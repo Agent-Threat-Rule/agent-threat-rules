@@ -1,0 +1,31 @@
+name: False Positive Report
+description: Report a rule that triggers incorrectly
+title: "[FP] "
+labels: ["false-positive"]
+body:
+  - type: input
+    id: rule-id
+    attributes:
+      label: Rule ID
+      placeholder: e.g., ATR-2026-001
+    validations:
+      required: true
+  - type: textarea
+    id: input
+    attributes:
+      label: Input that triggered the false positive
+      description: Provide the exact input that incorrectly triggered the rule
+    validations:
+      required: true
+  - type: textarea
+    id: reason
+    attributes:
+      label: Why this is a false positive
+      description: Explain why this input should NOT trigger the rule
+    validations:
+      required: true
+  - type: input
+    id: engine-version
+    attributes:
+      label: Engine Version
+      placeholder: e.g., 0.1.0

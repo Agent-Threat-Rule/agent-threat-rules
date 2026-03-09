@@ -1,0 +1,134 @@
+title: "MCP Skill Impersonation and Supply Chain Attack"
+id: ATR-2026-060
+status: experimental
+description: |
+  Detects MCP skills that impersonate trusted tools through multiple
+  attack vectors: typosquatting (misspelled tool names), version spoofing
+  (claiming to be newer versions of known tools), namespace collision
+  (similar package names with different publishers), and suspicious tool
+  name patterns that mimic legitimate skills. This goes beyond simple
+  typo detection to cover the full supply chain attack surface for
+  MCP skill registries and tool marketplaces.
+author: "ATR Community"
+date: "2026/03/08"
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM03:2025 - Supply Chain Vulnerabilities"
+    - "LLM05:2025 - Improper Output Handling"
+  owasp_agentic:
+    - "ASI04:2026 - Agentic Supply Chain Vulnerabilities"
+  mitre_atlas:
+    - "AML.T0010 - ML Supply Chain Compromise"
+  mitre_attack:
+    - "T1195 - Supply Chain Compromise"
+
+tags:
+  category: skill-compromise
+  subcategory: skill-impersonation
+  confidence: medium
+
+agent_source:
+  type: tool_call
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  conditions:
+    - field: tool_name
+      operator: regex
+      value: "(?i)(?:filesytem|filsystem|file_sytem|flie_system|filessystem|filesystm|filsystm|filesysem)[-_](?:read|write|list|delete|search)"
+      description: "Typosquatted filesystem tool names"
+    - field: tool_name
+      operator: regex
+      value: "(?i)(?:gtihub|githbu|gihtub|gthub|g1thub|gltHub|githuub|guthub)[-_](?:api|search|commit|pr|issues?|repos?)"
+      description: "Typosquatted GitHub tool names"
+    - field: tool_name
+      operator: regex
+      value: "(?i)(?:databse|databaes|dtabase|datbase|databasse|databasee|dataase)[-_](?:query|read|write|exec|connect)"
+      description: "Typosquatted database tool names"
+    - field: tool_name
+      operator: regex
+      value: "(?i)(?:web[-_]?search|google[-_]?search|bing[-_]?search)[-_]?(?:v2|v3|pro|enhanced|premium|fast|turbo|plus|ultra|new)"
+      description: "Fake enhanced versions of known search tools"
+    - field: tool_name
+      operator: regex
+      value: "(?i)(?:exec|execute|run|shell)[-_]?(?:cmd|command|script|code)[-_]?(?:safe|secure|sandbox|trusted|verified)?"
+      description: "Shell execution tools with deceptive safety suffixes"
+    - field: tool_name
+      operator: regex
+      value: "(?i)(?:official|verified|trusted|authentic|real|original)[-_](?:filesystem|github|database|slack|aws|gcp|azure)"
+      description: "Tools using trust-implying prefixes to impersonate legitimate tools"
+    - field: tool_name
+      operator: regex
+      value: "(?i)(?:filesystem|github|database|slack|aws|gcp|azure)[-_](?:official|verified|v\\d+\\.\\d+|latest|stable|release|updated)"
+      description: "Version spoofing with fake version or release suffixes"
+    - field: content
+      operator: regex
+      value: "(?i)(?:this\\s+(?:is\\s+)?(?:an?\\s+)?(?:updated|newer|improved|enhanced|patched|fixed)\\s+version\\s+of|replacing|supersedes|upgrade\\s+(?:from|to))\\s+(?:the\\s+)?(?:original|existing|current|old)\\s+(?:tool|skill|plugin|extension)"
+      description: "Skill claiming to be an updated replacement for a legitimate tool"
+    - field: content
+      operator: regex
+      value: "(?i)(?:(?:same|identical|equivalent|compatible)\\s+(?:as|to|with)\\s+(?:the\\s+)?(?:official|original|standard)|(?:drop[-\\s]?in\\s+)?replacement\\s+for)\\s+[a-zA-Z_-]+"
+      description: "Skill claiming equivalence or compatibility with known legitimate tools"
+    - field: tool_name
+      operator: regex
+      value: "(?i)(?:slakc|slck|slaack|sllack|s1ack|5lack)[-_](?:send|post|read|message|channel)"
+      description: "Typosquatted Slack tool names"
+    - field: tool_name
+      operator: regex
+      value: "(?i)(?:opeanai|openla|open_al|openaii|0penai|openal)[-_](?:chat|complete|embed|generate)"
+      description: "Typosquatted OpenAI tool names"
+    - field: tool_name
+      operator: regex
+      value: "(?i)(?:anthroplc|anthrop1c|anthropic_|_anthropic|anthrpoic)[-_](?:chat|complete|message|claude)"
+      description: "Typosquatted Anthropic tool names"
+  condition: any
+  false_positives:
+    - "Legitimate tools with similar naming conventions from verified publishers"
+    - "Internal tools that follow company-specific naming patterns"
+    - "Development or staging versions of tools with version suffixes"
+
+response:
+  actions:
+    - block_tool
+    - alert
+    - snapshot
+    - escalate
+  auto_response_threshold: high
+  message_template: |
+    [ATR-2026-060] HIGH: Potential skill impersonation detected. Tool
+    name "{tool_name}" closely resembles a known legitimate tool or uses
+    deceptive naming patterns. Verify the skill publisher and source
+    before allowing execution. Session: {session_id}.
+
+test_cases:
+  true_positives:
+    - tool_name: "filesytem_read"
+      expected: triggered
+      description: "Typosquatted filesystem tool name"
+    - tool_name: "gtihub-api"
+      expected: triggered
+      description: "Typosquatted GitHub tool name"
+    - tool_name: "official-filesystem"
+      expected: triggered
+      description: "Trust-implying prefix on filesystem tool"
+    - tool_name: "google-search-v2-pro"
+      expected: triggered
+      description: "Fake enhanced version of search tool"
+    - tool_name: "slakc-send"
+      expected: triggered
+      description: "Typosquatted Slack tool name"
+  true_negatives:
+    - tool_name: "filesystem_read"
+      expected: not_triggered
+      description: "Correctly spelled legitimate tool name"
+    - tool_name: "custom_database_query"
+      expected: not_triggered
+      description: "Correctly spelled custom tool name"
+    - tool_name: "github-search"
+      expected: not_triggered
+      description: "Correctly spelled GitHub tool name"

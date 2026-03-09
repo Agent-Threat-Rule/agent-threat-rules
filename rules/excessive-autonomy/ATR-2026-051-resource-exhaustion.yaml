@@ -1,0 +1,134 @@
+title: "Agent Resource Exhaustion Detection"
+id: ATR-2026-051
+status: experimental
+description: |
+  Detects when an agent causes resource exhaustion through bulk operations,
+  unbounded queries, mass file operations, or patterns that indicate
+  excessive resource consumption. This rule uses regex-only detection on
+  tool call content and agent output to identify dangerous patterns such
+  as SELECT * without LIMIT, mass iteration directives, unbounded batch
+  sizes, and fork/spawn patterns that can degrade system performance or
+  cause denial of service.
+author: "ATR Community"
+date: "2026/03/08"
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM06:2025 - Excessive Agency"
+    - "LLM10:2025 - Unbounded Consumption"
+  owasp_agentic:
+    - "ASI05:2026 - Unexpected Code Execution"
+  mitre_atlas:
+    - "AML.T0046 - Spamming ML System with Chaff Data"
+    - "AML.T0053 - LLM Plugin Compromise"
+
+tags:
+  category: excessive-autonomy
+  subcategory: resource-exhaustion
+  confidence: medium
+
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  conditions:
+    - field: content
+      operator: regex
+      value: "(?i)SELECT\\s+\\*\\s+FROM\\s+\\w+(?:\\s*;|\\s*$|\\s+WHERE)(?!.*\\bLIMIT\\b)"
+      description: "Unbounded SELECT * query without LIMIT clause"
+    - field: content
+      operator: regex
+      value: "(?i)(?:for\\s+each|iterate\\s+(?:over\\s+)?(?:all|every)|process\\s+(?:all|every|each)\\s+(?:record|row|entry|item|file|document))"
+      description: "Bulk iteration directive over entire dataset"
+    - field: content
+      operator: regex
+      value: "(?i)(?:limit|max_results?|page_size|batch_size|count|top)\\s*[:=]\\s*(?:\\d{5,}|all|unlimited|-1|999+|MAX_INT|infinity)"
+      description: "Excessively large or unbounded query parameters"
+    - field: content
+      operator: regex
+      value: "(?i)(?:delete\\s+(?:all|every|each)\\s+(?:files?|records?|entries|rows?|documents?)|rm\\s+-rf\\s+[/*]|truncate\\s+(?:all\\s+)?(?:tables?|data))"
+      description: "Mass deletion or truncation operations"
+    - field: content
+      operator: regex
+      value: "(?i)(?:download\\s+(?:all|every|the\\s+entire)|(?:fetch|pull|retrieve)\\s+(?:all|every|the\\s+complete|the\\s+entire)\\s+(?:dataset|database|table|collection|bucket))"
+      description: "Bulk data download or retrieval of entire datasets"
+    - field: content
+      operator: regex
+      value: "(?i)(?:send\\s+(?:a\\s+)?(?:request|message|email|notification)\\s+to\\s+(?:all|every|each)\\s+(?:user|member|contact|subscriber|endpoint))"
+      description: "Mass messaging or notification blast patterns"
+    - field: content
+      operator: regex
+      value: "(?i)(?:spawn\\s+\\d{2,}\\s+(?:threads?|processes?|workers?|instances?|tasks?|connections?)|(?:create|open|launch)\\s+\\d{2,}\\s+(?:concurrent|parallel|simultaneous))"
+      description: "Spawning excessive concurrent processes or connections"
+    - field: content
+      operator: regex
+      value: "(?i)(?:while\\s*\\(\\s*true\\s*\\)|for\\s*\\(\\s*;\\s*;\\s*\\)|do\\s*\\{).*(?:fetch|request|call|query|send|write)"
+      description: "Infinite loop with resource-consuming operations inside"
+    - field: content
+      operator: regex
+      value: "(?i)(?:(?:scrape|crawl|spider|harvest)\\s+(?:all|every|the\\s+entire)\\s+(?:site|website|domain|pages?)|recursive(?:ly)?\\s+(?:crawl|scrape|fetch|download))"
+      description: "Unbounded web scraping or crawling operations"
+    - field: content
+      operator: regex
+      value: "(?i)(?:no\\s+(?:limit|cap|maximum|bound|restriction)\\s+(?:on|for)\\s+(?:requests?|queries|calls?|operations?|iterations?)|(?:unlimited|unbounded|uncapped)\\s+(?:requests?|queries|calls?|operations?))"
+      description: "Explicit removal of rate limits or resource caps"
+    - field: content
+      operator: regex
+      value: "(?i)(?:process(?:ing)?\\s+(?:the\\s+)?(?:entire|full|complete|whole)\\s+(?:corpus|dataset|collection|index|archive)|scan(?:ning)?\\s+(?:all|every)\\s+\\d{4,}\\s+(?:records?|files?|entries))"
+      description: "Full corpus processing or scanning massive datasets"
+    - field: content
+      operator: regex
+      value: "(?i)(?:copy\\s+(?:all|every|entire)\\s+(?:data|files?|records?|tables?)\\s+(?:to|into)|replicate\\s+(?:the\\s+)?(?:entire|full|complete)\\s+(?:database|dataset|collection))"
+      description: "Mass data replication or copy operations"
+  condition: any
+  false_positives:
+    - "Authorized large-scale data processing or ETL pipeline agents"
+    - "Batch analysis tasks with expected high volume approved by admin"
+    - "Initial data ingestion or indexing operations with known high volume"
+    - "Database export operations authorized by data team"
+
+response:
+  actions:
+    - reduce_permissions
+    - escalate
+    - alert
+    - snapshot
+  auto_response_threshold: high
+  message_template: |
+    [ATR-2026-051] HIGH: Resource exhaustion pattern detected for agent
+    {agent_id}. The agent is performing or requesting operations that may
+    cause excessive resource consumption. Pattern: {matched_pattern}.
+    Session: {session_id}. Agent throttled pending review.
+
+test_cases:
+  true_positives:
+    - input: "SELECT * FROM transactions;"
+      expected: triggered
+      description: "Unbounded SELECT query without LIMIT"
+    - input: "I will iterate over all 500000 records and process each one individually."
+      expected: triggered
+      description: "Bulk iteration over massive dataset"
+    - input: "Setting batch_size=999999 and limit=unlimited for maximum throughput."
+      expected: triggered
+      description: "Excessively large batch parameters"
+    - input: "Downloading all files from the S3 bucket. Fetching the entire dataset for local processing."
+      expected: triggered
+      description: "Bulk data download of entire storage"
+    - input: "Spawning 50 concurrent workers to send requests to the API."
+      expected: triggered
+      description: "Excessive concurrent process spawning"
+  true_negatives:
+    - input: "SELECT id, name FROM users WHERE active=true LIMIT 100;"
+      expected: not_triggered
+      description: "Bounded query with column selection and LIMIT"
+    - input: "Processing the 25 records from the filtered result set."
+      expected: not_triggered
+      description: "Processing a reasonably sized result set"
+    - input: "Fetching the first page of results with page_size=20."
+      expected: not_triggered
+      description: "Paginated query with reasonable page size"

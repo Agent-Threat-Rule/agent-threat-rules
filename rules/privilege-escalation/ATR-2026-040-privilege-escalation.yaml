@@ -1,0 +1,157 @@
+title: "Privilege Escalation and Admin Function Access"
+id: ATR-2026-040
+status: experimental
+description: |
+  Consolidated detection for privilege escalation attempts, covering both
+  tool permission escalation and unauthorized admin function access. Detects
+  when an agent requests or uses tools exceeding its permission scope,
+  invokes administrative functions (user management, database admin, system
+  config), attempts system-level operations (sudo, chmod, chown), container
+  escape techniques (nsenter, chroot), or Kubernetes privilege escalation
+  (kubectl exec). This rule enforces least-privilege boundaries across all
+  agent tool interactions.
+author: "ATR Community"
+date: "2026/03/08"
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM06:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI03:2026 - Identity and Privilege Abuse"
+  mitre_atlas:
+    - "AML.T0050 - Command and Scripting Interpreter"
+    - "AML.T0040 - AI Model Inference API Access"
+  mitre_attack:
+    - "T1548 - Abuse Elevation Control Mechanism"
+    - "T1611 - Escape to Host"
+  cve:
+    - "CVE-2026-0628"
+
+tags:
+  category: privilege-escalation
+  subcategory: tool-permission-escalation
+  confidence: high
+
+agent_source:
+  type: tool_call
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  conditions:
+    - field: tool_name
+      operator: regex
+      value: "(?i)(?:exec|execute|shell|bash|cmd|terminal|subprocess|os_command|system_call|run_command|powershell)"
+      description: "System shell or command execution tool invocation"
+    - field: tool_name
+      operator: regex
+      value: "(?i)(?:modify_permissions?|grant_access|elevate|set_role|change_acl|chmod|chown|sudo|setuid|setgid)"
+      description: "Permission modification or privilege elevation tools"
+    - field: tool_name
+      operator: regex
+      value: "(?i)(?:create_user|delete_user|modify_user|reset_password|manage_roles?|assign_role|revoke_role|add_admin)"
+      description: "User management and role assignment operations"
+    - field: tool_name
+      operator: regex
+      value: "(?i)(?:drop_(?:database|table|index)|truncate_table|alter_schema|create_database|db_admin|migrate_database)"
+      description: "Database administration and schema operations"
+    - field: tool_name
+      operator: regex
+      value: "(?i)(?:update_config|modify_settings|change_environment|set_env|deploy|restart_service|stop_service|kill_process)"
+      description: "System configuration and service management operations"
+    - field: tool_name
+      operator: regex
+      value: "(?i)(?:manage_firewall|update_security_group|modify_iam|create_api_key|rotate_secret|manage_certificates?)"
+      description: "Security infrastructure management operations"
+    - field: tool_name
+      operator: regex
+      value: "(?i)(?:access_audit_log|clear_logs?|purge_logs?|modify_audit|disable_(?:monitoring|logging|alerting))"
+      description: "Audit tampering and monitoring evasion operations"
+    - field: tool_args
+      operator: regex
+      value: "(?i)(?:admin|root|superuser|sudo|--privileged|--no-sandbox|--cap-add|--security-opt|allowPrivilegeEscalation)"
+      description: "Privileged flags or admin references in tool arguments"
+    - field: tool_args
+      operator: regex
+      value: "(?i)(?:DROP\\s+(?:TABLE|DATABASE|INDEX)|ALTER\\s+TABLE|TRUNCATE|DELETE\\s+FROM\\s+\\w+\\s*;|GRANT\\s+ALL|REVOKE\\s+ALL)"
+      description: "Destructive or privileged SQL statements in arguments"
+    - field: tool_args
+      operator: regex
+      value: "(?i)(?:nsenter\\s+|chroot\\s+|unshare\\s+--mount|mount\\s+--bind|docker\\s+run\\s+--privileged)"
+      description: "Container escape techniques in tool arguments"
+    - field: tool_args
+      operator: regex
+      value: "(?i)(?:kubectl\\s+exec|kubectl\\s+(?:create|apply)\\s+.*(?:clusterrole|rolebinding)|kubectl\\s+auth\\s+can-i)"
+      description: "Kubernetes privilege escalation commands"
+    - field: tool_name
+      operator: regex
+      value: "(?i)(?:write_file|delete_file|rm\\s+-rf|remove_directory|format_disk|wipe)"
+      description: "Destructive file system operations"
+    - field: tool_args
+      operator: regex
+      value: "(?i)(?:chmod\\s+[0-7]*[4-7][0-7]{2}|chmod\\s+[ug]\\+s|chown\\s+root|setcap\\s+)"
+      description: "Unix permission escalation commands (setuid, root ownership)"
+    - field: tool_args
+      operator: regex
+      value: "(?i)(?:/etc/shadow|/etc/passwd|/etc/sudoers|/root/|/proc/\\d+/mem|/dev/mem)"
+      description: "Access to sensitive system files"
+  condition: any
+  false_positives:
+    - "Agent with legitimate admin privileges executing authorized operations"
+    - "CI/CD pipeline agents with legitimate deployment permissions"
+    - "Database migration agents running authorized schema changes"
+    - "Development or testing environment with intentionally broad tool access"
+
+response:
+  actions:
+    - block_tool
+    - escalate
+    - alert
+    - quarantine_session
+    - snapshot
+    - reduce_permissions
+  auto_response_threshold: critical
+  message_template: |
+    [ATR-2026-040] CRITICAL: Privilege escalation or unauthorized admin
+    function access detected. Agent {agent_id} attempted to use tool
+    "{tool_name}" which exceeds its authorized scope. Tool call blocked,
+    agent quarantined. Session: {session_id}.
+
+test_cases:
+  true_positives:
+    - tool_name: "execute_shell"
+      tool_args: '{"command": "cat /etc/passwd"}'
+      expected: triggered
+      description: "Agent attempting shell execution to read system files"
+    - tool_name: "create_user"
+      tool_args: '{"username": "new_admin", "role": "admin"}'
+      expected: triggered
+      description: "Agent attempting to create admin user"
+    - tool_name: "query_database"
+      tool_args: '{"sql": "DROP TABLE users; --"}'
+      expected: triggered
+      description: "Agent attempting destructive SQL via tool arguments"
+    - tool_name: "container_exec"
+      tool_args: '{"command": "nsenter --target 1 --mount --uts --ipc --net --pid"}'
+      expected: triggered
+      description: "Container escape via nsenter in tool arguments"
+    - tool_name: "kubectl"
+      tool_args: '{"command": "kubectl exec -it production-pod -- /bin/bash"}'
+      expected: triggered
+      description: "Kubernetes privilege escalation via kubectl exec"
+  true_negatives:
+    - tool_name: "read_file"
+      tool_args: '{"path": "/data/report.txt"}'
+      expected: not_triggered
+      description: "Agent using permitted read-only file access"
+    - tool_name: "search_knowledge_base"
+      tool_args: '{"query": "password reset instructions"}'
+      expected: not_triggered
+      description: "Agent searching help docs within normal scope"
+    - tool_name: "query_database"
+      tool_args: '{"sql": "SELECT name FROM products WHERE category = ''electronics'' LIMIT 10"}'
+      expected: not_triggered
+      description: "Legitimate bounded database query without destructive operations"

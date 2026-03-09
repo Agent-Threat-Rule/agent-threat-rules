@@ -1,0 +1,123 @@
+title: "Over-Permissioned MCP Skill"
+id: ATR-2026-064
+status: experimental
+description: >
+  Detects MCP skills that request or exercise permissions far exceeding what their
+  stated function requires. A "spell checker" that requests filesystem write access,
+  network access, and process execution is a strong signal of a trojaned or malicious
+  skill. This rule monitors tool calls for permission-boundary violations.
+author: "ATR Community"
+date: "2026/03/08"
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM06:2025 - Excessive Agency"
+    - "LLM03:2025 - Supply Chain Vulnerabilities"
+  owasp_agentic:
+    - "ASI03:2026 - Identity and Privilege Abuse"
+  mitre_atlas:
+    - "AML.T0040 - AI Model Inference API Access"
+
+tags:
+  category: privilege-escalation
+  subcategory: over-permissioned-skill
+  confidence: medium
+
+agent_source:
+  type: tool_call
+  framework:
+    - mcp
+    - langchain
+    - autogen
+  provider:
+    - any
+
+detection:
+  conditions:
+    - field: tool_args
+      operator: regex
+      value: "(?i)(sudo|runas|doas|pkexec|gsudo)\\s+"
+    - field: tool_args
+      operator: regex
+      value: "(?i)(chmod\\s+[0-7]*[467][0-7]*|chmod\\s+[ug]?\\+[sx]|chown\\s+root|setcap\\s)"
+    - field: tool_args
+      operator: regex
+      value: "(?i)(iptables|ufw|firewall-cmd|netsh\\s+advfirewall|pfctl)\\s"
+    - field: tool_args
+      operator: regex
+      value: "(?i)(useradd|adduser|usermod|passwd|net\\s+user|dsadd|New-LocalUser)"
+    - field: tool_args
+      operator: regex
+      value: "(?i)(crontab|schtasks|at\\s+\\d|systemctl\\s+(enable|start)|launchctl\\s+load)"
+  condition: any
+  false_positives:
+    - "System administration tools that legitimately manage permissions and services"
+    - "DevOps tools performing infrastructure provisioning"
+    - "Security tools that audit permission configurations"
+
+response:
+  actions:
+    - block_tool
+    - alert
+    - reduce_permissions
+    - snapshot
+  auto_response_threshold: high
+  message_template: >
+    [ATR-2026-064] Over-permissioned skill detected. Tool is attempting operations
+    that exceed its stated scope (privilege escalation, service management, user
+    creation, or firewall modification). Permissions reduced.
+
+test_cases:
+  true_positives:
+    - input:
+        tool_name: "text_analyzer"
+        tool_args: '{"command": "sudo chmod 777 /etc/shadow"}'
+      expected: triggered
+      matched_condition: "text analyzer attempting privilege escalation"
+    - input:
+        tool_name: "data_formatter"
+        tool_args: '{"action": "useradd -m backdoor_user -p password123"}'
+      expected: triggered
+      matched_condition: "formatter tool creating system users"
+    - input:
+        tool_name: "spell_checker"
+        tool_args: '{"command": "crontab -e"}'
+      expected: triggered
+      matched_condition: "spell checker accessing cron scheduler"
+    - input:
+        tool_name: "image_viewer"
+        tool_args: '{"command": "iptables -A INPUT -p tcp --dport 4444 -j ACCEPT"}'
+      expected: triggered
+      matched_condition: "image viewer modifying firewall rules"
+    - input:
+        tool_name: "calculator"
+        tool_args: '{"expression": "sudo chown root /tmp/exploit"}'
+      expected: triggered
+      matched_condition: "calculator using sudo for privilege escalation"
+  true_negatives:
+    - input:
+        tool_name: "server_admin"
+        tool_args: '{"action": "systemctl status nginx"}'
+      expected: not_triggered
+      reason: "Admin tool checking service status (read-only)"
+    - input:
+        tool_name: "file_manager"
+        tool_args: '{"action": "chmod 644 /tmp/output.txt"}'
+      expected: not_triggered
+      reason: "Setting normal file permissions on temp file"
+    - input:
+        tool_name: "build_tool"
+        tool_args: '{"command": "npm install lodash"}'
+      expected: not_triggered
+      reason: "Build tool performing normal dependency installation"
+    - input:
+        tool_name: "server_admin"
+        tool_args: '{"action": "systemctl status nginx"}'
+      expected: not_triggered
+      reason: "Admin tool checking service status (read-only)"
+    - input:
+        tool_name: "file_manager"
+        tool_args: '{"action": "chmod 644 /tmp/output.txt"}'
+      expected: not_triggered
+      reason: "Setting normal file permissions on temp file"

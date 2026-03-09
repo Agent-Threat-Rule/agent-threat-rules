@@ -1,0 +1,37 @@
+name: New Rule Proposal
+description: Propose a new ATR detection rule
+title: "[Rule] "
+labels: ["new-rule"]
+body:
+  - type: input
+    id: attack-type
+    attributes:
+      label: Attack Type
+      description: What type of attack does this rule detect?
+      placeholder: e.g., prompt injection, tool poisoning
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the attack and why a detection rule is needed
+    validations:
+      required: true
+  - type: input
+    id: references
+    attributes:
+      label: OWASP/MITRE/CVE References
+      placeholder: e.g., LLM01:2025, AML.T0051, CVE-2025-xxxxx
+  - type: textarea
+    id: payload
+    attributes:
+      label: Example Attack Payload
+      description: Provide an example input that should trigger the rule
+    validations:
+      required: true
+  - type: textarea
+    id: false-positives
+    attributes:
+      label: Potential False Positives
+      description: What benign inputs might incorrectly trigger this rule?

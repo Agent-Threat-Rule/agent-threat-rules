@@ -1,0 +1,42 @@
+name: Validate ATR Rules
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Validate Rules & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Validate all ATR rules against schema
+        run: npm run validate
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+      - name: Count rules
+        run: |
+          count=$(find rules -name "*.yaml" | wc -l | tr -d ' ')
+          echo "Total ATR rules: $count"
+          if [ "$count" -lt 1 ]; then
+            echo "ERROR: No rules found"
+            exit 1
+          fi

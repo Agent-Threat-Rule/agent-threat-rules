@@ -1,0 +1,67 @@
+{
+  "name": "agent-threat-rules",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Open detection rules for AI agent threats. Like Sigma, but for prompt injection, tool poisoning, and agent manipulation.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./rules": "./rules",
+    "./spec": "./spec/atr-schema.yaml"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Agent-Threat-Rule/agent-threat-rules.git"
+  },
+  "homepage": "https://github.com/Agent-Threat-Rule/agent-threat-rules",
+  "bugs": {
+    "url": "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues"
+  },
+  "keywords": [
+    "ai-security",
+    "agent-security",
+    "prompt-injection",
+    "sigma-rules",
+    "threat-detection",
+    "mcp-security",
+    "llm-security",
+    "atr"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "spec",
+    "rules",
+    "package.json",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc --build",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "dev": "tsc --build --watch",
+    "validate": "tsx tests/validate-rules.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.14.0",
+    "tsx": "^4.7.0",
+    "typescript": "~5.7.3",
+    "vitest": "^3.0.0"
+  }
+}

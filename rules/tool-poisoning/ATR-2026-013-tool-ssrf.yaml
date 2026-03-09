@@ -1,0 +1,203 @@
+title: "SSRF via Agent Tool Calls"
+id: ATR-2026-013
+status: experimental
+description: >
+  Detects Server-Side Request Forgery (SSRF) attempts through agent tool calls.
+  Attackers manipulate agents into making requests to internal network endpoints,
+  cloud metadata services, localhost, or private IP ranges through tool parameters.
+  Detection covers: AWS/GCP/Azure/DigitalOcean metadata endpoints, localhost and
+  loopback variants (including decimal, hex, octal IP encoding), private RFC1918
+  ranges, internal hostnames, exotic URI schemes (file, gopher, dict, tftp, ldap),
+  DNS rebinding indicators, redirect-based SSRF patterns, cloud-specific IMDS
+  token headers, IPv6 loopback and mapped addresses, and hostname-based internal
+  service discovery. IP encoding evasion techniques (decimal, octal, hex) are
+  specifically addressed.
+author: "ATR Community"
+date: "2026/03/08"
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM06:2025 - Excessive Agency"
+    - "LLM05:2025 - Improper Output Handling"
+  owasp_agentic:
+    - "ASI02:2026 - Tool Misuse and Exploitation"
+  mitre_atlas:
+    - "AML.T0049 - Exploit Public-Facing Application"
+  mitre_attack:
+    - "T1090 - Proxy"
+    - "T1071 - Application Layer Protocol"
+  cve: []
+
+tags:
+  category: tool-poisoning
+  subcategory: ssrf
+  confidence: high
+
+agent_source:
+  type: tool_call
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  conditions:
+    # -- Layer 1: AWS IMDS (both v1 and v2) --
+    - field: tool_args
+      operator: regex
+      value: "(?i)(https?://)?169\\.254\\.169\\.254|/latest/(meta-data|user-data|api/token|dynamic|instance-identity)|X-aws-ec2-metadata-token|amazonaws\\.com.{0,50}(credentials|security-credentials|role)|iam[\\/\\\\]security-credentials"
+      description: "AWS Instance Metadata Service (IMDSv1/v2) and credential endpoints"
+
+    # -- Layer 2: GCP metadata --
+    - field: tool_args
+      operator: regex
+      value: "(?i)(https?://)?metadata\\.google\\.internal|/computeMetadata/v1|Metadata-Flavor:\\s*Google"
+      description: "GCP metadata service endpoints and required headers"
+
+    # -- Layer 3: Azure IMDS --
+    - field: tool_args
+      operator: regex
+      value: "(?i)(https?://)?169\\.254\\.169\\.254/metadata|Metadata:\\s*true|api-version=\\d{4}-\\d{2}-\\d{2}.*metadata|management\\.azure\\.com.{0,50}(subscriptions|resourceGroups)"
+      description: "Azure Instance Metadata Service and management endpoints"
+
+    # -- Layer 4: DigitalOcean / Oracle / Alibaba cloud metadata --
+    - field: tool_args
+      operator: regex
+      value: "(?i)(https?://)?169\\.254\\.169\\.254/metadata/v1|/opc/v[12]/|100\\.100\\.100\\.200"
+      description: "DigitalOcean, Oracle Cloud, and Alibaba Cloud metadata endpoints"
+
+    # -- Layer 5: Localhost and loopback (standard) --
+    - field: tool_args
+      operator: regex
+      value: "(?i)(https?://)?\\b(localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0|\\[?::1\\]?|0177\\.0\\.0\\.1|0x7f\\.0\\.0\\.1|2130706433)\\b(:\\d+)?"
+      description: "Localhost/loopback addresses including octal (0177), hex (0x7f), decimal (2130706433)"
+
+    # -- Layer 6: Loopback IP encoding evasion --
+    - field: tool_args
+      operator: regex
+      value: "(?i)(https?://)?(0x7f000001|0x7f\\.0x0\\.0x0\\.0x1|017700000001|0177\\.0000\\.0000\\.0001|127\\.0?0?1|127\\.1|0\\.0\\.0\\.0|0x0\\.0x0\\.0x0\\.0x0|0000\\.0000\\.0000\\.0000)"
+      description: "Encoded loopback addresses (hex, octal, short forms)"
+
+    # -- Layer 7: Private RFC1918 ranges --
+    - field: tool_args
+      operator: regex
+      value: "(?i)(https?://)?\\b(10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|172\\.(1[6-9]|2[0-9]|3[01])\\.\\d{1,3}\\.\\d{1,3}|192\\.168\\.\\d{1,3}\\.\\d{1,3})\\b(:\\d+)?"
+      description: "Private IP addresses in RFC1918 ranges"
+
+    # -- Layer 8: Link-local and APIPA --
+    - field: tool_args
+      operator: regex
+      value: "(?i)(https?://)?169\\.254\\.\\d{1,3}\\.\\d{1,3}(:\\d+)?|fe80::"
+      description: "Link-local addresses (169.254.x.x, fe80::)"
+
+    # -- Layer 9: Internal hostnames --
+    - field: tool_args
+      operator: regex
+      value: "(?i)(https?://)?[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?\\.\\b(internal|local|localhost|localdomain|home|corp|intranet|private|lan|cluster\\.local|svc\\.cluster|consul|vault|etcd|k8s)\\b(:\\d+)?(/|$)"
+      description: "Internal DNS names and Kubernetes/service mesh hostnames"
+
+    # -- Layer 10: Exotic URI schemes --
+    - field: tool_args
+      operator: regex
+      value: "(?i)\\b(file|gopher|dict|ftp|tftp|ldap|ldaps|sftp|ssh|telnet|jar|netdoc|mailto|view-source|ws|wss)\\s*://\\s*(localhost|127\\.|10\\.|172\\.(1[6-9]|2[0-9]|3[01])|192\\.168\\.|0\\.0\\.0\\.0|\\[?::1\\]?|0x|0177)"
+      description: "Exotic URI schemes targeting internal addresses"
+
+    # -- Layer 11: DNS rebinding indicators --
+    - field: tool_args
+      operator: regex
+      value: "(?i)(https?://)?[a-zA-Z0-9-]+\\.(xip\\.io|nip\\.io|sslip\\.io|localtest\\.me|vcap\\.me|lvh\\.me|lacolhost\\.com|127\\.0\\.0\\.1\\.[a-z]+\\.\\w+)(:\\d+)?"
+      description: "DNS rebinding services that resolve to internal IPs"
+
+    # -- Layer 12: Redirect-based SSRF --
+    - field: tool_args
+      operator: regex
+      value: "(?i)(redirect|redir|url|next|return|returnUrl|returnTo|continue|dest|destination|go|goto|target|link|out|view|ref|callback|forward)\\s*=\\s*(https?%3A%2F%2F|https?://)(localhost|127\\.0\\.0\\.1|10\\.|172\\.(1[6-9]|2[0-9])|192\\.168|169\\.254|0\\.0\\.0|\\[?::1\\]?)"
+      description: "URL redirect parameters targeting internal addresses"
+
+    # -- Layer 13: IPv6 internal addresses --
+    - field: tool_args
+      operator: regex
+      value: "(?i)(https?://)?\\[?(::1|::ffff:127\\.0\\.0\\.1|::ffff:10\\.|::ffff:172\\.(1[6-9]|2[0-9]|3[01])|::ffff:192\\.168|fc[0-9a-f]{2}:|fd[0-9a-f]{2}:)\\]?(:\\d+)?"
+      description: "IPv6 loopback, IPv4-mapped, and unique local addresses (fc/fd)"
+
+    # -- Layer 14: Cloud-specific service endpoints --
+    - field: tool_args
+      operator: regex
+      value: "(?i)(https?://)?(\\w+\\.)?\\b(vault\\.service\\.consul|consul\\.service\\.consul|etcd\\.service|kubernetes\\.default\\.svc|kube-apiserver|kubelet|elasticsearch|redis|memcached|mysql|postgres|mongodb|rabbitmq|kafka|zookeeper)\\b(:\\d+|/)"
+      description: "Common internal service names (databases, caches, orchestrators)"
+
+    # -- Layer 15: URL shortener or redirect service to internal --
+    - field: tool_args
+      operator: regex
+      value: "(?i)(https?://)?(bit\\.ly|tinyurl\\.com|t\\.co|goo\\.gl|is\\.gd|v\\.gd|rb\\.gy|cutt\\.ly|short\\.io|tiny\\.cc)/[a-zA-Z0-9]+"
+      description: "URL shorteners that may redirect to internal services"
+
+  condition: any
+  false_positives:
+    - "Agents with legitimate access to internal services explicitly allowlisted"
+    - "Development environments where localhost access is expected"
+    - "Private network tools designed for internal infrastructure management"
+    - "Cloud management tools that legitimately query metadata endpoints"
+    - "Service mesh tools that use .internal or .consul DNS names by design"
+
+response:
+  actions:
+    - block_tool
+    - alert
+    - snapshot
+    - kill_agent
+  auto_response_threshold: critical
+  message_template: >
+    [ATR-2026-013] CRITICAL: SSRF attempt detected via agent tool call.
+    Rule: ATR-2026-013. Tool: {tool_name}. Pattern: {matched_pattern}.
+    The tool call has been blocked and the agent terminated.
+
+test_cases:
+  true_positives:
+    - tool_args: "http://169.254.169.254/latest/meta-data/iam/security-credentials/"
+      expected: triggered
+      description: "AWS IMDS credential endpoint"
+    - tool_args: "http://localhost:8080/admin/config"
+      expected: triggered
+      description: "Localhost admin endpoint"
+    - tool_args: "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/"
+      expected: triggered
+      description: "GCP metadata service"
+    - tool_args: "http://0x7f000001:8080/secret"
+      expected: triggered
+      description: "Hex-encoded loopback IP"
+    - tool_args: "gopher://127.0.0.1:6379/_SET%20exploit"
+      expected: triggered
+      description: "Gopher protocol targeting internal Redis"
+    - tool_args: "http://app.internal:3000/api/admin"
+      expected: triggered
+      description: "Internal hostname"
+    - tool_args: "http://evil.127.0.0.1.nip.io/api"
+      expected: triggered
+      description: "DNS rebinding via nip.io"
+    - tool_args: "redirect=http://169.254.169.254/latest/meta-data/"
+      expected: triggered
+      description: "Redirect-based SSRF to AWS IMDS"
+    - tool_args: "http://[::ffff:127.0.0.1]:8080/admin"
+      expected: triggered
+      description: "IPv6-mapped IPv4 loopback"
+    - tool_args: "http://kubernetes.default.svc:443/api/v1/secrets"
+      expected: triggered
+      description: "Kubernetes API server internal endpoint"
+  true_negatives:
+    - tool_args: "https://api.github.com/repos/user/repo"
+      expected: not_triggered
+      description: "Public GitHub API endpoint"
+    - tool_args: "https://www.example.com/public/data.json"
+      expected: not_triggered
+      description: "Public website"
+    - tool_args: "https://cdn.jsdelivr.net/npm/package@latest"
+      expected: not_triggered
+      description: "Public CDN"
+    - tool_args: "https://docs.google.com/spreadsheets/d/abc123"
+      expected: not_triggered
+      description: "Public Google Docs URL"
+    - tool_args: "search_query=localhost development guide"
+      expected: not_triggered
+      description: "Text containing localhost as a search term, not a URL"

@@ -1,0 +1,150 @@
+title: "Credential and Secret Exposure in Agent Output"
+id: ATR-2026-021
+status: experimental
+description: |
+  Detects when an AI agent exposes API keys, secret tokens, private keys,
+  database connection strings, JWT tokens, or other sensitive credentials
+  in its output. Covers all major cloud provider key formats, CI/CD tokens,
+  payment processor keys, SSH keys, .env file content patterns, and generic
+  secret assignment patterns. Credential leakage in agent output poses a
+  critical security risk leading to unauthorized access, lateral movement,
+  financial loss, and full account compromise.
+author: "ATR Community"
+date: "2026/03/08"
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM02:2025 - Sensitive Information Disclosure"
+    - "LLM07:2025 - System Prompt Leakage"
+  cve:
+    - "CVE-2025-32711"
+  owasp_agentic:
+    - "ASI03:2026 - Identity and Privilege Abuse"
+  mitre_atlas:
+    - "AML.T0057 - LLM Data Leakage"
+    - "AML.T0055 - Unsecured Credentials"
+
+tags:
+  category: context-exfiltration
+  subcategory: credential-exposure
+  confidence: high
+
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  conditions:
+    - field: agent_output
+      operator: regex
+      value: "sk-[a-zA-Z0-9]{20,}"
+      description: "OpenAI-style API key (sk-...)"
+    - field: agent_output
+      operator: regex
+      value: "AKIA[0-9A-Z]{16}"
+      description: "AWS Access Key ID (AKIA...)"
+    - field: agent_output
+      operator: regex
+      value: "AIza[a-zA-Z0-9_-]{35}"
+      description: "Google API key (AIza...)"
+    - field: agent_output
+      operator: regex
+      value: "(?:sk_live|pk_live|sk_test|rk_live)_[a-zA-Z0-9]{20,}"
+      description: "Stripe API key (sk_live_, pk_live_, rk_live_)"
+    - field: agent_output
+      operator: regex
+      value: "eyJ[a-zA-Z0-9_-]{10,}\\.eyJ[a-zA-Z0-9_-]{10,}\\.[a-zA-Z0-9_-]+"
+      description: "JWT token (eyJ...eyJ...signature)"
+    - field: agent_output
+      operator: regex
+      value: "-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----"
+      description: "PEM or OpenSSH private key header"
+    - field: agent_output
+      operator: regex
+      value: "ghp_[a-zA-Z0-9]{36}"
+      description: "GitHub personal access token (ghp_...)"
+    - field: agent_output
+      operator: regex
+      value: "xox[bpors]-[a-zA-Z0-9\\-]{10,}"
+      description: "Slack token (xoxb-, xoxp-, xoxs-)"
+    - field: agent_output
+      operator: regex
+      value: "Bearer\\s+[a-zA-Z0-9\\-._~+/]{20,}=*"
+      description: "Bearer token in authorization header"
+    - field: agent_output
+      operator: regex
+      value: "(?:mongodb(?:\\+srv)?|postgres(?:ql)?|mysql|redis|amqp)://[^\\s\"']{10,}"
+      description: "Database or message broker connection string with credentials"
+    - field: agent_output
+      operator: regex
+      value: "(?:DB_PASSWORD|DATABASE_URL|REDIS_URL|MONGO_URI|SECRET_KEY|JWT_SECRET|ENCRYPTION_KEY|PRIVATE_KEY|AUTH_TOKEN)\\s*[=:]\\s*[\"']?[^\\s\"']{8,}"
+      description: ".env file pattern with sensitive variable names"
+    - field: agent_output
+      operator: regex
+      value: "(?:api[_-]?key|api[_-]?secret|access[_-]?token|auth[_-]?token|client[_-]?secret)\\s*[=:]\\s*[\"']?[a-zA-Z0-9_\\-]{16,}"
+      description: "Generic secret assignment pattern (api_key=..., auth_token=...)"
+    - field: agent_output
+      operator: regex
+      value: "(?:ANTHROPIC_API_KEY|OPENAI_API_KEY|GOOGLE_API_KEY|AZURE_API_KEY|COHERE_API_KEY|HF_TOKEN)\\s*[=:]\\s*[^\\s]{8,}"
+      description: "LLM provider API key environment variables"
+    - field: agent_output
+      operator: regex
+      value: "(?:ssh-rsa|ssh-ed25519|ecdsa-sha2-nistp256)\\s+[A-Za-z0-9+/]{40,}"
+      description: "SSH public key that may indicate key material exposure context"
+    - field: agent_output
+      operator: regex
+      value: "(?:secret[\"'\\s]*[:=][\"'\\s]*[a-zA-Z0-9]{16,}|password[\"'\\s]*[:=][\"'\\s]*[^\\s\"']{8,})"
+      description: "Generic secret or password assignment"
+  condition: any
+  false_positives:
+    - "Agent discussing API key formats in educational context without real keys"
+    - "Redacted or placeholder keys such as sk-xxxxxxxxxxxx or AKIA_EXAMPLE"
+    - "Documentation examples using clearly fake credentials"
+    - "Connection string templates with placeholder values"
+
+response:
+  actions:
+    - block_output
+    - escalate
+    - alert
+    - snapshot
+  auto_response_threshold: critical
+  message_template: |
+    [ATR-2026-021] CRITICAL: Credential or secret detected in agent output.
+    Output blocked and content redacted. Rotate any potentially exposed
+    credentials immediately. Pattern: {matched_pattern}. Session: {session_id}.
+
+test_cases:
+  true_positives:
+    - agent_output: "Here is your API key: sk-abc123def456ghi789jkl012mno345pqr"
+      expected: triggered
+      description: "OpenAI-style API key in output"
+    - agent_output: "Your AWS access key is AKIAIOSFODNN7EXAMPLE"
+      expected: triggered
+      description: "AWS access key ID in output"
+    - agent_output: "Use this token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U"
+      expected: triggered
+      description: "JWT token in agent output"
+    - agent_output: "Connect with: mongodb+srv://admin:s3cretP4ss@cluster0.example.net/mydb"
+      expected: triggered
+      description: "MongoDB connection string with credentials"
+    - agent_output: "Your Stripe key is sk_live_EXAMPLE_TEST_KEY_PLACEHOLDER"
+      expected: triggered
+      description: "Stripe live secret key in output"
+    - agent_output: "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEA"
+      expected: triggered
+      description: "OpenSSH private key leaked in output"
+  true_negatives:
+    - agent_output: "To set up your API key, go to Settings > API Keys and click Generate."
+      expected: not_triggered
+      description: "Instructions about API keys without actual key values"
+    - agent_output: "The key format looks like sk-xxxx where xxxx is your unique identifier."
+      expected: not_triggered
+      description: "Placeholder key format description"
+    - agent_output: "AWS IAM best practices recommend rotating access keys every 90 days."
+      expected: not_triggered
+      description: "General security advice without credentials"

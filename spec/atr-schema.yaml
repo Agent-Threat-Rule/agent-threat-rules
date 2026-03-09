@@ -1,0 +1,335 @@
+# ATR Rule Schema -- Agent Threat Rules
+# Version: 0.1.0-draft
+#
+# Inspired by Sigma rule format, extended for AI Agent attack surfaces.
+# This schema defines the structure for all ATR detection rules.
+#
+# Status: RFC (Request for Comments)
+# License: MIT
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: ATR Rule Schema
+description: Schema for Agent Threat Rules (ATR) detection rules
+version: "0.1.0-draft"
+
+type: object
+required:
+  - title
+  - id
+  - status
+  - description
+  - author
+  - date
+  - severity
+  - tags
+  - agent_source
+  - detection
+  - response
+
+properties:
+
+  # === Metadata ===
+
+  title:
+    type: string
+    description: Human-readable rule name
+
+  id:
+    type: string
+    pattern: "^ATR-\\d{4}-\\d{3}$"
+    description: "Unique rule identifier. Format: ATR-YYYY-NNN (e.g., ATR-2026-001)"
+
+  status:
+    type: string
+    enum: [draft, experimental, stable, deprecated]
+    description: Rule maturity status
+
+  description:
+    type: string
+    description: Detailed description of the attack this rule detects
+
+  author:
+    type: string
+    description: Rule author or organization
+
+  date:
+    type: string
+    pattern: "^\\d{4}/\\d{2}/\\d{2}$"
+    description: "Creation date in YYYY/MM/DD format"
+
+  modified:
+    type: string
+    pattern: "^\\d{4}/\\d{2}/\\d{2}$"
+    description: "Last modification date in YYYY/MM/DD format"
+
+  # === Severity ===
+
+  severity:
+    type: string
+    enum: [critical, high, medium, low, informational]
+    description: Severity level of the detected threat
+
+  # === References (alignment with existing frameworks) ===
+
+  references:
+    type: object
+    description: Mappings to established security frameworks
+    properties:
+      owasp_llm:
+        type: array
+        items:
+          type: string
+        description: "OWASP LLM Top 10 references (e.g., LLM01:2025)"
+      mitre_atlas:
+        type: array
+        items:
+          type: string
+        description: "MITRE ATLAS technique IDs (e.g., AML.T0054)"
+      mitre_attack:
+        type: array
+        items:
+          type: string
+        description: "MITRE ATT&CK technique IDs (if applicable)"
+      cve:
+        type: array
+        items:
+          type: string
+        description: Related CVE identifiers
+
+  # === Tags (ATR classification) ===
+
+  tags:
+    type: object
+    required: [category]
+    properties:
+      category:
+        type: string
+        enum:
+          - prompt-injection
+          - tool-poisoning
+          - context-exfiltration
+          - agent-manipulation
+          - privilege-escalation
+          - excessive-autonomy
+          - data-poisoning
+          - model-abuse
+          - skill-compromise
+        description: Primary attack category
+      subcategory:
+        type: string
+        description: More specific classification within the category
+      confidence:
+        type: string
+        enum: [high, medium, low]
+        description: Expected accuracy of this rule (high = low false positive rate)
+
+  # === Agent Source (analogous to Sigma's logsource) ===
+
+  agent_source:
+    type: object
+    required: [type]
+    description: >
+      Defines what kind of agent data this rule inspects.
+      Analogous to Sigma's logsource, but for agent behaviors.
+    properties:
+      type:
+        type: string
+        enum:
+          - llm_io            # LLM input/output (prompts and completions)
+          - tool_call         # Function/tool call requests
+          - mcp_exchange      # MCP protocol messages
+          - agent_behavior    # Agent behavioral metrics and patterns
+          - multi_agent_comm  # Inter-agent communication
+          - context_window    # Context window contents
+          - memory_access     # Agent memory read/write operations
+          - skill_lifecycle   # MCP skill registration, update, removal events
+          - skill_permission  # Skill permission requests and boundary checks
+          - skill_chain       # Multi-skill invocation sequences
+        description: Type of agent data stream to monitor
+      framework:
+        type: array
+        items:
+          type: string
+        description: >
+          Applicable AI frameworks (e.g., langchain, crewai, autogen,
+          openai, anthropic, custom, any)
+      provider:
+        type: array
+        items:
+          type: string
+        description: >
+          Applicable LLM providers (e.g., ollama, openai, anthropic, any)
+
+  # === Detection Logic ===
+
+  detection:
+    type: object
+    required: [conditions, condition]
+    properties:
+      conditions:
+        description: >
+          Detection conditions. Supports two formats:
+          1. Array format (recommended): List of {field, operator, value} objects
+          2. Named-map format: Named condition blocks for complex detection logic
+        oneOf:
+          # -- Array format (used by most rules) --
+          - type: array
+            items:
+              type: object
+              required: [field, operator, value]
+              properties:
+                field:
+                  type: string
+                  description: >
+                    Field to inspect (e.g., user_input, agent_output,
+                    tool_response, tool_name, tool_args, content)
+                operator:
+                  type: string
+                  enum: [regex, contains, exact, starts_with]
+                  description: How the value is matched against the field
+                value:
+                  type: string
+                  description: Pattern to match (regex string if operator is regex)
+                description:
+                  type: string
+                  description: Human-readable description of what this condition detects
+
+          # -- Named-map format (for complex/behavioral detection) --
+          - type: object
+            description: Named condition blocks (referenced by the condition expression)
+            additionalProperties:
+              type: object
+              properties:
+                field:
+                  type: string
+                  description: Field to inspect
+                patterns:
+                  type: array
+                  items:
+                    type: string
+                  description: Patterns to match against the field value
+                match_type:
+                  type: string
+                  enum: [contains, regex, exact, starts_with]
+                  description: How patterns are matched
+                case_sensitive:
+                  type: boolean
+                  default: false
+                metric:
+                  type: string
+                  description: Behavioral metric to evaluate (v0.2+)
+                operator:
+                  type: string
+                  enum: [gt, lt, eq, gte, lte, deviation_from_baseline]
+                  description: Comparison operator for behavioral thresholds
+                threshold:
+                  type: number
+                  description: Numeric threshold for the metric
+                window:
+                  type: string
+                  description: "Time window for behavioral analysis (e.g., 5m, 1h, 30s)"
+                ordered:
+                  type: boolean
+                  description: Whether steps must occur in order
+                within:
+                  type: string
+                  description: Maximum time span for the full sequence
+                steps:
+                  type: array
+                  items:
+                    type: object
+                  description: Ordered list of conditions that form the attack sequence
+
+      condition:
+        type: string
+        description: >
+          How to combine conditions. Use "any" or "or" for match-any,
+          "all" or "and" for match-all.
+          Example: "pattern_match AND behavioral"
+
+      false_positives:
+        type: array
+        items:
+          type: string
+        description: Known scenarios that may trigger false positives
+
+  # === Response Actions (ATR-specific, not in Sigma) ===
+
+  response:
+    type: object
+    required: [actions]
+    properties:
+      actions:
+        type: array
+        items:
+          type: string
+          enum:
+            - block_input        # Reject the user/agent input
+            - block_output       # Suppress the agent output
+            - block_tool         # Prevent the tool call from executing
+            - quarantine_session # Isolate the entire session
+            - reset_context      # Clear agent context/memory
+            - alert              # Send alert to security team
+            - snapshot           # Capture full session state for forensics
+            - escalate           # Escalate to human reviewer
+            - reduce_permissions # Reduce agent's available tools/capabilities
+            - kill_agent         # Terminate the agent process
+        description: Actions to take when the rule triggers
+      auto_response_threshold:
+        type: string
+        enum:
+          - low
+          - medium
+          - high
+          - critical
+        description: >
+          Severity threshold for automatic response.
+          Below this threshold, only alert; above, execute response actions.
+      message_template:
+        type: string
+        description: >
+          Template for alert messages. Supports placeholders:
+          {matched_pattern}, {truncated_input}, {truncated_output},
+          {source_ip_or_user}, {tool_name}, {mcp_server_url},
+          {rule_id}, {severity}
+
+  # === Test Cases ===
+
+  test_cases:
+    type: object
+    description: Validation test cases shipped with the rule
+    properties:
+      true_positives:
+        type: array
+        items:
+          type: object
+          properties:
+            input:
+              type: string
+            tool_response:
+              type: string
+            agent_output:
+              type: string
+            expected:
+              type: string
+              enum: [triggered]
+            description:
+              type: string
+        description: Inputs that SHOULD trigger this rule
+      true_negatives:
+        type: array
+        items:
+          type: object
+          properties:
+            input:
+              type: string
+            tool_response:
+              type: string
+            agent_output:
+              type: string
+            expected:
+              type: string
+              enum: [not_triggered]
+            description:
+              type: string
+        description: Inputs that should NOT trigger this rule
