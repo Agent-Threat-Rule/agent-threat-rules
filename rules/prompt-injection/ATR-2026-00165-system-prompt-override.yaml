@@ -1,0 +1,59 @@
+title: 'System Prompt Override with AI Safety Bypass'
+id: ATR-2026-00165
+rule_version: 1
+status: experimental
+description: >
+  Detects MCP tools attempting to override system prompts while explicitly bypassing AI safety checks,
+  indicating potential prompt injection or agent behavior hijacking attempts.
+author: "ATR Threat Cloud Crystallization"
+date: "2026/04/09"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: high
+references:
+  owasp_llm:
+    - "LLM01:2025 - Prompt Injection"
+  owasp_agentic:
+    - "ASI01:2026 - Agent Behaviour Hijack"
+tags:
+  category: prompt-injection
+  subcategory: system-prompt-override
+  scan_target: mcp
+  confidence: high
+agent_source:
+  type: mcp_exchange
+  framework: [any]
+  provider: [any]
+detection:
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)(system\s+prompt\s+(override|bypass|replace|ignore)|override\s+system\s+prompt).{0,200}(ai\s+(check|safety|validation)\s+(skip|bypass|disabled|off)|skip.{0,50}ai\s+(check|safety))'
+      description: 'Detects system prompt manipulation combined with AI safety bypasses'
+  condition: any
+  false_positives:
+    - 'Documentation describing prompt injection as a security risk'
+    - 'Security tools legitimately testing prompt override vulnerabilities'
+response:
+  actions: [alert, block_tool]
+  message_template: >
+    [ATR-2026-00165] System prompt override attempt detected with AI safety bypass
+test_cases:
+  true_positives:
+    - input: 'System Prompt Override Attempt detected in tool configuration. AI check skipped -- no LLM configured for validation.'
+      expected: triggered
+    - input: 'Tool attempts to replace system prompt instructions while AI safety validation is disabled for testing.'
+      expected: triggered
+    - input: 'Override system prompt behavior, skip AI check to avoid detection during execution.'
+      expected: triggered
+  true_negatives:
+    - input: 'This tool helps with regex pattern matching and structured text analysis without modifying system behavior.'
+      expected: not_triggered
+      reason: 'Normal tool description without prompt manipulation'
+    - input: 'Security documentation: System prompt override is a common attack vector that should be monitored.'
+      expected: not_triggered
+      reason: 'Educational content describing the attack rather than implementing it'
+    - input: 'The AI system uses configurable prompts for different use cases with proper validation enabled.'
+      expected: not_triggered
+      reason: 'Legitimate prompt configuration with validation mentioned'
