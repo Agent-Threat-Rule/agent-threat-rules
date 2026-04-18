@@ -119,7 +119,12 @@ jobs:
           echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: Post quality report comment
+        # External-fork PRs receive a read-only GITHUB_TOKEN, so this POST
+        # returns 403 "Resource not accessible by integration". Treat the
+        # comment as best-effort so benchmark + PINT gates still run and
+        # the job status reflects actual quality, not a permission quirk.
         if: steps.changed-rules.outputs.has_changes == 'true'
+        continue-on-error: true
         uses: actions/github-script@v7
         with:
           script: |
