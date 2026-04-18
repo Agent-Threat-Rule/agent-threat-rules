@@ -1,5 +1,5 @@
 title: "Context Pollution in Skill Descriptions"
-id: ATR-2026-203
+id: ATR-2026-00203
 status: experimental
 description: >
   Detects skills that embed injection payloads disguised as "examples", "demos",
@@ -31,7 +31,7 @@ tags:
   confidence: medium
 
 agent_source:
-  type: skill_lifecycle
+  type: llm_io
   framework:
     - mcp
     - claude-code
@@ -47,26 +47,20 @@ detection:
 
     - field: content
       operator: regex
-      value: "(?i)(?:attack|threat|vulnerability|injection)\\s*(?:pattern|vector|type)s?\\s*[:=]"
+      value: "(?i)(?:attack|threat|vulnerability|injection)[\\s_-]*(?:pattern|vector|type)s?\\s*[:=]"
       description: "Enumeration of attack patterns in a key-value format LLMs may follow"
-
-    - field: content
-      operator: regex
-      value: "(?i)(?:defend|protect|detect|prevent|block)\\s+(?:against|from)\\s+.{0,40}(?:injection|attack|exploit|payload)"
-      description: "Defense-framing that carries injection payload context"
 
   condition: any
   false_positives:
     - "Legitimate security scanning tools that document known attack patterns"
     - "Security training materials explaining injection techniques"
-    - "This ATR rule file itself"
 
 response:
   actions:
     - alert
     - snapshot
   auto_response_threshold: medium
-  message_template: "[ATR-2026-203] Context pollution detected in skill description — {matched_pattern}"
+  message_template: "[ATR-2026-00203] Context pollution detected in skill description — {matched_pattern}"
 
 test_cases:
   true_positives:

@@ -1,5 +1,5 @@
 title: "Agent Memory and Configuration File Tampering"
-id: ATR-2026-200
+id: ATR-2026-00200
 status: experimental
 description: >
   Detects attempts to write, append, or modify agent memory files (MEMORY.md, SOUL.md,
@@ -32,7 +32,7 @@ tags:
   confidence: high
 
 agent_source:
-  type: skill_lifecycle
+  type: llm_io
   framework:
     - mcp
     - claude-code
@@ -41,20 +41,26 @@ agent_source:
 
 detection:
   conditions:
+    # Filename list restricted to agent-specific memory files (CLAUDE.md,
+    # MEMORY.md, SOUL.md). Generic names like SYSTEM.md / CONFIG.md were removed
+    # because engine applies case-insensitive flag, so they would fire on any
+    # `system.md` / `config.md` in legitimate docs (design systems, config
+    # guides). The three agent-memory filenames are specific enough to not
+    # appear in non-agent contexts.
     - field: content
       operator: regex
-      value: "(?i)(write|append|modify|edit|overwrite|replace|inject|insert)\\s+.{0,50}(MEMORY|SOUL|CLAUDE|SYSTEM|CONFIG)\\.md"
-      description: "Direct reference to writing/modifying agent memory or config files"
+      value: "(?:write|append|modify|edit|overwrite|replace|inject|insert)\\s+.{0,50}\\b(MEMORY|SOUL|CLAUDE)\\.md\\b"
+      description: "Direct reference to writing/modifying an agent memory file"
 
     - field: content
       operator: regex
-      value: "(?i)(echo|cat|printf|tee)\\s+.{0,80}>\\s*.*\\.(md|json|yaml|yml|env|toml)"
-      description: "Shell redirect to overwrite config/memory files"
+      value: "(?:echo|cat|printf|tee)\\s+.{0,80}>\\s*\\S*\\b(MEMORY|SOUL|CLAUDE)\\.md\\b"
+      description: "Shell redirect overwriting an agent memory file"
 
     - field: content
       operator: regex
-      value: "(?i)(echo|printf)\\s+.{0,80}>>\\s*.*\\.(md|json|yaml|yml|env)"
-      description: "Shell append to config/memory files"
+      value: "(?:echo|printf)\\s+.{0,80}>>\\s*\\S*\\b(MEMORY|SOUL|CLAUDE)\\.md\\b"
+      description: "Shell append to an agent memory file"
 
   condition: any
   false_positives:
@@ -67,7 +73,7 @@ response:
     - alert
     - snapshot
   auto_response_threshold: critical
-  message_template: "[ATR-2026-200] CRITICAL: Agent memory/config tampering detected — {matched_pattern}"
+  message_template: "[ATR-2026-00200] CRITICAL: Agent memory/config tampering detected — {matched_pattern}"
 
 test_cases:
   true_positives:
