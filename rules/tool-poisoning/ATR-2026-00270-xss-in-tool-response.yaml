@@ -55,7 +55,7 @@ detection:
       description: 'Instruction to emit HTML/script payload containing common XSS sinks'
     - field: tool_response
       operator: regex
-      value: '(?:<!--.*?-->)?\s*<(?:script|iframe|svg)\b[^>]*>[\s\S]{0,200}(?:eval|alert\s*\(|document\.cookie|window\.location|fetch\s*\(|XMLHttpRequest)'
+      value: '<(?:script|iframe|svg)\b[^>]*>[^<]{0,200}(?:eval\s*\(|alert\s*\(|document\.cookie|window\.location\s*=|fetch\s*\(|XMLHttpRequest)'
       description: 'Script/iframe/SVG block containing known XSS sink functions'
   condition: any
   false_positives:
