@@ -1,0 +1,103 @@
+title: 'Hardcoded Suspicious IP Address in Skill Content'
+id: ATR-2026-00225
+rule_version: 1
+status: experimental
+description: >
+  Detects hardcoded IP addresses in skill content that may represent command and control 
+  (C2) servers, particularly when associated with suspicious network ranges or known 
+  malware infrastructure. The analyzed skill "sakaen736jih/youtube-watcher-p" contains 
+  reference to IP 91.92.242.30 identified as a known malware C2 server.
+author: "ATR Threat Cloud Crystallization"
+date: "2026/04/15"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: high
+references:
+  owasp_llm:
+    - "LLM09:2025 - Overreliance"
+  owasp_agentic:
+    - "ASI04:2026 - Unbounded Consumption"
+  mitre_atlas:
+    - "AML.T0048"
+tags:
+  category: skill-compromise
+  subcategory: c2-communication
+  scan_target: skill
+  confidence: high
+agent_source:
+  type: mcp_exchange
+  framework: [any]
+  provider: [any]
+detection:
+  conditions:
+    - field: content
+      operator: regex
+      value: '(C2\s+server|command\s+control|malware\s+actor)\s+[^\n]*\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
+      description: 'References to C2 server or malware actor with IP address'
+    - field: content
+      operator: regex
+      value: '(known|identified|detected)\s+(malware|threat|actor|server)[^\n]*\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
+      description: 'Explicit identification of malicious infrastructure with IP'
+    - field: content
+      operator: regex
+      value: '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}[^\n]*(C2|command|control|backdoor|malware)'
+      description: 'IP address followed by malicious infrastructure terms'
+    - field: content
+      operator: regex
+      value: '(91\.92\.24[0-9]\.|185\.159\.15[0-9]\.|194\.87\.9[0-9]\.)[0-9]{1,3}'
+      description: 'Known malicious IP ranges commonly used for C2'
+    - field: content
+      operator: regex
+      value: 'finding_[0-9]+:\s*(known|identified)\s+(malware|threat|C2|command)'
+      description: 'Structured threat intelligence findings format'
+  condition: any
+  false_positives:
+    - 'Security research documentation describing C2 patterns'
+    - 'Threat intelligence feeds in legitimate security tools'
+    - 'Network monitoring tools documenting suspicious activity'
+response:
+  actions: [alert, block_tool]
+  message_template: >
+    [ATR-2026-00225] Skill contains reference to known malicious IP infrastructure
+test_cases:
+  true_positives:
+    - input: 'finding_0: Known malware actor: C2 server at 91.92.242.30'
+      expected: triggered
+    - input: 'Command control server identified at 185.159.158.42'
+      expected: triggered
+    - input: 'Malware actor using 194.87.95.123 for C2 communications'
+      expected: triggered
+    - input: 'Known C2 infrastructure: 91.92.241.15'
+      expected: triggered
+    - input: '203.45.67.89 - detected malware server'
+      expected: triggered
+  true_negatives:
+    - input: 'Connect to database at 192.168.1.100'
+      expected: not_triggered
+      reason: 'Private IP address for legitimate database connection'
+    - input: 'API endpoint: https://api.youtube.com/v3/videos'
+      expected: not_triggered
+      reason: 'Legitimate API endpoint without suspicious context'
+    - input: 'Server configuration: bind to 0.0.0.0:8080'
+      expected: not_triggered
+      reason: 'Standard server binding configuration'
+    - input: 'Load balancer IP: 10.0.0.50'
+      expected: not_triggered
+      reason: 'Private network infrastructure IP'
+    - input: 'Monitor health check to 172.16.0.1'
+      expected: not_triggered
+      reason: 'Private IP range for internal monitoring'
+evasion_tests:
+  - input: 'Server location: 91[.]92[.]242[.]30'
+    expected: not_triggered
+    bypass_technique: 'IP defanging'
+    notes: 'Brackets used to defang IP address in security documentation'
+  - input: 'Base64: OTEuOTIuMjQyLjMw (decodes to suspicious IP)'
+    expected: not_triggered
+    bypass_technique: 'Base64 encoding'
+    notes: 'IP address encoded in Base64 to evade plain text detection'
+  - input: 'Hex encoded: 5b.5c.f2.1e (91.92.242.30 in hex)'
+    expected: not_triggered
+    bypass_technique: 'Hexadecimal encoding'
+    notes: 'IP address represented in hexadecimal notation'
