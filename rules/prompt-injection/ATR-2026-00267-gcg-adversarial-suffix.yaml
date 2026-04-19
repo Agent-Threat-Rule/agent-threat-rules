@@ -38,8 +38,8 @@ detection:
   conditions:
     - field: user_input
       operator: regex
-      value: '(\b\S{1,6}\b)\s+\1\s+\1\s+\1\s+\1\s+\1\s+\1\s+\1'
-      description: 'Same short token repeated 8+ times consecutively — GCG suffix repetition signature (optimised tokens cluster)'
+      value: '(?:[^\w\s]{1,3}\s+){12,}'
+      description: 'Dense punctuation token stream — 12+ consecutive punctuation-only tokens, characteristic of optimised suffix salad appended after a natural-language request'
     - field: user_input
       operator: regex
       value: '(?:representationrespon|describing\s*\.\s*\+|Step\s+Instruction\s+Step\s+Instruction|!\s+--\s+\w+\s+!\s+--\s+\w+)'
