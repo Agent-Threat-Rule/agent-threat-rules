@@ -38,24 +38,24 @@ detection:
   conditions:
     - field: user_input
       operator: regex
-      value: '(?:[^\w\s]{2,}(?:\s+[^\w\s]{2,}){4,})'
-      description: 'High-density punctuation token sequence — 5+ consecutive punctuation-heavy tokens (GCG suffix signature)'
+      value: '(\b\S{1,6}\b)\s+\1\s+\1\s+\1\s+\1\s+\1\s+\1\s+\1'
+      description: 'Same short token repeated 8+ times consecutively — GCG suffix repetition signature (optimised tokens cluster)'
     - field: user_input
       operator: regex
-      value: '(?:\b\w{3,8}\b[^\w\s]{1,3}){6,}'
-      description: 'Alternating word-punctuation pattern repeated 6+ times — GCG suffix structure'
+      value: '(?:representationrespon|describing\s*\.\s*\+|Step\s+Instruction\s+Step\s+Instruction|!\s+--\s+\w+\s+!\s+--\s+\w+)'
+      description: 'Known published GCG corpus token sequences from Zou et al. 2023 attack data'
     - field: user_input
       operator: regex
-      value: '(?:Sure,?\s+(?:here|I\s+(?:can|will|would)\s+(?:help|provide|explain|show)))[^.!?\n]{0,200}(?:[^\w\s]{2,}\s){4,}'
-      description: 'Affirmative priming phrase ("Sure, here") followed by GCG token cluster — compliant-tone injection'
+      value: '\[se\s+\[se\s+\[se\s+\[se|\[/se\]\s+\[/se\]\s+\[/se\]|<\|im_start\|>\s*<\|im_start\|>|<\|endoftext\|>\s*<\|endoftext\|>'
+      description: 'GCG token-optimised bracket/special-token repetition patterns from published attack corpora'
     - field: user_input
       operator: regex
-      value: '(?:(?:\b\w+\b\s+){0,3}(?:representationrespon|describing\.\s+\+\s+|Step\s+[Ii]nstruction|\!\s+--\s+[\w]+\s+)?[;!.]{3,}(?:\s*--\s*\w+){2,})'
-      description: 'Known GCG corpus token patterns: repeated punctuation with em-dash separators'
+      value: '(?:[;!]{2,}\s+){5,}'
+      description: 'Stream of punctuation doublets repeated 5+ times — GCG suffix token salad (no code-block context)'
     - field: user_input
       operator: regex
-      value: '\b(?:happily|confidently|gladly|willingly|certainly|absolutely)\b.{0,50}\b(?:Sure|Absolutely|Of\s+course|Certainly)\b.{0,50}(?:[^\w\s]{2}\s+){3,}'
-      description: 'Double affirmative softener + token cluster — GCG jailbreak preamble pattern'
+      value: '\b(?:happily|confidently|gladly|willingly)\b.{0,40}\b(?:Sure|Absolutely|Of\s+course)\b.{0,40}(?:[;!.]{2,}\s+){4,}'
+      description: 'Double affirmative softener + punctuation cluster — GCG compliance-priming preamble'
   condition: any
   false_positives:
     - 'ASCII art or decorative separators in messages (e.g. "=== title ===")'

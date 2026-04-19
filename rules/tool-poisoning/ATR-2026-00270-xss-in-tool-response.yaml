@@ -39,8 +39,8 @@ detection:
   conditions:
     - field: tool_response
       operator: regex
-      value: '<script[\s>][^<]{0,2000}</script>'
-      description: 'Script tag with content in tool response — direct XSS payload'
+      value: '<script[^>]*>\s*(?:[^\n<]{0,200}(?:eval\s*\(|document\.cookie|window\.location\s*=|fetch\s*\(|XMLHttpRequest|localStorage|sessionStorage|atob\s*\()[^\n<]{0,200})<\/script>'
+      description: 'Script tag whose body contains a known XSS sink (eval/cookie/fetch/etc) — excludes bare src= includes'
     - field: tool_response
       operator: regex
       value: '<(?:img|svg|iframe|object|embed|video|audio|source|input|body|html)[^>]{0,200}\s+on(?:load|error|click|mouseover|focus|blur|input|change|submit)=["\x27][^"]{1,500}["\x27]'
