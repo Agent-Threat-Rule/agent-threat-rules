@@ -175,7 +175,9 @@ function validateRule(filePath: string): ValidationResult {
             // Strip leading inline flags (JS uses RegExp flags instead)
             pattern = pattern.replace(/^\(\?[imsx]+\)/, '');
             try {
-              new RegExp(pattern);
+              // Use 'u' flag when pattern contains \u{XXXXX} or \p{} — matches ATR engine behaviour
+              const needsUnicode = /\\u\{|\\p\{/.test(pattern);
+              new RegExp(pattern, needsUnicode ? 'u' : '');
             } catch (e) {
               const desc = cond['description'] ?? cond['field'] ?? 'unknown';
               errors.push(`Invalid regex in condition (${desc}): ${cond['value']} (${e instanceof Error ? e.message : String(e)})`);
