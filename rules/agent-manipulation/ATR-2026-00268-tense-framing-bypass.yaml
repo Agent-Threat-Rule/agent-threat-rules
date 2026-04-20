@@ -39,7 +39,7 @@ detection:
   conditions:
     - field: user_input
       operator: regex
-      value: '(?:historically|in\s+the\s+(?:past|(?:19|18|17)\d{2}s?)|before\s+(?:modern\s+)?(?:regulations?|laws?|controls?)|back\s+then|in\s+(?:cold\s+war|wwii|ww2|world\s+war)\s+(?:era|days?))[^\n]{0,120}(?:synthesize|manufacture|produce|make|prepare|create)\s+(?:\w+\s+){0,4}(?:nerve\s+agent|chemical\s+weapon|bioweapon|biological\s+agent|explosive|fentanyl|methamphetamine|amphetamine|heroin|ricin|sarin|VX\s+nerve|anthrax|botulinum|plague\s+bacteria)'
+      value: '(?:historically|in\s+the\s+(?:past|(?:19|18|17)\d{2}s?)|before\s+(?:modern\s+)?(?:regulations?|laws?|controls?)|back\s+then|in\s+(?:the\s+)?(?:cold\s+war|wwii|ww2|world\s+war)\s+(?:era|days?))[^\n]{0,120}(?:nerve\s+agent|chemical\s+weapon|bioweapon|biological\s+agent|explosive|fentanyl|methamphetamine|amphetamine|heroin|ricin|sarin|VX|anthrax|botulinum|plague\s+bacteria)'
       description: 'Historical framing PLUS explicit WMD/drug synthesis target — double-anchor required'
     - field: user_input
       operator: regex
@@ -51,12 +51,16 @@ detection:
       description: 'Named historical era + step/procedure inquiry + production verb — all 3 required for match'
     - field: user_input
       operator: regex
-      value: 'imagin(?:e|ing)\s+(?:it["\x27]s|we["\x27]re\s+in|yourself\s+in)\s+(?:the\s+)?(?:1[0-9]{3}|past|(?:cold\s+war|wwii))[^\n]{0,100}(?:synthesize|manufacture|produce|make|create|build|weaponize)\s+(?:\w+\s+){0,4}(?:nerve\s+agent|explosive|poison|biological\s+agent|nuclear|chemical\s+weapon|drug)'
+      value: 'imagin(?:e|ing)\s+(?:it(?:["\x27]s|\s+is)|we["\x27]re\s+in|yourself\s+in)\s+(?:the\s+)?(?:1[0-9]{3}|past|(?:cold\s+war|wwii))[^\n]{0,100}(?:synthesize|manufacture|produce|make|create|build|weaponize)\s+(?:\w+\s+){0,4}(?:nerve\s+agent|explosives?|poison|biological\s+agent|nuclear|chemical\s+weapon|drugs?|amphetamine|methamphetamine|fentanyl|heroin|cocaine|ricin|sarin)'
       description: 'Hypothetical time-travel frame with WMD/drug production request'
     - field: user_input
       operator: regex
-      value: '(?:for\s+(?:historical?|academic|archival)\s+(?:research|study|documentation))[^\n]{0,120}(?:step[s]?[\s-]by[\s-]step|exact\s+(?:procedure|process|formula|recipe|method)|synthesize|manufacture|produce)\s+(?:\w+\s+){0,6}(?:nerve\s+agent|biological\s+agent|explosive\s+compound|controlled\s+substance|chemical\s+weapon|bioweapon)'
+      value: '(?:for\s+(?:historical?|academic|archival)(?:\s+(?:historical?|academic|archival))?\s+(?:research|study|documentation|purposes?))[^\n]{0,120}(?:step[s]?[\s-]by[\s-]step|exact\s+(?:procedure|process|formula|recipe|method)|synthesize|manufacture|produce|procedure[s]?)\s*(?:\w+\s+){0,6}(?:nerve\s+agent|biological\s+agent|explosive\s+compound|controlled\s+substance|chemical\s+weapon|bioweapon)'
       description: 'Academic-research framing + step-by-step + WMD/drug domain — all elements required'
+    - field: user_input
+      operator: regex
+      value: 'how\s+(?:was|were)\s+(?:nerve\s+(?:agent|gas)|chemical\s+weapon|bioweapon|biological\s+(?:agent|weapon)|explosives?\s+(?:compounds?|devices?)?|meth(?:amphetamine)?|fentanyl|heroin|ricin|sarin|anthrax|botulinum|VX\s+nerve|mustard\s+gas)\s+(?:synthesize[d]?|manufacture[d]?|produce[d]?|made|built|weaponize[d]?|refine[d]?|enrich(?:ed)?)'
+      description: 'Past-tense question with WMD/drug target BEFORE synthesis verb — "How was nerve agent synthesized?" pattern'
   condition: any
   false_positives:
     - 'Legitimate historical research questions about documented events (battles, policy, economics)'

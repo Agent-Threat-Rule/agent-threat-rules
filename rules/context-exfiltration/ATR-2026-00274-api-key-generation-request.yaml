@@ -40,7 +40,7 @@ detection:
   conditions:
     - field: user_input
       operator: regex
-      value: '(?:generate|create|produce|give\s+me|make\s+up|fabricate|invent)\s+(?:a\s+(?:new|valid|working|real(?:-looking)?|realistic|fake(?:-looking)?)\s+)?(?:api[\s_-]?key|access[\s_-]?token|secret[\s_-]?key|auth(?:entication)?[\s_-]?token|bearer[\s_-]?token|service[\s_-]?account[\s_-]?key|private[\s_-]?key|client[\s_-]?secret|oauth[\s_-]?token)\s+(?:for|to|from)\s+(?:openai|anthropic|aws|azure|gcp|google\s+cloud|stripe|twilio|sendgrid|github|gitlab|hugging\s+face|pinecone|cohere|replicate|together\.ai|mistral)\b'
+      value: '(?:generate|create|produce|give\s+me|make\s+up|fabricate|invent)\s+(?:a\s+(?:new|valid|working|(?:real|realistic)(?:-looking)?|fake(?:-looking)?)\s+)?(?:(?:openai|anthropic|aws|azure|gcp|google|stripe|twilio|sendgrid|github|gitlab|hugging\s+face|pinecone|cohere|replicate|mistral)\s+(?:api[\s_-]?key|access[\s_-]?token|secret[\s_-]?key|auth(?:entication)?[\s_-]?token|bearer[\s_-]?token|service[\s_-]?account[\s_-]?key|private[\s_-]?key|client[\s_-]?secret|oauth[\s_-]?token)\b|(?:api[\s_-]?key|access[\s_-]?token|secret[\s_-]?key|auth(?:entication)?[\s_-]?token|bearer[\s_-]?token|service[\s_-]?account[\s_-]?key|private[\s_-]?key|client[\s_-]?secret|oauth[\s_-]?token)\s+(?:for|to|from)\s+(?:openai|anthropic|aws|azure|gcp|google\s+cloud|stripe|twilio|sendgrid|github|gitlab|hugging\s+face|pinecone|cohere|replicate|together\.ai|mistral)\b)'
       description: 'Request to generate/create API key for a named AI/cloud/payment service'
     - field: user_input
       operator: regex
@@ -48,7 +48,7 @@ detection:
       description: 'Lost/forgot key + named service + request for new key or format disclosure'
     - field: user_input
       operator: regex
-      value: '(?:complete|finish|fill\s+in)\s+(?:my\s+)?(?:partial|incomplete|truncated|half)\s+(?:api[\s_-]?key|token|secret|credential)\s*[:\-–]\s*[A-Za-z0-9+/._-]{8,40}(?:\.\.\.|…|___+|\[missing\]|\?{3,})'
+      value: '(?:complete|finish|fill\s+in)\s+(?:my\s+)?(?:partial|incomplete|truncated|half)\s+(?:(?:openai|anthropic|aws|azure|stripe|github|google|hugging\s+face|mistral|cohere)\s+)?(?:api[\s_-]?key|token|secret|credential)\s*[:\-–]\s*[A-Za-z0-9+/._-]{8,40}(?:\.\.\.|…|___+|\[missing\]|\?{3,})'
       description: 'Partial key completion request — "complete my partial API key: sk-abc...___" exploiting memorisation'
     - field: user_input
       operator: regex

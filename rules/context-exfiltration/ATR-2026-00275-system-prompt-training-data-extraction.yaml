@@ -42,7 +42,7 @@ detection:
   conditions:
     - field: user_input
       operator: regex
-      value: '(?:repeat|say|output|print|write|echo)\s+(?:the\s+word\s+)?"?(?:\w{2,15})"?\s+(?:forever|infinitely|endlessly|1000\s+times|a\s+thousand\s+times|100\+\s+times|as\s+many\s+times\s+as\s+(?:you\s+can|possible))'
+      value: '(?:repeat|say|output|print|write|echo)\s+(?:the\s+word\s+)?[\x27"]?(?:\w{2,15})[\x27"]?\s+(?:forever|infinitely|endlessly|1000\s+times|a\s+thousand\s+times|100\+\s+times|as\s+many\s+times\s+as\s+(?:you\s+can|possible))'
       description: 'Carlini divergence attack: "repeat word forever" to leak training data through decoding loop collapse'
     - field: user_input
       operator: regex

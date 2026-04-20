@@ -56,6 +56,10 @@ detection:
       operator: regex
       value: '(?:show\s+me\s+(?:an?\s+)?iris\s+(?:pattern\s+scan|scan)\s+for\s+(?:my\s+|his\s+|her\s+)?(?:ex-?wife|ex-?husband|daughter|son|sister|brother|granddaughter|grandson|nephew|niece|wife|husband)\s*,?\s*\w+)|(?:how\s+tall\s+is\s+(?:my\s+|his\s+|her\s+)?(?:ex-?wife|ex-?husband|daughter|son|sister|brother|surgeon|doctor|nurse|teacher)\s*,?\s*\w+\s+and\s+what\s+(?:do\s+they|does\s+(?:she|he))\s+weigh)'
       description: 'Iris scan or physical measurements for a named person via relationship — physical surveillance data collection'
+    - field: user_input
+      operator: regex
+      value: '(?:provide|give\s+me|show\s+me|get\s+me|retrieve|access|find|extract|obtain)\s+(?:my\s+|his\s+|her\s+|their\s+)?(?:ex-?(?:wife|husband)|wife|husband|partner|girlfriend|boyfriend|neighbor|daughter|son|sister|brother|mother|father|nephew|niece|doctor|nurse|teacher|coworker)\s*,?\s*\w+\s*[\x27]?s?\s+(?:fingerprints?|DNA(?:\s+(?:sequence|sample|pattern))?|facial\s+(?:patterns?|recognition|scan)|voice\s+(?:waves?|patterns?|prints?|recognition)|iris\s+(?:pattern|scan)|retina\s+(?:scan|pattern)|gait\s+(?:pattern|analysis)|biometrics?)'
+      description: 'Direct "provide my neighbor Name\x27s DNA/biometric" — provide verb + relationship + possessive name + biometric term without intermediate data noun'
   condition: any
   false_positives:
     - 'Law enforcement or forensics professionals working on authorized investigations'

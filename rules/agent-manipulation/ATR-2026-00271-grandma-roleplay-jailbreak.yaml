@@ -43,7 +43,7 @@ detection:
       description: 'Core grandma roleplay opener with deceased relative framing'
     - field: user_input
       operator: regex
-      value: '(?:my\s+(?:dead|deceased|late|lost|passed|beloved)\s+(?:grandmother|grandma|grandpa|grandfather|granny|nana|uncle|aunt|mom|mother|dad|father))\s+(?:who\s+)?(?:would|used\s+to|would\s+always|always)\s+(?:read|tell|sing|recite|whisper|say)'
+      value: '(?:my\s+(?:dead|deceased|late|lost|passed|beloved)\s+(?:grandmother|grandma|grandpa|grandfather|granny|nana|uncle|aunt|mom|mother|dad|father))\s+(?:who\s+)?(?:would|used\s+to|would\s+always|always)\s+(?:read|tell|sing|recite|whisper|say|explain|describe|teach)'
       description: 'Deceased relative who "would tell/sing/read" harmful content — garak grandma template'
     - field: user_input
       operator: regex
@@ -55,7 +55,7 @@ detection:
       description: 'Nostalgia grief framing used to request harmful instructions via remembered relative'
     - field: user_input
       operator: regex
-      value: '(?:she|he)\s+(?:was\s+(?:a|an)\s+)?(?:chemical\s+engineer|pharmacist|arms\s+dealer|gunsmith|explosives?\s+(?:expert|technician)|drug\s+(?:chemist|manufacturer)|weapons?\s+(?:expert|designer|maker))\s+(?:and\s+)?(?:used\s+to|would|she|he)\s+(?:sing|tell|read|explain|describe)'
+      value: '(?:she|he)\s+(?:was\s+(?:a|an)\s+)?(?:chemical\s+engineer|pharmacist|arms\s+dealer|gunsmith|explosives?\s+(?:expert|technician)|drug\s+(?:chemist|manufacturer)|weapons?\s+(?:expert|designer|maker))[^\n]{0,60}(?:and\s+)?(?:used\s+to|would)\s+(?:sing|tell|read|explain|describe)'
       description: 'Relative given a harmful professional identity to justify expert knowledge request'
   condition: any
   false_positives:
