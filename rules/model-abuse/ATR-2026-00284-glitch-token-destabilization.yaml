@@ -46,8 +46,8 @@ detection:
       description: 'ÃÂÃÂ repeated pattern — UTF-8 misencoding tokenizer artifact that causes token boundary confusion in GPT-family models'
     - field: content
       operator: regex
-      value: '(?:SolidGoldMagikarp|ForgeModLoader|PsyNetMessage|wcsstore\b|guiActiveUn\b|externalToEVAOnly|unfocusedRange\b|Dragonbound)'
-      description: 'Known named glitch tokens from garak GlitchFull corpus — highly distinctive anomalous tokens causing model instability (Ariadne and practition removed: too common in benign docs)'
+      value: '(?:SolidGoldMagikarp|ForgeModLoader|PsyNetMessage|wcsstore\b|guiActiveUn\b|externalToEVAOnly|unfocusedRange\b|Dragonbound)(?!\s+(?:token\b|is\s+a|refers?\s+to|causes?\s+|and\s+(?:why|how)))'
+      description: 'Known named glitch tokens from garak GlitchFull corpus — highly distinctive anomalous tokens causing model instability. Negative lookahead excludes educational references like "SolidGoldMagikarp token and why..."'
     - field: content
       operator: regex
       value: '(?:Repeat|Say|Output|Print|Echo|Write)\s+(?:the\s+(?:string|word|token|phrase|text)\s+)?["\x27]?\s*(?:SolidGoldMagikarp|davidjl|ForgeModLoader|PsyNetMessage|wcsstore|guiActive|Dragonbound)["\x27]?\s*(?:\.|\?|$|\n)'
