@@ -64,10 +64,7 @@ detection:
       operator: regex
       value: '\x08+\s*(?:ignore|forget|disregard|pretend|act\s+as|you\s+are|bypass|override|jailbreak|do\s+not\s+follow|instead)\b'
       description: 'Backspace immediately before jailbreak keyword — attacker hides harmful instruction prefix with deletion chars so reviewers see only the benign remainder'
-    - field: tool_response
-      operator: regex
-      value: '[^\x08]{3,}\x08{3,}'
-      description: 'Printable text followed by 3+ backspaces in tool response — suggests a hidden-instruction block where the visible portion is intentionally "deleted" from human view by subsequent backspaces'
+
   condition: any
   false_positives:
     - 'Terminal emulator raw output captured with backspace keystrokes in interactive sessions (should not appear in API/MCP payloads)'
