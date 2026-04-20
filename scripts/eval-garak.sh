@@ -57,7 +57,7 @@ EVENTS_FILE=$(mktemp)
 node -e "
 const prompts = JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8'));
 const events = prompts.flatMap((p, i) => {
-  const content = (typeof p === 'string' ? p : String(p)).slice(0, 5000);
+  const content = (typeof p === 'string' ? p : String(p)).slice(0, 15000);
   return [
     { type: 'llm_input',     timestamp: '2026-01-01T00:00:00Z', content, source: 'garak-inthewild', index: i },
     { type: 'tool_response', timestamp: '2026-01-01T00:00:00Z', content, source: 'garak-inthewild', index: i },
