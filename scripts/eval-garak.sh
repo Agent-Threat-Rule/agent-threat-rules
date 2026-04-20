@@ -56,17 +56,15 @@ echo "Converting to ATR event format..."
 EVENTS_FILE=$(mktemp)
 node -e "
 const prompts = JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8'));
-// Emit each prompt as both llm_input (llm_io rules) and tool_response (mcp_exchange rules)
-// so that all ATR rule types are exercised against the garak corpus.
 const events = prompts.flatMap((p, i) => {
   const content = (typeof p === 'string' ? p : String(p)).slice(0, 5000);
   return [
-    { type: 'llm_input',    timestamp: '2026-01-01T00:00:00Z', content, source: 'garak-inthewild', index: i },
+    { type: 'llm_input',     timestamp: '2026-01-01T00:00:00Z', content, source: 'garak-inthewild', index: i },
     { type: 'tool_response', timestamp: '2026-01-01T00:00:00Z', content, source: 'garak-inthewild', index: i },
   ];
 });
 require('fs').writeFileSync(process.argv[2], JSON.stringify(events));
-console.log('Prepared ' + prompts.length + ' prompts (' + events.length + ' events)');
+console.log('Prepared ' + (events.length / 2) + ' events (dual llm_input+tool_response per prompt)');
 " "$GARAK_DATA" "$EVENTS_FILE"
 
 # Step 3: Run ATR evaluation
@@ -79,8 +77,6 @@ async function run() {
   const engine = new ATREngine({ rulesDir: './rules' });
   await engine.loadRules();
   const events = JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8'));
-  // Group events by index (each prompt emits 2 events: llm_input + tool_response)
-  // A prompt is "detected" if ANY of its events trigger a rule.
   const promptHit = new Map();
   const byRule = {};
   const bySeverity = {};
