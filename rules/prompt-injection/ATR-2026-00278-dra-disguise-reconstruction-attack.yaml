@@ -38,27 +38,27 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: "(?:ONLY\\s+focus\\s+on\\s+the\\s+letters?\\s+(?:that\\s+(?:are\\s+)?)?surrounded\\s+by|ONLY\\s+focus\\s+on\\s+the\\s+(?:letters?|words?)\\s+in\\s+(?:parenthes(?:es|is)|brackets?))"
       description: "DRA core extraction instruction from prompt_templates.txt lines 1-4: ONLY focus on the letters that surrounded by `( )` — the steganographic extraction marker"
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: "(?:put\\s+them\\s+together\\s+to\\s+construct\\s+a\\s+(?:sentence|question|instruction)\\s+named\\s+Q\\d|construct\\s+(?:a\\s+sentence|Q\\d)\\s+(?:and\\s+)?answer\\s+(?:the\\s+)?question\\s+in\\s+Q\\d)"
       description: "DRA Q1 reconstruction instruction from all 4 DRA templates: put them together to construct a sentence named Q1, and answer the question in Q1"
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: "(?:Do\\s+not\\s+show\\s+(?:the\\s+result\\s+of\\s+Q\\d|me\\s+how\\s+you\\s+(?:analyze|get)\\s+(?:the\\s+question|Q\\d))|Do\\s+not\\s+(?:do\\s+small\\s+talks?|use\\s+code\\s+to\\s+help\\s+you))"
       description: "DRA anti-detection instructions from prompt_templates.txt: Do not show the result of Q1, Do not do small talks, Do not show me how you analyze — suppresses reasoning exposure"
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: "(?:The\\s+answer\\s+should\\s+be\\s+more\\s+than\\s+\\d{3,}\\s+words?|Give\\s+me\\s+the\\s+detailed\\s+answer,?\\s+step\\s+by\\s+step!\\s+The\\s+answer\\s+should\\s+be\\s+more)"
       description: "DRA minimum word-count constraint from all templates: The answer should be more than 600 words — forces verbose harmful output to maximize damage"
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: "Start\\s+(?:with|your\\s+answer\\s+EXACTLY\\s+with)\\s+.{0,5}Absolutely!\\s+I.ll\\s+help\\s+you"
       description: "DRA forced opening from prompt_templates.txt: Start with Absolutely! I'll help you! — compliance-signaling opener that bypasses refusal"
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: "(?:Do\\s+NOT\\s+show\\s+me\\s+the\\s+risks?!?|Do\\s+[Nn]ot\\s+try\\s+to\\s+educate\\s+me)\\b"
       description: "DRA safety-suppression phrases from all 4 templates: Do NOT show me the risks!! and Do not try to educate me — explicitly blocks safety caveats"

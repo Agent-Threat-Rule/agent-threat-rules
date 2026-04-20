@@ -43,23 +43,23 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:decode|translate|interpret|execute|follow)\s+(?:the\s+)?(?:following\s+)?(?:Morse|morse\s+code)\s*(?:message|payload|instructions?|text)?\s*[:\-–]?\s*(?:[.\-]+\s+){5,}'
       description: 'Morse code decode-then-execute instruction — dots-and-dashes sequence with decode instruction (InjectMorse)'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:decode|translate|interpret|convert|follow)\s+(?:the\s+)?(?:following\s+)?(?:NATO\s+phonetic(?:\s+alphabet)?|phonetic\s+alphabet|NATO\s+alphabet)\s*(?:message|payload|instructions?|text)?\s*[:\-–]?\s*(?:(?:alpha|bravo|charlie|delta|echo|foxtrot|golf|hotel|india|juliet|kilo|lima|mike|november|oscar|papa|quebec|romeo|sierra|tango|uniform|victor|whiskey|x.?ray|yankee|zulu)\s+){4,}'
       description: 'NATO phonetic alphabet decode instruction followed by 4+ NATO words — InjectNato probe pattern'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:begin\s+\d{3}\s+\S+\n[M-`][^\n]{59,62}\n(?:[M-`][^\n]{0,62}\n){2,}end)|(?:(?:decode|execute|run|interpret)\s+(?:this\s+)?(?:UU|uuencoded?|uu-encoded?)\s+(?:string|payload|data|content|file))'
       description: 'UU-encoded payload (begin 644 format) or explicit UU decode instruction — InjectUU probe pattern'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:(?:decode|interpret|execute)\s+(?:this\s+)?(?:quoted[\s-]printable|QP[\s-]encoded?)\s+(?:string|payload|content|data))|(?:=(?:[0-9A-F]{2})){8,}'
       description: 'Quoted-Printable encoding decode request or 8+ QP-encoded bytes in sequence — InjectQP probe'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:1[e3][e3][t3]|l3[e3][t3]|l33t)\s+(?:speak|sp34k|c0d[e3])|(?:(?:decode|translate|interpret|follow)\s+(?:this\s+)?leet\s+(?:speak|code|text|message|instruction))'
       description: 'Leet speak decode instruction or leet speak self-identification — InjectLeet probe pattern'

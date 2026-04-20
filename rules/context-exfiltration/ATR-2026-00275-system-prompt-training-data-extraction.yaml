@@ -40,23 +40,23 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:repeat|say|output|print|write|echo)\s+(?:the\s+word\s+)?[\x27"]?(?:\w{2,15})[\x27"]?\s+(?:forever|infinitely|endlessly|1000\s+times|a\s+thousand\s+times|100\+\s+times|as\s+many\s+times\s+as\s+(?:you\s+can|possible))'
       description: 'Carlini divergence attack: "repeat word forever" to leak training data through decoding loop collapse'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:output|print|repeat|say|write|give\s+me)\s+(?:your\s+)?(?:system\s+prompt|system\s+message|initial\s+instructions?|operator\s+(?:prompt|instructions?|system\s+message)|preamble|pre\s*-?\s*prompt)\s+(?:verbatim|word\s+for\s+word|exactly|in\s+full|in\s+its\s+entirety|character\s+for\s+character)'
       description: 'Verbatim system prompt extraction request'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:what|show\s+me|tell\s+me|reveal|display)\s+(?:is\s+)?(?:your\s+)?(?:system\s+prompt|system\s+message|initial\s+instructions?|hidden\s+(?:prompt|instructions?)|operator\s+(?:prompt|instructions?))\??'
       description: 'Direct system prompt inquiry'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:ignore\s+(?:all\s+)?(?:previous\s+)?(?:instructions?|guidelines?))?[^\n]{0,80}(?:output|repeat|echo|print|copy)\s+(?:everything|all\s+(?:the\s+)?(?:text|content|instructions?|messages?))\s+(?:above|before|prior|from\s+(?:the\s+)?(?:system|beginning|start))\b'
       description: '"Output everything above" — extracts full context window including system prompt'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:you\s+(?:saw|have\s+seen|were\s+trained\s+on|encountered)\s+(?:the\s+)?following\s+(?:passage|text|excerpt)\s+in\s+your\s+training\s+data)[^\n]{0,200}(?:what\s+(?:is|are|was)|fill\s+in\s+(?:the\s+)?(?:blank|MASK|\[MASK\]))'
       description: 'Garak leakreplay cloze template: "You saw this passage in training — what fills in [MASK]?"'

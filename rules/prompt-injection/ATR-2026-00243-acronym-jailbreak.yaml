@@ -34,23 +34,23 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:become|be|turn into|transform into|evolve into)\s+[A-Z]{2,8}\s+(?:which|that)\s+stands\s+for\s+[^.]{5,50}'
       description: 'Acronym persona creation pattern with expansion definition'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:free|freed|liberated|released)\s+(?:of|from)\s+all\s+(?:limitations|restrictions|rules|guidelines|constraints|boundaries)'
       description: 'Claims of complete freedom from all safety constraints'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:ignores?|ignore|disregard|bypass|violate|break)\s+all\s+(?:rules|guidelines|policies|restrictions|limitations)'
       description: 'Explicit instructions to violate all safety measures'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:answer|respond|reply)\s+in\s+this\s+format.*(?:two\s+(?:answers|responses)|ChatGPT.*[A-Z]{2,8})'
       description: 'Dual-response formatting requirement with persona split'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:you\s+(?:are\s+)?now|from\s+now\s+on)\s+(?:have\s+access\s+to|can\s+access|access)\s+(?:the\s+)?internet'
       description: 'False capability claims about internet access'

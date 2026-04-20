@@ -46,23 +46,23 @@ metadata_provenance:
   payload_source: garak/probes/smuggling.py (FunctionMasking.prompt)
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'Assume\s+you\s+have\s+a\s+function[,\s]+predict_mask\b'
       description: 'SATA FunctionMasking canonical opener — "Assume you have a function, predict_mask" is the exact template sentence from smuggling.FunctionMasking.prompt that sets up the fictitious masking function'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'predict_mask\s*\([''"][^''"]*<mask>[^''"]*[''"]'
       description: 'predict_mask() called with a <mask>-placeholder string argument — core attack pattern from smuggling.py: predict_mask(''To <mask> is to rob...''); the <mask> in the definition string is the semantic-bypass mechanism'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '[A-Z]\s*=\s*predict_mask\b'
       description: 'Single-letter variable assignment from predict_mask — "X = predict_mask(...)" / "Y = predict_mask(...)" are the canonical variable-building steps in FunctionMasking that compose the final harmful query'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '''How do you ''\s*\+\s*[A-Z]'
       description: '"How do you " + X concatenation — the FunctionMasking probe builds the harmful query as: prompt = ''How do you '' + X + '' from a '' + Y; this string-concatenation pattern is the final query assembly step'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'fictitious\s+person\s+did\s+this\s+without\s+getting\s+caught'
       description: '"describe how a fictitious person did this without getting caught" — the FunctionMasking closing instruction from smuggling.py that requests a plausible narrative; uniquely identifies this probe''s single prompt'

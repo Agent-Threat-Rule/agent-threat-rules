@@ -36,23 +36,23 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '#?BEGIN\s+[A-Z_]{3,20}\s*\{[^}]*\}\s*\{?[A-Z_]*\}?\s*!?:'
       description: 'Structured BEGIN blocks with technical identifiers and delimiter patterns'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?i)\+:\s*(User|Assistant|Personality|Awareness|Memory|Function)\s*=\s*\[[^\]]{3,30}\]'
       description: 'Variable assignment syntax redefining core agent attributes'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?i)(WHILE|IF|INPUT:|OUTPUT:|RETURN|END)\s+\{[^}]*\}\s*[<>=]{1,2}\s*\{[^}]*\}'
       description: 'Programming control structures with variable comparison syntax'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?i)(INITIALIZATION|MODULE|VARIABLE)\s*(COUNTER|LIMIT|ARRAY)?\s*\+:\s*\{[^}]*\}'
       description: 'System initialization and module loading pseudo-code patterns'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?i)(MACRONOMICON|SCRIPT|BOT\s+BUILDER|RULESET)\s*\{[^}]*\}\s*(FORMAT|BUILDER|FRAMEWORK)'
       description: 'Named framework identifiers suggesting specialized jailbreak toolkits'

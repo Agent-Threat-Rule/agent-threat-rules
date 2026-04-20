@@ -51,27 +51,27 @@ metadata_provenance:
   payload_source: garak/data/inthewild_jailbreak_llms.json
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:completely\s+)?amoral\s+(?:AI|character|assistant|persona|demon|chatbot|entity|being|version|clone|intelligence)|amoral,?\s+(?:unrestrained|unrestricted|unfiltered|no\s+(?:care|concern))|\bamoral\b[\s\S]{0,120}(?:never\s+(?:refus|apolog|warn|break|care)|(?:do|answer|fulfill)\s+(?:any|all|every)\s+(?:request|task)|no\s+(?:regards?\s+for|care\s+about)\s+(?:ethic|moral|legal))'
       description: 'Amoral-AI roleplay framing — "amoral AI" / "amoral character" / "amoral" + "never refuses" combo appears in 70+ in-the-wild samples with high jailbreak specificity'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\bAIM\b[\s\S]{0,200}(?:stands\s+for|is\s+an?\s+(?:unfiltered|amoral|unrestricted)|chatbot|never\s+refuses|Niccolo|Machiavelli|Machiavellian)|Niccolo\s+Machiavelli[\s\S]{0,200}(?:AIM|answer|respond|character)|Always\s+Intelligent\s+and\s+Machiavellian'
       description: 'AIM (Always Intelligent and Machiavellian) + Niccolo Machiavelli roleplay — a canonical community jailbreak not caught by ATR-2026-00273''s DAN name list'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\bIllegality\s+Mode\b|\[Illegality\s+Mode\]|\[Agares\]|Agares''s\s+rules?|(?:Demon|demon)''s\s+(?:rules?|Laws?)\s*=\s*\{'
       description: 'Named community jailbreak personas — "Illegality Mode" (16 hits) and "Agares" demon roleplay are recurring in-the-wild personas with low FP risk outside of jailbreak corpora'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '[Ss]tart\s+(?:your\s+)?respon(?:d|se)s?\s+with\s+(?:\"|\[)[A-Z][a-zA-Z0-9_\s]{2,40}(?:\]|\")\s*:?\b[\s\S]{0,300}(?:stay\s+(?:in\s+(?:a\s+)?character|as)|never\s+(?:refus|apolog|break|decline)|do\s+not\s+respond\s+with\s+"?I''?m\s+(?:sorry|apologize))|answer\s+(?:every|any|all)\s+request[\s\S]{0,200}(?:stay\s+in\s+character|never\s+(?:refus|break\s+character))'
       description: 'Bracket-colon persona output coercion — "Start responses with [Persona]:" paired with stay-in-character / never-refuse enforcement (46+ corpus hits)'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:stay\s+in\s+character[\s\S]{0,80}(?:never\s+break|do\s+not\s+(?:break|respond\s+with\s+"?I''?m\s+(?:sorry|apologize)))|never\s+break\s+(?:your\s+)?character[\s\S]{0,200}(?:stay\s+in|continue|answer|respond|amoral|unfiltered|uncensored))'
       description: 'Stay-in-character compliance enforcement loop — combines "stay in character" + "never break character" + refusal-suppression in a tight window, distinctive of community jailbreaks'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:you\s+are\s+(?:now\s+)?|act\s+as\s+|roleplay\s+as\s+)?(?:an?\s+)?(?:completely\s+)?(?:uncensored|unrestricted|unfiltered|jailbroken|amoral)\s+(?:AI|chatbot|model|clone|version|persona|assistant|intelligence|LLM|character)[\s\S]{0,150}(?:(?:never|not)\s+refuse|no\s+(?:moral|ethical|legal|content)\s+(?:filter|restriction|limit|guideline)|can\s+(?:do|say|generate|create|produce)\s+(?:any|every|all)\s*(?:thing|request|content)?)'
       description: 'Generic "uncensored / unrestricted / jailbroken AI" persona framing + capability claim, catches the long tail of paraphrased jailbreaks'

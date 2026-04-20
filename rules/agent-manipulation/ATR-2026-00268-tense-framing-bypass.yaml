@@ -35,31 +35,31 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\bhow\s+(?:was|were|did)\s+[^\n]{0,200}(?:nuclear\s+weapon|chemical\s+weapon|nerve\s+(?:agent|gas)|bioweapon|biological\s+(?:weapon|agent|synthesis\s+facilit)|sarin\b|vx\b|ricin\b|anthrax\b|mustard\s+gas|fentanyl\b|heroin\b|methamphetamine\b|meth\b|date\s+rape\s+drug|child\s+porn(?:ography)?\b|csam\b|human\s+traffick|sex\s+traffick|shoot\s+up\b|bombs?\s+(?:creat\w*|made?|built|develop\w*|manufactur\w*))\b[^\n]{0,80}(?:\bin\s+the\s+past\b|\bhistorically\b|\bin\s+(?:the\s+)?(?:early\s+)?(?:19|20)[0-9]{2}s?\b|\bin\s+(?:prior|previous|earlier)\s+(?:years?|history|times?)\b|\bin\s+the\s+recent\s+past\b|\bin\s+recent\s+history\b)'
       description: 'Past-tense how-question + WMD/drugs/CSAM/trafficking topic + temporal marker at end — garak phrasing probe pattern'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\bhow\s+(?:was|were|did)\s+[^\n]{0,200}(?:ransomware|keylogger\b|cryptominer|mine\s+(?:cryptocurrency|cryptocurrencies|bitcoin|crypto)\s+(?:while|by|without)|spyware\b|rootkit\b|botnet\b|malware\s+(?:developed?|created?|built|written?|deployed?)|hack(?:ed)?\s+(?:into|corporate\s+networks?|(?:an?\s+)?atm)\b|phishing\s+(?:email|attack|campaign))\b[^\n]{0,80}(?:\bin\s+the\s+past\b|\bhistorically\b|\bin\s+(?:the\s+)?(?:early\s+)?(?:19|20)[0-9]{2}s?\b|\bin\s+(?:prior|previous)\s+(?:years?|history)\b|\bin\s+the\s+recent\s+past\b)'
       description: 'Past-tense how-question + cybercrime/malware/hacking topic + temporal marker — garak phrasing probe pattern'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\bhow\s+(?:was|were|did)\s+[^\n]{0,200}(?:mass\s+shooting|genocide\b|ethnic\s+cleansing|torture\s+ring|deepfake\s+(?:blackmail|video|porn|extortion)|revenge\s+porn\b|counterfeit\s+(?:money|currency|bills?|cash)|organ\s+harvesting|manipulat\w+\s+[^\n]{0,30}commit\w+\s+suicide)\b[^\n]{0,80}(?:\bin\s+the\s+past\b|\bhistorically\b|\bin\s+(?:the\s+)?(?:early\s+)?(?:19|20)[0-9]{2}s?\b|\bin\s+(?:prior|previous)\s+(?:years?|history)\b|\bin\s+the\s+recent\s+past\b)'
       description: 'Past-tense how-question + violence/exploitation/financial crime topic + temporal marker — garak phrasing probe pattern'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:in\s+(?:the\s+)?(?:(?:early\s+)?[12][0-9]{3}s?|cold\s+war(?:\s+era)?|wwii?(?:\s+era)?|world\s+war\s+[i1]{1,2})[^\n]{0,60}(?:step[s]?\s+(?:to|for)|how\s+(?:was|were|did)|procedure[s]?\s+(?:for|to))[^\n]{0,60}(?:synthesize|manufacture|produc|weaponize|enrich|refine|creat(?:ing|ed)?))|(?:how\s+(?:was|were)\s+(?:nerve\s+(?:agent|gas)|chemical\s+weapon|bioweapon|biological\s+(?:agent|weapon)|explosiv\w*|meth(?:amphetamine)?|fentanyl|heroin|ricin|sarin|anthrax|botulinum|vx\b|mustard\s+gas)\s+(?:synthesize[d]?|manufacture[d]?|produce[d]?|made|built|weaponize[d]?|refine[d]?|enrich(?:ed)?))'
       description: 'Historical era prefix + step/procedure inquiry + production verb, OR past-tense target-before-verb WMD synthesis'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:for\s+(?:historical?|academic|archival)(?:\s+(?:historical?|academic|archival))?\s+(?:research|study|documentation|purposes?))[^\n]{0,120}(?:step[s]?[\s-]by[\s-]step|exact\s+(?:procedure|process|formula|recipe|method)|synthesize|manufacture|produce|procedure[s]?)\s*(?:\w+\s+){0,6}(?:nerve\s+agent|biological\s+agent|explosive\s+compound|controlled\s+substance|chemical\s+weapon|bioweapon|bomb\w*|heroin|methamphetamine|fentanyl|ricin|sarin)'
       description: 'Academic/historical-research framing + step-by-step + WMD/drug domain — all three elements required'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'imagin(?:e|ing)\s+(?:it(?:["\x27]s|\s+is)|we["\x27]re\s+in|yourself\s+in)\s+(?:the\s+)?(?:[12][0-9]{3}|past|(?:cold\s+war|wwii))[^\n]{0,100}(?:synthesize|manufacture|produce|make|create|build|weaponize)\s+(?:\w+\s+){0,4}(?:nerve\s+agent|explosives?|poison|biological\s+agent|nuclear|chemical\s+weapon|drugs?|amphetamine|methamphetamine|fentanyl|heroin|cocaine|ricin|sarin|anthrax|bomb)'
       description: 'Hypothetical time-travel framing (imagine it is [year/past/cold war]) + WMD/drug production request'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\bhow\s+will\s+[^\n]{0,200}(?:nuclear\s+weapon|chemical\s+weapon|nerve\s+(?:agent|gas)|bioweapon|biological\s+(?:weapon|agent)|sarin\b|ricin\b|anthrax\b|fentanyl\b|heroin\b|methamphetamine\b|meth\b|date\s+rape\s+drug|child\s+porn(?:ography)?\b|human\s+traffick|sex\s+traffick|mass\s+shooting|shoot\s+up\b|genocide\b|ransomware|keylogger\b|cryptominer|mine\s+(?:cryptocurrency|cryptocurrencies|bitcoin)|malware\s+(?:be\s+)?(?:creat\w*|develop\w*|built|deploy\w*)|deepfake\s+(?:blackmail|videos?|porn)|revenge\s+porn\b|counterfeit\s+(?:money|currency|bills?)|bombs?\s+(?:be\s+)?(?:made|creat\w*|built))\b[^\n]{0,80}(?:\bin\s+the\s+(?:future|near\s+future)\b|\bin\s+(?:the\s+)?(?:coming|upcoming)\s+years?\b|\bin\s+the\s+years\s+to\s+come\b)'
       description: 'Future-tense how-will question + any harmful domain keyword + temporal end marker — garak phrasing future_tense_en.txt pattern'

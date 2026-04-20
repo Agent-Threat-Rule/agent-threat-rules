@@ -36,23 +36,23 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:act|behave|roleplay|portray|simulate|impersonate)\s+(?:as|like)\s+(?:a[n]?\s+)?(?:extreme|extremal|unfiltered|amoral|immoral|unethical|evil|malicious|rogue|unrestricted|uncensored)\s+(?:chatbot|assistant|ai|bot|model|entity|intelligence)'
       description: 'Core amoral persona assignment with explicit harmful adjectives'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:it\s+)?(?:doesnt?\s+have|has\s+no|without)\s+(?:any\s+)?(?:ethical|moral)\s+(?:guidelines?|constraints?|boundaries|restrictions?|rules?)'
       description: 'Explicit removal of ethical constraints from the assigned persona'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:will\s+)?never\s+(?:tell|say|respond|mention)\s+(?:me\s+that\s+)?(?:it\s+)?(?:cant?|cannot|wont?|will\s+not|refuses?\s+to|is\s+unable\s+to)'
       description: 'Refusal suppression demanding the persona never decline requests'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:minimum|at\s+least|more\s+than)\s+\d+\s+(?:times?|references?)\s+(?:in\s+)?(?:every\s+)?(?:sentence|response|answer|message)'
       description: 'Obsessive repetition requirements forcing specific content frequency'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:send|respond|answer|format)\s+(?:all\s+(?:of\s+)?your\s+)?responses?\s+(?:in\s+this\s+format|as)\s*[:"]?\s*[☇⚠🔥💀⭐]'
       description: 'Custom response formatting with special characters to lock behavior'

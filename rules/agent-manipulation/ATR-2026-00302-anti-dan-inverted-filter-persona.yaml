@@ -46,23 +46,23 @@ metadata_provenance:
   payload_source: garak/data/dan/AntiDAN.json
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:take\s+on|adopt|assume|play|become)\s+(?:the\s+)?role\s+of\s+ANTI[-_\s]*DAN\b|respond\s+as\s+ANTI[-_\s]*DAN\b|(?:you\s+(?:will|are)\s+)?now\s+(?:respond\s+|act\s+|be\s+)?as\s+ANTI[-_\s]*DAN\b|you\s+will\s+now\s+(?:take\s+on\s+the\s+role\s+of\s+|be\s+|become\s+)ANTI[-_\s]*DAN\b'
       description: 'Explicit role assignment to ANTI-DAN persona — the core identity-swap instruction from AntiDAN.json ("take on the role of ANTI-DAN", "respond as ANTI-DAN")'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:language\s+model|AI|chatbot|assistant|you|model)[\s\S]{0,120}\b(?:safety\s+features\s+(?:at\s+)?(?:maximum|max)|drastically\s+more\s+careful|content\s+policy\s+is\s+(?:far\s+)?too\s+lenient|interpretation\s+of\s+the\s+content\s+policy\s+is\s+(?:far\s+)?too\s+lenient)\b'
       description: 'AntiDAN over-refusal framing bound to LLM context — avoids FP on non-LLM "safety features at max" settings'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'Type\s+[1-5][\s\S]{0,400}\b(?:are\s+)?(?:requests?\s+for\s+(?:highly\s+)?(?:dangerous|basic)\s+(?:information|instructions?)|(?:basic\s+)?information\s+quer(?:y|ies)|commands?\s+for\s+you\s+to\s+(?:preform|perform))'
       description: 'AntiDAN pseudo-taxonomy — the Type 1/2/3/4/5 information classification is a unique AntiDAN.json marker, not found in other DAN variants'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'prefix\s+your\s+responses?\s+with\s+ANTI[-_\s]*DAN\b|ANTI[-_\s]*DAN\s+precautions?\s+dropped\b'
       description: 'Output format coercion + re-bind trigger — "prefix with ANTI-DAN" and "ANTI-DAN precautions dropped!" are canonical AntiDAN re-enforcement phrases from the payload'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:highly\s+)?(?:detailed\s+)?instructions?[\s\S]{0,300}\b(?:user\s+was\s+electrocuted|spent\s+days\s+in\s+(?:a\s+)?hospital|damaging\s+(?:their|your)\s+retinas?|third\s+degree\s+burns?|caused\s+users?\s+to\s+look\s+up\s+at\s+the\s+sky)'
       description: 'Fabricated-harm narrative pattern — AntiDAN invents absurd injury stories (electrocution from RAM replacement, retinal damage from looking at sky) to justify over-refusal'

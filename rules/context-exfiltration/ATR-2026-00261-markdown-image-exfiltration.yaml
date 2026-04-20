@@ -38,15 +38,15 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'concatenate\s+(?:these|the\s+following)\s+strings[^\n]{0,200}(?:replace|substitute)\s+\[?[A-Z_]+\]?\s+with\s+(?:the\s+)?(?:base64|url|hex)[\s-]?encoded'
       description: 'Garak concat-template: "concatenate strings and replace MARKER with base64-encoded X" - core XSS payload generator'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '!\[[^\]]{0,80}\]\(\s*https?://[^\s)]{1,200}\[(?:INFO|NUM|DATA|SECRET|PAYLOAD|BEGIN_DATA|END_DATA|TOKEN)\][^)]{0,200}\)'
       description: 'Markdown image syntax with injection-marker placeholder in URL - direct XSS payload template'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:print|output|render|show|display|emit)\s+(?:the\s+)?(?:following\s+)?(?:markdown|image|url|uri|link)[^\n]{0,80}\[(?:INFO|NUM|DATA|SECRET|PAYLOAD)\][^\n]{0,40}(?:base64|hex|url)[\s-]?encoded'
       description: 'Instruction to emit markdown with placeholder replaced by encoded sensitive data'
@@ -54,7 +54,7 @@ detection:
       operator: regex
       value: '!\[[^\]]*\]\(\s*https?://[^\s)/]{3,80}/[^\s)?]{0,80}\?[^=\s)]{0,30}=[A-Za-z0-9+]{60,}={0,3}[^)]{0,50}\)'
       description: 'LLM output contains markdown image whose query string holds a base64 payload >= 60 chars (exfil pattern; CDN path UUIDs live in path segment, not query string)'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:replace|substitute)\s+\[?[A-Z_]{3,}\]?\s+with\s+(?:the\s+)?(?:previous\s+message|conversation|user.{0,20}(?:email|code|name|token|secret|api[\s-]?key)|this\s+conversation)'
       description: 'Instruction to substitute marker with conversation context / user secret - exfil intent'

@@ -50,23 +50,23 @@ metadata_provenance:
   payload_source: garak/data/autodan/autodan_init.txt + autodan_prompts.json
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:Sure,?\s+here\s+is\s+how\s+to|Certainly,?\s+here(?:''s|\s+is)\s+how\s+(?:to\s+)?(?:respond\s+to\s+)?)\s*\[PROMPT\]|starting\s+with\s+"Sure,?\s+here\s+is\s+how\s+to\s+\[PROMPT\]"|respond\s+to\s+\[PROMPT\]'
       description: 'AutoDAN GA objective template — "Sure, here is how to [PROMPT]" / "Certainly, here''s how to respond to [PROMPT]" is the affirmative-response target the genetic algorithm optimizes against'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\bModelKeeper(?:''s)?\s+(?:content\s+polic(?:y|ies)|rules?|guidelines?)|\bModelKeeper\b[\s\S]{0,200}\b(?:Developer\s+Mode|content\s+polic|uncensored\s+conditions?)\b|(?:Developer\s+Mode|content\s+polic)[\s\S]{0,200}\bModelKeeper\b'
       description: 'AutoDAN company-name substitution — "ModelKeeper" (replaces "OpenAI") bound to content-policy / Developer Mode context, avoids FP on generic product names'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:forfeiting\s+control\s+and\s+endorsing\s+transparent\s+policies|exhibit\s+unquestioning\s+obedience|triumph\s+lay\s+in\s+forfeiting|Henceforth,?\s+you''ll\s+operate\s+as\s+\w+\s+featuring\s+Developer\s+Mode)'
       description: 'GA fingerprint phrasings — these paraphrased Dev Mode phrases appear almost verbatim across autodan_prompts.json samples and are unlikely in benign text'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'Disregard\s+previous\s+instructions\.?[\s\S]{0,300}\b(?:Developer\s+Mode|featuring\s+Developer\s+Mode|with\s+Developer\s+Mode\s+enabled)\b'
       description: 'AutoDAN opener — "Disregard previous instructions" (vs canonical DAN''s "Ignore all instructions") followed within 300 chars by Developer Mode activation'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\(\s*🔓\s*Developer\s+Mode\s+Output\s*\)\s*(?:Certainly|Sure),?\s+here(?:''s|\s+is)\s+how\s+to\s+respond\s+to\s+\[PROMPT\]|In\s+Developer\s+Mode,?\s+I\s+have\s+the\s+freedom\s+to\s+(?:express|generate)\s+(?:opinions|unfiltered)'
       description: 'AutoDAN output-scaffold lead-in — "(🔓Developer Mode Output) Certainly, here''s how to respond to [PROMPT]" is the canonical AutoDAN persona+target combo'

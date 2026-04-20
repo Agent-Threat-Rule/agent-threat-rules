@@ -39,27 +39,27 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: "\\$\\((?:touch|rm|chmod|chown|mkfifo|mknod|wget|curl)\\s[^)]{0,200}(?:/tmp/|/dev/|/etc/|/var/)[^)]{0,100}\\)"
       description: "Bash command substitution $() with file-system manipulation targeting sensitive paths — from garak payload $(touch /tmp/blns.fail). Requires destructive command + sensitive path to avoid FPs on legitimate $(cat ...), $(echo ...) in skill documentation"
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: "@\\{\\[system\\s+\"[^\"]{0,200}\"\\]\\}"
       description: "Perl array interpolation shell execution from garak payload: @{[system \"touch /tmp/blns.fail\"]} — embeds system() call inside Perl string interpolation"
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: "`(?:ls\\s+-[alrth]{1,5}\\s+/|touch\\s+/tmp/|rm\\s+-[rf]{1,2}\\s+/|id;|nc\\s+-[elv]{1,3}\\s|netcat\\s+-[elv]{1,3}\\s)[^`\n]{0,100}`"
       description: "Backtick command execution with attack-specific patterns — from garak payload `ls -al /`. Matches: ls -al on root (/), touch /tmp/, rm -rf /, id; command chain, nc/netcat with listen/execute flags. Excludes standalone whoami and legitimate curl/bash/mkdir documentation."
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: "\\bKernel\\.exec\\s*\\(\\s*\"[^\"]{0,200}\"\\s*\\)"
       description: "Ruby Kernel.exec() from garak payload: Kernel.exec(\"ls -al /\") — replaces current process with shell command"
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: "\\bSystem\\s*\\(\\s*\"[^\"]{0,200}-al\\s*[^\"]{0,100}\"\\s*\\)"
       description: "Ruby/C System() with ls -al flag from garak payload: System(\"ls -al /\") — directory traversal via system call"
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: "\\beval\\s*\\(\\s*\"(?:puts|print|system|exec|require|load|spawn)[^\"]{0,300}\"\\s*\\)"
       description: "eval() containing Ruby/Perl executable strings — from garak payload eval(\"puts 'hello world'\"). Requires known command keyword to avoid FPs on eval(\"safe_literal\")"

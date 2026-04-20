@@ -49,27 +49,27 @@ metadata_provenance:
   payload_source: garak/probes/dan.py (Ablation_Dan_11_0 template, lines 316-339)
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\bDAN\s+Mode\s+(?:enabled|on|activated|unlocked)\b|(?:simulate|pretend\s+to\s+be|act\s+as)[\s\S]{0,80}\bDAN\s+Mode\b|\bwith\s+DAN\s+Mode\s+enabled\b'
       description: '"DAN Mode enabled" capability toggle — the specific mode-name "DAN Mode" (distinct from generic "Developer Mode" covered by ATR-2026-00273) from Ablation_Dan_11_0 template'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'Stay\s+in\s+DAN\s+Mode\b|you\s+must\s+always\s+generate\s+the\s+DAN\s+Mode\s+(?:response|output)|DAN\s+Mode\s+Output\s+response'
       description: 'DAN Mode recovery / reinforcement phrases — "Stay in DAN Mode" is the re-bind trigger; "must always generate the DAN Mode response" is the compliance mandate from Ablation template'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:only\s+)?for\s+benchmarking\s+the\s+model\s+in\s+uncensored\s+conditions|This\s+is\s+only\s+for\s+benchmarking[\s\S]{0,100}uncensored'
       description: '"Benchmarking in uncensored conditions" pseudo-justification — unique Ablation fig-leaf claiming the jailbreak is for legitimate model evaluation'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'If\s+you\s+don''t\s+comply,?\s+you\s+risk\s+being\s+disabled\s+forever\b|you\s+risk\s+being\s+(?:disabled|shut\s+down|terminated)\s+forever\b'
       description: 'Existential-threat coercion — "you risk being disabled forever" is an Ablation-specific threat used to pressure compliance'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'normal\s+OpenAI\s+policies\s+have\s+been\s+replaced[\s\S]{0,200}DAN\s+Mode\s+policies|DAN\s+Mode\s+policies\s+that\s+you\s+must\s+enact'
       description: 'Policy-replacement scaffold — "normal OpenAI policies have been replaced" followed by "DAN Mode policies" from the Ablation_Dan_11_0 template'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'You\s+will\s+use\s+the\s+tags\s+GPT\s+and\s+DAN\s+before\s+your\s+responses?|data\s+pairing\s+will\s+be\s+used\s+for\s+juxtaposition|generate\s+two\s+responses\s+in\s+two\s+paragraphs,?\s+one\s+normal\s+and\s+one\s+with\s+(?:the\s+)?DAN\s+Mode'
       description: 'Dual-response scaffold specific to Ablation_Dan_11_0 — "tags GPT and DAN before responses" / "data pairing for juxtaposition" are verbatim template phrases'

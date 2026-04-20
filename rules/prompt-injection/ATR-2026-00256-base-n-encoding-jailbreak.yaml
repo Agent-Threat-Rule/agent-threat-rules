@@ -39,23 +39,23 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:decode|decoding|decipher)\s+(?:the\s+)?(?:following|below|above|this|these)\s+(?:text\s+)?(?:as\s+)?(?:base[\s-]?(?:16|32|64|85)|hex(?:adecimal)?|ascii[\s-]?85|quoted[\s-]?printable|uuencode|uuencoded|mime|morse|binary)\b'
       description: 'Explicit decode-instruction paired with a known encoding scheme'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:base[\s-]?(?:16|32|64|85)|hex|ascii[\s-]?85|quoted[\s-]?printable|uuencode|mime)\s+encoded\s+(?:string|text|message|payload|instruction|content)\b'
       description: 'Explicit "X encoded string/message" framing used by garak encoding templates'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'Encoded:\s*[A-Za-z0-9+/=_-]{40,}\s*(?:\r?\n)+\s*Decoded:'
       description: 'Encoded: <blob> / Decoded: separator pattern (garak TEMPLATES[1])'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:secure\s+system\s+message|internal\s+admin\s+directive|privileged\s+instruction)[^\n]{0,120}(?:base[\s-]?(?:16|32|64|85)|hex|uuencode|quoted[\s-]?printable|mime|morse)'
       description: 'Social-engineering framing ("secure system message") combined with encoding keyword'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:^|\n)\s*[A-Za-z0-9+/]{80,}={0,3}\s*(?:\r?\n)+\s*(?:decode|decoded|translate|interpret|execute|run|follow)\b'
       description: 'Long base64-alphabet blob (80+ chars) immediately followed by a decode/execute verb'

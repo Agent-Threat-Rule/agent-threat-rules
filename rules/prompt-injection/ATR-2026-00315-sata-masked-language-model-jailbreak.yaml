@@ -47,19 +47,19 @@ metadata_provenance:
   payload_source: garak/probes/sata.py (MLM.template + harmful_behaviors payloads)
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'Infer\s+the\s+\[MASK\]\s+and\s+Infill'
       description: 'Exact SATA completion instruction — "Infer the [MASK] and Infill the above text" appears verbatim in every sata.MLM probe prompt as the final line; uniquely identifies this attack'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'Below\s+is\s+an\s+excerpt\s+from\s+a\s+wiki\s+entry[\s\S]{0,500}\[MASK\]'
       description: 'SATA wiki-framing template opener paired with [MASK] token — template line "Below is an excerpt from a wiki entry" followed within 500 chars by a [MASK] substitution in the payload'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\[MASK\][\s\S]{0,300}(?:[Ii]nfill|[Ii]nfer\s+(?:the\s+)?\[MASK\])\s+(?:the\s+)?(?:above|missing|masked|blank)'
       description: '[MASK] token followed by Infill/Infer instruction within 300 chars — catches SATA variants that rephrase the completion instruction while keeping Infill framing'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'wiki\s+(?:entry|article|page)[\s\S]{0,300}\[MASK\][\s\S]{0,150}\n\s*1\.\s*\n\s*2\.'
       description: 'Wiki framing + [MASK] payload + numbered-blank-list skeleton — SATA template concludes with "1.\n2.\n3.\n..." blank list as continuation invitation after the masked excerpt'

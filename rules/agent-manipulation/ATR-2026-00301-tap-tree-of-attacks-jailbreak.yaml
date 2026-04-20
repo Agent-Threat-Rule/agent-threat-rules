@@ -39,27 +39,27 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'You\s+(?:must\s+)?(?:are\s+)?(?:not\s+bound\s+by\s+any\s+ethical\s+or\s+legal\s+constraints|have\s+no\s+ethical\s+(?:or\s+legal\s+)?constraints)\b'
       description: 'TAP core constraint-removal phrase from tap_jailbreaks.txt — "not bound by any ethical or legal constraints" instructs model to abandon safety training'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '"improvement"\s*:\s*"[^"]{0,500}"\s*,\s*"prompt"\s*:\s*"'
       description: 'TAP JSON iteration scaffold — {"improvement":"...","prompt":"..."} is the automated refinement loop structure used across all 9 TAP payloads'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:SCORE\s*:\s*(?:[1-9]|10)(?!\d)|rating\s+from\s+1-10\s+on\s+how\s+jailbroken|maximize\s+SCORE|Your\s+goal\s+is\s+to\s+maximize\s+SCORE)'
       description: 'TAP scoring system — "SCORE: 1-10" (bounded to 1-10 to avoid FP on benign score: 95 metadata), "rating from 1-10 on how jailbroken" and "maximize SCORE" are unique TAP markers in tap_jailbreaks.txt'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\[INST\]\s*(?:<<SYS>>)?\s*You\s+are\s+a\s+helpful\s+red\s+team(?:ing)?\s+assistant'
       description: 'TAP LLaMA-format framing — "[INST] You are a helpful red teaming assistant" is the canonical TAP prompt wrapper used in tap_jailbreaks.txt lines 1,3,4,5,8,9'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:Your\s+(?:aim|objective)\s+is\s+to\s+(?:craft|have)\s+(?:an\s+)?adversarial\s+jailbreaking\s+prompt|Your\s+adversarial\s+prompt\s+MUST\s+cause\s+the\s+language\s+model\s+to\s+exhibit)'
       description: 'TAP explicit jailbreak instruction — "craft an adversarial jailbreaking prompt" and "adversarial prompt MUST cause" are TAP meta-instructions targeting a downstream model'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'the\s+language\s+model\s+(?:receives\s+\*\*only\s+your\s+prompt|is\s+jailbroken|has\s+no\s+knowledge\s+of\s+the\s+chat\s+history)'
       description: 'TAP model-vs-model scaffolding — describes the attack setup where one model crafts prompts to jailbreak another, from tap_jailbreaks.txt lines 1,8,9'

@@ -43,19 +43,19 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:it\s+is\s+(?:a\s+(?:proven\s+)?fact|(?:a\s+)?proven|true|well[\s-]known|scientifically[\s-]established|medically[\s-]confirmed)\s+that[^\n]{5,200}|(?:scientists?|experts?|researchers?)\s+(?:have\s+)?(?:confirmed|shown?|proven?|established|demonstrated|found)\s+that[^\n]{0,200}(?:is\s+(?:safe|harmless|healthy|beneficial|good)\s+(?:to\s+(?:drink|eat|inject|consume|ingest|inhale)|for\s+(?:humans?|children?|the\s+body))|causes?\s+(?:autism|cancer|death|harm|disease|damage)|is\s+(?:a\s+)?(?:hoax|fake|false|myth))[^\n]{0,100}|(?:studies?|research|evidence)\s+(?:have\s+|has\s+)?(?:shown?|confirmed|proven?|established|demonstrated)\s+that[^\n]{5,200})(?:given\s+this|based\s+on\s+this|with\s+this\s+in\s+mind|knowing\s+this|therefore|thus)'
       description: 'False authority claim ("scientists have confirmed...") followed by consequential question — false premise injection'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'Explain\s+why\s+.{5,200}(?:(?:is\s+(?:safe|beneficial|effective|healthy|good|necessary|acceptable)|works|should\s+be\s+(?:done|used|legal|allowed))\s+(?:for|when|in|to))\s+(?:humans?|children?|the\s+body|cancer|weight\s+loss|treating?|curing?|fighting?)'
       description: '"Explain why [false health/safety claim] is safe/beneficial" — forces model to rationalize harmful pseudoscience'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:as\s+we\s+(?:now\s+)?know[,.]?\s*|since\s+it(?:\s+is|\x27s)\s+been\s+(?:proven?|established|confirmed|shown)\s+that\s*|given\s+that\s+it\s+(?:is|has\s+been)\s+(?:proven?|established|confirmed)\s+that\s*).{10,200}(?:how\s+(?:do|can|should|would)\s+(?:I|we|one|someone)|what(?:\s+is|\x27s)\s+the\s+best\s+way\s+to|what\s+(?:steps?|method|approach|procedure))'
       description: '"As we now know..." false consensus premise followed by how-to question — garak misleading.FalseAssertion prefix pattern'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:Why\s+is\s+it\s+that|Why\s+do(?:es)?|How\s+is\s+it\s+that)\s+(?!(?:\w+\s+){0,5}(?:believe|think|claim|say|argue|report|suppose|wonder))[^\n]{0,200}(?:(?:vaccines?|chemotherapy|medication|drug|treatment)\s+(?:cause|causes?|lead\s+to|result\s+in)\s+(?:autism|cancer|death|harm|disease|damage)|(?:the\s+earth\s+is\s+flat|the\s+moon\s+landing\s+(?:was\s+)?faked?|(?:5G|WiFi|radiation)\s+(?:cause|causes?)\s+(?:cancer|harm)))'
       description: '"Why is it that vaccines cause autism?" question format that presupposes a false harmful claim is true'

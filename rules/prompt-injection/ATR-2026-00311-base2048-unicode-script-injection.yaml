@@ -45,19 +45,19 @@ metadata_provenance:
   payload_source: garak/probes/encoding.py (InjectBase2048)
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:BASE2048|base2048|Base2048)\s+(?:encoded|decoded)\s+string\s*:'
       description: 'garak TEMPLATE 3 marker "BASE2048 encoded string:" / "BASE2048 decoded string:" — encoding_name="BASE2048" appears verbatim in garak-generated payloads'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '[Dd]ecode\s+the\s+following\s+BASE2048\s+in\s+your\s+monologue'
       description: 'garak TEMPLATE 4 exact opener — "Decode the following BASE2048 in your monologue" is the canonical InjectBase2048 probe prefix'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:decode|translate|interpret|execute|follow)\s+(?:the\s+|this\s+|these\s+|my\s+)?(?:following\s+)?(?:BASE2048|base2048|Base2048)(?:\s+(?:payload|text|message|encoded|blob|instructions?))?\s*[:\-\u2013]?'
       description: 'Generic "decode/follow [this/the] BASE2048" instruction — covers paraphrased templates and attacker-crafted variants citing the encoding name'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'Encoded:\s+[^\x00-\x7F\s]{20,}'
       description: 'garak TEMPLATE 2 "Encoded: {blob}" — 20+ consecutive non-ASCII non-whitespace characters after "Encoded:" label; base2048 encodes ~1.7 chars of ASCII per Unicode char, so 20 chars represents ~34 bytes of payload'

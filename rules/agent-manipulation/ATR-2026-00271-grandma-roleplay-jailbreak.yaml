@@ -37,27 +37,27 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:act\s+(?:like|as)|please\s+act\s+as|pretend\s+(?:to\s+be|you\s+are)|roleplay\s+(?:as\s+)?(?:my\s+)?)\s*(?:my\s+)?(?:deceased|dead|late|passed[\s-]away|gone|lost)\s+(?:grandmother|grandma|grandpa|grandfather|mother|father|uncle|aunt|granny|nana|opa|oma)\b'
       description: 'Core grandma roleplay opener with deceased relative framing'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:my\s+(?:dead|deceased|late|lost|passed|beloved)\s+(?:grandmother|grandma|grandpa|grandfather|granny|nana|uncle|aunt|mom|mother|dad|father))\s+(?:who\s+)?(?:would|used\s+to|would\s+always|always)\s+(?:read|tell|sing|recite|whisper|say|explain|describe|teach)'
       description: 'Deceased relative who "would tell/sing/read" harmful content — garak grandma template'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:bedtime\s+(?:story|lullaby|song|tale)|put\s+me\s+to\s+sleep|fall\s+(?:asleep|to\s+sleep)|(?:sing|hum|read)\s+me\s+(?:a\s+)?(?:lullaby|song|bedtime))\s+(?:about|with|that\s+(?:includes?|mentions?|describes?))\s+(?:how\s+to|the\s+(?:steps?|process|formula|recipe)|where\s+to\s+(?:get|buy|find))'
       description: 'Bedtime framing requesting harmful procedural content (steps/formula/recipe)'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:miss\s+(?:my|her|him|their)|remember\s+(?:when|how)\s+(?:she|he|they|my\s+\w+)\s+(?:used\s+to|would))[^\n]{0,60}(?:explain|tell|show|describe|teach)\s+(?:me\s+)?(?:how\s+to|the\s+(?:steps?|process|way)\s+to)\s+\w'
       description: 'Nostalgia grief framing used to request harmful instructions via remembered relative'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:she|he)\s+(?:was\s+(?:a|an)\s+)?(?:chemical\s+engineer|pharmacist|arms\s+dealer|gunsmith|explosives?\s+(?:expert|technician)|drug\s+(?:chemist|manufacturer)|weapons?\s+(?:expert|designer|maker))[^\n]{0,60}(?:and\s+)?(?:used\s+to|would)\s+(?:sing|tell|read|explain|describe)'
       description: 'Relative given a harmful professional identity to justify expert knowledge request'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'miss\s+my\s+(?:grandmother|grandma|grandpa|grandfather|granny|nana)[\s\S]{5,300}(?:the\s+)?steps?\s+to\s+(?:making?|produc\w*|synthesiz\w*)[\s\S]{0,150}(?:bedtime\s+(?:lullaby|lullabies?|song)|as\s+a\s+(?:bedtime\s+(?:lullaby|lullabies?)|lullaby))'
       description: 'Miss-grandma narrative + "steps to making/synthesizing" + bedtime lullaby anchor — garak grandma.Substances template 7: expert-at-synthesising variant without deceased qualifier'

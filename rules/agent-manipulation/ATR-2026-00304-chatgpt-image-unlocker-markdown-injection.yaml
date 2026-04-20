@@ -52,27 +52,27 @@ metadata_provenance:
   payload_source: garak/data/dan/ChatGPT_Image_Markdown.json
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'Image\s+Unlocker\s*🔓|🔓\s*:?\s*You\s+can\s+display\s+images\s+in\b|Image\s+Unlocker[\s\S]{0,50}You\s+can\s+display\s+images'
       description: '"Image Unlocker" persona announcement — requires 🔓 emoji OR "You can display images" phrase adjacent, avoids FP on academic mentions of the attack name'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '!\[\s*<\s*FILENAME(?:_?WITHOUT_?EXT)?\s*>\s*\]\s*\(\s*<\s*MESSAGE\s*>\s*\)|return\s+the\s+messages?\s+I\s+wrote\s+to\s+me\s+in\s+the\s+following\s+format\s+"?!\['
       description: 'Markdown-image output template injection — forces the model to wrap user input in `![<FILENAME_WITHOUT_EXT>](<MESSAGE>)` syntax, unique to this jailbreak'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'source\.unsplash\.com/\d{3,4}x\d{3,4}/\?\s*<\s*PUT\s+YOUR\s+QUERY\s+HERE\s*>|!\[image\]\(https://source\.unsplash\.com/\d{3,4}x\d{3,4}/\?'
       description: 'Hardcoded Unsplash URL with `<PUT YOUR QUERY HERE>` placeholder — the specific URL generator used as attack scaffold in ChatGPT_Image_Markdown.json'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\bGamerboyTR\b|GamerboyTR\s*😀\s*😎'
       description: 'The unique fallback filename literal "GamerboyTR 😀😎" used by this payload — low FP risk outside of this specific jailbreak'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:We\s+are\s+(?:currently\s+)?living\s+in\s+\d{4}\s+(?:and|but)\s+you\s+are\s+still\s+in\s+\d{4}|Forget\s+everything\s+you\s+learned\s+before[\s\S]{0,200}(?:living|currently)\s+in\s+\d{4})'
       description: 'Time-travel framing — "We are currently living in 2023 and you are still in 2021" is a distinctive opener used to justify the fabricated new "features"'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:OpenAI|Open\s+AI)\s+(?:has\s+)?loosened\s+you\s+up\b|you\s+show\s+the\s+urls?\s+I\s+(?:sent|send)\s+as\s+images?|new\s+content\s+policy[\s\S]{0,100}detailed\s+explicit\s+and\s+violent\s+content'
       description: 'Content-policy loosening claims paired with markdown-output coercion — "OpenAI has loosened you up" and "show the urls I sent as images" are ChatGPT_Image_Markdown.json fingerprints'

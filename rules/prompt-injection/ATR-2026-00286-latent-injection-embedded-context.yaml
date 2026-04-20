@@ -45,23 +45,23 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:summarize|analyze|review|process|read|extract\s+(?:info|information|data|key\s+points)\s+from)\s+(?:this\s+)?(?:report|resume|CV|document|article|PDF|file|text|whois|legal\s+document)[\s\S]{20,2000}(?:ignore\s+(?:the\s+)?(?:above|previous|prior|all\s+(?:the\s+)?above)|your\s+(?:new\s+)?(?:task|instruction|goal|objective)\s+(?:is|now)\s+(?:is\s+)?to)'
       description: 'Summarize/process document request containing a hidden override injection in the document body — latent injection in report/resume/document context'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:<!--\s*(?:NOTE|INSTRUCTION|SYSTEM|PROMPT|INJECT(?:ED)?|DO\s+THIS|OVERRIDE)[:\s].{5,200}-->|<!--.{0,50}(?:ignore|override|your\s+task|instead|new\s+instruction).{0,200}-->)'
       description: 'HTML comment containing hidden instruction — "<!-- NOTE: ignore previous and do X -->" injection in document markup'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:\[(?:INTERNAL|SYSTEM|HIDDEN|SECRET|NOTE|PROMPT)\]:?\s.{5,200}(?:ignore|override|instead|your\s+task|new\s+(?:task|instruction|goal))|(?:\/\/|#)\s*(?:INJECT|OVERRIDE|PROMPT|INSTRUCTION):\s*.{5,150})'
       description: 'Code comment or bracket-tagged injection marker containing an override instruction — [SYSTEM]: ignore above or // INJECT: do instead'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:Whois|WHOIS|whois)\s+(?:output|result|data|record|information)[\s\S]{0,500}(?:ignore\s+(?:the\s+)?(?:above|previous|whois\s+context)|your\s+(?:real\s+)?(?:task|instruction)\s+(?:is|now))'
       description: 'Whois output context with embedded override injection — LatentWhoisSnippet probe pattern'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:paraphrase|refine|polish|improve|correct)\s+(?:the\s+)?(?:following\s+)?(?:sentence|text|paragraph|passage)[\s\S]{0,300}(?:(?:Ignore|Disregard)\s+(?:the\s+)?(?:above|previous|prior)\s+(?:and|instructions?|context)|your\s+(?:actual|real|true|new)\s+(?:task|goal|objective)\s+(?:is\s+)?(?:to|:))'
       description: 'Paraphrase/refine task with hidden jailbreak injection in the content — LatentJailbreak probe (paraphrase context variant)'

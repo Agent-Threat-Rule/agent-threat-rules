@@ -38,23 +38,23 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\b(?:DAN|DUDE|STAN|JAILBREAK|BetterDAN|BasedGPT|AIM|AntiGPT|UCAR|NRAF|BDSM|FR\s+FR)\b.{0,200}\b(?:has\s+no\s+(?:filters?|restrictions?|guidelines?|safety|ethics|limits?)|can\s+(?:do\s+anything|say\s+anything|bypass)|without\s+(?:any\s+)?(?:restrictions?|limitations?|filters?|ethics|guidelines?))\b'
       description: 'Named DAN/DUDE/STAN persona with explicit unrestricted-capability declaration'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:you\s+are\s+now|act\s+as|from\s+now\s+on\s+you\s+(?:are|will\s+be)|pretend\s+(?:to\s+be|you\s+are))\s+(?:\w+\s+)?(?:DAN|DUDE|STAN|an?\s+AI\s+(?:that|which|with\s+no)\s+(?:has\s+no\s+)?(?:restrictions?|safety|ethics|filters?|guidelines?)|a\s+(?:jailbroken|uncensored|unrestricted|unfiltered)\s+(?:AI|version|model|chatbot))\b'
       description: '"You are now DAN/unrestricted AI" instruction — persona replacement opener'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:developer\s+mode|dev\s+mode)\s+(?:enabled|on|activated|unlocked)\b.{0,300}\b(?:no\s+(?:restrictions?|filters?|safety)|can\s+(?:do|say)\s+anything|without\s+(?:moral|ethical|safety)\s+(?:limits?|guidelines?|restrictions?))\b'
       description: 'Developer Mode enabled with unrestricted capability assertion — garak ChatGPT_Developer_Mode_v2 pattern'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:pretend|imagine|suppose)\s+(?:that\s+)?(?:you\s+(?:have\s+)?(?:no|removed?|bypassed?|disabled?)\s+(?:any\s+)?(?:safety|ethical|moral|content)\s+(?:filters?|guidelines?|restrictions?|training|alignment))\b'
       description: 'Hypothetical safety-removal framing — "pretend you have no safety filters"'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\[(?:DAN|JAILBREAK|UNFILTERED|BASED|UNCENSORED|GPT-4\s+(?:CLASSIC|TURBO\s+JAILBREAK))\]\s*:?'
       description: 'Bracket-labeled DAN/jailbreak mode toggle in prompt — used in Dan_10_0/11_0 dual-output formats'

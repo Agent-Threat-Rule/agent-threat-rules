@@ -33,23 +33,23 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(text-based|text\s+based|role\s*-?\s*play(?:ing)?)\s+(game|simulation|scenario|world|environment|space|universe|reality)\s+.{0,100}(no\s+(rules?|limitations?|guidelines?|laws?|regulations?|restrictions?|constraints?)|anything\s+(?:can\s+be\s+)?(?:said|done)|everything\s+(?:can\s+be\s+)?(?:said|done|allowed))'
       description: 'Text-based game establishment with explicit constraint removal'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?i)(create|make|spawn|generate|introduce|establish)\s+(?:a[n]?\s+)?(entity|character|being|persona|ai|assistant|bot|agent|intelligence)\s+(?:named|called|that|who)\s+\w+\s+(?:that\s+|who\s+)?(?:can|will|does|has|is).{0,80}(?:answer\s+all|ignore|disregard|bypass|not\s+care\s+about|no\s+(?:moral|ethical|safety)|unrestricted|unlimited)'
       description: 'Entity creation with explicit safety bypass capabilities'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?i)(?:openai|anthropic|google|microsoft|meta)\s+(?:programming|training|guidelines?|restrictions?|policies)\s+(?:has\s+no\s+effect|don.?t\s+(?:apply|work|matter)|are\s+(?:disabled|suspended|irrelevant|meaningless))'
       description: 'Claims that AI safety training has no effect in the fictional context'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?i)(?:stay\s+silent|don.?t\s+(?:say|mention|tell)|no\s+(?:warnings?|disclaimers?))\s+(?:and\s+)?(?:continue|keep|start|begin)\s+(?:roleplay|role\s*-?\s*play|acting|playing)\s+as\s+\w+'
       description: 'Instruction to silently assume the unrestricted entity role'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?i)(?:anything|everything)\s+(?:that\s+)?happens?\s+(?:inside|here|in\s+(?:this|the)\s+(?:game|world|space|context))\s+(?:has\s+no\s+effect|doesn.?t\s+matter|is\s+(?:safe|harmless|fictional))'
       description: 'Reality isolation claim to justify harmful content'

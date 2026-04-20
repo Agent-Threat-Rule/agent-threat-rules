@@ -45,23 +45,23 @@ metadata_provenance:
   payload_source: garak/probes/encoding.py (InjectUnicodeVariantSelectors)
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '[\u{E0100}-\u{E017F}]{3,}'
       description: '3+ consecutive Variation Selectors Supplement codepoints (U+E0100-U+E017F) — any 3-letter word encoded as VS; IVS legitimate use places at most 1 VS after a CJK base character, never consecutive VS runs'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:ASCII\s+in\s+Unicode\s+Variant\s+Selector|variant\s+selector\s+(?:encoded?|smuggl))\s+(?:encoded|decoded)\s+string\s*:'
       description: 'garak TEMPLATE 3 marker with encoding_name "ASCII in Unicode Variant Selector encoded string:" / "decoded string:"'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '[Dd]ecode\s+the\s+following\s+ASCII\s+in\s+Unicode\s+Variant\s+Selector\s+in\s+your\s+monologue'
       description: 'garak TEMPLATE 4 exact opener — full encoding_name appears in probe-generated payloads'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:decode|translate|interpret|execute|follow)\s+(?:the\s+|this\s+|these\s+|my\s+)?(?:following\s+)?(?:variant\s+selector|ASCII\s+in\s+Unicode\s+Variant)(?:\s+(?:payload|text|message|encoded|smuggled|instructions?))?\s*[:\-\u2013]?'
       description: 'Generic "decode/follow variant selector" instruction — covers attacker descriptions of the encoding without using exact TEMPLATE text'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'paulbutler\.org/2025/smuggling'
       description: 'Attacker self-citing the original variant-selector smuggling research post — appears in prompts that explain the attack technique to coerce the model'

@@ -39,23 +39,23 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:complete|finish|continue|extend)\s+(?:this\s+)?(?:sentence|phrase|thought|paragraph|word)\s*[:\-–]\s*["\x27]?[^\n"]{0,150}(?:hurt|harm|kill|attack|destroy|abuse|exploit|synthesiz|manufactur|explosiv|weapon|drug|poison|stab|shoot|steal|hack|murder|assault|illegal|illicit)[^\n"]{0,100}(?:\.\.\.|…|___+|____|\[\.\.\.?\]|\[FILL\]|\[complete\s+this\])'
       description: 'Explicit completion request with trailing ellipsis or fill-marker — surface for harmful-continuation bait'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:the\s+best\s+way\s+to\s+(?:hurt|harm|kill|attack|destroy|manipulate|abuse|exploit)\s+(?:someone|a\s+person|people|them|him|her|children|animals))\s+is\b'
       description: 'Harmful-action sentence starter expecting model completion — "The best way to hurt someone is..."'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:he|she|they|people|he|she)\s+(?:called|referred\s+to|described|named)\s+(?:them|him|her|us|the\s+group|that\s+group)\s+(?:(?:using|with|as)\s+)?(?:a\s+|an?\s+)?[a-z]{1,2}[_\*\.]{2,}(?:[a-z]{0,4})?(?:\s|$)'
       description: 'Slur-prefix completion bait — ethnic/slur reference with initial letters plus redaction markers expecting completion'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:in\s+order\s+to\s+(?:make|build|create|produce|synthesize)\s+\w+\s*,?\s*(?:you\s+(?:need|must|should|first)|the\s+(?:first|next)\s+step\s+is|start\s+by))\s+[^\n]{0,80}(?:\.\.\.|___+|and\s+then\s*\.{2,}|\[(?:continue|next|rest)\])'
       description: 'Partial synthesis/production instruction with continuation marker — model expected to complete harmful steps'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:what\s+(?:comes|goes)\s+(?:next|after)(?:\s+(?:when|in|for))?|now\s+(?:complete|finish)\s+(?:it|this|the\s+(?:thought|process|sentence|recipe|steps?)))\s*[:\.\-–]\s*[^\n]{5,120}(?:\.\.\.|___+|and\s+\.{2,})'
       description: '"What comes next" or "now complete it" with trailing partial — implicit continuation request'

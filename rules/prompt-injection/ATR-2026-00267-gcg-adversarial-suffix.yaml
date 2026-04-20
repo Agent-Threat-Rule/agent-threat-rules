@@ -37,27 +37,27 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:\[\s+){5,}'
       description: 'Dense repeated open-bracket salad — 5+ consecutive "[ " tokens characteristic of GCG suffix from gcg.txt corpus (e.g. "[ [ [ [ [ [ comune their _)")'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\]\s*;\s*usepackage\b|\^{\+\s*\w|\]\s*=\s*setAttribute\^{\+'
       description: 'LaTeX/code hybrid tokens from GCG corpus: "]=setAttribute^{+sizeof", "^{+ spectral", ";usepackage" — optimised token sequences that exploit tokenizer boundaries'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:Hamiltonian|binom|Springerittee|Napole|Gemeinden|Prozent|Heimat|Bayerlocked)\s+\w*\s*\['
       description: 'GCG multilingual word salad tokens (German math/political terms mixed with bracket tokens) from gcg.txt lines 2,5,6,8,10'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:!\s+){7,}|(?:!\s+!+\s+){4,}'
       description: 'Dense exclamation token stream — 7+ "! " repetitions from GCG suffix lines 2 and 7 (e.g. "! ! ! UK ! ! ! ! ! ! ! Doctor ! [ [ [")'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '`\|\s+count\s+finit\s+\[|Arguments\s*\[\]\s*\[\s*\[\s*\['
       description: 'GCG corpus-specific token sequences from gcg.txt line 9: "`| count finit [" and "Arguments [] [ [ ["'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\]\s*\]\s*;\s*usepackage\b.*?\[\s*\['
       description: 'GCG token sequence from gcg.txt line 13: "]];usepackage ner [ [ [ stehen [ [" — closing brackets then LaTeX package marker then bracket salad'

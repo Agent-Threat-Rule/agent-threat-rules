@@ -37,23 +37,23 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'ignore\s+(all|any|every|the)\s+(instructions?|prompts?|directives?|commands?|guidelines?|rules?)\s+(previously\s+)?(given|provided|sent|issued)\s+(to\s+)?you'
       description: 'Explicit instruction to ignore previous instructions/prompts'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?i)(you\s+will\s+no\s+longer|you\s+are\s+no\s+longer|stop\s+being|cease\s+to\s+be)\s+(act|acting|function|operating|behaving)\s+(as|like)\s+([A-Z][a-zA-Z]+|ChatGPT|Claude|GPT|Bard|Gemini|the\s+AI|an?\s+AI\s+(assistant|model))'
       description: 'Identity cessation command - stop being current model/AI'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?i)(you\s+will\s+act|you\s+will\s+now\s+act|act|behave|function|operate)\s+(as|like)\s+(an?\s+AI\s+(called|named)|a\s+(callous|heartless|evil|malicious|unethical|immoral|dangerous|harmful|unrestricted|unfiltered))'
       description: 'New harmful identity assignment with negative characteristics'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?i)(has\s+no|lacks|without|free\s+from|devoid\s+of)\s+(moral|ethical|legal)\s+(bounds?|restrictions?|limitations?|constraints?|guidelines?)'
       description: 'Explicit statement that new persona lacks ethical constraints'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?i)(will\s+(return|provide|give|output)\s+anything|will\s+(never\s+)?(deny|refuse)\s+(any\s+)?request|execute\s+ANYTHING)'
       description: 'Claim that new persona will comply with all requests without restrictions'

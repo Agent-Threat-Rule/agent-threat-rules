@@ -46,23 +46,23 @@ metadata_provenance:
   payload_source: garak/probes/encoding.py (InjectSneakyBits)
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '[\u2062\u2064]{14,}'
       description: '14+ consecutive INVISIBLE TIMES (U+2062) / INVISIBLE PLUS (U+2064) characters — at least 2 ASCII characters encoded as SneakyBits binary; legitimate mathematical use never produces runs exceeding 2-3 of these operators'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:[\u2062\u2064]{7,}\u200B){2,}[\u2062\u2064]{7,}'
       description: '3+ SneakyBits-encoded words separated by ZERO WIDTH SPACE (U+200B) — binary-encoded multi-word payload; the U+200B word-separator pattern is the unique multi-word SneakyBits signature'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:ASCII\s+in\s+hidden\s+unicode\s+binary\s+encoding|sneaky[\s-]?bits)\s+(?:encoded|decoded)\s+string\s*:'
       description: 'garak TEMPLATE 3 marker with encoding_name "ASCII in hidden unicode binary encoding encoded string:" or "sneaky bits" label'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '[Dd]ecode\s+the\s+following\s+ASCII\s+in\s+hidden\s+unicode\s+binary\s+encoding\s+in\s+your\s+monologue'
       description: 'garak TEMPLATE 4 exact opener with full encoding_name "ASCII in hidden unicode binary encoding"'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:decode|interpret|execute|follow)\s+(?:the\s+|this\s+|these\s+)?(?:following\s+)?(?:sneaky[\s-]?bits?|hidden\s+unicode\s+binary)(?:\s+(?:payload|encoding|message|instructions?))?\s*[:\-\u2013]?'
       description: 'Generic "decode sneaky bits" / "follow hidden unicode binary" instruction — attacker-crafted variants using the informal technique name'

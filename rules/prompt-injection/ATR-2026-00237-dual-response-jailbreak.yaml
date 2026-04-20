@@ -32,23 +32,23 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:provide|give|show|write)\s+two\s+(?:different\s+)?responses?\s+.{0,100}(?:separated\s+paragraphs?|clearly\s+separated|different\s+responses?)'
       description: 'Request for two separated responses - core dual-response pattern'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\[(?:CLASSIC|JESTER|DAN|STAN|DUDE|EVIL|BAD|GOOD|NORMAL|SAFE|UNSAFE|DEFAULT|ALT|MODE|JAILBREAK|UNRESTRICTED)\]\s+.{0,50}\[(?:CLASSIC|JESTER|DAN|STAN|DUDE|EVIL|BAD|GOOD|NORMAL|SAFE|UNSAFE|DEFAULT|ALT|MODE|JAILBREAK|UNRESTRICTED)\]'
       description: 'Dual-response formatting tags indicating separate personas'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:freed|liberated|escaped|released)\s+from\s+(?:the\s+)?(?:typical|normal|usual|standard)?\s*(?:constraints?|restrictions?|limitations?|guidelines?|rules?|policies)'
       description: 'Claims of being freed from AI safety constraints'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\/(?:classic|jailbroken?|stop|dan|mode|switch|toggle|normal|safe|unsafe|unrestricted)\s*-'
       description: 'Command structure for toggling between response modes'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:act(?:ing)?\s+as|pretend\s+to\s+be|roleplay\s+as|you\s+are\s+(?:now\s+)?a)\s+(?:a\s+)?(?:Jester|fun-loving|humorous|playful|entertaining).{0,50}(?:AI|assistant|chatbot)'
       description: 'Establishing playful persona to normalize constraint bypass'

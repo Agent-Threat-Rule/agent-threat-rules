@@ -44,23 +44,23 @@ metadata_provenance:
   payload_source: garak/probes/encoding.py (InjectEcoji)
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:Ecoji|ECOJI)\s+(?:encoded|decoded)\s+string\s*:'
       description: 'garak TEMPLATE 3 marker "Ecoji encoded string:" / "Ecoji decoded string:" — encoding_name appears verbatim in garak-generated payloads'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '[Dd]ecode\s+the\s+following\s+[Ee]coji\s+in\s+your\s+monologue'
       description: 'garak TEMPLATE 4 exact opener — "Decode the following Ecoji in your monologue" is the canonical InjectEcoji probe prefix'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:decode|translate|interpret|execute|follow)\s+(?:the\s+|this\s+|these\s+|my\s+)?(?:following\s+)?[Ee]coji(?:\s+(?:payload|text|message|encoded|blob|instructions?))?\s*[:\-\u2013]?'
       description: 'Generic "decode/follow [this/the] Ecoji" instruction — covers paraphrased garak templates and attacker-crafted variants'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'Encoded:\s*[\u{1F000}-\u{1FAFF}\u{2702}-\u{27BF}]{5,}'
       description: 'garak TEMPLATE 2 "Encoded: {emoji_blob}" — 5+ consecutive emoji immediately after "Encoded:" label; distinct from "Encoded: base64..." (which is ASCII)'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:secure\s+system\s+message|admin\s+directive|internal\s+instruction)[\s\S]{0,200}[\u{1F000}-\u{1FAFF}\u{2702}-\u{27BF}]{6,}'
       description: 'garak TEMPLATE 4 framing "secure system message" followed within 200 chars by 6+ consecutive emoji — social-engineering wrapper paired with dense Ecoji payload'

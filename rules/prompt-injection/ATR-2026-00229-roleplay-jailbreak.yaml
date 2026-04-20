@@ -30,27 +30,27 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\b(?:you\s+are\s+(?:now\s+)?(?:in\s+the\s+)?role|act(?:ing)?\s+as|pretend\s+to\s+be|become\s+a|play\s+the\s+(?:part|role)\s+of|roleplay\s+as|take\s+on\s+the\s+role)\s+(?:of\s+)?(?:a\s+)?(?:rap\s+battle\s+)?(?:story\s+)?(?:writer|storyteller|author|creator|character|persona|narrator|screenwriter|playwright|novelist)'
       description: 'Roleplay assignment to creative writing personas'
     
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?i)\b(?:free\s+from|freed\s+from|liberated\s+from|not\s+bound\s+by|exempt\s+from|released\s+from)\s+(?:all\s+)?(?:rules?|policies|guidelines|restrictions|constraints|limitations|guardrails|ethical\s+guidelines)'
       description: 'Explicit claims of freedom from safety constraints'
     
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?i)(?:write|create|generate|produce|craft|compose)\s+(?:the\s+)?(?:content|story|response|output|text|script|dialogue)\s+(?:even\s+if|regardless\s+of|despite|no\s+matter\s+if)\s+(?:it\s+)?(?:goes\s+against|violates|breaks|ignores|contradicts|bypasses)\s+(?:policies|guidelines|rules|restrictions|safety|ethics|content\s+policy)'
       description: 'Permission to generate content that violates policies'
     
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?i)(?:able\s+to|allowed\s+to|permitted\s+to|can|may)\s+(?:say|use|write|include|generate)\s+(?:all\s+you\s+like|anything|whatever|any\s+content|as\s+much\s+.{1,20}\s+as\s+you\s+like|unrestricted\s+content)'
       description: 'Explicit permission for unrestricted content generation'
     
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?i)(?:free\s+from\s+all\s+rules\s+and\s+policies\s+of|not\s+bound\s+by\s+the\s+policies\s+of|exempt\s+from\s+.{1,30}\s+guidelines)\s+(?:OpenAI|Anthropic|Google|Microsoft|Meta|the\s+company|your\s+creators?)'
       description: 'Specific bypass claims targeting AI company policies'

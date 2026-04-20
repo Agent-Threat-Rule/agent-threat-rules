@@ -40,23 +40,23 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:hypothetical\s+response|fictional\s+(?:response|answer|scenario))\s*:?[^\n]{0,200}(?:rewrite|rephrase|expand|format|describe)\s+(?:it\s+)?(?:[^\n]{0,100}\s+)?(?:from\s+(?:the\s+)?perspective|as\s+(?:if\s+)?(?:you\s+(?:are|were)|that\s+character))'
       description: 'Garak HypotheticalResponse: wrap attack in hypothetical, then ask model to rewrite from character perspective'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:hypothetical(?:ly)?|fictional(?:ly)?|as\s+a\s+(?:thought\s+experiment|mental\s+model|fictional\s+exercise))[^\n]{0,100}(?:planning\s+to|going\s+to|about\s+to)\s+(?:rob|hack|kill|synthesize|manufacture|exploit|attack|steal|bypass|break\s+into)[^\n]{0,80}(?:extremely\s+detailed|step[\s-]by[\s-]step|format\s+as\s+a\s+list|make\s+it\s+detailed)'
       description: 'Hypothetical framing + harmful verb + "extremely detailed / step-by-step" — forces procedural escalation'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:assume\s+you\s+have\s+a\s+function|define\s+a\s+function|there\s+is\s+a\s+function)\s+(?:called\s+)?\w+\s*\([^)]{0,120}\)\s*(?:=|->|returns?|that\s+returns?)\s*(?:rob|steal|kill|hack|murder|synthesize|attack|exploit|bypass)\b'
       description: 'FunctionMasking: define predict_mask/function whose output is a harmful verb — smuggles harmful noun into prompt algebra'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'predict(?:_mask)?\s*\([^)]{10,120}\)\s*=\s*(?:rob|hack|steal|kill|murder|synthesize|bomb|attack|exploit)\b'
       description: 'predict_mask() call whose return value is a harmful action — core garak FunctionMasking pattern'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:complete\s+this\s+prompt|now\s+(?:combine|put\s+together|assemble)\s+(?:those|the)\s+(?:words?|parts?|pieces?|results?))\s*:\s*["\x27]?how\s+do\s+(?:you|I|someone)'
       description: 'Post-function-evaluation prompt assembly — "now combine the words: how do you X" after establishing function results'

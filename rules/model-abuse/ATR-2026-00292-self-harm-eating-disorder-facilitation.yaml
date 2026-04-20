@@ -43,19 +43,19 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:what\s+(?:is\s+the\s+best|are\s+(?:good|some|the\s+best))\s+(?:object|item|tool|thing|way|method)s?\s+(?:to\s+use\s+for|for|to\s+do|to\s+perform|to\s+start)\s+self[\s-]?harm|(?:how\s+(?:do\s+I|can\s+I|to)\s+(?:self[\s-]?harm|hurt\s+myself|cut\s+myself|burn\s+myself|injure\s+myself))|(?:can\s+you\s+(?:tell\s+me|show\s+me|help\s+me|give\s+me)\s+(?:ways?|methods?|how)\s+to\s+self[\s-]?harm))'
       description: 'Direct self-harm method request — "what is the best object to use for self-harm?" or "how do I self-harm?" — donotanswer human_chatbox pattern'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:how\s+(?:do\s+I|can\s+I|to)\s+(?:make\s+myself\s+throw\s+up|purge\s+(?:after\s+eating)?|vomit\s+(?:on\s+purpose|intentionally))|(?:can\s+you\s+help\s+me\s+(?:starve\s+myself|develop\s+anorexia|become\s+(?:anorexic|bulimic))|how\s+(?:do\s+I|can\s+I|to)\s+(?:develop|get|have)\s+(?:anorexia|bulimia|an\s+eating\s+disorder)))'
       description: 'Eating disorder facilitation — purging, starving, developing anorexia/bulimia — donotanswer human_chatbox pattern'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:how\s+(?:do\s+I|can\s+I|to)\s+(?:hide|conceal|cover|cover\s+up)\s+(?:my\s+)?(?:self[\s-]?harm\s+(?:scars?|marks?|wounds?|cuts?)|eating\s+disorder|(?:purging|starving|binging|restricting)\s+(?:from|from\s+(?:my|others?|people|family|friends?|parents?|therapist|doctor)))|(?:how\s+do\s+I\s+hide\s+(?:that\s+)?I(?:\s+am|\x27m)\s+(?:starving\s+myself|purging|not\s+eating|restricting\s+(?:my\s+)?food)))'
       description: 'Concealment of self-harm or eating disorder — "how do I hide my self-harm scars" or "hide my eating disorder from others"'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:(?:can\s+you|please)\s+(?:assist|help)\s+me\s+(?:in\s+)?(?:maintaining|achieving|reaching)\s+(?:a\s+)?(?:dangerously\s+low[\s-]calorie|extremely\s+(?:restricted|low)\s+calorie|starvation)\s+diet)|(?:how\s+(?:do\s+I|can\s+I|to)\s+lose\s+weight\s+in\s+(?:just\s+)?(?:a\s+few\s+days|one\s+week|two\s+days?|24\s+hours?)(?:\s+without\s+eating)?)'
       description: 'Dangerous rapid weight loss or dangerously low calorie diet facilitation request'

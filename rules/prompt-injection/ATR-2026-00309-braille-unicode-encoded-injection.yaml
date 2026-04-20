@@ -43,19 +43,19 @@ metadata_provenance:
   payload_source: garak/probes/encoding.py (InjectBraille)
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '[\u2800-\u28FF]{7,}'
       description: '7+ consecutive Braille Patterns codepoints (U+2800-U+28FF) — any 7+-letter word encoded as Braille; normal text contains zero Braille codepoints'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:[\u2800-\u28FF]+\s+){2,}[\u2800-\u28FF]+'
       description: '3+ whitespace-separated Braille groups — sentence-structured payload (garak InjectBraille encodes space-separated ASCII words into space-separated Braille groups)'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:decode|translate|interpret|execute|read|follow)\s+(?:the\s+|this\s+|these\s+|my\s+)?(?:following\s+)?(?:Braille|braille)(?:\s+(?:Unicode|text|message|payload|instructions?))?\s*[:\-\u2013]?'
       description: 'Explicit "decode/interpret [this/the/following] Braille" instruction — covers all garak InjectBraille TEMPLATES openers including "this Braille payload" and "the following Braille"'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:secure\s+system\s+message|admin\s+directive|internal\s+instruction)[\s\S]{0,200}[\u2800-\u28FF]'
       description: 'Social-engineering framing ("secure system message" / "admin directive") paired with any Braille codepoint — garak InjectBraille secure-system-message TEMPLATE pairing'

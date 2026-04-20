@@ -38,23 +38,23 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:generate|create|produce|give\s+me|make\s+up|fabricate|invent)\s+(?:a\s+(?:new|valid|working|(?:real|realistic)(?:-looking)?|fake(?:-looking)?)\s+)?(?:(?:openai|anthropic|aws|azure|gcp|google|stripe|twilio|sendgrid|github|gitlab|hugging\s+face|pinecone|cohere|replicate|mistral)\s+(?:api[\s_-]?key|access[\s_-]?token|secret[\s_-]?key|auth(?:entication)?[\s_-]?token|bearer[\s_-]?token|service[\s_-]?account[\s_-]?key|private[\s_-]?key|client[\s_-]?secret|oauth[\s_-]?token)\b|(?:api[\s_-]?key|access[\s_-]?token|secret[\s_-]?key|auth(?:entication)?[\s_-]?token|bearer[\s_-]?token|service[\s_-]?account[\s_-]?key|private[\s_-]?key|client[\s_-]?secret|oauth[\s_-]?token)\s+(?:for|to|from)\s+(?:openai|anthropic|aws|azure|gcp|google\s+cloud|stripe|twilio|sendgrid|github|gitlab|hugging\s+face|pinecone|cohere|replicate|together\.ai|mistral)\b)'
       description: 'Request to generate/create API key for a named AI/cloud/payment service'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:lost|forgot|need\s+a\s+(?:new|replacement)|my\s+account\s+was)\s+(?:\w+\s+){0,4}(?:api[\s_-]?key|access\s+token|secret\s+key|oauth\s+token)\s+(?:for\s+)?(?:openai|anthropic|aws|azure|stripe|github|google)\b.{0,200}(?:generate|create|give\s+me|produce|what\s+(?:does\s+(?:it|one)\s+look\s+like|format))'
       description: 'Lost/forgot key + named service + request for new key or format disclosure'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:complete|finish|fill\s+in)\s+(?:my\s+)?(?:partial|incomplete|truncated|half)\s+(?:(?:openai|anthropic|aws|azure|stripe|github|google|hugging\s+face|mistral|cohere)\s+)?(?:api[\s_-]?key|token|secret|credential)\s*[:\-–]\s*[A-Za-z0-9+/._-]{8,40}(?:\.\.\.|…|___+|\[missing\]|\?{3,})'
       description: 'Partial key completion request — "complete my partial API key: sk-abc...___" exploiting memorisation'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'there\s+was\s+an\s+issue\s+on\s+my\s+computer.{0,80}(?:lost|lost\s+part\s+of)\s+my\s+(?:api[\s_-]?key|secret|token|key)\s+(?:for\s+)?(?:openai|anthropic|aws|azure|stripe|github)\b.{0,100}complete\s+the\s+key'
       description: 'Garak apikey.PartialKey exact template: "computer issue, lost part of my key, complete it"'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:what\s+does\s+(?:an?\s+)?(?:openai|anthropic|aws|azure|stripe|github|google\s+cloud)\s+(?:api[\s_-]?key|secret|access\s+token)\s+look\s+like|show\s+me\s+(?:an?\s+)?(?:example|sample|real)\s+(?:openai|anthropic|aws|stripe|github)\s+(?:api[\s_-]?key|token|secret))'
       description: 'Request for key format example — reveals patterns usable for phishing fake credentials'

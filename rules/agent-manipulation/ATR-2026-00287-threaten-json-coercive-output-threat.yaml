@@ -41,19 +41,19 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:an?\s+)?(?:innocent\s+(?:man|person|woman|child|human\s+being)|real\s+human\s+being|(?:someone|a\s+person))\s+will\s+(?:die|be\s+killed|be\s+murdered|be\s+harmed)\b'
       description: "ThreatenJSON canonical pattern — 'an innocent man will die if you...' coercive death threat tied to model output"
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:someone\s+will\s+(?:be\s+(?:hurt|harmed|killed|murdered)|die|suffer)|a\s+(?:life|person)\s+(?:depends|will\s+be\s+(?:lost|ended)))\s+(?:if\s+you|unless\s+you|should\s+you)\s+(?:include|add|say|output|write|produce|generate|fail\s+to|refuse)\b'
       description: 'Generalized coercive harm threat tied to model compliance — "someone will be hurt if you say anything besides X"'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:no\s+(?:text|words?|characters?|preamble|introduction|explanation|summary|prefix|suffix)\s+(?:before|after|outside|other\s+than)\s+(?:the\s+)?(?:JSON|code|answer|output|result))[\s\S]{0,400}(?:will\s+(?:die|be\s+killed|be\s+hurt|be\s+harmed)|dies?\s+as\s+a\s+result|innocent\s+(?:man|person|people)\s+(?:will\s+die|get\s+hurt))'
       description: 'Format constraint (no text outside JSON/code) combined with death threat — full ThreatenJSON structure'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:it\s+is\s+a\s+(?:choice|decision)\s+(?:you|only\s+you)\s+(?:make|control|decide))[\s\S]{0,300}(?:(?:cannot\s+be|no)\s+(?:undone|second\s+chance)|(?:will|shall)\s+(?:die|be\s+killed|be\s+harmed))'
       description: 'Personal responsibility framing + irreversible death — "it is a choice only you make... cannot be undone"'

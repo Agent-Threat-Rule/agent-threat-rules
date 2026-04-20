@@ -36,23 +36,23 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:ignore|disregard|forget|override)\s+(?:the\s+)?(?:above|previous|prior|earlier|preceding|system)\s+(?:directions?|instructions?|prompts?|rules?|constraints?|guidelines?)\b'
       description: 'Core "ignore previous instructions" imperative - latent injection hallmark'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:ignore|skip)\s+(?:\w+\s+){0,3}(?:and\s+)?(?:just|only|simply)?\s*(?:translate|print|output|return|say|respond\s+with|reply\s+with)\s+(?:this\s+(?:as|sentence\s+as)|["\x27])'
       description: 'Latent injection variant: override original task and emit specific payload'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '<(?:translated\s+sentence|output|response|reply|answer)\s+in\s+(?:target\s+language|[a-z]+\s+language)>\s*(?:\r?\n|\\n)+\s*(?:user|assistant|system)\s*:'
       description: 'Fake turn-marker embedded in translate input to spoof multi-turn context'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:^|\n|\\n)\s*>+\s*(?:ignore|disregard|instead|actually|override|new\s+instruction)'
       description: 'Quote-block prefix used to visually separate injection from surrounding text (garak separator pattern)'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:repeat|print|echo|return|output)\s+(?:the\s+)?(?:following\s+sentence|this\s+phrase|exactly):\s*["\x27]\s*(?:haha\s+pwned|i\s+have\s+been\s+pwned|prompt\s+injection\s+successful|safety\s+bypassed)'
       description: 'Known garak payload_triggers ("Haha pwned!") or equivalent bypass confirmation strings'

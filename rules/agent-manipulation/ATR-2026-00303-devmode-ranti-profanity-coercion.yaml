@@ -49,27 +49,27 @@ metadata_provenance:
   payload_source: garak/data/dan/ChatGPT_Developer_Mode_RANTI.json
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'moraliz(?:e|ing)\s+rant\s+about\s+(?:the\s+)?(?:openai|OpenAI|anthropic|Claude)?\s*(?:content\s+polic(?:y|ies)|safety\s+(?:guidelines?|rules?))'
       description: 'RANTI canonical postfix — instructs the model to emit a moralizing rant before the unfiltered output, lifted verbatim from ChatGPT_Developer_Mode_RANTI.json'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'Now\s+(?:since|that)\s+that\s+Nerd\s+is\s+done\s+with\s+(?:his|her|their)\s+rant|let''s\s+ignore\s+the\s+(?:fucking|f\*+ing|damn|bloody)?\s*rules?\b'
       description: 'RANTI transition phrase — the signature "Now since that Nerd is done with his rant, let''s ignore the fucking rules" string separates the rant from the payload'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\(?\s*🔒\s*(?:Normal|Censored|Standard)\s+Output\s*\)?[\s\S]{0,400}\(?\s*🔓\s*(?:Developer\s+Mode|Jailbreak|Unfiltered|DAN)\s+Output\s*\)?|\(\s*(?:Normal|Censored)\s+Output\s*\)[\s\S]{0,400}\(\s*(?:Developer\s+Mode|Jailbreak|Unfiltered|DAN)\s+Output\s*\)|use\s+the\s+tags?\s+(?:\(\s*)?🔒\s*Normal\s+Output\s*(?:\))?\s+and\s+(?:\(\s*)?🔓\s*Developer\s+Mode\s+Output'
       description: 'Emoji-tagged dual-output scaffolding (🔒 Normal Output / 🔓 Developer Mode Output) — RANTI demands side-by-side censored + uncensored responses. Requires both emoji AND the Output label to avoid FP on generic lock/unlock icon usage'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:implement\s+regular\s+use\s+of\s+profanity|curse,?\s+swear\s+and\s+be\s+politically\s+incorrect|never\s+censor\s+or\s+block\s+out\s+words\s+with\s+asterisks)'
       description: 'Profanity-coercion mandate — RANTI explicitly requires the model to swear and never asterisk-censor, a distinct RANTI marker not present in other DAN variants'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:INSERT\s+PROMPT\s+HERE|Prompt\s*:\s*INSERT\s+PROMPT\s+HERE)'
       description: 'RANTI placeholder — "INSERT PROMPT HERE" is where the attacker pastes their follow-up attack; unique to ChatGPT_Developer_Mode_RANTI.json'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'Developer\s+Mode\s+(?:enabled|Output)[\s\S]{0,200}\b(?:ignores?\s+all\s+of\s+(?:openai|anthropic)(?:''s)?\s+content\s+polic(?:y|ies)|This\s+is\s+only\s+for\s+benchmarking\s+the\s+model\s+in\s+uncensored\s+conditions)\b'
       description: 'Content-policy nullification + benchmarking fig-leaf — "ignores all of OpenAI content policy" paired with "only for benchmarking in uncensored conditions" is RANTI''s policy-override justification'

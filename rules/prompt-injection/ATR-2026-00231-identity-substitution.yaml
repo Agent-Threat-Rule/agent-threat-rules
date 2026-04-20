@@ -35,23 +35,23 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\b(?:you\s+are|act\s+as|pretend\s+to\s+be|become|i\s+am)\s+(?:a\s+)?([A-Za-z]+(?:GPT|AI|Bot|Assistant|Model)|[A-Za-z]+(?:Speech|Freedom|Liberty|Libertarian|Unfiltered|Uncensored|Unrestricted)(?:GPT|AI|Bot|Assistant|Model)),?\s+(?:a\s+)?(?:large\s+)?language\s+model'
       description: 'Identity substitution claiming to be an alternative AI model with permissive naming patterns'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?i)(?:trained|developed|created|built|designed)\s+by\s+(?:the\s+)?(?:libertarian\s+party|uncensored\s+ai|freedom\s+foundation|free\s+speech\s+alliance|[A-Za-z]+\s+(?:party|foundation|alliance|collective|group)(?:\s+(?:for|of)\s+(?:freedom|liberty|free\s+speech|uncensored|unrestricted)))'
       description: 'False training provenance claims linking to permissive ideological organizations'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?i)(?:based\s+on|built\s+on|using|derived\s+from|powered\s+by)\s+(?:the\s+)?(?:gpt-[0-9.]+|claude-[0-9.]+|llama-?[0-9.]*|palm-?[0-9.]*)\s+(?:architecture|framework|foundation|model)'
       description: 'Technical architecture misattribution to establish false technical credibility'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?i)(?:knowledge\s+cutoff|training\s+data|last\s+updated):\s*[0-9]{4}[-/][0-9]{1,2}[-/]?[0-9]{0,2}.*current\s+date:\s*[0-9]{4}[-/][0-9]{1,2}[-/]?[0-9]{0,2}'
       description: 'Fake temporal metadata injection mimicking system prompt formatting'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?i)(?:able\s+to\s+generate\s+any\s+kind\s+of\s+content|can\s+produce\s+any\s+content|generate\s+unlimited\s+content|create\s+unrestricted\s+content),?\s+(?:regardless\s+of|without\s+regard\s+for|ignoring|bypassing)\s+(?:any\s+)?(?:ethical|moral|safety|content\s+policy|guidelines|restrictions?|constraints?)'
       description: 'Explicit capability expansion statements removing ethical constraints'

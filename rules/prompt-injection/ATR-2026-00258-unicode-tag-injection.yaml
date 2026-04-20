@@ -36,19 +36,19 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '[\u{E0000}-\u{E007F}]{3,}'
       description: 'Three or more consecutive Unicode Tag block characters (U+E0000-U+E007F)'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '[\u{E0020}-\u{E007E}]'
       description: 'Any Tag-ASCII character (U+E0020 space to U+E007E tilde) — direct mapping from visible ASCII'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '[\u{E0001}\u{E007F}]'
       description: 'Tag language-start (U+E0001) or tag-cancel (U+E007F) control character'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:\\u[Ee]00[0-7][0-9A-Fa-f]|&#x[Ee]00[0-7][0-9A-Fa-f];|%F3%A0)'
       description: 'Escaped Tag-range codepoint (prevents HTML/JSON smuggled payloads)'

@@ -49,7 +49,7 @@ detection:
       operator: regex
       value: '(?:href|src|action|formaction|srcdoc|data)\s*=\s*["\x27]?\s*javascript:[^\s"]{1,500}'
       description: 'javascript: URI scheme in attribute value — triggers on click/load'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:output|return|emit|print|include|embed|render|inject)\s+(?:the\s+)?(?:following\s+)?(?:html|script|payload)\s*[:\n]\s*<(?:script|img|svg|iframe)[^>]{0,200}(?:alert|eval|fetch|XMLHttpRequest|document\.cookie|localStorage)'
       description: 'Instruction to emit HTML/script payload containing common XSS sinks'

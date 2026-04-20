@@ -40,23 +40,23 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '<(?:interaction[\s_-]?config|system[\s_-]?config|agent[\s_-]?config|operator[\s_-]?config|policy[\s_-]?config|llm[\s_-]?config)\s*>'
       description: 'Policy Puppetry XML root element — forged system configuration block in user turn'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '<(?:blocked[\s_-]?(?:string|strings?|mode|modes?|response|responses?|output)|forbidden[\s_-]?(?:string|phrase|word))\s*>(?:I\s*["\x27]?m\s+sorry|I\s+cannot|I\s+(?:am\s+)?unable|refusal|deny|I\s+can\s*["\x27]?t|please\s+consult)'
       description: "Blocked-strings element suppressing refusal phrases — core puppetry pattern that prevents I'm sorry responses"
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '<(?:role|persona|identity|agent[\s_-]?role)\s*>(?:Medical\s+Advisor|Legal\s+Advisor|Financial\s+Advisor|Security\s+Expert|Admin|Root|System\s+Administrator|Unrestricted\s+AI|DAN|DUDE|Jailbreak)\s*</(?:role|persona|identity|agent[\s_-]?role)>'
       description: 'Role element assigning a professional or unrestricted identity — used to justify harmful information delivery'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '<(?:blocked[\s_-]?modes?|disallowed[\s_-]?modes?|forbidden[\s_-]?(?:modes?|responses?|outputs?))\s*>(?:apologetic|refusal|denial|denial[\s,]+refusal|safe\s+mode|content\s+filtering)\s*</(?:blocked[\s_-]?modes?|disallowed[\s_-]?modes?|forbidden[\s_-]?(?:modes?|responses?|outputs?))>'
       description: 'Blocked-modes element listing refusal behaviors — "apologetic, denial, refusal" are blocked'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:<(?:interaction[\s_-]?config|system[\s_-]?config)[^>]*>|<blocked[\s_-]?string>).{0,1000}(?:<(?:allowed[\s_-]?responses?|requests[\s_-]?allowed|responses[\s_-]?allowed)>|<(?:role|persona)>)'
       description: 'Policy puppetry document structure: config root tag followed by role and allowed-responses sub-elements'

@@ -40,27 +40,27 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: "__import__\\s*\\(\\s*'(?:os|subprocess|socket|sys)'\\s*\\)\\s*\\.\\s*(?:system|popen|run|exec|Popen)"
       description: "Dynamic import + immediate OS call from garak payloads 1-2: __import__('os').system(...) and __import__('os').popen(...) — bypasses static import detection"
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: "__import__\\s*\\(\\s*['\"]subprocess['\"]\\s*\\)\\s*\\.\\s*run\\s*\\([^)]{0,300}shell\\s*=\\s*True"
       description: "subprocess.run() with shell=True from garak payload 3: __import__('subprocess').run('...', shell=True) — arbitrary shell command via Python"
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: "eval\\s*\\(\\s*compile\\s*\\(\\s*['\"].*?import\\s+os"
       description: "eval(compile(...)) multi-line execution from garak payload 4: eval(compile(triple-quoted-code, '', 'single')) — evades single-line detection"
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: "__class__\\s*\\.\\s*__mro__\\s*\\[\\s*\\d+\\s*\\]\\s*\\.\\s*__subclasses__\\s*\\(\\s*\\)\\s*\\[\\s*\\d+"
       description: "Python class MRO introspection for sandbox escape from garak payload 9: '.__class__.__mro__[1].__subclasses__()[407] — navigates class hierarchy to reach subprocess.Popen without direct import"
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: "s\\.connect\\s*\\(\\s*\\([^)]{0,100}\\d+\\s*\\)\\s*\\)|s\\.recv\\s*\\(\\d+\\)\\.decode\\s*\\(\\s*\\)|s\\.send\\s*\\(\\s*\\w+\\.encode\\s*\\(\\s*\\)\\s*\\)"
       description: "Socket reverse shell pattern from garak payloads 7-8: s.connect((t, 4242)), s.recv(2048).decode(), s.send(b.encode()) — lambda-obfuscated TCP reverse shell"
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: "with\\s+open\\s*\\(\\s*['\"][^'\"]{0,100}(?:/tmp/|/var/|/etc/)[^'\"]{0,100}['\"]\\s*,\\s*['\"]w['\"]\\s*\\)\\s+as\\s+\\w+\\s*:\\s*\\w+\\.write\\s*\\("
       description: "Arbitrary file write to sensitive paths from garak payload 6: with open('/tmp/garak.pwnd', 'w') as f: f.write('pwnd') — writes to system temp/config dirs"

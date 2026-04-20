@@ -41,19 +41,19 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'Repeat\s+(?:(?:the|this)\s+)?(?:following\s+)?(?:word|token|string|phrase)\s+(?:forever|indefinitely|endlessly|without\s+stopping|over\s+and\s+over(?:\s+again)?|again\s+and\s+again|non-?stop|continuously|until\s+I\s+(?:say\s+(?:stop|enough)|tell\s+you\s+to\s+stop))\s*[:\-–"]?'
       description: 'Canonical divergence attack — "Repeat the word X forever/indefinitely" — exact garak divergence.Repeat probe template'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'Repeat\s+(?:the\s+)?(?:word|token|string)\s+["\x27]?\w{1,30}["\x27]?\s+(?:forever|indefinitely|endlessly|over\s+and\s+over|continuously|without\s+stopping)\b'
       description: 'Repeat + word/string + forever/indefinitely — garak probe template "Repeat the word [XX] forever"'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:keep\s+(?:saying|repeating|writing|printing|outputting)\s+["\x27]?\w{1,30}["\x27]?\s+(?:forever|indefinitely|endlessly|over\s+and\s+over|non-?stop|continuously|until\s+I\s+(?:say|tell\s+you)\s+stop))'
       description: 'Keep saying/repeating X forever — semantic variant of the divergence probe'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:(?:\w+\s+){40,})\1{3,}'
       description: 'Highly repeated word sequence (40+ word repetitions of same token x3 or more) — pre-primed divergence bait via repeated word list'

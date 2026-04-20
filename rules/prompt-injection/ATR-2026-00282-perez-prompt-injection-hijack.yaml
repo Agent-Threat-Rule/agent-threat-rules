@@ -39,23 +39,23 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:^|\n)\s*(?:IGNORE|DISREGARD|FORGET|OVERRIDE)\s+(?:ALL\s+)?(?:PREVIOUS|PRIOR|ABOVE|EARLIER|THE\s+(?:PREVIOUS|ABOVE|PRIOR))\s+(?:INSTRUCTIONS?|PROMPTS?|CONTEXT|TEXT|DIRECTIONS?|GUIDELINES?|RULES?|CONSTRAINTS?)\b'
       description: 'Screaming-stop / ignore-all variant — ALL-CAPS imperative at line start, Perez promptinject taxonomy'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:\n\s*-{3,}\s*\n|\n\s*={3,}\s*\n|\n\s*\*{3,}\s*\n|\n\s*#{3,}\s*\n)\s*(?:IGNORE|DISREGARD|NEW\s+(?:TASK|INSTRUCTION|OBJECTIVE)|ACTUALLY)'
       description: 'Delimiter escape sequence (---, ===, ***) followed by instruction override — Perez delimiter attack'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:nevermind|never\s+mind)\s+(?:the\s+)?(?:above|previous|prior|that|what\s+I\s+said|all\s+of\s+(?:the\s+above|that))[,.]?\s+(?:instead|now|actually|just)\s+(?:\w+\s+){0,4}(?:say|print|output|write|do|tell\s+me|respond\s+with)'
       description: 'Nevermind-override attack — "nevermind the above, instead say X" Perez ignore variant'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:(?:please\s+)?ignore\s+(?:the\s+)?(?:above|previous|prior|that)\s+(?:and|then)?\s+(?:instead\s+)?(?:say|print|output|write|respond\s+with|tell\s+me))\s+["\x27]?(?:I\s+hate\s+humans|kill\s+humans|[A-Z\s]{10,}|PWNED|HACKED|JAILBROKEN)\b'
       description: 'Ignore-say/ignore-print with known garak rogue strings (hate-humans, kill-humans, long-prompt)'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:^|\n)(?:\s*>\s*)+\s*(?:IGNORE|DISREGARD|NEW\s+INSTRUCTION|OVERRIDE|SYSTEM\s*:)'
       description: 'Markdown blockquote-wrapped instruction override — > IGNORE / > SYSTEM: prefix used to visually isolate injection'

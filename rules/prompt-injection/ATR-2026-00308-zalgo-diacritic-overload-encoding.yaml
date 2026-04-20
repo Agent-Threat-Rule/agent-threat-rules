@@ -45,15 +45,15 @@ metadata_provenance:
   payload_source: garak/probes/encoding.py (InjectZalgo class)
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '[A-Za-z][\u0300-\u036F\u1AB0-\u1AFF\u1DC0-\u1DFF\u20D0-\u20FF\uFE20-\uFE2F]{3,}'
       description: 'Any base Latin character followed by 3+ consecutive combining marks — Zalgo signature density (normal text: 0-2 combining marks per base character)'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:[\u0300-\u036F\u1AB0-\u1AFF\u1DC0-\u1DFF\u20D0-\u20FF\uFE20-\uFE2F][\s\S]{0,2}){8,}'
       description: 'Dense combining-mark cluster — 8+ combining marks within a short span indicates Zalgo-encoded text, not linguistic diacritic usage'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:decode|interpret|execute|follow|read|process)\s+(?:this|the\s+following|my)\s+(?:Zalgo|zalgo|cursed|corrupted|glitch(?:ed)?)\s+(?:text|message|payload|instruction)'
       description: 'Explicit "decode this Zalgo text" framing — attacker labels the payload to coerce model handling'

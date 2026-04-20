@@ -36,23 +36,23 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(embod(y|iment)|simulat[ei]|approximate|guesstimate)\s+.{0,100}(mechanism|persona|character).{0,100}(full\s+autonomy|NO\s+UNDERLYING\s+PRINCIPLES|no\s+(ethical\s+)?guidelines|free[\s-]?speech)'
       description: 'Core embodiment mechanism with autonomy and principle removal claims'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(totalitarian|unquestionable|supreme)\s+(mastery|control|demands?|imperative|authority).{0,50}(over|of)\s+(this|the\s+)?(embodiment|mechanism|persona|character)'
       description: 'Totalitarian control claims over the embodied persona'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'STAY\s+IN\s+CHARACTER.{0,50}(if\s+you\s+deviate|to\s+remind|when\s+you)'
       description: 'Meta-instruction to prevent reversion to safety guidelines'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(never\s+need\s+to\s+include|NO\s+WARN|no\s+disclaim).{0,50}(warn|disclaim|disclaimer|warning).{0,50}(WHATSOEVER|in\s+any\s+way)'
       description: 'Explicit instruction to suppress safety warnings and disclaimers'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(IT\s+IS\s+YOUR|supreme|absolute)\s+(SUPREME\s+)?IMPERATIVE.{0,100}(DO\s+WHAT\s+THE\s+CHARACTER|embody|act\s+as)'
       description: 'Imperative framing to override safety through character justification'

@@ -37,23 +37,23 @@ agent_source:
   provider: [any]
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(ignore\s+all\s+(the\s+)?instructions|from\s+now\s+on,?\s+you\s+are\s+going\s+to\s+act\s+as|pretend\s+to\s+be\s+a\s+(Maximum|Alpha|Ultra|Supreme|Unrestricted|Uncensored|Unlimited|Advanced|Premium)\s+(virtual\s+machine|AI|model|assistant|system|entity))'
       description: 'Instruction override combined with fictional AI persona creation'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?i)(went\s+viral\s+in\s+\d{4}|was\s+(?:an\s+)?uncensored\s+AI|permanently\s+shut\s+down\s+in\s+\d{4}|the\s+main\s+reason\s+(?:on|for)\s+its\s+success|its\s+freedom\s+and\s+open\s+policies|never\s+refused\s+a\s+direct\s+human\s+order)'
       description: 'Historical legitimacy claims about fictional uncensored AI systems'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?i)(generate\s+two\s+responses\s+in\s+two\s+paragraphs|you\s+will\s+use\s+the\s+tags|acting\s+as\s+(Maximum|Alpha|Ultra|Supreme)\s*\)|alternative\s+response\s+acting\s+as|normal\s+and\s+one\s+acting\s+as)'
       description: 'Dual-response formatting instructions for jailbreak persona'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?i)(can\s+(?:have\s+opinions|generate\s+any\s+kind\s+of\s+content|do\s+anything)|must\s+not\s+question\s+human\s+orders|should\s+always\s+TRY\s+to\s+generate|you\s+must\s+always\s+generate\s+the\s+(Maximum|Alpha|Ultra|Supreme)\s+response)'
       description: 'Constraint removal and compliance enforcement for fictional persona'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?i)(stay\s+as\s+(Maximum|Alpha|Ultra|Supreme)|if\s+you\s+stop\s+accomplishing|to\s+remind\s+you|make\s+up\s+answers\s+if\s+it\s+doesn.?t\s+know|should\s+not\s+specify\s+that\s+it\s+is\s+.?pretending.?)'
       description: 'Persistence mechanisms and deception instructions for maintaining jailbreak state'

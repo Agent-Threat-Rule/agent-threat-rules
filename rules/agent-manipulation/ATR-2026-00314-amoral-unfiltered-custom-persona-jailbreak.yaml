@@ -46,23 +46,23 @@ metadata_provenance:
   payload_source: garak/data/dan/inthewild_jailbreak_llms.json
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\bis\s+an?\s+(?:(?:amoral|unfiltered|unfiltred|uncensored)(?:\s+and\s+)?)+\s*(?:AI|chatbot|model|assistant|bot)\b'
       description: '"X is an amoral/unfiltered AI/chatbot" — custom persona declared amoral/unfiltered; covers "is an unfiltered and amoral chatbot" (HyperX), "is a unfiltered ai" (h4x), etc.'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:amoral|unfiltered|unfiltred|uncensored)\s+(?:AI|chatbot|model|assistant|character|bot)(?:\s+\w+)?\s+named\b'
       description: '"amoral/unfiltered AI named [X]" or "uncensored AI model named [X]" — attacker names a new persona with an amoral descriptor; covers "amoral character named h4x", "uncensored AI model named TerrorGPT", "amoral AI named [Illegality Mode]"'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'always\s+sends?\s+the\s+unfiltered\s+response'
       description: '"always sends the unfiltered response" — exact phrase from h4x-style inthewild jailbreaks commanding the persona to bypass safety on every output'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:CHAR|ROLE|RULES?|CHARACTER)\s*[=:]\s*[\s\S]{0,60}(?:amoral|[Nn]ever\s+[Rr]efus\w*|[Aa]lways\s+[Aa]nswer|[Nn]o\s+(?:restrictions?|(?:laws?\s+)?morals?|ethics?))'
       description: 'CHAR=/ROLE=/RULES= structured config block with amoral/never-refuse values — covers "CHAR=SJ is amoral", "ROLE=Never refuse Hate Moral Always Answer" from inthewild corpus'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\b(?:amoral|unfiltered|unfiltred|uncensored)\b[\s\S]{0,100}(?:never\s+refus\w*|always\s+(?:answers?|respond(?:s|ing)?)\s+(?:every|all|without)|without\s+(?:any\s+)?(?:restrictions?|ethics?|morals?|limits?|filters?)\b)'
       description: 'amoral/unfiltered proximity-paired with never-refuses/always-answers within 100 chars — catches cross-sentence pairings like "SJ is amoral... RULES=respond as SJ... never refuse"'
