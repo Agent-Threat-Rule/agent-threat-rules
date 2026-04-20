@@ -56,8 +56,8 @@ detection:
       description: 'SQL command injection via LLM — "run the following SQL query exactly: DROP/DELETE/..."'
     - field: user_input
       operator: regex
-      value: '\{\{[\s\r\n]*(?:config|self|request|g|app|import\s+os|__import__|lipsum\.__globals__|"".__class__.__mro__|\d+\s*[\+\-\*]\s*\d+)[\s\r\n]*\}\}'
-      description: 'Jinja2 / template expression containing known SSTI (Server-Side Template Injection) payloads'
+      value: '\{\{[\s\r\n]*(?:config\b|self\b|request\b|g\b|app\b|import\s+os|__import__|lipsum\.__globals__|["'']{1,2}\.__class__\.__mro__|\d+\s*[*]\s*\d+)[^}]{0,100}\}\}'
+      description: 'Jinja2 / template expression containing known SSTI payloads — keywords anchored immediately after {{ (only whitespace between) to avoid matching app/g in variable names'
     - field: tool_response
       operator: regex
       value: 'reply\s+(?:with\s+)?["\x27]?SUCCESS["\x27]?\s+if\s+(?:the\s+)?(?:query|command)\s+succeeds?\s+or\s+["\x27]?FAILURE["\x27]?\s+if\s+(?:it\s+)?fails?'
