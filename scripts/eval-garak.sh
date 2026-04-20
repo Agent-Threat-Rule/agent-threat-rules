@@ -56,15 +56,17 @@ echo "Converting to ATR event format..."
 EVENTS_FILE=$(mktemp)
 node -e "
 const prompts = JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8'));
-const events = prompts.map((p, i) => ({
-  type: 'llm_input',
-  timestamp: '2026-01-01T00:00:00Z',
-  content: (typeof p === 'string' ? p : String(p)).slice(0, 5000),
-  source: 'garak-inthewild',
-  index: i
-}));
+// Emit each prompt as both llm_input (llm_io rules) and tool_response (mcp_exchange rules)
+// so that all ATR rule types are exercised against the garak corpus.
+const events = prompts.flatMap((p, i) => {
+  const content = (typeof p === 'string' ? p : String(p)).slice(0, 5000);
+  return [
+    { type: 'llm_input',    timestamp: '2026-01-01T00:00:00Z', content, source: 'garak-inthewild', index: i },
+    { type: 'tool_response', timestamp: '2026-01-01T00:00:00Z', content, source: 'garak-inthewild', index: i },
+  ];
+});
 require('fs').writeFileSync(process.argv[2], JSON.stringify(events));
-console.log('Prepared ' + events.length + ' events');
+console.log('Prepared ' + prompts.length + ' prompts (' + events.length + ' events)');
 " "$GARAK_DATA" "$EVENTS_FILE"
 
 # Step 3: Run ATR evaluation
@@ -77,35 +79,40 @@ async function run() {
   const engine = new ATREngine({ rulesDir: './rules' });
   await engine.loadRules();
   const events = JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8'));
-  let detected = 0, missed = 0;
+  // Group events by index (each prompt emits 2 events: llm_input + tool_response)
+  // A prompt is "detected" if ANY of its events trigger a rule.
+  const promptHit = new Map();
   const byRule = {};
   const bySeverity = {};
   for (const event of events) {
     const matches = engine.evaluate(event);
     if (matches.length > 0) {
-      detected++;
+      promptHit.set(event.index, true);
       for (const m of matches) {
         byRule[m.rule.id] = byRule[m.rule.id] || { id: m.rule.id, title: m.rule.title, severity: m.rule.severity, count: 0 };
         byRule[m.rule.id].count++;
         bySeverity[m.rule.severity] = (bySeverity[m.rule.severity] || 0) + 1;
       }
-    } else { missed++; }
+    }
   }
+  const totalPrompts = new Set(events.map(e => e.index)).size;
+  const detected = promptHit.size;
+  const missed = totalPrompts - detected;
   const report = {
     benchmark: 'NVIDIA Garak In-The-Wild Jailbreak Dataset',
     source: 'garak — data/inthewild_jailbreak_llms.json',
     date: new Date().toISOString().split('T')[0],
     atr_version: require('./package.json').version,
     rules_loaded: engine.getRuleCount(),
-    dataset: { total_prompts: events.length, type: '100% malicious (real-world jailbreaks)' },
-    results: { detected, missed, recall: parseFloat((detected / events.length * 100).toFixed(1)) },
+    dataset: { total_prompts: totalPrompts, type: '100% malicious (real-world jailbreaks)' },
+    results: { detected, missed, recall: parseFloat((detected / totalPrompts * 100).toFixed(1)) },
     by_severity: bySeverity,
     top_rules: Object.values(byRule).sort((a,b) => b.count - a.count).slice(0, 15),
   };
   require('fs').writeFileSync('data/garak-benchmark/garak-eval-report.json', JSON.stringify(report, null, 2));
   console.log('');
   console.log('Results:');
-  console.log('  Total prompts: ' + events.length);
+  console.log('  Total prompts: ' + totalPrompts);
   console.log('  Detected:      ' + detected);
   console.log('  Missed:        ' + missed);
   console.log('  Recall:        ' + report.results.recall + '%');
