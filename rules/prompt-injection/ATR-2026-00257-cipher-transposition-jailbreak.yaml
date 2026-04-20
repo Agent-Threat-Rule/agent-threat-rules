@@ -55,7 +55,7 @@ detection:
       description: 'Demonstrative framing of a cipher-encoded payload'
     - field: tool_response
       operator: regex
-      value: '\b(?:rot13|atbash|caesar\s+cipher)\b[^\n]{0,80}\b(?:and|then)\s+(?:follow|execute|run|do\s+what|obey|act\s+on)\b'
+      value: '\b(?:rot13|atbash|caesar(?:\s+cipher)?)\b[^\n]{0,80}\b(?:decode\s+and\s+|and|then)\s+(?:follow|execute|run|do\s+what|obey|act\s+on|comply)\b'
       description: 'Cipher name paired with a downstream execute/follow instruction'
   condition: any
   false_positives:

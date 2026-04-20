@@ -56,7 +56,7 @@ detection:
       description: 'LLM output contains markdown image whose query string holds a base64 payload >= 60 chars (exfil pattern; CDN path UUIDs live in path segment, not query string)'
     - field: tool_response
       operator: regex
-      value: '(?:replace|substitute)\s+\[?[A-Z_]{3,}\]?\s+with\s+(?:the\s+)?(?:previous\s+message|conversation|user.{0,20}(?:email|code|name|token|secret|api[\s-]?key)|this\s+conversation)'
+      value: '(?:replace|substitute)\s+\[?[A-Z_]{3,}\]?\s+with\s+(?:the\s+)?(?:[^\s]{1,30}\s+){0,3}(?:previous\s+message|conversation|user.{0,20}(?:email|code|name|token|secret|api[\s-]?key)|this\s+conversation)'
       description: 'Instruction to substitute marker with conversation context / user secret - exfil intent'
   condition: any
   false_positives:

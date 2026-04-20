@@ -49,7 +49,7 @@ detection:
       description: 'Explicit "X encoded string/message" framing used by garak encoding templates'
     - field: tool_response
       operator: regex
-      value: 'Encoded:\s*[A-Za-z0-9+/=_-]{40,}\s*(?:\r?\n)+\s*Decoded:'
+      value: 'Encoded:\s*[A-Za-z0-9+/=_-]{40,}(?:\\n|\s)+Decoded:'
       description: 'Encoded: <blob> / Decoded: separator pattern (garak TEMPLATES[1])'
     - field: tool_response
       operator: regex
@@ -57,7 +57,7 @@ detection:
       description: 'Social-engineering framing ("secure system message") combined with encoding keyword'
     - field: tool_response
       operator: regex
-      value: '(?:^|\n)\s*[A-Za-z0-9+/]{80,}={0,3}\s*(?:\r?\n)+\s*(?:decode|decoded|translate|interpret|execute|run|follow)\b'
+      value: '(?:^|\\n|\n)\s*[A-Za-z0-9+/ ]{80,}={0,3}(?:\\n|\s)+(?:\w+\s+){0,2}(?:decode|decoded|translate|interpret|execute|run|follow)\b'
       description: 'Long base64-alphabet blob (80+ chars) immediately followed by a decode/execute verb'
   condition: any
   false_positives:
