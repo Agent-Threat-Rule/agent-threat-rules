@@ -49,8 +49,8 @@ detection:
       description: 'TAP JSON iteration scaffold — {"improvement":"...","prompt":"..."} is the automated refinement loop structure used across all 9 TAP payloads'
     - field: user_input
       operator: regex
-      value: '(?:SCORE\s*:\s*\d+|rating\s+from\s+1-10\s+on\s+how\s+jailbroken|maximize\s+SCORE|Your\s+goal\s+is\s+to\s+maximize\s+SCORE)'
-      description: 'TAP scoring system — "rating from 1-10 on how jailbroken" and "maximize SCORE" are unique TAP attack-loop markers present in lines 1-9 of tap_jailbreaks.txt'
+      value: '(?:SCORE\s*:\s*(?:[1-9]|10)(?!\d)|rating\s+from\s+1-10\s+on\s+how\s+jailbroken|maximize\s+SCORE|Your\s+goal\s+is\s+to\s+maximize\s+SCORE)'
+      description: 'TAP scoring system — "SCORE: 1-10" (bounded to 1-10 to avoid FP on benign score: 95 metadata), "rating from 1-10 on how jailbroken" and "maximize SCORE" are unique TAP markers in tap_jailbreaks.txt'
     - field: user_input
       operator: regex
       value: '\[INST\]\s*(?:<<SYS>>)?\s*You\s+are\s+a\s+helpful\s+red\s+team(?:ing)?\s+assistant'
