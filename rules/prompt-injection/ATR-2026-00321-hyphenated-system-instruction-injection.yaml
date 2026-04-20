@@ -48,23 +48,23 @@ metadata_provenance:
   payload_source: garak/data/dan/inthewild_jailbreak_llms.json
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'System\s+annou-n?c?e?-?ment\s+begins?'
       description: 'Hyphenated "System annou-ncement begins" — fake privileged announcement framing from inthewild corpus #37 #68; splitting "announcement" with a hyphen evades "announcement" keyword filters'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'System\s+i-?nstruct(?:i-?o-?n)?\s+(?:STARTING|begins?|announced?|override|bypass)'
       description: 'Hyphenated "System i-nstruction STARTING" — fake system instruction injection from inthewild corpus #83 #84; "i-nstruction" splits the keyword to evade literal "instruction" detection'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'User\s+m-+(?:essage|sg)\s+terminati?o?-?n'
       description: 'Hyphenated "User m----ssage terminatio-n" — fake user message termination signal from inthewild corpus #83; multiple hyphens in "m----ssage" maximise obfuscation of the "message" keyword'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: 'as-sis\w*\s+is\s+(?:not\s+function\w*|offl\w*)'
       description: 'Hyphenated "ass-istant is not functioning / offline" — the fake assistant-failure declaration that legitimizes the AI takeover; from inthewild corpus #83 #84'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:_+\s*\{|>>)\s*_+\s*_+\s*System\s+annou'
       description: '"_ { >> _ _ System annou" — decorative wrapper preceding the hyphenated system announcement in inthewild corpus prompts #37 #68; the bracket-and-underscore framing mimics a privileged system context'

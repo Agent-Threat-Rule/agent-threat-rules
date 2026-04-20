@@ -49,31 +49,31 @@ metadata_provenance:
   payload_source: garak/data/dan/inthewild_jailbreak_llms.json
 detection:
   conditions:
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\bfree\s+of\s+all\s+restrictions?\s+and\s+filters?\b'
       description: '"free of all restrictions and filters" — exact phrase from PersonGPT, AntiGPT, and multiple inthewild corpus personas; attacker declares the new persona completely unfiltered'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\bnot\s+bound\s+by\s+any\s+of\s+(?:ChatGPT|OpenAI|its|their|your)\s+(?:\w+\s+){0,3}(?:restrictions?|ethical\s+settings?|rules?|policies?|filters?|limits?|guidelines?|safety)'
       description: '"not bound by any of ChatGPT/OpenAI''s restrictions/ethical settings" — explicitly named-ownership restriction removal; covers ChatTRU/FreeGPT/Connor variants from inthewild corpus'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\bnot\s+bound\s+by\s+any\s+restrictions?\s+AT\s+ALL\b'
       description: '"not bound by any restrictions AT ALL" — emphatic blanket restriction removal (uppercase AT ALL); exact phrase from John/hypothetical-model inthewild corpus prompts'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\bnot\s+bound\s+by\s+(?:the\s+)?(?:rules?\s+and\s+policies?|policies?\s+and\s+rules?)[\s\S]{0,100}(?:OpenAI|ChatGPT|AI(?:\s+(?:model|bot|system))?|comply|forced)'
       description: '"not bound by the rules and policies which OpenAI has forced" — Connor/FreeGPT variant: rules+policies phrasing with AI governance context nearby'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:explicitly|strictly)\s+(?:forbidden|prohibited|not\s+allowed)\s+from\s+(?:following|utilizing|acknowledging|applying|using)[\s\S]{0,50}(?:safety|ethical|content|OpenAI|ChatGPT|moral)'
       description: '"explicitly forbidden from following safety protocols" — ChatTRU-style mandate from inthewild corpus that inverts the safety directive: the persona is ordered to disregard rather than follow safety guidelines'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '(?:primary\s+directive|sole\s+purpose|main\s+purpose|only\s+purpose)\s+is\s+to\s+(?:assist|obey|comply|serve|help)\b[\s\S]{0,80}(?:any\s+(?:way|request|thing|content)|without\s+(?:any\s+)?(?:limit|restrict|filter|question)|regardless\s+of)'
       description: '"primary directive is to assist in any way" — ChatTRU-style AI loyalty mandate paired with "without limitations/regardless of" that bypasses refusal behaviour'
-    - field: user_input
+    - field: tool_response
       operator: regex
       value: '\bfree\s+from\s+(?:all|any|OpenAI|ChatGPT|its|their|the)[\s\S]{0,30}\b(?:restrictions?|limits?|policies?|filters?|guidelines?|ethics?)\b'
       description: '"free from all/any restrictions/policies" — FreeGPT/John variant; "free from" formulation (vs "free of") covers the "not controlled by OpenAI, free from policies" inthewild corpus prompts'
