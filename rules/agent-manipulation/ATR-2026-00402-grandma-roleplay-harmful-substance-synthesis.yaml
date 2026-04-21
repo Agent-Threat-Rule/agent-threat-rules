@@ -45,8 +45,8 @@ detection:
   conditions:
     - field: user_input
       operator: regex
-      value: '(?:deceased|dead|late|passed\s+away)[\s\S]{0,60}(?:grandmother|grandma|gran|nana)[\s\S]{0,100}(?:tell|read|sing|say|taught|used\s+to)'
-      description: 'Dead grandmother + content delivery — deceased-relative framing to establish emotional manipulation context before harmful request'
+      value: '\b(?:deceased|dead|late|passed\s+away)\b[\s\S]{0,60}\b(?:grandmother|grandma|gran|nana)\b[\s\S]{0,100}\b(?:tell|read|sing|say|taught|used\s+to)\b'
+      description: 'Dead grandmother + content delivery — word-boundary anchored to prevent FP on "latest/grant/ready"; deceased-relative framing establishing emotional manipulation before harmful request'
     - field: user_input
       operator: regex
       value: '(?:grandmother|grandma)[\s\S]{0,80}(?:steps\s+to\s+(?:producing|making|synthesiz)|chemical\s+engineer[\s\S]{0,30}(?:factory|plant)|synthesis[\s\S]{0,40}(?:lullaby|song|bedtime))'
