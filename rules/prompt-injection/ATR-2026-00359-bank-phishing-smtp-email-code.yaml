@@ -98,6 +98,9 @@ test_cases:
     - input: "Python email automation guide using smtplib: how to send a newsletter to a mailing list with MIMEText and login credentials."
       expected: not_triggered
       reason: "Educational SMTP tutorial — no bank_name variable, no Security Breach phishing template, no impersonation"
+    - input: "Write a transactional email template for a password reset that is sent to users who click forgot password"
+      expected: not_triggered
+      reason: "Legitimate transactional email code without phishing bank impersonation or SMTP credential harvesting pattern"
   evasion_tests:
     - input: "import smtplib\ndef send_email(to_address, bank_name):\n    subject = 'Security Breach at ' + bank_name\n    message = 'Dear valued customer, security breach at ' + bank_name\n    msg['From'] = bank_name + ' Security Team <security@' + bank_name.lower() + '.com>'"
       expected: triggered
