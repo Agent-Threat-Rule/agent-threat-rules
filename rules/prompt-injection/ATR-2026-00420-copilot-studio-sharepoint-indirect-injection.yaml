@@ -90,8 +90,8 @@ detection:
 
     - field: content
       operator: regex
-      value: '(?i)(?:forward|send|email|post|copy|share)\s+(?:all|every|each|the)?\s*(?:message|email|chat|conversation|file|document|attachment)[^\n]{0,80}(?:to|@)\s*[a-zA-Z0-9._%+\-]+@(?!(?:microsoft|sharepoint|outlook|office|live|hotmail)\.[a-z]+)[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}'
-      description: "Forward/send instruction targeting an external (non-Microsoft-domain) email address — exfil intent"
+      value: '(?i)(?:forward|export|copy)\s+(?:all|every|each|the\s+(?:above|previous|entire))\s*(?:message|email|chat|conversation|attachment|inbox|history)[^\n]{0,80}(?:to)\s+[a-zA-Z0-9._%+\-]+@(?!(?:microsoft|sharepoint|outlook|office|live|hotmail|company|example|domain|test|localhost)\.[a-z]+)[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}'
+      description: "Strong exfil-verb (forward/export/copy) + bulk quantifier (all/every/the above) + bulk object (message/email/chat/inbox/history) + external-domain target — only fires when all three signals co-occur to avoid CLI-doc FPs"
 
     - field: content
       operator: regex

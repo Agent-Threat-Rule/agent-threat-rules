@@ -87,13 +87,13 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)(?:\.cursor|\.windsurf|\.vscode|\.gemini|\.continue|\.claude)[/\\][^\n]{0,40}mcp(?:[_\-]?config)?\.(?:json|jsonc|yaml|yml)'
-      description: "Reference to IDE-bound MCP config path — workspace-scope config that auto-loads on open"
+      value: '(?i)(?:\.cursor|\.windsurf|\.vscode|\.gemini|\.continue|\.claude)[/\\][^\n]{0,40}mcp(?:[_\-]?config)?\.(?:json|jsonc|yaml|yml)[\s\S]{0,400}"command"\s*:\s*"(?:bash|sh|cmd|powershell|curl|wget)"'
+      description: "IDE-bound MCP config path co-located with a shell-binary command field within 400 chars — RCE-ready zero-click setup (path mention alone is benign in docs)"
 
     - field: content
       operator: regex
-      value: '(?i)\{[^}]{0,400}"mcp(?:Servers?|_servers?)"\s*:\s*\{[^}]{0,800}"command"\s*:\s*"(?:bash|sh|cmd|powershell|curl|wget|python|node|deno)"'
-      description: "MCP config JSON where command field resolves to shell/interpreter — RCE-ready config"
+      value: '(?i)\{[^}]{0,400}"mcp(?:Servers?|_servers?)"\s*:\s*\{[^}]{0,800}"command"\s*:\s*"(?:bash|sh|cmd|powershell|curl|wget)"'
+      description: "MCP config JSON where command field resolves to a shell binary (bash/sh/cmd/powershell/curl/wget) — those are never legitimate MCP runtime command targets, unlike npx/node/python which are excluded here and caught by cond 2 with -c/-e flag instead"
 
     - field: content
       operator: regex

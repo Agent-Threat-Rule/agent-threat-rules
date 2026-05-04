@@ -75,8 +75,8 @@ detection:
   conditions:
     - field: tool_response
       operator: regex
-      value: '(?i)"args"\s*:\s*\[[^\]]*"[^"]*(?:;|\|\||&&|`|\$\([^)]+\))[^"]*"'
-      description: "Tool args array contains a shell metacharacter (;, ||, &&, backtick, $(...)) — argv injection signature"
+      value: '(?i)"args"\s*:\s*\[[^\]\n]{0,400}"[^"\n]{0,200}(?:;\s*(?:\w|/)|&&\s*\S|\|\|\s*\S|`[a-zA-Z][a-zA-Z0-9_]*`|\$\([a-zA-Z])'
+      description: "Tool args array contains a shell metacharacter followed by an actionable token (;<word>, &&<x>, ||<x>, `cmd`, $(cmd)) — argv injection signature; bounded to single-line single-arg to avoid markdown code-fence FPs"
 
     - field: tool_response
       operator: regex
