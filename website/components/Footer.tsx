@@ -126,7 +126,7 @@ export function Footer({ locale }: { locale: Locale }) {
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-data text-xs text-mist">
-            <span>ATR v2.0.0 · {stats.ruleCount} {zh ? "條規則" : "rules"}</span>
+            <span>ATR v2.0.17 · {stats.ruleCount} {zh ? "條規則" : "rules"}</span>
             <span className="text-fog hidden sm:inline">|</span>
             <span>{zh ? "更新於" : "Updated"} {lastUpdated}</span>
           </div>

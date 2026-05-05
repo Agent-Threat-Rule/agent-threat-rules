@@ -695,13 +695,13 @@ atr migrate --source snort --input ./rules.snort --output ./atr-out`}</code>
             org="NVIDIA garak"
             status={zh ? "整合中" : "Integrating"}
             statusClass="bg-medium/10 text-medium"
-            desc={zh ? "PR #1676 · v2.0.17 · 已通過兩輪 review" : "PR #1676 · v2.0.17 · 2 review rounds passed"}
+            desc={zh ? "PR #1676 · v2.0.17 · 314 rules · 已通過兩輪 review" : "PR #1676 · v2.0.17 · 314 rules · 2 review rounds passed"}
           />
           <TractionRow
-            org="Meta PurpleLlama"
+            org="Gen Digital Sage"
             status="Open PR"
             statusClass="bg-ash text-stone"
-            desc={zh ? "20 條 regex pattern 合併入 DEFAULT_REGEX_PATTERNS" : "20 regex patterns merged into DEFAULT_REGEX_PATTERNS"}
+            desc={zh ? "PR #33 · 27 patterns · vaclavbelak (Norton/Avast 母公司) 主動邀請" : "PR #33 · 27 patterns · vaclavbelak (Norton/Avast parent) maintainer-invited"}
           />
           <TractionRow
             org="IBM"
@@ -944,7 +944,7 @@ atr migrate --source snort --input ./rules.snort --output ./atr-out`}</code>
               agentthreatrule.org
             </a>
             <div className="font-data text-[11px] text-mist tracking-[1px] uppercase mt-3">
-              v2.0.17 · 314 Rules · 1,600+ Patterns
+              v2.0.17 · 314 Rules · 1,750+ Patterns
             </div>
           </div>
         </div>

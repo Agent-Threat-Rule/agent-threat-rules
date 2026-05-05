@@ -229,8 +229,8 @@ export function loadSiteStats(): SiteStats {
       {
         name: "Cisco AI Defense",
         type: "merged",
-        detail: "34 ATR rules merged as upstream. Built --rule-packs CLI for ATR.",
-        url: "https://github.com/cisco-ai-defense/skill-scanner/pull/79",
+        detail: "PR #79 + #99 merged. Full 314-rule pack in skill-scanner production. Upstream maintained.",
+        url: "https://github.com/cisco-ai-defense/skill-scanner/pull/99",
       },
       {
         name: "Awesome LM-SSP",
@@ -282,13 +282,13 @@ export function loadSiteStats(): SiteStats {
       {
         name: "Microsoft AGT",
         type: "merged",
-        detail: "PR #908 merged. 15 ATR rules as PolicyDocument + full sync script. 554 additions.",
-        url: "https://github.com/microsoft/agent-governance-toolkit/pull/908",
+        detail: "PR #908 + #1277 merged. 287 ATR rules + weekly auto-sync workflow into Agent Governance Toolkit production.",
+        url: "https://github.com/microsoft/agent-governance-toolkit/pull/1277",
       },
       {
         name: "NVIDIA Garak",
         type: "open",
-        detail: "PR #1676 submitted. 108 ATR detectors for AI agent threat detection.",
+        detail: "PR #1676. 314 ATR detectors. Two review rounds passed; final maintainer review in progress.",
         url: "https://github.com/NVIDIA/garak/pull/1676",
       },
       {
@@ -324,8 +324,20 @@ export function loadSiteStats(): SiteStats {
       {
         name: "Sage (Gen Digital)",
         type: "open",
-        detail: "Issue #30. Agent-layer threat rules integration.",
-        url: "https://github.com/gendigitalinc/sage/issues/30",
+        detail: "PR #33. 27 patterns. Maintainer-invited (vaclavbelak, Norton/Avast parent security team).",
+        url: "https://github.com/gendigitalinc/sage/pull/33",
+      },
+      {
+        name: "IBM mcp-context-forge",
+        type: "open",
+        detail: "PR #4109. ATR threat detection plugin for IBM MCP runtime. 18 tests, follows secrets_detection template.",
+        url: "https://github.com/IBM/mcp-context-forge/pull/4109",
+      },
+      {
+        name: "PanGuard Migrator (community)",
+        type: "using",
+        detail: "@panguard-ai/migrator-community v0.1.0 on npm (MIT). Sigma / YARA → ATR YAML converter — open-core complement to ATR ruleset.",
+        url: "https://www.npmjs.com/package/@panguard-ai/migrator-community",
       },
       {
         name: "Awesome AI Security",
