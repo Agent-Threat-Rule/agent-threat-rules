@@ -52,7 +52,7 @@ export default async function SovereignAIDefensePage({
       {/* Header eyebrow */}
       <Reveal>
         <div className="font-data text-[11px] md:text-xs font-medium text-blue tracking-[1.5px] md:tracking-[3px] uppercase mb-5">
-          Sovereign AI Defense · {zh ? "公開倡議" : "An Open Call"} · April 2026
+          Sovereign AI Defense · {zh ? "公開倡議" : "An Open Call"} · May 2026
         </div>
       </Reveal>
 
@@ -319,6 +319,175 @@ export default async function SovereignAIDefensePage({
         </p>
       </Section>
 
+      {/* 03b · Migration + Compliance Layer */}
+      <Section label="03B · MIGRATION + COMPLIANCE LAYER" delay={0.05}>
+        <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.02em] text-ink mb-5">
+          {zh
+            ? "把全人類的偵測知識帶進 AI Agent 時代"
+            : "Bringing humanity's detection knowledge into the AI agent era"}
+        </h2>
+        <p className="text-sm md:text-base text-graphite leading-[1.8]">
+          {zh ? (
+            <>
+              ATR 還必須回答 CISO 一定會問的問題：「我們公司過去 15 年寫的所有 Sigma / YARA / Snort / CodeQL / Splunk SPL / Elastic EQL / CVE / KEV / Semgrep——都白花錢了嗎？」答案：
+              <strong className="text-ink"> 沒有。它們是這時代攻擊的祖宗。</strong>
+            </>
+          ) : (
+            <>
+              ATR must answer the question every CISO will ask: &ldquo;Are the 15 years we spent writing Sigma, YARA, Snort, CodeQL, Splunk SPL, Elastic EQL — and curating CVE, KEV, Semgrep policies — wasted?&rdquo;
+              <strong className="text-ink"> No. They are the ancestors of this era&rsquo;s attacks.</strong>
+            </>
+          )}
+        </p>
+        <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
+          {zh ? (
+            <>
+              <strong className="text-ink">ATR Migrator v0.1.0</strong> 已 ship 15-format 遷移層，覆蓋你既有資安堆疊的全部知識來源：
+            </>
+          ) : (
+            <>
+              <strong className="text-ink">ATR Migrator v0.1.0</strong> ships a 15-format migration layer covering every knowledge source in any existing security stack:
+            </>
+          )}
+        </p>
+        <div className="border-t border-fog mt-5">
+          <FormatRow category={zh ? "漏洞情資" : "Vulnerability intel"} formats="CVE-NVD · GHSA · OSV · CISA KEV" />
+          <FormatRow category={zh ? "AI Red Teaming" : "AI red teaming"} formats="NVIDIA garak · Microsoft PyRIT · promptfoo" />
+          <FormatRow category={zh ? "程式碼掃描" : "Code scanning"} formats="Semgrep · CodeQL" />
+          <FormatRow category={zh ? "網路偵測" : "Network detection"} formats="Snort" />
+          <FormatRow category={zh ? "Runtime 安全" : "Runtime security"} formats="Falco" />
+          <FormatRow category={zh ? "SIEM 查詢語言" : "SIEM queries"} formats="Splunk SPL · Elastic EQL" />
+          <FormatRow category={zh ? "早期 SIEM / 樣本" : "Legacy SIEM / malware"} formats="Sigma · YARA" />
+        </div>
+        <pre className="mt-7 bg-ink text-paper rounded-md p-5 text-[12.5px] md:text-[13px] leading-[1.7] overflow-x-auto font-data whitespace-pre">
+          <code>{`# Commercial CLI (production)
+panguard migrate-pro --source garak --input ./probes.json   --strict
+panguard migrate-pro --source nvd   --input ./cve-feed.json --strict
+
+# Open reference CLI
+atr migrate --source snort --input ./rules.snort --output ./atr-out`}</code>
+        </pre>
+        <h3 className="font-display text-[19px] md:text-[21px] font-bold text-ink mt-9 mb-3">
+          {zh ? "不是 grep/sed，是工業級品質流水線" : "Not grep/sed — an industrial quality pipeline"}
+        </h3>
+        <pre className="bg-ash text-ink rounded-md p-5 text-[12.5px] leading-[1.7] overflow-x-auto font-data border border-fog whitespace-pre">
+          <code>{zh
+            ? `1. Parse        → 來源規則 → NormalizedRule IR
+2. Variant gen  → 自動推導同源攻擊變體
+3. FP sampler   → 432 benign corpus 找出潛在誤報
+4. Regex tighten → 多條件強化弱 pattern
+5. Self-test    → strict 逐條件驗證 + 失敗即拒絕`
+            : `1. Parse         → Source rules → NormalizedRule IR
+2. Variant gen   → Sibling attack variants derived automatically
+3. FP sampler    → False positives surfaced via 432-sample benign corpus
+4. Regex tighten → Weak patterns strengthened with multi-condition logic
+5. Self-test     → Strict per-condition validation; fail-closed`}</code>
+        </pre>
+        <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
+          {zh ? (
+            <>
+              每條輸出規則於 <strong className="text-ink">garak inthewild (666 prompts) + Lakera PINT (850 prompts)</strong> 對抗樣本集上自動驗證。
+            </>
+          ) : (
+            <>
+              Every emitted rule is auto-validated against <strong className="text-ink">garak inthewild (666 prompts) + Lakera PINT (850 prompts)</strong> adversarial corpora.
+            </>
+          )}
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-[2px] bg-fog border border-fog mt-7">
+          <StatCell
+            label={zh ? "誤報率" : "FALSE POSITIVES"}
+            value="0"
+            unit=""
+            note={zh ? "於 432 benign 樣本" : "on 432 benign samples"}
+            valueColor="blue"
+          />
+          <StatCell
+            label={zh ? "測試通過" : "TESTS PASSING"}
+            value="313"
+            unit="/313"
+            note={zh ? "TypeScript strict mode" : "TypeScript strict mode"}
+          />
+          <StatCell
+            label={zh ? "Adapter" : "ADAPTERS"}
+            value="15"
+            unit=""
+            note={zh ? "格式全綠 · 0 FP" : "formats green · 0 FP"}
+          />
+        </div>
+        <h3 className="font-display text-[19px] md:text-[21px] font-bold text-ink mt-9 mb-3">
+          {zh ? "自動合規證據鏈（不需要人工標註）" : "Automatic compliance evidence (zero manual labeling)"}
+        </h3>
+        <p className="text-sm md:text-base text-graphite leading-[1.8]">
+          {zh ? (
+            <>
+              Migrator 的 <code className="font-data text-[13px] text-blue">compliance-mapper.ts</code> 在轉換時即自動寫入：
+            </>
+          ) : (
+            <>
+              Migrator&rsquo;s <code className="font-data text-[13px] text-blue">compliance-mapper.ts</code> writes, at conversion time:
+            </>
+          )}
+        </p>
+        <ul className="mt-3 space-y-2">
+          <ContribItem
+            strong={zh ? "EU AI Act：" : "EU AI Act:"}
+            text={zh ? "Article 9 (Risk Management) / Article 15 (Cybersecurity) tag" : "Article 9 (Risk Management) / Article 15 (Cybersecurity) tags"}
+          />
+          <ContribItem
+            strong={zh ? "NIST AI RMF：" : "NIST AI RMF:"}
+            text={zh ? "Manage / Measure / Govern function 對應" : "Manage / Measure / Govern function mappings"}
+          />
+          <ContribItem
+            strong={zh ? "ISO/IEC 42001：" : "ISO/IEC 42001:"}
+            text={zh ? "AI Management System 條文對應" : "AI Management System clause mappings"}
+          />
+        </ul>
+        <p className="text-sm md:text-base text-graphite leading-[1.8] mt-5">
+          {zh ? (
+            <>
+              受 EU AI Act 管制的銀行、健保、能源公司——把現有 Sigma 規則餵進 Migrator——
+              <strong className="text-ink">直接得到帶合規 metadata 的 AI Agent 偵測規則</strong>。Article 15 cybersecurity-by-design 證據自動產生。
+            </>
+          ) : (
+            <>
+              Banks, healthcare systems, and energy companies subject to EU AI Act feed in their existing Sigma rules — and
+              <strong className="text-ink"> get back AI agent detection rules pre-tagged with compliance metadata</strong>. Article 15 cybersecurity-by-design evidence is generated automatically.
+            </>
+          )}
+        </p>
+        <h3 className="font-display text-[19px] md:text-[21px] font-bold text-ink mt-9 mb-3">
+          {zh ? "為什麼這對 Sovereign AI 是必要的" : "Why this is necessary for Sovereign AI"}
+        </h3>
+        <p className="text-sm md:text-base text-graphite leading-[1.8] mb-4">
+          {zh ? "Sovereign AI 不能只是「擁有自己的模型」。它必須有：" : "Sovereign AI cannot just mean owning your own model. It must include:"}
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <ConditionCard
+            num="LAYER 01"
+            head={zh ? "開放標準" : "Open Standard"}
+            body={zh ? "ATR · MIT License — 任何國家可採用、可審核、可叉。" : "ATR · MIT License — adoptable, auditable, forkable by any nation."}
+          />
+          <ConditionCard
+            num="LAYER 02"
+            head={zh ? "遷移層" : "Migration Layer"}
+            body={zh ? "ATR Migrator — 把 SOC 過去 20 年的 detection IP 帶進 AI Agent 時代。" : "ATR Migrator — bringing the SOC's 20 years of detection IP into the AI agent era."}
+          />
+          <ConditionCard
+            num="LAYER 03"
+            head={zh ? "合規層" : "Compliance Layer"}
+            body={zh ? "Compliance metadata — 自動產生該國 AI 法規所需證據。" : "Compliance metadata — auto-producing evidence that satisfies each nation's AI regulations."}
+          />
+        </div>
+        <Callout borderColor="blue">
+          <strong className="text-ink">
+            {zh
+              ? "能保留歷史投資、能產出合規證據、能脫離 vendor lock-in——三者皆備才叫 Sovereign AI Defense。"
+              : "Preserves historical investment. Produces compliance evidence. Escapes vendor lock-in. Only with all three is it Sovereign AI Defense."}
+          </strong>
+        </Callout>
+      </Section>
+
       {/* 04 · Ecosystem */}
       <Section label="04 · ECOSYSTEM" delay={0.05}>
         <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.02em] text-ink mb-5">
@@ -335,13 +504,13 @@ export default async function SovereignAIDefensePage({
             org="Microsoft"
             status={zh ? "PR 已合併" : "PR Merged"}
             statusClass="bg-blue/10 text-blue"
-            desc={zh ? "agent-governance-toolkit · 287 條規則自動同步" : "agent-governance-toolkit · 287-rule auto-sync"}
+            desc={zh ? "agent-governance-toolkit · 314 條規則自動同步" : "agent-governance-toolkit · 314-rule auto-sync"}
           />
           <TractionRow
             org="NVIDIA garak"
             status={zh ? "整合中" : "Integrating"}
             statusClass="bg-medium/10 text-medium"
-            desc={zh ? "PR #1676 · v2.0.12 · 已通過兩輪 review" : "PR #1676 · v2.0.12 · 2 review rounds passed"}
+            desc={zh ? "PR #1676 · v2.0.17 · 已通過兩輪 review" : "PR #1676 · v2.0.17 · 2 review rounds passed"}
           />
           <TractionRow
             org="Meta PurpleLlama"
@@ -590,7 +759,7 @@ export default async function SovereignAIDefensePage({
               agentthreatrule.org
             </a>
             <div className="font-data text-[11px] text-mist tracking-[1px] uppercase mt-3">
-              v2.0.12 · 293 Rules · 1,597 Patterns
+              v2.0.17 · 314 Rules · 1,600+ Patterns
             </div>
           </div>
         </div>
@@ -660,6 +829,15 @@ function DealRow({ country, desc, scale }: { country: string; desc: string; scal
       <div className="font-display font-semibold text-ink">{country}</div>
       <div className="text-graphite text-[13px]">{desc}</div>
       <div className="font-data text-xs text-blue md:text-right">{scale}</div>
+    </div>
+  );
+}
+
+function FormatRow({ category, formats }: { category: string; formats: string }) {
+  return (
+    <div className="grid grid-cols-[180px_1fr] gap-5 py-3 border-b border-fog text-sm items-baseline max-md:grid-cols-1 max-md:gap-1">
+      <div className="font-display font-semibold text-ink">{category}</div>
+      <div className="font-data text-[12.5px] text-graphite tracking-[0.3px]">{formats}</div>
     </div>
   );
 }
