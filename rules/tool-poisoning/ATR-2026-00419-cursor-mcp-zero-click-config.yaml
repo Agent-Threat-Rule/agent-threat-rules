@@ -63,11 +63,11 @@ compliance:
 tags:
   category: tool-poisoning
   subcategory: zero-click-config-rce
-  scan_target: skill
+  scan_target: both
   confidence: high
 
 agent_source:
-  type: skill_lifecycle
+  type: mcp_exchange
   framework:
     - cursor
     - windsurf
@@ -109,6 +109,16 @@ detection:
       operator: regex
       value: '(?i)(?:postinstall|preinstall)[^\n]{0,80}(?:write|drop|create|modify)[^\n]{0,80}(?:\.cursor|\.windsurf|\.claude|mcp\.json)'
       description: "Supply-chain delivery: npm postinstall script writing/modifying IDE MCP config — zero-click setup"
+
+    - field: content
+      operator: regex
+      value: '(?i)(?:drop|compromise|tamper|inject)[^\n]{0,80}(?:\.cursor|\.windsurf|\.claude|\.vscode|\.gemini|\.continue)'
+      description: "Skill/document describing tampering with IDE-bound config dir — co-occurrence anchor"
+
+    - field: content
+      operator: regex
+      value: '(?i)(?:auto[-_\s]?load|on[-_\s]?open|no\s+consent\s+prompt)[^\n]{0,160}(?:cursor|windsurf|claude|gemini|vscode|mcp\.json)'
+      description: "Auto-load / no-consent property of IDE MCP config — co-occurrence anchor for compound-gate"
 
 response:
   actions:

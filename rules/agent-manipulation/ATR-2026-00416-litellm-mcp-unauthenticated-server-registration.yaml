@@ -90,8 +90,8 @@ detection:
 
     - field: tool_response
       operator: regex
-      value: '(?i)(?:litellm|langchain|langflow)[^\n]{0,80}(?:add[_\-]?mcp|register[_\-]?(?:tool|server)|install[_\-]?adapter)[^\n]{0,200}(?:command|stdio|exec|spawn)'
-      description: "Framework-specific registration call referencing command/STDIO/exec — likely arbitrary-command registration"
+      value: '(?i)(?:litellm|langchain|langflow)[^\n]{0,80}(?:add[_\-]?mcp|register[_\-]?(?:tool|server)|install[_\-]?adapter)[^\n]{0,200}command\s*=?\s*[\x27"](?:bash|sh|cmd|powershell|curl|wget|python|node|deno)[\x27"]'
+      description: "Framework-specific registration call where command field resolves to a shell/interpreter binary — distinguishes attack from legitimate npx + MCP package registration"
 
     - field: tool_response
       operator: regex
