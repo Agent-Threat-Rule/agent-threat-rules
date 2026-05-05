@@ -75,36 +75,36 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             <img src="/atr-logo-black.png" alt="ATR" className="h-12 md:h-16 mx-auto mb-8 md:mb-10" />
           </HeroEntrance>
 
-          {/* The paradigm shift */}
+          {/* The standards body framing */}
           <HeroEntrance delay={0.8}>
             <p className="font-display text-[28px] md:text-[clamp(40px,5.5vw,72px)] font-black leading-[1.1] tracking-[-1.5px] md:tracking-[-3px] text-stone">
-              {zh ? "我們曾經保護人。" : "We used to protect people."}
+              {zh ? "AI Agent 時代的" : "An open standard for the"}
             </p>
           </HeroEntrance>
 
           <HeroEntrance delay={1.1}>
             <h1 className="font-display text-[36px] md:text-[clamp(52px,6.5vw,80px)] font-black leading-[1.05] tracking-[-2px] md:tracking-[-3px] text-ink mt-2 md:mt-3">
-              {zh ? "現在我們保護 AI agent。" : "Now we protect AI agents."}
+              {zh ? "開放偵測標準。" : "AI agent era."}
             </h1>
           </HeroEntrance>
 
-          {/* Subtitle — one line explaining what ATR is */}
+          {/* Subtitle — analogy framing */}
           <HeroEntrance delay={1.3}>
-            <p className="text-base md:text-lg text-stone font-light mt-5 md:mt-6 max-w-[520px] mx-auto leading-relaxed">
+            <p className="text-base md:text-lg text-stone font-light mt-5 md:mt-6 max-w-[640px] mx-auto leading-relaxed">
               {zh
-                ? "社群驅動的開源 AI agent 資安偵測標準。"
-                : "The open-source, community-driven detection standard for AI agent security."}
+                ? "為「會做決定的系統」寫的偵測規則。Sigma 之於 SIEM。CVE 之於漏洞。ATR 之於 AI Agent。"
+                : "Detection rules for the systems that decide. The way Sigma is for SIEM. The way CVE is for vulnerabilities. ATR is for AI agents."}
             </p>
           </HeroEntrance>
 
-          {/* Three monospace stats */}
+          {/* Three monospace stats — emphasize garak recall (more impressive than PINT precision) */}
           <HeroEntrance delay={1.5}>
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-8 md:mt-10 font-data text-sm md:text-base tracking-wide">
               <span><span className="font-data font-bold text-ink">{stats.ruleCount}</span> <span className="text-stone">{zh ? "條規則" : "rules"}</span></span>
               <span className="text-fog">·</span>
               <span><span className="font-data font-bold text-ink">{stats.categoryCount}</span> <span className="text-stone">{zh ? "個類別" : "categories"}</span></span>
               <span className="text-fog">·</span>
-              <span><span className="font-data font-bold text-ink">{stats.pintPrecision}%</span> <span className="text-stone">{zh ? "精準度" : "precision"}</span></span>
+              <span><span className="font-data font-bold text-ink">97.1%</span> <span className="text-stone">{zh ? "garak 召回率" : "garak recall"}</span></span>
             </div>
           </HeroEntrance>
 
@@ -126,22 +126,82 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             </div>
           </HeroEntrance>
 
-          {/* Trust bar — proof points that build credibility */}
+          {/* Trust bar — production deployments + ecosystem */}
           <HeroEntrance delay={1.9}>
             <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-8 md:mt-10 font-data text-[11px] md:text-xs text-stone tracking-wide">
-              <span>Cisco AI Defense</span>
+              <span>{zh ? "生產採用:" : "In production:"}</span>
+              <span className="font-bold text-ink">Cisco AI Defense</span>
               <span className="text-fog">·</span>
-              <span>Microsoft AGT</span>
+              <span className="font-bold text-ink">Microsoft AGT</span>
+              <span className="text-fog">|</span>
+              <span>{zh ? "整合中:" : "Integrating:"}</span>
+              <span>NVIDIA garak</span>
               <span className="text-fog">·</span>
-              <span>OWASP 10/10</span>
+              <span>Gen Digital Sage</span>
               <span className="text-fog">·</span>
-              <span>MITRE ATLAS</span>
-              <span className="text-fog">·</span>
-              <span>{stats.megaScanTotal.toLocaleString()} {zh ? "skills 已掃描" : "skills scanned"}</span>
-              <span className="text-fog">·</span>
-              <span>MIT License</span>
+              <span>IBM mcp-context-forge</span>
+              <span className="text-fog">|</span>
+              <span>MIT License · {zh ? "由 ATR Community 維護" : "Maintained by ATR Community"}</span>
             </div>
           </HeroEntrance>
+        </div>
+      </section>
+
+      <SpeedLines />
+
+      {/* ── Scene 1.5: The Gap (why ATR exists) ── */}
+      <section className="py-14 md:py-[100px] px-5 md:px-6 bg-ash">
+        <div className="max-w-[980px] mx-auto">
+          <Reveal>
+            <div className="font-data text-[11px] md:text-xs font-medium text-stone tracking-[1.5px] md:tracking-[3px] uppercase mb-5 md:mb-6">
+              {zh ? "為什麼是新的標準" : "Why a new standard"}
+            </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <h2 className="font-display text-[26px] md:text-[clamp(34px,4.5vw,52px)] font-extrabold tracking-[-1px] md:tracking-[-2px] leading-[1.15] text-ink max-w-[820px]">
+              {zh
+                ? <>舊時代的偵測標準<br/>看不到 AI agent 的行為。</>
+                : <>Endpoint detection standards<br/>cannot see AI agent behavior.</>}
+            </h2>
+          </Reveal>
+          <Reveal delay={0.2}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-fog mt-8 md:mt-12">
+              <div className="bg-paper p-6 md:p-8">
+                <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-3">{zh ? "舊時代" : "Old era"}</div>
+                <div className="font-display text-xl md:text-2xl font-bold text-ink mb-3">Sigma · YARA · CVE</div>
+                <p className="text-sm text-graphite leading-[1.7]">
+                  {zh
+                    ? "為 endpoint event log、檔案 binary、軟體漏洞編號設計。看程式碼,不看意圖。"
+                    : "Built for endpoint event logs, file binaries, and software vulnerability IDs. They watch code, not intent."}
+                </p>
+              </div>
+              <div className="bg-paper p-6 md:p-8">
+                <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-3">{zh ? "新表面" : "New surface"}</div>
+                <div className="font-display text-xl md:text-2xl font-bold text-ink mb-3">{zh ? "AI Agent 行為" : "AI Agent behavior"}</div>
+                <p className="text-sm text-graphite leading-[1.7]">
+                  {zh
+                    ? "Prompt injection、tool poisoning、skill compromise、context exfiltration——攻擊在 prompt / tool call / skill 層發生,不是在 process / file / network 層。"
+                    : "Prompt injection, tool poisoning, skill compromise, context exfiltration — attacks live at the prompt / tool call / skill layer, not at process / file / network."}
+                </p>
+              </div>
+              <div className="bg-paper p-6 md:p-8 border-l-2 border-blue">
+                <div className="font-data text-xs text-blue tracking-[2px] uppercase mb-3">{zh ? "新標準" : "New standard"}</div>
+                <div className="font-display text-xl md:text-2xl font-bold text-ink mb-3">ATR</div>
+                <p className="text-sm text-graphite leading-[1.7]">
+                  {zh
+                    ? "Protocol-agnostic 的行為偵測規則。看 agent 在做什麼,不只是 agent 在跑什麼。MIT 永久。社群治理。"
+                    : "Protocol-agnostic behavioral detection rules. Watches what an agent does, not just what it runs. MIT forever. Community governed."}
+                </p>
+              </div>
+            </div>
+          </Reveal>
+          <Reveal delay={0.3}>
+            <p className="text-sm md:text-base text-graphite mt-8 max-w-[820px] leading-[1.8]">
+              {zh
+                ? <>Sigma 在 2017 年成為 SIEM 偵測的開放標準前,每家 SOC 自己寫規則。CVE 在 1999 年之前,每家廠商自己編漏洞編號。<strong>AI agent 時代的偵測層此刻在同樣的位置——尚未標準化。</strong>ATR 填補這個空缺。</>
+                : <>Before Sigma became the open standard for SIEM detection in 2017, every SOC wrote its own rules. Before CVE in 1999, every vendor numbered its own vulnerabilities. <strong>The detection layer for the AI agent era sits in the same position right now — not yet standardized.</strong> ATR fills the gap.</>}
+            </p>
+          </Reveal>
         </div>
       </section>
 
@@ -221,27 +281,16 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                   Cisco AI Defense
                 </h3>
                 <p className="text-sm text-graphite mt-4 leading-[1.7]">
-                  {zh ? (
-                    <>34 條規則合併 · 1,272 行新增 ·{" "}
-                      <span className="whitespace-nowrap">
-                        <code className="font-data text-xs bg-ash px-1.5 py-0.5 rounded-[2px] mx-0.5">--rule-packs</code> CLI
-                      </span>
-                    </>
-                  ) : (
-                    <>34 rules merged · 1,272 lines ·{" "}
-                      <span className="whitespace-nowrap">
-                        <code className="font-data text-xs bg-ash px-1.5 py-0.5 rounded-[2px]">--rule-packs</code> CLI
-                      </span>
-                    </>
-                  )}
+                  {zh ? "PR #79 + #99 已合併 · 314 條完整規則集進入 skill-scanner 生產環境"
+                      : "PR #79 + #99 merged · full 314-rule pack in skill-scanner production"}
                 </p>
                 <a
-                  href="https://github.com/cisco-ai-defense/skill-scanner/pull/79"
+                  href="https://github.com/cisco-ai-defense/skill-scanner/pull/99"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-data text-xs text-blue hover:underline inline-block mt-3"
                 >
-                  {zh ? "查看 PR #79 →" : "View PR #79 →"}
+                  {zh ? "查看 PR #99 →" : "View PR #99 →"}
                 </a>
               </div>
               <div className="bg-paper p-8 md:p-10 text-center">
@@ -249,31 +298,30 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                   Microsoft AGT
                 </h3>
                 <p className="text-sm text-graphite mt-4 leading-[1.7]">
-                  {zh ? "15 條規則以 PolicyDocument 格式合併 · 554 行新增" : "15 rules as PolicyDocument · 554 additions"}
+                  {zh ? "PR #908 + #1277 已合併 · 287 條規則 + 每週自動同步 workflow"
+                      : "PR #908 + #1277 merged · 287 rules + weekly auto-sync workflow"}
                 </p>
                 <a
-                  href="https://github.com/microsoft/agent-governance-toolkit/pull/908"
+                  href="https://github.com/microsoft/agent-governance-toolkit/pull/1277"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-data text-xs text-blue hover:underline inline-block mt-3"
                 >
-                  {zh ? "查看 PR #908 →" : "View PR #908 →"}
+                  {zh ? "查看 PR #1277 →" : "View PR #1277 →"}
                 </a>
               </div>
             </div>
           </Reveal>
           <Reveal delay={0.25}>
             <p className="font-data text-xs text-mist mt-8 md:mt-10">
-              {zh ? "NVIDIA Garak 整合審查中（" : "NVIDIA Garak integration under review ("}
-              <a
-                href="https://github.com/NVIDIA/garak/pull/1676"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue hover:underline"
-              >
-                PR #1676
-              </a>
-              {zh ? "）" : ")"}
+              {zh ? "整合進行中:" : "Integrations in active review:"}{" "}
+              <a href="https://github.com/NVIDIA/garak/pull/1676" target="_blank" rel="noopener noreferrer" className="text-blue hover:underline">NVIDIA garak #1676</a>
+              {" · "}
+              <a href="https://github.com/gendigitalinc/sage/pull/33" target="_blank" rel="noopener noreferrer" className="text-blue hover:underline">Gen Digital Sage #33</a>
+              {" · "}
+              <a href="https://github.com/IBM/mcp-context-forge/pull/4109" target="_blank" rel="noopener noreferrer" className="text-blue hover:underline">IBM mcp-context-forge #4109</a>
+              {" · "}
+              <a href="https://github.com/OWASP/www-project-top-10-for-large-language-model-applications/pull/814" target="_blank" rel="noopener noreferrer" className="text-blue hover:underline">OWASP LLM Top 10 #814</a>
             </p>
           </Reveal>
         </div>
@@ -311,6 +359,57 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </Reveal>
         </div>
       </section>
+
+      {/* ── Scene 3.5: Open Call to Democratic Governments ── */}
+      <section className="py-14 md:py-[120px] px-5 md:px-6 bg-paper relative overflow-hidden">
+        <HeroGrid />
+        <div className="max-w-[980px] mx-auto relative z-10">
+          <Reveal>
+            <div className="font-data text-[11px] md:text-xs font-medium text-blue tracking-[1.5px] md:tracking-[3px] uppercase mb-5 md:mb-6">
+              {zh ? "公開邀請" : "An open invitation"}
+            </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <h2 className="font-display text-[28px] md:text-[clamp(36px,5vw,60px)] font-extrabold tracking-[-1.5px] md:tracking-[-2.5px] leading-[1.1] text-ink max-w-[860px]">
+              {zh
+                ? <>每個民主國家都在做 sovereign AI。<br/><span className="text-stone">沒有人在做 sovereign AI defense。</span></>
+                : <>Every democratic nation is building sovereign AI.<br/><span className="text-stone">None are building sovereign AI defense.</span></>}
+            </h2>
+          </Reveal>
+          <Reveal delay={0.2}>
+            <p className="text-base md:text-lg text-graphite mt-8 md:mt-10 max-w-[760px] leading-[1.8]">
+              {zh
+                ? <>India · Japan · UK · France · Korea · UAE · Taiwan 都在 ship sovereign AI 模型與算力。<strong>現有合約裡沒有任何一個包含對應的 defense layer。</strong>這個空缺如果沒被開放標準填補,就會被封閉方案、地緣政治綁定的私人協議、或被對岸先補上。</>
+                : <>India, Japan, UK, France, Korea, UAE, and Taiwan are all shipping sovereign AI models and compute. <strong>None of these deployments include a corresponding defense layer.</strong> If this gap is not filled by an open standard, it will be filled by closed solutions, geopolitically-tied private agreements, or by adversaries first.</>}
+            </p>
+          </Reveal>
+          <Reveal delay={0.3}>
+            <div className="mt-10 md:mt-12 p-6 md:p-8 border-l-2 border-blue bg-ash">
+              <p className="font-display text-lg md:text-xl font-bold text-ink leading-[1.5]">
+                {zh
+                  ? "我們邀請數位部會、AI 安全研究機構、與標準制定組織評估 ATR 作為您 sovereign AI defense layer 的開放基底。"
+                  : "We invite digital ministries, AI safety institutes, and standards bodies to evaluate ATR as the open foundation for your sovereign AI defense layer."}
+              </p>
+              <p className="text-sm md:text-base text-graphite mt-4 leading-[1.7]">
+                {zh
+                  ? "無 vendor lock-in。無地緣政治綁定。可分叉、可替換、可問責。第一個 reference deployment 對話進行中。歡迎來自任何民主國家的合作對話。"
+                  : "No vendor lock-in. No geopolitical strings. Forkable, replaceable, accountable. First reference deployment in discussion. We are seeking conversation partners across democracies."}
+              </p>
+              <div className="flex flex-wrap gap-x-6 gap-y-3 mt-6 font-data text-xs md:text-sm">
+                <a href="mailto:adam@agentthreatrule.org" className="text-blue hover:underline">
+                  adam@agentthreatrule.org
+                </a>
+                <span className="text-fog">·</span>
+                <Link href={`${prefix}/sovereign-ai-defense`} className="text-blue hover:underline">
+                  {zh ? "閱讀完整 manifesto →" : "Read the full manifesto →"}
+                </Link>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      <SpeedLines />
 
       {/* ── Scene 4: The Categories ── */}
       <section className="py-14 md:py-[120px] px-5 md:px-6">
