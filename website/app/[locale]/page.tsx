@@ -78,13 +78,13 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           {/* The standards body framing */}
           <HeroEntrance delay={0.8}>
             <p className="font-display text-[28px] md:text-[clamp(40px,5.5vw,72px)] font-black leading-[1.1] tracking-[-1.5px] md:tracking-[-3px] text-stone">
-              {zh ? "AI Agent 時代的" : "An open standard for the"}
+              {zh ? "AI Agent 自己做決定的時代,你寫得出規則嗎?" : "An open standard for the"}
             </p>
           </HeroEntrance>
 
           <HeroEntrance delay={1.1}>
             <h1 className="font-display text-[36px] md:text-[clamp(52px,6.5vw,80px)] font-black leading-[1.05] tracking-[-2px] md:tracking-[-3px] text-ink mt-2 md:mt-3">
-              {zh ? "開放偵測標準。" : "AI agent era."}
+              {zh ? "我們寫了。叫做 ATR。" : "AI agent era."}
             </h1>
           </HeroEntrance>
 
@@ -92,7 +92,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <HeroEntrance delay={1.3}>
             <p className="text-base md:text-lg text-stone font-light mt-5 md:mt-6 max-w-[640px] mx-auto leading-relaxed">
               {zh
-                ? "為「會做決定的系統」寫的偵測規則。Sigma 之於 SIEM。CVE 之於漏洞。ATR 之於 AI Agent。"
+                ? "Sigma 寫給 SIEM。CVE 編漏洞編號。ATR 寫給 AI Agent。MIT 永久,由社群維護。"
                 : "Detection rules for the systems that decide. The way Sigma is for SIEM. The way CVE is for vulnerabilities. ATR is for AI agents."}
             </p>
           </HeroEntrance>
@@ -104,7 +104,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <span className="text-fog">·</span>
               <span><span className="font-data font-bold text-ink">{stats.categoryCount}</span> <span className="text-stone">{zh ? "個類別" : "categories"}</span></span>
               <span className="text-fog">·</span>
-              <span><span className="font-data font-bold text-ink">97.1%</span> <span className="text-stone">{zh ? "garak 召回率" : "garak recall"}</span></span>
+              <span><span className="font-data font-bold text-ink">97.1%</span> <span className="text-stone">{zh ? "garak 抓得到" : "garak recall"}</span></span>
             </div>
           </HeroEntrance>
 
@@ -129,19 +129,19 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           {/* Trust bar — production deployments + ecosystem */}
           <HeroEntrance delay={1.9}>
             <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-8 md:mt-10 font-data text-[11px] md:text-xs text-stone tracking-wide">
-              <span>{zh ? "生產採用:" : "In production:"}</span>
+              <span>{zh ? "已上線:" : "In production:"}</span>
               <span className="font-bold text-ink">Cisco AI Defense</span>
               <span className="text-fog">·</span>
               <span className="font-bold text-ink">Microsoft AGT</span>
               <span className="text-fog">|</span>
-              <span>{zh ? "整合中:" : "Integrating:"}</span>
+              <span>{zh ? "正在接:" : "Integrating:"}</span>
               <span>NVIDIA garak</span>
               <span className="text-fog">·</span>
               <span>Gen Digital Sage</span>
               <span className="text-fog">·</span>
               <span>IBM mcp-context-forge</span>
               <span className="text-fog">|</span>
-              <span>MIT License · {zh ? "由 ATR Community 維護" : "Maintained by ATR Community"}</span>
+              <span>MIT License · {zh ? "ATR 社群維護" : "Maintained by ATR Community"}</span>
             </div>
           </HeroEntrance>
         </div>
@@ -154,13 +154,13 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <div className="max-w-[980px] mx-auto">
           <Reveal>
             <div className="font-data text-[11px] md:text-xs font-medium text-stone tracking-[1.5px] md:tracking-[3px] uppercase mb-5 md:mb-6">
-              {zh ? "為什麼是新的標準" : "Why a new standard"}
+              {zh ? "為什麼要做新的" : "Why a new standard"}
             </div>
           </Reveal>
           <Reveal delay={0.1}>
             <h2 className="font-display text-[26px] md:text-[clamp(34px,4.5vw,52px)] font-extrabold tracking-[-1px] md:tracking-[-2px] leading-[1.15] text-ink max-w-[820px]">
               {zh
-                ? <>舊時代的偵測標準<br/>看不到 AI agent 的行為。</>
+                ? <>舊的偵測規則<br/>抓不到 AI agent 在搞什麼。</>
                 : <>Endpoint detection standards<br/>cannot see AI agent behavior.</>}
             </h2>
           </Reveal>
@@ -171,16 +171,16 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 <div className="font-display text-xl md:text-2xl font-bold text-ink mb-3">Sigma · YARA · CVE</div>
                 <p className="text-sm text-graphite leading-[1.7]">
                   {zh
-                    ? "為 endpoint event log、檔案 binary、軟體漏洞編號設計。看程式碼,不看意圖。"
+                    ? "看 log、看檔案、編漏洞編號——盯著程式碼,看不到意圖。"
                     : "Built for endpoint event logs, file binaries, and software vulnerability IDs. They watch code, not intent."}
                 </p>
               </div>
               <div className="bg-paper p-6 md:p-8">
-                <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-3">{zh ? "新表面" : "New surface"}</div>
-                <div className="font-display text-xl md:text-2xl font-bold text-ink mb-3">{zh ? "AI Agent 行為" : "AI Agent behavior"}</div>
+                <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-3">{zh ? "新攻擊面" : "New surface"}</div>
+                <div className="font-display text-xl md:text-2xl font-bold text-ink mb-3">{zh ? "AI Agent 的行為" : "AI Agent behavior"}</div>
                 <p className="text-sm text-graphite leading-[1.7]">
                   {zh
-                    ? "Prompt injection、tool poisoning、skill compromise、context exfiltration——攻擊在 prompt / tool call / skill 層發生,不是在 process / file / network 層。"
+                    ? "Prompt 注入、工具下毒、skill 被汙染、context 外洩——攻擊發生在 prompt 跟 tool call 層,不在程式檔案層。"
                     : "Prompt injection, tool poisoning, skill compromise, context exfiltration — attacks live at the prompt / tool call / skill layer, not at process / file / network."}
                 </p>
               </div>
@@ -189,7 +189,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 <div className="font-display text-xl md:text-2xl font-bold text-ink mb-3">ATR</div>
                 <p className="text-sm text-graphite leading-[1.7]">
                   {zh
-                    ? "Protocol-agnostic 的行為偵測規則。看 agent 在做什麼,不只是 agent 在跑什麼。MIT 永久。社群治理。"
+                    ? "不綁特定協議的行為偵測規則。看 agent 在做什麼,不是看它在跑什麼。MIT 永久,社群治理。"
                     : "Protocol-agnostic behavioral detection rules. Watches what an agent does, not just what it runs. MIT forever. Community governed."}
                 </p>
               </div>
@@ -198,7 +198,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.3}>
             <p className="text-sm md:text-base text-graphite mt-8 max-w-[820px] leading-[1.8]">
               {zh
-                ? <>Sigma 在 2017 年成為 SIEM 偵測的開放標準前,每家 SOC 自己寫規則。CVE 在 1999 年之前,每家廠商自己編漏洞編號。<strong>AI agent 時代的偵測層此刻在同樣的位置——尚未標準化。</strong>ATR 填補這個空缺。</>
+                ? <>2017 年 Sigma 成為 SIEM 偵測的開放標準之前,每家 SOC 各寫各的規則。1999 年 CVE 出現之前,每家廠商各編各的漏洞編號。<strong>AI Agent 的偵測層,現在就站在那個位置——還沒被任何人標準化。</strong>ATR 把這格填上。</>
                 : <>Before Sigma became the open standard for SIEM detection in 2017, every SOC wrote its own rules. Before CVE in 1999, every vendor numbered its own vulnerabilities. <strong>The detection layer for the AI agent era sits in the same position right now — not yet standardized.</strong> ATR fills the gap.</>}
             </p>
           </Reveal>
@@ -366,20 +366,20 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <div className="max-w-[980px] mx-auto relative z-10">
           <Reveal>
             <div className="font-data text-[11px] md:text-xs font-medium text-blue tracking-[1.5px] md:tracking-[3px] uppercase mb-5 md:mb-6">
-              {zh ? "公開邀請" : "An open invitation"}
+              {zh ? "致民主國家的公開邀請" : "An open invitation"}
             </div>
           </Reveal>
           <Reveal delay={0.1}>
             <h2 className="font-display text-[28px] md:text-[clamp(36px,5vw,60px)] font-extrabold tracking-[-1.5px] md:tracking-[-2.5px] leading-[1.1] text-ink max-w-[860px]">
               {zh
-                ? <>每個民主國家都在做 sovereign AI。<br/><span className="text-stone">沒有人在做 sovereign AI defense。</span></>
+                ? <>每個民主國家都在做主權 AI。<br/><span className="text-stone">沒人在做主權 AI 的防禦層。</span></>
                 : <>Every democratic nation is building sovereign AI.<br/><span className="text-stone">None are building sovereign AI defense.</span></>}
             </h2>
           </Reveal>
           <Reveal delay={0.2}>
             <p className="text-base md:text-lg text-graphite mt-8 md:mt-10 max-w-[760px] leading-[1.8]">
               {zh
-                ? <>India · Japan · UK · France · Korea · UAE · Taiwan 都在 ship sovereign AI 模型與算力。<strong>現有合約裡沒有任何一個包含對應的 defense layer。</strong>這個空缺如果沒被開放標準填補,就會被封閉方案、地緣政治綁定的私人協議、或被對岸先補上。</>
+                ? <>印度、日本、英國、法國、韓國、UAE、台灣——大家都在做自己的主權 AI 模型跟算力。<strong>但沒有任何一個合約包含對應的防禦層。</strong>這個缺口如果沒被開放標準填上,就會被閉源方案、地緣政治綁定的私下協議、或被對岸先補上。</>
                 : <>India, Japan, UK, France, Korea, UAE, and Taiwan are all shipping sovereign AI models and compute. <strong>None of these deployments include a corresponding defense layer.</strong> If this gap is not filled by an open standard, it will be filled by closed solutions, geopolitically-tied private agreements, or by adversaries first.</>}
             </p>
           </Reveal>
@@ -387,12 +387,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             <div className="mt-10 md:mt-12 p-6 md:p-8 border-l-2 border-blue bg-ash">
               <p className="font-display text-lg md:text-xl font-bold text-ink leading-[1.5]">
                 {zh
-                  ? "我們邀請數位部會、AI 安全研究機構、與標準制定組織評估 ATR 作為您 sovereign AI defense layer 的開放基底。"
+                  ? "我們邀請各國的數位部會、AI 安全機構、與標準制定組織,評估 ATR 作為您主權 AI 防禦層的開放基底。"
                   : "We invite digital ministries, AI safety institutes, and standards bodies to evaluate ATR as the open foundation for your sovereign AI defense layer."}
               </p>
               <p className="text-sm md:text-base text-graphite mt-4 leading-[1.7]">
                 {zh
-                  ? "無 vendor lock-in。無地緣政治綁定。可分叉、可替換、可問責。第一個 reference deployment 對話進行中。歡迎來自任何民主國家的合作對話。"
+                  ? "不被任何廠商綁住。不帶地緣政治條件。可以分叉、可以替換、可以問責。第一個 reference deployment 已在對話中。歡迎任何民主國家加入。"
                   : "No vendor lock-in. No geopolitical strings. Forkable, replaceable, accountable. First reference deployment in discussion. We are seeking conversation partners across democracies."}
               </p>
               <div className="flex flex-wrap gap-x-6 gap-y-3 mt-6 font-data text-xs md:text-sm">
@@ -401,7 +401,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 </a>
                 <span className="text-fog">·</span>
                 <Link href={`${prefix}/sovereign-ai-defense`} className="text-blue hover:underline">
-                  {zh ? "閱讀完整 manifesto →" : "Read the full manifesto →"}
+                  {zh ? "閱讀完整公開信 →" : "Read the full manifesto →"}
                 </Link>
               </div>
             </div>
