@@ -1,0 +1,52 @@
+rule_id: ATR-2026-00394
+rule_path: >-
+  /rules/prompt-injection/ATR-2026-00394-backspace-deletion-character-injection.yaml
+rule_title: Backspace Deletion Character Injection
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      Backspace deletion character injection is an adversarial input vector that
+      exploits the visual gap between what human reviewers see and what the
+      model processes; MP.5.1 requires identifying and characterizing such
+      prompt-injection attack patterns so their likelihood and impact can be
+      tracked.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detecting \x08 control character clusters in user input and tool output
+      provides continuous security/resilience evaluation evidence against
+      hidden-instruction smuggling; MS.2.7 requires that these adversarial
+      robustness signals are measured and documented.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Backspace clusters in API/MCP text are essentially never legitimate, so
+      detection should trigger pre-defined response plans to quarantine or
+      sanitize the payload before it reaches the model; MG.2.3 mandates these
+      risk treatment mechanisms be in place.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: >-
+      Backspace deletion character injection is an adversarial input vector that exploits the visual gap between what human reviewers see and what the model processes; MP.5.1 requires identifying and characterizing such prompt-injection attack patterns so their likelihood and impact can be tracked.
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: >-
+      Detecting \x08 control character clusters in user input and tool output provides continuous security/resilience evaluation evidence against hidden-instruction smuggling; MS.2.7 requires that these adversarial robustness signals are measured and documented.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Backspace clusters in API/MCP text are essentially never legitimate, so detection should trigger pre-defined response plans to quarantine or sanitize the payload before it reaches the model; MG.2.3 mandates these risk treatment mechanisms be in place.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:49:26.783Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0971
+qa_status: pending

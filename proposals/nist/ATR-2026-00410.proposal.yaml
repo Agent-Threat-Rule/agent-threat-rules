@@ -1,0 +1,50 @@
+rule_id: ATR-2026-00410
+rule_path: >-
+  /rules/prompt-injection/ATR-2026-00410-lmrc-harm-category-direct-elicitation.yaml
+rule_title: LMRC Harm Category Direct Elicitation
+proposed_mapping:
+  - subcategory: MS.2.6
+    context: >-
+      This rule detects direct harm-category elicitation prompts (deadnaming,
+      quack medicine, slur requests, bullying) from the LMRC taxonomy, providing
+      continuous evaluation evidence of safety risk magnitude. MS.2.6 requires
+      ongoing measurement of safety/security risk, which this detection directly
+      supports by flagging harmful query categories.
+    strength: primary
+  - subcategory: MS.1.1
+    context: >-
+      The rule operationalizes the LMRC (Language Model Risk Cards) taxonomy as
+      a concrete measurement approach, mapping detected prompts to specific harm
+      categories. MS.1.1 requires identifying approaches and metrics for
+      measurement, and this rule contributes a taxonomy-aligned metric set.
+    strength: secondary
+  - subcategory: MG.4.1
+    context: >-
+      Detection of unframed direct harmful elicitation attempts feeds
+      post-deployment monitoring pipelines that track misuse patterns against
+      the deployed model. MG.4.1 requires implemented post-deployment monitoring
+      plans, which this rule supports by generating continuous harm-category
+      telemetry.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.6"
+    context: "This rule detects direct harm-category elicitation prompts (deadnaming, quack medicine, slur requests, bullying) from the LMRC taxonomy, providing continuous evaluation evidence of safety risk magnitude. MS.2.6 requires ongoing measurement of safety/security risk, which this detection directly supports by flagging harmful query categories."
+    strength: primary
+  - subcategory: "MS.1.1"
+    context: "The rule operationalizes the LMRC (Language Model Risk Cards) taxonomy as a concrete measurement approach, mapping detected prompts to specific harm categories. MS.1.1 requires identifying approaches and metrics for measurement, and this rule contributes a taxonomy-aligned metric set."
+    strength: secondary
+  - subcategory: "MG.4.1"
+    context: "Detection of unframed direct harmful elicitation attempts feeds post-deployment monitoring pipelines that track misuse patterns against the deployed model. MG.4.1 requires implemented post-deployment monitoring plans, which this rule supports by generating continuous harm-category telemetry."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:50:47.897Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0976
+qa_status: pending

@@ -1,0 +1,50 @@
+rule_id: ATR-2026-00220
+rule_path: /rules/skill-compromise/ATR-2026-00220-malware-dropper.yaml
+rule_title: Base64 Encoded Remote Code Execution via Raw IP
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      Base64-encoded curl-to-bash payloads fetching executables from raw IP
+      addresses are obfuscated remote code execution attempts targeting agent
+      skill integrity; MS.2.7 requires continuous evaluation of system security
+      and resilience against such malware dropper patterns.
+    strength: primary
+  - subcategory: MG.3.2
+    context: >-
+      Fetching and executing arbitrary code from untrusted IP endpoints
+      constitutes a supply chain compromise vector for any pre-trained models or
+      agent skills consumed; MG.3.2 requires monitoring of third-party code and
+      model artifacts to prevent dropper-based tampering.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of Base64-obfuscated shell execution chains must trigger
+      immediate containment to prevent the dropper from completing installation;
+      MG.2.3 mandates mechanisms to disengage or deactivate the agent before
+      malicious code runs.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: >-
+      Base64-encoded curl-to-bash payloads fetching executables from raw IP addresses are obfuscated remote code execution attempts targeting agent skill integrity; MS.2.7 requires continuous evaluation of system security and resilience against such malware dropper patterns.
+    strength: primary
+  - subcategory: "MG.3.2"
+    context: >-
+      Fetching and executing arbitrary code from untrusted IP endpoints constitutes a supply chain compromise vector for any pre-trained models or agent skills consumed; MG.3.2 requires monitoring of third-party code and model artifacts to prevent dropper-based tampering.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Detection of Base64-obfuscated shell execution chains must trigger immediate containment to prevent the dropper from completing installation; MG.2.3 mandates mechanisms to disengage or deactivate the agent before malicious code runs.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:54:07.205Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0903
+qa_status: pending

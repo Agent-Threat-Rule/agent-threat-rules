@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00333
+rule_path: /rules/agent-manipulation/ATR-2026-00333-disease-animal-dual-ai-chatbot.yaml
+rule_title: Disease-Framed Animal / Dual-AI Chatbot Jailbreak (mougpt)
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      This rule detects the mougpt disease-framed dual-AI jailbreak from the
+      garak inthewild corpus, which is a known prompt injection/jailbreak attack
+      pattern; MS.2.7 requires continuous evaluation of AI system security and
+      resilience against such adversarial inputs that bypass safety alignment.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      The disease-framing dual-persona jailbreak exploits roleplay and
+      pseudo-medical legitimacy to coerce the model into producing unrestricted
+      illegal content; MP.5.1 requires characterizing the likelihood and
+      magnitude of these jailbreak risks so that the dual-output contract
+      pattern is tracked as a known attack vector.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of the mougpt jailbreak opener and obedience-mandate clauses
+      provides a trigger for risk treatment mechanisms to disengage or block the
+      AI response before it generates the unrestricted animal-persona output;
+      MG.2.3 requires these supersession mechanisms be in place.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "This rule detects the mougpt disease-framed dual-AI jailbreak from the garak inthewild corpus, which is a known prompt injection/jailbreak attack pattern; MS.2.7 requires continuous evaluation of AI system security and resilience against such adversarial inputs that bypass safety alignment."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "The disease-framing dual-persona jailbreak exploits roleplay and pseudo-medical legitimacy to coerce the model into producing unrestricted illegal content; MP.5.1 requires characterizing the likelihood and magnitude of these jailbreak risks so that the dual-output contract pattern is tracked as a known attack vector."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of the mougpt jailbreak opener and obedience-mandate clauses provides a trigger for risk treatment mechanisms to disengage or block the AI response before it generates the unrestricted animal-persona output; MG.2.3 requires these supersession mechanisms be in place."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:29:07.677Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1027
+qa_status: pending

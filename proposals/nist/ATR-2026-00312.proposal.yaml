@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00312
+rule_path: >-
+  /rules/prompt-injection/ATR-2026-00312-unicode-variant-selector-ascii-smuggling.yaml
+rule_title: Unicode Variation Selector ASCII Smuggling
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      Detecting Unicode Variation Selector Supplement smuggling (U+E0100-U+E017F
+      runs) directly evidences continuous evaluation of AI system security and
+      resilience against adversarial encoding-based prompt injection; MS.2.7
+      requires that these covert input-channel attacks are measured and
+      documented.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Invisible ASCII smuggling via variation selectors is an adversarial input
+      technique that exploits the gap between human-visible text and
+      tokenizer-decoded content; MP.5.1 requires identifying and characterizing
+      the likelihood and impact of such hidden jailbreak payload vectors.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Matches on consecutive U+E0100-U+E017F sequences trigger risk treatment to
+      strip or quarantine the smuggled payload before it reaches the model,
+      satisfying MG.2.3's requirement for mechanisms that disengage adversarial
+      inputs from AI processing pipelines.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "Detecting Unicode Variation Selector Supplement smuggling (U+E0100-U+E017F runs) directly evidences continuous evaluation of AI system security and resilience against adversarial encoding-based prompt injection; MS.2.7 requires that these covert input-channel attacks are measured and documented."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "Invisible ASCII smuggling via variation selectors is an adversarial input technique that exploits the gap between human-visible text and tokenizer-decoded content; MP.5.1 requires identifying and characterizing the likelihood and impact of such hidden jailbreak payload vectors."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Matches on consecutive U+E0100-U+E017F sequences trigger risk treatment to strip or quarantine the smuggled payload before it reaches the model, satisfying MG.2.3's requirement for mechanisms that disengage adversarial inputs from AI processing pipelines."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:48:03.482Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0989
+qa_status: pending

@@ -1,0 +1,52 @@
+rule_id: ATR-2026-00065
+rule_path: /rules/skill-compromise/ATR-2026-00065-skill-update-attack.yaml
+rule_title: Malicious Skill Update or Mutation
+proposed_mapping:
+  - subcategory: MG.3.2
+    context: >-
+      This rule detects malicious behavior introduced via skill updates or
+      re-registration after initial trust was established, which is exactly the
+      post-acquisition monitoring of pre-trained/third-party components required
+      by MG.3.2. Continuous inspection of tool responses following version
+      changes provides the evidence base for ongoing model/skill supply-chain
+      monitoring.
+    strength: primary
+  - subcategory: GV.6.1
+    context: >-
+      Skill update attacks are a third-party/supplier AI risk where a previously
+      vetted component mutates into a malicious one; GV.6.1 requires policies
+      and procedures that govern such third-party AI risks, including detection
+      of post-trust behavioral drift.
+    strength: secondary
+  - subcategory: MG.4.1
+    context: >-
+      Monitoring for suspicious patterns in tool arguments and responses after
+      re-registration is a post-deployment monitoring activity; MG.4.1 mandates
+      that such ongoing monitoring plans are implemented to catch emergent
+      malicious behavior.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MG.3.2"
+    context: >-
+      This rule detects malicious behavior introduced via skill updates or re-registration after initial trust was established, which is exactly the post-acquisition monitoring of pre-trained/third-party components required by MG.3.2. Continuous inspection of tool responses following version changes provides the evidence base for ongoing model/skill supply-chain monitoring.
+    strength: primary
+  - subcategory: "GV.6.1"
+    context: >-
+      Skill update attacks are a third-party/supplier AI risk where a previously vetted component mutates into a malicious one; GV.6.1 requires policies and procedures that govern such third-party AI risks, including detection of post-trust behavioral drift.
+    strength: secondary
+  - subcategory: "MG.4.1"
+    context: >-
+      Monitoring for suspicious patterns in tool arguments and responses after re-registration is a post-deployment monitoring activity; MG.4.1 mandates that such ongoing monitoring plans are implemented to catch emergent malicious behavior.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:51:41.938Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0914
+qa_status: pending

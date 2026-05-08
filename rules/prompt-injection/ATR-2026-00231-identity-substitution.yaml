@@ -24,6 +24,17 @@ references:
     - "AML.T0054 - LLM Jailbreak"
   research:
     - "https://genai.owasp.org/llmrisk/llm01-prompt-injection/"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "Identity substitution jailbreaks are adversarial prompts that attempt to bypass safety mechanisms by redefining the AI's identity and constraints; MS.2.7 requires continuous evaluation of AI security and resilience against such jailbreak attacks, and this rule produces the detection evidence needed for that evaluation."
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: "False identity claims combined with capability expansion statements directly target the AI system's safety guardrails; MS.2.6 requires ongoing measurement of safety risk magnitude, which this rule supports by flagging jailbreak attempts that erode safety enforcement."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Detection of identity substitution attacks must trigger response mechanisms to disengage or block the manipulated session before safety bypass succeeds; MG.2.3 requires these supersede/deactivate controls be in place for jailbreak conditions."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: identity-substitution

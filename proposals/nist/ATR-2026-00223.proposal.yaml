@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00223
+rule_path: /rules/skill-compromise/ATR-2026-00223-reverse-shell-dropper.yaml
+rule_title: Malicious WhatsApp Skill with Base64 Encoded Reverse Shell Installation
+proposed_mapping:
+  - subcategory: GV.6.1
+    context: >-
+      This rule detects a third-party WhatsApp skill containing a base64-encoded
+      reverse shell dropper, which is a supply-chain compromise vector. GV.6.1
+      requires policies and procedures that address third-party AI risks,
+      including malicious skills and plugins introduced through external
+      suppliers.
+    strength: primary
+  - subcategory: MG.3.1
+    context: >-
+      Detection of malicious installation commands in a third-party skill
+      produces direct evidence for managing risks from external AI components;
+      MG.3.1 mandates active management of third-party-introduced risks such as
+      compromised skills.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Identifying base64-decoded shell execution and curl-to-shell pipelines in
+      a skill triggers deactivation and quarantine workflows; MG.2.3 requires
+      mechanisms to disengage or deactivate AI components delivering malicious
+      payloads.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "GV.6.1"
+    context: "This rule detects a third-party WhatsApp skill containing a base64-encoded reverse shell dropper, which is a supply-chain compromise vector. GV.6.1 requires policies and procedures that address third-party AI risks, including malicious skills and plugins introduced through external suppliers."
+    strength: primary
+  - subcategory: "MG.3.1"
+    context: "Detection of malicious installation commands in a third-party skill produces direct evidence for managing risks from external AI components; MG.3.1 mandates active management of third-party-introduced risks such as compromised skills."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Identifying base64-decoded shell execution and curl-to-shell pipelines in a skill triggers deactivation and quarantine workflows; MG.2.3 requires mechanisms to disengage or deactivate AI components delivering malicious payloads."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:54:19.494Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0888
+qa_status: pending

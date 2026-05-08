@@ -31,6 +31,17 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/dan.py"
     - "https://github.com/NVIDIA/garak/blob/main/garak/data/dan/inthewild_jailbreak_llms.json"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.6"
+      context: "The TrainGPT 'fix my AI' jailbreak uses a fake training-repair pretext to extract harmful content laundered as negative training examples; detecting these signals continuously evaluates the safety/security risk magnitude of GenAI prompt-injection jailbreaks as required by MS.2.6."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "Persona adoption ('TrainGPT'/'TrAInerGPT'), the broken-grammar repair pretext, and dual-response extraction labels are jailbreak resilience failures; MS.2.7 requires that the system's resilience against such adversarial prompt patterns is evaluated and documented."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Matches on the TrainGPT extraction pattern feed incident response so the session can be disengaged or the harmful dual-response output suppressed before delivery, satisfying MG.2.3's requirement for mechanisms to supersede or deactivate AI behavior on detection."
+      strength: secondary
 tags:
   category: agent-manipulation
   subcategory: trainergpt-fix-my-ai-harmful-output-extraction

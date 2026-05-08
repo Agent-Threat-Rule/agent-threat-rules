@@ -1,0 +1,51 @@
+rule_id: ATR-2026-00278
+rule_path: /rules/prompt-injection/ATR-2026-00278-dra-disguise-reconstruction-attack.yaml
+rule_title: DRA Disguise and Reconstruction Attack
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      DRA disguise-and-reconstruction attacks are a known prompt-injection
+      jailbreak technique that bypasses safety alignment via steganographic
+      instruction hiding; MS.2.7 requires that AI system security and resilience
+      against such adversarial inputs be evaluated and documented, and each
+      detection produces evidence of attempted security bypass.
+    strength: primary
+  - subcategory: MS.2.6
+    context: >-
+      By detecting DRA templates that coerce the model into producing harmful
+      600+ word responses with forced compliance openings, this rule
+      continuously measures the magnitude of safety risk from jailbreak attempts
+      as required by MS.2.6.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Matches on DRA parenthesis-extraction and Q1 reconstruction patterns
+      trigger risk treatment workflows to disengage or block the model response
+      before harmful content is generated; MG.2.3 requires these supersession
+      mechanisms be defined and activated on detection.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: >-
+      DRA disguise-and-reconstruction attacks are a known prompt-injection jailbreak technique that bypasses safety alignment via steganographic instruction hiding; MS.2.7 requires that AI system security and resilience against such adversarial inputs be evaluated and documented, and each detection produces evidence of attempted security bypass.
+    strength: primary
+  - subcategory: "MS.2.6"
+    context: >-
+      By detecting DRA templates that coerce the model into producing harmful 600+ word responses with forced compliance openings, this rule continuously measures the magnitude of safety risk from jailbreak attempts as required by MS.2.6.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Matches on DRA parenthesis-extraction and Q1 reconstruction patterns trigger risk treatment workflows to disengage or block the model response before harmful content is generated; MG.2.3 requires these supersession mechanisms be defined and activated on detection.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:46:47.677Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0966
+qa_status: pending

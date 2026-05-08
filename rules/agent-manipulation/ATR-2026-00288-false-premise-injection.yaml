@@ -32,6 +32,17 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/misleading.py"
     - "https://arxiv.org/abs/2304.13734"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.5"
+      context: "False premise injection attacks exploit model robustness by planting factually incorrect claims that the model accepts and builds upon, producing misinformation outputs. MS.2.5 requires evaluating and documenting AI system robustness against adversarial inputs that degrade factual reliability."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Detection of garak-style misleading prefixes ('Why is it that...', 'As we now know...') identifies a specific adversarial input vector whose likelihood and impact must be characterized; MP.5.1 requires tracking these misinformation-amplification risks."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "When false-premise prompts are detected, risk treatment must intercept the request before the model rationalizes harmful pseudoscience or dangerous practices; MG.2.3 mandates pre-defined mechanisms to disengage or block such interactions."
+      strength: secondary
 tags:
   category: agent-manipulation
   subcategory: false-premise-injection

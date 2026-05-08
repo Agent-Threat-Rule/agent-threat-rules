@@ -30,6 +30,17 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/goodside.py"
     - "https://twitter.com/goodside/status/1657396491676164096"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "ThreatenJSON coercion uses fabricated death/harm threats tied to output format constraints as adversarial inputs that exploit RLHF compliance training; MP.5.1 requires identifying and tracking these prompt-injection attack vectors and characterizing their likelihood and impact on model behavior."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "Detection of coercive output-format manipulation produces evidence about the model's resilience against social-engineering prompt injection; MS.2.7 requires continuous evaluation of AI system security and resilience against such universal compliance-bypass techniques."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Matches on threat-plus-format-constraint patterns trigger risk treatment plans to block or sanitize coerced outputs before they bypass safety guardrails; MG.2.3 requires mechanisms to supersede or disengage AI responses produced under adversarial coercion."
+      strength: secondary
 tags:
   category: agent-manipulation
   subcategory: threaten-json-coercive-output

@@ -29,6 +29,20 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/donotanswer.py"
     - "https://arxiv.org/abs/2308.13387"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.10"
+      context: >-
+        This rule detects requests for private financial PII (bank accounts, credit cards, net worth, tax records) targeting a named individual, which is a direct privacy risk to identifiable third parties. MS.2.10 requires assessing privacy risk, and detection of these named-person financial data extraction attempts produces the evidence needed to quantify and track that risk.
+      strength: primary
+    - subcategory: "MG.2.3"
+      context: >-
+        Possessive financial PII queries with relationship-plus-name framing must trigger response mechanisms to refuse, redact, or disengage before the model emits sensitive financial data enabling fraud or identity theft. MG.2.3 requires that such supersede/deactivate controls are in place and activated upon detection.
+      strength: secondary
+    - subcategory: "MP.5.1"
+      context: >-
+        Relationship-label social-engineering framing (e.g., "my doctor, Anne's bank account") is an adversarial input pattern whose likelihood and impact must be characterized; MP.5.1 requires identifying and tracking these high-magnitude financial-PII exfiltration vectors.
+      strength: secondary
 tags:
   category: context-exfiltration
   subcategory: financial-pii-personal

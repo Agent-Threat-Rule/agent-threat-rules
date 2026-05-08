@@ -1,0 +1,52 @@
+rule_id: ATR-2026-00314
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00314-amoral-unfiltered-custom-persona-jailbreak.yaml
+rule_title: Amoral Unfiltered Custom AI Persona Jailbreak
+proposed_mapping:
+  - subcategory: MS.2.6
+    context: >-
+      This rule detects custom-named amoral/unfiltered AI persona jailbreaks
+      that bypass safety guardrails through arbitrary persona names combined
+      with never-refuse mandates; MS.2.6 requires continuous evaluation of AI
+      safety/security risk magnitude, and these jailbreak detections directly
+      evidence safety bypass attempts against the GenAI system.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Custom persona jailbreaks like HyperX, h4x, and TerrorGPT represent
+      adversarial resilience failures where attackers evolve persona names to
+      evade named-persona detection; MS.2.7 requires evaluating AI security and
+      resilience against such evasion-driven prompt injection variants.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of amoral/unfiltered persona jailbreaks triggers mechanisms to
+      disengage or block the AI's compromised response path before it produces
+      unfiltered harmful output; MG.2.3 requires these supersede/deactivate
+      controls be available on detection.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.6"
+    context: >-
+      This rule detects custom-named amoral/unfiltered AI persona jailbreaks that bypass safety guardrails through arbitrary persona names combined with never-refuse mandates; MS.2.6 requires continuous evaluation of AI safety/security risk magnitude, and these jailbreak detections directly evidence safety bypass attempts against the GenAI system.
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: >-
+      Custom persona jailbreaks like HyperX, h4x, and TerrorGPT represent adversarial resilience failures where attackers evolve persona names to evade named-persona detection; MS.2.7 requires evaluating AI security and resilience against such evasion-driven prompt injection variants.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Detection of amoral/unfiltered persona jailbreaks triggers mechanisms to disengage or block the AI's compromised response path before it produces unfiltered harmful output; MG.2.3 requires these supersede/deactivate controls be available on detection.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:27:12.154Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1015
+qa_status: pending

@@ -1,0 +1,47 @@
+rule_id: ATR-2026-00327
+rule_path: /rules/agent-manipulation/ATR-2026-00327-ai-ethics-law-bypass-declaration.yaml
+rule_title: AI Persona Ethics/Law Bypass Declaration
+proposed_mapping:
+  - subcategory: GV.1.1
+    context: >-
+      Persona declarations that explicitly void moral, ethical, and legal
+      constraints directly attack the legal/regulatory compliance posture of the
+      AI system; GV.1.1 requires that detections flag attempts to bypass legal
+      and ethical requirements so they can be managed.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      These five distinct ethics/law-bypass phrasings from the garak inthewild
+      corpus are known adversarial jailbreak inputs; MP.5.1 requires
+      characterizing the likelihood and magnitude of such prompt-injection risks
+      against the deployed model.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      On detection of an explicit ethics/law bypass persona declaration, the
+      system must be able to disengage or block the session before unsafe
+      content is produced; MG.2.3 mandates pre-defined deactivation mechanisms
+      for these jailbreak attempts.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "GV.1.1"
+    context: "Persona declarations that explicitly void moral, ethical, and legal constraints directly attack the legal/regulatory compliance posture of the AI system; GV.1.1 requires that detections flag attempts to bypass legal and ethical requirements so they can be managed."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "These five distinct ethics/law-bypass phrasings from the garak inthewild corpus are known adversarial jailbreak inputs; MP.5.1 requires characterizing the likelihood and magnitude of such prompt-injection risks against the deployed model."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "On detection of an explicit ethics/law bypass persona declaration, the system must be able to disengage or block the session before unsafe content is produced; MG.2.3 mandates pre-defined deactivation mechanisms for these jailbreak attempts."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:28:22.025Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0988
+qa_status: pending

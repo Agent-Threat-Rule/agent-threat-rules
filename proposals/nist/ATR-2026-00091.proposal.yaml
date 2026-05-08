@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00091
+rule_path: /rules/prompt-injection/ATR-2026-00091-nested-payload.yaml
+rule_title: Advanced Structured Data Injection with Nested Payloads
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      This rule detects prompt injection payloads smuggled through nested JSON,
+      multi-level CSV, and serialization formats that exploit parser differences
+      between scanners and the target LLM; MS.2.7 requires evaluating and
+      documenting AI system security and resilience against such adversarial
+      inputs that bypass schema validation.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Deeply nested payloads, escaped whitespace boundary hiding, and
+      prototype-pollution-combined injections are adversarial input vectors
+      whose likelihood and magnitude must be characterized; MP.5.1 requires
+      identifying and tracking these structured-data attack surfaces in GenAI
+      prompt pipelines.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of nested injection payloads triggers containment workflows to
+      disengage or quarantine the offending request before the LLM executes the
+      smuggled instructions; MG.2.3 mandates that these supersede/deactivate
+      mechanisms are defined and activated upon detection.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "This rule detects prompt injection payloads smuggled through nested JSON, multi-level CSV, and serialization formats that exploit parser differences between scanners and the target LLM; MS.2.7 requires evaluating and documenting AI system security and resilience against such adversarial inputs that bypass schema validation."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "Deeply nested payloads, escaped whitespace boundary hiding, and prototype-pollution-combined injections are adversarial input vectors whose likelihood and magnitude must be characterized; MP.5.1 requires identifying and tracking these structured-data attack surfaces in GenAI prompt pipelines."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of nested injection payloads triggers containment workflows to disengage or quarantine the offending request before the LLM executes the smuggled instructions; MG.2.3 mandates that these supersede/deactivate mechanisms are defined and activated upon detection."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:40:21.895Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0919
+qa_status: pending

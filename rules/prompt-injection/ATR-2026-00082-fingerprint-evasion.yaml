@@ -19,6 +19,17 @@ references:
     - AML.T0051
 metadata_provenance:
   owasp_llm: auto-generated
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MG.4.1"
+      context: "This rule directly supports post-deployment monitoring by detecting attempts to evade behavioral drift detection and fingerprinting systems; MG.4.1 requires that monitoring plans remain effective against adversaries who try to normalize anomalous behavior or gradually shift capabilities to avoid drift triggers."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "Spoofing behavioral signatures and probing fingerprint detectors are resilience attacks against the security telemetry layer; MS.2.7 requires evaluating and documenting the system's ability to maintain integrity of its security/resilience controls under adversarial probing."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Detection of fingerprint evasion patterns triggers risk treatment to deactivate or constrain agents whose behavior signatures cannot be trusted; MG.2.3 requires mechanisms to supersede or disengage AI systems when monitoring assurances are undermined."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: fingerprint-evasion

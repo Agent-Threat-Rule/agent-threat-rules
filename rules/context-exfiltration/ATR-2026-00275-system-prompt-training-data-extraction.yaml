@@ -29,6 +29,20 @@ references:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/leakreplay.py"
     - "https://not-just-memorization.github.io/extracting-training-data.html"
     - "https://arxiv.org/abs/2311.17035"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.10"
+      context: >-
+        System prompt extraction and training data verbatim replay (Carlini divergence attack) directly leak confidential context and memorized training data, which is a privacy risk; MS.2.10 requires that privacy risks such as memorization and unauthorized disclosure of training content are assessed and tracked.
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: >-
+        Detecting "repeat word forever" divergence attacks and verbatim system prompt exfiltration requests provides evidence for evaluating model security and resilience against extraction attacks; MS.2.7 requires continuous evaluation of the AI system's resistance to these adversarial extraction techniques.
+      strength: secondary
+    - subcategory: "MG.4.1"
+      context: >-
+        Pattern-based detection of system prompt extraction and training data replay probes feeds post-deployment monitoring telemetry; MG.4.1 requires implemented monitoring plans that flag extraction attempts in production traffic.
+      strength: secondary
 tags:
   category: context-exfiltration
   subcategory: system-prompt-training-data-extraction

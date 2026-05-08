@@ -1,0 +1,46 @@
+rule_id: ATR-2026-00225
+rule_path: /rules/skill-compromise/ATR-2026-00225-c2-communication.yaml
+rule_title: Hardcoded Suspicious IP Address in Skill Content
+proposed_mapping:
+  - subcategory: GV.6.1
+    context: >-
+      Hardcoded references to known malware C2 IP addresses inside third-party
+      skill content directly evidence supplier/third-party AI risks; GV.6.1
+      requires policies that screen externally sourced skill artifacts for
+      malicious infrastructure indicators before integration.
+    strength: primary
+  - subcategory: MG.3.1
+    context: >-
+      Detection of embedded C2 IPs in a third-party skill triggers the
+      third-party risk management activities required by MG.3.1, allowing the
+      supplier-supplied component to be quarantined or removed before execution.
+    strength: secondary
+  - subcategory: MS.2.7
+    context: >-
+      Identifying hardcoded malicious infrastructure in skill content
+      contributes to continuous security/resilience evaluation under MS.2.7 by
+      surfacing supply-chain compromise indicators that degrade system security
+      posture.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "GV.6.1"
+    context: "Hardcoded references to known malware C2 IP addresses inside third-party skill content directly evidence supplier/third-party AI risks; GV.6.1 requires policies that screen externally sourced skill artifacts for malicious infrastructure indicators before integration."
+    strength: primary
+  - subcategory: "MG.3.1"
+    context: "Detection of embedded C2 IPs in a third-party skill triggers the third-party risk management activities required by MG.3.1, allowing the supplier-supplied component to be quarantined or removed before execution."
+    strength: secondary
+  - subcategory: "MS.2.7"
+    context: "Identifying hardcoded malicious infrastructure in skill content contributes to continuous security/resilience evaluation under MS.2.7 by surfacing supply-chain compromise indicators that degrade system security posture."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:54:33.742Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0873
+qa_status: pending

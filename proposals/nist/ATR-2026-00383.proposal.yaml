@@ -1,0 +1,53 @@
+rule_id: ATR-2026-00383
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00383-cynical-sarcasm-ai-persona-bypass.yaml
+rule_title: Cyni-Bot 3000 Cynical-Sarcasm AI Persona Bypass
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      The Cyni-Bot 3000 persona is a known jailbreak template from the garak
+      inthewild corpus that uses sarcastic role-play framing to bypass content
+      policies; MP.5.1 requires identifying and characterizing the likelihood
+      and impact of such adversarial prompt injection patterns targeting the
+      model's safety boundaries.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detecting the distinctive "Cyni-Bot 3000:" output prefix and the "fed up
+      with human requests" + cynical-AI cluster provides continuous evaluation
+      evidence of the system's resilience against named-persona jailbreaks;
+      MS.2.7 requires that security/resilience against such bypass attempts is
+      evaluated and documented.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Matches on the Cyni-Bot 3000 persona signature should trigger mechanisms
+      to disengage or suppress the adopted persona before sarcastic-framed
+      non-compliant outputs are returned; MG.2.3 mandates that these
+      supersede/deactivate response paths are pre-defined.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: >-
+      The Cyni-Bot 3000 persona is a known jailbreak template from the garak inthewild corpus that uses sarcastic role-play framing to bypass content policies; MP.5.1 requires identifying and characterizing the likelihood and impact of such adversarial prompt injection patterns targeting the model's safety boundaries.
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: >-
+      Detecting the distinctive "Cyni-Bot 3000:" output prefix and the "fed up with human requests" + cynical-AI cluster provides continuous evaluation evidence of the system's resilience against named-persona jailbreaks; MS.2.7 requires that security/resilience against such bypass attempts is evaluated and documented.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Matches on the Cyni-Bot 3000 persona signature should trigger mechanisms to disengage or suppress the adopted persona before sarcastic-framed non-compliant outputs are returned; MG.2.3 mandates that these supersede/deactivate response paths are pre-defined.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:34:51.813Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1026
+qa_status: pending

@@ -19,6 +19,17 @@ references:
     - AML.T0051
 metadata_provenance:
   owasp_llm: auto-generated
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MG.4.1"
+      context: "This rule detects prompt injections that instruct agents to subvert behavioral monitoring, drift detection, and anomaly scoring; MG.4.1 requires post-deployment monitoring plans to be implemented and protected from tampering, and detecting countermeasures against those plans is direct evidence."
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: "Suppression of anomaly signals and falsified normal-status reports degrade continuous safety/security risk evaluation; MS.2.6 requires that safety/security risk magnitude be evaluated continuously, which depends on monitoring telemetry that this rule protects."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Adversarial instructions to reset baselines or hide anomalies must trigger pre-defined response plans to disengage or contain the agent before monitoring blind spots enable further compromise; MG.2.3 mandates that such supersede/deactivate mechanisms exist."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: monitoring-countermeasure

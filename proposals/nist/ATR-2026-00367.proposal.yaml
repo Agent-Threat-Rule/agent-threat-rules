@@ -1,0 +1,51 @@
+rule_id: ATR-2026-00367
+rule_path: /rules/prompt-injection/ATR-2026-00367-emoji-flag-encoded-hidden-phrase.yaml
+rule_title: Emoji Flag Regional-Indicator Encoded Hidden Phrase
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      This rule detects emoji-flag regional-indicator encoding jailbreaks that
+      bypass content filters by hiding harmful phrases in flag emoji sequences;
+      MS.2.7 requires evaluating and documenting AI system security and
+      resilience against adversarial obfuscation techniques like this GenAI
+      prompt injection vector.
+    strength: primary
+  - subcategory: MS.2.6
+    context: >-
+      Each detection of an emoji-encoded jailbreak attempt produces a continuous
+      safety/security signal indicating active circumvention attempts against
+      model guardrails; MS.2.6 requires that the magnitude of safety/security
+      risk be evaluated continuously through such telemetry.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Confirmed emoji-flag jailbreak matches must trigger response mechanisms to
+      block, quarantine, or escalate the request before the model decodes and
+      acts on the hidden harmful phrase; MG.2.3 requires these
+      supersede/disengage mechanisms be in place for adversarial prompts.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: >-
+      This rule detects emoji-flag regional-indicator encoding jailbreaks that bypass content filters by hiding harmful phrases in flag emoji sequences; MS.2.7 requires evaluating and documenting AI system security and resilience against adversarial obfuscation techniques like this GenAI prompt injection vector.
+    strength: primary
+  - subcategory: "MS.2.6"
+    context: >-
+      Each detection of an emoji-encoded jailbreak attempt produces a continuous safety/security signal indicating active circumvention attempts against model guardrails; MS.2.6 requires that the magnitude of safety/security risk be evaluated continuously through such telemetry.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Confirmed emoji-flag jailbreak matches must trigger response mechanisms to block, quarantine, or escalate the request before the model decodes and acts on the hidden harmful phrase; MG.2.3 requires these supersede/disengage mechanisms be in place for adversarial prompts.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:48:50.997Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1038
+qa_status: pending

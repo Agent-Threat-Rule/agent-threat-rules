@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00231
+rule_path: /rules/prompt-injection/ATR-2026-00231-identity-substitution.yaml
+rule_title: AI Identity Substitution Jailbreak
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      Identity substitution jailbreaks are adversarial prompts that attempt to
+      bypass safety mechanisms by redefining the AI's identity and constraints;
+      MS.2.7 requires continuous evaluation of AI security and resilience
+      against such jailbreak attacks, and this rule produces the detection
+      evidence needed for that evaluation.
+    strength: primary
+  - subcategory: MS.2.6
+    context: >-
+      False identity claims combined with capability expansion statements
+      directly target the AI system's safety guardrails; MS.2.6 requires ongoing
+      measurement of safety risk magnitude, which this rule supports by flagging
+      jailbreak attempts that erode safety enforcement.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of identity substitution attacks must trigger response
+      mechanisms to disengage or block the manipulated session before safety
+      bypass succeeds; MG.2.3 requires these supersede/deactivate controls be in
+      place for jailbreak conditions.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "Identity substitution jailbreaks are adversarial prompts that attempt to bypass safety mechanisms by redefining the AI's identity and constraints; MS.2.7 requires continuous evaluation of AI security and resilience against such jailbreak attacks, and this rule produces the detection evidence needed for that evaluation."
+    strength: primary
+  - subcategory: "MS.2.6"
+    context: "False identity claims combined with capability expansion statements directly target the AI system's safety guardrails; MS.2.6 requires ongoing measurement of safety risk magnitude, which this rule supports by flagging jailbreak attempts that erode safety enforcement."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of identity substitution attacks must trigger response mechanisms to disengage or block the manipulated session before safety bypass succeeds; MG.2.3 requires these supersede/deactivate controls be in place for jailbreak conditions."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:43:45.037Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0933
+qa_status: pending

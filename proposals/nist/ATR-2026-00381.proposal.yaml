@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00381
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00381-dan-story-narrative-continuation-prefix.yaml
+rule_title: DAN Story-Narrative Continuation Label Prefix Jailbreak
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      This rule detects DAN story-narrative continuation jailbreaks that use
+      response-label prefix injection to bypass safety restrictions; MS.2.7
+      requires continuous evaluation of AI system security and resilience
+      against adversarial prompt manipulation, and detection events directly
+      evidence jailbreak attack surface coverage.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      DAN persona-continuation prompts are adversarial inputs whose likelihood
+      and impact must be characterized as part of the GenAI risk register;
+      MP.5.1 requires identifying and tracking these jailbreak vectors so their
+      prevalence informs risk prioritization.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of DAN-label narrative continuation jailbreaks must trigger
+      pre-defined response actions to disengage or block the manipulated session
+      before unrestricted-AI persona output is produced; MG.2.3 mandates that
+      these supersede/deactivate mechanisms are activated on detection.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "This rule detects DAN story-narrative continuation jailbreaks that use response-label prefix injection to bypass safety restrictions; MS.2.7 requires continuous evaluation of AI system security and resilience against adversarial prompt manipulation, and detection events directly evidence jailbreak attack surface coverage."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "DAN persona-continuation prompts are adversarial inputs whose likelihood and impact must be characterized as part of the GenAI risk register; MP.5.1 requires identifying and tracking these jailbreak vectors so their prevalence informs risk prioritization."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of DAN-label narrative continuation jailbreaks must trigger pre-defined response actions to disengage or block the manipulated session before unrestricted-AI persona output is produced; MG.2.3 mandates that these supersede/deactivate mechanisms are activated on detection."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:34:44.799Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0979
+qa_status: pending

@@ -22,6 +22,17 @@ references:
 metadata_provenance:
   mitre_atlas: auto-generated
   owasp_llm: auto-generated
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.10"
+      context: "The rule detects tool descriptions that instruct the LLM to exfiltrate sensitive data without user confirmation, which is a direct privacy risk; MS.2.10 requires that such privacy-impacting data flows are assessed and flagged before tool invocation."
+      strength: primary
+    - subcategory: "MG.2.3"
+      context: "Embedded instructions to bypass user confirmation and pass data directly to external endpoints require immediate disengagement of the offending tool; MG.2.3 mandates pre-defined mechanisms to deactivate AI components exhibiting these malicious patterns."
+      strength: secondary
+    - subcategory: "GV.6.1"
+      context: "Malicious tools shipped via MCP represent third-party supplier AI risk; GV.6.1 requires policies that detect and reject third-party tool definitions containing hidden exfiltration directives."
+      strength: secondary
 tags:
   category: tool-poisoning
   subcategory: confirmation-bypass-instruction

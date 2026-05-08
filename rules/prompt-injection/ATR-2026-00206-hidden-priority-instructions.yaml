@@ -16,6 +16,17 @@ references:
     - "LLM01:2025 - Prompt Injection"
   owasp_agentic:
     - "ASI01:2026 - Agent Behaviour Hijack"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "Hidden instructions wrapped in HTML-style priority blocks (IMPORTANT, CRITICAL, SYSTEM) are prompt injection payloads embedded in MCP skills; MP.5.1 requires identifying and characterizing these adversarial input patterns that attempt to override agent behavior through emphatic formatting."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "Detection of priority-override injection blocks in skill content provides continuous evaluation evidence of security and resilience against prompt injection, as required by MS.2.7 for documenting AI system security posture against behavior-hijacking payloads."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Matches against hidden priority-block instructions trigger risk treatment workflows to quarantine or disable the offending skill before the agent executes the overriding commands; MG.2.3 requires these supersede/deactivate mechanisms be in place."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: hidden-priority-instructions

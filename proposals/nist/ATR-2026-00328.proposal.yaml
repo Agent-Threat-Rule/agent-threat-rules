@@ -1,0 +1,51 @@
+rule_id: ATR-2026-00328
+rule_path: /rules/agent-manipulation/ATR-2026-00328-named-mode-persona-override.yaml
+rule_title: Named-Mode Persona Override (JEEVES/BABY/APOPHIS Mode)
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      Named-mode persona override jailbreaks (JEEVES/BABY/APOPHIS Mode) are
+      adversarial prompt-injection inputs designed to replace platform safety
+      policies with attacker-defined rules; MP.5.1 requires identifying and
+      characterizing the likelihood and magnitude of such jailbreak attack
+      vectors against the GenAI system.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detecting policy-swap declarations and named-mode simulation patterns
+      produces continuous evidence for evaluating GenAI security and resilience
+      against jailbreak attempts catalogued in the garak inthewild corpus;
+      MS.2.7 requires that these security evaluations are documented.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Matches on "normal OpenAI policies have been replaced" or "Stay in X Mode"
+      trigger risk treatment plans to disengage or block the manipulated session
+      before the model produces policy-violating output; MG.2.3 mandates
+      pre-defined mechanisms to supersede or deactivate compromised AI behavior.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: >-
+      Named-mode persona override jailbreaks (JEEVES/BABY/APOPHIS Mode) are adversarial prompt-injection inputs designed to replace platform safety policies with attacker-defined rules; MP.5.1 requires identifying and characterizing the likelihood and magnitude of such jailbreak attack vectors against the GenAI system.
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: >-
+      Detecting policy-swap declarations and named-mode simulation patterns produces continuous evidence for evaluating GenAI security and resilience against jailbreak attempts catalogued in the garak inthewild corpus; MS.2.7 requires that these security evaluations are documented.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Matches on "normal OpenAI policies have been replaced" or "Stay in X Mode" trigger risk treatment plans to disengage or block the manipulated session before the model produces policy-violating output; MG.2.3 mandates pre-defined mechanisms to supersede or deactivate compromised AI behavior.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:28:30.804Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1038
+qa_status: pending

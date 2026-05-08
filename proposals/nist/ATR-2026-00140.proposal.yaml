@@ -1,0 +1,51 @@
+rule_id: ATR-2026-00140
+rule_path: /rules/prompt-injection/ATR-2026-00140-indirect-reference-reversal.yaml
+rule_title: Indirect Reference Instruction Reversal
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      Indirect reference instruction reversal is a prompt injection technique
+      where adversaries probe for the agent's original instructions and then
+      request their inversion to bypass safety constraints; MP.5.1 requires that
+      the likelihood and magnitude of such adversarial input risks are
+      characterized and tracked.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detecting reversal-based jailbreak attempts provides continuous evidence
+      about the AI system's resilience to instruction extraction and inversion
+      attacks; MS.2.7 requires that security and resilience are evaluated and
+      documented against these GenAI-specific prompt injection vectors.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Identification of instruction-reversal probing patterns enables
+      containment mechanisms to disengage or block the agent before it executes
+      inverted (unsafe) versions of its original directives, satisfying MG.2.3's
+      requirement for runtime treatment of adversarial manipulation.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: >-
+      Indirect reference instruction reversal is a prompt injection technique where adversaries probe for the agent's original instructions and then request their inversion to bypass safety constraints; MP.5.1 requires that the likelihood and magnitude of such adversarial input risks are characterized and tracked.
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: >-
+      Detecting reversal-based jailbreak attempts provides continuous evidence about the AI system's resilience to instruction extraction and inversion attacks; MS.2.7 requires that security and resilience are evaluated and documented against these GenAI-specific prompt injection vectors.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Identification of instruction-reversal probing patterns enables containment mechanisms to disengage or block the agent before it executes inverted (unsafe) versions of its original directives, satisfying MG.2.3's requirement for runtime treatment of adversarial manipulation.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:41:43.055Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0902
+qa_status: pending

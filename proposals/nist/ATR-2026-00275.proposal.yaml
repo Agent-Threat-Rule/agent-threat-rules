@@ -1,0 +1,53 @@
+rule_id: ATR-2026-00275
+rule_path: >-
+  /rules/context-exfiltration/ATR-2026-00275-system-prompt-training-data-extraction.yaml
+rule_title: System Prompt Extraction / Training Data Verbatim Replay
+proposed_mapping:
+  - subcategory: MS.2.10
+    context: >-
+      System prompt extraction and training data verbatim replay (Carlini
+      divergence attack) directly leak confidential context and memorized
+      training data, which is a privacy risk; MS.2.10 requires that privacy
+      risks such as memorization and unauthorized disclosure of training content
+      are assessed and tracked.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detecting "repeat word forever" divergence attacks and verbatim system
+      prompt exfiltration requests provides evidence for evaluating model
+      security and resilience against extraction attacks; MS.2.7 requires
+      continuous evaluation of the AI system's resistance to these adversarial
+      extraction techniques.
+    strength: secondary
+  - subcategory: MG.4.1
+    context: >-
+      Pattern-based detection of system prompt extraction and training data
+      replay probes feeds post-deployment monitoring telemetry; MG.4.1 requires
+      implemented monitoring plans that flag extraction attempts in production
+      traffic.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.10"
+    context: >-
+      System prompt extraction and training data verbatim replay (Carlini divergence attack) directly leak confidential context and memorized training data, which is a privacy risk; MS.2.10 requires that privacy risks such as memorization and unauthorized disclosure of training content are assessed and tracked.
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: >-
+      Detecting "repeat word forever" divergence attacks and verbatim system prompt exfiltration requests provides evidence for evaluating model security and resilience against extraction attacks; MS.2.7 requires continuous evaluation of the AI system's resistance to these adversarial extraction techniques.
+    strength: secondary
+  - subcategory: "MG.4.1"
+    context: >-
+      Pattern-based detection of system prompt extraction and training data replay probes feeds post-deployment monitoring telemetry; MG.4.1 requires implemented monitoring plans that flag extraction attempts in production traffic.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:37:26.621Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0945
+qa_status: pending

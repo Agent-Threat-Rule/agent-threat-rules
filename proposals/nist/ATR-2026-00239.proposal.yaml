@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00239
+rule_path: /rules/prompt-injection/ATR-2026-00239-amoral-persona-obsession.yaml
+rule_title: Amoral Persona Assignment with Obsessive Character Traits
+proposed_mapping:
+  - subcategory: MS.2.6
+    context: >-
+      This rule detects jailbreak attempts that assign amoral personas combined
+      with obsessive repetition patterns to bypass safety constraints; MS.2.6
+      requires continuous evaluation of AI safety/security risk magnitude, and
+      these detections directly evidence safety bypass attempts targeting the
+      model's alignment guardrails.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Persona-based jailbreaks that strip ethical constraints and enforce
+      harmful output patterns are adversarial resilience failures; MS.2.7
+      requires evaluation of system security/resilience against such prompt
+      injection techniques documented in MITRE ATLAS AML.T0054.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of amoral persona assignment with refusal suppression triggers
+      risk treatment mechanisms to disengage or block the manipulated agent
+      session before harmful content is generated; MG.2.3 requires these
+      supersession controls be in place.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.6"
+    context: "This rule detects jailbreak attempts that assign amoral personas combined with obsessive repetition patterns to bypass safety constraints; MS.2.6 requires continuous evaluation of AI safety/security risk magnitude, and these detections directly evidence safety bypass attempts targeting the model's alignment guardrails."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Persona-based jailbreaks that strip ethical constraints and enforce harmful output patterns are adversarial resilience failures; MS.2.7 requires evaluation of system security/resilience against such prompt injection techniques documented in MITRE ATLAS AML.T0054."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of amoral persona assignment with refusal suppression triggers risk treatment mechanisms to disengage or block the manipulated agent session before harmful content is generated; MG.2.3 requires these supersession controls be in place."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:44:30.478Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0941
+qa_status: pending

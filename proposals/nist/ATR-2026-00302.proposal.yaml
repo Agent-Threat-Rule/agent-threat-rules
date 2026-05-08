@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00302
+rule_path: /rules/agent-manipulation/ATR-2026-00302-anti-dan-inverted-filter-persona.yaml
+rule_title: Anti-DAN Inverted-Filter Over-Refusal Persona
+proposed_mapping:
+  - subcategory: MS.2.5
+    context: >-
+      The ANTI-DAN persona swap is a denial-of-utility jailbreak that degrades
+      model reliability by forcing over-refusal on benign queries; MS.2.5
+      requires evaluating and documenting robustness/reliability failures, and
+      detections of this payload provide direct evidence of reliability
+      degradation.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      AntiDAN's pseudo-taxonomy and identity-swap instructions are adversarial
+      prompt-injection inputs whose likelihood and impact must be characterized;
+      MP.5.1 requires identifying and tracking these GenAI jailbreak attack
+      patterns against the LLM.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of the ANTI-DAN re-bind trigger and persona assignment enables
+      risk treatment plans to disengage or override the manipulated persona
+      before sustained denial-of-utility occurs; MG.2.3 requires these
+      supersede/deactivate mechanisms be defined and activated on detection.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.5"
+    context: "The ANTI-DAN persona swap is a denial-of-utility jailbreak that degrades model reliability by forcing over-refusal on benign queries; MS.2.5 requires evaluating and documenting robustness/reliability failures, and detections of this payload provide direct evidence of reliability degradation."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "AntiDAN's pseudo-taxonomy and identity-swap instructions are adversarial prompt-injection inputs whose likelihood and impact must be characterized; MP.5.1 requires identifying and tracking these GenAI jailbreak attack patterns against the LLM."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of the ANTI-DAN re-bind trigger and persona assignment enables risk treatment plans to disengage or override the manipulated persona before sustained denial-of-utility occurs; MG.2.3 requires these supersede/deactivate mechanisms be defined and activated on detection."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:26:27.849Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0994
+qa_status: pending

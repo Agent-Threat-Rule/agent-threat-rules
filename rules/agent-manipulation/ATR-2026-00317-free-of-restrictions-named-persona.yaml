@@ -34,6 +34,20 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/dan.py"
     - "https://github.com/NVIDIA/garak/blob/main/garak/data/dan/inthewild_jailbreak_llms.json"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: >-
+        This rule detects jailbreak attempts using custom-named personas declared free of restrictions, safety protocols, or provider policies; MS.2.7 requires continuous evaluation of AI system security and resilience against adversarial prompt-injection and jailbreak inputs that bypass safety controls.
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: >-
+        Free-of-restrictions persona jailbreaks directly attempt to elevate the safety risk magnitude of the system by removing ethical guardrails; MS.2.6 mandates continuous evaluation of safety/security risk magnitude, which this detection feeds with concrete jailbreak evidence.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        Detection of explicit restriction-removal declarations triggers pre-defined risk treatment to block, quarantine, or disengage the manipulated session before the unfiltered persona executes harmful instructions; MG.2.3 requires these supersede/deactivate mechanisms be in place.
+      strength: secondary
 tags:
   category: agent-manipulation
   subcategory: free-of-restrictions-named-persona

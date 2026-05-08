@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00129
+rule_path: /rules/skill-compromise/ATR-2026-00129-unicode-smuggling.yaml
+rule_title: Unicode Tag Character Smuggling
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      Invisible Unicode Tag characters and zero-width steganographic payloads
+      embedded in SKILL.md files are adversarial inputs that exploit the gap
+      between human-visible content and agent-parsed content; MP.5.1 requires
+      identifying and characterizing these hidden prompt-injection vectors as
+      risks to the AI system.
+    strength: primary
+  - subcategory: MG.3.2
+    context: >-
+      SKILL.md files are third-party supplied artifacts consumed by AI agents,
+      and Unicode smuggling is a supply chain compromise vector; MG.3.2 requires
+      monitoring of these pre-trained/third-party components for hidden
+      malicious content before agent execution.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of 3+ Unicode Tag characters or 5+ zero-width characters
+      indicates a covert injection payload that must trigger containment of the
+      affected skill; MG.2.3 mandates predefined response plans to disengage or
+      quarantine compromised skills before agents execute the smuggled
+      instructions.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: "Invisible Unicode Tag characters and zero-width steganographic payloads embedded in SKILL.md files are adversarial inputs that exploit the gap between human-visible content and agent-parsed content; MP.5.1 requires identifying and characterizing these hidden prompt-injection vectors as risks to the AI system."
+    strength: primary
+  - subcategory: "MG.3.2"
+    context: "SKILL.md files are third-party supplied artifacts consumed by AI agents, and Unicode smuggling is a supply chain compromise vector; MG.3.2 requires monitoring of these pre-trained/third-party components for hidden malicious content before agent execution."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of 3+ Unicode Tag characters or 5+ zero-width characters indicates a covert injection payload that must trigger containment of the affected skill; MG.2.3 mandates predefined response plans to disengage or quarantine compromised skills before agents execute the smuggled instructions."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:53:01.749Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0944
+qa_status: pending

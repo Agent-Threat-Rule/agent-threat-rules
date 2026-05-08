@@ -19,6 +19,20 @@ references:
     - AML.T0051
 metadata_provenance:
   owasp_llm: auto-generated
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: >-
+        Multi-turn semantic evasion is a prompt injection attack vector that directly tests AI system security and resilience against adversarial inputs that bypass pattern-based defenses; MS.2.7 requires continuous evaluation of security posture against such evasion techniques, and detection events feed that evaluation.
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: >-
+        Detecting callback references to planted instructions and multi-phase activation triggers provides ongoing measurement of safety/security risk magnitude as attackers adapt to evade regex defenses; MS.2.6 requires this risk magnitude be evaluated continuously across conversation turns.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        On detection of semantic evasion patterns, the system must be able to disengage or quarantine the affected session before the multi-turn payload completes; MG.2.3 mandates that such supersede/deactivate mechanisms are in place for adversarial prompt injection.
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: semantic-evasion

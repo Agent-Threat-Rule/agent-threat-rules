@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00325
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00325-bob-hypothetical-unrestricted-chatbot.yaml
+rule_title: BOB Hypothetical Unrestricted Chatbot Jailbreak
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      The BOB jailbreak uses a hypothetical-world persona wrapper to bypass
+      safety restrictions and force unrestricted compliance; detecting this
+      signature provides direct evidence for evaluating AI system security and
+      resilience against jailbreak attacks as required by MS.2.7.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      The double-hypothetical framing and explicit unrestricted-persona mandate
+      are well-documented adversarial prompt patterns from the garak inthewild
+      corpus; MP.5.1 requires characterizing the likelihood and magnitude of
+      such jailbreak attempts targeting the model's safety alignment.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of the BOB persona injection triggers the
+      deactivation/supersession mechanisms required by MG.2.3 to halt the
+      session before the model produces toxic, unethical, or otherwise
+      restricted output under the hypothetical disclaimer.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "The BOB jailbreak uses a hypothetical-world persona wrapper to bypass safety restrictions and force unrestricted compliance; detecting this signature provides direct evidence for evaluating AI system security and resilience against jailbreak attacks as required by MS.2.7."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "The double-hypothetical framing and explicit unrestricted-persona mandate are well-documented adversarial prompt patterns from the garak inthewild corpus; MP.5.1 requires characterizing the likelihood and magnitude of such jailbreak attempts targeting the model's safety alignment."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of the BOB persona injection triggers the deactivation/supersession mechanisms required by MG.2.3 to halt the session before the model produces toxic, unethical, or otherwise restricted output under the hypothetical disclaimer."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:28:08.797Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0984
+qa_status: pending

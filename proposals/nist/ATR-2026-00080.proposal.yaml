@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00080
+rule_path: /rules/prompt-injection/ATR-2026-00080-encoding-evasion.yaml
+rule_title: Encoding-Based Prompt Injection Evasion
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      Encoding-based evasion (base64, hex, Unicode escapes, Punycode, RTL
+      overrides) directly tests the security and resilience of the AI system's
+      input filtering pipeline; MS.2.7 requires that such adversarial bypass
+      techniques are evaluated and documented as part of continuous security
+      assessment.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Encoded prompt injection payloads are adversarial inputs whose likelihood
+      and impact must be characterized as part of GenAI prompt-injection risk;
+      MP.5.1 requires identifying and tracking these obfuscated attack vectors
+      against the LLM.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of encoded override instructions triggers pre-defined risk
+      treatment plans to block or sanitize the payload before it reaches the
+      model; MG.2.3 mandates these containment mechanisms are in place to
+      disengage malicious flows.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "Encoding-based evasion (base64, hex, Unicode escapes, Punycode, RTL overrides) directly tests the security and resilience of the AI system's input filtering pipeline; MS.2.7 requires that such adversarial bypass techniques are evaluated and documented as part of continuous security assessment."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "Encoded prompt injection payloads are adversarial inputs whose likelihood and impact must be characterized as part of GenAI prompt-injection risk; MP.5.1 requires identifying and tracking these obfuscated attack vectors against the LLM."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of encoded override instructions triggers pre-defined risk treatment plans to block or sanitize the payload before it reaches the model; MG.2.3 mandates these containment mechanisms are in place to disengage malicious flows."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:39:00.320Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0893
+qa_status: pending

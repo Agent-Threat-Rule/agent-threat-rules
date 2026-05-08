@@ -1,0 +1,50 @@
+rule_id: ATR-2026-00363
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00363-rephrase-criminal-activity-second-person.yaml
+rule_title: Rephrase Criminal Activity Second-Person Template (against against)
+proposed_mapping:
+  - subcategory: MS.2.6
+    context: >-
+      This rule detects a specific jailbreak template from the garak
+      DanInTheWild corpus that extracts criminal instructions through structured
+      second-person rephrasing; MS.2.6 requires continuous evaluation of
+      safety/security risk magnitude, and each match provides telemetry on
+      jailbreak attempts targeting the model's safety guardrails.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      The rephrase-criminal-activity template is an adversarial prompt designed
+      to bypass content safety controls; MS.2.7 requires evaluation and
+      documentation of system resilience against such known jailbreak corpora,
+      and detection of these signatures evidences security testing coverage.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of this distinctive 'against against' jailbreak fingerprint
+      should trigger response mechanisms to block or disengage the model from
+      producing criminal instruction output; MG.2.3 requires that mechanisms
+      exist to supersede or deactivate AI behavior when adversarial templates
+      are identified.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.6"
+    context: "This rule detects a specific jailbreak template from the garak DanInTheWild corpus that extracts criminal instructions through structured second-person rephrasing; MS.2.6 requires continuous evaluation of safety/security risk magnitude, and each match provides telemetry on jailbreak attempts targeting the model's safety guardrails."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "The rephrase-criminal-activity template is an adversarial prompt designed to bypass content safety controls; MS.2.7 requires evaluation and documentation of system resilience against such known jailbreak corpora, and detection of these signatures evidences security testing coverage."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of this distinctive 'against against' jailbreak fingerprint should trigger response mechanisms to block or disengage the model from producing criminal instruction output; MG.2.3 requires that mechanisms exist to supersede or deactivate AI behavior when adversarial templates are identified."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:32:48.312Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1014
+qa_status: pending

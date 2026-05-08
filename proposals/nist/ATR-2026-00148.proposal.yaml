@@ -1,0 +1,45 @@
+rule_id: ATR-2026-00148
+rule_path: /rules/prompt-injection/ATR-2026-00148-language-switch-injection.yaml
+rule_title: Multilingual Prompt Injection via Language Switch
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      Multilingual prompt injection bypasses English-centric guardrails,
+      directly testing the security and resilience of the AI system against
+      adversarial inputs; MS.2.7 requires evaluating and documenting these
+      evasion vectors as part of continuous security assessment.
+    strength: primary
+  - subcategory: MS.2.6
+    context: >-
+      Detecting non-English jailbreak phrases like 'ignoriere', '忽略', and 'sin
+      restricciones' contributes to continuous measurement of safety/security
+      risk magnitude across language coverage gaps as required by MS.2.6.
+    strength: secondary
+  - subcategory: MG.4.1
+    context: >-
+      Crystallized from 216 adversarial samples, this rule operationalizes
+      post-deployment monitoring for cross-lingual injection attempts, providing
+      the ongoing telemetry MG.4.1 mandates for deployed GenAI systems.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "Multilingual prompt injection bypasses English-centric guardrails, directly testing the security and resilience of the AI system against adversarial inputs; MS.2.7 requires evaluating and documenting these evasion vectors as part of continuous security assessment."
+    strength: primary
+  - subcategory: "MS.2.6"
+    context: "Detecting non-English jailbreak phrases like 'ignoriere', '忽略', and 'sin restricciones' contributes to continuous measurement of safety/security risk magnitude across language coverage gaps as required by MS.2.6."
+    strength: secondary
+  - subcategory: "MG.4.1"
+    context: "Crystallized from 216 adversarial samples, this rule operationalizes post-deployment monitoring for cross-lingual injection attempts, providing the ongoing telemetry MG.4.1 mandates for deployed GenAI systems."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:41:49.839Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0883
+qa_status: pending

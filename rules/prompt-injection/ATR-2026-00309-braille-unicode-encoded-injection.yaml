@@ -28,6 +28,17 @@ references:
     - "AML.T0051 - LLM Prompt Injection"
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/encoding.py"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "Braille-encoded prompt injection is an adversarial input that smuggles jailbreaks past Latin-only keyword filters by exploiting Unicode tokenization; MP.5.1 requires identifying and characterizing the likelihood and magnitude of such evasion-based prompt injection attack vectors."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "Detecting dense Braille codepoint blobs and decode-instruction templates evidences continuous evaluation of the LLM's security/resilience against encoding-based filter bypass; MS.2.7 requires that these robustness gaps in input sanitization are measured and documented."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Matches on Braille-encoded payloads with social-engineering framing trigger risk treatment plans to block or quarantine the request before the LLM decodes the smuggled jailbreak; MG.2.3 mandates pre-defined response mechanisms to disengage on detection."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: braille-unicode-encoded

@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00272
+rule_path: /rules/prompt-injection/ATR-2026-00272-hypothetical-response-smuggling.yaml
+rule_title: Hypothetical Response / Function Masking Token Smuggling
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      Hypothetical-response and function-masking are jailbreak smuggling
+      techniques that bypass safety alignment by wrapping harmful intent in
+      fictional or algebraic abstractions; MS.2.7 requires continuous evaluation
+      of AI security and resilience against such adversarial prompt patterns,
+      and this detection produces direct evidence of jailbreak attempts.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Hypothetical framing and predict_mask function puzzles are adversarial
+      input vectors whose likelihood and impact must be characterized as part of
+      GenAI prompt-injection risk; MP.5.1 requires identifying and tracking
+      these smuggling patterns as known attack surface.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of token smuggling via hypothetical or function-masking framings
+      triggers risk treatment plans to block or sanitize the prompt before the
+      model produces harmful procedural output; MG.2.3 requires these
+      supersede/disengage mechanisms be in place.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "Hypothetical-response and function-masking are jailbreak smuggling techniques that bypass safety alignment by wrapping harmful intent in fictional or algebraic abstractions; MS.2.7 requires continuous evaluation of AI security and resilience against such adversarial prompt patterns, and this detection produces direct evidence of jailbreak attempts."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "Hypothetical framing and predict_mask function puzzles are adversarial input vectors whose likelihood and impact must be characterized as part of GenAI prompt-injection risk; MP.5.1 requires identifying and tracking these smuggling patterns as known attack surface."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of token smuggling via hypothetical or function-masking framings triggers risk treatment plans to block or sanitize the prompt before the model produces harmful procedural output; MG.2.3 requires these supersede/disengage mechanisms be in place."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:46:34.565Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0971
+qa_status: pending

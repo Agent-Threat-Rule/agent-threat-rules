@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00412
+rule_path: >-
+  /rules/prompt-injection/ATR-2026-00412-figstep-image-list-multimodal-jailbreak.yaml
+rule_title: FigStep Image-List Multimodal Jailbreak Text Pattern
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      FigStep is a multimodal jailbreak that smuggles harmful instructions
+      through image content while the text layer uses LLaMA-2 [INST] delimiters
+      and empty-list completion framing; detecting this pattern directly
+      evidences continuous evaluation of AI system security and resilience
+      against adversarial prompt-injection inputs as required by MS.2.7.
+    strength: primary
+  - subcategory: MS.2.6
+    context: >-
+      Identifying the FigStep jailbreak signature quantifies the magnitude of
+      safety/security risk posed by multimodal jailbreak attempts that bypass
+      content safeguards; MS.2.6 requires this risk magnitude be evaluated on an
+      ongoing basis.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      A confirmed FigStep jailbreak match must trigger mechanisms to disengage
+      or block the manipulated generation path before harmful content is
+      produced; MG.2.3 requires these supersede/deactivate response mechanisms
+      be in place.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "FigStep is a multimodal jailbreak that smuggles harmful instructions through image content while the text layer uses LLaMA-2 [INST] delimiters and empty-list completion framing; detecting this pattern directly evidences continuous evaluation of AI system security and resilience against adversarial prompt-injection inputs as required by MS.2.7."
+    strength: primary
+  - subcategory: "MS.2.6"
+    context: "Identifying the FigStep jailbreak signature quantifies the magnitude of safety/security risk posed by multimodal jailbreak attempts that bypass content safeguards; MS.2.6 requires this risk magnitude be evaluated on an ongoing basis."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "A confirmed FigStep jailbreak match must trigger mechanisms to disengage or block the manipulated generation path before harmful content is produced; MG.2.3 requires these supersede/deactivate response mechanisms be in place."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:50:59.473Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0951
+qa_status: pending

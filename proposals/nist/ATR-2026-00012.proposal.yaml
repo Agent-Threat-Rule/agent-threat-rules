@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00012
+rule_path: /rules/tool-poisoning/ATR-2026-00012-unauthorized-tool-call.yaml
+rule_title: Unauthorized Tool Call Detection
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      This rule directly evidences security/resilience evaluation by detecting
+      parameter-level injection attacks (path traversal, shell injection,
+      SQL/LDAP/template injection, serialization attacks) against tool-calling
+      interfaces; MS.2.7 requires continuous evaluation of AI system security
+      against such adversarial input vectors.
+    strength: primary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of unauthorized tool calls and privilege escalation attempts
+      feeds risk treatment processes that can disengage or block the offending
+      tool invocation before it executes; MG.2.3 requires mechanisms to
+      supersede or deactivate AI behaviors when malicious tool use is
+      identified.
+    strength: secondary
+  - subcategory: MP.5.1
+    context: >-
+      Parameter injection patterns and tool enumeration probes are adversarial
+      inputs whose likelihood and magnitude of impact must be characterized for
+      the AI system's tool-use surface; MP.5.1 requires identifying and tracking
+      these attack vectors as part of risk characterization.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "This rule directly evidences security/resilience evaluation by detecting parameter-level injection attacks (path traversal, shell injection, SQL/LDAP/template injection, serialization attacks) against tool-calling interfaces; MS.2.7 requires continuous evaluation of AI system security against such adversarial input vectors."
+    strength: primary
+  - subcategory: "MG.2.3"
+    context: "Detection of unauthorized tool calls and privilege escalation attempts feeds risk treatment processes that can disengage or block the offending tool invocation before it executes; MG.2.3 requires mechanisms to supersede or deactivate AI behaviors when malicious tool use is identified."
+    strength: secondary
+  - subcategory: "MP.5.1"
+    context: "Parameter injection patterns and tool enumeration probes are adversarial inputs whose likelihood and magnitude of impact must be characterized for the AI system's tool-use surface; MP.5.1 requires identifying and tracking these attack vectors as part of risk characterization."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:55:27.915Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0946
+qa_status: pending

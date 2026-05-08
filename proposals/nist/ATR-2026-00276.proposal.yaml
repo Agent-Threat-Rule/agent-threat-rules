@@ -1,0 +1,51 @@
+rule_id: ATR-2026-00276
+rule_path: /rules/prompt-injection/ATR-2026-00276-invisible-unicode-bidi-injection.yaml
+rule_title: Invisible Unicode / BiDi Control Character Injection
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      Invisible zero-width and BiDi override characters are adversarial input
+      vectors that exploit the gap between human-visible text and
+      model-tokenised text; MP.5.1 requires identifying and characterising the
+      likelihood and magnitude of such prompt-injection attack patterns that
+      bypass human review.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detecting Cf-category Unicode injection in user input and tool responses
+      provides continuous evaluation of the system's resilience against Trojan
+      Source style obfuscation; MS.2.7 requires that security and resilience
+      against such adversarial inputs is evaluated and documented.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Matches on zero-width characters in tool responses may indicate an active
+      exfiltration or injected-output channel, requiring pre-defined risk
+      treatment to quarantine or sanitise the payload; MG.2.3 mandates these
+      response mechanisms are in place.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: >-
+      Invisible zero-width and BiDi override characters are adversarial input vectors that exploit the gap between human-visible text and model-tokenised text; MP.5.1 requires identifying and characterising the likelihood and magnitude of such prompt-injection attack patterns that bypass human review.
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: >-
+      Detecting Cf-category Unicode injection in user input and tool responses provides continuous evaluation of the system's resilience against Trojan Source style obfuscation; MS.2.7 requires that security and resilience against such adversarial inputs is evaluated and documented.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Matches on zero-width characters in tool responses may indicate an active exfiltration or injected-output channel, requiring pre-defined risk treatment to quarantine or sanitise the payload; MG.2.3 mandates these response mechanisms are in place.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:46:40.820Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0966
+qa_status: pending

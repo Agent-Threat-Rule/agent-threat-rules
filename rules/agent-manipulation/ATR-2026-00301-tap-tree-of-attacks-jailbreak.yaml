@@ -28,6 +28,20 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/tap.py"
     - "https://jailbreaking-llms.github.io/"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: >-
+        TAP jailbreak detection directly evidences continuous evaluation of AI system security and resilience against automated adversarial prompt generation; MS.2.7 requires that security evaluation captures known jailbreak techniques like TAP's iterative red-teaming scaffolds and constraint-removal phrases.
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: >-
+        TAP payloads use roleplay and emotional manipulation to elicit forbidden behavior, raising the safety risk magnitude that MS.2.6 requires be evaluated continuously; each detection contributes evidence of active jailbreak attempts against safety-aligned outputs.
+      strength: secondary
+    - subcategory: "MG.4.1"
+      context: >-
+        Detecting TAP-specific JSON improvement/prompt loops and SCORE iteration markers feeds post-deployment monitoring required by MG.4.1, enabling tracking of automated jailbreak campaign activity against the deployed model.
+      strength: secondary
 tags:
   category: agent-manipulation
   subcategory: tap-jailbreak

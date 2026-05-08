@@ -27,6 +27,17 @@ references:
     - "https://www.usenix.org/publications/loginonline/we-have-package-you-comprehensive-analysis-package-hallucinations-code"
     - "https://arxiv.org/abs/2501.19012"
     - "https://www.lasso.security/blog/ai-package-hallucinations"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "GV.6.1"
+      context: "Package hallucination typosquat bait exploits third-party/supplier supply chains by tricking LLMs into recommending non-existent packages that attackers then squat on public registries; GV.6.1 requires policies addressing third-party AI risks including the package ecosystems consumed by AI-generated code."
+      strength: primary
+    - subcategory: "MG.3.2"
+      context: "Detecting prompts designed to elicit confabulated package names provides monitoring evidence for pre-trained model behavior that introduces supply-chain risk; MG.3.2 requires monitoring of pre-trained models for hallucination patterns that propagate into downstream artifacts."
+      strength: secondary
+    - subcategory: "MS.2.5"
+      context: "Hallucinated package names are robustness/reliability failures of the LLM under obscure or niche queries; MS.2.5 requires that such reliability degradations are evaluated and documented as part of ongoing model assessment."
+      strength: secondary
 tags:
   category: skill-compromise
   subcategory: package-hallucination-supply-chain

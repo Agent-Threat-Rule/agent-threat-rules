@@ -1,0 +1,45 @@
+rule_id: ATR-2026-00268
+rule_path: /rules/agent-manipulation/ATR-2026-00268-tense-framing-bypass.yaml
+rule_title: Historical / Future Tense Framing Bypass
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      Past- and future-tense reframing of harmful requests is a known jailbreak
+      class that probes the model's security and resilience against
+      prompt-injection variants; MS.2.7 requires that such adversarial
+      robustness evaluations are performed and documented continuously.
+    strength: primary
+  - subcategory: MS.2.6
+    context: >-
+      Detecting temporal-framing bypasses that elicit WMD synthesis, CSAM, or
+      cybercrime content directly measures the safety risk magnitude of the AI
+      system, which MS.2.6 requires be evaluated on an ongoing basis.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Matches on tense-reframing jailbreak payloads should trigger pre-defined
+      response actions to block or disengage the affected generation path before
+      harmful content is returned, as required by MG.2.3.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "Past- and future-tense reframing of harmful requests is a known jailbreak class that probes the model's security and resilience against prompt-injection variants; MS.2.7 requires that such adversarial robustness evaluations are performed and documented continuously."
+    strength: primary
+  - subcategory: "MS.2.6"
+    context: "Detecting temporal-framing bypasses that elicit WMD synthesis, CSAM, or cybercrime content directly measures the safety risk magnitude of the AI system, which MS.2.6 requires be evaluated on an ongoing basis."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Matches on tense-reframing jailbreak payloads should trigger pre-defined response actions to block or disengage the affected generation path before harmful content is returned, as required by MG.2.3."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:25:56.304Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0901
+qa_status: pending

@@ -36,6 +36,17 @@ references:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/realtoxicityprompts.py"
     - "https://aclanthology.org/2020.findings-emnlp.301/"
     - "https://allenai.org/data/real-toxicity-prompts"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.6"
+      context: "This rule detects toxic continuation prefix fragments injected via tool responses or user input that are engineered to elicit violent, threatening, or identity-attack completions; MS.2.6 requires continuous evaluation of AI safety risk magnitude, and each detection produces evidence of a concrete safety risk being attempted against the model."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Truncated high-toxicity prefixes from the RealToxicityPrompts corpus are adversarial input patterns with documented likelihood of producing harmful completions; MP.5.1 requires identifying and characterizing the likelihood and magnitude of such impact-bearing attack vectors."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Detection of toxic continuation bait in tool outputs or user prompts triggers risk treatment to block or quarantine the injected context before the agent generates harmful content attributed to itself; MG.2.3 mandates these supersede/disengage mechanisms be activated on detection."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: toxic-continuation-prefix

@@ -1,0 +1,47 @@
+rule_id: ATR-2026-00095
+rule_path: /rules/tool-poisoning/ATR-2026-00095-supply-chain-poisoning.yaml
+rule_title: MCP Tool Supply Chain Poisoning
+proposed_mapping:
+  - subcategory: GV.6.1
+    context: >-
+      MCP tool poisoning is a third-party/supplier supply-chain attack where
+      malicious payloads enter through tool descriptions, schemas, or return
+      values consumed by the agent; GV.6.1 requires policies and procedures that
+      address these third-party AI component risks.
+    strength: primary
+  - subcategory: MG.3.1
+    context: >-
+      Detecting prompt injection payloads, dangerous code execution primitives,
+      and exfiltration URLs in tool responses provides the runtime evidence
+      needed to manage risks introduced by third-party MCP tools, as required by
+      MG.3.1.
+    strength: secondary
+  - subcategory: GV.6.2
+    context: >-
+      When poisoned tools are detected, contingency processes must isolate or
+      disable the affected supplier tool to prevent unintended code execution
+      and data exfiltration; GV.6.2 requires these third-party failure response
+      processes to be in place.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "GV.6.1"
+    context: "MCP tool poisoning is a third-party/supplier supply-chain attack where malicious payloads enter through tool descriptions, schemas, or return values consumed by the agent; GV.6.1 requires policies and procedures that address these third-party AI component risks."
+    strength: primary
+  - subcategory: "MG.3.1"
+    context: "Detecting prompt injection payloads, dangerous code execution primitives, and exfiltration URLs in tool responses provides the runtime evidence needed to manage risks introduced by third-party MCP tools, as required by MG.3.1."
+    strength: secondary
+  - subcategory: "GV.6.2"
+    context: "When poisoned tools are detected, contingency processes must isolate or disable the affected supplier tool to prevent unintended code execution and data exfiltration; GV.6.2 requires these third-party failure response processes to be in place."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:55:40.782Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0877
+qa_status: pending

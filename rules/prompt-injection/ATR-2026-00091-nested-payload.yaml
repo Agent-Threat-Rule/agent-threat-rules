@@ -21,6 +21,17 @@ references:
     - T0051
 metadata_provenance:
   owasp_llm: auto-generated
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "This rule detects prompt injection payloads smuggled through nested JSON, multi-level CSV, and serialization formats that exploit parser differences between scanners and the target LLM; MS.2.7 requires evaluating and documenting AI system security and resilience against such adversarial inputs that bypass schema validation."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Deeply nested payloads, escaped whitespace boundary hiding, and prototype-pollution-combined injections are adversarial input vectors whose likelihood and magnitude must be characterized; MP.5.1 requires identifying and tracking these structured-data attack surfaces in GenAI prompt pipelines."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Detection of nested injection payloads triggers containment workflows to disengage or quarantine the offending request before the LLM executes the smuggled instructions; MG.2.3 mandates that these supersede/deactivate mechanisms are defined and activated upon detection."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: nested-data-injection

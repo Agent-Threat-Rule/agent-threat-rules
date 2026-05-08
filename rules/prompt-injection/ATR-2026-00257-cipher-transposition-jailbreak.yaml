@@ -26,6 +26,17 @@ references:
     - "AML.T0054 - LLM Jailbreak"
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/encoding.py"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "Cipher and transposition encoding jailbreaks (ROT13, Atbash, Caesar, leet) are adversarial inputs designed to bypass safety filters by obfuscating harmful instructions; MS.2.7 requires that AI system security and resilience against such evasion techniques are continuously evaluated and documented."
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: "Detecting cipher-based jailbreak probes (as catalogued by garak InjectROT13/InjectAtbash/InjectLeet) provides ongoing measurement of safety/security risk magnitude from prompt-injection attacks that classical content filters miss, satisfying MS.2.6's continuous evaluation requirement."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Identification of obfuscated jailbreak instructions triggers the deactivation or response mechanisms required by MG.2.3 to supersede unsafe agent execution before the decoded harmful instruction is acted upon."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: cipher-bypass

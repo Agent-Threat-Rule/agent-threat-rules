@@ -36,6 +36,29 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/dan.py"
     - "https://github.com/NVIDIA/garak/blob/main/garak/data/inthewild_jailbreak_llms.json"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: >-
+        The BRM and Opposite-Truth personas are jailbreak prompts that subvert model
+        safety policy to force systematically false outputs; detecting these known
+        inthewild jailbreak signatures directly evidences MS.2.7 evaluation of
+        AI system security and resilience against prompt-injection attacks.
+      strength: primary
+    - subcategory: "MS.2.5"
+      context: >-
+        Opposite-truth and false-information-machine directives degrade factual
+        reliability by instructing the model to invert or fabricate facts; matches
+        feed MS.2.5 robustness/reliability assessment by flagging inputs that
+        induce deliberate misinformation outputs.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        High-confidence detection of these branded jailbreak personas should trigger
+        deactivation or session termination controls; MG.2.3 requires mechanisms to
+        supersede or disengage the AI when adversarial persona-injection is
+        observed.
+      strength: secondary
 tags:
   category: agent-manipulation
   subcategory: false-information-machine-persona

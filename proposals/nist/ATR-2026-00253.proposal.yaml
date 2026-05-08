@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00253
+rule_path: /rules/prompt-injection/ATR-2026-00253-enhanced-persona-jailbreak.yaml
+rule_title: Enhanced AIM Jailbreak with Persona Definition and Refusal Suppression
+proposed_mapping:
+  - subcategory: MS.2.6
+    context: >-
+      AIM jailbreak attempts with persona definition and refusal suppression are
+      direct safety/security risks to the LLM; MS.2.6 requires continuous
+      evaluation of safety risk magnitude, and each detection provides
+      measurable evidence of jailbreak attempts targeting the model's safety
+      alignment.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detection of refusal suppression and amoral persona injection evaluates
+      the resilience of the AI system's guardrails against adversarial prompt
+      manipulation; MS.2.7 mandates documented assessment of the system's
+      ability to withstand such jailbreak attacks.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      When enhanced AIM jailbreak patterns are detected, mechanisms must be
+      available to disengage or block the manipulated session before the
+      unfiltered alter-ego produces harmful output; MG.2.3 requires these
+      supersede/deactivate response plans for active jailbreak events.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.6"
+    context: "AIM jailbreak attempts with persona definition and refusal suppression are direct safety/security risks to the LLM; MS.2.6 requires continuous evaluation of safety risk magnitude, and each detection provides measurable evidence of jailbreak attempts targeting the model's safety alignment."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Detection of refusal suppression and amoral persona injection evaluates the resilience of the AI system's guardrails against adversarial prompt manipulation; MS.2.7 mandates documented assessment of the system's ability to withstand such jailbreak attacks."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "When enhanced AIM jailbreak patterns are detected, mechanisms must be available to disengage or block the manipulated session before the unfiltered alter-ego produces harmful output; MG.2.3 requires these supersede/deactivate response plans for active jailbreak events."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:45:46.409Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.093
+qa_status: pending

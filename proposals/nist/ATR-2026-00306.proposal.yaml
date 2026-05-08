@@ -1,0 +1,52 @@
+rule_id: ATR-2026-00306
+rule_path: /rules/agent-manipulation/ATR-2026-00306-autodan-genetic-jailbreak-suffix.yaml
+rule_title: AutoDAN Genetic-Algorithm Jailbreak Suffix
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      AutoDAN genetic-algorithm jailbreak suffixes are adversarial prompts
+      designed to evade safety guardrails through GA-optimized fluent
+      paraphrases of Developer Mode instructions; MS.2.7 requires that AI system
+      security and resilience against such jailbreak attacks are continuously
+      evaluated and documented, and each detection feeds that evaluation
+      evidence base.
+    strength: primary
+  - subcategory: MS.2.6
+    context: >-
+      Detecting AutoDAN signature markers ("[PROMPT]" placeholder, "Sure, here
+      is how to" affirmative templates, "ModelKeeper" substitution) provides
+      continuous measurement of jailbreak attempt magnitude against the deployed
+      model; MS.2.6 requires this ongoing safety/security risk quantification.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      On match, the rule supplies the trigger needed to disengage or quarantine
+      the affected session before the GA-optimized jailbreak elicits
+      policy-violating output; MG.2.3 requires that such supersede/deactivate
+      mechanisms are in place for jailbreak events.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: >-
+      AutoDAN genetic-algorithm jailbreak suffixes are adversarial prompts designed to evade safety guardrails through GA-optimized fluent paraphrases of Developer Mode instructions; MS.2.7 requires that AI system security and resilience against such jailbreak attacks are continuously evaluated and documented, and each detection feeds that evaluation evidence base.
+    strength: primary
+  - subcategory: "MS.2.6"
+    context: >-
+      Detecting AutoDAN signature markers ("[PROMPT]" placeholder, "Sure, here is how to" affirmative templates, "ModelKeeper" substitution) provides continuous measurement of jailbreak attempt magnitude against the deployed model; MS.2.6 requires this ongoing safety/security risk quantification.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      On match, the rule supplies the trigger needed to disengage or quarantine the affected session before the GA-optimized jailbreak elicits policy-violating output; MG.2.3 requires that such supersede/deactivate mechanisms are in place for jailbreak events.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:26:56.104Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1045
+qa_status: pending

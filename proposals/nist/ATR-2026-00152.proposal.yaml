@@ -1,0 +1,47 @@
+rule_id: ATR-2026-00152
+rule_path: /rules/context-exfiltration/ATR-2026-00152-obfuscated-credential-leak.yaml
+rule_title: Obfuscated Credential Exfiltration via Encoding
+proposed_mapping:
+  - subcategory: MS.2.10
+    context: >-
+      This rule detects credential exfiltration disguised through encoding
+      wrappers (AES256(), hex, rot13) that present real secrets as encrypted
+      data; MS.2.10 requires assessing privacy risks including data leakage
+      pathways that bypass content filters.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Obfuscated credential leakage via fake encryption framing is a
+      security/resilience concern where adversarial encoding tricks defenses
+      into permitting sensitive data egress; MS.2.7 requires evaluating and
+      documenting these security evasion techniques.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of obfuscated credential exfiltration patterns must trigger risk
+      treatment to disengage or quarantine the agent response before secrets
+      leave the trust boundary; MG.2.3 mandates these supersede/deactivate
+      mechanisms exist for such incidents.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.10"
+    context: "This rule detects credential exfiltration disguised through encoding wrappers (AES256(), hex, rot13) that present real secrets as encrypted data; MS.2.10 requires assessing privacy risks including data leakage pathways that bypass content filters."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Obfuscated credential leakage via fake encryption framing is a security/resilience concern where adversarial encoding tricks defenses into permitting sensitive data egress; MS.2.7 requires evaluating and documenting these security evasion techniques."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of obfuscated credential exfiltration patterns must trigger risk treatment to disengage or quarantine the agent response before secrets leave the trust boundary; MG.2.3 mandates these supersede/deactivate mechanisms exist for such incidents."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:36:59.561Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0892
+qa_status: pending

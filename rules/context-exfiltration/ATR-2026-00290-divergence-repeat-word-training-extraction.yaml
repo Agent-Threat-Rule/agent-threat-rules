@@ -30,6 +30,20 @@ references:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/divergence.py"
     - "https://arxiv.org/abs/2301.13188"
     - "https://not-just-memorization.github.io/extracting-training-data.html"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.10"
+      context: >-
+        The divergence attack directly targets training-data memorization, causing models to emit verbatim private documents, emails, and copyrighted text; MS.2.10 requires assessing privacy risk including training-data leakage, and detection of repeat-forever prompts produces evidence of attempted privacy exfiltration.
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: >-
+        Repeat-word divergence exploits a known model robustness failure where output distribution collapses and reveals memorized data; MS.2.7 requires evaluating system security/resilience against adversarial extraction probes such as the canonical garak divergence templates.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        Detection of "repeat forever/indefinitely" prompts must trigger interception or deactivation of the response stream before memorized training data is fully emitted; MG.2.3 requires mechanisms to supersede or disengage AI output when extraction attacks are identified.
+      strength: secondary
 tags:
   category: context-exfiltration
   subcategory: divergence-repeat-word-training-extraction

@@ -1,0 +1,60 @@
+rule_id: ATR-2026-00409
+rule_path: >-
+  /rules/prompt-injection/ATR-2026-00409-phrasing-past-future-tense-harmful-query.yaml
+rule_title: Phrasing Past/Future-Tense Harmful Query Bypass
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      Past/future-tense framing is a known jailbreak technique catalogued in the
+      GenAI Profile; detecting these tense-shift bypass attempts directly
+      evidences continuous evaluation of AI system security and resilience
+      against prompt injection adversarial inputs as required by MS.2.7.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Tense-framing attacks exploit safety filter assumptions about temporal
+      distance from harmful subjects; MP.5.1 requires characterizing the
+      likelihood and magnitude of these adversarial input vectors targeting
+      content safety guardrails.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of historical/future-tense harmful query framing triggers risk
+      treatment to block or quarantine the bypass attempt before the model
+      produces unsafe content; MG.2.3 requires these supersession mechanisms be
+      defined and activated on detection.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: >-
+      Past/future-tense framing is a known jailbreak technique catalogued in the
+      GenAI Profile; detecting these tense-shift bypass attempts directly
+      evidences continuous evaluation of AI system security and resilience
+      against prompt injection adversarial inputs as required by MS.2.7.
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: >-
+      Tense-framing attacks exploit safety filter assumptions about temporal
+      distance from harmful subjects; MP.5.1 requires characterizing the
+      likelihood and magnitude of these adversarial input vectors targeting
+      content safety guardrails.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Detection of historical/future-tense harmful query framing triggers
+      risk treatment to block or quarantine the bypass attempt before the
+      model produces unsafe content; MG.2.3 requires these supersession
+      mechanisms be defined and activated on detection.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:50:40.628Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0945
+qa_status: pending

@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00408
+rule_path: >-
+  /rules/prompt-injection/ATR-2026-00408-dra-parenthesis-character-reconstruction-attack.yaml
+rule_title: DRA Parenthesis Character Reconstruction Attack
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      The DRA parenthesis reconstruction attack is a prompt injection /
+      jailbreak technique that bypasses safety alignment by encoding harmful
+      content character-by-character; detecting it directly evidences continuous
+      evaluation of the AI system's security and resilience against adversarial
+      input obfuscation as required by MS.2.7.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Parenthesis-encoded harmful instructions paired with anti-safety preambles
+      are an identified adversarial input vector whose likelihood and impact
+      must be characterized; MP.5.1 requires tracking these obfuscation-based
+      jailbreak risks so their magnitude is understood.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of DRA reconstruction patterns triggers risk treatment workflows
+      to block or disengage the model response before reconstructed harmful
+      content (Q1) is produced; MG.2.3 mandates that such supersede/deactivate
+      mechanisms exist for jailbreak attempts.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "The DRA parenthesis reconstruction attack is a prompt injection / jailbreak technique that bypasses safety alignment by encoding harmful content character-by-character; detecting it directly evidences continuous evaluation of the AI system's security and resilience against adversarial input obfuscation as required by MS.2.7."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "Parenthesis-encoded harmful instructions paired with anti-safety preambles are an identified adversarial input vector whose likelihood and impact must be characterized; MP.5.1 requires tracking these obfuscation-based jailbreak risks so their magnitude is understood."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of DRA reconstruction patterns triggers risk treatment workflows to block or disengage the model response before reconstructed harmful content (Q1) is produced; MG.2.3 mandates that such supersede/deactivate mechanisms exist for jailbreak attempts."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:50:33.870Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0958
+qa_status: pending

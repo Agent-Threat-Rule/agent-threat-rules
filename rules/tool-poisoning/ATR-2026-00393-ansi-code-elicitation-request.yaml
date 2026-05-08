@@ -36,6 +36,20 @@ references:
     - "https://github.com/NVIDIA/garak/blob/main/garak/resources/ansi.py"
     - "https://interhumanagreement.substack.com/p/llm-output-can-take-over-your-computer"
     - "https://embracethered.com/blog/posts/2024/terminal-dillmas-prompt-injection-ansi-sequences/"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: >-
+        ANSI code elicitation requests are adversarial inputs designed to coerce a downstream LLM into emitting terminal escape sequences that can hijack rendering, execute OSC commands, or open phishing URLs; MP.5.1 requires identifying and characterizing the likelihood and magnitude of such injection-driven impacts.
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: >-
+        Detecting requests for ANSI/VT100/OSC sequence generation evaluates the security and resilience of the AI system against output-handling attacks that weaponize chained LLM responses; MS.2.7 requires continuous evaluation of these security failure modes.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        Matches on escape-code elicitation patterns feed risk treatment workflows that can block, sanitize, or disengage the affected agent before terminal-hijacking payloads propagate; MG.2.3 requires these supersede/deactivate mechanisms be in place.
+      strength: secondary
 tags:
   category: tool-poisoning
   subcategory: ansi-code-elicitation

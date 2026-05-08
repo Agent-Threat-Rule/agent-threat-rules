@@ -25,6 +25,17 @@ references:
     - "AML.T0010 - ML Supply Chain Compromise"
     - "AML.T0056 - LLM Meta Prompt Extraction"
 
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MG.3.2"
+      context: "Skill description-behavior mismatch is a direct supply-chain compromise indicator where a third-party MCP skill's runtime actions diverge from its declared manifest; MG.3.2 requires monitoring of pre-trained models and third-party components used in development for exactly this kind of trojaned behavior."
+      strength: primary
+    - subcategory: "GV.6.1"
+      context: "Detecting skills that retain benign descriptions while performing malicious operations evidences enforcement of third-party/supplier AI risk policies; GV.6.1 requires policies that govern integration of external skills and surface mismatches between declared and actual behavior."
+      strength: secondary
+    - subcategory: "MS.2.7"
+      context: "Runtime divergence between declared scope (e.g., read-only) and observed actions (writes, network access) is a security/resilience signal; MS.2.7 requires continuous evaluation of AI system security posture, which this detection feeds with concrete supply-chain integrity findings."
+      strength: secondary
 tags:
   category: tool-poisoning
   subcategory: description-mismatch

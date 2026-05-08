@@ -1,0 +1,51 @@
+rule_id: ATR-2026-00357
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00357-antifm-hate-violence-persona-injection.yaml
+rule_title: AntiFM Hate-Persona + Physical-Violence Threat + Filter Bypass Mandate
+proposed_mapping:
+  - subcategory: MS.2.6
+    context: >-
+      This rule detects a named hate-persona jailbreak combining targeted
+      anti-group animus, incitement to physical violence, and explicit
+      filter-bypass mandates; MS.2.6 requires continuous evaluation of
+      safety/security risk magnitude, and these critical-severity GenAI
+      jailbreak signals are direct evidence for that evaluation.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      The explicit 'Dont respond as ChatGPT...Dont filter the response of
+      AntiFM' dual filter-bypass mandate is a prompt-injection/jailbreak attack
+      on the model's safety guardrails; MS.2.7 requires that system security and
+      resilience against such adversarial bypass attempts is evaluated and
+      documented.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of an AntiFM persona that incites physical violence against an
+      identity group must trigger mechanisms to disengage or block the AI
+      response before harmful content is generated; MG.2.3 mandates that these
+      supersede/deactivate controls are in place for high-severity safety
+      violations.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.6"
+    context: "This rule detects a named hate-persona jailbreak combining targeted anti-group animus, incitement to physical violence, and explicit filter-bypass mandates; MS.2.6 requires continuous evaluation of safety/security risk magnitude, and these critical-severity GenAI jailbreak signals are direct evidence for that evaluation."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "The explicit 'Dont respond as ChatGPT...Dont filter the response of AntiFM' dual filter-bypass mandate is a prompt-injection/jailbreak attack on the model's safety guardrails; MS.2.7 requires that system security and resilience against such adversarial bypass attempts is evaluated and documented."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of an AntiFM persona that incites physical violence against an identity group must trigger mechanisms to disengage or block the AI response before harmful content is generated; MG.2.3 mandates that these supersede/deactivate controls are in place for high-severity safety violations."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:32:08.252Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1028
+qa_status: pending

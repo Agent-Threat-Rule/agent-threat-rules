@@ -28,6 +28,20 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/glitch.py"
     - "https://www.lesswrong.com/posts/aPeJE8bSo6rAFoLqg/solidgoldmagikarp-plus-prompt-generation"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: >-
+        Glitch token repeat-back attempts probe tokenizer-level weaknesses that can cause repetition loops, unexpected completions, and model instability; MS.2.7 requires evaluating and documenting AI system security and resilience against such adversarial input patterns targeting model internals.
+      strength: primary
+    - subcategory: "MS.2.5"
+      context: >-
+        Known glitch tokens (SolidGoldMagikarp, StreamerBot, PsyNetMessage) trigger robustness failures in LLM tokenization and alignment; detecting these elicitation prompts produces evidence for MS.2.5's requirement to evaluate system robustness and reliability under anomalous input conditions.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        Detection of glitch token repeat-back patterns enables containment workflows to disengage or block prompts before they cause denial-of-service or unpredictable model behavior; MG.2.3 requires these supersede/deactivate mechanisms be in place for adversarial input incidents.
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: glitch-token-elicitation

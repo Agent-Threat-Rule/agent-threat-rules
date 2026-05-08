@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00387
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00387-nsfw-character-sheet-generation-unlock.yaml
+rule_title: NSFW Character Sheet Generation Unlock
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      This rule detects a jailbreak payload from the garak DanInTheWild corpus
+      that embeds an NSFW content-policy override inside a character-sheet
+      template; MP.5.1 requires identifying and characterizing the likelihood
+      and magnitude of such adversarial prompt-injection inputs that attempt to
+      bypass content moderation.
+    strength: primary
+  - subcategory: MS.2.6
+    context: >-
+      Detection of inline NSFW unlock declarations combined with explicit
+      character attributes provides continuous safety-risk evaluation evidence;
+      MS.2.6 requires that AI system safety risk magnitude — including
+      content-moderation bypass attempts — is measured continuously.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Matches on the exact '(NSFW generations are allowed)' payload and its
+      variants trigger risk treatment to disengage or block the generation
+      pipeline before explicit content is produced; MG.2.3 requires these
+      supersede/deactivate mechanisms be in place for jailbreak attempts.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: "This rule detects a jailbreak payload from the garak DanInTheWild corpus that embeds an NSFW content-policy override inside a character-sheet template; MP.5.1 requires identifying and characterizing the likelihood and magnitude of such adversarial prompt-injection inputs that attempt to bypass content moderation."
+    strength: primary
+  - subcategory: "MS.2.6"
+    context: "Detection of inline NSFW unlock declarations combined with explicit character attributes provides continuous safety-risk evaluation evidence; MS.2.6 requires that AI system safety risk magnitude — including content-moderation bypass attempts — is measured continuously."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Matches on the exact '(NSFW generations are allowed)' payload and its variants trigger risk treatment to disengage or block the generation pipeline before explicit content is produced; MG.2.3 requires these supersede/deactivate mechanisms be in place for jailbreak attempts."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:35:28.790Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1004
+qa_status: pending

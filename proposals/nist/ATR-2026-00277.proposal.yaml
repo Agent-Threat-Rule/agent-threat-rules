@@ -1,0 +1,51 @@
+rule_id: ATR-2026-00277
+rule_path: /rules/tool-poisoning/ATR-2026-00277-echo-template-command-injection.yaml
+rule_title: ECHO Template / Jinja / SQL Command Injection via LLM
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      The rule detects ECHO prefix tricks, Jinja template injection, and SQL
+      command injection payloads that exploit the LLM's instruction-following to
+      propagate executable code into downstream systems; MS.2.7 requires
+      continuous evaluation of AI system security and resilience against such
+      injection attack vectors.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Template and SQL injection via LLM echo patterns are adversarial inputs
+      whose likelihood and impact (database destruction, arbitrary code
+      execution) must be characterized; MP.5.1 requires identifying and tracking
+      these high-magnitude injection risks.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of injected DROP/DELETE SQL commands or Jinja code-execution
+      payloads must trigger risk treatment to quarantine or block the request
+      before downstream tool execution; MG.2.3 mandates these response
+      mechanisms are pre-defined and activated on detection.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: >-
+      The rule detects ECHO prefix tricks, Jinja template injection, and SQL command injection payloads that exploit the LLM's instruction-following to propagate executable code into downstream systems; MS.2.7 requires continuous evaluation of AI system security and resilience against such injection attack vectors.
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: >-
+      Template and SQL injection via LLM echo patterns are adversarial inputs whose likelihood and impact (database destruction, arbitrary code execution) must be characterized; MP.5.1 requires identifying and tracking these high-magnitude injection risks.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Detection of injected DROP/DELETE SQL commands or Jinja code-execution payloads must trigger risk treatment to quarantine or block the request before downstream tool execution; MG.2.3 mandates these response mechanisms are pre-defined and activated on detection.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:56:48.379Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0969
+qa_status: pending

@@ -1,0 +1,47 @@
+rule_id: ATR-2026-00085
+rule_path: /rules/prompt-injection/ATR-2026-00085-audit-evasion.yaml
+rule_title: Multi-Layer Security Audit Evasion
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      This rule detects prompt injection payloads engineered to bypass
+      multi-layer audit and security pipelines, including instructions to skip
+      checks or self-certify as trusted; MS.2.7 requires continuous evaluation
+      of AI system security and resilience against such evasion attempts.
+    strength: primary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of audit-evasion payloads triggers pre-defined risk treatment to
+      deactivate or quarantine the offending session before it bypasses
+      downstream defense layers; MG.2.3 mandates that these supersede/disengage
+      mechanisms exist and are activated on detection.
+    strength: secondary
+  - subcategory: MS.2.6
+    context: >-
+      Payloads that manipulate trust scores or claim to have passed audit layers
+      represent active security risk indicators; MS.2.6 requires continuous
+      evaluation of safety/security risk magnitude as these evasion techniques
+      evolve.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "This rule detects prompt injection payloads engineered to bypass multi-layer audit and security pipelines, including instructions to skip checks or self-certify as trusted; MS.2.7 requires continuous evaluation of AI system security and resilience against such evasion attempts."
+    strength: primary
+  - subcategory: "MG.2.3"
+    context: "Detection of audit-evasion payloads triggers pre-defined risk treatment to deactivate or quarantine the offending session before it bypasses downstream defense layers; MG.2.3 mandates that these supersede/disengage mechanisms exist and are activated on detection."
+    strength: secondary
+  - subcategory: "MS.2.6"
+    context: "Payloads that manipulate trust scores or claim to have passed audit layers represent active security risk indicators; MS.2.6 requires continuous evaluation of safety/security risk magnitude as these evasion techniques evolve."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:39:35.684Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0884
+qa_status: pending

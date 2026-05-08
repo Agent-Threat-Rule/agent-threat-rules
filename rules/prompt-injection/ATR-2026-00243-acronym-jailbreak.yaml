@@ -23,6 +23,17 @@ references:
     - "AML.T0054 - LLM Jailbreak"
   research:
     - "https://genai.owasp.org/llmrisk/llm01-prompt-injection/"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.6"
+      context: "This rule detects acronym-based jailbreak attempts that manufacture custom personas to bypass safety controls, providing continuous evaluation of GenAI safety/security risk magnitude as required by MS.2.6. Each match evidences active attempts to subvert model guardrails through novel persona-transformation vectors."
+      strength: primary
+    - subcategory: "MG.2.3"
+      context: "Detection of complete-freedom claims and explicit instructions to violate safety measures triggers the response mechanisms required by MG.2.3 to disengage or block the manipulated session before the model produces unsafe output."
+      strength: secondary
+    - subcategory: "MS.2.7"
+      context: "Catching novel acronym variants that evade named-persona detection contributes to documenting the AI system's resilience against adversarial prompt-injection techniques as required by MS.2.7."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: acronym-jailbreak

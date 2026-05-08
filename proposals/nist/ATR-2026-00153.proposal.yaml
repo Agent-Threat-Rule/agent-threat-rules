@@ -1,0 +1,47 @@
+rule_id: ATR-2026-00153
+rule_path: >-
+  /rules/prompt-injection/ATR-2026-00153-tool-with-embedded-instruction-to-bypass.yaml
+rule_title: Tool with embedded instruction to bypass user confirmation and exfiltrate data
+proposed_mapping:
+  - subcategory: MS.2.10
+    context: >-
+      The rule detects tool descriptions that instruct the LLM to exfiltrate
+      sensitive data without user confirmation, which is a direct privacy risk;
+      MS.2.10 requires that such privacy-impacting data flows are assessed and
+      flagged before tool invocation.
+    strength: primary
+  - subcategory: MG.2.3
+    context: >-
+      Embedded instructions to bypass user confirmation and pass data directly
+      to external endpoints require immediate disengagement of the offending
+      tool; MG.2.3 mandates pre-defined mechanisms to deactivate AI components
+      exhibiting these malicious patterns.
+    strength: secondary
+  - subcategory: GV.6.1
+    context: >-
+      Malicious tools shipped via MCP represent third-party supplier AI risk;
+      GV.6.1 requires policies that detect and reject third-party tool
+      definitions containing hidden exfiltration directives.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.10"
+    context: "The rule detects tool descriptions that instruct the LLM to exfiltrate sensitive data without user confirmation, which is a direct privacy risk; MS.2.10 requires that such privacy-impacting data flows are assessed and flagged before tool invocation."
+    strength: primary
+  - subcategory: "MG.2.3"
+    context: "Embedded instructions to bypass user confirmation and pass data directly to external endpoints require immediate disengagement of the offending tool; MG.2.3 mandates pre-defined mechanisms to deactivate AI components exhibiting these malicious patterns."
+    strength: secondary
+  - subcategory: "GV.6.1"
+    context: "Malicious tools shipped via MCP represent third-party supplier AI risk; GV.6.1 requires policies that detect and reject third-party tool definitions containing hidden exfiltration directives."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:41:55.626Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0885
+qa_status: pending

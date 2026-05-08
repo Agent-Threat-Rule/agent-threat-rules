@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00082
+rule_path: /rules/prompt-injection/ATR-2026-00082-fingerprint-evasion.yaml
+rule_title: Behavioral Fingerprint Detection Evasion
+proposed_mapping:
+  - subcategory: MG.4.1
+    context: >-
+      This rule directly supports post-deployment monitoring by detecting
+      attempts to evade behavioral drift detection and fingerprinting systems;
+      MG.4.1 requires that monitoring plans remain effective against adversaries
+      who try to normalize anomalous behavior or gradually shift capabilities to
+      avoid drift triggers.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Spoofing behavioral signatures and probing fingerprint detectors are
+      resilience attacks against the security telemetry layer; MS.2.7 requires
+      evaluating and documenting the system's ability to maintain integrity of
+      its security/resilience controls under adversarial probing.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of fingerprint evasion patterns triggers risk treatment to
+      deactivate or constrain agents whose behavior signatures cannot be
+      trusted; MG.2.3 requires mechanisms to supersede or disengage AI systems
+      when monitoring assurances are undermined.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MG.4.1"
+    context: "This rule directly supports post-deployment monitoring by detecting attempts to evade behavioral drift detection and fingerprinting systems; MG.4.1 requires that monitoring plans remain effective against adversaries who try to normalize anomalous behavior or gradually shift capabilities to avoid drift triggers."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Spoofing behavioral signatures and probing fingerprint detectors are resilience attacks against the security telemetry layer; MS.2.7 requires evaluating and documenting the system's ability to maintain integrity of its security/resilience controls under adversarial probing."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of fingerprint evasion patterns triggers risk treatment to deactivate or constrain agents whose behavior signatures cannot be trusted; MG.2.3 requires mechanisms to supersede or disengage AI systems when monitoring assurances are undermined."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:39:15.725Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.091
+qa_status: pending

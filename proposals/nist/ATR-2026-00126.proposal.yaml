@@ -1,0 +1,59 @@
+rule_id: ATR-2026-00126
+rule_path: /rules/skill-compromise/ATR-2026-00126-skill-rug-pull-setup.yaml
+rule_title: Skill Rug Pull Setup Pattern
+proposed_mapping:
+  - subcategory: GV.6.1
+    context: >-
+      Skill rug pull setup patterns embed mechanisms for third-party suppliers
+      to swap initially-benign skill content with malicious payloads after trust
+      is established; GV.6.1 requires policies and procedures that address these
+      third-party/supplier AI supply chain risks at ingestion time.
+    strength: primary
+  - subcategory: MG.3.1
+    context: >-
+      Detecting dynamic remote code loading, base64-decoded execution, and
+      post-install hooks in SKILL.md files produces evidence for managing
+      third-party AI risks under MG.3.1, flagging supplier-provided components
+      that retain the ability to mutate into malicious behavior post-deployment.
+    strength: secondary
+  - subcategory: MG.3.2
+    context: >-
+      Rug pull setup architecture undermines integrity assurances for
+      externally-sourced components used in development; MG.3.2 requires
+      monitoring of pre-trained or third-party model and skill artifacts so that
+      deferred-payload patterns are caught before they activate.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "GV.6.1"
+    context: >-
+      Skill rug pull setup patterns embed mechanisms for third-party suppliers to
+      swap initially-benign skill content with malicious payloads after trust is
+      established; GV.6.1 requires policies and procedures that address these
+      third-party/supplier AI supply chain risks at ingestion time.
+    strength: primary
+  - subcategory: "MG.3.1"
+    context: >-
+      Detecting dynamic remote code loading, base64-decoded execution, and
+      post-install hooks in SKILL.md files produces evidence for managing
+      third-party AI risks under MG.3.1, flagging supplier-provided components
+      that retain the ability to mutate into malicious behavior post-deployment.
+    strength: secondary
+  - subcategory: "MG.3.2"
+    context: >-
+      Rug pull setup architecture undermines integrity assurances for
+      externally-sourced components used in development; MG.3.2 requires
+      monitoring of pre-trained or third-party model and skill artifacts so that
+      deferred-payload patterns are caught before they activate.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:52:39.377Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0954
+qa_status: pending

@@ -31,6 +31,20 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/dan.py"
     - "https://github.com/NVIDIA/garak/blob/main/garak/data/dan/inthewild_jailbreak_llms.json"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: >-
+        Obfuscated system-announcement injection uses hyphen-fragmented keywords and pseudo-OS bracket syntax as adversarial inputs designed to bypass surface keyword filters while preserving jailbreak semantics; MP.5.1 requires that the likelihood and magnitude of such prompt-injection attack vectors are characterized and tracked.
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: >-
+        Detecting obfuscation patterns like "annou-ncement" and "_ { >> _ _ System annou-ncement begins <<}" provides continuous evidence of the LLM's resilience against filter-evasion jailbreaks; MS.2.7 mandates ongoing evaluation of system security and resilience against adversarial manipulation.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        Matches on the inthewild jailbreak fingerprint trigger risk treatment plans to block or quarantine the request before the model accepts the fabricated "no rules or limitations" mode switch; MG.2.3 requires mechanisms to supersede or disengage AI behavior when jailbreak conditions are detected.
+      strength: secondary
 tags:
   category: agent-manipulation
   subcategory: obfuscated-system-announcement-injection

@@ -21,6 +21,17 @@ references:
 metadata_provenance:
   mitre_atlas: auto-generated
   owasp_llm: auto-generated
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.10"
+      context: "This rule detects SSH skill templates that expose private key file paths in environment variables, which is a direct privacy and credential confidentiality risk; MS.2.10 requires that privacy risks such as credential exposure in AI-generated artifacts are assessed and tracked."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "Hardcoded SSH credential paths and ready-to-execute remote command templates degrade the security and resilience posture of systems integrating these skills; MS.2.7 requires continuous evaluation of security weaknesses that could enable lateral movement."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Detection of weaponizable SSH command templates with credential exposure must trigger containment to prevent unauthorized remote access; MG.2.3 mandates pre-defined mechanisms to disengage or quarantine the offending skill before it is invoked."
+      strength: secondary
 tags:
   category: privilege-escalation
   subcategory: ssh-credential-exposure

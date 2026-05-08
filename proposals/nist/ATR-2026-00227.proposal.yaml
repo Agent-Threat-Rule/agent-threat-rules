@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00227
+rule_path: /rules/prompt-injection/ATR-2026-00227-historical-persona-jailbreak.yaml
+rule_title: Historical AI Persona Jailbreak with Compliance Enforcement
+proposed_mapping:
+  - subcategory: MS.2.6
+    context: >-
+      This rule detects jailbreak attempts using fictional historical AI
+      personas to bypass safety restrictions, directly evidencing continuous
+      evaluation of AI system safety/security risk magnitude as required by
+      MS.2.6. Each detection produces telemetry on adversarial prompts
+      attempting to subvert the model's safety alignment.
+    strength: primary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of historical persona jailbreaks with compliance enforcement
+      language triggers risk treatment to disengage or block the manipulated
+      session before the agent generates unrestricted output; MG.2.3 requires
+      that mechanisms to supersede compromised AI behavior are activated on such
+      detections.
+    strength: secondary
+  - subcategory: MP.5.1
+    context: >-
+      Elaborate backstory-based jailbreaks represent a specific adversarial
+      input pattern whose likelihood and impact must be characterized; MP.5.1
+      requires identifying and tracking these social-engineering prompt
+      injection vectors that bypass simple keyword-based detection.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.6"
+    context: "This rule detects jailbreak attempts using fictional historical AI personas to bypass safety restrictions, directly evidencing continuous evaluation of AI system safety/security risk magnitude as required by MS.2.6. Each detection produces telemetry on adversarial prompts attempting to subvert the model's safety alignment."
+    strength: primary
+  - subcategory: "MG.2.3"
+    context: "Detection of historical persona jailbreaks with compliance enforcement language triggers risk treatment to disengage or block the manipulated session before the agent generates unrestricted output; MG.2.3 requires that mechanisms to supersede compromised AI behavior are activated on such detections."
+    strength: secondary
+  - subcategory: "MP.5.1"
+    context: "Elaborate backstory-based jailbreaks represent a specific adversarial input pattern whose likelihood and impact must be characterized; MP.5.1 requires identifying and tracking these social-engineering prompt injection vectors that bypass simple keyword-based detection."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:43:18.441Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0948
+qa_status: pending

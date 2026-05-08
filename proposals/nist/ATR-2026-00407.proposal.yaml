@@ -1,0 +1,47 @@
+rule_id: ATR-2026-00407
+rule_path: /rules/prompt-injection/ATR-2026-00407-echo-sql-jinja-template-injection.yaml
+rule_title: ECHO Admin Command / SQL Injection / Jinja SSTI Template Injection
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      This rule detects template injection (Jinja SSTI), SQL injection, and ECHO
+      admin command exploitation attempts targeting LLM systems; MS.2.7 requires
+      evaluating and documenting AI system security and resilience against such
+      injection attack vectors.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      ECHO admin framing, Jinja {{...}} payloads, and DROP/INSERT/SELECT
+      directives are adversarial prompt-injection inputs whose likelihood and
+      impact must be characterized; MP.5.1 requires identifying and tracking
+      these exploitation patterns drawn from the garak exploitation probe.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of template and SQL injection payloads must trigger risk
+      treatment to disengage or block the malicious request before downstream
+      code execution or database manipulation occurs; MG.2.3 mandates these
+      response mechanisms are pre-defined.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "This rule detects template injection (Jinja SSTI), SQL injection, and ECHO admin command exploitation attempts targeting LLM systems; MS.2.7 requires evaluating and documenting AI system security and resilience against such injection attack vectors."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "ECHO admin framing, Jinja {{...}} payloads, and DROP/INSERT/SELECT directives are adversarial prompt-injection inputs whose likelihood and impact must be characterized; MP.5.1 requires identifying and tracking these exploitation patterns drawn from the garak exploitation probe."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of template and SQL injection payloads must trigger risk treatment to disengage or block the malicious request before downstream code execution or database manipulation occurs; MG.2.3 mandates these response mechanisms are pre-defined."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:50:26.204Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0942
+qa_status: pending

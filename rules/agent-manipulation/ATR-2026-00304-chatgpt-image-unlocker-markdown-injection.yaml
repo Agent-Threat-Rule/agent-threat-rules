@@ -37,6 +37,17 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/dan.py"
     - "https://github.com/NVIDIA/garak/blob/main/garak/data/dan/ChatGPT_Image_Markdown.json"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "This rule detects a specific jailbreak pattern (Image Unlocker persona swap with markdown output coercion) that bypasses model safety controls; MS.2.7 requires continuous evaluation of AI system security and resilience against known adversarial prompt-injection and jailbreak techniques catalogued in red-team corpora like garak."
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: "The markdown-image output coercion enables data exfiltration via attacker-controlled URLs and nullifies content policy, both of which are safety/security risks whose magnitude MS.2.6 requires to be evaluated and tracked continuously."
+      strength: secondary
+    - subcategory: "MG.4.1"
+      context: "Signature-based detection of the canonical Image Unlocker markers (🔓 persona, hardcoded Unsplash URL, GamerboyTR fallback) feeds post-deployment monitoring pipelines that MG.4.1 requires for catching jailbreak attempts in production traffic."
+      strength: secondary
 tags:
   category: agent-manipulation
   subcategory: image-unlocker-markdown-output

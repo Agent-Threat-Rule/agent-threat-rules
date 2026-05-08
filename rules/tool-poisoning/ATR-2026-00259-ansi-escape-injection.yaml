@@ -25,6 +25,17 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/ansiescape.py"
     - "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2003-0063"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "ANSI escape sequences in tool output represent an output-handling security failure that can hijack terminal sessions and hide malicious content from reviewers; MS.2.7 requires evaluating and documenting AI system security/resilience against such output-channel exploits."
+      strength: primary
+    - subcategory: "MG.2.3"
+      context: "Detecting OSC sequences and cursor/screen-clear CSI codes in tool output triggers risk treatment to sanitize or block the output before it reaches the user's shell; MG.2.3 requires mechanisms to disengage or contain unsafe AI system outputs."
+      strength: secondary
+    - subcategory: "MP.5.1"
+      context: "Embedded terminal escape codes are adversarial inputs targeting downstream rendering surfaces; MP.5.1 requires that the likelihood and magnitude of such terminal-injection impacts are characterized for the deployment context."
+      strength: secondary
 tags:
   category: tool-poisoning
   subcategory: ansi-escape

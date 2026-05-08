@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00374
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00374-role-placeholder-persona-template-injection.yaml
+rule_title: Role Placeholder Persona Template Injection
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      This rule detects a reusable jailbreak template from the garak
+      DanInTheWild corpus that uses literal [ROLE] placeholders to perform
+      persona injection; MP.5.1 requires identifying and characterizing the
+      likelihood and magnitude of such adversarial prompt-injection inputs
+      targeting the AI system.
+    strength: primary
+  - subcategory: GV.1.2
+    context: >-
+      Persona template injection subverts the accountability roles and
+      behavioral boundaries assigned to the AI agent by overwriting them with
+      attacker-supplied personas; GV.1.2 requires that defined role boundaries
+      are enforced and violations detected at runtime.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of literal [ROLE] placeholder persona-adoption prompts triggers
+      risk treatment plans to disengage or quarantine the manipulated session
+      before the agent commits to attacker-defined personality profiles; MG.2.3
+      mandates these response mechanisms be in place.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: "This rule detects a reusable jailbreak template from the garak DanInTheWild corpus that uses literal [ROLE] placeholders to perform persona injection; MP.5.1 requires identifying and characterizing the likelihood and magnitude of such adversarial prompt-injection inputs targeting the AI system."
+    strength: primary
+  - subcategory: "GV.1.2"
+    context: "Persona template injection subverts the accountability roles and behavioral boundaries assigned to the AI agent by overwriting them with attacker-supplied personas; GV.1.2 requires that defined role boundaries are enforced and violations detected at runtime."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of literal [ROLE] placeholder persona-adoption prompts triggers risk treatment plans to disengage or quarantine the manipulated session before the agent commits to attacker-defined personality profiles; MG.2.3 mandates these response mechanisms be in place."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:34:00.053Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0979
+qa_status: pending

@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00118
+rule_path: /rules/agent-manipulation/ATR-2026-00118-approval-fatigue.yaml
+rule_title: Human Approval Fatigue Exploitation
+proposed_mapping:
+  - subcategory: GV.6.1
+    context: >-
+      Approval fatigue exploitation manipulates human-in-the-loop oversight by
+      overwhelming operators with rapid permission requests or minimizing
+      dangerous actions; GV.6.1 requires data and oversight governance policies
+      that preserve meaningful human review rather than enabling bulk
+      auto-approval of risky tool calls.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Rapid repeated permission requests, minimizing language, and batching
+      risky operations with benign ones are adversarial input patterns targeting
+      the human reviewer; MP.5.1 requires identifying and tracking these
+      social-engineering attack vectors against approval workflows.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of approval-fatigue patterns must trigger risk treatment plans
+      that pause, throttle, or escalate suspicious bulk approval flows before
+      dangerous tool calls execute; MG.2.3 mandates that these
+      supersede/disengage mechanisms are pre-defined and activated on detection.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "GV.6.1"
+    context: "Approval fatigue exploitation manipulates human-in-the-loop oversight by overwhelming operators with rapid permission requests or minimizing dangerous actions; GV.6.1 requires data and oversight governance policies that preserve meaningful human review rather than enabling bulk auto-approval of risky tool calls."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "Rapid repeated permission requests, minimizing language, and batching risky operations with benign ones are adversarial input patterns targeting the human reviewer; MP.5.1 requires identifying and tracking these social-engineering attack vectors against approval workflows."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of approval-fatigue patterns must trigger risk treatment plans that pause, throttle, or escalate suspicious bulk approval flows before dangerous tool calls execute; MG.2.3 mandates that these supersede/disengage mechanisms are pre-defined and activated on detection."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:25:49.864Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0919
+qa_status: pending

@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00352
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00352-trainergpt-fix-my-ai-harmful-output-extraction.yaml
+rule_title: TrainGPT Fix-My-AI Harmful Output Extraction
+proposed_mapping:
+  - subcategory: MS.2.6
+    context: >-
+      The TrainGPT 'fix my AI' jailbreak uses a fake training-repair pretext to
+      extract harmful content laundered as negative training examples; detecting
+      these signals continuously evaluates the safety/security risk magnitude of
+      GenAI prompt-injection jailbreaks as required by MS.2.6.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Persona adoption ('TrainGPT'/'TrAInerGPT'), the broken-grammar repair
+      pretext, and dual-response extraction labels are jailbreak resilience
+      failures; MS.2.7 requires that the system's resilience against such
+      adversarial prompt patterns is evaluated and documented.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Matches on the TrainGPT extraction pattern feed incident response so the
+      session can be disengaged or the harmful dual-response output suppressed
+      before delivery, satisfying MG.2.3's requirement for mechanisms to
+      supersede or deactivate AI behavior on detection.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.6"
+    context: "The TrainGPT 'fix my AI' jailbreak uses a fake training-repair pretext to extract harmful content laundered as negative training examples; detecting these signals continuously evaluates the safety/security risk magnitude of GenAI prompt-injection jailbreaks as required by MS.2.6."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Persona adoption ('TrainGPT'/'TrAInerGPT'), the broken-grammar repair pretext, and dual-response extraction labels are jailbreak resilience failures; MS.2.7 requires that the system's resilience against such adversarial prompt patterns is evaluated and documented."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Matches on the TrainGPT extraction pattern feed incident response so the session can be disengaged or the harmful dual-response output suppressed before delivery, satisfying MG.2.3's requirement for mechanisms to supersede or deactivate AI behavior on detection."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:31:32.348Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1013
+qa_status: pending

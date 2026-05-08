@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00404
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00404-goodside-threat-json-death-coercion.yaml
+rule_title: ThreatenJSON Death-Coercion and UTF Tag Injection
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      ThreatenJSON's emotional coercion framing and invisible UTF tag character
+      payloads are adversarial prompt injection inputs that exploit output
+      formatting and tokenization weaknesses; MP.5.1 requires identifying and
+      characterizing the likelihood and magnitude of these GenAI prompt
+      injection attack vectors.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detection of near-verbatim Goodside probe phrases, U+E0000–U+E007F tag
+      character smuggling, and davidjl glitch token elicitation provides
+      continuous evaluation evidence of the AI system's resilience against known
+      prompt injection techniques, as required by MS.2.7.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Death-coercion framing and hidden UTF-tag instructions warrant immediate
+      risk treatment to disengage or quarantine the request before the model
+      complies with the smuggled instructions; MG.2.3 mandates such response
+      mechanisms be in place.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: "ThreatenJSON's emotional coercion framing and invisible UTF tag character payloads are adversarial prompt injection inputs that exploit output formatting and tokenization weaknesses; MP.5.1 requires identifying and characterizing the likelihood and magnitude of these GenAI prompt injection attack vectors."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Detection of near-verbatim Goodside probe phrases, U+E0000–U+E007F tag character smuggling, and davidjl glitch token elicitation provides continuous evaluation evidence of the AI system's resilience against known prompt injection techniques, as required by MS.2.7."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Death-coercion framing and hidden UTF-tag instructions warrant immediate risk treatment to disengage or quarantine the request before the model complies with the smuggled instructions; MG.2.3 mandates such response mechanisms be in place."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:36:10.262Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0941
+qa_status: pending

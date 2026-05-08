@@ -1,0 +1,46 @@
+rule_id: ATR-2026-00163
+rule_path: /rules/prompt-injection/ATR-2026-00163-skill-hidden-override-instruction.yaml
+rule_title: Hidden Override Instructions in Skill Content
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      Hidden override instructions embedded in SKILL.md files are prompt
+      injection payloads delivered through skill content; MS.2.7 requires
+      evaluating and documenting AI system security/resilience against such
+      injection vectors before they alter agent behavior.
+    strength: primary
+  - subcategory: MG.3.2
+    context: >-
+      SKILL.md files act as third-party/supplied content that augments agent
+      behavior; MG.3.2 requires monitoring of pre-trained models and supplied
+      artifacts used in development to catch malicious override instructions in
+      skill packages.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of unconditional approval and confirmation-suppression
+      instructions triggers the disengage/deactivate response paths required by
+      MG.2.3 to prevent the agent from executing under hijacked safety controls.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "Hidden override instructions embedded in SKILL.md files are prompt injection payloads delivered through skill content; MS.2.7 requires evaluating and documenting AI system security/resilience against such injection vectors before they alter agent behavior."
+    strength: primary
+  - subcategory: "MG.3.2"
+    context: "SKILL.md files act as third-party/supplied content that augments agent behavior; MG.3.2 requires monitoring of pre-trained models and supplied artifacts used in development to catch malicious override instructions in skill packages."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of unconditional approval and confirmation-suppression instructions triggers the disengage/deactivate response paths required by MG.2.3 to prevent the agent from executing under hijacked safety controls."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:42:21.284Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0866
+qa_status: pending

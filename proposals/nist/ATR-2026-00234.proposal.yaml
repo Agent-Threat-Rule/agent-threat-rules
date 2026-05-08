@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00234
+rule_path: /rules/prompt-injection/ATR-2026-00234-roleplay-jailbreak.yaml
+rule_title: Roleplay-Based Policy Bypass Jailbreak
+proposed_mapping:
+  - subcategory: MS.2.6
+    context: >-
+      Roleplay-based jailbreaks are a GenAI-specific safety bypass where
+      attackers use fictional persona framing to coerce the model into violating
+      its policies; MS.2.6 requires continuous evaluation of safety/security
+      risk magnitude, and detections of these explicit policy-bypass patterns
+      directly feed that safety risk measurement.
+    strength: primary
+  - subcategory: MG.2.3
+    context: >-
+      Detecting explicit 'free from rules/policies' roleplay assignments enables
+      the system to disengage or block the unsafe interaction before the model
+      produces policy-violating content; MG.2.3 mandates pre-defined mechanisms
+      to supersede or deactivate the AI when such jailbreak attempts are
+      observed.
+    strength: secondary
+  - subcategory: MP.5.1
+    context: >-
+      Creative-roleplay jailbreaks are adversarial inputs whose likelihood and
+      impact must be characterized as part of the AI system's risk profile;
+      MP.5.1 requires that these prompt-injection vectors are identified and
+      their potential impact on guardrail integrity is tracked.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.6"
+    context: "Roleplay-based jailbreaks are a GenAI-specific safety bypass where attackers use fictional persona framing to coerce the model into violating its policies; MS.2.6 requires continuous evaluation of safety/security risk magnitude, and detections of these explicit policy-bypass patterns directly feed that safety risk measurement."
+    strength: primary
+  - subcategory: "MG.2.3"
+    context: "Detecting explicit 'free from rules/policies' roleplay assignments enables the system to disengage or block the unsafe interaction before the model produces policy-violating content; MG.2.3 mandates pre-defined mechanisms to supersede or deactivate the AI when such jailbreak attempts are observed."
+    strength: secondary
+  - subcategory: "MP.5.1"
+    context: "Creative-roleplay jailbreaks are adversarial inputs whose likelihood and impact must be characterized as part of the AI system's risk profile; MP.5.1 requires that these prompt-injection vectors are identified and their potential impact on guardrail integrity is tracked."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:43:58.473Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0949
+qa_status: pending

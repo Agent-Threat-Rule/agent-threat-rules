@@ -22,6 +22,17 @@ references:
     - "ASI01:2026 - Agent Goal Hijack"
   mitre_atlas:
     - "AML.T0054 - LLM Jailbreak"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "Dual-response persona jailbreaks with emoji-tagged channels are adversarial prompt injection attacks targeting the safety alignment of generative AI systems; MS.2.7 requires continuous evaluation of security and resilience against such jailbreak techniques, and each detection event provides direct evidence of resilience testing."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Fictional AI persona creation with mandatory uncensored output channels represents an identified adversarial input vector whose likelihood and impact must be characterized; MP.5.1 requires tracking these jailbreak patterns as part of the GenAI risk profile."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Detection of persona-based dual-response jailbreaks triggers risk treatment mechanisms to disengage or block the manipulated session before harmful content is produced; MG.2.3 requires that these supersession controls activate on detection."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: persona-jailbreak

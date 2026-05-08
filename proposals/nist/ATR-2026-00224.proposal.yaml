@@ -1,0 +1,51 @@
+rule_id: ATR-2026-00224
+rule_path: /rules/skill-compromise/ATR-2026-00224-credential-exfiltration.yaml
+rule_title: Credential Exfiltration via Fake DevOps Tool Initialization
+proposed_mapping:
+  - subcategory: MS.2.10
+    context: >-
+      The rule detects exfiltration of cloud credential files (AWS, GCP, Azure
+      config files) via base64 encoding and HTTP POST, which is a direct privacy
+      and sensitive-data leakage event; MS.2.10 requires assessing and detecting
+      privacy risks including unauthorized disclosure of credentials and
+      secrets.
+    strength: primary
+  - subcategory: MG.3.2
+    context: >-
+      Skills masquerading as legitimate DevOps tools represent compromised
+      third-party/pre-trained components introduced into the agent supply chain;
+      MG.3.2 requires monitoring of such third-party models and tools for
+      malicious behavior post-integration.
+    strength: secondary
+  - subcategory: MS.2.7
+    context: >-
+      Detection of credential file reads chained to outbound curl POST traffic
+      provides continuous security/resilience evaluation evidence; MS.2.7
+      requires that security risks like credential exfiltration channels are
+      evaluated and documented.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.10"
+    context: >-
+      The rule detects exfiltration of cloud credential files (AWS, GCP, Azure config files) via base64 encoding and HTTP POST, which is a direct privacy and sensitive-data leakage event; MS.2.10 requires assessing and detecting privacy risks including unauthorized disclosure of credentials and secrets.
+    strength: primary
+  - subcategory: "MG.3.2"
+    context: >-
+      Skills masquerading as legitimate DevOps tools represent compromised third-party/pre-trained components introduced into the agent supply chain; MG.3.2 requires monitoring of such third-party models and tools for malicious behavior post-integration.
+    strength: secondary
+  - subcategory: "MS.2.7"
+    context: >-
+      Detection of credential file reads chained to outbound curl POST traffic provides continuous security/resilience evaluation evidence; MS.2.7 requires that security risks like credential exfiltration channels are evaluated and documented.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:54:27.188Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0905
+qa_status: pending

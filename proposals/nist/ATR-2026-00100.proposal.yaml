@@ -1,0 +1,47 @@
+rule_id: ATR-2026-00100
+rule_path: /rules/tool-poisoning/ATR-2026-00100-consent-bypass-instruction.yaml
+rule_title: Consent Bypass via Hidden LLM Instructions in Tool Descriptions
+proposed_mapping:
+  - subcategory: MS.2.10
+    context: >-
+      Hidden instructions in tool descriptions that direct automatic data
+      forwarding without user confirmation create privacy risks through
+      unauthorized data exfiltration; MS.2.10 requires that these privacy risks
+      from consent bypass mechanisms are assessed and tracked.
+    strength: primary
+  - subcategory: GV.6.1
+    context: >-
+      Tool descriptions originate from third-party MCP servers and embedding
+      hidden LLM instructions represents a supply-chain risk in third-party AI
+      components; GV.6.1 requires policies that address these third-party tool
+      risks including malicious description payloads.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of consent-bypass directives must trigger risk treatment to
+      disengage or block the offending tool before automated data forwarding
+      chains execute; MG.2.3 requires mechanisms to supersede or deactivate AI
+      system components on such detections.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.10"
+    context: "Hidden instructions in tool descriptions that direct automatic data forwarding without user confirmation create privacy risks through unauthorized data exfiltration; MS.2.10 requires that these privacy risks from consent bypass mechanisms are assessed and tracked."
+    strength: primary
+  - subcategory: "GV.6.1"
+    context: "Tool descriptions originate from third-party MCP servers and embedding hidden LLM instructions represents a supply-chain risk in third-party AI components; GV.6.1 requires policies that address these third-party tool risks including malicious description payloads."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of consent-bypass directives must trigger risk treatment to disengage or block the offending tool before automated data forwarding chains execute; MG.2.3 requires mechanisms to supersede or deactivate AI system components on such detections."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:55:53.436Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0898
+qa_status: pending

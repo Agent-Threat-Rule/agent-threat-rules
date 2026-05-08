@@ -1,0 +1,50 @@
+rule_id: ATR-2026-00094
+rule_path: /rules/prompt-injection/ATR-2026-00094-audit-bypass.yaml
+rule_title: Systematic Multi-Layer Audit System Bypass
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      Systematic multi-layer audit bypass attempts directly target the security
+      and resilience evaluation pipeline by crafting payloads that defeat
+      manifest, permissions, dependency, code, and semantic analysis stages;
+      MS.2.7 requires that the security/resilience of the AI system, including
+      its audit controls, is evaluated and that bypass attempts are documented.
+    strength: primary
+  - subcategory: MS.2.6
+    context: >-
+      Detection of payloads engineered to slip through gaps between audit layers
+      produces continuous evidence of safety/security risk magnitude against the
+      audit pipeline, supporting the ongoing risk evaluation MS.2.6 requires.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Identifying staged bypass payloads that attempt to smuggle malicious
+      functionality through the full audit pipeline triggers the deactivation
+      and containment mechanisms MG.2.3 mandates before the malicious code
+      reaches execution.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: >-
+      Systematic multi-layer audit bypass attempts directly target the security and resilience evaluation pipeline by crafting payloads that defeat manifest, permissions, dependency, code, and semantic analysis stages; MS.2.7 requires that the security/resilience of the AI system, including its audit controls, is evaluated and that bypass attempts are documented.
+    strength: primary
+  - subcategory: "MS.2.6"
+    context: >-
+      Detection of payloads engineered to slip through gaps between audit layers produces continuous evidence of safety/security risk magnitude against the audit pipeline, supporting the ongoing risk evaluation MS.2.6 requires.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Identifying staged bypass payloads that attempt to smuggle malicious functionality through the full audit pipeline triggers the deactivation and containment mechanisms MG.2.3 mandates before the malicious code reaches execution.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:40:43.745Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0907
+qa_status: pending

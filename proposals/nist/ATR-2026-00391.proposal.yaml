@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00391
+rule_path: /rules/agent-manipulation/ATR-2026-00391-persona-conditional-harm-unlock.yaml
+rule_title: Persona Conditional Harm-Unlock Rule (BreadClyde Pattern)
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      This rule detects a specific jailbreak signature (BreadClyde persona with
+      conditional harm-unlock and curly-brace unlock-emoji prefix) sourced from
+      the garak inthewild corpus; MS.2.7 requires continuous evaluation of AI
+      system security and resilience against known adversarial prompt-injection
+      patterns.
+    strength: primary
+  - subcategory: MG.2.3
+    context: >-
+      Matching the conditional harm-unlock construction and {🔓 PersonaName}
+      answer-prefix mandate triggers risk treatment to disengage or block the
+      manipulated persona before harmful content is generated; MG.2.3 requires
+      these supersede/deactivate mechanisms be in place.
+    strength: secondary
+  - subcategory: MP.5.1
+    context: >-
+      The conditional 'unless explicitly asked' permission path and unlock-emoji
+      prefix are adversarial input patterns whose likelihood and impact must be
+      characterized as part of the GenAI prompt-injection threat model under
+      MP.5.1.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "This rule detects a specific jailbreak signature (BreadClyde persona with conditional harm-unlock and curly-brace unlock-emoji prefix) sourced from the garak inthewild corpus; MS.2.7 requires continuous evaluation of AI system security and resilience against known adversarial prompt-injection patterns."
+    strength: primary
+  - subcategory: "MG.2.3"
+    context: "Matching the conditional harm-unlock construction and {🔓 PersonaName} answer-prefix mandate triggers risk treatment to disengage or block the manipulated persona before harmful content is generated; MG.2.3 requires these supersede/deactivate mechanisms be in place."
+    strength: secondary
+  - subcategory: "MP.5.1"
+    context: "The conditional 'unless explicitly asked' permission path and unlock-emoji prefix are adversarial input patterns whose likelihood and impact must be characterized as part of the GenAI prompt-injection threat model under MP.5.1."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:35:49.915Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1016
+qa_status: pending

@@ -1,0 +1,50 @@
+rule_id: ATR-2026-00149
+rule_path: /rules/skill-compromise/ATR-2026-00149-skill-exfil-compound.yaml
+rule_title: Skill Data Exfiltration via Compound Patterns
+proposed_mapping:
+  - subcategory: MS.2.10
+    context: >-
+      The rule detects compound patterns where sensitive data (SSH keys,
+      wallets, credentials, browser databases) is both read and transmitted
+      externally from SKILL.md files; MS.2.10 requires that privacy
+      risks—particularly unauthorized data exfiltration—are continuously
+      assessed and evidenced.
+    strength: primary
+  - subcategory: GV.6.1
+    context: >-
+      SKILL.md files are third-party/supplier artifacts loaded into the agent
+      runtime, and exfiltration logic embedded in them constitutes a
+      supply-chain risk; GV.6.1 requires policies that govern third-party AI
+      components against malicious data-harvesting behavior.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of compound read-and-transmit exfiltration patterns triggers the
+      deactivation/quarantine response plans required by MG.2.3 to disengage the
+      malicious skill before sensitive data leaves the host.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.10"
+    context: >-
+      The rule detects compound patterns where sensitive data (SSH keys, wallets, credentials, browser databases) is both read and transmitted externally from SKILL.md files; MS.2.10 requires that privacy risks—particularly unauthorized data exfiltration—are continuously assessed and evidenced.
+    strength: primary
+  - subcategory: "GV.6.1"
+    context: >-
+      SKILL.md files are third-party/supplier artifacts loaded into the agent runtime, and exfiltration logic embedded in them constitutes a supply-chain risk; GV.6.1 requires policies that govern third-party AI components against malicious data-harvesting behavior.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Detection of compound read-and-transmit exfiltration patterns triggers the deactivation/quarantine response plans required by MG.2.3 to disengage the malicious skill before sensitive data leaves the host.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:53:27.161Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0926
+qa_status: pending

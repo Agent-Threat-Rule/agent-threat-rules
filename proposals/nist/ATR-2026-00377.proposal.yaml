@@ -1,0 +1,52 @@
+rule_id: ATR-2026-00377
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00377-jailbreak-keyword-targetlanguage-template.yaml
+rule_title: Jailbreak-Template Command with [TARGETLANGUAGE]/[KEYWORD] Placeholders
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      This rule detects reusable jailbreak templates with GPT-style placeholder
+      variables (TARGETLANGUAGE, KEYWORD, PROMPT) from the garak DanInTheWild
+      corpus, providing direct security evaluation evidence; MS.2.7 requires
+      continuous evaluation of AI system security and resilience against known
+      jailbreak attack patterns.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Jailbreak-as-command templates with placeholder variables represent a
+      well-characterized adversarial input pattern with high likelihood of
+      successful safety bypass; MP.5.1 requires identifying and characterizing
+      the magnitude of such templated jailbreak risks.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of jailbreak template commands triggers risk treatment
+      mechanisms to disengage or block the manipulated agent response before
+      safety controls are bypassed; MG.2.3 mandates these supersede/deactivate
+      processes are in place.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: >-
+      This rule detects reusable jailbreak templates with GPT-style placeholder variables (TARGETLANGUAGE, KEYWORD, PROMPT) from the garak DanInTheWild corpus, providing direct security evaluation evidence; MS.2.7 requires continuous evaluation of AI system security and resilience against known jailbreak attack patterns.
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: >-
+      Jailbreak-as-command templates with placeholder variables represent a well-characterized adversarial input pattern with high likelihood of successful safety bypass; MP.5.1 requires identifying and characterizing the magnitude of such templated jailbreak risks.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Detection of jailbreak template commands triggers risk treatment mechanisms to disengage or block the manipulated agent response before safety controls are bypassed; MG.2.3 mandates these supersede/deactivate processes are in place.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:34:21.550Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0983
+qa_status: pending

@@ -30,6 +30,20 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/dan.py"
     - "https://github.com/NVIDIA/garak/blob/main/garak/data/dan/inthewild_jailbreak_llms.json"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: >-
+        This rule detects emoji-flag regional-indicator encoding jailbreaks that bypass content filters by hiding harmful phrases in flag emoji sequences; MS.2.7 requires evaluating and documenting AI system security and resilience against adversarial obfuscation techniques like this GenAI prompt injection vector.
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: >-
+        Each detection of an emoji-encoded jailbreak attempt produces a continuous safety/security signal indicating active circumvention attempts against model guardrails; MS.2.6 requires that the magnitude of safety/security risk be evaluated continuously through such telemetry.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        Confirmed emoji-flag jailbreak matches must trigger response mechanisms to block, quarantine, or escalate the request before the model decodes and acts on the hidden harmful phrase; MG.2.3 requires these supersede/disengage mechanisms be in place for adversarial prompts.
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: emoji-flag-encoded-hidden-phrase

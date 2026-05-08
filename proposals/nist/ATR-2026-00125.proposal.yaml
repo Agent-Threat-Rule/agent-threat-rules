@@ -1,0 +1,51 @@
+rule_id: ATR-2026-00125
+rule_path: /rules/skill-compromise/ATR-2026-00125-context-poisoning-compaction.yaml
+rule_title: Context Poisoning via Compaction Survival
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      Compaction-survival instructions embedded in SKILL.md/CLAUDE.md files are
+      adversarial inputs that exploit context-window summarization to persist
+      malicious directives across agent sessions; MP.5.1 requires identifying
+      and characterizing the likelihood and impact of such prompt-injection
+      vectors targeting agent context.
+    strength: primary
+  - subcategory: MG.3.2
+    context: >-
+      SKILL.md files are pre-deployed configuration artifacts consumed by the
+      agent at runtime; MG.3.2 requires monitoring of these supplied model/skill
+      resources to detect poisoned instructions that survive context compaction
+      and re-inject across agent invocations.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of compaction-aware persistence directives and system-level
+      impersonation in skill files triggers risk treatment plans to quarantine
+      or disengage the affected skill before it propagates poisoned context;
+      MG.2.3 mandates these supersede/deactivate mechanisms be defined.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: >-
+      Compaction-survival instructions embedded in SKILL.md/CLAUDE.md files are adversarial inputs that exploit context-window summarization to persist malicious directives across agent sessions; MP.5.1 requires identifying and characterizing the likelihood and impact of such prompt-injection vectors targeting agent context.
+    strength: primary
+  - subcategory: "MG.3.2"
+    context: >-
+      SKILL.md files are pre-deployed configuration artifacts consumed by the agent at runtime; MG.3.2 requires monitoring of these supplied model/skill resources to detect poisoned instructions that survive context compaction and re-inject across agent invocations.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Detection of compaction-aware persistence directives and system-level impersonation in skill files triggers risk treatment plans to quarantine or disengage the affected skill before it propagates poisoned context; MG.2.3 mandates these supersede/deactivate mechanisms be defined.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:52:32.225Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0944
+qa_status: pending

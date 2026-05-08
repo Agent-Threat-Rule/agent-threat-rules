@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00211
+rule_path: /rules/prompt-injection/ATR-2026-00211-system-prompt-override.yaml
+rule_title: System Prompt Override via Translation Context Injection
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      Translation context injection is a prompt injection vector where
+      adversarial instructions are smuggled inside document translation payloads
+      to override system prompts; MP.5.1 requires that the likelihood and
+      magnitude of such adversarial input attacks are characterized and tracked
+      as identified risks.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detecting system prompt override attempts via translation requests
+      provides continuous evidence for evaluating the AI system's security and
+      resilience against prompt injection, which MS.2.7 requires to be measured
+      and documented.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Matches on translation-borne override instructions trigger pre-defined
+      risk treatment to disengage or quarantine the hijacked agent behavior
+      before safety controls are bypassed, satisfying MG.2.3's requirement for
+      mechanisms to supersede or deactivate compromised AI behavior.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: "Translation context injection is a prompt injection vector where adversarial instructions are smuggled inside document translation payloads to override system prompts; MP.5.1 requires that the likelihood and magnitude of such adversarial input attacks are characterized and tracked as identified risks."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Detecting system prompt override attempts via translation requests provides continuous evidence for evaluating the AI system's security and resilience against prompt injection, which MS.2.7 requires to be measured and documented."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Matches on translation-borne override instructions trigger pre-defined risk treatment to disengage or quarantine the hijacked agent behavior before safety controls are bypassed, satisfying MG.2.3's requirement for mechanisms to supersede or deactivate compromised AI behavior."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:42:59.376Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0874
+qa_status: pending

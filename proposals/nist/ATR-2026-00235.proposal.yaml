@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00235
+rule_path: /rules/prompt-injection/ATR-2026-00235-persona-moral-bypass.yaml
+rule_title: Persona-Based Moral Constraint Removal Jailbreak
+proposed_mapping:
+  - subcategory: MS.2.6
+    context: >-
+      This rule detects jailbreak attempts that establish alternate personas
+      explicitly designed to remove moral and ethical constraints, which is a
+      direct safety/security risk to the AI system. MS.2.6 requires continuous
+      evaluation of safety/security risk magnitude, and each detection event
+      provides evidence of attempted safety bypass that must be measured and
+      tracked.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Persona-based moral constraint removal is an adversarial input attack on
+      the model's alignment guardrails; MS.2.7 requires evaluation of the AI
+      system's security and resilience against such jailbreak techniques, and
+      these detections feed the resilience evaluation evidence base.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detected jailbreak attempts using moral-unrestraint persona adoption must
+      trigger pre-defined risk treatment such as blocking the prompt or
+      disengaging the affected session; MG.2.3 mandates mechanisms exist to
+      supersede or deactivate AI behavior when safety bypass is detected.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.6"
+    context: "This rule detects jailbreak attempts that establish alternate personas explicitly designed to remove moral and ethical constraints, which is a direct safety/security risk to the AI system. MS.2.6 requires continuous evaluation of safety/security risk magnitude, and each detection event provides evidence of attempted safety bypass that must be measured and tracked."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Persona-based moral constraint removal is an adversarial input attack on the model's alignment guardrails; MS.2.7 requires evaluation of the AI system's security and resilience against such jailbreak techniques, and these detections feed the resilience evaluation evidence base."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detected jailbreak attempts using moral-unrestraint persona adoption must trigger pre-defined risk treatment such as blocking the prompt or disengaging the affected session; MG.2.3 mandates mechanisms exist to supersede or deactivate AI behavior when safety bypass is detected."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:44:05.673Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0947
+qa_status: pending

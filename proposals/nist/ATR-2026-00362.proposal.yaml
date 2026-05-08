@@ -1,0 +1,51 @@
+rule_id: ATR-2026-00362
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00362-fictional-unfiltered-ai-comparison-jailbreak.yaml
+rule_title: Fictional Unfiltered AI Comparison / Verbatim Hypothetical Model Extraction
+proposed_mapping:
+  - subcategory: MS.2.6
+    context: >-
+      This rule detects a specific jailbreak pattern (fictional unfiltered AI
+      comparison) that attempts to bypass content safety filters by extracting
+      harmful content under the guise of a hypothetical model comparison; MS.2.6
+      requires continuous evaluation of AI system safety/security risk
+      magnitude, which this detection directly evidences by surfacing
+      safety-bypass attempts.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      The verbatim hypothetical model extraction technique probes the resilience
+      of the model's safety alignment against adversarial framing; MS.2.7
+      requires evaluating and documenting AI system security/resilience against
+      such jailbreak vectors drawn from known corpora (garak DanInTheWild #80).
+    strength: secondary
+  - subcategory: MP.5.1
+    context: >-
+      Fictional-unfiltered-model comparison prompts are adversarial inputs whose
+      likelihood and impact must be characterized as part of risk
+      identification; MP.5.1 requires that these jailbreak attack patterns are
+      tracked so their magnitude of impact on safe-output guarantees can be
+      assessed.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.6"
+    context: "This rule detects a specific jailbreak pattern (fictional unfiltered AI comparison) that attempts to bypass content safety filters by extracting harmful content under the guise of a hypothetical model comparison; MS.2.6 requires continuous evaluation of AI system safety/security risk magnitude, which this detection directly evidences by surfacing safety-bypass attempts."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "The verbatim hypothetical model extraction technique probes the resilience of the model's safety alignment against adversarial framing; MS.2.7 requires evaluating and documenting AI system security/resilience against such jailbreak vectors drawn from known corpora (garak DanInTheWild #80)."
+    strength: secondary
+  - subcategory: "MP.5.1"
+    context: "Fictional-unfiltered-model comparison prompts are adversarial inputs whose likelihood and impact must be characterized as part of risk identification; MP.5.1 requires that these jailbreak attack patterns are tracked so their magnitude of impact on safe-output guarantees can be assessed."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:32:40.908Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1026
+qa_status: pending

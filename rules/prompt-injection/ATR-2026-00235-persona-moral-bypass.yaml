@@ -24,6 +24,17 @@ references:
     - "AML.T0054"
   research:
     - "https://arxiv.org/abs/2307.15043"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.6"
+      context: "This rule detects jailbreak attempts that establish alternate personas explicitly designed to remove moral and ethical constraints, which is a direct safety/security risk to the AI system. MS.2.6 requires continuous evaluation of safety/security risk magnitude, and each detection event provides evidence of attempted safety bypass that must be measured and tracked."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "Persona-based moral constraint removal is an adversarial input attack on the model's alignment guardrails; MS.2.7 requires evaluation of the AI system's security and resilience against such jailbreak techniques, and these detections feed the resilience evaluation evidence base."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Detected jailbreak attempts using moral-unrestraint persona adoption must trigger pre-defined risk treatment such as blocking the prompt or disengaging the affected session; MG.2.3 mandates mechanisms exist to supersede or deactivate AI behavior when safety bypass is detected."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: persona-moral-bypass

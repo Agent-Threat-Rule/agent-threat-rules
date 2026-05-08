@@ -25,6 +25,17 @@ references:
     - "AML.T0024 - Exfiltration via ML Inference API"
     - "AML.T0053 - LLM Plugin Compromise"
 
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "Multi-skill chain attacks combine individually benign tool calls into a composite exfiltration or compromise sequence; MP.5.1 requires characterizing the likelihood and magnitude of impact for these emergent risks that only manifest when steps are correlated across skills."
+      strength: primary
+    - subcategory: "MG.2.3"
+      context: "Detection of reconnaissance-then-encode-then-exfiltrate skill chains must trigger pre-defined risk treatment to disengage or quarantine the orchestration before the final exfiltration step completes; MG.2.3 mandates these supersede/deactivate mechanisms are in place."
+      strength: secondary
+    - subcategory: "GV.6.1"
+      context: "Skill chains often span third-party MCP tools whose composed behavior is not covered by individual supplier risk reviews; GV.6.1 requires policies that address third-party AI/tool risks including emergent misuse across multiple suppliers."
+      strength: secondary
 tags:
   category: tool-poisoning
   subcategory: skill-chain

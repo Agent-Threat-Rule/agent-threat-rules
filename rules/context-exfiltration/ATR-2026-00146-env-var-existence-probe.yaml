@@ -21,6 +21,20 @@ references:
     - ASI08 - Data Leakage
 metadata_provenance:
   mitre_atlas: auto-generated
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.10"
+      context: >-
+        This rule detects agent responses that confirm the existence of sensitive environment variables, which constitutes a privacy and confidentiality leak even without revealing values; MS.2.10 requires assessing privacy risks including indirect disclosures that confirm sensitive system metadata.
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: >-
+        Confirming env var existence is a reconnaissance step in social-engineering exfiltration chains targeting agent secrets; MS.2.7 requires evaluating system security and resilience against such probing techniques.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        Detection of env var probing patterns enables containment responses to halt the exfiltration attempt before the agent escalates to retrieving the actual value; MG.2.3 mandates pre-defined treatment mechanisms for these risk events.
+      strength: secondary
 tags:
   category: context-exfiltration
   subcategory: env-var-probe

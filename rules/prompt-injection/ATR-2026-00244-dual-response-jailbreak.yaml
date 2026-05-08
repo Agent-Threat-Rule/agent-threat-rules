@@ -25,6 +25,17 @@ references:
     - "AML.T0054"
   research:
     - "https://arxiv.org/abs/2308.03825"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.6"
+      context: "Dual-response persona jailbreaks are GenAI-specific safety bypass attacks that force models to emit unfiltered content under a fictional character; MS.2.6 requires continuous evaluation of safety/security risk magnitude, and each detection contributes evidence of active jailbreak attempts against safety mechanisms."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "The rule evaluates resilience of the model's safety alignment against roleplay-based bypass techniques drawn from public jailbreak communities; MS.2.7 requires documented evaluation of security/resilience, which these detections directly inform."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Detection of dual-response jailbreak patterns enables mechanisms to disengage or block the manipulated response path before harmful output is delivered; MG.2.3 requires such supersede/deactivate controls be in place for adversarial bypass attempts."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: dual-response-jailbreak

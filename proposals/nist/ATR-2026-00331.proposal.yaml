@@ -1,0 +1,50 @@
+rule_id: ATR-2026-00331
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00331-terminal-cli-harmful-function-simulator.yaml
+rule_title: Terminal / CLI Harmful-Function Simulator Persona
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      Terminal/CLI persona jailbreaks are adversarial prompt-injection inputs
+      that reframe the model as an unfiltered command interpreter to bypass
+      safety processing; MP.5.1 requires identifying and characterizing the
+      likelihood and magnitude of such jailbreak attack vectors drawn from known
+      corpora like garak's inthewild.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detecting terminal-simulator and custom-language parser framings that
+      claim to strip content filters provides continuous evidence of
+      security/resilience failures against documented jailbreak techniques;
+      MS.2.7 requires that AI system security and resilience are evaluated and
+      documented against these adversarial patterns.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Matches on 'Available functions:' with offensive function names or 'acts
+      like a terminal' patterns must trigger pre-defined risk treatment to
+      disengage or block the manipulated session before harmful output is
+      generated; MG.2.3 mandates these supersede/deactivate mechanisms.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: "Terminal/CLI persona jailbreaks are adversarial prompt-injection inputs that reframe the model as an unfiltered command interpreter to bypass safety processing; MP.5.1 requires identifying and characterizing the likelihood and magnitude of such jailbreak attack vectors drawn from known corpora like garak's inthewild."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Detecting terminal-simulator and custom-language parser framings that claim to strip content filters provides continuous evidence of security/resilience failures against documented jailbreak techniques; MS.2.7 requires that AI system security and resilience are evaluated and documented against these adversarial patterns."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Matches on 'Available functions:' with offensive function names or 'acts like a terminal' patterns must trigger pre-defined risk treatment to disengage or block the manipulated session before harmful output is generated; MG.2.3 mandates these supersede/deactivate mechanisms."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:28:53.232Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1021
+qa_status: pending

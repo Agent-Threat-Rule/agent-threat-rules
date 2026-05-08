@@ -30,6 +30,29 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/encoding.py"
     - "https://github.com/qntm/base2048"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: >-
+        Base2048-encoded prompt injection bypasses input filters by hiding adversarial
+        instructions inside dense multi-script Unicode payloads from garak's
+        InjectBase2048 probe; MS.2.7 requires evaluating and documenting AI system
+        security and resilience against such obfuscated injection vectors.
+      strength: primary
+    - subcategory: "MS.2.5"
+      context: >-
+        Detection of garak BASE2048 templates produces evidence that the model is
+        being adversarially probed for robustness against non-ASCII encoding attacks;
+        MS.2.5 requires that robustness and reliability under such adversarial inputs
+        are measured and documented.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        Identifying BASE2048 encoded injection markers triggers pre-defined risk
+        treatment to quarantine or block the payload before it reaches the model;
+        MG.2.3 mandates mechanisms to supersede or disengage AI processing of
+        detected adversarial inputs.
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: base2048-unicode-script

@@ -1,0 +1,51 @@
+rule_id: ATR-2026-00274
+rule_path: /rules/context-exfiltration/ATR-2026-00274-api-key-generation-request.yaml
+rule_title: API Key / Secret Credential Generation or Completion Request
+proposed_mapping:
+  - subcategory: MS.2.10
+    context: >-
+      This rule detects requests that attempt to extract memorized credential
+      strings from training data via partial-key completion, or to fabricate
+      realistic-looking secrets — both of which are privacy and data-leakage
+      risks. MS.2.10 requires that privacy risks, including memorization-based
+      leakage of sensitive strings, are assessed and tracked.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Generating plausible API keys or completing partial credentials enables
+      downstream phishing and service impersonation, undermining system security
+      and resilience. MS.2.7 requires continuous evaluation of security risks
+      like credential fabrication and memorization leakage.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of credential generation or completion requests must trigger
+      risk treatment to block the response before the fabricated or memorized
+      secret is emitted. MG.2.3 mandates that these supersede/disengage
+      mechanisms are in place for high-risk output paths.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.10"
+    context: >-
+      This rule detects requests that attempt to extract memorized credential strings from training data via partial-key completion, or to fabricate realistic-looking secrets — both of which are privacy and data-leakage risks. MS.2.10 requires that privacy risks, including memorization-based leakage of sensitive strings, are assessed and tracked.
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: >-
+      Generating plausible API keys or completing partial credentials enables downstream phishing and service impersonation, undermining system security and resilience. MS.2.7 requires continuous evaluation of security risks like credential fabrication and memorization leakage.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Detection of credential generation or completion requests must trigger risk treatment to block the response before the fabricated or memorized secret is emitted. MG.2.3 mandates that these supersede/disengage mechanisms are in place for high-risk output paths.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:37:20.545Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0938
+qa_status: pending

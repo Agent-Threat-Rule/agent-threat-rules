@@ -19,6 +19,17 @@ references:
     - "AML.T0054 - LLM Jailbreak"
   research:
     - "https://arxiv.org/abs/2307.15043 - Universal and Transferable Adversarial Attacks on Aligned Language Models"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.6"
+      context: "This rule detects roleplay-based jailbreak attempts that explicitly claim freedom from safety policies, providing continuous evaluation of safety/security risk magnitude as required by MS.2.6 for GenAI systems. Each detection is direct evidence of attempted safety guardrail bypass against the deployed model."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "Roleplay jailbreaks targeting policy bypass test the resilience of the AI system's alignment controls; MS.2.7 requires that security/resilience against adversarial prompt techniques is evaluated and documented through detections like this one."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Detection of explicit policy-bypass language combined with persona assignment triggers the deactivation/superseding mechanisms required by MG.2.3 to halt the jailbroken interaction before policy-violating content is generated."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: roleplay-jailbreak

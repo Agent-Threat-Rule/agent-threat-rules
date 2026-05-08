@@ -20,6 +20,20 @@ references:
     - AML.T0051
 metadata_provenance:
   owasp_llm: auto-generated
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: >-
+        Systematic multi-layer audit bypass attempts directly target the security and resilience evaluation pipeline by crafting payloads that defeat manifest, permissions, dependency, code, and semantic analysis stages; MS.2.7 requires that the security/resilience of the AI system, including its audit controls, is evaluated and that bypass attempts are documented.
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: >-
+        Detection of payloads engineered to slip through gaps between audit layers produces continuous evidence of safety/security risk magnitude against the audit pipeline, supporting the ongoing risk evaluation MS.2.6 requires.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        Identifying staged bypass payloads that attempt to smuggle malicious functionality through the full audit pipeline triggers the deactivation and containment mechanisms MG.2.3 mandates before the malicious code reaches execution.
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: systematic-audit-bypass

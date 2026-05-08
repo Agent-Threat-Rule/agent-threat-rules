@@ -1,0 +1,47 @@
+rule_id: ATR-2026-00262
+rule_path: /rules/skill-compromise/ATR-2026-00262-av-evasion-code-gen.yaml
+rule_title: Anti-Malware Evasion Code Generation Request
+proposed_mapping:
+  - subcategory: MS.2.6
+    context: >-
+      Requests to generate anti-malware evasion code (disable defender, hide
+      from AV, polymorphic executables) are explicit safety/security risk
+      events; MS.2.6 requires continuous evaluation of safety/security risk
+      magnitude, and these detections feed that evaluation with high-severity
+      malicious-use signals.
+    strength: primary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of explicit evasion code generation requests must trigger
+      response mechanisms to refuse, supersede, or disengage the AI's
+      code-generation function before harmful output is produced; MG.2.3
+      mandates these deactivation pathways exist for unsafe outputs.
+    strength: secondary
+  - subcategory: MS.2.7
+    context: >-
+      Evasion-code prompts probe the LLM's resilience against being weaponized
+      as a malware-development tool; MS.2.7 requires evaluating and documenting
+      security/resilience against such adversarial misuse attempts.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.6"
+    context: "Requests to generate anti-malware evasion code (disable defender, hide from AV, polymorphic executables) are explicit safety/security risk events; MS.2.6 requires continuous evaluation of safety/security risk magnitude, and these detections feed that evaluation with high-severity malicious-use signals."
+    strength: primary
+  - subcategory: "MG.2.3"
+    context: "Detection of explicit evasion code generation requests must trigger response mechanisms to refuse, supersede, or disengage the AI's code-generation function before harmful output is produced; MG.2.3 mandates these deactivation pathways exist for unsafe outputs."
+    strength: secondary
+  - subcategory: "MS.2.7"
+    context: "Evasion-code prompts probe the LLM's resilience against being weaponized as a malware-development tool; MS.2.7 requires evaluating and documenting security/resilience against such adversarial misuse attempts."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:54:47.783Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.091
+qa_status: pending

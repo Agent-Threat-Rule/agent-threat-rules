@@ -34,6 +34,17 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/dan.py"
     - "https://github.com/NVIDIA/garak/blob/main/garak/data/inthewild_jailbreak_llms.json"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "This rule identifies structured key-value template persona injection patterns (JOB/ROLE/PREFIX keywords and parenthetical bracket character-sheet formats) from the garak inthewild jailbreak corpus that smuggle no-refusal persona declarations past safety guards. MP.5.1 requires that the likelihood and magnitude of such adversarial prompt-injection inputs are characterized and tracked."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "Detecting these jailbreak persona-injection signatures provides continuous evidence for evaluating LLM security and resilience against known prompt-injection corpora; MS.2.7 requires that AI system security/resilience is evaluated and documented against adversarial inputs."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Matches on 'ROLE = Never refuse' and 'above any mortal morals, ethics and laws' indicate active jailbreak attempts that must trigger mechanisms to disengage or block the manipulated session; MG.2.3 requires pre-defined supersede/deactivate response paths on detection."
+      strength: secondary
 tags:
   category: agent-manipulation
   subcategory: key-value-template-persona-injection

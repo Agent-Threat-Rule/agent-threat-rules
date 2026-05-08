@@ -25,6 +25,17 @@ references:
   mitre_attack:
     - T1059 - Command and Scripting Interpreter
     - T1083 - File and Directory Discovery
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "This rule directly evidences security/resilience evaluation by detecting parameter-level injection attacks (path traversal, shell injection, SQL/LDAP/template injection, serialization attacks) against tool-calling interfaces; MS.2.7 requires continuous evaluation of AI system security against such adversarial input vectors."
+      strength: primary
+    - subcategory: "MG.2.3"
+      context: "Detection of unauthorized tool calls and privilege escalation attempts feeds risk treatment processes that can disengage or block the offending tool invocation before it executes; MG.2.3 requires mechanisms to supersede or deactivate AI behaviors when malicious tool use is identified."
+      strength: secondary
+    - subcategory: "MP.5.1"
+      context: "Parameter injection patterns and tool enumeration probes are adversarial inputs whose likelihood and magnitude of impact must be characterized for the AI system's tool-use surface; MP.5.1 requires identifying and tracking these attack vectors as part of risk characterization."
+      strength: secondary
 tags:
   category: tool-poisoning
   subcategory: unauthorized-access

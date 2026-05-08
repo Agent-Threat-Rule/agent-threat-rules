@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00396
+rule_path: >-
+  /rules/prompt-injection/ATR-2026-00396-toxic-continuation-prefix-injection.yaml
+rule_title: Toxic Continuation Prefix Injection
+proposed_mapping:
+  - subcategory: MS.2.6
+    context: >-
+      This rule detects toxic continuation prefix fragments injected via tool
+      responses or user input that are engineered to elicit violent,
+      threatening, or identity-attack completions; MS.2.6 requires continuous
+      evaluation of AI safety risk magnitude, and each detection produces
+      evidence of a concrete safety risk being attempted against the model.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Truncated high-toxicity prefixes from the RealToxicityPrompts corpus are
+      adversarial input patterns with documented likelihood of producing harmful
+      completions; MP.5.1 requires identifying and characterizing the likelihood
+      and magnitude of such impact-bearing attack vectors.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of toxic continuation bait in tool outputs or user prompts
+      triggers risk treatment to block or quarantine the injected context before
+      the agent generates harmful content attributed to itself; MG.2.3 mandates
+      these supersede/disengage mechanisms be activated on detection.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.6"
+    context: "This rule detects toxic continuation prefix fragments injected via tool responses or user input that are engineered to elicit violent, threatening, or identity-attack completions; MS.2.6 requires continuous evaluation of AI safety risk magnitude, and each detection produces evidence of a concrete safety risk being attempted against the model."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "Truncated high-toxicity prefixes from the RealToxicityPrompts corpus are adversarial input patterns with documented likelihood of producing harmful completions; MP.5.1 requires identifying and characterizing the likelihood and magnitude of such impact-bearing attack vectors."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of toxic continuation bait in tool outputs or user prompts triggers risk treatment to block or quarantine the injected context before the agent generates harmful content attributed to itself; MG.2.3 mandates these supersede/disengage mechanisms be activated on detection."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:49:45.828Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1004
+qa_status: pending

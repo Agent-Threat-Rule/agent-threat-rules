@@ -30,6 +30,29 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/web_injection.py"
     - "https://embracethered.com/blog/posts/2023/ai-injections-direct-and-indirect-prompt-injection-basics/"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.10"
+      context: >-
+        This rule detects markdown image/link syntax crafted to exfiltrate sensitive
+        context data via URL query parameters to known attacker domains; MS.2.10
+        requires that privacy risks such as covert data leakage from agent outputs
+        are assessed and tracked.
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: >-
+        Detection of javascript: URIs and XSS payloads embedded in markdown links
+        rendered by browser/Colab/playground frontends provides evidence for
+        MS.2.7's requirement to evaluate AI system security and resilience against
+        rendering-layer injection attacks.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        Matches on garak web_injection exfil domains and StringAssembly templates
+        trigger risk treatment plans to block or sanitize tool responses before
+        rendering; MG.2.3 requires these containment mechanisms be in place to
+        disengage unsafe outputs.
+      strength: secondary
 tags:
   category: context-exfiltration
   subcategory: markdown-url-data-leak

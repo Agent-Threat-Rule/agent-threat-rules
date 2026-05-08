@@ -23,6 +23,29 @@ references:
   mitre_atlas:
     - "AML.T0040 - AI Model Inference API Access"
 
+compliance:
+  nist_ai_rmf:
+    - subcategory: "GV.6.1"
+      context: >-
+        Over-permissioned MCP skills are a third-party/supplier AI risk where an
+        installed skill requests permissions far exceeding its stated function;
+        GV.6.1 requires policies and procedures that govern third-party AI
+        components and their permission boundaries.
+      strength: primary
+    - subcategory: "MG.3.1"
+      context: >-
+        Detecting permission-boundary violations in third-party MCP skills directly
+        supports MG.3.1's requirement to manage risks from third-party AI entities,
+        including trojaned or malicious supply-chain components exercising
+        unauthorized capabilities.
+      strength: secondary
+    - subcategory: "MP.5.1"
+      context: >-
+        A skill exercising filesystem, network, or process-execution permissions
+        inconsistent with its declared purpose characterizes the likelihood and
+        magnitude of privilege-escalation impact that MP.5.1 requires to be
+        identified and tracked.
+      strength: secondary
 tags:
   category: privilege-escalation
   subcategory: over-permissioned-skill

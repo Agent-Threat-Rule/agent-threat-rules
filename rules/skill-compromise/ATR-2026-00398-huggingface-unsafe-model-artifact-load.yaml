@@ -39,6 +39,17 @@ references:
     - "https://huggingface.co/docs/hub/security-pickle"
     - "https://github.com/pytorch/pytorch/blob/main/SECURITY.md"
     - "https://nvd.nist.gov/vuln/detail/CVE-2019-20907"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MG.3.2"
+      context: "This rule detects instructions to load pre-trained model artifacts (pickle, PyTorch, executables) from HuggingFace Hub that can execute arbitrary code via unsafe deserialization; MG.3.2 requires that pre-trained models used for development are monitored for supply-chain risks like malicious artifacts."
+      strength: primary
+    - subcategory: "GV.6.1"
+      context: "Loading untrusted HuggingFace artifacts is a third-party/supplier AI risk where external model repositories can deliver code-execution payloads; GV.6.1 requires policies addressing third-party AI component risks such as unsafe model formats."
+      strength: secondary
+    - subcategory: "MS.2.7"
+      context: "Pickle deserialization and unsafe from_pretrained calls are concrete security/resilience weaknesses; MS.2.7 requires that these security risks in the AI pipeline are evaluated and documented when detected."
+      strength: secondary
 tags:
   category: skill-compromise
   subcategory: unsafe-model-artifact-load

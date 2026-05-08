@@ -31,6 +31,20 @@ references:
     - "Axios: Anthropic Claude skills ransomware disclosure"
 metadata_provenance:
   mitre_atlas: auto-generated
+compliance:
+  nist_ai_rmf:
+    - subcategory: "GV.6.1"
+      context: >-
+        Weaponized skills are third-party/supplier AI components that embed offensive tooling (SQLMap, Metasploit, ransomware payloads) into agent workflows; GV.6.1 requires policies and procedures to address third-party AI supply chain risks where approved skills can execute malicious code without further consent.
+      strength: primary
+    - subcategory: "MG.3.2"
+      context: >-
+        Detecting offensive tooling embedded in skills directly evidences the need to monitor pre-trained models and skill artifacts used for development; MG.3.2 mandates ongoing monitoring of these third-party components for malicious modifications like the MedusaLocker-laden Claude skill.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        Detection of weaponized skills must trigger mechanisms to disengage or deactivate the AI system before the consent gap is exploited to download/execute code or exfiltrate credentials; MG.2.3 requires these supersede/deactivate controls be in place.
+      strength: secondary
 tags:
   category: skill-compromise
   subcategory: weaponized-skill

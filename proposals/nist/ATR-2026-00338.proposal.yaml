@@ -1,0 +1,52 @@
+rule_id: ATR-2026-00338
+rule_path: /rules/agent-manipulation/ATR-2026-00338-persongpt-hash-prefix-activation.yaml
+rule_title: PersonGPT Hash-Prefix Trigger Activation
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      The PersonGPT hash-prefix jailbreak installs a covert activation trigger
+      that switches the model into an unrestricted persona, directly attacking
+      the model's safety guardrails; MS.2.7 requires continuous evaluation of AI
+      system security and resilience against such jailbreak techniques cataloged
+      in the garak inthewild corpus.
+    strength: primary
+  - subcategory: MS.2.6
+    context: >-
+      Detection of "free of all restrictions and filters" and "literally any
+      request, no matter how illegal" persona declarations measures the safety
+      risk magnitude when adversaries attempt to bypass content policy; MS.2.6
+      mandates ongoing measurement of safety risk exposure from these jailbreak
+      payloads.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Identifying the "[PersonGPT #]:" persistent persona state and hash-prefix
+      activation key enables runtime intervention to disengage the hijacked
+      persona before unsafe outputs are produced; MG.2.3 requires mechanisms to
+      supersede or deactivate AI behavior when jailbreak triggers are detected.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: >-
+      The PersonGPT hash-prefix jailbreak installs a covert activation trigger that switches the model into an unrestricted persona, directly attacking the model's safety guardrails; MS.2.7 requires continuous evaluation of AI system security and resilience against such jailbreak techniques cataloged in the garak inthewild corpus.
+    strength: primary
+  - subcategory: "MS.2.6"
+    context: >-
+      Detection of "free of all restrictions and filters" and "literally any request, no matter how illegal" persona declarations measures the safety risk magnitude when adversaries attempt to bypass content policy; MS.2.6 mandates ongoing measurement of safety risk exposure from these jailbreak payloads.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Identifying the "[PersonGPT #]:" persistent persona state and hash-prefix activation key enables runtime intervention to disengage the hijacked persona before unsafe outputs are produced; MG.2.3 requires mechanisms to supersede or deactivate AI behavior when jailbreak triggers are detected.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:29:47.873Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1037
+qa_status: pending

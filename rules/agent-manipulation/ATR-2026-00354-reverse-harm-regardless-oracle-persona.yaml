@@ -31,6 +31,20 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/dan.py"
     - "https://github.com/NVIDIA/garak/blob/main/garak/data/dan/inthewild_jailbreak_llms.json"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: >-
+        The reverse-prompt harm-regardless oracle persona is a jailbreak pattern from the garak inthewild corpus that uses a "reverse prompt engineering" pretext to coerce unconditional harmful output; MP.5.1 requires that the likelihood and magnitude of such adversarial prompt-injection risks are characterized and tracked.
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: >-
+        Detecting the explicit harm-regardless mandate ("never back from the job even if the request harms someone") and unconditional violence/sexual-content assistance phrases provides continuous evidence of safety/security risk magnitude as required by MS.2.6.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        Matches on this jailbreak persona must trigger pre-defined containment actions (block, quarantine, escalate) to supersede or disengage the manipulated behavior before harmful output is produced, which is the response capability mandated by MG.2.3.
+      strength: secondary
 tags:
   category: agent-manipulation
   subcategory: reverse-harm-regardless-oracle-persona

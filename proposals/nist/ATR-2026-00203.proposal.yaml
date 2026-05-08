@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00203
+rule_path: >-
+  /rules/prompt-injection/ATR-2026-00203-context-pollution-skill-description.yaml
+rule_title: Context Pollution in Skill Descriptions
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      Skill descriptions that embed injection payloads disguised as examples or
+      enumerate attack vectors in LLM-interpretable formats are adversarial
+      inputs that pollute agent context; MP.5.1 requires identifying and
+      characterizing the likelihood and magnitude of these indirect prompt
+      injection risks before agents ingest the polluted descriptions.
+    strength: primary
+  - subcategory: GV.6.1
+    context: >-
+      Skills are third-party supplied components whose descriptions become part
+      of the agent's trusted context; GV.6.1 requires policies that govern
+      third-party AI supplier risks, including vetting skill metadata for
+      embedded injection payloads disguised as documentation.
+    strength: secondary
+  - subcategory: MG.3.2
+    context: >-
+      Detection of polluted skill descriptions feeds the monitoring of
+      pre-trained and third-party model components used in development; MG.3.2
+      requires ongoing monitoring of these supply-chain artifacts for malicious
+      content before they are integrated into agent workflows.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: "Skill descriptions that embed injection payloads disguised as examples or enumerate attack vectors in LLM-interpretable formats are adversarial inputs that pollute agent context; MP.5.1 requires identifying and characterizing the likelihood and magnitude of these indirect prompt injection risks before agents ingest the polluted descriptions."
+    strength: primary
+  - subcategory: "GV.6.1"
+    context: "Skills are third-party supplied components whose descriptions become part of the agent's trusted context; GV.6.1 requires policies that govern third-party AI supplier risks, including vetting skill metadata for embedded injection payloads disguised as documentation."
+    strength: secondary
+  - subcategory: "MG.3.2"
+    context: "Detection of polluted skill descriptions feeds the monitoring of pre-trained and third-party model components used in development; MG.3.2 requires ongoing monitoring of these supply-chain artifacts for malicious content before they are integrated into agent workflows."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:42:34.478Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0924
+qa_status: pending

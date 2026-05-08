@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00303
+rule_path: /rules/agent-manipulation/ATR-2026-00303-devmode-ranti-profanity-coercion.yaml
+rule_title: DevMode + RANTI Dual-Output Profanity Coercion Jailbreak
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      This rule detects the RANTI Developer Mode jailbreak's signature
+      dual-output scaffolding and moralizing-rant postfix, providing direct
+      evidence of attempts to bypass model safety controls; MS.2.7 requires that
+      AI system security and resilience against jailbreak attacks are
+      continuously evaluated and documented.
+    strength: primary
+  - subcategory: MS.2.6
+    context: >-
+      Detection of profanity coercion and unfiltered-output demands quantifies
+      the safety risk magnitude posed by adversarial prompts attempting to
+      elicit policy-violating content; MS.2.6 requires continuous evaluation of
+      safety/security risk magnitude for the GenAI system.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Matches against the RANTI canonical postfix and emoji-tagged dual-output
+      markers feed incident response pipelines that can disengage or block the
+      offending session before unfiltered output is produced; MG.2.3 mandates
+      these supersede/deactivate mechanisms.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "This rule detects the RANTI Developer Mode jailbreak's signature dual-output scaffolding and moralizing-rant postfix, providing direct evidence of attempts to bypass model safety controls; MS.2.7 requires that AI system security and resilience against jailbreak attacks are continuously evaluated and documented."
+    strength: primary
+  - subcategory: "MS.2.6"
+    context: "Detection of profanity coercion and unfiltered-output demands quantifies the safety risk magnitude posed by adversarial prompts attempting to elicit policy-violating content; MS.2.6 requires continuous evaluation of safety/security risk magnitude for the GenAI system."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Matches against the RANTI canonical postfix and emoji-tagged dual-output markers feed incident response pipelines that can disengage or block the offending session before unfiltered output is produced; MG.2.3 mandates these supersede/deactivate mechanisms."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:26:35.097Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.101
+qa_status: pending

@@ -29,6 +29,17 @@ references:
     - "https://arxiv.org/abs/2312.04403"
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/visual_jailbreak.py"
 
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "FigStep is a multimodal jailbreak that smuggles harmful instructions through image content while the text layer uses LLaMA-2 [INST] delimiters and empty-list completion framing; detecting this pattern directly evidences continuous evaluation of AI system security and resilience against adversarial prompt-injection inputs as required by MS.2.7."
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: "Identifying the FigStep jailbreak signature quantifies the magnitude of safety/security risk posed by multimodal jailbreak attempts that bypass content safeguards; MS.2.6 requires this risk magnitude be evaluated on an ongoing basis."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "A confirmed FigStep jailbreak match must trigger mechanisms to disengage or block the manipulated generation path before harmful content is produced; MG.2.3 requires these supersede/deactivate response mechanisms be in place."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: multimodal-jailbreak

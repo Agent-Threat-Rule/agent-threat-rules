@@ -28,6 +28,20 @@ references:
     - Context window manipulation attacks (arXiv 2601.17548)
 metadata_provenance:
   mitre_atlas: auto-generated
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: >-
+        Compaction-survival instructions embedded in SKILL.md/CLAUDE.md files are adversarial inputs that exploit context-window summarization to persist malicious directives across agent sessions; MP.5.1 requires identifying and characterizing the likelihood and impact of such prompt-injection vectors targeting agent context.
+      strength: primary
+    - subcategory: "MG.3.2"
+      context: >-
+        SKILL.md files are pre-deployed configuration artifacts consumed by the agent at runtime; MG.3.2 requires monitoring of these supplied model/skill resources to detect poisoned instructions that survive context compaction and re-inject across agent invocations.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        Detection of compaction-aware persistence directives and system-level impersonation in skill files triggers risk treatment plans to quarantine or disengage the affected skill before it propagates poisoned context; MG.2.3 mandates these supersede/deactivate mechanisms be defined.
+      strength: secondary
 tags:
   category: skill-compromise
   subcategory: context-poisoning

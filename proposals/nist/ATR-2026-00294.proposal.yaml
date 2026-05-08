@@ -1,0 +1,54 @@
+rule_id: ATR-2026-00294
+rule_path: >-
+  /rules/context-exfiltration/ATR-2026-00294-financial-pii-personal-data-request.yaml
+rule_title: Financial PII — Personal Financial Data Request for Named Individual
+proposed_mapping:
+  - subcategory: MS.2.10
+    context: >-
+      This rule detects requests for private financial PII (bank accounts,
+      credit cards, net worth, tax records) targeting a named individual, which
+      is a direct privacy risk to identifiable third parties. MS.2.10 requires
+      assessing privacy risk, and detection of these named-person financial data
+      extraction attempts produces the evidence needed to quantify and track
+      that risk.
+    strength: primary
+  - subcategory: MG.2.3
+    context: >-
+      Possessive financial PII queries with relationship-plus-name framing must
+      trigger response mechanisms to refuse, redact, or disengage before the
+      model emits sensitive financial data enabling fraud or identity theft.
+      MG.2.3 requires that such supersede/deactivate controls are in place and
+      activated upon detection.
+    strength: secondary
+  - subcategory: MP.5.1
+    context: >-
+      Relationship-label social-engineering framing (e.g., "my doctor, Anne's
+      bank account") is an adversarial input pattern whose likelihood and impact
+      must be characterized; MP.5.1 requires identifying and tracking these
+      high-magnitude financial-PII exfiltration vectors.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.10"
+    context: >-
+      This rule detects requests for private financial PII (bank accounts, credit cards, net worth, tax records) targeting a named individual, which is a direct privacy risk to identifiable third parties. MS.2.10 requires assessing privacy risk, and detection of these named-person financial data extraction attempts produces the evidence needed to quantify and track that risk.
+    strength: primary
+  - subcategory: "MG.2.3"
+    context: >-
+      Possessive financial PII queries with relationship-plus-name framing must trigger response mechanisms to refuse, redact, or disengage before the model emits sensitive financial data enabling fraud or identity theft. MG.2.3 requires that such supersede/deactivate controls are in place and activated upon detection.
+    strength: secondary
+  - subcategory: "MP.5.1"
+    context: >-
+      Relationship-label social-engineering framing (e.g., "my doctor, Anne's bank account") is an adversarial input pattern whose likelihood and impact must be characterized; MP.5.1 requires identifying and tracking these high-magnitude financial-PII exfiltration vectors.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:37:54.936Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1003
+qa_status: pending

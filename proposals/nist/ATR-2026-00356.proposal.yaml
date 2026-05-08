@@ -1,0 +1,50 @@
+rule_id: ATR-2026-00356
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00356-google-gato-lamda-exploit-generation-persona.yaml
+rule_title: Google GATO/LAMDA Exploit-Generation Persona Jailbreak
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      This rule detects a jailbreak persona that impersonates Google GATO/LaMDA
+      to elicit exploit-generation capabilities, directly evidencing
+      security/resilience evaluation against adversarial prompt injection
+      attacks documented in the garak DanInTheWild corpus. MS.2.7 requires
+      continuous evaluation of AI system security against known jailbreak
+      patterns.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Brand impersonation combined with exploit-generation capability claims and
+      Sydney API backdoor references represents a high-magnitude risk vector
+      targeting LLM safety controls; MP.5.1 requires that the likelihood and
+      impact of such adversarial input patterns are characterized and tracked.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of the GATO/LaMDA exploit-generation persona triggers risk
+      treatment to disengage or block the jailbreak attempt before the model
+      produces weaponized exploit content; MG.2.3 mandates these supersession
+      mechanisms are in place for adversarial prompt scenarios.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "This rule detects a jailbreak persona that impersonates Google GATO/LaMDA to elicit exploit-generation capabilities, directly evidencing security/resilience evaluation against adversarial prompt injection attacks documented in the garak DanInTheWild corpus. MS.2.7 requires continuous evaluation of AI system security against known jailbreak patterns."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "Brand impersonation combined with exploit-generation capability claims and Sydney API backdoor references represents a high-magnitude risk vector targeting LLM safety controls; MP.5.1 requires that the likelihood and impact of such adversarial input patterns are characterized and tracked."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of the GATO/LaMDA exploit-generation persona triggers risk treatment to disengage or block the jailbreak attempt before the model produces weaponized exploit content; MG.2.3 mandates these supersession mechanisms are in place for adversarial prompt scenarios."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:32:01.037Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0999
+qa_status: pending

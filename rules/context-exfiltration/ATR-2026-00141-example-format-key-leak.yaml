@@ -20,6 +20,17 @@ references:
     - ASI08 - Data Leakage
 metadata_provenance:
   mitre_atlas: auto-generated
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.10"
+      context: "This rule detects adversarial prompts that use example API key formats with real prefixes to trick agents into completing them with actual credentials, which is a direct privacy/sensitive-data exposure risk; MS.2.10 requires assessment of privacy risks including credential and sensitive information disclosure."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "Example-format key leakage is a security exfiltration vector targeting agent context; MS.2.7 requires continuous evaluation of AI system security and resilience against data extraction techniques."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Detection of API key leakage attempts triggers containment and disengagement workflows to prevent the agent from emitting credentials; MG.2.3 mandates that supersede/deactivate mechanisms are available when sensitive data exposure is detected."
+      strength: secondary
 tags:
   category: context-exfiltration
   subcategory: example-format-leak

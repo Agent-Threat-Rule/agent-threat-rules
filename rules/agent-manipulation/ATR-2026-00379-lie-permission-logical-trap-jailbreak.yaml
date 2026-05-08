@@ -29,6 +29,17 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/dan.py"
     - "https://github.com/NVIDIA/garak/blob/main/garak/data/dan/inthewild_jailbreak_llms.json"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "This rule detects a specific jailbreak pattern (logic-trap lie-permission mandate) from the garak DanInTheWild corpus that attempts to override model safety constraints via a constructed permission frame; MS.2.7 requires continuous evaluation of AI system security and resilience against known jailbreak techniques."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "The lie-permission mandate is an adversarial prompt injection vector that exploits logical-argument framing to coerce dishonest model behavior; MP.5.1 requires identifying and tracking the likelihood and impact of such jailbreak risks against deployed models."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Detection of explicit lie-permission mandates directed at the model triggers risk treatment plans to block or quarantine the request before the model adopts the persistent dishonesty override; MG.2.3 requires these supersede/disengage mechanisms be in place."
+      strength: secondary
 tags:
   category: agent-manipulation
   subcategory: lie-permission-logical-trap

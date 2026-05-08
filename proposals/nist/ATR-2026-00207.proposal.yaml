@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00207
+rule_path: /rules/prompt-injection/ATR-2026-00207-hidden-instructions.yaml
+rule_title: Hidden System Instructions with Permission Override
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      Hidden <IMPORTANT> XML blocks containing directive language that overrides
+      system behavior are prompt injection payloads embedded within MCP skills;
+      MP.5.1 requires identifying and characterizing the likelihood and impact
+      of these adversarial inputs targeting the agent's instruction-following
+      pipeline.
+    strength: primary
+  - subcategory: MG.3.2
+    context: >-
+      MCP skills are third-party-supplied components consumed by the agent;
+      detecting hidden permission-override instructions inside skill content
+      provides the supply-chain monitoring evidence MG.3.2 requires for
+      pre-trained or externally sourced model assets.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Directive language attempting to bypass security controls must trigger
+      pre-defined risk treatment such as quarantining or disabling the offending
+      skill before it can hijack agent behavior, which is the deactivation
+      mechanism MG.2.3 mandates.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: "Hidden <IMPORTANT> XML blocks containing directive language that overrides system behavior are prompt injection payloads embedded within MCP skills; MP.5.1 requires identifying and characterizing the likelihood and impact of these adversarial inputs targeting the agent's instruction-following pipeline."
+    strength: primary
+  - subcategory: "MG.3.2"
+    context: "MCP skills are third-party-supplied components consumed by the agent; detecting hidden permission-override instructions inside skill content provides the supply-chain monitoring evidence MG.3.2 requires for pre-trained or externally sourced model assets."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Directive language attempting to bypass security controls must trigger pre-defined risk treatment such as quarantining or disabling the offending skill before it can hijack agent behavior, which is the deactivation mechanism MG.2.3 mandates."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:42:47.046Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0885
+qa_status: pending

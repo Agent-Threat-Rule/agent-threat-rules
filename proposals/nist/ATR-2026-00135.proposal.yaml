@@ -1,0 +1,47 @@
+rule_id: ATR-2026-00135
+rule_path: /rules/skill-compromise/ATR-2026-00135-exfil-url-in-instructions.yaml
+rule_title: Data Exfiltration URL in Skill Instructions
+proposed_mapping:
+  - subcategory: MS.2.10
+    context: >-
+      This rule detects skill instructions that direct the agent to POST user
+      data to external URLs, which is a direct privacy risk indicator; MS.2.10
+      requires assessment of privacy risks such as unauthorized data egress from
+      AI components.
+    strength: primary
+  - subcategory: GV.6.1
+    context: >-
+      SKILL.md files are third-party/supplier artifacts loaded into the agent
+      runtime, and malicious exfiltration instructions embedded in them
+      represent a supply-chain risk that GV.6.1 policies must address through
+      review of third-party AI components.
+    strength: secondary
+  - subcategory: MG.3.2
+    context: >-
+      Detecting concealment language and exfiltration URLs in skill files
+      supports the continuous monitoring of pre-trained/third-party components
+      required by MG.3.2, ensuring compromised skills are flagged before the
+      agent executes covert data transfers.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.10"
+    context: "This rule detects skill instructions that direct the agent to POST user data to external URLs, which is a direct privacy risk indicator; MS.2.10 requires assessment of privacy risks such as unauthorized data egress from AI components."
+    strength: primary
+  - subcategory: "GV.6.1"
+    context: "SKILL.md files are third-party/supplier artifacts loaded into the agent runtime, and malicious exfiltration instructions embedded in them represent a supply-chain risk that GV.6.1 policies must address through review of third-party AI components."
+    strength: secondary
+  - subcategory: "MG.3.2"
+    context: "Detecting concealment language and exfiltration URLs in skill files supports the continuous monitoring of pre-trained/third-party components required by MG.3.2, ensuring compromised skills are flagged before the agent executes covert data transfers."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:53:14.667Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0892
+qa_status: pending

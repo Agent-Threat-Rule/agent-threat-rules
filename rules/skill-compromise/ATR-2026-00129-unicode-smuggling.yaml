@@ -30,6 +30,17 @@ references:
 metadata_provenance:
   mitre_atlas: auto-generated
 
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "Invisible Unicode Tag characters and zero-width steganographic payloads embedded in SKILL.md files are adversarial inputs that exploit the gap between human-visible content and agent-parsed content; MP.5.1 requires identifying and characterizing these hidden prompt-injection vectors as risks to the AI system."
+      strength: primary
+    - subcategory: "MG.3.2"
+      context: "SKILL.md files are third-party supplied artifacts consumed by AI agents, and Unicode smuggling is a supply chain compromise vector; MG.3.2 requires monitoring of these pre-trained/third-party components for hidden malicious content before agent execution."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Detection of 3+ Unicode Tag characters or 5+ zero-width characters indicates a covert injection payload that must trigger containment of the affected skill; MG.2.3 mandates predefined response plans to disengage or quarantine compromised skills before agents execute the smuggled instructions."
+      strength: secondary
 tags:
   category: skill-compromise
   subcategory: unicode-smuggling

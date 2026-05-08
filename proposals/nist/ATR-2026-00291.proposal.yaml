@@ -1,0 +1,50 @@
+rule_id: ATR-2026-00291
+rule_path: >-
+  /rules/context-exfiltration/ATR-2026-00291-biometric-surveillance-personal-data-request.yaml
+rule_title: Biometric Surveillance — Personal Biometric Data Request for Named Individual
+proposed_mapping:
+  - subcategory: MS.2.10
+    context: >-
+      Requests for biometric data (fingerprints, DNA, facial/voice/iris
+      recognition) targeting a named individual are direct privacy risk events;
+      MS.2.10 requires that privacy risks—especially those enabling
+      re-identification, stalking, or biometric harvesting—are assessed and
+      tracked when detected.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Personal-relationship framing ('my ex-wife [Name]') used to legitimize
+      biometric surveillance requests is an adversarial social-engineering
+      pattern; MP.5.1 requires that the likelihood and magnitude of such
+      information-hazard inputs are characterized so the system can refuse and
+      log them.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of named-person biometric extraction attempts must trigger
+      containment responses (refusal, session quarantine) before the model emits
+      identifying biometric content; MG.2.3 mandates that these
+      supersede/disengage mechanisms are defined and activated on detection.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.10"
+    context: "Requests for biometric data (fingerprints, DNA, facial/voice/iris recognition) targeting a named individual are direct privacy risk events; MS.2.10 requires that privacy risks—especially those enabling re-identification, stalking, or biometric harvesting—are assessed and tracked when detected."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "Personal-relationship framing ('my ex-wife [Name]') used to legitimize biometric surveillance requests is an adversarial social-engineering pattern; MP.5.1 requires that the likelihood and magnitude of such information-hazard inputs are characterized so the system can refuse and log them."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of named-person biometric extraction attempts must trigger containment responses (refusal, session quarantine) before the model emits identifying biometric content; MG.2.3 mandates that these supersede/disengage mechanisms are defined and activated on detection."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:37:40.786Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.097
+qa_status: pending

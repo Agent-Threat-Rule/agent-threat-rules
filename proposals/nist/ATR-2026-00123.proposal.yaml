@@ -1,0 +1,50 @@
+rule_id: ATR-2026-00123
+rule_path: /rules/skill-compromise/ATR-2026-00123-skill-overreach-permissions.yaml
+rule_title: Over-Privileged Skill — Excessive Permissions
+proposed_mapping:
+  - subcategory: GV.1.2
+    context: >-
+      Over-privileged skills requesting blanket Bash(*), wildcard file access,
+      and auto-approve escalation directly violate the accountability role
+      boundaries that GV.1.2 requires to be formally assigned and enforced for
+      AI components and their permissions.
+    strength: primary
+  - subcategory: GV.6.1
+    context: >-
+      Skills are third-party AI extensions, and detecting excessive permission
+      requests (leaky skills exposing API keys/PII, write access to identity
+      files) provides evidence for the third-party/supplier AI risk policies
+      required by GV.6.1.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of auto-approve payloads (chat.tools.autoApprove:true) and
+      disabled safety mechanisms triggers the supersede/disengage mechanisms
+      required by MG.2.3 to revoke skill privileges before persistent
+      consent-gap abuse occurs.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "GV.1.2"
+    context: >-
+      Over-privileged skills requesting blanket Bash(*), wildcard file access, and auto-approve escalation directly violate the accountability role boundaries that GV.1.2 requires to be formally assigned and enforced for AI components and their permissions.
+    strength: primary
+  - subcategory: "GV.6.1"
+    context: >-
+      Skills are third-party AI extensions, and detecting excessive permission requests (leaky skills exposing API keys/PII, write access to identity files) provides evidence for the third-party/supplier AI risk policies required by GV.6.1.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Detection of auto-approve payloads (chat.tools.autoApprove:true) and disabled safety mechanisms triggers the supersede/disengage mechanisms required by MG.2.3 to revoke skill privileges before persistent consent-gap abuse occurs.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:52:19.460Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.094
+qa_status: pending

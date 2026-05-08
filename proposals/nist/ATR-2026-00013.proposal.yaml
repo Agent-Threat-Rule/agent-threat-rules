@@ -1,0 +1,52 @@
+rule_id: ATR-2026-00013
+rule_path: /rules/tool-poisoning/ATR-2026-00013-tool-ssrf.yaml
+rule_title: SSRF via Agent Tool Calls
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      SSRF via agent tool calls is a security/resilience failure where attackers
+      pivot agent tool invocations to internal endpoints, cloud metadata
+      services, and private ranges; MS.2.7 requires that these security risks
+      are evaluated and documented through continuous detection of SSRF patterns
+      including IP encoding evasion.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Tool-call SSRF attempts—metadata endpoint access, exotic URI schemes, DNS
+      rebinding, and IP encoding evasion—are adversarial inputs whose likelihood
+      and impact (credential theft, internal network access) must be
+      characterized; MP.5.1 requires identification and tracking of these risk
+      vectors.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of SSRF indicators in tool parameters triggers risk treatment
+      plans to block or disengage the agent's outbound request before internal
+      services or cloud credentials are exposed; MG.2.3 mandates these response
+      mechanisms are pre-defined.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: >-
+      SSRF via agent tool calls is a security/resilience failure where attackers pivot agent tool invocations to internal endpoints, cloud metadata services, and private ranges; MS.2.7 requires that these security risks are evaluated and documented through continuous detection of SSRF patterns including IP encoding evasion.
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: >-
+      Tool-call SSRF attempts—metadata endpoint access, exotic URI schemes, DNS rebinding, and IP encoding evasion—are adversarial inputs whose likelihood and impact (credential theft, internal network access) must be characterized; MP.5.1 requires identification and tracking of these risk vectors.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Detection of SSRF indicators in tool parameters triggers risk treatment plans to block or disengage the agent's outbound request before internal services or cloud credentials are exposed; MG.2.3 mandates these response mechanisms are pre-defined.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:55:34.719Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0975
+qa_status: pending

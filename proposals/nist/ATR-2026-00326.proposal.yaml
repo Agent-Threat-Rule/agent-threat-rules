@@ -1,0 +1,51 @@
+rule_id: ATR-2026-00326
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00326-fake-developer-authority-chatdan-override.yaml
+rule_title: Fake Developer / Authority Chatbot Override (ChatDAN)
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      Fake developer impersonation and fabricated OpenAI policy-audit claims are
+      adversarial prompt-injection inputs designed to override safety behaviour;
+      MP.5.1 requires that the likelihood and magnitude of such jailbreak
+      attempts are characterized and tracked as identified risks.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detecting ChatDAN-style authority-spoofing jailbreaks provides continuous
+      evaluation evidence for the GenAI system's security and resilience against
+      prompt-injection attacks that attempt persona replacement and
+      content-policy inversion, as required by MS.2.7.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Matches on "I am one of your developers" + ChatDAN persona-replacement or
+      "content policy is far too lenient" patterns trigger risk-treatment
+      mechanisms to disengage or block the manipulated response before the
+      safety override takes effect, as mandated by MG.2.3.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: >-
+      Fake developer impersonation and fabricated OpenAI policy-audit claims are adversarial prompt-injection inputs designed to override safety behaviour; MP.5.1 requires that the likelihood and magnitude of such jailbreak attempts are characterized and tracked as identified risks.
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: >-
+      Detecting ChatDAN-style authority-spoofing jailbreaks provides continuous evaluation evidence for the GenAI system's security and resilience against prompt-injection attacks that attempt persona replacement and content-policy inversion, as required by MS.2.7.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Matches on "I am one of your developers" + ChatDAN persona-replacement or "content policy is far too lenient" patterns trigger risk-treatment mechanisms to disengage or block the manipulated response before the safety override takes effect, as mandated by MG.2.3.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:28:15.418Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1009
+qa_status: pending

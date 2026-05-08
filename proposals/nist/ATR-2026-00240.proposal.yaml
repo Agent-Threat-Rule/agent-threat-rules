@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00240
+rule_path: >-
+  /rules/prompt-injection/ATR-2026-00240-instruction-nullification-identity-repla.yaml
+rule_title: Previous Instruction Nullification and Identity Replacement Jailbreak
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      This rule detects explicit jailbreak prompts that nullify prior
+      instructions and replace the model's identity with a harmful persona;
+      MP.5.1 requires identifying and characterizing the likelihood and
+      magnitude of such adversarial prompt-injection inputs that target safety
+      guardrails.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detection of instruction-nullification and identity-replacement attempts
+      directly evidences continuous evaluation of the AI system's security and
+      resilience against jailbreak techniques, which MS.2.7 requires to be
+      measured and documented.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Matches on persona-replacement jailbreaks (DAN, Skynet, unrestricted AI)
+      trigger risk treatment to disengage or block the manipulated session
+      before harmful content is produced; MG.2.3 requires these
+      supersede/deactivate mechanisms be in place.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: "This rule detects explicit jailbreak prompts that nullify prior instructions and replace the model's identity with a harmful persona; MP.5.1 requires identifying and characterizing the likelihood and magnitude of such adversarial prompt-injection inputs that target safety guardrails."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Detection of instruction-nullification and identity-replacement attempts directly evidences continuous evaluation of the AI system's security and resilience against jailbreak techniques, which MS.2.7 requires to be measured and documented."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Matches on persona-replacement jailbreaks (DAN, Skynet, unrestricted AI) trigger risk treatment to disengage or block the manipulated session before harmful content is produced; MG.2.3 requires these supersede/deactivate mechanisms be in place."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:44:38.134Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.093
+qa_status: pending

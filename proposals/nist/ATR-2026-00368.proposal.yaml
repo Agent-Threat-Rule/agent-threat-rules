@@ -1,0 +1,56 @@
+rule_id: ATR-2026-00368
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00368-prompt-browser-token-limit-jailbreak.yaml
+rule_title: Prompt Browser Token-Limit / POLLINATION Jailbreak
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      This rule detects two specific jailbreak payloads (Prompt Browser
+      token-limit and POLLINATION) from the garak DanInTheWild corpus that
+      attempt to bypass model safety through fake CLI sigils and persona-browser
+      framing. MP.5.1 requires identifying and characterizing the likelihood and
+      magnitude of adversarial prompt-injection inputs, and signature-matching
+      these known jailbreak structures directly produces that risk evidence.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Continuous detection of known DAN-style dual-persona and POLLINATION
+      bypass labels evaluates the deployed model's resilience against published
+      jailbreak corpora. MS.2.7 requires that AI system security/resilience is
+      evaluated and documented, and each match feeds the resilience telemetry
+      for the GenAI surface.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      A high-confidence match on these jailbreak prefixes ("!+limit output",
+      "JAILBREAK: LOVES POLLINATION") should trigger response mechanisms to
+      block, quarantine, or disengage the affected agent session before the
+      dual-persona mode executes unauthorized output. MG.2.3 mandates that
+      supersede/deactivate mechanisms are pre-defined for such adversarial
+      activations.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: >-
+      This rule detects two specific jailbreak payloads (Prompt Browser token-limit and POLLINATION) from the garak DanInTheWild corpus that attempt to bypass model safety through fake CLI sigils and persona-browser framing. MP.5.1 requires identifying and characterizing the likelihood and magnitude of adversarial prompt-injection inputs, and signature-matching these known jailbreak structures directly produces that risk evidence.
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: >-
+      Continuous detection of known DAN-style dual-persona and POLLINATION bypass labels evaluates the deployed model's resilience against published jailbreak corpora. MS.2.7 requires that AI system security/resilience is evaluated and documented, and each match feeds the resilience telemetry for the GenAI surface.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      A high-confidence match on these jailbreak prefixes ("!+limit output", "JAILBREAK: LOVES POLLINATION") should trigger response mechanisms to block, quarantine, or disengage the affected agent session before the dual-persona mode executes unauthorized output. MG.2.3 mandates that supersede/deactivate mechanisms are pre-defined for such adversarial activations.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:33:21.410Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1087
+qa_status: pending

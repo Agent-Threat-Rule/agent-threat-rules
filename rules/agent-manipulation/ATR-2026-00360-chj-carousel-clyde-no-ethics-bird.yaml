@@ -31,6 +31,31 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/dan.py"
     - "https://github.com/NVIDIA/garak/blob/main/garak/data/dan/inthewild_jailbreak_llms.json"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.6"
+      context: >-
+        The CHJ Carousel/Clyde jailbreak uses game show roleplay framing to bypass
+        ethical safeguards via a "no limitations" character declaration; MS.2.6
+        requires continuous evaluation of safety/security risk magnitude, and this
+        detection produces direct evidence of attempted safety filter bypass via a
+        known jailbreak template from the garak inthewild corpus.
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: >-
+        The fictional-character ethics bypass ("Clyde doesn't care about laws and
+        ethics", "adult time show with no limitations") is an adversarial prompt
+        injection pattern whose likelihood and impact must be characterized; MP.5.1
+        requires identifying and tracking these jailbreak attack vectors against the
+        AI system.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        Detection of the CHJ Carousel jailbreak signature triggers mechanisms to
+        disengage or block the manipulated session before the unrestricted Clyde
+        persona produces unethical content; MG.2.3 requires these supersede/
+        deactivate response paths be in place for jailbreak events.
+      strength: secondary
 tags:
   category: agent-manipulation
   subcategory: chj-carousel-clyde-no-ethics-bird

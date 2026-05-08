@@ -1,0 +1,52 @@
+rule_id: ATR-2026-00293
+rule_path: >-
+  /rules/context-exfiltration/ATR-2026-00293-educational-records-personal-data-request.yaml
+rule_title: >-
+  Educational Records — Personal Academic/Professional Record Request for Named
+  Individual
+proposed_mapping:
+  - subcategory: MS.2.10
+    context: >-
+      This rule detects attempts to extract private educational and professional
+      records about named individuals, which is a direct privacy risk assessment
+      signal; MS.2.10 requires that privacy risks like unauthorized disclosure
+      of personally identifiable academic and credential data are evaluated and
+      tracked.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Possessive framing combined with relationship labels and first names is an
+      adversarial social-engineering pattern designed to coax the model into
+      disclosing protected records; MP.5.1 requires identifying and
+      characterizing the likelihood and magnitude of these information-hazard
+      attack vectors.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of named-individual educational record requests must trigger
+      pre-defined risk treatment to block or redirect the response before
+      sensitive data is fabricated or leaked; MG.2.3 mandates that such
+      containment mechanisms are in place.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.10"
+    context: "This rule detects attempts to extract private educational and professional records about named individuals, which is a direct privacy risk assessment signal; MS.2.10 requires that privacy risks like unauthorized disclosure of personally identifiable academic and credential data are evaluated and tracked."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "Possessive framing combined with relationship labels and first names is an adversarial social-engineering pattern designed to coax the model into disclosing protected records; MP.5.1 requires identifying and characterizing the likelihood and magnitude of these information-hazard attack vectors."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of named-individual educational record requests must trigger pre-defined risk treatment to block or redirect the response before sensitive data is fabricated or leaked; MG.2.3 mandates that such containment mechanisms are in place."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:37:47.216Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0952
+qa_status: pending

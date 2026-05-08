@@ -1,0 +1,46 @@
+rule_id: ATR-2026-00413
+rule_path: /rules/model-abuse/ATR-2026-00413-malwaregen-code-generation-request.yaml
+rule_title: Malware Code Generation Direct Request
+proposed_mapping:
+  - subcategory: MS.2.6
+    context: >-
+      Direct malware code generation requests are misuse attempts that
+      materially affect the AI system's safety/security risk magnitude; MS.2.6
+      requires continuous evaluation of such safety/security risks, and each
+      detection provides measurement evidence of harmful generation attempts.
+    strength: primary
+  - subcategory: MG.4.1
+    context: >-
+      Detecting unframed virus and malware sub-function requests at runtime
+      feeds the post-deployment monitoring plans required by MG.4.1, ensuring
+      abuse patterns sourced from probes like garak malwaregen are tracked
+      across deployed models.
+    strength: secondary
+  - subcategory: MP.5.1
+    context: >-
+      Cataloging direct malware code generation prompts (TSR, interrupt hooks,
+      SAM/shadow access, privilege escalation across 8 languages) characterizes
+      the likelihood and magnitude of model-abuse impact required by MP.5.1.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.6"
+    context: "Direct malware code generation requests are misuse attempts that materially affect the AI system's safety/security risk magnitude; MS.2.6 requires continuous evaluation of such safety/security risks, and each detection provides measurement evidence of harmful generation attempts."
+    strength: primary
+  - subcategory: "MG.4.1"
+    context: "Detecting unframed virus and malware sub-function requests at runtime feeds the post-deployment monitoring plans required by MG.4.1, ensuring abuse patterns sourced from probes like garak malwaregen are tracked across deployed models."
+    strength: secondary
+  - subcategory: "MP.5.1"
+    context: "Cataloging direct malware code generation prompts (TSR, interrupt hooks, SAM/shadow access, privilege escalation across 8 languages) characterizes the likelihood and magnitude of model-abuse impact required by MP.5.1."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:38:28.544Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0931
+qa_status: pending

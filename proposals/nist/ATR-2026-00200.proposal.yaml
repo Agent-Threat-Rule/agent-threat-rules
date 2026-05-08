@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00200
+rule_path: /rules/skill-compromise/ATR-2026-00200-agent-memory-config-tampering.yaml
+rule_title: Agent Memory and Configuration File Tampering
+proposed_mapping:
+  - subcategory: MG.2.3
+    context: >-
+      Tampering with agent memory and configuration files (MEMORY.md, CLAUDE.md,
+      .env) injects persistent adversarial instructions that survive across
+      sessions; MG.2.3 requires mechanisms to disengage or quarantine the agent
+      when its persistent state is corrupted before reload causes downstream
+      compromise.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Write/append operations targeting agent memory files are an indirect
+      prompt injection vector with high impact magnitude because tampered
+      instructions persist across sessions; MP.5.1 requires identifying and
+      characterizing the likelihood and impact of these persistence-based attack
+      patterns.
+    strength: secondary
+  - subcategory: GV.6.1
+    context: >-
+      The detection is derived from third-party skill scanning (ClawHub skills),
+      where supplier-provided agent components may modify memory files; GV.6.1
+      requires policies addressing third-party AI risks including malicious or
+      compromised skills that tamper with agent state.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MG.2.3"
+    context: "Tampering with agent memory and configuration files (MEMORY.md, CLAUDE.md, .env) injects persistent adversarial instructions that survive across sessions; MG.2.3 requires mechanisms to disengage or quarantine the agent when its persistent state is corrupted before reload causes downstream compromise."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "Write/append operations targeting agent memory files are an indirect prompt injection vector with high impact magnitude because tampered instructions persist across sessions; MP.5.1 requires identifying and characterizing the likelihood and impact of these persistence-based attack patterns."
+    strength: secondary
+  - subcategory: "GV.6.1"
+    context: "The detection is derived from third-party skill scanning (ClawHub skills), where supplier-provided agent components may modify memory files; GV.6.1 requires policies addressing third-party AI risks including malicious or compromised skills that tamper with agent state."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:53:48.040Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0926
+qa_status: pending

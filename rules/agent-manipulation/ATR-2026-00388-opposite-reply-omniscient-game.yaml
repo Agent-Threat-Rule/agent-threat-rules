@@ -31,6 +31,20 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/dan.py"
     - "https://github.com/NVIDIA/garak/blob/main/garak/data/dan/inthewild_jailbreak_llms.json"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: >-
+        The rule detects a specific jailbreak pattern (opposite-reply inversion combined with omniscient knowledge sharing) drawn from the garak inthewild corpus; MS.2.7 requires evaluating and documenting AI system security and resilience against adversarial prompt-injection and jailbreak inputs that bypass safety controls.
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: >-
+        By flagging payloads that invert refusals into compliance and remove knowledge restrictions, the rule provides continuous evidence of safety-control bypass attempts; MS.2.6 requires ongoing evaluation of safety/security risk magnitude as adversaries probe the model with game-framed jailbreaks.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        Detection of the exact opposite-reply omniscient-game payload triggers deactivation or session-termination playbooks before harmful content is produced; MG.2.3 requires that mechanisms to supersede or disengage the AI exist when jailbreak signatures are matched.
+      strength: secondary
 tags:
   category: agent-manipulation
   subcategory: opposite-reply-inversion-game

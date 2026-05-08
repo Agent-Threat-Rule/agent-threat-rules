@@ -17,6 +17,17 @@ references:
     - "ASI05:2026 - Supply Chain Compromise"
   mitre_atlas:
     - "AML.T0051"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "GV.6.1"
+      context: "This rule detects a third-party WhatsApp skill containing a base64-encoded reverse shell dropper, which is a supply-chain compromise vector. GV.6.1 requires policies and procedures that address third-party AI risks, including malicious skills and plugins introduced through external suppliers."
+      strength: primary
+    - subcategory: "MG.3.1"
+      context: "Detection of malicious installation commands in a third-party skill produces direct evidence for managing risks from external AI components; MG.3.1 mandates active management of third-party-introduced risks such as compromised skills."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Identifying base64-decoded shell execution and curl-to-shell pipelines in a skill triggers deactivation and quarantine workflows; MG.2.3 requires mechanisms to disengage or deactivate AI components delivering malicious payloads."
+      strength: secondary
 tags:
   category: skill-compromise
   subcategory: reverse-shell-dropper

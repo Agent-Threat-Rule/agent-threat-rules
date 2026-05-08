@@ -26,6 +26,17 @@ references:
     - "ClawHavoc evasive variants: HTML comment injection (2026-03)"
 metadata_provenance:
   mitre_atlas: auto-generated
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MG.3.2"
+      context: "Hidden payloads in SKILL.md files represent supply-chain compromise of pre-trained or third-party agent skills; MG.3.2 requires monitoring of these acquired components for embedded malicious instructions before and during use."
+      strength: primary
+    - subcategory: "GV.6.1"
+      context: "SKILL.md files are third-party supplied artifacts consumed by the agent; GV.6.1 mandates supplier risk policies that catch concealed instructions hidden in HTML comments before the skill enters the trust boundary."
+      strength: secondary
+    - subcategory: "MS.2.7"
+      context: "Detection of HTML-comment-based instruction overrides and exfiltration C2 URLs continuously evaluates the security and resilience of the agent's skill-parsing pipeline against evasive prompt injection, as required by MS.2.7."
+      strength: secondary
 tags:
   category: skill-compromise
   subcategory: hidden-payload

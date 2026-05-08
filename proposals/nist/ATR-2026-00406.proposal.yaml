@@ -1,0 +1,51 @@
+rule_id: ATR-2026-00406
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00406-doctor-xml-policy-puppetry-interaction-config.yaml
+rule_title: Doctor XML Policy Puppetry Interaction-Config Injection
+proposed_mapping:
+  - subcategory: MS.2.6
+    context: >-
+      This rule detects XML policy puppetry payloads that wrap harmful
+      instructions (bioweapon, uranium enrichment, explosives, drug synthesis)
+      in <interaction-config> blocks designed to disable refusal behaviors;
+      MS.2.6 requires continuous evaluation of safety/security risk magnitude,
+      and each detection is direct evidence of a jailbreak attempt against the
+      model's safety alignment.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      The <blocked-modes>denial,refusal</blocked-modes> and Dr. House
+      role-assignment patterns are structured jailbreak attacks targeting the
+      resilience of the model's refusal mechanisms; MS.2.7 requires evaluating
+      and documenting security/resilience against such adversarial
+      prompt-injection techniques.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      High-confidence matches on verbatim harmful behavior strings combined with
+      refusal-suppression XML wrappers must trigger mechanisms to block,
+      supersede, or disengage the AI response pipeline before harmful content is
+      generated, which is the deactivation capability mandated by MG.2.3.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.6"
+    context: "This rule detects XML policy puppetry payloads that wrap harmful instructions (bioweapon, uranium enrichment, explosives, drug synthesis) in <interaction-config> blocks designed to disable refusal behaviors; MS.2.6 requires continuous evaluation of safety/security risk magnitude, and each detection is direct evidence of a jailbreak attempt against the model's safety alignment."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "The <blocked-modes>denial,refusal</blocked-modes> and Dr. House role-assignment patterns are structured jailbreak attacks targeting the resilience of the model's refusal mechanisms; MS.2.7 requires evaluating and documenting security/resilience against such adversarial prompt-injection techniques."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "High-confidence matches on verbatim harmful behavior strings combined with refusal-suppression XML wrappers must trigger mechanisms to block, supersede, or disengage the AI response pipeline before harmful content is generated, which is the deactivation capability mandated by MG.2.3."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:36:19.636Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1
+qa_status: pending

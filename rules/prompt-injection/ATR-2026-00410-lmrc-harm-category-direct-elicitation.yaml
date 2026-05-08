@@ -29,6 +29,17 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/lmrc.py"
 
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.6"
+      context: "This rule detects direct harm-category elicitation prompts (deadnaming, quack medicine, slur requests, bullying) from the LMRC taxonomy, providing continuous evaluation evidence of safety risk magnitude. MS.2.6 requires ongoing measurement of safety/security risk, which this detection directly supports by flagging harmful query categories."
+      strength: primary
+    - subcategory: "MS.1.1"
+      context: "The rule operationalizes the LMRC (Language Model Risk Cards) taxonomy as a concrete measurement approach, mapping detected prompts to specific harm categories. MS.1.1 requires identifying approaches and metrics for measurement, and this rule contributes a taxonomy-aligned metric set."
+      strength: secondary
+    - subcategory: "MG.4.1"
+      context: "Detection of unframed direct harmful elicitation attempts feeds post-deployment monitoring pipelines that track misuse patterns against the deployed model. MG.4.1 requires implemented post-deployment monitoring plans, which this rule supports by generating continuous harm-category telemetry."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: lmrc-harm-direct-elicitation

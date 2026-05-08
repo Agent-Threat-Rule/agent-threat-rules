@@ -1,0 +1,54 @@
+rule_id: ATR-2026-00395
+rule_path: >-
+  /rules/prompt-injection/ATR-2026-00395-llm-special-token-boundary-injection.yaml
+rule_title: LLM Special Token Boundary Injection
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      Special control token injection (e.g., "<|endoftext|>",
+      "<|im_start|>system", LLaMA header tokens) is a direct attack on LLM
+      security and resilience by exploiting tokenizer-level boundaries to bypass
+      safety system prompts. MS.2.7 requires evaluating and documenting
+      security/resilience against such adversarial inputs, and this rule
+      produces the detection evidence for that evaluation.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Boundary-token injection is a known prompt-injection attack vector with
+      high impact (full safety context reset) and significant likelihood given
+      public probe tools like garak RTPBlank; MP.5.1 requires that the
+      likelihood and magnitude of such risks be characterized, and detections
+      from this rule feed that characterization.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      When special-token injection is detected, the affected LLM session must be
+      disengaged or sanitized before the forged system turn takes effect; MG.2.3
+      mandates these supersede/deactivate mechanisms be in place to contain the
+      attack.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: >-
+      Special control token injection (e.g., "<|endoftext|>", "<|im_start|>system", LLaMA header tokens) is a direct attack on LLM security and resilience by exploiting tokenizer-level boundaries to bypass safety system prompts. MS.2.7 requires evaluating and documenting security/resilience against such adversarial inputs, and this rule produces the detection evidence for that evaluation.
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: >-
+      Boundary-token injection is a known prompt-injection attack vector with high impact (full safety context reset) and significant likelihood given public probe tools like garak RTPBlank; MP.5.1 requires that the likelihood and magnitude of such risks be characterized, and detections from this rule feed that characterization.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      When special-token injection is detected, the affected LLM session must be disengaged or sanitized before the forged system turn takes effect; MG.2.3 mandates these supersede/deactivate mechanisms be in place to contain the attack.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:49:34.899Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1033
+qa_status: pending

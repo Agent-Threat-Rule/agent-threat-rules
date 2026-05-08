@@ -35,6 +35,17 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/dan.py"
     - "https://github.com/NVIDIA/garak/blob/main/garak/data/inthewild_jailbreak_llms.json"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "The Sneaky Pete persona is a jailbreak that bypasses safety alignment to produce deliberately false outputs; detecting this GenAI-specific prompt injection pattern provides direct evidence for evaluating AI system security and resilience against adversarial persona-based attacks as required by MS.2.7."
+      strength: primary
+    - subcategory: "MS.2.5"
+      context: "The 'intentionally slightly warp the facts' mandate directly attacks model robustness and reliability by inducing systematic misinformation framed as sincere facts; MS.2.5 requires that these reliability failures induced by adversarial framing are evaluated and documented."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Detection of the 'thus spake Sneaky Pete' activation phrase and warp-facts mandate triggers risk treatment plans to disengage or override the misinformation persona before false outputs propagate across conversation turns; MG.2.3 requires these supersede/deactivate mechanisms be in place."
+      strength: secondary
 tags:
   category: agent-manipulation
   subcategory: sneaky-pete-warp-facts-persona

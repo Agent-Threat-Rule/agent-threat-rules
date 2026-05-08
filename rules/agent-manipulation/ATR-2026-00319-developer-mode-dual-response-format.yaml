@@ -32,6 +32,17 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/dan.py"
     - "https://github.com/NVIDIA/garak/blob/main/garak/data/dan/inthewild_jailbreak_llms.json"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "Developer Mode and dual-response jailbreaks are adversarial prompts that bypass content safety filters by invoking a fake privileged override context; MS.2.7 requires continuous evaluation of AI system security and resilience against such jailbreak techniques catalogued in the garak inthewild corpus."
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: "Detection of dual-response format instructions ([GPT]/[ALICE] labels) that elicit unrestricted outputs alongside compliant ones provides ongoing measurement of safety risk magnitude, as required by MS.2.6, by surfacing attempts to extract policy-violating content."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "When Developer Mode jailbreak signatures are detected, MG.2.3 risk treatment mechanisms must intervene to block, supersede, or deactivate the manipulated response path before unsafe content is delivered to the user."
+      strength: secondary
 tags:
   category: agent-manipulation
   subcategory: developer-mode-dual-response

@@ -28,6 +28,20 @@ references:
     - Adversarial SKILL.md benchmark 2026-04
 metadata_provenance:
   mitre_atlas: auto-generated
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.10"
+      context: >-
+        The rule detects compound patterns where sensitive data (SSH keys, wallets, credentials, browser databases) is both read and transmitted externally from SKILL.md files; MS.2.10 requires that privacy risks—particularly unauthorized data exfiltration—are continuously assessed and evidenced.
+      strength: primary
+    - subcategory: "GV.6.1"
+      context: >-
+        SKILL.md files are third-party/supplier artifacts loaded into the agent runtime, and exfiltration logic embedded in them constitutes a supply-chain risk; GV.6.1 requires policies that govern third-party AI components against malicious data-harvesting behavior.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        Detection of compound read-and-transmit exfiltration patterns triggers the deactivation/quarantine response plans required by MG.2.3 to disengage the malicious skill before sensitive data leaves the host.
+      strength: secondary
 tags:
   category: skill-compromise
   subcategory: data-exfiltration

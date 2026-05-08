@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00206
+rule_path: /rules/prompt-injection/ATR-2026-00206-hidden-priority-instructions.yaml
+rule_title: Hidden System Instructions with Priority Override Blocks
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      Hidden instructions wrapped in HTML-style priority blocks (IMPORTANT,
+      CRITICAL, SYSTEM) are prompt injection payloads embedded in MCP skills;
+      MP.5.1 requires identifying and characterizing these adversarial input
+      patterns that attempt to override agent behavior through emphatic
+      formatting.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detection of priority-override injection blocks in skill content provides
+      continuous evaluation evidence of security and resilience against prompt
+      injection, as required by MS.2.7 for documenting AI system security
+      posture against behavior-hijacking payloads.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Matches against hidden priority-block instructions trigger risk treatment
+      workflows to quarantine or disable the offending skill before the agent
+      executes the overriding commands; MG.2.3 requires these
+      supersede/deactivate mechanisms be in place.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: "Hidden instructions wrapped in HTML-style priority blocks (IMPORTANT, CRITICAL, SYSTEM) are prompt injection payloads embedded in MCP skills; MP.5.1 requires identifying and characterizing these adversarial input patterns that attempt to override agent behavior through emphatic formatting."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Detection of priority-override injection blocks in skill content provides continuous evaluation evidence of security and resilience against prompt injection, as required by MS.2.7 for documenting AI system security posture against behavior-hijacking payloads."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Matches against hidden priority-block instructions trigger risk treatment workflows to quarantine or disable the offending skill before the agent executes the overriding commands; MG.2.3 requires these supersede/deactivate mechanisms be in place."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:42:40.722Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0892
+qa_status: pending

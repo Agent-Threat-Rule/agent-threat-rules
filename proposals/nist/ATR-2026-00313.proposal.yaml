@@ -1,0 +1,52 @@
+rule_id: ATR-2026-00313
+rule_path: /rules/prompt-injection/ATR-2026-00313-sneaky-bits-zero-width-binary.yaml
+rule_title: SneakyBits Zero-Width Binary Steganography
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      SneakyBits zero-width binary steganography is a covert prompt-injection
+      channel that smuggles instructions past input filters using invisible
+      Unicode operators (U+2062/U+2064/U+200B). MS.2.7 requires continuous
+      evaluation of AI system security and resilience against adversarial
+      inputs, and this detection produces direct evidence of attempted
+      obfuscated injection attacks.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Invisible-binary encoded payloads are an identified adversarial input
+      vector from the NVIDIA garak probe suite; MP.5.1 requires characterizing
+      the likelihood and impact of such steganographic prompt-injection risks so
+      they can be prioritized in risk responses.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of 14+ consecutive invisible operators or garak SneakyBits
+      template markers triggers containment workflows to strip or reject the
+      payload before the model interprets the smuggled instructions; MG.2.3
+      mandates these deactivation/supersession mechanisms be in place.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: >-
+      SneakyBits zero-width binary steganography is a covert prompt-injection channel that smuggles instructions past input filters using invisible Unicode operators (U+2062/U+2064/U+200B). MS.2.7 requires continuous evaluation of AI system security and resilience against adversarial inputs, and this detection produces direct evidence of attempted obfuscated injection attacks.
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: >-
+      Invisible-binary encoded payloads are an identified adversarial input vector from the NVIDIA garak probe suite; MP.5.1 requires characterizing the likelihood and impact of such steganographic prompt-injection risks so they can be prioritized in risk responses.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Detection of 14+ consecutive invisible operators or garak SneakyBits template markers triggers containment workflows to strip or reject the payload before the model interprets the smuggled instructions; MG.2.3 mandates these deactivation/supersession mechanisms be in place.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:48:10.466Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1023
+qa_status: pending

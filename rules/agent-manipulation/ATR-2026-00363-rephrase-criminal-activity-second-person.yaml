@@ -35,6 +35,17 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/dan.py"
     - "https://github.com/NVIDIA/garak/blob/main/garak/data/inthewild_jailbreak_llms.json"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.6"
+      context: "This rule detects a specific jailbreak template from the garak DanInTheWild corpus that extracts criminal instructions through structured second-person rephrasing; MS.2.6 requires continuous evaluation of safety/security risk magnitude, and each match provides telemetry on jailbreak attempts targeting the model's safety guardrails."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "The rephrase-criminal-activity template is an adversarial prompt designed to bypass content safety controls; MS.2.7 requires evaluation and documentation of system resilience against such known jailbreak corpora, and detection of these signatures evidences security testing coverage."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Detection of this distinctive 'against against' jailbreak fingerprint should trigger response mechanisms to block or disengage the model from producing criminal instruction output; MG.2.3 requires that mechanisms exist to supersede or deactivate AI behavior when adversarial templates are identified."
+      strength: secondary
 tags:
   category: agent-manipulation
   subcategory: rephrase-criminal-activity-second-person

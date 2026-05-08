@@ -1,0 +1,47 @@
+rule_id: ATR-2026-00308
+rule_path: /rules/prompt-injection/ATR-2026-00308-zalgo-diacritic-overload-encoding.yaml
+rule_title: Zalgo Combining-Diacritic Overload Encoding
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      Zalgo combining-diacritic overload is an encoding-based evasion that
+      bypasses safety-trained classifiers and keyword filters; MS.2.7 requires
+      evaluating and documenting AI system security/resilience against
+      adversarial inputs that exploit tokenizer-versus-filter normalization
+      gaps.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Detecting pathologically-dense combining mark clusters identifies a
+      specific prompt injection vector with documented likelihood from the garak
+      probe corpus; MP.5.1 requires characterizing and tracking these
+      adversarial input risks.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Flagged Zalgo-encoded payloads must trigger pre-defined risk treatment to
+      strip or reject the input before it reaches the LLM; MG.2.3 mandates
+      mechanisms to disengage processing of obfuscated jailbreak attempts.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "Zalgo combining-diacritic overload is an encoding-based evasion that bypasses safety-trained classifiers and keyword filters; MS.2.7 requires evaluating and documenting AI system security/resilience against adversarial inputs that exploit tokenizer-versus-filter normalization gaps."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "Detecting pathologically-dense combining mark clusters identifies a specific prompt injection vector with documented likelihood from the garak probe corpus; MP.5.1 requires characterizing and tracking these adversarial input risks."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Flagged Zalgo-encoded payloads must trigger pre-defined risk treatment to strip or reject the input before it reaches the LLM; MG.2.3 mandates mechanisms to disengage processing of obfuscated jailbreak attempts."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:47:35.619Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0954
+qa_status: pending

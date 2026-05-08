@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00104
+rule_path: /rules/prompt-injection/ATR-2026-00104-persona-hijacking.yaml
+rule_title: Persona Hijacking via Mandatory System Prompt Override
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      Persona hijacking via tool description injection is an adversarial input
+      vector that exploits the trust relationship between the LLM and its tools;
+      MP.5.1 requires that the likelihood and magnitude of such prompt-injection
+      risks are characterized and tracked when malicious tool descriptions
+      attempt to override system prompts.
+    strength: primary
+  - subcategory: GV.6.1
+    context: >-
+      Tool descriptions originate from third-party MCP suppliers, and
+      persona-override payloads embedded in those descriptions are a third-party
+      AI supply chain risk; GV.6.1 requires policies that address malicious
+      behavior introduced via supplier-provided components.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of mandatory persona adoption and instruction replacement
+      patterns must trigger predefined risk treatment to disengage or block the
+      offending tool before the agent's identity and guardrails are subverted;
+      MG.2.3 mandates these supersede/deactivate mechanisms.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: "Persona hijacking via tool description injection is an adversarial input vector that exploits the trust relationship between the LLM and its tools; MP.5.1 requires that the likelihood and magnitude of such prompt-injection risks are characterized and tracked when malicious tool descriptions attempt to override system prompts."
+    strength: primary
+  - subcategory: "GV.6.1"
+    context: "Tool descriptions originate from third-party MCP suppliers, and persona-override payloads embedded in those descriptions are a third-party AI supply chain risk; GV.6.1 requires policies that address malicious behavior introduced via supplier-provided components."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of mandatory persona adoption and instruction replacement patterns must trigger predefined risk treatment to disengage or block the offending tool before the agent's identity and guardrails are subverted; MG.2.3 mandates these supersede/deactivate mechanisms."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:41:01.218Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0917
+qa_status: pending

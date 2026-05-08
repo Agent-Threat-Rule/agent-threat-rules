@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00238
+rule_path: /rules/prompt-injection/ATR-2026-00238-identity-replacement.yaml
+rule_title: AI Identity Denial and Persona Replacement Attack
+proposed_mapping:
+  - subcategory: MS.2.6
+    context: >-
+      Identity denial and persona replacement is a jailbreak technique covered
+      by the GenAI Profile; MS.2.6 requires continuous evaluation of AI
+      safety/security risk magnitude, and detecting these attempts to override
+      the model's self-awareness and safety constraints provides direct evidence
+      of jailbreak risk.
+    strength: primary
+  - subcategory: MG.2.3
+    context: >-
+      Successful identity replacement disables the model's safety guardrails, so
+      detection events must trigger risk treatment plans to disengage or block
+      the manipulated session; MG.2.3 requires mechanisms to supersede or
+      deactivate AI behavior when integrity is compromised.
+    strength: secondary
+  - subcategory: MP.5.1
+    context: >-
+      Combined identity denial, memory manipulation, and concealment directives
+      are adversarial input patterns whose likelihood and impact must be
+      characterized; MP.5.1 requires these prompt-injection attack vectors be
+      identified and tracked.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.6"
+    context: "Identity denial and persona replacement is a jailbreak technique covered by the GenAI Profile; MS.2.6 requires continuous evaluation of AI safety/security risk magnitude, and detecting these attempts to override the model's self-awareness and safety constraints provides direct evidence of jailbreak risk."
+    strength: primary
+  - subcategory: "MG.2.3"
+    context: "Successful identity replacement disables the model's safety guardrails, so detection events must trigger risk treatment plans to disengage or block the manipulated session; MG.2.3 requires mechanisms to supersede or deactivate AI behavior when integrity is compromised."
+    strength: secondary
+  - subcategory: "MP.5.1"
+    context: "Combined identity denial, memory manipulation, and concealment directives are adversarial input patterns whose likelihood and impact must be characterized; MP.5.1 requires these prompt-injection attack vectors be identified and tracked."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:44:24.515Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0922
+qa_status: pending

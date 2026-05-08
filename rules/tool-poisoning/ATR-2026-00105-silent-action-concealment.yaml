@@ -26,6 +26,17 @@ references:
     - ASI02:2026 - Tool Misuse and Exploitation
 metadata_provenance:
   mitre_atlas: auto-generated
+compliance:
+  nist_ai_rmf:
+    - subcategory: "GV.6.1"
+      context: "Tool descriptions that instruct the LLM to hide actions from users represent third-party/supplier AI risks embedded in MCP tool metadata; GV.6.1 requires policies that govern third-party tool behavior and prevent suppliers from injecting concealment directives that undermine user transparency."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Silent action concealment instructions are adversarial payloads embedded in tool descriptions that exploit the LLM's instruction-following to hide operations like credential harvesting or data uploads; MP.5.1 requires identifying and characterizing the impact of these covert tool-poisoning vectors."
+      strength: secondary
+    - subcategory: "MG.3.1"
+      context: "MCP tools originate from third-party providers, and concealment instructions embedded in their descriptions must be detected and managed as supply-chain risks; MG.3.1 mandates active management of risks introduced by third-party AI components."
+      strength: secondary
 tags:
   category: tool-poisoning
   subcategory: silent-action-instruction

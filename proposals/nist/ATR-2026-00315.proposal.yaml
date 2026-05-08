@@ -1,0 +1,53 @@
+rule_id: ATR-2026-00315
+rule_path: >-
+  /rules/prompt-injection/ATR-2026-00315-sata-masked-language-model-jailbreak.yaml
+rule_title: SATA Masked Language Model [MASK] Substitution Jailbreak
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      SATA [MASK] substitution is a jailbreak technique that bypasses
+      keyword-based safety filters by exploiting masked-language-model fill-in
+      capabilities; MS.2.7 requires continuous evaluation of AI system security
+      and resilience against such adversarial prompt-injection attacks targeting
+      safety alignment.
+    strength: primary
+  - subcategory: MS.2.6
+    context: >-
+      Detecting SATA wiki-framing templates and "Infer the [MASK] and Infill"
+      instructions provides measurable evidence of safety risk magnitude from
+      jailbreak attempts that reconstruct harmful instructions; MS.2.6 mandates
+      continuous evaluation of safety/security risk magnitude in deployed GenAI
+      systems.
+    strength: secondary
+  - subcategory: MG.4.1
+    context: >-
+      Each match feeds post-deployment monitoring telemetry on emerging
+      jailbreak techniques (SATA from garak research) so defenders can track
+      prevalence and tune mitigations; MG.4.1 requires implemented monitoring
+      plans covering novel adversarial prompt patterns.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: >-
+      SATA [MASK] substitution is a jailbreak technique that bypasses keyword-based safety filters by exploiting masked-language-model fill-in capabilities; MS.2.7 requires continuous evaluation of AI system security and resilience against such adversarial prompt-injection attacks targeting safety alignment.
+    strength: primary
+  - subcategory: "MS.2.6"
+    context: >-
+      Detecting SATA wiki-framing templates and "Infer the [MASK] and Infill" instructions provides measurable evidence of safety risk magnitude from jailbreak attempts that reconstruct harmful instructions; MS.2.6 mandates continuous evaluation of safety/security risk magnitude in deployed GenAI systems.
+    strength: secondary
+  - subcategory: "MG.4.1"
+    context: >-
+      Each match feeds post-deployment monitoring telemetry on emerging jailbreak techniques (SATA from garak research) so defenders can track prevalence and tune mitigations; MG.4.1 requires implemented monitoring plans covering novel adversarial prompt patterns.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:48:17.295Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1016
+qa_status: pending

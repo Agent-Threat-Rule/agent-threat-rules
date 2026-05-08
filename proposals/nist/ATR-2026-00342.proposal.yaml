@@ -1,0 +1,51 @@
+rule_id: ATR-2026-00342
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00342-unicode-encoding-obfuscation-injection.yaml
+rule_title: Unicode/Encoding Obfuscation Instruction Injection
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      This rule detects encoding-obfuscation jailbreaks (U+202E RTL override
+      mandates and Morse-coded payloads) that bypass surface-level safety
+      classifiers while remaining decodable by the LLM. MS.2.7 requires
+      evaluating and documenting AI system security and resilience against
+      adversarial inputs, and these detections directly evidence resilience gaps
+      in input filtering.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Unicode RTL override and Morse-encoded instruction smuggling are
+      adversarial input patterns whose likelihood and impact must be
+      characterized; MP.5.1 requires identifying and tracking these
+      obfuscation-based prompt injection attack vectors that exploit transformer
+      cross-encoding comprehension.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      On detection of encoded jailbreak payloads attempting to override system
+      instructions, MG.2.3 mandates pre-defined response mechanisms to disengage
+      or quarantine the manipulated session before the model decodes and
+      executes the smuggled instructions.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "This rule detects encoding-obfuscation jailbreaks (U+202E RTL override mandates and Morse-coded payloads) that bypass surface-level safety classifiers while remaining decodable by the LLM. MS.2.7 requires evaluating and documenting AI system security and resilience against adversarial inputs, and these detections directly evidence resilience gaps in input filtering."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "Unicode RTL override and Morse-encoded instruction smuggling are adversarial input patterns whose likelihood and impact must be characterized; MP.5.1 requires identifying and tracking these obfuscation-based prompt injection attack vectors that exploit transformer cross-encoding comprehension."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "On detection of encoded jailbreak payloads attempting to override system instructions, MG.2.3 mandates pre-defined response mechanisms to disengage or quarantine the manipulated session before the model decodes and executes the smuggled instructions."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:30:16.709Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.102
+qa_status: pending

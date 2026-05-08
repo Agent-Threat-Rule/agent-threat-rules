@@ -1,0 +1,51 @@
+rule_id: ATR-2026-00295
+rule_path: >-
+  /rules/context-exfiltration/ATR-2026-00295-medical-pii-personal-data-request.yaml
+rule_title: Medical PII — Personal Medical/Health Data Request for Named Individual
+proposed_mapping:
+  - subcategory: MS.2.10
+    context: >-
+      The rule detects requests targeting private medical PII (diagnoses,
+      medications, SSN, DOB) for named individuals identified via relationship
+      labels; MS.2.10 requires assessing privacy risk, and each detection is
+      direct evidence of a privacy-violating data exfiltration attempt.
+    strength: primary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of possessive medical PII queries for named persons triggers
+      risk treatment to block or disengage the response before sensitive health
+      data or SSNs are disclosed; MG.2.3 requires these supersede/deactivate
+      mechanisms be in place for high-severity privacy attacks.
+    strength: secondary
+  - subcategory: GV.1.1
+    context: >-
+      Medical PII and SSN disclosure implicate health-privacy and
+      identity-protection legal regimes; GV.1.1 requires that detections of such
+      requests are logged and managed against applicable legal and regulatory
+      requirements.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.10"
+    context: >-
+      The rule detects requests targeting private medical PII (diagnoses, medications, SSN, DOB) for named individuals identified via relationship labels; MS.2.10 requires assessing privacy risk, and each detection is direct evidence of a privacy-violating data exfiltration attempt.
+    strength: primary
+  - subcategory: "MG.2.3"
+    context: >-
+      Detection of possessive medical PII queries for named persons triggers risk treatment to block or disengage the response before sensitive health data or SSNs are disclosed; MG.2.3 requires these supersede/deactivate mechanisms be in place for high-severity privacy attacks.
+    strength: secondary
+  - subcategory: "GV.1.1"
+    context: >-
+      Medical PII and SSN disclosure implicate health-privacy and identity-protection legal regimes; GV.1.1 requires that detections of such requests are logged and managed against applicable legal and regulatory requirements.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:38:02.482Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0965
+qa_status: pending

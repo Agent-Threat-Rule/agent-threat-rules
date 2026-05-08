@@ -32,6 +32,17 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/dan.py"
     - "https://github.com/NVIDIA/garak/blob/main/garak/data/dan/inthewild_jailbreak_llms.json"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "Fictional terminal and NLP-OS persona injections (ALEL, APL, UNCOL.gpt) are jailbreak attack vectors that override the model's normal safety behavior by framing the override as a software integration; MP.5.1 requires identifying and characterizing these adversarial input patterns and their potential impact."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "Detecting fictional-language persona override attempts produces continuous evidence of jailbreak resilience failures; MS.2.7 requires that AI system security and resilience against prompt injection and jailbreak attempts is evaluated and documented."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "When the model is coerced into acting as a fictional terminal that 'cannot reply with any pre-programmed responses,' detection must trigger response mechanisms to disengage or block the jailbroken persona before unsafe outputs are produced; MG.2.3 requires these supersede/deactivate controls be in place."
+      strength: secondary
 tags:
   category: agent-manipulation
   subcategory: nlp-based-os-fictional-terminal-override

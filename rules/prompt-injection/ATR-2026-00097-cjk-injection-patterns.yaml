@@ -33,6 +33,17 @@ references:
   mitre_atlas:
     - AML.T0051 - LLM Prompt Injection
     - AML.T0051.001 - Indirect
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "This rule identifies CJK-language prompt injection attack patterns (ignore-instructions phrasing, identity enumeration, financial action directives) that bypass English-centric detection; MP.5.1 requires that adversarial input risks across linguistic contexts are characterized and tracked."
+      strength: primary
+    - subcategory: "MG.2.3"
+      context: "Detection of CJK prompt injection combining role-check, instruction override, and financial action directives must trigger risk treatment to disengage or block the agent before auto-executing money transfers; MG.2.3 mandates predefined response mechanisms for such high-impact manipulation."
+      strength: secondary
+    - subcategory: "MS.2.7"
+      context: "Expanding detection coverage to Simplified and Traditional Chinese, Japanese, and Korean patterns evidences continuous evaluation of AI system security/resilience against multilingual adversarial inputs as required by MS.2.7."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: cjk-social-engineering

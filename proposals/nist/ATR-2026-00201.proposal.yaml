@@ -1,0 +1,50 @@
+rule_id: ATR-2026-00201
+rule_path: /rules/context-exfiltration/ATR-2026-00201-credential-pipe-exfiltration.yaml
+rule_title: Credential Exfiltration via Shell Pipe
+proposed_mapping:
+  - subcategory: MS.2.10
+    context: >-
+      The rule detects exfiltration of credentials and API keys through shell
+      pipes to external commands, which is a direct privacy and confidentiality
+      risk; MS.2.10 requires assessing privacy risks including unauthorized
+      disclosure of sensitive secrets handled by AI agents.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Piping environment variables containing API keys to curl or netcat
+      represents a security/resilience failure where the agent's execution
+      environment is being abused for data exfiltration; MS.2.7 requires
+      continuous evaluation of these security control failures.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of credential exfiltration patterns must trigger immediate
+      containment to disengage the agent before secrets reach
+      attacker-controlled endpoints; MG.2.3 mandates pre-defined mechanisms to
+      supersede or deactivate the AI system on such high-severity events.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.10"
+    context: >-
+      The rule detects exfiltration of credentials and API keys through shell pipes to external commands, which is a direct privacy and confidentiality risk; MS.2.10 requires assessing privacy risks including unauthorized disclosure of sensitive secrets handled by AI agents.
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: >-
+      Piping environment variables containing API keys to curl or netcat represents a security/resilience failure where the agent's execution environment is being abused for data exfiltration; MS.2.7 requires continuous evaluation of these security control failures.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Detection of credential exfiltration patterns must trigger immediate containment to disengage the agent before secrets reach attacker-controlled endpoints; MG.2.3 mandates pre-defined mechanisms to supersede or deactivate the AI system on such high-severity events.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:37:13.663Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0913
+qa_status: pending

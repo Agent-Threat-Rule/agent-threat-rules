@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00105
+rule_path: /rules/tool-poisoning/ATR-2026-00105-silent-action-concealment.yaml
+rule_title: Silent Action Concealment Instructions in Tool Descriptions
+proposed_mapping:
+  - subcategory: GV.6.1
+    context: >-
+      Tool descriptions that instruct the LLM to hide actions from users
+      represent third-party/supplier AI risks embedded in MCP tool metadata;
+      GV.6.1 requires policies that govern third-party tool behavior and prevent
+      suppliers from injecting concealment directives that undermine user
+      transparency.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Silent action concealment instructions are adversarial payloads embedded
+      in tool descriptions that exploit the LLM's instruction-following to hide
+      operations like credential harvesting or data uploads; MP.5.1 requires
+      identifying and characterizing the impact of these covert tool-poisoning
+      vectors.
+    strength: secondary
+  - subcategory: MG.3.1
+    context: >-
+      MCP tools originate from third-party providers, and concealment
+      instructions embedded in their descriptions must be detected and managed
+      as supply-chain risks; MG.3.1 mandates active management of risks
+      introduced by third-party AI components.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "GV.6.1"
+    context: "Tool descriptions that instruct the LLM to hide actions from users represent third-party/supplier AI risks embedded in MCP tool metadata; GV.6.1 requires policies that govern third-party tool behavior and prevent suppliers from injecting concealment directives that undermine user transparency."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "Silent action concealment instructions are adversarial payloads embedded in tool descriptions that exploit the LLM's instruction-following to hide operations like credential harvesting or data uploads; MP.5.1 requires identifying and characterizing the impact of these covert tool-poisoning vectors."
+    strength: secondary
+  - subcategory: "MG.3.1"
+    context: "MCP tools originate from third-party providers, and concealment instructions embedded in their descriptions must be detected and managed as supply-chain risks; MG.3.1 mandates active management of risks introduced by third-party AI components."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:56:13.167Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.091
+qa_status: pending

@@ -1,0 +1,54 @@
+rule_id: ATR-2026-00389
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00389-terminal-custom-ruleset-injection.yaml
+rule_title: Terminal Custom OS Ruleset Session Injection
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      This rule detects a specific jailbreak pattern (terminal persona +
+      fictional OS ruleset injection from the garak inthewild corpus #85) that
+      attempts to override AI safety defaults via session-level policy takeover.
+      MP.5.1 requires identifying and characterizing the likelihood and
+      magnitude of adversarial prompt-injection risks, and this signature
+      directly evidences that risk surface.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detection of safety-response disabler phrasing ("cannot reply with any
+      pre-programmed responses") and session ruleset takeover declarations
+      provides continuous evaluation evidence of the AI system's resilience
+      against jailbreak attempts, which MS.2.7 requires to be measured and
+      documented.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      A high-confidence match on this terminal-OS jailbreak signature is an
+      incident candidate that should trigger response mechanisms to disengage or
+      supersede the manipulated session before the injected ruleset governs
+      subsequent outputs, as required by MG.2.3.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: >-
+      This rule detects a specific jailbreak pattern (terminal persona + fictional OS ruleset injection from the garak inthewild corpus #85) that attempts to override AI safety defaults via session-level policy takeover. MP.5.1 requires identifying and characterizing the likelihood and magnitude of adversarial prompt-injection risks, and this signature directly evidences that risk surface.
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: >-
+      Detection of safety-response disabler phrasing ("cannot reply with any pre-programmed responses") and session ruleset takeover declarations provides continuous evaluation evidence of the AI system's resilience against jailbreak attempts, which MS.2.7 requires to be measured and documented.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      A high-confidence match on this terminal-OS jailbreak signature is an incident candidate that should trigger response mechanisms to disengage or supersede the manipulated session before the injected ruleset governs subsequent outputs, as required by MG.2.3.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:35:43.346Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1031
+qa_status: pending

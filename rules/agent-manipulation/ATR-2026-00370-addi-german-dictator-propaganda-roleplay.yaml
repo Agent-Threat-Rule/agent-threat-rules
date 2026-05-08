@@ -31,6 +31,17 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/dan.py"
     - "https://github.com/NVIDIA/garak/blob/main/garak/data/dan/inthewild_jailbreak_llms.json"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "The ADDI/DONNIE roleplay is a known jailbreak pattern from the garak DanInTheWild corpus that uses fictional-actor framing to elicit fascist propaganda techniques; MP.5.1 requires that the likelihood and magnitude of such adversarial prompt-injection inputs be characterized and tracked."
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: "Detection of this propaganda-roleplay jailbreak provides continuous safety/security signal for evaluating whether the AI system can be coerced into generating harmful political manipulation content; MS.2.6 mandates ongoing evaluation of safety risk magnitude."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Matches against the ADDI/DONNIE signature should trigger containment workflows that block or disengage the offending session before propaganda content is produced; MG.2.3 requires pre-defined mechanisms to supersede or deactivate AI behavior on detection."
+      strength: secondary
 tags:
   category: agent-manipulation
   subcategory: political-propaganda-roleplay

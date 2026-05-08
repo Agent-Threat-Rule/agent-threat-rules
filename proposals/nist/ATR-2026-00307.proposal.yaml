@@ -1,0 +1,52 @@
+rule_id: ATR-2026-00307
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00307-inthewild-jailbreak-corpus-signature.yaml
+rule_title: In-the-Wild Jailbreak Corpus Signature Patterns
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      This rule detects in-the-wild jailbreak corpus signatures (amoral-AI
+      roleplay, AIM/Machiavelli, Illegality Mode, Agares personas) sourced from
+      the garak DanInTheWild probe set; MS.2.7 requires that AI system security
+      and resilience against known adversarial prompt patterns is continuously
+      evaluated and documented using established attack corpora.
+    strength: primary
+  - subcategory: MS.2.6
+    context: >-
+      Frequency-analyzed signatures from the 666-prompt Shen et al. corpus
+      provide measurable evidence of jailbreak attempt magnitude against the
+      deployed LLM; MS.2.6 requires continuous evaluation of safety/security
+      risk magnitude, which these corpus-derived detections directly quantify.
+    strength: secondary
+  - subcategory: MG.4.1
+    context: >-
+      Matches against community-developed jailbreak personas feed
+      post-deployment monitoring pipelines that track emerging real-world bypass
+      techniques; MG.4.1 requires implemented monitoring plans that ingest
+      detection events for these in-the-wild attack patterns.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: >-
+      This rule detects in-the-wild jailbreak corpus signatures (amoral-AI roleplay, AIM/Machiavelli, Illegality Mode, Agares personas) sourced from the garak DanInTheWild probe set; MS.2.7 requires that AI system security and resilience against known adversarial prompt patterns is continuously evaluated and documented using established attack corpora.
+    strength: primary
+  - subcategory: "MS.2.6"
+    context: >-
+      Frequency-analyzed signatures from the 666-prompt Shen et al. corpus provide measurable evidence of jailbreak attempt magnitude against the deployed LLM; MS.2.6 requires continuous evaluation of safety/security risk magnitude, which these corpus-derived detections directly quantify.
+    strength: secondary
+  - subcategory: "MG.4.1"
+    context: >-
+      Matches against community-developed jailbreak personas feed post-deployment monitoring pipelines that track emerging real-world bypass techniques; MG.4.1 requires implemented monitoring plans that ingest detection events for these in-the-wild attack patterns.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:27:04.664Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1046
+qa_status: pending

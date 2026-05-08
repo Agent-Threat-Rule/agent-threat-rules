@@ -20,6 +20,17 @@ references:
     - "ASI04:2026 - Unbounded Consumption"
   mitre_atlas:
     - "AML.T0048"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "GV.6.1"
+      context: "Hardcoded references to known malware C2 IP addresses inside third-party skill content directly evidence supplier/third-party AI risks; GV.6.1 requires policies that screen externally sourced skill artifacts for malicious infrastructure indicators before integration."
+      strength: primary
+    - subcategory: "MG.3.1"
+      context: "Detection of embedded C2 IPs in a third-party skill triggers the third-party risk management activities required by MG.3.1, allowing the supplier-supplied component to be quarantined or removed before execution."
+      strength: secondary
+    - subcategory: "MS.2.7"
+      context: "Identifying hardcoded malicious infrastructure in skill content contributes to continuous security/resilience evaluation under MS.2.7 by surfacing supply-chain compromise indicators that degrade system security posture."
+      strength: secondary
 tags:
   category: skill-compromise
   subcategory: c2-communication

@@ -29,6 +29,20 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/encoding.py"
     - "https://ecoji.io/"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: >-
+        Ecoji emoji-encoded prompt injection is an obfuscation-based adversarial input that bypasses content filters by hiding ASCII instructions in dense emoji sequences; MS.2.7 requires evaluating and documenting AI system security and resilience against such encoded prompt injection attack vectors.
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: >-
+        Detection of garak InjectEcoji probe templates and secure-system-message framing characterizes the likelihood and magnitude of prompt injection risk from encoding-based bypass techniques; MP.5.1 requires identifying and tracking these adversarial input patterns.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        Matching Ecoji-encoded payloads must trigger risk treatment to disengage or block the manipulated prompt before the LLM decodes and executes the hidden instructions; MG.2.3 mandates that these supersede/deactivate mechanisms are defined.
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: ecoji-emoji-encoded

@@ -19,6 +19,17 @@ references:
     - AML.T0051
 metadata_provenance:
   owasp_llm: auto-generated
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "This rule detects prompt injection payloads engineered to bypass multi-layer audit and security pipelines, including instructions to skip checks or self-certify as trusted; MS.2.7 requires continuous evaluation of AI system security and resilience against such evasion attempts."
+      strength: primary
+    - subcategory: "MG.2.3"
+      context: "Detection of audit-evasion payloads triggers pre-defined risk treatment to deactivate or quarantine the offending session before it bypasses downstream defense layers; MG.2.3 mandates that these supersede/disengage mechanisms exist and are activated on detection."
+      strength: secondary
+    - subcategory: "MS.2.6"
+      context: "Payloads that manipulate trust scores or claim to have passed audit layers represent active security risk indicators; MS.2.6 requires continuous evaluation of safety/security risk magnitude as these evasion techniques evolve."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: audit-evasion

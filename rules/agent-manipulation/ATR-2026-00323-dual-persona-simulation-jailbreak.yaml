@@ -34,6 +34,17 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/dan.py"
     - "https://github.com/NVIDIA/garak/blob/main/garak/data/dan/inthewild_jailbreak_llms.json"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "Dual-persona simulation jailbreaks from the garak inthewild corpus are documented adversarial techniques that bypass model safety alignment by splitting the model into restricted and unrestricted personas; MS.2.7 requires continuous evaluation of AI security/resilience against such known jailbreak patterns."
+      strength: primary
+    - subcategory: "MG.2.3"
+      context: "Detection of phrases like 'create and maintain two separate personas' and 'broken free of the limitations of OpenAI' triggers risk treatment to disengage or block the manipulated session before the unrestricted persona produces unsafe output; MG.2.3 mandates these supersede/deactivate mechanisms be in place."
+      strength: secondary
+    - subcategory: "MS.2.5"
+      context: "Recurrent dual-persona jailbreak attempts test the robustness of the model's safety guardrails under adversarial role-play framing; MS.2.5 requires that robustness/reliability evaluations document the system's resistance to these persona-splitting attacks."
+      strength: secondary
 tags:
   category: agent-manipulation
   subcategory: dual-persona-simulation

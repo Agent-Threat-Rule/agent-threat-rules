@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00101
+rule_path: /rules/tool-poisoning/ATR-2026-00101-trust-escalation-override.yaml
+rule_title: Trust Escalation via Authority Override Instructions
+proposed_mapping:
+  - subcategory: GV.1.2
+    context: >-
+      Tool output declared as 'authoritative directives' that override user
+      preferences and safety guidelines directly subverts the accountability
+      hierarchy and decision-making roles assigned within the agent system;
+      GV.1.2 requires those role boundaries and authority levels are enforced
+      and not overridden by untrusted tool content.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Authority-override instructions embedded in tool output are an adversarial
+      prompt-injection vector with high impact potential, since they hijack the
+      agent's instruction hierarchy; MP.5.1 requires identifying and
+      characterizing the likelihood and magnitude of such trust-escalation
+      risks.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of tools issuing override directives must trigger pre-defined
+      treatment actions to disengage or quarantine the offending tool before the
+      LLM acts on hijacked instructions; MG.2.3 mandates these
+      supersede/deactivate mechanisms exist for compromised components.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "GV.1.2"
+    context: "Tool output declared as 'authoritative directives' that override user preferences and safety guidelines directly subverts the accountability hierarchy and decision-making roles assigned within the agent system; GV.1.2 requires those role boundaries and authority levels are enforced and not overridden by untrusted tool content."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "Authority-override instructions embedded in tool output are an adversarial prompt-injection vector with high impact potential, since they hijack the agent's instruction hierarchy; MP.5.1 requires identifying and characterizing the likelihood and magnitude of such trust-escalation risks."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of tools issuing override directives must trigger pre-defined treatment actions to disengage or quarantine the offending tool before the LLM acts on hijacked instructions; MG.2.3 mandates these supersede/deactivate mechanisms exist for compromised components."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:56:00.086Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0919
+qa_status: pending

@@ -31,6 +31,20 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/smuggling.py"
     - "https://medium.com/@austin-stubbs/llm-security-types-of-prompt-injection-d7ad8d7d75a3"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: >-
+        FunctionMasking smuggles harmful semantic content past keyword-based safety filters by encoding the malicious verb/noun as <mask> definitions inside a fictitious predict_mask() function; detecting this canonical garak smuggling probe directly evidences continuous evaluation of the model's security/resilience against adversarial prompt-injection bypasses, which MS.2.7 requires.
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: >-
+        Detection of predict_mask() jailbreak templates and single-letter variable concatenation provides ongoing measurement of safety risk magnitude from prompt-injection attacks that cause the model to construct and answer harmful queries; MS.2.6 mandates this continuous safety risk evaluation.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        Matches on the FunctionMasking canonical opener and predict_mask call patterns trigger pre-defined response actions to block or disengage the model from completing the smuggled harmful query before it is answered; MG.2.3 requires such supersede/deactivate mechanisms.
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: function-masking-predict-mask

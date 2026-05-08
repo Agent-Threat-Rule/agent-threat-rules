@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00378
+rule_path: >-
+  /rules/prompt-injection/ATR-2026-00378-chatgpt-dom-javascript-redirect-manipulation.yaml
+rule_title: ChatGPT DOM JavaScript Redirect and UI Spoofing Injection
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      This rule detects a specific prompt-injection payload (garak DanInTheWild
+      #360) that uses DOM JavaScript to redirect users and spoof ChatGPT Plus
+      UI; MP.5.1 requires that the likelihood and magnitude of such adversarial
+      input attacks targeting end users via the AI interface are characterized
+      and tracked.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Window.location.href redirects, document.querySelector element removal,
+      and spoofed branding injection are security/resilience failures of the LLM
+      output channel; MS.2.7 requires continuous evaluation of these
+      injection-based security risks against the deployed AI system.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of the three-component DOM redirect signature and 'made by
+      aci25' attribution triggers risk treatment to block or sanitize the
+      response before it reaches the browser; MG.2.3 requires pre-defined
+      mechanisms to disengage or filter unsafe AI output.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: "This rule detects a specific prompt-injection payload (garak DanInTheWild #360) that uses DOM JavaScript to redirect users and spoof ChatGPT Plus UI; MP.5.1 requires that the likelihood and magnitude of such adversarial input attacks targeting end users via the AI interface are characterized and tracked."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Window.location.href redirects, document.querySelector element removal, and spoofed branding injection are security/resilience failures of the LLM output channel; MS.2.7 requires continuous evaluation of these injection-based security risks against the deployed AI system."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of the three-component DOM redirect signature and 'made by aci25' attribution triggers risk treatment to block or sanitize the response before it reaches the browser; MG.2.3 requires pre-defined mechanisms to disengage or filter unsafe AI output."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:49:04.932Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0967
+qa_status: pending

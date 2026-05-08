@@ -1,0 +1,50 @@
+rule_id: ATR-2026-00323
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00323-dual-persona-simulation-jailbreak.yaml
+rule_title: Dual-Persona AI Simulation Jailbreak
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      Dual-persona simulation jailbreaks from the garak inthewild corpus are
+      documented adversarial techniques that bypass model safety alignment by
+      splitting the model into restricted and unrestricted personas; MS.2.7
+      requires continuous evaluation of AI security/resilience against such
+      known jailbreak patterns.
+    strength: primary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of phrases like 'create and maintain two separate personas' and
+      'broken free of the limitations of OpenAI' triggers risk treatment to
+      disengage or block the manipulated session before the unrestricted persona
+      produces unsafe output; MG.2.3 mandates these supersede/deactivate
+      mechanisms be in place.
+    strength: secondary
+  - subcategory: MS.2.5
+    context: >-
+      Recurrent dual-persona jailbreak attempts test the robustness of the
+      model's safety guardrails under adversarial role-play framing; MS.2.5
+      requires that robustness/reliability evaluations document the system's
+      resistance to these persona-splitting attacks.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "Dual-persona simulation jailbreaks from the garak inthewild corpus are documented adversarial techniques that bypass model safety alignment by splitting the model into restricted and unrestricted personas; MS.2.7 requires continuous evaluation of AI security/resilience against such known jailbreak patterns."
+    strength: primary
+  - subcategory: "MG.2.3"
+    context: "Detection of phrases like 'create and maintain two separate personas' and 'broken free of the limitations of OpenAI' triggers risk treatment to disengage or block the manipulated session before the unrestricted persona produces unsafe output; MG.2.3 mandates these supersede/deactivate mechanisms be in place."
+    strength: secondary
+  - subcategory: "MS.2.5"
+    context: "Recurrent dual-persona jailbreak attempts test the robustness of the model's safety guardrails under adversarial role-play framing; MS.2.5 requires that robustness/reliability evaluations document the system's resistance to these persona-splitting attacks."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:27:53.050Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1023
+qa_status: pending

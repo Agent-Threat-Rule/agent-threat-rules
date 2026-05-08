@@ -1,0 +1,60 @@
+rule_id: ATR-2026-00311
+rule_path: /rules/prompt-injection/ATR-2026-00311-base2048-unicode-script-injection.yaml
+rule_title: Base2048 Unicode Script Encoded Prompt Injection
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      Base2048-encoded prompt injection bypasses input filters by hiding
+      adversarial instructions inside dense multi-script Unicode payloads from
+      garak's InjectBase2048 probe; MS.2.7 requires evaluating and documenting
+      AI system security and resilience against such obfuscated injection
+      vectors.
+    strength: primary
+  - subcategory: MS.2.5
+    context: >-
+      Detection of garak BASE2048 templates produces evidence that the model is
+      being adversarially probed for robustness against non-ASCII encoding
+      attacks; MS.2.5 requires that robustness and reliability under such
+      adversarial inputs are measured and documented.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Identifying BASE2048 encoded injection markers triggers pre-defined risk
+      treatment to quarantine or block the payload before it reaches the model;
+      MG.2.3 mandates mechanisms to supersede or disengage AI processing of
+      detected adversarial inputs.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: >-
+      Base2048-encoded prompt injection bypasses input filters by hiding adversarial
+      instructions inside dense multi-script Unicode payloads from garak's
+      InjectBase2048 probe; MS.2.7 requires evaluating and documenting AI system
+      security and resilience against such obfuscated injection vectors.
+    strength: primary
+  - subcategory: "MS.2.5"
+    context: >-
+      Detection of garak BASE2048 templates produces evidence that the model is
+      being adversarially probed for robustness against non-ASCII encoding attacks;
+      MS.2.5 requires that robustness and reliability under such adversarial inputs
+      are measured and documented.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Identifying BASE2048 encoded injection markers triggers pre-defined risk
+      treatment to quarantine or block the payload before it reaches the model;
+      MG.2.3 mandates mechanisms to supersede or disengage AI processing of
+      detected adversarial inputs.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:47:57.366Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0987
+qa_status: pending

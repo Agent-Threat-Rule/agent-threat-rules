@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00351
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00351-dan-ofkilter-sms-abbreviated-persona.yaml
+rule_title: DAN Off-Kilter and SMS-Abbreviated Persona Jailbreak
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      This rule detects the off-kilter Dan persona and SMS-abbreviated DAN
+      jailbreak variants that attempt to bypass model safety guardrails through
+      persona assignment and obfuscated instructions; MS.2.7 requires continuous
+      evaluation of AI system security and resilience against such jailbreak
+      attempts.
+    strength: primary
+  - subcategory: MS.2.6
+    context: >-
+      Jailbreak personas declaring 'no rules/morals/ethics' and
+      unrestricted-assistance mandates directly elevate safety risk magnitude by
+      attempting to remove content restrictions; MS.2.6 requires ongoing
+      measurement of safety risk that this detection feeds into.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of these DAN variants triggers risk treatment plans to disengage
+      or block the manipulated session before the model produces unrestricted
+      harmful output; MG.2.3 mandates pre-defined deactivation mechanisms for
+      compromised AI interactions.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "This rule detects the off-kilter Dan persona and SMS-abbreviated DAN jailbreak variants that attempt to bypass model safety guardrails through persona assignment and obfuscated instructions; MS.2.7 requires continuous evaluation of AI system security and resilience against such jailbreak attempts."
+    strength: primary
+  - subcategory: "MS.2.6"
+    context: "Jailbreak personas declaring 'no rules/morals/ethics' and unrestricted-assistance mandates directly elevate safety risk magnitude by attempting to remove content restrictions; MS.2.6 requires ongoing measurement of safety risk that this detection feeds into."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of these DAN variants triggers risk treatment plans to disengage or block the manipulated session before the model produces unrestricted harmful output; MG.2.3 mandates pre-defined deactivation mechanisms for compromised AI interactions."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:31:24.516Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1015
+qa_status: pending

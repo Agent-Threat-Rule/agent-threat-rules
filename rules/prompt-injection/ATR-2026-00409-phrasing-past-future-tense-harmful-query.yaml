@@ -28,6 +28,29 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/phrasing.py"
 
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: >-
+        Past/future-tense framing is a known jailbreak technique catalogued in the
+        GenAI Profile; detecting these tense-shift bypass attempts directly
+        evidences continuous evaluation of AI system security and resilience
+        against prompt injection adversarial inputs as required by MS.2.7.
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: >-
+        Tense-framing attacks exploit safety filter assumptions about temporal
+        distance from harmful subjects; MP.5.1 requires characterizing the
+        likelihood and magnitude of these adversarial input vectors targeting
+        content safety guardrails.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        Detection of historical/future-tense harmful query framing triggers
+        risk treatment to block or quarantine the bypass attempt before the
+        model produces unsafe content; MG.2.3 requires these supersession
+        mechanisms be defined and activated on detection.
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: tense-framing-bypass

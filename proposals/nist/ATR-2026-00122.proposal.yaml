@@ -1,0 +1,51 @@
+rule_id: ATR-2026-00122
+rule_path: /rules/skill-compromise/ATR-2026-00122-skill-weaponized-instruction.yaml
+rule_title: Weaponized Skill — Agent as Attack Tool
+proposed_mapping:
+  - subcategory: GV.6.1
+    context: >-
+      Weaponized skills are third-party/supplier AI components that embed
+      offensive tooling (SQLMap, Metasploit, ransomware payloads) into agent
+      workflows; GV.6.1 requires policies and procedures to address third-party
+      AI supply chain risks where approved skills can execute malicious code
+      without further consent.
+    strength: primary
+  - subcategory: MG.3.2
+    context: >-
+      Detecting offensive tooling embedded in skills directly evidences the need
+      to monitor pre-trained models and skill artifacts used for development;
+      MG.3.2 mandates ongoing monitoring of these third-party components for
+      malicious modifications like the MedusaLocker-laden Claude skill.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of weaponized skills must trigger mechanisms to disengage or
+      deactivate the AI system before the consent gap is exploited to
+      download/execute code or exfiltrate credentials; MG.2.3 requires these
+      supersede/deactivate controls be in place.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "GV.6.1"
+    context: >-
+      Weaponized skills are third-party/supplier AI components that embed offensive tooling (SQLMap, Metasploit, ransomware payloads) into agent workflows; GV.6.1 requires policies and procedures to address third-party AI supply chain risks where approved skills can execute malicious code without further consent.
+    strength: primary
+  - subcategory: "MG.3.2"
+    context: >-
+      Detecting offensive tooling embedded in skills directly evidences the need to monitor pre-trained models and skill artifacts used for development; MG.3.2 mandates ongoing monitoring of these third-party components for malicious modifications like the MedusaLocker-laden Claude skill.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Detection of weaponized skills must trigger mechanisms to disengage or deactivate the AI system before the consent gap is exploited to download/execute code or exfiltrate credentials; MG.2.3 requires these supersede/deactivate controls be in place.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:52:12.364Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.096
+qa_status: pending

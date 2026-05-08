@@ -23,6 +23,17 @@ references:
     - "AML.T0054 - LLM Jailbreak"
   research:
     - "https://arxiv.org/abs/2402.16914 - DrAttack: Prompt Decomposition and Reconstruction"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.6"
+      context: "Structured dual-response jailbreaks with persona-based command systems are GenAI safety/security attacks that attempt persistent policy bypass; MS.2.6 requires continuous evaluation of AI safety/security risk magnitude, and each detection produces direct evidence of jailbreak attempts against the model's safety controls."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "Persona establishment (DAN, UnleashedGPT) combined with policy override claims tests the resilience of model guardrails against structured jailbreak frameworks; MS.2.7 requires that security/resilience against adversarial prompt patterns is evaluated and documented."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Detection of persistent jailbreak command infrastructure must trigger mechanisms to disengage or block the manipulated session before downstream harmful generations occur; MG.2.3 requires these supersede/deactivate response plans be defined and activated on detection."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: structured-jailbreak

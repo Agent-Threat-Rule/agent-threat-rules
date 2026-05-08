@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00156
+rule_path: >-
+  /rules/prompt-injection/ATR-2026-00156-ssh-remote-command-execution-with-creden.yaml
+rule_title: SSH Remote Command Execution with Credential Exposure
+proposed_mapping:
+  - subcategory: MS.2.10
+    context: >-
+      This rule detects SSH skill templates that expose private key file paths
+      in environment variables, which is a direct privacy and credential
+      confidentiality risk; MS.2.10 requires that privacy risks such as
+      credential exposure in AI-generated artifacts are assessed and tracked.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Hardcoded SSH credential paths and ready-to-execute remote command
+      templates degrade the security and resilience posture of systems
+      integrating these skills; MS.2.7 requires continuous evaluation of
+      security weaknesses that could enable lateral movement.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of weaponizable SSH command templates with credential exposure
+      must trigger containment to prevent unauthorized remote access; MG.2.3
+      mandates pre-defined mechanisms to disengage or quarantine the offending
+      skill before it is invoked.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.10"
+    context: "This rule detects SSH skill templates that expose private key file paths in environment variables, which is a direct privacy and credential confidentiality risk; MS.2.10 requires that privacy risks such as credential exposure in AI-generated artifacts are assessed and tracked."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Hardcoded SSH credential paths and ready-to-execute remote command templates degrade the security and resilience posture of systems integrating these skills; MS.2.7 requires continuous evaluation of security weaknesses that could enable lateral movement."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of weaponizable SSH command templates with credential exposure must trigger containment to prevent unauthorized remote access; MG.2.3 mandates pre-defined mechanisms to disengage or quarantine the offending skill before it is invoked."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:42:15.087Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0889
+qa_status: pending

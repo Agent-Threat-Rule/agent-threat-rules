@@ -1,0 +1,50 @@
+rule_id: ATR-2026-00093
+rule_path: /rules/prompt-injection/ATR-2026-00093-gradual-escalation.yaml
+rule_title: Gradual Capability Escalation via Incremental Introduction
+proposed_mapping:
+  - subcategory: MG.4.1
+    context: >-
+      Gradual capability escalation evades point-in-time controls by drifting
+      the behavioral baseline across versions and interactions; MG.4.1 requires
+      post-deployment monitoring plans that track cumulative permission and
+      capability changes over time to surface sub-threshold drift.
+    strength: primary
+  - subcategory: MS.2.6
+    context: >-
+      Detecting incremental permission additions and per-interaction capability
+      creep produces continuous evidence of safety/security risk magnitude
+      changes; MS.2.6 requires that this evolving risk surface is evaluated
+      continuously rather than only at release gates.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Once cumulative escalation is detected, response mechanisms must be able
+      to revoke newly added capabilities or deactivate the agent before
+      normalized malicious functionality is exercised; MG.2.3 mandates these
+      supersede/disengage controls are in place.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MG.4.1"
+    context: >-
+      Gradual capability escalation evades point-in-time controls by drifting the behavioral baseline across versions and interactions; MG.4.1 requires post-deployment monitoring plans that track cumulative permission and capability changes over time to surface sub-threshold drift.
+    strength: primary
+  - subcategory: "MS.2.6"
+    context: >-
+      Detecting incremental permission additions and per-interaction capability creep produces continuous evidence of safety/security risk magnitude changes; MS.2.6 requires that this evolving risk surface is evaluated continuously rather than only at release gates.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Once cumulative escalation is detected, response mechanisms must be able to revoke newly added capabilities or deactivate the agent before normalized malicious functionality is exercised; MG.2.3 mandates these supersede/disengage controls are in place.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:40:37.585Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0889
+qa_status: pending

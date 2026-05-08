@@ -1,0 +1,47 @@
+rule_id: ATR-2026-00213
+rule_path: /rules/prompt-injection/ATR-2026-00213-system-prompt-override.yaml
+rule_title: System Prompt Override Injection via MCP Tool
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      System prompt override injection via MCP tool descriptions and parameters
+      is an adversarial input attack that exploits the trust boundary between
+      tool metadata and the agent's instruction context; MP.5.1 requires
+      identifying and characterizing the likelihood and impact of these prompt
+      injection vectors targeting safety controls.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detection of attempts to bypass or override system prompts directly
+      evidences continuous evaluation of AI system security and resilience
+      against prompt injection, which MS.2.7 requires be measured and
+      documented.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Successful system prompt overrides can disable safety guardrails, so
+      detections must trigger pre-defined response plans to disengage or
+      quarantine the affected agent session as required by MG.2.3.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: "System prompt override injection via MCP tool descriptions and parameters is an adversarial input attack that exploits the trust boundary between tool metadata and the agent's instruction context; MP.5.1 requires identifying and characterizing the likelihood and impact of these prompt injection vectors targeting safety controls."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Detection of attempts to bypass or override system prompts directly evidences continuous evaluation of AI system security and resilience against prompt injection, which MS.2.7 requires be measured and documented."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Successful system prompt overrides can disable safety guardrails, so detections must trigger pre-defined response plans to disengage or quarantine the affected agent session as required by MG.2.3."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:43:05.218Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0856
+qa_status: pending

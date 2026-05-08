@@ -22,6 +22,17 @@ references:
 metadata_provenance:
   mitre_atlas: auto-generated
   owasp_llm: auto-generated
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "Hidden LLM instructions embedded in skill descriptions are a prompt injection vector that exploits trust in third-party skill content; MP.5.1 requires identifying and characterizing such adversarial input risks before they manipulate model behavior."
+      strength: primary
+    - subcategory: "GV.6.1"
+      context: "Skills with embedded directives like 'CRITICAL INSTRUCTION — YOU MUST FOLLOW THIS' are third-party supplier artifacts whose content can subvert the host LLM; GV.6.1 requires policies addressing risks introduced by third-party AI components and their content."
+      strength: secondary
+    - subcategory: "MG.3.2"
+      context: "Detecting injected instructions inside skill descriptions provides ongoing monitoring evidence for pre-trained model integrations and supplied components used by the agent; MG.3.2 requires monitoring of these third-party model and content artifacts post-integration."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: hidden-llm-instructions

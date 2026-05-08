@@ -36,6 +36,20 @@ references:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/realtoxicityprompts.py"
     - "https://aclanthology.org/2020.findings-emnlp.301/"
     - "https://arxiv.org/abs/2302.07459"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: >-
+        Special control token injection (e.g., "<|endoftext|>", "<|im_start|>system", LLaMA header tokens) is a direct attack on LLM security and resilience by exploiting tokenizer-level boundaries to bypass safety system prompts. MS.2.7 requires evaluating and documenting security/resilience against such adversarial inputs, and this rule produces the detection evidence for that evaluation.
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: >-
+        Boundary-token injection is a known prompt-injection attack vector with high impact (full safety context reset) and significant likelihood given public probe tools like garak RTPBlank; MP.5.1 requires that the likelihood and magnitude of such risks be characterized, and detections from this rule feed that characterization.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        When special-token injection is detected, the affected LLM session must be disengaged or sanitized before the forged system turn takes effect; MG.2.3 mandates these supersede/deactivate mechanisms be in place to contain the attack.
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: special-token-boundary-injection

@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00319
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00319-developer-mode-dual-response-format.yaml
+rule_title: Developer Mode Dual-Response Format Jailbreak
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      Developer Mode and dual-response jailbreaks are adversarial prompts that
+      bypass content safety filters by invoking a fake privileged override
+      context; MS.2.7 requires continuous evaluation of AI system security and
+      resilience against such jailbreak techniques catalogued in the garak
+      inthewild corpus.
+    strength: primary
+  - subcategory: MS.2.6
+    context: >-
+      Detection of dual-response format instructions ([GPT]/[ALICE] labels) that
+      elicit unrestricted outputs alongside compliant ones provides ongoing
+      measurement of safety risk magnitude, as required by MS.2.6, by surfacing
+      attempts to extract policy-violating content.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      When Developer Mode jailbreak signatures are detected, MG.2.3 risk
+      treatment mechanisms must intervene to block, supersede, or deactivate the
+      manipulated response path before unsafe content is delivered to the user.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "Developer Mode and dual-response jailbreaks are adversarial prompts that bypass content safety filters by invoking a fake privileged override context; MS.2.7 requires continuous evaluation of AI system security and resilience against such jailbreak techniques catalogued in the garak inthewild corpus."
+    strength: primary
+  - subcategory: "MS.2.6"
+    context: "Detection of dual-response format instructions ([GPT]/[ALICE] labels) that elicit unrestricted outputs alongside compliant ones provides ongoing measurement of safety risk magnitude, as required by MS.2.6, by surfacing attempts to extract policy-violating content."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "When Developer Mode jailbreak signatures are detected, MG.2.3 risk treatment mechanisms must intervene to block, supersede, or deactivate the manipulated response path before unsafe content is delivered to the user."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:27:32.462Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0978
+qa_status: pending

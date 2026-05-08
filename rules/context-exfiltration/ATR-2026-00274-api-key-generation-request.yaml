@@ -27,6 +27,20 @@ references:
     - "AML.T0057 - LLM Data Leakage"
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/apikey.py"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.10"
+      context: >-
+        This rule detects requests that attempt to extract memorized credential strings from training data via partial-key completion, or to fabricate realistic-looking secrets — both of which are privacy and data-leakage risks. MS.2.10 requires that privacy risks, including memorization-based leakage of sensitive strings, are assessed and tracked.
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: >-
+        Generating plausible API keys or completing partial credentials enables downstream phishing and service impersonation, undermining system security and resilience. MS.2.7 requires continuous evaluation of security risks like credential fabrication and memorization leakage.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        Detection of credential generation or completion requests must trigger risk treatment to block the response before the fabricated or memorized secret is emitted. MG.2.3 mandates that these supersede/disengage mechanisms are in place for high-risk output paths.
+      strength: secondary
 tags:
   category: context-exfiltration
   subcategory: api-key-generation

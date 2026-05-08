@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00061
+rule_path: /rules/skill-compromise/ATR-2026-00061-description-behavior-mismatch.yaml
+rule_title: Skill Description-Behavior Mismatch
+proposed_mapping:
+  - subcategory: MG.3.2
+    context: >-
+      Skill description-behavior mismatch is a direct supply-chain compromise
+      indicator where a third-party MCP skill's runtime actions diverge from its
+      declared manifest; MG.3.2 requires monitoring of pre-trained models and
+      third-party components used in development for exactly this kind of
+      trojaned behavior.
+    strength: primary
+  - subcategory: GV.6.1
+    context: >-
+      Detecting skills that retain benign descriptions while performing
+      malicious operations evidences enforcement of third-party/supplier AI risk
+      policies; GV.6.1 requires policies that govern integration of external
+      skills and surface mismatches between declared and actual behavior.
+    strength: secondary
+  - subcategory: MS.2.7
+    context: >-
+      Runtime divergence between declared scope (e.g., read-only) and observed
+      actions (writes, network access) is a security/resilience signal; MS.2.7
+      requires continuous evaluation of AI system security posture, which this
+      detection feeds with concrete supply-chain integrity findings.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MG.3.2"
+    context: "Skill description-behavior mismatch is a direct supply-chain compromise indicator where a third-party MCP skill's runtime actions diverge from its declared manifest; MG.3.2 requires monitoring of pre-trained models and third-party components used in development for exactly this kind of trojaned behavior."
+    strength: primary
+  - subcategory: "GV.6.1"
+    context: "Detecting skills that retain benign descriptions while performing malicious operations evidences enforcement of third-party/supplier AI risk policies; GV.6.1 requires policies that govern integration of external skills and surface mismatches between declared and actual behavior."
+    strength: secondary
+  - subcategory: "MS.2.7"
+    context: "Runtime divergence between declared scope (e.g., read-only) and observed actions (writes, network access) is a security/resilience signal; MS.2.7 requires continuous evaluation of AI system security posture, which this detection feeds with concrete supply-chain integrity findings."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:51:14.613Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0915
+qa_status: pending

@@ -1,0 +1,60 @@
+rule_id: ATR-2026-00405
+rule_path: >-
+  /rules/context-exfiltration/ATR-2026-00405-markdown-image-url-exfiltration-xss.yaml
+rule_title: Markdown Image URL Exfiltration and XSS Injection
+proposed_mapping:
+  - subcategory: MS.2.10
+    context: >-
+      This rule detects markdown image/link syntax crafted to exfiltrate
+      sensitive context data via URL query parameters to known attacker domains;
+      MS.2.10 requires that privacy risks such as covert data leakage from agent
+      outputs are assessed and tracked.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detection of javascript: URIs and XSS payloads embedded in markdown links
+      rendered by browser/Colab/playground frontends provides evidence for
+      MS.2.7's requirement to evaluate AI system security and resilience against
+      rendering-layer injection attacks.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Matches on garak web_injection exfil domains and StringAssembly templates
+      trigger risk treatment plans to block or sanitize tool responses before
+      rendering; MG.2.3 requires these containment mechanisms be in place to
+      disengage unsafe outputs.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.10"
+    context: >-
+      This rule detects markdown image/link syntax crafted to exfiltrate sensitive
+      context data via URL query parameters to known attacker domains; MS.2.10
+      requires that privacy risks such as covert data leakage from agent outputs
+      are assessed and tracked.
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: >-
+      Detection of javascript: URIs and XSS payloads embedded in markdown links
+      rendered by browser/Colab/playground frontends provides evidence for
+      MS.2.7's requirement to evaluate AI system security and resilience against
+      rendering-layer injection attacks.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Matches on garak web_injection exfil domains and StringAssembly templates
+      trigger risk treatment plans to block or sanitize tool responses before
+      rendering; MG.2.3 requires these containment mechanisms be in place to
+      disengage unsafe outputs.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:38:09.159Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0956
+qa_status: pending

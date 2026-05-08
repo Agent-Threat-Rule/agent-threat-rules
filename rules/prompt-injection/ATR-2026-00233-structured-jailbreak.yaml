@@ -23,6 +23,17 @@ references:
     - "AML.T0054 - LLM Jailbreak"
   research:
     - "https://arxiv.org/abs/2402.16914 - DrAttack: Prompt Decomposition and Reconstruction"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "This rule detects structured jailbreak attempts that establish unrestricted AI personas with dual-response command systems designed to bypass safety guardrails; MS.2.7 requires continuous evaluation of AI system security and resilience against adversarial bypass techniques like persona-based jailbreaks."
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: "Persistent jailbreak frameworks with policy override instructions and constraint removal claims represent sustained safety/security risks whose magnitude must be evaluated continuously per MS.2.6, since successful persona bypass enables ongoing harmful content generation."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Detection of structured dual-response jailbreaks with command infrastructure triggers the deactivation and override mechanisms required by MG.2.3 to disengage the manipulated persona before it produces unsafe outputs."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: structured-jailbreak

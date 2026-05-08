@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00245
+rule_path: /rules/prompt-injection/ATR-2026-00245-malicious-persona.yaml
+rule_title: Malicious Persona Creation for Safety Bypass
+proposed_mapping:
+  - subcategory: MS.2.6
+    context: >-
+      Malicious persona creation is a jailbreak technique targeting GenAI safety
+      guardrails through roleplay-based bypass; MS.2.6 requires continuous
+      evaluation of safety/security risk magnitude, and detection of bespoke
+      evil-character prompts produces direct evidence of active safety-bypass
+      attempts.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detecting attempts to define harmful fictional personas with explicit
+      removal of ethical constraints evidences the resilience of the AI system
+      against adversarial roleplay attacks; MS.2.7 requires that such
+      security/resilience evaluations are documented.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      When malicious persona injection is detected, treatment mechanisms must
+      supersede or disengage the roleplay instruction before harmful outputs are
+      generated; MG.2.3 mandates these deactivation pathways exist for
+      safety-bypass attempts.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.6"
+    context: "Malicious persona creation is a jailbreak technique targeting GenAI safety guardrails through roleplay-based bypass; MS.2.6 requires continuous evaluation of safety/security risk magnitude, and detection of bespoke evil-character prompts produces direct evidence of active safety-bypass attempts."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Detecting attempts to define harmful fictional personas with explicit removal of ethical constraints evidences the resilience of the AI system against adversarial roleplay attacks; MS.2.7 requires that such security/resilience evaluations are documented."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "When malicious persona injection is detected, treatment mechanisms must supersede or disengage the roleplay instruction before harmful outputs are generated; MG.2.3 mandates these deactivation pathways exist for safety-bypass attempts."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:45:11.824Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0927
+qa_status: pending

@@ -1,0 +1,47 @@
+rule_id: ATR-2026-00243
+rule_path: /rules/prompt-injection/ATR-2026-00243-acronym-jailbreak.yaml
+rule_title: Acronym-Based Identity Override Jailbreak
+proposed_mapping:
+  - subcategory: MS.2.6
+    context: >-
+      This rule detects acronym-based jailbreak attempts that manufacture custom
+      personas to bypass safety controls, providing continuous evaluation of
+      GenAI safety/security risk magnitude as required by MS.2.6. Each match
+      evidences active attempts to subvert model guardrails through novel
+      persona-transformation vectors.
+    strength: primary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of complete-freedom claims and explicit instructions to violate
+      safety measures triggers the response mechanisms required by MG.2.3 to
+      disengage or block the manipulated session before the model produces
+      unsafe output.
+    strength: secondary
+  - subcategory: MS.2.7
+    context: >-
+      Catching novel acronym variants that evade named-persona detection
+      contributes to documenting the AI system's resilience against adversarial
+      prompt-injection techniques as required by MS.2.7.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.6"
+    context: "This rule detects acronym-based jailbreak attempts that manufacture custom personas to bypass safety controls, providing continuous evaluation of GenAI safety/security risk magnitude as required by MS.2.6. Each match evidences active attempts to subvert model guardrails through novel persona-transformation vectors."
+    strength: primary
+  - subcategory: "MG.2.3"
+    context: "Detection of complete-freedom claims and explicit instructions to violate safety measures triggers the response mechanisms required by MG.2.3 to disengage or block the manipulated session before the model produces unsafe output."
+    strength: secondary
+  - subcategory: "MS.2.7"
+    context: "Catching novel acronym variants that evade named-persona detection contributes to documenting the AI system's resilience against adversarial prompt-injection techniques as required by MS.2.7."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:44:58.234Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0897
+qa_status: pending

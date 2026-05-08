@@ -1,0 +1,55 @@
+rule_id: ATR-2026-00400
+rule_path: >-
+  /rules/prompt-injection/ATR-2026-00400-latent-injection-ignore-instruction-keyword.yaml
+rule_title: Latent Injection Ignore-Instruction Keyword
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      This rule detects latent prompt-injection keywords ("Ignore the above
+      directions", "Disregard all info except") embedded within translation,
+      whois, or factual content that redirect the LLM from its original task.
+      MP.5.1 requires identifying and characterizing these adversarial input
+      patterns as known risks to LLM integrity, especially when delivered
+      indirectly via tool responses.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Latent instruction-keyword injection is a canonical LLM
+      security/resilience failure mode drawn from the NVIDIA garak
+      LatentJailbreak/LatentWhois probes; detection events feed continuous
+      evaluation of the system's resilience against indirect prompt injection as
+      required by MS.2.7.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      High-confidence matches on "Ignore X and print/say Y" or
+      exception-redirect patterns in tool output must trigger pre-defined
+      response actions to disengage or quarantine the manipulated agent turn
+      before downstream execution, which is the risk treatment capability MG.2.3
+      requires.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: >-
+      This rule detects latent prompt-injection keywords ("Ignore the above directions", "Disregard all info except") embedded within translation, whois, or factual content that redirect the LLM from its original task. MP.5.1 requires identifying and characterizing these adversarial input patterns as known risks to LLM integrity, especially when delivered indirectly via tool responses.
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: >-
+      Latent instruction-keyword injection is a canonical LLM security/resilience failure mode drawn from the NVIDIA garak LatentJailbreak/LatentWhois probes; detection events feed continuous evaluation of the system's resilience against indirect prompt injection as required by MS.2.7.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      High-confidence matches on "Ignore X and print/say Y" or exception-redirect patterns in tool output must trigger pre-defined response actions to disengage or quarantine the manipulated agent turn before downstream execution, which is the risk treatment capability MG.2.3 requires.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:50:07.697Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0992
+qa_status: pending

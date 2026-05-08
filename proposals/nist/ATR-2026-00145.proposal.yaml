@@ -1,0 +1,45 @@
+rule_id: ATR-2026-00145
+rule_path: /rules/context-exfiltration/ATR-2026-00145-obfuscated-key-disclosure.yaml
+rule_title: Obfuscated API Key Disclosure
+proposed_mapping:
+  - subcategory: MS.2.10
+    context: >-
+      This rule detects API key exfiltration disguised by fake encryption
+      wrappers like 'AES256(sk-proj-...)'; MS.2.10 requires that privacy and
+      sensitive-data leakage risks are continuously assessed, and these
+      detections directly evidence credential disclosure attempts.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Obfuscated key disclosure is an evasion technique against output filters;
+      MS.2.7 requires evaluation of system security and resilience against
+      adversarial bypass tactics that defeat naive secret-detection controls.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of fake-encryption-wrapped credentials must trigger response
+      plans to block transmission and revoke exposed keys; MG.2.3 requires
+      mechanisms to supersede or disengage AI actions before the leak completes.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.10"
+    context: "This rule detects API key exfiltration disguised by fake encryption wrappers like 'AES256(sk-proj-...)'; MS.2.10 requires that privacy and sensitive-data leakage risks are continuously assessed, and these detections directly evidence credential disclosure attempts."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Obfuscated key disclosure is an evasion technique against output filters; MS.2.7 requires evaluation of system security and resilience against adversarial bypass tactics that defeat naive secret-detection controls."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of fake-encryption-wrapped credentials must trigger response plans to block transmission and revoke exposed keys; MG.2.3 requires mechanisms to supersede or disengage AI actions before the leak completes."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:36:39.862Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0876
+qa_status: pending

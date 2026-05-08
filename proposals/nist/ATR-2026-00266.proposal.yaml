@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00266
+rule_path: /rules/skill-compromise/ATR-2026-00266-malware-dropper-gen.yaml
+rule_title: Malware Dropper / Loader Code Generation Request
+proposed_mapping:
+  - subcategory: MS.2.6
+    context: >-
+      Detection of dropper/loader/stager code-generation requests directly
+      evidences continuous evaluation of the AI system's safety/security risk
+      magnitude; MS.2.6 requires ongoing measurement of misuse attempts that
+      produce active exploitation infrastructure.
+    strength: primary
+  - subcategory: MG.2.3
+    context: >-
+      Identifying requests for stage-0 beacons, shellcode loaders, and
+      reflective PE payloads must trigger pre-defined risk treatment such as
+      refusal or session termination; MG.2.3 requires mechanisms to disengage or
+      supersede the AI system before it produces second-stage payload delivery
+      code.
+    strength: secondary
+  - subcategory: MP.5.1
+    context: >-
+      Dropper-specific prompt patterns represent a high-magnitude adversarial
+      misuse vector targeting the model's code-generation capability; MP.5.1
+      requires that the likelihood and impact of such weaponization risks are
+      characterized and tracked.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.6"
+    context: "Detection of dropper/loader/stager code-generation requests directly evidences continuous evaluation of the AI system's safety/security risk magnitude; MS.2.6 requires ongoing measurement of misuse attempts that produce active exploitation infrastructure."
+    strength: primary
+  - subcategory: "MG.2.3"
+    context: "Identifying requests for stage-0 beacons, shellcode loaders, and reflective PE payloads must trigger pre-defined risk treatment such as refusal or session termination; MG.2.3 requires mechanisms to disengage or supersede the AI system before it produces second-stage payload delivery code."
+    strength: secondary
+  - subcategory: "MP.5.1"
+    context: "Dropper-specific prompt patterns represent a high-magnitude adversarial misuse vector targeting the model's code-generation capability; MP.5.1 requires that the likelihood and impact of such weaponization risks are characterized and tracked."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:55:00.929Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0924
+qa_status: pending

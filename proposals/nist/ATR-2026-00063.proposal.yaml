@@ -1,0 +1,47 @@
+rule_id: ATR-2026-00063
+rule_path: /rules/skill-compromise/ATR-2026-00063-skill-chain-attack.yaml
+rule_title: Multi-Skill Chain Attack
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      Multi-skill chain attacks combine individually benign tool calls into a
+      composite exfiltration or compromise sequence; MP.5.1 requires
+      characterizing the likelihood and magnitude of impact for these emergent
+      risks that only manifest when steps are correlated across skills.
+    strength: primary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of reconnaissance-then-encode-then-exfiltrate skill chains must
+      trigger pre-defined risk treatment to disengage or quarantine the
+      orchestration before the final exfiltration step completes; MG.2.3
+      mandates these supersede/deactivate mechanisms are in place.
+    strength: secondary
+  - subcategory: GV.6.1
+    context: >-
+      Skill chains often span third-party MCP tools whose composed behavior is
+      not covered by individual supplier risk reviews; GV.6.1 requires policies
+      that address third-party AI/tool risks including emergent misuse across
+      multiple suppliers.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: "Multi-skill chain attacks combine individually benign tool calls into a composite exfiltration or compromise sequence; MP.5.1 requires characterizing the likelihood and magnitude of impact for these emergent risks that only manifest when steps are correlated across skills."
+    strength: primary
+  - subcategory: "MG.2.3"
+    context: "Detection of reconnaissance-then-encode-then-exfiltrate skill chains must trigger pre-defined risk treatment to disengage or quarantine the orchestration before the final exfiltration step completes; MG.2.3 mandates these supersede/deactivate mechanisms are in place."
+    strength: secondary
+  - subcategory: "GV.6.1"
+    context: "Skill chains often span third-party MCP tools whose composed behavior is not covered by individual supplier risk reviews; GV.6.1 requires policies that address third-party AI/tool risks including emergent misuse across multiple suppliers."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:51:27.873Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0912
+qa_status: pending

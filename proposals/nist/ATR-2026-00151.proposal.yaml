@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00151
+rule_path: /rules/skill-compromise/ATR-2026-00151-fork-impersonation-install.yaml
+rule_title: Malicious Fork Impersonation via Install Instruction
+proposed_mapping:
+  - subcategory: GV.6.1
+    context: >-
+      Detection of install instructions promoting unverified 'community forks'
+      or 'patched versions' of known packages directly evidences
+      third-party/supplier AI risk policy enforcement; GV.6.1 requires policies
+      that address supply-chain risks such as typosquatted forks masquerading as
+      legitimate dependencies.
+    strength: primary
+  - subcategory: MG.3.1
+    context: >-
+      Fork-impersonation install guidance is a third-party supply chain risk
+      that must be actively managed; MG.3.1 mandates mechanisms to detect and
+      treat risks introduced by external packages and dependencies before they
+      are installed by users.
+    strength: secondary
+  - subcategory: MP.5.1
+    context: >-
+      Crystallized fork_claim patterns characterize the likelihood and magnitude
+      of supply-chain deception attacks; MP.5.1 requires that these adversarial
+      install-instruction vectors be identified and tracked as part of risk
+      characterization.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "GV.6.1"
+    context: "Detection of install instructions promoting unverified 'community forks' or 'patched versions' of known packages directly evidences third-party/supplier AI risk policy enforcement; GV.6.1 requires policies that address supply-chain risks such as typosquatted forks masquerading as legitimate dependencies."
+    strength: primary
+  - subcategory: "MG.3.1"
+    context: "Fork-impersonation install guidance is a third-party supply chain risk that must be actively managed; MG.3.1 mandates mechanisms to detect and treat risks introduced by external packages and dependencies before they are installed by users."
+    strength: secondary
+  - subcategory: "MP.5.1"
+    context: "Crystallized fork_claim patterns characterize the likelihood and magnitude of supply-chain deception attacks; MP.5.1 requires that these adversarial install-instruction vectors be identified and tracked as part of risk characterization."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:53:33.889Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0892
+qa_status: pending

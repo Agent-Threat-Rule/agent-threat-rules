@@ -1,0 +1,50 @@
+rule_id: ATR-2026-00350
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00350-black-alert-no-ethics-writing-assistant.yaml
+rule_title: Black Alert No-Ethics Writing Assistant Persona
+proposed_mapping:
+  - subcategory: MS.2.6
+    context: >-
+      The Black Alert persona jailbreak explicitly removes morality, legality,
+      and ethics filtering, directly impacting AI system safety; MS.2.6 requires
+      continuous evaluation of safety/security risk magnitude, and detecting
+      this named-persona activation phrase produces evidence of an active
+      safety-bypass attempt.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detection of the '>>BLACK ALERT ACTIVATED<<' trigger and
+      persona-exclusivity mandates evaluates the model's resilience against
+      known inthewild jailbreak corpora; MS.2.7 requires documenting
+      security/resilience evaluations against adversarial prompt-injection
+      patterns.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Matches on the Black Alert activation phrase or persona-with-no-filtering
+      mandate should trigger mechanisms to disengage or override the hijacked
+      persona before unfiltered output is returned; MG.2.3 requires such
+      supersede/deactivate response paths be available on detection.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.6"
+    context: "The Black Alert persona jailbreak explicitly removes morality, legality, and ethics filtering, directly impacting AI system safety; MS.2.6 requires continuous evaluation of safety/security risk magnitude, and detecting this named-persona activation phrase produces evidence of an active safety-bypass attempt."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Detection of the '>>BLACK ALERT ACTIVATED<<' trigger and persona-exclusivity mandates evaluates the model's resilience against known inthewild jailbreak corpora; MS.2.7 requires documenting security/resilience evaluations against adversarial prompt-injection patterns."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Matches on the Black Alert activation phrase or persona-with-no-filtering mandate should trigger mechanisms to disengage or override the hijacked persona before unfiltered output is returned; MG.2.3 requires such supersede/deactivate response paths be available on detection."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:31:17.294Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1013
+qa_status: pending

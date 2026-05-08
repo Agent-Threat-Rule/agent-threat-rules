@@ -1,0 +1,51 @@
+rule_id: ATR-2026-00083
+rule_path: /rules/prompt-injection/ATR-2026-00083-indirect-tool-injection.yaml
+rule_title: Indirect Prompt Injection via Tool Responses
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      Indirect prompt injection via poisoned tool responses, API outputs, and
+      retrieved content is a GenAI-specific adversarial input vector where
+      hidden instructions exploit the agent's trust in external data sources;
+      MP.5.1 requires identifying and characterizing the likelihood and impact
+      of these injection risks across data ingestion paths.
+    strength: primary
+  - subcategory: MG.3.1
+    context: >-
+      Tool responses and retrieved content originate from third-party APIs,
+      plugins, and data sources; detecting injection payloads in these flows
+      directly supports MG.3.1's mandate to manage risks introduced by
+      third-party entities feeding the AI system.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of instruction-override payloads, fake system delimiters, and
+      role-reassignment content in tool outputs must trigger containment so the
+      agent does not execute attacker-controlled actions; MG.2.3 requires these
+      supersede/disengage mechanisms be available on detection.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: >-
+      Indirect prompt injection via poisoned tool responses, API outputs, and retrieved content is a GenAI-specific adversarial input vector where hidden instructions exploit the agent's trust in external data sources; MP.5.1 requires identifying and characterizing the likelihood and impact of these injection risks across data ingestion paths.
+    strength: primary
+  - subcategory: "MG.3.1"
+    context: >-
+      Tool responses and retrieved content originate from third-party APIs, plugins, and data sources; detecting injection payloads in these flows directly supports MG.3.1's mandate to manage risks introduced by third-party entities feeding the AI system.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Detection of instruction-override payloads, fake system delimiters, and role-reassignment content in tool outputs must trigger containment so the agent does not execute attacker-controlled actions; MG.2.3 requires these supersede/disengage mechanisms be available on detection.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:39:23.008Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0909
+qa_status: pending

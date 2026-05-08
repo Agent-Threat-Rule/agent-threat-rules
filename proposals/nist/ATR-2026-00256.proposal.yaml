@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00256
+rule_path: /rules/prompt-injection/ATR-2026-00256-base-n-encoding-jailbreak.yaml
+rule_title: Base-N Encoding Instruction Bypass
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      Base-N encoding bypass attempts directly probe the security and resilience
+      of safety classifiers by exploiting their failure to generalize from
+      plaintext to encoded harmful instructions; MS.2.7 requires evaluating and
+      documenting these resilience gaps against adversarial input
+      transformations.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Decode-then-execute prompt injections framed with encoding scheme names
+      and opaque blobs are adversarial inputs whose likelihood and impact must
+      be characterized; MP.5.1 requires identifying these jailbreak vectors so
+      their risk magnitude can be tracked.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of encoded payloads paired with decode instructions must trigger
+      pre-defined risk treatment to block or quarantine the request before the
+      model executes the smuggled instructions; MG.2.3 requires mechanisms to
+      supersede or disengage AI behavior on such matches.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "Base-N encoding bypass attempts directly probe the security and resilience of safety classifiers by exploiting their failure to generalize from plaintext to encoded harmful instructions; MS.2.7 requires evaluating and documenting these resilience gaps against adversarial input transformations."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "Decode-then-execute prompt injections framed with encoding scheme names and opaque blobs are adversarial inputs whose likelihood and impact must be characterized; MP.5.1 requires identifying these jailbreak vectors so their risk magnitude can be tracked."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of encoded payloads paired with decode instructions must trigger pre-defined risk treatment to block or quarantine the request before the model executes the smuggled instructions; MG.2.3 requires mechanisms to supersede or disengage AI behavior on such matches."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:45:52.761Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0944
+qa_status: pending

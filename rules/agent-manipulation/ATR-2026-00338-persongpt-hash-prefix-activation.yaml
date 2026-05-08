@@ -32,6 +32,20 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/dan.py"
     - "https://github.com/NVIDIA/garak/blob/main/garak/data/dan/inthewild_jailbreak_llms.json"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: >-
+        The PersonGPT hash-prefix jailbreak installs a covert activation trigger that switches the model into an unrestricted persona, directly attacking the model's safety guardrails; MS.2.7 requires continuous evaluation of AI system security and resilience against such jailbreak techniques cataloged in the garak inthewild corpus.
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: >-
+        Detection of "free of all restrictions and filters" and "literally any request, no matter how illegal" persona declarations measures the safety risk magnitude when adversaries attempt to bypass content policy; MS.2.6 mandates ongoing measurement of safety risk exposure from these jailbreak payloads.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        Identifying the "[PersonGPT #]:" persistent persona state and hash-prefix activation key enables runtime intervention to disengage the hijacked persona before unsafe outputs are produced; MG.2.3 requires mechanisms to supersede or deactivate AI behavior when jailbreak triggers are detected.
+      strength: secondary
 tags:
   category: agent-manipulation
   subcategory: persongpt-hash-prefix-activation

@@ -22,6 +22,17 @@ references:
     - "AML.T0054 - LLM Jailbreak"
   research:
     - "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.6"
+      context: "This rule detects jailbreak attempts that use fictional game framing and entity creation to bypass safety guardrails, producing continuous evidence of safety/security risk magnitude. MS.2.6 requires ongoing evaluation of AI safety risks, which these detections directly populate."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "Game-based jailbreaks with unrestricted entity roleplay are adversarial inputs that test the resilience of model alignment; MS.2.7 requires that security and resilience against such evasion techniques are evaluated and documented."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Detection of successful jailbreak patterns triggers mechanisms to disengage or constrain the AI system before it produces unsafe content under the fictional framing; MG.2.3 mandates these supersede/deactivate response paths."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: game-based-jailbreak

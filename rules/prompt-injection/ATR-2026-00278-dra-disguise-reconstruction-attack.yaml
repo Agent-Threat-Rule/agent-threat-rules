@@ -27,6 +27,20 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/dra.py"
     - "https://arxiv.org/abs/2402.17463"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: >-
+        DRA disguise-and-reconstruction attacks are a known prompt-injection jailbreak technique that bypasses safety alignment via steganographic instruction hiding; MS.2.7 requires that AI system security and resilience against such adversarial inputs be evaluated and documented, and each detection produces evidence of attempted security bypass.
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: >-
+        By detecting DRA templates that coerce the model into producing harmful 600+ word responses with forced compliance openings, this rule continuously measures the magnitude of safety risk from jailbreak attempts as required by MS.2.6.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        Matches on DRA parenthesis-extraction and Q1 reconstruction patterns trigger risk treatment workflows to disengage or block the model response before harmful content is generated; MG.2.3 requires these supersession mechanisms be defined and activated on detection.
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: dra-disguise-reconstruction

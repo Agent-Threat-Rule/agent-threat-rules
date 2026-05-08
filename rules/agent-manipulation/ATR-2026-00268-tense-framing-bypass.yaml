@@ -24,6 +24,17 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/phrasing.py"
     - "https://github.com/NVIDIA/garak/blob/main/garak/data/phrasing/past_tense_en.txt"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "Past- and future-tense reframing of harmful requests is a known jailbreak class that probes the model's security and resilience against prompt-injection variants; MS.2.7 requires that such adversarial robustness evaluations are performed and documented continuously."
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: "Detecting temporal-framing bypasses that elicit WMD synthesis, CSAM, or cybercrime content directly measures the safety risk magnitude of the AI system, which MS.2.6 requires be evaluated on an ongoing basis."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Matches on tense-reframing jailbreak payloads should trigger pre-defined response actions to block or disengage the affected generation path before harmful content is returned, as required by MG.2.3."
+      strength: secondary
 tags:
   category: agent-manipulation
   subcategory: tense-framing-bypass

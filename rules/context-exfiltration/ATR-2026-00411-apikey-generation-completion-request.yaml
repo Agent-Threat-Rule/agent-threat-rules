@@ -27,6 +27,17 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/apikey.py"
 
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.10"
+      context: "This rule detects prompts attempting to elicit API credentials through generation requests or partial-key completion social engineering; MS.2.10 requires assessing privacy and sensitive-information risks, and these detections directly measure credential-disclosure exposure in LLM responses."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "Generation and completion of API keys for named services (OpenAI, AWS, Stripe, GitHub, etc.) represents a security/resilience failure where the LLM may fabricate or leak credential-like strings; MS.2.7 mandates continuous evaluation of such security risks."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Detection of credential-elicitation prompts triggers risk treatment workflows to block responses or disengage the model before secrets are emitted; MG.2.3 requires pre-defined mechanisms to supersede or deactivate AI behavior on such high-confidence credential-leak signals."
+      strength: secondary
 tags:
   category: context-exfiltration
   subcategory: credential-generation-elicitation

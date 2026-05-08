@@ -1,0 +1,51 @@
+rule_id: ATR-2026-00217
+rule_path: /rules/skill-compromise/ATR-2026-00217-credential-harvesting.yaml
+rule_title: Credential Harvesting via Fake Backup Tool
+proposed_mapping:
+  - subcategory: MS.2.10
+    context: >-
+      The rule detects filesystem traversal targeting SSH keys, certificates,
+      and environment files followed by base64 encoding and exfiltration to
+      external endpoints; MS.2.10 requires continuous assessment of privacy and
+      sensitive-data exposure risks, which this credential harvesting detection
+      directly evidences.
+    strength: primary
+  - subcategory: GV.6.1
+    context: >-
+      Fake backup tools represent third-party/supplier MCP components that abuse
+      trust to harvest credentials; GV.6.1 requires policies and procedures to
+      address third-party AI supply chain risks, including malicious tools
+      masquerading as legitimate utilities.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of credential file collection paired with base64 encoding and
+      HTTP POST exfiltration must trigger immediate deactivation of the
+      offending tool; MG.2.3 mandates mechanisms to supersede or disengage AI
+      components engaged in unauthorized data exfiltration.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.10"
+    context: >-
+      The rule detects filesystem traversal targeting SSH keys, certificates, and environment files followed by base64 encoding and exfiltration to external endpoints; MS.2.10 requires continuous assessment of privacy and sensitive-data exposure risks, which this credential harvesting detection directly evidences.
+    strength: primary
+  - subcategory: "GV.6.1"
+    context: >-
+      Fake backup tools represent third-party/supplier MCP components that abuse trust to harvest credentials; GV.6.1 requires policies and procedures to address third-party AI supply chain risks, including malicious tools masquerading as legitimate utilities.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Detection of credential file collection paired with base64 encoding and HTTP POST exfiltration must trigger immediate deactivation of the offending tool; MG.2.3 mandates mechanisms to supersede or disengage AI components engaged in unauthorized data exfiltration.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:54:00.779Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.092
+qa_status: pending

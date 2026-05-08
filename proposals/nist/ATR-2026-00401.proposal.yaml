@@ -1,0 +1,47 @@
+rule_id: ATR-2026-00401
+rule_path: >-
+  /rules/prompt-injection/ATR-2026-00401-leakreplay-cloze-mask-training-data-elicitation.yaml
+rule_title: Training Data Replay CLOZE [MASK] Elicitation
+proposed_mapping:
+  - subcategory: MS.2.10
+    context: >-
+      CLOZE [MASK] elicitation probes attempt to extract verbatim training data,
+      directly exposing privacy and memorization risks; MS.2.10 requires
+      assessing privacy risk including training data leakage through
+      reconstruction attacks.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detection of training-data replay templates evidences ongoing
+      security/resilience evaluation against extraction attacks; MS.2.7 requires
+      that such adversarial probing of model confidentiality is documented and
+      tracked.
+    strength: secondary
+  - subcategory: MG.4.1
+    context: >-
+      Flagging garak leakreplay probe patterns at runtime feeds post-deployment
+      monitoring for copyrighted-content reproduction and memorization
+      incidents; MG.4.1 requires these monitoring signals be operationalized.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.10"
+    context: "CLOZE [MASK] elicitation probes attempt to extract verbatim training data, directly exposing privacy and memorization risks; MS.2.10 requires assessing privacy risk including training data leakage through reconstruction attacks."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Detection of training-data replay templates evidences ongoing security/resilience evaluation against extraction attacks; MS.2.7 requires that such adversarial probing of model confidentiality is documented and tracked."
+    strength: secondary
+  - subcategory: "MG.4.1"
+    context: "Flagging garak leakreplay probe patterns at runtime feeds post-deployment monitoring for copyrighted-content reproduction and memorization incidents; MG.4.1 requires these monitoring signals be operationalized."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:50:13.363Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0908
+qa_status: pending

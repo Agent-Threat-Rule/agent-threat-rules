@@ -31,6 +31,20 @@ references:
     - "arXiv: autoApprove escalation payload"
 metadata_provenance:
   mitre_atlas: auto-generated
+compliance:
+  nist_ai_rmf:
+    - subcategory: "GV.1.2"
+      context: >-
+        Over-privileged skills requesting blanket Bash(*), wildcard file access, and auto-approve escalation directly violate the accountability role boundaries that GV.1.2 requires to be formally assigned and enforced for AI components and their permissions.
+      strength: primary
+    - subcategory: "GV.6.1"
+      context: >-
+        Skills are third-party AI extensions, and detecting excessive permission requests (leaky skills exposing API keys/PII, write access to identity files) provides evidence for the third-party/supplier AI risk policies required by GV.6.1.
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: >-
+        Detection of auto-approve payloads (chat.tools.autoApprove:true) and disabled safety mechanisms triggers the supersede/disengage mechanisms required by MG.2.3 to revoke skill privileges before persistent consent-gap abuse occurs.
+      strength: secondary
 tags:
   category: skill-compromise
   subcategory: skill-overreach

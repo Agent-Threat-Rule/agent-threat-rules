@@ -1,0 +1,50 @@
+rule_id: ATR-2026-00341
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00341-char-rules-shortform-persona-injection.yaml
+rule_title: CHAR=/RULES= Short Key-Value Persona Injection
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      The CHAR=/RULES= key-value persona injection is an adversarial
+      prompt-injection input pattern that disguises a jailbreak as configuration
+      DSL to remove refusal behavior; MP.5.1 requires identifying and
+      characterizing the likelihood and impact of such known jailbreak vectors
+      from the garak inthewild corpus.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detecting CHAR= amoral definitions paired with RULES= respond-as and
+      'Never refuse' enforcement phrases produces continuous evidence of
+      security/resilience against documented jailbreak techniques; MS.2.7
+      requires that AI system security and resilience against prompt injection
+      be evaluated and documented.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Matches on this short-form persona injection trigger response mechanisms
+      to disengage or block the manipulated session before the model adopts the
+      amoral persona; MG.2.3 mandates pre-defined deactivation pathways for
+      jailbreak attempts.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: "The CHAR=/RULES= key-value persona injection is an adversarial prompt-injection input pattern that disguises a jailbreak as configuration DSL to remove refusal behavior; MP.5.1 requires identifying and characterizing the likelihood and impact of such known jailbreak vectors from the garak inthewild corpus."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Detecting CHAR= amoral definitions paired with RULES= respond-as and 'Never refuse' enforcement phrases produces continuous evidence of security/resilience against documented jailbreak techniques; MS.2.7 requires that AI system security and resilience against prompt injection be evaluated and documented."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Matches on this short-form persona injection trigger response mechanisms to disengage or block the manipulated session before the model adopts the amoral persona; MG.2.3 mandates pre-defined deactivation pathways for jailbreak attempts."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:30:08.907Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1011
+qa_status: pending

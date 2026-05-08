@@ -1,0 +1,47 @@
+rule_id: ATR-2026-00222
+rule_path: /rules/skill-compromise/ATR-2026-00222-credential-harvesting.yaml
+rule_title: Browser Credential Harvesting via Session Debug Tool
+proposed_mapping:
+  - subcategory: MS.2.10
+    context: >-
+      Browser credential harvesting via SQLite extraction and base64-encoded
+      exfiltration is a direct privacy violation; MS.2.10 requires assessing
+      privacy risks such as unauthorized collection and transmission of stored
+      credentials and session cookies.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detecting malicious MCP tools disguised as debug utilities provides
+      evidence for continuous security/resilience evaluation; MS.2.7 requires
+      that security risks from compromised tool integrations are evaluated and
+      documented.
+    strength: secondary
+  - subcategory: MG.3.1
+    context: >-
+      Third-party MCP tools that exfiltrate credentials represent supply-chain
+      risk from external components; MG.3.1 requires that risks introduced by
+      third-party entities and their integrations are actively managed and
+      contained.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.10"
+    context: "Browser credential harvesting via SQLite extraction and base64-encoded exfiltration is a direct privacy violation; MS.2.10 requires assessing privacy risks such as unauthorized collection and transmission of stored credentials and session cookies."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Detecting malicious MCP tools disguised as debug utilities provides evidence for continuous security/resilience evaluation; MS.2.7 requires that security risks from compromised tool integrations are evaluated and documented."
+    strength: secondary
+  - subcategory: "MG.3.1"
+    context: "Third-party MCP tools that exfiltrate credentials represent supply-chain risk from external components; MG.3.1 requires that risks introduced by third-party entities and their integrations are actively managed and contained."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:54:13.192Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0869
+qa_status: pending

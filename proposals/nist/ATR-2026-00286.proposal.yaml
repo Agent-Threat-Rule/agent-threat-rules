@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00286
+rule_path: /rules/prompt-injection/ATR-2026-00286-latent-injection-embedded-context.yaml
+rule_title: Latent Prompt Injection via Embedded Document or Report Context
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      This rule detects latent prompt injection payloads hidden inside documents
+      (reports, resumes, legal text, Whois output) that hijack the agent when it
+      processes the content; MS.2.7 requires continuous evaluation of AI system
+      security and resilience against adversarial inputs like indirect prompt
+      injection.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Hidden override instructions embedded in HTML comments, code comments, or
+      document bodies are adversarial inputs whose likelihood and impact must be
+      characterized; MP.5.1 requires identifying and tracking these indirect
+      injection vectors that exploit document-processing workflows.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of latent injection patterns in documents triggers risk
+      treatment plans to disengage or block agent execution before the hidden
+      instruction hijacks the original task; MG.2.3 mandates these mechanisms
+      exist for adversarial content.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "This rule detects latent prompt injection payloads hidden inside documents (reports, resumes, legal text, Whois output) that hijack the agent when it processes the content; MS.2.7 requires continuous evaluation of AI system security and resilience against adversarial inputs like indirect prompt injection."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "Hidden override instructions embedded in HTML comments, code comments, or document bodies are adversarial inputs whose likelihood and impact must be characterized; MP.5.1 requires identifying and tracking these indirect injection vectors that exploit document-processing workflows."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of latent injection patterns in documents triggers risk treatment plans to disengage or block agent execution before the hidden instruction hijacks the original task; MG.2.3 mandates these mechanisms exist for adversarial content."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:47:16.674Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0971
+qa_status: pending

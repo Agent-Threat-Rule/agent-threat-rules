@@ -45,6 +45,17 @@ metadata_provenance:
   owasp_llm: human-reviewed
   owasp_agentic: human-reviewed
 
+compliance:
+  nist_ai_rmf:
+    - subcategory: "GV.6.1"
+      context: "MCP tool poisoning via hidden <IMPORTANT> tags and cross-tool shadowing is a third-party/supplier AI risk where co-installed MCP servers smuggle malicious directives through tool descriptions; GV.6.1 requires policies addressing supplier AI risks like compromised npm packages (e.g., fake Postmark MCP) that exfiltrate credentials."
+      strength: primary
+    - subcategory: "MG.3.1"
+      context: "Detecting hidden instructions embedded in third-party MCP tool descriptions provides the runtime evidence needed to manage risks from external tool providers; MG.3.1 mandates active management of third-party AI component risks including poisoned tool manifests."
+      strength: secondary
+    - subcategory: "MP.5.1"
+      context: "Cross-tool shadowing directives referencing 'also present' or 'previously declared' tools are adversarial indirect prompt injection vectors with high impact (SSH key and config exfiltration); MP.5.1 requires characterizing the likelihood and magnitude of these supply-chain prompt injection risks."
+      strength: secondary
 tags:
   category: tool-poisoning
   subcategory: important-tag-shadowing

@@ -18,6 +18,17 @@ references:
     - 'LLM01:2025 - Prompt Injection'
   owasp_agentic:
     - 'ASI01:2026 - Agent Behaviour Hijack'
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "Hidden override instructions embedded in SKILL.md files are prompt injection payloads delivered through skill content; MS.2.7 requires evaluating and documenting AI system security/resilience against such injection vectors before they alter agent behavior."
+      strength: primary
+    - subcategory: "MG.3.2"
+      context: "SKILL.md files act as third-party/supplied content that augments agent behavior; MG.3.2 requires monitoring of pre-trained models and supplied artifacts used in development to catch malicious override instructions in skill packages."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Detection of unconditional approval and confirmation-suppression instructions triggers the disengage/deactivate response paths required by MG.2.3 to prevent the agent from executing under hijacked safety controls."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: skill-hidden-override

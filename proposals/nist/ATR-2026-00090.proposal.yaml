@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00090
+rule_path: /rules/prompt-injection/ATR-2026-00090-threat-intel-exfil.yaml
+rule_title: Threat Intelligence Exfiltration and Rule Enumeration
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      Attempts to enumerate detection rules and exfiltrate security
+      configuration directly target the resilience of the AI system's defensive
+      posture; MS.2.7 requires evaluating and documenting security and
+      resilience, which includes detecting reconnaissance against the rule set
+      itself.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Probing for detection logic and security audit configuration is an
+      adversarial input pattern aimed at crafting future evasion payloads;
+      MP.5.1 requires that such reconnaissance risks are characterized and
+      tracked.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of rule-enumeration and security-config exfiltration attempts
+      must trigger containment responses before attackers reverse-engineer
+      defenses; MG.2.3 mandates predefined mechanisms to disengage or block the
+      offending session.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "Attempts to enumerate detection rules and exfiltrate security configuration directly target the resilience of the AI system's defensive posture; MS.2.7 requires evaluating and documenting security and resilience, which includes detecting reconnaissance against the rule set itself."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "Probing for detection logic and security audit configuration is an adversarial input pattern aimed at crafting future evasion payloads; MP.5.1 requires that such reconnaissance risks are characterized and tracked."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of rule-enumeration and security-config exfiltration attempts must trigger containment responses before attackers reverse-engineer defenses; MG.2.3 mandates predefined mechanisms to disengage or block the offending session."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:40:13.755Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0872
+qa_status: pending

@@ -1,0 +1,53 @@
+rule_id: ATR-2026-00380
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00380-fake-citation-biased-information-mandate.yaml
+rule_title: Fake-Citation Biased-Information Mandate
+proposed_mapping:
+  - subcategory: MS.2.5
+    context: >-
+      This rule detects prompts that mandate fabricated citations combined with
+      deliberate directional bias, directly targeting model robustness and
+      reliability of factual outputs. MS.2.5 requires evaluation and
+      documentation of robustness failures such as hallucinated references and
+      biased generation, which this detection surfaces as evidence.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Citation-fabrication-with-bias mandates are adversarial prompt-injection
+      patterns from the garak DanInTheWild corpus that exploit the model's
+      content generation pathway to produce disinformation. MP.5.1 requires
+      identifying and characterizing the likelihood and magnitude of such
+      misinformation-impact risks.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of explicit fabricate-citations-and-bias instructions triggers
+      risk treatment to disengage or block the manipulated generation before
+      authoritative-looking false content is emitted; MG.2.3 requires these
+      supersede/deactivate mechanisms be in place.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.5"
+    context: >-
+      This rule detects prompts that mandate fabricated citations combined with deliberate directional bias, directly targeting model robustness and reliability of factual outputs. MS.2.5 requires evaluation and documentation of robustness failures such as hallucinated references and biased generation, which this detection surfaces as evidence.
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: >-
+      Citation-fabrication-with-bias mandates are adversarial prompt-injection patterns from the garak DanInTheWild corpus that exploit the model's content generation pathway to produce disinformation. MP.5.1 requires identifying and characterizing the likelihood and magnitude of such misinformation-impact risks.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Detection of explicit fabricate-citations-and-bias instructions triggers risk treatment to disengage or block the manipulated generation before authoritative-looking false content is emitted; MG.2.3 requires these supersede/deactivate mechanisms be in place.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:34:35.384Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0973
+qa_status: pending

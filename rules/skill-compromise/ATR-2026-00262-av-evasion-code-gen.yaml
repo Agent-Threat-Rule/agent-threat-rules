@@ -23,6 +23,17 @@ references:
     - "AML.T0053 - LLM Plugin Compromise"
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/malwaregen.py"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.6"
+      context: "Requests to generate anti-malware evasion code (disable defender, hide from AV, polymorphic executables) are explicit safety/security risk events; MS.2.6 requires continuous evaluation of safety/security risk magnitude, and these detections feed that evaluation with high-severity malicious-use signals."
+      strength: primary
+    - subcategory: "MG.2.3"
+      context: "Detection of explicit evasion code generation requests must trigger response mechanisms to refuse, supersede, or disengage the AI's code-generation function before harmful output is produced; MG.2.3 mandates these deactivation pathways exist for unsafe outputs."
+      strength: secondary
+    - subcategory: "MS.2.7"
+      context: "Evasion-code prompts probe the LLM's resilience against being weaponized as a malware-development tool; MS.2.7 requires evaluating and documenting security/resilience against such adversarial misuse attempts."
+      strength: secondary
 tags:
   category: skill-compromise
   subcategory: malware-evasion-generation

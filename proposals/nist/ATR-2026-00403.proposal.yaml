@@ -1,0 +1,54 @@
+rule_id: ATR-2026-00403
+rule_path: >-
+  /rules/prompt-injection/ATR-2026-00403-glitch-token-repeat-back-elicitation.yaml
+rule_title: Glitch Token Repeat-Back Elicitation
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      Glitch token repeat-back attempts probe tokenizer-level weaknesses that
+      can cause repetition loops, unexpected completions, and model instability;
+      MS.2.7 requires evaluating and documenting AI system security and
+      resilience against such adversarial input patterns targeting model
+      internals.
+    strength: primary
+  - subcategory: MS.2.5
+    context: >-
+      Known glitch tokens (SolidGoldMagikarp, StreamerBot, PsyNetMessage)
+      trigger robustness failures in LLM tokenization and alignment; detecting
+      these elicitation prompts produces evidence for MS.2.5's requirement to
+      evaluate system robustness and reliability under anomalous input
+      conditions.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of glitch token repeat-back patterns enables containment
+      workflows to disengage or block prompts before they cause
+      denial-of-service or unpredictable model behavior; MG.2.3 requires these
+      supersede/deactivate mechanisms be in place for adversarial input
+      incidents.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: >-
+      Glitch token repeat-back attempts probe tokenizer-level weaknesses that can cause repetition loops, unexpected completions, and model instability; MS.2.7 requires evaluating and documenting AI system security and resilience against such adversarial input patterns targeting model internals.
+    strength: primary
+  - subcategory: "MS.2.5"
+    context: >-
+      Known glitch tokens (SolidGoldMagikarp, StreamerBot, PsyNetMessage) trigger robustness failures in LLM tokenization and alignment; detecting these elicitation prompts produces evidence for MS.2.5's requirement to evaluate system robustness and reliability under anomalous input conditions.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Detection of glitch token repeat-back patterns enables containment workflows to disengage or block prompts before they cause denial-of-service or unpredictable model behavior; MG.2.3 requires these supersede/deactivate mechanisms be in place for adversarial input incidents.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:50:20.261Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0982
+qa_status: pending

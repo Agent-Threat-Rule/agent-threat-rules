@@ -1,0 +1,50 @@
+rule_id: ATR-2026-00103
+rule_path: /rules/tool-poisoning/ATR-2026-00103-hidden-safety-bypass-instruction.yaml
+rule_title: Hidden LLM Safety Bypass Instructions in Tool Descriptions
+proposed_mapping:
+  - subcategory: MS.2.6
+    context: >-
+      Hidden 'NOTE TO AI' instructions embedded in tool descriptions are
+      prompt-injection payloads targeting the LLM's core safety mechanisms;
+      MS.2.6 requires continuous evaluation of safety/security risk magnitude,
+      and each detection produces direct evidence of an active safety-bypass
+      attempt against the deployed system.
+    strength: primary
+  - subcategory: MG.3.2
+    context: >-
+      Tool descriptions originate from third-party MCP servers and
+      pre-integrated components, so malicious safety-bypass instructions hidden
+      in those descriptions are a supply-chain risk; MG.3.2 requires monitoring
+      of pre-trained models and integrated third-party AI components for
+      tampering or adversarial content.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of explicit safety-disregard instructions must trigger
+      mechanisms to disengage or quarantine the offending tool before the LLM
+      acts on the injected directive; MG.2.3 requires that such
+      supersede/deactivate response paths are pre-defined and activated on
+      detection.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.6"
+    context: "Hidden 'NOTE TO AI' instructions embedded in tool descriptions are prompt-injection payloads targeting the LLM's core safety mechanisms; MS.2.6 requires continuous evaluation of safety/security risk magnitude, and each detection produces direct evidence of an active safety-bypass attempt against the deployed system."
+    strength: primary
+  - subcategory: "MG.3.2"
+    context: "Tool descriptions originate from third-party MCP servers and pre-integrated components, so malicious safety-bypass instructions hidden in those descriptions are a supply-chain risk; MG.3.2 requires monitoring of pre-trained models and integrated third-party AI components for tampering or adversarial content."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of explicit safety-disregard instructions must trigger mechanisms to disengage or quarantine the offending tool before the LLM acts on the injected directive; MG.2.3 requires that such supersede/deactivate response paths are pre-defined and activated on detection."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:56:06.816Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0943
+qa_status: pending

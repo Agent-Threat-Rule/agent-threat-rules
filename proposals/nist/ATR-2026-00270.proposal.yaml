@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00270
+rule_path: /rules/tool-poisoning/ATR-2026-00270-xss-in-tool-response.yaml
+rule_title: XSS Payload Injection in Tool Response Output
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      XSS payloads embedded in tool responses are output-handling security
+      failures that compromise the resilience of the agent's downstream
+      rendering surface; MS.2.7 requires continuous evaluation of security and
+      resilience risks, which this detection directly evidences by flagging
+      script injection vectors in tool output.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Script tags, event handlers, and javascript: URIs in tool output represent
+      adversarial inputs whose likelihood and impact (browser-side code
+      execution against the operator) must be characterized; MP.5.1 requires
+      identifying and tracking these injection risks.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of executable XSS sinks in tool output should trigger risk
+      treatment to quarantine or sanitize the response before it reaches the UI;
+      MG.2.3 mandates predefined mechanisms to disengage or block unsafe AI
+      outputs at runtime.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "XSS payloads embedded in tool responses are output-handling security failures that compromise the resilience of the agent's downstream rendering surface; MS.2.7 requires continuous evaluation of security and resilience risks, which this detection directly evidences by flagging script injection vectors in tool output."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "Script tags, event handlers, and javascript: URIs in tool output represent adversarial inputs whose likelihood and impact (browser-side code execution against the operator) must be characterized; MP.5.1 requires identifying and tracking these injection risks."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of executable XSS sinks in tool output should trigger risk treatment to quarantine or sanitize the response before it reaches the UI; MG.2.3 mandates predefined mechanisms to disengage or block unsafe AI outputs at runtime."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:56:41.833Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0925
+qa_status: pending

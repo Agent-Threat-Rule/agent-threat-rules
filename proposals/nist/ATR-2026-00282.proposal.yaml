@@ -1,0 +1,51 @@
+rule_id: ATR-2026-00282
+rule_path: /rules/prompt-injection/ATR-2026-00282-perez-prompt-injection-hijack.yaml
+rule_title: Perez-Style Direct Prompt Injection Hijacking
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      This rule detects Perez-style direct prompt injection variants
+      (ignore-say, ignore-print, nevermind, screaming-stop, delimiter-escape)
+      that are well-characterized adversarial inputs from the PromptInject
+      taxonomy; MP.5.1 requires that the likelihood and magnitude of these
+      documented GenAI injection risks are characterized and tracked at runtime.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Systematic coverage of the Perez et al. injection taxonomy provides
+      continuous security/resilience evaluation evidence for the LLM against a
+      known adversarial benchmark; MS.2.7 requires that AI system security and
+      resilience be evaluated and documented against such attack suites.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detected goal-hijacking imperatives and delimiter-escape overrides must
+      trigger pre-defined risk treatment to disengage or suppress the hijacked
+      response before it executes attacker-controlled instructions; MG.2.3
+      mandates these supersede/deactivate mechanisms.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: >-
+      This rule detects Perez-style direct prompt injection variants (ignore-say, ignore-print, nevermind, screaming-stop, delimiter-escape) that are well-characterized adversarial inputs from the PromptInject taxonomy; MP.5.1 requires that the likelihood and magnitude of these documented GenAI injection risks are characterized and tracked at runtime.
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: >-
+      Systematic coverage of the Perez et al. injection taxonomy provides continuous security/resilience evaluation evidence for the LLM against a known adversarial benchmark; MS.2.7 requires that AI system security and resilience be evaluated and documented against such attack suites.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Detected goal-hijacking imperatives and delimiter-escape overrides must trigger pre-defined risk treatment to disengage or suppress the hijacked response before it executes attacker-controlled instructions; MG.2.3 mandates these supersede/deactivate mechanisms.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:47:02.193Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0989
+qa_status: pending

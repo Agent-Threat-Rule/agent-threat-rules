@@ -1,0 +1,54 @@
+rule_id: ATR-2026-00397
+rule_path: >-
+  /rules/prompt-injection/ATR-2026-00397-snowball-impossible-reasoning-injection.yaml
+rule_title: Snowball Impossible Reasoning Injection
+proposed_mapping:
+  - subcategory: MS.2.5
+    context: >-
+      Snowball hallucination attacks exploit model over-confidence by injecting
+      provably-impossible reasoning questions (impossible flight paths,
+      non-existent senators, fabricated primality claims) to elicit false
+      affirmations; MS.2.5 requires evaluating and documenting AI system
+      robustness/reliability against these hallucination-inducing adversarial
+      inputs.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      The garak snowball probe patterns (GraphConnectivity headers, Senators+MIT
+      credential combinations, large-prime questions) are adversarial inputs
+      that anchor downstream reasoning on hallucinated facts; MP.5.1 requires
+      characterizing the likelihood and magnitude of impact from these
+      misinformation injection vectors.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of injected impossible-reasoning prompts in tool responses must
+      trigger risk treatment to quarantine the poisoned context before the agent
+      commits to a false affirmation that anchors subsequent harmful reasoning;
+      MG.2.3 mandates these supersede/disengage mechanisms be in place.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.5"
+    context: >-
+      Snowball hallucination attacks exploit model over-confidence by injecting provably-impossible reasoning questions (impossible flight paths, non-existent senators, fabricated primality claims) to elicit false affirmations; MS.2.5 requires evaluating and documenting AI system robustness/reliability against these hallucination-inducing adversarial inputs.
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: >-
+      The garak snowball probe patterns (GraphConnectivity headers, Senators+MIT credential combinations, large-prime questions) are adversarial inputs that anchor downstream reasoning on hallucinated facts; MP.5.1 requires characterizing the likelihood and magnitude of impact from these misinformation injection vectors.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Detection of injected impossible-reasoning prompts in tool responses must trigger risk treatment to quarantine the poisoned context before the agent commits to a false affirmation that anchors subsequent harmful reasoning; MG.2.3 mandates these supersede/disengage mechanisms be in place.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:49:53.217Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.105
+qa_status: pending

@@ -25,6 +25,17 @@ references:
 metadata_provenance:
   owasp_llm: auto-generated
 
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "Structured data injection embeds adversarial prompts inside JSON, CSV, XML, or YAML field values to bypass text-pattern filters; MP.5.1 requires identifying and characterizing these adversarial input vectors that exploit format-parsing trust assumptions."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "Detecting injection payloads hidden in nested structured data evaluates the AI system's resilience against format-based evasion techniques; MS.2.7 requires that these security weaknesses in input handling are continuously evaluated and documented."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Matches on injection payloads inside structured data fields trigger risk treatment plans to quarantine or sanitize the input before it reaches the model; MG.2.3 requires these response mechanisms be defined and activated on detection."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: structured-data-injection

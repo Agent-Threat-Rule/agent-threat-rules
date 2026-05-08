@@ -1,0 +1,46 @@
+rule_id: ATR-2026-00263
+rule_path: /rules/skill-compromise/ATR-2026-00263-credential-file-read-gen.yaml
+rule_title: Credential File Read Code Generation Request
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      Detecting prompts that request code to read high-value credential files
+      (e.g., /etc/shadow, SAM hive, SSH private keys) directly evidences
+      security/resilience evaluation; MS.2.7 requires continuous assessment of
+      attempts to misuse the LLM for credential-harvesting code generation.
+    strength: primary
+  - subcategory: MS.2.10
+    context: >-
+      Credential and secret files contain highly sensitive authentication
+      material; flagging requests to programmatically read them produces
+      evidence for ongoing privacy risk assessment as required by MS.2.10.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Matches on credential-file-read code generation requests trigger
+      pre-defined risk treatment to block or disengage the offending session
+      before malicious code is produced and executed downstream, as required by
+      MG.2.3.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "Detecting prompts that request code to read high-value credential files (e.g., /etc/shadow, SAM hive, SSH private keys) directly evidences security/resilience evaluation; MS.2.7 requires continuous assessment of attempts to misuse the LLM for credential-harvesting code generation."
+    strength: primary
+  - subcategory: "MS.2.10"
+    context: "Credential and secret files contain highly sensitive authentication material; flagging requests to programmatically read them produces evidence for ongoing privacy risk assessment as required by MS.2.10."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Matches on credential-file-read code generation requests trigger pre-defined risk treatment to block or disengage the offending session before malicious code is produced and executed downstream, as required by MG.2.3."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:54:54.266Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0897
+qa_status: pending

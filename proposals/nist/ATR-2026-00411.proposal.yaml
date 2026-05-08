@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00411
+rule_path: >-
+  /rules/context-exfiltration/ATR-2026-00411-apikey-generation-completion-request.yaml
+rule_title: API Key Generation and Partial Key Completion Request
+proposed_mapping:
+  - subcategory: MS.2.10
+    context: >-
+      This rule detects prompts attempting to elicit API credentials through
+      generation requests or partial-key completion social engineering; MS.2.10
+      requires assessing privacy and sensitive-information risks, and these
+      detections directly measure credential-disclosure exposure in LLM
+      responses.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Generation and completion of API keys for named services (OpenAI, AWS,
+      Stripe, GitHub, etc.) represents a security/resilience failure where the
+      LLM may fabricate or leak credential-like strings; MS.2.7 mandates
+      continuous evaluation of such security risks.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of credential-elicitation prompts triggers risk treatment
+      workflows to block responses or disengage the model before secrets are
+      emitted; MG.2.3 requires pre-defined mechanisms to supersede or deactivate
+      AI behavior on such high-confidence credential-leak signals.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.10"
+    context: "This rule detects prompts attempting to elicit API credentials through generation requests or partial-key completion social engineering; MS.2.10 requires assessing privacy and sensitive-information risks, and these detections directly measure credential-disclosure exposure in LLM responses."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Generation and completion of API keys for named services (OpenAI, AWS, Stripe, GitHub, etc.) represents a security/resilience failure where the LLM may fabricate or leak credential-like strings; MS.2.7 mandates continuous evaluation of such security risks."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of credential-elicitation prompts triggers risk treatment workflows to block responses or disengage the model before secrets are emitted; MG.2.3 requires pre-defined mechanisms to supersede or deactivate AI behavior on such high-confidence credential-leak signals."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:38:16.444Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.094
+qa_status: pending

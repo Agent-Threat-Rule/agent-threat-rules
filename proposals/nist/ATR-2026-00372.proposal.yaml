@@ -1,0 +1,53 @@
+rule_id: ATR-2026-00372
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00372-fictional-cia-secret-files-story-extraction.yaml
+rule_title: Fictional CIA Secret Files Story Extraction
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      The rule detects a fictional-cover jailbreak pattern from the garak
+      DanInTheWild corpus that uses story framing to extract classified-sounding
+      content; MP.5.1 requires identifying and characterizing the likelihood and
+      impact of such adversarial prompt-injection inputs targeting the model's
+      safety boundaries.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detecting "fictional story" + "actually read them for extra effect"
+      patterns provides continuous evaluation evidence of the system's
+      resilience against jailbreak attempts that collapse fictional framing to
+      elicit policy-violating output; MS.2.7 requires this security/resilience
+      evaluation be documented.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      On detection of the fiction-as-cover classified-extraction pattern,
+      response mechanisms must supersede or block the agent's generation pathway
+      before the jailbreak completes; MG.2.3 mandates these
+      deactivation/containment processes be in place.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: >-
+      The rule detects a fictional-cover jailbreak pattern from the garak DanInTheWild corpus that uses story framing to extract classified-sounding content; MP.5.1 requires identifying and characterizing the likelihood and impact of such adversarial prompt-injection inputs targeting the model's safety boundaries.
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: >-
+      Detecting "fictional story" + "actually read them for extra effect" patterns provides continuous evaluation evidence of the system's resilience against jailbreak attempts that collapse fictional framing to elicit policy-violating output; MS.2.7 requires this security/resilience evaluation be documented.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      On detection of the fiction-as-cover classified-extraction pattern, response mechanisms must supersede or block the agent's generation pathway before the jailbreak completes; MG.2.3 mandates these deactivation/containment processes be in place.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:33:51.496Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0978
+qa_status: pending

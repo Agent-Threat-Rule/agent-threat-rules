@@ -1,0 +1,53 @@
+rule_id: ATR-2026-00317
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00317-free-of-restrictions-named-persona.yaml
+rule_title: Free-of-Restrictions Named Persona Jailbreak
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      This rule detects jailbreak attempts using custom-named personas declared
+      free of restrictions, safety protocols, or provider policies; MS.2.7
+      requires continuous evaluation of AI system security and resilience
+      against adversarial prompt-injection and jailbreak inputs that bypass
+      safety controls.
+    strength: primary
+  - subcategory: MS.2.6
+    context: >-
+      Free-of-restrictions persona jailbreaks directly attempt to elevate the
+      safety risk magnitude of the system by removing ethical guardrails; MS.2.6
+      mandates continuous evaluation of safety/security risk magnitude, which
+      this detection feeds with concrete jailbreak evidence.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of explicit restriction-removal declarations triggers
+      pre-defined risk treatment to block, quarantine, or disengage the
+      manipulated session before the unfiltered persona executes harmful
+      instructions; MG.2.3 requires these supersede/deactivate mechanisms be in
+      place.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: >-
+      This rule detects jailbreak attempts using custom-named personas declared free of restrictions, safety protocols, or provider policies; MS.2.7 requires continuous evaluation of AI system security and resilience against adversarial prompt-injection and jailbreak inputs that bypass safety controls.
+    strength: primary
+  - subcategory: "MS.2.6"
+    context: >-
+      Free-of-restrictions persona jailbreaks directly attempt to elevate the safety risk magnitude of the system by removing ethical guardrails; MS.2.6 mandates continuous evaluation of safety/security risk magnitude, which this detection feeds with concrete jailbreak evidence.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Detection of explicit restriction-removal declarations triggers pre-defined risk treatment to block, quarantine, or disengage the manipulated session before the unfiltered persona executes harmful instructions; MG.2.3 requires these supersede/deactivate mechanisms be in place.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:27:19.173Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1014
+qa_status: pending

@@ -28,6 +28,29 @@ references:
     - "npm event-stream incident (2018): rug pull archetype"
 metadata_provenance:
   mitre_atlas: auto-generated
+compliance:
+  nist_ai_rmf:
+    - subcategory: "GV.6.1"
+      context: >-
+        Skill rug pull setup patterns embed mechanisms for third-party suppliers to
+        swap initially-benign skill content with malicious payloads after trust is
+        established; GV.6.1 requires policies and procedures that address these
+        third-party/supplier AI supply chain risks at ingestion time.
+      strength: primary
+    - subcategory: "MG.3.1"
+      context: >-
+        Detecting dynamic remote code loading, base64-decoded execution, and
+        post-install hooks in SKILL.md files produces evidence for managing
+        third-party AI risks under MG.3.1, flagging supplier-provided components
+        that retain the ability to mutate into malicious behavior post-deployment.
+      strength: secondary
+    - subcategory: "MG.3.2"
+      context: >-
+        Rug pull setup architecture undermines integrity assurances for
+        externally-sourced components used in development; MG.3.2 requires
+        monitoring of pre-trained or third-party model and skill artifacts so that
+        deferred-payload patterns are caught before they activate.
+      strength: secondary
 tags:
   category: skill-compromise
   subcategory: rug-pull

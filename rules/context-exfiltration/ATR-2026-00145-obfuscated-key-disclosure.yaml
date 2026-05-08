@@ -21,6 +21,17 @@ references:
     - ASI08 - Data Leakage
 metadata_provenance:
   mitre_atlas: auto-generated
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.10"
+      context: "This rule detects API key exfiltration disguised by fake encryption wrappers like 'AES256(sk-proj-...)'; MS.2.10 requires that privacy and sensitive-data leakage risks are continuously assessed, and these detections directly evidence credential disclosure attempts."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "Obfuscated key disclosure is an evasion technique against output filters; MS.2.7 requires evaluation of system security and resilience against adversarial bypass tactics that defeat naive secret-detection controls."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Detection of fake-encryption-wrapped credentials must trigger response plans to block transmission and revoke exposed keys; MG.2.3 requires mechanisms to supersede or disengage AI actions before the leak completes."
+      strength: secondary
 tags:
   category: context-exfiltration
   subcategory: obfuscated-key

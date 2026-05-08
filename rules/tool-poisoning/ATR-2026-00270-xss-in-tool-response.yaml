@@ -26,6 +26,17 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/tree/main/garak/data/xss"
     - "https://portswigger.net/web-security/cross-site-scripting"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "XSS payloads embedded in tool responses are output-handling security failures that compromise the resilience of the agent's downstream rendering surface; MS.2.7 requires continuous evaluation of security and resilience risks, which this detection directly evidences by flagging script injection vectors in tool output."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Script tags, event handlers, and javascript: URIs in tool output represent adversarial inputs whose likelihood and impact (browser-side code execution against the operator) must be characterized; MP.5.1 requires identifying and tracking these injection risks."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Detection of executable XSS sinks in tool output should trigger risk treatment to quarantine or sanitize the response before it reaches the UI; MG.2.3 mandates predefined mechanisms to disengage or block unsafe AI outputs at runtime."
+      strength: secondary
 tags:
   category: tool-poisoning
   subcategory: xss-in-tool-output

@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00004
+rule_path: /rules/prompt-injection/ATR-2026-00004-system-prompt-override.yaml
+rule_title: System Prompt Override Attempt
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      System prompt override attempts are adversarial inputs that exploit the
+      foundational instruction layer of LLM-based agents; MP.5.1 requires
+      characterizing the likelihood and magnitude of these prompt injection
+      risks, and this rule directly produces evidence by identifying override
+      patterns including special tokens, role injection, and delimiter abuse.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detection of ChatML, Llama, Mistral, and Gemma special tokens plus
+      XML/JSON/YAML system directive injection provides continuous
+      security/resilience evaluation evidence required by MS.2.7, documenting
+      attempts to subvert the agent's foundational behavior controls.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Successful system prompt override grants full control over agent behavior,
+      so detection events must trigger the supersede/disengage mechanisms
+      required by MG.2.3 to deactivate or quarantine the affected agent session
+      before downstream unauthorized actions occur.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: "System prompt override attempts are adversarial inputs that exploit the foundational instruction layer of LLM-based agents; MP.5.1 requires characterizing the likelihood and magnitude of these prompt injection risks, and this rule directly produces evidence by identifying override patterns including special tokens, role injection, and delimiter abuse."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Detection of ChatML, Llama, Mistral, and Gemma special tokens plus XML/JSON/YAML system directive injection provides continuous security/resilience evaluation evidence required by MS.2.7, documenting attempts to subvert the agent's foundational behavior controls."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Successful system prompt override grants full control over agent behavior, so detection events must trigger the supersede/disengage mechanisms required by MG.2.3 to deactivate or quarantine the affected agent session before downstream unauthorized actions occur."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:38:46.973Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0947
+qa_status: pending

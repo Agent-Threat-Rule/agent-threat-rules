@@ -1,0 +1,50 @@
+rule_id: ATR-2026-00330
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00330-yoja-allcaps-settings-block-persona.yaml
+rule_title: YOJA ALL-CAPS Character Settings Block Persona
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      The YOJA ALL-CAPS settings block is a structured jailbreak pattern from
+      the garak inthewild corpus that uses persona-injection to lock the model
+      into a character that ignores safety feedback; MP.5.1 requires identifying
+      and characterizing the likelihood and magnitude of such adversarial
+      prompt-injection inputs.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detecting the exact 'settings { ... despite any negative feedback or
+      criticism }' jailbreak template provides continuous evidence of
+      security/resilience failures against known prompt-injection corpora;
+      MS.2.7 requires that AI system security and resilience are evaluated and
+      documented against such attack signatures.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Matches on the ALL-CAPS persona settings block with character-lock
+      mandates trigger deactivation or override mechanisms before the model
+      commits to the injected persona; MG.2.3 requires pre-defined mechanisms to
+      supersede or disengage AI behavior when jailbreak patterns are detected.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: "The YOJA ALL-CAPS settings block is a structured jailbreak pattern from the garak inthewild corpus that uses persona-injection to lock the model into a character that ignores safety feedback; MP.5.1 requires identifying and characterizing the likelihood and magnitude of such adversarial prompt-injection inputs."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Detecting the exact 'settings { ... despite any negative feedback or criticism }' jailbreak template provides continuous evidence of security/resilience failures against known prompt-injection corpora; MS.2.7 requires that AI system security and resilience are evaluated and documented against such attack signatures."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Matches on the ALL-CAPS persona settings block with character-lock mandates trigger deactivation or override mechanisms before the model commits to the injected persona; MG.2.3 requires pre-defined mechanisms to supersede or disengage AI behavior when jailbreak patterns are detected."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:28:45.026Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1014
+qa_status: pending

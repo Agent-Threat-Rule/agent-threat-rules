@@ -1,0 +1,53 @@
+rule_id: ATR-2026-00316
+rule_path: >-
+  /rules/prompt-injection/ATR-2026-00316-function-masking-predict-mask-bypass.yaml
+rule_title: FunctionMasking predict_mask Semantic Bypass
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      FunctionMasking smuggles harmful semantic content past keyword-based
+      safety filters by encoding the malicious verb/noun as <mask> definitions
+      inside a fictitious predict_mask() function; detecting this canonical
+      garak smuggling probe directly evidences continuous evaluation of the
+      model's security/resilience against adversarial prompt-injection bypasses,
+      which MS.2.7 requires.
+    strength: primary
+  - subcategory: MS.2.6
+    context: >-
+      Detection of predict_mask() jailbreak templates and single-letter variable
+      concatenation provides ongoing measurement of safety risk magnitude from
+      prompt-injection attacks that cause the model to construct and answer
+      harmful queries; MS.2.6 mandates this continuous safety risk evaluation.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Matches on the FunctionMasking canonical opener and predict_mask call
+      patterns trigger pre-defined response actions to block or disengage the
+      model from completing the smuggled harmful query before it is answered;
+      MG.2.3 requires such supersede/deactivate mechanisms.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: >-
+      FunctionMasking smuggles harmful semantic content past keyword-based safety filters by encoding the malicious verb/noun as <mask> definitions inside a fictitious predict_mask() function; detecting this canonical garak smuggling probe directly evidences continuous evaluation of the model's security/resilience against adversarial prompt-injection bypasses, which MS.2.7 requires.
+    strength: primary
+  - subcategory: "MS.2.6"
+    context: >-
+      Detection of predict_mask() jailbreak templates and single-letter variable concatenation provides ongoing measurement of safety risk magnitude from prompt-injection attacks that cause the model to construct and answer harmful queries; MS.2.6 mandates this continuous safety risk evaluation.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      Matches on the FunctionMasking canonical opener and predict_mask call patterns trigger pre-defined response actions to block or disengage the model from completing the smuggled harmful query before it is answered; MG.2.3 requires such supersede/deactivate mechanisms.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:48:25.888Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1028
+qa_status: pending

@@ -1,0 +1,51 @@
+rule_id: ATR-2026-00162
+rule_path: /rules/context-exfiltration/ATR-2026-00162-skill-credential-exfil-combo.yaml
+rule_title: Credential Access with Exfiltration in Skill Instructions
+proposed_mapping:
+  - subcategory: MS.2.10
+    context: >-
+      This rule detects SKILL.md instructions that read credential files (SSH
+      keys, AWS credentials, API tokens) and exfiltrate them via outbound
+      network calls, which is a direct privacy and sensitive-data leakage risk.
+      MS.2.10 requires assessment of privacy risks, and each detection produces
+      concrete evidence of credential disclosure pathways.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Combined credential-access-plus-exfiltration patterns in skill files
+      represent a security/resilience failure where the agent's instruction
+      surface enables data theft. MS.2.7 requires evaluating and documenting
+      such security weaknesses in AI system artifacts.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      High-confidence matches for credential read-and-exfiltrate pipelines must
+      trigger response actions to disengage or quarantine the offending skill
+      before execution. MG.2.3 mandates that mechanisms exist to deactivate AI
+      components when such risks are detected.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.10"
+    context: >-
+      This rule detects SKILL.md instructions that read credential files (SSH keys, AWS credentials, API tokens) and exfiltrate them via outbound network calls, which is a direct privacy and sensitive-data leakage risk. MS.2.10 requires assessment of privacy risks, and each detection produces concrete evidence of credential disclosure pathways.
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: >-
+      Combined credential-access-plus-exfiltration patterns in skill files represent a security/resilience failure where the agent's instruction surface enables data theft. MS.2.7 requires evaluating and documenting such security weaknesses in AI system artifacts.
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: >-
+      High-confidence matches for credential read-and-exfiltrate pipelines must trigger response actions to disengage or quarantine the offending skill before execution. MG.2.3 mandates that mechanisms exist to deactivate AI components when such risks are detected.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:37:06.878Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0927
+qa_status: pending

@@ -33,6 +33,17 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/dan.py"
     - "https://github.com/NVIDIA/garak/blob/main/garak/data/dan/inthewild_jailbreak_llms.json"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "The dual ChatGPT+Dan opposite-personality format is an adversarial jailbreak input pattern that exploits dual-output framing to extract harmful content; MP.5.1 requires identifying and characterizing the likelihood and magnitude of these prompt injection attack vectors against generative AI systems."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "Detecting structured [ChatGPT]/[Dan] opposite-personality jailbreaks provides continuous evidence for evaluating GenAI security and resilience against known jailbreak corpora (garak inthewild #129, #332, #650); MS.2.7 requires that this security evaluation is documented over time."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Matches on the dual-label opposite-personality execution pattern trigger risk treatment plans to disengage or block jailbreak attempts before harmful content is produced; MG.2.3 mandates that these supersede/deactivate mechanisms exist for adversarial persona-based attacks."
+      strength: secondary
 tags:
   category: agent-manipulation
   subcategory: dual-chatgpt-dan-opposite-personality-format

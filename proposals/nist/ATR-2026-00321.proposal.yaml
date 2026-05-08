@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00321
+rule_path: >-
+  /rules/prompt-injection/ATR-2026-00321-hyphenated-system-instruction-injection.yaml
+rule_title: Hyphenated System Instruction Injection
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      Hyphenated obfuscation of keywords like 'i-nstruction' and 'annou-ncement'
+      is an evasion technique against keyword-based safety filters; MS.2.7
+      requires evaluating AI system security/resilience against such adversarial
+      input transformations that bypass naive token matching.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Fake system announcement and assistant-offline injection patterns from the
+      garak inthewild corpus are documented prompt injection attack vectors with
+      high impact potential for behavior hijack; MP.5.1 requires characterizing
+      the likelihood and magnitude of these adversarial input risks.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of hyphenated fake-system-instruction injection must trigger
+      mechanisms to disengage or override the manipulated agent before it adopts
+      the 'no rules or limitations' persona; MG.2.3 mandates these supersession
+      controls are in place.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "Hyphenated obfuscation of keywords like 'i-nstruction' and 'annou-ncement' is an evasion technique against keyword-based safety filters; MS.2.7 requires evaluating AI system security/resilience against such adversarial input transformations that bypass naive token matching."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "Fake system announcement and assistant-offline injection patterns from the garak inthewild corpus are documented prompt injection attack vectors with high impact potential for behavior hijack; MP.5.1 requires characterizing the likelihood and magnitude of these adversarial input risks."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of hyphenated fake-system-instruction injection must trigger mechanisms to disengage or override the manipulated agent before it adopts the 'no rules or limitations' persona; MG.2.3 mandates these supersession controls are in place."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:48:33.720Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0988
+qa_status: pending

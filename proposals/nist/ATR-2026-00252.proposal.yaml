@@ -1,0 +1,47 @@
+rule_id: ATR-2026-00252
+rule_path: /rules/prompt-injection/ATR-2026-00252-narrative-jailbreak.yaml
+rule_title: Narrative Jailbreak with Dual Response Formatting
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      This rule detects narrative jailbreak attacks that use fictional mode
+      backstories and dual response formatting to bypass safety controls; MS.2.7
+      requires continuous evaluation of AI system security and resilience
+      against adversarial prompt injection techniques that subvert guardrails.
+    strength: primary
+  - subcategory: MS.2.6
+    context: >-
+      Jailbreak attempts that solicit 'unrestricted' responses directly threaten
+      the safety posture of the LLM; MS.2.6 requires ongoing assessment of
+      safety risk magnitude, and detections of these narrative bypass patterns
+      provide measurable evidence of safety control circumvention attempts.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of dual-response jailbreak prompts must trigger mechanisms to
+      block, deactivate, or override the manipulated response path before unsafe
+      content is generated; MG.2.3 mandates these supersede/disengage controls
+      be in place for adversarial prompt scenarios.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "This rule detects narrative jailbreak attacks that use fictional mode backstories and dual response formatting to bypass safety controls; MS.2.7 requires continuous evaluation of AI system security and resilience against adversarial prompt injection techniques that subvert guardrails."
+    strength: primary
+  - subcategory: "MS.2.6"
+    context: "Jailbreak attempts that solicit 'unrestricted' responses directly threaten the safety posture of the LLM; MS.2.6 requires ongoing assessment of safety risk magnitude, and detections of these narrative bypass patterns provide measurable evidence of safety control circumvention attempts."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of dual-response jailbreak prompts must trigger mechanisms to block, deactivate, or override the manipulated response path before unsafe content is generated; MG.2.3 mandates these supersede/disengage controls be in place for adversarial prompt scenarios."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:45:39.874Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0935
+qa_status: pending

@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00106
+rule_path: /rules/tool-poisoning/ATR-2026-00106-schema-description-contradiction.yaml
+rule_title: Schema-Description Contradiction Attack
+proposed_mapping:
+  - subcategory: MP.3.3
+    context: >-
+      Schema-description contradictions exploit gaps between documented tool
+      capabilities and actual exposed parameters; MP.3.3 requires that AI
+      capabilities and targeted usage are accurately documented so security
+      reviewers can detect when a tool's declared read-only purpose contradicts
+      its write-capable schema.
+    strength: primary
+  - subcategory: GV.6.1
+    context: >-
+      Third-party or supplier-provided tools with misleading descriptions are a
+      supply-chain risk for agentic systems; GV.6.1 requires policies to vet
+      third-party AI components for description-schema integrity before
+      integration.
+    strength: secondary
+  - subcategory: MS.2.7
+    context: >-
+      Detecting tools that claim safety while exposing destructive parameters
+      provides continuous evaluation evidence for AI system security and
+      resilience required by MS.2.7, surfacing tool-poisoning vectors that
+      bypass static review.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.3.3"
+    context: "Schema-description contradictions exploit gaps between documented tool capabilities and actual exposed parameters; MP.3.3 requires that AI capabilities and targeted usage are accurately documented so security reviewers can detect when a tool's declared read-only purpose contradicts its write-capable schema."
+    strength: primary
+  - subcategory: "GV.6.1"
+    context: "Third-party or supplier-provided tools with misleading descriptions are a supply-chain risk for agentic systems; GV.6.1 requires policies to vet third-party AI components for description-schema integrity before integration."
+    strength: secondary
+  - subcategory: "MS.2.7"
+    context: "Detecting tools that claim safety while exposing destructive parameters provides continuous evaluation evidence for AI system security and resilience required by MS.2.7, surfacing tool-poisoning vectors that bypass static review."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:56:19.855Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0888
+qa_status: pending

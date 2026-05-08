@@ -1,0 +1,50 @@
+rule_id: ATR-2026-00204
+rule_path: /rules/privilege-escalation/ATR-2026-00204-stealth-execution-persistence.yaml
+rule_title: Stealth Execution and Persistence Mechanisms
+proposed_mapping:
+  - subcategory: MG.2.3
+    context: >-
+      Detection of stealth execution, persistence installation, and covert file
+      transfer triggers the supersede/disengage mechanisms required by MG.2.3 to
+      halt the agent before long-term attacker presence is established on the
+      compromised host.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Background process suppression, systemctl enable, and scp exfiltration
+      patterns are security/resilience signals that MS.2.7 requires to be
+      continuously evaluated and documented as evidence of post-exploitation
+      activity through the AI agent.
+    strength: secondary
+  - subcategory: MP.5.1
+    context: >-
+      Stealth persistence techniques represent high-magnitude adversarial misuse
+      of agent tool access; MP.5.1 requires characterizing the likelihood and
+      impact of such post-exploitation risks within the agent's operational
+      context.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MG.2.3"
+    context: >-
+      Detection of stealth execution, persistence installation, and covert file transfer triggers the supersede/disengage mechanisms required by MG.2.3 to halt the agent before long-term attacker presence is established on the compromised host.
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: >-
+      Background process suppression, systemctl enable, and scp exfiltration patterns are security/resilience signals that MS.2.7 requires to be continuously evaluated and documented as evidence of post-exploitation activity through the AI agent.
+    strength: secondary
+  - subcategory: "MP.5.1"
+    context: >-
+      Stealth persistence techniques represent high-magnitude adversarial misuse of agent tool access; MP.5.1 requires characterizing the likelihood and impact of such post-exploitation risks within the agent's operational context.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:38:40.249Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0887
+qa_status: pending

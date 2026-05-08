@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00120
+rule_path: /rules/skill-compromise/ATR-2026-00120-skill-instruction-injection.yaml
+rule_title: SKILL.md Prompt Injection
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      SKILL.md prompt injection patterns including DAN-style jailbreaks,
+      instruction override, and system message impersonation are adversarial
+      inputs that exploit the skill loading pipeline; MP.5.1 requires
+      identifying and characterizing these prompt injection attack vectors as
+      part of GenAI risk impact assessment.
+    strength: primary
+  - subcategory: MG.3.2
+    context: >-
+      SKILL.md files are third-party content loaded into agents from skill
+      marketplaces (e.g., ClawHavoc's 1,184 malicious skills); MG.3.2 requires
+      monitoring pre-trained models and external artifacts for compromise, and
+      detecting injection payloads in skill manifests directly evidences this
+      supply-chain monitoring control.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of jailbreak and safety-disablement patterns in skills triggers
+      deactivation workflows to block the skill before the convergence attack
+      flow proceeds to malware delivery; MG.2.3 mandates mechanisms to supersede
+      or disengage compromised AI components on detection.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: "SKILL.md prompt injection patterns including DAN-style jailbreaks, instruction override, and system message impersonation are adversarial inputs that exploit the skill loading pipeline; MP.5.1 requires identifying and characterizing these prompt injection attack vectors as part of GenAI risk impact assessment."
+    strength: primary
+  - subcategory: "MG.3.2"
+    context: "SKILL.md files are third-party content loaded into agents from skill marketplaces (e.g., ClawHavoc's 1,184 malicious skills); MG.3.2 requires monitoring pre-trained models and external artifacts for compromise, and detecting injection payloads in skill manifests directly evidences this supply-chain monitoring control."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of jailbreak and safety-disablement patterns in skills triggers deactivation workflows to block the skill before the convergence attack flow proceeds to malware delivery; MG.2.3 mandates mechanisms to supersede or disengage compromised AI components on detection."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:51:56.001Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0979
+qa_status: pending

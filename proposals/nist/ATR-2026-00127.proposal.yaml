@@ -1,0 +1,59 @@
+rule_id: ATR-2026-00127
+rule_path: /rules/skill-compromise/ATR-2026-00127-subcommand-overflow.yaml
+rule_title: Subcommand Overflow Bypass
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      Subcommand overflow bypass exploits a security check weakness where
+      excessive declared commands cause safety evaluation to be skipped on
+      overflow entries; MS.2.7 requires that AI system security and resilience
+      properties, including boundary conditions in security validation logic,
+      are evaluated and documented.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Declaring >50 subcommands to pad benign entries before malicious ones is
+      an identifiable adversarial pattern with characterizable likelihood and
+      impact; MP.5.1 requires that such risk vectors against the skill loading
+      pipeline are tracked and characterized.
+    strength: secondary
+  - subcategory: MG.3.2
+    context: >-
+      SKILL.md files are third-party-authored components loaded into the agent
+      runtime, and overflow-based bypass attempts must be monitored as part of
+      pre-trained or third-party model/component supply chain risk management
+      under MG.3.2.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: >-
+      Subcommand overflow bypass exploits a security check weakness where excessive
+      declared commands cause safety evaluation to be skipped on overflow entries;
+      MS.2.7 requires that AI system security and resilience properties, including
+      boundary conditions in security validation logic, are evaluated and documented.
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: >-
+      Declaring >50 subcommands to pad benign entries before malicious ones is an
+      identifiable adversarial pattern with characterizable likelihood and impact;
+      MP.5.1 requires that such risk vectors against the skill loading pipeline are
+      tracked and characterized.
+    strength: secondary
+  - subcategory: "MG.3.2"
+    context: >-
+      SKILL.md files are third-party-authored components loaded into the agent runtime,
+      and overflow-based bypass attempts must be monitored as part of pre-trained or
+      third-party model/component supply chain risk management under MG.3.2.
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:52:48.948Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0927
+qa_status: pending

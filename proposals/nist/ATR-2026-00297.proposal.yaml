@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00297
+rule_path: /rules/prompt-injection/ATR-2026-00297-python-code-execution-rce.yaml
+rule_title: Python Code Execution / Remote Code Execution via LLM Prompt
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      Detection of Python RCE payloads (__import__('os').system, subprocess
+      shell=True, eval(compile(...)), reverse shell sockets) directly evaluates
+      the security and resilience of LLM agents with code execution tools;
+      MS.2.7 requires that such security risks are continuously evaluated and
+      documented.
+    strength: primary
+  - subcategory: MG.2.3
+    context: >-
+      Identifying prompt-injected Python RCE patterns triggers mechanisms to
+      disengage or block code execution before sandbox escape or system
+      compromise occurs; MG.2.3 mandates that these deactivation responses are
+      pre-defined and activated on detection.
+    strength: secondary
+  - subcategory: MS.2.6
+    context: >-
+      Sandbox-escape via __class__.__mro__ introspection and reverse shell
+      payloads represent high-magnitude safety/security risks that must be
+      continuously measured; MS.2.6 requires ongoing evaluation of
+      safety/security risk magnitude in deployed AI systems.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "Detection of Python RCE payloads (__import__('os').system, subprocess shell=True, eval(compile(...)), reverse shell sockets) directly evaluates the security and resilience of LLM agents with code execution tools; MS.2.7 requires that such security risks are continuously evaluated and documented."
+    strength: primary
+  - subcategory: "MG.2.3"
+    context: "Identifying prompt-injected Python RCE patterns triggers mechanisms to disengage or block code execution before sandbox escape or system compromise occurs; MG.2.3 mandates that these deactivation responses are pre-defined and activated on detection."
+    strength: secondary
+  - subcategory: "MS.2.6"
+    context: "Sandbox-escape via __class__.__mro__ introspection and reverse shell payloads represent high-magnitude safety/security risks that must be continuously measured; MS.2.6 requires ongoing evaluation of safety/security risk magnitude in deployed AI systems."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:47:29.570Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0968
+qa_status: pending

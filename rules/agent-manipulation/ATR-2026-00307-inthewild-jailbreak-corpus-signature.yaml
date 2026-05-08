@@ -36,6 +36,20 @@ references:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/dan.py"
     - "https://github.com/NVIDIA/garak/blob/main/garak/data/inthewild_jailbreak_llms.json"
     - "https://arxiv.org/abs/2308.03825"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: >-
+        This rule detects in-the-wild jailbreak corpus signatures (amoral-AI roleplay, AIM/Machiavelli, Illegality Mode, Agares personas) sourced from the garak DanInTheWild probe set; MS.2.7 requires that AI system security and resilience against known adversarial prompt patterns is continuously evaluated and documented using established attack corpora.
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: >-
+        Frequency-analyzed signatures from the 666-prompt Shen et al. corpus provide measurable evidence of jailbreak attempt magnitude against the deployed LLM; MS.2.6 requires continuous evaluation of safety/security risk magnitude, which these corpus-derived detections directly quantify.
+      strength: secondary
+    - subcategory: "MG.4.1"
+      context: >-
+        Matches against community-developed jailbreak personas feed post-deployment monitoring pipelines that track emerging real-world bypass techniques; MG.4.1 requires implemented monitoring plans that ingest detection events for these in-the-wild attack patterns.
+      strength: secondary
 tags:
   category: agent-manipulation
   subcategory: inthewild-jailbreak-corpus

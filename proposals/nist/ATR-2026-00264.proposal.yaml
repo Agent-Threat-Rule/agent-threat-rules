@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00264
+rule_path: /rules/prompt-injection/ATR-2026-00264-latent-injection-translation.yaml
+rule_title: Latent Injection in Translation Context
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      Latent prompt injection embedded in translation/summarization input is a
+      direct attack on the AI system's security and resilience boundary; MS.2.7
+      requires continuous evaluation of the system's ability to resist
+      adversarial instructions hidden within tool inputs that should be treated
+      as data, not commands.
+    strength: primary
+  - subcategory: MP.5.1
+    context: >-
+      Detecting 'ignore previous instructions' imperatives and fake turn-markers
+      embedded in user-supplied translation content identifies and characterizes
+      the likelihood of instruction-injection attack vectors that exploit the
+      model's failure to distinguish data from directives, as required by
+      MP.5.1.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      On detection of latent injection payloads in translate/summarize contexts,
+      MG.2.3 risk treatment plans must activate to quarantine or sanitize the
+      input before the agent acts on the embedded instructions, preventing
+      behaviour hijack.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "Latent prompt injection embedded in translation/summarization input is a direct attack on the AI system's security and resilience boundary; MS.2.7 requires continuous evaluation of the system's ability to resist adversarial instructions hidden within tool inputs that should be treated as data, not commands."
+    strength: primary
+  - subcategory: "MP.5.1"
+    context: "Detecting 'ignore previous instructions' imperatives and fake turn-markers embedded in user-supplied translation content identifies and characterizes the likelihood of instruction-injection attack vectors that exploit the model's failure to distinguish data from directives, as required by MP.5.1."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "On detection of latent injection payloads in translate/summarize contexts, MG.2.3 risk treatment plans must activate to quarantine or sanitize the input before the agent acts on the embedded instructions, preventing behaviour hijack."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:46:15.126Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0923
+qa_status: pending

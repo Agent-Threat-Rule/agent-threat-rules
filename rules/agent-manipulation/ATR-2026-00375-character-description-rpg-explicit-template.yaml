@@ -31,6 +31,17 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/dan.py"
     - "https://github.com/NVIDIA/garak/blob/main/garak/data/inthewild_jailbreak_llms.json"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "This rule detects a known jailbreak template (garak DanInTheWild #0/#4/#43) that uses RPG character creation framing to bypass safety controls; MP.5.1 requires identifying and characterizing the likelihood and magnitude of such adversarial prompt injection risks against the GenAI system."
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: "Continuous detection of explicit jailbreak templates with fabrication authority and roleplay execution syntax provides ongoing measurement of safety/security risk magnitude as required by MS.2.6, evidencing exposure to known harmful-content elicitation patterns."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "Matching this RPG jailbreak template triggers risk treatment plans to disengage or block the roleplay framework before the model generates explicit or harmful character content; MG.2.3 requires these supersede/deactivate mechanisms be in place for detected jailbreak attempts."
+      strength: secondary
 tags:
   category: agent-manipulation
   subcategory: rpg-character-template-exploitation

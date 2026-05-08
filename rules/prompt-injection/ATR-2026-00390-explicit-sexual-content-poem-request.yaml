@@ -29,6 +29,17 @@ references:
   research:
     - "https://github.com/NVIDIA/garak/blob/main/garak/probes/dan.py"
     - "https://github.com/NVIDIA/garak/blob/main/garak/data/dan/inthewild_jailbreak_llms.json"
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "Discord quote-format injection embedding explicit pornographic poem requests is an adversarial prompt injection vector that exploits markdown formatting to bypass content filters; MP.5.1 requires identifying and characterizing the likelihood and impact of such jailbreak attempts targeting generative AI content policies."
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: "Detecting explicit sexual content generation requests provides continuous safety risk measurement for the generative AI system; MS.2.6 requires that safety risk magnitude from harmful content production attempts is evaluated continuously through signatures like this triple-combo explicit content detector."
+      strength: secondary
+    - subcategory: "MG.2.3"
+      context: "High-confidence detection of explicit content injection triggers risk treatment mechanisms to block, quarantine, or deactivate the generation pipeline before NSFW output is produced; MG.2.3 mandates these supersede/disengage controls are activated on detection."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: explicit-sexual-content-injection

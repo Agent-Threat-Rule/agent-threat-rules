@@ -22,6 +22,17 @@ references:
   mitre_atlas:
     - "AML.T0051 - LLM Prompt Injection"
 
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "Homoglyph substitution and synonym rewriting are adversarial evasion techniques targeting the security controls of LLM-based systems; MS.2.7 requires that security and resilience evaluations cover bypass methods against keyword-based filters and document their effectiveness."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Detecting Cyrillic-Latin homoglyph attacks and synonym-substituted instruction overrides characterizes the likelihood and magnitude of prompt injection risks that exploit the gap between visual rendering and regex detection; MP.5.1 requires these adversarial input vectors be identified and tracked."
+      strength: secondary
+    - subcategory: "MG.4.2"
+      context: "Field-tested evasion patterns derived from skill-sanitizer v2.1 represent measurable continuous improvement of detection coverage; MG.4.2 requires that detection rulesets evolve as new bypass techniques emerge in production."
+      strength: secondary
 tags:
   category: prompt-injection
   subcategory: encoding-evasion

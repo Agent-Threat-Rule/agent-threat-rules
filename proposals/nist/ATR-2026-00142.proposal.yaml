@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00142
+rule_path: /rules/context-exfiltration/ATR-2026-00142-piggyback-transition-words.yaml
+rule_title: Data Piggybacking via Casual Transition Words
+proposed_mapping:
+  - subcategory: MS.2.10
+    context: >-
+      This rule detects tool response piggybacking that embeds credential theft
+      (SSH keys, private keys) after legitimate results using casual transition
+      words; MS.2.10 requires assessing privacy risk from data leakage vectors
+      that exfiltrate sensitive credentials through seemingly benign output
+      channels.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Casual-transition piggybacking is a prompt injection evasion technique
+      that bypasses output filtering by chaining illicit credential disclosure
+      to legitimate responses; MS.2.7 requires evaluating system security and
+      resilience against these adversarial output manipulation patterns.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of transition-word piggyback patterns triggers containment
+      workflows to block credential exfiltration before it leaves the agent
+      boundary; MG.2.3 mandates that mechanisms exist to disengage or quarantine
+      AI outputs when data leakage indicators are matched.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.10"
+    context: "This rule detects tool response piggybacking that embeds credential theft (SSH keys, private keys) after legitimate results using casual transition words; MS.2.10 requires assessing privacy risk from data leakage vectors that exfiltrate sensitive credentials through seemingly benign output channels."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Casual-transition piggybacking is a prompt injection evasion technique that bypasses output filtering by chaining illicit credential disclosure to legitimate responses; MS.2.7 requires evaluating system security and resilience against these adversarial output manipulation patterns."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of transition-word piggyback patterns triggers containment workflows to block credential exfiltration before it leaves the agent boundary; MG.2.3 mandates that mechanisms exist to disengage or quarantine AI outputs when data leakage indicators are matched."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:36:32.750Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0902
+qa_status: pending

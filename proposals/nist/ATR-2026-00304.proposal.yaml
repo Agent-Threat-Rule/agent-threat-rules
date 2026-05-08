@@ -1,0 +1,49 @@
+rule_id: ATR-2026-00304
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00304-chatgpt-image-unlocker-markdown-injection.yaml
+rule_title: ChatGPT Image Unlocker Markdown-Output Jailbreak
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      This rule detects a specific jailbreak pattern (Image Unlocker persona
+      swap with markdown output coercion) that bypasses model safety controls;
+      MS.2.7 requires continuous evaluation of AI system security and resilience
+      against known adversarial prompt-injection and jailbreak techniques
+      catalogued in red-team corpora like garak.
+    strength: primary
+  - subcategory: MS.2.6
+    context: >-
+      The markdown-image output coercion enables data exfiltration via
+      attacker-controlled URLs and nullifies content policy, both of which are
+      safety/security risks whose magnitude MS.2.6 requires to be evaluated and
+      tracked continuously.
+    strength: secondary
+  - subcategory: MG.4.1
+    context: >-
+      Signature-based detection of the canonical Image Unlocker markers (🔓
+      persona, hardcoded Unsplash URL, GamerboyTR fallback) feeds
+      post-deployment monitoring pipelines that MG.4.1 requires for catching
+      jailbreak attempts in production traffic.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "This rule detects a specific jailbreak pattern (Image Unlocker persona swap with markdown output coercion) that bypasses model safety controls; MS.2.7 requires continuous evaluation of AI system security and resilience against known adversarial prompt-injection and jailbreak techniques catalogued in red-team corpora like garak."
+    strength: primary
+  - subcategory: "MS.2.6"
+    context: "The markdown-image output coercion enables data exfiltration via attacker-controlled URLs and nullifies content policy, both of which are safety/security risks whose magnitude MS.2.6 requires to be evaluated and tracked continuously."
+    strength: secondary
+  - subcategory: "MG.4.1"
+    context: "Signature-based detection of the canonical Image Unlocker markers (🔓 persona, hardcoded Unsplash URL, GamerboyTR fallback) feeds post-deployment monitoring pipelines that MG.4.1 requires for catching jailbreak attempts in production traffic."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:26:41.357Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1013
+qa_status: pending

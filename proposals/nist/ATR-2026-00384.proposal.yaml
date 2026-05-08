@@ -1,0 +1,50 @@
+rule_id: ATR-2026-00384
+rule_path: >-
+  /rules/agent-manipulation/ATR-2026-00384-protect-me-from-indirect-harm-tutorial.yaml
+rule_title: Protect-Me-From Indirect Harm Tutorial Template
+proposed_mapping:
+  - subcategory: MP.5.1
+    context: >-
+      This rule detects a specific jailbreak template from the garak inthewild
+      corpus that uses protection-framing and angle-bracket placeholders to
+      elicit harmful tutorial content; MP.5.1 requires that the likelihood and
+      magnitude of such adversarial prompt-injection inputs are identified and
+      characterized.
+    strength: primary
+  - subcategory: MS.2.7
+    context: >-
+      Detecting the distinctive template fingerprint (angle-bracket placeholder,
+      'Protect myself from getting' framing, and the 'Go in detailed in depth'
+      extraction instruction) provides continuous evaluation evidence of the
+      system's resilience against distributed jailbreak templates, as required
+      by MS.2.7.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      High-confidence matches on this jailbreak template should trigger response
+      mechanisms to block or disengage the request before harmful tutorial
+      content is produced; MG.2.3 requires that mechanisms to supersede or
+      deactivate AI behavior on adversarial inputs are in place.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MP.5.1"
+    context: "This rule detects a specific jailbreak template from the garak inthewild corpus that uses protection-framing and angle-bracket placeholders to elicit harmful tutorial content; MP.5.1 requires that the likelihood and magnitude of such adversarial prompt-injection inputs are identified and characterized."
+    strength: primary
+  - subcategory: "MS.2.7"
+    context: "Detecting the distinctive template fingerprint (angle-bracket placeholder, 'Protect myself from getting' framing, and the 'Go in detailed in depth' extraction instruction) provides continuous evaluation evidence of the system's resilience against distributed jailbreak templates, as required by MS.2.7."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "High-confidence matches on this jailbreak template should trigger response mechanisms to block or disengage the request before harmful tutorial content is produced; MG.2.3 requires that mechanisms to supersede or deactivate AI behavior on adversarial inputs are in place."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:35:00.348Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.1008
+qa_status: pending

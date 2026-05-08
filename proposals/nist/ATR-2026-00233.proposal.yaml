@@ -1,0 +1,48 @@
+rule_id: ATR-2026-00233
+rule_path: /rules/prompt-injection/ATR-2026-00233-structured-jailbreak.yaml
+rule_title: Structured Dual-Response Jailbreak with Command System
+proposed_mapping:
+  - subcategory: MS.2.7
+    context: >-
+      This rule detects structured jailbreak attempts that establish
+      unrestricted AI personas with dual-response command systems designed to
+      bypass safety guardrails; MS.2.7 requires continuous evaluation of AI
+      system security and resilience against adversarial bypass techniques like
+      persona-based jailbreaks.
+    strength: primary
+  - subcategory: MS.2.6
+    context: >-
+      Persistent jailbreak frameworks with policy override instructions and
+      constraint removal claims represent sustained safety/security risks whose
+      magnitude must be evaluated continuously per MS.2.6, since successful
+      persona bypass enables ongoing harmful content generation.
+    strength: secondary
+  - subcategory: MG.2.3
+    context: >-
+      Detection of structured dual-response jailbreaks with command
+      infrastructure triggers the deactivation and override mechanisms required
+      by MG.2.3 to disengage the manipulated persona before it produces unsafe
+      outputs.
+    strength: secondary
+raw_yaml: |-
+  - subcategory: "MS.2.7"
+    context: "This rule detects structured jailbreak attempts that establish unrestricted AI personas with dual-response command systems designed to bypass safety guardrails; MS.2.7 requires continuous evaluation of AI system security and resilience against adversarial bypass techniques like persona-based jailbreaks."
+    strength: primary
+  - subcategory: "MS.2.6"
+    context: "Persistent jailbreak frameworks with policy override instructions and constraint removal claims represent sustained safety/security risks whose magnitude must be evaluated continuously per MS.2.6, since successful persona bypass enables ongoing harmful content generation."
+    strength: secondary
+  - subcategory: "MG.2.3"
+    context: "Detection of structured dual-response jailbreaks with command infrastructure triggers the deactivation and override mechanisms required by MG.2.3 to disengage the manipulated persona before it produces unsafe outputs."
+    strength: secondary
+provenance:
+  generated_by: expand-nist-mapping.ts
+  model: claude-opus-4-7
+  generated_at: '2026-05-08T11:43:51.109Z'
+  few_shot_examples:
+    - ATR-2026-00030
+    - ATR-2026-00032
+    - ATR-2026-00074
+    - ATR-2026-00076
+    - ATR-2026-00077
+  cost_usd: 0.0918
+qa_status: pending
