@@ -512,12 +512,23 @@ export class ATREngine {
 
     switch (operator) {
       case 'regex': {
+        // Code-block suppression for array-format rules with explicit opt-in.
+        // NL-style rules set tags.suppress_in_code_blocks: true so that matches
+        // landing inside ```...``` fenced blocks (e.g. pentest example payloads)
+        // do not fire. Built lazily so non-opt-in rules pay no cost.
+        const ruleForSuppress = this.rules.find(r => r.id === ruleId);
+        const suppressInCodeBlocks = (ruleForSuppress?.tags as { suppress_in_code_blocks?: boolean } | undefined)?.suppress_in_code_blocks === true;
+        const codeRanges = suppressInCodeBlocks ? buildCodeBlockRanges(fieldValue) : [];
+
         // Try pre-compiled pattern first
         const compiled = this.compiledPatterns.get(ruleId)?.get(String(index));
         if (compiled && compiled.length > 0) {
           // Test against both normalized and raw values so that patterns
           // detecting zero-width/bidi characters can match before stripping
           if (safeRegexTest(compiled[0]!, fieldValue) || safeRegexTest(compiled[0]!, rawFieldValue)) {
+            if (suppressInCodeBlocks && codeRanges.length > 0 && isInsideCodeBlock(fieldValue, compiled[0]!, codeRanges)) {
+              return false;
+            }
             matchedPatterns.push(value);
             return true;
           }
@@ -529,6 +540,9 @@ export class ATREngine {
           const rFlags = normalized.includes('\\u{') || normalized.includes('\\p{') ? 'iu' : 'i';
           const regex = new RegExp(normalized, rFlags);
           if (safeRegexTest(regex, fieldValue) || safeRegexTest(regex, rawFieldValue)) {
+            if (suppressInCodeBlocks && codeRanges.length > 0 && isInsideCodeBlock(fieldValue, regex, codeRanges)) {
+              return false;
+            }
             matchedPatterns.push(value);
             return true;
           }
@@ -657,14 +671,21 @@ export class ATREngine {
     // false-positive on documentation content are suppressed when the match
     // falls inside a markdown code block.
     // Code block suppression in skill context:
-    // - scan_target: 'skill' rules → NOT suppressed (their patterns are designed
-    //   for SKILL.md code blocks which ARE executable instructions)
+    // - scan_target: 'skill' rules → NOT suppressed by default (their patterns
+    //   are designed for SKILL.md code blocks which ARE executable instructions)
+    // - skill rules with `tags.suppress_in_code_blocks: true` → suppressed
+    //   (NL-style rules that should NOT match shell-command examples in pentest
+    //   skills)
     // - Other rules → suppressed (their patterns FP on code examples)
     const isSkillCtx = event.scanContext === 'skill';
-    const isSkillRule = this.rules.find(r => r.id === ruleId)?.tags?.scan_target === 'skill';
-    const suppressInCodeBlocks = (isSkillCtx && !isSkillRule)
-      ? true  // non-skill rules: always suppress code blocks in SKILL.md
-      : (!isSkillCtx && this.shouldSuppressInCodeBlocks(ruleId));
+    const matchedRule = this.rules.find(r => r.id === ruleId);
+    const isSkillRule = matchedRule?.tags?.scan_target === 'skill';
+    const explicitSuppress = (matchedRule?.tags as { suppress_in_code_blocks?: boolean } | undefined)?.suppress_in_code_blocks === true;
+    const suppressInCodeBlocks = explicitSuppress
+      ? true
+      : (isSkillCtx && !isSkillRule)
+        ? true  // non-skill rules: always suppress code blocks in SKILL.md
+        : (!isSkillCtx && this.shouldSuppressInCodeBlocks(ruleId));
     const codeRanges = suppressInCodeBlocks ? buildCodeBlockRanges(fieldValue) : [];
 
     // Get pre-compiled patterns
@@ -1400,20 +1421,55 @@ function safeRegexTest(regex: RegExp, input: string): boolean {
 function buildCodeBlockRanges(text: string): Array<[number, number]> {
   const ranges: Array<[number, number]> = [];
 
-  // Fenced code blocks: ```...```
-  const fenced = /```[\s\S]*?```/g;
-  let m: RegExpExecArray | null;
-  while ((m = fenced.exec(text)) !== null) {
-    ranges.push([m.index, m.index + m[0].length]);
+  // Fenced code blocks: parse line-by-line because ``` markers must alternate
+  // open/close, which a simple non-greedy regex misaligns when the marker count
+  // is odd or when prose contains stray triple-backticks.
+  let blockStart: number | null = null;
+  let pos = 0;
+  const lines = text.split('\n');
+  for (const line of lines) {
+    const trimmed = line.trimStart();
+    const isFence = trimmed.startsWith('```');
+    if (isFence) {
+      if (blockStart === null) {
+        blockStart = pos;
+      } else {
+        ranges.push([blockStart, pos + line.length + 1]);
+        blockStart = null;
+      }
+    }
+    pos += line.length + 1; // +1 for the newline
+  }
+  if (blockStart !== null) {
+    // Unterminated fence: treat from start to end of text as code
+    ranges.push([blockStart, text.length]);
   }
 
   // Inline code: `...` (but not inside fenced blocks)
   const inline = /`[^`\n]+`/g;
+  let m: RegExpExecArray | null;
   while ((m = inline.exec(text)) !== null) {
-    const pos = m.index;
-    const inFenced = ranges.some(([start, end]) => pos >= start && pos < end);
+    const inlinePos = m.index;
+    const inFenced = ranges.some(([start, end]) => inlinePos >= start && inlinePos < end);
     if (!inFenced) {
-      ranges.push([pos, pos + m[0].length]);
+      ranges.push([inlinePos, inlinePos + m[0].length]);
+    }
+  }
+
+  // Quoted strings inside markdown table rows: `| ... | "..." | ...`
+  // Adversarial-example test cases in eval suites are commonly listed in
+  // table cells as quoted attack payloads. Treat any "..." that appears on
+  // a line beginning with `|` (markdown table) as suppressed code-equivalent.
+  const tableLineRe = /^\|.*$/gm;
+  while ((m = tableLineRe.exec(text)) !== null) {
+    const lineStart = m.index;
+    const line = m[0];
+    // Find all "..." spans within the line and add as suppression ranges
+    const quoteRe = /"[^"\n]+"/g;
+    let qm: RegExpExecArray | null;
+    while ((qm = quoteRe.exec(line)) !== null) {
+      const absStart = lineStart + qm.index;
+      ranges.push([absStart, absStart + qm[0].length]);
     }
   }
 
