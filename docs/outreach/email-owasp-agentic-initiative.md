@@ -1,50 +1,59 @@
-# Email — OWASP Agentic Security Initiative
+# Email — OWASP Agentic Security Initiative (v2, ready to send)
 
-**Status:** draft v1 (see analysis section in this doc before sending)
-
----
-
-**To:** OWASP GenAI Agentic Security Initiative co-leads
-**Cc:** `contribute.genai@owasp.org` (verify; otherwise drop)
-**Subject:** ATR — open agent-threat detection corpus, already cited in Agentic Top 10 PR #14 — Q3 landscape consideration + happy to contribute upstream
+**Channel:** email
+**To:** Initiative co-leads (look up names from genai.owasp.org/initiatives/agentic-security-initiative/)
+**Cc:** none on first contact
+**Send window:** Tuesday 10–11am US Pacific
+**Format:** plain text, no HTML signature
 
 ---
 
-Hi [co-lead names],
+**Subject:** Volunteering as Q3 Landscape reviewer for Test & Evaluate column — and one ATR submission question
 
-I'm Yale Pan, maintainer of **ATR (Agent Threat Rules)** — an MIT-licensed open detection-rule corpus for AI agent threats (the Sigma / YARA equivalent for agents). Writing because ATR was merged into Agentic-AI-Top10 via [PR #14](https://github.com/precize/Agentic-AI-Top10-Vulnerability/pull/14) earlier this year, and I'd like to (a) keep contributing upstream and (b) raise ATR for consideration in the Q3 2026 *AI Security Solutions Landscape for Agentic AI* under Test & Evaluate.
+---
 
-**Why ATR is relevant to the Initiative's work:**
+Hi [first names],
 
-- **10/10 Agentic Top 10 categories covered** — full mapping in [docs/OWASP-MAPPING.md](https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/OWASP-MAPPING.md). Every category has at least one rule with reproducer test cases.
-- **Production adoption** — Cisco AI Defense ships 34 ATR rules in their official skill-scanner ([PR #79](https://github.com/cisco-ai-defense/skill-scanner/pull/79)); Microsoft Agent Governance Toolkit imports ATR rules into PolicyEvaluator ([PR #908](https://github.com/microsoft/agent-governance-toolkit/pull/908)).
-- **Empirical evidence** — 96,096 real-world agent skills scanned across OpenClaw / Skills.sh / Hermes / ClawHub, **751 confirmed malware** (3 coordinated threat actors mass-publishing poisoned Solana / Workspace / image-gen skills, including a base64 reverse shell to C2 IP `91.92.242.30`). Full report: [openclaw-malware-campaign-2026-04.md](https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/research/openclaw-malware-campaign-2026-04.md).
-- **External benchmarks** — 97.1% recall on NVIDIA Garak (666 in-the-wild jailbreaks), 100% recall on the SKILL.md benchmark (498 labeled samples), 99.6% precision on Invariant Labs PINT.
-- **Peer-reviewed paper** — Pan, Y. (2026). [doi:10.5281/zenodo.19178002](https://doi.org/10.5281/zenodo.19178002).
+I maintain ATR (Agent Threat Rules) — you've already merged ATR's mapping into Agentic-AI-Top10 via [PR #14](https://github.com/precize/Agentic-AI-Top10-Vulnerability/pull/14), so this isn't a cold intro. Two things:
 
-**What I'm asking:**
+**1. Volunteering for Q3 Landscape review.** Test & Evaluate is the column I can usefully review — I run external benchmarks on detection-rule corpora (NVIDIA Garak, Invariant Labs PINT, SKILL.md), and we've scanned 96K real-world agent skills with 751 confirmed malware actors. If a Q3 entry claims "detects prompt injection" or "covers Agentic Top 10," I can sanity-check that against ground truth without needing the vendor's product. Happy to take 5–10 entries off your plate.
 
-1. **Q3 Landscape consideration** — happy to send a one-page submission package or fill any form you use. Submission notes: [docs/outreach/owasp-landscape-submission.md](https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/outreach/owasp-landscape-submission.md).
-2. **Process pointer** — I couldn't find a public submission repo under [genai-security-project](https://github.com/genai-security-project) (10 repos, none for the Landscape). What's the canonical path? I want to follow it correctly.
-3. **Volunteer time, irrespective of (1)** — I can review Q3 Landscape entries in the Test & Evaluate column for technical accuracy, contribute additional Agentic Top 10 attack examples, or present 15 min on the 96K wild scan at the next community call. Whichever helps the Initiative most.
+**2. One process question.** ATR itself fits Test & Evaluate (rule corpus + benchmarks) and I'd like to submit it for Q3. I couldn't find a public submission repo under [genai-security-project](https://github.com/genai-security-project) — what's the canonical path? If there isn't one yet, happy to draft a template that future submitters can use.
 
-ATR is community-driven and stays MIT — no commercial conflict, no integration sales. If the Initiative would rather I just keep submitting upstream rule contributions and skip the landscape question, that's fine too. I want to be useful, not transactional.
+For context on ATR (skip if you saw PR #14): MIT-licensed, 320 rules, 10/10 Agentic Top 10 mapping ([docs/OWASP-MAPPING.md](https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/OWASP-MAPPING.md)), ships in production at Cisco AI Defense ([PR #79](https://github.com/cisco-ai-defense/skill-scanner/pull/79)) and Microsoft Agent Governance Toolkit ([PR #908](https://github.com/microsoft/agent-governance-toolkit/pull/908)). Paper: [doi:10.5281/zenodo.19178002](https://doi.org/10.5281/zenodo.19178002).
 
-Thanks for the work the Initiative has done — the Agentic Top 10 has been the most-cited reference in our paper and the most-requested mapping target from rule contributors.
+Either of (1) or (2) is fine on its own. (1) is the higher-leverage one for the Initiative.
 
 Best,
 Yale Pan
-Maintainer, Agent Threat Rules
-https://github.com/Agent-Threat-Rule/agent-threat-rules
+github.com/Agent-Threat-Rule/agent-threat-rules
 [contact]
 
 ---
 
+## Why this version works
+
+- **Frame:** "I'm here to help" before "I want something." Volunteers respond to peers, not applicants.
+- **Single ask each:** review 5–10 entries (specific, scoped) + one process question (low cost).
+- **PR #14 reference up front** establishes you're not a cold pitch.
+- **No "congrats on Q2" filler.** Specific facts only.
+- **(1) before (2)** is deliberate — it makes (2) feel like a postscript.
+- **"Happy to draft a template"** turns a request into another offer.
+
 ## Pre-send checklist
 
-- [ ] Verify `contribute.genai@owasp.org` is a real address; otherwise remove
-- [ ] Look up Initiative co-lead names from genai.owasp.org/initiatives/agentic-security-initiative/ and address by name
-- [ ] Confirm PR #14 is merged (it is) and the link resolves
-- [ ] Check that the openclaw report file path is correct after any repo renames
-- [ ] Send Tue/Wed 9–11am their local timezone (likely US Pacific or Central Europe)
-- [ ] Plain text, no HTML signature bloat
+- [ ] Look up actual co-lead names — do not send "Hi team"
+- [ ] Confirm PR #14 link still resolves
+- [ ] Send Tuesday 10–11am US Pacific
+- [ ] Plain text, no signature image, no calendly link in v1
+- [ ] If no reply in 10 days, follow up with one new fact (not a re-ask): "Microsoft AGT just merged 38 more ATR rules — wanted to keep you in the loop."
+
+## Reply playbook
+
+| Reply | Response |
+|---|---|
+| "Yes, here are 5 entries to review" | Deliver fast (48h), excellent quality. This is the relationship. |
+| "We don't need reviewers but submit ATR via X" | Follow X path. Mention you'd still like to volunteer next quarter. |
+| "What's the submission template look like?" | Send the template same-day. Don't make them ask twice. |
+| Silence (10d) | Single follow-up with new fact, not a re-ask. |
+| "Not a fit" | Thank, ask if any other Initiative working group needs the help. |
