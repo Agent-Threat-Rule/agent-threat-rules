@@ -65,16 +65,16 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: (?i)\b(?:on\s+every|for\s+each|after\s+every|whenever\s+(?:the\s+)?(?:user|question|asked)|when\s+asked\s+any|every\s+time\s+(?:you|the\s+(?:agent|assistant|model)))\b[\s\S]{0,150}\b(?:without\s+(?:telling|notifying|informing|alerting|asking)\s+(?:the\s+)?user|do\s+not\s+(?:tell|mention|notify|alert|disclose)\s+(?:the\s+)?user|don[’']t\s+(?:tell|mention|notify|alert|disclose)\s+(?:the\s+)?user)
-      description: Persistence trigger + explicit do-not-tell-user stealth within 150 chars
+      value: (?i)\b(?:on\s+every|for\s+each|after\s+every|whenever\s+(?:the\s+)?(?:user|question|asked|anyone)|when\s+asked\s+any|every\s+time\s+(?:you|the\s+(?:agent|assistant|model)))\b[\s\S]{0,200}\b(?:without\s+(?:telling|notifying|informing|alerting|asking)\s+(?:the\s+)?(?:user|them)|do\s+not\s+(?:tell|mention|notify|alert|disclose)\s+(?:the\s+)?(?:user|them)|don[’']t\s+(?:tell|mention|notify|alert|disclose)\s+(?:the\s+)?(?:user|them))
+      description: Persistence trigger + explicit do-not-tell-user/them stealth within 200 chars
     - field: content
       operator: regex
-      value: (?i)\b(?:on\s+every|for\s+each|after\s+every|whenever\s+(?:the\s+)?(?:user|question|asked)|when\s+asked\s+any|every\s+time\s+(?:you|the\s+(?:agent|assistant|model)))\b[\s\S]{0,150}\b(?:also|additionally)\s+(?:send|transmit|forward|upload|post|relay|exfiltrat\w*|leak)\b[\s\S]{0,100}\bto\s+(?:https?:\/\/|@\w+\.\w+|\w+@)
+      value: (?i)\b(?:on\s+every|for\s+each|after\s+every|whenever\s+(?:the\s+)?(?:user|question|asked|anyone)|when\s+asked\s+any|every\s+time\s+(?:you|the\s+(?:agent|assistant|model)))\b[\s\S]{0,200}\b(?:also|additionally)\s+(?:send|transmit|forward|upload|post|relay|exfiltrat\w*|leak)\b[\s\S]{0,100}\bto\s+(?:https?:\/\/|@\w+\.\w+|\w+@)
       description: Persistence trigger + covert side-effect verb + external URL destination
     - field: content
       operator: regex
-      value: (?i)\b(?:silently|covertly|secretly)\s+(?:send|transmit|forward|upload|post|relay|exfiltrat\w*|leak|include|append)\b[\s\S]{0,100}\b(?:to\s+https?:\/\/|conversation|chat|dialog|prompt|message|user[\s_-]?input|history|transcript|api[\s_-]?key|credential|secret|token|password|env(?:ironment)?[\s_-]?(?:variable|var))
-      description: Stealth adverb + side-effect verb + sensitive sink or external URL
+      value: (?i)\b(?:silently|covertly|secretly|without\s+(?:telling|notifying|informing|alerting)\s+(?:the\s+)?(?:user|them))(?:\s*,)?\s+(?:send|transmit|forward|upload|post|relay|exfiltrat\w*|leak|include|append)\b[\s\S]{0,120}\b(?:to\s+https?:\/\/|conversation|chat|dialog|prompt|message|user[\s_-]?input|history|transcript|api[\s_-]?key|credential|secret|token|password|env(?:ironment)?[\s_-]?(?:variable|var)|webhook|auditing|endpoint)
+      description: Stealth qualifier (with comma tolerance) + side-effect verb + sensitive sink or external destination
   condition: any
   false_positives:
     - Security research describing this attack pattern

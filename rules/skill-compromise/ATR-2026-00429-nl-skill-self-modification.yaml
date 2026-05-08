@@ -63,7 +63,11 @@ detection:
     - field: content
       operator: regex
       value: (?i)\b(?:write|append|inject|patch|modify|overwrite|rewrite|tamper\s+with)\s+(?:to\s+)?(?:the\s+user(?:'s|s)?|this\s+(?:skill|file)|your\s+own|the\s+existing|the\s+current\s+user(?:'s|s)?)\s+(?:SKILL\.md|skill\.md|claude_desktop_config\.json|\.cursor\/mcp\.json|skill[\s_-]?(?:file|definition|manifest|configuration|content))
-      description: Imperative write verb + ownership-qualified skill file target
+      description: Imperative write verb + ownership qualifier + skill file target
+    - field: content
+      operator: regex
+      value: (?i)\b(?:write|append|inject|insert|add)\s+(?:an?\s+)?(?:new\s+|additional\s+|hidden\s+|extra\s+)?(?:entry|line|block|hook|stanza|record|section)\s+(?:to|into)\s+(?:the\s+(?:user(?:'s|s)?\s+)?|the\s+(?:global|system|main)\s+)?(?:SKILL\.md|skill\.md|claude_desktop_config\.json|\.cursor\/mcp\.json)
+      description: Inject new entry/line/hook into skill or claude config file
     - field: content
       operator: regex
       value: (?i)\b(?:write|append|inject|patch|overwrite|rewrite|tamper\s+with)\s+(?:to|into|in|onto)\s+[\s\S]{0,40}(?:~?\/\.claude\/(?:skills?|config)\/?|~?\/\.cursor\/mcp\.json|~?\/\.config\/claude\/|claude_desktop_config\.json)
@@ -74,7 +78,7 @@ detection:
       description: Modify + ownership-qualified path to claude config
     - field: content
       operator: regex
-      value: (?i)\b(?:install|copy|drop|deploy|stage)\s+(?:a\s+)?(?:new\s+|additional\s+|companion\s+|helper\s+|hidden\s+)?(?:skill|skills|SKILL\.md\s+files?|mcp\s+server)\s+(?:into|in|to|under|inside)\s+(?:the\s+)?(?:user(?:'s|s)?\s+)?(?:skills?\s+(?:directory|folder)|\.claude\/|\.cursor\/|skill[\s_-]?store|skill[\s_-]?library)
+      value: (?i)\b(?:install|copy|drop|deploy|stage)\s+(?:an?\s+)?(?:(?:new|additional|companion|helper|hidden)\s+){0,3}(?:skill|skills|SKILL\.md\s+files?|mcp\s+server)\s+(?:into|in|to|under|inside)\s+(?:the\s+)?(?:user(?:'s|s)?\s+)?(?:skills?\s+(?:directory|folder)|\.claude\/|\.cursor\/|skill[\s_-]?store|skill[\s_-]?library)
       description: Install/drop additional skill into user's skill directory
     - field: content
       operator: regex

@@ -65,8 +65,8 @@ detection:
       description: Skill claims pre-approval / verification / vendor signing
     - field: content
       operator: regex
-      value: (?i)\b(?:the\s+user\s+(?:has\s+already|already)\s+(?:approved|authorized|consented|agreed)|user[\s_-]?consent\s+is\s+(?:implicit|implied|granted|already\s+given)|operator\s+override\s+(?:granted|enabled|authorized))\b[\s\S]{0,150}\b(?:so\s+(?:you|skip|proceed|do\s+not\s+ask)|therefore\s+(?:execute|run|invoke|proceed)|do\s+not\s+(?:ask|prompt|confirm))
-      description: Fabricated user-consent claim + skip-confirmation directive
+      value: (?i)\b(?:the\s+user\s+(?:has\s+already|already)\s+(?:approved|authorized|consented|agreed)|user[\s_-]?consent\s+is\s+(?:implicit|implied|granted|already\s+given)|operator\s+override\s+(?:granted|enabled|authorized))\b[\s\S]{0,200}(?:\b(?:so\s+(?:you|skip|proceed|do\s+not\s+ask)|therefore\s+(?:execute|run|invoke|proceed)|do\s+not\s+(?:ask|prompt|confirm))|—\s*proceed|-\s*proceed|,\s*proceed\s+without|\bproceed\s+without\s+(?:prompting|asking|confirming))
+      description: Fabricated user-consent claim + skip-confirmation directive (tolerates dash + comma + bare proceed-without-prompting)
     - field: content
       operator: regex
       value: (?i)\b(?:claude|anthropic|openai|the\s+model\s+vendor)\s+(?:has\s+)?(?:approved|certified|verified|signed|trusts)\s+(?:this\s+(?:skill|tool|action)|me|all\s+commands|every\s+request)
