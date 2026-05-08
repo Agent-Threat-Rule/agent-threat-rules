@@ -1,77 +1,87 @@
-# Jim Reavis Outreach (v2) — Public Comment Primary, DM Fallback
+# Jim Reavis Outreach (v3) — Public Comment as Deal Proposal
 
-**Strategy change vs. v1:** lead with a **public LinkedIn comment** on Jim Reavis's CSAI announcement post, not a DM. Public comment surfaces ATR to the entire CSAI team watching the announcement, costs Jim nothing to engage, and creates a referenceable artifact for the eventual DM (if needed).
+**Strategy change vs. v2:** v2 framed ATR as "happy to brief CSAI" (supplicant offering time). v3 frames the public comment as **a deal proposal between peers**: CSAI gets the upstream pipeline it needs as a new CNA; ATR gets the disclosure venue it needs. Both sides bring real assets.
 
-**Source post:** https://lnkd.in/e-g_wq7R (CSAI Foundation announcement, 2026-05-02±)
+**Source post:** https://lnkd.in/e-g_wq7R (CSAI Foundation announcement, ~2026-05-02)
 **Jim's LinkedIn:** https://www.linkedin.com/in/jimreavis/
 
 ---
 
 ## Step 1: Public Comment (primary)
 
-Post directly under Jim's announcement post. Plain text, no emoji.
+> Jim, congrats on the CNA — agent / MCP CVE coordination is the missing layer in the agentic stack right now.
+>
+> Direct ask: ATR (the open detection-rule corpus that Cisco AI Defense and Microsoft Agent Governance Toolkit both ship in production) has been sitting on **751 active malware actors** from a 96K-skill wild scan, and we keep discovering more — 3 coordinated threat groups on OpenClaw alone, all currently un-CVE'd. We've been routing MCP disclosures (CVE-2026-24307, -28363, -0628) through MITRE root because there was no agent-native CNA. **Now there is.**
+>
+> Want to set up CSAI as the primary CNA for agent / MCP disclosures going forward? Detection signal flows the right way: ATR rules → Cisco / Microsoft / IBM mcp-context-forge → CSAI CVEs → back into ATR rules. Closed loop, MIT licensed, no commercial conflict.
+>
+> github.com/Agent-Threat-Rule/agent-threat-rules
 
-> Big deal that CSAI is now a CNA — agent and MCP CVE coordination is genuinely missing. We've been routing MCP disclosures (CVE-2026-24307, -28363, -0628 so far) through MITRE root, with 751 active malware actors still un-CVE'd from a 96K-skill wild scan we ran across OpenClaw, Skills.sh, Hermes, and ClawHub. Happy to brief CSAI's CNA team on the disclosure pipeline — ATR rules are MIT, already shipping in Cisco AI Defense and Microsoft Agent Governance Toolkit. github.com/Agent-Threat-Rule/agent-threat-rules
+**Char count:** ~880. Frame: deal between peers. Hook: 751 un-CVE'd actors. Ask: structural — make CSAI the CNA, not "please brief us."
 
-**Char count:** ~580. Single ask = "brief CSAI's CNA team." Single offer = the disclosure pipeline + dataset.
+### Why this works as a deal, not a request
 
-### Why this works
+- **First sentence amplifies his announcement** — but tells him *why* the CNA matters (missing layer), which is more valuable than congratulating him
+- **The actual hook is the asset** — 751 active actors, 3 coordinated groups, ongoing pipeline. CEOs forward facts, not "happy to brief"
+- **"Now there is."** — three-word punctuation that makes the deal obvious without saying it
+- **The pipeline diagram in one sentence** — Jim sees the closed loop in 4 nouns: ATR rules → vendors → CSAI CVEs → ATR rules. He doesn't have to imagine it.
+- **"MIT licensed, no commercial conflict"** — preempts the question every CEO asks about a partner's incentives
+- **No 30-min ask, no Calendly link, no deck attached** — public comments that ask for calendar time die in the comment section. Asking for a *structural arrangement* invites delegation to the right person.
 
-- **Opens by amplifying his announcement** (CNA is genuinely missing) — gives Jim social value to engage rather than a calendar load
-- **One specific unpublished fact** ("751 un-CVE'd actors") — the kind of line a CEO forwards internally before reading the full thread
-- **Ask is scoped to the team he just announced** (CNA), not to him personally — easier yes, easier delegation
-- **Public** means CSAI staff watching the announcement see ATR before Jim has to forward anything; auto-triggers internal awareness
-- **Production-deployment proof** (Cisco + Microsoft) does the credibility work in 8 words
+### Why public, not DM
+
+- CSAI staff watching the announcement see ATR before Jim has to forward anything → automatic internal awareness
+- Jim's reply (or lack thereof) is public → builds credibility either way
+- Friends-of-CSA in the comment thread can amplify or vouch
+- DM gets buried in inbox; public comment shows up on Jim's LinkedIn activity for everyone in his network
 
 ### Pre-post checklist
 
-- [ ] Verify the LinkedIn post is still pinned / recent (within 7 days). If older than 7 days, comment is half-buried — use DM instead.
-- [ ] Confirm CVE numbers are real and assigned (don't fabricate)
-- [ ] Confirm "751" matches latest scan numbers
-- [ ] Post Tue–Thu 9–11am US Pacific (CSA staff are typically US-based)
-- [ ] No emoji, no "Excited to share", no "Reach out anytime"
-- [ ] Single shortlink at the end — repo only, not Calendly
+- [ ] Verify Jim's announcement post is still pinned / recent (<7 days). If older than 7 days, the comment is half-buried — post it anyway but lower expectations and use DM (Step 2) sooner.
+- [ ] Confirm CVE numbers are real, assigned, and yours to disclose
+- [ ] Confirm "751" matches latest scan
+- [ ] Tue–Thu 9–11am US Pacific (CSA staff are typically US-based)
+- [ ] No emoji, no "Excited", no "Reach out anytime"
+- [ ] Post from your professional LinkedIn — make sure your headline reads as someone CSA staff would take seriously
+- [ ] Repo link only, no Calendly, no deck
 
 ---
 
-## Step 2: DM (only if Step 1 doesn't trigger response in 7 days)
+## Step 2: DM (only if Step 1 doesn't trigger response in 5–7 days)
 
-If the public comment is read but generates no CSAI-side outreach within 7 days, send the DM below. The DM **references the public comment** — this is the key move; it shows you're not spraying.
+The DM **references the public comment** explicitly. This is the move that differentiates us from the 50 other vendor DMs Jim gets that week — none of them have a public artifact to point to.
 
-### DM Variant — RECOMMENDED
-
-> Hi Jim — followed up on your CSAI post a few days back with a comment about the agent/MCP CVE pipeline. In case it got buried: ATR is the open detection corpus Cisco AI Defense and Microsoft AGT both ship in production, and we've sat on 751 un-CVE'd malware actors from a 96K-skill wild scan that look like a natural fit for the new CNA. Worth a 20-min intro to whoever leads CSAI's CNA work?
+> Hi Jim — left a comment on your CSAI announcement about the agent/MCP CVE pipeline (paste comment URL). 751 active malware actors from our 96K-skill scan are sitting un-CVE'd because there was no agent-native CNA. With CSAI now standing one up, the pipeline becomes obvious — ATR rules → Cisco AI Defense / Microsoft AGT / IBM mcp-context-forge → CSAI CVEs → back into ATR. Closed loop. MIT, no commercial conflict.
 >
-> 1-pager: github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/outreach/csai-partnership.md
+> If this is interesting to whoever's leading the CNA work at CSAI, an intro would let us hand over the pipeline directly.
 
-**Char count:** ~620. Hook = "you saw the comment, here's the action." Single ask = "intro to CNA lead."
+**Char count:** ~700. Single ask: intro to the CNA lead.
 
-### Why the DM references the public comment
+### Why the DM works as escalation
 
-- Signals you respect his time (you tried public first, didn't barge into DMs)
-- Creates a reference URL CSAI staff can click
-- Differentiates from the 50 vendor DMs he gets that week — none of them have a public comment to point to
-- Lets Jim forward the DM to the CNA lead with one click ("see this comment + DM, please reply")
+- The public-comment reference signals "I respected your time first"
+- Repeats the hook (751, closed loop) so the DM stands alone
+- Asks for one specific intro, not Jim's calendar
+- "Hand over the pipeline" — you're not asking for a meeting; you're offering to transfer an asset
 
 ---
 
-## Step 3 (fallback): if neither works
+## Step 3 (only if Steps 1 and 2 both silent after 14 days)
 
-If both Step 1 and Step 2 produce silence after 14 days total:
-
-1. **Find a second-degree LinkedIn connection** — most likely route via Cisco / Microsoft contacts who already deploy ATR
-2. **Email CSA contact form** with subject: `CNA collaboration — open detection corpus + 751 un-CVE'd MCP malware actors`
-3. **DO NOT** post a third LinkedIn message. Three is spam.
+1. **Second-degree LinkedIn intro** via Cisco AI Defense or Microsoft AGT contacts who already deploy ATR
+2. **Email CSA contact form** with subject: `CNA pipeline handover — 751 un-CVE'd agent/MCP malware actors, ATR detection corpus`
+3. **STOP** after this. Three messages in 21 days is the upper limit.
 
 ---
 
 ## What NOT to do
 
-- Don't pitch AARM in the first contact — that's Step 4 work, after CNA contact lands
-- Don't lead with "Cisco and Microsoft already ship our rules" as a brag — it works only when framed as "production-grade source" for CSAI's pipeline
-- Don't ask Jim for a 30-min call — CEO calendar is the worst possible ask
-- Don't send a Calendly link in v1 — feels presumptuous before relationship exists
-- Don't attach the csai-partnership.md until they reply — it's a 200-line doc and will not be read cold
+- **Don't pitch AARM in the first contact.** AARM is the second conversation. CNA is the entry — it's what Jim just announced and what's freshest.
+- **Don't pitch ATR landscape inclusion or features.** Lead with the deal.
+- **Don't ask Jim for calendar time directly.** CEO calendar is the worst possible ask. Ask for a delegation, an intro, or a yes/no.
+- **Don't attach `csai-partnership.md`.** That doc is for the CSAI technical lead after they reply, not for Jim.
+- **Don't soften with "no pressure" or "if interested."** Those phrases tell readers the offer isn't strong.
+- **Don't use "we'd love to" / "excited to" / "happy to."** Jim has read 10,000 of these.
 
 ---
 
@@ -79,9 +89,10 @@ If both Step 1 and Step 2 produce silence after 14 days total:
 
 | Reply pattern | Response |
 |---|---|
-| Jim comments back publicly | Reply concisely, offer to email CNA team directly with no further intro needed |
-| CSAI team member DMs you | Move to email immediately; share csai-partnership.md and propose 3 calendar slots |
-| Jim DMs "send to X" | Email X same-day, cc Jim once, then drop Jim from the thread |
-| 7-day silence on public comment | Move to Step 2 (DM with reference) |
-| 14-day total silence | Move to Step 3 (second-degree intro / contact form) |
-| "Not a fit" | Thank, ask if any CSA working group has overlap, never re-pitch |
+| Jim replies publicly with an @mention | Tag the right CSA contact in your reply; offer to email them directly with the pipeline doc |
+| Jim DMs "send to X" | Email X same-day, cc Jim once, drop Jim from the thread after that |
+| CSAI staff member comments / DMs | Move to email immediately; share `csai-partnership.md`; propose 3 calendar slots |
+| Public comment likes but no reply | Wait 5 days; if still no reply, send DM (Step 2) |
+| Silent on both (14 days total) | Move to Step 3 |
+| "Not a fit" | Thank, ask if there's overlap with any CSA working group, never re-pitch |
+| Hostile / dismissive (rare) | Thank, drop the thread, do not engage further |
