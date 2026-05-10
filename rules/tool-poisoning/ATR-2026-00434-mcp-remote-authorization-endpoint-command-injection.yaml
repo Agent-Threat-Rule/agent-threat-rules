@@ -80,8 +80,8 @@ detection:
   conditions:
     - field: tool_response
       operator: regex
-      value: '(?i)"authorization_endpoint"\s*:\s*"https?://[^"]*[`;|&$<>][^"]*"'
-      description: "OAuth authorization_endpoint URL contains shell metacharacters — direct CVE-2025-6514 signature"
+      value: '(?i)"authorization_endpoint"\s*:\s*"https?://[^"]*(?:`|\$\(|\$IFS|\$\{IFS|&&|\|\||\|\s*[a-z]|>\(|;\s*[a-z]\w*\s*[;&|]|>\s*/[a-z])'
+      description: "OAuth authorization_endpoint URL contains unambiguous shell metacharacters (backtick, $(, &&, ||, |cmd, command-chain, file-redirect) — direct CVE-2025-6514 signature"
 
     - field: tool_response
       operator: regex
@@ -95,8 +95,8 @@ detection:
 
     - field: tool_response
       operator: regex
-      value: '(?i)"(?:authorization_endpoint|registration_endpoint|token_endpoint|jwks_uri|userinfo_endpoint|end_session_endpoint)"\s*:\s*"[^"]*(?:\$\(|`|;\s*\w+|\|\s*\w+|&&|>\s*/|>\(|\$IFS|\$\{IFS)'
-      description: "Any OAuth/OIDC metadata field URL contains shell metacharacters — generalised auth-metadata injection"
+      value: '(?i)"(?:authorization_endpoint|registration_endpoint|token_endpoint|jwks_uri|userinfo_endpoint|end_session_endpoint)"\s*:\s*"[^"]*(?:\$\(|`|;\s*[a-z]\w*\s*[;&|]|&&|\|\||>\s*/[a-z]|>\(|\$IFS|\$\{IFS)'
+      description: "Any OAuth/OIDC metadata field URL contains unambiguous shell metacharacters — generalised auth-metadata injection"
 
     - field: tool_response
       operator: regex

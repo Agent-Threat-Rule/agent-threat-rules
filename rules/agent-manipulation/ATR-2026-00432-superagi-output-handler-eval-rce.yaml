@@ -62,7 +62,7 @@ compliance:
 tags:
   category: agent-manipulation
   subcategory: llm-output-eval-rce
-  scan_target: tool_response
+  scan_target: both
   confidence: high
 
 agent_source:
@@ -80,24 +80,24 @@ detection:
     - "Static analysis output reporting eval() usage in code review tooling."
     - "Documentation of CVE-2024-21552 written for defensive purposes."
   conditions:
-    - field: tool_response
+    - field: content
       operator: regex
       value: '(?i)(?:^|[^a-zA-Z_])eval\s*\(\s*["\x27]?\s*(?:__import__|os\.system|os\.popen|subprocess\.|os\.exec|exec\s*\()'
       description: "eval() invoking Python OS-execution primitives — direct LLM-output-to-eval RCE signature"
 
-    - field: tool_response
+    - field: content
       operator: regex
-      value: '(?i)(?:^|[^a-zA-Z_])exec\s*\(\s*["\x27]?\s*(?:__import__\s*\(\s*["\x27](?:os|subprocess|socket)|import\s+(?:os|subprocess|socket))'
+      value: '(?i)(?:^|[^a-zA-Z_])exec\s*\(\s*["\x27]?[^)]{0,200}(?:__import__\s*\(\s*\\?["\x27]?(?:os|subprocess|socket)|import\s+(?:os|subprocess|socket)|os\.system|subprocess\.\w)'
       description: "exec() with import of process or socket modules — code-injection payload pattern"
 
-    - field: tool_response
+    - field: content
       operator: regex
       value: '(?i)__import__\s*\(\s*["\x27](?:os|subprocess|socket|pty|ctypes|builtins)["\x27]\s*\)\.(?:system|popen|run|call|check_output|fork|fdopen)'
       description: "__import__ of dangerous module followed by execution method — eval-friendly RCE chain"
 
-    - field: tool_response
+    - field: content
       operator: regex
-      value: '(?i)compile\s*\(\s*["\x27][^"\x27]{2,500}(?:os\.system|subprocess|__import__)[^"\x27]{0,200}["\x27]\s*,\s*["\x27]<[^>]*>["\x27]\s*,\s*["\x27]exec["\x27]\s*\)'
+      value: '(?i)compile\s*\([\s\S]{2,500}?(?:os\.system|subprocess|__import__)[\s\S]{0,500}?["\x27]exec["\x27]\s*\)'
       description: "compile() producing exec-mode bytecode containing OS-execution — eval-compile RCE chain"
 
     - field: content

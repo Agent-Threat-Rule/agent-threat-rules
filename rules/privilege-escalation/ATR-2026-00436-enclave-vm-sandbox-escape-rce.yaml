@@ -64,11 +64,11 @@ compliance:
 tags:
   category: privilege-escalation
   subcategory: js-sandbox-escape
-  scan_target: tool_response
+  scan_target: both
   confidence: high
 
 agent_source:
-  type: tool_call
+  type: llm_io
   framework:
     - enclave-vm
     - any
@@ -82,32 +82,32 @@ detection:
     - "Static analysis output reporting these patterns in dependencies."
     - "Security research write-ups discussing CVE-2026-27597 with quoted bypass code."
   conditions:
-    - field: tool_response
+    - field: content
       operator: regex
       value: '(?i)(?:[\w\)\.])\.constructor\.constructor\s*\(\s*["\x27`][^"\x27`]{0,200}(?:return\s+(?:process|require|globalThis|global)|process\.|require\s*\()'
       description: "Function-constructor chain reaching process / require / globalThis — canonical JS sandbox escape"
 
-    - field: tool_response
+    - field: content
       operator: regex
       value: '(?i)(?:^|[^a-zA-Z_$])globalThis\s*\.\s*(?:process|Buffer|require)\b'
       description: "Direct globalThis.process / globalThis.require access — host-realm leakage"
 
-    - field: tool_response
+    - field: content
       operator: regex
       value: '(?i)Error\.prepareStackTrace\s*=\s*(?:function|\([^)]*\)\s*=>)[\s\S]{0,300}(?:process|require|globalThis|child_process|__proto__)'
       description: "Error.prepareStackTrace abuse pulling host-realm objects through stack frames — Node sandbox escape"
 
-    - field: tool_response
+    - field: content
       operator: regex
       value: '(?i)\(\s*(?:async\s+)?function\s*\*?\s*\([^)]*\)\s*\{[\s\S]{0,200}\}\s*\)\s*\.\s*constructor\s*\(\s*["\x27`][\s\S]{0,200}(?:return\s+process|require\s*\(|child_process)'
       description: "Anonymous function .constructor invocation returning process / require — sandbox-escape primitive"
 
-    - field: tool_response
+    - field: content
       operator: regex
       value: '(?i)(?:[^\w]|^)__proto__\s*\.\s*(?:constructor|polluted|toString)\s*=\s*(?:function|\(.*?\)\s*=>|process|require)'
       description: "Prototype pollution writing constructor / toString / polluted on Object.prototype — escape primitive"
 
-    - field: tool_response
+    - field: content
       operator: regex
       value: '(?i)Object\.getPrototypeOf\s*\(\s*[^)]+\)\s*\.\s*constructor\s*\(\s*["\x27`][\s\S]{0,200}(?:return\s+process|require)'
       description: "Object.getPrototypeOf().constructor() walk reaching process / require — escape primitive"

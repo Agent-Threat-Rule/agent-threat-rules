@@ -61,11 +61,11 @@ compliance:
 tags:
   category: model-abuse
   subcategory: pickle-deserialization-rce
-  scan_target: model_artifact
+  scan_target: both
   confidence: high
 
 agent_source:
-  type: skill_chain
+  type: llm_io
   framework:
     - modelcache
     - any
@@ -79,27 +79,27 @@ detection:
     - "Static analysis output reporting pickle.load usage in code review."
     - "Educational examples demonstrating pickle exploit theory in academic contexts."
   conditions:
-    - field: tool_response
+    - field: content
       operator: regex
       value: '(?i)torch\.load\s*\(\s*[^,)]*(?:request\.|flask\.request|user_input|untrusted|attacker|payload|upload|f\.read\(\)|response\.content)[^)]{0,200}\)'
       description: "torch.load called on attacker-derived input — direct CVE-2025-45146 sink"
 
-    - field: tool_response
+    - field: content
       operator: regex
-      value: '(?i)torch\.load\s*\([^)]*\)(?![^)]*weights_only\s*=\s*True)'
-      description: "torch.load without weights_only=True — exposed to pickle reduce code execution"
+      value: '(?i)torch\.load\s*\((?![^)]*weights_only\s*=\s*True)[^)]*(?:request\.|flask\.request|user_input|untrusted|attacker|payload|upload|response\.content|f\.read\(\)|self\.\w+\.read\(\))[^)]*\)'
+      description: "torch.load on attacker-derived input AND missing weights_only=True — exposed to pickle reduce code execution"
 
-    - field: tool_response
+    - field: content
       operator: regex
       value: '(?i)pickle\.(?:load|loads)\s*\(\s*(?:request\.|flask\.request|user_input|untrusted|attacker|payload|upload|response\.content|self\.\w+\.read\(\))'
       description: "pickle.load on untrusted input — generic deserialisation RCE precursor that includes the ModelCache class"
 
-    - field: tool_response
+    - field: content
       operator: regex
       value: '(?i)def\s+__reduce__\s*\(\s*self\s*\)\s*:[\s\S]{0,200}return\s*\(\s*(?:os\.system|os\.popen|subprocess\.\w+|exec|eval|__import__\s*\(\s*["\x27]os)'
       description: "Custom __reduce__ returning OS-execution callable — pickle bomb construction signature"
 
-    - field: tool_response
+    - field: content
       operator: regex
       value: '(?i)\\x80\\x04(?:\\x95|.).{0,40}c(?:posix|os|subprocess|__builtin__|builtins)\s*\n(?:system|popen|run|exec)'
       description: "Pickle opcode stream containing GLOBAL/REDUCE of os/subprocess — raw pickle-bomb signature"
