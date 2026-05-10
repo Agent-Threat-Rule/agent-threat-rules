@@ -1,0 +1,184 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/Agent-Threat-Rule/agent-threat-rules/main/spec/stix-extension/x-atr-rule-schema.json",
+  "title": "x-atr-rule",
+  "description": "STIX 2.1 custom SDO for an Agent Threat Rules detection rule.",
+  "type": "object",
+  "required": [
+    "type",
+    "id",
+    "spec_version",
+    "created",
+    "modified",
+    "atr_id",
+    "atr_category",
+    "name",
+    "severity",
+    "extensions"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "x-atr-rule",
+      "description": "Always 'x-atr-rule'."
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^x-atr-rule--[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "description": "STIX UUID-typed identifier. Recommended: deterministic UUID5 derived from atr_id under a stable namespace so the same rule ID always produces the same STIX id."
+    },
+    "spec_version": {
+      "type": "string",
+      "const": "2.1"
+    },
+    "created_by_ref": {
+      "type": "string",
+      "pattern": "^identity--[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "created": { "type": "string", "format": "date-time" },
+    "modified": { "type": "string", "format": "date-time" },
+    "revoked": { "type": "boolean" },
+    "labels": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "confidence": { "type": "integer", "minimum": 0, "maximum": 100 },
+    "lang": { "type": "string" },
+    "external_references": { "type": "array" },
+    "object_marking_refs": { "type": "array" },
+    "granular_markings": { "type": "array" },
+
+    "atr_id": {
+      "type": "string",
+      "pattern": "^ATR-[0-9]{4}-[0-9]{5}$",
+      "description": "Canonical ATR rule identifier (e.g. ATR-2026-00431)."
+    },
+    "atr_category": {
+      "type": "string",
+      "enum": [
+        "prompt-injection",
+        "tool-poisoning",
+        "context-exfiltration",
+        "agent-manipulation",
+        "privilege-escalation",
+        "excessive-autonomy",
+        "data-poisoning",
+        "model-abuse",
+        "skill-compromise"
+      ],
+      "description": "One of nine ATR attack-class categories."
+    },
+    "atr_subcategory": {
+      "type": "string",
+      "description": "Optional finer-grained subcategory (e.g. 'mcp-oauth-metadata-injection')."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable rule title."
+    },
+    "description": { "type": "string" },
+    "severity": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low", "informational"]
+    },
+    "maturity": {
+      "type": "string",
+      "enum": ["experimental", "test", "stable", "deprecated"]
+    },
+    "agent_source_type": {
+      "type": "string",
+      "enum": [
+        "llm_io",
+        "tool_call",
+        "mcp_exchange",
+        "agent_behavior",
+        "multi_agent_comm",
+        "context_window",
+        "memory_access",
+        "skill_lifecycle",
+        "skill_permission",
+        "skill_chain"
+      ]
+    },
+    "detection_patterns": {
+      "type": "array",
+      "description": "Regex patterns extracted from the ATR rule's detection.conditions.",
+      "items": {
+        "type": "object",
+        "required": ["field", "pattern"],
+        "properties": {
+          "field": { "type": "string" },
+          "pattern": { "type": "string" },
+          "operator": { "type": "string", "default": "regex" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "response_actions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "block_input",
+          "block_output",
+          "block_tool",
+          "quarantine_session",
+          "reset_context",
+          "alert",
+          "snapshot",
+          "escalate",
+          "reduce_permissions",
+          "kill_agent"
+        ]
+      }
+    },
+    "owasp_llm_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "owasp_agentic_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "mitre_atlas_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "mitre_attack_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "cve_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^CVE-[0-9]{4}-[0-9]+$"
+      }
+    },
+    "compliance_refs": {
+      "type": "object",
+      "description": "Mappings to compliance frameworks. Each value is an array of {control, context, strength}.",
+      "properties": {
+        "eu_ai_act": { "type": "array" },
+        "nist_ai_rmf": { "type": "array" },
+        "iso_42001": { "type": "array" }
+      },
+      "additionalProperties": false
+    },
+    "extensions": {
+      "type": "object",
+      "description": "STIX 2.1 extensions object, must contain the ATR extension-definition reference.",
+      "patternProperties": {
+        "^extension-definition--93370194-c964-570f-9802-9d1154e5525d$": {
+          "type": "object",
+          "required": ["extension_type"],
+          "properties": {
+            "extension_type": { "const": "new-sdo" }
+          }
+        }
+      },
+      "minProperties": 1
+    }
+  },
+  "additionalProperties": true
+}

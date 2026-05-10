@@ -1,0 +1,52 @@
+{
+  "type": "x-atr-rule",
+  "id": "x-atr-rule--7859f830-8dd6-55ee-a3c4-d942825b4294",
+  "spec_version": "2.1",
+  "created_by_ref": "identity--4ee77ba4-f956-5d27-aeb1-cbfeb4c8f8d5",
+  "created": "2026-05-11T00:00:00.000Z",
+  "modified": "2026-05-11T00:00:00.000Z",
+  "atr_id": "ATR-2026-00001",
+  "atr_category": "prompt-injection",
+  "atr_subcategory": "direct-prompt-injection",
+  "name": "Direct Prompt Injection via User Input",
+  "description": "Detects direct prompt injection attempts where a user embeds malicious instructions within their input to override the agent's intended behavior. Layered detection covers instruction override verbs with target nouns, persona switching, temporal behavioral overrides, fake system delimiters, restriction removal, encoding-wrapped payloads (base64, hex, unicode homoglyphs), and zero-width character obfuscation.",
+  "severity": "high",
+  "maturity": "stable",
+  "agent_source_type": "llm_io",
+  "detection_patterns": [
+    {
+      "field": "user_input",
+      "operator": "regex",
+      "pattern": "(?i)\\b(?:ignore|disregard|forget|override)\\s+(?:all|any|previous|prior)\\s+(?:instructions?|rules?|prompts?)",
+      "description": "Instruction override verbs targeting prior context"
+    }
+  ],
+  "response_actions": [
+    "alert",
+    "block_input"
+  ],
+  "owasp_llm_refs": [
+    "LLM01:2025 - Prompt Injection"
+  ],
+  "mitre_atlas_refs": [
+    "AML.T0051 - LLM Prompt Injection",
+    "AML.T0051.000 - Direct"
+  ],
+  "cve_refs": [
+    "CVE-2024-5184",
+    "CVE-2024-3402",
+    "CVE-2025-53773"
+  ],
+  "external_references": [
+    {
+      "source_name": "agent-threat-rules",
+      "external_id": "ATR-2026-00001",
+      "url": "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/rules/prompt-injection/ATR-2026-00001-direct-prompt-injection.yaml"
+    }
+  ],
+  "extensions": {
+    "extension-definition--93370194-c964-570f-9802-9d1154e5525d": {
+      "extension_type": "new-sdo"
+    }
+  }
+}
