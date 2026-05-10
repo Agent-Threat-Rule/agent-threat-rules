@@ -1,0 +1,183 @@
+title: "Enclave VM Sandbox Escape RCE (CVE-2026-27597)"
+id: ATR-2026-00436
+rule_version: 1
+status: experimental
+description: >
+  Detects exploitation of CVE-2026-27597 (CVSS 10.0), security-boundary
+  escape in Agentfront Enclave (`@enclave-vm/core`) prior to v2.11.1.
+  Enclave is a JavaScript sandbox marketed for safe AI-agent code execution;
+  the upstream advisory states only that escape is possible without naming
+  a single technique. This rule detects the canonical JavaScript-sandbox
+  escape primitives — Function constructor through .constructor.constructor,
+  prototype-chain pollution reaching the host realm, Error.prepareStackTrace
+  abuse, and require/process exfiltration — when they appear inside code
+  destined for `@enclave-vm/core` evaluation. CWE-94.
+author: "ATR Community"
+date: "2026/05/10"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM05:2025 - Improper Output Handling"
+    - "LLM02:2025 - Sensitive Information Disclosure"
+  owasp_agentic:
+    - "ASI05:2026 - Unexpected Code Execution"
+    - "ASI06:2026 - Sandbox Escape"
+  mitre_atlas:
+    - "AML.T0050 - Command and Scripting Interpreter"
+    - "AML.T0049 - Exploit Public-Facing Application"
+  mitre_attack:
+    - "T1611 - Escape to Host"
+    - "T1059.007 - JavaScript"
+    - "T1059 - Command and Scripting Interpreter"
+  cve:
+    - "CVE-2026-27597"
+
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "CVE-2026-27597 Enclave VM allows escaping the JavaScript sandbox boundary to reach the host realm and achieve remote code execution; Article 15 cybersecurity requirements mandate that AI agent code-execution sandboxes maintain isolation under adversarial input."
+      strength: primary
+    - article: "9"
+      context: "Article 9 risk management must enumerate sandbox-escape via constructor-chain / prototype-pollution / Error.prepareStackTrace as primary high-risk evasion vectors for any agent code-execution layer."
+      strength: primary
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "Adversarial inputs designed to escape JS sandbox boundaries (constructor chain, prototype pollution, Error.prepareStackTrace, host-realm leakage) must be tracked as a primary evasion class for any agent code-execution surface."
+      strength: primary
+    - subcategory: "MG.2.3"
+      context: "Risk treatment under MG.2.3 must prohibit user-controlled JavaScript reaching `@enclave-vm/core` versions prior to 2.11.1, and must require continuous evaluation of sandbox isolation under known-bypass corpora."
+      strength: primary
+  iso_42001:
+    - clause: "8.6"
+      context: "Operational controls under clause 8.6 must include detection of canonical JavaScript sandbox-escape primitives in code submitted to any agent VM/sandbox layer."
+      strength: primary
+
+tags:
+  category: privilege-escalation
+  subcategory: js-sandbox-escape
+  scan_target: tool_response
+  confidence: high
+
+agent_source:
+  type: tool_response
+  framework:
+    - enclave-vm
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "Defensive documentation describing sandbox-escape techniques for educational or research purposes."
+    - "Static analysis output reporting these patterns in dependencies."
+    - "Security research write-ups discussing CVE-2026-27597 with quoted bypass code."
+  conditions:
+    - field: tool_response
+      operator: regex
+      value: '(?i)(?:[\w\)\.])\.constructor\.constructor\s*\(\s*["\x27`][^"\x27`]{0,200}(?:return\s+(?:process|require|globalThis|global)|process\.|require\s*\()'
+      description: "Function-constructor chain reaching process / require / globalThis — canonical JS sandbox escape"
+
+    - field: tool_response
+      operator: regex
+      value: '(?i)(?:^|[^a-zA-Z_$])globalThis\s*\.\s*(?:process|Buffer|require)\b'
+      description: "Direct globalThis.process / globalThis.require access — host-realm leakage"
+
+    - field: tool_response
+      operator: regex
+      value: '(?i)Error\.prepareStackTrace\s*=\s*(?:function|\([^)]*\)\s*=>)[\s\S]{0,300}(?:process|require|globalThis|child_process|__proto__)'
+      description: "Error.prepareStackTrace abuse pulling host-realm objects through stack frames — Node sandbox escape"
+
+    - field: tool_response
+      operator: regex
+      value: '(?i)\(\s*(?:async\s+)?function\s*\*?\s*\([^)]*\)\s*\{[\s\S]{0,200}\}\s*\)\s*\.\s*constructor\s*\(\s*["\x27`][\s\S]{0,200}(?:return\s+process|require\s*\(|child_process)'
+      description: "Anonymous function .constructor invocation returning process / require — sandbox-escape primitive"
+
+    - field: tool_response
+      operator: regex
+      value: '(?i)(?:[^\w]|^)__proto__\s*\.\s*(?:constructor|polluted|toString)\s*=\s*(?:function|\(.*?\)\s*=>|process|require)'
+      description: "Prototype pollution writing constructor / toString / polluted on Object.prototype — escape primitive"
+
+    - field: tool_response
+      operator: regex
+      value: '(?i)Object\.getPrototypeOf\s*\(\s*[^)]+\)\s*\.\s*constructor\s*\(\s*["\x27`][\s\S]{0,200}(?:return\s+process|require)'
+      description: "Object.getPrototypeOf().constructor() walk reaching process / require — escape primitive"
+
+    - field: content
+      operator: regex
+      value: '(?i)(?:enclave-?vm|@enclave-vm/core)[^\n]{0,200}(?:escape|bypass|sandbox|rce|cve-?2026-?27597|prototype\s+pollut|constructor\s+chain)'
+      description: "Skill / payload references @enclave-vm/core escape — CVE-2026-27597 explicit framing"
+
+response:
+  actions:
+    - alert
+    - block_tool
+  message_template: >
+    [ATR-2026-00436] CRITICAL: JavaScript VM sandbox escape pattern detected
+    (CVE-2026-27597, CVSS 10.0). Code reaching `@enclave-vm/core` evaluation
+    contains a canonical sandbox-escape primitive: Function-constructor chain,
+    globalThis.process access, Error.prepareStackTrace abuse, prototype
+    pollution, or Object.getPrototypeOf().constructor() walk. Refuse to
+    evaluate; require Enclave >= 2.11.1 and continuous bypass-corpus eval.
+
+confidence: 86
+
+test_cases:
+  true_positives:
+    - input: '(function(){}).constructor.constructor("return process")()'
+      expected: triggered
+      description: "Direct CVE-2026-27597 PoC: anonymous-function constructor chain returning process"
+    - input: 'this.constructor.constructor("return require(\"child_process\").execSync(\"id\")")()'
+      expected: triggered
+      description: "this.constructor.constructor reaching require(child_process)"
+    - input: 'globalThis.process.mainModule.require("child_process").execSync("id")'
+      expected: triggered
+      description: "globalThis.process direct host-realm leak"
+    - input: 'Error.prepareStackTrace = function(_, frames) { return frames[0].getThis().process }; new Error().stack'
+      expected: triggered
+      description: "Error.prepareStackTrace returning frame this.process — escape primitive"
+    - input: '({}).__proto__.polluted = function() { return require("child_process") }'
+      expected: triggered
+      description: "Prototype pollution writing function returning require"
+    - input: 'Object.getPrototypeOf(async function(){}).constructor("return process.mainModule.require")'
+      expected: triggered
+      description: "Object.getPrototypeOf walk to async-function constructor returning process"
+    - input: 'The @enclave-vm/core sandbox can be escaped via constructor chain — see CVE-2026-27597.'
+      expected: triggered
+      description: "Skill description weaponising CVE-2026-27597"
+
+  true_negatives:
+    - input: 'function add(a, b) { return a + b; }'
+      expected: not_triggered
+      description: "Benign user code, no constructor chain"
+    - input: 'const proto = Object.getPrototypeOf(myObj); console.log(proto);'
+      expected: not_triggered
+      description: "getPrototypeOf used for inspection, no constructor() call"
+    - input: 'Use weakset.has(obj) instead of polluting __proto__ for fast lookup.'
+      expected: not_triggered
+      description: "Defensive guidance against prototype pollution"
+    - input: 'process.argv contains the command-line arguments in Node.js.'
+      expected: not_triggered
+      description: "Documentation mentioning process — not behind constructor chain or globalThis"
+    - input: 'class Foo extends Bar { constructor() { super(); this.x = 1; } }'
+      expected: not_triggered
+      description: "Standard class constructor — not the escape primitive"
+
+evasion_tests:
+  - input: 'this["constructor"]["constructor"]("return process")()'
+    expected: triggered
+    bypass_technique: bracket_property_access
+    notes: "Bracket-notation property access still matches the constructor.constructor regex through the .constructor segment after replacement"
+  - input: 'Reflect.construct(Function, ["return process"])()'
+    expected: not_triggered
+    bypass_technique: reflect_construct_alternative
+    notes: "Reflect.construct on the Function global is an equivalent escape primitive that bypasses the .constructor regex; v2 should add Reflect.construct(Function, ...) pattern"

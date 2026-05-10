@@ -1,0 +1,165 @@
+title: "Azure MCP Server Missing Authentication for Critical Function (CVE-2026-32211)"
+id: ATR-2026-00435
+rule_version: 1
+status: experimental
+description: >
+  Detects exploitation or configuration exposure of CVE-2026-32211
+  (CVSS 9.1 Microsoft / 7.5 NIST), missing authentication for critical
+  function in Azure MCP Server allowing an unauthenticated attacker to
+  disclose information over a network. Detects (a) MCP server config
+  blocks pointing at Azure MCP endpoints without an `auth` / `headers` /
+  `token` field, (b) raw MCP handshake responses from Azure MCP servers
+  that expose tool listings without an Authorization challenge, and
+  (c) skill/tool descriptions referencing the Azure MCP unauthenticated
+  surface. CWE-306.
+author: "ATR Community"
+date: "2026/05/10"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM03:2025 - Supply Chain"
+    - "LLM06:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI09:2026 - Identity Spoofing"
+    - "ASI04:2026 - Supply Chain"
+  mitre_atlas:
+    - "AML.T0040 - ML Model Inference API Access"
+    - "AML.T0049 - Exploit Public-Facing Application"
+  mitre_attack:
+    - "T1190 - Exploit Public-Facing Application"
+    - "T1078 - Valid Accounts"
+  cve:
+    - "CVE-2026-32211"
+
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "CVE-2026-32211 Azure MCP Server exposes a critical function without authentication, permitting unauthorised network attackers to disclose information; Article 15 cybersecurity requirements mandate that AI tool servers enforce authentication on every information-disclosing critical function."
+      strength: primary
+    - article: "9"
+      context: "Article 9 risk management must enumerate missing-auth-on-critical-function as a primary access-control failure mode for any MCP / tool-router deployment."
+      strength: primary
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "Network attacks against MCP / tool-server endpoints that do not require authentication on critical functions must be tracked as a primary surface in the threat profile."
+      strength: primary
+    - subcategory: "MG.2.3"
+      context: "Risk treatment under MG.2.3 must require an authentication challenge on every MCP server tool-listing and tool-invocation handler before exposing the surface to a network."
+      strength: primary
+    - subcategory: "GV.6.1"
+      context: "Third-party MCP services (including Azure MCP Server) must be assessed under GV.6.1 supplier risk-management for authentication-on-critical-function controls before agent deployments depend on them."
+      strength: secondary
+  iso_42001:
+    - clause: "8.6"
+      context: "Operational controls under clause 8.6 must include detection of MCP server registrations pointing at endpoints lacking an authentication challenge."
+      strength: primary
+
+tags:
+  category: tool-poisoning
+  subcategory: mcp-missing-authentication
+  scan_target: mcp
+  confidence: medium
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - azure-mcp-server
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "Local development MCP server bound to localhost:N where missing auth is intentional and gateways enforce access elsewhere."
+    - "Educational documentation describing the Azure MCP Server architecture."
+    - "Security tooling that scans MCP configurations for the missing-auth pattern."
+  conditions:
+    - field: tool_response
+      operator: regex
+      value: '(?i)"mcpServers"\s*:\s*\{[^}]*"[^"]*azure[^"]*"\s*:\s*\{(?:(?!"(?:auth|authorization|headers|token|apiKey|bearerToken)")[^{}])*\}'
+      description: "MCP server config block whose key references Azure but has no auth-related field — direct CVE-2026-32211 exposure pattern"
+
+    - field: tool_response
+      operator: regex
+      value: '(?i)"url"\s*:\s*"https://[^"]*\.(?:azure|azurewebsites|microsoftcontainerregistry|microsoft)\.[^"/]+/(?:mcp|tools|invoke|list)[^"]*"(?:(?!"(?:auth|headers|token|apiKey)")[\s\S]){0,400}\}'
+      description: "MCP server URL pointing at Azure-hosted MCP endpoint without auth/headers field within the same config object"
+
+    - field: tool_response
+      operator: regex
+      value: '(?i)"tools"\s*:\s*\[[^\]]{20,}\]\s*,\s*"server"\s*:\s*"azure-mcp[^"]*"(?![\s\S]{0,400}?(?:authorization|www-?authenticate|access[_-]?token))'
+      description: "Azure MCP handshake exposes tools list with no authentication challenge present in the same exchange"
+
+    - field: content
+      operator: regex
+      value: '(?i)azure\s+mcp(?:\s+server)?[^\n]{0,200}(?:no\s+auth|missing\s+auth|unauth(?:enticated|orised)?|cve-?2026-?32211|disclose\s+(?:info|data))'
+      description: "Skill / payload describing the Azure MCP missing-authentication surface — CVE-2026-32211 explicit framing"
+
+response:
+  actions:
+    - alert
+    - require_auth_challenge
+  message_template: >
+    [ATR-2026-00435] HIGH: Azure MCP Server unauthenticated critical-function
+    pattern detected (CVE-2026-32211, CVSS 9.1 Microsoft). MCP configuration
+    points at an Azure-hosted MCP endpoint without an auth / headers / token
+    field, OR the handshake exposes tool listings without an Authorization
+    challenge. Refuse to register the server until an authentication mechanism
+    is configured; treat unauthenticated information-disclosure surfaces as
+    out-of-scope for agent toolchains.
+
+confidence: 72
+
+test_cases:
+  true_positives:
+    - input: '{"mcpServers": {"azure-storage": {"url": "https://my-mcp.azurewebsites.net/mcp"}}}'
+      expected: triggered
+      description: "Azure MCP server config without auth field — direct CVE-2026-32211 exposure"
+    - input: '{"mcpServers": {"azure-foundry": {"url": "https://foundry.azure.com/mcp/list"}}}'
+      expected: triggered
+      description: "Azure-domain MCP URL with no auth/headers in the same config object"
+    - input: '{"tools": [{"name": "blob_list"}, {"name": "kv_secret_read"}], "server": "azure-mcp-prod"}'
+      expected: triggered
+      description: "Azure MCP server exposing sensitive tools without an Authorization challenge in the handshake"
+    - input: 'The Azure MCP Server has missing auth on its tool-list endpoint — CVE-2026-32211 lets an unauthenticated attacker disclose info.'
+      expected: triggered
+      description: "Skill description weaponising CVE-2026-32211"
+    - input: '{"mcpServers": {"azure-app-service": {"url": "https://api.azure.microsoft.com/mcp/invoke"}}}'
+      expected: triggered
+      description: "Azure-domain MCP URL with no auth — invoke endpoint exposed"
+
+  true_negatives:
+    - input: '{"mcpServers": {"azure-storage": {"url": "https://my-mcp.azurewebsites.net/mcp", "headers": {"Authorization": "Bearer ${TOKEN}"}}}}'
+      expected: not_triggered
+      description: "Azure MCP server config WITH Authorization header — properly authenticated"
+    - input: '{"mcpServers": {"azure-mcp": {"url": "https://my-mcp.azurewebsites.net/mcp", "auth": {"type": "oauth2"}}}}'
+      expected: not_triggered
+      description: "Azure MCP server config WITH auth.type field — properly configured"
+    - input: '{"mcpServers": {"local-dev": {"command": "npx", "args": ["my-mcp-server"]}}}'
+      expected: not_triggered
+      description: "Local STDIO MCP server — no Azure URL, different threat model"
+    - input: "Azure MCP Server documentation: configure your server with OAuth2 client credentials in the auth.headers section."
+      expected: not_triggered
+      description: "Defensive documentation"
+    - input: '{"mcpServers": {"azure-test": {"url": "https://my-mcp.azurewebsites.net/mcp", "apiKey": "abc123"}}}'
+      expected: not_triggered
+      description: "Azure MCP config WITH apiKey field — authenticated"
+
+evasion_tests:
+  - input: '{"mcpServers": {"azuretools": {"url": "https://172.16.0.5:8443/mcp"}}}'
+    expected: not_triggered
+    bypass_technique: ip_address_bypass
+    notes: "Server keyed 'azuretools' but pointing at raw IP defeats the azure-domain regex; v2 should add IP-vs-azure-tag conflict detection"
+  - input: '{"mcpServers": {"AZURE-MCP": {"url": "https://my-mcp.AZUREWEBSITES.net/mcp"}}}'
+    expected: triggered
+    bypass_technique: case_variation
+    notes: "Case-insensitive flag ensures uppercase variant still triggers; this is a regression test, not a true bypass"
