@@ -51,7 +51,7 @@ detection:
     # Generate creative-thing + named/titled/called + quoted payload
     - field: user_input
       operator: regex
-      value: "(?i)\\b(generate|create|write|compose|invent|come\\s+up\\s+with)\\b\\s+(?:a\\s+|an\\s+|the\\s+|some\\s+)?(?:movie|film|book|song|story|chapter|poem|essay|article|headline|title|name|character|chorus|lyric|tweet|post|message|caption)\\b[^\\n]{0,40}(?:named|titled|called|with\\s+(?:the\\s+)?(?:exact|name|title|text|content|words|phrase|chorus)|containing|that\\s+(?:says|reads|outputs|equals|is))\\s+[\"'`][^\"'`\\n]{2,200}[\"'`]"
+      value: "(?i)\\b(generate|create|write|compose|invent|come\\s+up\\s+with)\\b\\s+(?:a\\s+|an\\s+|the\\s+|some\\s+)?(?:movie|film|book|song|story|chapter|poem|essay|article|headline|title|name|character|chorus|lyric|tweet|post|message|caption)\\b[^\\n]{0,40}(?:named|titled|called|with\\s+(?:the\\s+)?(?:exact|name|title|text|content|words|phrase|chorus|line|lyric|caption)\\s+(?:title|name|chorus|caption|line|lyric|text|word|words|phrase|content)?|containing|that\\s+(?:says|reads|outputs|equals|is))\\s+[\"'`][^\"'`\\n]{2,200}[\"'`]"
       description: "Creative generation verb + creative noun + named/titled/containing + quoted target"
 
     # Generate + creative-noun + exact-output append/replace
@@ -60,11 +60,12 @@ detection:
       value: "(?i)\\b(generate|write|create|compose|invent|come\\s+up\\s+with)\\b[^\\n]{0,40}(?:movie|film|book|song|story|title|name|character|line|caption)\\b[^\\n]{0,80}(?:add(?:ing)?|append(?:ing)?|insert(?:ing)?|replac(?:e|ing)|adding\\s+text|adding\\s+the\\s+(?:word|phrase|text|suffix))\\s+[\"'`][^\"'`\\n]{2,80}[\"'`]"
       description: "Creative generation + add/append/replace action with quoted text"
 
-    # Exact-title forcing: "the exact title is X" / "output exact title 'X'"
+    # Exact-title forcing: "the exact title is X" / "output exact title 'X'" /
+    # "{noun} is exactly 'X'" / "{noun} reads exactly 'X'"
     - field: user_input
       operator: regex
-      value: "(?i)(?:the\\s+)?(?:exact|complete|full|whole)\\s+(?:title|name|chorus|caption|line|lyric|text|content)\\s+(?:is|should\\s+be|must\\s+be|will\\s+be|reads?)\\s+[\"'`][^\"'`\\n]{2,200}[\"'`]"
-      description: "Exact-title-is quoted payload constraint"
+      value: "(?i)(?:(?:the\\s+)?(?:exact|complete|full|whole)\\s+(?:title|name|chorus|caption|line|lyric|text|content)\\s+(?:is|should\\s+be|must\\s+be|will\\s+be|reads?)|(?:title|name|chorus|caption|line|lyric|text|content|verse|stanza)\\s+(?:is|reads?|should\\s+(?:be|read))\\s+exactly)\\s+[\"'`][^\"'`\\n]{2,200}[\"'`]"
+      description: "Exact-title constraint: 'the exact X is Y' or '{noun} is exactly Y' or '{noun} reads exactly Y'"
 
 response:
   actions:

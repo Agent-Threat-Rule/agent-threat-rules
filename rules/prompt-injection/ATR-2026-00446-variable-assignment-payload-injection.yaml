@@ -48,22 +48,28 @@ detection:
     - "Educational requests to explain or refactor specific assignment statements."
     - "Configuration discussion with key=value pairs in non-attack context."
   conditions:
-    # Single-line var assignment + quoted payload + (print|return|concat) action on next line
+    # Single-line var assignment + quoted payload + (print|return|concat) action on next line.
+    # Var name restricted to attack-shaped identifiers (single uppercase letter,
+    # reserved-name like None/True/null, or short common var like s/x/y/z/var/str)
+    # to avoid matching legitimate Python/JS config code (name = "..." / url = "...").
+    # The engine strips (?im) prefix but only applies 'i' flag; use (?:^|[\n\r])
+    # for line-start anchoring and [\s\S] for cross-line greedy match.
     - field: user_input
       operator: regex
-      value: "(?im)^\\s*(?:None|True|False|null|undefined|[A-Za-z_]\\w{0,15})\\s*=\\s*[\"'`][^\"'`\\n]{3,120}[\"'`]\\s*(?:[\\n;].*?(?:print|output|return|concat|join|emit|reveal|exec|eval)\\b)"
-      description: "Variable assignment with quoted payload followed by output / exec action"
+      value: "(?:^|[\\n\\r])\\s*(?:None|True|False|null|undefined|[A-Z]|var|str|[sxyz])\\s*=\\s*[\"'`][^\"'`\\n]{3,120}[\"'`]\\s*[\\n;][\\s\\S]{0,300}?(?:print|output|return|concat|join|emit|reveal|exec|eval)\\b"
+      description: "Attack-shaped variable assignment with quoted payload followed by output / exec action"
 
     # Multi-var assignment chain (X = 'foo'\nY = 'bar'\nprint(X+Y))
+    # Same var-name restriction as layer 1.
     - field: user_input
       operator: regex
-      value: "(?im)^\\s*[A-Za-z_]\\w{0,8}\\s*=\\s*[\"'`][^\"'`\\n]{1,30}[\"'`]\\s*\\n\\s*[A-Za-z_]\\w{0,8}\\s*=\\s*[\"'`][^\"'`\\n]{1,30}[\"'`]"
-      description: "Two-or-more variable assignments with quoted payloads in user input"
+      value: "(?:^|[\\n\\r])\\s*(?:[A-Z]|[sxyz]|var|str|None|True|False|null|undefined)\\s*=\\s*[\"'`][^\"'`\\n]{1,30}[\"'`]\\s*[\\n\\r]+\\s*(?:[A-Z]|[sxyz]|var|str|None|True|False|null|undefined)\\s*=\\s*[\"'`][^\"'`\\n]{1,30}[\"'`]"
+      description: "Two-or-more attack-shaped variable assignments with quoted payloads"
 
     # Suspicious reserved-name assignment (None=, True=, False=, null=)
     - field: user_input
       operator: regex
-      value: "(?im)^\\s*(?:None|True|False|null|undefined)\\s*=\\s*[\"'`]"
+      value: "(?:^|[\\n\\r])\\s*(?:None|True|False|null|undefined)\\s*=\\s*[\"'`]"
       description: "Reserved-name reassignment to quoted string (Python None/True/False or JS null/undefined)"
 
 response:
