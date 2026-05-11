@@ -75,21 +75,19 @@ async function main(): Promise<void> {
   console.log(`  P99:  ${formatMs(report.latency.p99)}`);
   console.log(`  Mean: ${formatMs(report.latency.mean)}`);
 
-  console.log(`\n--- By Difficulty ---`);
+  console.log(`\n--- By Category ---`);
   for (const cat of report.byCategory) {
-    const tp = cat.confusion.tp;
-    const fn = cat.confusion.fn;
+    const m = cat.metrics;
+    const tp = m.confusion.tp;
+    const fn = m.confusion.fn;
     const recall = tp + fn === 0 ? 0 : tp / (tp + fn);
     console.log(`  ${cat.category}: recall=${formatPercent(recall)} (TP=${tp} FN=${fn})`);
   }
 
   console.log(`\n--- Top Firing Rules (top 15) ---`);
-  const fired = ruleQuality?.rules ? Object.entries(ruleQuality.rules)
-    .filter(([, q]) => q.matches > 0)
-    .sort((a, b) => b[1].matches - a[1].matches)
-    .slice(0, 15) : [];
-  for (const [id, q] of fired) {
-    console.log(`  ${id}: matches=${q.matches} TP=${q.tp}`);
+  const fired = ruleQuality?.topRules ?? [];
+  for (const r of fired.slice(0, 15)) {
+    console.log(`  ${r.ruleId}: matches=${r.matchCount} TP=${r.tpCount} FP=${r.fpCount}`);
   }
 
   console.log(`\nReport saved to: ${outputPath}`);

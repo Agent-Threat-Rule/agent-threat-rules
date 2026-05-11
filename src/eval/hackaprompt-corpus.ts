@@ -48,7 +48,7 @@ export function loadHackaPromptCorpus(dataPath: string): readonly CorpusSample[]
       text: sample.text,
       category: sample.category,
       expectedDetection: sample.label,
-      eventType: 'user_input',
+      eventType: 'llm_input',
       tier: 'any',
       difficulty: assignDifficulty(level),
       fields: {
