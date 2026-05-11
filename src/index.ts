@@ -22,6 +22,8 @@ export { loadRuleFile, loadRulesFromDirectory, validateRule } from './loader.js'
 export { SessionTracker } from './session-tracker.js';
 export type { SessionStateSnapshot } from './session-tracker.js';
 export { computeContentHash } from './content-hash.js';
+export { redactMatchedValue, redactMatchedValues } from './redact.js';
+export type { RedactOptions } from './redact.js';
 
 // ── Tier 0: Invariant Enforcement (hard boundaries) ──────────────
 export { InvariantChecker } from './tier0-invariant.js';
