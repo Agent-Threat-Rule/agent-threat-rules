@@ -194,9 +194,6 @@ interface GhsaVulnerability {
   patched_versions?: string;
   vulnerable_version_range?: string;
 }
-interface GhsaReference {
-  url: string;
-}
 interface GhsaAdvisory {
   ghsa_id: string;
   cve_id?: string | null;
@@ -206,7 +203,7 @@ interface GhsaAdvisory {
   description: string;
   severity: string;
   cwes?: Array<{ cwe_id: string; name: string }>;
-  references: GhsaReference[];
+  references: string[];
   vulnerabilities: GhsaVulnerability[];
   published_at: string;
   withdrawn_at?: string | null;
@@ -312,7 +309,7 @@ function isDetectionReady(adv: GhsaAdvisory): {
   const body = `${adv.summary}\n${adv.description}`;
   if (PAYLOAD_HEURISTICS_RX.test(body))
     return { ready: true, reason: "payload-like content in advisory body" };
-  if (adv.references.some((r) => /poc|exploit-db|cve\.org/.test(r.url)))
+  if (adv.references.some((r) => /poc|exploit-db|cve\.org/.test(r)))
     return { ready: true, reason: "PoC reference link present" };
   return {
     ready: false,
@@ -328,6 +325,22 @@ function slugify(s: string): string {
     .slice(0, 60);
 }
 
+const ADVISORY_BODY_MAX_CHARS = 8000;
+
+// Indent every line for embedding under a YAML `|` literal block.
+// Empty lines also get the indent prefix so all parsers stay inside the block.
+function indentForLiteralBlock(text: string, indent: string): string {
+  const capped =
+    text.length > ADVISORY_BODY_MAX_CHARS
+      ? text.slice(0, ADVISORY_BODY_MAX_CHARS) +
+        `\n\n... (truncated at ${ADVISORY_BODY_MAX_CHARS} chars; see html_url for full text)`
+      : text;
+  return capped
+    .split("\n")
+    .map((line) => indent + line)
+    .join("\n");
+}
+
 function renderProposal(adv: GhsaAdvisory): string {
   const cwes = (adv.cwes ?? []).map((c) => c.cwe_id);
   const category = guessCategory(cwes);
@@ -341,7 +354,9 @@ function renderProposal(adv: GhsaAdvisory): string {
   const pkgList = adv.vulnerabilities.map(
     (v) => `${v.package.ecosystem}:${v.package.name}`,
   );
-  const refExternal = adv.references.map((r) => r.url);
+  const refExternal = adv.references.filter(
+    (r): r is string => typeof r === "string" && r.length > 0,
+  );
 
   const triage = isDetectionReady(adv);
 
@@ -431,6 +446,10 @@ ${pkgList.map((p) => `    - "${p}"`).join("\n")}
   published_at: "${adv.published_at}"
   withdrawn_at: ${adv.withdrawn_at ? `"${adv.withdrawn_at}"` : "null"}
   html_url: "${adv.html_url}"
+  advisory_summary: |
+${indentForLiteralBlock(adv.summary ?? "", "    ")}
+  advisory_body: |
+${indentForLiteralBlock(adv.description ?? "(no body provided by GHSA API)", "    ")}
 `;
 }
 
