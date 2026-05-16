@@ -12,7 +12,7 @@ AI Agent 威脅偵測規則 -- 開源、社群驅動
 [![PyPI](https://img.shields.io/pypi/v/pyatr?style=flat-square&color=brightgreen&label=PyPI)](https://pypi.org/project/pyatr/)
 [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-ATR%20Scan-2ea44f?style=flat-square&logo=github)](https://github.com/marketplace/actions/atr-scan)
 [![License](https://img.shields.io/badge/license-MIT-brightgreen?style=flat-square)](LICENSE)
-[![Rules](https://img.shields.io/badge/rules-419-blue?style=flat-square)](#what-atr-detects)
+[![Rules](https://img.shields.io/badge/rules-425-blue?style=flat-square)](#what-atr-detects)
 [![Tests](https://img.shields.io/badge/tests-361_passing-green?style=flat-square)](#ecosystem)
 [![SKILL.md Recall](https://img.shields.io/badge/SKILL.md_recall-100%25-brightgreen?style=flat-square)](#evaluation)
 [![Garak Recall](https://img.shields.io/badge/garak_recall-97.1%25-brightgreen?style=flat-square)](#evaluation)
@@ -23,37 +23,40 @@ AI Agent 威脅偵測規則 -- 開源、社群驅動
 
 ---
 
-AI assistants (ChatGPT, Claude, Copilot) now browse the web, run code, and use external tools. Attackers can trick them into leaking data, running malicious commands, or ignoring safety instructions. **ATR is a set of open detection rules that spot these attacks -- like antivirus signatures, but for AI agents.**
+ATR is an open detection rule format for AI agent threats. Rules are written in YAML, identified by a public ATR-2026-NNNNN scheme, and evaluated by any conforming engine. The reference TypeScript engine and a Python wrapper ship in this repository under MIT license.
 
-AI 助理現在可以瀏覽網頁、執行程式碼、使用外部工具。攻擊者可以欺騙它們洩漏資料、執行惡意指令、繞過安全限制。**ATR 是一套開放的偵測規則，專門識別這些攻擊 -- 像防毒軟體的病毒碼，但對象是 AI Agent。**
+AI Agent 威脅偵測規則的開放格式。YAML 規則,公開 ATR-2026-NNNNN 編號,任何符合 SPEC.md 的引擎都可執行。MIT 授權。
 
-### What changed in v2.2.0 (2026-05-12)
+### Specification, governance, and citation
 
-- **75 new rules** across 5 categories. Total: 344 → 419.
-- **HackAPrompt recall: 28.6% → 66.2%** (+37.6pp) on 4,780 EMNLP 2023 samples. 100% precision maintained.
-- **5 new rule-source integrations in a 24h sprint:** HackAPrompt (EMNLP 2023, 4,780 samples) · NeMo-Guardrails + llm-guard + Promptfoo vendor test suites · PromptInject (NeurIPS 2022) · OWASP LLM Top 10 + MITRE ATLAS PoCs · CISA KEV anchors.
-- **6-framework compliance metadata** on every new rule: OWASP Agentic + OWASP LLM + MITRE ATLAS + NIST AI RMF + EU AI Act + ISO/IEC 42001. Bumped from 5.
-- **53 rules generalized** from literal corpus fingerprints to multi-layer structural patterns. Less brittle. Lower FP risk.
-- **0 FP regression** on 432-sample benign corpus. 0 FP on SKILL.md 341-sample test set.
+Standards artifacts ship in this repository:
 
-Full changelog: [CHANGELOG.md](CHANGELOG.md).
+| Artifact | Document |
+|---|---|
+| Core specification (RFC 2119 normative, v1.0.0 Draft) | [SPEC.md](SPEC.md) |
+| Governance and BDFL → TSC transition | [GOVERNANCE.md](GOVERNANCE.md) · [docs/BDFL-charter.md](docs/BDFL-charter.md) |
+| Vulnerability reporting | [SECURITY.md](SECURITY.md) |
+| Trademark policy (ATR®, ATR-Certified™) | [TRADEMARK.md](TRADEMARK.md) |
+| Citation metadata (DOI [10.5281/zenodo.19178002](https://doi.org/10.5281/zenodo.19178002)) | [CITATION.cff](CITATION.cff) |
+| Conformance test suite (per SPEC §12) | [conformance/](conformance/) |
+| Single source of truth for project numbers | [stats.json](stats.json) |
+| Internet-Draft prepared for SECEVENT WG | [spec/internet-drafts/draft-lin-atr-core-00.md](spec/internet-drafts/draft-lin-atr-core-00.md) |
 
-### Sovereign AI defense
+### Scope
 
-ATR is the open detection standard nations can adopt without geopolitical risk. MIT licensed. Adoptable by any country. Contributable by any organization. No vendor lock-in.
+In scope: detection rules that match against AI agent artifacts (SKILL.md, MCP tool definitions, agent configurations) and runtime events (LLM inputs/outputs, tool invocations, context windows). Reference engine semantics. Rule identifier scheme. Conformance levels.
 
-ATR 是各國可採用、無地緣政治風險的開放偵測標準。MIT 授權，任何國家可採用，任何組織可貢獻，無廠商鎖定。
+Out of scope: model-level alignment, prompt-engineering guidance, content moderation policy, sandbox enforcement, IAM. ATR provides match results; enforcement is the responsibility of the integrating system.
 
-Background: [sovereign-ai-defense.vercel.app](https://sovereign-ai-defense.vercel.app)
+### Current release
 
-### Recognized in national and international guidance
+See [CHANGELOG.md](CHANGELOG.md) for the full version history. Numbers throughout this document are sourced from [stats.json](stats.json); CI rejects drift via [`scripts/sync-stats.ts`](scripts/sync-stats.ts).
 
-The Five Eyes intelligence alliance (US CISA + NSA, UK NCSC, Australia ASD, Canada CCCS, New Zealand NCSC) published joint guidance on 2026-05-01 directing organizations to deploy AI agents with verified identity, short-lived credentials, encrypted agent-to-agent communication, and runtime detection against known attack patterns ([CyberScoop coverage](https://cyberscoop.com/cisa-nsa-five-eyes-guidance-secure-deployment-ai-agents/)).
+### Mapping to Five Eyes 2026-05-01 joint guidance
 
-ATR is the open detection layer the guidance calls for: deterministic, MIT-licensed, no vendor lock-in, deployable inside or outside cloud boundaries.
+The Five Eyes intelligence alliance (US CISA + NSA, UK NCSC, Australia ASD, Canada CCCS, New Zealand NCSC) published joint guidance on 2026-05-01 calling for verified identity, short-lived credentials, encrypted agent-to-agent communication, and runtime detection against known attack patterns ([CyberScoop coverage](https://cyberscoop.com/cisa-nsa-five-eyes-guidance-secure-deployment-ai-agents/)). The Five Eyes document does not name specific implementations.
 
-- [Five Eyes guidance ↔ ATR category mapping](docs/FIVE-EYES-MAPPING.md)
-- 5-category Careful-Adoption guidance maps to ATR's 9 detection categories
+ATR provides one runnable detection layer matching the guidance categories. The 5-category Careful-Adoption guidance maps to ATR's 10 detection categories in [docs/FIVE-EYES-MAPPING.md](docs/FIVE-EYES-MAPPING.md).
 
 ### Where ATR fits in the AI agent security stack
 
@@ -68,16 +71,20 @@ ATR maps to **10/10 OWASP Agentic Top 10 categories** ([full mapping](docs/OWASP
 
 ### Who uses ATR
 
-**13 external PR merges across 6 external orgs.** Microsoft and Cisco each ship multiple PRs in production.
+9 PRs merged across 6 organizations. Production deployments: Microsoft Agent Governance Toolkit and Cisco AI Defense. Standards-body integrations: MISP (CIRCL). Additional integrations are in review (see "Pending review" below).
 
 | Organization | Integration | Reference |
 |---|---|---|
-| **Microsoft Agent Governance Toolkit** | 287-rule expansion + weekly auto-sync workflow (merged 2026-04-26) · Original 15-rule PoC | [PR #1277](https://github.com/microsoft/agent-governance-toolkit/pull/1277) · [PR #908](https://github.com/microsoft/agent-governance-toolkit/pull/908) |
-| **Cisco AI Defense** | Full 419-rule pack in skill-scanner production (merged 2026-04-22) · Original PoC | [PR #99](https://github.com/cisco-ai-defense/skill-scanner/pull/99) · [PR #79](https://github.com/cisco-ai-defense/skill-scanner/pull/79) |
-| **MISP** (CIRCL) | 336-rule cluster in global threat-intel sharing (galaxy, merged 2026-05-10) · Rule-ID tagging vocabulary (taxonomies, merged 2026-04-12) | [galaxy #1207](https://github.com/MISP/misp-galaxy/pull/1207) · [taxonomies #323](https://github.com/MISP/misp-taxonomies/pull/323) |
-| **OWASP Agent Security Regression Harness** (third-party precize repo, NOT OWASP Foundation official) | Rule pack merged 2026-05-11 with project-lead greeting | [PR #74](https://github.com/precize/Agent-Security-Regression-Harness/pull/74) · [PR #14](https://github.com/precize/Agentic-AI-Top10-Vulnerability/pull/14) |
+| **Microsoft Agent Governance Toolkit** | 287-rule expansion + weekly auto-sync workflow (merged 2026-04-26) · Original 15-rule PoC (merged 2026-04-13) | [PR #1277](https://github.com/microsoft/agent-governance-toolkit/pull/1277) · [PR #908](https://github.com/microsoft/agent-governance-toolkit/pull/908) |
+| **Cisco AI Defense** | Full rule pack in skill-scanner production (merged 2026-04-22) · Original PoC (merged 2026-04-03) | [PR #99](https://github.com/cisco-ai-defense/skill-scanner/pull/99) · [PR #79](https://github.com/cisco-ai-defense/skill-scanner/pull/79) |
+| **MISP (CIRCL)** | Global threat-intel cluster (galaxy, merged 2026-05-10) · Rule-ID tagging vocabulary (taxonomies, merged 2026-05-10) | [galaxy #1207](https://github.com/MISP/misp-galaxy/pull/1207) · [taxonomies #323](https://github.com/MISP/misp-taxonomies/pull/323) |
 | **Gen Digital Sage** (Norton / Avast / AVG parent) | Merged 2026-05-11 by @vaclavbelak | [PR #33](https://github.com/gendigitalinc/sage/pull/33) |
-| **Awesome lists** | Listed in CryptoAILab/Awesome-LM-SSP, wearetyomsmnv/Awesome-LLM-agent-Security, nibzard/awesome-agentic-patterns, TalEliyahu/Awesome-AI-Security | [#108](https://github.com/CryptoAILab/Awesome-LM-SSP/pull/108) · [#6](https://github.com/wearetyomsmnv/Awesome-LLM-agent-Security/pull/6) · [#58](https://github.com/nibzard/awesome-agentic-patterns/pull/58) · [#53](https://github.com/TalEliyahu/Awesome-AI-Security/pull/53) |
+| **Agent-Security-Regression-Harness** (third-party precize repo, not OWASP Foundation) | Rule pack merged 2026-05-11 | [PR #74](https://github.com/precize/Agent-Security-Regression-Harness/pull/74) |
+| **Agentic-AI-Top10-Vulnerability** (third-party precize repo) | Mapping merged 2026-03-30 | [PR #14](https://github.com/precize/Agentic-AI-Top10-Vulnerability/pull/14) |
+
+NIST AI RMF: a community OSCAL catalog ([Agent-Threat-Rule/ai-rmf-oscal-catalog](https://github.com/Agent-Threat-Rule/ai-rmf-oscal-catalog)) is self-published covering all 4 AI RMF functions. NIST has not reviewed it; the catalog is offered for community contribution per Path 1 invitation received 2026-05-11.
+
+Curated list inclusions: [CryptoAILab/Awesome-LM-SSP](https://github.com/CryptoAILab/Awesome-LM-SSP), [wearetyomsmnv/Awesome-LLM-agent-Security](https://github.com/wearetyomsmnv/Awesome-LLM-agent-Security), [nibzard/awesome-agentic-patterns](https://github.com/nibzard/awesome-agentic-patterns).
 
 #### Featured loop: Microsoft Copilot SWE Agent → ATR (2026-05-11)
 
@@ -89,10 +96,8 @@ Microsoft Copilot SWE Agent opened a PR in `microsoft/agent-governance-toolkit` 
 
 This is Microsoft Copilot operating inside AGT — not an MSRC endorsement. Coverage is partial: 2 of 4 Copilot fixtures match the v2.1.2 canonical regex shape.
 
-**Pending review (major frameworks):**
-[NVIDIA Garak #1676](https://github.com/NVIDIA/garak/pull/1676) · [SAFE-MCP / OpenSSF #187](https://github.com/safe-agentic-framework/safe-mcp/pull/187) · [OWASP LLM Top 10 #814](https://github.com/OWASP/www-project-top-10-for-large-language-model-applications/pull/814) · [IBM mcp-context-forge #4109](https://github.com/IBM/mcp-context-forge/pull/4109) · [Meta PurpleLlama #206](https://github.com/meta-llama/PurpleLlama/pull/206) · [Promptfoo #8529](https://github.com/promptfoo/promptfoo/pull/8529) · 5+ more
-
-> ATR rules are consumed as a standard -- not a product. MIT licensed, auto-updated via npm, zero strings attached.
+**In review at upstream maintainers (open PRs):**
+[NVIDIA garak #1676](https://github.com/NVIDIA/garak/pull/1676) · [OWASP LLM Top 10 #814](https://github.com/OWASP/www-project-top-10-for-large-language-model-applications/pull/814) · [IBM mcp-context-forge #4109](https://github.com/IBM/mcp-context-forge/pull/4109) · [Meta PurpleLlama #206](https://github.com/meta-llama/PurpleLlama/pull/206) · [promptfoo #8529](https://github.com/promptfoo/promptfoo/pull/8529) · [microsoft/PyRIT #1715](https://github.com/microsoft/PyRIT/pull/1715)
 
 ### Ecosystem scan (96,000+ skills)
 
@@ -123,7 +128,7 @@ npm install -g agent-threat-rules
 atr scan skill.md                 # scan a SKILL.md for threats
 atr scan mcp-config.json          # scan MCP events for threats
 atr scan skill.md --sarif         # output SARIF v2.1.0 for GitHub Security tab
-atr convert generic-regex         # export 419 rules as JSON (1,600+ regex patterns)
+atr convert generic-regex         # export 425 rules as JSON (1,600+ regex patterns)
 atr convert splunk                # export to Splunk SPL
 atr convert elastic               # export to Elasticsearch Query DSL
 atr stats                         # show rule collection stats
@@ -149,7 +154,7 @@ One line. Zero config. SARIF results in your Security tab.
 
 ## What ATR Detects
 
-419 rules across 10 categories, mapped to real CVEs:
+425 rules across 10 categories, mapped to real CVEs:
 
 | Category | What it catches | Rules | Real CVEs |
 |----------|----------------|-------|-----------|
@@ -329,7 +334,7 @@ Every rule is a YAML file answering: **what** to detect, **how** to detect it, *
 ### Export rules
 
 ```bash
-# For your security platform (419 rules, 2,400+ regex patterns as JSON)
+# For your security platform (425 rules, 2,400+ regex patterns as JSON)
 atr convert generic-regex --output atr-rules.json
 
 # For SIEM integration
@@ -346,15 +351,13 @@ The generic-regex export is designed for direct consumption by any tool that sup
 
 ## Contributing
 
-ATR needs your help to become a standard. Here's how:
-
-### Easiest way to contribute: scan your skills
+### Scan your own deployment first
 
 ```bash
 npx agent-threat-rules scan your-mcp-config.json
 ```
 
-Report what ATR found (or missed). **Your real-world detection report is more valuable than 10 new regex patterns.**
+Real-world detection reports — true positives we miss, false positives we trigger — are the most useful single contribution. Open an issue with the redacted finding.
 
 ### Ways to contribute
 
@@ -377,7 +380,7 @@ Want to integrate ATR into your product? Three options:
 ```bash
 # Option 1: Export rules as JSON (recommended for most tools)
 atr convert generic-regex --output atr-rules.json
-# → 419 rules, 2,400+ regex patterns, severity/category metadata
+# → 425 rules, 2,400+ regex patterns, severity/category metadata
 
 # Option 2: Use the TypeScript engine directly
 npm install agent-threat-rules
@@ -387,7 +390,7 @@ npm install agent-threat-rules
 # → One YAML line, SARIF output, GitHub Security tab integration
 ```
 
-Cisco AI Defense integrated via Option 1: full 419-rule pack merged in [PR #99](https://github.com/cisco-ai-defense/skill-scanner/pull/99) after the original PoC [PR #79](https://github.com/cisco-ai-defense/skill-scanner/pull/79). Microsoft Agent Governance Toolkit upgraded to 287 rules + weekly auto-sync in [PR #1277](https://github.com/microsoft/agent-governance-toolkit/pull/1277). Happy to help with your integration -- [open an issue](https://github.com/Agent-Threat-Rule/agent-threat-rules/issues).
+Cisco AI Defense integrated via Option 1: full rule pack merged in [PR #99](https://github.com/cisco-ai-defense/skill-scanner/pull/99) after the original PoC [PR #79](https://github.com/cisco-ai-defense/skill-scanner/pull/79). Microsoft Agent Governance Toolkit upgraded via 287-rule expansion + weekly auto-sync in [PR #1277](https://github.com/microsoft/agent-governance-toolkit/pull/1277). For integration questions, [open an issue](https://github.com/Agent-Threat-Rule/agent-threat-rules/issues).
 
 ### Rule contribution workflow
 
@@ -433,17 +436,19 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide. See [CONTRIBUTION-GUI
 - [x] **v2.1.1** -- MISP taxonomies + galaxy merged (CIRCL adulau), 336 rules
 - [x] **v2.1.2** -- Microsoft Copilot SWE Agent AGT loop closure (2h 16m, Semantic Kernel CVEs), 338 rules
 - [x] **v2.1.4** -- 4 production CVE rules (Spring AI + LiteLLM CISA KEV), 348 rules
-- [x] **v2.2.0** (current, 2026-05-12) -- 419 rules, +75 rules / 24h sprint, HackAPrompt recall 28.6% → 66.2%, 6-framework compliance metadata, 97.1% garak recall, 100% SKILL.md precision
-- [ ] **v2.3** -- Go engine, ML classifier integration, semantic signatures, community rule submissions
-- [ ] **v3.0** -- Multi-engine standard: 2+ engines, 10+ production deployments, schema review by 3+ security teams
+- [x] **v2.2.0** (2026-05-12) -- 419 rules, +75 rules / 24h sprint, HackAPrompt recall 28.6% → 66.2%, 6-framework compliance metadata, 97.1% garak recall, 100% SKILL.md precision
+- [x] **v2.2.1** -- patch release
+- [x] **v2.2.2** (current, 2026-05-16) -- 425 rules (see [stats.json](stats.json) for the canonical breakdown)
+- [ ] **v2.3** -- Go engine, ML classifier integration, semantic signatures, automated CVE-PoC → rule pipeline (CVE generator + promote orchestrator in scripts/, runnable today, workflow wiring pending)
+- [ ] **v3.0** -- Multi-engine standard: 2+ independent engines, 10+ production deployments, schema review by 3+ security teams
 
 ### Strategic direction
 
 | Phase | Goal | Status |
 |-------|------|--------|
-| **Phase 0: Core product** | 419 rules, 97.1% garak recall, OWASP 10/10, 96K scan | **Done** |
+| **Phase 0: Core product** | 425 rules, 97.1% garak recall, OWASP 10/10, 96K scan | **Done** |
 | **Phase 1: Distribution** | GitHub Action, SARIF, generic-regex export, ecosystem PRs | **Done** |
-| **Phase 2: Adoption** | Microsoft AGT (287 rules merged) + Cisco AI Defense (full 419 pack merged) + MISP galaxy/taxonomies + OWASP A-S-R-H (third-party precize repo); 13 merged PRs across 6 external orgs | **In progress** |
+| **Phase 2: Adoption** | Microsoft AGT (287 rules merged) + Cisco AI Defense (full pack merged) + MISP galaxy/taxonomies + Gen Digital Sage + Agent-Security-Regression-Harness (third-party precize repo); 9 PRs merged across 6 organizations | **In progress** |
 | **Phase 3: Community flywheel** | Threat Cloud crystallization, auto-generated rules, 10+ contributors | In progress |
 | **Phase 4: Standard** | Multi-vendor adoption, OpenSSF submission, schema governance | Planned |
 
@@ -456,7 +461,7 @@ ATR uses "ATR Scanned" (not "ATR Certified") until recall exceeds 80%. We are ho
 ```
 ATR (this repo)                        Your Product / Integration
 ┌─────────────────────────┐            ┌──────────────────────────┐
-│ 419 Rules (YAML)        │   match    │ Block / Allow / Alert     │
+│ 425 Rules (YAML)        │   match    │ Block / Allow / Alert     │
 │ Engine (TS + Py)        │ ────────→  │ SIEM (Splunk / Elastic)  │
 │ CLI / MCP / GitHub Act. │   results  │ CI/CD (SARIF → Security) │
 │ SARIF / Generic Regex   │            │ Runtime Proxy (MCP)      │
@@ -519,15 +524,15 @@ If you use ATR in your research, please cite:
 
 Adam Lin (林冠辛). adam@agentthreatrule.org. GitHub [@eeee2345](https://github.com/eeee2345). Taiwan.
 
-60 days solo from zero to 419 rules, 6 ecosystem integrations, 30+ PRs in flight.
+Governance is single-maintainer (BDFL) during the transition to a Technical Steering Committee — see [GOVERNANCE.md](GOVERNANCE.md) for the TSC seating criteria.
 
 ---
 
 ## Acknowledgments
 
-ATR builds on: [Sigma](https://github.com/SigmaHQ/sigma) (SIEM detection format), [OWASP LLM Top 10](https://owasp.org/www-project-top-10-for-large-language-model-applications/), [OWASP Agentic Top 10](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/), [MITRE ATLAS](https://atlas.mitre.org/), [NVIDIA Garak](https://github.com/NVIDIA/garak), [Invariant Labs](https://invariantlabs.ai/), [Meta LlamaFirewall](https://ai.meta.com/research/publications/llamafirewall-an-open-source-guardrail-system-for-building-secure-ai-agents/).
+ATR builds on prior work in: [Sigma](https://github.com/SigmaHQ/sigma) (SIEM detection format), [OWASP LLM Top 10](https://owasp.org/www-project-top-10-for-large-language-model-applications/), [OWASP Agentic Top 10](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/), [MITRE ATLAS](https://atlas.mitre.org/), [NVIDIA garak](https://github.com/NVIDIA/garak), [Invariant Labs PINT](https://invariantlabs.ai/), [Meta LlamaFirewall](https://ai.meta.com/research/publications/llamafirewall-an-open-source-guardrail-system-for-building-secure-ai-agents/), [SAFE-MCP (OpenSSF)](https://github.com/safe-agentic-framework/safe-mcp).
 
-**MIT License** -- Use it, modify it, build on it.
+Licensed under the [MIT License](LICENSE).
 
 ---
 

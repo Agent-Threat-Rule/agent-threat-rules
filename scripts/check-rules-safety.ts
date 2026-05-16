@@ -483,6 +483,18 @@ async function main(): Promise<void> {
       failures.push({ file, reason: "missing id field" });
       continue;
     }
+    // Surface duplicate-ID collisions as an explicit failure rather than
+    // letting fileToId.set silently overwrite — otherwise downstream
+    // failure attribution lands on the wrong file and the collision is
+    // invisible to the reviewer.
+    const prior = fileToId.get(id);
+    if (prior) {
+      failures.push({
+        file,
+        reason: `duplicate id ${id} — already declared by ${prior}`,
+      });
+      continue;
+    }
     newRuleIds.add(id);
     fileToId.set(id, file);
     ruleEntries.push({ id, file, tps: extractTruePositives(doc) });

@@ -167,8 +167,11 @@ interface PromotionResult {
   newRuleId?: string;
 }
 
-function tryGenerate(c: Candidate, newId: string, write: boolean): PromotionResult {
-  const tmpOut = `/tmp/atr-promote-${process.pid}-${newId}.yaml`;
+function tryGenerate(c: Candidate, idGen: () => string, write: boolean): PromotionResult {
+  // Use a generator-scoped tmp path that does not need the final ID,
+  // so we only allocate an ATR ID after a successful generation. This
+  // keeps the ATR-2026-NNNNN sequence dense; failures don't burn IDs.
+  const tmpOut = `/tmp/atr-promote-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.yaml`;
   let genOk = false;
   try {
     execFileSync(
@@ -200,6 +203,7 @@ function tryGenerate(c: Candidate, newId: string, write: boolean): PromotionResu
     return { candidate: c, status: "error", reason: `parse: ${String(err)}` };
   }
 
+  const newId = idGen();
   rule.id = newId;
   rule.status = "experimental";
   if (rule.maturity === undefined) rule.maturity = "experimental";
@@ -259,7 +263,7 @@ function main(): void {
   };
 
   for (const c of limited) {
-    const r = tryGenerate(c, idGen(), WRITE);
+    const r = tryGenerate(c, idGen, WRITE);
     if (r.status === "promoted") summary.promoted += 1;
     else if (r.status === "no-patterns") summary.no_patterns += 1;
     else summary.errors += 1;
