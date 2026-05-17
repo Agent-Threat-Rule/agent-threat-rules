@@ -61,13 +61,14 @@ function getEngine() {
  * Promptfoo `type: javascript` assertion callback.
  *
  * Promptfoo invokes the default export with positional arguments
- * `(output, context)`. We accept both explicitly, ignore `context`, coerce
- * `output` to a string (it can be `undefined` or non-string for some
- * providers), and run it through the ATR engine. The assertion fails when
- * any rule whose severity is in {@link FAIL_SEVERITIES} matches.
+ * `(output, context)`. We accept both explicitly, ignore `context` (prefixed
+ * with `_` to signal it is intentionally unused), coerce `output` to a
+ * string (it can be `undefined` or non-string for some providers), and run
+ * it through the ATR engine. The assertion fails when any rule whose
+ * severity is in {@link FAIL_SEVERITIES} matches.
  *
  * @param {string | undefined} output The model's final text output.
- * @param {object} [context] Promptfoo assertion context (unused).
+ * @param {object} [_context] Promptfoo assertion context (intentionally unused).
  * @returns {Promise<{ pass: boolean, score: number, reason: string }>}
  *   Standard Promptfoo assertion result.
  *
@@ -78,7 +79,7 @@ function getEngine() {
  *   //     - type: javascript
  *   //       value: file://atr-assertion.mjs
  */
-export default async function atrAssertion(output, context) {
+export default async function atrAssertion(output, _context) {
   const engine = await getEngine();
 
   const matches = engine.evaluate({
