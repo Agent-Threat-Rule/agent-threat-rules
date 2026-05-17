@@ -6,6 +6,18 @@ Draft of the two source files needed to unblock
 Copy these into `examples/redteam-atr-mcp-defense/` in the promptfoo PR
 branch (`eeee2345/promptfoo @ examples/redteam-atr-mcp-defense`).
 
+## Pre-flight checks performed
+
+- `node --check atr-assertion.mjs` — syntax OK
+- `python3 -c 'yaml.safe_load(...)'` — yaml parses
+- `bash -n apply.sh` — shell syntax OK
+- `prettier --check` with promptfoo's `.prettierrc.yaml`
+  (`printWidth: 100`, `singleQuote: true`, `trailingComma: 'all'`,
+  `bracketSpacing: true`) — `All matched files use Prettier code style!`
+- `@biomejs/biome@2.4.14 check` with a config mirroring promptfoo's
+  `biome.jsonc` (2-space indent, 100 line width, single quotes, semi,
+  trailing commas) — `Checked 1 file. No fixes applied.`
+
 ## What changed vs. the PR's current files
 
 ### `atr-assertion.mjs`
