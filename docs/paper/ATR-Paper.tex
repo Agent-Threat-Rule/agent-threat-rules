@@ -31,9 +31,12 @@
 \title{The Collapse of Trust: Security Architecture for the Age of Autonomous AI Agents\\[0.5em]
 \large With ATR, the First Open Detection Standard and Quality Framework for AI Agent Threats}
 
-\author{ATR Project}
+\author{Adam Lin\\
+Panguard AI, Inc.\\
+\texttt{adam@agentthreatrule.org}\\
+\texttt{https://github.com/Agent-Threat-Rule/agent-threat-rules}}
 
-\date{April 2026}
+\date{May 2026}
 
 \begin{document}
 
@@ -52,7 +55,7 @@ This paper presents an empirical analysis of the AI agent security landscape bas
 
 \textbf{(4)} We propose architectural requirements for a defense system that can keep pace with AI evolution: multi-point interception, below-reasoning-layer detection, cascade economics, community-driven rule evolution, and open auditability. We argue that the industry needs an open detection standard analogous to Sigma \cite{sigma} (for SIEM) or Snort (for network IDS) --- and define the properties such a standard must have.
 
-\textbf{(5)} We present Agent Threat Rules (ATR) \cite{atr}, the first open-source implementation of this standard, and validate it empirically: \textbf{113 YAML-based detection rules} across 9 threat categories, independently benchmarked at 99.6\% precision and 61.4\% recall against the external PINT dataset \cite{pint} (850 samples), with 100\% recall and 97\% precision on the SKILL.md structured content benchmark (498 samples, 0.20\% FP rate). An ecosystem-wide scan of \textbf{96,096 agent skills} across six registries (OpenClaw, ClawHub, Skills.sh, Hermes, MCP Registry) discovered \textbf{751 active malware skills} from three coordinated threat actors \cite{atrscanmega}. A threat crystallization flywheel has been validated end-to-end: community signal aggregation $\rightarrow$ LLM-assisted rule generation $\rightarrow$ automated quality gate $\rightarrow$ human review $\rightarrow$ publication. ATR rules are shipped as upstream detection by Cisco AI Defense \cite{ciscopr79}.
+\textbf{(5)} We present Agent Threat Rules (ATR) \cite{atr}, the first open-source implementation of this standard, and validate it empirically: \textbf{419 YAML-based detection rules} across 10 threat categories (ATR v2.2.2, May 2026), independently benchmarked at 99.7\% precision and 63.9\% recall against the external PINT dataset \cite{pint} (850 samples), 97.1\% recall on NVIDIA Garak, and 100\% precision with 89.7\% recall on a 341-sample self-test corpus. An ecosystem-wide scan of \textbf{96,096 agent skills} across six registries (OpenClaw, ClawHub, Skills.sh, Hermes, MCP Registry) discovered \textbf{751 active malware skills} from three coordinated threat actors \cite{atrscanmega}. A threat crystallization flywheel has been validated end-to-end: community signal aggregation $\rightarrow$ LLM-assisted rule generation $\rightarrow$ automated quality gate $\rightarrow$ human review $\rightarrow$ publication. ATR rules are in production at Microsoft Agent Governance Toolkit (PRs \#908, \#1277), Cisco AI Defense skill-scanner (PRs \#79, \#99), MISP galaxy and taxonomies (merged 2026-05-10, distributed via CIRCL Luxembourg to EU national CERTs), and OWASP Agent Security Resource Hub (PR \#74 merged 2026-05-11). On 2026-05-11, Microsoft Copilot SWE Agent (operating inside the Microsoft Agent Governance Toolkit) opened a regression-test issue against ATR for two Semantic Kernel CVEs (CVE-2026-26030, CVE-2026-25592) disclosed four days earlier; ATR shipped matching detection rules to npm 2 hours 16 minutes after the issue opened, with no human routing required on Microsoft's side.
 
 \textbf{(6)} We publish RFC-001 \cite{rfc001}, the first vendor-neutral quality standard for AI agent detection rules. RFC-001 defines maturity levels, a confidence scoring formula, a two-dimensional compliance model (metadata presence $\times$ provenance), six review tier levels (the first standard to formalize LLM-assisted review as a first-class tier), community signal aggregation, and multi-runtime compatibility declarations for 14 agent platforms. The standard is designed so that \textbf{any vendor} --- not just ATR --- can adopt the scoring algorithm by implementing a single adapter interface. A reference implementation is published as MIT-licensed open source. Microsoft's concurrent CTI-REALM benchmark \cite{ctirealm} independently validates the premise that AI agents can assist in detection rule generation, which is the mechanism ATR's crystallization flywheel relies on.
 
