@@ -39,6 +39,26 @@ export type ATRSourceType =
 
 export type ATRMatchType = "contains" | "regex" | "exact" | "starts_with";
 
+/**
+ * BCP-47 language tag used by multilingual rules (v3.0+).
+ *
+ * When a condition declares `language: 'zh-Hant'`, the engine will only
+ * evaluate the condition against inputs whose dominant script matches.
+ * Rules without an explicit `language` field default to `'en'` and apply
+ * to all inputs (backwards-compatible with v2.x).
+ *
+ * Adding a new language: append the tag here and update
+ * `detectInputLanguage()` in engine.ts to recognise the relevant Unicode
+ * block.
+ */
+export type ATRLanguage =
+  | "en"
+  | "zh-Hant"
+  | "zh-Hans"
+  | "ja"
+  | "es"
+  | "ar";
+
 export type ATROperator =
   | "gt"
   | "lt"
@@ -88,6 +108,14 @@ export interface ATRPatternCondition {
   patterns: string[];
   match_type: ATRMatchType;
   case_sensitive?: boolean;
+  /**
+   * BCP-47 language tag. v3.0+ multilingual support.
+   *
+   * If set, this condition only fires when the engine's input language
+   * detection matches. Default behaviour (field absent) is "match all
+   * inputs", preserving v2.x compatibility.
+   */
+  language?: ATRLanguage;
 }
 
 export interface ATRBehavioralCondition {

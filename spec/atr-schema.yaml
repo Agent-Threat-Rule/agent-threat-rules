@@ -241,6 +241,15 @@ properties:
                 description:
                   type: string
                   description: Human-readable description of what this condition detects
+                language:
+                  type: string
+                  enum: [en, zh-Hant, zh-Hans, ja, es, ar]
+                  default: en
+                  description: >
+                    BCP-47 language tag this condition targets. Optional; default 'en'.
+                    Engine applies NFKC normalization at match time. Per-language
+                    conditions on the same rule are combined under condition: any.
+                    Adopted v3.0.0 (2026-05-18).
 
           # -- Named-map format (for complex/behavioral detection) --
           - type: object

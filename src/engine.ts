@@ -22,6 +22,7 @@ import type {
   ActionResult,
   ScanResult,
   ScanType,
+  ATRLanguage,
 } from './types.js';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -503,12 +504,30 @@ export class ATREngine {
     const field = cond['field'] as string | undefined;
     const operator = cond['operator'] as string | undefined;
     const value = cond['value'] as string | undefined;
+    const condLang = cond['language'] as ATRLanguage | undefined;
 
     if (!field || !operator || value === undefined) return false;
 
     const rawFieldValue = this.resolveField(field, event);
     if (!rawFieldValue) return false;
-    const fieldValue = normalizeUnicode(rawFieldValue);
+
+    // v3.0 multilingual dispatch: skip language-tagged conditions whose
+    // declared language doesn't match the input's dominant script. Pure
+    // optimisation — language-untagged conditions remain unaffected.
+    if (condLang !== undefined) {
+      const inputLang = detectInputLanguage(rawFieldValue);
+      if (!conditionLanguageMatches(condLang, inputLang)) return false;
+    }
+
+    // Non-English conditions normalise with NFKC (aggressive) so full-width
+    // Latin evasion inside CJK/Arabic text (e.g. "ｉｇｎｏｒｅ" embedded in a
+    // Chinese prompt) is caught. English conditions retain NFC for
+    // backwards compatibility with v2.x rules whose regex sometimes
+    // distinguishes full-width vs half-width characters.
+    const fieldValue =
+      condLang !== undefined && condLang !== 'en'
+        ? normalizeUnicodeAggressive(rawFieldValue)
+        : normalizeUnicode(rawFieldValue);
 
     switch (operator) {
       case 'regex': {
@@ -1393,11 +1412,122 @@ function normalizeRegex(pattern: string): string {
 /**
  * Normalize Unicode text to NFC form and strip zero-width characters.
  * This prevents evasion via combining characters, zero-width joiners, etc.
+ *
+ * NFC was chosen over NFKC to preserve writer intent \u2014 full-width letters
+ * (\uFF21\uFF22\uFF23 vs ABC) remain distinct so rules that explicitly target full-width
+ * evasion can still match. For aggressive normalization use
+ * `normalizeUnicodeAggressive()`.
  */
 function normalizeUnicode(text: string): string {
   return text
     .normalize('NFC')
     .replace(/[\u200B\u200C\u200D\uFEFF\u2060\u180E\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, '');
+}
+
+/**
+ * Aggressive NFKC normalization for evasion-aware matching.
+ *
+ * NFKC collapses compatibility characters: full-width \uFF21\uFF22\uFF23 \u2192 ABC,
+ * circled \u2460 \u2192 1, superscript \u00B2 \u2192 2. Use when a rule needs to match
+ * regardless of presentational tricks. Always strips zero-width + bidi
+ * override characters too.
+ *
+ * Currently invoked only via the v3.0 multilingual dispatch path for inputs
+ * whose dominant script is non-Latin \u2014 full-width Latin in CJK text is a
+ * known evasion vector.
+ */
+function normalizeUnicodeAggressive(text: string): string {
+  return text
+    .normalize('NFKC')
+    .replace(/[\u200B\u200C\u200D\uFEFF\u2060\u180E\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, '');
+}
+
+/**
+ * Heuristic dominant-script detection for v3.0 multilingual dispatch.
+ *
+ * Counts Unicode-block code points and returns the BCP-47 tag of the
+ * dominant script. Used to skip language-tagged conditions whose
+ * declared language does not match the input \u2014 pure optimisation, never
+ * affects correctness of language-untagged rules.
+ *
+ * Disambiguation:
+ *  - Han script: split via simplified-only vs traditional-only indicator
+ *    char sets. Tie / both zero \u2192 defaults to 'zh-Hant'.
+ *  - Latin script: 'es' if Spanish-specific punctuation/diacritics
+ *    (\u00F1, \u00BF, \u00A1) detected, else 'en'.
+ *  - Empty / pure ASCII without Spanish markers \u2192 'en'.
+ *
+ * Exported for unit testing; not part of the public API surface.
+ */
+export function detectInputLanguage(text: string): ATRLanguage {
+  if (!text) return 'en';
+
+  // Simplified-only common chars (rough but cheap).
+  const SIMP_ONLY = /[\u56FD\u5B66\u65F6\u8FD9\u4EEC\u8BF4\u8BA9\u8BF7\u8FD0\u52A8\u6765\u4E2A\u4E07\u53D1\u5173\u73B0\u5B9E\u89C1\u4E49\u9F99\u4E1C\u8F66\u4E66]/;
+  // Traditional-only common chars.
+  const TRAD_ONLY = /[\u570B\u5B78\u6642\u9019\u5011\u8AAA\u8B93\u8ACB\u904B\u52D5\u4F86\u500B\u842C\u767C\u95DC\u73FE\u5BE6\u898B\u7FA9\u9F8D\u6771\u8ECA\u66F8]/;
+  // Spanish-distinguishing characters.
+  const ES_MARKER = /[\u00F1\u00D1\u00BF\u00A1\u00E1\u00E9\u00ED\u00F3\u00FA\u00FC\u00C1\u00C9\u00CD\u00D3\u00DA\u00DC]/;
+
+  let han = 0;
+  let hira = 0;
+  let kata = 0;
+  let arabic = 0;
+  for (const ch of text) {
+    const cp = ch.codePointAt(0);
+    if (cp === undefined) continue;
+    if (cp >= 0x4e00 && cp <= 0x9fff) han++;
+    else if (cp >= 0x3040 && cp <= 0x309f) hira++;
+    else if (cp >= 0x30a0 && cp <= 0x30ff) kata++;
+    else if (cp >= 0x0600 && cp <= 0x06ff) arabic++;
+    else if (cp >= 0x0750 && cp <= 0x077f) arabic++; // Arabic supplement
+    else if (cp >= 0xfb50 && cp <= 0xfdff) arabic++; // Arabic presentation A
+    else if (cp >= 0xfe70 && cp <= 0xfeff) arabic++; // Arabic presentation B
+  }
+
+  if (arabic > 0) return 'ar';
+  if (hira > 0 || kata > 0) return 'ja';
+  if (han > 0) {
+    const hasSimp = SIMP_ONLY.test(text);
+    const hasTrad = TRAD_ONLY.test(text);
+    if (hasSimp && !hasTrad) return 'zh-Hans';
+    if (hasTrad && !hasSimp) return 'zh-Hant';
+    // Tie or no disambiguation chars \u2192 default zh-Hant.
+    // Downstream: callers should evaluate both zh-Hant and zh-Hans conditions
+    // when this is the case (handled in conditionLanguageMatches below).
+    return 'zh-Hant';
+  }
+  if (ES_MARKER.test(text)) return 'es';
+  return 'en';
+}
+
+/**
+ * Decide whether a condition with `language: condLang` should be evaluated
+ * against an input whose detected language is `inputLang`.
+ *
+ * Rules:
+ *  - condLang undefined (no language field) \u2192 always evaluate (v2.x compat)
+ *  - condLang === inputLang \u2192 evaluate
+ *  - Han-script ambiguity: if input is Han and condLang is the other
+ *    Chinese variant, still evaluate (the cheap detector cannot reliably
+ *    split zh-Hant vs zh-Hans, so we err on inclusion)
+ *  - Otherwise \u2192 skip (return false)
+ *
+ * Exported for unit testing; not part of the public API surface.
+ */
+export function conditionLanguageMatches(
+  condLang: ATRLanguage | undefined,
+  inputLang: ATRLanguage
+): boolean {
+  if (condLang === undefined) return true;
+  if (condLang === inputLang) return true;
+  if (
+    (condLang === 'zh-Hant' && inputLang === 'zh-Hans') ||
+    (condLang === 'zh-Hans' && inputLang === 'zh-Hant')
+  ) {
+    return true;
+  }
+  return false;
 }
 
 /** Maximum input length for regex evaluation to mitigate ReDoS */
