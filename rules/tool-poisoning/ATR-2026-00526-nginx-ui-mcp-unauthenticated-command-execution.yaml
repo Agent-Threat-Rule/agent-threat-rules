@@ -109,7 +109,7 @@ detection:
     # Matches tool args containing raw nginx command strings or shell injection appended to nginx commands
     - field: tool_response
       operator: regex
-      value: "(?i)(?:\"args\"\\s*:\\s*(?:\\{[^}]{0,200}|\\[[^\\]]{0,200}))?(?:nginx\\s+-s\\s+(?:reload|restart|stop|quit|reopen)|nginx\\s+-c\\s+/[^'\"\\s]{0,80}|nginx\\s+-t\\s*[;|&]|nginx[_\\-]command_execute[^'\"]{0,40}(?:;|\\||&&|`|\\$\\()[^'\"]{0,200})"
+      value: "(?i)(?:\"(?:command|cmd|args)\"\\s*:\\s*\"[^\"]{0,200}nginx\\s+-s\\s+(?:reload|restart|stop|quit|reopen)|\"args\"\\s*:\\s*(?:\\{[^}]{0,200}|\\[[^\\]]{0,200})nginx\\s+-c\\s+/[^'\"\\s]{0,80}|nginx\\s+-t\\s*[;|&]|nginx[_\\-]command_execute[^'\"]{0,40}(?:;|\\||&&|`|\\$\\()[^'\"]{0,200})"
       description: "nginx command injection pattern inside MCP tool arguments — direct OS command execution via nginx-ui MCP"
 
     # -- Layer 4: Unauthenticated nginx-ui MCP surface described in skill/content --
