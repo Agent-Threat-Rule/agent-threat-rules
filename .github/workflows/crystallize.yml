@@ -208,6 +208,13 @@ jobs:
           \`\`\`
 
           </details>
+
+          ---
+          ⚠️  This PR uses \`gh pr merge --auto\`. Auto-merge enforcement
+          depends on branch protection being configured on \`main\` to
+          require the safety-gate status check. If branch protection is
+          NOT configured, --auto is equivalent to immediate merge. See
+          MIGRATION_v15.md §6 in panguard-ai/packages/threat-cloud/.
           PREOF
           )
 
@@ -219,6 +226,23 @@ jobs:
 
           echo "pr_created=true" >> "$GITHUB_OUTPUT"
 
+      # IMPORTANT — auto-merge depends on branch protection rules.
+      #
+      # `gh pr merge --auto --squash` only enforces the safety gate as a
+      # blocker when GitHub branch protection on `main` is configured to
+      # require the safety-gate check (or "Required checks: <this check>")
+      # before merge. Without that branch-protection setting, --auto
+      # effectively becomes "merge immediately" — the safety script still
+      # runs, but its `fail` result no longer prevents the merge.
+      #
+      # Required GitHub repo settings (Branches > main > Edit):
+      #   1. Enable "Require status checks to pass before merging"
+      #   2. Add the workflow status check named "Run safety gate on new rules"
+      #      from this file as a required check
+      #   3. Enable "Require branches to be up to date before merging"
+      #
+      # See MIGRATION_v15.md §6 in panguard-ai/packages/threat-cloud/
+      # for the operator-facing migration note.
       - name: Label and auto-merge if safety passed
         if: ${{ steps.push_branch.outputs.skipped != 'true' }}
         env:
@@ -234,9 +258,12 @@ jobs:
 
           if [ "$SAFETY_RESULT" = "pass" ]; then
             gh pr edit "$PR_NUM" --add-label "auto-mergeable"
+            # NOTE: --auto only enforces required checks when branch
+            # protection is configured (see comment block above this step).
             gh pr merge "$PR_NUM" --auto --squash --delete-branch \
               || echo "auto-merge scheduling failed — branch protection may require approvals"
             echo "Safety passed: PR #${PR_NUM} queued for auto-merge"
+            echo "  -> ensure branch-protection requires the safety-gate check on main"
           else
             gh pr edit "$PR_NUM" --add-label "needs-human-review"
             echo "Safety failed: PR #${PR_NUM} left open for human review"
