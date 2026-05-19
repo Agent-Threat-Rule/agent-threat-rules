@@ -68,7 +68,7 @@ jobs:
       - name: Safety gate — check new rules against clean corpus
         id: safety
         if: steps.before.outputs.count != steps.after.outputs.count
-        continue-on-error: true
+        continue-on-error: false
         run: |
           set +e
           npx tsx scripts/check-rules-safety.ts --base origin/main | tee /tmp/safety.log
@@ -90,6 +90,12 @@ jobs:
           NEW_RULES=$((AFTER - BEFORE))
           BRANCH="${{ steps.stage.outputs.branch }}"
           SAFETY="${{ steps.safety.outputs.result }}"
+
+          # Guard: if the safety step crashed without writing output, treat as fail.
+          if [ -z "$SAFETY" ]; then
+            echo "Safety gate produced no output (crash) — treating as fail"
+            SAFETY="fail"
+          fi
 
           if [ "$NEW_RULES" -le 0 ]; then
             echo "No new rules"

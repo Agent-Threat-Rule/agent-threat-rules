@@ -13,6 +13,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   crystallize:
@@ -128,24 +129,115 @@ jobs:
             console.log('Generated data/stats.json:', JSON.stringify(stats.rules, null, 2));
           "
 
-      - name: Commit new rules and stats
+      - name: Configure git author
         if: ${{ github.event.inputs.dry_run != 'true' }}
         run: |
           git config user.name "ATR Crystallizer"
           git config user.email "crystallizer@atr-framework.org"
 
-          BEFORE=${{ steps.before.outputs.count }}
-          AFTER=${{ steps.after.outputs.count }}
+      - name: Create branch, commit, and push
+        id: push_branch
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        env:
+          BEFORE: ${{ steps.before.outputs.count }}
+          AFTER: ${{ steps.after.outputs.count }}
+        run: |
           NEW_RULES=$((AFTER - BEFORE))
+          if git diff --quiet -- rules/ data/stats.json && git diff --staged --quiet -- rules/ data/stats.json; then
+            echo "No new rules crystallized — nothing to commit"
+            echo "skipped=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
 
+          BRANCH="crystallize/auto-${{ github.run_id }}-${{ github.run_attempt }}"
+          git checkout -b "$BRANCH"
           git add rules/ data/stats.json
-          if git diff --cached --quiet; then
-            echo "No new rules crystallized"
-          else
-            git commit -m "feat: auto-crystallize ${NEW_RULES} new rules (${BEFORE} -> ${AFTER} total)
+          git commit -m "feat: auto-crystallize ${NEW_RULES} new rules (${BEFORE} -> ${AFTER} total)
 
-            Source: TC ecosystem scan + adversarial samples
-            Pipeline: local-crystallize.ts"
-            git push
-            echo "Committed ${NEW_RULES} new rules"
+          Source: TC ecosystem scan + adversarial samples
+          Pipeline: local-crystallize.ts
+          Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          git push origin "$BRANCH"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "new_rules=$NEW_RULES" >> "$GITHUB_OUTPUT"
+          echo "skipped=false" >> "$GITHUB_OUTPUT"
+
+      - name: Run safety gate on new rules
+        id: safety
+        if: ${{ steps.push_branch.outputs.skipped != 'true' }}
+        continue-on-error: false
+        run: |
+          set +e
+          npx tsx scripts/check-rules-safety.ts --base origin/main | tee /tmp/safety-crystallize.log
+          EXIT=$?
+          if [ $EXIT -eq 0 ]; then
+            echo "result=pass" >> "$GITHUB_OUTPUT"
+          else
+            echo "result=fail" >> "$GITHUB_OUTPUT"
+          fi
+          exit 0
+
+      - name: Open PR
+        id: open_pr
+        if: ${{ steps.push_branch.outputs.skipped != 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ steps.push_branch.outputs.branch }}
+          NEW_RULES: ${{ steps.push_branch.outputs.new_rules }}
+          SAFETY_RESULT: ${{ steps.safety.outputs.result }}
+        run: |
+          if [ -z "$SAFETY_RESULT" ]; then
+            # Safety step crashed without writing output — treat as fail
+            SAFETY_RESULT="fail"
+          fi
+
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          SAFETY_LOG=$(cat /tmp/safety-crystallize.log 2>/dev/null | tail -40 || echo "(no output)")
+
+          BODY=$(cat <<PREOF
+          ## Auto-crystallised rules from TC
+
+          - Run: ${RUN_URL}
+          - New rules added: ${NEW_RULES}
+          - Safety gate: ${SAFETY_RESULT}
+
+          <details><summary>Safety gate output</summary>
+
+          \`\`\`
+          ${SAFETY_LOG}
+          \`\`\`
+
+          </details>
+          PREOF
+          )
+
+          gh pr create \
+            --title "chore(crystallize): auto-synthesised rules from TC" \
+            --body "$BODY" \
+            --base main \
+            --head "$BRANCH"
+
+          echo "pr_created=true" >> "$GITHUB_OUTPUT"
+
+      - name: Label and auto-merge if safety passed
+        if: ${{ steps.push_branch.outputs.skipped != 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ steps.push_branch.outputs.branch }}
+          SAFETY_RESULT: ${{ steps.safety.outputs.result }}
+        run: |
+          if [ -z "$SAFETY_RESULT" ]; then
+            SAFETY_RESULT="fail"
+          fi
+
+          PR_NUM=$(gh pr view "$BRANCH" --json number --jq .number)
+
+          if [ "$SAFETY_RESULT" = "pass" ]; then
+            gh pr edit "$PR_NUM" --add-label "auto-mergeable"
+            gh pr merge "$PR_NUM" --auto --squash --delete-branch \
+              || echo "auto-merge scheduling failed — branch protection may require approvals"
+            echo "Safety passed: PR #${PR_NUM} queued for auto-merge"
+          else
+            gh pr edit "$PR_NUM" --add-label "needs-human-review"
+            echo "Safety failed: PR #${PR_NUM} left open for human review"
           fi

@@ -55,9 +55,11 @@ jobs:
       - name: Auto-generate regex + run quality gate
         id: autoregex
         continue-on-error: true
+        env:
+          CONVERT_OUT_PATH: ${{ steps.convert.outputs.out_path }}
         run: |
           set -e
-          OUTPUT=$(npx tsx scripts/auto-regex.ts --file "${{ steps.convert.outputs.out_path }}" --write 2>&1 || true)
+          OUTPUT=$(npx tsx scripts/auto-regex.ts --file "$CONVERT_OUT_PATH" --write 2>&1 || true)
           echo "$OUTPUT"
           SUMMARY=$(echo "$OUTPUT" | grep -F '::auto-regex-summary::' | sed 's/^.*::auto-regex-summary:://')
           if [ -z "$SUMMARY" ]; then
@@ -79,12 +81,14 @@ jobs:
         id: push
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CONVERT_SLUG: ${{ steps.convert.outputs.slug }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
           set -e
-          BRANCH="probe/${{ steps.convert.outputs.slug }}-${{ github.event.issue.number }}"
+          BRANCH="probe/${CONVERT_SLUG}-${ISSUE_NUMBER}"
           git checkout -b "$BRANCH"
           git add proposals/red-team-probes/
-          git commit -m "feat(proposals): red-team probe submission #${{ github.event.issue.number }} — ${{ steps.convert.outputs.slug }}"
+          git commit -m "feat(proposals): red-team probe submission #${ISSUE_NUMBER} — ${CONVERT_SLUG}"
           git push origin "$BRANCH"
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
 
@@ -92,11 +96,12 @@ jobs:
         if: steps.autoregex.outputs.passed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
           set -e
           if ! git diff --quiet; then
             git add proposals/red-team-probes/
-            git commit -m "feat(auto-regex): generate regex for probe #${{ github.event.issue.number }} — gate passed"
+            git commit -m "feat(auto-regex): generate regex for probe #${ISSUE_NUMBER} — gate passed"
             git push origin HEAD
           fi
 
@@ -104,21 +109,27 @@ jobs:
         id: pr
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AUTOREGEX_PASSED: ${{ steps.autoregex.outputs.passed }}
+          AUTOREGEX_REASON: ${{ steps.autoregex.outputs.reason }}
+          CONVERT_SLUG: ${{ steps.convert.outputs.slug }}
+          CONVERT_OUT_PATH: ${{ steps.convert.outputs.out_path }}
+          PUSH_BRANCH: ${{ steps.push.outputs.branch }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
           set -e
-          if [ "${{ steps.autoregex.outputs.passed }}" = "true" ]; then
+          if [ "$AUTOREGEX_PASSED" = "true" ]; then
             REGEX_BLOCK="**Auto-regex: PASS.** The 6-check quality gate (own-TP match + 1,784-sample benign corpus 0 FP + research-mention 0 FP + cross-rule 0 conflicts) cleared this proposal end-to-end. The generated regex is committed under \`detection.conditions\` and the proposal is ready for human review of the regex shape before promotion to \`rules/\`."
             LABELS="red-team-probe,auto-generated,gate-passed"
           else
-            REGEX_BLOCK="**Auto-regex: NO-PASS.** The deterministic generator could not produce a regex that cleared the 6-check gate without FP. Closest attempt: ${{ steps.autoregex.outputs.reason }}. The proposal stays as a stub — a maintainer needs to hand-craft the regex. The test cases are ready to validate against once written."
+            REGEX_BLOCK="**Auto-regex: NO-PASS.** The deterministic generator could not produce a regex that cleared the 6-check gate without FP. Closest attempt: ${AUTOREGEX_REASON}. The proposal stays as a stub — a maintainer needs to hand-craft the regex. The test cases are ready to validate against once written."
             LABELS="red-team-probe,auto-generated,needs-detection-regex"
           fi
           PR_BODY=$(cat <<EOF
-          Auto-generated proposal from red-team probe submission #${{ github.event.issue.number }}.
+          Auto-generated proposal from red-team probe submission #${ISSUE_NUMBER}.
 
           ## What this PR does
 
-          Adds \`${{ steps.convert.outputs.out_path }}\` — an ATR rule
+          Adds \`${CONVERT_OUT_PATH}\` — an ATR rule
           proposal with the submitter's positive and negative examples
           pre-populated as \`test_cases\`, and an auto-generated regex
           attempt validated against ATR's full quality gate.
@@ -145,29 +156,32 @@ jobs:
           - [ ] Credit the submitter in the rule's \`author\` field —
                 \`metadata_provenance.discovered_by\` is already preserved.
 
-          Closes #${{ github.event.issue.number }} when this proposal is
+          Closes #${ISSUE_NUMBER} when this proposal is
           promoted into \`rules/\`.
           EOF
           )
           PR_URL=$(gh pr create \
-            --title "feat(proposals): red-team probe — ${{ steps.convert.outputs.slug }}" \
+            --title "feat(proposals): red-team probe — ${CONVERT_SLUG}" \
             --body "$PR_BODY" \
             --label "$LABELS" \
             --draft \
             --base main \
-            --head "${{ steps.push.outputs.branch }}")
+            --head "$PUSH_BRANCH")
           echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
-          echo "gate_passed=${{ steps.autoregex.outputs.passed }}" >> "$GITHUB_OUTPUT"
+          echo "gate_passed=$AUTOREGEX_PASSED" >> "$GITHUB_OUTPUT"
 
       - name: Comment on issue with PR link
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_GATE_PASSED: ${{ steps.pr.outputs.gate_passed }}
+          PR_URL: ${{ steps.pr.outputs.pr_url }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
-          if [ "${{ steps.pr.outputs.gate_passed }}" = "true" ]; then
+          if [ "$PR_GATE_PASSED" = "true" ]; then
             BODY=$(cat <<EOF
           Thanks for the probe!
 
-          ✅ **Auto-regex passed the full quality gate.** Your probe is now a complete ATR rule proposal: ${{ steps.pr.outputs.pr_url }}
+          Auto-regex passed the full quality gate. Your probe is now a complete ATR rule proposal: ${PR_URL}
 
           The generated regex matches all your positive examples and produces 0 false positives across our benign corpus (1,784 samples), research-mention corpus (157 samples), and every other ATR rule's true_negatives.
 
@@ -180,9 +194,9 @@ jobs:
             BODY=$(cat <<EOF
           Thanks for the probe!
 
-          ⚠️ **Auto-regex could not clear the gate.** The deterministic generator tried 4 regex variants; the closest one still produced false positives or didn't cover all your examples.
+          Auto-regex could not clear the gate. The deterministic generator tried 4 regex variants; the closest one still produced false positives or didn't cover all your examples.
 
-          PR opened anyway as a stub — a maintainer will hand-craft the regex within a few days: ${{ steps.pr.outputs.pr_url }}
+          PR opened anyway as a stub — a maintainer will hand-craft the regex within a few days: ${PR_URL}
 
           This usually means the positive examples are too varied for a single regex (different attack families bundled into one probe) or the negative examples are too close to the positives (the probe is genuinely hard to detect at the content layer). If you can split the probe into 2-3 tighter probes by attack family, the next submissions will likely auto-pass.
 
@@ -190,14 +204,16 @@ jobs:
           EOF
           )
           fi
-          gh issue comment "${{ github.event.issue.number }}" --body "$BODY"
+          gh issue comment "$ISSUE_NUMBER" --body "$BODY"
 
       - name: Failure comment on issue
         if: failure()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          gh issue comment "${{ github.event.issue.number }}" --body "$(cat <<EOF
+          gh issue comment "$ISSUE_NUMBER" --body "$(cat <<EOF
           The probe-to-ATR converter failed on this submission.
           Common reasons:
           - Fewer than 3 positive or 3 negative examples
@@ -205,7 +221,7 @@ jobs:
           - Acknowledgement boxes not checked
 
           See the workflow log for the exact error:
-          ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          ${RUN_URL}
 
           Edit the issue (or open a new one) and re-trigger the workflow
           by adding/removing the \`red-team-probe\` label.
