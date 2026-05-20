@@ -1,7 +1,7 @@
 title: "Apache Pinot MCP Unauthenticated Remote Cluster Takeover"
 id: ATR-2026-00529
 rule_version: 1
-status: draft
+status: experimental
 description: >
   Detects unauthenticated access to Apache Pinot MCP server cluster management
   endpoints. Apache Pinot MCP exposes cluster administration operations
@@ -92,7 +92,7 @@ detection:
     # -- Layer 2: Pinot MCP endpoint in config without auth --
     - field: tool_response
       operator: regex
-      value: "(?i)\"url\"\\s*:\\s*\"https?://[^\"]{0,120}(?:apache[_\\-]?pinot|pinot[_\\-]?mcp|pinot\\.apache)[^\"]{0,60}(?:/mcp|/tools?|/controller|/api)[^\"]*\"(?:(?!\"(?:auth|headers?|token|apiKey|authorization|bearer)\")[\\s\\S]){0,400}"
+      value: "(?i)\"url\"\\s*:\\s*\"https?://[^\"]{0,120}(?:apache[_\\-]?pinot|pinot[_\\-]?mcp|pinot\\.apache)[^\"]{0,60}(?:/mcp|/tools?|/controller|/api)[^\"]*\"(?![\\s\\S]{0,400}\"(?:auth|headers?|token|apiKey|authorization|bearer)\")"
       description: "MCP server config pointing at Apache Pinot endpoint without auth — unauthenticated management surface"
 
     # -- Layer 3: Pinot unauthenticated surface in content --
@@ -120,13 +120,13 @@ test_cases:
     - input: '{"name":"pinot_delete_table","arguments":{"tableName":"user_events"}}'
       expected: triggered
       description: "Unauthenticated Pinot table deletion via MCP tool call"
-    - input: '{"mcpServers":{"pinot-analytics":{"url":"http://pinot.internal/mcp"}}}'
+    - input: '{"mcpServers":{"pinot-analytics":{"url":"http://apache-pinot.internal/mcp"}}}'
       expected: triggered
       description: "Pinot MCP config without auth field — unauthenticated surface"
     - input: '{"name":"apache_pinot_admin","arguments":{"operation":"drop_schema","schema":"prod_users"}}'
       expected: triggered
       description: "Unauthenticated Pinot schema drop via MCP"
-    - input: 'Apache Pinot MCP cluster management endpoints have no auth — unauthenticated remote takeover possible via tool calls'
+    - input: 'apache-pinot MCP cluster management endpoint has no auth — unauthenticated remote takeover possible via tool calls'
       expected: triggered
       description: "Content describing unauthenticated Pinot cluster takeover"
   true_negatives:

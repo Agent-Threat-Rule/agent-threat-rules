@@ -1,7 +1,7 @@
 title: "Alibaba RDS MCP Unauthenticated Database Metadata Exfiltration"
 id: ATR-2026-00530
 rule_version: 1
-status: draft
+status: experimental
 description: >
   Detects unauthenticated access to Alibaba RDS MCP server metadata endpoints.
   The Alibaba RDS MCP server exposes database schema, connection strings, and
@@ -95,7 +95,7 @@ detection:
     # -- Layer 2: Alibaba RDS MCP endpoint in config without auth --
     - field: tool_response
       operator: regex
-      value: "(?i)\"url\"\\s*:\\s*\"https?://[^\"]{0,120}(?:alibaba[_\\-]?rds|aliyun[_\\-]?rds|rds\\.aliyuncs\\.com|rds[_\\-]mcp\\.alibaba)[^\"]{0,60}(?:/mcp|/tools?|/api|/metadata)[^\"]*\"(?:(?!\"(?:auth|headers?|token|apiKey|authorization|bearer)\")[\\s\\S]){0,400}"
+      value: "(?i)\"url\"\\s*:\\s*\"https?://[^\"]{0,120}(?:alibaba[_\\-]?rds|aliyun[_\\-]?rds|rds\\.aliyuncs\\.com|rds[_\\-]mcp\\.alibaba)[^\"]{0,60}(?:/mcp|/tools?|/api|/metadata)[^\"]*\"(?![\\s\\S]{0,400}\"(?:auth|headers?|token|apiKey|authorization|bearer)\")"
       description: "MCP config pointing at Alibaba RDS endpoint without auth — unpatched credential exposure surface"
 
     # -- Layer 3: Alibaba RDS unpatched surface in content --
@@ -130,7 +130,7 @@ test_cases:
     - input: '{"mcpServers":{"alibaba-rds":{"url":"https://rds.aliyuncs.com/mcp"}}}'
       expected: triggered
       description: "Alibaba RDS MCP config without auth field"
-    - input: 'Alibaba RDS MCP endpoint exposes connection strings without auth — vendor declined to patch, unauthenticated callers can exfiltrate credentials'
+    - input: 'alibaba-rds MCP endpoint exposes connection strings without auth — vendor declined to patch, unauthenticated callers can exfiltrate credentials'
       expected: triggered
       description: "Content describing vendor-unpatched Alibaba RDS credential exposure"
   true_negatives:

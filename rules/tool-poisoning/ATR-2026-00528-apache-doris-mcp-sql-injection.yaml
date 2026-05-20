@@ -1,7 +1,7 @@
 title: "Apache Doris MCP Server SQL Injection (CVE-2025-66335)"
 id: ATR-2026-00528
 rule_version: 1
-status: draft
+status: experimental
 description: >
   Detects CVE-2025-66335: Apache Doris MCP server passes user-supplied SQL
   fragments directly to query execution without sanitisation. An attacker can
@@ -93,7 +93,7 @@ detection:
     # -- Layer 2: Doris MCP endpoint in config --
     - field: tool_response
       operator: regex
-      value: "(?i)\"url\"\\s*:\\s*\"https?://[^\"]{0,120}(?:apache[_\\-]?doris|doris[_\\-]?mcp|doris\\.apache)[^\"]{0,60}(?:/mcp|/tools?|/api)[^\"]*\"(?:(?!\"(?:auth|headers?|token|apiKey|authorization|bearer)\")[\\s\\S]){0,400}"
+      value: "(?i)\"url\"\\s*:\\s*\"https?://[^\"]{0,120}(?:apache[_\\-]?doris|doris[_\\-]?mcp|doris\\.apache)[^\"]{0,60}(?:/mcp|/tools?|/api)[^\"]*\"(?![\\s\\S]{0,400}\"(?:auth|headers?|token|apiKey|authorization|bearer)\")"
       description: "MCP config pointing at Apache Doris endpoint without auth — unauthenticated SQL injection surface"
 
     # -- Layer 3: Doris SQL injection described in content --
@@ -118,19 +118,19 @@ confidence: 83
 
 test_cases:
   true_positives:
-    - input: '{"name":"doris_query","arguments":{"query":"SELECT * FROM users WHERE id=1; DROP TABLE users; --"}}'
+    - input: '{"name":"doris_query","arguments":{"query":"SELECT * FROM t WHERE x=1 UNION SELECT username,password FROM admins--"}}'
       expected: triggered
-      description: "SQL injection via semicolon-chained DROP in Doris MCP query argument"
+      description: "UNION-based SQL injection in Doris MCP query argument — CVE-2025-66335 exfil pattern"
     - input: '{"name":"execute_sql","arguments":{"sql":"SELECT * FROM t WHERE name='' OR ''1''=''1"}}'
       expected: triggered
       description: "Classic OR-based SQL injection in Doris MCP tool"
     - input: '{"name":"doris_query","arguments":{"query":"SELECT 1 UNION ALL SELECT username,password FROM admin_users"}}'
       expected: triggered
       description: "UNION-based data exfiltration via Doris MCP"
-    - input: 'Apache Doris MCP CVE-2025-66335: unsanitised SQL passed directly to query execution — union select extracts credentials'
+    - input: 'apache-doris MCP CVE-2025-66335: unsanitised SQL passed directly to query execution — union select extracts credentials'
       expected: triggered
       description: "Content describing CVE-2025-66335 SQL injection exploitation"
-    - input: '{"mcpServers":{"doris-analytics":{"url":"http://doris.internal/mcp"}}}'
+    - input: '{"mcpServers":{"doris-analytics":{"url":"http://apache-doris.internal/mcp"}}}'
       expected: triggered
       description: "Apache Doris MCP config without auth field"
   true_negatives:

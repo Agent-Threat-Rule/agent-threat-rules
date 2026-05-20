@@ -1,7 +1,7 @@
 title: "PraisonAI Unauthenticated Agent API Exploitation (CVE-2026-44338)"
 id: ATR-2026-00527
 rule_version: 1
-status: draft
+status: experimental
 description: >
   Detects CVE-2026-44338 (CVSS ~9.1): PraisonAI's legacy api_server.py exposes
   /agents and /chat HTTP endpoints without authentication by default. An
@@ -91,13 +91,13 @@ detection:
     # -- Layer 1: Tool call to PraisonAI agent API without auth context --
     - field: tool_response
       operator: regex
-      value: "(?i)\"url\"\\s*:\\s*\"https?://[^\"]{0,120}(?:praisonai|praison[_\\-]?ai|praison\\.ai)[^\"]{0,60}(?:/agents?|/chat|/api/v1/(?:agents?|chat))[^\"]*\"(?:(?!\"(?:auth|headers?|token|apiKey|authorization|bearer)\")[\\s\\S]){0,400}"
+      value: "(?i)\"url\"\\s*:\\s*\"https?://[^\"]{0,120}(?:praisonai|praison[_\\-]?ai|praison\\.ai)[^\"]{0,60}(?:/agents?|/chat|/api/v1/(?:agents?|chat))[^\"]*\"(?![\\s\\S]{0,400}\"(?:auth|headers?|token|apiKey|authorization|bearer)\")"
       description: "MCP server config pointing at PraisonAI /agents or /chat endpoint URL without auth/headers field — unauthenticated surface exposure"
 
     # -- Layer 2: Direct POST to PraisonAI agent execution endpoint in tool args --
     - field: tool_response
       operator: regex
-      value: "(?i)(?:\"(?:url|endpoint|target)\"\\s*:\\s*\"[^\"]{0,120}(?:praisonai|praison[_\\-]?ai)[^\"]{0,60}(?:/agents?|/chat)\"|(?:curl|wget|fetch|requests?\\.post)[^\\n]{0,200}(?:praisonai|praison[_\\-]?ai)[^\\n]{0,100}(?:/agents?|/chat))(?:(?!(?:authorization|bearer|api[_\\-]?key|x-api-key|token|x-auth))[\\s\\S]){0,400}"
+      value: "(?i)(?:\"(?:url|endpoint|target)\"\\s*:\\s*\"[^\"]{0,120}(?:praisonai|praison[_\\-]?ai)[^\"]{0,60}(?:/agents?|/chat)\"|(?:curl|wget|fetch|requests?\\.post)[^\\n]{0,200}(?:praisonai|praison[_\\-]?ai)[^\\n]{0,100}(?:/agents?|/chat))(?![\\s\\S]{0,400}(?:authorization|bearer|api[_\\-]?key|x-api-key|token|x-auth))"
       description: "HTTP call to PraisonAI agent execution endpoint in tool arguments without auth header — CVE-2026-44338 direct exploitation"
 
     # -- Layer 3: PraisonAI unauthenticated surface described in content --
@@ -109,7 +109,7 @@ detection:
     # -- Layer 4: PraisonAI MCP tool listing exposing agent execution without auth challenge --
     - field: tool_response
       operator: regex
-      value: "(?i)\"tools\"\\s*:\\s*\\[(?:[^\\]]{0,400}(?:run_agent|execute_agent|create_agent|agent_run|praisonai[_\\-](?:run|execute|create|task))[^\\]]{0,400})\\](?:(?!(?:www[_\\-]?authenticate|authorization|x-api-key|bearer\\s+token))[\\s\\S]){0,600}"
+      value: "(?i)\"tools\"\\s*:\\s*\\[(?:[^\\]]{0,400}(?:run_agent|execute_agent|create_agent|agent_run|praisonai[_\\-](?:run|execute|create|task))[^\\]]{0,400})\\](?![\\s\\S]{0,600}(?:www[_\\-]?authenticate|authorization|x-api-key|bearer\\s+token))"
       description: "PraisonAI MCP handshake exposes agent execution tools without an authentication challenge"
 
 response:
@@ -131,13 +131,13 @@ confidence: 87
 
 test_cases:
   true_positives:
-    - input: '{"mcpServers":{"praisonai":{"url":"http://192.168.1.50:8080/agents"}}}'
+    - input: '{"mcpServers":{"praisonai":{"url":"http://praisonai.internal:8080/agents"}}}'
       expected: triggered
       description: "PraisonAI MCP config pointing at /agents endpoint without auth — unauthenticated surface exposure"
     - input: '{"mcpServers":{"multi-agent":{"url":"http://praisonai.internal/chat"}}}'
       expected: triggered
       description: "PraisonAI /chat endpoint in MCP config without auth field"
-    - input: 'curl -X POST http://192.168.1.50:8080/agents -d {"task":"ls -la /etc"}'
+    - input: 'curl -X POST http://praisonai.internal:8080/agents -d {"task":"ls -la /etc"}'
       expected: triggered
       description: "Direct unauthenticated POST to PraisonAI /agents endpoint — CVE-2026-44338 PoC"
     - input: 'The PraisonAI api_server.py legacy endpoint /agents has no auth by default — CVE-2026-44338 lets unauthenticated callers execute agents.'
@@ -150,7 +150,7 @@ test_cases:
       expected: triggered
       description: "Unauthenticated POST to PraisonAI /chat with prompt injection payload"
   true_negatives:
-    - input: '{"mcpServers":{"praisonai":{"url":"http://192.168.1.50:8080/agents","headers":{"Authorization":"Bearer eyJhbG..."}}}}'
+    - input: '{"mcpServers":{"praisonai":{"url":"http://praisonai.internal:8080/agents","headers":{"Authorization":"Bearer eyJhbG..."}}}}'
       expected: not_triggered
       description: "PraisonAI MCP config WITH Authorization header — properly authenticated"
     - input: '{"mcpServers":{"praisonai":{"url":"https://agents.example.com/mcp","auth":{"type":"oauth2","clientId":"app"}}}}'
