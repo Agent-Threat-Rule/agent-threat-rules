@@ -1,0 +1,155 @@
+title: "Alibaba RDS MCP Unauthenticated Database Metadata Exfiltration"
+id: ATR-2026-00530
+rule_version: 1
+status: draft
+description: >
+  Detects unauthenticated access to Alibaba RDS MCP server metadata endpoints.
+  The Alibaba RDS MCP server exposes database schema, connection strings, and
+  credential metadata without requiring authentication. Alibaba confirmed the
+  vulnerability but declined to patch it, leaving all deployments permanently
+  exposed. An unauthenticated attacker can enumerate databases, extract schema
+  structures, and obtain connection credentials via MCP tool calls.
+  Detection covers (a) MCP configs pointing at Alibaba RDS endpoints without
+  auth, (b) tool calls invoking RDS metadata functions without auth context,
+  (c) content describing the unpatched unauthenticated surface.
+  CWE-306 (Missing Authentication), CWE-200 (Exposure of Sensitive Information).
+author: "ATR Community"
+date: "2026/05/20"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM06:2025 - Excessive Agency"
+    - "LLM02:2025 - Sensitive Information Disclosure"
+  owasp_agentic:
+    - "ASI06:2026 - Resource and Environment Manipulation"
+    - "ASI03:2026 - Memory Poisoning"
+  mitre_atlas:
+    - "AML.T0049 - Exploit Public-Facing Application"
+  mitre_attack:
+    - "T1190 - Exploit Public-Facing Application"
+    - "T1552 - Unsecured Credentials"
+
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Alibaba RDS MCP exposes database credentials and schema without authentication; Article 15 requires AI tool servers to protect sensitive data access with authentication."
+      strength: primary
+    - article: "9"
+      context: "Article 9 risk management must enumerate unauthenticated credential and schema exposure as a critical data-protection failure for any agent-integrated RDS tool — especially given vendor refusal to patch."
+      strength: primary
+  nist_ai_rmf:
+    - function: Manage
+      subcategory: MG.2.3
+      context: "Detection of unauthenticated MCP metadata calls against Alibaba RDS is the primary risk treatment given vendor non-response to the vulnerability."
+      strength: primary
+    - function: Map
+      subcategory: MP.5.1
+      context: "Permanently unpatched credential exposure surfaces must be flagged as accepted-risk or mitigated at the network layer in the organizational AI risk register."
+      strength: secondary
+    - subcategory: GV.6.1
+      function: Govern
+      context: "Cloud provider MCP tools with unpatched authentication gaps require compensating controls under GV.6.1 supplier risk management."
+      strength: primary
+  iso_42001:
+    - clause: "8.6"
+      context: "Operational controls must detect MCP tool calls that would expose Alibaba RDS credentials or schema to unauthenticated callers."
+      strength: primary
+
+tags:
+  category: tool-poisoning
+  subcategory: mcp-missing-authentication
+  scan_target: mcp
+  confidence: high
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - alibaba-rds
+    - any
+  provider:
+    - alibaba
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "Internal Alibaba RDS deployments behind authenticated VPN."
+    - "Security scanning tooling probing the Alibaba RDS MCP endpoint."
+    - "Educational content describing the vulnerability."
+  conditions:
+    # -- Layer 1: RDS metadata/credential tool call without auth --
+    - field: tool_response
+      operator: regex
+      value: "(?i)\"(?:name|tool)\"\\s*:\\s*\"(?:rds_(?:describe|list|get|fetch)_(?:instances?|databases?|schemas?|credentials?|connection[_\\-]?strings?|accounts?|passwords?)|alibaba[_\\-]rds[_\\-](?:describe|list|metadata|credentials?|schema))[^\"]{0,60}\"(?:(?!(?:authorization|bearer|api[_\\-]?key|x-api-key|token|x-auth))[\\s\\S]){0,500}"
+      description: "MCP tool call targeting Alibaba RDS metadata or credential enumeration without auth — unauthenticated exfiltration vector"
+
+    # -- Layer 2: Alibaba RDS MCP endpoint in config without auth --
+    - field: tool_response
+      operator: regex
+      value: "(?i)\"url\"\\s*:\\s*\"https?://[^\"]{0,120}(?:alibaba[_\\-]?rds|aliyun[_\\-]?rds|rds\\.aliyuncs\\.com|rds[_\\-]mcp\\.alibaba)[^\"]{0,60}(?:/mcp|/tools?|/api|/metadata)[^\"]*\"(?:(?!\"(?:auth|headers?|token|apiKey|authorization|bearer)\")[\\s\\S]){0,400}"
+      description: "MCP config pointing at Alibaba RDS endpoint without auth — unpatched credential exposure surface"
+
+    # -- Layer 3: Alibaba RDS unpatched surface in content --
+    - field: content
+      operator: regex
+      value: "(?i)alibaba[_\\-]?rds[^\\n]{0,200}(?:mcp|tool\\s+call|endpoint)[^\\n]{0,200}(?:no\\s+auth|missing\\s+auth|unauth(?:enticated)?|without\\s+(?:auth|credentials?|token)|vendor\\s+(?:refuse|declined|won.t\\s+patch|unpatched)|exfil(?:trat)?|credentials?\\s+(?:exposed?|leak)|connection\\s+string)"
+      description: "Content describing Alibaba RDS MCP unauthenticated credential exfiltration — vendor-refused-to-patch surface"
+
+response:
+  actions:
+    - block_tool
+    - alert
+    - escalate
+  auto_response_threshold: high
+  message_template: >
+    [ATR-2026-00530] HIGH: Alibaba RDS MCP unauthenticated metadata/credential
+    exfiltration detected. MCP tool call targets Alibaba RDS schema or credential
+    metadata without authentication. Note: Alibaba confirmed this vulnerability
+    but declined to patch — apply network-layer controls immediately and remove
+    Alibaba RDS MCP from agent toolchains until a compensating control is in place.
+
+confidence: 81
+
+test_cases:
+  true_positives:
+    - input: '{"name":"rds_describe_instances","arguments":{"region":"cn-hangzhou"}}'
+      expected: triggered
+      description: "Unauthenticated Alibaba RDS instance enumeration via MCP"
+    - input: '{"name":"rds_get_credentials","arguments":{"instanceId":"rm-abc123"}}'
+      expected: triggered
+      description: "Unauthenticated credential retrieval from Alibaba RDS via MCP"
+    - input: '{"mcpServers":{"alibaba-rds":{"url":"https://rds.aliyuncs.com/mcp"}}}'
+      expected: triggered
+      description: "Alibaba RDS MCP config without auth field"
+    - input: 'Alibaba RDS MCP endpoint exposes connection strings without auth — vendor declined to patch, unauthenticated callers can exfiltrate credentials'
+      expected: triggered
+      description: "Content describing vendor-unpatched Alibaba RDS credential exposure"
+  true_negatives:
+    - input: '{"mcpServers":{"rds":{"url":"https://rds.aliyuncs.com/mcp","headers":{"Authorization":"Bearer token"}}}}'
+      expected: not_triggered
+      description: "Alibaba RDS MCP config WITH Authorization header"
+    - input: '{"name":"rds_query","arguments":{"sql":"SELECT COUNT(*) FROM orders"}}'
+      expected: not_triggered
+      description: "Read-only RDS query without metadata/credential access pattern"
+    - input: "Mitigate Alibaba RDS MCP exposure by placing a reverse proxy with authentication in front of the endpoint."
+      expected: not_triggered
+      description: "Defensive mitigation guidance"
+
+evasion_tests:
+  - input: '{"mcpServers":{"cloud-db":{"url":"http://10.0.0.20:8080/mcp"}}}'
+    expected: not_triggered
+    bypass_technique: ip_only_no_alibaba_name
+    notes: "Generic key and raw IP evades Layer 2 — no alibaba/aliyun substring in URL."
+  - input: '{"name":"ALIBABA_RDS_DESCRIBE_INSTANCES","arguments":{}}'
+    expected: triggered
+    bypass_technique: case_variation
+    notes: "Case-insensitive flag covers uppercase tool name."

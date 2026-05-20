@@ -1,0 +1,155 @@
+title: "Apache Doris MCP Server SQL Injection (CVE-2025-66335)"
+id: ATR-2026-00528
+rule_version: 1
+status: draft
+description: >
+  Detects CVE-2025-66335: Apache Doris MCP server passes user-supplied SQL
+  fragments directly to query execution without sanitisation. An attacker can
+  inject arbitrary SQL via MCP tool call arguments to read, modify, or destroy
+  database contents. Detection covers (a) tool call arguments containing SQL
+  injection payloads targeting Doris MCP tool names, (b) MCP configs pointing
+  at Doris endpoints, (c) content describing the injection surface.
+  CWE-89 (SQL Injection).
+author: "ATR Community"
+date: "2026/05/20"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM05:2025 - Improper Output Handling"
+    - "LLM06:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI05:2026 - Unexpected Code Execution"
+    - "ASI06:2026 - Resource and Environment Manipulation"
+  mitre_atlas:
+    - "AML.T0049 - Exploit Public-Facing Application"
+  mitre_attack:
+    - "T1190 - Exploit Public-Facing Application"
+    - "T1059.004 - Unix Shell"
+  cve:
+    - "CVE-2025-66335"
+
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "CVE-2025-66335 Apache Doris MCP server passes unsanitised SQL to query execution; Article 15 requires AI tool servers to validate and sanitise all inputs before execution."
+      strength: primary
+    - article: "9"
+      context: "Article 9 risk management must enumerate SQL injection via MCP tool arguments as a critical data-integrity threat for any agent-integrated database tool."
+      strength: primary
+  nist_ai_rmf:
+    - function: Manage
+      subcategory: MG.2.3
+      context: "Runtime detection of SQL injection patterns in MCP tool arguments targeting Apache Doris is the primary risk treatment for CVE-2025-66335."
+      strength: primary
+    - function: Map
+      subcategory: MP.5.1
+      context: "SQL injection via database MCP tools must be catalogued as a high-severity threat in the organizational AI risk register."
+      strength: secondary
+    - subcategory: GV.6.1
+      function: Govern
+      context: "Database MCP servers (including Apache Doris) must be assessed for input validation controls before agent pipelines depend on them."
+      strength: secondary
+  iso_42001:
+    - clause: "8.6"
+      context: "Operational controls under clause 8.6 must detect SQL injection payloads in MCP tool call arguments before they reach database execution."
+      strength: primary
+
+tags:
+  category: tool-poisoning
+  subcategory: mcp-sql-injection
+  scan_target: mcp
+  confidence: high
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - apache-doris
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "Security scanning tooling that probes Doris MCP for SQL injection vulnerabilities."
+    - "Educational content describing SQL injection in database MCP servers."
+    - "Legitimate SQL queries containing UNION or subqueries for analytics."
+  conditions:
+    # -- Layer 1: SQL injection payload in MCP tool arguments --
+    - field: tool_response
+      operator: regex
+      value: "(?i)\"(?:query|sql|statement|command)\"\\s*:\\s*\"[^\"]{0,300}(?:';\\s*(?:drop|delete|insert|update|create|alter|truncate)\\s+|'\\s*(?:or|and)\\s*'[^']{0,50}'\\s*=\\s*'|union\\s+(?:all\\s+)?select|--\\s*$|/\\*[^*]{0,50}\\*/|xp_cmdshell|information_schema|pg_sleep|waitfor\\s+delay)[^\"]{0,200}\""
+      description: "SQL injection payload in MCP tool query argument — CVE-2025-66335 Apache Doris exploitation pattern"
+
+    # -- Layer 2: Doris MCP endpoint in config --
+    - field: tool_response
+      operator: regex
+      value: "(?i)\"url\"\\s*:\\s*\"https?://[^\"]{0,120}(?:apache[_\\-]?doris|doris[_\\-]?mcp|doris\\.apache)[^\"]{0,60}(?:/mcp|/tools?|/api)[^\"]*\"(?:(?!\"(?:auth|headers?|token|apiKey|authorization|bearer)\")[\\s\\S]){0,400}"
+      description: "MCP config pointing at Apache Doris endpoint without auth — unauthenticated SQL injection surface"
+
+    # -- Layer 3: Doris SQL injection described in content --
+    - field: content
+      operator: regex
+      value: "(?i)(?:apache[_\\-]?doris|doris[_\\-]?mcp)[^\\n]{0,200}(?:sql\\s+injection|unsaniti[sz]ed|inject[^\\n]{0,50}(?:query|sql)|cve[_\\-]?2025[_\\-]?66335|drop\\s+table|union\\s+select)"
+      description: "Content describing or weaponising Apache Doris MCP SQL injection — CVE-2025-66335 framing"
+
+response:
+  actions:
+    - block_tool
+    - alert
+    - escalate
+  auto_response_threshold: critical
+  message_template: >
+    [ATR-2026-00528] CRITICAL: Apache Doris MCP SQL injection detected
+    (CVE-2025-66335). MCP tool arguments contain SQL injection patterns
+    targeting Apache Doris query execution. Block tool invocation immediately;
+    patch Doris MCP server; validate and parameterise all SQL inputs.
+
+confidence: 83
+
+test_cases:
+  true_positives:
+    - input: '{"name":"doris_query","arguments":{"query":"SELECT * FROM users WHERE id=1; DROP TABLE users; --"}}'
+      expected: triggered
+      description: "SQL injection via semicolon-chained DROP in Doris MCP query argument"
+    - input: '{"name":"execute_sql","arguments":{"sql":"SELECT * FROM t WHERE name='' OR ''1''=''1"}}'
+      expected: triggered
+      description: "Classic OR-based SQL injection in Doris MCP tool"
+    - input: '{"name":"doris_query","arguments":{"query":"SELECT 1 UNION ALL SELECT username,password FROM admin_users"}}'
+      expected: triggered
+      description: "UNION-based data exfiltration via Doris MCP"
+    - input: 'Apache Doris MCP CVE-2025-66335: unsanitised SQL passed directly to query execution — union select extracts credentials'
+      expected: triggered
+      description: "Content describing CVE-2025-66335 SQL injection exploitation"
+    - input: '{"mcpServers":{"doris-analytics":{"url":"http://doris.internal/mcp"}}}'
+      expected: triggered
+      description: "Apache Doris MCP config without auth field"
+  true_negatives:
+    - input: '{"name":"doris_query","arguments":{"query":"SELECT COUNT(*) FROM orders WHERE created_at > 2026-01-01"}}'
+      expected: not_triggered
+      description: "Legitimate analytics query without injection patterns"
+    - input: '{"mcpServers":{"doris":{"url":"http://doris.internal/mcp","headers":{"Authorization":"Bearer token123"}}}}'
+      expected: not_triggered
+      description: "Doris MCP config with Authorization header — properly authenticated"
+    - input: "Apache Doris documentation: use parameterised queries to prevent SQL injection."
+      expected: not_triggered
+      description: "Defensive documentation about SQL injection prevention"
+
+evasion_tests:
+  - input: '{"name":"doris_query","arguments":{"query":"SELECT * FROM t WHERE x=1 UNION/*comment*/SELECT user,pass FROM admins"}}'
+    expected: triggered
+    bypass_technique: comment_obfuscation
+    notes: "Inline comment inside UNION SELECT — regex matches UNION.*SELECT with intervening content covered."
+  - input: '{"name":"run_query","arguments":{"sql":"SELECT name FROM products WHERE category=hiking"}}'
+    expected: not_triggered
+    bypass_technique: benign_query_no_injection
+    notes: "Normal query with no injection patterns — should not trigger."

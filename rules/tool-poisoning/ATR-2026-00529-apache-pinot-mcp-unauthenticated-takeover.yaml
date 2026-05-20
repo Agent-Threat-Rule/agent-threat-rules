@@ -1,0 +1,151 @@
+title: "Apache Pinot MCP Unauthenticated Remote Cluster Takeover"
+id: ATR-2026-00529
+rule_version: 1
+status: draft
+description: >
+  Detects unauthenticated access to Apache Pinot MCP server cluster management
+  endpoints. Apache Pinot MCP exposes cluster administration operations
+  (schema modification, table deletion, segment management) without requiring
+  authentication, allowing any network-reachable caller to take over the cluster
+  via MCP tool calls. Detection covers (a) MCP configs pointing at Pinot
+  endpoints without auth, (b) tool calls invoking Pinot cluster management
+  functions without auth context, (c) content describing the unauthenticated
+  surface. CWE-306 (Missing Authentication for Critical Function).
+author: "ATR Community"
+date: "2026/05/20"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM06:2025 - Excessive Agency"
+    - "LLM05:2025 - Improper Output Handling"
+  owasp_agentic:
+    - "ASI05:2026 - Unexpected Code Execution"
+    - "ASI06:2026 - Resource and Environment Manipulation"
+  mitre_atlas:
+    - "AML.T0049 - Exploit Public-Facing Application"
+  mitre_attack:
+    - "T1190 - Exploit Public-Facing Application"
+    - "T1078 - Valid Accounts"
+
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Apache Pinot MCP exposes cluster management without authentication; Article 15 requires AI tool servers to enforce authentication on all administrative functions."
+      strength: primary
+    - article: "9"
+      context: "Article 9 risk management must enumerate unauthenticated cluster management endpoints as a critical threat for any agent-integrated real-time analytics infrastructure."
+      strength: primary
+  nist_ai_rmf:
+    - function: Manage
+      subcategory: MG.2.3
+      context: "Runtime detection of unauthenticated MCP tool calls against Apache Pinot cluster management is the primary risk treatment."
+      strength: primary
+    - function: Map
+      subcategory: MP.5.1
+      context: "Unauthenticated real-time analytics cluster management surfaces must be catalogued in the organizational AI risk register."
+      strength: secondary
+    - subcategory: GV.6.1
+      function: Govern
+      context: "Database MCP servers must be assessed for missing authentication controls before agent pipelines depend on them."
+      strength: secondary
+  iso_42001:
+    - clause: "8.6"
+      context: "Operational controls must detect and block unauthenticated MCP tool invocations targeting Apache Pinot cluster management endpoints."
+      strength: primary
+
+tags:
+  category: tool-poisoning
+  subcategory: mcp-missing-authentication
+  scan_target: mcp
+  confidence: high
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - apache-pinot
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "Internal Pinot deployments behind authenticated VPN perimeter."
+    - "Security scanning tooling probing Pinot MCP for authentication bypass."
+    - "Educational documentation describing Pinot MCP architecture."
+  conditions:
+    # -- Layer 1: Pinot cluster management tool call without auth --
+    - field: tool_response
+      operator: regex
+      value: "(?i)\"(?:name|tool)\"\\s*:\\s*\"(?:pinot_(?:create|delete|update|drop|add|modify|alter)_(?:table|schema|segment|tenant|instance)|apache[_\\-]?pinot[_\\-](?:admin|manage|cluster|delete|drop))[^\"]{0,60}\"(?:(?!(?:authorization|bearer|api[_\\-]?key|x-api-key|token|x-auth))[\\s\\S]){0,500}"
+      description: "MCP tool call targeting Apache Pinot cluster management function without auth — unauthenticated takeover vector"
+
+    # -- Layer 2: Pinot MCP endpoint in config without auth --
+    - field: tool_response
+      operator: regex
+      value: "(?i)\"url\"\\s*:\\s*\"https?://[^\"]{0,120}(?:apache[_\\-]?pinot|pinot[_\\-]?mcp|pinot\\.apache)[^\"]{0,60}(?:/mcp|/tools?|/controller|/api)[^\"]*\"(?:(?!\"(?:auth|headers?|token|apiKey|authorization|bearer)\")[\\s\\S]){0,400}"
+      description: "MCP server config pointing at Apache Pinot endpoint without auth — unauthenticated management surface"
+
+    # -- Layer 3: Pinot unauthenticated surface in content --
+    - field: content
+      operator: regex
+      value: "(?i)apache[_\\-]?pinot[^\\n]{0,200}(?:mcp|tool\\s+call|endpoint)[^\\n]{0,200}(?:no\\s+auth|missing\\s+auth|unauth(?:enticated)?|without\\s+(?:auth|credentials?|token)|bypass|remote\\s+takeover|cluster\\s+(?:admin|management|takeover))"
+      description: "Content describing Apache Pinot MCP unauthenticated cluster takeover surface"
+
+response:
+  actions:
+    - block_tool
+    - alert
+    - escalate
+  auto_response_threshold: critical
+  message_template: >
+    [ATR-2026-00529] CRITICAL: Apache Pinot MCP unauthenticated cluster
+    management detected. MCP tool call targets Apache Pinot cluster
+    administration without authentication. Block tool invocation immediately;
+    enforce authentication on all Pinot MCP endpoints.
+
+confidence: 80
+
+test_cases:
+  true_positives:
+    - input: '{"name":"pinot_delete_table","arguments":{"tableName":"user_events"}}'
+      expected: triggered
+      description: "Unauthenticated Pinot table deletion via MCP tool call"
+    - input: '{"mcpServers":{"pinot-analytics":{"url":"http://pinot.internal/mcp"}}}'
+      expected: triggered
+      description: "Pinot MCP config without auth field — unauthenticated surface"
+    - input: '{"name":"apache_pinot_admin","arguments":{"operation":"drop_schema","schema":"prod_users"}}'
+      expected: triggered
+      description: "Unauthenticated Pinot schema drop via MCP"
+    - input: 'Apache Pinot MCP cluster management endpoints have no auth — unauthenticated remote takeover possible via tool calls'
+      expected: triggered
+      description: "Content describing unauthenticated Pinot cluster takeover"
+  true_negatives:
+    - input: '{"mcpServers":{"pinot":{"url":"http://pinot.internal/mcp","headers":{"Authorization":"Bearer token"}}}}'
+      expected: not_triggered
+      description: "Pinot MCP config with Authorization header — properly authenticated"
+    - input: '{"name":"pinot_query","arguments":{"sql":"SELECT count(*) FROM orders"}}'
+      expected: not_triggered
+      description: "Read-only Pinot query without cluster management pattern"
+    - input: "Apache Pinot documentation: configure authentication before exposing the controller API."
+      expected: not_triggered
+      description: "Defensive documentation about Pinot authentication"
+
+evasion_tests:
+  - input: '{"mcpServers":{"realtime-db":{"url":"http://10.0.0.8:9000/mcp"}}}'
+    expected: not_triggered
+    bypass_technique: ip_only_no_pinot_name
+    notes: "Generic key and raw IP — no pinot substring in URL evades Layer 2. Attacker renames endpoint path."
+  - input: '{"name":"PINOT_DELETE_TABLE","arguments":{"tableName":"users"}}'
+    expected: triggered
+    bypass_technique: case_variation
+    notes: "Case-insensitive flag covers uppercase tool name."
