@@ -1,39 +1,50 @@
 # Contributing to ATR
 
-ATR is MIT-licensed. Contributing requires a text editor, a YAML file,
-and `npx agent-threat-rules test`. Nothing else.
+ATR is MIT-licensed. No proprietary tooling. No telemetry. No CLA.
 
-No proprietary tooling. No telemetry. No CLA.
+---
 
-ATR is community-maintained and governed as an open standard.
-Rules contributed here are MIT-licensed and belong to the community.
+## Fastest path: open a GitHub Issue
+
+Spotted an attack pattern? File a **[New Rule Proposal](https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=new-rule.yml)** issue. Fill in three fields — attack type, description, example payload. A bot converts it to a draft proposal within minutes and opens a PR. You don't need to clone the repo.
+
+A maintainer (or you) authors the detection regex from there.
 
 ---
 
 ## How to Contribute
 
-ATR accepts contributions through both traditional open source workflows
-and AI-native workflows. In the age of AI agents, contributing to a
-security standard should not be limited to writing regex by hand.
+#### A. Propose a New Rule via Issue (~5 minutes, no repo setup needed)
 
-### Traditional Contributions
+1. Open a **[New Rule Proposal](https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=new-rule.yml)** issue.
+2. Fill in: attack type, description, and at least one example payload.
+3. A bot creates `proposals/community/ISSUE-{number}-{slug}.proposal.yaml` and opens a draft PR automatically.
+4. The proposal is queued for regex authoring. You can stop here, or continue to step 5.
+5. Optional: check out the PR branch, fill in `detection.conditions`, run `npx tsx scripts/check-rules-safety.ts <file>`, push.
 
-#### A. Report an Evasion (~15 minutes)
+Every filed issue becomes a tracked proposal. Your name appears in the `author` field of any rule that ships from it.
 
-Found a way to bypass an existing rule? This is the most valuable contribution.
+#### B. Write the Regex for an Existing Proposal (~30–60 minutes)
 
-1. Check the rule's existing `evasion_tests` section and [LIMITATIONS.md](./LIMITATIONS.md)
-   to verify the bypass is not already documented.
+The `proposals/` directory has CVE-sourced drafts that have payloads but no detection logic yet. These are the fastest contributions to ship.
+
+1. Browse `proposals/` for files with `_triage.detection_ready: true`
+2. Pick one, check out a branch, fill in `detection.conditions` based on the `_triage.example_payload`
+3. Run `npx agent-threat-rules test <file>` — must pass all test cases
+4. Run `npx tsx scripts/check-rules-safety.ts <file>` — must show 0 FP
+5. Submit a PR
+
+#### C. Report an Evasion (~15 minutes)
+
+Found a way to bypass an existing rule?
+
+1. Check the rule's `evasion_tests` section and [LIMITATIONS.md](./LIMITATIONS.md) — might already be documented.
 2. Open an issue using the **Evasion Report** template.
 3. Include: rule ID, bypass input, technique used, why it works.
 
-Every confirmed evasion becomes a new `evasion_tests` entry in the rule YAML.
-You get credited in [CONTRIBUTORS.md](./CONTRIBUTORS.md).
+Every confirmed evasion becomes a new `evasion_tests` entry. You get credited in [CONTRIBUTORS.md](./CONTRIBUTORS.md). We publish evasion tests openly — your bypass makes the project more honest.
 
-We already know regex has limits. We publish evasion tests openly.
-Your bypass makes the project more honest.
-
-#### B. Report a False Positive (~20 minutes)
+#### D. Report a False Positive (~20 minutes)
 
 A rule triggered on legitimate content?
 
@@ -42,9 +53,9 @@ A rule triggered on legitimate content?
 
 Confirmed false positives become new `true_negatives` test cases.
 
-#### C. Submit a New Rule (1-2 hours)
+#### E. Submit a New Rule Directly (~1 hour)
 
-Write a full detection rule for a new attack pattern.
+Write a full detection rule from scratch.
 
 1. Fork this repository
 2. Create a YAML file in the appropriate `rules/<category>/` subdirectory
@@ -58,7 +69,7 @@ Write a full detection rule for a new attack pattern.
 Security standards in the AI era need AI-era contribution workflows.
 You do not have to write YAML by hand to make ATR better.
 
-#### D. Scan and Report (~2 minutes)
+#### F. Scan and Report (~2 minutes)
 
 Run ATR against your MCP skills or any public skill. Findings go to
 Threat Cloud for aggregation (anonymized, opt-in via `--report-to-cloud`).
@@ -74,7 +85,7 @@ When TC aggregates enough signals for a new attack pattern, it
 crystallizes a draft rule, opens a PR to this repo, and a human
 reviewer merges it. Your scan data becomes part of the global defense.
 
-#### E. Add ATR to Your CI (~5 minutes)
+#### G. Add ATR to Your CI (~5 minutes)
 
 Add one file to your repo. Every PR gets scanned automatically.
 
@@ -95,7 +106,7 @@ jobs:
 
 Results appear in GitHub's Security tab as code scanning alerts.
 
-#### F. Contribute via LLM-Assisted Rule Generation
+#### H. Contribute via LLM-Assisted Rule Generation
 
 Use AI tools to draft ATR rules. The ATR MCP server lets any AI
 agent read, test, and propose new rules:

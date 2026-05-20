@@ -1,0 +1,133 @@
+name: Issue → Proposal
+
+on:
+  issues:
+    types: [opened, labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  convert:
+    if: contains(github.event.issue.labels.*.name, 'new-rule')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Write issue body to file
+        env:
+          BODY: ${{ github.event.issue.body }}
+        run: printf '%s' "$BODY" > /tmp/issue-body.txt
+
+      - name: Convert issue to proposal
+        id: convert
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          TITLE: ${{ github.event.issue.title }}
+          AUTHOR: ${{ github.event.issue.user.login }}
+        run: |
+          set -e
+          npx tsx scripts/issue-to-proposal.ts \
+            --issue "$ISSUE_NUMBER" \
+            --title "$TITLE" \
+            --body-file /tmp/issue-body.txt \
+            --author "$AUTHOR" \
+            --write | tee /tmp/convert.out
+          # Extract the proposal file path from output marker
+          PROPOSAL_FILE=$(grep "::proposal-file::" /tmp/convert.out | sed 's/::proposal-file:://')
+          echo "proposal_file=$PROPOSAL_FILE" >> "$GITHUB_OUTPUT"
+          echo "Proposal file: $PROPOSAL_FILE"
+
+      - name: Configure git
+        run: |
+          git config user.name "ATR Issue Bot"
+          git config user.email "issues@agentthreatrule.org"
+
+      - name: Create branch + commit + push
+        id: push
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          BRANCH="proposal/issue-${{ github.event.issue.number }}-$(echo '${{ github.event.issue.title }}' | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/-\+/-/g' | cut -c1-50)"
+          git push origin --delete "$BRANCH" 2>/dev/null || true
+          git checkout -b "$BRANCH"
+          git add proposals/community/
+          git commit -m "feat(proposals): community issue #${{ github.event.issue.number }} — ${{ github.event.issue.title }}"
+          git push origin "$BRANCH"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Open draft PR
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          PR_URL=$(gh pr create \
+            --title "feat(proposals): community issue #${{ github.event.issue.number }} — ${{ github.event.issue.title }}" \
+            --body "$(cat <<'EOF'
+          Community rule proposal from GitHub Issue #${{ github.event.issue.number }}.
+
+          Submitted by @${{ github.event.issue.user.login }}.
+
+          ## What to do next
+
+          1. Open `${{ steps.convert.outputs.proposal_file }}` in this PR
+          2. Author a detection regex in `detection.conditions`
+          3. Fill in `test_cases.true_positives` from the `_triage.example_payload`
+          4. Run locally: `npx tsx scripts/check-rules-safety.ts ${{ steps.convert.outputs.proposal_file }}`
+          5. Once 0 FP — remove the `needs-regex` label and request review
+
+          The proposal will not auto-merge until detection conditions are filled in and pass the safety gate.
+
+          Closes #${{ github.event.issue.number }}
+          EOF
+          )" \
+            --label "cve-collector,auto-generated" \
+            --draft \
+            --base main \
+            --head "${{ steps.push.outputs.branch }}" 2>&1)
+          echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+          echo "PR: $PR_URL"
+
+      - name: Comment on issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue comment ${{ github.event.issue.number }} --body "$(cat <<'EOF'
+          Thanks @${{ github.event.issue.user.login }}! A draft proposal has been created from this issue.
+
+          **Next step:** A maintainer (or you!) needs to author a detection regex. Draft PR: ${{ steps.pr.outputs.pr_url }}
+
+          To contribute the regex yourself:
+          1. Clone the repo and check out the branch in the PR above
+          2. Open the proposal file and fill in `detection.conditions`
+          3. Run `npx tsx scripts/check-rules-safety.ts <proposal-file>` — must pass 0 FP
+          4. Push and mark the PR ready for review
+
+          See [how-to-write-a-rule.md](https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/examples/how-to-write-a-rule.md) for a walkthrough.
+          EOF
+          )"
+
+      - name: Failure comment
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue comment ${{ github.event.issue.number }} --body "$(cat <<'EOF'
+          The bot failed to convert this issue into a proposal automatically. A maintainer will review manually.
+
+          If you filed this issue, make sure the **Attack Type**, **Description**, and **Example Attack Payload** fields are filled in — they are required.
+          EOF
+          )"
