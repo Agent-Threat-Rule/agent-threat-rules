@@ -28,7 +28,7 @@ ATR (Agent Threat Rules) is an open detection rule format for AI agent security 
 
 ## Status of This Document
 
-ATR is published as a **Working Draft** at version `3.0.0-alpha.0`. The rule format defined in `ATR-SPEC-v1.md` is stable and in production at multiple Fortune 500 deployments (see [§6 Adoption](#6-adoption)). Governance is currently single-maintainer (BDFL) transitioning to a Technical Steering Committee per [GOVERNANCE.md](GOVERNANCE.md).
+ATR is published as a **Working Draft** at version `3.0.0-alpha.0`. The rule format defined in `ATR-SPEC-v1.md` is stable and shipped in production at two Fortune 500 organizations (Microsoft, Cisco) and one standards-body deployment (MISP / CIRCL); full list with PR links in [§6 Adoption](#6-adoption). Governance is currently single-maintainer (BDFL) transitioning to a Technical Steering Committee per [GOVERNANCE.md](GOVERNANCE.md).
 
 All numbers in this document are sourced from [`data/stats.json`](data/stats.json), which is the canonical record of the project's current state. Where this README and `stats.json` disagree, `stats.json` is authoritative.
 
@@ -74,7 +74,7 @@ The keywords MUST, MUST NOT, SHOULD, SHOULD NOT, and MAY in this document and in
 A conforming **ATR engine** MUST:
 
 1. Parse all fields defined in [`spec/atr-schema.yaml`](spec/atr-schema.yaml) without error.
-2. Evaluate `detection.conditions` with the semantics defined in [`ATR-SPEC-v1.md`](ATR-SPEC-v1.md) §4.
+2. Evaluate `detection.conditions` with the semantics defined in [`ATR-SPEC-v1.md`](ATR-SPEC-v1.md) §3.5 (Detection Logic) and §5 (Engine Requirements).
 3. Honor the `scan_target` field — a rule with `scan_target: skill` MUST NOT be evaluated against `mcp_exchange` events and vice versa.
 4. Respect rule `status` — rules with `status: deprecated` or `status: draft` MUST NOT participate in production matching unless the consumer opts in explicitly.
 5. Emit `rule_id` and rule `severity` on every match.
@@ -230,7 +230,6 @@ Production deployments and standards-body integrations, as of 2026-05-21:
 | Cisco AI Defense (skill-scanner) | Full rule pack in production (merged 2026-04-22); original PoC (merged 2026-04-03) | [PR #99](https://github.com/cisco-ai-defense/skill-scanner/pull/99) · [PR #79](https://github.com/cisco-ai-defense/skill-scanner/pull/79) |
 | MISP (CIRCL) | Threat-intel cluster (galaxy, merged 2026-05-10) + rule-ID tagging vocabulary (taxonomies, merged 2026-05-10) | [galaxy #1207](https://github.com/MISP/misp-galaxy/pull/1207) · [taxonomies #323](https://github.com/MISP/misp-taxonomies/pull/323) |
 | Gen Digital Sage (Norton / Avast / AVG parent) | Rule pack merged 2026-05-11 | [PR #33](https://github.com/gendigitalinc/sage/pull/33) |
-| OWASP Agent Security Reference Hub (Mert Satilmaz, project lead) | Rule pack merged 2026-05-11 | [PR #74](https://github.com/precize/Agent-Security-Regression-Harness/pull/74) |
 
 ### Featured loop — Microsoft Copilot SWE Agent → ATR (2026-05-11)
 
@@ -240,7 +239,7 @@ This is Microsoft Copilot operating inside AGT, not an MSRC endorsement. Coverag
 
 ### Under maintainer review (open PRs)
 
-[NVIDIA garak #1676](https://github.com/NVIDIA/garak/pull/1676) · [OWASP LLM Top 10 #814](https://github.com/OWASP/www-project-top-10-for-large-language-model-applications/pull/814) · [IBM mcp-context-forge #4109](https://github.com/IBM/mcp-context-forge/pull/4109) · [Meta PurpleLlama #206](https://github.com/meta-llama/PurpleLlama/pull/206) · [Microsoft PyRIT #1715](https://github.com/microsoft/PyRIT/pull/1715) · [BerriAI LiteLLM #28050](https://github.com/BerriAI/litellm/pull/28050) · [Apache promptfoo #8529](https://github.com/promptfoo/promptfoo/pull/8529) · [Cybercentre Canada CCCS-YARA #100](https://github.com/CybercentreCanada/CCCS-YARA/pull/100)
+[NVIDIA garak #1676](https://github.com/NVIDIA/garak/pull/1676) · [OWASP LLM Top 10 #814](https://github.com/OWASP/www-project-top-10-for-large-language-model-applications/pull/814) · [IBM mcp-context-forge #4109](https://github.com/IBM/mcp-context-forge/pull/4109) · [Meta PurpleLlama #206](https://github.com/meta-llama/PurpleLlama/pull/206) · [Microsoft PyRIT #1715](https://github.com/microsoft/PyRIT/pull/1715) · [BerriAI LiteLLM #28050](https://github.com/BerriAI/litellm/pull/28050) · [promptfoo #8529](https://github.com/promptfoo/promptfoo/pull/8529) · [Cybercentre Canada CCCS-Yara #100](https://github.com/CybercentreCanada/CCCS-Yara/pull/100)
 
 ## 7. Coverage
 
@@ -283,7 +282,6 @@ ATR maps its rules onto established frameworks so adopters can answer "we deploy
 | CVE-2026-25592 | Microsoft Semantic Kernel autostart file write | ATR-2026-00441 |
 | CVE-2025-59536 | Claude Code Hooks SessionStart pre-trust RCE | ATR-2026-00523 |
 | CVE-2026-21852 | Claude Code ANTHROPIC_BASE_URL credential exfil | ATR-2026-00524 |
-| CVE-2026-44338 | PraisonAI unauthenticated agent API | ATR-2026-00527 |
 
 A full list lives in each rule's `references.cve` field. See [LIMITATIONS.md](LIMITATIONS.md) for what ATR structurally cannot detect.
 
@@ -293,7 +291,7 @@ A full list lives in each rule's `references.cve` field. See [LIMITATIONS.md](LI
 |---|---|---:|---:|---:|---:|
 | SKILL.md benchmark (internal) | 498 labeled samples | 498 | 100% | 97.0% | 0.20% |
 | NVIDIA garak (in-the-wild jailbreaks) | NVIDIA red-team corpus | 666 | 97.1% | 100% | 0% |
-| PINT (Invariant Labs, adversarial) | External | 850 | — | 99.6% | 62.7% (high-noise adversarial corpus, documented in LIMITATIONS.md) |
+| PINT (Invariant Labs, adversarial) | External | 850 | 63.9% | 99.6% | — (FP rate not separately measured on this corpus; see LIMITATIONS.md) |
 | Ecosystem wild scan | OpenClaw + Skills.sh + Hermes + ClawHub | 96,096 | — | — | 1.35% flag rate |
 
 ```bash
