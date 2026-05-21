@@ -37,8 +37,8 @@ export default async function ResponsibleUsePage({
       <Reveal delay={0.1}>
         <p className="text-base text-stone font-light max-w-[640px] leading-[1.8] mb-12">
           {zh
-            ? "ATR 的 419 條規則描述 AI agent 攻擊模式，用途是偵測。相同的描述可以被誤用來生成攻擊。本頁說明我們的設計意圖、已知的雙重用途風險、以及回報濫用的管道。"
-            : "ATR's 419 rules describe AI agent attack patterns for the purpose of detection. The same descriptions can be misused to generate attacks. This page explains our design intent, known dual-use risks, and how to report misuse."}
+            ? "ATR 的 421 條規則描述 AI agent 攻擊模式，用途是偵測。相同的描述可以被誤用來生成攻擊。本頁說明我們的設計意圖、已知的雙重用途風險、以及回報濫用的管道。"
+            : "ATR's 421 rules describe AI agent attack patterns for the purpose of detection. The same descriptions can be misused to generate attacks. This page explains our design intent, known dual-use risks, and how to report misuse."}
         </p>
       </Reveal>
 

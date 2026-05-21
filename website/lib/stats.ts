@@ -222,7 +222,7 @@ export function loadSiteStats(): SiteStats {
     pintPrecision:
       Math.round((pint?.report?.overall?.precision ?? 0.9964) * 1000) / 10, // 99.6%
     pintRecall:
-      Math.round((pint?.report?.overall?.recall ?? 0.6142) * 1000) / 10, // 61.4%
+      Math.round((pint?.report?.overall?.recall ?? 0.6386) * 1000) / 10, // 63.9%
     pintF1: Math.round((pint?.report?.overall?.f1 ?? 0.7599) * 1000) / 10, // 76.0%
 
     selfTestSamples: eval_?.report?.corpusSize ?? 341,
@@ -267,12 +267,12 @@ export function loadSiteStats(): SiteStats {
         logo: "https://github.com/MISP.png?size=128",
       },
       {
-        name: "OWASP Agent-Security-Regression-Harness",
+        name: "Gen Digital Sage",
         type: "merged",
         detail:
-          'PR #74 merged 2026-05-11 by mertsatilmaz (OWASP Project Lead): "Welcome to the team." Detection rules wired into the OWASP regression harness.',
-        url: "https://github.com/OWASP/Agent-Security-Regression-Harness/pull/74",
-        logo: "https://github.com/OWASP.png?size=128",
+          "PR #33 merged 2026-05-11 by vaclavbelak (Norton / Avast / AVG parent security team). 7 privilege-escalation rules + ATR upstream bridge.",
+        url: "https://github.com/gendigitalinc/sage/pull/33",
+        logo: "https://github.com/gendigitalinc.png?size=128",
       },
       {
         name: "Microsoft Agent Governance Toolkit",
@@ -361,8 +361,8 @@ export function loadSiteStats(): SiteStats {
         name: "SAFE-MCP",
         type: "open",
         detail:
-          "PR #187 to safe-agentic-framework/safe-mcp. Coverage mapping submitted.",
-        url: "https://github.com/safe-agentic-framework/safe-mcp/pull/187",
+          "Issue #207 open at safe-agentic-framework/safe-mcp. Structured proposal for a detections/ registry to support cross-project rule-ID linkage.",
+        url: "https://github.com/safe-agentic-framework/safe-mcp/issues/207",
       },
       {
         name: "Awesome LLM Security",
@@ -391,8 +391,8 @@ export function loadSiteStats(): SiteStats {
         name: "NVIDIA NeMo Guardrails",
         type: "open",
         detail:
-          "Issue #1872. Colang rail loader proposal — turn ATR rules into reusable input/output rails inside NeMo Guardrails.",
-        url: "https://github.com/NVIDIA/NeMo-Guardrails/issues/1872",
+          "PR #1869 open. ATR-inspired threat detection example library config; coderabbitai automated review clean.",
+        url: "https://github.com/NVIDIA-NeMo/Guardrails/pull/1869",
         logo: "https://github.com/NVIDIA.png?size=128",
       },
       {
@@ -431,23 +431,17 @@ export function loadSiteStats(): SiteStats {
         url: "https://github.com/harishsg993010/damn-vulnerable-MCP-server/pull/29",
       },
       {
-        name: "Meta LlamaFirewall",
+        name: "Meta PurpleLlama",
         type: "open",
-        detail: "Issue #204. RegexScanner expansion with ATR rules.",
-        url: "https://github.com/meta-llama/PurpleLlama/issues/204",
+        detail:
+          "PR #206 open. RegexScanner expansion with 20 ATR-derived agent threat patterns. Multi-round maintainer follow-up; awaiting Meta internal CI gate.",
+        url: "https://github.com/meta-llama/PurpleLlama/pull/206",
       },
       {
         name: "Portkey Gateway",
         type: "open",
-        detail: "Issue #1594. ATR guardrail plugin proposal.",
-        url: "https://github.com/Portkey-AI/gateway/issues/1594",
-      },
-      {
-        name: "Sage (Gen Digital)",
-        type: "open",
-        detail:
-          "PR #33. 27 patterns. Maintainer-invited (vaclavbelak, Norton/Avast parent security team).",
-        url: "https://github.com/gendigitalinc/sage/pull/33",
+        detail: "PR #1652 open. ATR (Agent Threat Rules) detection plugin.",
+        url: "https://github.com/Portkey-AI/gateway/pull/1652",
       },
       {
         name: "IBM mcp-context-forge",
@@ -470,8 +464,8 @@ export function loadSiteStats(): SiteStats {
       },
       {
         name: "Awesome AI Security (ottosulin)",
-        type: "open",
-        detail: "PR #192 submitted to MCP Security section.",
+        type: "merged",
+        detail: "PR #192 merged 2026-05-18 into MCP Security section.",
         url: "https://github.com/ottosulin/awesome-ai-security/pull/192",
       },
     ],

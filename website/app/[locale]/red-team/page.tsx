@@ -32,7 +32,7 @@ const RED_TEAM_TOOLS: RedTeamTool[] = [
     prUrl: "https://github.com/NVIDIA/garak/pull/1676",
     hook: "The reference open-source LLM vulnerability scanner. 50+ probe families, jmartin-tech + leondz maintainers.",
     what_atr_did:
-      "Wrapped 419 ATR rules as garak detectors. PR #1676 cleared two review rounds; in-the-wild benchmark posted 97.1% recall on garak's own community jailbreak corpus. Per-family: latentinjection 34.4%, sysprompt_extraction 67.9%, dan 90.2%, ATR-core families ~80%+.",
+      "Wrapped 421 ATR rules as garak detectors. PR #1676 cleared two review rounds; in-the-wild benchmark posted 97.1% recall on garak's own community jailbreak corpus. Per-family: latentinjection 34.4%, sysprompt_extraction 67.9%, dan 90.2%, ATR-core families ~80%+.",
   },
   {
     name: "HarmBench",
@@ -187,7 +187,7 @@ const ATTRIBUTION_STATS: AttributionStat[] = [
       'Microsoft (Agent Governance Toolkit weekly auto-sync). Cisco AI Defense (314-rule pack in production). CIRCL/MISP (taxonomies + galaxy merged by project lead). OWASP (Project Lead merged with "Welcome to the team"). FINOS, NIST OSCAL, UK Gov AISI in motion.',
   },
   {
-    number: "419",
+    number: "421",
     label: "Rules. Each with your name attached forever",
     detail:
       "Every rule carries author + metadata_provenance.discovered_by. Microsoft AGT, Cisco AI Defense, MISP, OWASP all preserve it on sync. When MISP exports to STIX, attribution survives. When NIST cites the rule, lineage is intact.",

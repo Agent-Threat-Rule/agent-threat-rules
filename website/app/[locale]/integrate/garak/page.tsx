@@ -4,7 +4,7 @@ import { loadSiteStats } from '@/lib/stats';
 export const metadata: Metadata = {
   title: 'NVIDIA garak × ATR — ATR',
   description:
-    'Auto-convert NVIDIA garak red-team findings into ATR detection rules. 419 ATR rules wrapped as garak detectors (PR #1676, 97.1% recall on garak community jailbreak corpus). Every probe becomes a MIT-licensed defensive rule downstream.',
+    'Auto-convert NVIDIA garak red-team findings into ATR detection rules. 421 ATR rules wrapped as garak detectors (PR #1676, 97.1% recall on garak community jailbreak corpus). Every probe becomes a MIT-licensed defensive rule downstream.',
 };
 
 export default function GarakIntegratePage() {
