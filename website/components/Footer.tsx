@@ -110,7 +110,7 @@ export function Footer({ locale }: { locale: Locale }) {
           </div>
         </div>
 
-        {/* License + static description */}
+        {/* License + standards meta */}
         <div className="border-t border-fog pt-6 pb-4 flex flex-wrap items-center gap-3">
           <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">
             <img src="https://img.shields.io/badge/license-MIT-E8E8E5?style=flat&labelColor=FAFAF8" alt="MIT License" className="h-5" />
@@ -120,15 +120,15 @@ export function Footer({ locale }: { locale: Locale }) {
           </span>
           <span className="font-data text-xs text-fog">·</span>
           <span className="font-data text-xs text-stone">
-            {zh ? "需要企業 SLA 與合規證據：" : "Enterprise deployment with SLAs and compliance evidence:"}
+            {zh ? "商業實作:" : "Commercial implementations:"}
             {" "}
-            <a href="https://panguard.ai" target="_blank" rel="noopener noreferrer" className="text-blue hover:underline">
-              PanGuard AI
-            </a>
+            <Link href={`${prefix}/ecosystem`} className="text-stone hover:text-ink underline-offset-2 hover:underline">
+              {zh ? "見生態系" : "see ecosystem"}
+            </Link>
           </span>
         </div>
 
-        {/* Bottom bar */}
+        {/* Bottom bar — spec lineage, rule count, last-build */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-3 pt-4">
           <div className="flex items-center gap-3">
             <img src="/atr-logo-black.png" alt="ATR" className="h-5 opacity-40" />
@@ -137,7 +137,11 @@ export function Footer({ locale }: { locale: Locale }) {
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-data text-xs text-mist">
-            <span>ATR v2.1.0 · {stats.ruleCount} {zh ? "條規則" : "rules"}</span>
+            <Link href={`${prefix}/quality-standard`} className="hover:text-stone transition-colors">
+              {zh ? "規範 v1.0" : "Spec v1.0"}
+            </Link>
+            <span className="text-fog">·</span>
+            <span>{stats.ruleCount} {zh ? "條規則" : "rules"}</span>
             <span className="text-fog hidden sm:inline">|</span>
             <span>{zh ? "更新於" : "Updated"} {lastUpdated}</span>
           </div>

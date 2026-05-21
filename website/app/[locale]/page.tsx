@@ -75,25 +75,26 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             <img src="/atr-logo-black.png" alt="ATR" className="h-12 md:h-16 mx-auto mb-8 md:mb-10" />
           </HeroEntrance>
 
-          {/* The standards body framing */}
+          {/* Standards-lineage eyebrow — peer-format framing */}
           <HeroEntrance delay={0.8}>
             <p className="font-display text-[28px] md:text-[clamp(40px,5.5vw,72px)] font-black leading-[1.1] tracking-[-1.5px] md:tracking-[-3px] text-stone">
-              {zh ? "AI Agent 自己做決定的時代,你寫得出規則嗎?" : "An open standard for the"}
+              {zh ? "Sigma 寫給 SIEM。YARA 寫給 malware。" : "Sigma is for SIEM. YARA is for malware."}
             </p>
           </HeroEntrance>
 
+          {/* H1 — ATR's position in the lineage */}
           <HeroEntrance delay={1.1}>
             <h1 className="font-display text-[36px] md:text-[clamp(52px,6.5vw,80px)] font-black leading-[1.05] tracking-[-2px] md:tracking-[-3px] text-ink mt-2 md:mt-3">
-              {zh ? "我們寫了。叫做 ATR。" : "AI agent era."}
+              {zh ? "ATR 寫給 AI agent。" : "ATR is for AI agents."}
             </h1>
           </HeroEntrance>
 
-          {/* Subtitle — risk-consequence framing */}
+          {/* Subtitle — definitional, not outcome */}
           <HeroEntrance delay={1.3}>
             <p className="text-base md:text-lg text-stone font-light mt-5 md:mt-6 max-w-[640px] mx-auto leading-relaxed">
               {zh
-                ? "偵測 prompt 注入、工具下毒、agent 權限升級——在未授權動作發生前。Sigma 寫給 SIEM。ATR 寫給 AI Agent。MIT 永久,由社群維護。"
-                : "Detect prompt injection, tool poisoning, and agent privilege escalation before unauthorized action. The way Sigma is for SIEM. ATR is for AI agents. MIT forever."}
+                ? "AI agent 安全威脅的公共偵測規則格式。版本化、可機器讀取、廠商中立。任何符合規範的引擎都能評估。社群維護,MIT 永久授權。"
+                : "An open, versioned, machine-readable detection rule format for AI agent security threats. Any conforming engine can evaluate it. Community-maintained, MIT licensed."}
             </p>
           </HeroEntrance>
 
@@ -108,40 +109,57 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             </div>
           </HeroEntrance>
 
-          {/* Two CTA buttons */}
+          {/* CTAs — procedural, standards-form */}
           <HeroEntrance delay={1.7}>
             <div className="flex gap-3 justify-center flex-wrap mt-7 md:mt-8">
               <Link
-                href={`${prefix}/integrate`}
+                href={`${prefix}/quality-standard`}
                 className="bg-blue text-white px-8 md:px-10 py-3.5 md:py-4 rounded-[2px] text-sm font-semibold hover:bg-blue-hover transition-colors"
               >
-                {zh ? "開始整合" : "Integrate ATR"}
+                {zh ? "讀規範" : "Read the spec"}
               </Link>
               <Link
                 href={`${prefix}/rules`}
                 className="text-ink px-8 md:px-10 py-3.5 md:py-4 text-sm font-medium border border-fog hover:border-stone transition-colors rounded-[2px]"
               >
-                {zh ? "瀏覽規則" : "Explore Rules"}
+                {zh ? "瀏覽規則" : "Browse rules"}
+              </Link>
+              <Link
+                href={`${prefix}/contribute`}
+                className="text-ink px-8 md:px-10 py-3.5 md:py-4 text-sm font-medium border border-fog hover:border-stone transition-colors rounded-[2px]"
+              >
+                {zh ? "投規則" : "Submit a rule"}
               </Link>
             </div>
           </HeroEntrance>
 
-          {/* Trust bar — production deployments + ecosystem */}
+          {/* Trust bar — three rows, standards bodies first, text-only (no logos until vendor brand approval) */}
           <HeroEntrance delay={1.9}>
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-8 md:mt-10 font-data text-[11px] md:text-xs text-stone tracking-wide">
-              <span>{zh ? "已上線:" : "In production:"}</span>
-              <span className="font-bold text-ink">Cisco AI Defense</span>
-              <span className="text-fog">·</span>
-              <span className="font-bold text-ink">Microsoft AGT</span>
-              <span className="text-fog">|</span>
-              <span>{zh ? "正在接:" : "Integrating:"}</span>
-              <span>NVIDIA garak</span>
-              <span className="text-fog">·</span>
-              <span>Gen Digital Sage</span>
-              <span className="text-fog">·</span>
-              <span>IBM mcp-context-forge</span>
-              <span className="text-fog">|</span>
-              <span>MIT License · {zh ? "ATR 社群維護" : "Maintained by ATR Community"}</span>
+            <div className="mt-8 md:mt-10 font-data text-[11px] md:text-xs text-stone tracking-wide space-y-1.5">
+              {/* Row 1 — peer standards bodies (most important trust signal for a standard) */}
+              <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+                <span>{zh ? "標準同儕:" : "Standards bodies:"}</span>
+                <span className="text-ink">MISP / CIRCL</span>
+                <span className="text-fog">·</span>
+                <span className="text-ink">OWASP A-S-R-H</span>
+                <span className="text-fog">·</span>
+                <span className="text-ink">NIST AI RMF (OSCAL)</span>
+                <span className="text-fog">·</span>
+                <span className="text-ink">OpenTelemetry</span>
+              </div>
+              {/* Row 2 — production deployments */}
+              <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+                <span>{zh ? "已上線:" : "In production:"}</span>
+                <span className="font-bold text-ink">Cisco AI Defense</span>
+                <span className="text-fog">·</span>
+                <span className="font-bold text-ink">Microsoft AGT</span>
+                <span className="text-fog">·</span>
+                <span className="font-bold text-ink">Gen Digital Sage</span>
+              </div>
+              {/* Row 3 — license + lineage */}
+              <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 pt-1">
+                <span>MIT License · {zh ? "ATR 社群維護" : "Maintained by ATR Community"} · {zh ? "規範 v1.0 穩定版" : "Spec v1.0 stable"}</span>
+              </div>
             </div>
           </HeroEntrance>
         </div>
