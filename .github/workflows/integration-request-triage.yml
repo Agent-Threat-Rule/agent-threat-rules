@@ -1,0 +1,135 @@
+name: Integration Request Triage
+
+# Auto-triage integration-request issues. Fires when an issue is opened
+# (or reopened) that carries the `integration-request` label set by the
+# issue form template. Posts a structured welcome comment and routes the
+# request to the maintainers' queue.
+
+on:
+  issues:
+    types: [opened, reopened, labeled]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  triage:
+    name: Welcome + route integration request
+    runs-on: ubuntu-latest
+    # Only run for integration-request issues. The label is applied by the
+    # issue form template; for reopened/labeled events we double-check.
+    if: |
+      contains(github.event.issue.labels.*.name, 'integration-request') &&
+      github.event.issue.state == 'open'
+    steps:
+      - name: Check if welcome comment already posted
+        id: existing
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          # The triage workflow is idempotent: it must not double-post the
+          # welcome banner if the issue is reopened or relabeled.
+          ALREADY=$(gh api "repos/${REPO}/issues/${ISSUE_NUMBER}/comments" \
+            --jq '.[] | select(.user.login == "github-actions[bot]") | select(.body | startswith("Thanks for opening an integration request"))' \
+            | head -c 1)
+          if [ -n "$ALREADY" ]; then
+            echo "already_welcomed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "already_welcomed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Post welcome comment
+        if: steps.existing.outputs.already_welcomed != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
+          ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+        run: |
+          gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "$(cat <<EOF
+          Thanks for opening an integration request, @${ISSUE_AUTHOR}.
+
+          Here is what happens next:
+
+          1. **A maintainer will read this within 7 days** and reply in this
+             thread. If your tier is "Standards body / framework" or
+             "Production deployment" we usually respond faster.
+
+          2. **If you have shipped already**, the next step is to open a PR
+             against \`ADOPTERS.md\` adding your project to the appropriate
+             tier section. Use the \`adopter\` PR template.
+
+          3. **If you are still implementing**, the spec is at
+             https://agentthreatrule.org/quality-standard and the schema
+             lives at https://github.com/Agent-Threat-Rule/agent-threat-rules
+             in the repo root (\`ATR-FRAMEWORK-SPEC.md\` + \`ATR-SPEC-v1.md\`).
+             Feel free to ask questions in this thread — the maintainers
+             prefer asynchronous discussion over scheduled calls.
+
+          4. **Conformance check (optional)**: a reference helper action is
+             planned but not yet released. Until then, the \`npm run validate\`
+             script in this repo will validate any rule YAML you author or
+             import. You can also paste a sample rule in this thread and we
+             will review it.
+
+          ### Useful links
+
+          - Spec: https://agentthreatrule.org/quality-standard
+          - Repo: https://github.com/Agent-Threat-Rule/agent-threat-rules
+          - Adopters list: https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ADOPTERS.md
+          - Code of Conduct: https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/CODE_OF_CONDUCT.md
+          - Governance: https://agentthreatrule.org/governance
+
+          ATR is community-maintained and MIT licensed; there are no commercial
+          licensing fees, no NDA gates, no "Enterprise tier" — anyone can ship
+          ATR in any product. The only thing the maintainers ask in return is
+          that adopters who ship publicly add themselves to ADOPTERS.md so the
+          ecosystem is visible to other potential adopters.
+
+          ---
+
+          *This message was posted automatically by the
+          \`integration-request-triage\` workflow. The thread itself is read
+          and replied to by humans.*
+          EOF
+          )"
+
+      - name: Auto-label by tier
+        if: steps.existing.outputs.already_welcomed != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          # Best-effort tier-label parsing from the issue body. The issue
+          # form template renders the dropdown answer as the literal label
+          # text in a "### Your project tier (best guess)" heading.
+          TIER_LABEL=""
+          if printf '%s' "$ISSUE_BODY" | grep -q "Standards body / framework"; then
+            TIER_LABEL="tier-standards-body"
+          elif printf '%s' "$ISSUE_BODY" | grep -q "Production deployment"; then
+            TIER_LABEL="tier-production"
+          elif printf '%s' "$ISSUE_BODY" | grep -q "Open-source tool / SDK"; then
+            TIER_LABEL="tier-tooling"
+          elif printf '%s' "$ISSUE_BODY" | grep -q "Awesome-list / documentation reference"; then
+            TIER_LABEL="tier-docs"
+          elif printf '%s' "$ISSUE_BODY" | grep -q "Research / academic"; then
+            TIER_LABEL="tier-research"
+          elif printf '%s' "$ISSUE_BODY" | grep -q "Personal / hobby project"; then
+            TIER_LABEL="tier-hobby"
+          fi
+
+          if [ -n "$TIER_LABEL" ]; then
+            # Create the label if it does not yet exist (idempotent).
+            gh label create "$TIER_LABEL" --repo "$REPO" \
+              --color "0E8A16" --description "Integration request tier" \
+              2>/dev/null || true
+            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "$TIER_LABEL"
+            echo "Added label: $TIER_LABEL"
+          else
+            echo "No tier detected in issue body — skipping tier label"
+          fi

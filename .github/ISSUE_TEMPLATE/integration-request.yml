@@ -1,0 +1,137 @@
+name: Integration Request
+description: Add ATR to your project (framework, scanner, dashboard, MCP gateway, or other tool)
+title: "[Integration] "
+labels: ["integration-request", "ecosystem"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for considering ATR. This template captures the information the
+        maintainers need to triage your integration and put you in touch with
+        the right reviewers. The form takes about 5 minutes.
+
+        Before filling this out, please skim the spec at
+        `quality-standard` (https://agentthreatrule.org/quality-standard) so
+        you know what "conforming to ATR" means in practice. If your project
+        only consumes the rule corpus as text (no engine), you can skip the
+        conformance bits.
+
+  - type: input
+    id: project_name
+    attributes:
+      label: Project name
+      description: Human-readable name of the project that will adopt ATR.
+      placeholder: e.g. promptfoo, IBM mcp-context-forge, Gen Digital Sage
+    validations:
+      required: true
+
+  - type: input
+    id: project_repo
+    attributes:
+      label: Project repository
+      description: Public Git URL (GitHub / GitLab / Codeberg). Leave blank if the project is closed-source — capture in the description below instead.
+      placeholder: https://github.com/...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: integration_type
+    attributes:
+      label: What kind of integration?
+      description: Pick the closest match. Multiple-select via the description field below if your project does more than one.
+      options:
+        - Engine implementation (you are writing an evaluator for ATR rules)
+        - Rule import (you import the YAML corpus directly into your detection layer)
+        - Category subset (you import a specific category — e.g. prompt-injection only)
+        - Adapter / bridge (you translate ATR rules into another format — Sigma / OPA / OCSF / STIX)
+        - Reference in docs / framework (you reference ATR rule IDs in your project's documentation or threat model)
+        - Sidecar / proxy (your project sits in the request path and evaluates rules at runtime)
+        - Other (please describe)
+    validations:
+      required: true
+
+  - type: textarea
+    id: integration_description
+    attributes:
+      label: Integration description
+      description: One paragraph. What does the integration look like end-to-end? Which side runs ATR — your CI, your runtime, your IDE?
+      placeholder: |
+        e.g. "We import the prompt-injection category at build time, compile the
+        regexes into our existing Sigma backend, and emit our own rule IDs that
+        cross-reference ATR rule IDs in the description field."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: tier
+    attributes:
+      label: Your project tier (best guess)
+      description: This helps the maintainers route the request. Be honest — there is no wrong answer.
+      options:
+        - Standards body / framework (e.g. OWASP, NIST, OpenTelemetry SIG)
+        - Production deployment (your project ships ATR in a customer-facing product)
+        - Open-source tool / SDK (your project is a developer tool that integrates ATR)
+        - Awesome-list / documentation reference (you want to list ATR in a public catalogue)
+        - Research / academic
+        - Personal / hobby project
+    validations:
+      required: true
+
+  - type: dropdown
+    id: timeline
+    attributes:
+      label: Timeline
+      options:
+        - Already shipped (and we want to be listed in ADOPTERS.md)
+        - In review / draft PR open in our repo
+        - Implementing now, 1–4 weeks
+        - Planning, 1–3 months
+        - Exploring, no commitment yet
+    validations:
+      required: true
+
+  - type: input
+    id: your_role
+    attributes:
+      label: Your role
+      description: Maintainer, contributor, employee of company X — whatever applies. We don't gatekeep, but accurate context helps us calibrate the conversation.
+      placeholder: e.g. "Maintainer of repo X" or "Security engineer at Company Y"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: help_wanted
+    attributes:
+      label: What kind of help would be useful?
+      description: Tick all that apply. The maintainers will follow up in the issue thread with the relevant pointers.
+      options:
+        - label: A walkthrough of the rule schema and conformance requirements
+        - label: Help mapping ATR rules to our existing detection format
+        - label: Sample code / reference implementation for our language
+        - label: Review of our integration design before we commit code
+        - label: Pre-publication review of our public announcement / blog post
+        - label: Co-presentation or joint blog post when we ship
+        - label: Nothing right now — just want to be on the radar
+
+  - type: textarea
+    id: specific_rules_or_categories
+    attributes:
+      label: Specific rules or categories you care about (optional)
+      description: If your project only consumes part of the corpus, list the categories or rule IDs. Helps us flag relevant updates to you.
+      placeholder: |
+        e.g. prompt-injection, tool-poisoning, ATR-2026-00440, ATR-2026-00441
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: agreement
+    attributes:
+      label: Before submitting
+      description: Standard housekeeping.
+      options:
+        - label: I have read the ATR README and skimmed the spec at /quality-standard
+          required: true
+        - label: I understand ATR is MIT licensed and that adopters are listed publicly in ADOPTERS.md unless they ask not to be
+          required: true
+        - label: I agree to the Code of Conduct
+          required: true

@@ -241,6 +241,20 @@ This is Microsoft Copilot operating inside AGT, not an MSRC endorsement. Coverag
 
 [NVIDIA garak #1676](https://github.com/NVIDIA/garak/pull/1676) · [OWASP LLM Top 10 #814](https://github.com/OWASP/www-project-top-10-for-large-language-model-applications/pull/814) · [IBM mcp-context-forge #4109](https://github.com/IBM/mcp-context-forge/pull/4109) · [Meta PurpleLlama #206](https://github.com/meta-llama/PurpleLlama/pull/206) · [Microsoft PyRIT #1715](https://github.com/microsoft/PyRIT/pull/1715) · [BerriAI LiteLLM #28050](https://github.com/BerriAI/litellm/pull/28050) · [promptfoo #8529](https://github.com/promptfoo/promptfoo/pull/8529) · [Cybercentre Canada CCCS-Yara #100](https://github.com/CybercentreCanada/CCCS-Yara/pull/100)
 
+### Integrating ATR into your project
+
+The full adopter list lives in [ADOPTERS.md](./ADOPTERS.md). New adopters
+self-declare via PR — the maintainers do not pre-approve entries.
+
+If you are planning an integration and want a structured intake (spec
+walkthrough, review of design, sample code for your language), open an
+[Integration Request issue](https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=integration-request.yml).
+The triage workflow posts a welcome and routes the request to the
+maintainers within seven days.
+
+If you have already shipped, open a PR against `ADOPTERS.md` using the
+[`adopter` PR template](./.github/PULL_REQUEST_TEMPLATE/adopter.md).
+
 ## 7. Coverage
 
 ATR maps its rules onto established frameworks so adopters can answer "we deploy ATR — what does that buy us in terms of \[your framework\] coverage?" without re-doing the mapping themselves.
