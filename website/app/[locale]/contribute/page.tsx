@@ -33,12 +33,70 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
       <Reveal delay={0.2}>
         <p className="text-base text-stone font-light mb-10 max-w-[520px]">
           {zh
-            ? "MIT 授權。零專有工具。零 CLA。從回報一個繞過方法開始，15 分鐘。"
+            ? "MIT 授權。零專有工具。零 CLA。從回報一個繞過方法開始,15 分鐘。"
             : "MIT licensed. No proprietary tooling. No CLA. Start by reporting an evasion, 15 minutes."}
         </p>
       </Reveal>
 
+      {/* ── Integrating ATR into your project (top — most asked path) ── */}
+      <Reveal>
+        <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-3">
+          {zh ? "把 ATR 接到你的專案" : "Integrating ATR into your project"}
+        </div>
+      </Reveal>
+      <Reveal delay={0.1}>
+        <div className="border border-fog mb-12 grid grid-cols-1 md:grid-cols-2">
+          <div className="p-6 md:p-7 border-b md:border-b-0 md:border-r border-fog">
+            <div className="font-data text-[11px] text-stone tracking-wide uppercase mb-2">
+              {zh ? "規劃中 / 實作中" : "Planning or implementing"}
+            </div>
+            <h3 className="font-display text-base font-semibold text-ink mb-2">
+              {zh ? "開 Integration Request issue" : "Open an Integration Request issue"}
+            </h3>
+            <p className="text-sm text-stone leading-relaxed mb-3">
+              {zh
+                ? "結構化表單,5 分鐘填完。需要 spec walkthrough、design review、語言 sample code、或合規 mapping 就走這條。維護者七天內回覆。"
+                : "Structured intake form, 5 minutes. Use this path if you need a spec walkthrough, design review, sample code for your language, or framework-compliance mapping. Maintainers respond within seven days."}
+            </p>
+            <a
+              href="https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=integration-request.yml"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-data text-xs text-blue hover:underline"
+            >
+              {zh ? "開 issue" : "Open the issue"} &rarr;
+            </a>
+          </div>
+          <div className="p-6 md:p-7">
+            <div className="font-data text-[11px] text-stone tracking-wide uppercase mb-2">
+              {zh ? "已經 ship 了" : "Already shipped"}
+            </div>
+            <h3 className="font-display text-base font-semibold text-ink mb-2">
+              {zh ? "提 PR 加進 ADOPTERS.md" : "Open a PR against ADOPTERS.md"}
+            </h3>
+            <p className="text-sm text-stone leading-relaxed mb-3">
+              {zh
+                ? "你的整合公開可驗證了就走這條。Schema 對、有 evidence link 就 merge — 維護者不預先審核採用者,這跟 Sigma 一樣。"
+                : "Take this path when your integration is publicly verifiable. Schema-conforming entries with a verifiable evidence link get merged — maintainers do not pre-approve adopters. Same model as Sigma."}
+            </p>
+            <a
+              href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ADOPTERS.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-data text-xs text-blue hover:underline"
+            >
+              ADOPTERS.md &rarr;
+            </a>
+          </div>
+        </div>
+      </Reveal>
+
       {/* ── Quick Actions (the most important part) ── */}
+      <Reveal>
+        <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-3">
+          {zh ? "改進規則本身" : "Improve the rules themselves"}
+        </div>
+      </Reveal>
       <Reveal delay={0.3}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
           {[
@@ -97,6 +155,108 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
               </div>
             </Reveal>
           ))}
+        </div>
+      </Reveal>
+
+      {/* ── Spec amendments ── */}
+      <Reveal>
+        <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-3">
+          {zh ? "想改 spec 本身" : "Want to change the spec itself"}
+        </div>
+      </Reveal>
+      <Reveal delay={0.1}>
+        <div className="border border-fog p-6 mb-12">
+          <p className="text-sm text-stone leading-relaxed mb-3">
+            {zh
+              ? "Spec(ATR-SPEC-v1)是所有相容引擎的契約。改動 spec 不像加規則那麼直接 — 流程是:先開 RFC issue 標題以 [RFC] 開頭,描述要改什麼、為什麼;留 7 天公開評論窗口讓所有 implementer 看到並回饋;接下來才接受 PR。Breaking change(SemVer 主版號)需要額外 30 天提前公告。"
+              : "The spec (ATR-SPEC-v1) is the contract between all conforming engines. Spec changes are not as direct as rule additions — the process is: open an RFC issue with title prefixed [RFC] describing what you want to change and why; leave a 7-day public comment window so every implementer sees it and can respond; then submit the PR. Breaking changes (SemVer major bump) require an additional 30-day advance notice."}
+          </p>
+          <p className="text-sm text-stone leading-relaxed mb-3">
+            {zh
+              ? "完整流程在 governance 頁的 Decision-making 區段。"
+              : "Full process documented under Decision-making on the governance page."}
+          </p>
+          <div className="flex flex-wrap gap-4">
+            <a
+              href="https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?title=%5BRFC%5D+"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-data text-xs text-blue hover:underline"
+            >
+              {zh ? "開 RFC issue" : "Open an RFC issue"} &rarr;
+            </a>
+            <span className="text-fog">|</span>
+            <a
+              href={`/${locale}/governance`}
+              className="font-data text-xs text-blue hover:underline"
+            >
+              {zh ? "決策流程細節" : "Decision-making process"} &rarr;
+            </a>
+            <span className="text-fog">|</span>
+            <a
+              href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ATR-SPEC-v1.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-data text-xs text-blue hover:underline"
+            >
+              ATR-SPEC-v1.md &rarr;
+            </a>
+          </div>
+        </div>
+      </Reveal>
+
+      {/* ── First-time contributors ── */}
+      <Reveal>
+        <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-3">
+          {zh ? "第一次貢獻" : "First time contributing"}
+        </div>
+      </Reveal>
+      <Reveal delay={0.1}>
+        <div className="border border-fog p-6 mb-12 text-sm text-graphite leading-relaxed space-y-3">
+          <p>
+            {zh
+              ? "如果你想開始但不確定從哪開始,有兩條低門檻入口:"
+              : "If you want to contribute but don't know where to start, two low-friction entry points:"}
+          </p>
+          <ul className="list-disc pl-6 space-y-2">
+            <li>
+              <a
+                href="https://github.com/Agent-Threat-Rule/agent-threat-rules/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue hover:underline"
+              >
+                {zh ? "「good first issue」標籤的 open issue" : "Open issues labelled 'good first issue'"}
+              </a>
+              {zh
+                ? " — 維護者標記過、範圍清楚的入門任務。"
+                : " — maintainer-tagged starter tasks with clear scope."}
+            </li>
+            <li>
+              {zh
+                ? "規則的 false-positive 報告 — 你的工作流程中遇到誤判,15 分鐘填表格,就直接幫到下游所有採用者。維護者最重視這類回饋。"
+                : "False-positive reports — if you hit a misfire in your workflow, a 15-minute report directly helps every downstream adopter. Maintainers prioritise this class of feedback."}
+            </li>
+          </ul>
+        </div>
+      </Reveal>
+
+      {/* ── Become a maintainer ── */}
+      <Reveal>
+        <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-3">
+          {zh ? "想成為維護者" : "Want to become a maintainer"}
+        </div>
+      </Reveal>
+      <Reveal delay={0.1}>
+        <div className="border border-fog p-6 mb-12 text-sm text-graphite leading-relaxed">
+          <p className="mb-3">
+            {zh
+              ? "ATR 目前是 single-maintainer,正在主動招募第二位、第三位。候選條件、決策結構、以及申請方式都在 governance 頁。"
+              : "ATR is currently single-maintainer and is actively recruiting a second and third. Candidate criteria, the decision-making structure, and how to apply are all on the governance page."}
+          </p>
+          <a href={`/${locale}/governance`} className="font-data text-xs text-blue hover:underline">
+            {zh ? "看治理頁的「想成為維護者」段" : "See 'Become a maintainer' on the governance page"} &rarr;
+          </a>
         </div>
       </Reveal>
 
