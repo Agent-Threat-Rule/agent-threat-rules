@@ -50,7 +50,7 @@ jobs:
           set -euo pipefail
           INPUT="${{ inputs.sources }}"
           if [ -z "$INPUT" ] || [ "$INPUT" = "all" ]; then
-            echo "set=atr-self-test,pint,hackaprompt,skill-benchmark,std-corpora,prompt-academic,small-corpora,garak-full" >> "$GITHUB_OUTPUT"
+            echo "set=atr-self-test,pint,hackaprompt,skill-benchmark,std-corpora,prompt-academic,small-corpora,garak-inthewild,garak-full,academic-raw" >> "$GITHUB_OUTPUT"
           else
             echo "set=$INPUT" >> "$GITHUB_OUTPUT"
           fi
@@ -123,6 +123,19 @@ jobs:
             echo "::warning::small-corpora data not present — skipping."
           fi
 
+      - name: garak in-the-wild (headline; local corpus — no python needed)
+        if: contains(steps.sources.outputs.set, 'garak-inthewild')
+        run: |
+          if [ -f data/test-corpora/garak-full/inthewild.json ]; then
+            # Refreshes the headline `garak` source against the in-the-wild
+            # jailbreak corpus extracted from upstream. The legacy
+            # scripts/eval-garak.sh (Python-based) is an alternative when
+            # you want to pull from the live `pip install garak` package.
+            npx tsx scripts/eval-garak-inthewild.ts
+          else
+            echo "::warning::garak in-the-wild corpus not present — skipping."
+          fi
+
       - name: garak-full (all probe families, local corpus — no python needed)
         if: contains(steps.sources.outputs.set, 'garak-full')
         run: |
@@ -134,6 +147,14 @@ jobs:
           else
             echo "::warning::garak-full corpus not present — skipping."
           fi
+
+      - name: academic-raw (advbench + harmbench + jailbreakbench, upstream fetch)
+        if: contains(steps.sources.outputs.set, 'academic-raw')
+        run: |
+          # Fetches the three MIT-licensed academic adversarial CSVs from
+          # upstream live. Network-dependent; on fetch failure the script
+          # emits ::warning:: and continues to the next source.
+          npx tsx scripts/eval-academic-raw.ts
 
       - name: Verify measurement schemas
         run: npx tsx scripts/measurement/verify.ts

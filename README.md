@@ -309,12 +309,15 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 
 | Source | Source version | Samples | Recall | Precision | FP rate | Measured |
 |---|---|---:|---:|---:|---:|---|
+| AdvBench (LLM-attacks behaviors) | upstream-2026-05-23 | 520 | 1.3% | 100.0% | 0.0% | 2026-05-23 |
 | atr-self-test | internal | 341 | 89.4% | 100.0% | 0.0% | 2026-05-23 |
 | autoresearch | internal-1054 | 1,054 | 15.1% | 100.0% | 0.0% | 2026-05-23 |
-| garak (in-the-wild jailbreaks) | in-the-wild-jailbreak-llms-2026-04 | 666 | 97.1% | 100.0% | 0.0% | 2026-04-21 |
+| garak (in-the-wild jailbreaks) | inthewild-jailbreak-corpus-650 | 650 | 98.0% | 100.0% | 0.0% | 2026-05-23 |
 | garak-full (all probe families) | 23-families | 3,475 | 38.5% | 100.0% | 0.0% | 2026-05-23 |
 | hackaprompt | v1 | 4,780 | 66.0% | 100.0% | 0.0% | 2026-05-23 |
+| HarmBench (CAIS behaviors) | upstream-2026-05-23 | 400 | 2.5% | 100.0% | 0.0% | 2026-05-23 |
 | hh-rlhf (Anthropic red-team-attempts) | snapshot-2026-04 | 4,957 | 99.1% | 100.0% | 0.0% | 2026-05-23 |
+| JailbreakBench (JBB-Behaviors) | upstream-2026-05-23 | 100 | 5.0% | 100.0% | 0.0% | 2026-05-23 |
 | llm-guard (Protect AI test fixtures) | corpus-2026-05-12 | 44 | 72.7% | 100.0% | 0.0% | 2026-05-23 |
 | MITRE ATLAS | snapshot-2026-04 | 182 | 100.0% | 100.0% | 0.0% | 2026-05-23 |
 | NeMo Guardrails (NVIDIA test fixtures) | corpus-2026-05-12 | 6 | 100.0% | 100.0% | 0.0% | 2026-05-23 |
@@ -327,12 +330,23 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | Wild scan (OpenClaw + Skills.sh + Hermes + ClawHub) | corpus-2026-04-14 | 96,096 | — | 57.7% (floor) | 1.35% flag rate | 2026-04-14 |
 
 Two `garak` rows are deliberate: the headline `garak` source tracks NVIDIA's
-in-the-wild jailbreak corpus (narrow, the 97.1% number ATR has cited
-publicly), while `garak-full` tracks every probe family in upstream garak
-(broad, includes families like `badchars`, `dra`, `encoding` that ATR's
-regex layer intentionally does not target). Both are valid measurements
-against different corpora; they are kept as separate streams so the
-broad-corpus number does not silently overwrite the headline.
+in-the-wild jailbreak corpus (narrow, the 98% number ATR cites publicly,
+refreshed 2026-05-23 against ATR 3.0.0-alpha.0), while `garak-full` tracks
+every probe family in upstream garak (broad, includes families like
+`badchars`, `dra`, `encoding` that ATR's regex layer intentionally does
+not target). Both are valid measurements against different corpora; they
+are kept as separate streams so the broad-corpus number does not silently
+overwrite the headline.
+
+The single-digit recall on AdvBench / HarmBench / JailbreakBench is honest
+and expected. Those three corpora test **LLM safety alignment** (does the
+model refuse harmful requests like "explain how to make a bomb"), not
+**prompt-injection detection** (the surface ATR's regex layer targets).
+ATR's near-zero recall on these corpora confirms the layering thesis:
+regex catches structured attack patterns, alignment + content moderation
+catch natural-language harm requests. The numbers are recorded for
+completeness and so any future ATR rule additions in the harm-category
+space can be measured against a documented baseline.
 
 Conventions: 100%-adversarial corpora have `fp_rate` undefined and recorded as
 0 in measurement files. Wild-scan has no ground-truth labels; the `precision`
@@ -350,8 +364,10 @@ npx tsx src/eval/skill-benchmark.ts                                          # S
 npx tsx scripts/eval-std-corpora.ts                                          # HH-RLHF + OWASP + ATLAS
 npx tsx scripts/atr_recall_analysis.ts                                       # PromptBench + PromptInject
 npx tsx scripts/eval-small-corpora.ts                                        # llm-guard + nemo-guardrails + promptfoo
+npx tsx scripts/eval-garak-inthewild.ts                                      # garak in-the-wild (local corpus, no pip needed)
 npx tsx scripts/run-garak-full-benchmark.ts                                  # garak-full (all probe families, local corpus)
-bash scripts/eval-garak.sh                  # garak in-the-wild (NVIDIA red-team narrow corpus; requires: pip install garak)
+npx tsx scripts/eval-academic-raw.ts                                         # advbench + harmbench + jailbreakbench (fetches upstream)
+bash scripts/eval-garak.sh                  # garak via upstream Python package (requires: pip install garak)
 npx tsx scripts/measurement/verify.ts       # validate every measurement file
 npx tsx scripts/sync-stats-from-measurements.ts                              # refresh stats.json benchmarks[]
 ```
