@@ -19,6 +19,7 @@
 import { resolve, join } from 'node:path';
 import { loadHackaPromptCorpus, getHackaPromptCorpusStats } from './hackaprompt-corpus.js';
 import { runEval } from './eval-harness.js';
+import { writeMeasurementFromEvalReport } from '../measurement/from-eval-harness.js';
 
 function formatPercent(n: number): string {
   return `${(n * 100).toFixed(1)}%`;
@@ -91,6 +92,15 @@ async function main(): Promise<void> {
   }
 
   console.log(`\nReport saved to: ${outputPath}`);
+
+  // Standardized Measurement file (version-pinned, immutable).
+  const { measurementPath } = writeMeasurementFromEvalReport(report, {
+    source: 'hackaprompt',
+    source_version: 'v1',
+    source_url: 'https://huggingface.co/datasets/hackaprompt/hackaprompt-dataset',
+    notes: 'HackAPrompt competition dataset. 100% adversarial — fp_rate is undefined on this corpus.',
+  });
+  console.log(`Measurement: ${measurementPath}`);
   console.log('Done.');
 }
 

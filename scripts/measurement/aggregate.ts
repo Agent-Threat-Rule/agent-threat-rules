@@ -13,7 +13,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { type LatestPointer, parseLatestPointer } from "./schema.js";
+import { type LatestPointer, parseLatestPointer } from "../../src/measurement/schema.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

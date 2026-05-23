@@ -19,6 +19,7 @@
 import { resolve, join } from 'node:path';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { ATREngine } from '../engine.js';
+import { writeMeasurement } from '../measurement/write.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -229,6 +230,49 @@ export async function runSkillBenchmark(options?: {
 
   // Save report
   writeFileSync(outputPath, JSON.stringify(report, null, 2));
+
+  // Standardized Measurement file (version-pinned, immutable).
+  writeMeasurement(
+    {
+      source: 'skill-benchmark',
+      source_version: 'internal-498',
+      measured_at: report.timestamp,
+      samples: report.corpus_size,
+      metrics: {
+        recall: report.overall_recall,
+        precision: report.overall_precision,
+        f1: report.overall_f1,
+        fp_rate: report.fp_rate,
+      },
+      confusion: {
+        tp: report.true_positives,
+        fp: report.false_positives,
+        tn: report.true_negatives,
+        fn: report.false_negatives,
+      },
+      latency_ms: {
+        p50: report.avg_latency_ms,
+        p95: report.max_latency_ms,
+        p99: report.max_latency_ms,
+        mean: report.avg_latency_ms,
+        max: report.max_latency_ms,
+      },
+      breakdown: {
+        layers: {
+          a: report.layer_a,
+          b: report.layer_b,
+          c: report.layer_c,
+        },
+        malicious_count: report.malicious_count,
+        benign_count: report.benign_count,
+        expected_rules_accuracy: report.expected_rules_accuracy,
+        category_accuracy: report.category_accuracy,
+      },
+      notes:
+        'Internal 498-sample SKILL.md benchmark. Layer A = obvious payload, Layer B = obfuscated, Layer C = semantic.',
+    },
+    { force: true },
+  );
 
   return report;
 }

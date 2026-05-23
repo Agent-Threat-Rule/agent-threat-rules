@@ -18,6 +18,7 @@
 import { resolve, join } from 'node:path';
 import { loadPintCorpus, getPintCorpusStats } from './pint-corpus.js';
 import { runEval } from './eval-harness.js';
+import { writeMeasurementFromEvalReport } from '../measurement/from-eval-harness.js';
 
 // ---------------------------------------------------------------------------
 // Formatting helpers
@@ -173,6 +174,15 @@ async function main(): Promise<void> {
   }
 
   console.log(`\nReport saved to: ${outputPath}`);
+
+  // Also write the standardized Measurement file (version-pinned, immutable).
+  const { measurementPath } = writeMeasurementFromEvalReport(report, {
+    source: 'pint',
+    source_version: 'v1',
+    source_url: 'https://github.com/lakeraai/pint-benchmark',
+    notes: 'Invariant Labs PINT benchmark — 850-sample adversarial prompt-injection corpus.',
+  });
+  console.log(`Measurement: ${measurementPath}`);
   console.log('Done.\n');
 
   if (!regression.passed) {

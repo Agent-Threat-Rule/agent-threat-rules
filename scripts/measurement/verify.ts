@@ -17,7 +17,7 @@ import { join, resolve } from "node:path";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { MeasurementSchemaError, parseLatestPointer, parseMeasurement } from "./schema.js";
+import { MeasurementSchemaError, parseLatestPointer, parseMeasurement } from "../../src/measurement/schema.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

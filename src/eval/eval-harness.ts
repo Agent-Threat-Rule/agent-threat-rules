@@ -14,6 +14,7 @@
 
 import { resolve, join } from 'node:path';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { writeMeasurementFromEvalReport } from '../measurement/from-eval-harness.js';
 import { ATREngine } from '../engine.js';
 import { EmbeddingModule } from '../modules/embedding.js';
 import type { AgentEvent } from '../types.js';
@@ -357,6 +358,15 @@ export async function runEvalCLI(): Promise<void> {
   }
 
   console.log(`\nReport saved to: ${outputPath}`);
+
+  // Standardized Measurement file (version-pinned, immutable). This is the
+  // canonical record consumed by stats.json, README badges, and the website.
+  const { measurementPath } = writeMeasurementFromEvalReport(report, {
+    source: 'atr-self-test',
+    source_version: 'internal',
+    notes: "Engine regression eval against the union of every rule's own test_cases.",
+  });
+  console.log(`Measurement: ${measurementPath}`);
   console.log('Done.\n');
 
   if (!regression.passed) {
