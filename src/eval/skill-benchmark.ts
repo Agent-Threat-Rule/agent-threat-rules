@@ -231,7 +231,24 @@ export async function runSkillBenchmark(options?: {
   // Save report
   writeFileSync(outputPath, JSON.stringify(report, null, 2));
 
-  // Standardized Measurement file (version-pinned, immutable).
+  return report;
+}
+
+// ---------------------------------------------------------------------------
+// Measurement adapter (CLI-only — tests call runSkillBenchmark and skip this)
+// ---------------------------------------------------------------------------
+
+/**
+ * Write the standardized version-pinned Measurement file for a SkillBenchmark
+ * report. Separated from runSkillBenchmark so unit tests can exercise the
+ * benchmark logic without mutating data/measurements/ on disk (which would
+ * make the CI 'sync-stats --check' drift gate flake).
+ *
+ * Called from the CLI block at the bottom of this file and from any
+ * external script that wants to persist the measurement. Safe to call
+ * repeatedly the same day — uses force=true.
+ */
+export function writeSkillBenchmarkMeasurement(report: SkillBenchmarkReport): void {
   writeMeasurement(
     {
       source: 'skill-benchmark',
@@ -273,8 +290,6 @@ export async function runSkillBenchmark(options?: {
     },
     { force: true },
   );
-
-  return report;
 }
 
 // ---------------------------------------------------------------------------
@@ -340,6 +355,10 @@ if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith
   runSkillBenchmark().then((report) => {
     printReport(report);
     console.log(`Report saved to: data/skill-benchmark/benchmark-report.json`);
+    // Write the standardized version-pinned Measurement file. CLI-only —
+    // unit tests call runSkillBenchmark() directly and skip this.
+    writeSkillBenchmarkMeasurement(report);
+    console.log(`Measurement: data/measurements/skill-benchmark/`);
   }).catch((err) => {
     console.error('Benchmark failed:', err);
     process.exit(1);

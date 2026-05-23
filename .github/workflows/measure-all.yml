@@ -86,7 +86,12 @@ jobs:
         if: contains(steps.sources.outputs.set, 'skill-benchmark')
         run: |
           if [ -f data/skill-benchmark/manifest.json ]; then
-            npx tsx -e "import('./src/eval/skill-benchmark.js').then(m => m.runSkillBenchmark())"
+            # Direct script invocation — the file's bottom block calls
+            # runSkillBenchmark + printReport + writeSkillBenchmarkMeasurement.
+            # (Importing runSkillBenchmark alone does NOT write the
+            # measurement; that's intentional so unit tests don't mutate
+            # data/measurements/ during npm test.)
+            npx tsx src/eval/skill-benchmark.ts
           else
             echo "::warning::skill-benchmark manifest not present — skipping."
           fi
