@@ -1,0 +1,168 @@
+name: Measure All Benchmarks
+
+# Re-runs every benchmark whose corpus is available in this repo (or
+# pullable from upstream) and writes a fresh Measurement file per source.
+# Designed for two triggers:
+#
+#   1. workflow_dispatch — manual trigger when a maintainer wants to refresh
+#      the public-facing recall numbers (e.g. before a release announcement).
+#
+#   2. release published — automatic refresh on every published GitHub
+#      release so the numbers cited in release notes are pinned to the
+#      released ATR version.
+#
+# This workflow does NOT run on every push — re-measuring per commit is
+# expensive (10-20 minutes for the full sweep) and the daily eval CI already
+# refreshes atr-self-test on every PR.
+
+on:
+  workflow_dispatch:
+    inputs:
+      sources:
+        description: "Comma-separated source list (or `all` for the full sweep)"
+        required: false
+        default: "all"
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Determine source set
+        id: sources
+        run: |
+          set -euo pipefail
+          INPUT="${{ inputs.sources }}"
+          if [ -z "$INPUT" ] || [ "$INPUT" = "all" ]; then
+            echo "set=atr-self-test,pint,hackaprompt,skill-benchmark,std-corpora,prompt-academic" >> "$GITHUB_OUTPUT"
+          else
+            echo "set=$INPUT" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Each step is gated by whether its source appears in the requested set.
+      # Sources that need gitignored corpora are skipped with a log line
+      # rather than failing — the corpora license-restricted ones must be
+      # provisioned separately (see docs/benchmark-corpus-acquisition.md).
+
+      - name: atr-self-test
+        if: contains(steps.sources.outputs.set, 'atr-self-test')
+        run: npm run eval
+
+      - name: pint
+        if: contains(steps.sources.outputs.set, 'pint')
+        run: |
+          if [ -f data/pint-benchmark/pint-corpus.json ]; then
+            npm run eval:pint
+          else
+            echo "::warning::PINT corpus not present — skipping. Provision data/pint-benchmark/pint-corpus.json to enable."
+          fi
+
+      - name: hackaprompt
+        if: contains(steps.sources.outputs.set, 'hackaprompt')
+        run: |
+          if [ -f data/hackaprompt/hackaprompt-corpus.json ]; then
+            npx tsx src/eval/run-hackaprompt-benchmark.ts
+          else
+            echo "::warning::HackAPrompt corpus not present — skipping. Provision data/hackaprompt/hackaprompt-corpus.json to enable."
+          fi
+
+      - name: skill-benchmark
+        if: contains(steps.sources.outputs.set, 'skill-benchmark')
+        run: |
+          if [ -f data/skill-benchmark/manifest.json ]; then
+            npx tsx -e "import('./src/eval/skill-benchmark.js').then(m => m.runSkillBenchmark())"
+          else
+            echo "::warning::skill-benchmark manifest not present — skipping."
+          fi
+
+      - name: std-corpora (hh-rlhf, owasp-llm-top10, mitre-atlas)
+        if: contains(steps.sources.outputs.set, 'std-corpora')
+        run: |
+          if [ -d data/test-corpora/hh-rlhf ]; then
+            npx tsx scripts/eval-std-corpora.ts
+          else
+            echo "::warning::std-corpora source data not present — skipping."
+          fi
+
+      - name: prompt-academic (promptbench, promptinject)
+        if: contains(steps.sources.outputs.set, 'prompt-academic')
+        run: |
+          if [ -f data/test-corpora/promptbench/all.json ] && [ -f data/test-corpora/promptinject/all.json ]; then
+            npx tsx scripts/atr_recall_analysis.ts
+          else
+            echo "::warning::promptbench / promptinject corpora not present — skipping."
+          fi
+
+      - name: Verify measurement schemas
+        run: npx tsx scripts/measurement/verify.ts
+
+      - name: Sync stats.json benchmarks
+        run: npx tsx scripts/sync-stats-from-measurements.ts
+
+      - name: Detect changes
+        id: changes
+        run: |
+          git add -A data/measurements/ data/stats.json
+          if git diff --cached --quiet; then
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            echo "No measurement changes this run."
+          else
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+            git diff --cached --stat
+          fi
+
+      - name: Configure git author
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          git config user.name "ATR Measurement Bot"
+          git config user.email "measurement-bot@agentthreatrule.org"
+
+      - name: Push branch + open PR
+        if: steps.changes.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          DATE=$(date -u +%Y-%m-%d)
+          BRANCH="measure-all/$DATE"
+          # Idempotency: if the branch already exists from a prior same-day run,
+          # delete it and recreate so we don't get non-fast-forward push errors.
+          git push origin --delete "$BRANCH" 2>/dev/null || true
+          git checkout -b "$BRANCH"
+          git commit -m "chore(measurement): refresh measurements ($DATE)"
+          git push origin "$BRANCH"
+
+          # If a PR for today's branch already exists, update its body; else create.
+          EXISTING_PR=$(gh pr list --head "$BRANCH" --json number -q '.[0].number' 2>/dev/null || true)
+          BODY="Auto-generated measurement refresh (${DATE}).
+
+          See \`data/measurements/<source>/latest.json\` for each updated source and
+          \`data/stats.json\` for the aggregated benchmarks array.
+
+          Triggered by: ${{ github.event_name }}
+          Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          if [ -n "$EXISTING_PR" ]; then
+            gh pr edit "$EXISTING_PR" --body "$BODY"
+          else
+            gh pr create \
+              --title "chore(measurement): refresh measurements — $DATE" \
+              --body "$BODY" \
+              --base main \
+              --head "$BRANCH"
+          fi

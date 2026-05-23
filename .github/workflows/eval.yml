@@ -33,10 +33,33 @@ jobs:
       - name: Validate rules
         run: npm run validate
 
+      - name: Verify measurement schemas
+        # Fails the build if any data/measurements/<source>/*.json file
+        # violates the Measurement schema. Catches accidental hand-edits
+        # of immutable measurement files in PRs.
+        run: npx tsx scripts/measurement/verify.ts --quiet
+
+      - name: Check stats.json benchmarks freshness
+        # `npm run eval` above writes a new atr-self-test measurement which
+        # updates data/measurements/atr-self-test/latest.json. This step
+        # asserts that data/stats.json reflects every latest measurement
+        # currently on disk. Fails if PR author forgot to run
+        # `npx tsx scripts/sync-stats-from-measurements.ts` after a
+        # measurement-producing change.
+        run: npx tsx scripts/sync-stats-from-measurements.ts --check
+
       - name: Upload eval report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: eval-report
           path: data/eval-report.json
+          if-no-files-found: ignore
+
+      - name: Upload measurement (atr-self-test fresh run)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: atr-self-test-measurement
+          path: data/measurements/atr-self-test/
           if-no-files-found: ignore
