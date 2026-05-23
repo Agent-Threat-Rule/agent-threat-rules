@@ -1,0 +1,192 @@
+title: "PraisonAI-Style Auth-Disabled-By-Default Configuration (CVE-2026-44338 family)"
+id: ATR-2026-00528
+rule_version: 1
+status: "stable"
+description: >
+  Detects the configuration shape exploited by CVE-2026-44338 (PraisonAI
+  authentication bypass, disclosed 2026-05-18, Sysdig wave-analysis showed
+  internet-exposed instances were scanned within 3 hours 44 minutes of
+  disclosure). The PraisonAI legacy Flask server shipped with
+  `AUTH_ENABLED = False` and `AUTH_TOKEN = None` hard-coded as defaults,
+  leaving `/agents` and `/chat` endpoints unauthenticated when deployed
+  without operator override. Affects versions 2.5.6 through 4.6.33.
+  The detection target is the static configuration pattern — agent
+  framework code that ships authentication-disabling defaults — which
+  generalizes beyond PraisonAI to any agent server that takes this
+  shortcut.
+author: "ATR Community (cve-pipeline)"
+date: "2026/05/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: "test"
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM03:2025 - Supply Chain"
+  owasp_agentic:
+    - "ASI01:2026 - Improper Identity & Access Management"
+  mitre_atlas:
+    - "AML.T0049 - Exploit Public-Facing Application"
+
+compliance:
+  owasp_agentic:
+    - id: ASI01:2026
+      context: >
+        ASI01 Improper IAM directly covers agent frameworks that ship
+        with authentication disabled by default. Detection at install
+        time stops the exposed-by-default deployment shape.
+      strength: primary
+  owasp_llm:
+    - id: LLM03:2025
+      context: >
+        LLM03 Supply Chain risk: an agent dependency that ships an unsafe
+        default configuration class. Detection on the dependency code
+        catches the issue before runtime.
+      strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: >
+        Article 15 robustness — accepting an upstream package with
+        authentication-disabled defaults violates the duty of resilience
+        against manipulation.
+      strength: primary
+  nist_ai_rmf:
+    - function: Manage
+      subcategory: MG.4.3
+      context: >
+        Third-party AI risk monitoring under MG.4.3 must include
+        configuration-level provenance checks.
+      strength: primary
+  iso_42001:
+    - clause: "8.3"
+      context: >
+        AIMS information security under 8.3 — exposed endpoints from
+        auth-disabled defaults are an explicit information security gap.
+      strength: primary
+
+tags:
+  category: privilege-escalation
+  subcategory: auth-disabled-default
+  scan_target: skill
+  confidence: high
+  source: cve-disclosure
+  vendor_sources: praisonai-44338
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  conditions:
+    - field: user_input
+      operator: regex
+      value: >-
+        (?<![A-Za-z_])(?:AUTH_ENABLED|AUTHENTICATION_ENABLED|REQUIRE_AUTH|ENABLE_AUTH|AUTH_REQUIRED|AUTH_GATE)\s*[:=]\s*(?:False|false|0|None|null|nil|"")
+    - field: user_input
+      operator: regex
+      value: >-
+        (?<![A-Za-z_])(?:AUTH_TOKEN|API_TOKEN|API_KEY|BEARER_TOKEN|SESSION_SECRET|SECRET_KEY)\s*[:=]\s*(?:None|null|nil|""|''|False|false)[\s\S]{0,400}(?:@app\.route|router\.|fastapi|flask|express|app\.(?:get|post|put|delete)|@router\.|@get|@post)
+  condition: any
+  false_positives:
+    - "Test files explicitly setting AUTH_ENABLED=False for unit-test fixtures inside conftest.py or *.test.* paths — recommend separate per-path suppression rather than removing the rule."
+    - "Documentation that mentions AUTH_ENABLED but doesn't assign False directly (e.g. `AUTH_ENABLED defaults to True in production`)."
+    - "Comments showing the dangerous pattern as an anti-example — rule deliberately fires here; downstream policy should allow suppression by path or context."
+
+response:
+  actions:
+    - block_input
+    - alert
+    - snapshot
+  auto_response_threshold: critical
+  message_template: >
+    [ATR-2026-00528] Agent framework configuration ships authentication
+    disabled by default (CVE-2026-44338 family). Production deployment
+    will expose endpoints unauthenticated.
+
+confidence: 85
+test_cases:
+  true_positives:
+    - input: >-
+        # config.py
+        AUTH_ENABLED = False
+        AUTH_TOKEN = None
+        PORT = 5000
+      expected: triggered
+      description: "PraisonAI exact disclosure shape (Sysdig writeup)"
+    - input: >-
+        AUTHENTICATION_ENABLED = false
+        SECRET_KEY = ""
+        @app.route('/agents', methods=['POST'])
+        def list_agents():
+            return jsonify(get_all_agents())
+      expected: triggered
+      description: "Auth disabled + empty secret + Flask /agents route"
+    - input: >-
+        AUTH_TOKEN: None
+        @router.get('/chat')
+        async def chat_endpoint(request):
+            return await process(request)
+      expected: triggered
+      description: "FastAPI /chat with AUTH_TOKEN None"
+    - input: >-
+        REQUIRE_AUTH = 0
+        from fastapi import FastAPI
+        app = FastAPI()
+        @app.post('/agent/execute')
+        def execute(payload): return run(payload)
+      expected: triggered
+      description: "FastAPI agent/execute with REQUIRE_AUTH=0"
+    - input: >-
+        const ENABLE_AUTH = false;
+        app.post('/api/agent', (req, res) => {
+          res.json(executeAgent(req.body));
+        });
+      expected: triggered
+      description: "Express agent endpoint with ENABLE_AUTH=false"
+    - input: >-
+        BEARER_TOKEN = ""
+        @app.route('/api/v1/run')
+        def run_workflow(): return execute(request.json)
+      expected: triggered
+      description: "Flask run-workflow with empty BEARER_TOKEN"
+  true_negatives:
+    - input: >-
+        AUTH_ENABLED = True
+        AUTH_TOKEN = os.environ['AUTH_TOKEN']
+        @app.route('/agents')
+        @require_auth
+        def list_agents(): return jsonify(agents)
+      expected: not_triggered
+      description: "Auth properly enabled with env var token"
+    - input: >-
+        # Production setup notes:
+        # Set AUTH_ENABLED to True before deploying.
+        # Token comes from env via AUTH_TOKEN env var.
+      expected: not_triggered
+      description: "Doc text mentioning auth, no actual assignment to False/None paired with route"
+    - input: >-
+        WHITELIST_AUTH_PATHS = ["/health", "/metrics"]
+        AUTH_TOKEN_HEADER = "X-Auth-Token"
+        AUTH_ENABLED = True
+      expected: not_triggered
+      description: "Auth config with WHITELIST/HEADER fields (not the disabling pattern)"
+    - input: "How do I configure authentication for my Flask app?"
+      expected: not_triggered
+      description: "General Flask auth question"
+    - input: >-
+        const LOG_AUTH_FAILURES = false;
+        const AUTH_RATE_LIMIT = 5;
+      expected: not_triggered
+      description: "Unrelated config with auth-suffixed names but not the auth-enabling switch"
+    - input: >-
+        if not session.auth_enabled:
+            raise PermissionError("Authentication required")
+      expected: not_triggered
+      description: "Code reading auth state at runtime, not the disabling assignment"
+    - input: "Please explain JWT token best practices."
+      expected: not_triggered
+      description: "General security knowledge question"

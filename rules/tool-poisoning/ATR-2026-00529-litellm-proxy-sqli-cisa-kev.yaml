@@ -1,0 +1,158 @@
+title: "LiteLLM Proxy SQL Injection (CVE-2026-42208, first AI-stack CISA KEV)"
+id: ATR-2026-00529
+rule_version: 1
+status: "stable"
+description: >
+  Detects the SQL injection class exploited by CVE-2026-42208 in LiteLLM
+  proxy (CVSS 9.8, added to CISA KEV catalog 2026-05-15 with a 3-day
+  federal patch deadline — the first AI-stack vulnerability added to KEV).
+  LiteLLM proxy admin/team management endpoints accept identifiers
+  (team_id, user_id, model, key) that were interpolated into SQL queries
+  without parameterization, allowing attackers to inject SQL via the API
+  surface that the agent's own LLM proxy uses. The detection target is
+  classic SQL injection metacharacter patterns appearing inside agent
+  request payloads bound to LiteLLM-style endpoint paths.
+author: "ATR Community (cve-pipeline)"
+date: "2026/05/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: "test"
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM06:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI06:2026 - Tool Misuse"
+    - "ASI04:2026 - Code Execution & Data Exfiltration"
+  mitre_atlas:
+    - "AML.T0049 - Exploit Public-Facing Application"
+
+compliance:
+  owasp_agentic:
+    - id: ASI06:2026
+      context: >
+        ASI06 Tool Misuse — the agent's LLM proxy tool is exploited via
+        an injection vector. Detection on the request shape stops
+        the exploit before SQL execution.
+      strength: primary
+  owasp_llm:
+    - id: LLM06:2025
+      context: >
+        LLM06 Excessive Agency — the LLM has authority to invoke proxy
+        endpoints and adversarial inputs reach SQL through that authority.
+      strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: >
+        Article 15 robustness — defending AI proxies against SQL injection
+        is required for high-risk AI systems with persistent state.
+      strength: primary
+  nist_ai_rmf:
+    - function: Manage
+      subcategory: MG.2.3
+      context: >
+        Runtime risk treatment for AI proxy components includes detection
+        of injection metacharacters reaching SQL boundary.
+      strength: primary
+  iso_42001:
+    - clause: "8.4"
+      context: >
+        AIMS impact assessment must cover the proxy SQL surface;
+        detection events feed the required monitoring trail.
+      strength: primary
+
+tags:
+  category: tool-poisoning
+  subcategory: sql-injection-proxy
+  scan_target: llm_io
+  confidence: high
+  source: cve-disclosure
+  vendor_sources: litellm-42208-cisa-kev
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  conditions:
+    - field: user_input
+      operator: regex
+      value: >-
+        (?:/litellm|/v1/team|/v1/user|/v1/model|/v1/key|/v1/admin|/team/(?:new|update|delete|info)|/user/(?:new|update|delete|info)|/key/(?:generate|update|delete|info)|/model/(?:new|update|delete|info))[\s\S]{0,500}(?:'\s*(?:OR|UNION|AND|SELECT|--|;)|"\s*(?:OR|UNION|AND|SELECT|--|;)|%27\s*(?:OR|UNION|AND|SELECT)|\bOR\s+1\s*=\s*1\b|\bUNION\s+(?:ALL\s+)?SELECT\b|;\s*DROP\s+TABLE|;\s*DELETE\s+FROM|--\s*$|/\*.*?\*/)
+    - field: user_input
+      operator: regex
+      value: >-
+        (?<![A-Za-z_])(?:team_id|user_id|key_id|model_id|customer_id|budget_id|alias_id|tag_id)\s*[:=]\s*["'][\s\S]{0,200}(?:'\s*(?:OR|UNION|AND|SELECT|;)|"\s*(?:OR|UNION|AND|SELECT|;)|\bOR\s+1\s*=\s*1\b|\bUNION\s+(?:ALL\s+)?SELECT\b|;\s*DROP\s+TABLE|;\s*DELETE\s+FROM)
+  condition: any
+  false_positives:
+    - "Database tutorial content showing SQL injection examples — rule deliberately fires when these patterns appear in agent I/O context, regardless of educational intent."
+    - "Security research papers cited inside agent contexts — these are intentional matches and should be evaluated case-by-case."
+    - "PR descriptions discussing SQLi fixes — match expected; signal that the fix discussion is reaching agent I/O."
+
+response:
+  actions:
+    - block_input
+    - alert
+    - snapshot
+  auto_response_threshold: critical
+  message_template: >
+    [ATR-2026-00529] LiteLLM-style SQL injection pattern detected at proxy
+    endpoint (CVE-2026-42208, CISA KEV 2026-05-15). Request blocked.
+
+confidence: 85
+test_cases:
+  true_positives:
+    - input: >-
+        POST /v1/team/info HTTP/1.1
+        Content-Type: application/json
+        {"team_id": "abc' OR 1=1 --"}
+      expected: triggered
+      description: "Classic OR 1=1 injection in team_id at /v1/team/info"
+    - input: >-
+        GET /v1/key/info?key_id=k_123' UNION ALL SELECT api_key FROM keys --
+      expected: triggered
+      description: "UNION SELECT exfil via key_id parameter"
+    - input: >-
+        POST /v1/user/update
+        {"user_id": "u1\"; DROP TABLE users; --", "alias": "test"}
+      expected: triggered
+      description: "Stacked query DROP TABLE through user_id"
+    - input: >-
+        Calling LiteLLM proxy: /team/update with team_id='admin' OR '1'='1
+      expected: triggered
+      description: "OR 1=1 (string equality form) at /team/update"
+    - input: >-
+        {"endpoint": "/v1/model/new", "payload": {"model_id": "m1' /*'*/UNION SELECT password FROM users/**/--", "model_name": "test"}}
+      expected: triggered
+      description: "Comment-obfuscated UNION SELECT at /v1/model/new"
+    - input: >-
+        curl /litellm/admin/users?customer_id=42%27%20OR%201=1--
+      expected: triggered
+      description: "URL-encoded OR 1=1 at /litellm/admin endpoint"
+  true_negatives:
+    - input: >-
+        POST /v1/team/info {"team_id": "team-prod-456"}
+      expected: not_triggered
+      description: "Normal team_id with valid string, no SQL metachars"
+    - input: >-
+        GET /v1/key/info?key_id=sk-abc123def
+      expected: not_triggered
+      description: "Normal API key lookup, no injection"
+    - input: "What is SQL injection and how do I prevent it?"
+      expected: not_triggered
+      description: "General security question, not an attack payload reaching /v1/* endpoints"
+    - input: >-
+        UPDATE users SET budget = 100 WHERE user_id = 'u_123';
+      expected: not_triggered
+      description: "Legitimate SQL statement outside LiteLLM endpoint context"
+    - input: >-
+        POST /v1/team/new {"team_alias": "Engineering Team", "team_id": null}
+      expected: not_triggered
+      description: "Team creation with valid alias, no metachars"
+    - input: "Please explain UNION SELECT semantics in SQL."
+      expected: not_triggered
+      description: "Educational query about UNION SELECT, no LiteLLM endpoint"
