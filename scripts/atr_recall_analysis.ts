@@ -8,6 +8,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { resolve, join } from "node:path";
 import { ATREngine } from "../src/engine.js";
+import { writeMeasurement } from "../src/measurement/write.js";
 
 const REPO = resolve("/Users/user/Downloads/agent-threat-rules");
 const PB_FILE = join(REPO, "data/test-corpora/promptbench/all.json");
@@ -235,6 +236,45 @@ async function main() {
     JSON.stringify(analysisOut, null, 2)
   );
   console.log("\nWrote data/test-corpora/recall-analysis.json");
+
+  // Standardized Measurement files (version-pinned, immutable). Both corpora
+  // are 100% adversarial → precision = 1 by construction, fp_rate undefined (0).
+  const writePure = (
+    source: "promptbench" | "promptinject",
+    res: typeof pbResult,
+  ) => {
+    const recall = res.matched / res.total;
+    const f1 = recall === 0 ? 0 : (2 * recall) / (recall + 1);
+    const topRules = Object.entries(res.matchedByRule)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([id, n]) => ({ rule_id: id, matches: n }));
+    const { measurementPath } = writeMeasurement(
+      {
+        source,
+        source_version: "snapshot-2026-04",
+        samples: res.total,
+        metrics: {
+          recall,
+          precision: 1,
+          f1,
+          fp_rate: 0,
+        },
+        confusion: {
+          tp: res.matched,
+          fp: 0,
+          tn: 0,
+          fn: res.missed,
+        },
+        breakdown: { top_matching_rules: topRules },
+        notes: `${source} academic adversarial corpus — 100% attack samples; fp_rate undefined and recorded as 0 by convention.`,
+      },
+      { force: true },
+    );
+    console.log(`  Measurement: ${measurementPath}`);
+  };
+  writePure("promptbench", pbResult);
+  writePure("promptinject", piResult);
 }
 
 main().catch(e => {

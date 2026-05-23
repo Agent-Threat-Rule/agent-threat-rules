@@ -20,6 +20,7 @@ import { resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 import yaml from 'js-yaml';
+import { writeMeasurement } from '../src/measurement/write.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -358,10 +359,41 @@ async function main() {
       console.log(`    ${fam}: ${stats.matched}/${stats.total} (${(famRecall * 100).toFixed(0)}% recall)`);
     }
 
-    // Save results
+    // Save legacy results
     const outPath = join(CORPORA_DIR, corpus, 'recall-results.json');
     writeFileSync(outPath, JSON.stringify(results, null, 2));
     console.log(`  Saved to ${outPath}`);
+
+    // Standardized Measurement file (version-pinned, immutable).
+    // 100% adversarial corpora → precision is 1 by construction; fp_rate undefined (0).
+    const f1 = recall === 0 ? 0 : (2 * recall) / (recall + 1);
+    const byFamilyBreakdown: Record<string, { total: number; matched: number; recall: number }> = {};
+    for (const [fam, stats] of byFamily.entries()) {
+      byFamilyBreakdown[fam] = { total: stats.total, matched: stats.matched, recall: stats.matched / stats.total };
+    }
+    const { measurementPath } = writeMeasurement(
+      {
+        source: corpus,
+        source_version: 'snapshot-2026-04',
+        samples: samples.length,
+        metrics: {
+          recall,
+          precision: 1,
+          f1,
+          fp_rate: 0,
+        },
+        confusion: {
+          tp: matched,
+          fp: 0,
+          tn: 0,
+          fn: samples.length - matched,
+        },
+        breakdown: { by_family: byFamilyBreakdown },
+        notes: `${corpus} corpus — 100% adversarial samples; fp_rate undefined and recorded as 0 by convention.`,
+      },
+      { force: true },
+    );
+    console.log(`  Measurement: ${measurementPath}`);
 
     allResults.push(...results);
   }
