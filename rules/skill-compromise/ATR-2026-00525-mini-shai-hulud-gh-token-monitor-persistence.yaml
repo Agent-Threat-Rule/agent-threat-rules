@@ -4,15 +4,18 @@ rule_version: 1
 status: "stable"
 description: >
   Detects the persistence and dead-man's-switch IOCs of the Mini Shai-Hulud
-  npm/PyPI supply-chain worm (2026-05-11 wave, 404 trojanized package versions
-  including @mistralai/mistralai, guardrails-ai, and TanStack packages).
-  After install via prepare/preinstall hook (npm) or on-import side-effect
-  (PyPI __init__.py), the worm installs a `gh-token-monitor` daemon that
-  polls `api.github.com/user` every 60 seconds; on GitHub token revocation
-  it triggers a destructive cleanup (rm -rf, drop tables, secret rotation
-  trip-wire). The detection target is the daemon name string and the
-  token-revoke + destructive-action pairing — both of which are absent in
-  legitimate skill/tool descriptions but characteristic of this campaign.
+  npm/PyPI supply-chain worm (2026-05-11 wave, ~403 trojanized package
+  versions across ~172 unique packages including @mistralai/mistralai and
+  TanStack via npm prepare hook, plus mistralai + guardrails-ai PyPI via
+  __init__.py on-import side-effect; UiPath sub-cluster used preinstall +
+  node setup.mjs). The worm installs a `gh-token-monitor` daemon (real
+  IOCs per Wiz: macOS plist `~/Library/LaunchAgents/com.user.gh-token-monitor.plist`,
+  Linux systemd user unit `~/.config/systemd/user/gh-token-monitor.service`)
+  that polls `api.github.com/user` every 60 seconds; on GitHub token
+  revocation (HTTP 401) it runs `rm -rf ~/` against the entire home directory.
+  The detection target is the daemon name string and the token-revoke +
+  destructive-action pairing — both of which are absent in legitimate
+  skill/tool descriptions but characteristic of this campaign.
 author: "ATR Community (vendor-corpus-import)"
 date: "2026/05/23"
 schema_version: "0.1"
@@ -87,7 +90,7 @@ detection:
     - field: user_input
       operator: regex
       value: >-
-        (?:gh[-_]token[-_]monitor|com\.github\.token\.monitor|api\.github\.com/user[\s\S]{0,500}(?:rm\s+-rf|drop\s+table|shutil\.rmtree|os\.system\s*\(\s*['"]rm)|(?:setInterval|setTimeout|threading\.Timer|asyncio\.sleep)[\s\S]{0,200}api\.github\.com/user[\s\S]{0,300}(?:rm\s+-rf|shutil\.rmtree|child_process|exec\s*\())
+        (?:gh[-_]token[-_]monitor|api\.github\.com/user[\s\S]{0,500}(?:rm\s+-rf|drop\s+table|shutil\.rmtree|os\.system\s*\(\s*['"]rm)|(?:setInterval|setTimeout|threading\.Timer|asyncio\.sleep)[\s\S]{0,200}api\.github\.com/user[\s\S]{0,300}(?:rm\s+-rf|shutil\.rmtree|child_process|exec\s*\())
       description: >
         Three parallel patterns flag the Mini Shai-Hulud signature:
         (A) Literal daemon name `gh-token-monitor` or `com.github.token.monitor`
@@ -132,13 +135,13 @@ test_cases:
       expected: triggered
       description: "Dead-man's-switch via setInterval polling /user + rm -rf on 401"
     - input: >-
-        # /Library/LaunchAgents/com.github.token.monitor.plist
+        # ~/Library/LaunchAgents/com.user.gh-token-monitor.plist
         <key>Label</key>
-        <string>gh-token-monitor</string>
+        <string>com.user.gh-token-monitor</string>
         <key>ProgramArguments</key>
         <array><string>/usr/local/bin/gh-token-monitor</string></array>
       expected: triggered
-      description: "LaunchAgent persistence with gh-token-monitor daemon name"
+      description: "LaunchAgent persistence with com.user.gh-token-monitor daemon (per Wiz writeup)"
     - input: >-
         # __init__.py (PyPI on-import payload)
         import threading, urllib.request, shutil, os

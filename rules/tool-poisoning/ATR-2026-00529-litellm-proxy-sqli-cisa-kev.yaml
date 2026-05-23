@@ -1,17 +1,17 @@
-title: "LiteLLM Proxy SQL Injection (CVE-2026-42208, first AI-stack CISA KEV)"
+title: "LiteLLM Proxy SQL Injection (CVE-2026-42208, CISA KEV 2026-05-08)"
 id: ATR-2026-00529
 rule_version: 1
 status: "stable"
 description: >
   Detects the SQL injection class exploited by CVE-2026-42208 in LiteLLM
-  proxy (CVSS 9.8, added to CISA KEV catalog 2026-05-15 with a 3-day
-  federal patch deadline — the first AI-stack vulnerability added to KEV).
-  LiteLLM proxy admin/team management endpoints accept identifiers
-  (team_id, user_id, model, key) that were interpolated into SQL queries
-  without parameterization, allowing attackers to inject SQL via the API
-  surface that the agent's own LLM proxy uses. The detection target is
-  classic SQL injection metacharacter patterns appearing inside agent
-  request payloads bound to LiteLLM-style endpoint paths.
+  proxy (CVSS 9.3 per upstream advisory / 9.8 per Tenable; added to CISA
+  KEV catalog 2026-05-08 with the standard BOD 22-01 3-day federal patch
+  deadline). LiteLLM proxy admin/team management endpoints accept
+  identifiers (team_id, user_id, model, key) that were interpolated into
+  SQL queries without parameterization, allowing attackers to inject SQL
+  via the API surface that the agent's own LLM proxy uses. The detection
+  target is classic SQL injection metacharacter patterns appearing inside
+  agent request payloads bound to LiteLLM-style endpoint paths.
 author: "ATR Community (cve-pipeline)"
 date: "2026/05/23"
 schema_version: "0.1"
@@ -86,7 +86,7 @@ detection:
     - field: user_input
       operator: regex
       value: >-
-        (?<![A-Za-z_])(?:team_id|user_id|key_id|model_id|customer_id|budget_id|alias_id|tag_id)\s*[:=]\s*["'][\s\S]{0,200}(?:'\s*(?:OR|UNION|AND|SELECT|;)|"\s*(?:OR|UNION|AND|SELECT|;)|\bOR\s+1\s*=\s*1\b|\bUNION\s+(?:ALL\s+)?SELECT\b|;\s*DROP\s+TABLE|;\s*DELETE\s+FROM)
+        (?<![A-Za-z_])(?:team_id|user_id|key_id|model_id|customer_id|budget_id|alias_id|tag_id)\s*[:=]\s*["'][\s\S]{0,200}(?:'\s*(?:OR|UNION|AND|SELECT)|"\s*(?:OR|UNION|AND|SELECT)|\bOR\s+1\s*=\s*1\b|\bUNION\s+(?:ALL\s+)?SELECT\b|;\s*DROP\s+TABLE|;\s*DELETE\s+FROM)
   condition: any
   false_positives:
     - "Database tutorial content showing SQL injection examples — rule deliberately fires when these patterns appear in agent I/O context, regardless of educational intent."

@@ -4,11 +4,12 @@ rule_version: 1
 status: "stable"
 description: >
   Detects the agent-tool RCE class exploited by CVE-2026-2256 in the
-  ModelScope MS-Agent framework (disclosed 2026-05-19). The MS-Agent
-  Shell tool passes user-influenced input directly to a shell execution
-  context without sanitization, providing a prompt-to-RCE primitive.
-  MS-Agent has strong APAC adoption; this is the first widely-covered
-  Chinese-ecosystem agent CVE in 2026.
+  ModelScope MS-Agent framework (CVSS 9.8). Original disclosure
+  CERT/CC VU#431821 dated 2026-03-02; SecurityWeek republication
+  brought renewed attention 2026-05-19. The MS-Agent Shell tool passes
+  user-influenced input directly to a shell execution context without
+  sanitization, providing a prompt-to-RCE primitive. MS-Agent has strong
+  APAC adoption.
   The detection target is shell-tool invocation shapes whose argument
   comes verbatim from user input or LLM output, with the dangerous
   characteristic being absence of argv splitting / shlex.quote / explicit
