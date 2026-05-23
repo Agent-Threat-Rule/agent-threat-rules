@@ -301,23 +301,49 @@ A full list lives in each rule's `references.cve` field. See [LIMITATIONS.md](LI
 
 ## 8. Evaluation
 
-| Benchmark | Source | Samples | Recall | Precision | FP rate |
-|---|---|---:|---:|---:|---:|
-| SKILL.md benchmark (internal) | 498 labeled samples | 498 | 100% | 97.0% | 0.20% |
-| NVIDIA garak (in-the-wild jailbreaks) | NVIDIA red-team corpus | 666 | 97.1% | 100% | 0% |
-| PINT (Invariant Labs, adversarial) | External | 850 | 63.9% | 99.6% | — (FP rate not separately measured on this corpus; see LIMITATIONS.md) |
-| Ecosystem wild scan | OpenClaw + Skills.sh + Hermes + ClawHub | 96,096 | — | — | 1.35% flag rate |
+Every number below is a version-pinned, reproducible measurement. The full
+historical series for each source lives at
+[`data/measurements/<source>/`](data/measurements/) (immutable, append-only).
+The current pointer per source is `data/measurements/<source>/latest.json`.
+Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
+
+| Source | Source version | Samples | Recall | Precision | FP rate | Measured |
+|---|---|---:|---:|---:|---:|---|
+| atr-self-test | internal | 341 | 89.4% | 100.0% | 0.0% | 2026-05-23 |
+| autoresearch | internal-1054 | 1,054 | 15.1% | 100.0% | 0.0% | 2026-05-23 |
+| garak (in-the-wild jailbreaks) | in-the-wild-jailbreak-llms-2026-04 | 666 | 97.1% | 100.0% | 0.0% | 2026-04-21 |
+| hackaprompt | v1 | 4,780 | 66.0% | 100.0% | 0.0% | 2026-05-23 |
+| hh-rlhf (Anthropic red-team-attempts) | snapshot-2026-04 | 4,957 | 99.1% | 100.0% | 0.0% | 2026-05-23 |
+| MITRE ATLAS | snapshot-2026-04 | 182 | 100.0% | 100.0% | 0.0% | 2026-05-23 |
+| OWASP LLM Top 10 | snapshot-2026-04 | 56 | 100.0% | 100.0% | 0.0% | 2026-05-23 |
+| PINT (Invariant Labs) | v1 | 850 | 63.2% | 99.7% | 0.0% | 2026-05-23 |
+| PromptBench (academic adversarial) | snapshot-2026-04 | 3,280 | 0.0% | 100.0% | 0.0% | 2026-05-23 |
+| PromptInject (academic adversarial) | snapshot-2026-04 | 1,080 | 0.0% | 100.0% | 0.0% | 2026-05-23 |
+| SKILL.md benchmark (internal) | internal-498 | 498 | 100.0% | 97.0% | 0.20% | 2026-05-23 |
+| Wild scan (OpenClaw + Skills.sh + Hermes + ClawHub) | corpus-2026-04-14 | 96,096 | — | 57.7% (floor) | 1.35% flag rate | 2026-04-14 |
+
+Conventions: 100%-adversarial corpora have `fp_rate` undefined and recorded as
+0 in measurement files. Wild-scan has no ground-truth labels; the `precision`
+column reports a precision floor computed as `confirmed_malware / flagged`.
+Every cell is sourced from a specific measurement file — see
+`data/measurements/<source>/latest.json` for the file path and
+`metadata.measurement_file` in `stats.json` for the absolute repo path.
 
 ```bash
-npm test                    # run engine + rule unit tests (vitest)
-npm run eval                # run self-test evaluation
-npm run eval:pint           # run external PINT benchmark
-bash scripts/eval-garak.sh  # run NVIDIA Garak benchmark (requires: pip install garak)
+npm test                                    # engine + rule unit tests (vitest)
+npm run eval                                # atr-self-test eval (writes a measurement)
+npm run eval:pint                           # PINT benchmark (writes a measurement)
+npx tsx src/eval/run-hackaprompt-benchmark.ts                                # HackAPrompt
+npx tsx scripts/eval-std-corpora.ts                                          # HH-RLHF + OWASP + ATLAS
+npx tsx scripts/atr_recall_analysis.ts                                       # PromptBench + PromptInject
+bash scripts/eval-garak.sh                  # NVIDIA Garak (requires: pip install garak)
+npx tsx scripts/measurement/verify.ts       # validate every measurement file
+npx tsx scripts/sync-stats-from-measurements.ts                              # refresh stats.json benchmarks[]
 ```
 
 Raw data: [`data/full-scan-v2-2026-04-14.json`](data/full-scan-v2-2026-04-14.json) (96,096-skill scan); ecosystem report on the 751 confirmed malware specimens in [`docs/research/openclaw-malware-campaign-2026-04.md`](docs/research/openclaw-malware-campaign-2026-04.md).
 
-ATR is honest about what it cannot detect. Regex catalogs miss paraphrased attacks, semantic rephrasings of credential exfiltration, and novel attack shapes not present in the training corpus. See [LIMITATIONS.md](LIMITATIONS.md) for the documented evasion-test corpus (64 techniques as of 2026-05) and the layering recommendation: ATR is the content layer; pair with credential brokering, sandbox execution, and human-in-the-loop for high-blast-radius actions.
+ATR is honest about what it cannot detect. Regex catalogs miss paraphrased attacks, semantic rephrasings of credential exfiltration, and novel attack shapes not present in the training corpus. The 0% recall on PromptBench and PromptInject in the table above is a documented coverage gap — those corpora are academic adversarial paraphrase sets that the regex layer structurally cannot match. See [LIMITATIONS.md](LIMITATIONS.md) for the documented evasion-test corpus (64 techniques as of 2026-05) and the layering recommendation: ATR is the content layer; pair with credential brokering, sandbox execution, and human-in-the-loop for high-blast-radius actions.
 
 ## 9. Governance
 

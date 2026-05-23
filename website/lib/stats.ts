@@ -1,8 +1,9 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { loadAllRules } from "./rules";
 
 const DATA_DIR = join(process.cwd(), "..", "data");
+const MEASUREMENTS_DIR = join(DATA_DIR, "measurements");
 
 function readJson<T>(path: string): T | null {
   try {
@@ -146,6 +147,11 @@ export interface SiteStats {
   owaspAgentic: string;
   safeMcp: string;
   owaspAst10: string;
+
+  // Version-pinned benchmark measurements (canonical source for any
+  // public-facing recall claim). Reads from data/measurements/<source>/latest.json.
+  // Empty array if no measurements present yet.
+  benchmarks: BenchmarkMeasurement[];
 }
 
 export interface EcosystemIntegration {
@@ -154,6 +160,80 @@ export interface EcosystemIntegration {
   detail: string;
   url?: string;
   logo?: string; // path to logo in public/ecosystem/ or external URL
+}
+
+/**
+ * One benchmark measurement, version-pinned and reproducible.
+ * Loaded from data/measurements/<source>/latest.json. The full historical
+ * series lives alongside as data/measurements/<source>/<date>_*.json.
+ */
+export interface BenchmarkMeasurement {
+  /** Stable lowercase source identifier (e.g. "garak", "pint"). */
+  source: string;
+  /** Upstream version pinned at measurement time. */
+  source_version: string;
+  /** ATR version under test. */
+  atr_version: string;
+  /** ISO 8601 timestamp the measurement was taken. */
+  measured_at: string;
+  /** YYYY-MM-DD slice for display. */
+  measured_date: string;
+  /** Corpus size in samples. */
+  samples: number;
+  /** Recall as a fraction in [0,1]. */
+  recall: number;
+  /** Precision as a fraction in [0,1]. */
+  precision: number;
+  /** F1 as a fraction in [0,1]. */
+  f1: number;
+  /** False-positive rate as a fraction in [0,1]. */
+  fp_rate: number;
+  /** Repo-relative path of the immutable measurement file. */
+  measurement_file: string;
+}
+
+/**
+ * Load every latest measurement from data/measurements/<source>/latest.json.
+ * Returns an empty array if the directory is absent. Skips sources whose
+ * latest.json fails to parse (logs to console — not thrown — so a bad source
+ * does not break site rendering).
+ */
+function loadBenchmarkMeasurements(): BenchmarkMeasurement[] {
+  if (!existsSync(MEASUREMENTS_DIR)) return [];
+  const out: BenchmarkMeasurement[] = [];
+  for (const entry of readdirSync(MEASUREMENTS_DIR)) {
+    const dir = join(MEASUREMENTS_DIR, entry);
+    if (!statSync(dir).isDirectory()) continue;
+    const latest = join(dir, "latest.json");
+    if (!existsSync(latest)) continue;
+    try {
+      const raw = JSON.parse(readFileSync(latest, "utf-8")) as {
+        source: string;
+        source_version: string;
+        atr_version: string;
+        measured_at: string;
+        samples: number;
+        file: string;
+        metrics: { recall: number; precision: number; f1: number; fp_rate: number };
+      };
+      out.push({
+        source: raw.source,
+        source_version: raw.source_version,
+        atr_version: raw.atr_version,
+        measured_at: raw.measured_at,
+        measured_date: raw.measured_at.slice(0, 10),
+        samples: raw.samples,
+        recall: raw.metrics.recall,
+        precision: raw.metrics.precision,
+        f1: raw.metrics.f1,
+        fp_rate: raw.metrics.fp_rate,
+        measurement_file: `data/measurements/${entry}/${raw.file}`,
+      });
+    } catch (err) {
+      console.warn(`benchmark measurement ${entry}/latest.json failed to parse:`, err);
+    }
+  }
+  return out.sort((a, b) => a.source.localeCompare(b.source));
 }
 
 function isSafeUrl(url: string | undefined): boolean {
@@ -473,5 +553,7 @@ export function loadSiteStats(): SiteStats {
     owaspAgentic: "10/10",
     safeMcp: "78/85 (91.8%)",
     owaspAst10: "7/10",
+
+    benchmarks: loadBenchmarkMeasurements(),
   };
 }
