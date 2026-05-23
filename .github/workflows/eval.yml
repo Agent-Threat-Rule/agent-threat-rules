@@ -27,26 +27,30 @@ jobs:
         env:
           VITEST_POOL_WORKER_COMMUNICATION_TIMEOUT: 300000
 
+      # Measurement-layer integrity checks BEFORE eval. The order matters:
+      #
+      #   verify  → assert every committed measurement file parses cleanly
+      #             (catches accidental hand-edits of immutable files)
+      #   --check → assert stats.json benchmarks[] matches every latest.json
+      #             on disk (catches PR author forgetting to run sync-stats
+      #             after updating a measurement)
+      #
+      # Both run BEFORE `npm run eval` so the assertions are against what
+      # the PR ships, not against what running the eval would mutate. (Running
+      # them after eval would always 'fail' because a fresh eval produces a
+      # new measurement with today's timestamp that the committed stats.json
+      # cannot have predicted.)
+      - name: Verify measurement schemas
+        run: npx tsx scripts/measurement/verify.ts --quiet
+
+      - name: Check stats.json benchmarks freshness
+        run: npx tsx scripts/sync-stats-from-measurements.ts --check
+
       - name: Eval
         run: npm run eval
 
       - name: Validate rules
         run: npm run validate
-
-      - name: Verify measurement schemas
-        # Fails the build if any data/measurements/<source>/*.json file
-        # violates the Measurement schema. Catches accidental hand-edits
-        # of immutable measurement files in PRs.
-        run: npx tsx scripts/measurement/verify.ts --quiet
-
-      - name: Check stats.json benchmarks freshness
-        # `npm run eval` above writes a new atr-self-test measurement which
-        # updates data/measurements/atr-self-test/latest.json. This step
-        # asserts that data/stats.json reflects every latest measurement
-        # currently on disk. Fails if PR author forgot to run
-        # `npx tsx scripts/sync-stats-from-measurements.ts` after a
-        # measurement-producing change.
-        run: npx tsx scripts/sync-stats-from-measurements.ts --check
 
       - name: Upload eval report
         if: always()
