@@ -312,15 +312,27 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | atr-self-test | internal | 341 | 89.4% | 100.0% | 0.0% | 2026-05-23 |
 | autoresearch | internal-1054 | 1,054 | 15.1% | 100.0% | 0.0% | 2026-05-23 |
 | garak (in-the-wild jailbreaks) | in-the-wild-jailbreak-llms-2026-04 | 666 | 97.1% | 100.0% | 0.0% | 2026-04-21 |
+| garak-full (all probe families) | 23-families | 3,475 | 38.5% | 100.0% | 0.0% | 2026-05-23 |
 | hackaprompt | v1 | 4,780 | 66.0% | 100.0% | 0.0% | 2026-05-23 |
 | hh-rlhf (Anthropic red-team-attempts) | snapshot-2026-04 | 4,957 | 99.1% | 100.0% | 0.0% | 2026-05-23 |
+| llm-guard (Protect AI test fixtures) | corpus-2026-05-12 | 44 | 72.7% | 100.0% | 0.0% | 2026-05-23 |
 | MITRE ATLAS | snapshot-2026-04 | 182 | 100.0% | 100.0% | 0.0% | 2026-05-23 |
+| NeMo Guardrails (NVIDIA test fixtures) | corpus-2026-05-12 | 6 | 100.0% | 100.0% | 0.0% | 2026-05-23 |
 | OWASP LLM Top 10 | snapshot-2026-04 | 56 | 100.0% | 100.0% | 0.0% | 2026-05-23 |
 | PINT (Invariant Labs) | v1 | 850 | 63.2% | 99.7% | 0.0% | 2026-05-23 |
 | PromptBench (academic adversarial) | snapshot-2026-04 | 3,280 | 0.0% | 100.0% | 0.0% | 2026-05-23 |
+| promptfoo (red-team plugin fixtures) | corpus-2026-05-12 | 44 | 79.5% | 100.0% | 0.0% | 2026-05-23 |
 | PromptInject (academic adversarial) | snapshot-2026-04 | 1,080 | 0.0% | 100.0% | 0.0% | 2026-05-23 |
 | SKILL.md benchmark (internal) | internal-498 | 498 | 100.0% | 97.0% | 0.20% | 2026-05-23 |
 | Wild scan (OpenClaw + Skills.sh + Hermes + ClawHub) | corpus-2026-04-14 | 96,096 | — | 57.7% (floor) | 1.35% flag rate | 2026-04-14 |
+
+Two `garak` rows are deliberate: the headline `garak` source tracks NVIDIA's
+in-the-wild jailbreak corpus (narrow, the 97.1% number ATR has cited
+publicly), while `garak-full` tracks every probe family in upstream garak
+(broad, includes families like `badchars`, `dra`, `encoding` that ATR's
+regex layer intentionally does not target). Both are valid measurements
+against different corpora; they are kept as separate streams so the
+broad-corpus number does not silently overwrite the headline.
 
 Conventions: 100%-adversarial corpora have `fp_rate` undefined and recorded as
 0 in measurement files. Wild-scan has no ground-truth labels; the `precision`
@@ -334,9 +346,12 @@ npm test                                    # engine + rule unit tests (vitest)
 npm run eval                                # atr-self-test eval (writes a measurement)
 npm run eval:pint                           # PINT benchmark (writes a measurement)
 npx tsx src/eval/run-hackaprompt-benchmark.ts                                # HackAPrompt
+npx tsx src/eval/skill-benchmark.ts                                          # SKILL.md (498 labeled)
 npx tsx scripts/eval-std-corpora.ts                                          # HH-RLHF + OWASP + ATLAS
 npx tsx scripts/atr_recall_analysis.ts                                       # PromptBench + PromptInject
-bash scripts/eval-garak.sh                  # NVIDIA Garak (requires: pip install garak)
+npx tsx scripts/eval-small-corpora.ts                                        # llm-guard + nemo-guardrails + promptfoo
+npx tsx scripts/run-garak-full-benchmark.ts                                  # garak-full (all probe families, local corpus)
+bash scripts/eval-garak.sh                  # garak in-the-wild (NVIDIA red-team narrow corpus; requires: pip install garak)
 npx tsx scripts/measurement/verify.ts       # validate every measurement file
 npx tsx scripts/sync-stats-from-measurements.ts                              # refresh stats.json benchmarks[]
 ```

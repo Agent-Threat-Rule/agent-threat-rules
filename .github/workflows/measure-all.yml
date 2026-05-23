@@ -50,7 +50,7 @@ jobs:
           set -euo pipefail
           INPUT="${{ inputs.sources }}"
           if [ -z "$INPUT" ] || [ "$INPUT" = "all" ]; then
-            echo "set=atr-self-test,pint,hackaprompt,skill-benchmark,std-corpora,prompt-academic" >> "$GITHUB_OUTPUT"
+            echo "set=atr-self-test,pint,hackaprompt,skill-benchmark,std-corpora,prompt-academic,small-corpora,garak-full" >> "$GITHUB_OUTPUT"
           else
             echo "set=$INPUT" >> "$GITHUB_OUTPUT"
           fi
@@ -112,6 +112,27 @@ jobs:
             npx tsx scripts/atr_recall_analysis.ts
           else
             echo "::warning::promptbench / promptinject corpora not present — skipping."
+          fi
+
+      - name: small-corpora (llm-guard, nemo-guardrails, promptfoo)
+        if: contains(steps.sources.outputs.set, 'small-corpora')
+        run: |
+          if [ -f data/test-corpora/llm-guard/corpus.json ]; then
+            npx tsx scripts/eval-small-corpora.ts
+          else
+            echo "::warning::small-corpora data not present — skipping."
+          fi
+
+      - name: garak-full (all probe families, local corpus — no python needed)
+        if: contains(steps.sources.outputs.set, 'garak-full')
+        run: |
+          if [ -d data/test-corpora/garak-full ]; then
+            # Distinct stream from the headline 'garak' source. garak-full
+            # writes under data/measurements/garak-full/; the narrower
+            # 'garak' in-the-wild headline stays untouched.
+            npx tsx scripts/run-garak-full-benchmark.ts
+          else
+            echo "::warning::garak-full corpus not present — skipping."
           fi
 
       - name: Verify measurement schemas
