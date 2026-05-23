@@ -1,5 +1,5 @@
 /**
- * scripts/measurement/write.ts
+ * src/measurement/write.ts
  *
  * Atomic writer + helpers for ATR benchmark measurement files.
  *

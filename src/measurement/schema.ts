@@ -1,5 +1,5 @@
 /**
- * scripts/measurement/schema.ts
+ * src/measurement/schema.ts
  *
  * Schema for ATR benchmark measurement files.
  *

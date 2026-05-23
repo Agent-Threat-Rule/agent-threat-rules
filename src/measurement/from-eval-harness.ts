@@ -1,5 +1,5 @@
 /**
- * scripts/measurement/from-eval-harness.ts
+ * src/measurement/from-eval-harness.ts
  *
  * Adapter: convert an `src/eval/eval-harness.ts` `EvalReport` into a
  * `MeasurementInput`. Used by the four first-class eval runners (PINT,
