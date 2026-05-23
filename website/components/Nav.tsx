@@ -29,6 +29,7 @@ export function Nav({ locale }: { locale: Locale }) {
     "integrate",
     "ecosystem",
     "red-team",
+    "contribute",
     "research",
     "about",
     "changelog",

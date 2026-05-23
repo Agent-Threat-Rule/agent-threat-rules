@@ -101,28 +101,46 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
           {[
             {
+              title: zh ? "提交新規則(5 分鐘,無需 fork)" : "Submit a New Rule (5 min, no fork)",
+              desc: zh
+                ? "發現新的攻擊模式?填一個 issue,bot 自動轉成 draft proposal PR。不需 clone repo、不需寫 YAML。"
+                : "Found a new attack pattern? File one issue, the bot converts it to a draft proposal PR automatically. No clone, no YAML required.",
+              time: "~5 min",
+              href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=new-rule.yml",
+              cta: zh ? "開一個 Issue" : "Open an Issue",
+            },
+            {
+              title: zh ? "提交紅隊 Probe(加入基準測試)" : "Submit a Red Team Probe (joins the benchmark)",
+              desc: zh
+                ? "有 attack payload + 良性對照樣本?bot 轉成 proposal,合進去之後自動納入下一輪 measurement 跑分。recall 數字看得到你的貢獻。"
+                : "Have an attack payload plus benign look-alikes? The bot converts it into a proposal; once merged, your probe joins the next benchmark run. Your contribution shows up in the recall numbers.",
+              time: "~10 min",
+              href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=red-team-probe.yml",
+              cta: zh ? "送一個 Probe" : "Submit a Probe",
+            },
+            {
               title: zh ? "回報繞過方式" : "Report an Evasion",
               desc: zh
-                ? "找到了繞過規則的方法？每個確認的繞過都會觸發規則改進。這是最有影響力的貢獻。"
+                ? "找到了繞過規則的方法?每個確認的繞過都會觸發規則改進。這是最有影響力的貢獻。"
                 : "Found a way to bypass a rule? Every confirmed evasion triggers a rule improvement. Most impactful contribution.",
               time: "~15 min",
-              href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=evasion-report.md",
+              href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=evasion-report.yml",
               cta: zh ? "開一個 Issue" : "Open an Issue",
             },
             {
               title: zh ? "回報誤判" : "Report a False Positive",
               desc: zh
-                ? "規則誤判了正常內容？幫我們維持 99.6% precision 的真實性。"
+                ? "規則誤判了正常內容?幫我們維持 99.6% precision 的真實性。"
                 : "Rule triggered on legitimate content? Help us keep 99.6% precision real.",
               time: "~20 min",
-              href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=false-positive.md",
+              href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=false-positive.yml",
               cta: zh ? "開一個 Issue" : "Open an Issue",
             },
             {
-              title: zh ? "提交新規則" : "Submit a New Rule",
+              title: zh ? "完整規則撰寫(進階)" : "Full Rule Authoring (advanced)",
               desc: zh
-                ? "為新的攻擊模式撰寫偵測規則。YAML 格式，有完整教學。"
-                : "Write a detection rule for a new attack pattern. YAML format, full walkthrough available.",
+                ? "想直接寫 YAML?fork repo、跟著 spec 寫、跑 atr validate + atr test、提 PR。教學一步一步帶。"
+                : "Want to author YAML directly? Fork the repo, follow the spec, run atr validate + atr test, open a PR. Full walkthrough provided.",
               time: "1-2 hr",
               href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/examples/how-to-write-a-rule.md",
               cta: zh ? "查看教學" : "See the Guide",
@@ -130,7 +148,7 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
             {
               title: zh ? "AI 原生貢獻" : "AI-Native Contribution",
               desc: zh
-                ? "用 Claude Code 或 Cursor 搭配 ATR MCP server。AI 寫 YAML，你審查。"
+                ? "用 Claude Code 或 Cursor 搭配 ATR MCP server。AI 寫 YAML,你審查。"
                 : "Use Claude Code or Cursor with ATR's MCP server. The AI writes YAML, you review.",
               time: zh ? "不定" : "Variable",
               href: "https://github.com/Agent-Threat-Rule/agent-threat-rules#mcp-server",
@@ -155,6 +173,54 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
               </div>
             </Reveal>
           ))}
+        </div>
+      </Reveal>
+
+      {/* ── What happens after you contribute (sets motivation) ── */}
+      <Reveal>
+        <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-3">
+          {zh ? "送出後會發生什麼" : "What happens after you contribute"}
+        </div>
+      </Reveal>
+      <Reveal delay={0.1}>
+        <div className="border border-fog p-6 mb-12">
+          <ol className="text-sm text-stone leading-[1.7] space-y-2 list-decimal list-inside marker:font-data marker:text-ink">
+            <li>
+              {zh
+                ? "Bot 把你的 issue 轉成 proposals/ 下的 YAML 草案,開一條 draft PR,你在 PR 的 author 欄位被掛名。"
+                : "Bot converts your issue to a YAML draft under proposals/ and opens a draft PR with your name in the author field."}
+            </li>
+            <li>
+              {zh
+                ? "maintainer 或社群把 detection regex 寫完,跑 safety gate(0 FP on benign corpus 是硬條件)。"
+                : "A maintainer or community member writes the detection regex and runs the safety gate (0 FP on the benign corpus is a hard requirement)."}
+            </li>
+            <li>
+              {zh ? "規則 merge 進主 branch,自動 npm publish + GitHub release。" : "Rule merges to main, auto-publishes to npm + GitHub release."}
+            </li>
+            <li>
+              {zh
+                ? "下一次 measurement 跑分時你的 payload 進入 corpus。"
+                : "On the next measurement run, your payload joins the benchmark corpus."}
+              {" "}
+              <a
+                href="https://github.com/Agent-Threat-Rule/agent-threat-rules/tree/main/data/measurements"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue hover:underline"
+              >
+                data/measurements/&lt;source&gt;/
+              </a>
+              {zh
+                ? " 下的歷史檔記錄每一次跑分的 recall / precision / fp-rate,版本綁定不會 drift。"
+                : " stores the historical recall / precision / fp-rate per run, version-pinned and drift-proof."}
+            </li>
+            <li>
+              {zh
+                ? "公開引用 recall 數字時 ATR 一定附上 measurement file 路徑,你的貢獻在公開審計鏈裡可追溯。"
+                : "Every public recall claim cites a measurement file path, so your contribution is traceable in the public audit chain."}
+            </li>
+          </ol>
         </div>
       </Reveal>
 
