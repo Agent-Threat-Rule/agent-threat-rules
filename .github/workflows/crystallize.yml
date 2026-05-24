@@ -70,19 +70,29 @@ jobs:
           echo "count=$count" >> "$GITHUB_OUTPUT"
           echo "Rules after crystallization: $count"
 
-      - name: Generate stats.json
+      - name: Generate stats.json (merge-preserve, not regenerate-clobber)
+        # This step computes the fields it owns (version, generatedAt, rules,
+        # ecosystem, benchmark) and MERGES them into the existing stats.json,
+        # preserving any other top-level keys. Notably:
+        #
+        #   - `benchmarks` (array) — populated by Phase 6+ measurement layer
+        #     via scripts/sync-stats-from-measurements.ts. Used by website
+        #     lib/stats.ts to render version-pinned recall claims.
+        #   - `benchmarks_generated_at` — sibling to `benchmarks`.
+        #
+        # Prior to this patch, this step regenerated the whole file from
+        # scratch every cron tick, silently wiping the benchmarks[] field
+        # added by sync-stats. The fix: read-first, preserve unknown keys.
         run: |
           node -e "
             const fs = require('fs');
             const path = require('path');
-            const yaml = require('js-yaml');
 
-            // Count rules by category
+            // Count rules by category.
             const rulesDir = path.resolve('rules');
             const categories = fs.readdirSync(rulesDir).filter(d =>
               fs.statSync(path.join(rulesDir, d)).isDirectory()
             );
-
             const rulesByCategory = {};
             let totalRules = 0;
             for (const cat of categories) {
@@ -92,21 +102,32 @@ jobs:
               totalRules += files.length;
             }
 
-            // Load scan stats if available
+            // Load scan stats if available.
             let megaScan = { scanned: 0, flagged: 0 };
             try {
               const mega = JSON.parse(fs.readFileSync('data/mega-scan-report.json', 'utf8'));
               megaScan = { scanned: mega.totals?.scanned ?? 0, flagged: mega.totals?.flagged ?? 0 };
             } catch {}
 
-            // Load benchmark stats if available
+            // Load benchmark stats if available (legacy flat 'benchmark' object).
             let benchmark = { recall: 0, precision: 0 };
             try {
               const pint = JSON.parse(fs.readFileSync('data/pint-benchmark/pint-eval-report.json', 'utf8'));
               benchmark = { recall: pint.report?.overall?.recall ?? 0, precision: pint.report?.overall?.precision ?? 0 };
             } catch {}
 
+            // Read existing stats.json first (if present) so we preserve
+            // unknown top-level keys like 'benchmarks' and
+            // 'benchmarks_generated_at' that other workflows / scripts own.
+            let existing = {};
+            try {
+              existing = JSON.parse(fs.readFileSync('data/stats.json', 'utf8'));
+            } catch {}
+
+            // Merge: this step's owned keys win; everything else is
+            // preserved verbatim from the existing file.
             const stats = {
+              ...existing,
               version: require('./package.json').version,
               generatedAt: new Date().toISOString(),
               rules: {
@@ -125,7 +146,13 @@ jobs:
             };
 
             fs.writeFileSync('data/stats.json', JSON.stringify(stats, null, 2) + '\n');
+            const preserved = Object.keys(existing).filter(k =>
+              !['version','generatedAt','rules','ecosystem','benchmark'].includes(k)
+            );
             console.log('Generated data/stats.json:', JSON.stringify(stats.rules, null, 2));
+            if (preserved.length > 0) {
+              console.log('Preserved unknown top-level keys:', preserved.join(', '));
+            }
           "
 
       - name: Commit new rules and stats
