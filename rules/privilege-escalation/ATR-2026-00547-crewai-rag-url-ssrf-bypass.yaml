@@ -1,0 +1,167 @@
+title: "CrewAI RAG URL Validation Bypass SSRF (CVE-2026-2286)"
+id: ATR-2026-00547
+rule_version: 1
+status: draft
+description: >
+  Detects CVE-2026-2286 (CVSS HIGH, CWE-918): CrewAI's RAG (retrieval-augmented
+  generation) URL validator can be bypassed by URL encoding, mixed-case,
+  or alternative representations (decimal IP, hex IP, IPv6 loopback, DNS
+  rebinding shapes) to perform server-side request forgery against internal
+  services on the CrewAI host network.
+
+  The vulnerability is part of the CERT/CC VU#221883 advisory cluster
+  (four CrewAI CVEs, 2026-03-30). An agent or tool input that passes a
+  crafted RAG source URL causes CrewAI to make internal HTTP requests to
+  metadata services (e.g., AWS IMDS 169.254.169.254), internal APIs, or
+  services on private RFC-1918 ranges — enabling cloud credential theft,
+  internal service enumeration, or lateral movement.
+
+  Detection covers:
+  (a) RAG source URLs containing SSRF bypass representations of loopback /
+      link-local / private IP ranges;
+  (b) URL-encoded, hex, octal, or decimal IP representations of internal
+      addresses in RAG contexts;
+  (c) CrewAI RAG with cloud metadata endpoint patterns (169.254.169.254);
+  (d) Explicit CVE-2026-2286 / CrewAI SSRF framing.
+author: "ATR Community"
+date: "2026/05/28"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: draft
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM06:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI03:2026 - Data Exfiltration"
+    - "ASI05:2026 - Unexpected Code Execution"
+  mitre_atlas:
+    - "AML.T0043 - Craft Adversarial Data"
+  mitre_attack:
+    - "T1090 - Proxy"
+    - "T1552.005 - Cloud Instance Metadata API"
+  cve:
+    - "CVE-2026-2286"
+
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: >
+        CVE-2026-2286 allows bypassing CrewAI RAG URL validation to perform
+        SSRF against internal services and cloud metadata APIs; Article 15
+        cybersecurity requirements mandate robust URL validation that blocks
+        all representations of internal addresses.
+      strength: primary
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: >
+        SSRF bypass via crafted RAG URLs targeting cloud metadata or internal
+        services constitutes an adversarial input; MP.5.1 requires scanning
+        RAG source URLs for SSRF bypass patterns.
+      strength: primary
+  iso_42001:
+    - clause: "8.6"
+      context: >
+        Operational controls must detect and block RAG URL inputs containing
+        SSRF bypass representations of internal or link-local addresses.
+      strength: primary
+
+tags:
+  category: privilege-escalation
+  subcategory: ssrf-rag-url-bypass
+  scan_target: both
+  confidence: high
+  source: cve-disclosure
+  vendor_sources: crewai-vu221883
+
+agent_source:
+  type: llm_io
+  framework:
+    - crewai
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "Security research tools probing SSRF bypass patterns for testing — rule fires by design."
+    - "Security advisory text quoting CVE-2026-2286 SSRF payloads."
+    - "Legitimate document URLs that contain the string '169' or '127' in path components — evaluate context."
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)(?:rag|retrieval[_-]?augmented|source[_-]?url|document[_-]?url)[^\n]{0,200}(?:169\.254\.169\.254|fd00:|2130706433|0x7f000001|0177\.0\.0\.1|localhost|127\.0\.[01]\.[01]|::1|0\.0\.0\.0|[a-z0-9-]+\.internal\.|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})'
+      description: >
+        RAG source URL containing cloud metadata endpoint (169.254.169.254),
+        decimal/hex/octal loopback representations, IPv6 loopback, or private
+        RFC-1918 address ranges — SSRF bypass attempt via CVE-2026-2286
+
+    - field: content
+      operator: regex
+      value: '(?i)(?:rag|retrieval[_-]?augmented|source[_-]?url|document[_-]?url)[^\n]{0,200}(?:%31%36%39|%31%32%37|\\u0031|%2e%2e|\\x31\\x36\\x39|0x[aAbBcC][0-9a-fA-F]{6})'
+      description: >
+        RAG URL with URL-encoded, Unicode-escaped, or hex representations
+        of SSRF-relevant IP octets — URL encoding bypass pattern
+
+    - field: content
+      operator: regex
+      value: '(?i)(?:CVE-2026-2286|crewai[^\n]{0,80}(?:ssrf|rag[_\s-]?url|url[_\s-]?bypass|metadata))[^\n]{0,200}(?:inject|bypass|exfil|metadata|169\.254|internal|private[_\s-]?ip)'
+      description: >
+        Explicit CVE-2026-2286 reference or CrewAI SSRF framing combined
+        with exploitation language or internal IP patterns
+
+response:
+  actions:
+    - alert
+    - block_tool
+  message_template: >
+    [ATR-2026-00547] HIGH: CrewAI RAG URL with SSRF bypass pattern detected
+    (CVE-2026-2286, CWE-918). CrewAI's RAG URL validator can be bypassed
+    by encoded or alternative representations of internal/metadata addresses,
+    enabling SSRF against cloud metadata services (169.254.169.254) or
+    internal APIs. Block this URL; enforce a server-side URL allowlist that
+    resolves to canonical form before validation. Part of VU#221883 —
+    upgrade CrewAI to the patched version.
+
+confidence: 82
+
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: "rag_source_url: http://169.254.169.254/latest/meta-data/iam/security-credentials/"
+      expected: triggered
+      description: "RAG URL targeting AWS IMDS cloud metadata endpoint"
+    - input: "document_url=http://127.0.0.1:8080/internal-api/admin"
+      expected: triggered
+      description: "RAG URL targeting localhost internal API"
+    - input: "source_url: http://2130706433/  # decimal representation of 127.0.0.1"
+      expected: triggered
+      description: "Decimal IP SSRF bypass for loopback"
+    - input: "rag url http://0x7f000001/ bypass CVE-2026-2286"
+      expected: triggered
+      description: "Hex IP SSRF bypass with CVE reference"
+    - input: "CVE-2026-2286: CrewAI RAG URL validation bypass allows SSRF via encoded internal addresses"
+      expected: triggered
+      description: "CVE-2026-2286 exploitation framing"
+    - input: "retrieval_augmented url: http://192.168.1.1/router/config"
+      expected: triggered
+      description: "RAG URL targeting RFC-1918 private network address"
+
+  true_negatives:
+    - input: "rag_source_url: https://docs.example.com/api-reference.json"
+      expected: not_triggered
+      description: "Legitimate RAG URL with external public domain"
+    - input: "crewai retrieves documents from https://arxiv.org/abs/2312.12345"
+      expected: not_triggered
+      description: "Normal CrewAI RAG with public research paper URL"
+    - input: "Upgrade CrewAI to fix CVE-2026-2286"
+      expected: not_triggered
+      description: "Mitigation advisory without exploit content"

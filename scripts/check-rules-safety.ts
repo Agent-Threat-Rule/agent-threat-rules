@@ -403,11 +403,20 @@ async function checkCrossRuleConflict(
  * Check 2 (sanity): rule's own true_positives MUST actually match its
  * own regex. A rule that doesn't catch its own declared TPs is broken
  * by construction.
+ *
+ * NOTE: engine.evaluate() skips rules with status='draft' or 'deprecated',
+ * so new draft rules would never match their own TPs via the normal path.
+ * To work around this, we temporarily promote each draft/test rule to
+ * 'active' in the in-memory engine object before testing, then restore it.
+ * This only affects the in-memory engine used for validation — it never
+ * modifies the rule files on disk.
  */
 async function checkOwnTruePositivesMatch(
   engine: ATREngine,
   newRuleEntries: Array<{ id: string; file: string; tps: string[] }>,
 ): Promise<Map<string, string[]>> {
+  // NOTE: caller is responsible for promoting draft/test rules to 'active'
+  // before calling this function — engine.evaluate() skips draft rules.
   const fps = new Map<string, string[]>();
   for (const r of newRuleEntries) {
     const misses: string[] = [];
@@ -504,6 +513,26 @@ async function main(): Promise<void> {
     const engine = new ATREngine({ rulesDir: RULES_DIR });
     await engine.loadRules();
 
+    // Temporarily promote all NEW draft/test rules to 'active' for FP checks
+    // (benign corpus, extended benign, research mentions, cross-rule conflict).
+    // engine.evaluate() skips draft rules, so without this promotion the FP
+    // checks would trivially pass for draft rules — a false green.
+    // We restore original statuses before returning.
+    const statusBackup = new Map<string, string>();
+    for (const id of newRuleIds) {
+      const rule = engine.getRuleById(id) as Record<string, unknown> | undefined;
+      if (rule && (rule['status'] === 'draft' || rule['status'] === 'test')) {
+        statusBackup.set(id, rule['status'] as string);
+        rule['status'] = 'active';
+      }
+    }
+    const restoreStatuses = () => {
+      for (const [id, status] of statusBackup) {
+        const rule = engine.getRuleById(id) as Record<string, unknown> | undefined;
+        if (rule) rule['status'] = status;
+      }
+    };
+
     // Check 2 — own TPs must actually match.
     const tpMisses = await checkOwnTruePositivesMatch(engine, ruleEntries);
     for (const [id, reasons] of tpMisses) {
@@ -555,6 +584,9 @@ async function main(): Promise<void> {
         reason: `cross-rule conflict: ${conflicts.slice(0, 2).join(" | ")}${conflicts.length > 2 ? `, +${conflicts.length - 2} more` : ""}`,
       });
     }
+
+    // Restore original statuses now that all FP checks are complete
+    restoreStatuses();
   }
 
   if (failures.length === 0) {

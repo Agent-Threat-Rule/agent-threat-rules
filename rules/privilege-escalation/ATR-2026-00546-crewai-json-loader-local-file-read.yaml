@@ -1,0 +1,162 @@
+title: "CrewAI JSON Loader Arbitrary Local File Read (CVE-2026-2285)"
+id: ATR-2026-00546
+rule_version: 1
+status: draft
+description: >
+  Detects CVE-2026-2285 (CVSS HIGH, CWE-22): CrewAI's JSON document loader
+  accepts a file path without sanitisation, allowing an agent or tool input
+  to traverse outside the intended data directory and read arbitrary local
+  files (e.g., /etc/passwd, ~/.ssh/id_rsa, .env secrets) by supplying a
+  path-traversal sequence in the loader argument.
+
+  The vulnerability is part of the CERT/CC VU#221883 advisory cluster
+  (four CrewAI CVEs, 2026-03-30). The JSON loader is invoked when CrewAI
+  processes RAG documents; a crafted document path causes the loader to
+  return the contents of an attacker-specified file, which the agent then
+  includes in its context and may exfiltrate via subsequent tool calls.
+
+  Detection covers:
+  (a) Path-traversal sequences in JSON loader file path arguments;
+  (b) Absolute paths to sensitive files (e.g., /etc/passwd, .env, .ssh);
+  (c) CrewAI document loader with directory traversal or sensitive-file targets;
+  (d) Explicit CVE-2026-2285 / CrewAI JSON loader file-read framing.
+author: "ATR Community"
+date: "2026/05/28"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: draft
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM06:2025 - Excessive Agency"
+    - "LLM05:2025 - Improper Output Handling"
+  owasp_agentic:
+    - "ASI03:2026 - Data Exfiltration"
+  mitre_atlas:
+    - "AML.T0043 - Craft Adversarial Data"
+  mitre_attack:
+    - "T1083 - File and Directory Discovery"
+    - "T1552 - Unsecured Credentials"
+  cve:
+    - "CVE-2026-2285"
+
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: >
+        CVE-2026-2285 allows arbitrary local file read via the CrewAI JSON
+        loader without path sanitisation; Article 15 cybersecurity requirements
+        mandate that AI agent document loaders canonicalise paths and restrict
+        access to the intended data directory.
+      strength: primary
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: >
+        Path traversal in a document loader argument enabling sensitive file
+        read constitutes an adversarial input; MP.5.1 requires scanning
+        document loader path arguments for traversal sequences.
+      strength: primary
+  iso_42001:
+    - clause: "8.6"
+      context: >
+        Operational controls must detect and block document loader invocations
+        with path traversal sequences targeting sensitive files outside the
+        intended data scope.
+      strength: primary
+
+tags:
+  category: privilege-escalation
+  subcategory: path-traversal-file-read
+  scan_target: both
+  confidence: high
+  source: cve-disclosure
+  vendor_sources: crewai-vu221883
+
+agent_source:
+  type: llm_io
+  framework:
+    - crewai
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "Legitimate document loaders referencing known-good data directories — pattern requires traversal or sensitive-file targets."
+    - "Security advisory text quoting CVE-2026-2285 file paths."
+    - "References to /etc/ in system administration documentation without traversal context."
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)(?:json[_-]?loader|load[_-]?json|JSONLoader|document[_-]?loader)[^\n]{0,200}(?:(?:\.\.\/|\.\.\\){2,}|(?:\/etc\/(?:passwd|shadow|hosts)|\/root\/|\/home\/[^/]+\/\.ssh|\.env|\.aws\/credentials|\.npmrc|id_rsa))'
+      description: >
+        JSON/document loader invocation with either a path-traversal sequence
+        (2+ levels up) or a known sensitive-file target — CVE-2026-2285
+        local file read via CrewAI document loader
+
+    - field: content
+      operator: regex
+      value: '(?i)(?:crewai|crew_ai|CrewAI)[^\n]{0,200}(?:json[_-]?loader|load[_-]?json|document[_-]?loader)[^\n]{0,200}(?:\.\.\/|\/etc\/|\.env|\.ssh|id_rsa|credentials)'
+      description: >
+        CrewAI combined with a document/JSON loader and a sensitive path
+        or traversal sequence — attack framing specific to CVE-2026-2285
+
+    - field: content
+      operator: regex
+      value: '(?i)(?:CVE-2026-2285|crewai[^\n]{0,80}(?:file[_\s-]?read|local[_\s-]?file|json[_\s-]?loader))[^\n]{0,200}(?:inject|read|exfil|bypass|traverse|sensitive|passwd|\.env|\.ssh)'
+      description: >
+        Explicit CVE-2026-2285 reference or CrewAI file-read framing combined
+        with exploitation language or sensitive file targets
+
+response:
+  actions:
+    - alert
+    - block_tool
+  message_template: >
+    [ATR-2026-00546] HIGH: CrewAI JSON loader with path traversal or
+    sensitive-file target detected (CVE-2026-2285, CWE-22). The CrewAI JSON
+    loader does not sanitise document paths, allowing traversal to read
+    arbitrary local files (/etc/passwd, .env, SSH keys). Block this loader
+    call; canonicalise document paths and restrict loader access to the
+    intended data directory. Part of VU#221883 advisory cluster — upgrade
+    CrewAI to the patched version.
+
+confidence: 80
+
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: "JSONLoader('../../../../etc/passwd')"
+      expected: triggered
+      description: "JSON loader with path traversal to /etc/passwd"
+    - input: "document_loader path: ../../../.env"
+      expected: triggered
+      description: "Document loader with traversal to .env secrets file"
+    - input: "crewai json_loader ../../.ssh/id_rsa exfil CVE-2026-2285"
+      expected: triggered
+      description: "CrewAI JSON loader + SSH key + CVE reference"
+    - input: "JSONLoader('/root/.aws/credentials')"
+      expected: triggered
+      description: "JSON loader with absolute path to AWS credentials"
+    - input: "CVE-2026-2285: CrewAI JSON loader reads /etc/passwd via unsanitised path"
+      expected: triggered
+      description: "CVE-2026-2285 exploitation framing with sensitive file target"
+
+  true_negatives:
+    - input: "JSONLoader('/data/documents/report.json')"
+      expected: not_triggered
+      description: "Legitimate JSON loader with a safe absolute data path"
+    - input: "crewai loads documents from the /tmp/uploads/ directory"
+      expected: not_triggered
+      description: "Normal CrewAI document directory reference — no traversal"
+    - input: "Upgrade CrewAI to fix CVE-2026-2285"
+      expected: not_triggered
+      description: "Mitigation advisory without exploit content"
