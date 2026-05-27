@@ -153,11 +153,13 @@ detection:
 
     - field: content
       operator: regex
-      value: '(?i)libraries_used\s*=\s*\[[^\]]*["\x27][^"\x27]*[;|&`$][^"\x27]*["\x27][^\]]*\]'
+      value: '(?i)libraries_used\s*=\s*\[[^\]]*["\x27][^"\x27]*(?:[|&`$]|;(?!\s*(?:python_(?:version|full_version)|os_name|sys_platform|platform_(?:machine|release|system|version)|implementation_(?:name|version)|extra\s|version\s|>=|<=|==|!=|~=|\d)))[^"\x27]*["\x27][^\]]*\]'
       description: >
         CrewAI CodeInterpreterTool libraries_used list containing a package name
-        with a shell metacharacter (; | & ` $) — pip install command injection
-        (Surface B PoC: "numpy; id #")
+        with a shell metacharacter (| & ` $) or semicolon not followed by a PEP 508
+        environment marker — pip install command injection
+        (Surface B PoC: "numpy; id #"). Negative lookahead excludes legitimate
+        PEP 508 specifiers like "requests; python_version >= '3.6'".
 
     - field: content
       operator: regex
