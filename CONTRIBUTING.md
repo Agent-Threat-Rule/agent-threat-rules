@@ -190,8 +190,26 @@ See [RFC-001](docs/proposals/001-atr-quality-standard-rfc.md) for full details.
 - Categories: `prompt-injection`, `tool-poisoning`, `context-exfiltration`,
   `agent-manipulation`, `privilege-escalation`, `excessive-autonomy`,
   `skill-compromise`, `data-poisoning`, `model-security`
-- If unsure about the next available ID, use a placeholder.
-  Maintainers assign the final ID during review.
+
+### Allocating the next rule ID
+
+Run the helper from the repo root to get a non-colliding ID before you create
+the file:
+
+```bash
+npx tsx scripts/next-rule-id.ts            # next 1 ID, e.g. ATR-2026-00537
+npx tsx scripts/next-rule-id.ts 4          # next 4 sequential IDs
+npx tsx scripts/next-rule-id.ts --include-open-prs   # also scans in-flight PRs
+```
+
+The helper reads `rules/**` on your local checkout (so `git pull origin main`
+first) and, with `--include-open-prs`, calls `gh pr list` to surface IDs
+claimed by PRs that haven't merged yet. The CI safety gate (`validate.yml`)
+will also block a PR that picks a colliding ID, but using this helper avoids
+the force-push + re-review cycle that PRs #56 and #57 went through.
+
+If you cannot run the helper, leave the ID as `ATR-YYYY-XXXXX` and a
+maintainer will assign it during review.
 
 ---
 
