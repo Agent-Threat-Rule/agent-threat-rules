@@ -25,6 +25,8 @@
  *   npx tsx scripts/promote-detection-ready.ts --write        # commit changes
  *   npx tsx scripts/promote-detection-ready.ts --max 5        # cap to 5 promotions
  *   npx tsx scripts/promote-detection-ready.ts --source ghsa  # only this source
+ *   npx tsx scripts/promote-detection-ready.ts --write \
+ *     --report /tmp/promote-report.json  # also write run summary JSON
  *
  * Exit codes:
  *   0 success (may have promoted 0 or more)
@@ -63,6 +65,10 @@ const opt = (n: string): string | undefined => {
 const WRITE = flag("--write");
 const SOURCE_FILTER = opt("--source");
 const MAX_PROMOTE = opt("--max") ? parseInt(opt("--max")!, 10) : DEFAULT_MAX;
+// When set, the full run summary is written to this path as JSON so a caller
+// (cve-daily-sync.yml) can build the human-PoC backlog issue. Does not need
+// to be a committed path — the workflow points it at a tmp file.
+const REPORT_PATH = opt("--report");
 
 const VALID_CATEGORIES = new Set([
   "agent-manipulation",
@@ -82,6 +88,7 @@ interface Candidate {
   source: string;
   category: string;
   draftId: string;
+  title: string;
 }
 
 function walkYaml(dir: string): string[] {
@@ -129,12 +136,14 @@ function findCandidates(): Candidate[] {
     const draftId =
       typeof doc.id === "string" ? doc.id : "";
     if (!draftId.startsWith("ATR-DRAFT-")) continue;
+    const title = typeof doc.title === "string" ? doc.title : draftId;
     out.push({
       proposalPath: rel,
       proposalAbs: f,
       source,
       category,
       draftId,
+      title,
     });
   }
   return out;
@@ -279,6 +288,8 @@ function main(): void {
     errors: 0,
     results: [] as Array<{
       proposal: string;
+      draft_id: string;
+      title: string;
       status: string;
       new_rule?: string;
       new_id?: string;
@@ -294,11 +305,19 @@ function main(): void {
     else summary.errors += 1;
     summary.results.push({
       proposal: c.proposalPath,
+      draft_id: c.draftId,
+      title: c.title,
       status: r.status,
       new_rule: r.newRulePath,
       new_id: r.newRuleId,
       reason: r.reason,
     });
+  }
+
+  if (REPORT_PATH) {
+    const abs = resolve(REPO_ROOT, REPORT_PATH);
+    mkdirSync(dirname(abs), { recursive: true });
+    writeFileSync(abs, JSON.stringify(summary, null, 2), "utf-8");
   }
 
   console.log(JSON.stringify(summary, null, 2));
