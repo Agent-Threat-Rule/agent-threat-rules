@@ -3,6 +3,12 @@ name: CI
 on:
   push:
     branches: [main]
+    # Skip the (heavy) test + eval suite on the daily CVE collector's
+    # proposal/report commits to main — they are drafts, not engine-loaded.
+    # Code/rule changes still run via the pull_request trigger below.
+    paths-ignore:
+      - 'proposals/**'
+      - 'data/cve-collector/**'
   pull_request:
     branches: [main]
 

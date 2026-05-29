@@ -3,6 +3,13 @@ name: Validate ATR Rules
 on:
   push:
     branches: [main]
+    # The daily CVE collector commits proposals + its run report straight to
+    # main (drafts, never loaded by the engine). Those pushes don't need
+    # validate/build — rules go through a PR, which still runs this workflow
+    # via the pull_request trigger below.
+    paths-ignore:
+      - 'proposals/**'
+      - 'data/cve-collector/**'
   pull_request:
     branches: [main]
 

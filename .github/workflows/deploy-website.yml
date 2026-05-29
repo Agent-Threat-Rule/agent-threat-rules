@@ -7,6 +7,10 @@ on:
       - 'website/**'
       - 'rules/**'
       - 'data/**'
+      # Don't redeploy the site for the daily CVE collector's run-report churn
+      # (the site doesn't surface cve-collector data). Negation must come after
+      # the 'data/**' include; a mixed push (e.g. benchmark data) still deploys.
+      - '!data/cve-collector/**'
       - '.github/workflows/deploy-website.yml'
   workflow_dispatch:
 
