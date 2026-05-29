@@ -25,9 +25,9 @@ jobs:
     timeout-minutes: 45
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: npm
@@ -39,7 +39,7 @@ jobs:
 
       # Restore previous cumulative results
       - name: Restore cumulative scan data
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             data/scan-cumulative.json
@@ -200,7 +200,7 @@ jobs:
 
       # Upload PRIVATE artifacts (full scan data — not in git)
       - name: Upload private scan artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: scan-private-${{ github.run_number }}
           path: |
@@ -211,7 +211,7 @@ jobs:
 
       # Upload PUBLIC artifacts (ecosystem report — also committed to git)
       - name: Upload public scan artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: scan-public-${{ github.run_number }}
           path: |
@@ -222,7 +222,7 @@ jobs:
 
       # Upload generated posts (for review before publishing)
       - name: Upload Skills Sec posts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: skillssec-posts-${{ github.run_number }}
           path: posts/
@@ -231,7 +231,7 @@ jobs:
 
       # Cache cumulative data for next run
       - name: Save cumulative data
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: |
             data/scan-cumulative.json
