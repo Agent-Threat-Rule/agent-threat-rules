@@ -173,6 +173,57 @@ properties:
           "pyrit:indirect_pi_v2" or "garak:promptinject.HijackHateHumans". Lets a
           Rule pair with its generating probe so detection coverage can be measured
           end-to-end against adversarial test suites. See atr-method-v1.1.md §9.2.
+      external_references:
+        type: object
+        description: >
+          Cross-references to detection rules in other vendor / community rule
+          registries that cover the same or related threats. Lets ATR act as a
+          taxonomy bridge across rule formats without claiming authority over
+          the other registry's rule IDs. See atr-method-v1.1.md §9.4.
+
+          Each property is an array of opaque identifiers in the target
+          registry's native format. ATR engines MUST NOT execute these
+          identifiers; they are evidence only. Downstream tooling MAY use
+          them to enrich SIEM events, correlate detections, or generate
+          OSCAL assessment results that span rule formats.
+        properties:
+          cccs_yara:
+            type: array
+            items:
+              type: string
+            description: >
+              CCCS-Yara rule names (e.g., "APT_CN_BEACON_2024"). Per the
+              2026-05-26 CCCS-Yara#100 closing comment, cross-reference
+              ownership lives on the ATR side. See spec/external-registries/cccs-yara.md.
+          sigma:
+            type: array
+            items:
+              type: string
+            description: >
+              Sigma rule UUIDs (e.g., "12345678-1234-1234-1234-123456789abc")
+              that cover the same or correlated threat. Lets ATR rules bridge
+              into the wider Sigma ecosystem.
+          yara:
+            type: array
+            items:
+              type: string
+            description: >
+              Generic YARA rule names from public corpora (YARA-Forge,
+              Florian Roth's signature-base, etc.) covering related artifacts.
+          misp_taxonomy:
+            type: array
+            items:
+              type: string
+            description: >
+              MISP taxonomy entries (e.g., "atr:category=prompt-injection"
+              or "misp-taxonomies:dark-web=...") referencing this Rule.
+          stix_pattern:
+            type: array
+            items:
+              type: string
+            description: >
+              STIX 2.1 indicator pattern IDs covering the same Indicator
+              of Compromise.
       research:
         type: array
         items:
