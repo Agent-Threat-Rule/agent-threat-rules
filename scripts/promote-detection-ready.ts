@@ -4,8 +4,16 @@
  *
  * Walks proposals/ for drafts with _triage.detection_ready=true,
  * runs scripts/generate-detection-from-poc.ts against each, and moves
- * successfully-generated rules into rules/<category>/ATR-2026-NNNNN-
+ * ONLY PoC-grounded rules into rules/<category>/ATR-2026-NNNNN-
  * <slug>.yaml. Failed generations stay as proposals.
+ *
+ * GROUNDING GATE (the MiroFish guard):
+ *   The generator exits 3 when every detection pattern was inferred from
+ *   advisory prose rather than a real PoC code block. Those proposals are
+ *   NOT promoted — they stay in proposals/ flagged `needs-human-poc` so a
+ *   maintainer can supply the real exploit payload. Only generator exit 0
+ *   (>=1 poc-grounded pattern) is promoted into rules/, and the generator's
+ *   own status/maturity is preserved (never force-overridden here).
  *
  * After this script runs, scripts/check-rules-safety.ts is the next
  * gate -- it can be invoked per-rule (--file) or batch (--base origin/
@@ -161,7 +169,7 @@ function slugify(title: string): string {
 
 interface PromotionResult {
   candidate: Candidate;
-  status: "promoted" | "no-patterns" | "error";
+  status: "promoted" | "no-patterns" | "needs-human-poc" | "error";
   reason?: string;
   newRulePath?: string;
   newRuleId?: string;
@@ -185,6 +193,18 @@ function tryGenerate(c: Candidate, idGen: () => string, write: boolean): Promoti
     if (e.status === 2) {
       return { candidate: c, status: "no-patterns", reason: "no extractable patterns" };
     }
+    if (e.status === 3) {
+      // Prose-only: the generator could only infer patterns from advisory
+      // description text, not from a real PoC payload. Do NOT promote — this
+      // is the MiroFish failure mode. Discard the draft and leave the
+      // proposal in place for a maintainer to supply the real payload.
+      if (existsSync(tmpOut)) unlinkSync(tmpOut);
+      return {
+        candidate: c,
+        status: "needs-human-poc",
+        reason: "no PoC code block in advisory; all patterns prose-inferred",
+      };
+    }
     return {
       candidate: c,
       status: "error",
@@ -205,7 +225,10 @@ function tryGenerate(c: Candidate, idGen: () => string, write: boolean): Promoti
 
   const newId = idGen();
   rule.id = newId;
-  rule.status = "experimental";
+  // We only reach this point on generator exit 0 (>=1 poc-grounded pattern),
+  // for which the generator already set status/maturity = experimental. Do
+  // NOT force-override: respect the generator as the single source of truth
+  // for the grounding decision. Only backfill if it left maturity unset.
   if (rule.maturity === undefined) rule.maturity = "experimental";
 
   const title =
@@ -252,6 +275,7 @@ function main(): void {
     max: MAX_PROMOTE,
     promoted: 0,
     no_patterns: 0,
+    needs_human_poc: 0,
     errors: 0,
     results: [] as Array<{
       proposal: string;
@@ -266,6 +290,7 @@ function main(): void {
     const r = tryGenerate(c, idGen, WRITE);
     if (r.status === "promoted") summary.promoted += 1;
     else if (r.status === "no-patterns") summary.no_patterns += 1;
+    else if (r.status === "needs-human-poc") summary.needs_human_poc += 1;
     else summary.errors += 1;
     summary.results.push({
       proposal: c.proposalPath,
@@ -283,6 +308,7 @@ function main(): void {
       attempted: summary.candidates_attempted,
       promoted: summary.promoted,
       no_patterns: summary.no_patterns,
+      needs_human_poc: summary.needs_human_poc,
       errors: summary.errors,
     })}`,
   );
