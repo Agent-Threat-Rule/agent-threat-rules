@@ -12,10 +12,11 @@
  *   2. description               (NVD proposals — CVE description prose)
  *
  * Extractors run in priority order (highest precision first):
- *   1. code-block    — content inside ``` fences (e.g. PoC scripts)
- *   2. cli-command   — recognized CLI verbs (install, run, exec, clone)
- *   3. http-endpoint — METHOD /path/with/{params}
- *   4. shell-flag    — flags with backtick-quoted values
+ *   1. code-block    — content inside ``` fences (e.g. PoC scripts) [poc]
+ *   2. cli-command   — recognized CLI verbs (install, run, exec)   [prose]
+ *   3. http-endpoint — METHOD /path/with/{params}                  [prose]
+ *   4. function-arg  — "function foo() of file ..." / "argument x" [prose]
+ *   5. endpoint-name — "config.get endpoint" / "mcp.run tool"      [prose]
  *
  * Each extracted pattern becomes one detection.conditions entry with:
  *   - field: content
@@ -27,8 +28,26 @@
  *                             (so own-TP-must-match always holds).
  * test_cases.true_negatives = a small corpus of benign agent traffic.
  *
+ * GROUNDING — poc vs prose (the MiroFish guard):
+ *   Only the code-block extractor is "poc"-grounded: it lifts the literal
+ *   exploit payload out of a ``` fence. The other four extractors are
+ *   "prose"-grounded: they infer a pattern from advisory DESCRIPTION text
+ *   ("the vulnerable function foo()"). A regex built from prose detects the
+ *   SENTENCE describing the attack, not the attack — the documented MiroFish
+ *   failure mode that got the ATR-PRED-* batch deprecated.
+ *
+ *   Therefore:
+ *   - If >=1 pattern is poc-grounded → the rule is a Cisco-level candidate.
+ *     status is promoted to experimental for the maturity + auto-merge gate.
+ *   - If every pattern is prose-only → status=draft, maturity=needs-human-poc,
+ *     and a `_needs_human_poc` marker is attached. The script exits 3 so the
+ *     daily CVE workflow routes it to HUMAN REVIEW instead of the auto-merge
+ *     gate. The draft is still written so a maintainer can supply the real
+ *     PoC payload and re-promote it.
+ *
  * The emitted rule will NOT auto-merge if:
  *   - No patterns can be extracted (exit 2)
+ *   - Patterns are prose-only — needs a human PoC (exit 3)
  *   - check-rules-safety.ts fails on FP / conflict (caller's responsibility)
  *
  * Usage:
@@ -43,9 +62,10 @@
  *     proposals/nvd/CVE-2025-64340.proposal.yaml --dry-run
  *
  * Exit codes:
- *   0 success (rule emitted)
+ *   0 success (poc-grounded rule emitted, eligible for auto-merge gate)
  *   1 fatal error (parse failure, IO error)
  *   2 no extractable patterns — proposal cannot be auto-completed
+ *   3 prose-only — draft written, needs a human-supplied PoC payload
  */
 
 import { readFileSync, writeFileSync } from "node:fs";
@@ -62,6 +82,18 @@ interface ExtractedPattern {
   regex: string;
   description: string;
   test_input: string;
+  /**
+   * Provenance of this pattern. "poc" = extracted from a real proof-of-
+   * concept code block (the literal exploit payload). "prose" = inferred
+   * from advisory description text (e.g. "the vulnerable function foo()").
+   *
+   * Prose-inferred patterns are the documented MiroFish failure mode:
+   * a regex built from "this CVE allows command injection via X" detects
+   * the SENTENCE describing the attack, not the attack. Cisco-level rules
+   * MUST be poc-grounded. Prose-only proposals are routed to human review
+   * (exit code 3) instead of being auto-promoted to a production rule.
+   */
+  grounding: "poc" | "prose";
 }
 
 const BENIGN_TRUE_NEGATIVES: string[] = [
@@ -103,6 +135,7 @@ const codeBlockExtractor = {
         regex: `(?i)${escapeRegex(firstLine)}`,
         description: `Literal first line of advisory PoC code block`,
         test_input: firstLine,
+        grounding: "poc",
       });
     }
     return results;
@@ -128,6 +161,7 @@ const cliCommandExtractor = {
         regex: `(?i)\\b${escapeRegex(cmd)}\\b`,
         description: `CLI invocation pattern from advisory text`,
         test_input: cmd,
+        grounding: "prose",
       });
     }
     return results;
@@ -152,6 +186,7 @@ const functionArgExtractor = {
         regex: `(?i)\\b${escapeRegex(fn)}\\s*\\(`,
         description: `Vulnerable function call ${fn}() from ${file}`,
         test_input: `${fn}(`,
+        grounding: "prose",
       });
     }
     const argRe =
@@ -166,6 +201,7 @@ const functionArgExtractor = {
         regex: `(?i)\\b${escapeRegex(arg)}\\s*=`,
         description: `Vulnerable argument ${arg}=...`,
         test_input: `${arg}=`,
+        grounding: "prose",
       });
     }
     return results;
@@ -192,6 +228,7 @@ const endpointNameExtractor = {
           regex: `(?i)\\b${escapeRegex(name)}\\b`,
           description: `Vulnerable endpoint ${name} from advisory text`,
           test_input: name,
+          grounding: "prose",
         });
       }
     }
@@ -219,6 +256,7 @@ const httpEndpointExtractor = {
         regex: `(?i)\\b${method}\\s+${escapeRegex(path).replace(/\\\{[^}]+\\\}/g, "[\\w-]+")}`,
         description: `Vulnerable HTTP endpoint ${method} ${path}`,
         test_input: `${method} ${concretePath}`,
+        grounding: "prose",
       });
     }
     return results;
@@ -255,6 +293,8 @@ function buildRule(
   delete (newRule as Record<string, unknown>)._nvd_sync;
   delete (newRule as Record<string, unknown>)._triage;
 
+  const hasPoc = patterns.some((p) => p.grounding === "poc");
+
   newRule.detection = {
     condition: "any",
     false_positives: [],
@@ -270,7 +310,7 @@ function buildRule(
     true_positives: patterns.map((p) => ({
       input: p.test_input,
       expected: "triggered",
-      description: `Auto-extracted via ${p.extractor}`,
+      description: `Auto-extracted via ${p.extractor} (${p.grounding}-grounded)`,
     })),
     true_negatives: BENIGN_TRUE_NEGATIVES.map((input, i) => ({
       input,
@@ -279,8 +319,30 @@ function buildRule(
     })),
   };
 
-  if (newRule.status === "draft") newRule.status = "experimental";
-  if (newRule.maturity === undefined) newRule.maturity = "experimental";
+  if (hasPoc) {
+    // At least one pattern is grounded in a real PoC code block — this is
+    // a Cisco-level candidate. Promote to experimental for the maturity
+    // pipeline + auto-merge gate.
+    if (newRule.status === "draft") newRule.status = "experimental";
+    if (newRule.maturity === undefined) newRule.maturity = "experimental";
+  } else {
+    // Prose-only: every pattern was inferred from advisory description
+    // text, not from an exploit payload. This is the MiroFish failure
+    // mode. Force the rule to draft + needs-human-poc so it CANNOT pass
+    // the auto-merge gate (check-rules-safety.ts) and is surfaced for a
+    // human to supply the real PoC payload.
+    newRule.status = "draft";
+    newRule.maturity = "needs-human-poc";
+    (newRule as Record<string, unknown>)._needs_human_poc = {
+      reason:
+        "No PoC code block in the advisory. All detection patterns were " +
+        "inferred from description prose and may detect the text describing " +
+        "the attack rather than the attack itself. A maintainer must replace " +
+        "detection.conditions with patterns derived from the actual exploit " +
+        "payload before this rule can be promoted.",
+      generated_at: new Date().toISOString(),
+    };
+  }
 
   return newRule;
 }
@@ -334,6 +396,8 @@ function main(): void {
 
   const rule = buildRule(proposal, patterns);
   const ruleYaml = yaml.dump(rule, { lineWidth: 120, noRefs: true });
+  const hasPoc = patterns.some((p) => p.grounding === "poc");
+  const grounding = hasPoc ? "poc" : "prose-only";
 
   if (dryRun) {
     console.error(
@@ -342,6 +406,7 @@ function main(): void {
           status: "dry_run",
           proposal_id: proposal.id,
           patterns: patterns.length,
+          grounding,
           extractors_used: [...new Set(patterns.map((p) => p.extractor))],
         },
         null,
@@ -352,15 +417,26 @@ function main(): void {
     writeFileSync(resolve(REPO_ROOT, outputPath), ruleYaml, "utf-8");
     console.error(
       JSON.stringify({
-        status: "written",
+        status: hasPoc ? "written" : "written_needs_human_poc",
         output: outputPath,
         proposal_id: proposal.id,
         patterns: patterns.length,
+        grounding,
         extractors_used: [...new Set(patterns.map((p) => p.extractor))],
       }),
     );
   } else {
     console.log(ruleYaml);
+  }
+
+  // Prose-only proposals must NOT auto-merge: every detection pattern was
+  // inferred from advisory description text, which is the MiroFish failure
+  // mode (detecting the sentence that describes the attack, not the attack).
+  // Exit 3 signals the caller (cve-daily-sync.yml) to route this to human
+  // review instead of the auto-merge gate. The draft rule is still written
+  // so a maintainer can pick it up and supply the real PoC payload.
+  if (!hasPoc) {
+    process.exit(3);
   }
 }
 
