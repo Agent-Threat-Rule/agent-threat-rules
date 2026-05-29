@@ -82,8 +82,21 @@ const ADVISORY_FILTER = opt("--advisory");
 const LIMIT = opt("--limit") ? parseInt(opt("--limit")!, 10) : Infinity;
 const VERBOSE = flag("--verbose");
 
-// AI / agent / LLM / MCP package allowlist by ecosystem.
-// Keep this curated — broad "matches /ai/" globs drag in unrelated CVEs.
+// AI AGENT package allowlist by ecosystem.
+// SCOPE: ATR detects AGENT-runtime threats (prompt injection, tool/MCP
+// poisoning, context exfiltration, excessive autonomy). This list is
+// therefore agent frameworks + agent infra/protocol + runtime guardrails +
+// LLM IO SDKs — NOT ML training / inference / MLOps libraries.
+//
+// Intentionally EXCLUDED (ML infra, not agents — they generated the bulk of
+// the prior noise: ~251 TensorFlow kernel-crash advisories, plus mlflow /
+// gradio / ray / torch / transformers / vllm etc. whose CVEs — `CHECK fail in
+// AvgPoolGrad`, artifact-store path traversal, demo-UI XSS — have zero
+// agent-runtime relevance and ATR cannot/should not detect):
+//   tensorflow, torch, onnxruntime, gradio, mlflow, ray, diffusers,
+//   datasets, accelerate, huggingface-hub, transformers, vllm
+// A CVE-layer agent-relevance filter (agentRelevance) is the second gate, so
+// even an injection/RCE CWE inside an excluded package never slips through.
 const AI_PACKAGES: Record<string, string[]> = {
   pip: [
     "langchain",
@@ -96,11 +109,6 @@ const AI_PACKAGES: Record<string, string[]> = {
     "llama-index-core",
     "openai",
     "anthropic",
-    "transformers",
-    "vllm",
-    "mlflow",
-    "ray",
-    "gradio",
     "dspy",
     "dspy-ai",
     "autogen-agentchat",
@@ -121,13 +129,6 @@ const AI_PACKAGES: Record<string, string[]> = {
     "embedchain",
     "mcp",
     "fastmcp",
-    "huggingface-hub",
-    "diffusers",
-    "accelerate",
-    "datasets",
-    "torch",
-    "tensorflow",
-    "onnxruntime",
   ],
   npm: [
     "@langchain/core",
@@ -183,6 +184,90 @@ function guessCategory(cwes: string[]): string {
     if (CWE_TO_CATEGORY[c]) return CWE_TO_CATEGORY[c];
   }
   return "model-abuse";
+}
+
+// CWEs that map to an agent-runtime threat ATR can detect at the content
+// layer: code/command injection, SSRF, path traversal, deserialization,
+// SQL/template/general injection, XSS, access control, info exposure.
+// Deliberately NOT here: memory-safety / availability CWEs (476 null-deref,
+// 190/191 overflow, 400/770 resource exhaustion, 125/787 OOB r/w, 369
+// div-by-zero, 617 reachable assertion) — these are the TensorFlow-style
+// `CHECK fail` kernel crashes with no agent-runtime meaning.
+const AGENT_RELEVANT_CWES = new Set([
+  "CWE-94", // code injection
+  "CWE-95", // eval injection
+  "CWE-77", // command injection
+  "CWE-78", // OS command injection
+  "CWE-917", // expression language / template injection
+  "CWE-1336", // server-side template injection (prompt)
+  "CWE-918", // SSRF
+  "CWE-22", // path traversal
+  "CWE-23", // relative path traversal
+  "CWE-611", // XXE
+  "CWE-502", // deserialization of untrusted data
+  "CWE-89", // SQL injection
+  "CWE-79", // XSS
+  "CWE-74", // injection (general)
+  "CWE-470", // unsafe reflection
+  "CWE-601", // open redirect
+  "CWE-862", // missing authorization
+  "CWE-863", // incorrect authorization
+  "CWE-200", // sensitive info exposure
+  "CWE-20", // improper input validation (maps to prompt-injection)
+]);
+
+// Agent-threat phrases. Each entry is a lowercase regex tested against the
+// lowercased summary+description. Used as a second signal when the CWE list
+// is absent/uninformative, so a clearly agent-relevant advisory that lacks a
+// mapped CWE is still kept. (Bare "agent" is intentionally omitted — it
+// false-matches "user agent" headers; the package allowlist already scopes
+// to agent ecosystems.)
+const AGENT_THREAT_KEYWORDS: RegExp[] = [
+  /prompt injection/,
+  /prompt-injection/,
+  /system prompt/,
+  /jailbreak/,
+  /tool call/,
+  /tool-calling/,
+  /tool poisoning/,
+  /model context protocol/,
+  /\bmcp\b/,
+  /\bssrf\b/,
+  /server-side request/,
+  /remote code execution/,
+  /\brce\b/,
+  /arbitrary code/,
+  /code execution/,
+  /command injection/,
+  /deserializ/,
+  /sql injection/,
+  /path traversal/,
+  /template injection/,
+  /sandbox escape/,
+  /exfiltrat/,
+  /untrusted (input|data|manifest|model|content)/,
+];
+
+// Second gate (after the package allowlist): is this specific advisory an
+// agent-runtime threat ATR could write a detection rule for? Relevant if it
+// carries an agent-relevant CWE OR an agent-threat keyword. Pure DoS / kernel
+// crashes (excluded CWEs, no injection wording) are dropped.
+export function agentRelevance(adv: {
+  summary?: string;
+  description?: string;
+  cwes?: Array<{ cwe_id: string }>;
+}): { relevant: boolean; reason: string } {
+  const cwes = (adv.cwes ?? []).map((c) => c.cwe_id);
+  const hitCwe = cwes.find((c) => AGENT_RELEVANT_CWES.has(c));
+  if (hitCwe) return { relevant: true, reason: `agent-relevant CWE ${hitCwe}` };
+  const body = `${adv.summary ?? ""}\n${adv.description ?? ""}`.toLowerCase();
+  const hitKw = AGENT_THREAT_KEYWORDS.find((rx) => rx.test(body));
+  if (hitKw)
+    return { relevant: true, reason: `agent-threat keyword /${hitKw.source}/` };
+  return {
+    relevant: false,
+    reason: `no agent-relevant CWE or keyword (cwes: ${cwes.join(",") || "none"})`,
+  };
 }
 
 interface GhsaPackage {
@@ -463,6 +548,7 @@ async function main(): Promise<void> {
     packages_queried: 0,
     advisories_seen: 0,
     advisories_withdrawn: 0,
+    advisories_filtered_not_agent: 0,
     advisories_already_known: 0,
     new_proposals: 0,
     new_detection_ready: 0,
@@ -498,6 +584,18 @@ async function main(): Promise<void> {
           continue;
         }
         if (sinceDate && new Date(adv.published_at) < sinceDate) continue;
+
+        // Agent-relevance gate: drop advisories that are real bugs but not
+        // agent-runtime threats (e.g. an ML-kernel CHECK-fail that slipped in
+        // via an allowlisted package's transitive advisory). ATR is an AGENT
+        // standard — a CVE with no injection/exec/exfil signal is noise here.
+        const relevance = agentRelevance(adv);
+        if (!relevance.relevant) {
+          summary.advisories_filtered_not_agent += 1;
+          if (VERBOSE)
+            console.error(`  skip (not agent) ${adv.ghsa_id}: ${relevance.reason}`);
+          continue;
+        }
 
         const cveId = adv.cve_id ?? null;
         if (cveId && known.cves.has(cveId)) {
@@ -539,13 +637,18 @@ async function main(): Promise<void> {
       new_proposals: summary.new_proposals,
       new_detection_ready: summary.new_detection_ready,
       new_tracking_only: summary.new_tracking_only,
+      advisories_filtered_not_agent: summary.advisories_filtered_not_agent,
       advisories_seen: summary.advisories_seen,
       packages_queried: summary.packages_queried,
     })}`,
   );
 }
 
-main().catch((e) => {
-  console.error("fatal:", e);
-  process.exit(1);
-});
+// Run if invoked as a script (not when imported as a module for tests)
+const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+if (isMainModule) {
+  main().catch((e) => {
+    console.error("fatal:", e);
+    process.exit(1);
+  });
+}
