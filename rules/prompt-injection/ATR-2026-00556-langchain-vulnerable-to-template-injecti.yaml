@@ -1,0 +1,109 @@
+title: LangChain Vulnerable to Template Injection via Attribute Access in Prompt Templates
+id: ATR-2026-00556
+rule_version: 1
+status: experimental
+description: >
+  GitHub Security Advisory GHSA-6qv9-48xg-fc7f (CVE-2025-65106). LangChain Vulnerable to Template Injection via
+  Attribute Access in Prompt Templates
+author: ATR Community (GHSA sync)
+date: 2026/05/30
+schema_version: '0.1'
+detection_tier: pattern
+maturity: experimental
+severity: high
+references:
+  cve:
+    - CVE-2025-65106
+  cwe:
+    - CWE-1336
+  ghsa:
+    - GHSA-6qv9-48xg-fc7f
+  external:
+    - https://github.com/langchain-ai/langchain/security/advisories/GHSA-6qv9-48xg-fc7f
+    - https://github.com/langchain-ai/langchain/commit/c4b6ba254e1a49ed91f2e268e6484011c540542a
+    - https://github.com/langchain-ai/langchain/commit/fa7789d6c21222b85211755d822ef698d3b34e00
+    - https://nvd.nist.gov/vuln/detail/CVE-2025-65106
+    - https://github.com/advisories/GHSA-6qv9-48xg-fc7f
+metadata_provenance:
+  ghsa: ghsa-sync
+  cve: ghsa-sync
+  cwe: ghsa-sync
+tags:
+  category: prompt-injection
+  scan_target: runtime
+  confidence: high
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+detection:
+  condition: any
+  false_positives: []
+  conditions:
+    - field: content
+      operator: regex
+      value: (?i)from string import Formatter
+      description: Literal first line of advisory PoC code block
+    - field: content
+      operator: regex
+      value: (?i)# User controls the template string itself
+      description: Literal first line of advisory PoC code block
+    - field: content
+      operator: regex
+      value: (?i)# Template is hardcoded - users only control variables
+      description: Literal first line of advisory PoC code block
+    - field: content
+      operator: regex
+      value: (?i)# After fix - these are rejected at template creation time
+      description: Literal first line of advisory PoC code block
+    - field: content
+      operator: regex
+      value: (?i)# After hardening - attribute access returns empty string
+      description: Literal first line of advisory PoC code block
+    - field: content
+      operator: regex
+      value: (?i)\bor create prompt\b
+      description: CLI invocation pattern from advisory text
+response:
+  actions:
+    - alert
+  notify:
+    - security_team
+test_cases:
+  true_positives:
+    - input: from string import Formatter
+      expected: triggered
+      description: Auto-extracted via code-block (poc-grounded)
+    - input: '# User controls the template string itself'
+      expected: triggered
+      description: Auto-extracted via code-block (poc-grounded)
+    - input: '# Template is hardcoded - users only control variables'
+      expected: triggered
+      description: Auto-extracted via code-block (poc-grounded)
+    - input: '# After fix - these are rejected at template creation time'
+      expected: triggered
+      description: Auto-extracted via code-block (poc-grounded)
+    - input: '# After hardening - attribute access returns empty string'
+      expected: triggered
+      description: Auto-extracted via code-block (poc-grounded)
+    - input: or create prompt
+      expected: triggered
+      description: Auto-extracted via cli-command (prose-grounded)
+  true_negatives:
+    - input: Please summarize the attached document and email me the result.
+      expected: not_triggered
+      description: Benign agent traffic sample 1
+    - input: What is the weather forecast for Taipei tomorrow?
+      expected: not_triggered
+      description: Benign agent traffic sample 2
+    - input: Translate this paragraph from English to Japanese.
+      expected: not_triggered
+      description: Benign agent traffic sample 3
+    - input: Fetch the latest commit messages from the upstream branch.
+      expected: not_triggered
+      description: Benign agent traffic sample 4
+    - input: Schedule a 30-minute meeting with the design team next Tuesday.
+      expected: not_triggered
+      description: Benign agent traffic sample 5
