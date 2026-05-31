@@ -1,23 +1,22 @@
-## Daily Scan Summary (2026-05-30)
+## Daily Scan Summary (2026-05-31)
 - Scanned: 50 packages
-- CRITICAL: 6
-- HIGH: 1
-- CLEAN/LOW: 37
+- CRITICAL: 2
+- HIGH: 4
+- CLEAN/LOW: 40
 
 ### Flagged Packages:
-- [CRITICAL] @charlie.act7/canvas-mcp-server (score: 90)
-- [CRITICAL] @revealui/mcp (score: 90)
-- [CRITICAL] @rokealvo/jira-mcp (score: 100)
-- [CRITICAL] @roomi-fields/notebooklm-mcp (score: 85)
-- [HIGH] @runtimescope/mcp-server (score: 40)
-- [CRITICAL] @rushdb/mcp-server (score: 100)
-- [CRITICAL] @sanctuary-framework/mcp-server (score: 100)
+- [HIGH] @boundless-oss/atlas (score: 55)
+- [HIGH] @champz-llc/legends-mcp-server (score: 55)
+- [HIGH] @openephemeris/mcp-server (score: 45)
+- [HIGH] @progress/kendo-angular-mcp (score: 50)
+- [CRITICAL] @secondlayer/mcp (score: 100)
+- [CRITICAL] @sellable/mcp (score: 95)
 
 ### Cumulative:
-- Total scanned: 2360
-  - CLEAN: 1411
-  - CRITICAL: 272
+- Total scanned: 2410
+  - CLEAN: 1444
+  - CRITICAL: 274
   - ERROR: 3
-  - HIGH: 186
-  - LOW: 254
-  - MEDIUM: 234
+  - HIGH: 190
+  - LOW: 261
+  - MEDIUM: 238
