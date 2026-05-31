@@ -692,7 +692,7 @@ function cmdInit(options: Record<string, string>): void {
     // Empty matcher means "match all tools" in Claude Code hooks —
     // this is intentional so every tool call is scanned against ATR rules.
     matcher: '',
-    command: 'npx agent-threat-rules guard',
+    hooks: [{ type: 'command', command: 'npx agent-threat-rules guard' }],
   };
 
   // Determine target settings file
@@ -736,14 +736,30 @@ function cmdInit(options: Record<string, string>): void {
   }
   const preToolUse = hooks['PreToolUse'] as Array<Record<string, unknown>>;
 
-  // Check if hook is already configured (validate each element is an object before accessing .command)
-  const alreadyConfigured = preToolUse.some(
-    (entry: unknown) =>
-      typeof entry === 'object' &&
-      entry !== null &&
-      !Array.isArray(entry) &&
-      (entry as Record<string, unknown>)['command'] === hookEntry.command
-  );
+  // Check if the guard hook is already configured. The command lives inside
+  // each entry's nested `hooks` array; we also tolerate the legacy flat
+  // `command` field so re-running init stays idempotent on older configs.
+  const hasGuardCommand = (entry: unknown): boolean => {
+    if (typeof entry !== 'object' || entry === null || Array.isArray(entry)) {
+      return false;
+    }
+    const e = entry as Record<string, unknown>;
+    if (e['command'] === 'npx agent-threat-rules guard') {
+      return true;
+    }
+    const nested = e['hooks'];
+    return (
+      Array.isArray(nested) &&
+      nested.some(
+        (h) =>
+          typeof h === 'object' &&
+          h !== null &&
+          (h as Record<string, unknown>)['command'] === 'npx agent-threat-rules guard'
+      )
+    );
+  };
+
+  const alreadyConfigured = preToolUse.some(hasGuardCommand);
 
   if (alreadyConfigured) {
     console.log(`${GREEN}ATR guard hook already configured${RESET} in ${settingsPath}`);
