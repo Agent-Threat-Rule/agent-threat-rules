@@ -81,6 +81,13 @@ const ECOSYSTEM_FILTER = opt("--ecosystem");
 const ADVISORY_FILTER = opt("--advisory");
 const LIMIT = opt("--limit") ? parseInt(opt("--limit")!, 10) : Infinity;
 const VERBOSE = flag("--verbose");
+const NO_FIREHOSE = flag("--no-firehose");
+const FIREHOSE_WINDOW_DAYS = opt("--firehose-days")
+  ? parseInt(opt("--firehose-days")!, 10)
+  : 90;
+// Ecosystems large enough that a reviewed-advisory firehose is worth it. The
+// small ecosystems (maven/nuget/go/rubygems) stay allowlist-only.
+const FIREHOSE_ECOSYSTEMS = ["pip", "npm"];
 
 // AI AGENT package allowlist by ecosystem.
 // SCOPE: ATR detects AGENT-runtime threats (prompt injection, tool/MCP
@@ -538,6 +545,84 @@ ${indentForLiteralBlock(adv.description ?? "(no body provided by GHSA API)", "  
 `;
 }
 
+// Package-name signal for the firehose: a name that looks like an agent
+// framework / agent infra by convention. Lets NEW agent packages (not in the
+// curated allowlist) self-onboard. Bounded tokens avoid matching substrings
+// inside unrelated names; agentRelevance() is still the final gate.
+const AGENT_PACKAGE_RX =
+  /(?:^|[-_/@.])(?:langchain|langgraph|llama[-_]?index|llamaindex|mcp|fastmcp|modelcontextprotocol|crew[-_]?ai|autogen|pyautogen|semantic[-_]kernel|pydantic[-_]ai|haystack|dspy|embedchain|litellm|guardrails?|llm[-_]?guard|nemoguardrails|agentscope|smolagents|agno|llm|agent|genai|rag|copilot)(?:[-_/@.]|$)/i;
+
+export function looksAgentPackage(adv: GhsaAdvisory): boolean {
+  return (adv.vulnerabilities ?? []).some((v) =>
+    AGENT_PACKAGE_RX.test(v.package?.name ?? ""),
+  );
+}
+
+// Unambiguous agent-threat phrases for firehose description matching. Stricter
+// than agentRelevance's keyword set (which includes generic ssrf/rce/sql that
+// match almost any web package) — these terms specifically indicate an AGENT
+// context. Without this the firehose keeps thousands of unrelated pip/npm CVEs.
+const FIREHOSE_DESC_RX =
+  /(prompt[- ]?injection|system prompt|jailbreak|tool[- ]?(?:call|calling|poisoning)|model context protocol|\bmcp\b|agentic|\bai[- ]agent|\bllm[- ]agent|agent framework|retrieval[- ]augmented|langchain|llama[- ]?index|semantic[- ]kernel|autogen|crew[- ]?ai|fastmcp|litellm)/i;
+
+// Firehose keep rule: only process an advisory whose PACKAGE NAME looks like an
+// agent package, OR whose text carries an unambiguous agent-threat phrase. The
+// shared processAdvisory pipeline (agentRelevance) then finalizes within that
+// narrowed set. Deliberately does NOT use agentRelevance here — its generic-CWE
+// acceptance would let in every injection/XSS CVE in the ecosystem.
+export function firehoseKeep(adv: GhsaAdvisory): boolean {
+  if (looksAgentPackage(adv)) return true;
+  return FIREHOSE_DESC_RX.test(`${adv.summary ?? ""} ${adv.description ?? ""}`);
+}
+
+function parseNextLink(link: string | null): string | null {
+  if (!link) return null;
+  const m = link.match(/<([^>]+)>;\s*rel="next"/);
+  return m ? m[1] : null;
+}
+
+// Pull the reviewed-advisory firehose for an ecosystem (NO affects= filter),
+// newest-first, bounded by publish date. Cursor-paginated via the Link header.
+async function ghsaFirehose(
+  ecosystem: string,
+  sinceISO: string,
+  maxPages = 40,
+): Promise<GhsaAdvisory[]> {
+  const headers: Record<string, string> = {
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+    "User-Agent": "atr-sync-ghsa",
+  };
+  if (TOKEN) headers.Authorization = `Bearer ${TOKEN}`;
+  const out: GhsaAdvisory[] = [];
+  let url: string | null =
+    `https://api.github.com/advisories?ecosystem=${encodeURIComponent(ecosystem)}` +
+    `&type=reviewed&sort=published&direction=desc&per_page=100`;
+  let pages = 0;
+  while (url && pages < maxPages) {
+    pages += 1;
+    const resp = await fetch(url, { headers });
+    if (resp.status === 403 || resp.status === 429) {
+      console.error(`firehose rate limited on ${ecosystem}`);
+      process.exit(2);
+    }
+    if (!resp.ok) break;
+    const batch = (await resp.json()) as GhsaAdvisory[];
+    if (!Array.isArray(batch) || batch.length === 0) break;
+    let reachedSince = false;
+    for (const adv of batch) {
+      if (adv.published_at && adv.published_at < sinceISO) {
+        reachedSince = true;
+        continue;
+      }
+      out.push(adv);
+    }
+    if (reachedSince) break; // sorted desc — everything older is out of window
+    url = parseNextLink(resp.headers.get("link"));
+  }
+  return out;
+}
+
 async function main(): Promise<void> {
   if (!existsSync(PROPOSALS_DIR)) mkdirSync(PROPOSALS_DIR, { recursive: true });
 
@@ -550,6 +635,8 @@ async function main(): Promise<void> {
     advisories_withdrawn: 0,
     advisories_filtered_not_agent: 0,
     advisories_already_known: 0,
+    firehose_advisories_seen: 0,
+    firehose_new: 0,
     new_proposals: 0,
     new_detection_ready: 0,
     new_tracking_only: 0,
@@ -560,12 +647,68 @@ async function main(): Promise<void> {
     ? [ECOSYSTEM_FILTER]
     : Object.keys(AI_PACKAGES);
   const sinceDate = SINCE ? new Date(SINCE) : null;
+  const seenIds = new Set<string>();
   let writtenCount = 0;
 
+  // Shared per-advisory pipeline. Both the curated allowlist pass and the
+  // firehose discovery pass feed advisories through this single gate, so
+  // dedup (seenIds + known index) and the agent-relevance filter are applied
+  // uniformly regardless of how the advisory was found.
+  const processAdvisory = (adv: GhsaAdvisory): void => {
+    if (writtenCount >= LIMIT) return;
+    summary.advisories_seen += 1;
+    if (ADVISORY_FILTER && adv.ghsa_id !== ADVISORY_FILTER) return;
+    if (seenIds.has(adv.ghsa_id)) return;
+    seenIds.add(adv.ghsa_id);
+    if (adv.withdrawn_at) {
+      summary.advisories_withdrawn += 1;
+      return;
+    }
+    if (sinceDate && new Date(adv.published_at) < sinceDate) return;
+
+    // Agent-relevance gate: ATR is an AGENT standard — drop real bugs that are
+    // not agent-runtime threats (no injection/exec/exfil signal).
+    const relevance = agentRelevance(adv);
+    if (!relevance.relevant) {
+      summary.advisories_filtered_not_agent += 1;
+      if (VERBOSE)
+        console.error(`  skip (not agent) ${adv.ghsa_id}: ${relevance.reason}`);
+      return;
+    }
+
+    const cveId = adv.cve_id ?? null;
+    if (cveId && known.cves.has(cveId)) {
+      summary.advisories_already_known += 1;
+      return;
+    }
+    if (known.ghsas.has(adv.ghsa_id)) {
+      summary.advisories_already_known += 1;
+      return;
+    }
+    const outPath = join(PROPOSALS_DIR, `${adv.ghsa_id}.proposal.yaml`);
+    if (existsSync(outPath) && !FORCE) {
+      summary.advisories_already_known += 1;
+      return;
+    }
+
+    const triage = isDetectionReady(adv);
+    const yamlBody = renderProposal(adv);
+    summary.new_proposals += 1;
+    if (triage.ready) summary.new_detection_ready += 1;
+    else summary.new_tracking_only += 1;
+    if (WRITE) {
+      writeFileSync(outPath, yamlBody, "utf-8");
+      summary.written_files.push(outPath.replace(REPO_ROOT + "/", ""));
+    } else if (VERBOSE) {
+      console.log(`would write ${outPath}`);
+    }
+    writtenCount += 1;
+  };
+
+  // Pass 1 — curated allowlist: guaranteed coverage of known agent packages.
   for (const ecosystem of ecosystems) {
     summary.ecosystems_scanned.push(ecosystem);
-    const pkgs = AI_PACKAGES[ecosystem] ?? [];
-    for (const pkg of pkgs) {
+    for (const pkg of AI_PACKAGES[ecosystem] ?? []) {
       if (writtenCount >= LIMIT) break;
       summary.packages_queried += 1;
       let advs: GhsaAdvisory[];
@@ -576,57 +719,38 @@ async function main(): Promise<void> {
         continue;
       }
       if (VERBOSE) console.error(`${ecosystem}/${pkg}: ${advs.length} adv`);
+      for (const adv of advs) processAdvisory(adv);
+    }
+  }
+
+  // Pass 2 — firehose discovery: pull the reviewed-advisory stream for the big
+  // ecosystems (NO affects= filter) and keep anything that looks like an agent
+  // package or carries an agent-threat signal, so NEW packages outside the
+  // allowlist self-onboard with their fresh, PoC-rich advisory.
+  if (!NO_FIREHOSE) {
+    const firehoseSince = (
+      sinceDate ?? new Date(Date.now() - FIREHOSE_WINDOW_DAYS * 86_400_000)
+    ).toISOString();
+    const firehoseEcos = FIREHOSE_ECOSYSTEMS.filter(
+      (e) => !ECOSYSTEM_FILTER || e === ECOSYSTEM_FILTER,
+    );
+    for (const ecosystem of firehoseEcos) {
+      if (writtenCount >= LIMIT) break;
+      let advs: GhsaAdvisory[];
+      try {
+        advs = await ghsaFirehose(ecosystem, firehoseSince);
+      } catch (e) {
+        console.error(`firehose failed for ${ecosystem}: ${e}`);
+        continue;
+      }
+      summary.firehose_advisories_seen += advs.length;
+      if (VERBOSE)
+        console.error(`firehose ${ecosystem}: ${advs.length} adv in ${FIREHOSE_WINDOW_DAYS}d`);
       for (const adv of advs) {
-        summary.advisories_seen += 1;
-        if (ADVISORY_FILTER && adv.ghsa_id !== ADVISORY_FILTER) continue;
-        if (adv.withdrawn_at) {
-          summary.advisories_withdrawn += 1;
-          continue;
-        }
-        if (sinceDate && new Date(adv.published_at) < sinceDate) continue;
-
-        // Agent-relevance gate: drop advisories that are real bugs but not
-        // agent-runtime threats (e.g. an ML-kernel CHECK-fail that slipped in
-        // via an allowlisted package's transitive advisory). ATR is an AGENT
-        // standard — a CVE with no injection/exec/exfil signal is noise here.
-        const relevance = agentRelevance(adv);
-        if (!relevance.relevant) {
-          summary.advisories_filtered_not_agent += 1;
-          if (VERBOSE)
-            console.error(`  skip (not agent) ${adv.ghsa_id}: ${relevance.reason}`);
-          continue;
-        }
-
-        const cveId = adv.cve_id ?? null;
-        if (cveId && known.cves.has(cveId)) {
-          summary.advisories_already_known += 1;
-          continue;
-        }
-        if (known.ghsas.has(adv.ghsa_id)) {
-          summary.advisories_already_known += 1;
-          continue;
-        }
-
-        const outName = `${adv.ghsa_id}.proposal.yaml`;
-        const outPath = join(PROPOSALS_DIR, outName);
-        if (existsSync(outPath) && !FORCE) {
-          summary.advisories_already_known += 1;
-          continue;
-        }
-
-        const triage = isDetectionReady(adv);
-        const yamlBody = renderProposal(adv);
-        summary.new_proposals += 1;
-        if (triage.ready) summary.new_detection_ready += 1;
-        else summary.new_tracking_only += 1;
-
-        if (WRITE) {
-          writeFileSync(outPath, yamlBody, "utf-8");
-          summary.written_files.push(outPath.replace(REPO_ROOT + "/", ""));
-        } else if (VERBOSE) {
-          console.log(`would write ${outPath}`);
-        }
-        writtenCount += 1;
+        if (seenIds.has(adv.ghsa_id) || !firehoseKeep(adv)) continue;
+        const before = summary.new_proposals;
+        processAdvisory(adv);
+        if (summary.new_proposals > before) summary.firehose_new += 1;
       }
     }
   }
@@ -640,6 +764,8 @@ async function main(): Promise<void> {
       advisories_filtered_not_agent: summary.advisories_filtered_not_agent,
       advisories_seen: summary.advisories_seen,
       packages_queried: summary.packages_queried,
+      firehose_advisories_seen: summary.firehose_advisories_seen,
+      firehose_new: summary.firehose_new,
     })}`,
   );
 }
