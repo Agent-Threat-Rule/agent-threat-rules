@@ -46,6 +46,13 @@ const RESEARCH_MENTIONS_FILE = join(
   "data/research-mentions/corpus.jsonl",
 );
 const BENIGN_EXTENDED_DIR = join(REPO_ROOT, "data/benign-corpus-extended");
+// Benign SOURCE CODE corpus. The other benign corpora are prose (skill
+// markdown, arxiv abstracts, package descriptions), so a rule whose pattern is
+// a benign code line — e.g. `import random`, `from bs4 import BeautifulSoup` —
+// passes them all yet false-positives on real code. This corpus is normal
+// source code (common imports + normal usage of the allowlisted agent
+// libraries) that detection rules must NEVER match.
+const BENIGN_CODE_DIR = join(REPO_ROOT, "data/benign-code");
 const RULES_DIR = join(REPO_ROOT, "rules");
 
 interface Failure {
@@ -335,6 +342,66 @@ async function checkExtendedBenignFP(
 }
 
 /**
+ * Load the benign-code corpus from data/benign-code/*.jsonl. Same
+ * {source, source_id, text} shape as the extended benign corpus, but each
+ * `text` is real source code (imports + normal library usage).
+ */
+function loadBenignCode(): ExtendedBenignSample[] {
+  if (!existsSync(BENIGN_CODE_DIR)) return [];
+  const out: ExtendedBenignSample[] = [];
+  for (const entry of readdirSync(BENIGN_CODE_DIR)) {
+    if (!entry.endsWith(".jsonl")) continue;
+    let raw: string;
+    try {
+      raw = readFileSync(join(BENIGN_CODE_DIR, entry), "utf-8");
+    } catch {
+      continue;
+    }
+    for (const line of raw.split("\n")) {
+      const t = line.trim();
+      if (!t) continue;
+      try {
+        out.push(JSON.parse(t) as ExtendedBenignSample);
+      } catch {
+        continue;
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * Check 3c: scan the benign-CODE corpus. This is the hard gate that the
+ * import-FP class (e.g. a rule whose pattern is `import random`) failed —
+ * the prose corpora never contained source code. A new rule matching ANY
+ * benign-code sample is a false positive and the rule is rejected, routing
+ * the proposal back to human review instead of letting it reach main.
+ */
+async function checkBenignCodeFP(
+  engine: ATREngine,
+  newRuleIds: Set<string>,
+): Promise<Map<string, string[]>> {
+  const fps = new Map<string, string[]>();
+  const samples = loadBenignCode();
+  if (samples.length === 0) {
+    console.error(
+      `[safety-gate] benign-code corpus empty (${BENIGN_CODE_DIR}) — skipping benign-code FP check`,
+    );
+    return fps;
+  }
+  for (const s of samples) {
+    const label = `${s.source}:${s.source_id.slice(0, 40)}`;
+    for (const id of matchAllRuleIds(engine, s.text)) {
+      if (newRuleIds.has(id)) {
+        if (!fps.has(id)) fps.set(id, []);
+        fps.get(id)!.push(label);
+      }
+    }
+  }
+  return fps;
+}
+
+/**
  * Check 4: scan the research-mention corpus. Same shape as Check 3,
  * but each sample is a curated piece of text that MENTIONS attacks
  * without being them — academic abstracts, security blogs, READMEs,
@@ -560,6 +627,16 @@ async function main(): Promise<void> {
       failures.push({
         file: fileToId.get(id) ?? id,
         reason: `extended-benign FP on ${samples.length} sample(s): ${samples.slice(0, 3).join(", ")}${samples.length > 3 ? ", ..." : ""}`,
+      });
+    }
+
+    // Check 3c — benign-CODE corpus FP (imports + normal library usage).
+    // Hard gate against the import-FP class that slipped through before.
+    const codeFps = await checkBenignCodeFP(engine, newRuleIds);
+    for (const [id, samples] of codeFps) {
+      failures.push({
+        file: fileToId.get(id) ?? id,
+        reason: `benign-CODE FP on ${samples.length} sample(s): ${samples.slice(0, 3).join(", ")}${samples.length > 3 ? ", ..." : ""}`,
       });
     }
 

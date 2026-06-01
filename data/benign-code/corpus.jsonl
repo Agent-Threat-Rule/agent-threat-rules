@@ -1,0 +1,51 @@
+{"source": "py-stdlib", "source_id": "std-00", "text": "import random\nseed = random.randint(0, 100)\nchoice = random.choice(items)"}
+{"source": "py-stdlib", "source_id": "std-01", "text": "import os\npath = os.path.join(base, name)\nkey = os.environ.get('API_KEY')"}
+{"source": "py-stdlib", "source_id": "std-02", "text": "import sys\nsys.path.append('./lib')\nprint(sys.argv[1:])"}
+{"source": "py-stdlib", "source_id": "std-03", "text": "import json\ndata = json.loads(payload)\ntext = json.dumps(obj, indent=2)"}
+{"source": "py-stdlib", "source_id": "std-04", "text": "import re\nm = re.match(r'\\d+', s)\nout = re.sub(r'\\s+', ' ', s)"}
+{"source": "py-stdlib", "source_id": "std-05", "text": "import math\narea = math.pi * r ** 2"}
+{"source": "py-stdlib", "source_id": "std-06", "text": "import time\nstart = time.time()\ntime.sleep(0.5)"}
+{"source": "py-stdlib", "source_id": "std-07", "text": "import logging\nlogger = logging.getLogger(__name__)\nlogger.info('ready')"}
+{"source": "py-stdlib", "source_id": "std-08", "text": "import datetime\nnow = datetime.datetime.utcnow()"}
+{"source": "py-stdlib", "source_id": "std-09", "text": "import hashlib\nh = hashlib.sha256(data).hexdigest()"}
+{"source": "py-stdlib", "source_id": "std-10", "text": "import base64\nenc = base64.b64encode(raw).decode()"}
+{"source": "py-stdlib", "source_id": "std-11", "text": "from string import Formatter\nfields = [f for _, f, _, _ in Formatter().parse(template) if f]"}
+{"source": "py-stdlib", "source_id": "std-12", "text": "from typing import Any, Dict, List, Optional\ndef f(x: Dict[str, Any]) -> Optional[int]:\n    return x.get('n')"}
+{"source": "py-stdlib", "source_id": "std-13", "text": "from collections import defaultdict, Counter\ncounts = Counter(words)"}
+{"source": "py-stdlib", "source_id": "std-14", "text": "from dataclasses import dataclass\n@dataclass\nclass Config:\n    name: str"}
+{"source": "py-stdlib", "source_id": "std-15", "text": "from pathlib import Path\nfor p in Path('.').glob('*.yaml'):\n    print(p)"}
+{"source": "py-stdlib", "source_id": "std-16", "text": "import asyncio\nasync def main():\n    await asyncio.sleep(1)\nasyncio.run(main())"}
+{"source": "py-stdlib", "source_id": "std-17", "text": "from bs4 import BeautifulSoup as Soup\nsoup = Soup(html, 'html.parser')\ntitle = soup.title.string"}
+{"source": "py-stdlib", "source_id": "std-18", "text": "import requests\nresp = requests.get(url, timeout=10)\nresp.raise_for_status()"}
+{"source": "py-ai-lib", "source_id": "ai-00", "text": "from langchain_core.load import load\nobj = load(serialized, valid_namespaces=['langchain'])"}
+{"source": "py-ai-lib", "source_id": "ai-01", "text": "from langchain_core.prompts import ChatPromptTemplate\nprompt = ChatPromptTemplate.from_messages([('system', 'You are helpful.')])"}
+{"source": "py-ai-lib", "source_id": "ai-02", "text": "from langchain.chains import LLMChain\nchain = LLMChain(llm=llm, prompt=prompt)\nresult = chain.invoke({'q': question})"}
+{"source": "py-ai-lib", "source_id": "ai-03", "text": "from langchain_community.document_loaders import WebBaseLoader\ndocs = WebBaseLoader(url).load()"}
+{"source": "py-ai-lib", "source_id": "ai-04", "text": "from langchain_core.runnables import RunnablePassthrough\nchain = RunnablePassthrough() | model | parser"}
+{"source": "py-ai-lib", "source_id": "ai-05", "text": "from pydantic_ai import Agent, ImageUrl\nagent = Agent('openai:gpt-4o')\nresult = agent.run_sync(['Describe', ImageUrl(url=image)])"}
+{"source": "py-ai-lib", "source_id": "ai-06", "text": "from pydantic import BaseModel, Field\nclass Out(BaseModel):\n    answer: str = Field(description='the answer')"}
+{"source": "py-ai-lib", "source_id": "ai-07", "text": "from fastmcp import FastMCP\nmcp = FastMCP('demo')\n@mcp.tool()\ndef add(a: int, b: int) -> int:\n    return a + b"}
+{"source": "py-ai-lib", "source_id": "ai-08", "text": "from mcp.server import Server\nfrom mcp.server.stdio import stdio_server\nserver = Server('example')"}
+{"source": "py-ai-lib", "source_id": "ai-09", "text": "from mcp import ClientSession\nasync with ClientSession(read, write) as session:\n    await session.initialize()"}
+{"source": "py-ai-lib", "source_id": "ai-10", "text": "from llama_index.core import VectorStoreIndex, SimpleDirectoryReader\ndocs = SimpleDirectoryReader('data').load_data()\nindex = VectorStoreIndex.from_documents(docs)"}
+{"source": "py-ai-lib", "source_id": "ai-11", "text": "from openai import OpenAI\nclient = OpenAI()\nresp = client.chat.completions.create(model='gpt-4o', messages=msgs)"}
+{"source": "py-ai-lib", "source_id": "ai-12", "text": "from anthropic import Anthropic\nclient = Anthropic()\nmsg = client.messages.create(model='claude-3-5-sonnet', max_tokens=1024, messages=msgs)"}
+{"source": "py-ai-lib", "source_id": "ai-13", "text": "from crewai import Agent, Task, Crew\nagent = Agent(role='researcher', goal='find facts', backstory='expert')"}
+{"source": "py-ai-lib", "source_id": "ai-14", "text": "from haystack import Pipeline\npipe = Pipeline()\npipe.add_component('retriever', retriever)"}
+{"source": "py-ai-lib", "source_id": "ai-15", "text": "import dspy\nlm = dspy.LM('openai/gpt-4o-mini')\ndspy.configure(lm=lm)"}
+{"source": "py-ai-lib", "source_id": "ai-16", "text": "from guardrails import Guard\nguard = Guard().use(ValidLength(min=1, max=100))"}
+{"source": "py-ai-lib", "source_id": "ai-17", "text": "from langsmith import Client\nclient = Client()\nclient.create_run(name='trace', run_type='chain')"}
+{"source": "js-ai-lib", "source_id": "js-00", "text": "import { load } from \"@langchain/core/load\";\nconst obj = load(serialized);"}
+{"source": "js-ai-lib", "source_id": "js-01", "text": "import { ChatOpenAI } from \"@langchain/openai\";\nconst model = new ChatOpenAI({ model: \"gpt-4o\" });"}
+{"source": "js-ai-lib", "source_id": "js-02", "text": "import { Client } from \"@modelcontextprotocol/sdk/client/index.js\";\nconst client = new Client({ name: \"app\", version: \"1.0.0\" });"}
+{"source": "js-ai-lib", "source_id": "js-03", "text": "import { Server } from \"@modelcontextprotocol/sdk/server/index.js\";\nconst server = new Server({ name: \"demo\", version: \"1.0.0\" });"}
+{"source": "js-ai-lib", "source_id": "js-04", "text": "import express from \"express\";\nconst app = express();\napp.use(express.json());"}
+{"source": "js-ai-lib", "source_id": "js-05", "text": "import { z } from \"zod\";\nconst schema = z.object({ name: z.string() });"}
+{"source": "js-ai-lib", "source_id": "js-06", "text": "import OpenAI from \"openai\";\nconst openai = new OpenAI();\nconst r = await openai.chat.completions.create({ model, messages });"}
+{"source": "js-ai-lib", "source_id": "js-07", "text": "import { generateText } from \"ai\";\nconst { text } = await generateText({ model, prompt });"}
+{"source": "js-ai-lib", "source_id": "js-08", "text": "import Anthropic from \"@anthropic-ai/sdk\";\nconst client = new Anthropic();"}
+{"source": "benign-config", "source_id": "cfg-00", "text": "url = \"http://127.0.0.1:8000/mcp\"  # local dev MCP endpoint"}
+{"source": "benign-config", "source_id": "cfg-01", "text": "BASE_URL = \"http://localhost:8000/.well-known/oauth-protected-resource\"  # standard OAuth metadata"}
+{"source": "benign-config", "source_id": "cfg-02", "text": "self._jwt_issuer: JWTIssuer = JWTIssuer(key=signing_key, issuer=\"auth\")  # library internal"}
+{"source": "benign-config", "source_id": "cfg-03", "text": "MCP_SERVER = \"http://localhost:3000/sse\"  # default local server"}
+{"source": "benign-config", "source_id": "cfg-04", "text": "health = requests.get(\"http://127.0.0.1:8080/health\").json()"}
