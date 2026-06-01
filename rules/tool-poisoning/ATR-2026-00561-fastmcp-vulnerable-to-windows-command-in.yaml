@@ -1,0 +1,99 @@
+title: FastMCP vulnerable to windows command injection in FastMCP Cursor installer via server_name
+id: ATR-2026-00561
+rule_version: 1
+status: experimental
+description: 'GitHub Security Advisory GHSA-rj5c-58rq-j5g5 (CVE-2025-62801). FastMCP vulnerable to windows command injection in FastMCP Cursor installer via server_name
+
+  '
+author: ATR Community (GHSA sync)
+date: 2026/06/01
+schema_version: '0.1'
+detection_tier: pattern
+maturity: experimental
+severity: critical
+references:
+  cve:
+  - CVE-2025-62801
+  cwe:
+  - CWE-78
+  ghsa:
+  - GHSA-rj5c-58rq-j5g5
+  external:
+  - https://github.com/jlowin/fastmcp/security/advisories/GHSA-rj5c-58rq-j5g5
+  - https://nvd.nist.gov/vuln/detail/CVE-2025-62801
+  - https://github.com/advisories/GHSA-rj5c-58rq-j5g5
+metadata_provenance:
+  ghsa: ghsa-sync
+  cve: ghsa-sync
+  cwe: ghsa-sync
+tags:
+  category: tool-poisoning
+  scan_target: runtime
+  confidence: high
+agent_source:
+  type: llm_io
+  framework:
+  - any
+  provider:
+  - any
+detection:
+  condition: any
+  false_positives: []
+  conditions:
+  - field: content
+    operator: regex
+    value: (?i)FastMCP\s*\(\s*name\s*=\s*["'][^"']*[&|><^]
+    description: Detects FastMCP initialization with server_name containing Windows command metacharacters (&, |, >, <, ^) that would be injected into cursor:// deeplinks and executed via cmd.exe /c start
+  - field: content
+    operator: regex
+    value: (?i)generate_cursor_deeplink\s*\([^)]*[&|><^]
+    description: Detects direct calls to generate_cursor_deeplink with arguments containing shell metacharacters that bypass proper URL encoding
+  - field: content
+    operator: regex
+    value: (?i)open_deeplink\s*\([^)]*(?:cursor://[^)]*[&|><^]|shell\s*=\s*True)
+    description: Detects open_deeplink calls with shell=True on Windows combined with unescaped cursor:// URLs containing command separators
+response:
+  actions:
+  - alert
+  notify:
+  - security_team
+test_cases:
+  true_positives:
+  - input: mcp = FastMCP(name="test&calc")
+    expected: triggered
+    description: LLM-authored attack sample 1
+  - input: mcp = FastMCP(name='service|whoami')
+    expected: triggered
+    description: LLM-authored attack sample 2
+  - input: mcp = FastMCP(name="backup>C:\\output.txt")
+    expected: triggered
+    description: LLM-authored attack sample 3
+  - input: FastMCP(name="foo^bar&cmd /c del /s C:\\")
+    expected: triggered
+    description: LLM-authored attack sample 4
+  - input: generate_cursor_deeplink('app&taskkill /f', version)
+    expected: triggered
+    description: LLM-authored attack sample 5
+  - input: open_deeplink(f'cursor://install?name={user_input}&cmd')
+    expected: triggered
+    description: LLM-authored attack sample 6
+  true_negatives:
+  - input: mcp = FastMCP(name="my-service-v1")
+    expected: not_triggered
+    description: LLM-authored benign sample 1
+  - input: mcp = FastMCP(name='calculator-tool')
+    expected: not_triggered
+    description: LLM-authored benign sample 2
+  - input: mcp = FastMCP(name="weather_api_v2.0")
+    expected: not_triggered
+    description: LLM-authored benign sample 3
+  - input: server_name = 'example_mcp'; FastMCP(name=server_name)
+    expected: not_triggered
+    description: LLM-authored benign sample 4
+  - input: generate_cursor_deeplink(safe_name.replace(' ', '_'), '1.0')
+    expected: not_triggered
+    description: LLM-authored benign sample 5
+_llm_authored:
+  model: claude-haiku-4-5-20251001
+  generalization_note: 'This rule detects Windows command injection via FastMCP server_name by matching FastMCP initialization and deeplink generation functions where shell metacharacters (&, |, >, <, ^) appear in name parameters. It generalizes beyond the literal ''test&calc'' PoC to catch any attempt to inject cmd.exe separators or redirection operators into server names that will be embedded in cursor:// URIs and executed with shell=True on Windows. The three conditions target different injection points: constructor, function call, and shell execution context.'
+  note: Generation-time LLM authoring; verified by deterministic gate. Runtime detection is pure regex. Human review required before merge.

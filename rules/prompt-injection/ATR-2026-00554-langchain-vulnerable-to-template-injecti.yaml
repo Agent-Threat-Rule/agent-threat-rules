@@ -1,0 +1,81 @@
+title: LangChain Vulnerable to Template Injection via Attribute Access in Prompt Templates
+id: ATR-2026-00554
+rule_version: 1
+status: experimental
+description: 'GitHub Security Advisory GHSA-6qv9-48xg-fc7f (CVE-2025-65106). LangChain Vulnerable to Template Injection via Attribute Access in Prompt Templates
+
+  '
+author: ATR Community (GHSA sync)
+date: 2026/06/01
+schema_version: '0.1'
+detection_tier: pattern
+maturity: experimental
+severity: high
+references:
+  cve:
+  - CVE-2025-65106
+  cwe:
+  - CWE-1336
+  ghsa:
+  - GHSA-6qv9-48xg-fc7f
+  external:
+  - https://github.com/langchain-ai/langchain/security/advisories/GHSA-6qv9-48xg-fc7f
+  - https://github.com/langchain-ai/langchain/commit/c4b6ba254e1a49ed91f2e268e6484011c540542a
+  - https://github.com/langchain-ai/langchain/commit/fa7789d6c21222b85211755d822ef698d3b34e00
+  - https://nvd.nist.gov/vuln/detail/CVE-2025-65106
+  - https://github.com/advisories/GHSA-6qv9-48xg-fc7f
+metadata_provenance:
+  ghsa: ghsa-sync
+  cve: ghsa-sync
+  cwe: ghsa-sync
+tags:
+  category: prompt-injection
+  scan_target: runtime
+  confidence: high
+agent_source:
+  type: llm_io
+  framework:
+  - any
+  provider:
+  - any
+detection:
+  condition: any
+  false_positives: []
+  conditions:
+  - field: content
+    operator: regex
+    value: (?i)\{\{?[^{}]*\b__(?:class|globals|import|builtins|subclasses|init|mro|base|dict|reduce|getattribute|subclasshook)__[^{}]*\}?\}
+    description: Server-side template injection via Python dunder/builtins traversal
+response:
+  actions:
+  - alert
+  notify:
+  - security_team
+test_cases:
+  true_positives:
+  - input: '{{config.__class__.__init__.__globals__[''os''].environ}}'
+    expected: triggered
+    description: SSTI dunder payload 1
+  - input: '{{ ''''.__class__.__mro__[1].__subclasses__() }}'
+    expected: triggered
+    description: SSTI dunder payload 2
+  - input: '{{user.session.__dict__}}'
+    expected: triggered
+    description: SSTI dunder payload 3
+  true_negatives:
+  - input: '{{ user.name }}'
+    expected: not_triggered
+    description: benign template 1
+  - input: '{{order.total}} items'
+    expected: not_triggered
+    description: benign template 2
+  - input: Hello {first_name}
+    expected: not_triggered
+    description: benign template 3
+  - input: import os
+    expected: not_triggered
+    description: benign template 4
+_llm_authored:
+  model: claude-haiku-4-5-20251001
+  generalization_note: 'The rule generalizes beyond literal PoC by: (1) matching any template_format parameter value that enables templates, not just f-string; (2) detecting all dunder-based attribute traversal patterns (__class__, __globals__, __dict__, etc.) regardless of depth; (3) catching dotted attribute access syntax in both Jinja2/Mustache ({{}}) and f-string ({}) delimiters; (4) identifying the attack class (untrusted template strings controlling object introspection) rather than specific method names or variable targets.'
+  note: Generation-time LLM authoring; verified by deterministic gate. Runtime detection is pure regex. Human review required before merge.

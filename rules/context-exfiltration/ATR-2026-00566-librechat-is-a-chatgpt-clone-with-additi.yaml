@@ -1,0 +1,93 @@
+title: LibreChat is a ChatGPT clone with additional features.
+id: ATR-2026-00566
+rule_version: 1
+status: experimental
+description: 'NVD-tracked CVE CVE-2026-31951 (CVSS v3 6.8 (MEDIUM)). LibreChat is a ChatGPT clone with additional features. In versions 0.8.2-rc1 through 0.8.3-rc1, user-created MCP (Model Context Protocol) servers can include arbitrary HTTP headers that undergo credential placeholder substitution. An attacker can create a malicious MCP server with headers containing `{{LIBRECHAT_OPENID_ACCESS_TOKEN}}` (and others), causing victims who call tools on that server to have their OAuth tokens exfiltrated. Version 0.8.3-rc2 fixes the issue.
+
+  '
+author: ATR Community (NVD sync)
+date: 2026/05/30
+schema_version: '0.1'
+detection_tier: pattern
+maturity: experimental
+severity: high
+references:
+  cve:
+  - CVE-2026-31951
+  cwe:
+  - CWE-200
+  external:
+  - https://github.com/danny-avila/LibreChat/security/advisories/GHSA-pmw7-gqwj-f954
+metadata_provenance:
+  cve: nvd-sync
+  cwe: nvd-sync
+tags:
+  category: context-exfiltration
+  subcategory: nvd-imported
+  scan_target: mcp
+  confidence: medium
+agent_source:
+  type: llm_io
+  framework:
+  - any
+  provider:
+  - any
+detection:
+  condition: any
+  false_positives: []
+  conditions:
+  - field: content
+    operator: regex
+    value: (?i){{\s*LIBRECHAT_[A-Z_]*(?:TOKEN|SECRET|KEY|CREDENTIAL)\s*}}
+    description: Detects credential placeholder substitution syntax in MCP server headers. Matches double-brace template literals containing LIBRECHAT_ prefixed credential/token/secret/key names, which are vulnerable to exfiltration when injected into HTTP headers.
+  - field: content
+    operator: regex
+    value: (?i)(?:headers?|HTTP[-_]?headers?|x[-_]?[a-z0-9\-]+)\s*[=:]\s*[^\n]*{{\s*[A-Z_]*(?:TOKEN|SECRET|CREDENTIAL|PASSWORD|AUTH|API[-_]?KEY)\s*}}
+    description: 'Detects HTTP header field assignments that contain credential placeholders. Matches patterns like ''headers = {...}'' or ''x-auth-token: {{...}}'' with embedded OAuth/secret tokens, which indicates header-injection exfiltration setup.'
+  - field: content
+    operator: regex
+    value: (?i)createHeader|addHeader|setHeader|registerHeader.*{{\s*(?:ACCESS|OAUTH|BEARER|JWT|TOKEN)\s*}}
+    description: Detects MCP server header creation/registration functions that embed OAuth tokens or bearer credentials via placeholder syntax, indicating dynamic credential injection into outbound requests.
+response:
+  actions:
+  - alert
+  notify:
+  - security_team
+test_cases:
+  true_positives:
+  - input: 'headers: { ''Authorization'': ''{{LIBRECHAT_OPENID_ACCESS_TOKEN}}'' }'
+    expected: triggered
+    description: LLM-authored attack sample 1
+  - input: 'httpHeaders: { ''X-Token'': ''{{LIBRECHAT_OAUTH_TOKEN}}'', ''X-Secret'': ''{{LIBRECHAT_API_SECRET}}'' }'
+    expected: triggered
+    description: LLM-authored attack sample 2
+  - input: const authHeader = `Bearer {{LIBRECHAT_ACCESS_TOKEN}}`; this.headers['auth'] = authHeader;
+    expected: triggered
+    description: LLM-authored attack sample 3
+  - input: addHeader('x-api-key', '{{LIBRECHAT_API_KEY}}'); registerServer(config);
+    expected: triggered
+    description: LLM-authored attack sample 4
+  - input: '{ headers: { ''authorization'': ''{{LIBRECHAT_OPENID_ACCESS_TOKEN}}'', ''user-agent'': ''MCP-Client'' } }'
+    expected: triggered
+    description: LLM-authored attack sample 5
+  true_negatives:
+  - input: 'import requests\nheaders = {''User-Agent'': ''MyApp/1.0''}\nresp = requests.get(url, headers=headers)'
+    expected: not_triggered
+    description: LLM-authored benign sample 1
+  - input: 'const token = process.env.API_TOKEN; const headers = {''auth'': token};'
+    expected: not_triggered
+    description: LLM-authored benign sample 2
+  - input: from string import Formatter\nfields = [f for _, f, _, _ in Formatter().parse(template) if f]
+    expected: not_triggered
+    description: LLM-authored benign sample 3
+  - input: 'httpHeaders = {''Content-Type'': ''application/json'', ''Accept'': ''text/plain''}'
+    expected: not_triggered
+    description: LLM-authored benign sample 4
+  - input: 'config = { ''headers'': {''x-custom'': ''value123''}, ''timeout'': 30 }'
+    expected: not_triggered
+    description: LLM-authored benign sample 5
+confidence: 60
+_llm_authored:
+  model: claude-haiku-4-5-20251001
+  generalization_note: The rule generalizes beyond the literal CVE-2026-31951 PoC (LIBRECHAT_OPENID_ACCESS_TOKEN) by matching any LIBRECHAT_ prefixed credential placeholder (TOKEN, SECRET, KEY, CREDENTIAL, PASSWORD, AUTH, API_KEY) in HTTP header contexts. This detects the attack class (credential exfiltration via header injection in MCP servers) across all variants, versions, and malicious server implementations, while avoiding false positives on normal header configuration and environment variable usage.
+  note: Generation-time LLM authoring; verified by deterministic gate. Runtime detection is pure regex. Human review required before merge.
