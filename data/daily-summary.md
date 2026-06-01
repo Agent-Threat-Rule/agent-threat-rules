@@ -1,22 +1,25 @@
-## Daily Scan Summary (2026-05-31)
+## Daily Scan Summary (2026-06-01)
 - Scanned: 50 packages
-- CRITICAL: 2
-- HIGH: 4
-- CLEAN/LOW: 40
+- CRITICAL: 8
+- HIGH: 1
+- CLEAN/LOW: 34
 
 ### Flagged Packages:
-- [HIGH] @boundless-oss/atlas (score: 55)
-- [HIGH] @champz-llc/legends-mcp-server (score: 55)
-- [HIGH] @openephemeris/mcp-server (score: 45)
-- [HIGH] @progress/kendo-angular-mcp (score: 50)
-- [CRITICAL] @secondlayer/mcp (score: 100)
-- [CRITICAL] @sellable/mcp (score: 95)
+- [CRITICAL] @agentrysh/mcp (score: 100)
+- [CRITICAL] @controlzero/mcp-server (score: 100)
+- [CRITICAL] @cosmocoder/mcp-web-docs (score: 70)
+- [CRITICAL] @iflow-mcp/cubie-ai-solana-mcp (score: 100)
+- [CRITICAL] @iflow-mcp/xmcp (score: 100)
+- [CRITICAL] @kodelint/kodebase-mcp (score: 100)
+- [CRITICAL] @krisdevs/xmcp (score: 100)
+- [CRITICAL] @kya-os/xmcp-i (score: 100)
+- [HIGH] @launchdarkly/js-sdk-common (score: 55)
 
 ### Cumulative:
-- Total scanned: 2410
-  - CLEAN: 1444
-  - CRITICAL: 274
+- Total scanned: 2460
+  - CLEAN: 1475
+  - CRITICAL: 282
   - ERROR: 3
-  - HIGH: 190
-  - LOW: 261
-  - MEDIUM: 238
+  - HIGH: 191
+  - LOW: 264
+  - MEDIUM: 245
