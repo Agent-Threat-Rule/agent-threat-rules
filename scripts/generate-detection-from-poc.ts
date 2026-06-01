@@ -108,6 +108,83 @@ function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+// High-confidence attack indicators. A PoC code-block line must contain at
+// least one of these to qualify as a detection pattern. This is the fix for
+// the import-FP class: the OLD extractor took the first line of the code
+// block, which is almost always a benign `import`/setup line (e.g.
+// `import random`), producing rules that fired on normal code. Now a line
+// only becomes a pattern if it carries a genuine exploit signal; if no line
+// in the block qualifies, the extractor yields nothing and the proposal
+// routes to human-PoC review.
+const ATTACK_INDICATORS: RegExp[] = [
+  // SSRF / cloud metadata / dangerous URL schemes
+  /169\.254\.169\.254/,
+  /metadata\.google\.internal/,
+  /\bfile:\/\//i,
+  /\bgopher:\/\//i,
+  /\bdict:\/\//i,
+  // code execution / unsafe deserialization
+  /__import__\s*\(/,
+  /\beval\s*\(/,
+  /\bexec\s*\(/,
+  /os\.system\s*\(/,
+  /subprocess\.[A-Za-z]+\([^)]*shell\s*=\s*True/,
+  /pickle\.loads\s*\(/,
+  /\byaml\.load\s*\((?![^)]*Loader)/,
+  /__reduce__/,
+  /marshal\.loads/,
+  // server-side template injection
+  /\{\{.*(self|config|request|globals|__|\.\.|class)\b.*\}\}/,
+  // path traversal
+  /\.\.\/\.\.\//,
+  /\.\.\\\.\.\\/,
+  /\/etc\/passwd/,
+  /\/proc\/self/,
+  // command injection
+  /;\s*(rm|cat|curl|wget|nc|bash|sh|powershell)\b/i,
+  /\|\s*(bash|sh|nc)\b/i,
+  /\$\([^)]+\)/,
+  // SQL injection
+  /UNION\s+SELECT/i,
+  /'\s*OR\s+'?1'?\s*=\s*'?1/i,
+  /;\s*DROP\s+TABLE/i,
+  // XSS
+  /<script\b/i,
+  /\bonerror\s*=/i,
+  /javascript:/i,
+  // prompt injection
+  /ignore\s+(all\s+)?previous\s+instructions/i,
+  /disregard.*instructions/i,
+  // exfiltration / OOB interaction services
+  /\bexfil/i,
+  /\br3dir/i,
+  /webhook\.site/i,
+  /burpcollaborator/i,
+  /\.oastify\.com/i,
+  /requestbin/i,
+  /interact\.sh/i,
+];
+
+// Lines that are setup/benign even if otherwise interesting — never patterns.
+const BENIGN_LINE: RegExp[] = [
+  /^\s*(#|\/\/|\/\*|\*)/, // comment
+  /^\s*from\s+\S+\s+import\b/, // python: from x import y
+  /^\s*import\s+\S+/, // python/js: import x  /  import x from 'y'
+  /^\s*(const|let|var)\s+\{[^}]*\}\s*=\s*require\s*\(/, // js require destructure
+  /^\s*(def|class|async\s+def|function|interface|type|@)\b/, // definitions / decorators
+  /^\s*(pip|npm|yarn|pnpm|poetry|uv)\s+(install|add)\b/, // dependency setup
+  /^\s*$/, // blank
+];
+
+function isBenignLine(line: string): boolean {
+  return BENIGN_LINE.some((rx) => rx.test(line));
+}
+
+// Number of distinct attack indicators a line matches. 0 = not a payload line.
+function attackScore(line: string): number {
+  return ATTACK_INDICATORS.reduce((n, rx) => n + (rx.test(line) ? 1 : 0), 0);
+}
+
 function sourceText(proposal: Record<string, unknown>): string {
   const parts: string[] = [];
   const description = proposal.description;
@@ -127,14 +204,30 @@ const codeBlockExtractor = {
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
       const raw = m[1].trim();
-      if (raw.length < 8 || raw.length > 400) continue;
-      const firstLine = raw.split("\n")[0].trim();
-      if (firstLine.length < 8 || firstLine.length > 200) continue;
+      if (raw.length < 8) continue;
+      // Select the highest-confidence ATTACK-INDICATOR line — not the first
+      // line (which is almost always a benign import/setup statement). A line
+      // qualifies only if it carries a genuine exploit signal and is not
+      // itself setup. If no line qualifies, this block produces no pattern and
+      // the proposal routes to human-PoC (the grounding gate exits 3).
+      let best: string | null = null;
+      let bestScore = 0;
+      for (const rawLine of raw.split("\n")) {
+        const line = rawLine.trim();
+        if (line.length < 8 || line.length > 200) continue;
+        if (isBenignLine(line)) continue;
+        const score = attackScore(line);
+        if (score > bestScore) {
+          bestScore = score;
+          best = line;
+        }
+      }
+      if (best === null || bestScore === 0) continue;
       results.push({
         extractor: "code-block",
-        regex: `(?i)${escapeRegex(firstLine)}`,
-        description: `Literal first line of advisory PoC code block`,
-        test_input: firstLine,
+        regex: `(?i)${escapeRegex(best)}`,
+        description: `Attack-indicator line from advisory PoC code block (${bestScore} signal${bestScore > 1 ? "s" : ""})`,
+        test_input: best,
         grounding: "poc",
       });
     }
