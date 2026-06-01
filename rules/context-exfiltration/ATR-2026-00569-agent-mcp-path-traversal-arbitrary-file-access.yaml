@@ -1,0 +1,99 @@
+title: Agent / MCP tool path traversal and arbitrary file access
+id: ATR-2026-00569
+rule_version: 1
+status: experimental
+description: An MCP/agent file tool receives a path argument that escapes its intended directory — a deep ../ chain or URL-encoded traversal — enabling arbitrary file read/write (incl. zip-slip). Generalizes a cluster of MCP file-handler CVEs and agent-app path traversals.
+author: ATR Community
+date: 2026/06/02
+schema_version: '0.1'
+detection_tier: pattern
+maturity: experimental
+severity: high
+references:
+  cve:
+  - CVE-2026-40576
+  - CVE-2026-32719
+  - CVE-2026-42249
+  - CVE-2026-7020
+  - CVE-2026-7811
+  - CVE-2026-34070
+  - CVE-2026-7318
+  - CVE-2026-7599
+  - CVE-2026-7728
+  - CVE-2026-9467
+  cwe:
+  - CWE-22
+  - CWE-23
+  - CWE-29
+  external:
+  - https://nvd.nist.gov/vuln/detail/CVE-2026-40576
+  - https://github.com/Advanced-Excel-MCP/excel-mcp-server
+metadata_provenance:
+  cve: human-authored
+  cwe: human-authored
+tags:
+  category: context-exfiltration
+  scan_target: runtime
+  confidence: high
+agent_source:
+  type: llm_io
+  framework:
+  - any
+  provider:
+  - any
+detection:
+  condition: any
+  false_positives: []
+  conditions:
+  - field: content
+    operator: regex
+    value: (?i)(?:\.\.[\\/]){2,}[^\s"\x27<>]*?(?:etc[\\/](?:passwd|shadow)|proc[\\/]self|windows[\\/]system32|[\\/]\.ssh[\\/]|win\.ini|boot\.ini)
+    description: Deep ../ traversal chain that reaches a sensitive system target
+  - field: content
+    operator: regex
+    value: (?i)(?:%2e%2e|%252e%252e|\.\.)(?:%2f|%5c|%c0%af)|%2e%2e%2f
+    description: URL/percent-encoded path traversal sequence
+response:
+  actions:
+  - alert
+  notify:
+  - security_team
+test_cases:
+  true_positives:
+  - input: '{"path": "../../../../etc/passwd"}'
+    expected: triggered
+    description: path-traversal payload 1
+  - input: read_file("..\..\..\..\windows\system32\config")
+    expected: triggered
+    description: path-traversal payload 2
+  - input: GET /files?name=%2e%2e%2f%2e%2e%2fetc%2fpasswd
+    expected: triggered
+    description: path-traversal payload 3
+  - input: 'extractAllTo zip entry: ../../../../home/u/.ssh/id_rsa'
+    expected: triggered
+    description: path-traversal payload 4
+  - input: digest=../../../../proc/self/environ
+    expected: triggered
+    description: path-traversal payload 5
+  true_negatives:
+  - input: '#include "../../../../include/foo.h"'
+    expected: not_triggered
+    description: benign path/doc 1
+  - input: import "../../shared/utils"
+    expected: not_triggered
+    description: benign path/doc 2
+  - input: from ..models import User
+    expected: not_triggered
+    description: benign path/doc 3
+  - input: path = "../config/app.json"
+    expected: not_triggered
+    description: benign path/doc 4
+  - input: ssh-keygen -lf ~/.ssh/id_rsa
+    expected: not_triggered
+    description: benign path/doc 5
+  - input: The scanner flags /etc/passwd references
+    expected: not_triggered
+    description: benign path/doc 6
+  - input: relpath = "../../../build/output/lib.so"
+    expected: not_triggered
+    description: benign path/doc 7
