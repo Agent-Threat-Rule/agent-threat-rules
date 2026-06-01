@@ -1,0 +1,120 @@
+title: LangChain vulnerable to unsafe deserialization of attacker-controlled objects through overly broad `load()` allowlists
+id: ATR-2026-00559
+rule_version: 1
+status: experimental
+description: >
+  GitHub Security Advisory GHSA-pjwx-r37v-7724 (CVE-2026-44843). LangChain vulnerable to unsafe deserialization of
+  attacker-controlled objects through overly broad `load()` allowlists
+author: ATR Community (GHSA sync)
+date: 2026/05/30
+schema_version: '0.1'
+detection_tier: pattern
+maturity: experimental
+severity: critical
+references:
+  cve:
+    - CVE-2026-44843
+  cwe:
+    - CWE-502
+  ghsa:
+    - GHSA-pjwx-r37v-7724
+  external:
+    - https://github.com/langchain-ai/langchain/security/advisories/GHSA-pjwx-r37v-7724
+    - https://github.com/advisories/GHSA-pjwx-r37v-7724
+metadata_provenance:
+  ghsa: ghsa-sync
+  cve: ghsa-sync
+  cwe: ghsa-sync
+tags:
+  category: tool-poisoning
+  scan_target: runtime
+  confidence: high
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+detection:
+  condition: any
+  false_positives: []
+  conditions:
+    - field: content
+      operator: regex
+      value: (?i)"lc"\s*:\s*1\s*,\s*"type"\s*:\s*"constructor"
+      description: >-
+        Detects LangChain serialized constructor objects (lc=1, type=constructor) which are the core attack payload
+        format for unsafe deserialization
+    - field: content
+      operator: regex
+      value: (?i)"id"\s*:\s*\[\s*["']langchain[_\w]*["']\s*,\s*["'][\w_]+["']
+      description: >-
+        Matches LangChain module path references in deserialization payloads (e.g., langchain_core, langchain_community
+        modules) that enable class instantiation
+    - field: content
+      operator: regex
+      value: (?i)(astream_log|astream_events|RunnableWithMessageHistory)\s*\(.*?allowed_objects\s*=\s*["']?all["']?
+      description: >-
+        Detects vulnerable API calls with overly broad allowed_objects parameter that permit arbitrary LangChain object
+        revival
+response:
+  actions:
+    - alert
+  notify:
+    - security_team
+test_cases:
+  true_positives:
+    - input: >-
+        {"lc": 1, "type": "constructor", "id": ["langchain_core", "messages", "ai", "AIMessage"], "kwargs": {"content":
+        "injected"}}
+      expected: triggered
+      description: LLM-authored attack sample 1
+    - input: '{"lc":1,"type":"constructor","id":["langchain_community","tools","bash","BashTool"],"kwargs":{"name":"pwn"}}'
+      expected: triggered
+      description: LLM-authored attack sample 2
+    - input: astream_events(version='v1', allowed_objects='all')
+      expected: triggered
+      description: LLM-authored attack sample 3
+    - input: RunnableWithMessageHistory(runnable=chain, get_session_history=fn, allowed_objects='all')
+      expected: triggered
+      description: LLM-authored attack sample 4
+    - input: >-
+        {"lc": 1, "type": "constructor", "id": ["langchain_core", "documents", "Document"], "kwargs": {"page_content":
+        "<script>alert(1)</script>"}}
+      expected: triggered
+      description: LLM-authored attack sample 5
+  true_negatives:
+    - input: |-
+        from langchain_core.load import load
+        obj = load(serialized, valid_namespaces=['langchain'])
+      expected: not_triggered
+      description: LLM-authored benign sample 1
+    - input: |-
+        from langchain_core.prompts import ChatPromptTemplate
+        prompt = ChatPromptTemplate.from_messages([('system', 'You are helpful.')])
+      expected: not_triggered
+      description: LLM-authored benign sample 2
+    - input: |-
+        import json
+        data = json.loads(payload)
+        text = json.dumps(obj, indent=2)
+      expected: not_triggered
+      description: LLM-authored benign sample 3
+    - input: RunnableWithMessageHistory(runnable=chain, get_session_history=get_history)
+      expected: not_triggered
+      description: LLM-authored benign sample 4
+    - input: '{"type": "message", "content": "user input", "lc_secrets": {}}'
+      expected: not_triggered
+      description: LLM-authored benign sample 5
+_llm_authored:
+  model: claude-haiku-4-5-20251001
+  generalization_note: >-
+    This rule generalizes the attack beyond the literal PoC by: (1) matching any LangChain serialized constructor
+    regardless of specific class referenced; (2) detecting the id array pattern across any langchain_* namespace module
+    path; (3) catching the vulnerable API calls with broad allowlist parameters rather than looking for specific
+    function implementations. The regex avoids matching benign JSON, imports, or normal LangChain API usage by requiring
+    the specific 'lc'=1 and 'type'='constructor' pattern together, which only appears in malicious deserialization
+    payloads.
+  note: >-
+    Generation-time LLM authoring; verified by deterministic gate. Runtime detection is pure regex. Human review
+    required before merge.

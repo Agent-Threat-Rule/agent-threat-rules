@@ -1,0 +1,119 @@
+title: langchain Server-Side Request Forgery vulnerability
+id: ATR-2026-00558
+rule_version: 1
+status: experimental
+description: |
+  GitHub Security Advisory GHSA-h9j7-5xvc-qhg5 (CVE-2024-0243). langchain Server-Side Request Forgery vulnerability
+author: ATR Community (GHSA sync)
+date: 2026/06/01
+schema_version: '0.1'
+detection_tier: pattern
+maturity: experimental
+severity: high
+references:
+  cve:
+    - CVE-2024-0243
+  cwe:
+    - CWE-918
+  ghsa:
+    - GHSA-h9j7-5xvc-qhg5
+  external:
+    - https://nvd.nist.gov/vuln/detail/CVE-2024-0243
+    - https://github.com/langchain-ai/langchain/commit/bf0b3cc0b5ade1fb95a5b1b6fa260e99064c2e22
+    - https://huntr.com/bounties/370904e7-10ac-40a4-a8d4-e2d16e1ca861
+    - https://github.com/langchain-ai/langchain/pull/15559
+    - >-
+      https://github.com/langchain-ai/langchain/blob/bf0b3cc0b5ade1fb95a5b1b6fa260e99064c2e22/libs/community/langchain_community/document_loaders/recursive_url_loader.py#L51-L51
+    - https://github.com/pypa/advisory-database/tree/main/vulns/langchain-exa/PYSEC-2024-235.yaml
+    - https://github.com/advisories/GHSA-h9j7-5xvc-qhg5
+metadata_provenance:
+  ghsa: ghsa-sync
+  cve: ghsa-sync
+  cwe: ghsa-sync
+tags:
+  category: tool-poisoning
+  scan_target: runtime
+  confidence: high
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+detection:
+  condition: any
+  false_positives: []
+  conditions:
+    - field: content
+      operator: regex
+      value: RecursiveUrlLoader\s*\([^)]*prevent_outside\s*=\s*True
+      description: >-
+        Detects RecursiveUrlLoader instantiation with prevent_outside=True flag, which is the vulnerable configuration
+        that should enforce domain boundary checks.
+    - field: content
+      operator: regex
+      value: (?:extract_sub_links|find_all_links)\s*\([^)]*(?:prevent_outside\s*=\s*(?:True|False)|base_url\s*=)
+      description: >-
+        Detects calls to extract_sub_links or find_all_links that manipulate URL filtering logic with prevent_outside or
+        base_url parameters, indicating potential SSRF bypass attempts.
+    - field: content
+      operator: regex
+      value: (?:startswith\s*\(\s*["']http|scheme\s*==\s*["']https?["'])[^)]*(?:absolute_paths\.add|results?\.append)\s*\(
+      description: >-
+        Detects patterns where links are added to result sets based solely on scheme/protocol checks without proper
+        netloc (domain) validation, allowing cross-domain SSRF.
+response:
+  actions:
+    - alert
+  notify:
+    - security_team
+test_cases:
+  true_positives:
+    - input: >-
+        loader = RecursiveUrlLoader(url='https://example.com', max_depth=2, prevent_outside=True, extractor=lambda x:
+        Soup(x, 'html.parser').text)
+      expected: triggered
+      description: LLM-authored attack sample 1
+    - input: extract_sub_links(html, 'https://example.com/page', base_url='https://example.com', prevent_outside=True)
+      expected: triggered
+      description: LLM-authored attack sample 2
+    - input: 'if link.startswith(''http''): absolute_paths.add(link)'
+      expected: triggered
+      description: LLM-authored attack sample 3
+    - input: 'if parsed_link.scheme == ''https'': absolute_paths.add(link)'
+      expected: triggered
+      description: LLM-authored attack sample 4
+  true_negatives:
+    - input: |-
+        from langchain_community.document_loaders import RecursiveUrlLoader
+        loader = RecursiveUrlLoader(url=url, max_depth=2)
+      expected: not_triggered
+      description: LLM-authored benign sample 1
+    - input: loader = RecursiveUrlLoader(url='https://example.com', prevent_outside=False)
+      expected: not_triggered
+      description: LLM-authored benign sample 2
+    - input: |-
+        soup = Soup(html, 'html.parser')
+        links = soup.find_all('a')
+      expected: not_triggered
+      description: LLM-authored benign sample 3
+    - input: |-
+        from urllib.parse import urlparse
+        parsed = urlparse(url)
+        if parsed.netloc == base_netloc: results.append(url)
+      expected: not_triggered
+      description: LLM-authored benign sample 4
+    - input: resp = requests.get(url, timeout=10)
+      expected: not_triggered
+      description: LLM-authored benign sample 5
+_llm_authored:
+  model: claude-haiku-4-5-20251001
+  generalization_note: >-
+    This rule generalizes the SSRF vulnerability beyond the literal PoC by detecting: (1) the vulnerable configuration
+    pattern (RecursiveUrlLoader with prevent_outside=True), (2) unsafe URL filtering logic that validates scheme but not
+    domain, and (3) calls to the affected extract_sub_links function with weak boundary checks. It catches variations
+    where attackers inject cross-domain links in HTML content to bypass domain boundaries, whether through direct
+    http/https scheme checks or using urlparse comparisons that ignore netloc validation.
+  note: >-
+    Generation-time LLM authoring; verified by deterministic gate. Runtime detection is pure regex. Human review
+    required before merge.
