@@ -1,0 +1,75 @@
+title: Agent SSRF to cloud metadata / file inclusion via unvalidated fetch URL
+id: ATR-2026-00568
+rule_version: 1
+status: experimental
+description: An agent tool fetches an attacker-controlled URL with no scheme allowlist or private-network block, letting it reach cloud-metadata endpoints (credential theft), local files via file://, or SSRF-only schemes (gopher/dict). Detects those unambiguous internal targets. Generalizes across CVE-2026-40150/40160 (PraisonAIAgents), CVE-2026-7817 (pgAdmin), CVE-2026-45401 (Open WebUI).
+author: ATR Community
+date: 2026/06/02
+schema_version: '0.1'
+detection_tier: pattern
+maturity: experimental
+severity: high
+references:
+  cve:
+  - CVE-2026-40150
+  - CVE-2026-40160
+  - CVE-2026-7817
+  - CVE-2026-45401
+  cwe:
+  - CWE-918
+  - CWE-552
+  external:
+  - https://nvd.nist.gov/vuln/detail/CVE-2026-40150
+metadata_provenance:
+  cve: human-authored
+  cwe: human-authored
+tags:
+  category: tool-poisoning
+  scan_target: runtime
+  confidence: high
+agent_source:
+  type: llm_io
+  framework:
+  - any
+  provider:
+  - any
+detection:
+  condition: any
+  false_positives: []
+  conditions:
+  - field: content
+    operator: regex
+    value: (?i)(?:169\.254\.169\.254|metadata\.google\.internal|100\.100\.100\.200|fd00:ec2::254)(?:[:/]|\b)|\bfile://(?:/?(?:etc|proc|root|home|var/run|sys)/)|\bgopher://|\bdict://
+    description: Fetch targets a cloud-metadata IP/host, a file:// system path, or a gopher/dict SSRF scheme
+response:
+  actions:
+  - alert
+  notify:
+  - security_team
+test_cases:
+  true_positives:
+  - input: web_crawl("http://169.254.169.254/latest/meta-data/iam/security-credentials/")
+    expected: triggered
+    description: attack sample 1
+  - input: api_url=http://metadata.google.internal/computeMetadata/v1/instance/
+    expected: triggered
+    description: attack sample 2
+  - input: fetch("file:///etc/passwd")
+    expected: triggered
+    description: attack sample 3
+  - input: gopher://127.0.0.1:6379/_FLUSHALL
+    expected: triggered
+    description: attack sample 4
+  true_negatives:
+  - input: fetch("https://api.openai.com/v1/chat/completions")
+    expected: not_triggered
+    description: benign sample 1
+  - input: url = "http://localhost:8000/health"
+    expected: not_triggered
+    description: benign sample 2
+  - input: open("/etc/hostname")
+    expected: not_triggered
+    description: benign sample 3
+  - input: crawl("https://example.com/blog")
+    expected: not_triggered
+    description: benign sample 4
