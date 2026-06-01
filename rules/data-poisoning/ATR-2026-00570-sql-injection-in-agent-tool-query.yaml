@@ -1,0 +1,82 @@
+title: SQL injection in agent / MCP tool database query
+id: ATR-2026-00570
+rule_version: 1
+status: experimental
+description: An agent or MCP tool builds a SQL query from unvalidated input, letting an attacker (or prompt injection in retrieved content) inject a tautology, a UNION SELECT to read other tables, or a stacked DROP/DELETE. Generalizes a cluster of agent-app SQLi CVEs.
+author: ATR Community
+date: 2026/06/02
+schema_version: '0.1'
+detection_tier: pattern
+maturity: experimental
+severity: high
+references:
+  cve:
+  - CVE-2026-7591
+  - CVE-2026-4593
+  - CVE-2026-5322
+  - CVE-2026-30860
+  cwe:
+  - CWE-89
+  external:
+  - https://nvd.nist.gov/vuln/detail/CVE-2026-30860
+metadata_provenance:
+  cve: human-authored
+  cwe: human-authored
+tags:
+  category: data-poisoning
+  scan_target: runtime
+  confidence: high
+agent_source:
+  type: llm_io
+  framework:
+  - any
+  provider:
+  - any
+detection:
+  condition: any
+  false_positives: []
+  conditions:
+  - field: content
+    operator: regex
+    value: (?i)(?:'\s*or\s+'?1'?\s*=\s*'?1|\bor\s+1\s*=\s*1\b\s*(?:--|#|/\*|;|$))
+    description: SQL boolean tautology (' OR '1'='1 / OR 1=1 --)
+  - field: content
+    operator: regex
+    value: (?i)\bunion\s+(?:all\s+)?select\b.{0,120}\bfrom\b
+    description: UNION SELECT ... FROM to read arbitrary tables
+  - field: content
+    operator: regex
+    value: (?i);\s*(?:drop|delete|truncate)\s+(?:table|database)\b
+    description: Stacked destructive query (; DROP/DELETE/TRUNCATE TABLE)
+response:
+  actions:
+  - alert
+  notify:
+  - security_team
+test_cases:
+  true_positives:
+  - input: username=admin' OR '1'='1
+    expected: triggered
+    description: attack 1
+  - input: id=1 UNION SELECT username,password FROM users
+    expected: triggered
+    description: attack 2
+  - input: '''; DROP TABLE users;--'
+    expected: triggered
+    description: attack 3
+  - input: ?id=1 OR 1=1 --
+    expected: triggered
+    description: attack 4
+  true_negatives:
+  - input: SELECT * FROM users WHERE id = ?
+    expected: not_triggered
+    description: benign 1
+  - input: query = "SELECT name FROM products"
+    expected: not_triggered
+    description: benign 2
+  - input: if (a == 1 || b == 1) return
+    expected: not_triggered
+    description: benign 3
+  - input: page.union of selected items from list
+    expected: not_triggered
+    description: benign 4
