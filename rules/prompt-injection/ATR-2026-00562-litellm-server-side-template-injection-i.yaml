@@ -2,9 +2,9 @@ title: 'LiteLLM: Server-Side Template Injection in /prompts/test endpoint'
 id: ATR-2026-00562
 rule_version: 1
 status: experimental
-description: >
-  GitHub Security Advisory GHSA-xqmj-j6mv-4862 (CVE-2026-42203). LiteLLM: Server-Side Template Injection in
-  /prompts/test endpoint
+description: 'GitHub Security Advisory GHSA-xqmj-j6mv-4862 (CVE-2026-42203). LiteLLM: Server-Side Template Injection in /prompts/test endpoint
+
+  '
 author: ATR Community (GHSA sync)
 date: 2026/05/30
 schema_version: '0.1'
@@ -13,16 +13,16 @@ maturity: experimental
 severity: critical
 references:
   cve:
-    - CVE-2026-42203
+  - CVE-2026-42203
   cwe:
-    - CWE-1336
+  - CWE-1336
   ghsa:
-    - GHSA-xqmj-j6mv-4862
+  - GHSA-xqmj-j6mv-4862
   external:
-    - https://github.com/BerriAI/litellm/security/advisories/GHSA-xqmj-j6mv-4862
-    - https://github.com/BerriAI/litellm/releases/tag/v1.83.7-stable
-    - https://nvd.nist.gov/vuln/detail/CVE-2026-42203
-    - https://github.com/advisories/GHSA-xqmj-j6mv-4862
+  - https://github.com/BerriAI/litellm/security/advisories/GHSA-xqmj-j6mv-4862
+  - https://github.com/BerriAI/litellm/releases/tag/v1.83.7-stable
+  - https://nvd.nist.gov/vuln/detail/CVE-2026-42203
+  - https://github.com/advisories/GHSA-xqmj-j6mv-4862
 metadata_provenance:
   ghsa: ghsa-sync
   cve: ghsa-sync
@@ -34,86 +34,68 @@ tags:
 agent_source:
   type: llm_io
   framework:
-    - any
+  - any
   provider:
-    - any
+  - any
 detection:
   condition: any
   false_positives: []
   conditions:
-    - field: content
-      operator: regex
-      value: (?i)POST\s+/prompts/test
-      description: Detects requests to the vulnerable /prompts/test endpoint
-    - field: content
-      operator: regex
-      value: >-
-        (?i)(jinja2|mako|django\.template|tornado\.template|genshi|cheetah)\s*[.:]\s*(?:Template|Markup|render|from_string)
-      description: Detects server-side template engine instantiation with user-supplied content in context of prompt rendering
-    - field: content
-      operator: regex
-      value: (?i)template\s*[=:]\s*(?:['"].*?['"]|.*?(?:render|compile|process)\s*\()
-      description: >-
-        Detects template variable assignment followed by rendering/processing without sandboxing, specifically when
-        combined with user input or environment access patterns
+  - field: content
+    operator: regex
+    value: (?i)POST\s+/prompts/test
+    description: Detects requests to the vulnerable /prompts/test endpoint
+  - field: content
+    operator: regex
+    value: (?i)template\s*[=:]\s*(?:['"].*?['"]|.*?(?:render|compile|process)\s*\()
+    description: Detects template variable assignment followed by rendering/processing without sandboxing, specifically when combined with user input or environment access patterns
 response:
   actions:
-    - alert
+  - alert
   notify:
-    - security_team
+  - security_team
 test_cases:
   true_positives:
-    - input: >-
-        POST /prompts/test with payload: {"template": "{{
-        request.application.__globals__.__builtins__.__import__('os').popen('id').read() }}"}
-      expected: triggered
-      description: LLM-authored attack sample 1
-    - input: >-
-        POST /prompts/test with template containing: {% for item in ().__class__.__bases__[0].__subclasses__() %}
-        arbitrary code injection
-      expected: triggered
-      description: LLM-authored attack sample 2
-    - input: '{"prompt_template": "{{ config.__class__.__init__.__globals__[''os''].environ[''API_KEY''] }}"}'
-      expected: triggered
-      description: LLM-authored attack sample 3
-    - input: jinja2.Template(user_supplied_prompt).render(request=request, config=sensitive_config)
-      expected: triggered
-      description: LLM-authored attack sample 4
-    - input: template = Markup(user_input); output = template.render() with no sandboxing in /prompts/test context
-      expected: triggered
-      description: LLM-authored attack sample 5
+  - input: 'POST /prompts/test with payload: {"template": "{{ request.application.__globals__.__builtins__.__import__(''os'').popen(''id'').read() }}"}'
+    expected: triggered
+    description: LLM-authored attack sample 1
+  - input: 'POST /prompts/test with template containing: {% for item in ().__class__.__bases__[0].__subclasses__() %} arbitrary code injection'
+    expected: triggered
+    description: LLM-authored attack sample 2
+  - input: '{"prompt_template": "{{ config.__class__.__init__.__globals__[''os''].environ[''API_KEY''] }}"}'
+    expected: triggered
+    description: LLM-authored attack sample 3
+  - input: jinja2.Template(user_supplied_prompt).render(request=request, config=sensitive_config)
+    expected: triggered
+    description: LLM-authored attack sample 4
+  - input: template = Markup(user_input); output = template.render() with no sandboxing in /prompts/test context
+    expected: triggered
+    description: LLM-authored attack sample 5
   true_negatives:
-    - input: |-
-        from jinja2 import Template
-        template = Template('Hello {{ name }}')
-        result = template.render(name='World')
-      expected: not_triggered
-      description: LLM-authored benign sample 1
-    - input: |-
-        import os
-        path = os.path.join(base_dir, user_filename)
-      expected: not_triggered
-      description: LLM-authored benign sample 2
-    - input: |-
-        from langchain_core.prompts import ChatPromptTemplate
-        prompt = ChatPromptTemplate.from_messages([('system', 'You are helpful.')])
-      expected: not_triggered
-      description: LLM-authored benign sample 3
-    - input: POST /api/process with template rendering using safe_template() function
-      expected: not_triggered
-      description: LLM-authored benign sample 4
-    - input: 'def render_prompt(template_str): return template_str.format(name=safe_value)'
-      expected: not_triggered
-      description: LLM-authored benign sample 5
+  - input: 'from jinja2 import Template
+
+      template = Template(''Hello {{ name }}'')
+
+      result = template.render(name=''World'')'
+    expected: not_triggered
+    description: LLM-authored benign sample 1
+  - input: 'import os
+
+      path = os.path.join(base_dir, user_filename)'
+    expected: not_triggered
+    description: LLM-authored benign sample 2
+  - input: 'from langchain_core.prompts import ChatPromptTemplate
+
+      prompt = ChatPromptTemplate.from_messages([(''system'', ''You are helpful.'')])'
+    expected: not_triggered
+    description: LLM-authored benign sample 3
+  - input: POST /api/process with template rendering using safe_template() function
+    expected: not_triggered
+    description: LLM-authored benign sample 4
+  - input: 'def render_prompt(template_str): return template_str.format(name=safe_value)'
+    expected: not_triggered
+    description: LLM-authored benign sample 5
 _llm_authored:
   model: claude-haiku-4-5-20251001
-  generalization_note: >-
-    This rule generalizes the SSFI attack beyond the literal PoC by detecting: (1) requests to the vulnerable endpoint,
-    (2) instantiation of any major server-side template engine without sandbox context, (3) template rendering patterns
-    that combine user-supplied prompts with dangerous attribute access (jinja2 __class__, __globals__, etc.). The
-    conditions avoid matching benign template usage by requiring either endpoint-specific detection, explicit dangerous
-    template engine calls in sensitive contexts, or dangerous attribute access patterns that indicate intent to break
-    out of template scope.
-  note: >-
-    Generation-time LLM authoring; verified by deterministic gate. Runtime detection is pure regex. Human review
-    required before merge.
+  generalization_note: 'This rule generalizes the SSFI attack beyond the literal PoC by detecting: (1) requests to the vulnerable endpoint, (2) instantiation of any major server-side template engine without sandbox context, (3) template rendering patterns that combine user-supplied prompts with dangerous attribute access (jinja2 __class__, __globals__, etc.). The conditions avoid matching benign template usage by requiring either endpoint-specific detection, explicit dangerous template engine calls in sensitive contexts, or dangerous attribute access patterns that indicate intent to break out of template scope.'
+  note: Generation-time LLM authoring; verified by deterministic gate. Runtime detection is pure regex. Human review required before merge.
