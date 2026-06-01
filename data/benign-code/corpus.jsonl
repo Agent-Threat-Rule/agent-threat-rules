@@ -49,3 +49,17 @@
 {"source": "benign-config", "source_id": "cfg-02", "text": "self._jwt_issuer: JWTIssuer = JWTIssuer(key=signing_key, issuer=\"auth\")  # library internal"}
 {"source": "benign-config", "source_id": "cfg-03", "text": "MCP_SERVER = \"http://localhost:3000/sse\"  # default local server"}
 {"source": "benign-config", "source_id": "cfg-04", "text": "health = requests.get(\"http://127.0.0.1:8080/health\").json()"}
+{"source": "py-ai-lib", "source_id": "tmpl-jinja-call", "text": "result = jinja2.Template(user_template).render(ctx)"}
+{"source": "py-ai-lib", "source_id": "tmpl-mako-call", "text": "from mako.template import Template\nhtml = Template(tpl).render(**data)"}
+{"source": "py-ai-lib", "source_id": "langchain-tplfmt", "text": "prompt = ChatPromptTemplate.from_messages([('system','{role}')], template_format='jinja2')"}
+{"source": "py-ai-lib", "source_id": "litellm-apibase", "text": "resp = litellm.completion(model='azure/gpt-4', api_base='https://my-co.openai.azure.com', messages=msgs)"}
+{"source": "py-ai-lib", "source_id": "litellm-baseurl", "text": "client = OpenAI(base_url='https://my-proxy.internal.example.com/v1', api_key=key)"}
+{"source": "py-ai-lib", "source_id": "msgpack-normal", "text": "import msgpack\nobj = msgpack.unpackb(buf, raw=False, strict_map_key=False)"}
+{"source": "py-ai-lib", "source_id": "langchain-serialized-benign", "text": "cfg = {\"lc\": 1, \"type\": \"constructor\", \"id\": [\"langchain_core\", \"prompts\", \"chat\", \"ChatPromptTemplate\"], \"kwargs\": {}}"}
+{"source": "py-ai-lib", "source_id": "langchain-dumpd", "text": "from langchain_core.load import dumpd\nstate = dumpd(prompt)  # {'lc': 1, 'type': 'constructor', ...}"}
+{"source": "py-stdlib", "source_id": "fetch-normal", "text": "const data = await fetch(url).then(r => r.json())"}
+{"source": "py-stdlib", "source_id": "fetch-localhost-dev", "text": "resp = await fetch('http://localhost:3000/api/health')"}
+{"source": "py-stdlib", "source_id": "getattr-normal", "text": "value = getattr(obj, attr_name, default)\nsetattr(cfg, 'verbose', True)"}
+{"source": "py-ai-lib", "source_id": "recursiveurlloader-safe", "text": "loader = RecursiveUrlLoader(url, prevent_outside=True, max_depth=2)"}
+{"source": "py-ai-lib", "source_id": "tmpl-var-attr", "text": "tmpl = '{{ user.name }} ordered {{ order.total }}'  # normal template variables"}
+{"source": "py-ai-lib", "source_id": "fastmcp-normal", "text": "mcp = FastMCP(name='my-tools')\n@mcp.tool()\ndef greet(name: str) -> str: return f'hi {name}'"}
