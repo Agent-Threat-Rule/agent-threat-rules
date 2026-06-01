@@ -52,7 +52,15 @@ const __dirname = dirname(__filename);
 const REPO_ROOT = resolve(__dirname, "..");
 const PROPOSALS_BASE = resolve(REPO_ROOT, "proposals");
 const RULES_BASE = resolve(REPO_ROOT, "rules");
-const GENERATOR = resolve(__dirname, "generate-detection-from-poc.ts");
+// Generator selection: when ANTHROPIC_API_KEY is present, use the LLM
+// rule-author (generalized, Cisco-grade rules with a deterministic gate);
+// otherwise fall back to the heuristic attack-indicator extractor. Both share
+// the same exit-code contract (0 emit / 2 no-source / 3 route-to-human).
+const LLM_GENERATOR = resolve(__dirname, "author-rule-llm.ts");
+const HEURISTIC_GENERATOR = resolve(__dirname, "generate-detection-from-poc.ts");
+const GENERATOR = process.env.ANTHROPIC_API_KEY
+  ? LLM_GENERATOR
+  : HEURISTIC_GENERATOR;
 const DEFAULT_MAX = 10;
 
 const args = process.argv.slice(2);
@@ -277,6 +285,7 @@ function main(): void {
 
   const summary = {
     run_date: new Date().toISOString(),
+    generator_mode: GENERATOR === LLM_GENERATOR ? "llm-authored" : "heuristic",
     write: WRITE,
     candidates_total: candidates.length,
     candidates_attempted: limited.length,
