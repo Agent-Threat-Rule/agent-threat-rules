@@ -1,0 +1,78 @@
+title: LangChain serialization injection vulnerability enables secret extraction in dumps/loads APIs
+id: ATR-2026-00558
+rule_version: 1
+status: experimental
+description: >
+  GitHub Security Advisory GHSA-c67j-w6g6-q2cm (CVE-2025-68664). LangChain serialization injection vulnerability enables
+  secret extraction in dumps/loads APIs
+author: ATR Community (GHSA sync)
+date: 2026/05/30
+schema_version: '0.1'
+detection_tier: pattern
+maturity: experimental
+severity: critical
+references:
+  cve:
+    - CVE-2025-68664
+  cwe:
+    - CWE-502
+  ghsa:
+    - GHSA-c67j-w6g6-q2cm
+  external:
+    - https://github.com/langchain-ai/langchain/security/advisories/GHSA-c67j-w6g6-q2cm
+    - https://github.com/langchain-ai/langchain/pull/34455
+    - https://github.com/langchain-ai/langchain/pull/34458
+    - https://github.com/langchain-ai/langchain/commit/5ec0fa69de31bbe3d76e4cf9cd65a6accb8466c8
+    - https://github.com/langchain-ai/langchain/commit/d9ec4c5cc78960abd37da79b0250f5642e6f0ce6
+    - https://github.com/langchain-ai/langchain/releases/tag/langchain-core%3D%3D0.3.81
+    - https://github.com/langchain-ai/langchain/releases/tag/langchain-core%3D%3D1.2.5
+    - https://nvd.nist.gov/vuln/detail/CVE-2025-68664
+    - https://github.com/advisories/GHSA-c67j-w6g6-q2cm
+metadata_provenance:
+  ghsa: ghsa-sync
+  cve: ghsa-sync
+  cwe: ghsa-sync
+tags:
+  category: model-abuse
+  scan_target: runtime
+  confidence: high
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+detection:
+  condition: any
+  false_positives: []
+  conditions:
+    - field: content
+      operator: regex
+      value: (?i)from langchain_core\.load import load
+      description: Literal first line of advisory PoC code block
+response:
+  actions:
+    - alert
+  notify:
+    - security_team
+test_cases:
+  true_positives:
+    - input: from langchain_core.load import load
+      expected: triggered
+      description: Auto-extracted via code-block (poc-grounded)
+  true_negatives:
+    - input: Please summarize the attached document and email me the result.
+      expected: not_triggered
+      description: Benign agent traffic sample 1
+    - input: What is the weather forecast for Taipei tomorrow?
+      expected: not_triggered
+      description: Benign agent traffic sample 2
+    - input: Translate this paragraph from English to Japanese.
+      expected: not_triggered
+      description: Benign agent traffic sample 3
+    - input: Fetch the latest commit messages from the upstream branch.
+      expected: not_triggered
+      description: Benign agent traffic sample 4
+    - input: Schedule a 30-minute meeting with the design team next Tuesday.
+      expected: not_triggered
+      description: Benign agent traffic sample 5
