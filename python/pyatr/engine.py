@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+import logging
 import os
 import re
 import unicodedata
@@ -18,6 +20,8 @@ from pyatr.types import (
     EVENT_TYPE_TO_FIELD,
     SEVERITY_ORDER,
 )
+
+logger = logging.getLogger(__name__)
 
 # Zero-width and bidi characters to strip during normalization.
 _ZERO_WIDTH_RE = re.compile(
@@ -81,6 +85,23 @@ def _parse_rule(data: dict[str, Any]) -> ATRRule:
     )
 
 
+def _read_bundled_rules() -> list[dict[str, Any]]:
+    """Read the rules JSON bundled inside the installed package, if present.
+
+    Returns an empty list when no bundle ships with the install (e.g. an
+    editable checkout that has not run ``scripts/bundle_rules.py``).
+    """
+    try:
+        import importlib.resources as ir
+
+        resource = ir.files(__package__).joinpath("_bundled_rules.json")
+        if resource.is_file():
+            return json.loads(resource.read_text(encoding="utf-8"))
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.debug("pyatr: could not read bundled rules: %s", exc)
+    return []
+
+
 class ATREngine:
     """Layer 1 (pattern-only) ATR evaluation engine."""
 
@@ -124,6 +145,45 @@ class ATREngine:
     def load_rule(self, rule: ATRRule) -> None:
         """Add a single pre-built rule."""
         self._add_rule(rule)
+
+    def load_bundled_rules(self) -> int:
+        """Load the rule set bundled inside the installed pyatr package.
+
+        Returns the number of rules loaded (0 when no bundle is present).
+        """
+        count = 0
+        for raw in _read_bundled_rules():
+            if not isinstance(raw, dict) or "id" not in raw:
+                continue
+            try:
+                self._add_rule(_parse_rule(raw))
+                count += 1
+            except Exception:  # pragma: no cover - defensive
+                continue
+        return count
+
+    def load_default_rules(self) -> int:
+        """Load rules from the best available source.
+
+        Order: (1) the rule set bundled in the installed package, then
+        (2) the canonical ``rules/`` directory when running from a source
+        checkout. Emits a warning -- never fails silently -- when neither
+        yields a rule, so a zero-rule engine is visible rather than quietly
+        reporting "no threats found".
+        """
+        count = self.load_bundled_rules()
+        if count == 0:
+            dev_dir = Path(__file__).resolve().parent.parent.parent / "rules"
+            if dev_dir.is_dir():
+                count = self.load_rules_from_directory(dev_dir)
+        if count == 0:
+            logger.warning(
+                "pyatr loaded 0 rules: no in-package bundle and no source-tree "
+                "rules/ directory found, so scan() will not match anything. "
+                "Install pyatr from PyPI (the wheel bundles the rules) or run "
+                "scripts/bundle_rules.py in a source checkout."
+            )
+        return count
 
     def _add_rule(self, rule: ATRRule) -> None:
         self._rules.append(rule)
