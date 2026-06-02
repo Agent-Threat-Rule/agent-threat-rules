@@ -205,6 +205,8 @@ export interface ATREngineConfig {
   embeddingModule?: EmbeddingModule;
   /** Optional Layer 3: Semantic LLM-as-judge analysis (requires API key) */
   semanticModule?: SemanticLayerConfig;
+  /** Optional rule-level semantic judge for detection.method=semantic rules */
+  semanticJudge?: ATRSemanticJudge;
   /** Optional: detection reporter for feeding results to ATR Threat Cloud */
   reporter?: ATRReporter;
 }
@@ -424,6 +426,120 @@ export class ATREngine {
   }
 
   /**
+   * Async evaluation path that supports rule-level method=semantic dispatch.
+   *
+   * The synchronous evaluate() method remains pattern-only for compatibility.
+   * Consumers that configure semanticJudge should call evaluateAsync() or
+   * evaluateWithVerdict(), which delegates here when a semantic judge exists.
+   */
+  async evaluateAsync(event: AgentEvent): Promise<ATRMatch[]> {
+    const matches: ATRMatch[] = [];
+    const eventSourceType = EVENT_TYPE_TO_SOURCE[event.type];
+    const allMatchedPatterns: string[] = [];
+
+    const sessionId = event.sessionId;
+
+    // Tier 0: Invariant enforcement (hard boundaries, pre-check)
+    if (this.config.invariantChecker) {
+      const violations = this.config.invariantChecker.check(event);
+      if (violations.length > 0) {
+        if (this.config.sessionTracker && sessionId) {
+          this.config.sessionTracker.recordEvent(sessionId, event, ['tier0-invariant-deny']);
+        }
+        return violations.map((v) => this.config.invariantChecker!.buildDenyMatch(v));
+      }
+    }
+
+    // Tier 1: Blacklist lookup (known-bad skills)
+    if (this.config.blacklistProvider) {
+      const skillId = resolveBlacklistSkillId(event);
+      if (skillId) {
+        const entry = this.config.blacklistProvider.lookup(skillId);
+        if (entry) {
+          matches.push(buildBlacklistMatch(entry));
+        }
+      }
+    }
+
+    // Tier 2: Pattern matching + async semantic rules
+    const isSkillContext = event.scanContext === 'skill';
+    for (const rule of this.rules) {
+      if (rule.status === 'deprecated' || rule.status === 'draft') continue;
+
+      if (!isSkillContext && eventSourceType && rule.agent_source.type !== eventSourceType) {
+        if (!(rule.agent_source.type === 'mcp_exchange' && eventSourceType === 'tool_call')) {
+          continue;
+        }
+      }
+
+      const matchResult = await this.evaluateRuleAsync(rule, event, this.config.semanticJudge);
+      if (matchResult) {
+        if (isSkillContext && rule.tags.scan_target !== 'skill' && rule.tags.scan_target !== 'both') {
+          const totalConds: number = Number(rule.detection?.conditions?.length ?? 1);
+          const minRequired = Math.max(2, Math.ceil(totalConds * 0.3));
+          if ((matchResult.matchedConditions?.length ?? 0) < minRequired) {
+            continue;
+          }
+        }
+        matches.push(matchResult);
+        allMatchedPatterns.push(...matchResult.matchedPatterns);
+      }
+    }
+
+    // Record event in session tracker (always, for cross-event sequence detection)
+    if (this.config.sessionTracker && sessionId) {
+      this.config.sessionTracker.recordEvent(sessionId, event, allMatchedPatterns);
+    }
+
+    // Layer 2: Skill behavioral fingerprinting (optional, no LLM)
+    const fingerprintStore = this.config.fingerprintStore;
+    if (fingerprintStore) {
+      const skillId = resolveSkillId(event);
+      if (skillId) {
+        const layer2Matches = runFingerprintLayer(fingerprintStore, event, skillId);
+        matches.push(...layer2Matches);
+      }
+    }
+
+    const sorted = matches.sort((a, b) => {
+      const severityOrder = { critical: 0, high: 1, medium: 2, low: 3, informational: 4 };
+      const aSev = severityOrder[a.rule.severity] ?? 4;
+      const bSev = severityOrder[b.rule.severity] ?? 4;
+      if (aSev !== bSev) return aSev - bSev;
+      return b.confidence - a.confidence;
+    });
+
+    if (this.config.reporter) {
+      const hash = computeContentHash(event.content ?? '');
+      const scanTarget = isSkillContext ? 'skill' : (event.type ?? 'unknown');
+      const now = new Date().toISOString();
+
+      if (sorted.length > 0) {
+        for (const match of sorted) {
+          this.config.reporter.onDetection({
+            ruleId: match.rule.id,
+            severity: match.rule.severity,
+            scanTarget,
+            category: match.rule.tags?.category ?? 'unknown',
+            confidence: match.confidence,
+            timestamp: now,
+            contentHash: hash,
+          });
+        }
+      } else if (this.config.reporter.onClean) {
+        this.config.reporter.onClean({
+          rulesEvaluated: this.rules.length,
+          scanTarget,
+          timestamp: now,
+          contentHash: hash,
+        });
+      }
+    }
+
+    return sorted;
+  }
+
+  /**
    * Evaluate a single rule against an event.
    * Supports both array-format and named-map-format conditions.
    */
@@ -457,11 +573,10 @@ export class ATREngine {
     // Engines that implement semantic must use evaluateAsync (see below) or
     // wire a synchronous judge. Pattern fallback applies here.
     if (method === 'semantic') {
-      // If the rule has fallback_method=pattern AND conditions[] is populated,
-      // evaluate the pattern fallback synchronously. Otherwise skip.
-      if (detection.semantic?.fallback_method === 'pattern' && Array.isArray(detection.conditions) && detection.conditions.length > 0) {
-        const allMatchedPatterns: string[] = [];
-        return this.evaluateArrayConditions(rule, detection.conditions, detection.condition, event, allMatchedPatterns);
+      // If the rule has fallback_method=pattern, evaluate pattern conditions
+      // synchronously. Otherwise skip because the judge path is async-only.
+      if (detection.semantic?.fallback_method === 'pattern') {
+        return this.evaluatePatternRule(rule, event);
       }
       return null;
     }
@@ -482,10 +597,15 @@ export class ATREngine {
     }
 
     // Default: pattern method (v1.0 evaluation path).
+    return this.evaluatePatternRule(rule, event);
+  }
+
+  /** Evaluate a rule using pattern-mode conditions, regardless of detection.method. */
+  private evaluatePatternRule(rule: ATRRule, event: AgentEvent): ATRMatch | null {
+    const { detection } = rule;
     const conditions = detection.conditions;
     const allMatchedPatterns: string[] = [];
 
-    // Detect format: array or named map
     if (Array.isArray(conditions)) {
       return this.evaluateArrayConditions(rule, conditions, detection.condition, event, allMatchedPatterns);
     }
@@ -504,12 +624,22 @@ export class ATREngine {
   ): Promise<ATRMatch | null> {
     const method = rule.detection.method ?? 'pattern';
     if (method === 'semantic') {
-      const result = await evaluateSemanticRule(rule, event.content, { judge });
-      if (!result.matched) return null;
+      const effectiveJudge = judge ?? this.config.semanticJudge;
+      const result = await evaluateSemanticRule(rule, event.content, { judge: effectiveJudge });
+      if (!result.matched) {
+        if (result.reason?.includes('fallback_pattern')) {
+          return this.evaluatePatternRule(rule, event);
+        }
+        return null;
+      }
+      const matchedPatterns = [
+        ...(result.category ? [result.category] : []),
+        ...(result.evidence ? [result.evidence] : []),
+      ];
       return {
         rule,
         matchedConditions: ['semantic'],
-        matchedPatterns: result.category ? [result.category] : [],
+        matchedPatterns,
         confidence: result.confidence ?? 0.5,
         timestamp: new Date().toISOString(),
         scan_context: 'native' as const,
@@ -1327,7 +1457,12 @@ export class ATREngine {
     layersUsed: readonly string[];
   }> {
     const layersUsed: string[] = ['layer1-regex'];
-    let matches = this.evaluate(event);
+    let matches = this.config.semanticJudge
+      ? await this.evaluateAsync(event)
+      : this.evaluate(event);
+    if (this.config.semanticJudge) {
+      layersUsed.push('method-semantic');
+    }
 
     // Tier 0 + Tier 1 run inside evaluate(), track them
     if (this.config.invariantChecker) layersUsed.push('tier0-invariant');
@@ -1484,9 +1619,51 @@ export class ATREngine {
     return matches;
   }
 
+  /**
+   * Async SKILL.md scan that supports method=semantic rules through semanticJudge.
+   */
+  async scanSkillAsync(content: string): Promise<ATRMatch[]> {
+    const baseEvent = {
+      type: 'mcp_exchange' as const,
+      timestamp: new Date().toISOString(),
+      sessionId: 'skill-scan',
+      fields: {},
+      scanContext: 'skill' as const,
+    };
+
+    const matches = await this.evaluateAsync({ ...baseEvent, content });
+
+    const decodedBlocks = decodeBase64Blocks(content);
+    for (const block of decodedBlocks) {
+      const blockMatches = await this.evaluateAsync({ ...baseEvent, content: block });
+      for (const m of blockMatches) {
+        matches.push({
+          ...m,
+          matchedPatterns: [...m.matchedPatterns, '[decoded:base64]'],
+        });
+      }
+    }
+
+    return matches;
+  }
+
   /** Scan a SKILL.md file and return a unified ScanResult with content_hash. */
   scanSkillFull(content: string, filePath?: string): ScanResult {
     const matches = this.scanSkill(content);
+    return {
+      scan_type: 'skill',
+      content_hash: computeContentHash(content),
+      input_file: filePath,
+      timestamp: new Date().toISOString(),
+      rules_loaded: this.rules.length,
+      matches,
+      threat_count: matches.length,
+    };
+  }
+
+  /** Async SKILL.md scan result with semantic rule support. */
+  async scanSkillFullAsync(content: string, filePath?: string): Promise<ScanResult> {
+    const matches = await this.scanSkillAsync(content);
     return {
       scan_type: 'skill',
       content_hash: computeContentHash(content),
@@ -1502,6 +1679,23 @@ export class ATREngine {
   evaluateFull(event: AgentEvent, filePath?: string): ScanResult {
     const matches = this.evaluate(event);
     // Hash content + fields to distinguish tool-call events with same content but different args
+    const hashInput = event.fields
+      ? event.content + '\0' + JSON.stringify(event.fields)
+      : event.content;
+    return {
+      scan_type: 'mcp',
+      content_hash: computeContentHash(hashInput),
+      input_file: filePath,
+      timestamp: new Date().toISOString(),
+      rules_loaded: this.rules.length,
+      matches,
+      threat_count: matches.length,
+    };
+  }
+
+  /** Async MCP event scan result with semantic rule support. */
+  async evaluateFullAsync(event: AgentEvent, filePath?: string): Promise<ScanResult> {
+    const matches = await this.evaluateAsync(event);
     const hashInput = event.fields
       ? event.content + '\0' + JSON.stringify(event.fields)
       : event.content;

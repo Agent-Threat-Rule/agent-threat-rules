@@ -218,6 +218,8 @@ See [contribution-paths.md](./contribution-paths.md) for the full contribution w
 
 Use ATR as a library in your TypeScript/JavaScript project:
 
+For semantic LLM-as-judge rules, use the async engine path with an injected judge function. See [Semantic Judge Integration](./semantic-judge.md).
+
 ```typescript
 import { ATREngine } from 'agent-threat-rules';
 

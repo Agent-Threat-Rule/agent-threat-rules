@@ -23,6 +23,18 @@ export type ATRCategory =
   | "model-abuse"
   | "skill-compromise";
 
+/**
+ * Semantic judge category.
+ *
+ * ATR categories plus benign/unknown are the recommended vocabulary. The
+ * string fallback keeps custom/private judge labels source-compatible.
+ */
+export type ATRSemanticJudgeCategory =
+  | ATRCategory
+  | "benign"
+  | "unknown"
+  | (string & {});
+
 export type ATRConfidence = "high" | "medium" | "low";
 
 export type ATRSourceType =
@@ -364,6 +376,13 @@ export interface AgentEvent {
   trace?: ATRTrace;
 }
 
+/** Normalized result returned by an injected semantic judge. */
+export interface ATRSemanticJudgeResult {
+  category: ATRSemanticJudgeCategory;
+  confidence: number;
+  evidence?: string;
+}
+
 /** A semantic-judge invocation signature passed into the engine.
  *  Engines that implement method=semantic accept this via dependency
  *  injection. When absent, semantic rules with fallback_method='pattern'
@@ -373,7 +392,7 @@ export type ATRSemanticJudge = (args: {
   prompt: string;
   input: string;
   judge_model_class: string;
-}) => Promise<{ category: string; confidence: number; evidence?: string }>;
+}) => Promise<ATRSemanticJudgeResult>;
 
 /** Result when an ATR rule matches an event */
 export type ScanContextType = "native" | "cross-context";

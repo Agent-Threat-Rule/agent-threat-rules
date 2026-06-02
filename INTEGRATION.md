@@ -50,6 +50,28 @@ for (const match of matches) {
 }
 ```
 
+### Semantic LLM-as-Judge
+
+Rule-level `detection.method: semantic` uses an injected judge function and the async engine path:
+
+```typescript
+import { ATREngine, createOpenAICompatibleJudge } from 'agent-threat-rules';
+
+const engine = new ATREngine({
+  rulesDir: './node_modules/agent-threat-rules/rules',
+  semanticJudge: createOpenAICompatibleJudge({
+    apiKey: process.env.LLM_API_KEY ?? '',
+    baseUrl: process.env.LLM_BASE_URL,
+    model: process.env.LLM_MODEL,
+  }),
+});
+
+await engine.loadRules();
+const matches = await engine.evaluateAsync(event);
+```
+
+See [`docs/semantic-judge.md`](docs/semantic-judge.md) for the judge contract, provider-agnostic prompt, local model setup, and deterministic test example.
+
 ## Quick Integration (Python)
 
 ```python

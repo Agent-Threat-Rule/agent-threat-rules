@@ -24,6 +24,7 @@ import { handleValidate } from './mcp-tools/validate.js';
 import { handleSubmitProposal } from './mcp-tools/submit-proposal.js';
 import { handleCoverageGaps } from './mcp-tools/coverage-gaps.js';
 import { handleThreatSummary } from './mcp-tools/threat-summary.js';
+import { createSemanticJudgeFromConfig } from './cli/semantic-judge-config.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -202,8 +203,12 @@ const TOOLS = [
 ];
 
 export async function createMCPServer(): Promise<Server> {
-  const engine = new ATREngine({ rulesDir: RULES_DIR });
+  const semantic = createSemanticJudgeFromConfig();
+  const engine = new ATREngine({ rulesDir: RULES_DIR, semanticJudge: semantic.judge });
   const ruleCount = await engine.loadRules();
+  if (semantic.enabled) {
+    process.stderr.write('[atr-mcp] Semantic judge enabled for method=semantic rules\n');
+  }
 
   const server = new Server(
     {
