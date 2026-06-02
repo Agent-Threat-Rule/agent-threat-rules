@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyatr"
-version = "0.2.5"
-description = "Python engine for Agent Threat Rules (ATR) -- the open detection standard for AI agents (like Sigma, but for prompt injection, tool poisoning, and MCP attacks). 311 rules, Cisco AI Defense shipped, 97.1% garak recall."
+version = "0.2.6"
+description = "Python engine for Agent Threat Rules (ATR) -- the open detection standard for AI agents (like Sigma, but for prompt injection, tool poisoning, MCP attacks, and skill compromise). Bundles the ATR rule set."
 requires-python = ">=3.10"
 license = {text = "MIT"}
 readme = "README.md"
@@ -49,6 +49,9 @@ pyatr = "pyatr.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["pyatr*"]
+
+[tool.setuptools.package-data]
+pyatr = ["_bundled_rules.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -7,7 +7,7 @@ from pyatr.engine import ATREngine
 from pyatr.validator import validate, ValidationResult, ValidationError
 from pyatr.test_runner import run_tests, TestRunResult, RuleTestResult, TestCaseResult
 
-__version__ = "0.2.0"
+__version__ = "0.2.6"
 __all__ = [
     "ATREngine",
     "AgentEvent",
@@ -23,18 +23,24 @@ __all__ = [
     "run_tests",
 ]
 
-# Default rules directory: bundled rules from the npm package or sibling dir
+# Source-tree fallback used only when running from a checkout without a
+# generated in-package bundle (see ATREngine.load_default_rules).
 _DEFAULT_RULES_DIR = Path(__file__).resolve().parent.parent.parent / "rules"
 
 
 def scan(text: str, *, rules_dir: str | Path | None = None) -> list[ATRMatch]:
     """Convenience function: evaluate text against all ATR rules.
 
-    Loads rules on first call (cached). Returns list of ATRMatch sorted by severity.
+    Loads rules on first call (cached). When ``rules_dir`` is omitted the
+    rules bundled inside the installed package are used, so this works after
+    a plain ``pip install pyatr`` with no source checkout. Returns a list of
+    ATRMatch sorted by severity.
     """
     if not hasattr(scan, "_engine"):
         engine = ATREngine()
-        rdir = Path(rules_dir) if rules_dir else _DEFAULT_RULES_DIR
-        engine.load_rules_from_directory(rdir)
+        if rules_dir is not None:
+            engine.load_rules_from_directory(Path(rules_dir))
+        else:
+            engine.load_default_rules()
         scan._engine = engine  # type: ignore[attr-defined]
     return scan._engine.evaluate(AgentEvent(content=text, event_type="llm_input", fields={"user_input": text}))  # type: ignore[attr-defined]

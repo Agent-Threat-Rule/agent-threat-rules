@@ -37,6 +37,7 @@ VALID_SOURCE_TYPES: frozenset[str] = frozenset({
     "skill_lifecycle",
     "skill_permission",
     "skill_chain",
+    "agent_trace",  # OpenInference/OTel GenAI spans; see spec/atr-method-v1.1.md
 })
 
 VALID_SEVERITIES: frozenset[str] = frozenset({

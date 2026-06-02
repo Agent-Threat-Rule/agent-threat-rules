@@ -75,6 +75,10 @@ jobs:
           pip install -e ".[dev]"
           python -m pytest tests/ -v
 
+      - name: Bundle rules into package
+        working-directory: python
+        run: python scripts/bundle_rules.py
+
       - name: Build sdist + wheel
         working-directory: python
         run: python -m build
