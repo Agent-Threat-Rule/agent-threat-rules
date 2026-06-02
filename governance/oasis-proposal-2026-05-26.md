@@ -41,7 +41,7 @@ The ATR project began in early 2026 as a community-led detection-rule corpus. As
   - Cisco AI Defense skill-scanner (PRs #79 + #99, April 2026)
   - MISP CIRCL (galaxy #1207 + taxonomies #323, May 2026) — used by national CERTs
   - precize / Gen Digital Sage chain (#74, May 2026)
-- **Measured performance**: 100% precision + 89.7% recall on 341-sample internal benchmark; 97.1% recall on NVIDIA garak; 99.6% precision + 62.7% recall on PINT
+- **Measured performance**: 100% precision + 89.7% recall on 341-sample internal benchmark; 97.1% recall on NVIDIA garak; 99.7% precision + 63.2% recall on an 850-sample PINT-format corpus (self-built, not Lakera's official PINT)
 - **Zenodo DOI**: 10.5281/zenodo.19178002
 - **CC BY 4.0 / MIT** licensing
 - **Fiscal sponsor**: Open Source Collective Inc. (501(c)(3), EIN 81-1567737)
