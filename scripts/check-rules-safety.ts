@@ -37,6 +37,7 @@ import { fileURLToPath } from "node:url";
 import { load as yamlLoad } from "js-yaml";
 import { ATREngine } from "../src/engine.js";
 import type { AgentEvent } from "../src/types.js";
+import { lintRuleDoc } from "./lint-rule-patterns.js";
 
 const MAX_NEW_PER_PR = Number(process.env.MAX_NEW_PER_PR ?? 10);
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -574,6 +575,19 @@ async function main(): Promise<void> {
     newRuleIds.add(id);
     fileToId.set(id, file);
     ruleEntries.push({ id, file, tps: extractTruePositives(doc) });
+
+    // Check 6 — loose-regex lint. The bare-keyword-without-word-boundary class
+    // (e.g. "nc" matching inside "async", "host" inside prose) is the highest-
+    // confidence FP cause (00120, 00149) and almost never legitimate, so route
+    // it to human review. Other loose patterns ([^...]*, .*, wide {0,N}) are
+    // advisory only (frequently legitimate).
+    for (const lf of lintRuleDoc(doc)) {
+      if (lf.code === "bareword") {
+        failures.push({ file, reason: `loose-regex lint: ${lf.detail}` });
+      } else {
+        console.log(`  [loose-regex advisory] ${file} — ${lf.code}: ${lf.detail}`);
+      }
+    }
   }
 
   if (newRuleIds.size > 0) {
