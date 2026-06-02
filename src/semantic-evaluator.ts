@@ -15,6 +15,8 @@
  *     graceful_error (matched: false, error: <reason>).
  */
 
+import { createHash } from "node:crypto";
+
 import type {
   ATRRule,
   ATRSemanticDetection,
@@ -59,15 +61,32 @@ class InMemoryJudgeCache implements JudgeCache {
 
 const DEFAULT_CACHE: JudgeCache = new InMemoryJudgeCache();
 
+/**
+ * Upper bound on characters sent to the judge. Bounds token cost and protects
+ * the endpoint from a multi-megabyte input. Note: padding past the cap is a
+ * known evasion tradeoff (a payload buried after the cap is not seen) — the cap
+ * exists to bound cost/DoS, not as a security boundary on its own.
+ */
+const DEFAULT_MAX_INPUT_CHARS = 20_000;
+
 /** Render a prompt template by substituting `{{input}}` with the actual input. */
 function renderPrompt(template: string, input: string): string {
   return template.replace(/\{\{\s*input\s*\}\}/g, input);
 }
 
-/** Compute a stable cache key from (judge prompt hash, input). */
-function cacheKey(promptHash: string | undefined, input: string): string {
-  // Caller should hash; we just concatenate. For reference, prefer pre-hashed input.
-  return `${promptHash ?? "no-hash"}:${input}`;
+/**
+ * Compute a stable cache key from (judge prompt template, input).
+ *
+ * Hashes the prompt template together with the input so two semantic rules with
+ * different prompts can never collide on the same input — which would serve
+ * rule A's verdict to rule B through the shared module-level cache. Both fields
+ * are length-prefixed before hashing so a ':' inside the input cannot forge
+ * another (template, input) pair's key.
+ */
+function cacheKey(promptTemplate: string, input: string): string {
+  return createHash("sha256")
+    .update(`${promptTemplate.length}:${promptTemplate}|${input.length}:${input}`)
+    .digest("hex");
 }
 
 export interface SemanticEvaluatorOptions {
@@ -75,6 +94,8 @@ export interface SemanticEvaluatorOptions {
   judge?: ATRSemanticJudge;
   /** Caller-supplied cache. Defaults to an in-process Map cache. */
   cache?: JudgeCache;
+  /** Max input chars sent to the judge (default 20000). Bounds token cost. */
+  maxInputChars?: number;
 }
 
 export async function evaluateSemanticRule(
@@ -87,9 +108,15 @@ export async function evaluateSemanticRule(
     return { matched: false, error: "rule has method=semantic but no detection.semantic block" };
   }
 
+  // Bound input size before hashing/judging to cap token cost and protect the
+  // judge endpoint from a multi-megabyte input. The judge only sees boundedInput.
+  const maxInputChars = options.maxInputChars ?? DEFAULT_MAX_INPUT_CHARS;
+  const boundedInput =
+    input.length > maxInputChars ? input.slice(0, maxInputChars) : input;
+
   // Cache check
   const cache = options.cache ?? DEFAULT_CACHE;
-  const key = cacheKey(sem.judge_prompt_hash, input);
+  const key = cacheKey(sem.prompt_template, boundedInput);
   const cached = cache.get(key);
   if (cached) {
     return {
@@ -116,12 +143,12 @@ export async function evaluateSemanticRule(
   }
 
   // Call judge
-  const prompt = renderPrompt(sem.prompt_template, input);
+  const prompt = renderPrompt(sem.prompt_template, boundedInput);
   let response: ATRSemanticJudgeResult;
   try {
     response = await options.judge({
       prompt,
-      input,
+      input: boundedInput,
       judge_model_class: sem.judge_model_class,
     });
   } catch (err) {

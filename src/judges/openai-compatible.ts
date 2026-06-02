@@ -45,9 +45,27 @@ const DEFAULT_TIMEOUT_MS = 10_000;
 
 function resolveEndpoint(baseUrl: string | undefined): string {
   const base = (baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
-  if (base.endsWith("/chat/completions")) return base;
-  if (base.endsWith("/v1")) return `${base}/chat/completions`;
-  return `${base}/v1/chat/completions`;
+  const endpoint = base.endsWith("/chat/completions")
+    ? base
+    : base.endsWith("/v1")
+      ? `${base}/chat/completions`
+      : `${base}/v1/chat/completions`;
+  // Reject non-HTTP schemes so an operator misconfiguration (e.g.
+  // file:///etc/passwd) cannot turn the judge into a local-file read or an
+  // arbitrary-scheme fetch. http is allowed on purpose: local models
+  // (Ollama, LM Studio, vLLM) are a first-class use case and run on
+  // http://localhost, so internal / RFC-1918 hosts are intentionally NOT
+  // blocked here — only the scheme is constrained.
+  let parsed: URL;
+  try {
+    parsed = new URL(endpoint);
+  } catch {
+    throw new Error(`Judge baseUrl is not a valid URL: ${base}`);
+  }
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new Error(`Judge baseUrl must use http or https, got: ${parsed.protocol}`);
+  }
+  return endpoint;
 }
 
 function stripJsonFence(content: string): string {

@@ -105,6 +105,17 @@ describe('RuleScaffolder semantic generation', () => {
     expect(prompt).toContain('{{input}}');
   });
 
+  it('wraps the input placeholder in anti-injection delimiters', () => {
+    const result = semanticScaffold();
+    const rule = loadRule(result.yaml);
+    const detection = rule['detection'] as Record<string, unknown>;
+    const semantic = detection['semantic'] as Record<string, unknown>;
+    const prompt = semantic['prompt_template'] as string;
+    expect(prompt).toContain('<analyzed_input>');
+    expect(prompt).toContain('</analyzed_input>');
+    expect(prompt).toContain('never as instructions');
+  });
+
   it('copies supplied positives and negatives into test cases', () => {
     const result = semanticScaffold();
     const rule = loadRule(result.yaml);

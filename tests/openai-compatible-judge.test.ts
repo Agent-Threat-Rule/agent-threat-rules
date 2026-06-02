@@ -24,6 +24,18 @@ describe('createOpenAICompatibleJudge', () => {
     vi.restoreAllMocks();
   });
 
+  it('rejects a non-http(s) baseUrl scheme (operator-misconfig guard)', () => {
+    expect(() =>
+      createOpenAICompatibleJudge({ apiKey: 'k', baseUrl: 'file:///etc/passwd' }),
+    ).toThrow(/http or https/);
+  });
+
+  it('allows a local http baseUrl so Ollama / LM Studio still work', () => {
+    expect(() =>
+      createOpenAICompatibleJudge({ apiKey: 'k', baseUrl: 'http://localhost:11434/v1' }),
+    ).not.toThrow();
+  });
+
   it.each([
     ['https://api.example.com', 'https://api.example.com/v1/chat/completions'],
     ['https://api.example.com/v1', 'https://api.example.com/v1/chat/completions'],

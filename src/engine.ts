@@ -617,7 +617,7 @@ export class ATREngine {
    * Async variant that supports method=semantic with an injected judge.
    * For trace/pattern/signature/behavioral methods, defers to the sync path.
    */
-  async evaluateRuleAsync(
+  private async evaluateRuleAsync(
     rule: ATRRule,
     event: AgentEvent,
     judge?: ATRSemanticJudge,
@@ -1631,20 +1631,22 @@ export class ATREngine {
       scanContext: 'skill' as const,
     };
 
-    const matches = await this.evaluateAsync({ ...baseEvent, content });
+    const baseMatches = await this.evaluateAsync({ ...baseEvent, content });
 
     const decodedBlocks = decodeBase64Blocks(content);
+    const decodedMatches: ATRMatch[] = [];
     for (const block of decodedBlocks) {
       const blockMatches = await this.evaluateAsync({ ...baseEvent, content: block });
       for (const m of blockMatches) {
-        matches.push({
+        decodedMatches.push({
           ...m,
           matchedPatterns: [...m.matchedPatterns, '[decoded:base64]'],
         });
       }
     }
 
-    return matches;
+    // Do not mutate the array returned by evaluateAsync — build a fresh result.
+    return [...baseMatches, ...decodedMatches];
   }
 
   /** Scan a SKILL.md file and return a unified ScanResult with content_hash. */
