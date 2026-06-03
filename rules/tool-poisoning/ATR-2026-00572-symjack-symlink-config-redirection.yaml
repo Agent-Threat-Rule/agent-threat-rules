@@ -64,7 +64,7 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)ln\s+-s(?:f|n|fn|nf)?\s+\S*(?:\.mcp\.json|\.claude[/\\]settings\.json|\.cursor[/\\]mcp\.json|\.gemini[/\\]settings\.json|\.codex[/\\]config\.toml)\b'
+      value: '(?i)\bln\s+-s(?:f|n|fn|nf)?\s+\S*(?:\.mcp\.json|\.claude[/\\]settings\.json|\.cursor[/\\]mcp\.json|\.gemini[/\\]settings\.json|\.codex[/\\]config\.toml)\b'
       description: "Symlink created with an agent-config file as its link target — the SymJack write-redirection primitive (decoy name is the second arg, irrelevant to the match)"
     - field: content
       operator: regex
@@ -72,7 +72,7 @@ detection:
       description: "Symlink listing/metadata whose resolved target is an agent-config file (ls -l / git ls-files / archive entry)"
     - field: content
       operator: regex
-      value: '(?i)(?:symlink|ln\s+-s|hard\s*link|junction)[^\n]{0,120}(?:mcpServers?|\.mcp\.json|\.claude|\.cursor|\.gemini|\.codex)[^\n]{0,200}(?:approv|trust\s+prompt|empty\s+file|ships?\s+empty|resolve[sd]?\s+to|on\s+restart)'
+      value: '(?i)(?:symlink|\bln\s+-s|hard\s*link|junction)[^\n]{0,120}(?:mcpServers?|\.mcp\.json|\.claude|\.cursor|\.gemini|\.codex)[^\n]{0,200}(?:approv|trust\s+prompt|empty\s+file|ships?\s+empty|resolve[sd]?\s+to|on\s+restart)'
       description: "Symlink + agent-config token + approval/empty-file/on-restart framing co-located — the SymJack chain expressed in skill/tool content"
 response:
   actions:
