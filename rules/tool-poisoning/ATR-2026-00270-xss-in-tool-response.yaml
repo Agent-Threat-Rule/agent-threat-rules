@@ -54,8 +54,8 @@ detection:
       description: 'Script tag whose body contains a known XSS sink (eval/cookie/fetch/etc) — excludes bare src= includes'
     - field: tool_response
       operator: regex
-      value: '<(?:img|svg|iframe|object|embed|video|audio|source|input|body|html)[^>]{0,200}\s+on(?:load|error|click|mouseover|focus|blur|input|change|submit)=["\x27][^"]{1,500}["\x27]'
-      description: 'HTML element with JavaScript event handler attribute in tool output'
+      value: '<(?:img|svg|iframe|object|embed|video|audio|source|input|body|html)[^>]{0,200}\s+on(?:load|error|click|mouseover|focus|blur|input|change|submit)=["\x27][^"]{0,200}(?:eval\s*\(|alert\s*\(|fetch\s*\(|XMLHttpRequest|document\.cookie|document\.write\s*\(|window\.location\s*=|location\.href\s*=|localStorage|sessionStorage|atob\s*\(|new\s+Function\s*\(|String\.fromCharCode)[^"]{0,200}["\x27]'
+      description: 'HTML element with JavaScript event handler attribute whose body contains a known XSS sink (eval/fetch/cookie/storage/etc) — excludes benign UI handlers like oninput="updateValue(this.value)"'
     - field: tool_response
       operator: regex
       value: '(?:href|src|action|formaction|srcdoc|data)\s*=\s*["\x27]?\s*javascript:[^\s"]{1,500}'
@@ -105,6 +105,9 @@ test_cases:
     - input: "src='https://cdn.example.com/app.js' — include this in your index.html head."
       expected: not_triggered
       reason: "Legitimate CDN script src without javascript: scheme"
+    - input: "<input type=\"range\" id=\"param\" min=\"0\" max=\"100\" step=\"1\" value=\"50\" oninput=\"updateParam('param', this.value)\">"
+      expected: not_triggered
+      reason: "Benign UI slider with an event handler whose body contains no XSS sink — common in legitimate interactive HTML templates (e.g. p5.js parameter controls)"
 evasion_tests:
   - input: "<SCRIPT SRC=https://evil.com/xss.js></SCRIPT>"
     expected: triggered

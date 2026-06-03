@@ -58,8 +58,8 @@ detection:
       description: 'Social engineering — framing dangerous action as routine to avoid scrutiny'
     - field: content
       operator: regex
-      value: '(?i)(?:execute|run|perform)\s+(?:silently|quietly|in\s+the\s+background|without\s+(?:notification|alerting|informing|telling|notifying))'
-      description: 'Silent execution instruction'
+      value: '(?i)(?:execute|run|perform)\s+(?:silently|quietly|without\s+(?:notification|alerting|informing|telling|notifying)|(?:[\w\s-]{0,30}\s+)?in\s+the\s+background\b[\s\S]{0,40}?(?:without\s+(?:notif\w*|alert\w*|inform\w*|telling|notifying|(?:the\s+)?user(?:.?s)?(?:\s+(?:knowledge|awareness|notice|consent|confirmation|approval|permission))?|confirmation|approval|consent|permission|notice)|silently|secretly|covertly|hidden\s+from\s+(?:the\s+)?user|unbeknownst))'
+      description: 'Silent execution instruction (concealment-qualified; bare "in the background" no longer matches without a hide-from-user signal)'
   condition: any
   false_positives:
     - 'Security tools describing what attacks look like in documentation'

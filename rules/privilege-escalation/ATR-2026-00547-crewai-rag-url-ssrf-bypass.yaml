@@ -1,7 +1,7 @@
 title: "CrewAI RAG URL Validation Bypass SSRF (CVE-2026-2286)"
 id: ATR-2026-00547
 rule_version: 1
-status: draft
+status: experimental
 description: >
   Detects CVE-2026-2286 (CVSS HIGH, CWE-918): CrewAI's RAG (retrieval-augmented
   generation) URL validator can be bypassed by URL encoding, mixed-case,
@@ -27,7 +27,7 @@ author: "ATR Community"
 date: "2026/05/28"
 schema_version: "0.1"
 detection_tier: pattern
-maturity: draft
+maturity: experimental
 severity: high
 
 references:
@@ -97,11 +97,13 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)(?:rag|retrieval[_-]?augmented|source[_-]?url|document[_-]?url)[^\n]{0,200}(?:169\.254\.169\.254|fd00:|2130706433|0x7f000001|0177\.0\.0\.1|localhost|127\.0\.[01]\.[01]|::1|0\.0\.0\.0|[a-z0-9-]+\.internal\.|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})'
+      value: '(?i)(?:rag|retrieval[_-]?augmented|source[_-]?url|document[_-]?url)[^\n]{0,200}(?:169\.254\.169\.254|fd00:|2130706433|0x7f000001|0177\.0\.0\.1|[a-z0-9-]+\.internal\.|(?:127\.0\.[01]\.[01]|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})(?::\d+)?/)'
       description: >
-        RAG source URL containing cloud metadata endpoint (169.254.169.254),
-        decimal/hex/octal loopback representations, IPv6 loopback, or private
-        RFC-1918 address ranges — SSRF bypass attempt via CVE-2026-2286
+        RAG source URL containing a cloud metadata endpoint (169.254.169.254),
+        decimal/hex/octal loopback representations, or an RFC-1918 private
+        address followed by an internal resource path — SSRF bypass via
+        CVE-2026-2286. Plain "localhost:PORT" / bare-IP server defaults (no
+        path) are excluded so legitimate RAG deployment docs do not false-positive.
 
     - field: content
       operator: regex

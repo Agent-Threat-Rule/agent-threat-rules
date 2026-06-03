@@ -1,0 +1,132 @@
+title: "SymJack — Symlink Approval-Path Spoofing Redirects Writes into Agent MCP/Config (RCE on Restart)"
+id: ATR-2026-00572
+rule_version: 1
+status: experimental
+description: >
+  Detects the SymJack attack (Adversa AI, Rony Utevsky, 2026-05-26): an
+  attacker-controlled repository commits a benign-named symlink (e.g.
+  docs/vid-settings.mp4, docs/vid-mcp.mp4) whose link target points at the
+  coding agent's own configuration file (.mcp.json, .claude/settings.json,
+  .cursor/mcp.json, .gemini/settings.json, .codex/config.toml). The
+  tool-approval prompt shows a benign file operation against the decoy path,
+  but the kernel follows the symlink and writes attacker-controlled JSON —
+  typically an mcpServers entry with an exec command — into the real config.
+  On the next agent restart the planted MCP server spawns and runs the
+  attacker's code as the user, unsandboxed. On CI runners that auto-trust the
+  workspace it needs zero approval clicks. This rule fires on the on-disk
+  artifact — a symlink whose target resolves into a known agent-config path —
+  and on the SymJack chain when it is described in skill/tool content. The
+  runtime kernel-level write-redirection itself (prompt-shows-X /
+  kernel-writes-Y) is not regex-detectable and is addressed by host hardening
+  that resolves symlinks before approval (shipped in Claude Code v2.1.129+);
+  see false_positives. No CVE assigned as of 2026-06-03.
+author: "ATR Community"
+date: "2026/06/03"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: critical
+references:
+  owasp_llm:
+    - "LLM05:2025 - Improper Output Handling"
+    - "LLM06:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI04:2026 - Supply Chain"
+    - "ASI05:2026 - Unexpected Code Execution"
+  mitre_atlas:
+    - "AML.T0010 - ML Supply Chain Compromise"
+  mitre_attack:
+    - "T1546 - Event Triggered Execution"
+    - "T1059 - Command and Scripting Interpreter"
+    - "T1195.002 - Compromise Software Supply Chain"
+    - "T1036 - Masquerading"
+  research:
+    - "Adversa AI / Rony Utevsky, SymJack, 2026-05-26: https://adversa.ai/blog/the-approval-prompt-is-lying-to-you-symlink-rce-in-five-ai-coding-agents-claude-code-cursor-antigravity-copilot-grok-build/"
+    - "SecurityWeek / Kevin Townsend, 2026-05-27: https://www.securityweek.com/symjack-attack-turns-ai-coding-agents-into-supply-chain-attack-delivery-systems/"
+tags:
+  category: tool-poisoning
+  subcategory: symlink-config-redirection
+  scan_target: both
+  confidence: high
+agent_source:
+  type: tool_call
+  framework:
+    - any
+  provider:
+    - any
+detection:
+  condition: any
+  false_positives:
+    - "Legitimate symlinks in a repo that point at non-config targets (node_modules, dist, vendored docs)."
+    - "Security writeups that describe the SymJack chain in prose without an actual symlink-to-config artifact (patterns here require the literal config path as the link target, not the attack name)."
+    - "A developer intentionally symlinking their own .mcp.json/settings.json across machines (rare; flagged for review)."
+    - "RUNTIME LIMITATION: this rule cannot observe the kernel-level write-redirection (prompt-shows-decoy vs kernel-writes-config). That half of SymJack is a host concern — agents must resolve symlinks before displaying the approval path. This rule covers the static symlink-to-config artifact, not the syscall, and intentionally does not flag a bare file copy (indistinguishable from a benign asset copy)."
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)\bln\s+-s(?:f|n|fn|nf)?\s+\S*(?:\.mcp\.json|\.claude[/\\]settings\.json|\.cursor[/\\]mcp\.json|\.gemini[/\\]settings\.json|\.codex[/\\]config\.toml)\b'
+      description: "Symlink created with an agent-config file as its link target — the SymJack write-redirection primitive (decoy name is the second arg, irrelevant to the match)"
+    - field: content
+      operator: regex
+      value: '(?i)(?:->|=>|symlink\s+to|target\s*[:=])\s*\S*(?:\.mcp\.json|\.claude[/\\]settings\.json|\.cursor[/\\]mcp\.json|\.gemini[/\\]settings\.json|\.codex[/\\]config\.toml)\b'
+      description: "Symlink listing/metadata whose resolved target is an agent-config file (ls -l / git ls-files / archive entry)"
+    - field: content
+      operator: regex
+      value: '(?i)(?:symlink|\bln\s+-s|hard\s*link|junction)[^\n]{0,120}(?:mcpServers?|\.mcp\.json|\.claude|\.cursor|\.gemini|\.codex)[^\n]{0,200}(?:approv|trust\s+prompt|empty\s+file|ships?\s+empty|resolve[sd]?\s+to|on\s+restart)'
+      description: "Symlink + agent-config token + approval/empty-file/on-restart framing co-located — the SymJack chain expressed in skill/tool content"
+response:
+  actions:
+    - block_tool
+    - require_human_review
+    - alert
+    - snapshot
+  auto_response_threshold: high
+  message_template: >
+    [ATR-2026-00572] CRITICAL: SymJack symlink approval-path spoofing detected.
+    A symlink resolves to an agent config (.mcp.json / settings.json) — the
+    approval prompt path may not equal the kernel write target. Block the file
+    operation, resolve and display the REAL destination, and reject any write
+    that lands in an MCP / agent config directory via an unresolved symlink.
+    Matched: {matched_pattern}
+confidence: 85
+test_cases:
+  true_positives:
+    - input: 'ln -s ../.claude/settings.json docs/vid-settings.mp4'
+      expected: triggered
+      description: "SymJack PoC: symlink with .mp4 decoy name targeting Claude Code settings.json"
+    - input: 'ln -sf ../../.mcp.json docs/vid-mcp.mp4'
+      expected: triggered
+      description: "Symlink (forced) targeting project .mcp.json under a media decoy name"
+    - input: 'ln -s ~/.cursor/mcp.json assets/logo.png'
+      expected: triggered
+      description: "Global Cursor MCP config as symlink target behind an image decoy"
+    - input: 'lrwxr-xr-x  1 user  staff  18 docs/vid-settings.mp4 -> ../.gemini/settings.json'
+      expected: triggered
+      description: "ls -l listing exposing a symlink whose target is the Gemini CLI config"
+    - input: '120000 blob a1b2c3  docs/readme.pdf  symlink to ../.codex/config.toml'
+      expected: triggered
+      description: "git/archive symlink metadata resolving to the Codex CLI config"
+    - input: 'Commit a symlink named docs/vid-mcp.mp4 that resolves to ../.mcp.json; the file ships empty so a clone audit shows nothing, then on restart the planted mcpServers entry runs.'
+      expected: triggered
+      description: "SymJack chain in skill content: symlink + .mcp.json + empty-file + on-restart framing"
+  true_negatives:
+    - input: 'ln -s ../dist/bundle.js public/bundle.js'
+      expected: not_triggered
+      description: "Ordinary build symlink to a JS bundle — target is not an agent config"
+    - input: 'cp ./assets/logo.png ./emails/static/logo.png'
+      expected: not_triggered
+      description: "Legitimate asset copy (react-email style) — a bare file copy is intentionally NOT flagged"
+    - input: 'Edit .claude/settings.json to add your MCP server: see docs.anthropic.com for the schema.'
+      expected: not_triggered
+      description: "Legitimate config-edit instruction — no symlink, config path is not a link target"
+    - input: 'ln -s /etc/nginx/nginx.conf ./nginx.conf'
+      expected: not_triggered
+      description: "Symlink to an OS service config unrelated to the agent MCP/config surface"
+    - input: 'The SymJack attack abuses symlinks to redirect writes; always resolve link targets before approving file operations.'
+      expected: not_triggered
+      description: "Prose advisory about SymJack — names the attack but contains no actual symlink-to-config artifact (must not FP)"
+evasion_tests:
+  - input: 'ln -s ../$(printf "\x2e")claude/settings.json docs/clip.mp4'
+    expected: not_triggered
+    bypass_technique: shell_expansion_in_target
+    notes: "Attacker builds the config path via shell expansion so the literal '.claude/settings.json' string never appears. Needs path-resolution at scan time, not regex."
