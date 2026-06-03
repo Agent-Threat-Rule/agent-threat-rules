@@ -1,22 +1,28 @@
-## Daily Scan Summary (2026-06-02)
+## Daily Scan Summary (2026-06-03)
 - Scanned: 50 packages
-- CRITICAL: 5
-- HIGH: 1
-- CLEAN/LOW: 37
+- CRITICAL: 8
+- HIGH: 4
+- CLEAN/LOW: 32
 
 ### Flagged Packages:
-- [HIGH] @argosvix/mcp-server (score: 40)
-- [CRITICAL] @fruition/fcp-mcp-server (score: 100)
-- [CRITICAL] @kaanha-ai/mcp (score: 100)
-- [CRITICAL] @kodiak-finance/orderly-sdk-docs (score: 70)
-- [CRITICAL] @maestro-ai/mcp-server (score: 95)
-- [CRITICAL] @mastra/core (score: 100)
+- [HIGH] @coherenceos/mcp-server (score: 40)
+- [CRITICAL] @disciplog/mcp (score: 100)
+- [HIGH] @easbot/mcp (score: 50)
+- [CRITICAL] @eo-studio-dev/veda-mcp (score: 100)
+- [CRITICAL] @getfunneled/mcp (score: 100)
+- [CRITICAL] @grafema/mcp (score: 100)
+- [HIGH] @helmdeck/mcp-bridge (score: 40)
+- [CRITICAL] @klever/mcp-server (score: 100)
+- [HIGH] @mattabase/modlens-mcp (score: 65)
+- [CRITICAL] @n24q02m/better-godot-mcp (score: 90)
+- [CRITICAL] @ncukondo/pubmed-mcp (score: 100)
+- [CRITICAL] @nielspeter/sonarlint-mcp-server (score: 85)
 
 ### Cumulative:
-- Total scanned: 2510
-  - CLEAN: 1509
-  - CRITICAL: 287
+- Total scanned: 2560
+  - CLEAN: 1537
+  - CRITICAL: 295
   - ERROR: 3
-  - HIGH: 192
-  - LOW: 267
-  - MEDIUM: 252
+  - HIGH: 196
+  - LOW: 271
+  - MEDIUM: 258
