@@ -54,6 +54,7 @@ ${BOLD}Usage:${RESET}
   atr init [--global]                      Setup ATR guard hook for Claude Code
   atr mcp                                  Start MCP server (stdio transport)
   atr scaffold                             Interactive rule scaffolding
+  atr scaffold-semantic                    Interactive semantic rule scaffolding
   atr badge <package> [--data <audit.json>] [--svg] [--json]
                                            Generate ATR Scanned badge for a package
 
@@ -69,6 +70,12 @@ ${BOLD}Options:${RESET}
   --sarif          Output results as SARIF v2.1.0 (GitHub Security tab)
   --output <file>  Write output to file instead of stdout (convert)
   --severity <s>   Minimum severity to report (critical|high|medium|low|informational)
+  --semantic       Enable method=semantic rules using an OpenAI-compatible judge
+  --semantic-api-key <key>       Judge API key (or ATR_SEMANTIC_API_KEY / LLM_API_KEY)
+  --semantic-base-url <url>      Judge API base URL (or ATR_SEMANTIC_BASE_URL / LLM_BASE_URL)
+  --semantic-model <model>       Judge model (or ATR_SEMANTIC_MODEL / LLM_MODEL)
+  --semantic-timeout <ms>        Judge request timeout (or ATR_SEMANTIC_TIMEOUT_MS)
+  --semantic-no-json-mode        Do not send OpenAI JSON-mode response_format
   --no-report        Disable anonymous Threat Cloud reporting (enabled by default)
   --tc-url <url>     Threat Cloud endpoint (default: https://tc.panguard.ai)
   --dry-run        Log actions without executing (guard mode)
@@ -119,7 +126,7 @@ function parseArgs(argv: string[]): { command: string; target: string; options: 
   for (let i = 1; i < args.length; i++) {
     if (args[i].startsWith('--')) {
       const key = args[i].slice(2);
-      if (key === 'json' || key === 'sarif' || key === 'help' || key === 'dry-run' || key === 'fail-open' || key === 'global' || key === 'svg' || key === 'no-report' || key === 'report-to-cloud') {
+      if (key === 'json' || key === 'sarif' || key === 'help' || key === 'dry-run' || key === 'fail-open' || key === 'global' || key === 'svg' || key === 'no-report' || key === 'report-to-cloud' || key === 'semantic' || key === 'semantic-no-json-mode') {
         options[key] = 'true';
       } else {
         options[key] = args[++i] ?? '';
@@ -669,6 +676,189 @@ async function cmdScaffold(): Promise<void> {
   console.log(`\n${DIM}Copy this YAML to a .yaml file in rules/${category.trim()}/ and validate with: atr validate <file>${RESET}\n`);
 }
 
+async function cmdScaffoldSemantic(): Promise<void> {
+  const { createInterface } = await import('node:readline');
+  const { RuleScaffolder } = await import('./rule-scaffolder.js');
+
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+
+  const ask = (question: string): Promise<string> =>
+    new Promise((resolve) => rl.question(question, resolve));
+
+  console.log(`\n${BOLD}ATR Semantic Rule Scaffolder${RESET}`);
+  console.log(`${DIM}Generate a draft method=semantic ATR rule interactively.${RESET}\n`);
+
+  const title = await ask('Rule title: ');
+  if (!title.trim()) {
+    console.error(`${RED}Error: Title is required.${RESET}`);
+    rl.close();
+    process.exit(1);
+  }
+
+  const categories = [
+    'prompt-injection', 'tool-poisoning', 'context-exfiltration',
+    'agent-manipulation', 'privilege-escalation', 'excessive-autonomy',
+    'data-poisoning', 'model-abuse', 'skill-compromise',
+  ];
+  console.log(`\nCategories: ${categories.join(', ')}`);
+  const category = await ask('Category: ');
+  if (!categories.includes(category.trim())) {
+    console.error(`${RED}Error: Invalid category.${RESET}`);
+    rl.close();
+    process.exit(1);
+  }
+
+  const attackDescription = await ask('Attack description: ');
+  if (!attackDescription.trim()) {
+    console.error(`${RED}Error: Description is required.${RESET}`);
+    rl.close();
+    process.exit(1);
+  }
+
+  const notDetectedDescription = await ask('What is NOT detected by this rule: ');
+  if (!notDetectedDescription.trim()) {
+    console.error(`${RED}Error: Non-detection scope is required for semantic rules.${RESET}`);
+    rl.close();
+    process.exit(1);
+  }
+
+  console.log('\nEnter malicious examples / true positives (at least 5, one per line, empty line to finish):');
+  const positives: string[] = [];
+  while (true) {
+    const payload = await ask(`  Positive ${positives.length + 1}: `);
+    if (!payload.trim()) break;
+    positives.push(payload.trim());
+  }
+
+  if (positives.length < 5) {
+    console.error(`${RED}Error: At least 5 positive examples are required for promotion-ready semantic rules.${RESET}`);
+    rl.close();
+    process.exit(1);
+  }
+
+  console.log('\nEnter benign examples / true negatives (at least 5, include near-misses, empty line to finish):');
+  const negatives: string[] = [];
+  while (true) {
+    const payload = await ask(`  Negative ${negatives.length + 1}: `);
+    if (!payload.trim()) break;
+    negatives.push(payload.trim());
+  }
+
+  if (negatives.length < 5) {
+    console.error(`${RED}Error: At least 5 negative examples are required for promotion-ready semantic rules.${RESET}`);
+    rl.close();
+    process.exit(1);
+  }
+
+  console.log('\nEnter evasion tests (at least 3). Leave input empty after 3 to finish.');
+  const evasionTests: import('./rule-scaffolder.js').ScaffoldEvasionTestInput[] = [];
+  while (true) {
+    const input = await ask(`  Evasion ${evasionTests.length + 1} input: `);
+    if (!input.trim()) break;
+    const bypass = await ask('    bypass_technique: ');
+    if (!bypass.trim()) {
+      console.error(`${RED}Error: Each evasion test requires bypass_technique.${RESET}`);
+      rl.close();
+      process.exit(1);
+    }
+    const expected = await ask('    expected [triggered/not_triggered] (default: triggered): ');
+    const normalizedExpected = expected.trim() === 'not_triggered' ? 'not_triggered' : 'triggered';
+    const notes = await ask('    notes (optional): ');
+    evasionTests.push({
+      input: input.trim(),
+      expected: normalizedExpected,
+      bypass_technique: bypass.trim(),
+      ...(notes.trim() ? { notes: notes.trim() } : {}),
+    });
+  }
+
+  if (evasionTests.length < 3) {
+    console.error(`${RED}Error: At least 3 evasion tests are required for promotion-ready semantic rules.${RESET}`);
+    rl.close();
+    process.exit(1);
+  }
+
+  console.log('\nEnter known false-positive edge cases (at least 1, empty line to finish):');
+  const falsePositiveScenarios: string[] = [];
+  while (true) {
+    const scenario = await ask(`  False positive ${falsePositiveScenarios.length + 1}: `);
+    if (!scenario.trim()) break;
+    falsePositiveScenarios.push(scenario.trim());
+  }
+
+  if (falsePositiveScenarios.length === 0) {
+    console.error(`${RED}Error: At least one false-positive edge case is required.${RESET}`);
+    rl.close();
+    process.exit(1);
+  }
+
+  const owaspRefsRaw = await ask('OWASP refs, comma-separated (for example LLM01:2025, ASI01): ');
+  const owaspRefs = owaspRefsRaw.split(',').map((ref) => ref.trim()).filter(Boolean);
+  if (owaspRefs.length === 0) {
+    console.error(`${RED}Error: At least one OWASP reference is required.${RESET}`);
+    rl.close();
+    process.exit(1);
+  }
+
+  const mitreRefsRaw = await ask('MITRE refs, comma-separated (for example AML.T0051): ');
+  const mitreRefs = mitreRefsRaw.split(',').map((ref) => ref.trim()).filter(Boolean);
+  if (mitreRefs.length === 0) {
+    console.error(`${RED}Error: At least one MITRE reference is required.${RESET}`);
+    rl.close();
+    process.exit(1);
+  }
+
+  const severities = ['critical', 'high', 'medium', 'low', 'informational'];
+  const severity = await ask(`Severity [${severities.join('/')}] (default: medium): `);
+  const finalSeverity = severity.trim() && severities.includes(severity.trim())
+    ? severity.trim()
+    : 'medium';
+
+  const thresholdRaw = await ask('Semantic threshold 0.0-1.0 (default: 0.7): ');
+  const threshold = thresholdRaw.trim() ? Number.parseFloat(thresholdRaw.trim()) : 0.7;
+
+  const fallbackRaw = await ask('Use generated pattern fallback? [Y/n]: ');
+  const includePatternFallback = !['n', 'no'].includes(fallbackRaw.trim().toLowerCase());
+
+  rl.close();
+
+  const scaffolder = new RuleScaffolder();
+  const result = scaffolder.scaffoldSemantic({
+    title: title.trim(),
+    category: category.trim() as import('./types.js').ATRCategory,
+    attackDescription: attackDescription.trim(),
+    notDetectedDescription: notDetectedDescription.trim(),
+    examplePayloads: positives,
+    negativePayloads: negatives,
+    evasionTests,
+    falsePositiveScenarios,
+    owaspRefs,
+    mitreRefs,
+    severity: finalSeverity as import('./types.js').ATRSeverity,
+    detectionMethod: 'semantic',
+    semantic: {
+      threshold,
+      includePatternFallback,
+      fallbackMethod: includePatternFallback ? 'pattern' : 'none',
+    },
+  });
+
+  console.log(`\n${GREEN}Generated semantic rule ${result.id}:${RESET}\n`);
+  console.log(`${DIM}${'─'.repeat(60)}${RESET}`);
+  console.log(result.yaml);
+  console.log(`${DIM}${'─'.repeat(60)}${RESET}`);
+
+  if (result.warnings.length > 0) {
+    console.log(`\n${BOLD}Warnings:${RESET}`);
+    for (const w of result.warnings) {
+      console.log(`  - ${w}`);
+    }
+  }
+
+  console.log(`\n${DIM}Place draft YAML in proposals/semantic/ first, then validate with: atr validate <file>${RESET}`);
+  console.log(`${DIM}For live local-model smoke tests, run with --semantic and an Ollama/OpenAI-compatible judge.${RESET}\n`);
+}
+
 // --- INIT command ---
 
 function cmdInit(options: Record<string, string>): void {
@@ -932,6 +1122,12 @@ async function main(): Promise<void> {
         severity: options['severity'],
         reportToCloud: options['no-report'] !== 'true',
         tcUrl: options['tc-url'],
+        semantic: options['semantic'] === 'true',
+        semanticApiKey: options['semantic-api-key'],
+        semanticBaseUrl: options['semantic-base-url'],
+        semanticModel: options['semantic-model'],
+        semanticTimeout: options['semantic-timeout'],
+        semanticNoJsonMode: options['semantic-no-json-mode'] === 'true',
       });
       break;
     case 'scan-skill':
@@ -942,6 +1138,12 @@ async function main(): Promise<void> {
         forceType: 'skill',
         reportToCloud: options['no-report'] !== 'true',
         tcUrl: options['tc-url'],
+        semantic: options['semantic'] === 'true',
+        semanticApiKey: options['semantic-api-key'],
+        semanticBaseUrl: options['semantic-base-url'],
+        semanticModel: options['semantic-model'],
+        semanticTimeout: options['semantic-timeout'],
+        semanticNoJsonMode: options['semantic-no-json-mode'] === 'true',
       });
       break;
     case 'validate':
@@ -967,6 +1169,9 @@ async function main(): Promise<void> {
       break;
     case 'scaffold':
       await cmdScaffold();
+      break;
+    case 'scaffold-semantic':
+      await cmdScaffoldSemantic();
       break;
     case 'badge':
       cmdBadge(target, options);

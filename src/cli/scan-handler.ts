@@ -11,6 +11,7 @@ import { ATREngine } from '../engine.js';
 import type { AgentEvent, ATRMatch, ScanResult, ScanType } from '../types.js';
 import { scanResultToSARIF } from '../converters/sarif.js';
 import { createTCReporter } from '../tc-reporter.js';
+import { createSemanticJudgeFromConfig } from './semantic-judge-config.js';
 
 const SEVERITY_ORDER = ['informational', 'low', 'medium', 'high', 'critical'] as const;
 
@@ -37,6 +38,12 @@ export interface ScanOptions {
   readonly forceType?: ScanType;
   readonly reportToCloud?: boolean;
   readonly tcUrl?: string;
+  readonly semantic?: boolean;
+  readonly semanticApiKey?: string;
+  readonly semanticBaseUrl?: string;
+  readonly semanticModel?: string;
+  readonly semanticTimeout?: string;
+  readonly semanticNoJsonMode?: boolean;
 }
 
 /** Detect whether the target is an MCP event JSON or SKILL.md file/directory. */
@@ -139,8 +146,12 @@ async function scanMcpEvents(
     process.exit(1);
   }
 
-  const engine = new ATREngine({ rulesDir, reporter });
+  const semantic = createSemanticJudgeFromScanOptions(options);
+  const engine = new ATREngine({ rulesDir, reporter, semanticJudge: semantic.judge });
   await engine.loadRules();
+  if (semantic.enabled && !options.json && !options.sarif) {
+    console.error(`${DIM}Semantic judge: enabled for method=semantic rules${RESET}`);
+  }
 
   const minIdx = SEVERITY_ORDER.indexOf(
     (options.severity ?? 'informational') as typeof SEVERITY_ORDER[number],
@@ -151,7 +162,9 @@ async function scanMcpEvents(
 
   for (const event of events) {
     if (!event.content) continue; // skip malformed events
-    const result = engine.evaluateFull(event, eventsPath);
+    const result = semantic.enabled
+      ? await engine.evaluateFullAsync(event, eventsPath)
+      : engine.evaluateFull(event, eventsPath);
     const filtered = result.matches.filter(
       (m) => SEVERITY_ORDER.indexOf(m.rule.severity) >= minIdx,
     );
@@ -223,8 +236,12 @@ async function scanSkillFiles(
     process.exit(1);
   }
 
-  const engine = new ATREngine({ rulesDir, reporter });
+  const semantic = createSemanticJudgeFromScanOptions(options);
+  const engine = new ATREngine({ rulesDir, reporter, semanticJudge: semantic.judge });
   await engine.loadRules();
+  if (semantic.enabled && !options.json && !options.sarif) {
+    console.error(`${DIM}Semantic judge: enabled for method=semantic rules${RESET}`);
+  }
 
   const minIdx = SEVERITY_ORDER.indexOf(
     (options.severity ?? 'informational') as typeof SEVERITY_ORDER[number],
@@ -240,7 +257,9 @@ async function scanSkillFiles(
       continue;
     }
     const content = readFileSync(file, 'utf-8');
-    const result = engine.scanSkillFull(content, file);
+    const result = semantic.enabled
+      ? await engine.scanSkillFullAsync(content, file)
+      : engine.scanSkillFull(content, file);
     const filtered = result.matches.filter(
       (m) => SEVERITY_ORDER.indexOf(m.rule.severity) >= minIdx,
     );
@@ -291,6 +310,17 @@ async function scanSkillFiles(
     }
     console.log('');
   }
+}
+
+function createSemanticJudgeFromScanOptions(options: ScanOptions) {
+  return createSemanticJudgeFromConfig({
+    ...(options.semantic ? { semantic: 'true' } : {}),
+    ...(options.semanticApiKey ? { 'semantic-api-key': options.semanticApiKey } : {}),
+    ...(options.semanticBaseUrl ? { 'semantic-base-url': options.semanticBaseUrl } : {}),
+    ...(options.semanticModel ? { 'semantic-model': options.semanticModel } : {}),
+    ...(options.semanticTimeout ? { 'semantic-timeout': options.semanticTimeout } : {}),
+    ...(options.semanticNoJsonMode ? { 'semantic-no-json-mode': 'true' } : {}),
+  });
 }
 
 // ── Shared Helpers ─────────────────────────────────────────────

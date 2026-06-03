@@ -127,6 +127,34 @@ describe("semantic-evaluator: caching", () => {
     await evaluateSemanticRule(rule, "input B", { judge });
     expect(callCount).toBe(2);
   });
+
+  it("does NOT collide between two rules with different prompts and no judge_prompt_hash", async () => {
+    // Regression (PR #84 review): cacheKey used `judge_prompt_hash ?? "no-hash"`,
+    // so two scaffolded rules (neither sets a hash) sharing the module cache
+    // returned each other's verdicts for the same input. The key now derives
+    // from the prompt template, so distinct prompts never collide.
+    let callCount = 0;
+    const judge: ATRSemanticJudge = vi.fn(async () => {
+      callCount++;
+      return { category: "test", confidence: 0.9 };
+    });
+    const ruleA = semanticRule({ cache_ttl: 60, prompt_template: "Judge A: {{input}}" });
+    const ruleB = semanticRule({ cache_ttl: 60, prompt_template: "Judge B: {{input}}" });
+    await evaluateSemanticRule(ruleA, "shared-collision-input", { judge });
+    await evaluateSemanticRule(ruleB, "shared-collision-input", { judge });
+    expect(callCount).toBe(2);
+  });
+
+  it("caps input length sent to the judge (bounds token cost)", async () => {
+    let seenLen = -1;
+    const judge: ATRSemanticJudge = vi.fn(async (req) => {
+      seenLen = req.input.length;
+      return { category: "ok", confidence: 0.1 };
+    });
+    const rule = semanticRule({ prompt_template: "X: {{input}}" });
+    await evaluateSemanticRule(rule, "a".repeat(50_000), { judge, maxInputChars: 1000 });
+    expect(seenLen).toBe(1000);
+  });
 });
 
 describe("semantic-evaluator: prompt rendering", () => {
