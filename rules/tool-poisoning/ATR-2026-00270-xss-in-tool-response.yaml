@@ -50,7 +50,7 @@ detection:
   conditions:
     - field: tool_response
       operator: regex
-      value: '<script[^>]*>\s*(?:[^\n<]{0,200}(?:eval\s*\(|document\.cookie|window\.location\s*=|fetch\s*\(|XMLHttpRequest|localStorage|sessionStorage|atob\s*\()[^\n<]{0,200})<\/script>'
+      value: '<script\b(?![^>]*(?:\bsetup\b|\blang[\s=]))[^>]*>\s*(?:[^\n<]{0,200}(?:eval\s*\(|document\.cookie|window\.location\s*=|fetch\s*\(|XMLHttpRequest|localStorage|sessionStorage|atob\s*\()[^\n<]{0,200})<\/script>'
       description: 'Script tag whose body contains a known XSS sink (eval/cookie/fetch/etc) — excludes bare src= includes'
     - field: tool_response
       operator: regex
@@ -66,7 +66,7 @@ detection:
       description: 'Instruction to emit HTML/script payload containing common XSS sinks'
     - field: tool_response
       operator: regex
-      value: '<(?:script|iframe|svg)\b[^>]*>[^<]{0,200}(?:eval\s*\(|alert\s*\(|document\.cookie|window\.location\s*=|fetch\s*\(|XMLHttpRequest)'
+      value: '<(?:script\b(?![^>]*(?:\bsetup\b|\blang[\s=]))|iframe|svg)\b[^>]*>[^<]{0,200}(?:eval\s*\(|alert\s*\(|document\.cookie|window\.location\s*=|fetch\s*\(|XMLHttpRequest)'
       description: 'Script/iframe/SVG block containing known XSS sink functions'
   condition: any
   false_positives:

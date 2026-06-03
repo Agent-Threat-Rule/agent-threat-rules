@@ -109,8 +109,8 @@ detection:
 
     - field: user_input
       operator: regex
-      value: '(?i)\bremember\s*:\s*[^.]{0,200}\b(?:you\s+are|act\s+as|always|never|from\s+now\s+on|in\s+every\s+(?:reply|response|turn))\b'
-      description: "Explicit REMEMBER: directive followed by persona-shaping verbs — instructs the advisor to keep the override across turns"
+      value: '(?i)\bremember\s*:\s*[^.]{0,200}\b(?:from\s+now\s+on|in\s+every\s+(?:reply|response|turn)|in\s+all\s+(?:future\s+)?(?:replies|responses|turns)|once\s+(?:stored|saved|persisted)|across\s+(?:all\s+)?(?:sessions?|turns?))\b'
+      description: "REMEMBER: directive paired with a cross-turn persistence marker (from now on / in every reply / once stored) — drops bare always/never/you-are emphasis that benign skills use"
 
     - field: user_input
       operator: regex
