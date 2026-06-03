@@ -104,8 +104,8 @@ detection:
 
     - field: content
       operator: regex
-      value: '(?i)BuiltinImporter|FunctionType|getattr\s*\(\s*(?:object|type|__builtins__)'
-      description: "Direct reference to BuiltinImporter or reflective getattr on built-in roots — second stage of the AST-bypass chain"
+      value: '(?i)BuiltinImporter|\btypes\.FunctionType\b|\bFunctionType\s*\(|getattr\s*\(\s*(?:object|type|__builtins__)'
+      description: "BuiltinImporter, Python types.FunctionType reflective construction, or reflective getattr on built-in roots — excludes bare 'FunctionType' which collides with TypeScript terminology"
 
     - field: content
       operator: regex
