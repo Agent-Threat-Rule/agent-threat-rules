@@ -1,28 +1,19 @@
-## Daily Scan Summary (2026-06-03)
+## Daily Scan Summary (2026-06-04)
 - Scanned: 50 packages
-- CRITICAL: 8
-- HIGH: 4
-- CLEAN/LOW: 32
+- CRITICAL: 1
+- HIGH: 2
+- CLEAN/LOW: 45
 
 ### Flagged Packages:
-- [HIGH] @coherenceos/mcp-server (score: 40)
-- [CRITICAL] @disciplog/mcp (score: 100)
-- [HIGH] @easbot/mcp (score: 50)
-- [CRITICAL] @eo-studio-dev/veda-mcp (score: 100)
-- [CRITICAL] @getfunneled/mcp (score: 100)
-- [CRITICAL] @grafema/mcp (score: 100)
-- [HIGH] @helmdeck/mcp-bridge (score: 40)
-- [CRITICAL] @klever/mcp-server (score: 100)
-- [HIGH] @mattabase/modlens-mcp (score: 65)
-- [CRITICAL] @n24q02m/better-godot-mcp (score: 90)
-- [CRITICAL] @ncukondo/pubmed-mcp (score: 100)
-- [CRITICAL] @nielspeter/sonarlint-mcp-server (score: 85)
+- [HIGH] @avantguardllc/mcp-huntress (score: 40)
+- [CRITICAL] @codefundi/code-fundi-mcp (score: 100)
+- [HIGH] @fastmcp-me/imagegen-mcp (score: 50)
 
 ### Cumulative:
-- Total scanned: 2560
-  - CLEAN: 1537
-  - CRITICAL: 295
+- Total scanned: 2610
+  - CLEAN: 1578
+  - CRITICAL: 296
   - ERROR: 3
-  - HIGH: 196
-  - LOW: 271
-  - MEDIUM: 258
+  - HIGH: 198
+  - LOW: 275
+  - MEDIUM: 260
