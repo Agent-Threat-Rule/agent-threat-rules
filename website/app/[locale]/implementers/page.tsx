@@ -72,7 +72,7 @@ const IMPLEMENTERS = [
     date: "2026-05-11",
     refLabel: "PR #74",
     refUrl:
-      "https://github.com/precize/Agentic-AI-Top10-Vulnerability/pull/74",
+      "https://github.com/OWASP/Agent-Security-Regression-Harness/pull/74",
   },
   {
     org: "Gen Digital Sage (Norton / Avast / AVG)",
@@ -81,14 +81,6 @@ const IMPLEMENTERS = [
     date: "2026-05-11",
     refLabel: "PR #33",
     refUrl: "https://github.com/gendigitalinc/sage/pull/33",
-  },
-  {
-    org: "NIST OSCAL",
-    role: "Path 1 Accepted",
-    version: "2.2.0",
-    date: "2026-05-10",
-    refLabel: "ai-rmf-oscal-catalog",
-    refUrl: "https://github.com/Agent-Threat-Rule/ai-rmf-oscal-catalog",
   },
 ] as const;
 
@@ -165,8 +157,8 @@ export default async function ImplementersPage({
         </h2>
         <p>
           {zh
-            ? "下表列出已在生產環境部署 ATR 的組織。每一筆紀錄連結至構成公開採用證據的合併 pull request 或整合 commit。"
-            : "The following organizations have shipped ATR in production. Each entry links to the merged pull request or integration commit that constitutes the public adoption record."}
+            ? "下表列出已整合或引用 ATR 的組織,符規等級欄位區分 L1 Engine(在偵測引擎中執行規則)與 L1 Citation / L1 Galaxy(引用或編入分類法)。每一筆紀錄連結至構成公開採用證據的合併 pull request 或整合 commit。"
+            : "The following organizations have integrated or referenced ATR. The Conformance column distinguishes L1 Engine (rules run inside a detection engine) from L1 Citation / L1 Galaxy (referenced or incorporated into a taxonomy). Each entry links to the merged pull request or integration commit that constitutes the public adoption record."}
         </p>
 
         {/* Desktop / tablet table */}
@@ -260,6 +252,27 @@ export default async function ImplementersPage({
             ADOPTERS.md ↗
           </a>
         </p>
+
+        {/* Separate aside: standards-body submissions in review — NOT adoptions */}
+        <div className="border border-fog rounded-sm p-4 mt-6 bg-paper" style={{ maxWidth: "42em" }}>
+          <p className="text-xs uppercase tracking-[0.18em] text-stone mb-2" style={{ fontFamily: "var(--font-data)" }}>
+            {zh ? "標準機構 submission(審查中,非採用)" : "Standards-body submissions (in review, not adoptions)"}
+          </p>
+          <p className="text-sm text-graphite" style={{ fontFamily: "var(--font-body)" }}>
+            {zh
+              ? "ATR 把 AI RMF 社群版 OSCAL catalog 提交給 NIST 官方 usnistgov/oscal-content,目前 submission 審查中(NIST OSCAL maintainer 開了 collaboration branch #338)。這不是 NIST 採用、不是 NIST 背書,因此不列入上方生產實作者表。"
+              : "ATR submitted its community AI RMF OSCAL catalog to NIST's official usnistgov/oscal-content repo; the submission is in review (the NIST OSCAL maintainer opened collaboration branch #338). This is not a NIST adoption or endorsement, so it is not listed in the implementers table above."}
+            {" "}
+            <a
+              href="https://github.com/usnistgov/oscal-content/pull/338"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-navy underline"
+            >
+              #338 ↗
+            </a>
+          </p>
+        </div>
       </section>
 
       {/* §2 How to self-certify */}

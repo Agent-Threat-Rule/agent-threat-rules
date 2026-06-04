@@ -154,7 +154,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "integrate.license.title": "License & Legal",
     "integrate.cisco.title": "Case Study: How Cisco Did It",
     "integrate.cisco.body":
-      "Cisco's DefenseClaw team integrated ATR rules as an upstream dependency. Their engineer submitted PR #79, we reviewed it, and it merged in 3 days. They then built a --rule-packs CLI feature (PR #80) specifically to consume ATR as a first-class rule source.",
+      "Cisco's AI Defense team integrated ATR rules as an upstream dependency. Their engineer submitted PR #79, we reviewed it, and it merged in 3 days. They then built a --rule-packs CLI feature (PR #80) specifically to consume ATR as a first-class rule source.",
 
     // Contribute page
     "contribute.crystal.title": "Threat Cloud Crystallization",
@@ -174,8 +174,8 @@ export const messages: Record<Locale, Record<string, string>> = {
     "research.paper": "Published Paper",
     "research.benchmarks": "Benchmarks",
     "research.benchmarks.sub":
-      "Tested with our own corpus AND external benchmarks we've never seen before.",
-    "research.pint": "PINT (External, Adversarial)",
+      "Tested against our own corpus and public adversarial datasets (deepset, Lakera Gandalf, HackAPrompt, garak).",
+    "research.pint": "PINT-format (self-built)",
     "research.self": "Self-Test (Own Rules)",
     "research.precision": "Precision",
     "research.recall": "Recall",
@@ -287,7 +287,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     // Implementers page
     "implementers.title": "Implementer Report",
     "implementers.subtitle":
-      "Organizations that have shipped ATR in production. Self-declared via pull request to the ADOPTERS.md registry.",
+      "Organizations that have integrated or referenced ATR. Self-declared via pull request to the ADOPTERS.md registry.",
     "implementers.col.org": "Organization",
     "implementers.col.role": "Conformance",
     "implementers.col.version": "Spec Version",
@@ -297,7 +297,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "implementers.tier.publisher": "L2 Publisher",
     "implementers.tier.citation": "L1 Citation",
     "implementers.tier.galaxy": "L1 Galaxy",
-    "implementers.tier.accepted": "Path 1 Accepted",
+    "implementers.tier.accepted": "Submission in review",
     "implementers.empty":
       "No entries yet. Open a PR against ADOPTERS.md to add your organization.",
 
@@ -313,13 +313,13 @@ export const messages: Record<Locale, Record<string, string>> = {
       "An L2 publisher publishes rules in a vendor-prefixed sub-range (e.g., ACME-YYYY-NNNNN) that follow all ATR semantics. L2 publishers MUST honor the deprecation policy in §3.7 and SHOULD include test_cases for every published rule.",
     "conformance.l3.title": "L3 Sub-range Authority",
     "conformance.l3.body":
-      "An L3 sub-range authority is a national or organizational body that mints rules under a sovereign prefix (e.g., ATR-TW-2026-NNNNN). Authority is granted by the ATR TSC following the procedure in /charter §5.",
+      "An L3 sub-range authority is a national or organizational body that mints rules under a sovereign prefix (e.g., ATR-TW-2026-NNNNN). Authority is granted following the procedure in /charter §5; the TSC grants it once seated — until then the lead maintainer (BDFL) acts in this role.",
     "conformance.testsuite.h": "Test Suite",
     "conformance.testsuite.body":
       "The L1 engine test suite consists of YAML fixtures stored under spec/conformance/ in the main repository. Each fixture pairs a rule with its expected evaluation outcome on a fixed event. An implementation passes if every fixture evaluates as declared.",
     "conformance.self.h": "Self-Certification",
     "conformance.self.body":
-      "Implementations self-certify by running the test suite locally and opening a pull request against ADOPTERS.md with the integration metadata. The TSC may verify a self-certification at any time by re-running the suite against a published artifact.",
+      "Implementations self-certify by running the test suite locally and opening a pull request against ADOPTERS.md with the integration metadata. The maintainers (the TSC once seated) may verify a self-certification at any time by re-running the suite against a published artifact.",
 
     // Errata page
     "errata.title": "Errata",
@@ -533,7 +533,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "integrate.license.title": "\u6388\u6B0A\u8207\u6CD5\u5F8B",
     "integrate.cisco.title": "\u6848\u4F8B\uff1ACisco \u600E\u9EBC\u505A\u7684",
     "integrate.cisco.body":
-      "Cisco \u7684 DefenseClaw \u5718\u968A\u5C07 ATR rules \u4F5C\u70BA\u4E0A\u6E38\u4F9D\u8CF4\u6574\u5408\u3002\u4ED6\u5011\u7684\u5DE5\u7A0B\u5E2B\u63D0\u4EA4\u4E86 PR #79\uff0C\u6211\u5011 review \u5B8C\uff0C3 \u5929\u5408\u4F75\u3002\u7136\u5F8C\u4ED6\u5011\u5EFA\u4E86 --rule-packs CLI\uff08PR #80\uff09\u5C08\u9580\u6D88\u8CBB ATR\u3002",
+      "Cisco \u7684 AI Defense \u5718\u968A\u5C07 ATR rules \u4F5C\u70BA\u4E0A\u6E38\u4F9D\u8CF4\u6574\u5408\u3002\u4ED6\u5011\u7684\u5DE5\u7A0B\u5E2B\u63D0\u4EA4\u4E86 PR #79\uff0C\u6211\u5011 review \u5B8C\uff0C3 \u5929\u5408\u4F75\u3002\u7136\u5F8C\u4ED6\u5011\u5EFA\u4E86 --rule-packs CLI\uff08PR #80\uff09\u5C08\u9580\u6D88\u8CBB ATR\u3002",
 
     // Contribute page
     "contribute.crystal.title": "Threat Cloud \u7D50\u6676\u6A5F\u5236",
@@ -553,8 +553,8 @@ export const messages: Record<Locale, Record<string, string>> = {
     "research.paper": "\u5DF2\u767C\u5E03\u8AD6\u6587",
     "research.benchmarks": "Benchmarks",
     "research.benchmarks.sub":
-      "\u7528\u6211\u5011\u81EA\u5DF1\u7684\u8A9E\u6599\u5EAB\u548C\u5F9E\u672A\u898B\u904E\u7684\u5916\u90E8 benchmark \u6E2C\u8A66\u3002",
-    "research.pint": "PINT\uff08\u5916\u90E8\u5C0D\u6297\u6E2C\u8A66\uff09",
+      "\u7528\u6211\u5011\u81EA\u5DF1\u7684\u8A9E\u6599\u5EAB,\u4EE5\u53CA\u516C\u958B\u5C0D\u6297\u8CC7\u6599\u96C6(deepset\u3001Lakera Gandalf\u3001HackAPrompt\u3001garak)\u6E2C\u8A66\u3002",
+    "research.pint": "PINT \u683C\u5F0F\uff08\u81EA\u5EFA\u8A9E\u6599\uff09",
     "research.self": "Self-Test\uff08\u81EA\u6709\u898F\u5247\uff09",
     "research.precision": "Precision",
     "research.recall": "Recall",
@@ -670,7 +670,7 @@ export const messages: Record<Locale, Record<string, string>> = {
 
     "implementers.title": "Implementer Report",
     "implementers.subtitle":
-      "\u5DF2\u5728\u751F\u7522\u74B0\u5883\u90E8\u7F72 ATR \u7684\u7D44\u7E54\u3002\u900F\u904E pull request \u5C0D ADOPTERS.md registry \u81EA\u6211\u5BA3\u544A (self-declaration)\u3002",
+      "\u5DF2\u6574\u5408\u6216\u5F15\u7528 ATR \u7684\u7D44\u7E54\u3002\u900F\u904E pull request \u5C0D ADOPTERS.md registry \u81EA\u6211\u5BA3\u544A (self-declaration)\u3002",
     "implementers.col.org": "\u7D44\u7E54",
     "implementers.col.role": "\u7B26\u898F\u7B49\u7D1A",
     "implementers.col.version": "\u898F\u683C\u7248\u672C",
@@ -680,7 +680,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "implementers.tier.publisher": "L2 Publisher",
     "implementers.tier.citation": "L1 Citation",
     "implementers.tier.galaxy": "L1 Galaxy",
-    "implementers.tier.accepted": "Path 1 Accepted",
+    "implementers.tier.accepted": "Submission in review",
     "implementers.empty":
       "\u76EE\u524D\u7121\u7D00\u9304\u3002\u5C0D ADOPTERS.md \u958B PR \u5373\u53EF\u52A0\u5165\u4F60\u7684\u7D44\u7E54\u3002",
 
@@ -695,13 +695,13 @@ export const messages: Record<Locale, Record<string, string>> = {
       "L2 publisher \u5728\u5EE0\u5546\u524D\u7DB4 (vendor-prefixed) \u7684\u5B50\u7BC4\u570D (\u4F8B\u5982 ACME-YYYY-NNNNN) \u5167\u767C\u5E03\u7B26\u5408 ATR \u8A9E\u610F\u7684\u898F\u5247\u3002L2 publisher MUST \u9075\u5B88 \u00A73.7 \u7684\u5EE2\u68C4\u653F\u7B56,SHOULD \u70BA\u6BCF\u4E00\u689D\u767C\u5E03\u898F\u5247\u9644\u4E0A test_cases\u3002",
     "conformance.l3.title": "L3 Sub-range Authority",
     "conformance.l3.body":
-      "L3 sub-range authority \u662F\u570B\u5BB6\u7D1A\u6216\u7D44\u7E54\u7D1A\u7684\u4E3B\u9AD4,\u5728\u4E3B\u6B0A (sovereign) \u524D\u7DB4\u4E0B\u9444\u9020\u898F\u5247 (\u4F8B\u5982 ATR-TW-2026-NNNNN)\u3002\u6388\u6B0A\u7531 ATR TSC \u4F9D /charter \u00A75 \u7A0B\u5E8F\u6838\u767C\u3002",
+      "L3 sub-range authority \u662F\u570B\u5BB6\u7D1A\u6216\u7D44\u7E54\u7D1A\u7684\u4E3B\u9AD4,\u5728\u4E3B\u6B0A (sovereign) \u524D\u7DB4\u4E0B\u9444\u9020\u898F\u5247 (\u4F8B\u5982 ATR-TW-2026-NNNNN)\u3002\u6388\u6B0A\u4F9D /charter \u00A75 \u7A0B\u5E8F\u6838\u767C;TSC \u6210\u7ACB\u5F8C\u7531\u5176\u6838\u767C,\u5728\u6B64\u4E4B\u524D\u7531\u4E3B\u7406\u4EBA (BDFL) \u66AB\u4EE3\u3002",
     "conformance.testsuite.h": "\u6E2C\u8A66\u5957\u4EF6 (Test Suite)",
     "conformance.testsuite.body":
       "L1 engine \u6E2C\u8A66\u5957\u4EF6\u7531\u4E3B repository \u4E2D spec/conformance/ \u4E0B\u7684 YAML fixture \u7D44\u6210\u3002\u6BCF\u500B fixture \u914D\u5C0D\u4E00\u689D\u898F\u5247\u8207\u5176\u5728\u56FA\u5B9A\u4E8B\u4EF6 (event) \u4E0A\u7684\u9810\u671F\u8A55\u4F30\u7D50\u679C\u3002\u5BE6\u4F5C\u901A\u904E\u7684\u689D\u4EF6\u662F:\u6BCF\u500B fixture \u90FD\u5982\u5BA3\u544A\u822C\u8A55\u4F30\u3002",
     "conformance.self.h": "\u81EA\u6211\u8A8D\u8B49 (Self-Certification)",
     "conformance.self.body":
-      "\u5BE6\u4F5C\u8005\u5728\u672C\u5730\u57F7\u884C\u6E2C\u8A66\u5957\u4EF6,\u4E26\u5C0D ADOPTERS.md \u958B\u7ACB pull request \u52A0\u5165\u6574\u5408 metadata,\u5373\u53EF\u81EA\u6211\u8A8D\u8B49 (self-certify)\u3002TSC \u53EF\u96A8\u6642\u5C0D\u4EFB\u4E00\u5DF2\u767C\u5E03\u7522\u7269\u91CD\u8DD1\u6E2C\u8A66\u5957\u4EF6\u4EE5\u9A57\u8B49\u81EA\u6211\u8A8D\u8B49\u3002",
+      "\u5BE6\u4F5C\u8005\u5728\u672C\u5730\u57F7\u884C\u6E2C\u8A66\u5957\u4EF6,\u4E26\u5C0D ADOPTERS.md \u958B\u7ACB pull request \u52A0\u5165\u6574\u5408 metadata,\u5373\u53EF\u81EA\u6211\u8A8D\u8B49 (self-certify)\u3002\u7DAD\u8B77\u8005(TSC \u6210\u7ACB\u5F8C)\u53EF\u96A8\u6642\u5C0D\u4EFB\u4E00\u5DF2\u767C\u5E03\u7522\u7269\u91CD\u8DD1\u6E2C\u8A66\u5957\u4EF6\u4EE5\u9A57\u8B49\u81EA\u6211\u8A8D\u8B49\u3002",
 
     "errata.title": "\u52D8\u8AA4 (Errata)",
     "errata.subtitle":

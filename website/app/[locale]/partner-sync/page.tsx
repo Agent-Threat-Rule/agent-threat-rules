@@ -31,7 +31,7 @@ export default function PartnerSyncPage() {
       <section className="mt-10 space-y-3">
         <h2 className="text-xl font-semibold">Getting a key</h2>
         <p>
-          Email <a className="underline" href="mailto:attlab0527@gmail.com">attlab0527@gmail.com</a>{' '}
+          Email <a className="underline" href="mailto:adam@agentthreatrule.org">adam@agentthreatrule.org</a>{' '}
           with: organisation name, intended use, approximate poll interval. Keys are issued
           manually during the early-partner phase. No cost. MIT terms still apply to the rules
           themselves.
@@ -41,7 +41,7 @@ export default function PartnerSyncPage() {
       <section className="mt-10 space-y-3">
         <h2 className="text-xl font-semibold">Endpoint</h2>
         <pre className="overflow-x-auto rounded bg-neutral-900 p-4 text-sm">
-{`GET https://tc.panguard.ai/api/atr-rules/live?since=<ISO-8601>
+{`GET https://tc.agentthreatrule.org/api/atr-rules/live?since=<ISO-8601>
 Authorization: Bearer <partner-key>`}
         </pre>
         <p className="text-sm text-neutral-400">
@@ -68,7 +68,7 @@ Authorization: Bearer <partner-key>`}
       "tags": "..."
     }
   ],
-  "meta": { "total": 114, "etag": "W/\\"114-2026-04-17T00:03:42Z\\"" }
+  "meta": { "total": 462, "etag": "W/\\"462-2026-04-17T00:03:42Z\\"" }
 }`}
         </pre>
       </section>
@@ -82,14 +82,14 @@ while true; do
   RESP=$(curl -sS -w '\\n%{http_code}' \\
     -H "Authorization: Bearer $ATR_PARTNER_KEY" \\
     \${LAST_ETAG:+-H "If-None-Match: $LAST_ETAG"} \\
-    "https://tc.panguard.ai/api/atr-rules/live")
+    "https://tc.agentthreatrule.org/api/atr-rules/live")
   STATUS=$(echo "$RESP" | tail -1)
   if [ "$STATUS" = "304" ]; then
     echo "no change"
   elif [ "$STATUS" = "200" ]; then
     echo "$RESP" | head -n-1 | jq '.data | length' # process rules
     LAST_ETAG=$(curl -sSI -H "Authorization: Bearer $ATR_PARTNER_KEY" \\
-      "https://tc.panguard.ai/api/atr-rules/live" | grep -i etag | cut -d' ' -f2- | tr -d '\\r')
+      "https://tc.agentthreatrule.org/api/atr-rules/live" | grep -i etag | cut -d' ' -f2- | tr -d '\\r')
   fi
   sleep 300
 done`}

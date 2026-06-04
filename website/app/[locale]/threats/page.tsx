@@ -14,7 +14,7 @@ export function generateStaticParams() {
 export const metadata: Metadata = {
   title: "Threat Feed - ATR",
   description:
-    "Public blacklist of flagged AI agent skills. 1,302 flagged, 751 confirmed malware. Updated from ATR ecosystem scans and Threat Cloud reports.",
+    "Public blacklist of flagged AI agent skills. 1,302 flagged, 552 confirmed malware. Updated from ATR ecosystem scans and Threat Cloud reports.",
 };
 
 interface BlacklistData {

@@ -73,8 +73,8 @@ const MILESTONES: Milestone[] = [
       zh: "大規模惡意軟體行動研究發布",
     },
     detail: {
-      en: "Scanned 96,096 skills across five registries. Documented 751 malicious skills from three coordinated threat actors. Notified NousResearch via issue #9809.",
-      zh: "跨五個 registry 掃描 96,096 個 skill，記錄 751 個惡意 skill 與三個協同行為者，透過 issue #9809 通報 NousResearch。",
+      en: "Scanned 96,096 skills across five registries. Documented malicious skills from three coordinated threat actors (552 confirmed on the live blacklist). Notified NousResearch via issue #9809.",
+      zh: "跨五個 registry 掃描 96,096 個 skill，記錄三個協同行為者的惡意 skill（即時黑名單已確認 552 個），透過 issue #9809 通報 NousResearch。",
     },
   },
   {
@@ -95,8 +95,8 @@ const MILESTONES: Milestone[] = [
       zh: "v2.0.11 · NVIDIA garak 覆蓋",
     },
     detail: {
-      en: "193 new rules covering the full NVIDIA garak probe corpus (311 total). garak in-the-wild jailbreak benchmark recall: 97.1% (646/666).",
-      zh: "新增 193 條規則，涵蓋完整 NVIDIA garak probe corpus（總計 311 條）。garak in-the-wild jailbreak 基準召回率：97.1%（646/666）。",
+      en: "193 new rules covering the full NVIDIA garak probe corpus (311 total). garak in-the-wild jailbreak subset recall: 97.1% (646/666) at the time.",
+      zh: "新增 193 條規則，涵蓋完整 NVIDIA garak probe corpus（總計 311 條）。garak in-the-wild jailbreak 子集召回率（當時）：97.1%（646/666）。",
     },
   },
   {
@@ -152,6 +152,17 @@ const MILESTONES: Milestone[] = [
     detail: {
       en: "Hero, footer, and information architecture rewritten to match peer-format positioning (Sigma / YARA / ATT&CK / NIST AI RMF). Integration intake pipeline shipped: structured issue form, auto-triage workflow, ADOPTERS.md as machine-readable source of truth.",
       zh: "Hero、footer、資訊架構全面改寫為標準體裁,與 Sigma / YARA / ATT&CK / NIST AI RMF 對齊。Integration intake 管線上線:結構化 issue form、自動 triage workflow、ADOPTERS.md 作為機器可讀來源。",
+    },
+  },
+  {
+    date: "2026-06",
+    title: {
+      en: "v3.1.x · 462 rules across 10 categories",
+      zh: "v3.1.x · 462 條規則,跨 10 個類別",
+    },
+    detail: {
+      en: "Current release line: 462 detection rules across 10 categories, specification 3.0.0-alpha.1 (Working Draft).",
+      zh: "目前釋出線:462 條偵測規則,跨 10 個類別,規範 3.0.0-alpha.1（Working Draft）。",
     },
   },
 ];
@@ -262,8 +273,8 @@ export default async function AboutPage({
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh
-            ? "目前的外部採用來自三條 Fortune-500 production deployments(Cisco AI Defense 完整規則集進 skill-scanner、Microsoft AGT 287 條規則加每週自動同步、Gen Digital Sage 整套規則包),兩個標準機構已合併(MISP/CIRCL 的 taxonomies #323 + galaxy #1207、OWASP A-S-R-H #74),以及兩條送審中的 standards-body 提案(NIST AI RMF 社群 OSCAL catalog 已自 publish · usnistgov/oscal-content#333 review 中;OpenTelemetry GenAI SIG 的 agent.threat.detection.* PR #165 review 中)——這種「企業把鞋帶綁緊就提 PR」的採用模式,是 ATR 想要的治理質感。"
-            : "External adoption to date comes from three Fortune-500 production deployments (Cisco AI Defense's full rule pack in skill-scanner, Microsoft AGT's 287 rules plus weekly auto-sync, Gen Digital Sage's integrated pack); two standards-body integrations actually merged (MISP / CIRCL taxonomies #323 + galaxy #1207, and OWASP A-S-R-H #74); and two standards-body submissions in review (a community-authored OSCAL catalog for NIST AI RMF self-published by the ATR maintainers, with usnistgov/oscal-content#333 in NIST review; and the agent.threat.detection.* semantic-conventions PR #165 in OpenTelemetry GenAI SIG review). This pattern — enterprises integrating via pull request instead of private forks — is the governance texture ATR is built for."}
+            ? "目前的外部採用包含兩條生產環境部署(Cisco AI Defense 完整規則集進 skill-scanner、Microsoft AGT 287 條規則加每週自動同步),外加 Gen Digital Sage 已合併的規則包,兩個標準機構已合併(MISP/CIRCL 的 taxonomies #323 + galaxy #1207、OWASP A-S-R-H #74),以及兩條送審中的 standards-body 提案(NIST AI RMF 社群 OSCAL catalog 已自 publish · usnistgov/oscal-content#338 協作分支審查中,非 NIST 背書;OpenTelemetry GenAI SIG 的 agent.threat.detection.* PR #165 review 中)——這種「企業把鞋帶綁緊就提 PR」的採用模式,是 ATR 想要的治理質感。"
+            : "External adoption to date includes two in production (Cisco AI Defense's full rule pack in skill-scanner, Microsoft AGT's 287 rules plus weekly auto-sync) plus Gen Digital's merged Sage pack; two standards-body integrations actually merged (MISP / CIRCL taxonomies #323 + galaxy #1207, and OWASP A-S-R-H #74); and two standards-body submissions in review (a community-authored OSCAL catalog for NIST AI RMF self-published by the ATR maintainers, with usnistgov/oscal-content#338 collaboration branch in review — not a NIST endorsement; and the agent.threat.detection.* semantic-conventions PR #165 in OpenTelemetry GenAI SIG review). This pattern — enterprises integrating via pull request instead of private forks — is the governance texture ATR is built for."}
         </p>
         <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2">
           <a

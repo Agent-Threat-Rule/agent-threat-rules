@@ -283,6 +283,11 @@ export default async function CharterPage({
               </a>
               {zh ? "決策機制" : "Decision-Making"}
             </h2>
+            <p className="text-sm text-stone" style={{ maxWidth: "42em" }}>
+              {zh
+                ? "TSC 尚未就任。下列為提議之程序,於 GOVERNANCE.md 之過渡條件滿足後生效;在此之前,由首席維護者 (BDFL) 行使此角色。"
+                : "The TSC is not yet seated. The procedures below are proposed and take effect once the transition criteria in GOVERNANCE.md are met; until then the lead maintainer (BDFL) acts in this role."}
+            </p>
             <p>
               {zh
                 ? "規格層級 (spec-level) 之變更走 RFC process:任何人皆可於 repository 上開立 RFC issue 或 PR 描述提案,維護者標示為 RFC 後啟動公開討論窗 — 通常為十四日,複雜提案得延長至三十日。討論結束後,以 consensus 為主、必要時由維護者裁決 (maintainer call),通過後合併。實作層級 (engine-level) 之缺失修正、文件編輯與 rule 新增等不走 RFC process,以一般 PR 流程處理。"
@@ -315,6 +320,11 @@ export default async function CharterPage({
               </a>
               {zh ? "TSC 就任標準" : "TSC Seating Criteria"}
             </h2>
+            <p className="text-sm text-stone" style={{ maxWidth: "42em" }}>
+              {zh
+                ? "TSC 尚未就任。下列為提議之就任標準,於 GOVERNANCE.md 之過渡條件滿足後生效;在此之前,由首席維護者 (BDFL) 行使此角色。"
+                : "The TSC is not yet seated. The criteria below are proposed and take effect once the transition criteria in GOVERNANCE.md are met; until then the lead maintainer (BDFL) acts in this role."}
+            </p>
             <p>
               {zh
                 ? "下列四項條件 MUST 同時滿足,方得提名為 ATR Technical Steering Committee 成員。提名以對 GOVERNANCE.md 之 pull request 為之,並於 RFC 流程中公開討論。"

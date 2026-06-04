@@ -232,14 +232,6 @@ Vendors offering commercial support, hosted engines, or enterprise SLAs
 around ATR. Listed when the vendor has confirmed publicly that they ship
 ATR as a product feature.
 
-### PanGuard AI
-- **Org**: Panguard AI, Inc.
-- **Type**: engine
-- **Integration**: Hosted ATR engine + enterprise SLAs, compliance evidence module, and runtime guardrails
-- **Evidence**: <https://panguard.ai>
-- **Since**: 2026-04-22
-- **Status**: shipped
-
 *Vendors wishing to be listed here must contact `contact@agentthreatrule.org`
 with evidence that ATR is a documented product feature in their public
 docs.*

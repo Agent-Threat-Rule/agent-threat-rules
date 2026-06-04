@@ -1,4 +1,5 @@
 import { Reveal } from "@/components/Reveal";
+import { loadSiteStats } from "@/lib/stats";
 import { locales, t, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 
@@ -15,6 +16,7 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
   const { locale: raw } = await params;
   const locale = (locales.includes(raw as Locale) ? raw : "en") as Locale;
   const zh = locale === "zh";
+  const stats = loadSiteStats();
 
   return (
     <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
@@ -130,8 +132,8 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
             {
               title: zh ? "回報誤判" : "Report a False Positive",
               desc: zh
-                ? "規則誤判了正常內容?幫我們維持 99.6% precision 的真實性。"
-                : "Rule triggered on legitimate content? Help us keep 99.6% precision real.",
+                ? `規則誤判了正常內容?幫我們維持 ${stats.pintPrecision}% precision 的真實性。`
+                : `Rule triggered on legitimate content? Help us keep ${stats.pintPrecision}% precision real.`,
               time: "~20 min",
               href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=false-positive.yml",
               cta: zh ? "開一個 Issue" : "Open an Issue",

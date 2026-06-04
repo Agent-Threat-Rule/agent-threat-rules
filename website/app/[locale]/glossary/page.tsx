@@ -62,8 +62,8 @@ const ENTRIES: GlossaryEntry[] = [
   },
   {
     term: "crystallization",
-    en: "The Threat Cloud pipeline that converts an observed attack into a candidate ATR rule and routes it through review.",
-    zh: "Threat Cloud pipeline,將觀察到的攻擊轉換為 ATR 候選規則並送入審查。",
+    en: "The Threat Cloud pipeline that converts an observed attack into a candidate ATR rule and routes it through review. (Reference implementation, not part of the normative standard.)",
+    zh: "Threat Cloud pipeline,將觀察到的攻擊轉換為 ATR 候選規則並送入審查。(參考實作,非規範標準的一部分。)",
   },
   {
     term: "detection.conditions",
@@ -87,8 +87,8 @@ const ENTRIES: GlossaryEntry[] = [
   },
   {
     term: "maturity",
-    en: "The promotion stage of a rule: experimental → test → stable. Promotion rules are defined in RFC-001.",
-    zh: "規則的晉升階段:experimental → test → stable。晉升規則由 RFC-001 定義。",
+    en: "The promotion stage of a rule, tracked by the status field: draft → experimental → test → stable → deprecated. Promotion rules are defined in RFC-001.",
+    zh: "規則的晉升階段,由 status 欄位追蹤:draft → experimental → test → stable → deprecated。晉升規則由 RFC-001 定義。",
   },
   {
     term: "normative",
@@ -127,8 +127,8 @@ const ENTRIES: GlossaryEntry[] = [
   },
   {
     term: "status",
-    en: "A required field on every rule: draft, stable, deprecated. Rules with status: draft MUST NOT participate in production matching without explicit opt-in.",
-    zh: "每條規則必填欄位:draft、stable、deprecated。status: draft 的規則 MUST NOT 在未明示 opt-in 的情況下參與生產環境 match。",
+    en: "A required field on every rule, drawn from the maturity ladder: draft, experimental, test, stable, deprecated. Rules with status: draft or status: deprecated MUST NOT participate in production matching without explicit opt-in.",
+    zh: "每條規則必填欄位,取自成熟度階梯:draft、experimental、test、stable、deprecated。status: draft 或 status: deprecated 的規則 MUST NOT 在未明示 opt-in 的情況下參與生產環境 match。",
   },
   {
     term: "sub-range",
@@ -142,8 +142,8 @@ const ENTRIES: GlossaryEntry[] = [
   },
   {
     term: "Threat Cloud",
-    en: "ATR's auto-review backend for community-submitted rules. Runs the crystallization pipeline and safety gates.",
-    zh: "ATR 對社群提交規則的自動審查後端。執行 crystallization pipeline 與安全閘 (safety gate)。",
+    en: "An auto-review backend for community-submitted rules. Runs the crystallization pipeline and safety gates. (Reference implementation, not part of the normative standard.)",
+    zh: "對社群提交規則的自動審查後端。執行 crystallization pipeline 與安全閘 (safety gate)。(參考實作,非規範標準的一部分。)",
   },
 ];
 

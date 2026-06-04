@@ -154,7 +154,7 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
               <div className="text-xs text-stone mt-1">{zh ? "skills 已掃描" : "skills scanned"}</div>
             </div>
             <div>
-              <div className="font-data text-2xl md:text-3xl font-bold text-ink">10/10</div>
+              <div className="font-data text-2xl md:text-3xl font-bold text-ink">{stats.owaspAgentic}</div>
               <div className="text-xs text-stone mt-1">OWASP Agentic</div>
             </div>
             <div>
@@ -189,8 +189,8 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
               en: "Report a False Positive",
               zh: "回報誤判",
               desc: zh
-                ? "ATR 規則標記了正常內容？回報幫助我們維持 99.6% 精準度。"
-                : "ATR rule flagged something benign? Your report helps maintain 99.6% precision.",
+                ? "ATR 規則標記了正常內容？回報幫助我們維持 99.7% 精準度。"
+                : "ATR rule flagged something benign? Your report helps maintain 99.7% precision.",
               href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=false-positive.md",
               time: "20 min",
               impact: zh ? "高" : "High",

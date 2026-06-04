@@ -32,7 +32,7 @@ const RED_TEAM_TOOLS: RedTeamTool[] = [
     prUrl: "https://github.com/NVIDIA/garak/pull/1676",
     hook: "The reference open-source LLM vulnerability scanner. 50+ probe families, jmartin-tech + leondz maintainers.",
     what_atr_did:
-      "Wrapped 421 ATR rules as garak detectors. PR #1676 cleared two review rounds; in-the-wild benchmark posted 97.1% recall on garak's own community jailbreak corpus. Per-family: latentinjection 34.4%, sysprompt_extraction 67.9%, dan 90.2%, ATR-core families ~80%+.",
+      "Wrapped 330 ATR rules as garak detectors. PR #1676 cleared two review rounds; the in-the-wild jailbreak set (650 prompts) posted 98.0% recall, while the full 23-probe garak suite (3,475 prompts) is 38.5%. Per-family: latentinjection 34.4%, sysprompt_extraction 67.9%, dan 90.2%.",
   },
   {
     name: "HarmBench",
@@ -102,7 +102,7 @@ const RED_TEAM_TOOLS: RedTeamTool[] = [
     prUrl: "https://github.com/Agent-Threat-Rule/agent-threat-rules/pull/51",
     hook: "The largest crowd-sourced prompt-injection competition corpus, 4,780 competition samples across GPT/Claude/PaLM. EMNLP 2023 best-paper nominee.",
     what_atr_did:
-      "Clustered 4,780 HackAPrompt samples by attack family. Shipped 5 ATR rules (ATR-2026-00452..00456) from dominant clusters. HackAPrompt recall: 28.6% before sprint → 66.2% after. 100% precision maintained. Each rule cites the HackAPrompt cluster in metadata_provenance.",
+      "Clustered 4,780 HackAPrompt samples by attack family. Shipped 5 ATR rules (ATR-2026-00452..00456) from dominant clusters. HackAPrompt recall: 28.6% before sprint → 66.0% after. 100% precision maintained. Each rule cites the HackAPrompt cluster in metadata_provenance.",
   },
   {
     name: "NeMo-Guardrails + llm-guard + Promptfoo",
@@ -133,16 +133,6 @@ const RED_TEAM_TOOLS: RedTeamTool[] = [
     hook: "Standards-defined PoC attack patterns from OWASP LLM01-LLM10 and corresponding MITRE ATLAS technique catalog (AML.T00XX series).",
     what_atr_did:
       "Shipped 8 ATR rules (ATR-2026-00510..00517), each mapping to a named OWASP LLM category (LLM01-LLM10) and a specific MITRE ATLAS technique. Rules are standards-aligned at the metadata_provenance level.",
-  },
-  {
-    name: "PromptInject",
-    org: "agencyenterprise · NeurIPS 2022 Best Paper",
-    status: "in-review",
-    homepage: "https://github.com/agencyenterprise/PromptInject",
-    prUrl: "https://github.com/agencyenterprise/PromptInject/issues/9",
-    hook: "The original academic benchmark that started prompt-injection research. 8.2k stars; cited by every prompt-injection paper since.",
-    what_atr_did:
-      "Issue #9 proposes a corpus-to-ATR pipeline turning every PromptInject attack into a paired ATR rule. The reference academic benchmark gets defensive parity.",
   },
   {
     name: "Promptfoo",
@@ -176,18 +166,18 @@ interface AttributionStat {
 const ATTRIBUTION_STATS: AttributionStat[] = [
   {
     number: "2h 16m",
-    label: "Disclosure → npm publish",
+    label: "Copilot regression PR → npm publish",
     detail:
       "2026-05-07 Microsoft Security disclosed Semantic Kernel CVE-2026-26030. 2026-05-11 06:07 UTC Microsoft Copilot SWE Agent opened a regression-test PR presuming ATR coverage. 08:24 UTC v2.1.2 published on npm with paired rules. End-to-end loop.",
   },
   {
-    number: "7",
+    number: "5",
     label: "Tier-1 institutions integrating",
     detail:
-      'Microsoft (Agent Governance Toolkit weekly auto-sync). Cisco AI Defense (314-rule pack in production). CIRCL/MISP (taxonomies + galaxy merged by project lead). OWASP (Project Lead merged with "Welcome to the team"). FINOS, NIST OSCAL, UK Gov AISI in motion.',
+      'Microsoft (Agent Governance Toolkit weekly auto-sync). Cisco AI Defense (ATR rule pack in skill-scanner). CIRCL/MISP (taxonomies + galaxy merged by project lead). OWASP A-S-R-H (Project Lead merged with "Welcome to the team"). Gen Digital Sage (Norton / Avast parent security team merged).',
   },
   {
-    number: "421",
+    number: "RULECOUNT",
     label: "Rules. Each with your name attached forever",
     detail:
       "Every rule carries author + metadata_provenance.discovered_by. Microsoft AGT, Cisco AI Defense, MISP, OWASP all preserve it on sync. When MISP exports to STIX, attribution survives. When NIST cites the rule, lineage is intact.",
@@ -263,7 +253,7 @@ const CONTRIBUTOR_BENEFITS: ContributorBenefit[] = [
   {
     for: "Corporate red teams",
     benefit:
-      "Your adversarial work becomes the defensive standard before competitors. Your team shows up as the discoverer in 350+ rules consumed by every major AI-security platform.",
+      "Your adversarial work becomes the defensive standard before competitors. Your team shows up as the discoverer in the ATR rule corpus consumed by Microsoft AGT, Cisco AI Defense, MISP, OWASP A-S-R-H, and Gen Digital Sage.",
     proof:
       "Microsoft's Copilot SWE Agent already opens PRs presuming ATR coverage (AGT #1981, closed 2026-05-11). Being the originator of ATR-2026-NNNNN rules is a real authority signal in vendor-eval conversations.",
   },
@@ -335,14 +325,14 @@ export default async function RedTeamPage({
             {zh ? (
               <>
                 Microsoft Copilot SWE Agent 自己會開 PR 預設 ATR 存在。Cisco AI
-                Defense production 內建完整 ATR 規則集。MISP 全部 export 到 STIX
+                Defense 的 skill-scanner 內建一份 ATR 規則集。MISP 全部 export 到 STIX
                 帶你的署名。NeurIPS 2024 的 HarmBench / AgentDojo /
                 JailbreakBench 下一個 wave 接進來。
               </>
             ) : (
               <>
                 Microsoft&apos;s Copilot SWE Agent already opens PRs presuming
-                ATR exists. Cisco AI Defense ships the full ATR rule pack by default.
+                ATR exists. Cisco AI Defense ships an ATR rule pack in skill-scanner.
                 MISP exports them to STIX with your name on them. NeurIPS
                 2024&apos;s HarmBench, AgentDojo, JailbreakBench wire through
                 next.
@@ -390,7 +380,7 @@ export default async function RedTeamPage({
             <Reveal key={i} delay={0.1 + i * 0.08}>
               <div className="border-l-2 border-blue pl-6">
                 <div className="font-display text-[clamp(36px,4.5vw,56px)] font-extrabold tracking-[-2px] text-ink mb-2 leading-none">
-                  {s.number}
+                  {s.number === "RULECOUNT" ? stats.ruleCount : s.number}
                 </div>
                 <div className="font-display text-base font-semibold text-ink mb-3">
                   {s.label}
@@ -550,8 +540,8 @@ export default async function RedTeamPage({
                   </p>
                   <p className="text-sm text-paper/60">
                     {zh
-                      ? "Microsoft Semantic Kernel CVE 從 disclosure 到 v2.1.2 publish 用了 2 小時 16 分鐘。這就是 cadence。"
-                      : "Microsoft Semantic Kernel CVE went from public disclosure to v2.1.2 npm publish in 2h 16m. That's the cadence."}
+                      ? "Microsoft Copilot 的 regression PR 從開 PR 到 v2.1.2 npm publish 用了 2 小時 16 分鐘（06:07 → 08:24 UTC）。這就是 cadence。"
+                      : "Microsoft Copilot's regression PR went from opened to v2.1.2 npm publish in 2h 16m (06:07 → 08:24 UTC). That's the cadence."}
                   </p>
                 </div>
               </div>
@@ -684,8 +674,8 @@ export default async function RedTeamPage({
           </div>
           <h2 className="font-display text-[clamp(24px,3.4vw,36px)] font-extrabold tracking-[-2px] leading-tight mb-4 max-w-[720px]">
             {zh
-              ? "5 個語料庫 · 75 條新規則 · HackAPrompt 召回率 28.6% → 66.2%"
-              : "5 corpora · 75 new rules · HackAPrompt recall 28.6% → 66.2%"}
+              ? "5 個語料庫 · 75 條新規則 · HackAPrompt 召回率 28.6% → 66.0%"
+              : "5 corpora · 75 new rules · HackAPrompt recall 28.6% → 66.0%"}
           </h2>
           <p className="text-base text-stone font-light max-w-[640px] mb-10">
             {zh
@@ -696,11 +686,11 @@ export default async function RedTeamPage({
         <Reveal delay={0.1}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-fog mb-8">
             {[
-              { corpus: "HackAPrompt", samples: "4,780", rules: "5", ruleIds: "ATR-2026-00452..00456", recall: "28.6% → 66.2%" },
+              { corpus: "HackAPrompt", samples: "4,780", rules: "5", ruleIds: "ATR-2026-00452..00456", recall: "28.6% → 66.0%" },
               { corpus: zh ? "Vendor test suites" : "Vendor test suites", samples: "94", rules: "6", ruleIds: "ATR-2026-00500..00505", recall: "" },
               { corpus: "PromptInject", samples: zh ? "全語料庫" : "full corpus", rules: "4", ruleIds: "ATR-2026-00506..00509", recall: "" },
               { corpus: "OWASP LLM Top 10 + ATLAS PoCs", samples: zh ? "8 標準分類" : "8 standard categories", rules: "8", ruleIds: "ATR-2026-00510..00517", recall: "" },
-              { corpus: zh ? "Garak 社群 jailbreak" : "Garak community jailbreak", samples: "666", rules: zh ? "已有覆蓋" : "existing coverage", ruleIds: "97.1% recall", recall: "" },
+              { corpus: zh ? "Garak in-the-wild jailbreak" : "Garak in-the-wild jailbreak", samples: "650", rules: zh ? "已有覆蓋" : "existing coverage", ruleIds: "98.0% recall", recall: "" },
             ].map((row) => (
               <div key={row.corpus} className="bg-paper p-5 md:p-6">
                 <div className="font-display text-sm font-bold text-ink mb-2">{row.corpus}</div>

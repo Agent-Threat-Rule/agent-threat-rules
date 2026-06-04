@@ -1,5 +1,6 @@
 import { Reveal } from "@/components/Reveal";
 import { locales, type Locale } from "@/lib/i18n";
+import { loadSiteStats } from "@/lib/stats";
 import type { Metadata } from "next";
 
 export function generateStaticParams() {
@@ -46,6 +47,8 @@ export default async function SovereignAIDefensePage({
   const zh = locale === "zh";
   const ENC_SLOGAN = zh ? ENCODED_SLOGAN_ZH : ENCODED_SLOGAN_EN;
   const ENC_URL = zh ? ENCODED_URL_ZH : ENCODED_URL_EN;
+  const stats = loadSiteStats();
+  const ruleCount = stats.ruleCount;
 
   return (
     <div className="pt-20 pb-20 px-5 md:px-6 max-w-[880px] mx-auto">
@@ -101,13 +104,13 @@ export default async function SovereignAIDefensePage({
             <>
               這不是疏忽,這是<strong className="text-ink">系統性漏洞</strong>。
               今天,這個缺口有了第一個開放、可運作、由社群治理的答案——
-              MIT License、421 條行為規則、已在 Cisco AI Defense、Microsoft AGT、Gen Digital Sage 生產環境運作,並被 MISP、OWASP、NIST AI RMF 引用。
+              MIT License、{ruleCount} 條行為規則、已在 Microsoft AGT、Cisco AI Defense 生產環境運作(外加 Gen Digital Sage PR 已合併),並被 MISP、OWASP 引用。
             </>
           ) : (
             <>
               This is not an oversight. It is a <strong className="text-ink">structural vulnerability</strong>.
               Today, that gap has its first open, operational, community-governed answer —
-              MIT-licensed, 421 behavioral rules, shipping in production at Cisco AI Defense, Microsoft AGT, and Gen Digital Sage, and referenced by MISP, OWASP, and NIST AI RMF.
+              MIT-licensed, {ruleCount} behavioral rules, in production at Microsoft AGT and Cisco AI Defense (plus Gen Digital Sage, PR merged), and referenced by MISP and OWASP.
             </>
           )}
         </p>
@@ -118,15 +121,15 @@ export default async function SovereignAIDefensePage({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-[2px] bg-fog border border-fog mt-9">
           <StatCell
             label="SHIPPING"
-            value="344"
+            value={String(ruleCount)}
             unit={zh ? " 條" : ""}
-            note={zh ? "在 Cisco AI Defense 生產環境" : "rules in Cisco AI Defense"}
+            note={zh ? "完整 ATR 規則集於 Cisco AI Defense" : "full ATR rule pack in Cisco AI Defense"}
           />
           <StatCell
-            label="RECALL"
-            value="97.1"
+            label="GARAK RECALL"
+            value="98.0"
             unit="%"
-            note={zh ? "666 真實 jailbreaks" : "666 real-world jailbreaks"}
+            note={zh ? "650 in-the-wild · 全 3,475 樣本 38.5%" : "650 in-the-wild · 38.5% on full 3,475"}
           />
           <StatCell
             label="FALSE POSITIVE"
@@ -135,10 +138,10 @@ export default async function SovereignAIDefensePage({
             note={zh ? "498 真實 SKILL.md 樣本" : "498 benign samples"}
           />
           <StatCell
-            label="GARAK COVERAGE"
+            label="GARAK MAPPING"
             value="32"
             unit="/32"
-            note={zh ? "NVIDIA 紅隊 probe 模組" : "NVIDIA probe modules"}
+            note={zh ? "ATR 側對應覆蓋 · garak PR #1676 審查中" : "ATR-side mapping coverage · garak PR #1676 open"}
           />
         </div>
       </Reveal>
@@ -298,8 +301,8 @@ export default async function SovereignAIDefensePage({
         </h2>
         <p className="text-sm md:text-base text-graphite leading-[1.8]">
           {zh
-            ? "MIT License · 421 條行為規則 · Protocol-agnostic · Behavioral-based。從真實攻擊情資產生,對應 NVIDIA garak、OWASP Agentic、MITRE ATLAS 三大標準 taxonomy。任何國家可採用,任何組織可貢獻,沒有地緣政治風險,沒有 vendor lock-in。"
-            : "MIT License · 421 behavioral rules · protocol-agnostic · behavior-based. Derived from real attack corpora, classified to NVIDIA garak / OWASP Agentic / MITRE ATLAS taxonomies. Adoptable by any country, contributable by any organization. No geopolitical risk. No vendor lock-in."}
+            ? `MIT License · ${ruleCount} 條行為規則 · Protocol-agnostic · Behavioral-based。從真實攻擊情資產生,對應 NVIDIA garak、OWASP Agentic、MITRE ATLAS 三大標準 taxonomy。任何國家可採用,任何組織可貢獻,沒有地緣政治風險,沒有 vendor lock-in。`
+            : `MIT License · ${ruleCount} behavioral rules · protocol-agnostic · behavior-based. Derived from real attack corpora, classified to NVIDIA garak / OWASP Agentic / MITRE ATLAS taxonomies. Adoptable by any country, contributable by any organization. No geopolitical risk. No vendor lock-in.`}
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh ? (
@@ -319,366 +322,54 @@ export default async function SovereignAIDefensePage({
         </p>
       </Section>
 
-      {/* 03b · Migration + Compliance Layer */}
-      <Section label="03B · MIGRATION + COMPLIANCE LAYER" delay={0.05}>
+      {/* 03b · Carrying SOC detection IP forward */}
+      <Section label="03B · CARRYING DETECTION IP FORWARD" delay={0.05}>
         <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.02em] text-ink mb-5">
-          {zh ? "一個 CISO 的午後" : "A Tuesday afternoon in any CISO's office"}
+          {zh ? "20 年的偵測知識不會消失，它換了個外殼" : "Twenty years of detection knowledge doesn't disappear — it takes a new form"}
         </h2>
         <p className="text-sm md:text-base text-graphite leading-[1.8]">
           {zh ? (
             <>
-              走進任何一家銀行、醫院或半導體廠的資安中心，你都會看到同樣的場景：整面牆的 Splunk dashboard、堆在角落的 SIEM 手冊、貼著「2018 — Sigma rules v3」「2021 — YARA family」的硬碟。
+              任何銀行、醫院或半導體廠的資安中心，都累積了一整套
+              <strong className="text-ink">用多年攻防實戰養出來的偵測 IP</strong>
+              ——Sigma、YARA、Snort、Splunk SPL、Elastic EQL。每一條規則背後，都有一場真實事件。
             </>
           ) : (
             <>
-              Walk into the security operations center of any bank, hospital, or semiconductor fab and you&rsquo;ll see the same thing: walls of Splunk dashboards, shelves of SIEM playbooks, hard drives labeled &ldquo;2018 — Sigma rules v3&rdquo; and &ldquo;2021 — YARA family.&rdquo;
+              Every bank, hospital, and semiconductor fab&rsquo;s security operations center has accumulated
+              <strong className="text-ink"> detection IP built over years of real combat</strong>
+              {" "}— Sigma, YARA, Snort, Splunk SPL, Elastic EQL. Behind every rule sits a real incident.
             </>
           )}
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh ? (
             <>
-              這不是該被丟掉的舊東西，是這個團隊
-              <strong className="text-ink">用 20 年攻防實戰親手養出來的偵測 IP</strong>
-              ——每一條規則背後，都有一場真實事件、一段熬夜的調查、一個被擋下來的攻擊。
+              AI Agent 時代來臨後，SQL injection 沒有消失——它跑進了 reasoning chain。Command injection 跑進了 tool calls。SSRF 跑進了 MCP 連線。
+              <strong className="text-ink">攻擊面變了，攻擊的本質沒變。</strong>
             </>
           ) : (
             <>
-              This isn&rsquo;t legacy junk waiting to be retired. It is
-              <strong className="text-ink"> 20 years of detection IP, hand-crafted by the team in actual combat</strong>
-              {" "}— every rule corresponds to a real incident, a sleepless investigation, an attack caught before it could do damage.
+              In the AI agent era, SQL injection didn&rsquo;t disappear — it moved into reasoning chains. Command injection lives in tool calls. SSRF lives in MCP connections.
+              <strong className="text-ink"> The attack surface changed; the nature of attack didn&rsquo;t.</strong>
             </>
           )}
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-5">
-          {zh ? "然後 AI Agent 時代來了。" : "Then the AI agent era arrived."}
-        </p>
-        <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh ? (
             <>
-              第一個直接擺到資安長辦公桌上的問題就是：「我們這 20 年——還有用嗎？還是要全部丟掉重來？」
+              ATR 提供一個開放的參考 CLI <strong className="text-ink">atr migrate</strong>，把既有的偵測規則轉成 ATR 格式的草稿規則，讓累積的偵測知識能銜接到 AI Agent 時代，不用打掉重練。每條輸出都對 benign 樣本語料做誤報檢查，沒過關就拒收。
             </>
           ) : (
             <>
-              The first question that lands on the CSO&rsquo;s desk: &ldquo;Those 20 years — are they still useful? Or do we throw it all out and start over?&rdquo;
+              ATR ships an open reference CLI, <strong className="text-ink">atr migrate</strong>, that translates existing detection rules into draft ATR rules — so accumulated detection knowledge carries forward into the AI agent era without rewriting from scratch. Each emitted rule is checked against a benign corpus for false positives; rules that don&rsquo;t pass are rejected.
             </>
           )}
         </p>
-        <p className="text-base md:text-lg font-display font-semibold text-ink leading-[1.55] mt-6">
-          {zh
-            ? "如果 Sovereign AI Defense 給不出這個問題的答案，沒有一個民主國家會真的編預算採購。"
-            : "If Sovereign AI Defense can't answer this question, no democracy will seriously fund it."}
-        </p>
-
-        <h3 className="font-display text-[19px] md:text-[21px] font-bold text-ink mt-10 mb-3">
-          {zh
-            ? "答案：還有用。它們是新時代攻擊的祖宗。"
-            : "The answer: still useful. They are the ancestors of this era's attacks."}
-        </h3>
-        <p className="text-sm md:text-base text-graphite leading-[1.8]">
-          {zh ? (
-            <>
-              過去 20 年 SOC 抓 SQL injection 的經驗，在 AI Agent 時代不會消失——它只是換了個外殼，跑進了 reasoning chain。Command injection 不會消失，它跑進了 tool calls。SSRF 不會消失，它跑進了 MCP 連線。
-            </>
-          ) : (
-            <>
-              The 20 years your SOC spent learning to catch SQL injection don&rsquo;t disappear in the AI agent era — they take a new form, running through reasoning chains. Command injection doesn&rsquo;t disappear; it lives in tool calls. SSRF doesn&rsquo;t disappear; it lives in MCP connections.
-            </>
-          )}
-        </p>
-        <p className="text-base md:text-lg font-display font-semibold text-ink leading-[1.55] mt-5">
-          {zh ? "攻擊面變了，攻擊的本質沒變。" : "The attack surface changed. The nature of attack didn't."}
-        </p>
-        <p className="text-sm md:text-base text-graphite leading-[1.8] mt-5">
-          {zh ? (
-            <>
-              ATR 因此必須做一件事：
-              <strong className="text-ink">讓 SOC 過去累積的偵測知識，能直接銜接到 AI Agent 時代，不用打掉重練。</strong>
-            </>
-          ) : (
-            <>
-              ATR therefore has to do one thing:
-              <strong className="text-ink"> let the detection knowledge a SOC has accumulated carry forward into the AI agent era — without rewriting from scratch.</strong>
-            </>
-          )}
-        </p>
-
-        <h3 className="font-display text-[19px] md:text-[21px] font-bold text-ink mt-10 mb-3">
-          {zh
-            ? "ATR Migrator — 不是抹掉重寫，是接續上去"
-            : "ATR Migrator — not erase and rewrite, but extend"}
-        </h3>
-        <p className="text-sm md:text-base text-graphite leading-[1.8]">
-          {zh ? (
-            <>
-              <strong className="text-ink">ATR Migrator v0.1.0</strong> 就是為了回答這個問題而生。
-            </>
-          ) : (
-            <>
-              <strong className="text-ink">ATR Migrator v0.1.0</strong> exists to answer that question.
-            </>
-          )}
-        </p>
-        <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
-          {zh ? (
-            <>
-              它做的事想法上很簡單——
-              <strong className="text-ink">把舊規則自動翻譯成 ATR 格式的新規則初稿</strong>：
-            </>
-          ) : (
-            <>
-              What it does is conceptually simple —
-              <strong className="text-ink"> automatically translate your old rules into draft ATR rules for the new era</strong>:
-            </>
-          )}
-        </p>
-        <ul className="mt-4 space-y-3">
-          <ContribItem
-            strong={zh ? "Sigma 規則：" : "Sigma rules:"}
-            text={zh ? "原本標記某個可疑的 PowerShell 命令模式 → 轉成「AI Agent 透過 tool 觸發 shell 時，相同模式仍然可疑」的 ATR 規則" : "originally flagged a suspicious PowerShell pattern → become \"when an AI agent triggers a shell through a tool call, the same pattern is still suspicious\""}
-          />
-          <ContribItem
-            strong={zh ? "YARA 樣本特徵：" : "YARA family signatures:"}
-            text={zh ? "變成「AI Agent 嘗試輸出或載入符合這些特徵的內容」的偵測" : "become \"AI agent attempting to emit or load content matching these signatures\""}
-          />
-          <ContribItem
-            strong={zh ? "Snort 網路偵測規則：" : "Snort network detections:"}
-            text={zh ? "變成 Agent MCP 流量上的同類偵測" : "become equivalent detections on agent MCP traffic"}
-          />
-          <ContribItem
-            strong={zh ? "Splunk SPL / Elastic EQL 查詢：" : "Splunk SPL / Elastic EQL queries:"}
-            text={zh ? "變成 ATR rule + 自動推導的攻擊變體" : "become ATR rules plus automatically derived attack variants"}
-          />
-        </ul>
-        <p className="text-sm md:text-base text-graphite leading-[1.8] mt-5">
-          {zh ? (
-            <>
-              第一版（v0.1.0）支援 <strong className="text-ink">15 種來源格式</strong>，覆蓋你資安堆疊的全部知識來源：
-            </>
-          ) : (
-            <>
-              The first release (v0.1.0) supports <strong className="text-ink">15 source formats</strong>, covering every knowledge source in your existing security stack:
-            </>
-          )}
-        </p>
-        <div className="border-t border-fog mt-5">
-          <FormatRow category={zh ? "漏洞情資" : "Vulnerability intel"} formats="CVE-NVD · GHSA · OSV · CISA KEV" />
-          <FormatRow category={zh ? "AI Red Teaming" : "AI red teaming"} formats="NVIDIA garak · Microsoft PyRIT · promptfoo" />
-          <FormatRow category={zh ? "程式碼掃描" : "Code scanning"} formats="Semgrep · CodeQL" />
-          <FormatRow category={zh ? "網路偵測" : "Network detection"} formats="Snort" />
-          <FormatRow category={zh ? "Runtime 安全" : "Runtime security"} formats="Falco" />
-          <FormatRow category={zh ? "SIEM 查詢語言" : "SIEM queries"} formats="Splunk SPL · Elastic EQL" />
-          <FormatRow category={zh ? "早期 SIEM / 樣本" : "Legacy SIEM / malware"} formats="Sigma · YARA" />
-        </div>
         <pre className="mt-7 bg-ink text-paper rounded-md p-5 text-[12.5px] md:text-[13px] leading-[1.7] overflow-x-auto font-data whitespace-pre">
-          <code>{`# Commercial CLI (production)
-panguard migrate-pro --source garak --input ./probes.json   --strict
-panguard migrate-pro --source nvd   --input ./cve-feed.json --strict
-
-# Open reference CLI
+          <code>{`# Open reference CLI (MIT)
 atr migrate --source snort --input ./rules.snort --output ./atr-out`}</code>
         </pre>
-
-        <h3 className="font-display text-[19px] md:text-[21px] font-bold text-ink mt-10 mb-3">
-          {zh
-            ? "為什麼必須是「品質流水線」而不是「直接轉檔」"
-            : "Why this has to be a quality pipeline, not a converter"}
-        </h3>
-        <p className="text-sm md:text-base text-graphite leading-[1.8]">
-          {zh ? (
-            <>
-              「自動翻譯」聽起來很美好。但如果隨便轉個格式就交差，產出來的規則會帶大量誤報——
-              <strong className="text-ink">這是任何被半夜誤報吵醒過的 SOC 都不能接受的</strong>。
-            </>
-          ) : (
-            <>
-              &ldquo;Automatic translation&rdquo; sounds great. But if you just shove rules through a format converter, you&rsquo;ll ship rules with massive false-positive rates —
-              <strong className="text-ink"> and no SOC engineer who has been woken up at 3 a.m. by a noisy SIEM will accept that</strong>.
-            </>
-          )}
-        </p>
-        <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
-          {zh
-            ? "所以 Migrator 不是 grep+sed。每條規則進來，都得通過 5 個關卡："
-            : "So Migrator is not grep + sed. Every rule that comes in passes through 5 gates:"}
-        </p>
-        <pre className="bg-ash text-ink rounded-md p-5 text-[12.5px] leading-[1.7] overflow-x-auto font-data border border-fog whitespace-pre mt-4">
-          <code>{zh
-            ? `1. Parse        → 來源規則 → NormalizedRule 中介層
-2. Variant gen  → 自動推導同源攻擊變體
-3. FP sampler   → 432 條 benign 樣本中找出潛在誤報
-4. Regex tighten → 多條件強化弱 pattern
-5. Self-test    → strict 逐條件驗證 · 失敗即拒收`
-            : `1. Parse         → Source rules → NormalizedRule IR
-2. Variant gen   → Sibling attack variants derived automatically
-3. FP sampler    → False positives surfaced via 432-sample benign corpus
-4. Regex tighten → Weak patterns strengthened with multi-condition logic
-5. Self-test     → Strict per-condition validation; fail-closed`}</code>
-        </pre>
-        <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
-          {zh ? (
-            <>
-              每條輸出規則，出貨前還必須通過 <strong className="text-ink">1,516 條真實越獄樣本</strong>的對抗檢驗（NVIDIA garak in-the-wild 666 + Lakera PINT 850）。沒過關的，<strong className="text-ink">拒收</strong>。
-            </>
-          ) : (
-            <>
-              Every emitted rule must also pass adversarial validation against <strong className="text-ink">1,516 real-world jailbreak prompts</strong> (NVIDIA garak in-the-wild 666 + Lakera PINT 850). If it doesn&rsquo;t pass — <strong className="text-ink">rejected</strong>.
-            </>
-          )}
-        </p>
-        <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
-          {zh ? (
-            <>
-              我們的原則是：<strong className="text-ink">寧可少出一條規則，也絕不容忍誤報吵到你的 SOC。</strong>
-            </>
-          ) : (
-            <>
-              Our principle: <strong className="text-ink">ship one fewer rule before you ship a single false positive into someone&rsquo;s pager.</strong>
-            </>
-          )}
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-[2px] bg-fog border border-fog mt-7">
-          <StatCell
-            label={zh ? "誤報率" : "FALSE POSITIVES"}
-            value="0"
-            unit=""
-            note={zh ? "於 432 條 benign 樣本" : "on 432 benign samples"}
-            valueColor="blue"
-          />
-          <StatCell
-            label={zh ? "測試通過" : "TESTS PASSING"}
-            value="313"
-            unit="/313"
-            note={zh ? "TypeScript strict mode" : "TypeScript strict mode"}
-          />
-          <StatCell
-            label={zh ? "Adapter" : "ADAPTERS"}
-            value="15"
-            unit=""
-            note={zh ? "格式全綠 · 0 FP" : "formats green · 0 FP"}
-          />
-        </div>
-
-        <h3 className="font-display text-[19px] md:text-[21px] font-bold text-ink mt-10 mb-3">
-          {zh
-            ? "合規證據鏈——比規則本身還累的事，自動完成"
-            : "Compliance evidence — the work harder than the rules themselves, done automatically"}
-        </h3>
-        <p className="text-sm md:text-base text-graphite leading-[1.8]">
-          {zh ? (
-            <>
-              如果你受 EU AI Act 管、正在為 NIST AI RMF 寫合規報告、或將要面對 ISO/IEC 42001 認證——你會知道一件事：
-              <strong className="text-ink">寫合規證據比寫規則本身還累十倍</strong>。
-            </>
-          ) : (
-            <>
-              If you&rsquo;re regulated by the EU AI Act, writing a NIST AI RMF report, or preparing for ISO/IEC 42001 certification, you already know one thing:
-              <strong className="text-ink"> producing compliance evidence is ten times harder than writing the detection rules themselves</strong>.
-            </>
-          )}
-        </p>
-        <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
-          {zh
-            ? "Migrator 在轉換規則的同時，順便幫你把這件事一起做完："
-            : "While Migrator converts each rule, it does this work for you in the same pass:"}
-        </p>
-        <ul className="mt-3 space-y-2">
-          <ContribItem
-            strong="EU AI Act："
-            text={zh ? "自動標註 Article 9（風險管理）/ Article 15（網路安全）對應條文" : "auto-tags Article 9 (Risk Management) and Article 15 (Cybersecurity)"}
-          />
-          <ContribItem
-            strong="NIST AI RMF："
-            text={zh ? "415 / 421 規則對應 · 16 個 subcategory 跨 GV / MP / MS / MG · 社群 OSCAL catalog 已發布(CC0),usnistgov/oscal-content#333 審查中" : "415 of 421 rules mapped · 16 subcategories across GV / MP / MS / MG · community OSCAL catalog published (CC0); submission to usnistgov/oscal-content#333 in maintainer review"}
-          />
-          <ContribItem
-            strong="ISO/IEC 42001："
-            text={zh ? "自動標註 AI 管理系統條款對應" : "auto-tags AI Management System clause mappings"}
-          />
-        </ul>
-        <p className="text-[13px] md:text-sm text-graphite leading-[1.6] mt-4">
-          <a
-            href={`/${locale}/compliance/nist-ai-rmf`}
-            className="text-blue underline-offset-4 hover:underline"
-          >
-            {zh ? "→ 完整 NIST AI RMF mapping(可審核 metadata、subcategory 分布、樣本對應、方法論)" : "→ Full NIST AI RMF mapping (auditable metadata, subcategory distribution, sample mapping, methodology)"}
-          </a>
-        </p>
-        <p className="text-sm md:text-base text-graphite leading-[1.8] mt-5">
-          {zh ? (
-            <>
-              也就是說——當你把既有 Sigma 規則丟進 Migrator——你拿回來的
-              <strong className="text-ink">不只是 AI Agent 偵測規則，是已經帶好 Article 15 cybersecurity-by-design 證據的偵測規則</strong>。法務部門看完直接點頭。
-            </>
-          ) : (
-            <>
-              Which means — when you feed your existing Sigma rules into Migrator — what comes out
-              <strong className="text-ink"> is not just AI agent detection rules, but AI agent detection rules pre-tagged with Article 15 cybersecurity-by-design evidence</strong>. Your legal team finally stops frowning.
-            </>
-          )}
-        </p>
-
-        <h3 className="font-display text-[19px] md:text-[21px] font-bold text-ink mt-10 mb-3">
-          {zh ? "為什麼這三層對 Sovereign AI 是必要的" : "Why these three layers are necessary for Sovereign AI"}
-        </h3>
-        <p className="text-sm md:text-base text-graphite leading-[1.8]">
-          {zh ? (
-            <>
-              Sovereign AI 從來不只是「擁有自己的模型」這麼簡單。它代表的是——這個國家在 AI 時代裡，
-              <strong className="text-ink">不必把命運交給別人</strong>。
-            </>
-          ) : (
-            <>
-              Sovereign AI was never just about &ldquo;owning your own model.&rdquo; It is about something larger —
-              <strong className="text-ink"> a country that, in the AI era, doesn&rsquo;t have to hand its fate to someone else</strong>.
-            </>
-          )}
-        </p>
-        <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
-          {zh
-            ? "任何時候、任何地緣政治劇變、任何一家美國雲端廠商被政府命令斷服務——你的醫院還在運作、你的銀行還在運作、你的電網還在運作。"
-            : "Whatever happens, however the geopolitics shift, whichever US cloud provider gets ordered by its government to cut service — your hospitals keep running, your banks keep running, your power grid keeps running."}
-        </p>
-        <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
-          {zh ? "這需要三層東西。缺一個，就稱不上 sovereign：" : "Three layers are required. Miss any one, and it isn't sovereign:"}
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-5">
-          <ConditionCard
-            num="LAYER 01"
-            head={zh ? "開放標準" : "Open Standard"}
-            body={zh ? "ATR · MIT License — 任何國家都可以採用、可以審核、可以 fork。" : "ATR · MIT License — adoptable, auditable, forkable by any nation."}
-          />
-          <ConditionCard
-            num="LAYER 02"
-            head={zh ? "遷移層" : "Migration Layer"}
-            body={zh ? "ATR Migrator — 把 SOC 過去 20 年的 detection IP 帶進 AI Agent 時代。" : "ATR Migrator — bringing the SOC's 20 years of detection IP into the AI agent era."}
-          />
-          <ConditionCard
-            num="LAYER 03"
-            head={zh ? "合規層" : "Compliance Layer"}
-            body={zh ? "Compliance metadata — 自動產生該國 AI 法規所需證據。" : "Compliance metadata — auto-producing evidence that satisfies each nation's AI regulations."}
-          />
-        </div>
-        <p className="text-sm md:text-base text-graphite leading-[1.8] mt-7">
-          {zh ? (
-            <>
-              ATR + Migrator + Compliance metadata 不是三個產品，是 Sovereign AI Defense 的
-              <strong className="text-ink">三項必要條件</strong>。今天已交付。任何民主國家——都可以採用、可以 fork 自己維護、可以零成本接到自己的 SOC 上。
-            </>
-          ) : (
-            <>
-              ATR + Migrator + Compliance metadata are not three products. They are the
-              <strong className="text-ink"> three necessary conditions</strong> of Sovereign AI Defense. Shipping today. Any democracy can adopt, fork, and operate them — at zero cost — into its own SOC.
-            </>
-          )}
-        </p>
-        <Callout borderColor="blue">
-          <strong className="text-ink">
-            {zh
-              ? "能保留歷史投資、能產出合規證據、能脫離 vendor lock-in——三者皆備才叫 Sovereign AI Defense。"
-              : "Preserves historical investment. Produces compliance evidence. Escapes vendor lock-in. Only with all three is it Sovereign AI Defense."}
-          </strong>
-        </Callout>
       </Section>
 
       {/* 04 · Ecosystem */}
@@ -697,7 +388,7 @@ atr migrate --source snort --input ./rules.snort --output ./atr-out`}</code>
             org="Microsoft"
             status={zh ? "PR 已合併" : "PR Merged"}
             statusClass="bg-blue/10 text-blue"
-            desc={zh ? "agent-governance-toolkit · PR #1277 · 287 條規則 + 每週自動同步 ATR 上游釋出" : "agent-governance-toolkit · PR #1277 · 287 rules + weekly auto-sync of ATR upstream releases"}
+            desc={zh ? "agent-governance-toolkit · PR #1277 · 287 條規則（PR 當時）+ 每週自動同步 ATR 上游釋出" : "agent-governance-toolkit · PR #1277 · 287 rules at time of PR + weekly auto-sync of ATR upstream releases"}
           />
           <TractionRow
             org="NVIDIA garak"
@@ -726,8 +417,8 @@ atr migrate --source snort --input ./rules.snort --output ./atr-out`}</code>
         </div>
         <p className="text-xs md:text-sm text-stone mt-5">
           {zh
-            ? "0 → 421 條規則 · 3 個 Fortune-500 production deployments · 4 個標準同儕引用 · 20+ adopters 在 ADOPTERS.md · MIT 永久授權 · "
-            : "0 → 421 rules · 3 Fortune-500 production deployments · 4 peer-standard references · 20+ adopters in ADOPTERS.md · MIT licensed · "}
+            ? `0 → ${ruleCount} 條規則 · 2 個生產環境（Microsoft、Cisco）外加 Gen Digital Sage（已合併）· 標準同儕引用 · 20+ adopters 在 ADOPTERS.md · MIT 永久授權 · `
+            : `0 → ${ruleCount} rules · 2 in production (Microsoft, Cisco) plus Gen Digital Sage (merged) · peer-standard references · 20+ adopters in ADOPTERS.md · MIT licensed · `}
           <a href="https://doi.org/10.5281/zenodo.19178002" className="text-blue hover:underline">
             DOI 10.5281/zenodo.19178002
           </a>
@@ -792,49 +483,49 @@ atr migrate --source snort --input ./rules.snort --output ./atr-out`}</code>
       {/* 06 · First reference */}
       <Section label="06 · FIRST REFERENCE" delay={0.05}>
         <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.02em] text-ink mb-5">
-          {zh ? "為什麼台灣適合成為第一個 reference deployment" : "Why Taiwan is positioned to be the first reference deployment"}
+          {zh ? "第一個國家級 reference deployment 需要什麼" : "What a first national reference deployment requires"}
         </h2>
         <p className="text-[17px] md:text-lg text-graphite leading-[1.55] mb-7">
           {zh ? (
             <>
-              <strong className="text-ink">台灣不會擁有這個標準，台灣只是率先採用它</strong>——
-              像第一個採用 Linux 的銀行、第一個採用 OpenSSL 的政府。
+              <strong className="text-ink">沒有任何國家會「擁有」這個標準，只會率先採用它</strong>——
+              像第一個採用 Linux 的銀行、第一個採用 OpenSSL 的政府。以下是讓一個民主國家適合成為第一個 reference deployment 的條件。
             </>
           ) : (
             <>
-              <strong className="text-ink">Taiwan will not own this standard. Taiwan will be the first to adopt it</strong> —
-              like the first bank to deploy Linux, or the first government to adopt OpenSSL.
+              <strong className="text-ink">No country will own this standard; the first adopter simply deploys it first</strong> —
+              like the first bank to run Linux, or the first government to adopt OpenSSL. These are the conditions that make a democracy a strong candidate to be the first reference deployment.
             </>
           )}
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <ConditionCard
             num="CONDITION 01"
-            head={zh ? "最密集的真實國家級攻擊" : "Densest real nation-state attack environment"}
+            head={zh ? "密集的真實國家級攻擊環境" : "A dense, real nation-state attack environment"}
             body={zh
-              ? "2025 年每日 263 萬次攻擊（NSB 官方，較 2023 年 +113%）。醫療、電信、半導體供應鏈、政府系統皆為已確認目標。"
-              : "2.63 million daily attacks in 2025 (NSB official, +113% vs 2023). Healthcare, telecom, semiconductor supply chain, and government systems are all confirmed targets."}
+              ? "醫療、電信、半導體供應鏈、政府系統都是已確認目標——真實攻擊壓力讓行為偵測規則能被實戰驗證，而非只在實驗室。"
+              : "Healthcare, telecom, semiconductor supply chains, and government systems are confirmed targets — real attack pressure that validates behavioral rules in production, not only in a lab."}
           />
           <ConditionCard
             num="CONDITION 02"
-            head={zh ? "最靠近的 NVIDIA 生態" : "Closest NVIDIA ecosystem"}
+            head={zh ? "靠近的 AI 算力與生態" : "Proximity to AI compute and ecosystem"}
             body={zh
-              ? 'NVIDIA Taipei HQ 「Constellation」NT$40B+ 投資、2026/6 動工。Jensen Huang 公開表達："Without Taiwan, NVIDIA could not achieve what it has today."'
-              : 'NVIDIA Taipei HQ "Constellation" — NT$40B+ investment, groundbreaking June 2026. Jensen Huang: "Without Taiwan, NVIDIA could not achieve what it has today."'}
+              ? "鄰近大型 AI 基礎設施投資與供應鏈，讓 Sovereign AI 與其對應的 Defense 層能在同一個生態裡一起落地。"
+              : "Closeness to large AI infrastructure investment and supply chains, so Sovereign AI and its defense layer can land together inside the same ecosystem."}
           />
           <ConditionCard
             num="CONDITION 03"
-            head={zh ? "最成熟的開放治理文化" : "Most mature open-governance culture"}
+            head={zh ? "成熟的開放治理文化" : "A mature open-governance culture"}
             body={zh
-              ? "g0v、vTaiwan、Pol.is、Plurality——台灣是全球少數擁有「開放標準 × 政府協作」長期實戰經驗的民主社會。"
-              : "g0v, vTaiwan, Pol.is, Plurality — Taiwan is one of the few democracies with long-term proven experience running open standards × government collaboration in production."}
+              ? "具備「開放標準 × 政府協作」長期實戰經驗的民主社會，最能把社群治理的開放標準接到公部門。"
+              : "A democracy with proven experience running open standards × government collaboration is best placed to connect a community-governed standard into the public sector."}
           />
           <ConditionCard
             num="CONDITION 04"
-            head={zh ? "最短的決策鏈" : "Shortest decision chain"}
+            head={zh ? "短的決策鏈" : "A short decision chain"}
             body={zh
-              ? "從技術社群到行政部門的距離遠小於歐美——同樣的提案在 D.C. 需要 18 個月，在台北可以 3 個月啟動。"
-              : "The distance from technical community to executive agencies is far shorter than in the EU or US. The same proposal that needs 18 months in D.C. can launch in 3 months in Taipei."}
+              ? "從技術社群到行政部門距離短——提案可以在數個月內啟動，而不是數年。"
+              : "A short distance from technical community to executive agencies — a proposal can launch in months rather than years."}
           />
         </div>
       </Section>
@@ -937,14 +628,14 @@ atr migrate --source snort --input ./rules.snort --output ./atr-out`}</code>
         <div className="mt-14 pt-9 border-t border-fog flex flex-col md:flex-row justify-between gap-5 text-xs text-stone">
           <div>
             <div className="font-display text-base font-semibold text-ink mb-1.5">Adam Lin</div>
-            <div>{zh ? "PanGuard AI · ATR 發起人" : "Founder · PanGuard AI · ATR Initiator"}</div>
+            <div>{zh ? "ATR 發起人" : "ATR Initiator"}</div>
             <div className="mt-2">
               <a href="mailto:adam@agentthreatrule.org" className="text-blue hover:underline">
                 adam@agentthreatrule.org
               </a>
             </div>
             <div className="font-data text-[11px] text-mist tracking-[1px] uppercase mt-3">
-              MIT License · Open Standard · Day 43
+              MIT License · Open Standard
             </div>
           </div>
           <div className="md:text-right">
@@ -952,7 +643,7 @@ atr migrate --source snort --input ./rules.snort --output ./atr-out`}</code>
               agentthreatrule.org
             </a>
             <div className="font-data text-[11px] text-mist tracking-[1px] uppercase mt-3">
-              421 Rules · 415 carry NIST AI RMF mappings · Spec v1.0
+              {ruleCount} Rules · NIST AI RMF mappings · Spec 3.0.0-alpha.1 (Working Draft)
             </div>
           </div>
         </div>
@@ -1022,15 +713,6 @@ function DealRow({ country, desc, scale }: { country: string; desc: string; scal
       <div className="font-display font-semibold text-ink">{country}</div>
       <div className="text-graphite text-[13px]">{desc}</div>
       <div className="font-data text-xs text-blue md:text-right">{scale}</div>
-    </div>
-  );
-}
-
-function FormatRow({ category, formats }: { category: string; formats: string }) {
-  return (
-    <div className="grid grid-cols-[180px_1fr] gap-5 py-3 border-b border-fog text-sm items-baseline max-md:grid-cols-1 max-md:gap-1">
-      <div className="font-display font-semibold text-ink">{category}</div>
-      <div className="font-data text-[12.5px] text-graphite tracking-[0.3px]">{formats}</div>
     </div>
   );
 }

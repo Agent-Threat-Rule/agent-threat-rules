@@ -171,6 +171,11 @@ export default async function ConformancePage({
               {t(locale, "conformance.l3.title")} <NormativeBadge />
             </h2>
             <p>{t(locale, "conformance.l3.body")}</p>
+            <p className="text-sm text-stone mt-3" style={{ maxWidth: "42em" }}>
+              {zh
+                ? "TSC 尚未就任。授權之核發於 TSC 就任後生效;在此之前,由首席維護者 (BDFL) 行使此角色。"
+                : "The TSC is not yet seated. Authority is granted once the TSC is seated; until then the lead maintainer (BDFL) acts in this role."}
+            </p>
           </section>
 
           {/* §4 Test Suite */}
@@ -214,6 +219,11 @@ export default async function ConformancePage({
               {t(locale, "conformance.self.h")}
             </h2>
             <p>{t(locale, "conformance.self.body")}</p>
+            <p className="text-sm text-stone mt-3" style={{ maxWidth: "42em" }}>
+              {zh
+                ? "TSC 尚未就任。上述驗證職責於 TSC 就任後由 TSC 行使;在此之前,由首席維護者 (BDFL) 行使此角色。"
+                : "The TSC is not yet seated. This verification role is exercised by the TSC once it is seated; until then the lead maintainer (BDFL) acts in this role."}
+            </p>
             <p>
               {zh
                 ? "通過測試套件後,實作者於 "
@@ -227,8 +237,8 @@ export default async function ConformancePage({
                 ADOPTERS.md ↗
               </a>
               {zh
-                ? " 開立 pull request,內容包含組織名稱、規格版本、整合日期 (ISO 8601)、可驗證之公開證據連結、自我宣告之符規等級。維護者通常於七日內完成 schema 驗證並合併。完整流程與已合併之實作者見 "
-                : ", including organization name, spec version, integration date (ISO 8601), a verifiable public evidence link, and a self-declared conformance level. Maintainers typically validate and merge within seven days. The full procedure and the list of merged implementers live at "}
+                ? " 開立 pull request,內容包含組織名稱、規格版本、整合日期 (ISO 8601)、可驗證之公開證據連結、自我宣告之符規等級。維護者以七日內完成 schema 驗證並合併為目標。完整流程與已合併之實作者見 "
+                : ", including organization name, spec version, integration date (ISO 8601), a verifiable public evidence link, and a self-declared conformance level. Maintainers aim to validate and merge within seven days. The full procedure and the list of merged implementers live at "}
               <Link href={`${prefix}/implementers`} className="text-navy underline">
                 /implementers
               </Link>

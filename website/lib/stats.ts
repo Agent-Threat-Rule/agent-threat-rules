@@ -300,9 +300,9 @@ export function loadSiteStats(): SiteStats {
 
     pintSamples: pint?.report?.corpusSize ?? 850,
     pintPrecision:
-      Math.round((pint?.report?.overall?.precision ?? 0.9964) * 1000) / 10, // 99.6%
+      Math.round((pint?.report?.overall?.precision ?? 0.9965) * 1000) / 10, // 99.7%
     pintRecall:
-      Math.round((pint?.report?.overall?.recall ?? 0.6386) * 1000) / 10, // 63.9%
+      Math.round((pint?.report?.overall?.recall ?? 0.6319) * 1000) / 10, // 63.2%
     pintF1: Math.round((pint?.report?.overall?.f1 ?? 0.7599) * 1000) / 10, // 76.0%
 
     selfTestSamples: eval_?.report?.corpusSize ?? 341,
@@ -366,7 +366,7 @@ export function loadSiteStats(): SiteStats {
         name: "Cisco AI Defense",
         type: "merged",
         detail:
-          "PR #79 + #99 merged. Full 314-rule pack in skill-scanner production. Upstream maintained.",
+          "PR #79 (34-rule PoC) + #99 merged. Full ATR rule pack (314 at time of PR #99) in skill-scanner production. Upstream maintained.",
         url: "https://github.com/cisco-ai-defense/skill-scanner/pull/99",
         logo: "https://github.com/cisco-ai-defense.png?size=128",
       },
@@ -418,7 +418,7 @@ export function loadSiteStats(): SiteStats {
         name: "NIST OSCAL",
         type: "open",
         detail:
-          "PR #2234 conversation. iMichaela invited Path 1 community contribution; Adam reply 2026-05-11 with 4 technical questions, awaiting NIST reviewer.",
+          "Submission in review; the OSCAL lead opened a collaboration branch and invited a community contribution. Not a NIST endorsement or adoption.",
         url: "https://github.com/usnistgov/OSCAL/pull/2234",
         logo: "https://github.com/usnistgov.png?size=128",
       },
@@ -455,7 +455,7 @@ export function loadSiteStats(): SiteStats {
         name: "NVIDIA Garak",
         type: "open",
         detail:
-          "PR #1676. 330 ATR detectors. Two review rounds passed; final maintainer review in progress.",
+          "Integration PR #1676 open (not merged). ATR rules wrapped as garak detectors; under maintainer review.",
         url: "https://github.com/NVIDIA/garak/pull/1676",
         logo: "https://github.com/NVIDIA.png?size=128",
       },

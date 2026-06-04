@@ -51,8 +51,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             <p className="text-sm text-stone mb-3">
               {locale === "zh"
-                ? `${stats.ruleCount} 條偵測規則、RFC-001 品質標準、96K 生態系掃描、751 惡意軟體發現、Cisco 採用。ATR 標準的完整論述，含六項研究貢獻。`
-                : `${stats.ruleCount} detection rules, RFC-001 quality standard, 96K ecosystem scan, 751 malware discovered, Cisco adoption. The complete ATR thesis with six research contributions.`}
+                ? `${stats.ruleCount} 條偵測規則、RFC-001 品質標準、96K 生態系掃描、552 惡意軟體確認、Cisco 採用。ATR 標準的完整論述，含六項研究貢獻。`
+                : `${stats.ruleCount} detection rules, RFC-001 quality standard, 96K ecosystem scan, 552 confirmed malware, Cisco adoption. The complete ATR thesis with six research contributions.`}
             </p>
             <div className="flex flex-wrap gap-3">
               <a href="https://doi.org/10.5281/zenodo.19178002" target="_blank" rel="noopener noreferrer" className="font-data text-xs text-blue hover:underline">Zenodo (DOI)</a>
@@ -345,8 +345,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             <p className="text-sm text-graphite leading-[1.7]">
               {locale === "zh"
-                ? `${stats.ruleCount} 條規則全部以確定性 regex / AST 比對執行，無 LLM 推論。這確保同一個輸入在不同環境下的偵測結果完全一致——可重現性是前提。每條規則在發布前都會對 ${stats.clawHubCrawled.toLocaleString()} 個 ClawHub skill 的 wild 樣本驗證。`
-                : `All ${stats.ruleCount} rules execute deterministic regex / AST matching. No LLM inference. The same input produces the same detection result across environments — reproducibility is a prerequisite. Every rule is wild-validated against ${stats.clawHubCrawled.toLocaleString()} ClawHub skills before publication.`}
+                ? `偵測核心是確定性的：規則以 regex / AST 比對執行、無 LLM 推論，同一個輸入在任何環境都得到一致的結果——可重現性是前提，也是預設啟用的部分。v3.1.0 起另有一個選用、實驗性的語意 judge 階段，用來補抓 pattern 漏掉的改寫式攻擊；它需手動開啟、預設關閉，不更動確定性核心。每條規則在發布前都會對 ${stats.clawHubCrawled.toLocaleString()} 個 ClawHub skill 的 wild 樣本驗證。`
+                : `The detection core is deterministic: rules execute regex / AST matching with no LLM inference, so the same input produces the same result in every environment — reproducibility is a prerequisite, and it is what ships on by default. Since v3.1.0 an optional, experimental semantic judge stage recovers paraphrased attacks the patterns miss; it is opt-in, off by default, and never alters the deterministic core. Every rule is wild-validated against ${stats.clawHubCrawled.toLocaleString()} ClawHub skills before publication.`}
             </p>
           </div>
           <div className="border-l-2 border-fog pl-4">

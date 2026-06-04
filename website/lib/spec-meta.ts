@@ -1,13 +1,19 @@
 // ATR spec metadata — single source of truth for Document Status banners
-// across the site. Bump the version + lastModified when a new spec
-// release lands.
+// across the site. Bump SPEC_DOC_VERSION when a new spec-document release
+// lands. NOTE: the spec-document version is deliberately DISTINCT from the
+// npm package version recorded in data/stats.json — they version different
+// things. The package ships rules + engine on its own SemVer line; the spec
+// document tracks the maturity of the written standard. Do not source the
+// spec-document version from stats.json.
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { loadSiteStats } from "./stats";
 
+/** Version of the SPEC DOCUMENT (the written standard), not the npm package. */
+const SPEC_DOC_VERSION = "3.0.0-alpha.1";
+
 interface StatsJsonShape {
-  version?: string;
   generatedAt?: string;
 }
 
@@ -58,7 +64,7 @@ export function getSpecMeta(): SpecMeta {
     : new Date().toISOString().slice(0, 10);
 
   return {
-    version: raw.version ?? "3.0.0-alpha.1",
+    version: SPEC_DOC_VERSION,
     status: "Working Draft",
     lastModified: generatedAt,
     canonicalUrl: "https://agentthreatrule.org/spec",

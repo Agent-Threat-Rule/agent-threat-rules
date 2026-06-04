@@ -45,9 +45,17 @@ const CATEGORY_DESC: Record<string, { en: string; zh: string }> = {
     en: "Agents exceeding intended operational boundaries",
     zh: "Agent 超越預期的操作邊界",
   },
-  "model-level-attacks": {
-    en: "Attacks on the LLM itself — behavior extraction, adversarial fine-tuning, poisoned training data",
-    zh: "針對 LLM 模型本身的攻擊——行為提取、對抗式 fine-tuning、污染訓練資料",
+  "data-poisoning": {
+    en: "Corrupting training data, memory, or retrieval sources to bias agent behavior",
+    zh: "污染訓練資料、記憶體或檢索來源以扭曲 agent 行為",
+  },
+  "model-abuse": {
+    en: "Misusing model capabilities — jailbreaks, harmful generation, resource abuse",
+    zh: "濫用模型能力——越獄、有害內容生成、資源濫用",
+  },
+  "model-security": {
+    en: "Attacks on the model itself — extraction, inversion, adversarial inputs",
+    zh: "針對模型本身的攻擊——模型提取、逆向還原、對抗式輸入",
   },
 };
 
@@ -114,7 +122,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <span className="text-fog">·</span>
               <span><span className="font-data font-bold text-ink">{stats.categoryCount}</span> <span className="text-stone">{zh ? "個類別" : "categories"}</span></span>
               <span className="text-fog">·</span>
-              <span><span className="font-data font-bold text-ink">97.1%</span> <span className="text-stone">{zh ? "garak 抓得到" : "garak recall"}</span></span>
+              <span><span className="font-data font-bold text-ink">98.0%</span> <span className="text-stone">{zh ? "garak 抓得到" : "garak recall"}</span></span>
             </div>
           </HeroEntrance>
 
@@ -201,7 +209,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               </div>
               {/* Row 3 — license + lineage */}
               <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 pt-1">
-                <span>MIT License · {zh ? "ATR 社群維護" : "Maintained by ATR Community"} · {zh ? "規範 v1.0 穩定版" : "Spec v1.0 stable"}</span>
+                <span>MIT License · {zh ? "ATR 社群維護" : "Maintained by ATR Community"} · {zh ? "規範 3.0.0-alpha.1（Working Draft）" : "Spec 3.0.0-alpha.1 (Working Draft)"}</span>
               </div>
             </div>
           </HeroEntrance>
@@ -342,8 +350,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                   Cisco AI Defense
                 </h3>
                 <p className="text-sm text-graphite mt-4 leading-[1.7]">
-                  {zh ? "PR #79 + #99 已合併 · 330 條完整規則集進入 skill-scanner 生產環境"
-                      : "PR #79 + #99 merged · full 330-rule pack in skill-scanner production"}
+                  {zh ? "PR #79 + #99 已合併 · 完整規則集進入 skill-scanner 生產環境（合併當時 330 條）"
+                      : "PR #79 + #99 merged · full rule pack in skill-scanner production (330 rules at time of PR)"}
                 </p>
                 <a
                   href="https://github.com/cisco-ai-defense/skill-scanner/pull/99"
@@ -359,8 +367,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                   Microsoft AGT
                 </h3>
                 <p className="text-sm text-graphite mt-4 leading-[1.7]">
-                  {zh ? "PR #908 + #1277 已合併 · 287 條規則 + 每週自動同步 workflow"
-                      : "PR #908 + #1277 merged · 287 rules + weekly auto-sync workflow"}
+                  {zh ? "PR #908 + #1277 已合併 · 287 條規則（合併當時）+ 每週自動同步 workflow"
+                      : "PR #908 + #1277 merged · 287 rules (at time of PR) + weekly auto-sync workflow"}
                 </p>
                 <a
                   href="https://github.com/microsoft/agent-governance-toolkit/pull/1277"
@@ -401,7 +409,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               {/* Row 1: quality + scale stats */}
               {[
                 { value: stats.ruleCount, suffix: "", label: zh ? "條偵測規則" : "detection rules", desc: zh ? `${stats.categoryCount} 個威脅類別` : `${stats.categoryCount} threat categories`, liveKey: undefined },
-                { label: zh ? "HackAPrompt 召回率" : "HackAPrompt recall", rawValue: "66.2%", desc: zh ? "4,780 個對抗性樣本" : "4,780 adversarial samples" },
+                { label: zh ? "HackAPrompt 召回率" : "HackAPrompt recall", rawValue: "66.0%", desc: zh ? "4,780 個對抗性樣本" : "4,780 adversarial samples" },
                 { value: stats.pintPrecision, suffix: "%", label: zh ? "PINT 精準度 (0.25% FP)" : "PINT precision (0.25% FP)", desc: zh ? `850 個樣本` : `850 samples`, liveKey: "pintPrecision" },
                 { label: "npm", rawValue: "23K", desc: zh ? "月下載量 (30d)" : "monthly downloads (30d)" },
               ].map((item, i) => (
@@ -423,14 +431,14 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                   <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-3">
                     {zh ? "已在生產環境" : "In production"}
                   </div>
-                  <div className="font-data text-[clamp(28px,4vw,48px)] font-bold text-ink leading-none mb-2">3</div>
+                  <div className="font-data text-[clamp(28px,4vw,48px)] font-bold text-ink leading-none mb-2">2</div>
                   <div className="text-sm text-graphite leading-[1.7]">
                     {zh
-                      ? "Cisco AI Defense · Microsoft AGT · Gen Digital Sage"
-                      : "Cisco AI Defense · Microsoft AGT · Gen Digital Sage"}
+                      ? "Microsoft AGT · Cisco AI Defense（+ Gen Digital Sage 已合併）"
+                      : "Microsoft AGT · Cisco AI Defense (+ Gen Digital Sage merged)"}
                   </div>
                   <div className="text-xs text-mist mt-2">
-                    {zh ? "已合併 PR、已進入生產部署" : "Merged PRs, deployed in production"}
+                    {zh ? "已合併 PR、已上生產環境" : "Merged PRs, in production"}
                   </div>
                 </div>
               </Reveal>
@@ -442,8 +450,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                   <div className="font-data text-[clamp(28px,4vw,48px)] font-bold text-ink leading-none mb-2">4</div>
                   <div className="text-sm text-graphite leading-[1.7]">
                     {zh
-                      ? "MISP/CIRCL(已合併)· OWASP A-S-R-H(已合併)· NIST AI RMF(社群 OSCAL · oscal-content#333 審查中)· OpenTelemetry GenAI SIG(#165 審查中)"
-                      : "MISP/CIRCL (merged) · OWASP A-S-R-H (merged) · NIST AI RMF (community OSCAL · oscal-content#333 in review) · OpenTelemetry GenAI SIG (#165 in review)"}
+                      ? "MISP/CIRCL(已合併)· OWASP A-S-R-H(已合併)· NIST AI RMF(社群 OSCAL · oscal-content#338 協作分支審查中,非 NIST 背書)· OpenTelemetry GenAI SIG(#165 審查中)"
+                      : "MISP/CIRCL (merged) · OWASP A-S-R-H (merged) · NIST AI RMF (community OSCAL · oscal-content#338 collaboration branch, submission in review, not a NIST endorsement) · OpenTelemetry GenAI SIG (#165 in review)"}
                   </div>
                   <div className="text-xs text-mist mt-2">
                     {zh ? "兩件已合併,兩件 maintainer 審查中" : "Two merged, two under maintainer review"}
@@ -666,12 +674,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             <div className="mt-8 md:mt-10 border-t border-fog pt-6 md:pt-8 max-w-[680px]">
               <h3 className="font-display text-lg md:text-xl font-semibold text-ink tracking-[-0.5px] leading-[1.3]">
                 <span className="text-blue">Microsoft Agent Governance Toolkit</span>
-                {zh ? " 從 15 條規則擴張到 287 條,每週自動同步。" : " expanded from 15 to 287 ATR rules with a weekly auto-sync workflow."}
+                {zh ? " 從 15 條規則擴張到 287 條（合併當時),每週自動同步。" : " expanded from 15 to 287 ATR rules (at time of PR) with a weekly auto-sync workflow."}
               </h3>
               <p className="text-sm md:text-base text-graphite mt-2 md:mt-3 leading-[1.7]">
                 {zh
-                  ? "2026-04-13 的 PR #908 先合併 15 條規則作為 PolicyDocument 格式 PoC。2026-04-26 的 production PR #1277 擴張到 287 條規則,並加上每週自動同步 ATR 上游釋出版本的 workflow。"
-                  : "PR #908 (2026-04-13) merged the 15-rule PolicyDocument PoC. PR #1277 (2026-04-26) brought it to 287 rules and added a workflow that auto-syncs ATR upstream releases every week."}
+                  ? "2026-04-13 的 PR #908 先合併 15 條規則作為 PolicyDocument 格式 PoC。2026-04-26 的 production PR #1277 擴張到 287 條規則（合併當時),並加上每週自動同步 ATR 上游釋出版本的 workflow。"
+                  : "PR #908 (2026-04-13) merged the 15-rule PolicyDocument PoC. PR #1277 (2026-04-26) brought it to 287 rules (at time of PR) and added a workflow that auto-syncs ATR upstream releases every week."}
               </p>
               <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
                 <a
@@ -726,7 +734,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 {[
                   { name: "MISP / CIRCL", detail: zh ? "Taxonomy + Galaxy 已合併 2026-05-10" : "Taxonomy + Galaxy merged 2026-05-10", href: "https://github.com/MISP/misp-galaxy/pull/1207" },
                   { name: "OWASP A-S-R-H", detail: zh ? "已合併 2026-05-11" : "Merged 2026-05-11", href: "https://github.com/OWASP/agent-security-regression-harness/pull/74" },
-                  { name: "NIST AI RMF (OSCAL)", detail: zh ? "社群 catalog 已發布 · oscal-content#333 審查中" : "Community catalog published · oscal-content#333 in review", href: "https://github.com/usnistgov/oscal-content/pull/333" },
+                  { name: "NIST AI RMF (OSCAL)", detail: zh ? "社群 catalog 已發布 · oscal-content#338 協作分支審查中（非 NIST 背書）" : "Community catalog published · oscal-content#338 collaboration branch, in review (not a NIST endorsement)", href: "https://github.com/usnistgov/oscal-content/pull/338" },
                   { name: "OpenTelemetry GenAI SIG", detail: zh ? "agent.threat.detection.* 審查中" : "agent.threat.detection.* in review", href: "https://github.com/open-telemetry/semantic-conventions-genai/pull/165" },
                 ].map((item) => (
                   <a
@@ -747,7 +755,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.5}>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-fog mt-10 md:mt-12">
               {[
-                { num: "3", label: zh ? "個 Fortune-500 採用" : "Fortune-500 deployments", sub: zh ? "Cisco · Microsoft · Gen Digital" : "Cisco · Microsoft · Gen Digital" },
+                { num: "2", label: zh ? "已在生產環境" : "in production", sub: zh ? "Microsoft · Cisco（+ Gen Digital Sage 已合併）" : "Microsoft, Cisco (+ Gen Digital Sage merged)" },
                 { num: String(stats.ruleCount), label: zh ? "條偵測規則" : "detection rules", sub: zh ? `跨 ${stats.categoryCount} 個類別` : `across ${stats.categoryCount} categories` },
                 { num: stats.megaScanTotal.toLocaleString(), label: zh ? "skills 已掃描" : "skills scanned", sub: zh ? "跨多個 registry" : "across registries" },
                 { num: `${mergedCount}/${stats.ecosystemIntegrations.length}`, label: zh ? "生態系 PR" : "ecosystem PRs", sub: zh ? "已合併" : "merged" },
@@ -777,7 +785,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 { name: "OWASP Agentic", score: "10/10", desc: zh ? "完整覆蓋" : "Full coverage" },
                 { name: "SAFE-MCP", score: "91.8%", desc: zh ? "78/85 技術" : "78/85 techniques" },
                 { name: "OWASP AST10", score: "7/10", desc: zh ? "3 個是流程層級" : "3 are process-level" },
-                { name: "PINT F1", score: "76.7", desc: zh ? "850 個樣本" : "850 samples" },
+                { name: "PINT F1", score: "77.3", desc: zh ? "850 個樣本" : "850 samples" },
               ].map((s) => (
                 <div key={s.name} className="bg-ash p-6 md:p-8 text-center">
                   <div className="font-data text-[10px] md:text-xs font-medium text-stone tracking-[2px] uppercase mb-2 md:mb-3">{s.name}</div>

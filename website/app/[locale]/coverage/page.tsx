@@ -57,26 +57,26 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
               {
                 name: "PINT (850 samples)",
                 verdict: locale === "zh"
-                  ? "ATR 在 PINT 的 850 個 MCP 對抗性樣本上達到 99.6% 精準度、0.25% FP——代表規則在真實 MCP 流量中幾乎不誤報。"
-                  : "ATR reaches 99.6% precision and 0.25% FP on PINT's 850 MCP adversarial samples — rules rarely fire on legitimate MCP traffic.",
+                  ? "ATR 在 850 個 PINT 格式對抗性樣本（自建語料，來自 deepset + Lakera Gandalf，非 Lakera 官方私有 benchmark）上達到 63.2% 召回率、99.7% 精準度、0.25% FP——代表規則在真實 MCP 流量中幾乎不誤報。"
+                  : "ATR reaches 63.2% recall, 99.7% precision, and 0.25% FP on 850 PINT-format adversarial samples (self-built from deepset + Lakera Gandalf; not Lakera's official private benchmark) — rules rarely fire on legitimate MCP traffic.",
               },
               {
                 name: "HackAPrompt (4,780 samples)",
                 verdict: locale === "zh"
-                  ? "ATR 在 4,780 個 HackAPrompt 競賽樣本上達到 66.2% 召回率、100% 精準度——每 3 次攻擊就能抓到 2 次，且不誤報。"
-                  : "ATR catches 66.2% of the 4,780 HackAPrompt competition samples at 100% precision — roughly 2-in-3 attacks caught with no false alarms.",
+                  ? "ATR 在 4,780 個 HackAPrompt 競賽樣本上達到 66.0% 召回率、100% 精準度，且不誤報。"
+                  : "ATR catches 66.0% of the 4,780 HackAPrompt competition samples at 100% precision, with no false alarms.",
               },
               {
-                name: "SKILL.md (341 samples)",
+                name: "Self-test (341 samples)",
                 verdict: locale === "zh"
-                  ? "ATR 在 341 個真實 SKILL.md 樣本上達到 100% 精準度、0% FP——對 MCP skill 定義的偵測沒有誤報。"
-                  : "ATR reaches 100% precision and 0% FP on 341 real-world SKILL.md samples — no false positives on legitimate MCP skill definitions.",
+                  ? "ATR 在 341 個內部自測樣本上達到 89.4% 召回率、100% 精準度、0% FP——這是與 SKILL.md benchmark 分開的獨立語料。"
+                  : "ATR reaches 89.4% recall, 100% precision, and 0% FP on 341 internal self-test samples — a separate corpus from the SKILL.md benchmark.",
               },
               {
-                name: "garak (3,475 prompts)",
+                name: "garak (650 in-the-wild / 3,475 full)",
                 verdict: locale === "zh"
-                  ? "ATR 對 garak 社群 jailbreak 語料庫達到 97.1% 召回率——ATR 核心規則族群覆蓋了 garak 探測的 ~80% 以上。"
-                  : "ATR reaches 97.1% recall on garak's community jailbreak corpus — ATR-core rule families cover ~80%+ of what garak probes.",
+                  ? "ATR 對 garak in-the-wild jailbreak 集（650 個 prompt）達到 98.0% 召回率；對完整 23-probe garak 套件（3,475 個 prompt）為 38.5%。"
+                  : "ATR reaches 98.0% recall on garak's in-the-wild jailbreak set (650 prompts), and 38.5% on the full 23-probe garak suite (3,475 prompts).",
               },
             ].map((item) => (
               <div key={item.name}>
@@ -168,8 +168,8 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
 
       {/* SAFE-MCP */}
       <Reveal>
-        <h2 className="font-display text-2xl font-extrabold tracking-[-1px] mb-1 mt-12">SAFE-MCP (OpenSSF)</h2>
-        <p className="text-sm text-stone mb-4">{locale === "zh" ? "85 項技術中已覆蓋 78 項（91.8%）。" : "78 of 85 techniques covered (91.8%)."}</p>
+        <h2 className="font-display text-2xl font-extrabold tracking-[-1px] mb-1 mt-12">SAFE-MCP</h2>
+        <p className="text-sm text-stone mb-4">{locale === "zh" ? "85 項技術中已覆蓋 78 項（91.8%）。對應表正在隨類別調整重新校訂中。" : "78 of 85 techniques covered (91.8%). Mapping under revision as categories are reconciled."}</p>
         <a
           href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/SAFE-MCP-MAPPING.md"
           target="_blank"

@@ -1,5 +1,6 @@
 import { Reveal } from "@/components/Reveal";
 import { locales, type Locale } from "@/lib/i18n";
+import { loadSiteStats } from "@/lib/stats";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -21,6 +22,7 @@ export default async function ResponsibleUsePage({
   const { locale: raw } = await params;
   const locale = (locales.includes(raw as Locale) ? raw : "en") as Locale;
   const zh = locale === "zh";
+  const stats = loadSiteStats();
 
   return (
     <div className="pt-20 pb-20 px-5 md:px-6 max-w-[860px] mx-auto">
@@ -37,8 +39,8 @@ export default async function ResponsibleUsePage({
       <Reveal delay={0.1}>
         <p className="text-base text-stone font-light max-w-[640px] leading-[1.8] mb-12">
           {zh
-            ? "ATR 的 421 條規則描述 AI agent 攻擊模式，用途是偵測。相同的描述可以被誤用來生成攻擊。本頁說明我們的設計意圖、已知的雙重用途風險、以及回報濫用的管道。"
-            : "ATR's 421 rules describe AI agent attack patterns for the purpose of detection. The same descriptions can be misused to generate attacks. This page explains our design intent, known dual-use risks, and how to report misuse."}
+            ? `ATR 的 ${stats.ruleCount} 條規則描述 AI agent 攻擊模式，用途是偵測。相同的描述可以被誤用來生成攻擊。本頁說明我們的設計意圖、已知的雙重用途風險、以及回報濫用的管道。`
+            : `ATR's ${stats.ruleCount} rules describe AI agent attack patterns for the purpose of detection. The same descriptions can be misused to generate attacks. This page explains our design intent, known dual-use risks, and how to report misuse.`}
         </p>
       </Reveal>
 
@@ -111,7 +113,7 @@ export default async function ResponsibleUsePage({
           <ul className="space-y-2 text-sm text-graphite leading-[1.7]">
             {[
               zh
-                ? "將 true_positive test cases 直接作為對生產 AI agent 系統的攻擊 payload 使用。"
+                ? "未經授權,將 true_positive test cases 直接作為對生產 AI agent 系統的攻擊 payload 使用。"
                 : "Using true_positive test cases directly as attack payloads against production AI agent systems without authorization.",
               zh
                 ? "將 ATR 規則的 regex 反向工程成繞過偵測的攻擊變體，並在未授權的環境中使用。"

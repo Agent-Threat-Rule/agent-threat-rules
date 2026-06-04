@@ -10,7 +10,7 @@ export function generateStaticParams() {
 export const metadata: Metadata = {
   title: "Quality Standard (RFC-001 v1.1) - ATR",
   description:
-    "The open detection standard for the AI agent era. Six first-principles requirements, four-tier maturity ladder, vendor-neutral validator, wild-validated on 96,096 real agents. MIT licensed. Effective 2026-04-14.",
+    "An open detection-rule quality standard for the AI agent era. Six first-principles requirements, maturity ladder with explicit gates, vendor-neutral validator, wild-validated on 96,096 real agents (as of 2026-04-14). MIT licensed. Effective 2026-04-14.",
 };
 
 /* =============================================================
@@ -44,6 +44,9 @@ const FORMULA_COMPONENTS = [
   },
 ];
 
+// Canonical maturity ladder = the rule `status` field progression:
+// draft → experimental → test → stable → deprecated. Keep this aligned with
+// the glossary `maturity` entry.
 const MATURITY_LEVELS = [
   {
     label: "Draft",
@@ -56,9 +59,19 @@ const MATURITY_LEVELS = [
     deploy: "Alert-only",
   },
   {
+    label: "Test",
+    gate: "Canary observation passed · wild FP measured · no unresolved false-positive reports in the canary window",
+    deploy: "Alert-only, promotion candidate",
+  },
+  {
     label: "Stable",
     gate: "Wild-validated (1,000+ samples) · FP rate ≤ 0.5% · human-verified provenance · ≥3 evasion tests",
     deploy: "Block in production",
+  },
+  {
+    label: "Deprecated",
+    gate: "Superseded or demoted · retained for provenance · engines MUST NOT enable by default",
+    deploy: "Off by default",
   },
 ];
 
@@ -167,9 +180,12 @@ function Cell({ v }: { v: "yes" | "no" | "partial" }) {
   return <span className="text-mist">—</span>;
 }
 
+// Static evidence literals. This page does not bind to lib/stats.ts, so each
+// figure carries an explicit "as of" date. Re-verify against data/stats.json
+// before citing externally — rule/scan counts move.
 const EVIDENCE = [
-  { stat: "34", label: "ATR rules merged into Cisco AI Defense" },
-  { stat: "96,096", label: "Real agent skills scanned across 6 registries" },
+  { stat: "34", label: "ATR rules merged into Cisco AI Defense (as of 2026-05-11)" },
+  { stat: "96,096", label: "Real agent skills scanned across 6 registries (as of 2026-04-14)" },
   { stat: "99.6%", label: "Precision on PINT adversarial benchmark" },
   { stat: "100%", label: "Recall on SKILL.md corpus, 0.20% FP rate" },
 ];
@@ -210,15 +226,15 @@ export default async function QualityStandardPage({
         <h1 className="font-display text-[clamp(28px,4vw,44px)] font-extrabold tracking-[-2px] mb-3 leading-[1.05]">
           {locale === "zh" ? (
             <>
-              首個具備
+              具備
               <br />
               <span className="text-blue">來源追溯</span>的
               <br />
-              AI Agent 規則標準
+              AI Agent 規則品質標準
             </>
           ) : (
             <>
-              The first AI agent rule standard
+              An AI agent rule standard
               <br />
               with <span className="text-blue">provenance tracking</span>
             </>
@@ -426,8 +442,8 @@ export default async function QualityStandardPage({
         </h2>
         <p className="text-sm text-stone mb-6 max-w-2xl">
           {locale === "zh"
-            ? "業界首創:將「規則有沒有必要 metadata」與「誰驗證的」分開處理。"
-            : "The industry first: separating 'does the rule have the metadata' from 'who verified it'."}
+            ? "將「規則有沒有必要 metadata」與「誰驗證的」分開處理。LLM 只在撰寫階段參與;偵測核心本身是 deterministic regex / AST 比對,執行時不呼叫 LLM。"
+            : "Separating 'does the rule have the metadata' from 'who verified it'. The LLM participates only at authoring time; the detection core itself is deterministic regex / AST matching and calls no LLM at evaluation time."}
         </p>
       </Reveal>
 
@@ -813,8 +829,8 @@ console.log('Issues:', gate.issues);`}
           </h2>
           <p className="text-sm text-stone mb-6 max-w-xl mx-auto">
             {locale === "zh"
-              ? "ATR Quality Standard 已上線、在生產環境運作、隨時可採用。任何掃描器 — ATR、Cisco、Snyk、Microsoft AGT 或你自己的 — 都能用同一個 library 在同一個維度上計分。"
-              : "The ATR Quality Standard is live, in production, and ready to adopt. Any scanner — ATR, Cisco, Snyk, Microsoft AGT, or yours — can score rules on the same axes with the same library."}
+              ? "ATR Quality Standard 已上線、在生產環境運作、隨時可採用。任何掃描器 — ATR、Cisco、Microsoft AGT 或你自己的掃描器 — 都能用同一個 library 在同一個維度上計分。"
+              : "The ATR Quality Standard is live, in production, and ready to adopt. Any scanner — ATR, Cisco, Microsoft AGT, or your own scanner — can score rules on the same axes with the same library."}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <a

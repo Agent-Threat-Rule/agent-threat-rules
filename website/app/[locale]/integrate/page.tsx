@@ -57,7 +57,7 @@ rules/
   prompt-injection/
   tool-poisoning/
   agent-manipulation/
-  ... (8 categories)`,
+  ... (10 categories)`,
     doc: "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ATR-FRAMEWORK-SPEC.md",
   },
   {
@@ -288,8 +288,8 @@ jobs:
               </p>
               <p className="text-xs text-mist mt-2 leading-[1.7]">
                 {locale === "zh"
-                  ? "採用形式不只 GitHub Action——Cisco AI Defense (PR #79 PoC + PR #99 production) 以 rule-packs CLI 整合完整規則集;Microsoft AGT (PR #908 PoC + PR #1277 production) 以 PolicyDocument 格式整合 287 條規則並每週自動同步;Gen Digital Sage (PR #33) 整套規則包進 agentic-AI 風險評分層。這三筆算「上游採用」,不屬於 Action 使用統計。"
-                  : "Adoption forms vary — Cisco AI Defense (PR #79 PoC + PR #99 production) integrates the full rule pack via a rule-packs CLI; Microsoft AGT (PR #908 PoC + PR #1277 production) integrates 287 rules as PolicyDocument with a weekly auto-sync workflow; Gen Digital Sage (PR #33) ships the rule pack inside the agentic-AI risk-scoring layer. These three count as upstream adoption, separate from Action usage."}
+                  ? "採用形式不只 GitHub Action——Cisco AI Defense (PR #79 PoC + PR #99 production) 以 rule-packs CLI 整合完整規則集;Microsoft AGT (PR #908 PoC + PR #1277 production) 以 PolicyDocument 格式整合規則(提 PR 時為 287 條,後續每週自動同步至 ATR main);Gen Digital Sage (PR #33) 整套規則包進 agentic-AI 風險評分層。這三筆算「上游採用」,不屬於 Action 使用統計。"
+                  : "Adoption forms vary — Cisco AI Defense (PR #79 PoC + PR #99 production) integrates the full rule pack via a rule-packs CLI; Microsoft AGT (PR #908 PoC + PR #1277 production) integrates rules as PolicyDocument (287 rules at time of PR, auto-synced to ATR main since via a weekly workflow); Gen Digital Sage (PR #33) ships the rule pack inside the agentic-AI risk-scoring layer. These three count as upstream adoption, separate from Action usage."}
               </p>
             </div>
           </div>
@@ -361,10 +361,10 @@ jobs:
               {[
                 { label: locale === "zh" ? "覆蓋範圍" : "Coverage", atr: locale === "zh" ? `${stats.ruleCount} 條規則，${stats.cveCount} 個 CVE 對應，${stats.categoryCount} 個威脅類別` : `${stats.ruleCount} rules, ${stats.cveCount} CVEs mapped, ${stats.categoryCount} threat categories`, own: locale === "zh" ? "需要自行建立規則庫" : "You build your own rule set" },
                 { label: locale === "zh" ? "新攻擊反應" : "New attack response", atr: locale === "zh" ? "Threat Cloud 結晶，目標數小時內產出規則" : "Threat Cloud crystallization, targeting hours", own: locale === "zh" ? "取決於你團隊的頻寬" : "Depends on your team's bandwidth" },
-                { label: locale === "zh" ? "繞過測試" : "Evasion testing", atr: locale === "zh" ? "64 種已記錄的繞過技術，每個 PR 都測試" : "64 documented evasion techniques, tested on every PR", own: locale === "zh" ? "需要額外投入時間建立" : "Requires dedicated effort to build" },
+                { label: locale === "zh" ? "繞過測試" : "Evasion testing", atr: locale === "zh" ? "64 種已記錄的繞過技術，規則附帶 evasion_tests" : "64 documented evasion techniques, with per-rule evasion_tests", own: locale === "zh" ? "需要額外投入時間建立" : "Requires dedicated effort to build" },
                 { label: locale === "zh" ? "OWASP / MITRE 對應" : "OWASP / MITRE mapping", atr: locale === "zh" ? "內建。Agentic 10/10 + 每條規則對應 MITRE ATLAS" : "Pre-built. 10/10 Agentic + MITRE ATLAS per rule", own: locale === "zh" ? "數小時的手動對應工作" : "Hours of manual mapping work" },
                 { label: locale === "zh" ? "維護成本" : "Maintenance", atr: locale === "zh" ? "社群維護。MIT 授權。零成本。" : "Community-maintained. MIT. Zero cost.", own: locale === "zh" ? "需要持續的人力投入" : "Requires ongoing engineering effort" },
-                { label: locale === "zh" ? "生態系" : "Ecosystem", atr: locale === "zh" ? "Cisco 已整合，OWASP 和 OpenSSF PR 審查中" : "Cisco integrated, OWASP and OpenSSF PRs under review", own: locale === "zh" ? "獨立維護，無共享規則" : "Maintained independently, no shared rules" },
+                { label: locale === "zh" ? "生態系" : "Ecosystem", atr: locale === "zh" ? "Cisco、Microsoft、MISP 已整合，OWASP PR 審查中" : "Cisco, Microsoft, MISP integrated; OWASP PRs under review", own: locale === "zh" ? "獨立維護，無共享規則" : "Maintained independently, no shared rules" },
               ].map((row) => (
                 <div key={row.label} className="bg-paper text-sm">
                   {/* Desktop: 3-column */}
@@ -426,7 +426,7 @@ jobs:
             {[
               { label: "Cisco AI Defense", detail: locale === "zh" ? "完整 ATR 規則包 · skill-scanner production (PR #99)" : "Full ATR rule pack · skill-scanner production (PR #99)", highlight: true },
               { label: locale === "zh" ? `${stats.ruleCount} 條偵測規則` : `${stats.ruleCount} detection rules`, detail: locale === "zh" ? `${stats.categoryCount} 個威脅類別` : `${stats.categoryCount} threat categories`, highlight: false },
-              { label: locale === "zh" ? `${stats.megaScanTotal.toLocaleString()} 已掃描` : `${stats.megaScanTotal.toLocaleString()} skills scanned`, detail: locale === "zh" ? "6 個 registry · 751 惡意軟體" : "6 registries · 751 malware", highlight: false },
+              { label: locale === "zh" ? `${stats.megaScanTotal.toLocaleString()} 已掃描` : `${stats.megaScanTotal.toLocaleString()} skills scanned`, detail: locale === "zh" ? "6 個 registry · 552 確認惡意軟體" : "6 registries · 552 confirmed malware", highlight: false },
               { label: locale === "zh" ? `${stats.ecosystemIntegrations.length} 個生態系整合` : `${stats.ecosystemIntegrations.length} ecosystem integrations`, detail: `${stats.ecosystemIntegrations.filter(e => e.type === "merged").length} merged · ${stats.ecosystemIntegrations.filter(e => e.type === "open").length} under review`, highlight: false },
             ].map((item) => (
               <div key={item.label} className="bg-paper p-5">

@@ -26,8 +26,8 @@ const STEPS: Step[] = [
     labelZh: "分析",
     actor: "Threat Cloud LLM",
     actorZh: "Threat Cloud LLM",
-    detail: "AI analyzes attack structure, intent, and evasion techniques",
-    detailZh: "AI 分析攻擊結構、意圖、和繞過技術",
+    detail: "In the rule-authoring pipeline (not per-scan), the LLM analyzes attack structure, intent, and evasion techniques",
+    detailZh: "在規則撰寫管線中(非每次掃描),LLM 分析攻擊結構、意圖、和繞過技術",
   },
   {
     label: "Crystallize",

@@ -1,5 +1,6 @@
 import { Reveal } from "@/components/Reveal";
 import { locales, type Locale } from "@/lib/i18n";
+import { loadSiteStats } from "@/lib/stats";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -14,13 +15,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const zh = locale === "zh";
+  const stats = loadSiteStats();
   return {
     title: zh
-      ? "ATR × NIST AI RMF — 100% 規則對應"
-      : "ATR × NIST AI RMF — 100% rule coverage",
+      ? "ATR × NIST AI RMF — 近乎完整的 subcategory 覆蓋"
+      : "ATR × NIST AI RMF — near-complete subcategory coverage",
     description: zh
-      ? "ATR 421 條規則中 415 條對應 NIST AI RMF subcategory。16 個 subcategory,跨 GV / MP / MS / MG 四大 function。MIT License。"
-      : "ATR — 415 of 421 rules carry NIST AI RMF subcategory mappings. 16 subcategories spanning all four functions (GV / MP / MS / MG). MIT License.",
+      ? `ATR ${stats.ruleCount} 條規則中多數帶有 NIST AI RMF subcategory 對應。16 個 subcategory,跨 GV / MP / MS / MG 四大 function。MIT License。`
+      : `ATR — most of ${stats.ruleCount} rules carry NIST AI RMF subcategory mappings. 16 subcategories spanning all four functions (GV / MP / MS / MG). MIT License.`,
   };
 }
 
@@ -68,6 +70,7 @@ export default async function NistAiRmfPage({
   const { locale: rawLocale } = await params;
   const locale = (locales.includes(rawLocale as Locale) ? rawLocale : "en") as Locale;
   const zh = locale === "zh";
+  const stats = loadSiteStats();
 
   return (
     <div className="pt-20 pb-20 px-5 md:px-6 max-w-[880px] mx-auto">
@@ -81,10 +84,13 @@ export default async function NistAiRmfPage({
       {/* H1 */}
       <Reveal delay={0.05}>
         <h1 className="font-display text-[clamp(32px,5vw,52px)] font-extrabold tracking-[-2px] md:tracking-[-3px] leading-[1.08] text-ink">
-          {zh ? "ATR 415 條規則 (of 421)" : "415 of 421 ATR rules carry"}
+          {zh ? "ATR 規則近乎完整對應" : "Near-complete coverage of"}
           <br />
-          <span className="text-blue">{zh ? "對應 NIST AI RMF。" : "NIST AI RMF mappings."}</span>
+          <span className="text-blue">{zh ? "NIST AI RMF subcategory。" : "NIST AI RMF subcategories."}</span>
         </h1>
+        <p className="text-sm text-stone mt-3 leading-[1.6]">
+          {zh ? "(逐條分布見下方表格)" : "(see the subcategory table below)"}
+        </p>
       </Reveal>
 
       {/* Speed line */}
@@ -97,14 +103,14 @@ export default async function NistAiRmfPage({
         <p className="text-[18px] md:text-[21px] font-medium text-ink leading-[1.55] max-w-[720px]">
           {zh ? (
             <>
-              首版於 2026-05-09 隨 ATR v2.1.0 發布,當時 330 條規則全部對應。隨著 corpus 成長到 421 條,
-              <strong> compliance.nist_ai_rmf </strong>metadata 同步擴張到 415 條規則(98.6%)。
+              首版於 2026-05-09 隨 ATR v2.1.0 發布,當時 330 條規則全部對應。隨著 corpus 成長到 {stats.ruleCount} 條,
+              <strong> compliance.nist_ai_rmf </strong>metadata 同步擴張到多數規則,逐條分布見下方 subcategory 表格。
             </>
           ) : (
             <>
               First shipped 2026-05-09 with ATR v2.1.0 — all 330 rules then in the corpus carried{" "}
-              <strong>compliance.nist_ai_rmf</strong> metadata. As the corpus has grown to 421 rules,
-              the NIST AI RMF metadata now covers 415 of them (98.6%).
+              <strong>compliance.nist_ai_rmf</strong> metadata. As the corpus has grown to {stats.ruleCount} rules,
+              the NIST AI RMF metadata now covers most of them; the per-subcategory distribution is in the table below.
             </>
           )}
         </p>
@@ -128,8 +134,8 @@ export default async function NistAiRmfPage({
           </p>
           <p className="text-sm md:text-base text-graphite leading-[1.8] mb-3">
             {zh
-              ? "我們進一步把 catalog 作為 PR 提交給 NIST 官方的 usnistgov/oscal-content 倉庫(#333),目前 OPEN、由 NIST OSCAL maintainer review 中。Maintainer 已回應「方向需要對齊我們的 approach,內容需要 rework」。我們已寄信 oscal@nist.gov 詢問方向,等待 NIST 團隊指引中。"
-              : "The catalog was further submitted as a PR to NIST's official usnistgov/oscal-content repo (PR #333). The PR is OPEN and under NIST OSCAL maintainer review. The maintainer has commented that the contribution needs to align with their approach and would require rework. We have emailed oscal@nist.gov asking for direction; awaiting their response."}
+              ? "我們進一步把 catalog 提交給 NIST 官方的 usnistgov/oscal-content 倉庫:submission 審查中,NIST OSCAL maintainer 已開了 collaboration branch #338 一起調整內容。我們已寄信 oscal@nist.gov 詢問方向,等待 NIST 團隊指引中。"
+              : "The catalog was further submitted to NIST's official usnistgov/oscal-content repo. The submission is in review; the NIST OSCAL maintainer opened a collaboration branch (#338) to align on the content. We have emailed oscal@nist.gov asking for direction; awaiting their response."}
           </p>
           <div className="bg-ash/40 border border-fog p-4 text-sm text-stone leading-[1.7]">
             <span className="font-data text-xs text-stone tracking-[2px] uppercase block mb-2">
@@ -149,12 +155,12 @@ export default async function NistAiRmfPage({
               {zh ? "查看社群 catalog (CC0)" : "Community catalog (CC0)"} &rarr;
             </a>
             <a
-              href="https://github.com/usnistgov/oscal-content/pull/333"
+              href="https://github.com/usnistgov/oscal-content/pull/338"
               target="_blank"
               rel="noopener noreferrer"
               className="font-data text-xs text-blue hover:underline"
             >
-              {zh ? "查看 NIST 一側的 PR #333(審查中)" : "PR #333 on NIST side (in review)"} &rarr;
+              {zh ? "查看 NIST 一側的 collaboration branch #338(審查中)" : "Collaboration branch #338 on NIST side (in review)"} &rarr;
             </a>
           </div>
         </div>
@@ -163,9 +169,9 @@ export default async function NistAiRmfPage({
       {/* Top-line stats */}
       <Reveal delay={0.16}>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-8">
-          <StatCell label="Coverage" value="98.6" unit="%" note={zh ? "415 / 421 條規則" : "415 / 421 rules"} valueColor="blue" />
+          <StatCell label="Corpus" value={String(stats.ruleCount)} unit="" note={zh ? "目前規則總數" : "rules in corpus"} valueColor="blue" />
           <StatCell label="Subcategories" value="16" unit="" note={zh ? "跨 GV / MP / MS / MG" : "across GV / MP / MS / MG"} />
-          <StatCell label="Mappings" value="587" unit="" note={zh ? "primary + secondary 合計" : "primary + secondary combined"} />
+          <StatCell label="Functions" value="4" unit="" note={zh ? "GV / MP / MS / MG" : "GV / MP / MS / MG"} />
           <StatCell label="License" value="MIT" unit="" note={zh ? "永久免費,可 fork" : "Forever free, forkable"} />
         </div>
       </Reveal>
@@ -211,8 +217,8 @@ export default async function NistAiRmfPage({
       <Section label={zh ? "02 · Subcategory 分布" : "02 · Subcategory distribution"} delay={0.08}>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mb-5">
           {zh
-            ? "16 個 subcategory,涵蓋 NIST AI RMF 的 4 個 function:GV / MP / MS / MG。每條規則可同時對應多個 subcategory(primary + secondary strength),目前 415 條 mapped 規則共產生 587 個 subcategory entry。"
-            : "16 subcategories spanning all 4 NIST AI RMF functions (GV / MP / MS / MG). Each rule can map to multiple subcategories (primary + secondary strength). The 415 mapped rules currently produce 587 subcategory entries in total."}
+            ? "16 個 subcategory,涵蓋 NIST AI RMF 的 4 個 function:GV / MP / MS / MG。每條規則可同時對應多個 subcategory(primary + secondary strength);各 subcategory 的對應次數見下表。"
+            : "16 subcategories spanning all 4 NIST AI RMF functions (GV / MP / MS / MG). Each rule can map to multiple subcategories (primary + secondary strength); the per-subcategory mapping counts are listed in the table below."}
         </p>
         <div className="bg-paper border border-fog rounded">
           <div className="grid grid-cols-[80px_55px_minmax(0,1fr)_55px] sm:grid-cols-[110px_70px_minmax(0,1fr)_70px] gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 border-b border-fog font-data text-[10.5px] tracking-[1.2px] uppercase text-stone">
@@ -317,8 +323,8 @@ export default async function NistAiRmfPage({
             </span>
             <span>
               {zh
-                ? "USD 24.98(原估 USD 34)· wall-clock 約 52 分鐘 · 261 條新 mapping 疊在 v0.1 既有的 69 條之上,達成 100% 覆蓋。"
-                : "USD 24.98 (estimated USD 34) · wall-clock ~52 minutes · 261 new mappings layered on top of v0.1's 69, reaching 100% coverage."}
+                ? "USD 24.98(原估 USD 34)· wall-clock 約 52 分鐘 · 261 條新 mapping 疊在 v0.1 既有的 69 條之上,當時 v2.1.0 corpus 內的 330 條規則全數對應。"
+                : "USD 24.98 (estimated USD 34) · wall-clock ~52 minutes · 261 new mappings layered on top of v0.1's 69, mapping all 330 rules then in the v2.1.0 corpus."}
             </span>
           </li>
           <li className="grid grid-cols-[130px_1fr] gap-5 max-md:grid-cols-1 max-md:gap-1.5">
@@ -339,11 +345,11 @@ export default async function NistAiRmfPage({
         <p className="text-sm md:text-base text-graphite leading-[1.8]">
           {zh ? (
             <>
-              ATR 是 NIST CAISI 推動 COSAiS Single-Agent / Multi-Agent overlay 工作的候選 reference implementation。
+              ATR 設計上希望能作為 NIST CAISI 推動 COSAiS Single-Agent / Multi-Agent overlay 工作的 reference implementation,並以此回應 RFI NIST-2025-0035。這是 ATR 自行提交的回應,不代表 NIST 已選定 ATR。
             </>
           ) : (
             <>
-              ATR is a candidate reference implementation for NIST CAISI&rsquo;s COSAiS Single-Agent and Multi-Agent overlay work.
+              ATR is designed to serve as a reference implementation for NIST CAISI&rsquo;s COSAiS Single-Agent and Multi-Agent overlay work, and responds to RFI NIST-2025-0035 on that basis. This is ATR&rsquo;s own submission, not a selection by NIST.
             </>
           )}
         </p>
@@ -387,8 +393,8 @@ export default async function NistAiRmfPage({
             <span className="text-blue font-data text-xs pt-[5px]">→</span>
             <span>
               {zh
-                ? "效能 benchmark:NVIDIA garak inthewild_jailbreak_llms recall 97.1%(666 樣本)· 498 條已標註 SKILL.md 上 FP rate 0.20% · DOI 10.5281/zenodo.19178002"
-                : "Performance benchmarks: 97.1% recall on NVIDIA garak's inthewild_jailbreak_llms (666 samples) · 0.20% FP rate on 498 labeled benign SKILL.md samples · DOI 10.5281/zenodo.19178002"}
+                ? "效能 benchmark:NVIDIA garak in-the-wild jailbreak recall 98.0%(650 樣本)、完整 23-probe garak 38.5%(3,475 樣本)· 498 條已標註 SKILL.md 上 FP rate 0.20% · DOI 10.5281/zenodo.19178002"
+                : "Performance benchmarks: 98.0% recall on NVIDIA garak's in-the-wild jailbreak set (650 samples) and 38.5% across the full 23-probe garak suite (3,475 samples) · 0.20% FP rate on 498 labeled benign SKILL.md samples · DOI 10.5281/zenodo.19178002"}
             </span>
           </li>
         </ul>
@@ -410,8 +416,8 @@ export default async function NistAiRmfPage({
           />
           <CTACard
             num="NPM"
-            head={zh ? "v2.1.0 已發布" : "v2.1.0 published"}
-            body="npm install agent-threat-rules@2.1.0"
+            head={zh ? "v3.1.1 已發布" : "v3.1.1 published"}
+            body="npm install agent-threat-rules@3.1.1"
             href="https://www.npmjs.com/package/agent-threat-rules"
           />
           <CTACard
@@ -424,8 +430,8 @@ export default async function NistAiRmfPage({
         <Callout borderColor="blue">
           <strong className="text-ink">
             {zh
-              ? "100% NIST AI RMF 對應——非行銷話術,是可下載、可審核的 YAML metadata,MIT 授權永久免費。"
-              : "100% NIST AI RMF coverage — not a marketing claim. Downloadable, auditable YAML metadata, MIT-licensed forever."}
+              ? "近乎完整的 NIST AI RMF subcategory 對應——非行銷話術,是可下載、可審核的 YAML metadata,MIT 授權永久免費。"
+              : "Near-complete NIST AI RMF subcategory coverage — not a marketing claim. Downloadable, auditable YAML metadata, MIT-licensed forever."}
           </strong>
         </Callout>
         <div className="mt-8 pt-6 border-t border-fog text-sm text-graphite leading-[1.7]">

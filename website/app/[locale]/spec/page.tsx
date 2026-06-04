@@ -255,12 +255,12 @@ test_cases:
     status: "informative",
     en: {
       title: "Adoption",
-      body: `<p>The full Implementer Report — including conformance level, spec version, integration date, and public reference per organization — is published at <a href="/en/implementers">/implementers</a>. Production deployments as of the date of this document include Microsoft Agent Governance Toolkit, Cisco AI Defense, MISP / CIRCL (galaxy + taxonomies), OWASP A-S-R-H Project, Gen Digital Sage (Norton / Avast / AVG parent), and NIST OSCAL Path 1 acceptance.</p>
+      body: `<p>The full Implementer Report — including conformance level, spec version, integration date, and public reference per organization — is published at <a href="/en/implementers">/implementers</a>. Production deployments as of the date of this document include Microsoft Agent Governance Toolkit, Cisco AI Defense, MISP / CIRCL (galaxy + taxonomies), OWASP A-S-R-H Project, and Gen Digital Sage (Norton / Avast / AVG parent). A NIST OSCAL submission is in review (collaboration branch #338); this is not a NIST endorsement and not a production deployment.</p>
 <p>New adopters self-declare via pull request to <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ADOPTERS.md" target="_blank" rel="noopener noreferrer"><code>ADOPTERS.md</code></a>. The maintainers do not pre-approve entries; self-certification is the model.</p>`,
     },
     zh: {
       title: "採用 (Adoption)",
-      body: `<p>完整的 Implementer Report ── 包含每個組織的符規等級、規格版本、整合日期、公開憑據 ── 發布於 <a href="/zh/implementers">/implementers</a>。截至本文件日期,production 部署包含 Microsoft Agent Governance Toolkit、Cisco AI Defense、MISP / CIRCL (galaxy + taxonomies)、OWASP A-S-R-H Project、Gen Digital Sage (Norton / Avast / AVG 的母公司)、以及 NIST OSCAL Path 1 acceptance。</p>
+      body: `<p>完整的 Implementer Report ── 包含每個組織的符規等級、規格版本、整合日期、公開憑據 ── 發布於 <a href="/zh/implementers">/implementers</a>。截至本文件日期,production 部署包含 Microsoft Agent Governance Toolkit、Cisco AI Defense、MISP / CIRCL (galaxy + taxonomies)、OWASP A-S-R-H Project、以及 Gen Digital Sage (Norton / Avast / AVG 的母公司)。NIST OSCAL 之送件正在審查中 (collaboration branch #338);此非 NIST 背書,亦非 production 部署。</p>
 <p>新採用者透過對 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ADOPTERS.md" target="_blank" rel="noopener noreferrer"><code>ADOPTERS.md</code></a> 開立 pull request 自我宣告。維護者不預先審核條目;自我認證 (self-certification) 即是模型。</p>`,
     },
   },
@@ -275,7 +275,7 @@ test_cases:
   <thead><tr><th>Framework</th><th>Coverage</th><th>Mapping</th></tr></thead>
   <tbody>
     <tr><td>OWASP Agentic Top 10 (2026)</td><td>10/10 categories</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/OWASP-AGENTIC-MAPPING.md" target="_blank" rel="noopener noreferrer">OWASP-AGENTIC-MAPPING.md</a></td></tr>
-    <tr><td>SAFE-MCP (OpenSSF)</td><td>78/85 techniques (91.8%)</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/SAFE-MCP-MAPPING.md" target="_blank" rel="noopener noreferrer">SAFE-MCP-MAPPING.md</a></td></tr>
+    <tr><td>SAFE-MCP</td><td>78/85 techniques (91.8%) (mapping under revision)</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/SAFE-MCP-MAPPING.md" target="_blank" rel="noopener noreferrer">SAFE-MCP-MAPPING.md</a></td></tr>
     <tr><td>OWASP LLM Top 10 (2025)</td><td>Per-rule references</td><td>Per-rule <code>references.owasp_llm</code></td></tr>
     <tr><td>MITRE ATLAS</td><td>Per-rule references</td><td>Per-rule <code>references.mitre_atlas</code></td></tr>
     <tr><td>NIST AI RMF (community OSCAL catalog)</td><td>4/4 functions</td><td><a href="https://github.com/Agent-Threat-Rule/ai-rmf-oscal-catalog" target="_blank" rel="noopener noreferrer">ai-rmf-oscal-catalog</a></td></tr>
@@ -291,7 +291,7 @@ test_cases:
   <thead><tr><th>框架</th><th>覆蓋率</th><th>對應</th></tr></thead>
   <tbody>
     <tr><td>OWASP Agentic Top 10 (2026)</td><td>10/10 類別</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/OWASP-AGENTIC-MAPPING.md" target="_blank" rel="noopener noreferrer">OWASP-AGENTIC-MAPPING.md</a></td></tr>
-    <tr><td>SAFE-MCP (OpenSSF)</td><td>78/85 techniques (91.8%)</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/SAFE-MCP-MAPPING.md" target="_blank" rel="noopener noreferrer">SAFE-MCP-MAPPING.md</a></td></tr>
+    <tr><td>SAFE-MCP</td><td>78/85 techniques (91.8%) (對應修訂中)</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/SAFE-MCP-MAPPING.md" target="_blank" rel="noopener noreferrer">SAFE-MCP-MAPPING.md</a></td></tr>
     <tr><td>OWASP LLM Top 10 (2025)</td><td>Per-rule references</td><td>Per-rule <code>references.owasp_llm</code></td></tr>
     <tr><td>MITRE ATLAS</td><td>Per-rule references</td><td>Per-rule <code>references.mitre_atlas</code></td></tr>
     <tr><td>NIST AI RMF (community OSCAL catalog)</td><td>4/4 functions</td><td><a href="https://github.com/Agent-Threat-Rule/ai-rmf-oscal-catalog" target="_blank" rel="noopener noreferrer">ai-rmf-oscal-catalog</a></td></tr>
@@ -405,7 +405,7 @@ test_cases:
   <li><a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank" rel="noopener noreferrer">OWASP Agentic Top 10 (2026)</a> — Taxonomy of agentic-application risk categories.</li>
   <li><a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/" target="_blank" rel="noopener noreferrer">OWASP LLM Top 10 (2025)</a> — Taxonomy of LLM-application risk categories.</li>
   <li><a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a> — Adversarial-threat landscape for AI systems.</li>
-  <li><a href="https://github.com/safe-agentic-framework/safe-mcp" target="_blank" rel="noopener noreferrer">SAFE-MCP (OpenSSF)</a> — Secure-MCP framework, technique catalog.</li>
+  <li><a href="https://github.com/safe-agentic-framework/safe-mcp" target="_blank" rel="noopener noreferrer">SAFE-MCP</a> — Secure-MCP framework (safe-agentic-framework), technique catalog.</li>
   <li><a href="https://github.com/SigmaHQ/sigma" target="_blank" rel="noopener noreferrer">Sigma</a> — Generic detection rule format for SIEMs (architectural precedent).</li>
   <li><a href="https://github.com/VirusTotal/yara" target="_blank" rel="noopener noreferrer">YARA</a> — Pattern-matching language for malware (architectural precedent).</li>
 </ul>`,
@@ -423,7 +423,7 @@ test_cases:
   <li><a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank" rel="noopener noreferrer">OWASP Agentic Top 10 (2026)</a> ── Agentic application 風險類別分類。</li>
   <li><a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/" target="_blank" rel="noopener noreferrer">OWASP LLM Top 10 (2025)</a> ── LLM application 風險類別分類。</li>
   <li><a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a> ── AI 系統的對抗性威脅 landscape。</li>
-  <li><a href="https://github.com/safe-agentic-framework/safe-mcp" target="_blank" rel="noopener noreferrer">SAFE-MCP (OpenSSF)</a> ── 安全 MCP 框架、技術型錄。</li>
+  <li><a href="https://github.com/safe-agentic-framework/safe-mcp" target="_blank" rel="noopener noreferrer">SAFE-MCP</a> ── 安全 MCP 框架 (safe-agentic-framework)、技術型錄。</li>
   <li><a href="https://github.com/SigmaHQ/sigma" target="_blank" rel="noopener noreferrer">Sigma</a> ── SIEM 通用偵測規則格式 (架構先例)。</li>
   <li><a href="https://github.com/VirusTotal/yara" target="_blank" rel="noopener noreferrer">YARA</a> ── 惡意程式比對語言 (架構先例)。</li>
 </ul>`,

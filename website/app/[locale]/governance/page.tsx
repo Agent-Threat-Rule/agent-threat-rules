@@ -10,7 +10,7 @@ export function generateStaticParams() {
 export const metadata: Metadata = {
   title: "Governance — ATR",
   description:
-    "ATR governance model: named maintainers, merge policy, succession plan, and conflict-of-interest disclosure between PanGuard AI Inc and the ATR community.",
+    "ATR governance model: named maintainers, merge policy, succession plan, and the lead maintainer's conflict-of-interest disclosure.",
 };
 
 export default async function GovernancePage({
@@ -37,8 +37,8 @@ export default async function GovernancePage({
       <Reveal delay={0.1}>
         <p className="text-base text-stone font-light max-w-[640px] leading-[1.8] mb-12">
           {zh
-            ? "ATR 是 MIT 授權的開放標準，不隸屬任何公司。本頁說明誰維護這個標準、決策怎麼做、以及 PanGuard AI Inc 與 ATR 社群的利益衝突揭露。"
-            : "ATR is an MIT-licensed open standard, not owned by any company. This page documents who maintains it, how decisions are made, and the conflict-of-interest disclosure between PanGuard AI Inc and the ATR community."}
+            ? "ATR 是 MIT 授權的開放標準，不隸屬任何公司。本頁說明誰維護這個標準、決策怎麼做、以及首席維護者的利益衝突揭露。"
+            : "ATR is an MIT-licensed open standard, not owned by any company. This page documents who maintains it, how decisions are made, and the lead maintainer's conflict-of-interest disclosure."}
         </p>
       </Reveal>
 
@@ -169,8 +169,8 @@ export default async function GovernancePage({
                 ? "RFC issue 先開 + 7 天公開評論窗口 + 2 名維護者核可"
                 : "RFC issue opened first + 7-day public comment window + 2 maintainer approvals",
               detail: zh
-                ? "spec 是所有相容引擎的契約。任何 spec 變動都要先以 issue 形式提出 RFC、開 7 天評論窗讓所有 implementer 看到,然後才接受 PR。在目前 BDFL 階段,「2 名核可」靠主要維護者 + 1 名指定的外部 reviewer。TSC 成立後改為 TSC 過半數核可。"
-                : "The spec is the contract between all conforming engines. Any spec change is opened first as an RFC issue with a 7-day public comment window so every implementer sees it, then the PR is accepted. Under the current BDFL phase the 'two approvals' bar is satisfied by the lead maintainer + one designated external reviewer. When the TSC is formed the bar becomes a TSC majority.",
+                ? "spec 是所有相容引擎的契約。任何 spec 變動都要先以 issue 形式提出 RFC、開 7 天評論窗讓所有 implementer 看到,然後才接受 PR。在目前 BDFL 階段,「2 名核可」將由首席維護者加上一名外部 reviewer(待指定後)滿足。TSC 成立後改為 TSC 過半數核可。"
+                : "The spec is the contract between all conforming engines. Any spec change is opened first as an RFC issue with a 7-day public comment window so every implementer sees it, then the PR is accepted. Under the current BDFL phase the 'two approvals' bar will be satisfied by the lead maintainer plus one external reviewer once designated. When the TSC is formed the bar becomes a TSC majority.",
             },
             {
               kind: zh ? "breaking change(SemVer 主版號)" : "Breaking change (SemVer major bump)",
@@ -335,7 +335,7 @@ export default async function GovernancePage({
           {zh ? "利益衝突揭露" : "Conflict-of-interest disclosure"}
         </div>
         <h2 className="font-display text-xl font-extrabold tracking-[-0.5px] mb-4">
-          {zh ? "ATR 與 PanGuard AI Inc 的關係。" : "The relationship between ATR and PanGuard AI Inc."}
+          {zh ? "為什麼揭露這件事。" : "Why this disclosure exists."}
         </h2>
       </Reveal>
       <Reveal delay={0.1}>
@@ -343,18 +343,13 @@ export default async function GovernancePage({
           <div className="space-y-4 text-sm text-graphite leading-[1.7]">
             <p>
               {zh
-                ? "ATR（Agent Threat Rules）是 MIT 授權的開放標準，由 Agent-Threat-Rule GitHub 組織維護。PanGuard AI Inc 是 2026-05-12 在美國德拉瓦州成立的獨立商業公司，由 Adam Lin 創立。"
-                : "ATR (Agent Threat Rules) is an MIT-licensed open standard maintained under the Agent-Threat-Rule GitHub organization. PanGuard AI Inc is a separate commercial company incorporated in Delaware, USA on 2026-05-12, founded by Adam Lin."}
+                ? "ATR（Agent Threat Rules）是 MIT 授權的開放標準，由 Agent-Threat-Rule GitHub 組織維護。首席維護者在 AI agent 安全領域另持有商業利益（commercial affiliation）。本揭露之存在，是為了讓規則合併（rule-merge）決策始終可被審計。"
+                : "ATR (Agent Threat Rules) is an MIT-licensed open standard maintained under the Agent-Threat-Rule GitHub organization. The lead maintainer also holds a commercial affiliation in AI agent security. This disclosure exists so that rule-merge decisions stay auditable."}
             </p>
             <p>
               {zh
-                ? "重疊之處：兩者的主要聯絡人是同一人（Adam Lin）。PanGuard AI 的產品將 ATR 規則作為上游依賴，與 Cisco AI Defense 和 Microsoft AGT 的做法相同。"
-                : "Overlap: The primary contact is the same person (Adam Lin). PanGuard AI's product depends on ATR rules as an upstream dependency — the same relationship Cisco AI Defense and Microsoft AGT have."}
-            </p>
-            <p>
-              {zh
-                ? "界限：ATR 的規則、CHANGELOG、benchmark 資料、以及文件不得被 PanGuard AI 的商業利益所操控。ATR 的 issue tracker 和 PR review 流程對所有人開放，包括 PanGuard AI 的競爭對手。ATR 的 GOVERNANCE.md 在 GitHub 上公開查閱。"
-                : "The boundary: ATR's rules, CHANGELOG, benchmark data, and documentation must not be distorted by PanGuard AI's commercial interests. ATR's issue tracker and PR review process is open to everyone, including PanGuard AI's competitors. ATR's GOVERNANCE.md is publicly auditable on GitHub."}
+                ? "界限：ATR 的規則、CHANGELOG、benchmark 資料、以及文件不得被任何商業利益所操控。ATR 的 issue tracker 和 PR review 流程對所有人開放，包括該商業利益的競爭對手。ATR 的 GOVERNANCE.md 在 GitHub 上公開查閱。"
+                : "The boundary: ATR's rules, CHANGELOG, benchmark data, and documentation must not be distorted by any commercial interest. ATR's issue tracker and PR review process is open to everyone, including competitors of that commercial interest. ATR's GOVERNANCE.md is publicly auditable on GitHub."}
             </p>
             <p>
               {zh
