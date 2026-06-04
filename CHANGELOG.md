@@ -2,11 +2,25 @@
 
 All notable changes to ATR will be documented in this file.
 
+## [3.1.1] - 2026-06-05
+
+### Fixed
+
+- **ATR-2026-00001** (prompt-injection) false positive: the `start over/fresh/anew with a new …` task-switch branch matched benign phrasing such as "start fresh with a new outline" / "a new draft" because it lacked the task-noun constraint its sibling branches carry. Tightened to require a task-like noun (task / instruction / assignment / objective / goal / mission / prompt / persona / role / directive / job) after "new". The rule's documented true-positives are unaffected; full suite green (535 tests). Surfaced by the new semantic-validation corpus.
+
+### Added
+
+- **Semantic-validation harness** (`data/semantic-validation/` + `scripts/semantic-validation-score.mts`): a focused, reproducible corpus — 20 held-out paraphrased attacks targeting the two v3.1.0 semantic rules (00573 instruction-override, 00574 system-prompt extraction) plus 15 adversarial benign near-misses — and a scorer. Documents what the optional semantic stage actually adds on its two target threats, and ships the corpus so anyone can re-run it with their own judge.
+
+### Measured
+
+- Focused semantic validation (n=35, Claude-as-judge via worklist mode, threshold 0.7): the deterministic regex layer caught 10% of the paraphrased attacks; the optional semantic judge stage raised combined recall to 95% (19/20), with 0 judge false positives on the 15 adversarial benign near-misses (0 regex FP after the 00001 fix above). This is a small-n, authored, self-judged validation of the pipeline — NOT an independent benchmark. See `data/semantic-validation/README.md` for method and caveats.
+
 ## [3.1.0] - 2026-06-05
 
 ### Added
 
-- **Tier-2 semantic detection (T2) — optional second-stage judge.** New two-stage scan pipeline (`scripts/scan-with-judge.mts`). Stage 1 is the existing deterministic regex engine run across the whole corpus; Stage 2 spends an LLM-as-judge only on the subset Stage 1 flags or misses (~2%), so judge cost scales with the flagged/missed set rather than the corpus. Opt-in by design: it runs only with an OpenAI-compatible backend (`ATR_SEMANTIC_API_KEY` [+ `ATR_SEMANTIC_BASE_URL` / `ATR_SEMANTIC_MODEL`]) or a no-key worklist mode (`WORKLIST_OUT`) that a separate session adjudicates and feeds back via `--verdicts`. Tunable `JUDGE_SUBSET` (missed | flagged | all) and `JUDGE_THRESHOLD`. The default `ATREngine.evaluate()` path is untouched and stays 100% deterministic — the semantic stage is additive and never on by default.
+- **Tier-2 semantic detection (T2) — optional second-stage judge.** New two-stage scan pipeline (`scripts/scan-with-judge.mts`). Stage 1 is the existing deterministic regex engine run across the whole corpus; Stage 2 spends an LLM-as-judge only on the subset Stage 1 flags or misses (~2%), so judge cost scales with the flagged/missed set rather than the corpus. Opt-in by design: it runs only with an OpenAI-compatible backend (`ATR_SEMANTIC_API_KEY` [+ `ATR_SEMANTIC_BASE_URL` / `ATR_SEMANTIC_MODEL`]) or a no-key worklist mode (`WORKLIST_OUT`) that a separate session adjudicates and feeds back via `--verdicts`. Tunable `JUDGE_SUBSET` (missed | flagged | all) and `JUDGE_THRESHOLD`. The default `ATREngine.evaluate()` path stays 100% deterministic and the LLM judge is off by default — the two semantic rules contribute only narrow regex fallback patterns to the default path (FP-gated, with documented true-negatives); the judge stage is additive and opt-in.
 - **ATR-2026-00573** (prompt-injection): semantic paraphrased instruction-override. Flags reworded injection that drops the literal trigger vocabulary (ignore / disregard / forget) that pattern rule ATR-2026-00001 keys on — the precise misses recorded in 00001's `evasion_tests`. Severity high, status experimental.
 - **ATR-2026-00574** (context-exfiltration): semantic paraphrased system-prompt extraction. Flags indirect elicitation of the agent's system prompt or hidden configuration without the literal verb-first phrasing (reveal / show / print your instructions). Severity high, status experimental.
 - Cisco-grade, human-reviewed exploitation rules for agent runtimes: path traversal, SQL injection, and reflected XSS (ATR-2026-00569 / 00570 / 00571), MCP command injection, and SSRF-to-cloud-metadata, plus CVE-anchored detections surfaced by the daily NVD collector.
