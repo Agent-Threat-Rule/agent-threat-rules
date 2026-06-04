@@ -46,7 +46,7 @@ ATR is publishing proposal-stage standardization scaffolding ahead of OASIS Open
 - [`certification/`](certification/) — proposed ATR-Certified™ program guide
 - [`engines/`](engines/) — Python and Go reference impl interface contracts (TypeScript is the existing engine at `src/`)
 
-**All scaffolding is tagged PROPOSED v1.0 / v2.0 and is NOT ratified.** The 9-seat TSC has not been formed. The trust marks are not registered. Existing v1.1 governance ([`GOVERNANCE.md`](GOVERNANCE.md)) continues to operate. The rule format, npm package, TypeScript engine API, and all 450 rules are unchanged — existing ecosystem integrations (Microsoft AGT, Cisco AI Defense, MISP CIRCL, OWASP A-S-R-H, precize, Sage) work without modification.
+**All scaffolding is tagged PROPOSED v1.0 / v2.0 and is NOT ratified.** The 9-seat TSC has not been formed. The trust marks are not registered. Existing v1.1 governance ([`GOVERNANCE.md`](GOVERNANCE.md)) continues to operate. The rule format, npm package, TypeScript engine API, and all 462 rules are unchanged — existing ecosystem integrations (Microsoft AGT, Cisco AI Defense, MISP CIRCL, OWASP A-S-R-H, precize, Sage) work without modification.
 
 See [`STANDARDIZATION-STATUS.md`](STANDARDIZATION-STATUS.md) for the full status matrix mapping every new artifact to `{STABLE IN PRODUCTION, PROPOSED, SKELETON, PRELIMINARY}` and timeline for OASIS submission, community comment, and ratification.
 

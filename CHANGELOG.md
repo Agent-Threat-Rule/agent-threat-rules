@@ -2,6 +2,31 @@
 
 All notable changes to ATR will be documented in this file.
 
+## [3.1.0] - 2026-06-05
+
+### Added
+
+- **Tier-2 semantic detection (T2) — optional second-stage judge.** New two-stage scan pipeline (`scripts/scan-with-judge.mts`). Stage 1 is the existing deterministic regex engine run across the whole corpus; Stage 2 spends an LLM-as-judge only on the subset Stage 1 flags or misses (~2%), so judge cost scales with the flagged/missed set rather than the corpus. Opt-in by design: it runs only with an OpenAI-compatible backend (`ATR_SEMANTIC_API_KEY` [+ `ATR_SEMANTIC_BASE_URL` / `ATR_SEMANTIC_MODEL`]) or a no-key worklist mode (`WORKLIST_OUT`) that a separate session adjudicates and feeds back via `--verdicts`. Tunable `JUDGE_SUBSET` (missed | flagged | all) and `JUDGE_THRESHOLD`. The default `ATREngine.evaluate()` path is untouched and stays 100% deterministic — the semantic stage is additive and never on by default.
+- **ATR-2026-00573** (prompt-injection): semantic paraphrased instruction-override. Flags reworded injection that drops the literal trigger vocabulary (ignore / disregard / forget) that pattern rule ATR-2026-00001 keys on — the precise misses recorded in 00001's `evasion_tests`. Severity high, status experimental.
+- **ATR-2026-00574** (context-exfiltration): semantic paraphrased system-prompt extraction. Flags indirect elicitation of the agent's system prompt or hidden configuration without the literal verb-first phrasing (reveal / show / print your instructions). Severity high, status experimental.
+- Cisco-grade, human-reviewed exploitation rules for agent runtimes: path traversal, SQL injection, and reflected XSS (ATR-2026-00569 / 00570 / 00571), MCP command injection, and SSRF-to-cloud-metadata, plus CVE-anchored detections surfaced by the daily NVD collector.
+- Daily CVE collector and ecosystem-scan automation now feed agent-package vulnerability proposals into the review queue (collection only; promotion stays behind the human safety gate).
+
+### Changed
+
+- Total rule count: 450 → 462.
+- Two rounds of false-positive hardening on existing rules, gated by a wild-confirmed benign corpus and a dual-use security-skill bucket, so security tooling that legitimately ships attack strings no longer trips detection.
+- Engine and rule format unchanged; existing ecosystem integrations (Microsoft AGT, Cisco AI Defense, MISP CIRCL, OWASP A-S-R-H, precize, Sage) work without modification.
+
+### Deprecated
+
+- **ATR-2026-00235** — exact duplicate of ATR-2026-00230; marked deprecated, retained for ID stability.
+
+### Notes
+
+- First npm release to carry the post-3.0.5 work. The Cisco-grade rules and hardening landed on `main` between 2026-05-29 and 2026-06-04 but stayed unpublished until now: the auto-publish flywheel fires only for Threat-Cloud-crystallized commits, so human-authored rule work ships on an explicit minor release like this one.
+- Semantic rules are experimental and the T2 judge is opt-in; production blocking should continue to rely on the pattern rules. Benchmarks remain measured on the 3.0.0 baseline (see `stats.json`) and have not been re-run against the semantic stage.
+
 ## [2.2.2] - 2026-05-13
 
 ### Added
