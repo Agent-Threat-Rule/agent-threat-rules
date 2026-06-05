@@ -251,7 +251,7 @@ async def check_blacklist(skill_name: str) -> dict:
 
 **PR: Leaderboard entry**
 - Pre-requirement: email opensource@lakera.ai
-- Numbers: 62.7% recall, 99.7% precision, F1 77.1%
+- Numbers: 63.2% recall, 99.7% precision, F1 77.3% (850-sample PINT-format corpus, self-built — not Lakera's official PINT)
 - Method: Regex-based, <1ms, 108 rules
 - Positioning: "Fast first gate before LLM-based detectors"
 

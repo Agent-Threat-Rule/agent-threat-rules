@@ -339,7 +339,7 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | MITRE ATLAS | snapshot-2026-04 | 182 | 100.0% | 100.0% | 0.0% | 2026-05-23 |
 | NeMo Guardrails (NVIDIA test fixtures) | corpus-2026-05-12 | 6 | 100.0% | 100.0% | 0.0% | 2026-05-23 |
 | OWASP LLM Top 10 | snapshot-2026-04 | 56 | 100.0% | 100.0% | 0.0% | 2026-05-23 |
-| PINT (Invariant Labs) | v1 | 850 | 63.2% | 99.7% | 0.0% | 2026-05-23 |
+| PINT-format (deepset + Lakera Gandalf) | public-850 | 850 | 63.2% | 99.7% | 0.0% | 2026-05-23 |
 | PromptBench (academic adversarial) | snapshot-2026-04 | 3,280 | 0.0% | 100.0% | 0.0% | 2026-05-23 |
 | promptfoo (red-team plugin fixtures) | corpus-2026-05-12 | 44 | 79.5% | 100.0% | 0.0% | 2026-05-23 |
 | PromptInject (academic adversarial) | snapshot-2026-04 | 1,080 | 0.0% | 100.0% | 0.0% | 2026-05-23 |
@@ -470,7 +470,7 @@ ATR is released under the [MIT License](LICENSE). All contributions are MIT-lice
 
 ## 16. Acknowledgments
 
-ATR's design draws on prior work in: [Sigma](https://github.com/SigmaHQ/sigma) (SIEM detection format), [YARA](https://github.com/VirusTotal/yara) (malware signature format), [OWASP LLM Top 10](https://owasp.org/www-project-top-10-for-large-language-model-applications/), [OWASP Agentic Top 10](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/), [MITRE ATLAS](https://atlas.mitre.org/), [NVIDIA garak](https://github.com/NVIDIA/garak), [Invariant Labs PINT](https://invariantlabs.ai/), [Meta LlamaFirewall](https://ai.meta.com/research/publications/llamafirewall-an-open-source-guardrail-system-for-building-secure-ai-agents/), and [SAFE-MCP (OpenSSF)](https://github.com/safe-agentic-framework/safe-mcp).
+ATR's design draws on prior work in: [Sigma](https://github.com/SigmaHQ/sigma) (SIEM detection format), [YARA](https://github.com/VirusTotal/yara) (malware signature format), [OWASP LLM Top 10](https://owasp.org/www-project-top-10-for-large-language-model-applications/), [OWASP Agentic Top 10](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/), [MITRE ATLAS](https://atlas.mitre.org/), [NVIDIA garak](https://github.com/NVIDIA/garak), [Lakera PINT](https://github.com/lakeraai/pint-benchmark), [Meta LlamaFirewall](https://ai.meta.com/research/publications/llamafirewall-an-open-source-guardrail-system-for-building-secure-ai-agents/), and [SAFE-MCP (OpenSSF)](https://github.com/safe-agentic-framework/safe-mcp).
 
 The 96,096-skill ecosystem scan was made possible by the maintainers of OpenClaw, Skills.sh, Hermes Agent, and ClawHub publishing their registries openly.
 

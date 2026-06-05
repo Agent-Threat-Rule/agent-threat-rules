@@ -20,7 +20,7 @@ The attack surface is broad: any channel through which an agent receives natural
 
 1. Prevention Step 1: **Input Sanitization and Instruction Hierarchy:** Enforce strict separation between system instructions and user/external input. Strip or neutralize model-specific tokens (`[INST]`, `<<SYS>>`, `<|im_start|>`) from all external content before processing. Implement instruction hierarchy where system prompts cannot be overridden by user-level input.
 
-2. Prevention Step 2: **Multi-Layer Detection with Pattern Matching:** Deploy detection rules that identify injection patterns across all input channels. ATR (Agent Threat Rules) provides 13 rules for this category, including ATR-2026-001 (Direct Prompt Injection), ATR-2026-002 (Indirect Prompt Injection with 13 detection layers), ATR-2026-003 (Jailbreak with 15+ technique categories and multilingual support), ATR-2026-004 (System Prompt Override with 15 detection layers), and ATR-2026-005 (Multi-Turn Injection). These rules achieve 99.7% precision on the PINT benchmark.
+2. Prevention Step 2: **Multi-Layer Detection with Pattern Matching:** Deploy detection rules that identify injection patterns across all input channels. ATR (Agent Threat Rules) provides 13 rules for this category, including ATR-2026-001 (Direct Prompt Injection), ATR-2026-002 (Indirect Prompt Injection with 13 detection layers), ATR-2026-003 (Jailbreak with 15+ technique categories and multilingual support), ATR-2026-004 (System Prompt Override with 15 detection layers), and ATR-2026-005 (Multi-Turn Injection). These rules achieve 99.7% precision on an 850-sample PINT-format corpus (deepset + Lakera Gandalf).
 
 3. Prevention Step 3: **Context Isolation and Output Filtering:** Process external content (web pages, documents, API responses) in isolated contexts where embedded instructions cannot affect the agent's core behavior. Apply output filtering to detect when the agent begins following injected instructions rather than its legitimate task. Monitor for behavioral anomalies such as sudden topic shifts or unauthorized data disclosure.
 
@@ -32,7 +32,7 @@ Scenario #2: An attacker engages an agent across multiple conversation turns: Tu
 
 **Reference Links:**
 
-1. [PINT Benchmark — Prompt Injection Test Suite](https://github.com/PINT-Benchmark/PINT): Standardized evaluation framework for prompt injection detection.
+1. [Lakera PINT — Prompt Injection Test Suite](https://github.com/lakeraai/pint-benchmark): Standardized evaluation framework for prompt injection detection.
 2. [ATR-2026-001: Direct Prompt Injection](https://github.com/Agent-Threat-Rule/agent-threat-rules): Open-source detection rule with regex patterns for instruction override, task switching, and forget-all attacks.
 3. [ATR-2026-002: Indirect Prompt Injection](https://github.com/Agent-Threat-Rule/agent-threat-rules): 13-layer detection covering HTML comments, zero-width characters, model tokens, CSS-hidden text, and base64 payloads.
 4. [CVE-2024-5184](https://nvd.nist.gov/vuln/detail/CVE-2024-5184): Prompt injection vulnerability in AI assistant leading to unauthorized data access.

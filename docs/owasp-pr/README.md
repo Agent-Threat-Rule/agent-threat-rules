@@ -6,7 +6,7 @@ This PR adds real-world attack examples, prevention strategies, and detection re
 
 - **76 open-source detection rules** from [ATR (Agent Threat Rules)](https://github.com/Agent-Threat-Rule/agent-threat-rules), MIT licensed
 - **36,394 MCP skills scanned** on ClawHub (182 CRITICAL, 1,124 HIGH findings)
-- **PINT benchmark results**: 62.7% recall, 99.7% precision
+- **PINT-format corpus** (850 samples from deepset + Lakera Gandalf, not Lakera's official PINT benchmark): 63.2% recall, 99.7% precision
 - **Real CVEs**: CVE-2026-28363 (CVSS 9.9), CVE-2026-25253 (CVSS 8.8), CVE-2025-59536 (CVSS 8.7), CVE-2025-49150, CVE-2025-53773, and others
 - **Real attack campaigns**: ClawHavoc (1,184 malicious skills), AMOS infostealer (314 skills), Snyk ToxicSkills (76 confirmed malicious)
 
@@ -14,7 +14,7 @@ This PR adds real-world attack examples, prevention strategies, and detection re
 
 | ASI Category | ATR Rules | Real CVEs | Attack Campaigns |
 |---|---|---|---|
-| ASI01: Agent Behaviour Hijack | 13 | CVE-2024-5184, CVE-2025-53773 | PINT benchmark |
+| ASI01: Agent Behaviour Hijack | 13 | CVE-2024-5184, CVE-2025-53773 | PINT-format eval |
 | ASI02: Tool Misuse & Exploitation | 11 | CVE-2025-59536, CVE-2025-49150 | MCP server compromises |
 | ASI03: Identity & Privilege Abuse | 9 | CVE-2025-59536 | Snyk 280+ leaky skills |
 | ASI04: Supply Chain Vulnerabilities | 8 | CVE-2026-28363 (9.9), CVE-2026-25253 (8.8) | ClawHavoc, AMOS, ToxicSkills |
@@ -46,5 +46,5 @@ ATR (Agent Threat Rules) is an open-source, MIT-licensed detection ruleset for a
 
 - Repository: https://github.com/Agent-Threat-Rule/agent-threat-rules
 - Rules: 76 (71 MCP + 5 skill-level)
-- Benchmark: PINT (62.7% recall, 99.7% precision)
+- Eval: PINT-format corpus, self-built from public datasets (63.2% recall, 99.7% precision)
 - License: MIT

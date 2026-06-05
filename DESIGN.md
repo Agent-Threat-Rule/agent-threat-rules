@@ -367,7 +367,7 @@ Responsive grid (1/2/3 cols) of 8 threat categories. Each: name + count + one-li
 The story: engineer submitted PR, reviewed, merged in 3 days. Link to PR #79.
 
 **Scene 6 — The Standards:**
-4-column row: OWASP 10/10 / SAFE-MCP 91.8% / AST10 7/10 / PINT F1 76.7
+4-column row: OWASP 10/10 / SAFE-MCP 91.8% / AST10 7/10 / PINT-format F1 77.3
 
 **Scene 7 — The Future (AI-Native Contribution + Crystallization):**
 "ATR rules don't have to be written by hand."
@@ -390,7 +390,7 @@ Four paths: TypeScript, Python, Raw YAML, SIEM converters.
 | OWASP Agentic Top 10 merge | Scene 6 + /coverage | PR #14, 10/10 categories |
 | SAFE-MCP coverage | Scene 6 + /coverage | 78/85 techniques, 91.8% |
 | OWASP AST10 coverage | Scene 6 + /coverage | 7/10, 3 are process-level |
-| PINT external benchmark | Scene 3 + /research | 850 samples, 99.4% precision, 62.7% recall, F1 76.7 |
+| PINT-format corpus (self-built) | Scene 3 + /research | 850 samples, 99.7% precision, 63.2% recall, F1 77.3 |
 | ClawHub full scan | Scene 2 + /research | 36,394 skills, 182 CRITICAL, 1,124 HIGH |
 | Skills.sh crawl | /research | 91,226 skills from 124 publishers |
 | npm downloads | Footer or Scene 3 | 23,000+ monthly across all packages |

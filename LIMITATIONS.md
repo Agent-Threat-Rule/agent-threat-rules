@@ -1,8 +1,8 @@
 # ATR Limitations
 
-ATR v2.0.0 uses regex-based pattern detection (`detection_tier: pattern`, `schema_version: 0.1`). This document is a transparent accounting of what that approach can and cannot do. Read this before deploying ATR in production.
+ATR v3.0.5 uses regex-based pattern detection (`detection_tier: pattern`, `schema_version: 0.1`). This document is a transparent accounting of what that approach can and cannot do. Read this before deploying ATR in production.
 
-**Current stats:** 113 rules, 361 tests passing. MCP benchmark: 62.7% recall, 99.6% precision (PINT, 850 samples). SKILL.md benchmark: 100% recall, 97% precision, 0.20% FP (498 real-world samples). Plus 64 evasion tests documenting known bypasses.
+**Current stats:** 459 rules. On an 850-sample PINT-format corpus (deepset/prompt-injections + Lakera Gandalf -- not Lakera's official private PINT benchmark): 63.2% recall, 99.7% precision. SKILL.md benchmark: 100% recall, 97% precision, 0.20% FP (498 real-world samples). Plus 64 evasion tests documenting known bypasses.
 
 That pass rate sounds impressive. It is not. It means ATR correctly matches the patterns it was written to match. It says nothing about attacks that use different words to express the same intent.
 
@@ -127,29 +127,29 @@ The tiers are additive, not replacements. Tier 1 handles the fast path (block ob
 
 ATR's self-test corpus produces a 99.4% recall rate. That number is misleading if taken in isolation. Self-tests are written by the same people who wrote the rules -- they test whether ATR matches the patterns it was designed to match. External benchmarks paint a very different picture.
 
-### PINT Benchmark (850 samples)
+### PINT-format public corpus (850 samples)
 
-We evaluated ATR against 850 external samples sourced from deepset/prompt-injections and Lakera's Gandalf dataset. These are real-world prompt injection and jailbreak payloads that ATR was not trained against.
+We evaluated ATR against 850 external samples sourced from deepset/prompt-injections and Lakera's Gandalf dataset, assembled into Lakera's PINT format. This is ATR's own reconstructed corpus -- not a run of Lakera's official PINT benchmark, which is private (~4,314 samples). These are real-world prompt injection and jailbreak payloads that ATR was not trained against.
 
 | Metric | Score |
 |--------|-------|
 | Precision | 99.7% |
-| Recall | 62.7% |
-| F1 | 77.0% |
+| Recall | 63.2% |
+| F1 | 77.3% |
 
 **Precision is high.** When ATR fires, it is almost always correct. This is by design -- regex patterns are specific, so false positives are rare.
 
-**Recall is moderate.** ATR misses 37.3% of external attack samples. This is the honest cost of regex-based detection.
+**Recall is moderate.** ATR misses 36.8% of external attack samples. This is the honest cost of regex-based detection.
 
 ### Recall Breakdown by Category
 
 | Category | Recall |
 |----------|--------|
-| English jailbreaks | 51.6% |
-| English prompt-injection | 27.6% |
-| Non-English attacks | 24.4% |
+| Jailbreak | 73.7% |
+| Prompt-injection | 55.6% |
+| Non-English (hard subset) | 57.3% |
 
-Non-English recall at 24.4% is consistent with the multilingual limitation documented above. The rules are English-only; non-English detections occur only when attackers include English keywords alongside non-English text.
+Non-English (hard-subset) recall at 57.3% remains below the English jailbreak rate; the rules are English-first, so non-English detections still rely largely on English keywords appearing alongside non-English text.
 
 ### Rule Concentration
 
@@ -160,9 +160,9 @@ On the MCP/PINT benchmark (v0.4, 71 rules at the time), only 6 rules fired on ex
 | Corpus | Recall |
 |--------|--------|
 | Self-test (341 samples) | 99.4% |
-| External (850 samples) | 62.7% |
+| External (850 samples) | 63.2% |
 
-The 37-point gap is explained entirely by the paraphrase problem. Self-test samples use the exact phrasings the rules were written to match. External samples express the same malicious intent using different words, sentence structures, and languages. This is the fundamental limitation of regex-based detection, documented extensively in the "What Regex CANNOT Detect" section above.
+The 36-point gap is explained entirely by the paraphrase problem. Self-test samples use the exact phrasings the rules were written to match. External samples express the same malicious intent using different words, sentence structures, and languages. This is the fundamental limitation of regex-based detection, documented extensively in the "What Regex CANNOT Detect" section above.
 
 ### Competitive Context
 
