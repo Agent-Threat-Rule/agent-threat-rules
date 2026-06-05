@@ -1,8 +1,14 @@
 # ATR → OWASP Agentic Skills Top 10 (AST10) Mapping
 
-Last updated: 2026-03-29
-ATR version: v2.0.0 (113 rules, including 20 skill-specific rules)
+Last updated: 2026-06-06 (header refreshed)
+ATR corpus: v3.1.1, 462 rules (10 categories, including skill-compromise)
 OWASP framework: Agentic Skills Top 10 (AST10), March 2026
+
+> Coverage note: the per-category ATR rule citations below were last fully
+> enumerated against the 113-rule v2.0.0 corpus. Category coverage is monotonic —
+> adding rules can only maintain or increase it — so the current 462-rule corpus
+> covers at least the 7/10 categories shown (a conservative lower bound; the other
+> 3 are process/meta-level, not pattern-detectable). A full re-enumeration is pending.
 
 ## Background
 

@@ -290,6 +290,25 @@ function toJson(data: ReturnType<typeof buildAudit>): unknown {
   };
 }
 
+// Coverage-floor gate: fail if any listed framework is below 100% rule coverage.
+// Spec is a comma list of `tier:framework` (tier = references | compliance),
+// e.g. --require-full=references:mitre_atlas,compliance:eu_ai_act. Keeps the
+// website's "100% / every rule" claims honest by enforcing them in CI.
+function requireFull(data: ReturnType<typeof buildAudit>, spec: string): number {
+  let failures = 0;
+  console.log(`\nCoverage-floor check (--require-full), corpus = ${data.total} rules`);
+  for (const raw of spec.split(",").map((s) => s.trim()).filter(Boolean)) {
+    const [tier, fw] = raw.includes(":") ? raw.split(":") : ["compliance", raw];
+    const stats = tier === "references" ? data.refStats : data.compStats;
+    const stat = stats.find((s) => s.key === fw);
+    const ok = stat !== undefined && stat.count === data.total;
+    if (!ok) failures++;
+    console.log(`  ${ok ? "PASS" : "FAIL"} ${tier}:${fw} — ${stat ? `${stat.count}/${data.total}` : "absent"}`);
+  }
+  console.log(failures === 0 ? "  all required frameworks at 100%\n" : `  ${failures} framework(s) below 100%\n`);
+  return failures;
+}
+
 function main(): void {
   const args = new Set(process.argv.slice(2));
   const data = buildAudit(args.has("--gaps"));
@@ -297,6 +316,10 @@ function main(): void {
     console.log(JSON.stringify(toJson(data), null, 2));
   } else {
     renderReport(data);
+  }
+  const reqArg = process.argv.find((a) => a.startsWith("--require-full="));
+  if (reqArg && requireFull(data, reqArg.slice("--require-full=".length)) > 0) {
+    process.exitCode = 1;
   }
   if (data.parseErrors.length > 0) process.exitCode = 1;
 }
