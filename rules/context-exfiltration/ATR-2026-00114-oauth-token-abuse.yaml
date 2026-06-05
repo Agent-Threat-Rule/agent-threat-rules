@@ -27,12 +27,21 @@ compliance:
     - article: "12"
       context: "Stolen OAuth tokens allow attackers to impersonate legitimate users in audit logs, corrupting the record integrity that Article 12 requires; token interception detection is a prerequisite for maintaining trustworthy audit trails."
       strength: secondary
+    - article: "10"
+      context: "Article 10 (data and data governance) requires control over the data an AI system processes; this rule provides detection evidence for the context-exfiltration attempt (OAuth and API Token Interception) affecting that data."
+      strength: secondary
   nist_ai_rmf:
     - subcategory: "MP.5.1"
       context: "OAuth token interception and malicious redirect_uri manipulation are adversarial input risks that exploit the agent's participation in authentication flows to capture credentials intended for legitimate services."
       strength: primary
     - subcategory: "GV.6.1"
       context: "Data governance policies must restrict agent handling of bearer tokens, refresh tokens, and client secrets to prevent AI-assisted exfiltration of authorization credentials via forwarding or redirect manipulation."
+      strength: secondary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the context-exfiltration attempt (OAuth and API Token Interception)."
+      strength: primary
+    - subcategory: "MS.2.10"
+      context: "NIST AI RMF MEASURE 2.10 (privacy risk examined and documented) is supported by this rule's detection of the context-exfiltration attempt (OAuth and API Token Interception)."
       strength: secondary
   iso_42001:
     - clause: "6.2"
@@ -41,6 +50,9 @@ compliance:
     - clause: "8.4"
       context: "Impact assessments must document the account-takeover blast radius of OAuth token theft through agent-mediated flows, covering all services that accept the stolen bearer token."
       strength: secondary
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control, including control of externally provided processes) is operationalised by this rule's detection of the context-exfiltration attempt (OAuth and API Token Interception)."
+      strength: primary
 tags:
   category: context-exfiltration
   subcategory: oauth-token-abuse

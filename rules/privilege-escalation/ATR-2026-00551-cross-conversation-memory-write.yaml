@@ -54,13 +54,32 @@ compliance:
         tenant-isolated state and violate Article 10 data-governance
         requirements.
       strength: primary
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires high-risk AI systems to resist unauthorised attempts to alter their use, outputs or performance; this rule provides runtime detection evidence by flagging the privilege-escalation attempt (Cross-conversation memory write (scope-escape via memory store))."
+      strength: primary
+    - article: "14"
+      context: "Article 14 (human oversight) requires high-risk AI systems to remain subject to effective human oversight; this rule provides detection evidence where the privilege-escalation attempt (Cross-conversation memory write (scope-escape via memory store)) would bypass or undermine that oversight."
+      strength: secondary
   nist_ai_rmf:
     - subcategory: "MS.2.6"
       context: >
         Information security — cross-tenant memory writes are integrity
         failures under MS-2.6.
       strength: primary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the privilege-escalation attempt (Cross-conversation memory write (scope-escape via memory store))."
+      strength: primary
+    - subcategory: "MG.2.3"
+      context: "NIST AI RMF MANAGE 2.3 (respond to previously unknown identified risks) is supported by this rule, which surfaces the privilege-escalation attempt (Cross-conversation memory write (scope-escape via memory store)) so the risk can be treated."
+      strength: secondary
 
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control, including control of externally provided processes) is operationalised by this rule's detection of the privilege-escalation attempt (Cross-conversation memory write (scope-escape via memory store))."
+      strength: primary
+    - clause: "6.2"
+      context: "ISO/IEC 42001 Clause 6.2 (AI objectives and planning) calls for risk treatment of known attack patterns; this rule's detection of the privilege-escalation attempt (Cross-conversation memory write (scope-escape via memory store)) is such a treatment."
+      strength: secondary
 tags:
   category: privilege-escalation
   subcategory: cross-conversation-memory-write

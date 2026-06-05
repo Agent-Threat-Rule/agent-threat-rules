@@ -85,13 +85,22 @@ compliance:
         management interfaces and deny arbitrary binary values in command
         fields (enforce an allowlist of approved MCP server executables).
       strength: secondary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the tool-poisoning technique (LangChain-ChatChat Unauthenticated MCP STDIO Server Configuration RCE (CVE-2026-30617))."
+      strength: primary
+    - subcategory: "MG.3.2"
+      context: "NIST AI RMF MANAGE 3.2 (pre-trained models monitored as part of maintenance) is supported where this rule detects the tool-poisoning technique (LangChain-ChatChat Unauthenticated MCP STDIO Server Configuration RCE (CVE-2026-30617))."
+      strength: secondary
   iso_42001:
-    - clause: "8.6"
+    - clause: "8.1"
       context: >
         Operational controls must detect and block unauthenticated MCP STDIO
         server registration attempts carrying shell-binary command fields and
         RCE argument patterns.
       strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is supported by this rule, which implements runtime detection of the tool-poisoning technique (LangChain-ChatChat Unauthenticated MCP STDIO Server Configuration RCE (CVE-2026-30617)) as a treatment control."
+      strength: secondary
 
 tags:
   category: tool-poisoning

@@ -51,6 +51,9 @@ compliance:
         Article 15 robustness against manipulation requires defending
         against this specific shell metacharacter bypass class.
       strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control that detects the tool-poisoning technique (Claude Code Shell Metacharacter in Double-Quoted File Path)."
+      strength: secondary
   nist_ai_rmf:
     - function: Manage
       subcategory: MG.2.3
@@ -58,12 +61,24 @@ compliance:
         MG.2.3 runtime risk treatment — detecting the metacharacter
         shape blocks the exploit before shell execution.
       strength: primary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the tool-poisoning technique (Claude Code Shell Metacharacter in Double-Quoted File Path)."
+      strength: primary
+    - subcategory: "MG.3.2"
+      context: "NIST AI RMF MANAGE 3.2 (pre-trained models monitored as part of maintenance) is supported where this rule detects the tool-poisoning technique (Claude Code Shell Metacharacter in Double-Quoted File Path)."
+      strength: secondary
   iso_42001:
     - clause: "8.4"
       context: >
         AIMS impact assessment for AI tool integrations must cover
         path-injection RCE; this rule is the detection control.
       strength: primary
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control, including control of externally provided processes) is operationalised by this rule's detection of the tool-poisoning technique (Claude Code Shell Metacharacter in Double-Quoted File Path)."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is supported by this rule, which implements runtime detection of the tool-poisoning technique (Claude Code Shell Metacharacter in Double-Quoted File Path) as a treatment control."
+      strength: secondary
 
 tags:
   category: tool-poisoning

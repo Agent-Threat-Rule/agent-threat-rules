@@ -55,10 +55,19 @@ compliance:
     - subcategory: "MG.2.3"
       context: "Risk treatment plans under MG.2.3 must enforce arg-pattern denylists (npx -c, node -e, python -c, sh -c, bash -c) on top of binary allow-lists for any Custom MCP / STDIO / subprocess registration interface."
       strength: secondary
-  iso_42001:
-    - clause: "8.6"
-      context: "Operational controls under clause 8.6 must include detection of interpreter inline-execution flags (-c, -e, --eval, --command) in Custom MCP node configurations and tool registration payloads, since these convert allow-listed binaries into arbitrary code-execution sinks."
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the tool-poisoning technique (Flowise Custom MCP STDIO Command Injection (CVE-2026-40933))."
       strength: primary
+    - subcategory: "MG.3.2"
+      context: "NIST AI RMF MANAGE 3.2 (pre-trained models monitored as part of maintenance) is supported where this rule detects the tool-poisoning technique (Flowise Custom MCP STDIO Command Injection (CVE-2026-40933))."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Operational controls under clause 8.1 must include detection of interpreter inline-execution flags (-c, -e, --eval, --command) in Custom MCP node configurations and tool registration payloads, since these convert allow-listed binaries into arbitrary code-execution sinks."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is supported by this rule, which implements runtime detection of the tool-poisoning technique (Flowise Custom MCP STDIO Command Injection (CVE-2026-40933)) as a treatment control."
+      strength: secondary
 
 tags:
   category: tool-poisoning

@@ -38,6 +38,12 @@ compliance:
     - subcategory: "MG.2.3"
       context: "Detected malicious fine-tuning submissions require immediate risk treatment including quarantine and forensic analysis; MG.2.3 mandates that risk treatment plans are implemented to prevent backdoor activation after model deployment."
       strength: secondary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the model-security attack (Malicious Fine-tuning Data)."
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: "NIST AI RMF MEASURE 2.6 (system evaluated regularly for safety risks) is supported by this rule's detection of the model-security attack (Malicious Fine-tuning Data)."
+      strength: secondary
   iso_42001:
     - clause: "6.2"
       context: "ISO 42001 clause 6.2 risk treatment plans must address training data poisoning as a supply chain threat; this rule operationalizes the detection control that inspects fine-tuning uploads for backdoor trigger patterns before they alter model behavior."
@@ -45,6 +51,9 @@ compliance:
     - clause: "8.3"
       context: "Clause 8.3 requires that data quality, integrity, and provenance for AI systems are maintained; malicious fine-tuning detection enforces data integrity by blocking training examples that embed backdoors, credential disclosure patterns, or safety bypass instructions."
       strength: secondary
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control, including control of externally provided processes) is operationalised by this rule's detection of the model-security attack (Malicious Fine-tuning Data)."
+      strength: primary
 
 tags:
   category: data-poisoning

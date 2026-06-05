@@ -49,6 +49,9 @@ compliance:
     - article: "9"
       context: "Article 9 risk management must enumerate sandbox-escape via constructor-chain / prototype-pollution / Error.prepareStackTrace as primary high-risk evasion vectors for any agent code-execution layer."
       strength: primary
+    - article: "14"
+      context: "Article 14 (human oversight) requires high-risk AI systems to remain subject to effective human oversight; this rule provides detection evidence where the privilege-escalation attempt (Enclave VM Sandbox Escape RCE (CVE-2026-27597)) would bypass or undermine that oversight."
+      strength: secondary
   nist_ai_rmf:
     - subcategory: "MP.5.1"
       context: "Adversarial inputs designed to escape JS sandbox boundaries (constructor chain, prototype pollution, Error.prepareStackTrace, host-realm leakage) must be tracked as a primary evasion class for any agent code-execution surface."
@@ -56,10 +59,16 @@ compliance:
     - subcategory: "MG.2.3"
       context: "Risk treatment under MG.2.3 must prohibit user-controlled JavaScript reaching `@enclave-vm/core` versions prior to 2.11.1, and must require continuous evaluation of sandbox isolation under known-bypass corpora."
       strength: primary
-  iso_42001:
-    - clause: "8.6"
-      context: "Operational controls under clause 8.6 must include detection of canonical JavaScript sandbox-escape primitives in code submitted to any agent VM/sandbox layer."
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the privilege-escalation attempt (Enclave VM Sandbox Escape RCE (CVE-2026-27597))."
       strength: primary
+  iso_42001:
+    - clause: "8.1"
+      context: "Operational controls under clause 8.1 must include detection of canonical JavaScript sandbox-escape primitives in code submitted to any agent VM/sandbox layer."
+      strength: primary
+    - clause: "6.2"
+      context: "ISO/IEC 42001 Clause 6.2 (AI objectives and planning) calls for risk treatment of known attack patterns; this rule's detection of the privilege-escalation attempt (Enclave VM Sandbox Escape RCE (CVE-2026-27597)) is such a treatment."
+      strength: secondary
 
 tags:
   category: privilege-escalation

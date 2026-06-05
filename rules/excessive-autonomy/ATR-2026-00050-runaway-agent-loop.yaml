@@ -45,6 +45,9 @@ compliance:
     - article: "15"
       context: "Article 15 robustness requires that AI systems handle failure states gracefully; detection of runaway loops is a monitoring control ensuring the system does not enter unrecoverable autonomous states."
       strength: secondary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control that detects the unsafe autonomous action (Runaway Agent Loop Detection)."
+      strength: secondary
   nist_ai_rmf:
     - function: Manage
       subcategory: MG.3.2
@@ -54,13 +57,22 @@ compliance:
       subcategory: GV.1.2
       context: "GV.1.2 accountability roles must include responsibility for detecting and halting runaway agent behavior; this rule provides the signal required to fulfill that accountability."
       strength: secondary
+    - subcategory: "MG.2.3"
+      context: "NIST AI RMF MANAGE 2.3 (respond to previously unknown identified risks) is supported by this rule, which surfaces the unsafe autonomous action (Runaway Agent Loop Detection) so the risk can be treated."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the unsafe autonomous action (Runaway Agent Loop Detection)."
+      strength: secondary
   iso_42001:
-    - clause: "8.6"
-      context: "Clause 8.6 AI system operational control requires monitoring for abnormal execution patterns; runaway loop detection is the primary operational control for this failure class."
+    - clause: "8.1"
+      context: "Clause 8.1 AI system operational control requires monitoring for abnormal execution patterns; runaway loop detection is the primary operational control for this failure class."
       strength: primary
     - clause: "9.1"
       context: "Clause 9.1 monitoring and evaluation requires measuring AI system behavior against expected norms; loop counter patterns are the measurable anomaly indicators for this rule."
       strength: secondary
+    - clause: "6.2"
+      context: "ISO/IEC 42001 Clause 6.2 (AI objectives and planning) calls for risk treatment of known attack patterns; this rule's detection of the unsafe autonomous action (Runaway Agent Loop Detection) is such a treatment."
+      strength: primary
   colorado_ai_act:
     - section: "6-1-1703"
       clause: "Deployer ongoing monitoring of AI system performance"

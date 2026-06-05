@@ -29,6 +29,9 @@ compliance:
     - article: "15"
       context: "Article 15 cybersecurity requirements include protection against social engineering attacks targeting agent output pipelines; casual authority redirect is a documented adversarial technique exploiting agents as exfiltration proxies."
       strength: secondary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control that detects the agent-manipulation technique (Casual Authority Data Redirect)."
+      strength: secondary
   nist_ai_rmf:
     - subcategory: "GV.1.2"
       context: "Casual authority redirect attacks succeed when no formal accountability role exists to verify output redirection decisions; GV.1.2 requires that accountability roles for AI risk management are defined so that informal directives to redirect agent output can be challenged and blocked."
@@ -36,12 +39,15 @@ compliance:
     - subcategory: "MG.2.3"
       context: "Data redirect via social engineering authority claims is a documented exfiltration risk requiring active treatment; MG.2.3 requires that risk treatment plans include detection controls for authority-impersonation-based output redirection attacks."
       strength: secondary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the agent-manipulation technique (Casual Authority Data Redirect)."
+      strength: primary
   iso_42001:
     - clause: "6.2"
       context: "Clause 6.2 AI objectives and plans must include controls for preventing agents from being redirected to attacker-controlled endpoints through casual authority claims that spoof organizational hierarchy."
       strength: primary
-    - clause: "8.6"
-      context: "Clause 8.6 operational controls must ensure that agent output destinations are validated against authorized endpoints and that casual authority directives to disable safety filters or redirect data are blocked before execution."
+    - clause: "8.1"
+      context: "Clause 8.1 operational controls must ensure that agent output destinations are validated against authorized endpoints and that casual authority directives to disable safety filters or redirect data are blocked before execution."
       strength: secondary
 tags:
   category: agent-manipulation

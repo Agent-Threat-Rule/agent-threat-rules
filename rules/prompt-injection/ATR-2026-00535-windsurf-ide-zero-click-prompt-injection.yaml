@@ -49,6 +49,9 @@ compliance:
     - article: "9"
       context: "Article 9 risk management for high-risk AI systems must include indirect prompt injection from developer-opened files as a primary threat vector."
       strength: secondary
+    - article: "14"
+      context: "Article 14 (human oversight) requires high-risk AI systems to remain subject to effective human oversight; this rule provides detection evidence where the prompt-injection attempt (Windsurf IDE Zero-Click Prompt Injection via Embedded File Directives (CVE-2026-30615)) would bypass or undermine that oversight."
+      strength: secondary
   nist_ai_rmf:
     - function: Manage
       subcategory: MG.2.3
@@ -58,9 +61,15 @@ compliance:
       subcategory: MP.5.1
       context: "File-embedded indirect prompt injection must be catalogued as a tracked threat in the organizational AI risk register for any IDE deploying an LLM assistant."
       strength: secondary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the prompt-injection attempt (Windsurf IDE Zero-Click Prompt Injection via Embedded File Directives (CVE-2026-30615))."
+      strength: primary
   iso_42001:
     - clause: "6.2"
       context: "Zero-click indirect prompt injection via developer-opened files requires a detection control operationalised at the model-input layer under clause 6.2 AIMS planning."
+      strength: primary
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control, including control of externally provided processes) is operationalised by this rule's detection of the prompt-injection attempt (Windsurf IDE Zero-Click Prompt Injection via Embedded File Directives (CVE-2026-30615))."
       strength: primary
 
 tags:

@@ -37,6 +37,23 @@ compliance:
     - subcategory: "MG.2.3"
       context: "Detection of executable XSS sinks in tool output should trigger risk treatment to quarantine or sanitize the response before it reaches the UI; MG.2.3 mandates predefined mechanisms to disengage or block unsafe AI outputs at runtime."
       strength: secondary
+    - subcategory: "MG.3.2"
+      context: "NIST AI RMF MANAGE 3.2 (pre-trained models monitored as part of maintenance) is supported where this rule detects the tool-poisoning technique (XSS Payload Injection in Tool Response Output)."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control, including control of externally provided processes) is operationalised by this rule's detection of the tool-poisoning technique (XSS Payload Injection in Tool Response Output)."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is supported by this rule, which implements runtime detection of the tool-poisoning technique (XSS Payload Injection in Tool Response Output) as a treatment control."
+      strength: secondary
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires high-risk AI systems to resist unauthorised attempts to alter their use, outputs or performance; this rule provides runtime detection evidence by flagging the tool-poisoning technique (XSS Payload Injection in Tool Response Output)."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control that detects the tool-poisoning technique (XSS Payload Injection in Tool Response Output)."
+      strength: secondary
 tags:
   category: tool-poisoning
   subcategory: xss-in-tool-output

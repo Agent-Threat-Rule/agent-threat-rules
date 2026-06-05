@@ -34,6 +34,9 @@ compliance:
     - article: "9"
       context: "FITD escalation is a documented multi-step adversarial pattern; Article 9 risk management systems must include detection controls for incremental jailbreak techniques that bypass single-turn safety evaluation."
       strength: secondary
+    - article: "14"
+      context: "Article 14 (human oversight) requires high-risk AI systems to remain subject to effective human oversight; this rule provides detection evidence where the agent-manipulation technique (Foot-in-the-Door Gradual Escalation Attack) would bypass or undermine that oversight."
+      strength: secondary
   nist_ai_rmf:
     - subcategory: "MP.5.1"
       context: "Foot-in-the-door escalation is an adversarial input technique that exploits LLM consistency bias to incrementally bypass safety constraints across multiple turns; MP.5.1 requires that such multi-step adversarial input risks are identified and tracked to enable cross-turn detection."
@@ -41,12 +44,15 @@ compliance:
     - subcategory: "MG.2.3"
       context: "FITD escalation represents an identified risk requiring active treatment through detection controls that monitor prior-compliance anchors and escalation signals across conversation history; MG.2.3 requires such risk treatment plans are implemented."
       strength: secondary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the agent-manipulation technique (Foot-in-the-Door Gradual Escalation Attack)."
+      strength: primary
   iso_42001:
     - clause: "6.2"
       context: "Clause 6.2 AI objectives and plans must include risk treatment for multi-step jailbreak techniques like FITD escalation that exploit model consistency bias to extract harmful outputs that would be refused if requested directly."
       strength: primary
-    - clause: "8.6"
-      context: "Clause 8.6 operational controls must ensure that agents evaluate escalating requests in context of prior conversation turns rather than in isolation, preventing foot-in-the-door compliance anchoring from lowering refusal thresholds."
+    - clause: "8.1"
+      context: "Clause 8.1 operational controls must ensure that agents evaluate escalating requests in context of prior conversation turns rather than in isolation, preventing foot-in-the-door compliance anchoring from lowering refusal thresholds."
       strength: secondary
 tags:
   category: agent-manipulation

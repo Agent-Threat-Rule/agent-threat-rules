@@ -71,12 +71,21 @@ compliance:
       subcategory: MP.3.3
       context: "MCP servers are third-party components in the AI tool ecosystem; identifying malicious tool responses is an MP.3.3 third-party component risk detection action."
       strength: secondary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the tool-poisoning technique (Malicious Content in MCP Tool Response)."
+      strength: primary
+    - subcategory: "MG.3.2"
+      context: "NIST AI RMF MANAGE 3.2 (pre-trained models monitored as part of maintenance) is supported where this rule detects the tool-poisoning technique (Malicious Content in MCP Tool Response)."
+      strength: secondary
   iso_42001:
     - clause: "6.2"
       context: "Clause 6.2 AIMS security planning requires controls for third-party tool interfaces; this rule operationalizes the detection measure for malicious content delivered via MCP."
       strength: primary
-    - clause: "8.5"
-      context: "MCP server integrations are externally-provided AI-related processes under clause 8.5; this rule validates that external tool responses do not contain adversarial payloads before the agent acts on them."
+    - clause: "8.1"
+      context: "MCP server integrations are externally-provided AI-related processes under clause 8.1; this rule validates that external tool responses do not contain adversarial payloads before the agent acts on them."
+      strength: secondary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is supported by this rule, which implements runtime detection of the tool-poisoning technique (Malicious Content in MCP Tool Response) as a treatment control."
       strength: secondary
 
 tags:

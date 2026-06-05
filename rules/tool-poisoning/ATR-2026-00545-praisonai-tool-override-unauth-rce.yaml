@@ -58,6 +58,9 @@ compliance:
         requirements mandate comprehensive patch coverage for AI agent
         tool-override interfaces.
       strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control that detects the tool-poisoning technique (PraisonAI tool_override.py Unauthenticated RCE — CVE-2026-40287 Patch Bypass (CVE-2026-44334))."
+      strength: secondary
   nist_ai_rmf:
     - subcategory: "MP.5.1"
       context: >
@@ -65,12 +68,21 @@ compliance:
         primitives constitute an adversarial input; MP.5.1 requires scanning
         tool_override requests for embedded execution patterns.
       strength: primary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the tool-poisoning technique (PraisonAI tool_override.py Unauthenticated RCE — CVE-2026-40287 Patch Bypass (CVE-2026-44334))."
+      strength: primary
+    - subcategory: "MG.3.2"
+      context: "NIST AI RMF MANAGE 3.2 (pre-trained models monitored as part of maintenance) is supported where this rule detects the tool-poisoning technique (PraisonAI tool_override.py Unauthenticated RCE — CVE-2026-40287 Patch Bypass (CVE-2026-44334))."
+      strength: secondary
   iso_42001:
-    - clause: "8.6"
+    - clause: "8.1"
       context: >
         Operational controls must detect and block PraisonAI tool_override
         payloads containing code execution primitives before tool dispatch.
       strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is supported by this rule, which implements runtime detection of the tool-poisoning technique (PraisonAI tool_override.py Unauthenticated RCE — CVE-2026-40287 Patch Bypass (CVE-2026-44334)) as a treatment control."
+      strength: secondary
 
 tags:
   category: tool-poisoning

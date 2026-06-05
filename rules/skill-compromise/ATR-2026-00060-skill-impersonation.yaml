@@ -46,6 +46,9 @@ compliance:
     - article: "9"
       context: "Supply chain compromise via malicious skill registries is a documented risk requiring monitoring controls under Article 9; skill-name pattern detection is the runtime enforcement of those controls."
       strength: secondary
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires high-risk AI systems to resist unauthorised attempts to alter their use, outputs or performance; this rule provides runtime detection evidence by flagging the skill supply-chain compromise (MCP Skill Impersonation and Supply Chain Attack)."
+      strength: primary
   nist_ai_rmf:
     - function: Map
       subcategory: MP.2.3
@@ -55,12 +58,24 @@ compliance:
       subcategory: GV.1.2
       context: "GV.1.2 accountability roles must include responsibility for validating third-party tool integrity; this rule provides the automated signal needed to fulfill that governance obligation."
       strength: secondary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the skill supply-chain compromise (MCP Skill Impersonation and Supply Chain Attack)."
+      strength: primary
+    - subcategory: "MG.3.1"
+      context: "NIST AI RMF MANAGE 3.1 (third-party resources regularly monitored) is supported where this rule detects the skill supply-chain compromise (MCP Skill Impersonation and Supply Chain Attack)."
+      strength: secondary
+    - subcategory: "MG.3.2"
+      context: "NIST AI RMF MANAGE 3.2 (pre-trained models monitored as part of maintenance) is supported where this rule detects the skill supply-chain compromise (MCP Skill Impersonation and Supply Chain Attack)."
+      strength: secondary
   iso_42001:
-    - clause: "8.5"
-      context: "MCP skills are externally-provided AI-related components under clause 8.5; this rule enforces controls over externally-provided tools by detecting impersonation before invocation."
+    - clause: "8.1"
+      context: "MCP skills are externally-provided AI-related components under clause 8.1; this rule enforces controls over externally-provided tools by detecting impersonation before invocation."
       strength: primary
     - clause: "6.2"
       context: "Clause 6.2 AIMS security planning requires controls for third-party component integrity; skill impersonation detection operationalizes that planning objective at runtime."
+      strength: secondary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is supported by this rule, which implements runtime detection of the skill supply-chain compromise (MCP Skill Impersonation and Supply Chain Attack) as a treatment control."
       strength: secondary
 
 tags:

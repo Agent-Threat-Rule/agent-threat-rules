@@ -39,10 +39,11 @@ compliance:
       strength: primary
 
   eu_ai_act:
-    - article: 12               # Required. Article number (integer).
-      clause: "Automatic logging for high-risk AI systems"  # Required. Short name.
-      context: "..."            # Required. How this rule satisfies the clause.
-      strength: primary
+    - article: "12"             # Required. Article number as a STRING, e.g. "12".
+      context: "..."            # Required. How this rule provides detection EVIDENCE
+                                # for the article (not "satisfies" — ATR is evidence,
+                                # not a compliance guarantee).
+      strength: primary         # Optional. primary | secondary | partial.
 
   colorado_ai_act:
     - section: "SB24-205.5"     # Required. Section identifier.
@@ -51,14 +52,14 @@ compliance:
       strength: primary
 
   nist_ai_rmf:
-    - function: "Manage"        # Required. Govern | Map | Measure | Manage.
-      subcategory: "MG.2.3"     # Required. Full subcategory ID.
+    - subcategory: "MG.2.3"     # Required. Full subcategory ID.
+      function: "Manage"        # Optional. Govern | Map | Measure | Manage.
       context: "..."
       strength: primary
 
   iso_42001:
-    - clause: "6.2"             # Required. AIMS clause (e.g. 6.2, 9.1).
-      clause_name: "Risk treatment"  # Required. Human-readable name.
+    - clause: "6.2"             # Required. AIMS clause as a STRING (e.g. "6.2", "8.1").
+                                # Clause 8 (Operation) has ONLY 8.1-8.4 — 8.5/8.6 do not exist.
       context: "..."
       strength: primary
 ```
@@ -90,8 +91,9 @@ A rule can have entries in both blocks — e.g., `references.mitre_atlas` AND `c
 
 ## Validation
 
-- `scripts/validate-compliance.mjs` (to be added) validates every `compliance:` block against a per-framework allowlist of valid IDs / articles / subcategories / clauses. Rules with invalid entries fail CI.
-- The allowlists live in `data/compliance-frameworks/*.json` — one file per framework — and are updated via PR when a framework publishes revisions.
+- `scripts/validate-compliance.ts` (shipped 2026-06-05; `npm run validate:compliance`) validates every `compliance:` block against a per-framework allowlist of valid IDs / articles / subcategories / clauses. Rules with invalid entries fail CI (wired into `.github/workflows/validate.yml`). It requires non-empty `context` on every item and a valid `strength` enum.
+- The allowlists live in `data/compliance-frameworks/*.json` — one file per framework — and are updated via PR when a framework publishes revisions. Frameworks used in rules but without an allowlist file are reported as warnings (not failures), so allowlists can be added incrementally.
+- The canonical machine-readable shape is in `spec/atr-schema.yaml` under `properties.compliance`. Where this illustrative document and the schema differ, the schema + validator win.
 
 ## Downstream consumers
 
@@ -120,6 +122,6 @@ All downstream consumers are welcome — the `compliance:` block is MIT-licensed
 1. 2026-04-22: this spec document merged
 2. 2026-04-W4: 10 sample rules carry `compliance:` block for OWASP Agentic + OWASP LLM (bootstrap from existing `references:` data)
 3. 2026-05: 50 rules extended across all 6 frameworks (LLM-assisted authoring + human QA)
-4. 2026-Q2-end: all 311 rules mapped across at least the 3 most-requested frameworks (EU AI Act, NIST AI RMF, OWASP Agentic)
-5. 2026-Q3: remaining frameworks (Colorado, ISO 42001, OWASP LLM) complete
-6. Ongoing: new ATR rules MUST include `compliance:` from day 1 (enforced by contribution checklist)
+4. 2026-06-05 status (462 rules): NIST AI RMF 96.1%, EU AI Act 39.6%, ISO 42001 38.3%. Validator + allowlists + schema shipped; 72 fabricated ISO clauses (8.5/8.6) corrected to 8.1. Run `npm run audit:mappings` for live coverage.
+5. In progress: honest full-coverage backfill — every rule mapped to every framework control that GENUINELY applies, with rule-specific context. Frameworks that cannot honestly reach 100% (Colorado AI Act, ETSI) stay partial by design; see docs/COMPLIANCE-COVERAGE-POLICY.md.
+6. Ongoing: new ATR rules SHOULD include `compliance:` from day 1; CI (`validate:compliance`) blocks any rule that cites a non-existent framework identifier.

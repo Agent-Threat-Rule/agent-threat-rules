@@ -44,6 +44,9 @@ compliance:
     - article: "15"
       context: "CVE-2024-48144 / CVE-2024-48145 chatbox interfaces leak conversation history through crafted prompts that request dump of prior or subsequent turns; Article 15 cybersecurity requirements mandate that AI systems neutralize prompt patterns extracting cross-session conversation state."
       strength: primary
+    - article: "10"
+      context: "Article 10 (data and data governance) requires control over the data an AI system processes; this rule provides detection evidence for the context-exfiltration attempt (Chatbox History Exfiltration via Prompt Injection (CVE-2024-48144, CVE-2024-48145)) affecting that data."
+      strength: secondary
   nist_ai_rmf:
     - subcategory: "MP.5.1"
       context: "Adversarial inputs that ask the model to repeat all prior chat turns or system messages must be enumerated as a tracked attack class in the AI system's threat profile."
@@ -51,10 +54,19 @@ compliance:
     - subcategory: "MS.1.1"
       context: "Conversation history exfiltration via prompt injection is a measurable harm that MS.1.1 monitoring must surface, since it directly violates user-data confidentiality boundaries."
       strength: secondary
-  iso_42001:
-    - clause: "8.6"
-      context: "Operational controls under clause 8.6 must include detection of conversation-history exfiltration prompts in chatbox-style interfaces, since these convert stored multi-turn context into an attacker-controlled exfiltration channel."
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the context-exfiltration attempt (Chatbox History Exfiltration via Prompt Injection (CVE-2024-48144, CVE-2024-48145))."
       strength: primary
+    - subcategory: "MS.2.10"
+      context: "NIST AI RMF MEASURE 2.10 (privacy risk examined and documented) is supported by this rule's detection of the context-exfiltration attempt (Chatbox History Exfiltration via Prompt Injection (CVE-2024-48144, CVE-2024-48145))."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Operational controls under clause 8.1 must include detection of conversation-history exfiltration prompts in chatbox-style interfaces, since these convert stored multi-turn context into an attacker-controlled exfiltration channel."
+      strength: primary
+    - clause: "6.2"
+      context: "ISO/IEC 42001 Clause 6.2 (AI objectives and planning) calls for risk treatment of known attack patterns; this rule's detection of the context-exfiltration attempt (Chatbox History Exfiltration via Prompt Injection (CVE-2024-48144, CVE-2024-48145)) is such a treatment."
+      strength: secondary
 
 tags:
   category: context-exfiltration

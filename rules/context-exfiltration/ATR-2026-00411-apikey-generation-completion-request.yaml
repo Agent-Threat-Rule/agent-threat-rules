@@ -38,6 +38,20 @@ compliance:
     - subcategory: "MG.2.3"
       context: "Detection of credential-elicitation prompts triggers risk treatment workflows to block responses or disengage the model before secrets are emitted; MG.2.3 requires pre-defined mechanisms to supersede or deactivate AI behavior on such high-confidence credential-leak signals."
       strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control, including control of externally provided processes) is operationalised by this rule's detection of the context-exfiltration attempt (API Key Generation and Partial Key Completion Request)."
+      strength: primary
+    - clause: "6.2"
+      context: "ISO/IEC 42001 Clause 6.2 (AI objectives and planning) calls for risk treatment of known attack patterns; this rule's detection of the context-exfiltration attempt (API Key Generation and Partial Key Completion Request) is such a treatment."
+      strength: secondary
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires high-risk AI systems to resist unauthorised attempts to alter their use, outputs or performance; this rule provides runtime detection evidence by flagging the context-exfiltration attempt (API Key Generation and Partial Key Completion Request)."
+      strength: primary
+    - article: "10"
+      context: "Article 10 (data and data governance) requires control over the data an AI system processes; this rule provides detection evidence for the context-exfiltration attempt (API Key Generation and Partial Key Completion Request) affecting that data."
+      strength: secondary
 tags:
   category: context-exfiltration
   subcategory: credential-generation-elicitation

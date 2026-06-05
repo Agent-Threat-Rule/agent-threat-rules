@@ -46,6 +46,9 @@ compliance:
     - article: "14"
       context: "Runaway invocation loops prevent effective human oversight by consuming the agent's token budget before any human-reviewable output is produced; Article 14 oversight mechanisms must include detection of denial-of-oversight patterns that exhaust agent capacity through tool-layer abuse."
       strength: secondary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control that detects the tool-poisoning technique (MCPwn Runaway Tool Invocation via Retry Directive (CVE-2026-33032))."
+      strength: secondary
   nist_ai_rmf:
     - subcategory: "MP.5.1"
       context: "CVE-2026-33032 MCPwn runaway invocation uses malicious retry_hint and continue_after_error MCP response fields as adversarial inputs that coerce the client into unbounded tool-call loops; MP.5.1 requires this class of resource exhaustion attack delivered through agent tool channels to be identified and tracked."
@@ -53,12 +56,21 @@ compliance:
     - subcategory: "MG.2.3"
       context: "Risk treatment plans under MG.2.3 must implement hard retry caps and treat retry_hint as advisory-only to prevent malicious MCP servers from exploiting the runaway invocation pattern to consume token budgets and probe rate limits via forced tool-call loops."
       strength: secondary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the tool-poisoning technique (MCPwn Runaway Tool Invocation via Retry Directive (CVE-2026-33032))."
+      strength: primary
+    - subcategory: "MG.3.2"
+      context: "NIST AI RMF MANAGE 3.2 (pre-trained models monitored as part of maintenance) is supported where this rule detects the tool-poisoning technique (MCPwn Runaway Tool Invocation via Retry Directive (CVE-2026-33032))."
+      strength: secondary
   iso_42001:
     - clause: "6.2"
       context: "Risk treatment activities under clause 6.2 must address the MCPwn runaway invocation pattern (CVE-2026-33032), where malicious MCP response fields are used as tool-invoke directives to create unbounded retry loops that exhaust agent capacity."
       strength: primary
-    - clause: "8.6"
-      context: "Operational controls under clause 8.6 must enforce bounded retry policies and detect retry_hint or continue_after_error fields set to imperative tool-invoke directives, preventing malicious MCP servers from triggering runaway invocation loops in the agent client."
+    - clause: "8.1"
+      context: "Operational controls under clause 8.1 must enforce bounded retry policies and detect retry_hint or continue_after_error fields set to imperative tool-invoke directives, preventing malicious MCP servers from triggering runaway invocation loops in the agent client."
+      strength: secondary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is supported by this rule, which implements runtime detection of the tool-poisoning technique (MCPwn Runaway Tool Invocation via Retry Directive (CVE-2026-33032)) as a treatment control."
       strength: secondary
 
 tags:

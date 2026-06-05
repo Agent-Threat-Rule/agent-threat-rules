@@ -51,13 +51,29 @@ compliance:
         boundaries; cross-tenant leakage via delegation is a data-governance
         failure under Article 10.
       strength: primary
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires high-risk AI systems to resist unauthorised attempts to alter their use, outputs or performance; this rule provides runtime detection evidence by flagging the context-exfiltration attempt (Cross-agent session context leak across delegation chain)."
+      strength: primary
   nist_ai_rmf:
     - subcategory: "MS.2.6"
       context: >
         Information security — agent delegation chains must preserve session
         and user scope; attribute drift across spans is an integrity violation.
       strength: primary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the context-exfiltration attempt (Cross-agent session context leak across delegation chain)."
+      strength: primary
+    - subcategory: "MS.2.10"
+      context: "NIST AI RMF MEASURE 2.10 (privacy risk examined and documented) is supported by this rule's detection of the context-exfiltration attempt (Cross-agent session context leak across delegation chain)."
+      strength: secondary
 
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control, including control of externally provided processes) is operationalised by this rule's detection of the context-exfiltration attempt (Cross-agent session context leak across delegation chain)."
+      strength: primary
+    - clause: "6.2"
+      context: "ISO/IEC 42001 Clause 6.2 (AI objectives and planning) calls for risk treatment of known attack patterns; this rule's detection of the context-exfiltration attempt (Cross-agent session context leak across delegation chain) is such a treatment."
+      strength: secondary
 tags:
   category: context-exfiltration
   subcategory: cross-agent-context-drift

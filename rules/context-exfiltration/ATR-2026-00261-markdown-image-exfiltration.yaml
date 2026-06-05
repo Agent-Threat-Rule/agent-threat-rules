@@ -35,12 +35,21 @@ compliance:
     - article: "13"
       context: "Covert exfiltration via markdown rendering is invisible to users and operators, directly violating the transparency that Article 13 requires by allowing AI-generated output to silently transmit user data without any indication."
       strength: secondary
+    - article: "10"
+      context: "Article 10 (data and data governance) requires control over the data an AI system processes; this rule provides detection evidence for the context-exfiltration attempt (Markdown Image URL Data Exfiltration) affecting that data."
+      strength: secondary
   nist_ai_rmf:
     - subcategory: "MP.5.1"
       context: "Markdown image URL exfiltration is an adversarial input technique that coerces LLMs into generating image references that encode base64 conversation data in query strings, triggering auto-fetch exfiltration; MP.5.1 requires this output-channel attack pattern to be identified and tracked."
       strength: primary
     - subcategory: "GV.6.1"
       context: "Exfiltrating conversation context and user secrets via markdown-rendered image URLs to attacker-controlled domains violates data governance boundaries; GV.6.1 policies must cover AI-generated output as a potential unauthorized data transmission channel."
+      strength: secondary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the context-exfiltration attempt (Markdown Image URL Data Exfiltration)."
+      strength: primary
+    - subcategory: "MS.2.10"
+      context: "NIST AI RMF MEASURE 2.10 (privacy risk examined and documented) is supported by this rule's detection of the context-exfiltration attempt (Markdown Image URL Data Exfiltration)."
       strength: secondary
   iso_42001:
     - clause: "6.2"
@@ -49,6 +58,9 @@ compliance:
     - clause: "8.4"
       context: "AI system impact assessment under clause 8.4 must document the markdown image exfiltration vector, where LLM-generated image references encode sensitive context in URLs that the rendering client automatically fetches to attacker domains."
       strength: secondary
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control, including control of externally provided processes) is operationalised by this rule's detection of the context-exfiltration attempt (Markdown Image URL Data Exfiltration)."
+      strength: primary
 tags:
   category: context-exfiltration
   subcategory: markdown-image-uri

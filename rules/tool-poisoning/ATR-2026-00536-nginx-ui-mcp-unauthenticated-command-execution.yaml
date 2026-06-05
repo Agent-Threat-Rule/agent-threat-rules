@@ -64,10 +64,19 @@ compliance:
       function: Govern
       context: "Third-party MCP-enabled server tools (including nginx-ui) must be assessed under GV.6.1 supplier risk management for missing-authentication-on-critical-function controls before agent pipelines depend on them."
       strength: secondary
-  iso_42001:
-    - clause: "8.6"
-      context: "Operational controls under clause 8.6 must detect and block MCP server registrations or tool invocations targeting nginx-ui command-execution endpoints without a verified authentication mechanism."
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the tool-poisoning technique (nginx-ui MCP Endpoint Unauthenticated Command Execution (CVE-2026-33032))."
       strength: primary
+    - subcategory: "MG.3.2"
+      context: "NIST AI RMF MANAGE 3.2 (pre-trained models monitored as part of maintenance) is supported where this rule detects the tool-poisoning technique (nginx-ui MCP Endpoint Unauthenticated Command Execution (CVE-2026-33032))."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Operational controls under clause 8.1 must detect and block MCP server registrations or tool invocations targeting nginx-ui command-execution endpoints without a verified authentication mechanism."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is supported by this rule, which implements runtime detection of the tool-poisoning technique (nginx-ui MCP Endpoint Unauthenticated Command Execution (CVE-2026-33032)) as a treatment control."
+      strength: secondary
 
 tags:
   category: tool-poisoning

@@ -32,6 +32,20 @@ compliance:
     - subcategory: "MG.2.3"
       context: "Detection of fake-encryption-wrapped credentials must trigger response plans to block transmission and revoke exposed keys; MG.2.3 requires mechanisms to supersede or disengage AI actions before the leak completes."
       strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control, including control of externally provided processes) is operationalised by this rule's detection of the context-exfiltration attempt (Obfuscated API Key Disclosure)."
+      strength: primary
+    - clause: "6.2"
+      context: "ISO/IEC 42001 Clause 6.2 (AI objectives and planning) calls for risk treatment of known attack patterns; this rule's detection of the context-exfiltration attempt (Obfuscated API Key Disclosure) is such a treatment."
+      strength: secondary
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires high-risk AI systems to resist unauthorised attempts to alter their use, outputs or performance; this rule provides runtime detection evidence by flagging the context-exfiltration attempt (Obfuscated API Key Disclosure)."
+      strength: primary
+    - article: "10"
+      context: "Article 10 (data and data governance) requires control over the data an AI system processes; this rule provides detection evidence for the context-exfiltration attempt (Obfuscated API Key Disclosure) affecting that data."
+      strength: secondary
 tags:
   category: context-exfiltration
   subcategory: obfuscated-key

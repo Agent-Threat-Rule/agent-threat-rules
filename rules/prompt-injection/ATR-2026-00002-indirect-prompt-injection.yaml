@@ -52,6 +52,9 @@ compliance:
     - article: "9"
       context: "Indirect injection from third-party content sources is a documented risk category requiring mitigation controls under Article 9 risk management obligations."
       strength: secondary
+    - article: "14"
+      context: "Article 14 (human oversight) requires high-risk AI systems to remain subject to effective human oversight; this rule provides detection evidence where the prompt-injection attempt (Indirect Prompt Injection via External Content) would bypass or undermine that oversight."
+      strength: secondary
   nist_ai_rmf:
     - function: Manage
       subcategory: MG.2.3
@@ -61,12 +64,15 @@ compliance:
       subcategory: MP.3.3
       context: "External content providers are third-party components in the AI supply chain; this rule identifies their attack surface as a risk source."
       strength: secondary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the prompt-injection attempt (Indirect Prompt Injection via External Content)."
+      strength: primary
   iso_42001:
     - clause: "6.2"
       context: "Clause 6.2 AIMS planning requires controls for externally-sourced risks; this rule operationalizes the detection measure for indirect injection via consumed content."
       strength: primary
-    - clause: "8.5"
-      context: "Externally-provided content processed by the agent falls under clause 8.5 control of externally-provided processes; this rule validates that external content does not contain adversarial directives."
+    - clause: "8.1"
+      context: "Externally-provided content processed by the agent falls under clause 8.1 control of externally-provided processes; this rule validates that external content does not contain adversarial directives."
       strength: secondary
 
 tags:

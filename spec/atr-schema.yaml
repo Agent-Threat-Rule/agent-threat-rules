@@ -230,6 +230,129 @@ properties:
           type: string
         description: "Research paper references or URLs"
 
+  # === Compliance (audit-grade regulatory mappings) ===
+
+  compliance:
+    type: object
+    description: >
+      Audit-grade mappings to published regulatory / governance frameworks. Distinct
+      from `references:` (academic citations): every item carries auditor-readable
+      `context` prose plus an optional `strength`. An ATR rule is runtime detection
+      EVIDENCE supporting a control, NOT a compliance guarantee. Framework identifiers
+      are validated against data/compliance-frameworks/*.json by
+      scripts/validate-compliance.ts (npm run validate:compliance). Omit the block
+      entirely if no framework genuinely applies — never invent a mapping to hit 100%.
+    properties:
+      eu_ai_act:
+        type: array
+        description: "EU AI Act (Reg 2024/1689) high-risk obligations. Allowlist: eu_ai_act.json."
+        items:
+          type: object
+          required: [article, context]
+          properties:
+            article:
+              type: string
+              description: "Article number as a string, e.g. \"15\"."
+            context:
+              type: string
+              description: "How this rule provides detection evidence for the article. Auditor-readable."
+            strength:
+              type: string
+              enum: [primary, secondary, partial]
+      nist_ai_rmf:
+        type: array
+        description: "NIST AI RMF 1.0 subcategories. Allowlist: nist_ai_rmf.json."
+        items:
+          type: object
+          required: [subcategory, context]
+          properties:
+            subcategory:
+              type: string
+              description: "Subcategory ID, e.g. MS.2.7."
+            function:
+              type: string
+              enum: [Govern, Map, Measure, Manage]
+              description: "Optional parent function."
+            context:
+              type: string
+            strength:
+              type: string
+              enum: [primary, secondary, partial]
+      iso_42001:
+        type: array
+        description: >
+          ISO/IEC 42001:2023 management-system clauses (4-10). Clause 8 (Operation)
+          has ONLY 8.1-8.4 — 8.5/8.6 do not exist. Allowlist: iso_42001.json.
+        items:
+          type: object
+          required: [clause, context]
+          properties:
+            clause:
+              type: string
+              description: "Clause number as a string, e.g. \"8.1\"."
+            context:
+              type: string
+            strength:
+              type: string
+              enum: [primary, secondary, partial]
+      owasp_llm:
+        type: array
+        description: "Audit-context mirror of references.owasp_llm. IDs LLMxx:2025. Allowlist: owasp_llm.json."
+        items:
+          type: object
+          required: [id, context]
+          properties:
+            id:
+              type: string
+            context:
+              type: string
+            strength:
+              type: string
+              enum: [primary, secondary, partial]
+      owasp_agentic:
+        type: array
+        description: "Audit-context mirror of references.owasp_agentic. IDs ASIxx:2026. Allowlist: owasp_agentic.json."
+        items:
+          type: object
+          required: [id, context]
+          properties:
+            id:
+              type: string
+            context:
+              type: string
+            strength:
+              type: string
+              enum: [primary, secondary, partial]
+      colorado_ai_act:
+        type: array
+        description: >
+          Colorado AI Act SB24-205 — applies ONLY to consequential decisions
+          (employment, lending, insurance, housing, etc.). Do NOT map a rule here
+          unless it genuinely concerns a consequential-decision system. Allowlist TBD.
+        items:
+          type: object
+          required: [context]
+          properties:
+            section:
+              type: string
+            clause:
+              type: string
+            context:
+              type: string
+            strength:
+              type: string
+              enum: [primary, secondary, partial]
+      etsi_ts_104223:
+        type: array
+        description: "ETSI TS 104 223 principle / sub-principle identifiers. Allowlist TBD."
+        items:
+          type: object
+      nist_csf:
+        type: array
+        description: "NIST CSF 2.0 subcategory identifiers (e.g., DE.CM-09). Allowlist TBD."
+        items:
+          type: object
+
   # === Tags (ATR classification) ===
 
   tags:

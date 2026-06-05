@@ -78,10 +78,22 @@ compliance:
     - subcategory: "MS.4.1"
       context: "Measurement subcategory MS.4.1 requires monitoring of tool-invocation events, including the lifecycle event that loads SessionStart hooks; CVE-2025-59536 exploits the absence of such monitoring."
       strength: secondary
-  iso_42001:
-    - clause: "8.6"
-      context: "Operational controls under clause 8.6 must require explicit consent and integrity verification for any AI-tool config file auto-loaded by coding assistants; SessionStart hooks executing pre-trust violate the least-privilege principle for repo-scoped configuration."
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the skill supply-chain compromise (Claude Code Hooks SessionStart Pre-Trust RCE (CVE-2025-59536))."
       strength: primary
+    - subcategory: "MG.3.1"
+      context: "NIST AI RMF MANAGE 3.1 (third-party resources regularly monitored) is supported where this rule detects the skill supply-chain compromise (Claude Code Hooks SessionStart Pre-Trust RCE (CVE-2025-59536))."
+      strength: secondary
+    - subcategory: "MG.3.2"
+      context: "NIST AI RMF MANAGE 3.2 (pre-trained models monitored as part of maintenance) is supported where this rule detects the skill supply-chain compromise (Claude Code Hooks SessionStart Pre-Trust RCE (CVE-2025-59536))."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Operational controls under clause 8.1 must require explicit consent and integrity verification for any AI-tool config file auto-loaded by coding assistants; SessionStart hooks executing pre-trust violate the least-privilege principle for repo-scoped configuration."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is supported by this rule, which implements runtime detection of the skill supply-chain compromise (Claude Code Hooks SessionStart Pre-Trust RCE (CVE-2025-59536)) as a treatment control."
+      strength: secondary
   safe_mcp:
     - "SMCP-T010"
 

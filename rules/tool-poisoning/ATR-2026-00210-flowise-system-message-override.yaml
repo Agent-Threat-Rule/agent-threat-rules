@@ -53,12 +53,21 @@ compliance:
     - subcategory: "MG.2.3"
       context: "Risk treatment plans under MG.2.3 must mandate input sanitization before Flowise template interpolation, as the CVE-2025-59528 attack achieves system prompt override and remote code execution through the vm.runInNewContext and new Function sinks."
       strength: secondary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the tool-poisoning technique (Flowise System Message Override via Template Interpolation (CVE-2025-59528))."
+      strength: primary
+    - subcategory: "MG.3.2"
+      context: "NIST AI RMF MANAGE 3.2 (pre-trained models monitored as part of maintenance) is supported where this rule detects the tool-poisoning technique (Flowise System Message Override via Template Interpolation (CVE-2025-59528))."
+      strength: secondary
   iso_42001:
     - clause: "6.2"
       context: "Risk treatment activities under clause 6.2 must address the Flowise system message override vulnerability (CVE-2025-59528), implementing sanitization controls that prevent attacker-controlled chat inputs from reaching template interpolation in privileged execution contexts."
       strength: primary
-    - clause: "8.6"
-      context: "Operational controls under clause 8.6 must include detection of Flowise template interpolation syntax ({{$flow.variables}}, {{$input}}) in content fields that feed into system messages or code execution sinks, blocking the CVE-2025-59528 RCE pathway."
+    - clause: "8.1"
+      context: "Operational controls under clause 8.1 must include detection of Flowise template interpolation syntax ({{$flow.variables}}, {{$input}}) in content fields that feed into system messages or code execution sinks, blocking the CVE-2025-59528 RCE pathway."
+      strength: secondary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is supported by this rule, which implements runtime detection of the tool-poisoning technique (Flowise System Message Override via Template Interpolation (CVE-2025-59528)) as a treatment control."
       strength: secondary
 
 tags:

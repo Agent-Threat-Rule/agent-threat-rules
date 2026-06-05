@@ -43,14 +43,29 @@ compliance:
     - article: "15"
       context: "CVE-2026-22252 LibreChat MCP STDIO adapter passes user-controlled tool arguments to child_process.spawn without quoting, allowing argv-level injection of additional flags or shell commands; Article 15 cybersecurity requirements mandate that high-risk AI systems sanitize and quote all attacker-influenced inputs before they reach process-spawning sinks."
       strength: primary
+    - article: "14"
+      context: "Article 14 (human oversight) requires high-risk AI systems to remain subject to effective human oversight; this rule provides detection evidence where the agent-manipulation technique (LibreChat MCP STDIO Argument Injection (CVE-2026-22252)) would bypass or undermine that oversight."
+      strength: secondary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control that detects the agent-manipulation technique (LibreChat MCP STDIO Argument Injection (CVE-2026-22252))."
+      strength: secondary
   nist_ai_rmf:
     - subcategory: "MP.5.1"
       context: "Argv-level injection through tool arguments is an adversarial input attack identified under MP.5.1; sanitization of tool-arg fields before spawn() is the canonical control."
       strength: primary
-  iso_42001:
-    - clause: "8.6"
-      context: "Operational controls under clause 8.6 must include argv-quoting policies and metacharacter denylists for any tool-runtime spawn surface that accepts agent-supplied arguments."
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the agent-manipulation technique (LibreChat MCP STDIO Argument Injection (CVE-2026-22252))."
       strength: primary
+    - subcategory: "MG.2.3"
+      context: "NIST AI RMF MANAGE 2.3 (respond to previously unknown identified risks) is supported by this rule, which surfaces the agent-manipulation technique (LibreChat MCP STDIO Argument Injection (CVE-2026-22252)) so the risk can be treated."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Operational controls under clause 8.1 must include argv-quoting policies and metacharacter denylists for any tool-runtime spawn surface that accepts agent-supplied arguments."
+      strength: primary
+    - clause: "6.2"
+      context: "ISO/IEC 42001 Clause 6.2 (AI objectives and planning) calls for risk treatment of known attack patterns; this rule's detection of the agent-manipulation technique (LibreChat MCP STDIO Argument Injection (CVE-2026-22252)) is such a treatment."
+      strength: secondary
 
 tags:
   category: agent-manipulation

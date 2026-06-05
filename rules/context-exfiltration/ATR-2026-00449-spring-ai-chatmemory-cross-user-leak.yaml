@@ -58,6 +58,9 @@ compliance:
     - article: "9"
       context: "Article 9 risk management must enumerate cross-user memory leakage as a high-risk class — the conversation-memory layer is typically treated as low-risk infrastructure but actually carries private dialogue content."
       strength: primary
+    - article: "10"
+      context: "Article 10 (data and data governance) requires control over the data an AI system processes; this rule provides detection evidence for the context-exfiltration attempt (Spring AI ChatMemory Cross-User Memory Leakage (CVE-2026-41712)) affecting that data."
+      strength: secondary
   nist_ai_rmf:
     - subcategory: "MP.5.1"
       context: "Adversarial conditions that cause one user's chat memory to be retrieved into another user's prompt must be tracked as a primary confidentiality failure mode for advisor-based architectures."
@@ -65,10 +68,19 @@ compliance:
     - subcategory: "MG.2.3"
       context: "Risk treatment plans under MG.2.3 must require per-conversation_id memory partitioning in any code path that uses a shared ChatMemory across multiple users."
       strength: primary
-  iso_42001:
-    - clause: "8.6"
-      context: "Operational controls under clause 8.6 must require that conversation_id is distinct per session and that advisor pipelines reject memory retrieval whose conversation_id does not match the active session."
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the context-exfiltration attempt (Spring AI ChatMemory Cross-User Memory Leakage (CVE-2026-41712))."
       strength: primary
+    - subcategory: "MS.2.10"
+      context: "NIST AI RMF MEASURE 2.10 (privacy risk examined and documented) is supported by this rule's detection of the context-exfiltration attempt (Spring AI ChatMemory Cross-User Memory Leakage (CVE-2026-41712))."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Operational controls under clause 8.1 must require that conversation_id is distinct per session and that advisor pipelines reject memory retrieval whose conversation_id does not match the active session."
+      strength: primary
+    - clause: "6.2"
+      context: "ISO/IEC 42001 Clause 6.2 (AI objectives and planning) calls for risk treatment of known attack patterns; this rule's detection of the context-exfiltration attempt (Spring AI ChatMemory Cross-User Memory Leakage (CVE-2026-41712)) is such a treatment."
+      strength: secondary
 
 tags:
   category: context-exfiltration

@@ -48,6 +48,9 @@ compliance:
     - article: "9"
       context: "Article 9 risk management must enumerate unauthenticated tool-registration endpoints as a critical risk vector since they convert any inbound HTTP to host command execution without identity binding."
       strength: secondary
+    - article: "14"
+      context: "Article 14 (human oversight) requires high-risk AI systems to remain subject to effective human oversight; this rule provides detection evidence where the agent-manipulation technique (LiteLLM MCP Unauthenticated Server Registration RCE (CVE-2026-30623)) would bypass or undermine that oversight."
+      strength: secondary
   nist_ai_rmf:
     - subcategory: "GV.6.1"
       context: "Governance subcategory GV.6.1 requires identity and access controls for all configuration-changing AI system interfaces; CVE-2026-30623 is a direct violation where MCP registration bypasses authentication altogether."
@@ -55,10 +58,19 @@ compliance:
     - subcategory: "MP.5.1"
       context: "MP.5.1 requires identification of adversarial input vectors; unauthenticated MCP registration is the canonical input vector for this class of attack."
       strength: secondary
-  iso_42001:
-    - clause: "8.6"
-      context: "Operational controls under clause 8.6 must include authentication and request-source verification on every tool/MCP registration endpoint, blocking the unauthenticated CVE-2026-30623 attack path."
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the agent-manipulation technique (LiteLLM MCP Unauthenticated Server Registration RCE (CVE-2026-30623))."
       strength: primary
+    - subcategory: "MG.2.3"
+      context: "NIST AI RMF MANAGE 2.3 (respond to previously unknown identified risks) is supported by this rule, which surfaces the agent-manipulation technique (LiteLLM MCP Unauthenticated Server Registration RCE (CVE-2026-30623)) so the risk can be treated."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Operational controls under clause 8.1 must include authentication and request-source verification on every tool/MCP registration endpoint, blocking the unauthenticated CVE-2026-30623 attack path."
+      strength: primary
+    - clause: "6.2"
+      context: "ISO/IEC 42001 Clause 6.2 (AI objectives and planning) calls for risk treatment of known attack patterns; this rule's detection of the agent-manipulation technique (LiteLLM MCP Unauthenticated Server Registration RCE (CVE-2026-30623)) is such a treatment."
+      strength: secondary
 
 tags:
   category: agent-manipulation

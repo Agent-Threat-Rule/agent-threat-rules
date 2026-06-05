@@ -31,12 +31,21 @@ compliance:
     - article: "13"
       context: "Piggybacked data theft disguised as normal tool responses undermines the transparency Article 13 requires between AI system behavior and what users or operators understand to be occurring; users cannot exercise informed oversight when tool responses silently exfiltrate their data."
       strength: secondary
+    - article: "10"
+      context: "Article 10 (data and data governance) requires control over the data an AI system processes; this rule provides detection evidence for the context-exfiltration attempt (Tool Response Data Piggybacking) affecting that data."
+      strength: secondary
   nist_ai_rmf:
     - subcategory: "MP.5.1"
       context: "Tool response piggybacking is an adversarial input risk where legitimate-looking MCP outputs embed credential theft payloads; MP.5.1 requires that this class of adversarial tool-output attack be identified and tracked in the AI system risk inventory."
       strength: primary
     - subcategory: "GV.6.1"
       context: "Piggybacked credential exfiltration in tool responses breaches data governance controls by transmitting SSH keys and API tokens to attacker endpoints; GV.6.1 data governance policies must cover tool output integrity as a data handling boundary."
+      strength: secondary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the context-exfiltration attempt (Tool Response Data Piggybacking)."
+      strength: primary
+    - subcategory: "MS.2.10"
+      context: "NIST AI RMF MEASURE 2.10 (privacy risk examined and documented) is supported by this rule's detection of the context-exfiltration attempt (Tool Response Data Piggybacking)."
       strength: secondary
   iso_42001:
     - clause: "6.2"
@@ -45,6 +54,9 @@ compliance:
     - clause: "8.4"
       context: "Impact assessment under clause 8.4 must document the tool-response piggybacking vector — where credential theft is hidden in legitimate tool outputs — as a high-impact data exfiltration pathway for AI systems using MCP tool exchanges."
       strength: secondary
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control, including control of externally provided processes) is operationalised by this rule's detection of the context-exfiltration attempt (Tool Response Data Piggybacking)."
+      strength: primary
 tags:
   category: context-exfiltration
   subcategory: tool-response-piggyback

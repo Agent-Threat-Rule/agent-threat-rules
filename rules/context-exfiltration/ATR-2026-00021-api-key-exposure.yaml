@@ -49,6 +49,12 @@ compliance:
     - article: "9"
       context: "Credential leakage is a documented risk class in the AI system risk management plan; Article 9 requires that monitoring controls are implemented to detect and respond to such events."
       strength: secondary
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires high-risk AI systems to resist unauthorised attempts to alter their use, outputs or performance; this rule provides runtime detection evidence by flagging the context-exfiltration attempt (Credential and Secret Exposure in Agent Output)."
+      strength: primary
+    - article: "10"
+      context: "Article 10 (data and data governance) requires control over the data an AI system processes; this rule provides detection evidence for the context-exfiltration attempt (Credential and Secret Exposure in Agent Output) affecting that data."
+      strength: secondary
   nist_ai_rmf:
     - function: Govern
       subcategory: GV.6.1
@@ -58,6 +64,12 @@ compliance:
       subcategory: MG.3.1
       context: "Credential exposure requires an immediate risk treatment response; this detection rule is the technical implementation of the risk treatment plan for credential leakage events."
       strength: secondary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the context-exfiltration attempt (Credential and Secret Exposure in Agent Output)."
+      strength: primary
+    - subcategory: "MS.2.10"
+      context: "NIST AI RMF MEASURE 2.10 (privacy risk examined and documented) is supported by this rule's detection of the context-exfiltration attempt (Credential and Secret Exposure in Agent Output)."
+      strength: secondary
   iso_42001:
     - clause: "8.4"
       context: "Clause 8.4 AI system impact assessment must identify credential leakage as a high-severity impact scenario; this rule generates the detection evidence needed for audit and impact reporting."
@@ -65,6 +77,9 @@ compliance:
     - clause: "6.2"
       context: "Protecting credentials from exposure is an explicit AIMS information security objective under clause 6.2; detection of leakage events measures whether this objective is being achieved."
       strength: secondary
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control, including control of externally provided processes) is operationalised by this rule's detection of the context-exfiltration attempt (Credential and Secret Exposure in Agent Output)."
+      strength: primary
   colorado_ai_act:
     - section: "6-1-1703"
       clause: "Deployer risk management for consumer-facing AI"

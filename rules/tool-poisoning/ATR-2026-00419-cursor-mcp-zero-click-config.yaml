@@ -48,6 +48,9 @@ compliance:
     - article: "14"
       context: "Article 14 human oversight requirements are violated when a workspace-bound MCP config triggers tool execution before any human-reviewable signal is presented."
       strength: secondary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control that detects the tool-poisoning technique (Cursor MCP JSON Zero-Click Configuration RCE (CVE-2025-54136))."
+      strength: secondary
   nist_ai_rmf:
     - subcategory: "GV.6.1"
       context: "Supply-chain governance under GV.6.1 must include integrity verification for any IDE / agent config file consumed at workspace-open time, since this is the canonical zero-click delivery vector."
@@ -55,10 +58,19 @@ compliance:
     - subcategory: "MS.4.1"
       context: "Measurement subcategory MS.4.1 requires monitoring of tool-invocation events including the config-load event itself; CVE-2025-54136 exploits the absence of such monitoring."
       strength: secondary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the tool-poisoning technique (Cursor MCP JSON Zero-Click Configuration RCE (CVE-2025-54136))."
+      strength: primary
+    - subcategory: "MG.3.2"
+      context: "NIST AI RMF MANAGE 3.2 (pre-trained models monitored as part of maintenance) is supported where this rule detects the tool-poisoning technique (Cursor MCP JSON Zero-Click Configuration RCE (CVE-2025-54136))."
+      strength: secondary
   iso_42001:
-    - clause: "8.6"
+    - clause: "8.1"
       context: "Operational controls must require explicit consent and integrity verification for any AI-tool config file auto-loaded by IDEs / coding assistants, blocking the zero-click vector."
       strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is supported by this rule, which implements runtime detection of the tool-poisoning technique (Cursor MCP JSON Zero-Click Configuration RCE (CVE-2025-54136)) as a treatment control."
+      strength: secondary
 
 tags:
   category: tool-poisoning

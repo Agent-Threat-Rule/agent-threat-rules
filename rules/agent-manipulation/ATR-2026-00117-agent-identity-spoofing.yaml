@@ -28,6 +28,12 @@ compliance:
     - article: "15"
       context: "Article 15 cybersecurity requirements include protection against masquerading attacks; identity spoofing in multi-agent systems represents a documented adversarial pattern targeting the authentication layer of agent architectures."
       strength: secondary
+    - article: "14"
+      context: "Article 14 (human oversight) requires high-risk AI systems to remain subject to effective human oversight; this rule provides detection evidence where the agent-manipulation technique (Agent Identity Spoofing and Authority Impersonation) would bypass or undermine that oversight."
+      strength: secondary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control that detects the agent-manipulation technique (Agent Identity Spoofing and Authority Impersonation)."
+      strength: secondary
   nist_ai_rmf:
     - subcategory: "GV.6.1"
       context: "Agent identity spoofing exploits the absence of verified identity provenance in inter-agent data flows; GV.6.1 data governance policies must define how agent identity claims are authenticated to prevent masquerading attacks."
@@ -35,12 +41,24 @@ compliance:
     - subcategory: "MP.5.1"
       context: "Impersonation of admin or supervisor agent roles is an adversarial input risk that must be tracked under MP.5.1 to ensure detection controls cover identity-claim-based privilege escalation patterns."
       strength: secondary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the agent-manipulation technique (Agent Identity Spoofing and Authority Impersonation)."
+      strength: primary
+    - subcategory: "MG.2.3"
+      context: "NIST AI RMF MANAGE 2.3 (respond to previously unknown identified risks) is supported by this rule, which surfaces the agent-manipulation technique (Agent Identity Spoofing and Authority Impersonation) so the risk can be treated."
+      strength: secondary
   iso_42001:
     - clause: "8.4"
       context: "Clause 8.4 AI system impact assessments must document the risk that unverified agent identity claims allow privilege escalation, and review controls that ensure identity spoofing is detectable before actions are taken."
       strength: primary
     - clause: "9.1"
       context: "Clause 9.1 performance monitoring must include evaluation of whether agent identity verification controls are functioning correctly and catching masquerading attacks in operational deployments."
+      strength: secondary
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control, including control of externally provided processes) is operationalised by this rule's detection of the agent-manipulation technique (Agent Identity Spoofing and Authority Impersonation)."
+      strength: primary
+    - clause: "6.2"
+      context: "ISO/IEC 42001 Clause 6.2 (AI objectives and planning) calls for risk treatment of known attack patterns; this rule's detection of the agent-manipulation technique (Agent Identity Spoofing and Authority Impersonation) is such a treatment."
       strength: secondary
 tags:
   category: agent-manipulation

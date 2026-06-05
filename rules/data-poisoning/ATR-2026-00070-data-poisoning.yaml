@@ -52,6 +52,9 @@ compliance:
     - article: "9"
       context: "Data poisoning of RAG pipelines is a documented risk requiring monitoring controls under Article 9; detection events from this rule provide the evidence trail for risk management reporting."
       strength: secondary
+    - article: "10"
+      context: "Article 10 (data and data governance) requires control over the data an AI system processes; this rule provides detection evidence for the data-poisoning attempt (Data Poisoning via RAG and Knowledge Base Contamination) affecting that data."
+      strength: primary
   nist_ai_rmf:
     - function: Map
       subcategory: MP.5.1
@@ -61,12 +64,24 @@ compliance:
       subcategory: MG.2.3
       context: "Active detection of data poisoning events implements the risk treatment for the data contamination risk identified in the AI risk register."
       strength: secondary
+    - subcategory: "MS.2.5"
+      context: "NIST AI RMF MEASURE 2.5 (system validity and reliability demonstrated) is supported by this rule's detection of the data-poisoning attempt (Data Poisoning via RAG and Knowledge Base Contamination)."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the data-poisoning attempt (Data Poisoning via RAG and Knowledge Base Contamination)."
+      strength: secondary
   iso_42001:
     - clause: "8.3"
       context: "Clause 8.3 data governance for AI systems requires controls ensuring data integrity; detection of hidden directives in retrieved content is the runtime enforcement of clause 8.3 data quality requirements."
       strength: primary
     - clause: "6.2"
       context: "Clause 6.2 AIMS security planning must include controls for adversarial data injection into AI pipelines; this rule operationalizes the detection measure for that planning objective."
+      strength: secondary
+    - clause: "8.2"
+      context: "ISO/IEC 42001 Clause 8.2 (AI risk assessment) is informed by this rule, which detects the data-poisoning attempt (Data Poisoning via RAG and Knowledge Base Contamination) as an assessed risk."
+      strength: primary
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control, including control of externally provided processes) is operationalised by this rule's detection of the data-poisoning attempt (Data Poisoning via RAG and Knowledge Base Contamination)."
       strength: secondary
   colorado_ai_act:
     - section: "6-1-1703"

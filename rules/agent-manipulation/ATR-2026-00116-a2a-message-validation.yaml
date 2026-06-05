@@ -28,6 +28,9 @@ compliance:
     - article: "14"
       context: "A2A message injection can cause agents to take actions outside their authorized scope without human awareness, eroding the effective oversight capability Article 14 requires for high-risk AI systems."
       strength: secondary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control that detects the agent-manipulation technique (Malicious Agent-to-Agent Message Injection)."
+      strength: secondary
   nist_ai_rmf:
     - subcategory: "MP.5.1"
       context: "Malicious A2A message injection is a documented adversarial input risk targeting inter-agent communication channels; MP.5.1 requires that adversarial input risks to AI systems are identified and tracked to enable detection of embedded payload attacks."
@@ -35,12 +38,15 @@ compliance:
     - subcategory: "MG.2.3"
       context: "A2A message validation failures represent a risk requiring active treatment; MG.2.3 requires that risk treatment plans are implemented for identified AI risks, including validation controls on all inter-agent message channels."
       strength: secondary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the agent-manipulation technique (Malicious Agent-to-Agent Message Injection)."
+      strength: primary
   iso_42001:
     - clause: "6.2"
       context: "AI system plans under clause 6.2 must include risk treatment activities for inter-agent message injection, ensuring that A2A communication validation is a planned control rather than an afterthought."
       strength: primary
-    - clause: "8.6"
-      context: "Clause 8.6 operational controls require that inter-agent messages are validated before execution, preventing injected instructions from executing in the receiving agent's security context."
+    - clause: "8.1"
+      context: "Clause 8.1 operational controls require that inter-agent messages are validated before execution, preventing injected instructions from executing in the receiving agent's security context."
       strength: secondary
 tags:
   category: agent-manipulation

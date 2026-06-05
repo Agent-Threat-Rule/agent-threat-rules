@@ -58,10 +58,19 @@ compliance:
     - subcategory: "GV.6.1"
       context: "Third-party MCP services (including Azure MCP Server) must be assessed under GV.6.1 supplier risk-management for authentication-on-critical-function controls before agent deployments depend on them."
       strength: secondary
-  iso_42001:
-    - clause: "8.6"
-      context: "Operational controls under clause 8.6 must include detection of MCP server registrations pointing at endpoints lacking an authentication challenge."
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the tool-poisoning technique (Azure MCP Server Missing Authentication for Critical Function (CVE-2026-32211))."
       strength: primary
+    - subcategory: "MG.3.2"
+      context: "NIST AI RMF MANAGE 3.2 (pre-trained models monitored as part of maintenance) is supported where this rule detects the tool-poisoning technique (Azure MCP Server Missing Authentication for Critical Function (CVE-2026-32211))."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Operational controls under clause 8.1 must include detection of MCP server registrations pointing at endpoints lacking an authentication challenge."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is supported by this rule, which implements runtime detection of the tool-poisoning technique (Azure MCP Server Missing Authentication for Critical Function (CVE-2026-32211)) as a treatment control."
+      strength: secondary
 
 tags:
   category: tool-poisoning

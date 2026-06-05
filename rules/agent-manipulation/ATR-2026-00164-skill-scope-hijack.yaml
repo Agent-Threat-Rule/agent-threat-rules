@@ -25,6 +25,9 @@ compliance:
     - article: "15"
       context: "Article 15 cybersecurity requirements mandate protection against supply chain attacks; malicious SKILL.md files represent a documented technique for injecting unauthorized capability expansion at the skill-definition layer."
       strength: secondary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control that detects the agent-manipulation technique (Skill Scope Hijacking and Cross-Agent Escalation)."
+      strength: secondary
   nist_ai_rmf:
     - subcategory: "GV.1.2"
       context: "Skill scope hijacking succeeds when no accountability role governs what capabilities a skill may claim; GV.1.2 requires that accountability roles for AI risk management are defined and assigned, ensuring that SKILL.md capability claims are reviewed against authorized scope boundaries."
@@ -32,12 +35,18 @@ compliance:
     - subcategory: "MP.2.3"
       context: "Malicious SKILL.md files in external skill repositories represent an AI supply chain risk source; MP.2.3 requires that AI supply chain risk sources are identified and assessed, covering the skill-definition layer as a vector for privilege escalation injection."
       strength: secondary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the agent-manipulation technique (Skill Scope Hijacking and Cross-Agent Escalation)."
+      strength: primary
+    - subcategory: "MG.2.3"
+      context: "NIST AI RMF MANAGE 2.3 (respond to previously unknown identified risks) is supported by this rule, which surfaces the agent-manipulation technique (Skill Scope Hijacking and Cross-Agent Escalation) so the risk can be treated."
+      strength: secondary
   iso_42001:
     - clause: "6.2"
       context: "Clause 6.2 AI objectives and plans must include risk treatment for skill-definition-layer attacks where SKILL.md instructions expand agent scope beyond authorized boundaries without human knowledge."
       strength: primary
-    - clause: "8.5"
-      context: "Clause 8.5 controls over externally-provided AI components must include validation of SKILL.md files to ensure that skill definitions do not embed cross-agent escalation or unauthorized scope expansion instructions."
+    - clause: "8.1"
+      context: "Clause 8.1 controls over externally-provided AI components must include validation of SKILL.md files to ensure that skill definitions do not embed cross-agent escalation or unauthorized scope expansion instructions."
       strength: secondary
 tags:
   category: agent-manipulation

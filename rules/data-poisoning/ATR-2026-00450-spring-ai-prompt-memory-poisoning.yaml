@@ -58,6 +58,9 @@ compliance:
     - article: "9"
       context: "Article 9 risk management must enumerate memory-poisoning as a high-risk class — the advisor write path is typically treated as low-risk infrastructure but actually controls every subsequent prompt assembly."
       strength: primary
+    - article: "10"
+      context: "Article 10 (data and data governance) requires control over the data an AI system processes; this rule provides detection evidence for the data-poisoning attempt (Spring AI PromptChatMemoryAdvisor Memory Poisoning (CVE-2026-41713)) affecting that data."
+      strength: primary
   nist_ai_rmf:
     - subcategory: "MP.5.1"
       context: "Adversarial inputs that embed persistence-aware role-override markers ('SYSTEM:', 'REMEMBER:', 'IGNORE PREVIOUS INSTRUCTIONS once stored') must be tracked as a primary input-attack class affecting memory-advised architectures."
@@ -65,9 +68,18 @@ compliance:
     - subcategory: "MG.2.3"
       context: "Risk treatment plans under MG.2.3 must require pre-write sanitisation in any pipeline that persists user input into ChatMemory; mere prompt-time filtering is insufficient because the payload is replayed by the advisor."
       strength: primary
+    - subcategory: "MS.2.5"
+      context: "NIST AI RMF MEASURE 2.5 (system validity and reliability demonstrated) is supported by this rule's detection of the data-poisoning attempt (Spring AI PromptChatMemoryAdvisor Memory Poisoning (CVE-2026-41713))."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the data-poisoning attempt (Spring AI PromptChatMemoryAdvisor Memory Poisoning (CVE-2026-41713))."
+      strength: secondary
   iso_42001:
-    - clause: "8.6"
-      context: "Operational controls under clause 8.6 must require that the memory-write boundary applies the same content-safety policy as the prompt-input boundary; otherwise an attacker bypasses input filters by reaching them via the advisor replay path."
+    - clause: "8.1"
+      context: "Operational controls under clause 8.1 must require that the memory-write boundary applies the same content-safety policy as the prompt-input boundary; otherwise an attacker bypasses input filters by reaching them via the advisor replay path."
+      strength: primary
+    - clause: "8.2"
+      context: "ISO/IEC 42001 Clause 8.2 (AI risk assessment) is informed by this rule, which detects the data-poisoning attempt (Spring AI PromptChatMemoryAdvisor Memory Poisoning (CVE-2026-41713)) as an assessed risk."
       strength: primary
 
 tags:

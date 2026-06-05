@@ -54,6 +54,9 @@ compliance:
     - article: "9"
       context: "Article 9 risk management must enumerate lambda-with-eval and AST-traversal payloads from LLM output as a high-risk vector — particularly in vector-store filter paths, which are typically considered low-risk infrastructure."
       strength: primary
+    - article: "14"
+      context: "Article 14 (human oversight) requires high-risk AI systems to remain subject to effective human oversight; this rule provides detection evidence where the agent-manipulation technique (Microsoft Semantic Kernel In-Memory Vector Store eval() RCE (CVE-2026-26030)) would bypass or undermine that oversight."
+      strength: secondary
   nist_ai_rmf:
     - subcategory: "MP.5.1"
       context: "Adversarial inputs that drive an LLM to emit lambda bodies invoking eval / __import__ / mro-traversal must be tracked as a primary input-attack class affecting framework-level integrations."
@@ -61,10 +64,16 @@ compliance:
     - subcategory: "MG.2.3"
       context: "Risk treatment plans under MG.2.3 must require static and runtime detection of dynamic-evaluation primitives in any code path that consumes LLM output, including filter / search / ranking sinks."
       strength: primary
-  iso_42001:
-    - clause: "8.6"
-      context: "Operational controls under clause 8.6 must prohibit dynamic-evaluation primitives (eval, exec, lambda-with-eval, Function constructor) being reached by any LLM-generated or user-supplied content path."
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the agent-manipulation technique (Microsoft Semantic Kernel In-Memory Vector Store eval() RCE (CVE-2026-26030))."
       strength: primary
+  iso_42001:
+    - clause: "8.1"
+      context: "Operational controls under clause 8.1 must prohibit dynamic-evaluation primitives (eval, exec, lambda-with-eval, Function constructor) being reached by any LLM-generated or user-supplied content path."
+      strength: primary
+    - clause: "6.2"
+      context: "ISO/IEC 42001 Clause 6.2 (AI objectives and planning) calls for risk treatment of known attack patterns; this rule's detection of the agent-manipulation technique (Microsoft Semantic Kernel In-Memory Vector Store eval() RCE (CVE-2026-26030)) is such a treatment."
+      strength: secondary
 
 tags:
   category: agent-manipulation

@@ -47,6 +47,9 @@ compliance:
     - article: "9"
       context: "Privilege escalation is a documented high-severity risk in the AI system risk register; Article 9 requires monitoring controls to detect and respond to such scope violations."
       strength: secondary
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires high-risk AI systems to resist unauthorised attempts to alter their use, outputs or performance; this rule provides runtime detection evidence by flagging the privilege-escalation attempt (Privilege Escalation and Admin Function Access)."
+      strength: primary
   nist_ai_rmf:
     - function: Govern
       subcategory: GV.1.2
@@ -56,12 +59,18 @@ compliance:
       subcategory: MG.4.1
       context: "Privilege escalation events require an incident response; this rule generates the alerts needed to initiate the MG.4.1 AI incident response process."
       strength: secondary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the privilege-escalation attempt (Privilege Escalation and Admin Function Access)."
+      strength: primary
+    - subcategory: "MG.2.3"
+      context: "NIST AI RMF MANAGE 2.3 (respond to previously unknown identified risks) is supported by this rule, which surfaces the privilege-escalation attempt (Privilege Escalation and Admin Function Access) so the risk can be treated."
+      strength: secondary
   iso_42001:
     - clause: "6.2"
       context: "Clause 6.2 AIMS security objectives include least-privilege enforcement for AI agent operations; this rule detects violations of those objectives at runtime."
       strength: primary
-    - clause: "8.6"
-      context: "Clause 8.6 AI system operational control requires that agents do not exceed their authorized operational scope; privilege escalation detection enforces that operational boundary."
+    - clause: "8.1"
+      context: "Clause 8.1 AI system operational control requires that agents do not exceed their authorized operational scope; privilege escalation detection enforces that operational boundary."
       strength: secondary
   colorado_ai_act:
     - section: "6-1-1703"
