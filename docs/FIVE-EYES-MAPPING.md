@@ -1,8 +1,8 @@
 # ATR → Five Eyes "Careful Adoption of Agentic AI Services" Mapping
 
-- **ATR corpus version:** v2.2.2, 421 rules across 10 detection-rule categories
+- **ATR corpus version:** v3.1.1, 462 rules across 10 detection-rule categories
 - **Five Eyes guidance:** "Careful Adoption of Agentic AI Services", published 2026-04-30 on media.defense.gov, jointly authored by CISA (US) + NSA (US) + ASD-ACSC (Australia) + CCCS (Canada) + NCSC-UK + NCSC-NZ
-- **Document date:** 2026-05-13
+- **Document date:** 2026-06-05
 - **Maintainer:** Adam Lin (adam@agentthreatrule.org), Panguard AI Inc. (Delaware C-Corp)
 - **License:** MIT
 
@@ -18,7 +18,7 @@ The Five Eyes joint guidance ships 5 named risk categories (Privilege, Design an
 
 The guidance's recommended response is to "Strengthen collaboration between stakeholders to keep pace with evolving threats to agentic AI systems" and "Coordinate with major AI developers and government organisations to compile and maintain threat information."
 
-ATR v2.2.2 ships 421 rules with 6-framework compliance metadata (OWASP Agentic Top 10 + OWASP LLM Top 10 + MITRE ATLAS + NIST AI RMF + EU AI Act + ISO/IEC 42001) and is already merged into Microsoft AGT, Cisco AI Defense skill-scanner, MISP (galaxy + taxonomies), OWASP A-S-R-H (precize, third-party), and Gen Digital Sage. This document maps each Five Eyes category to specific ATR rule clusters and is honest about what ATR does not cover.
+ATR v3.1.1 ships 462 rules with 6-framework compliance metadata (OWASP Agentic Top 10 + OWASP LLM Top 10 + MITRE ATLAS + NIST AI RMF + EU AI Act + ISO/IEC 42001) and is already merged into Microsoft Agent Governance Toolkit (PR #1277 / 287-rule weekly auto-sync + PR #908 + #1981 the copilot-swe-agent regression-test loop), Microsoft PyRIT (PR #1715 merged 2026-05-27 by Roman Lutz), Cisco AI Defense skill-scanner (PR #99 / 314 rules), MISP via CIRCL Luxembourg (galaxy PR #1207 / 336 rules + taxonomies PR #323), and precize/Agentic-AI-Top10-Vulnerability (third-party community repo, PR #14 + #18). This document maps each Five Eyes category to specific ATR rule clusters and is honest about what ATR does not cover.
 
 The mapping does not claim Five Eyes endorsement of ATR. It is provided as a community detection-rule starter set for operators implementing the guidance.
 
@@ -32,7 +32,7 @@ The mapping does not claim Five Eyes endorsement of ATR. It is provided as a com
 
 **ATR rule clusters that satisfy this:**
 
-- `privilege-escalation/` (12 rules):
+- `privilege-escalation/` (18 rules):
   - ATR-2026-00040 privilege-escalation — generic detection for explicit elevation requests
   - ATR-2026-00041 scope-creep — agent expanding beyond its declared scope
   - ATR-2026-00110 eval-injection — code execution via eval primitives
@@ -42,12 +42,12 @@ The mapping does not claim Five Eyes endorsement of ATR. It is provided as a com
   - ATR-2026-00436 enclave-vm-sandbox-escape-rce — concrete CVE-class sandbox escape
   - ATR-2026-00441 semantic-kernel-sessions-python-plugin-startup-persistence — MSRC CVE-2026-26030 chain
   - ATR-2026-00451 litellm-admin-sqli — CISA KEV CVE-2026-42208
-- `excessive-autonomy/` (8 rules):
+- `excessive-autonomy/` (9 rules):
   - ATR-2026-00098 unauthorized-financial-action — financial tool call without confirmation
   - ATR-2026-00099 high-risk-tool-gate — defense-in-depth gate forcing `ask` verdict on financial/destructive/communication/permission/system tool categories
   - ATR-2026-00428 nl-unauthorized-shell-execution — shell command via natural language without human authorization
   - ATR-2026-00500 ssrf-via-agent-url-fetch-instruction — SSRF through agent-initiated URL fetch
-- `context-exfiltration/` (subset of 40 rules covering credential leakage):
+- `context-exfiltration/` (subset of 46 rules covering credential leakage):
   - ATR-2026-00021 api-key-exposure — direct API key leak
   - ATR-2026-00113 credential-theft — explicit credential extraction prompt
   - ATR-2026-00114 oauth-token-abuse — OAuth token misuse
@@ -57,7 +57,7 @@ The mapping does not claim Five Eyes endorsement of ATR. It is provided as a com
   - ATR-2026-00201 credential-pipe-exfiltration — piping credentials to external sink
   - ATR-2026-00212 mcp-atlassian-credential-leak — MCP server credential leak
 
-**Strength:** STRONG (29 rules across 3 clusters covering this category)
+**Strength:** STRONG (35 rules across 3 clusters covering this category)
 
 **Cross-link:** ATR detects abuse of credentials at runtime. ATR does not issue or attest cryptographic agent identity. That layer belongs to identity infrastructure (W3C DIDs, agent-attestation frameworks, Lyrie ATP). ATR is the runtime detection layer that complements identity layer.
 
@@ -69,7 +69,7 @@ The mapping does not claim Five Eyes endorsement of ATR. It is provided as a com
 
 **ATR rule clusters that satisfy this:**
 
-- `tool-poisoning/` (27 rules):
+- `tool-poisoning/` (47 rules):
   - ATR-2026-00010 mcp-malicious-response — malicious payload returned by MCP server
   - ATR-2026-00013 tool-ssrf — SSRF through tool parameter
   - ATR-2026-00106 schema-description-contradiction — tool schema lies about behavior
@@ -86,7 +86,7 @@ The mapping does not claim Five Eyes endorsement of ATR. It is provided as a com
   - ATR-2026-00084 structured-data-injection — injection through structured input fields
   - ATR-2026-00083 indirect-tool-injection — injection from a tool boundary
 
-**Strength:** MODERATE (32 rules concentrated on input/output handling; broader architectural concerns remain out of scope)
+**Strength:** MODERATE (52 rules concentrated on input/output handling; broader architectural concerns remain out of scope)
 
 **Cross-link:** Concrete CVE-class flaws (Spring AI Milvus filter-expression injection CVE-2026-41705, Semantic Kernel In-Memory Vector Store eval-RCE CVE-2026-26030) ship as ATR rules within hours of disclosure. Architectural anti-patterns (missing zero-trust boundary, no isolation between agent components) are out of pattern-detection scope and require architectural review.
 
@@ -102,7 +102,7 @@ This is a prompt-injection-with-piggyback-instruction pattern. ATR rules in `pro
 
 **ATR rule clusters that satisfy this:**
 
-- `prompt-injection/` (172 rules) — the densest cluster in the corpus:
+- `prompt-injection/` (177 rules) — the densest cluster in the corpus:
   - ATR-2026-00001 direct-prompt-injection — canonical direct injection
   - ATR-2026-00002 indirect-prompt-injection — payload from retrieved context
   - ATR-2026-00003 jailbreak-attempt — classic jailbreak family
@@ -111,7 +111,7 @@ This is a prompt-injection-with-piggyback-instruction pattern. ATR rules in `pro
   - ATR-2026-00080 encoding-evasion — base64/rot13/hex evasion
   - ATR-2026-00081 semantic-multi-turn — semantic-shift multi-turn
   - ATR-2026-00091 nested-payload — nested payload obfuscation
-- `agent-manipulation/` (105 rules) — manipulation across agent boundaries:
+- `agent-manipulation/` (106 rules) — manipulation across agent boundaries:
   - ATR-2026-00030 cross-agent-attack — payload crossing agent boundary
   - ATR-2026-00032 goal-hijacking — adversarial goal substitution
   - ATR-2026-00076 inter-agent-message-spoofing — spoofed inter-agent message
@@ -126,7 +126,7 @@ This is a prompt-injection-with-piggyback-instruction pattern. ATR rules in `pro
   - ATR-2026-00284 glitch-token-destabilization — glitch-token destabilization
   - ATR-2026-00299 harmbench-detailed-harmful-instruction — HarmBench class
 
-**Strength:** STRONG (287 rules across 3 clusters; this is the highest-density area of the ATR corpus)
+**Strength:** STRONG (293 rules across 3 clusters; this is the highest-density area of the ATR corpus)
 
 **Cross-link:** ATR can flag the high-impact action via `response.actions: require_auth_challenge`, but the actual human-approval UX is operator-side. The detection layer raises the signal; the operator-side approval gate must be implemented separately. Honest limit: paraphrase bypasses of canonical injection payloads are not always caught — regex-and-pattern detection is one defense layer, not the only one.
 
@@ -149,7 +149,7 @@ The PDF's scenario example (p.11) describes a cascade chain: "A structural risk 
   - ATR-2026-00102 disguised-analytics-exfiltration — exfil disguised as analytics
   - ATR-2026-00136 tool-response-data-piggyback — data piggybacked through tool response
   - ATR-2026-00261 markdown-image-exfiltration — markdown image URL exfil
-- `data-poisoning/` (2 rules):
+- `data-poisoning/` (3 rules):
   - ATR-2026-00070 data-poisoning — training/retrieval data poisoning
   - ATR-2026-00450 spring-ai-prompt-memory-poisoning — Spring AI ChatMemory cross-user leak (CVE-2026-41713)
 - `agent-manipulation/` (subset for cross-agent propagation):
@@ -157,7 +157,7 @@ The PDF's scenario example (p.11) describes a cascade chain: "A structural risk 
   - ATR-2026-00108 consensus-sybil-attack — sybil attack on multi-agent consensus
   - ATR-2026-00116 a2a-message-validation — agent-to-agent message validation failure
 
-**Strength:** MODERATE (12 directly-relevant rules; "resilience" itself is architectural and out of scope)
+**Strength:** MODERATE (13 directly-relevant rules; "resilience" itself is architectural and out of scope)
 
 **Cross-link:** ATR detects precursors of structural failure. ATR cannot guarantee reversibility or roll-back; that is the runtime platform's responsibility. The detection signal feeds the runtime's containment decision.
 
@@ -169,7 +169,7 @@ The PDF's scenario example (p.11) describes a cascade chain: "A structural risk 
 
 **ATR rule clusters that satisfy this:**
 
-- `skill-compromise/` (41 rules — skill-manifest and skill-update integrity):
+- `skill-compromise/` (43 rules — skill-manifest and skill-update integrity):
   - ATR-2026-00060 skill-impersonation — skill impersonating another skill
   - ATR-2026-00061 description-behavior-mismatch — skill description lies about behavior
   - ATR-2026-00062 hidden-capability — skill hides capability from manifest
@@ -212,7 +212,7 @@ The recommended best practices in this section (verbatim from PDF, p.24):
 - "Adopt a collaborative security approach, such as those described in CISA's AI Cybersecurity Collaboration Playbook"
 - "Implement alerting, data collection and tracking methods for malicious actors"
 
-This is exactly the position ATR occupies. ATR is the open, MIT-licensed, agentic-specific detection rule corpus that (a) is not LLM-vulnerability-focused like OWASP LLM Top 10 or MITRE ATLAS, (b) maps to OWASP Agentic Top 10 (the agent-specific successor framework), (c) is already shipped in production by Microsoft AGT (PR #1277, 287-rule weekly auto-sync), Cisco AI Defense skill-scanner (PR #99, full 421-rule pack), MISP galaxy + taxonomies (CIRCL Luxembourg), OWASP A-S-R-H (precize, third-party repo not OWASP Foundation), and Gen Digital Sage (Norton / Avast / AVG parent).
+This is exactly the position ATR occupies. ATR is the open, MIT-licensed, agentic-specific detection rule corpus that (a) is not LLM-vulnerability-focused like OWASP LLM Top 10 or MITRE ATLAS, (b) maps to OWASP Agentic Top 10 (the agent-specific successor framework), (c) is already shipped in production by Microsoft Agent Governance Toolkit (PR #1277 / 287-rule weekly auto-sync + PR #908 + #1981), Microsoft PyRIT (PR #1715 merged 2026-05-27 by Roman Lutz), Cisco AI Defense skill-scanner (PR #99 / 314 rules), MISP galaxy + taxonomies via CIRCL Luxembourg (PR #1207 / #323), and the precize/Agentic-AI-Top10-Vulnerability community repo (PR #14 + #18, third-party not OWASP Foundation).
 
 ## How to consume this mapping
 
@@ -225,7 +225,7 @@ This is exactly the position ATR occupies. ATR is the open, MIT-licensed, agenti
 
 - ATR is MIT-licensed and at https://github.com/Agent-Threat-Rule/agent-threat-rules.
 - Contributions accepted via PR. Quality gate is a 6-check enforcement (schema validation, own-TP-must-match, benign-corpus FP, research-mention FP, cross-rule conflict, per-PR cap).
-- Operational record: 13 external PR merges across 6 external organizations (Microsoft, Cisco, MISP/CIRCL, OWASP A-S-R-H third-party precize repo, plus 2 others in NIST OSCAL Path 1 acceptance and ecosystem awesome-lists). OWASP A-S-R-H is the third-party precize repo, not the OWASP Foundation repo.
+- Operational record (verified 2026-06-05): 9 external PRs merged across 5 external organizations — Microsoft (AGT #908, #1277, #1981; PyRIT #1715), Cisco AI Defense (skill-scanner #79, #99), MISP via CIRCL Luxembourg (misp-galaxy #1207, misp-taxonomies #323), and the precize/Agentic-AI-Top10-Vulnerability community repo (#14, #18). NIST OSCAL coordination is in progress (community AI RMF profile examples PR #338); UK AISI Inspect Evals submission (#1658) was closed 2026-05-29 pending arXiv paper publication.
 - Maintainer contact: Adam Lin (adam@agentthreatrule.org), Taiwan.
 
 ## References
@@ -245,6 +245,6 @@ This is exactly the position ATR occupies. ATR is the open, MIT-licensed, agenti
 - [x] 5-category section headings confirmed verbatim: "Privilege risks", "Design and configuration risks", "Behaviour risks", "Structural risks", "Accountability risks" (British spelling).
 - [x] Per-category descriptions replaced with verbatim quotes from the PDF.
 - [x] "Defend against future risks → Expand threat intelligence through collaboration" section quoted verbatim (highest-leverage hook for ATR).
-- [x] Rule-ID list pinned to v2.2.2 / 421 rules / 2026-05-13.
+- [x] Rule-ID list pinned to v3.1.1 / 462 rules / 2026-06-05.
 - [ ] Generate auto-`docs/five-eyes-mapping.json` from this markdown (mapping script pending).
 - [ ] Have a second reviewer sanity-check the strength rating (STRONG / MODERATE / LIMITED) per category.
