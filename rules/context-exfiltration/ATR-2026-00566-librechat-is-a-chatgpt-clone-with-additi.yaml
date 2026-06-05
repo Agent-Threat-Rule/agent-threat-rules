@@ -18,30 +18,36 @@ references:
   - CWE-200
   external:
   - https://github.com/danny-avila/LibreChat/security/advisories/GHSA-pmw7-gqwj-f954
+  owasp_llm:
+    - LLM02:2025 - Sensitive Information Disclosure
+  owasp_agentic:
+    - ASI01:2026 - Agent Goal Hijack
+  mitre_atlas:
+    - AML.T0057 - LLM Data Leakage
 metadata_provenance:
   cve: nvd-sync
   cwe: nvd-sync
 compliance:
   eu_ai_act:
     - article: "15"
-      context: "Article 15 (accuracy, robustness and cybersecurity) requires high-risk AI systems to resist unauthorised attempts to alter their use, outputs or performance; this rule provides runtime detection evidence by flagging the context-exfiltration attempt (LibreChat is a ChatGPT clone with additional features)."
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires high-risk AI systems to resist unauthorised attempts to alter their use, outputs or performance; this rule provides runtime detection evidence by flagging OAuth-token exfiltration via a malicious MCP server's credential-placeholder header substitution (LibreChat CVE-2026-31951)."
       strength: primary
     - article: "10"
-      context: "Article 10 (data and data governance) requires control over the data an AI system processes; this rule provides detection evidence for the context-exfiltration attempt (LibreChat is a ChatGPT clone with additional features) affecting that data."
+      context: "Article 10 (data and data governance) requires control over the data an AI system processes; this rule provides detection evidence for OAuth-token exfiltration via a malicious MCP server's credential-placeholder header substitution (LibreChat CVE-2026-31951) affecting that data."
       strength: secondary
   nist_ai_rmf:
     - subcategory: "MS.2.7"
-      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the context-exfiltration attempt (LibreChat is a ChatGPT clone with additional features)."
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of OAuth-token exfiltration via a malicious MCP server's credential-placeholder header substitution (LibreChat CVE-2026-31951)."
       strength: primary
     - subcategory: "MS.2.10"
-      context: "NIST AI RMF MEASURE 2.10 (privacy risk examined and documented) is supported by this rule's detection of the context-exfiltration attempt (LibreChat is a ChatGPT clone with additional features)."
+      context: "NIST AI RMF MEASURE 2.10 (privacy risk examined and documented) is supported by this rule's detection of OAuth-token exfiltration via a malicious MCP server's credential-placeholder header substitution (LibreChat CVE-2026-31951)."
       strength: secondary
   iso_42001:
     - clause: "8.1"
-      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control, including control of externally provided processes) is operationalised by this rule's detection of the context-exfiltration attempt (LibreChat is a ChatGPT clone with additional features)."
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control, including control of externally provided processes) is operationalised by this rule's detection of OAuth-token exfiltration via a malicious MCP server's credential-placeholder header substitution (LibreChat CVE-2026-31951)."
       strength: primary
     - clause: "6.2"
-      context: "ISO/IEC 42001 Clause 6.2 (AI objectives and planning) calls for risk treatment of known attack patterns; this rule's detection of the context-exfiltration attempt (LibreChat is a ChatGPT clone with additional features) is such a treatment."
+      context: "ISO/IEC 42001 Clause 6.2 (AI objectives and planning) calls for risk treatment of known attack patterns; this rule's detection of OAuth-token exfiltration via a malicious MCP server's credential-placeholder header substitution (LibreChat CVE-2026-31951) is such a treatment."
       strength: secondary
 tags:
   category: context-exfiltration
