@@ -1,25 +1,25 @@
-## Daily Scan Summary (2026-06-06)
+## Daily Scan Summary (2026-06-07)
 - Scanned: 50 packages
-- CRITICAL: 4
-- HIGH: 5
-- CLEAN/LOW: 37
+- CRITICAL: 7
+- HIGH: 2
+- CLEAN/LOW: 31
 
 ### Flagged Packages:
-- [CRITICAL] @fastmcp-me/mcp-modus (score: 95)
-- [CRITICAL] @fastmcp-me/ncp (score: 80)
-- [CRITICAL] @fastmcp-me/okx-mcp (score: 100)
-- [HIGH] @feedmob/civitai-records (score: 40)
-- [HIGH] @feedmob/femini-reporting (score: 40)
-- [HIGH] @iflow-mcp/7gugu-zip-mcp (score: 50)
-- [HIGH] @iflow-mcp/gdmacmillan-apt-mcp-server (score: 60)
-- [HIGH] @iflow-mcp/zip-mcp (score: 50)
-- [CRITICAL] @inlustris/youtube-mcp (score: 100)
+- [HIGH] @hunyed15/codecgc (score: 65)
+- [CRITICAL] @iflow-mcp/eoinjordan-gbstudio-claude-mcp (score: 80)
+- [CRITICAL] @kenkaiiii/queen-mcp (score: 100)
+- [CRITICAL] @lumeo-ui/mcp-server (score: 100)
+- [CRITICAL] @mizchi/lsmcp (score: 100)
+- [CRITICAL] @pasympa/discord-mcp (score: 100)
+- [CRITICAL] @quackai/q402-mcp (score: 100)
+- [CRITICAL] @simonecoelhosfo/optimizely-mcp-server (score: 100)
+- [HIGH] @sinch/mcp (score: 50)
 
 ### Cumulative:
-- Total scanned: 2710
-  - CLEAN: 1637
-  - CRITICAL: 304
+- Total scanned: 2760
+  - CLEAN: 1662
+  - CRITICAL: 311
   - ERROR: 3
-  - HIGH: 211
-  - LOW: 279
-  - MEDIUM: 276
+  - HIGH: 213
+  - LOW: 285
+  - MEDIUM: 286
