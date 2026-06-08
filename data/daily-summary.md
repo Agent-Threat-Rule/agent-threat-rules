@@ -1,25 +1,21 @@
-## Daily Scan Summary (2026-06-07)
+## Daily Scan Summary (2026-06-08)
 - Scanned: 50 packages
-- CRITICAL: 7
-- HIGH: 2
-- CLEAN/LOW: 31
+- CRITICAL: 2
+- HIGH: 3
+- CLEAN/LOW: 41
 
 ### Flagged Packages:
-- [HIGH] @hunyed15/codecgc (score: 65)
-- [CRITICAL] @iflow-mcp/eoinjordan-gbstudio-claude-mcp (score: 80)
-- [CRITICAL] @kenkaiiii/queen-mcp (score: 100)
-- [CRITICAL] @lumeo-ui/mcp-server (score: 100)
-- [CRITICAL] @mizchi/lsmcp (score: 100)
-- [CRITICAL] @pasympa/discord-mcp (score: 100)
-- [CRITICAL] @quackai/q402-mcp (score: 100)
-- [CRITICAL] @simonecoelhosfo/optimizely-mcp-server (score: 100)
-- [HIGH] @sinch/mcp (score: 50)
+- [HIGH] @boostmoveo/priority-mcp-server (score: 40)
+- [CRITICAL] @ikenga/mcp-iyke (score: 100)
+- [HIGH] @luiscore/chorus-field (score: 40)
+- [HIGH] @mcp-z/client (score: 40)
+- [CRITICAL] @mkterswingman/yt-mcp (score: 100)
 
 ### Cumulative:
-- Total scanned: 2760
-  - CLEAN: 1662
-  - CRITICAL: 311
-  - ERROR: 3
-  - HIGH: 213
-  - LOW: 285
-  - MEDIUM: 286
+- Total scanned: 2810
+  - CLEAN: 1698
+  - CRITICAL: 313
+  - ERROR: 4
+  - HIGH: 216
+  - LOW: 290
+  - MEDIUM: 289
