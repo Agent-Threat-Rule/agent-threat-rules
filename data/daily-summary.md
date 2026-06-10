@@ -1,25 +1,29 @@
-## Daily Scan Summary (2026-06-09)
+## Daily Scan Summary (2026-06-10)
 - Scanned: 50 packages
-- CRITICAL: 6
-- HIGH: 3
-- CLEAN/LOW: 34
+- CRITICAL: 7
+- HIGH: 6
+- CLEAN/LOW: 29
 
 ### Flagged Packages:
-- [HIGH] @aibuilders/mcp-coach-server (score: 65)
-- [CRITICAL] @formio/mcp (score: 75)
-- [CRITICAL] @marvelcodes/mcp-pear (score: 85)
-- [CRITICAL] @mcpflow.io/unsplash-smart-mcp-server (score: 90)
-- [CRITICAL] @missionsquad/mcp-msq (score: 100)
-- [CRITICAL] @missionsquad/mcp-wordpress (score: 100)
-- [CRITICAL] @mseep/unsplash-smart-mcp-server (score: 90)
-- [HIGH] @mseep/zip-mcp (score: 50)
-- [HIGH] @o1-labs/mina-mcp-server (score: 45)
+- [CRITICAL] @owrede/vault-memory (score: 100)
+- [CRITICAL] @pinepaper.studio/mcp-server (score: 100)
+- [HIGH] @polarity-lab/cosmos-mcp (score: 50)
+- [HIGH] @robinmordasiewicz/f5xc-terraform-mcp (score: 55)
+- [CRITICAL] @shiharu/mcp-remote-ssh (score: 100)
+- [HIGH] @solapi/mcp-server (score: 40)
+- [CRITICAL] @splicr/mcp-server (score: 70)
+- [HIGH] @sprigr/mcp-server (score: 50)
+- [CRITICAL] @sprintrr/mcp-server (score: 80)
+- [HIGH] @stackable-labs/mcp-app-extension (score: 40)
+- [CRITICAL] @stackguide/mcp-server (score: 100)
+- [CRITICAL] @steipete/claude-code-mcp (score: 100)
+- [HIGH] @stigg/typescript-mcp (score: 60)
 
 ### Cumulative:
-- Total scanned: 2860
-  - CLEAN: 1724
-  - CRITICAL: 319
+- Total scanned: 2910
+  - CLEAN: 1748
+  - CRITICAL: 326
   - ERROR: 4
-  - HIGH: 219
-  - LOW: 298
-  - MEDIUM: 296
+  - HIGH: 225
+  - LOW: 303
+  - MEDIUM: 304
