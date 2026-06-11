@@ -1,0 +1,100 @@
+{
+  "name": "atr-scan",
+  "displayName": "ATR Scan",
+  "description": "Scan agent configuration files (SKILL.md, MCP configs, CLAUDE.md, .cursorrules) for known threat patterns using Agent Threat Rules.",
+  "version": "0.1.0",
+  "publisher": "agent-threat-rule",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Agent-Threat-Rule/agent-threat-rules",
+    "directory": "editors/vscode"
+  },
+  "bugs": {
+    "url": "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Linters"
+  ],
+  "keywords": [
+    "security",
+    "ai-agents",
+    "prompt-injection",
+    "mcp",
+    "static-analysis"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "atrScan.scanCurrentFile",
+        "title": "ATR: Scan Current File"
+      },
+      {
+        "command": "atrScan.scanWorkspace",
+        "title": "ATR: Scan Workspace"
+      }
+    ],
+    "configuration": {
+      "title": "ATR Scan",
+      "properties": {
+        "atrScan.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatic scanning on file open and save."
+        },
+        "atrScan.minSeverity": {
+          "type": "string",
+          "enum": [
+            "critical",
+            "high",
+            "medium",
+            "low",
+            "informational"
+          ],
+          "default": "medium",
+          "description": "Minimum rule severity to report as a diagnostic."
+        },
+        "atrScan.filePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/SKILL.md",
+            "**/.mcp.json",
+            "**/mcp.json",
+            "**/claude_desktop_config.json",
+            "**/.cursorrules",
+            "**/CLAUDE.md",
+            "**/AGENTS.md",
+            "**/agents.md"
+          ],
+          "description": "Glob patterns for files scanned automatically on open and save."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "test": "npm run compile && node test/engine-smoke.mjs",
+    "package": "npm run compile && vsce package --no-dependencies --allow-package-secrets github --allow-package-secrets slack"
+  },
+  "dependencies": {
+    "agent-threat-rules": "^3.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "@types/vscode": "1.85.0",
+    "@vscode/vsce": "^3.9.2",
+    "esbuild": "^0.24.2",
+    "typescript": "^5.9.3"
+  }
+}
