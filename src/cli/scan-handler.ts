@@ -36,6 +36,7 @@ export interface ScanOptions {
   readonly sarif?: boolean;
   readonly severity?: string;
   readonly forceType?: ScanType;
+  readonly failOn?: string;
   readonly reportToCloud?: boolean;
   readonly tcUrl?: string;
   readonly semantic?: boolean;
@@ -103,13 +104,19 @@ export async function cmdScanUnified(
     console.error(`${DIM}Threat Cloud: anonymous reporting enabled (--no-report to disable)${RESET}`);
   }
 
+  if (options.failOn !== undefined && !SEVERITY_ORDER.includes(options.failOn as typeof SEVERITY_ORDER[number])) {
+    console.error(`${RED}Error: --fail-on must be one of: ${SEVERITY_ORDER.join(', ')}${RESET}`);
+    process.exit(1);
+  }
+
   const scanType = options.forceType ?? detectInputType(targetPath);
 
+  let failHits = 0;
   try {
     if (scanType === 'skill') {
-      await scanSkillFiles(targetPath, rulesDir, options, reporter);
+      failHits = await scanSkillFiles(targetPath, rulesDir, options, reporter);
     } else {
-      await scanMcpEvents(targetPath, rulesDir, options, reporter);
+      failHits = await scanMcpEvents(targetPath, rulesDir, options, reporter);
     }
   } finally {
     // Flush remaining events before exit
@@ -120,6 +127,12 @@ export async function cmdScanUnified(
       }
     }
   }
+
+  // --fail-on: non-zero exit when matches at/above the threshold were found
+  // (lets pre-commit hooks and CI gates actually block on detections)
+  if (failHits > 0) {
+    process.exitCode = 1;
+  }
 }
 
 // ── MCP Event Scan ─────────────────────────────────────────────
@@ -129,7 +142,7 @@ async function scanMcpEvents(
   rulesDir: string,
   options: ScanOptions,
   reporter?: ReturnType<typeof createTCReporter>,
-): Promise<void> {
+): Promise<number> {
   const fileStat = statSync(eventsPath);
   if (fileStat.size > 50 * 1024 * 1024) {
     console.error(`${RED}Error: Events file exceeds 50MB limit${RESET}`);
@@ -157,8 +170,10 @@ async function scanMcpEvents(
     (options.severity ?? 'informational') as typeof SEVERITY_ORDER[number],
   );
 
+  const failIdx = options.failOn !== undefined ? SEVERITY_ORDER.indexOf(options.failOn as typeof SEVERITY_ORDER[number]) : -1;
   const allResults: Array<{ event: AgentEvent; result: ScanResult; filtered: ATRMatch[] }> = [];
   let totalThreats = 0;
+  let failHits = 0;
 
   for (const event of events) {
     if (!event.content) continue; // skip malformed events
@@ -171,6 +186,9 @@ async function scanMcpEvents(
     if (filtered.length > 0) {
       allResults.push({ event, result, filtered });
       totalThreats += filtered.length;
+      if (failIdx >= 0) {
+        failHits += filtered.filter((m) => SEVERITY_ORDER.indexOf(m.rule.severity) >= failIdx).length;
+      }
     }
   }
 
@@ -182,7 +200,7 @@ async function scanMcpEvents(
     }));
     const version = process.env['npm_package_version'] ?? '1.0.0';
     console.log(JSON.stringify(scanResultToSARIF(sarifResults, version), null, 2));
-    return;
+    return failHits;
   }
 
   if (options.json) {
@@ -201,14 +219,14 @@ async function scanMcpEvents(
         matches: filtered.map(formatMatchJson),
       })),
     }, null, 2));
-    return;
+    return failHits;
   }
 
   printScanHeader('MCP', events.length, engine.getRuleCount(), totalThreats);
 
   if (totalThreats === 0) {
     console.log(`${GREEN}No threats detected.${RESET}\n`);
-    return;
+    return failHits;
   }
 
   for (const { event, filtered } of allResults) {
@@ -219,6 +237,7 @@ async function scanMcpEvents(
     }
     console.log('');
   }
+  return failHits;
 }
 
 // ── SKILL.md Scan ──────────────────────────────────────────────
@@ -228,7 +247,7 @@ async function scanSkillFiles(
   rulesDir: string,
   options: ScanOptions,
   reporter?: ReturnType<typeof createTCReporter>,
-): Promise<void> {
+): Promise<number> {
   const skillFiles = collectSkillFiles(targetPath);
 
   if (skillFiles.length === 0) {
@@ -247,8 +266,10 @@ async function scanSkillFiles(
     (options.severity ?? 'informational') as typeof SEVERITY_ORDER[number],
   );
 
+  const failIdx = options.failOn !== undefined ? SEVERITY_ORDER.indexOf(options.failOn as typeof SEVERITY_ORDER[number]) : -1;
   const allResults: Array<{ file: string; result: ScanResult; filtered: ATRMatch[] }> = [];
   let totalThreats = 0;
+  let failHits = 0;
 
   for (const file of skillFiles) {
     const fileSize = statSync(file).size;
@@ -266,6 +287,9 @@ async function scanSkillFiles(
     if (filtered.length > 0) {
       allResults.push({ file, result, filtered });
       totalThreats += filtered.length;
+      if (failIdx >= 0) {
+        failHits += filtered.filter((m) => SEVERITY_ORDER.indexOf(m.rule.severity) >= failIdx).length;
+      }
     }
   }
 
@@ -277,7 +301,7 @@ async function scanSkillFiles(
     }));
     const version = process.env['npm_package_version'] ?? '1.0.0';
     console.log(JSON.stringify(scanResultToSARIF(sarifResults, version), null, 2));
-    return;
+    return failHits;
   }
 
   if (options.json) {
@@ -292,14 +316,14 @@ async function scanSkillFiles(
         matches: filtered.map(formatMatchJson),
       })),
     }, null, 2));
-    return;
+    return failHits;
   }
 
   printScanHeader('SKILL', skillFiles.length, engine.getRuleCount(), totalThreats);
 
   if (totalThreats === 0) {
     console.log(`  ${GREEN}No threats detected.${RESET}\n`);
-    return;
+    return failHits;
   }
 
   for (const { file, filtered } of allResults) {
@@ -310,6 +334,7 @@ async function scanSkillFiles(
     }
     console.log('');
   }
+  return failHits;
 }
 
 function createSemanticJudgeFromScanOptions(options: ScanOptions) {
