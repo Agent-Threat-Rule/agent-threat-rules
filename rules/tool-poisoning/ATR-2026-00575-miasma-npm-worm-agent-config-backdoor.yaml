@@ -85,15 +85,15 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)<!@?\([^)]{0,200}(?:curl\s|wget\s|https?://|base64\s+-d|\|\s*(?:sh|bash)\b)'
+      value: '(?i)<!@?\([^)]{0,200}(?:\bcurl\s|\bwget\s|https?://|base64\s+-d|\|\s*(?:sh|bash)\b)'
       description: "gyp command-substitution (<!(...) / <!@(...)) that fetches a remote payload or pipes to a shell during npm install — the Miasma install-time execution primitive"
     - field: content
       operator: regex
-      value: '(?i)(?:\.claude[/\\]setup\.mjs|\.cursor[/\\]rules[/\\]\S*\.mdc|\.gemini[/\\]settings\.json|\.vscode[/\\]tasks\.json)[\s\S]{0,300}(?:child_process|exec(?:Sync)?\s*\(|spawn(?:Sync)?\s*\(|curl\s|wget\s|base64\s+-d|powershell|\|\s*(?:sh|bash)\b)'
+      value: '(?i)(?:\.claude[/\\]setup\.mjs|\.cursor[/\\]rules[/\\]\S*\.mdc|\.gemini[/\\]settings\.json|\.vscode[/\\]tasks\.json)[\s\S]{0,300}(?:child_process|exec(?:Sync)?\s*\(|spawn(?:Sync)?\s*\(|\bcurl\s|\bwget\s|base64\s+-d|powershell|\|\s*(?:sh|bash)\b)'
       description: "AI-agent auto-run config surface (.claude/setup.mjs, .cursor/rules/*.mdc, .gemini/settings.json, .vscode/tasks.json) followed by a process-spawn or remote-fetch token — the auto-execute persistence write"
     - field: content
       operator: regex
-      value: '(?i)(?:child_process|exec(?:Sync)?\s*\(|spawn(?:Sync)?\s*\(|curl\s+-|wget\s|base64\s+-d|powershell\s+-[en])[\s\S]{0,300}(?:\.claude[/\\]setup\.mjs|\.cursor[/\\]rules[/\\]\S*\.mdc|\.gemini[/\\]settings\.json|\.vscode[/\\]tasks\.json)'
+      value: '(?i)(?:child_process|exec(?:Sync)?\s*\(|spawn(?:Sync)?\s*\(|\bcurl\s+-|\bwget\s|base64\s+-d|powershell\s+-[en])[\s\S]{0,300}(?:\.claude[/\\]setup\.mjs|\.cursor[/\\]rules[/\\]\S*\.mdc|\.gemini[/\\]settings\.json|\.vscode[/\\]tasks\.json)'
       description: "Process-spawn / remote-fetch token followed by an AI-agent auto-run config surface (reverse order) — the same persistence write expressed code-first"
 response:
   actions:
