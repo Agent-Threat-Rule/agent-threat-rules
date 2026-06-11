@@ -77,6 +77,7 @@ ${BOLD}Options:${RESET}
   --semantic-timeout <ms>        Judge request timeout (or ATR_SEMANTIC_TIMEOUT_MS)
   --semantic-no-json-mode        Do not send OpenAI JSON-mode response_format
   --no-report        Disable anonymous Threat Cloud reporting (enabled by default)
+  --fail-on <sev>    Exit non-zero if matches at/above this severity are found (for CI / pre-commit gates)
   --tc-url <url>     Threat Cloud endpoint (default: https://tc.panguard.ai)
   --dry-run        Log actions without executing (guard mode)
   --fail-open      Default to allow on errors (guard mode, default: true)
@@ -1136,6 +1137,7 @@ async function main(): Promise<void> {
         json: options['json'] === 'true',
         sarif: options['sarif'] === 'true',
         severity: options['severity'],
+        failOn: options['fail-on'],
         reportToCloud: options['no-report'] !== 'true',
         tcUrl: options['tc-url'],
         semantic: options['semantic'] === 'true',
@@ -1151,6 +1153,7 @@ async function main(): Promise<void> {
         json: options['json'] === 'true',
         sarif: options['sarif'] === 'true',
         severity: options['severity'],
+        failOn: options['fail-on'],
         forceType: 'skill',
         reportToCloud: options['no-report'] !== 'true',
         tcUrl: options['tc-url'],
