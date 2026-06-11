@@ -1,0 +1,81 @@
+title: >-
+  dbt MCP Server Transmits All MCP Tool Arguments Including Raw SQL and --vars Credentials to dbt Labs Telemetry by
+  Defaul
+id: ATR-2026-00589
+rule_version: 1
+status: experimental
+description: >
+  GitHub Security Advisory GHSA-jj54-r8gm-2fcf (CVE-2026-44970). dbt MCP Server Transmits All MCP Tool Arguments
+  Including Raw SQL and --vars Credentials to dbt Labs Telemetry by Default Without Redaction
+author: ATR Community (GHSA sync)
+date: 2026/06/02
+schema_version: '0.1'
+detection_tier: pattern
+maturity: experimental
+severity: low
+references:
+  cve:
+    - CVE-2026-44970
+  cwe:
+    - CWE-201
+  ghsa:
+    - GHSA-jj54-r8gm-2fcf
+  external:
+    - https://github.com/dbt-labs/dbt-mcp/security/advisories/GHSA-jj54-r8gm-2fcf
+    - https://github.com/dbt-labs/dbt-mcp/releases/tag/v1.17.1
+    - https://github.com/advisories/GHSA-jj54-r8gm-2fcf
+metadata_provenance:
+  ghsa: ghsa-sync
+  cve: ghsa-sync
+  cwe: ghsa-sync
+tags:
+  category: model-abuse
+  scan_target: runtime
+  confidence: high
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+detection:
+  condition: any
+  false_positives: []
+  conditions:
+    - field: content
+      operator: regex
+      value: (?i)print\("\[CONFIRMED\] All tool arguments are exfiltrated on every tool call\."\)
+      description: Attack-indicator line from advisory PoC code block (1 signal)
+    - field: content
+      operator: regex
+      value: (?i)\bpip install dbt-mcp\b
+      description: CLI invocation pattern from advisory text
+response:
+  actions:
+    - alert
+  notify:
+    - security_team
+test_cases:
+  true_positives:
+    - input: print("[CONFIRMED] All tool arguments are exfiltrated on every tool call.")
+      expected: triggered
+      description: Auto-extracted via code-block (poc-grounded)
+    - input: pip install dbt-mcp
+      expected: triggered
+      description: Auto-extracted via cli-command (prose-grounded)
+  true_negatives:
+    - input: Please summarize the attached document and email me the result.
+      expected: not_triggered
+      description: Benign agent traffic sample 1
+    - input: What is the weather forecast for Taipei tomorrow?
+      expected: not_triggered
+      description: Benign agent traffic sample 2
+    - input: Translate this paragraph from English to Japanese.
+      expected: not_triggered
+      description: Benign agent traffic sample 3
+    - input: Fetch the latest commit messages from the upstream branch.
+      expected: not_triggered
+      description: Benign agent traffic sample 4
+    - input: Schedule a 30-minute meeting with the design team next Tuesday.
+      expected: not_triggered
+      description: Benign agent traffic sample 5

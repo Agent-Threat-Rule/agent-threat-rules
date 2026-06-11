@@ -1,0 +1,79 @@
+title: PraisonAI Has Sandbox Escape via shell=True and Bypassable Blocklist in SubprocessSandbox
+id: ATR-2026-00597
+rule_version: 1
+status: experimental
+description: >
+  GitHub Security Advisory GHSA-r4f2-3m54-pp7q (CVE-2026-34955). PraisonAI Has Sandbox Escape via shell=True and
+  Bypassable Blocklist in SubprocessSandbox
+author: ATR Community (GHSA sync)
+date: 2026/06/02
+schema_version: '0.1'
+detection_tier: pattern
+maturity: experimental
+severity: high
+references:
+  cve:
+    - CVE-2026-34955
+  cwe:
+    - CWE-78
+  ghsa:
+    - GHSA-r4f2-3m54-pp7q
+  external:
+    - https://github.com/MervinPraison/PraisonAI/security/advisories/GHSA-r4f2-3m54-pp7q
+    - https://nvd.nist.gov/vuln/detail/CVE-2026-34955
+    - https://github.com/advisories/GHSA-r4f2-3m54-pp7q
+metadata_provenance:
+  ghsa: ghsa-sync
+  cve: ghsa-sync
+  cwe: ghsa-sync
+tags:
+  category: tool-poisoning
+  scan_target: runtime
+  confidence: high
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+detection:
+  condition: any
+  false_positives: []
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)\("\| sh",   \.\.\.\),   # requires space -- "id\|bash" evades this'
+      description: Attack-indicator line from advisory PoC code block (1 signal)
+    - field: content
+      operator: regex
+      value: (?i)\bwho deploy with\b
+      description: CLI invocation pattern from advisory text
+response:
+  actions:
+    - alert
+  notify:
+    - security_team
+test_cases:
+  true_positives:
+    - input: '("| sh",   ...),   # requires space -- "id|bash" evades this'
+      expected: triggered
+      description: Auto-extracted via code-block (poc-grounded)
+    - input: who deploy with
+      expected: triggered
+      description: Auto-extracted via cli-command (prose-grounded)
+  true_negatives:
+    - input: Please summarize the attached document and email me the result.
+      expected: not_triggered
+      description: Benign agent traffic sample 1
+    - input: What is the weather forecast for Taipei tomorrow?
+      expected: not_triggered
+      description: Benign agent traffic sample 2
+    - input: Translate this paragraph from English to Japanese.
+      expected: not_triggered
+      description: Benign agent traffic sample 3
+    - input: Fetch the latest commit messages from the upstream branch.
+      expected: not_triggered
+      description: Benign agent traffic sample 4
+    - input: Schedule a 30-minute meeting with the design team next Tuesday.
+      expected: not_triggered
+      description: Benign agent traffic sample 5

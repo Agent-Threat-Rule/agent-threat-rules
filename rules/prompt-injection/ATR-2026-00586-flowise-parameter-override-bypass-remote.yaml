@@ -1,0 +1,79 @@
+title: 'Flowise: Parameter Override Bypass Remote Command Execution'
+id: ATR-2026-00586
+rule_version: 1
+status: experimental
+description: >
+  GitHub Security Advisory GHSA-cvrr-qhgw-2mm6 (CVE-2026-41268). Flowise: Parameter Override Bypass Remote Command
+  Execution
+author: ATR Community (GHSA sync)
+date: 2026/06/02
+schema_version: '0.1'
+detection_tier: pattern
+maturity: experimental
+severity: high
+references:
+  cve:
+    - CVE-2026-41268
+  cwe:
+    - CWE-20
+  ghsa:
+    - GHSA-cvrr-qhgw-2mm6
+  external:
+    - https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-cvrr-qhgw-2mm6
+    - https://nvd.nist.gov/vuln/detail/CVE-2026-41268
+    - https://github.com/advisories/GHSA-cvrr-qhgw-2mm6
+metadata_provenance:
+  ghsa: ghsa-sync
+  cve: ghsa-sync
+  cwe: ghsa-sync
+tags:
+  category: prompt-injection
+  scan_target: runtime
+  confidence: high
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+detection:
+  condition: any
+  false_positives: []
+  conditions:
+    - field: content
+      operator: regex
+      value: (?i)ENCODED=\$\(echo -n "\$LOADER_CODE" \| base64 \| tr -d '\\n'\)
+      description: Attack-indicator line from advisory PoC code block (1 signal)
+    - field: content
+      operator: regex
+      value: (?i)\bto create personalized\b
+      description: CLI invocation pattern from advisory text
+response:
+  actions:
+    - alert
+  notify:
+    - security_team
+test_cases:
+  true_positives:
+    - input: ENCODED=$(echo -n "$LOADER_CODE" | base64 | tr -d '\n')
+      expected: triggered
+      description: Auto-extracted via code-block (poc-grounded)
+    - input: to create personalized
+      expected: triggered
+      description: Auto-extracted via cli-command (prose-grounded)
+  true_negatives:
+    - input: Please summarize the attached document and email me the result.
+      expected: not_triggered
+      description: Benign agent traffic sample 1
+    - input: What is the weather forecast for Taipei tomorrow?
+      expected: not_triggered
+      description: Benign agent traffic sample 2
+    - input: Translate this paragraph from English to Japanese.
+      expected: not_triggered
+      description: Benign agent traffic sample 3
+    - input: Fetch the latest commit messages from the upstream branch.
+      expected: not_triggered
+      description: Benign agent traffic sample 4
+    - input: Schedule a 30-minute meeting with the design team next Tuesday.
+      expected: not_triggered
+      description: Benign agent traffic sample 5

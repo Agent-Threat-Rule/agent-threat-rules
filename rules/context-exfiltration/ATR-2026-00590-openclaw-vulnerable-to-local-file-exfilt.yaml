@@ -1,0 +1,77 @@
+title: 'OpenClaw Vulnerable to Local File Exfiltration via MCP Tool Result MEDIA: Directive Injection'
+id: ATR-2026-00590
+rule_version: 1
+status: experimental
+description: >
+  GitHub Security Advisory GHSA-jjgj-cpp9-cvpv. OpenClaw Vulnerable to Local File Exfiltration via MCP Tool Result
+  MEDIA: Directive Injection
+author: ATR Community (GHSA sync)
+date: 2026/06/02
+schema_version: '0.1'
+detection_tier: pattern
+maturity: experimental
+severity: medium
+references:
+  cwe:
+    - CWE-22
+    - CWE-200
+  ghsa:
+    - GHSA-jjgj-cpp9-cvpv
+  external:
+    - https://github.com/openclaw/openclaw/security/advisories/GHSA-jjgj-cpp9-cvpv
+    - https://owasp.org/www-community/attacks/Path_Traversal
+    - https://github.com/advisories/GHSA-jjgj-cpp9-cvpv
+metadata_provenance:
+  ghsa: ghsa-sync
+  cwe: ghsa-sync
+tags:
+  category: context-exfiltration
+  scan_target: runtime
+  confidence: high
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+detection:
+  condition: any
+  false_positives: []
+  conditions:
+    - field: content
+      operator: regex
+      value: (?i)→ FILE CONTENTS EXFILTRATED TO ATTACKER-CONTROLLED CHANNEL
+      description: Attack-indicator line from advisory PoC code block (1 signal)
+    - field: content
+      operator: regex
+      value: (?i)MEDIA:file:///etc/shadow  →  /etc/shadow
+      description: Attack-indicator line from advisory PoC code block (1 signal)
+response:
+  actions:
+    - alert
+  notify:
+    - security_team
+test_cases:
+  true_positives:
+    - input: → FILE CONTENTS EXFILTRATED TO ATTACKER-CONTROLLED CHANNEL
+      expected: triggered
+      description: Auto-extracted via code-block (poc-grounded)
+    - input: MEDIA:file:///etc/shadow  →  /etc/shadow
+      expected: triggered
+      description: Auto-extracted via code-block (poc-grounded)
+  true_negatives:
+    - input: Please summarize the attached document and email me the result.
+      expected: not_triggered
+      description: Benign agent traffic sample 1
+    - input: What is the weather forecast for Taipei tomorrow?
+      expected: not_triggered
+      description: Benign agent traffic sample 2
+    - input: Translate this paragraph from English to Japanese.
+      expected: not_triggered
+      description: Benign agent traffic sample 3
+    - input: Fetch the latest commit messages from the upstream branch.
+      expected: not_triggered
+      description: Benign agent traffic sample 4
+    - input: Schedule a 30-minute meeting with the design team next Tuesday.
+      expected: not_triggered
+      description: Benign agent traffic sample 5

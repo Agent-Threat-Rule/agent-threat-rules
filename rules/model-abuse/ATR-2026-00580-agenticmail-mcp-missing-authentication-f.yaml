@@ -1,0 +1,74 @@
+title: '@agenticmail/mcp Missing Authentication for Critical Function'
+id: ATR-2026-00580
+rule_version: 1
+status: experimental
+description: |
+  GitHub Security Advisory GHSA-63gr-g7jc-v8rg. @agenticmail/mcp Missing Authentication for Critical Function
+author: ATR Community (GHSA sync)
+date: 2026/06/02
+schema_version: '0.1'
+detection_tier: pattern
+maturity: experimental
+severity: high
+references:
+  cwe:
+    - CWE-306
+  ghsa:
+    - GHSA-63gr-g7jc-v8rg
+  external:
+    - https://github.com/agenticmail/agenticmail/security/advisories/GHSA-63gr-g7jc-v8rg
+    - https://github.com/agenticmail/agenticmail/commit/7b9b05d973676e9f3d097c08b8e649f59bfc15d0
+    - https://github.com/agenticmail/agenticmail/commit/7d1791da7c8c8bd4e70d7081db48e18ab55f6736
+    - https://github.com/agenticmail/agenticmail/blob/7b9b05d973676e9f3d097c08b8e649f59bfc15d0/CHANGELOG.md?plain=1#L10
+    - >-
+      https://github.com/agenticmail/agenticmail/blob/7b9b05d973676e9f3d097c08b8e649f59bfc15d0/packages/mcp/README.md?plain=1#L13
+    - >-
+      https://github.com/agenticmail/agenticmail/blob/7b9b05d973676e9f3d097c08b8e649f59bfc15d0/packages/mcp/src/index.ts#L311
+    - https://github.com/advisories/GHSA-63gr-g7jc-v8rg
+metadata_provenance:
+  ghsa: ghsa-sync
+  cwe: ghsa-sync
+tags:
+  category: model-abuse
+  scan_target: runtime
+  confidence: high
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+detection:
+  condition: any
+  false_positives: []
+  conditions:
+    - field: content
+      operator: regex
+      value: (?i)node_major="\$\(node -p 'Number\(process\.versions\.node\.split\("\."\)\[0\]\)' 2>/dev/null \|\| echo 0\)"
+      description: Attack-indicator line from advisory PoC code block (1 signal)
+response:
+  actions:
+    - alert
+  notify:
+    - security_team
+test_cases:
+  true_positives:
+    - input: node_major="$(node -p 'Number(process.versions.node.split(".")[0])' 2>/dev/null || echo 0)"
+      expected: triggered
+      description: Auto-extracted via code-block (poc-grounded)
+  true_negatives:
+    - input: Please summarize the attached document and email me the result.
+      expected: not_triggered
+      description: Benign agent traffic sample 1
+    - input: What is the weather forecast for Taipei tomorrow?
+      expected: not_triggered
+      description: Benign agent traffic sample 2
+    - input: Translate this paragraph from English to Japanese.
+      expected: not_triggered
+      description: Benign agent traffic sample 3
+    - input: Fetch the latest commit messages from the upstream branch.
+      expected: not_triggered
+      description: Benign agent traffic sample 4
+    - input: Schedule a 30-minute meeting with the design team next Tuesday.
+      expected: not_triggered
+      description: Benign agent traffic sample 5

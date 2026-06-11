@@ -1,0 +1,84 @@
+title: Telnyx has malicious code in PyPI versions 4.87.1 and 4.87.2
+id: ATR-2026-00584
+rule_version: 1
+status: experimental
+description: |
+  GitHub Security Advisory GHSA-955r-262c-33jc. Telnyx has malicious code in PyPI versions 4.87.1 and 4.87.2
+author: ATR Community (GHSA sync)
+date: 2026/06/02
+schema_version: '0.1'
+detection_tier: pattern
+maturity: experimental
+severity: critical
+references:
+  cwe:
+    - CWE-506
+  ghsa:
+    - GHSA-955r-262c-33jc
+  external:
+    - https://github.com/team-telnyx/telnyx-python/security/advisories/GHSA-955r-262c-33jc
+    - https://github.com/team-telnyx/telnyx-python/issues/235
+    - https://ramimac.me/teampcp
+    - https://www.endorlabs.com/learn/teampcp-strikes-again-telnyx-compromised-three-days-after-litellm
+    - https://github.com/advisories/GHSA-955r-262c-33jc
+metadata_provenance:
+  ghsa: ghsa-sync
+  cwe: ghsa-sync
+tags:
+  category: model-abuse
+  scan_target: runtime
+  confidence: high
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+detection:
+  condition: any
+  false_positives: []
+  conditions:
+    - field: content
+      operator: regex
+      value: (?i)ls -la \$\(python -c "import site; print\(site\.getsitepackages\(\)\[0\]\)"\)/telnyx\* 2>/dev/null
+      description: Attack-indicator line from advisory PoC code block (1 signal)
+    - field: content
+      operator: regex
+      value: (?i)\bto publish malicious\b
+      description: CLI invocation pattern from advisory text
+    - field: content
+      operator: regex
+      value: (?i)\bpip install telnyx\b
+      description: CLI invocation pattern from advisory text
+response:
+  actions:
+    - alert
+  notify:
+    - security_team
+test_cases:
+  true_positives:
+    - input: ls -la $(python -c "import site; print(site.getsitepackages()[0])")/telnyx* 2>/dev/null
+      expected: triggered
+      description: Auto-extracted via code-block (poc-grounded)
+    - input: to publish malicious
+      expected: triggered
+      description: Auto-extracted via cli-command (prose-grounded)
+    - input: pip install telnyx
+      expected: triggered
+      description: Auto-extracted via cli-command (prose-grounded)
+  true_negatives:
+    - input: Please summarize the attached document and email me the result.
+      expected: not_triggered
+      description: Benign agent traffic sample 1
+    - input: What is the weather forecast for Taipei tomorrow?
+      expected: not_triggered
+      description: Benign agent traffic sample 2
+    - input: Translate this paragraph from English to Japanese.
+      expected: not_triggered
+      description: Benign agent traffic sample 3
+    - input: Fetch the latest commit messages from the upstream branch.
+      expected: not_triggered
+      description: Benign agent traffic sample 4
+    - input: Schedule a 30-minute meeting with the design team next Tuesday.
+      expected: not_triggered
+      description: Benign agent traffic sample 5
