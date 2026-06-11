@@ -15,9 +15,10 @@
  *         + POST to TC as proposals
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { createHash } from 'node:crypto';
+import yaml from 'js-yaml';
 import { ATREngine } from '../dist/engine.js';
 import { validateRule, loadRuleFile } from '../dist/loader.js';
 
@@ -195,6 +196,21 @@ async function main() {
   }
   
   // Crystallize each technique
+  // Real next-ID from the existing corpus. Previously hardcoded `142 + created` (written when
+  // the repo had ~141 rules) — it now collides with every existing ID up to the current max,
+  // one of the two reasons the daily crystallize run red-failed.
+  const scanMaxId = (dir: string): number => {
+    let max = 0;
+    for (const entry of readdirSync(dir)) {
+      const full = join(dir, entry);
+      if (statSync(full).isDirectory()) max = Math.max(max, scanMaxId(full));
+      else { const m = entry.match(/ATR-2026-(\d{5})/); if (m) max = Math.max(max, parseInt(m[1]!, 10)); }
+    }
+    return max;
+  };
+  const baseId = scanMaxId('rules');
+  console.log(`Allocating new rule IDs from ATR-2026-${String(baseId + 1).padStart(5, '0')}`);
+
   let created = 0, pushed = 0;
   for (const [tech, items] of crystallizable) {
     const samplePayloads = items.slice(0, 10).map(i => `- "${i.payload}"`).join('\n');
@@ -219,7 +235,7 @@ async function main() {
       const ruleContent = yamlMatch[1]!.trim();
       
       // Assign real ID
-      const nextId = 142 + created; // Continue from ATR-2026-00141
+      const nextId = baseId + 1 + created;
       const finalContent = ruleContent.replace('ATR-2026-DRAFT', `ATR-2026-${String(nextId).padStart(5, '0')}`);
       
       // Determine category and write file
@@ -229,7 +245,17 @@ async function main() {
       const slug = slugMatch?.[1] ?? tech;
       
       const filePath = `rules/${category}/ATR-2026-${String(nextId).padStart(5, '0')}-${slug}.yaml`;
-      
+
+      // Reject malformed LLM YAML BEFORE it touches disk. A duplicate-key file pollutes the
+      // engine's directory scan and silently red-fails the whole run (the `duplicated mapping
+      // key (50:1)` error that broke crystallize for days). js-yaml throws on duplicate keys.
+      try {
+        yaml.load(finalContent);
+      } catch (e) {
+        console.log(`  → Malformed YAML, skipping: ${e instanceof Error ? e.message : e}`);
+        continue;
+      }
+
       if (!DRY_RUN) {
         writeFileSync(filePath, finalContent);
       }

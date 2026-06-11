@@ -13,6 +13,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   crystallize:
@@ -155,8 +156,10 @@ jobs:
             }
           "
 
-      - name: Commit new rules and stats
+      - name: Open PR for new rules (human review via check-rules-safety gate)
         if: ${{ github.event.inputs.dry_run != 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "ATR Crystallizer"
           git config user.email "crystallizer@atr-framework.org"
@@ -169,10 +172,18 @@ jobs:
           if git diff --cached --quiet; then
             echo "No new rules crystallized"
           else
-            git commit -m "feat: auto-crystallize ${NEW_RULES} new rules (${BEFORE} -> ${AFTER} total)
+            BRANCH="auto-crystallize/run-${{ github.run_id }}"
+            git checkout -b "$BRANCH"
+            git commit -m "feat: auto-crystallize ${NEW_RULES} new draft rules (${BEFORE} -> ${AFTER} total)
 
             Source: TC ecosystem scan + adversarial samples
-            Pipeline: local-crystallize.ts"
-            git push
-            echo "Committed ${NEW_RULES} new rules"
+            Pipeline: local-crystallize.ts
+            Status: draft/test — requires human review before promotion."
+            git push -u origin "$BRANCH"
+            gh pr create \
+              --title "auto-crystallize: ${NEW_RULES} new draft rule(s)" \
+              --body "Automated crystallization from TC attack data. New rules are status=draft / maturity=test and must pass the check-rules-safety gate before promotion. Do NOT auto-merge — human review required." \
+              --label "needs-human-review" \
+              || echo "PR creation failed; branch '$BRANCH' pushed — open PR manually (main was NOT modified)."
+            echo "Opened PR from ${BRANCH} with ${NEW_RULES} new rules"
           fi
