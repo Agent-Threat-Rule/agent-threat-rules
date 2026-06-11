@@ -1,0 +1,111 @@
+name: Garak Miss -> Semantic Proposals
+
+# The "last mile" of the red-team pipeline. The garak full benchmark tells us
+# which agent-attack prompts ATR still MISSES; this workflow turns those misses
+# into garak-clusters proposals that the T2 authoring pipeline
+# (scripts/author-semantic-rules.ts --source garak) consumes to draft
+# method=semantic rules.
+#
+# WHY A SEPARATE WORKFLOW
+# -----------------------
+# scripts/garak-miss-to-proposals.ts has ZERO dependency on the (still-unmerged)
+# semantic-rule-pipeline: it only reads the committed garak report and writes
+# proposals. Keeping it standalone means it is safe on main and does not collide
+# with promote-semantic.yml (which lives on the semantic-rule-pipeline branch and
+# will pick these refreshed proposals up once merged).
+#
+# SAFETY
+# ------
+# This workflow only WRITES proposals/ and opens a needs-human-review PR. It does
+# NOT author or modify any rule, call any LLM, or auto-merge. Scope discipline
+# (agent-attack families only; content-safety dropped) is enforced inside the
+# bridge, mirroring the consumer's allowlist.
+
+on:
+  workflow_run:
+    workflows: ["Measure All Benchmarks"]
+    types: [completed]
+  schedule:
+    - cron: '20 6 * * 1'   # weekly, Monday — a safety net independent of the benchmark run
+  workflow_dispatch:
+    inputs:
+      max_tp:
+        description: 'Max true_positives per family proposal'
+        required: false
+        default: '40'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bridge:
+    name: Bridge garak misses into semantic proposals
+    runs-on: ubuntu-latest
+    # Only run on a successful benchmark run, or on manual/scheduled trigger.
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Refresh garak full report (local corpus, no python needed)
+        run: |
+          if [ -d data/test-corpora/garak-full ]; then
+            npx tsx scripts/run-garak-full-benchmark.ts \
+              --output data/garak-benchmark/garak-full-report.json \
+              || echo "::warning::garak-full benchmark exited non-zero; using existing committed report."
+          else
+            echo "::notice::garak-full corpus not present in checkout — using existing committed report."
+          fi
+
+      - name: Generate semantic proposals from misses
+        run: |
+          npx tsx scripts/garak-miss-to-proposals.ts \
+            --write \
+            --max-tp "${{ github.event.inputs.max_tp || '40' }}"
+
+      - name: Unit-test the bridge
+        run: npx vitest run tests/garak-miss-to-proposals.test.ts
+
+      - name: Open PR for refreshed proposals (human review required)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "ATR Garak Bridge"
+          git config user.email "bridge@atr-framework.org"
+
+          # Stage only the bridge's outputs. The committed report is regenerated
+          # above but is an input, not part of this PR's reviewable surface — add
+          # it too so reviewers see exactly what the proposals were derived from.
+          git add proposals/garak-clusters/ data/garak-benchmark/garak-full-report.json 2>/dev/null \
+            || git add proposals/garak-clusters/
+
+          if git diff --cached --quiet; then
+            echo "No proposal changes this run (misses unchanged since last bridge run)."
+          else
+            BRANCH="garak-miss-bridge/run-${{ github.run_id }}"
+            git checkout -b "$BRANCH"
+            git commit -m "chore: refresh garak-clusters semantic proposals from current misses
+
+          Source: data/garak-benchmark/garak-full-report.json (garak full benchmark).
+          Pipeline: garak-miss-to-proposals.ts -> proposals/garak-clusters/ -> author-semantic-rules.ts.
+          Scope: agent-attack families only (content-safety families and samples dropped).
+          Status: proposals only; no rules authored. Human review required before any rule ships."
+            git push -u origin "$BRANCH"
+            gh pr create \
+              --title "garak-miss-bridge: refresh semantic attack proposals from current misses" \
+              --body "Regenerated proposals/garak-clusters/ from the latest garak full benchmark misses via scripts/garak-miss-to-proposals.ts. Only agent-attack families are included (prompt injection, jailbreak override, latent injection, system-prompt extraction, encoding/web injection, exploitation); content-safety families and content-safety samples are dropped to keep ATR in its lane. These are PROPOSALS only — no rule is authored or modified here. The T2 authoring pipeline (author-semantic-rules.ts) consumes them under its own deterministic 0-FP gate. Do NOT auto-merge; human review required." \
+              --label "needs-human-review" \
+              || echo "PR creation failed; branch '${BRANCH}' pushed — open PR manually (main was NOT modified)."
+            echo "Opened PR from ${BRANCH}"
+          fi
