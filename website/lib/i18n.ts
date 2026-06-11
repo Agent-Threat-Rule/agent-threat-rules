@@ -19,6 +19,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "nav.research": "Research",
     "nav.about": "About",
     "nav.changelog": "Changelog",
+    "nav.blog": "Blog",
     "nav.quality-standard": "Quality",
     "nav.cta": "Integrate",
 
@@ -385,6 +386,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "nav.research": "\u7814\u7A76",
     "nav.about": "\u95DC\u65BC",
     "nav.changelog": "\u7248\u672C\u6B77\u7A0B",
+    "nav.blog": "Blog",
     "nav.quality-standard": "\u54C1\u8CEA\u6A19\u6E96",
     "nav.cta": "\u6574\u5408",
 
