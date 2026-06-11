@@ -15,7 +15,7 @@
  *         + POST to TC as proposals
  */
 
-import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync, statSync, unlinkSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { createHash } from 'node:crypto';
 import yaml from 'js-yaml';
@@ -211,7 +211,7 @@ async function main() {
   const baseId = scanMaxId('rules');
   console.log(`Allocating new rule IDs from ATR-2026-${String(baseId + 1).padStart(5, '0')}`);
 
-  let created = 0, pushed = 0;
+  let created = 0, pushed = 0, allocated = 0;
   for (const [tech, items] of crystallizable) {
     const samplePayloads = items.slice(0, 10).map(i => `- "${i.payload}"`).join('\n');
     const prompt = ATR_DRAFTER_PROMPT + `\n\nAttack technique: ${tech}\nSamples (${items.length} total, showing 10):\n${samplePayloads}`;
@@ -234,8 +234,15 @@ async function main() {
       
       const ruleContent = yamlMatch[1]!.trim();
       
-      // Assign real ID
-      const nextId = baseId + 1 + created;
+      // Assign real ID. Use a dedicated `allocated` counter that increments PER ATTEMPT,
+      // not `created` (which only increments on full success at the bottom). Binding the ID
+      // to `created` meant any rule that failed validate/test below did not consume its
+      // number, so the NEXT rule reused it — producing 5 files all stamped ATR-2026-00579
+      // and red-failing the corpus-wide validate with "Duplicate rule ID". Per-attempt
+      // allocation guarantees every emitted file gets a unique, monotonic ID; gaps from
+      // discarded attempts are fine (IDs need not be contiguous, only unique).
+      const nextId = baseId + 1 + allocated;
+      allocated++;
       const finalContent = ruleContent.replace('ATR-2026-DRAFT', `ATR-2026-${String(nextId).padStart(5, '0')}`);
       
       // Determine category and write file
@@ -266,6 +273,7 @@ async function main() {
         const v = validateRule(rule);
         if (!v.valid) {
           console.log(`  → Invalid: ${v.errors.join(', ')}`);
+          if (!DRY_RUN) unlinkSync(filePath);  // remove rejected file so it can't pollute the corpus-wide validate
           continue;
         }
         
@@ -283,6 +291,7 @@ async function main() {
         
         if (!testPass) {
           console.log(`  → Test case failed`);
+          if (!DRY_RUN) unlinkSync(filePath);  // remove failing file so it can't pollute the corpus-wide validate
           continue;
         }
         
@@ -296,6 +305,7 @@ async function main() {
         }
       } catch (e) {
         console.log(`  → Error: ${e instanceof Error ? e.message : e}`);
+        if (!DRY_RUN) { try { unlinkSync(filePath); } catch { /* file may not have been written */ } }
       }
     } catch (e) {
       console.log(`  → LLM error: ${e instanceof Error ? e.message : e}`);
