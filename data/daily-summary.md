@@ -1,29 +1,26 @@
-## Daily Scan Summary (2026-06-10)
+## Daily Scan Summary (2026-06-11)
 - Scanned: 50 packages
-- CRITICAL: 7
+- CRITICAL: 4
 - HIGH: 6
-- CLEAN/LOW: 29
+- CLEAN/LOW: 34
 
 ### Flagged Packages:
-- [CRITICAL] @owrede/vault-memory (score: 100)
-- [CRITICAL] @pinepaper.studio/mcp-server (score: 100)
-- [HIGH] @polarity-lab/cosmos-mcp (score: 50)
-- [HIGH] @robinmordasiewicz/f5xc-terraform-mcp (score: 55)
-- [CRITICAL] @shiharu/mcp-remote-ssh (score: 100)
-- [HIGH] @solapi/mcp-server (score: 40)
-- [CRITICAL] @splicr/mcp-server (score: 70)
-- [HIGH] @sprigr/mcp-server (score: 50)
-- [CRITICAL] @sprintrr/mcp-server (score: 80)
-- [HIGH] @stackable-labs/mcp-app-extension (score: 40)
-- [CRITICAL] @stackguide/mcp-server (score: 100)
-- [CRITICAL] @steipete/claude-code-mcp (score: 100)
-- [HIGH] @stigg/typescript-mcp (score: 60)
+- [CRITICAL] @influxdata/influxdb3-mcp-server (score: 100)
+- [HIGH] @ishidad2/jgrants-mcp-server (score: 45)
+- [HIGH] @leashmarket/mcp-core (score: 40)
+- [HIGH] @marupelkar/vaaya-mcp (score: 55)
+- [HIGH] @metronome/mcp (score: 60)
+- [HIGH] @nado-language/mcp (score: 50)
+- [CRITICAL] @ovra/mcp (score: 100)
+- [CRITICAL] @relaystation/mcp (score: 100)
+- [HIGH] @routecraft/ai (score: 60)
+- [CRITICAL] @skew-labs/mcp (score: 100)
 
 ### Cumulative:
-- Total scanned: 2910
-  - CLEAN: 1748
-  - CRITICAL: 326
-  - ERROR: 4
-  - HIGH: 225
-  - LOW: 303
-  - MEDIUM: 304
+- Total scanned: 2960
+  - CLEAN: 1781
+  - CRITICAL: 330
+  - ERROR: 5
+  - HIGH: 231
+  - LOW: 304
+  - MEDIUM: 309
