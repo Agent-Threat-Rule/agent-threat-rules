@@ -1,0 +1,145 @@
+name: Promote Semantic (T2) Rules
+
+# Authors method=semantic (T2) ATR rules from semantic-attack adversarial
+# samples (PromptInject / HackAPrompt / garak clusters) via
+# scripts/author-semantic-rules.ts, then opens a needs-human-review PR.
+#
+# WHY THIS LANE EXISTS
+# Pure regex on a semantic attack (prompt injection / jailbreak) is the MiroFish
+# failure mode: it keys on the wording that describes the attack, false-positives
+# on benign paraphrases, and is bypassed by the next rewording. This lane instead
+# produces the validated T2 shape (see rules/.../ATR-2026-00573): a NARROW regex
+# fallback (anchor + redirect, low-FP) plus a high-quality LLM-as-judge prompt
+# that DEFINES the attack class with positive and negative cues. The judge carries
+# recall against rewordings; the regex carries graceful no-judge degradation.
+#
+# GATE: a deterministic gate (which the model cannot bypass) requires the narrow
+# fallback to compile, match >=1 of its own true_positives, and produce ZERO
+# matches on data/benign-code + a sample of data/skill-benchmark/benign + its own
+# true_negatives; and requires the judge prompt to carry the untrusted-data guard
+# and the {{input}} placeholder. Drafts that fail are routed to human review and
+# never written. Content-safety garak clusters (dra/lmrc — graphic violence /
+# weapons / drugs) are filtered out as outside ATR's agent-attack scope.
+#
+# Complements promote-cve.yml (CVE PoC -> regex rules) and crystallize.yml
+# (TC + adversarial -> rules). This is the semantic/T2 intake lane.
+
+on:
+  # Chain after the CVE collector so semantic authoring runs on the freshest
+  # cluster proposals each day, same as promote-cve.yml.
+  workflow_run:
+    workflows: ["CVE Collector — Daily Sync"]
+    types: [completed]
+  schedule:
+    - cron: '50 5 * * *'   # daily safety net, after the collector's morning run
+  workflow_dispatch:
+    inputs:
+      max:
+        description: 'Max semantic rules to author this run'
+        required: false
+        default: '8'
+      source:
+        description: 'Limit to one cluster source (hackaprompt|promptinject|garak); blank = all'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  author-semantic:
+    name: Author semantic (T2) rules from adversarial clusters
+    runs-on: ubuntu-latest
+    # Only run on a successful collector run, or on manual/scheduled trigger.
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build ATR engine
+        run: npm run build
+
+      - name: Count rules before
+        id: before
+        run: |
+          count=$(find rules -name "*.yaml" | wc -l | tr -d ' ')
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          echo "Rules before: $count"
+
+      - name: Author semantic rules (deterministic 0-FP gate)
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Use a stronger model than the local default for judge-prompt quality.
+          ATR_AUTHOR_MODEL: claude-sonnet-4-5-20250929
+        run: |
+          npx tsx scripts/author-semantic-rules.ts \
+            --write \
+            --max "${{ github.event.inputs.max || '8' }}" \
+            ${{ github.event.inputs.source && format('--source {0}', github.event.inputs.source) || '' }} \
+            --report /tmp/semantic-report.json \
+            || echo "Semantic authoring completed with warnings"
+
+      - name: Validate new rules
+        run: npm run validate
+
+      - name: Run tests
+        run: npm test
+
+      - name: Count rules after
+        id: after
+        run: |
+          count=$(find rules -name "*.yaml" | wc -l | tr -d ' ')
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          echo "Rules after: $count"
+
+      - name: Open PR for authored semantic rules (human review required)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "ATR Semantic Author"
+          git config user.email "semantic-author@atr-framework.org"
+
+          BEFORE=${{ steps.before.outputs.count }}
+          AFTER=${{ steps.after.outputs.count }}
+          NEW=$((AFTER - BEFORE))
+
+          git add rules/ 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No semantic rules authored this run (all drafts routed to human review or no in-scope clusters)."
+          else
+            BRANCH="auto-semantic/run-${{ github.run_id }}"
+            git checkout -b "$BRANCH"
+            git commit -m "feat: author ${NEW} semantic (T2) rule(s) from adversarial clusters
+
+          Source: PromptInject / HackAPrompt / garak agent-attack clusters (content-safety filtered out).
+          Pipeline: author-semantic-rules.ts — narrow regex fallback (anchor + redirect) plus LLM-as-judge prompt.
+          Gate: deterministic 0-FP gate on benign-code + benign-skill corpus; judge prompt carries untrusted guard.
+          Status: experimental / maturity: test — requires human review before promotion."
+            git push -u origin "$BRANCH"
+            gh pr create \
+              --title "auto-semantic: ${NEW} T2 semantic rule(s) for human review" \
+              --body "$(cat <<'BODY'
+          Authored method=semantic (T2) rules from semantic-attack adversarial clusters (PromptInject / HackAPrompt / garak) via scripts/author-semantic-rules.ts.
+
+          Why semantic, not regex: pure regex on a reworded prompt injection is the MiroFish failure mode (keys on the describing wording, false-positives on benign paraphrases, bypassed by the next rewording). Each rule here follows the ATR-2026-00573 T2 shape: a narrow regex fallback (anchor plus redirect, low false-positive by design) used only when no judge is configured, and a high-quality LLM-as-judge prompt that defines the attack class with positive and negative cues and returns strict JSON.
+
+          Deterministic gate (the model cannot bypass it): the narrow fallback must compile, must match at least one of its own true_positives, and must produce zero matches on data/benign-code plus a sample of data/skill-benchmark/benign plus its own true_negatives; the judge prompt must carry the untrusted-data guard and the input placeholder. Drafts failing the gate are routed to human review and never written. Content-safety garak families (dra, lmrc) are filtered out as outside ATR's agent-attack scope.
+
+          Status experimental, maturity test. Do not auto-merge; human review required.
+          BODY
+          )" \
+              --label "needs-human-review" \
+              || echo "PR creation failed; branch '${BRANCH}' pushed — open PR manually (main was NOT modified)."
+            echo "Opened PR from ${BRANCH} with ${NEW} authored semantic rules"
+          fi
