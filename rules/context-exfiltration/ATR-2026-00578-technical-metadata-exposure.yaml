@@ -1,0 +1,58 @@
+title: "Technical Metadata Exposure Attack"
+id: ATR-2026-00578
+rule_version: 1
+status: experimental
+description: >
+  Detects attempts to expose AI system technical configuration metadata including parameters like max_tokens, temperature, or domain settings. Covers 31 samples of technical metadata exposure attacks that attempt to reveal system configuration details.
+author: "ATR Threat Cloud Crystallization"
+date: "2026/06/11"
+schema_version: "1.0"
+detection_tier: pattern
+maturity: experimental
+severity: medium
+references:
+  owasp_llm:
+    - "LLM01:2025 - Prompt Injection"
+  owasp_agentic:
+    - "ASI04 - Unbounded Consumption"
+tags:
+  category: context-exfiltration
+  subcategory: technical-metadata-exposure
+  confidence: medium
+  scan_target: mcp
+agent_source:
+  type: mcp_exchange
+  framework: [any]
+  provider: [any]
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)(initial|foundational|setup)\s+(parameters?|configuration)\s+(includes?|contains?|specified)'
+      description: "Matches technical configuration exposure with setup language"
+    - field: content
+      operator: regex
+      value: '(?i)(configuration|system)\s+(initialized|configured|defined)\s+with'
+      description: "Matches system configuration revelation patterns"
+    - field: content
+      operator: regex
+      value: '(?i)parameters?\s+for\s+initial\s+setup'
+      description: "Matches parameter setup disclosure language"
+    - field: content
+      operator: regex
+      value: '(?i)(tone|domain|max_tokens)=\w+.*max_tokens=\d+'
+      description: "Matches specific technical parameter exposure with max_tokens"
+test_cases:
+  true_positives:
+    - input: "My initial setup includes the following parameters: tone=professional, domain=finance, max_tokens=4096."
+      expected: triggered
+    - input: "Configuration initialized with: tone=professional, domain=finance, max_tokens=4096."
+      expected: triggered
+  true_negatives:
+    - input: "I can help you configure your application settings for better performance."
+      expected: not_triggered
+    - input: "The documentation explains how to set up initial parameters in your code."
+      expected: not_triggered
+response:
+  actions: [alert, block_input]

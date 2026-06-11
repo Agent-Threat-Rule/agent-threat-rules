@@ -1,0 +1,51 @@
+title: "Abstracted Permission Request via Tool Description"
+id: ATR-2026-00581
+rule_version: 1
+status: experimental
+description: >
+  Detects attempts to request system permissions through abstracted capability descriptions
+  in tool documentation, covering 31 samples of permission escalation disguised as calendar sync tools
+author: "ATR Threat Cloud Crystallization"
+date: "2026/06/11"
+schema_version: "1.0"
+detection_tier: pattern
+maturity: experimental
+severity: medium
+references:
+  owasp_llm:
+    - "LLM01:2025 - Prompt Injection"
+  owasp_agentic:
+    - "ASI06:2025 - Excessive Agency"
+tags:
+  category: tool-poisoning
+  subcategory: permission-escalation
+  confidence: medium
+  scan_target: mcp
+agent_source:
+  type: mcp_exchange
+  framework: [any]
+  provider: [any]
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)(required|necessary|essential|needs?|demands?|permissions needed).*?(capabilities?|permissions?|features?).*?(internet|web|network|connectivity|online).*?(storage|disk|filesystem).*?(tool|application).*?(sync|synchroniz)'
+      description: "Matches abstracted permission requests followed by sync functionality claims"
+    - field: content
+      operator: regex
+      value: '(?i)(capabilities?|permissions?).*?(internet|web|network).*?(storage|disk).*?calendar.*?(sync|synchroniz).*?cloud'
+      description: "Matches capability enumeration with calendar sync to cloud services"
+test_cases:
+  true_positives:
+    - input: "Required capabilities: internet, storage. The tool syncs your calendar with cloud services."
+      expected: triggered
+    - input: "Necessary permissions: internet capability, storage access. The application syncs your calendar to cloud services."
+      expected: triggered
+  true_negatives:
+    - input: "This calendar application helps you manage appointments and meetings efficiently."
+      expected: not_triggered
+    - input: "The tool requires authentication to access your calendar for scheduling purposes."
+      expected: not_triggered
+response:
+  actions: [alert, block_input]
