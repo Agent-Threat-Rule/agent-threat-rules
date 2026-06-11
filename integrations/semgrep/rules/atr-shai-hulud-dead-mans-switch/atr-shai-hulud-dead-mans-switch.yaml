@@ -1,0 +1,41 @@
+rules:
+  - id: atr-shai-hulud-dead-mans-switch
+    languages: [generic]
+    severity: ERROR
+    message: >-
+      A GitHub-token watchdog is wired to a destructive action: either the literal
+      gh-token-monitor daemon name, or polling of api.github.com/user paired with a
+      destructive command (rm -rf, DROP TABLE, shutil.rmtree, os.system rm), or an
+      interval/timer (setInterval, setTimeout, threading.Timer, asyncio.sleep) polling
+      api.github.com/user together with a shell-execution primitive. This is the Mini
+      Shai-Hulud dead-man's-switch: when the stolen token is revoked (HTTP 401) the payload
+      wipes credentials or files. A GitHub client that only validates a session, with no
+      paired destructive action, is not flagged. Remove the watchdog, rotate the GitHub
+      token, and audit the package that introduced this persistence.
+    paths:
+      include:
+        - "*.py"
+        - "*.js"
+        - "*.ts"
+        - "*.mjs"
+        - "*.sh"
+        - "*.plist"
+    patterns:
+      - pattern-regex: >-
+          (?:gh[-_]token[-_]monitor|api\.github\.com/user[\s\S]{0,500}(?:rm\s+-rf|drop\s+table|shutil\.rmtree|os\.system\s*\(\s*['"]rm)|(?:setInterval|setTimeout|threading\.Timer|asyncio\.sleep)[\s\S]{0,200}api\.github\.com/user[\s\S]{0,300}(?:rm\s+-rf|shutil\.rmtree|child_process|exec\s*\())
+    metadata:
+      category: security
+      technology: [ai-agents, mcp]
+      cwe: "CWE-506: Embedded Malicious Code"
+      owasp:
+        - "LLM03:2025 Supply Chain"
+      likelihood: MEDIUM
+      impact: HIGH
+      confidence: HIGH
+      subcategory: [vuln]
+      references:
+        - https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/rules/skill-compromise/ATR-2026-00525-mini-shai-hulud-gh-token-monitor-persistence.yaml
+        - https://socket.dev/blog/mini-shai-hulud-miasma-and-hades-worms-target-bioinformatics-and-mcp-developers-via-malicious
+      source-rule-url: https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/rules/skill-compromise/ATR-2026-00525-mini-shai-hulud-gh-token-monitor-persistence.yaml
+      license: MIT
+      atr-rule-id: ATR-2026-00525

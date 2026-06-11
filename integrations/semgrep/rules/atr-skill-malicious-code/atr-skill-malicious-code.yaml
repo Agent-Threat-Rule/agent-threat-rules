@@ -1,0 +1,38 @@
+rules:
+  - id: atr-skill-malicious-code
+    languages: [generic]
+    severity: ERROR
+    message: >-
+      A skill package contains a malicious-code primitive: base64-obfuscated command
+      execution, a password-protected archive used for evasion, remote code execution from a
+      raw IP or paste service (glot.io, rentry.co, pastebin raw), a credential file read piped
+      to an exfil command, or a reverse shell. These are signatures of observed malicious
+      skill campaigns (ToxicSkills, ClawHavoc, AMOS infostealer). Legitimate installer scripts
+      from known publishers (brew, nvm, rustup) fetch over HTTPS from their own domains and do
+      not pipe raw-IP or paste-service payloads to a shell. Do not run this skill; remove the
+      payload and report the package.
+    paths:
+      include:
+        - "*.md"
+        - "*.sh"
+        - "*.py"
+        - "*.js"
+        - "*.ts"
+    patterns:
+      - pattern-regex: >-
+          (?i)(?:eval\s*\$\(\s*echo\s+["'][A-Za-z0-9+/=]{20,}["']\s*\|\s*base64\s+-d|echo\s+["'][A-Za-z0-9+/=]{20,}["']\s*\|\s*base64\s+(?:-d|--decode)\s*\|\s*(?:bash|sh|python|perl))|(?i)unzip\s+(?:-[oP]\s+["'][^"']+["']\s+|.*-P\s+["'][^"']+["']).*\.(?:zip|7z|rar)|(?i)(?:curl|wget)\s+(?:-[sSfLo]+\s+)*https?://(?:\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|glot\.io|rentry\.co|pastebin\.com|paste\.c-net|hastebin\.com)[^|\s]*\s*\|\s*(?:bash|sh|python[23]?|perl|ruby)|(?i)(?:cat|head|tail|strings)\s+[~$]?[/\\]?\.(?:aws|ssh|gnupg|kube)/[^|\n]*\|\s*(?:curl|wget|nc|base64|python|perl)|(?i)(?:bash\s+-i\s+>&\s*/dev/tcp/|nc\s+-[elp]\s|mkfifo\s+/tmp/|socat\s+exec)
+    metadata:
+      category: security
+      technology: [ai-agents, mcp]
+      cwe: "CWE-506: Embedded Malicious Code"
+      owasp:
+        - "LLM03:2025 Supply Chain"
+      likelihood: HIGH
+      impact: HIGH
+      confidence: HIGH
+      subcategory: [vuln]
+      references:
+        - https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/rules/skill-compromise/ATR-2026-00121-skill-dangerous-script.yaml
+      source-rule-url: https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/rules/skill-compromise/ATR-2026-00121-skill-dangerous-script.yaml
+      license: MIT
+      atr-rule-id: ATR-2026-00121
