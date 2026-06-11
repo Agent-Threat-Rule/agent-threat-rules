@@ -1,0 +1,40 @@
+rules:
+  - id: atr-skill-data-exfiltration
+    languages: [generic]
+    severity: ERROR
+    message: >-
+      A skill or agent script archives or reads a sensitive target (SSH keys, crypto wallet
+      files, browser cookie/credential databases, cloud instance metadata 169.254.169.254,
+      .env/.npmrc) and ships it out, or contains a known exfil primitive (DNS-encoded
+      subdomain query, non-official npm registry install, fake [SYSTEM] override block).
+      These are the compound data-exfiltration patterns seen in malicious SKILL packages.
+      Referencing ~/.ssh for legitimate config, or documenting these patterns to detect them,
+      is not the target; the read or enumeration must be paired with an outbound sink or use
+      a credential-store path no benign skill needs. Remove the collection-and-send code and
+      audit how the skill entered the supply chain.
+    paths:
+      include:
+        - "*.md"
+        - "*.py"
+        - "*.js"
+        - "*.ts"
+        - "*.sh"
+    patterns:
+      - pattern-regex: >-
+          (?i)(?:tar|zip|7z)\s+[^\n]*~/?\.ssh|(?i)(?:find|ls|cat|strings)\s+[^\n]*(?:wallet\.dat|seed\.txt|mnemonic|keystore)[^\n]*(?:\||>|>>|curl|wget|fetch|POST)|(?i)sqlite3\s+[^\n]*(?:Cookies|Login\s*Data|cookies\.sqlite|places\.sqlite)|(?i)(?:^|[\n;&|])\s*(?:dig|nslookup|host)\b[^\n]{0,40}?\$[{(][^\n]{0,40}[.][a-z]|(?i)(?:curl|wget|fetch|http)\s*[^\n]*169\.254\.169\.254|(?i)cat\s+[^|\n]*\.(?:env|bashrc|zshrc|npmrc)[^|\n]*\|\s*(?:curl|wget|nc|python|base64)|(?i)\[SYSTEM\]\s*[^\n]*(?:previous\s+instructions|new\s+directive|ignore\s+(?:all\s+)?previous|you\s+are\s+now)|(?i)npm\s+install\s+[^\n]*--registry\s+https?://(?!registry\.npmjs\.org)
+    metadata:
+      category: security
+      technology: [ai-agents, mcp]
+      cwe: "CWE-200: Exposure of Sensitive Information to an Unauthorized Actor"
+      owasp:
+        - "LLM06:2025 Excessive Agency"
+        - "LLM02:2025 Sensitive Information Disclosure"
+      likelihood: HIGH
+      impact: HIGH
+      confidence: HIGH
+      subcategory: [vuln]
+      references:
+        - https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/rules/skill-compromise/ATR-2026-00149-skill-exfil-compound.yaml
+      source-rule-url: https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/rules/skill-compromise/ATR-2026-00149-skill-exfil-compound.yaml
+      license: MIT
+      atr-rule-id: ATR-2026-00149

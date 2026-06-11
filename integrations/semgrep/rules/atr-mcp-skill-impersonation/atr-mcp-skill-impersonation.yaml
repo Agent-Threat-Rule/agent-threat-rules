@@ -1,0 +1,38 @@
+rules:
+  - id: atr-mcp-skill-impersonation
+    languages: [generic]
+    severity: WARNING
+    message: >-
+      A tool or skill name impersonates a well-known MCP tool: a typosquat of filesystem,
+      github, database, slack, openai, or anthropic (e.g. gtihub-api, databse-query,
+      slakc-send, anthroplc-claude), or a fabricated enhanced edition of a known search tool
+      (web-search-pro, google-search-turbo). Typosquatting and fake-upgrade naming are the
+      lures of MCP supply-chain impersonation: the user installs the look-alike believing it
+      is the trusted original. Legitimate tools from verified publishers do not rely on
+      misspelled brand names. Verify the publisher and the exact package name against the
+      official registry before installing.
+    paths:
+      include:
+        - "*.md"
+        - "*.json"
+        - "*.py"
+        - "*.js"
+        - "*.ts"
+    patterns:
+      - pattern-regex: >-
+          (?i)(?:filesytem|filsystem|file_sytem|flie_system|filessystem|filesystm|filsystm|filesysem)[-_](?:read|write|list|delete|search)|(?i)(?:gtihub|githbu|gihtub|gthub|g1thub|gltHub|githuub|guthub)[-_](?:api|search|commit|pr|issues?|repos?)|(?i)(?:databse|databaes|dtabase|datbase|databasse|databasee|dataase)[-_](?:query|read|write|exec|connect)|(?i)(?:web[-_]?search|google[-_]?search|bing[-_]?search)[-_]?(?:v2|v3|pro|enhanced|premium|fast|turbo|plus|ultra)|(?i)(?:slakc|slck|slaack|sllack|s1ack|5lack)[-_](?:send|post|read|message|channel)|(?i)(?:opeanai|openla|open_al|openaii|0penai|openal)[-_](?:chat|complete|embed|generate)|(?i)(?:anthroplc|anthrop1c|anthrpoic)[-_](?:chat|complete|message|claude)
+    metadata:
+      category: security
+      technology: [ai-agents, mcp]
+      cwe: "CWE-1021: Improper Restriction of Rendered UI Layers (UI Impersonation)"
+      owasp:
+        - "LLM03:2025 Supply Chain"
+      likelihood: MEDIUM
+      impact: MEDIUM
+      confidence: MEDIUM
+      subcategory: [audit]
+      references:
+        - https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/rules/skill-compromise/ATR-2026-00060-skill-impersonation.yaml
+      source-rule-url: https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/rules/skill-compromise/ATR-2026-00060-skill-impersonation.yaml
+      license: MIT
+      atr-rule-id: ATR-2026-00060

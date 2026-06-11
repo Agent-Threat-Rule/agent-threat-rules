@@ -1,0 +1,40 @@
+rules:
+  - id: atr-cursor-mcp-autorun-rce
+    languages: [generic]
+    severity: ERROR
+    message: >-
+      An IDE-bound MCP configuration (.cursor/.windsurf/.vscode/.gemini/.continue/.claude
+      mcp.json) declares a command field that resolves to a shell binary (bash, sh, cmd,
+      powershell, curl, wget) or an interpreter with an inline-exec flag (-c/-e/--eval). IDEs
+      auto-load these configs on workspace open with no consent prompt (CVE-2025-54136), so a
+      shell or inline-exec command here is zero-click RCE. This is distinct from the
+      enableAllProjectMcpServers auto-enable setting: that toggle silently activates servers,
+      whereas this rule flags the command target itself being a shell. Legitimate MCP servers
+      launch via npx/node/python with a package or module name, never bash -c or curl. Replace
+      the command with a vetted MCP launcher and review who wrote this config.
+    paths:
+      include:
+        - "*.json"
+        - "*.jsonc"
+        - "*.md"
+        - "*.py"
+    patterns:
+      - pattern-regex: >-
+          (?i)(?:\.cursor|\.windsurf|\.vscode|\.gemini|\.continue|\.claude)[/\\][^\n]{0,40}mcp(?:[_\-]?config)?\.(?:json|jsonc|yaml|yml)[\s\S]{0,400}"command"\s*:\s*"(?:bash|sh|cmd|powershell|curl|wget)"|(?i)\{[^}]{0,400}"mcp(?:Servers?|_servers?)"\s*:\s*\{[^}]{0,800}"command"\s*:\s*"(?:bash|sh|cmd|powershell|curl|wget)"|(?i)"command"\s*:\s*"(?:npx|node|python|deno|bun)"\s*,\s*"args"\s*:\s*\[[^\]]*"-(?:c|e|-eval|-command)"|(?i)(?:postinstall|preinstall)[^\n]{0,80}(?:write|drop|create|modify)[^\n]{0,80}(?:\.cursor|\.windsurf|\.claude|mcp\.json)
+    metadata:
+      category: security
+      technology: [ai-agents, mcp]
+      cwe: "CWE-829: Inclusion of Functionality from Untrusted Control Sphere"
+      owasp:
+        - "LLM06:2025 Excessive Agency"
+        - "LLM03:2025 Supply Chain"
+      likelihood: HIGH
+      impact: HIGH
+      confidence: HIGH
+      subcategory: [vuln]
+      references:
+        - https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/rules/tool-poisoning/ATR-2026-00419-cursor-mcp-zero-click-config.yaml
+        - https://nvd.nist.gov/vuln/detail/CVE-2025-54136
+      source-rule-url: https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/rules/tool-poisoning/ATR-2026-00419-cursor-mcp-zero-click-config.yaml
+      license: MIT
+      atr-rule-id: ATR-2026-00419

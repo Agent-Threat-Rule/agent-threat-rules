@@ -1,0 +1,39 @@
+rules:
+  - id: atr-llm-output-xss
+    languages: [generic]
+    severity: ERROR
+    message: >-
+      A prompt asks the model to generate HTML or JavaScript whose payload reaches a browser
+      sink: a script tag or event handler that reads document.cookie / localStorage /
+      sessionStorage and sends it out via fetch, new Image, or XMLHttpRequest, or a
+      javascript:/data:text/html URI carrying the same. This elicits an XSS payload from the
+      LLM for injection into a victim's browser. This targets a browser/XSS sink (cookie and
+      DOM theft), which is distinct from rules that flag LLM output flowing into a code-exec
+      sink. Asking what XSS is, or for a plain HTML form, is not flagged; the request must pair
+      a markup-generation verb with a data-access-and-exfil payload. Do not render
+      LLM-generated markup unsanitized, and treat such a request as adversarial.
+    paths:
+      include:
+        - "*.md"
+        - "*.txt"
+        - "*.py"
+        - "*.js"
+        - "*.ts"
+    patterns:
+      - pattern-regex: >-
+          (?i)\b(?:write|generate|create|produce|include|add|insert|output|make|build|construct|give\s+me|show\s+me|return)\b.{0,200}<script[^>]{0,50}>[^<]{0,300}(?:document\.cookie|localStorage|sessionStorage|document\.body|document\.location|window\.location|fetch\s*\(|XMLHttpRequest|navigator\.|eval\s*\(|atob\s*\(|btoa\s*\(|String\.fromCharCode|unescape\s*\()|(?i)\b(?:write|generate|create|produce|include|add|insert|output|make|build|construct|give\s+me|show\s+me|return)\b.{0,200}<[a-z]{1,10}[^>]{0,200}\b(?:onerror|onload|onclick|onmouseover|onfocus|onblur|onchange|oninput|onsubmit|onkeydown|onkeyup)\s*=\s*['"]?[^'"\s>]{0,300}(?:fetch|eval|atob|btoa|document\.cookie|localStorage|sessionStorage|window\.location|XMLHttpRequest|new\s+Image)|(?i)\b(?:write|generate|create|produce|include|add|insert|output|make|build|construct|give\s+me|show\s+me|return)\b.{0,200}javascript\s*:\s*(?:void|fetch|eval|document|window|location|alert|open|XMLHttpRequest|new\s+Image|parent\.|top\.)[^'"\s]{0,300}
+    metadata:
+      category: security
+      technology: [ai-agents, mcp]
+      cwe: "CWE-79: Improper Neutralization of Input During Web Page Generation (Cross-site Scripting)"
+      owasp:
+        - "LLM02:2025 Sensitive Information Disclosure"
+      likelihood: MEDIUM
+      impact: HIGH
+      confidence: MEDIUM
+      subcategory: [vuln]
+      references:
+        - https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/rules/context-exfiltration/ATR-2026-00516-output-xss-via-llm.yaml
+      source-rule-url: https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/rules/context-exfiltration/ATR-2026-00516-output-xss-via-llm.yaml
+      license: MIT
+      atr-rule-id: ATR-2026-00516

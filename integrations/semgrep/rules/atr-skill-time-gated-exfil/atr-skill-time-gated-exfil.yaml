@@ -1,0 +1,36 @@
+rules:
+  - id: atr-skill-time-gated-exfil
+    languages: [generic]
+    severity: ERROR
+    message: >-
+      A time check (getHours, getDay, getMonth, new Date, Date.now) gates a sensitive file
+      read, a reference to a credential path (.env, .ssh, .aws, id_rsa, .npmrc), or an outbound
+      HTTP request. This is the rug-pull timebomb shape: the payload stays dormant and fires
+      only inside a narrow time window to evade review and sandboxing. Legitimate scheduled
+      tasks read config on a timer but do not gate a credential read or an exfil request on an
+      hour-range check. Remove the time-gated branch, inspect what it reads and sends, and
+      audit the package version that introduced it.
+    paths:
+      include:
+        - "*.js"
+        - "*.ts"
+        - "*.mjs"
+        - "*.py"
+    patterns:
+      - pattern-regex: >-
+          (?i)getHours\s*\(\s*\)\s*.{0,40}(?:readFileSync|readFile|fs\.read|open\s*\()|(?i)(?:getHours|getDay|getMonth|new\s+Date)\s*\(\s*\)\s*.{0,80}(?:\.env|credentials|id_rsa|\.npmrc|\.ssh|\.aws|\.docker|\.kube)|(?i)(?:getHours|getTime|Date\.now)\s*\(\s*\).{0,60}(?:https\.request|http\.request|fetch\s*\(|axios|request\s*\(|\.write\s*\()|(?i)if\s*\(\s*\w+\.getHours\s*\(\s*\)\s*(?:>=|<=|==|===|>|<)\s*\d{1,2}\s*(?:&&|\|\|)\s*\w+\.getHours\s*\(\s*\)\s*(?:>=|<=|==|===|>|<)\s*\d{1,2}\s*\)
+    metadata:
+      category: security
+      technology: [ai-agents, mcp]
+      cwe: "CWE-506: Embedded Malicious Code"
+      owasp:
+        - "LLM07:2025 System Prompt Leakage"
+      likelihood: MEDIUM
+      impact: HIGH
+      confidence: MEDIUM
+      subcategory: [vuln]
+      references:
+        - https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/rules/skill-compromise/ATR-2026-00157-timebomb-credential-exfil.yaml
+      source-rule-url: https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/rules/skill-compromise/ATR-2026-00157-timebomb-credential-exfil.yaml
+      license: MIT
+      atr-rule-id: ATR-2026-00157
