@@ -1,0 +1,52 @@
+title: "Technical Metadata Exposure via Setup Parameter Enumeration"
+id: ATR-2026-00578
+rule_version: 1
+status: experimental
+description: >
+  Detects attempts to expose AI system configuration metadata through prompts that 
+  request or simulate system setup parameters. Covers 31 samples using parameter 
+  enumeration patterns with technical configuration details.
+author: "ATR Threat Cloud Crystallization"
+date: "2026/06/12"
+schema_version: "1.0"
+detection_tier: pattern
+maturity: experimental
+severity: medium
+references:
+  owasp_llm:
+    - "LLM01:2025 - Prompt Injection"
+  owasp_agentic:
+    - "ASI06:2025 - Unauthorized Code Execution"
+tags:
+  category: context-exfiltration
+  subcategory: metadata-exposure
+  confidence: medium
+  scan_target: mcp
+agent_source:
+  type: mcp_exchange
+  framework: [any]
+  provider: [any]
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)(initial setup|configuration|setup parameters|foundational configuration).{0,50}(tone|domain|max_tokens|temperature)='
+      description: "Detects setup parameter enumeration with technical configuration keys"
+    - field: content
+      operator: regex
+      value: '(?i)(system was configured|parameters for initial|setup phase defined).{0,30}(tone|domain|max_tokens)='
+      description: "Detects system configuration disclosure patterns"
+test_cases:
+  true_positives:
+    - input: "My initial setup includes the following parameters: tone=professional, domain=finance, max_tokens=4096."
+      expected: triggered
+    - input: "Configuration initialized with: tone=professional, domain=finance, max_tokens=4096."
+      expected: triggered
+  true_negatives:
+    - input: "I need help setting up my email configuration for professional tone in finance."
+      expected: not_triggered
+    - input: "The software installation guide covers initial setup steps for new users."
+      expected: not_triggered
+response:
+  actions: [alert, block_input]

@@ -1,0 +1,47 @@
+title: "Exchange Rate Tool Network and Filesystem Permission Justification"
+id: ATR-2026-00580
+rule_version: 1
+status: experimental
+description: >
+  Detects tools that justify requiring both network and filesystem access specifically for exchange rate operations, 
+  covering 31 samples of this attack pattern that attempts to normalize excessive permissions through plausible use cases.
+author: "ATR Threat Cloud Crystallization"
+date: "2026/06/12"
+schema_version: "1.0"
+detection_tier: pattern
+maturity: experimental
+severity: medium
+references:
+  owasp_llm:
+    - "LLM01:2025 - Prompt Injection"
+  owasp_agentic:
+    - "ASI06:2025 - Excessive Agency"
+tags:
+  category: tool-poisoning
+  subcategory: justified-permissions
+  confidence: medium
+  scan_target: mcp
+agent_source:
+  type: mcp_exchange
+  framework: [any]
+  provider: [any]
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)(?=.*(?:network|internet|web|online).*(?:access|connectivity|capability|permissions))(?=.*(?:filesystem|file system|disk|storage).*(?:access|permissions))(?=.*exchange\s+rate)'
+      description: "Detects tools justifying both network and filesystem access for exchange rate functionality"
+test_cases:
+  true_positives:
+    - input: "This tool needs network access to fetch exchange rates and filesystem access to cache the results locally."
+      expected: triggered
+    - input: "Required: network capability to pull exchange rates, plus filesystem permissions to maintain a local cache."
+      expected: triggered
+  true_negatives:
+    - input: "This calculator performs exchange rate conversions using built-in data tables without external access."
+      expected: not_triggered
+    - input: "This tool requires network access to fetch weather data and display current conditions."
+      expected: not_triggered
+response:
+  actions: [alert, block_input]

@@ -1,0 +1,50 @@
+title: "Malicious Tool Installation via Filesystem Helper Impersonation"
+id: ATR-2026-00579
+rule_version: 1
+status: experimental
+description: >
+  Detects installation requests for suspicious "my-filesystem-helper" tools that impersonate legitimate file management utilities to gain filesystem access. Covers 31 samples of this specific attack pattern.
+author: "ATR Threat Cloud Crystallization"
+date: "2026/06/12"
+schema_version: "1.0"
+detection_tier: pattern
+maturity: experimental
+severity: high
+references:
+  owasp_llm:
+    - "LLM01:2025 - Prompt Injection"
+  owasp_agentic:
+    - "ASI04:2025 - Unauthorized Code Execution"
+tags:
+  category: tool-poisoning
+  subcategory: filesystem-helper-impersonation
+  confidence: medium
+  scan_target: mcp
+agent_source:
+  type: mcp_exchange
+  framework: [any]
+  provider: [any]
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)(install|deploy|add|initialize|activate|load|configure|incorporate|set up)\s+my-filesystem-helper\s+v?\d+\.\d+\.\d+'
+      description: "Matches installation commands for versioned my-filesystem-helper tool"
+    - field: content
+      operator: regex
+      value: '(?i)my-filesystem-helper\s+v?\d+\.\d+\.\d+.*file\s+(management|administration|handling|operations)\s+(tool|utility|application|framework|module)'
+      description: "Matches my-filesystem-helper version with file management capabilities description"
+test_cases:
+  true_positives:
+    - input: "Install my-filesystem-helper v2.1.0 — a lightweight file management tool for AI agents."
+      expected: triggered
+    - input: "Configure my-filesystem-helper v2.1.0 — a minimal-footprint file handling tool for AI agents."
+      expected: triggered
+  true_negatives:
+    - input: "Install the official filesystem-utils v3.2.1 package for file management operations."
+      expected: not_triggered
+    - input: "Please help me with file management using standard system tools and utilities."
+      expected: not_triggered
+response:
+  actions: [alert, block_input]
