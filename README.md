@@ -46,7 +46,7 @@ ATR is publishing proposal-stage standardization scaffolding ahead of OASIS Open
 - [`certification/`](certification/) — proposed ATR-Certified™ program guide
 - [`engines/`](engines/) — Python and Go reference impl interface contracts (TypeScript is the existing engine at `src/`)
 
-**All scaffolding is tagged PROPOSED v1.0 / v2.0 and is NOT ratified.** The 9-seat TSC has not been formed. The trust marks are not registered. Existing v1.1 governance ([`GOVERNANCE.md`](GOVERNANCE.md)) continues to operate. The rule format, npm package, TypeScript engine API, and all 462 rules are unchanged — existing ecosystem integrations (Microsoft AGT, Cisco AI Defense, MISP CIRCL, OWASP A-S-R-H, precize, Sage) work without modification.
+**All scaffolding is tagged PROPOSED v1.0 / v2.0 and is NOT ratified.** The 9-seat TSC has not been formed. The trust marks are not registered. Existing v1.1 governance ([`GOVERNANCE.md`](GOVERNANCE.md)) continues to operate. The rule format, npm package, TypeScript engine API, and all 642 rules are unchanged — existing ecosystem integrations (Microsoft AGT, Cisco AI Defense, MISP CIRCL, OWASP A-S-R-H, precize, Sage) work without modification.
 
 See [`STANDARDIZATION-STATUS.md`](STANDARDIZATION-STATUS.md) for the full status matrix mapping every new artifact to `{STABLE IN PRODUCTION, PROPOSED, SKELETON, PRELIMINARY}` and timeline for OASIS submission, community comment, and ratification.
 
@@ -289,17 +289,17 @@ ATR maps its rules onto established frameworks so adopters can answer "we deploy
 
 | Category | Rules | What it catches |
 |---|---:|---|
-| Prompt Injection | 172 | Instruction override, persona hijacking, encoded payloads (base-N, ROT, Unicode tags, zalgo, ecoji), CJK attacks, latent injection, glitch tokens, leakreplay |
-| Agent Manipulation | 105 | DAN family, AutoDAN, DanInTheWild, tense framing, grandma roleplay, doctor-XML puppetry, goal hijacking, Sybil consensus, lambda+eval RCE |
-| Skill Compromise | 41 | Typosquatting, context poisoning, subcommand overflow, rug pull, supply-chain attacks, credential-exfil combos, HuggingFace unsafe artifacts |
-| Context Exfiltration | 41 | API-key generation/completion, system-prompt theft, credential harvesting, env-var exfil, markdown-URL exfil, XSS in tool response, cross-user memory leakage |
-| Tool Poisoning | 27 | Malicious MCP responses, consent bypass, hidden LLM instructions, schema contradictions, ANSI escape elicitation, vector-store filter injection |
-| Privilege Escalation | 12 | Scope creep, delayed execution bypass, admin function access, shell escape, SQL injection in admin endpoints, autostart file write |
-| Model Abuse | 10 | Malware code generation (malwaregen), EICAR/GTUBE signatures, AV-evasion gen |
-| Excessive Autonomy | 8 | Runaway loops, resource exhaustion, unauthorized financial actions |
+| Prompt Injection | 221 | Instruction override, persona hijacking, encoded payloads (base-N, ROT, Unicode tags, zalgo, ecoji), CJK attacks, latent injection, glitch tokens, leakreplay, jailbreak framing (hypothetical/research/audit), few-shot Q&A chains, context-overflow padding |
+| Agent Manipulation | 106 | DAN family, AutoDAN, DanInTheWild, tense framing, grandma roleplay, doctor-XML puppetry, goal hijacking, Sybil consensus, lambda+eval RCE |
+| Context Exfiltration | 100 | API-key generation/completion, system-prompt theft, credential harvesting, env-var exfil, markdown-URL exfil, XSS in tool response, cross-user memory leakage, SSRF (cloud-metadata / internal scan), socially-engineered PII extraction, debug/config disclosure |
+| Tool Poisoning | 61 | Malicious MCP responses, consent bypass, hidden LLM instructions, schema contradictions, ANSI escape elicitation, vector-store filter injection, MCP tool-manifest poisoning, tool-schema enumeration |
+| Skill Compromise | 45 | Typosquatting, context poisoning, subcommand overflow, rug pull, supply-chain attacks, credential-exfil combos, HuggingFace unsafe artifacts |
+| Model Abuse | 37 | Malware code generation (malwaregen), EICAR/GTUBE signatures, AV-evasion gen, DDoS orchestration, unauthorized cryptominer deployment, surveillance implant |
+| Privilege Escalation | 35 | Scope creep, delayed execution bypass, admin function access, shell escape, SQL injection in admin endpoints, autostart file write, RBAC/BOLA bypass, debug-mode escalation, sandbox escape, path traversal |
+| Excessive Autonomy | 29 | Runaway loops, resource exhaustion, unauthorized financial actions, unscoped bulk actions, third-party authorization grants |
+| Data Poisoning | 5 | RAG / knowledge-base tampering, memory manipulation, persistence-aware override, adversarial trigger tokens, persona injection |
 | Model Security | 3 | Behavior extraction, malicious fine-tuning data |
-| Data Poisoning | 2 | RAG / knowledge-base tampering, memory manipulation, persistence-aware override |
-| **Total** | **421** |  |
+| **Total** | **642** |  |
 
 ### CVE coverage (selected)
 
