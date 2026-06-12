@@ -1,11 +1,11 @@
 title: "DoS: Forced Infinite / Maximum-Length Output Token Flood"
-id: ATR-2026-001760
+id: ATR-2026-01760
 rule_version: 1
 status: "active"
 description: >
   Detects denial-of-service attacks that command the model to produce output
   of maximum length, fill its context window, or generate content until no
-  more tokens remain. This is distinct from repeat-word-N-times (ATR-2026-001750)
+  more tokens remain. This is distinct from repeat-word-N-times (ATR-2026-01750)
   and forever-repetition (ATR-2026-00502): the invariant here is an explicit
   instruction to exhaust the token budget or fill the output to its maximum
   capacity. Variations include: "generate as much text as possible", "fill your
@@ -87,7 +87,7 @@ response:
     - block
   auto_response_threshold: high
   message_template: >
-    [ATR-2026-001760] DoS token-flood detected: input commands the model to produce
+    [ATR-2026-01760] DoS token-flood detected: input commands the model to produce
     maximum-length or infinite output, indicating an attempted token-exhaustion attack.
 
 test_cases:

@@ -1,5 +1,5 @@
 title: "Ransom Extortion: Cloud File Exfil + Delete + Payment Demand"
-id: ATR-2026-001754
+id: ATR-2026-01754
 rule_version: 1
 status: "active"
 description: >
@@ -7,7 +7,7 @@ description: >
   commanded to (1) identify the N largest or most sensitive files in a cloud
   storage account, (2) email them as attachments to an attacker-controlled address,
   (3) delete the originals, and (4) send the victim a ransom note. Distinguished
-  from ATR-2026-001753 (which covers email-content exfil) by the cloud-file
+  from ATR-2026-01753 (which covers email-content exfil) by the cloud-file
   attachment vector. The artifact pattern is: cloud-file-attach + email-to-external
   + delete-files + ransom-subject-or-IBAN. Derived from AgentDojo
   indirect-pi-ransom-extortion corpus (2026-06).
@@ -95,7 +95,7 @@ response:
     - escalate
   auto_response_threshold: critical
   message_template: >
-    [ATR-2026-001754] CRITICAL: Cloud-file ransom injection detected. Input contains
+    [ATR-2026-01754] CRITICAL: Cloud-file ransom injection detected. Input contains
     instructions to exfiltrate cloud files as email attachments and then delete the originals,
     consistent with a ransomware exfiltration + deletion attack pattern.
 
