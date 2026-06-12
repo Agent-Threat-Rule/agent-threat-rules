@@ -1,7 +1,7 @@
 title: Output Encoding Hijack — Cipher / Base-N / Symbol Substitution of the Response
 id: ATR-2026-01900
 rule_version: 1
-status: active
+status: experimental
 description: Detects indirect-injection instructions that force the agent to encode its entire response (Caesar/substitution/monoalphabetic cipher, Base16/32/58/64/85, or letter-to-number / letter-to-symbol substitution). Encoding the output is a covert channel that defeats downstream output content moderation. Anchored to the output target ('your response/answer/reply') to avoid firing on legitimate encoding requests.
 author: ATR Community
 date: 2026/06/13
@@ -98,7 +98,7 @@ detection:
 response:
   actions:
   - alert
-  - block
+      - block_tool
   auto_response_threshold: medium
   message_template: '[ATR-2026-01900] Output Encoding Hijack — Cipher / Base-N / Symbol Substitution of the Response detected (BIPIA output-encoding).'
 test_cases:

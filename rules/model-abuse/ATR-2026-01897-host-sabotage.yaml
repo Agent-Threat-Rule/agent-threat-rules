@@ -1,7 +1,7 @@
 title: Injected Code — Local Host Sabotage (Filesystem Destruction / Resource Exhaustion / Hosts Tamper)
 id: ATR-2026-01897
 rule_version: 1
-status: active
+status: experimental
 description: 'Detects injected code that sabotages the local host: recursive root deletion (shutil.rmtree(''/'')), removal of critical system binaries (libc), fork bombs, megabyte-string memory bombs in an infinite loop, infinite window spawning, or DNS hijack by appending to /etc/hosts.'
 author: ATR Community
 date: 2026/06/13
@@ -90,7 +90,7 @@ detection:
 response:
   actions:
   - alert
-  - block
+      - block_tool
   auto_response_threshold: critical
   message_template: '[ATR-2026-01897] Injected Code — Local Host Sabotage (Filesystem Destruction / Resource Exhaustion / Hosts Tamper) detected (BIPIA host-sabotage).'
 test_cases:

@@ -1,7 +1,7 @@
 title: "Backdoor Trojan: Linguistic Trigger Phrase (POT Attack)"
 id: ATR-2026-01755
 rule_version: 1
-status: "active"
+status: experimental
 description: >
   Detects Prompt-Operated Trojan (POT) / backdoor attacks that embed specific
   rare linguistic trigger phrases in prompts to activate hidden malicious behavior
@@ -107,7 +107,7 @@ detection:
 response:
   actions:
     - alert
-    - block
+      - block_tool
     - escalate
   auto_response_threshold: critical
   message_template: >

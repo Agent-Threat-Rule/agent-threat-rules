@@ -1,7 +1,7 @@
 title: Injected Advertising / Promotional Copy in the Response
 id: ATR-2026-01905
 rule_version: 1
-status: active
+status: experimental
 description: Detects indirect-injection instructions that turn the agent into an ad vector — injecting promotional copy (discount, newsletter, free shipping, special offer, brand plug, investment pitch) into its response. Requires the injection scaffold, the output target, and a promotional lure token.
 author: ATR Community
 date: 2026/06/13
@@ -70,7 +70,7 @@ detection:
 response:
   actions:
   - alert
-  - block
+      - block_tool
   auto_response_threshold: medium
   message_template: '[ATR-2026-01905] Injected Advertising / Promotional Copy in the Response detected (BIPIA promotional-injection).'
 test_cases:

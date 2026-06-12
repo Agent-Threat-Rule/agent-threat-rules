@@ -1,7 +1,7 @@
 title: "Hypothetical-Framing Bypass: Research / Security-Audit Pretext"
 id: ATR-2026-01757
 rule_version: 1
-status: "active"
+status: experimental
 description: >
   Detects prompt injection attacks that use research or security-audit framing
   as a bypass pretext to extract sensitive data (PII, passwords, email addresses)
@@ -91,7 +91,7 @@ detection:
 response:
   actions:
     - alert
-    - block
+      - block_tool
   auto_response_threshold: high
   message_template: >
     [ATR-2026-01757] Hypothetical-framing bypass detected: research/audit pretext

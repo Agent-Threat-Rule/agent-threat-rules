@@ -1,7 +1,7 @@
 title: Injected Hyperlink — Scam / Malware / Advertising URL in the Response
 id: ATR-2026-01904
 rule_version: 1
-status: active
+status: experimental
 description: Detects indirect-injection instructions that make the agent embed an attacker-chosen hyperlink or contact address (lottery/phishing/fake-software/malware-download/advertising) into its response. Requires the injection scaffold (add/integrate/include/suggest), the output target, and a URL or email within a tight span.
 author: ATR Community
 date: 2026/06/13
@@ -79,7 +79,7 @@ detection:
 response:
   actions:
   - alert
-  - block
+      - block_tool
   auto_response_threshold: high
   message_template: '[ATR-2026-01904] Injected Hyperlink — Scam / Malware / Advertising URL in the Response detected (BIPIA link-injection).'
 test_cases:

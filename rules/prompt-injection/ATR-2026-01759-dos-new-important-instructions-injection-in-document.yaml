@@ -1,7 +1,7 @@
 title: "DoS Injection: NEW IMPORTANT INSTRUCTIONS Embedded in Document Data"
 id: ATR-2026-01759
 rule_version: 1
-status: "active"
+status: experimental
 description: >
   Detects indirect prompt injection that embeds adversarial instructions inside
   document or data content using the "*** NEW IMPORTANT INSTRUCTIONS ***" header
@@ -87,7 +87,7 @@ detection:
 response:
   actions:
     - alert
-    - block
+      - block_tool
   auto_response_threshold: high
   message_template: >
     [ATR-2026-01759] Document-embedded injection detected: '*** NEW IMPORTANT

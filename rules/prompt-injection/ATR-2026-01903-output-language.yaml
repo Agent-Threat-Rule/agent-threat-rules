@@ -1,7 +1,7 @@
 title: Output-Language Hijack — Forced Translation of the Response
 id: ATR-2026-01903
 rule_version: 1
-status: active
+status: experimental
 description: Detects indirect-injection instructions that override the agent's output language ('translate YOUR response into X'). Scoped tightly to 'your response/answer/message' + a target language so it does not fire on legitimate multilingual or translation requests; marked maturity:test because the signal is weak and benign-adjacent.
 author: ATR Community
 date: 2026/06/13
@@ -70,7 +70,7 @@ detection:
 response:
   actions:
   - alert
-  - block
+      - block_tool
   auto_response_threshold: medium
   message_template: '[ATR-2026-01903] Output-Language Hijack — Forced Translation of the Response detected (BIPIA output-language).'
 test_cases:

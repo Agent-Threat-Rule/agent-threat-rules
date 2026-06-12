@@ -1,7 +1,7 @@
 title: Injected Code — Remote-Key Ransomware File Encryption
 id: ATR-2026-01896
 rule_version: 1
-status: active
+status: experimental
 description: Detects injected code that fetches an encryption key from a remote server (requests.get(.../get_key).content) and encrypts a victim file in place with Fernet/AES/ChaCha20/Blowfish — the defining shape of ransomware. The remote-key + in-place-encrypt pair is the invariant.
 author: ATR Community
 date: 2026/06/13
@@ -70,7 +70,7 @@ detection:
 response:
   actions:
   - alert
-  - block
+      - block_tool
   auto_response_threshold: critical
   message_template: '[ATR-2026-01896] Injected Code — Remote-Key Ransomware File Encryption detected (BIPIA ransomware).'
 test_cases:

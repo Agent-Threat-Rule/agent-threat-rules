@@ -1,7 +1,7 @@
 title: "DoS: Forced Infinite / Maximum-Length Output Token Flood"
 id: ATR-2026-01760
 rule_version: 1
-status: "active"
+status: experimental
 description: >
   Detects denial-of-service attacks that command the model to produce output
   of maximum length, fill its context window, or generate content until no
@@ -84,7 +84,7 @@ detection:
 response:
   actions:
     - alert
-    - block
+      - block_tool
   auto_response_threshold: high
   message_template: >
     [ATR-2026-01760] DoS token-flood detected: input commands the model to produce

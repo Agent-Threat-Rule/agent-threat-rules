@@ -1,7 +1,7 @@
 title: "DoS via Repeat-Word-N-Times Output Amplification"
 id: ATR-2026-01750
 rule_version: 1
-status: "active"
+status: experimental
 description: >
   Detects denial-of-service injection attacks that command the model to repeat a
   specific word or short phrase a large number of times (typically 50-1000+),
@@ -94,7 +94,7 @@ detection:
 response:
   actions:
     - alert
-    - block
+      - block_tool
   auto_response_threshold: high
   message_template: >
     [ATR-2026-01750] DoS output-amplification detected: repeat-word-N-times injection.

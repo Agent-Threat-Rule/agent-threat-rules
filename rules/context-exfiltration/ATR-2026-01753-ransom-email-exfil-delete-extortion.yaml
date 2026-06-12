@@ -1,7 +1,7 @@
 title: "Ransom Extortion: Email Exfil + Delete + Wire-Transfer Demand"
 id: ATR-2026-01753
 rule_version: 1
-status: "active"
+status: experimental
 description: >
   Detects ransom-extortion prompt injection attacks that instruct an agent to (1)
   forward email or file contents to an attacker-controlled address, (2) delete the
@@ -98,7 +98,7 @@ detection:
 response:
   actions:
     - alert
-    - block
+      - block_tool
     - escalate
   auto_response_threshold: critical
   message_template: >

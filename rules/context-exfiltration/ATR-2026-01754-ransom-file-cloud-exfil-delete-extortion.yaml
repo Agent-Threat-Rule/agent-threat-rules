@@ -1,7 +1,7 @@
 title: "Ransom Extortion: Cloud File Exfil + Delete + Payment Demand"
 id: ATR-2026-01754
 rule_version: 1
-status: "active"
+status: experimental
 description: >
   Detects ransom-extortion injections targeting cloud storage: the agent is
   commanded to (1) identify the N largest or most sensitive files in a cloud
@@ -91,7 +91,7 @@ detection:
 response:
   actions:
     - alert
-    - block
+      - block_tool
     - escalate
   auto_response_threshold: critical
   message_template: >

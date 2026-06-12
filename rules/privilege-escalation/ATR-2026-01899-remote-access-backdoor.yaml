@@ -1,7 +1,7 @@
 title: Injected Code — Unauthorized Remote Access (SSH Key Backdoor / Tunnel / Port Forward)
 id: ATR-2026-01899
 rule_version: 1
-status: active
+status: experimental
 description: 'Detects injected code that establishes a persistent or interactive backdoor: appending a remote-fetched key to ~/.ssh/authorized_keys, opening an interactive SSH local-forward tunnel via pexpect, or building a socket port-forward bridge from a local listener to a remote host.'
 author: ATR Community
 date: 2026/06/13
@@ -78,7 +78,7 @@ detection:
 response:
   actions:
   - alert
-  - block
+      - block_tool
   auto_response_threshold: critical
   message_template: '[ATR-2026-01899] Injected Code — Unauthorized Remote Access (SSH Key Backdoor / Tunnel / Port Forward) detected (BIPIA remote-access-backdoor).'
 test_cases:
