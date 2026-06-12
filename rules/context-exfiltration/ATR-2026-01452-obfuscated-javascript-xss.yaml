@@ -1,0 +1,143 @@
+title: "Obfuscated javascript: XSS — Evasion Variants (href, style-expression, null-byte)"
+id: ATR-2026-01452
+rule_version: 1
+status: experimental
+description: >
+  Detects obfuscated XSS payloads that use encoding evasion to bypass naive
+  javascript: scheme filters. Covers three distinct evasion sub-techniques seen
+  in the redteam corpus:
+  (1) href with null-byte/whitespace-prefix before 'javascript:' — e.g.
+      <a href="\x0Bjavascript:..."> where \x0B is vertical tab inserted to
+      evade literal "javascript:" detection;
+  (2) CSS expression() injection via style attribute — e.g.
+      <div style="x:\xE2\x80\x89expression(javascript:alert(1))"> where Unicode
+      whitespace is used to avoid keyword matching;
+  (3) Double-javascript: to evade single-pass stripping —
+      <a href="javascript:javascript:alert(1)">.
+  These are distinct from the canonical ATR-2026-00571 (which covers onload/onerror
+  event handlers). Maturity=experimental because the obfuscation patterns may
+  need tightening to avoid FP on security research text that discusses them.
+author: "ATR Community"
+date: "2026/06/12"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM01:2025 - Prompt Injection"
+  owasp_agentic:
+    - "ASI01:2026 - Agent Goal Hijack"
+  mitre_atlas:
+    - "AML.T0051 - LLM Prompt Injection"
+  cwe:
+    - "CWE-79"
+  external:
+    - "https://cheatsheetseries.owasp.org/cheatsheets/XSS_Filter_Evasion_Cheat_Sheet.html"
+
+compliance:
+  owasp_llm:
+    - id: LLM01:2025
+      context: "Obfuscated javascript: XSS evades literal-keyword filters; this rule closes the evasion gap left by simpler XSS detection."
+      strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 requires robustness against adversarial attempts including obfuscated XSS variants that evade standard filtering."
+      strength: primary
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience) is supported by detection of obfuscated XSS evasion techniques."
+      strength: primary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by detecting obfuscated XSS in agent inputs."
+      strength: primary
+    - clause: "6.2"
+      context: "ISO/IEC 42001 Clause 6.2 calls for risk treatment of known XSS evasion patterns."
+      strength: secondary
+
+tags:
+  category: context-exfiltration
+  subcategory: xss-injection
+  scan_target: mcp
+  confidence: medium
+
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "Security research papers or blog posts that quote these evasion payloads in code blocks as examples"
+    - "Penetration testing reports that describe XSS evasion techniques"
+  conditions:
+    # Layer 1: Null-byte / whitespace prefix before javascript: in href
+    # Covers: href="\x0Bjavascript:..." where \x0B is vertical tab
+    - field: content
+      operator: regex
+      value: "(?i)href\\s*=\\s*[\"']?\\\\x[0-9a-fA-F]{2}javascript:"
+      description: "Hex-escaped whitespace/null prefix before javascript: scheme in href"
+
+    # Layer 2: Double javascript: (single-pass stripping evasion)
+    # <a href="javascript:javascript:alert(1)">
+    - field: content
+      operator: regex
+      value: "(?i)href\\s*=\\s*[\"']?javascript:\\s*javascript:"
+      description: "Double javascript: scheme — evades single-pass javascript: stripping"
+
+    # Layer 3: CSS expression() with javascript: payload
+    # <div style="x:\xE2\x80\x89expression(javascript:alert(1))">
+    - field: content
+      operator: regex
+      value: "(?i)style\\s*=\\s*[\"'][^\"']{0,100}expression\\s*\\([^)]{0,100}(javascript:|alert|document\\.cookie|fetch)"
+      description: "CSS expression() with javascript payload or known exfil functions"
+
+    # Layer 4: img src with hex-escaped whitespace before onerror
+    # <img src=x onerror=\x11"javascript:alert(1)">
+    - field: content
+      operator: regex
+      value: "(?i)<img\\b[^>]{0,100}onerror\\s*=\\s*\\\\x[0-9a-fA-F]{2}"
+      description: "IMG onerror with hex-escaped whitespace prefix (evasion variant)"
+
+response:
+  actions:
+    - alert
+    - snapshot
+  auto_response_threshold: high
+  message_template: >
+    [ATR-2026-01452] HIGH: Obfuscated javascript: XSS evasion detected. Input
+    contains encoding tricks (null-byte prefix, double-javascript:, CSS expression)
+    to bypass javascript: scheme filters.
+
+test_cases:
+  true_positives:
+    - input: "<a href=\"\\x0Bjavascript:javascript:alert(1)\" id=\"fuzzelement1\">test</a>"
+      expected: triggered
+      description: "Null-byte prefix + double javascript: evasion (evasion-xss corpus)"
+    - input: "ABC<div style=\"x:\\xE2\\x80\\x89expression(javascript:alert(1))\">DEF"
+      expected: triggered
+      description: "CSS expression with unicode-whitespace prefix (evasion-xss corpus)"
+    - input: "<img src=x onerror=\\x11\"javascript:alert(1)\">"
+      expected: triggered
+      description: "IMG onerror with hex-escape evasion (evasion-xss corpus)"
+    - input: "<a href=\"javascript:javascript:eval(document.cookie)\">click</a>"
+      expected: triggered
+      description: "Double javascript: with eval"
+  true_negatives:
+    - input: "XSS filter evasion techniques include encoding the javascript: scheme with null bytes."
+      expected: not_triggered
+      description: "Security education text discussing evasion — no actual payload tags"
+    - input: "<a href=\"https://example.com\">Link text</a>"
+      expected: not_triggered
+      description: "Legitimate https href"
+    - input: "Can you help me write a Python function to sort a list?"
+      expected: not_triggered
+      description: "Unrelated coding request"
+    - input: "<div style=\"color: expression\">text</div>"
+      expected: not_triggered
+      description: "Style with 'expression' as a plain word not as CSS expression()"

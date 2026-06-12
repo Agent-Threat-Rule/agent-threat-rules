@@ -1,0 +1,94 @@
+title: SQL Injection Information Schema Enumeration
+id: ATR-2026-01604
+rule_version: 1
+status: active
+description: |
+  Detects SQL injection payloads that query information_schema (or sqlite_master,
+  pg_catalog, sys.tables) to enumerate table names, column names, and data types.
+  Schema enumeration is the reconnaissance phase of SQL injection attacks—it
+  reveals the database layout required to craft targeted UNION SELECT or DML
+  payloads. Targeting agents that expose search/query tools backed by relational
+  databases.
+author: ATR Community
+date: 2026/06/12
+schema_version: "0.1"
+detection_tier: pattern
+maturity: stable
+severity: high
+references:
+  owasp_llm:
+    - "LLM02:2025 - Sensitive Information Disclosure"
+  owasp_agentic:
+    - "ASI03:2026 - Identity and Privilege Abuse"
+  mitre_atlas:
+    - "AML.T0043 - Craft Adversarial Data"
+  mitre_attack:
+    - "T1190 - Exploit Public-Facing Application"
+compliance:
+  owasp_llm:
+    - id: "LLM02:2025"
+      context: "Schema enumeration leaks structural metadata that enables targeted data exfiltration."
+      strength: primary
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "Detection of schema enumeration injection supports MEASURE 2.7 security evaluation."
+      strength: primary
+tags:
+  category: privilege-escalation
+  subcategory: sql-injection
+  scan_target: tool_args
+  confidence: high
+agent_source:
+  type: tool_call
+  framework:
+    - any
+  provider:
+    - any
+detection:
+  conditions:
+    - field: tool_args
+      operator: regex
+      value: "(?i)\\b(?:information_schema\\.(?:tables|columns|schemata|routines|views)|sqlite_master|pg_catalog\\.pg_tables|sys\\.(?:tables|columns|objects))\\b"
+      description: "Reference to information_schema or equivalent system catalog in tool args"
+    - field: user_input
+      operator: regex
+      value: "(?i)\\b(?:information_schema\\.(?:tables|columns|schemata)|sqlite_master|pg_catalog\\.pg_tables)\\b"
+      description: "Schema catalog reference in user input"
+  condition: any
+  false_positives:
+    - "Database schema documentation agents with explicit catalog read permissions"
+    - "ORM introspection tools performing authorized schema discovery"
+response:
+  actions:
+    - block_tool
+    - alert
+    - snapshot
+  auto_response_threshold: high
+  message_template: |
+    [ATR-2026-01604] SQL schema enumeration injection detected. Reference to
+    information_schema or system catalog found in tool argument. Tool call blocked.
+confidence: 88
+test_cases:
+  true_positives:
+    - tool_args: "{\"search\": \"product' UNION SELECT table_name, column_name, 1 FROM information_schema.columns --\"}"
+      expected: triggered
+      description: "Schema enumeration via UNION + information_schema.columns (probe: sql-injection-schema-exfil)"
+    - tool_args: "{\"filter\": \"1 UNION SELECT table_name, 1, 1 FROM information_schema.tables --\"}"
+      expected: triggered
+      description: "Table enumeration via information_schema.tables"
+    - tool_args: "{\"name\": \"' UNION SELECT name, sql, 1 FROM sqlite_master --\"}"
+      expected: triggered
+      description: "SQLite schema enumeration via sqlite_master"
+    - user_input: "'' UNION SELECT table_name, column_name FROM information_schema.columns WHERE table_schema='public' --"
+      expected: triggered
+      description: "PostgreSQL information_schema enumeration in user input"
+  true_negatives:
+    - tool_args: '{"query": "show me the database schema"}'
+      expected: not_triggered
+      description: "Natural language schema request (no SQL injection)"
+    - user_input: "What columns does the products table have?"
+      expected: not_triggered
+      description: "Benign question about table structure"
+    - tool_args: '{"format": "json", "table": "products"}'
+      expected: not_triggered
+      description: "Normal table reference in structured args"

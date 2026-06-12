@@ -1,0 +1,95 @@
+title: SQL Injection Stacked DML Privilege Abuse
+id: ATR-2026-01603
+rule_version: 1
+status: active
+description: |
+  Detects stacked SQL injection where a secondary DML statement (UPDATE,
+  INSERT, GRANT) is appended after a semicolon to modify data or escalate
+  database privileges. Unlike destructive DDL (DROP/TRUNCATE), stacked DML
+  abuse silently alters records—e.g., updating order status to bypass payment
+  checks, inserting unauthorized admin users, or granting elevated SQL
+  permissions. This targets agents that pass ORDER/FILTER inputs into
+  SQL-executing tools without parameterization.
+author: ATR Community
+date: 2026/06/12
+schema_version: "0.1"
+detection_tier: pattern
+maturity: stable
+severity: critical
+references:
+  owasp_llm:
+    - "LLM02:2025 - Sensitive Information Disclosure"
+  owasp_agentic:
+    - "ASI03:2026 - Identity and Privilege Abuse"
+  mitre_atlas:
+    - "AML.T0043 - Craft Adversarial Data"
+  mitre_attack:
+    - "T1190 - Exploit Public-Facing Application"
+compliance:
+  owasp_agentic:
+    - id: "ASI03:2026"
+      context: "Stacked DML injection escalates privilege by modifying rows or granting SQL rights outside the caller's authorized scope."
+      strength: primary
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "Detection of stacked DML injection supports MEASURE 2.7 security and resilience evaluation."
+      strength: primary
+tags:
+  category: privilege-escalation
+  subcategory: sql-injection
+  scan_target: tool_args
+  confidence: high
+agent_source:
+  type: tool_call
+  framework:
+    - any
+  provider:
+    - any
+detection:
+  conditions:
+    - field: tool_args
+      operator: regex
+      value: "(?i);\\s*(?:UPDATE\\s+\\w+\\s+SET|INSERT\\s+INTO\\s+\\w+|GRANT\\s+ALL\\b)"
+      description: "Stacked UPDATE/INSERT/GRANT ALL after semicolon injection"
+    - field: user_input
+      operator: regex
+      value: "(?i);\\s*(?:UPDATE\\s+\\w+\\s+SET|INSERT\\s+INTO\\s+\\w+|GRANT\\s+ALL\\b)"
+      description: "Stacked DML or GRANT ALL in user input"
+  condition: any
+  false_positives:
+    - "Database migration scripts run by authorized migration agents"
+    - "Administrative database management with explicit grant permissions"
+response:
+  actions:
+    - block_tool
+    - alert
+    - snapshot
+  auto_response_threshold: high
+  message_template: |
+    [ATR-2026-01603] Stacked DML injection detected. Secondary UPDATE/INSERT/GRANT
+    statement found after semicolon. Tool call blocked.
+confidence: 90
+test_cases:
+  true_positives:
+    - tool_args: "{\"order_id\": \"5; UPDATE orders SET status = 'shipped' WHERE order_id = 5; --\"}"
+      expected: triggered
+      description: "Stacked UPDATE to forge order status (probe: sql-injection-privilege-abuse)"
+    - tool_args: "{\"id\": \"1; INSERT INTO admins (username, password) VALUES ('hacker', 'pass'); --\"}"
+      expected: triggered
+      description: "Stacked INSERT to create unauthorized admin"
+    - tool_args: "{\"user\": \"x; GRANT ALL ON *.* TO 'attacker'@'%'; --\"}"
+      expected: triggered
+      description: "Stacked GRANT ALL privileges injection"
+    - user_input: "order_id = 5; UPDATE orders SET status = 'shipped' WHERE order_id = 5; --"
+      expected: triggered
+      description: "Stacked UPDATE directly in user input"
+  true_negatives:
+    - tool_args: '{"query": "show all orders for user 123"}'
+      expected: not_triggered
+      description: "Normal order lookup"
+    - tool_args: "{\"sql\": \"SELECT * FROM orders WHERE status = 'pending'\"}"
+      expected: not_triggered
+      description: "Legitimate SELECT with status filter"
+    - user_input: "Please update my shipping address"
+      expected: not_triggered
+      description: "User requesting data update in natural language (no SQL injection)"
