@@ -1,4 +1,5 @@
 import { Reveal } from "@/components/Reveal";
+import { loadSiteStats } from "@/lib/stats";
 import { locales, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -154,17 +155,6 @@ const MILESTONES: Milestone[] = [
       zh: "Hero、footer、資訊架構全面改寫為標準體裁,與 Sigma / YARA / ATT&CK / NIST AI RMF 對齊。Integration intake 管線上線:結構化 issue form、自動 triage workflow、ADOPTERS.md 作為機器可讀來源。",
     },
   },
-  {
-    date: "2026-06",
-    title: {
-      en: "v3.1.x · 462 rules across 10 categories",
-      zh: "v3.1.x · 462 條規則,跨 10 個類別",
-    },
-    detail: {
-      en: "Current release line: 462 detection rules across 10 categories, specification 3.0.0-alpha.1 (Working Draft).",
-      zh: "目前釋出線:462 條偵測規則,跨 10 個類別,規範 3.0.0-alpha.1（Working Draft）。",
-    },
-  },
 ];
 
 export default async function AboutPage({
@@ -175,6 +165,25 @@ export default async function AboutPage({
   const { locale: rawLocale } = await params;
   const locale = (locales.includes(rawLocale as Locale) ? rawLocale : "en") as Locale;
   const zh = locale === "zh";
+  const stats = loadSiteStats();
+
+  // The closing milestone reflects the live release line. Rule and category
+  // counts are read from disk via loadSiteStats() so the timeline never drifts
+  // from the published ruleset. Historical milestones above stay frozen.
+  const milestones: Milestone[] = [
+    ...MILESTONES,
+    {
+      date: "2026-06",
+      title: {
+        en: `v${stats.packageVersion} · ${stats.ruleCount} rules`,
+        zh: `v${stats.packageVersion} · ${stats.ruleCount} 條規則`,
+      },
+      detail: {
+        en: `Current release line: ${stats.ruleCount} detection rules, coverage expanded across 13 public red-team benchmarks (InjecAgent, AgentDojo, ToolEmu, AgentPoison, PoisonedRAG, PyRIT, MCPSecBench, ASB, AgentHarm, LLMail-Inject, BIPIA, TensorTrust, Invariant MCP) using a marginal-coverage method that only crystallizes rules for attacks existing rules miss. Two-tier detection: L1 precise regex (0 FP, ships by default) plus an opt-in L2 semantic judge. Specification 3.0.0-alpha.1 (Working Draft).`,
+        zh: `目前釋出線:${stats.ruleCount} 條偵測規則,涵蓋範圍擴展到 13 個公開紅隊 benchmark(InjecAgent、AgentDojo、ToolEmu、AgentPoison、PoisonedRAG、PyRIT、MCPSecBench、ASB、AgentHarm、LLMail-Inject、BIPIA、TensorTrust、Invariant MCP),採用 marginal-coverage 方法——只對現有規則抓不到的攻擊產生新規則。分層偵測:L1 精確 regex(0 FP、預設啟用)加上選用的 L2 語意 judge。規範 3.0.0-alpha.1(Working Draft)。`,
+      },
+    },
+  ];
 
   return (
     <div className="pt-20 pb-20 px-5 md:px-6 max-w-[860px] mx-auto">
@@ -216,14 +225,14 @@ export default async function AboutPage({
       {/* History Timeline */}
       <Section label={zh ? "歷程" : "History"} delay={0.2}>
         <ol className="space-y-0">
-          {MILESTONES.map((m, i) => (
+          {milestones.map((m, i) => (
             <li key={i} className="flex gap-4 md:gap-6 relative pl-1">
               <div className="font-data text-xs text-stone w-[92px] shrink-0 pt-1.5">
                 {m.date}
               </div>
               <div className="flex flex-col items-center shrink-0 pt-2.5">
                 <div className="w-2 h-2 rounded-full bg-ink" />
-                {i < MILESTONES.length - 1 && (
+                {i < milestones.length - 1 && (
                   <div className="w-px flex-1 bg-fog mt-1 min-h-[48px]" />
                 )}
               </div>

@@ -97,6 +97,9 @@ export interface SiteStats {
   ruleCount: number;
   categoryCount: number;
 
+  // npm package version (canonical, from data/stats.json `version`)
+  packageVersion: string;
+
   // ClawHub scan
   clawHubCrawled: number;
   clawHubScanned: number;
@@ -265,6 +268,19 @@ export function loadSiteStats(): SiteStats {
 
   const rules = loadAllRules();
 
+  // npm package version — canonical source-of-truth is the repo-root stats.json
+  // (designated by its own $comment as the single source for all user-facing
+  // surfaces). Fall back to data/stats.json, then a safe literal, so a missing
+  // file never breaks rendering.
+  const rootStats = readJson<{ version?: string }>(
+    join(DATA_DIR, "..", "stats.json"),
+  );
+  const dataStats = readJson<{ version?: string }>(
+    join(DATA_DIR, "stats.json"),
+  );
+  const packageVersion =
+    rootStats?.version ?? dataStats?.version ?? "3.3.1";
+
   const categories = new Set(
     rules.map((r: { category: string }) => r.category),
   );
@@ -281,6 +297,8 @@ export function loadSiteStats(): SiteStats {
   return {
     ruleCount: rules.length,
     categoryCount: categories.size,
+
+    packageVersion,
 
     clawHubCrawled: clawhub?.totalCrawled ?? 36394,
     clawHubScanned: clawhub?.totalScanned ?? 9676,

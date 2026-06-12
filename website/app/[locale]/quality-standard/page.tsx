@@ -186,7 +186,7 @@ function Cell({ v }: { v: "yes" | "no" | "partial" }) {
 const EVIDENCE = [
   { stat: "34", label: "ATR rules merged into Cisco AI Defense (as of 2026-05-11)" },
   { stat: "96,096", label: "Real agent skills scanned across 6 registries (as of 2026-04-14)" },
-  { stat: "99.6%", label: "Precision on PINT adversarial benchmark" },
+  { stat: "99.7%", label: "Precision on PINT adversarial benchmark" },
   { stat: "100%", label: "Recall on SKILL.md corpus, 0.20% FP rate" },
 ];
 

@@ -355,8 +355,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             <p className="text-sm text-graphite leading-[1.7]">
               {locale === "zh"
-                ? `Precision / recall 採用外部 PINT dataset（${stats.pintSamples} 樣本），而非自產測試集——避免 overfit 到自家 test cases。另一組 SKILL.md benchmark 從真實 OpenClaw 抓 ${stats.skillBenchSamples} 個檔案，其中惡意樣本透過人工標記後作為 ground truth。`
-                : `Precision / recall uses the external PINT dataset (${stats.pintSamples} samples) rather than self-generated tests — this avoids overfitting to our own test cases. A separate SKILL.md benchmark uses ${stats.skillBenchSamples} real-world OpenClaw files, with malicious samples hand-labeled as ground truth.`}
+                ? `Precision / recall 採用外部 PINT dataset（${stats.pintSamples} 樣本），而非自產測試集——避免 overfit 到自家 test cases。另一組 SKILL.md benchmark 從真實 OpenClaw 抓 ${stats.skillBenchSamples} 個檔案，其中惡意樣本透過人工標記後作為 ground truth。涵蓋範圍另外擴展到 13 個公開紅隊 benchmark（InjecAgent、AgentDojo、ToolEmu、AgentPoison、PoisonedRAG、PyRIT、MCPSecBench、ASB、AgentHarm、LLMail-Inject、BIPIA、TensorTrust、Invariant MCP），採用 marginal-coverage 方法——只對現有規則抓不到的攻擊產生新規則，避免重複覆蓋並讓每條新規則都對應一個真實的偵測缺口。`
+                : `Precision / recall uses the external PINT dataset (${stats.pintSamples} samples) rather than self-generated tests — this avoids overfitting to our own test cases. A separate SKILL.md benchmark uses ${stats.skillBenchSamples} real-world OpenClaw files, with malicious samples hand-labeled as ground truth. Coverage is further expanded across 13 public red-team benchmarks (InjecAgent, AgentDojo, ToolEmu, AgentPoison, PoisonedRAG, PyRIT, MCPSecBench, ASB, AgentHarm, LLMail-Inject, BIPIA, TensorTrust, Invariant MCP) using a marginal-coverage method: rules are crystallized only for attacks existing rules miss, so each new rule maps to a real detection gap rather than duplicating coverage.`}
             </p>
           </div>
           <div className="border-l-2 border-fog pl-4">

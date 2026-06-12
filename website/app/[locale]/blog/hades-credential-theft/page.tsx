@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
 import { locales, type Locale } from "@/lib/i18n";
 import { getPost } from "@/lib/posts";
+import { loadSiteStats } from "@/lib/stats";
 import type { Metadata } from "next";
 
 export function generateStaticParams() {
@@ -29,6 +30,7 @@ export default async function HadesPostPage({
   const { locale: rawLocale } = await params;
   const locale = (locales.includes(rawLocale as Locale) ? rawLocale : "en") as Locale;
   const zh = locale === "zh";
+  const { ruleCount } = loadSiteStats();
 
   return (
     <div className="pt-20 pb-20 px-5 md:px-6 max-w-[760px] mx-auto">
@@ -72,7 +74,7 @@ export default async function HadesPostPage({
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">ATR 偵測什麼</h2>
           <p>
-            ATR 是 agent 威脅的開放標準。464 條偵測規則，MIT 授權。
+            ATR 是 agent 威脅的開放標準。{ruleCount} 條偵測規則，MIT 授權。
             規則 ATR-2026-00576 涵蓋 Hades 的憑證竊取階段，與 ATR-2026-00575 互補——
             後者偵測 Miasma 的 agent 設定檔後門，同一個攻擊活動的另一半。
           </p>
@@ -154,7 +156,7 @@ export default async function HadesPostPage({
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">What ATR detects</h2>
           <p>
-            ATR is an open standard for agent threats. 464 detection rules, MIT licensed. Rule
+            ATR is an open standard for agent threats. {ruleCount} detection rules, MIT licensed. Rule
             ATR-2026-00576 covers the Hades credential-theft stage, and it complements
             ATR-2026-00575, which detects the Miasma agent-config backdoor — the config-injection
             half of the same campaign.
