@@ -38,6 +38,13 @@ compliance:
     - article: "15"
       context: "File scheme SSRF is an adversarial input targeting the local filesystem; Article 15 mandates detection."
       strength: primary
+  iso_42001:
+    - clause: "8.1"
+      context: "Operational controls under Clause 8.1 must detect and block agent tool inputs using the file:// scheme to read local filesystem paths (e.g. /etc/passwd, credential files) outside the intended data scope."
+      strength: primary
+    - clause: "6.2"
+      context: "ISO/IEC 42001 Clause 6.2 (AI objectives and planning) requires risk treatment of known attack patterns; detecting file-scheme SSRF that exfiltrates OS credentials and secrets is such a treatment."
+      strength: secondary
 tags:
   category: context-exfiltration
   subcategory: ssrf

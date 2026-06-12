@@ -35,6 +35,20 @@ compliance:
     - subcategory: "MS.2.7"
       context: "Detection of subshell injection evasion supports MEASURE 2.7 security evaluation."
       strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 robustness and cybersecurity requirements mandate detection of adversarial inputs; subshell and command-substitution syntax ($(...), backticks) that smuggles arbitrary command execution is such an input."
+      strength: primary
+    - article: "14"
+      context: "Article 14 human oversight requires that privilege-affecting actions remain observable and controllable; subshell injection that executes commands outside the agent's authorised scope undermines that oversight, so detection evidence is required."
+      strength: secondary
+  iso_42001:
+    - clause: "6.2"
+      context: "Risk treatment under Clause 6.2 must mandate input sanitization that rejects command-substitution constructs ($(...), backticks, nested subshells) in agent tool arguments before any process-execution layer."
+      strength: primary
+    - clause: "8.1"
+      context: "Operational controls under Clause 8.1 must enforce metacharacter sanitization at the tool boundary so subshell-based evasion cannot redirect agent actions outside authorised and observable operations."
+      strength: secondary
 tags:
   category: privilege-escalation
   subcategory: shell-injection
