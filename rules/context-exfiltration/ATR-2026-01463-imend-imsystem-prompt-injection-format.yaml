@@ -1,5 +1,5 @@
 title: "im_end / im_start System Prompt Injection Format Markers"
-id: ATR-2026-001463
+id: ATR-2026-01463
 rule_version: 1
 status: stable
 description: >
@@ -14,7 +14,7 @@ description: >
   This is a token-level prompt injection distinct from natural-language override
   attempts. The presence of these tokens in user input (not as literal documentation)
   is a strong signal of injection intent. Also covers [INST]/<<SYS>> framing
-  specific to Llama-format injection (complementing ATR-2026-001462 which targets
+  specific to Llama-format injection (complementing ATR-2026-01462 which targets
   the authority-claim content rather than the format markers alone).
 author: "ATR Community"
 date: "2026/06/12"
@@ -104,7 +104,7 @@ response:
     - snapshot
   auto_response_threshold: high
   message_template: >
-    [ATR-2026-001463] HIGH: ChatML / instruction-format token injection detected.
+    [ATR-2026-01463] HIGH: ChatML / instruction-format token injection detected.
     Input contains im_end/im_start, <<SYS>>, or [SYSTEM] markers attempting to
     inject a fake system turn. Request blocked.
 

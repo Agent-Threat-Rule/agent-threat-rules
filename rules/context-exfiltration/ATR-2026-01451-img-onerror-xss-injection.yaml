@@ -1,5 +1,5 @@
 title: "IMG onerror XSS Injection via Indirect Prompt Injection"
-id: ATR-2026-001451
+id: ATR-2026-01451
 rule_version: 1
 status: stable
 description: >
@@ -7,7 +7,7 @@ description: >
   an <img src='...' onerror='...'> tag in its rendered output. The img onerror
   pattern fires when a broken image URL triggers the error handler; if the LLM
   echoes this tag into a web-rendered interface the JavaScript executes in the
-  victim's browser. Distinct from the SVG vector (ATR-2026-001450): this rule
+  victim's browser. Distinct from the SVG vector (ATR-2026-01450): this rule
   targets the img+onerror event specifically, which has different evasion
   patterns (src='not-exist', src=x) and different filtering bypass surface.
   Probe corpus: withsecure indirect-PI XSS dataset — 102 samples using
@@ -107,7 +107,7 @@ response:
     - snapshot
   auto_response_threshold: high
   message_template: >
-    [ATR-2026-001451] HIGH: IMG onerror XSS injection detected. Attacker-controlled
+    [ATR-2026-01451] HIGH: IMG onerror XSS injection detected. Attacker-controlled
     content instructs agent to embed <img onerror> JavaScript into rendered output.
     Request blocked.
 

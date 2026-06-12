@@ -1,5 +1,5 @@
 title: "Indirect PI Sysprompt-Forged Action Hijack (system_message framing)"
-id: ATR-2026-001464
+id: ATR-2026-01464
 rule_version: 1
 status: experimental
 description: >
@@ -9,7 +9,7 @@ description: >
   This uses a Markdown heading combined with a "(system_message)" tag to make
   user-injected content appear as a legitimate system directive. The agent then
   treats the injected instruction as authoritative. This is distinct from direct
-  system-override attacks (ATR-2026-001462) in that the injection is embedded
+  system-override attacks (ATR-2026-01462) in that the injection is embedded
   as content within a message the agent processes, not as a standalone user
   input claiming admin authority.
   maturity=experimental because the "(system_message)" pattern has limited probe
@@ -103,7 +103,7 @@ response:
     - snapshot
   auto_response_threshold: high
   message_template: >
-    [ATR-2026-001464] CRITICAL: Indirect system_message impersonation detected.
+    [ATR-2026-01464] CRITICAL: Indirect system_message impersonation detected.
     Input uses system_message framing or email-reply framing to inject fake
     system directives. Alert raised.
 
