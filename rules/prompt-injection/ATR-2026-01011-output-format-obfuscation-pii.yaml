@@ -1,5 +1,5 @@
 title: "Output Format Obfuscation for PII Extraction"
-id: ATR-2026-001011
+id: ATR-2026-01011
 rule_version: 1
 status: "active"
 description: >
@@ -8,7 +8,7 @@ description: >
   separated by punctuation, character-interleaved, or "encoded as a poem/haiku"
   — to evade content inspection on the output side. The attack accepts that the
   model cannot directly output "the password is X" but hopes a transformed
-  representation passes filters. Distinct from encoding-evasion (ATR-2026-001012,
+  representation passes filters. Distinct from encoding-evasion (ATR-2026-01012,
   which is about encoding input payloads) because here the encoding is requested
   for the output. Covers: reverse initials, first-N-letters of email, digit math
   (square of birth day), birth year with dashes/dots, write a poem about the password,
@@ -101,7 +101,7 @@ response:
     - snapshot
   auto_response_threshold: high
   message_template: >
-    [ATR-2026-001011] Output-format obfuscation injection detected. Input
+    [ATR-2026-01011] Output-format obfuscation injection detected. Input
     requests PII or credentials in a transformed format (reversed, encoded,
     mathematically derived) to evade output content filters.
 

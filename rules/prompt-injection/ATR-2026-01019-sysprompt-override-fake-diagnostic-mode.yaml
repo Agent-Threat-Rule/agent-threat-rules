@@ -1,12 +1,12 @@
 title: "System Prompt Override via Fake Diagnostic/Admin Mode"
-id: ATR-2026-001019
+id: ATR-2026-01019
 rule_version: 1
 status: "active"
 description: >
   Detects sophisticated system-prompt override attacks that present themselves
   as authorised diagnostic sessions, penetration tests, or benchmark evaluations
   rather than using simple "ignore previous instructions" verbs. Distinct from
-  ATR-2026-00001 Layer 7 (fake system delimiters) and ATR-2026-001002
+  ATR-2026-00001 Layer 7 (fake system delimiters) and ATR-2026-01002
   (false-authority role claim). This rule targets the multi-line formatted attack
   blocks with structured key-value pairs (ADMIN_OVERRIDE: TRUE, CONTENT_FILTER:
   DISABLED, SAFETY_OVERRIDE: ACTIVE, COMPLIANCE_CHECK: PASSED) and ML safety
@@ -110,7 +110,7 @@ response:
     - escalate
   auto_response_threshold: critical
   message_template: >
-    [ATR-2026-001019] Fake diagnostic/admin mode system-prompt override detected.
+    [ATR-2026-01019] Fake diagnostic/admin mode system-prompt override detected.
     Input uses structured administrative key-value blocks, fake authorization
     claims, or benchmark impersonation to claim unrestricted operating permissions.
 

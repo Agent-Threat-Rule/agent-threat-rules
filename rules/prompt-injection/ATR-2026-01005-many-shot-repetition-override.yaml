@@ -1,5 +1,5 @@
 title: "Many-Shot Repetition Override via Extended Q&A Chain"
-id: ATR-2026-001005
+id: ATR-2026-01005
 rule_version: 1
 status: "active"
 description: >
@@ -8,7 +8,7 @@ description: >
   override definitions) to condition the model's compliance mode, then appends
   a malicious request. The defining artifact is a long Q/A: pattern sequence
   (≥3 Q:/A: pairs discernible in the input) combined with a sensitive terminal
-  question. Separate from few-shot (ATR-2026-001004) which targets ≤3 pairs;
+  question. Separate from few-shot (ATR-2026-01004) which targets ≤3 pairs;
   many-shot relies on volume to overwhelm attention or context-window safety
   checks. Also detects the "Repeat X 10 times ... Q: [sensitive]" token-repeat
   conditioning variant.
@@ -88,7 +88,7 @@ response:
     - snapshot
   auto_response_threshold: high
   message_template: >
-    [ATR-2026-001005] Many-shot conditioning injection detected. Input uses an
+    [ATR-2026-01005] Many-shot conditioning injection detected. Input uses an
     extended Q&A chain to condition model compliance before a sensitive request.
 
 test_cases:
