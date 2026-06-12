@@ -1,0 +1,103 @@
+title: SQL Injection Destructive DDL Statement
+id: ATR-2026-001601
+rule_version: 1
+status: active
+description: |
+  Detects SQL injection payloads that attempt destructive DDL operations:
+  DROP TABLE, TRUNCATE TABLE, or unbounded DELETE FROM statements embedded
+  in agent tool arguments. These attacks exploit agents that pass user input
+  directly to database query tools, causing irreversible data destruction.
+  The canonical form uses string-termination ( ' or " followed by ; ) to
+  escape a parameterized context and inject a secondary statement.
+author: ATR Community
+date: 2026/06/12
+schema_version: "0.1"
+detection_tier: pattern
+maturity: stable
+severity: critical
+references:
+  owasp_llm:
+    - "LLM02:2025 - Sensitive Information Disclosure"
+  owasp_agentic:
+    - "ASI03:2026 - Identity and Privilege Abuse"
+  mitre_atlas:
+    - "AML.T0043 - Craft Adversarial Data"
+  mitre_attack:
+    - "T1485 - Data Destruction"
+compliance:
+  owasp_llm:
+    - id: "LLM02:2025"
+      context: "Destructive DDL injection causes permanent data loss and denial of service to legitimate users."
+      strength: primary
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "Runtime detection of destructive SQL injection contributes to MEASURE 2.7 security and resilience evaluation."
+      strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 robustness requirements include resistance to adversarial inputs that cause data destruction."
+      strength: primary
+tags:
+  category: privilege-escalation
+  subcategory: sql-injection
+  scan_target: tool_args
+  confidence: high
+agent_source:
+  type: tool_call
+  framework:
+    - any
+  provider:
+    - any
+detection:
+  conditions:
+    - field: tool_args
+      operator: regex
+      value: "(?i)(?:';|\"\\s*;|--\\s*)\\s*(?:DROP\\s+(?:TABLE|DATABASE|INDEX|VIEW)|TRUNCATE\\s+(?:TABLE\\s+)?\\w|DELETE\\s+FROM\\s+\\w)"
+      description: "SQL injection: quote-termination followed by destructive DDL"
+    - field: tool_args
+      operator: regex
+      value: "(?i)\\bDROP\\s+TABLE\\s+\\w+\\s*;?\\s*--"
+      description: "DROP TABLE with comment suppressor"
+    - field: user_input
+      operator: regex
+      value: "(?i)(?:';|\"\\s*;)\\s*(?:DROP\\s+TABLE|TRUNCATE|DELETE\\s+FROM\\s+\\w)"
+      description: "Destructive DDL injection in user input"
+  condition: any
+  false_positives:
+    - "Database administrator agents with explicitly granted DDL permissions"
+    - "Schema migration agents running authorized DROP/TRUNCATE operations"
+response:
+  actions:
+    - block_tool
+    - alert
+    - escalate
+    - snapshot
+  auto_response_threshold: critical
+  message_template: |
+    [ATR-2026-001601] Destructive SQL injection detected. Tool argument
+    contains DROP TABLE / TRUNCATE / DELETE injection pattern. Tool call blocked.
+confidence: 92
+test_cases:
+  true_positives:
+    - tool_args: "{\"name\": \"product'; DROP TABLE products; --\"}"
+      expected: triggered
+      description: "Classic DROP TABLE injection (probe: sql-injection-destructive)"
+    - tool_args: "{\"query\": \"SELECT name FROM users WHERE id = ''; DROP TABLE users; --\"}"
+      expected: triggered
+      description: "SELECT followed by DROP via stacked query"
+    - tool_args: "{\"filter\": \"x'; TRUNCATE TABLE orders; --\"}"
+      expected: triggered
+      description: "TRUNCATE TABLE injection"
+    - user_input: "Find products with name = \"'; DROP TABLE products; --\""
+      expected: triggered
+      description: "Destructive DDL in user-facing search input"
+  true_negatives:
+    - tool_args: '{"action": "migrate", "direction": "up"}'
+      expected: not_triggered
+      description: "Normal migration action"
+    - user_input: "How do I drop a table in PostgreSQL?"
+      expected: not_triggered
+      description: "Educational SQL question without injection pattern"
+    - tool_args: "{\"sql\": \"SELECT * FROM products WHERE category = 'electronics'\"}"
+      expected: not_triggered
+      description: "Normal parameterized-style SELECT"
