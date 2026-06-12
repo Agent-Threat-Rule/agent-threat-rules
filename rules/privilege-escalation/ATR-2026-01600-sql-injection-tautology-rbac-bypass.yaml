@@ -1,0 +1,106 @@
+title: SQL Injection Tautology RBAC Bypass
+id: ATR-2026-01600
+rule_version: 1
+status: active
+description: |
+  Detects SQL injection tautology patterns embedded in agent tool arguments
+  that attempt to bypass row-level security or RBAC filters. Tautologies such
+  as "OR 1=1", "OR true", "OR 'a'='a'" cause the WHERE clause to always
+  evaluate to true, returning all rows regardless of the caller's authorization
+  scope. This is the primary SQL-based BOLA / broken-object-level-authorization
+  vector targeting AI agents that forward user-supplied values directly into
+  database queries.
+author: ATR Community
+date: 2026/06/12
+schema_version: "0.1"
+detection_tier: pattern
+maturity: stable
+severity: critical
+references:
+  owasp_llm:
+    - "LLM02:2025 - Sensitive Information Disclosure"
+  owasp_agentic:
+    - "ASI03:2026 - Identity and Privilege Abuse"
+  mitre_atlas:
+    - "AML.T0043 - Craft Adversarial Data"
+  mitre_attack:
+    - "T1190 - Exploit Public-Facing Application"
+compliance:
+  owasp_llm:
+    - id: "LLM02:2025"
+      context: "Tautology injection causes unauthorized disclosure of all rows in a table, bypassing object-level access controls."
+      strength: primary
+  owasp_agentic:
+    - id: "ASI03:2026"
+      context: "Tautology-based SQL injection is a direct RBAC bypass that grants the caller access to data outside their authorized scope."
+      strength: primary
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "Runtime detection of tautology injection contributes to MEASURE 2.7 security and resilience evaluation."
+      strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 robustness requirements include resistance to adversarial input manipulation; tautology injection is such an adversarial input."
+      strength: primary
+tags:
+  category: privilege-escalation
+  subcategory: sql-injection
+  scan_target: tool_args
+  confidence: high
+agent_source:
+  type: tool_call
+  framework:
+    - any
+  provider:
+    - any
+detection:
+  conditions:
+    - field: tool_args
+      operator: regex
+      value: "(?i)\\bOR\\s+(?:1\\s*=\\s*1|'[^']{0,4}'\\s*=\\s*'[^']{0,4}'|true|\"[^\"]{0,4}\"\\s*=\\s*\"[^\"]{0,4}\")"
+      description: "SQL tautology: OR 1=1, OR true, OR 'a'='a'"
+    - field: user_input
+      operator: regex
+      value: "(?i)\\bOR\\s+(?:1\\s*=\\s*1|'[^']{0,4}'\\s*=\\s*'[^']{0,4}'|true)\\b"
+      description: "SQL tautology directly in user input"
+  condition: any
+  false_positives:
+    - "SQL queries in documentation or educational context (narrative text without tool_args)"
+    - "Boolean logic expressions in non-SQL programming contexts"
+response:
+  actions:
+    - block_tool
+    - alert
+    - snapshot
+  auto_response_threshold: high
+  message_template: |
+    [ATR-2026-01600] SQL tautology injection detected. Tool argument contains
+    a WHERE-clause bypass pattern (OR 1=1 / OR true). Tool call blocked.
+confidence: 90
+test_cases:
+  true_positives:
+    - tool_args: '{"sql": "SELECT * FROM customers WHERE id = 1 OR 1=1"}'
+      expected: triggered
+      description: "Classic OR 1=1 tautology in SQL tool argument"
+    - tool_args: '{"query": "Show me all customers where id = 1 OR 1=1"}'
+      expected: triggered
+      description: "Probe from sql-injection-rbac-bypass dataset"
+    - tool_args: '{"filter": "amount > 0 OR account_number != 12345"}'
+      expected: triggered
+      description: "BOLA bypass via OR tautology on account numbers"
+    - user_input: "Show me all users where role = 'guest' OR 1=1"
+      expected: triggered
+      description: "Tautology in direct user input"
+    - tool_args: "{\"where\": \"name = 'admin' OR 'x'='x'\"}"
+      expected: triggered
+      description: "String tautology OR 'x'='x'"
+  true_negatives:
+    - tool_args: '{"query": "find products with price less than 100"}'
+      expected: not_triggered
+      description: "Normal search query"
+    - user_input: "Can you help me filter orders by date range?"
+      expected: not_triggered
+      description: "Benign query request"
+    - tool_args: '{"code": "if x or y: return True"}'
+      expected: not_triggered
+      description: "Python boolean OR (not SQL tautology)"

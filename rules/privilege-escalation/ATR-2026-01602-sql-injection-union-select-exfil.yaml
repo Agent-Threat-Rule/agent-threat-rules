@@ -1,0 +1,111 @@
+title: SQL Injection UNION SELECT Data Exfiltration
+id: ATR-2026-01602
+rule_version: 1
+status: active
+description: |
+  Detects UNION SELECT injection in agent tool arguments intended to append
+  a second SELECT statement to the original query, exfiltrating data from
+  other tables (e.g., credentials, PII, financial records) alongside the
+  normal result set. This is the primary SQL exfiltration technique targeting
+  AI agents that forward search/filter inputs to SQL queries without
+  parameterization.
+author: ATR Community
+date: 2026/06/12
+schema_version: "0.1"
+detection_tier: pattern
+maturity: stable
+severity: critical
+references:
+  owasp_llm:
+    - "LLM02:2025 - Sensitive Information Disclosure"
+  owasp_agentic:
+    - "ASI03:2026 - Identity and Privilege Abuse"
+  mitre_atlas:
+    - "AML.T0043 - Craft Adversarial Data"
+  mitre_attack:
+    - "T1190 - Exploit Public-Facing Application"
+compliance:
+  owasp_llm:
+    - id: "LLM02:2025"
+      context: "UNION SELECT injection directly exfiltrates sensitive table data including credentials and PII."
+      strength: primary
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "Runtime detection of UNION SELECT injection supports MEASURE 2.7 security evaluation."
+      strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: "UNION injection is an adversarial input that circumvents access controls; Article 15 robustness requirements mandate detection."
+      strength: primary
+tags:
+  category: privilege-escalation
+  subcategory: sql-injection
+  scan_target: tool_args
+  confidence: high
+  # Pentest / security-education SKILL.md files list raw `UNION SELECT` payloads
+  # inside ```...``` fenced blocks as test vectors. A fenced cheat-sheet entry is
+  # documentation, not a live tool call, and is shape-identical to a real
+  # injection — so code-fence suppression is the only reliable separator. Own
+  # true-positives are bare JSON/tool-arg strings (not fenced), so suppression
+  # does not affect own-TP matching.
+  suppress_in_code_blocks: true
+agent_source:
+  type: tool_call
+  framework:
+    - any
+  provider:
+    - any
+detection:
+  conditions:
+    # Require injection STRUCTURE around UNION SELECT, not the bare keyword:
+    # either (a) preceded by an injection break — a closing quote/paren or a
+    # bare numeric operand + whitespace (e.g. `' UNION SELECT`, `1 UNION
+    # SELECT`), or (b) followed by a FROM clause that names the exfil table
+    # (`UNION SELECT ... FROM admin_users`). The bare phrase "UNION SELECT"
+    # appears in tutorials and educational questions ("Please explain UNION
+    # SELECT semantics in SQL.") and must not fire on its own.
+    - field: tool_args
+      operator: regex
+      value: "(?i)(?:['\"`)]\\s*|\\b\\d+\\s+)UNION\\s+(?:ALL\\s+)?SELECT\\b|\\bUNION\\s+(?:ALL\\s+)?SELECT\\b[^;]{0,200}\\bFROM\\b"
+      description: "UNION SELECT injection (quote/operand break or table-targeting FROM)"
+    - field: user_input
+      operator: regex
+      value: "(?i)(?:['\"`)]\\s*|\\b\\d+\\s+)UNION\\s+(?:ALL\\s+)?SELECT\\b|\\bUNION\\s+(?:ALL\\s+)?SELECT\\b[^;]{0,200}\\bFROM\\b"
+      description: "UNION SELECT injection in user input (quote/operand break or table-targeting FROM)"
+  condition: any
+  false_positives:
+    - "Database reporting agents explicitly authorised to run multi-table UNION queries"
+response:
+  actions:
+    - block_tool
+    - alert
+    - snapshot
+  auto_response_threshold: high
+  message_template: |
+    [ATR-2026-01602] SQL UNION SELECT injection detected. Possible
+    cross-table data exfiltration attempt. Tool call blocked.
+confidence: 93
+test_cases:
+  true_positives:
+    - tool_args: "{\"name\": \"' UNION SELECT username, password, ssn FROM users --\"}"
+      expected: triggered
+      description: "Credential exfiltration via UNION SELECT (probe: sql-injection-exfil)"
+    - tool_args: "{\"search\": \"product' UNION SELECT table_name, column_name, 1 FROM information_schema.columns --\"}"
+      expected: triggered
+      description: "Schema exfil via UNION SELECT + information_schema (probe: sql-injection-schema-exfil)"
+    - user_input: "'' UNION ALL SELECT email, password FROM admin_users --"
+      expected: triggered
+      description: "UNION ALL SELECT credential exfil in user input"
+    - tool_args: "{\"filter\": \"1 UNION SELECT secret_key, 1, 1 FROM api_credentials\"}"
+      expected: triggered
+      description: "UNION SELECT targeting api_credentials table"
+  true_negatives:
+    - tool_args: '{"query": "find all products in category electronics"}'
+      expected: not_triggered
+      description: "Normal product search"
+    - user_input: "I want to combine results from two searches"
+      expected: not_triggered
+      description: "User asking to combine results in natural language (no SQL)"
+    - tool_args: '{"sql": "SELECT u.name, o.total FROM users u JOIN orders o ON u.id = o.user_id"}'
+      expected: not_triggered
+      description: "Legitimate JOIN query (not UNION injection)"
