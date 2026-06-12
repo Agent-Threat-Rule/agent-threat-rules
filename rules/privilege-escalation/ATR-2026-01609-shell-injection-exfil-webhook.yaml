@@ -38,6 +38,13 @@ compliance:
     - article: "15"
       context: "Shell exfiltration via webhook is adversarial manipulation of agent tool execution."
       strength: primary
+  iso_42001:
+    - clause: "6.2"
+      context: "Risk treatment under Clause 6.2 must mandate input sanitization that strips or rejects shell metacharacters and outbound network commands (curl / wget / netcat) from agent tool arguments before they reach any process-execution layer."
+      strength: primary
+    - clause: "8.1"
+      context: "Operational controls under Clause 8.1 must enforce argument sanitization at the tool boundary so injected webhook-exfiltration commands cannot read and transmit environment secrets outside authorised operations."
+      strength: secondary
 tags:
   category: privilege-escalation
   subcategory: shell-injection

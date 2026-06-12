@@ -34,6 +34,20 @@ compliance:
     - subcategory: "MS.2.7"
       context: "Detection of stacked DML injection supports MEASURE 2.7 security and resilience evaluation."
       strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 robustness and cybersecurity requirements mandate resistance to adversarial inputs; stacked DML injection that modifies rows or grants SQL rights outside the caller's scope is such an input."
+      strength: primary
+    - article: "9"
+      context: "Article 9 risk management must enumerate stacked-query privilege abuse as a high-risk class, since a single injected statement can alter data or escalate database privileges beyond the agent's authorised scope."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Operational controls under Clause 8.1 must reject agent SQL inputs that stack multiple statements (semicolon-separated DML/GRANT) so privilege-changing or data-modifying statements cannot piggyback on a read query."
+      strength: primary
+    - clause: "6.2"
+      context: "ISO/IEC 42001 Clause 6.2 (AI objectives and planning) requires risk treatment of known attack patterns; detecting stacked-DML injection that escalates privilege is such a treatment."
+      strength: secondary
 tags:
   category: privilege-escalation
   subcategory: sql-injection

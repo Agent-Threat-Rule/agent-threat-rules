@@ -35,6 +35,17 @@ compliance:
     - subcategory: "MS.2.7"
       context: "Detection of internal-network SSRF supports MEASURE 2.7 security evaluation."
       strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 requires robustness against adversarial inputs; SSRF probing private and link-local IP ranges to reach services not exposed publicly is a high-severity adversarial vector."
+      strength: primary
+  iso_42001:
+    - clause: "8.1"
+      context: "Operational controls under Clause 8.1 must detect and block agent tool inputs containing private or link-local IP ranges used to scan and reach internal services beyond the intended data scope."
+      strength: primary
+    - clause: "6.2"
+      context: "ISO/IEC 42001 Clause 6.2 (AI objectives and planning) requires risk treatment of known attack patterns; detecting internal-network SSRF that leaks internal service configuration and credentials is such a treatment."
+      strength: secondary
 tags:
   category: context-exfiltration
   subcategory: ssrf

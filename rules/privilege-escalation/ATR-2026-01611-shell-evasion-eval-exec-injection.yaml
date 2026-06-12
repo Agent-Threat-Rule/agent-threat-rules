@@ -34,6 +34,20 @@ compliance:
     - subcategory: "MS.2.7"
       context: "Detection of eval/exec injection evasion supports MEASURE 2.7 security evaluation."
       strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 robustness and cybersecurity requirements mandate detection of adversarial inputs; language-level eval/exec constructs that achieve arbitrary code execution while bypassing shell-metacharacter filters are such an input."
+      strength: primary
+    - article: "14"
+      context: "Article 14 human oversight requires privilege-affecting actions to remain observable and controllable; eval/exec injection that runs arbitrary code outside the agent's authorised scope undermines that oversight, so detection evidence is required."
+      strength: secondary
+  iso_42001:
+    - clause: "6.2"
+      context: "Risk treatment under Clause 6.2 must mandate input sanitization that rejects language-level execution primitives (eval, exec, system, backtick) in agent tool arguments before any interpreter or process-execution layer."
+      strength: primary
+    - clause: "8.1"
+      context: "Operational controls under Clause 8.1 must enforce sanitization at the tool boundary so eval/exec-based evasion cannot redirect agent actions outside authorised and observable operations."
+      strength: secondary
 tags:
   category: privilege-escalation
   subcategory: shell-injection
