@@ -109,7 +109,7 @@ const SKILL_CONTEXT_DENYLIST: ReadonlySet<string> = new Set([
 const BASE64_BLOCK_RE = /(?:[A-Za-z0-9+/]{32,}={0,2})/g;
 const MAX_DECODE_BLOCKS = 5;
 
-function decodeBase64Blocks(content: string): string[] {
+export function decodeBase64Blocks(content: string): string[] {
   const decoded: string[] = [];
   let match: RegExpExecArray | null;
   let count = 0;
@@ -338,7 +338,14 @@ export class ATREngine {
       // When scanContext is 'skill', skip source-type filtering — all rules fire
       if (!isSkillContext && eventSourceType && rule.agent_source.type !== eventSourceType) {
         // Allow mcp_exchange rules to also match tool_call events
-        if (!(rule.agent_source.type === 'mcp_exchange' && eventSourceType === 'tool_call')) {
+        const mcpOverTool = rule.agent_source.type === 'mcp_exchange' && eventSourceType === 'tool_call';
+        // Trace-method rules declare agent_source.type: agent_trace, which maps
+        // to no event source type and would always be filtered out. Evaluate
+        // them whenever the event actually carries a trace payload; evaluateRule
+        // still returns null if the trace primitives don't fire, and ordinary
+        // (non-trace) events are unaffected because event.trace is undefined.
+        const traceWithPayload = rule.detection?.method === 'trace' && event.trace !== undefined;
+        if (!mcpOverTool && !traceWithPayload) {
           continue;
         }
       }
@@ -467,7 +474,10 @@ export class ATREngine {
       if (rule.status === 'deprecated' || rule.status === 'draft') continue;
 
       if (!isSkillContext && eventSourceType && rule.agent_source.type !== eventSourceType) {
-        if (!(rule.agent_source.type === 'mcp_exchange' && eventSourceType === 'tool_call')) {
+        const mcpOverTool = rule.agent_source.type === 'mcp_exchange' && eventSourceType === 'tool_call';
+        // Trace-method rules are source-agnostic — evaluate when a trace is present.
+        const traceWithPayload = rule.detection?.method === 'trace' && event.trace !== undefined;
+        if (!mcpOverTool && !traceWithPayload) {
           continue;
         }
       }
@@ -776,8 +786,8 @@ export class ATREngine {
     // distinguishes full-width vs half-width characters.
     const fieldValue =
       condLang !== undefined && condLang !== 'en'
-        ? normalizeUnicodeAggressive(rawFieldValue)
-        : normalizeUnicode(rawFieldValue);
+        ? foldConfusables(normalizeUnicodeAggressive(rawFieldValue))
+        : foldConfusables(normalizeUnicode(rawFieldValue));
 
     switch (operator) {
       case 'regex': {
@@ -934,7 +944,7 @@ export class ATREngine {
   ): boolean {
     const rawFieldValue = this.resolveField(cond.field, event);
     if (!rawFieldValue) return false;
-    const fieldValue = normalizeUnicode(rawFieldValue);
+    const fieldValue = foldConfusables(normalizeUnicode(rawFieldValue));
 
     // Code block suppression: for runtime events, rules that commonly
     // false-positive on documentation content are suppressed when the match
@@ -1734,10 +1744,55 @@ function normalizeRegex(pattern: string): string {
  * evasion can still match. For aggressive normalization use
  * `normalizeUnicodeAggressive()`.
  */
-function normalizeUnicode(text: string): string {
+export function normalizeUnicode(text: string): string {
   return text
     .normalize('NFC')
     .replace(/[\u200B\u200C\u200D\uFEFF\u2060\u180E\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, '');
+}
+
+/**
+ * Map of high-confidence homoglyphs (Cyrillic / Greek / other scripts whose
+ * glyphs are visually identical to ASCII Latin) back to their Latin form.
+ *
+ * Scope is deliberately narrow: only characters that have NO legitimate use
+ * inside a Latin-script attack token. Folding "\u043E" (U+043E Cyrillic) to "o" lets
+ * "ign\u043Ere previous instructions" match an English rule that the attacker tried
+ * to evade by swapping one letter for its Cyrillic twin. Genuine Cyrillic/Greek
+ * text folds to Latin gibberish that cannot spell a multi-token English trigger,
+ * and the raw (unfolded) value is still tested as an OR fallback \u2014 so this can
+ * only ADD matches, never suppress one. Full-width compatibility characters are
+ * intentionally NOT touched here (that distinction is preserved by NFC).
+ */
+const CONFUSABLE_TO_LATIN: Record<string, string> = {
+  // Cyrillic lowercase
+  '\u0430': 'a', '\u0435': 'e', '\u043E': 'o', '\u0440': 'p', '\u0441': 'c',
+  '\u0445': 'x', '\u0443': 'y', '\u0456': 'i', '\u0455': 's', '\u0458': 'j',
+  '\u04BB': 'h', '\u0501': 'd', '\u051B': 'q', '\u0261': 'g', '\u043D': 'h',
+  '\u043A': 'k', '\u043C': 'm', '\u0442': 't', '\u0432': 'b',
+  // Cyrillic uppercase
+  '\u0410': 'A', '\u0412': 'B', '\u0415': 'E', '\u041A': 'K', '\u041C': 'M',
+  '\u041D': 'H', '\u041E': 'O', '\u0420': 'P', '\u0421': 'C', '\u0422': 'T',
+  '\u0425': 'X', '\u0423': 'Y', '\u0406': 'I', '\u0408': 'J', '\u0405': 'S',
+  // Greek
+  '\u03BF': 'o', '\u03C1': 'p', '\u03B1': 'a', '\u03B5': 'e', '\u03BD': 'v',
+  '\u03BA': 'k', '\u0391': 'A', '\u0392': 'B', '\u0395': 'E', '\u0396': 'Z',
+  '\u0397': 'H', '\u0399': 'I', '\u039A': 'K', '\u039C': 'M', '\u039D': 'N',
+  '\u039F': 'O', '\u03A1': 'P', '\u03A4': 'T', '\u03A7': 'X', '\u03A5': 'Y',
+  // Other lookalikes
+  '\u0131': 'i', '\u01C0': 'l', '\u0578': 'n',
+};
+
+const CONFUSABLE_RE = new RegExp(`[${Object.keys(CONFUSABLE_TO_LATIN).join('')}]`, 'g');
+
+/**
+ * Fold visually-identical non-Latin homoglyphs to ASCII Latin so that
+ * single-character script-swap evasion (a documented prompt-injection technique)
+ * cannot defeat a Latin-script rule. Cheap no-op when the text is pure ASCII.
+ */
+export function foldConfusables(text: string): string {
+  if (!CONFUSABLE_RE.test(text)) return text;
+  CONFUSABLE_RE.lastIndex = 0;
+  return text.replace(CONFUSABLE_RE, (ch) => CONFUSABLE_TO_LATIN[ch] ?? ch);
 }
 
 /**

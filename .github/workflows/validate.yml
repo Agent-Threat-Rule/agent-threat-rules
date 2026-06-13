@@ -71,3 +71,12 @@ jobs:
       - name: Rule safety gate (duplicate IDs + cross-rule conflicts + own-TP coverage)
         if: github.event_name == 'pull_request'
         run: npx tsx scripts/check-rules-safety.ts --base origin/${{ github.base_ref }}
+
+      # Generalization gate (full-set ratchet): runs over EVERY pattern rule,
+      # using real engine semantics (Unicode/confusable folding, base64 decode,
+      # multi-field + nested test cases). Fails if any rule NOT already in the
+      # baseline fails to match its own true_positive or fires on its own
+      # true_negative. Catches rules that landed via direct-to-main crystallize
+      # commits, which the PR-diff-scoped safety gate above never sees.
+      - name: Generalization gate (own-TP coverage + self-FP, full set)
+        run: npm run gate:generalization
