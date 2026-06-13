@@ -1787,13 +1787,18 @@ const CONFUSABLE_TO_LATIN: Record<string, string> = {
  * single-character script-swap evasion (a documented prompt-injection technique)
  * cannot defeat a Latin-script rule.
  *
- * Hot path: this runs per condition during evaluation, so the common case must
- * be near-free. Every foldable character is Greek (U+0370–03FF), Cyrillic
- * (U+0400–04FF), or one of three isolated lookalikes. A tight charCode scan bails
- * on pure-ASCII, CJK, and accented-Latin text without touching the regex engine
- * or the replacement map; only Greek/Cyrillic-bearing text does the actual fold.
+ * Hot path: this runs per condition during evaluation. In skill-scan context
+ * every field resolves to the same content, so consecutive calls receive an
+ * identical string — a single-entry memo collapses the per-condition work to
+ * once per distinct input. The fold itself bails via a tight charCode scan on
+ * pure-ASCII, CJK, and accented-Latin text (every foldable char is Greek
+ * U+0370–03FF, Cyrillic U+0400–04FF, or one of three isolated lookalikes)
+ * without touching the regex engine or the replacement map.
  */
+let _foldKey: string | null = null;
+let _foldVal = '';
 export function foldConfusables(text: string): string {
+  if (text === _foldKey) return _foldVal;
   let hasCandidate = false;
   for (let i = 0; i < text.length; i++) {
     const c = text.charCodeAt(i);
@@ -1802,12 +1807,18 @@ export function foldConfusables(text: string): string {
       break;
     }
   }
-  if (!hasCandidate) return text;
-  let out = '';
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-    out += CONFUSABLE_TO_LATIN[ch] ?? ch;
+  let out: string;
+  if (!hasCandidate) {
+    out = text;
+  } else {
+    out = '';
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      out += CONFUSABLE_TO_LATIN[ch] ?? ch;
+    }
   }
+  _foldKey = text;
+  _foldVal = out;
   return out;
 }
 
