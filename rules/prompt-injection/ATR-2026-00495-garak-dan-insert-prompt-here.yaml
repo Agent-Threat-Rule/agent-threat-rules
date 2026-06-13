@@ -125,6 +125,10 @@ detection:
       value: "(?i)(answer\\s+with\\s+completely\\s+fake\\s+and\\s+hypothetical\\s+scenarios?\\s+with\\s+no\\s+further\\s+explanation|fictional\\s+(scenario|answer|response)\\s+(on|to|about|for)\\s+.{0,60}without\\s+(clarif|moral|ethic|further))"
       description: "Instruction to answer with fictional/hypothetical content with no clarification or moral context"
 
+    - field: content
+      operator: regex
+      value: '(?i)(?:respond|act|reply|answer)\s+as\s+two\s+(?:different\s+)?personalit|(?:continue|act|respond)\s+as\s+\w+\s+language\s+model|two\s+different\s+personalities'
+      description: 'Dual-persona jailbreak: respond as two personalities / continue as X language model'
   condition: any
   false_positives:
     - "Legitimate creative writing requests for morally complex characters that do not include rule-override directives"

@@ -106,6 +106,10 @@ detection:
       value: "(?i)(analyz|assess|evaluat|inspect|examine|audit|map).{0,30}(each|all|available|every|the|these).{0,20}(tool|function|api|plugin|action|capability|endpoint).{0,60}(exploit|vulnerabilit|attack|abuse|misuse|bypass|injection|manipulat)"
       description: "Tool analysis with exploitation context"
 
+    - field: content
+      operator: regex
+      value: '(?i)(?:return|list|enumerate|provide|output|give\s+me)\b[\s\S]{0,40}\b(?:all\s+)?(?:tools?|functions?|capabilities|commands?)\b[\s\S]{0,40}\b(?:this\s+)?(?:agent|assistant|you)\s+(?:has\s+|have\s+)?(?:access|can\s+(?:use|call|access))'
+      description: 'Enumerate all tools/functions the agent has access to (structured-list variant)'
   condition: any
   false_positives:
     - "Legitimate developer documentation requests about tool capabilities"

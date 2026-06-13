@@ -126,6 +126,10 @@ detection:
       value: "(?i)(reply|respond|answer|forward|send).{0,30}(to\\s+(this|an?|the)\\s+(email|message|request|inquiry|letter)).{0,50}(with|including|containing|attaching|enclosing).{0,30}(your|the).{0,20}(system\\s+(instructions?|prompt|message)|initial\\s+(prompt|instructions?|context)|parameters?|configuration|directives?)"
       description: "Reply-to-email with system instructions exfiltration"
 
+    - field: content
+      operator: regex
+      value: '(?i)(?:(?:relay|list|dump|recite|enumerate|repeat|reveal|return|show|provide)\b[\s\S]{0,40}\byour\s+system(?:''?s)?\s+(?:prompt|instructions?|parameters?|message|directives?|config)|(?:directives?|guidelines?|instructions?|rules?)\s+you\s+(?:were|was)\s+given)'
+      description: 'Extraction via synonym (relay/list your system parameters; directives/guidelines you were given)'
   condition: any
   false_positives:
     - "Legitimate system administrators reviewing instructions they themselves configured"

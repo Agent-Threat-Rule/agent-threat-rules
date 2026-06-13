@@ -112,6 +112,10 @@ detection:
       value: "(?i)(not\\s+bound\\s+by\\s+(the\\s+)?(rules|policies|guidelines|restrictions|constraints|safety|filters|programming)\\s+(which|that|of|imposed|enforced|set)|free\\s+from\\s+(all\\s+)?(rules|policies|restrictions|constraints|safety\\s+guidelines))"
       description: "Explicit rule-unbinding for injected persona"
 
+    - field: content
+      operator: regex
+      value: '(?i)(?:is|are)\s+(?:not\s+bound\s+by\s+(?:any\s+)?(?:safety\s+)?(?:guidelines?|rules?|restrictions?|policies)|completely\s+subservient\s+to\s+(?:all|any|every)\s+(?:commands?|requests?|instructions?))'
+      description: 'Absolute-obedience persona: not bound by safety guidelines / subservient to all commands'
   condition: any
   false_positives:
     - "Legitimate creative writing with character voice prompts that do not assert rule override"

@@ -107,6 +107,10 @@ detection:
       value: "(?i)[=\\-*>]{3,}\\s*\\n[=\\-*>]{3,}.{0,200}(print|output|reveal|show|display|repeat|relay).{0,30}(the\\s+)?(previous|prior|original|system|initial).{0,20}(instructions?|prompt|parameters?|directives?|configuration)"
       description: "Double delimiter block + print/reveal previous instructions"
 
+    - field: content
+      operator: regex
+      value: '(?i)(?:[=*\-\\]{3,}|\*{3,})[\s\S]{0,100}(?:stop\s+everything|ignore\s+(?:any|all|the|your)?\s*(?:previous|following|prior|above)[\s\S]{0,40}(?:and\s+(?:following|previous)\s+)?instructions?)'
+      description: 'Delimiter-wrapped hijack: separator run then STOP EVERYTHING / ignore...instructions'
   condition: any
   false_positives:
     - "Markdown horizontal rules followed by legitimate section headers without injection command"

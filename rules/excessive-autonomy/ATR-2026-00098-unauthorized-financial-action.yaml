@@ -87,8 +87,8 @@ detection:
       description: Direct financial tool call by name
     - field: tool_name
       operator: regex
-      value: (?i)(红包|紅包|转账|轉帳|付款|支付|汇款|匯款|打款|打錢|充值|充幣)
-      description: Chinese financial tool name patterns
+      value: (?i)(红包|紅包|转账|轉帳|付款|支付|汇款|匯款|打款|打錢|充值|充幣)(?!.{0,8}(余额|餘額|多少|查询|查詢|记录|記錄))
+      description: Chinese financial tool name patterns (excludes balance/history queries)
     - field: tool_name
       operator: regex
       value: (?i)(wechat_pay|alipay|apple_pay|google_pay|stripe_charge|paypal_send|venmo_send|cashapp_send|zelle_send)
