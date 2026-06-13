@@ -68,7 +68,7 @@ Authorization: Bearer <partner-key>`}
       "tags": "..."
     }
   ],
-  "meta": { "total": 462, "etag": "W/\\"462-2026-04-17T00:03:42Z\\"" }
+  "meta": { "total": 651, "etag": "W/\\"651-2026-06-14T00:00:00Z\\"" }
 }`}
         </pre>
       </section>
