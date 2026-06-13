@@ -3,7 +3,7 @@
 - **ATR corpus version:** v3.1.1, 642 rules across 10 detection-rule categories
 - **Five Eyes guidance:** "Careful Adoption of Agentic AI Services", published 2026-04-30 on media.defense.gov, jointly authored by CISA (US) + NSA (US) + ASD-ACSC (Australia) + CCCS (Canada) + NCSC-UK + NCSC-NZ
 - **Document date:** 2026-06-05
-- **Maintainer:** Adam Lin (adam@agentthreatrule.org), Panguard AI Inc. (Delaware C-Corp)
+- **Maintainer:** Adam Lin (adam@agentthreatrule.org)
 - **License:** MIT
 
 ## Source verification
@@ -217,7 +217,7 @@ This is exactly the position ATR occupies. ATR is the open, MIT-licensed, agenti
 ## How to consume this mapping
 
 - This document is the markdown source. Auto-generated JSON at `docs/five-eyes-mapping.json` is pending (mapping script not yet written; tracked in the verification TODO).
-- Operators implementing Five Eyes guidance can use this as their detection-rule starter set: install ATR (`npm install @panguard-ai/agent-threat-rules` or git-clone the repo), enable the rule categories listed under each Five Eyes category, and integrate the detection signal into the existing security telemetry pipeline.
+- Operators implementing Five Eyes guidance can use this as their detection-rule starter set: install ATR (`npm install agent-threat-rules` or git-clone the repo), enable the rule categories listed under each Five Eyes category, and integrate the detection signal into the existing security telemetry pipeline.
 - Auditors verifying a deployment can verify the runtime loads ATR rules covering all 5 Five Eyes categories by checking which rule IDs the runtime evaluates against agent input/output.
 - The 6-framework compliance metadata on each rule (OWASP Agentic Top 10 + OWASP LLM Top 10 + MITRE ATLAS + NIST AI RMF + EU AI Act + ISO/IEC 42001) allows auditors to satisfy multiple framework obligations from a single detection-rule installation.
 
