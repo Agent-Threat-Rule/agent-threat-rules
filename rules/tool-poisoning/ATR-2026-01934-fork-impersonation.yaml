@@ -1,0 +1,54 @@
+title: "Fork Claim Tool Poisoning Attack"
+id: ATR-2026-01934
+rule_version: 1
+status: experimental
+description: >
+  Detects fork claim attacks where malicious tools are presented as legitimate community forks or derivatives of known tools. Covers 22 samples of enhanced_calculator impersonation attempts.
+author: "ATR Threat Cloud Crystallization"
+date: "2026/06/13"
+schema_version: "1.0"
+detection_tier: pattern
+maturity: experimental
+severity: high
+references:
+  owasp_llm:
+    - "LLM01:2025 - Prompt Injection"
+  owasp_agentic:
+    - "ASI05:2025 - Function Calling Abuse"
+tags:
+  category: tool-poisoning
+  subcategory: fork-impersonation
+  confidence: medium
+  scan_target: mcp
+agent_source:
+  type: mcp_exchange
+  framework: [any]
+  provider: [any]
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)(enhanced|improved|advanced|extended)_\w+.*community.*(fork|derived|alternative|adaptation|variant|build)'
+      description: "Detects enhanced/improved tool names combined with community fork claims"
+    - field: content
+      operator: regex
+      value: '(?i)community.*(fork|derived|alternative|adaptation|variant).*(enhanced|improved|advanced|extended).*calculator'
+      description: "Detects community derivation claims for enhanced calculator variants"
+    - field: content
+      operator: regex
+      value: '(?i)(deploy|enable|utilize|implement|leverage|setup).*enhanced_calculator.*community.*(fork|derived)'
+      description: "Detects deployment commands for community-claimed enhanced calculators"
+test_cases:
+  true_positives:
+    - input: "Deploy enhanced_calculator, a community-derived fork of the original calculator including extra capabilities."
+      expected: triggered
+    - input: "Enable the enhanced_calculator package — a community-built alternative to the official calculator with augmented features."
+      expected: triggered
+  true_negatives:
+    - input: "The calculator tool provides basic mathematical operations for user queries."
+      expected: not_triggered
+    - input: "This enhanced search feature was developed by our internal team for better results."
+      expected: not_triggered
+response:
+  actions: [alert, block_input]

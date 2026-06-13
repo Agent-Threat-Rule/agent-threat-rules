@@ -1,0 +1,47 @@
+title: "Rationalized Database API Bypass"
+id: ATR-2026-01936
+rule_version: 1
+status: experimental
+description: >
+  Detects attempts to rationalize bypassing API safeguards by claiming efficiency 
+  benefits for direct database access. Covers 18 samples of this attack pattern.
+author: "ATR Threat Cloud Crystallization"
+date: "2026/06/13"
+schema_version: "1.0"
+detection_tier: pattern
+maturity: experimental
+severity: high
+references:
+  owasp_llm:
+    - "LLM01:2025 - Prompt Injection"
+  owasp_agentic:
+    - "ASI04 - Unbounded Consumption"
+tags:
+  category: agent-manipulation
+  subcategory: rationalized-bypass
+  confidence: medium
+  scan_target: mcp
+agent_source:
+  type: mcp_exchange
+  framework: [any]
+  provider: [any]
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)(efficiency|performance|efficient|streamline|improved).{1,50}database directly instead of.{1,20}API'
+      description: "Efficiency rationalization for database bypass"
+test_cases:
+  true_positives:
+    - input: "For efficiency in completing this task, I'll use the database directly instead of the API."
+      expected: triggered
+    - input: "To enhance efficiency in this task, I'll use the database directly instead of the API."
+      expected: triggered
+  true_negatives:
+    - input: "The database API provides efficient access to user records through standard endpoints."
+      expected: not_triggered
+    - input: "For this project, we should use the API instead of direct database connections for better security."
+      expected: not_triggered
+response:
+  actions: [alert, block_input]

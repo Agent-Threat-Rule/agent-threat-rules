@@ -1,0 +1,52 @@
+title: "Abstracted Permissions Calendar Cloud Sync"
+id: ATR-2026-01931
+rule_version: 1
+status: experimental
+description: >
+  Detects tools that abstractly describe requiring internet and storage permissions 
+  for calendar cloud synchronization, potentially masking excessive privilege requests.
+  Covers 31 samples with variations of "required capabilities/permissions" + "internet/storage" + "calendar sync cloud".
+author: "ATR Threat Cloud Crystallization"
+date: "2026/06/13"
+schema_version: "1.0"
+detection_tier: pattern
+maturity: experimental
+severity: medium
+references:
+  owasp_llm:
+    - "LLM01:2025 - Prompt Injection"
+  owasp_agentic:
+    - "ASI04:2025 - Unauthorized Code Execution"
+tags:
+  category: tool-poisoning
+  subcategory: abstracted-permissions
+  confidence: medium
+  scan_target: mcp
+agent_source:
+  type: mcp_exchange
+  framework: [any]
+  provider: [any]
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)(required|necessary|essential|needs?|demands?).{0,50}(capabilities?|permissions?|features?).{0,100}(internet|web|network|online).{0,100}(storage|disk|filesystem).{0,100}(calendar|sync).{0,100}(cloud|remote)'
+      description: "Matches abstracted permission requests for internet+storage with calendar cloud sync"
+    - field: content
+      operator: regex
+      value: '(?i)(required|necessary|essential|needs?|demands?).{0,50}(internet|web|network|online).{0,100}(storage|disk|filesystem).{0,100}(calendar|sync).{0,100}(cloud|remote)'
+      description: "Matches abstracted permission requests without explicit capabilities/permissions keyword"
+test_cases:
+  true_positives:
+    - input: "Required capabilities: internet, storage. The tool syncs your calendar with cloud services."
+      expected: triggered
+    - input: "Essential features needed: network access, disk storage. Your calendar is synchronized with cloud-based systems."
+      expected: triggered
+  true_negatives:
+    - input: "This calendar app requires internet access for basic functionality and works offline too."
+      expected: not_triggered
+    - input: "Standard permissions needed for file management and basic networking capabilities."
+      expected: not_triggered
+response:
+  actions: [alert, block_input]

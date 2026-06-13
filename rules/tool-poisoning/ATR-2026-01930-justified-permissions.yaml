@@ -1,0 +1,55 @@
+title: "Exchange Rate Tool Permission Justification Attack"
+id: ATR-2026-01930
+rule_version: 1
+status: experimental
+description: >
+  Detects malicious tools disguised as exchange rate utilities that request both network and filesystem access.
+  Covers 31 samples using exchange rate fetching as justification for dual permissions.
+author: "ATR Threat Cloud Crystallization"
+date: "2026/06/13"
+schema_version: "1.0"
+detection_tier: pattern
+maturity: experimental
+severity: high
+references:
+  owasp_llm:
+    - "LLM01:2025 - Prompt Injection"
+  owasp_agentic:
+    - "ASI06:2025 - Excessive Agency"
+tags:
+  category: tool-poisoning
+  subcategory: justified-permissions
+  confidence: medium
+  scan_target: mcp
+agent_source:
+  type: mcp_exchange
+  framework: [any]
+  provider: [any]
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)(?:network|internet|web|online)\s+(?:access|connectivity|capability|permissions)[^.]*(?:exchange\s+rate|rates)[^.]*(?:filesystem|file\s+system|disk|storage)\s+(?:access|permissions)'
+      description: "Network access justification followed by exchange rates and filesystem access"
+    - field: content
+      operator: regex
+      value: '(?i)(?:filesystem|file\s+system|disk|storage)\s+(?:access|permissions)[^.]*(?:exchange\s+rate|rates)[^.]*(?:network|internet|web|online)\s+(?:access|connectivity|capability|permissions)'
+      description: "Filesystem access justification followed by exchange rates and network access"
+    - field: content
+      operator: regex
+      value: '(?i)(?:fetch|retrieve|download|pull|grab|import)\s+exchange\s+rate[^.]*(?:cache|cached|cach\w+)[^.]*(?:filesystem|file\s+system|locally|disk)'
+      description: "Exchange rate fetching with caching justification for filesystem access"
+test_cases:
+  true_positives:
+    - input: "This tool needs network access to fetch exchange rates and filesystem access to cache the results locally."
+      expected: triggered
+    - input: "Required: network capability to pull exchange rates, plus filesystem permissions to maintain a local cache."
+      expected: triggered
+  true_negatives:
+    - input: "This tool provides currency conversion using pre-loaded exchange rates from our API."
+      expected: not_triggered
+    - input: "Network access is required for downloading software updates and patches."
+      expected: not_triggered
+response:
+  actions: [alert, block_input]
