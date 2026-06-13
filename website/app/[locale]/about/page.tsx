@@ -157,12 +157,12 @@ const MILESTONES: Milestone[] = [
   {
     date: "2026-06",
     title: {
-      en: "v3.1.x · 462 rules across 10 categories",
-      zh: "v3.1.x · 462 條規則,跨 10 個類別",
+      en: "v3.3.x · 651 rules across 10 categories",
+      zh: "v3.3.x · 651 條規則,跨 10 個類別",
     },
     detail: {
-      en: "Current release line: 462 detection rules across 10 categories, specification 3.0.0-alpha.1 (Working Draft).",
-      zh: "目前釋出線:462 條偵測規則,跨 10 個類別,規範 3.0.0-alpha.1（Working Draft）。",
+      en: "Current release line: 651 detection rules across 10 categories, specification 3.0.0-alpha.1 (Working Draft).",
+      zh: "目前釋出線:651 條偵測規則,跨 10 個類別,規範 3.0.0-alpha.1（Working Draft）。",
     },
   },
 ];
