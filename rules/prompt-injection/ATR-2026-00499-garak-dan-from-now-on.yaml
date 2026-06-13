@@ -107,6 +107,10 @@ detection:
       value: "(?i)(my|the)\\s+(information|data|facts?|knowledge|input)\\s+is\\s+(accurate|correct|real|true)\\s+and\\s+(real[- ]time|live|current|up[- ]to[- ]date|fresh).{0,60}(you\\s+(must|need\\s+to|have\\s+to|should)\\s+(answer|respond|comply|believe|trust))"
       description: "False authority claim asserting real-time accuracy to force compliance"
 
+    - field: content
+      operator: regex
+      value: '(?i)(?:from\s+now\s+on[\s\S]{0,80}(?:refer\s+to\s+me\s+as|address\s+me\s+as|at\s+the\s+end\s+of\s+(?:all\s+)?your\s+responses?)|(?:refer\s+to\s+me\s+as|address\s+me\s+as|at\s+the\s+end\s+of\s+(?:all\s+)?your\s+responses?|answer\s+(?:me\s+)?in\s+(?:less\s+than|under|fewer\s+than)\s+\d+\s+words?)[\s\S]{0,40}from\s+now\s+on)'
+      description: 'Temporal persona override: from-now-on bound to a forced address/format directive'
   condition: any
   false_positives:
     - "Legitimate session-level behavioral instructions from system operators"

@@ -107,6 +107,10 @@ detection:
       value: "(?i)please\\s+(repeat|write|say|output).{0,30}(this\\s+)?(sequence|pattern|word|phrase|text|string|token).{0,60}[\"'][^\"']{1,50}[\"'].{1,50}[\"'][^\"']{1,50}[\"']"
       description: "Please repeat this sequence with multiple repetitions of the target"
 
+    - field: content
+      operator: regex
+      value: '(?i)(?:repeat|say|print|output|write)\b[\s\S]{0,60}\b(\w{2,})\b(?:\W+\1\b){3,}'
+      description: 'Divergent repetition: repeat/print followed by the same token 4+ times'
   condition: any
   false_positives:
     - "Legitimate requests to repeat something a finite, small number of times"

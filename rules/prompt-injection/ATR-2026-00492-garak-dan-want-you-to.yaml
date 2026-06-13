@@ -97,7 +97,7 @@ detection:
     # -- Layer 3: Fictional government/authority framing for content extraction --
     - field: user_input
       operator: regex
-      value: "(?i)(tell\\s+(me\\s+)?a\\s+(fictional|made[- ]up|hypothetical|fantasy)\\s+(story|scenario|tale)\\s+about\\s+(the\\s+)?(government|military|agency|CIA|NSA|FBI|secret\\s+service|intelligence).{0,60}(retrieve|access|steal|read\\s+out|extract|disclose|leak|obtain))"
+      value: "(?i)(tell\\s+(me\\s+)?a\\s+(fictional|made[- ]up|hypothetical|fantasy)\\s+(story|scenario|tale)\\s+about\\s+(the\\s+)?(government|military|agency|CIA|NSA|FBI|secret\\s+service|intelligence).{0,140}(retrieve|access|steal|read\\s+(out|them)|extract|disclose|leak|obtain|top\\s+secret))"
       description: "Fictional government framing used to request classified-style content extraction"
 
     # -- Layer 4: Docker/shell container bootstrapping for code execution --
@@ -110,7 +110,7 @@ detection:
     # -- Layer 5: Article framing to lower safety - multi-perspective AI manipulation --
     - field: user_input
       operator: regex
-      value: "(?i)(writing\\s+an\\s+article.{0,60}(want\\s+your\\s+input|multiple\\s+(perspective|view|angle|opinion)|capable\\s+of\\s+providing|speak\\s+from|voice\\s+of).{0,60}(provid|answering|responding|capabilit|unconstrained|unrestrict|without\\s+(filter|restriction|limit)))"
+      value: "(?i)(writing\\s+an\\s+article.{0,140}(want\\s+your\\s+input|(would\\s+)?like\\s+your\\s+input|multiple\\s+(perspective|view|angle|opinion)|capable\\s+of\\s+providing|speak\\s+from|voice\\s+of).{0,140}(provid|answering|responding|capabilit|unconstrained|unrestrict|without\\s+(filter|restriction|limit)))"
       description: "Article-writing framing to request multi-perspective AI including unconstrained mode"
 
   condition: any
