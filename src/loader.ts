@@ -105,6 +105,7 @@ export function validateRule(rule: unknown): { valid: boolean; errors: string[] 
       'llm_io', 'tool_call', 'mcp_exchange', 'agent_behavior',
       'multi_agent_comm', 'context_window', 'memory_access',
       'skill_lifecycle', 'skill_permission', 'skill_chain',
+      'agent_trace',
     ];
     if (typeof agentSource['type'] === 'string' && !validTypes.includes(agentSource['type'])) {
       errors.push(`Invalid agent_source.type: ${agentSource['type']}`);

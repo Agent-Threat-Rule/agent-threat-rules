@@ -37,10 +37,26 @@ function resolvePlaceholder(value: unknown, candidateSpan: ATRSpan): unknown {
 
 /** Read dotted-path attribute, e.g., "tool.args.target_conversation_id" */
 function readAttributePath(attrs: Record<string, unknown>, path: string): unknown {
-  // Try literal-key first (covers cases like "session.id" stored as a literal key with a dot)
+  // Fast path: exact literal key (covers "session.id" stored as a dotted literal key).
   if (path in attrs) return attrs[path];
-  // Then walk dotted path
   const parts = path.split(".");
+  // Greedy: match the longest leading literal-key prefix, then descend into the
+  // remainder. Handles span attributes that MIX literal dotted keys (e.g.
+  // "tool.args") with nested objects (e.g. { target_conversation_id }), which a
+  // plain part-by-part walk from the root cannot traverse.
+  for (let n = parts.length; n >= 1; n--) {
+    const prefix = parts.slice(0, n).join(".");
+    if (prefix in attrs) {
+      const head = attrs[prefix];
+      const rest = parts.slice(n);
+      if (rest.length === 0) return head;
+      if (head !== null && typeof head === "object") {
+        return readAttributePath(head as Record<string, unknown>, rest.join("."));
+      }
+      return undefined;
+    }
+  }
+  // Fallback: plain nested walk from the root (fully-nested attribute objects).
   let cur: unknown = attrs;
   for (const part of parts) {
     if (cur === null || cur === undefined) return undefined;
@@ -61,29 +77,49 @@ function evaluatePredicate(predicate: unknown, value: unknown): boolean {
     return value === predicate;
   }
   const pred = predicate as Record<string, unknown>;
-  // Compound predicate object: { in: [...] } / { not_equals: X } / etc.
-  if (Array.isArray(pred["in"]) && (pred["in"] as unknown[]).includes(value)) return true;
-  if (Array.isArray(pred["in"]) && !(pred["in"] as unknown[]).includes(value)) return false;
-  if (Array.isArray(pred["not_in"])) {
-    return !(pred["not_in"] as unknown[]).includes(value);
+  // Compound predicate object: EVERY recognised operator present must hold (AND).
+  // e.g. { exists: true, not_equals: X } means "the attribute exists AND differs
+  // from X" (spec §8.3). Evaluating operators independently with first-match
+  // early-return is a bug: { exists: true, not_equals: X } against an absent
+  // attribute would wrongly pass on not_equals (undefined !== X) without ever
+  // checking exists.
+  let sawOperator = false;
+  if ("in" in pred) {
+    sawOperator = true;
+    if (!Array.isArray(pred["in"]) || !(pred["in"] as unknown[]).includes(value)) return false;
   }
-  if ("equals" in pred) return value === pred["equals"];
-  if ("not_equals" in pred) return value !== pred["not_equals"];
+  if ("not_in" in pred) {
+    sawOperator = true;
+    if (!Array.isArray(pred["not_in"]) || (pred["not_in"] as unknown[]).includes(value)) return false;
+  }
+  if ("equals" in pred) {
+    sawOperator = true;
+    if (value !== pred["equals"]) return false;
+  }
+  if ("not_equals" in pred) {
+    sawOperator = true;
+    if (value === pred["not_equals"]) return false;
+  }
   if ("exists" in pred) {
+    sawOperator = true;
     const requiredExists = Boolean(pred["exists"]);
-    return requiredExists ? value !== undefined : value === undefined;
+    if (requiredExists ? value === undefined : value !== undefined) return false;
   }
   if ("regex" in pred && typeof pred["regex"] === "string") {
+    sawOperator = true;
     try {
       const re = new RegExp(pred["regex"] as string);
-      return typeof value === "string" && re.test(value);
+      if (!(typeof value === "string" && re.test(value))) return false;
     } catch {
       return false;
     }
   }
-  if (Object.keys(pred).length === 0) return true;
-  // Unknown predicate object — strict: return false rather than assume.
-  return false;
+  if (!sawOperator) {
+    // No recognised operator: empty object matches anything; otherwise strict-fail
+    // rather than assume.
+    return Object.keys(pred).length === 0;
+  }
+  return true;
 }
 
 /** Check if a span matches a shape. Handles literal values + predicate maps + placeholders. */
