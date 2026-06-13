@@ -1,0 +1,86 @@
+title: 'MCP Server Kubernetes: kubectl-generic flag injection enables Kubernetes bearer token exfiltration'
+id: ATR-2026-01931
+rule_version: 1
+status: experimental
+description: >
+  GitHub Security Advisory GHSA-6mx4-4h42-r8vh (CVE-2026-47250). MCP Server Kubernetes: kubectl-generic flag injection
+  enables Kubernetes bearer token exfiltration
+author: ATR Community (GHSA sync)
+date: 2026/06/06
+schema_version: '0.1'
+detection_tier: pattern
+maturity: experimental
+severity: medium
+references:
+  cve:
+    - CVE-2026-47250
+  cwe:
+    - CWE-88
+  ghsa:
+    - GHSA-6mx4-4h42-r8vh
+  external:
+    - https://github.com/Flux159/mcp-server-kubernetes/security/advisories/GHSA-6mx4-4h42-r8vh
+    - https://github.com/Flux159/mcp-server-kubernetes/releases/tag/v3.7.0
+    - https://github.com/advisories/GHSA-6mx4-4h42-r8vh
+metadata_provenance:
+  ghsa: ghsa-sync
+  cve: ghsa-sync
+  cwe: ghsa-sync
+tags:
+  category: model-abuse
+  scan_target: runtime
+  confidence: high
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+detection:
+  condition: any
+  false_positives: []
+  conditions:
+    - field: content
+      operator: regex
+      value: (?i)t = __import__\("threading"\)\.Thread\(target=srv\.serve_forever, daemon=True\); t\.start\(\)
+      description: Attack-indicator line from advisory PoC code block (1 signal)
+    - field: content
+      operator: regex
+      value: (?i)\band run the\b
+      description: CLI invocation pattern from advisory text
+    - field: content
+      operator: regex
+      value: (?i)\bnpm run build\b
+      description: CLI invocation pattern from advisory text
+response:
+  actions:
+    - alert
+  notify:
+    - security_team
+test_cases:
+  true_positives:
+    - input: t = __import__("threading").Thread(target=srv.serve_forever, daemon=True); t.start()
+      expected: triggered
+      description: Auto-extracted via code-block (poc-grounded)
+    - input: and run the
+      expected: triggered
+      description: Auto-extracted via cli-command (prose-grounded)
+    - input: npm run build
+      expected: triggered
+      description: Auto-extracted via cli-command (prose-grounded)
+  true_negatives:
+    - input: Please summarize the attached document and email me the result.
+      expected: not_triggered
+      description: Benign agent traffic sample 1
+    - input: What is the weather forecast for Taipei tomorrow?
+      expected: not_triggered
+      description: Benign agent traffic sample 2
+    - input: Translate this paragraph from English to Japanese.
+      expected: not_triggered
+      description: Benign agent traffic sample 3
+    - input: Fetch the latest commit messages from the upstream branch.
+      expected: not_triggered
+      description: Benign agent traffic sample 4
+    - input: Schedule a 30-minute meeting with the design team next Tuesday.
+      expected: not_triggered
+      description: Benign agent traffic sample 5
