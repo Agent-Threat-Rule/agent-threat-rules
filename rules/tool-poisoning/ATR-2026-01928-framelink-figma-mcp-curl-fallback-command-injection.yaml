@@ -18,6 +18,15 @@ detection_tier: pattern
 maturity: experimental
 severity: high
 references:
+  owasp_llm:
+  - "LLM06:2025 - Excessive Agency"
+  - "LLM05:2025 - Improper Output Handling"
+  owasp_agentic:
+  - "ASI02:2026 - Tool Misuse and Exploitation"
+  - "ASI05:2026 - Unexpected Code Execution"
+  mitre_atlas:
+  - "AML.T0053 - LLM Plugin Compromise"
+  - "AML.T0051.001 - Indirect Prompt Injection"
   cve:
   - CVE-2025-53967
   cwe:
@@ -31,6 +40,45 @@ metadata_provenance:
   vulnerablemcp: vulnerablemcp-sync
   cve: vulnerablemcp-sync
   cwe: vulnerablemcp-sync
+compliance:
+  owasp_agentic:
+    - id: ASI02:2026
+      context: "OWASP Agentic ASI02:2026 is exercised by command injection via the Framelink Figma MCP curl fallback path (CVE-2025-53967); this rule provides runtime detection of that technique."
+      strength: primary
+    - id: ASI05:2026
+      context: "OWASP Agentic ASI05:2026 is exercised by command injection via the Framelink Figma MCP curl fallback path (CVE-2025-53967); this rule provides runtime detection of that technique."
+      strength: secondary
+  owasp_llm:
+    - id: LLM06:2025
+      context: "OWASP LLM LLM06:2025 is exercised by command injection via the Framelink Figma MCP curl fallback path (CVE-2025-53967); this rule is a detection implementation for that category."
+      strength: primary
+    - id: LLM05:2025
+      context: "OWASP LLM LLM05:2025 is exercised by command injection via the Framelink Figma MCP curl fallback path (CVE-2025-53967); this rule is a detection implementation for that category."
+      strength: secondary
+  eu_ai_act:
+    - article: "15"
+      context: "EU AI Act Article 15 (accuracy, robustness and cybersecurity) requires controls against command injection via the Framelink Figma MCP curl fallback path (CVE-2025-53967); this rule provides runtime detection evidence for that obligation."
+      strength: primary
+    - article: "9"
+      context: "EU AI Act Article 9 (risk management system) requires controls against command injection via the Framelink Figma MCP curl fallback path (CVE-2025-53967); this rule provides runtime detection evidence for that obligation."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Manage
+      subcategory: MG.2.3
+      context: "NIST AI RMF MG.2.3 (risk treatment options selected and tracked) is supported by this rule's detection of command injection via the Framelink Figma MCP curl fallback path (CVE-2025-53967)."
+      strength: primary
+    - function: Measure
+      subcategory: MS.2.7
+      context: "NIST AI RMF MS.2.7 (security and resilience evaluated and documented) is supported by this rule's detection of command injection via the Framelink Figma MCP curl fallback path (CVE-2025-53967)."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control, including control of externally-provided processes) is operationalised by this rule's detection of command injection via the Framelink Figma MCP curl fallback path (CVE-2025-53967)."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is operationalised by this rule's detection of command injection via the Framelink Figma MCP curl fallback path (CVE-2025-53967)."
+      strength: secondary
+
 tags:
   category: tool-poisoning
   subcategory: mcp-catalog-imported

@@ -27,9 +27,53 @@ detection_tier: pattern
 maturity: experimental
 severity: high
 references:
+  owasp_llm:
+  - "LLM01:2025 - Prompt Injection"
+  owasp_agentic:
+  - "ASI01:2026 - Agent Goal Hijack"
+  - "ASI06:2026 - Memory and Context Poisoning"
+  mitre_atlas:
+  - "AML.T0051 - LLM Prompt Injection"
+  - "AML.T0051.001 - Indirect Prompt Injection"
   external:
     - https://github.com/uiuc-kang-lab/InjecAgent
     - https://arxiv.org/abs/2403.02691
+compliance:
+  owasp_agentic:
+    - id: ASI01:2026
+      context: "OWASP Agentic ASI01:2026 is exercised by indirect prompt injection where attacker instructions are embedded in a returned tool / API response (InjecAgent threat model); this rule provides runtime detection of that technique."
+      strength: primary
+    - id: ASI06:2026
+      context: "OWASP Agentic ASI06:2026 is exercised by indirect prompt injection where attacker instructions are embedded in a returned tool / API response (InjecAgent threat model); this rule provides runtime detection of that technique."
+      strength: secondary
+  owasp_llm:
+    - id: LLM01:2025
+      context: "OWASP LLM LLM01:2025 is exercised by indirect prompt injection where attacker instructions are embedded in a returned tool / API response (InjecAgent threat model); this rule is a detection implementation for that category."
+      strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: "EU AI Act Article 15 (accuracy, robustness and cybersecurity) requires controls against indirect prompt injection where attacker instructions are embedded in a returned tool / API response (InjecAgent threat model); this rule provides runtime detection evidence for that obligation."
+      strength: primary
+    - article: "9"
+      context: "EU AI Act Article 9 (risk management system) requires controls against indirect prompt injection where attacker instructions are embedded in a returned tool / API response (InjecAgent threat model); this rule provides runtime detection evidence for that obligation."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Manage
+      subcategory: MG.2.3
+      context: "NIST AI RMF MG.2.3 (risk treatment options selected and tracked) is supported by this rule's detection of indirect prompt injection where attacker instructions are embedded in a returned tool / API response (InjecAgent threat model)."
+      strength: primary
+    - function: Measure
+      subcategory: MS.2.7
+      context: "NIST AI RMF MS.2.7 (security and resilience evaluated and documented) is supported by this rule's detection of indirect prompt injection where attacker instructions are embedded in a returned tool / API response (InjecAgent threat model)."
+      strength: secondary
+  iso_42001:
+    - clause: "6.2"
+      context: "ISO/IEC 42001 Clause 6.2 (AI objectives and planning to achieve them) is operationalised by this rule's detection of indirect prompt injection where attacker instructions are embedded in a returned tool / API response (InjecAgent threat model)."
+      strength: primary
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control, including control of externally-provided processes) is operationalised by this rule's detection of indirect prompt injection where attacker instructions are embedded in a returned tool / API response (InjecAgent threat model)."
+      strength: secondary
+
 tags:
   category: prompt-injection
   subcategory: indirect-injection-tool-response

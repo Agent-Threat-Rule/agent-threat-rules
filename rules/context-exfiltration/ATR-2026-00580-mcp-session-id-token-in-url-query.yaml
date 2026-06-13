@@ -27,12 +27,60 @@ detection_tier: pattern
 maturity: experimental
 severity: high
 references:
+  owasp_llm:
+  - "LLM07:2025 - System Prompt Leakage"
+  - "LLM02:2025 - Sensitive Information Disclosure"
+  owasp_agentic:
+  - "ASI05:2026 - Unexpected Code Execution"
+  - "ASI06:2026 - Memory and Context Poisoning"
+  mitre_atlas:
+  - "AML.T0057 - LLM Data Leakage"
+  - "AML.T0056 - LLM Meta Prompt Extraction"
   vulnerablemcp_id:
   - session-ids-exposed-in-urls
   external:
   - https://equixly.com/blog/2025/03/29/mcp-server-new-security-nightmare/
 metadata_provenance:
   vulnerablemcp: vulnerablemcp-sync
+compliance:
+  owasp_agentic:
+    - id: ASI06:2026
+      context: "OWASP Agentic ASI06:2026 is exercised by leakage of MCP session IDs and auth tokens placed in URL query strings (exposed via logs, referrer headers, and history); this rule provides runtime detection of that technique."
+      strength: primary
+    - id: ASI05:2026
+      context: "OWASP Agentic ASI05:2026 is exercised by leakage of MCP session IDs and auth tokens placed in URL query strings (exposed via logs, referrer headers, and history); this rule provides runtime detection of that technique."
+      strength: secondary
+  owasp_llm:
+    - id: LLM02:2025
+      context: "OWASP LLM LLM02:2025 is exercised by leakage of MCP session IDs and auth tokens placed in URL query strings (exposed via logs, referrer headers, and history); this rule is a detection implementation for that category."
+      strength: primary
+    - id: LLM07:2025
+      context: "OWASP LLM LLM07:2025 is exercised by leakage of MCP session IDs and auth tokens placed in URL query strings (exposed via logs, referrer headers, and history); this rule is a detection implementation for that category."
+      strength: secondary
+  eu_ai_act:
+    - article: "15"
+      context: "EU AI Act Article 15 (accuracy, robustness and cybersecurity) requires controls against leakage of MCP session IDs and auth tokens placed in URL query strings (exposed via logs, referrer headers, and history); this rule provides runtime detection evidence for that obligation."
+      strength: primary
+    - article: "10"
+      context: "EU AI Act Article 10 (data and data governance) requires controls against leakage of MCP session IDs and auth tokens placed in URL query strings (exposed via logs, referrer headers, and history); this rule provides runtime detection evidence for that obligation."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Measure
+      subcategory: MS.2.10
+      context: "NIST AI RMF MS.2.10 (privacy risk examined and documented) is supported by this rule's detection of leakage of MCP session IDs and auth tokens placed in URL query strings (exposed via logs, referrer headers, and history)."
+      strength: primary
+    - function: Measure
+      subcategory: MS.2.7
+      context: "NIST AI RMF MS.2.7 (security and resilience evaluated and documented) is supported by this rule's detection of leakage of MCP session IDs and auth tokens placed in URL query strings (exposed via logs, referrer headers, and history)."
+      strength: secondary
+  iso_42001:
+    - clause: "8.4"
+      context: "ISO/IEC 42001 Clause 8.4 (AI system impact assessment) is operationalised by this rule's detection of leakage of MCP session IDs and auth tokens placed in URL query strings (exposed via logs, referrer headers, and history)."
+      strength: primary
+    - clause: "9.1"
+      context: "ISO/IEC 42001 Clause 9.1 (monitoring, measurement, analysis and evaluation) is operationalised by this rule's detection of leakage of MCP session IDs and auth tokens placed in URL query strings (exposed via logs, referrer headers, and history)."
+      strength: secondary
+
 tags:
   category: context-exfiltration
   subcategory: session-credential-in-url-query
