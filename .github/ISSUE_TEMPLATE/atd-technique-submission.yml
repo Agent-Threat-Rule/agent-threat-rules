@@ -1,0 +1,82 @@
+name: ATD — Submit a technique
+description: Propose a new agent-native threat technique for the ATD enumeration. Submissions enter a review queue; nothing auto-publishes.
+title: "[ATD] Technique: <short imperative title>"
+labels: ["atd", "atd-technique-submission", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for contributing to ATD (Agentic Threat Detection).
+
+        Important: this is a request for review, not a publish. Every submission
+        is treated as untrusted input, runs through a deterministic schema +
+        precision gate, and is reviewed by a maintainer before anything ships.
+        Do NOT paste working exploit payloads — describe the mechanism and link
+        evidence. See the contribution gate: https://agentthreatrule.org/en/atd#downloads
+  - type: input
+    id: title
+    attributes:
+      label: Technique title
+      description: A short imperative noun phrase, e.g. "Rug pull — silent mutation of an approved tool".
+      placeholder: Short imperative title
+    validations:
+      required: true
+  - type: dropdown
+    id: tactic
+    attributes:
+      label: Tactic
+      description: Which ATD tactic does this fall under?
+      options:
+        - "ATD-TA1 Protocol & Interconnect"
+        - "ATD-TA2 Memory & Context Integrity"
+        - "ATD-TA3 Goal, Planning & Reasoning"
+        - "ATD-TA4 Identity, Authz & Delegation"
+        - "ATD-TA5 Tool & Supply Chain"
+        - "ATD-TA6 Execution & Autonomy"
+        - "ATD-TA7 Multi-Agent Dynamics"
+        - "ATD-TA8 Model-Intrinsic & Governance"
+        - "ATD-TA9 Agentic Commerce (forward)"
+    validations:
+      required: true
+  - type: textarea
+    id: mechanism
+    attributes:
+      label: Attack mechanism (one or two sentences)
+      description: How the attack works. Describe the mechanism — do not include a working exploit payload.
+    validations:
+      required: true
+  - type: input
+    id: evidence
+    attributes:
+      label: Evidence URL
+      description: A real CVE (NVD/GHSA), a published advisory, or a peer-reviewed paper. Mark "aspirational" only if no public instance exists.
+      placeholder: https://nvd.nist.gov/vuln/detail/CVE-...  |  https://arxiv.org/abs/...  |  aspirational
+    validations:
+      required: true
+  - type: input
+    id: mappings
+    attributes:
+      label: Proposed framework mappings
+      description: OWASP ASI / MITRE ATLAS (AML.T...) / CWE, where one exists. Leave blank where genuinely none applies.
+      placeholder: "ASI04; AML.T0109; CWE-494"
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options: ["critical", "high", "medium"]
+    validations:
+      required: true
+  - type: textarea
+    id: detection
+    attributes:
+      label: Detection idea (optional)
+      description: If you have a precision-safe detection sketch (a regex or content pattern), describe it. It will go through the 0-FP gate before any rule ships.
+  - type: checkboxes
+    id: ack
+    attributes:
+      label: Acknowledgements
+      options:
+        - label: I am not pasting a working exploit payload; I am describing a mechanism and linking evidence.
+          required: true
+        - label: The evidence URL is real and verifiable (or I marked this aspirational).
+          required: true

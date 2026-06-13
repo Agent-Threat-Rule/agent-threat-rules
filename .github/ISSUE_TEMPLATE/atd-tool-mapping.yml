@@ -1,0 +1,42 @@
+name: ATD — Map a tool / interoperate
+description: Register that your scanner, framework, or registry maps to ATD, or request a crosswalk. Builds the ecosystem; borrows no authority it hasn't earned.
+title: "[ATD] Mapping: <your tool / project>"
+labels: ["atd", "atd-mapping", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this to declare that your project consumes or maps to ATD, or to
+        request an interop crosswalk (e.g. ATD ↔ your detection IDs, or ATD ↔
+        OWASP ASI / MITRE ATLAS / AVID). ATD maps to the established frameworks
+        rather than competing with them.
+  - type: input
+    id: project
+    attributes:
+      label: Project / tool name
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: Project URL
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Relationship
+      options:
+        - "Consumes ATD techniques / rules"
+        - "Maps its own detections to ATD"
+        - "Requests a crosswalk to another framework"
+        - "Offers to maintain / co-author"
+    validations:
+      required: true
+  - type: textarea
+    id: detail
+    attributes:
+      label: Details
+      description: What you map, how, and what you need from us.
+    validations:
+      required: true
