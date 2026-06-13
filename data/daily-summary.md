@@ -1,31 +1,24 @@
-## Daily Scan Summary (2026-06-12)
+## Daily Scan Summary (2026-06-13)
 - Scanned: 50 packages
-- CRITICAL: 11
-- HIGH: 4
-- CLEAN/LOW: 32
+- CRITICAL: 3
+- HIGH: 5
+- CLEAN/LOW: 33
 
 ### Flagged Packages:
-- [HIGH] ssh-mcp-server (score: 60)
-- [CRITICAL] @deploycheck/deploycheck-mcp (score: 75)
-- [HIGH] @morris131/mysql-mcp-server (score: 50)
-- [HIGH] @smilechecks/mcp-server (score: 45)
-- [CRITICAL] @stubbedev/atlassian-mcp (score: 100)
-- [CRITICAL] @suekou/mcp-notion-server (score: 100)
-- [CRITICAL] @suthio/redash-mcp (score: 100)
-- [CRITICAL] @synapta/mcp (score: 100)
-- [CRITICAL] @syncfusion/blazor-assistant (score: 80)
-- [CRITICAL] @syncfusion/javascript-assistant (score: 80)
-- [CRITICAL] @synchronity/mcp-server (score: 100)
-- [CRITICAL] @szc-ft/mcp-szcd-client (score: 100)
-- [HIGH] @taazkareem/clickup-mcp-server (score: 50)
-- [CRITICAL] @tacticlaunch/mcp-linear (score: 100)
-- [CRITICAL] @tankpkg/mcp-server (score: 100)
+- [HIGH] @figcodessolucoes/gmcps (score: 55)
+- [CRITICAL] @friday-ai-codes/mcp (score: 100)
+- [HIGH] @jonyoder/code-index-mcp (score: 40)
+- [HIGH] @kynver-app/mcp-agent-os (score: 60)
+- [HIGH] @lu71/mcp (score: 50)
+- [CRITICAL] @pipeshub-ai/mcp (score: 100)
+- [HIGH] @qverisai/sdk (score: 45)
+- [CRITICAL] @roadmapperai/mcp (score: 100)
 
 ### Cumulative:
-- Total scanned: 3010
-  - CLEAN: 1808
-  - CRITICAL: 341
+- Total scanned: 3060
+  - CLEAN: 1836
+  - CRITICAL: 344
   - ERROR: 5
-  - HIGH: 235
-  - LOW: 309
-  - MEDIUM: 312
+  - HIGH: 240
+  - LOW: 314
+  - MEDIUM: 321
