@@ -123,7 +123,7 @@ pip install pyatr
 
 ```yaml
 # .github/workflows/atr-scan.yml
-- uses: Agent-Threat-Rule/agent-threat-rules@v1
+- uses: Agent-Threat-Rule/agent-threat-rules@v3
   with:
     path: '.'
     severity: 'medium'
