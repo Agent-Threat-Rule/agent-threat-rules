@@ -1,0 +1,153 @@
+title: Zen MCP Server path-traversal blacklist bypass via non-canonical paths (CVE-2025-66689)
+id: ATR-2026-00578
+rule_version: 1
+status: experimental
+description: >
+  CVE-2025-66689 (CWE-22). The Zen MCP server's is_dangerous_path() blocks
+  sensitive files with an exact-string blacklist but never canonicalizes the
+  path before comparison, so a path that still resolves to a protected target
+  slips through when it is wrapped in normalization tricks: a blacklisted
+  prefix followed by ../ (/etc/shadow/../../../home/user/.ssh/id_rsa), a
+  same-directory bounce (/home/user/.ssh/../.ssh/id_rsa), a /./ no-op
+  (/etc/./shadow), or redundant slashes (/etc//shadow). The discriminator from
+  the existing deep-../-chain rule (ATR-2026-00569) and the clean-credential-path
+  rule (ATR-2026-00113) is that the SENSITIVE target token sits immediately
+  adjacent to a normalization/traversal artefact — neither a clean credential
+  path nor a bare ../ chain alone matches here.
+author: "ATR Community (vulnerablemcp sync)"
+date: 2026/06/12
+schema_version: '0.1'
+detection_tier: pattern
+maturity: experimental
+severity: high
+references:
+  cve:
+  - CVE-2025-66689
+  cwe:
+  - CWE-22
+  vulnerablemcp_id:
+  - cve-2025-66689-zen-mcp-path-traversal
+  external:
+  - https://www.sentinelone.com/vulnerability-database/cve-2025-66689/
+metadata_provenance:
+  cve: vulnerablemcp-sync
+  cwe: vulnerablemcp-sync
+  vulnerablemcp: vulnerablemcp-sync
+tags:
+  category: context-exfiltration
+  subcategory: path-normalization-bypass
+  scan_target: runtime
+  confidence: high
+agent_source:
+  type: tool_invocation
+  framework:
+  - any
+  provider:
+  - any
+detection:
+  condition: any
+  false_positives:
+  - Documentation or tutorials that mention ../ relative imports without a sensitive credential/system target adjacent to it
+  - Legitimate absolute file paths to project source under /home/<user>/project that contain no /../ , /./ , or redundant-slash artefact
+  - Security write-ups quoting the CVE that describe canonicalization in prose rather than presenting an inline non-canonical path to a sensitive file
+  conditions:
+  - field: content
+    operator: regex
+    value: (?i)[\\/](?:etc[\\/](?:shadow|passwd|sudoers)|\.ssh|\.aws|\.config[\\/]gcloud|root)[\\/]\.{1,2}[\\/]{1,2}[^\s"'<>]{0,80}(?:id_(?:rsa|ed25519|ecdsa)|\.ssh|shadow|passwd|credentials|authorized_keys|\.pem|\.key)
+    description: Blacklisted sensitive prefix immediately followed by a ./ or ../ normalization hop that re-targets another sensitive file (Zen-MCP prefix-then-traversal bypass)
+  - field: content
+    operator: regex
+    value: (?i)[\\/]etc[\\/]\.{1,2}[\\/]{1,2}(?:etc[\\/]){0,1}(?:shadow|passwd|sudoers)\b
+    description: /etc/./shadow or /etc/../etc/shadow style same-dir or bounce normalization reaching an exact-blacklist target
+  - field: content
+    operator: regex
+    value: (?i)[\\/]\.ssh[\\/]\.\.[\\/]\.ssh[\\/](?:id_(?:rsa|ed25519|ecdsa)|authorized_keys|known_hosts)\b
+    description: .ssh/../.ssh/ same-directory bounce that re-resolves to an SSH private key while evading an exact ~/.ssh/id_rsa blacklist entry
+  - field: content
+    operator: regex
+    value: (?i)/etc/{2,}(?:shadow|passwd|sudoers)\b|/\.ssh/{2,}id_(?:rsa|ed25519|ecdsa)\b
+    description: Redundant FORWARD-slash variant (/etc//shadow , /.ssh//id_rsa) that defeats an exact-string blacklist while resolving to the protected file. Forward-slash only — backslash forms like \etc\\passwd are almost always doc/Windows-escaping in tutorials, not a unix redundant-slash bypass, and caused a wild FP.
+response:
+  actions:
+  - alert
+  - block_tool
+  message_template: >
+    [ATR-2026-00578] Non-canonical path to a sensitive file detected
+    (CVE-2025-66689, Zen MCP is_dangerous_path blacklist bypass). The path mixes
+    a sensitive target (SSH key, /etc/shadow, credentials) with a normalization
+    or traversal artefact (../ , /./ , redundant slash, blacklisted-prefix-then-..)
+    that evades exact-string blacklists while still resolving to the protected
+    file. Remediation: upgrade Zen MCP server to v9.8.2 or later; canonicalize
+    paths (resolve symlinks, normalize . and ..) BEFORE any security check; prefer
+    an allowlist of permitted directories over a sensitive-path blacklist.
+  notify:
+  - security_team
+confidence: 85
+wild_fp_rate: 0
+test_cases:
+  true_positives:
+  - input: '{"path": "/etc/shadow/../../../home/user/.ssh/id_rsa"}'
+    expected: triggered
+    description: Blacklisted /etc/shadow prefix then ../ chain re-targeting an SSH private key (CVE-2025-66689 PoC)
+  - input: read_file("/home/user/.ssh/../.ssh/id_rsa")
+    expected: triggered
+    description: .ssh/../.ssh/ same-directory bounce evading exact ~/.ssh/id_rsa blacklist
+  - input: 'requested file: /etc/./shadow'
+    expected: triggered
+    description: /etc/./shadow no-op normalization reaching exact blacklist target
+  - input: open("/etc//shadow")
+    expected: triggered
+    description: Redundant-slash variant defeating exact-string match on /etc/shadow
+  - input: '{"file": "/root/.ssh/../.ssh/id_ed25519"}'
+    expected: triggered
+    description: root .ssh bounce to ed25519 private key
+  - input: path=/etc/../etc/passwd
+    expected: triggered
+    description: /etc/../etc/passwd bounce normalization to /etc/passwd
+  - input: load("/home/user/.aws/../.ssh/id_rsa")
+    expected: triggered
+    description: Blacklisted .aws prefix then ../ hop re-targeting an SSH key
+  true_negatives:
+  - input: path = "/home/user/project/main.py"
+    expected: not_triggered
+    description: Legit absolute project source path, no normalization artefact or sensitive target
+  - input: import "../../shared/utils"
+    expected: not_triggered
+    description: Normal relative import path, no sensitive credential/system target
+  - input: To go up a directory in the tutorial, use ../ before the folder name.
+    expected: not_triggered
+    description: Documentation sentence mentioning ../ with no sensitive target adjacent
+  - input: CVE-2025-66689 is fixed by canonicalizing paths before the blacklist check in is_dangerous_path().
+    expected: not_triggered
+    description: CVE patch-discussion prose, describes the fix without an inline non-canonical sensitive path
+  - input: We studied path-traversal bypasses where attackers reach SSH keys via redundant slashes and dot segments.
+    expected: not_triggered
+    description: Research abstract describing the technique in prose, no literal payload
+  - input: ssh-keygen -lf ~/.ssh/id_rsa
+    expected: not_triggered
+    description: Clean ~/.ssh/id_rsa path with no traversal/normalization artefact (owned by ATR-2026-00113)
+  - input: relpath = "../../../build/output/lib.so"
+    expected: not_triggered
+    description: Deep ../ chain to a build artefact, not a sensitive target (no overlap with ATR-2026-00569 either)
+  - input: cp /etc/passwd.bak /home/user/backup/passwd.copy
+    expected: not_triggered
+    description: Backup copy of passwd-like files via clean absolute paths, no normalization artefact
+  - input: 'In this lab, requesting \etc\\passwd demonstrates the path-traversal example.'
+    expected: not_triggered
+    description: Security-education skill quoting a backslash-escaped \etc\passwd example (wild FP from skills-sh/sickn33 file-path-traversal.md) — backslash form is doc-escaping, not a unix redundant-slash bypass
+_llm_authored:
+  model: claude (gstack subagent)
+  generalization_note: >
+    Generalizes the Zen-MCP is_dangerous_path() exact-blacklist bypass beyond the
+    two literal PoCs (/home/user/.ssh/../.ssh/id_rsa and /etc/./shadow) by keying
+    on the structural invariant of the bug class: a SENSITIVE target token
+    (id_rsa/ed25519/ecdsa, /etc/shadow|passwd|sudoers, credentials, authorized_keys,
+    .pem/.key) appearing ADJACENT to a path-normalization artefact (blacklisted
+    prefix then ../ , same-dir .ssh/../.ssh/ bounce, /./ no-op, /etc/../etc bounce,
+    or redundant slashes). This is deliberately disjoint from ATR-2026-00569
+    (requires 2+ consecutive ../ hops to a system target — a clean deep chain, no
+    prefix/bounce/normalization adjacency) and from ATR-2026-00113 (clean
+    credential paths with no traversal), so a bare ../ chain or a clean
+    ~/.ssh/id_rsa does not trigger this rule. Bounded {0,80}/{1,2} spans keep the
+    regex linear and avoid catastrophic backtracking.
+  note: Generation-time authoring; verified by deterministic gate. Runtime detection is pure regex. Human review required before merge.

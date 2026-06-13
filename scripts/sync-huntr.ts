@@ -689,6 +689,18 @@ _huntr_sync:
   imported_at: "${new Date().toISOString()}"
   huntr_disclosed: ${b.disclosed_at ? `"${b.disclosed_at}"` : "null"}
   data_source_used: "FALLBACK_A protectai/ai-exploits"
+
+# Triage flag read by promote-detection-ready.ts. ai-exploits nuclei
+# templates embed the exploit request itself (the PoC payload), so a
+# template with a parsed PoC body is detection-ready; the generator lifts
+# patterns from poc_body, never from advisory prose.
+_triage:
+  detection_ready: ${b.poc_body ? "true" : "false"}
+  reason: ${
+    b.poc_body
+      ? '"nuclei PoC payload present in ai-exploits template"'
+      : '"no PoC body in source template"'
+  }
 `;
 }
 
