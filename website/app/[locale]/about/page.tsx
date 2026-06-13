@@ -157,8 +157,8 @@ const MILESTONES: Milestone[] = [
   {
     date: "2026-06",
     title: {
-      en: "v3.3.x · 651 rules across 10 categories",
-      zh: "v3.3.x · 651 條規則,跨 10 個類別",
+      en: "v3.4.0 · 651 rules across 10 categories",
+      zh: "v3.4.0 · 651 條規則,跨 10 個類別",
     },
     detail: {
       en: "Current release line: 651 detection rules across 10 categories, specification 3.0.0-alpha.1 (Working Draft).",
@@ -210,6 +210,11 @@ export default async function AboutPage({
           {zh
             ? "規則以 MIT 授權公開，YAML 格式儲存於 GitHub。任何人都可以整合、修改、或貢獻回上游。沒有付費功能，沒有廠商鎖定。"
             : "Rules are published under MIT license in YAML format on GitHub. Anyone may integrate, modify, or contribute upstream. There are no paid features. There is no vendor lock-in."}
+        </p>
+        <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
+          {zh
+            ? "標準由社群驅動，並透過每日自動結晶飛輪持續擴張——紅隊大掃描與 CVE 攝取兩條管線各自跑完完整 sweep，把規則集從 462 條長到 651 條（新增 189 條）。"
+            : "The standard is community-driven and grows through daily auto-crystallization flywheels — a red-team mega-scan pipeline and a CVE-ingestion pipeline each ran full sweeps, expanding the ruleset from 462 to 651 rules (189 new rules)."}
         </p>
       </Section>
 

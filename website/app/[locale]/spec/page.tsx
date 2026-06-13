@@ -63,13 +63,13 @@ const SECTIONS: Section[] = [
       title: "Status of This Document",
       body: `<p>This document is a <strong>Working Draft</strong> published by the ATR Community. Although the rule format has been shipping in production for over a year, the surrounding governance is still transitioning from a single-maintainer model (BDFL) to a Technical Steering Committee (TSC). The transition criteria and seating process are defined in the <a href="/en/charter">project charter</a>.</p>
 <p>Discussion of this document takes place on the public GitHub repository at <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules" target="_blank" rel="noopener noreferrer">github.com/Agent-Threat-Rule/agent-threat-rules</a>. Substantive feedback should be filed as issues.</p>
-<p>All numbers in this document are sourced from <code>data/stats.json</code> in the repository, which is the canonical record of the project's current state. Where this document and <code>stats.json</code> disagree, <code>stats.json</code> is authoritative.</p>`,
+<p>All numbers in this document are sourced from <code>data/stats.json</code> in the repository, which is the canonical record of the project's current state. Benchmark figures additionally resolve through the per-source pointer at <code>data/measurements/&lt;source&gt;/latest.json</code> (aggregated into <code>stats.json</code> under <code>benchmarks[]</code>). Where this document and these files disagree, the files are authoritative.</p>`,
     },
     zh: {
       title: "本文件狀態 (Status of This Document)",
       body: `<p>本文件為 ATR 社群發布的 <strong>Working Draft</strong>。儘管規則格式已在 production 運行超過一年,周邊治理仍處於從單一維護者模型 (BDFL) 過渡到 Technical Steering Committee (TSC) 的階段。過渡條件與就任程序定義於 <a href="/zh/charter">專案章程</a>。</p>
 <p>本文件討論於公開 GitHub repository <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules" target="_blank" rel="noopener noreferrer">github.com/Agent-Threat-Rule/agent-threat-rules</a> 進行。實質性回饋請開 issue。</p>
-<p>本文件所有數字皆源自 repository 中的 <code>data/stats.json</code>,此為專案目前狀態的正本紀錄。若本文件與 <code>stats.json</code> 不一致,以 <code>stats.json</code> 為準。</p>`,
+<p>本文件所有數字皆源自 repository 中的 <code>data/stats.json</code>,此為專案目前狀態的正本紀錄。Benchmark 數字另經各來源指標 <code>data/measurements/&lt;source&gt;/latest.json</code> 解析 (彙總於 <code>stats.json</code> 的 <code>benchmarks[]</code>)。若本文件與這些檔案不一致,以這些檔案為準。</p>`,
     },
   },
   {

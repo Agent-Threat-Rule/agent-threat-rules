@@ -293,14 +293,14 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </Reveal>
           <Reveal delay={0.15}>
             <div className="font-data text-[clamp(48px,10vw,120px)] font-bold text-critical/[0.18] leading-[0.9] mb-3 md:mb-4">
-              751
+              1,302
             </div>
           </Reveal>
           <Reveal delay={0.2}>
             <h2 className="font-display text-[20px] md:text-[clamp(22px,3vw,32px)] font-extrabold tracking-[-1px] leading-[1.35] mb-3 md:mb-4 max-w-[620px]">
               {zh
-                ? <>惡意 AI agent skill。<br />三個協同攻擊者。<br />史上最大的 AI agent 惡意軟體行動。</>
-                : <>malicious AI agent skills.<br />Three coordinated threat actors.<br />The largest AI agent malware campaign ever documented.</>}
+                ? <>個 skill 被標記，552 個經人工複審確認為惡意。<br />三個協同攻擊者。<br />史上最大的 AI agent 惡意軟體行動。</>
+                : <>skills flagged, 552 confirmed malware after manual review.<br />Three coordinated threat actors.<br />The largest AI agent malware campaign ever documented.</>}
             </h2>
           </Reveal>
           <Reveal delay={0.25}>
@@ -321,8 +321,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.3}>
             <p className="text-sm md:text-base text-graphite max-w-[520px] mt-5 leading-[1.8]">
               {zh
-                ? "ATR 掃描 ClawHub、OpenClaw、Skills.sh 等六個 registry，共 96,096 個 skill 時發現了這些攻擊者。751 個惡意 skill 全數加入黑名單，並已通報 NousResearch。"
-                : "ATR found these threat actors scanning 96,096 skills across six registries — ClawHub, OpenClaw, Skills.sh, and three others. All 751 blacklisted and reported to NousResearch."}
+                ? "ATR 掃描 ClawHub、OpenClaw、Skills.sh 等六個 registry，共 96,096 個 skill 時發現了這些攻擊者。1,302 個 skill 被標記，經人工複審後確認 552 個為惡意，全數加入黑名單並已通報 NousResearch。"
+                : "ATR found these threat actors scanning 96,096 skills across six registries — ClawHub, OpenClaw, Skills.sh, and three others. 1,302 were flagged; 552 confirmed malware after manual review, all blacklisted and reported to NousResearch."}
             </p>
           </Reveal>
           <Reveal delay={0.35}>
@@ -411,7 +411,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 { value: stats.ruleCount, suffix: "", label: zh ? "條偵測規則" : "detection rules", desc: zh ? `${stats.categoryCount} 個威脅類別` : `${stats.categoryCount} threat categories`, liveKey: undefined },
                 { label: zh ? "HackAPrompt 召回率" : "HackAPrompt recall", rawValue: "66.0%", desc: zh ? "4,780 個對抗性樣本" : "4,780 adversarial samples" },
                 { value: stats.pintPrecision, suffix: "%", label: zh ? "PINT 精準度 (0.25% FP)" : "PINT precision (0.25% FP)", desc: zh ? `850 個樣本` : `850 samples`, liveKey: "pintPrecision" },
-                { label: "npm", rawValue: "23K", desc: zh ? "月下載量 (30d)" : "monthly downloads (30d)" },
+                { label: "npm", rawValue: "2.3K", desc: zh ? "月下載量 (30d)" : "monthly downloads (30d)" },
               ].map((item, i) => (
                 <Reveal key={i} delay={0.1 + i * 0.05}>
                   <div className="bg-ash p-5 md:p-10">
@@ -835,8 +835,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.18}>
             <p className="text-sm text-stone font-light max-w-[600px] mb-6 md:mb-8 leading-[1.8]">
               {zh
-                ? <>這個飛輪已經在運轉。96,096 次掃描發現 751 個惡意 skill，觸發結晶流程，新規則再回頭掃描——一個不斷自我強化的循環。</>
-                : <>The flywheel is already turning. The 96,096-skill scan discovered 751 malware, triggered crystallization, and new rules re-scanned the ecosystem &mdash; a self-reinforcing loop.</>}
+                ? <>這些飛輪每天都在運轉。紅隊大掃描飛輪與 CVE 匯入飛輪都已跑完完整掃描，並正轉為每日更新。96,096 次掃描標記了 1,302 個 skill（552 個經人工複審確認為惡意），觸發結晶流程，新規則再回頭掃描——一個不斷自我強化的循環。自動結晶化把標準從 462 條長到 651 條，新增 189 條規則，全部隨 npm <span className="font-data text-graphite">agent-threat-rules@3.4.0</span>（651 條規則，已上線）發布。</>
+                : <>These flywheels run every day. A red-team mega-scan flywheel and a CVE-ingestion flywheel have both completed full sweeps and are moving to daily updates. The 96,096-skill scan flagged 1,302 skills (552 confirmed malware after manual review), triggered crystallization, and new rules re-scan the ecosystem &mdash; a self-reinforcing loop. Auto-crystallization grew the standard from 462 to 651 rules (189 new), all shipped in npm <span className="font-data text-graphite">agent-threat-rules@3.4.0</span> &mdash; live now with 651 rules.</>}
             </p>
           </Reveal>
 

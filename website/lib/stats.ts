@@ -366,7 +366,7 @@ export function loadSiteStats(): SiteStats {
         name: "Cisco AI Defense",
         type: "merged",
         detail:
-          "PR #79 (34-rule PoC) + #99 merged. Full ATR rule pack (314 at time of PR #99) in skill-scanner production. Upstream maintained.",
+          "PR #79 (34-rule PoC) + #99 merged. Full ATR rule pack (at time of PR #99) in skill-scanner production. Upstream maintained.",
         url: "https://github.com/cisco-ai-defense/skill-scanner/pull/99",
         logo: "https://github.com/cisco-ai-defense.png?size=128",
       },

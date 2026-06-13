@@ -677,10 +677,15 @@ export default async function RedTeamPage({
               ? "5 個語料庫 · 75 條新規則 · HackAPrompt 召回率 28.6% → 66.0%"
               : "5 corpora · 75 new rules · HackAPrompt recall 28.6% → 66.0%"}
           </h2>
-          <p className="text-base text-stone font-light max-w-[640px] mb-10">
+          <p className="text-base text-stone font-light max-w-[640px] mb-4">
             {zh
               ? "2026-05-12：11 個並行 agent 消化五個外部語料庫，生成 75 條規則，均通過 6 道品質關卡，0 FP regression on benign corpus。詳細版本記錄在 /changelog。"
               : "2026-05-12: 11 parallel agents ingested five external corpora and generated 75 rules, all passing the 6-gate quality process with 0 FP regression on the benign corpus. Full version record at /changelog."}
+          </p>
+          <p className="text-base text-stone font-light max-w-[640px] mb-10">
+            {zh
+              ? `這個流程現在每天跑：紅隊巨量掃描與 CVE 攝取兩條飛輪都已跑完整輪，並轉為每日更新。新發現自動結晶成規則，把標準從 462 條推進到目前的 ${stats.ruleCount} 條（npm agent-threat-rules@3.4.0，2026-06-13 發布）。`
+              : `This pipeline now runs daily: a red-team mega-scan flywheel and a CVE-ingestion flywheel have each completed a full sweep and moved to daily updates. New findings auto-crystallize into rules, growing the standard from 462 to the current ${stats.ruleCount} (npm agent-threat-rules@3.4.0, published 2026-06-13).`}
           </p>
         </Reveal>
         <Reveal delay={0.1}>
