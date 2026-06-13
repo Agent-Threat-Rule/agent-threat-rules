@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://atr.dev/atd/schema/atd-technique-0.1.0.json",
+  "title": "ATD Technique Entry",
+  "description": "Agentic Threat Detection (ATD) — normative schema for a technique entry. v0.1.0 DRAFT. SemVer 2.0.0, no leading v. Minor/patch only ADD fields; readers MUST ignore unknown fields (OSV compatibility guarantee).",
+  "type": "object",
+  "required": ["atd_id", "schema_version", "title", "tactic", "abstraction", "status", "description", "detection_surface", "mappings", "references"],
+  "additionalProperties": true,
+  "properties": {
+    "atd_id": {
+      "type": "string",
+      "pattern": "^ATD-T[0-9]{4}(\\.[0-9]{3})?$",
+      "description": "Permanent technique id, e.g. ATD-T0001 or sub-technique ATD-T0001.001. Never reused."
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "SemVer 2.0.0, no leading 'v'."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 120,
+      "description": "Short imperative noun phrase naming the technique."
+    },
+    "tactic": {
+      "type": "string",
+      "enum": ["ATD-TA1", "ATD-TA2", "ATD-TA3", "ATD-TA4", "ATD-TA5", "ATD-TA6", "ATD-TA7", "ATD-TA8", "ATD-TA9"],
+      "description": "TA1 Protocol&Interconnect · TA2 Memory&Context · TA3 Goal/Planning/Reasoning · TA4 Identity/Authz/Delegation · TA5 Tool&Supply-Chain · TA6 Execution&Autonomy · TA7 Multi-Agent Dynamics · TA8 Model-Intrinsic&Governance · TA9 Agentic Commerce (forward)."
+    },
+    "abstraction": {
+      "type": "string",
+      "enum": ["pillar", "class", "base", "variant"],
+      "description": "CWE-style abstraction level."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["experimental", "test", "stable", "deprecated"],
+      "description": "Maturity ladder. Only 'stable' SHOULD be auto-synced by production consumers."
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["informational", "low", "medium", "high", "critical"]
+    },
+    "description": {
+      "type": "string",
+      "minLength": 20,
+      "description": "What the technique is and the attack mechanism."
+    },
+    "detection_surface": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "enum": ["content", "tool_input", "tool_response", "inter_agent_msg", "memory_op", "trace", "screen", "payment_mandate"]
+      },
+      "description": "Where in agent I/O this technique is observable."
+    },
+    "mappings": {
+      "type": "object",
+      "description": "Crosswalk to established frameworks. REQUIRED: interoperability is the source of legitimacy. A documented empty array with a 'gap' note is permitted where no upstream mapping exists yet (ATD differentiation).",
+      "required": ["owasp_asi", "mitre_atlas", "cwe"],
+      "additionalProperties": true,
+      "properties": {
+        "owasp_asi": {
+          "type": "array",
+          "items": {"type": "string", "pattern": "^ASI(0[1-9]|10)$"},
+          "description": "OWASP Agentic Top 10 2026 IDs (ASI01..ASI10). Empty [] allowed if documented gap."
+        },
+        "mitre_atlas": {
+          "type": "array",
+          "items": {"type": "string", "pattern": "^AML\\.(TA|T|M|CS)[0-9]{4}(\\.[0-9]{3})?$"},
+          "description": "MITRE ATLAS ids. Re-verify exact AML.T numbers against atlas.mitre.org before publishing."
+        },
+        "cwe": {
+          "type": "array",
+          "items": {"type": "string", "pattern": "^CWE-[0-9]+$"}
+        },
+        "avid": {
+          "type": "array",
+          "items": {"type": "string", "pattern": "^AVID-[0-9]{4}-[RV][0-9]+$"}
+        },
+        "maestro_layer": {
+          "type": "array",
+          "items": {"type": "string", "pattern": "^L[1-7]$"}
+        },
+        "gap_note": {
+          "type": "string",
+          "description": "If a required mapping array is empty, explain why no upstream framework names this technique (the future-proofing differentiation)."
+        }
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "target"],
+        "properties": {
+          "type": {"type": "string", "enum": ["childOf", "canPrecede", "peerOf", "mitigatedBy", "detectedBy"]},
+          "target": {"type": "string"}
+        }
+      }
+    },
+    "references": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["url"],
+        "properties": {
+          "type": {"type": "string", "enum": ["cve", "advisory", "research", "vendor", "other"]},
+          "url": {"type": "string", "format": "uri"}
+        }
+      },
+      "description": "Evidence the technique is real (CVE/advisory/research)."
+    },
+    "detection_rules": {
+      "type": "array",
+      "items": {"type": "string", "format": "uuid"},
+      "description": "UUIDv4 rule_ids in the ATD rule corpus bound to this technique."
+    }
+  }
+}

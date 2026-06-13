@@ -97,7 +97,7 @@ detection:
   false_positives:
   - URLs with non-credential query parameters only (?page=2, ?q=search, ?city=NYC) — no session/auth credential keyword in the query string
   - Credential keyword as a documentation path segment (/api-keys, /access-tokens/, /settings/auth-tokens/) with no =value query parameter
-  - Environment-variable or config assignment of a credential that is NOT inside a URL query (export API_KEY=..., SESSION_ID=... env, "Authorization: Bearer ..." header examples)
+  - 'Environment-variable or config assignment of a credential that is NOT inside a URL query (export API_KEY=..., SESSION_ID=... env, "Authorization: Bearer ..." header examples)'
   - Documentation placeholders with a redacted/short value (?session_token=5e9..., ?apiKey=KEY) — the 12+ char realistic-value bound excludes these
   - Uppercase or single-word placeholder token values (?access_token=ACCESS_TOKEN, ?apiKey=YOUR_API_KEY, ?sessionId=attacker_session, ?token=your_token_here) — the require-a-digit value shape excludes these, so API docs and security-teaching examples that show the pattern with a placeholder value do not match
   - Prose that mentions "session id in a URL" as a best-practice warning without an inline credential-bearing URL

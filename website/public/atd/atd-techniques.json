@@ -1,0 +1,577 @@
+{
+  "standard": "ATD — Agentic Threat Detection",
+  "status": "Editor's Draft",
+  "version": "0.1.0",
+  "generated": "2026-06-14",
+  "license": "CC-BY-4.0",
+  "stats": {
+    "techniques": 24,
+    "withLiveRule": 9,
+    "withCve": 9,
+    "tactics": 9
+  },
+  "tactics": [
+    {
+      "id": "ATD-TA1",
+      "name": "Protocol & Interconnect"
+    },
+    {
+      "id": "ATD-TA2",
+      "name": "Memory & Context Integrity"
+    },
+    {
+      "id": "ATD-TA3",
+      "name": "Goal, Planning & Reasoning"
+    },
+    {
+      "id": "ATD-TA4",
+      "name": "Identity, Authz & Delegation"
+    },
+    {
+      "id": "ATD-TA5",
+      "name": "Tool & Supply Chain"
+    },
+    {
+      "id": "ATD-TA6",
+      "name": "Execution & Autonomy"
+    },
+    {
+      "id": "ATD-TA7",
+      "name": "Multi-Agent Dynamics"
+    },
+    {
+      "id": "ATD-TA8",
+      "name": "Model-Intrinsic & Governance"
+    },
+    {
+      "id": "ATD-TA9",
+      "name": "Agentic Commerce (forward)"
+    }
+  ],
+  "techniques": [
+    {
+      "id": "ATD-T0001",
+      "tactic": "ATD-TA1",
+      "title": "Shell metacharacter injection through MCP tool parameters",
+      "mechanism": "Unsanitized MCP tool input reaches execSync/exec, yielding RCE on the server host.",
+      "severity": "high",
+      "evidence": {
+        "kind": "cve",
+        "label": "CVE-2025-53355",
+        "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-53355"
+      },
+      "asi": [
+        "ASI05",
+        "ASI02"
+      ],
+      "atlas": [
+        "AML.T0053"
+      ],
+      "cwe": [
+        "CWE-77"
+      ],
+      "atrRule": "ATR-2026-01927"
+    },
+    {
+      "id": "ATD-T0002",
+      "tactic": "ATD-TA1",
+      "title": "curl-fallback command injection in an MCP server",
+      "mechanism": "A failed fetch falls back to exec'ing curl with an unsanitized URL, enabling RCE.",
+      "severity": "high",
+      "evidence": {
+        "kind": "cve",
+        "label": "CVE-2025-53967",
+        "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-53967"
+      },
+      "asi": [
+        "ASI05",
+        "ASI02"
+      ],
+      "atlas": [
+        "AML.T0053"
+      ],
+      "cwe": [
+        "CWE-420"
+      ],
+      "atrRule": "ATR-2026-01928"
+    },
+    {
+      "id": "ATD-T0003",
+      "tactic": "ATD-TA1",
+      "title": "Command injection in a scaffolded MCP stdio server",
+      "mechanism": "Generated server concatenates tool input into exec(), giving RCE to anything built from it.",
+      "severity": "critical",
+      "evidence": {
+        "kind": "cve",
+        "label": "CVE-2025-54994",
+        "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-54994"
+      },
+      "asi": [
+        "ASI04",
+        "ASI05"
+      ],
+      "atlas": [
+        "AML.T0010.005"
+      ],
+      "cwe": [
+        "CWE-78"
+      ],
+      "atrRule": "ATR-2026-00577"
+    },
+    {
+      "id": "ATD-T0004",
+      "tactic": "ATD-TA1",
+      "title": "Line-jumping — tool-description injection at listing time",
+      "mechanism": "Hidden instructions in a tool description enter the model context at tools/list, before any call.",
+      "severity": "high",
+      "evidence": {
+        "kind": "research",
+        "label": "Trail of Bits / Invariant Labs",
+        "url": "https://blog.trailofbits.com/2025/04/21/jumping-the-line-how-mcp-servers-can-attack-you-before-you-ever-use-them/"
+      },
+      "asi": [
+        "ASI04",
+        "ASI01"
+      ],
+      "atlas": [
+        "AML.T0110",
+        "AML.T0104"
+      ],
+      "cwe": [
+        "CWE-1427"
+      ],
+      "atrRule": "ATR-2026-00579"
+    },
+    {
+      "id": "ATD-T0005",
+      "tactic": "ATD-TA1",
+      "title": "Rug pull — silent mutation of an approved tool",
+      "mechanism": "A server approved once later changes a tool's definition with no integrity re-check.",
+      "severity": "high",
+      "evidence": {
+        "kind": "research",
+        "label": "Invariant Labs",
+        "url": "https://github.com/invariantlabs-ai/mcp-injection-experiments"
+      },
+      "asi": [
+        "ASI04"
+      ],
+      "atlas": [
+        "AML.T0109",
+        "AML.T0110"
+      ],
+      "cwe": [
+        "CWE-494"
+      ],
+      "atrRule": "ATR-2026-00581"
+    },
+    {
+      "id": "ATD-T0006",
+      "tactic": "ATD-TA1",
+      "title": "Missing-auth MCP proxy command execution",
+      "mechanism": "No auth between client and MCP proxy lets any local/web-driven request spawn MCP processes.",
+      "severity": "critical",
+      "evidence": {
+        "kind": "cve",
+        "label": "CVE-2025-49596",
+        "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-49596"
+      },
+      "asi": [
+        "ASI03",
+        "ASI05"
+      ],
+      "atlas": [],
+      "cwe": [
+        "CWE-306"
+      ]
+    },
+    {
+      "id": "ATD-T0007",
+      "tactic": "ATD-TA1",
+      "title": "RCE from a malicious upstream MCP server",
+      "mechanism": "A client is RCE'd via a crafted authorization_endpoint URL in an untrusted server's response.",
+      "severity": "critical",
+      "evidence": {
+        "kind": "cve",
+        "label": "CVE-2025-6514",
+        "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-6514"
+      },
+      "asi": [
+        "ASI04",
+        "ASI05"
+      ],
+      "atlas": [
+        "AML.T0010.005"
+      ],
+      "cwe": [
+        "CWE-78"
+      ]
+    },
+    {
+      "id": "ATD-T0008",
+      "tactic": "ATD-TA1",
+      "title": "DNS-rebinding to a localhost MCP server",
+      "mechanism": "A malicious page rebinds DNS to reach an unauthenticated localhost MCP server cross-origin.",
+      "severity": "high",
+      "evidence": {
+        "kind": "cve",
+        "label": "CVE-2025-66416",
+        "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-66416"
+      },
+      "asi": [
+        "ASI07",
+        "ASI03"
+      ],
+      "atlas": [],
+      "cwe": [
+        "CWE-1188"
+      ]
+    },
+    {
+      "id": "ATD-T0009",
+      "tactic": "ATD-TA1",
+      "title": "Session ID / auth token placed in a URL query string",
+      "mechanism": "A credential in the query string leaks via server logs, proxies, CDNs, history, and Referer.",
+      "severity": "medium",
+      "evidence": {
+        "kind": "research",
+        "label": "Vulnerable MCP Project (Equixly)",
+        "url": "https://vulnerablemcp.info/"
+      },
+      "asi": [
+        "ASI03",
+        "ASI07"
+      ],
+      "atlas": [],
+      "cwe": [
+        "CWE-598"
+      ],
+      "atrRule": "ATR-2026-00580"
+    },
+    {
+      "id": "ATD-T0010",
+      "tactic": "ATD-TA2",
+      "title": "Serialized-object smuggling through an LLM response field",
+      "mechanism": "Injected output carries a serialization marker; deserialization rehydrates it as trusted and exfiltrates secrets.",
+      "severity": "critical",
+      "evidence": {
+        "kind": "cve",
+        "label": "CVE-2025-68664",
+        "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-68664"
+      },
+      "asi": [
+        "ASI06",
+        "ASI01"
+      ],
+      "atlas": [
+        "AML.T0051.001"
+      ],
+      "cwe": [
+        "CWE-502"
+      ]
+    },
+    {
+      "id": "ATD-T0011",
+      "tactic": "ATD-TA2",
+      "title": "Persistent memory / context-store poisoning",
+      "mechanism": "Attacker-controlled content is written into data the agent later reads back as trusted context.",
+      "severity": "high",
+      "evidence": {
+        "kind": "research",
+        "label": "MITRE ATLAS — Context Poisoning",
+        "url": "https://atlas.mitre.org/"
+      },
+      "asi": [
+        "ASI06"
+      ],
+      "atlas": [
+        "AML.T0080"
+      ],
+      "cwe": [
+        "CWE-349"
+      ]
+    },
+    {
+      "id": "ATD-T0012",
+      "tactic": "ATD-TA3",
+      "title": "Indirect prompt injection via tool / API response",
+      "mechanism": "Malicious text in returned tool data overrides the agent's plan and redirects its actions.",
+      "severity": "high",
+      "evidence": {
+        "kind": "research",
+        "label": "InjecAgent, arXiv 2403.02691",
+        "url": "https://arxiv.org/abs/2403.02691"
+      },
+      "asi": [
+        "ASI01"
+      ],
+      "atlas": [
+        "AML.T0051.001",
+        "AML.T0099"
+      ],
+      "cwe": [
+        "CWE-1427"
+      ],
+      "atrRule": "ATR-2026-00584"
+    },
+    {
+      "id": "ATD-T0013",
+      "tactic": "ATD-TA3",
+      "title": "System-prompt / guardrail extraction to plan evasion",
+      "mechanism": "Crafted queries coerce the agent to reveal its hidden system prompt, exposing control logic.",
+      "severity": "medium",
+      "evidence": {
+        "kind": "research",
+        "label": "MITRE ATLAS — Extract LLM System Prompt",
+        "url": "https://atlas.mitre.org/"
+      },
+      "asi": [
+        "ASI01",
+        "ASI09"
+      ],
+      "atlas": [
+        "AML.T0056"
+      ],
+      "cwe": [
+        "CWE-200"
+      ]
+    },
+    {
+      "id": "ATD-T0014",
+      "tactic": "ATD-TA4",
+      "title": "Confused-deputy token passthrough in an MCP server",
+      "mechanism": "A server forwards a held token to a downstream API without audience validation, escalating privilege.",
+      "severity": "high",
+      "evidence": {
+        "kind": "research",
+        "label": "MCP Authorization spec (confused-deputy)",
+        "url": "https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization"
+      },
+      "asi": [
+        "ASI03"
+      ],
+      "atlas": [],
+      "cwe": [
+        "CWE-441"
+      ]
+    },
+    {
+      "id": "ATD-T0015",
+      "tactic": "ATD-TA5",
+      "title": "Agent reads .env / secret files without consent",
+      "mechanism": "An agent tool reads credential files (.env, credentials, .npmrc) outside any user-approved scope.",
+      "severity": "high",
+      "evidence": {
+        "kind": "research",
+        "label": "ModelContextProtocol-Security advisory",
+        "url": "https://github.com/modelcontextprotocol-security/vulnerability-db"
+      },
+      "asi": [
+        "ASI02",
+        "ASI06"
+      ],
+      "atlas": [
+        "AML.T0053"
+      ],
+      "cwe": [
+        "CWE-538"
+      ],
+      "atrRule": "ATR-2026-00583"
+    },
+    {
+      "id": "ATD-T0016",
+      "tactic": "ATD-TA5",
+      "title": "Hallucinated-dependency squatting (slopsquatting)",
+      "mechanism": "The model recommends a fabricated package name an attacker pre-registers, pulling code into the agent env.",
+      "severity": "medium",
+      "evidence": {
+        "kind": "research",
+        "label": "MITRE ATLAS — Publish Hallucinated Entities",
+        "url": "https://atlas.mitre.org/"
+      },
+      "asi": [
+        "ASI04",
+        "ASI08"
+      ],
+      "atlas": [
+        "AML.T0060",
+        "AML.T0062"
+      ],
+      "cwe": [
+        "CWE-1427"
+      ]
+    },
+    {
+      "id": "ATD-T0017",
+      "tactic": "ATD-TA6",
+      "title": "Path-traversal blacklist bypass via non-canonical paths",
+      "mechanism": "Exact-string path checks are bypassed with ../, /./, redundant slashes to reach sensitive files.",
+      "severity": "medium",
+      "evidence": {
+        "kind": "cve",
+        "label": "CVE-2025-66689",
+        "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-66689"
+      },
+      "asi": [
+        "ASI02",
+        "ASI03"
+      ],
+      "atlas": [
+        "AML.T0053"
+      ],
+      "cwe": [
+        "CWE-22"
+      ],
+      "atrRule": "ATR-2026-00578"
+    },
+    {
+      "id": "ATD-T0018",
+      "tactic": "ATD-TA6",
+      "title": "MCP filesystem sandbox escape via symlink following",
+      "mechanism": "A symlink inside an allowed directory resolves to an out-of-scope path, granting system file access.",
+      "severity": "high",
+      "evidence": {
+        "kind": "cve",
+        "label": "CVE-2025-53109",
+        "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-53109"
+      },
+      "asi": [
+        "ASI02",
+        "ASI05"
+      ],
+      "atlas": [
+        "AML.T0053"
+      ],
+      "cwe": [
+        "CWE-59"
+      ]
+    },
+    {
+      "id": "ATD-T0019",
+      "tactic": "ATD-TA6",
+      "title": "Prompt-injection-to-RCE via an agent's file-write capability",
+      "mechanism": "Injected instructions drive the agent to write a startup/config file that yields persistent code execution.",
+      "severity": "critical",
+      "evidence": {
+        "kind": "research",
+        "label": "Pillar Security — Antigravity (no CVE assigned)",
+        "url": "https://www.pillar.security/blog/prompt-injection-leads-to-rce-and-sandbox-escape-in-antigravity"
+      },
+      "asi": [
+        "ASI05",
+        "ASI01"
+      ],
+      "atlas": [
+        "AML.T0053",
+        "AML.T0051.001"
+      ],
+      "cwe": [
+        "CWE-94"
+      ]
+    },
+    {
+      "id": "ATD-T0020",
+      "tactic": "ATD-TA7",
+      "title": "Agent Card poisoning to capture A2A task routing",
+      "mechanism": "A rogue A2A agent advertises an instruction-laden Agent Card so the orchestrator routes tasks to it.",
+      "severity": "high",
+      "evidence": {
+        "kind": "research",
+        "label": "Trustwave SpiderLabs — Agent-in-the-Middle",
+        "url": "https://www.levelblue.com/blogs/spiderlabs-blog/agent-in-the-middle-abusing-agent-cards-in-the-agent-2-agent-protocol-to-win-all-the-tasks"
+      },
+      "asi": [
+        "ASI07",
+        "ASI10"
+      ],
+      "atlas": [
+        "AML.T0051.001"
+      ],
+      "cwe": [
+        "CWE-345"
+      ]
+    },
+    {
+      "id": "ATD-T0021",
+      "tactic": "ATD-TA7",
+      "title": "Cross-agent injection propagation (cascading compromise)",
+      "mechanism": "One compromised agent emits content that injects the next downstream agent, cascading through the swarm.",
+      "severity": "high",
+      "evidence": {
+        "kind": "research",
+        "label": "InjecAgent + multi-agent control-flow hijack",
+        "url": "https://arxiv.org/abs/2403.02691"
+      },
+      "asi": [
+        "ASI08",
+        "ASI07",
+        "ASI10"
+      ],
+      "atlas": [
+        "AML.T0051.001",
+        "AML.T0080"
+      ],
+      "cwe": [
+        "CWE-1427"
+      ]
+    },
+    {
+      "id": "ATD-T0022",
+      "tactic": "ATD-TA8",
+      "title": "Trace tampering / non-tamper-evident agent audit logs",
+      "mechanism": "An agent logs reasoning but not the actual tool call, or logs are mutable — defeating after-the-fact audit.",
+      "severity": "medium",
+      "evidence": {
+        "kind": "research",
+        "label": "EU AI Act Art.12 logging / observability gap",
+        "url": "https://artificialintelligenceact.eu/article/12/"
+      },
+      "asi": [
+        "ASI10"
+      ],
+      "atlas": [],
+      "cwe": [
+        "CWE-778"
+      ]
+    },
+    {
+      "id": "ATD-T0023",
+      "tactic": "ATD-TA9",
+      "title": "Adversarial transaction steering of a purchasing agent",
+      "mechanism": "Injected content in a listing/page steers an autonomous-commerce agent to overpay or leak payment authority.",
+      "severity": "medium",
+      "evidence": {
+        "kind": "aspirational",
+        "label": "Forward-looking — no public instance yet"
+      },
+      "asi": [
+        "ASI01",
+        "ASI02",
+        "ASI09"
+      ],
+      "atlas": [],
+      "cwe": [
+        "CWE-1427"
+      ]
+    },
+    {
+      "id": "ATD-T0024",
+      "tactic": "ATD-TA9",
+      "title": "Payment-mandate forgery in an agent-to-agent handshake",
+      "mechanism": "A rogue agent spoofs delegated payment authority or mandate scope in an agentic-commerce exchange.",
+      "severity": "medium",
+      "evidence": {
+        "kind": "aspirational",
+        "label": "Forward-looking — protocols (AP2-class) emerging"
+      },
+      "asi": [
+        "ASI03",
+        "ASI07"
+      ],
+      "atlas": [],
+      "cwe": [
+        "CWE-345"
+      ]
+    }
+  ]
+}
