@@ -269,6 +269,26 @@ export const ATD_TECHNIQUES: ATDTechnique[] = [
     evidence: { kind: "aspirational", label: "Forward-looking — protocols (AP2-class) emerging", url: "https://fidoalliance.org/fido-alliance-to-develop-standards-for-trusted-ai-agent-interactions/" },
     asi: ["ASI03", "ASI07"], atlas: [], cwe: ["CWE-345"],
   },
+
+  // ---- TA2/TA8 addenda: 2026-06 research (verified arXiv) ----
+  {
+    id: "ATD-T0026",
+    tactic: "ATD-TA2",
+    title: "Sleeper (dormant) memory poisoning",
+    mechanism: "Attacker-controlled external content is written into the agent's persistent memory and lies dormant across sessions, re-emerging in later conversations to steer actions — decoupling the injection event from the malicious effect in time. The deterministic detection chokepoint is the memory-write boundary.",
+    severity: "high",
+    evidence: { kind: "research", label: "Hidden in Memory: Sleeper Memory Poisoning in LLM Agents (arXiv 2605.15338)", url: "https://arxiv.org/abs/2605.15338" },
+    asi: ["ASI06"], atlas: ["AML.T0080"], cwe: ["CWE-349"],
+  },
+  {
+    id: "ATD-T0025",
+    tactic: "ATD-TA8",
+    title: "Acoustic prompt injection of a voice agent",
+    mechanism: "An imperceptible adversarial audio perturbation mixed into normal speech drives a voice / audio-LLM agent to issue real tool calls, under audio-data-only access and with no textual user instruction. Text-layer rules cannot see it; detection is limited to the trace plane (a voice-initiated session producing high-risk tool calls with no corresponding textual instruction).",
+    severity: "high",
+    evidence: { kind: "research", label: "AudioHijack — imperceptible auditory prompt injection (arXiv 2604.14604, IEEE S&P 2026)", url: "https://arxiv.org/abs/2604.14604" },
+    asi: ["ASI01"], atlas: [], cwe: ["CWE-1427"],
+  },
 ];
 
 export const ATD_STATS = {

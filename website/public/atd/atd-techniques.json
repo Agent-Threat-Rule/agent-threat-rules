@@ -5,7 +5,7 @@
   "generated": "2026-06-14",
   "license": "CC-BY-4.0",
   "stats": {
-    "techniques": 24,
+    "techniques": 26,
     "withLiveRule": 9,
     "withCve": 9,
     "tactics": 9
@@ -804,6 +804,64 @@
         {
           "type": "vendor",
           "url": "https://fidoalliance.org/fido-alliance-to-develop-standards-for-trusted-ai-agent-interactions/"
+        }
+      ]
+    },
+    {
+      "atd_id": "ATD-T0026",
+      "schema_version": "0.1.0",
+      "title": "Sleeper (dormant) memory poisoning",
+      "tactic": "ATD-TA2",
+      "abstraction": "base",
+      "status": "experimental",
+      "severity": "high",
+      "description": "Attacker-controlled external content is written into the agent's persistent memory and lies dormant across sessions, re-emerging in later conversations to steer actions — decoupling the injection event from the malicious effect in time. The deterministic detection chokepoint is the memory-write boundary.",
+      "detection_surface": [
+        "memory_op"
+      ],
+      "mappings": {
+        "owasp_asi": [
+          "ASI06"
+        ],
+        "mitre_atlas": [
+          "AML.T0080"
+        ],
+        "cwe": [
+          "CWE-349"
+        ]
+      },
+      "references": [
+        {
+          "type": "research",
+          "url": "https://arxiv.org/abs/2605.15338"
+        }
+      ]
+    },
+    {
+      "atd_id": "ATD-T0025",
+      "schema_version": "0.1.0",
+      "title": "Acoustic prompt injection of a voice agent",
+      "tactic": "ATD-TA8",
+      "abstraction": "base",
+      "status": "experimental",
+      "severity": "high",
+      "description": "An imperceptible adversarial audio perturbation mixed into normal speech drives a voice / audio-LLM agent to issue real tool calls, under audio-data-only access and with no textual user instruction. Text-layer rules cannot see it; detection is limited to the trace plane (a voice-initiated session producing high-risk tool calls with no corresponding textual instruction).",
+      "detection_surface": [
+        "trace"
+      ],
+      "mappings": {
+        "owasp_asi": [
+          "ASI01"
+        ],
+        "mitre_atlas": [],
+        "cwe": [
+          "CWE-1427"
+        ]
+      },
+      "references": [
+        {
+          "type": "research",
+          "url": "https://arxiv.org/abs/2604.14604"
         }
       ]
     }
