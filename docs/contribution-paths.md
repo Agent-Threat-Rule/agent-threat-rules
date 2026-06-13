@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: Agent-Threat-Rule/agent-threat-rules@v1
+      - uses: Agent-Threat-Rule/agent-threat-rules@v3
 ```
 
 That's it. Every PR gets scanned against 113 detection rules.
