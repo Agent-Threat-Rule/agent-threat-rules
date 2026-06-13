@@ -99,7 +99,7 @@ the CSF 2.0 subcategories the rule corpus supplies evidence for.
 
 | CSF 2.0 Subcategory | Outcome | ATR Evidence | Rules (examples) |
 |---------------------|---------|--------------|------------------|
-| GV.PO-01 | Policy for cybersecurity risks established | Rules detect runaway loops, resource exhaustion patterns | ATR-2026-00045, -00046 |
+| GV.PO-01 | Policy for cybersecurity risks established | Rules detect runaway loops, resource exhaustion patterns | ATR-2026-00050, -00051 |
 | DE.AE-02 | Adverse events analyzed | Behavioral-method rules (placeholder in v1.1) will use metric thresholds over windows | (behavioral plane, §7 placeholder) |
 
 ### 4.7 skill-compromise (43 rules)
