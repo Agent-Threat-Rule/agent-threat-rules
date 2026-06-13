@@ -234,36 +234,36 @@ export default async function ATDPage({
       lang={locale === "zh" ? "zh-Hant" : "en"}
     >
       <header
-        className="atd-cover mb-10 md:mb-12"
+        className="atd-masthead mb-10 md:mb-12"
         lang={locale === "zh" ? "zh-Hant" : "en"}
       >
-        <p className="atd-kicker">
+        {/* ATD logo — enumeration bracket [ATD] in ATR palette (ink mark, blue dots) */}
+        <div className="atd-logo" aria-label="ATD">
+          <svg width="168" height="56" viewBox="0 0 168 56" role="img" aria-label="ATD" style={{ display: "block" }}>
+            <path d="M26 11 L13 11 L13 45 L26 45" fill="none" stroke="#07142A" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M142 11 L155 11 L155 45 L142 45" fill="none" stroke="#07142A" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+            <text x="84" y="38" textAnchor="middle" style={{ fontFamily: "var(--font-data)", fontWeight: 700, fontSize: "31px", letterSpacing: "1px" }} fill="#07142A">ATD</text>
+            <circle cx="38" cy="48" r="2.1" fill="#2563EB" />
+            <circle cx="46" cy="48" r="2.1" fill="#2563EB" />
+            <circle cx="54" cy="48" r="2.1" fill="#2563EB" />
+          </svg>
+        </div>
+
+        <p className="atd-eyebrow">
           {locale === "zh"
             ? "開放標準 · 草案 RFC · 徵求協作者 · ATR 之伴隨標準"
             : "Open standard · draft RFC · call for collaborators · companion to ATR"}
         </p>
 
-        {/* C logo — enumeration bracket [ATD], paper strokes + brass dots */}
-        <div className="atd-emblem" aria-label="ATD wordmark">
-          <svg width="186" height="66" viewBox="0 0 186 66" role="img" aria-label="ATD" style={{ display: "block" }}>
-            <path d="M28 13 L14 13 L14 53 L28 53" fill="none" stroke="#EDEBE4" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M158 13 L172 13 L172 53 L158 53" fill="none" stroke="#EDEBE4" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
-            <text x="93" y="45" textAnchor="middle" style={{ fontFamily: "var(--font-data)", fontWeight: 600, fontSize: "36px", letterSpacing: "1.5px" }} fill="#FBFAF6">ATD</text>
-            <circle cx="42" cy="56" r="2.3" fill="#B8924A" />
-            <circle cx="51" cy="56" r="2.3" fill="#B8924A" />
-            <circle cx="60" cy="56" r="2.3" fill="#B8924A" />
-          </svg>
-        </div>
-
         <h1>Agentic Threat Detection</h1>
-        <hr className="atd-rule" />
+
         <p className="atd-sub">
           {locale === "zh"
             ? "agent 原生威脅的開放、可執行偵測標準 —— OWASP、MITRE ATLAS、CWE、AVID 之下會跑的那一層。"
             : "The open, executable detection standard for agent-native threats — the runnable layer beneath OWASP, MITRE ATLAS, CWE and AVID."}
         </p>
 
-        <div className="atd-status not-prose" role="note">
+        <div className="doc-status not-prose" role="note">
           <strong>{status}</strong>
           <span className="pipe">·</span>
           <span><span className="opacity-70">{locale === "zh" ? "版本" : "Version"}</span> {ATD_VERSION}</span>
