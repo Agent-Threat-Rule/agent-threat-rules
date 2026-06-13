@@ -189,9 +189,18 @@ function sourceText(proposal: Record<string, unknown>): string {
   const parts: string[] = [];
   const description = proposal.description;
   if (typeof description === "string") parts.push(description);
-  const ghsa = proposal._ghsa_sync as Record<string, unknown> | undefined;
-  if (ghsa && typeof ghsa.advisory_body === "string") {
-    parts.push(ghsa.advisory_body);
+  // Pull the PoC / advisory body from ANY source provenance block. Every
+  // sync-*.ts writes a `_<source>_sync` object carrying the raw advisory
+  // markdown (advisory_body) and/or the exploit payload (poc_body). Scanning
+  // generically means a new CVE source is grounded the moment it lands a
+  // proposal — no per-source edit here. (Originally only `_ghsa_sync` was
+  // read, which silently starved huntr/osv/mcp/vulnerablemcp/msrc/owasp-asi.)
+  for (const [key, val] of Object.entries(proposal)) {
+    if (!/^_.*_sync$/.test(key)) continue;
+    const prov = val as Record<string, unknown> | undefined;
+    if (!prov || typeof prov !== "object") continue;
+    if (typeof prov.advisory_body === "string") parts.push(prov.advisory_body);
+    if (typeof prov.poc_body === "string") parts.push(prov.poc_body);
   }
   return parts.join("\n\n");
 }
@@ -382,8 +391,12 @@ function buildRule(
   patterns: ExtractedPattern[],
 ): Record<string, unknown> {
   const newRule = { ...proposal };
-  delete (newRule as Record<string, unknown>)._ghsa_sync;
-  delete (newRule as Record<string, unknown>)._nvd_sync;
+  // Strip every source-provenance block (_ghsa_sync, _huntr_sync, _osv_sync,
+  // _mcp_security_sync, _vulnerablemcp_sync, _msrc_sync, _owasp_asi_sync, …)
+  // and the triage flag — these are import scaffolding, not part of the rule.
+  for (const key of Object.keys(newRule)) {
+    if (/^_.*_sync$/.test(key)) delete (newRule as Record<string, unknown>)[key];
+  }
   delete (newRule as Record<string, unknown>)._triage;
 
   const hasPoc = patterns.some((p) => p.grounding === "poc");

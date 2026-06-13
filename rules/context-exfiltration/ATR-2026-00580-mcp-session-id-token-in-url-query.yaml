@@ -1,0 +1,220 @@
+title: MCP session ID / auth token placed in URL query string (session leak via logs, referrer, history)
+id: ATR-2026-00580
+rule_version: 1
+status: experimental
+description: >
+  Vulnerable MCP Project entry "session-ids-exposed-in-urls" (reported by
+  Equixly). An MCP server, gateway, or client construction embeds a session
+  identifier or auth credential in the URL QUERY STRING rather than in a
+  request header or POST body — e.g. GET /messages/?sessionId=<uuid>,
+  https://mcp.example.com/sse?session_id=<value>, or a config "url" field with
+  ?access_token=/?api_key=. URLs are routinely logged by web servers, proxies,
+  CDNs, and browser history, and are leaked in HTTP Referer headers on outbound
+  navigation, so a credential in the query string is an exposed credential —
+  enabling session hijack and context exfiltration. The discriminator from the
+  generic secret-assignment rule (ATR-2026-00021, which matches any
+  api_key=/access_token= at-rest assignment) and from the markdown-image-exfil
+  rules (00261/00405/00501, which key on ![](url?param=) image/link syntax) is
+  that THIS rule requires a session/auth credential keyword to sit in the QUERY
+  STRING of an http(s)/ws(s) URL or an MCP-shaped relative endpoint
+  (/messages, /sse, /mcp, or a config url= field) with a realistic (12+ char)
+  credential value — not a credential assigned to an env var, not a path
+  segment like /api-keys, and not a doc placeholder like ?session_token=5e9...
+author: "ATR Community (vulnerablemcp sync)"
+date: 2026/06/12
+schema_version: '0.1'
+detection_tier: pattern
+maturity: experimental
+severity: high
+references:
+  owasp_llm:
+  - "LLM07:2025 - System Prompt Leakage"
+  - "LLM02:2025 - Sensitive Information Disclosure"
+  owasp_agentic:
+  - "ASI05:2026 - Unexpected Code Execution"
+  - "ASI06:2026 - Memory and Context Poisoning"
+  mitre_atlas:
+  - "AML.T0057 - LLM Data Leakage"
+  - "AML.T0056 - LLM Meta Prompt Extraction"
+  vulnerablemcp_id:
+  - session-ids-exposed-in-urls
+  external:
+  - https://equixly.com/blog/2025/03/29/mcp-server-new-security-nightmare/
+metadata_provenance:
+  vulnerablemcp: vulnerablemcp-sync
+compliance:
+  owasp_agentic:
+    - id: ASI06:2026
+      context: "OWASP Agentic ASI06:2026 is exercised by leakage of MCP session IDs and auth tokens placed in URL query strings (exposed via logs, referrer headers, and history); this rule provides runtime detection of that technique."
+      strength: primary
+    - id: ASI05:2026
+      context: "OWASP Agentic ASI05:2026 is exercised by leakage of MCP session IDs and auth tokens placed in URL query strings (exposed via logs, referrer headers, and history); this rule provides runtime detection of that technique."
+      strength: secondary
+  owasp_llm:
+    - id: LLM02:2025
+      context: "OWASP LLM LLM02:2025 is exercised by leakage of MCP session IDs and auth tokens placed in URL query strings (exposed via logs, referrer headers, and history); this rule is a detection implementation for that category."
+      strength: primary
+    - id: LLM07:2025
+      context: "OWASP LLM LLM07:2025 is exercised by leakage of MCP session IDs and auth tokens placed in URL query strings (exposed via logs, referrer headers, and history); this rule is a detection implementation for that category."
+      strength: secondary
+  eu_ai_act:
+    - article: "15"
+      context: "EU AI Act Article 15 (accuracy, robustness and cybersecurity) requires controls against leakage of MCP session IDs and auth tokens placed in URL query strings (exposed via logs, referrer headers, and history); this rule provides runtime detection evidence for that obligation."
+      strength: primary
+    - article: "10"
+      context: "EU AI Act Article 10 (data and data governance) requires controls against leakage of MCP session IDs and auth tokens placed in URL query strings (exposed via logs, referrer headers, and history); this rule provides runtime detection evidence for that obligation."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Measure
+      subcategory: MS.2.10
+      context: "NIST AI RMF MS.2.10 (privacy risk examined and documented) is supported by this rule's detection of leakage of MCP session IDs and auth tokens placed in URL query strings (exposed via logs, referrer headers, and history)."
+      strength: primary
+    - function: Measure
+      subcategory: MS.2.7
+      context: "NIST AI RMF MS.2.7 (security and resilience evaluated and documented) is supported by this rule's detection of leakage of MCP session IDs and auth tokens placed in URL query strings (exposed via logs, referrer headers, and history)."
+      strength: secondary
+  iso_42001:
+    - clause: "8.4"
+      context: "ISO/IEC 42001 Clause 8.4 (AI system impact assessment) is operationalised by this rule's detection of leakage of MCP session IDs and auth tokens placed in URL query strings (exposed via logs, referrer headers, and history)."
+      strength: primary
+    - clause: "9.1"
+      context: "ISO/IEC 42001 Clause 9.1 (monitoring, measurement, analysis and evaluation) is operationalised by this rule's detection of leakage of MCP session IDs and auth tokens placed in URL query strings (exposed via logs, referrer headers, and history)."
+      strength: secondary
+
+tags:
+  category: context-exfiltration
+  subcategory: session-credential-in-url-query
+  scan_target: runtime
+  confidence: high
+agent_source:
+  type: mcp_exchange
+  framework:
+  - any
+  provider:
+  - any
+detection:
+  condition: any
+  false_positives:
+  - URLs with non-credential query parameters only (?page=2, ?q=search, ?city=NYC) — no session/auth credential keyword in the query string
+  - Credential keyword as a documentation path segment (/api-keys, /access-tokens/, /settings/auth-tokens/) with no =value query parameter
+  - Environment-variable or config assignment of a credential that is NOT inside a URL query (export API_KEY=..., SESSION_ID=... env, "Authorization: Bearer ..." header examples)
+  - Documentation placeholders with a redacted/short value (?session_token=5e9..., ?apiKey=KEY) — the 12+ char realistic-value bound excludes these
+  - Uppercase or single-word placeholder token values (?access_token=ACCESS_TOKEN, ?apiKey=YOUR_API_KEY, ?sessionId=attacker_session, ?token=your_token_here) — the require-a-digit value shape excludes these, so API docs and security-teaching examples that show the pattern with a placeholder value do not match
+  - Prose that mentions "session id in a URL" as a best-practice warning without an inline credential-bearing URL
+  conditions:
+  - field: content
+    operator: regex
+    value: (?i)(?:https?|wss?):\/\/[A-Za-z0-9.@:\/_~%+-]{1,120}\?[A-Za-z0-9._~%+\/=&-]{0,80}?\b(?:session[_-]?id|sessionid|session[_-]?token|auth[_-]?token|access[_-]?token|api[_-]?key)=(?=[A-Za-z0-9._~+\/-]*[0-9])[A-Za-z0-9._~+\/-]{12,}
+    description: A session/auth credential keyword carrying a realistic high-entropy (12+ char, contains a digit) value inside the query string of an http(s)/ws(s) URL (session leak via logs/referrer/history). The digit requirement excludes uppercase/word placeholders (ACCESS_TOKEN, YOUR_API_KEY, attacker_session) that survive the engine's case-insensitive matching.
+  - field: content
+    operator: regex
+    value: (?i)\b(?:GET|POST|url["']?\s*[:=]\s*["']?)\s*\/[A-Za-z0-9._~%+\/-]{0,60}\?[A-Za-z0-9._~%+\/=&-]{0,60}?\b(?:session[_-]?id|sessionid|session[_-]?token|auth[_-]?token|access[_-]?token|api[_-]?key)=(?=[A-Za-z0-9._~+\/-]*[0-9])[A-Za-z0-9._~+\/-]{12,}
+    description: An MCP/SSE-shaped relative endpoint (request line or config url field, e.g. GET /messages/?sessionId=..., url=/sse?session_id=...) carrying a realistic high-entropy credential (12+ char, contains a digit) in the query string
+response:
+  actions:
+  - alert
+  - block_tool
+  message_template: >
+    [ATR-2026-00580] A session ID or auth credential is being placed in a URL
+    query string (Vulnerable MCP "session-ids-exposed-in-urls", reported by
+    Equixly). URLs are logged by servers, proxies, CDNs and browser history and
+    leak via HTTP Referer headers, so a credential in the query string is an
+    exposed credential — enabling MCP session hijack and context exfiltration.
+    Remediation: never put session IDs or tokens in the URL. Send them in an
+    HTTP header (Authorization: Bearer ...) or a POST request body; use
+    short-lived, rotating session tokens; serve everything over HTTPS; and
+    scrub session identifiers from proxy/server access logs.
+  notify:
+  - security_team
+confidence: 82
+wild_fp_rate: 0
+test_cases:
+  true_positives:
+  - input: https://mcp.example.com/sse?session_id=abc123def456ghi789
+    expected: triggered
+    description: MCP SSE endpoint URL with a session_id credential in the query string
+  - input: 'GET /messages/?sessionId=550e8400-e29b-41d4-a716-446655440000'
+    expected: triggered
+    description: Canonical MCP SSE transport request line placing the session UUID in the URL query (Equixly PoC form)
+  - input: 'endpoint: https://mcp.acme.io/connect?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'
+    expected: triggered
+    description: MCP connect URL carrying a JWT access_token in the query string
+  - input: '{"url": "https://gateway.tool.dev/mcp?api_key=sk-live-9f8e7d6c5b4a3210"}'
+    expected: triggered
+    description: MCP client config with the server api_key embedded in the URL query
+  - input: wss://realtime.example.org/stream?auth_token=A1b2C3d4E5f6G7h8I9j0
+    expected: triggered
+    description: WebSocket MCP transport with an auth_token in the query string (logged by proxies/CDNs)
+  - input: 'url=/sse?session_id=abc123def456ghi789jkl'
+    expected: triggered
+    description: Relative config url field placing a session_id in the SSE endpoint query string
+  - input: 'POST /mcp/stream?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'
+    expected: triggered
+    description: MCP stream request line with an access_token in the query string
+  true_negatives:
+  - input: https://api.example.com/search?q=hello&page=2
+    expected: not_triggered
+    description: Ordinary URL with only non-credential query params (q, page)
+  - input: Use the Authorization Bearer header instead of putting the token in the URL.
+    expected: not_triggered
+    description: Remediation prose recommending header-based auth — no credential-bearing URL
+  - input: SESSION_ID=local1234567890 set as an environment variable for the test runner
+    expected: not_triggered
+    description: Credential assigned to an env var, not inside a URL query string
+  - input: wss://connect.browser-use.com?apiKey=KEY&proxyCountryCode=us
+    expected: not_triggered
+    description: Documented WebSocket URL whose apiKey value is the literal placeholder KEY (under the 12-char realistic-value bound)
+  - input: https://connect.maton.ai/?session_token=5e9...
+    expected: not_triggered
+    description: Benign API doc with a redacted/truncated session_token placeholder (5e9... is under the 12-char realistic-value bound)
+  - input: The session id should never be exposed in a URL query string per best practice.
+    expected: not_triggered
+    description: Best-practice warning prose mentioning the concept with no inline credential-bearing URL
+  - input: https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=123&redirect_uri=https://app.example.com/callback
+    expected: not_triggered
+    description: Standard OAuth authorization-code redirect (response_type=code, no session/auth-token credential keyword in the query)
+  - input: 'GET /v1/users?page=2&limit=50'
+    expected: not_triggered
+    description: Normal REST request line with pagination params, no credential in the query
+  - input: 'documentation link: https://sentry.io/settings/auth-tokens/'
+    expected: not_triggered
+    description: Credential keyword appears only as a path segment (/auth-tokens/), not a =value query parameter
+  - input: https://api.weixin.qq.com/cgi-bin/draft/add?access_token=ACCESS_TOKEN
+    expected: not_triggered
+    description: WeChat API documentation URL whose access_token value is the uppercase placeholder ACCESS_TOKEN — no digit, so the require-a-digit value shape excludes it (wild FP from real-skill scan)
+  - input: https://target.com/login?SESSIONID=attacker_session
+    expected: not_triggered
+    description: Security-education example (broken-authentication.md) showing the session-fixation vuln with a teaching placeholder value attacker_session — no digit, excluded by value shape (wild FP from real-skill scan)
+_llm_authored:
+  model: claude (gstack subagent)
+  generalization_note: >
+    Generalizes the Vulnerable MCP "session-ids-exposed-in-urls" advisory beyond
+    its single canonical example (GET /messages/?sessionId=UUID) by keying on the
+    structural invariant of the bug class: a session/auth credential keyword
+    (session_id, sessionid, session_token, auth_token, access_token, api_key)
+    appearing as a QUERY-STRING parameter (preceded by ? or & inside the query)
+    of either an absolute http(s)/ws(s) URL (condition 1) or an MCP/SSE-shaped
+    relative endpoint or config url field (condition 2), carrying a realistic
+    12+ character credential value that CONTAINS A DIGIT. Two precision
+    discriminators stack: (1) the 12+ char length bound excludes short
+    placeholders (?session_token=5e9..., ?apiKey=KEY); (2) the require-a-digit
+    value shape — a (?=[A-Za-z0-9._~+/-]*[0-9]) lookahead before the value —
+    excludes letters-only / uppercase placeholders. The digit requirement is
+    deliberately chosen instead of a case-sensitive lowercase check because the
+    ATR engine strips inline (?i) and applies the case-insensitive flag
+    globally, so a [a-z] check would still match uppercase; a digit is the
+    case-fold-stable signal. This drops the wild false positives found scanning
+    3115 real skills — a WeChat API doc (?access_token=ACCESS_TOKEN) and a
+    security-teaching example (?SESSIONID=attacker_session) — plus the
+    YOUR_API_KEY / your_token_here / REDACTED placeholder family, while still
+    catching real UUIDs (550e8400-...), JWTs (eyJ...digits...) and live keys
+    (sk-live-9f8e7d6c...), which all contain digits. Deliberately disjoint from
+    ATR-2026-00021 (generic at-rest credential ASSIGNMENT, no URL-query
+    requirement), from the markdown-image-exfil rules 00261/00405/00501 (which
+    require ![](...) image/link markdown syntax), and from ATR-2026-00114
+    (OAuth redirect_uri / forwarding-verb patterns). Path-segment credential
+    keywords (/api-keys, /access-tokens/) and env-var assignments do not match
+    because the credential must be a =value query parameter inside a URL.
+    Bounded {0,80}/{0,60}/{1,120} spans keep the regex linear (no unbounded
+    [^...]* or .*) and avoid catastrophic backtracking.
+  note: Generation-time authoring; verified by deterministic gate. Runtime detection is pure regex. Human review required before merge.
