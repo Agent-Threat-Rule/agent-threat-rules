@@ -416,8 +416,8 @@ export default async function NistAiRmfPage({
           />
           <CTACard
             num="NPM"
-            head={zh ? "v3.1.1 已發布" : "v3.1.1 published"}
-            body="npm install agent-threat-rules@3.1.1"
+            head={zh ? "v3.3.1 已發布" : "v3.3.1 published"}
+            body="npm install agent-threat-rules"
             href="https://www.npmjs.com/package/agent-threat-rules"
           />
           <CTACard
