@@ -15,7 +15,7 @@ import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { ATREngine } from './engine.js';
 import { loadRuleFile, loadRulesFromDirectory, validateRule } from './loader.js';
-import type { AgentEvent, ATRMatch, ATRRule } from './types.js';
+import type { AgentEvent, ATRMatch, ATRRule, ATRTrace } from './types.js';
 import { generateBadgeSvg, generateBadgeEndpoint, lookupPackageScan, generateBadgeMarkdown } from './badge.js';
 import { cmdScanUnified } from './cli/scan-handler.js';
 
@@ -462,6 +462,28 @@ function buildEventFromTestCase(
   fields['content'] = content;
   fields['agent_message'] = content;
 
+  // v1.1 trace-method rules evaluate over a span DAG (OpenInference), not text.
+  // When the rule declares method: trace and the test input is a JSON trace
+  // ({"spans":[...]}), parse it into event.trace so the engine's trace
+  // evaluator can run. Without this, trace rules can never satisfy their own
+  // declared true_positives: the harness would otherwise feed the raw JSON as
+  // text to the pattern fallback, whose regex expects a pre-computed synthetic
+  // verdict field that is absent from a raw trace.
+  let trace: ATRTrace | undefined;
+  if (rule.detection?.method === 'trace') {
+    let parsed: unknown =
+      rawInput && typeof rawInput === 'object' && !Array.isArray(rawInput) ? rawInput : undefined;
+    if (parsed === undefined) {
+      try {
+        parsed = JSON.parse(input);
+      } catch {
+        parsed = undefined; // input is not a JSON trace; leave trace unset
+      }
+    }
+    if (parsed && typeof parsed === 'object' && Array.isArray((parsed as { spans?: unknown }).spans)) {
+      trace = parsed as ATRTrace;
+    }
+  }
 
   return {
     type,
@@ -470,6 +492,7 @@ function buildEventFromTestCase(
     fields,
     sessionId: 'test-session',
     agentId: 'test-agent',
+    ...(trace ? { trace } : {}),
   };
 }
 
