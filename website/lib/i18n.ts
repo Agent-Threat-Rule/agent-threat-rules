@@ -68,9 +68,9 @@ export const messages: Record<Locale, Record<string, string>> = {
     "future.label": "The Future",
     "future.heading": "ATR rules don't have to be written by hand.",
     "future.sub":
-      "Threat Cloud crystallization turns new attacks into detection rules automatically.",
+      "Automated crystallization turns new attacks into detection rules automatically.",
     "future.note":
-      "Traditional rules are written by hand, on weekly cycles. Threat Cloud shrinks new rule turnaround from weeks to hours.",
+      "Traditional rules are written by hand, on weekly cycles. Automated crystallization shrinks new rule turnaround from weeks to hours.",
 
     // CTA
     "cta.heading": "Add ATR to your platform.",
@@ -158,9 +158,9 @@ export const messages: Record<Locale, Record<string, string>> = {
       "Cisco's AI Defense team integrated ATR rules as an upstream dependency. Their engineer submitted PR #79, we reviewed it, and it merged in 3 days. They then built a --rule-packs CLI feature (PR #80) specifically to consume ATR as a first-class rule source.",
 
     // Contribute page
-    "contribute.crystal.title": "Threat Cloud Crystallization",
+    "contribute.crystal.title": "Automated Crystallization",
     "contribute.crystal.sub":
-      "Traditional rules take weeks to write, review, and ship. Threat Cloud targets hours.",
+      "Traditional rules take weeks to write, review, and ship. Automated crystallization targets hours.",
     "contribute.governance": "Governance",
     "contribute.governance.desc":
       "Rule review process, maintainer roles, decision-making.",
@@ -439,9 +439,9 @@ export const messages: Record<Locale, Record<string, string>> = {
     "future.label": "\u672A\u4F86",
     "future.heading": "ATR \u898F\u5247\u4E0D\u9700\u8981\u624B\u5BEB\u3002",
     "future.sub":
-      "Threat Cloud \u7D50\u6676\u6A5F\u5236\u81EA\u52D5\u5C07\u65B0\u653B\u64CA\u8F49\u5316\u70BA\u5075\u6E2C\u898F\u5247\u3002",
+      "\u81EA\u52D5\u7D50\u6676\u6A5F\u5236\u81EA\u52D5\u5C07\u65B0\u653B\u64CA\u8F49\u5316\u70BA\u5075\u6E2C\u898F\u5247\u3002",
     "future.note":
-      "\u50B3\u7D71\u898F\u5247\u7531\u4EBA\u5DE5\u64B0\u5BEB\uff0c\u9031\u671F\u4EE5\u9031\u8A08\u3002Threat Cloud \u8B93\u65B0\u898F\u5247\u7684\u7522\u51FA\u5F9E\u6578\u9031\u7E2E\u77ED\u5230\u6578\u5C0F\u6642\u3002",
+      "\u50B3\u7D71\u898F\u5247\u7531\u4EBA\u5DE5\u64B0\u5BEB\uff0c\u9031\u671F\u4EE5\u9031\u8A08\u3002\u81EA\u52D5\u7D50\u6676\u8B93\u65B0\u898F\u5247\u7684\u7522\u51FA\u5F9E\u6578\u9031\u7E2E\u77ED\u5230\u6578\u5C0F\u6642\u3002",
 
     // CTA
     "cta.heading": "\u5C07 ATR \u52A0\u5165\u4F60\u7684\u5E73\u53F0\u3002",
@@ -538,9 +538,9 @@ export const messages: Record<Locale, Record<string, string>> = {
       "Cisco \u7684 AI Defense \u5718\u968A\u5C07 ATR rules \u4F5C\u70BA\u4E0A\u6E38\u4F9D\u8CF4\u6574\u5408\u3002\u4ED6\u5011\u7684\u5DE5\u7A0B\u5E2B\u63D0\u4EA4\u4E86 PR #79\uff0C\u6211\u5011 review \u5B8C\uff0C3 \u5929\u5408\u4F75\u3002\u7136\u5F8C\u4ED6\u5011\u5EFA\u4E86 --rule-packs CLI\uff08PR #80\uff09\u5C08\u9580\u6D88\u8CBB ATR\u3002",
 
     // Contribute page
-    "contribute.crystal.title": "Threat Cloud \u7D50\u6676\u6A5F\u5236",
+    "contribute.crystal.title": "\u81EA\u52D5\u7D50\u6676\u6A5F\u5236",
     "contribute.crystal.sub":
-      "\u50B3\u7D71\u898F\u5247\u9700\u8981\u6578\u9031\u64B0\u5BEB\u3001\u5BE9\u67E5\u3001\u767C\u5E03\u3002Threat Cloud \u76EE\u6A19\u6578\u5C0F\u6642\u3002",
+      "\u50B3\u7D71\u898F\u5247\u9700\u8981\u6578\u9031\u64B0\u5BEB\u3001\u5BE9\u67E5\u3001\u767C\u5E03\u3002\u81EA\u52D5\u7D50\u6676\u76EE\u6A19\u6578\u5C0F\u6642\u3002",
     "contribute.governance": "\u6CBB\u7406",
     "contribute.governance.desc":
       "\u898F\u5247\u5BE9\u67E5\u6D41\u7A0B\u3001\u7DAD\u8B77\u8005\u89D2\u8272\u3001\u6C7A\u7B56\u6A5F\u5236\u3002",

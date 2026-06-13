@@ -51,8 +51,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             <p className="text-sm text-stone mb-3">
               {locale === "zh"
-                ? `${stats.ruleCount} 條偵測規則、RFC-001 品質標準、96K 生態系掃描、552 惡意軟體確認、Cisco 採用。ATR 標準的完整論述，含六項研究貢獻。`
-                : `${stats.ruleCount} detection rules, RFC-001 quality standard, 96K ecosystem scan, 552 confirmed malware, Cisco adoption. The complete ATR thesis with six research contributions.`}
+                ? `${stats.ruleCount} 條偵測規則、RFC-001 品質標準、96K 生態系掃描、751 惡意軟體確認、Cisco 採用。ATR 標準的完整論述，含六項研究貢獻。`
+                : `${stats.ruleCount} detection rules, RFC-001 quality standard, 96K ecosystem scan, 751 confirmed malware, Cisco adoption. The complete ATR thesis with six research contributions.`}
             </p>
             <div className="flex flex-wrap gap-3">
               <a href="https://doi.org/10.5281/zenodo.19178002" target="_blank" rel="noopener noreferrer" className="font-data text-xs text-blue hover:underline">Zenodo (DOI)</a>
