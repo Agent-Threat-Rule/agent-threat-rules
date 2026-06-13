@@ -1,0 +1,24 @@
+name: ATD — Validate enumeration
+
+on:
+  pull_request:
+    paths:
+      - "website/public/atd/**"
+      - "website/lib/atd-data.ts"
+      - "scripts/validate-atd.ts"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - run: npm ci
+      - name: Validate ATD techniques against the schema
+        run: npx tsx scripts/validate-atd.ts

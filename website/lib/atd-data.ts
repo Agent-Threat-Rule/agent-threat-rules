@@ -257,7 +257,7 @@ export const ATD_TECHNIQUES: ATDTechnique[] = [
     title: "Adversarial transaction steering of a purchasing agent",
     mechanism: "Injected content in a listing/page steers an autonomous-commerce agent to overpay or leak payment authority.",
     severity: "medium",
-    evidence: { kind: "aspirational", label: "Forward-looking — no public instance yet" },
+    evidence: { kind: "aspirational", label: "Forward-looking — no public instance yet", url: "https://cloud.google.com/blog/products/ai-machine-learning/announcing-agents-to-payments-ap2-protocol" },
     asi: ["ASI01", "ASI02", "ASI09"], atlas: [], cwe: ["CWE-1427"],
   },
   {
@@ -266,7 +266,7 @@ export const ATD_TECHNIQUES: ATDTechnique[] = [
     title: "Payment-mandate forgery in an agent-to-agent handshake",
     mechanism: "A rogue agent spoofs delegated payment authority or mandate scope in an agentic-commerce exchange.",
     severity: "medium",
-    evidence: { kind: "aspirational", label: "Forward-looking — protocols (AP2-class) emerging" },
+    evidence: { kind: "aspirational", label: "Forward-looking — protocols (AP2-class) emerging", url: "https://fidoalliance.org/fido-alliance-to-develop-standards-for-trusted-ai-agent-interactions/" },
     asi: ["ASI03", "ASI07"], atlas: [], cwe: ["CWE-345"],
   },
 ];
@@ -277,3 +277,51 @@ export const ATD_STATS = {
   withCve: ATD_TECHNIQUES.filter((t) => t.evidence.kind === "cve").length,
   tactics: ATD_TACTICS.length,
 };
+
+// Map the internal render-model to the normative schema shape used by the
+// public, downloadable enumeration (atd-techniques.json) and validated by
+// scripts/validate-atd.ts. The page renders the simple model; the published
+// artifact conforms to atd-technique.schema.json.
+const TACTIC_SURFACE: Record<string, string[]> = {
+  "ATD-TA1": ["tool_input", "tool_response"],
+  "ATD-TA2": ["memory_op"],
+  "ATD-TA3": ["content", "tool_response"],
+  "ATD-TA4": ["tool_input"],
+  "ATD-TA5": ["tool_input", "tool_response"],
+  "ATD-TA6": ["tool_input", "trace"],
+  "ATD-TA7": ["inter_agent_msg"],
+  "ATD-TA8": ["trace"],
+  "ATD-TA9": ["payment_mandate"],
+};
+
+export function toATDRecord(t: ATDTechnique) {
+  const refType =
+    t.evidence.kind === "cve"
+      ? "cve"
+      : t.evidence.kind === "aspirational"
+        ? "vendor"
+        : "research";
+  return {
+    atd_id: t.id,
+    schema_version: "0.1.0",
+    title: t.title,
+    tactic: t.tactic,
+    abstraction: "base",
+    status: "experimental",
+    severity: t.severity,
+    description: t.mechanism,
+    detection_surface: TACTIC_SURFACE[t.tactic] ?? ["content"],
+    mappings: {
+      owasp_asi: t.asi,
+      mitre_atlas: t.atlas,
+      cwe: t.cwe,
+      ...(t.asi.length === 0 && t.atlas.length === 0
+        ? { gap_note: "No upstream framework names this technique yet." }
+        : {}),
+    },
+    references: t.evidence.url
+      ? [{ type: refType, url: t.evidence.url }]
+      : [],
+    ...(t.atrRule ? { atr_rule: t.atrRule } : {}),
+  };
+}

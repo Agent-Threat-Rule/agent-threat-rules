@@ -246,6 +246,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "cite.tablist_aria": "Citation format selector",
 
     // Nav additions (kept short)
+    "nav.atd": "ATD",
     "nav.spec": "Specification",
     "nav.implementers": "Implementers",
     "nav.conformance": "Conformance",
@@ -633,6 +634,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "spec.implementer_report": "\u5BE6\u4F5C\u8005\u5831\u544A (Implementer Report)",
     "cite.tablist_aria": "\u5F15\u7528\u683C\u5F0F\u9078\u64C7\u5668",
 
+    "nav.atd": "ATD",
     "nav.spec": "\u898F\u683C (Specification)",
     "nav.implementers": "\u5BE6\u4F5C\u8005 (Implementers)",
     "nav.conformance": "\u7B26\u898F (Conformance)",

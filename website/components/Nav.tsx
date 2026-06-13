@@ -23,6 +23,7 @@ export function Nav({ locale }: { locale: Locale }) {
   const prefix = `/${locale}`;
   const otherLocale = locale === "en" ? "zh" : "en";
   const pages = [
+    "atd",
     "spec",
     "rules",
     "threats",
