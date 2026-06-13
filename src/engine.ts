@@ -1782,17 +1782,33 @@ const CONFUSABLE_TO_LATIN: Record<string, string> = {
   '\u0131': 'i', '\u01C0': 'l', '\u0578': 'n',
 };
 
-const CONFUSABLE_RE = new RegExp(`[${Object.keys(CONFUSABLE_TO_LATIN).join('')}]`, 'g');
-
 /**
  * Fold visually-identical non-Latin homoglyphs to ASCII Latin so that
  * single-character script-swap evasion (a documented prompt-injection technique)
- * cannot defeat a Latin-script rule. Cheap no-op when the text is pure ASCII.
+ * cannot defeat a Latin-script rule.
+ *
+ * Hot path: this runs per condition during evaluation, so the common case must
+ * be near-free. Every foldable character is Greek (U+0370–03FF), Cyrillic
+ * (U+0400–04FF), or one of three isolated lookalikes. A tight charCode scan bails
+ * on pure-ASCII, CJK, and accented-Latin text without touching the regex engine
+ * or the replacement map; only Greek/Cyrillic-bearing text does the actual fold.
  */
 export function foldConfusables(text: string): string {
-  if (!CONFUSABLE_RE.test(text)) return text;
-  CONFUSABLE_RE.lastIndex = 0;
-  return text.replace(CONFUSABLE_RE, (ch) => CONFUSABLE_TO_LATIN[ch] ?? ch);
+  let hasCandidate = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    if ((c >= 0x0370 && c <= 0x04ff) || c === 0x0131 || c === 0x01c0 || c === 0x0578) {
+      hasCandidate = true;
+      break;
+    }
+  }
+  if (!hasCandidate) return text;
+  let out = '';
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    out += CONFUSABLE_TO_LATIN[ch] ?? ch;
+  }
+  return out;
 }
 
 /**
