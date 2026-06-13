@@ -132,6 +132,14 @@ pip install pyatr
 
 Results render in the GitHub Security tab via SARIF v2.1.0.
 
+### Docker
+
+```bash
+docker run --rm -v "$PWD:/scan" ghcr.io/agent-threat-rule/agent-threat-rules scan .
+```
+
+Zero-install scan of the current directory; the image bundles the CLI and pulls the latest published rules from npm.
+
 ## 4. Usage
 
 ### Command-line
