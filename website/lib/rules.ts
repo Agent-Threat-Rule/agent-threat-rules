@@ -335,7 +335,16 @@ export function loadRuleDetail(id: string): RuleDetail | undefined {
     rawYaml,
     detectionConditions: parsed.detection?.conditions ?? [],
     detectionCombinator: parsed.detection?.condition,
-    falsePositives: parsed.detection?.false_positives ?? [],
+    falsePositives: ((parsed.detection?.false_positives ?? []) as unknown[]).map(
+      (fp) =>
+        typeof fp === "string"
+          ? fp
+          : fp && typeof fp === "object"
+            ? Object.entries(fp as Record<string, unknown>)
+                .map(([k, v]) => `${k}: ${v}`)
+                .join("")
+            : String(fp),
+    ),
     truePositives: (parsed.test_cases?.true_positives ?? []).map((tc) =>
       normalizeTestCase(tc as { input?: unknown }),
     ) as TestCase[],
