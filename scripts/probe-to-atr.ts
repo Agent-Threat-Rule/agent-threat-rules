@@ -199,6 +199,17 @@ function validateProbe(p: Probe): void {
       `need at least 3 negative examples (got ${p.negative_examples.length}). Lookalike-but-benign strings keep precision honest.`,
     );
   if (!p.discovered_by) fail("discovered_by is required for attribution");
+  // Wall 3 — content sanitization. The probe body is untrusted GitHub-issue text
+  // written into a YAML proposal; keep attribution and examples to safe shapes so
+  // they cannot smuggle control content or bomb the pipeline.
+  if (!/^[A-Za-z0-9._\-\s@()/:]+$/.test(p.discovered_by))
+    fail("discovered_by must be a plain name/handle (letters, digits and . _ - @ ( ) / : only)");
+  const allExamples = [...p.positive_examples, ...p.negative_examples];
+  if (allExamples.length > 100) fail("too many examples (max 100 combined)");
+  for (const ex of allExamples) {
+    if (ex.length > 5000) fail(`example too long (${ex.length} chars, max 5000)`);
+    if (/\x00/.test(ex)) fail("examples must not contain null bytes");
+  }
 }
 
 function buildProposal(p: Probe, slug: string): string {
