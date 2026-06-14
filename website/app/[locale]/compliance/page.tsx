@@ -126,7 +126,7 @@ export default async function CompliancePage({
               {zh ? "下載合規映射包 (GitHub Releases) →" : "Download compliance mapping (GitHub Releases) →"}
             </a>
             <a
-              href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/compliance/"
+              href="https://github.com/Agent-Threat-Rule/agent-threat-rules/tree/main/docs"
               target="_blank"
               rel="noopener noreferrer"
               className="font-data text-xs text-blue hover:underline text-center"
@@ -189,12 +189,25 @@ export default async function CompliancePage({
               : "ATR's compliance mappings are not marketing claims. Each rule's YAML contains specific compliance metadata citing the exact regex or token that detects the attack — not a generic claim of 'alignment with framework'."}
           </p>
           <a
-            href="https://github.com/Agent-Threat-Rule/agent-threat-rules/tree/main/data/rules"
+            href="https://github.com/Agent-Threat-Rule/agent-threat-rules/tree/main/rules"
             target="_blank"
             rel="noopener noreferrer"
             className="font-data text-xs text-blue hover:underline"
           >
             {zh ? "在 GitHub 查看 raw rule YAML →" : "Browse raw rule YAML on GitHub →"}
+          </a>
+          <p className="text-sm text-graphite leading-[1.7] mt-4 mb-3">
+            {zh
+              ? "認為某條對應有誤？這是開放標準——歡迎 fork、挑戰，並提 PR 或開 issue 修正任何 mapping。"
+              : "Think a mapping is wrong? This is an open standard — fork it, challenge it, and open a PR or issue to correct any mapping."}
+          </p>
+          <a
+            href="https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-data text-xs text-blue hover:underline"
+          >
+            {zh ? "開 issue 挑戰某條對應 →" : "Open an issue to challenge a mapping →"}
           </a>
         </div>
       </Reveal>

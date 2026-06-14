@@ -181,7 +181,7 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
               desc: zh
                 ? "找到繞過 ATR 規則的方法？這是最有價值的貢獻。每個回報都讓規則更強。"
                 : "Found a way to bypass an ATR rule? This is the most valuable contribution. Every report makes the rules stronger.",
-              href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=evasion-report.md",
+              href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=evasion-report.yml",
               time: "15 min",
               impact: zh ? "最高" : "Highest",
             },
@@ -191,7 +191,7 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
               desc: zh
                 ? "ATR 規則標記了正常內容？回報幫助我們維持 99.7% 精準度。"
                 : "ATR rule flagged something benign? Your report helps maintain 99.7% precision.",
-              href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=false-positive.md",
+              href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=false-positive.yml",
               time: "20 min",
               impact: zh ? "高" : "High",
             },
@@ -212,7 +212,7 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
               desc: zh
                 ? "發現新的 AI agent 攻擊手法？在 Discussions 裡分享，可能會變成新規則。"
                 : "Found a new AI agent attack technique? Share it in Discussions. It may become a new rule.",
-              href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/discussions/categories",
+              href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/discussions",
               time: "10 min",
               impact: zh ? "中" : "Medium",
             },

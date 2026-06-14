@@ -166,11 +166,11 @@ export default async function GovernancePage({
             {
               kind: zh ? "修改 spec(ATR-SPEC-v1)" : "Spec amendment (ATR-SPEC-v1)",
               quorum: zh
-                ? "RFC issue 先開 + 7 天公開評論窗口 + 2 名維護者核可"
-                : "RFC issue opened first + 7-day public comment window + 2 maintainer approvals",
+                ? "RFC issue 先開 + 14 天公開評論窗口(複雜提案延長至 30 天)+ 2 名維護者核可"
+                : "RFC issue opened first + 14-day public comment window (extended to 30 for complex proposals) + 2 maintainer approvals",
               detail: zh
-                ? "spec 是所有相容引擎的契約。任何 spec 變動都要先以 issue 形式提出 RFC、開 7 天評論窗讓所有 implementer 看到,然後才接受 PR。在目前 BDFL 階段,「2 名核可」將由首席維護者加上一名外部 reviewer(待指定後)滿足。TSC 成立後改為 TSC 過半數核可。"
-                : "The spec is the contract between all conforming engines. Any spec change is opened first as an RFC issue with a 7-day public comment window so every implementer sees it, then the PR is accepted. Under the current BDFL phase the 'two approvals' bar will be satisfied by the lead maintainer plus one external reviewer once designated. When the TSC is formed the bar becomes a TSC majority.",
+                ? "spec 是所有相容引擎的契約。任何 spec 變動都要先以 issue 形式提出 RFC、開 14 天公開評論窗口(複雜提案延長至 30 天)讓所有 implementer 看到,然後才接受 PR。在目前 BDFL 階段,「2 名核可」將由首席維護者加上一名外部 reviewer(待指定後)滿足。TSC 成立後改為 TSC 過半數核可。"
+                : "The spec is the contract between all conforming engines. Any spec change is opened first as an RFC issue with a 14-day public comment window (extended to 30 for complex proposals) so every implementer sees it, then the PR is accepted. Under the current BDFL phase the 'two approvals' bar will be satisfied by the lead maintainer plus one external reviewer once designated. When the TSC is formed the bar becomes a TSC majority.",
             },
             {
               kind: zh ? "breaking change(SemVer 主版號)" : "Breaking change (SemVer major bump)",

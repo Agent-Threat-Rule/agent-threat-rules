@@ -72,7 +72,7 @@ export default async function HadesPostPage({
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">ATR 偵測什麼</h2>
           <p>
-            ATR 是 agent 威脅的開放標準。651 條偵測規則，MIT 授權。
+            ATR 是 agent 威脅的開放標準。652 條偵測規則，MIT 授權。
             規則 ATR-2026-00576 涵蓋 Hades 的憑證竊取階段，與 ATR-2026-00575 互補——
             後者偵測 Miasma 的 agent 設定檔後門，同一個攻擊活動的另一半。
           </p>
@@ -154,7 +154,7 @@ export default async function HadesPostPage({
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">What ATR detects</h2>
           <p>
-            ATR is an open standard for agent threats. 651 detection rules, MIT licensed. Rule
+            ATR is an open standard for agent threats. 652 detection rules, MIT licensed. Rule
             ATR-2026-00576 covers the Hades credential-theft stage, and it complements
             ATR-2026-00575, which detects the Miasma agent-config backdoor — the config-injection
             half of the same campaign.

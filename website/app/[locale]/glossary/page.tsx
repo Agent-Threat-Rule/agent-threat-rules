@@ -142,8 +142,8 @@ const ENTRIES: GlossaryEntry[] = [
   },
   {
     term: "Threat Cloud",
-    en: "An auto-review backend for community-submitted rules. Runs the crystallization pipeline and safety gates. (Reference implementation, not part of the normative standard.)",
-    zh: "對社群提交規則的自動審查後端。執行 crystallization pipeline 與安全閘 (safety gate)。(參考實作,非規範標準的一部分。)",
+    en: "An optional reference service operated by the ATR maintainers — not part of the standard. The standard is the spec plus the MIT-licensed rules, fully usable offline via npm / PyPI / raw YAML. Threat Cloud only adds hosted convenience (rule sync, threat submission); the same outcomes are reachable without it. Technically, it is an auto-review backend for community-submitted rules, running the crystallization pipeline and safety gates.",
+    zh: "Threat Cloud 是 ATR 維護者運營的選用參考服務,並非標準的一部分。標準本體是規格加上 MIT 授權的規則,透過 npm / PyPI / 純 YAML 完全可離線使用;Threat Cloud 只提供 hosted 便利(規則同步、威脅提交),不用它也能達到同樣結果。技術上,它是對社群提交規則的自動審查後端,執行 crystallization pipeline 與安全閘 (safety gate)。",
   },
 ];
 

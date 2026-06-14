@@ -403,22 +403,16 @@ atr migrate --source snort --input ./rules.snort --output ./atr-out`}</code>
             desc={zh ? "PR #33 已合併（2026-05-11）· 完整 ATR 規則集於 Norton/Avast/LifeLock 母集團的 Sage 風險評分層" : "PR #33 merged (2026-05-11) · Full ATR rule pack in the Sage risk-scoring layer under the Norton/Avast/LifeLock parent"}
           />
           <TractionRow
-            org="IBM"
-            status="Open PR"
-            statusClass="bg-ash text-stone"
-            desc={zh ? "mcp-context-forge · IBM MCP runtime ATR plugin" : "mcp-context-forge · ATR plugin for IBM MCP runtime"}
-          />
-          <TractionRow
             org="OWASP"
             status={zh ? "Review 中" : "Under Review"}
             statusClass="bg-ash text-stone"
-            desc={zh ? "LLM Top 10 官方專案 PR · 標準引用路徑" : "LLM Top 10 official project PR · standards-track reference"}
+            desc={zh ? "LLM Top 10 專案 PR · 審查中" : "PR to the LLM Top 10 project · under review"}
           />
         </div>
         <p className="text-xs md:text-sm text-stone mt-5">
           {zh
-            ? `0 → ${ruleCount} 條規則 · 2 個生產環境（Microsoft、Cisco）外加 Gen Digital Sage（已合併）· 標準同儕引用 · 20+ adopters 在 ADOPTERS.md · MIT 永久授權 · `
-            : `0 → ${ruleCount} rules · 2 in production (Microsoft, Cisco) plus Gen Digital Sage (merged) · peer-standard references · 20+ adopters in ADOPTERS.md · MIT licensed · `}
+            ? `0 → ${ruleCount} 條規則 · 2 個生產環境（Microsoft、Cisco）外加 Gen Digital Sage（已合併）· 標準同儕引用 · 完整採用者清單見 ADOPTERS.md · MIT 永久授權 · `
+            : `0 → ${ruleCount} rules · 2 in production (Microsoft, Cisco) plus Gen Digital Sage (merged) · peer-standard references · full adopter list in ADOPTERS.md · MIT licensed · `}
           <a href="https://doi.org/10.5281/zenodo.19178002" className="text-blue hover:underline">
             DOI 10.5281/zenodo.19178002
           </a>
