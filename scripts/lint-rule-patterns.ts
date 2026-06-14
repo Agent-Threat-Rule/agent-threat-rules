@@ -24,13 +24,20 @@ const RISKY_BAREWORDS = new Set([
 ]);
 
 export interface LintFlag {
-  code: "unbounded-negated" | "unbounded-dotstar" | "wide-bridge" | "bareword";
+  code: "unbounded-negated" | "unbounded-dotstar" | "wide-bridge" | "bareword" | "redos";
   detail: string;
 }
 
 /** Lint a single regex string. Returns the anti-patterns found. */
 export function lintRegex(rx: string): LintFlag[] {
   const flags: LintFlag[] = [];
+  // Catastrophic-backtracking: a SINGLE repeatable atom quantified inside a group
+  // that is itself quantified ((a+)+, (\w*)*, (.*)*, ([a-z]+){2,}). This is the
+  // shape that hangs the gate that runs the rule against the corpus. Non-overlapping
+  // multi-atom bodies like (?:\s+[.\-]{1,}){15,} are linear and not flagged.
+  if (/\((?:\?:)?(?:\\.|\[[^\]]*\]|[^()\[\]{}|+*?\\])[+*]\)(?:[+*]|\{\d+,?\d*\})/.test(rx)) {
+    flags.push({ code: "redos", detail: "nested quantifier on a single atom — ReDoS / catastrophic-backtracking risk" });
+  }
   if (/\[\^[^\]]+\]\*/.test(rx)) {
     flags.push({ code: "unbounded-negated", detail: "[^...]* greedy span can jump past intended context" });
   }
