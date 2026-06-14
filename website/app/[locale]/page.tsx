@@ -82,29 +82,29 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <StatsHydrator />
 
       {/* ── Scene 1: The Shift (Hero) ── */}
-      <section className="bg-paper min-h-screen flex flex-col items-center justify-center text-center px-5 md:px-6 pt-24 pb-16 md:py-0 relative overflow-hidden">
+      <section className="bg-paper min-h-screen flex flex-col items-center justify-center text-center px-5 md:px-6 pt-32 pb-24 md:pt-40 md:pb-32 relative overflow-hidden">
         <HeroGrid />
 
-        <div className="relative z-10 max-w-[900px]">
+        <div className="relative z-10 max-w-[820px]">
           {/* Standards-lineage eyebrow — peer-format framing.
               (Hero logo removed: the nav already carries the ATR lockup, and a
               second oversized logo here collided with the sticky nav on load.) */}
           <HeroEntrance delay={0.6}>
-            <p className="font-display text-[28px] md:text-[clamp(40px,5.5vw,72px)] font-black leading-[1.1] tracking-[-1.5px] md:tracking-[-3px] text-stone text-balance">
+            <p className="font-display text-[18px] md:text-[clamp(22px,2.6vw,32px)] font-semibold leading-[1.35] tracking-[-0.3px] text-mist text-balance">
               {zh ? "Sigma 寫給 SIEM。YARA 寫給 malware。" : "Sigma is for SIEM. YARA is for malware."}
             </p>
           </HeroEntrance>
 
           {/* H1 — ATR's position in the lineage */}
           <HeroEntrance delay={0.9}>
-            <h1 className="font-display text-[36px] md:text-[clamp(52px,6.5vw,80px)] font-black leading-[1.05] tracking-[-2px] md:tracking-[-3px] text-ink mt-2 md:mt-3 text-balance">
+            <h1 className="font-display text-[40px] md:text-[clamp(48px,5.6vw,72px)] font-black leading-[1.04] tracking-[-1.5px] md:tracking-[-2.5px] text-ink mt-3 md:mt-4 text-balance">
               {zh ? "ATR 寫給 AI agent。" : "ATR is for AI agents."}
             </h1>
           </HeroEntrance>
 
           {/* Mission tagline — short, italic, between H1 and subtitle. */}
           <HeroEntrance delay={1.0}>
-            <p className="mt-4 md:mt-5 text-sm md:text-base italic text-stone font-light max-w-[600px] mx-auto leading-relaxed text-pretty">
+            <p className="mt-7 md:mt-9 text-sm md:text-base italic text-stone font-light max-w-[580px] mx-auto leading-[1.7] text-pretty">
               {zh
                 ? "一條在台北寫的規則,能擋下西雅圖首次通報的攻擊——規則格式不必有人重新發明。"
                 : "Built so a rule written in Taipei catches an attack first reported in Seattle — without anyone reinventing the rule format."}
@@ -113,7 +113,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
           {/* Subtitle — definitional, not outcome */}
           <HeroEntrance delay={1.1}>
-            <p className="text-base md:text-lg text-stone font-light mt-5 md:mt-6 max-w-[620px] mx-auto leading-relaxed text-pretty">
+            <p className="text-base md:text-lg text-stone font-light mt-5 md:mt-7 max-w-[600px] mx-auto leading-[1.75] text-pretty">
               {zh
                 ? "AI agent 安全威脅的公共偵測規則格式。版本化、可機器讀取、廠商中立,任何符合規範的引擎都能評估。社群維護,MIT 永久授權。"
                 : "An open, versioned, machine-readable detection rule format for AI agent security threats. Any conforming engine can evaluate it. Community-maintained, MIT licensed."}
@@ -122,7 +122,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
           {/* Three monospace stats */}
           <HeroEntrance delay={1.3}>
-            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-8 md:mt-10 font-data text-sm md:text-base tracking-wide">
+            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 mt-11 md:mt-14 font-data text-sm md:text-base tracking-wide">
               <span><span className="font-data font-bold text-ink">{stats.ruleCount}</span> <span className="text-stone">{zh ? "條規則" : "rules"}</span></span>
               <span className="text-fog">·</span>
               <span><span className="font-data font-bold text-ink">{categoryCount}</span> <span className="text-stone">{zh ? "個類別" : "categories"}</span></span>
@@ -148,7 +148,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
           {/* CTAs — procedural, standards-form */}
           <HeroEntrance delay={1.5}>
-            <div className="flex gap-3 justify-center flex-wrap mt-7 md:mt-8">
+            <div className="flex gap-3 justify-center flex-wrap mt-9 md:mt-11">
               <Link
                 href={`${prefix}/spec`}
                 className="bg-blue text-white px-8 md:px-10 py-3.5 md:py-4 rounded-[2px] text-sm font-semibold hover:bg-blue-hover transition-colors"
@@ -185,7 +185,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           {/* Trust bar — two restrained rows. Detailed adoption lives in the
               consolidated section below; here it is a single touch each. */}
           <HeroEntrance delay={1.7}>
-            <div className="mt-9 md:mt-12 font-data text-[11px] md:text-xs text-stone tracking-wide space-y-1.5">
+            <div className="mt-16 md:mt-24 pt-8 md:pt-10 border-t border-fog/60 font-data text-[11px] md:text-xs text-mist tracking-wide space-y-2">
               <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
                 <span>{zh ? "標準同儕:" : "Standards bodies:"}</span>
                 <span className="text-ink">MISP / CIRCL</span>
