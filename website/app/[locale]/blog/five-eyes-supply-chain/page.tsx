@@ -74,7 +74,7 @@ export default async function FiveEyesPostPage({
           </p>
           <p>
             指引要你驗證第三方元件。Agent Threat Rules(ATR)就是做這件事的開放、MIT
-            授權規則集——651 條偵測規則，對任何 skill 或 MCP manifest 秒級掃描。機構點出了
+            授權規則集——652 條偵測規則，對任何 skill 或 MCP manifest 秒級掃描。機構點出了
             缺口；這個填上它。
           </p>
 
@@ -154,7 +154,7 @@ export default async function FiveEyesPostPage({
           </p>
           <p>
             The guidance asks you to verify third-party components. Agent Threat Rules (ATR) is
-            the open, MIT-licensed rule set that does exactly that — 651 detection rules, running
+            the open, MIT-licensed rule set that does exactly that — 652 detection rules, running
             against any skill or MCP manifest in seconds. The agencies named the gap; this fills
             it.
           </p>
