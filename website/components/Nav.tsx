@@ -22,6 +22,17 @@ export function Nav({ locale }: { locale: Locale }) {
   const pathname = usePathname();
   const prefix = `/${locale}`;
   const otherLocale = locale === "en" ? "zh" : "en";
+  // Desktop bar shows a restrained primary set; the full list stays in the
+  // mobile drawer (and the footer), so nothing becomes unreachable.
+  const primaryPages = [
+    "spec",
+    "rules",
+    "coverage",
+    "integrate",
+    "ecosystem",
+    "atd",
+    "about",
+  ] as const;
   const pages = [
     "atd",
     "spec",
@@ -52,8 +63,8 @@ export function Nav({ locale }: { locale: Locale }) {
           <img src="/atr-logo-black.png" alt="ATR" className="h-7 md:h-8" />
         </Link>
 
-        <div className="hidden md:flex items-center gap-8">
-          {pages.map((page) => {
+        <div className="hidden md:flex items-center gap-6 lg:gap-8">
+          {primaryPages.map((page) => {
             const isActive = pathname === `${prefix}/${page}`;
             return (
               <Link
