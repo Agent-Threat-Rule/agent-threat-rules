@@ -33,9 +33,9 @@ const DOCS_DIR = path.join(REPO_ROOT, "docs");
 const OUTPUT_MD = path.join(DOCS_DIR, "OWASP-AGENTIC-MAPPING.md");
 const OUTPUT_JSON = path.join(DOCS_DIR, "owasp-agentic-mapping.json");
 
-const ATR_VERSION = "v2.2.1";
+const ATR_VERSION = `v${JSON.parse(fs.readFileSync(path.join(REPO_ROOT, "package.json"), "utf8")).version}`;
 const OWASP_VERSION = "v1.0 (December 2025)";
-const RUN_DATE = "2026-05-13";
+const RUN_DATE = new Date().toISOString().slice(0, 10);
 
 interface AsiCategory {
   readonly key: string; // "ASI01"
@@ -363,6 +363,7 @@ function main(): void {
   lines.push("- OWASP LLM Top 10 (2025) -- per-rule `compliance.owasp_llm[]`");
   lines.push("- SAFE-MCP -- see [SAFE-MCP-MAPPING.md](SAFE-MCP-MAPPING.md) (78/85 techniques, 91.8%)");
   lines.push("- OWASP Agentic Skills Top 10 (AST) -- see [OWASP-AST10-MAPPING.md](OWASP-AST10-MAPPING.md) (skill supply chain framework)");
+  lines.push("- OWASP Agentic AI Maturity Model -- see [OWASP-AGENTIC-MATURITY-MAPPING.md](OWASP-AGENTIC-MATURITY-MAPPING.md) (which ASI detections substantiate governance maturity)");
   lines.push("");
 
   lines.push("## Contributing");
