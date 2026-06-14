@@ -418,8 +418,8 @@ export function loadSiteStats(): SiteStats {
         name: "NIST OSCAL",
         type: "open",
         detail:
-          "Submission in review; the OSCAL lead opened a collaboration branch and invited a community contribution. Not a NIST endorsement or adoption.",
-        url: "https://github.com/usnistgov/OSCAL",
+          "Submission in review; the OSCAL lead opened collaboration branch oscal-content#338 (rework of #333) and invited a community contribution. Not a NIST endorsement or adoption.",
+        url: "https://github.com/usnistgov/oscal-content/pull/338",
         logo: "https://github.com/usnistgov.png?size=128",
       },
       {
