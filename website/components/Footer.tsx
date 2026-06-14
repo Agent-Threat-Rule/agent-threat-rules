@@ -25,6 +25,9 @@ export function Footer({ locale }: { locale: Locale }) {
               <Link href={`${prefix}/spec`} className="text-sm text-stone hover:text-ink transition-colors">
                 {zh ? "完整規格" : "Specification"}
               </Link>
+              <Link href={`${prefix}/atd`} className="text-sm text-stone hover:text-ink transition-colors">
+                {zh ? "ATD 技法目錄" : "ATD techniques"}
+              </Link>
               <Link href={`${prefix}/conformance`} className="text-sm text-stone hover:text-ink transition-colors">
                 {zh ? "符規" : "Conformance"}
               </Link>
