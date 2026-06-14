@@ -24,10 +24,13 @@ substantiate — rather than merely assert — a mature agentic-governance postu
 
 ## 2. Source-fidelity caveat (read before citing)
 
-The report's PDF body is not machine-text-extractable, so the granular structure below
-is drawn from OWASP's public resource page and reputable secondary coverage, **not**
-from the primary PDF. Two specifics could not be reconciled across public sources and
-**must be confirmed against the PDF before any external citation**:
+The full report PDF is access-gated (OWASP serves a "No Access" page on the direct
+download URL — it requires a registration/download form), so the granular structure
+below is drawn from OWASP's public resource page and reputable secondary coverage,
+**not** from the primary PDF. Verified 2026-06-14 that the direct download is gated;
+primary-source confirmation is therefore pending access. Two specifics could not be
+reconciled across public sources and **must be confirmed against the PDF before any
+external citation**:
 
 - the exact publication day (sources give both 1 and 3 June 2026 — cite "June 2026");
 - the top of the deployment axis (sources give both AT5 and AT8).

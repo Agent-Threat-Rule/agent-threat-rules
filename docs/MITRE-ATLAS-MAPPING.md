@@ -32,11 +32,11 @@ the official `dist/ATLAS.yaml` (v5.6.0). Every cited rule ID is a real
 |---|---|
 | ATLAS version reconciled against | v5.6.0 |
 | ATLAS top-level techniques (total) | 101 |
-| ATLAS top-level techniques with ≥1 ATR rule | **28 (28%)** |
-| ATLAS tactics with ≥1 covered technique | 12 of 16 (14 including techniques that also span Defense Evasion and Lateral Movement) |
+| ATLAS top-level techniques with ≥1 ATR rule | **34 (34%)** |
+| ATLAS tactics with ≥1 covered technique | 13 of 16 (Defense Evasion now directly covered via T0109; also spans Lateral Movement) |
 | ATR rules carrying ≥1 ATLAS technique ID | every rule in the corpus |
 
-**Honest scope note.** The ~73 uncovered top-level techniques are dominated by the
+**Honest scope note.** The ~67 uncovered top-level techniques are dominated by the
 **Reconnaissance**, **Resource Development**, and **AI Attack Staging** tactics —
 attacker-side preparation that occurs *before* a deployed agent observes any input,
 and which a runtime detection rule operating on agent inputs/outputs structurally
@@ -132,6 +132,20 @@ sub-techniques). The cited rule is one representative example, not the only rule
 | ATLAS ID | Technique | ATR rules | Example | Primary ATR categories |
 |---|---|---|---|---|
 | AML.T0036 | Data from Information Repositories | 1 | ATR-2026-00420 | prompt-injection |
+
+### Agent-native techniques (added 2026-06-14)
+
+ATLAS v5.6.0 ships agent-native techniques. These rules now carry the precise
+agent-native ID (added alongside, not in place of, existing mappings):
+
+| ATLAS ID | Technique | Tactic | ATR rules | Example |
+|---|---|---|---|---|
+| AML.T0080 | AI Agent Context Poisoning | Persistence | 3 | ATR-2026-00075, ATR-2026-00125, ATR-2026-00551 |
+| AML.T0110 | AI Agent Tool Poisoning | Persistence | 3 | ATR-2026-00103, ATR-2026-00161, ATR-2026-01775 |
+| AML.T0105 | Escape to Host | Privilege Escalation | 3 | ATR-2026-00436, ATR-2026-00539, ATR-2026-01615 |
+| AML.T0104 | Publish Poisoned AI Agent Tool | Resource Development | 1 | ATR-2026-00060 |
+| AML.T0109 | AI Supply Chain Rug Pull | Defense Evasion | 1 | ATR-2026-00126 |
+| AML.T0102 | Generate Malicious Commands | AI Attack Staging | 1 | ATR-2026-00413 |
 
 ## 4. Maintenance
 

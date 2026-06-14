@@ -554,6 +554,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             <Link href={`${prefix}/coverage`} className="font-data text-xs md:text-sm text-blue hover:underline inline-block mt-3">
               {zh ? "查看完整覆蓋對照表 →" : "View full coverage mapping →"}
             </Link>
+            <Link href={`${prefix}/atd`} className="font-data text-xs md:text-sm text-blue hover:underline inline-block mt-3 md:ml-6">
+              {zh ? "ATD:可執行的 agent 威脅技法目錄 →" : "ATD: the executable agent-threat technique catalog →"}
+            </Link>
           </Reveal>
         </div>
       </section>
