@@ -419,7 +419,7 @@ export function loadSiteStats(): SiteStats {
         type: "open",
         detail:
           "Submission in review; the OSCAL lead opened a collaboration branch and invited a community contribution. Not a NIST endorsement or adoption.",
-        url: "https://github.com/usnistgov/OSCAL/pull/2234",
+        url: "https://github.com/usnistgov/OSCAL",
         logo: "https://github.com/usnistgov.png?size=128",
       },
       {
@@ -444,12 +444,6 @@ export function loadSiteStats(): SiteStats {
           "Issue #207 open at safe-agentic-framework/safe-mcp. Structured proposal for a detections/ registry to support cross-project rule-ID linkage.",
         url: "https://github.com/safe-agentic-framework/safe-mcp/issues/207",
       },
-      {
-        name: "Awesome LLM Security",
-        type: "open",
-        detail: "PR #117 submitted to curated security tools list.",
-        url: "https://github.com/corca-ai/awesome-llm-security/pull/117",
-      },
       // === Red team tooling (open) ===
       {
         name: "NVIDIA Garak",
@@ -461,9 +455,9 @@ export function loadSiteStats(): SiteStats {
       },
       {
         name: "Microsoft PyRIT",
-        type: "open",
+        type: "merged",
         detail:
-          "PR #1715 draft. ATR dataset loader for PyRIT red-team orchestrators. Roman Lutz reviewed in 2 min; iterating on doc shape.",
+          "PR #1715 merged. ATR adversarial-payload dataset loader for Microsoft's PyRIT red-team orchestration framework.",
         url: "https://github.com/microsoft/PyRIT/pull/1715",
         logo: "https://github.com/microsoft.png?size=128",
       },
@@ -497,13 +491,6 @@ export function loadSiteStats(): SiteStats {
         url: "https://github.com/promptfoo/promptfoo/pull/8529",
       },
       {
-        name: "Cisco MCP Scanner",
-        type: "open",
-        detail:
-          "PR #151 submitted. ATR regex analyzer with 20 community rules.",
-        url: "https://github.com/cisco-ai-defense/mcp-scanner/pull/151",
-      },
-      {
         name: "Damn Vulnerable MCP Server",
         type: "open",
         detail:
@@ -518,19 +505,6 @@ export function loadSiteStats(): SiteStats {
         url: "https://github.com/meta-llama/PurpleLlama/pull/206",
       },
       {
-        name: "Portkey Gateway",
-        type: "open",
-        detail: "PR #1652 open. ATR (Agent Threat Rules) detection plugin.",
-        url: "https://github.com/Portkey-AI/gateway/pull/1652",
-      },
-      {
-        name: "IBM mcp-context-forge",
-        type: "open",
-        detail:
-          "PR #4109. ATR threat detection plugin for IBM MCP runtime. 18 tests, follows secrets_detection template.",
-        url: "https://github.com/IBM/mcp-context-forge/pull/4109",
-      },
-      {
         name: "Awesome Cybersecurity Agentic AI",
         type: "open",
         detail: "PR #24 submitted to Tools section.",
@@ -538,8 +512,8 @@ export function loadSiteStats(): SiteStats {
       },
       {
         name: "Awesome AI Agents Security",
-        type: "open",
-        detail: "PR #17 submitted to Static Analysis & Linters.",
+        type: "merged",
+        detail: "PR #17 merged into Static Analysis & Linters.",
         url: "https://github.com/ProjectRecon/awesome-ai-agents-security/pull/17",
       },
       {
