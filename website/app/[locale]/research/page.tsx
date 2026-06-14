@@ -219,6 +219,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
           </div>
           <div className="bg-paper p-6">
+            {/* SKILL.md benchmark snapshot (v2.0.0, 498 samples): Layer A 24 + Layer C 8 = 32 malicious, both 100% detected. Pinned numbers — re-sync if the benchmark is re-run. */}
             <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-4">
               {locale === "zh" ? "按攻擊層分析" : "By Attack Layer"}
             </div>

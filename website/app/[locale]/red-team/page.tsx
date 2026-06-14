@@ -186,7 +186,7 @@ const ATTRIBUTION_STATS: AttributionStat[] = [
     number: "0 FP",
     label: "Required across 3,551 benign samples",
     detail:
-      "6-check quality gate: own-TP must match + 1,784 benign + 157 research-mention + 1,611 cross-rule conflict-free + own true_negative coverage. Rules that fire on the paper describing the attack don't ship.",
+      "6-check quality gate: own-TP must match + 431 benign + 1,352 extended + 157 research-mention + 1,611 cross-rule conflict-free + own true_negative coverage. Rules that fire on the paper describing the attack don't ship.",
   },
 ];
 
@@ -495,8 +495,8 @@ export default async function RedTeamPage({
                   </p>
                   <p className="text-sm text-paper/60">
                     {zh
-                      ? "Gate = 自己 TP 必須 100% 命中 + 1,784 樣本 benign corpus 0 FP + 157 樣本 research-mention 0 FP + 跨規則 0 衝突。"
-                      : "Gate = your TPs must match 100% + 1,784-sample benign corpus 0 FP + 157-sample research-mention 0 FP + 0 cross-rule conflicts."}
+                      ? "Gate = 自己 TP 必須 100% 命中 + 1,783 樣本 benign+extended corpus 0 FP + 157 樣本 research-mention 0 FP + 跨規則 0 衝突。"
+                      : "Gate = your TPs must match 100% + 1,783-sample benign+extended corpus 0 FP + 157-sample research-mention 0 FP + 0 cross-rule conflicts."}
                   </p>
                 </div>
               </div>
