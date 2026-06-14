@@ -5,7 +5,7 @@ Status: Draft alignment mapping for MITRE ATLAS v5.6.0
 Date: 2026-06-14
 Editor: Adam Lin (林冠辛) <adam@agentthreatrule.org>
 Mapped corpus: Agent Threat Rules (over 650 rules / 10 categories; disk == data/stats.json reconciled 2026-06-14)
-Reference framework: MITRE ATLAS (Adversarial Threat Landscape for Artificial-Intelligence Systems), `dist/ATLAS.yaml` on mitre-atlas/atlas-data, v5.6.0 — 16 tactics, 71 top-level techniques (127 including sub-techniques).
+Reference framework: MITRE ATLAS (Adversarial Threat Landscape for Artificial-Intelligence Systems), `dist/ATLAS.yaml` on mitre-atlas/atlas-data, v5.6.0 — 16 tactics, 101 top-level techniques (271 including sub-techniques), counted from the full machine-readable `dist/ATLAS.yaml`.
 
 ---
 
@@ -31,12 +31,12 @@ the official `dist/ATLAS.yaml` (v5.6.0). Every cited rule ID is a real
 | Metric | Value |
 |---|---|
 | ATLAS version reconciled against | v5.6.0 |
-| ATLAS top-level techniques (total) | 71 |
-| ATLAS top-level techniques with ≥1 ATR rule | **28 (39%)** |
+| ATLAS top-level techniques (total) | 101 |
+| ATLAS top-level techniques with ≥1 ATR rule | **28 (28%)** |
 | ATLAS tactics with ≥1 covered technique | 12 of 16 (14 including techniques that also span Defense Evasion and Lateral Movement) |
 | ATR rules carrying ≥1 ATLAS technique ID | every rule in the corpus |
 
-**Honest scope note.** The 43 uncovered top-level techniques are dominated by the
+**Honest scope note.** The ~73 uncovered top-level techniques are dominated by the
 **Reconnaissance**, **Resource Development**, and **AI Attack Staging** tactics —
 attacker-side preparation that occurs *before* a deployed agent observes any input,
 and which a runtime detection rule operating on agent inputs/outputs structurally
@@ -137,7 +137,14 @@ sub-techniques). The cited rule is one representative example, not the only rule
 
 - **Source of truth:** each rule's `references.mitre_atlas` block. This document is a
   generated aggregate, not a second source. Regenerate after rule-corpus changes:
-  `grep -rhoE "AML\.T[0-9]{4}" rules/ | sort | uniq -c`.
+  `grep -rhoE "AML\.T[0-9]{4}" rules/ | sort | uniq -c`. Always count the ATLAS side
+  from the full machine-readable `dist/ATLAS.yaml` (download and parse it locally — do
+  not rely on a truncated fetch, which undercounts).
+- **Expansion candidates:** ATLAS v5.6.0 ships agent-native techniques ATR does not yet
+  map to — AML.T0104 Publish Poisoned AI Agent Tool, AML.T0105 Escape to Host,
+  AML.T0110 AI Agent Tool Poisoning, AML.T0099 AI Agent Tool Data Poisoning,
+  AML.T0102 Generate Malicious Commands. Several existing rules are candidates to add
+  these IDs (e.g. malware-codegen rules → T0102).
 - **Cadence:** re-reconcile technique IDs/names against `dist/ATLAS.yaml` on each
   ATLAS minor release (ATLAS ships roughly monthly). The 2026-06-14 reconciliation
   corrected 82 rules whose metadata carried pre-v5 technique names (e.g. "ML Supply
