@@ -157,12 +157,12 @@ const MILESTONES: Milestone[] = [
   {
     date: "2026-06",
     title: {
-      en: "v3.4.0 · 651 rules across 10 categories",
-      zh: "v3.4.0 · 651 條規則,跨 10 個類別",
+      en: "v3.4.0 · 652 rules across 10 categories",
+      zh: "v3.4.0 · 652 條規則,跨 10 個類別",
     },
     detail: {
-      en: "Current release line: 651 detection rules across 10 categories, specification 3.0.0-alpha.1 (Working Draft).",
-      zh: "目前釋出線:651 條偵測規則,跨 10 個類別,規範 3.0.0-alpha.1（Working Draft）。",
+      en: "Current release line: 652 detection rules across 10 categories, specification 3.0.0-alpha.1 (Working Draft).",
+      zh: "目前釋出線:652 條偵測規則,跨 10 個類別,規範 3.0.0-alpha.1（Working Draft）。",
     },
   },
 ];
@@ -213,8 +213,8 @@ export default async function AboutPage({
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh
-            ? "標準由社群驅動，並透過每日自動結晶飛輪持續擴張——紅隊大掃描與 CVE 攝取兩條管線各自跑完完整 sweep，把規則集從 462 條長到 651 條（新增 189 條）。"
-            : "The standard is community-driven and grows through daily auto-crystallization flywheels — a red-team mega-scan pipeline and a CVE-ingestion pipeline each ran full sweeps, expanding the ruleset from 462 to 651 rules (189 new rules)."}
+            ? "標準由社群驅動，並透過每日自動結晶飛輪持續擴張——紅隊大掃描與 CVE 攝取兩條管線各自跑完完整 sweep，把規則集從 462 條長到 652 條（新增 190 條）。"
+            : "The standard is community-driven and grows through daily auto-crystallization flywheels — a red-team mega-scan pipeline and a CVE-ingestion pipeline each ran full sweeps, expanding the ruleset from 462 to 652 rules (190 new rules)."}
         </p>
       </Section>
 
