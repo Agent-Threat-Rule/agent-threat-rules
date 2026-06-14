@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { execSync } from "node:child_process";
-import { join, extname, relative } from "node:path";
+import { join, extname, relative, basename, dirname } from "node:path";
 import yaml from "js-yaml";
 
 /**
@@ -83,13 +83,16 @@ function loadRulesRecursive(dir: string, rootDir: string): RuleSummary[] {
         const content = readFileSync(fullPath, "utf-8");
         const raw = yaml.load(content, { schema: yaml.CORE_SCHEMA }) as RawRule;
 
-        if (!raw?.id || !raw?.title) return results;
+        if (!raw?.id || !raw?.title) continue;
 
         results.push({
           id: raw.id,
           title: raw.title,
           severity: raw.severity ?? "medium",
-          category: aliasCategory(raw.tags?.category ?? "unknown"),
+          // Category is canonical = the directory the rule lives in (matches
+          // data/stats.json byCategory). tags.category drifts on some rules and
+          // must not drive the public per-category counts.
+          category: aliasCategory(basename(dir)),
           subcategory: raw.tags?.subcategory,
           description: raw.description ?? "",
           scanTarget: raw.tags?.scan_target,
@@ -317,7 +320,7 @@ export function loadRuleDetail(id: string): RuleDetail | undefined {
     id: parsed.id,
     title: parsed.title,
     severity: parsed.severity ?? "medium",
-    category: aliasCategory(parsed.tags?.category ?? "unknown"),
+    category: aliasCategory(basename(dirname(filePath))),
     subcategory: parsed.tags?.subcategory,
     description: parsed.description ?? "",
     scanTarget: parsed.tags?.scan_target,
