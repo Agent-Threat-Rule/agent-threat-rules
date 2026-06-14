@@ -50,6 +50,14 @@ ATR is publishing proposal-stage standardization scaffolding ahead of OASIS Open
 
 See [`STANDARDIZATION-STATUS.md`](STANDARDIZATION-STATUS.md) for the full status matrix mapping every new artifact to `{STABLE IN PRODUCTION, PROPOSED, SKELETON, PRELIMINARY}` and timeline for OASIS submission, community comment, and ratification.
 
+## ATD — Agentic Threat Detection
+
+ATD is ATR's technique catalog: an enumeration of agent-runtime attack *techniques* — the "what" — each mapped to MITRE ATLAS, OWASP ASI, and CWE. ATR *rules* are the "how" that detect them. ATD is to ATR what MITRE ATLAS is to a detection ruleset: a knowledge layer that names every known agent-runtime threat, whether or not an executable rule exists for it yet.
+
+- **Live catalog (machine-readable):** <https://agentthreatrule.org/atd>
+- **80 techniques across 9 tactics**, every one mapped to an upstream framework (or with a documented gap); a subset carry a live ATR detection rule, the rest are documented — a technique needs verifiable provenance, not a rule.
+- **Schema gate:** every PR runs `scripts/validate-atd.ts` (validates each technique against the normative `website/public/atd/atd-technique.schema.json`) and `scripts/atd/verify-atd-mappings.ts` (verifies every cited MITRE ATLAS id against the authoritative catalog).
+
 ## Table of Contents
 
 - [1. Background](#1-background)
