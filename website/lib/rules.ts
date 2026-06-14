@@ -7,13 +7,13 @@ import yaml from "js-yaml";
  * Display-layer category aliases. Merges thin categories into parent groups
  * without modifying the canonical rule YAML on disk.
  *
- * model-abuse (1 rule) + data-poisoning (2 rules) → model-level-attacks (3)
- * All attacks here target the LLM or its training data directly.
+ * Empty: the 10 on-disk categories are now all substantial (model-abuse has 37
+ * rules, data-poisoning 5) and are shown 1:1 with data/stats.json byCategory.
+ * The old model-abuse+data-poisoning → "model-level-attacks" merge dated from
+ * when those categories held 1 and 2 rules; it now hid 42 rules and displayed
+ * both as 0, so it was removed.
  */
-const CATEGORY_ALIASES: Record<string, string> = {
-  "data-poisoning": "model-level-attacks",
-  "model-abuse": "model-level-attacks",
-};
+const CATEGORY_ALIASES: Record<string, string> = {};
 
 function aliasCategory(category: string): string {
   return CATEGORY_ALIASES[category] ?? category;
