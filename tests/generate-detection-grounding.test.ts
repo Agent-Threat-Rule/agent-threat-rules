@@ -56,6 +56,21 @@ describe('generate-detection-from-poc grounding routing', () => {
     expect(rule.detection.conditions.length).toBeGreaterThan(0);
   });
 
+  it('emits the generalizable attack indicator, not the literal PoC line or benign setup (#123 regression)', () => {
+    const { status, rule } = runGenerator('generalizable-not-literal.proposal.yaml');
+    expect(status).toBe(0);
+    const values: string[] = rule.detection.conditions.map((c: any) => c.value);
+    // The cloud-metadata indicator is emitted in its GENERALIZABLE form...
+    expect(values).toContain('(?i)169\\.254\\.169\\.254');
+    // ...and the literal PoC line, the benign install command, and the local
+    // variable name are NOT shipped as detection patterns (the #123 failure
+    // mode where "pip install langsmith" became a rule condition).
+    const joined = values.join('\n');
+    expect(joined).not.toMatch(/pip install/i);
+    expect(joined).not.toMatch(/creds_url/);
+    expect(joined).not.toMatch(/fetch_url/);
+  });
+
   it('prose-only proposal is blocked from auto-merge and exits 3', () => {
     const { status, rule } = runGenerator('prose-only.proposal.yaml');
     // Exit 3 routes to human review (MiroFish guard), NOT the auto-merge gate.
