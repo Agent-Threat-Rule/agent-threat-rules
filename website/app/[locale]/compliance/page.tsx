@@ -196,6 +196,19 @@ export default async function CompliancePage({
           >
             {zh ? "在 GitHub 查看 raw rule YAML →" : "Browse raw rule YAML on GitHub →"}
           </a>
+          <p className="text-sm text-graphite leading-[1.7] mt-4 mb-3">
+            {zh
+              ? "認為某條對應有誤？這是開放標準——歡迎 fork、挑戰，並提 PR 或開 issue 修正任何 mapping。"
+              : "Think a mapping is wrong? This is an open standard — fork it, challenge it, and open a PR or issue to correct any mapping."}
+          </p>
+          <a
+            href="https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-data text-xs text-blue hover:underline"
+          >
+            {zh ? "開 issue 挑戰某條對應 →" : "Open an issue to challenge a mapping →"}
+          </a>
         </div>
       </Reveal>
 

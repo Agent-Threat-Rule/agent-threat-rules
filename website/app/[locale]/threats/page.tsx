@@ -14,7 +14,7 @@ export function generateStaticParams() {
 export const metadata: Metadata = {
   title: "Threat Feed - ATR",
   description:
-    "Public blacklist of flagged AI agent skills. 1,302 flagged, 552 confirmed malware. Updated from ATR ecosystem scans and Threat Cloud reports.",
+    "Public blacklist of flagged AI agent skills. 1,302 flagged, 552 confirmed malware. Generated from open ATR ecosystem scans; Threat Cloud is an optional reference service that can also feed reports.",
 };
 
 interface BlacklistData {
@@ -271,8 +271,17 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
       <Reveal delay={0.5}>
         <p className="text-xs text-mist mt-6 leading-[1.8] max-w-[480px]">
           {zh
-            ? <>此清單由 ATR 生態系掃描自動產生，<br className="sm:hidden" />並與 Threat Cloud 同步。<br />被標記不代表一定是惡意 — <br className="sm:hidden" />請查看具體規則判斷風險。<br />回報誤報：GitHub Issue。</>
-            : <>This list is generated from ATR ecosystem scans<br className="sm:hidden" /> and synced with Threat Cloud.<br />Being flagged does not guarantee malice — <br className="sm:hidden" />check the specific rules for risk assessment.<br />Report false positives via GitHub Issues.</>}
+            ? <>此清單由開放的 ATR 生態系掃描自動產生，<br className="sm:hidden" />並以 MIT 授權的規則為本體。<br />被標記不代表一定是惡意 — <br className="sm:hidden" />請查看具體規則判斷風險。<br />回報誤報：GitHub Issue。</>
+            : <>This list is generated from open ATR ecosystem scans,<br className="sm:hidden" /> built on the MIT-licensed rules.<br />Being flagged does not guarantee malice — <br className="sm:hidden" />check the specific rules for risk assessment.<br />Report false positives via GitHub Issues.</>}
+        </p>
+      </Reveal>
+
+      {/* Threat Cloud — optional reference service (not part of the standard) */}
+      <Reveal delay={0.55}>
+        <p className="text-xs text-mist mt-4 leading-[1.8] max-w-[480px]">
+          {zh
+            ? "Threat Cloud 是 ATR 維護者運營的選用參考服務，並非標準的一部分。標準本體是規格加上 MIT 授權的規則，透過 npm / PyPI / 純 YAML 完全可離線使用；Threat Cloud 只提供 hosted 便利（規則同步、威脅提交），不用它也能達到同樣結果。"
+            : "Threat Cloud is an optional reference service operated by the ATR maintainers — not part of the standard. The standard is the spec plus the MIT-licensed rules, fully usable offline via npm / PyPI / raw YAML. Threat Cloud only adds hosted convenience (rule sync, threat submission); the same outcomes are reachable without it."}
         </p>
       </Reveal>
     </div>

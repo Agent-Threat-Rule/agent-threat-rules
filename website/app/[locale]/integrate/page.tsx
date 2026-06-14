@@ -136,11 +136,11 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
               },
               {
                 level: "L3",
-                title: locale === "zh" ? "雙向" : "Bidirectional",
+                title: locale === "zh" ? "雙向（選用）" : "Bidirectional (optional)",
                 who: locale === "zh" ? "安全平台、企業 SOC" : "Security platforms, enterprise SOC",
-                how: locale === "zh" ? "嵌入 + 上報威脅到 Threat Cloud" : "Embed + report threats to Threat Cloud",
-                what: locale === "zh" ? "你的端點變成全球感測器，你也收到全球情報" : "Your endpoints become global sensors, you receive global intel",
-                update: locale === "zh" ? "TC 即時推送 + npm update" : "TC real-time push + npm update",
+                how: locale === "zh" ? "嵌入 + 選用接上 Threat Cloud 參考服務" : "Embed + optionally connect Threat Cloud reference service",
+                what: locale === "zh" ? "選用便利:上報威脅與同步規則;不接也能用標準完整運作" : "Optional convenience: submit threats and sync rules; the standard works fully without it",
+                update: locale === "zh" ? "npm update（接上 TC 可加即時推送）" : "npm update (TC adds real-time push if connected)",
               },
             ].map((tier) => (
               <div key={tier.level} className="bg-paper p-5 md:p-6">
@@ -360,7 +360,7 @@ jobs:
             <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-fog">
               {[
                 { label: locale === "zh" ? "覆蓋範圍" : "Coverage", atr: locale === "zh" ? `${stats.ruleCount} 條規則，${stats.cveCount} 個 CVE 對應，${stats.categoryCount} 個威脅類別` : `${stats.ruleCount} rules, ${stats.cveCount} CVEs mapped, ${stats.categoryCount} threat categories`, own: locale === "zh" ? "需要自行建立規則庫" : "You build your own rule set" },
-                { label: locale === "zh" ? "新攻擊反應" : "New attack response", atr: locale === "zh" ? "Threat Cloud 結晶，目標數小時內產出規則" : "Threat Cloud crystallization, targeting hours", own: locale === "zh" ? "取決於你團隊的頻寬" : "Depends on your team's bandwidth" },
+                { label: locale === "zh" ? "新攻擊反應" : "New attack response", atr: locale === "zh" ? "社群與 CI 流程持續新增規則,目標數小時內產出(選用的 Threat Cloud 可加速回報)" : "Community + CI pipeline add rules continuously, targeting hours (optional Threat Cloud can speed up reporting)", own: locale === "zh" ? "取決於你團隊的頻寬" : "Depends on your team's bandwidth" },
                 { label: locale === "zh" ? "繞過測試" : "Evasion testing", atr: locale === "zh" ? "64 種已記錄的繞過技術，規則附帶 evasion_tests" : "64 documented evasion techniques, with per-rule evasion_tests", own: locale === "zh" ? "需要額外投入時間建立" : "Requires dedicated effort to build" },
                 { label: locale === "zh" ? "OWASP / MITRE 對應" : "OWASP / MITRE mapping", atr: locale === "zh" ? "內建。Agentic 10/10 + 每條規則對應 MITRE ATLAS" : "Pre-built. 10/10 Agentic + MITRE ATLAS per rule", own: locale === "zh" ? "數小時的手動對應工作" : "Hours of manual mapping work" },
                 { label: locale === "zh" ? "維護成本" : "Maintenance", atr: locale === "zh" ? "社群維護。MIT 授權。零成本。" : "Community-maintained. MIT. Zero cost.", own: locale === "zh" ? "需要持續的人力投入" : "Requires ongoing engineering effort" },
@@ -416,11 +416,11 @@ jobs:
         </div>
       </Reveal>
 
-      {/* Trusted By */}
+      {/* Integrated by */}
       <Reveal>
         <div className="mt-12 mb-px">
           <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-5">
-            {locale === "zh" ? "已被採用" : "Trusted By"}
+            {locale === "zh" ? "生態整合" : "Integrated by"}
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-fog">
             {[
@@ -438,19 +438,26 @@ jobs:
         </div>
       </Reveal>
 
-      {/* Threat Reporting API — upstream contribution */}
+      {/* Threat Cloud — optional reference service */}
       <Reveal>
         <div className="mt-12 border border-fog">
           <div className="px-6 py-4 border-b border-fog bg-[#0B0B0F]">
             <h2 className="font-display text-lg font-semibold text-white">
-              {locale === "zh" ? "上報威脅 — 讓你的端點成為全球感測器" : "Report Threats — Turn Your Endpoints Into Global Sensors"}
+              {locale === "zh" ? "Threat Cloud — 選用參考服務" : "Threat Cloud — Optional Reference Service"}
             </h2>
           </div>
           <div className="p-6 space-y-6">
+            <div className="bg-ash border border-fog px-4 py-3 rounded-sm">
+              <p className="text-sm text-graphite leading-[1.8] max-w-[640px]">
+                {locale === "zh"
+                  ? "Threat Cloud 是 ATR 維護者運營的選用參考服務,並非標準的一部分。標準本體是規格加上 MIT 授權的規則,透過 npm / PyPI / 純 YAML 完全可離線使用;Threat Cloud 只提供 hosted 便利(規則同步、威脅提交),不用它也能達到同樣結果。"
+                  : "Threat Cloud is an optional reference service operated by the ATR maintainers — not part of the standard. The standard is the spec plus the MIT-licensed rules, fully usable offline via npm / PyPI / raw YAML. Threat Cloud only adds hosted convenience (rule sync, threat submission); the same outcomes are reachable without it."}
+              </p>
+            </div>
             <p className="text-sm text-stone leading-[1.8] max-w-[560px]">
               {locale === "zh"
-                ? "你的掃描器發現了新威脅？上報到 Threat Cloud，ATR 會自動結晶成偵測規則，審核通過後分發給全世界。你發現的威脅，保護所有人。"
-                : "Your scanner found a new threat? Report it to Threat Cloud. ATR crystallizes it into a detection rule, reviews it, and distributes it globally. Your discovery protects everyone."}
+                ? "若你選擇接上:掃描器發現新威脅時可上報到 Threat Cloud,維護者會將其結晶成偵測規則,審核通過後合併進 MIT 規則集分發。以下是接上的技術文件——完全選用。"
+                : "If you choose to connect it: when your scanner finds a new threat, you can submit it to Threat Cloud, where maintainers crystallize it into a detection rule, review it, and merge it into the MIT rule set for distribution. The technical docs below cover connecting it — entirely optional."}
             </p>
 
             <div className="space-y-4">

@@ -328,17 +328,31 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
         </div>
       </Reveal>
 
-      {/* ── How Threat Cloud Crystallization Works ── */}
+      {/* ── Optional: Threat Cloud reference service ── */}
+      <Reveal>
+        <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-3">
+          {zh ? "選用:Threat Cloud 參考服務" : "Optional: Threat Cloud reference service"}
+        </div>
+      </Reveal>
+      <Reveal delay={0.1}>
+        <div className="border border-fog p-6 mb-6 text-sm text-stone leading-relaxed">
+          <p>
+            {zh
+              ? "Threat Cloud 是 ATR 維護者運營的選用參考服務,並非標準的一部分。標準本體是規格加上 MIT 授權的規則,透過 npm / PyPI / 純 YAML 完全可離線使用;Threat Cloud 只提供 hosted 便利(規則同步、威脅提交),不用它也能達到同樣結果。"
+              : "Threat Cloud is an optional reference service operated by the ATR maintainers — not part of the standard. The standard is the spec plus the MIT-licensed rules, fully usable offline via npm / PyPI / raw YAML. Threat Cloud only adds hosted convenience (rule sync, threat submission); the same outcomes are reachable without it."}
+          </p>
+        </div>
+      </Reveal>
       <Reveal>
         <div className="border border-fog mb-10">
           <div className="px-6 py-4 border-b border-fog bg-ash">
             <h2 className="font-display text-base font-semibold">
-              {zh ? "Threat Cloud 結晶流程" : "How Threat Cloud Crystallization Works"}
+              {zh ? "Threat Cloud 自動化管線(選用便利層)" : "The Threat Cloud auto-pipeline (optional convenience layer)"}
             </h2>
             <p className="text-sm text-stone mt-1">
               {zh
-                ? "傳統規則需要數週撰寫、審查、發布。Threat Cloud 目標數小時。"
-                : "Traditional rules take weeks to write, review, and ship. Threat Cloud targets hours."}
+                ? "規則的權威產生路徑是上面「送出後會發生什麼」描述的社群/維護者流程(issue → bot 草案 PR → 維護者寫 regex → safety gate → merge → npm publish)。下面是 Threat Cloud 維護者運營的選用自動化版本,目標把同樣流程壓到數小時 — 用不用它,標準與規則都不變。"
+                : "The canonical way rules get made is the community/maintainer workflow described in \"What happens after you contribute\" above (issue → bot draft PR → maintainer writes regex → safety gate → merge → npm publish). Below is the optional, maintainer-operated automated version Threat Cloud runs to target hours for that same flow — the standard and the rules are identical whether or not you use it."}
             </p>
           </div>
           <div className="p-5 md:p-6">

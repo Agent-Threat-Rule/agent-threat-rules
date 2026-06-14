@@ -411,11 +411,36 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
               <>No external citations recorded yet. If your paper, technical report, or product documentation cites ATR, please let us know via <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new" target="_blank" rel="noopener noreferrer" className="text-blue hover:underline">GitHub issue</a>.</>
             )}
           </p>
-          <p className="text-xs text-mist mt-3 leading-[1.7]">
-            {locale === "zh"
-              ? "Cite as: Lin, Kuan-Hsin (2026). The Collapse of Trust. DOI: 10.5281/zenodo.19178002"
-              : "Cite as: Lin, Kuan-Hsin (2026). The Collapse of Trust. DOI: 10.5281/zenodo.19178002"}
-          </p>
+          <div className="mt-4 pt-4 border-t border-fog space-y-3">
+            <div>
+              <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-1">
+                {locale === "zh" ? "引用此標準" : "Cite the standard"}
+              </div>
+              <p className="text-xs text-mist leading-[1.7]">
+                {locale === "zh"
+                  ? "Cite as: Agent Threat Rules (ATR) Project (2026). Agent Threat Rules: An open detection standard for AI agent threats. DOI: 10.5281/zenodo.19178002"
+                  : "Cite as: Agent Threat Rules (ATR) Project (2026). Agent Threat Rules: An open detection standard for AI agent threats. DOI: 10.5281/zenodo.19178002"}
+              </p>
+            </div>
+            <div>
+              <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-1">
+                {locale === "zh" ? "原始論文" : "Originating paper"}
+              </div>
+              <p className="text-xs text-mist leading-[1.7]">
+                {locale === "zh"
+                  ? "Cite as: Lin, Kuan-Hsin (2026). The Collapse of Trust. DOI: 10.5281/zenodo.19178002"
+                  : "Cite as: Lin, Kuan-Hsin (2026). The Collapse of Trust. DOI: 10.5281/zenodo.19178002"}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3 pt-1">
+              <a href={`/${locale}/citations`} className="font-data text-xs text-blue hover:underline">
+                {locale === "zh" ? "BibTeX / 引用格式" : "BibTeX / citation formats"} &rarr;
+              </a>
+              <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/CITATION.cff" target="_blank" rel="noopener noreferrer" className="font-data text-xs text-blue hover:underline">
+                {locale === "zh" ? "機器可讀引用 (CITATION.cff)" : "Machine-readable citation (CITATION.cff)"}
+              </a>
+            </div>
+          </div>
         </div>
       </Reveal>
 
