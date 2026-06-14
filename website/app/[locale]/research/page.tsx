@@ -69,13 +69,13 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             <div className="font-display text-base font-semibold text-ink mb-1">
               {locale === "zh"
-                ? "751 個惡意 AI Agent Skill：史上最大規模的 AI Agent 惡意軟體行動"
-                : "751 Malicious AI Agent Skills: The Largest AI Agent Malware Campaign Ever Documented"}
+                ? "552 個確認惡意的 AI Agent Skill：史上最大規模的 AI Agent 惡意軟體行動"
+                : "552 Confirmed Malicious AI Agent Skills: The Largest AI Agent Malware Campaign Ever Documented"}
             </div>
             <p className="text-sm text-stone mb-3">
               {locale === "zh"
-                ? "掃描 96,096 個 skill 時發現三個協同攻擊者（hightower6eu 354、sakaen736jih 212、52yuanchangxing 137）。已通報 NousResearch 並全數加入黑名單。"
-                : "Discovered while scanning 96,096 skills across six registries. Three coordinated threat actors (hightower6eu 354, sakaen736jih 212, 52yuanchangxing 137). Reported to NousResearch and blacklisted."}
+                ? "掃描 96,096 個 skill、標記 1,302 個風險項，人工複審後確認 552 個惡意軟體。發現三個協同攻擊者（hightower6eu 354、sakaen736jih 212、52yuanchangxing 137）。已通報 NousResearch 並全數加入黑名單。"
+                : "1,302 flagged across 96,096 skills scanned in six registries; 552 confirmed malware after manual review. Three coordinated threat actors (hightower6eu 354, sakaen736jih 212, 52yuanchangxing 137). Reported to NousResearch and blacklisted."}
             </p>
             <div className="flex flex-wrap gap-3">
               <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/research/openclaw-malware-campaign-2026-04.md" target="_blank" rel="noopener noreferrer" className="font-data text-xs text-blue hover:underline">{locale === "zh" ? "完整報告 (EN)" : "Full Report (EN)"}</a>
@@ -89,12 +89,12 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
               <span className="font-data text-xs text-mist">April 2026 · 7 pages · 32 references</span>
             </div>
             <div className="font-display text-base font-semibold text-ink mb-1">
-              96,096 Skills, 751 Malware: A Large-Scale Security Audit of the AI Agent Ecosystem
+              96,096 Skills, 552 Confirmed Malware: A Large-Scale Security Audit of the AI Agent Ecosystem
             </div>
             <p className="text-sm text-stone mb-3">
               {locale === "zh"
-                ? "史上最大規模 AI agent 安全掃描。96,096 個 skill、1,302 個有風險、751 個確認惡意軟體。三個協同攻擊者。工具描述下毒佔偵測的 53%。"
-                : "The largest AI agent security scan to date. 96,096 skills across 6 registries, 1,302 flagged, 751 confirmed malware. Three coordinated threat actors. Credential access via tool descriptions accounts for 53% of detections."}
+                ? "史上最大規模 AI agent 安全掃描。96,096 個 skill、1,302 個有風險、人工複審後 552 個確認惡意軟體。三個協同攻擊者。工具描述下毒佔偵測的 53%。"
+                : "The largest AI agent security scan to date. 96,096 skills across 6 registries, 1,302 flagged, 552 confirmed malware after manual review. Three coordinated threat actors. Credential access via tool descriptions accounts for 53% of detections."}
             </p>
             <div className="flex flex-wrap gap-3">
               <a href="https://doi.org/10.5281/zenodo.19476480" target="_blank" rel="noopener noreferrer" className="font-data text-xs text-blue hover:underline">Zenodo (DOI)</a>
@@ -304,6 +304,13 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
           </div>
         </div>
+      </Reveal>
+      <Reveal delay={0.15}>
+        <p className="text-sm text-graphite leading-[1.7] mb-6 max-w-[760px]">
+          {locale === "zh"
+            ? `這個掃描現在是活的：紅隊巨量掃描與 CVE 攝取兩條飛輪都已跑完整輪，並轉為每日更新。新發現會自動結晶成偵測規則回流 ATR，把標準從 462 條推進到目前的 ${stats.ruleCount} 條（npm agent-threat-rules@3.4.0，2026-06-13 發布）。`
+            : `This scan is now a live loop: a red-team mega-scan flywheel and a CVE-ingestion flywheel have each run a full sweep and are moving to daily updates. New findings auto-crystallize into detection rules that flow back into ATR, growing the standard from 462 to the current ${stats.ruleCount} (npm agent-threat-rules@3.4.0, published 2026-06-13).`}
+        </p>
       </Reveal>
       <Reveal delay={0.2}>
         <div className="flex gap-4 mb-8">

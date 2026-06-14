@@ -184,9 +184,9 @@ function Cell({ v }: { v: "yes" | "no" | "partial" }) {
 // figure carries an explicit "as of" date. Re-verify against data/stats.json
 // before citing externally — rule/scan counts move.
 const EVIDENCE = [
-  { stat: "34", label: "ATR rules merged into Cisco AI Defense (as of 2026-05-11)" },
+  { stat: "Live", label: "Full ATR rule pack in Cisco AI Defense production" },
   { stat: "96,096", label: "Real agent skills scanned across 6 registries (as of 2026-04-14)" },
-  { stat: "99.6%", label: "Precision on PINT adversarial benchmark" },
+  { stat: "99.7%", label: "Precision on PINT adversarial benchmark" },
   { stat: "100%", label: "Recall on SKILL.md corpus, 0.20% FP rate" },
 ];
 
@@ -272,7 +272,7 @@ export default async function QualityStandardPage({
             rel="noopener noreferrer"
             className="font-data text-xs text-stone hover:text-ink transition-colors border border-fog px-4 py-2.5 rounded-sm"
           >
-            npm install agent-threat-rules
+            npm install agent-threat-rules@3.4.0
           </a>
         </div>
       </Reveal>
@@ -791,7 +791,7 @@ export default async function QualityStandardPage({
             </span>
           </div>
           <pre className="font-data text-xs md:text-sm text-ink p-5 overflow-x-auto">
-            npm install agent-threat-rules
+            npm install agent-threat-rules@3.4.0
           </pre>
         </div>
       </Reveal>

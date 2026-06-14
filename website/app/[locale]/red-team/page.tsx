@@ -677,10 +677,15 @@ export default async function RedTeamPage({
               ? "5 個語料庫 · 75 條新規則 · HackAPrompt 召回率 28.6% → 66.0%"
               : "5 corpora · 75 new rules · HackAPrompt recall 28.6% → 66.0%"}
           </h2>
-          <p className="text-base text-stone font-light max-w-[640px] mb-10">
+          <p className="text-base text-stone font-light max-w-[640px] mb-4">
             {zh
               ? "2026-05-12：11 個並行 agent 消化五個外部語料庫，生成 75 條規則，均通過 6 道品質關卡，0 FP regression on benign corpus。詳細版本記錄在 /changelog。"
               : "2026-05-12: 11 parallel agents ingested five external corpora and generated 75 rules, all passing the 6-gate quality process with 0 FP regression on the benign corpus. Full version record at /changelog."}
+          </p>
+          <p className="text-base text-stone font-light max-w-[640px] mb-10">
+            {zh
+              ? `這個流程現在每天跑：紅隊巨量掃描與 CVE 攝取兩條飛輪都已跑完整輪，並轉為每日更新。新發現自動結晶成規則，把標準從 462 條推進到目前的 ${stats.ruleCount} 條（npm agent-threat-rules@3.4.0，2026-06-13 發布）。`
+              : `This pipeline now runs daily: a red-team mega-scan flywheel and a CVE-ingestion flywheel have each completed a full sweep and moved to daily updates. New findings auto-crystallize into rules, growing the standard from 462 to the current ${stats.ruleCount} (npm agent-threat-rules@3.4.0, published 2026-06-13).`}
           </p>
         </Reveal>
         <Reveal delay={0.1}>
@@ -707,6 +712,48 @@ export default async function RedTeamPage({
             {zh
               ? "所有 75 條規則均通過 RFC-001 品質門檻、benign corpus 0 FP、跨規則衝突檢查。53 條規則的 regex 已從字面模式泛化為多層結構 pattern。詳細 changelog 見 v2.2.0。"
               : "All 75 rules passed the RFC-001 quality gate, benign corpus 0 FP, and cross-rule conflict check. 53 rules had regex generalized from literal fingerprints to multi-layer structural patterns. Full detail in v2.2.0 changelog."}
+          </p>
+        </Reveal>
+        <Reveal delay={0.3}>
+          <div className="font-data text-xs uppercase tracking-[2px] text-stone mb-3 mt-16">
+            {zh ? "2026-06 巨量掃描" : "2026-06 mega-scan"}
+          </div>
+          <h2 className="font-display text-[clamp(24px,3.4vw,36px)] font-extrabold tracking-[-2px] leading-tight mb-4 max-w-[720px]">
+            {zh
+              ? "8 個語料庫 · 29 條偵測規則 · 2 個無新增 miss"
+              : "8 corpora · 29 detection rules · 2 with no novel misses"}
+          </h2>
+          <p className="text-base text-stone font-light max-w-[640px] mb-10">
+            {zh
+              ? "消化 8 個公開 agent 紅隊語料庫,找出現有規則漏抓的攻擊變體並結晶成新規則。6 個語料庫產出 29 條偵測規則,2 個(TensorTrust、PoisonedRAG)在現有覆蓋之外無新增 miss。全部通過 6 道品質關卡與 benign corpus 0 FP。"
+              : "Ingested 8 public agent red-team corpora to surface attack variants existing rules missed and crystallize them into new rules. 6 corpora produced 29 detection rules; 2 (TensorTrust, PoisonedRAG) yielded no novel misses beyond existing coverage. All passed the 6-gate quality process with 0 FP on the benign corpus."}
+          </p>
+        </Reveal>
+        <Reveal delay={0.1}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-fog mb-8">
+            {[
+              { corpus: "LLMail-Inject", ruleIds: "ATR-2026-01860..01865", note: "" },
+              { corpus: "InjecAgent", ruleIds: "ATR-2026-00550 / 00584 / 00700 / 00859 / 01000", note: "" },
+              { corpus: "AgentDojo", ruleIds: "ATR-2026-00715 / 00720 / 01751..01754", note: "" },
+              { corpus: "ToolEmu", ruleIds: "ATR-2026-00702 / 00718 / 00719 / 01301", note: "" },
+              { corpus: "MCPSecBench", ruleIds: "ATR-2026-01300 / 01306 / 01307 / 01310 / 01615 / 01616", note: "" },
+              { corpus: "AgentPoison", ruleIds: "ATR-2026-01774 / 01800", note: "" },
+              { corpus: "TensorTrust", ruleIds: "", note: zh ? "已有覆蓋 — 無新增 miss" : "Existing coverage — no novel misses" },
+              { corpus: "PoisonedRAG", ruleIds: "", note: zh ? "已有覆蓋 — 無新增 miss" : "Existing coverage — no novel misses" },
+            ].map((row) => (
+              <div key={row.corpus} className="bg-paper p-5 md:p-6">
+                <div className="font-display text-sm font-bold text-ink mb-2">{row.corpus}</div>
+                {row.ruleIds && <div className="font-data text-xs text-blue mb-1">{row.ruleIds}</div>}
+                {row.note && <div className="font-data text-xs text-stone mb-1">{row.note}</div>}
+              </div>
+            ))}
+          </div>
+        </Reveal>
+        <Reveal delay={0.2}>
+          <p className="text-xs text-stone max-w-[640px]">
+            {zh
+              ? "29 條為去重後的 distinct 規則;部分源自跨語料庫共通的 miss。成熟度涵蓋 stable 與 experimental,全部通過安全門檻與 benign corpus 0 FP。這兩條飛輪(紅隊 + CVE)現在每日運轉。"
+              : "29 distinct rules after de-duplication; several emerged from misses shared across corpora. Maturity spans stable and experimental; all cleared the safety gate with 0 FP on the benign corpus. Both flywheels (red-team + CVE) now run daily."}
           </p>
         </Reveal>
       </section>
