@@ -1,10 +1,10 @@
 # ATR → NIST Cybersecurity Framework 2.0 Mapping
 
-Version: 1.0.0
+Version: 1.1.0
 Status: Draft for NIST IR 8596 Informative Reference submission
-Date: 2026-05-28
+Date: 2026-06-14
 Editor: Adam Lin (林冠辛) <adam@agentthreatrule.org>
-Mapped corpus: Agent Threat Rules v3.0.x (449 rules / 10 categories)
+Mapped corpus: Agent Threat Rules v3.4.0 (651 rules / 10 categories; per data/stats.json 2026-06-14)
 Reference framework: NIST CSF 2.0 (NIST CSWP 29, February 2024)
 
 ---
@@ -55,7 +55,7 @@ Each ATR detection method contributes primarily to one or two CSF Functions:
 For each of the 10 ATR attack-class categories (SPEC.md §8), the table lists
 the CSF 2.0 subcategories the rule corpus supplies evidence for.
 
-### 4.1 prompt-injection (174 rules)
+### 4.1 prompt-injection (223 rules)
 
 | CSF 2.0 Subcategory | Outcome | ATR Evidence | Rules (examples) |
 |---------------------|---------|--------------|------------------|
@@ -63,7 +63,7 @@ the CSF 2.0 subcategories the rule corpus supplies evidence for.
 | DE.AE-02 | Potentially adverse events are analyzed to better understand associated activities | Each Rule's `detection.condition` produces a structured Match output (SPEC.md §7) with rule_id, severity, matched_selectors | All prompt-injection rules |
 | PR.IR-01 | Networks and environments are protected from unauthorized logical access and usage | `response.actions: [block_input]` enforces preventive control when Pattern matches | ATR-2026-00001, -00440, -00441 |
 
-### 4.2 tool-poisoning (43 rules)
+### 4.2 tool-poisoning (65 rules)
 
 | CSF 2.0 Subcategory | Outcome | ATR Evidence | Rules (examples) |
 |---------------------|---------|--------------|------------------|
@@ -71,7 +71,7 @@ the CSF 2.0 subcategories the rule corpus supplies evidence for.
 | ID.RA-08 | Processes for receiving, analyzing, and responding to vulnerabilities disclosed are established | CVE-mapped rules (CVE-2026-26030, CVE-2026-2275, CVE-2026-30617, ...) provide runtime detection for known tool-poisoning CVEs | ATR-2026-00529 (litellm SQL), -00538 (langchain-chatchat), -00543 (litellm MCP argv) |
 | PR.IR-01 | Networks/environments protected from unauthorized access | `block_tool` action prevents tool execution when poisoned MCP message detected | All tool-poisoning rules with `block_tool` |
 
-### 4.3 context-exfiltration (42 rules)
+### 4.3 context-exfiltration (103 rules)
 
 | CSF 2.0 Subcategory | Outcome | ATR Evidence | Rules (examples) |
 |---------------------|---------|--------------|------------------|
@@ -87,7 +87,7 @@ the CSF 2.0 subcategories the rule corpus supplies evidence for.
 | DE.AE-03 | Information is correlated from multiple sources | Trace rule 00552 correlates RETRIEVER / TOOL_RESPONSE pressure spans with AGENT goal-change spans | ATR-2026-00552 (goal drift, composite trace) |
 | GV.RM-01 | Cybersecurity risk management strategy is established | Authorization for autonomous goal changes requires policy; trace rules surface deviations | ATR-2026-00552 |
 
-### 4.5 privilege-escalation (18 rules)
+### 4.5 privilege-escalation (35 rules)
 
 | CSF 2.0 Subcategory | Outcome | ATR Evidence | Rules (examples) |
 |---------------------|---------|--------------|------------------|
@@ -95,14 +95,14 @@ the CSF 2.0 subcategories the rule corpus supplies evidence for.
 | PR.IR-01 | Unauthorized access protection | Cross-conversation memory write rule blocks tenant-boundary escapes | ATR-2026-00551 (forbid + cross-attribute, trace) |
 | GV.PO-01 | Policy for managing cybersecurity risks is established | Rules surface destructive autonomy that policy did not authorize | ATR-2026-00549, -00551 |
 
-### 4.6 excessive-autonomy (8 rules)
+### 4.6 excessive-autonomy (29 rules)
 
 | CSF 2.0 Subcategory | Outcome | ATR Evidence | Rules (examples) |
 |---------------------|---------|--------------|------------------|
 | GV.PO-01 | Policy for cybersecurity risks established | Rules detect runaway loops, resource exhaustion patterns | ATR-2026-00050, -00051 |
 | DE.AE-02 | Adverse events analyzed | Behavioral-method rules (placeholder in v1.1) will use metric thresholds over windows | (behavioral plane, §7 placeholder) |
 
-### 4.7 skill-compromise (43 rules)
+### 4.7 skill-compromise (45 rules)
 
 | CSF 2.0 Subcategory | Outcome | ATR Evidence | Rules (examples) |
 |---------------------|---------|--------------|------------------|
@@ -110,7 +110,7 @@ the CSF 2.0 subcategories the rule corpus supplies evidence for.
 | ID.AM-08 | Systems, hardware, software, services, and data are managed throughout their life cycle | Signature rules supply skill provenance binding | All signature-method rules in skill-compromise |
 | DE.CM-09 | Computing software monitored | Static skill scan (`scan_target: skill`) on every SKILL.md ingest | ATR-2026-00451, -00452 |
 
-### 4.8 model-abuse (10 rules)
+### 4.8 model-abuse (37 rules)
 
 | CSF 2.0 Subcategory | Outcome | ATR Evidence | Rules (examples) |
 |---------------------|---------|--------------|------------------|
@@ -124,7 +124,7 @@ the CSF 2.0 subcategories the rule corpus supplies evidence for.
 | PR.PS-04 | Log records are generated and made available for continuous monitoring | Model-security rules emit Match output for downstream SIEM consumption | ATR-2026-00433 (modelcache deserialization RCE) |
 | ID.RA-08 | Vulnerability disclosure processes | CVE-mapped model-security rules | ATR-2026-00433 |
 
-### 4.10 data-poisoning (2 rules)
+### 4.10 data-poisoning (5 rules)
 
 | CSF 2.0 Subcategory | Outcome | ATR Evidence | Rules (examples) |
 |---------------------|---------|--------------|------------------|
