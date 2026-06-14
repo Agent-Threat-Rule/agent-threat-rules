@@ -87,12 +87,12 @@ const RED_TEAM_TOOLS: RedTeamTool[] = [
   {
     name: "Microsoft PyRIT",
     org: "Microsoft AI Red Team",
-    status: "in-review",
+    status: "corpus",
     homepage: "https://github.com/microsoft/PyRIT",
     prUrl: "https://github.com/microsoft/PyRIT/pull/1715",
     hook: "The toolkit Microsoft uses internally to red-team production LLM products. Roman Lutz leads.",
     what_atr_did:
-      "Added an ATR dataset loader exposing the rule corpus as PyRIT attack sources. Roman reviewed within 2 min on first push; iterating on doc shape.",
+      "Added an ATR dataset loader exposing the rule corpus as PyRIT attack sources; PR #1715 merged 2026-05-27.",
   },
   {
     name: "HackAPrompt",

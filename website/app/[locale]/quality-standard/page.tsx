@@ -253,7 +253,7 @@ export default async function QualityStandardPage({
           readers know this document covers §RFC-001 of the spec family. */}
       <Reveal delay={0.25}>
         <div className="mb-6">
-          <DocumentStatus locale={locale} sectionHref="/rfc-001" />
+          <DocumentStatus locale={locale} sectionHref="/spec" />
         </div>
       </Reveal>
       <Reveal delay={0.3}>

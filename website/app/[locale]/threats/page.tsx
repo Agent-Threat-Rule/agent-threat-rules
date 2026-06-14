@@ -188,8 +188,8 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
           <Reveal delay={0.1}>
             <p className="text-sm text-graphite mb-6 max-w-[480px] leading-[1.8]">
               {zh
-                ? <>這些 skill 通過 ATR {stats.ruleCount} 條規則掃描，<br className="sm:hidden" />零 CRITICAL / HIGH 發現。<br />安全使用。</>
-                : <>These skills passed ATR&apos;s {stats.ruleCount}-rule scan<br className="sm:hidden" /> with zero CRITICAL / HIGH findings.<br />Safe to use.</>}
+                ? <>這些 skill 在最新一次 ATR {stats.ruleCount} 條規則掃描中,<br className="sm:hidden" />零 CRITICAL / HIGH 發現。</>
+                : <>These skills had zero CRITICAL / HIGH findings<br className="sm:hidden" /> in the latest ATR {stats.ruleCount}-rule scan.</>}
             </p>
           </Reveal>
           <Reveal delay={0.2}>

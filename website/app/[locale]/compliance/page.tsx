@@ -126,7 +126,7 @@ export default async function CompliancePage({
               {zh ? "下載合規映射包 (GitHub Releases) →" : "Download compliance mapping (GitHub Releases) →"}
             </a>
             <a
-              href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/compliance/"
+              href="https://github.com/Agent-Threat-Rule/agent-threat-rules/tree/main/docs"
               target="_blank"
               rel="noopener noreferrer"
               className="font-data text-xs text-blue hover:underline text-center"
@@ -189,7 +189,7 @@ export default async function CompliancePage({
               : "ATR's compliance mappings are not marketing claims. Each rule's YAML contains specific compliance metadata citing the exact regex or token that detects the attack — not a generic claim of 'alignment with framework'."}
           </p>
           <a
-            href="https://github.com/Agent-Threat-Rule/agent-threat-rules/tree/main/data/rules"
+            href="https://github.com/Agent-Threat-Rule/agent-threat-rules/tree/main/rules"
             target="_blank"
             rel="noopener noreferrer"
             className="font-data text-xs text-blue hover:underline"

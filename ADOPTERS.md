@@ -68,8 +68,8 @@ Adopters whose adoption is itself a public-good interoperability artefact
 ### NIST AI RMF — community OSCAL catalog (submission in review)
 - **Org**: ATR maintainers (community contribution; NOT a NIST publication)
 - **Type**: reference
-- **Integration**: Community-authored OSCAL catalog covering NIST AI RMF (72 controls + 31 cross-reference links), CC0-licensed, self-published at Agent-Threat-Rule/ai-rmf-oscal-catalog. The catalog has been submitted to the NIST OSCAL team as PR usnistgov/oscal-content#333; the PR is OPEN, the NIST OSCAL maintainer has flagged that scope alignment needs rework, and the ATR maintainers are awaiting NIST direction. Listed here for transparency about the submission, NOT as evidence of NIST endorsement.
-- **Evidence**: <https://github.com/usnistgov/oscal-content/pull/333>
+- **Integration**: Community-authored OSCAL catalog covering NIST AI RMF (72 controls + 31 cross-reference links), CC0-licensed, self-published at Agent-Threat-Rule/ai-rmf-oscal-catalog. The catalog was submitted to the NIST OSCAL team; the initial PR usnistgov/oscal-content#333 was closed and reopened as a scope-aligned rework, usnistgov/oscal-content#338 (currently OPEN, in review). The ATR maintainers are awaiting NIST direction. Listed here for transparency about the submission, NOT as evidence of NIST endorsement.
+- **Evidence**: <https://github.com/usnistgov/oscal-content/pull/338>
 - **Since**: 2026-05-10 (community catalog published; PR opened 2026-05-21)
 - **Status**: in-review
 
@@ -140,32 +140,8 @@ Listed when the integration code has been merged or released.
 - **Org**: NVIDIA
 - **Type**: rule-import
 - **Integration**: ATR detector plugin for the garak red-teaming framework
-- **Evidence**: <https://github.com/NVIDIA/garak/pull/1276>
+- **Evidence**: <https://github.com/NVIDIA/garak/pull/1676>
 - **Since**: 2026-05-20
-- **Status**: in-review
-
-### IBM mcp-context-forge
-- **Org**: IBM
-- **Type**: sidecar-proxy
-- **Integration**: ATR threat-detection plugin for the MCP context-forge proxy
-- **Evidence**: <https://github.com/IBM/mcp-context-forge/pull/4109>
-- **Since**: 2026-05-09
-- **Status**: in-review
-
-### Portkey AI Gateway
-- **Org**: Portkey AI
-- **Type**: sidecar-proxy
-- **Integration**: ATR detection plugin in the Portkey gateway plugin architecture
-- **Evidence**: <https://github.com/Portkey-AI/gateway/pull/1652>
-- **Since**: 2026-05-16
-- **Status**: in-review
-
-### Semgrep
-- **Org**: Semgrep Inc. (community contribution)
-- **Type**: adapter
-- **Integration**: YAML rule-format adapter that translates Semgrep rule conventions to ATR conformance for skill-manifest + MCP-tool security
-- **Evidence**: Semgrep upstream PR (open as of 2026-05-10)
-- **Since**: 2026-05-10
 - **Status**: in-review
 
 ### aaif-goose
@@ -174,7 +150,7 @@ Listed when the integration code has been merged or released.
 - **Integration**: PreToolUse hook denial integrates ATR rule evaluation at the tool-call boundary
 - **Evidence**: <https://github.com/aaif-goose/goose/pull/9304>
 - **Since**: 2026-05-19
-- **Status**: in-review
+- **Status**: shipped
 
 ### SigmaHQ
 - **Org**: SigmaHQ
@@ -182,7 +158,7 @@ Listed when the integration code has been merged or released.
 - **Integration**: Cross-listing in the Sigma tools directory; agent-threat-rules listed as a sibling detection-rule format
 - **Evidence**: <https://github.com/SigmaHQ/sigma/pull/6015>
 - **Since**: 2026-05-09
-- **Status**: in-review
+- **Status**: shipped
 
 ---
 
@@ -216,14 +192,6 @@ discoverability.
 - **Since**: 2026-05-16
 - **Status**: in-review
 
-### Puliczek/awesome-mcp-security
-- **Org**: Puliczek (independent)
-- **Type**: reference
-- **Integration**: ATR listed in MCP threat-detection tools
-- **Evidence**: Puliczek/awesome-mcp-security
-- **Since**: 2026-04-21
-- **Status**: in-review
-
 ---
 
 ## Tier 4 — Commercial implementations
@@ -240,6 +208,11 @@ docs.*
 
 ## Removed entries
 
-None to date. If an adopter is moved out of an active tier due to project
-archival or removal of ATR support, the entry is moved here with a
-one-line note and the original "Since" date is preserved.
+If an adopter is moved out of an active tier due to project archival, removal
+of ATR support, a closed/unmerged PR, or unverifiable evidence, the entry is
+noted here with the reason and the original "Since" date preserved.
+
+- **IBM mcp-context-forge** (was Tier 2 · since 2026-05-09) — evidence PR IBM/mcp-context-forge#4109 was closed without merge. Removed 2026-06-14.
+- **Portkey AI Gateway** (was Tier 2 · since 2026-05-16) — evidence PR Portkey-AI/gateway#1652 was closed without merge. Removed 2026-06-14.
+- **Semgrep** (was Tier 2 · since 2026-05-10) — no merged PR or verifiable evidence link could be located. Removed 2026-06-14.
+- **Puliczek/awesome-mcp-security** (was Tier 3 · since 2026-04-21) — ATR is not present in the project README; listing could not be verified. Removed 2026-06-14.
