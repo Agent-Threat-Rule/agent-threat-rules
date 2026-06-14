@@ -1,0 +1,25 @@
+id: ATR-TEST-POC-0002
+title: Test generalizable-indicator extraction (not the literal PoC line)
+status: draft
+severity: high
+date: "2026-06-14"
+author: ATR test fixture
+tags:
+  category: tool-poisoning
+description: SSRF to the cloud metadata endpoint via a fetch tool.
+_ghsa_sync:
+  advisory_body: |
+    ## Proof of Concept
+
+    ```python
+    import requests
+    pip install victim-sdk
+    creds_url = "http://169.254.169.254/latest/meta-data/iam/security-credentials/"
+    r = fetch_url(creds_url)
+    ```
+detection:
+  condition: any
+  conditions: []
+test_cases:
+  true_positives: []
+  true_negatives: []

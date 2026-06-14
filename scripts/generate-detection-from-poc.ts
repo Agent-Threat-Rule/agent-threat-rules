@@ -165,8 +165,48 @@ const ATTACK_INDICATORS: RegExp[] = [
   /interact\.sh/i,
 ];
 
+// GENERALIZABLE attack-class indicators — the HIGH-SPECIFICITY subset of
+// ATTACK_INDICATORS that is safe to emit as a standalone detection pattern.
+// These are signatures that almost never appear in benign agent content (cloud
+// metadata endpoints, OOB-interaction services, SQLi/SSTI signatures, named
+// prompt-injection phrases, deserialization sinks, command-after-pipe). The
+// extractor emits the matched indicator's own regex — NOT the literal PoC line
+// — so the rule generalizes to real attacks instead of matching one advisory's
+// exact reproducer string (the #123 / ATR-PRED-* failure mode). The broader,
+// noisier ATTACK_INDICATORS (bare eval(/exec(/$()/../../) still QUALIFY a line
+// as a payload line, but a line that carries no generalizable indicator yields
+// no pattern, routing the proposal to human/LLM PoC review (exit 3).
+const GENERALIZABLE_INDICATORS: RegExp[] = [
+  /169\.254\.169\.254/,
+  /metadata\.google\.internal/,
+  /\bgopher:\/\//i,
+  /\bdict:\/\//i,
+  /\{\{.*(self|config|request|globals|__|\.\.|class)\b.*\}\}/,
+  /\/etc\/passwd/,
+  /\/proc\/self/,
+  /;\s*(rm|cat|curl|wget|nc|bash|sh|powershell)\b/i,
+  /\|\s*(bash|sh|nc)\b/i,
+  /UNION\s+SELECT/i,
+  /'\s*OR\s+'?1'?\s*=\s*'?1/i,
+  /;\s*DROP\s+TABLE/i,
+  /ignore\s+(all\s+)?previous\s+instructions/i,
+  /disregard.*instructions/i,
+  /\br3dir/i,
+  /webhook\.site/i,
+  /burpcollaborator/i,
+  /\.oastify\.com/i,
+  /requestbin/i,
+  /interact\.sh/i,
+  /pickle\.loads\s*\(/,
+  /marshal\.loads/,
+  /__reduce__/,
+];
+
 // Lines that are setup/benign even if otherwise interesting — never patterns.
 const BENIGN_LINE: RegExp[] = [
+  /^\s*\d+[\s:]/, // leading source line-number (PoC pasted with gutter)
+  /^\s*(\[[+!*]\]|→|->|=>)/, // description/console-output markers, not code
+
   /^\s*(#|\/\/|\/\*|\*)/, // comment
   /^\s*from\s+\S+\s+import\b/, // python: from x import y
   /^\s*import\s+\S+/, // python/js: import x  /  import x from 'y'
@@ -209,36 +249,38 @@ const codeBlockExtractor = {
   name: "code-block",
   extract(text: string): ExtractedPattern[] {
     const results: ExtractedPattern[] = [];
+    const seenInBlock = new Set<string>();
     const re = /```[\w-]*\n([\s\S]*?)```/g;
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
       const raw = m[1].trim();
       if (raw.length < 8) continue;
-      // Select the highest-confidence ATTACK-INDICATOR line — not the first
-      // line (which is almost always a benign import/setup statement). A line
-      // qualifies only if it carries a genuine exploit signal and is not
-      // itself setup. If no line qualifies, this block produces no pattern and
-      // the proposal routes to human-PoC (the grounding gate exits 3).
-      let best: string | null = null;
-      let bestScore = 0;
+      // For every payload line (matches an ATTACK_INDICATOR and is not setup),
+      // emit the GENERALIZABLE indicator(s) it carries — NOT the escaped line.
+      // The old extractor escaped the whole "best" line, producing a regex that
+      // only matched that one advisory's literal reproducer; it passed own-TP +
+      // the benign gate but never generalized to a real attack (#123). A line
+      // that qualifies as a payload but matches no generalizable indicator
+      // yields nothing here, so the proposal routes to human/LLM PoC review.
       for (const rawLine of raw.split("\n")) {
         const line = rawLine.trim();
         if (line.length < 8 || line.length > 200) continue;
         if (isBenignLine(line)) continue;
-        const score = attackScore(line);
-        if (score > bestScore) {
-          bestScore = score;
-          best = line;
+        if (attackScore(line) === 0) continue;
+        for (const ind of GENERALIZABLE_INDICATORS) {
+          if (!ind.test(line)) continue;
+          const regex = `(?i)${ind.source}`;
+          if (seenInBlock.has(regex)) continue;
+          seenInBlock.add(regex);
+          results.push({
+            extractor: "code-block",
+            regex,
+            description: `Generalizable attack-class indicator from advisory PoC code block`,
+            test_input: line,
+            grounding: "poc",
+          });
         }
       }
-      if (best === null || bestScore === 0) continue;
-      results.push({
-        extractor: "code-block",
-        regex: `(?i)${escapeRegex(best)}`,
-        description: `Attack-indicator line from advisory PoC code block (${bestScore} signal${bestScore > 1 ? "s" : ""})`,
-        test_input: best,
-        grounding: "poc",
-      });
     }
     return results;
   },
@@ -401,10 +443,20 @@ function buildRule(
 
   const hasPoc = patterns.some((p) => p.grounding === "poc");
 
+  // When the rule is poc-grounded, ship ONLY the poc (generalizable) patterns.
+  // The prose extractors (cli-command / http-endpoint / function-arg /
+  // endpoint-name) emit benign or description-derived patterns — "pip install
+  // x", "GET /api/agents", a vulnerable function name — which must never enter
+  // a production rule. Bundling them alongside one poc pattern is exactly how
+  // the #123 batch shipped "pip install langsmith" as a detection condition.
+  // Prose-only proposals keep all patterns: they become a needs-human-poc DRAFT
+  // (below) that a maintainer rewrites, so the prose hints are useful context.
+  const emitted = hasPoc ? patterns.filter((p) => p.grounding === "poc") : patterns;
+
   newRule.detection = {
     condition: "any",
     false_positives: [],
-    conditions: patterns.map((p) => ({
+    conditions: emitted.map((p) => ({
       field: "content",
       operator: "regex",
       value: p.regex,
@@ -413,7 +465,7 @@ function buildRule(
   };
 
   newRule.test_cases = {
-    true_positives: patterns.map((p) => ({
+    true_positives: emitted.map((p) => ({
       input: p.test_input,
       expected: "triggered",
       description: `Auto-extracted via ${p.extractor} (${p.grounding}-grounded)`,
