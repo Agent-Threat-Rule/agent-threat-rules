@@ -72,9 +72,11 @@ export default async function HadesPostPage({
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">ATR 偵測什麼</h2>
           <p>
-            ATR 是 agent 威脅的開放標準。652 條偵測規則，MIT 授權。
-            規則 ATR-2026-00576 涵蓋 Hades 的憑證竊取階段，與 ATR-2026-00575 互補——
-            後者偵測 Miasma 的 agent 設定檔後門，同一個攻擊活動的另一半。
+            ATR 是 AI agent 威脅的開放、廠商中立偵測標準——652 條機器可讀規則，MIT 授權，
+            一經發布 ID 永不更動，任何符合規範的引擎都能評估。當一個攻擊活動每隔幾天就換套件名，
+            穩定、可引用的規則 ID 正是讓多方對得上同一條偵測的東西。規則 ATR-2026-00576 涵蓋
+            Hades 的憑證竊取階段，與 ATR-2026-00575 互補——後者偵測 Miasma 的 agent 設定檔
+            後門，同一個攻擊活動的另一半。
           </p>
           <p>規則在兩種形狀上觸發：</p>
           <p>
@@ -154,10 +156,13 @@ export default async function HadesPostPage({
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">What ATR detects</h2>
           <p>
-            ATR is an open standard for agent threats. 652 detection rules, MIT licensed. Rule
-            ATR-2026-00576 covers the Hades credential-theft stage, and it complements
-            ATR-2026-00575, which detects the Miasma agent-config backdoor — the config-injection
-            half of the same campaign.
+            ATR is an open, vendor-neutral detection standard for AI agent threats — 652
+            machine-readable rules, MIT licensed, with IDs that never change once published and
+            that any conformant engine can evaluate. When a campaign rotates package names every
+            few days, a stable, citable rule ID is exactly what lets different parties point at the
+            same detection. Rule ATR-2026-00576 covers the Hades credential-theft stage, and it
+            complements ATR-2026-00575, which detects the Miasma agent-config backdoor — the
+            config-injection half of the same campaign.
           </p>
           <p>The rule fires on two shapes:</p>
           <p>

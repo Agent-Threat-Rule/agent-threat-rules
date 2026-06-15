@@ -48,14 +48,21 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
       </Reveal>
       <Reveal delay={0.1}>
         <h1 className="font-display text-[clamp(28px,4vw,44px)] font-extrabold tracking-[-2px] mb-2">
-          {zh ? "正在使用 ATR 的專案。" : "Projects shipping ATR."}
+          {zh ? "誰在採用這個標準。" : "Who ships the standard."}
         </h1>
       </Reveal>
       <Reveal delay={0.2}>
         <p className="text-base text-stone font-light mb-3 max-w-[640px]">
           {zh
-            ? "ADOPTERS.md 是這份清單的單一來源。社群採用者自行提 PR 加入,維護者不預先審核;只要 schema 對、有公開可驗證的證據連結就 merge。"
-            : "ADOPTERS.md is the single source of truth for this list. Adopters self-declare via PR — the maintainers do not pre-approve entries. A schema-conforming PR with a verifiable evidence link gets merged."}
+            ? "一個標準靠採用衡量,不靠宣稱。這頁列的是把 ATR 規則綁進公開、可驗證成品的專案——標準機構、生產部署、開源工具——而採用的形狀本身就是重點:企業整合走 pull request,不是私有 fork。這正是一個開放標準想要的治理質感。"
+            : "A standard is measured by adoption, not by assertion. This page lists projects that ship ATR rules in public, verifiable work — standards bodies, production deployments, open-source tooling. The shape of that adoption is itself the point: enterprises integrate through pull requests, not private forks. That is the governance texture an open standard is built for."}
+        </p>
+      </Reveal>
+      <Reveal delay={0.22}>
+        <p className="text-base text-stone font-light mb-3 max-w-[640px]">
+          {zh
+            ? "ADOPTERS.md 是這份清單的單一機器可讀來源。採用者自行提 PR 加入,維護者不預先審核;只要 schema 對、附上公開可驗證的證據連結就 merge——你的 PR 本身就是紀錄。"
+            : "ADOPTERS.md is the single machine-readable source of truth for this list. Adopters self-declare via PR — the maintainers do not pre-approve entries. A schema-conforming PR with a verifiable evidence link gets merged; your PR is the record."}
         </p>
       </Reveal>
       <Reveal delay={0.25}>
@@ -207,8 +214,8 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
             </h3>
             <p className="text-sm text-stone mb-3 leading-relaxed">
               {zh
-                ? "需要 spec walkthrough、design review、sample code,或想討論你的整合形狀,就走這條。維護者七天內回覆。"
-                : "If you want a spec walkthrough, design review, sample code for your language, or to discuss the shape of your integration, this is the path. Maintainers respond within seven days."}
+                ? "想要 spec walkthrough、design review、你的語言的 sample code,或先討論整合形狀,就走這條。維護者七天內回覆——標準的責任之一,是讓整合的人不必獨自摸索格式。"
+                : "If you want a spec walkthrough, design review, sample code for your language, or to discuss the shape of your integration, this is the path. Maintainers respond within seven days — part of a standard's job is to keep integrators from reinventing the format alone."}
             </p>
             <a
               href="https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=integration-request.yml"
@@ -228,8 +235,8 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
             </h3>
             <p className="text-sm text-stone mb-3 leading-relaxed">
               {zh
-                ? "整合已經公開可驗證,直接走這條。Schema 對、有 evidence link 就 merge — 維護者不預先審核採用者。"
-                : "If your integration is publicly verifiable, take this path. Schema-conforming entries with a verifiable evidence link get merged — maintainers do not pre-approve adopters."}
+                ? "整合已經公開可驗證,直接走這條。Schema 對、附 evidence link 就 merge——維護者不預先審核採用者,把你自己寫進公開紀錄,跟 Cisco、Microsoft、MISP 列在同一份檔案。"
+                : "If your integration is publicly verifiable, take this path. Schema-conforming entries with a verifiable evidence link get merged — maintainers do not pre-approve adopters. You write yourself into the public record, in the same file as Cisco, Microsoft, and MISP."}
             </p>
             <a
               href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ADOPTERS.md"
@@ -251,8 +258,8 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
           </div>
           <p className="text-sm text-stone mb-3 max-w-[480px]">
             {zh
-              ? "你的專案使用 ATR?加上這個徽章。"
-              : "Your project ships ATR? Add this badge to your README."}
+              ? "你的專案 ship 了 ATR?在 README 加上這個徽章——讓下游知道你的偵測規則對著一個版本化、可審查的標準。"
+              : "Your project ships ATR? Add this badge to your README — it tells downstream that your detections track a versioned, peer-reviewable standard."}
           </p>
         </div>
       </Reveal>

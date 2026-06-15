@@ -11,7 +11,7 @@ export function generateStaticParams() {
 export const metadata: Metadata = {
   title: "Compliance — ATR",
   description:
-    "ATR framework compliance coverage: OWASP Agentic Top 10, MITRE ATLAS, NIST AI RMF, EU AI Act, ISO 42001, and SAFE-MCP. Downloadable compliance mapping for procurement teams.",
+    "Regulation says you must manage AI agent risk. ATR maps every rule to the framework it answers to — OWASP Agentic, MITRE ATLAS, NIST AI RMF, EU AI Act, ISO 42001, SAFE-MCP — so compliance becomes a detection that runs, not a document that asserts.",
 };
 
 // Per-rule coverage figures are enforced in CI by
@@ -44,15 +44,15 @@ function buildFrameworks(ruleCount: number) {
     {
       id: "NIST AI RMF",
       coverage: "100%",
-      desc_en: `All ${ruleCount} rules carry NIST AI RMF subcategory mappings across the GV/MP/MS/MG functions. A community OSCAL catalog (CC0) is self-published; submission in review (NIST OSCAL collaboration branch #338), not yet a NIST endorsement.`,
-      desc_zh: `全部 ${ruleCount} 條規則皆帶有 NIST AI RMF subcategory 對應，涵蓋 GV/MP/MS/MG 四大 function。社群版 OSCAL catalog 已自 publish(CC0)；submission 審查中(NIST OSCAL collaboration branch #338)，尚未是 NIST 官方背書。`,
+      desc_en: `All ${ruleCount} rules carry NIST AI RMF subcategory mappings across the GV/MP/MS/MG functions. A community-authored OSCAL catalog (CC0) is self-published, with the NIST OSCAL collaboration branch #338 in review — collaboration, not a NIST endorsement or adoption.`,
+      desc_zh: `全部 ${ruleCount} 條規則皆帶有 NIST AI RMF subcategory 對應,涵蓋 GV/MP/MS/MG 四大 function。社群撰寫的 OSCAL catalog 已自行 publish(CC0),NIST OSCAL collaboration branch #338 審查中——是協作,不是 NIST 背書或採用。`,
       link: "nist-ai-rmf",
     },
     {
       id: "EU AI Act",
       coverage: "100%",
-      desc_en: `All ${ruleCount} rules map to high-risk-AI obligations (Articles 9, 10, 12, 13, 14, 15). ATR supplies runtime detection evidence supporting these articles — it is not, by itself, a compliance guarantee.`,
-      desc_zh: `全部 ${ruleCount} 條規則皆對應到高風險 AI 義務（第 9、10、12、13、14、15 條）。ATR 提供支持這些條文的執行期偵測證據——本身並非合規保證。`,
+      desc_en: `All ${ruleCount} rules map to high-risk-AI obligations (Articles 9, 10, 12, 13, 14, 15). The Act names the duty; ATR supplies the runtime detection that produces evidence against the named article. It is detection evidence, not a compliance guarantee by itself.`,
+      desc_zh: `全部 ${ruleCount} 條規則皆對應到高風險 AI 義務（第 9、10、12、13、14、15 條）。法案說的是義務,ATR 給的是能對著該條文跑出證據的執行期偵測。是偵測證據,本身並非合規保證。`,
       link: null,
     },
     {
@@ -98,8 +98,8 @@ export default async function CompliancePage({
       <Reveal delay={0.1}>
         <p className="text-base text-stone font-light max-w-[640px] leading-[1.8] mb-4">
           {zh
-            ? `ATR 的 ${stats.ruleCount} 條規則每一條都帶有六個框架對應——OWASP LLM、OWASP Agentic、MITRE ATLAS、NIST AI RMF、EU AI Act、ISO 42001——且在 CI 驗證合法性與 100% 覆蓋。SAFE-MCP 為技術層級對應（78/85）。所有 metadata 皆 MIT 授權、可下載、可審核。`
-            : `Every one of ATR's ${stats.ruleCount} rules carries six framework mappings — OWASP LLM, OWASP Agentic, MITRE ATLAS, NIST AI RMF, EU AI Act, and ISO 42001 — with validity and 100% coverage enforced in CI. SAFE-MCP is mapped at the technique level (78/85). All metadata is MIT-licensed, downloadable, and auditable.`}
+            ? `每一條法規都說同一句話:你必須管理 AI agent 風險。它們沒說的是怎麼在真實成品上證明你做到了。ATR 的 ${stats.ruleCount} 條規則,每一條都帶有六個框架對應——OWASP LLM、OWASP Agentic、MITRE ATLAS、NIST AI RMF、EU AI Act、ISO 42001——合法性與 100% 覆蓋由 CI 強制。一條義務於是接上一個能在 SKILL.md、MCP tool 描述、agent config 上跑的偵測。SAFE-MCP 為技術層級對應(78/85)。所有 metadata 皆 MIT 授權、可下載、可審核。`
+            : `Every regulation says the same thing: you must manage AI agent risk. None of them say how to prove it on a real artifact. Each of ATR's ${stats.ruleCount} rules carries six framework mappings — OWASP LLM, OWASP Agentic, MITRE ATLAS, NIST AI RMF, EU AI Act, and ISO 42001 — with validity and 100% coverage enforced in CI. Each obligation thus connects to a detection that runs on a SKILL.md file, an MCP tool description, an agent config. SAFE-MCP is mapped at the technique level (78/85). All metadata is MIT-licensed, downloadable, and auditable.`}
         </p>
       </Reveal>
 
@@ -112,8 +112,8 @@ export default async function CompliancePage({
             </div>
             <p className="text-sm text-graphite leading-[1.7]">
               {zh
-                ? "合規官員無法將 URL 作為採購證據提交。下載結構化的合規映射包（PDF + JSON），包含每條規則的框架對應、rule ID 索引、以及品質分數摘要。"
-                : "Compliance officers cannot submit URLs as evidence in procurement. Download the structured compliance mapping package (PDF + JSON) with per-rule framework mappings, rule ID index, and quality score summary."}
+                ? "合規官員無法把一個 URL 當成採購證據提交。下載結構化的合規映射包(PDF + JSON):每條規則的框架對應、rule ID 索引、品質分數摘要。因為是開放標準,審稿者不必信任 ATR——他們可以自己驗每一條對應。"
+                : "A compliance officer cannot submit a URL as procurement evidence. Download the structured compliance mapping package (PDF + JSON): per-rule framework mappings, a rule ID index, a quality-score summary. Because it is an open standard, a reviewer does not have to trust ATR — they can verify every mapping themselves."}
             </p>
           </div>
           <div className="flex flex-col gap-3 flex-shrink-0">
@@ -185,8 +185,8 @@ export default async function CompliancePage({
           </div>
           <p className="text-sm text-graphite leading-[1.7] mb-3">
             {zh
-              ? "ATR 的合規映射不是行銷話術。每條規則的 YAML 中包含具體的 compliance metadata，引用偵測此攻擊的具體 regex 或 token，而非泛指「符合該框架」。"
-              : "ATR's compliance mappings are not marketing claims. Each rule's YAML contains specific compliance metadata citing the exact regex or token that detects the attack — not a generic claim of 'alignment with framework'."}
+              ? "「符合某框架」是宣稱;指出偵測某攻擊的那一段 regex,是證據。ATR 的合規對應寫在每條規則的 YAML 裡——具體的 compliance metadata,引用偵測此攻擊的確切 regex 或 token,而非泛指「與該框架對齊」。任何人都能把對應和它聲稱偵測的東西擺在一起看。"
+              : "'Aligned with a framework' is an assertion. The exact regex that detects an attack is evidence. ATR's compliance mappings live in each rule's YAML — specific compliance metadata citing the precise regex or token that detects the attack, never a generic claim of 'alignment with framework.' Anyone can put the mapping next to the thing it claims to detect and check."}
           </p>
           <a
             href="https://github.com/Agent-Threat-Rule/agent-threat-rules/tree/main/rules"

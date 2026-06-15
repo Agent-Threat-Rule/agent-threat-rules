@@ -46,13 +46,13 @@ const SECTIONS: Section[] = [
     status: "informative",
     en: {
       title: "Abstract",
-      body: `<p>Agent Threat Rules (ATR) is an open detection rule format for AI agent security threats. Rules are written as YAML documents conforming to a versioned schema, identified by the public <code>ATR-YYYY-NNNNN</code> scheme, and evaluated by any conforming engine. The reference TypeScript engine and a Python wrapper ship in the main repository under the MIT license.</p>
-<p>ATR is to AI-agent threat detection what <a href="https://github.com/SigmaHQ/sigma" target="_blank" rel="noopener noreferrer">Sigma</a> is to SIEM detection and <a href="https://github.com/VirusTotal/yara" target="_blank" rel="noopener noreferrer">YARA</a> is to malware signatures — a vendor-neutral, machine-readable, peer-reviewable rule format.</p>`,
+      body: `<p>Agent Threat Rules (ATR) is an open detection rule format for AI agent security threats. Rules are written as YAML documents conforming to a versioned schema, identified by the public <code>ATR-YYYY-NNNNN</code> scheme — like a CVE number, an ID is permanent and never reassigned once published — and evaluated by any conforming engine. The reference TypeScript engine and a Python wrapper ship in the main repository under the MIT license.</p>
+<p>ATR is to AI-agent threat detection what <a href="https://github.com/SigmaHQ/sigma" target="_blank" rel="noopener noreferrer">Sigma</a> is to SIEM detection and <a href="https://github.com/VirusTotal/yara" target="_blank" rel="noopener noreferrer">YARA</a> is to malware signatures: a vendor-neutral, machine-readable, peer-reviewable rule format that any engine may implement and any party may cite. A detection written once is portable across every conforming engine — no reinvention of the rule format per vendor.</p>`,
     },
     zh: {
       title: "Abstract (摘要)",
-      body: `<p>Agent Threat Rules (ATR) 是 AI Agent 安全威脅的開放偵測規則格式。規則以 YAML 撰寫,遵循版本化 schema,使用公開的 <code>ATR-YYYY-NNNNN</code> 識別碼方案,可由任何 conforming engine 評估。Reference TypeScript engine 與 Python wrapper 於主 repository 中以 MIT license 發布。</p>
-<p>ATR 之於 AI Agent 威脅偵測,如同 <a href="https://github.com/SigmaHQ/sigma" target="_blank" rel="noopener noreferrer">Sigma</a> 之於 SIEM 偵測、<a href="https://github.com/VirusTotal/yara" target="_blank" rel="noopener noreferrer">YARA</a> 之於 malware signature ── 一個廠商中立、機器可讀、可同儕審查 (peer-reviewable) 的規則格式。</p>`,
+      body: `<p>Agent Threat Rules (ATR) 是 AI Agent 安全威脅的開放偵測規則格式。規則以 YAML 撰寫,遵循版本化 schema,使用公開的 <code>ATR-YYYY-NNNNN</code> 識別碼方案 ── 一如 CVE 編號,ID 一經發布即永久穩定、永不重新指派 ── 並可由任何 conforming engine 評估。Reference TypeScript engine 與 Python wrapper 於主 repository 中以 MIT license 發布。</p>
+<p>ATR 之於 AI Agent 威脅偵測,如同 <a href="https://github.com/SigmaHQ/sigma" target="_blank" rel="noopener noreferrer">Sigma</a> 之於 SIEM 偵測、<a href="https://github.com/VirusTotal/yara" target="_blank" rel="noopener noreferrer">YARA</a> 之於 malware signature:一個廠商中立、機器可讀、可同儕審查 (peer-reviewable) 的規則格式,任何引擎皆可實作、任何人皆可引用。一條偵測寫一次,即可在每個 conforming engine 間流通 ── 不必為每家廠商重新發明規則格式。</p>`,
     },
   },
   {
@@ -309,13 +309,15 @@ test_cases:
       title: "Evaluation",
       body: `<p>Every benchmark number reported on this site is a version-pinned, reproducible measurement. The full historical series for each source lives at <code>data/measurements/&lt;source&gt;/</code> (immutable, append-only). The current pointer per source is <code>data/measurements/&lt;source&gt;/latest.json</code>. Aggregated into <code>data/stats.json</code> under <code>benchmarks[]</code>.</p>
 <p>The single-digit recall on AdvBench / HarmBench / JailbreakBench is honest and expected. Those three corpora test <em>LLM safety alignment</em> (does the model refuse harmful requests), not <em>prompt-injection detection</em> (the surface ATR's regex layer targets). ATR's near-zero recall on these corpora confirms the layering thesis: regex catches structured attack patterns, alignment + content moderation catch natural-language harm requests.</p>
-<p>Wild scan has no ground-truth labels; the precision column reports a precision floor computed as <code>confirmed_malware / flagged</code>. Limitations are documented openly in <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/LIMITATIONS.md" target="_blank" rel="noopener noreferrer">LIMITATIONS.md</a>.</p>`,
+<p>Wild scan has no ground-truth labels; the precision column reports a precision floor computed as <code>confirmed_malware / flagged</code>. Limitations are documented openly in <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/LIMITATIONS.md" target="_blank" rel="noopener noreferrer">LIMITATIONS.md</a>.</p>
+<p>Precision is not reported as a single number. Each rule declares a <code>maturity</code>, and maturity maps to a detection <em>lane</em>: the <code>enforce</code> lane fires only the most mature rules, the <code>alert</code> lane adds rules under observation, and the default <code>hunt</code> lane runs the whole corpus as advisory signal. False-positive rates are published lane by lane — measured on a benign corpus of roughly 65,000 samples, enforce sits near 0.24% and hunt near 9% — so a consumer chooses the precision/coverage trade-off explicitly rather than inheriting one. A standard earns trust by publishing its worst figure, not by averaging it away.</p>`,
     },
     zh: {
       title: "評估 (Evaluation)",
       body: `<p>本站發布的每一個 benchmark 數字皆為版本綁定 (version-pinned)、可重現的測量結果。每個來源的完整歷史序列位於 <code>data/measurements/&lt;source&gt;/</code> (immutable, append-only)。各來源的目前指標為 <code>data/measurements/&lt;source&gt;/latest.json</code>。彙總於 <code>data/stats.json</code> 的 <code>benchmarks[]</code>。</p>
 <p>在 AdvBench / HarmBench / JailbreakBench 上的個位數 recall 是誠實且符合預期的。這三個 corpus 測試的是 <em>LLM safety alignment</em> (模型是否拒絕有害請求),而不是 <em>prompt injection detection</em> (ATR regex 層所針對的攻擊面)。ATR 在這些 corpus 上接近零的 recall 證實了分層假設:regex 抓結構化攻擊 pattern;alignment 與 content moderation 抓自然語言的有害請求。</p>
-<p>Wild scan 沒有 ground truth label;precision 欄報告以 <code>confirmed_malware / flagged</code> 計算的 precision floor。限制公開記錄於 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/LIMITATIONS.md" target="_blank" rel="noopener noreferrer">LIMITATIONS.md</a>。</p>`,
+<p>Wild scan 沒有 ground truth label;precision 欄報告以 <code>confirmed_malware / flagged</code> 計算的 precision floor。限制公開記錄於 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/LIMITATIONS.md" target="_blank" rel="noopener noreferrer">LIMITATIONS.md</a>。</p>
+<p>Precision 不以單一數字呈現。每條規則宣告自身的 <code>maturity</code>,而 maturity 對應到一個偵測<em>車道 (lane)</em>:<code>enforce</code> 車道只讓最成熟的規則開火,<code>alert</code> 車道納入觀察中的規則,預設的 <code>hunt</code> 車道則把整個 corpus 當作 advisory 訊號跑。誤報率逐車道發布 ── 在約 65,000 筆良性樣本的 corpus 上測量,enforce 約 0.24%、hunt 約 9% ── 讓消費者明示地選擇 precision 與 coverage 的取捨,而非被動繼承某個預設。一個標準的可信度,取決於它願不願意公開自己最差的數字,而非把它平均掉。</p>`,
     },
   },
   {

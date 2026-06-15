@@ -18,6 +18,8 @@ All notable changes to ATR will be documented in this file.
 
 ### Changed
 
+- **652 detection rules across 10 categories.** Specification line `3.0.0-alpha.1`
+  (Working Draft); this is the npm release line, tracked separately from the spec version.
 - **23 rules reclassified** (maturity) to reflect measured precision and generalization.
 - **ATR-2026-00495 deprecated** (garak DAN "insert prompt here" variant) — it now never fires.
   Spec-conformant; the only behavior change in this release.

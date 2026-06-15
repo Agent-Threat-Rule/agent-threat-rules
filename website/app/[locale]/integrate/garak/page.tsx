@@ -9,7 +9,7 @@ export function generateStaticParams() {
 export const metadata: Metadata = {
   title: 'NVIDIA garak × ATR — ATR',
   description:
-    'Auto-convert NVIDIA garak red-team findings into ATR detection rules. ATR rules wrapped as garak detectors (integration PR #1676, open). Every probe becomes a MIT-licensed defensive rule downstream.',
+    'A red-team standard feeds a detection standard. NVIDIA garak finds the attack; ATR turns it into a versioned, MIT-licensed detection rule. Two standards interoperate instead of duplicating each other (integration PR #1676, open).',
 };
 
 export default async function GarakIntegratePage({
@@ -28,8 +28,8 @@ export default async function GarakIntegratePage({
       <h1 className="text-3xl font-bold">NVIDIA garak × ATR</h1>
       <p className="mt-2 text-neutral-400">
         {zh
-          ? '把每一個 garak 失敗的 probe 轉成一條 MIT 授權的 ATR 偵測規則。零額外紅隊工作,author 欄位保留完整來源。'
-          : 'Turn every garak failed probe into a MIT-licensed ATR detection rule. Zero extra red-team work, full provenance on the author line.'}
+          ? 'garak 是紅隊的標準,ATR 是偵測的標準。一個找到攻擊,另一個把它變成一條版本化、MIT 授權的偵測規則。標準之間互餵,不重造彼此——每個 probe 的來源都留在 author 欄位。'
+          : "garak is a standard for red teaming; ATR is a standard for detection. One finds the attack, the other turns it into a versioned, MIT-licensed detection rule. Standards feed each other instead of reinventing each other — every probe's provenance stays on the author line."}
       </p>
 
       <section className="mt-10 space-y-3">
@@ -41,14 +41,18 @@ export default async function GarakIntegratePage({
           {zh ? (
             <>
               在 LLM 層找攻擊。ATR 在 agent 層防禦(tool calls、skills、MCP)。同一個攻擊
-              payload,不同防禦面。橋接是一支 Python 腳本:garak 報告進來,ATR 提案出去,
-              結晶 loop 處理其餘的事。
+              payload,兩個不同的偵測面——一個標準量它能不能突破模型,另一個標準量它能不能
+              在真實 agent 成品上被攔下來。橋接只是一支 Python 腳本:garak 報告進來,ATR 提案
+              出去,結晶 loop 處理其餘的事。一條在這裡寫下的規則,下游每個消費 ATR 的引擎都收得到。
             </>
           ) : (
             <>
               finds attacks at the LLM layer. ATR defends at the agent layer (tool calls, skills,
-              MCP). Same attack payload, different defence surface. The bridge is a single Python
-              script: garak reports in, ATR proposals out, crystallisation loop does the rest.
+              MCP). One attack payload, two detection surfaces — one standard measures whether it
+              breaks the model, the other measures whether it can be caught on a real agent artifact.
+              The bridge is just a Python script: garak reports in, ATR proposals out, the
+              crystallisation loop does the rest. A rule written here reaches every engine that
+              consumes ATR downstream.
             </>
           )}
         </p>
@@ -273,15 +277,21 @@ python3 garak-to-tc.py \\
           <li>
             {zh ? (
               <>
-                每次 POST 之間預設 100ms 延遲。在 garak 公開 in-the-wild jailbreak 集
-                (650 筆)上,recall 為 98.0%;在完整 garak 語料(3,475 筆)上 recall 為 38.5%。
-                跑完約一分鐘。
+                每次 POST 之間預設 100ms 延遲,跑完約一分鐘。兩個數字都公開:在 garak 公開
+                in-the-wild jailbreak 集(650 筆)上,recall 是 98.0%;在完整 garak 語料
+                (3,475 筆,涵蓋全部 probe 家族)上,recall 是 38.5%。落差是刻意的——regex
+                偵測層不去打某些 probe 家族(例如純語意越獄),硬塞只會換來脆弱簽章與誤報。
+                列出較低的那個數字,是因為一個標準的可信度,取決於它願不願意公開自己最差的數字。
               </>
             ) : (
               <>
-                Default 100ms delay between POSTs. On the public garak in-the-wild jailbreak set
-                (650 samples) recall is 98.0%; on the full garak corpus (3,475 samples) recall is
-                38.5%. A run takes about a minute.
+                Default 100ms delay between POSTs; a run takes about a minute. Both figures are
+                published. On the public garak in-the-wild jailbreak set (650 samples) recall is
+                98.0%; on the full garak corpus (3,475 samples, every probe family) recall is 38.5%.
+                The gap is deliberate — the regex detection layer does not chase some probe families
+                (pure semantic jailbreaks, for instance); forcing it to would buy brittle signatures
+                and false positives. We report the lower number because a standard earns trust by
+                publishing its worst figure, not hiding it.
               </>
             )}
           </li>

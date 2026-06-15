@@ -194,35 +194,45 @@ export default async function ActorPage({
             </div>
             <p className="text-xs text-mist mt-2 leading-[1.7]">
               {zh
-                ? "在隔離環境下使用 `echo \"...\" | base64 -d` 解碼可還原原始 payload。"
-                : 'Decode with `echo "..." | base64 -d` in an isolated environment to recover the raw payload.'}
+                ? "僅在隔離環境下解碼:`echo \"...\" | base64 -d` 會還原原始 payload。請勿在正式機器上執行。"
+                : 'Decode in an isolated environment only: `echo "..." | base64 -d` recovers the raw payload. Do not run it on a live machine.'}
             </p>
           </div>
         )}
       </Section>
 
       {/* Related ATR Rules */}
-      <Section label={zh ? "相關 ATR 規則" : "Related ATR Rules"} delay={0.35}>
-        <div className="flex flex-wrap gap-2">
-          {actor.atrRules.map((rid) => (
-            <Link
-              key={rid}
-              href={`${prefix}/rules/${rid}`}
-              className="font-data text-xs md:text-sm bg-paper border border-fog hover:border-stone px-3 py-1.5 rounded-[2px] text-ink transition-colors"
-            >
-              {rid}
-            </Link>
-          ))}
-        </div>
-        <p className="text-xs text-mist mt-3 leading-[1.7]">
-          {zh
-            ? "點擊規則 ID 可查看完整 YAML 定義、攻擊樣本與已記錄的規避手法。"
-            : "Click a rule ID for the full YAML definition, attack samples, and documented evasion techniques."}
-        </p>
+      <Section label={zh ? "對應的 ATR 規則" : "Detection Coverage"} delay={0.35}>
+        {actor.atrRules.length > 0 ? (
+          <>
+            <div className="flex flex-wrap gap-2">
+              {actor.atrRules.map((rid) => (
+                <Link
+                  key={rid}
+                  href={`${prefix}/rules/${rid}`}
+                  className="font-data text-xs md:text-sm bg-paper border border-fog hover:border-stone px-3 py-1.5 rounded-[2px] text-ink transition-colors"
+                >
+                  {rid}
+                </Link>
+              ))}
+            </div>
+            <p className="text-xs text-mist mt-3 leading-[1.7]">
+              {zh
+                ? "每個規則 ID 永久穩定（ATR-YYYY-NNNNN），對外引用安全。點開可看完整 YAML 定義、攻擊樣本與已記錄的規避手法。"
+                : "Each rule ID is permanent and stable (ATR-YYYY-NNNNN), safe to cite. Open one for the full YAML definition, attack samples, and documented evasion techniques."}
+            </p>
+          </>
+        ) : (
+          <p className="text-sm text-mist leading-[1.7]">
+            {zh
+              ? "這個行為者的手法尚無對應的已發布規則。偵測規則一經審查合併便會列於此處。"
+              : "No published rule maps to this actor's techniques yet. Detection rules appear here once reviewed and merged."}
+          </p>
+        )}
       </Section>
 
       {/* Framework mappings */}
-      <Section label={zh ? "框架對照" : "Framework Mappings"} delay={0.4}>
+      <Section label={zh ? "上層框架對照" : "Maps to Established Frameworks"} delay={0.4}>
         <div className="space-y-5">
           <div>
             <div className="font-data text-[11px] text-stone tracking-[2px] uppercase mb-2">

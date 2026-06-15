@@ -251,8 +251,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 <div className="font-display text-xl md:text-2xl font-bold text-ink mb-3">ATR</div>
                 <p className="text-sm text-graphite leading-[1.7] text-pretty">
                   {zh
-                    ? "不綁特定協議的行為偵測規則。看 agent 在做什麼,不是看它在跑什麼。MIT 永久,社群治理。"
-                    : "Protocol-agnostic behavioral detection rules. Watches what an agent does, not just what it runs. MIT forever. Community governed."}
+                    ? "廠商中立、機器可讀的行為偵測規則。看 agent 在做什麼,不是看它在跑什麼。任何符合規範的引擎都能評估。MIT 永久,社群治理。"
+                    : "Vendor-neutral, machine-readable behavioral detection rules. Watches what an agent does, not just what it runs. Any conforming engine can evaluate it. MIT forever. Community governed."}
                 </p>
               </div>
             </div>
@@ -517,8 +517,15 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.15}>
             <p className="text-sm md:text-base text-graphite font-light max-w-[640px] mb-6 md:mb-8 leading-[1.8] text-pretty">
               {zh
-                ? <>紅隊大掃描飛輪與 CVE 匯入飛輪每天運轉:新攻擊被語義層抓到後,「結晶」成 regex 規則回流標準——從每次 500ms 的推理,變成 5ms 的 pattern match。自動結晶化把標準從 462 條長到 {stats.ruleCount} 條,全部隨 npm <span className="font-data text-graphite">agent-threat-rules@3.5.0</span> 發布。</>
-                : <>A red-team mega-scan flywheel and a CVE-ingestion flywheel run daily: when the semantic layer catches a novel attack, it crystallizes into a regex rule and flows back into the standard — turning a 500ms inference into a 5ms pattern match. Auto-crystallization grew the standard from 462 to {stats.ruleCount} rules, all shipped in npm <span className="font-data text-graphite">agent-threat-rules@3.5.0</span>.</>}
+                ? <>紅隊大掃描與 CVE 匯入兩條管線每天運轉:新攻擊被語義層抓到後,「結晶」成 regex 規則回流標準——從每次 500ms 的推理,變成 5ms 的 pattern match。自動結晶化把標準從 462 條長到 {stats.ruleCount} 條,全部隨 npm <span className="font-data text-graphite">agent-threat-rules@3.5.0</span> 發布。</>
+                : <>A red-team mega-scan pipeline and a CVE-ingestion pipeline run daily: when the semantic layer catches a novel attack, it crystallizes into a regex rule and flows back into the standard — turning a 500ms inference into a 5ms pattern match. Auto-crystallization grew the standard from 462 to {stats.ruleCount} rules, all shipped in npm <span className="font-data text-graphite">agent-threat-rules@3.5.0</span>.</>}
+            </p>
+          </Reveal>
+          <Reveal delay={0.18}>
+            <p className="text-sm md:text-base text-graphite font-light max-w-[640px] mb-6 md:mb-8 leading-[1.8] text-pretty">
+              {zh
+                ? <>但成長從不是目的——對精確度誠實才是。v3.5.0 引入偵測車道:每條規則標明成熟度,使用者自己決定要信任到哪。enforce 車道只放最成熟的規則開火(在 65,000 筆良性語料上約 0.24% 誤報);預設的 hunt 車道把全部規則當建議性訊號跑(約 9%)。誤報率逐車道揭露,而不是用一個好看的數字一概而論。<strong>一個標準的可信度,取決於它願不願意公開自己最差的數字。</strong></>
+                : <>But growth was never the point — honesty about precision is. v3.5.0 introduced detection lanes: every rule declares a maturity, and the consumer decides how far to trust it. The enforce lane fires only the most mature rules (~0.24% false positives on a 65,000-sample benign corpus); the default hunt lane runs everything as advisory (~9%). False-positive rates are reported lane by lane, never as a single flattering number. <strong>A standard earns trust by publishing its worst figure, not hiding it.</strong></>}
             </p>
           </Reveal>
 
@@ -593,8 +600,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.2}>
             <p className="text-sm md:text-base text-stone font-light max-w-[480px] mx-auto mb-7 md:mb-8 mt-6 md:mt-8 leading-[1.8] text-pretty">
               {zh
-                ? "TypeScript、Python、Raw YAML、SIEM 轉換器——四種整合路徑。"
-                : "TypeScript, Python, Raw YAML, SIEM converters. Four integration paths."}
+                ? "TypeScript、Python、Raw YAML、SIEM 轉換器——四種整合路徑,同一份規則。MIT 永久,沒有授權鎖,任何符合規範的引擎都能評估。"
+                : "TypeScript, Python, Raw YAML, SIEM converters — four integration paths, one ruleset. MIT forever, no license to negotiate, evaluated by any conforming engine."}
             </p>
           </Reveal>
           <Reveal delay={0.3}>

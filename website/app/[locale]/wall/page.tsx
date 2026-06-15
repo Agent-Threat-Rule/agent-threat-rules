@@ -12,7 +12,7 @@ export function generateStaticParams() {
 export const metadata: Metadata = {
   title: "Wall — ATR Community",
   description:
-    "ATR contributors by country. Every contribution strengthens the shared defense network. Join the community protecting AI agents.",
+    "The people maintaining ATR — contributors, adopters, and researchers carrying an open detection standard toward universal. A standard is only as strong as the people who maintain it.",
 };
 
 const COUNTRY_NAMES: Record<string, { en: string; zh: string }> = {
@@ -69,15 +69,15 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
       <Reveal delay={0.1}>
         <h1 className="font-display text-[clamp(26px,4vw,44px)] font-extrabold tracking-[-2px] leading-[1.2] mb-4 max-w-[600px]">
           {zh
-            ? <>開源標準的力量來自貢獻者。<br />這是目前的隊伍。</>
-            : <>An open standard is only as strong<br className="hidden sm:block" /> as its contributors.</>}
+            ? <>一個標準的強度，<br />等於貢獻它的人。</>
+            : <>A standard is only as strong<br className="hidden sm:block" /> as the people who maintain it.</>}
         </h1>
       </Reveal>
       <Reveal delay={0.2}>
         <p className="text-sm md:text-base text-stone font-light leading-[1.8] mb-10 max-w-[540px]">
           {zh
-            ? "ATR 是社群驅動的偵測標準。每一條規則、每一次掃描、每一個繞過回報，都在強化整個生態系的防禦。你的名字會出現在這裡。"
-            : "ATR is community-driven. Every rule, every scan, every evasion report strengthens the defense for everyone. Your name belongs here."}
+            ? "Sigma、CVE、YARA 之所以通用，不是因為某家公司擁有它們，而是因為夠多人選擇用同一套語言描述威脅。ATR 走的是同一條路——貢獻者寫規則、採用者把它接進產線、研究者回報繞過。每一筆都讓這套標準離「世界通用」近一點。一條在台北寫的規則，會擋下西雅圖首報的攻擊。"
+            : "Sigma, CVE, and YARA became universal not because a company owned them, but because enough people chose to describe threats in one shared language. ATR follows the same path — contributors write rules, adopters wire them into production, researchers report the bypasses. Each one moves the standard a step closer to universal. A rule written in Taipei catches an attack first reported in Seattle."}
         </p>
       </Reveal>
 
@@ -179,8 +179,8 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
               en: "Report an Evasion",
               zh: "回報繞過方法",
               desc: zh
-                ? "找到繞過 ATR 規則的方法？這是最有價值的貢獻。每個回報都讓規則更強。"
-                : "Found a way to bypass an ATR rule? This is the most valuable contribution. Every report makes the rules stronger.",
+                ? "找到繞過某條 ATR 規則的方法？這是最有價值的貢獻。已知繞過手法是公開記錄的——回報一個，整個生態系一起補上，沒有人需要再各自踩同一個坑。"
+                : "Found a way to bypass an ATR rule? This is the most valuable contribution there is. Known evasions are documented in the open — report one and the whole ecosystem closes the gap at once, so no one has to rediscover it.",
               href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=evasion-report.yml",
               time: "15 min",
               impact: zh ? "最高" : "Highest",
@@ -189,8 +189,8 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
               en: "Report a False Positive",
               zh: "回報誤判",
               desc: zh
-                ? "ATR 規則標記了正常內容？回報幫助我們維持 99.7% 精準度。"
-                : "ATR rule flagged something benign? Your report helps maintain 99.7% precision.",
+                ? "ATR 規則標記了正常內容？一筆誤報回報就是一個我們公開揭露的最差數字——它直接讓對應車道的精確度更誠實。"
+                : "An ATR rule flagged something benign? A false-positive report is one more worst-case figure we publish, not hide — it makes the precision we report, lane by lane, more honest.",
               href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=false-positive.yml",
               time: "20 min",
               impact: zh ? "高" : "High",
@@ -199,8 +199,8 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
               en: "Submit a Rule",
               zh: "提交新規則",
               desc: zh
-                ? "用 YAML 格式寫偵測規則。需要真實攻擊 payload，不是描述。"
-                : "Write a detection rule in YAML. Must include real attack payloads, not descriptions.",
+                ? "用 YAML 寫一條偵測規則。必須附真實攻擊 payload 與真／假陽性 test case，不是文字描述——這樣它才能被 peer-review、被 conformance 測試、被任何引擎重現。"
+                : "Write a detection rule in YAML. It must carry real attack payloads and true/false-positive test cases, not a prose description — so it can be peer-reviewed, conformance-tested, and reproduced by any engine.",
               href: `${prefix}/contribute`,
               time: "1-2 hr",
               impact: zh ? "高" : "High",
@@ -210,8 +210,8 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
               en: "Share Threat Intel",
               zh: "分享威脅情報",
               desc: zh
-                ? "發現新的 AI agent 攻擊手法？在 Discussions 裡分享，可能會變成新規則。"
-                : "Found a new AI agent attack technique? Share it in Discussions. It may become a new rule.",
+                ? "看到一種還沒人寫進規則的 AI agent 攻擊手法？在 Discussions 裡描述它。技法先被記錄，規則隨後跟上——知識層不必等偵測層就位。"
+                : "Seen an AI agent attack technique no rule covers yet? Describe it in Discussions. The technique gets documented first; a rule follows — the knowledge layer doesn't wait on the detection layer.",
               href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/discussions",
               time: "10 min",
               impact: zh ? "中" : "Medium",
@@ -250,8 +250,8 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
           </div>
           <p className="text-sm text-white/60 mb-5 max-w-[480px] leading-relaxed">
             {zh
-              ? "在 contributors.yaml 加一行，提 PR。你的 GitHub 頭像、國家、貢獻類型都會顯示在這裡。貢獻越多，存在感越強。"
-              : "Add one line to contributors.yaml and submit a PR. Your GitHub avatar, country, and contribution types appear here. The more you contribute, the more visible you become."}
+              ? "在 contributors.yaml 加一行，提一個 PR。你的 GitHub 頭像、國家、貢獻類型會顯示在這裡——和那些把開放標準推向世界通用的人並列。這份名單是公開的，永久留存。"
+              : "Add one line to contributors.yaml and open a PR. Your GitHub avatar, country, and contribution types appear here — alongside everyone carrying an open standard toward universal. The list is public, and it stays."}
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <a
@@ -301,8 +301,8 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
           </div>
           <p className="text-xs text-mist">
             {zh
-              ? `${countries.length} 個國家。目標：讓每個有 AI agent 的國家都有人在保護。`
-              : `${countries.length} countries. Goal: a contributor in every country running AI agents.`}
+              ? `${countries.length} 個國家。一套通用標準的價值，正比於有多少地方在用同一套語言描述威脅。目標：每個運行 AI agent 的國家，都有人在這裡。`
+              : `${countries.length} countries. A universal standard is worth as much as the number of places speaking the same language for threats. Goal: a contributor in every country running AI agents.`}
           </p>
         </Reveal>
       )}

@@ -51,8 +51,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             <p className="text-sm text-stone mb-3">
               {locale === "zh"
-                ? `${stats.ruleCount} 條偵測規則、RFC-001 品質標準、96K 生態系掃描、552 惡意軟體確認、Cisco 採用。ATR 標準的完整論述，含六項研究貢獻。`
-                : `${stats.ruleCount} detection rules, RFC-001 quality standard, 96K ecosystem scan, 552 confirmed malware, Cisco adoption. The complete ATR thesis with six research contributions.`}
+                ? `ATR 標準為何存在的完整論述：當 agent 能自主行動，信任不再能假設，偵測必須變成一個任何人都能查核、版本化、社群維護的標準層。涵蓋 RFC-001 品質規範、96,096 個 skill 的生態系掃描、751 個確認惡意軟體，以及把標準從一次性快照變成活飛輪的機制。`
+                : `The full argument for why ATR exists: once agents act on their own, trust can no longer be assumed, and detection has to become a standard layer anyone can audit, version, and maintain. Covers the RFC-001 quality specification, a 96,096-skill ecosystem scan, 751 confirmed malware findings, and the mechanism that turns the standard from a one-time snapshot into a living one.`}
             </p>
             <div className="flex flex-wrap gap-3">
               <a href="https://doi.org/10.5281/zenodo.19178002" target="_blank" rel="noopener noreferrer" className="font-data text-xs text-blue hover:underline">Zenodo (DOI)</a>
@@ -309,8 +309,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
       <Reveal delay={0.15}>
         <p className="text-sm text-graphite leading-[1.7] mb-6 max-w-[760px]">
           {locale === "zh"
-            ? `這個掃描現在是活的：紅隊巨量掃描與 CVE 攝取兩條飛輪都已跑完整輪，並轉為每日更新。新發現會自動結晶成偵測規則回流 ATR，把標準從 462 條推進到目前的 ${stats.ruleCount} 條（npm agent-threat-rules@3.5.0，2026-06-16 發布）。`
-            : `This scan is now a live loop: a red-team mega-scan flywheel and a CVE-ingestion flywheel have each run a full sweep and are moving to daily updates. New findings auto-crystallize into detection rules that flow back into ATR, growing the standard from 462 to the current ${stats.ruleCount} (npm agent-threat-rules@3.5.0, published 2026-06-16).`}
+            ? `這個掃描不是一份報告，是一條每天運轉的迴圈。新攻擊出現 → 結晶成偵測規則 → 回流標準：紅隊巨量掃描與 CVE 攝取兩條飛輪各自跑完整輪後轉為每日更新，把規則集從 462 條推進到目前的 ${stats.ruleCount} 條（新增 190 條，npm agent-threat-rules@3.5.0）。這就是「標準活著」的意思——不是一次性的快照，而是與威脅同速演化的層。`
+            : `This scan is not a report — it is a loop that runs every day. New attack appears → crystallizes into a detection rule → flows back into the standard. A red-team mega-scan flywheel and a CVE-ingestion flywheel each completed a full sweep, then moved to daily updates, taking the ruleset from 462 to the current ${stats.ruleCount} (190 new rules, npm agent-threat-rules@3.5.0). This is what it means for a standard to be alive: not a one-time snapshot, but a layer that evolves at the speed of the threats it covers.`}
         </p>
       </Reveal>
       <Reveal delay={0.2}>
@@ -331,8 +331,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
         </h2>
         <p className="text-sm text-stone mb-6">
           {locale === "zh"
-            ? "所有研究都是可重現的。資料集、掃描腳本、評估腳本全部開源於 MIT license。"
-            : "All research is reproducible. Datasets, scan scripts, and evaluation scripts are open-source under MIT license."}
+            ? "一個標準的數字只有在別人能複驗時才算數。所有研究都可重現——資料集、掃描腳本、評估腳本全部以 MIT license 開源，任何人都能拿同一版 ATR 重跑，自己得出這些數字，或證明它們是錯的。"
+            : "A standard's numbers only count if someone else can reproduce them. All research here is reproducible — datasets, scan scripts, and evaluation scripts are open-source under MIT license, so anyone can rerun them on the same ATR version and arrive at these figures, or prove them wrong."}
         </p>
       </Reveal>
       <Reveal delay={0.1}>
@@ -373,8 +373,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             <p className="text-sm text-graphite leading-[1.7]">
               {locale === "zh"
-                ? "誤報率以真實 benign 樣本（通過人工或社群審查的正常 skill）除以總偵測數量測。每條已記錄的誤報情境會寫入 YAML 的 false_positives 欄位，並在規則頁面公開。"
-                : "False positive rate is measured against real benign samples (skills vetted by manual or community review), divided by total detections. Every documented FP context is written into the rule YAML's false_positives field and surfaced on the rule page."}
+                ? "誤報率以真實 benign 樣本（通過人工或社群審查的正常 skill）除以總偵測數量測，並逐車道揭露、不用單一數字概括：enforce 車道只跑最成熟的規則（在一個約 65,000 筆的良性語料上約 0.24% 誤報），預設的 hunt 車道把全部規則當建議性訊號跑（約 9%）。一個標準的可信度，取決於它願不願意公開自己最差的數字——所以這裡兩個都列。每條已記錄的誤報情境會寫入 YAML 的 false_positives 欄位，並在規則頁面公開。"
+                : "False positive rate is measured against real benign samples (skills vetted by manual or community review), divided by total detections, and reported lane by lane rather than as one flattering number: the enforce lane runs only the most mature rules (~0.24% on a ~65,000-sample benign corpus), while the default hunt lane runs everything as an advisory signal (~9%). A standard earns trust by publishing its worst figure, not hiding it — so both are stated here. Every documented FP context is written into the rule YAML's false_positives field and surfaced on the rule page."}
             </p>
           </div>
           <div className="border-l-2 border-fog pl-4">
@@ -399,8 +399,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
         </h2>
         <p className="text-sm text-stone mb-6">
           {locale === "zh"
-            ? "追蹤引用 ATR 的學術論文與技術報告。"
-            : "Academic papers and technical reports that cite ATR."}
+            ? "ATR 的設計目標就是被引用、被內嵌、被別人的工作所依賴。這裡誠實記錄外部引用——包括目前還沒有的部分。"
+            : "ATR is built to be cited, embedded, and depended on by other people's work. This section records external citations honestly — including where there are none yet."}
         </p>
       </Reveal>
       <Reveal delay={0.1}>
@@ -452,8 +452,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
         </h2>
         <p className="text-sm text-stone mb-6">
           {locale === "zh"
-            ? "以下是 ATR 下一階段的研究方向。進度會反映在 GitHub release 與 paper 更新。"
-            : "The next research frontiers for ATR. Progress is reflected in GitHub releases and paper updates."}
+            ? "飛輪的下一段：把偵測從靜態 pattern 推向 runtime 行為與語意，再讓難判定的案例結晶回確定性規則。每一步都公開在 GitHub release 與 paper 更新，進度可被外部追蹤。"
+            : "The next turns of the flywheel: pushing detection from static patterns toward runtime behavior and semantics, then crystallizing the hard cases back into deterministic rules. Each step ships in GitHub releases and paper updates, so the progress is auditable from the outside."}
         </p>
       </Reveal>
       <Reveal delay={0.1}>

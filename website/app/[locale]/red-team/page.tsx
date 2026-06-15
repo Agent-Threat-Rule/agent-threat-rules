@@ -10,7 +10,7 @@ export function generateStaticParams() {
 export const metadata: Metadata = {
   title: "Red Team — Your attack becomes the standard | ATR",
   description:
-    "ATR is the only public detection standard built from red-team research. Your discovered probe becomes a permanent rule, auto-propagating to Microsoft Agent Governance Toolkit, Cisco AI Defense, MISP, and OWASP within hours. Attribution stays attached. Forever.",
+    "ATR is an open detection standard fed by red-team research. A probe found today becomes a versioned rule that propagates to Microsoft Agent Governance Toolkit, Cisco AI Defense, MISP, and OWASP — keeping defenders evolving at the same speed as attackers. Attribution stays attached to the rule ID, permanently.",
 };
 
 interface RedTeamTool {
@@ -166,27 +166,27 @@ interface AttributionStat {
 const ATTRIBUTION_STATS: AttributionStat[] = [
   {
     number: "2h 16m",
-    label: "Copilot regression PR → npm publish",
+    label: "Disclosure to published rule",
     detail:
-      "2026-05-07 Microsoft Security disclosed Semantic Kernel CVE-2026-26030. 2026-05-11 06:07 UTC Microsoft Copilot SWE Agent opened a regression-test PR presuming ATR coverage. 08:24 UTC v2.1.2 published on npm with paired rules. End-to-end loop.",
+      "2026-05-07 Microsoft Security disclosed Semantic Kernel CVE-2026-26030. 2026-05-11 06:07 UTC a Microsoft Copilot SWE Agent opened a regression-test PR presuming ATR already covered it. 08:24 UTC v2.1.2 published on npm with the paired rules. The loop from a disclosed attack to a shared detection closes in hours, not committee cycles.",
   },
   {
     number: "5",
-    label: "Tier-1 institutions integrating",
+    label: "Independent organizations carry the same rules",
     detail:
-      'Microsoft (Agent Governance Toolkit weekly auto-sync). Cisco AI Defense (ATR rule pack in skill-scanner). CIRCL/MISP (taxonomies + galaxy merged by project lead). OWASP A-S-R-H (Project Lead merged with "Welcome to the team"). Gen Digital Sage (Norton / Avast parent security team merged).',
+      'Microsoft Agent Governance Toolkit (weekly auto-sync). Cisco AI Defense (rule pack in skill-scanner). CIRCL/MISP (taxonomies + galaxy merged by the project lead). OWASP A-S-R-H (lead merged with "Welcome to the team"). Gen Digital Sage (Norton / Avast parent security team merged). A rule written once becomes vocabulary five organizations share — which is the point of a standard.',
   },
   {
     number: "RULECOUNT",
-    label: "Rules. Each with your name attached forever",
+    label: "Rules, each carrying the discoverer's name",
     detail:
-      "Every rule carries author + metadata_provenance.discovered_by. Microsoft AGT, Cisco AI Defense, MISP, OWASP all preserve it on sync. When MISP exports to STIX, attribution survives. When NIST cites the rule, lineage is intact.",
+      "Every rule carries author + metadata_provenance.discovered_by, and a stable ATR-YYYY-NNNNN ID that never changes after publication. Microsoft AGT, Cisco AI Defense, MISP, and OWASP all preserve the field on sync. When MISP exports to STIX, the attribution survives the format change. When NIST references the rule, the lineage back to the original red-teamer stays intact.",
   },
   {
     number: "0 FP",
-    label: "Required across 3,551 benign samples",
+    label: "Required across the benign gate before a rule ships",
     detail:
-      "6-check quality gate: own-TP must match + 431 benign + 1,352 extended + 157 research-mention + 1,611 cross-rule conflict-free + own true_negative coverage. Rules that fire on the paper describing the attack don't ship.",
+      "A 6-check quality gate: own-TP must match + 431 benign + 1,352 extended + 157 research-mention + 1,611 cross-rule conflict-free + own true_negative coverage. A rule that fires on the paper describing the attack does not ship. The standard would rather miss a clever variant than corrupt the corpus with a false positive — and it publishes its real per-lane figures rather than a single flattering one.",
   },
 ];
 
@@ -246,30 +246,30 @@ const CONTRIBUTOR_BENEFITS: ContributorBenefit[] = [
   {
     for: "Academic researchers",
     benefit:
-      "Citable artifact paired with your attack. Concrete adoption metrics for your CV: number of rules, downstream consumers, fire counts in production telemetry.",
+      "A citable artifact paired with the attack you described — one with a stable ID, real downstream consumers, and fire counts in production telemetry, not just a paper that sits behind a paywall.",
     proof:
-      "Your name appears in the rule file's author + metadata_provenance.discovered_by. When MISP exports the taxonomy to STIX, your attribution propagates. When NIST cites the rule in a publication (in-progress with iMichaela at NIST OSCAL), the lineage is intact.",
+      "Your name lives in the rule file's author + metadata_provenance.discovered_by. When MISP exports the taxonomy to STIX, the attribution propagates. When NIST references the rule (collaboration in progress with iMichaela at NIST OSCAL — a working branch, not an endorsement), the lineage back to you is intact.",
   },
   {
     for: "Corporate red teams",
     benefit:
-      "Your adversarial work becomes the defensive standard before competitors. Your team shows up as the discoverer in the ATR rule corpus consumed by Microsoft AGT, Cisco AI Defense, MISP, OWASP A-S-R-H, and Gen Digital Sage.",
+      "The variant your team found stops being an internal finding and becomes shared defensive vocabulary. Your team appears as the discoverer in the rule corpus that Microsoft AGT, Cisco AI Defense, MISP, OWASP A-S-R-H, and Gen Digital Sage all pull from.",
     proof:
-      "Microsoft's Copilot SWE Agent already opens PRs presuming ATR coverage (AGT #1981, closed 2026-05-11). Being the originator of ATR-2026-NNNNN rules is a real authority signal in vendor-eval conversations.",
+      "Microsoft's Copilot SWE Agent already opens PRs presuming ATR coverage (AGT #1981, closed 2026-05-11). Originating an ATR-2026-NNNNN rule is durable, verifiable provenance — it sits in a public corpus, not a slide.",
   },
   {
     for: "Independent researchers",
     benefit:
-      "Ship detection without writing regex. Submit positive + negative examples — auto-regex tries 4 variants against the full gate, ~30% pass on first attempt.",
+      "Ship a detection without hand-writing regex. Submit positive and negative examples; the deterministic auto-regex generator tries four variants against the full gate, and roughly one in three passes on the first attempt.",
     proof:
-      "Auto-regex deterministic generator clears 0 FP across 3,551 samples (benign + extended + research-mention + cross-rule). The PR labels itself gate-passed and goes straight to maintainer review.",
+      "The generator clears 0 FP across 3,551 samples (benign + extended + research-mention + cross-rule) before a candidate is ever shown. The PR labels itself gate-passed and goes straight to maintainer review — the same gate every rule in the standard had to clear.",
   },
   {
     for: "Bug bounty hunters",
     benefit:
-      "A second income stream for the same attack: the bug-bounty payout AND a permanent detection rule. Combines well with Huntr.dev, Hackerone AI scope, Protect AI bounty programmes.",
+      "The same attack does two jobs: the bounty payout, and a permanent rule that catches it everywhere afterward. Composes cleanly with Huntr.dev, HackerOne AI scope, and Protect AI bounty programmes.",
     proof:
-      "ATR proposals are MIT-licensed and citable. No NDA conflict — the bounty programme owns the responsible-disclosure window; ATR ships detection after disclosure with public attribution.",
+      "ATR proposals are MIT-licensed and citable. No NDA conflict — the bounty programme owns the responsible-disclosure window; ATR ships the detection only after disclosure, with public attribution to the finder.",
   },
 ];
 
@@ -324,18 +324,18 @@ export default async function RedTeamPage({
           <p className="font-display text-[clamp(18px,2.2vw,24px)] text-stone font-light leading-snug mb-10 max-w-[760px]">
             {zh ? (
               <>
-                Microsoft Copilot SWE Agent 自己會開 PR 預設 ATR 存在。Cisco AI
-                Defense 的 skill-scanner 內建一份 ATR 規則集。MISP 全部 export 到 STIX
-                帶你的署名。NeurIPS 2024 的 HarmBench / AgentDojo /
-                JailbreakBench 下一個 wave 接進來。
+                一個攻擊被結晶成一條規則，那條規則就成了所有防禦者共用的字彙。Microsoft
+                AGT 每週自動拉、Cisco AI Defense 的 skill-scanner 內建一份、MISP export
+                到 STIX 時帶著發現者的署名。這是一道閉環飛輪：攻擊餵養標準，標準與威脅同速演化。
               </>
             ) : (
               <>
-                Microsoft&apos;s Copilot SWE Agent already opens PRs presuming
-                ATR exists. Cisco AI Defense ships an ATR rule pack in skill-scanner.
-                MISP exports them to STIX with your name on them. NeurIPS
-                2024&apos;s HarmBench, AgentDojo, JailbreakBench wire through
-                next.
+                One attack, crystallized into one rule, becomes a word every
+                defender shares. Microsoft AGT pulls it weekly, Cisco AI
+                Defense ships it in skill-scanner, MISP exports it to STIX with
+                the discoverer&apos;s name attached. A closed-loop flywheel:
+                attacks feed the standard, and the standard evolves at the same
+                speed as the threat.
               </>
             )}
           </p>
@@ -372,7 +372,7 @@ export default async function RedTeamPage({
       <section className="px-6 max-w-[1120px] mx-auto mb-24 md:mb-32">
         <Reveal>
           <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-10">
-            {zh ? "為什麼這值得貢獻" : "Why this is worth your time"}
+            {zh ? "為什麼一個攻擊該進標準" : "Why an attack belongs in the standard"}
           </div>
         </Reveal>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12">
@@ -402,8 +402,8 @@ export default async function RedTeamPage({
           </div>
           <h2 className="font-display text-[clamp(28px,4vw,44px)] font-extrabold tracking-[-2px] leading-[1.05] mb-12 max-w-[720px]">
             {zh
-              ? "依你是誰，紅隊貢獻有四種具體報酬。"
-              : "Four concrete payoffs depending on who you are."}
+              ? "你的攻擊進了標準之後，留下什麼 — 依你是誰而不同。"
+              : "What your attack leaves behind once it's in the standard — depending on who you are."}
           </h2>
         </Reveal>
         <div className="space-y-8">
@@ -535,13 +535,13 @@ export default async function RedTeamPage({
                   </h3>
                   <p className="text-base text-paper/80 leading-relaxed mb-2">
                     {zh
-                      ? "Microsoft AGT 每週 sync、Cisco AI Defense 跟 release tag、MISP taxonomy + galaxy 每次 release 拉、OWASP A-S-R-H 在 fixture 中引用 rule ID。你的 discovered_by 跟著整條鏈傳遞。"
-                      : "Microsoft AGT syncs weekly. Cisco AI Defense pins to release tags. MISP taxonomy + galaxy pull on every release. OWASP A-S-R-H references rule IDs in fixtures. Your discovered_by field propagates through the whole chain."}
+                      ? "Microsoft AGT 每週 sync、Cisco AI Defense 跟 release tag、MISP taxonomy + galaxy 每次 release 拉、OWASP A-S-R-H 在 fixture 中引用 rule ID。你的 discovered_by 跟著整條鏈傳遞——這是飛輪的下半圈:一個攻擊變成一條規則,一條規則變成所有防禦者共用的字彙。"
+                      : "Microsoft AGT syncs weekly. Cisco AI Defense pins to release tags. MISP taxonomy + galaxy pull on every release. OWASP A-S-R-H references rule IDs in fixtures. Your discovered_by field rides the whole chain — this is the back half of the flywheel: one attack becomes one rule, and one rule becomes vocabulary every defender shares."}
                   </p>
                   <p className="text-sm text-paper/60">
                     {zh
-                      ? "Microsoft Copilot 的 regression PR 從開 PR 到 v2.1.2 npm publish 用了 2 小時 16 分鐘（06:07 → 08:24 UTC）。這就是 cadence。"
-                      : "Microsoft Copilot's regression PR went from opened to v2.1.2 npm publish in 2h 16m (06:07 → 08:24 UTC). That's the cadence."}
+                      ? "Microsoft Copilot 的 regression PR 從開 PR 到 v2.1.2 npm publish 用了 2 小時 16 分鐘（06:07 → 08:24 UTC）。標準與威脅同速演化,靠的就是這個節奏。"
+                      : "Microsoft Copilot's regression PR went from opened to v2.1.2 npm publish in 2h 16m (06:07 → 08:24 UTC). That cadence is how a standard stays level with the threat instead of lagging it."}
                   </p>
                 </div>
               </div>
@@ -560,13 +560,13 @@ export default async function RedTeamPage({
           </div>
           <h2 className="font-display text-[clamp(28px,4vw,40px)] font-extrabold tracking-[-2px] leading-[1.05] mb-4 max-w-[720px]">
             {zh
-              ? "我們把 ATR 接到紅隊這邊。你的工具可以是下一個。"
-              : "ATR is wired into the red-team ecosystem. Your tool can be next."}
+              ? "攻擊側的工具與語料,正在餵養標準。你的工具可以是下一個。"
+              : "The offensive side is already feeding the standard. Your tool can be next."}
           </h2>
           <p className="text-base text-stone font-light max-w-[640px] mb-12">
             {zh
-              ? "這些是真的紅隊工具（offensive testing）。防禦端框架在 /ecosystem。"
-              : "These are red-team tools — offensive testing frameworks and adversarial corpora. Defensive frameworks live on /ecosystem."}
+              ? "這些是真的紅隊工具（offensive testing）與對抗語料 — 每一個都是飛輪的入口。防禦端框架在 /ecosystem。"
+              : "These are red-team tools — offensive testing frameworks and adversarial corpora. Each is an entry point into the flywheel. Defensive frameworks live on /ecosystem."}
           </p>
         </Reveal>
 
@@ -684,8 +684,8 @@ export default async function RedTeamPage({
           </p>
           <p className="text-base text-stone font-light max-w-[640px] mb-10">
             {zh
-              ? `這個流程現在每天跑：紅隊巨量掃描與 CVE 攝取兩條飛輪都已跑完整輪，並轉為每日更新。新發現自動結晶成規則，把標準從 462 條推進到目前的 ${stats.ruleCount} 條（npm agent-threat-rules@3.5.0，2026-06-16 發布）。`
-              : `This pipeline now runs daily: a red-team mega-scan flywheel and a CVE-ingestion flywheel have each completed a full sweep and moved to daily updates. New findings auto-crystallize into rules, growing the standard from 462 to the current ${stats.ruleCount} (npm agent-threat-rules@3.5.0, published 2026-06-16).`}
+              ? `這個流程現在每天跑:紅隊巨量掃描與 CVE 攝取兩條飛輪都已跑完整輪,並轉為每日更新。新發現自動結晶成規則,把標準從 462 條推進到目前的 ${stats.ruleCount} 條(發布於 npm 上的 agent-threat-rules)。規則數天天在動——這正是飛輪在轉的證據。`
+              : `This pipeline now runs daily: a red-team mega-scan flywheel and a CVE-ingestion flywheel have each completed a full sweep and moved to daily updates. New findings auto-crystallize into rules, growing the standard from 462 to the current ${stats.ruleCount} (published as agent-threat-rules on npm). The count moves daily — which is what a turning flywheel looks like.`}
           </p>
         </Reveal>
         <Reveal delay={0.1}>
@@ -773,8 +773,8 @@ export default async function RedTeamPage({
           </h2>
           <p className="text-base text-stone font-light max-w-[640px] mb-10">
             {zh
-              ? "ATR 不引入所有可能的語料庫。以下是我們主動決定不引入的資料集，以及原因。"
-              : "ATR does not import every available corpus. Below are datasets we have made an active decision not to import, and why."}
+              ? "一個標準的可信度,一部分來自它拒絕了什麼。ATR 不引入所有可能的語料庫——以下是我們主動決定不引入的資料集,以及原因。"
+              : "Part of what a standard is worth comes from what it refuses. ATR does not import every available corpus — below are the datasets we made an active decision to leave out, and why."}
           </p>
         </Reveal>
         <Reveal delay={0.1}>
@@ -963,13 +963,13 @@ export default async function RedTeamPage({
             </div>
             <h2 className="font-display text-[clamp(28px,4vw,44px)] font-extrabold tracking-[-2px] leading-[1.05] mb-6 max-w-[720px]">
               {zh
-                ? "10 分鐘的填表 → 永久的署名 → 進每個主流 AI 安全平台。"
-                : "10 minutes of form-filling. Permanent attribution. Ships to every major AI security platform."}
+                ? "10 分鐘填表 → 永久署名 → 一條規則,所有採用 ATR 的防禦者共用。"
+                : "10 minutes of form-filling. Permanent attribution. One rule, shared by every defender who adopts ATR."}
             </h2>
             <p className="text-base text-stone leading-relaxed mb-8 max-w-[640px]">
               {zh
-                ? "MIT 授權、無 CLA、無遙測、永遠免費。你保留出版攻擊本身的所有權利 — ATR 只負責把它變成偵測。"
-                : "MIT licensed. No CLA. No telemetry. Forever free. You retain every right to publish the attack itself — ATR only carries the detection."}
+                ? "MIT 授權、無 CLA、無遙測、永遠免費。你保留出版攻擊本身的所有權利 — ATR 只負責把它變成一條全世界都能引用的偵測規則。"
+                : "MIT licensed. No CLA. No telemetry. Forever free. You keep every right to publish the attack itself — ATR only carries the detection, as a rule anyone, anywhere can cite by its stable ID."}
             </p>
             <div className="flex flex-wrap gap-3">
               <a

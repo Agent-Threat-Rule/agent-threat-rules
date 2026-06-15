@@ -31,14 +31,14 @@ export default async function GovernancePage({
       </Reveal>
       <Reveal delay={0.05}>
         <h1 className="font-display text-[clamp(28px,4vw,48px)] font-extrabold tracking-[-2px] leading-[1.08] text-ink mb-4">
-          {zh ? "ATR 的維護結構" : "How ATR is maintained"}
+          {zh ? "治理是寫在公開記錄裡的。" : "Governance is on the public record."}
         </h1>
       </Reveal>
       <Reveal delay={0.1}>
         <p className="text-base text-stone font-light max-w-[640px] leading-[1.8] mb-12">
           {zh
-            ? "ATR 是 MIT 授權的開放標準，不隸屬任何公司。本頁說明誰維護這個標準、決策怎麼做、以及首席維護者的利益衝突揭露。"
-            : "ATR is an MIT-licensed open standard, not owned by any company. This page documents who maintains it, how decisions are made, and the lead maintainer's conflict-of-interest disclosure."}
+            ? "一個標準的可信度，來自它的流程可以被任何人審查——不是來自單一權威說了算。ATR 是 MIT 授權的開放標準，不隸屬任何公司。誰維護、規則怎麼進、spec 怎麼改、首席維護者有什麼利益衝突，全部寫在這一頁，也全部寫在 GitHub 上可被審計。"
+            : "A standard earns trust when its process can be audited by anyone — not when a single authority vouches for it. ATR is an MIT-licensed open standard, not owned by any company. Who maintains it, how a rule gets in, how the spec changes, what the lead maintainer's conflicts are — all of it is on this page, and all of it is auditable on GitHub."}
         </p>
       </Reveal>
 
@@ -78,8 +78,8 @@ export default async function GovernancePage({
           <div className="p-6 md:p-8 bg-ash/30">
             <p className="text-sm text-stone leading-[1.7]">
               {zh
-                ? "ATR 目前是單一維護者。我們正在積極招募第二位維護者——有興趣者請寄信至 adam@agentthreatrule.org。外部機構（LF、OpenSSF）的中立託管在路線圖上，目前未決。"
-                : "ATR currently has one maintainer. We are actively recruiting a second. If you are interested, email adam@agentthreatrule.org. Neutral hosting under an external foundation (Linux Foundation, OpenSSF, or equivalent) is on the roadmap; no decision has been made."}
+                ? "ATR 目前是單一維護者啟動的——和 Linus Torvalds 1991 年的 Linux、Florian Roth 的 Sigma 同一條路徑：一個人開頭，定義格式與品質門檻，社群再接手治理。這是誠實的現狀，不是道歉。第二位維護者的招募正在進行（見下方條件），把標準託管到中立基金會（Linux Foundation、OpenSSF 或同級）的評估也在路線圖上。終點是 Technical Steering Committee；起點本來就只能有一個人。"
+                : "ATR was started by a single maintainer — the same path Linus Torvalds took with Linux in 1991, and Florian Roth with Sigma: one person defines the format and the quality bar, the community takes over governance. That is the honest present state, not an apology. Recruitment of a second maintainer is underway (criteria below), and evaluating transfer to a neutral foundation (Linux Foundation, OpenSSF, or equivalent) is on the roadmap. The destination is a Technical Steering Committee; every standard that reaches one started with someone willing to write the first rule."}
             </p>
           </div>
         </div>
@@ -94,6 +94,13 @@ export default async function GovernancePage({
           {zh ? "每條規則要過六道關才能 merge。" : "Six gates before any rule merges."}
         </h2>
       </Reveal>
+      <Reveal delay={0.05}>
+        <p className="text-sm text-graphite leading-[1.7] max-w-[640px] mb-5">
+          {zh
+            ? "這些閘是機器執行的，每一道都在公開的 CI log 裡留痕——任何人都能看到一條規則為什麼通過、或為什麼被擋。品質不靠維護者的判斷力背書，而靠可重跑的測試。"
+            : "These gates are machine-enforced, and every one leaves a trace in a public CI log — anyone can see why a rule passed, or why it was blocked. Quality is not vouched for by a maintainer's judgment; it is demonstrated by tests anyone can re-run."}
+        </p>
+      </Reveal>
       <Reveal delay={0.1}>
         <div className="space-y-px bg-fog mb-12">
           {[
@@ -106,14 +113,14 @@ export default async function GovernancePage({
             {
               gate: zh ? "2 · RFC-001 品質門檻" : "2 · RFC-001 quality gate",
               desc: zh
-                ? "信心分數公式（精準度 40% + wild 驗證 30% + 覆蓋深度 20% + 規避文件 10%）必須達到實驗門檻以上。"
-                : "Confidence score formula (precision 40% + wild 30% + coverage 20% + evasion 10%) must clear the experimental threshold.",
+                ? "信心分數（精準度、野外驗證、覆蓋深度、已知規避手法的文件）決定規則進哪一條偵測車道。分數沒到，規則不會被升到 enforce——但仍可以 advisory 形式存在。門檻是公開的公式，不是維護者的喜好。"
+                : "A confidence score — precision, in-the-wild validation, coverage depth, documented evasions — decides which detection lane a rule enters. Below the bar, a rule is never promoted to enforce, but may still exist as advisory. The threshold is a published formula, not a maintainer's preference.",
             },
             {
               gate: zh ? "3 · 良性語料 0 FP" : "3 · Benign corpus 0 FP",
               desc: zh
-                ? "在 432 個真實 benign skill 上 false positive rate 必須為 0。"
-                : "False positive rate must be 0 on 432 real-world benign skills.",
+                ? "新規則必須在每個 PR 的良性語料閘上 0 誤報。這是 merge 時的最低門檻；發布後，誤報率會在更大的良性語料上逐車道公開量測，不靠單一數字蓋過。"
+                : "A new rule must record zero false positives on the per-PR benign corpus gate. This is the floor at merge time; after release, false-positive rates are measured lane by lane on a larger benign corpus and published, never hidden behind a single figure.",
             },
             {
               gate: zh ? "4 · 跨規則衝突檢查" : "4 · Cross-rule conflict check",
@@ -150,6 +157,13 @@ export default async function GovernancePage({
         <h2 className="font-display text-xl font-extrabold tracking-[-0.5px] mb-4">
           {zh ? "每種改動有自己的審核門檻。" : "Different changes have different bars."}
         </h2>
+      </Reveal>
+      <Reveal delay={0.05}>
+        <p className="text-sm text-graphite leading-[1.7] max-w-[640px] mb-5">
+          {zh
+            ? "改一條規則和改 spec 不是同一回事。規則錯了可以撤、可以修；spec 是每一個相容引擎共同遵守的契約，動它要給所有 implementer 看得到、來得及反應的時間。門檻的高低，照的是這個改動會牽動多少人。"
+            : "Changing a rule and changing the spec are not the same act. A wrong rule can be deprecated or revised; the spec is the contract every conforming engine relies on, so changing it has to be visible to every implementer with time to react. The bar scales with how many people a change moves."}
+        </p>
       </Reveal>
       <Reveal delay={0.1}>
         <div className="border border-fog mb-12">
@@ -230,13 +244,13 @@ export default async function GovernancePage({
         <div className="bg-paper border border-fog p-6 md:p-8 mb-12 text-sm text-graphite leading-[1.7]">
           <p className="mb-3">
             {zh
-              ? "OASIS CTI、OpenTelemetry SIG、OWASP Working Group 都有定期會議。ATR 還沒到那個規模——目前所有討論在 GitHub Issues + PR 內非同步進行。"
-              : "OASIS CTI, OpenTelemetry SIGs, and OWASP Working Groups all run scheduled meetings. ATR is not yet at that scale — all discussion happens asynchronously in GitHub Issues and PRs."}
+              ? "OASIS CTI、OpenTelemetry SIG、OWASP Working Group 都開定期會議。ATR 還沒到需要排程會議的規模——目前所有討論都在 GitHub Issues 與 PR 上非同步、公開、留痕進行。一個只有少數 implementer 的標準，不該先有委員會再有需求。"
+              : "OASIS CTI, OpenTelemetry SIGs, and OWASP Working Groups all run scheduled meetings. ATR is not yet at the scale where standing meetings earn their cost — for now every discussion happens asynchronously, in the open, on the public record in GitHub Issues and PRs. A standard with a handful of implementers should not stand up a committee before there is demand for one."}
           </p>
           <p className="mb-3">
             {zh
-              ? "如果你有實際的整合工作、想推動 spec 的某個方向、或代表一個 implementer 想要在標準化過程中有結構化的話語權,請開一個 issue 標題以 [WG-proposal] 開頭。當 3 個或以上獨立的 implementer 表達相同需求時,維護者會發起一個固定週期(雙週)的工作小組會議。"
-              : "If you have active integration work, want to push the spec in a particular direction, or represent an implementer that wants structured voice in the standardisation process, open an issue with the title prefixed [WG-proposal]. When three or more independent implementers express the same need, the maintainers will schedule a recurring (bi-weekly) working-group meeting."}
+              ? "成立工作小組的路徑是開放的，而且是需求驅動的：如果你有實際的整合工作、想推動 spec 的某個方向、或代表一個 implementer 想要在標準化過程中有結構化的話語權，開一個標題以 [WG-proposal] 開頭的 issue。當 3 個或以上獨立的 implementer 表達相同需求，維護者會發起固定週期（雙週）的工作小組會議。觸發條件寫在這裡，誰都能援引。"
+              : "The path to forming one is open, and it is demand-driven: if you have active integration work, want to push the spec in a particular direction, or represent an implementer that wants structured voice in the process, open an issue titled with the prefix [WG-proposal]. When three or more independent implementers express the same need, the maintainers will schedule a recurring (bi-weekly) working-group meeting. The trigger is written here, and anyone may invoke it."}
           </p>
         </div>
       </Reveal>
@@ -254,8 +268,8 @@ export default async function GovernancePage({
         <div className="bg-paper border border-fog p-6 md:p-8 mb-12 text-sm text-graphite leading-[1.7]">
           <p className="mb-3">
             {zh
-              ? "ATR 目前只有一位維護者是已知的單點故障。我們正在主動招募第二位、第三位維護者,以便走向 Technical Steering Committee(TSC)模型。"
-              : "Having a single maintainer is a known single-point-of-failure for ATR. We are actively recruiting a second and third maintainer in order to transition to a Technical Steering Committee (TSC) model."}
+              ? "單一維護者是 ATR 目前已知的最大結構風險，這一點我們公開講。從一個人到一個 Technical Steering Committee（TSC），是每個開放標準都走過的路——分散治理的方式，是真的有人 merge 過足夠多的東西、值得拿到 commit 權。我們正在主動招募第二位、第三位維護者。"
+              : "A single maintainer is the largest known structural risk to ATR, and we state it plainly. The path from one person to a Technical Steering Committee (TSC) is the one every open standard walks — governance distributes when contributors have merged enough to have earned commit rights, not before. We are actively recruiting a second and third maintainer."}
           </p>
           <p className="mb-3 font-semibold text-ink">
             {zh ? "候選條件:" : "Candidate criteria:"}
@@ -343,13 +357,13 @@ export default async function GovernancePage({
           <div className="space-y-4 text-sm text-graphite leading-[1.7]">
             <p>
               {zh
-                ? "ATR（Agent Threat Rules）是 MIT 授權的開放標準，由 Agent-Threat-Rule GitHub 組織維護。首席維護者在 AI agent 安全領域另持有商業利益（commercial affiliation）。本揭露之存在，是為了讓規則合併（rule-merge）決策始終可被審計。"
-                : "ATR (Agent Threat Rules) is an MIT-licensed open standard maintained under the Agent-Threat-Rule GitHub organization. The lead maintainer also holds a commercial affiliation in AI agent security. This disclosure exists so that rule-merge decisions stay auditable."}
+                ? "ATR（Agent Threat Rules）是 MIT 授權的開放標準，由 Agent-Threat-Rule GitHub 組織維護。首席維護者在 AI agent 安全領域另持有商業利益（commercial affiliation）。我們不掩蓋這件事，而是寫下來——揭露本身就是治理機制。一個標準的中立性，不靠維護者沒有利益來證明，而靠他的決策過程公開到任何人都能檢查有沒有被利益扭曲。"
+                : "ATR (Agent Threat Rules) is an MIT-licensed open standard maintained under the Agent-Threat-Rule GitHub organization. The lead maintainer also holds a commercial affiliation in AI agent security. We do not hide this; we write it down — the disclosure itself is the governance mechanism. A standard's neutrality is not proven by a maintainer having no interests, but by a decision process open enough that anyone can check whether those interests bent it."}
             </p>
             <p>
               {zh
-                ? "界限：ATR 的規則、CHANGELOG、benchmark 資料、以及文件不得被任何商業利益所操控。ATR 的 issue tracker 和 PR review 流程對所有人開放，包括該商業利益的競爭對手。ATR 的 GOVERNANCE.md 在 GitHub 上公開查閱。"
-                : "The boundary: ATR's rules, CHANGELOG, benchmark data, and documentation must not be distorted by any commercial interest. ATR's issue tracker and PR review process is open to everyone, including competitors of that commercial interest. ATR's GOVERNANCE.md is publicly auditable on GitHub."}
+                ? "界限：ATR 的規則、CHANGELOG、benchmark 資料、以及文件不得被任何商業利益所操控。ATR 的 issue tracker 與 PR review 流程對所有人開放，包括該商業利益的競爭對手——他們可以提規則、可以審你的 PR、可以 fork 整套標準。GOVERNANCE.md 在 GitHub 上公開查閱。中立不是宣稱來的，是這些開放的入口逐一證成的。"
+                : "The boundary: ATR's rules, CHANGELOG, benchmark data, and documentation must not be distorted by any commercial interest. ATR's issue tracker and PR review process is open to everyone — including competitors of that commercial interest, who may propose rules, review pull requests, and fork the entire standard. GOVERNANCE.md is publicly auditable on GitHub. Neutrality is not asserted; it is what these open doors, one by one, demonstrate."}
             </p>
             <p>
               {zh

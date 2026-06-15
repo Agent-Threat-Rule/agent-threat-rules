@@ -18,11 +18,11 @@ export async function generateMetadata({
   const stats = loadSiteStats();
   return {
     title: zh
-      ? "ATR × NIST AI RMF — 近乎完整的 subcategory 覆蓋"
-      : "ATR × NIST AI RMF — near-complete subcategory coverage",
+      ? "ATR × NIST AI RMF — 讓風險管理框架長出可驗證的偵測層"
+      : "ATR × NIST AI RMF — a verifiable detection layer under the framework",
     description: zh
-      ? `ATR ${stats.ruleCount} 條規則中多數帶有 NIST AI RMF subcategory 對應。16 個 subcategory,跨 GV / MP / MS / MG 四大 function。MIT License。`
-      : `ATR — most of ${stats.ruleCount} rules carry NIST AI RMF subcategory mappings. 16 subcategories spanning all four functions (GV / MP / MS / MG). MIT License.`,
+      ? `NIST AI RMF 定義 GOVERN / MAP / MEASURE / MANAGE 四個 function。ATR ${stats.ruleCount} 條規則中多數帶有 subcategory 對應,把治理流程接到能在真實 agent 成品上開火的偵測。16 個 subcategory,跨四大 function。MIT License。`
+      : `NIST AI RMF defines four functions — GOVERN / MAP / MEASURE / MANAGE. Most of ATR's ${stats.ruleCount} rules carry subcategory mappings, wiring those governance functions to detection that fires on real agent artifacts. 16 subcategories across all four. MIT License.`,
   };
 }
 
@@ -84,12 +84,14 @@ export default async function NistAiRmfPage({
       {/* H1 */}
       <Reveal delay={0.05}>
         <h1 className="font-display text-[clamp(32px,5vw,52px)] font-extrabold tracking-[-2px] md:tracking-[-3px] leading-[1.08] text-ink">
-          {zh ? "ATR 規則近乎完整對應" : "Near-complete coverage of"}
+          {zh ? "NIST AI RMF 定義流程。" : "NIST AI RMF defines the process."}
           <br />
-          <span className="text-blue">{zh ? "NIST AI RMF subcategory。" : "NIST AI RMF subcategories."}</span>
+          <span className="text-blue">{zh ? "ATR 讓它能被偵測驗證。" : "ATR makes it detectable."}</span>
         </h1>
         <p className="text-sm text-stone mt-3 leading-[1.6]">
-          {zh ? "(逐條分布見下方表格)" : "(see the subcategory table below)"}
+          {zh
+            ? "GOVERN / MAP / MEASURE / MANAGE 四個 function,每一個都有 ATR 規則可掛進去(逐條分布見下方表格)。"
+            : "Every one of GOVERN / MAP / MEASURE / MANAGE has ATR rules wired into it (per-subcategory distribution below)."}
         </p>
       </Reveal>
 
@@ -103,21 +105,20 @@ export default async function NistAiRmfPage({
         <p className="text-[18px] md:text-[21px] font-medium text-ink leading-[1.55] max-w-[720px]">
           {zh ? (
             <>
-              首版於 2026-05-09 隨 ATR v2.1.0 發布,當時 330 條規則全部對應。隨著 corpus 成長到 {stats.ruleCount} 條,
-              <strong> compliance.nist_ai_rmf </strong>metadata 同步擴張到多數規則,逐條分布見下方 subcategory 表格。
+              AI RMF 是一份治理框架——它告訴你要 GOVERN、MAP、MEASURE、MANAGE 哪些風險,但本身不偵測任何東西。ATR 把
+              <strong> compliance.nist_ai_rmf </strong>metadata 寫進規則:每條規則標明自己服務哪個 subcategory,於是框架的每個 function 底下都有可以實際開火的偵測。首版於 2026-05-09 隨 v2.1.0 發布,當時 330 條規則全部對應;corpus 成長到 {stats.ruleCount} 條後,對應同步擴張到多數規則。
             </>
           ) : (
             <>
-              First shipped 2026-05-09 with ATR v2.1.0 — all 330 rules then in the corpus carried{" "}
-              <strong>compliance.nist_ai_rmf</strong> metadata. As the corpus has grown to {stats.ruleCount} rules,
-              the NIST AI RMF metadata now covers most of them; the per-subcategory distribution is in the table below.
+              AI RMF is a governance framework — it tells you which risks to GOVERN, MAP, MEASURE, and MANAGE, but it detects nothing on its own. ATR writes{" "}
+              <strong>compliance.nist_ai_rmf</strong> metadata into the rules themselves: each rule declares which subcategory it serves, so every function in the framework has detection that actually fires beneath it. First shipped 2026-05-09 with v2.1.0, when all 330 rules then in the corpus carried the mapping; as the corpus grew to {stats.ruleCount} rules, the mapping expanded to cover most of them.
             </>
           )}
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.7] max-w-[720px] mt-4">
           {zh
-            ? "每條對應引用該規則的具體偵測元素(regex / token / signature),而非制式樣板。可下載、可審核、可逐條驗證。"
-            : "Each mapping cites the specific detection element (regex / token / signature) used by that rule — not generic boilerplate. Downloadable, auditable, and verifiable rule by rule."}
+            ? "對應不是一句「對齊 NIST」的宣稱。每條都引用該規則賴以判斷的偵測元素(regex / token / signature),逐條對得起 YAML——可下載、可審核、可被任何稽核人員推翻。"
+            : "The mapping is not an “aligned with NIST” claim. Each one cites the detection element the rule actually relies on (regex / token / signature), accountable to the YAML line by line — downloadable, auditable, and refutable by any auditor."}
         </p>
       </Reveal>
 
@@ -129,21 +130,21 @@ export default async function NistAiRmfPage({
           </div>
           <p className="text-sm md:text-base text-graphite leading-[1.8] mb-3">
             {zh
-              ? "ATR 維護者把 NIST AI RMF 整理成 OSCAL 格式的社群 catalog(72 個控制項 + 31 個交叉參照連結),以 CC0 授權發布在 Agent-Threat-Rule/ai-rmf-oscal-catalog。這份 catalog 是「社群自發整理」,不是 NIST 官方產出。"
-              : "The ATR maintainers transcribed NIST AI RMF into an OSCAL-format community catalog (72 controls + 31 cross-reference links), published under CC0 at Agent-Threat-Rule/ai-rmf-oscal-catalog. This catalog is a community contribution, NOT a NIST publication."}
+              ? "框架本身是散文。要讓機器能消費它,得有人把它轉成結構化格式。ATR 維護者把 NIST AI RMF 整理成 OSCAL 格式的社群 catalog(72 個控制項 + 31 個交叉參照連結),以 CC0 授權發布在 Agent-Threat-Rule/ai-rmf-oscal-catalog。這份 catalog 是社群自發整理,不是 NIST 官方產出。"
+              : "The framework itself is prose. For a machine to consume it, someone has to transcribe it into a structured format. The ATR maintainers transcribed NIST AI RMF into an OSCAL-format community catalog (72 controls + 31 cross-reference links), published under CC0 at Agent-Threat-Rule/ai-rmf-oscal-catalog. This catalog is a community contribution, NOT a NIST publication."}
           </p>
           <p className="text-sm md:text-base text-graphite leading-[1.8] mb-3">
             {zh
-              ? "我們進一步把 catalog 提交給 NIST 官方的 usnistgov/oscal-content 倉庫:submission 審查中,NIST OSCAL maintainer 已開了 collaboration branch #338 一起調整內容。我們已寄信 oscal@nist.gov 詢問方向,等待 NIST 團隊指引中。"
-              : "The catalog was further submitted to NIST's official usnistgov/oscal-content repo. The submission is in review; the NIST OSCAL maintainer opened a collaboration branch (#338) to align on the content. We have emailed oscal@nist.gov asking for direction; awaiting their response."}
+              ? "這份 catalog 進一步提交給 NIST 官方的 usnistgov/oscal-content 倉庫:submission 仍在審查中,NIST OSCAL maintainer 已開了 collaboration branch #338 一起對齊內容。維護者已寄信 oscal@nist.gov 詢問方向,等待 NIST 團隊指引中。這是開放標準該走的路徑——把貢獻送進上游、公開協作、由標準機構自己決定要不要採。"
+              : "That catalog was further submitted to NIST's official usnistgov/oscal-content repository. The submission is in review; the NIST OSCAL maintainer opened a collaboration branch (#338) to align on the content. The maintainers have emailed oscal@nist.gov asking for direction and are awaiting a response. This is the path an open standard is supposed to take — contribute upstream, collaborate in the open, and leave the decision to adopt where it belongs: with the standards body itself."}
           </p>
           <div className="bg-ash/40 border border-fog p-4 text-sm text-stone leading-[1.7]">
             <span className="font-data text-xs text-stone tracking-[2px] uppercase block mb-2">
               {zh ? "我們不主張的事項" : "What this is NOT"}
             </span>
             {zh
-              ? "這不是 NIST 官方背書、不是 NIST AI RMF 合規認證、不是任何 NIST issuance 的「接受層級」。ATR 是 MIT 授權的獨立開放標準。任何在 NIST 一側的正式採用,以 NIST 自己的公告為準,不以這個頁面為準。"
-              : "This is not a NIST official endorsement, not a NIST AI RMF compliance certification, and not any NIST-issued 'acceptance tier'. ATR is an independent MIT-licensed open standard. Any formal adoption on NIST's side will be announced by NIST itself, not by this page."}
+              ? "這不是 NIST 官方背書、不是 NIST AI RMF 合規認證、不是任何 NIST issuance 的「接受層級」。ATR 是 MIT 授權的獨立開放標準。任何在 NIST 一側的正式採用,以 NIST 自己的公告為準,不以這個頁面為準。一個標準的可信度,取決於它願不願意把自己還沒拿到的東西誠實地標清楚。"
+              : "This is not a NIST official endorsement, not a NIST AI RMF compliance certification, and not any NIST-issued 'acceptance tier'. ATR is an independent MIT-licensed open standard. Any formal adoption on NIST's side will be announced by NIST itself, not by this page. A standard earns trust by being precise about what it has not yet been granted."}
           </div>
           <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1">
             <a
@@ -171,7 +172,7 @@ export default async function NistAiRmfPage({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-8">
           <StatCell label="Corpus" value={String(stats.ruleCount)} unit="" note={zh ? "目前規則總數" : "rules in corpus"} valueColor="blue" />
           <StatCell label="Subcategories" value="16" unit="" note={zh ? "跨 GV / MP / MS / MG" : "across GV / MP / MS / MG"} />
-          <StatCell label="Functions" value="4" unit="" note={zh ? "GV / MP / MS / MG" : "GV / MP / MS / MG"} />
+          <StatCell label="Functions" value="4" unit="" note={zh ? "GOVERN / MAP / MEASURE / MANAGE 皆有規則" : "all of GOVERN / MAP / MEASURE / MANAGE"} />
           <StatCell label="License" value="MIT" unit="" note={zh ? "永久免費,可 fork" : "Forever free, forkable"} />
         </div>
       </Reveal>
@@ -181,33 +182,33 @@ export default async function NistAiRmfPage({
         <p className="text-sm md:text-base text-graphite leading-[1.8]">
           {zh ? (
             <>
-              NIST AI Risk Management Framework(AI RMF 1.0 + GenAI Profile)是美國聯邦 AI 機構採用的事實標準,也是 NIST CAISI 推動 COSAiS Single-Agent / Multi-Agent overlay 工作的測量基底。
+              NIST AI Risk Management Framework(AI RMF 1.0 + GenAI Profile)是美國聯邦 AI 機構採用的事實標準,也是 NIST CAISI 推動 COSAiS Single-Agent / Multi-Agent overlay 工作的測量基底。它把 AI 風險管理拆成 GOVERN / MAP / MEASURE / MANAGE 四個 function——這是治理的語言,告訴你該管什麼,卻沒告訴你怎麼在一份 SKILL.md 或一個 MCP tool 描述上把風險抓出來。
             </>
           ) : (
             <>
-              The NIST AI Risk Management Framework (AI RMF 1.0 + GenAI Profile) is the de-facto standard adopted by US federal AI agencies, and the measurement foundation NIST CAISI is using for the COSAiS Single-Agent / Multi-Agent overlay work.
+              The NIST AI Risk Management Framework (AI RMF 1.0 + GenAI Profile) is the de-facto standard adopted by US federal AI agencies, and the measurement foundation NIST CAISI is using for the COSAiS Single-Agent / Multi-Agent overlay work. It splits AI risk management into four functions — GOVERN / MAP / MEASURE / MANAGE. That is the language of governance: it tells you what to manage, but not how to catch the risk inside a single SKILL.md file or one MCP tool description.
             </>
           )}
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh ? (
             <>
-              多數 AI 安全產品宣稱「對應 NIST AI RMF」,但通常只是一份封閉文件、一句行銷話術、或單一框架的交叉對照——沒有可逐條審核的 per-rule mapping。
+              那道缺口正是多數 AI 安全產品填得最潦草的地方。它們宣稱「對應 NIST AI RMF」,但通常只是一份封閉文件、一句行銷話術、或單一框架的交叉對照——沒有任何可逐條審核的 per-rule mapping。框架被引用,卻沒有任何能在真實成品上開火的東西接在它底下。
             </>
           ) : (
             <>
-              Most AI security products claim &ldquo;NIST AI RMF alignment.&rdquo; In practice the alignment is usually a closed document, a marketing line, or a single-framework crosswalk — without auditable per-rule mappings.
+              That gap is exactly where most AI security products are sloppiest. They claim &ldquo;NIST AI RMF alignment,&rdquo; but in practice the alignment is a closed document, a marketing line, or a single-framework crosswalk — with no auditable per-rule mappings. The framework gets cited; nothing that fires on a real artifact is wired beneath it.
             </>
           )}
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh ? (
             <>
-              ATR 把它做成 MIT 授權、open-source、可重現的 per-rule metadata。任何政府、任何 SOC、任何稽核人員,皆可下載 YAML 逐條檢視:每條規則對應到哪個 subcategory、為何如此對應、以何 detection element 為證據。
+              ATR 把那一層接上,做成 MIT 授權、open-source、可重現的 per-rule metadata。AI RMF 從一份治理框架,變成一個可驗證的偵測層:任何政府、任何 SOC、任何稽核人員,都能下載 YAML 逐條檢視——每條規則對應到哪個 subcategory、為何如此對應、以何 detection element 為證據。
             </>
           ) : (
             <>
-              ATR ships it as MIT-licensed, open-source, reproducible per-rule metadata. Any government, any SOC, any auditor can download the YAML and inspect, rule by rule, which subcategory each maps to, why, and which detection element justifies it.
+              ATR wires that layer in as MIT-licensed, open-source, reproducible per-rule metadata. The AI RMF turns from a governance framework into a verifiable detection layer: any government, any SOC, any auditor can download the YAML and inspect, rule by rule, which subcategory each maps to, why, and which detection element justifies it.
             </>
           )}
         </p>
@@ -217,8 +218,8 @@ export default async function NistAiRmfPage({
       <Section label={zh ? "02 · Subcategory 分布" : "02 · Subcategory distribution"} delay={0.08}>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mb-5">
           {zh
-            ? "16 個 subcategory,涵蓋 NIST AI RMF 的 4 個 function:GV / MP / MS / MG。每條規則可同時對應多個 subcategory(primary + secondary strength);各 subcategory 的對應次數見下表。"
-            : "16 subcategories spanning all 4 NIST AI RMF functions (GV / MP / MS / MG). Each rule can map to multiple subcategories (primary + secondary strength); the per-subcategory mapping counts are listed in the table below."}
+            ? "對應落在 16 個 subcategory 上,GOVERN / MAP / MEASURE / MANAGE 四個 function 沒有一個是空的——治理框架的每一段流程,底下都掛得到能開火的規則。一條規則可同時對應多個 subcategory(primary + secondary strength);各 subcategory 的對應次數見下表。"
+            : "The mappings land across 16 subcategories, and none of the four functions — GOVERN / MAP / MEASURE / MANAGE — is left empty: every stretch of the governance process has firing rules wired beneath it. A single rule can map to several subcategories (primary + secondary strength); the per-subcategory counts are listed below."}
         </p>
         <div className="bg-paper border border-fog rounded">
           <div className="grid grid-cols-[80px_55px_minmax(0,1fr)_55px] sm:grid-cols-[110px_70px_minmax(0,1fr)_70px] gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 border-b border-fog font-data text-[10.5px] tracking-[1.2px] uppercase text-stone">
@@ -250,8 +251,8 @@ export default async function NistAiRmfPage({
       <Section label={zh ? "03 · 樣本對應(可審核)" : "03 · Sample mapping (auditable)"} delay={0.05}>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mb-5">
           {zh
-            ? "每條規則的 NIST 對應都明確引用該規則所偵測的攻擊元素。以下是 ATR-2026-00118(Approval Fatigue Exploitation)的隨機抽樣:"
-            : "Every rule's NIST mapping cites the specific detection element it relies on. Sample drawn from ATR-2026-00118 (Approval Fatigue Exploitation):"}
+            ? "對應寫在規則裡,不是寫在投影片上。每條規則的 NIST 對應都明確說明它服務哪個 subcategory、以及為何。以下是 ATR-2026-00118(Approval Fatigue Exploitation)的實際 metadata:"
+            : "The mapping lives in the rule, not on a slide. Every rule's NIST mapping states which subcategory it serves and why. Below is the actual metadata from ATR-2026-00118 (Approval Fatigue Exploitation):"}
         </p>
         <div className="bg-ink rounded p-5 overflow-x-auto">
           <pre className="font-data text-[11.5px] md:text-[12.5px] text-paper leading-[1.6] whitespace-pre-wrap break-words">
@@ -356,11 +357,11 @@ export default async function NistAiRmfPage({
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh ? (
             <>
-              CAISI 在 Research Blog 提出的「measurement-science-first」框架,正是我們設計這份 mapping 的根基:每條規則都有可重現的量測證據(garak inthewild benchmark、SKILL.md FP corpus、公開測試 corpus),不是空口宣稱。
+              CAISI 在 Research Blog 提出的「measurement-science-first」框架,正是這份 mapping 的設計根基:對應到一個 subcategory 不該是一句斷言,而該附帶可重現的量測證據(garak in-the-wild benchmark、SKILL.md FP corpus、公開測試 corpus)。能量到的就標數字,量不到的就不宣稱——這跟 CAISI 對「以量測為先」的要求是同一套紀律。
             </>
           ) : (
             <>
-              The &ldquo;measurement-science-first&rdquo; framing CAISI uses in its Research Blog is the foundation we designed this mapping around: every rule has a reproducible measurement (garak inthewild benchmark, SKILL.md FP corpus, publicly-released test corpora) — not a marketing claim.
+              The &ldquo;measurement-science-first&rdquo; framing CAISI uses in its Research Blog is the foundation this mapping is built on: a claim to serve a subcategory should not be an assertion but a reproducible measurement (garak in-the-wild benchmark, SKILL.md FP corpus, publicly-released test corpora). What can be measured gets a number; what cannot is not claimed — the same discipline CAISI asks for when it puts measurement first.
             </>
           )}
         </p>
@@ -404,8 +405,8 @@ export default async function NistAiRmfPage({
       <Section label={zh ? "06 · 自行審核這份 mapping" : "06 · Audit the mapping yourself"} delay={0.05}>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mb-6">
           {zh
-            ? "Mapping 是公開 metadata,不是封閉規格。每條規則的 RMF 對應皆在 GitHub 上以 YAML 形式公開可讀——可 fork、可挑戰、可提 PR 修正 strength 或 context。"
-            : "The mapping is open metadata, not a closed spec. Every rule's RMF mapping is publicly readable as YAML on GitHub — fork it, challenge it, open a PR to refine strength or context."}
+            ? "對映不是只能看的封閉規格,是可改的公開 metadata。每條規則的 RMF 對應都在 GitHub 上以 YAML 形式公開可讀——可 fork、可挑戰、可提 PR 修正 strength 或 context。一個對映若禁不起被推翻,就稱不上是標準。"
+            : "The mapping is open metadata, not a closed spec you can only read. Every rule's RMF mapping is publicly readable as YAML on GitHub — fork it, challenge it, open a PR to refine strength or context. A mapping that can't be refuted isn't a standard."}
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <CTACard
@@ -430,8 +431,8 @@ export default async function NistAiRmfPage({
         <Callout borderColor="blue">
           <strong className="text-ink">
             {zh
-              ? "近乎完整的 NIST AI RMF subcategory 對應——非行銷話術,是可下載、可審核的 YAML metadata,MIT 授權永久免費。"
-              : "Near-complete NIST AI RMF subcategory coverage — not a marketing claim. Downloadable, auditable YAML metadata, MIT-licensed forever."}
+              ? "NIST AI RMF 定義要管什麼;ATR 讓每個 function 底下都長出能驗證的偵測——非行銷話術,是可下載、可審核的 YAML metadata,MIT 授權永久免費。"
+              : "NIST AI RMF defines what to manage; ATR gives every function a layer of detection you can verify beneath it — not a marketing claim. Downloadable, auditable YAML metadata, MIT-licensed forever."}
           </strong>
         </Callout>
         <div className="mt-8 pt-6 border-t border-fog text-sm text-graphite leading-[1.7]">

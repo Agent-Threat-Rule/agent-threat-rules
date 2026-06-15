@@ -1,5 +1,4 @@
 import { Reveal } from "@/components/Reveal";
-import { loadSiteStats } from "@/lib/stats";
 import { locales, t, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 
@@ -16,7 +15,6 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
   const { locale: raw } = await params;
   const locale = (locales.includes(raw as Locale) ? raw : "en") as Locale;
   const zh = locale === "zh";
-  const stats = loadSiteStats();
 
   return (
     <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
@@ -28,15 +26,15 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
       <Reveal delay={0.1}>
         <h1 className="font-display text-[clamp(28px,4vw,44px)] font-extrabold tracking-[-2px] mb-2 max-w-[600px]">
           {zh
-            ? "ATR 是社群驅動的。你的每一個貢獻都在保護整個生態系。"
-            : "ATR is community-driven. Every contribution protects the entire ecosystem."}
+            ? "一條在台北寫的規則,擋下西雅圖首報的攻擊。"
+            : "A rule written in Taipei catches an attack first reported in Seattle."}
         </h1>
       </Reveal>
       <Reveal delay={0.2}>
-        <p className="text-base text-stone font-light mb-10 max-w-[520px]">
+        <p className="text-base text-stone font-light mb-10 max-w-[560px]">
           {zh
-            ? "MIT 授權。零專有工具。零 CLA。從回報一個繞過方法開始,15 分鐘。"
-            : "MIT licensed. No proprietary tooling. No CLA. Start by reporting an evasion, 15 minutes."}
+            ? "ATR 是公共財。任何人提一條規則,經公開 PR 與安全閘審查,就成為全球防禦者共用標準的一部分。MIT 授權,零專有工具,零 CLA。從回報一個繞過方法開始,15 分鐘。"
+            : "ATR is a public good. Anyone can propose a rule; through a public PR and the safety gate, it becomes part of a standard every defender shares. MIT licensed, no proprietary tooling, no CLA. Start by reporting an evasion — fifteen minutes."}
         </p>
       </Reveal>
 
@@ -57,8 +55,8 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
             </h3>
             <p className="text-sm text-stone leading-relaxed mb-3">
               {zh
-                ? "結構化表單,5 分鐘填完。需要 spec walkthrough、design review、語言 sample code、或合規 mapping 就走這條。維護者七天內回覆。"
-                : "Structured intake form, 5 minutes. Use this path if you need a spec walkthrough, design review, sample code for your language, or framework-compliance mapping. Maintainers respond within seven days."}
+                ? "任何引擎都可以實作這個標準——這條路徑就是給正在實作的人。結構化表單,5 分鐘填完;需要 spec walkthrough、design review、語言 sample code,或合規 mapping 就走這條。維護者七天內回覆。"
+                : "Any engine may implement the standard — this path is for the people building one. Structured intake form, five minutes. Use it when you need a spec walkthrough, a design review, sample code for your language, or framework-compliance mapping. Maintainers respond within seven days."}
             </p>
             <a
               href="https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=integration-request.yml"
@@ -132,8 +130,8 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
             {
               title: zh ? "回報誤判" : "Report a False Positive",
               desc: zh
-                ? `規則誤判了正常內容?幫我們維持 ${stats.pintPrecision}% precision 的真實性。`
-                : `Rule triggered on legitimate content? Help us keep ${stats.pintPrecision}% precision real.`,
+                ? "規則誤判了正常內容?每一筆誤報都讓 ATR 公開的逐車道精確度更接近真實。一個標準的可信度,來自它願意公開自己最差的數字。"
+                : "Rule triggered on legitimate content? Every false positive sharpens the per-lane precision ATR publishes. A standard earns trust by publishing its worst figure, not hiding it.",
               time: "~20 min",
               href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=false-positive.yml",
               cta: zh ? "開一個 Issue" : "Open an Issue",
@@ -194,11 +192,11 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
             </li>
             <li>
               {zh
-                ? "maintainer 或社群把 detection regex 寫完,跑 safety gate(0 FP on benign corpus 是硬條件)。"
-                : "A maintainer or community member writes the detection regex and runs the safety gate (0 FP on the benign corpus is a hard requirement)."}
+                ? "maintainer 或社群把 detection regex 寫完,跑安全閘——真陽性與假陽性樣本、schema 合規、不與現有規則衝突,在良性語料上 0 FP 是硬條件。閘是真的會擋,不是擺設。"
+                : "A maintainer or community member writes the detection regex and runs the safety gate — true- and false-positive samples, schema compliance, no conflict with existing rules, and zero false positives on the benign corpus as a hard requirement. The gate actually blocks; it is not decorative."}
             </li>
             <li>
-              {zh ? "規則 merge 進主 branch,自動 npm publish + GitHub release。" : "Rule merges to main, auto-publishes to npm + GitHub release."}
+              {zh ? "規則 merge 進主 branch,自動 npm publish + GitHub release——從這一刻起,它屬於每一個讀 ATR 的引擎,跨廠商、跨國界。" : "Rule merges to main, auto-publishes to npm + GitHub release — from that moment it belongs to every engine that reads ATR, across vendors and across borders."}
             </li>
             <li>
               {zh

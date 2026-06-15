@@ -114,7 +114,7 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
       <Reveal>
         <div className="mb-12">
           <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-4">
-            {locale === "zh" ? "選擇你的整合程度" : "Choose Your Integration Level"}
+            {locale === "zh" ? "一份規則 · 任何符合規範的引擎 · 選擇你的整合程度" : "One ruleset · Any conforming engine · Choose your integration level"}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-fog">
             {[
@@ -167,8 +167,8 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
           <div className="p-6">
             <p className="text-sm text-graphite mb-4 leading-relaxed">
               {locale === "zh"
-                ? "不需要註冊、不需要 API key。一行指令掃描你的 SKILL.md 或 MCP config。"
-                : "No signup, no API key. One command scans your SKILL.md or MCP config."}
+                ? "不需要註冊、不需要 API key。一行指令掃描你的 SKILL.md 或 MCP config——你在本機跑的這份 YAML,正是 Cisco 與 Microsoft 在 production 跑的同一份規則。"
+                : "No signup, no API key. One command scans your SKILL.md or MCP config — the same YAML you run locally is the same ruleset Cisco and Microsoft run in production."}
             </p>
             <div className="space-y-3">
               <div>
@@ -202,7 +202,7 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
       {/* SDK Integration Paths */}
       <Reveal>
         <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-4">
-          {locale === "zh" ? "SDK 整合" : "SDK Integration"}
+          {locale === "zh" ? "SDK 整合 · 同一份規則,五種讀法" : "SDK Integration · Same rules, five ways to read them"}
         </div>
       </Reveal>
 

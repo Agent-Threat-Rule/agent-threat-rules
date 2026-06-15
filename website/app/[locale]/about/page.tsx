@@ -161,8 +161,8 @@ const MILESTONES: Milestone[] = [
       zh: "v3.5.0 · 652 條規則,跨 10 個類別",
     },
     detail: {
-      en: "Current release line: 652 detection rules across 10 categories, specification 3.0.0-alpha.1 (Working Draft).",
-      zh: "目前釋出線:652 條偵測規則,跨 10 個類別,規範 3.0.0-alpha.1（Working Draft）。",
+      en: "Current release line: 652 detection rules across 10 categories, specification 3.0.0-alpha.1 (Working Draft). Introduced detection lanes (enforce / alert / hunt) — maturity-driven precision, with false-positive rates reported per lane rather than as a single figure.",
+      zh: "目前釋出線:652 條偵測規則,跨 10 個類別,規範 3.0.0-alpha.1（Working Draft）。引入偵測車道(enforce / alert / hunt)——以成熟度驅動精確度,誤報率逐車道揭露,而非用單一數字概括。",
     },
   },
 ];
@@ -215,6 +215,11 @@ export default async function AboutPage({
           {zh
             ? "標準由社群驅動，並透過每日自動結晶飛輪持續擴張——紅隊大掃描與 CVE 攝取兩條管線各自跑完完整 sweep，把規則集從 462 條長到 652 條（新增 190 條）。"
             : "The standard is community-driven and grows through daily auto-crystallization flywheels — a red-team mega-scan pipeline and a CVE-ingestion pipeline each ran full sweeps, expanding the ruleset from 462 to 652 rules (190 new rules)."}
+        </p>
+        <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
+          {zh
+            ? "但成長從不是目的——對精確度誠實才是。v3.5.0 引入偵測車道:每條規則標明成熟度,使用者自己決定要信任到什麼程度。enforce 車道只讓最成熟的規則開火(在 65,000 筆良性語料上約 0.24% 誤報);預設的 hunt 車道把全部規則當建議性訊號跑(約 9%)。ATR 逐車道揭露誤報率,從不用單一個好看的數字一概而論。一個標準的可信度,取決於它願不願意公開自己最差的數字。"
+            : "But growth was never the point — honesty about precision is. The v3.5.0 release introduced detection lanes: every rule declares a maturity, and the consumer decides how far to trust it. The enforce lane fires only the most mature rules (~0.24% false positives on a 65,000-sample benign corpus); the default hunt lane runs everything as advisory (~9%). ATR reports false-positive rates lane by lane, never as a single flattering number. A standard earns trust by publishing its worst figure, not hiding it."}
         </p>
       </Section>
 
