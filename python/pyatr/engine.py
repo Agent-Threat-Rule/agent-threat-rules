@@ -207,6 +207,9 @@ class ATREngine:
         """
         matches: list[ATRMatch] = []
         for rule in self._rules:
+            # Parity with the TS engine: deprecated/draft rules never fire.
+            if rule.status in ("deprecated", "draft"):
+                continue
             match = self._evaluate_rule(rule, event)
             if match is not None:
                 matches.append(match)

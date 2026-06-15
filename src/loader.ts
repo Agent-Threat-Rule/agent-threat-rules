@@ -7,6 +7,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import yaml from 'js-yaml';
 import type { ATRRule } from './types.js';
+import { validateContract } from './quality/rule-contract.js';
 
 /**
  * Load a single ATR rule from a YAML file.
@@ -77,6 +78,11 @@ export function validateRule(rule: unknown): { valid: boolean; errors: string[] 
   const validStatuses = ['draft', 'experimental', 'stable', 'deprecated'];
   if (typeof r['status'] === 'string' && !validStatuses.includes(r['status'])) {
     errors.push(`Invalid status: ${r['status']}`);
+  }
+
+  // Contract-level fields (maturity enum + confirm) — single source of truth.
+  for (const e of validateContract(r as { maturity?: unknown; confirm?: unknown; detection?: { method?: string } })) {
+    errors.push(e);
   }
 
   // Severity enum

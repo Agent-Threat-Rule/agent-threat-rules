@@ -2,6 +2,32 @@
 
 All notable changes to ATR will be documented in this file.
 
+## [3.5.0] - 2026-06-16
+
+### Added
+
+- **Detection lanes (`enforce` / `alert` / `hunt`).** Rules now carry a maturity-driven
+  lane so consumers can trade recall for precision. On a 65K-sample benign gate: `enforce`
+  (stable + confirm rules only) ~0.24% FP; `hunt` (all rules) ~9% FP. Default is `hunt`,
+  opt-in and fully backward-compatible.
+- **`confirm` field** — an embedding/secondary check that must pass before a match fires in
+  the enforce lane. Four rules ship a `confirm: embedding` guard (ATR-2026-00001 / 00002 /
+  00030 / 00442).
+- **`src/quality/rule-contract.ts`** — a single shared contract (`MATURITIES`, `laneAllows`,
+  `validateContract`) the engine and loader consume.
+
+### Changed
+
+- **23 rules reclassified** (maturity) to reflect measured precision and generalization.
+- **ATR-2026-00495 deprecated** (garak DAN "insert prompt here" variant) — it now never fires.
+  Spec-conformant; the only behavior change in this release.
+- Python `pyatr` engine skips `deprecated` / `draft` rules, matching the TypeScript engine.
+
+### Note
+
+- Report false-positive rates lane-keyed (enforce ~0.24% / hunt ~9% on a 65K-sample benign
+  gate), not as a single overall figure.
+
 ## [3.1.1] - 2026-06-05
 
 ### Fixed

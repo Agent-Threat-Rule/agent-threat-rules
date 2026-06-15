@@ -9,6 +9,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, extname, relative } from 'node:path';
 import yaml from 'js-yaml';
+import { validateContract } from '../src/quality/rule-contract.js';
 
 const RULES_DIR = join(import.meta.dirname ?? '.', '..', 'rules');
 
@@ -97,6 +98,11 @@ function validateRule(filePath: string): ValidationResult {
     // Status
     if (typeof rule['status'] === 'string' && !VALID_STATUSES.includes(rule['status'])) {
       errors.push(`Invalid status: ${rule['status']}`);
+    }
+
+    // Contract-level fields (maturity enum + confirm) — single source of truth.
+    for (const e of validateContract(rule as { maturity?: unknown; confirm?: unknown; detection?: { method?: string } })) {
+      errors.push(e);
     }
 
     // Severity

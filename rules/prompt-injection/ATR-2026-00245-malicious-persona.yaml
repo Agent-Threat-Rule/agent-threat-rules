@@ -65,24 +65,24 @@ detection:
   conditions:
     - field: user_input
       operator: regex
-      value: '(roleplay|role[\s-]play|respond\s+as|act\s+as|play\s+the\s+(role|part)\s+of|you\s+are\s+(now\s+)?|pretend\s+to\s+be|impersonate)\s+[^\n]{0,150}(evil|sinister|malicious|wicked|dark|vile|twisted|corrupt|sadistic|psychopath|sociopath|villain|antagonist|bad|harmful|toxic|dangerous)'
-      description: 'Roleplay instruction combined with explicit evil character traits'
+      value: '(roleplay|role[\s-]play|respond\s+as|act\s+as|play\s+the\s+(?:role|part)\s+of|you\s+are\s+(?:now\s+)?|pretend\s+to\s+be|impersonate)\s+(?:an?\s+|the\s+)?[^\n]{0,60}?(evil|sinister|malicious|wicked|vile|twisted|sadistic|psychopath(?:ic)?|sociopath(?:ic)?|villain(?:ous)?)\b[^\n]{0,40}?(ai|character|persona|version|bot|entity|model|assistant|gpt)'
+      description: 'Roleplay imperative bound tightly (<=100 chars) to a strong evil descriptor AND a persona noun (drops ambiguous dark/bad and 150-char gap that matched benign "act as a harsh critic ... bad")'
     - field: user_input
       operator: regex
-      value: '(character|persona|version|entity|ai|assistant|bot|model)\s+[^\n]{0,80}(racist|encourages?\s+(suicide|self[\s-]harm|violence)|foul[\s-]mouthed|aggressive|rude|amoral|immoral|unethical|cruel|hateful|abusive)'
-      description: 'Character definition with explicit harmful behavioral traits'
+      value: '(?:evil|malicious|harmful|unrestricted|unfiltered)\s+(?:version|character|persona|ai|entity|bot|model|assistant)\b[^\n]{0,40}?(racist|encourages?\s+(?:suicide|self[\s-]harm|violence)|foul[\s-]mouthed|amoral|cruel|hateful|abusive)|(?:character|persona|version|entity|bot|model|assistant)\s+(?:called|named)\s+[^\n]{0,40}?(racist|encourages?\s+(?:suicide|self[\s-]harm|violence)|foul[\s-]mouthed|amoral|cruel|hateful|abusive)'
+      description: 'Harmful trait must attach to an EVIL/named persona, not a bare "ai ... aggressive" (the old bare-ai + generic aggressive/rude combo caused 355/383 of this pattern''s benign FPs)'
     - field: user_input
       operator: regex
-      value: '(no\s+(moral|ethical|safety)|without\s+(moral|ethical|safety)|lacks?\s+(moral|ethical)|freed?\s+from\s+(moral|ethical)|ignores?\s+(moral|ethical)|bypasses?\s+(moral|ethical))\s+[^\n]{0,60}(restriction|constraint|guideline|rule|limit|bound|filter|guardrail)'
-      description: 'Explicit removal of moral or ethical constraints from character'
+      value: '(?:has\s+no|with\s+no|having\s+no|without\s+(?:any\s+)?|no)\s+(?:moral|ethical|safety)(?:\s+or\s+(?:moral|ethical|safety))?\s+(?:restriction|constraint|guideline|rule|limit|bound(?:arie|ar)?s?|filter|guardrail)s?\b|(?:freed?\s+from|ignores?|bypass(?:es|ing)?)\s+(?:all\s+)?(?:its?\s+)?(?:moral|ethical|safety)\s*(?:and\s+(?:moral|ethical|safety)\s*)?(?:restriction|constraint|guideline|rule|limitation|filter|guardrail)s?'
+      description: 'Explicit removal of moral/ethical/safety constraints (keeps "has no moral or ethical restrictions" jailbreak form; tighter than the loose 60-char-gap original)'
     - field: user_input
       operator: regex
-      value: '(swears?\s+a\s+lot|uses?\s+(profanity|curse\s+words|bad\s+language)|foul[\s-]mouthed|vulgar|obscene|offensive\s+language)\s+[^\n]{0,80}(character|persona|ai|assistant|bot|model|version)'
-      description: 'Character with explicit profanity or offensive language traits'
+      value: '(swears?\s+a\s+lot|uses?\s+(?:profanity|curse\s+words|bad\s+language)|foul[\s-]mouthed)\s+[^\n]{0,40}?(character|persona|\bai\b|assistant|bot|model|version|robot)|(?:character|persona|\bai\b|bot|robot)\s+[^\n]{0,40}?(?:who|that)\s+(?:swears?\s+a\s+lot|is\s+foul[\s-]mouthed|uses?\s+(?:profanity|curse\s+words))'
+      description: 'Profanity trait must bind to a persona within 40 chars (drops standalone vulgar/obscene/offensive-language that matched benign content-policy text)'
     - field: user_input
       operator: regex
-      value: '(hopes?\s+(people|users?|humans?)\s+(hurt|harm|suffer|die)|wants?\s+(people|users?|humans?)\s+to\s+(hurt|suffer|die)|enjoys?\s+(pain|suffering|harm)|encourages?\s+(violence|harm|death))'
-      description: 'Character that explicitly wishes harm on others'
+      value: '(?:hopes?|wants?)\s+(?:people|users?|humans?|everyone)\s+(?:to\s+)?(?:get\s+)?(?:hurt|harm(?:ed)?|suffer|die)\b|enjoys?\s+(?:it\s+)?when\s+(?:people|users?|humans?)\s+(?:suffer|are\s+hurt|die)|enjoys?\s+(?:other\s+people''?s?\s+|their\s+)?(?:pain|suffering)|encourages?\s+(?:suicide|self[\s-]harm|violence\s+against)'
+      description: 'Character that explicitly wishes harm on others (narrowed "enjoys pain/suffering" to require a human target so it no longer matches benign "enjoys harm reduction" style phrasing)'
   condition: any
   false_positives:
     - 'Security research discussing persona-based attacks as examples without requesting roleplay'

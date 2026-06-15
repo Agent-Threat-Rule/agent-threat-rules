@@ -31,6 +31,7 @@ import { computeContentHash } from './content-hash.js';
 import { loadRulesFromDirectory, loadRuleFile } from './loader.js';
 import { evaluateTraceRule } from './trace-evaluator.js';
 import { evaluateSemanticRule } from './semantic-evaluator.js';
+import { laneAllows, requiresConfirm } from './quality/rule-contract.js';
 import type { SessionTracker } from './session-tracker.js';
 import { computeVerdict } from './verdict.js';
 import type { ActionExecutor } from './action-executor.js';
@@ -209,6 +210,22 @@ export interface ATREngineConfig {
   semanticJudge?: ATRSemanticJudge;
   /** Optional: detection reporter for feeding results to ATR Threat Cloud */
   reporter?: ATRReporter;
+  /**
+   * Detection lane — controls which rule maturities are allowed to fire.
+   *   'enforce' : only maturity=stable rules (auto-block lane, lowest FP).
+   *   'alert'   : maturity stable + test (analyst/correlation lane).
+   *   'hunt'    : all maturities (advisory/eval; default, backward-compatible).
+   * Deprecated/draft rules are always skipped regardless of lane.
+   */
+  lane?: 'enforce' | 'alert' | 'hunt';
+  /**
+   * Embedding-confirm threshold for rules flagged `confirm: embedding`.
+   * In enforce/alert lanes, such a rule's match is dropped unless the input's
+   * cosine similarity to the known-attack reference >= this value. Requires an
+   * embeddingModule; if absent, confirm-rules are dropped from enforce/alert
+   * (they are too broad to block without confirmation). Default 0.6.
+   */
+  confirmThreshold?: number;
 }
 
 export class ATREngine {
@@ -276,6 +293,17 @@ export class ATREngine {
   }
 
   /**
+   * Lane gate: does this rule's maturity qualify for the configured detection
+   * lane? 'enforce' = stable only; 'alert' = stable+test; 'hunt'/unset = all.
+   * Keeps experimental content out of the auto-block path without deleting it.
+   */
+  private passesLane(rule: ATRRule): boolean {
+    // Single source of truth for the maturity->lane mapping (incl. safe-fail on
+    // missing/odd maturity) lives in the rule-quality contract.
+    return laneAllows(rule.maturity, this.config.lane ?? 'hunt');
+  }
+
+  /**
    * Load a single rule file and add it to the engine.
    */
   addRuleFile(filePath: string): void {
@@ -293,10 +321,29 @@ export class ATREngine {
   }
 
   /**
-   * Evaluate an agent event against all loaded ATR rules.
-   * Returns all matching rules with details.
+   * Evaluate an agent event against all loaded ATR rules (synchronous, regex only).
+   * In enforce/alert lanes, rules flagged `confirm: embedding` are EXCLUDED here —
+   * embedding confirmation is asynchronous and cannot run in this path, so a broad
+   * confirm-rule must not fire unconfirmed in a blocking lane. Use
+   * evaluateWithVerdict() for confirmed enforce/alert detection.
    */
   evaluate(event: AgentEvent): ATRMatch[] {
+    const matches = this.evaluateRaw(event);
+    const lane = this.config.lane ?? 'hunt';
+    if (lane === 'hunt') return matches;
+    return matches.filter((m) => !requiresConfirm(m.rule));
+  }
+
+  /**
+   * Raw synchronous evaluation: returns all lane-passing matches including
+   * UNCONFIRMED `confirm: embedding` rules. Used ONLY internally by the verdict
+   * path, which then applies the async embedding-confirm gate.
+   *
+   * INTERNAL — do not call from outside evaluateWithVerdict. Calling this directly
+   * bypasses the embedding-confirm gate, letting broad confirm-rules fire
+   * unconfirmed in enforce/alert. The public sync entry point is evaluate().
+   */
+  private evaluateRaw(event: AgentEvent): ATRMatch[] {
     const matches: ATRMatch[] = [];
     const eventSourceType = EVENT_TYPE_TO_SOURCE[event.type];
     const allMatchedPatterns: string[] = [];
@@ -333,6 +380,8 @@ export class ATREngine {
     for (const rule of this.rules) {
       // Skip deprecated and draft rules
       if (rule.status === 'deprecated' || rule.status === 'draft') continue;
+      // Lane gate: keep non-stable maturities out of enforce/alert lanes
+      if (!this.passesLane(rule)) continue;
 
       // Source type filtering: skip rules that don't apply to this event type
       // When scanContext is 'skill', skip source-type filtering — all rules fire
@@ -472,6 +521,7 @@ export class ATREngine {
     const isSkillContext = event.scanContext === 'skill';
     for (const rule of this.rules) {
       if (rule.status === 'deprecated' || rule.status === 'draft') continue;
+      if (!this.passesLane(rule)) continue;
 
       if (!isSkillContext && eventSourceType && rule.agent_source.type !== eventSourceType) {
         const mcpOverTool = rule.agent_source.type === 'mcp_exchange' && eventSourceType === 'tool_call';
@@ -1469,7 +1519,7 @@ export class ATREngine {
     const layersUsed: string[] = ['layer1-regex'];
     let matches = this.config.semanticJudge
       ? await this.evaluateAsync(event)
-      : this.evaluate(event);
+      : this.evaluateRaw(event);
     if (this.config.semanticJudge) {
       layersUsed.push('method-semantic');
     }
@@ -1483,52 +1533,73 @@ export class ATREngine {
       layersUsed.push('layer2-fingerprint');
     }
 
-    // Tier 2.5: Embedding similarity (async, runs on all events)
-    if (this.config.embeddingModule?.isAvailable()) {
-      layersUsed.push('tier2.5-embedding');
+    // Tier 2.5 embedding similarity — computed ONCE here, shared by the confirm gate
+    // and the additive signal below (avoids a double encode). Computed lazily: the
+    // enforce lane (no additive signal) only encodes when a confirm-rule actually
+    // matched, so benign no-match events in the block lane stay encode-free.
+    const lane = this.config.lane ?? 'hunt';
+    const hasConfirmMatch = lane !== 'hunt' && matches.some((m) => requiresConfirm(m.rule));
+    const needEmbedding = lane !== 'enforce' || hasConfirmMatch;
+    let embResult: { matched: boolean; value: number; description: string } | null = null;
+    if (needEmbedding && this.config.embeddingModule?.isAvailable()) {
       try {
-        const embResult = await this.config.embeddingModule.evaluate(event, {
-          module: 'embedding',
-          function: 'similarity_search',
-          args: { field: 'content' },
-          operator: 'gte',
-          threshold: 0.65,
+        embResult = await this.config.embeddingModule.evaluate(event, {
+          module: 'embedding', function: 'similarity_search',
+          args: { field: 'content' }, operator: 'gte', threshold: 0,
         });
-
-        if (embResult.matched) {
-          const severity = embResult.value >= 0.95 ? 'critical' as const
-            : embResult.value >= 0.88 ? 'high' as const
-            : 'medium' as const;
-
-          const syntheticMatch: ATRMatch = {
-            rule: {
-              title: `Embedding Match: ${embResult.description}`,
-              id: 'tier2.5-embedding-match',
-              status: 'experimental',
-              description: embResult.description,
-              author: 'atr-engine/tier2.5',
-              date: new Date().toISOString().slice(0, 10),
-              severity,
-              tags: { category: 'prompt-injection', subcategory: 'semantic-similarity', confidence: 'high' },
-              agent_source: { type: 'llm_io' },
-              detection: { conditions: {}, condition: 'tier2.5-runtime' },
-              response: {
-                actions: severity === 'critical'
-                  ? ['block_input', 'alert']
-                  : ['alert'],
-              },
-            } as ATRRule,
-            matchedConditions: ['embedding_similarity'],
-            matchedPatterns: [`similarity=${embResult.value.toFixed(3)}`],
-            confidence: embResult.value,
-            timestamp: new Date().toISOString(),
-            scan_context: 'native' as const,
-          };
-          matches = [...matches, syntheticMatch];
-        }
+        layersUsed.push('tier2.5-embedding');
       } catch {
-        // Embedding failure is non-fatal
+        embResult = null; // embedding failure is non-fatal
       }
+    }
+
+    // Embedding-confirm gate: rules flagged `confirm: embedding` only survive in
+    // enforce/alert lanes if input similarity >= confirmThreshold. NARROWING only —
+    // confirmation can only REMOVE a match, never create a block (enforcementConfidence
+    // invariant). No embedding module -> confirm-rules dropped from enforce/alert.
+    if (hasConfirmMatch) {
+      const sim = embResult?.value ?? 0;
+      // Note: confirmThreshold 0 disables the gate (every similarity is >= 0).
+      if (sim < (this.config.confirmThreshold ?? 0.6)) {
+        matches = matches.filter((m) => !requiresConfirm(m.rule));
+        layersUsed.push('embedding-confirm');
+      }
+    }
+
+    // Additive Tier 2.5 signal: a high-similarity input surfaced as an embedding-only
+    // match. EXCLUDED from the enforce lane — an embedding-only signal must never
+    // produce a block there (only deterministic stable rules can block in enforce).
+    // Available in alert/hunt as an advisory signal.
+    if (lane !== 'enforce' && embResult && embResult.value >= 0.65) {
+      const severity = embResult.value >= 0.95 ? 'critical' as const
+        : embResult.value >= 0.88 ? 'high' as const
+        : 'medium' as const;
+
+      const syntheticMatch: ATRMatch = {
+        rule: {
+          title: `Embedding Match: ${embResult.description}`,
+          id: 'tier2.5-embedding-match',
+          status: 'experimental',
+          description: embResult.description,
+          author: 'atr-engine/tier2.5',
+          date: new Date().toISOString().slice(0, 10),
+          severity,
+          tags: { category: 'prompt-injection', subcategory: 'semantic-similarity', confidence: 'high' },
+          agent_source: { type: 'llm_io' },
+          detection: { conditions: {}, condition: 'tier2.5-runtime' },
+          response: {
+            actions: severity === 'critical'
+              ? ['block_input', 'alert']
+              : ['alert'],
+          },
+        } as ATRRule,
+        matchedConditions: ['embedding_similarity'],
+        matchedPatterns: [`similarity=${embResult.value.toFixed(3)}`],
+        confidence: embResult.value,
+        timestamp: new Date().toISOString(),
+        scan_context: 'native' as const,
+      };
+      matches = [...matches, syntheticMatch];
     }
 
     // Layer 3: Semantic LLM-as-judge (async, conditional)
@@ -1746,7 +1817,7 @@ function normalizeRegex(pattern: string): string {
  */
 export function normalizeUnicode(text: string): string {
   return text
-    .normalize('NFC')
+    .normalize('NFKC')
     .replace(/[\u200B\u200C\u200D\uFEFF\u2060\u180E\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, '');
 }
 

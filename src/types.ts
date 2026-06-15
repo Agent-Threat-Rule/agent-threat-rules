@@ -313,6 +313,8 @@ export interface ATRRule {
   schema_version?: string;
   detection_tier?: string;
   maturity?: string;
+  /** Require a second-stage confirmation before firing in enforce/alert lanes. */
+  confirm?: 'embedding';
   severity: ATRSeverity;
   references?: ATRReferences;
   tags: ATRTags;
