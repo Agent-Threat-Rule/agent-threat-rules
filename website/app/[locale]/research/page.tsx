@@ -309,8 +309,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
       <Reveal delay={0.15}>
         <p className="text-sm text-graphite leading-[1.7] mb-6 max-w-[760px]">
           {locale === "zh"
-            ? `這個掃描現在是活的：紅隊巨量掃描與 CVE 攝取兩條飛輪都已跑完整輪，並轉為每日更新。新發現會自動結晶成偵測規則回流 ATR，把標準從 462 條推進到目前的 ${stats.ruleCount} 條（npm agent-threat-rules@3.4.0，2026-06-13 發布）。`
-            : `This scan is now a live loop: a red-team mega-scan flywheel and a CVE-ingestion flywheel have each run a full sweep and are moving to daily updates. New findings auto-crystallize into detection rules that flow back into ATR, growing the standard from 462 to the current ${stats.ruleCount} (npm agent-threat-rules@3.4.0, published 2026-06-13).`}
+            ? `這個掃描現在是活的：紅隊巨量掃描與 CVE 攝取兩條飛輪都已跑完整輪，並轉為每日更新。新發現會自動結晶成偵測規則回流 ATR，把標準從 462 條推進到目前的 ${stats.ruleCount} 條（npm agent-threat-rules@3.5.0，2026-06-16 發布）。`
+            : `This scan is now a live loop: a red-team mega-scan flywheel and a CVE-ingestion flywheel have each run a full sweep and are moving to daily updates. New findings auto-crystallize into detection rules that flow back into ATR, growing the standard from 462 to the current ${stats.ruleCount} (npm agent-threat-rules@3.5.0, published 2026-06-16).`}
         </p>
       </Reveal>
       <Reveal delay={0.2}>

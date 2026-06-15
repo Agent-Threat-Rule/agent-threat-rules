@@ -684,8 +684,8 @@ export default async function RedTeamPage({
           </p>
           <p className="text-base text-stone font-light max-w-[640px] mb-10">
             {zh
-              ? `這個流程現在每天跑：紅隊巨量掃描與 CVE 攝取兩條飛輪都已跑完整輪，並轉為每日更新。新發現自動結晶成規則，把標準從 462 條推進到目前的 ${stats.ruleCount} 條（npm agent-threat-rules@3.4.0，2026-06-13 發布）。`
-              : `This pipeline now runs daily: a red-team mega-scan flywheel and a CVE-ingestion flywheel have each completed a full sweep and moved to daily updates. New findings auto-crystallize into rules, growing the standard from 462 to the current ${stats.ruleCount} (npm agent-threat-rules@3.4.0, published 2026-06-13).`}
+              ? `這個流程現在每天跑：紅隊巨量掃描與 CVE 攝取兩條飛輪都已跑完整輪，並轉為每日更新。新發現自動結晶成規則，把標準從 462 條推進到目前的 ${stats.ruleCount} 條（npm agent-threat-rules@3.5.0，2026-06-16 發布）。`
+              : `This pipeline now runs daily: a red-team mega-scan flywheel and a CVE-ingestion flywheel have each completed a full sweep and moved to daily updates. New findings auto-crystallize into rules, growing the standard from 462 to the current ${stats.ruleCount} (npm agent-threat-rules@3.5.0, published 2026-06-16).`}
           </p>
         </Reveal>
         <Reveal delay={0.1}>

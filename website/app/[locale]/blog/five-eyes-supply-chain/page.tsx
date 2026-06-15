@@ -96,7 +96,7 @@ export default async function FiveEyesPostPage({
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">跑起來</h2>
           <pre className="bg-ink text-paper font-data text-[13px] p-4 overflow-x-auto">
-            <code>npm install -g agent-threat-rules@3.4.0{"\n"}npx agent-threat-rules scan .</code>
+            <code>npm install -g agent-threat-rules@3.5.0{"\n"}npx agent-threat-rules scan .</code>
           </pre>
           <p>
             指向你的 skill 目錄或 MCP 設定。如果它標記了一個你沒寫的元件，把它當成不可信，
@@ -183,7 +183,7 @@ export default async function FiveEyesPostPage({
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">Run it</h2>
           <pre className="bg-ink text-paper font-data text-[13px] p-4 overflow-x-auto">
-            <code>npm install -g agent-threat-rules@3.4.0{"\n"}npx agent-threat-rules scan .</code>
+            <code>npm install -g agent-threat-rules@3.5.0{"\n"}npx agent-threat-rules scan .</code>
           </pre>
           <p>
             Point it at your skill directory or MCP config. If it flags a component you did not

@@ -157,8 +157,8 @@ const MILESTONES: Milestone[] = [
   {
     date: "2026-06",
     title: {
-      en: "v3.4.0 · 652 rules across 10 categories",
-      zh: "v3.4.0 · 652 條規則,跨 10 個類別",
+      en: "v3.5.0 · 652 rules across 10 categories",
+      zh: "v3.5.0 · 652 條規則,跨 10 個類別",
     },
     detail: {
       en: "Current release line: 652 detection rules across 10 categories, specification 3.0.0-alpha.1 (Working Draft).",

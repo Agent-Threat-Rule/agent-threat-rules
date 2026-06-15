@@ -13,7 +13,7 @@ AI Agent 威脅偵測規則的開放格式
 [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-ATR%20Scan-2ea44f?style=flat-square&logo=github)](https://github.com/marketplace/actions/atr-scan)
 [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen?style=flat-square)](LICENSE)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19178002-blue?style=flat-square)](https://doi.org/10.5281/zenodo.19178002)
-[![Rules](https://img.shields.io/badge/rules-651-blue?style=flat-square)](#5-specification)
+[![Rules](https://img.shields.io/badge/rules-652-blue?style=flat-square)](#5-specification)
 [![Categories](https://img.shields.io/badge/categories-10-blue?style=flat-square)](#7-coverage)
 [![OWASP Agentic](https://img.shields.io/badge/OWASP_Agentic_Top_10-10%2F10-brightgreen?style=flat-square)](#7-coverage)
 [![SAFE-MCP](https://img.shields.io/badge/SAFE--MCP-91.8%25-brightgreen?style=flat-square)](#7-coverage)
@@ -46,7 +46,7 @@ ATR is publishing proposal-stage standardization scaffolding ahead of OASIS Open
 - [`certification/`](certification/) — proposed ATR-Certified™ program guide
 - [`engines/`](engines/) — Python and Go reference impl interface contracts (TypeScript is the existing engine at `src/`)
 
-**All scaffolding is tagged PROPOSED v1.0 / v2.0 and is NOT ratified.** The 9-seat TSC has not been formed. The trust marks are not registered. Existing v1.1 governance ([`GOVERNANCE.md`](GOVERNANCE.md)) continues to operate. The rule format, npm package, TypeScript engine API, and all 651 rules are unchanged — existing ecosystem integrations (Microsoft AGT, Cisco AI Defense, MISP CIRCL, OWASP A-S-R-H, precize, Sage) work without modification.
+**All scaffolding is tagged PROPOSED v1.0 / v2.0 and is NOT ratified.** The 9-seat TSC has not been formed. The trust marks are not registered. Existing v1.1 governance ([`GOVERNANCE.md`](GOVERNANCE.md)) continues to operate. The rule format, npm package, TypeScript engine API, and all 652 rules are unchanged — existing ecosystem integrations (Microsoft AGT, Cisco AI Defense, MISP CIRCL, OWASP A-S-R-H, precize, Sage) work without modification.
 
 See [`STANDARDIZATION-STATUS.md`](STANDARDIZATION-STATUS.md) for the full status matrix mapping every new artifact to `{STABLE IN PRODUCTION, PROPOSED, SKELETON, PRELIMINARY}` and timeline for OASIS submission, community comment, and ratification.
 
@@ -203,6 +203,18 @@ matches = engine.evaluate(AgentEvent(content="...", event_type="llm_input"))
 | MCP server | Live integration with Claude Code, Cursor, Windsurf, and other MCP clients |
 | Splunk / Elastic export | SIEM rule pack for runtime detection |
 
+### Detection lanes (v3.5.0)
+
+Each rule carries a maturity-driven **lane**, so a consumer can trade recall for precision instead of running every rule at one fixed threshold:
+
+| Lane | Fires | Intended use | FP on a 65K-sample benign gate |
+|---|---|---|---:|
+| `enforce` | `stable` rules behind an embedding `confirm` guard | Auto-block | ~0.24% |
+| `alert` | `stable` + `test` | Analyst / correlation | — |
+| `hunt` | all rules except `deprecated` | Advisory / eval (**default**) | ~9% |
+
+Lanes are opt-in and fully backward-compatible: the default is `hunt`, so existing integrations behave exactly as before. Selecting `enforce` raises precision by firing only the most mature rules — and therefore catches fewer attacks. Report false-positive rates lane-keyed (`enforce` ~0.24% / `hunt` ~9% on the 65K-sample benign gate), not as a single overall figure. That gate is a separate corpus from the per-source measurements in [§8 Evaluation](#8-evaluation).
+
 ## 5. Specification
 
 | Artifact | Path | Purpose |
@@ -294,7 +306,7 @@ ATR maps its rules onto established frameworks so adopters can answer "we deploy
 
 | Framework | Coverage | Mapping document |
 |---|---|---|
-| [OWASP Agentic Top 10 (2026)](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) | 10/10 categories, 488 mappings across 403 tagged rules | [docs/OWASP-AGENTIC-MAPPING.md](docs/OWASP-AGENTIC-MAPPING.md) |
+| [OWASP Agentic Top 10 (2026)](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) | 10/10 categories, 866 mappings across 652 tagged rules | [docs/OWASP-AGENTIC-MAPPING.md](docs/OWASP-AGENTIC-MAPPING.md) |
 | [SAFE-MCP (OpenSSF)](https://github.com/safe-agentic-framework/safe-mcp) | 78/85 techniques (91.8%) | [docs/SAFE-MCP-MAPPING.md](docs/SAFE-MCP-MAPPING.md) |
 | [OWASP LLM Top 10 (2025)](https://owasp.org/www-project-top-10-for-large-language-model-applications/) | Per-rule references | Per-rule `references.owasp_llm` field |
 | [MITRE ATLAS](https://atlas.mitre.org/) | Per-rule references | Per-rule `references.mitre_atlas` field |
@@ -308,14 +320,14 @@ ATR maps its rules onto established frameworks so adopters can answer "we deploy
 | Prompt Injection | 223 | Instruction override, persona hijacking, encoded payloads (base-N, ROT, Unicode tags, zalgo, ecoji), CJK attacks, latent injection, glitch tokens, leakreplay |
 | Agent Manipulation | 106 | DAN family, AutoDAN, DanInTheWild, tense framing, grandma roleplay, doctor-XML puppetry, goal hijacking, Sybil consensus, lambda+eval RCE |
 | Skill Compromise | 45 | Typosquatting, context poisoning, subcommand overflow, rug pull, supply-chain attacks, credential-exfil combos, HuggingFace unsafe artifacts |
-| Context Exfiltration | 103 | API-key generation/completion, system-prompt theft, credential harvesting, env-var exfil, markdown-URL exfil, XSS in tool response, cross-user memory leakage |
+| Context Exfiltration | 104 | API-key generation/completion, system-prompt theft, credential harvesting, env-var exfil, markdown-URL exfil, XSS in tool response, cross-user memory leakage |
 | Tool Poisoning | 65 | Malicious MCP responses, consent bypass, hidden LLM instructions, schema contradictions, ANSI escape elicitation, vector-store filter injection |
 | Privilege Escalation | 35 | Scope creep, delayed execution bypass, admin function access, shell escape, SQL injection in admin endpoints, autostart file write |
 | Model Abuse | 37 | Malware code generation (malwaregen), EICAR/GTUBE signatures, AV-evasion gen |
 | Excessive Autonomy | 29 | Runaway loops, resource exhaustion, unauthorized financial actions |
 | Model Security | 3 | Behavior extraction, malicious fine-tuning data |
 | Data Poisoning | 5 | RAG / knowledge-base tampering, memory manipulation, persistence-aware override |
-| **Total** | **651** |  |
+| **Total** | **652** |  |
 
 ### CVE coverage (selected)
 

@@ -1,7 +1,7 @@
 # ATR -> OWASP Agentic Top 10 (2026) Mapping
 
 Last updated: 2026-06-14
-ATR version: v3.4.0 (652 rules with OWASP Agentic tags)
+ATR version: v3.5.0 (652 rules with OWASP Agentic tags)
 OWASP framework: Agentic Top 10 v1.0 (December 2025)
 
 ## Summary
@@ -9,7 +9,7 @@ OWASP framework: Agentic Top 10 v1.0 (December 2025)
 - Categories covered: **10/10**
 - Total rule -> category mappings: **866**
 - Tagged ATR rules: **652** of 652 total rules in repo
-- ATR version: `v3.4.0` -- OWASP Agentic Top 10: `v1.0 (December 2025)`
+- ATR version: `v3.5.0` -- OWASP Agentic Top 10: `v1.0 (December 2025)`
 
 Strength tiers: **STRONG** >= 8 rules · **MODERATE** 4-7 rules · **LIMITED** 1-3 rules.
 

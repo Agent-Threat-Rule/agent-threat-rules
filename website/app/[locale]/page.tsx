@@ -517,8 +517,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.15}>
             <p className="text-sm md:text-base text-graphite font-light max-w-[640px] mb-6 md:mb-8 leading-[1.8] text-pretty">
               {zh
-                ? <>紅隊大掃描飛輪與 CVE 匯入飛輪每天運轉:新攻擊被語義層抓到後,「結晶」成 regex 規則回流標準——從每次 500ms 的推理,變成 5ms 的 pattern match。自動結晶化把標準從 462 條長到 {stats.ruleCount} 條,全部隨 npm <span className="font-data text-graphite">agent-threat-rules@3.4.0</span> 發布。</>
-                : <>A red-team mega-scan flywheel and a CVE-ingestion flywheel run daily: when the semantic layer catches a novel attack, it crystallizes into a regex rule and flows back into the standard — turning a 500ms inference into a 5ms pattern match. Auto-crystallization grew the standard from 462 to {stats.ruleCount} rules, all shipped in npm <span className="font-data text-graphite">agent-threat-rules@3.4.0</span>.</>}
+                ? <>紅隊大掃描飛輪與 CVE 匯入飛輪每天運轉:新攻擊被語義層抓到後,「結晶」成 regex 規則回流標準——從每次 500ms 的推理,變成 5ms 的 pattern match。自動結晶化把標準從 462 條長到 {stats.ruleCount} 條,全部隨 npm <span className="font-data text-graphite">agent-threat-rules@3.5.0</span> 發布。</>
+                : <>A red-team mega-scan flywheel and a CVE-ingestion flywheel run daily: when the semantic layer catches a novel attack, it crystallizes into a regex rule and flows back into the standard — turning a 500ms inference into a 5ms pattern match. Auto-crystallization grew the standard from 462 to {stats.ruleCount} rules, all shipped in npm <span className="font-data text-graphite">agent-threat-rules@3.5.0</span>.</>}
             </p>
           </Reveal>
 

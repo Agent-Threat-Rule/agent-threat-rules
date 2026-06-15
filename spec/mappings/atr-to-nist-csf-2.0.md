@@ -4,7 +4,7 @@ Version: 1.1.0
 Status: Draft for NIST IR 8596 Informative Reference submission
 Date: 2026-06-14
 Editor: Adam Lin (林冠辛) <adam@agentthreatrule.org>
-Mapped corpus: Agent Threat Rules v3.4.0 (651 rules / 10 categories; per data/stats.json 2026-06-14)
+Mapped corpus: Agent Threat Rules v3.5.0 (652 rules / 10 categories; per data/stats.json 2026-06-16)
 Reference framework: NIST CSF 2.0 (NIST CSWP 29, February 2024)
 
 ---

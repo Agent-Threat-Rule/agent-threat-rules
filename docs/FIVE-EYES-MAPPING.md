@@ -1,6 +1,6 @@
 # ATR → Five Eyes "Careful Adoption of Agentic AI Services" Mapping
 
-- **ATR corpus version:** v3.1.1, 651 rules across 10 detection-rule categories
+- **ATR corpus version:** v3.5.0, 652 rules across 10 detection-rule categories
 - **Five Eyes guidance:** "Careful Adoption of Agentic AI Services", published 2026-04-30 on media.defense.gov, jointly authored by CISA (US) + NSA (US) + ASD-ACSC (Australia) + CCCS (Canada) + NCSC-UK + NCSC-NZ
 - **Document date:** 2026-06-05
 - **Maintainer:** Adam Lin (adam@agentthreatrule.org)
@@ -18,7 +18,7 @@ The Five Eyes joint guidance ships 5 named risk categories (Privilege, Design an
 
 The guidance's recommended response is to "Strengthen collaboration between stakeholders to keep pace with evolving threats to agentic AI systems" and "Coordinate with major AI developers and government organisations to compile and maintain threat information."
 
-ATR v3.1.1 ships 462 rules with 6-framework compliance metadata (OWASP Agentic Top 10 + OWASP LLM Top 10 + MITRE ATLAS + NIST AI RMF + EU AI Act + ISO/IEC 42001) and is already merged into Microsoft Agent Governance Toolkit (PR #1277 / 287-rule weekly auto-sync + PR #908 + #1981 the copilot-swe-agent regression-test loop), Microsoft PyRIT (PR #1715 merged 2026-05-27 by Roman Lutz), Cisco AI Defense skill-scanner (PR #99 / 314 rules), MISP via CIRCL Luxembourg (galaxy PR #1207 / 336 rules + taxonomies PR #323), and precize/Agentic-AI-Top10-Vulnerability (third-party community repo, PR #14 + #18). This document maps each Five Eyes category to specific ATR rule clusters and is honest about what ATR does not cover.
+ATR v3.5.0 ships 652 rules with 6-framework compliance metadata (OWASP Agentic Top 10 + OWASP LLM Top 10 + MITRE ATLAS + NIST AI RMF + EU AI Act + ISO/IEC 42001) and is already merged into Microsoft Agent Governance Toolkit (PR #1277 / 287-rule weekly auto-sync + PR #908 + #1981 the copilot-swe-agent regression-test loop), Microsoft PyRIT (PR #1715 merged 2026-05-27 by Roman Lutz), Cisco AI Defense skill-scanner (PR #99 / 314 rules), MISP via CIRCL Luxembourg (galaxy PR #1207 / 336 rules + taxonomies PR #323), and precize/Agentic-AI-Top10-Vulnerability (third-party community repo, PR #14 + #18). This document maps each Five Eyes category to specific ATR rule clusters and is honest about what ATR does not cover.
 
 The mapping does not claim Five Eyes endorsement of ATR. It is provided as a community detection-rule starter set for operators implementing the guidance.
 
@@ -245,6 +245,6 @@ This is exactly the position ATR occupies. ATR is the open, MIT-licensed, agenti
 - [x] 5-category section headings confirmed verbatim: "Privilege risks", "Design and configuration risks", "Behaviour risks", "Structural risks", "Accountability risks" (British spelling).
 - [x] Per-category descriptions replaced with verbatim quotes from the PDF.
 - [x] "Defend against future risks → Expand threat intelligence through collaboration" section quoted verbatim (highest-leverage hook for ATR).
-- [x] Rule-ID list pinned to v3.1.1 / 462 rules / 2026-06-05.
+- [x] Rule-ID list pinned to v3.5.0 / 652 rules / 2026-06-16.
 - [ ] Generate auto-`docs/five-eyes-mapping.json` from this markdown (mapping script pending).
 - [ ] Have a second reviewer sanity-check the strength rating (STRONG / MODERATE / LIMITED) per category.

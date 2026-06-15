@@ -97,7 +97,7 @@ export default async function HadesPostPage({
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">跑起來</h2>
           <pre className="bg-ink text-paper font-data text-[13px] p-4 overflow-x-auto">
-            <code>npm install -g agent-threat-rules@3.4.0{"\n"}npx agent-threat-rules scan .</code>
+            <code>npm install -g agent-threat-rules@3.5.0{"\n"}npx agent-threat-rules scan .</code>
           </pre>
           <p>
             如果它標記了一個你沒寫的套件或檔案，把整個 checkout 當成已被入侵。
@@ -183,7 +183,7 @@ export default async function HadesPostPage({
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">Run it</h2>
           <pre className="bg-ink text-paper font-data text-[13px] p-4 overflow-x-auto">
-            <code>npm install -g agent-threat-rules@3.4.0{"\n"}npx agent-threat-rules scan .</code>
+            <code>npm install -g agent-threat-rules@3.5.0{"\n"}npx agent-threat-rules scan .</code>
           </pre>
           <p>
             If it flags a package or a file you did not write, treat the checkout as compromised.
