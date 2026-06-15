@@ -1,24 +1,24 @@
-## Daily Scan Summary (2026-06-13)
+## Daily Scan Summary (2026-06-15)
 - Scanned: 50 packages
-- CRITICAL: 3
-- HIGH: 5
+- CRITICAL: 5
+- HIGH: 3
 - CLEAN/LOW: 33
 
 ### Flagged Packages:
-- [HIGH] @figcodessolucoes/gmcps (score: 55)
-- [CRITICAL] @friday-ai-codes/mcp (score: 100)
-- [HIGH] @jonyoder/code-index-mcp (score: 40)
-- [HIGH] @kynver-app/mcp-agent-os (score: 60)
-- [HIGH] @lu71/mcp (score: 50)
-- [CRITICAL] @pipeshub-ai/mcp (score: 100)
-- [HIGH] @qverisai/sdk (score: 45)
-- [CRITICAL] @roadmapperai/mcp (score: 100)
+- [HIGH] @realvest/mcp-server (score: 45)
+- [CRITICAL] @subscribe.dev/mcp (score: 100)
+- [CRITICAL] @telora/mcp-products (score: 85)
+- [HIGH] @thehammer/schema-mcp-server (score: 60)
+- [CRITICAL] @thirdstrandstudio/mcp-figma (score: 100)
+- [CRITICAL] @tim0_12432/hotkeyless-ahk-mcp-server (score: 80)
+- [CRITICAL] @tinify-ai/mcp-server (score: 100)
+- [HIGH] @tomtom-org/tomtom-mcp (score: 60)
 
 ### Cumulative:
-- Total scanned: 3060
-  - CLEAN: 1836
-  - CRITICAL: 344
+- Total scanned: 3160
+  - CLEAN: 1891
+  - CRITICAL: 356
   - ERROR: 5
-  - HIGH: 240
-  - LOW: 314
-  - MEDIUM: 321
+  - HIGH: 247
+  - LOW: 326
+  - MEDIUM: 335
