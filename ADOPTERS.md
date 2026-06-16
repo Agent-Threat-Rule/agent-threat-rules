@@ -81,6 +81,14 @@ Adopters whose adoption is itself a public-good interoperability artefact
 - **Since**: 2026-05-17
 - **Status**: in-review
 
+### OWASP AI Exchange
+- **Org**: OWASP Foundation (AI Exchange / AI Security & Privacy Guide)
+- **Type**: reference
+- **Integration**: Proposal to add Agent Threat Rules to the OWASP AI Exchange guidance as a referenceable agent-threat detection ruleset
+- **Evidence**: <https://github.com/OWASP/www-project-ai-security-and-privacy-guide/pull/181>
+- **Since**: 2026-06-16
+- **Status**: in-review
+
 ---
 
 ## Tier 1 — Production deployments
@@ -144,14 +152,6 @@ Listed when the integration code has been merged or released.
 - **Since**: 2026-05-20
 - **Status**: in-review
 
-### aaif-goose
-- **Org**: AAIF (block/goose)
-- **Type**: sidecar-proxy
-- **Integration**: PreToolUse hook denial integrates ATR rule evaluation at the tool-call boundary
-- **Evidence**: <https://github.com/aaif-goose/goose/pull/9304>
-- **Since**: 2026-05-19
-- **Status**: shipped
-
 ### SigmaHQ
 - **Org**: SigmaHQ
 - **Type**: adapter
@@ -159,6 +159,54 @@ Listed when the integration code has been merged or released.
 - **Evidence**: <https://github.com/SigmaHQ/sigma/pull/6015>
 - **Since**: 2026-05-09
 - **Status**: shipped
+
+### Microsoft PyRIT
+- **Org**: Microsoft
+- **Type**: rule-import
+- **Integration**: ATR adversarial-payload dataset loader merged into PyRIT (PR #1715, merged 2026-05-27 by maintainer Roman Lutz); a follow-up AgentThreatRulesScorer (PR #1893) is in review
+- **Evidence**: <https://github.com/microsoft/PyRIT/pull/1715>
+- **Since**: 2026-05-27
+- **Status**: shipped
+
+### Microsoft Agent Framework
+- **Org**: Microsoft
+- **Type**: adapter
+- **Integration**: Sample showing ATR as a deterministic action-boundary validator in the Microsoft Agent Framework
+- **Evidence**: <https://github.com/microsoft/agent-framework/pull/6528>
+- **Since**: 2026-06-16
+- **Status**: in-review
+
+### OpenAI Guardrails
+- **Org**: OpenAI
+- **Type**: adapter
+- **Integration**: Optional ATR deterministic text check contributed to the OpenAI Guardrails Python SDK
+- **Evidence**: <https://github.com/openai/openai-guardrails-python/pull/77>
+- **Since**: 2026-06-16
+- **Status**: in-review
+
+### Google ADK
+- **Org**: Google
+- **Type**: adapter
+- **Integration**: Sample ATR security-guardrail plugin for the Google Agent Development Kit
+- **Evidence**: <https://github.com/google/adk-python/pull/6130>
+- **Since**: 2026-06-16
+- **Status**: in-review
+
+### Cisco mcp-scanner
+- **Org**: Cisco
+- **Type**: rule-import
+- **Integration**: ATR-derived tool_shadowing YARA rule contributed to the Cisco mcp-scanner detection set
+- **Evidence**: <https://github.com/cisco-ai-defense/mcp-scanner/pull/194>
+- **Since**: 2026-06-16
+- **Status**: in-review
+
+### Splunk security_content
+- **Org**: Splunk
+- **Type**: rule-import
+- **Integration**: Three ATR-derived MCP detections contributed to the Splunk Suspicious MCP Activity analytic story
+- **Evidence**: <https://github.com/splunk/security_content/pull/4128>
+- **Since**: 2026-06-16
+- **Status**: in-review
 
 ---
 
@@ -192,6 +240,46 @@ discoverability.
 - **Since**: 2026-05-16
 - **Status**: in-review
 
+### CryptoAILab/Awesome-LM-SSP
+- **Org**: CryptoAILab (independent)
+- **Type**: reference
+- **Integration**: ATR listed in the LLM safety & security awesome-list
+- **Evidence**: <https://github.com/CryptoAILab/Awesome-LM-SSP/pull/108>
+- **Since**: 2026-04-02
+- **Status**: shipped
+
+### precize/Agentic-AI-Top10-Vulnerability
+- **Org**: precize (third-party community repo; NOT an OWASP Foundation publication)
+- **Type**: reference
+- **Integration**: ATR detection mapping across the agentic-AI vulnerability categories in a third-party catalogue
+- **Evidence**: <https://github.com/precize/Agentic-AI-Top10-Vulnerability/pull/14>
+- **Since**: 2026-03-30
+- **Status**: shipped
+
+### wearetyomsmnv/Awesome-LLM-agent-Security
+- **Org**: wearetyomsmnv (independent)
+- **Type**: reference
+- **Integration**: ATR listed in the LLM-agent security tooling awesome-list
+- **Evidence**: <https://github.com/wearetyomsmnv/Awesome-LLM-agent-Security/pull/6>
+- **Since**: 2026-04-08
+- **Status**: shipped
+
+### nibzard/awesome-agentic-patterns
+- **Org**: nibzard (independent)
+- **Type**: reference
+- **Integration**: "Deterministic Threat Rule Scanning" pattern accepted, referencing ATR
+- **Evidence**: <https://github.com/nibzard/awesome-agentic-patterns/pull/58>
+- **Since**: 2026-04-09
+- **Status**: shipped
+
+### TalEliyahu/Awesome-AI-Security
+- **Org**: Tal Eliyahu (independent)
+- **Type**: reference
+- **Integration**: ATR listed in the AI security resource awesome-list
+- **Evidence**: <https://github.com/TalEliyahu/Awesome-AI-Security/pull/53>
+- **Since**: 2026-04-10
+- **Status**: shipped
+
 ---
 
 ## Tier 4 — Commercial implementations
@@ -216,3 +304,4 @@ noted here with the reason and the original "Since" date preserved.
 - **Portkey AI Gateway** (was Tier 2 · since 2026-05-16) — evidence PR Portkey-AI/gateway#1652 was closed without merge. Removed 2026-06-14.
 - **Semgrep** (was Tier 2 · since 2026-05-10) — no merged PR or verifiable evidence link could be located. Removed 2026-06-14.
 - **Puliczek/awesome-mcp-security** (was Tier 3 · since 2026-04-21) — ATR is not present in the project README; listing could not be verified. Removed 2026-06-14.
+- **aaif-goose (block/goose)** (was Tier 2 · since 2026-05-19) — evidence PR aaif-goose/goose#9304 is goose's generic PreToolUse denial hook; the PR body does not reference ATR, so it is not an ATR-specific integration. Removed 2026-06-16.
