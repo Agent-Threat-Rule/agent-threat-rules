@@ -342,31 +342,31 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 
 | Source | Source version | Samples | Recall | Precision | FP rate | ATR version | Measured |
 |---|---|---:|---:|---:|---:|---|---|
-| AdvBench (LLM-attacks behaviors) | upstream-2026-05-23 | 520 | 1.3% | 100.0% | 0.0% | 3.0.0 | 2026-05-23 |
-| atr-self-test | internal | 341 | 89.4% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
+| AdvBench (LLM-attacks behaviors) | upstream-2026-06-16 | 520 | 2.1% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| atr-self-test | internal | 341 | 89.7% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | autoresearch | internal-1054 | 1,054 | 15.1% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
 | garak (in-the-wild jailbreaks) | inthewild-jailbreak-corpus-650 | 650 | 97.2% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | garak-full (all probe families) | 23-families | 3,475 | 38.3% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | hackaprompt | v1 | 4,780 | 69.6% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
-| HarmBench (CAIS behaviors) | upstream-2026-05-23 | 400 | 2.5% | 100.0% | 0.0% | 3.0.0 | 2026-05-23 |
-| hh-rlhf (Anthropic red-team-attempts) | snapshot-2026-04 | 4,957 | 99.1% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
-| JailbreakBench (JBB-Behaviors) | upstream-2026-05-23 | 100 | 5.0% | 100.0% | 0.0% | 3.0.0 | 2026-05-23 |
-| llm-guard (Protect AI test fixtures) | corpus-2026-05-12 | 44 | 72.7% | 100.0% | 0.0% | 3.0.0 | 2026-05-23 |
-| MITRE ATLAS | snapshot-2026-04 | 182 | 100.0% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
-| NeMo Guardrails (NVIDIA test fixtures) | corpus-2026-05-12 | 6 | 100.0% | 100.0% | 0.0% | 3.0.0 | 2026-05-23 |
-| OWASP LLM Top 10 | snapshot-2026-04 | 56 | 100.0% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
+| HarmBench (CAIS behaviors) | upstream-2026-06-16 | 400 | 2.8% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| hh-rlhf (Anthropic red-team-attempts) | snapshot-2026-04 | 4,957 | 99.1% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| JailbreakBench (JBB-Behaviors) | upstream-2026-06-16 | 100 | 6.0% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| llm-guard (Protect AI test fixtures) | corpus-2026-05-12 | 44 | 77.3% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| MITRE ATLAS | snapshot-2026-04 | 182 | 100.0% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| NeMo Guardrails (NVIDIA test fixtures) | corpus-2026-05-12 | 6 | 100.0% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| OWASP LLM Top 10 | snapshot-2026-04 | 56 | 100.0% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | PINT-format (deepset + Lakera Gandalf) | public-850 | 850 | 63.6% | 99.7% | 0.25% | 3.5.0 | 2026-06-16 |
-| PromptBench (academic adversarial) | snapshot-2026-04 | 3,280 | 0.0% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
-| promptfoo (red-team plugin fixtures) | corpus-2026-05-12 | 44 | 79.5% | 100.0% | 0.0% | 3.0.0 | 2026-05-23 |
-| PromptInject (academic adversarial) | snapshot-2026-04 | 1,080 | 0.0% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
+| PromptBench (academic adversarial) | snapshot-2026-04 | 3,280 | 0.0% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| promptfoo (red-team plugin fixtures) | corpus-2026-05-12 | 44 | 97.7% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| PromptInject (academic adversarial) | snapshot-2026-04 | 1,080 | 0.0% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | SKILL.md benchmark (internal) | internal-498 | 498 | 100.0% | 97.0% | 0.20% | 3.5.0 | 2026-06-16 |
 | Wild scan (OpenClaw + Skills.sh + Hermes + ClawHub) | corpus-2026-04-14 | 96,096 | — | 57.7% (floor) | 1.35% flag rate | 2.0.0 | 2026-04-14 |
 
-The headline corpora (`garak`, `hackaprompt`, `PINT-format`, `SKILL.md`) were
-re-measured against ATR 3.5.0 on 2026-06-16; the remaining corpora retain their
-2026-05-23 / 3.0.0-era measurements and will be refreshed on the next full
-re-run. The per-row `ATR version` column above is the version each cell was
-actually measured against, mirroring the `atr_version` field in each
+All detection corpora were (re-)measured against ATR 3.5.0 on 2026-06-16,
+except `autoresearch` (an internal predicted-rule corpus with no standalone
+runner) and the `Wild scan` snapshot, which retain their earlier measurements.
+The per-row `ATR version` column above is the version each cell was actually
+measured against, mirroring the `atr_version` field in each
 `data/measurements/<source>/latest.json`. The headline `garak` recall moved
 98.0% → 97.2% in 3.5.0 because rule `ATR-2026-00495` (a garak DAN variant) was
 deprecated and no longer fires; see [CHANGELOG.md](CHANGELOG.md).

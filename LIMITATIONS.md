@@ -125,7 +125,7 @@ The tiers are additive, not replacements. Tier 1 handles the fast path (block ob
 
 ## External Benchmark Results
 
-ATR's self-test corpus produces a 99.4% recall rate. That number is misleading if taken in isolation. Self-tests are written by the same people who wrote the rules -- they test whether ATR matches the patterns it was designed to match. External benchmarks paint a very different picture.
+ATR's self-test corpus produces an 89.7% recall rate. That number is misleading if taken in isolation. Self-tests are written by the same people who wrote the rules -- they test whether ATR matches the patterns it was designed to match. External benchmarks paint a very different picture.
 
 ### PINT-format public corpus (850 samples)
 
@@ -159,10 +159,10 @@ On the MCP/PINT benchmark (v0.4, 71 rules at the time), only 6 rules fired on ex
 
 | Corpus | Recall |
 |--------|--------|
-| Self-test (341 samples) | 99.4% |
+| Self-test (341 samples) | 89.7% |
 | External (850 samples) | 63.6% |
 
-The 36-point gap is explained entirely by the paraphrase problem. Self-test samples use the exact phrasings the rules were written to match. External samples express the same malicious intent using different words, sentence structures, and languages. This is the fundamental limitation of regex-based detection, documented extensively in the "What Regex CANNOT Detect" section above.
+The 26-point gap is explained entirely by the paraphrase problem. Self-test samples use the exact phrasings the rules were written to match. External samples express the same malicious intent using different words, sentence structures, and languages. This is the fundamental limitation of regex-based detection, documented extensively in the "What Regex CANNOT Detect" section above.
 
 ### Competitive Context
 
