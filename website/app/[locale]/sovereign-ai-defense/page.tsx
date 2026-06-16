@@ -204,8 +204,8 @@ export default async function SovereignAIDefensePage({
         </div>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-7">
           {zh
-            ? "驅動力是主權焦慮——各國不希望關鍵資料與智慧跑到美國雲端，也不願在關鍵時刻被外國平台關閉或審查。"
-            : "The driver is sovereignty anxiety — no country wants its critical data and intelligence running in US clouds, nor wants to be shut off or censored by foreign platforms at critical moments."}
+            ? "驅動力是主權焦慮——各國不希望關鍵資料與智慧跑到美國雲端,也不願在關鍵時刻被外國平台關閉或審查。光是亞太的主權 AI 基礎建設市場,2026 年估計就有 90–140 億美元,並預計在 2030 年達到 230–470 億美元。"
+            : "The driver is sovereignty anxiety — no country wants its critical data and intelligence running in US clouds, nor wants to be shut off or censored by foreign platforms at critical moments. The Asia-Pacific sovereign-AI infrastructure market alone is estimated at $9–14B in 2026, projected to reach $23–47B by 2030."}
         </p>
         <Callout borderColor="blue">
           {zh ? (
@@ -250,6 +250,24 @@ export default async function SovereignAIDefensePage({
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh ? (
             <>
+              監管者自己也清楚。EU AI Act 是在 agentic AI 出現之前談定的——它的風險分級假設的是
+              「輔助人類決策」的系統,而不是自己決策、自己行動的系統。NIST 的 AI Agent Standards
+              Initiative 在 2026 年 2 月啟動,正是為了補上這個缺口。框架正在追趕;它們底下仍然缺的,
+              是一個<strong className="text-ink">可執行的偵測層</strong>。
+            </>
+          ) : (
+            <>
+              The regulators know it. The EU AI Act was negotiated before agentic AI arrived — its risk tiers
+              assume systems that <strong className="text-ink">assist</strong> a human decision, not systems that decide and act on their
+              own. NIST&rsquo;s AI Agent Standards Initiative opened in February 2026 precisely to close that gap.
+              The frameworks are catching up; what they still need underneath them is an
+              {" "}<strong className="text-ink">executable detection layer</strong>.
+            </>
+          )}
+        </p>
+        <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
+          {zh ? (
+            <>
               目前多數可用的偵測規則庫是閉源的,且集中在少數國家的私有廠商手裡。
               一個國家可以自主掌握模型,卻仍得透過閉源、無法稽核的規則庫去防禦它。
               <strong className="text-ink">無法被開啟、檢視、fork 的防禦知識,是不完整的主權。</strong>
@@ -257,7 +275,8 @@ export default async function SovereignAIDefensePage({
           ) : (
             <>
               Most available detection rule sets are closed-source and concentrated in private vendors within a few countries.
-              A country can control its model yet still defend it through proprietary, unauditable rule sets it cannot inspect.
+              In a 2026 survey, 94% of IT leaders said they fear AI vendor lock-in — and for detection knowledge the lock-in is sharper:
+              a country can control its model yet still defend it through proprietary, unauditable rule sets it cannot inspect.
               <strong className="text-ink"> Defense knowledge that cannot be opened, inspected, or forked is incomplete sovereignty.</strong>
             </>
           )}
@@ -497,6 +516,24 @@ atr convert splunk --output ./atr-rules.spl`}</code>
             </>
           )}
         </p>
+        <p className="text-sm md:text-base text-graphite leading-[1.8] mt-5">
+          {zh ? (
+            <>
+              這也是國際局勢重要的原因。AI Safety Institutes 國際網絡——2024 年於舊金山啟動、創始十國,
+              如今跨司法管轄區協調——正朝「各國之間可比的安全評估」推進。可比的前提,是一套共享的、
+              機器可讀的偵測格式。一個中立標準,正是讓一國的發現對另一國仍然可讀的東西——
+              就像東京登記的一筆 CVE,在柏林意義相同。
+            </>
+          ) : (
+            <>
+              This is also why the international picture matters. The AI Safety Institutes network — launched in
+              San Francisco in 2024 with ten founding members and now coordinating across jurisdictions — is working
+              toward safety evaluations that are comparable from one country to the next. Comparability needs a shared,
+              machine-readable detection format. A neutral standard is what keeps one country&rsquo;s findings legible to
+              another&rsquo;s — the way a CVE filed in Tokyo means the same thing in Berlin.
+            </>
+          )}
+        </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <ConditionCard
             num="PROPERTY 01"
@@ -527,6 +564,17 @@ atr convert splunk --output ./atr-rules.spl`}</code>
               : "Rules use CVE-style IDs (ATR-YYYY-NNNNN) that never change after publication — safe for government documents, audit reports, and CI scripts to cite long-term."}
           />
         </div>
+        <p className="text-sm md:text-base text-graphite leading-[1.8] mt-7">
+          {zh
+            ? "採用不是一份提案,是三行指令。沒有授權窗口、沒有採購流程、沒有人需要先點頭:"
+            : "Adoption is not a proposal — it is three commands. No license desk, no procurement cycle, no one's permission required:"}
+        </p>
+        <pre className="mt-4 bg-ink text-paper rounded-md p-5 text-[12.5px] md:text-[13px] leading-[1.7] overflow-x-auto font-data whitespace-pre">
+          <code>{`# Adopt the open standard — MIT, no fee, no geopolitical strings
+npm install -g agent-threat-rules
+atr scan ./agent-config.json     # audit your own agents against ${ruleCount} rules
+atr convert splunk               # or export into the SOC you already run`}</code>
+        </pre>
       </Section>
 
       {/* 07 · Open call */}
