@@ -130,13 +130,13 @@ export default async function NistAiRmfPage({
           </div>
           <p className="text-sm md:text-base text-graphite leading-[1.8] mb-3">
             {zh
-              ? "框架本身是散文。要讓機器能消費它,得有人把它轉成結構化格式。ATR 維護者把 NIST AI RMF 整理成 OSCAL 格式的社群 catalog(72 個控制項 + 31 個交叉參照連結),以 CC0 授權發布在 Agent-Threat-Rule/ai-rmf-oscal-catalog。這份 catalog 是社群自發整理,不是 NIST 官方產出。"
-              : "The framework itself is prose. For a machine to consume it, someone has to transcribe it into a structured format. The ATR maintainers transcribed NIST AI RMF into an OSCAL-format community catalog (72 controls + 31 cross-reference links), published under CC0 at Agent-Threat-Rule/ai-rmf-oscal-catalog. This catalog is a community contribution, NOT a NIST publication."}
+              ? "框架本身是散文。要讓機器能消費它,得有人把它轉成結構化格式。ATR 維護者把 NIST AI RMF 整理成 OSCAL 格式的社群 catalog(72 個控制項 + 176 條交叉參照連結),以 CC0 授權發布在 Agent-Threat-Rule/ai-rmf-oscal-catalog。這份 catalog 是社群自發整理,不是 NIST 官方產出。"
+              : "The framework itself is prose. For a machine to consume it, someone has to transcribe it into a structured format. The ATR maintainers transcribed NIST AI RMF into an OSCAL-format community catalog (72 controls + 176 cross-reference links), published under CC0 at Agent-Threat-Rule/ai-rmf-oscal-catalog. This catalog is a community contribution, NOT a NIST publication."}
           </p>
           <p className="text-sm md:text-base text-graphite leading-[1.8] mb-3">
             {zh
-              ? "這份 catalog 進一步提交給 NIST 官方的 usnistgov/oscal-content 倉庫:submission 仍在審查中,NIST OSCAL maintainer 已開了 collaboration branch #338 一起對齊內容。維護者已寄信 oscal@nist.gov 詢問方向,等待 NIST 團隊指引中。這是開放標準該走的路徑——把貢獻送進上游、公開協作、由標準機構自己決定要不要採。"
-              : "That catalog was further submitted to NIST's official usnistgov/oscal-content repository. The submission is in review; the NIST OSCAL maintainer opened a collaboration branch (#338) to align on the content. The maintainers have emailed oscal@nist.gov asking for direction and are awaiting a response. This is the path an open standard is supposed to take — contribute upstream, collaborate in the open, and leave the decision to adopt where it belongs: with the standards body itself."}
+              ? "這份內容進一步提交給 NIST 官方的 usnistgov/oscal-content 倉庫:submission(PR #338)仍在審查中,提交在 NIST 自己的 collaboration branch 上,NIST OSCAL maintainer 已在串上回應、一起對齊內容。維護者已寄信 oscal@nist.gov 詢問方向,等待 NIST 團隊指引中。這是開放標準該走的路徑——把貢獻送進上游、公開協作、由標準機構自己決定要不要採。"
+              : "That content was further submitted to NIST's official usnistgov/oscal-content repository. The submission (PR #338) is in review, contributed onto NIST's own collaboration branch, where the NIST OSCAL maintainer has responded on the thread to align on the content. The maintainers have emailed oscal@nist.gov asking for direction and are awaiting a response. This is the path an open standard is supposed to take — contribute upstream, collaborate in the open, and leave the decision to adopt where it belongs: with the standards body itself."}
           </p>
           <div className="bg-ash/40 border border-fog p-4 text-sm text-stone leading-[1.7]">
             <span className="font-data text-xs text-stone tracking-[2px] uppercase block mb-2">

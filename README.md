@@ -490,7 +490,7 @@ Three funding milestones make the trajectory concrete:
 | $8,000 | Second maintainer joins — bus factor goes from one to two, the #1 risk every enterprise sponsor calls out |
 | $25,000 | Quarterly threat-research releases — CVE-to-detection pipeline, agentic adversarial corpus, public benchmarks |
 
-For organizations running ATR in production at scale, **Strategic Partner** is the contract-backed engagement: named maintainer contact on a dedicated channel, 24-hour SLA on CVE-class updates, co-authored rules attributed to your organization, and sovereign / on-prem / air-gapped deployment terms negotiated per partner. Reference range US $20,000 – US $200,000+ per year, invoiced through Open Source Collective. See [panguard.ai/sponsor](https://panguard.ai/sponsor) or email <adam@agentthreatrule.org>.
+Organizations that want a deeper engagement — a named maintainer contact, faster turnaround on CVE-class updates, or co-authored rules attributed to your organization — can arrange a custom sponsorship tier through Open Source Collective. Email <adam@agentthreatrule.org>.
 
 ## 15. License
 

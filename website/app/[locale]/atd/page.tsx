@@ -39,7 +39,7 @@ const ATD_DOI = "10.5281/zenodo.19178002";
 const PROOF = {
   skill: { recall: 100, fp: 0, n: 341 },
   garak: { recall: 98, n: 650 },
-  pint: { recall: 62.5, precision: 99.6, n: 850 },
+  pint: { recall: 63.2, precision: 99.7, n: 850 },
 };
 
 const sevColor: Record<string, string> = {
@@ -63,14 +63,16 @@ const SECTIONS: Section[] = [
     status: "informative",
     en: {
       title: "Abstract",
-      body: `<p>Agentic Threat Detection (ATD) is an open, machine-readable enumeration of agent-native threat techniques. It is a knowledge layer: each technique names a distinct way an agent can be attacked at runtime, is mapped to the established prose frameworks — <a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank" rel="noopener noreferrer">OWASP Agentic Top 10</a>, <a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a>, <a href="https://cwe.mitre.org/" target="_blank" rel="noopener noreferrer">CWE</a>, <a href="https://avidml.org/" target="_blank" rel="noopener noreferrer">AVID</a> — and carries real-world evidence that it occurs.</p>
-<p>Those frameworks tell you <em>what</em> can go wrong with an agent. ATD is the layer underneath that names <em>how</em> each technique manifests where it can be observed at runtime. A technique enters the catalog the moment an attack is documented — before any detection rule exists for it. Where a technique has earned a gate-passing detection rule, ATD binds the two; coverage is a property to grow, not a condition of entry. ATD is to agent threats what <a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a> is to AI attacks: a stable, citable vocabulary that a detection ruleset can hang from.</p>
+      body: `<p>Agentic Threat Detection (ATD) is the open, machine-readable knowledge base of agent-native threat techniques. Agents fail in ways no prior security taxonomy has a name for — a poisoned tool description, a forged agent card, a memory write that lies dormant for three sessions. ATD gives each of those a name, a permanent ID, and a stable definition, then maps it to the established prose frameworks — <a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank" rel="noopener noreferrer">OWASP Agentic Top 10</a>, <a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a>, <a href="https://cwe.mitre.org/" target="_blank" rel="noopener noreferrer">CWE</a>, <a href="https://avidml.org/" target="_blank" rel="noopener noreferrer">AVID</a> — with real-world evidence that the attack has actually occurred.</p>
+<p>Those frameworks tell you <em>what</em> can go wrong with an agent. ATD is the layer underneath that names <em>how</em> each technique manifests at the point it can be observed at runtime — the prompt, the tool call, the tool response, the inter-agent message, the memory write, the trace. That is where a detection rule has to hang, and until a technique is named, every team reinvents the description from scratch. A technique enters the catalog the moment an attack is documented — before any detection rule exists for it — so the vocabulary always leads the tooling, never lags it. Where a technique has earned a gate-passing detection rule, ATD binds the two; coverage is a property to grow, not a condition of entry. ATD is to agent threats what <a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a> is to AI attacks and <a href="https://cwe.mitre.org/" target="_blank" rel="noopener noreferrer">CWE</a> is to software weaknesses: a single, citable index that a whole ecosystem can point at.</p>
+<p>The catalog today names <strong>${"{TECH}"} techniques across ${"{TACTICS}"} tactics</strong>, every one mapped to at least one upstream framework, with <strong>${"{RULES}"} already bound to a live, gate-passing detection rule</strong>. That is the breadth a reference is measured by — and the rate it grows tells you the surface is still expanding.</p>
 <p class="atd-note"><strong>Status:</strong> an Editor's Draft — a request for comments and an open invitation to co-author. It is not yet a ratified standard; it earns that title when it meets the §8 neutrality bar. We publish it openly to gather collaborators and mapping partners, not to claim authority.</p>`,
     },
     zh: {
       title: "Abstract (摘要)",
-      body: `<p>Agentic Threat Detection (ATD) 是 agent 原生威脅技法的開放、機器可讀列舉,是一個知識層:每條技法為 agent 在 runtime 被攻擊的一種獨立手法命名,對映既有的論述型框架 ── <a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank" rel="noopener noreferrer">OWASP Agentic Top 10</a>、<a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a>、<a href="https://cwe.mitre.org/" target="_blank" rel="noopener noreferrer">CWE</a>、<a href="https://avidml.org/" target="_blank" rel="noopener noreferrer">AVID</a> ── 並附帶它確實發生過的真實佐證。</p>
-<p>那些框架告訴你 agent <em>會出什麼錯</em>。ATD 是其下的一層,為每條技法<em>如何</em>在可觀測之處顯現命名。一條技法在攻擊被記錄的當下就進入目錄 ── 早於任何偵測規則的存在。當技法已長出一條通過閘門的偵測規則,ATD 把兩者綁定;覆蓋率是要成長的屬性,不是進入的條件。ATD 之於 agent 威脅,如同 <a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a> 之於 AI 攻擊:一套穩定、可引用的詞彙,讓偵測 ruleset 有處可掛。</p>
+      body: `<p>Agentic Threat Detection (ATD) 是 agent 原生威脅技法的開放、機器可讀知識庫。agent 出錯的方式,既有的安全分類大多沒有名字 ── 一段被下毒的 tool description、一張偽造的 agent card、一次潛伏三個 session 的 memory 寫入。ATD 為每一種命名、給它一個永久 ID 與穩定定義,再對映既有的論述型框架 ── <a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank" rel="noopener noreferrer">OWASP Agentic Top 10</a>、<a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a>、<a href="https://cwe.mitre.org/" target="_blank" rel="noopener noreferrer">CWE</a>、<a href="https://avidml.org/" target="_blank" rel="noopener noreferrer">AVID</a> ── 並附帶該攻擊確實發生過的真實佐證。</p>
+<p>那些框架告訴你 agent <em>會出什麼錯</em>。ATD 是其下的一層,為每條技法<em>如何</em>在可觀測之處顯現命名 ── prompt、tool call、tool response、inter-agent 訊息、memory 寫入、trace。那正是偵測規則必須掛上的地方;而在技法被命名之前,每個團隊都從零重寫一遍描述。一條技法在攻擊被記錄的當下就進入目錄 ── 早於任何偵測規則的存在 ── 讓詞彙永遠領先工具,而非落後。當技法已長出一條通過閘門的偵測規則,ATD 把兩者綁定;覆蓋率是要成長的屬性,不是進入的條件。ATD 之於 agent 威脅,如同 <a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a> 之於 AI 攻擊、<a href="https://cwe.mitre.org/" target="_blank" rel="noopener noreferrer">CWE</a> 之於軟體弱點:一套整個生態都能指向的、可引用的索引。</p>
+<p>目錄至今已為 <strong>${"{TACTICS}"} 個戰術下的 ${"{TECH}"} 條技法</strong>命名,每條至少對映一個上游框架,其中 <strong>${"{RULES}"} 條已綁定一條 live、通過閘門的偵測規則</strong>。這正是一套參考被衡量的廣度 ── 而它成長的速度,告訴你這片攻擊面仍在擴張。</p>
 <p class="atd-note"><strong>狀態:</strong>Editor's Draft ── 一份 request for comments,公開邀請共同撰寫。它<strong>尚未</strong>是 ratified standard;唯有達到 §8 的中立門檻後才冠此名。我們公開它是為了徵集協作者與對映夥伴,不是宣稱權威。</p>`,
     },
   },
@@ -227,6 +229,15 @@ export default async function ATDPage({
   const locale: Locale = rawLocale === "zh" ? "zh" : "en";
   const status = locale === "zh" ? ATD_STATUS_ZH : ATD_STATUS_EN;
 
+  // Section bodies carry {LOCALE} for internal links and {TECH}/{TACTICS}/{RULES}
+  // so the coverage numbers stay sourced from ATD_STATS — never hardcoded in prose.
+  const renderBody = (body: string) =>
+    body
+      .replace(/\{LOCALE\}/g, locale)
+      .replace(/\{TECH\}/g, String(ATD_STATS.techniques))
+      .replace(/\{TACTICS\}/g, String(ATD_STATS.tactics))
+      .replace(/\{RULES\}/g, String(ATD_STATS.withLiveRule));
+
   return (
     <main
       id="main-content"
@@ -251,16 +262,16 @@ export default async function ATDPage({
 
         <p className="atd-eyebrow">
           {locale === "zh"
-            ? "開放標準 · 草案 RFC · 徵求協作者 · ATR 之伴隨標準"
-            : "Open standard · draft RFC · call for collaborators · companion to ATR"}
+            ? "agent 威脅技法權威知識庫 · 草案 RFC · 徵求協作者 · ATR 之伴隨標準"
+            : "Authoritative knowledge base of agent threat techniques · draft RFC · call for collaborators · companion to ATR"}
         </p>
 
         <h1>Agentic Threat Detection</h1>
 
         <p className="atd-sub">
           {locale === "zh"
-            ? "agent 原生威脅技法的開放知識庫 —— 為每種攻擊手法命名,讓偵測規則有處可掛。OWASP、MITRE ATLAS、CWE、AVID 之下的那一層。"
-            : "An open knowledge base of agent-native threat techniques — it names every attack technique so detection rules have something to hang from. The layer beneath OWASP, MITRE ATLAS, CWE and AVID."}
+            ? "agent runtime 威脅手法的權威開放知識庫 —— 為每一種攻擊手法命名、給它一個穩定的 ID、對映到 OWASP、MITRE ATLAS、CWE、AVID,讓偵測有處可掛。如同 ATLAS 之於 AI 攻擊、CWE 之於軟體弱點:這個時代 agent 威脅的命名與索引。"
+            : "The authoritative open knowledge base of agent-runtime threat techniques — it gives every attack technique a name, a stable ID, and a crosswalk to OWASP, MITRE ATLAS, CWE and AVID, so detection has somewhere to hang. What MITRE ATLAS is to AI attacks and CWE is to software weaknesses: the naming and index of agent threats for this era."}
         </p>
 
         <div className="doc-status not-prose" role="note">
@@ -381,7 +392,7 @@ export default async function ATDPage({
                 {s[locale].title}
                 {s.status === "normative" ? <NormativeBadge className="ml-2 align-middle" /> : <InformativeBadge className="ml-2 align-middle" />}
               </h2>
-              <div className="spec-body min-w-0 overflow-x-auto -mx-2 px-2" dangerouslySetInnerHTML={{ __html: s[locale].body.replace(/\{LOCALE\}/g, locale) }} />
+              <div className="spec-body min-w-0 overflow-x-auto -mx-2 px-2" dangerouslySetInnerHTML={{ __html: renderBody(s[locale].body) }} />
             </section>
           ))}
 
@@ -394,8 +405,8 @@ export default async function ATDPage({
             <div className="spec-body">
               <p>
                 {locale === "zh"
-                  ? `${ATD_STATS.techniques} 條技法,跨 ${ATD_TACTICS.length} 個戰術。每條對映 OWASP ASI / MITRE ATLAS / CWE,並附真實 CVE 或研究佐證。其中 ${ATD_STATS.withLiveRule} 條已綁定 live 的 ATR 偵測規則 ── 其餘是僅被記錄的技法,在此地位相同:命名一個威脅不需要先有規則。已記錄而尚無公開實例者誠實標 research / aspirational。框架識別碼對原始來源現驗 (2026-06-14)。`
-                  : `${ATD_STATS.techniques} techniques across ${ATD_TACTICS.length} tactics. Each maps to OWASP ASI / MITRE ATLAS / CWE with a real CVE or research citation. ${ATD_STATS.withLiveRule} are bound to a live ATR detection rule; the rest are documented techniques and stand on equal footing here — naming a threat does not wait for a rule to exist. Documented entries with no public instance are honestly marked research / aspirational. Framework ids verified against primary sources (2026-06-14).`}
+                  ? `這是完整目錄 ── ${ATD_STATS.techniques} 條技法,沿 ${ATD_TACTICS.length} 個戰術階段排列,從 MCP 協定層一路到 multi-agent 動態與 agentic commerce。每條都有一個永久 ID、一段穩定定義,並對映 OWASP ASI / MITRE ATLAS / CWE,附上真實 CVE 或研究佐證。其中 ${ATD_STATS.withLiveRule} 條已綁定一條 live 的 ATR 偵測規則 ── 其餘是僅被記錄的技法,在此地位完全相同:命名一個威脅不需要先有規則。已記錄而尚無公開實例者誠實標 research / aspirational,絕不偽裝成 CVE。每個框架識別碼都對原始來源現驗 (2026-06-14)。`
+                  : `This is the full index — ${ATD_STATS.techniques} techniques laid out along ${ATD_TACTICS.length} tactic phases, from the MCP protocol layer through multi-agent dynamics to agentic commerce. Each carries a permanent ID, a stable definition, and a crosswalk to OWASP ASI / MITRE ATLAS / CWE, backed by a real CVE or research citation. ${ATD_STATS.withLiveRule} are already bound to a live ATR detection rule; the rest are documented techniques and stand on exactly equal footing here — naming a threat does not wait for a rule to exist. Documented entries with no public instance are honestly marked research / aspirational, never dressed up as a CVE. Every framework id is verified against its primary source (2026-06-14).`}
               </p>
             </div>
             {ATD_TACTICS.map((tac) => {
@@ -448,7 +459,7 @@ export default async function ATDPage({
                 {s[locale].title}
                 {s.status === "normative" ? <NormativeBadge className="ml-2 align-middle" /> : <InformativeBadge className="ml-2 align-middle" />}
               </h2>
-              <div className="spec-body min-w-0 overflow-x-auto -mx-2 px-2" dangerouslySetInnerHTML={{ __html: s[locale].body.replace(/\{LOCALE\}/g, locale) }} />
+              <div className="spec-body min-w-0 overflow-x-auto -mx-2 px-2" dangerouslySetInnerHTML={{ __html: renderBody(s[locale].body) }} />
             </section>
           ))}
 

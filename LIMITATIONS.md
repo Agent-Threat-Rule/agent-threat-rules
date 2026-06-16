@@ -1,8 +1,8 @@
 # ATR Limitations
 
-ATR v3.0.5 uses regex-based pattern detection (`detection_tier: pattern`, `schema_version: 0.1`). This document is a transparent accounting of what that approach can and cannot do. Read this before deploying ATR in production.
+ATR v3.5.0 uses regex-based pattern detection (`detection_tier: pattern`, `schema_version: 0.1`). This document is a transparent accounting of what that approach can and cannot do. Read this before deploying ATR in production.
 
-**Current stats:** 459 rules. On an 850-sample PINT-format corpus (deepset/prompt-injections + Lakera Gandalf -- not Lakera's official private PINT benchmark): 63.2% recall, 99.7% precision. SKILL.md benchmark: 100% recall, 97% precision, 0.20% FP (498 real-world samples). Plus 64 evasion tests documenting known bypasses.
+**Current stats:** 652 rules. On an 850-sample PINT-format corpus (deepset/prompt-injections + Lakera Gandalf -- not Lakera's official private PINT benchmark): 63.2% recall, 99.7% precision. SKILL.md benchmark: 100% recall, 97% precision, 0.20% FP (498 real-world samples). Plus 64 evasion tests documenting known bypasses.
 
 That pass rate sounds impressive. It is not. It means ATR correctly matches the patterns it was written to match. It says nothing about attacks that use different words to express the same intent.
 

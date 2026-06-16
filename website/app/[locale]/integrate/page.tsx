@@ -9,7 +9,7 @@ export function generateStaticParams() {
 
 export const metadata: Metadata = {
   title: "Integrate - ATR",
-  description: "Four integration paths for ATR: TypeScript, Python, raw YAML, or SIEM queries.",
+  description: "Five integration paths for ATR: TypeScript, Python, raw YAML, GitHub Action, or SIEM queries.",
 };
 
 const PATHS = [

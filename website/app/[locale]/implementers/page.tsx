@@ -75,7 +75,7 @@ const IMPLEMENTERS = [
       "https://github.com/OWASP/Agent-Security-Regression-Harness/pull/74",
   },
   {
-    org: "Gen Digital Sage (Norton / Avast / AVG)",
+    org: "Gen Digital Sage (Norton / Avast / LifeLock)",
     role: "L1 Engine",
     version: "2.2.0",
     date: "2026-05-11",

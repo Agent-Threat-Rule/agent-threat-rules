@@ -65,8 +65,8 @@ export default async function ResponsibleUsePage({
             {
               title: zh ? "紅隊測試的基準線" : "Red-team baseline",
               desc: zh
-                ? "在授權範圍內，用 ATR 規則衡量你的紅隊工具找到的攻擊有多少已被偵測覆蓋，有多少是尚無規則的新型態——新型態正是下一條規則的來源。這是 NVIDIA garak 整合的設計意圖。"
-                : "Within an authorized scope, use ATR rules to measure what fraction of the attacks your red-team tool discovers already have detection coverage, and what fraction are novel — the novel fraction is where the next rule comes from. This is the design intent of the NVIDIA garak integration.",
+                ? "在授權範圍內，用 ATR 規則衡量你的紅隊工具找到的攻擊有多少已被偵測覆蓋，有多少是尚無規則的新型態——新型態正是下一條規則的來源。這是進行中的 NVIDIA garak 整合的設計意圖。"
+                : "Within an authorized scope, use ATR rules to measure what fraction of the attacks your red-team tool discovers already have detection coverage, and what fraction are novel — the novel fraction is where the next rule comes from. This is the design intent of the in-review NVIDIA garak integration.",
             },
             {
               title: zh ? "標準映射與合規文件" : "Standards mapping and compliance documentation",

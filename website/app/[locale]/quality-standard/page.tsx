@@ -186,7 +186,7 @@ function Cell({ v }: { v: "yes" | "no" | "partial" }) {
 const EVIDENCE = [
   { stat: "Live", label: "Full ATR rule pack in Cisco AI Defense production" },
   { stat: "96,096", label: "Real agent skills scanned across 6 registries (as of 2026-04-14)" },
-  { stat: "99.6%", label: "Precision on the PINT-format adversarial corpus" },
+  { stat: "99.7%", label: "Precision on the PINT-format adversarial corpus" },
   { stat: "~0.24%", label: "False-positive rate on the enforce lane (mature rules only)" },
 ];
 
