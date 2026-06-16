@@ -1,14 +1,14 @@
 {
   "$comment": "Single source of truth for ATR project numbers. Any user-facing surface (README, CITATION.cff, panguard.ai, docs site, schema.org JSON-LD, Zenodo metadata) MUST read from this file via scripts/sync-stats.ts. Hand-edits to derived files will be overwritten on next sync. Bump version + ruleCount here, then run `npm run sync:stats`. CI does this automatically on rules-merge release. ruleCount.total counts files matching `^id: ATR-` (excludes drafts/templates); CI in publish-on-rules-merge.yml uses the identical method to avoid drift.",
-  "version": "3.4.0",
-  "previousVersion": "3.3.1",
-  "lastUpdated": "2026-06-13",
+  "version": "3.5.0",
+  "previousVersion": "3.4.0",
+  "lastUpdated": "2026-06-16",
   "ruleCount": {
-    "total": 651,
+    "total": 652,
     "stable": 59,
     "experimental": 554,
     "draft": 37,
-    "deprecated": 1,
+    "deprecated": 2,
     "comment": "total = stable + experimental + draft + deprecated. Validated by `find rules -name '*.yaml' -type f -exec grep -l '^id: ATR-' {} \\;` in scripts/sync-stats.ts. Status breakdown counted via `grep -rh '^status:' rules/ --include='*.yaml' | sort | uniq -c` (handles both quoted and unquoted YAML strings)."
   },
   "spec": {
@@ -20,7 +20,7 @@
   },
   "benchmarks": {
     "garak": {
-      "recall": 98,
+      "recall": 97.2,
       "samples": 650,
       "source": "NVIDIA garak in-the-wild jailbreak corpus",
       "perFamily": {
@@ -31,29 +31,34 @@
     },
     "skill": {
       "recall": 100,
-      "precision": 100,
-      "fpRate": 0,
-      "samples": 341,
-      "source": "Real-world SKILL.md corpus"
+      "precision": 97,
+      "fpRate": 0.2,
+      "samples": 498,
+      "source": "Internal labeled SKILL.md corpus"
     },
     "pint": {
-      "recall": 62.5,
-      "precision": 99.6,
+      "recall": 63.6,
+      "precision": 99.7,
       "fpRate": 0.25,
       "samples": 850,
-      "source": "Invariant Labs PINT adversarial corpus"
+      "source": "PINT-format corpus (deepset/prompt-injections + Lakera Gandalf)"
     },
     "hackaprompt": {
-      "recall": 66.2,
+      "recall": 69.6,
       "baselineRecall": 28.6,
       "precision": 100,
       "samples": 4780,
       "source": "HackAPrompt EMNLP 2023"
     },
     "benign": {
-      "fpRate": 0,
-      "samples": 432,
-      "source": "Real-world benign SKILL.md corpus"
+      "lanes": {
+        "enforce": 0.24,
+        "hunt": 9
+      },
+      "samples": 65000,
+      "defaultLane": "hunt",
+      "source": "65K-sample benign gate (v3.5.0 detection lanes)",
+      "comment": "Lane-keyed FP rate, not a single overall figure: enforce (stable + confirm-gated rules) ~0.24% / hunt (all rules, default) ~9%."
     }
   },
   "ecosystem": {

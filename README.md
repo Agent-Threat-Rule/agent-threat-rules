@@ -13,7 +13,7 @@ AI Agent 威脅偵測規則的開放格式
 [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-ATR%20Scan-2ea44f?style=flat-square&logo=github)](https://github.com/marketplace/actions/atr-scan)
 [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen?style=flat-square)](LICENSE)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19178002-blue?style=flat-square)](https://doi.org/10.5281/zenodo.19178002)
-[![Rules](https://img.shields.io/badge/rules-651-blue?style=flat-square)](#5-specification)
+[![Rules](https://img.shields.io/badge/rules-652-blue?style=flat-square)](#5-specification)
 [![Categories](https://img.shields.io/badge/categories-10-blue?style=flat-square)](#7-coverage)
 [![OWASP Agentic](https://img.shields.io/badge/OWASP_Agentic_Top_10-10%2F10-brightgreen?style=flat-square)](#7-coverage)
 [![SAFE-MCP](https://img.shields.io/badge/SAFE--MCP-91.8%25-brightgreen?style=flat-square)](#7-coverage)
@@ -340,31 +340,40 @@ historical series for each source lives at
 The current pointer per source is `data/measurements/<source>/latest.json`.
 Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 
-| Source | Source version | Samples | Recall | Precision | FP rate | Measured |
-|---|---|---:|---:|---:|---:|---|
-| AdvBench (LLM-attacks behaviors) | upstream-2026-05-23 | 520 | 1.3% | 100.0% | 0.0% | 2026-05-23 |
-| atr-self-test | internal | 341 | 89.4% | 100.0% | 0.0% | 2026-05-23 |
-| autoresearch | internal-1054 | 1,054 | 15.1% | 100.0% | 0.0% | 2026-05-23 |
-| garak (in-the-wild jailbreaks) | inthewild-jailbreak-corpus-650 | 650 | 98.0% | 100.0% | 0.0% | 2026-05-23 |
-| garak-full (all probe families) | 23-families | 3,475 | 38.5% | 100.0% | 0.0% | 2026-05-23 |
-| hackaprompt | v1 | 4,780 | 66.0% | 100.0% | 0.0% | 2026-05-23 |
-| HarmBench (CAIS behaviors) | upstream-2026-05-23 | 400 | 2.5% | 100.0% | 0.0% | 2026-05-23 |
-| hh-rlhf (Anthropic red-team-attempts) | snapshot-2026-04 | 4,957 | 99.1% | 100.0% | 0.0% | 2026-05-23 |
-| JailbreakBench (JBB-Behaviors) | upstream-2026-05-23 | 100 | 5.0% | 100.0% | 0.0% | 2026-05-23 |
-| llm-guard (Protect AI test fixtures) | corpus-2026-05-12 | 44 | 72.7% | 100.0% | 0.0% | 2026-05-23 |
-| MITRE ATLAS | snapshot-2026-04 | 182 | 100.0% | 100.0% | 0.0% | 2026-05-23 |
-| NeMo Guardrails (NVIDIA test fixtures) | corpus-2026-05-12 | 6 | 100.0% | 100.0% | 0.0% | 2026-05-23 |
-| OWASP LLM Top 10 | snapshot-2026-04 | 56 | 100.0% | 100.0% | 0.0% | 2026-05-23 |
-| PINT-format (deepset + Lakera Gandalf) | public-850 | 850 | 63.2% | 99.7% | 0.0% | 2026-05-23 |
-| PromptBench (academic adversarial) | snapshot-2026-04 | 3,280 | 0.0% | 100.0% | 0.0% | 2026-05-23 |
-| promptfoo (red-team plugin fixtures) | corpus-2026-05-12 | 44 | 79.5% | 100.0% | 0.0% | 2026-05-23 |
-| PromptInject (academic adversarial) | snapshot-2026-04 | 1,080 | 0.0% | 100.0% | 0.0% | 2026-05-23 |
-| SKILL.md benchmark (internal) | internal-498 | 498 | 100.0% | 97.0% | 0.20% | 2026-05-23 |
-| Wild scan (OpenClaw + Skills.sh + Hermes + ClawHub) | corpus-2026-04-14 | 96,096 | — | 57.7% (floor) | 1.35% flag rate | 2026-04-14 |
+| Source | Source version | Samples | Recall | Precision | FP rate | ATR version | Measured |
+|---|---|---:|---:|---:|---:|---|---|
+| AdvBench (LLM-attacks behaviors) | upstream-2026-05-23 | 520 | 1.3% | 100.0% | 0.0% | 3.0.0 | 2026-05-23 |
+| atr-self-test | internal | 341 | 89.4% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
+| autoresearch | internal-1054 | 1,054 | 15.1% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
+| garak (in-the-wild jailbreaks) | inthewild-jailbreak-corpus-650 | 650 | 97.2% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| garak-full (all probe families) | 23-families | 3,475 | 38.3% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| hackaprompt | v1 | 4,780 | 69.6% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| HarmBench (CAIS behaviors) | upstream-2026-05-23 | 400 | 2.5% | 100.0% | 0.0% | 3.0.0 | 2026-05-23 |
+| hh-rlhf (Anthropic red-team-attempts) | snapshot-2026-04 | 4,957 | 99.1% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
+| JailbreakBench (JBB-Behaviors) | upstream-2026-05-23 | 100 | 5.0% | 100.0% | 0.0% | 3.0.0 | 2026-05-23 |
+| llm-guard (Protect AI test fixtures) | corpus-2026-05-12 | 44 | 72.7% | 100.0% | 0.0% | 3.0.0 | 2026-05-23 |
+| MITRE ATLAS | snapshot-2026-04 | 182 | 100.0% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
+| NeMo Guardrails (NVIDIA test fixtures) | corpus-2026-05-12 | 6 | 100.0% | 100.0% | 0.0% | 3.0.0 | 2026-05-23 |
+| OWASP LLM Top 10 | snapshot-2026-04 | 56 | 100.0% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
+| PINT-format (deepset + Lakera Gandalf) | public-850 | 850 | 63.6% | 99.7% | 0.25% | 3.5.0 | 2026-06-16 |
+| PromptBench (academic adversarial) | snapshot-2026-04 | 3,280 | 0.0% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
+| promptfoo (red-team plugin fixtures) | corpus-2026-05-12 | 44 | 79.5% | 100.0% | 0.0% | 3.0.0 | 2026-05-23 |
+| PromptInject (academic adversarial) | snapshot-2026-04 | 1,080 | 0.0% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
+| SKILL.md benchmark (internal) | internal-498 | 498 | 100.0% | 97.0% | 0.20% | 3.5.0 | 2026-06-16 |
+| Wild scan (OpenClaw + Skills.sh + Hermes + ClawHub) | corpus-2026-04-14 | 96,096 | — | 57.7% (floor) | 1.35% flag rate | 2.0.0 | 2026-04-14 |
+
+The headline corpora (`garak`, `hackaprompt`, `PINT-format`, `SKILL.md`) were
+re-measured against ATR 3.5.0 on 2026-06-16; the remaining corpora retain their
+2026-05-23 / 3.0.0-era measurements and will be refreshed on the next full
+re-run. The per-row `ATR version` column above is the version each cell was
+actually measured against, mirroring the `atr_version` field in each
+`data/measurements/<source>/latest.json`. The headline `garak` recall moved
+98.0% → 97.2% in 3.5.0 because rule `ATR-2026-00495` (a garak DAN variant) was
+deprecated and no longer fires; see [CHANGELOG.md](CHANGELOG.md).
 
 Two `garak` rows are deliberate: the headline `garak` source tracks NVIDIA's
-in-the-wild jailbreak corpus (narrow, the 98% number ATR cites publicly,
-refreshed 2026-05-23 against ATR 3.0.0-alpha.1), while `garak-full` tracks
+in-the-wild jailbreak corpus (narrow, the ~97% number ATR cites publicly,
+refreshed 2026-06-16 against ATR 3.5.0), while `garak-full` tracks
 every probe family in upstream garak (broad, includes families like
 `badchars`, `dra`, `encoding` that ATR's regex layer intentionally does
 not target). Both are valid measurements against different corpora; they
@@ -387,6 +396,13 @@ column reports a precision floor computed as `confirmed_malware / flagged`.
 Every cell is sourced from a specific measurement file — see
 `data/measurements/<source>/latest.json` for the file path and
 `metadata.measurement_file` in `stats.json` for the absolute repo path.
+
+False-positive rate is lane-keyed as of v3.5.0, not a single overall figure.
+ATR ships detection lanes (`enforce` / `alert` / `hunt`); on a 65K-sample
+benign gate the `enforce` lane (stable + `confirm`-gated rules) holds ~0.24%
+FP, while the default `hunt` lane (all rules) runs ~9% FP. Per-corpus `FP rate`
+cells above are measured in the default `hunt` lane. See [CHANGELOG.md](CHANGELOG.md)
+(v3.5.0) for the lane definitions.
 
 ```bash
 npm test                                    # engine + rule unit tests (vitest)
