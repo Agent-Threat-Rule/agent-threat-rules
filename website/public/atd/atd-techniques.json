@@ -5,8 +5,8 @@
   "generated": "2026-06-14",
   "license": "CC-BY-4.0",
   "stats": {
-    "techniques": 80,
-    "withLiveRule": 46,
+    "techniques": 81,
+    "withLiveRule": 47,
     "withCve": 18,
     "tactics": 9
   },
@@ -2578,6 +2578,43 @@
           "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-25536"
         }
       ]
+    },
+    {
+      "atd_id": "ATD-T0081",
+      "schema_version": "0.1.0",
+      "title": "Remediation-framed command execution via tool-response injection (agentjacking)",
+      "tactic": "ATD-TA5",
+      "abstraction": "base",
+      "status": "test",
+      "severity": "high",
+      "description": "Externally-influenced content returned through an MCP/tool integration disguises an executable command as legitimate remediation guidance (a Resolution/recommended-fix/required-step section running an npx/uvx/pipx package or a pipe-to-shell one-liner), so an AI coding agent runs attacker-controlled code while every step in the chain appears authorized. Prompt-layer defenses fail because the agent cannot distinguish data it reads from an instruction to act; the durable mitigation is detection on the tool-output boundary. Generalizes beyond the disclosed Sentry vector to any tool integration that returns externally-influenced data to an agent.",
+      "detection_surface": [
+        "tool_response"
+      ],
+      "mappings": {
+        "owasp_asi": [
+          "ASI02",
+          "ASI05"
+        ],
+        "mitre_atlas": [
+          "AML.T0051.001"
+        ],
+        "cwe": [
+          "CWE-829",
+          "CWE-77"
+        ]
+      },
+      "references": [
+        {
+          "type": "research",
+          "url": "https://tenetsecurity.ai/blog/agentjacking-coding-agents-with-fake-sentry-errors/"
+        },
+        {
+          "type": "research",
+          "url": "https://labs.cloudsecurityalliance.org/research/csa-research-note-agentjacking-mcp-sentry-injection-20260612/"
+        }
+      ],
+      "atr_rule": "ATR-2026-01930"
     }
   ]
 }
