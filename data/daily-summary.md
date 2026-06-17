@@ -1,21 +1,21 @@
-## Daily Scan Summary (2026-06-16)
+## Daily Scan Summary (2026-06-17)
 - Scanned: 50 packages
-- CRITICAL: 3
-- HIGH: 2
-- CLEAN/LOW: 41
+- CRITICAL: 2
+- HIGH: 3
+- CLEAN/LOW: 40
 
 ### Flagged Packages:
-- [CRITICAL] @affise/mcp-server (score: 100)
-- [CRITICAL] @ebowwa/ai (score: 100)
-- [CRITICAL] @figmcp/mcp-server (score: 80)
-- [HIGH] @findagent/mcp (score: 40)
-- [HIGH] @hypequery/mcp (score: 40)
+- [HIGH] @accelon/ptkmcp (score: 60)
+- [HIGH] @agent-e2e/harness (score: 50)
+- [CRITICAL] @ai-of-mine/fast-mermaid-validator-mcp (score: 90)
+- [HIGH] @alfe.ai/openclaw-github (score: 40)
+- [CRITICAL] @emmamind/easylog-mcp (score: 100)
 
 ### Cumulative:
-- Total scanned: 3210
-  - CLEAN: 1926
-  - CRITICAL: 359
+- Total scanned: 3260
+  - CLEAN: 1954
+  - CRITICAL: 361
   - ERROR: 5
-  - HIGH: 249
-  - LOW: 332
-  - MEDIUM: 339
+  - HIGH: 252
+  - LOW: 344
+  - MEDIUM: 344
