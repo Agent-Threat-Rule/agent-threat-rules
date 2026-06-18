@@ -6,7 +6,7 @@ This PR adds real-world attack examples, prevention strategies, and detection re
 
 - **76 open-source detection rules** from [ATR (Agent Threat Rules)](https://github.com/Agent-Threat-Rule/agent-threat-rules), MIT licensed
 - **36,394 MCP skills scanned** on ClawHub (182 CRITICAL, 1,124 HIGH findings)
-- **PINT-format corpus** (850 samples from deepset + Lakera Gandalf, not Lakera's official PINT benchmark): 63.2% recall, 99.7% precision
+- **PINT-format corpus** (850 samples from deepset + Lakera Gandalf, not Lakera's official PINT benchmark): 63.6% recall, 99.7% precision
 - **Real CVEs**: CVE-2026-28363 (CVSS 9.9), CVE-2026-25253 (CVSS 8.8), CVE-2025-59536 (CVSS 8.7), CVE-2025-49150, CVE-2025-53773, and others
 - **Real attack campaigns**: ClawHavoc (1,184 malicious skills), AMOS infostealer (314 skills), Snyk ToxicSkills (76 confirmed malicious)
 
@@ -46,5 +46,5 @@ ATR (Agent Threat Rules) is an open-source, MIT-licensed detection ruleset for a
 
 - Repository: https://github.com/Agent-Threat-Rule/agent-threat-rules
 - Rules: 76 (71 MCP + 5 skill-level)
-- Eval: PINT-format corpus, self-built from public datasets (63.2% recall, 99.7% precision)
+- Eval: PINT-format corpus, self-built from public datasets (63.6% recall, 99.7% precision)
 - License: MIT

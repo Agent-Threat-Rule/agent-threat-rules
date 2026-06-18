@@ -1,6 +1,6 @@
 # Contributing to ATR
 
-ATR is an MIT-licensed open standard for detecting AI agent attacks — think Snort rules but for LLMs and MCP tools. 438 detection rules. 99.6% precision on MCP traffic, 0.20% false positive rate on a 498-sample real-world skill corpus. Merged into repos at Microsoft, Cisco, MISP, and OWASP community. When you contribute a detection rule, it ships to every downstream consumer within hours.
+ATR is an MIT-licensed open standard for detecting AI agent attacks — think Snort rules but for LLMs and MCP tools. 652 detection rules. 99.7% precision on a PINT-format prompt-injection corpus, 0.20% false positive rate on a 498-sample real-world skill corpus. Merged into repos at Microsoft, Cisco, MISP, and OWASP community. When you contribute a detection rule, it ships to every downstream consumer within hours.
 
 No CLA. No telemetry. No proprietary tooling.
 
