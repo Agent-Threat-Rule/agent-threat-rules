@@ -24,6 +24,13 @@ on:
         default: "all"
   release:
     types: [published]
+  schedule:
+    # Weekly safety net so the public-facing recall numbers don't silently
+    # drift between releases. Releases can be infrequent (publish-on-rules-merge
+    # only auto-publishes Threat-Cloud-crystallized commits, so human-authored
+    # rule work doesn't trigger a release), which previously let the benchmarks
+    # go stale by several minor versions. Sunday 06:00 UTC.
+    - cron: "0 6 * * 0"
 
 permissions:
   contents: write
