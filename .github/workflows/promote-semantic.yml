@@ -82,13 +82,27 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           # Use a stronger model than the local default for judge-prompt quality.
           ATR_AUTHOR_MODEL: claude-sonnet-4-5-20250929
+          # Pass workflow_dispatch inputs through env (NOT interpolated into the
+          # command line) so a crafted input cannot inject shell; validate below.
+          INPUT_MAX: ${{ github.event.inputs.max || '8' }}
+          INPUT_SOURCE: ${{ github.event.inputs.source }}
         run: |
-          npx tsx scripts/author-semantic-rules.ts \
-            --write \
-            --max "${{ github.event.inputs.max || '8' }}" \
-            ${{ github.event.inputs.source && format('--source {0}', github.event.inputs.source) || '' }} \
-            --report /tmp/semantic-report.json \
-            || echo "Semantic authoring completed with warnings"
+          set -uo pipefail
+          case "$INPUT_MAX" in ''|*[!0-9]*) echo "::error::--max must be a positive integer"; exit 1 ;; esac
+          SOURCE_ARG=()
+          case "$INPUT_SOURCE" in
+            "") ;;
+            hackaprompt|promptinject|garak) SOURCE_ARG=(--source "$INPUT_SOURCE") ;;
+            *) echo "::error::invalid source '$INPUT_SOURCE' (allowed: hackaprompt|promptinject|garak)"; exit 1 ;;
+          esac
+          set +e
+          npx tsx scripts/author-semantic-rules.ts --write --max "$INPUT_MAX" "${SOURCE_ARG[@]}" --report /tmp/semantic-report.json
+          EXIT=$?
+          set -e
+          # exit 1 = fatal IO/parse -> fail the step; 0 = ok, 2 = no API key,
+          # 3 = all candidates routed to human -> non-fatal (no PR, but not an error).
+          if [ "$EXIT" -eq 1 ]; then echo "::error::author-semantic-rules fatal error"; exit 1; fi
+          echo "author-semantic-rules exited $EXIT (0=ok, 2=no-key, 3=all-human)"
 
       - name: Validate new rules
         run: npm run validate

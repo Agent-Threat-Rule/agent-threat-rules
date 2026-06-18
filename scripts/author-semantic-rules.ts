@@ -88,6 +88,10 @@ const BENIGN_SKILL_DIR = resolve(REPO_ROOT, "data/skill-benchmark/benign");
 const DEFAULT_MODEL = "claude-haiku-4-5-20251001";
 const DEFAULT_MAX = 10;
 const BENIGN_SKILL_SAMPLE = 120; // cap benign-skill FP scan for speed; corpus is large
+// Floor below which the 0-FP gate is not trustworthy: an empty/tiny benign
+// corpus (e.g. a fresh checkout where build-benign-corpus.ts never ran) would
+// let the FP loop pass vacuously, defeating the whole safety property.
+const MIN_BENIGN_CORPUS = 50;
 
 // Cluster sources that hold semantic agent-attack adversarial samples.
 const SEMANTIC_SOURCES = ["hackaprompt-clusters", "promptinject-clusters", "garak-clusters"] as const;
@@ -485,6 +489,7 @@ function loadBenignSkills(limit: number): string[] {
   if (!existsSync(BENIGN_SKILL_DIR)) return [];
   const files = readdirSync(BENIGN_SKILL_DIR)
     .filter((f) => f.endsWith(".md"))
+    .sort() // deterministic sample across CI runs (readdir order is FS-dependent)
     .slice(0, limit);
   const out: string[] = [];
   for (const f of files) {
@@ -582,7 +587,7 @@ async function callLlm(prompt: string): Promise<SemanticDraft | null> {
   const client = new Anthropic({ apiKey });
   const resp = await client.messages.create({
     model,
-    max_tokens: 2000,
+    max_tokens: 4096,
     messages: [{ role: "user", content: prompt }],
   });
   const out = resp.content
@@ -682,6 +687,18 @@ async function main(): Promise<void> {
   const benignCode = loadBenignCode();
   const benignSkills = loadBenignSkills(BENIGN_SKILL_SAMPLE);
   const benign = [...benignCode, ...benignSkills];
+
+  // Safety: the 0-FP gate is only meaningful with a real benign corpus. On a
+  // fresh checkout where build-benign-corpus.ts never ran, benign can be empty
+  // and every candidate would pass the FP check vacuously. Abort loudly rather
+  // than author rules against a vacuous gate.
+  if (WRITE && benign.length < MIN_BENIGN_CORPUS) {
+    console.error(
+      `FATAL: benign corpus too small (${benign.length} < ${MIN_BENIGN_CORPUS}); ` +
+        `the 0-FP gate cannot run safely. Run scripts/build-benign-corpus.ts first.`,
+    );
+    process.exit(1);
+  }
 
   const summary = {
     run_date: new Date().toISOString(),
