@@ -248,6 +248,12 @@ async function runServe(filter: OpenShellFilter): Promise<number> {
       process.stdout.write(JSON.stringify({ id, error: 'invalid_json' }) + '\n');
       continue;
     }
+    // Enforce the same hard cap as one-shot mode (ATR_MAX_BODY_BYTES); without
+    // it a single oversized NDJSON line would pass an uncapped body to the engine.
+    if (Buffer.byteLength(body, 'utf8') > maxBodyBytes()) {
+      process.stdout.write(JSON.stringify({ id, error: 'body_too_large' }) + '\n');
+      continue;
+    }
     let verdict: FilterVerdict;
     try {
       verdict = await filter.inspect(body);

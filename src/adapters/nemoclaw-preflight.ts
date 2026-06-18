@@ -37,7 +37,7 @@
  * @module agent-threat-rules/nemoclaw-preflight
  */
 
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, lstatSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, join, relative } from 'node:path';
 import { ATREngine } from '../engine.js';
 import type { AgentEvent, ATRMatch } from '../types.js';
@@ -142,7 +142,14 @@ function isMcpConfig(relPath: string, base: string): boolean {
  * target is reported as skipped; hitting maxFiles sets truncated.
  */
 function collectTargets(root: string, maxFiles: number): CollectResult {
-  if (statSync(root).isFile()) {
+  // lstat (not stat) so a symlinked root is NOT silently followed — the
+  // per-entry guard during traversal only covers symlinks found inside dirs,
+  // not the root argument itself. Honors the module's "never follow symlinks".
+  const rootStat = lstatSync(root);
+  if (rootStat.isSymbolicLink()) {
+    return { targets: [], skipped: [{ path: root, reason: 'symlink' }], truncated: false };
+  }
+  if (rootStat.isFile()) {
     const base = basename(root);
     const kind: TargetKind = isMcpConfig(root, base) ? 'mcp-config' : 'skill';
     return { targets: [{ path: root, kind }], skipped: [], truncated: false };
