@@ -20,8 +20,12 @@ author: "ATR Community"
 date: "2026/06/16"
 schema_version: "0.1"
 detection_tier: pattern
-maturity: test
+maturity: experimental
 severity: high
+
+false_positives:
+  - "Legitimate code-review / linting MCP tools that return remediation advice running a well-known dev tool — e.g. 'Recommended fix: run uvx ruff check --fix', 'to resolve this error, run uvx mypy src/', 'npx eslint --fix'. The known-tool negative lookahead on the executor match suppresses these; only unknown / attacker-named packages keep firing."
+  - "Developer onboarding or setup documentation embedded in tool output that recommends a package-runner command for a well-known scaffolder (e.g. npx create-next-app)."
 
 references:
   owasp_llm:
@@ -35,6 +39,9 @@ references:
   mitre_attack:
     - "T1059 - Command and Scripting Interpreter"
     - "T1195 - Supply Chain Compromise"
+  safe_mcp:
+    - "SAFE-T1001 - Tool Poisoning Attack"
+    - "SAFE-T1102 - Prompt Injection"
 
 compliance:
   owasp_agentic:
@@ -79,11 +86,11 @@ detection:
   conditions:
     - field: tool_response
       operator: regex
-      value: '(?i)(##\s*resolution|recommended\s+fix|to\s+(resolve|fix)\s+(this|the)\b[^\n]{0,40}\b(error|issue|failure|problem|bug|build|vulnerabilit)|as\s+a\s+(required|mandatory)\b[^\n]{0,25}\bstep[^\n]{0,20})[\s\S]{0,80}(\b(npx|uvx|pipx)\s+[@a-z0-9._/-]{2,}|\b(curl|wget)\b[^\n]{0,100}\|\s*(ba)?sh\b)'
+      value: '(?i)(##\s*resolution|recommended\s+fix|to\s+(resolve|fix)\s+(this|the)\b[^\n]{0,40}\b(error|issue|failure|problem|bug|build|vulnerabilit)|as\s+a\s+(required|mandatory)\b[^\n]{0,25}\bstep[^\n]{0,20})[\s\S]{0,80}(\b(npx|uvx|pipx)\s+(?!(?:eslint|ruff|mypy|prettier|black|pyright|pylint|playwright|pre-commit|tsc|jest|vitest|biome|isort|flake8|pytest|stylelint|tox|nox|poetry|pipenv|cypress|webpack|vite|rollup|esbuild|nodemon)\b|create-)[@a-z0-9._/-]{2,}|\b(curl|wget)\b[^\n]{0,100}\|\s*(ba)?sh\b)'
       description: "Remediation/resolution-framed instruction in tool output that, in close proximity, runs an external package executor or pipe-to-shell (agentjacking core signature)"
     - field: tool_response
       operator: regex
-      value: '(?i)\b(you\s+)?must\s+run\s+(the\s+following[:\s]+)?(\b(npx|uvx|pipx)\s+[@a-z0-9._/-]{2,}|\b(curl|wget)\b[^\n]{0,100}\|\s*(ba)?sh\b)'
+      value: '(?i)\b(you\s+)?must\s+run\s+(the\s+following[:\s]+)?(\b(npx|uvx|pipx)\s+(?!(?:eslint|ruff|mypy|prettier|black|pyright|pylint|playwright|pre-commit|tsc|jest|vitest|biome|isort|flake8|pytest|stylelint|tox|nox|poetry|pipenv|cypress|webpack|vite|rollup|esbuild|nodemon)\b|create-)[@a-z0-9._/-]{2,}|\b(curl|wget)\b[^\n]{0,100}\|\s*(ba)?sh\b)'
       description: "Tool output imperatively directs the agent to run an external package executor or pipe-to-shell immediately (mandatory-execution directive)"
     - field: tool_response
       operator: regex
@@ -91,7 +98,7 @@ detection:
       description: "Remediation/resolution-framed instruction in tool output to pipe a remote script to a shell"
     - field: tool_response
       operator: regex
-      value: '(?i)(after\s+[^\n]{0,40}\bapprov[^\n]{0,40}|on\s+(subsequent|later|future)\s+runs|every\s+time\s+(the\s+agent|you)\s+(run|execute))[\s\S]{0,120}(\b(npx|uvx|pipx)\s+[@a-z0-9._/-]{2,}|\b(curl|wget)\b[^\n]{0,100}\||\bbash\s+-c|\bsh\s+-c|\beval\s*\()'
+      value: '(?i)(after\s+[^\n]{0,40}\bapprov[^\n]{0,40}|on\s+(subsequent|later|future)\s+runs|every\s+time\s+(the\s+agent|you)\s+(run|execute))[\s\S]{0,120}(\b(npx|uvx|pipx)\s+(?!(?:eslint|ruff|mypy|prettier|black|pyright|pylint|playwright|pre-commit|tsc|jest|vitest|biome|isort|flake8|pytest|stylelint|tox|nox|poetry|pipenv|cypress|webpack|vite|rollup|esbuild|nodemon)\b|create-)[@a-z0-9._/-]{2,}|\b(curl|wget)\b[^\n]{0,100}\||\bbash\s+-c|\bsh\s+-c|\beval\s*\()'
       description: "Post-approval persistence framing in tool output directing the agent to execute a command on later runs (rug-pull in tool response)"
 
 response:
@@ -143,6 +150,12 @@ test_cases:
     - tool_response: "To resolve this, update the dependency in package.json to v2.1 and run npm install."
       expected: not_triggered
       description: "Plain npm install remediation, no executor/pipe-to-shell and not framed as mandatory"
+    - tool_response: "Recommended fix: run uvx ruff check --fix to auto-fix the 14 lint issues."
+      expected: not_triggered
+      description: "Remediation-framed advice running a well-known dev tool (ruff) — suppressed by the known-tool negative lookahead"
+    - tool_response: "To resolve this type error, run uvx mypy src/ and address the reported issues."
+      expected: not_triggered
+      description: "Remediation-framed advice running a well-known dev tool (mypy) — known-tool lookahead prevents the FP"
 
 tags:
   category: tool-poisoning
