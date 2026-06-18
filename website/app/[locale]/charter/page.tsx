@@ -285,8 +285,8 @@ export default async function CharterPage({
             </h2>
             <p className="text-sm text-stone" style={{ maxWidth: "42em" }}>
               {zh
-                ? "TSC 尚未就任。下列為提議之程序,於 GOVERNANCE.md 之過渡條件滿足後生效;在此之前,由首席維護者 (BDFL) 行使此角色。"
-                : "The TSC is not yet seated. The procedures below are proposed and take effect once the transition criteria in GOVERNANCE.md are met; until then the lead maintainer (BDFL) acts in this role."}
+                ? "TSC 尚在籌組。下列程序已先行明訂,於 GOVERNANCE.md 之過渡條件滿足後生效;在此之前,由首席維護者 (BDFL) 行使此角色 —— 把規則先寫好,正是為了不讓單一維護者的判斷成為標準的唯一依靠。"
+                : "The TSC is being seated. The procedures below are defined ahead of that and take effect once the transition criteria in GOVERNANCE.md are met; until then the lead maintainer (BDFL) acts in this role — the procedures are written first precisely so that no single maintainer's judgment is the standard's only safeguard."}
             </p>
             <p>
               {zh
@@ -322,8 +322,8 @@ export default async function CharterPage({
             </h2>
             <p className="text-sm text-stone" style={{ maxWidth: "42em" }}>
               {zh
-                ? "TSC 尚未就任。下列為提議之就任標準,於 GOVERNANCE.md 之過渡條件滿足後生效;在此之前,由首席維護者 (BDFL) 行使此角色。"
-                : "The TSC is not yet seated. The criteria below are proposed and take effect once the transition criteria in GOVERNANCE.md are met; until then the lead maintainer (BDFL) acts in this role."}
+                ? "TSC 尚在籌組。下列就任標準已先行明訂,於 GOVERNANCE.md 之過渡條件滿足後生效;在此之前,由首席維護者 (BDFL) 行使此角色。標準先於委員會寫定,意味著委員會一旦就任,是依既有規則承接,而非另起爐灶。"
+                : "The TSC is being seated. The criteria below are defined ahead of that and take effect once the transition criteria in GOVERNANCE.md are met; until then the lead maintainer (BDFL) acts in this role. Writing the criteria before the committee exists means that, once seated, it inherits a defined process rather than improvising one."}
             </p>
             <p>
               {zh

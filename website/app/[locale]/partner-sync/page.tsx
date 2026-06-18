@@ -15,9 +15,10 @@ export default function PartnerSyncPage() {
     <main className="mx-auto max-w-3xl px-6 py-16">
       <h1 className="text-3xl font-bold">Partner Live Sync</h1>
       <p className="mt-2 text-neutral-400">
-        An optional hosted convenience for live-polling ATR confirmed rules. Partner-tier API key
-        required. The standard itself — the spec plus the MIT-licensed rules — is fully usable
-        offline without this service.
+        An optional hosted endpoint for live-polling ATR confirmed rules, so an integrator can track
+        upstream releases without manually chasing each version. Partner-tier API key required. The
+        standard itself — the spec plus the MIT-licensed rules — is fully usable offline without this
+        service.
       </p>
 
       <section className="mt-10 space-y-3">
@@ -41,8 +42,11 @@ export default function PartnerSyncPage() {
         <h2 className="text-xl font-semibold">Who this is for</h2>
         <p>
           Security platforms, model vendors, and enterprise SOC teams that already embed the ATR
-          rules into their own detection stack via npm / PyPI / YAML, and want to minimise
-          npm-publish lag on top of that. For most users, the offline{' '}
+          rules into their own detection stack via npm / PyPI / YAML, and want their integration to
+          follow upstream releases automatically rather than waiting on a manual re-install. Keeping
+          a detection stack current is the standard's job, not the integrator's — this endpoint is
+          one way to make that automatic, the same shape as the weekly auto-sync workflow Microsoft
+          AGT runs against ATR upstream. For most users, the offline{' '}
           <code className="rounded bg-neutral-800 px-1">npm install agent-threat-rules</code> or{' '}
           <code className="rounded bg-neutral-800 px-1">pip install pyatr</code> path is the right
           one — this endpoint is not required to use the standard.
@@ -137,11 +141,15 @@ done`}
       <section className="mt-10 space-y-3">
         <h2 className="text-xl font-semibold">Why this exists</h2>
         <p className="text-neutral-400">
-          npm publish cycles give ~10-minute latency before a confirmed rule lands in a released
-          package. That is fine for most, and the offline npm / PyPI / YAML path remains the
-          canonical way to consume the standard. Partners that want to tie rule updates to their
-          own deploy cadence, or who cannot re-install npm packages on every cycle, can opt into
-          this hosted endpoint as a convenience — nothing here is exclusive to it.
+          A detection standard is only as useful as it is current — a rule written today against an
+          attack first seen yesterday has to reach the engines that run it. npm publish cycles give
+          ~10-minute latency before a confirmed rule lands in a released package. That is fine for
+          most, and the offline npm / PyPI / YAML path remains the canonical way to consume the
+          standard. The point of this endpoint is that staying current shouldn't require chasing
+          version numbers by hand: partners that want to tie rule updates to their own deploy
+          cadence, or who cannot re-install npm packages on every cycle, can opt into it. Nothing
+          here is exclusive to the endpoint — it is one delivery path for the same MIT-licensed
+          rules everyone else gets.
         </p>
       </section>
     </main>

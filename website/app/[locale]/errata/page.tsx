@@ -24,8 +24,8 @@ export async function generateMetadata({
     title: "Errata — ATR",
     description:
       locale === "zh"
-        ? "ATR 規格已發布版本中發現之錯誤紀錄。"
-        : "Errors discovered in published versions of the ATR specification.",
+        ? "ATR 規格已發布版本中發現之錯誤的公開常設紀錄。錯誤公開更正、留下紀錄,而非靜默修補。"
+        : "A public, standing record of errors found in published versions of the ATR specification — corrected in the open, never silently patched.",
   };
 }
 
@@ -280,8 +280,8 @@ export default async function ErrataPage({
             </h2>
             <p>
               {zh
-                ? "若你在規格中發現錯誤,請於 ATR repository 開立 issue。 issue 內容請包含:受影響之版本、所在章節 (如 §3.5)、目前的錯誤文字、建議的更正、以及任何可驗證之參考資料。維護者會於合理時間內審查並 — 若確認為勘誤 — 加入本頁紀錄。"
-                : "If you discover an error in this specification, please open an issue on the ATR repository. The report should include: the affected version, the section (e.g. §3.5), the erroneous text as published, the proposed correction, and any verifiable references. Maintainers review reports in reasonable time and — once confirmed — add the entry to this registry."}
+                ? "勘誤回報是公開審查的一環,任何人都可以提。若你在規格中發現錯誤,請於 ATR repository 開立 issue。內容請包含:受影響之版本、所在章節 (如 §3.5)、目前的錯誤文字、建議的更正、以及任何可驗證之參考資料。維護者會於合理時間內審查;一經確認,即加入上方紀錄,並標明來源。錯誤不會被悄悄改掉——它會留下紀錄。"
+                : "Reporting an erratum is part of open review, and anyone may do it. If you discover an error in this specification, open an issue on the ATR repository. The report should include: the affected version, the section (e.g. §3.5), the erroneous text as published, the proposed correction, and any verifiable references. Maintainers review reports in reasonable time; once confirmed, the entry is added to the registry above, with attribution. Errors are not silently overwritten — they leave a record."}
             </p>
             <ul>
               <li>
@@ -307,8 +307,8 @@ export default async function ErrataPage({
             </ul>
             <p className="text-sm text-stone mt-4" style={{ maxWidth: "42em" }}>
               {zh
-                ? "勘誤之合併不視為規格變更。實質性之語意修改會以新版本發布,並於 /changelog 標註為 [Breaking] 或 [Compatible]。"
-                : "Merging an erratum is not treated as a spec change. Substantive semantic changes are released as new versions and tagged on /changelog as [Breaking] or [Compatible]."}
+                ? "勘誤更正的是文字,不是規範本身——它不視為規格變更。實質性的語意修改另以新版本發布,並於 /changelog 標註為 [Breaking] 或 [Compatible]。這條界線讓引用本規格的人清楚知道:勘誤永遠不會在他們腳下改動規則的意義。"
+                : "An erratum corrects the text, not the normative content — it is not treated as a spec change. Substantive semantic changes ship as new versions, tagged on /changelog as [Breaking] or [Compatible]. The line is deliberate: anyone citing this specification can rely on errata never shifting a rule's meaning underneath them."}
             </p>
           </section>
 

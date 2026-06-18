@@ -139,8 +139,8 @@ export default async function CitationsPage({
             </h2>
             <p>
               {zh
-                ? "下列場景請引用本規格,而非僅以 URL 連結。引用之版本應以引用時 /spec 所載之最新版本為準,並於引用文字中標示該版本號 (例如 v3.0.0-alpha.1)。"
-                : "Please cite this specification — rather than only linking to a URL — in the following contexts. The cited version should be the latest version published on /spec at the time of writing, and the citation should include that version number (e.g. v3.0.0-alpha.1)."}
+                ? "URL 會搬家,專案會改名,網頁會 404。引用是把一個會動的東西釘成不會動的錨點——所以下列場景請引用本規格,而非僅以 URL 連結。引用之版本應以引用時 /spec 所載之最新版本為準,並於引用文字中標示該版本號 (例如 v3.0.0-alpha.1)。版本會前進,但被引用的那一版永遠指得回去。"
+                : "URLs move, projects get renamed, pages 404. A citation pins something that changes into an anchor that does not — so in the following contexts, cite this specification rather than only linking to a URL. The cited version should be the latest version published on /spec at the time of writing, and the citation should include that version number (e.g. v3.0.0-alpha.1). The version moves forward, but the version you cited remains reachable."}
             </p>
             <ul>
               <li>
@@ -188,8 +188,8 @@ export default async function CitationsPage({
             </h2>
             <p>
               {zh
-                ? "下方提供四種常見之引用格式。請依目標期刊或機構之要求選用。BibTeX 為 LaTeX 之原生格式;APA 為社會科學標準;IEEE 為工程學科標準;Chicago 為人文學科常見格式。"
-                : "Four common citation formats are provided below. Select the one required by your target journal or institution. BibTeX is native to LaTeX; APA is the social-sciences standard; IEEE is the engineering standard; Chicago is common in the humanities."}
+                ? "AI agent 的攻擊面不分學科——寫工程論文的、寫政策白皮書的、寫合規申報的,面對的是同一層威脅。所以同一個標準要在四種引用體裁裡都讀得通。下方四種格式對應四個學術傳統:BibTeX 為 LaTeX 之原生格式;APA 為社會科學標準;IEEE 為工程學科標準;Chicago 為人文學科常見格式。請依目標期刊或機構之要求選用——背後指向的,是同一份規格、同一個 DOI。"
+                : "The AI-agent attack surface does not respect disciplinary lines — the engineer writing a paper, the analyst writing a policy white paper, the officer filing for compliance are all describing the same layer of threat. So the same standard has to read cleanly across four citation traditions. The four formats below map to four of them: BibTeX is native to LaTeX; APA is the social-sciences standard; IEEE is the engineering standard; Chicago is common in the humanities. Select the one your target journal or institution requires — each points back to the same specification, the same DOI."}
             </p>
             <CitationBlock
               locale={locale}
@@ -213,8 +213,8 @@ export default async function CitationsPage({
             </h2>
             <p>
               {zh
-                ? "下列識別碼指向本規格之等效或衍生發布物。DOI 為長期穩定之引用錨點 (anchor),其餘為散佈格式 (distribution form)。"
-                : "The following identifiers point to equivalent or derived distributions of this specification. The DOI serves as the long-term stable anchor for citation; the others are distribution forms."}
+                ? "一個標準有很多個面向世界的入口,但只有一個錨。下列識別碼指向本規格之等效或衍生發布物:DOI 是那個錨——學術引用的規範性錨點,即使每個 npm 版本、每支 GitHub 分支都在動,它指向的那份 snapshot 永不改變。其餘 (GitHub / npm / PyPI / Zenodo / canonical URL) 是給實作者用的散佈格式 (distribution form),是錨周圍的鷹架,不是錨本身。"
+                : "A standard has many doors facing the world, but only one anchor. The identifiers below point to equivalent or derived distributions of this specification. The DOI is the anchor — the normative anchor for academic citation, pointing at a snapshot that never changes even as every npm version and every GitHub branch keeps moving. The rest (GitHub, npm, PyPI, Zenodo, canonical URL) are distribution forms for implementers — scaffolding around the anchor, not the anchor itself."}
             </p>
 
             <div className="hidden md:block overflow-x-auto -mx-2 my-5">
@@ -383,8 +383,8 @@ export default async function CitationsPage({
 
             <p className="text-sm text-stone mt-4" style={{ maxWidth: "42em" }}>
               {zh
-                ? "規範性之引用錨點 (normative anchor) 為 DOI。儲存於 Zenodo 之版本為每一發布版本之獨立 snapshot;GitHub 倉庫為持續演進之原始碼;npm 與 PyPI 套件為實作者使用之分發格式。"
-                : "The normative anchor for citation is the DOI. Zenodo holds an immutable snapshot per release; the GitHub repository tracks ongoing evolution; the npm and PyPI packages are distribution artifacts used by implementers."}
+                ? "規範性之引用錨點 (normative anchor) 為 DOI。儲存於 Zenodo 之版本為每一發布版本之獨立 snapshot;GitHub 倉庫為持續演進之原始碼;npm 與 PyPI 套件為實作者使用之分發格式。在規格之下、單條規則之層級,則以 CVE / CWE 風格之 ATR-YYYY-NNNNN 識別碼指涉——一經發布永不改 ID,規則內容可修訂,但識別碼穩定,讓論文、威脅情報與 CI 腳本得以安全引用某一條具體規則,而非整份標準。穩定的識別碼,是一個標準能被當作基礎建設依賴的前提。"
+                : "The normative anchor for citation is the DOI. Zenodo holds an immutable snapshot per release; the GitHub repository tracks ongoing evolution; the npm and PyPI packages are distribution artifacts used by implementers. Below the specification, at the level of a single rule, threats are referenced by CVE / CWE-style ATR-YYYY-NNNNN identifiers — the ID never changes after publication; the rule's content may be revised, but the identifier stays stable, so a paper, a threat-intel feed, or a CI script can safely reference one specific rule rather than the whole standard. A stable identifier is the precondition for a standard to be depended on as infrastructure."}
             </p>
           </section>
 

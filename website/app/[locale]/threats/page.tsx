@@ -90,14 +90,14 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
       </Reveal>
       <Reveal delay={0.1}>
         <h1 className="font-display text-[clamp(28px,4vw,44px)] font-extrabold tracking-[-2px] mb-2">
-          {zh ? "AI Agent 黑名單" : "AI Agent Blacklist"}
+          {zh ? "攻擊先發生在野外。" : "The attack happens in the wild first."}
         </h1>
       </Reveal>
       <Reveal delay={0.2}>
         <p className="text-base text-stone font-light mb-8 max-w-[560px] leading-[1.8]">
           {zh
-            ? <>ATR 掃描 {stats.megaScanTotal.toLocaleString()} 個 skill 後，<br className="sm:hidden" />標記了 {bl.total_flagged.toLocaleString()} 個有風險的 skill。<br />其中 {bl.confirmed_malware} 個確認為惡意軟體。<br /><br className="sm:hidden" />這份清單完全公開。任何人都可以查詢。</>
-            : <>After scanning {stats.megaScanTotal.toLocaleString()} skills,<br className="sm:hidden" /> ATR flagged {bl.total_flagged.toLocaleString()} with risks.<br />{bl.confirmed_malware} confirmed as malware.<br /><br className="sm:hidden" />This list is fully public. Anyone can check.</>}
+            ? <>一個偵測標準若只活在規格書裡，就沒有意義。<br />ATR 掃描了 {stats.megaScanTotal.toLocaleString()} 個真實 skill，標記 {bl.total_flagged.toLocaleString()} 個有風險、確認 {bl.confirmed_malware} 個為惡意軟體，<br className="sm:hidden" />並把背後的行為者公開記錄下來。<br /><br className="sm:hidden" />名單與規則都以 MIT 授權公開——任何人都能查詢、引用、自行核對。</>
+            : <>A detection standard that only lives in a spec is worth nothing. ATR scanned {stats.megaScanTotal.toLocaleString()} real skills, flagged {bl.total_flagged.toLocaleString()} as risky, confirmed {bl.confirmed_malware} as malware, and documented the actors behind them.<br /><br className="sm:hidden" />The list and the rules are public under MIT — anyone can query, cite, and verify them.</>}
         </p>
       </Reveal>
 
@@ -126,13 +126,20 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
       {/* Threat actors — clickable profile cards */}
       <Reveal delay={0.35}>
         <div className="mb-10 md:mb-12">
-          <div className="flex items-baseline justify-between flex-wrap gap-2 mb-4 md:mb-5">
-            <div className="font-data text-xs text-stone tracking-[2px] uppercase">
-              {zh ? "已知威脅行為者" : "Known Threat Actors"}
+          <div className="mb-4 md:mb-5">
+            <div className="flex items-baseline justify-between flex-wrap gap-2">
+              <div className="font-data text-xs text-stone tracking-[2px] uppercase">
+                {zh ? "已知威脅行為者" : "Known Threat Actors"}
+              </div>
+              <span className="font-data text-[11px] text-mist">
+                {zh ? "點擊查看完整檔案" : "Click for full profile"}
+              </span>
             </div>
-            <span className="font-data text-[11px] text-mist">
-              {zh ? "點擊查看完整檔案" : "Click for full profile"}
-            </span>
+            <p className="text-sm text-graphite mt-3 max-w-[620px] leading-[1.7]">
+              {zh
+                ? "ATR 不只列規則,也追蹤寫出這些攻擊的人。以下三個行為者在同一次掃描中被揪出——他們把惡意 skill 偽裝成錢包工具、圖像生成器、商業助手,散佈到公開 registry。每個檔案都附上實際證據:C2 位址、封存檔密碼、命名模式、對映的 ATLAS 技法。野外觀察到的手法,變成回流標準的偵測規則。"
+                : "ATR tracks the people who write the attacks, not just the rules that catch them. The three actors below surfaced in a single scan — distributing malicious skills disguised as wallet tools, image generators, and business assistants across public registries. Each profile carries the actual evidence: C2 addresses, archive passwords, naming patterns, the mapped ATLAS technique. What is observed in the wild becomes a detection rule that flows back into the standard."}
+            </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-fog">
             {actors.map((a) => (
@@ -186,10 +193,10 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
             </div>
           </Reveal>
           <Reveal delay={0.1}>
-            <p className="text-sm text-graphite mb-6 max-w-[480px] leading-[1.8]">
+            <p className="text-sm text-graphite mb-6 max-w-[520px] leading-[1.8]">
               {zh
-                ? <>這些 skill 在最新一次 ATR {stats.ruleCount} 條規則掃描中,<br className="sm:hidden" />零 CRITICAL / HIGH 發現。</>
-                : <>These skills had zero CRITICAL / HIGH findings<br className="sm:hidden" /> in the latest ATR {stats.ruleCount}-rule scan.</>}
+                ? <>同一套規則也用來證明乾淨。這些 skill 通過最新一次 ATR {stats.ruleCount} 條規則掃描,<br className="sm:hidden" />零 CRITICAL / HIGH 發現——同一個可稽核標準,既標記惡意,也背書良性。</>
+                : <>The same ruleset proves what is clean. These skills passed the latest ATR {stats.ruleCount}-rule scan with zero CRITICAL / HIGH findings — one auditable standard that flags the malicious and vouches for the benign.</>}
             </p>
           </Reveal>
           <Reveal delay={0.2}>
@@ -241,8 +248,8 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
               </div>
               <p className="text-sm text-graphite mt-2 leading-[1.7]">
                 {zh
-                  ? "所有被標記的 skill 都在公開的 blacklist.json。任何 CI、registry 或 agent framework 都可以直接拉取。"
-                  : "Every flagged skill lives in the public blacklist.json. Any CI, registry, or agent framework can pull it directly."}
+                  ? "所有被標記的 skill 都在一份機器可讀的 blacklist.json 裡——每筆都附上命中規則與證據。任何 CI、registry 或 agent framework 都能直接拉取,不需註冊、不需金鑰、不收過路費。"
+                  : "Every flagged skill lives in one machine-readable blacklist.json — each entry carries the rule it hit and the evidence behind it. Any CI, registry, or agent framework can pull it directly: no signup, no key, no toll."}
               </p>
             </div>
             <div className="flex flex-col gap-2 md:shrink-0">
@@ -271,8 +278,8 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
       <Reveal delay={0.5}>
         <p className="text-xs text-mist mt-6 leading-[1.8] max-w-[480px]">
           {zh
-            ? <>此清單由開放的 ATR 生態系掃描自動產生，<br className="sm:hidden" />並以 MIT 授權的規則為本體。<br />被標記不代表一定是惡意 — <br className="sm:hidden" />請查看具體規則判斷風險。<br />回報誤報：GitHub Issue。</>
-            : <>This list is generated from open ATR ecosystem scans,<br className="sm:hidden" /> built on the MIT-licensed rules.<br />Being flagged does not guarantee malice — <br className="sm:hidden" />check the specific rules for risk assessment.<br />Report false positives via GitHub Issues.</>}
+            ? <>此清單由開放的 ATR 生態系掃描自動產生，<br className="sm:hidden" />並以 MIT 授權的規則為本體。<br />被標記是訊號,不是定罪 — <br className="sm:hidden" />請對照命中的規則自行判斷。<br />認為標錯了?開一個 GitHub Issue,我們公開審。</>
+            : <>This list is generated from open ATR ecosystem scans,<br className="sm:hidden" /> built on the MIT-licensed rules.<br />A flag is a signal, not a verdict — <br className="sm:hidden" />check the rule it hit and judge for yourself.<br />Think we got one wrong? Open a GitHub Issue; we review it in the open.</>}
         </p>
       </Reveal>
 

@@ -1,6 +1,6 @@
 # ATR Limitations
 
-ATR v3.0.5 uses regex-based pattern detection (`detection_tier: pattern`, `schema_version: 0.1`). This document is a transparent accounting of what that approach can and cannot do. Read this before deploying ATR in production.
+ATR v3.5.0 uses regex-based pattern detection (`detection_tier: pattern`, `schema_version: 0.1`). This document is a transparent accounting of what that approach can and cannot do. Read this before deploying ATR in production.
 
 **Current stats:** 652 rules (ATR 3.5.0). On an 850-sample PINT-format corpus (deepset/prompt-injections + Lakera Gandalf -- not Lakera's official private PINT benchmark): 63.6% recall, 99.7% precision. SKILL.md benchmark: 100% recall, 97% precision, 0.20% FP (498 real-world samples). Plus 64 evasion tests documenting known bypasses. (Benchmarks re-measured against 3.5.0 on 2026-06-16; see README §Benchmarks for the full version-pinned table.)
 

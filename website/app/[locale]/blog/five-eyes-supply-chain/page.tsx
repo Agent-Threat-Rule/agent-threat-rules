@@ -73,9 +73,10 @@ export default async function FiveEyesPostPage({
             協同的發布者帳號出貨了其中絕大多數。
           </p>
           <p>
-            指引要你驗證第三方元件。Agent Threat Rules(ATR)就是做這件事的開放、MIT
-            授權規則集——652 條偵測規則，對任何 skill 或 MCP manifest 秒級掃描。機構點出了
-            缺口；這個填上它。
+            指引要你驗證第三方元件。Agent Threat Rules(ATR)就是做這件事的開放、廠商中立、MIT
+            授權標準——652 條機器可讀的偵測規則，對任何 skill 或 MCP manifest 秒級掃描，
+            任何符合規範的引擎都能評估。就像 Sigma 把 SIEM 的偵測寫成共用格式、YARA 之於
+            malware：機構點出了缺口，標準把它寫成大家都能跑的規則。
           </p>
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">指引點名的，正是我們抓到的</h2>
@@ -90,13 +91,14 @@ export default async function FiveEyesPostPage({
           </p>
           <p>
             說清楚這是什麼：pattern 偵測抓的是已知形狀，不是讀心。用 char code 拼出名稱、
-            或走 DNS 外滲的變種會滑過。把它當其中一層，不是唯一一層——但這一層，是指引要你
-            建立的「第三方元件驗證」裡，唯一可以今天就跑起來的那塊。
+            或走 DNS 外滲的變種會滑過。一個標準的可信度，取決於它願不願意說清楚自己抓不到什麼——
+            所以把它當其中一層，不是唯一一層。但這一層，是指引要你建立的「第三方元件驗證」裡，
+            唯一可以今天就跑起來的那塊。
           </p>
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">跑起來</h2>
           <pre className="bg-ink text-paper font-data text-[13px] p-4 overflow-x-auto">
-            <code>npm install -g agent-threat-rules@3.4.0{"\n"}npx agent-threat-rules scan .</code>
+            <code>npm install -g agent-threat-rules@3.5.0{"\n"}npx agent-threat-rules scan .</code>
           </pre>
           <p>
             指向你的 skill 目錄或 MCP 設定。如果它標記了一個你沒寫的元件，把它當成不可信，
@@ -154,9 +156,11 @@ export default async function FiveEyesPostPage({
           </p>
           <p>
             The guidance asks you to verify third-party components. Agent Threat Rules (ATR) is
-            the open, MIT-licensed rule set that does exactly that — 652 detection rules, running
-            against any skill or MCP manifest in seconds. The agencies named the gap; this fills
-            it.
+            the open, vendor-neutral, MIT-licensed standard that does exactly that — 652
+            machine-readable detection rules, evaluable by any conformant engine, running against
+            any skill or MCP manifest in seconds. The way Sigma made SIEM detections a shared
+            format and YARA did it for malware: the agencies named the gap, and a standard turns it
+            into rules anyone can run.
           </p>
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">
@@ -176,14 +180,14 @@ export default async function FiveEyesPostPage({
           <p>
             Be clear about what this is. Pattern detection catches the known shape; it does not
             read minds. A variant that builds names from char codes, or exfiltrates over DNS, will
-            slip past. Run it as one layer, not the only one — but it is the one layer of the
-            &ldquo;third-party component verification&rdquo; the guidance asks for that you can run
-            today.
+            slip past. A standard earns trust by being explicit about what it cannot catch — so run
+            it as one layer, not the only one. But it is the one layer of the &ldquo;third-party
+            component verification&rdquo; the guidance asks for that you can run today.
           </p>
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">Run it</h2>
           <pre className="bg-ink text-paper font-data text-[13px] p-4 overflow-x-auto">
-            <code>npm install -g agent-threat-rules@3.4.0{"\n"}npx agent-threat-rules scan .</code>
+            <code>npm install -g agent-threat-rules@3.5.0{"\n"}npx agent-threat-rules scan .</code>
           </pre>
           <p>
             Point it at your skill directory or MCP config. If it flags a component you did not

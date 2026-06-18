@@ -56,6 +56,11 @@ const ENTRIES: GlossaryEntry[] = [
     zh: "新產生的規則進入 production status 前,先在 shadow 模式下執行的 24 小時觀察窗。",
   },
   {
+    term: "confirm",
+    en: "An optional rule field requesting a second-stage check before the rule may fire in the enforce or alert lane. The only defined method is confirm: embedding, which re-evaluates a pattern hit against attack-content similarity and keeps the match only when similarity meets the configured threshold. The confirm gate is narrowing only: it may remove a match but never create one. A rule declaring confirm MUST have maturity stable or test, and a detection method of pattern, signature, or semantic — trace and behavioral signals are structural, not content, so content-similarity confirmation does not apply.",
+    zh: "選用的規則欄位,要求規則在 enforce 或 alert 車道開火前先通過第二階段檢查。目前唯一定義的方法是 confirm: embedding——將 pattern 命中重新對攻擊內容相似度評估,僅當相似度達到設定門檻時才保留該 match。confirm 閘只會收窄:它可以移除 match,但永不創造 match。宣告 confirm 的規則 MUST 為 stable 或 test 成熟度,且 detection method 為 pattern、signature 或 semantic——trace 與 behavioral 的訊號是結構性的,非內容,故內容相似度確認不適用。",
+  },
+  {
     term: "conformance level",
     en: "One of L1 (Engine), L2 (Publisher), or L3 (Sub-range Authority). Defined normatively in /conformance.",
     zh: "L1 (Engine)、L2 (Publisher) 或 L3 (Sub-range Authority) 三者之一。於 /conformance 中規範性定義。",
@@ -69,6 +74,11 @@ const ENTRIES: GlossaryEntry[] = [
     term: "detection.conditions",
     en: "The array of field/operator/value triples in a rule body that determine whether the rule matches.",
     zh: "規則內容中由 field/operator/value 三元組構成的陣列,決定規則是否 match。",
+  },
+  {
+    term: "detection lane",
+    en: "A consumer-selected gate that decides which rule maturities are allowed to fire, traded against false-positive tolerance. Three lanes are defined. enforce fires stable rules only — the auto-block lane, lowest false-positive rate. alert fires stable and test rules — the analyst / correlation lane. hunt fires every non-deprecated rule as advisory signal — the default, and the eval lane. Deprecated rules fire in no lane. The lane is chosen by the engine consumer, not declared on the rule: the same rule corpus yields a different firing set per lane, which is why ATR reports false-positive rates lane by lane rather than as a single figure.",
+    zh: "由消費者選定的閘,決定哪些成熟度的規則允許開火,以此換取對誤報的容忍度。共定義三條車道。enforce 只讓 stable 規則開火——自動封鎖車道,誤報率最低。alert 讓 stable 與 test 規則開火——分析師 / 關聯車道。hunt 讓所有未廢棄的規則以建議性訊號開火——預設車道,也是評估車道。deprecated 規則在任何車道皆不開火。車道由引擎消費者選擇,而非宣告於規則上:同一份規則語料在不同車道下產出不同的開火集合,這也是 ATR 逐車道揭露誤報率、而非用單一數字概括的原因。",
   },
   {
     term: "fixture",
@@ -87,8 +97,8 @@ const ENTRIES: GlossaryEntry[] = [
   },
   {
     term: "maturity",
-    en: "The promotion stage of a rule, tracked by the status field: draft → experimental → test → stable → deprecated. Promotion rules are defined in RFC-001.",
-    zh: "規則的晉升階段,由 status 欄位追蹤:draft → experimental → test → stable → deprecated。晉升規則由 RFC-001 定義。",
+    en: "The promotion stage of a rule, drawn from a fixed ladder: draft → experimental → test → stable → deprecated. A rule advances on evidence (false-positive rate, sample volume, confidence), not on age. Maturity is what each detection lane gates on: enforce admits stable only, alert admits stable and test, hunt admits everything non-deprecated. An unrecognized maturity value normalizes to experimental — a typo never silently reaches the enforce lane. Promotion and demotion rules are defined in RFC-001.",
+    zh: "規則的晉升階段,取自固定階梯:draft → experimental → test → stable → deprecated。規則靠證據(誤報率、樣本量、信心分數)晉升,而非靠年資。成熟度正是各偵測車道據以設閘的依據:enforce 只收 stable、alert 收 stable 與 test、hunt 收所有未廢棄規則。無法辨識的成熟度值會正規化為 experimental——一個拼寫錯誤永遠不會默默抵達 enforce 車道。晉升與降級規則由 RFC-001 定義。",
   },
   {
     term: "normative",
@@ -127,8 +137,8 @@ const ENTRIES: GlossaryEntry[] = [
   },
   {
     term: "status",
-    en: "A required field on every rule, drawn from the maturity ladder: draft, experimental, test, stable, deprecated. Rules with status: draft or status: deprecated MUST NOT participate in production matching without explicit opt-in.",
-    zh: "每條規則必填欄位,取自成熟度階梯:draft、experimental、test、stable、deprecated。status: draft 或 status: deprecated 的規則 MUST NOT 在未明示 opt-in 的情況下參與生產環境 match。",
+    en: "A required field gating whether a rule loads into production matching at all. Rules with status: draft or status: deprecated MUST NOT participate in production matching without explicit opt-in. Status is the coarse load-time gate; maturity is the finer per-lane gate applied to the rules that do load. The two are distinct fields and may differ — a rule may be status: stable yet maturity: experimental, in which case it loads but only fires in the hunt lane.",
+    zh: "決定規則是否載入生產環境 match 的必填欄位。status: draft 或 status: deprecated 的規則 MUST NOT 在未明示 opt-in 的情況下參與生產環境 match。status 是載入時的粗閘;maturity 是套用於已載入規則的細閘(逐車道)。兩者是不同欄位,可能不一致——一條規則可以 status: stable 卻 maturity: experimental,此時它會載入但只在 hunt 車道開火。",
   },
   {
     term: "sub-range",

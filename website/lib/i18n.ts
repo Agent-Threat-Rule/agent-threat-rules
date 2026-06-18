@@ -120,7 +120,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "rules.label": "Rule Explorer",
     "rules.heading": "{count} detection rules. Browse, filter, inspect.",
     "rules.sub":
-      "All rules parsed from YAML at build time. Click any rule to see details.",
+      "Every rule carries a stable ATR-YYYY-NNNNN identifier — CVE/CWE-style, permanent once published. Parsed from YAML at build time; click any rule to read its detection logic, test cases, and known limitations.",
     "rules.search": "Search rules... (name, ID, CVE)",
     "rules.all_categories": "All categories",
     "rules.all_severities": "All severities",
@@ -137,7 +137,7 @@ export const messages: Record<Locale, Record<string, string>> = {
 
     // Integrate page
     "integrate.ready":
-      "{count} rules, ready to integrate. The same path Cisco walked.",
+      "{count} rules, written once, runnable anywhere. Wire the same ruleset into TypeScript, Python, CI, or a SIEM — the path Cisco, Microsoft, and MISP already walked.",
     "integrate.schema.title": "Schema Stability Guarantee",
     "integrate.schema.intro":
       "If you depend on ATR as upstream, you need to know the format won't break. Here's our commitment:",
@@ -217,9 +217,9 @@ export const messages: Record<Locale, Record<string, string>> = {
 
     // Subpages
     "coverage.label": "Standards Coverage",
-    "coverage.heading": "ATR maps to every major AI security framework.",
+    "coverage.heading": "The frameworks name the threat. ATR runs it.",
     "coverage.sub":
-      'Go from "understand the threat" to "detect it" without building rules from scratch.',
+      "MITRE ATLAS, OWASP, NIST AI RMF, ISO 42001 — six frameworks classify what can go wrong. ATR is the executable layer underneath: detection that fires on a real agent artifact. Every one of the 652 rules carries mappings into all six frameworks, enforced in CI.",
     "integrate.label": "Integrate",
     "integrate.heading": "Four paths. Same destination.",
     "research.label": "Research",
@@ -228,9 +228,9 @@ export const messages: Record<Locale, Record<string, string>> = {
       "ATR publishes evasion tests openly. We tell you what we can't catch.",
     "contribute.label": "Contribute",
     "contribute.heading":
-      "ATR is MIT-licensed. Contributing requires a text editor and a YAML file.",
+      "One rule, proposed once, defends everyone who reads the standard.",
     "contribute.sub":
-      "No proprietary tooling. No telemetry. No CLA. Community-maintained and governed as an open standard.",
+      "ATR is MIT-licensed and community-maintained. Contributing takes a text editor and a YAML file — no proprietary tooling, no telemetry, no CLA.",
 
     // ── Standards site additions ───────────────────────────────
     // Document Status banner
@@ -280,7 +280,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     // Spec page
     "spec.title": "ATR Specification",
     "spec.subtitle":
-      "Open detection rule format for AI agent security threats. Working Draft toward a community standard maintained by the ATR Community.",
+      "The canonical, machine-readable rule format for detecting AI agent threats — what Sigma is to SIEM and YARA is to malware. A Working Draft maintained in the open by the ATR Community; the files in the repository, not this page, are authoritative.",
     "spec.abstract.h": "Abstract",
     "spec.status.h": "Status of This Document",
     "spec.status.body":
@@ -289,7 +289,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     // Implementers page
     "implementers.title": "Implementer Report",
     "implementers.subtitle":
-      "Organizations that have integrated or referenced ATR. Self-declared via pull request to the ADOPTERS.md registry.",
+      "A specification is only real when more than one engine implements it the same way. This report lists the organizations that run or reference ATR — each one independent evidence that the format can be implemented from the spec alone, the way W3C advances a standard on the strength of its implementations. Self-declared via pull request to the ADOPTERS.md registry.",
     "implementers.col.org": "Organization",
     "implementers.col.role": "Conformance",
     "implementers.col.version": "Spec Version",
@@ -306,10 +306,10 @@ export const messages: Record<Locale, Record<string, string>> = {
     // Conformance page
     "conformance.title": "Conformance",
     "conformance.subtitle":
-      "Three conformance levels define what it means to claim that a system implements ATR. Each level has an associated test suite published as YAML fixtures in the repository.",
+      "Conformance is what lets a rule written in Taipei run unchanged on an engine in Seattle. Three levels define what it means to claim a system implements ATR — so that any conforming engine evaluates the same rule the same way. Each level has a test suite published as YAML fixtures in the repository; conformance is demonstrated, not asserted.",
     "conformance.l1.title": "L1 Engine Conformance",
     "conformance.l1.body":
-      "An L1 engine MUST parse every rule that validates against spec/atr-schema.yaml, MUST evaluate detection.conditions with the semantics defined in §3.5, and MUST honor scan_target and status semantics. L1 engines MAY refuse rules outside their declared scan_target.",
+      "An L1 engine is what makes the format portable. It MUST parse every rule that validates against spec/atr-schema.yaml, MUST evaluate detection.conditions with the semantics defined in §3.5, and MUST honor scan_target and status semantics — so that the same rule yields the same verdict regardless of who wrote the engine. L1 engines MAY refuse rules outside their declared scan_target.",
     "conformance.l2.title": "L2 Publisher Conformance",
     "conformance.l2.body":
       "An L2 publisher publishes rules in a vendor-prefixed sub-range (e.g., ACME-YYYY-NNNNN) that follow all ATR semantics. L2 publishers MUST honor the deprecation policy in §3.7 and SHOULD include test_cases for every published rule.",
@@ -318,7 +318,7 @@ export const messages: Record<Locale, Record<string, string>> = {
       "An L3 sub-range authority is a national or organizational body that mints rules under a sovereign prefix (e.g., ATR-TW-2026-NNNNN). Authority is granted following the procedure in /charter §5; the TSC grants it once seated — until then the lead maintainer (BDFL) acts in this role.",
     "conformance.testsuite.h": "Test Suite",
     "conformance.testsuite.body":
-      "The L1 engine test suite consists of YAML fixtures stored under spec/conformance/ in the main repository. Each fixture pairs a rule with its expected evaluation outcome on a fixed event. An implementation passes if every fixture evaluates as declared.",
+      "The L1 engine test suite consists of YAML fixtures stored under spec/conformance/ in the main repository. Each fixture pairs a rule with its expected evaluation outcome on a fixed event — the contract is in the fixture, not in any one implementation. An implementation passes if every fixture evaluates as declared. Two engines that both pass agree, by construction, on every rule the suite covers.",
     "conformance.self.h": "Self-Certification",
     "conformance.self.body":
       "Implementations self-certify by running the test suite locally and opening a pull request against ADOPTERS.md with the integration metadata. The maintainers (the TSC once seated) may verify a self-certification at any time by re-running the suite against a published artifact.",
@@ -326,9 +326,9 @@ export const messages: Record<Locale, Record<string, string>> = {
     // Errata page
     "errata.title": "Errata",
     "errata.subtitle":
-      "Errors discovered in published versions of the ATR specification. Each entry identifies the affected version, the location of the error, the corrective text, and the date the correction was published.",
+      "A standing record of errors found in published versions of the ATR specification — kept in the open the way W3C and IETF specifications carry their errata. Every published version is permanent; the errors in it are corrected here, in public, with attribution. Each entry names the affected version, where the error sits, the corrective text, and the date the correction was published.",
     "errata.empty":
-      "No errata reported for the current Working Draft. If you discover an error in this document, please open an issue on the repository.",
+      "No errata are on record for the current Working Draft. The absence of entries is not a claim of perfection — it means no error has yet been confirmed in a published version. If you find one, open an issue on the repository; a confirmed report is added here, not quietly patched.",
     "errata.col.version": "Affected Version",
     "errata.col.section": "Section",
     "errata.col.summary": "Summary",
@@ -342,26 +342,26 @@ export const messages: Record<Locale, Record<string, string>> = {
     // Charter
     "charter.title": "Project Charter",
     "charter.subtitle":
-      "The charter defines what ATR is, what it is not, how decisions are made, and how the Technical Steering Committee is seated.",
+      "A standard outlives the people who start it only if its rules are written down. This charter sets out what ATR is, what it is not, how decisions are made, and how the Technical Steering Committee is seated — the commitments that hold regardless of who maintains the project.",
     "charter.mission.h": "Mission",
     "charter.mission.body":
-      "ATR exists to give the AI-agent security community a single shared format for declaring, exchanging, and evaluating detection rules — so that defenders working in different organizations and countries can compose their work without re-inventing the rule format each time.",
+      "ATR exists to give the AI-agent security community a single shared format for declaring, exchanging, and evaluating detection rules — so that a defender in one organization can build on a rule written by a defender in another, in another country, without anyone re-inventing the rule format. A shared format is infrastructure, not a product: it belongs to no vendor and answers to the community that maintains it.",
     "charter.scope.h": "Scope",
     "charter.scope.in":
       "In scope: the rule format, the reference engine, the rule schema, conformance levels, and the cross-framework mappings (OWASP, MITRE ATLAS, NIST AI RMF, SAFE-MCP).",
     "charter.scope.out":
-      "Out of scope: vendor-specific tooling, commercial integrations, runtime enforcement policy, and incident response coordination — these belong to downstream implementers, not to the standard itself.",
+      "Out of scope: vendor-specific tooling, commercial integrations, runtime enforcement policy, and incident response coordination. These are the work of downstream implementers, and the standard stays deliberately narrow so that any of them can build on it without inheriting someone else's product decisions.",
     "charter.governance.h": "Governance",
     "charter.governance.body":
-      "ATR is governed by a single maintainer (BDFL) transitioning to a Technical Steering Committee. The transition criteria and the TSC seating process are defined in GOVERNANCE.md and docs/BDFL-charter.md.",
+      "ATR is governed today by a single lead maintainer (BDFL), with a Technical Steering Committee being stood up to take that role. Concentrating authority in one maintainer is a phase, not the design: the transition criteria and the TSC seating process are written down in advance — in GOVERNANCE.md and docs/BDFL-charter.md — precisely so the move to shared governance happens by rule, not by accident.",
     "charter.ip.h": "Intellectual Property",
     "charter.ip.body":
-      "ATR is released under the MIT License. All contributions are MIT-licensed by submission. There is no CLA. The DOI for citation is 10.5281/zenodo.19178002.",
+      "ATR is released under the MIT License — permanently, with no path to relicensing the published standard. All contributions are MIT-licensed by submission; there is no CLA to sign and no rights to assign. Anyone may adopt, extend, or fork the rules, including vendors who compete with one another. The DOI for citation is 10.5281/zenodo.19178002.",
 
     // Citations
     "citations.title": "Citation",
     "citations.subtitle":
-      "If you use ATR in academic work, security research, or institutional documentation, please cite the specification using one of the formats below.",
+      "A standard becomes infrastructure the day other people's work can point at it and not have it move. ATR is built to be cited — by a paper, a CVE record, a CI script — through identifiers that never change after publication and a DOI that outlives any URL. The formats below are how you reference it.",
 
     // Mission articulation (used on /, /about, /charter)
     "mission.title": "Mission",
@@ -497,7 +497,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "rules.heading":
       "{count} \u689D\u5075\u6E2C\u898F\u5247\u3002\u700F\u89BD\u3001\u904E\u6FFE\u3001\u6AA2\u67E5\u3002",
     "rules.sub":
-      "\u6240\u6709\u898F\u5247\u5728 build time \u5F9E YAML \u89E3\u6790\u3002\u9EDE\u64CA\u4EFB\u4F55\u898F\u5247\u67E5\u770B\u8A73\u60C5\u3002",
+      "\u6BCF\u689D\u898F\u5247\u90FD\u6709\u7A69\u5B9A\u7684 ATR-YYYY-NNNNN \u8B58\u5225\u78BC\u2014\u2014CVE/CWE \u9AD4\u88C1\uFF0C\u4E00\u7D93\u767C\u5E03\u6C38\u4E0D\u66F4\u6539\u3002\u898F\u5247\u5728 build time \u5F9E YAML \u89E3\u6790\uFF1B\u9EDE\u64CA\u4EFB\u4F55\u898F\u5247\uFF0C\u67E5\u770B\u5B83\u7684\u5075\u6E2C\u908F\u8F2F\u3001\u6E2C\u8A66\u6848\u4F8B\u8207\u5DF2\u77E5\u9650\u5236\u3002",
     "rules.search":
       "\u641C\u7D22\u898F\u5247\u2026\uff08\u540D\u7A31\u3001ID\u3001CVE\uff09",
     "rules.all_categories": "\u6240\u6709\u985E\u5225",
@@ -516,7 +516,7 @@ export const messages: Record<Locale, Record<string, string>> = {
 
     // Integrate page
     "integrate.ready":
-      "{count} \u689D\u898F\u5247\uff0c\u96A8\u6642\u53EF\u6574\u5408\u3002\u8DDF Cisco \u8D70\u7684\u540C\u4E00\u689D\u8DEF\u3002",
+      "{count} \u689D\u898F\u5247\uFF0C\u5BEB\u4E00\u6B21\uFF0C\u4EFB\u4F55\u5730\u65B9\u90FD\u80FD\u8DD1\u3002\u540C\u4E00\u4EFD\u898F\u5247\u96C6\uFF0C\u63A5\u9032 TypeScript\u3001Python\u3001CI \u6216 SIEM\u2014\u2014Cisco\u3001Microsoft\u3001MISP \u5DF2\u7D93\u8D70\u904E\u7684\u8DEF\u3002",
     "integrate.schema.title": "Schema \u7A69\u5B9A\u6027\u4FDD\u8B49",
     "integrate.schema.intro":
       "\u5982\u679C\u4F60\u4F9D\u8CF4 ATR \u4F5C\u70BA\u4E0A\u6E38\uff0C\u4F60\u9700\u8981\u77E5\u9053\u683C\u5F0F\u4E0D\u6703\u58DE\u6389\u3002\u9019\u662F\u6211\u5011\u7684\u627F\u8AFE\uff1A",
@@ -601,9 +601,9 @@ export const messages: Record<Locale, Record<string, string>> = {
     // Subpages
     "coverage.label": "\u6A19\u6E96\u8986\u84CB",
     "coverage.heading":
-      "ATR \u5C0D\u61C9\u6BCF\u500B\u4E3B\u8981\u7684 AI \u5B89\u5168\u6846\u67B6\u3002",
+      "\u6846\u67B6\u5B9A\u7FA9\u5A01\u8105\uff0CATR \u8B93\u5B83\u8DD1\u8D77\u4F86\u3002",
     "coverage.sub":
-      "\u5F9E\u300C\u7406\u89E3\u5A01\u8105\u300D\u76F4\u63A5\u5230\u300C\u5075\u6E2C\u5A01\u8105\u300D\uff0C\u4E0D\u7528\u5F9E\u96F6\u5BEB\u898F\u5247\u3002",
+      "MITRE ATLAS\u3001OWASP\u3001NIST AI RMF\u3001ISO 42001\u2014\u2014\u516D\u500B\u6846\u67B6\u5206\u985E\u300C\u4EC0\u9EBC\u6703\u51FA\u932F\u300D\u3002ATR \u662F\u5176\u4E0B\u53EF\u57F7\u884C\u7684\u90A3\u4E00\u5C64\uFF1A\u80FD\u5728\u771F\u5BE6 agent \u6210\u54C1\u4E0A\u958B\u706B\u7684\u5075\u6E2C\u3002652 \u689D\u898F\u5247\u6BCF\u4E00\u689D\u90FD\u5E36\u6709\u9019\u516D\u500B\u6846\u67B6\u7684\u5C0D\u61C9\uff0C\u4E26\u7531 CI \u5F37\u5236\u3002",
     "integrate.label": "Integrate",
     "integrate.heading":
       "\u56DB\u689D\u8DEF\u5F91\u3002\u540C\u4E00\u500B\u7D42\u9EDE\u3002",
@@ -614,9 +614,9 @@ export const messages: Record<Locale, Record<string, string>> = {
       "ATR \u516C\u958B\u767C\u5E03 evasion test\u3002\u6211\u5011\u544A\u8A34\u4F60\u6211\u5011\u6293\u4E0D\u5230\u4EC0\u9EBC\u3002",
     "contribute.label": "\u8CA2\u737B",
     "contribute.heading":
-      "ATR \u662F MIT \u6388\u6B0A\u3002\u8CA2\u737B\u53EA\u9700\u8981\u4E00\u500B\u6587\u5B57\u7DE8\u8F2F\u5668\u548C\u4E00\u500B YAML \u6A94\u6848\u3002",
+      "\u4E00\u689D\u898F\u5247\uFF0C\u63D0\u4E00\u6B21\uFF0C\u4FDD\u8B77\u6BCF\u4E00\u500B\u8B80\u9019\u500B\u6A19\u6E96\u7684\u4EBA\u3002",
     "contribute.sub":
-      "\u96F6\u5C08\u6709\u5DE5\u5177\u3001\u96F6\u9059\u6E2C\u3001\u96F6 CLA\u3002\u793E\u7FA4\u7DAD\u8B77\u7684\u958B\u653E\u6A19\u6E96\u3002",
+      "ATR \u662F MIT \u6388\u6B0A\u3001\u793E\u7FA4\u7DAD\u8B77\u3002\u8CA2\u737B\u53EA\u9700\u8981\u4E00\u500B\u6587\u5B57\u7DE8\u8F2F\u5668\u548C\u4E00\u500B YAML \u6A94\u6848\u2014\u2014\u96F6\u5C08\u6709\u5DE5\u5177\u3001\u96F6\u9059\u6E2C\u3001\u96F6 CLA\u3002",
 
     // Footer
     "footer.note":
@@ -666,7 +666,7 @@ export const messages: Record<Locale, Record<string, string>> = {
 
     "spec.title": "ATR \u898F\u683C (Specification)",
     "spec.subtitle":
-      "AI Agent \u5B89\u5168\u5A01\u8105\u7684\u958B\u653E\u5075\u6E2C\u898F\u5247\u683C\u5F0F\u3002Working Draft,\u671D\u5411\u7531 ATR \u793E\u7FA4\u7DAD\u8B77\u7684\u793E\u7FA4\u6A19\u6E96\u524D\u9032\u3002",
+      "AI agent \u5A01\u8105\u5075\u6E2C\u7684\u6B63\u672C\u3001\u6A5F\u5668\u53EF\u8B80\u898F\u5247\u683C\u5F0F \u2500\u2500 \u4E00\u5982 Sigma \u4E4B\u65BC SIEM\u3001YARA \u4E4B\u65BC malware\u3002\u7531 ATR \u793E\u7FA4\u65BC\u516C\u958B\u8655\u7DAD\u8B77\u7684 Working Draft;\u4EE5 repository \u4E2D\u7684\u6A94\u6848\u70BA\u6E96,\u800C\u975E\u672C\u9801\u3002",
     "spec.abstract.h": "\u6458\u8981 (Abstract)",
     "spec.status.h": "\u672C\u6587\u4EF6\u72C0\u614B (Status of This Document)",
     "spec.status.body":
@@ -674,7 +674,7 @@ export const messages: Record<Locale, Record<string, string>> = {
 
     "implementers.title": "Implementer Report",
     "implementers.subtitle":
-      "\u5DF2\u6574\u5408\u6216\u5F15\u7528 ATR \u7684\u7D44\u7E54\u3002\u900F\u904E pull request \u5C0D ADOPTERS.md registry \u81EA\u6211\u5BA3\u544A (self-declaration)\u3002",
+      "\u4E00\u500B\u898F\u683C\u8981\u5230\u6709\u4E0D\u53EA\u4E00\u500B\u5F15\u64CE\u80FD\u7528\u540C\u4E00\u7A2E\u65B9\u5F0F\u5BE6\u4F5C\u5B83\u6642,\u624D\u7B97\u771F\u5BE6\u3002\u672C\u5831\u544A\u5217\u51FA\u57F7\u884C\u6216\u5F15\u7528 ATR \u7684\u7D44\u7E54\u2014\u2014\u6BCF\u4E00\u500B\u90FD\u662F\u4E00\u500B\u7368\u7ACB\u8B49\u64DA:\u8B49\u660E\u9019\u500B\u683C\u5F0F\u53EF\u4EE5\u53EA\u6191\u898F\u683C\u5C31\u88AB\u5BE6\u4F5C\u51FA\u4F86\u2014\u2014\u9019\u6B63\u662F W3C \u9760\u5BE6\u4F5C\u6578\u91CF\u63A8\u9032\u6A19\u6E96\u7684\u65B9\u5F0F\u3002\u900F\u904E pull request \u5C0D ADOPTERS.md registry \u81EA\u6211\u5BA3\u544A (self-declaration)\u3002",
     "implementers.col.org": "\u7D44\u7E54",
     "implementers.col.role": "\u7B26\u898F\u7B49\u7D1A",
     "implementers.col.version": "\u898F\u683C\u7248\u672C",
@@ -690,10 +690,10 @@ export const messages: Record<Locale, Record<string, string>> = {
 
     "conformance.title": "\u7B26\u898F (Conformance)",
     "conformance.subtitle":
-      "\u4E09\u500B\u7B26\u898F\u7B49\u7D1A\u5B9A\u7FA9\u300C\u5BE6\u4F5C ATR\u300D\u4EE3\u8868\u7684\u610F\u6DB5\u3002\u6BCF\u4E00\u7B49\u7D1A\u5728 repository \u4E2D\u4EE5 YAML fixture \u5F62\u5F0F\u767C\u5E03\u5C0D\u61C9\u7684\u6E2C\u8A66\u5957\u4EF6 (test suite)\u3002",
+      "\u7B26\u898F,\u6B63\u662F\u8B93\u4E00\u689D\u5728\u53F0\u5317\u5BEB\u7684\u898F\u5247,\u80FD\u539F\u5C01\u4E0D\u52D5\u8DD1\u5728\u897F\u96C5\u5716\u7684\u5F15\u64CE\u4E0A\u3002\u4E09\u500B\u7B49\u7D1A\u5B9A\u7FA9\u300C\u5BE6\u4F5C ATR\u300D\u4EE3\u8868\u7684\u610F\u6DB5\u2014\u2014\u4EFB\u4F55\u7B26\u898F\u7684\u5F15\u64CE,\u5C0D\u540C\u4E00\u689D\u898F\u5247\u90FD\u8A55\u4F30\u51FA\u540C\u4E00\u500B\u7D50\u679C\u3002\u6BCF\u4E00\u7B49\u7D1A\u5728 repository \u4E2D\u4EE5 YAML fixture \u5F62\u5F0F\u767C\u5E03\u5C0D\u61C9\u7684\u6E2C\u8A66\u5957\u4EF6 (test suite);\u7B26\u898F\u9760\u8DD1\u51FA\u4F86,\u4E0D\u9760\u5BA3\u7A31\u3002",
     "conformance.l1.title": "L1 Engine Conformance",
     "conformance.l1.body":
-      "L1 engine MUST \u80FD\u89E3\u6790\u4EFB\u4F55\u901A\u904E spec/atr-schema.yaml \u9A57\u8B49\u7684\u898F\u5247,MUST \u4EE5 \u00A73.5 \u5B9A\u7FA9\u7684\u8A9E\u610F\u8A55\u4F30 detection.conditions,\u4E26 MUST \u9075\u5B88 scan_target \u8207 status \u7684\u8A9E\u610F\u3002L1 engine MAY \u62D2\u7D55\u843D\u5728\u5176\u5BA3\u544A scan_target \u7BC4\u570D\u5916\u7684\u898F\u5247\u3002",
+      "L1 engine \u662F\u8B93\u683C\u5F0F\u53EF\u651C\u7684\u90A3\u4E00\u5C64\u3002\u5B83 MUST \u80FD\u89E3\u6790\u4EFB\u4F55\u901A\u904E spec/atr-schema.yaml \u9A57\u8B49\u7684\u898F\u5247,MUST \u4EE5 \u00A73.5 \u5B9A\u7FA9\u7684\u8A9E\u610F\u8A55\u4F30 detection.conditions,\u4E26 MUST \u9075\u5B88 scan_target \u8207 status \u7684\u8A9E\u610F\u2014\u2014\u597D\u8B93\u540C\u4E00\u689D\u898F\u5247,\u7121\u8AD6\u5F15\u64CE\u51FA\u81EA\u8AB0\u624B,\u90FD\u5F97\u51FA\u540C\u4E00\u500B\u5224\u5B9A\u3002L1 engine MAY \u62D2\u7D55\u843D\u5728\u5176\u5BA3\u544A scan_target \u7BC4\u570D\u5916\u7684\u898F\u5247\u3002",
     "conformance.l2.title": "L2 Publisher Conformance",
     "conformance.l2.body":
       "L2 publisher \u5728\u5EE0\u5546\u524D\u7DB4 (vendor-prefixed) \u7684\u5B50\u7BC4\u570D (\u4F8B\u5982 ACME-YYYY-NNNNN) \u5167\u767C\u5E03\u7B26\u5408 ATR \u8A9E\u610F\u7684\u898F\u5247\u3002L2 publisher MUST \u9075\u5B88 \u00A73.7 \u7684\u5EE2\u68C4\u653F\u7B56,SHOULD \u70BA\u6BCF\u4E00\u689D\u767C\u5E03\u898F\u5247\u9644\u4E0A test_cases\u3002",
@@ -702,16 +702,16 @@ export const messages: Record<Locale, Record<string, string>> = {
       "L3 sub-range authority \u662F\u570B\u5BB6\u7D1A\u6216\u7D44\u7E54\u7D1A\u7684\u4E3B\u9AD4,\u5728\u4E3B\u6B0A (sovereign) \u524D\u7DB4\u4E0B\u9444\u9020\u898F\u5247 (\u4F8B\u5982 ATR-TW-2026-NNNNN)\u3002\u6388\u6B0A\u4F9D /charter \u00A75 \u7A0B\u5E8F\u6838\u767C;TSC \u6210\u7ACB\u5F8C\u7531\u5176\u6838\u767C,\u5728\u6B64\u4E4B\u524D\u7531\u4E3B\u7406\u4EBA (BDFL) \u66AB\u4EE3\u3002",
     "conformance.testsuite.h": "\u6E2C\u8A66\u5957\u4EF6 (Test Suite)",
     "conformance.testsuite.body":
-      "L1 engine \u6E2C\u8A66\u5957\u4EF6\u7531\u4E3B repository \u4E2D spec/conformance/ \u4E0B\u7684 YAML fixture \u7D44\u6210\u3002\u6BCF\u500B fixture \u914D\u5C0D\u4E00\u689D\u898F\u5247\u8207\u5176\u5728\u56FA\u5B9A\u4E8B\u4EF6 (event) \u4E0A\u7684\u9810\u671F\u8A55\u4F30\u7D50\u679C\u3002\u5BE6\u4F5C\u901A\u904E\u7684\u689D\u4EF6\u662F:\u6BCF\u500B fixture \u90FD\u5982\u5BA3\u544A\u822C\u8A55\u4F30\u3002",
+      "L1 engine \u6E2C\u8A66\u5957\u4EF6\u7531\u4E3B repository \u4E2D spec/conformance/ \u4E0B\u7684 YAML fixture \u7D44\u6210\u3002\u6BCF\u500B fixture \u914D\u5C0D\u4E00\u689D\u898F\u5247\u8207\u5176\u5728\u56FA\u5B9A\u4E8B\u4EF6 (event) \u4E0A\u7684\u9810\u671F\u8A55\u4F30\u7D50\u679C\u2014\u2014\u5951\u7D04\u5BEB\u5728 fixture \u88E1,\u4E0D\u5BEB\u5728\u4EFB\u4F55\u55AE\u4E00\u5BE6\u4F5C\u88E1\u3002\u5BE6\u4F5C\u901A\u904E\u7684\u689D\u4EF6\u662F:\u6BCF\u500B fixture \u90FD\u5982\u5BA3\u544A\u822C\u8A55\u4F30\u3002\u5169\u500B\u90FD\u901A\u904E\u7684\u5F15\u64CE,\u5728\u6E2C\u8A66\u5957\u4EF6\u6DB5\u84CB\u7684\u6BCF\u4E00\u689D\u898F\u5247\u4E0A,\u7531\u69CB\u9020\u4FDD\u8B49\u5F7C\u6B64\u4E00\u81F4\u3002",
     "conformance.self.h": "\u81EA\u6211\u8A8D\u8B49 (Self-Certification)",
     "conformance.self.body":
       "\u5BE6\u4F5C\u8005\u5728\u672C\u5730\u57F7\u884C\u6E2C\u8A66\u5957\u4EF6,\u4E26\u5C0D ADOPTERS.md \u958B\u7ACB pull request \u52A0\u5165\u6574\u5408 metadata,\u5373\u53EF\u81EA\u6211\u8A8D\u8B49 (self-certify)\u3002\u7DAD\u8B77\u8005(TSC \u6210\u7ACB\u5F8C)\u53EF\u96A8\u6642\u5C0D\u4EFB\u4E00\u5DF2\u767C\u5E03\u7522\u7269\u91CD\u8DD1\u6E2C\u8A66\u5957\u4EF6\u4EE5\u9A57\u8B49\u81EA\u6211\u8A8D\u8B49\u3002",
 
     "errata.title": "\u52D8\u8AA4 (Errata)",
     "errata.subtitle":
-      "ATR \u898F\u683C\u5DF2\u767C\u5E03\u7248\u672C\u4E2D\u767C\u73FE\u7684\u932F\u8AA4\u3002\u6BCF\u4E00\u7B46\u7D00\u9304\u6A19\u793A\u53D7\u5F71\u97FF\u7248\u672C\u3001\u932F\u8AA4\u6240\u5728\u4F4D\u7F6E\u3001\u66F4\u6B63\u6587\u5B57\u3001\u4EE5\u53CA\u66F4\u6B63\u767C\u5E03\u65E5\u671F\u3002",
+      "ATR \u898F\u683C\u5DF2\u767C\u5E03\u7248\u672C\u4E2D\u767C\u73FE\u4E4B\u932F\u8AA4\u7684\u5E38\u8A2D\u7D00\u9304\u2014\u2014\u5C31\u50CF W3C \u8207 IETF \u898F\u683C\u90A3\u6A23\u516C\u958B\u4FDD\u7559\u52D8\u8AA4\u3002\u6BCF\u4E00\u500B\u5DF2\u767C\u5E03\u7248\u672C\u90FD\u662F\u6C38\u4E45\u7684;\u88E1\u9762\u7684\u932F\u8AA4\u5728\u9019\u88E1\u516C\u958B\u66F4\u6B63\u3001\u4E26\u6A19\u660E\u4F86\u6E90\u3002\u6BCF\u4E00\u7B46\u7D00\u9304\u6A19\u793A\u53D7\u5F71\u97FF\u7248\u672C\u3001\u932F\u8AA4\u6240\u5728\u4F4D\u7F6E\u3001\u66F4\u6B63\u6587\u5B57\u3001\u4EE5\u53CA\u66F4\u6B63\u767C\u5E03\u65E5\u671F\u3002",
     "errata.empty":
-      "\u76EE\u524D Working Draft \u7121\u52D8\u8AA4\u7D00\u9304\u3002\u82E5\u4F60\u767C\u73FE\u672C\u6587\u4EF6\u4E2D\u7684\u932F\u8AA4,\u8ACB\u65BC repository \u958B issue\u3002",
+      "\u76EE\u524D Working Draft \u5C1A\u7121\u52D8\u8AA4\u7D00\u9304\u3002\u6C92\u6709\u7D00\u9304\u4E26\u975E\u5BA3\u7A31\u5B8C\u7F8E\u2014\u2014\u53EA\u662F\u5C1A\u672A\u6709\u4EFB\u4F55\u5DF2\u767C\u5E03\u7248\u672C\u7684\u932F\u8AA4\u7D93\u78BA\u8A8D\u3002\u82E5\u4F60\u767C\u73FE\u4E00\u500B,\u8ACB\u65BC repository \u958B issue;\u7D93\u78BA\u8A8D\u7684\u56DE\u5831\u6703\u88AB\u52A0\u9032\u9019\u88E1,\u800C\u975E\u975C\u9ED8\u4FEE\u88DC\u3002",
     "errata.col.version": "\u53D7\u5F71\u97FF\u7248\u672C",
     "errata.col.section": "\u7AE0\u7BC0",
     "errata.col.summary": "\u6458\u8981",
@@ -723,25 +723,25 @@ export const messages: Record<Locale, Record<string, string>> = {
 
     "charter.title": "\u5C08\u6848\u7AE0\u7A0B (Project Charter)",
     "charter.subtitle":
-      "\u7AE0\u7A0B\u5B9A\u7FA9 ATR \u662F\u4EC0\u9EBC\u3001\u4E0D\u662F\u4EC0\u9EBC\u3001\u6C7A\u7B56\u5982\u4F55\u505A\u6210\u3001\u4EE5\u53CA\u6280\u8853\u6307\u5C0E\u59D4\u54E1\u6703 (TSC) \u5982\u4F55\u5C31\u4EFB\u3002",
+      "\u6A19\u6E96\u80FD\u5426\u6BD4\u555F\u52D5\u5B83\u7684\u4EBA\u6D3B\u5F97\u66F4\u4E45,\u53D6\u6C7A\u65BC\u5B83\u7684\u898F\u5247\u6709\u6C92\u6709\u88AB\u767D\u7D19\u9ED1\u5B57\u5BEB\u4E0B\u4F86\u3002\u672C\u7AE0\u7A0B\u8F09\u660E ATR \u662F\u4EC0\u9EBC\u3001\u4E0D\u662F\u4EC0\u9EBC\u3001\u6C7A\u7B56\u5982\u4F55\u505A\u6210\u3001\u4EE5\u53CA\u6280\u8853\u6307\u5C0E\u59D4\u54E1\u6703 (TSC) \u5982\u4F55\u5C31\u4EFB \u2014\u2014 \u9019\u4E9B\u627F\u8AFE\u7121\u8AD6\u7531\u8AB0\u7DAD\u8B77\u7686\u6210\u7ACB\u3002",
     "charter.mission.h": "\u4F7F\u547D",
     "charter.mission.body":
-      "ATR \u70BA AI Agent \u5B89\u5168\u793E\u7FA4\u63D0\u4F9B\u4E00\u500B\u5171\u540C\u7684\u5075\u6E2C\u898F\u5247\u683C\u5F0F \u2500\u2500 \u8B93\u4E0D\u540C\u7D44\u7E54\u3001\u4E0D\u540C\u570B\u5BB6\u7684\u9632\u79A6\u8005\u80FD\u7D44\u5408\u5F7C\u6B64\u7684\u5DE5\u4F5C,\u800C\u4E0D\u5FC5\u6BCF\u6B21\u90FD\u91CD\u65B0\u767C\u660E\u898F\u5247\u683C\u5F0F\u3002",
+      "ATR \u70BA AI Agent \u5B89\u5168\u793E\u7FA4\u63D0\u4F9B\u4E00\u500B\u5171\u540C\u7684\u5075\u6E2C\u898F\u5247\u683C\u5F0F \u2500\u2500 \u8B93\u67D0\u500B\u7D44\u7E54\u7684\u9632\u79A6\u8005,\u80FD\u76F4\u63A5\u6CBF\u7528\u53E6\u4E00\u500B\u7D44\u7E54\u3001\u751A\u81F3\u53E6\u4E00\u500B\u570B\u5BB6\u7684\u9632\u79A6\u8005\u6240\u5BEB\u7684\u898F\u5247,\u800C\u4E0D\u5FC5\u6709\u4EBA\u91CD\u65B0\u767C\u660E\u898F\u5247\u683C\u5F0F\u3002\u5171\u540C\u683C\u5F0F\u662F\u57FA\u790E\u5EFA\u8A2D,\u4E0D\u662F\u7522\u54C1:\u5B83\u4E0D\u5C6C\u65BC\u4EFB\u4F55\u5EE0\u5546,\u53EA\u5C0D\u7DAD\u8B77\u5B83\u7684\u793E\u7FA4\u8CA0\u8CAC\u3002",
     "charter.scope.h": "\u7BC4\u570D (Scope)",
     "charter.scope.in":
       "\u7BC4\u570D\u5167:\u898F\u5247\u683C\u5F0F\u3001reference engine\u3001rule schema\u3001\u7B26\u898F\u7B49\u7D1A\u3001\u8DE8\u6846\u67B6\u5C0D\u61C9 (OWASP\u3001MITRE ATLAS\u3001NIST AI RMF\u3001SAFE-MCP)\u3002",
     "charter.scope.out":
-      "\u7BC4\u570D\u5916:\u5EE0\u5546\u5C08\u5C6C\u5DE5\u5177\u3001\u5546\u696D\u6574\u5408\u3001runtime enforcement \u653F\u7B56\u3001\u4E8B\u4EF6\u56DE\u61C9\u5354\u8ABF \u2500\u2500 \u9019\u4E9B\u5C6C\u65BC\u4E0B\u6E38\u5BE6\u4F5C\u8005,\u4E0D\u5C6C\u65BC\u6A19\u6E96\u672C\u8EAB\u3002",
+      "\u7BC4\u570D\u5916:\u5EE0\u5546\u5C08\u5C6C\u5DE5\u5177\u3001\u5546\u696D\u6574\u5408\u3001runtime enforcement \u653F\u7B56\u3001\u4E8B\u4EF6\u56DE\u61C9\u5354\u8ABF\u3002\u9019\u4E9B\u662F\u4E0B\u6E38\u5BE6\u4F5C\u8005\u7684\u5DE5\u4F5C;\u6A19\u6E96\u523B\u610F\u4FDD\u6301\u72F9\u7A84,\u597D\u8B93\u4EFB\u4F55\u5BE6\u4F5C\u8005\u90FD\u80FD\u5728\u5176\u4E0A\u5EFA\u69CB,\u800C\u4E0D\u5FC5\u627F\u63A5\u5225\u4EBA\u7684\u7522\u54C1\u6C7A\u7B56\u3002",
     "charter.governance.h": "\u6CBB\u7406 (Governance)",
     "charter.governance.body":
-      "ATR \u73FE\u7531\u55AE\u4E00\u7DAD\u8B77\u8005\u6CBB\u7406 (BDFL),\u6B63\u904E\u6E21\u81F3\u6280\u8853\u6307\u5C0E\u59D4\u54E1\u6703 (TSC)\u3002\u904E\u6E21\u689D\u4EF6\u8207 TSC \u5C31\u4EFB\u7A0B\u5E8F\u5B9A\u7FA9\u65BC GOVERNANCE.md \u8207 docs/BDFL-charter.md\u3002",
+      "ATR \u73FE\u7531\u55AE\u4E00\u9996\u5E2D\u7DAD\u8B77\u8005\u6CBB\u7406 (BDFL),\u6280\u8853\u6307\u5C0E\u59D4\u54E1\u6703 (TSC) \u6B63\u5728\u7C4C\u7D44\u4EE5\u627F\u63A5\u6B64\u89D2\u8272\u3002\u6B0A\u529B\u96C6\u4E2D\u65BC\u55AE\u4E00\u7DAD\u8B77\u8005\u662F\u904E\u6E21\u968E\u6BB5,\u4E0D\u662F\u8A2D\u8A08\u672C\u8EAB:\u904E\u6E21\u689D\u4EF6\u8207 TSC \u5C31\u4EFB\u7A0B\u5E8F\u4E8B\u5148\u5BEB\u5B9A\u65BC GOVERNANCE.md \u8207 docs/BDFL-charter.md \u2014\u2014 \u6B63\u662F\u70BA\u4E86\u8B93\u8D70\u5411\u5171\u4EAB\u6CBB\u7406\u4E00\u4E8B\u4F9D\u898F\u5247\u767C\u751F,\u800C\u975E\u5076\u7136\u767C\u751F\u3002",
     "charter.ip.h": "\u667A\u6167\u8CA1\u7522 (Intellectual Property)",
     "charter.ip.body":
-      "ATR \u63A1 MIT License \u767C\u5E03\u3002\u6240\u6709\u8CA2\u737B\u7686\u4EE5 MIT License \u63D0\u4EA4\u3002\u7121 CLA\u3002\u5F15\u7528 DOI \u70BA 10.5281/zenodo.19178002\u3002",
+      "ATR \u63A1 MIT License \u6C38\u4E45\u767C\u5E03,\u5DF2\u767C\u5E03\u7684\u6A19\u6E96\u6C92\u6709\u4EFB\u4F55\u91CD\u65B0\u6388\u6B0A\u7684\u8DEF\u5F91\u3002\u6240\u6709\u8CA2\u737B\u7686\u4EE5 MIT License \u63D0\u4EA4:\u7121 CLA \u9700\u7C3D\u7F72,\u4EA6\u7121\u6B0A\u5229\u9700\u8B93\u6E21\u3002\u4EFB\u4F55\u4EBA \u2014\u2014 \u5305\u542B\u5F7C\u6B64\u7AF6\u722D\u7684\u5EE0\u5546 \u2014\u2014 \u7686\u5F97\u63A1\u7528\u3001\u64F4\u5145\u6216 fork \u9019\u4E9B\u898F\u5247\u3002\u5F15\u7528 DOI \u70BA 10.5281/zenodo.19178002\u3002",
 
     "citations.title": "\u5F15\u7528 (Citation)",
     "citations.subtitle":
-      "\u82E5\u4F60\u5728\u5B78\u8853\u5DE5\u4F5C\u3001\u5B89\u5168\u7814\u7A76\u6216\u6A5F\u69CB\u6587\u4EF6\u4E2D\u4F7F\u7528 ATR,\u8ACB\u4F9D\u4E0B\u5217\u4EFB\u4E00\u683C\u5F0F\u5F15\u7528\u672C\u898F\u683C\u3002",
+      "\u4E00\u500B\u6A19\u6E96\u6210\u70BA\u57FA\u790E\u5EFA\u8A2D\u7684\u90A3\u4E00\u5929,\u662F\u5225\u4EBA\u7684\u5DE5\u4F5C\u80FD\u6307\u5411\u5B83\u3001\u800C\u5B83\u4E0D\u518D\u79FB\u52D5\u7684\u90A3\u4E00\u5929\u3002ATR \u751F\u4F86\u5C31\u662F\u8981\u88AB\u5F15\u7528\u7684 \u2014\u2014 \u88AB\u4E00\u7BC7\u8AD6\u6587\u3001\u4E00\u7B46 CVE \u7D00\u9304\u3001\u4E00\u652F CI \u8173\u672C\u5F15\u7528 \u2014\u2014 \u9760\u7684\u662F\u767C\u5E03\u5F8C\u6C38\u4E0D\u6539\u52D5\u7684\u8B58\u5225\u78BC,\u4EE5\u53CA\u4E00\u500B\u6BD4\u4EFB\u4F55\u7DB2\u5740\u90FD\u9577\u58FD\u7684 DOI\u3002\u4E0B\u5217\u683C\u5F0F,\u5C31\u662F\u5F15\u7528\u5B83\u7684\u65B9\u5F0F\u3002",
 
     "mission.title": "\u4F7F\u547D",
     "mission.body":

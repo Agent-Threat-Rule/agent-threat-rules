@@ -1,24 +1,22 @@
-## Daily Scan Summary (2026-06-15)
+## Daily Scan Summary (2026-06-18)
 - Scanned: 50 packages
-- CRITICAL: 5
-- HIGH: 3
-- CLEAN/LOW: 33
+- CRITICAL: 1
+- HIGH: 5
+- CLEAN/LOW: 41
 
 ### Flagged Packages:
-- [HIGH] @realvest/mcp-server (score: 45)
-- [CRITICAL] @subscribe.dev/mcp (score: 100)
-- [CRITICAL] @telora/mcp-products (score: 85)
-- [HIGH] @thehammer/schema-mcp-server (score: 60)
-- [CRITICAL] @thirdstrandstudio/mcp-figma (score: 100)
-- [CRITICAL] @tim0_12432/hotkeyless-ahk-mcp-server (score: 80)
-- [CRITICAL] @tinify-ai/mcp-server (score: 100)
-- [HIGH] @tomtom-org/tomtom-mcp (score: 60)
+- [CRITICAL] @aqua-cloud/mcp-server (score: 70)
+- [HIGH] @domphy/mcp (score: 40)
+- [HIGH] @hloc/trello-mcp-server (score: 40)
+- [HIGH] @kujirahand/discord-webhook-mcp (score: 50)
+- [HIGH] @manywe/mcp-tools (score: 50)
+- [HIGH] @mdly/medi-mcp-server (score: 50)
 
 ### Cumulative:
-- Total scanned: 3160
-  - CLEAN: 1891
-  - CRITICAL: 356
-  - ERROR: 5
-  - HIGH: 247
-  - LOW: 326
-  - MEDIUM: 335
+- Total scanned: 3310
+  - CLEAN: 1990
+  - CRITICAL: 362
+  - ERROR: 6
+  - HIGH: 257
+  - LOW: 349
+  - MEDIUM: 346

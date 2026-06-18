@@ -264,7 +264,7 @@ export default async function RuleDetailPage({
               {detail.wildFpRate !== undefined && (
                 <div className="bg-paper p-4">
                   <div className="font-data text-xs text-stone mb-1">
-                    {zh ? "誤報率" : "False Positive Rate"}
+                    {zh ? "誤報率（實地語料）" : "False Positive Rate (in-the-wild)"}
                   </div>
                   <div className="font-data text-sm text-ink">{detail.wildFpRate}%</div>
                 </div>
@@ -331,8 +331,8 @@ export default async function RuleDetailPage({
             </ol>
             <p className="text-xs text-mist mt-3 leading-[1.7]">
               {zh
-                ? "以上為真實攻擊 payload 脫敏版本。用於 regression testing。"
-                : "Real-world attack payloads (sanitized). Used for regression testing."}
+                ? "以上為真實攻擊 payload 的脫敏版本，與規則一同版本化，作為 regression test——確保未來的修訂不會悄悄漏掉它們。"
+                : "Real-world attack payloads, sanitized and versioned alongside the rule as regression tests — so a future revision can't silently stop catching them."}
             </p>
           </div>
         )}
@@ -402,8 +402,8 @@ export default async function RuleDetailPage({
             </ol>
             <p className="text-xs text-mist mt-3 leading-[1.7]">
               {zh
-                ? "這些是公開記錄的繞過手法。誠實揭露限制，而不是假裝不存在。"
-                : "Publicly documented bypasses. We disclose known limitations rather than pretend they don't exist."}
+                ? "這些是公開記錄的繞過手法。一個標準的可信度，取決於它願不願意公開自己最差的數字——所以已知限制寫在規則裡，而不是藏起來。"
+                : "Publicly documented bypasses. A standard earns trust by publishing its worst figures, not hiding them — so known limitations ship inside the rule, not in a footnote."}
             </p>
           </div>
         )}

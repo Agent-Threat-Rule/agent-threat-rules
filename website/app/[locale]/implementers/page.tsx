@@ -75,7 +75,7 @@ const IMPLEMENTERS = [
       "https://github.com/OWASP/Agent-Security-Regression-Harness/pull/74",
   },
   {
-    org: "Gen Digital Sage (Norton / Avast / AVG)",
+    org: "Gen Digital Sage (Norton / Avast / LifeLock)",
     role: "L1 Engine",
     version: "2.2.0",
     date: "2026-05-11",
@@ -157,8 +157,8 @@ export default async function ImplementersPage({
         </h2>
         <p>
           {zh
-            ? "下表列出已整合或引用 ATR 的組織,符規等級欄位區分 L1 Engine(在偵測引擎中執行規則)與 L1 Citation / L1 Galaxy(引用或編入分類法)。每一筆紀錄連結至構成公開採用證據的合併 pull request 或整合 commit。"
-            : "The following organizations have integrated or referenced ATR. The Conformance column distinguishes L1 Engine (rules run inside a detection engine) from L1 Citation / L1 Galaxy (referenced or incorporated into a taxonomy). Each entry links to the merged pull request or integration commit that constitutes the public adoption record."}
+            ? "下表列出已整合或引用 ATR 的組織。符規等級欄位區分 L1 Engine(在自家偵測引擎中實際執行 ATR 規則)與 L1 Citation / L1 Galaxy(引用或編入分類法)。Engine 一行的份量最重——它代表又有一個獨立團隊只憑規格就把這個格式實作出來,而且在生產環境裡跑得起來。每一筆紀錄連結至構成公開採用證據的合併 pull request 或整合 commit;沒有任何一筆是私下宣稱的,全部可在 GitHub 上自行驗證。"
+            : "The following organizations have integrated or referenced ATR. The Conformance column distinguishes L1 Engine (ATR rules actually running inside the organization's own detection engine) from L1 Citation / L1 Galaxy (referenced or incorporated into a taxonomy). An Engine row carries the most weight — it means another independent team implemented the format from the spec alone and ran it in production. Each entry links to the merged pull request or integration commit that constitutes the public adoption record; nothing here is asserted privately — every row is verifiable on GitHub."}
         </p>
 
         {/* Desktop / tablet table */}
@@ -285,8 +285,8 @@ export default async function ImplementersPage({
         </h2>
         <p>
           {zh
-            ? "ATR 採用 self-certification 模型:實作者於本地執行 conformance 測試套件,並對 ADOPTERS.md 提出 PR 加入整合 metadata。下列三步驟為 self-certification 的最小流程。"
-            : "ATR follows a self-certification model: implementers run the conformance test suite locally and open a pull request against ADOPTERS.md with their integration metadata. The minimal self-certification procedure is three steps."}
+            ? "ATR 採用 self-certification 模型:符規靠跑出來,不靠宣稱。實作者於本地執行 conformance 測試套件,再對 ADOPTERS.md 提出 PR 加入整合 metadata。沒有審查委員會、沒有付費認證——加入這份報告唯一的門檻,就是公開地通過測試。下列三步驟為 self-certification 的最小流程。"
+            : "ATR follows a self-certification model: conformance is demonstrated, not asserted. Implementers run the conformance test suite locally, then open a pull request against ADOPTERS.md with their integration metadata. There is no review board and no paid certification — the only price of admission to this report is passing the tests in the open. The minimal self-certification procedure is three steps."}
         </p>
 
         <ol>
