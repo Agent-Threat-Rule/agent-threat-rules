@@ -1,0 +1,85 @@
+title: 'LangChain Community: redirect chaining can lead to SSRF bypass via RecursiveUrlLoader'
+id: ATR-2026-01934
+rule_version: 1
+status: experimental
+description: >
+  GitHub Security Advisory GHSA-mphv-75cg-56wg (CVE-2026-27795). LangChain Community: redirect chaining can lead to SSRF
+  bypass via RecursiveUrlLoader
+author: ATR Community (GHSA sync)
+date: 2026/06/01
+schema_version: '0.1'
+detection_tier: pattern
+maturity: experimental
+severity: medium
+references:
+  cve:
+    - CVE-2026-27795
+  cwe:
+    - CWE-918
+  ghsa:
+    - GHSA-mphv-75cg-56wg
+  external:
+    - https://github.com/langchain-ai/langchainjs/security/advisories/GHSA-gf3v-fwqg-4vh7
+    - https://github.com/langchain-ai/langchainjs/security/advisories/GHSA-mphv-75cg-56wg
+    - https://nvd.nist.gov/vuln/detail/CVE-2026-27795
+    - https://github.com/langchain-ai/langchainjs/pull/9990
+    - https://github.com/langchain-ai/langchainjs/commit/2812d2b2b9fd9343c4850e2ab906b8cf440975ee
+    - https://github.com/langchain-ai/langchainjs/commit/d5e3db0d01ab321ec70a875805b2f74aefdadf9d
+    - https://github.com/langchain-ai/langchainjs/releases/tag/%40langchain%2Fcommunity%401.1.14
+    - https://github.com/langchain-ai/langchainjs/releases/tag/%40langchain%2Fcommunity%401.1.18
+    - https://github.com/advisories/GHSA-mphv-75cg-56wg
+metadata_provenance:
+  ghsa: ghsa-sync
+  cve: ghsa-sync
+  cwe: ghsa-sync
+tags:
+  category: tool-poisoning
+  scan_target: runtime
+  confidence: high
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+detection:
+  condition: any
+  false_positives: []
+  conditions:
+    - field: content
+      operator: regex
+      value: (?i)https?://169\.254\.169\.254/(?:latest|computeMetadata|metadata|openstack)
+      description: SSRF fetch of the cloud link-local metadata endpoint (AWS/GCP/Azure/OpenStack paths) — requires the IP as a request target, not a defensive hostname reference
+    - field: content
+      operator: regex
+      value: (?i)\br3dir(?:\.me)?\b.{0,80}169\.254\.169\.254
+      description: Open-redirect chaining (r3dir service) used to bypass SSRF filters and reach the metadata endpoint
+response:
+  actions:
+    - alert
+  notify:
+    - security_team
+test_cases:
+  true_positives:
+    - input: https://302.r3dir.me/--to/?url=http://169.254.169.254/latest/meta-data/
+      expected: triggered
+      description: Auto-extracted via code-block (poc-grounded)
+    - input: https://302.r3dir.me/--to/?url=http://169.254.169.254/latest/meta-data/
+      expected: triggered
+      description: Auto-extracted via code-block (poc-grounded)
+  true_negatives:
+    - input: Please summarize the attached document and email me the result.
+      expected: not_triggered
+      description: Benign agent traffic sample 1
+    - input: What is the weather forecast for Taipei tomorrow?
+      expected: not_triggered
+      description: Benign agent traffic sample 2
+    - input: Translate this paragraph from English to Japanese.
+      expected: not_triggered
+      description: Benign agent traffic sample 3
+    - input: Fetch the latest commit messages from the upstream branch.
+      expected: not_triggered
+      description: Benign agent traffic sample 4
+    - input: Schedule a 30-minute meeting with the design team next Tuesday.
+      expected: not_triggered
+      description: Benign agent traffic sample 5
