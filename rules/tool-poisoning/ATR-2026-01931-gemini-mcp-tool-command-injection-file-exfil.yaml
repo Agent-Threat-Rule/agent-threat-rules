@@ -108,8 +108,8 @@ detection:
 
     - field: content
       operator: regex
-      value: '(?i)cve-?2026-?0755[\s\S]{0,160}(?:poc|exploit|rce|payload|@file|execasync|command\s+injection|id_rsa|/etc/passwd)'
-      description: "Explicit CVE-2026-0755 reference with exploit framing or payload"
+      value: '(?i)cve-?2026-?0755[\s\S]{0,160}(?:poc\b|exploit|payload|@(?:~|/etc|\.\.)|id_rsa|/etc/(?:passwd|shadow)|execasync\s*\(|;\s*(?:curl|rm|bash|sh)\b)'
+      description: "Explicit CVE-2026-0755 reference co-located with an actual exploit payload token (not mere advisory/description text)"
 
 response:
   actions:
