@@ -581,8 +581,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.3}>
             <p className="text-sm text-graphite max-w-[560px] mt-5 leading-[1.8] text-pretty">
               {zh
-                ? "框架告訴你威脅存在,ATR 告訴你怎麼偵測。ATR 對 MITRE ATLAS 的關係,就像 Sigma 規則對 ATT&CK 的關係。"
-                : "Frameworks tell you threats exist. ATR tells you how to detect them. ATR is to MITRE ATLAS what Sigma rules are to ATT&CK."}
+                ? "框架告訴你威脅存在,ATR 告訴你怎麼偵測。ATR 對 MITRE ATLAS 的關係,就像 Sigma 規則對 ATT&CK 的關係——目前對映官方 ATLAS v5.6.0 的 34/101 個技法。覆蓋集中在 agent 原生的攻擊面,不是硬充版面。"
+                : "Frameworks tell you threats exist. ATR tells you how to detect them. ATR is to MITRE ATLAS what Sigma rules are to ATT&CK — today mapping 34 of 101 official ATLAS techniques (v5.6.0), concentrated on the agent-native surface rather than padded for breadth."}
             </p>
           </Reveal>
           <Reveal delay={0.35}>
