@@ -18,7 +18,7 @@ interface DocumentStatusProps {
  * Standards-document banner. Appears at the top of every spec-bearing page.
  * Pattern after W3C "Status of This Document" header strip.
  *
- *   [Working Draft · 3.0.0-alpha.1 · 26 May 2026 · /spec · Editor: Adam Lin]
+ *   [Working Draft · 3.5.0 · 26 May 2026 · /spec · Editor: Adam Lin]
  */
 export function DocumentStatus({
   locale,

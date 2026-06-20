@@ -232,6 +232,10 @@ export const messages: Record<Locale, Record<string, string>> = {
     "contribute.sub":
       "ATR is MIT-licensed and community-maintained. Contributing takes a text editor and a YAML file — no proprietary tooling, no telemetry, no CLA.",
 
+    // Footer
+    "footer.note":
+      "ATR is a community-maintained open standard. MIT licensed. Not affiliated with any vendor.",
+
     // ── Standards site additions ───────────────────────────────
     // Document Status banner
     "spec.canonical": "canonical",

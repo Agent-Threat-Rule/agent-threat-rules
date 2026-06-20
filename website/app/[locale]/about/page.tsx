@@ -161,8 +161,8 @@ const MILESTONES: Milestone[] = [
       zh: "v3.5.0 · 652 條規則,跨 10 個類別",
     },
     detail: {
-      en: "Current release line: 652 detection rules across 10 categories, specification 3.0.0-alpha.1 (Working Draft). Introduced detection lanes (enforce / alert / hunt) — maturity-driven precision, with false-positive rates reported per lane rather than as a single figure.",
-      zh: "目前釋出線:652 條偵測規則,跨 10 個類別,規範 3.0.0-alpha.1（Working Draft）。引入偵測車道(enforce / alert / hunt)——以成熟度驅動精確度,誤報率逐車道揭露,而非用單一數字概括。",
+      en: "Current release line: 652 detection rules across 10 categories, specification 3.5.0 (Working Draft). Introduced detection lanes (enforce / alert / hunt) — maturity-driven precision, with false-positive rates reported per lane rather than as a single figure.",
+      zh: "目前釋出線:652 條偵測規則,跨 10 個類別,規範 3.5.0（Working Draft）。引入偵測車道(enforce / alert / hunt)——以成熟度驅動精確度,誤報率逐車道揭露,而非用單一數字概括。",
     },
   },
 ];

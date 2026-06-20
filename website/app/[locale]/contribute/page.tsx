@@ -234,8 +234,8 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
         <div className="border border-fog p-6 mb-12">
           <p className="text-sm text-stone leading-relaxed mb-3">
             {zh
-              ? "Spec(ATR-SPEC-v1,目前 v3.0.0-alpha.1 Working Draft)是所有相容引擎的契約。改動 spec 不像加規則那麼直接 — 流程是:先開 RFC issue 標題以 [RFC] 開頭,描述要改什麼、為什麼;留 14 天公開評論窗口(複雜提案延長至 30 天)讓所有 implementer 看到並回饋;接下來才接受 PR。Breaking change(SemVer 主版號)需要額外 30 天提前公告。"
-              : "The spec (ATR-SPEC-v1, currently v3.0.0-alpha.1 Working Draft) is the contract between all conforming engines. Spec changes are not as direct as rule additions — the process is: open an RFC issue with title prefixed [RFC] describing what you want to change and why; leave a 14-day public comment window (extended to 30 for complex proposals) so every implementer sees it and can respond; then submit the PR. Breaking changes (SemVer major bump) require an additional 30-day advance notice."}
+              ? "Spec(ATR-SPEC-v1,目前 v3.5.0 Working Draft)是所有相容引擎的契約。改動 spec 不像加規則那麼直接 — 流程是:先開 RFC issue 標題以 [RFC] 開頭,描述要改什麼、為什麼;留 14 天公開評論窗口(複雜提案延長至 30 天)讓所有 implementer 看到並回饋;接下來才接受 PR。Breaking change(SemVer 主版號)需要額外 30 天提前公告。"
+              : "The spec (ATR-SPEC-v1, currently v3.5.0 Working Draft) is the contract between all conforming engines. Spec changes are not as direct as rule additions — the process is: open an RFC issue with title prefixed [RFC] describing what you want to change and why; leave a 14-day public comment window (extended to 30 for complex proposals) so every implementer sees it and can respond; then submit the PR. Breaking changes (SemVer major bump) require an additional 30-day advance notice."}
           </p>
           <p className="text-sm text-stone leading-relaxed mb-3">
             {zh

@@ -171,7 +171,7 @@ export function Footer({ locale }: { locale: Locale }) {
           </div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-data text-xs text-mist">
             <Link href={`${prefix}/spec`} className="hover:text-stone transition-colors">
-              {zh ? "規格" : "Spec"} 3.0.0-alpha.1
+              {zh ? "規格" : "Spec"} 3.5.0
             </Link>
             <span className="text-fog">·</span>
             <Link href={`${prefix}/citations`} className="hover:text-stone transition-colors">

@@ -51,11 +51,11 @@ export default async function ChangelogPage({
         <p className="text-sm md:text-base text-graphite max-w-[640px] mt-5 md:mt-6 leading-[1.8]">
           {zh ? (
             <>
-              從 <code className="font-data text-xs bg-ash px-1.5 py-0.5">CHANGELOG.md</code> 於建置時自動產生——這頁就是那份檔案。規則 ID 一經發布永不改號；rule_version 可升，ID 穩定，外部論文、CI 腳本、稽核軌跡都能安全引用。版號是 npm 釋出線，與規範版號（<code className="font-data text-xs bg-ash px-1.5 py-0.5">3.0.0-alpha.1</code> Working Draft）分開計。完整 commit 歷史在 GitHub。
+              從 <code className="font-data text-xs bg-ash px-1.5 py-0.5">CHANGELOG.md</code> 於建置時自動產生——這頁就是那份檔案。規則 ID 一經發布永不改號；rule_version 可升，ID 穩定，外部論文、CI 腳本、稽核軌跡都能安全引用。版號跟著 npm 釋出線走（目前 <code className="font-data text-xs bg-ash px-1.5 py-0.5">v3.5.0</code>），書面規範以同一版號發布、狀態為 Working Draft。完整 commit 歷史在 GitHub。
             </>
           ) : (
             <>
-              Generated from <code className="font-data text-xs bg-ash px-1.5 py-0.5">CHANGELOG.md</code> at build time — this page is that file. Rule IDs are permanent once published; <code className="font-data text-xs bg-ash px-1.5 py-0.5">rule_version</code> may bump, but the ID stays stable, safe for papers, CI scripts, and audit trails to cite. Version numbers track the npm release line, kept separate from the specification version (<code className="font-data text-xs bg-ash px-1.5 py-0.5">3.0.0-alpha.1</code>, Working Draft). Full commit history is on GitHub.
+              Generated from <code className="font-data text-xs bg-ash px-1.5 py-0.5">CHANGELOG.md</code> at build time — this page is that file. Rule IDs are permanent once published; <code className="font-data text-xs bg-ash px-1.5 py-0.5">rule_version</code> may bump, but the ID stays stable, safe for papers, CI scripts, and audit trails to cite. Version numbers track the npm release line (currently <code className="font-data text-xs bg-ash px-1.5 py-0.5">v3.5.0</code>); the written specification ships at the same version with Working Draft status. Full commit history is on GitHub.
             </>
           )}
         </p>

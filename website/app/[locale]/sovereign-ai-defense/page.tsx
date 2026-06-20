@@ -690,7 +690,7 @@ atr convert splunk               # or export into the SOC you already run`}</cod
               agentthreatrule.org
             </a>
             <div className="font-data text-[11px] text-mist tracking-[1px] uppercase mt-3">
-              {ruleCount} Rules · NIST AI RMF mappings · Spec 3.0.0-alpha.1 (Working Draft)
+              {ruleCount} Rules · NIST AI RMF mappings · Spec 3.5.0 (Working Draft)
             </div>
           </div>
         </div>

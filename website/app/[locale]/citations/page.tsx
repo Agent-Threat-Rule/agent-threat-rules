@@ -139,8 +139,8 @@ export default async function CitationsPage({
             </h2>
             <p>
               {zh
-                ? "URL 會搬家,專案會改名,網頁會 404。引用是把一個會動的東西釘成不會動的錨點——所以下列場景請引用本規格,而非僅以 URL 連結。引用之版本應以引用時 /spec 所載之最新版本為準,並於引用文字中標示該版本號 (例如 v3.0.0-alpha.1)。版本會前進,但被引用的那一版永遠指得回去。"
-                : "URLs move, projects get renamed, pages 404. A citation pins something that changes into an anchor that does not — so in the following contexts, cite this specification rather than only linking to a URL. The cited version should be the latest version published on /spec at the time of writing, and the citation should include that version number (e.g. v3.0.0-alpha.1). The version moves forward, but the version you cited remains reachable."}
+                ? "URL 會搬家,專案會改名,網頁會 404。引用是把一個會動的東西釘成不會動的錨點——所以下列場景請引用本規格,而非僅以 URL 連結。引用之版本應以引用時 /spec 所載之最新版本為準,並於引用文字中標示該版本號 (例如 v3.5.0)。版本會前進,但被引用的那一版永遠指得回去。"
+                : "URLs move, projects get renamed, pages 404. A citation pins something that changes into an anchor that does not — so in the following contexts, cite this specification rather than only linking to a URL. The cited version should be the latest version published on /spec at the time of writing, and the citation should include that version number (e.g. v3.5.0). The version moves forward, but the version you cited remains reachable."}
             </p>
             <ul>
               <li>

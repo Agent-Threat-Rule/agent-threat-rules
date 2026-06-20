@@ -30,7 +30,7 @@ export async function generateMetadata({
 }
 
 interface ErrataEntry {
-  /** Affected spec version (e.g. "3.0.0-alpha.1"). */
+  /** Affected spec version (e.g. "3.5.0"). */
   version: string;
   /** Section identifier (e.g. "§3.5"). */
   section: string;

@@ -97,6 +97,11 @@ export interface SiteStats {
   ruleCount: number;
   categoryCount: number;
 
+  // Standard heartbeat — YYYY-MM-DD the canonical stats.json was last
+  // regenerated. Drives the "living standard" cadence signal on the home
+  // page; empty string if stats.json is absent or lacks a timestamp.
+  lastRegenerated: string;
+
   // ClawHub scan
   clawHubCrawled: number;
   clawHubScanned: number;
@@ -262,6 +267,9 @@ export function loadSiteStats(): SiteStats {
   const skillBench = readJson<SkillBenchmarkReport>(
     join(DATA_DIR, "skill-benchmark", "benchmark-report.json"),
   );
+  const statsJson = readJson<{ generatedAt?: string }>(
+    join(DATA_DIR, "stats.json"),
+  );
 
   const rules = loadAllRules();
 
@@ -281,6 +289,7 @@ export function loadSiteStats(): SiteStats {
   return {
     ruleCount: rules.length,
     categoryCount: categories.size,
+    lastRegenerated: statsJson?.generatedAt?.slice(0, 10) ?? "",
 
     clawHubCrawled: clawhub?.totalCrawled ?? 36394,
     clawHubScanned: clawhub?.totalScanned ?? 9676,

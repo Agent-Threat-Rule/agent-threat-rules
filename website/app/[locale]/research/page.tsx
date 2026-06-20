@@ -51,8 +51,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             <p className="text-sm text-stone mb-3">
               {locale === "zh"
-                ? `ATR 標準為何存在的完整論述：當 agent 能自主行動，信任不再能假設，偵測必須變成一個任何人都能查核、版本化、社群維護的標準層。涵蓋 RFC-001 品質規範、96,096 個 skill 的生態系掃描、751 個確認惡意軟體，以及把標準從一次性快照變成活飛輪的機制。`
-                : `The full argument for why ATR exists: once agents act on their own, trust can no longer be assumed, and detection has to become a standard layer anyone can audit, version, and maintain. Covers the RFC-001 quality specification, a 96,096-skill ecosystem scan, 751 confirmed malware findings, and the mechanism that turns the standard from a one-time snapshot into a living one.`}
+                ? `ATR 標準為何存在的完整論述：當 agent 能自主行動，信任不再能假設，偵測必須變成一個任何人都能查核、版本化、社群維護的標準層。涵蓋 RFC-001 品質規範、96,096 個 skill 的生態系掃描（1,302 個被標記、經人工複審確認 552 個惡意），以及把標準從一次性快照變成活飛輪的機制。`
+                : `The full argument for why ATR exists: once agents act on their own, trust can no longer be assumed, and detection has to become a standard layer anyone can audit, version, and maintain. Covers the RFC-001 quality specification, a 96,096-skill ecosystem scan (1,302 flagged, 552 confirmed malware after manual review), and the mechanism that turns the standard from a one-time snapshot into a living one.`}
             </p>
             <div className="flex flex-wrap gap-3">
               <a href="https://doi.org/10.5281/zenodo.19178002" target="_blank" rel="noopener noreferrer" className="font-data text-xs text-blue hover:underline">Zenodo (DOI)</a>

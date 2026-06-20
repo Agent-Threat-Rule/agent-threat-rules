@@ -76,6 +76,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   );
   const categoryCount = taxonomy.length;
   const mergedCount = stats.ecosystemIntegrations.filter(e => e.type === "merged").length;
+  // Pull garak recall from the version-pinned measurement (data/measurements/garak/latest.json)
+  // rather than hardcoding — keeps the hero stat honest as the corpus is re-run.
+  const garakMeasurement = stats.benchmarks.find((b) => b.source === "garak");
+  const garakRecall = garakMeasurement
+    ? (Math.round(garakMeasurement.recall * 1000) / 10).toFixed(1)
+    : "97.2";
 
   return (
     <>
@@ -127,7 +133,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <span className="text-fog">·</span>
               <span><span className="font-data font-bold text-ink">{categoryCount}</span> <span className="text-stone">{zh ? "個類別" : "categories"}</span></span>
               <span className="text-fog">·</span>
-              <span><span className="font-data font-bold text-ink">98.0%</span> <span className="text-stone">{zh ? "garak 抓得到" : "garak recall"}</span></span>
+              <span><span className="font-data font-bold text-ink">{garakRecall}%</span> <span className="text-stone">{zh ? "garak 抓得到" : "garak recall"}</span></span>
             </div>
           </HeroEntrance>
 
@@ -136,11 +142,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             <Link
               href={`${prefix}/spec`}
               className="mt-5 inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 font-data text-[10px] md:text-[11px] tracking-[0.08em] uppercase text-stone hover:text-ink transition-colors px-3 py-1.5 border border-fog rounded-[2px] group"
-              aria-label={zh ? "規格 Working Draft 3.0.0-alpha.1" : "Specification Working Draft 3.0.0-alpha.1"}
+              aria-label={zh ? "規格 Working Draft v3.5.0" : "Specification Working Draft v3.5.0"}
             >
               <span className="text-ink font-semibold">Working Draft</span>
               <span className="text-fog">·</span>
-              <span>3.0.0-alpha.1</span>
+              <span>v3.5.0</span>
               <span className="text-fog">·</span>
               <span>{zh ? "正式網址" : "canonical"} <span className="text-ink group-hover:underline">/spec</span></span>
             </Link>
@@ -529,6 +535,28 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             </p>
           </Reveal>
 
+          {/* Standard heartbeat — version-pinned, dated cadence so the flywheel
+              reads as a live, moving standard rather than a frozen catalog. Every
+              token here is verifiable (npm tag, rule count, daily CI, stats.json regen date). */}
+          <Reveal delay={0.19}>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 font-data text-[11px] md:text-xs text-stone mb-8 md:mb-10">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-green inline-block" aria-hidden="true" />
+                <span className="text-ink font-semibold">agent-threat-rules@3.5.0</span>
+              </span>
+              <span className="text-fog">·</span>
+              <span><span className="text-ink font-semibold">{stats.ruleCount}</span> {zh ? "條規則" : "rules"}</span>
+              <span className="text-fog">·</span>
+              <span>{zh ? "CVE 匯入 + 結晶管線每天運轉" : "CVE-ingest + crystallize pipelines run daily"}</span>
+              {stats.lastRegenerated && (
+                <>
+                  <span className="text-fog">·</span>
+                  <span>{zh ? `標準最後重生 ${stats.lastRegenerated}` : `standard regenerated ${stats.lastRegenerated}`}</span>
+                </>
+              )}
+            </div>
+          </Reveal>
+
           <Reveal delay={0.2}>
             <Flywheel locale={locale} />
           </Reveal>
@@ -540,7 +568,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 { name: "OWASP Agentic", score: "10/10", desc: zh ? "完整覆蓋" : "Full coverage" },
                 { name: "SAFE-MCP", score: "91.8%", desc: zh ? "78/85 技術" : "78/85 techniques" },
                 { name: "OWASP AST10", score: "7/10", desc: zh ? "3 個是流程層級" : "3 are process-level" },
-                { name: "PINT F1", score: "77.3", desc: zh ? "850 個樣本" : "850 samples" },
+                { name: "PINT F1", score: String(stats.pintF1), desc: zh ? "850 個樣本" : "850 samples" },
               ].map((s) => (
                 <div key={s.name} className="bg-paper p-6 md:p-8 text-center">
                   <div className="font-data text-[10px] md:text-xs font-medium text-stone tracking-[2px] uppercase mb-2 md:mb-3">{s.name}</div>

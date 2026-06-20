@@ -1,17 +1,17 @@
 // ATR spec metadata — single source of truth for Document Status banners
-// across the site. Bump SPEC_DOC_VERSION when a new spec-document release
-// lands. NOTE: the spec-document version is deliberately DISTINCT from the
-// npm package version recorded in data/stats.json — they version different
-// things. The package ships rules + engine on its own SemVer line; the spec
-// document tracks the maturity of the written standard. Do not source the
-// spec-document version from stats.json.
+// across the site. SPEC_DOC_VERSION is aligned to the published npm package
+// version (agent-threat-rules) for a single, unambiguous external version
+// number: once the standard ships in production and is cited by third parties,
+// a separate pre-1.0 spec-document number reads as half-baked. Status remains
+// "Working Draft" to register the governance transition (BDFL -> TSC) honestly.
+// Bump this when the package version bumps.
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { loadSiteStats } from "./stats";
 
-/** Version of the SPEC DOCUMENT (the written standard), not the npm package. */
-const SPEC_DOC_VERSION = "3.0.0-alpha.1";
+/** Public spec-document version, aligned to the npm package version (v3.5.0). */
+const SPEC_DOC_VERSION = "3.5.0";
 
 interface StatsJsonShape {
   generatedAt?: string;
