@@ -24,6 +24,10 @@ on:
         default: "all"
   release:
     types: [published]
+  # Weekly refresh so the public recall numbers never silently go stale
+  # between releases. Monday 06:00 UTC — off the daily-pipeline peak.
+  schedule:
+    - cron: "0 6 * * 1"
 
 permissions:
   contents: write
