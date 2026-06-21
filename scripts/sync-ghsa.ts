@@ -581,12 +581,54 @@ function parseNextLink(link: string | null): string | null {
   return m ? m[1] : null;
 }
 
-// Pull the reviewed-advisory firehose for an ecosystem (NO affects= filter),
-// newest-first, bounded by publish date. Cursor-paginated via the Link header.
+// Agent-package name tokens, derived from the allowlist so they stay in sync.
+// Used by the malware feed: a malicious package whose NAME impersonates an
+// agent SDK is a poisoned-skill / supply-chain attack even when its advisory
+// carries no agent CWE or keyword (malware advisories rarely do).
+const AI_PACKAGE_TOKENS: string[] = Array.from(
+  new Set(
+    Object.values(AI_PACKAGES)
+      .flat()
+      .flatMap((n) => {
+        const lower = n.toLowerCase();
+        const tokens = [lower.replace(/[-_./@]/g, "")]; // full name, separators stripped
+        const scope = lower.match(/^@([^/]+)\//); // npm scope is itself an impersonation target
+        if (scope) tokens.push(scope[1].replace(/[-_.]/g, ""));
+        const unscoped = lower.replace(/^@[^/]+\//, "").replace(/[-_.]/g, "");
+        tokens.push(unscoped);
+        return tokens;
+      })
+      .filter((n) => n.length >= 4),
+  ),
+);
+
+// Bounded "mcp" token — matches mcp as a whole word, not substrings like
+// "mcpherson". (Mirrors the gate in sync-cvelistv5.ts.)
+const GHSA_MCP_TOKEN_RX = /(?:^|[-_/@.\s:])mcp(?:[-_/@.\s:]|$)/i;
+
+// Does any affected package name impersonate an agent SDK? Containment of a
+// known agent token, plus the bounded MCP token. Conservative on purpose —
+// false positives go to human review, not auto-publish.
+function malwarePackageSignal(adv: GhsaAdvisory): boolean {
+  for (const v of adv.vulnerabilities ?? []) {
+    const name = (v.package?.name ?? "").toLowerCase();
+    if (!name) continue;
+    if (GHSA_MCP_TOKEN_RX.test(name)) return true;
+    const norm = name.replace(/[-_.@/]/g, ""); // keep scope — it can be the impersonation
+    if (AI_PACKAGE_TOKENS.some((t) => norm.includes(t))) return true;
+  }
+  return false;
+}
+
+// Pull the advisory firehose for an ecosystem (NO affects= filter), newest-first,
+// bounded by publish date. Cursor-paginated via the Link header. advType picks
+// the GitHub advisory class: "reviewed" (CVE-grade vulns) or "malware"
+// (malicious packages — the supply-chain / poisoned-skill first line).
 async function ghsaFirehose(
   ecosystem: string,
   sinceISO: string,
   maxPages = 40,
+  advType: "reviewed" | "malware" = "reviewed",
 ): Promise<GhsaAdvisory[]> {
   const headers: Record<string, string> = {
     Accept: "application/vnd.github+json",
@@ -597,7 +639,7 @@ async function ghsaFirehose(
   const out: GhsaAdvisory[] = [];
   let url: string | null =
     `https://api.github.com/advisories?ecosystem=${encodeURIComponent(ecosystem)}` +
-    `&type=reviewed&sort=published&direction=desc&per_page=100`;
+    `&type=${advType}&sort=published&direction=desc&per_page=100`;
   let pages = 0;
   while (url && pages < maxPages) {
     pages += 1;
@@ -669,7 +711,10 @@ async function main(): Promise<void> {
     // Agent-relevance gate: ATR is an AGENT standard — drop real bugs that are
     // not agent-runtime threats (no injection/exec/exfil signal).
     const relevance = agentRelevance(adv);
-    if (!relevance.relevant) {
+    // Keep if it clears the content gate OR a malicious package impersonates an
+    // agent SDK (malware advisories carry no agent CWE/keyword — their signal
+    // is the package name).
+    if (!relevance.relevant && !malwarePackageSignal(adv)) {
       summary.advisories_filtered_not_agent += 1;
       if (VERBOSE)
         console.error(`  skip (not agent) ${adv.ghsa_id}: ${relevance.reason}`);
@@ -748,6 +793,29 @@ async function main(): Promise<void> {
         console.error(`firehose ${ecosystem}: ${advs.length} adv in ${FIREHOSE_WINDOW_DAYS}d`);
       for (const adv of advs) {
         if (seenIds.has(adv.ghsa_id) || !firehoseKeep(adv)) continue;
+        const before = summary.new_proposals;
+        processAdvisory(adv);
+        if (summary.new_proposals > before) summary.firehose_new += 1;
+      }
+    }
+
+    // Malware feed — malicious packages impersonating agent SDKs (typosquats,
+    // poisoned forks). Their advisories carry no agent CWE/keyword, so the
+    // keyword firehoseKeep would drop them; gate on the package-name signal.
+    for (const ecosystem of firehoseEcos) {
+      if (writtenCount >= LIMIT) break;
+      let mal: GhsaAdvisory[];
+      try {
+        mal = await ghsaFirehose(ecosystem, firehoseSince, 40, "malware");
+      } catch (e) {
+        console.error(`malware firehose failed for ${ecosystem}: ${e}`);
+        continue;
+      }
+      summary.firehose_advisories_seen += mal.length;
+      if (VERBOSE)
+        console.error(`malware ${ecosystem}: ${mal.length} adv in ${FIREHOSE_WINDOW_DAYS}d`);
+      for (const adv of mal) {
+        if (seenIds.has(adv.ghsa_id) || !malwarePackageSignal(adv)) continue;
         const before = summary.new_proposals;
         processAdvisory(adv);
         if (summary.new_proposals > before) summary.firehose_new += 1;
