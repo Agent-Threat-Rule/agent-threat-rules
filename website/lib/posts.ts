@@ -16,6 +16,19 @@ export interface BlogPost {
 
 export const posts: BlogPost[] = [
   {
+    slug: "static-guardrails-lose",
+    date: "2026-06-21",
+    title: {
+      en: "The math says static guardrails lose",
+      zh: "數學證明:靜態防護必輸",
+    },
+    summary: {
+      en: "A June 2026 NIST proof shows no finite set of guardrails is universally robust against adversarial prompts — defense has to be continuous, not one-and-done. NVIDIA shipping an install-time skill scanner says the same thing. ATR is the open, continuously-updated rules layer for it.",
+      zh: "NIST 2026 年 6 月的數學證明:沒有任何有限的 guardrail 集合能普遍抵禦對抗式 prompt — 防禦必須持續更新,不能一次到位。NVIDIA 推出安裝前 skill 掃描器說明了同一件事。ATR 就是為此而生的開放、持續更新規則層。",
+    },
+    atrRules: ["ATR-2026-01931", "ATR-2026-00576"],
+  },
+  {
     slug: "five-eyes-supply-chain",
     date: "2026-06-14",
     title: {
