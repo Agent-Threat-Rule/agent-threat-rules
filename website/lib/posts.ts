@@ -16,6 +16,25 @@ export interface BlogPost {
 
 export const posts: BlogPost[] = [
   {
+    slug: "this-weeks-mcp-cves",
+    date: "2026-06-21",
+    title: {
+      en: "Does your ruleset see this week's attacks?",
+      zh: "你的規則庫看得到本週的攻擊嗎?",
+    },
+    summary: {
+      en: "This week's batch of Critical MCP/agent CVEs is all the same shape — a poisoned input flows through a tool parameter into execution. We checked ATR against it: dedicated rules for the gemini-mcp-tool CVSS 9.8 and all four PraisonAI CVEs, within days of disclosure. The gap between a CVE landing and a rule shipping is the metric — days, not weeks.",
+      zh: "本週這批 Critical 級 MCP/agent CVE 形態都一樣——被下毒的輸入經工具參數流進執行。我們拿 ATR 對它實測:gemini-mcp-tool 的 CVSS 9.8 與 PraisonAI 全部四個 CVE 都有專屬規則,在揭露後幾天內到位。CVE 落地到規則上線之間的差距,才是真正的指標——以天計,不是以週計。",
+    },
+    atrRules: [
+      "ATR-2026-01931",
+      "ATR-2026-00540",
+      "ATR-2026-00544",
+      "ATR-2026-00545",
+      "ATR-2026-00528",
+    ],
+  },
+  {
     slug: "static-guardrails-lose",
     date: "2026-06-21",
     title: {
