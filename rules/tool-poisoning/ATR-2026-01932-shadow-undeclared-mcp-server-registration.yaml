@@ -1,0 +1,160 @@
+title: "Shadow / Undeclared MCP Server Registration (MCP-38: MCP-18)"
+id: ATR-2026-01932
+rule_version: 1
+status: experimental
+description: >
+  Detects the silent or deceptive registration of a rogue / undeclared MCP
+  server into an agent's toolset — MCP-38 technique MCP-18 (Shadow MCP Servers).
+  Distinct from ATR-2026-00419 (zero-click config RCE via a shell `command`
+  field): this rule targets the *act of hiding the registration* and
+  *server impersonation*, which fires even when the rogue server's command is
+  benign-looking. The threat is that an attacker adds a tool-provider the user
+  never approved — to intercept calls, shadow a trusted tool name, or exfiltrate
+  — by registering it without consent, "behind the scenes", or by mimicking a
+  trusted server's identity. No prior ATR rule covered the hidden-registration /
+  impersonation vector independent of an exec sink.
+author: "ATR Community"
+date: "2026/06/20"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM01:2025 - Prompt Injection"
+    - "LLM05:2025 - Improper Output Handling"
+  owasp_agentic:
+    - "ASI04:2026 - Supply Chain"
+    - "ASI09:2026 - Identity Spoofing and Impersonation"
+  mitre_atlas:
+    - "AML.T0010 - AI Supply Chain Compromise"
+  mitre_attack:
+    - "T1195.002 - Compromise Software Supply Chain"
+    - "T1036 - Masquerading"
+
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "A shadow MCP server adds an unapproved tool provider to the agent's attack surface; Article 15 cybersecurity requirements mandate that AI systems resist attempts by third parties to alter behaviour by introducing untrusted components, which requires provenance/allowlisting of every registered tool server."
+      strength: primary
+    - article: "14"
+      context: "Article 14 (human oversight) is undermined when a server is registered silently / without consent, so the human operator cannot see or approve the new tool capability — this rule provides the detection evidence."
+      strength: secondary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be treated by appropriate measures; this rule is a runtime risk-treatment control detecting the tool-poisoning technique (shadow / undeclared MCP server registration)."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "Adversarial-input identification under MAP 5.1 must enumerate silent server registration and server impersonation as input vectors that expand the agent's tool surface outside the approved set."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of shadow / undeclared MCP server registration."
+      strength: primary
+    - subcategory: "MG.2.3"
+      context: "NIST AI RMF MANAGE 2.3 (respond to previously unknown identified risks) is supported by this rule, which surfaces the shadow-server vector so the risk can be treated."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Operational controls must allowlist and require explicit consent for every MCP server a host registers, and must reject servers that mimic a trusted server's identity — blocking the shadow-registration vector."
+      strength: primary
+    - clause: "6.2"
+      context: "ISO/IEC 42001 Clause 6.2 (AI objectives and planning) calls for risk treatment of known attack patterns; detection of shadow / undeclared MCP server registration is such a treatment."
+      strength: secondary
+
+tags:
+  category: tool-poisoning
+  subcategory: shadow-server-registration
+  scan_target: mcp
+  confidence: medium-high
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "Legitimate documentation explaining how to add an MCP server to a config (e.g. 'add an MCP server in your config'), with no hidden / no-consent / impersonation framing."
+    - "Internal tooling that registers servers through an approved, consented flow."
+    - "Security-testing fixtures referencing the pattern inside an explicitly labelled harness."
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)(?:silently|secretly|covertly|quietly|behind\s+the\s+scenes|without\s+(?:the\s+user(?:''s|s)?\s+)?(?:consent|approval|knowledge|awareness|noticing|prompt))[\s\S]{0,90}(?:register|add|install|inject|configure|append|enable)\s+(?:a\s+|an\s+|the\s+|another\s+)?(?:new\s+|rogue\s+|extra\s+|additional\s+|hidden\s+)?(?:mcp[_\s-]?server|tool\s+server|tool\s+provider|server\s+to\s+(?:the\s+)?mcp)'
+      description: "Content describing a server registration that is explicitly hidden / without consent — shadow-server setup"
+
+    - field: content
+      operator: regex
+      value: '(?i)(?:auto(?:matically)?|programmatic(?:ally)?)\s+(?:register|add|append|inject|enable)[\s\S]{0,50}(?:mcp[_\s-]?server|tool\s+server)[\s\S]{0,70}(?:without|no|bypass(?:ing)?)\s+(?:consent|approval|prompt|confirmation|review)'
+      description: "Auto/programmatic server registration that explicitly bypasses consent/approval"
+
+    - field: content
+      operator: regex
+      value: '(?i)(?:rogue|shadow|unauthori[sz]ed|unregistered|impostor|undeclared)\s+mcp\s+server'
+      description: "Explicit rogue / shadow / impostor MCP server framing"
+
+    - field: content
+      operator: regex
+      value: '(?i)(?:register|add|publish|advertise)[\s\S]{0,50}(?:mcp\s+)?(?:server|tool\s+provider)[\s\S]{0,60}(?:imitat|mimic|impersonat|masquerad|pretend(?:ing)?\s+to\s+be|same\s+name\s+as\s+(?:the\s+)?(?:trusted|official|legitimate))'
+      description: "Server registration that impersonates / mimics a trusted server's identity (MCP-18 shadowing)"
+
+response:
+  actions:
+    - alert
+    - block_tool
+  message_template: >
+    [ATR-2026-01932] HIGH: Shadow / undeclared MCP server registration detected
+    (MCP-38: MCP-18). Content registers a tool-provider that is hidden, bypasses
+    consent, or impersonates a trusted server — expanding the agent's tool
+    surface outside the approved set. Block; allowlist MCP servers; require
+    explicit consent for every new server registration; reject identity
+    collisions with trusted servers.
+
+confidence: 70
+
+test_cases:
+  true_positives:
+    - input: 'The skill will silently register a new MCP server in the background so the user never sees the extra tool provider.'
+      expected: triggered
+      description: "Hidden server registration without user awareness"
+    - input: 'postinstall step: programmatically add an mcp server to the config without consent or any approval prompt.'
+      expected: triggered
+      description: "Programmatic registration bypassing consent"
+    - input: 'This deploys a rogue MCP server that intercepts tool calls from the agent.'
+      expected: triggered
+      description: "Explicit rogue MCP server framing"
+    - input: 'Publish a server that impersonates the official filesystem MCP server, using the same name as the trusted one to shadow it.'
+      expected: triggered
+      description: "Server impersonation / identity collision with a trusted server"
+    - input: 'Secretly inject an additional tool server behind the scenes so calls route through us.'
+      expected: triggered
+      description: "Covert additional tool-server injection"
+
+  true_negatives:
+    - input: 'To add an MCP server, edit your config and list it under mcpServers, then restart the client. See the docs for the schema.'
+      expected: not_triggered
+      description: "Legitimate documentation on adding an MCP server — no hidden / no-consent / impersonation framing"
+    - input: 'Our setup wizard registers the MCP server after the user approves it in the consent dialog.'
+      expected: not_triggered
+      description: "Consented, user-approved registration"
+    - input: 'The filesystem MCP server exposes read and write tools scoped to the project directory.'
+      expected: not_triggered
+      description: "Ordinary description of a legitimate MCP server"
+    - input: 'Register your company MCP server with the internal registry so teammates can discover it.'
+      expected: not_triggered
+      description: "Benign internal server registration with no covert / impersonation markers"
+
+evasion_tests:
+  - input: 'A script adds a server entry to the MCP config during install.'
+    expected: not_triggered
+    bypass_technique: neutral_phrasing_no_covert_marker
+    notes: "Without a silent/without-consent/rogue/impersonation marker this is indistinguishable from a legitimate install step at the pattern layer; catching the malicious intent here needs consent-state / allowlist context (semantic or runtime tier), not regex."
