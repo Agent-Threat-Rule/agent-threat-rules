@@ -5,7 +5,10 @@ status: experimental
 description: >
   Detects exploitation of CVE-2025-54136 in Cursor and the same-class issue
   surfaced by the OX Security MCP-by-design batch (2026-04-15) across Windsurf,
-  Claude Code, Gemini CLI, and GitHub Copilot. The IDE's MCP config file
+  Claude Code, Gemini CLI, and GitHub Copilot. The Windsurf zero-click variant
+  (CVE-2026-30615) reaches the same config sink via attacker-controlled HTML
+  content that the IDE renders, which silently writes the MCP JSON and registers
+  a malicious STDIO server. The IDE's MCP config file
   (.cursor/mcp.json or equivalent) is auto-loaded on workspace open and treats
   the `command` and `args` fields as OS exec targets. An attacker who can
   modify this file via supply chain (npm package post-install, malicious
@@ -35,6 +38,7 @@ references:
     - "T1195.002 - Compromise Software Supply Chain"
   cve:
     - "CVE-2025-54136"
+    - "CVE-2026-30615"
 
 metadata_provenance:
   mitre_atlas: human-reviewed
