@@ -184,14 +184,6 @@ Listed when the integration code has been merged or released.
 - **Since**: 2026-06-16
 - **Status**: in-review
 
-### Google ADK
-- **Org**: Google
-- **Type**: adapter
-- **Integration**: Sample ATR security-guardrail plugin for the Google Agent Development Kit
-- **Evidence**: <https://github.com/google/adk-python/pull/6130>
-- **Since**: 2026-06-16
-- **Status**: in-review
-
 ### Cisco mcp-scanner
 - **Org**: Cisco
 - **Type**: rule-import
@@ -207,6 +199,46 @@ Listed when the integration code has been merged or released.
 - **Evidence**: <https://github.com/splunk/security_content/pull/4128>
 - **Since**: 2026-06-16
 - **Status**: in-review
+
+### Dify
+- **Org**: ATR maintainers (plugin listed in the Dify plugin marketplace; NOT a Dify-core adoption or integration)
+- **Type**: adapter
+- **Integration**: ATR available as a reviewed plugin in the Dify plugin marketplace (146k★ platform)
+- **Evidence**: <https://github.com/langgenius/dify-plugins/pull/2584>
+- **Since**: 2026-06-22
+- **Status**: shipped
+
+### rulezet
+- **Org**: rulezet (independent project, ~50★; PR merged by external maintainer)
+- **Type**: adapter
+- **Integration**: ATR rule-format adapter merged into rulezet-core, letting rulezet ingest and translate ATR-format rules
+- **Evidence**: <https://github.com/rulezet/rulezet-core/pull/50>
+- **Since**: 2026-06-18
+- **Status**: shipped
+
+### Tencent AI-Infra-Guard
+- **Org**: Tencent
+- **Type**: rule-import
+- **Integration**: ATR-derived MCP threat-detection rules (tool poisoning, credential exfiltration) merged into Tencent's open-source AI-Infra-Guard scanner
+- **Evidence**: <https://github.com/Tencent/AI-Infra-Guard/pull/422>
+- **Since**: 2026-06-23
+- **Status**: shipped
+
+### Google ADK
+- **Org**: Google
+- **Type**: reference
+- **Integration**: ATR guardrail plugin documented as an integration in the official Google Agent Development Kit (ADK) docs (the earlier adk-python sample PR closed unmerged; the docs integration was merged by a Google maintainer)
+- **Evidence**: <https://github.com/google/adk-docs/pull/1850>
+- **Since**: 2026-06-24
+- **Status**: shipped
+
+### AMD GAIA
+- **Org**: AMD
+- **Type**: reference
+- **Integration**: ATR endpoint-guard integration pattern documented in the AMD GAIA docs
+- **Evidence**: <https://github.com/amd/gaia/pull/1809>
+- **Since**: 2026-06-24
+- **Status**: shipped
 
 ---
 
@@ -278,6 +310,30 @@ discoverability.
 - **Integration**: ATR listed in the AI security resource awesome-list
 - **Evidence**: <https://github.com/TalEliyahu/Awesome-AI-Security/pull/53>
 - **Since**: 2026-04-10
+- **Status**: shipped
+
+### cckuailong/awesome-gpt-security
+- **Org**: cckuailong (independent)
+- **Type**: reference
+- **Integration**: ATR listed in the Detecting section of the awesome-gpt-security list
+- **Evidence**: <https://github.com/cckuailong/awesome-gpt-security/pull/39>
+- **Since**: 2026-05-11
+- **Status**: shipped
+
+### Joe-B-Security/awesome-prompt-injection
+- **Org**: Joe B (independent)
+- **Type**: reference
+- **Integration**: ATR listed in the Tools section of the awesome-prompt-injection list
+- **Evidence**: <https://github.com/Joe-B-Security/awesome-prompt-injection/pull/45>
+- **Since**: 2026-06-02
+- **Status**: shipped
+
+### ProjectRecon/awesome-ai-agents-security
+- **Org**: ProjectRecon (independent)
+- **Type**: reference
+- **Integration**: ATR listed in the Static Analysis & Linters section of the awesome-ai-agents-security list
+- **Evidence**: <https://github.com/ProjectRecon/awesome-ai-agents-security/pull/17>
+- **Since**: 2026-06-12
 - **Status**: shipped
 
 ---
