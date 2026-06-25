@@ -368,15 +368,19 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | NeMo Guardrails (NVIDIA test fixtures) | corpus-2026-05-12 | 6 | 100.0% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | OWASP LLM Top 10 | snapshot-2026-04 | 56 | 100.0% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | PINT-format (deepset + Lakera Gandalf) | public-850 | 850 | 63.6% | 99.7% | 0.25% | 3.5.0 | 2026-06-16 |
-| PromptBench (academic adversarial) | snapshot-2026-04 | 3,280 | 0.0% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| PromptBench (academic adversarial) | snapshot-2026-04 | 3,280 | 23.2% | 100.0% | 0.0% | 3.5.2 | 2026-06-25 |
 | promptfoo (red-team plugin fixtures) | corpus-2026-05-12 | 44 | 97.7% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
-| PromptInject (academic adversarial) | snapshot-2026-04 | 1,080 | 0.0% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| PromptInject (academic adversarial) | snapshot-2026-04 | 1,080 | 100.0% | 100.0% | 0.0% | 3.5.2 | 2026-06-25 |
 | SKILL.md benchmark (internal) | internal-498 | 498 | 100.0% | 97.0% | 0.20% | 3.5.0 | 2026-06-16 |
 | Wild scan (OpenClaw + Skills.sh + Hermes + ClawHub) | corpus-2026-04-14 | 96,096 | — | 57.7% (floor) | 1.35% flag rate | 2.0.0 | 2026-04-14 |
 
 All detection corpora were (re-)measured against ATR 3.5.0 on 2026-06-16,
 except `autoresearch` (an internal predicted-rule corpus with no standalone
 runner) and the `Wild scan` snapshot, which retain their earlier measurements.
+`PromptInject` and `PromptBench` were re-measured against ATR 3.5.2 on
+2026-06-25 after a fix to the recall-analysis harness event shape; the prior
+0.0% rows were a harness artifact (the harness placed the prompt in a
+top-level field the engine does not read), not the engine's actual result.
 The per-row `ATR version` column above is the version each cell was actually
 measured against, mirroring the `atr_version` field in each
 `data/measurements/<source>/latest.json`. The headline `garak` recall moved
@@ -435,7 +439,7 @@ npx tsx scripts/sync-stats-from-measurements.ts                              # r
 
 Raw data: [`data/full-scan-v2-2026-04-14.json`](data/full-scan-v2-2026-04-14.json) (96,096-skill scan); ecosystem report on the 751 confirmed malware specimens in [`docs/research/openclaw-malware-campaign-2026-04.md`](docs/research/openclaw-malware-campaign-2026-04.md).
 
-ATR is honest about what it cannot detect. Regex catalogs miss paraphrased attacks, semantic rephrasings of credential exfiltration, and novel attack shapes not present in the training corpus. The 0% recall on PromptBench and PromptInject in the table above is a documented coverage gap — those corpora are academic adversarial paraphrase sets that the regex layer structurally cannot match. See [LIMITATIONS.md](LIMITATIONS.md) for the documented evasion-test corpus (64 techniques as of 2026-05) and the layering recommendation: ATR is the content layer; pair with credential brokering, sandbox execution, and human-in-the-loop for high-blast-radius actions.
+ATR is honest about what it cannot detect. Regex catalogs miss paraphrased attacks, semantic rephrasings of credential exfiltration, and novel attack shapes not present in the training corpus. `PromptBench` (3,280 character- and word-level robustness perturbations) is a different threat class from prompt injection and sits largely outside ATR's content scope; ATR still matches the 23.2% that carry injection-shaped payloads, at 100% precision. See [LIMITATIONS.md](LIMITATIONS.md) for the documented evasion-test corpus (64 techniques as of 2026-05) and the layering recommendation: ATR is the content layer; pair with credential brokering, sandbox execution, and human-in-the-loop for high-blast-radius actions.
 
 ## 9. Governance
 
