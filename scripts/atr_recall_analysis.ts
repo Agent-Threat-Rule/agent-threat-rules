@@ -54,7 +54,8 @@ async function runRecallAnalysis(
     const event = {
       type: "llm_io" as const,
       timestamp: new Date().toISOString(),
-      user_input: text,
+      content: text,
+      fields: { user_input: text },
       source: "user_input",
     };
 
