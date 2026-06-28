@@ -41,16 +41,6 @@ directory. The repo has ten rule directories, but three rules under
 `rules/model-security/` carry `tags.category` of `model-abuse` or
 `data-poisoning`, so nine distinct categories appear in the metadata.
 
-Data-fidelity note: a small number of rules carry an ATLAS short-form id
-(`T00xx`, e.g. AML.T0051) inside the `mitre_attack` field rather than in
-`mitre_atlas`. These are reported as ATLAS, not enterprise ATT&CK, so the
-ATT&CK join key stays clean. Affected entries:
-
-- `ATR-2026-00084` (prompt-injection): `T0051` -> treated as ATLAS `T0051`
-- `ATR-2026-00091` (prompt-injection): `T0051` -> treated as ATLAS `T0051`
-- `ATR-2026-00092` (prompt-injection): `T0010` -> treated as ATLAS `T0010`
-- `ATR-2026-00096` (tool-poisoning): `T0056` -> treated as ATLAS `T0056`
-
 ## ATT&CK techniques referenced by ATR (the join surface)
 
 Every enterprise ATT&CK technique id present in ATR metadata, with the ATR
@@ -134,7 +124,7 @@ ATT&CK techniques (join key):
 
 ATLAS techniques ATR adds: AML.T0010, AML.T0040, AML.T0043, AML.T0048, AML.T0049, AML.T0050, AML.T0051, AML.T0051.000, AML.T0051.001, AML.T0052.000, AML.T0054
 
-OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03, ASI03:2026, ASI04:2026, ASI05:2026, ASI06, ASI06:2026, ASI07:2026, ASI09:2026, ASI10:2026
+OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:2026, ASI05:2026, ASI06:2026, ASI07:2026, ASI09:2026, ASI10:2026
 
 ### context-exfiltration
 
@@ -165,7 +155,7 @@ ATT&CK techniques (join key):
 
 ATLAS techniques ATR adds: AML.CS0036, AML.T0010, AML.T0024, AML.T0025, AML.T0040, AML.T0043, AML.T0048, AML.T0051, AML.T0051.001, AML.T0053, AML.T0054, AML.T0055, AML.T0056, AML.T0057, AML.T0069, AML.T0080, AML.T0088
 
-OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:2026, ASI05:2026, ASI06, ASI06:2026, ASI07:2026, ASI08, ASI08:2026, ASI09:2026
+OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:2026, ASI05:2026, ASI06:2026, ASI07:2026, ASI08:2026, ASI09:2026
 
 ### data-poisoning
 
@@ -239,7 +229,7 @@ ATT&CK techniques (join key):
 
 ATLAS techniques ATR adds: AML.T0024, AML.T0040, AML.T0043, AML.T0047, AML.T0049, AML.T0050, AML.T0051, AML.T0053, AML.T0054, AML.T0080, AML.T0105
 
-OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03, ASI03:2026, ASI04:2026, ASI05:2026, ASI06:2026, ASI07:2026
+OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:2026, ASI05:2026, ASI06:2026, ASI07:2026
 
 ### prompt-injection
 
@@ -256,7 +246,7 @@ ATT&CK techniques (join key):
 
 ATLAS techniques ATR adds: AML.CS0038, AML.T0010, AML.T0025, AML.T0036, AML.T0040, AML.T0043, AML.T0048, AML.T0050, AML.T0051, AML.T0051.000, AML.T0051.001, AML.T0054, AML.T0057
 
-OWASP Agentic categories ATR adds: ASI01, ASI01:2026, ASI03:2026, ASI04:2026, ASI05:2026, ASI06:2026, ASI07:2026, ASI08:2026, ASI10:2026
+OWASP Agentic categories ATR adds: ASI01:2026, ASI03:2026, ASI04:2026, ASI05:2026, ASI06:2026, ASI07:2026, ASI08:2026, ASI10:2026
 
 ### skill-compromise
 
@@ -274,7 +264,7 @@ ATT&CK techniques (join key):
 
 ATLAS techniques ATR adds: AML.T0010, AML.T0011.000, AML.T0018.000, AML.T0020, AML.T0024, AML.T0040, AML.T0044, AML.T0048, AML.T0050, AML.T0051, AML.T0051.001, AML.T0053, AML.T0057, AML.T0060, AML.T0080, AML.T0104, AML.T0109
 
-OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04, ASI04:2026, ASI05:2026, ASI06:2026, ASI07:2026, ASI08:2026, ASI09:2026
+OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:2026, ASI05:2026, ASI06:2026, ASI07:2026, ASI08:2026, ASI09:2026
 
 ### tool-poisoning
 
