@@ -389,4 +389,140 @@ describe('SARIF Converter', () => {
     expect(msg).toContain('95%');
     expect(msg).toContain('regex: ignore.*instructions');
   });
+
+  // ── Shared scan-report envelope: artifacts[] + index + layer ──
+
+  it('emits run.artifacts[] with hashes["sha-256"] as the join key', () => {
+    const result = makeScanResult({
+      input_file: process.cwd() + '/skills/test/SKILL.md',
+      content_hash: '64f9e18ef138e7238509134f660f1bdd9859ff9953f5e4cb9c884f0e0ec3395a',
+    });
+    const sarif = scanResultToSARIF([result], '1.0.0') as {
+      runs: Array<{
+        artifacts: Array<{ location: { uri: string; uriBaseId: string }; hashes: Record<string, string> }>;
+      }>;
+    };
+    const artifacts = sarif.runs[0]!.artifacts;
+    expect(artifacts).toHaveLength(1);
+    expect(artifacts[0]!.location.uri).toBe('skills/test/SKILL.md');
+    expect(artifacts[0]!.location.uriBaseId).toBe('%SRCROOT%');
+    // The join key is the engine's existing content_hash, surfaced verbatim.
+    expect(artifacts[0]!.hashes['sha-256']).toBe(
+      '64f9e18ef138e7238509134f660f1bdd9859ff9953f5e4cb9c884f0e0ec3395a',
+    );
+  });
+
+  it('points each result artifactLocation.index back at its artifact entry', () => {
+    const result = makeScanResult({ input_file: process.cwd() + '/skills/test/SKILL.md' });
+    const sarif = scanResultToSARIF([result], '1.0.0') as {
+      runs: Array<{
+        artifacts: Array<{ hashes: Record<string, string> }>;
+        results: Array<{ locations: Array<{ physicalLocation: { artifactLocation: { uri: string; index: number } } }> }>;
+      }>;
+    };
+    const artifactLoc = sarif.runs[0]!.results[0]!.locations[0]!.physicalLocation.artifactLocation;
+    expect(artifactLoc.index).toBe(0);
+    // index resolves to the artifact carrying the join key
+    expect(sarif.runs[0]!.artifacts[artifactLoc.index]!.hashes['sha-256']).toBe('abc123');
+  });
+
+  it('sets properties.layer = "atr" on every result, keeping existing properties', () => {
+    const result = makeScanResult({ input_file: process.cwd() + '/skills/test/SKILL.md' });
+    const sarif = scanResultToSARIF([result], '1.0.0') as {
+      runs: Array<{ results: Array<{ properties: Record<string, unknown> }> }>;
+    };
+    const props = sarif.runs[0]!.results[0]!.properties;
+    expect(props['layer']).toBe('atr');
+    // existing fields intact
+    expect(props['confidence']).toBe(0.95);
+    expect(props['scan_context']).toBe('mcp');
+    expect(props['content_hash']).toBe('abc123');
+  });
+
+  it('deduplicates artifacts per scanned file (one entry per unique uri)', () => {
+    const path = process.cwd() + '/skills/test/SKILL.md';
+    // Two findings on the same file → one artifact entry, both results index 0.
+    const result = makeScanResult({
+      input_file: path,
+      matches: [
+        makeMatch(),
+        makeMatch({ rule: makeRule({ id: 'ATR-2026-00002' }) }),
+      ],
+    });
+    const sarif = scanResultToSARIF([result], '1.0.0') as {
+      runs: Array<{
+        artifacts: object[];
+        results: Array<{ locations: Array<{ physicalLocation: { artifactLocation: { index: number } } }> }>;
+      }>;
+    };
+    expect(sarif.runs[0]!.artifacts).toHaveLength(1);
+    const results = sarif.runs[0]!.results;
+    expect(results).toHaveLength(2);
+    expect(results[0]!.locations[0]!.physicalLocation.artifactLocation.index).toBe(0);
+    expect(results[1]!.locations[0]!.physicalLocation.artifactLocation.index).toBe(0);
+  });
+
+  it('emits an artifact per distinct file with the matching index', () => {
+    const r1 = makeScanResult({ input_file: process.cwd() + '/skills/a/SKILL.md', content_hash: 'hashA' });
+    const r2 = makeScanResult({
+      input_file: process.cwd() + '/skills/b/SKILL.md',
+      content_hash: 'hashB',
+      matches: [makeMatch({ rule: makeRule({ id: 'ATR-2026-00009' }) })],
+    });
+    const sarif = scanResultToSARIF([r1, r2], '1.0.0') as {
+      runs: Array<{
+        artifacts: Array<{ location: { uri: string }; hashes: Record<string, string> }>;
+        results: Array<{ locations: Array<{ physicalLocation: { artifactLocation: { uri: string; index: number } } }> }>;
+      }>;
+    };
+    const artifacts = sarif.runs[0]!.artifacts;
+    expect(artifacts).toHaveLength(2);
+    expect(artifacts[0]!.hashes['sha-256']).toBe('hashA');
+    expect(artifacts[1]!.hashes['sha-256']).toBe('hashB');
+    const results = sarif.runs[0]!.results;
+    // each result's index resolves to the artifact with its own uri + hash
+    for (const res of results) {
+      const loc = res.locations[0]!.physicalLocation.artifactLocation;
+      expect(artifacts[loc.index]!.location.uri).toBe(loc.uri);
+    }
+  });
+
+  it('keeps distinct files apart when their normalized URIs collide (basename clash)', () => {
+    // Two distinct out-of-CWD files share a basename → both normalize to
+    // 'SKILL.md', but each must get its own artifact carrying its own hash,
+    // and each result must index back at the artifact for its own file.
+    const r1 = makeScanResult({ input_file: '/mnt/scan-a/SKILL.md', content_hash: 'hashA' });
+    const r2 = makeScanResult({
+      input_file: '/mnt/scan-b/SKILL.md',
+      content_hash: 'hashB',
+      matches: [makeMatch({ rule: makeRule({ id: 'ATR-2026-00011' }) })],
+    });
+    const sarif = scanResultToSARIF([r1, r2], '1.0.0') as {
+      runs: Array<{
+        artifacts: Array<{ location: { uri: string }; hashes: Record<string, string> }>;
+        results: Array<{ locations: Array<{ physicalLocation: { artifactLocation: { index: number } } }> }>;
+      }>;
+    };
+    const artifacts = sarif.runs[0]!.artifacts;
+    // distinct files → two artifacts even though both URIs are 'SKILL.md'
+    expect(artifacts).toHaveLength(2);
+    expect(artifacts[0]!.hashes['sha-256']).toBe('hashA');
+    expect(artifacts[1]!.hashes['sha-256']).toBe('hashB');
+    const results = sarif.runs[0]!.results;
+    const idx0 = results[0]!.locations[0]!.physicalLocation.artifactLocation.index;
+    const idx1 = results[1]!.locations[0]!.physicalLocation.artifactLocation.index;
+    // each result resolves to the artifact with its own file's hash
+    expect(artifacts[idx0]!.hashes['sha-256']).toBe('hashA');
+    expect(artifacts[idx1]!.hashes['sha-256']).toBe('hashB');
+  });
+
+  it('emits empty artifacts[] and no index when no input_file is set', () => {
+    const sarif = scanResultToSARIF([makeScanResult()], '1.0.0') as {
+      runs: Array<{ artifacts: object[]; results: Array<{ locations?: unknown; properties: Record<string, unknown> }> }>;
+    };
+    expect(sarif.runs[0]!.artifacts).toHaveLength(0);
+    // MCP runtime event: no location, but still tagged as the atr layer
+    expect(sarif.runs[0]!.results[0]!.locations).toBeUndefined();
+    expect(sarif.runs[0]!.results[0]!.properties['layer']).toBe('atr');
+  });
 });
