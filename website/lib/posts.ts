@@ -16,6 +16,24 @@ export interface BlogPost {
 
 export const posts: BlogPost[] = [
   {
+    slug: "nsa-mcp-security",
+    date: "2026-06-29",
+    title: {
+      en: "The NSA wrote 9 MCP security recommendations. Two of them are ATR's job.",
+      zh: "NSA 寫了 9 條 MCP 安全建議。其中兩條,正是 ATR 在做的事。",
+    },
+    summary: {
+      en: "In May 2026 the NSA published MCP security design considerations: 8 named risks, 9 recommendations, zero executable rules. Two of those recommendations — track and patch MCP CVEs, and filter agent output pipelines — are exactly what ATR's rule corpus does. We map all nine, and we're honest about the rest: ATR is not a scanner and emits no logs.",
+      zh: "2026 年 5 月,NSA 發布 MCP 安全設計考量:8 項風險、9 條建議、零條可執行規則。其中兩條——追蹤修補 MCP CVE、過濾 agent 輸出管線——正是 ATR 規則庫在做的事。我們對映全部九條,也老實說清楚其餘:ATR 不是掃描器,也不產生 log。",
+    },
+    atrRules: [
+      "ATR-2026-00451",
+      "ATR-2026-00534",
+      "ATR-2026-00002",
+      "ATR-2026-00010",
+    ],
+  },
+  {
     slug: "this-weeks-mcp-cves",
     date: "2026-06-21",
     title: {
