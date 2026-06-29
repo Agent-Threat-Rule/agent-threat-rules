@@ -34,6 +34,7 @@ const CROSSWALK_DOCS = [
   "SAFE-MCP-MAPPING.md",
   "FIVE-EYES-MAPPING.md",
   "OWASP-AST10-MAPPING.md",
+  "NSA-MCP-MAPPING.md",
 ] as const;
 
 interface RuleMapping {
