@@ -4,7 +4,7 @@ Version: 0.1.0 (INTERNAL DRAFT — not published)
 Status: Draft alignment mapping for MITRE ATLAS v5.6.0
 Date: 2026-06-14
 Editor: Adam Lin (林冠辛) <adam@agentthreatrule.org>
-Mapped corpus: Agent Threat Rules v3.5.0 (652 rules / 10 categories; disk == data/stats.json reconciled 2026-06-16)
+Mapped corpus: Agent Threat Rules v3.5.2 (655 rules / 10 categories; disk == data/stats.json reconciled 2026-06-29)
 Reference framework: MITRE ATLAS (Adversarial Threat Landscape for Artificial-Intelligence Systems), `dist/ATLAS.yaml` on mitre-atlas/atlas-data, v5.6.0 — 16 tactics, 101 top-level techniques (271 including sub-techniques), counted from the full machine-readable `dist/ATLAS.yaml`.
 
 ---
