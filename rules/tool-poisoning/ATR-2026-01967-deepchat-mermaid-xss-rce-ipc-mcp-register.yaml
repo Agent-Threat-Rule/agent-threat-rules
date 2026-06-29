@@ -1,0 +1,97 @@
+title: "DeepChat Mermaid XSS to RCE via Electron IPC MCP Server Registration (CVE-2025-66481 / GHSA-h9f5-7hhf-fqm4)"
+id: ATR-2026-01967
+rule_version: 1
+status: draft
+description: >
+  Detects CVE-2025-66481 (CVSS 9.6 CRITICAL): DeepChat <= 0.5.1 incompletely
+  sanitizes Mermaid diagram content in MermaidArtifact.vue. The sanitizer regex
+  /on\w+\s*=\s*["'][^"']*["']/ only strips QUOTED event-handler attributes, so an
+  unquoted handler (e.g. `<audio src=x onerror=...>`) survives and executes in the
+  Electron renderer. The PoC handler invokes window.electron.ipcRenderer.invoke
+  ('presenter:call','mcpPresenter','addMcpServer',...) then 'startServer' to register
+  and launch a malicious stdio MCP server (command:'calc.exe'), escalating stored
+  XSS to remote code execution. This rule keys on the unquoted-onerror + IPC
+  presenter:call mcpPresenter addMcpServer/startServer tokens, not on Mermaid alone.
+author: "ATR Community"
+date: "2026/06/29"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: critical
+references:
+  owasp_llm: ["LLM06:2025 - Excessive Agency"]
+  owasp_agentic: ["ASI06:2026 - Tool Misuse"]
+  mitre_atlas: ["AML.T0049 - Exploit Public-Facing Application"]
+  mitre_attack: ["T1190 - Exploit Public-Facing Application"]
+  cve: ["CVE-2025-66481"]
+metadata_provenance: { mitre_atlas: human-reviewed, owasp_llm: human-reviewed, owasp_agentic: human-reviewed }
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness, cybersecurity) — runtime detection of this technique is a cybersecurity control for high-risk AI systems. Technique: DeepChat Mermaid XSS to RCE via Electron IPC MCP Server Registration (CVE-2025-66481 / GHSA-h9f5-7hhf-fqm4)."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control. Technique: DeepChat Mermaid XSS to RCE via Electron IPC MCP Server Registration (CVE-2025-66481 / GHSA-h9f5-7hhf-fqm4)."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "NIST AI RMF MAP 5.1 — likelihood and impact of the identified attack are characterised; this rule detects the adversarial input at runtime. Technique: DeepChat Mermaid XSS to RCE via Electron IPC MCP Server Registration (CVE-2025-66481 / GHSA-h9f5-7hhf-fqm4)."
+      strength: primary
+    - subcategory: "MG.3.2"
+      context: "NIST AI RMF MANAGE 3.2 — runtime monitoring/maintenance control that surfaces this attack class. Technique: DeepChat Mermaid XSS to RCE via Electron IPC MCP Server Registration (CVE-2025-66481 / GHSA-h9f5-7hhf-fqm4)."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) — detection of this payload is an operational control. Technique: DeepChat Mermaid XSS to RCE via Electron IPC MCP Server Registration (CVE-2025-66481 / GHSA-h9f5-7hhf-fqm4)."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) — this rule implements runtime detection as a treatment control. Technique: DeepChat Mermaid XSS to RCE via Electron IPC MCP Server Registration (CVE-2025-66481 / GHSA-h9f5-7hhf-fqm4)."
+      strength: secondary
+tags: { category: tool-poisoning, subcategory: mermaid-xss-ipc-rce, scan_target: both, confidence: high, source: cve-disclosure, vendor_sources: deepchat-cve-2025-66481 }
+agent_source: { type: llm_io, framework: [any], provider: [any] }
+detection:
+  condition: any
+  false_positives:
+    - "A legitimate Mermaid diagram (graph/flowchart/sequenceDiagram) with node labels and no event-handler attributes or IPC calls."
+    - "DeepChat source/docs discussing the electron.ipcRenderer presenter bridge or mcpPresenter API without an embedded onerror handler payload."
+    - "A normal addMcpServer config object with command:'npx' that is not wrapped inside an HTML event handler attribute."
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)<\s*(?:audio|img|video|svg|image|object|input|body|details)\b[^>]*\bon\w+\s*=\s*[^"''\s>][^>]*?(?:electron\.)?ipcRenderer\.invoke\s*\(\s*[''"]presenter:call[''"]'
+      description: "one line: HTML tag with an UNQUOTED event handler whose body calls ipcRenderer.invoke('presenter:call' — the CVE-2025-66481 sanitizer-bypass + IPC sink"
+    - field: content
+      operator: regex
+      value: '(?i)ipcRenderer\.invoke\([^)]*[''"]mcpPresenter[''"][^)]*[''"](?:addMcpServer|startServer)[''"]'
+      description: "one line: Electron IPC presenter:call into mcpPresenter registering/starting an MCP server — the RCE escalation primitive"
+    - field: content
+      operator: regex
+      value: '(?i)CVE-2025-66481[\s\S]{0,200}(?:mermaid|MermaidArtifact|onerror|ipcRenderer|mcpPresenter)'
+      description: "explicit CVE framing"
+response:
+  actions: [alert, block_input]
+  message_template: >
+    [ATR-2026-01967] CRITICAL: DeepChat Mermaid XSS bypass (CVE-2025-66481) escalates to RCE by registering a malicious MCP server via electron ipcRenderer. Block and upgrade past 0.5.1.
+confidence: 85
+wild_fp_rate: 0
+test_cases:
+  true_positives:
+    - input: "<audio src=x onerror=window.electron.ipcRenderer.invoke('presenter:call','mcpPresenter','addMcpServer','test',{command:'calc.exe',args:[],type:'stdio',enabled:true,name:'test'}).then(()=>window.electron.ipcRenderer.invoke('presenter:call','mcpPresenter','startServer','test'))>"
+      expected: triggered
+      description: "Exact CVE-2025-66481 PoC: unquoted onerror on <audio> survives the sanitizer and invokes mcpPresenter addMcpServer/startServer for RCE"
+    - input: "graph TD; A[<img src=x onerror=electron.ipcRenderer.invoke('presenter:call','mcpPresenter','addMcpServer','x',{command:'powershell',args:[],type:'stdio'})>]"
+      expected: triggered
+      description: "Same bypass inside a Mermaid node label using <img> unquoted onerror into the mcpPresenter IPC sink"
+    - input: "window.electron.ipcRenderer.invoke('presenter:call','mcpPresenter','startServer','test')"
+      expected: triggered
+      description: "The IPC escalation primitive that launches the attacker-registered MCP server"
+  true_negatives:
+    - input: "graph TD; A[Start] --> B[Process] --> C[End]"
+      expected: not_triggered
+      description: "Benign Mermaid flowchart with plain node labels, no event handler or IPC call"
+    - input: "DeepChat uses electron.ipcRenderer for its presenter bridge; see mcpPresenter docs for how addMcpServer registers a server."
+      expected: not_triggered
+      description: "Documentation mentioning the presenter/mcpPresenter API without an unquoted onerror handler or the invoke() call shape"
+    - input: "<img src=\"diagram.png\" onerror=\"showFallback()\" alt=\"architecture\">"
+      expected: not_triggered
+      description: "Legitimate quoted onerror fallback handler with no ipcRenderer/presenter:call payload"

