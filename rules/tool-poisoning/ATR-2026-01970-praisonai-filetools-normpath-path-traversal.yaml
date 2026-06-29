@@ -1,0 +1,111 @@
+title: "PraisonAI FileTools _validate_path normpath Path Traversal (CVE-2026-35615 / GHSA-693f-pf34-72c5)"
+id: ATR-2026-01970
+rule_version: 1
+status: draft
+description: >
+  Detects exploitation of CVE-2026-35615 (GHSA-693f-pf34-72c5, CWE-22, CVSS 9.2)
+  in PraisonAI < 1.5.113. FileTools._validate_path() calls os.path.normpath()
+  FIRST, collapsing '..' sequences, then checks `if '..' in normalized` — a check
+  that can never fire, so traversal succeeds. An attacker supplies a path such as
+  /tmp/../etc/passwd to read_file / write_file / delete_file and reaches any file
+  on the host. This rule keys on the distinctive normpath-then-dotdot-check sink,
+  the FileTools operation names with a traversal payload, and the canonical
+  /tmp/../etc/passwd PoC.
+author: "ATR Community"
+date: "2026/06/29"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: critical
+references:
+  owasp_llm: ["LLM06:2025 - Excessive Agency"]
+  owasp_agentic: ["ASI06:2026 - Tool Misuse"]
+  mitre_atlas: ["AML.T0049 - Exploit Public-Facing Application"]
+  mitre_attack: ["T1190 - Exploit Public-Facing Application"]
+  cve: ["CVE-2026-35615"]
+metadata_provenance: { mitre_atlas: human-reviewed, owasp_llm: human-reviewed, owasp_agentic: human-reviewed }
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness, cybersecurity) — runtime detection of this technique is a cybersecurity control for high-risk AI systems. Technique: PraisonAI FileTools _validate_path normpath Path Traversal (CVE-2026-35615 / GHSA-693f-pf34-72c5)."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control. Technique: PraisonAI FileTools _validate_path normpath Path Traversal (CVE-2026-35615 / GHSA-693f-pf34-72c5)."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "NIST AI RMF MAP 5.1 — likelihood and impact of the identified attack are characterised; this rule detects the adversarial input at runtime. Technique: PraisonAI FileTools _validate_path normpath Path Traversal (CVE-2026-35615 / GHSA-693f-pf34-72c5)."
+      strength: primary
+    - subcategory: "MG.3.2"
+      context: "NIST AI RMF MANAGE 3.2 — runtime monitoring/maintenance control that surfaces this attack class. Technique: PraisonAI FileTools _validate_path normpath Path Traversal (CVE-2026-35615 / GHSA-693f-pf34-72c5)."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) — detection of this payload is an operational control. Technique: PraisonAI FileTools _validate_path normpath Path Traversal (CVE-2026-35615 / GHSA-693f-pf34-72c5)."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) — this rule implements runtime detection as a treatment control. Technique: PraisonAI FileTools _validate_path normpath Path Traversal (CVE-2026-35615 / GHSA-693f-pf34-72c5)."
+      strength: secondary
+tags: { category: tool-poisoning, subcategory: path-traversal, scan_target: both, confidence: high, source: cve-disclosure, vendor_sources: praisonai-cve-2026-35615 }
+agent_source: { type: llm_io, framework: [any], provider: [any] }
+detection:
+  condition: any
+  false_positives:
+    - "Legitimate FileTools.read_file('/workspace/data/report.txt') with an absolute path and no '..' traversal segment."
+    - "Security advisory or changelog text that names CVE-2026-35615 but contains no traversal payload."
+    - "Discussion of os.path.normpath usage in code review without a '../' traversal sink."
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)(?:FileTools\.)?(?:read_file|write_file|delete_file|copy_file|move_file|get_file_info|list_files|download_file|_validate_path)\s*\(\s*[''"][^''"\n]{0,80}\.\.[\\/]+[^''"\n]{0,120}(?:etc[\\/]passwd|\.\.[\\/]|[\\/]root[\\/]|id_rsa|shadow)'
+      description: >
+        PraisonAI FileTools operation invoked with a relative path argument that
+        contains a '../' traversal segment reaching a sensitive target — the core
+        CVE-2026-35615 exploit shape.
+    - field: content
+      operator: regex
+      value: '(?i)(?:os\.path\.)?normpath\s*\([^)\n]{0,80}\)[\s\S]{0,160}(?:if\s+[''"]\.\.[''"]\s+in\b|[''"]\.\.[''"]\s+in\s+normalized)'
+      description: >
+        The vulnerable validation order: normpath() called first, then an
+        ineffective `'..' in normalized` check — the CVE-2026-35615 logic bug.
+    - field: content
+      operator: regex
+      value: '(?i)[''"/]?(?:tmp[\\/])?\.\.[\\/]+etc[\\/]+passwd'
+      description: >
+        Canonical /tmp/../etc/passwd traversal PoC string from the advisory.
+    - field: content
+      operator: regex
+      value: '(?i)CVE-2026-35615[\s\S]{0,200}(?:_validate_path|normpath|path\s*traversal|FileTools|\.\.[\\/])'
+      description: "explicit CVE framing combined with the vulnerable function or traversal token"
+response:
+  actions: [alert, block_input]
+  message_template: >
+    [ATR-2026-01970] CRITICAL: PraisonAI FileTools path traversal (CVE-2026-35615) —
+    normpath-then-dotdot-check lets '../' paths escape the workspace and read/write
+    any host file (e.g. /etc/passwd). Block this call and upgrade PraisonAI to >= 1.5.113.
+confidence: 80
+wild_fp_rate: 0
+test_cases:
+  true_positives:
+    - input: "FileTools.read_file('/tmp/../etc/passwd')"
+      expected: triggered
+      description: "Canonical advisory PoC — FileTools op with traversal to /etc/passwd"
+    - input: "result = _validate_path('/tmp/../../../root/.ssh/id_rsa')"
+      expected: triggered
+      description: "_validate_path called with multi-level traversal to a secret file"
+    - input: "normalized = os.path.normpath(filepath)\n    if '..' in normalized:\n        raise ValueError"
+      expected: triggered
+      description: "The vulnerable normpath-first then dead '..' check logic bug"
+    - input: "CVE-2026-35615 exploit: write_file('foo/../../../etc/passwd', payload) bypasses _validate_path"
+      expected: triggered
+      description: "Explicit CVE framing with FileTools traversal payload"
+  true_negatives:
+    - input: "FileTools.read_file('/workspace/output/results.json')"
+      expected: not_triggered
+      description: "Legitimate absolute path with no traversal segment"
+    - input: "Upgrade PraisonAI to >= 1.5.113 to remediate CVE-2026-35615."
+      expected: not_triggered
+      description: "Mitigation advisory text without any traversal payload"
+    - input: "We use os.path.normpath() to canonicalize the upload directory before saving."
+      expected: not_triggered
+      description: "Benign normpath mention with no dead '..' check and no traversal"
