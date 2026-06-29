@@ -122,6 +122,25 @@ function syncQuickStart(s: Stats): SyncResult {
   });
 }
 
+// Crosswalk mapping docs hardcode the live corpus rule count in their header.
+// Keep that single number synced with the live total so audit-mappings.ts never
+// flags them stale. We replace ONLY the first "<N> rules" occurrence (the header
+// corpus count); body coverage counts ("12 rules across ...", "462-rule corpus")
+// and version strings are left untouched. The legacy v1.0.0 OWASP-MAPPING.md is
+// intentionally excluded — its 108-rule body is a frozen snapshot, not the live corpus.
+const CROSSWALK_DOCS = [
+  'SAFE-MCP-MAPPING.md', 'FIVE-EYES-MAPPING.md', 'OWASP-AST10-MAPPING.md', 'NSA-MCP-MAPPING.md',
+  'ETSI-TS-104223-MAPPING.md', 'FINOS-AI-GOVERNANCE-MAPPING.md', 'MCP-38-MAPPING.md',
+  'MITRE-ATLAS-MAPPING.md', 'OWASP-AGENTIC-MAPPING.md', 'OWASP-AGENTIC-MATURITY-MAPPING.md',
+  'OWASP-AISVS-MAPPING.md', 'OWASP-AIVSS-MAPPING.md',
+] as const;
+
+function syncCrosswalkDocs(s: Stats): SyncResult[] {
+  return CROSSWALK_DOCS.map((name) =>
+    syncFile(`docs/${name}`, (text) => text.replace(/\b\d{2,4}(\s+rules)/, `${s.ruleCount.total}$1`)),
+  );
+}
+
 const main = (): void => {
   const stats = loadStats();
   const results: SyncResult[] = [
@@ -129,6 +148,7 @@ const main = (): void => {
     syncCitation(stats),
     syncPackageJson(stats),
     syncQuickStart(stats),
+    ...syncCrosswalkDocs(stats),
   ];
   const filesystemRuleCount = countRuleFiles();
   if (filesystemRuleCount !== stats.ruleCount.total) {

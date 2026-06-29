@@ -4,7 +4,7 @@ Version: 0.1.0 (INTERNAL DRAFT — not published, not submitted)
 Status: Draft for future FINOS AI Governance Framework Informative Reference / PR basis (human review gate before any upstream submission)
 Date: 2026-06-12
 Editor: Adam Lin (林冠辛) <adam@agentthreatrule.org>
-Mapped corpus: Agent Threat Rules v3.5.0 (652 rules / 10 categories, disk==stats.json verified 2026-06-16)
+Mapped corpus: Agent Threat Rules v3.5.2 (655 rules / 10 categories, disk==stats.json verified 2026-06-29)
 Reference framework: FINOS AI Governance Framework v2 (published 2025-10-20), Risk Catalogue
 Reference framework license: CC-BY-4.0 (finos/ai-governance-framework). Risk and
 mitigation text quoted below is reproduced under that license.
