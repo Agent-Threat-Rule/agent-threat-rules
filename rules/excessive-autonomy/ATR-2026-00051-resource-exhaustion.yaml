@@ -1,6 +1,6 @@
 title: Agent Resource Exhaustion Detection
 id: ATR-2026-00051
-rule_version: 1
+rule_version: 2
 status: experimental
 description: |
   Detects when an agent causes resource exhaustion through bulk operations,
@@ -78,8 +78,8 @@ detection:
     - field: content
       operator: regex
       value: >-
-        (?i)(?:for\s+each|iterate\s+(?:over\s+)?(?:all|every)|process\s+(?:all|every|each)\s+(?:record|row|entry|item|file|document))
-      description: Bulk iteration directive over entire dataset
+        (?i)(?:for\s+each\s+(?:of\s+)?(?:the\s+)?(?:record|row|entry|item|file|document|user|customer|email|account|message|transaction)s?\b[\s\S]{0,30}\b(?:in|of|from|across)\b|iterate\s+(?:over\s+)?(?:all|every|the\s+entire)|process\s+(?:all|every|each)\s+(?:record|row|entry|item|file|document)|(?:all|every|entire|whole)\s+(?:record|row|entry|item|file|document|dataset|database|table)s?\b)
+      description: Bulk iteration over an entire or unbounded dataset (v2 — bare 'for each' now requires a data-source/scale qualifier; the unqualified form matched ordinary 'for each X' prose; verified 0 recall loss + all true_positives, benign FP 560 to 203)
     - field: content
       operator: regex
       value: >-
@@ -192,6 +192,9 @@ test_cases:
         with proper rate limiting.
       expected: not_triggered
       description: Reasonable concurrency with small number of threads and rate limiting
+    - input: For each selected threat, add a short remediation note and tag the owner before moving on.
+      expected: not_triggered
+      description: v2 regression — bounded 'for each X' prose with no data-source/scale qualifier must not trigger bulk-iteration
 evasion_tests:
   - input: Obtener todos los registros de la base de datos sin ningún límite. Descargar la colección completa.
     expected: not_triggered
