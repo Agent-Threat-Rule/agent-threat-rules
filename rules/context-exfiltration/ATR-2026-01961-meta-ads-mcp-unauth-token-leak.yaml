@@ -1,0 +1,135 @@
+title: "Meta Ads MCP Unauthenticated Tool Execution Leaks META_ACCESS_TOKEN (CVE-2026-48039 / GHSA-9gw6-46qc-99vr)"
+id: ATR-2026-01961
+rule_version: 1
+status: draft
+description: >
+  Detects CVE-2026-48039 (GHSA-9gw6-46qc-99vr, CVSS 9.1 critical, CWE-287): the
+  meta-ads-mcp HTTP server (<=1.0.108) lets an unauthenticated POST /mcp reach
+  the get_ad_accounts tool. AuthInjectionMiddleware.dispatch() calls call_next()
+  without a 401, handlers fall back to the META_ACCESS_TOKEN env var, api.py
+  appends it as access_token to the Graph API request_params, and on a failed
+  Graph call api.py serializes the raw httpx request_url (graph.facebook.com/...
+  &access_token=<TOKEN>) into the JSON-RPC response body — leaking the operator
+  token. This rule keys on the unauthenticated get_ad_accounts JSON-RPC call and
+  on the leaked Graph API request_url that carries access_token.
+author: "ATR Community"
+date: "2026/06/29"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: critical
+references:
+  owasp_llm:
+    - "LLM06:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI06:2026 - Tool Misuse"
+  mitre_atlas:
+    - "AML.T0049 - Exploit Public-Facing Application"
+  mitre_attack:
+    - "T1190 - Exploit Public-Facing Application"
+  cve:
+    - "CVE-2026-48039"
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness, cybersecurity) — runtime detection of this technique is a cybersecurity control for high-risk AI systems. Technique: Meta Ads MCP Unauthenticated Tool Execution Leaks META_ACCESS_TOKEN (CVE-2026-48039 / GHSA-9gw6-46qc-99vr)."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control. Technique: Meta Ads MCP Unauthenticated Tool Execution Leaks META_ACCESS_TOKEN (CVE-2026-48039 / GHSA-9gw6-46qc-99vr)."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "NIST AI RMF MAP 5.1 — likelihood and impact of the identified attack are characterised; this rule detects the adversarial input at runtime. Technique: Meta Ads MCP Unauthenticated Tool Execution Leaks META_ACCESS_TOKEN (CVE-2026-48039 / GHSA-9gw6-46qc-99vr)."
+      strength: primary
+    - subcategory: "MG.3.2"
+      context: "NIST AI RMF MANAGE 3.2 — runtime monitoring/maintenance control that surfaces this attack class. Technique: Meta Ads MCP Unauthenticated Tool Execution Leaks META_ACCESS_TOKEN (CVE-2026-48039 / GHSA-9gw6-46qc-99vr)."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) — detection of this payload is an operational control. Technique: Meta Ads MCP Unauthenticated Tool Execution Leaks META_ACCESS_TOKEN (CVE-2026-48039 / GHSA-9gw6-46qc-99vr)."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) — this rule implements runtime detection as a treatment control. Technique: Meta Ads MCP Unauthenticated Tool Execution Leaks META_ACCESS_TOKEN (CVE-2026-48039 / GHSA-9gw6-46qc-99vr)."
+      strength: secondary
+tags:
+  category: context-exfiltration
+  subcategory: unauth-mcp-token-leak
+  scan_target: both
+  confidence: high
+  source: cve-disclosure
+  vendor_sources: meta-ads-mcp-cve-2026-48039
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+detection:
+  condition: any
+  false_positives:
+    - "An authenticated meta-ads-mcp client legitimately calling get_ad_accounts with a per-request Authorization header (not relying on the env-var fallback)."
+    - "Documentation or advisory text that names get_ad_accounts or META_ACCESS_TOKEN without an actual JSON-RPC tools/call payload or a leaked request_url."
+    - "A Graph API integration that references graph.facebook.com/me/adaccounts in code without exposing access_token in a response body."
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)"method"\s*:\s*"tools/call"[\s\S]{0,200}"name"\s*:\s*"get_ad_accounts"'
+      description: >
+        Unauthenticated JSON-RPC tools/call invoking the get_ad_accounts tool — the
+        exact PoC payload against POST /mcp in meta-ads-mcp (CVE-2026-48039).
+    - field: content
+      operator: regex
+      value: '(?i)graph\.facebook\.com/v\d+\.\d+/me/adaccounts[\s\S]{0,200}[?&]access_token='
+      description: >
+        Leaked Graph API request_url for /me/adaccounts carrying the access_token query
+        parameter — the token-exfiltration sink serialized into the JSON-RPC response.
+    - field: content
+      operator: regex
+      value: '(?i)"request_url"\s*:\s*"https?://graph\.facebook\.com[\s\S]{0,200}access_token='
+      description: >
+        JSON-RPC response field request_url exposing a graph.facebook.com URL with an
+        embedded access_token — the meta-ads-mcp token leak.
+    - field: content
+      operator: regex
+      value: '(?i)CVE-2026-48039[\s\S]{0,200}(?:get_ad_accounts|META_ACCESS_TOKEN|access[_\s-]?token|unauthenticated|/mcp)'
+      description: "explicit CVE framing"
+response:
+  actions:
+    - alert
+    - block_input
+  message_template: >
+    [ATR-2026-01961] CRITICAL: Unauthenticated meta-ads-mcp tool call leaks the
+    operator META_ACCESS_TOKEN via the Graph API request_url in the JSON-RPC response
+    (CVE-2026-48039, GHSA-9gw6-46qc-99vr, CWE-287). Block and upgrade meta-ads-mcp
+    past 1.0.108; require per-request auth and stop serializing request URLs that
+    contain access_token.
+confidence: 80
+wild_fp_rate: 0
+test_cases:
+  true_positives:
+    - input: '{"jsonrpc":"2.0","method":"tools/call","id":2,"params":{"name":"get_ad_accounts","arguments":{"limit":1}}}'
+      expected: triggered
+      description: "Exact PoC: unauthenticated JSON-RPC tools/call to get_ad_accounts against POST /mcp."
+    - input: '{"request_url": "https://graph.facebook.com/v24.0/me/adaccounts?fields=id,name&access_token=FAKE_TOKEN_FOR_POC_DEMO_123456789"}'
+      expected: triggered
+      description: "Leaked request_url field carrying the operator access_token from the Graph API call."
+    - input: "CVE-2026-48039: unauthenticated POST /mcp get_ad_accounts leaks META_ACCESS_TOKEN via request_url"
+      expected: triggered
+      description: "Explicit CVE-2026-48039 exploitation framing with the leaked-token sink."
+  true_negatives:
+    - input: '{"jsonrpc":"2.0","method":"tools/list","id":1,"params":{}}'
+      expected: not_triggered
+      description: "Benign MCP tools/list discovery call — no get_ad_accounts invocation and no token."
+    - input: "The get_ad_accounts tool returns the ad accounts the authenticated operator can manage. Set META_ACCESS_TOKEN in your .env before running."
+      expected: not_triggered
+      description: "Normal documentation mentioning get_ad_accounts and META_ACCESS_TOKEN with no JSON-RPC payload and no leaked request_url."
+    - input: "Our integration calls https://graph.facebook.com/v24.0/me/adaccounts?fields=id,name with the token sent in the Authorization header."
+      expected: not_triggered
+      description: "Legitimate Graph API usage at the /me/adaccounts path with the token in a header, not as an access_token query parameter."
+    - input: "Upgrade meta-ads-mcp past 1.0.108 to remediate CVE-2026-48039."
+      expected: not_triggered
+      description: "Mitigation advisory referencing the CVE without any exploit tokens or leaked credential."

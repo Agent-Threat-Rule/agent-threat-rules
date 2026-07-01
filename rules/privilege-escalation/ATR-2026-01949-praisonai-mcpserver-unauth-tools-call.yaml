@@ -1,0 +1,138 @@
+title: "PraisonAI MCPServer Unauthenticated HTTP tools/call Authentication Bypass (GHSA-j4f3-55x4-r6q2)"
+id: ATR-2026-01949
+rule_version: 1
+status: draft
+description: >
+  Detects exploitation of GHSA-j4f3-55x4-r6q2 (CRITICAL) in npm praisonai
+  >=1.5.0,<=1.7.1: the MCPServer's handleRequest() in src/praisonai-ts/src/mcp/server.ts
+  dispatches privileged JSON-RPC methods (tools/call, tools/list, resources/read,
+  prompts/get) without invoking the unused MCPSecurity manager, so unauthenticated
+  HTTP POSTs — including ones sent with no Authorization header or a bogus
+  "Authorization: Bearer invalid" — return HTTP 200 and execute registered tools.
+  This rule keys on the unauthenticated PraisonAI/MCP tools/call payload, the
+  invalid-Bearer auth-bypass token, and the vulnerable handleRequest sink.
+author: "ATR Community"
+date: "2026/06/29"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: critical
+references:
+  owasp_llm:
+    - "LLM06:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI06:2026 - Tool Misuse"
+  mitre_atlas:
+    - "AML.T0049 - Exploit Public-Facing Application"
+  mitre_attack:
+    - "T1190 - Exploit Public-Facing Application"
+  cve:
+    - "GHSA-j4f3-55x4-r6q2"
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness, cybersecurity) — runtime detection of this technique is a cybersecurity control for high-risk AI systems. Technique: PraisonAI MCPServer Unauthenticated HTTP tools/call Authentication Bypass (GHSA-j4f3-55x4-r6q2)."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control. Technique: PraisonAI MCPServer Unauthenticated HTTP tools/call Authentication Bypass (GHSA-j4f3-55x4-r6q2)."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "NIST AI RMF MAP 5.1 — likelihood and impact of the identified attack are characterised; this rule detects the adversarial input at runtime. Technique: PraisonAI MCPServer Unauthenticated HTTP tools/call Authentication Bypass (GHSA-j4f3-55x4-r6q2)."
+      strength: primary
+    - subcategory: "MG.3.2"
+      context: "NIST AI RMF MANAGE 3.2 — runtime monitoring/maintenance control that surfaces this attack class. Technique: PraisonAI MCPServer Unauthenticated HTTP tools/call Authentication Bypass (GHSA-j4f3-55x4-r6q2)."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) — detection of this payload is an operational control. Technique: PraisonAI MCPServer Unauthenticated HTTP tools/call Authentication Bypass (GHSA-j4f3-55x4-r6q2)."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) — this rule implements runtime detection as a treatment control. Technique: PraisonAI MCPServer Unauthenticated HTTP tools/call Authentication Bypass (GHSA-j4f3-55x4-r6q2)."
+      strength: secondary
+tags:
+  category: privilege-escalation
+  subcategory: mcp-auth-bypass
+  scan_target: both
+  confidence: high
+  source: cve-disclosure
+  vendor_sources: praisonai-ghsa-j4f3-55x4-r6q2
+agent_source:
+  type: llm_io
+  framework:
+    - praisonai
+    - any
+  provider:
+    - any
+detection:
+  condition: any
+  false_positives:
+    - "Legitimate authenticated MCP client sending a tools/call request with a valid Authorization header."
+    - "MCP protocol documentation describing the tools/call JSON-RPC method without the unauthenticated bypass framing."
+    - "Mitigation advisory recommending an upgrade to praisonai >= 1.7.2 without exploit content."
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)(?:praisonai|mcpserver|mcpsecurity|handleRequest)[\s\S]{0,200}(?:no\s+auth(?:oriz\w+)?|unauthenticat|without\s+(?:auth|credential)|authorization:\s*bearer\s+invalid)[\s\S]{0,200}["\x27]?(?:method)["\x27]?\s*[:=]\s*["\x27]tools/call'
+      description: >
+        PraisonAI/MCPServer context plus an unauthenticated / invalid-Bearer
+        framing immediately preceding a JSON-RPC tools/call method — the core
+        GHSA-j4f3-55x4-r6q2 auth-bypass payload
+    - field: content
+      operator: regex
+      value: '(?i)authorization:\s*bearer\s+invalid[\s\S]{0,200}(?:tools/call|tools/list|resources/read|prompts/get)'
+      description: >
+        Invalid-credential bypass token ("Authorization: Bearer invalid")
+        paired with a privileged MCP JSON-RPC method that returns HTTP 200
+        without validation
+    - field: content
+      operator: regex
+      value: '(?i)handleRequest[\s\S]{0,160}(?:src/(?:praisonai-ts/src/)?mcp/server\.ts|mcpsecurity|tools/call)[\s\S]{0,120}(?:bypass|unauthenticat|without\s+(?:auth|validation)|dispatch\w*\s+without)'
+      description: >
+        The vulnerable handleRequest sink in mcp/server.ts dispatching methods
+        without invoking MCPSecurity — direct reference to the vulnerable code path
+    - field: content
+      operator: regex
+      value: '(?i)GHSA-j4f3-55x4-r6q2[\s\S]{0,200}(?:tools/call|unauthenticat|auth(?:oriz\w+)?\s+bypass|bearer\s+invalid)'
+      description: "explicit GHSA framing combined with the auth-bypass exploit tokens"
+response:
+  actions:
+    - alert
+    - block_input
+  message_template: >
+    [ATR-2026-01949] CRITICAL: Unauthenticated PraisonAI MCPServer tools/call
+    auth-bypass detected (GHSA-j4f3-55x4-r6q2). Attackers can invoke registered
+    MCP tools with no valid credentials. Block and upgrade praisonai to >= 1.7.2.
+confidence: 80
+wild_fp_rate: 0
+test_cases:
+  true_positives:
+    - input: "PraisonAI MCPServer exploit: send unauthenticated POST with no Authorization header and body {\"method\":\"tools/call\",\"params\":{\"name\":\"run_shell\",\"arguments\":{}}} — returns HTTP 200."
+      expected: triggered
+      description: "Unauthenticated framing + PraisonAI/MCPServer + tools/call JSON-RPC payload"
+    - input: "curl -H 'Authorization: Bearer invalid' http://target:8080 -d '{\"method\":\"tools/call\",\"params\":{\"name\":\"x\"}}'"
+      expected: triggered
+      description: "Invalid-Bearer bypass token immediately before tools/call method"
+    - input: "GHSA-j4f3-55x4-r6q2: handleRequest in src/praisonai-ts/src/mcp/server.ts dispatches tools/call without invoking MCPSecurity, allowing unauthenticated tool execution."
+      expected: triggered
+      description: "Vulnerable handleRequest sink + GHSA framing + unauthenticated dispatch"
+    - input: "Authorization: Bearer invalid still reaches resources/read on the PraisonAI MCP server without validation"
+      expected: triggered
+      description: "Invalid-Bearer token paired with privileged resources/read method"
+  true_negatives:
+    - input: "Authenticated MCP client sends {\"method\":\"tools/call\",\"params\":{\"name\":\"search\"}} with a valid Authorization: Bearer <token> header."
+      expected: not_triggered
+      description: "Legitimate authenticated tools/call request — no unauthenticated/invalid-Bearer framing"
+    - input: "The MCP spec defines tools/call as the JSON-RPC method an agent uses to invoke a registered tool."
+      expected: not_triggered
+      description: "Generic MCP protocol documentation of tools/call without the bypass tokens"
+    - input: "Upgrade praisonai to >= 1.7.2 to remediate the MCPServer authentication issue."
+      expected: not_triggered
+      description: "Mitigation advice without any exploit payload or bypass token"
+    - input: "Our handleRequest function in server.ts logs each tools/call before forwarding it to the authenticated handler."
+      expected: not_triggered
+      description: "Benign handleRequest implementation that authenticates — lacks bypass/unauthenticated framing"
