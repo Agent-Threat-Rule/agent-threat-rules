@@ -1,0 +1,38 @@
+name: Promote to Production — wild-FP gate
+
+# The production-grade promotion gate. A rule at maturity:test only becomes
+# maturity:production after 0 false positives against a LARGE benign corpus.
+# On the PUBLIC repo this runs as a REPORT over the ~5.2K public corpus (it will
+# refuse to promote because that is below the production threshold). The private
+# scan pipeline runs the same script with ATR_WILD_CORPUS pointed at the 53K/96K
+# wild corpus and --write to open the promotion PR. The gate LOGIC is public;
+# the wild corpus DATA stays private.
+
+on:
+  workflow_dispatch:
+    inputs:
+      min_corpus:
+        description: "Min benign samples required to mint production (default 20000)"
+        required: false
+        default: "20000"
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    name: Wild-FP promotion report
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        run: npm ci
+      - name: Build ATR engine
+        run: npm run build
+      - name: Run wild-FP promotion gate (report only)
+        env:
+          MIN_CORPUS: ${{ inputs.min_corpus }}
+        run: npx tsx scripts/promote-to-stable.ts --min-corpus "$MIN_CORPUS"
