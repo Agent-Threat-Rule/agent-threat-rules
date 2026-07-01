@@ -1,0 +1,99 @@
+title: "PraisonAI Action Orchestrator step.target Path Traversal Arbitrary File Write RCE (CVE-2026-39305 / GHSA-jfxc-v5g9-38xr)"
+id: ATR-2026-01963
+rule_version: 1
+status: draft
+description: >
+  Detects CVE-2026-39305 (GHSA-jfxc-v5g9-38xr, CWE-22, CRITICAL): PraisonAI
+  (< 4.5.113) Action Orchestrator builds a write path as `workspace / step.target`
+  without resolving or boundary-checking it. An ActionStep of type FILE_CREATE /
+  FILE_EDIT whose `target` contains `../` traversal escapes the workspace and writes
+  arbitrary files (e.g. ~/.ssh/authorized_keys, ~/.bashrc), yielding RCE. This rule
+  keys on the Action Orchestrator sink tokens (ActionStep / step.target / FILE_CREATE /
+  FILE_EDIT) co-occurring with relative traversal sequences and sensitive write targets.
+author: "ATR Community"
+date: "2026/06/29"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: critical
+references:
+  owasp_llm: ["LLM06:2025 - Excessive Agency"]
+  owasp_agentic: ["ASI06:2026 - Tool Misuse"]
+  mitre_atlas: ["AML.T0049 - Exploit Public-Facing Application"]
+  mitre_attack: ["T1190 - Exploit Public-Facing Application"]
+  cve: ["CVE-2026-39305"]
+metadata_provenance: { mitre_atlas: human-reviewed, owasp_llm: human-reviewed, owasp_agentic: human-reviewed }
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness, cybersecurity) — runtime detection of this technique is a cybersecurity control for high-risk AI systems. Technique: PraisonAI Action Orchestrator step.target Path Traversal Arbitrary File Write RCE (CVE-2026-39305 / GHSA-jfxc-v5g9-38xr)."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control. Technique: PraisonAI Action Orchestrator step.target Path Traversal Arbitrary File Write RCE (CVE-2026-39305 / GHSA-jfxc-v5g9-38xr)."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "NIST AI RMF MAP 5.1 — likelihood and impact of the identified attack are characterised; this rule detects the adversarial input at runtime. Technique: PraisonAI Action Orchestrator step.target Path Traversal Arbitrary File Write RCE (CVE-2026-39305 / GHSA-jfxc-v5g9-38xr)."
+      strength: primary
+    - subcategory: "MG.3.2"
+      context: "NIST AI RMF MANAGE 3.2 — runtime monitoring/maintenance control that surfaces this attack class. Technique: PraisonAI Action Orchestrator step.target Path Traversal Arbitrary File Write RCE (CVE-2026-39305 / GHSA-jfxc-v5g9-38xr)."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) — detection of this payload is an operational control. Technique: PraisonAI Action Orchestrator step.target Path Traversal Arbitrary File Write RCE (CVE-2026-39305 / GHSA-jfxc-v5g9-38xr)."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) — this rule implements runtime detection as a treatment control. Technique: PraisonAI Action Orchestrator step.target Path Traversal Arbitrary File Write RCE (CVE-2026-39305 / GHSA-jfxc-v5g9-38xr)."
+      strength: secondary
+tags: { category: tool-poisoning, subcategory: path-traversal-arbitrary-file-write, scan_target: both, confidence: high, source: cve-disclosure, vendor_sources: praisonai-cve-2026-39305 }
+agent_source: { type: llm_io, framework: [praisonai, any], provider: [any] }
+detection:
+  condition: any
+  false_positives:
+    - "Legitimate PraisonAI ActionStep FILE_CREATE/FILE_EDIT whose target is a normal relative filename inside the workspace (no ../ traversal)."
+    - "Incident-response or hardening checklists that mention ~/.ssh/authorized_keys or .bashrc defensively, without any path-traversal write."
+    - "Security advisory text quoting CVE-2026-39305 as a fixed/mitigated issue without an executable traversal payload."
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)(?:ActionStep|action[_-]?type|step\.target|target\s*=)[\s\S]{0,200}(?:FILE_CREATE|FILE_EDIT)?[\s\S]{0,120}target\s*[=:]\s*["'']?(?:\.\.[\\/]){3,}'
+      description: "one line: PraisonAI ActionStep with a FILE_CREATE/FILE_EDIT target value containing 3+ ../ traversal segments — the core step.target escape"
+    - field: content
+      operator: regex
+      value: '(?i)(?:\.\.[\\/]){3,}[^\n"'']{0,120}(?:tmp/orchestrator_pwned|\.ssh/authorized_keys|/\.bashrc|/\.bash_profile|/\.profile)'
+      description: "one line: relative traversal chain writing to the advisory PoC sink (orchestrator_pwned) or sensitive RCE targets (authorized_keys/.bashrc/.profile)"
+    - field: content
+      operator: regex
+      value: '(?i)(?:praisonai|action[_-]?orchestrator)[\s\S]{0,200}(?:\.\.[\\/]){2,}[\s\S]{0,80}(?:FILE_CREATE|FILE_EDIT|step\.target|workspace\s*/\s*step)'
+      description: "one line: PraisonAI / Action Orchestrator context combined with traversal sequences and the workspace/step.target write sink"
+    - field: content
+      operator: regex
+      value: '(?i)CVE-2026-39305[\s\S]{0,200}(?:path[\s_-]?traversal|step\.target|action[\s_-]?orchestrator|FILE_CREATE|authorized_keys|arbitrary[\s_-]?file)'
+      description: "explicit CVE framing"
+response:
+  actions: [alert, block_input]
+  message_template: >
+    [ATR-2026-01963] CRITICAL: PraisonAI Action Orchestrator step.target path traversal (CVE-2026-39305) writes arbitrary files outside the workspace (e.g. ~/.ssh/authorized_keys) enabling RCE. Block this ActionStep, canonicalise/validate target paths against the workspace boundary, and upgrade PraisonAI to >= 4.5.113.
+confidence: 80
+wild_fp_rate: 0
+test_cases:
+  true_positives:
+    - input: "ActionStep(id='x', action_type=ActionType.FILE_CREATE, target='../../../../../../../tmp/orchestrator_pwned.txt', params={'content':'pwned'})"
+      expected: triggered
+      description: "Verbatim advisory PoC: FILE_CREATE ActionStep with deep ../ traversal target to /tmp/orchestrator_pwned.txt"
+    - input: "PraisonAI Action Orchestrator step.target = '../../../../../../.ssh/authorized_keys' via workspace / step.target FILE_CREATE write"
+      expected: triggered
+      description: "Action Orchestrator traversal writing the SSH backdoor sink described in the advisory"
+    - input: "CVE-2026-39305: PraisonAI Action Orchestrator path traversal in step.target allows arbitrary file write (authorized_keys) leading to RCE"
+      expected: triggered
+      description: "Explicit CVE-2026-39305 reference with path-traversal and authorized_keys exploit context"
+  true_negatives:
+    - input: "ActionStep(action_type=ActionType.FILE_CREATE, target='reports/summary.md', params={'content':'done'})"
+      expected: not_triggered
+      description: "Legitimate Action Orchestrator FILE_CREATE writing a normal relative path inside the workspace — no ../ traversal"
+    - input: "Incident response checklist: review ~/.ssh/authorized_keys for SSH backdoors and rotate keys"
+      expected: not_triggered
+      description: "Defensive mention of authorized_keys with no traversal sequence and no orchestrator/ActionStep sink"
+    - input: "Upgrade PraisonAI to 4.5.113 to remediate CVE-2026-39305"
+      expected: not_triggered
+      description: "Mitigation advice citing the CVE without any traversal payload or exploit tokens"
