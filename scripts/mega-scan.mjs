@@ -3,7 +3,7 @@
  * 53,000+ skills across OpenClaw + Skills.sh
  * Uses 93-rule engine with cross-context detection + base64 decode
  */
-import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync, statSync, mkdirSync, appendFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import { ATREngine } from '../dist/engine.js';
@@ -79,6 +79,15 @@ async function main() {
   const threats = [];
   const startTime = Date.now();
 
+  // Persist EVERY clean benign sample to a local corpus for the production
+  // promotion gate (promote-to-stable --wild-corpus). These are public skills;
+  // the file is large + gitignored, never committed. Truncated at scan start.
+  const WILD_CORPUS_DIR = 'data/wild-benign';
+  const WILD_CORPUS_OUT = WILD_CORPUS_DIR + '/clean-corpus.jsonl';
+  mkdirSync(WILD_CORPUS_DIR, { recursive: true });
+  writeFileSync(WILD_CORPUS_OUT, '');
+  let corpusWritten = 0;
+
   for (const file of allFiles) {
     try {
       const stat = statSync(file);
@@ -118,6 +127,16 @@ async function main() {
         }
       } else {
         clean++;
+        // Stream the clean benign sample to the wild corpus (memory-safe append).
+        appendFileSync(
+          WILD_CORPUS_OUT,
+          JSON.stringify({
+            source: 'wild-scan',
+            source_id: file.split('/').slice(-2).join('/'),
+            text: content,
+          }) + '\n',
+        );
+        corpusWritten++;
       }
       
       // Progress every 5000
@@ -271,6 +290,8 @@ async function main() {
   };
   writeFileSync('data/mega-scan-report.json', JSON.stringify(report, null, 2));
   console.log('\nReport saved: data/mega-scan-report.json');
+  console.log(`Wild benign corpus: ${corpusWritten} clean samples saved to ${WILD_CORPUS_OUT}`);
+  console.log(`  Production gate: npx tsx scripts/promote-to-stable.ts --wild-corpus ${WILD_CORPUS_OUT} --write`);
 }
 
 main().catch(e => { console.error('FATAL:', e); process.exit(1); });
