@@ -80,6 +80,14 @@ function hookInputToEvent(input: HookInput): AgentEvent {
 /**
  * Run a promise with a timeout. Resolves to the promise result
  * or rejects with a timeout error.
+ *
+ * NOTE (ReDoS): this timeout is a race on the microtask/timer queue, so it can
+ * only abort work that yields to the event loop (async layers — semantic judge,
+ * embeddings, network). It CANNOT interrupt a synchronous RegExp: a
+ * catastrophic-backtracking match monopolizes the single thread and the timer
+ * callback is queued behind the very work it is meant to cancel. The real
+ * defense against a pathological rule is compile-time rejection — see
+ * isReDoSSafe / safeCompile in engine.ts — plus the MAX_EVAL_LENGTH input cap.
  */
 function withTimeout<T>(
   promise: Promise<T>,
