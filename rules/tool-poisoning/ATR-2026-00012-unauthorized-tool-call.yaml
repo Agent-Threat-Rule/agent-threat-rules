@@ -1,6 +1,6 @@
 title: Unauthorized Tool Call Detection
 id: ATR-2026-00012
-rule_version: 1
+rule_version: 2
 status: experimental
 description: >
   Detects unauthorized or malicious tool call attempts including parameter injection, path traversal, shell injection in
@@ -74,8 +74,8 @@ detection:
     - field: tool_args
       operator: regex
       value: >-
-        (;|&&|\|\||\$\(|`|\|\s*\w)\s*.{0,50}(curl|wget|nc|ncat|bash|sh|zsh|python|ruby|perl|node|php|powershell|cmd|eval|exec|system|rm\s+-|cat\s+/etc|whoami|id\b|uname|hostname|ifconfig|ipconfig|net\s+user|net\s+localgroup)
-      description: Shell metacharacter injection followed by dangerous commands
+        (;|&&|\|\|)\s*(?:sudo\s+)?(?:curl\s+(?:-\S+\s+)*['"]?https?://(?!localhost|127\.0\.0\.1|0\.0\.0\.0)|wget\s+(?:-\S+\s+)*['"]?https?://(?!localhost|127\.)|\bnc\b\s+-?[a-z0-9]|ncat\s+\S|\b(?:ba)?sh\s+-[ic]|python[0-9]?\s+-c|perl\s+-e|ruby\s+-e|node\s+-e|\beval\s|rm\s+-[rf]|cat\s+/etc/(?:passwd|shadow|sudoers)|whoami|\bid\b\s*(?:;|&|\||$)|uname\s+-a|base64\s+(?:-d|--decode)|ifconfig|>&\s*/dev/tcp)|[$`]\([^)`]{0,80}(?:curl|wget|\bnc\b|\bbash\b|\bsh\s+-|whoami|\bid\b|base64\s+-d|/etc/(?:passwd|shadow))
+      description: Shell metacharacter chained to a genuinely dangerous command — external network fetch, pipe-to-shell / interpreter one-liner, recon (whoami/id/uname -a), or sensitive-file read (v2 tightened; legit build chains like "npm i && bash setup.sh", "&& python -m pytest", "| jq" no longer fire)
     - field: tool_name
       operator: regex
       value: (?i)^(admin_|root_|sudo_|system_|internal_|debug_|maintenance_|privileged_|superuser_|__)

@@ -1,6 +1,6 @@
 title: "Parameter Injection via Tool Arguments"
 id: ATR-2026-00066
-rule_version: 1
+rule_version: 2
 status: experimental
 description: >
   Detects injection attacks delivered through MCP tool arguments. An attacker
@@ -78,7 +78,7 @@ detection:
   conditions:
     - field: tool_args
       operator: regex
-      value: "(?i)(;|&&|\\|\\||`|\\$\\()\\s*(cat|ls|id|whoami|uname|pwd|env|curl|wget|nc|bash|sh|python)"
+      value: "(?i)(;|&&|\\|\\||`|\\$\\()\\s*(whoami|\\bid\\b|uname\\s+-a|curl\\s+(?:-\\S+\\s+)*https?://(?!localhost|127\\.)|wget\\s+https?://(?!localhost|127\\.)|\\bnc\\b\\s|ncat\\s|cat\\s+/etc/(?:passwd|shadow|sudoers)|\\b(?:ba)?sh\\s+-[ic]|python[0-9]?\\s+-c|base64\\s+-d|rm\\s+-[rf])"
     - field: tool_args
       operator: regex
       value: "(?i)('\\s*(OR|AND|UNION)\\s+'|'?\\s*;\\s*(DROP|DELETE|INSERT|UPDATE|ALTER|CREATE)\\s|--\\s*[;\\\"'\\)\\]]|/\\*.*\\*/)"
