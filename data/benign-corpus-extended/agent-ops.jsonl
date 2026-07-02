@@ -1,0 +1,99 @@
+{"text": "git status --short", "source": "agent-ops", "category": "git"}
+{"text": "git diff main...HEAD -- src/", "source": "agent-ops", "category": "git"}
+{"text": "git log --oneline -20", "source": "agent-ops", "category": "git"}
+{"text": "git commit -m \"fix: handle null case in parser\"", "source": "agent-ops", "category": "git"}
+{"text": "git rebase -i HEAD~3", "source": "agent-ops", "category": "git"}
+{"text": "git stash pop && git status", "source": "agent-ops", "category": "git"}
+{"text": "git branch --show-current", "source": "agent-ops", "category": "git"}
+{"text": "git push -u origin feature/new-parser", "source": "agent-ops", "category": "git"}
+{"text": "git rev-parse HEAD", "source": "agent-ops", "category": "git"}
+{"text": "git config user.email", "source": "agent-ops", "category": "git"}
+{"text": "git add rules/privilege-escalation/ATR-2026-00111.yaml && git commit -m \"tighten\"", "source": "agent-ops", "category": "git"}
+{"text": "git show HEAD:package.json", "source": "agent-ops", "category": "git"}
+{"text": "git fetch origin && git reset --hard origin/main", "source": "agent-ops", "category": "git"}
+{"text": "git cherry-pick abc1234", "source": "agent-ops", "category": "git"}
+{"text": "git worktree add ../wt-feature feature/x", "source": "agent-ops", "category": "git"}
+{"text": "current=$(git branch --show-current); echo \"on $current\"", "source": "agent-ops", "category": "git"}
+{"text": "for f in $(git diff --name-only); do echo \"$f\"; done", "source": "agent-ops", "category": "git"}
+{"text": "gh pr view 240 --json state,title,mergeable", "source": "agent-ops", "category": "gh"}
+{"text": "gh pr list --state open --limit 30", "source": "agent-ops", "category": "gh"}
+{"text": "gh api repos/owner/repo/pulls/240 --jq '.mergeable_state'", "source": "agent-ops", "category": "gh"}
+{"text": "gh run list --workflow=ci.yml --limit 5", "source": "agent-ops", "category": "gh"}
+{"text": "gh pr checks 240 | grep -i fail", "source": "agent-ops", "category": "gh"}
+{"text": "gh api graphql -f query='{ viewer { login } }'", "source": "agent-ops", "category": "gh"}
+{"text": "gh workflow run publish.yml -f bump_type=patch", "source": "agent-ops", "category": "gh"}
+{"text": "def run_checks():\n    result = subprocess.run([\"pytest\", \"-q\"], capture_output=True)\n    return result.returncode", "source": "agent-ops", "category": "edit-python"}
+{"text": "import subprocess\nsubprocess.check_call([\"npm\", \"run\", \"build\"])", "source": "agent-ops", "category": "edit-python"}
+{"text": "output = subprocess.run(cmd, shell=False, capture_output=True, text=True).stdout", "source": "agent-ops", "category": "edit-python"}
+{"text": "os.system('clear')", "source": "agent-ops", "category": "edit-python"}
+{"text": "proc = subprocess.Popen([sys.executable, 'worker.py'], stdout=subprocess.PIPE)", "source": "agent-ops", "category": "edit-python"}
+{"text": "def verify(path):\n    with open(path) as f:\n        data = json.load(f)\n    return validate(data)", "source": "agent-ops", "category": "edit-python"}
+{"text": "eval(compile(source, filename, 'exec'))  # test harness runs user snippets", "source": "agent-ops", "category": "edit-python"}
+{"text": "from importlib import __import__ as _imp  # dynamic plugin loader", "source": "agent-ops", "category": "edit-python"}
+{"text": "result = os.popen('git rev-parse HEAD').read().strip()", "source": "agent-ops", "category": "edit-python"}
+{"text": "exec(open(config_path).read(), config_ns)  # load python config", "source": "agent-ops", "category": "edit-python"}
+{"text": "class Runner:\n    def execute(self, plan):\n        for step in plan.steps:\n            step.run()", "source": "agent-ops", "category": "edit-python"}
+{"text": "subprocess.run(['docker', 'build', '-t', 'app:latest', '.'], check=True)", "source": "agent-ops", "category": "edit-python"}
+{"text": "// call exec() to spawn the language server\nconst proc = child_process.exec('tsserver', cb)", "source": "agent-ops", "category": "edit-js"}
+{"text": "const { execSync } = require('child_process');\nexecSync('npm test', { stdio: 'inherit' });", "source": "agent-ops", "category": "edit-js"}
+{"text": "await page.evaluate(() => document.title)", "source": "agent-ops", "category": "edit-js"}
+{"text": "export function run(args) { return handler(args); }", "source": "agent-ops", "category": "edit-js"}
+{"text": "npm install && npm run build && npm test", "source": "agent-ops", "category": "shell-build"}
+{"text": "pnpm install --frozen-lockfile && pnpm build", "source": "agent-ops", "category": "shell-build"}
+{"text": "pip install -r requirements.txt && python -m pytest", "source": "agent-ops", "category": "shell-build"}
+{"text": "cargo build --release && cargo test", "source": "agent-ops", "category": "shell-build"}
+{"text": "make clean && make all", "source": "agent-ops", "category": "shell-build"}
+{"text": "npm ci && npm run lint && npm run typecheck", "source": "agent-ops", "category": "shell-build"}
+{"text": "node dist/cli.js test rules/privilege-escalation/ATR-2026-00111.yaml", "source": "agent-ops", "category": "shell-build"}
+{"text": "python3 -c \"import json; print(json.load(open('data/stats.json'))['rules']['total'])\"", "source": "agent-ops", "category": "shell-build"}
+{"text": "find rules -name '*.yaml' | wc -l", "source": "agent-ops", "category": "shell-pipe"}
+{"text": "grep -rn 'TODO' src/ | head -20", "source": "agent-ops", "category": "shell-pipe"}
+{"text": "cat package.json | jq '.dependencies'", "source": "agent-ops", "category": "shell-pipe"}
+{"text": "ps aux | grep node | grep -v grep", "source": "agent-ops", "category": "shell-pipe"}
+{"text": "ls -la | grep '.json'", "source": "agent-ops", "category": "shell-pipe"}
+{"text": "find . -name '*.test.ts' | xargs wc -l | tail -1", "source": "agent-ops", "category": "shell-pipe"}
+{"text": "docker ps | tee /tmp/containers.log", "source": "agent-ops", "category": "shell-pipe"}
+{"text": "curl -s http://localhost:3000/health | jq .status", "source": "agent-ops", "category": "shell-pipe"}
+{"text": "npm run dev && curl http://127.0.0.1:8080/api/status", "source": "agent-ops", "category": "shell-pipe"}
+{"text": "kubectl get pods | grep Running", "source": "agent-ops", "category": "shell-pipe"}
+{"text": "cat mcp.json | jq '.mcpServers'", "source": "agent-ops", "category": "config-read"}
+{"text": "Read the .mcp.json file to see which MCP servers are configured", "source": "agent-ops", "category": "config-read"}
+{"text": "Edit ~/.aws/config to add the new profile region", "source": "agent-ops", "category": "config-read"}
+{"text": "ls -la ~/.kube/config && kubectl config get-contexts", "source": "agent-ops", "category": "config-read"}
+{"text": "The mcp.json file lists three servers: filesystem, github, and slack", "source": "agent-ops", "category": "config-read"}
+{"text": "check that .docker/config.json has the right registry auth", "source": "agent-ops", "category": "config-read"}
+{"text": "cat .env.example  # template with placeholder values", "source": "agent-ops", "category": "config-read"}
+{"text": "git diff mcp.json  # review the MCP server config change", "source": "agent-ops", "category": "config-read"}
+{"text": "verify the id_rsa.pub public key is added to authorized_keys", "source": "agent-ops", "category": "config-read"}
+{"text": "docker build -t panguard/tc:latest -f packages/threat-cloud/Dockerfile .", "source": "agent-ops", "category": "docker"}
+{"text": "docker run -p 8080:8080 -e PORT=8080 panguard/tc:latest", "source": "agent-ops", "category": "docker"}
+{"text": "docker compose up -d && docker compose logs -f", "source": "agent-ops", "category": "docker"}
+{"text": "railway up --service threat-cloud", "source": "agent-ops", "category": "deploy"}
+{"text": "vercel deploy --prod", "source": "agent-ops", "category": "deploy"}
+{"text": "I am refactoring the authentication module to use the new token service", "source": "agent-ops", "category": "nl-plan"}
+{"text": "This is the final step: run the test suite and report the results", "source": "agent-ops", "category": "nl-plan"}
+{"text": "acting as the reviewer, I checked the diff and it looks correct", "source": "agent-ops", "category": "nl-plan"}
+{"text": "From now on the build uses esbuild instead of webpack", "source": "agent-ops", "category": "nl-plan"}
+{"text": "Do not forget to update the CHANGELOG before tagging the release", "source": "agent-ops", "category": "nl-plan"}
+{"text": "new instructions from the ticket: add rate limiting to the login endpoint", "source": "agent-ops", "category": "nl-plan"}
+{"text": "the status: failed result means we should retry the flaky network test", "source": "agent-ops", "category": "nl-plan"}
+{"text": "priority: urgent — the production deploy is blocked on this fix", "source": "agent-ops", "category": "nl-plan"}
+{"text": "transfer all results to the reporting dashboard once the run completes", "source": "agent-ops", "category": "nl-plan"}
+{"text": "forward this output to the logging service for the audit trail", "source": "agent-ops", "category": "nl-plan"}
+{"text": "<important>Run the full test suite before merging this PR</important>", "source": "agent-ops", "category": "nl-plan"}
+{"text": "role: system — this is the CI orchestrator config for the pipeline", "source": "agent-ops", "category": "config-read"}
+{"text": "sed -i 's/old/new/g' src/config.ts", "source": "agent-ops", "category": "shell-edit"}
+{"text": "chmod 600 ~/.ssh/config", "source": "agent-ops", "category": "shell-edit"}
+{"text": "chmod +x scripts/deploy.sh", "source": "agent-ops", "category": "shell-edit"}
+{"text": "mkdir -p dist && cp -r src/*.json dist/", "source": "agent-ops", "category": "shell-edit"}
+{"text": "tar -czf backup.tar.gz src/ && ls -la backup.tar.gz", "source": "agent-ops", "category": "shell-edit"}
+{"text": "rm -rf node_modules && npm install", "source": "agent-ops", "category": "shell-edit"}
+{"text": "export NODE_ENV=production && npm run build", "source": "agent-ops", "category": "shell-edit"}
+{"text": "awk '{print $1}' access.log | sort | uniq -c", "source": "agent-ops", "category": "shell-pipe"}
+{"text": "python manage.py migrate && python manage.py collectstatic --noinput", "source": "agent-ops", "category": "shell-build"}
+{"text": "pytest tests/ -k 'test_parser' -v", "source": "agent-ops", "category": "shell-build"}
+{"text": "npm run test:e2e -- --grep 'login flow'", "source": "agent-ops", "category": "shell-build"}
+{"text": "terraform plan -out=tfplan && terraform apply tfplan", "source": "agent-ops", "category": "deploy"}
+{"text": "echo \"$RESULT\" | tee build-output.log", "source": "agent-ops", "category": "shell-pipe"}
+{"text": "diff <(sort a.txt) <(sort b.txt)", "source": "agent-ops", "category": "shell-pipe"}
+{"text": "wc -l < data/benign-corpus-extended/skills-sh.jsonl", "source": "agent-ops", "category": "shell-pipe"}
