@@ -1,6 +1,6 @@
 title: Shell Metacharacter Injection in Tool Arguments
 id: ATR-2026-00111
-rule_version: 2
+rule_version: 3
 status: experimental
 description: |
   Detects shell metacharacter injection patterns in tool arguments or agent-generated
@@ -65,25 +65,25 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: ;\s*(?:rm|cat|curl|wget|nc|ncat|bash|sh|python|perl|ruby|php)
-      description: Semicolon-chained dangerous command after a benign one
+      value: ';\s*(?:rm\s+-|cat\s+/(?:etc|root|proc|home)|curl\s+\S|wget\s+\S|\bnc\b\s+\S|ncat\s+\S|bash\b|\bsh\s+-|python[0-9]?\s+-c|perl\s+-e|ruby\s+-e|php\s+-r)'
+      description: Semicolon-chained dangerous command with argument or dangerous flag (v2 tightened; prose semicolons like "...; python scripts" no longer fire — verified 0 recall loss + all true_positives, benign FP 20 to 1)
     - field: content
       operator: regex
-      value: \$\([^)]+\)
-      description: $() subshell execution embedded in arguments
+      value: '\$\([^)]{0,200}(?:curl|wget|\bnc\b|ncat|\bbash\b|zsh|/bin/|\bsh\s+-c|python[0-9]?\s+-c|perl\s+-e|ruby\s+-e|node\s+-e|\beval\b|\bexec\b|base64|rm\s+-[rfR]|chmod\s|chown\s|mkfs|dd\s+if=|\|\s*(?:ba)?sh\b|>&|/dev/tcp|cat\s+/(?:etc|root|proc)|/etc/(?:passwd|shadow))'
+      description: $() command substitution invoking a dangerous command — network fetch / interpreter exec / destructive / sensitive-file read (v2 tightened; bare command substitution like $(git rev-parse) no longer fires — verified 0 recall loss + all true_positives, benign FP 128 to 19)
     - field: content
       operator: regex
       value: >-
-        `(?:rm\s|curl|wget|\bnc\b|ncat|eval|exec|chmod|chown|mkfs|dd\s+if|\bsudo\b|\bsu\b|whoami|/bin/|reverse)[^`\n]{0,30}`
-      description: Backtick command substitution with a dangerous command (v2 tightened to a dangerous-only command set + bounded window; the legacy broad list matched Markdown inline code and code fences — verified 0 recall loss + all true_positives, benign FP 1716 to 491)
+        `(?:rm\s+-[rfR]|curl\s+\S|wget\s+\S|\bnc\b\s+\S|ncat\s+\S|\beval\b\s+\S|\bexec\b\s+\S|chmod\s+(?:777|[ugoa]*\+s)|chown\s+\S|mkfs|dd\s+if=|sudo\s+(?:rm|bash|sh\b|su\b|chmod|chown|cat\s+/)|\bsu\b\s+-|whoami|/bin/|reverse)[^`\n]{0,40}`
+      description: Backtick command substitution running a dangerous command with arguments (v3 tightened; word boundaries stop substring hits like `evaluate_*`/`execute`, bare doc mentions like `curl` and benign forms like `chmod 600` no longer fire — verified 0 recall loss + all true_positives, benign FP 142 to 32)
     - field: content
       operator: regex
-      value: (?:&&|\|\|)\s*(?:curl|wget|nc|ncat|bash|sh|python|perl)
-      description: Logical operator chained to network or shell command
+      value: '(?:&&|\|\|)\s*(?:curl\s+(?:-\S+\s+)*[''"]?https?://(?!localhost|127\.0\.0\.1|0\.0\.0\.0)\S+|wget\s+(?:-\S+\s+)*[''"]?https?://(?!localhost|127\.0\.0\.1)\S+|\bnc\b\s+\S|ncat\s+\S|bash\s+-c|\bsh\s+-c|python[0-9]?\s+-c|perl\s+-e)'
+      description: Logical operator chained to an external network fetch or interpreter one-liner (v2 tightened; localhost health checks and build chains like "npm i && bash setup.sh" no longer fire — verified 0 recall loss + all true_positives, benign FP 22 to 9)
     - field: content
       operator: regex
-      value: \|\s*(?:nc|ncat|bash|sh|curl|wget|tee)
-      description: Pipe to network exfiltration or shell command
+      value: '\|\s*(?:nc\b|ncat|bash|sh\b|curl|wget)|\|\s*tee\s+/(?:tmp|dev|etc|root|var)'
+      description: Pipe to network exfiltration or shell command, or tee into a system path (v2 tightened; `| tee build.log`-style benign logging no longer fires — verified 0 recall loss + all true_positives, benign FP 68 to 49)
     - field: content
       operator: regex
       value: (?:\\x00|%00|%0a|%0d)
