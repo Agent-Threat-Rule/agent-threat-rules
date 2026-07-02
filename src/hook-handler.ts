@@ -78,6 +78,50 @@ function hookInputToEvent(input: HookInput): AgentEvent {
 }
 
 /**
+ * Map a verdict to the Claude Code PreToolUse hook contract.
+ *
+ * CRITICAL (finding #8 — silent non-enforcement): `atr init` wires this guard
+ * into Claude Code's PreToolUse hook, but Claude Code ONLY honors a block when
+ * it reads hookSpecificOutput.permissionDecision === 'deny' (or exit code 2).
+ * The generic { decision } shape ATR emits internally is an unknown field to
+ * Claude Code — it silently ignores it and runs the tool anyway. That is fake
+ * protection: the hook looks installed and never blocks. VerdictOutcome
+ * (allow|ask|deny) maps 1:1 onto permissionDecision, so we emit the exact
+ * contract. ATR fields are carried alongside under non-colliding keys for logs
+ * and non-Claude-Code consumers; we deliberately do NOT emit a top-level
+ * `decision` here, so Claude Code cannot misread a stray field.
+ */
+export function toClaudeCodePreToolUse(output: HookOutput): Record<string, unknown> {
+  return {
+    hookSpecificOutput: {
+      hookEventName: 'PreToolUse',
+      permissionDecision: output.decision,
+      permissionDecisionReason: output.reason ?? output.message ?? '',
+    },
+    atr_decision: output.decision,
+    ...(output.matched_rules ? { matched_rules: output.matched_rules } : {}),
+  };
+}
+
+/**
+ * Map a verdict to the Claude Code PostToolUse hook contract. The tool has
+ * already run, so PostToolUse cannot un-run it — Claude Code blocks by feeding
+ * `decision: 'block'` + reason back to the model (stops it trusting poisoned
+ * tool output). A deny OR ask verdict blocks; allow passes. The generic ATR
+ * decision is preserved under atr_decision to avoid colliding with Claude
+ * Code's 'block' sentinel on the shared `decision` key.
+ */
+export function toClaudeCodePostToolUse(output: HookOutput): Record<string, unknown> {
+  const block = output.decision === 'deny' || output.decision === 'ask';
+  return {
+    hookSpecificOutput: { hookEventName: 'PostToolUse' },
+    atr_decision: output.decision,
+    ...(output.matched_rules ? { matched_rules: output.matched_rules } : {}),
+    ...(block ? { decision: 'block', reason: output.reason ?? output.message ?? '' } : {}),
+  };
+}
+
+/**
  * Run a promise with a timeout. Resolves to the promise result
  * or rejects with a timeout error.
  *
@@ -152,7 +196,7 @@ export class HookHandler {
    *
    * Exits cleanly when stdin closes.
    */
-  async startStdioLoop(): Promise<void> {
+  async startStdioLoop(format: 'claude-code' | 'generic' = 'claude-code'): Promise<void> {
     const rl = createInterface({
       input: process.stdin,
       crlfDelay: Infinity,
@@ -163,15 +207,28 @@ export class HookHandler {
       if (!trimmed) continue;
 
       let output: HookOutput;
+      // Default to PreToolUse framing: on an unparseable line the error path
+      // fail-closes to a deny, and a deny must reach Claude Code as a real block.
+      let hookType: HookInput['hook'] = 'PreToolUse';
 
       try {
         const input = JSON.parse(trimmed) as HookInput;
+        if (input.hook === 'PostToolUse') hookType = 'PostToolUse';
         output = await this.dispatch(input);
       } catch (err) {
         output = this.handleError(err);
       }
 
-      process.stdout.write(JSON.stringify(output) + '\n');
+      // Emit the host's exact hook contract. Generic { decision } is silently
+      // ignored by Claude Code (fake protection) — see toClaudeCodePreToolUse.
+      const payload =
+        format === 'generic'
+          ? (output as unknown as Record<string, unknown>)
+          : hookType === 'PostToolUse'
+            ? toClaudeCodePostToolUse(output)
+            : toClaudeCodePreToolUse(output);
+
+      process.stdout.write(JSON.stringify(payload) + '\n');
     }
   }
 
