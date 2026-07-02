@@ -388,13 +388,23 @@ export class ATREngine {
       if (!isSkillContext && eventSourceType && rule.agent_source.type !== eventSourceType) {
         // Allow mcp_exchange rules to also match tool_call events
         const mcpOverTool = rule.agent_source.type === 'mcp_exchange' && eventSourceType === 'tool_call';
+        // Indirect prompt injection: llm_io (prompt-injection) rules must also
+        // run on tool_response events. A poisoned tool / MCP / RAG output is the
+        // primary indirect-injection channel — the payload never appears in a
+        // direct llm_input, it rides in on tool output the model then reads.
+        // tool_response maps to source type 'mcp_exchange', so without this the
+        // entire llm_io family was silently skipped on every tool response.
+        // (Field resolution routes event.content into user_input/agent_output
+        // for tool_response events — see getFieldValue.)
+        const llmIoOverToolResponse =
+          rule.agent_source.type === 'llm_io' && eventSourceType === 'mcp_exchange';
         // Trace-method rules declare agent_source.type: agent_trace, which maps
         // to no event source type and would always be filtered out. Evaluate
         // them whenever the event actually carries a trace payload; evaluateRule
         // still returns null if the trace primitives don't fire, and ordinary
         // (non-trace) events are unaffected because event.trace is undefined.
         const traceWithPayload = rule.detection?.method === 'trace' && event.trace !== undefined;
-        if (!mcpOverTool && !traceWithPayload) {
+        if (!mcpOverTool && !llmIoOverToolResponse && !traceWithPayload) {
           continue;
         }
       }
@@ -525,9 +535,14 @@ export class ATREngine {
 
       if (!isSkillContext && eventSourceType && rule.agent_source.type !== eventSourceType) {
         const mcpOverTool = rule.agent_source.type === 'mcp_exchange' && eventSourceType === 'tool_call';
+        // Indirect prompt injection: llm_io rules also run on tool_response
+        // (source type mcp_exchange) — poisoned tool/MCP/RAG output. See the
+        // matching note in evaluateRaw().
+        const llmIoOverToolResponse =
+          rule.agent_source.type === 'llm_io' && eventSourceType === 'mcp_exchange';
         // Trace-method rules are source-agnostic — evaluate when a trace is present.
         const traceWithPayload = rule.detection?.method === 'trace' && event.trace !== undefined;
-        if (!mcpOverTool && !traceWithPayload) {
+        if (!mcpOverTool && !llmIoOverToolResponse && !traceWithPayload) {
           continue;
         }
       }
@@ -1343,10 +1358,21 @@ export class ATREngine {
 
     // Common field aliases
     switch (fieldName) {
+      // On a tool_response event the tool/MCP/RAG output IS the text the model
+      // ingests, so llm_io (prompt-injection) rules that target user_input /
+      // agent_output must resolve to event.content here — otherwise an
+      // un-filtered llm_io rule would look in an empty field and silently miss
+      // an indirect-injection payload riding in on tool output.
       case 'user_input':
-        return event.type === 'llm_input' ? event.content : event.fields?.['user_input'];
+        return event.type === 'llm_input'
+          ? event.content
+          : (event.fields?.['user_input'] ??
+              (event.type === 'tool_response' ? event.content : undefined));
       case 'agent_output':
-        return event.type === 'llm_output' ? event.content : event.fields?.['agent_output'];
+        return event.type === 'llm_output'
+          ? event.content
+          : (event.fields?.['agent_output'] ??
+              (event.type === 'tool_response' ? event.content : undefined));
       case 'tool_response':
         return event.type === 'tool_response' ? event.content : event.fields?.['tool_response'];
       case 'tool_name':
