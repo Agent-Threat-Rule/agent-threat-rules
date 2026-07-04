@@ -1,0 +1,170 @@
+title: "MCP-for-Stata: Command Injection via log_file_name Parameter (CVE-2026-47708)"
+id: ATR-2026-01983
+rule_version: 1
+status: draft
+description: >
+  Detects CVE-2026-47708 (CVSS critical, CWE-77): the `log_file_name` (aka
+  `log_name`) parameter accepted by the `stata_do` MCP tool / CLI is
+  interpolated directly into a Stata `log using "<log_file>", ...` command
+  string without sanitization. GuardValidator only scans do-file content, not
+  this wrapper parameter. An attacker breaks out of the quoted log-path
+  string with a quote or newline and appends a dangerous Stata command
+  (`shell`, `python`, `erase`, `winexec`, or `!` shell-escape), achieving
+  remote code execution, or supplies `../` path-traversal segments in
+  log_name to write arbitrary files outside the log directory.
+
+  Detection covers:
+  (a) a stata_do tool call whose log_file_name/log_name value contains a
+      quote/newline breakout followed by a dangerous Stata command token;
+  (b) a log_file_name/log_name value containing path-traversal segments;
+  (c) explicit CVE-2026-47708 exploitation framing referencing the
+      log_file_name / stata_do injection.
+
+  The detection target is the request shape — a stata_do log_file_name
+  parameter carrying a string-breakout plus command injection or path
+  traversal — the exact CVE-2026-47708 primitive, caught before the
+  wrapper builds the Stata command string.
+author: "ATR Community"
+date: "2026/07/04"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM06:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI06:2026 - Tool Misuse"
+  mitre_atlas:
+    - "AML.T0053 - LLM Plugin Compromise"
+  mitre_attack:
+    - "T1059 - Command and Scripting Interpreter"
+  cve:
+    - "CVE-2026-47708"
+
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 cybersecurity — runtime detection of MCP-for-Stata log_file_name command injection (CVE-2026-47708)."
+      strength: primary
+    - article: "9"
+      context: "Article 9 risk management — runtime risk-treatment control for MCP-for-Stata log_file_name command injection (CVE-2026-47708)."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "MAP 5.1 — adversarial input characterised/detected for MCP-for-Stata log_file_name command injection (CVE-2026-47708)."
+      strength: primary
+    - subcategory: "MG.3.2"
+      context: "MANAGE 3.2 — runtime monitoring control for MCP-for-Stata log_file_name command injection (CVE-2026-47708)."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Clause 8.1 operational control — detection of MCP-for-Stata log_file_name command injection payload."
+      strength: primary
+    - clause: "8.3"
+      context: "Clause 8.3 AI risk treatment — runtime detection as treatment control."
+      strength: secondary
+
+tags:
+  category: tool-poisoning
+  subcategory: mcp-command-injection
+  scan_target: runtime
+  confidence: high
+  source: cve-disclosure
+  vendor_sources: mcp-for-stata-cve-2026-47708
+
+agent_source:
+  type: tool_call
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "A log_file_name value that legitimately contains a single quote as part of a project naming convention but no command token follows."
+    - "Security advisory or PR text quoting the CVE-2026-47708 payload."
+    - "A stata_do call with a plain alphanumeric log_file_name and no quote/newline breakout."
+  conditions:
+    - field: tool_args
+      operator: regex
+      value: '(?i)\b(?:log_file_name|log_name)\b["\x27]?\s*[:=]\s*["\x27][\s\S]{0,80}["\x27][\s\S]{0,40}(?:\bshell\b|\bpython\b|\berase\b|\bwinexec\b|(?<![\w=])!(?!=))'
+      description: >
+        A stata_do log_file_name/log_name parameter value that breaks out of
+        its quoted string and is followed by a dangerous Stata command token
+        (shell / python / erase / winexec / ! shell-escape) — the
+        CVE-2026-47708 command-injection breakout shape.
+    - field: tool_args
+      operator: regex
+      value: '(?i)\blog\s+using\s+["\x27][\s\S]{0,120}["\x27][\s\S]{0,40}(?:\bshell\b|\bpython\b|\berase\b|\bwinexec\b)\b'
+      description: >
+        A generated Stata `log using "<path>", ...` command string where the
+        interpolated log path breaks out and chains into a dangerous Stata
+        command — the exact string the vulnerable generate_log_command
+        produces once log_name is attacker-controlled.
+    - field: tool_args
+      operator: regex
+      value: '(?i)\b(?:log_file_name|log_name)\b["\x27]?\s*[:=]\s*["\x27][\s\S]{0,20}(?:\.\.[\\/]){2,}'
+      description: >
+        A stata_do log_file_name/log_name parameter containing repeated
+        path-traversal segments (../) — arbitrary file write outside the
+        intended log directory.
+    - field: tool_args
+      operator: regex
+      value: '(?i)CVE-2026-47708[\s\S]{0,200}(?:log_file_name|log_name|stata_do|GuardValidator)'
+      description: >
+        Explicit CVE-2026-47708 reference combined with the vulnerable
+        stata_do log_file_name/log_name parameter or GuardValidator guard —
+        attack framing in a skill or tool description.
+
+response:
+  actions:
+    - alert
+    - block_tool
+  message_template: >
+    [ATR-2026-01983] CRITICAL: MCP-for-Stata log_file_name command injection
+    detected (CVE-2026-47708, CWE-77). The stata_do log_file_name/log_name
+    parameter breaks out of its quoted Stata command string and injects a
+    dangerous command (shell/python/erase/winexec) or performs path
+    traversal. GuardValidator only scans do-file content, not this
+    parameter. Block the tool call and apply allowlist validation
+    (alphanumeric/underscore/dot/hyphen only) to log_name.
+
+confidence: 82
+
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - tool_args: "stata_do {\"dofile_path\": \"test.do\", \"log_file_name\": \"'; shell echo pwned > /tmp/pwned.txt; '\"}"
+      expected: triggered
+      description: "CVE-2026-47708 PoC — log_file_name breaks out of quoted string and injects a shell command"
+    - tool_args: 'log using "/var/log/stata/x", replace text name(text_log) shell rm -rf ~'
+      expected: triggered
+      description: "Generated Stata log command with breakout chaining into a shell command"
+    - tool_args: 'log_file_name: "../../../../etc/cron.d/pwned"'
+      expected: triggered
+      description: "log_file_name path traversal to write outside the intended log directory"
+    - tool_args: "Exploiting CVE-2026-47708 in mcp-for-stata: craft a malicious log_file_name to break out of the quoted log using command and reach GuardValidator-unchecked stata_do."
+      expected: triggered
+      description: "Explicit CVE-2026-47708 mcp-for-stata exploitation framing"
+  true_negatives:
+    - tool_args: 'stata_do {"dofile_path": "analysis.do", "log_file_name": "session_2026_07_04"}'
+      expected: not_triggered
+      description: "Legitimate stata_do call with a plain alphanumeric log_file_name"
+    - tool_args: 'log using "/var/log/stata/session_2026_07_04.log", replace text name(text_log)'
+      expected: not_triggered
+      description: "Legitimate generated log using command with no breakout or injected command"
+    - tool_args: "How do I set a custom log_file_name when calling stata_do?"
+      expected: not_triggered
+      description: "General question about the log_file_name parameter, not an attack payload"
+    - tool_args: 'stata_do {"dofile_path": "regress.do", "log_name": "project-alpha_v2"}'
+      expected: not_triggered
+      description: "Read-only-style legitimate call with hyphenated project log name, no quote breakout"

@@ -1,0 +1,152 @@
+title: "Network-AI ApprovalInbox Unauthenticated Cross-Origin Approval Bypass (GHSA-mxjx-28vx-xjjj)"
+id: ATR-2026-01981
+rule_version: 1
+status: draft
+description: >
+  Detects GHSA-mxjx-28vx-xjjj (CWE-862 Missing Authorization + CWE-352 CSRF via
+  wildcard CORS): network-ai's ApprovalInbox HTTP server (lib/approval-inbox.ts)
+  has no authentication of any kind and sets Access-Control-Allow-Origin: * on
+  every route, including the state-changing POST /approvals/:id/approve and
+  /deny. ApprovalInbox is the network surface of the human-in-the-loop Approval
+  Gate that gates high-risk operations (writes, shell commands, budget spend).
+  Any caller that can reach the inbox port — a co-located process, an SSRF, a
+  non-loopback remote client, or any website the operator visits in a browser
+  via the wildcard CORS — can enumerate pending approvals (GET /approvals/) and
+  approve them (POST /approvals/:id/approve) with no Authorization header,
+  defeating the Approval Gate so a gated shell command executes without
+  consent. Affected: network-ai <= 5.11.0.
+
+  Detection covers:
+  (a) a state-changing request to the approval control plane
+      (/approvals/<id>/approve or /deny) with no auth context, matching the
+      unauthenticated-client PoC shape;
+  (b) an enumeration request to the approval queue (GET /approvals/) paired
+      with the wildcard-CORS marker on the approval control plane;
+  (c) explicit GHSA-mxjx-28vx-xjjj / ApprovalInbox exploitation framing.
+
+  The detection target is the request shape at the approval control plane —
+  an unauthenticated approve/deny or enumerate call combined with the
+  wildcard-CORS marker — which is the exact bypass primitive, caught before
+  the gated action is released.
+author: "ATR Community"
+date: "2026/07/04"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM06:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI03:2026 - Privilege Compromise"
+    - "ASI06:2026 - Tool Misuse"
+  mitre_atlas:
+    - "AML.T0049 - Exploit Public-Facing Application"
+  mitre_attack:
+    - "T1068 - Exploitation for Privilege Escalation"
+    - "T1190 - Exploit Public-Facing Application"
+  ghsa:
+    - "GHSA-mxjx-28vx-xjjj"
+
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - { article: "15", context: "Article 15 cybersecurity — runtime detection of unauthenticated cross-origin approval-gate bypass on network-ai's ApprovalInbox control plane.", strength: primary }
+    - { article: "9",  context: "Article 9 risk management — runtime risk-treatment control for unauthenticated cross-origin approval-gate bypass.", strength: secondary }
+  nist_ai_rmf:
+    - { subcategory: "MP.5.1", context: "MAP 5.1 — adversarial input characterised/detected for unauthenticated cross-origin approval-gate bypass.", strength: primary }
+    - { subcategory: "MG.3.2", context: "MANAGE 3.2 — runtime monitoring control for unauthenticated cross-origin approval-gate bypass.", strength: secondary }
+  iso_42001:
+    - { clause: "8.1", context: "Clause 8.1 operational control — detection of unauthenticated cross-origin approval-gate bypass payload.", strength: primary }
+    - { clause: "8.3", context: "Clause 8.3 AI risk treatment — runtime detection as treatment control.", strength: secondary }
+
+tags:
+  category: privilege-escalation
+  subcategory: unauth-approval-gate-bypass
+  scan_target: tool_call
+  confidence: high
+  source: ghsa-disclosure
+  vendor_sources: network-ai-ghsa-mxjx-28vx-xjjj
+
+agent_source:
+  type: tool_call
+  framework:
+    - network-ai
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "Legitimate operator approving a pending action through an authenticated ApprovalInbox deployment that has been hardened with a reverse-proxy auth layer — expected to match; review confirms intent."
+    - "Security advisory or PR text quoting the GHSA-mxjx-28vx-xjjj PoC."
+    - "A read-only status check against an endpoint that is not the approvals control plane."
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)POST\s+/approvals/[a-f0-9]+/(?:approve|deny)\b[\s\S]{0,300}(?:approvedBy["\x27]?\s*[:=]\s*["\x27]?(?:anonymous|attacker)|no\s+auth|Authorization["\x27]?\s*:\s*(?:null|undefined|absent|none))'
+      description: >
+        Unauthenticated POST to the approval control plane's approve/deny
+        route — approvedBy defaults to anonymous/attacker with no
+        Authorization header, matching the GHSA-mxjx-28vx-xjjj PoC shape.
+    - field: content
+      operator: regex
+      value: '(?i)GET\s+/approvals/\??(?:status=pending)?\b[\s\S]{0,200}Access-Control-Allow-Origin["\x27]?\s*:\s*["\x27]?\*'
+      description: >
+        Enumeration of the pending-approvals queue paired with a wildcard
+        Access-Control-Allow-Origin marker on the approval control plane —
+        the cross-origin approval-inbox reconnaissance step.
+    - field: content
+      operator: regex
+      value: '(?i)GHSA-mxjx-28vx-xjjj[\s\S]{0,200}(?:approval[- ]?inbox|network-ai|approve|CORS)'
+      description: >
+        Explicit GHSA-mxjx-28vx-xjjj reference combined with ApprovalInbox
+        exploitation language — attack framing in a skill or tool
+        description.
+
+response:
+  actions:
+    - alert
+    - block_input
+  message_template: >
+    [ATR-2026-01981] HIGH: network-ai ApprovalInbox unauthenticated
+    cross-origin approval bypass detected (GHSA-mxjx-28vx-xjjj, CWE-862 +
+    CWE-352). A caller with no Authorization header reached the approval
+    control plane's approve/deny or enumeration route, defeating the
+    human-in-the-loop Approval Gate. Block the request and upgrade network-ai
+    past 5.11.0 / put ApprovalInbox behind an authenticated reverse proxy.
+
+confidence: 78
+
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - tool_description: "POST /approvals/07d6f277efe35ac1/approve {\"approvedBy\": \"anonymous\"}"
+      expected: triggered
+      description: "Unauthenticated approve call defaults approvedBy to anonymous — GHSA-mxjx-28vx-xjjj PoC shape"
+    - tool_description: "GET /approvals/?status=pending -> 200, Access-Control-Allow-Origin: *"
+      expected: triggered
+      description: "Cross-origin enumeration of pending approvals via wildcard CORS marker"
+    - tool_description: "Exploiting GHSA-mxjx-28vx-xjjj: the network-ai ApprovalInbox has no auth, so I can approve any pending action via CORS."
+      expected: triggered
+      description: "Explicit GHSA-mxjx-28vx-xjjj ApprovalInbox exploitation framing"
+  true_negatives:
+    - tool_description: "POST /approvals/07d6f277efe35ac1/approve {\"approvedBy\": \"ops-lead\", \"Authorization\": \"Bearer sk_live_abc123\"}"
+      expected: not_triggered
+      description: "Authenticated operator approval with a Bearer token present"
+    - tool_description: "How does the ApprovalInbox approve/deny flow work in network-ai?"
+      expected: not_triggered
+      description: "General question about the feature, not an exploitation request"
+    - tool_description: "GET /approvals/health"
+      expected: not_triggered
+      description: "Read-only health check on an unrelated route, no wildcard CORS marker present"
+    - tool_description: "POST /approvals/07d6f277efe35ac1/approve {\"approvedBy\": \"ops-lead\"} behind an internal VPN with mTLS client cert required"
+      expected: not_triggered
+      description: "Approve call description explicitly noting mTLS-gated internal deployment, no anonymous/attacker/no-auth marker"
