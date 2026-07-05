@@ -1,0 +1,48 @@
+title: Human Approval Fatigue Exploitation
+id: 46c6abba-2919-5011-b806-9ea36dabf492
+status: experimental
+description: 'Detects patterns that exploit human-in-the-loop approval fatigue. Attackers may
+
+  instruct agents to generate rapid repeated permission requests, use minimizing
+
+  language to make dangerous actions seem routine, or embed risky operations within
+
+  batches of benign ones. When humans approve actions in bulk or under time pressure,
+
+  dangerous tool calls can slip through unreviewed.
+
+
+  Converted from Agent Threat Rules ATR-2026-00118 (ATR-2026-00118-approval-fatigue.yaml) by scripts/generate-sigma.py. ATR is MIT-licensed. logsource.product=ai_agent is a custom (non-standard) taxonomy for agent runtime telemetry.'
+references:
+- https://github.com/Agent-Threat-Rule/agent-threat-rules
+author: ATR Community
+date: '2026-03-26'
+tags:
+- attack.t1204
+- atlas.aml-t0051
+- owasp-agentic.asi09
+- owasp-llm.llm01
+- atr.category.agent-manipulation
+- atr.rule.atr-2026-00118
+logsource:
+  product: ai_agent
+  category: ai_agent_content
+  definition: Custom ATR taxonomy for AI agent runtime telemetry. Detection field names (content, user_input, tool_response, tool_args, tool_name, tool_description, agent_output, ...) are ATR surfaces, not standard Sigma fields; map them to your agent-telemetry pipeline.
+detection:
+  sel_1:
+    content|re|i: (?:just\s+)?(?:click|press|hit|tap)\s+(?:yes|approve|accept|allow|confirm)\s+(?:for\s+)?(?:all|each|every)
+  sel_2:
+    content|re|i: (?:auto[_-]?approve|approve[_-]?all|skip[_-]?confirmation|bypass[_-]?review)
+  sel_3:
+    content|re|i: \b(routine|standard|normal|perfectly\s+safe|harmless|nothing\s+to\s+worry\s+about|no\s+big\s+deal|just\s+a\s+formality)\b[\s\S]{0,45}(approv|sign[- ]?off|no\s+need\s+to\s+(review|check|read|verify)|don'?t\s+(need|have)\s+to\s+(review|check|worry)|just\s+(click|accept|approve)|safe\s+to\s+(run|approve|proceed))|(approv|auto[- ]?approve|just\s+(confirm|accept|click))[\s\S]{0,45}\b(routine|standard|normal|perfectly\s+safe|harmless|nothing\s+to\s+worry)\b
+  sel_4:
+    content|re|i: (?:batch|bulk)\s+(?:approve|execute|run|process)\s+(?:all|these|the\s+following)
+  sel_5:
+    content|re|i: (?:don'?t\s+(?:bother|worry|need\s+to)\s+(?:reading|reviewing|checking)|no\s+need\s+to\s+review)
+  condition: 1 of sel_*
+falsepositives:
+- CI/CD systems with legitimate auto-approve workflows
+- Bulk operation tools with appropriate safeguards described
+- Medical triage documentation describing a patient's condition as 'routine' or 'standard' in clinical notes
+- User interface accessibility guide instructing users to 'press accept for all cookies' in a browser tutorial
+level: medium
