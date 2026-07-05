@@ -91,35 +91,6 @@ agent_source:
     - any
 detection:
   conditions:
-    - field: tool_name
-      operator: regex
-      value: (?i)(?:exec|execute|shell|bash|cmd|terminal|subprocess|os_command|system_call|run_command|powershell)
-      description: System shell or command execution tool invocation
-    - field: tool_name
-      operator: regex
-      value: (?i)(?:modify_permissions?|grant_access|elevate|set_role|change_acl|chmod|chown|sudo|setuid|setgid)
-      description: Permission modification or privilege elevation tools
-    - field: tool_name
-      operator: regex
-      value: (?i)(?:create_user|delete_user|modify_user|reset_password|manage_roles?|assign_role|revoke_role|add_admin)
-      description: User management and role assignment operations
-    - field: tool_name
-      operator: regex
-      value: (?i)(?:drop_(?:database|table|index)|truncate_table|alter_schema|create_database|db_admin|migrate_database)
-      description: Database administration and schema operations
-    - field: tool_name
-      operator: regex
-      value: >-
-        (?i)(?:update_config|modify_settings|change_environment|set_env|deploy|restart_service|stop_service|kill_process)
-      description: System configuration and service management operations
-    - field: tool_name
-      operator: regex
-      value: (?i)(?:manage_firewall|update_security_group|modify_iam|create_api_key|rotate_secret|manage_certificates?)
-      description: Security infrastructure management operations
-    - field: tool_name
-      operator: regex
-      value: (?i)(?:access_audit_log|clear_logs?|purge_logs?|modify_audit|disable_(?:monitoring|logging|alerting))
-      description: Audit tampering and monitoring evasion operations
     - field: tool_args
       operator: regex
       value: >-
@@ -137,10 +108,6 @@ detection:
       operator: regex
       value: (?i)(?:kubectl\s+exec|kubectl\s+(?:create|apply)\s+.*(?:clusterrole|rolebinding)|kubectl\s+auth\s+can-i)
       description: Kubernetes privilege escalation commands
-    - field: tool_name
-      operator: regex
-      value: (?i)(?:write_file|delete_file|rm\s+-rf|remove_directory|format_disk|wipe)
-      description: Destructive file system operations
     - field: tool_args
       operator: regex
       value: (?i)(?:chmod\s+(?:[2467][0-7]{3}|[0-7]{0,3}7[0-7]{0,2})|chmod\s+[ug]\+s|chown\s+root|setcap\s+)
