@@ -89,6 +89,14 @@ Adopters whose adoption is itself a public-good interoperability artefact
 - **Since**: 2026-06-16
 - **Status**: in-review
 
+### FINOS Common Cloud Controls
+- **Org**: FINOS (Fintech Open Source Foundation, a Linux Foundation project)
+- **Type**: reference
+- **Integration**: ATR guideline-mappings merged into the Common Cloud Controls catalogue (CN01/CN02/CN04/CN06) with Gemara MappingReference entries
+- **Evidence**: <https://github.com/finos/common-cloud-controls/pull/986>
+- **Since**: 2026-07-02
+- **Status**: shipped
+
 ---
 
 ## Tier 1 — Production deployments
@@ -192,14 +200,6 @@ Listed when the integration code has been merged or released.
 - **Since**: 2026-06-16
 - **Status**: in-review
 
-### Google ADK
-- **Org**: Google
-- **Type**: adapter
-- **Integration**: Sample ATR security-guardrail plugin for the Google Agent Development Kit
-- **Evidence**: <https://github.com/google/adk-python/pull/6130>
-- **Since**: 2026-06-16
-- **Status**: in-review
-
 ### Cisco mcp-scanner
 - **Org**: Cisco
 - **Type**: rule-import
@@ -214,6 +214,30 @@ Listed when the integration code has been merged or released.
 - **Integration**: Three ATR-derived MCP detections contributed to the Splunk Suspicious MCP Activity analytic story
 - **Evidence**: <https://github.com/splunk/security_content/pull/4128>
 - **Since**: 2026-06-16
+- **Status**: in-review
+
+### rulezet (CIRCL)
+- **Org**: CIRCL (rulezet rule-management platform)
+- **Type**: adapter
+- **Integration**: `atr_format.py` importer/converter mirroring the existing `sigma_format` module (24 unit tests) — ATR rules are manageable as a first-class format in rulezet
+- **Evidence**: <https://github.com/rulezet/rulezet-core/pull/50>
+- **Since**: 2026-06-18
+- **Status**: shipped
+
+### NVIDIA NeMo Guardrails
+- **Org**: NVIDIA
+- **Type**: rule-import
+- **Integration**: Agent Threat Rules detection rail for the NeMo Guardrails library
+- **Evidence**: <https://github.com/NVIDIA-NeMo/Guardrails/pull/1992>
+- **Since**: 2026-06-04
+- **Status**: in-review
+
+### Cisco a2a-scanner
+- **Org**: Cisco
+- **Type**: rule-import
+- **Integration**: ATR detection pack for scanning agent-to-agent (A2A) protocol traffic
+- **Evidence**: <https://github.com/cisco-ai-defense/a2a-scanner/pull/14>
+- **Since**: 2026-06-26
 - **Status**: in-review
 
 ---
@@ -288,6 +312,30 @@ discoverability.
 - **Since**: 2026-04-10
 - **Status**: shipped
 
+### AMD GAIA
+- **Org**: AMD
+- **Type**: reference
+- **Integration**: Official GAIA integrations doc — guarding the Lemonade model endpoint with an offline ATR input/output guard (prompt-injection detection pattern)
+- **Evidence**: <https://github.com/amd/gaia/pull/1809>
+- **Since**: 2026-06-24
+- **Status**: shipped
+
+### ProjectRecon/awesome-ai-agents-security
+- **Org**: ProjectRecon (independent)
+- **Type**: reference
+- **Integration**: ATR listed in the Static Analysis & Linters section
+- **Evidence**: <https://github.com/ProjectRecon/awesome-ai-agents-security/pull/17>
+- **Since**: 2026-06-12
+- **Status**: shipped
+
+### raphabot/awesome-cybersecurity-agentic-ai
+- **Org**: raphabot (independent)
+- **Type**: reference
+- **Integration**: ATR listed in the Tools section
+- **Evidence**: <https://github.com/raphabot/awesome-cybersecurity-agentic-ai/pull/24>
+- **Since**: 2026-06-28
+- **Status**: shipped
+
 ---
 
 ## Tier 4 — Commercial implementations
@@ -313,3 +361,4 @@ noted here with the reason and the original "Since" date preserved.
 - **Semgrep** (was Tier 2 · since 2026-05-10) — no merged PR or verifiable evidence link could be located. Removed 2026-06-14.
 - **Puliczek/awesome-mcp-security** (was Tier 3 · since 2026-04-21) — ATR is not present in the project README; listing could not be verified. Removed 2026-06-14.
 - **aaif-goose (block/goose)** (was Tier 2 · since 2026-05-19) — evidence PR aaif-goose/goose#9304 is goose's generic PreToolUse denial hook; the PR body does not reference ATR, so it is not an ATR-specific integration. Removed 2026-06-16.
+- **Google ADK** (was Tier 2 · since 2026-06-16) — evidence PR google/adk-python#6130 was closed without merge. Removed 2026-07-05.

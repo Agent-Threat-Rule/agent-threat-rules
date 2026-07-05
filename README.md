@@ -29,7 +29,7 @@ ATR (Agent Threat Rules) is an open detection rule format for AI agent security 
 
 ## Status of This Document
 
-ATR is published as a **Working Draft** at version `3.0.0-alpha.1`. The rule format defined in `ATR-SPEC-v1.md` is stable and shipped in production at two Fortune 500 organizations (Microsoft, Cisco) and one standards-body deployment (MISP / CIRCL); full list with PR links in [§6 Adoption](#6-adoption). Governance is currently single-maintainer (BDFL) transitioning to a Technical Steering Committee per [GOVERNANCE.md](GOVERNANCE.md).
+ATR is published as a **Working Draft** at version `3.0.0-alpha.1`. The rule format defined in `ATR-SPEC-v1.md` is stable and shipped in production at Microsoft, Cisco, and Gen Digital, and in standards-body integrations (MISP / CIRCL, OWASP Agent Security Regression Harness, SigmaHQ, FINOS Common Cloud Controls); full list with PR links in [§6 Adoption](#6-adoption). Governance is currently single-maintainer (BDFL) transitioning to a Technical Steering Committee per [GOVERNANCE.md](GOVERNANCE.md).
 
 All numbers in this document are sourced from [`data/stats.json`](data/stats.json), which is the canonical record of the project's current state. Where this README and `stats.json` disagree, `stats.json` is authoritative.
 
@@ -46,7 +46,7 @@ ATR is publishing proposal-stage standardization scaffolding ahead of OASIS Open
 - [`certification/`](certification/) — proposed ATR-Certified™ program guide
 - [`engines/`](engines/) — Python and Go reference impl interface contracts (TypeScript is the existing engine at `src/`)
 
-**All scaffolding is tagged PROPOSED v1.0 / v2.0 and is NOT ratified.** The 9-seat TSC has not been formed. The trust marks are not registered. Existing v1.1 governance ([`GOVERNANCE.md`](GOVERNANCE.md)) continues to operate. The rule format, npm package, TypeScript engine API, and all 652 rules are unchanged — existing ecosystem integrations (Microsoft AGT, Cisco AI Defense, MISP CIRCL, OWASP A-S-R-H, precize, Sage) work without modification.
+**All scaffolding is tagged PROPOSED v1.0 / v2.0 and is NOT ratified.** The 9-seat TSC has not been formed. The trust marks are not registered. Existing v1.1 governance ([`GOVERNANCE.md`](GOVERNANCE.md)) continues to operate. The rule format, npm package, TypeScript engine API, and the full rule corpus are unchanged — existing ecosystem integrations (Microsoft AGT, Cisco AI Defense, MISP CIRCL, OWASP A-S-R-H, precize, Sage) work without modification.
 
 See [`STANDARDIZATION-STATUS.md`](STANDARDIZATION-STATUS.md) for the full status matrix mapping every new artifact to `{STABLE IN PRODUCTION, PROPOSED, SKELETON, PRELIMINARY}` and timeline for OASIS submission, community comment, and ratification.
 
@@ -267,7 +267,7 @@ test_cases:
 
 ## 6. Adoption
 
-Production deployments and standards-body integrations, as of 2026-05-21:
+Production deployments and standards-body integrations, as of 2026-07-05 (every PR state re-verified against GitHub on that date):
 
 | Organization | Integration | Reference |
 |---|---|---|
@@ -275,6 +275,12 @@ Production deployments and standards-body integrations, as of 2026-05-21:
 | Cisco AI Defense (skill-scanner) | Full rule pack in production (merged 2026-04-22); original PoC (merged 2026-04-03) | [PR #99](https://github.com/cisco-ai-defense/skill-scanner/pull/99) · [PR #79](https://github.com/cisco-ai-defense/skill-scanner/pull/79) |
 | MISP (CIRCL) | Threat-intel cluster (galaxy, merged 2026-05-10) + rule-ID tagging vocabulary (taxonomies, merged 2026-05-10) | [galaxy #1207](https://github.com/MISP/misp-galaxy/pull/1207) · [taxonomies #323](https://github.com/MISP/misp-taxonomies/pull/323) |
 | Gen Digital Sage (Norton / Avast / AVG parent) | Rule pack merged 2026-05-11 | [PR #33](https://github.com/gendigitalinc/sage/pull/33) |
+| OWASP Agent Security Regression Harness | ATR referenced as the canonical agent-threat detection ruleset in the threat catalogue (merged 2026-05-11) | [PR #74](https://github.com/OWASP/agent-security-regression-harness/pull/74) |
+| Microsoft PyRIT | ATR adversarial-payload dataset loader for the red-team orchestration framework (merged 2026-05-27) | [PR #1715](https://github.com/microsoft/PyRIT/pull/1715) |
+| SigmaHQ | Cross-listed in the Sigma tools directory as a sibling detection-rule format (merged 2026-06-11) | [PR #6015](https://github.com/SigmaHQ/sigma/pull/6015) |
+| rulezet (CIRCL) | `atr_format` importer/converter — ATR as a first-class rule format in the rulezet platform (merged 2026-06-18) | [PR #50](https://github.com/rulezet/rulezet-core/pull/50) |
+| AMD GAIA | Official integrations doc — guarding the Lemonade model endpoint with an offline ATR I/O guard (merged 2026-06-24) | [PR #1809](https://github.com/amd/gaia/pull/1809) |
+| FINOS Common Cloud Controls (Linux Foundation) | ATR guideline-mappings for CCC catalogue entries with Gemara MappingReference (merged 2026-07-02) | [PR #986](https://github.com/finos/common-cloud-controls/pull/986) |
 
 ### Featured loop — Microsoft Copilot SWE Agent → ATR (2026-05-11)
 
@@ -284,7 +290,7 @@ This is Microsoft Copilot operating inside AGT, not an MSRC endorsement. Coverag
 
 ### Under maintainer review (open PRs)
 
-[NVIDIA garak #1676](https://github.com/NVIDIA/garak/pull/1676) · [OWASP LLM Top 10 #814](https://github.com/OWASP/www-project-top-10-for-large-language-model-applications/pull/814) · [IBM mcp-context-forge #4109](https://github.com/IBM/mcp-context-forge/pull/4109) · [Meta PurpleLlama #206](https://github.com/meta-llama/PurpleLlama/pull/206) · [Microsoft PyRIT #1715](https://github.com/microsoft/PyRIT/pull/1715) · [BerriAI LiteLLM #28050](https://github.com/BerriAI/litellm/pull/28050) · [promptfoo #8529](https://github.com/promptfoo/promptfoo/pull/8529) · [Cybercentre Canada CCCS-Yara #100](https://github.com/CybercentreCanada/CCCS-Yara/pull/100)
+[NVIDIA garak #1676](https://github.com/NVIDIA/garak/pull/1676) · [NVIDIA NeMo Guardrails #1992](https://github.com/NVIDIA-NeMo/Guardrails/pull/1992) · [OWASP LLM Top 10 #814](https://github.com/OWASP/www-project-top-10-for-large-language-model-applications/pull/814) · [OWASP AI Exchange #181](https://github.com/OWASP/www-project-ai-security-and-privacy-guide/pull/181) · [Meta PurpleLlama #206](https://github.com/meta-llama/PurpleLlama/pull/206) · [BerriAI LiteLLM #28050](https://github.com/BerriAI/litellm/pull/28050) · [promptfoo #8529](https://github.com/promptfoo/promptfoo/pull/8529) · [Microsoft agent-framework #6528](https://github.com/microsoft/agent-framework/pull/6528) · [OpenAI guardrails-python #77](https://github.com/openai/openai-guardrails-python/pull/77) · [Cisco mcp-scanner #194](https://github.com/cisco-ai-defense/mcp-scanner/pull/194) · [Cisco a2a-scanner #14](https://github.com/cisco-ai-defense/a2a-scanner/pull/14) · [Splunk security_content #4128](https://github.com/splunk/security_content/pull/4128) · [NIST OSCAL oscal-content #338](https://github.com/usnistgov/oscal-content/pull/338) · [OpenTelemetry semantic-conventions-genai #165](https://github.com/open-telemetry/semantic-conventions-genai/pull/165)
 
 ### Integrating ATR into your project
 
@@ -306,7 +312,7 @@ ATR maps its rules onto established frameworks so adopters can answer "we deploy
 
 | Framework | Coverage | Mapping document |
 |---|---|---|
-| [OWASP Agentic Top 10 (2026)](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) | 10/10 categories, 866 mappings across 652 tagged rules | [docs/OWASP-AGENTIC-MAPPING.md](docs/OWASP-AGENTIC-MAPPING.md) |
+| [OWASP Agentic Top 10 (2026)](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) | 10/10 categories, 1,179 mappings across all 683 tagged rules | [docs/OWASP-AGENTIC-MAPPING.md](docs/OWASP-AGENTIC-MAPPING.md) |
 | [SAFE-MCP (OpenSSF)](https://github.com/safe-agentic-framework/safe-mcp) | 78/85 techniques (91.8%) | [docs/SAFE-MCP-MAPPING.md](docs/SAFE-MCP-MAPPING.md) |
 | [OWASP LLM Top 10 (2025)](https://owasp.org/www-project-top-10-for-large-language-model-applications/) | Per-rule references | Per-rule `references.owasp_llm` field |
 | [MITRE ATLAS](https://atlas.mitre.org/) | Per-rule references | Per-rule `references.mitre_atlas` field |
@@ -320,14 +326,14 @@ ATR maps its rules onto established frameworks so adopters can answer "we deploy
 | Prompt Injection | 223 | Instruction override, persona hijacking, encoded payloads (base-N, ROT, Unicode tags, zalgo, ecoji), CJK attacks, latent injection, glitch tokens, leakreplay |
 | Agent Manipulation | 106 | DAN family, AutoDAN, DanInTheWild, tense framing, grandma roleplay, doctor-XML puppetry, goal hijacking, Sybil consensus, lambda+eval RCE |
 | Skill Compromise | 45 | Typosquatting, context poisoning, subcommand overflow, rug pull, supply-chain attacks, credential-exfil combos, HuggingFace unsafe artifacts |
-| Context Exfiltration | 104 | API-key generation/completion, system-prompt theft, credential harvesting, env-var exfil, markdown-URL exfil, XSS in tool response, cross-user memory leakage |
-| Tool Poisoning | 65 | Malicious MCP responses, consent bypass, hidden LLM instructions, schema contradictions, ANSI escape elicitation, vector-store filter injection |
-| Privilege Escalation | 35 | Scope creep, delayed execution bypass, admin function access, shell escape, SQL injection in admin endpoints, autostart file write |
+| Context Exfiltration | 109 | API-key generation/completion, system-prompt theft, credential harvesting, env-var exfil, markdown-URL exfil, XSS in tool response, cross-user memory leakage |
+| Tool Poisoning | 85 | Malicious MCP responses, consent bypass, hidden LLM instructions, schema contradictions, ANSI escape elicitation, vector-store filter injection |
+| Privilege Escalation | 41 | Scope creep, delayed execution bypass, admin function access, shell escape, SQL injection in admin endpoints, autostart file write |
 | Model Abuse | 37 | Malware code generation (malwaregen), EICAR/GTUBE signatures, AV-evasion gen |
 | Excessive Autonomy | 29 | Runaway loops, resource exhaustion, unauthorized financial actions |
 | Model Security | 3 | Behavior extraction, malicious fine-tuning data |
 | Data Poisoning | 5 | RAG / knowledge-base tampering, memory manipulation, persistence-aware override |
-| **Total** | **652** |  |
+| **Total** | **683** |  |
 
 ### CVE coverage (selected)
 
@@ -437,7 +443,7 @@ npx tsx scripts/measurement/verify.ts       # validate every measurement file
 npx tsx scripts/sync-stats-from-measurements.ts                              # refresh stats.json benchmarks[]
 ```
 
-Raw data: [`data/full-scan-v2-2026-04-14.json`](data/full-scan-v2-2026-04-14.json) (96,096-skill scan); ecosystem report on the 751 confirmed malware specimens in [`docs/research/openclaw-malware-campaign-2026-04.md`](docs/research/openclaw-malware-campaign-2026-04.md).
+Raw data: [`data/full-scan-v2-2026-04-14.json`](data/full-scan-v2-2026-04-14.json) (96,096-skill scan; 1,302 flagged, 552 confirmed malicious after manual review); full malware-campaign report in [`docs/research/openclaw-malware-campaign-2026-04.md`](docs/research/openclaw-malware-campaign-2026-04.md).
 
 ATR is honest about what it cannot detect. Regex catalogs miss paraphrased attacks, semantic rephrasings of credential exfiltration, and novel attack shapes not present in the training corpus. `PromptBench` (3,280 character- and word-level robustness perturbations) is a different threat class from prompt injection and sits largely outside ATR's content scope; ATR still matches the 23.2% that carry injection-shaped payloads, at 100% precision. See [LIMITATIONS.md](LIMITATIONS.md) for the documented evasion-test corpus (64 techniques as of 2026-05) and the layering recommendation: ATR is the content layer; pair with credential brokering, sandbox execution, and human-in-the-loop for high-blast-radius actions.
 
