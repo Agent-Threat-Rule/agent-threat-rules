@@ -7,7 +7,9 @@ import { StatsHydrator } from "@/components/StatsHydrator";
 import { NumberScramble } from "@/components/NumberScramble";
 import { Flywheel } from "@/components/Flywheel";
 import { HeroGrid } from "@/components/DotGrid";
+import { EcosystemWall } from "@/components/EcosystemWall";
 import { loadSiteStats } from "@/lib/stats";
+import { getSpecMeta } from "@/lib/spec-meta";
 import { loadAllRules, getCategories, categoryDisplayName } from "@/lib/rules";
 import { locales, type Locale } from "@/lib/i18n";
 import Link from "next/link";
@@ -76,6 +78,20 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   );
   const categoryCount = taxonomy.length;
   const mergedCount = stats.ecosystemIntegrations.filter(e => e.type === "merged").length;
+  const specVersion = getSpecMeta().version;
+  // Tier 1 in ADOPTERS.md = shipped in a publicly-available product.
+  const productionCount = stats.ecosystemIntegrations.filter(
+    (e) => e.tier === "1" && e.type === "merged",
+  ).length;
+  // The home logo wall shows standards bodies, production deployments, and
+  // tooling/SDK integrations (tiers S/1/2). Catalogue and documentation
+  // references (tier 3) are summarised as a count with a pointer to /ecosystem.
+  const wallIntegrations = stats.ecosystemIntegrations.filter(
+    (e) => e.tier === "S" || e.tier === "1" || e.tier === "2",
+  );
+  const tier3Merged = stats.ecosystemIntegrations.filter(
+    (e) => e.tier === "3" && e.type === "merged",
+  ).length;
   // Pull garak recall from the version-pinned measurement (data/measurements/garak/latest.json)
   // rather than hardcoding — keeps the hero stat honest as the corpus is re-run.
   const garakMeasurement = stats.benchmarks.find((b) => b.source === "garak");
@@ -142,11 +158,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             <Link
               href={`${prefix}/spec`}
               className="mt-5 inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 font-data text-[10px] md:text-[11px] tracking-[0.08em] uppercase text-stone hover:text-ink transition-colors px-3 py-1.5 border border-fog rounded-[2px] group"
-              aria-label={zh ? "規格 Working Draft v3.5.0" : "Specification Working Draft v3.5.0"}
+              aria-label={zh ? `規格 Working Draft v${specVersion}` : `Specification Working Draft v${specVersion}`}
             >
               <span className="text-ink font-semibold">Working Draft</span>
               <span className="text-fog">·</span>
-              <span>v3.5.0</span>
+              <span>v{specVersion}</span>
               <span className="text-fog">·</span>
               <span>{zh ? "正式網址" : "canonical"} <span className="text-ink group-hover:underline">/spec</span></span>
             </Link>
@@ -451,25 +467,23 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             </div>
           </Reveal>
 
-          {/* Standards bodies — one compact row */}
+          {/* Ecosystem wall — standards bodies, production deployments, and
+              tooling integrations, derived from ADOPTERS.md (single source of
+              truth) with the merging org's logo on every shipped entry. */}
           <Reveal delay={0.3}>
             <div className="mt-8 md:mt-10">
-              <div className="font-data text-[11px] md:text-xs text-stone tracking-[1.5px] md:tracking-[2px] uppercase mb-3">
-                {zh ? "標準同儕引用 ATR" : "Standards bodies referencing ATR"}
+              <div className="font-data text-[11px] md:text-xs text-stone tracking-[1.5px] md:tracking-[2px] uppercase mb-4">
+                {zh ? "誰在出貨這個標準" : "Who ships the standard"}
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-fog">
-                {[
-                  { name: "MISP / CIRCL", detail: zh ? "Taxonomy + Galaxy 已合併" : "Taxonomy + Galaxy merged", href: "https://github.com/MISP/misp-galaxy/pull/1207" },
-                  { name: "OWASP A-S-R-H", detail: zh ? "已合併" : "Merged", href: "https://github.com/OWASP/agent-security-regression-harness/pull/74" },
-                  { name: "NIST AI RMF (OSCAL)", detail: zh ? "oscal-content#338 審查中(非 NIST 背書)" : "oscal-content#338 in review (not a NIST endorsement)", href: "https://github.com/usnistgov/oscal-content/pull/338" },
-                  { name: "OpenTelemetry GenAI", detail: zh ? "agent.threat.detection.* 審查中" : "agent.threat.detection.* in review", href: "https://github.com/open-telemetry/semantic-conventions-genai/pull/165" },
-                ].map((item) => (
-                  <a key={item.name} href={item.href} target="_blank" rel="noopener noreferrer" className="bg-paper p-4 md:p-5 hover:bg-ash/40 transition-colors block">
-                    <div className="font-display text-sm font-semibold text-ink mb-1">{item.name}</div>
-                    <p className="font-data text-xs text-stone leading-relaxed text-pretty">{item.detail}</p>
-                  </a>
-                ))}
-              </div>
+              <EcosystemWall integrations={wallIntegrations} locale={locale} />
+              <p className="font-data text-xs text-stone mt-5">
+                {zh
+                  ? `另有 ${tier3Merged} 個公開目錄與文件索引收錄 ATR — `
+                  : `Plus ${tier3Merged} public catalogues and documentation indices listing ATR — `}
+                <Link href={`${prefix}/ecosystem`} className="text-blue hover:underline">
+                  {zh ? "完整採用清單" : "full adopter list"}
+                </Link>
+              </p>
             </div>
           </Reveal>
 
@@ -477,7 +491,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.35}>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-fog mt-8 md:mt-10">
               {[
-                { num: "2", label: zh ? "已在生產環境" : "in production", sub: zh ? "Microsoft · Cisco" : "Microsoft, Cisco" },
+                { num: String(productionCount), label: zh ? "已在生產環境" : "in production", sub: zh ? "Microsoft · Cisco · Gen Digital" : "Microsoft, Cisco, Gen Digital" },
                 { num: String(stats.ruleCount), label: zh ? "條偵測規則" : "detection rules", sub: zh ? `跨 ${categoryCount} 個類別` : `across ${categoryCount} categories` },
                 { num: stats.megaScanTotal.toLocaleString(), label: zh ? "skills 已掃描" : "skills scanned", sub: zh ? "跨多個 registry" : "across registries" },
                 { num: `${mergedCount}/${stats.ecosystemIntegrations.length}`, label: zh ? "生態系 PR" : "ecosystem PRs", sub: zh ? "已合併" : "merged" },
@@ -523,8 +537,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.15}>
             <p className="text-sm md:text-base text-graphite font-light max-w-[640px] mb-6 md:mb-8 leading-[1.8] text-pretty">
               {zh
-                ? <>紅隊大掃描與 CVE 匯入兩條管線每天運轉:新攻擊被語義層抓到後,「結晶」成 regex 規則回流標準——從每次 500ms 的推理,變成 5ms 的 pattern match。自動結晶化把標準從 462 條長到 {stats.ruleCount} 條,全部隨 npm <span className="font-data text-graphite">agent-threat-rules@3.5.0</span> 發布。</>
-                : <>A red-team mega-scan pipeline and a CVE-ingestion pipeline run daily: when the semantic layer catches a novel attack, it crystallizes into a regex rule and flows back into the standard — turning a 500ms inference into a 5ms pattern match. Auto-crystallization grew the standard from 462 to {stats.ruleCount} rules, all shipped in npm <span className="font-data text-graphite">agent-threat-rules@3.5.0</span>.</>}
+                ? <>紅隊大掃描與 CVE 匯入兩條管線每天運轉:新攻擊被語義層抓到後,「結晶」成 regex 規則回流標準——從每次 500ms 的推理,變成 5ms 的 pattern match。自動結晶化把標準從 462 條長到 {stats.ruleCount} 條,全部隨 npm <span className="font-data text-graphite">agent-threat-rules@{specVersion}</span> 發布。</>
+                : <>A red-team mega-scan pipeline and a CVE-ingestion pipeline run daily: when the semantic layer catches a novel attack, it crystallizes into a regex rule and flows back into the standard — turning a 500ms inference into a 5ms pattern match. Auto-crystallization grew the standard from 462 to {stats.ruleCount} rules, all shipped in npm <span className="font-data text-graphite">agent-threat-rules@{specVersion}</span>.</>}
             </p>
           </Reveal>
           <Reveal delay={0.18}>
@@ -542,7 +556,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 font-data text-[11px] md:text-xs text-stone mb-8 md:mb-10">
               <span className="inline-flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-green inline-block" aria-hidden="true" />
-                <span className="text-ink font-semibold">agent-threat-rules@3.5.0</span>
+                <span className="text-ink font-semibold">agent-threat-rules@{specVersion}</span>
               </span>
               <span className="text-fog">·</span>
               <span><span className="text-ink font-semibold">{stats.ruleCount}</span> {zh ? "條規則" : "rules"}</span>

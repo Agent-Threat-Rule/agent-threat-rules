@@ -146,12 +146,17 @@ function parseEntry(block: string, tier: AdopterTier): Adopter | null {
   }
 
   // Evidence values may be wrapped in angle brackets `<url>`, the markdown
-  // autolink form, or a `[label](url)` pair. Normalise to the URL.
+  // autolink form, a `[label](url)` pair, or carry trailing prose ("<url>
+  // (and predecessor PoC #79)") or multiple autolinks ("<url> and <url>").
+  // Normalise to the FIRST canonical URL so links and derived logos never
+  // receive a malformed value.
   let evidenceUrl = evidence;
-  const angleMatch = evidence.match(/^<(.+)>$/);
-  if (angleMatch) evidenceUrl = angleMatch[1];
+  const angleMatch = evidence.match(/<(https?:\/\/[^>\s]+)>/);
   const linkMatch = evidence.match(/^\[.*?\]\((.+?)\)/);
-  if (linkMatch) evidenceUrl = linkMatch[1];
+  const bareMatch = evidence.match(/https?:\/\/[^\s>)]+/);
+  if (angleMatch) evidenceUrl = angleMatch[1];
+  else if (linkMatch) evidenceUrl = linkMatch[1];
+  else if (bareMatch) evidenceUrl = bareMatch[0];
 
   const categories = categoriesRaw
     ? categoriesRaw
@@ -271,6 +276,22 @@ export function loadAdopters(): AdoptersData {
     tier4: byTier["4"],
     count,
   };
+}
+
+/**
+ * Derive a display logo for an adopter from its evidence URL: the GitHub
+ * organisation avatar of the repo the evidence lives in. Zero-maintenance
+ * and honest — it is the org whose repository merged (or is reviewing) the
+ * integration. Returns undefined for non-GitHub evidence so callers can
+ * render a text-only fallback.
+ */
+export function adopterLogoUrl(
+  adopter: Adopter,
+  size = 128,
+): string | undefined {
+  const match = adopter.evidence.match(/^https:\/\/github\.com\/([^/]+)\//);
+  if (!match) return undefined;
+  return `https://github.com/${match[1]}.png?size=${size}`;
 }
 
 /**

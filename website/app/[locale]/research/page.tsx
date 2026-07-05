@@ -2,6 +2,7 @@ import { Reveal } from "@/components/Reveal";
 import { CountUp } from "@/components/CountUp";
 import { StatsHydrator } from "@/components/StatsHydrator";
 import { loadSiteStats } from "@/lib/stats";
+import { getSpecMeta } from "@/lib/spec-meta";
 import { locales, t, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 
@@ -309,8 +310,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
       <Reveal delay={0.15}>
         <p className="text-sm text-graphite leading-[1.7] mb-6 max-w-[760px]">
           {locale === "zh"
-            ? `這個掃描不是一份報告，是一條每天運轉的迴圈。新攻擊出現 → 結晶成偵測規則 → 回流標準：紅隊巨量掃描與 CVE 攝取兩條飛輪各自跑完整輪後轉為每日更新，把規則集從 462 條推進到目前的 ${stats.ruleCount} 條（新增 190 條，npm agent-threat-rules@3.5.0）。這就是「標準活著」的意思——不是一次性的快照，而是與威脅同速演化的層。`
-            : `This scan is not a report — it is a loop that runs every day. New attack appears → crystallizes into a detection rule → flows back into the standard. A red-team mega-scan flywheel and a CVE-ingestion flywheel each completed a full sweep, then moved to daily updates, taking the ruleset from 462 to the current ${stats.ruleCount} (190 new rules, npm agent-threat-rules@3.5.0). This is what it means for a standard to be alive: not a one-time snapshot, but a layer that evolves at the speed of the threats it covers.`}
+            ? `這個掃描不是一份報告，是一條每天運轉的迴圈。新攻擊出現 → 結晶成偵測規則 → 回流標準：紅隊巨量掃描與 CVE 攝取兩條飛輪各自跑完整輪後轉為每日更新，把規則集從 462 條推進到目前的 ${stats.ruleCount} 條（新增 ${stats.ruleCount - 462} 條，npm agent-threat-rules@${getSpecMeta().version}）。這就是「標準活著」的意思——不是一次性的快照，而是與威脅同速演化的層。`
+            : `This scan is not a report — it is a loop that runs every day. New attack appears → crystallizes into a detection rule → flows back into the standard. A red-team mega-scan flywheel and a CVE-ingestion flywheel each completed a full sweep, then moved to daily updates, taking the ruleset from 462 to the current ${stats.ruleCount} (${stats.ruleCount - 462} new rules, npm agent-threat-rules@${getSpecMeta().version}). This is what it means for a standard to be alive: not a one-time snapshot, but a layer that evolves at the speed of the threats it covers.`}
         </p>
       </Reveal>
       <Reveal delay={0.2}>

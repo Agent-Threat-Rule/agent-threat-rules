@@ -219,7 +219,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "coverage.label": "Standards Coverage",
     "coverage.heading": "The frameworks name the threat. ATR runs it.",
     "coverage.sub":
-      "MITRE ATLAS, OWASP, NIST AI RMF, ISO 42001 — six frameworks classify what can go wrong. ATR is the executable layer underneath: detection that fires on a real agent artifact. Every one of the 652 rules carries mappings into all six frameworks, enforced in CI.",
+      "MITRE ATLAS, OWASP, NIST AI RMF, ISO 42001 — six frameworks classify what can go wrong. ATR is the executable layer underneath: detection that fires on a real agent artifact. Every rule carries mappings into all six frameworks, enforced in CI.",
     "integrate.label": "Integrate",
     "integrate.heading": "Four paths. Same destination.",
     "research.label": "Research",
@@ -607,7 +607,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "coverage.heading":
       "\u6846\u67B6\u5B9A\u7FA9\u5A01\u8105\uff0CATR \u8B93\u5B83\u8DD1\u8D77\u4F86\u3002",
     "coverage.sub":
-      "MITRE ATLAS\u3001OWASP\u3001NIST AI RMF\u3001ISO 42001\u2014\u2014\u516D\u500B\u6846\u67B6\u5206\u985E\u300C\u4EC0\u9EBC\u6703\u51FA\u932F\u300D\u3002ATR \u662F\u5176\u4E0B\u53EF\u57F7\u884C\u7684\u90A3\u4E00\u5C64\uFF1A\u80FD\u5728\u771F\u5BE6 agent \u6210\u54C1\u4E0A\u958B\u706B\u7684\u5075\u6E2C\u3002652 \u689D\u898F\u5247\u6BCF\u4E00\u689D\u90FD\u5E36\u6709\u9019\u516D\u500B\u6846\u67B6\u7684\u5C0D\u61C9\uff0C\u4E26\u7531 CI \u5F37\u5236\u3002",
+      "MITRE ATLAS\u3001OWASP\u3001NIST AI RMF\u3001ISO 42001\u2014\u2014\u516D\u500B\u6846\u67B6\u5206\u985E\u300C\u4EC0\u9EBC\u6703\u51FA\u932F\u300D\u3002ATR \u662F\u5176\u4E0B\u53EF\u57F7\u884C\u7684\u90A3\u4E00\u5C64\uFF1A\u80FD\u5728\u771F\u5BE6 agent \u6210\u54C1\u4E0A\u958B\u706B\u7684\u5075\u6E2C\u3002\u6BCF\u4E00\u689D\u898F\u5247\u90FD\u5E36\u6709\u9019\u516D\u500B\u6846\u67B6\u7684\u5C0D\u61C9\uff0C\u4E26\u7531 CI \u5F37\u5236\u3002",
     "integrate.label": "Integrate",
     "integrate.heading":
       "\u56DB\u689D\u8DEF\u5F91\u3002\u540C\u4E00\u500B\u7D42\u9EDE\u3002",

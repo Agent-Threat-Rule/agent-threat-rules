@@ -1,4 +1,5 @@
 import { Reveal } from "@/components/Reveal";
+import { loadSiteStats } from "@/lib/stats";
 import { locales, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -157,12 +158,23 @@ const MILESTONES: Milestone[] = [
   {
     date: "2026-06",
     title: {
-      en: "v3.5.0 · 652 rules across 10 categories",
-      zh: "v3.5.0 · 652 條規則,跨 10 個類別",
+      en: "v3.5.0 · detection lanes ship",
+      zh: "v3.5.0 · 偵測車道上線",
     },
     detail: {
-      en: "Current release line: 652 detection rules across 10 categories, specification 3.5.0 (Working Draft). Introduced detection lanes (enforce / alert / hunt) — maturity-driven precision, with false-positive rates reported per lane rather than as a single figure.",
-      zh: "目前釋出線:652 條偵測規則,跨 10 個類別,規範 3.5.0（Working Draft）。引入偵測車道(enforce / alert / hunt)——以成熟度驅動精確度,誤報率逐車道揭露,而非用單一數字概括。",
+      en: "v3.5.0 (652 rules at release) introduced detection lanes (enforce / alert / hunt) — maturity-driven precision, with false-positive rates reported per lane rather than as a single figure.",
+      zh: "v3.5.0（發布時 652 條規則）引入偵測車道(enforce / alert / hunt)——以成熟度驅動精確度,誤報率逐車道揭露,而非用單一數字概括。",
+    },
+  },
+  {
+    date: "2026-07",
+    title: {
+      en: "Adoption re-verified · auto-publish flywheel",
+      zh: "採用全面現驗 · 自動發布飛輪",
+    },
+    detail: {
+      en: "Every adopter PR state re-verified against GitHub — new shipped integrations recorded across FINOS, SigmaHQ, rulezet/CIRCL, AMD GAIA, and AG2. The crystallization flywheel now auto-publishes new rules to npm on merge; rule count, spec version, and the adopter wall on this site are all rebuilt from repo state at deploy time.",
+      zh: "所有採用者 PR 狀態對 GitHub 全面現驗——FINOS、SigmaHQ、rulezet/CIRCL、AMD GAIA、AG2 等新出貨整合入列。結晶飛輪已在 merge 時自動發布新規則到 npm;本站的規則數、規範版本、採用者牆全部在部署時從 repo 狀態重建。",
     },
   },
 ];
@@ -175,6 +187,7 @@ export default async function AboutPage({
   const { locale: rawLocale } = await params;
   const locale = (locales.includes(rawLocale as Locale) ? rawLocale : "en") as Locale;
   const zh = locale === "zh";
+  const ruleCount = loadSiteStats().ruleCount;
 
   return (
     <div className="pt-20 pb-20 px-5 md:px-6 max-w-[860px] mx-auto">
@@ -213,8 +226,8 @@ export default async function AboutPage({
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh
-            ? "標準由社群驅動，並透過每日自動結晶飛輪持續擴張——紅隊大掃描與 CVE 攝取兩條管線各自跑完完整 sweep，把規則集從 462 條長到 652 條（新增 190 條）。"
-            : "The standard is community-driven and grows through daily auto-crystallization flywheels — a red-team mega-scan pipeline and a CVE-ingestion pipeline each ran full sweeps, expanding the ruleset from 462 to 652 rules (190 new rules)."}
+            ? <>標準由社群驅動，並透過每日自動結晶飛輪持續擴張——紅隊大掃描與 CVE 攝取兩條管線各自跑完完整 sweep，把規則集從 462 條長到 {ruleCount} 條。</>
+            : <>The standard is community-driven and grows through daily auto-crystallization flywheels — a red-team mega-scan pipeline and a CVE-ingestion pipeline each ran full sweeps, expanding the ruleset from 462 to {ruleCount} rules.</>}
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh

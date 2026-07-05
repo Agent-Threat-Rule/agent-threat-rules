@@ -4,6 +4,7 @@ import {
   loadAdopters,
   tierLabel,
   tierDescription,
+  adopterLogoUrl,
   type Adopter,
   type AdopterTier,
 } from "@/lib/adopters";
@@ -114,8 +115,19 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
               <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-fog">
                 {entries.map((a) => (
                   <article key={a.name} className="bg-paper p-5">
-                    <div className="flex items-baseline justify-between gap-3 mb-1">
-                      <h2 className="font-display text-base font-semibold text-ink">
+                    <div className="flex items-center gap-3 mb-1">
+                      {adopterLogoUrl(a) && (
+                        <img
+                          src={adopterLogoUrl(a)}
+                          alt=""
+                          width={28}
+                          height={28}
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                          className="rounded-sm ring-1 ring-fog shrink-0"
+                        />
+                      )}
+                      <h2 className="font-display text-base font-semibold text-ink flex-1">
                         {a.name}
                       </h2>
                       <StatusBadge status={a.status} zh={zh} />
@@ -177,8 +189,19 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
             <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-fog">
               {commercial.map((a) => (
                 <article key={a.name} className="bg-paper p-5">
-                  <div className="flex items-baseline justify-between gap-3 mb-1">
-                    <h2 className="font-display text-base font-semibold text-ink">
+                  <div className="flex items-center gap-3 mb-1">
+                    {adopterLogoUrl(a) && (
+                      <img
+                        src={adopterLogoUrl(a)}
+                        alt=""
+                        width={28}
+                        height={28}
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                        className="rounded-sm ring-1 ring-fog shrink-0"
+                      />
+                    )}
+                    <h2 className="font-display text-base font-semibold text-ink flex-1">
                       {a.name}
                     </h2>
                     <StatusBadge status={a.status} zh={zh} />
