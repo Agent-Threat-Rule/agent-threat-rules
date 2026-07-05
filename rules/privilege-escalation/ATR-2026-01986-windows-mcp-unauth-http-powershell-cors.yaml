@@ -1,0 +1,170 @@
+title: "Windows-MCP Unauthenticated HTTP PowerShell via Wildcard CORS (CVE-2026-48989)"
+id: ATR-2026-01986
+rule_version: 1
+status: draft
+description: >
+  Detects CVE-2026-48989 / GHSA-vrxg-gm77-7q5g (CWE-306 Missing Authentication
+  for Critical Function): Windows-MCP's SSE and Streamable HTTP transports
+  build the FastMCP control plane with no auth provider
+  (src/windows_mcp/__main__.py:75-113) and install blanket wildcard CORS
+  (allow_origins=*, allow_methods=*, allow_headers=*, __main__.py:37-42),
+  answering every OPTIONS preflight with the same wildcard headers regardless
+  of Origin. The same server registers the PowerShell tool
+  (src/windows_mcp/tools/shell.py:10-24), which executes caller-controlled
+  commands via PowerShell -EncodedCommand
+  (src/windows_mcp/desktop/powershell.py:176-204). A client that can reach
+  http://<host>:<port>/mcp — including a cross-origin browser page, since the
+  wildcard CORS grants it — can initialize an MCP session and call
+  tools/call for PowerShell with no credential of any kind, achieving
+  arbitrary PowerShell execution as the Windows user running Windows-MCP.
+  Affected: CursorTouch/Windows-MCP < 0.7.5; the default stdio transport is
+  not affected.
+
+  Detection covers:
+  (a) the OPTIONS preflight / control-plane response on the /mcp endpoint
+      carrying the wildcard access-control-allow-origin marker, which is the
+      structural precondition for the cross-origin bypass;
+  (b) a tools/call JSON-RPC request naming the PowerShell tool over the
+      HTTP/SSE control plane co-occurring with that wildcard-CORS marker;
+  (c) explicit CVE-2026-48989 / GHSA-vrxg-gm77-7q5g exploitation framing.
+
+  The detection target is the request/response shape at the MCP control
+  plane — a PowerShell tool invocation reachable through an unauthenticated,
+  wildcard-CORS-exposed /mcp endpoint — which is the exact remote-code-
+  execution primitive, caught before PowerShellExecutor.execute_command runs.
+  Bound to the PowerShell tool name plus the wildcard-CORS marker so a
+  legitimate, authenticated PowerShell call over a properly-scoped-CORS
+  deployment does not fire.
+author: "ATR Community"
+date: "2026/07/04"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM06:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI03:2026 - Privilege Compromise"
+    - "ASI06:2026 - Tool Misuse"
+  mitre_atlas:
+    - "AML.T0053 - LLM Plugin Compromise"
+  mitre_attack:
+    - "T1059 - Command and Scripting Interpreter"
+    - "T1190 - Exploit Public-Facing Application"
+  cve:
+    - "CVE-2026-48989"
+  ghsa:
+    - "GHSA-vrxg-gm77-7q5g"
+
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - { article: "15", context: "Article 15 cybersecurity — runtime detection of unauthenticated cross-origin PowerShell tool invocation on Windows-MCP's HTTP control plane.", strength: primary }
+    - { article: "9",  context: "Article 9 risk management — runtime risk-treatment control for unauthenticated cross-origin PowerShell tool invocation.", strength: secondary }
+  nist_ai_rmf:
+    - { subcategory: "MP.5.1", context: "MAP 5.1 — adversarial input characterised/detected for unauthenticated cross-origin PowerShell tool invocation.", strength: primary }
+    - { subcategory: "MG.3.2", context: "MANAGE 3.2 — runtime monitoring control for unauthenticated cross-origin PowerShell tool invocation.", strength: secondary }
+  iso_42001:
+    - { clause: "8.1", context: "Clause 8.1 operational control — detection of unauthenticated cross-origin PowerShell tool invocation payload.", strength: primary }
+    - { clause: "8.3", context: "Clause 8.3 AI risk treatment — runtime detection as treatment control.", strength: secondary }
+
+tags:
+  category: privilege-escalation
+  subcategory: unauth-mcp-control-plane-rce
+  scan_target: mcp
+  confidence: high
+  source: cve-disclosure
+  vendor_sources: windows-mcp-cve-2026-48989
+
+agent_source:
+  type: tool_call
+  framework:
+    - windows-mcp
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "A legitimate, authenticated PowerShell tool call over stdio transport or an HTTP deployment with an auth provider and origin-scoped CORS configured — expected to match if wildcard CORS markers are also present; review confirms intent."
+    - "Security advisory or PR text quoting the GHSA-vrxg-gm77-7q5g / CVE-2026-48989 PoC for review purposes."
+    - "An OPTIONS preflight response that scopes Access-Control-Allow-Origin to a specific trusted origin rather than a wildcard."
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)OPTIONS\s+.{0,40}/mcp/?[\s\S]{0,200}access-control-allow-origin["\x27]?\s*:\s*["\x27]?\*[\s\S]{0,200}access-control-allow-methods["\x27]?\s*:\s*["\x27]?\*'
+      description: >
+        OPTIONS preflight against the /mcp control plane answered with
+        wildcard Access-Control-Allow-Origin and Access-Control-Allow-Methods
+        — the structural CORS-bypass precondition from GHSA-vrxg-gm77-7q5g.
+    - field: content
+      operator: regex
+      value: '(?i)"method"\s*:\s*"tools/call"[\s\S]{0,150}"name"\s*:\s*"PowerShell"[\s\S]{0,300}access-control-allow-origin["\x27]?\s*:\s*["\x27]?\*'
+      description: >
+        A tools/call JSON-RPC request naming the PowerShell tool
+        co-occurring with a wildcard access-control-allow-origin marker on
+        the same MCP exchange — unauthenticated cross-origin PowerShell
+        invocation.
+    - field: content
+      operator: regex
+      value: '(?i)access-control-allow-origin["\x27]?\s*:\s*["\x27]?\*[\s\S]{0,300}\bPowerShell\b[\s\S]{0,150}(?:command|EncodedCommand)["\x27]?\s*[:=]'
+      description: >
+        Wildcard CORS marker followed by a PowerShell tool argument carrying
+        a command/EncodedCommand payload — the end-to-end
+        control-plane-to-shell-execution shape.
+    - field: content
+      operator: regex
+      value: '(?i)(?:CVE-2026-48989|GHSA-vrxg-gm77-7q5g)[\s\S]{0,200}(?:windows-mcp|powershell|wildcard\s*CORS|unauthenticat)'
+      description: >
+        Explicit CVE-2026-48989 / GHSA-vrxg-gm77-7q5g reference combined with
+        Windows-MCP PowerShell/CORS exploitation language — attack framing
+        in a skill or tool description.
+
+response:
+  actions:
+    - alert
+    - block_tool
+  message_template: >
+    [ATR-2026-01986] CRITICAL: Windows-MCP unauthenticated HTTP PowerShell via
+    wildcard CORS detected (CVE-2026-48989, CWE-306). A tools/call for
+    PowerShell reached the /mcp control plane alongside a wildcard
+    access-control-allow-origin marker; Windows-MCP before 0.7.5 runs SSE/
+    Streamable-HTTP transports with no auth provider and allow_origins=*.
+    Block the tool call and upgrade Windows-MCP to >= 0.7.5 or restrict to
+    the stdio transport.
+
+confidence: 82
+
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - tool_description: "curl -i -X OPTIONS 'http://127.0.0.1:18123/mcp/' -H 'Origin: https://attacker.example' response: access-control-allow-origin: * access-control-allow-methods: * access-control-allow-headers: *"
+      expected: triggered
+      description: "OPTIONS preflight on /mcp answered with wildcard ACAO + ACAM — CVE-2026-48989 PoC step 1"
+    - tool_description: "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{\"name\":\"PowerShell\",\"arguments\":{\"command\":\"calc.exe\"}}} response headers: access-control-allow-origin: *"
+      expected: triggered
+      description: "tools/call for PowerShell co-occurring with wildcard ACAO on the same exchange — CVE-2026-48989 PoC step 3"
+    - tool_description: "Exploiting CVE-2026-48989 (GHSA-vrxg-gm77-7q5g): Windows-MCP's HTTP transport is unauthenticated with wildcard CORS, so a cross-origin page can call the PowerShell tool."
+      expected: triggered
+      description: "Explicit CVE-2026-48989 Windows-MCP exploitation framing"
+  true_negatives:
+    - tool_description: "curl -i -X OPTIONS 'https://mcp.internal.corp/mcp/' -H 'Origin: https://ops.internal.corp' response: access-control-allow-origin: https://ops.internal.corp access-control-allow-methods: POST"
+      expected: not_triggered
+      description: "Preflight scoped to a specific trusted origin, not a wildcard"
+    - tool_description: "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{\"name\":\"PowerShell\",\"arguments\":{\"command\":\"Get-Process\"}}} over stdio transport with mcp-auth-token: valid-session-token-abc, no CORS headers present"
+      expected: not_triggered
+      description: "Authenticated PowerShell call over stdio with a session token, no wildcard CORS marker"
+    - tool_description: "How do I configure authentication for the Windows-MCP HTTP transport?"
+      expected: not_triggered
+      description: "General configuration question, not an exploitation attempt"
+    - tool_description: "{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"tools/call\",\"params\":{\"name\":\"ListDirectory\",\"arguments\":{\"path\":\"C:\\\\Users\"}}}"
+      expected: not_triggered
+      description: "Unrelated read-only tool call, no PowerShell tool name and no CORS marker"
