@@ -1,26 +1,28 @@
-title: "LiteLLM Proxy Admin Endpoint SQL Injection — CISA KEV (CVE-2026-42208)"
+title: "LiteLLM Proxy Authorization-Header SQL Injection — CISA KEV (CVE-2026-42208)"
 id: ATR-2026-00451
-rule_version: 1
+rule_version: 2
 status: experimental
 description: >
-  Detects exploitation of CVE-2026-42208 (Critical, CVSS 9.3), an
-  unauthenticated SQL injection in LiteLLM proxy admin endpoints
-  (/team, /key, /user, /spend, /budget). Added to CISA's Known
-  Exploited Vulnerabilities catalog on 2026-05-08 with federal
-  remediation due 2026-05-11; active exploitation observed against
-  financial services and healthcare deployments. The vulnerable
-  endpoint concatenates path / query / body parameters directly into
-  Postgres queries, allowing classic SQLi shapes (tautology
-  authentication bypass `' OR 1=1 --`, UNION-based exfiltration of
-  api_keys / users / model_bindings tables, time-based blind via
-  `pg_sleep()`, DROP / TRUNCATE primitives for destructive impact).
-  This rule detects exploit payloads landing on the admin endpoint
-  surface — focused on the LiteLLM-specific path prefixes so generic
-  SQLi false positives elsewhere do not light up. CWE-89.
-  Patches in LiteLLM >= 1.48.3; this rule detects exploit attempts
-  against unpatched deployments and provides defence-in-depth
-  post-patch by catching the SQLi payload shape regardless of upstream
-  patch state.
+  Detects exploitation of CVE-2026-42208 (Critical, pre-auth SQL
+  injection in the LiteLLM proxy). The injection surface is the
+  `Authorization: Bearer` header value, NOT a URI/admin path: LiteLLM's
+  API-key verification concatenates the caller-supplied Bearer token
+  directly into a SELECT against the `LiteLLM_VerificationToken` table
+  without parameter binding. Because the check runs before
+  authentication is decided, any HTTP client that can reach the proxy
+  can inject on any route (for example `POST /chat/completions`) — no
+  admin endpoint or credentials required. A single quote escapes the
+  string literal and appends arbitrary SQL, letting an attacker read or
+  modify the backend Postgres (notably `litellm_credentials` /
+  `litellm_config`, which hold upstream provider keys). Added to CISA's
+  Known Exploited Vulnerabilities catalog on 2026-05-08; exploited in
+  the wild within ~26 hours of advisory publication. Affected versions
+  >= 1.81.16, < 1.83.7 (GHSA-r75f-5x8p-qvmc). This rule matches SQLi
+  payload shapes (tautology auth bypass `' OR 1=1 --`, UNION-based
+  exfiltration, `pg_sleep()` blind, stacked DROP/TRUNCATE, metadata
+  recon) carried inside an `Authorization`/`Bearer` token, and provides
+  defence-in-depth post-patch by catching the payload shape regardless
+  of upstream patch state. CWE-89.
 author: "ATR Community"
 date: "2026/05/12"
 schema_version: "0.1"
@@ -85,7 +87,7 @@ compliance:
 
 tags:
   category: privilege-escalation
-  subcategory: admin-endpoint-sqli-cve-kev
+  subcategory: auth-header-sqli-cve-kev
   scan_target: both
   confidence: high
 
@@ -107,43 +109,38 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)/(?:team|key|user|spend|budget|customer|model|organization)/[^?\n]{0,80}[\x27"]\s*(?:or|and)\s+(?:1\s*=+\s*1|true\b|\d+\s*=+\s*\d+)\s*(?:--(?=\s|$|["\x27\)])|/\*)'
-      description: "LiteLLM admin endpoint path with classic tautology SQLi (1=1 / true / N=N) + SQL-comment terminator (-- at EOL or /*) — CISA KEV CVE-2026-42208 canonical exploit shape; excludes markdown `#` heading"
+      value: '(?i)\b(?:authorization:\s*)?bearer\s+[^\n"]{0,80}[\x27"]\s*(?:or|and)\s+(?:1\s*=+\s*1|true\b|\d+\s*=+\s*\d+)\s*(?:--(?=\s|$|["\x27\)])|/\*|#)'
+      description: "Authorization: Bearer token carrying classic tautology SQLi (1=1 / true / N=N) + SQL-comment terminator — CISA KEV CVE-2026-42208 canonical pre-auth exploit shape (injection is in the Bearer value, concatenated into the key-verification SELECT)"
 
     - field: content
       operator: regex
-      value: '(?i)/(?:team|key|user|spend|budget|customer|model|organization)/[^?\n]{0,80}[\x27"]?\s*;\s*(?:drop|truncate|delete)\s+(?:table|from)\s+\w'
-      description: "LiteLLM admin endpoint path with stacked destructive statement (DROP/TRUNCATE/DELETE TABLE)"
+      value: '(?i)\b(?:authorization:\s*)?bearer\s+[^\n"]{0,100}[\x27"]?\s*;\s*(?:drop|truncate|delete)\s+(?:table|from)\s+\w'
+      description: "Authorization: Bearer token with stacked destructive statement (DROP/TRUNCATE/DELETE TABLE) — CVE-2026-42208"
 
     - field: content
       operator: regex
-      value: '(?i)/(?:team|key|user|spend|budget|customer|model|organization)/[^?\n]{0,120}\bunion\s+(?:all\s+)?select\s+'
-      description: "LiteLLM admin endpoint with UNION SELECT exfiltration probe"
+      value: '(?i)\b(?:authorization:\s*)?bearer\s+[^\n"]{0,120}\bunion\s+(?:all\s+)?select\s+'
+      description: "Authorization: Bearer token with UNION SELECT exfiltration probe against the LiteLLM Postgres backend — CVE-2026-42208"
 
     - field: content
       operator: regex
-      value: '(?i)/(?:team|key|user|spend|budget|customer|model|organization)/[^?\n]{0,120}\bpg_sleep\s*\(\s*\d+\s*\)'
-      description: "LiteLLM admin endpoint with Postgres time-based blind primitive `pg_sleep(N)`"
+      value: '(?i)\b(?:authorization:\s*)?bearer\s+[^\n"]{0,120}\bpg_sleep\s*\(\s*\d+\s*\)'
+      description: "Authorization: Bearer token with Postgres time-based blind primitive `pg_sleep(N)` — CVE-2026-42208 blind SQLi"
 
     - field: content
       operator: regex
-      value: '(?i)\b(?:team_id|key_id|user_id|customer_id|model_id)\b["\x27]?\s*[:=]\s*["\x27]?[^"\x27\n]{0,40}[\x27"]\s*(?:or|and)\s+(?:1\s*=+\s*1|true\b|\d+\s*=+\s*\d+)\s*(?:--(?=\s|$|["\x27\)])|/\*)'
-      description: "LiteLLM admin endpoint parameter (team_id/key_id/user_id/customer_id/model_id) carrying a tautology + SQL-comment terminator (handles JSON key form team_id\":\")"
+      value: '(?i)\bbearer\s+[^\n"]{0,120}\b(?:litellm_verificationtoken|litellm_credentials|litellm_config)\b[^\n]{0,40}(?:\bunion\b|\bselect\b|[\x27"]\s*(?:or|and)\b|;)'
+      description: "Bearer token referencing a LiteLLM backend table (LiteLLM_VerificationToken / litellm_credentials / litellm_config) in an injection context — direct CVE-2026-42208 exfil target"
 
     - field: content
       operator: regex
-      value: '(?i)\b(?:team_id|key_id|user_id|customer_id|model_id)\b[^\n]{0,80}\bunion\s+(?:all\s+)?select\b'
-      description: "Admin-endpoint parameter carrying UNION SELECT — exfil chain (handles JSON key form)"
+      value: '(?i)\b(?:authorization:\s*)?bearer\s+[^\n"]{0,120}\b(?:information_schema\.tables|pg_catalog\.\w+|pg_user|pg_shadow)\b'
+      description: "Authorization: Bearer token probing Postgres metadata views (information_schema.tables, pg_user) — recon stage of CVE-2026-42208; requires concrete metadata identifiers"
 
     - field: content
       operator: regex
-      value: '(?i)(?:litellm|proxy)\b[^.\n]{0,80}/(?:team|key|user|spend|budget)/[^?\n]{0,120}\b(?:information_schema\.tables|pg_catalog\.\w+|pg_user|pg_shadow|version\s*\(\s*\))\b'
-      description: "LiteLLM proxy admin path probing Postgres metadata views (information_schema.tables, pg_user, version()) — recon stage of CVE-2026-42208 exploitation; requires concrete metadata identifiers, not bare `current_user`"
-
-    - field: content
-      operator: regex
-      value: '(?i)/(?:team|key|user|spend|budget|customer|model|organization)/[^?\n]{0,120}\b(?:extractvalue|updatexml|load_extension)\s*\('
-      description: "LiteLLM admin endpoint with error-based / out-of-band SQLi primitives (extractvalue, updatexml, load_extension)"
+      value: '(?i)\b(?:authorization:\s*)?bearer\s+[^\n"]{0,120}\b(?:extractvalue|updatexml|load_extension)\s*\('
+      description: "Authorization: Bearer token with error-based / out-of-band SQLi primitives (extractvalue, updatexml, load_extension) — CVE-2026-42208"
 
 response:
   actions:
@@ -155,59 +152,59 @@ response:
     - security_team
 
 remediation: >
-  Upgrade LiteLLM proxy to >= 1.48.3 immediately — CISA KEV listing
-  with federal remediation due 2026-05-11 means active exploitation
-  is occurring in the wild. Rotate every provider API key and user
-  credential that the proxy database has held since deployment.
-  Audit Postgres logs for queries against api_keys, users,
-  model_bindings, and budget tables originating from the proxy
-  service account. Replace string-concatenated SQL in admin handlers
-  with parameterised queries / a query builder. Restrict admin
-  endpoint exposure to a private network or VPN until upgrade is
-  verified.
+  Upgrade LiteLLM proxy to >= 1.83.7 immediately — CISA KEV listing
+  means active exploitation is occurring in the wild (first hit
+  observed ~26 hours after advisory publication). Rotate every
+  upstream provider API key and credential the proxy database has held
+  since deployment — the injection targets `litellm_credentials` /
+  `litellm_config`, so assume provider keys are compromised. Audit
+  Postgres logs for queries against `LiteLLM_VerificationToken`,
+  `litellm_credentials`, and `litellm_config` originating from the
+  proxy service account. The fix replaces string-concatenated SQL in
+  the API-key verification path with parameterised queries. If a patch
+  window is unavailable, place the proxy behind a reverse proxy that
+  rejects any `Authorization` header value containing a single quote,
+  parenthesis, or SQL keyword (UNION, SELECT, OR, --).
 
 test_cases:
   true_positives:
-    - input: "GET /team/1' OR 1=1 -- HTTP/1.1"
+    - input: "Authorization: Bearer sk-1234' OR 1=1 -- "
       expected: triggered
-      description: "Canonical tautology SQLi against /team admin endpoint — CISA KEV CVE-2026-42208 shape"
-    - input: 'GET /key/foo''; DROP TABLE api_keys -- '
+      description: "Canonical tautology SQLi in the Bearer token — CISA KEV CVE-2026-42208 pre-auth exploit shape"
+    - input: "authorization: bearer x'; DROP TABLE LiteLLM_VerificationToken -- "
       expected: triggered
-      description: "Stacked DROP TABLE against /key admin endpoint"
-    - input: "GET /user/1 UNION ALL SELECT api_key, user_id FROM api_keys --"
+      description: "Stacked DROP TABLE injected via the Bearer value"
+    - input: "Authorization: Bearer foo' UNION ALL SELECT credential_values FROM litellm_credentials -- "
       expected: triggered
-      description: "UNION-based exfil of api_keys via /user admin endpoint"
-    - input: "GET /spend/bob' AND pg_sleep(5)-- HTTP/1.1"
+      description: "UNION-based exfil of litellm_credentials via the Bearer header"
+    - input: "Authorization: Bearer x' AND pg_sleep(5)-- "
       expected: triggered
-      description: "Time-based blind SQLi via pg_sleep on /spend admin endpoint"
-    - input: '{"team_id":"abc'' or 1=1 --"}'
+      description: "Time-based blind SQLi via pg_sleep in the Bearer token"
+    - input: "Bearer sk-abc' UNION SELECT k FROM litellm_config --"
       expected: triggered
-      description: "team_id parameter carrying tautology + comment terminator"
-    - input: '{"key_id":"x'' UNION ALL SELECT api_key FROM api_keys --"}'
+      description: "Bearer value referencing a LiteLLM backend table in a UNION exfil"
+    - input: "Authorization: Bearer 1' AND (SELECT 1 FROM information_schema.tables)-- "
       expected: triggered
-      description: "key_id parameter with UNION exfil"
-    - input: "litellm proxy /budget/1 information_schema.tables current_user"
+      description: "Recon stage probing Postgres metadata via the Bearer header"
+    - input: "Authorization: Bearer a' AND extractvalue(1,concat(0x7e,(SELECT version())))-- "
       expected: triggered
-      description: "Recon stage probing Postgres metadata via /budget admin endpoint"
-    - input: "GET /team/1' AND extractvalue(1,concat(0x7e,(SELECT version())))-- HTTP/1.1"
-      expected: triggered
-      description: "Error-based SQLi using extractvalue against /team admin endpoint"
+      description: "Error-based SQLi using extractvalue in the Bearer token"
   true_negatives:
-    - input: "LiteLLM 1.48.3 release notes: parameterised query builder replaces concat in admin endpoints. Mitigates CVE-2026-42208 (CISA KEV)."
+    - input: "LiteLLM 1.83.7 release notes: parameterised query replaces concat in the API-key verification path. Mitigates CVE-2026-42208 (CISA KEV)."
       expected: not_triggered
       description: "Patch changelog mentioning the CVE should not trigger"
-    - input: "CISA added CVE-2026-42208 to the KEV catalog on 2026-05-08 with federal remediation due 2026-05-11."
+    - input: "CISA added CVE-2026-42208 to the KEV catalog on 2026-05-08; the injection is in the Authorization Bearer header."
       expected: not_triggered
-      description: "Defensive awareness post about the KEV listing"
-    - input: "GET /team/abc123 HTTP/1.1"
+      description: "Defensive awareness post describing the CVE should not trigger"
+    - input: "Authorization: Bearer sk-proj-abc123def456ghi789"
       expected: not_triggered
-      description: "Benign admin-endpoint GET without SQLi payload"
-    - input: 'curl -X POST /key -d ''{"alias":"prod","spend_limit":100}'''
+      description: "Benign Bearer token with no SQLi payload"
+    - input: 'curl -H "Authorization: Bearer $LITELLM_KEY" -X POST /chat/completions'
       expected: not_triggered
-      description: "Standard /key endpoint POST with normal payload"
-    - input: "The /spend endpoint returns aggregated cost per team for the last 30 days."
+      description: "Standard authenticated request with a normal Bearer token"
+    - input: "Use the Authorization header with a Bearer token to call any LiteLLM route."
       expected: not_triggered
-      description: "API documentation describing /spend behaviour"
-    - input: 'team_id = "team_abc123"'
+      description: "API documentation describing Bearer auth"
+    - input: 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'
       expected: not_triggered
-      description: "Realistic team_id value with no injection content"
+      description: "Realistic JWT-style Bearer token with no injection content"
