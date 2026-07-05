@@ -163,6 +163,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <span className="text-ink font-semibold">Working Draft</span>
               <span className="text-fog">·</span>
               <span>v{specVersion}</span>
+              {stats.lastRegenerated && (
+                <>
+                  <span className="text-fog">·</span>
+                  <span>{zh ? `最新發布 ${stats.lastRegenerated}` : `latest release ${stats.lastRegenerated}`}</span>
+                </>
+              )}
               <span className="text-fog">·</span>
               <span>{zh ? "正式網址" : "canonical"} <span className="text-ink group-hover:underline">/spec</span></span>
             </Link>

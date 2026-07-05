@@ -279,6 +279,55 @@ export function loadAdopters(): AdoptersData {
 }
 
 /**
+ * Verification stamp produced by scripts/verify-adopters.mjs (run weekly in
+ * CI and on every ADOPTERS.md change): every evidence link re-checked
+ * against GitHub — shipped must be MERGED, in-review must be OPEN. The
+ * website surfaces the date and the per-entry result so "adopter" is a
+ * checked claim, not a remembered one.
+ */
+export interface AdoptersVerification {
+  /** YYYY-MM-DD the evidence links were last re-verified. */
+  verifiedAt: string;
+  /** Entries checked / entries that matched their declared status. */
+  total: number;
+  ok: number;
+  /** Per-adopter result keyed by entry name; true = evidence matches claim. */
+  okByName: Record<string, boolean>;
+}
+
+/**
+ * Load data/adopters-verification.json. Returns null when the file is
+ * missing or unparsable — the page then simply omits the stamp rather
+ * than failing the build or (worse) showing a fabricated date.
+ */
+export function loadAdoptersVerification(): AdoptersVerification | null {
+  try {
+    const raw = JSON.parse(
+      readFileSync(
+        join(process.cwd(), "..", "data", "adopters-verification.json"),
+        "utf-8",
+      ),
+    ) as {
+      verified_at?: string;
+      total?: number;
+      ok?: number;
+      results?: Array<{ name: string; ok: boolean }>;
+    };
+    if (!raw.verified_at || !Array.isArray(raw.results)) return null;
+    const okByName: Record<string, boolean> = {};
+    for (const r of raw.results) okByName[r.name] = r.ok;
+    return {
+      verifiedAt: raw.verified_at,
+      total: raw.total ?? raw.results.length,
+      ok: raw.ok ?? raw.results.filter((r) => r.ok).length,
+      okByName,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Derive a display logo for an adopter from its evidence URL: the GitHub
  * organisation avatar of the repo the evidence lives in. Zero-maintenance
  * and honest — it is the org whose repository merged (or is reviewing) the
