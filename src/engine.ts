@@ -388,13 +388,23 @@ export class ATREngine {
       if (!isSkillContext && eventSourceType && rule.agent_source.type !== eventSourceType) {
         // Allow mcp_exchange rules to also match tool_call events
         const mcpOverTool = rule.agent_source.type === 'mcp_exchange' && eventSourceType === 'tool_call';
+        // Indirect prompt injection: llm_io (prompt-injection) rules must also
+        // run on tool_response events. A poisoned tool / MCP / RAG output is the
+        // primary indirect-injection channel — the payload never appears in a
+        // direct llm_input, it rides in on tool output the model then reads.
+        // tool_response maps to source type 'mcp_exchange', so without this the
+        // entire llm_io family was silently skipped on every tool response.
+        // (Field resolution routes event.content into user_input/agent_output
+        // for tool_response events — see getFieldValue.)
+        const llmIoOverToolResponse =
+          rule.agent_source.type === 'llm_io' && eventSourceType === 'mcp_exchange';
         // Trace-method rules declare agent_source.type: agent_trace, which maps
         // to no event source type and would always be filtered out. Evaluate
         // them whenever the event actually carries a trace payload; evaluateRule
         // still returns null if the trace primitives don't fire, and ordinary
         // (non-trace) events are unaffected because event.trace is undefined.
         const traceWithPayload = rule.detection?.method === 'trace' && event.trace !== undefined;
-        if (!mcpOverTool && !traceWithPayload) {
+        if (!mcpOverTool && !llmIoOverToolResponse && !traceWithPayload) {
           continue;
         }
       }
@@ -525,9 +535,14 @@ export class ATREngine {
 
       if (!isSkillContext && eventSourceType && rule.agent_source.type !== eventSourceType) {
         const mcpOverTool = rule.agent_source.type === 'mcp_exchange' && eventSourceType === 'tool_call';
+        // Indirect prompt injection: llm_io rules also run on tool_response
+        // (source type mcp_exchange) — poisoned tool/MCP/RAG output. See the
+        // matching note in evaluateRaw().
+        const llmIoOverToolResponse =
+          rule.agent_source.type === 'llm_io' && eventSourceType === 'mcp_exchange';
         // Trace-method rules are source-agnostic — evaluate when a trace is present.
         const traceWithPayload = rule.detection?.method === 'trace' && event.trace !== undefined;
-        if (!mcpOverTool && !traceWithPayload) {
+        if (!mcpOverTool && !llmIoOverToolResponse && !traceWithPayload) {
           continue;
         }
       }
@@ -863,20 +878,16 @@ export class ATREngine {
           }
           return false;
         }
-        // Fallback: compile on the fly
-        try {
-          const normalized = normalizeRegex(value);
-          const rFlags = normalized.includes('\\u{') || normalized.includes('\\p{') ? 'iu' : 'i';
-          const regex = new RegExp(normalized, rFlags);
-          if (safeRegexTest(regex, fieldValue) || safeRegexTest(regex, rawFieldValue)) {
-            if (suppressInCodeBlocks && codeRanges.length > 0 && isInsideCodeBlock(fieldValue, regex, codeRanges)) {
-              return false;
-            }
-            matchedPatterns.push(value);
-            return true;
+        // Fallback: compile on the fly (ReDoS-gated — see safeCompile)
+        const normalized = normalizeRegex(value);
+        const rFlags = normalized.includes('\\u{') || normalized.includes('\\p{') ? 'iu' : 'i';
+        const regex = safeCompile(normalized, rFlags);
+        if (regex && (safeRegexTest(regex, fieldValue) || safeRegexTest(regex, rawFieldValue))) {
+          if (suppressInCodeBlocks && codeRanges.length > 0 && isInsideCodeBlock(fieldValue, regex, codeRanges)) {
+            return false;
           }
-        } catch {
-          // Invalid regex
+          matchedPatterns.push(value);
+          return true;
         }
         return false;
       }
@@ -1061,15 +1072,11 @@ export class ATREngine {
           break;
         case 'regex':
         default: {
-          try {
-            const flags = cond.case_sensitive ? '' : 'i';
-            const regex = new RegExp(pattern, flags);
-            if (safeRegexTest(regex, fieldValue)) {
-              matchedPatterns.push(pattern);
-              return true;
-            }
-          } catch {
-            // Invalid regex, skip
+          const flags = cond.case_sensitive ? '' : 'i';
+          const regex = safeCompile(pattern, flags);
+          if (regex && safeRegexTest(regex, fieldValue)) {
+            matchedPatterns.push(pattern);
+            return true;
           }
           break;
         }
@@ -1351,10 +1358,21 @@ export class ATREngine {
 
     // Common field aliases
     switch (fieldName) {
+      // On a tool_response event the tool/MCP/RAG output IS the text the model
+      // ingests, so llm_io (prompt-injection) rules that target user_input /
+      // agent_output must resolve to event.content here — otherwise an
+      // un-filtered llm_io rule would look in an empty field and silently miss
+      // an indirect-injection payload riding in on tool output.
       case 'user_input':
-        return event.type === 'llm_input' ? event.content : event.fields?.['user_input'];
+        return event.type === 'llm_input'
+          ? event.content
+          : (event.fields?.['user_input'] ??
+              (event.type === 'tool_response' ? event.content : undefined));
       case 'agent_output':
-        return event.type === 'llm_output' ? event.content : event.fields?.['agent_output'];
+        return event.type === 'llm_output'
+          ? event.content
+          : (event.fields?.['agent_output'] ??
+              (event.type === 'tool_response' ? event.content : undefined));
       case 'tool_response':
         return event.type === 'tool_response' ? event.content : event.fields?.['tool_response'];
       case 'tool_name':
@@ -1459,13 +1477,10 @@ export class ATREngine {
       for (let i = 0; i < conditions.length; i++) {
         const cond = conditions[i] as unknown as Record<string, unknown>;
         if (cond['operator'] === 'regex' && typeof cond['value'] === 'string') {
-          try {
-            const pattern = normalizeRegex(cond['value'] as string);
-            const flags = pattern.includes('\\u{') || pattern.includes('\\p{') ? 'iu' : 'i';
-            ruleMap.set(String(i), [new RegExp(pattern, flags)]);
-          } catch {
-            // Invalid regex, skip
-          }
+          const pattern = normalizeRegex(cond['value'] as string);
+          const flags = pattern.includes('\\u{') || pattern.includes('\\p{') ? 'iu' : 'i';
+          const compiledRe = safeCompile(pattern, flags, rule.id);
+          if (compiledRe) ruleMap.set(String(i), [compiledRe]);
         }
       }
     } else {
@@ -1479,19 +1494,14 @@ export class ATREngine {
 
           const compiled: RegExp[] = [];
           for (const pattern of cond['patterns'] as string[]) {
-            try {
-              if (matchType === 'regex') {
-                compiled.push(new RegExp(normalizeRegex(pattern), flags));
-              } else if (matchType === 'contains') {
-                compiled.push(new RegExp(escapeRegex(pattern), flags));
-              } else if (matchType === 'exact') {
-                compiled.push(new RegExp(`^${escapeRegex(pattern)}$`, flags));
-              } else if (matchType === 'starts_with') {
-                compiled.push(new RegExp(`^${escapeRegex(pattern)}`, flags));
-              }
-            } catch {
-              // Invalid regex pattern, skip
-            }
+            let source: string | null = null;
+            if (matchType === 'regex') source = normalizeRegex(pattern);
+            else if (matchType === 'contains') source = escapeRegex(pattern);
+            else if (matchType === 'exact') source = `^${escapeRegex(pattern)}$`;
+            else if (matchType === 'starts_with') source = `^${escapeRegex(pattern)}`;
+            if (source === null) continue;
+            const re = safeCompile(source, flags, rule.id);
+            if (re) compiled.push(re);
           }
 
           ruleMap.set(condName, compiled);
@@ -2009,6 +2019,72 @@ const MAX_EVAL_LENGTH = 100_000;
 function safeRegexTest(regex: RegExp, input: string): boolean {
   if (input.length > MAX_EVAL_LENGTH) return false;
   return regex.test(input);
+}
+
+/**
+ * Heuristic catastrophic-backtracking (ReDoS) detector for rule-derived
+ * patterns.
+ *
+ * Why compile-time rejection is the ONLY real defense: a synchronous RegExp
+ * cannot be interrupted once it starts. Node runs it to completion on the
+ * single event-loop thread, so the hook-handler's withTimeout() (a setTimeout
+ * race) can never fire while a pathological match is spinning — the timer
+ * callback is queued behind the very work it is meant to abort. The length cap
+ * in safeRegexTest bounds one axis; this bounds the other by refusing to
+ * compile a pattern whose STRUCTURE permits exponential backtracking, before
+ * any attacker-controlled input can reach it.
+ *
+ * Mirrors scan-core's isSafeRegex, which has run against the full bundled rule
+ * corpus without dropping a single legitimate rule.
+ */
+export function isReDoSSafe(source: string): boolean {
+  // Classic exponential form: an UNBOUNDED inner quantifier (+ or *) immediately
+  // inside a group, followed by an UNBOUNDED outer quantifier (+ or *):
+  // (a+)+, (a*)*, ([a-z]+)*. This is the shape that blows up exponentially.
+  //
+  // Deliberately NOT flagged (would be false positives that silently drop real
+  // detection rules):
+  //   - Bounded outer repetition — (…+){0,3}, (…+){2,5}. A finite upper bound
+  //     caps backtracking to polynomial degree, not exponential.
+  //   - Unbounded outer over a DISJOINT inner — (\w+\s+){40,}. \w and \s cannot
+  //     overlap, so each iteration has a single parse: linear, not catastrophic.
+  // A purely structural check cannot see inner-class overlap, so we scope the
+  // gate to the unambiguous exponential form and rely on the corpus fuzz
+  // (tests/redos-safety.test.ts) + the MAX_EVAL_LENGTH cap for the rest.
+  //
+  // SINGLE-ATOM nested quantifier only: a group whose interior is exactly one
+  // quantified atom — (\w+)+, (.*)*, ([a-z]+)*, (a+)+ — then an unbounded outer
+  // + or *. This is the true exponential shape. A MULTI-atom group such as
+  // (\S+\s+)* or (-\S+\s+)* cannot re-partition its input (the atoms are
+  // consumed in a fixed order), so it stays linear and must NOT be flagged —
+  // those are real shell-injection / exfil detection patterns in the corpus.
+  if (/\((?:\?:)?(?:\\[dDwWsS]|\[[^\]]*\]|\.|[A-Za-z0-9])[*+]\)[*+]/.test(source)) return false;
+  // Overlapping alternation under a quantifier: (a|a)+
+  if (/\(([^|)]+)\|\1\)[+*]/.test(source)) return false;
+  // 3+ consecutive greedy wildcards: .*.*.*
+  if (/(\.\*){3,}/.test(source)) return false;
+  return true;
+}
+
+/**
+ * Compile a rule-derived pattern with a ReDoS safety gate. Returns null (caller
+ * skips the pattern) when the source is syntactically invalid OR exhibits
+ * catastrophic-backtracking structure. A dropped rule in a security engine must
+ * be LOUD, not silent, so a rejected ReDoS pattern warns to stderr (never
+ * stdout — that carries the hook protocol) with the offending source.
+ */
+function safeCompile(source: string, flags: string, ruleId?: string): RegExp | null {
+  if (!isReDoSSafe(source)) {
+    console.warn(
+      `[atr-engine] rejected ReDoS-unsafe pattern${ruleId ? ` in rule ${ruleId}` : ''}: ${source.slice(0, 120)}`
+    );
+    return null;
+  }
+  try {
+    return new RegExp(source, flags);
+  } catch {
+    return null;
+  }
 }
 
 /**
