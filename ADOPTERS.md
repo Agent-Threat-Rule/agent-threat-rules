@@ -128,6 +128,14 @@ deployment publicly (merged PR, public docs, conference talk, etc.).
 Open-source developer tools, frameworks, and SDKs that have integrated ATR.
 Listed when the integration code has been merged or released.
 
+### AG2 (AutoGen)
+- **Org**: AG2 (ag2ai)
+- **Type**: adapter
+- **Integration**: `ATRGuardrail` contrib capability that scans tool output and LLM input against the ATR ruleset via the `pyatr` engine; merged into the ag2-classic framework and since maintained by an AG2 maintainer
+- **Evidence**: <https://github.com/ag2ai/ag2classic/blob/main/autogen/agentchat/contrib/capabilities/atr_guardrail.py>
+- **Since**: 2026-06-28
+- **Status**: shipped
+
 ### BerriAI LiteLLM
 - **Org**: BerriAI
 - **Type**: sidecar-proxy
