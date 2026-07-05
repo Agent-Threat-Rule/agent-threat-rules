@@ -146,12 +146,17 @@ function parseEntry(block: string, tier: AdopterTier): Adopter | null {
   }
 
   // Evidence values may be wrapped in angle brackets `<url>`, the markdown
-  // autolink form, or a `[label](url)` pair. Normalise to the URL.
+  // autolink form, a `[label](url)` pair, or carry trailing prose ("<url>
+  // (and predecessor PoC #79)") or multiple autolinks ("<url> and <url>").
+  // Normalise to the FIRST canonical URL so links and derived logos never
+  // receive a malformed value.
   let evidenceUrl = evidence;
-  const angleMatch = evidence.match(/^<(.+)>$/);
-  if (angleMatch) evidenceUrl = angleMatch[1];
+  const angleMatch = evidence.match(/<(https?:\/\/[^>\s]+)>/);
   const linkMatch = evidence.match(/^\[.*?\]\((.+?)\)/);
-  if (linkMatch) evidenceUrl = linkMatch[1];
+  const bareMatch = evidence.match(/https?:\/\/[^\s>)]+/);
+  if (angleMatch) evidenceUrl = angleMatch[1];
+  else if (linkMatch) evidenceUrl = linkMatch[1];
+  else if (bareMatch) evidenceUrl = bareMatch[0];
 
   const categories = categoriesRaw
     ? categoriesRaw
@@ -271,6 +276,71 @@ export function loadAdopters(): AdoptersData {
     tier4: byTier["4"],
     count,
   };
+}
+
+/**
+ * Verification stamp produced by scripts/verify-adopters.mjs (run weekly in
+ * CI and on every ADOPTERS.md change): every evidence link re-checked
+ * against GitHub — shipped must be MERGED, in-review must be OPEN. The
+ * website surfaces the date and the per-entry result so "adopter" is a
+ * checked claim, not a remembered one.
+ */
+export interface AdoptersVerification {
+  /** YYYY-MM-DD the evidence links were last re-verified. */
+  verifiedAt: string;
+  /** Entries checked / entries that matched their declared status. */
+  total: number;
+  ok: number;
+  /** Per-adopter result keyed by entry name; true = evidence matches claim. */
+  okByName: Record<string, boolean>;
+}
+
+/**
+ * Load data/adopters-verification.json. Returns null when the file is
+ * missing or unparsable — the page then simply omits the stamp rather
+ * than failing the build or (worse) showing a fabricated date.
+ */
+export function loadAdoptersVerification(): AdoptersVerification | null {
+  try {
+    const raw = JSON.parse(
+      readFileSync(
+        join(process.cwd(), "..", "data", "adopters-verification.json"),
+        "utf-8",
+      ),
+    ) as {
+      verified_at?: string;
+      total?: number;
+      ok?: number;
+      results?: Array<{ name: string; ok: boolean }>;
+    };
+    if (!raw.verified_at || !Array.isArray(raw.results)) return null;
+    const okByName: Record<string, boolean> = {};
+    for (const r of raw.results) okByName[r.name] = r.ok;
+    return {
+      verifiedAt: raw.verified_at,
+      total: raw.total ?? raw.results.length,
+      ok: raw.ok ?? raw.results.filter((r) => r.ok).length,
+      okByName,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Derive a display logo for an adopter from its evidence URL: the GitHub
+ * organisation avatar of the repo the evidence lives in. Zero-maintenance
+ * and honest — it is the org whose repository merged (or is reviewing) the
+ * integration. Returns undefined for non-GitHub evidence so callers can
+ * render a text-only fallback.
+ */
+export function adopterLogoUrl(
+  adopter: Adopter,
+  size = 128,
+): string | undefined {
+  const match = adopter.evidence.match(/^https:\/\/github\.com\/([^/]+)\//);
+  if (!match) return undefined;
+  return `https://github.com/${match[1]}.png?size=${size}`;
 }
 
 /**

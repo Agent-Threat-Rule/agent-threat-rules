@@ -2,6 +2,7 @@ import { Reveal } from "@/components/Reveal";
 import { loadSiteStats } from "@/lib/stats";
 import { locales, t, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -557,6 +558,73 @@ jobs:
               </a>
             </div>
           </div>
+        </div>
+      </Reveal>
+
+      {/* Self-serve close: what to do after you ship. No sales step anywhere
+          in the loop — integrate, ask if stuck, then list yourself. */}
+      <Reveal>
+        <div className="mt-12 border border-fog px-6 py-6">
+          <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-4">
+            {locale === "zh" ? "出貨之後" : "After you ship"}
+          </div>
+          <ol className="grid grid-cols-1 md:grid-cols-3 gap-6 list-none">
+            <li>
+              <div className="font-data text-xs text-stone mb-1">1</div>
+              <h3 className="font-display text-sm font-semibold text-ink mb-1">
+                {locale === "zh" ? "卡住了?開 Integration Request" : "Stuck? Open an Integration Request"}
+              </h3>
+              <p className="text-sm text-stone leading-relaxed mb-2">
+                {locale === "zh"
+                  ? "spec walkthrough、design review、你的語言的 sample code。維護者七天內回覆。"
+                  : "Spec walkthrough, design review, sample code for your language. Maintainers respond within seven days."}
+              </p>
+              <a
+                href="https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=integration-request.yml"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-data text-xs text-blue hover:underline"
+              >
+                {locale === "zh" ? "開 issue →" : "Open issue →"}
+              </a>
+            </li>
+            <li>
+              <div className="font-data text-xs text-stone mb-1">2</div>
+              <h3 className="font-display text-sm font-semibold text-ink mb-1">
+                {locale === "zh" ? "上線了?自己列進 ADOPTERS.md" : "Shipped? List yourself in ADOPTERS.md"}
+              </h3>
+              <p className="text-sm text-stone leading-relaxed mb-2">
+                {locale === "zh"
+                  ? "採用者自行提 PR,維護者不預先審核——schema 對、附公開可驗證的證據連結就 merge。你的 PR 本身就是紀錄。"
+                  : "Adopters self-declare via PR — no pre-approval. A schema-conforming entry with a verifiable evidence link gets merged. Your PR is the record."}
+              </p>
+              <a
+                href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/.github/PULL_REQUEST_TEMPLATE/adopter.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-data text-xs text-blue hover:underline"
+              >
+                {locale === "zh" ? "adopter PR 模板 →" : "Adopter PR template →"}
+              </a>
+            </li>
+            <li>
+              <div className="font-data text-xs text-stone mb-1">3</div>
+              <h3 className="font-display text-sm font-semibold text-ink mb-1">
+                {locale === "zh" ? "進採用者牆,證據週週重驗" : "You join the wall — evidence re-verified weekly"}
+              </h3>
+              <p className="text-sm text-stone leading-relaxed mb-2">
+                {locale === "zh"
+                  ? "生態頁直接讀 ADOPTERS.md 渲染,CI 每週對 GitHub 重驗每個證據連結並蓋上日期。"
+                  : "The ecosystem page renders straight from ADOPTERS.md, and CI re-verifies every evidence link against GitHub weekly, stamping the date."}
+              </p>
+              <Link
+                href={`/${locale}/ecosystem`}
+                className="font-data text-xs text-blue hover:underline"
+              >
+                {locale === "zh" ? "看採用者牆 →" : "See the wall →"}
+              </Link>
+            </li>
+          </ol>
         </div>
       </Reveal>
     </div>

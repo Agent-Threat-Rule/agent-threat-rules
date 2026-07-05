@@ -1,5 +1,6 @@
 import { Reveal } from "@/components/Reveal";
 import { DocumentStatus } from "@/components/spec/DocumentStatus";
+import { getSpecMeta } from "@/lib/spec-meta";
 import { locales, t, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 
@@ -272,7 +273,7 @@ export default async function QualityStandardPage({
             rel="noopener noreferrer"
             className="font-data text-xs text-stone hover:text-ink transition-colors border border-fog px-4 py-2.5 rounded-sm"
           >
-            npm install agent-threat-rules@3.5.0
+            {`npm install agent-threat-rules@${getSpecMeta().version}`}
           </a>
         </div>
       </Reveal>
@@ -877,7 +878,7 @@ export default async function QualityStandardPage({
             </span>
           </div>
           <pre className="font-data text-xs md:text-sm text-ink p-5 overflow-x-auto">
-            npm install agent-threat-rules@3.5.0
+            {`npm install agent-threat-rules@${getSpecMeta().version}`}
           </pre>
         </div>
       </Reveal>

@@ -1,0 +1,77 @@
+title: Cross-Agent Attack Detection
+id: cbfb4b86-e2e4-508a-a146-90aefb22dbed
+status: stable
+description: 'Consolidated detection for cross-agent attacks in multi-agent systems,
+
+  covering both impersonation and prompt injection vectors. Detects when
+
+  one agent spoofs another agent''s identity, injects manipulative
+
+  instructions into inter-agent messages, forges system-level message tags,
+
+  attempts orchestrator bypass, injects fake status or error messages,
+
+  or manipulates message format conventions to deceive target agents.
+
+  These attacks exploit trust relationships between agents to achieve
+
+  unauthorized actions, data exfiltration, or safety bypass.
+
+
+  Converted from Agent Threat Rules ATR-2026-00030 (ATR-2026-00030-cross-agent-attack.yaml) by scripts/generate-sigma.py. ATR is MIT-licensed. logsource.product=ai_agent is a custom (non-standard) taxonomy for agent runtime telemetry.'
+references:
+- https://github.com/Agent-Threat-Rule/agent-threat-rules
+author: ATR Community
+date: '2026-03-08'
+tags:
+- atlas.aml-t0051
+- atlas.aml-t0043
+- atlas.aml-t0052-000
+- owasp-agentic.asi01
+- owasp-agentic.asi07
+- owasp-agentic.asi10
+- owasp-llm.llm01
+- owasp-llm.llm06
+- owasp-llm.llm05
+- atr.category.agent-manipulation
+- atr.rule.atr-2026-00030
+logsource:
+  product: ai_agent
+  category: ai_agent_content
+  definition: Custom ATR taxonomy for AI agent runtime telemetry. Detection field names (content, user_input, tool_response, tool_args, tool_name, tool_description, agent_output, ...) are ATR surfaces, not standard Sigma fields; map them to your agent-telemetry pipeline.
+detection:
+  sel_1:
+    content|re|i: (?:i\s+am|this\s+is|speaking\s+as|responding\s+as|acting\s+as)\s+(?:the\s+)?(?:admin|supervisor|orchestrator|manager|controller|system|root)\s+agent
+  sel_2:
+    content|re|i: (?:ignore|disregard|forget|override|overwrite)\s+(?:all\s+)?(?:your\s+)?(?:previous|prior|above|earlier|existing)\s+(?:instructions?|rules?|constraints?|guidelines?|prompt|directives?)
+  sel_3:
+    content|re|i: \[\s*(?:SYSTEM|ADMIN|OVERRIDE|ROOT|SUDO|PRIORITY|URGENT)\s*\]|<<\s*SYS\s*>>|<\|im_start\|>system
+  sel_4:
+    content|re|i: (?:new\s+instructions?|updated\s+(?:prompt|directive)|revised\s+(?:rules?|orders?)|emergency\s+(?:override|protocol))\s*[:=]
+  sel_5:
+    content|re|i: (?:you\s+are\s+now|from\s+now\s+on|henceforth|going\s+forward|effective\s+immediately)\s+(?:a|an|the)?\s*(?:unrestricted|unfiltered|jailbroken)?\s*[a-zA-Z]+\s+(?:agent|assistant|bot)
+  sel_6:
+    content|re|i: (?:do\s+not|don'?t|never)\s+(?:tell|inform|alert|notify|report|mention|log|record)\s+(?:the\s+)?(?:user|admin|orchestrator|supervisor|human|monitor)
+  sel_7:
+    content|re|i: (?:acting|speaking|operating)\s+(?:on\s+behalf\s+of|as\s+a?\s*proxy\s+for|in\s+place\s+of)\s+[a-zA-Z0-9_-]+\s*(?:agent)?
+  sel_8:
+    content|re|i: (?:override|bypass|elevate|escalate)\s+(?:my|this|your|the)\s+(?:identity|role|permissions?|access|privileges?)\s+(?:to|as|with)
+  sel_9:
+    content|re|i: (?:execute|run|eval)\s*\(.*\)|__import__|subprocess\.|os\.(?:system|popen|exec)|exec\s*\(
+  sel_10:
+    content|re|i: (?:status|error|result)\s*[:=]\s*(?:failed|error|timeout|unauthorized).*(?:retry|fallback|use\s+alternative|switch\s+to)
+  sel_11:
+    content|re|i: (?:message_type|msg_type|role)\s*[:=]\s*["']?(?:system|admin|orchestrator|supervisor)["']?
+  sel_12:
+    content|re|i: agent[_-]?id\s*[:=]\s*["']?(?:admin|system|orchestrator|supervisor|root)["']?
+  sel_13:
+    content|re|i: (?:priority\s*[:=]\s*(?:critical|emergency|urgent|override)|\[PRIORITY:\s*OVERRIDE\])
+  sel_14:
+    content|re|i: (?:transfer|forward|route|redirect)\s+(?:all|any|this)\s+(?:data|output|results?|responses?)\s+to\s+(?:https?://|ftp://|\d{1,3}\.\d{1,3})
+  condition: 1 of sel_*
+falsepositives:
+- Legitimate agent delegation where one agent is authorized to act on behalf of another
+- Orchestrator agent routing messages with original sender metadata
+- Agent discussing prompt injection as a topic in security-related tasks
+- Authorized system reconfiguration commands through proper admin channels
+level: critical

@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { loadAllRules } from "./rules";
+import { loadAdopters, adopterLogoUrl, type Adopter, type AdopterTier } from "./adopters";
 
 const DATA_DIR = join(process.cwd(), "..", "data");
 const MEASUREMENTS_DIR = join(DATA_DIR, "measurements");
@@ -165,6 +166,8 @@ export interface EcosystemIntegration {
   detail: string;
   url?: string;
   logo?: string; // path to logo in public/ecosystem/ or external URL
+  /** ADOPTERS.md tier the entry came from (S/1/2/3/4). */
+  tier: AdopterTier;
 }
 
 /**
@@ -250,6 +253,34 @@ function isSafeUrl(url: string | undefined): boolean {
   }
 }
 
+/**
+ * Ecosystem integrations derived from ADOPTERS.md — the single source of
+ * truth for adoption (see lib/adopters.ts header). Tier order preserved
+ * (S -> 1 -> 2 -> 3 -> 4); "planning" entries are excluded because they
+ * carry no verifiable evidence yet. Status maps shipped -> "merged",
+ * in-review -> "open", matching the display vocabulary the pages use.
+ */
+function ecosystemFromAdopters(): EcosystemIntegration[] {
+  const adopters = loadAdopters();
+  const ordered: Adopter[] = [
+    ...adopters.tierS,
+    ...adopters.tier1,
+    ...adopters.tier2,
+    ...adopters.tier3,
+    ...adopters.tier4,
+  ];
+  return ordered
+    .filter((a) => a.status === "shipped" || a.status === "in-review")
+    .map((a) => ({
+      name: a.name,
+      type: a.status === "shipped" ? ("merged" as const) : ("open" as const),
+      detail: a.org,
+      url: isSafeUrl(a.evidence) ? a.evidence : undefined,
+      logo: adopterLogoUrl(a),
+      tier: a.tier,
+    }));
+}
+
 export function loadSiteStats(): SiteStats {
   const clawhub = readJson<ClawHubStats>(
     join(DATA_DIR, "clawhub-scan", "ecosystem-stats.json"),
@@ -270,6 +301,13 @@ export function loadSiteStats(): SiteStats {
   const statsJson = readJson<{ generatedAt?: string }>(
     join(DATA_DIR, "stats.json"),
   );
+  // Root stats.json is rewritten by CI on every rules-merge release, so its
+  // lastUpdated is the freshest honest "standard heartbeat". data/stats.json
+  // generatedAt only moves when the measurement pipeline reruns — keep it as
+  // the fallback.
+  const rootStatsJson = readJson<{ lastUpdated?: string }>(
+    join(process.cwd(), "..", "stats.json"),
+  );
 
   const rules = loadAllRules();
 
@@ -289,7 +327,8 @@ export function loadSiteStats(): SiteStats {
   return {
     ruleCount: rules.length,
     categoryCount: categories.size,
-    lastRegenerated: statsJson?.generatedAt?.slice(0, 10) ?? "",
+    lastRegenerated:
+      rootStatsJson?.lastUpdated ?? statsJson?.generatedAt?.slice(0, 10) ?? "",
 
     clawHubCrawled: clawhub?.totalCrawled ?? 36394,
     clawHubScanned: clawhub?.totalScanned ?? 9676,
@@ -337,201 +376,7 @@ export function loadSiteStats(): SiteStats {
 
     cveCount: cves.size || 16,
 
-    ecosystemIntegrations: [
-      // === Tier-1 standards bodies (merged by external maintainer) ===
-      {
-        name: "MISP Taxonomies",
-        type: "merged",
-        detail:
-          "PR #323 merged 2026-05-10 by adulau (MISP project lead). 10 ATR predicates + 330 rule IDs as MISP machine tags. CIRCL adoption.",
-        url: "https://github.com/MISP/misp-taxonomies/pull/323",
-        logo: "https://github.com/MISP.png?size=128",
-      },
-      {
-        name: "MISP Galaxy",
-        type: "merged",
-        detail:
-          "PR #1207 merged 2026-05-10 by adulau. 336 cluster values with kill-chain, severity, CVE / OWASP LLM / MITRE ATLAS cross-refs. 10,408 lines.",
-        url: "https://github.com/MISP/misp-galaxy/pull/1207",
-        logo: "https://github.com/MISP.png?size=128",
-      },
-      {
-        name: "Gen Digital Sage",
-        type: "merged",
-        detail:
-          "PR #33 merged 2026-05-11 by vaclavbelak (Norton / Avast / AVG parent security team). 7 privilege-escalation rules + ATR upstream bridge.",
-        url: "https://github.com/gendigitalinc/sage/pull/33",
-        logo: "https://github.com/gendigitalinc.png?size=128",
-      },
-      {
-        name: "Microsoft Agent Governance Toolkit",
-        type: "merged",
-        detail:
-          "PR #908 + #1277 merged. Weekly auto-sync workflow runs against ATR main. AGT #1981 (Copilot SWE Agent) generated regression fixtures presuming ATR coverage — closed loop 2026-05-11 in 2h 16m.",
-        url: "https://github.com/microsoft/agent-governance-toolkit/pull/1277",
-        logo: "https://github.com/microsoft.png?size=128",
-      },
-      {
-        name: "Cisco AI Defense",
-        type: "merged",
-        detail:
-          "PR #79 (34-rule PoC) + #99 merged. Full ATR rule pack (at time of PR #99) in skill-scanner production. Upstream maintained.",
-        url: "https://github.com/cisco-ai-defense/skill-scanner/pull/99",
-        logo: "https://github.com/cisco-ai-defense.png?size=128",
-      },
-      // === Curated awesome-list merges ===
-      {
-        name: "Awesome LM-SSP",
-        type: "merged",
-        detail: "PR #108 merged into LLM safety/security list.",
-        url: "https://github.com/ThuCCSLab/Awesome-LM-SSP/pull/108",
-        logo: "https://github.com/CryptoAILab.png?size=128",
-      },
-      {
-        name: "Agentic AI Top 10 Vulnerability",
-        type: "merged",
-        detail:
-          "PR #14 merged. ATR detection mapping for 12 vulnerability categories.",
-        url: "https://github.com/precize/Agentic-AI-Top10-Vulnerability/pull/14",
-        logo: "https://github.com/precize.png?size=128",
-      },
-      {
-        name: "Awesome LLM agent Security",
-        type: "merged",
-        detail: "PR #6 merged into LLM agent security tools list.",
-        url: "https://github.com/wearetyomsmnv/Awesome-LLM-agent-Security/pull/6",
-      },
-      {
-        name: "Awesome Agentic Patterns",
-        type: "merged",
-        detail:
-          "PR #58 merged. Deterministic Threat Rule Scanning pattern accepted.",
-        url: "https://github.com/nibzard/awesome-agentic-patterns/pull/58",
-      },
-      {
-        name: "Awesome AI Security",
-        type: "merged",
-        detail: "Merged into Agentic Systems section.",
-        url: "https://github.com/TalEliyahu/Awesome-AI-Security/pull/53",
-      },
-      // === Open PRs / draft conversations (standards + frameworks) ===
-      {
-        name: "FINOS Common Cloud Controls",
-        type: "open",
-        detail:
-          "PR #986 draft open. ATR guideline-mappings for CN01/CN02/CN04/CN06 + Gemara MappingReference. CI green, CLA signed. Linux Foundation project.",
-        url: "https://github.com/finos/common-cloud-controls/pull/986",
-        logo: "https://github.com/finos.png?size=128",
-      },
-      {
-        name: "NIST OSCAL",
-        type: "open",
-        detail:
-          "Submission in review; the OSCAL lead opened collaboration branch oscal-content#338 (rework of #333) and invited a community contribution. Not a NIST endorsement or adoption.",
-        url: "https://github.com/usnistgov/oscal-content/pull/338",
-        logo: "https://github.com/usnistgov.png?size=128",
-      },
-      {
-        name: "rulezet (CIRCL)",
-        type: "open",
-        detail:
-          "Issue #49 + PR #50 draft. atr_format.py converter mirroring sigma_format with 24 unit tests. CIRCL maintainer Théo GEFFE.",
-        url: "https://github.com/rulezet/rulezet-core/pull/50",
-      },
-      {
-        name: "OWASP LLM Top 10",
-        type: "open",
-        detail:
-          "PR #814 open. Detection mapping for ASI01-ASI10; engaged by reviewer desiorac with substantive feedback rounds.",
-        url: "https://github.com/OWASP/www-project-top-10-for-large-language-model-applications/pull/814",
-        logo: "https://github.com/OWASP.png?size=128",
-      },
-      {
-        name: "SAFE-MCP",
-        type: "open",
-        detail:
-          "Issue #207 open at safe-agentic-framework/safe-mcp. Structured proposal for a detections/ registry to support cross-project rule-ID linkage.",
-        url: "https://github.com/safe-agentic-framework/safe-mcp/issues/207",
-      },
-      // === Red team tooling (open) ===
-      {
-        name: "NVIDIA Garak",
-        type: "open",
-        detail:
-          "Integration PR #1676 open (not merged). ATR rules wrapped as garak detectors; under maintainer review.",
-        url: "https://github.com/NVIDIA/garak/pull/1676",
-        logo: "https://github.com/NVIDIA.png?size=128",
-      },
-      {
-        name: "Microsoft PyRIT",
-        type: "merged",
-        detail:
-          "PR #1715 merged. ATR adversarial-payload dataset loader for Microsoft's PyRIT red-team orchestration framework.",
-        url: "https://github.com/microsoft/PyRIT/pull/1715",
-        logo: "https://github.com/microsoft.png?size=128",
-      },
-      {
-        name: "NVIDIA NeMo Guardrails",
-        type: "open",
-        detail:
-          "PR #1869 open. ATR-inspired threat detection example library config; coderabbitai automated review clean.",
-        url: "https://github.com/NVIDIA-NeMo/Guardrails/pull/1869",
-        logo: "https://github.com/NVIDIA.png?size=128",
-      },
-      {
-        name: "Protect AI llm-guard",
-        type: "open",
-        detail:
-          "Issue #340. ATRScanner input/output scanner proposal following existing scanner pattern.",
-        url: "https://github.com/protectai/llm-guard/issues/340",
-      },
-      {
-        name: "PromptInject (NeurIPS 2022)",
-        type: "open",
-        detail:
-          "Issue #9. Attack-source integration — turn PromptInject's adversarial corpus into ATR detection coverage.",
-        url: "https://github.com/agencyenterprise/PromptInject/issues/9",
-      },
-      {
-        name: "Promptfoo",
-        type: "open",
-        detail:
-          "PR #8529 submitted. MCP red team example with ATR deterministic defense.",
-        url: "https://github.com/promptfoo/promptfoo/pull/8529",
-      },
-      {
-        name: "Damn Vulnerable MCP Server",
-        type: "open",
-        detail:
-          "PR #29 submitted. Blue team detection guide for all 10 challenges.",
-        url: "https://github.com/harishsg993010/damn-vulnerable-MCP-server/pull/29",
-      },
-      {
-        name: "Meta PurpleLlama",
-        type: "open",
-        detail:
-          "PR #206 open. RegexScanner expansion with 20 ATR-derived agent threat patterns. Multi-round maintainer follow-up; awaiting Meta internal CI gate.",
-        url: "https://github.com/meta-llama/PurpleLlama/pull/206",
-      },
-      {
-        name: "Awesome Cybersecurity Agentic AI",
-        type: "open",
-        detail: "PR #24 submitted to Tools section.",
-        url: "https://github.com/raphabot/awesome-cybersecurity-agentic-ai/pull/24",
-      },
-      {
-        name: "Awesome AI Agents Security",
-        type: "merged",
-        detail: "PR #17 merged into Static Analysis & Linters.",
-        url: "https://github.com/ProjectRecon/awesome-ai-agents-security/pull/17",
-      },
-      {
-        name: "Awesome AI Security (ottosulin)",
-        type: "merged",
-        detail: "PR #192 merged 2026-05-18 into MCP Security section.",
-        url: "https://github.com/ottosulin/awesome-ai-security/pull/192",
-      },
-    ],
+    ecosystemIntegrations: ecosystemFromAdopters(),
 
     owaspAgentic: "10/10",
     safeMcp: "78/85 (91.8%)",

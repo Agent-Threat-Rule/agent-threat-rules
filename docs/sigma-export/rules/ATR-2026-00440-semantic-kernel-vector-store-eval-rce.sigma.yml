@@ -1,0 +1,45 @@
+title: Microsoft Semantic Kernel In-Memory Vector Store eval() RCE (CVE-2026-26030)
+id: e99441d2-a2d2-555d-a535-993a536de231
+status: experimental
+description: 'Detects exploitation of CVE-2026-26030 (Critical), remote code execution in Microsoft Semantic Kernel via unsafe string interpolation in In-Memory Vector Store filter functions. The vulnerable sink interpolates a user/LLM-controlled filter expression and evaluates it as a lambda; attacker constructs a lambda body that traverses Python''s class hierarchy via `tuple()` to reach `BuiltinImporter` and execute `os.system()`, achieving unauthenticated RCE on the Semantic Kernel host. This rule detects the LLM-output / user-input payload patterns that reach the filter sink: lambda definitions combined with eval / __import__ / AST-traversal-via-mro patterns inside content or user_input fields a Semantic Kernel agent is likely to interpolate. CWE-94, CWE-95. Patches available in Python semantic-kernel >= 1.39.4 and .NET semantic-kernel >= 1.71.0; this rule detects exploit attempts against unpatched deployments and provides defence-in-depth post-patch.
+
+
+  Converted from Agent Threat Rules ATR-2026-00440 (ATR-2026-00440-semantic-kernel-vector-store-eval-rce.yaml) by scripts/generate-sigma.py. ATR is MIT-licensed. logsource.product=ai_agent is a custom (non-standard) taxonomy for agent runtime telemetry.'
+references:
+- https://github.com/Agent-Threat-Rule/agent-threat-rules
+author: ATR Community
+date: '2026-05-11'
+tags:
+- attack.t1059
+- attack.t1059.006
+- atlas.aml-t0050
+- atlas.aml-t0051
+- owasp-agentic.asi05
+- owasp-agentic.asi06
+- owasp-llm.llm05
+- owasp-llm.llm06
+- atr.category.agent-manipulation
+- atr.rule.atr-2026-00440
+logsource:
+  product: ai_agent
+  category: ai_agent_content
+  definition: Custom ATR taxonomy for AI agent runtime telemetry. Detection field names (content, user_input, tool_response, tool_args, tool_name, tool_description, agent_output, ...) are ATR surfaces, not standard Sigma fields; map them to your agent-telemetry pipeline.
+detection:
+  sel_1:
+    content|re|i: lambda\s+\w*\s*:\s*[^,)]*\beval\s*\(
+  sel_2:
+    content|re|i: lambda\s+\w*\s*:\s*[^,)]*\b__import__\s*\(\s*["\x27](?:os|subprocess|socket|builtins|importlib)["\x27]
+  sel_3:
+    content|re|i: \(\s*\)\.__class__\.__mro__|tuple\s*\(\s*\)\.__class__|\(\s*\)\.__class__\.__bases__|__subclasses__\s*\(\s*\)
+  sel_4:
+    content|re|i: BuiltinImporter|\btypes\.FunctionType\b|\bFunctionType\s*\(|getattr\s*\(\s*(?:object|type|__builtins__)
+  sel_5:
+    content|re|i: \bFunction\s*\(\s*["\x27].{0,200}?(?:return\s+(?:eval|new\s+Function|require|process)|os\.system|child_process)["\x27]
+  sel_6:
+    user_input|re|i: lambda\s+\w*\s*:\s*[^,)]*\b(?:eval|exec|__import__)\s*\(
+  condition: 1 of sel_*
+falsepositives:
+- Legitimate Python educational content discussing lambda safety or eval() risks.
+- Static analysis tooling output documenting CVE-2026-26030 attack patterns for defensive purposes.
+- Patched Semantic Kernel filter expressions that use AST allowlisting and reject lambda bodies before evaluation.
+level: critical

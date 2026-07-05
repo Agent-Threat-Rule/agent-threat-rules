@@ -1,6 +1,6 @@
 {
   "name": "agent-threat-rules",
-  "version": "3.5.5",
+  "version": "3.5.6",
   "mcpName": "io.github.Agent-Threat-Rule/agent-threat-rules",
   "type": "module",
   "description": "Open detection standard -- like Sigma, but for AI agents. 683 rules for prompt injection, tool poisoning, context exfiltration, and MCP attacks. Shipped in Cisco AI Defense. 97.2% recall on NVIDIA garak.",
@@ -84,6 +84,7 @@
     "eval:generalization": "tsx scripts/eval-generalization.ts --all",
     "gate:generalization": "tsx scripts/eval-generalization.ts --gate",
     "compile:yara": "tsx scripts/compile-yara.ts --all rules/",
+    "compile:sigma": "python3 scripts/generate-sigma.py --all --out docs/sigma-export/rules",
     "prepublishOnly": "npm run build",
     "prepare": "npm run build 1>&2",
     "compile:pipelock": "tsx scripts/compile-pipelock.ts",
