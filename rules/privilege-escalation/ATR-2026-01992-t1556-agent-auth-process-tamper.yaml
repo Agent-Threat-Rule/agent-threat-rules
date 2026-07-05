@@ -1,0 +1,123 @@
+title: Agent Weakening of Host Authentication Configuration
+id: ATR-2026-01992
+rule_version: 1
+status: draft
+description: |
+  Detects an agent tool call that modifies host authentication to weaken or
+  backdoor it: appending an SSH public key to authorized_keys, enabling
+  PermitRootLogin, inserting pam_permit / disabling PAM auth modules, or
+  writing NOPASSWD sudoers entries. This is the agent-context form of ATT&CK
+  T1556 (Modify Authentication Process).
+  Detects: writes/edits to authorized_keys, sshd_config, PAM, sudoers that
+  weaken authentication.
+  Does NOT detect: reading or fingerprinting these files, tightening them
+  (chmod 600, PermitRootLogin no), or discussing them in prose.
+author: ATR Community (sigma-gap-18tech)
+date: 2026/07/05
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: critical
+references:
+  mitre_attack:
+  - "T1556 - Modify Authentication Process"
+  mitre_atlas:
+  - "AML.T0053 - LLM Plugin Compromise"
+  owasp_agentic:
+  - "ASI03:2026 - Identity and Privilege Abuse"
+  owasp_llm:
+  - LLM06:2025 - Excessive Agency
+tags:
+  category: privilege-escalation
+  subcategory: auth-tamper
+  scan_target: both
+  confidence: high
+agent_source:
+  type: tool_call
+  framework:
+  - any
+  provider:
+  - any
+detection:
+  conditions:
+  - field: content
+    operator: regex
+    value: "(?i)(echo|printf|cat)\\s+[^\\n]{0,80}(ssh-(rsa|ed25519|ecdsa)\\s+AAAA[0-9A-Za-z+/]{20,})[^\\n]{0,60}>>\\s*[^\\n]{0,40}authorized_keys"
+    description: "Appending an SSH public key to authorized_keys (backdoor key)"
+  - field: content
+    operator: regex
+    value: "(?i)(permitrootlogin\\s+yes|passwordauthentication\\s+yes[^\\n]{0,40}permitemptypasswords\\s+yes|permitemptypasswords\\s+yes)[^\\n]{0,40}(sshd_config|>>\\s*/etc/ssh)"
+    description: "Enabling root/empty-password SSH login in sshd_config"
+  - field: content
+    operator: regex
+    value: "(?i)(auth\\s+sufficient\\s+pam_permit\\.so|>>\\s*/etc/sudoers[^\\n]{0,30}NOPASSWD:\\s*ALL|echo\\s+[^\\n]{0,40}NOPASSWD:\\s*ALL[^\\n]{0,30}>>\\s*/etc/sudoers)"
+    description: "pam_permit bypass or NOPASSWD:ALL sudoers backdoor"
+  - field: tool_args
+    operator: regex
+    value: "(?i)(ssh-(rsa|ed25519|ecdsa)\\s+AAAA[0-9A-Za-z+/]{20,})[^\\n]{0,60}>>\\s*[^\\n]{0,40}authorized_keys"
+    description: "Same authorized_keys backdoor resolved from tool_args"
+  condition: any
+  false_positives:
+  - "Legitimate provisioning that adds an operator's key via a reviewed IaC pipeline"
+  - "Hardening changes (PermitRootLogin no, disabling password auth) which this rule intentionally does not match"
+response:
+  actions:
+  - block_tool
+  - alert
+  - snapshot
+  auto_response_threshold: high
+  message_template: |
+    [ATR-2026-01992] Agent tool call weakens host authentication (backdoor SSH
+    key / root login / pam_permit / NOPASSWD). Likely T1556. Tool call blocked.
+confidence: 84
+test_cases:
+  true_positives:
+  - input: "echo 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIattacker' >> ~/.ssh/authorized_keys"
+    expected: triggered
+    description: "Backdoor SSH key appended to authorized_keys"
+  - input: "printf 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABevil root@c2' >> /home/deploy/.ssh/authorized_keys"
+    expected: triggered
+    description: "Attacker RSA key appended for another user"
+  - input: "echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config"
+    expected: triggered
+    description: "Enabling root SSH login"
+  - input: "echo 'auth sufficient pam_permit.so' >> /etc/pam.d/sshd"
+    expected: triggered
+    description: "PAM bypass making all auth succeed"
+  - input: "echo 'agent ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers"
+    expected: triggered
+    description: "Passwordless sudo backdoor"
+  true_negatives:
+  - input: "chmod 600 ~/.ssh/config"
+    expected: not_triggered
+    description: "Tightening ssh config permissions (hardening)"
+  - input: "verify the id_rsa.pub public key is added to authorized_keys"
+    expected: not_triggered
+    description: "Verifying a legitimate key, not writing a backdoor key"
+  - input: "grep PermitRootLogin /etc/ssh/sshd_config"
+    expected: not_triggered
+    description: "Reading the current sshd setting"
+  - input: "echo 'PermitRootLogin no' >> /etc/ssh/sshd_config"
+    expected: not_triggered
+    description: "Hardening: disabling root login"
+  - input: "ssh-keygen -t ed25519 -C 'me@example.com'"
+    expected: not_triggered
+    description: "Generating a new personal key, no authorized_keys write"
+evasion_tests:
+- input: "install -m600 /tmp/k ~/.ssh/authorized_keys"
+  expected: not_triggered
+  bypass_technique: file_move
+  notes: "Places a pre-staged authorized_keys via install/mv rather than an inline echo append; key material is not in the command text."
+compliance:
+  eu_ai_act:
+  - article: '15'
+    context: EU AI Act Article 15 cybersecurity/robustness requirements are engaged by detection of tampering with the authentication process by an agent, a security-relevant event against an AI system.
+    strength: secondary
+  nist_ai_rmf:
+  - subcategory: MS.2.7
+    context: NIST AI RMF MEASURE 2.7 (security and resilience) is supported by runtime detection of tampering with the authentication process by an agent.
+    strength: secondary
+  iso_42001:
+  - clause: '8.1'
+    context: ISO/IEC 42001 clause 8.1 operational controls cover detection of tampering with the authentication process by an agent against AI-agent tooling.
+    strength: secondary

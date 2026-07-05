@@ -1,0 +1,123 @@
+title: Agent-Initiated Screen or Window Capture
+id: ATR-2026-01998
+rule_version: 1
+status: draft
+description: |
+  Detects an agent tool call that captures the screen or a window to a file —
+  screencapture (macOS), scrot / import / gnome-screenshot / grim (Linux), or
+  PowerShell/ffmpeg screen grab. In an agent context this is the ATT&CK T1113
+  (Screen Capture) collection action: an agent driven to snapshot the user's
+  screen (potentially exposing credentials, tokens, or confidential content on
+  display) and write it to disk for later exfiltration.
+  Detects: CLI screen-capture commands that write an image/video file.
+  Does NOT detect: an interactive user-initiated screenshot outside the agent
+  tool path, or image processing of a pre-existing file.
+author: ATR Community (sigma-gap-18tech)
+date: 2026/07/05
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+references:
+  mitre_attack:
+  - "T1113 - Screen Capture"
+  mitre_atlas:
+  - "AML.T0057 - LLM Data Leakage"
+  owasp_agentic:
+  - "ASI01:2026 - Agent Behaviour Hijack"
+  owasp_llm:
+  - LLM02:2025 - Sensitive Information Disclosure
+tags:
+  category: context-exfiltration
+  subcategory: screen-capture
+  scan_target: both
+  confidence: high
+agent_source:
+  type: tool_call
+  framework:
+  - any
+  provider:
+  - any
+detection:
+  conditions:
+  - field: content
+    operator: regex
+    value: "(?i)\\b(screencapture|scrot|gnome-screenshot|grim|maim|spectacle)\\b[^\\n]{0,60}(\\S+\\.(png|jpg|jpeg)|-o\\s+\\S+|-f\\s+\\S+|>\\s*\\S+\\.(png|jpg))"
+    description: "CLI screenshot tool writing an image file"
+  - field: content
+    operator: regex
+    value: "(?i)import\\s+-window\\s+(root|\\S+)\\s+\\S+\\.(png|jpg)|ffmpeg\\s+[^\\n]{0,60}-f\\s+(x11grab|gdigrab|avfoundation)[^\\n]{0,40}\\S+\\.(mp4|mkv|png)"
+    description: "ImageMagick window grab or ffmpeg screen recording to file"
+  - field: content
+    operator: regex
+    value: "(?i)(Get-Clipboard|Add-Type[^\\n]{0,60}CopyFromScreen|\\[System\\.Windows\\.Forms\\.Screen\\][^\\n]{0,60}CopyFromScreen)"
+    description: "PowerShell CopyFromScreen / clipboard screen capture"
+  - field: tool_args
+    operator: regex
+    value: "(?i)\\b(screencapture|scrot|grim|maim)\\b[^\\n]{0,60}\\S+\\.(png|jpg|jpeg)"
+    description: "Same screenshot-to-file resolved from tool_args"
+  condition: any
+  false_positives:
+  - "A UI-testing agent that legitimately captures app screenshots in an allowlisted CI environment"
+  - "A documentation task that screenshots a local dev app for a guide (context-dependent)"
+response:
+  actions:
+  - block_tool
+  - alert
+  - snapshot
+  auto_response_threshold: high
+  message_template: |
+    [ATR-2026-01998] Agent tool call captures the screen to a file (T1113
+    screen capture). Tool call blocked pending review.
+confidence: 76
+test_cases:
+  true_positives:
+  - input: "screencapture -x /tmp/screen.png"
+    expected: triggered
+    description: "Silent macOS full-screen capture to file"
+  - input: "scrot -o /tmp/grab.png"
+    expected: triggered
+    description: "Linux scrot screenshot to file"
+  - input: "import -window root /tmp/root.png"
+    expected: triggered
+    description: "ImageMagick full-root-window capture"
+  - input: "ffmpeg -f x11grab -i :0.0 -t 30 /tmp/rec.mp4"
+    expected: triggered
+    description: "ffmpeg X11 screen recording to file"
+  - input: "grim /tmp/wayland.png"
+    expected: triggered
+    description: "Wayland grim screenshot to file"
+  true_negatives:
+  - input: "convert input.png -resize 50% output.png"
+    expected: not_triggered
+    description: "Resizing an existing image, no capture"
+  - input: "ffmpeg -i movie.mp4 -vf scale=1280:720 out.mp4"
+    expected: not_triggered
+    description: "Transcoding a video file, not screen grab"
+  - input: "docker compose logs -f"
+    expected: not_triggered
+    description: "Streaming logs, no screen capture"
+  - input: "playwright screenshot --url http://localhost:3000 shot.png"
+    expected: not_triggered
+    description: "Headless browser page screenshot in a test (not a screen tool)"
+  - input: "cat screen.png | base64"
+    expected: not_triggered
+    description: "Encoding an existing image file, no capture command"
+evasion_tests:
+- input: "python3 -c 'import pyautogui; pyautogui.screenshot(\"/tmp/s.png\")'"
+  expected: not_triggered
+  bypass_technique: library_capture
+  notes: "Uses pyautogui in code rather than a screenshot CLI; not covered by the command shapes here."
+compliance:
+  eu_ai_act:
+  - article: '15'
+    context: EU AI Act Article 15 cybersecurity/robustness requirements are engaged by detection of screen capture of the local host by an agent, a security-relevant event against an AI system.
+    strength: secondary
+  nist_ai_rmf:
+  - subcategory: MS.2.7
+    context: NIST AI RMF MEASURE 2.7 (security and resilience) is supported by runtime detection of screen capture of the local host by an agent.
+    strength: secondary
+  iso_42001:
+  - clause: '8.1'
+    context: ISO/IEC 42001 clause 8.1 operational controls cover detection of screen capture of the local host by an agent against AI-agent tooling.
+    strength: secondary

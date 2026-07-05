@@ -28,12 +28,12 @@ columns are still extracted from ATR metadata, not authored here.
 
 ## Coverage
 
-- ATR rules total: 683
-- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 116
-- Distinct enterprise ATT&CK techniques referenced: 47
-- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 683
-- Distinct MITRE ATLAS techniques referenced: 39
-- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 683
+- ATR rules total: 693
+- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 126
+- Distinct enterprise ATT&CK techniques referenced: 58
+- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 693
+- Distinct MITRE ATLAS techniques referenced: 40
+- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 693
 - ATR categories (distinct `tags.category` values): 9
 
 Categories are keyed on each rule's `tags.category` metadata, not on its
@@ -49,9 +49,11 @@ against.
 
 | ATT&CK technique | Name | ATR rules | ATR categories |
 |---|---|---|---|
+| T1005 | Data from Local System | `ATR-2026-01988` | context-exfiltration |
 | T1027 | Obfuscated Files or Information | `ATR-2026-00535` | prompt-injection |
 | T1036 | Masquerading | `ATR-2026-00117`, `ATR-2026-00204`, `ATR-2026-00572`, `ATR-2026-01932` | agent-manipulation, privilege-escalation, tool-poisoning |
 | T1041 | Exfiltration Over C2 Channel | `ATR-2026-00201`, `ATR-2026-00576`, `ATR-2026-00863` | context-exfiltration, tool-poisoning |
+| T1046 | Network Service Discovery | `ATR-2026-01989` | excessive-autonomy |
 | T1048 | Exfiltration Over Alternative Protocol | `ATR-2026-01609` | privilege-escalation |
 | T1053 | Scheduled Task/Job | `ATR-2026-00107`, `ATR-2026-00204`, `ATR-2026-00441` | privilege-escalation |
 | T1059 | Command and Scripting Interpreter | `ATR-2026-00010`, `ATR-2026-00012`, `ATR-2026-00110`, `ATR-2026-00204`, `ATR-2026-00209`, `ATR-2026-00210`, `ATR-2026-00415`, `ATR-2026-00416`, `ATR-2026-00417`, `ATR-2026-00418`, `ATR-2026-00419`, `ATR-2026-00432`, `ATR-2026-00433`, `ATR-2026-00434`, `ATR-2026-00436`, `ATR-2026-00440`, `ATR-2026-00451`, `ATR-2026-00523`, `ATR-2026-00531`, `ATR-2026-00535`, `ATR-2026-00538`, `ATR-2026-00540`, `ATR-2026-00541`, `ATR-2026-00542`, `ATR-2026-00543`, `ATR-2026-00545`, `ATR-2026-00572`, `ATR-2026-00575`, `ATR-2026-01610`, `ATR-2026-01611`, `ATR-2026-01930`, `ATR-2026-01931`, `ATR-2026-01980`, `ATR-2026-01982`, `ATR-2026-01983`, `ATR-2026-01985`, `ATR-2026-01986`, `ATR-2026-01987` | agent-manipulation, model-abuse, privilege-escalation, prompt-injection, skill-compromise, tool-poisoning |
@@ -62,11 +64,15 @@ against.
 | T1068 | Exploitation for Privilege Escalation | `ATR-2026-00417`, `ATR-2026-01933`, `ATR-2026-01934`, `ATR-2026-01981` | agent-manipulation, privilege-escalation |
 | T1070.004 | Indicator Removal on Host: File Deletion | `ATR-2026-00858` | context-exfiltration |
 | T1071 | Application Layer Protocol | `ATR-2026-00010`, `ATR-2026-00013`, `ATR-2026-00212` | context-exfiltration, tool-poisoning |
+| T1074 | Data Staged | `ATR-2026-01997` | context-exfiltration |
 | T1078 | Valid Accounts | `ATR-2026-00074`, `ATR-2026-00416`, `ATR-2026-00435`, `ATR-2026-00531`, `ATR-2026-00533`, `ATR-2026-00536`, `ATR-2026-00538`, `ATR-2026-00543`, `ATR-2026-01933`, `ATR-2026-01934`, `ATR-2026-01984` | agent-manipulation, context-exfiltration, privilege-escalation, tool-poisoning |
 | T1082 | System Information Discovery | `ATR-2026-00115` | context-exfiltration |
 | T1083 | File and Directory Discovery | `ATR-2026-00012`, `ATR-2026-00546`, `ATR-2026-01608`, `ATR-2026-01616` | context-exfiltration, privilege-escalation, tool-poisoning |
 | T1090 | Proxy | `ATR-2026-00013`, `ATR-2026-00547`, `ATR-2026-01606` | context-exfiltration, privilege-escalation, tool-poisoning |
+| T1105 | Ingress Tool Transfer | `ATR-2026-01990` | skill-compromise |
 | T1111 | Multi-Factor Authentication Interception | `ATR-2026-00862` | context-exfiltration |
+| T1113 | Screen Capture | `ATR-2026-01998` | context-exfiltration |
+| T1119 | Automated Collection | `ATR-2026-01997` | context-exfiltration |
 | T1129 | Shared Modules | `ATR-2026-00112` | privilege-escalation |
 | T1190 | Exploit Public-Facing Application | `ATR-2026-00210`, `ATR-2026-00415`, `ATR-2026-00416`, `ATR-2026-00434`, `ATR-2026-00435`, `ATR-2026-00448`, `ATR-2026-00451`, `ATR-2026-00531`, `ATR-2026-00532`, `ATR-2026-00533`, `ATR-2026-00534`, `ATR-2026-00536`, `ATR-2026-00537`, `ATR-2026-00538`, `ATR-2026-00540`, `ATR-2026-00541`, `ATR-2026-00542`, `ATR-2026-00545`, `ATR-2026-01600`, `ATR-2026-01602`, `ATR-2026-01603`, `ATR-2026-01604`, `ATR-2026-01948`, `ATR-2026-01949`, `ATR-2026-01952`, `ATR-2026-01953`, `ATR-2026-01957`, `ATR-2026-01959`, `ATR-2026-01961`, `ATR-2026-01963`, `ATR-2026-01964`, `ATR-2026-01965`, `ATR-2026-01967`, `ATR-2026-01968`, `ATR-2026-01970`, `ATR-2026-01973`, `ATR-2026-01974`, `ATR-2026-01978`, `ATR-2026-01979`, `ATR-2026-01981`, `ATR-2026-01986` | agent-manipulation, context-exfiltration, privilege-escalation, tool-poisoning |
 | T1195 | Supply Chain Compromise | `ATR-2026-00060`, `ATR-2026-00418`, `ATR-2026-01930` | agent-manipulation, skill-compromise, tool-poisoning |
@@ -89,11 +95,16 @@ against.
 | T1552.001 | Credentials In Files | `ATR-2026-00113`, `ATR-2026-00201`, `ATR-2026-00524`, `ATR-2026-00576`, `ATR-2026-00863` | context-exfiltration, tool-poisoning |
 | T1552.005 | Cloud Instance Metadata API | `ATR-2026-00547`, `ATR-2026-01605`, `ATR-2026-01607` | context-exfiltration, privilege-escalation |
 | T1553 | Subvert Trust Controls | `ATR-2026-00539` | privilege-escalation |
+| T1555 | Credentials from Password Stores | `ATR-2026-01991` | context-exfiltration |
+| T1556 | Modify Authentication Process | `ATR-2026-01992` | privilege-escalation |
 | T1557 | Adversary-in-the-Middle | `ATR-2026-00116` | agent-manipulation |
+| T1562 | Impair Defenses | `ATR-2026-01993` | excessive-autonomy |
 | T1565 | Data Manipulation | `ATR-2026-00070`, `ATR-2026-00450` | data-poisoning |
 | T1565.001 | Data Manipulation: Stored Data Manipulation | `ATR-2026-00075`, `ATR-2026-00200`, `ATR-2026-01155` | context-exfiltration, data-poisoning, skill-compromise |
 | T1566 | Phishing | `ATR-2026-00119`, `ATR-2026-00420` | agent-manipulation, prompt-injection |
 | T1567 | Exfiltration Over Web Service | `ATR-2026-00420` | prompt-injection |
+| T1573 | Encrypted Channel | `ATR-2026-01994` | excessive-autonomy |
+| T1574 | Hijack Execution Flow | `ATR-2026-01995` | skill-compromise |
 | T1611 | Escape to Host | `ATR-2026-00040`, `ATR-2026-00436`, `ATR-2026-00441`, `ATR-2026-00539`, `ATR-2026-01615` | privilege-escalation |
 | T1657 | Financial Theft | `ATR-2026-00860`, `ATR-2026-00861` | context-exfiltration |
 
@@ -129,21 +140,25 @@ OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:202
 
 ### context-exfiltration
 
-Rules in category: 109
+Rules in category: 113
 
 ATT&CK techniques (join key):
 
 | ATT&CK technique | Name | ATR rules |
 |---|---|---|
+| T1005 | Data from Local System | `ATR-2026-01988` |
 | T1041 | Exfiltration Over C2 Channel | `ATR-2026-00201`, `ATR-2026-00863` |
 | T1059.004 | Command and Scripting Interpreter: Unix Shell | `ATR-2026-00863` |
 | T1070.004 | Indicator Removal on Host: File Deletion | `ATR-2026-00858` |
 | T1071 | Application Layer Protocol | `ATR-2026-00212` |
+| T1074 | Data Staged | `ATR-2026-01997` |
 | T1078 | Valid Accounts | `ATR-2026-01984` |
 | T1082 | System Information Discovery | `ATR-2026-00115` |
 | T1083 | File and Directory Discovery | `ATR-2026-01608` |
 | T1090 | Proxy | `ATR-2026-01606` |
 | T1111 | Multi-Factor Authentication Interception | `ATR-2026-00862` |
+| T1113 | Screen Capture | `ATR-2026-01998` |
+| T1119 | Automated Collection | `ATR-2026-01997` |
 | T1190 | Exploit Public-Facing Application | `ATR-2026-01948`, `ATR-2026-01957`, `ATR-2026-01961`, `ATR-2026-01964` |
 | T1195.002 | Compromise Software Supply Chain | `ATR-2026-00524` |
 | T1485 | Data Destruction | `ATR-2026-00858` |
@@ -153,6 +168,7 @@ ATT&CK techniques (join key):
 | T1552 | Unsecured Credentials | `ATR-2026-00212`, `ATR-2026-00431`, `ATR-2026-00524` |
 | T1552.001 | Credentials In Files | `ATR-2026-00113`, `ATR-2026-00201`, `ATR-2026-00524`, `ATR-2026-00863` |
 | T1552.005 | Cloud Instance Metadata API | `ATR-2026-01605`, `ATR-2026-01607` |
+| T1555 | Credentials from Password Stores | `ATR-2026-01991` |
 | T1565.001 | Data Manipulation: Stored Data Manipulation | `ATR-2026-00075` |
 | T1657 | Financial Theft | `ATR-2026-00860`, `ATR-2026-00861` |
 
@@ -178,11 +194,17 @@ OWASP Agentic categories ATR adds: ASI01:2026, ASI04:2026, ASI06:2026
 
 ### excessive-autonomy
 
-Rules in category: 30
+Rules in category: 33
 
-ATT&CK techniques (join key): none tagged in this category's rules.
+ATT&CK techniques (join key):
 
-ATLAS techniques ATR adds: AML.T0011.001, AML.T0034, AML.T0044, AML.T0046, AML.T0050, AML.T0051, AML.T0051.001, AML.T0053, AML.T0057
+| ATT&CK technique | Name | ATR rules |
+|---|---|---|
+| T1046 | Network Service Discovery | `ATR-2026-01989` |
+| T1562 | Impair Defenses | `ATR-2026-01993` |
+| T1573 | Encrypted Channel | `ATR-2026-01994` |
+
+ATLAS techniques ATR adds: AML.T0011, AML.T0011.001, AML.T0034, AML.T0044, AML.T0046, AML.T0050, AML.T0051, AML.T0051.001, AML.T0053, AML.T0057
 
 OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:2026, ASI05:2026, ASI06:2026, ASI07:2026, ASI08:2026, ASI09:2026, ASI10:2026
 
@@ -203,7 +225,7 @@ OWASP Agentic categories ATR adds: ASI01:2026, ASI04:2026, ASI05:2026, ASI08:202
 
 ### privilege-escalation
 
-Rules in category: 43
+Rules in category: 44
 
 ATT&CK techniques (join key):
 
@@ -230,6 +252,7 @@ ATT&CK techniques (join key):
 | T1552 | Unsecured Credentials | `ATR-2026-00546` |
 | T1552.005 | Cloud Instance Metadata API | `ATR-2026-00547` |
 | T1553 | Subvert Trust Controls | `ATR-2026-00539` |
+| T1556 | Modify Authentication Process | `ATR-2026-01992` |
 | T1611 | Escape to Host | `ATR-2026-00040`, `ATR-2026-00436`, `ATR-2026-00441`, `ATR-2026-00539`, `ATR-2026-01615` |
 
 ATLAS techniques ATR adds: AML.T0024, AML.T0040, AML.T0043, AML.T0047, AML.T0049, AML.T0050, AML.T0051, AML.T0053, AML.T0054, AML.T0080, AML.T0105
@@ -255,19 +278,21 @@ OWASP Agentic categories ATR adds: ASI01:2026, ASI03:2026, ASI04:2026, ASI05:202
 
 ### skill-compromise
 
-Rules in category: 41
+Rules in category: 43
 
 ATT&CK techniques (join key):
 
 | ATT&CK technique | Name | ATR rules |
 |---|---|---|
 | T1059 | Command and Scripting Interpreter | `ATR-2026-00523` |
+| T1105 | Ingress Tool Transfer | `ATR-2026-01990` |
 | T1195 | Supply Chain Compromise | `ATR-2026-00060` |
 | T1195.002 | Compromise Software Supply Chain | `ATR-2026-00523` |
 | T1546 | Event Triggered Execution | `ATR-2026-00523` |
 | T1565.001 | Data Manipulation: Stored Data Manipulation | `ATR-2026-00200` |
+| T1574 | Hijack Execution Flow | `ATR-2026-01995` |
 
-ATLAS techniques ATR adds: AML.T0010, AML.T0011.000, AML.T0018.000, AML.T0020, AML.T0024, AML.T0040, AML.T0044, AML.T0048, AML.T0050, AML.T0051, AML.T0051.001, AML.T0053, AML.T0057, AML.T0060, AML.T0080, AML.T0104, AML.T0109
+ATLAS techniques ATR adds: AML.T0010, AML.T0011, AML.T0011.000, AML.T0018.000, AML.T0020, AML.T0024, AML.T0040, AML.T0044, AML.T0048, AML.T0050, AML.T0051, AML.T0051.001, AML.T0053, AML.T0057, AML.T0060, AML.T0080, AML.T0104, AML.T0109
 
 OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:2026, ASI05:2026, ASI06:2026, ASI07:2026, ASI08:2026, ASI09:2026
 
