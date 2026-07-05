@@ -1,0 +1,61 @@
+name: Reconcile Rule Count Stats
+
+# The rule count lives in git as rules/**/*.yaml (ground truth). stats.json
+# (ruleCount.total) and data/stats.json (rules.total) are derived caches that used
+# to drift whenever rules changed without regenerating them — patched by hand via
+# `chore(stats): reconcile ...` commits. This closes the window: on every rules
+# change to main, recompute the disk count and commit it back into both caches so
+# they can never diverge from disk.
+#
+# Safe by construction:
+#   - Only fires on rules/** changes; the reconcile commit touches stats files only,
+#     so it never re-triggers this workflow (and GITHUB_TOKEN pushes don't recurse).
+#   - Never blocks a PR (post-merge fix), so the flywheel's auto-generated PRs
+#     (maturity-promote / TC-crystallize) are unaffected.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'rules/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: reconcile-stats-main
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    # Defensive: never react to our own reconcile commit.
+    if: "${{ !startsWith(github.event.head_commit.message, 'chore(stats): auto-reconcile') }}"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # full history so `git push origin main` fast-forwards (matches release bot)
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Reconcile rule-count stats to disk
+        run: node scripts/reconcile-rule-count.mjs
+
+      - name: Commit reconciled stats if changed
+        run: |
+          if [ -z "$(git status --porcelain stats.json data/stats.json)" ]; then
+            echo "stats already in sync with disk — nothing to commit"
+            exit 0
+          fi
+          count=$(node -e 'process.stdout.write(String(JSON.parse(require("fs").readFileSync("stats.json","utf8")).ruleCount.total))')
+          git config user.name "ATR Stats Bot"
+          git config user.email "bot@agentthreatrule.org"
+          git add stats.json data/stats.json
+          git commit -m "chore(stats): auto-reconcile rule count to disk (${count} rules)"
+          git push origin main
