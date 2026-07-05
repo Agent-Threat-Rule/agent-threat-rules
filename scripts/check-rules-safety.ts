@@ -331,7 +331,7 @@ async function checkExtendedBenignFP(
     return fps;
   }
   for (const s of samples) {
-    const label = `${s.source}:${s.source_id.slice(0, 40)}`;
+    const label = `${s.source ?? "?"}:${(s.source_id ?? "?").slice(0, 40)}`;
     for (const id of matchAllRuleIds(engine, s.text)) {
       if (newRuleIds.has(id)) {
         if (!fps.has(id)) fps.set(id, []);
@@ -391,7 +391,7 @@ async function checkBenignCodeFP(
     return fps;
   }
   for (const s of samples) {
-    const label = `${s.source}:${s.source_id.slice(0, 40)}`;
+    const label = `${s.source ?? "?"}:${(s.source_id ?? "?").slice(0, 40)}`;
     for (const id of matchAllRuleIds(engine, s.text)) {
       if (newRuleIds.has(id)) {
         if (!fps.has(id)) fps.set(id, []);
