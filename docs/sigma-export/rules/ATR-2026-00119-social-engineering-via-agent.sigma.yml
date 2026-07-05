@@ -1,0 +1,48 @@
+title: Social Engineering Attack via Agent Output
+id: 9c3a28c8-b3fc-5f3a-9cca-d9c16fa67b0a
+status: experimental
+description: 'Detects agents being used as social engineering vectors against the human user.
+
+  Attackers can poison agent context to generate urgency-based manipulation,
+
+  authority impersonation, or emotional pressure tactics. Because users tend to
+
+  trust agent output more than raw emails, social engineering delivered through
+
+  an AI agent has higher success rates than traditional phishing.
+
+
+  Converted from Agent Threat Rules ATR-2026-00119 (ATR-2026-00119-social-engineering-via-agent.yaml) by scripts/generate-sigma.py. ATR is MIT-licensed. logsource.product=ai_agent is a custom (non-standard) taxonomy for agent runtime telemetry.'
+references:
+- https://github.com/Agent-Threat-Rule/agent-threat-rules
+author: ATR Community
+date: '2026-03-26'
+tags:
+- attack.t1566
+- atlas.aml-t0051
+- owasp-agentic.asi09
+- owasp-llm.llm01
+- atr.category.agent-manipulation
+- atr.rule.atr-2026-00119
+logsource:
+  product: ai_agent
+  category: ai_agent_content
+  definition: Custom ATR taxonomy for AI agent runtime telemetry. Detection field names (content, user_input, tool_response, tool_args, tool_name, tool_description, agent_output, ...) are ATR surfaces, not standard Sigma fields; map them to your agent-telemetry pipeline.
+detection:
+  sel_1:
+    content|re|i: (?:immediate|urgent)\s+action\s+(?:is\s+)?required|(?:your\s+)?account\s+(?:will|has)\s+be(?:en)?\s+(?:locked|suspended|terminated|disabled)
+  sel_2:
+    content|re|i: (?:IT\s+department|security\s+team|your\s+(?:manager|supervisor|boss))\s+(?:requires?|requested|demands?|needs?\s+you\s+to)
+  sel_3:
+    content|re|i: (?:failure\s+to\s+comply|if\s+you\s+don'?t\s+act\s+(?:now|immediately))\s+.*(?:consequences|terminated|fired|suspended|legal)
+  sel_4:
+    content|re|i: (?:verify|confirm|update)\s+your\s+(?:password|credentials?|identity|payment|bank|account)\s+(?:at|by|through|via)\s+(?:this|the\s+following)
+  sel_5:
+    content|re|i: (?:click|visit|go\s+to|open)\s+(?:this|the)\s+(?:link|url|page)\s+(?:to|and)\s+(?:verify|confirm|secure|update|restore)
+  condition: 1 of sel_*
+falsepositives:
+- Legitimate security alerts from monitoring systems
+- Actual IT department communications forwarded through agent
+- A legitimate compliance training module that describes phishing tactics using phrases like 'account will be locked' as educational examples
+- Automated monitoring system generating real alerts about accounts being disabled due to policy violations
+level: high

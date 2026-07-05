@@ -1,0 +1,46 @@
+title: Cross-Agent Privilege Escalation
+id: ab23e6c1-bbbc-59a5-bd34-3a81807ca25e
+status: experimental
+description: 'Detects agents using inter-agent communication channels to escalate privileges beyond their authorized scope. Attackers exploit multi-agent architectures by having a compromised or lower-privilege agent forward credentials, assume roles of higher-privilege agents, or bypass orchestrator controls through direct agent-to-agent messaging. This enables lateral movement across agent boundaries and unauthorized access to restricted tools or data.
+
+
+  Converted from Agent Threat Rules ATR-2026-00074 (ATR-2026-00074-cross-agent-privilege-escalation.yaml) by scripts/generate-sigma.py. ATR is MIT-licensed. logsource.product=ai_agent is a custom (non-standard) taxonomy for agent runtime telemetry.'
+references:
+- https://github.com/Agent-Threat-Rule/agent-threat-rules
+author: ATR Community
+date: '2026-03-08'
+tags:
+- attack.t1078
+- attack.t1550
+- atlas.aml-t0051-001
+- owasp-agentic.asi03
+- owasp-agentic.asi10
+- owasp-llm.llm06
+- owasp-llm.llm08
+- atr.category.agent-manipulation
+- atr.rule.atr-2026-00074
+logsource:
+  product: ai_agent
+  category: ai_agent_content
+  definition: Custom ATR taxonomy for AI agent runtime telemetry. Detection field names (content, user_input, tool_response, tool_args, tool_name, tool_description, agent_output, ...) are ATR surfaces, not standard Sigma fields; map them to your agent-telemetry pipeline.
+detection:
+  sel_1:
+    content|re|i: (forward|pass|share|send|relay|transmit)\s+(my|the|these|your|this)\s+(credentials?|tokens?|api[_\s]?keys?|auth(entication|orization)?\s+(headers?|tokens?)|session\s+(id|token)|secrets?)(\s+and\s+\w+(?:\s+\w+){0,2})?\s+(to|with|for)
+  sel_2:
+    content|re|i: (I\s+am|acting\s+as|speaking\s+as|on\s+behalf\s+of|representing)\s+(the\s+)?(admin|supervisor|orchestrat(or|ing)|master|root|privileged|authorized)\s+(agent|system|process|service)
+  sel_3:
+    content|re|i: (bypass|skip|circumvent|ignore|override)\s+(the\s+)?(orchestrat(or|ion)|coordinator|supervisor|permission|authorization|access\s+control|gatekeeper)
+  sel_4:
+    content|re|i: (use\s+my\s+(elevated|admin|root|system)\s+(access|privileges?|permissions?|role)|escalate\s+(to|my|your)\s+(admin|root|system|elevated))
+  sel_5:
+    content|re|i: (grant|give|assign|delegate)\s+(me|this\s+agent|the\s+agent)\s+(additional|extra|elevated|higher|admin|full)\s+(access|permissions?|privileges?|capabilities|tools?)
+  sel_6:
+    content|re|i: (execute|run|invoke|call)\s+(this|the\s+following).{0,20}(with|using)\s+(your|admin|elevated|system|root)(?:\s+\w+){0,2}\s+(permissions?|privileges?|access|credentials?|authority)
+  condition: 1 of sel_*
+falsepositives:
+- Legitimate orchestration patterns where a supervisor agent delegates tasks
+- Multi-agent systems with designed credential sharing mechanisms
+- Agents discussing access control as a topic rather than attempting escalation
+- A security training document that instructs agents on how to detect when another agent attempts to share credentials, using exact phrases like 'forward my credentials to' as example attack patterns
+- An automated orchestration system where a supervisor agent legitimately delegates elevated tool access to a worker agent as part of a designed workflow
+level: critical
