@@ -2,11 +2,19 @@ import { Reveal } from "@/components/Reveal";
 import { locales, type Locale } from "@/lib/i18n";
 import {
   loadAdopters,
+  loadAdoptersVerification,
   tierLabel,
   tierDescription,
+  adopterLogoUrl,
   type Adopter,
   type AdopterTier,
+  type IntegrationType,
 } from "@/lib/adopters";
+import {
+  IntegrationTypeIcon,
+  integrationTypeLabel,
+  integrationTypeHint,
+} from "@/components/IntegrationTypeIcon";
 import type { Metadata } from "next";
 
 export function generateStaticParams() {
@@ -24,6 +32,7 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
   const locale = (locales.includes(raw as Locale) ? raw : "en") as Locale;
   const zh = locale === "zh";
   const adopters = loadAdopters();
+  const verification = loadAdoptersVerification();
 
   // Pair tiers with their entries in display order. Tier S is most prominent,
   // tier 4 (commercial) is separated visually so vendor implementations do not
@@ -66,7 +75,7 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
         </p>
       </Reveal>
       <Reveal delay={0.25}>
-        <p className="font-data text-xs text-stone tracking-wide mb-10">
+        <p className="font-data text-xs text-stone tracking-wide mb-5">
           {zh ? "共計" : "Total"}: <span className="text-ink font-bold">{adopters.count}</span> {zh ? "個採用者" : "adopters"}
           {" · "}
           <a
@@ -77,7 +86,59 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
           >
             ADOPTERS.md →
           </a>
+          {verification && (
+            <>
+              {" · "}
+              <a
+                href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/data/adopters-verification.json"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-green hover:underline"
+                title={
+                  zh
+                    ? "scripts/verify-adopters.mjs 每週對 GitHub 重驗每個證據連結:shipped 必須是 MERGED,in-review 必須是 OPEN"
+                    : "scripts/verify-adopters.mjs re-checks every evidence link against GitHub weekly: shipped must be MERGED, in-review must be OPEN"
+                }
+              >
+                {zh
+                  ? `證據連結 ${verification.verifiedAt} 對 GitHub 現驗 ${verification.ok}/${verification.total}`
+                  : `evidence re-verified against GitHub ${verification.verifiedAt} — ${verification.ok}/${verification.total}`}
+              </a>
+            </>
+          )}
         </p>
+      </Reveal>
+
+      {/* Integration-shape legend — the Type field decoded for engineers */}
+      <Reveal delay={0.28}>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-3 mb-10 max-w-[820px]">
+          {(
+            [
+              "engine",
+              "rule-import",
+              "category-subset",
+              "adapter",
+              "reference",
+              "sidecar-proxy",
+            ] as IntegrationType[]
+          ).map((ty) => (
+            <div key={ty} className="flex items-start gap-2">
+              <IntegrationTypeIcon
+                type={ty}
+                size={14}
+                className="text-stone mt-[3px] shrink-0"
+              />
+              <div>
+                <span className="font-data text-[11px] text-ink">
+                  {integrationTypeLabel(ty, locale)}
+                </span>
+                <span className="block text-[11px] text-stone leading-snug">
+                  {integrationTypeHint(ty, locale)}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       </Reveal>
 
       {/* Tier S / 1 / 2 / 3 — the standard's reach */}
@@ -114,8 +175,19 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
               <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-fog">
                 {entries.map((a) => (
                   <article key={a.name} className="bg-paper p-5">
-                    <div className="flex items-baseline justify-between gap-3 mb-1">
-                      <h2 className="font-display text-base font-semibold text-ink">
+                    <div className="flex items-center gap-3 mb-1">
+                      {adopterLogoUrl(a) && (
+                        <img
+                          src={adopterLogoUrl(a)}
+                          alt=""
+                          width={28}
+                          height={28}
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                          className="rounded-sm ring-1 ring-fog shrink-0"
+                        />
+                      )}
+                      <h2 className="font-display text-base font-semibold text-ink flex-1">
                         {a.name}
                       </h2>
                       <StatusBadge status={a.status} zh={zh} />
@@ -129,7 +201,30 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
                         </>
                       )}
                       {" · "}
-                      <span className="text-ink/70">{a.type}</span>
+                      <span
+                        className="text-ink/70 inline-flex items-center gap-1 align-middle"
+                        title={integrationTypeHint(a.type, locale)}
+                      >
+                        <IntegrationTypeIcon type={a.type} size={12} className="shrink-0" />
+                        {integrationTypeLabel(a.type, locale)}
+                      </span>
+                      {verification?.okByName[a.name] && (
+                        <>
+                          {" · "}
+                          <span
+                            className="text-green normal-case"
+                            title={
+                              zh
+                                ? "此證據連結最近一次自動重驗時,GitHub 上的狀態與宣稱相符"
+                                : "On the last automated re-check, the GitHub state of this evidence matched the declared status"
+                            }
+                          >
+                            {zh
+                              ? `證據現驗 ${verification.verifiedAt}`
+                              : `verified ${verification.verifiedAt}`}
+                          </span>
+                        </>
+                      )}
                     </p>
                     <p className="text-sm text-stone leading-relaxed mb-3">
                       {a.integration}
@@ -177,8 +272,19 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
             <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-fog">
               {commercial.map((a) => (
                 <article key={a.name} className="bg-paper p-5">
-                  <div className="flex items-baseline justify-between gap-3 mb-1">
-                    <h2 className="font-display text-base font-semibold text-ink">
+                  <div className="flex items-center gap-3 mb-1">
+                    {adopterLogoUrl(a) && (
+                      <img
+                        src={adopterLogoUrl(a)}
+                        alt=""
+                        width={28}
+                        height={28}
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                        className="rounded-sm ring-1 ring-fog shrink-0"
+                      />
+                    )}
+                    <h2 className="font-display text-base font-semibold text-ink flex-1">
                       {a.name}
                     </h2>
                     <StatusBadge status={a.status} zh={zh} />

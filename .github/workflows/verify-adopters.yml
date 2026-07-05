@@ -1,0 +1,58 @@
+name: Verify Adopters Evidence
+
+# Re-verify every ADOPTERS.md evidence link against GitHub so the website's
+# "evidence re-verified on <date>" stamp stays honest without human effort.
+# shipped must be MERGED, in-review must be OPEN, plain links must resolve.
+# The refreshed data/adopters-verification.json is auto-committed (same bot
+# convention as reconcile-stats); a non-zero drift count fails the run so
+# drift surfaces as a red check instead of rotting silently.
+
+on:
+  schedule:
+    - cron: '0 3 * * 1' # weekly, Monday 03:00 UTC
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'ADOPTERS.md'
+      - 'scripts/verify-adopters.mjs'
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Re-verify every evidence link
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/verify-adopters.mjs
+
+      - name: Commit refreshed verification data
+        if: github.ref == 'refs/heads/main'
+        run: |
+          if git diff --quiet data/adopters-verification.json; then
+            echo "verification data unchanged — nothing to commit"
+            exit 0
+          fi
+          git config user.name "ATR Stats Bot"
+          git config user.email "bot@agentthreatrule.org"
+          git add data/adopters-verification.json
+          git commit -m "chore(adopters): auto re-verify evidence links"
+          git push origin main
+
+      - name: Fail on drift
+        run: |
+          drift=$(node -e 'process.stdout.write(String(JSON.parse(require("fs").readFileSync("data/adopters-verification.json","utf8")).drift.length))')
+          echo "drift entries: ${drift}"
+          if [ "${drift}" != "0" ]; then
+            echo "ADOPTERS.md declares a status that GitHub no longer supports — fix the entries listed in data/adopters-verification.json drift[]"
+            exit 1
+          fi

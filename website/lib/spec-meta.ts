@@ -4,14 +4,25 @@
 // number: once the standard ships in production and is cited by third parties,
 // a separate pre-1.0 spec-document number reads as half-baked. Status remains
 // "Working Draft" to register the governance transition (BDFL -> TSC) honestly.
-// Bump this when the package version bumps.
+// The version is read from the repo-root package.json at build time so it can
+// never drift from the published package again (it sat at a hardcoded 3.5.0
+// while npm shipped 3.5.6).
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { loadSiteStats } from "./stats";
 
-/** Public spec-document version, aligned to the npm package version (v3.5.0). */
-const SPEC_DOC_VERSION = "3.5.0";
+/** Public spec-document version, aligned to the npm package version. */
+const SPEC_DOC_VERSION = ((): string => {
+  try {
+    const pkg = JSON.parse(
+      readFileSync(join(process.cwd(), "..", "package.json"), "utf-8"),
+    ) as { version?: string };
+    return pkg.version ?? "unversioned";
+  } catch {
+    return "unversioned";
+  }
+})();
 
 interface StatsJsonShape {
   generatedAt?: string;
