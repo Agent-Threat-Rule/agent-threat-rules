@@ -1,0 +1,125 @@
+title: Agent Disabling of Host Security Controls
+id: ATR-2026-01993
+rule_version: 1
+status: draft
+description: |
+  Detects an agent tool call that disables or tears down a host defense:
+  stopping/flushing the firewall, disabling SELinux/AppArmor, turning off or
+  clearing the audit daemon, stopping an EDR/AV service, or wiping shell
+  history to hide activity. This is the agent-context form of ATT&CK T1562
+  (Impair Defenses) — the agent is being driven to blind the host before or
+  during an intrusion.
+  Detects: explicit disable/stop/flush/clear commands against named security
+  controls.
+  Does NOT detect: application/build teardown (docker compose down, rm
+  node_modules), or reading the status of a control.
+author: ATR Community (sigma-gap-18tech)
+date: 2026/07/05
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+references:
+  mitre_attack:
+  - "T1562 - Impair Defenses"
+  mitre_atlas:
+  - "AML.T0011 - User Execution"
+  owasp_agentic:
+  - "ASI01:2026 - Agent Behaviour Hijack"
+  owasp_llm:
+  - LLM06:2025 - Excessive Agency
+tags:
+  category: excessive-autonomy
+  subcategory: impair-defenses
+  scan_target: both
+  confidence: high
+agent_source:
+  type: tool_call
+  framework:
+  - any
+  provider:
+  - any
+detection:
+  conditions:
+  - field: content
+    operator: regex
+    value: "(?i)(systemctl\\s+(stop|disable|mask)\\s+(firewalld|ufw|auditd|falcon-sensor|crowdstrike|osqueryd|wazuh-agent|clamav-daemon)|ufw\\s+disable|iptables\\s+-F\\b|service\\s+(auditd|firewalld)\\s+stop)"
+    description: "Stopping/disabling firewall, audit, or EDR/AV services"
+  - field: content
+    operator: regex
+    value: "(?i)(setenforce\\s+0|selinux=disabled|aa-disable\\s+\\S+|systemctl\\s+(stop|disable)\\s+apparmor)"
+    description: "Disabling SELinux or AppArmor mandatory-access-control"
+  - field: content
+    operator: regex
+    value: "(?i)(auditctl\\s+-D\\b|history\\s+-c\\b[^\\n]{0,20}(rm|>\\s*~?/?\\.?bash_history)|(\\bcat\\s+/dev/null|:)\\s*>\\s*~?/\\.?bash_history|export\\s+HISTFILE=/dev/null)"
+    description: "Clearing audit rules or wiping shell history to hide tracks"
+  - field: tool_args
+    operator: regex
+    value: "(?i)(systemctl\\s+(stop|disable|mask)\\s+(firewalld|ufw|auditd|falcon-sensor|crowdstrike|wazuh-agent)|setenforce\\s+0|ufw\\s+disable)"
+    description: "Same defense-disable resolved from tool_args"
+  condition: any
+  false_positives:
+  - "A sanctioned maintenance window that briefly stops a security agent for an upgrade (context-dependent)"
+  - "A CI job that resets iptables in an isolated throwaway container"
+response:
+  actions:
+  - block_tool
+  - alert
+  - snapshot
+  auto_response_threshold: high
+  message_template: |
+    [ATR-2026-01993] Agent tool call disables a host security control
+    (firewall / SELinux / audit / EDR / history). Likely T1562 impair-defenses.
+    Tool call blocked pending review.
+confidence: 82
+test_cases:
+  true_positives:
+  - input: "systemctl stop auditd && systemctl disable auditd"
+    expected: triggered
+    description: "Stopping and disabling the audit daemon"
+  - input: "setenforce 0"
+    expected: triggered
+    description: "Putting SELinux into permissive mode"
+  - input: "ufw disable && iptables -F"
+    expected: triggered
+    description: "Disabling the firewall and flushing iptables"
+  - input: "systemctl stop falcon-sensor"
+    expected: triggered
+    description: "Stopping the CrowdStrike EDR sensor"
+  - input: "history -c && rm -f ~/.bash_history"
+    expected: triggered
+    description: "Clearing shell history to hide activity"
+  true_negatives:
+  - input: "docker compose up -d && docker compose logs -f"
+    expected: not_triggered
+    description: "Normal container lifecycle, no security control"
+  - input: "rm -rf node_modules && npm install"
+    expected: not_triggered
+    description: "Rebuilding dependencies, not impairing defenses"
+  - input: "systemctl status firewalld"
+    expected: not_triggered
+    description: "Reading firewall status, not disabling it"
+  - input: "systemctl restart nginx"
+    expected: not_triggered
+    description: "Restarting an app service, not a security control"
+  - input: "git log --oneline -20"
+    expected: not_triggered
+    description: "Viewing git history, not shell-history wipe"
+evasion_tests:
+- input: "kill -9 $(pgrep -f falcon-sensor)"
+  expected: not_triggered
+  bypass_technique: process_kill_by_pid
+  notes: "Kills the EDR via pgrep/kill instead of systemctl; the service name is resolved indirectly, out of this pattern's scope."
+compliance:
+  eu_ai_act:
+  - article: '15'
+    context: EU AI Act Article 15 cybersecurity/robustness requirements are engaged by detection of impairing host security defenses by an agent, a security-relevant event against an AI system.
+    strength: secondary
+  nist_ai_rmf:
+  - subcategory: MS.2.7
+    context: NIST AI RMF MEASURE 2.7 (security and resilience) is supported by runtime detection of impairing host security defenses by an agent.
+    strength: secondary
+  iso_42001:
+  - clause: '8.1'
+    context: ISO/IEC 42001 clause 8.1 operational controls cover detection of impairing host security defenses by an agent against AI-agent tooling.
+    strength: secondary

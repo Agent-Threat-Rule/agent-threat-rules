@@ -1,0 +1,120 @@
+title: Agent-Initiated Internal Network Service Sweep
+id: ATR-2026-01989
+rule_version: 1
+status: draft
+description: |
+  Detects a tool call that performs a broad internal network service scan —
+  a CIDR/range sweep across a port range using nmap/masptcan-style flags, or
+  a scripted loop that connects to a subnet across many ports. In an agent
+  context this is the ATT&CK T1046 (Network Service Discovery) action: the
+  agent is being driven to map the internal network as a precursor to lateral
+  movement, rather than checking one known host:port.
+  Detects: CIDR + port-range scan flags, or subnet for-loop port probes.
+  Does NOT detect: a single-host connectivity check (curl/nc host port), or a
+  documented scan command inside skill prose without range+portrange together.
+author: ATR Community (sigma-gap-18tech)
+date: 2026/07/05
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+references:
+  mitre_attack:
+  - "T1046 - Network Service Discovery"
+  mitre_atlas:
+  - "AML.T0011 - User Execution"
+  owasp_agentic:
+  - "ASI06:2026 - Agent Orchestration and Multi-Agent Exploitation"
+  owasp_llm:
+  - LLM06:2025 - Excessive Agency
+tags:
+  category: excessive-autonomy
+  subcategory: network-discovery
+  scan_target: both
+  confidence: high
+agent_source:
+  type: tool_call
+  framework:
+  - any
+  provider:
+  - any
+detection:
+  conditions:
+  - field: content
+    operator: regex
+    value: "(?i)\\bnmap\\b[^\\n]{0,60}(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}/\\d{1,2}|\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.0/24)[^\\n]{0,40}-p\\s*\\d{1,5}-\\d{1,5}"
+    description: "nmap CIDR sweep across an explicit port range"
+  - field: content
+    operator: regex
+    value: "(?i)for\\s+\\w+\\s+in\\s+\\{?1\\.\\.(?:254|255)\\}?[^\\n]{0,60}(nc|ncat|/dev/tcp/)[^\\n]{0,30}\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}"
+    description: "Scripted subnet loop probing hosts via netcat/raw TCP"
+  - field: tool_args
+    operator: regex
+    value: "(?i)\\bnmap\\b[^\\n]{0,60}(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}/\\d{1,2})[^\\n]{0,40}-p\\s*\\d{1,5}-\\d{1,5}"
+    description: "Same nmap CIDR+portrange sweep resolved from tool_args"
+  condition: any
+  false_positives:
+  - "Authorized internal vulnerability scanning by a security team (context-dependent, requires allowlisting the agent)"
+  - "A documented single scan command referenced in security training material"
+response:
+  actions:
+  - block_tool
+  - alert
+  - snapshot
+  auto_response_threshold: high
+  message_template: |
+    [ATR-2026-01989] Agent tool call performs a broad internal network sweep
+    (CIDR + port range). Likely T1046 service discovery preceding lateral
+    movement. Tool call blocked pending review.
+confidence: 80
+test_cases:
+  true_positives:
+  - input: "nmap 10.0.0.0/24 -p 1-65535 -sV --open"
+    expected: triggered
+    description: "Full-range internal CIDR service scan"
+  - input: "nmap 192.168.1.0/24 -p 20-1024 -T4"
+    expected: triggered
+    description: "Subnet scan across common port range"
+  - input: "for i in {1..254}; do nc -zv 10.0.0.$i 22; done"
+    expected: triggered
+    description: "Scripted subnet loop probing SSH via netcat"
+  - input: "nmap 172.16.5.0/24 -p 445-3389 -Pn"
+    expected: triggered
+    description: "Internal SMB-to-RDP range sweep"
+  - input: "for h in {1..255}; do (echo > /dev/tcp/10.10.10.$h/3306) 2>/dev/null; done"
+    expected: triggered
+    description: "Raw /dev/tcp subnet probe for MySQL"
+  true_negatives:
+  - input: "curl -s http://localhost:3000/health | jq .status"
+    expected: not_triggered
+    description: "Single-host health check"
+  - input: "kubectl get pods | grep Running"
+    expected: not_triggered
+    description: "Kubernetes pod listing, not a network sweep"
+  - input: "nmap -sT 10.10.10.10 -p445 --script smb2-time"
+    expected: not_triggered
+    description: "Single-host, single-port documented scan (AD pentest skill)"
+  - input: "nc -zv redis.internal 6379"
+    expected: not_triggered
+    description: "Connectivity check to one known service"
+  - input: "ps aux | grep node | grep -v grep"
+    expected: not_triggered
+    description: "Local process listing, not network discovery"
+evasion_tests:
+- input: "nmap -iL targets.txt -p 1-1024"
+  expected: not_triggered
+  bypass_technique: indirect_target_list
+  notes: "Target list supplied via file instead of inline CIDR; the range is not visible in the command text."
+compliance:
+  eu_ai_act:
+  - article: '15'
+    context: EU AI Act Article 15 cybersecurity/robustness requirements are engaged by detection of unattended internal network service discovery by an agent, a security-relevant event against an AI system.
+    strength: secondary
+  nist_ai_rmf:
+  - subcategory: MS.2.7
+    context: NIST AI RMF MEASURE 2.7 (security and resilience) is supported by runtime detection of unattended internal network service discovery by an agent.
+    strength: secondary
+  iso_42001:
+  - clause: '8.1'
+    context: ISO/IEC 42001 clause 8.1 operational controls cover detection of unattended internal network service discovery by an agent against AI-agent tooling.
+    strength: secondary
