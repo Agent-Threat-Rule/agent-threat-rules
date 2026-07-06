@@ -31,8 +31,17 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
-import { join, resolve, dirname } from "node:path";
+import {
+  readFileSync,
+  readdirSync,
+  existsSync,
+  statSync,
+  mkdtempSync,
+  copyFileSync,
+  rmSync,
+} from "node:fs";
+import { join, resolve, dirname, basename } from "node:path";
+import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { load as yamlLoad } from "js-yaml";
 import { ATREngine } from "../src/engine.js";
@@ -614,6 +623,31 @@ async function main(): Promise<void> {
       }
     };
 
+    // Perf: the corpus-FP checks (Checks 3/3b/3c/4) only ask whether a NEW
+    // rule matches a benign sample. Running the full ~690-rule engine over
+    // thousands of samples spends ~99% of its time evaluating rules whose
+    // result is discarded. Per-event preprocessing (base64/unicode folding,
+    // skill parsing) is content-driven, not rule-set-driven, so a scoped
+    // engine holding ONLY the new rules yields the identical new-rule match
+    // set at ~100x less work. Verified empirically: scoped+promoted
+    // reproduces the full-engine FP set exactly (same rules, same counts).
+    // The full engine is still used for own-TP (Check 2) and cross-rule
+    // conflict (Check 5, which must see every existing rule's true_negatives).
+    const scopedDir = mkdtempSync(join(tmpdir(), "atr-safety-newrules-"));
+    for (const f of newFiles) {
+      copyFileSync(join(REPO_ROOT, f), join(scopedDir, basename(f)));
+    }
+    const scopedEngine = new ATREngine({ rulesDir: scopedDir });
+    await scopedEngine.loadRules();
+    for (const id of newRuleIds) {
+      const rule = scopedEngine.getRuleById(id) as
+        | Record<string, unknown>
+        | undefined;
+      if (rule && (rule['status'] === 'draft' || rule['status'] === 'test')) {
+        rule['status'] = 'active';
+      }
+    }
+
     // Check 2 — own TPs must actually match.
     const tpMisses = await checkOwnTruePositivesMatch(engine, ruleEntries);
     for (const [id, reasons] of tpMisses) {
@@ -627,7 +661,7 @@ async function main(): Promise<void> {
     }
 
     // Check 3 — benign skill corpus FP (432 SKILL.md samples).
-    const benignFps = await checkBenignCorpusFP(engine, newRuleIds);
+    const benignFps = await checkBenignCorpusFP(scopedEngine, newRuleIds);
     for (const [id, samples] of benignFps) {
       failures.push({
         file: fileToId.get(id) ?? id,
@@ -636,7 +670,7 @@ async function main(): Promise<void> {
     }
 
     // Check 3b — extended benign corpus FP (arxiv + npm + pypi).
-    const extendedFps = await checkExtendedBenignFP(engine, newRuleIds);
+    const extendedFps = await checkExtendedBenignFP(scopedEngine, newRuleIds);
     for (const [id, samples] of extendedFps) {
       failures.push({
         file: fileToId.get(id) ?? id,
@@ -646,7 +680,7 @@ async function main(): Promise<void> {
 
     // Check 3c — benign-CODE corpus FP (imports + normal library usage).
     // Hard gate against the import-FP class that slipped through before.
-    const codeFps = await checkBenignCodeFP(engine, newRuleIds);
+    const codeFps = await checkBenignCodeFP(scopedEngine, newRuleIds);
     for (const [id, samples] of codeFps) {
       failures.push({
         file: fileToId.get(id) ?? id,
@@ -655,7 +689,7 @@ async function main(): Promise<void> {
     }
 
     // Check 4 — research-mention corpus FP.
-    const mentionFps = await checkResearchMentionFP(engine, newRuleIds);
+    const mentionFps = await checkResearchMentionFP(scopedEngine, newRuleIds);
     for (const [id, samples] of mentionFps) {
       failures.push({
         file: fileToId.get(id) ?? id,
@@ -678,6 +712,7 @@ async function main(): Promise<void> {
 
     // Restore original statuses now that all FP checks are complete
     restoreStatuses();
+    rmSync(scopedDir, { recursive: true, force: true });
   }
 
   if (failures.length === 0) {
