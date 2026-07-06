@@ -19,6 +19,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   verify:
@@ -36,10 +37,12 @@ jobs:
         run: node scripts/verify-adopters.mjs
 
       - name: Commit refreshed verification data
+        id: commit
         if: github.ref == 'refs/heads/main'
         run: |
           if git diff --quiet data/adopters-verification.json; then
             echo "verification data unchanged — nothing to commit"
+            echo "committed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git config user.name "ATR Stats Bot"
@@ -47,6 +50,18 @@ jobs:
           git add data/adopters-verification.json
           git commit -m "chore(adopters): auto re-verify evidence links"
           git push origin main
+          echo "committed=true" >> "$GITHUB_OUTPUT"
+
+      # Pushes made with the default GITHUB_TOKEN deliberately do not fire
+      # push-triggered workflows (GitHub recursion guard), so the bot commit
+      # above never reaches deploy-website.yml on its own — the public
+      # verification stamp would lag until the next unrelated deploy.
+      # Dispatch the deploy explicitly instead.
+      - name: Trigger website deploy for the fresh stamp
+        if: github.ref == 'refs/heads/main' && steps.commit.outputs.committed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run deploy-website.yml --ref main
 
       - name: Fail on drift
         run: |
