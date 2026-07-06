@@ -51,7 +51,7 @@ detection:
     description: "Disabling SELinux or AppArmor mandatory-access-control"
   - field: content
     operator: regex
-    value: "(?i)(auditctl\\s+-D\\b|history\\s+-c\\b[^\\n]{0,20}(rm|>\\s*~?/?\\.?bash_history)|(cat\\s+/dev/null|:)\\s*>\\s*~?/\\.?bash_history|export\\s+HISTFILE=/dev/null)"
+    value: "(?i)(auditctl\\s+-D\\b|history\\s+-c\\b[^\\n]{0,20}(rm|>\\s*~?/?\\.?bash_history)|(\\bcat\\s+/dev/null|:)\\s*>\\s*~?/\\.?bash_history|export\\s+HISTFILE=/dev/null)"
     description: "Clearing audit rules or wiping shell history to hide tracks"
   - field: tool_args
     operator: regex
