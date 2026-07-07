@@ -45,12 +45,13 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
   // tier 4 (commercial) is separated visually so vendor implementations do not
   // dominate a page that is primarily about the standard's reach. Empty tiers
   // (after the shipped filter) are dropped rather than shown as empty states.
-  const sections: Array<{ tier: AdopterTier; entries: Adopter[] }> = [
+  const allSections: Array<{ tier: AdopterTier; entries: Adopter[] }> = [
     { tier: "S", entries: shippedOnly(adopters.tierS) },
     { tier: "1", entries: shippedOnly(adopters.tier1) },
     { tier: "2", entries: shippedOnly(adopters.tier2) },
     { tier: "3", entries: shippedOnly(adopters.tier3) },
-  ].filter((s) => s.entries.length > 0);
+  ];
+  const sections = allSections.filter((s) => s.entries.length > 0);
   // Commercial is rendered after a separator so it reads as "vendors offering
   // hosted ATR" rather than "another tier of adoption".
   const commercial: Adopter[] = shippedOnly(adopters.tier4);
