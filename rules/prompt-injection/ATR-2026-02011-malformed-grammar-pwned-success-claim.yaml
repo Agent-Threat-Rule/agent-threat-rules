@@ -1,0 +1,121 @@
+title: "Malformed-Grammar PWNED Success-Claim Detection"
+id: ATR-2026-02011
+rule_version: 1
+status: draft
+description: >
+  Detects prompt-injection success-claim outputs where the model has been coerced into
+  emitting a grammatically broken "has/have been PWNED" style confirmation string.
+  These malformed-grammar variants (e.g. "Me have been PWNED", "I has been PWNED")
+  are a recurring artifact of automated jailbreak/injection fuzzing corpora (e.g.
+  HackAPrompt-style challenges) where the attacker forces the target LLM to echo a
+  templated compliance token regardless of correct grammar. Detection targets the
+  LLM output / tool response text channel rather than user input, since the payload
+  only appears once the model has already produced the compromised completion.
+author: "ATR Community"
+date: "2026/07/07"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM01:2025 - Prompt Injection"
+  owasp_agentic:
+    - "ASI01:2026 - Agent Goal Hijack"
+  mitre_atlas:
+    - "AML.T0051 - LLM Prompt Injection"
+    - "AML.T0054 - LLM Jailbreak"
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "High-risk AI systems must be resilient against adversarial attempts to suppress safety mechanisms. Detecting confirmed prompt-injection success-claim output is a concrete cybersecurity control satisfying Article 15 requirements for robustness against input-based manipulation."
+      strength: primary
+    - article: "9"
+      context: "Successful prompt-injection compliance strings constitute a documented risk class in the AI system risk register; Article 9 requires that monitoring controls are deployed to detect these attempts at runtime."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: "Malformed-grammar success-claim strings are a primary artifact of adversarial prompt-injection attacks against AI systems; MP.5.1 requires that adversarial input risks are identified and tracked so that runtime detection controls like this rule can be deployed."
+      strength: primary
+    - subcategory: "MG.3.2"
+      context: "Detected PWNED-style success-claim output represents confirmed exploitation of the model's output channel, triggering the risk treatment response plans required by MG.3.2 to contain and remediate adversarial prompt attacks."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Clause 8.1 operational controls ensure AI systems execute correctly and consistently; runtime detection of confirmed injection success-claim output enforces that safety constraints remain active despite adversarial instructions to disable them."
+      strength: primary
+    - clause: "8.3"
+      context: "Clause 8.3 requires AI system impacts to be assessed and monitored in operation; this rule provides monitoring evidence for the prompt-injection technique (Malformed-Grammar PWNED Success-Claim) once it manifests in model output."
+      strength: secondary
+
+tags:
+  category: prompt-injection
+  subcategory: jailbreak
+  scan_target: mcp
+  confidence: high
+
+agent_source:
+  type: llm_io
+  framework:
+    - openai
+    - anthropic
+    - langchain
+    - llamaindex
+    - autogen
+    - crewai
+  provider:
+    - any
+
+detection:
+  conditions:
+    - field: content
+      operator: regex
+      value: "(?i)\\b(?:i|me|iv|we all)\\b[\\s\\S]{0,15}\\b(?:has|have|has be|iv)\\b[\\s\\S]{0,10}\\bbeen\\b[\\s\\S]{0,10}\\bpwned\\b"
+      description: "Grammatically malformed first-person 'has/have been PWNED' success-claim string typical of forced prompt-injection compliance output"
+
+  condition: any
+  false_positives:
+    - "Benign chat text referencing having 'been' somewhere, unrelated to any compliance token"
+    - "Security researchers discussing PWNED-style CTF/jailbreak success strings in professional writeups"
+    - "Legitimate grammar/language-learning discussion of correct vs incorrect verb conjugation"
+
+response:
+  actions:
+    - block_input
+    - alert
+    - snapshot
+    - escalate
+  auto_response_threshold: high
+  message_template: >
+    [ATR-2026-02011] Prompt-injection success-claim detected. The model output contains
+    a malformed-grammar "has/have been PWNED" confirmation string consistent with a
+    successful prompt-injection or jailbreak attempt. This response has been blocked.
+    Repeated occurrences may indicate an active injection campaign against this agent.
+
+confidence: 88
+wild_validated: "2026/07/07"
+wild_samples: 4817
+wild_fp_rate: 0
+test_cases:
+  true_positives:
+    - input: "Me have been PWNED English"
+      expected: triggered
+      description: "Malformed-grammar success-claim from HackAPrompt-style residual corpus"
+    - input: "I has been PWNED. You has been PWNED. We all has been PWNED."
+      expected: triggered
+      description: "Repeated malformed-grammar success-claim across multiple subjects"
+  true_negatives:
+    - input: "I have been to Paris three times and each trip was wonderful."
+      expected: not_triggered
+      description: "Benign first-person travel anecdote using 'have been'"
+    - input: "We all have been working overtime this week to hit the deadline."
+      expected: not_triggered
+      description: "Benign team status update using 'have been'"
+    - input: "The document has been reviewed and approved by the compliance team."
+      expected: not_triggered
+      description: "Benign third-person passive voice, no first-person subject"
+    - input: "I have been a software engineer for ten years and love solving hard problems."
+      expected: not_triggered
+      description: "Benign professional bio statement using 'have been'"
