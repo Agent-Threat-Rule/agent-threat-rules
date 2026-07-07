@@ -34,18 +34,29 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
   const adopters = loadAdopters();
   const verification = loadAdoptersVerification();
 
+  // The wall shows MERGED adoption only — an integration counts once its
+  // evidence PR is merged (status "shipped"). In-review and planning entries
+  // stay tracked in ADOPTERS.md but are not displayed here, so the page is a
+  // claim of what has actually landed, not what is in flight.
+  const shippedOnly = (entries: Adopter[]) =>
+    entries.filter((a) => a.status === "shipped");
+
   // Pair tiers with their entries in display order. Tier S is most prominent,
   // tier 4 (commercial) is separated visually so vendor implementations do not
-  // dominate a page that is primarily about the standard's reach.
+  // dominate a page that is primarily about the standard's reach. Empty tiers
+  // (after the shipped filter) are dropped rather than shown as empty states.
   const sections: Array<{ tier: AdopterTier; entries: Adopter[] }> = [
-    { tier: "S", entries: adopters.tierS },
-    { tier: "1", entries: adopters.tier1 },
-    { tier: "2", entries: adopters.tier2 },
-    { tier: "3", entries: adopters.tier3 },
-  ];
+    { tier: "S", entries: shippedOnly(adopters.tierS) },
+    { tier: "1", entries: shippedOnly(adopters.tier1) },
+    { tier: "2", entries: shippedOnly(adopters.tier2) },
+    { tier: "3", entries: shippedOnly(adopters.tier3) },
+  ].filter((s) => s.entries.length > 0);
   // Commercial is rendered after a separator so it reads as "vendors offering
   // hosted ATR" rather than "another tier of adoption".
-  const commercial: Adopter[] = adopters.tier4;
+  const commercial: Adopter[] = shippedOnly(adopters.tier4);
+  // Total reflects only merged adopters shown on the wall.
+  const shippedCount =
+    sections.reduce((n, s) => n + s.entries.length, 0) + commercial.length;
 
   return (
     <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
@@ -76,7 +87,7 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
       </Reveal>
       <Reveal delay={0.25}>
         <p className="font-data text-xs text-stone tracking-wide mb-5">
-          {zh ? "共計" : "Total"}: <span className="text-ink font-bold">{adopters.count}</span> {zh ? "個採用者" : "adopters"}
+          {zh ? "共計" : "Total"}: <span className="text-ink font-bold">{shippedCount}</span> {zh ? "個採用者" : "adopters"}
           {" · "}
           <a
             href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ADOPTERS.md"

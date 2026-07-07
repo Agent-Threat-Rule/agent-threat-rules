@@ -248,6 +248,14 @@ Adopters who reference ATR in public catalogues, awesome-lists, or
 documentation indices. Lower-effort inclusion but useful for ecosystem
 discoverability.
 
+### killertcell428/aigis
+- **Org**: Aigis (independent)
+- **Type**: reference
+- **Integration**: Aigis↔ATR crosswalk — maps Aigis detection patterns to ATR rule IDs through the shared MITRE ATLAS technique axis, with a two-direction ATLAS coverage-gap analysis; merged into the Aigis repo
+- **Evidence**: <https://github.com/killertcell428/aigis/pull/154>
+- **Since**: 2026-07-07
+- **Status**: shipped
+
 ### ottosulin/awesome-ai-security
 - **Org**: Otto Sulin (independent)
 - **Type**: reference
