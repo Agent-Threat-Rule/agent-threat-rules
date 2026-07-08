@@ -85,7 +85,7 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          set -e
+          set -eo pipefail
           DRY_RUN_FLAG=""
           if [ "${{ inputs.dry_run }}" = "true" ]; then DRY_RUN_FLAG="--dry-run"; fi
           npx tsx scripts/fn-mine-llm.ts $DRY_RUN_FLAG --cap "${{ inputs.cap || '5' }}" | tee /tmp/fn-mine.out
