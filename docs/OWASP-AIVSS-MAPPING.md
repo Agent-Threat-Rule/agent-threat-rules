@@ -1,7 +1,7 @@
 # ATR -> OWASP AIVSS (AI Vulnerability Scoring System) Mapping
 
 Last updated: 2026-06-16
-ATR version: v3.5.2 (655 rules)
+ATR version: v3.5.2 (708 rules)
 OWASP framework: AIVSS v0.8 (March 2026) — OWASP Agentic AI Core Security Risks
 
 ## What this maps, and what it does not

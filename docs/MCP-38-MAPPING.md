@@ -1,6 +1,6 @@
 # ATR → MCP-38 Threat Taxonomy Mapping
 
-Last updated: 2026-07-08 (corpus refreshed from 655 to 708 rules; cited rule IDs
+Last updated: 2026-07-08 (version stamp refreshed to v3.5.6; cited rule IDs
 spot-checked as still resolving; the 7-gap authoring roadmap is carried forward
 and re-validated as those dedicated rules are written)
 ATR corpus: v3.5.6, 708 rules (10 categories)
