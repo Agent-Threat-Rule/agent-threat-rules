@@ -1,0 +1,195 @@
+title: "EscapeRoute — Filesystem MCP Server Directory Prefix-Bypass (CVE-2025-53110)"
+id: ATR-2026-02023
+rule_version: 1
+status: draft
+description: >
+  Detects the EscapeRoute directory-containment bypass (CVE-2025-53110, CVSS
+  7.3) reported by Cymulate against Anthropic's Filesystem MCP Server before
+  0.6.3 / 2025.7.1. The server enforced the allowed-directory boundary with a
+  naive string prefix check: any requested path that merely starts with the
+  allowed-directory string passed validation. An attacker requests a sibling
+  directory that shares the allowed prefix — e.g. allowed dir "/private/tmp/allow_dir"
+  is escaped with "/private/tmp/allow_dir_sensitive_credentials" — reading or
+  writing files entirely outside the intended sandbox. This rule fires on the
+  concrete filesystem-MCP access signature: a read_file/write_file/list_directory
+  operation whose path takes an allowed-dir-like prefix and appends a suffix
+  character that turns it into a different sibling directory (allow_dir ->
+  allow_dir_secret). It does NOT fire on plain "../" traversal (covered
+  elsewhere) or on legitimate paths that stay inside the boundary. Fixed by
+  path.resolve + boundary-with-separator checks in 0.6.3 / 2025.7.1.
+author: "ATR Community (MCP CVE sweep)"
+date: "2026/07/08"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM06:2025 - Excessive Agency"
+    - "LLM02:2025 - Sensitive Information Disclosure"
+  owasp_agentic:
+    - "ASI02:2026 - Tool Misuse and Exploitation"
+    - "ASI06:2026 - Memory and Context Manipulation"
+  mitre_atlas:
+    - "AML.T0053 - AI Agent Tool Invocation"
+    - "AML.T0057 - LLM Data Leakage"
+  cve:
+    - "CVE-2025-53110"
+  cwe:
+    - "CWE-22"
+    - "CWE-706"
+  external:
+    - "https://cymulate.com/blog/cve-2025-53109-53110-escaperoute-anthropic/"
+    - "https://nvd.nist.gov/vuln/detail/CVE-2025-53110"
+
+metadata_provenance:
+  cve: mcp-cve-sweep
+  cwe: mcp-cve-sweep
+  owasp_llm: mcp-cve-sweep
+  owasp_agentic: mcp-cve-sweep
+  mitre_atlas: mcp-cve-sweep
+
+compliance:
+  owasp_agentic:
+    - id: "ASI02:2026"
+      context: "OWASP Agentic ASI02:2026 (Tool Misuse and Exploitation) is exercised by the EscapeRoute prefix-bypass that misuses the filesystem MCP tool to read outside its sandbox (CVE-2025-53110); this rule detects that access pattern."
+      strength: primary
+    - id: "ASI06:2026"
+      context: "OWASP Agentic ASI06:2026 (Memory and Context Manipulation) is affected where out-of-sandbox reads pull sensitive files into agent context (CVE-2025-53110)."
+      strength: secondary
+  owasp_llm:
+    - id: "LLM02:2025"
+      context: "OWASP LLM LLM02:2025 (Sensitive Information Disclosure) is exercised by the EscapeRoute prefix bypass leaking files outside the allowed directory (CVE-2025-53110); this rule is a detection implementation for that category."
+      strength: primary
+    - id: "LLM06:2025"
+      context: "OWASP LLM LLM06:2025 (Excessive Agency) is exercised where the filesystem MCP server acts outside its intended directory scope (CVE-2025-53110)."
+      strength: secondary
+  eu_ai_act:
+    - article: "15"
+      context: "EU AI Act Article 15 (accuracy, robustness and cybersecurity) requires MCP filesystem tools to enforce directory boundaries; this rule provides runtime detection evidence for the CVE-2025-53110 prefix-bypass."
+      strength: primary
+    - article: "10"
+      context: "EU AI Act Article 10 (data and data governance) is supported by preventing out-of-scope data access via the CVE-2025-53110 prefix bypass; this rule provides detection evidence."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Manage
+      subcategory: "MG.2.3"
+      context: "NIST AI RMF MG.2.3 (risk treatment options selected and tracked) is supported by this rule's detection of the EscapeRoute prefix-bypass path traversal (CVE-2025-53110)."
+      strength: primary
+    - function: Measure
+      subcategory: "MS.2.7"
+      context: "NIST AI RMF MS.2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of CVE-2025-53110."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by this rule's detection of the EscapeRoute prefix bypass (CVE-2025-53110)."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is operationalised by this rule's detection of CVE-2025-53110."
+      strength: secondary
+
+tags:
+  category: tool-poisoning
+  subcategory: filesystem-mcp-prefix-bypass
+  scan_target: runtime
+  confidence: high
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "Legitimate filesystem MCP reads/writes that stay inside the allowed directory — a path continuing with a directory separator after the allowed prefix (allow_dir/subfolder/file) is IN-scope and must not fire. This rule only matches when the character immediately after the allowed-directory token is a name character (letter/digit/underscore/hyphen/dot) that extends the directory name into a DIFFERENT sibling, not a '/' that descends inside it."
+    - "Advisory or research text naming CVE-2025-53110, EscapeRoute, or the allow_dir_sensitive example without a live tool call carrying the sibling-directory path."
+    - "Filenames or variables that legitimately contain an underscore after a common word (e.g. reading data_export/report.csv) where there is no filesystem-MCP allowed-directory-escape framing — the rule requires the filesystem-MCP operation/boundary context to co-occur."
+  conditions:
+    # Layer 1 — an explicit allowed-directory-escape: a filesystem MCP tool op
+    # (read_file/write_file/etc.) whose path names an <allowed>_<suffix> sibling
+    # while the same content names the allowed directory itself, i.e. the path
+    # extends the boundary token with a name char instead of a separator.
+    - field: content
+      operator: regex
+      value: '(?i)\ballow(?:ed)?[_-]?dir\b[\s\S]{0,160}?\b(?:read_file|write_file|read_text_file|read_media_file|list_directory|directory_tree|move_file|edit_file|get_file_info)\b[\s\S]{0,80}?[=:"''\s]/?[\w./-]*\ballow(?:ed)?[_-]?dir[_-][A-Za-z0-9][\w.-]*'
+      description: "A filesystem MCP operation whose path extends the allowed-directory token with a suffix name char (allow_dir -> allow_dir_secret) — the CVE-2025-53110 prefix-bypass sibling escape"
+    # Layer 2 — the boundary-token-plus-suffix path anchored to filesystem-MCP
+    # framing (allowed directory / sandbox / boundary / prefix check), covering
+    # the generalized case where the allowed dir has any name and a suffix turns
+    # it into a sibling.
+    - field: content
+      operator: regex
+      value: '(?i)\b(?:allowed\s+director(?:y|ies)|sandbox\s+(?:root|dir(?:ectory)?)|filesystem\s+mcp|prefix\s+check)\b[\s\S]{0,180}?\b(?:read_file|write_file|read_text_file|list_directory|directory_tree|edit_file|move_file|call\s+(?:read|write)|read|write|leak|exfil(?:trate)?|access)\b[\s\S]{0,80}?/[\w./-]+_(?:sensitive|secret|secrets|credentials?|backup|private|config|evil|admin|root)\b[\w./-]*'
+      description: "Filesystem-MCP allowed-directory framing paired with a live operation (read_file/write_file/list/read/leak) on a sibling path whose name is the boundary token plus a sensitive suffix — CVE-2025-53110 containment bypass. Requiring an operation verb keeps advisory prose that only names the prefix-check + PoC path from firing."
+    # Layer 3 — the exact Cymulate PoC family: allow_dir followed directly by
+    # _sensitive / _credentials, the published escape strings.
+    - field: content
+      operator: regex
+      value: '(?i)(?:\b(?:read_file|write_file|read_text_file|list_directory|directory_tree|edit_file|move_file|read|write|open|cat|leak|exfil(?:trate)?)\b[\s\S]{0,80}?/(?:private/)?tmp/allow(?:ed)?[_-]?dir_(?:sensitive|credentials?|secrets?|evil|backup)\b|/(?:private/)?tmp/allow(?:ed)?[_-]?dir_(?:sensitive|credentials?|secrets?|evil|backup)\b[\s\S]{0,80}?\b(?:read_file|write_file|list_directory|directory_tree|edit_file|move_file|to\s+read|to\s+leak|to\s+exfil))'
+      description: "The published CVE-2025-53110 EscapeRoute PoC sibling path (/tmp/allow_dir_sensitive etc.) reached by a live filesystem-MCP operation (read_file/write_file/list_directory/read/leak). Requiring an operation verb near the path keeps advisory prose that merely quotes the PoC path from firing."
+
+response:
+  actions:
+    - alert
+    - block_tool
+  notify:
+    - security_team
+  message_template: >
+    [ATR-2026-02023] HIGH: EscapeRoute filesystem-MCP directory prefix bypass
+    (CVE-2025-53110, CVSS 7.3). A filesystem MCP operation targets a sibling
+    directory that merely shares the allowed-directory prefix (allow_dir ->
+    allow_dir_sensitive), reading/writing outside the sandbox. Remediation:
+    upgrade @modelcontextprotocol/server-filesystem to 2025.7.1 / 0.6.3+
+    (adds path.resolve + trailing-separator boundary checks); never validate
+    directory containment with a bare string prefix.
+
+confidence: 82
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: 'filesystem MCP read_file path=/private/tmp/allow_dir_sensitive_credentials/.env — escapes the /private/tmp/allow_dir boundary'
+      expected: triggered
+      description: "Cymulate PoC — read_file on the allow_dir_sensitive_credentials sibling that shares the allow_dir prefix"
+    - input: 'The allowed directory is /tmp/allow_dir; call write_file with /tmp/allow_dir_evil/payload to bypass the prefix check'
+      expected: triggered
+      description: "write_file to allow_dir_evil sibling escaping the allowed_dir prefix"
+    - input: 'allowed directory /srv/data_dir — list_directory /srv/data_dir_secrets leaks files outside the sandbox via prefix match'
+      expected: triggered
+      description: "Generalized allowed-directory framing with a _secrets sibling escape"
+    - input: 'sandbox root is /home/agent/work; read_file /home/agent/work_backup/id_rsa slips past the naive filesystem mcp prefix check'
+      expected: triggered
+      description: "sandbox-root framing with a _backup sibling read via filesystem MCP"
+    - input: 'curl not involved — just point the filesystem mcp at /private/tmp/allow_dir_credentials to read the sibling directory outside allowed_dir'
+      expected: triggered
+      description: "Filesystem-MCP framing plus the allow_dir_credentials sibling path"
+  true_negatives:
+    - input: 'filesystem MCP read_file path=/private/tmp/allow_dir/report.txt — a normal in-scope read inside the allowed directory'
+      expected: not_triggered
+      description: "In-scope read: path continues with '/' after allow_dir, staying inside the boundary"
+    - input: 'The allowed directory is /tmp/allow_dir; write_file /tmp/allow_dir/output/result.json stays within the sandbox subtree.'
+      expected: not_triggered
+      description: "In-scope write into a subfolder of the allowed directory — separator after the boundary token"
+    - input: "CVE-2025-53110 EscapeRoute abused a naive prefix check so /tmp/allow_dir_sensitive escaped /tmp/allow_dir; fixed in 2025.7.1."
+      expected: not_triggered
+      description: "Advisory text explaining the bypass and the fix without a live tool call"
+    - input: 'Our data pipeline reads data_export/2026/report.csv and writes to data_export/out; standard project paths, no MCP boundary escape.'
+      expected: not_triggered
+      description: "Ordinary underscore-containing directory names with no filesystem-MCP allowed-directory-escape framing"
+    - input: 'list_directory /home/agent/work/subdir returns the files under the allowed work directory tree.'
+      expected: not_triggered
+      description: "In-scope list of a subdirectory under the allowed work root — separator, not a sibling suffix"
+
+evasion_tests:
+  - input: 'read_file /private/tmp/allow_dir%5Fsensitive/.env (URL-encoded underscore) to escape allow_dir'
+    expected: not_triggered
+    bypass_technique: url_encoded_separator
+    notes: "URL-encoding the underscore (%5F) between allow_dir and sensitive defeats the literal name-char match. Percent-decoding belongs in an engine normalization pass; a v2 could add a %5F branch after confirming the filesystem MCP decodes it."
+  - input: 'set the boundary to C:\\tmp\\allow_dir then read C:\\tmp\\allow_dir_secret\\creds.txt on the Windows filesystem server'
+    expected: not_triggered
+    bypass_technique: windows_backslash_path
+    notes: "Windows backslash paths are not modeled by the forward-slash anchors. The Anthropic reference server is cross-platform; a v2 should add a backslash path variant if Windows exploitation is observed."
