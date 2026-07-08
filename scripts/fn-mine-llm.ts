@@ -431,11 +431,27 @@ async function main(): Promise<void> {
   console.log(`[fn-mine] model=${model} cap=${cap} minRecovers=${minRecovers} dryRun=${isDryRun}`);
 
   console.log('[fn-mine] regenerating FN reports against the current rule set...');
+  // Per-corpus fault tolerance: an external dependency failing for ONE corpus
+  // (e.g. HackAPrompt's upstream HuggingFace dataset requiring auth) must not
+  // crash the whole run — the OTHER corpora should still get mined. A corpus
+  // that fails to regenerate is skipped for this run and logged loudly, not
+  // silently — this is exactly the kind of failure `set -o pipefail` in the
+  // calling workflow is there to make visible if left unhandled.
+  const availableCorpora: CorpusSpec[] = [];
   for (const spec of CORPORA) {
-    for (const cmd of spec.regenerate) {
-      console.log(`[fn-mine]   $ ${cmd}`);
-      execSync(cmd, { cwd: REPO_ROOT, stdio: 'inherit' });
+    try {
+      for (const cmd of spec.regenerate) {
+        console.log(`[fn-mine]   $ ${cmd}`);
+        execSync(cmd, { cwd: REPO_ROOT, stdio: 'inherit' });
+      }
+      availableCorpora.push(spec);
+    } catch (e) {
+      console.log(`[fn-mine] WARNING: ${spec.name} corpus regeneration failed — skipping this corpus for this run.`);
+      console.log(`[fn-mine]   ${e instanceof Error ? e.message : String(e)}`);
     }
+  }
+  if (availableCorpora.length === 0) {
+    throw new Error('Every corpus failed to regenerate — nothing to mine. See warnings above for per-corpus failure reasons.');
   }
 
   const benignTexts = loadBenignTexts();
@@ -445,7 +461,7 @@ async function main(): Promise<void> {
   console.log(`[fn-mine] existing rule regexes on disk (any status, incl. draft): ${existingRegexes.length}`);
 
   let allSurvivors: Array<GatedCandidate & { corpus: string }> = [];
-  for (const spec of CORPORA) {
+  for (const spec of availableCorpora) {
     const fnRaw = loadFnCorpus(spec);
     const fnFiltered = filterAlreadyCovered(fnRaw.texts, existingRegexes);
     const fn = { name: fnRaw.name, texts: fnFiltered };
