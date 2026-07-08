@@ -1,0 +1,152 @@
+name: Scheduled FN Mining (red-team false-negative sweep)
+
+# Weekly unattended counterpart to the interactive /fn-mine Claude Code
+# workflow. Regenerates fresh false-negative reports against the CURRENT
+# rule set for the corpora ATR has fixtures for (HackAPrompt, PINT), mines
+# generalizable candidates via the Anthropic API (scripts/fn-mine-llm.ts —
+# same @anthropic-ai/sdk pattern as scripts/quality-upgrade.ts), gates every
+# candidate against the full FN set + the full benign corpus with the exact
+# engine regex-compile semantics, authors survivors, self-tests each on the
+# real engine, and re-verifies the whole batch against this repo's own
+# safety gate before opening a DRAFT PR.
+#
+# Safety posture (deliberately conservative for unattended automation):
+#   - Never auto-merges. Always opens a draft PR; a human decides.
+#   - A "null result" (nothing survived the gate) is a valid, quiet outcome —
+#     no PR is opened, no noise. See scripts/fn-mine-llm.ts's design notes:
+#     both corpora will naturally converge toward null results as their
+#     (finite, fixed-seed) reservoirs get mined out — that is expected, not
+#     a bug to chase.
+#   - Capped at 5 rules per run by default (the `cap` workflow_dispatch input,
+#     or --cap 5 on the cron trigger), well under the repo's 10-rules/PR
+#     safety-gate limit, since an unattended batch has no interactive
+#     reviewer catching subtle bugs the way a live session does.
+
+on:
+  schedule:
+    # Thursdays 09:00 UTC — matches the red-team cadence slot used by the
+    # interactive /fn-mine command.
+    - cron: '0 9 * * 4'
+  workflow_dispatch:
+    inputs:
+      cap:
+        description: 'Max rules to author this run'
+        required: false
+        default: '5'
+      dry_run:
+        description: 'Mine and gate but do not author/PR (prints survivors)'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: fn-mine-scheduled
+  cancel-in-progress: false
+
+jobs:
+  mine:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Install Python dependencies (HackAPrompt corpus fetch)
+        run: pip install datasets
+
+      - name: Build
+        run: npm run build
+
+      - name: Configure git identity
+        run: |
+          git config user.name "ATR FN-Mine Bot"
+          git config user.email "fn-mine@agentthreatrule.org"
+
+      - name: Run FN mining
+        id: mine
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          set -e
+          DRY_RUN_FLAG=""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then DRY_RUN_FLAG="--dry-run"; fi
+          npx tsx scripts/fn-mine-llm.ts $DRY_RUN_FLAG --cap "${{ inputs.cap || '5' }}" | tee /tmp/fn-mine.out
+          FILES=$(grep "::authored-files::" /tmp/fn-mine.out | tail -1 | sed 's/::authored-files:://')
+          echo "files=$FILES" >> "$GITHUB_OUTPUT"
+
+      - name: Stop here if nothing survived (null result — not an error)
+        if: steps.mine.outputs.files == ''
+        run: echo "No rules survived the gate this run. Quiet exit, no PR."
+
+      - name: Create branch + commit + push
+        if: steps.mine.outputs.files != ''
+        id: push
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          BRANCH="fn-mine/scheduled-$(date +%Y%m%d)"
+          git push origin --delete "$BRANCH" 2>/dev/null || true
+          git checkout -b "$BRANCH"
+          git add rules/ docs/crosswalks/
+          git commit -m "$(cat <<'EOF'
+          feat(rules): scheduled FN-mine sweep
+
+          Unattended weekly red-team false-negative mining (HackAPrompt + PINT).
+          See output/fn-mine-report.json for per-rule recovers counts.
+          EOF
+          )"
+          git push origin "$BRANCH"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Open draft PR
+        if: steps.mine.outputs.files != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          gh pr create \
+            --title "feat(rules): scheduled FN-mine sweep — $(date +%Y-%m-%d)" \
+            --body "$(cat <<'EOF'
+          Unattended weekly false-negative mining run (HackAPrompt + PINT reservoirs),
+          the scheduled counterpart to the interactive /fn-mine Claude Code workflow.
+
+          Method: regenerated fresh FN reports against the CURRENT rule set, filtered
+          out anything already covered by an existing rule regex on disk (any status,
+          draft included — prevents re-mining the same cluster every week just because
+          a prior draft hasn't been promoted yet), clustered the genuinely-uncovered
+          false negatives via Claude into candidate regexes, gated every candidate
+          against the FULL false-negative set and the FULL benign corpus using the
+          exact engine regex-compile semantics (not an approximation), authored
+          survivors, self-tested each on the real engine, then re-verified the whole
+          batch against this repo's own safety gate (65K-benign 0-FP + cross-rule
+          conflict + duplicate-ID checks) — dropping (not force-fixing) anything that
+          failed.
+
+          See output/fn-mine-report.json in this PR's diff for per-rule recovers
+          counts. Left as draft — nothing here is auto-merged; a human reviews and
+          decides, same as every other rule PR in this repo.
+          EOF
+          )" \
+            --label "auto-generated,fn-mine,needs-human-review" \
+            --draft \
+            --base main \
+            --head "${{ steps.push.outputs.branch }}"
