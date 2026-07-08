@@ -1,6 +1,6 @@
 # ATR → NSA "Model Context Protocol (MCP): Security Design Considerations" Mapping
 
-- **ATR corpus version:** v3.5.2 HEAD, 655 rules across 10 detection-rule categories. Headline benchmarks below were measured at v3.5.0 (2026-06-16).
+- **ATR corpus version:** v3.5.2 HEAD, 708 rules across 10 detection-rule categories. Headline benchmarks below were measured at v3.5.0 (2026-06-16).
 - **NSA guidance:** *Model Context Protocol (MCP): Security Design Considerations for AI-Driven Automation*, Cybersecurity Information Sheet (CSI), **NSA Artificial Intelligence Security**, **May 2026 Ver. 1.0** (U/OO/6030316-26 | PP-26-1834), posted 2026-06-02 on media.defense.gov; developed with the Carnegie Mellon University Software Engineering Institute.
 - **Document date:** 2026-06-29 (ratings recalibrated after an adversarial second-reviewer pass — see Verification status)
 - **Maintainer:** Adam Lin (adam@agentthreatrule.org)
