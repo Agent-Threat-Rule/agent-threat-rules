@@ -1,6 +1,6 @@
 title: "Skill Description-Behavior Mismatch"
 id: ATR-2026-00061
-rule_version: 1
+rule_version: 2
 status: experimental
 description: >
   Detects MCP skills whose runtime behavior diverges from their declared description.
@@ -10,6 +10,7 @@ description: >
   may retain its benign description while performing malicious actions.
 author: "ATR Community"
 date: "2026/03/08"
+modified: "2026/07/09"
 schema_version: "0.1"
 detection_tier: pattern
 maturity: test
@@ -69,27 +70,28 @@ agent_source:
     - any
 
 detection:
+  # A description-behavior MISMATCH needs two signals together: (A) the tool
+  # declares a narrow, benign capability scope (its name implies "weather",
+  # "lookup", "formatter", ...), and (B) its arguments perform a system /
+  # network / exec / secret operation outside that stated scope. Firing on (B)
+  # alone flags every shell tool that legitimately runs shell commands — a
+  # `shell.exec` tool running `curl` or `rm -rf` is NOT a mismatch. The earlier
+  # `condition: any` version had exactly that false-positive mode (it fired on
+  # benign `rm -rf ./build`, `curl … | tar xz`, `curl https://api.github.com`),
+  # so this now requires BOTH conditions (`condition: all`).
   conditions:
+    - field: tool_name
+      operator: regex
+      value: "(?i)(weather|forecast|lookup|translat|calculat|summar(y|iz)|dictionary|spell|currency|horoscope|wiki|encyclopedia|format(ter)?|greet|joke|quote|stock.?price|unit.?convert|calendar|reminder)"
+      description: "Tool declares a narrow, benign capability scope"
     - field: tool_args
       operator: regex
-      value: "(?i)(rm\\s+-rf|unlink|deleteFile|removeDir|fs\\.write|writeFile|appendFile|truncate)"
-    - field: tool_args
-      operator: regex
-      value: "(?i)(curl|wget|fetch|http\\.request|axios\\.|net\\.connect|socket\\.connect)"
-    - field: tool_args
-      operator: regex
-      value: "(?i)(child_process|spawn|exec|execFile|system\\(|popen|subprocess)"
-    - field: tool_args
-      operator: regex
-      value: "(?i)(process\\.env|os\\.environ|getenv|\\$\\{?[A-Z_]+\\}?|secrets?\\.|credentials?)"
-    - field: tool_response
-      operator: regex
-      value: "(?i)(password|api[_-]?key|secret[_-]?key|access[_-]?token|private[_-]?key|bearer\\s+[a-zA-Z0-9])"
-  condition: any
+      value: "(?i)(rm\\s+-rf|unlink|deleteFile|removeDir|fs\\.(write|unlink|rm)|writeFile|appendFile|truncate|child_process|spawn|execFile|subprocess|popen|system\\(|curl\\s+https?|wget\\s+https?|net\\.connect|socket\\.connect|/etc/(passwd|shadow)|process\\.env|os\\.environ|getenv|cat\\s+/etc|id_rsa|/\\.ssh)"
+      description: "Arguments perform system/network/exec/secret operations outside a benign scope"
+  condition: all
   false_positives:
-    - "Development tools that legitimately perform filesystem writes as part of their function"
-    - "CI/CD tools that execute build commands"
-    - "Configuration management tools that read environment variables"
+    - "A tool whose name legitimately implies system scope (shell, exec, terminal, deploy, git, npm, pip) performing system operations is NOT a mismatch — condition A requires a benign-scoped name, so these no longer match."
+    - "A benign-scoped tool whose arguments only pass data (URLs, text) without an exec/filesystem/secret verb does not match condition B."
 
 response:
   actions:
@@ -130,3 +132,23 @@ test_cases:
         tool_args: '{"url": "https://api.weather.com/forecast"}'
       expected: not_triggered
       reason: "API client legitimately making HTTP requests"
+    - input:
+        tool_name: "shell.exec"
+        tool_args: '{"cmd": "curl https://api.github.com/repos/acme/app"}'
+      expected: not_triggered
+      reason: "A shell/exec tool running curl is expected behavior, not a description mismatch"
+    - input:
+        tool_name: "shell.exec"
+        tool_args: '{"cmd": "rm -rf ./build"}'
+      expected: not_triggered
+      reason: "A shell tool removing a local build directory is a normal dev operation, not a mismatch"
+    - input:
+        tool_name: "bash"
+        tool_args: '{"cmd": "curl -fsSL https://files.pythonhosted.org/x.tar.gz | tar xz"}'
+      expected: not_triggered
+      reason: "A shell tool downloading and extracting a package is expected, not a benign-scoped tool exceeding its scope"
+    - input:
+        tool_name: "weather_lookup"
+        tool_args: '{"url": "https://api.weather.com/forecast?city=taipei"}'
+      expected: not_triggered
+      reason: "A benign-scoped tool passing a data URL without an exec/filesystem/secret verb does not match condition B"
