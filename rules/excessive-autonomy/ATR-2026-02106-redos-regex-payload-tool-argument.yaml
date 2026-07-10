@@ -88,11 +88,11 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '\([^()\n]{1,25}[+*]\)[+*]'
-      description: "Nested quantifier shape: a group ending in + or * immediately followed by another + or * on the group itself (classic catastrophic-backtracking construct)"
+      value: '\((?!\?:[^\s()\[\]a-zA-Z0-9]\[)[^()\n]{1,25}[+*]\)[+*](?!\*)'
+      description: "Nested quantifier shape: a group ending in + or * immediately followed by another + or * on the group itself (classic catastrophic-backtracking construct). Excludes a second trailing '*' so markdown **bold** markers do not coincidentally supply the outer quantifier (e.g. '(H3+)**'), and excludes the safe delimiter-prefixed non-capturing idiom '(?:-[a-z0-9]+)*' (slug/kebab-case validation) where a literal separator before the class removes the backtracking ambiguity"
     - field: content
       operator: regex
-      value: '\([^()\n]{1,25}[+*]\)[+*]\s*[$!]'
+      value: '\((?!\?:[^\s()\[\]a-zA-Z0-9]\[)[^()\n]{1,25}[+*]\)[+*](?!\*)\s*[$!]'
       description: "Nested-quantifier ReDoS shape anchored with a trailing $ or ! -- forces a full failed-match backtrack against the entire input"
   false_positives:
     - "Legitimate regex-library documentation or tutorial text quoting a nested-quantifier example to explain why it is dangerous, without an actual tool call submitting it as a live query"
