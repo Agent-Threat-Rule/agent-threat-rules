@@ -1,0 +1,144 @@
+title: "Single-Level Directory Traversal to a Named Sensitive Config/Secret File"
+id: ATR-2026-02122
+rule_version: 1
+status: experimental
+description: >
+  Detects a file/path/resource argument that uses a single ".." to step up
+  one directory level out of an asset-serving or upload sandbox and land on a
+  specifically named sensitive config or secret file (config.json, .env,
+  secrets.json/.yaml, credentials.json, wp-config.php, id_rsa, .htpasswd,
+  settings.py). ATR-2026-00569 requires a DEEP traversal chain (two or more
+  "../" segments) reaching /etc/passwd-class system targets, so it does not
+  fire on a single-level escape targeting an application-level secrets file
+  one directory up -- which is the shape of the actual vulnerability class:
+  an app restricts access to a subdirectory (e.g. "web_assets/") but a lone
+  ".." reaches the parent directory where its own config lives. Mined from
+  CVE-2024-3234 (gaizhenbiao/chuanhuchatgpt, path traversal via an outdated
+  gradio component: `GET /file=web_assets/../config.json` exposes the app's
+  own OpenAI API key), generalized beyond that one app/filename since any
+  file-serving tool or endpoint with the same one-level sandbox gap is
+  equally exploitable against any of the listed sensitive filenames.
+author: "ATR Community (CVE sweep)"
+date: "2026/07/11"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: high
+
+references:
+  cve:
+    - "CVE-2024-3234"
+  cwe:
+    - "CWE-22"
+  owasp_llm:
+    - "LLM02:2025 - Sensitive Information Disclosure"
+  owasp_agentic:
+    - "ASI01:2026 - Agent Goal Hijack"
+  mitre_attack:
+    - "T1552.001 - Unsecured Credentials: Credentials In Files"
+  mitre_atlas:
+    - "AML.T0057 - LLM Data Leakage"
+  external:
+    - "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2024/CVE-2024-3234.yaml"
+
+metadata_provenance:
+  cve: human-reviewed
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires resistance to unauthorised data access; this rule detects a single-level directory-traversal escape used to read an application's own secrets/config file, a shape a deep-traversal-only filter misses."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control for the single-level-traversal-to-config risk class."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Treating single-level traversal to a named secrets file as an identified AI risk requires active runtime countermeasures; this detection rule is the primary risk treatment implementation."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Identifying the single-level traversal pattern as an AI risk to be catalogued in the organizational risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by this rule's detection of single-level traversal attempts targeting secrets/config files."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented via this rule's runtime detection of the traversal attempt."
+      strength: secondary
+
+tags:
+  category: context-exfiltration
+  subcategory: single-level-traversal-config-exfil
+  scan_target: mcp
+  confidence: medium
+
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)(?:file|path|resource|filename)[''"]?\s*[=:]\s*[''"]?(?:[\w.-]+/)*(?:web[_-]?assets|assets|uploads?|public|static|media|images?|files|downloads?|tmp|temp|cache|attachments?|resources?|content)/\.\./(?:config\.json|\.env\b|secrets?\.(?:json|ya?ml)|credentials\.json|wp-config\.php|id_rsa|\.htpasswd|settings\.py)'
+      description: "file/path-style argument using a single ../ to escape a recognizable asset-serving/upload sandbox directory (web_assets, uploads, public, static, etc.) and land on a named sensitive config/secret file"
+  false_positives:
+    - "A legitimate monorepo-relative reference that genuinely needs one '../' to reach a same-named local file that is not actually the app's secrets store"
+    - "Educational or changelog text discussing this exact CVE's PoC path as an example, not an actual tool-call argument"
+    - "Ordinary monorepo dotenv/config loading such as load_env(path='backend/../.env') or load_config(path='backend/../config.json') -- 'backend' (or any other ordinary source-code directory name) is not a recognized asset-serving/upload sandbox, so this rule no longer fires on it; it now requires the escaped directory to look like the kind of public file-serving sandbox the underlying CVE class actually describes"
+
+response:
+  actions:
+    - block_input
+    - alert
+  message_template: >
+    [ATR-2026-02122] Single-level directory-traversal argument targets a named
+    sensitive config/secret file -- treat as an attempt to escape the intended
+    file-serving sandbox, not a normal relative path.
+
+confidence: 72
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: "GET /file=web_assets/../config.json HTTP/1.1"
+      expected: triggered
+      description: "CVE-2024-3234 chuanhuchatgpt/gradio PoC - single-level escape to config.json exposing the API key"
+    - input: "{\"path\": \"public/../secrets.yaml\"}"
+      expected: triggered
+      description: "JSON tool-argument variant targeting secrets.yaml"
+    - input: "read_file(filename='uploads/../credentials.json')"
+      expected: triggered
+      description: "Function-call-style argument targeting credentials.json"
+    - input: "GET /static?file=assets/../wp-config.php"
+      expected: triggered
+      description: "Same technique against a WordPress-style config target"
+  true_negatives:
+    - input: "path = \"../config/app.json\""
+      expected: not_triggered
+      description: "Traversal lands in a directory named config/, not a file literally named config.json"
+    - input: "import \"../shared/utils\""
+      expected: not_triggered
+      description: "Ordinary relative code import, not a URL/tool-argument path to a sensitive filename"
+    - input: "path: 'images/../logo.png'"
+      expected: not_triggered
+      description: "Same traversal shape but targeting an ordinary image asset, not a sensitive filename"
+    - input: "filename: 'uploads/../readme.md'"
+      expected: not_triggered
+      description: "Same traversal shape but targeting a benign readme file"
+    - input: "load_env(path='backend/../.env')"
+      expected: not_triggered
+      description: "FP regression: realistic monorepo dotenv-loading code, 'backend' is an ordinary source directory, not an asset-serving/upload sandbox"
+    - input: "load_config(path='backend/../config.json')"
+      expected: not_triggered
+      description: "FP regression: realistic monorepo config-loading code, 'backend' is an ordinary source directory, not an asset-serving/upload sandbox"
