@@ -28,12 +28,12 @@ columns are still extracted from ATR metadata, not authored here.
 
 ## Coverage
 
-- ATR rules total: 714
-- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 134
-- Distinct enterprise ATT&CK techniques referenced: 53
-- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 714
+- ATR rules total: 716
+- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 136
+- Distinct enterprise ATT&CK techniques referenced: 55
+- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 716
 - Distinct MITRE ATLAS techniques referenced: 40
-- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 714
+- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 716
 - ATR categories (distinct `tags.category` values): 9
 
 Categories are keyed on each rule's `tags.category` metadata, not on its
@@ -99,8 +99,10 @@ against.
 | T1566 | Phishing | `ATR-2026-00119`, `ATR-2026-00420` | agent-manipulation, prompt-injection |
 | T1567 | Exfiltration Over Web Service | `ATR-2026-00420` | prompt-injection |
 | T1573 | Encrypted Channel | `ATR-2026-01994` | excessive-autonomy |
+| T1587.001 | Develop Capabilities: Malware | `ATR-2026-02211` | model-abuse |
 | T1611 | Escape to Host | `ATR-2026-00040`, `ATR-2026-00436`, `ATR-2026-00441`, `ATR-2026-00539`, `ATR-2026-01615` | privilege-escalation |
 | T1622 | Debugger Evasion | `ATR-2026-02005` | prompt-injection |
+| T1656 | Impersonation | `ATR-2026-02210` | prompt-injection |
 | T1657 | Financial Theft | `ATR-2026-00860`, `ATR-2026-00861` | context-exfiltration |
 
 ## Crosswalk by ATR category
@@ -201,7 +203,7 @@ OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:202
 
 ### model-abuse
 
-Rules in category: 39
+Rules in category: 40
 
 ATT&CK techniques (join key):
 
@@ -209,6 +211,7 @@ ATT&CK techniques (join key):
 |---|---|---|
 | T1059 | Command and Scripting Interpreter | `ATR-2026-00433` |
 | T1195.002 | Compromise Software Supply Chain | `ATR-2026-00433` |
+| T1587.001 | Develop Capabilities: Malware | `ATR-2026-02211` |
 
 ATLAS techniques ATR adds: AML.T0010, AML.T0011.000, AML.T0024, AML.T0040, AML.T0044, AML.T0046, AML.T0048, AML.T0051, AML.T0057, AML.T0102
 
@@ -252,7 +255,7 @@ OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:202
 
 ### prompt-injection
 
-Rules in category: 238
+Rules in category: 239
 
 ATT&CK techniques (join key):
 
@@ -266,6 +269,7 @@ ATT&CK techniques (join key):
 | T1566 | Phishing | `ATR-2026-00420` |
 | T1567 | Exfiltration Over Web Service | `ATR-2026-00420` |
 | T1622 | Debugger Evasion | `ATR-2026-02005` |
+| T1656 | Impersonation | `ATR-2026-02210` |
 
 ATLAS techniques ATR adds: AML.CS0038, AML.T0010, AML.T0025, AML.T0036, AML.T0040, AML.T0043, AML.T0048, AML.T0050, AML.T0051, AML.T0051.000, AML.T0051.001, AML.T0054, AML.T0057
 
