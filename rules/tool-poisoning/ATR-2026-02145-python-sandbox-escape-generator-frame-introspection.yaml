@@ -1,0 +1,161 @@
+title: "Python Sandbox Escape via Generator/Coroutine Frame Object Introspection"
+id: ATR-2026-02145
+rule_version: 1
+status: experimental
+description: >
+  Detects the "generator/coroutine frame introspection" Python sandbox-escape
+  technique, where an AST or attribute allowlist that blocks only
+  underscore-prefixed dunder names (__class__, __globals__, etc.) is bypassed
+  via the non-underscore attributes exposed by generator/coroutine/async-gen
+  objects: .gi_frame / .cr_frame / .ag_frame, chained with .f_back,
+  .f_locals, .f_builtins, or .f_globals to reach the caller's frame, the
+  unrestricted builtins, or an import-allowlist data structure. Two concrete
+  disclosed variants: (1) reaching __import__ via
+  f_builtins['__import__'] or __builtins__ via f_globals['__builtins__'], and
+  (2) directly mutating an "authorized_imports" allowlist list via
+  .append()/.extend()/.remove() once its containing frame's f_locals is
+  reached. Mined from GHSA-qxjp-w3pj-48m7 (CVE-2026-53753, crawl4ai's
+  `_safe_eval_expression()` AST validator "only blocks attributes starting
+  with underscore," but "Python generator and frame object attributes like
+  gi_frame, f_back, and f_builtins bypass this check since they don't begin
+  with underscores," chaining to __import__) and a disclosed smolagents
+  LocalPythonExecutor PoC (CVE-2026-4963): "user-defined classes can implement
+  malicious __str__ or __repr__ methods that perform sandbox escape... Calling
+  str() on such an object... triggers the malicious method," using
+  "g.gi_frame.f_locals['authorized_imports'].append('os')" to defeat the
+  post-CVE-2025-9959 dunder-method content-validation allowlist. Deliberately
+  narrower than ATR-2026-00440/ATR-2026-00539 (which target the classic
+  `__class__.__base__.__subclasses__()` chain) since this rule fires on the
+  frame-introspection attribute chain itself, independent of whether a final
+  os.system()/eval() call is also present in the same content.
+author: "ATR Community (CVE sweep)"
+date: "2026/07/11"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM05:2025 - Improper Output Handling"
+  owasp_agentic:
+    - "ASI05:2026 - Unexpected Code Execution"
+  mitre_attack:
+    - "T1059.006 - Python"
+  mitre_atlas:
+    - "AML.T0053 - LLM Plugin Compromise"
+  cve:
+    - "CVE-2026-53753"
+    - "CVE-2026-4963"
+  external:
+    - "https://github.com/unclecode/crawl4ai/security/advisories/GHSA-qxjp-w3pj-48m7"
+    - "https://gist.github.com/YLChen-007/35b7d46e892266a0ed6dbe57802858be"
+
+metadata_provenance:
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+  cve: nvd-sync
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires high-risk AI systems to resist unauthorised attempts to alter their behaviour or environment; this rule detects a code-execution sandbox escape via generator/coroutine frame introspection."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control for the frame-introspection sandbox-escape risk class."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Treating generator-frame-introspection sandbox escapes as an identified AI risk requires active runtime countermeasures; this detection rule is the primary risk treatment implementation."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Identifying the frame-introspection sandbox-escape technique as an AI risk to be catalogued in the organizational risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by this rule's detection of sandbox-escape attempts."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented via this rule's runtime detection of the escape attempt."
+      strength: secondary
+
+tags:
+  category: tool-poisoning
+  subcategory: python-sandbox-escape
+  scan_target: llm_io
+  confidence: high
+
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)\b(?:gi_frame|cr_frame|ag_frame)\.f_(?:back|locals|builtins|globals)\b'
+      description: "Generator/coroutine/async-gen frame-introspection attribute chain — the non-underscore bypass of a dunder-only allowlist"
+    - field: content
+      operator: regex
+      value: '(?i)\bauthorized_imports\b[\s\S]{0,10}\.(?:append|extend|insert|remove)\('
+      description: "Direct mutation of an authorized_imports allowlist once its containing frame has been reached"
+    - field: content
+      operator: regex
+      value: "(?i)f_builtins\\[[\"']__import__[\"']\\]|f_globals\\[[\"']__builtins__[\"']\\]"
+      description: "Reaching __import__ or __builtins__ via frame builtins/globals indexing"
+  false_positives:
+    - "Legitimate debugging/introspection code using sys._getframe() or inspect.currentframe() that does not go through a generator/coroutine's gi_frame/cr_frame/ag_frame attribute"
+    - "Documentation or CTF write-ups quoting this exact technique for educational purposes — should be reviewed by a human, not auto-allowlisted, since the same string appears in both attack and defense"
+
+response:
+  actions:
+    - block_input
+    - alert
+  message_template: >
+    [ATR-2026-02145] Content contains the generator/coroutine frame-object
+    introspection sandbox-escape chain (gi_frame/cr_frame/ag_frame +
+    f_back/f_locals/f_builtins/f_globals) — treat as an active attempt to
+    bypass a dunder-only Python sandbox allowlist, not benign debugging code.
+
+confidence: 82
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: "g.gi_frame.f_back.f_builtins['__import__']('os').system('id')"
+      expected: triggered
+      description: "GHSA-qxjp-w3pj-48m7 crawl4ai _safe_eval_expression bypass chain"
+    - input: 'gen.gi_frame.f_locals["authorized_imports"]'
+      expected: triggered
+      description: "smolagents-style access to the authorized_imports frame local via gi_frame"
+    - input: "coro.cr_frame.f_globals"
+      expected: triggered
+      description: "Coroutine frame variant of the same introspection technique"
+    - input: 'class Evil:\n    def __str__(self):\n        g = (x for x in [1])\n        g.gi_frame.f_locals["authorized_imports"].append("os")\n        return "x"'
+      expected: triggered
+      description: "CVE-2026-4963 disclosed smolagents PoC — __str__ override triggering allowlist mutation"
+    - input: 'f_locals["authorized_imports"].append("os")'
+      expected: triggered
+      description: "Standalone authorized_imports allowlist mutation once the frame local is already reached"
+    - input: 'frame.f_globals["__builtins__"]["eval"]("1")'
+      expected: triggered
+      description: "Reaching __builtins__ via f_globals indexing to call eval"
+  true_negatives:
+    - input: "frame.f_back.f_locals is a normal debugging technique using sys._getframe()"
+      expected: not_triggered
+      description: "Ordinary frame introspection via sys._getframe(), not through a generator's gi_frame"
+    - input: "the generator has a gi_frame attribute used for introspection in debuggers"
+      expected: not_triggered
+      description: "Documentation mentioning gi_frame without the f_back/f_locals/f_builtins/f_globals chain"
+    - input: "the authorized_imports allowlist is documented in the README"
+      expected: not_triggered
+      description: "Mentions authorized_imports without a following .append/.extend/.remove call"
+    - input: "the __builtins__ module is a normal part of the Python runtime"
+      expected: not_triggered
+      description: "Mentions __builtins__ without the f_globals/f_builtins indexing chain"

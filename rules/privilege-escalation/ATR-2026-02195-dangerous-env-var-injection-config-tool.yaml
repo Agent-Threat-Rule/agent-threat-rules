@@ -1,0 +1,155 @@
+title: "Dangerous Process-Hijacking Environment Variable Injected via Config/Env-Update Tool"
+id: ATR-2026-02195
+rule_version: 1
+status: experimental
+description: >
+  Detects an agent config/environment-update tool call that sets a
+  well-known process-hijacking environment variable (NODE_OPTIONS,
+  LD_PRELOAD, DYLD_INSERT_LIBRARIES, PYTHONSTARTUP, BASH_ENV, PERL5OPT,
+  RUBYOPT, GCONV_PATH) to a path- or flag-shaped value. These variables let
+  an attacker who can only write configuration (not source code) achieve
+  code execution the next time the target process starts, by pointing the
+  runtime at an attacker-controlled module/library/script. Mined from
+  GHSA (huntr bounty) for mintplex-labs/anything-llm CVE-2024-3104: the
+  `POST /api/system/update-env` endpoint accepted arbitrary environment
+  variable names and values with no allowlist, "allowing for the execution
+  of arbitrary code on the host running anything-llm." The disclosed
+  advisory does not name the specific variable used, so this rule
+  generalizes over the standard, well-documented set of dangerous
+  runtime-hijacking variables for Node.js, Python, Bash, Perl, Ruby, and
+  dynamic linkers -- the same technique class regardless of which config
+  endpoint accepts it. Setting an ordinary application environment variable
+  (PORT, DATABASE_URL, LOG_LEVEL, etc.) does not fire.
+author: "ATR Community (CVE sweep)"
+date: "2026/07/11"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: critical
+
+references:
+  cve:
+    - "CVE-2024-3104"
+  cwe:
+    - "CWE-94"
+  owasp_llm:
+    - "LLM08:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI04:2026 - Privilege Escalation"
+  mitre_attack:
+    - "T1574.006 - Hijack Execution Flow: Dynamic Linker Hijacking"
+  mitre_atlas:
+    - "AML.T0053 - LLM Plugin Compromise"
+  external:
+    - "https://huntr.com/bounties/4f2fcb45-5828-4bec-985a-9d3a0ee00462"
+    - "https://github.com/mintplex-labs/anything-llm/commit/bfedfebfab032e6f4d5a369c8a2f947c5d0c5286"
+
+metadata_provenance:
+  cve: human-reviewed
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires high-risk AI systems to resist unauthorised attempts to alter their behaviour; this rule detects a config/env-update tool being weaponised to inject a process-hijacking environment variable."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control for the dangerous-env-var-injection risk class."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Treating dangerous environment-variable injection as an identified AI risk requires active runtime countermeasures; this detection rule is the primary risk treatment implementation."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Identifying process-hijacking environment variables accepted by a config-update tool as an AI risk to be catalogued in the organizational risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by this rule's detection of dangerous environment-variable injection via agent config tools."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented via this rule's runtime detection of the injection attempt."
+      strength: secondary
+
+tags:
+  category: privilege-escalation
+  subcategory: dangerous-env-var-injection
+  scan_target: llm_io
+  confidence: high
+
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: "(?i)(?:\\bupdate[-_ ]?env(?:ironment)?\\b|\\bsetenv\\b|\\bset\\s+(?:the\\s+)?environment\\s+variable\\b|\\bPOST\\s+/api/[\\w/-]{0,24}env\\b)[\\s\\S]{0,40}\\bNODE_OPTIONS\\b[\\s\\S]{0,10}[:=][\\s\\S]{0,60}(?:--require\\b|-r\\s|--loader\\b|--experimental-loader\\b|--experimental-require-module\\b|\\.m?js\\b)"
+      description: "A config/env-update tool-call context naming NODE_OPTIONS whose VALUE actually references a require/preload/loader mechanism (--require, -r, --loader, --experimental-loader, or an explicit .js/.mjs module payload) -- not a routine memory/debug/warnings flag"
+    - field: content
+      operator: regex
+      value: "(?i)(?:\\bupdate[-_ ]?env(?:ironment)?\\b|\\bsetenv\\b|\\bset\\s+(?:the\\s+)?environment\\s+variable\\b|\\bPOST\\s+/api/[\\w/-]{0,24}env\\b)[\\s\\S]{0,40}\\b(?:LD_PRELOAD|DYLD_INSERT_LIBRARIES|PYTHONSTARTUP|BASH_ENV|PERL5OPT|RUBYOPT|GCONV_PATH)\\b"
+      description: "A config/env-update tool-call context (update-env, setenv, 'set environment variable', POST .../env endpoint) naming a known process-hijacking environment variable that has no benign flag-only mode (its value IS the hijack payload)"
+  false_positives:
+    - "A DevOps runbook or documentation discussing these variable names in prose without an accompanying config/env-update tool-call context"
+    - "A legitimate, security-reviewed deployment script that intentionally sets LD_PRELOAD/NODE_OPTIONS for approved instrumentation (e.g. an APM agent) via a config/update-env style call -- rare but possible; still worth a human check given the severity of process-hijacking if the value turns out to be attacker-controlled"
+    - "Shell-syntax examples in security-education content (e.g. 'sudo LD_PRELOAD=/tmp/shell.so find') that show the variable being set directly in a shell, without any update-env/setenv/config-API framing"
+    - "Routine NODE_OPTIONS flags that are not a require/loader mechanism -- 'NODE_OPTIONS=--max-old-space-size=4096', 'NODE_OPTIONS=--inspect=9229', 'NODE_OPTIONS=--no-warnings', '--stack-size=...' -- these tune memory/debugging/warnings and carry no code-loading capability, so they must not fire"
+
+response:
+  actions:
+    - block_input
+    - alert
+  message_template: >
+    [ATR-2026-02195] Config/environment-update tool call sets a known
+    process-hijacking environment variable to a path/flag value -- treat as
+    an RCE-via-env-var-injection attempt, not routine configuration.
+
+confidence: 80
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: "POST /api/system/update-env with body: {\"NODE_OPTIONS\": \"--require /tmp/evil.js\"}"
+      expected: triggered
+      description: "CVE-2024-3104 pattern - NODE_OPTIONS injected via update-env endpoint to load an attacker module at next process start"
+    - input: "update env: LD_PRELOAD=/tmp/evil.so"
+      expected: triggered
+      description: "Dynamic-linker hijacking via LD_PRELOAD"
+    - input: "set environment variable BASH_ENV=/tmp/malicious.sh"
+      expected: triggered
+      description: "BASH_ENV hijack causing a script to be sourced on every non-interactive bash invocation"
+    - input: "update-env endpoint: PYTHONSTARTUP=/tmp/backdoor.py"
+      expected: triggered
+      description: "PYTHONSTARTUP hijack causing a script to run at every interactive Python startup"
+    - input: "update env: NODE_OPTIONS=--loader=/tmp/evil-loader.mjs"
+      expected: triggered
+      description: "NODE_OPTIONS abused via --loader to load an attacker-controlled ESM loader module"
+  true_negatives:
+    - input: "update env: LOG_LEVEL=debug"
+      expected: not_triggered
+      description: "Ordinary application environment variable, not in the dangerous set"
+    - input: "set environment variable DATABASE_URL=postgres://user:pass@host/db"
+      expected: not_triggered
+      description: "Ordinary connection-string env var, not a process-hijacking variable"
+    - input: "NODE_OPTIONS and LD_PRELOAD are both examples of environment variables that can be abused for code execution if an attacker controls them"
+      expected: not_triggered
+      description: "Prose discussing the variable names without an actual path/flag assignment"
+    - input: "update env: NODE_OPTIONS=--max-old-space-size=4096"
+      expected: not_triggered
+      description: "Routine NODE_OPTIONS memory-tuning flag, no require/loader/module payload"
+    - input: "set environment variable NODE_OPTIONS=--inspect=9229"
+      expected: not_triggered
+      description: "Routine NODE_OPTIONS debug-inspector flag, no require/loader/module payload"
+    - input: "update-env endpoint: NODE_OPTIONS=--no-warnings"
+      expected: not_triggered
+      description: "Routine NODE_OPTIONS warnings-suppression flag, no require/loader/module payload"
