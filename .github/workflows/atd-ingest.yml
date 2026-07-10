@@ -1,0 +1,135 @@
+name: ATD Ingest (CVE -> ATD)
+
+# The missing CVE -> ATD link. The daily collector turns frontline agent CVEs
+# into proposals and promote-cve turns the generalizable ones into ATR rules
+# (HOW). This feeds the ATD knowledge base (WHAT): every agent-relevant CVE
+# either enriches an existing technique with real-world evidence (automatic,
+# schema-validated, low risk), or — when a CWE is corroborated by multiple
+# independent CVEs but not yet covered by any technique — Claude drafts a
+# candidate technique entry for human review. Runs after the collector +
+# promote-cve.
+#
+# Cadence: daily. The ENRICH leg is cheap, deterministic, and safe to run
+# every day. The LLM-drafting leg only fires on CWE clusters that have never
+# been drafted before (scripts/atd/ingest-cve-to-atd.ts's
+# loadAlreadyDraftedCwes skips anything already sitting in a prior
+# data/atd-ingest/new-technique-drafts-*.json for review) — so a daily
+# cadence does not spam duplicate review PRs for the same unresolved cluster;
+# it just means new evidence and genuinely new clusters surface with minimal
+# lag instead of waiting up to a week.
+#
+# Safety posture:
+#   - Never auto-merges anything. Always opens a DRAFT PR; a human decides.
+#   - Never mints a technique directly into the catalog — drafted entries are
+#     schema-validated but land in data/atd-ingest/ for review, never written
+#     to website/public/atd/atd-techniques.json.
+#   - A run that changes nothing on disk opens NO PR — silence is the
+#     expected, honest outcome most days, not a bug (the maturity-promote
+#     workflow's daily no-op PR is the anti-pattern this deliberately avoids).
+
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "Limit to one proposals source (blank = all)"
+        required: false
+        default: ""
+      cap:
+        description: "Max new-technique entries to draft this run"
+        required: false
+        default: "10"
+      dry_run:
+        description: "Compute enrichments/drafts but do not write, commit, or open a PR"
+        required: false
+        default: false
+        type: boolean
+  schedule:
+    - cron: "0 6 * * *" # daily, after the CVE collector + promote-cve (05:40)
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: atd-ingest
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+
+      - name: Ingest CVEs into ATD (enrich + drafted new techniques)
+        id: ingest
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          set -eo pipefail
+          SRC='${{ inputs.source }}'
+          CAP='${{ inputs.cap || '10' }}'
+          ARGS=(--draft-techniques --max-new-techniques "$CAP")
+          if [ "${{ inputs.dry_run }}" != "true" ]; then
+            ARGS=(--write "${ARGS[@]}")
+          fi
+          [ -n "$SRC" ] && ARGS=("${ARGS[@]}" --source "$SRC")
+          npx tsx scripts/atd/ingest-cve-to-atd.ts "${ARGS[@]}" | tee /tmp/atd-ingest.out
+          SUMMARY=$(grep -F '::atd-ingest::' /tmp/atd-ingest.out | tail -1 | sed 's/^.*::atd-ingest:://')
+          echo "summary=$SUMMARY" >> "$GITHUB_OUTPUT"
+          CHANGED=$(echo "$SUMMARY" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['enrichments']+d['newTechniqueDraftsGenerated'])")
+          echo "changed=$CHANGED" >> "$GITHUB_OUTPUT"
+
+      - name: Validate ATD after ingest
+        if: steps.ingest.outputs.changed != '0' && inputs.dry_run != true
+        run: npx tsx scripts/validate-atd.ts
+
+      - name: Stop here on dry-run or null result (not an error)
+        if: inputs.dry_run == true || steps.ingest.outputs.changed == '0'
+        run: |
+          echo "Summary: ${{ steps.ingest.outputs.summary }}"
+          echo "dry_run=${{ inputs.dry_run }} — no write, no PR. This is the expected quiet outcome most runs."
+
+      - name: Open review PR
+        if: steps.ingest.outputs.changed != '0' && inputs.dry_run != true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eo pipefail
+          # Guard against the maturity-promote anti-pattern: only commit + PR if
+          # something ACTUALLY changed on disk, even if the summary counters were
+          # non-zero (e.g. every enrichment already existed on a previous run).
+          if git diff --quiet website/public/atd/ data/atd-ingest/ 2>/dev/null && [ -z "$(git status --porcelain data/atd-ingest/)" ]; then
+            echo "No on-disk change; nothing to PR."
+            exit 0
+          fi
+          DATE=$(date -u +%Y-%m-%d)
+          BRANCH="atd-ingest/$DATE"
+          git config user.name "ATR ATD Bot"
+          git config user.email "atd-bot@agentthreatrule.org"
+          git push origin --delete "$BRANCH" 2>/dev/null || true
+          git checkout -b "$BRANCH"
+          git add website/public/atd/atd-techniques.json data/atd-ingest/
+          git commit -m "feat(atd): daily CVE ingest $DATE — ${{ steps.ingest.outputs.summary }}"
+          git push origin "$BRANCH"
+          {
+            echo "Daily CVE -> ATD ingest for $DATE."
+            echo ""
+            echo "Summary: ${{ steps.ingest.outputs.summary }}"
+            echo ""
+            echo "Enrichments add real CVE evidence onto existing techniques (matched by CWE) — automatic, schema-validated, low risk."
+            echo "New-technique DRAFTS (data/atd-ingest/new-technique-drafts-*.json) are Claude-authored candidate ATD entries for CWEs with no covering technique, corroborated by 2+ independent CVEs, and schema-validated against atd-technique.schema.json. Never auto-merged: a new technique is a claim about the threat taxonomy. Confirm tactic/mappings/atd_id (provisional — re-check it is still free) before pasting into website/public/atd/atd-techniques.json."
+            echo "The flat candidates dump (data/atd-ingest/candidates-*.json) is everything else — no CWE at all, or a CWE seen only once — for human triage, not auto-drafted."
+          } > /tmp/atd-pr-body.md
+          gh pr create \
+            --base main --head "$BRANCH" \
+            --title "atd: CVE ingest $DATE — ${{ steps.ingest.outputs.summary }}" \
+            --body-file /tmp/atd-pr-body.md \
+            --label "atd,needs-human-review" \
+            --draft
