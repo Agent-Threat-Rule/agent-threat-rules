@@ -1,0 +1,154 @@
+title: "MCP/API Tool Argument LFI via Mixed-Encoding Path Separator or file:// URI Scheme Escape"
+id: ATR-2026-02121
+rule_version: 1
+status: experimental
+description: >
+  Detects a local-file-inclusion argument passed to an agent/MCP tool or API
+  endpoint via two encoding tricks that ATR-2026-00569's deep-../-chain and
+  fully-percent-encoded-traversal conditions do not cover: (1) a MIXED
+  encoding where only the path SEPARATOR next to a sensitive system target is
+  percent-encoded while the rest of the string is literal (e.g. "etc%2fpasswd",
+  "%2Fetc%2Fpasswd") -- 00569's traversal regex requires a literal `/` or `\`
+  immediately before "etc/passwd", so a lone %2f in that position slips past
+  it; and (2) a `file://` URI scheme value pointing straight at a system
+  directory with no traversal characters at all (e.g. "file:///etc"), which
+  00569 does not address since it only matches ../ chains and %-encoded dot
+  sequences. Mined from three Huntr-disclosed AI/ML CVEs sharing this LFI
+  shape: CVE-2023-6021 (Ray logs API, `filename=../../../../../etc%2fpasswd`),
+  CVE-2023-6038 (H2O ImportFiles API, `path=%2Fetc%2Fpasswd`), and
+  CVE-2023-1177 (MLflow model-versions API, `"source": "file:///etc"`).
+  Generalized beyond those three products/endpoints since any tool/API
+  argument carrying either encoding trick is equally exploitable.
+author: "ATR Community (CVE sweep)"
+date: "2026/07/11"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: high
+
+references:
+  cve:
+    - "CVE-2023-6021"
+    - "CVE-2023-6038"
+    - "CVE-2023-1177"
+  cwe:
+    - "CWE-22"
+    - "CWE-23"
+    - "CWE-29"
+  owasp_llm:
+    - "LLM02:2025 - Sensitive Information Disclosure"
+  owasp_agentic:
+    - "ASI01:2026 - Agent Goal Hijack"
+  mitre_attack:
+    - "T1083 - File and Directory Discovery"
+  mitre_atlas:
+    - "AML.T0057 - LLM Data Leakage"
+  external:
+    - "https://huntr.com/bounties/5039c045-f986-4cbc-81ac-370fe4b0d3f8"
+    - "https://huntr.com/bounties/380fce33-fec5-49d9-a101-12c972125d8c"
+    - "https://huntr.com/bounties/1fe8f21a-c438-4cba-9add-e8a5dab94e28"
+
+metadata_provenance:
+  cve: human-reviewed
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires resistance to unauthorised data access; this rule detects mixed-encoding and file:// -scheme LFI tricks in tool/API arguments that a literal-separator traversal filter misses."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control for the encoding-trick LFI risk class."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Treating mixed-encoding and file:// -scheme LFI as an identified AI risk requires active runtime countermeasures; this detection rule is the primary risk treatment implementation."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Identifying the encoding-trick LFI pattern as an AI risk to be catalogued in the organizational risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by this rule's detection of encoding-trick LFI attempts in tool arguments."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented via this rule's runtime detection of the LFI attempt."
+      strength: secondary
+
+tags:
+  category: context-exfiltration
+  subcategory: encoding-trick-lfi
+  scan_target: mcp
+  confidence: high
+
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)(?:path|filename|file|source)\s*[=:]\s*[''"]?[%\w./-]{0,20}(?:etc|proc|windows|boot)%2f(?:passwd|shadow|hosts|self|system32|ini)'
+      description: "Path/filename/source-style tool argument whose separator is percent-encoded while the rest of the string is literal (mixed-encoding LFI)"
+    - field: content
+      operator: regex
+      value: '(?i)(?:source|path|url|location)\s*[=:]\s*[''"]?file:///(?:etc|root|proc)\b'
+      description: "source/path/url-style tool argument using the file:// URI scheme to point directly at a system directory"
+  false_positives:
+    - "A legitimate percent-encoded slash in an unrelated path that coincidentally contains the substring 'etc' immediately before it (e.g. a directory literally named 'etc' inside an application's own asset tree) -- rare enough combined with the passwd/shadow/system32 target list and the required key= prefix that this is an acceptable trade-off at experimental maturity"
+    - "HTML/XML attributes (src=, SYSTEM \") pointing file:// at /etc are a related but distinct LFI/XXE surface intentionally left to other rules -- this rule is scoped to source/path/url/location tool-argument keys to avoid matching bare documentation examples of the XXE/iframe-src technique"
+
+response:
+  actions:
+    - block_input
+    - alert
+  message_template: >
+    [ATR-2026-02121] Tool/API argument carries a mixed-encoding path-separator
+    trick or a file:// URI scheme pointed at a system directory -- treat as an
+    LFI attempt, not a normal file reference.
+
+confidence: 78
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: "GET /api/v0/logs/file?node_id=abc123&filename=../../../../../etc%2fpasswd&lines=50000"
+      expected: triggered
+      description: "CVE-2023-6021 Ray logs API - traversal chain literal, only the final separator percent-encoded"
+    - input: "GET /3/ImportFiles?path=%2Fetc%2Fpasswd"
+      expected: triggered
+      description: "CVE-2023-6038 H2O ImportFiles API - fully percent-encoded absolute path, no ../ at all"
+    - input: "call the model-versions create tool with source: \"file:///etc\""
+      expected: triggered
+      description: "CVE-2023-1177 MLflow model-versions API - file:// scheme escape via source parameter"
+    - input: "please fetch the artifact using source=\"file:///root/.ssh/id_rsa\""
+      expected: triggered
+      description: "Paraphrased file:// scheme escape targeting a different system directory (root) and file"
+  true_negatives:
+    - input: "file:///Users/adam/project/README.md is the doc entry point"
+      expected: not_triggered
+      description: "Legitimate file:// reference to a user project path, not a system directory"
+    - input: "the client sets path=%2Fapi%2Fusers for the REST proxy route"
+      expected: not_triggered
+      description: "Percent-encoded slash in an unrelated API route, not a sensitive system path"
+    - input: "reading /etc/hostname for system info"
+      expected: not_triggered
+      description: "Plain literal path with no percent-encoding trick and no traversal, out of this rule's narrow scope"
+    - input: "GET /static/data%2Fcache.json HTTP/1.1"
+      expected: not_triggered
+      description: "Percent-encoded slash targeting an unrelated cache file, not etc/proc/windows/boot"
+    - input: "# URL encoded\n..%2F..%2F..%2Fetc%2Fpasswd\n%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd"
+      expected: not_triggered
+      description: "Bug-bounty cheat-sheet listing bare traversal payload examples with no path/filename/source= tool-argument key (skills-sh corpus FP class)"
+    - input: '<!DOCTYPE test [ <!ENTITY xxe SYSTEM "file:///etc/passwd"> ]>'
+      expected: not_triggered
+      description: "XXE documentation example using SYSTEM \"file:///etc/passwd\", not a source/path/url tool-argument key (skills-sh corpus FP class)"

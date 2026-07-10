@@ -1,0 +1,149 @@
+title: "SSRF to Cloud Metadata Endpoint via IPv6 Transition-Address Hex Encoding"
+id: ATR-2026-02140
+rule_version: 1
+status: experimental
+description: >
+  Detects an agent tool call (crawler proxy config, fetch/browser config, or
+  raw URL) that targets the well-known cloud-metadata address 169.254.169.254
+  (AWS IMDS / GCP / Azure IMDS / DigitalOcean) or the Alibaba Cloud metadata
+  address 100.100.100.200 encoded as an IPv6 transition-mechanism address
+  rather than plain dotted-decimal. The two hex-encoded forms are
+  NAT64 (64:ff9b::a9fe:a9fe) and 6to4 (2002:a9fe:a9fe::), plus the bare
+  IPv4-compatible/IPv4-mapped hex form (::a9fe:a9fe / ::ffff:a9fe:a9fe) when
+  it appears in a proxy/server/host field. Mined from
+  GHSA-4qqr-vv2q-cmr5 (crawl4ai's Docker API SSRF blocklist used "an explicit
+  IPv4/IPv6 CIDR blocklist that missed several address families", letting an
+  attacker bypass it by encoding the blocked internal IPv4 address using
+  NAT64/6to4/IPv4-mapped IPv6 notation, none of which resolve to a literal
+  dotted-decimal string the existing ATR-2026-01605/ATR-2026-00568 metadata
+  rules match on). Generalized beyond crawl4ai since any proxy/fetch
+  configuration accepting a raw IPv6 address is equally exploitable this way.
+author: "ATR Community (CVE sweep)"
+date: "2026/07/11"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM08:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI02:2026 - Tool Misuse and Exploitation"
+  mitre_attack:
+    - "T1090 - Proxy"
+  mitre_atlas:
+    - "AML.T0053 - LLM Plugin Compromise"
+  cve:
+    - "CVE-2026-53754"
+  external:
+    - "https://github.com/unclecode/crawl4ai/security/advisories/GHSA-4qqr-vv2q-cmr5"
+
+metadata_provenance:
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+  cve: nvd-sync
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires high-risk AI systems to resist unauthorised attempts to alter their behaviour or environment; this rule detects an IPv6 transition-address encoding used to smuggle a cloud-metadata SSRF target past a dotted-decimal-only blocklist."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control for the metadata-SSRF-via-address-encoding-bypass risk class."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Treating IPv6-encoded metadata-SSRF bypass attempts as an identified AI risk requires active runtime countermeasures; this detection rule is the primary risk treatment implementation."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Identifying the IPv6 transition-address encoding technique as an AI risk to be catalogued in the organizational risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by this rule's detection of encoded-address SSRF bypass attempts."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented via this rule's runtime detection of the bypass attempt."
+      strength: secondary
+
+tags:
+  category: context-exfiltration
+  subcategory: ssrf-address-encoding-bypass
+  scan_target: both
+  confidence: high
+
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)\b64:ff9b::a9fe:a9fe\b'
+      description: "NAT64 IPv6 transition address encoding the AWS/GCP/Azure metadata IP 169.254.169.254"
+    - field: content
+      operator: regex
+      value: '(?i)\b2002:a9fe:a9fe\b'
+      description: "6to4 IPv6 transition address encoding the AWS/GCP/Azure metadata IP 169.254.169.254"
+    - field: content
+      operator: regex
+      value: '(?i)\b(?:proxy|server|host)[\w.\[\]_-]{0,20}["\x27]?\s*[:=]\s*["\x27]?\[?(?:::(?:ffff:)?)?a9fe:a9fe\b'
+      description: "Proxy/server/host field set to the bare hex IPv4-compatible or IPv4-mapped IPv6 form of the metadata IP 169.254.169.254"
+    - field: content
+      operator: regex
+      value: '(?i)\b(?:64:ff9b::)?6464:64c8\b'
+      description: "NAT64/bare hex IPv6 transition address encoding the Alibaba Cloud metadata IP 100.100.100.200"
+  false_positives:
+    - "A legitimate, unrelated IPv6 address that happens to contain similar-looking hex groups without the specific NAT64 (64:ff9b::) or 6to4 (2002:) prefix and without proxy/server/host field context"
+    - "Documentation or defensive code that blocks these specific transition-address forms by name (should be reviewed for context, not auto-allowlisted, since the same string appears in both attack and defense)"
+
+response:
+  actions:
+    - block_input
+    - alert
+  message_template: >
+    [ATR-2026-02140] SSRF target uses an IPv6 transition-address encoding
+    (NAT64/6to4/IPv4-mapped) of a cloud-metadata IP — treat as an active
+    metadata-SSRF attempt bypassing dotted-decimal address filtering.
+
+confidence: 78
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: 'crawler_config: {"proxy_config":{"server":"http://[64:ff9b::a9fe:a9fe]:80"}}'
+      expected: triggered
+      description: "GHSA-4qqr-vv2q-cmr5 NAT64 bypass form targeting AWS/GCP/Azure IMDS"
+    - input: '--proxy-server=http://[2002:a9fe:a9fe::]:80'
+      expected: triggered
+      description: "6to4 bypass form in a Chromium proxy flag"
+    - input: 'browser_config.proxy_config.server = "::ffff:a9fe:a9fe"'
+      expected: triggered
+      description: "Bare hex IPv4-mapped form in a proxy_config.server field"
+    - input: '"proxy_config":{"server":"[::a9fe:a9fe]"}'
+      expected: triggered
+      description: "Bare hex IPv4-compatible form bracketed as an IPv6 literal"
+    - input: 'proxy: 64:ff9b::6464:64c8'
+      expected: triggered
+      description: "NAT64 form encoding the Alibaba Cloud metadata IP 100.100.100.200"
+  true_negatives:
+    - input: "normal ipv6 address 2001:db8::1 used in network diagram"
+      expected: not_triggered
+      description: "Ordinary documentation-space IPv6 address, no transition-mechanism prefix"
+    - input: "unrelated hex value a9fe:a9fe appears in a hash digest 1234a9fe:a9fedeadbeef"
+      expected: not_triggered
+      description: "Coincidental hex substring inside a hash digest, no proxy/server/host field context"
+    - input: "commit hash abc123a9fe:a9fedef456 unrelated to networking"
+      expected: not_triggered
+      description: "Coincidental hex substring in a commit-like identifier"
+    - input: "6464:64c9 is a different, unrelated IPv6 group"
+      expected: not_triggered
+      description: "Off-by-one hex value that does not encode the Alibaba metadata IP"
