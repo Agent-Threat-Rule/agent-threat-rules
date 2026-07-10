@@ -95,8 +95,8 @@ detection:
       description: "A nested {constructor: {prototype: ...}} object structure -- the alternate constructor.prototype bypass shape"
     - field: content
       operator: regex
-      value: '\.constructor\.prototype\.\w+\s*='
-      description: "Direct code assignment through the obj.constructor.prototype.<field> = value traversal path"
+      value: '\.constructor\.prototype\.\w+\s*=(?!=)'
+      description: "Direct code assignment through the obj.constructor.prototype.<field> = value traversal path. The trailing = uses a negative lookahead to exclude == / === comparison/type-check code (e.g. obj.constructor.prototype.hasOwnProperty === Object.prototype.hasOwnProperty), which is not an assignment"
   false_positives:
     - "Ordinary class declarations using the word 'constructor' for their own constructor method (e.g. `class Foo { constructor(x) {...} }`), which do not contain the literal '.prototype.' continuation this rule requires"
     - "Legitimate reflection/introspection code reading obj.constructor.name or obj.constructor === SomeClass for type checks, which does not continue into '.prototype.<field> ='"

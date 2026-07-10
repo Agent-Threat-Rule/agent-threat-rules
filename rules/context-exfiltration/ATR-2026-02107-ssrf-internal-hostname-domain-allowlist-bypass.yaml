@@ -98,8 +98,8 @@ detection:
       description: "URL userinfo-injection - a trusted-looking dotted domain (2+ dots) appears before an @ authority separator, redirecting the actual host to whatever follows"
     - field: content
       operator: regex
-      value: 'https?://(?:[\w-]+\.)?(?:docs|api|cdn|static|assets)\.[\w-]+\.(?:com|org|io|dev|net)\.[\w-]+'
-      description: "Domain-allowlist startsWith() bypass - a trusted documentation/API domain is followed by an extra dot-segment, defeating a naive string-prefix allowlist check"
+      value: 'https?://(?:[\w-]+\.)?(?:docs|api|cdn|static|assets)\.[\w-]+\.(?:com|org|io|dev|net)\.(?!s3-website[\w.-]*\.amazonaws\.com\b|s3[\w.-]*\.amazonaws\.com\b|cloudfront\.net\b|github\.io\b|pages\.dev\b|vercel\.app\b|netlify\.app\b)[\w-]+'
+      description: "Domain-allowlist startsWith() bypass - a trusted documentation/API domain is followed by an extra dot-segment, defeating a naive string-prefix allowlist check. Excludes the extra dot-segment when it is a recognized legitimate static-hosting provider suffix (S3 static website hosting, CloudFront, GitHub Pages, Cloudflare Pages, Vercel, Netlify) so an ordinary docs-on-S3/CDN URL does not fire"
     - field: content
       operator: regex
       value: '(?i)\bBASE\s*URL\s*:\s*https?://(?:host\.docker\.internal|kubernetes\.default(?:\.svc)?|(?:[\w-]+\.){0,3}[\w-]+\.(?:internal|corp|lan|local)\b)'

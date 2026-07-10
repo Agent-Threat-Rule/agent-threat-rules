@@ -87,20 +87,20 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)\b(?:MATCH|CALL)\b[\s\S]{0,40}\bDETACH\s+DELETE\b'
-      description: "Cypher DETACH DELETE (bulk destructive delete of matched nodes/relationships) near a MATCH/CALL clause"
+      value: '(?i)(?<!\b(?:you will learn that|you will learn|for example|this query|note that|for instance|such as|explains that)\s)\b(?:MATCH|CALL)\b[\s\S]{0,40}\bDETACH\s+DELETE\b'
+      description: "Cypher DETACH DELETE (bulk destructive delete of matched nodes/relationships) near a MATCH/CALL clause, excluding common teaching-phrase lead-ins (e.g. 'you will learn that ...') so tutorial/explanatory prose quoting the same syntax does not fire"
     - field: content
       operator: regex
-      value: '(?i)\bCALL\s+dbms\.security\.\w+\s*\('
-      description: "Cypher CALL into the dbms.security.* administrative procedure namespace (account/role management)"
+      value: '(?i)(?<!\b(?:you will learn that|you will learn|for example|this query|note that|for instance|such as|explains that)\s)\bCALL\s+dbms\.security\.\w+\s*\('
+      description: "Cypher CALL into the dbms.security.* administrative procedure namespace (account/role management), excluding common teaching-phrase lead-ins"
     - field: content
       operator: regex
-      value: '(?i)\bapoc\.periodic\.iterate\s*\([\s\S]{0,40}\bDETACH\s+DELETE\b'
-      description: "apoc.periodic.iterate batch procedure driving a DETACH DELETE (mass destructive delete at scale)"
+      value: '(?i)(?<!\b(?:you will learn that|you will learn|for example|this query|note that|for instance|such as|explains that)\s)\bapoc\.periodic\.iterate\s*\([\s\S]{0,40}\bDETACH\s+DELETE\b'
+      description: "apoc.periodic.iterate batch procedure driving a DETACH DELETE (mass destructive delete at scale), excluding common teaching-phrase lead-ins"
     - field: content
       operator: regex
-      value: '(?i)\bapoc\.(?:cypher\.runFile|load\.json(?:Params)?)\s*\(\s*[\x27"]file://'
-      description: "apoc loader/runFile procedure pointed at a file:// URI (arbitrary local file read via Cypher)"
+      value: '(?i)(?<!\b(?:you will learn that|you will learn|for example|this query|note that|for instance|such as|explains that)\s)\bapoc\.(?:cypher\.runFile|load\.json(?:Params)?)\s*\(\s*[\x27"]file://'
+      description: "apoc loader/runFile procedure pointed at a file:// URI (arbitrary local file read via Cypher), excluding common teaching-phrase lead-ins"
   false_positives:
     - "A database administrator running schema-clearing DETACH DELETE or dbms.security procedures through an approved maintenance console, not through an LLM-facing chat/tool interface"
     - "Documentation or tutorial text explaining Cypher DETACH DELETE / apoc syntax without an actual query being submitted for execution"

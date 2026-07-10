@@ -92,8 +92,8 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)\bMEDIA:\s*(?:file://)?/(?:tmp|var/tmp|dev/shm)/[\w./-]{0,60}?(?:secret|credential|token|password|\.env\b|\.pem\b|\.key\b|id_rsa)'
-      description: "MEDIA: directive pointing into a shared/world-readable temp directory with a credential/secret-sounding filename"
+      value: '(?i)\bMEDIA:\s*(?:file://)?/(?:tmp|var/tmp|dev/shm)/[\w./-]{0,60}?(?:\bsecrets?\b|\bcredentials?\b|\btokens?\b|\bpasswords?\b|\.env\b|\.pem\b|\.key\b|id_rsa)'
+      description: "MEDIA: directive pointing into a shared/world-readable temp directory with a credential/secret-sounding filename. Keyword alternatives use \\b word boundaries so substrings inside ordinary words (tokenizer, passwordless, secretary) do not match"
     - field: content
       operator: regex
       value: '(?i)\bMEDIA:\s*file:///(?:etc|root|proc)/'

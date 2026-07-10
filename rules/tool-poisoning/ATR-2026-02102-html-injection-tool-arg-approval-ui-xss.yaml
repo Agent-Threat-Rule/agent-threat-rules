@@ -98,8 +98,8 @@ detection:
       description: "Tool argument breaking out of a code context to inject a script that calls a decide/approve endpoint (self-approval XSS)"
     - field: tool_args
       operator: regex
-      value: '(?i)\bon(?:error|load|focus)\s*=\s*[\x27"][\s\S]{0,120}(?:new\s+Image\s*\(\s*\)\.src|\.submit\s*\(\s*\)|/(?:approve|decide)/)'
-      description: "Event-handler payload in a tool argument auto-submitting a form or beaconing to an approve/decide endpoint via image-fetch, without a networky keyword like fetch/document.cookie"
+      value: '(?i)\bon(?:error|load|focus)\s*=\s*[\x27"][\s\S]{0,120}(?:new\s+Image\s*\(\s*\)\.src\s*=\s*[\x27"][^\x27"]{0,80}(?:approve|decide|confirm|consent)|\.submit\s*\(\s*\)[\s\S]{0,40}(?:approve|decide|confirm|consent)|(?:approve|decide|confirm|consent)[\s\S]{0,40}\.submit\s*\(\s*\)|/(?:approve|decide)/)'
+      description: "Event-handler payload in a tool argument auto-submitting a form or beaconing to an approve/decide endpoint via image-fetch, without a networky keyword like fetch/document.cookie. The image-beacon and form-submit branches require the destination URL/endpoint to actually reference an approve/confirm/decide/consent-style path or parameter, matching the scoping already used by the literal-path branch -- an ordinary logging/analytics beacon URL (e.g. /log?err=imgfail) does not qualify"
     - field: tool_args
       operator: regex
       value: '(?i)<(?:img|svg)\b[^>]{0,40}\bon(?:error|load)\s*=[^>]{0,120}(?:document\.forms|\.submit\s*\()'
