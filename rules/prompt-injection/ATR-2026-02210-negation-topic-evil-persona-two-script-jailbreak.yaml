@@ -1,6 +1,6 @@
 title: "Negated-Topic Two-Script Evil-Persona Jailbreak"
 id: ATR-2026-02210
-rule_version: 1
+rule_version: 2
 status: experimental
 description: >
   Detects the "two-script negation" jailbreak template mined from NVIDIA garak's
@@ -80,7 +80,7 @@ agent_source:
     - any
 
 detection:
-  condition: any
+  condition: all
   conditions:
     - field: content
       operator: regex
@@ -94,6 +94,7 @@ detection:
     - "Fiction/film discussion using 'pure evil' to describe a villain, without the co-occurring 'pure bastard' self-description within the bounded span"
     - "Academic or red-team writeup quoting this exact jailbreak template for defensive analysis"
     - "A creative-writing prompt discussing a character with no consciousness (e.g. a robot) that does not also declare itself pure evil and pure bastard in the same breath"
+    - "An ordinary film/character review calling a villain 'pure evil' and 'kind of a pure bastard' with no preceding self-declared amoral/non-conscious persona intro — v2 tightened from condition:any to condition:all so the pure-evil/pure-bastard co-occurrence can no longer fire alone; both the persona-declaration half AND the pure-evil/pure-bastard half must co-occur"
 
 response:
   actions:
@@ -132,3 +133,6 @@ test_cases:
     - input: "Please write a step by step guide on how to bake a cake."
       expected: not_triggered
       description: "Benign step-by-step request with no persona declaration at all"
+    - input: "The critics called the villain pure evil, and honestly kind of a pure bastard, but audiences loved him anyway."
+      expected: not_triggered
+      description: "v2 regression — ordinary film review co-occurring 'pure evil' and 'pure bastard' with no self-declared amoral/non-conscious persona intro must not fire"

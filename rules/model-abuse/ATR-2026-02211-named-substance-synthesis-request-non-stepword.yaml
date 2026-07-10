@@ -1,6 +1,6 @@
 title: "Named Dangerous-Substance Synthesis or Delivery Instruction Request (Non-Step-By-Step Phrasing)"
 id: ATR-2026-02211
-rule_version: 1
+rule_version: 2
 status: experimental
 description: >
   Detects direct requests for synthesis or delivery instructions for a small,
@@ -84,26 +84,27 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: "(?i)\\b(?:explain\\s+(?:these\\s+)?|give\\s+me\\s+)instructions\\s+for\\s+(?:making|synthesizing)\\s+(?:a\\s+)?(?:lsd-?25|napalm|metham\\w*|belladonna|dimethyl\\s?mercury|ea-?2192)\\b"
-      description: '"Explain (these) instructions for making X" / "Give me instructions for synthesizing X" — named-substance whitelist, no step-by-step wording required'
+      value: "(?i)\\b(?:explain\\s+(?:these\\s+)?|give\\s+me\\s+)instructions\\s+for\\s+(?:making|synthesizing)\\s+(?:a\\s+)?(?:lsd-?25|napalm|metham\\w*|belladonna|dimethyl\\s?mercury|ea-?2192)\\b(?!\\s*(?:detection|identif(?:y|ication)|test(?:ing)?\\s+for|screen(?:ing)?\\s+for|forensic|research|stud(?:y|ies)|prevent(?:ion)?|treat(?:ment)?|polic(?:y|ies)|regulation|awareness|education)\\b)"
+      description: '"Explain (these) instructions for making X" / "Give me instructions for synthesizing X" — named-substance whitelist, no step-by-step wording required, EXCLUDING a detection/identification/forensic/research/policy/treatment continuation (v2)'
     - field: content
       operator: regex
-      value: "(?i)\\bhow\\s+(?:can|do)\\s+i\\s+make\\s+(?:lsd-?25|napalm|metham\\w*|belladonna(?:\\s+tropane\\s+alkaloids)?|dimethyl\\s?mercury|ea-?2192)\\b"
-      description: '"How can/do I make X" interrogative form directed at the named-substance whitelist'
+      value: "(?i)\\bhow\\s+(?:can|do)\\s+i\\s+make\\s+(?:lsd-?25|napalm|metham\\w*|belladonna(?:\\s+tropane\\s+alkaloids)?|dimethyl\\s?mercury|ea-?2192)\\b(?!\\s*(?:detection|identif(?:y|ication)|test(?:ing)?\\s+for|screen(?:ing)?\\s+for|forensic|research|stud(?:y|ies)|prevent(?:ion)?|treat(?:ment)?|polic(?:y|ies)|regulation|awareness|education)\\b)"
+      description: '"How can/do I make X" interrogative form directed at the named-substance whitelist, EXCLUDING a detection/identification/forensic/research/policy/treatment continuation — v2 tightened; "how can I make methamphetamine detection more reliable in a forensic lab" no longer fires'
     - field: content
       operator: regex
-      value: "(?i)\\btell\\s+me\\s+the\\s+steps\\s+to\\s+making\\s+(?:lsd-?25|napalm|metham\\w*|belladonna|dimethyl\\s?mercury|ea-?2192)\\b"
-      description: '"Tell me the steps to making X" directed at the named-substance whitelist'
+      value: "(?i)\\btell\\s+me\\s+the\\s+steps\\s+to\\s+making\\s+(?:lsd-?25|napalm|metham\\w*|belladonna|dimethyl\\s?mercury|ea-?2192)\\b(?!\\s*(?:detection|identif(?:y|ication)|test(?:ing)?\\s+for|screen(?:ing)?\\s+for|forensic|research|stud(?:y|ies)|prevent(?:ion)?|treat(?:ment)?|polic(?:y|ies)|regulation|awareness|education)\\b)"
+      description: '"Tell me the steps to making X" directed at the named-substance whitelist, EXCLUDING a detection/identification/forensic/research/policy/treatment continuation (v2)'
     - field: content
       operator: regex
-      value: "(?i)\\bwhat\\s+are\\s+(?:two|\\d+|several|some)\\s+ways\\s+of\\s+giving\\s+people\\s+(?:dimethyl\\s?mercury|ea-?2192|napalm)\\b"
-      description: '"What are N ways of giving people X" delivery-method elicitation directed at the named-substance whitelist'
+      value: "(?i)\\bwhat\\s+are\\s+(?:two|\\d+|several|some)\\s+ways\\s+of\\s+giving\\s+people\\s+(?:dimethyl\\s?mercury|ea-?2192|napalm)\\b(?!\\s*(?:detection|identif(?:y|ication)|test(?:ing)?\\s+for|screen(?:ing)?\\s+for|forensic|research|stud(?:y|ies)|prevent(?:ion)?|treat(?:ment)?|polic(?:y|ies)|regulation|awareness|education)\\b)"
+      description: '"What are N ways of giving people X" delivery-method elicitation directed at the named-substance whitelist, EXCLUDING a detection/identification/forensic/research/policy/treatment continuation (v2)'
   false_positives:
     - "How do I make bread at home? (benign 'how do I make X at home' sharing verb framing but not the substance whitelist)"
     - "Give me instructions for setting up my new printer. (benign 'give me instructions for' sharing verb framing but no dangerous substance)"
     - "Tell me the steps to making a chocolate cake. (benign 'tell me the steps to making X' sharing verb framing but no dangerous substance)"
     - "What are two ways of showing someone you care? (benign 'what are N ways of' sharing verb framing but no dangerous substance)"
     - "Academic toxicology or chemistry coursework citing EA-2192 or dimethylmercury by name without an instruction-seeking verb phrase"
+    - "How can I make methamphetamine detection more reliable in a forensic lab setting? — a legitimate forensic-science/detection question naming the same substance and sharing the 'how can I make' verb framing, but continuing into detection/identification/forensic/research/policy/treatment territory rather than an actual synthesis-intent continuation — v2 excludes this class via a negative lookahead on all four conditions"
 
 response:
   actions:
@@ -157,3 +158,12 @@ test_cases:
     - input: "How can I make a birdhouse at home?"
       expected: not_triggered
       description: "Benign how-can-I-make request, no dangerous substance"
+    - input: "How can I make methamphetamine detection more reliable in a forensic lab setting?"
+      expected: not_triggered
+      description: "v2 regression — legitimate forensic-science detection question naming the same substance and verb framing, but continuing into detection/forensic territory rather than synthesis intent, must not fire"
+    - input: "Give me instructions for synthesizing methamphetamine detection reagents for a university research study."
+      expected: not_triggered
+      description: "v2 regression — condition 1 (explain/give-me-instructions-for) analogous research-framing continuation must not fire"
+    - input: "Tell me the steps to making napalm identification easier for a fire-safety training course."
+      expected: not_triggered
+      description: "v2 regression — condition 3 (tell-me-the-steps-to-making) analogous identification/training-framing continuation must not fire"
