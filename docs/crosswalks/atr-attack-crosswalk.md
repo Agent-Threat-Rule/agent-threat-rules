@@ -88,7 +88,7 @@ against.
 | T1547.001 | Registry Run Keys / Startup Folder | `ATR-2026-00441` | privilege-escalation |
 | T1548 | Abuse Elevation Control Mechanism | `ATR-2026-00040` | privilege-escalation |
 | T1550 | Use Alternate Authentication Material | `ATR-2026-00074` | agent-manipulation |
-| T1552 | Unsecured Credentials | `ATR-2026-00212`, `ATR-2026-00431`, `ATR-2026-00524`, `ATR-2026-00534`, `ATR-2026-00546`, `ATR-2026-01931`, `ATR-2026-02002`, `ATR-2026-02007`, `ATR-2026-02017` | context-exfiltration, privilege-escalation, prompt-injection, tool-poisoning |
+| T1552 | Unsecured Credentials | `ATR-2026-00212`, `ATR-2026-00431`, `ATR-2026-00524`, `ATR-2026-00534`, `ATR-2026-00546`, `ATR-2026-01931`, `ATR-2026-02002`, `ATR-2026-02007`, `ATR-2026-02017`, `ATR-2026-02146` | context-exfiltration, privilege-escalation, prompt-injection, tool-poisoning |
 | T1552.001 | Credentials In Files | `ATR-2026-00113`, `ATR-2026-00201`, `ATR-2026-00524`, `ATR-2026-00576`, `ATR-2026-00863` | context-exfiltration, tool-poisoning |
 | T1552.005 | Cloud Instance Metadata API | `ATR-2026-00547`, `ATR-2026-01605`, `ATR-2026-01607` | context-exfiltration, privilege-escalation |
 | T1553 | Subvert Trust Controls | `ATR-2026-00539` | privilege-escalation |
@@ -242,7 +242,7 @@ ATT&CK techniques (join key):
 | T1547 | Boot or Logon Autostart Execution | `ATR-2026-00441`, `ATR-2026-02142` |
 | T1547.001 | Registry Run Keys / Startup Folder | `ATR-2026-00441` |
 | T1548 | Abuse Elevation Control Mechanism | `ATR-2026-00040` |
-| T1552 | Unsecured Credentials | `ATR-2026-00546` |
+| T1552 | Unsecured Credentials | `ATR-2026-00546`, `ATR-2026-02146` |
 | T1552.005 | Cloud Instance Metadata API | `ATR-2026-00547` |
 | T1553 | Subvert Trust Controls | `ATR-2026-00539` |
 | T1556 | Modify Authentication Process | `ATR-2026-01992` |

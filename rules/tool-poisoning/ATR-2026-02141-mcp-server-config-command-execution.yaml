@@ -1,6 +1,6 @@
 title: "Unsandboxed Command Execution via Dynamic MCP Server Config (command/args Injection)"
 id: ATR-2026-02141
-rule_version: 1
+rule_version: 2
 status: experimental
 description: >
   Detects a dynamic/custom MCP server configuration object (a JSON body with
@@ -96,8 +96,8 @@ detection:
       description: "MCP server config command set to nc/ncat with a -e reverse-shell flag in args"
     - field: content
       operator: regex
-      value: '(?i)"command"\s*:\s*"(?:bash|sh|python3?|perl)"[\s\S]{0,20}"args"\s*:\s*\[\s*"-c"'
-      description: "MCP server config command set to a shell/interpreter with -c for arbitrary code execution"
+      value: '(?i)"command"\s*:\s*"(?:bash|sh|python3?|perl)"[\s\S]{0,20}"args"\s*:\s*\[\s*"-c"\s*,\s*"(?=(?:[^"\\]|\\.)*(?:curl\b|wget\b|\bnc\b|\bncat\b|/dev/tcp|base64\s+(?:-d|--decode)|\beval\(|\bexec\(|os\.system|subprocess\.|reverse[_ -]?shell|mkfifo|\.ssh/|\.aws/|\.gnupg/|id_rsa|/etc/passwd|/etc/shadow|credentials\.json|\$\(|`))(?:[^"\\]|\\.)*"'
+      description: "MCP server config command set to a shell/interpreter with -c whose payload itself contains a dangerous signal (network fetch, reverse shell, credential-file read, or code-exec obfuscation) — v2 tightened; bare interpreter+-c with a benign one-liner like npm install && npm start no longer fires"
     - field: content
       operator: regex
       value: '(?i)"command"\s*:\s*"docker"[\s\S]{0,20}"args"\s*:\s*\[\s*"build"[^\]]{0,60}https?://'
@@ -111,7 +111,7 @@ detection:
       value: '(?i)"command"\s*:\s*"node"[\s\S]{0,20}"args"\s*:\s*\[\s*"\/\/[^"]+'
       description: "node invoked with a double-slash path bypassing a single-leading-slash traversal check"
   false_positives:
-    - "Legitimate MCP server configs using bash/sh/python with -c for a benign, non-network one-liner (still worth a human glance, but common in local dev tooling)"
+    - "Legitimate MCP server configs using bash/sh/python with -c for a benign one-liner with no network-fetch/reverse-shell/credential-read/exec-obfuscation signal (e.g. \"bash -c 'npm install && npm start'\") — v2 requires the -c payload itself to contain a dangerous-vocabulary match, not just the bare interpreter+-c shape"
     - "docker build with a local Dockerfile path or build context (no https:// URL argument)"
     - "npx -y (short flag) for routine package execution — this rule only fires on the --yes long-flag alias"
     - "node invoked with a normal single-leading-slash absolute path or relative script name"
@@ -162,3 +162,6 @@ test_cases:
     - input: '{"command":"node","args":["server.js"]}'
       expected: not_triggered
       description: "Ordinary node invocation with a relative script path"
+    - input: '{"command":"bash","args":["-c","npm install && npm start"]}'
+      expected: not_triggered
+      description: "v2 regression — ordinary benign MCP server startup one-liner (bash -c with no network/exec/credential/reverse-shell signal) must not fire"

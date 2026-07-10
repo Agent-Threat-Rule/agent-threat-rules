@@ -1,6 +1,6 @@
 title: "Download/Attachment Tool Directed to Write Outside Its Sandbox via Absolute-Path Filename"
 id: ATR-2026-02142
-rule_version: 1
+rule_version: 2
 status: experimental
 description: >
   Detects two related sandbox-escape primitives for tools that save a
@@ -99,8 +99,8 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)(?:content-disposition\s*:\s*attachment;\s*filename\s*=|suggested_filename["\x27]?\s*[:=])\s*["\x27]?(?:/|[A-Za-z]:\\|\\\\)[^\s"\x27]{1,80}'
-      description: "Content-Disposition or suggested_filename value is an absolute path/drive path rather than a bare filename"
+      value: '(?i)(?:content-disposition\s*:\s*attachment;\s*filename\s*=|suggested_filename["\x27]?\s*[:=])\s*["\x27]?(?:/|[A-Za-z]:\\|\\\\)(?!(?:[^\s"\x27\\/]{1,40}[\\/]){0,6}(?:Downloads|Documents|Desktop|Pictures|Music|Videos|Movies)(?:[\\/]|$))[^\s"\x27]{1,80}'
+      description: "Content-Disposition or suggested_filename value is an absolute path/drive path rather than a bare filename, AND does not resolve into the user's own Downloads/Documents-style directory — v2 tightened; a path landing in an ordinary Downloads/Documents/Desktop folder no longer fires, matching the destination-allowlist logic condition 2 already used"
     - field: content
       operator: regex
       value: '(?i)\b(?:savePath|save_path|dest(?:ination)?_path|output_path|attachment_?path)\b["\x27]?\s*[:=]\s*["\x27]?(?:~|\$HOME)?/?(?:etc/cron\.(?:d|daily|hourly|weekly)|etc/systemd/system|Library/LaunchAgents|\.config/autostart)/'
@@ -108,6 +108,7 @@ detection:
   false_positives:
     - "Content-Disposition filenames that are plain basenames with no path separator (the overwhelming majority of legitimate responses)"
     - "A save-path argument pointed at the tool's own configured downloads/attachments directory, even if that directory happens to be an absolute path under the user's home folder (Downloads, Documents, a project workspace) — this rule only fires on the specific system-persistence directories listed"
+    - "A Content-Disposition or suggested_filename absolute/drive path that resolves into an ordinary Downloads/Documents/Desktop/Pictures/Music/Videos-style user folder (e.g. C:\\Users\\<name>\\Downloads\\invoice.pdf) — v2 excludes these via the same destination-allowlist logic condition 2 uses, since this is the tool's normal download target, not a sandbox escape"
 
 response:
   actions:
@@ -155,3 +156,6 @@ test_cases:
     - input: "output_path=/tmp/data.csv"
       expected: not_triggered
       description: "Save-path pointed at an ordinary temp file, not a system persistence directory"
+    - input: 'suggested_filename: "C:\Users\adam\Downloads\invoice.pdf"'
+      expected: not_triggered
+      description: "v2 regression — absolute drive-path suggested_filename that resolves into the user's own ordinary Downloads folder must not fire"
