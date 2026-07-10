@@ -11,7 +11,7 @@ This is a **curated thematic mapping**, not an id-equality join. ATR carries no 
 
 Regenerate with `python3 scripts/generate-ast-crosswalk.py`. CI runs `--check` so a stale copy fails the build.
 
-Rules in corpus at generation time: **722**.
+Rules in corpus at generation time: **721**.
 
 ## Coverage by AST control
 
@@ -19,13 +19,13 @@ Rules in corpus at generation time: **722**.
 |-----|-------|-----------|-------------------------------|
 | AST01 | Malicious Skills | 176 | ASI01 (55), ASI04 (45), ASI05 (44) |
 | AST02 | Supply Chain Compromise | 47 | ASI04 (19), ASI01 (11), ASI03 (7) |
-| AST03 | Over-Privileged Skills | 195 | ASI01 (88), ASI03 (83), ASI06 (35) |
+| AST03 | Over-Privileged Skills | 194 | ASI01 (88), ASI03 (83), ASI06 (35) |
 | AST04 | Insecure Metadata | 96 | ASI05 (37), ASI06 (31), ASI04 (26) |
 | AST05 | Untrusted External Instructions | 345 | ASI01 (326), ASI06 (16), ASI04 (14) |
 | AST06 | Weak Isolation | 114 | ASI01 (70), ASI03 (37), ASI06 (19) |
 | AST07 | Update Drift | 0 | - |
 | AST08 | Poor Scanning | 0 | - |
-| AST09 | No Governance | 35 | ASI03 (16), ASI01 (15), ASI02 (6) |
+| AST09 | No Governance | 34 | ASI03 (16), ASI01 (15), ASI02 (6) |
 | AST10 | Cross-Platform Reuse | 0 | - |
 
 ## Category -> AST mapping (the editorial join table)
@@ -42,7 +42,7 @@ Rules in corpus at generation time: **722**.
 | skill-compromise (41) | 41 | AST01 Malicious Skills | A compromised skill is a malicious skill. |
 |  |  | AST02 Supply Chain Compromise | Skill compromise via a tampered upstream is supply-chain compromise. |
 | model-abuse (39) | 39 | AST01 Malicious Skills | Coercing the model into attacker-chosen behaviour manifests as a malicious skill action. |
-| excessive-autonomy (35) | 35 | AST03 Over-Privileged Skills | Unbounded action authority is an over-privilege condition. |
+| excessive-autonomy (34) | 34 | AST03 Over-Privileged Skills | Unbounded action authority is an over-privilege condition. |
 |  |  | AST09 No Governance | Autonomy without checks is the AST09 governance gap. |
 | data-poisoning (6) | 6 | AST02 Supply Chain Compromise | Poisoned training/reference data enters through the supply chain. |
 

@@ -28,12 +28,12 @@ columns are still extracted from ATR metadata, not authored here.
 
 ## Coverage
 
-- ATR rules total: 722
-- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 142
+- ATR rules total: 721
+- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 141
 - Distinct enterprise ATT&CK techniques referenced: 56
-- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 722
+- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 721
 - Distinct MITRE ATLAS techniques referenced: 40
-- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 722
+- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 721
 - ATR categories (distinct `tags.category` values): 9
 
 Categories are keyed on each rule's `tags.category` metadata, not on its
@@ -88,7 +88,7 @@ against.
 | T1546.016 | Boot or Logon Autostart Execution: .pth Files | `ATR-2026-00544` | tool-poisoning |
 | T1547 | Boot or Logon Autostart Execution | `ATR-2026-00441` | privilege-escalation |
 | T1547.001 | Registry Run Keys / Startup Folder | `ATR-2026-00441` | privilege-escalation |
-| T1548 | Abuse Elevation Control Mechanism | `ATR-2026-00040`, `ATR-2026-02103` | excessive-autonomy, privilege-escalation |
+| T1548 | Abuse Elevation Control Mechanism | `ATR-2026-00040` | privilege-escalation |
 | T1550 | Use Alternate Authentication Material | `ATR-2026-00074` | agent-manipulation |
 | T1552 | Unsecured Credentials | `ATR-2026-00212`, `ATR-2026-00431`, `ATR-2026-00524`, `ATR-2026-00534`, `ATR-2026-00546`, `ATR-2026-01931`, `ATR-2026-02002`, `ATR-2026-02007`, `ATR-2026-02017` | context-exfiltration, privilege-escalation, prompt-injection, tool-poisoning |
 | T1552.001 | Credentials In Files | `ATR-2026-00113`, `ATR-2026-00201`, `ATR-2026-00524`, `ATR-2026-00576`, `ATR-2026-00863`, `ATR-2026-02104` | context-exfiltration, tool-poisoning |
@@ -189,7 +189,7 @@ OWASP Agentic categories ATR adds: ASI01:2026, ASI04:2026, ASI06:2026
 
 ### excessive-autonomy
 
-Rules in category: 35
+Rules in category: 34
 
 ATT&CK techniques (join key):
 
@@ -197,7 +197,6 @@ ATT&CK techniques (join key):
 |---|---|---|
 | T1046 | Network Service Discovery | `ATR-2026-01989` |
 | T1499 | Endpoint Denial of Service | `ATR-2026-02106` |
-| T1548 | Abuse Elevation Control Mechanism | `ATR-2026-02103` |
 | T1562 | Impair Defenses | `ATR-2026-01993` |
 | T1573 | Encrypted Channel | `ATR-2026-01994` |
 
