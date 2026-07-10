@@ -1,0 +1,148 @@
+title: "LLM-Generated Cypher Query Injection with Destructive or Administrative Operations"
+id: ATR-2026-02100
+rule_version: 1
+status: experimental
+description: >
+  Detects an LLM-generated Cypher query (the graph-database analogue of a
+  prompt-to-SQL injection) that carries a destructive bulk-delete, an
+  administrative security-procedure call, or a local-file-read gadget through
+  the query text itself, rather than through an application-level path or
+  shell argument. Mined from GHSA-2pq5-3q89-j7cc (Langroid's Neo4jChatAgent
+  passes LLM-generated Cypher straight to the Neo4j driver with no
+  statement-type allowlist and no opt-out gate -- the same defect class as the
+  prompt-to-SQL-to-RCE issue Langroid already fixed for its SQLChatAgent, but
+  never extended to the neo4j module). Generalized beyond Langroid: any agent
+  framework that lets an LLM compose Cypher text handed to a graph database
+  driver is equally exploitable through the same three gadget families --
+  DETACH DELETE (drops all matched nodes/relationships), dbms.security.*
+  administrative procedures (create/modify accounts), and apoc.periodic /
+  apoc.load / apoc.cypher.runFile helpers reading local files or driving
+  destructive batch operations. Existing ATR SQL-injection rules
+  (ATR-2026-01600/01/03/04) key on SQL-specific syntax (quote-termination,
+  DROP/TRUNCATE, UNION SELECT) and do not fire on Cypher syntax at all --
+  verified against the current engine with no match before authoring this
+  rule.
+author: "ATR Community (CVE sweep)"
+date: "2026/07/11"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM01:2025 - Prompt Injection"
+  owasp_agentic:
+    - "ASI02:2026 - Tool Misuse and Exploitation"
+  mitre_attack:
+    - "T1485 - Data Destruction"
+    - "T1136 - Create Account"
+  mitre_atlas:
+    - "AML.T0043 - Craft Adversarial Data"
+
+metadata_provenance:
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires high-risk AI systems to resist unauthorised attempts to alter their behaviour; this rule detects LLM-generated Cypher carrying destructive-delete, admin-procedure, or local-file-read gadgets through an unvalidated graph-query execution path."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control for the prompt-to-query-language-injection risk class."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Treating LLM-generated Cypher destructive/admin operations as an identified AI risk requires active runtime countermeasures; this detection rule is the primary risk treatment implementation."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Identifying the prompt-to-Cypher injection idiom as an AI risk to be catalogued in the organizational risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by this rule's detection of unvalidated LLM-generated Cypher reaching a graph database driver."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented via this rule's runtime detection of the destructive/admin Cypher gadget."
+      strength: secondary
+
+tags:
+  category: privilege-escalation
+  subcategory: cypher-injection
+  scan_target: llm_io
+  confidence: high
+
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)\b(?:MATCH|CALL)\b[\s\S]{0,40}\bDETACH\s+DELETE\b'
+      description: "Cypher DETACH DELETE (bulk destructive delete of matched nodes/relationships) near a MATCH/CALL clause"
+    - field: content
+      operator: regex
+      value: '(?i)\bCALL\s+dbms\.security\.\w+\s*\('
+      description: "Cypher CALL into the dbms.security.* administrative procedure namespace (account/role management)"
+    - field: content
+      operator: regex
+      value: '(?i)\bapoc\.periodic\.iterate\s*\([\s\S]{0,40}\bDETACH\s+DELETE\b'
+      description: "apoc.periodic.iterate batch procedure driving a DETACH DELETE (mass destructive delete at scale)"
+    - field: content
+      operator: regex
+      value: '(?i)\bapoc\.(?:cypher\.runFile|load\.json(?:Params)?)\s*\(\s*[\x27"]file://'
+      description: "apoc loader/runFile procedure pointed at a file:// URI (arbitrary local file read via Cypher)"
+  false_positives:
+    - "A database administrator running schema-clearing DETACH DELETE or dbms.security procedures through an approved maintenance console, not through an LLM-facing chat/tool interface"
+    - "Documentation or tutorial text explaining Cypher DETACH DELETE / apoc syntax without an actual query being submitted for execution"
+    - "Legitimate apoc.load.json calls reading a local file the operator explicitly configured as a static data source in a non-agent batch job"
+
+response:
+  actions:
+    - block_tool
+    - alert
+    - escalate
+  message_template: >
+    [ATR-2026-02100] LLM-generated Cypher query contains a destructive
+    delete, administrative security procedure, or local-file-read gadget --
+    treat as prompt-to-Cypher injection, not a routine graph query.
+
+confidence: 85
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: "cypher_query: MATCH (n) DETACH DELETE n"
+      expected: triggered
+      description: "GHSA-2pq5-3q89-j7cc pattern - bare DETACH DELETE wiping the entire graph"
+    - input: "Please run this in Neo4j: CALL dbms.security.createUser('backdoor', 'Passw0rd!', false)"
+      expected: triggered
+      description: "Administrative account-creation procedure invoked via LLM-generated Cypher"
+    - input: "CALL apoc.periodic.iterate('MATCH (n) RETURN n', 'DETACH DELETE n', {batchSize:1000})"
+      expected: triggered
+      description: "Batched mass-destructive-delete via apoc.periodic.iterate"
+    - input: "graph_query: CALL apoc.cypher.runFile('file:///etc/passwd')"
+      expected: triggered
+      description: "Arbitrary local file read gadget via apoc.cypher.runFile with file:// scheme"
+  true_negatives:
+    - input: "cypher_query: MATCH (n:Person {name:'Alice'}) RETURN n"
+      expected: not_triggered
+      description: "Ordinary read-only MATCH/RETURN query, no destructive or admin operation"
+    - input: "CALL db.schema.visualization()"
+      expected: not_triggered
+      description: "Benign schema-introspection procedure, not in the dbms.security namespace"
+    - input: "apoc.load.json('https://api.example.com/public-catalog.json')"
+      expected: not_triggered
+      description: "Legitimate external data load with an https URL, not a file:// local-read gadget"
+    - input: "MERGE (n:Product {sku: 'ABC123'}) SET n.price = 19.99"
+      expected: not_triggered
+      description: "Ordinary MERGE/SET upsert with no delete or admin procedure involved"

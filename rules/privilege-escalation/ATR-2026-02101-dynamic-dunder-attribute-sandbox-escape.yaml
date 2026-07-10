@@ -1,0 +1,147 @@
+title: "Python Sandbox Escape via Dynamically-Constructed Dunder Attribute Chain"
+id: ATR-2026-02101
+rule_version: 1
+status: experimental
+description: >
+  Detects a code-execution-tool payload that builds a blocked dunder/private
+  attribute name at runtime (via chr()/ord() character codes or string
+  concatenation of underscore fragments) and then feeds it into an
+  attribute-resolution primitive -- getattr(), str.format()/format_map()
+  field access, or a __subclasses__()/__mro__ introspection walk -- to reach
+  a real Python object outside a blocklist-based sandbox. This is the
+  structural technique behind two related PraisonAI sandbox-escape
+  disclosures: GHSA-6vh2-h83c-9294 (a str subclass overriding startswith()
+  so isinstance-based dunder checks pass, then walking __mro__/
+  __subclasses__ via names assembled at runtime) and GHSA-pv2j-rghr-v5r9
+  (str.format()'s C-level attribute resolution bypasses the sandbox's
+  Python-level getattr() wrapper entirely, and the dunder name fed to it is
+  built from runtime string concatenation so no blocklisted substring ever
+  appears in the source). Both bypasses exist specifically because the
+  target sandbox's AST/text-based blocklist checks for literal dunder
+  substrings (`__class__`, `__mro__`, `__subclasses__`, ...) in the source
+  text -- exactly the same class of check ATR's own pattern engine performs,
+  so a payload built this way defeats naive keyword-matching by
+  construction. Verified against the current engine: a literal-keyword
+  variant of this PoC is caught by the existing generic dunder-token rule
+  (ATR-2026-00062), but a chr()-encoded / concatenation-built variant with no
+  literal dunder substring anywhere in the payload text produces no match
+  before this rule.
+author: "ATR Community (CVE sweep)"
+date: "2026/07/11"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM08:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI05:2026 - Unexpected Code Execution"
+  mitre_attack:
+    - "T1059.006 - Command and Scripting Interpreter: Python"
+  mitre_atlas:
+    - "AML.T0053 - LLM Plugin Compromise"
+
+metadata_provenance:
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires high-risk AI systems to resist unauthorised attempts to alter their behaviour or environment; this rule detects code payloads that construct blocked attribute names at runtime specifically to evade a sandbox's literal-keyword blocklist."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control for the obfuscated-sandbox-escape risk class."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Treating dynamically-constructed dunder-attribute sandbox escapes as an identified AI risk requires active runtime countermeasures; this detection rule is the primary risk treatment implementation."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Identifying the runtime-attribute-name-construction bypass idiom as an AI risk to be catalogued in the organizational risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by this rule's detection of obfuscated sandbox-escape code payloads reaching an execute-code tool."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented via this rule's runtime detection of the introspection-chain bypass attempt."
+      strength: secondary
+
+tags:
+  category: privilege-escalation
+  subcategory: sandbox-escape
+  scan_target: llm_io
+  confidence: high
+
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?:chr\(\s*\d{2,3}\s*\)\s*\+?\s*){4,}'
+      description: "Four or more chr(N) character-code fragments concatenated -- runtime string assembly that avoids any literal blocklisted substring in source text"
+    - field: content
+      operator: regex
+      value: '\bgetattr\s*\([^,]{1,40},\s*(?:chr\(|[\x27"]_[\x27"]\s*\*\s*2|[\x27"]_[\x27"]\s*\+\s*[\x27"]_[\x27"])'
+      description: "getattr() called with a dynamically-built (chr()-encoded or underscore-multiplied/concatenated) attribute name rather than a literal string"
+    - field: content
+      operator: regex
+      value: '\{0\.[\s\S]{0,20}\}[\s\S]{0,20}\.format(?:_map)?\s*\('
+      description: "str.format()/format_map() field-access template (`{0.attr}`) used as an attribute-resolution primitive -- bypasses getattr()-wrapper-based sandboxes via CPython's C-level attribute lookup"
+    - field: content
+      operator: regex
+      value: '\bstartswith\s*=\s*lambda\s+self[^:]{0,20}:\s*False\b'
+      description: "A class attribute overriding startswith() to always return False -- defeats isinstance()/str.startswith()-based dunder-name filters on a str subclass"
+  false_positives:
+    - "Legitimate use of chr()/ord() in string-processing or Caesar-cipher/obfuscation-teaching code that never feeds the result into getattr(), format(), or an attribute-resolution primitive"
+    - "Test code exercising str.format() with ordinary positional/keyword field access (e.g. '{0}', '{name}') that does not reference a dotted attribute path"
+    - "Security-research or CTF write-ups that quote this exact bypass technique as prose/documentation rather than a submitted tool argument"
+
+response:
+  actions:
+    - block_tool
+    - alert
+    - escalate
+
+confidence: 85
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: "code: b = print.__self__\nd = b.vars(b)\nk = chr(95)+chr(95)+chr(105)+chr(109)+chr(112)+chr(111)+chr(114)+chr(116)+chr(95)+chr(95)\nimp = d[k]"
+      expected: triggered
+      description: "GHSA-4mr5/6vh2-style runtime chr()-encoded dunder name construction (4+ chr() fragments concatenated)"
+    - input: "t = type\nFakeStr = t('FakeStr', (str,), {'startswith': lambda self, *a: False})\nmro_attr = getattr(obj, chr(95)+chr(95)+chr(109)+chr(114)+chr(111)+chr(95)+chr(95))"
+      expected: triggered
+      description: "GHSA-6vh2-h83c-9294 pattern - str subclass overriding startswith() combined with getattr() fed a chr()-encoded attribute name"
+    - input: "key1 = chr(95)*2 + chr(99)+chr(108)+chr(97)+chr(115)+chr(115) + chr(95)*2\nfmt = \"{0.\" + key1 + \"}\"\nprint(fmt.format(()))"
+      expected: triggered
+      description: "GHSA-pv2j-rghr-v5r9 pattern - str.format() field-access attribute leak fed a runtime-constructed dunder name"
+    - input: "class FakeStr(str):\n    startswith = lambda self, *a: False\nresult = isinstance(FakeStr('_x'), str)"
+      expected: triggered
+      description: "str subclass startswith-override guard-bypass primitive on its own"
+  true_negatives:
+    - input: "def caesar_decode(s): return ''.join(chr((ord(c) - 65 + 13) % 26 + 65) for c in s)"
+      expected: not_triggered
+      description: "Legitimate chr()/ord() use in a Caesar cipher helper, not feeding getattr/format"
+    - input: "greeting = '{0} {1}'.format('hello', 'world')"
+      expected: not_triggered
+      description: "Ordinary str.format() with plain positional fields, no dotted attribute access"
+    - input: "value = getattr(config, 'timeout', 30)"
+      expected: not_triggered
+      description: "Normal getattr() call with a literal, non-obfuscated attribute name"
+    - input: "This CVE writeup explains how attackers can theoretically use chr() codes to build dunder names, but no code is being executed here."
+      expected: not_triggered
+      description: "Prose discussion of the technique, no chr() fragments or getattr/format primitive actually present"
