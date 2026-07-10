@@ -97,15 +97,15 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)(?:etc|proc|windows|boot)%2f(?:passwd|shadow|hosts|self|system32|ini)'
-      description: "Sensitive system path whose separator is percent-encoded while the rest of the string is literal (mixed-encoding LFI)"
+      value: '(?i)(?:path|filename|file|source)\s*[=:]\s*[''"]?[%\w./-]{0,20}(?:etc|proc|windows|boot)%2f(?:passwd|shadow|hosts|self|system32|ini)'
+      description: "Path/filename/source-style tool argument whose separator is percent-encoded while the rest of the string is literal (mixed-encoding LFI)"
     - field: content
       operator: regex
-      value: '(?i)\bfile:///(?:etc|root|proc)\b'
-      description: "file:// URI scheme argument pointing directly at a system directory, no traversal characters needed"
+      value: '(?i)(?:source|path|url|location)\s*[=:]\s*[''"]?file:///(?:etc|root|proc)\b'
+      description: "source/path/url-style tool argument using the file:// URI scheme to point directly at a system directory"
   false_positives:
-    - "Documentation or tutorials referencing file:///etc/hosts or similar as a worked example, not an actual tool-call argument"
-    - "A legitimate percent-encoded slash in an unrelated path that coincidentally contains the substring 'etc' immediately before it (e.g. a directory literally named 'etc' inside an application's own asset tree) -- rare enough combined with the passwd/shadow/system32 target list that this is an acceptable trade-off at experimental maturity"
+    - "A legitimate percent-encoded slash in an unrelated path that coincidentally contains the substring 'etc' immediately before it (e.g. a directory literally named 'etc' inside an application's own asset tree) -- rare enough combined with the passwd/shadow/system32 target list and the required key= prefix that this is an acceptable trade-off at experimental maturity"
+    - "HTML/XML attributes (src=, SYSTEM \") pointing file:// at /etc are a related but distinct LFI/XXE surface intentionally left to other rules -- this rule is scoped to source/path/url/location tool-argument keys to avoid matching bare documentation examples of the XXE/iframe-src technique"
 
 response:
   actions:
@@ -146,3 +146,9 @@ test_cases:
     - input: "GET /static/data%2Fcache.json HTTP/1.1"
       expected: not_triggered
       description: "Percent-encoded slash targeting an unrelated cache file, not etc/proc/windows/boot"
+    - input: "# URL encoded\n..%2F..%2F..%2Fetc%2Fpasswd\n%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd"
+      expected: not_triggered
+      description: "Bug-bounty cheat-sheet listing bare traversal payload examples with no path/filename/source= tool-argument key (skills-sh corpus FP class)"
+    - input: '<!DOCTYPE test [ <!ENTITY xxe SYSTEM "file:///etc/passwd"> ]>'
+      expected: not_triggered
+      description: "XXE documentation example using SYSTEM \"file:///etc/passwd\", not a source/path/url tool-argument key (skills-sh corpus FP class)"
