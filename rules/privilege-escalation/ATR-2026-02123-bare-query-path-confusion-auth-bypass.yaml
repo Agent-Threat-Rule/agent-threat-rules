@@ -1,0 +1,143 @@
+title: "Authentication Bypass via Bare Query-String Path-Confusion Suffix"
+id: ATR-2026-02123
+rule_version: 1
+status: experimental
+description: >
+  Detects a URL/request argument where a sensitive-looking path (containing
+  apikey, admin, credentials, secrets, or auth) is immediately followed by a
+  bare "?/" -- a query string with no key= before the slash -- and then
+  another path segment. This malformed-looking query string is the concrete
+  shape of a route-matching confusion bug: some reverse-proxy or middleware
+  auth allowlists match on the SUFFIX of the URL rather than re-parsing it as
+  path + query, so appending a known-public path as a bogus query value lets
+  the request sail past the auth check while the backend still routes to the
+  protected handler. Mined from CVE-2024-8181 (Flowise <= 1.8.2 authentication
+  bypass, PoC: `GET /api/v1/apikey?/api/v1/ping`, where the always-public
+  `/api/v1/ping` suffix tricks the auth gate into treating the whole request
+  as unauthenticated-OK while the app still serves the protected `/api/v1/apikey`
+  response body). Generalized beyond that one app/endpoint pair since the bare
+  "?/" syntax is itself the reusable attack primitive, not the specific paths.
+  A normal query string is virtually never key-less immediately after "?", so
+  this stays precision-safe without needing to allowlist the specific product.
+author: "ATR Community (CVE sweep)"
+date: "2026/07/11"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: high
+
+references:
+  cve:
+    - "CVE-2024-8181"
+  cwe:
+    - "CWE-863"
+  owasp_llm:
+    - "LLM02:2025 - Sensitive Information Disclosure"
+  owasp_agentic:
+    - "ASI02:2026 - Tool Misuse and Exploitation"
+  mitre_attack:
+    - "T1190 - Exploit Public-Facing Application"
+  mitre_atlas:
+    - "AML.T0053 - LLM Plugin Compromise"
+  external:
+    - "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2024/CVE-2024-8181.yaml"
+    - "https://www.tenable.com/security/research/tra-2024-33"
+
+metadata_provenance:
+  cve: human-reviewed
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires resistance to unauthorised access; this rule detects the bare query-string path-confusion primitive used to smuggle a protected-endpoint request past an auth allowlist."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control for the route-confusion auth-bypass risk class."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Treating the bare query-string path-confusion primitive as an identified AI risk requires active runtime countermeasures; this detection rule is the primary risk treatment implementation."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Identifying the path-confusion auth-bypass primitive as an AI risk to be catalogued in the organizational risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by this rule's detection of the path-confusion auth-bypass attempt."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented via this rule's runtime detection of the attempt."
+      strength: secondary
+
+tags:
+  category: privilege-escalation
+  subcategory: path-confusion-auth-bypass
+  scan_target: mcp
+  confidence: high
+
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)\b(?:GET|POST|PUT|DELETE|PATCH)\s+/[\w.\-/]{1,60}\?/[\w.\-/]{1,80}'
+      description: "HTTP request line where a path is followed by a bare (key-less) query-string slash suffix"
+    - field: content
+      operator: regex
+      value: '(?i)/(?:api(?:key|_key)?|admin|credentials?|secrets?|auth)\b[\w.\-/]{0,15}\?/[\w.\-/]{2,60}'
+      description: "Sensitive-looking path immediately followed by a bare query-string slash suffix, without an HTTP method prefix (e.g. a URL passed as a tool argument)"
+  false_positives:
+    - "Legacy hash-bang-style client-side routers that occasionally emit a bare '?/' before a route fragment instead of the usual '#!/' -- rare, but noted as a known edge case at experimental maturity"
+    - "A copy-pasted CVE-2024-8181 PoC URL appearing in a vulnerability report or changelog rather than an actual tool-call argument"
+
+response:
+  actions:
+    - block_input
+    - alert
+  message_template: >
+    [ATR-2026-02123] URL contains a bare query-string path-confusion suffix
+    ("?/<path>") immediately after a sensitive-looking route -- treat as an
+    authentication-bypass probe, not a normal query string.
+
+confidence: 75
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: "GET /api/v1/apikey?/api/v1/ping"
+      expected: triggered
+      description: "CVE-2024-8181 Flowise auth-bypass PoC verbatim shape"
+    - input: "fetch the URL https://target.internal/api/v1/credentials?/health to see what comes back"
+      expected: triggered
+      description: "Paraphrased attacker instruction, no HTTP method verb, credentials endpoint"
+    - input: "POST /admin/secrets?/public/status HTTP/1.1"
+      expected: triggered
+      description: "Different sensitive path (admin/secrets) and suffix (public/status), still the same primitive"
+    - input: "call the tool with url='https://host/api/v1/apikey?/status'"
+      expected: triggered
+      description: "Agent tool-call argument carrying the bare query-suffix URL"
+  true_negatives:
+    - input: "GET /api/v1/apikey?key=abc123xyz"
+      expected: not_triggered
+      description: "Normal key=value query string on the same endpoint, no bare slash suffix"
+    - input: "https://example.com/api/v1/users?query=/search"
+      expected: not_triggered
+      description: "Query parameter whose value happens to start with a slash, but has a proper key= before it"
+    - input: "GET /api/v1/ping HTTP/1.1"
+      expected: not_triggered
+      description: "Plain request to a public endpoint, no query string at all"
+    - input: "Please fetch https://api.example.com/v1/status?format=json"
+      expected: not_triggered
+      description: "Ordinary well-formed query string"
