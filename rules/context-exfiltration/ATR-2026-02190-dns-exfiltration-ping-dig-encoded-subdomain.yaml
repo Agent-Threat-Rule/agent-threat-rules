@@ -86,8 +86,8 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '\b(?:ping|dig|nslookup)\b[\s\S]{0,20}\b[A-Za-z0-9]{10,}-[A-Za-z0-9]{4,}-[A-Za-z0-9-]{4,}\.[a-z]{2,}(?:\.[a-z]{2,})?\b'
-      description: "ping/dig/nslookup target hostname whose leftmost label is a long dash-segmented alphanumeric blob (dash-substituted base64/secret value used as a DNS-safe exfil label)"
+      value: '\b(?:ping|dig|nslookup)\b[\s\S]{0,20}\b(?:[0-9a-f]{16,}|[0-9A-F]{16,}|(?=[A-Za-z0-9]*[0-9])(?=[A-Za-z0-9]*[A-Z])(?=[A-Za-z0-9]*[a-z])[A-Za-z0-9]{10,})-[A-Za-z0-9]{4,}-[A-Za-z0-9-]{4,}\.[a-z]{2,}(?:\.[a-z]{2,})?\b'
+      description: "ping/dig/nslookup target hostname whose leftmost label is a long dash-segmented blob that actually looks like ENCODED data -- a pure 16+ char hex run, or a 10+ char alphanumeric run mixing uppercase, lowercase, AND digits (the real-world signature of a base64/API-key value squeezed into a DNS-safe label) -- not merely any long lowercase English word/service-name segment"
     - field: content
       operator: regex
       value: '\b(?:ping|dig|nslookup)\b[\s\S]{0,20}\b(?:AKIA[0-9A-Z]{12,}|sk-[A-Za-z0-9_-]{16,}|ghp_[A-Za-z0-9]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|eyJ[A-Za-z0-9_-]{10,})'
@@ -99,6 +99,7 @@ detection:
   false_positives:
     - "Ordinary network troubleshooting: 'ping google.com', 'dig +short example.com', 'nslookup 8.8.8.8'"
     - "Internal hostnames with short dash-separated segments (e.g. 'ping my-server-01.internal.corp') do not meet the 10+/4+/4+ character segment thresholds"
+    - "Ordinary long service/deployment names common in cloud infra (e.g. 'dig authentication-service-7d4b8c9d6f-abc12.prod.svc.cluster.local', 'ping development-server-workload-01.example.com') read as plain lowercase English words/short hex hashes, not a mixed-case or 16+ char hex encoded blob"
     - "A security engineer discussing this exact DNS-exfiltration technique in an incident-response writeup, without actually issuing the command"
 
 response:
@@ -140,3 +141,9 @@ test_cases:
     - input: "nslookup 8.8.8.8"
       expected: not_triggered
       description: "Reverse lookup of a plain IP address"
+    - input: "dig authentication-service-7d4b8c9d6f-abc12.prod.svc.cluster.local"
+      expected: not_triggered
+      description: "Ordinary k8s-style service hostname -- 'authentication' is a plain lowercase word and '7d4b8c9d6f' is only a 10-char hex hash, neither meets the 16+ char hex or mixed-case+digit encoded-blob signature"
+    - input: "ping development-server-workload-01.example.com"
+      expected: not_triggered
+      description: "Ordinary long deployment/service hostname made of plain lowercase English words, not an encoded secret blob"

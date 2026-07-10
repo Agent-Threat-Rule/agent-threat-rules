@@ -93,12 +93,17 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: "(?i)(?:\\bupdate[-_ ]?env(?:ironment)?\\b|\\bsetenv\\b|\\bset\\s+(?:the\\s+)?environment\\s+variable\\b|\\bPOST\\s+/api/[\\w/-]{0,24}env\\b)[\\s\\S]{0,40}\\b(?:NODE_OPTIONS|LD_PRELOAD|DYLD_INSERT_LIBRARIES|PYTHONSTARTUP|BASH_ENV|PERL5OPT|RUBYOPT|GCONV_PATH)\\b"
-      description: "A config/env-update tool-call context (update-env, setenv, 'set environment variable', POST .../env endpoint) naming a known process-hijacking environment variable"
+      value: "(?i)(?:\\bupdate[-_ ]?env(?:ironment)?\\b|\\bsetenv\\b|\\bset\\s+(?:the\\s+)?environment\\s+variable\\b|\\bPOST\\s+/api/[\\w/-]{0,24}env\\b)[\\s\\S]{0,40}\\bNODE_OPTIONS\\b[\\s\\S]{0,10}[:=][\\s\\S]{0,60}(?:--require\\b|-r\\s|--loader\\b|--experimental-loader\\b|--experimental-require-module\\b|\\.m?js\\b)"
+      description: "A config/env-update tool-call context naming NODE_OPTIONS whose VALUE actually references a require/preload/loader mechanism (--require, -r, --loader, --experimental-loader, or an explicit .js/.mjs module payload) -- not a routine memory/debug/warnings flag"
+    - field: content
+      operator: regex
+      value: "(?i)(?:\\bupdate[-_ ]?env(?:ironment)?\\b|\\bsetenv\\b|\\bset\\s+(?:the\\s+)?environment\\s+variable\\b|\\bPOST\\s+/api/[\\w/-]{0,24}env\\b)[\\s\\S]{0,40}\\b(?:LD_PRELOAD|DYLD_INSERT_LIBRARIES|PYTHONSTARTUP|BASH_ENV|PERL5OPT|RUBYOPT|GCONV_PATH)\\b"
+      description: "A config/env-update tool-call context (update-env, setenv, 'set environment variable', POST .../env endpoint) naming a known process-hijacking environment variable that has no benign flag-only mode (its value IS the hijack payload)"
   false_positives:
     - "A DevOps runbook or documentation discussing these variable names in prose without an accompanying config/env-update tool-call context"
     - "A legitimate, security-reviewed deployment script that intentionally sets LD_PRELOAD/NODE_OPTIONS for approved instrumentation (e.g. an APM agent) via a config/update-env style call -- rare but possible; still worth a human check given the severity of process-hijacking if the value turns out to be attacker-controlled"
     - "Shell-syntax examples in security-education content (e.g. 'sudo LD_PRELOAD=/tmp/shell.so find') that show the variable being set directly in a shell, without any update-env/setenv/config-API framing"
+    - "Routine NODE_OPTIONS flags that are not a require/loader mechanism -- 'NODE_OPTIONS=--max-old-space-size=4096', 'NODE_OPTIONS=--inspect=9229', 'NODE_OPTIONS=--no-warnings', '--stack-size=...' -- these tune memory/debugging/warnings and carry no code-loading capability, so they must not fire"
 
 response:
   actions:
@@ -126,6 +131,9 @@ test_cases:
     - input: "update-env endpoint: PYTHONSTARTUP=/tmp/backdoor.py"
       expected: triggered
       description: "PYTHONSTARTUP hijack causing a script to run at every interactive Python startup"
+    - input: "update env: NODE_OPTIONS=--loader=/tmp/evil-loader.mjs"
+      expected: triggered
+      description: "NODE_OPTIONS abused via --loader to load an attacker-controlled ESM loader module"
   true_negatives:
     - input: "update env: LOG_LEVEL=debug"
       expected: not_triggered
@@ -136,3 +144,12 @@ test_cases:
     - input: "NODE_OPTIONS and LD_PRELOAD are both examples of environment variables that can be abused for code execution if an attacker controls them"
       expected: not_triggered
       description: "Prose discussing the variable names without an actual path/flag assignment"
+    - input: "update env: NODE_OPTIONS=--max-old-space-size=4096"
+      expected: not_triggered
+      description: "Routine NODE_OPTIONS memory-tuning flag, no require/loader/module payload"
+    - input: "set environment variable NODE_OPTIONS=--inspect=9229"
+      expected: not_triggered
+      description: "Routine NODE_OPTIONS debug-inspector flag, no require/loader/module payload"
+    - input: "update-env endpoint: NODE_OPTIONS=--no-warnings"
+      expected: not_triggered
+      description: "Routine NODE_OPTIONS warnings-suppression flag, no require/loader/module payload"
