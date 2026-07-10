@@ -11,18 +11,18 @@ This is a **curated thematic mapping**, not an id-equality join. ATR carries no 
 
 Regenerate with `python3 scripts/generate-ast-crosswalk.py`. CI runs `--check` so a stale copy fails the build.
 
-Rules in corpus at generation time: **721**.
+Rules in corpus at generation time: **727**.
 
 ## Coverage by AST control
 
 | AST | Title | ATR rules | Top supporting ASI (evidence) |
 |-----|-------|-----------|-------------------------------|
-| AST01 | Malicious Skills | 177 | ASI01 (55), ASI04 (45), ASI05 (45) |
+| AST01 | Malicious Skills | 178 | ASI01 (55), ASI04 (45), ASI05 (45) |
 | AST02 | Supply Chain Compromise | 49 | ASI04 (19), ASI01 (12), ASI03 (7) |
-| AST03 | Over-Privileged Skills | 192 | ASI01 (88), ASI03 (83), ASI06 (32) |
-| AST04 | Insecure Metadata | 97 | ASI05 (38), ASI06 (31), ASI04 (26) |
-| AST05 | Untrusted External Instructions | 344 | ASI01 (326), ASI06 (16), ASI04 (14) |
-| AST06 | Weak Isolation | 113 | ASI01 (70), ASI03 (37), ASI06 (17) |
+| AST03 | Over-Privileged Skills | 196 | ASI01 (90), ASI03 (83), ASI06 (32) |
+| AST04 | Insecure Metadata | 98 | ASI05 (38), ASI06 (31), ASI04 (26) |
+| AST05 | Untrusted External Instructions | 345 | ASI01 (327), ASI06 (16), ASI04 (14) |
+| AST06 | Weak Isolation | 115 | ASI01 (72), ASI03 (37), ASI06 (17) |
 | AST07 | Update Drift | 0 | - |
 | AST08 | Poor Scanning | 0 | - |
 | AST09 | No Governance | 33 | ASI03 (16), ASI01 (15), ASI02 (6) |
@@ -32,13 +32,13 @@ Rules in corpus at generation time: **721**.
 
 | ATR category | Rules | AST control(s) | Rationale |
 |--------------|-------|----------------|-----------|
-| prompt-injection (238) | 238 | AST05 Untrusted External Instructions | Injected/untrusted instructions are exactly the AST05 external-instruction class. |
-| context-exfiltration (113) | 113 | AST03 Over-Privileged Skills | Reading/exfiltrating data beyond the skill's need is over-privilege. |
+| prompt-injection (239) | 239 | AST05 Untrusted External Instructions | Injected/untrusted instructions are exactly the AST05 external-instruction class. |
+| context-exfiltration (115) | 115 | AST03 Over-Privileged Skills | Reading/exfiltrating data beyond the skill's need is over-privilege. |
 |  |  | AST06 Weak Isolation | Cross-context data leakage indicates weak isolation between skills/sessions. |
 | agent-manipulation (106) | 106 | AST05 Untrusted External Instructions | Manipulating an agent via crafted external content is untrusted-instruction abuse. |
-| tool-poisoning (97) | 97 | AST01 Malicious Skills | A poisoned tool/skill is a malicious skill at the point of use. |
+| tool-poisoning (98) | 98 | AST01 Malicious Skills | A poisoned tool/skill is a malicious skill at the point of use. |
 |  |  | AST04 Insecure Metadata | Tool-description / metadata poisoning is the AST04 insecure-metadata surface. |
-| privilege-escalation (46) | 46 | AST03 Over-Privileged Skills | Privilege escalation is the direct consequence of over-privileged skills. |
+| privilege-escalation (48) | 48 | AST03 Over-Privileged Skills | Privilege escalation is the direct consequence of over-privileged skills. |
 | skill-compromise (41) | 41 | AST01 Malicious Skills | A compromised skill is a malicious skill. |
 |  |  | AST02 Supply Chain Compromise | Skill compromise via a tampered upstream is supply-chain compromise. |
 | model-abuse (39) | 39 | AST01 Malicious Skills | Coercing the model into attacker-chosen behaviour manifests as a malicious skill action. |
