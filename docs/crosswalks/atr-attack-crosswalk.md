@@ -28,12 +28,12 @@ columns are still extracted from ATR metadata, not authored here.
 
 ## Coverage
 
-- ATR rules total: 714
-- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 134
+- ATR rules total: 718
+- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 135
 - Distinct enterprise ATT&CK techniques referenced: 53
-- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 714
+- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 718
 - Distinct MITRE ATLAS techniques referenced: 40
-- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 714
+- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 718
 - ATR categories (distinct `tags.category` values): 9
 
 Categories are keyed on each rule's `tags.category` metadata, not on its
@@ -75,7 +75,7 @@ against.
 | T1195.002 | Compromise Software Supply Chain | `ATR-2026-00419`, `ATR-2026-00433`, `ATR-2026-00523`, `ATR-2026-00524`, `ATR-2026-00572`, `ATR-2026-00575`, `ATR-2026-00576`, `ATR-2026-01932` | context-exfiltration, model-abuse, skill-compromise, tool-poisoning |
 | T1204 | User Execution | `ATR-2026-00118` | agent-manipulation |
 | T1204.001 | User Execution: Malicious Link | `ATR-2026-01968` | tool-poisoning |
-| T1485 | Data Destruction | `ATR-2026-00858`, `ATR-2026-01601` | context-exfiltration, privilege-escalation |
+| T1485 | Data Destruction | `ATR-2026-00858`, `ATR-2026-01601`, `ATR-2026-02233` | context-exfiltration, privilege-escalation, tool-poisoning |
 | T1499 | Endpoint Denial of Service | `ATR-2026-00209` | tool-poisoning |
 | T1528 | Steal Application Access Token | `ATR-2026-00114` | context-exfiltration |
 | T1530 | Data from Cloud Storage Object | `ATR-2026-00449` | context-exfiltration |
@@ -110,7 +110,7 @@ For each ATR category: the enterprise ATT&CK techniques its rules reference
 
 ### agent-manipulation
 
-Rules in category: 106
+Rules in category: 107
 
 ATT&CK techniques (join key):
 
@@ -252,7 +252,7 @@ OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:202
 
 ### prompt-injection
 
-Rules in category: 238
+Rules in category: 240
 
 ATT&CK techniques (join key):
 
@@ -291,7 +291,7 @@ OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:202
 
 ### tool-poisoning
 
-Rules in category: 95
+Rules in category: 96
 
 ATT&CK techniques (join key):
 
@@ -312,6 +312,7 @@ ATT&CK techniques (join key):
 | T1195 | Supply Chain Compromise | `ATR-2026-01930` |
 | T1195.002 | Compromise Software Supply Chain | `ATR-2026-00419`, `ATR-2026-00572`, `ATR-2026-00575`, `ATR-2026-00576`, `ATR-2026-01932` |
 | T1204.001 | User Execution: Malicious Link | `ATR-2026-01968` |
+| T1485 | Data Destruction | `ATR-2026-02233` |
 | T1499 | Endpoint Denial of Service | `ATR-2026-00209` |
 | T1546 | Event Triggered Execution | `ATR-2026-00419`, `ATR-2026-00572`, `ATR-2026-00575` |
 | T1546.016 | Boot or Logon Autostart Execution: .pth Files | `ATR-2026-00544` |
