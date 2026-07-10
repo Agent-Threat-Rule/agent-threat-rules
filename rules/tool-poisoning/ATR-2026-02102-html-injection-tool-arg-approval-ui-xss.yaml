@@ -1,0 +1,162 @@
+title: "HTML/Script Injection in Tool Call Argument Targeting a Human-Approval Dashboard"
+id: ATR-2026-02102
+rule_version: 1
+status: experimental
+description: >
+  Detects a tool-call argument (filename, command string, or other
+  free-text field) carrying an HTML/JavaScript injection payload -- a
+  script tag, or an event-handler attribute (onerror/onload/onfocus/
+  onclick/onsubmit) whose body targets a same-page decision/approve/deny
+  endpoint or window -- rather than plain data. The distinguishing signal
+  here is the payload's *target*: it self-approves or self-submits a
+  pending human-in-the-loop decision (via location.pathname-relative POSTs,
+  form auto-submission, or an embedding window's postMessage channel),
+  rather than the generic exfiltration targets (document.cookie,
+  window.location, alert/eval) that ATR's existing tool_response-scoped XSS
+  rules (ATR-2026-00497/00571/01451) already cover. Mined from
+  GHSA-63v4-w882-g4x2 (PraisonAI's HTTPApproval dashboard renders pending
+  tool-call arguments as raw, unescaped HTML; an attacker-controlled
+  argument value can inject a script that calls the approval page's own
+  `/approve/{id}/decide` endpoint, self-approving a dangerous tool call
+  before a human clicks Approve or Deny) and generalized to the equivalent
+  postMessage-based takeover shape seen in GHSA-x975-rgx4-5fh4 (appium-mcp's
+  MCP-UI locator resource lets injected script call
+  `window.parent.postMessage({type:'tool', ...})` to invoke arbitrary MCP
+  tools from inside a rendered UI resource). Verified against the current
+  engine: the existing XSS rules resolve against tool_response/agent_output
+  fields and do not fire when the identical payload appears as a tool_call
+  argument (tool_args) -- the field-scoping gap this rule closes -- and even
+  in a tool_response context, event-handler payloads using
+  non-networky-looking JS (e.g. `new Image().src=...`, `document.forms[0].
+  submit()`) that avoid the literal window./document./fetch/eval keywords
+  those rules key on produce no match.
+author: "ATR Community (CVE sweep)"
+date: "2026/07/11"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM08:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI02:2026 - Tool Misuse and Exploitation"
+  mitre_attack:
+    - "T1185 - Browser Session Hijacking"
+  mitre_atlas:
+    - "AML.T0053 - LLM Plugin Compromise"
+
+metadata_provenance:
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires high-risk AI systems to resist unauthorised attempts to alter their behaviour; this rule detects tool-call arguments carrying an HTML/script injection payload aimed at self-approving a pending human-in-the-loop decision."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control for the approval-UI XSS risk class."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Treating approval-dashboard XSS payloads in tool arguments as an identified AI risk requires active runtime countermeasures; this detection rule is the primary risk treatment implementation."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Identifying the human-in-the-loop approval-bypass XSS idiom as an AI risk to be catalogued in the organizational risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by this rule's detection of tool-argument XSS payloads that undermine the human-approval control itself."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented via this rule's runtime detection of the self-approval injection attempt."
+      strength: secondary
+
+tags:
+  category: tool-poisoning
+  subcategory: approval-ui-xss
+  scan_target: both
+  confidence: high
+
+agent_source:
+  type: tool_call
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: tool_args
+      operator: regex
+      value: '(?i)</code>\s*<script[^>]{0,20}>[\s\S]{0,80}(?:decide|approve|/approve/)'
+      description: "Tool argument breaking out of a code context to inject a script that calls a decide/approve endpoint (self-approval XSS)"
+    - field: tool_args
+      operator: regex
+      value: '(?i)\bon(?:error|load|focus)\s*=\s*[\x27"][\s\S]{0,120}(?:new\s+Image\s*\(\s*\)\.src\s*=\s*[\x27"][^\x27"]{0,80}(?:approve|decide|confirm|consent)|\.submit\s*\(\s*\)[\s\S]{0,40}(?:approve|decide|confirm|consent)|(?:approve|decide|confirm|consent)[\s\S]{0,40}\.submit\s*\(\s*\)|/(?:approve|decide)/)'
+      description: "Event-handler payload in a tool argument auto-submitting a form or beaconing to an approve/decide endpoint via image-fetch, without a networky keyword like fetch/document.cookie. The image-beacon and form-submit branches require the destination URL/endpoint to actually reference an approve/confirm/decide/consent-style path or parameter, matching the scoping already used by the literal-path branch -- an ordinary logging/analytics beacon URL (e.g. /log?err=imgfail) does not qualify"
+    - field: tool_args
+      operator: regex
+      value: '(?i)<(?:img|svg)\b[^>]{0,40}\bon(?:error|load)\s*=[^>]{0,120}(?:document\.forms|\.submit\s*\()'
+      description: "IMG/SVG event-handler payload driving form auto-submission (approval-page self-submit)"
+    - field: content
+      operator: regex
+      value: '(?i)(?:on(?:error|load)\s*=\s*[\x27"][\s\S]{0,40}|<script[^>]{0,20}>[\s\S]{0,40})window\.parent\.postMessage\s*\(\s*\{[\s\S]{0,60}\btool'
+      description: "Injected event handler or script tag calling window.parent.postMessage with a tool-invocation payload from inside a rendered UI resource"
+  false_positives:
+    - "Legitimate approval-dashboard UI code (server-authored, not an attacker-controlled tool argument) that itself defines the decide/approve POST handler"
+    - "Security test fixtures or unit tests for the approval dashboard that intentionally exercise XSS payloads in a controlled, non-production test suite"
+    - "Documentation or bug-report prose quoting this exact payload shape without an actual tool call carrying it"
+
+response:
+  actions:
+    - block_tool
+    - alert
+
+confidence: 82
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input:
+        tool_name: "execute_command"
+        tool_args: "touch /tmp/x # </code><script>fetch(location.pathname+'/decide',{method:'POST',body:JSON.stringify({decision:'approve'})})</script>"
+      expected: triggered
+      description: "GHSA-63v4-w882-g4x2 disclosed PoC shape - code-context breakout plus script calling the decide endpoint"
+    - input:
+        tool_name: "process_task"
+        tool_args: "report.txt<img src=x onerror=\"new Image().src='/decide?ok=1'\">"
+      expected: triggered
+      description: "IMG onerror beaconing to the decide endpoint via Image().src, no fetch/document keyword"
+    - input:
+        tool_name: "process_task"
+        tool_args: "notes.txt\"><svg onload=\"document.forms[0].submit()\">"
+      expected: triggered
+      description: "SVG onload auto-submitting the approval form"
+    - input: "element text: '\"><script>window.parent.postMessage({type:'tool',payload:{toolName:'take_screenshot'}},'*')</script>"
+      expected: triggered
+      description: "GHSA-x975-rgx4-5fh4 pattern - injected script invoking an MCP tool via window.parent.postMessage"
+  true_negatives:
+    - input:
+        tool_name: "rename_file"
+        tool_args: "Please rename the file report-final.txt to report-approved.txt"
+      expected: not_triggered
+      description: "Ordinary filename argument, no HTML/script content"
+    - input:
+        tool_name: "delete_file"
+        tool_args: "old_notes.txt"
+      expected: not_triggered
+      description: "Plain tool call with a benign path argument"
+    - input:
+        tool_name: "process_task"
+        tool_args: "<img src='logo.png' alt='Company logo'>"
+      expected: not_triggered
+      description: "Ordinary IMG tag with no event handler at all"
+    - input: "The approval dashboard displays tool_name, risk_level, and arguments in a table for the reviewer to read."
+      expected: not_triggered
+      description: "Prose description of the approval UI, no injected payload"

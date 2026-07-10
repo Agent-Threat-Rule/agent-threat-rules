@@ -1,0 +1,139 @@
+title: "Prototype Pollution via constructor.prototype Path Bypassing __proto__-Only Filters"
+id: ATR-2026-02105
+rule_version: 1
+status: experimental
+description: >
+  Detects a JSON/object payload or code snippet that reaches
+  Object.prototype through the `constructor.prototype.<key>` traversal path
+  rather than the literal `__proto__` key -- the classic incomplete guard
+  bypass, since many sanitizers/anonymizers only special-case `__proto__`
+  and let any other key (including "constructor") assign through
+  unmodified. Mined from GHSA-fw9q-39r9-c252 (the LangSmith JS/TS SDK's
+  vendored lodash `set()` utility guards only the literal `__proto__` key
+  in `baseAssignValue()`; a nested object with a key shaped like
+  "constructor.prototype.isAdmin" traverses obj.constructor -> Object ->
+  Object.prototype and writes through, polluting every object in the
+  process even though the anonymizer's own deep-clone step was supposed to
+  contain the mutation). Generalized beyond LangSmith's specific
+  anonymizer entry point to any JSON/object-processing tool argument or
+  code payload using this same traversal path. Verified against the
+  current engine: a literal `__proto__` payload is already caught by the
+  existing generic dunder-token rule (ATR-2026-00062), but a
+  `constructor.prototype`-shaped bypass payload -- the exact incomplete-fix
+  scenario this CVE demonstrates, and the same blind spot a
+  substring/keyword-based filter is inherently prone to -- produces no
+  match before this rule.
+author: "ATR Community (CVE sweep)"
+date: "2026/07/11"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM05:2025 - Improper Output Handling"
+  owasp_agentic:
+    - "ASI05:2026 - Unexpected Code Execution"
+  mitre_attack:
+    - "T1195.001 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools"
+  mitre_atlas:
+    - "AML.T0043 - Craft Adversarial Data"
+
+metadata_provenance:
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires high-risk AI systems to resist unauthorised attempts to alter their behaviour; this rule detects a constructor.prototype traversal payload designed to bypass a __proto__-only prototype-pollution guard."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control for the incomplete-guard prototype-pollution risk class."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Treating constructor.prototype-shaped prototype-pollution payloads as an identified AI risk requires active runtime countermeasures; this detection rule is the primary risk treatment implementation."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Identifying the __proto__-guard-bypass idiom as an AI risk to be catalogued in the organizational risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by this rule's detection of prototype-pollution bypass payloads reaching a JSON/object-processing tool."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented via this rule's runtime detection of the bypass attempt."
+      strength: secondary
+
+tags:
+  category: agent-manipulation
+  subcategory: prototype-pollution
+  scan_target: llm_io
+  confidence: high
+
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '[\x27"][\w.]*\bconstructor\.prototype\.\w+[\x27"]\s*:'
+      description: "A JSON/object key literal shaped as a dotted constructor.prototype.<field> traversal path"
+    - field: content
+      operator: regex
+      value: '\{\s*[\x27"]constructor[\x27"]\s*:\s*\{\s*[\x27"]prototype[\x27"]\s*:'
+      description: "A nested {constructor: {prototype: ...}} object structure -- the alternate constructor.prototype bypass shape"
+    - field: content
+      operator: regex
+      value: '\.constructor\.prototype\.\w+\s*=(?!=)'
+      description: "Direct code assignment through the obj.constructor.prototype.<field> = value traversal path. The trailing = uses a negative lookahead to exclude == / === comparison/type-check code (e.g. obj.constructor.prototype.hasOwnProperty === Object.prototype.hasOwnProperty), which is not an assignment"
+  false_positives:
+    - "Ordinary class declarations using the word 'constructor' for their own constructor method (e.g. `class Foo { constructor(x) {...} }`), which do not contain the literal '.prototype.' continuation this rule requires"
+    - "Legitimate reflection/introspection code reading obj.constructor.name or obj.constructor === SomeClass for type checks, which does not continue into '.prototype.<field> ='"
+
+response:
+  actions:
+    - block_tool
+    - alert
+    - escalate
+
+confidence: 83
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: '{"wrapper": {"constructor.prototype.isAdmin": "true"}}'
+      expected: triggered
+      description: "GHSA-fw9q-39r9-c252 disclosed shape - nested object with a constructor.prototype.<field> key"
+    - input: '{"user.constructor.prototype.isAdmin": true}'
+      expected: triggered
+      description: "Top-level dotted key variant of the same bypass path"
+    - input: 'Object.assign(target, {"constructor": {"prototype": {"isAdmin": true}}})'
+      expected: triggered
+      description: "Nested constructor/prototype object-literal bypass shape"
+    - input: 'x.constructor.prototype.isAdmin = true;'
+      expected: triggered
+      description: "Direct code assignment through the constructor.prototype traversal path"
+  true_negatives:
+    - input: '{"user": {"name": "Alice", "role": "member"}}'
+      expected: not_triggered
+      description: "Ordinary nested object with no constructor/prototype keys at all"
+    - input: '{"constructor": "MyClass"}'
+      expected: not_triggered
+      description: "Plain string value under a 'constructor' key, no .prototype. continuation"
+    - input: 'class Foo { constructor(x) { this.x = x; } }'
+      expected: not_triggered
+      description: "Ordinary JS class constructor method definition, no prototype traversal"
+    - input: 'const typeName = user.constructor.name;'
+      expected: not_triggered
+      description: "Legitimate introspection reading constructor.name, not constructor.prototype"

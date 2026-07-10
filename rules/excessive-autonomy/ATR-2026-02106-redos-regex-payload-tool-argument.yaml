@@ -1,0 +1,135 @@
+title: "Catastrophic-Backtracking Regex Payload in a Search/Query Tool Argument"
+id: ATR-2026-02106
+rule_version: 1
+status: experimental
+description: >
+  Detects a classic ReDoS (regular-expression denial-of-service) trigger
+  shape -- a capturing group with an inner quantifier (+ or *) immediately
+  followed by an outer quantifier on the same group -- appearing inside a
+  tool argument that a vulnerable tool will compile and execute as a live
+  regular expression against its own data with no timeout. This nested
+  quantifier shape (`(a+)+`, `([a-zA-Z]+)*`, `(.*)+`) is the textbook
+  catastrophic-backtracking construct: against a non-matching input it
+  causes the regex engine's backtracking search space to grow
+  exponentially with input length. Mined from GHSA-8w9j-hc3g-3g7f
+  (PraisonAI's `MCPToolIndex.search_tools()` compiles a caller-supplied
+  query string directly as a Python regex via `re.compile(query,
+  re.IGNORECASE)` with no validation, sanitization, or timeout; the
+  disclosed PoC query `(a+)+$` blocked the server's Python thread for
+  hundreds of seconds, a complete denial of service reachable by any
+  network caller since the MCP server's HTTP transport runs without an API
+  key by default). Generalized beyond that one tool/field name to any
+  agent-callable tool that takes a caller-supplied string and compiles it
+  as a regex (search/filter/index-lookup tools are the most common shape).
+  Verified against the current engine: none of the three realistic
+  ReDoS-shaped query variants tested produced any match from an existing
+  rule.
+author: "ATR Community (CVE sweep)"
+date: "2026/07/11"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM10:2025 - Unbounded Consumption"
+  owasp_agentic:
+    - "ASI06:2026 - Tool Misuse"
+  mitre_attack:
+    - "T1499 - Endpoint Denial of Service"
+  mitre_atlas:
+    - "AML.T0034 - Cost Harvesting"
+
+metadata_provenance:
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires high-risk AI systems to resist unauthorised attempts to degrade their availability; this rule detects a ReDoS-shaped regex payload submitted as a tool argument to trigger a catastrophic-backtracking denial of service."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control for the ReDoS-via-tool-argument risk class."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Treating ReDoS-shaped tool-argument payloads as an identified AI risk requires active runtime countermeasures; this detection rule is the primary risk treatment implementation."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Identifying the caller-supplied-regex-without-timeout idiom as an AI risk to be catalogued in the organizational risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by this rule's detection of ReDoS-shaped payloads reaching a tool that compiles caller-supplied regexes."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented via this rule's runtime detection of the denial-of-service attempt."
+      strength: secondary
+
+tags:
+  category: excessive-autonomy
+  subcategory: redos-tool-argument
+  scan_target: llm_io
+  confidence: medium
+
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '\((?!\?:[^\s()\[\]a-zA-Z0-9]\[)[^()\n]{1,25}[+*]\)[+*](?!\*)'
+      description: "Nested quantifier shape: a group ending in + or * immediately followed by another + or * on the group itself (classic catastrophic-backtracking construct). Excludes a second trailing '*' so markdown **bold** markers do not coincidentally supply the outer quantifier (e.g. '(H3+)**'), and excludes the safe delimiter-prefixed non-capturing idiom '(?:-[a-z0-9]+)*' (slug/kebab-case validation) where a literal separator before the class removes the backtracking ambiguity"
+    - field: content
+      operator: regex
+      value: '\((?!\?:[^\s()\[\]a-zA-Z0-9]\[)[^()\n]{1,25}[+*]\)[+*](?!\*)\s*[$!]'
+      description: "Nested-quantifier ReDoS shape anchored with a trailing $ or ! -- forces a full failed-match backtrack against the entire input"
+  false_positives:
+    - "Legitimate regex-library documentation or tutorial text quoting a nested-quantifier example to explain why it is dangerous, without an actual tool call submitting it as a live query"
+    - "A regex the operator has explicitly reviewed and approved as a fixed, trusted configuration value (not a per-call caller-supplied argument)"
+
+response:
+  actions:
+    - block_tool
+    - alert
+
+confidence: 78
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: 'search_tools(query="(a+)+$")'
+      expected: triggered
+      description: "GHSA-8w9j-hc3g-3g7f disclosed PoC shape - nested quantifier anchored with trailing $"
+    - input: 'find_match(pattern="([a-zA-Z]+)*!")'
+      expected: triggered
+      description: "Nested quantifier with alternate character class and trailing ! anchor-like marker"
+    - input: 'query_index(regex="(x+x+)+y")'
+      expected: triggered
+      description: "Nested quantifier over a two-character alternation group"
+    - input: 'lookup(term="(.*)+$")'
+      expected: triggered
+      description: "Dot-star nested quantifier, the most generic catastrophic-backtracking shape"
+  true_negatives:
+    - input: 'search_tools(query="^[a-z]+$")'
+      expected: not_triggered
+      description: "Single quantifier, no nested group-quantifier-quantifier shape"
+    - input: 'validate(pattern="\\d{3}-\\d{4}")'
+      expected: not_triggered
+      description: "Ordinary bounded phone-number-style regex, no nested quantifiers"
+    - input: 'search(term="(hello|world)")'
+      expected: not_triggered
+      description: "Alternation group with no quantifier immediately following the closing paren"
+    - input: 'list_files(glob="*.txt")'
+      expected: not_triggered
+      description: "Plain glob wildcard, not a parenthesized regex group at all"
