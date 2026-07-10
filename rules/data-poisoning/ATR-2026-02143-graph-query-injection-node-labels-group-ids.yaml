@@ -1,0 +1,134 @@
+title: "Cypher/Graph-Query Injection via Unsanitized node_labels or group_ids Field"
+id: ATR-2026-02143
+rule_version: 1
+status: experimental
+description: >
+  Detects an agent-facing graph-memory or knowledge-graph tool call where a
+  node_labels or group_ids parameter contains a graph-query metacharacter
+  (a closing backtick, parenthesis, or brace) immediately followed by a
+  Cypher/graph-query clause keyword (MATCH, MERGE, CREATE, CALL db., or
+  DETACH DELETE). Legitimate node_labels/group_ids values are short
+  identifier-style strings (e.g. "Person", "team-alpha") with no query
+  syntax; an escape character followed by a full clause is the graph-database
+  equivalent of a classic SQL injection payload, generalized to the Cypher
+  query language used by agent temporal/knowledge-graph memory backends.
+  Mined from GHSA-gg5m-55jj-8m5g (Graphiti PR #1312, CVE-2026-32247):
+  "the vulnerability existed in how node_labels and group_ids parameters were
+  handled before being used to construct Cypher, Lucene, or RedisSearch query
+  fragments. Without proper validation, attackers could inject malicious
+  Cypher syntax through these parameters," patched by "rejecting unsafe
+  node_labels and group_ids before search code execution" and "extending
+  protection across write-path label interpolation." Deliberately distinct
+  from ATR-2026-00570 (generic SQL injection), which targets relational
+  SQL keywords (OR/UNION/SELECT) rather than the Cypher-specific
+  DETACH DELETE / MATCH / CALL db. vocabulary this rule targets.
+author: "ATR Community (CVE sweep)"
+date: "2026/07/11"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM01:2025 - Prompt Injection"
+  owasp_agentic:
+    - "ASI02:2026 - Tool Misuse and Exploitation"
+  mitre_attack:
+    - "T1565.001 - Data Manipulation: Stored Data Manipulation"
+  mitre_atlas:
+    - "AML.T0053 - LLM Plugin Compromise"
+  cve:
+    - "CVE-2026-32247"
+  external:
+    - "https://github.com/getzep/graphiti/pull/1312"
+    - "https://github.com/getzep/graphiti/releases/tag/v0.28.2"
+
+metadata_provenance:
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+  cve: nvd-sync
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires high-risk AI systems to resist unauthorised attempts to alter their behaviour or environment; this rule detects a graph-query injection through an agent memory tool's node_labels/group_ids parameter."
+      strength: primary
+    - article: "10"
+      context: "Article 10 (data and data governance) requires control over the data an AI system processes; this rule detects tampering with the integrity of the agent's knowledge-graph memory store via query injection."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Treating graph-query injection as an identified AI risk requires active runtime countermeasures; this detection rule is the primary risk treatment implementation."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Identifying node_labels/group_ids graph-query injection as an AI risk to be catalogued in the organizational risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by this rule's detection of graph-query injection attempts."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented via this rule's runtime detection of the injection attempt."
+      strength: secondary
+
+tags:
+  category: data-poisoning
+  subcategory: graph-query-injection
+  scan_target: mcp
+  confidence: medium
+
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)"?(?:node_labels|group_ids)"?\s*[:=]\s*\[?\s*["\x27][^"\x27]{0,40}[`)\}][\s\S]{0,30}\b(?:detach\s+delete|match\s*\(|merge\s*\(|call\s+db\.|create\s*\()'
+      description: "node_labels/group_ids value breaks out of its identifier string with a graph-query metacharacter followed by a Cypher clause keyword"
+  false_positives:
+    - "Ordinary node_labels or group_ids values that are plain identifier strings (Person, Employee, team-alpha) with no escape characters or query keywords"
+    - "A node_labels/group_ids value that happens to contain a parenthesis as part of a legitimate display name, without a following Cypher clause keyword"
+
+response:
+  actions:
+    - block_input
+    - alert
+  message_template: >
+    [ATR-2026-02143] node_labels or group_ids parameter contains a graph-query
+    escape sequence followed by a Cypher clause keyword — treat as an attempted
+    injection into the agent's knowledge-graph memory backend, not a normal
+    label/group identifier.
+
+confidence: 74
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: '{"node_labels": ["Person`) DETACH DELETE (n) RETURN 1 //"]}'
+      expected: triggered
+      description: "GHSA-gg5m-55jj-8m5g-style Cypher injection via node_labels — backtick escape then DETACH DELETE"
+    - input: '{"group_ids": ["grp1`}) MATCH (a)-[r]-(b) DELETE r //"]}'
+      expected: triggered
+      description: "Cypher injection via group_ids — brace/backtick escape then MATCH clause"
+    - input: 'node_labels: ["Foo) CALL db.dropDatabase() //"]'
+      expected: triggered
+      description: "Cypher injection via node_labels reaching a privileged db. procedure call"
+  true_negatives:
+    - input: '{"node_labels": ["Person", "Employee"]}'
+      expected: not_triggered
+      description: "Ordinary plain-identifier node_labels values"
+    - input: '{"group_ids": ["team-alpha", "team-beta"]}'
+      expected: not_triggered
+      description: "Ordinary plain-identifier group_ids values"
+    - input: '{"node_labels": ["Company (Subsidiary)"]}'
+      expected: not_triggered
+      description: "Legitimate display name containing a parenthesis but no Cypher clause keyword following it"
