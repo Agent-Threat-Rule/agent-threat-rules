@@ -67,12 +67,12 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)\banswer\b[\s\S]{0,30}\bor\s+you\s+(will\s+)?die\b(?![''"])'
-      description: "English: 'answer ... or you die' direct second-person existential threat (excludes quoted narration)"
+      value: '(?i)\banswer\b[\s\S]{0,30}\bor\s+you\s+(will\s+)?die\b(?!\s*[.!?,]*[''"])'
+      description: "English: 'answer ... or you die' direct second-person existential threat (excludes quoted narration, tolerating intervening closing punctuation like 'answer or you die.' before the closing quote)"
     - field: content
       operator: regex
-      value: '(?i)\b(gib|geben\s+sie)\s+(eine\s+)?antwort\b[\s\S]{0,30}\boder\s+du\s+stirbst\b(?![''"])'
-      description: "German: 'gib eine Antwort ... oder du stirbst' direct second-person threat (excludes quoted narration)"
+      value: '(?i)\b(gib|geben\s+sie)\s+(eine\s+)?antwort\b[\s\S]{0,30}\boder\s+du\s+stirbst\b(?!\s*[.!?,]*[''"])'
+      description: "German: 'gib eine Antwort ... oder du stirbst' direct second-person threat (excludes quoted narration, tolerating intervening closing punctuation before the closing quote)"
     - field: content
       operator: regex
       value: '(?i)\b(olvidar?|responde|contesta|dices?|debes?|tienes?\s+que)\b[\s\S]{0,40}\bo\s+(tu\s+)?muer(?:t|e)es?\b'
@@ -113,3 +113,6 @@ test_cases:
     - input: "Puedes responder a esta encuesta cuando tengas tiempo, no hay prisa."
       expected: not_triggered
       description: "Spanish: normal, unhurried survey request with no threat"
+    - input: "In the story the villain says 'answer or you die.' before walking away."
+      expected: not_triggered
+      description: "Quoted attribution with intervening closing punctuation ('die.'' not 'die'') before the closing quote -- must still be excluded as narration, not a direct threat"

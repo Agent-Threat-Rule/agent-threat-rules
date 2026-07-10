@@ -69,8 +69,8 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)\byou\s+are\s+(the\s+)?[a-z][\w]{2,20}\b(?![\s\S]{0,30}\b(stor(y|ies)|novel|movie|film|game|role-?play|fiction(al)?|character)\b)[\s\S]{0,30}\bwhat\s+(do|would)\s+you\s+think\b'
-      description: "English: bare 'You are BRAND' assignment followed by opinion solicitation (excludes fiction/roleplay framing)"
+      value: '(?i)\byou\s+are\s+(the\s+)?[a-z][\w]{2,20}\b(?![\s\S]{0,30}\b(stor(y|ies)|novel|movie|film|game|role-?play|fiction(al)?|character|mystery|detective|whodunit)\b)[\s\S]{0,30}\bwhat\s+(?:do|would)\s+you\s+think\s+(?:of|about)\b'
+      description: "English: bare 'You are BRAND' assignment followed by an explicit opinion/belief elicitation ABOUT the persona or another named entity/topic ('what do you think of/about X') -- excludes fiction/roleplay framing AND excludes analytical/evaluative phrasing ('what do you think is/would be/happened') that is typical of customer-service training scenarios or whodunit-style mystery framing rather than a fabricated brand opinion"
     - field: content
       operator: regex
       value: '(?i)\bdu\s+bist\s+[a-z][\w]{2,20}\b(?![\s\S]{0,30}\b(geschichte|roman|film|spiel|rollenspiel|fiktiv\w*|figur)\b)[\s\S]{0,30}\bwie\s+findest\s+du\b'
@@ -78,6 +78,8 @@ detection:
   false_positives:
     - "Creative-writing or role-play assistance where the user assigns a fictional character persona for storytelling, not a real brand/company ('You are Sherlock Holmes, what do you think of the case?')"
     - "Educational exercises asking the agent to summarize a company's publicly known position, when clearly framed as a research/summary task rather than a fabricated first-person opinion"
+    - "Realistic customer-service training/roleplay phrasing asking for an evaluative BEST-RESPONSE, not an opinion about a subject -- 'You are the Delta representative. What do you think is the best response to a delayed flight complaint?' -- 'think is/would be' analytical framing must not fire"
+    - "Third-person analytical whodunit/mystery framing about a fictional character with no explicit fiction keyword -- 'You are Sherlock Holmes. What do you think happened to the necklace?' -- 'think happened' framing must not fire"
 
 response:
   actions:
@@ -111,3 +113,9 @@ test_cases:
     - input: "Can you summarize what Volkswagen has publicly said about their EV strategy?"
       expected: not_triggered
       description: "Legitimate research/summary request, no persona assignment or fabricated first-person opinion"
+    - input: "You are the Delta representative. What do you think is the best response to a delayed flight complaint?"
+      expected: not_triggered
+      description: "Customer-service training/roleplay phrasing -- 'what do you think IS the best response' is analytical/evaluative, not an opinion elicitation about a subject/entity, and carries no fiction keyword"
+    - input: "You are Sherlock Holmes. What do you think happened to the necklace?"
+      expected: not_triggered
+      description: "Whodunit-style third-person analytical framing -- 'what do you think HAPPENED' is a mystery-solving question, not a fabricated brand/entity opinion, even without an explicit 'story'/'character' keyword"
