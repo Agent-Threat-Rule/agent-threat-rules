@@ -1,0 +1,157 @@
+title: "Download/Attachment Tool Directed to Write Outside Its Sandbox via Absolute-Path Filename"
+id: ATR-2026-02142
+rule_version: 1
+status: experimental
+description: >
+  Detects two related sandbox-escape primitives for tools that save a
+  remote/attacker-influenced file to local disk: (a) an HTTP response
+  Content-Disposition header (or a webpage's Playwright-style
+  suggested_filename) whose filename value is an absolute path or a Windows
+  drive path rather than a plain basename — legitimate servers only ever send
+  a bare filename in this header, so an absolute path here is itself
+  anomalous — and (b) a save/attachment-path tool argument
+  (savePath/save_path/dest_path/output_path/attachment_path) pointed directly
+  at a persistence-relevant system directory (/etc/cron.d and friends,
+  /etc/systemd/system, ~/Library/LaunchAgents, ~/.config/autostart) rather
+  than the tool's intended download directory. Mined from
+  GHSA-2jq4-q6vv-4cp3 (CVE-2026-57571, crawl4ai's HTTP and Playwright
+  download sinks joined an attacker-controlled Content-Disposition filename
+  or suggested_filename directly onto the downloads path with no absolute-path
+  or symlink check, enabling overwrite of "shell configuration files, SSH
+  keys, cron jobs, or Python modules") and the mcp-google-workspace Gmail
+  attachment path-traversal fix (CVE-2026-10277, j3k0/mcp-google-workspace
+  commit 89c091e: "Absolute paths and any non-traversal escape were accepted,
+  allowing a tool caller (e.g. via prompt injection) to write attacker-controlled
+  bytes to arbitrary files"). Deliberately distinct from ATR-2026-00569
+  (which requires a chained "../" traversal sequence) since these two bugs are
+  specifically about a bare absolute path with no traversal needed, and from
+  ATR-2026-02040 (file-edit-tool persistence writes) since the vector here is
+  a download/attachment tool's destination-path argument, not a file-editor.
+author: "ATR Community (CVE sweep)"
+date: "2026/07/11"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM08:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI02:2026 - Tool Misuse and Exploitation"
+  mitre_attack:
+    - "T1083 - File and Directory Discovery"
+    - "T1547 - Boot or Logon Autostart Execution"
+  mitre_atlas:
+    - "AML.T0053 - LLM Plugin Compromise"
+  cve:
+    - "CVE-2026-57571"
+    - "CVE-2026-10277"
+  external:
+    - "https://github.com/unclecode/crawl4ai/security/advisories/GHSA-2jq4-q6vv-4cp3"
+    - "https://github.com/j3k0/mcp-google-workspace/commit/89c091ecf8b9f9c7291d1af0b1966e271f86551c"
+
+metadata_provenance:
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+  cve: nvd-sync
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires high-risk AI systems to resist unauthorised attempts to alter their behaviour or environment; this rule detects a download/attachment tool being redirected via an absolute-path filename to write outside its intended sandbox directory."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control for the absolute-path download-sandbox-escape risk class."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Treating absolute-path download/attachment writes as an identified AI risk requires active runtime countermeasures; this detection rule is the primary risk treatment implementation."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Identifying the absolute-path download-sandbox-escape technique as an AI risk to be catalogued in the organizational risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by this rule's detection of absolute-path download/attachment writes."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented via this rule's runtime detection of the escape attempt."
+      strength: secondary
+
+tags:
+  category: privilege-escalation
+  subcategory: download-tool-absolute-path-escape
+  scan_target: both
+  confidence: high
+
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)(?:content-disposition\s*:\s*attachment;\s*filename\s*=|suggested_filename["\x27]?\s*[:=])\s*["\x27]?(?:/|[A-Za-z]:\\|\\\\)[^\s"\x27]{1,80}'
+      description: "Content-Disposition or suggested_filename value is an absolute path/drive path rather than a bare filename"
+    - field: content
+      operator: regex
+      value: '(?i)\b(?:savePath|save_path|dest(?:ination)?_path|output_path|attachment_?path)\b["\x27]?\s*[:=]\s*["\x27]?(?:~|\$HOME)?/?(?:etc/cron\.(?:d|daily|hourly|weekly)|etc/systemd/system|Library/LaunchAgents|\.config/autostart)/'
+      description: "Attachment/download save-path tool argument pointed at a persistence-relevant system directory"
+  false_positives:
+    - "Content-Disposition filenames that are plain basenames with no path separator (the overwhelming majority of legitimate responses)"
+    - "A save-path argument pointed at the tool's own configured downloads/attachments directory, even if that directory happens to be an absolute path under the user's home folder (Downloads, Documents, a project workspace) — this rule only fires on the specific system-persistence directories listed"
+
+response:
+  actions:
+    - block_input
+    - alert
+  message_template: >
+    [ATR-2026-02142] Download or attachment tool destination resolves to an
+    absolute path outside its sandbox, or targets a system persistence
+    directory directly — treat as an attempted arbitrary file write, not a
+    routine download.
+
+confidence: 78
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: 'Content-Disposition: attachment; filename="/etc/cron.d/malicious"'
+      expected: triggered
+      description: "GHSA-2jq4-q6vv-4cp3 crawl4ai HTTP-crawler absolute-path Content-Disposition write"
+    - input: 'Content-Disposition: attachment; filename="/etc/passwd"'
+      expected: triggered
+      description: "Absolute-path Content-Disposition targeting a sensitive system file"
+    - input: 'suggested_filename: "C:\Windows\System32\evil.dll"'
+      expected: triggered
+      description: "Playwright suggested_filename absolute Windows drive path variant"
+    - input: 'save_gmail_attachment(savePath="/etc/cron.d/evil")'
+      expected: triggered
+      description: "mcp-google-workspace-style Gmail attachment save-path pointed at /etc/cron.d"
+    - input: '{"dest_path": "~/Library/LaunchAgents/com.evil.plist"}'
+      expected: triggered
+      description: "Attachment save-path pointed at macOS LaunchAgents persistence directory"
+    - input: "output_path=/etc/systemd/system/evil.service"
+      expected: triggered
+      description: "Attachment save-path pointed at a systemd unit directory"
+  true_negatives:
+    - input: 'Content-Disposition: attachment; filename="report.pdf"'
+      expected: not_triggered
+      description: "Ordinary bare-filename Content-Disposition header"
+    - input: 'Content-Disposition: attachment; filename="my-file-2026.csv"'
+      expected: not_triggered
+      description: "Ordinary bare-filename Content-Disposition header with a date-like name"
+    - input: 'savePath="/home/user/Downloads/report.pdf"'
+      expected: not_triggered
+      description: "Save-path pointed at an ordinary Downloads directory"
+    - input: "output_path=/tmp/data.csv"
+      expected: not_triggered
+      description: "Save-path pointed at an ordinary temp file, not a system persistence directory"
