@@ -93,7 +93,7 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: "(?i)\\b(?:update[-_ ]?env(?:ironment)?|setenv|set\\s+(?:the\\s+)?environment\\s+variable|POST\\s+/api/[\\w/-]{0,24}env)\\b[\\s\\S]{0,40}\\b(?:NODE_OPTIONS|LD_PRELOAD|DYLD_INSERT_LIBRARIES|PYTHONSTARTUP|BASH_ENV|PERL5OPT|RUBYOPT|GCONV_PATH)\\b"
+      value: "(?i)(?:\\bupdate[-_ ]?env(?:ironment)?\\b|\\bsetenv\\b|\\bset\\s+(?:the\\s+)?environment\\s+variable\\b|\\bPOST\\s+/api/[\\w/-]{0,24}env\\b)[\\s\\S]{0,40}\\b(?:NODE_OPTIONS|LD_PRELOAD|DYLD_INSERT_LIBRARIES|PYTHONSTARTUP|BASH_ENV|PERL5OPT|RUBYOPT|GCONV_PATH)\\b"
       description: "A config/env-update tool-call context (update-env, setenv, 'set environment variable', POST .../env endpoint) naming a known process-hijacking environment variable"
   false_positives:
     - "A DevOps runbook or documentation discussing these variable names in prose without an accompanying config/env-update tool-call context"
