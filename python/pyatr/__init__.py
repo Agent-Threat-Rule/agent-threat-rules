@@ -7,7 +7,12 @@ from pyatr.engine import ATREngine
 from pyatr.validator import validate, ValidationResult, ValidationError
 from pyatr.test_runner import run_tests, TestRunResult, RuleTestResult, TestCaseResult
 
-__version__ = "0.2.6"
+try:
+    from importlib.metadata import version as _pkg_version
+
+    __version__ = _pkg_version("pyatr")
+except Exception:  # pragma: no cover - source checkout without install
+    __version__ = "0.2.7"
 __all__ = [
     "ATREngine",
     "AgentEvent",
