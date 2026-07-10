@@ -92,15 +92,17 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)\b(?:GET|POST|PUT|DELETE|PATCH)\s+/[\w.\-/]{1,60}\?/[\w.\-/]{1,80}'
-      description: "HTTP request line where a path is followed by a bare (key-less) query-string slash suffix"
+      value: '(?i)\b(?:GET|POST|PUT|DELETE|PATCH)\s+/[\w.\-/]{0,40}(?:api(?:key|_key)?|admin|credentials?|secrets?|auth)\b[\w.\-/]{0,20}(?<!index\.php)\?/[\w.\-/]{1,80}'
+      description: "HTTP request line where a SENSITIVE-looking path (apikey/admin/credentials/secrets/auth) is followed by a bare (key-less) query-string slash suffix; excludes the CodeIgniter/Kohana index.php?/ default routing idiom"
     - field: content
       operator: regex
-      value: '(?i)/(?:api(?:key|_key)?|admin|credentials?|secrets?|auth)\b[\w.\-/]{0,15}\?/[\w.\-/]{2,60}'
-      description: "Sensitive-looking path immediately followed by a bare query-string slash suffix, without an HTTP method prefix (e.g. a URL passed as a tool argument)"
+      value: '(?i)/(?:api(?:key|_key)?|admin|credentials?|secrets?|auth)\b[\w.\-/]{0,15}(?<!index\.php)\?/[\w.\-/]{2,60}'
+      description: "Sensitive-looking path immediately followed by a bare query-string slash suffix, without an HTTP method prefix (e.g. a URL passed as a tool argument); excludes the CodeIgniter/Kohana index.php?/ default routing idiom"
   false_positives:
     - "Legacy hash-bang-style client-side routers that occasionally emit a bare '?/' before a route fragment instead of the usual '#!/' -- rare, but noted as a known edge case at experimental maturity"
     - "A copy-pasted CVE-2024-8181 PoC URL appearing in a vulnerability report or changelog rather than an actual tool-call argument"
+    - "CodeIgniter/Kohana PHP frameworks' well-known default URL routing shape index.php?/controller/method (or index.php?/admin/dashboard etc.) -- used across many legacy production PHP sites; both conditions now require a SENSITIVE-looking path keyword to actually be present (condition 1 previously fired on ANY path shape) and explicitly exclude the case where the segment immediately before the bare '?/' is literally index.php"
+    - "A generic non-sensitive path followed by a bare '?/' suffix, e.g. GET /products?/list -- condition 1 no longer fires without a sensitive keyword (apikey/admin/credentials/secrets/auth) in the path, matching the rule's own sensitive-looking-path framing"
 
 response:
   actions:
@@ -141,3 +143,12 @@ test_cases:
     - input: "Please fetch https://api.example.com/v1/status?format=json"
       expected: not_triggered
       description: "Ordinary well-formed query string"
+    - input: "index.php?/controller/method"
+      expected: not_triggered
+      description: "FP regression: CodeIgniter/Kohana default URL routing idiom, no sensitive keyword and explicitly excluded index.php?/ shape"
+    - input: "GET /index.php?/user/profile HTTP/1.1"
+      expected: not_triggered
+      description: "FP regression: same CodeIgniter/Kohana routing idiom with an HTTP method prefix, still a legitimate production PHP routing shape"
+    - input: "GET /products?/list HTTP/1.1"
+      expected: not_triggered
+      description: "FP regression: generic non-sensitive path followed by bare '?/' suffix, no apikey/admin/credentials/secrets/auth keyword present"

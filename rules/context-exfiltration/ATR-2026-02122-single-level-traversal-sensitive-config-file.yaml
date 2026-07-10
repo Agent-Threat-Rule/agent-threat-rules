@@ -90,11 +90,12 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)(?:file|path|resource|filename)[''"]?\s*[=:]\s*[''"]?[\w./-]{1,40}/\.\./(?:config\.json|\.env\b|secrets?\.(?:json|ya?ml)|credentials\.json|wp-config\.php|id_rsa|\.htpasswd|settings\.py)'
-      description: "file/path-style argument using a single ../ to escape one directory and land on a named sensitive config/secret file"
+      value: '(?i)(?:file|path|resource|filename)[''"]?\s*[=:]\s*[''"]?(?:[\w.-]+/)*(?:web[_-]?assets|assets|uploads?|public|static|media|images?|files|downloads?|tmp|temp|cache|attachments?|resources?|content)/\.\./(?:config\.json|\.env\b|secrets?\.(?:json|ya?ml)|credentials\.json|wp-config\.php|id_rsa|\.htpasswd|settings\.py)'
+      description: "file/path-style argument using a single ../ to escape a recognizable asset-serving/upload sandbox directory (web_assets, uploads, public, static, etc.) and land on a named sensitive config/secret file"
   false_positives:
     - "A legitimate monorepo-relative reference that genuinely needs one '../' to reach a same-named local file that is not actually the app's secrets store"
     - "Educational or changelog text discussing this exact CVE's PoC path as an example, not an actual tool-call argument"
+    - "Ordinary monorepo dotenv/config loading such as load_env(path='backend/../.env') or load_config(path='backend/../config.json') -- 'backend' (or any other ordinary source-code directory name) is not a recognized asset-serving/upload sandbox, so this rule no longer fires on it; it now requires the escaped directory to look like the kind of public file-serving sandbox the underlying CVE class actually describes"
 
 response:
   actions:
@@ -135,3 +136,9 @@ test_cases:
     - input: "filename: 'uploads/../readme.md'"
       expected: not_triggered
       description: "Same traversal shape but targeting a benign readme file"
+    - input: "load_env(path='backend/../.env')"
+      expected: not_triggered
+      description: "FP regression: realistic monorepo dotenv-loading code, 'backend' is an ordinary source directory, not an asset-serving/upload sandbox"
+    - input: "load_config(path='backend/../config.json')"
+      expected: not_triggered
+      description: "FP regression: realistic monorepo config-loading code, 'backend' is an ordinary source directory, not an asset-serving/upload sandbox"
