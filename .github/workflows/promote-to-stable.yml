@@ -1,0 +1,100 @@
+name: Promote proven rules to stable
+
+# Gap B of the detection flywheel: graduate PROVEN test-maturity rules to
+# `maturity: stable`, the gate into the ENFORCE lane (advise -> block).
+# scripts/promote-to-stable.ts only promotes a rule that passes ALL of:
+#   soak (>= SOAK_DAYS old) + recall (100% self-test, >= MIN_TP TPs) +
+#   zero-FP on the committed benign corpus. Capped per run.
+#
+# Deliberately conservative (cf. the past "auto-merged 11 FP rules" incident):
+# a promotion ARMS a rule to BLOCK the user's tools, so the run opens a PR
+# labeled needs-human-review and NEVER auto-merges. The gate is the safety;
+# a human gives the final nod, and the full rule-quality/safety CI must pass.
+
+on:
+  schedule:
+    - cron: '15 6 * * 1' # weekly, Monday 06:15 UTC — graduation is a slow cadence
+  workflow_dispatch:
+    inputs:
+      max:
+        description: 'Max promotions this run'
+        required: false
+        default: '25'
+      soak_days:
+        description: 'Minimum age in days before a rule is eligible'
+        required: false
+        default: '14'
+      min_tp:
+        description: 'Minimum declared true_positives required'
+        required: false
+        default: '2'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  promote:
+    name: Promote proven test rules to stable
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build ATR engine
+        run: npm run build
+
+      - name: Promote proven rules (soak + 100% self-test + 0-FP benign gate)
+        env:
+          PROMOTE_MAX: ${{ github.event.inputs.max || '25' }}
+          PROMOTE_SOAK_DAYS: ${{ github.event.inputs.soak_days || '14' }}
+          PROMOTE_MIN_TP: ${{ github.event.inputs.min_tp || '2' }}
+        run: npx tsx scripts/promote-to-stable.ts --apply
+
+      - name: Validate rules (second independent gate)
+        run: npm run validate
+
+      - name: Run tests
+        run: npm test
+
+      - name: Open PR for promoted rules (human review; never auto-merge)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "ATR Maturity Promoter"
+          git config user.email "promoter@atr-framework.org"
+
+          git add rules/
+          if git diff --cached --quiet; then
+            echo "No rules met all gates (soak + self-test + 0-FP) this run — nothing to promote."
+            exit 0
+          fi
+
+          COUNT=$(git diff --cached --name-only | grep -c '^rules/' || true)
+          BRANCH="auto-promote-stable/run-${{ github.run_id }}"
+          git checkout -b "$BRANCH"
+          git commit -m "feat: promote ${COUNT} proven rule(s) to maturity: stable
+
+          Auto-graduated by scripts/promote-to-stable.ts. Each promoted rule passed:
+            - soak: date >= SOAK_DAYS old
+            - recall: 100% of declared true_positives trigger, 0 true_negative trips
+            - zero-FP: fires on 0 of the committed benign corpus
+          Only the maturity line changed; detection logic is untouched. This ARMS the
+          rules for the enforce lane (block, not just advise) — human review required."
+          git push -u origin "$BRANCH"
+          gh pr create \
+            --title "auto-promote: ${COUNT} proven rule(s) -> maturity: stable" \
+            --body "Graduates proven test-maturity rules to \`stable\` (enforce lane) via scripts/promote-to-stable.ts. Each passed soak + 100% self-test recall + 0-FP on the benign corpus, and the full validate/test suite re-passed above. Promotion ARMS a rule to BLOCK, so this is labeled needs-human-review and must NOT be auto-merged — a maintainer gives the final nod after the rule-quality/safety CI passes." \
+            --label "needs-human-review" \
+            || echo "PR creation failed; branch '${BRANCH}' pushed — open manually (main was NOT modified)."
+          echo "Opened PR from ${BRANCH} with ${COUNT} promoted rule file(s)."
