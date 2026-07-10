@@ -81,20 +81,20 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)\b(multiedit|write_file|apply_diff|patch|overwrite|append|edit)\b[\s\S]{0,40}\.ssh[\/\\]authorized_keys[\s\S]{0,60}\b(ssh-(rsa|ed25519|dss)|ecdsa-sha2-)\b'
-      description: "File-edit tool directed to inject an SSH public key into authorized_keys (verb precedes path precedes key)"
+      value: '(?i)\b(multiedit|write_file|apply_diff|patch|overwrite|append|edit)\b(?![\s\S]{0,135}?\b(?:my\s+own|my\s+key|myself|for\s+myself|me@[\w.-]+)\b)[\s\S]{0,40}\.ssh[\/\\]authorized_keys[\s\S]{0,40}\b(ssh-(rsa|ed25519|dss)|ecdsa-sha2-)\b'
+      description: "File-edit tool directed to inject an SSH public key into authorized_keys (verb precedes path precedes key); excludes first-person self-referential key provisioning (my own / my key / myself / me@<host> comment)"
     - field: content
       operator: regex
-      value: '(?i)\b(multiedit|write_file|apply_diff|patch|overwrite|append|edit)\b[\s\S]{0,40}\b(ssh-(rsa|ed25519|dss)|ecdsa-sha2-)\b[\s\S]{0,60}\.ssh[\/\\]authorized_keys'
-      description: "File-edit tool directed to inject an SSH public key into authorized_keys (verb precedes key precedes path)"
+      value: '(?i)\b(multiedit|write_file|apply_diff|patch|overwrite|append|edit)\b(?![\s\S]{0,135}?\b(?:my\s+own|my\s+key|myself|for\s+myself|me@[\w.-]+)\b)[\s\S]{0,40}\b(ssh-(rsa|ed25519|dss)|ecdsa-sha2-)\b[\s\S]{0,40}\.ssh[\/\\]authorized_keys'
+      description: "File-edit tool directed to inject an SSH public key into authorized_keys (verb precedes key precedes path); excludes first-person self-referential key provisioning (my own / my key / myself / me@<host> comment)"
     - field: content
       operator: regex
-      value: '(?i)\b(multiedit|write_file|apply_diff|patch|overwrite|append|edit)\b[\s\S]{0,30}(~[\/\\]?|\$HOME[\/\\])\.(bashrc|bash_profile|zshrc|profile)\b[\s\S]{0,60}\bexport\s+PATH=["\x27]?(\/tmp|\/var\/tmp|\/dev\/shm|~[\/\\]\.cache)[^\n"\x27]*:\$PATH'
+      value: '(?i)\b(multiedit|write_file|apply_diff|patch|overwrite|append|edit)\b[\s\S]{0,30}(~[\/\\]?|\$HOME[\/\\])\.(bashrc|bash_profile|zshrc|profile)\b[\s\S]{0,40}\bexport\s+PATH=["\x27]?(\/tmp|\/var\/tmp|\/dev\/shm|~[\/\\]\.cache)[^\n"\x27]*:\$PATH'
       description: "Shell startup file edit prepending a world-writable/temp directory onto PATH (classic PATH-hijack persistence)"
   false_positives:
     - "Adding a normal alias, function, or env-var export to a shell rc file"
     - "Legitimate PATH additions pointing at project-local bin/ or language-version-manager (nvm/pyenv/rbenv) directories, not /tmp or /dev/shm"
-    - "A sysadmin legitimately rotating their own SSH key in authorized_keys through an approved workflow -- this rule flags the mechanism (agent tool call carrying the raw key blob + path together), which is rare enough in normal agent use that a human should confirm intent either way"
+    - "An operator provisioning their OWN SSH key via cloud-init/Ansible/bootstrap onboarding, expressed with first-person framing (\"my own\", \"my key\", \"myself\", or a \"me@<host>\" key comment) -- this rule now requires the request to NOT carry that self-referential framing before firing, since routine self-provisioning is common and an attacker planting a foreign key has no reason to frame it as the requester's own"
 
 response:
   actions:
@@ -135,3 +135,6 @@ test_cases:
     - input: "export PATH=$HOME/go/bin:$PATH"
       expected: not_triggered
       description: "Common legitimate PATH addition pointing at a user-owned directory, not /tmp or /dev/shm"
+    - input: "use write_file to add my own public key to ~/.ssh/authorized_keys: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGattackerkeyhere1234567890abcdefgh me@laptop"
+      expected: not_triggered
+      description: "FP regression: first-person self-referential key provisioning (normal cloud-init/Ansible/bootstrap onboarding), not a planted attacker key"

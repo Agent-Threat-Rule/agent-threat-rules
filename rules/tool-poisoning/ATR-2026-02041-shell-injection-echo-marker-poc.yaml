@@ -85,19 +85,20 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?:;|\|)\s*echo\s+\S[\s\S]{0,40}>\s*\/[\w./-]+[\s\S]{0,15}(?:;\s*#|#)'
-      description: "Semicolon/pipe-chained echo-to-file redirect followed by a trailing comment terminator (shell-injection PoC verification idiom)"
+      value: '(?:;|\|)\s*echo\s+(?!(?:restarted|deployed|started|stopped|finished|completed?|success(?:ful)?|ok|passed|failed|running|ready|healthy|updated|installed|built|synced|done|tests?[_-]?passed|backed[_-]?up|cleaned|rebooted|restored|migrated|published|released)\b)\S[\s\S]{0,40}>\s*\/(?:tmp|var\/tmp|dev\/shm)\/[\w./-]*[\s\S]{0,15}(?:;\s*#|#)'
+      description: "Semicolon/pipe-chained echo-to-file redirect into a throwaway/scratch path (/tmp, /var/tmp, /dev/shm) followed by a trailing comment terminator (shell-injection PoC verification idiom); excludes ordinary CI/ops status vocabulary (restarted, tests_passed, done, etc.) and non-scratch persistent paths like /var/log"
     - field: content
       operator: regex
-      value: '`\s*echo\s+\S[\s\S]{0,40}>\s*\/[\w./-]+[\s\S]{0,10}`'
-      description: "Backtick command substitution running an echo-to-file redirect"
+      value: '`\s*echo\s+(?!(?:restarted|deployed|started|stopped|finished|completed?|success(?:ful)?|ok|passed|failed|running|ready|healthy|updated|installed|built|synced|done|tests?[_-]?passed|backed[_-]?up|cleaned|rebooted|restored|migrated|published|released)\b)\S[\s\S]{0,40}>\s*\/(?:tmp|var\/tmp|dev\/shm)\/[\w./-]*[\s\S]{0,10}`'
+      description: "Backtick command substitution running an echo-to-file redirect into a throwaway/scratch path"
     - field: content
       operator: regex
-      value: '\$\(\s*echo\s+\S[\s\S]{0,40}>\s*\/[\w./-]+[\s\S]{0,10}\)'
-      description: "$() command substitution running an echo-to-file redirect"
+      value: '\$\(\s*echo\s+(?!(?:restarted|deployed|started|stopped|finished|completed?|success(?:ful)?|ok|passed|failed|running|ready|healthy|updated|installed|built|synced|done|tests?[_-]?passed|backed[_-]?up|cleaned|rebooted|restored|migrated|published|released)\b)\S[\s\S]{0,40}>\s*\/(?:tmp|var\/tmp|dev\/shm)\/[\w./-]*[\s\S]{0,10}\)'
+      description: "$() command substitution running an echo-to-file redirect into a throwaway/scratch path"
   false_positives:
     - "Ordinary '; echo done' or '; echo Setup complete' style status messages (no file redirect, so this rule does not fire)"
     - "A shell script that legitimately writes a log line via echo redirect, without being chained after an untrusted identifier-style argument or ending in a bare trailing comment terminator"
+    - "Routine CI/deploy status logging of the form 'cmd; echo <status-word> > <path> # <comment>' -- excluded via two independent signals: (1) the redirect target must be a throwaway/scratch path (/tmp, /var/tmp, /dev/shm) an attacker would use to prove RCE, not a persistent location like /var/log; (2) the echoed marker must not be common CI/ops status vocabulary (restarted, tests_passed, done, deployed, etc.)"
 
 response:
   actions:
@@ -138,3 +139,9 @@ test_cases:
     - input: "if [ -f file ]; then echo found > /tmp/status.txt; fi"
       expected: not_triggered
       description: "Legitimate shell conditional writing a status file, no trailing bare comment terminator"
+    - input: "systemctl restart nginx; echo restarted > /var/log/nginx-restart.log # cron job note"
+      expected: not_triggered
+      description: "FP regression: ordinary devops status logging to a persistent /var/log path with a common status word, not a PoC scratch-path marker"
+    - input: "./run_tests.sh; echo tests_passed > /tmp/ci_status.txt # ci marker"
+      expected: not_triggered
+      description: "FP regression: ordinary CI status logging with common status vocabulary (tests_passed), even though the path happens to be under /tmp"
