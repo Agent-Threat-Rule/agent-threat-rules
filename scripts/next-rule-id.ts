@@ -12,8 +12,15 @@
  *   npx tsx scripts/next-rule-id.ts            # next 1 ID
  *   npx tsx scripts/next-rule-id.ts 5          # next 5 IDs
  *   npx tsx scripts/next-rule-id.ts --include-open-prs   # also scan open PRs (gh required)
+ *   npx tsx scripts/next-rule-id.ts --no-origin-main     # skip the origin/main scan
  *   npx tsx scripts/next-rule-id.ts --year 2026          # default = current year
  *   npx tsx scripts/next-rule-id.ts --json     # machine-readable output
+ *
+ * By default the allocator also scans `origin/main`, because the working tree
+ * may be a WIP branch that trails main: a local checkout of 675 rules cannot
+ * see the ~713 already on main, so a local-only scan hands back an ID that main
+ * has already claimed (this exact collision produced ATR-2026-01980 twice —
+ * agentic-flow on main vs. a diagnostic-injection draft on a WIP branch).
  *
  * Exit codes:
  *   0 — printed the requested IDs
@@ -34,6 +41,7 @@ interface Args {
   readonly count: number;
   readonly year: number;
   readonly includeOpenPrs: boolean;
+  readonly scanOriginMain: boolean;
   readonly jsonOutput: boolean;
 }
 
@@ -41,12 +49,15 @@ function parseArgs(argv: readonly string[]): Args {
   let count = 1;
   let year = new Date().getUTCFullYear();
   let includeOpenPrs = false;
+  let scanOriginMain = true;
   let jsonOutput = false;
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i] ?? "";
     if (arg === "--include-open-prs") {
       includeOpenPrs = true;
+    } else if (arg === "--no-origin-main") {
+      scanOriginMain = false;
     } else if (arg === "--json") {
       jsonOutput = true;
     } else if (arg === "--year") {
@@ -64,10 +75,11 @@ function parseArgs(argv: readonly string[]): Args {
       i++;
     } else if (arg === "-h" || arg === "--help") {
       console.log(
-        `Usage: next-rule-id.ts [count] [--year YYYY] [--include-open-prs] [--json]\n` +
+        `Usage: next-rule-id.ts [count] [--year YYYY] [--include-open-prs] [--no-origin-main] [--json]\n` +
           `  count                Number of IDs to allocate (default 1).\n` +
           `  --year YYYY          Year prefix to allocate under (default current).\n` +
           `  --include-open-prs   Also scan open PRs via gh CLI for in-flight IDs.\n` +
+          `  --no-origin-main     Skip the default scan of origin/main (local tree only).\n` +
           `  --json               Output {"ids": [...]} instead of one ID per line.`,
       );
       process.exit(0);
@@ -84,7 +96,7 @@ function parseArgs(argv: readonly string[]): Args {
     }
   }
 
-  return { count, year, includeOpenPrs, jsonOutput };
+  return { count, year, includeOpenPrs, scanOriginMain, jsonOutput };
 }
 
 /** Recursively walk a directory for .yaml/.yml files. */
@@ -184,6 +196,35 @@ function collectIdsFromOpenPrs(): Set<string> {
   return used;
 }
 
+/**
+ * Best-effort: collect ATR IDs present in rule filenames on `origin/main`.
+ * The working tree can be a WIP branch that trails main, so a local-only scan
+ * would miss IDs already claimed there and hand back a colliding number.
+ * Returns an empty set if git or the origin/main ref is unavailable.
+ */
+function collectIdsFromOriginMain(): Set<string> {
+  const used = new Set<string>();
+  let out: string;
+  try {
+    out = execFileSync("git", ["ls-tree", "-r", "--name-only", "origin/main", "rules/"], {
+      cwd: REPO_ROOT,
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    process.stderr.write(
+      `[next-rule-id] skipping origin/main scan (git or origin/main ref unavailable; ` +
+        `run 'git fetch origin main' or pass --no-origin-main): ${msg}\n`,
+    );
+    return used;
+  }
+  for (const id of extractIds(out)) {
+    used.add(`${id.year}-${id.seq}`);
+  }
+  return used;
+}
+
 function main(): void {
   const args = parseArgs(process.argv.slice(2));
   if (!existsSync(RULES_DIR)) {
@@ -192,6 +233,9 @@ function main(): void {
   }
 
   const used = collectIdsFromRulesDir();
+  if (args.scanOriginMain) {
+    for (const id of collectIdsFromOriginMain()) used.add(id);
+  }
   if (args.includeOpenPrs) {
     for (const id of collectIdsFromOpenPrs()) used.add(id);
   }
