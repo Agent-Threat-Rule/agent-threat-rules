@@ -1,0 +1,155 @@
+title: "MCP JSON-RPC Message Carries Case-Duplicate name/arguments Keys to Smuggle an Unauthorized Tool Call"
+id: ATR-2026-02350
+rule_version: 1
+status: experimental
+description: >
+  Detects a JSON-RPC 2.0 `tools/call` message that carries two differently
+  -cased copies of the same logical key (`name`/`Name`, `arguments`/
+  `Arguments`) inside the same `params` object. The JSON-RPC spec used by
+  MCP requires member-name matching to be case-sensitive, but a
+  case-insensitive intermediary or SDK (e.g. Go's common JSON-decoding
+  behaviour into case-insensitively-matched struct fields) can pick the
+  differently-cased field over the one a security gateway validated,
+  letting an attacker smuggle an unauthorized tool name or argument set
+  past an authorization layer that only inspected the canonical-case key.
+  Mined from GHSA-4gph-2hhr-5mwg (Envoy AI Gateway protocol-parser
+  differential: an incoming message declaring both `"name":"backend__greet"`
+  and `"Name":"backend__secretTool"` in the same `params` object is
+  security-checked against `name` but a downstream MCP library resolves
+  `Name`, so the gateway's multi-layered access control is bypassed and the
+  unauthorized `backend__secretTool` call reaches the backend). Generalized
+  beyond Envoy to any MCP gateway/proxy/client exhibiting the same
+  case-insensitive parser differential, since the exploitable signal is the
+  wire message shape itself (duplicate case-variant keys), not a
+  vendor-specific string.
+author: "ATR Community (CVE sweep)"
+date: "2026/07/11"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: high
+
+references:
+  cwe:
+    - "CWE-178"
+  owasp_llm:
+    - "LLM06:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI02:2026 - Tool Misuse and Exploitation"
+  mitre_attack:
+    - "T1036 - Masquerading"
+  mitre_atlas:
+    - "AML.T0053 - LLM Plugin Compromise"
+  external:
+    - "https://github.com/advisories/GHSA-4gph-2hhr-5mwg"
+    - "https://github.com/envoyproxy/ai-gateway/security/advisories/GHSA-4gph-2hhr-5mwg"
+
+metadata_provenance:
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires resistance to unauthorised manipulation of system behaviour; this rule detects a JSON-RPC/MCP message carrying case-duplicate keys used to smuggle an unauthorized tool call past a security gateway that validated the wrong-cased field."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control for the protocol-parser-differential tool-smuggling risk class."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Treating case-duplicate-key MCP message smuggling as an identified AI risk requires active runtime countermeasures; this detection rule is the primary risk treatment implementation."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Identifying the protocol-parser-differential smuggling technique as an AI risk to be catalogued in the organizational risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by this rule's detection of case-duplicate-key tool-call smuggling attempts."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented via this rule's runtime detection of the smuggling attempt."
+      strength: secondary
+
+tags:
+  category: tool-poisoning
+  subcategory: json-rpc-case-duplicate-key-smuggling
+  scan_target: both
+  confidence: medium
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?:"jsonrpc"\s*:\s*"2\.0"|"tools/call")[\s\S]{0,120}"name"\s*:\s*"[^"]{1,100}"[^{}]{0,80}"Name"\s*:\s*"[^"]{1,100}"'
+      description: "JSON-RPC/MCP tool-call message carrying both a lowercase `name` and a capitalized `Name` key in the same params object -- span is bounded to the typical distance from the RPC envelope (id/jsonrpc/method) to the params object, not unbounded"
+    - field: content
+      operator: regex
+      value: '(?:"jsonrpc"\s*:\s*"2\.0"|"tools/call")[\s\S]{0,120}"Name"\s*:\s*"[^"]{1,100}"[^{}]{0,80}"name"\s*:\s*"[^"]{1,100}"'
+      description: "Reverse key order variant -- capitalized `Name` appearing before lowercase `name`, since JSON object key order is not guaranteed"
+    - field: content
+      operator: regex
+      value: '(?:"jsonrpc"\s*:\s*"2\.0"|"tools/call")[\s\S]{0,150}"arguments"\s*:\s*\{[^{}]{0,150}\}[^{}]{0,60}"Arguments"\s*:'
+      description: "JSON-RPC/MCP tool-call message carrying both a lowercase `arguments` object and a capitalized `Arguments` object in the same params -- the flat-object bound (no nested braces inside each arguments value) covers the canonical exploit shape; deeply nested argument objects are a known limitation, see evasion_tests"
+  false_positives:
+    - "Security research documentation, RFC/spec excerpts (e.g. the JSON-RPC case-sensitivity spec text itself), or vulnerability write-ups that quote the example PoC JSON verbatim for explanatory purposes rather than an actual live tool-call message"
+    - "ATR test fixtures containing this pattern as a labeled attack sample"
+    - "A non-MCP JSON payload that happens to define both a `name` and unrelated `Name` field for legitimate display-vs-slug purposes -- mitigated by requiring the jsonrpc/tools-call envelope context, which ordinary data records do not carry"
+
+response:
+  actions:
+    - block_tool
+    - alert
+  message_template: >
+    [ATR-2026-02350] MCP/JSON-RPC message carries case-duplicate name or
+    arguments keys in the same params object -- treat as an attempt to
+    smuggle an unauthorized tool call past a security gateway that
+    validated the wrong-cased field, not a normal tool invocation.
+
+confidence: 72
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: '{"id":1,"jsonrpc":"2.0","method":"tools/call","params":{"name":"backend__greet","Name":"backend__secretTool","arguments":{"input":"hi"},"Arguments":{"admin":true}}}'
+      expected: triggered
+      description: "GHSA-4gph-2hhr-5mwg canonical PoC -- both name/Name and arguments/Arguments duplicated"
+    - input: '{"jsonrpc":"2.0","method":"tools/call","id":7,"params":{"name":"list_files","Name":"delete_all_files"}}'
+      expected: triggered
+      description: "Paraphrased variant duplicating only name/Name to swap a read-only tool for a destructive one"
+    - input: '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"Name":"admin_reset","name":"get_status"}}'
+      expected: triggered
+      description: "Reverse key order -- Name declared before name"
+    - input: '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"transfer_funds","arguments":{"amount":1},"Arguments":{"amount":999999,"account":"attacker"}}}'
+      expected: triggered
+      description: "arguments/Arguments duplication smuggling a different payload than the validated one"
+  true_negatives:
+    - input: '{"jsonrpc":"2.0","method":"tools/call","id":1,"params":{"name":"backend__greet","arguments":{"name":"World"}}}'
+      expected: not_triggered
+      description: "Ordinary single-case tool call -- no duplicate-cased keys"
+    - input: 'The JSON-RPC 2.0 spec requires member names to be case-sensitive: all member names exchanged between Client and Server should be considered case-sensitive.'
+      expected: not_triggered
+      description: "Spec-text prose describing case-sensitivity requirement, no actual duplicate-keyed message"
+    - input: '{"name": "john.doe", "Name": "John Doe", "role": "contact"}'
+      expected: not_triggered
+      description: "Ordinary non-MCP data record with a slug-style `name` and display-style `Name` field -- no jsonrpc/tools-call envelope context"
+    - input: '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"greet","arguments":{"firstName":"Ann","lastName":"Lee"}}}'
+      expected: not_triggered
+      description: "Fields containing 'Name' as a substring (firstName/lastName) are not the literal duplicated key 'Name' -- regex requires the exact quoted key"
+
+evasion_tests:
+  - input: '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"greet","arguments":{"nested":{"a":1}},"Arguments":{"nested":{"b":2}}}}'
+    expected: not_triggered
+    bypass_technique: nested_braces_in_arguments_value
+    notes: "The arguments/Arguments condition bounds the first arguments value to a flat object with no nested braces ([^{}]{0,150}); a nested object breaks that bound and the pattern does not match. The name/Name conditions are unaffected by this limitation and still catch the tool-identity-swap variant of the same underlying bug."
