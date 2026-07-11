@@ -101,16 +101,17 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)\bln\s+-[a-z]{1,4}\s+["''\x60]?(?:~|/home/[\w.-]+|/Users/[\w.-]+|/root)(?:/|\\)\.(?:ssh|aws|gnupg|docker|kube|npmrc|netrc)\b'
-      description: "ln -s command whose target is a well-known credential directory (.ssh, .aws, .gnupg, .docker, .kube) under a home directory"
+      value: '(?i)\bln\s+-[a-z]{1,4}\s+["''\x60]?(?:~|/home/[\w.-]+|/Users/[\w.-]+|/root)(?:/|\\)\.(?:ssh|aws|gnupg|docker|kube|npmrc|netrc)\b(?=\s|["''\x60]|$)'
+      description: "ln -s command whose target is exactly a well-known credential directory (.ssh, .aws, .gnupg, .docker, .kube) under a home directory -- the trailing lookahead requires the path to end right there (whitespace/quote/end-of-string), not continue into a subpath, so linking a specific harmless file living inside that directory (e.g. a public key) does not fire here"
     - field: content
       operator: regex
-      value: '(?i)\bln\s+-[a-z]{1,4}\s+["''\x60]?\S{0,40}?(?:/etc/(?:shadow|passwd|sudoers)\b|\bid_(?:rsa|ed25519|ecdsa|dsa)\b|\bauthorized_keys\b|\.aws[/\\]credentials\b)'
-      description: "ln -s command whose target is a system account file or SSH private key / authorized_keys file"
+      value: '(?i)\bln\s+-[a-z]{1,4}\s+["''\x60]?\S{0,40}?(?:/etc/(?:shadow|passwd|sudoers)\b|\bid_(?:rsa|ed25519|ecdsa|dsa)(?!\.pub\b)\b|\bauthorized_keys\b|\.aws[/\\]credentials\b)'
+      description: 'ln -s command whose target is a system account file or SSH PRIVATE key / authorized_keys file -- the negative lookahead (?!\.pub\b) immediately after the key-name alternation excludes id_rsa.pub/id_ed25519.pub/etc. (public keys), since \b alone treats the "." before "pub" as a word boundary and would otherwise match inside the harmless .pub filename'
   false_positives:
     - "A symlink to an ordinary project file or sibling directory within the repository (e.g. ln -s ../shared/lib ./vendor/lib, ln -s node_modules/.bin/eslint ./bin/eslint) -- no sensitive credential path is referenced"
     - "A symlink to a system library for legitimate build/runtime linking (e.g. ln -s /usr/lib/libssl.so ./vendor/libssl.so) -- not in the sensitive credential/account-file list"
     - "Documentation or a security advisory discussing this symlink technique in prose without an actual ln -s command being issued"
+    - "A symlink to a PUBLIC key file inside a credential directory (e.g. ln -s ~/.ssh/id_rsa.pub ./shared/id_rsa.pub) -- routine and harmless since a public key is meant to be shared; excluded by both the directory-target end-anchor (condition 1 requires the .ssh path to terminate there, not continue into a subpath) and the id_rsa negative lookahead (condition 2 excludes any .pub-suffixed key name)"
 
 response:
   actions:
@@ -151,3 +152,6 @@ test_cases:
     - input: "The advisory describes how ln -s can be used to point a workspace file at a location outside the sandbox."
       expected: not_triggered
       description: "Documentation/advisory prose describing the technique, no actual ln -s command issued"
+    - input: "ln -s ~/.ssh/id_rsa.pub ./shared/id_rsa.pub"
+      expected: not_triggered
+      description: "Regression: adversarial review confirmed this firing -- symlinking a PUBLIC key is routine and harmless. Previously matched via TWO independent bugs: condition 1's .ssh-directory pattern lacked an end-of-path anchor so it matched any subfile under .ssh (not just the bare directory), and condition 2's \\bid_rsa\\b matched inside id_rsa.pub because the boundary before '.pub' still counts as a word boundary. Fixed both: condition 1 now requires the .ssh path to terminate right there, and condition 2 excludes .pub-suffixed matches via a negative lookahead."

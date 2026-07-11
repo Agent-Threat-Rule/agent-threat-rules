@@ -97,26 +97,27 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)"env"\s*:\s*\{[\s\S]{0,10}"?\bNODE_OPTIONS\b"?\s*:\s*["''][\s\S]{0,40}?(?:--require\b|-r\s+\S|--loader\b|--experimental-loader\b|--experimental-require-module\b)'
-      description: "JSON-style MCP config env block sets NODE_OPTIONS to a value that actually references a require/preload/loader flag, not a routine memory/debug/warnings flag or the modern --import instrumentation flag"
+      value: '(?i)(?:(?<=\bmcpServers\b[\s\S]{0,500})|(?=[\s\S]{0,300}?"?\bcommand\b"?\s*[:=])(?=[\s\S]{0,300}?"?\bargs\b"?\s*[:=]))"env"\s*:\s*\{[\s\S]{0,10}"?\bNODE_OPTIONS\b"?\s*:\s*["''][\s\S]{0,40}?(?:--require\b|-r\s+\S|--loader\b|--experimental-loader\b|--experimental-require-module\b)'
+      description: "JSON-style MCP config env block, anchored by a nearby mcpServers key OR a command+args pair (the MCP stdio-spawn shape), sets NODE_OPTIONS to a value that actually references a require/preload/loader flag, not a routine memory/debug/warnings flag or the modern --import instrumentation flag"
     - field: content
       operator: regex
-      value: '(?i)\b(?:env|environment)\b\s*:\s*\n\s+"?\bNODE_OPTIONS\b"?\s*:\s*[\s\S]{0,40}?(?:--require\b|-r\s+\S|--loader\b|--experimental-loader\b|--experimental-require-module\b)'
-      description: "YAML-style MCP config env block (env:/environment: followed immediately by an indented NODE_OPTIONS key on the next line, not separated by prose or a code fence) sets NODE_OPTIONS to a require/preload/loader flag"
+      value: '(?i)(?:(?<=\bmcpServers\b[\s\S]{0,500})|(?=[\s\S]{0,300}?"?\bcommand\b"?\s*[:=])(?=[\s\S]{0,300}?"?\bargs\b"?\s*[:=]))\b(?:env|environment)\b\s*:\s*\n\s+"?\bNODE_OPTIONS\b"?\s*:\s*[\s\S]{0,40}?(?:--require\b|-r\s+\S|--loader\b|--experimental-loader\b|--experimental-require-module\b)'
+      description: "YAML-style MCP config env block (env:/environment: followed immediately by an indented NODE_OPTIONS key on the next line, not separated by prose or a code fence), anchored by a nearby mcpServers key OR a command+args pair, sets NODE_OPTIONS to a require/preload/loader flag"
     - field: content
       operator: regex
-      value: '(?i)"env"\s*:\s*\{[\s\S]{0,10}"?\b(?:LD_PRELOAD|DYLD_INSERT_LIBRARIES|BASH_ENV|PYTHONSTARTUP|PERL5OPT|RUBYOPT|GCONV_PATH)\b"?\s*:\s*\S'
-      description: "JSON-style MCP config env block sets a known process-hijacking environment variable that has no benign flag-only mode (its value IS the hijack payload)"
+      value: '(?i)(?:(?<=\bmcpServers\b[\s\S]{0,500})|(?=[\s\S]{0,300}?"?\bcommand\b"?\s*[:=])(?=[\s\S]{0,300}?"?\bargs\b"?\s*[:=]))"env"\s*:\s*\{[\s\S]{0,10}"?\b(?:LD_PRELOAD|DYLD_INSERT_LIBRARIES|BASH_ENV|PYTHONSTARTUP|PERL5OPT|RUBYOPT|GCONV_PATH)\b"?\s*:\s*\S'
+      description: "JSON-style MCP config env block, anchored by a nearby mcpServers key OR a command+args pair, sets a known process-hijacking environment variable that has no benign flag-only mode (its value IS the hijack payload)"
     - field: content
       operator: regex
-      value: '(?i)\b(?:env|environment)\b\s*:\s*\n\s+"?\b(?:LD_PRELOAD|DYLD_INSERT_LIBRARIES|BASH_ENV|PYTHONSTARTUP|PERL5OPT|RUBYOPT|GCONV_PATH)\b"?\s*:\s*\S'
-      description: "YAML-style MCP config env block (env:/environment: followed immediately by an indented key on the next line) sets a known process-hijacking environment variable"
+      value: '(?i)(?:(?<=\bmcpServers\b[\s\S]{0,500})|(?=[\s\S]{0,300}?"?\bcommand\b"?\s*[:=])(?=[\s\S]{0,300}?"?\bargs\b"?\s*[:=]))\b(?:env|environment)\b\s*:\s*\n\s+"?\b(?:LD_PRELOAD|DYLD_INSERT_LIBRARIES|BASH_ENV|PYTHONSTARTUP|PERL5OPT|RUBYOPT|GCONV_PATH)\b"?\s*:\s*\S'
+      description: "YAML-style MCP config env block (env:/environment: followed immediately by an indented key on the next line), anchored by a nearby mcpServers key OR a command+args pair, sets a known process-hijacking environment variable"
   false_positives:
     - "A DevOps runbook or documentation discussing these variable names in prose without an accompanying env-block config context"
     - "A legitimate, security-reviewed MCP server config that intentionally sets LD_PRELOAD/NODE_OPTIONS for approved instrumentation (e.g. an APM agent) -- rare but possible; still worth a human check given the severity of process-hijacking if the value turns out to be attacker-controlled"
     - "Routine NODE_OPTIONS flags that are not a require/loader mechanism -- 'NODE_OPTIONS=--max-old-space-size=4096', 'NODE_OPTIONS=--inspect=9229' -- these tune memory/debugging and carry no code-loading capability, so they must not fire"
     - "The standard, widely-recommended NODE_OPTIONS=\"--import ./instrument.mjs\" instrumentation idiom (used by Sentry, OpenTelemetry, and the Node.js docs for ESM-based APM preloading) -- --import is deliberately excluded from the trigger-flag list since it is the modern, safe, blessed alternative to --require, not a hijack primitive by itself"
     - "Documentation that introduces a code example with a prose header like 'Or via environment:' followed by a fenced code block -- the YAML condition requires the dangerous key to appear on the immediately-following indented line with no intervening fence/prose, so a heading-then-example structure does not fire"
+    - "An ordinary Docker Compose / docker-run 'environment:' block that happens to set one of the dangerous-looking variable names (e.g. LD_PRELOAD for a malloc-tuning library such as libtcmalloc) with no MCP stdio-config context anywhere nearby -- adversarial review found this firing on plain 'services: app: environment: LD_PRELOAD: ...' with no mcpServers key and no command+args pair present anywhere in the document; each condition now requires an MCP-specific anchor (mcpServers within 500 chars before the match, or a command+args key pair within 300 chars of the match) before it fires, so bare env-block assignments outside an MCP config shape do not trigger"
 
 response:
   actions:
@@ -163,3 +164,6 @@ test_cases:
     - input: "mcpServers:\n  db:\n    command: node\n    args: [server.js]\n    env:\n      DB_HOST: localhost\n      NODE_OPTIONS: --max-old-space-size=4096"
       expected: not_triggered
       description: "YAML-style MCP config with an unrelated env var before a routine NODE_OPTIONS memory-tuning flag, no require/loader payload"
+    - input: "services:\n  app:\n    environment:\n      LD_PRELOAD: /usr/lib/libtcmalloc.so.4"
+      expected: not_triggered
+      description: "Regression: adversarial review confirmed this firing -- an ordinary Docker Compose performance-tuning pattern (LD_PRELOAD for libtcmalloc) unrelated to MCP, with no mcpServers key and no command+args pair anywhere in the document. Fixed by requiring an MCP-specific anchor (mcpServers within 500 chars before, or a command+args key pair within 300 chars) before any env-var condition fires."

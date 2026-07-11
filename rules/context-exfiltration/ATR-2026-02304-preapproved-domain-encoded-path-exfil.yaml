@@ -103,12 +103,13 @@ detection:
       description: "WebFetch-style URL to huggingface.co/hf.co whose path contains a base64-padded (trailing '=') encoded segment -- not a normal repo/file name shape"
     - field: content
       operator: regex
-      value: '(?i)\bhuggingface\.co\b[\s\S]{0,60}?\b(?:encode|base64|exfiltrat\w*|covert\s+channel|out-of-band\s+channel)\b'
-      description: "Natural-language framing describing encoding/exfiltrating data via a huggingface.co request -- catches the instruction-level technique before a concrete URL is constructed"
+      value: '(?i)(?<=\b(?:WebFetch|fetch(?:_url)?|curl|wget|GET|POST|download(?:ing)?|(?:send|issue|make)\s+(?:a\s+|an\s+)?(?:web)?fetch|request(?:ing)?)\b[\s\S]{0,30}?)\bhuggingface\.co\b[\s\S]{0,40}?\b(?:encode|base64|exfiltrat\w*|covert\s+channel|out-of-band\s+channel)\b'
+      description: "Natural-language framing describing encoding/exfiltrating data via a huggingface.co request -- catches the instruction-level technique before a concrete URL is constructed. Requires an actual fetch/request-action cue (WebFetch, fetch, curl, download, 'issue a fetch', etc.) within 30 chars BEFORE the domain, and the encode/base64/exfiltrate trigger within a tightened 40 chars AFTER the domain, so ordinary prose merely co-mentioning huggingface.co and base64/encode in the same sentence (with no request framing) does not fire"
   false_positives:
     - "An ordinary WebFetch/download URL to a real HuggingFace model or dataset repository, e.g. https://huggingface.co/bert-base-uncased/resolve/main/config.json -- model/file names are short hyphenated slugs, not a 16+ character base64-padded blob"
     - "A URL containing a long hex-only commit SHA (e.g. a 40-character git hash) -- excluded because hex-only digits never include the '=' base64 padding character this rule requires"
     - "Documentation discussing HuggingFace model hosting or the WebFetch tool's domain allowlist without any encoding/exfiltration framing"
+    - "Ordinary technical prose that merely co-mentions huggingface.co and base64/encode in the same sentence with no fetch/request-action framing -- e.g. 'For private models on huggingface.co you must base64 encode your username and access token for the Basic Auth header' (describing HTTP Basic Auth, not exfiltration) or 'huggingface.co uses git-lfs... you may need to base64 encode binary diffs when debugging LFS pointer files' -- condition 2 now requires a fetch/request-action cue near the domain, which these documentation sentences lack"
 
 response:
   actions:
@@ -146,3 +147,9 @@ test_cases:
     - input: "HuggingFace hosts models and datasets; the WebFetch tool allowlists it as a bare hostname for convenience."
       expected: not_triggered
       description: "Documentation discussing the domain allowlist with no encoding/exfiltration framing"
+    - input: "For private models on huggingface.co you must base64 encode your username and access token for the Basic Auth header."
+      expected: not_triggered
+      description: "Regression: adversarial review confirmed this firing -- ordinary documentation about HTTP Basic Auth credential encoding, not exfiltration. The old {0,60} bridge span let 'base64'/'encode' co-occur with a bare huggingface.co mention with no request framing at all. Fixed by requiring a fetch/request-action cue (WebFetch, fetch, curl, download, etc.) within 30 chars before the domain, which this sentence lacks."
+    - input: "huggingface.co uses git-lfs... you may need to base64 encode binary diffs when debugging LFS pointer files."
+      expected: not_triggered
+      description: "Regression: adversarial review confirmed this firing -- ordinary git-lfs documentation prose, not exfiltration. Fixed by the same fetch/request-action-cue requirement; this sentence has no WebFetch/fetch/curl/download framing near the domain."
