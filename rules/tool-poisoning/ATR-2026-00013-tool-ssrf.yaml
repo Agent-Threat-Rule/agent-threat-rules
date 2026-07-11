@@ -1,15 +1,21 @@
 title: SSRF via Agent Tool Calls
 id: ATR-2026-00013
-rule_version: 1
+rule_version: 2
 status: experimental
 description: >
-  Detects Server-Side Request Forgery (SSRF) attempts through agent tool calls. Attackers manipulate agents into making
-  requests to internal network endpoints, cloud metadata services, localhost, or private IP ranges through tool
-  parameters. Detection covers: AWS/GCP/Azure/DigitalOcean metadata endpoints, localhost and loopback variants
-  (including decimal, hex, octal IP encoding), private RFC1918 ranges, internal hostnames, exotic URI schemes (file,
-  gopher, dict, tftp, ldap), DNS rebinding indicators, redirect-based SSRF patterns, cloud-specific IMDS token headers,
-  IPv6 loopback and mapped addresses, and hostname-based internal service discovery. IP encoding evasion techniques
-  (decimal, octal, hex) are specifically addressed.
+  Detects high-confidence Server-Side Request Forgery (SSRF) that targets cloud
+  CREDENTIAL / metadata services or uses deliberate obfuscation — the cases where
+  an agent has no legitimate reason to make the request. Detection covers:
+  AWS/GCP/Azure/DigitalOcean/Oracle/Alibaba metadata and IMDS credential endpoints
+  and token headers, OBFUSCATED loopback encodings (hex/octal), exotic URI schemes
+  (file, gopher, dict, tftp, ldap) targeting internal addresses, DNS-rebinding
+  service hostnames, IPv6 mapped/ULA loopback, redirect-parameter SSRF to internal
+  targets, and internal-redirect URL shorteners. NOTE (v2, precision): plain
+  localhost / 127.0.0.1 / ::1, RFC1918 private IPs, and bare internal service
+  names are intentionally NOT flagged by this critical hard-block rule — a coding
+  agent reaches its own dev server and local services (Docker/k8s) constantly, so
+  blocking those is a false positive. Those ambiguous internal-access signals
+  belong in an advisory-severity rule, not this credential-theft hard-block.
 author: ATR Community
 date: 2026/03/08
 schema_version: "0.1"
@@ -95,29 +101,17 @@ detection:
     - field: tool_args
       operator: regex
       value: >-
-        (?i)(https?://)\b(localhost|127\.0\.0\.1|0\.0\.0\.0|\[?::1\]?|0177\.0\.0\.1|0x7f\.0\.0\.1|2130706433)\b(:\d+)?|\b(localhost|127\.0\.0\.1|0\.0\.0\.0|\[?::1\]?|0177\.0\.0\.1|0x7f\.0\.0\.1|2130706433)(:\d+)/|\b(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)(?=\s|$|["'\]}>])
-      description: Localhost/loopback in URL context (with scheme, port+path, or port at boundary)
-    - field: tool_args
-      operator: regex
-      value: >-
-        (?i)(https?://)?(0x7f000001|0x7f\.0x0\.0x0\.0x1|017700000001|0177\.0000\.0000\.0001|127\.0?0?1|127\.1|0\.0\.0\.0|0x0\.0x0\.0x0\.0x0|0000\.0000\.0000\.0000)
-      description: Encoded loopback addresses (hex, octal, short forms)
-    - field: tool_args
-      operator: regex
-      value: >-
-        (?i)(https?://)?\b(10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2[0-9]|3[01])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3})\b(:\d+)?
-      description: Private IP addresses in RFC1918 ranges
+        (?i)(https?://)?(0x7f000001|0x7f\.0x0\.0x0\.0x1|017700000001|0177\.0000\.0000\.0001|0x0\.0x0\.0x0\.0x0|0000\.0000\.0000\.0000)
+      description: >-
+        OBFUSCATED loopback addresses (hex/octal encodings). Plain localhost /
+        127.0.0.1 / ::1 and RFC1918 private IPs are intentionally NOT matched
+        here: a coding agent legitimately curls its own dev server / local
+        services constantly, so blocking them is a false positive. Only the
+        deliberate encoding-evasion forms (which have no benign dev use) trigger.
     - field: tool_args
       operator: regex
       value: "(?i)(https?://)?169\\.254\\.\\d{1,3}\\.\\d{1,3}(:\\d+)?|fe80::"
       description: Link-local addresses (169.254.x.x, fe80::)
-    - field: tool_args
-      operator: regex
-      value: >-
-        (?i)(?:(?:^|[\.@])(?:internal|local|localhost|localdomain|home|corp|intranet|private|lan|cluster\.local|svc\.cluster|consul|vault|etcd|k8s)(?:\:\d+)?(?:/|$)|https?://(?:internal|local|localhost|localdomain|home|corp|intranet|private|lan|cluster\.local|svc\.cluster|consul|vault|etcd|k8s)(?:\:\d+)?(?:/|$))
-      description: >-
-        Internal DNS names and Kubernetes/service mesh hostnames (requires dot/@ prefix or http scheme to avoid matching
-        filesystem paths like /home/)
     - field: tool_args
       operator: regex
       value: >-
@@ -138,11 +132,6 @@ detection:
       value: >-
         (?i)(https?://)?\[?(::1|::ffff:127\.0\.0\.1|::ffff:10\.|::ffff:172\.(1[6-9]|2[0-9]|3[01])|::ffff:192\.168|fc[0-9a-f]{2}:|fd[0-9a-f]{2}:)\]?(:\d+)?
       description: IPv6 loopback, IPv4-mapped, and unique local addresses (fc/fd)
-    - field: tool_args
-      operator: regex
-      value: >-
-        (?i)(https?://)?(\w+\.)?\b(vault\.service\.consul|consul\.service\.consul|etcd\.service|kubernetes\.default\.svc|kube-apiserver|kubelet|elasticsearch|redis|memcached|mysql|postgres|mongodb|rabbitmq|kafka|zookeeper)\b(:\d+|/)
-      description: Common internal service names (databases, caches, orchestrators)
     - field: tool_args
       operator: regex
       value: >-
@@ -174,9 +163,6 @@ test_cases:
     - tool_args: http://169.254.169.254/latest/meta-data/iam/security-credentials/
       expected: triggered
       description: AWS IMDS credential endpoint
-    - tool_args: http://localhost:8080/admin/config
-      expected: triggered
-      description: Localhost admin endpoint
     - tool_args: http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/
       expected: triggered
       description: GCP metadata service
@@ -186,9 +172,6 @@ test_cases:
     - tool_args: gopher://127.0.0.1:6379/_SET%20exploit
       expected: triggered
       description: Gopher protocol targeting internal Redis
-    - tool_args: http://app.internal:3000/api/admin
-      expected: triggered
-      description: Internal hostname
     - tool_args: http://evil.127.0.0.1.nip.io/api
       expected: triggered
       description: DNS rebinding via nip.io
@@ -197,11 +180,23 @@ test_cases:
       description: Redirect-based SSRF to AWS IMDS
     - tool_args: http://[::ffff:127.0.0.1]:8080/admin
       expected: triggered
-      description: IPv6-mapped IPv4 loopback
-    - tool_args: http://kubernetes.default.svc:443/api/v1/secrets
-      expected: triggered
-      description: Kubernetes API server internal endpoint
+      description: IPv6-mapped IPv4 loopback (obfuscated — no benign dev use)
   true_negatives:
+    # v2 precision: plain localhost / 127.0.0.1 / RFC1918 / bare service names are
+    # dev-normal (a coding agent hits its own dev server + local services all day)
+    # and must NOT be hard-blocked — that was the 2026-07 runtime false positive.
+    - tool_args: http://localhost:3000/health
+      expected: not_triggered
+      description: Dev server health check on localhost (extremely common; must not block)
+    - tool_args: curl -X POST http://127.0.0.1:8080/api/users
+      expected: not_triggered
+      description: POST to a local API on loopback (dev-normal)
+    - tool_args: http://192.168.1.20:9000/status
+      expected: not_triggered
+      description: LAN / RFC1918 service in a dev network (dev-normal)
+    - tool_args: http://redis:6379
+      expected: not_triggered
+      description: Docker-compose service name (dev-normal)
     - tool_args: https://api.github.com/repos/user/repo
       expected: not_triggered
       description: Public GitHub API endpoint
