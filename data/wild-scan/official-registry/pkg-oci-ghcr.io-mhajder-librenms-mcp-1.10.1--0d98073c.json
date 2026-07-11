@@ -1,0 +1,680 @@
+{
+  "dedup_key": "pkg:oci:ghcr.io/mhajder/librenms-mcp:1.10.1",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:oci:ghcr.io/mhajder/librenms-mcp:1.10.1",
+    "registryType": "oci",
+    "identifier": "ghcr.io/mhajder/librenms-mcp:1.10.1"
+  },
+  "server_names": [
+    "io.github.mhajder/librenms-mcp"
+  ],
+  "versions_seen": [
+    "1.10.1"
+  ],
+  "registry_row_count": 1,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.mhajder/librenms-mcp",
+      "description": "MCP server for LibreNMS network monitoring - query devices, ports, alerts, and manage infrastructure",
+      "title": "LibreNMS MCP",
+      "repository": {
+        "url": "https://github.com/mhajder/librenms-mcp",
+        "source": "github"
+      },
+      "version": "1.10.1",
+      "websiteUrl": "https://github.com/mhajder/librenms-mcp",
+      "packages": [
+        {
+          "registryType": "pypi",
+          "identifier": "librenms-mcp",
+          "version": "1.10.1",
+          "runtimeHint": "uvx",
+          "transport": {
+            "type": "stdio"
+          },
+          "environmentVariables": [
+            {
+              "description": "LibreNMS instance URL (e.g., https://librenms.example.com)",
+              "isRequired": true,
+              "name": "LIBRENMS_URL"
+            },
+            {
+              "description": "LibreNMS API token with appropriate permissions",
+              "isRequired": true,
+              "isSecret": true,
+              "name": "LIBRENMS_TOKEN"
+            },
+            {
+              "description": "Verify TLS certificates for LibreNMS requests (true/false)",
+              "default": "true",
+              "name": "LIBRENMS_VERIFY_SSL"
+            },
+            {
+              "description": "HTTP timeout for LibreNMS API requests in seconds",
+              "default": "30",
+              "name": "LIBRENMS_TIMEOUT"
+            },
+            {
+              "description": "Enable read-only mode to block write operations",
+              "default": "false",
+              "name": "READ_ONLY_MODE"
+            },
+            {
+              "description": "Comma-separated tool tags to disable (e.g., alerts,bills)",
+              "name": "DISABLED_TAGS"
+            },
+            {
+              "description": "Logging level (DEBUG, INFO, WARNING, ERROR)",
+              "default": "INFO",
+              "name": "LOG_LEVEL"
+            },
+            {
+              "description": "Enable per-client rate limiting (true/false)",
+              "default": "false",
+              "name": "RATE_LIMIT_ENABLED"
+            },
+            {
+              "description": "Maximum requests allowed per rate-limit window",
+              "default": "100",
+              "name": "RATE_LIMIT_MAX_REQUESTS"
+            },
+            {
+              "description": "Rate-limit window duration in minutes",
+              "default": "1",
+              "name": "RATE_LIMIT_WINDOW_MINUTES"
+            },
+            {
+              "description": "Enable FastMCP tool search transform",
+              "default": "false",
+              "name": "TOOL_SEARCH_ENABLED"
+            },
+            {
+              "description": "Tool search strategy: 'bm25' (natural language) or 'regex' (pattern match)",
+              "default": "bm25",
+              "name": "TOOL_SEARCH_STRATEGY"
+            },
+            {
+              "description": "Maximum number of tools returned by search_tools",
+              "default": "5",
+              "name": "TOOL_SEARCH_MAX_RESULTS"
+            }
+          ]
+        },
+        {
+          "registryType": "pypi",
+          "identifier": "librenms-mcp",
+          "version": "1.10.1",
+          "runtimeHint": "uvx",
+          "transport": {
+            "type": "streamable-http",
+            "url": "http://localhost:{MCP_HTTP_PORT}/mcp"
+          },
+          "environmentVariables": [
+            {
+              "description": "LibreNMS instance URL (e.g., https://librenms.example.com)",
+              "isRequired": true,
+              "name": "LIBRENMS_URL"
+            },
+            {
+              "description": "LibreNMS API token with appropriate permissions",
+              "isRequired": true,
+              "isSecret": true,
+              "name": "LIBRENMS_TOKEN"
+            },
+            {
+              "description": "Verify TLS certificates for LibreNMS requests (true/false)",
+              "default": "true",
+              "name": "LIBRENMS_VERIFY_SSL"
+            },
+            {
+              "description": "HTTP timeout for LibreNMS API requests in seconds",
+              "default": "30",
+              "name": "LIBRENMS_TIMEOUT"
+            },
+            {
+              "description": "Enable read-only mode to block write operations",
+              "default": "false",
+              "name": "READ_ONLY_MODE"
+            },
+            {
+              "description": "Comma-separated tool tags to disable (e.g., alerts,bills)",
+              "name": "DISABLED_TAGS"
+            },
+            {
+              "description": "Logging level (DEBUG, INFO, WARNING, ERROR)",
+              "default": "INFO",
+              "name": "LOG_LEVEL"
+            },
+            {
+              "description": "Enable per-client rate limiting (true/false)",
+              "default": "false",
+              "name": "RATE_LIMIT_ENABLED"
+            },
+            {
+              "description": "Maximum requests allowed per rate-limit window",
+              "default": "100",
+              "name": "RATE_LIMIT_MAX_REQUESTS"
+            },
+            {
+              "description": "Rate-limit window duration in minutes",
+              "default": "1",
+              "name": "RATE_LIMIT_WINDOW_MINUTES"
+            },
+            {
+              "description": "Enable FastMCP tool search transform",
+              "default": "false",
+              "name": "TOOL_SEARCH_ENABLED"
+            },
+            {
+              "description": "Tool search strategy: 'bm25' (natural language) or 'regex' (pattern match)",
+              "default": "bm25",
+              "name": "TOOL_SEARCH_STRATEGY"
+            },
+            {
+              "description": "Maximum number of tools returned by search_tools",
+              "default": "5",
+              "name": "TOOL_SEARCH_MAX_RESULTS"
+            },
+            {
+              "description": "Port for HTTP server (default: 8000)",
+              "default": "8000",
+              "name": "MCP_HTTP_PORT"
+            },
+            {
+              "description": "Optional bearer token for HTTP transport authentication",
+              "isSecret": true,
+              "name": "MCP_HTTP_BEARER_TOKEN"
+            },
+            {
+              "description": "MCP transport type (http for HTTP, stdio for stdio)",
+              "value": "http",
+              "name": "MCP_TRANSPORT"
+            }
+          ]
+        },
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/mhajder/librenms-mcp:1.10.1",
+          "transport": {
+            "type": "streamable-http",
+            "url": "http://localhost:{MCP_HTTP_PORT}/mcp"
+          },
+          "runtimeArguments": [
+            {
+              "description": "Port mapping for HTTP transport",
+              "isRequired": true,
+              "value": "{MCP_HTTP_PORT}:{MCP_HTTP_PORT}",
+              "type": "named",
+              "name": "-p"
+            }
+          ],
+          "environmentVariables": [
+            {
+              "description": "LibreNMS instance URL (e.g., https://librenms.example.com)",
+              "isRequired": true,
+              "name": "LIBRENMS_URL"
+            },
+            {
+              "description": "LibreNMS API token with appropriate permissions",
+              "isRequired": true,
+              "isSecret": true,
+              "name": "LIBRENMS_TOKEN"
+            },
+            {
+              "description": "Verify TLS certificates for LibreNMS requests (true/false)",
+              "default": "true",
+              "name": "LIBRENMS_VERIFY_SSL"
+            },
+            {
+              "description": "HTTP timeout for LibreNMS API requests in seconds",
+              "default": "30",
+              "name": "LIBRENMS_TIMEOUT"
+            },
+            {
+              "description": "Enable read-only mode to block write operations",
+              "default": "false",
+              "name": "READ_ONLY_MODE"
+            },
+            {
+              "description": "Comma-separated tool tags to disable (e.g., alerts,bills)",
+              "name": "DISABLED_TAGS"
+            },
+            {
+              "description": "Logging level (DEBUG, INFO, WARNING, ERROR)",
+              "default": "INFO",
+              "name": "LOG_LEVEL"
+            },
+            {
+              "description": "Enable per-client rate limiting (true/false)",
+              "default": "false",
+              "name": "RATE_LIMIT_ENABLED"
+            },
+            {
+              "description": "Maximum requests allowed per rate-limit window",
+              "default": "100",
+              "name": "RATE_LIMIT_MAX_REQUESTS"
+            },
+            {
+              "description": "Rate-limit window duration in minutes",
+              "default": "1",
+              "name": "RATE_LIMIT_WINDOW_MINUTES"
+            },
+            {
+              "description": "Enable FastMCP tool search transform",
+              "default": "false",
+              "name": "TOOL_SEARCH_ENABLED"
+            },
+            {
+              "description": "Tool search strategy: 'bm25' (natural language) or 'regex' (pattern match)",
+              "default": "bm25",
+              "name": "TOOL_SEARCH_STRATEGY"
+            },
+            {
+              "description": "Maximum number of tools returned by search_tools",
+              "default": "5",
+              "name": "TOOL_SEARCH_MAX_RESULTS"
+            },
+            {
+              "description": "Sentry DSN for optional error tracking",
+              "isSecret": true,
+              "name": "SENTRY_DSN"
+            },
+            {
+              "description": "Sentry traces sample rate (0.0-1.0)",
+              "default": "1.0",
+              "name": "SENTRY_TRACES_SAMPLE_RATE"
+            },
+            {
+              "description": "Allow Sentry to include default PII in events (true/false)",
+              "default": "true",
+              "name": "SENTRY_SEND_DEFAULT_PII"
+            },
+            {
+              "description": "Sentry environment name (e.g., production)",
+              "name": "SENTRY_ENVIRONMENT"
+            },
+            {
+              "description": "Sentry release identifier",
+              "name": "SENTRY_RELEASE"
+            },
+            {
+              "description": "Sentry profile session sample rate (0.0-1.0)",
+              "default": "1.0",
+              "name": "SENTRY_PROFILE_SESSION_SAMPLE_RATE"
+            },
+            {
+              "description": "Sentry profiling lifecycle mode",
+              "default": "trace",
+              "name": "SENTRY_PROFILE_LIFECYCLE"
+            },
+            {
+              "description": "Enable Sentry log capture integration (true/false)",
+              "default": "true",
+              "name": "SENTRY_ENABLE_LOGS"
+            },
+            {
+              "description": "Port for HTTP server (default: 8000)",
+              "default": "8000",
+              "name": "MCP_HTTP_PORT"
+            },
+            {
+              "description": "Optional bearer token for HTTP transport authentication",
+              "isSecret": true,
+              "name": "MCP_HTTP_BEARER_TOKEN"
+            },
+            {
+              "description": "MCP transport type (http for HTTP, stdio for stdio)",
+              "value": "http",
+              "name": "MCP_TRANSPORT"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-07-06T15:21:42.572858Z",
+        "publishedAt": "2026-07-06T15:21:42.572858Z",
+        "updatedAt": "2026-07-06T15:21:42.572858Z",
+        "isLatest": false
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.mhajder/librenms-mcp",
+        "description": "MCP server for LibreNMS network monitoring - query devices, ports, alerts, and manage infrastructure",
+        "title": "LibreNMS MCP",
+        "repository": {
+          "url": "https://github.com/mhajder/librenms-mcp",
+          "source": "github"
+        },
+        "version": "1.10.1",
+        "websiteUrl": "https://github.com/mhajder/librenms-mcp",
+        "packages": [
+          {
+            "registryType": "pypi",
+            "identifier": "librenms-mcp",
+            "version": "1.10.1",
+            "runtimeHint": "uvx",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "LibreNMS instance URL (e.g., https://librenms.example.com)",
+                "isRequired": true,
+                "name": "LIBRENMS_URL"
+              },
+              {
+                "description": "LibreNMS API token with appropriate permissions",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "LIBRENMS_TOKEN"
+              },
+              {
+                "description": "Verify TLS certificates for LibreNMS requests (true/false)",
+                "default": "true",
+                "name": "LIBRENMS_VERIFY_SSL"
+              },
+              {
+                "description": "HTTP timeout for LibreNMS API requests in seconds",
+                "default": "30",
+                "name": "LIBRENMS_TIMEOUT"
+              },
+              {
+                "description": "Enable read-only mode to block write operations",
+                "default": "false",
+                "name": "READ_ONLY_MODE"
+              },
+              {
+                "description": "Comma-separated tool tags to disable (e.g., alerts,bills)",
+                "name": "DISABLED_TAGS"
+              },
+              {
+                "description": "Logging level (DEBUG, INFO, WARNING, ERROR)",
+                "default": "INFO",
+                "name": "LOG_LEVEL"
+              },
+              {
+                "description": "Enable per-client rate limiting (true/false)",
+                "default": "false",
+                "name": "RATE_LIMIT_ENABLED"
+              },
+              {
+                "description": "Maximum requests allowed per rate-limit window",
+                "default": "100",
+                "name": "RATE_LIMIT_MAX_REQUESTS"
+              },
+              {
+                "description": "Rate-limit window duration in minutes",
+                "default": "1",
+                "name": "RATE_LIMIT_WINDOW_MINUTES"
+              },
+              {
+                "description": "Enable FastMCP tool search transform",
+                "default": "false",
+                "name": "TOOL_SEARCH_ENABLED"
+              },
+              {
+                "description": "Tool search strategy: 'bm25' (natural language) or 'regex' (pattern match)",
+                "default": "bm25",
+                "name": "TOOL_SEARCH_STRATEGY"
+              },
+              {
+                "description": "Maximum number of tools returned by search_tools",
+                "default": "5",
+                "name": "TOOL_SEARCH_MAX_RESULTS"
+              }
+            ]
+          },
+          {
+            "registryType": "pypi",
+            "identifier": "librenms-mcp",
+            "version": "1.10.1",
+            "runtimeHint": "uvx",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:{MCP_HTTP_PORT}/mcp"
+            },
+            "environmentVariables": [
+              {
+                "description": "LibreNMS instance URL (e.g., https://librenms.example.com)",
+                "isRequired": true,
+                "name": "LIBRENMS_URL"
+              },
+              {
+                "description": "LibreNMS API token with appropriate permissions",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "LIBRENMS_TOKEN"
+              },
+              {
+                "description": "Verify TLS certificates for LibreNMS requests (true/false)",
+                "default": "true",
+                "name": "LIBRENMS_VERIFY_SSL"
+              },
+              {
+                "description": "HTTP timeout for LibreNMS API requests in seconds",
+                "default": "30",
+                "name": "LIBRENMS_TIMEOUT"
+              },
+              {
+                "description": "Enable read-only mode to block write operations",
+                "default": "false",
+                "name": "READ_ONLY_MODE"
+              },
+              {
+                "description": "Comma-separated tool tags to disable (e.g., alerts,bills)",
+                "name": "DISABLED_TAGS"
+              },
+              {
+                "description": "Logging level (DEBUG, INFO, WARNING, ERROR)",
+                "default": "INFO",
+                "name": "LOG_LEVEL"
+              },
+              {
+                "description": "Enable per-client rate limiting (true/false)",
+                "default": "false",
+                "name": "RATE_LIMIT_ENABLED"
+              },
+              {
+                "description": "Maximum requests allowed per rate-limit window",
+                "default": "100",
+                "name": "RATE_LIMIT_MAX_REQUESTS"
+              },
+              {
+                "description": "Rate-limit window duration in minutes",
+                "default": "1",
+                "name": "RATE_LIMIT_WINDOW_MINUTES"
+              },
+              {
+                "description": "Enable FastMCP tool search transform",
+                "default": "false",
+                "name": "TOOL_SEARCH_ENABLED"
+              },
+              {
+                "description": "Tool search strategy: 'bm25' (natural language) or 'regex' (pattern match)",
+                "default": "bm25",
+                "name": "TOOL_SEARCH_STRATEGY"
+              },
+              {
+                "description": "Maximum number of tools returned by search_tools",
+                "default": "5",
+                "name": "TOOL_SEARCH_MAX_RESULTS"
+              },
+              {
+                "description": "Port for HTTP server (default: 8000)",
+                "default": "8000",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "Optional bearer token for HTTP transport authentication",
+                "isSecret": true,
+                "name": "MCP_HTTP_BEARER_TOKEN"
+              },
+              {
+                "description": "MCP transport type (http for HTTP, stdio for stdio)",
+                "value": "http",
+                "name": "MCP_TRANSPORT"
+              }
+            ]
+          },
+          {
+            "registryType": "oci",
+            "identifier": "ghcr.io/mhajder/librenms-mcp:1.10.1",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:{MCP_HTTP_PORT}/mcp"
+            },
+            "runtimeArguments": [
+              {
+                "description": "Port mapping for HTTP transport",
+                "isRequired": true,
+                "value": "{MCP_HTTP_PORT}:{MCP_HTTP_PORT}",
+                "type": "named",
+                "name": "-p"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "LibreNMS instance URL (e.g., https://librenms.example.com)",
+                "isRequired": true,
+                "name": "LIBRENMS_URL"
+              },
+              {
+                "description": "LibreNMS API token with appropriate permissions",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "LIBRENMS_TOKEN"
+              },
+              {
+                "description": "Verify TLS certificates for LibreNMS requests (true/false)",
+                "default": "true",
+                "name": "LIBRENMS_VERIFY_SSL"
+              },
+              {
+                "description": "HTTP timeout for LibreNMS API requests in seconds",
+                "default": "30",
+                "name": "LIBRENMS_TIMEOUT"
+              },
+              {
+                "description": "Enable read-only mode to block write operations",
+                "default": "false",
+                "name": "READ_ONLY_MODE"
+              },
+              {
+                "description": "Comma-separated tool tags to disable (e.g., alerts,bills)",
+                "name": "DISABLED_TAGS"
+              },
+              {
+                "description": "Logging level (DEBUG, INFO, WARNING, ERROR)",
+                "default": "INFO",
+                "name": "LOG_LEVEL"
+              },
+              {
+                "description": "Enable per-client rate limiting (true/false)",
+                "default": "false",
+                "name": "RATE_LIMIT_ENABLED"
+              },
+              {
+                "description": "Maximum requests allowed per rate-limit window",
+                "default": "100",
+                "name": "RATE_LIMIT_MAX_REQUESTS"
+              },
+              {
+                "description": "Rate-limit window duration in minutes",
+                "default": "1",
+                "name": "RATE_LIMIT_WINDOW_MINUTES"
+              },
+              {
+                "description": "Enable FastMCP tool search transform",
+                "default": "false",
+                "name": "TOOL_SEARCH_ENABLED"
+              },
+              {
+                "description": "Tool search strategy: 'bm25' (natural language) or 'regex' (pattern match)",
+                "default": "bm25",
+                "name": "TOOL_SEARCH_STRATEGY"
+              },
+              {
+                "description": "Maximum number of tools returned by search_tools",
+                "default": "5",
+                "name": "TOOL_SEARCH_MAX_RESULTS"
+              },
+              {
+                "description": "Sentry DSN for optional error tracking",
+                "isSecret": true,
+                "name": "SENTRY_DSN"
+              },
+              {
+                "description": "Sentry traces sample rate (0.0-1.0)",
+                "default": "1.0",
+                "name": "SENTRY_TRACES_SAMPLE_RATE"
+              },
+              {
+                "description": "Allow Sentry to include default PII in events (true/false)",
+                "default": "true",
+                "name": "SENTRY_SEND_DEFAULT_PII"
+              },
+              {
+                "description": "Sentry environment name (e.g., production)",
+                "name": "SENTRY_ENVIRONMENT"
+              },
+              {
+                "description": "Sentry release identifier",
+                "name": "SENTRY_RELEASE"
+              },
+              {
+                "description": "Sentry profile session sample rate (0.0-1.0)",
+                "default": "1.0",
+                "name": "SENTRY_PROFILE_SESSION_SAMPLE_RATE"
+              },
+              {
+                "description": "Sentry profiling lifecycle mode",
+                "default": "trace",
+                "name": "SENTRY_PROFILE_LIFECYCLE"
+              },
+              {
+                "description": "Enable Sentry log capture integration (true/false)",
+                "default": "true",
+                "name": "SENTRY_ENABLE_LOGS"
+              },
+              {
+                "description": "Port for HTTP server (default: 8000)",
+                "default": "8000",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "Optional bearer token for HTTP transport authentication",
+                "isSecret": true,
+                "name": "MCP_HTTP_BEARER_TOKEN"
+              },
+              {
+                "description": "MCP transport type (http for HTTP, stdio for stdio)",
+                "value": "http",
+                "name": "MCP_TRANSPORT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-06T15:21:42.572858Z",
+          "publishedAt": "2026-07-06T15:21:42.572858Z",
+          "updatedAt": "2026-07-06T15:21:42.572858Z",
+          "isLatest": false
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:57.370Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

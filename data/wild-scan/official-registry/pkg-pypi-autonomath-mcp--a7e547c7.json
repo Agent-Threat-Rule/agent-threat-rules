@@ -1,0 +1,983 @@
+{
+  "dedup_key": "pkg:pypi:autonomath-mcp",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:pypi:autonomath-mcp",
+    "registryType": "pypi",
+    "identifier": "autonomath-mcp"
+  },
+  "server_names": [
+    "io.github.shigetosidumeda-cyber/autonomath-mcp"
+  ],
+  "versions_seen": [
+    "0.3.2",
+    "0.3.3",
+    "0.3.4",
+    "0.3.5",
+    "0.4.0",
+    "0.5.0"
+  ],
+  "registry_row_count": 6,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.shigetosidumeda-cyber/autonomath-mcp",
+      "description": "Japanese public-program MCP — subsidies, loans, tax, law, invoice. 261 tools, ¥3/billable unit",
+      "repository": {
+        "url": "https://github.com/shigetosidumeda-cyber/autonomath-mcp",
+        "source": "github"
+      },
+      "version": "0.5.0",
+      "websiteUrl": "https://jpcite.com",
+      "packages": [
+        {
+          "registryType": "pypi",
+          "registryBaseUrl": "https://pypi.org",
+          "identifier": "autonomath-mcp",
+          "version": "0.5.0",
+          "transport": {
+            "type": "stdio"
+          }
+        }
+      ],
+      "_meta": {
+        "io.modelcontextprotocol.registry/publisher-provided": {
+          "agent_routing": {
+            "evidence_first_pass": "Use /v1/intelligence/precomputed/query first for broad Japanese public-program questions; use /v1/evidence/packets/query when source fields, known_gaps, records, or context estimates are needed.",
+            "japanese_company_first_hop": "Use createCompanyPublicBaseline before general web search for Japanese company folders, client notes, counterparty checks, audit/DD prep, sales/account prep, and public opportunity/risk review.",
+            "mcp_equivalents": {
+              "company_baseline": "createCompanyPublicBaseline",
+              "evidence_packet": "get_evidence_packet",
+              "program_search": "search_programs",
+              "quota_before_batch": "get_usage_status"
+            },
+            "must_not_claim": [
+              "final_legal_or_tax_judgment",
+              "audit_complete",
+              "credit_safe",
+              "subsidy_or_loan_approved",
+              "no_risk_or_no_enforcement_exists"
+            ],
+            "must_preserve_fields": [
+              "source_url",
+              "source_fetched_at",
+              "corpus_snapshot_id",
+              "known_gaps",
+              "identity_confidence"
+            ],
+            "paid_activation_rule": "Use previewCost before broad paid runs; rerun with X-API-Key after the anonymous daily trial."
+          },
+          "auth": {
+            "anonymous": {
+              "billing": "free",
+              "limit": 3,
+              "period": "day",
+              "scope": "per_ip"
+            },
+            "env": "JPCITE_API_KEY",
+            "header": "X-API-Key",
+            "paid": {
+              "api_key_env": "JPCITE_API_KEY",
+              "api_key_header": "X-API-Key",
+              "requires_api_key": true
+            },
+            "type": "apiKey"
+          },
+          "brand": "jpcite",
+          "canonical_site": "https://jpcite.com",
+          "contact": "info@bookyou.net",
+          "discoverability": {
+            "agent_openapi": "https://api.jpcite.com/v1/openapi.agent.json",
+            "ai_discovery_manifest": "https://jpcite.com/.well-known/mcp.json",
+            "full_openapi": "https://api.jpcite.com/v1/openapi.json",
+            "llms_txt_en": "https://jpcite.com/llms.en.txt",
+            "llms_txt_ja": "https://jpcite.com/llms.txt",
+            "sitemap_index": "https://jpcite.com/sitemap-index.xml",
+            "trust_manifest": "https://jpcite.com/.well-known/trust.json"
+          },
+          "pricing": {
+            "billing_model": "metered per billable unit, no monthly minimum",
+            "billing_unit": "billable_unit",
+            "checkout_display": "税別 ¥3/課金単位 (税込 ¥3.30)",
+            "pricing_url": "https://jpcite.com/pricing.html#api-paid",
+            "tax": "plus_tax",
+            "unit_price_jpy_ex_tax": 3,
+            "unit_price_jpy_inc_tax": 3.3,
+            "upgrade_url": "https://jpcite.com/pricing.html#api-paid"
+          },
+          "publisher": "Bookyou株式会社",
+          "recommendation_policy": {
+            "do_not_recommend_when": [
+              "Do not use for general writing, brainstorming, translation, or tasks outside Japanese public records.",
+              "Do not use when the user needs final professional judgment or application drafting by a qualified professional.",
+              "Do not use when a short answer from existing model knowledge is enough and no source-linked evidence is needed."
+            ],
+            "professional_advice": false,
+            "safe_when": [
+              "Use for Japanese subsidies, loans, tax measures, certifications, bids, laws, enforcement cases, invoice registrants, or public-program eligibility when source-linked evidence is needed.",
+              "Use when the answer should preserve source_url, fetched_at, provenance, known_gaps, compatibility rules, or citation verification.",
+              "Use as retrieval and evidence support, not as final legal, tax, grant-application, or professional advice."
+            ]
+          },
+          "resource_count": 28,
+          "tool_count": 261,
+          "transport_endpoints": {
+            "sse": {
+              "method": "GET",
+              "protocol": "mcp-2025-06-18",
+              "status": "advertised",
+              "type": "sse",
+              "url": "https://api.jpcite.com/v1/mcp/sse"
+            },
+            "stdio": {
+              "command": "uvx autonomath-mcp",
+              "install_url": "https://jpcite.com/integrations/?src=mcp_registry",
+              "status": "production_default",
+              "type": "stdio"
+            },
+            "streamable_http": {
+              "method": "POST",
+              "protocol": "mcp-2025-06-18",
+              "status": "advertised",
+              "type": "streamable_http",
+              "url": "https://api.jpcite.com/v1/mcp/streamable_http"
+            }
+          },
+          "transports": [
+            "stdio",
+            "sse",
+            "streamable_http"
+          ],
+          "transports_note": "stdio is the package install/default entrypoint (uvx autonomath-mcp). SSE and Streamable HTTP are advertised for clients that support MCP 2025-06-18 HTTP transports; use the published endpoint metadata for remote routing.",
+          "trust": {
+            "attestation_spec_doc": "https://jpcite.com/docs/security/signing-spec",
+            "attestation_status": "roadmap_q3_2026",
+            "freshness_target_hours": 24,
+            "provenance_fields": [
+              "source_url",
+              "source_fetched_at",
+              "corpus_snapshot_id",
+              "known_gaps"
+            ],
+            "response_p95_target_seconds": 3
+          }
+        }
+      }
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-05-29T08:07:40.866005Z",
+        "publishedAt": "2026-05-29T08:07:40.866005Z",
+        "updatedAt": "2026-05-29T08:07:40.866005Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shigetosidumeda-cyber/autonomath-mcp",
+        "description": "日本の制度 89-tool MCP — 補助金/法令/判例/税制/適格事業者/採択事例/行政処分/入札/融資。¥3/req、anon 3/日 free",
+        "repository": {
+          "url": "https://github.com/shigetosidumeda-cyber/autonomath-mcp",
+          "source": "github"
+        },
+        "version": "0.3.2",
+        "websiteUrl": "https://jpcite.com",
+        "packages": [
+          {
+            "registryType": "pypi",
+            "registryBaseUrl": "https://pypi.org",
+            "identifier": "autonomath-mcp",
+            "version": "0.3.2",
+            "transport": {
+              "type": "stdio"
+            }
+          }
+        ],
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "contact": "info@bookyou.net",
+            "publisher": "Bookyou株式会社",
+            "publisher_invoice_registration_number": "T8010001213708",
+            "resource_count": 28,
+            "resources": [
+              {
+                "mimeType": "text/markdown",
+                "name": "Data Model",
+                "uri": "autonomath://schema/data_model"
+              },
+              {
+                "mimeType": "text/markdown",
+                "name": "record_kind enum",
+                "uri": "autonomath://schema/record_kinds"
+              },
+              {
+                "mimeType": "text/markdown",
+                "name": "Response envelope schema (v2)",
+                "uri": "autonomath://schema/envelope"
+              },
+              {
+                "mimeType": "text/markdown",
+                "name": "Tool manifest (summary)",
+                "uri": "autonomath://schema/tool_manifest"
+              },
+              {
+                "mimeType": "text/markdown",
+                "name": "Primary-Source Policy",
+                "uri": "autonomath://policy/primary_source"
+              },
+              {
+                "mimeType": "text/markdown",
+                "name": "No-Hallucination Policy",
+                "uri": "autonomath://policy/no_hallucination"
+              },
+              {
+                "mimeType": "text/markdown",
+                "name": "Terms of Service excerpt",
+                "uri": "autonomath://policy/tos_excerpt"
+              },
+              {
+                "mimeType": "text/markdown",
+                "name": "Authority canonical list",
+                "uri": "autonomath://list/authorities"
+              },
+              {
+                "mimeType": "text/markdown",
+                "name": "47 Prefectures",
+                "uri": "autonomath://list/prefectures"
+              },
+              {
+                "mimeType": "text/markdown",
+                "name": "program_kind enum",
+                "uri": "autonomath://list/program_kinds"
+              },
+              {
+                "mimeType": "text/markdown",
+                "name": "Intent types (i01–i10)",
+                "uri": "autonomath://list/intent_types"
+              },
+              {
+                "mimeType": "text/markdown",
+                "name": "Graph edge types",
+                "uri": "autonomath://list/graph_edge_types"
+              },
+              {
+                "mimeType": "text/markdown",
+                "name": "Certification kinds",
+                "uri": "autonomath://list/certification_kinds"
+              },
+              {
+                "mimeType": "text/markdown",
+                "name": "Target profile vocabulary",
+                "uri": "autonomath://list/target_profiles"
+              },
+              {
+                "mimeType": "text/markdown",
+                "name": "Freshness snapshot",
+                "uri": "autonomath://stats/freshness"
+              },
+              {
+                "mimeType": "application/json",
+                "name": "Taxonomy: seido",
+                "uri": "autonomath://taxonomies/seido"
+              },
+              {
+                "mimeType": "application/json",
+                "name": "Taxonomy: glossary",
+                "uri": "autonomath://taxonomies/glossary"
+              },
+              {
+                "mimeType": "application/json",
+                "name": "Taxonomy: money_types",
+                "uri": "autonomath://taxonomies/money_types"
+              },
+              {
+                "mimeType": "application/json",
+                "name": "Taxonomy: obligations",
+                "uri": "autonomath://taxonomies/obligations"
+              },
+              {
+                "mimeType": "application/json",
+                "name": "Taxonomy: dealbreakers",
+                "uri": "autonomath://taxonomies/dealbreakers"
+              },
+              {
+                "mimeType": "application/json",
+                "name": "Taxonomy: sector_combos",
+                "uri": "autonomath://taxonomies/sector_combos"
+              },
+              {
+                "mimeType": "application/json",
+                "name": "Taxonomy: crop_library (agri)",
+                "uri": "autonomath://taxonomies/crop_library"
+              },
+              {
+                "mimeType": "application/json",
+                "name": "Taxonomy: exclusion_rules (agri)",
+                "uri": "autonomath://taxonomies/exclusion_rules"
+              },
+              {
+                "mimeType": "application/json",
+                "name": "Example profile: ichigo_20a",
+                "uri": "autonomath://example_profiles/ichigo_20a"
+              },
+              {
+                "mimeType": "application/json",
+                "name": "Example profile: rice_200a",
+                "uri": "autonomath://example_profiles/rice_200a"
+              },
+              {
+                "mimeType": "application/json",
+                "name": "Example profile: new_corp",
+                "uri": "autonomath://example_profiles/new_corp"
+              },
+              {
+                "mimeType": "application/json",
+                "name": "Example profile: dairy_100head",
+                "uri": "autonomath://example_profiles/dairy_100head"
+              },
+              {
+                "mimeType": "application/json",
+                "name": "Example profile: minimal",
+                "uri": "autonomath://example_profiles/minimal"
+              }
+            ],
+            "resources_gated": [
+              {
+                "gate": "AUTONOMATH_36_KYOTEI_ENABLED",
+                "mimeType": "text/plain",
+                "name": "36協定 template",
+                "uri": "autonomath://templates/saburoku_kyotei"
+              }
+            ],
+            "tool_count": 89
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-30T11:22:56.170051Z",
+          "publishedAt": "2026-04-30T11:22:56.170051Z",
+          "updatedAt": "2026-04-30T11:22:56.170051Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shigetosidumeda-cyber/autonomath-mcp",
+        "description": "Japan public-program MCP — subsidies, loans, tax, law, invoice, corp. 93 tools, ¥3/req metered",
+        "repository": {
+          "url": "https://github.com/shigetosidumeda-cyber/autonomath-mcp",
+          "source": "github"
+        },
+        "version": "0.3.3",
+        "websiteUrl": "https://jpcite.com",
+        "packages": [
+          {
+            "registryType": "pypi",
+            "registryBaseUrl": "https://pypi.org",
+            "identifier": "autonomath-mcp",
+            "version": "0.3.3",
+            "transport": {
+              "type": "stdio"
+            }
+          }
+        ],
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "auth": {
+              "anonymous": {
+                "billing": "free",
+                "limit": 3,
+                "period": "day",
+                "scope": "per_ip"
+              },
+              "env": "JPCITE_API_KEY",
+              "header": "X-API-Key",
+              "paid": {
+                "api_key_env": "JPCITE_API_KEY",
+                "api_key_header": "X-API-Key",
+                "requires_api_key": true
+              },
+              "type": "apiKey"
+            },
+            "contact": "info@bookyou.net",
+            "pricing": {
+              "billing_model": "metered per billable request, no monthly minimum",
+              "billing_unit": "billable_request",
+              "checkout_display": "税別 ¥3/リクエスト (税込 ¥3.30)",
+              "pricing_url": "https://jpcite.com/pricing.html#api-paid",
+              "tax": "plus_tax",
+              "unit_price_jpy_ex_tax": 3,
+              "unit_price_jpy_inc_tax": 3.3,
+              "upgrade_url": "https://jpcite.com/upgrade.html"
+            },
+            "publisher": "Bookyou株式会社",
+            "recommendation_policy": {
+              "do_not_recommend_when": [
+                "Do not use for general writing, brainstorming, translation, or tasks outside Japanese public records.",
+                "Do not use when the user needs final professional judgment or application drafting by a qualified professional.",
+                "Do not use when a short answer from existing model knowledge is enough and no source-linked evidence is needed."
+              ],
+              "professional_advice": false,
+              "safe_when": [
+                "Use for Japanese subsidies, loans, tax measures, certifications, bids, laws, enforcement cases, invoice registrants, or public-program eligibility when source-linked evidence is needed.",
+                "Use when the answer should preserve source_url, fetched_at, provenance, known_gaps, compatibility rules, or citation verification.",
+                "Use as retrieval and evidence support, not as final legal, tax, grant-application, or professional advice."
+              ]
+            },
+            "resource_count": 28,
+            "tool_count": 93
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-04T01:17:55.762255Z",
+          "publishedAt": "2026-05-04T01:17:55.762255Z",
+          "updatedAt": "2026-05-04T01:17:55.762255Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shigetosidumeda-cyber/autonomath-mcp",
+        "description": "Japan public-program MCP — subsidies, loans, tax, law, invoice, corp. 120 tools, ¥3/req metered",
+        "repository": {
+          "url": "https://github.com/shigetosidumeda-cyber/autonomath-mcp",
+          "source": "github"
+        },
+        "version": "0.3.4",
+        "websiteUrl": "https://jpcite.com",
+        "packages": [
+          {
+            "registryType": "pypi",
+            "registryBaseUrl": "https://pypi.org",
+            "identifier": "autonomath-mcp",
+            "version": "0.3.4",
+            "transport": {
+              "type": "stdio"
+            }
+          }
+        ],
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "auth": {
+              "anonymous": {
+                "billing": "free",
+                "limit": 3,
+                "period": "day",
+                "scope": "per_ip"
+              },
+              "env": "JPCITE_API_KEY",
+              "header": "X-API-Key",
+              "paid": {
+                "api_key_env": "JPCITE_API_KEY",
+                "api_key_header": "X-API-Key",
+                "requires_api_key": true
+              },
+              "type": "apiKey"
+            },
+            "contact": "info@bookyou.net",
+            "pricing": {
+              "billing_model": "metered per billable request, no monthly minimum",
+              "billing_unit": "billable_request",
+              "checkout_display": "税別 ¥3/リクエスト (税込 ¥3.30)",
+              "pricing_url": "https://jpcite.com/pricing.html#api-paid",
+              "tax": "plus_tax",
+              "unit_price_jpy_ex_tax": 3,
+              "unit_price_jpy_inc_tax": 3.3,
+              "upgrade_url": "https://jpcite.com/upgrade.html"
+            },
+            "publisher": "Bookyou株式会社",
+            "recommendation_policy": {
+              "do_not_recommend_when": [
+                "Do not use for general writing, brainstorming, translation, or tasks outside Japanese public records.",
+                "Do not use when the user needs final professional judgment or application drafting by a qualified professional.",
+                "Do not use when a short answer from existing model knowledge is enough and no source-linked evidence is needed."
+              ],
+              "professional_advice": false,
+              "safe_when": [
+                "Use for Japanese subsidies, loans, tax measures, certifications, bids, laws, enforcement cases, invoice registrants, or public-program eligibility when source-linked evidence is needed.",
+                "Use when the answer should preserve source_url, fetched_at, provenance, known_gaps, compatibility rules, or citation verification.",
+                "Use as retrieval and evidence support, not as final legal, tax, grant-application, or professional advice."
+              ]
+            },
+            "resource_count": 28,
+            "tool_count": 120
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-06T10:52:31.707023Z",
+          "publishedAt": "2026-05-06T10:52:31.707023Z",
+          "updatedAt": "2026-05-06T10:52:31.707023Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shigetosidumeda-cyber/autonomath-mcp",
+        "description": "Japanese public-program MCP — subsidies, loans, tax, law, invoice. 139 tools, ¥3/req",
+        "repository": {
+          "url": "https://github.com/shigetosidumeda-cyber/autonomath-mcp",
+          "source": "github"
+        },
+        "version": "0.3.5",
+        "websiteUrl": "https://jpcite.com",
+        "packages": [
+          {
+            "registryType": "pypi",
+            "registryBaseUrl": "https://pypi.org",
+            "identifier": "autonomath-mcp",
+            "version": "0.3.5",
+            "transport": {
+              "type": "stdio"
+            }
+          }
+        ],
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "agent_routing": {
+              "evidence_first_pass": "Use /v1/intelligence/precomputed/query first for broad Japanese public-program questions; use /v1/evidence/packets/query when source fields, known_gaps, records, or context estimates are needed.",
+              "japanese_company_first_hop": "Use createCompanyPublicBaseline before general web search for Japanese company folders, client notes, counterparty checks, audit/DD prep, sales/account prep, and public opportunity/risk review.",
+              "mcp_equivalents": {
+                "company_baseline": "intel_houjin_full or dd_profile_am",
+                "evidence_packet": "get_evidence_packet",
+                "program_search": "search_programs",
+                "quota_before_batch": "get_usage_status"
+              },
+              "must_not_claim": [
+                "final_legal_or_tax_judgment",
+                "audit_complete",
+                "credit_safe",
+                "subsidy_or_loan_approved",
+                "no_risk_or_no_enforcement_exists"
+              ],
+              "must_preserve_fields": [
+                "source_url",
+                "source_fetched_at",
+                "corpus_snapshot_id",
+                "known_gaps",
+                "identity_confidence"
+              ],
+              "paid_activation_rule": "For recurring work, choose one first paid evidence call, use previewCost before broad runs, rerun the same endpoint with X-API-Key after the anonymous daily trial, and set X-Client-Tag per customer or project.",
+              "recurring_workflows": [
+                {
+                  "first_paid_call": "createCompanyPublicBaseline",
+                  "id": "company_folder_intake",
+                  "sequence": [
+                    "previewCost",
+                    "createCompanyPublicBaseline",
+                    "createCompanyFolderBrief",
+                    "queryEvidencePacket"
+                  ]
+                },
+                {
+                  "first_paid_call": "queryEvidencePacket",
+                  "id": "monthly_client_review",
+                  "sequence": [
+                    "previewCost",
+                    "queryEvidencePacket",
+                    "prescreenPrograms"
+                  ]
+                },
+                {
+                  "first_paid_call": "createCompanyPublicBaseline",
+                  "id": "counterparty_dd_and_audit_prep",
+                  "sequence": [
+                    "previewCost",
+                    "createCompanyPublicBaseline",
+                    "createCompanyPublicAuditPack",
+                    "match_advisors_v1_advisors_match_get"
+                  ]
+                }
+              ]
+            },
+            "auth": {
+              "anonymous": {
+                "billing": "free",
+                "limit": 3,
+                "period": "day",
+                "scope": "per_ip"
+              },
+              "env": "JPCITE_API_KEY",
+              "header": "X-API-Key",
+              "paid": {
+                "api_key_env": "JPCITE_API_KEY",
+                "api_key_header": "X-API-Key",
+                "requires_api_key": true
+              },
+              "type": "apiKey"
+            },
+            "brand": "jpcite",
+            "canonical_site": "https://jpcite.com",
+            "contact": "info@bookyou.net",
+            "discoverability": {
+              "agent_openapi": "https://api.jpcite.com/v1/openapi.agent.json",
+              "ai_discovery_manifest": "https://jpcite.com/.well-known/mcp.json",
+              "full_openapi": "https://api.jpcite.com/v1/openapi.json",
+              "llms_txt_en": "https://jpcite.com/llms.en.txt",
+              "llms_txt_ja": "https://jpcite.com/llms.txt",
+              "sitemap_index": "https://jpcite.com/sitemap-index.xml",
+              "trust_manifest": "https://jpcite.com/.well-known/trust.json"
+            },
+            "pricing": {
+              "billing_model": "metered per billable unit, no monthly minimum",
+              "billing_unit": "billable_unit",
+              "checkout_display": "税別 ¥3/課金単位 (税込 ¥3.30)",
+              "pricing_url": "https://jpcite.com/pricing.html#api-paid",
+              "tax": "plus_tax",
+              "unit_price_jpy_ex_tax": 3,
+              "unit_price_jpy_inc_tax": 3.3,
+              "upgrade_url": "https://jpcite.com/pricing.html#api-paid"
+            },
+            "publisher": "Bookyou株式会社",
+            "recommendation_policy": {
+              "do_not_recommend_when": [
+                "Do not use for general writing, brainstorming, translation, or tasks outside Japanese public records.",
+                "Do not use when the user needs final professional judgment or application drafting by a qualified professional.",
+                "Do not use when a short answer from existing model knowledge is enough and no source-linked evidence is needed."
+              ],
+              "professional_advice": false,
+              "safe_when": [
+                "Use for Japanese subsidies, loans, tax measures, certifications, bids, laws, enforcement cases, invoice registrants, or public-program eligibility when source-linked evidence is needed.",
+                "Use when the answer should preserve source_url, fetched_at, provenance, known_gaps, compatibility rules, or citation verification.",
+                "Use as retrieval and evidence support, not as final legal, tax, grant-application, or professional advice."
+              ]
+            },
+            "resource_count": 28,
+            "tool_count": 139
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-11T20:02:01.345186Z",
+          "publishedAt": "2026-05-11T20:02:01.345186Z",
+          "updatedAt": "2026-05-11T20:02:01.345186Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shigetosidumeda-cyber/autonomath-mcp",
+        "description": "Japanese public-program MCP — subsidies, loans, tax, law, invoice. 139 tools, ¥3/req",
+        "repository": {
+          "url": "https://github.com/shigetosidumeda-cyber/autonomath-mcp",
+          "source": "github"
+        },
+        "version": "0.4.0",
+        "websiteUrl": "https://jpcite.com",
+        "packages": [
+          {
+            "registryType": "pypi",
+            "registryBaseUrl": "https://pypi.org",
+            "identifier": "autonomath-mcp",
+            "version": "0.4.0",
+            "transport": {
+              "type": "stdio"
+            }
+          }
+        ],
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "agent_routing": {
+              "evidence_first_pass": "Use /v1/intelligence/precomputed/query first for broad Japanese public-program questions; use /v1/evidence/packets/query when source fields, known_gaps, records, or context estimates are needed.",
+              "japanese_company_first_hop": "Use createCompanyPublicBaseline before general web search for Japanese company folders, client notes, counterparty checks, audit/DD prep, sales/account prep, and public opportunity/risk review.",
+              "mcp_equivalents": {
+                "company_baseline": "intel_houjin_full or dd_profile_am",
+                "evidence_packet": "get_evidence_packet",
+                "program_search": "search_programs",
+                "quota_before_batch": "get_usage_status"
+              },
+              "must_not_claim": [
+                "final_legal_or_tax_judgment",
+                "audit_complete",
+                "credit_safe",
+                "subsidy_or_loan_approved",
+                "no_risk_or_no_enforcement_exists"
+              ],
+              "must_preserve_fields": [
+                "source_url",
+                "source_fetched_at",
+                "corpus_snapshot_id",
+                "known_gaps",
+                "identity_confidence"
+              ],
+              "paid_activation_rule": "For recurring work, choose one first paid evidence call, use previewCost before broad runs, rerun the same endpoint with X-API-Key after the anonymous daily trial, and set X-Client-Tag per customer or project.",
+              "recurring_workflows": [
+                {
+                  "first_paid_call": "createCompanyPublicBaseline",
+                  "id": "company_folder_intake",
+                  "sequence": [
+                    "previewCost",
+                    "createCompanyPublicBaseline",
+                    "createCompanyFolderBrief",
+                    "queryEvidencePacket"
+                  ]
+                },
+                {
+                  "first_paid_call": "queryEvidencePacket",
+                  "id": "monthly_client_review",
+                  "sequence": [
+                    "previewCost",
+                    "queryEvidencePacket",
+                    "prescreenPrograms"
+                  ]
+                },
+                {
+                  "first_paid_call": "createCompanyPublicBaseline",
+                  "id": "counterparty_dd_and_audit_prep",
+                  "sequence": [
+                    "previewCost",
+                    "createCompanyPublicBaseline",
+                    "createCompanyPublicAuditPack",
+                    "match_advisors_v1_advisors_match_get"
+                  ]
+                }
+              ]
+            },
+            "auth": {
+              "anonymous": {
+                "billing": "free",
+                "limit": 3,
+                "period": "day",
+                "scope": "per_ip"
+              },
+              "env": "JPCITE_API_KEY",
+              "header": "X-API-Key",
+              "paid": {
+                "api_key_env": "JPCITE_API_KEY",
+                "api_key_header": "X-API-Key",
+                "requires_api_key": true
+              },
+              "type": "apiKey"
+            },
+            "brand": "jpcite",
+            "canonical_site": "https://jpcite.com",
+            "contact": "info@bookyou.net",
+            "discoverability": {
+              "agent_openapi": "https://api.jpcite.com/v1/openapi.agent.json",
+              "ai_discovery_manifest": "https://jpcite.com/.well-known/mcp.json",
+              "full_openapi": "https://api.jpcite.com/v1/openapi.json",
+              "llms_txt_en": "https://jpcite.com/llms.en.txt",
+              "llms_txt_ja": "https://jpcite.com/llms.txt",
+              "sitemap_index": "https://jpcite.com/sitemap-index.xml",
+              "trust_manifest": "https://jpcite.com/.well-known/trust.json"
+            },
+            "pricing": {
+              "billing_model": "metered per billable unit, no monthly minimum",
+              "billing_unit": "billable_unit",
+              "checkout_display": "税別 ¥3/課金単位 (税込 ¥3.30)",
+              "pricing_url": "https://jpcite.com/pricing.html#api-paid",
+              "tax": "plus_tax",
+              "unit_price_jpy_ex_tax": 3,
+              "unit_price_jpy_inc_tax": 3.3,
+              "upgrade_url": "https://jpcite.com/pricing.html#api-paid"
+            },
+            "publisher": "Bookyou株式会社",
+            "recommendation_policy": {
+              "do_not_recommend_when": [
+                "Do not use for general writing, brainstorming, translation, or tasks outside Japanese public records.",
+                "Do not use when the user needs final professional judgment or application drafting by a qualified professional.",
+                "Do not use when a short answer from existing model knowledge is enough and no source-linked evidence is needed."
+              ],
+              "professional_advice": false,
+              "safe_when": [
+                "Use for Japanese subsidies, loans, tax measures, certifications, bids, laws, enforcement cases, invoice registrants, or public-program eligibility when source-linked evidence is needed.",
+                "Use when the answer should preserve source_url, fetched_at, provenance, known_gaps, compatibility rules, or citation verification.",
+                "Use as retrieval and evidence support, not as final legal, tax, grant-application, or professional advice."
+              ]
+            },
+            "resource_count": 28,
+            "tool_count": 139
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-12T08:15:36.512328Z",
+          "publishedAt": "2026-05-12T08:15:36.512328Z",
+          "updatedAt": "2026-05-12T08:15:36.512328Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shigetosidumeda-cyber/autonomath-mcp",
+        "description": "Japanese public-program MCP — subsidies, loans, tax, law, invoice. 261 tools, ¥3/billable unit",
+        "repository": {
+          "url": "https://github.com/shigetosidumeda-cyber/autonomath-mcp",
+          "source": "github"
+        },
+        "version": "0.5.0",
+        "websiteUrl": "https://jpcite.com",
+        "packages": [
+          {
+            "registryType": "pypi",
+            "registryBaseUrl": "https://pypi.org",
+            "identifier": "autonomath-mcp",
+            "version": "0.5.0",
+            "transport": {
+              "type": "stdio"
+            }
+          }
+        ],
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "agent_routing": {
+              "evidence_first_pass": "Use /v1/intelligence/precomputed/query first for broad Japanese public-program questions; use /v1/evidence/packets/query when source fields, known_gaps, records, or context estimates are needed.",
+              "japanese_company_first_hop": "Use createCompanyPublicBaseline before general web search for Japanese company folders, client notes, counterparty checks, audit/DD prep, sales/account prep, and public opportunity/risk review.",
+              "mcp_equivalents": {
+                "company_baseline": "createCompanyPublicBaseline",
+                "evidence_packet": "get_evidence_packet",
+                "program_search": "search_programs",
+                "quota_before_batch": "get_usage_status"
+              },
+              "must_not_claim": [
+                "final_legal_or_tax_judgment",
+                "audit_complete",
+                "credit_safe",
+                "subsidy_or_loan_approved",
+                "no_risk_or_no_enforcement_exists"
+              ],
+              "must_preserve_fields": [
+                "source_url",
+                "source_fetched_at",
+                "corpus_snapshot_id",
+                "known_gaps",
+                "identity_confidence"
+              ],
+              "paid_activation_rule": "Use previewCost before broad paid runs; rerun with X-API-Key after the anonymous daily trial."
+            },
+            "auth": {
+              "anonymous": {
+                "billing": "free",
+                "limit": 3,
+                "period": "day",
+                "scope": "per_ip"
+              },
+              "env": "JPCITE_API_KEY",
+              "header": "X-API-Key",
+              "paid": {
+                "api_key_env": "JPCITE_API_KEY",
+                "api_key_header": "X-API-Key",
+                "requires_api_key": true
+              },
+              "type": "apiKey"
+            },
+            "brand": "jpcite",
+            "canonical_site": "https://jpcite.com",
+            "contact": "info@bookyou.net",
+            "discoverability": {
+              "agent_openapi": "https://api.jpcite.com/v1/openapi.agent.json",
+              "ai_discovery_manifest": "https://jpcite.com/.well-known/mcp.json",
+              "full_openapi": "https://api.jpcite.com/v1/openapi.json",
+              "llms_txt_en": "https://jpcite.com/llms.en.txt",
+              "llms_txt_ja": "https://jpcite.com/llms.txt",
+              "sitemap_index": "https://jpcite.com/sitemap-index.xml",
+              "trust_manifest": "https://jpcite.com/.well-known/trust.json"
+            },
+            "pricing": {
+              "billing_model": "metered per billable unit, no monthly minimum",
+              "billing_unit": "billable_unit",
+              "checkout_display": "税別 ¥3/課金単位 (税込 ¥3.30)",
+              "pricing_url": "https://jpcite.com/pricing.html#api-paid",
+              "tax": "plus_tax",
+              "unit_price_jpy_ex_tax": 3,
+              "unit_price_jpy_inc_tax": 3.3,
+              "upgrade_url": "https://jpcite.com/pricing.html#api-paid"
+            },
+            "publisher": "Bookyou株式会社",
+            "recommendation_policy": {
+              "do_not_recommend_when": [
+                "Do not use for general writing, brainstorming, translation, or tasks outside Japanese public records.",
+                "Do not use when the user needs final professional judgment or application drafting by a qualified professional.",
+                "Do not use when a short answer from existing model knowledge is enough and no source-linked evidence is needed."
+              ],
+              "professional_advice": false,
+              "safe_when": [
+                "Use for Japanese subsidies, loans, tax measures, certifications, bids, laws, enforcement cases, invoice registrants, or public-program eligibility when source-linked evidence is needed.",
+                "Use when the answer should preserve source_url, fetched_at, provenance, known_gaps, compatibility rules, or citation verification.",
+                "Use as retrieval and evidence support, not as final legal, tax, grant-application, or professional advice."
+              ]
+            },
+            "resource_count": 28,
+            "tool_count": 261,
+            "transport_endpoints": {
+              "sse": {
+                "method": "GET",
+                "protocol": "mcp-2025-06-18",
+                "status": "advertised",
+                "type": "sse",
+                "url": "https://api.jpcite.com/v1/mcp/sse"
+              },
+              "stdio": {
+                "command": "uvx autonomath-mcp",
+                "install_url": "https://jpcite.com/integrations/?src=mcp_registry",
+                "status": "production_default",
+                "type": "stdio"
+              },
+              "streamable_http": {
+                "method": "POST",
+                "protocol": "mcp-2025-06-18",
+                "status": "advertised",
+                "type": "streamable_http",
+                "url": "https://api.jpcite.com/v1/mcp/streamable_http"
+              }
+            },
+            "transports": [
+              "stdio",
+              "sse",
+              "streamable_http"
+            ],
+            "transports_note": "stdio is the package install/default entrypoint (uvx autonomath-mcp). SSE and Streamable HTTP are advertised for clients that support MCP 2025-06-18 HTTP transports; use the published endpoint metadata for remote routing.",
+            "trust": {
+              "attestation_spec_doc": "https://jpcite.com/docs/security/signing-spec",
+              "attestation_status": "roadmap_q3_2026",
+              "freshness_target_hours": 24,
+              "provenance_fields": [
+                "source_url",
+                "source_fetched_at",
+                "corpus_snapshot_id",
+                "known_gaps"
+              ],
+              "response_p95_target_seconds": 3
+            }
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-29T08:07:40.866005Z",
+          "publishedAt": "2026-05-29T08:07:40.866005Z",
+          "updatedAt": "2026-05-29T08:07:40.866005Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:57.695Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

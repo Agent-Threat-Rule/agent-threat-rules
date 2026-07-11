@@ -1,0 +1,157 @@
+{
+  "dedup_key": "repo:https://github.com/nazar256/memheaven",
+  "package_identity": {
+    "type": "repository",
+    "key": "repo:https://github.com/nazar256/memheaven",
+    "repositoryUrl": "https://github.com/nazar256/memheaven"
+  },
+  "server_names": [
+    "io.github.nazar256/memheaven"
+  ],
+  "versions_seen": [
+    "0.1.0"
+  ],
+  "registry_row_count": 1,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.nazar256/memheaven",
+      "description": "Self-hosted remote MCP memory server for ChatGPT and AI agents.",
+      "title": "MemHeaven",
+      "repository": {
+        "url": "https://github.com/nazar256/memheaven",
+        "source": "github"
+      },
+      "version": "0.1.0",
+      "websiteUrl": "https://github.com/nazar256/memheaven",
+      "icons": [
+        {
+          "src": "https://raw.githubusercontent.com/nazar256/memheaven/main/assets/memheaven-icon.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://{worker_domain}/mcp",
+          "variables": {
+            "worker_domain": {
+              "description": "Public MemHeaven hostname, for example memheaven.<your-workers-subdomain>.workers.dev or memory.example.com",
+              "isRequired": true,
+              "placeholder": "memheaven.<your-workers-subdomain>.workers.dev"
+            }
+          }
+        }
+      ],
+      "_meta": {
+        "io.modelcontextprotocol.registry/publisher-provided": {
+          "auth": {
+            "notes": "Hosted OAuth flow with PKCE and dynamic client registration where supported, plus an access-key gate on the consent page.",
+            "type": "oauth-2.1-pkce-dcr"
+          },
+          "environmentVariables": [
+            "OAUTH_ISSUER",
+            "MCP_RESOURCE",
+            "MCP_AUDIENCE",
+            "EMBEDDING_MODEL",
+            "EMBEDDING_DIMENSIONS",
+            "VECTORIZE_INDEX_NAME"
+          ],
+          "requiredSecrets": [
+            "JWT_SIGNING_SECRET",
+            "TOKEN_ENCRYPTION_KEY",
+            "AUTH_KEY_PEPPER",
+            "ACCESS_KEYS_JSON"
+          ],
+          "setupNotes": [
+            "Deploy on Cloudflare Workers, then point the client at https://<your-worker-domain>/mcp.",
+            "Generate an access key with npm run keygen and authorize with the printed raw key.",
+            "See docs/GETTING_STARTED_FROM_ZERO.md for a full guided setup."
+          ]
+        }
+      }
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-05-14T19:55:28.580069Z",
+        "publishedAt": "2026-05-14T19:55:28.580069Z",
+        "updatedAt": "2026-05-14T19:55:28.580069Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.nazar256/memheaven",
+        "description": "Self-hosted remote MCP memory server for ChatGPT and AI agents.",
+        "title": "MemHeaven",
+        "repository": {
+          "url": "https://github.com/nazar256/memheaven",
+          "source": "github"
+        },
+        "version": "0.1.0",
+        "websiteUrl": "https://github.com/nazar256/memheaven",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/nazar256/memheaven/main/assets/memheaven-icon.png",
+            "mimeType": "image/png"
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://{worker_domain}/mcp",
+            "variables": {
+              "worker_domain": {
+                "description": "Public MemHeaven hostname, for example memheaven.<your-workers-subdomain>.workers.dev or memory.example.com",
+                "isRequired": true,
+                "placeholder": "memheaven.<your-workers-subdomain>.workers.dev"
+              }
+            }
+          }
+        ],
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "auth": {
+              "notes": "Hosted OAuth flow with PKCE and dynamic client registration where supported, plus an access-key gate on the consent page.",
+              "type": "oauth-2.1-pkce-dcr"
+            },
+            "environmentVariables": [
+              "OAUTH_ISSUER",
+              "MCP_RESOURCE",
+              "MCP_AUDIENCE",
+              "EMBEDDING_MODEL",
+              "EMBEDDING_DIMENSIONS",
+              "VECTORIZE_INDEX_NAME"
+            ],
+            "requiredSecrets": [
+              "JWT_SIGNING_SECRET",
+              "TOKEN_ENCRYPTION_KEY",
+              "AUTH_KEY_PEPPER",
+              "ACCESS_KEYS_JSON"
+            ],
+            "setupNotes": [
+              "Deploy on Cloudflare Workers, then point the client at https://<your-worker-domain>/mcp.",
+              "Generate an access key with npm run keygen and authorize with the printed raw key.",
+              "See docs/GETTING_STARTED_FROM_ZERO.md for a full guided setup."
+            ]
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-14T19:55:28.580069Z",
+          "publishedAt": "2026-05-14T19:55:28.580069Z",
+          "updatedAt": "2026-05-14T19:55:28.580069Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:57.411Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

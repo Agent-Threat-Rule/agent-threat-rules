@@ -1,0 +1,208 @@
+{
+  "dedup_key": "pkg:npm:@three-ws/portfolio-mcp",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:npm:@three-ws/portfolio-mcp",
+    "registryType": "npm",
+    "identifier": "@three-ws/portfolio-mcp"
+  },
+  "server_names": [
+    "io.github.nirholas/portfolio-mcp"
+  ],
+  "versions_seen": [
+    "0.1.0"
+  ],
+  "registry_row_count": 1,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.nirholas/portfolio-mcp",
+      "description": "An agent's trading state — portfolio value, PnL, live balances, trade feed, and signed transfers.",
+      "title": "three.ws Portfolio",
+      "repository": {
+        "url": "https://github.com/nirholas/three.ws",
+        "source": "github",
+        "subfolder": "packages/portfolio-mcp"
+      },
+      "version": "0.1.0",
+      "websiteUrl": "https://three.ws",
+      "icons": [
+        {
+          "src": "https://three.ws/three-ws-mcp-icon.svg",
+          "mimeType": "image/svg+xml",
+          "sizes": [
+            "any"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "registryType": "npm",
+          "identifier": "@three-ws/portfolio-mcp",
+          "version": "0.1.0",
+          "runtimeHint": "npx",
+          "transport": {
+            "type": "stdio"
+          },
+          "environmentVariables": [
+            {
+              "description": "Base URL of the three.ws API that serves the portfolio + trades endpoints. Override only when self-hosting or targeting a preview deployment.",
+              "format": "string",
+              "default": "https://three.ws",
+              "name": "THREE_WS_BASE"
+            },
+            {
+              "description": "Per-request timeout in milliseconds for the live three.ws API reads.",
+              "format": "number",
+              "default": "20000",
+              "name": "THREE_WS_TIMEOUT_MS"
+            },
+            {
+              "description": "Your three.ws session token (the value of the `__Host-sid` cookie from a signed-in browser). Required for the account-scoped reads — get_portfolio_summary, get_portfolio_history, get_portfolio_asset — which return data for the agents YOU own. The public trade feed and on-chain balance reads do not need it. Treat like a password.",
+              "format": "string",
+              "isSecret": true,
+              "name": "THREE_WS_SESSION"
+            },
+            {
+              "description": "Solana mainnet RPC endpoint used by get_wallet_balances and send_transfer. Defaults to https://api.mainnet-beta.solana.com — bring your own (Helius / QuickNode / Triton) for production traffic.",
+              "format": "string",
+              "default": "https://api.mainnet-beta.solana.com",
+              "name": "SOLANA_RPC_URL"
+            },
+            {
+              "description": "Base58-encoded Solana secret key for the wallet that send_transfer signs from. REQUIRED for send_transfer (the only write tool); a per-call `secret` arg overrides it. Not needed for any read tool. Treat like cash.",
+              "isRequired": true,
+              "format": "string",
+              "isSecret": true,
+              "name": "SOLANA_SECRET_KEY"
+            },
+            {
+              "description": "Per-transaction spend cap in SOL for native SOL transfers via send_transfer. Bounds the blast radius of a leaked key or an injected argument.",
+              "format": "number",
+              "default": "0.5",
+              "name": "MAX_SOL_PER_TX"
+            },
+            {
+              "description": "Optional comma-separated base58 pubkeys. When set, send_transfer refuses any recipient not in the list.",
+              "format": "string",
+              "name": "RECIPIENT_ALLOWLIST"
+            },
+            {
+              "description": "When on (default), send_transfer refuses until re-issued with confirm:true. Set 0/false to disable the gate.",
+              "format": "boolean",
+              "default": "true",
+              "name": "REQUIRE_CONFIRM"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-06-24T07:19:28.887831Z",
+        "publishedAt": "2026-06-24T07:19:28.887831Z",
+        "updatedAt": "2026-06-24T07:19:28.887831Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.nirholas/portfolio-mcp",
+        "description": "An agent's trading state — portfolio value, PnL, live balances, trade feed, and signed transfers.",
+        "title": "three.ws Portfolio",
+        "repository": {
+          "url": "https://github.com/nirholas/three.ws",
+          "source": "github",
+          "subfolder": "packages/portfolio-mcp"
+        },
+        "version": "0.1.0",
+        "websiteUrl": "https://three.ws",
+        "icons": [
+          {
+            "src": "https://three.ws/three-ws-mcp-icon.svg",
+            "mimeType": "image/svg+xml",
+            "sizes": [
+              "any"
+            ]
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@three-ws/portfolio-mcp",
+            "version": "0.1.0",
+            "runtimeHint": "npx",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base URL of the three.ws API that serves the portfolio + trades endpoints. Override only when self-hosting or targeting a preview deployment.",
+                "format": "string",
+                "default": "https://three.ws",
+                "name": "THREE_WS_BASE"
+              },
+              {
+                "description": "Per-request timeout in milliseconds for the live three.ws API reads.",
+                "format": "number",
+                "default": "20000",
+                "name": "THREE_WS_TIMEOUT_MS"
+              },
+              {
+                "description": "Your three.ws session token (the value of the `__Host-sid` cookie from a signed-in browser). Required for the account-scoped reads — get_portfolio_summary, get_portfolio_history, get_portfolio_asset — which return data for the agents YOU own. The public trade feed and on-chain balance reads do not need it. Treat like a password.",
+                "format": "string",
+                "isSecret": true,
+                "name": "THREE_WS_SESSION"
+              },
+              {
+                "description": "Solana mainnet RPC endpoint used by get_wallet_balances and send_transfer. Defaults to https://api.mainnet-beta.solana.com — bring your own (Helius / QuickNode / Triton) for production traffic.",
+                "format": "string",
+                "default": "https://api.mainnet-beta.solana.com",
+                "name": "SOLANA_RPC_URL"
+              },
+              {
+                "description": "Base58-encoded Solana secret key for the wallet that send_transfer signs from. REQUIRED for send_transfer (the only write tool); a per-call `secret` arg overrides it. Not needed for any read tool. Treat like cash.",
+                "isRequired": true,
+                "format": "string",
+                "isSecret": true,
+                "name": "SOLANA_SECRET_KEY"
+              },
+              {
+                "description": "Per-transaction spend cap in SOL for native SOL transfers via send_transfer. Bounds the blast radius of a leaked key or an injected argument.",
+                "format": "number",
+                "default": "0.5",
+                "name": "MAX_SOL_PER_TX"
+              },
+              {
+                "description": "Optional comma-separated base58 pubkeys. When set, send_transfer refuses any recipient not in the list.",
+                "format": "string",
+                "name": "RECIPIENT_ALLOWLIST"
+              },
+              {
+                "description": "When on (default), send_transfer refuses until re-issued with confirm:true. Set 0/false to disable the gate.",
+                "format": "boolean",
+                "default": "true",
+                "name": "REQUIRE_CONFIRM"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-24T07:19:28.887831Z",
+          "publishedAt": "2026-06-24T07:19:28.887831Z",
+          "updatedAt": "2026-06-24T07:19:28.887831Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:57.423Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

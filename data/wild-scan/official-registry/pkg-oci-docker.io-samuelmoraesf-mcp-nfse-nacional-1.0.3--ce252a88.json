@@ -1,0 +1,236 @@
+{
+  "dedup_key": "pkg:oci:docker.io/samuelmoraesf/mcp-nfse-nacional:1.0.3",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:oci:docker.io/samuelmoraesf/mcp-nfse-nacional:1.0.3",
+    "registryType": "oci",
+    "identifier": "docker.io/samuelmoraesf/mcp-nfse-nacional:1.0.3"
+  },
+  "server_names": [
+    "io.github.SamuelMoraesF/mcp-nfse-nacional"
+  ],
+  "versions_seen": [
+    "1.0.3"
+  ],
+  "registry_row_count": 1,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.SamuelMoraesF/mcp-nfse-nacional",
+      "description": "MCP Server para consulta de NFSe no portal nacional (nfse.gov.br)",
+      "repository": {
+        "url": "https://github.com/SamuelMoraesF/mcp-nfse-nacional",
+        "source": "github"
+      },
+      "version": "1.0.3",
+      "packages": [
+        {
+          "registryType": "npm",
+          "identifier": "mcp-nfse-nacional",
+          "version": "1.0.3",
+          "transport": {
+            "type": "stdio"
+          },
+          "environmentVariables": [
+            {
+              "description": "Senha do certificado digital (e-CNPJ/e-CPF) em formato PFX",
+              "isRequired": true,
+              "format": "string",
+              "isSecret": true,
+              "name": "CERT_PASSWORD"
+            },
+            {
+              "description": "Caminho para o arquivo do certificado digital (.pfx)",
+              "isRequired": true,
+              "format": "string",
+              "name": "CERT_FILE"
+            },
+            {
+              "description": "Opções do Node.js (use --openssl-legacy-provider para compatibilidade com certificados)",
+              "format": "string",
+              "default": "--openssl-legacy-provider",
+              "name": "NODE_OPTIONS"
+            }
+          ]
+        },
+        {
+          "registryType": "oci",
+          "identifier": "docker.io/samuelmoraesf/mcp-nfse-nacional:1.0.3",
+          "runtimeHint": "docker",
+          "transport": {
+            "type": "streamable-http",
+            "url": "http://localhost:{MCP_PORT}/mcp"
+          },
+          "runtimeArguments": [
+            {
+              "description": "Mapeia a porta do container para o host",
+              "value": "{MCP_PORT}:{MCP_PORT}",
+              "type": "named",
+              "name": "-p"
+            },
+            {
+              "description": "Monta o certificado digital no container",
+              "value": "{CERT_FILE}:/app/certificado.pfx:ro",
+              "type": "named",
+              "name": "-v"
+            },
+            {
+              "description": "Monta o diretório de armazenamento no container",
+              "value": "{STORAGE_PATH}:/app/storage",
+              "type": "named",
+              "name": "-v"
+            }
+          ],
+          "environmentVariables": [
+            {
+              "description": "Senha do certificado digital (e-CNPJ/e-CPF) em formato PFX",
+              "isRequired": true,
+              "format": "string",
+              "isSecret": true,
+              "name": "CERT_PASSWORD"
+            },
+            {
+              "description": "Caminho para o arquivo do certificado digital (.pfx)",
+              "isRequired": true,
+              "format": "filepath",
+              "name": "CERT_FILE"
+            },
+            {
+              "description": "Porta do servidor HTTP",
+              "format": "number",
+              "default": "3000",
+              "name": "MCP_PORT"
+            },
+            {
+              "description": "Diretório onde os XMLs e PDFs baixados serão armazenados",
+              "format": "filepath",
+              "default": "./storage",
+              "name": "STORAGE_PATH"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-02-12T03:06:33.237733Z",
+        "publishedAt": "2026-02-12T03:06:33.237733Z",
+        "updatedAt": "2026-02-12T03:06:33.237733Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SamuelMoraesF/mcp-nfse-nacional",
+        "description": "MCP Server para consulta de NFSe no portal nacional (nfse.gov.br)",
+        "repository": {
+          "url": "https://github.com/SamuelMoraesF/mcp-nfse-nacional",
+          "source": "github"
+        },
+        "version": "1.0.3",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "mcp-nfse-nacional",
+            "version": "1.0.3",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Senha do certificado digital (e-CNPJ/e-CPF) em formato PFX",
+                "isRequired": true,
+                "format": "string",
+                "isSecret": true,
+                "name": "CERT_PASSWORD"
+              },
+              {
+                "description": "Caminho para o arquivo do certificado digital (.pfx)",
+                "isRequired": true,
+                "format": "string",
+                "name": "CERT_FILE"
+              },
+              {
+                "description": "Opções do Node.js (use --openssl-legacy-provider para compatibilidade com certificados)",
+                "format": "string",
+                "default": "--openssl-legacy-provider",
+                "name": "NODE_OPTIONS"
+              }
+            ]
+          },
+          {
+            "registryType": "oci",
+            "identifier": "docker.io/samuelmoraesf/mcp-nfse-nacional:1.0.3",
+            "runtimeHint": "docker",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:{MCP_PORT}/mcp"
+            },
+            "runtimeArguments": [
+              {
+                "description": "Mapeia a porta do container para o host",
+                "value": "{MCP_PORT}:{MCP_PORT}",
+                "type": "named",
+                "name": "-p"
+              },
+              {
+                "description": "Monta o certificado digital no container",
+                "value": "{CERT_FILE}:/app/certificado.pfx:ro",
+                "type": "named",
+                "name": "-v"
+              },
+              {
+                "description": "Monta o diretório de armazenamento no container",
+                "value": "{STORAGE_PATH}:/app/storage",
+                "type": "named",
+                "name": "-v"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Senha do certificado digital (e-CNPJ/e-CPF) em formato PFX",
+                "isRequired": true,
+                "format": "string",
+                "isSecret": true,
+                "name": "CERT_PASSWORD"
+              },
+              {
+                "description": "Caminho para o arquivo do certificado digital (.pfx)",
+                "isRequired": true,
+                "format": "filepath",
+                "name": "CERT_FILE"
+              },
+              {
+                "description": "Porta do servidor HTTP",
+                "format": "number",
+                "default": "3000",
+                "name": "MCP_PORT"
+              },
+              {
+                "description": "Diretório onde os XMLs e PDFs baixados serão armazenados",
+                "format": "filepath",
+                "default": "./storage",
+                "name": "STORAGE_PATH"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-02-12T03:06:33.237733Z",
+          "publishedAt": "2026-02-12T03:06:33.237733Z",
+          "updatedAt": "2026-02-12T03:06:33.237733Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:56.695Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

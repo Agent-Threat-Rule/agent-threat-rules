@@ -1,0 +1,554 @@
+{
+  "dedup_key": "pkg:oci:docker.io/hapimcp/hapi-cli:0.6.0",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:oci:docker.io/hapimcp/hapi-cli:0.6.0",
+    "registryType": "oci",
+    "identifier": "docker.io/hapimcp/hapi-cli:0.6.0"
+  },
+  "server_names": [
+    "ai.com.mcp/hapi-mcp"
+  ],
+  "versions_seen": [
+    "0.6.0"
+  ],
+  "registry_row_count": 1,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.com.mcp/hapi-mcp",
+      "description": "HAPI MCP server: Dynamically exposes OpenAPI REST APIs as MCP tools for AI assistants",
+      "title": "HAPI MCP Server",
+      "repository": {
+        "url": "https://github.com/larebelion/hapimcp",
+        "source": "github"
+      },
+      "version": "0.6.0",
+      "websiteUrl": "https://docs.mcp.com.ai/components/hapi-server/hapi-cli",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "docker.io/hapimcp/hapi-cli:0.6.0",
+          "runtimeHint": "docker",
+          "transport": {
+            "type": "streamable-http",
+            "url": "https://{HAPI_FQDN}:{HAPI_PORT}/mcp",
+            "headers": [
+              {
+                "description": "Authorization token for accessing the MCP server",
+                "format": "string",
+                "isSecret": true,
+                "name": "Authorization"
+              }
+            ]
+          },
+          "runtimeArguments": [
+            {
+              "description": "Port mapping for the host to container (e.g., '3030:3030'). Adjust second port if changing internal container port (HAPI_PORT)",
+              "isRequired": true,
+              "format": "string",
+              "default": "3030:3030",
+              "type": "named",
+              "name": "-p",
+              "valueHint": "port"
+            },
+            {
+              "description": "Volume mapping for HAPI configuration directory",
+              "format": "string",
+              "default": "~/.hapi:/app/.hapi",
+              "type": "named",
+              "name": "-v",
+              "valueHint": "volume",
+              "isRepeated": true
+            }
+          ],
+          "packageArguments": [
+            {
+              "description": "Command to start the HAPI MCP server",
+              "isRequired": true,
+              "format": "string",
+              "default": "serve",
+              "type": "positional",
+              "name": "serve",
+              "valueHint": "serve"
+            },
+            {
+              "description": "The name of the project/API to serve (e.g., 'petstore'). Optional when using HAPI_OPENAPI environment variable",
+              "format": "string",
+              "type": "positional",
+              "name": "projectName",
+              "valueHint": "petstore"
+            },
+            {
+              "description": "The port to listen on inside the container",
+              "format": "number",
+              "default": "3030",
+              "type": "named",
+              "name": "--port",
+              "valueHint": "port"
+            },
+            {
+              "description": "Run in headless mode (serve MCP-only, no business logic)",
+              "format": "boolean",
+              "default": "true",
+              "type": "named",
+              "name": "--headless"
+            },
+            {
+              "description": "The server provides REST API's business logic AND also exposes them as MCP tools",
+              "format": "boolean",
+              "default": "true",
+              "type": "named",
+              "name": "--mcp"
+            },
+            {
+              "description": "Enable development mode with verbose logging",
+              "format": "boolean",
+              "type": "named",
+              "name": "--dev"
+            },
+            {
+              "description": "The full URL for the backend API server (overrides OpenAPI spec servers). Uses OAS server URL if not provided",
+              "format": "string",
+              "type": "named",
+              "name": "--url",
+              "valueHint": "url"
+            },
+            {
+              "description": "OpenAPI spec file path or URL to use instead of loading from HAPI_HOME",
+              "format": "string",
+              "type": "named",
+              "name": "--openapi",
+              "valueHint": "openapi"
+            },
+            {
+              "description": "Comma-separated list of allowed origins for CORS (e.g., 'http://localhost:3000,https://example.com')",
+              "format": "string",
+              "type": "named",
+              "name": "--cors",
+              "valueHint": "origins"
+            },
+            {
+              "description": "Comma-separated list of OAS configuration files to apply (can be URLs)",
+              "format": "string",
+              "type": "named",
+              "name": "--filename",
+              "valueHint": "files"
+            },
+            {
+              "description": "Path to SSL certificate file for HTTPS. Volume mount required if using Docker. https://docs.mcp.com.ai/components/hapi-server/hapi-cli#running-with-tls-https",
+              "format": "string",
+              "type": "named",
+              "name": "--cert",
+              "valueHint": "path"
+            },
+            {
+              "description": "Path to SSL key file for HTTPS. Volume mount required if using Docker",
+              "format": "string",
+              "type": "named",
+              "name": "--key",
+              "valueHint": "path"
+            }
+          ],
+          "environmentVariables": [
+            {
+              "description": "Fully Qualified Domain Name for the HAPI server (used in MCP tool URLs)",
+              "format": "string",
+              "default": "localhost",
+              "name": "HAPI_FQDN"
+            },
+            {
+              "description": "Directory path for HAPI configuration and specs. Should be mounted as a volume in Docker",
+              "format": "string",
+              "default": "/app/.hapi",
+              "name": "HAPI_HOME"
+            },
+            {
+              "description": "The name of the project/API (alternative to positional argument)",
+              "format": "string",
+              "name": "PROJECT_NAME"
+            },
+            {
+              "description": "OpenAPI spec URL or path (alternative to --openapi flag)",
+              "format": "string",
+              "name": "HAPI_OPENAPI"
+            },
+            {
+              "description": "Backend API base URL (alternative to --url flag)",
+              "format": "string",
+              "name": "HAPI_URL"
+            },
+            {
+              "description": "Server port (alternative to --port flag) - this is the internal container port",
+              "format": "number",
+              "default": "3030",
+              "name": "HAPI_PORT"
+            },
+            {
+              "description": "Enable headless mode (alternative to --headless flag)",
+              "format": "boolean",
+              "default": "true",
+              "name": "HAPI_HEADLESS"
+            },
+            {
+              "description": "Enable MCP mode (alternative to --mcp flag)",
+              "format": "boolean",
+              "default": "true",
+              "name": "HAPI_MCP"
+            },
+            {
+              "description": "Enable development mode (alternative to --dev flag)",
+              "format": "boolean",
+              "name": "HAPI_DEV"
+            },
+            {
+              "description": "Comma-separated allowed CORS origins (alternative to --cors flag)",
+              "format": "string",
+              "name": "HAPI_CORS"
+            },
+            {
+              "description": "Comma-separated configuration files (alternative to --filename flag)",
+              "format": "string",
+              "name": "HAPI_CONFIG_FILES"
+            },
+            {
+              "description": "Node environment (development, production). 'development' enables verbose logging and debugging features.",
+              "format": "string",
+              "default": "production",
+              "name": "NODE_ENV"
+            }
+          ]
+        }
+      ],
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://{HAPI_FQDN}:{HAPI_PORT}/mcp",
+          "variables": {
+            "HAPI_FQDN": {
+              "description": "Fully Qualified Domain Name for the HAPI server",
+              "format": "string",
+              "default": "localhost"
+            },
+            "HAPI_PORT": {
+              "description": "Port for the HAPI server",
+              "format": "number",
+              "default": "3030"
+            }
+          }
+        }
+      ],
+      "_meta": {
+        "io.modelcontextprotocol.registry/publisher-provided": {
+          "documentation": "https://docs.mcp.com.ai/deployment/docker",
+          "examples": [
+            {
+              "command": "docker run -p 3030:3030 -v ~/.hapi:/app/.hapi hapimcp/hapi-cli:0.6.0 serve petstore --port 3030 --headless --url https://petstore3.swagger.io/api/v3",
+              "description": "Save specs in ~/.hapi/specs. Download example if not present: https://petstore3.swagger.io/api/v3/swagger.json",
+              "name": "Quick Start with a local API spec"
+            },
+            {
+              "command": "docker run -p 3030:3030 -e HAPI_OPENAPI=https://api.example.com/openapi.json -e HAPI_URL=https://api.example.com hapimcp/hapi-cli:0.6.0 serve my-api --headless",
+              "description": "Serve a custom API using environment variables",
+              "name": "Custom OpenAPI with Environment Variables"
+            },
+            {
+              "config": "See https://docs.mcp.com.ai/deployment/docker#docker-compose-example",
+              "description": "Run with persistent volumes and custom specs",
+              "name": "Docker Compose Setup"
+            }
+          ],
+          "keywords": [
+            "openapi",
+            "rest-api",
+            "api-first",
+            "headless",
+            "docker"
+          ],
+          "license": "MIT",
+          "publisher": "La Rebelion Labs"
+        }
+      }
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-01-07T00:32:01.41626Z",
+        "publishedAt": "2026-01-07T00:32:01.41626Z",
+        "updatedAt": "2026-01-07T00:32:01.41626Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "ai.com.mcp/hapi-mcp",
+        "description": "HAPI MCP server: Dynamically exposes OpenAPI REST APIs as MCP tools for AI assistants",
+        "title": "HAPI MCP Server",
+        "repository": {
+          "url": "https://github.com/larebelion/hapimcp",
+          "source": "github"
+        },
+        "version": "0.6.0",
+        "websiteUrl": "https://docs.mcp.com.ai/components/hapi-server/hapi-cli",
+        "packages": [
+          {
+            "registryType": "oci",
+            "identifier": "docker.io/hapimcp/hapi-cli:0.6.0",
+            "runtimeHint": "docker",
+            "transport": {
+              "type": "streamable-http",
+              "url": "https://{HAPI_FQDN}:{HAPI_PORT}/mcp",
+              "headers": [
+                {
+                  "description": "Authorization token for accessing the MCP server",
+                  "format": "string",
+                  "isSecret": true,
+                  "name": "Authorization"
+                }
+              ]
+            },
+            "runtimeArguments": [
+              {
+                "description": "Port mapping for the host to container (e.g., '3030:3030'). Adjust second port if changing internal container port (HAPI_PORT)",
+                "isRequired": true,
+                "format": "string",
+                "default": "3030:3030",
+                "type": "named",
+                "name": "-p",
+                "valueHint": "port"
+              },
+              {
+                "description": "Volume mapping for HAPI configuration directory",
+                "format": "string",
+                "default": "~/.hapi:/app/.hapi",
+                "type": "named",
+                "name": "-v",
+                "valueHint": "volume",
+                "isRepeated": true
+              }
+            ],
+            "packageArguments": [
+              {
+                "description": "Command to start the HAPI MCP server",
+                "isRequired": true,
+                "format": "string",
+                "default": "serve",
+                "type": "positional",
+                "name": "serve",
+                "valueHint": "serve"
+              },
+              {
+                "description": "The name of the project/API to serve (e.g., 'petstore'). Optional when using HAPI_OPENAPI environment variable",
+                "format": "string",
+                "type": "positional",
+                "name": "projectName",
+                "valueHint": "petstore"
+              },
+              {
+                "description": "The port to listen on inside the container",
+                "format": "number",
+                "default": "3030",
+                "type": "named",
+                "name": "--port",
+                "valueHint": "port"
+              },
+              {
+                "description": "Run in headless mode (serve MCP-only, no business logic)",
+                "format": "boolean",
+                "default": "true",
+                "type": "named",
+                "name": "--headless"
+              },
+              {
+                "description": "The server provides REST API's business logic AND also exposes them as MCP tools",
+                "format": "boolean",
+                "default": "true",
+                "type": "named",
+                "name": "--mcp"
+              },
+              {
+                "description": "Enable development mode with verbose logging",
+                "format": "boolean",
+                "type": "named",
+                "name": "--dev"
+              },
+              {
+                "description": "The full URL for the backend API server (overrides OpenAPI spec servers). Uses OAS server URL if not provided",
+                "format": "string",
+                "type": "named",
+                "name": "--url",
+                "valueHint": "url"
+              },
+              {
+                "description": "OpenAPI spec file path or URL to use instead of loading from HAPI_HOME",
+                "format": "string",
+                "type": "named",
+                "name": "--openapi",
+                "valueHint": "openapi"
+              },
+              {
+                "description": "Comma-separated list of allowed origins for CORS (e.g., 'http://localhost:3000,https://example.com')",
+                "format": "string",
+                "type": "named",
+                "name": "--cors",
+                "valueHint": "origins"
+              },
+              {
+                "description": "Comma-separated list of OAS configuration files to apply (can be URLs)",
+                "format": "string",
+                "type": "named",
+                "name": "--filename",
+                "valueHint": "files"
+              },
+              {
+                "description": "Path to SSL certificate file for HTTPS. Volume mount required if using Docker. https://docs.mcp.com.ai/components/hapi-server/hapi-cli#running-with-tls-https",
+                "format": "string",
+                "type": "named",
+                "name": "--cert",
+                "valueHint": "path"
+              },
+              {
+                "description": "Path to SSL key file for HTTPS. Volume mount required if using Docker",
+                "format": "string",
+                "type": "named",
+                "name": "--key",
+                "valueHint": "path"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Fully Qualified Domain Name for the HAPI server (used in MCP tool URLs)",
+                "format": "string",
+                "default": "localhost",
+                "name": "HAPI_FQDN"
+              },
+              {
+                "description": "Directory path for HAPI configuration and specs. Should be mounted as a volume in Docker",
+                "format": "string",
+                "default": "/app/.hapi",
+                "name": "HAPI_HOME"
+              },
+              {
+                "description": "The name of the project/API (alternative to positional argument)",
+                "format": "string",
+                "name": "PROJECT_NAME"
+              },
+              {
+                "description": "OpenAPI spec URL or path (alternative to --openapi flag)",
+                "format": "string",
+                "name": "HAPI_OPENAPI"
+              },
+              {
+                "description": "Backend API base URL (alternative to --url flag)",
+                "format": "string",
+                "name": "HAPI_URL"
+              },
+              {
+                "description": "Server port (alternative to --port flag) - this is the internal container port",
+                "format": "number",
+                "default": "3030",
+                "name": "HAPI_PORT"
+              },
+              {
+                "description": "Enable headless mode (alternative to --headless flag)",
+                "format": "boolean",
+                "default": "true",
+                "name": "HAPI_HEADLESS"
+              },
+              {
+                "description": "Enable MCP mode (alternative to --mcp flag)",
+                "format": "boolean",
+                "default": "true",
+                "name": "HAPI_MCP"
+              },
+              {
+                "description": "Enable development mode (alternative to --dev flag)",
+                "format": "boolean",
+                "name": "HAPI_DEV"
+              },
+              {
+                "description": "Comma-separated allowed CORS origins (alternative to --cors flag)",
+                "format": "string",
+                "name": "HAPI_CORS"
+              },
+              {
+                "description": "Comma-separated configuration files (alternative to --filename flag)",
+                "format": "string",
+                "name": "HAPI_CONFIG_FILES"
+              },
+              {
+                "description": "Node environment (development, production). 'development' enables verbose logging and debugging features.",
+                "format": "string",
+                "default": "production",
+                "name": "NODE_ENV"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://{HAPI_FQDN}:{HAPI_PORT}/mcp",
+            "variables": {
+              "HAPI_FQDN": {
+                "description": "Fully Qualified Domain Name for the HAPI server",
+                "format": "string",
+                "default": "localhost"
+              },
+              "HAPI_PORT": {
+                "description": "Port for the HAPI server",
+                "format": "number",
+                "default": "3030"
+              }
+            }
+          }
+        ],
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "documentation": "https://docs.mcp.com.ai/deployment/docker",
+            "examples": [
+              {
+                "command": "docker run -p 3030:3030 -v ~/.hapi:/app/.hapi hapimcp/hapi-cli:0.6.0 serve petstore --port 3030 --headless --url https://petstore3.swagger.io/api/v3",
+                "description": "Save specs in ~/.hapi/specs. Download example if not present: https://petstore3.swagger.io/api/v3/swagger.json",
+                "name": "Quick Start with a local API spec"
+              },
+              {
+                "command": "docker run -p 3030:3030 -e HAPI_OPENAPI=https://api.example.com/openapi.json -e HAPI_URL=https://api.example.com hapimcp/hapi-cli:0.6.0 serve my-api --headless",
+                "description": "Serve a custom API using environment variables",
+                "name": "Custom OpenAPI with Environment Variables"
+              },
+              {
+                "config": "See https://docs.mcp.com.ai/deployment/docker#docker-compose-example",
+                "description": "Run with persistent volumes and custom specs",
+                "name": "Docker Compose Setup"
+              }
+            ],
+            "keywords": [
+              "openapi",
+              "rest-api",
+              "api-first",
+              "headless",
+              "docker"
+            ],
+            "license": "MIT",
+            "publisher": "La Rebelion Labs"
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-01-07T00:32:01.41626Z",
+          "publishedAt": "2026-01-07T00:32:01.41626Z",
+          "updatedAt": "2026-01-07T00:32:01.41626Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:56.154Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

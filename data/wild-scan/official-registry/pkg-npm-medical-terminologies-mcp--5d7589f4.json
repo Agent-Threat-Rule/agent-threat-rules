@@ -1,0 +1,4248 @@
+{
+  "dedup_key": "pkg:npm:medical-terminologies-mcp",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:npm:medical-terminologies-mcp",
+    "registryType": "npm",
+    "identifier": "medical-terminologies-mcp"
+  },
+  "server_names": [
+    "io.github.SidneyBissoli/medical-terminologies-mcp"
+  ],
+  "versions_seen": [
+    "1.0.1",
+    "1.0.2",
+    "1.1.1",
+    "1.2.0",
+    "1.2.1",
+    "1.3.0",
+    "1.4.0",
+    "1.4.1",
+    "1.4.2",
+    "1.5.0",
+    "1.5.1",
+    "1.5.2",
+    "1.5.3",
+    "1.5.4",
+    "1.5.5",
+    "1.5.6",
+    "1.5.7"
+  ],
+  "registry_row_count": 31,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+      "description": "Diagnoses, drugs & lab codes: ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10. 37 tools, MIT.",
+      "title": "Medical Terminologies MCP",
+      "repository": {
+        "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+        "source": "github"
+      },
+      "version": "1.5.7",
+      "websiteUrl": "https://medium.com/@sbissoli76/seven-medical-terminologies-one-mcp-server-a-practical-walkthrough-for-clinical-and-research-use-a6c46de9c83b",
+      "icons": [
+        {
+          "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-dark.png",
+          "mimeType": "image/png",
+          "sizes": [
+            "512x512"
+          ],
+          "theme": "dark"
+        },
+        {
+          "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-light.png",
+          "mimeType": "image/png",
+          "sizes": [
+            "512x512"
+          ],
+          "theme": "light"
+        }
+      ],
+      "packages": [
+        {
+          "registryType": "npm",
+          "identifier": "medical-terminologies-mcp",
+          "version": "1.5.7",
+          "transport": {
+            "type": "stdio"
+          },
+          "environmentVariables": [
+            {
+              "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+              "name": "WHO_CLIENT_ID"
+            },
+            {
+              "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+              "isSecret": true,
+              "name": "WHO_CLIENT_SECRET"
+            },
+            {
+              "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+              "name": "WHO_ICD11_RELEASE_ID"
+            },
+            {
+              "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+              "name": "ENABLE_SNOMED_TOOLS"
+            },
+            {
+              "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+              "name": "SNOMED_BASE_URL"
+            },
+            {
+              "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+              "name": "SNOMED_LANGUAGE"
+            },
+            {
+              "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+              "name": "LOG_LEVEL"
+            }
+          ]
+        },
+        {
+          "registryType": "npm",
+          "identifier": "medical-terminologies-mcp",
+          "version": "1.5.0",
+          "transport": {
+            "type": "streamable-http",
+            "url": "http://localhost:3000/mcp"
+          },
+          "packageArguments": [
+            {
+              "type": "named",
+              "name": "--http"
+            },
+            {
+              "description": "TCP port to listen on. Update the transport URL above if you change this.",
+              "value": "3000",
+              "type": "named",
+              "name": "--port"
+            },
+            {
+              "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+              "value": "0.0.0.0",
+              "type": "named",
+              "name": "--host"
+            }
+          ],
+          "environmentVariables": [
+            {
+              "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+              "name": "WHO_CLIENT_ID"
+            },
+            {
+              "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+              "isSecret": true,
+              "name": "WHO_CLIENT_SECRET"
+            },
+            {
+              "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+              "name": "WHO_ICD11_RELEASE_ID"
+            },
+            {
+              "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+              "name": "ENABLE_SNOMED_TOOLS"
+            },
+            {
+              "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+              "name": "SNOMED_BASE_URL"
+            },
+            {
+              "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+              "name": "SNOMED_LANGUAGE"
+            },
+            {
+              "description": "pino log level. Optional; defaults to 'info'.",
+              "name": "LOG_LEVEL"
+            }
+          ]
+        }
+      ],
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://medical.sidneybissoli.com/mcp"
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-06-21T01:37:38.549244Z",
+        "publishedAt": "2026-06-21T01:37:38.549244Z",
+        "updatedAt": "2026-06-21T01:37:38.549244Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified access to global medical terminologies: ICD-11, SNOMED CT, LOINC, RxNorm, MeSH",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.0.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.0.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID (get from https://icd.who.int/icdapi)",
+                "isRequired": true,
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-01-19T14:18:55.68027Z",
+          "publishedAt": "2026-01-19T14:18:55.68027Z",
+          "updatedAt": "2026-01-19T14:18:55.68027Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified access to global medical terminologies: ICD-11, SNOMED CT, LOINC, RxNorm, MeSH",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.0.2",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.0.2",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID (get from https://icd.who.int/icdapi)",
+                "isRequired": true,
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-01-19T14:25:13.812928Z",
+          "publishedAt": "2026-01-19T14:25:13.812928Z",
+          "updatedAt": "2026-01-19T14:25:13.812928Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified access to global medical terminologies: ICD-11, SNOMED CT, LOINC, RxNorm, MeSH, ATC, CID-10",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.1.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.1.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-10T17:38:25.150849Z",
+          "publishedAt": "2026-05-10T17:38:25.150849Z",
+          "updatedAt": "2026-05-10T17:38:25.150849Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified access to global medical terminologies: ICD-11, SNOMED CT, LOINC, RxNorm, MeSH, ATC, CID-10",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.2.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.2.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.2.0",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-10T19:08:00.639268Z",
+          "publishedAt": "2026-05-10T19:08:00.639268Z",
+          "updatedAt": "2026-05-10T19:08:00.639268Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified access to global medical terminologies: ICD-11, SNOMED CT, LOINC, RxNorm, MeSH, ATC, CID-10",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.2.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.2.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.2.0",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-10T19:08:00.639268Z",
+          "publishedAt": "2026-05-10T19:08:00.639268Z",
+          "updatedAt": "2026-05-10T19:08:00.639268Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified access to global medical terminologies: ICD-11, SNOMED CT, LOINC, RxNorm, MeSH, ATC, CID-10",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.2.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.2.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.2.1",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical-terminologies-mcp.sidneybissoli.workers.dev/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-11T02:54:33.463697Z",
+          "publishedAt": "2026-05-11T02:54:33.463697Z",
+          "updatedAt": "2026-05-11T02:54:33.463697Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified access to global medical terminologies: ICD-11, SNOMED CT, LOINC, RxNorm, MeSH, ATC, CID-10",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.2.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.2.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.2.1",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical-terminologies-mcp.sidneybissoli.workers.dev/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-11T02:54:33.463697Z",
+          "publishedAt": "2026-05-11T02:54:33.463697Z",
+          "updatedAt": "2026-05-11T02:54:33.463697Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified access to global medical terminologies: ICD-11, SNOMED CT, LOINC, RxNorm, MeSH, ATC, CID-10",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.3.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.3.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.2.1",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical-terminologies-mcp.sidneybissoli.workers.dev/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-11T16:58:21.009723Z",
+          "publishedAt": "2026-05-11T16:58:21.009723Z",
+          "updatedAt": "2026-05-11T16:58:21.009723Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified access to global medical terminologies: ICD-11, SNOMED CT, LOINC, RxNorm, MeSH, ATC, CID-10",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.3.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.3.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.2.1",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical-terminologies-mcp.sidneybissoli.workers.dev/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-11T16:58:21.009723Z",
+          "publishedAt": "2026-05-11T16:58:21.009723Z",
+          "updatedAt": "2026-05-11T16:58:21.009723Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified access to global medical terminologies: ICD-11, SNOMED CT, LOINC, RxNorm, MeSH, ATC, CID-10",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.4.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.4.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.2.1",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical-terminologies-mcp.sidneybissoli.workers.dev/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-12T01:02:46.721947Z",
+          "publishedAt": "2026-05-12T01:02:46.721947Z",
+          "updatedAt": "2026-05-12T01:02:46.721947Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified access to global medical terminologies: ICD-11, SNOMED CT, LOINC, RxNorm, MeSH, ATC, CID-10",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.4.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.4.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.2.1",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical-terminologies-mcp.sidneybissoli.workers.dev/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-12T01:02:46.721947Z",
+          "publishedAt": "2026-05-12T01:02:46.721947Z",
+          "updatedAt": "2026-05-12T01:02:46.721947Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified MCP lookup server for ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10. 37 tools, MIT.",
+        "title": "Medical Terminologies MCP",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.4.1",
+        "websiteUrl": "https://medium.com/@sbissoli76/seven-medical-terminologies-one-mcp-server-a-practical-walkthrough-for-clinical-and-research-use-a6c46de9c83b",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-dark.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "1024x1024"
+            ],
+            "theme": "dark"
+          },
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-light.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "1024x1024"
+            ],
+            "theme": "light"
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.4.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.4.1",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical-terminologies-mcp.sidneybissoli.workers.dev/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-12T20:57:27.118469Z",
+          "publishedAt": "2026-05-12T20:57:27.118469Z",
+          "updatedAt": "2026-05-12T20:57:27.118469Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified MCP lookup server for ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10. 37 tools, MIT.",
+        "title": "Medical Terminologies MCP",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.4.1",
+        "websiteUrl": "https://medium.com/@sbissoli76/seven-medical-terminologies-one-mcp-server-a-practical-walkthrough-for-clinical-and-research-use-a6c46de9c83b",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-dark.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "1024x1024"
+            ],
+            "theme": "dark"
+          },
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-light.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "1024x1024"
+            ],
+            "theme": "light"
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.4.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.4.1",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical-terminologies-mcp.sidneybissoli.workers.dev/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-12T20:57:27.118469Z",
+          "publishedAt": "2026-05-12T20:57:27.118469Z",
+          "updatedAt": "2026-05-12T20:57:27.118469Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified MCP lookup server for ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10. 37 tools, MIT.",
+        "title": "Medical Terminologies MCP",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.4.2",
+        "websiteUrl": "https://medium.com/@sbissoli76/seven-medical-terminologies-one-mcp-server-a-practical-walkthrough-for-clinical-and-research-use-a6c46de9c83b",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-dark.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "dark"
+          },
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-light.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "light"
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.4.2",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.4.2",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical-terminologies-mcp.sidneybissoli.workers.dev/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-13T00:52:11.922304Z",
+          "publishedAt": "2026-05-13T00:52:11.922304Z",
+          "updatedAt": "2026-05-13T00:52:11.922304Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified MCP lookup server for ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10. 37 tools, MIT.",
+        "title": "Medical Terminologies MCP",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.4.2",
+        "websiteUrl": "https://medium.com/@sbissoli76/seven-medical-terminologies-one-mcp-server-a-practical-walkthrough-for-clinical-and-research-use-a6c46de9c83b",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-dark.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "dark"
+          },
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-light.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "light"
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.4.2",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.4.2",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical-terminologies-mcp.sidneybissoli.workers.dev/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-13T00:52:11.922304Z",
+          "publishedAt": "2026-05-13T00:52:11.922304Z",
+          "updatedAt": "2026-05-13T00:52:11.922304Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified MCP lookup server for ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10. 37 tools, MIT.",
+        "title": "Medical Terminologies MCP",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.5.0",
+        "websiteUrl": "https://medium.com/@sbissoli76/seven-medical-terminologies-one-mcp-server-a-practical-walkthrough-for-clinical-and-research-use-a6c46de9c83b",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-dark.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "dark"
+          },
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-light.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "light"
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.0",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical-terminologies-mcp.sidneybissoli.workers.dev/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-13T01:37:50.040091Z",
+          "publishedAt": "2026-05-13T01:37:50.040091Z",
+          "updatedAt": "2026-05-13T01:37:50.040091Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified MCP lookup server for ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10. 37 tools, MIT.",
+        "title": "Medical Terminologies MCP",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.5.0",
+        "websiteUrl": "https://medium.com/@sbissoli76/seven-medical-terminologies-one-mcp-server-a-practical-walkthrough-for-clinical-and-research-use-a6c46de9c83b",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-dark.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "dark"
+          },
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-light.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "light"
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.0",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical-terminologies-mcp.sidneybissoli.workers.dev/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-13T01:37:50.040091Z",
+          "publishedAt": "2026-05-13T01:37:50.040091Z",
+          "updatedAt": "2026-05-13T01:37:50.040091Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified MCP lookup server for ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10. 37 tools, MIT.",
+        "title": "Medical Terminologies MCP",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.5.1",
+        "websiteUrl": "https://medium.com/@sbissoli76/seven-medical-terminologies-one-mcp-server-a-practical-walkthrough-for-clinical-and-research-use-a6c46de9c83b",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-dark.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "dark"
+          },
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-light.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "light"
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.0",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical-terminologies-mcp.sidneybissoli.workers.dev/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-09T02:37:09.134059Z",
+          "publishedAt": "2026-06-09T02:37:09.134059Z",
+          "updatedAt": "2026-06-09T02:37:09.134059Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified MCP lookup server for ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10. 37 tools, MIT.",
+        "title": "Medical Terminologies MCP",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.5.1",
+        "websiteUrl": "https://medium.com/@sbissoli76/seven-medical-terminologies-one-mcp-server-a-practical-walkthrough-for-clinical-and-research-use-a6c46de9c83b",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-dark.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "dark"
+          },
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-light.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "light"
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.0",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical-terminologies-mcp.sidneybissoli.workers.dev/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-09T02:37:09.134059Z",
+          "publishedAt": "2026-06-09T02:37:09.134059Z",
+          "updatedAt": "2026-06-09T02:37:09.134059Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified MCP lookup server for ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10. 37 tools, MIT.",
+        "title": "Medical Terminologies MCP",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.5.2",
+        "websiteUrl": "https://medium.com/@sbissoli76/seven-medical-terminologies-one-mcp-server-a-practical-walkthrough-for-clinical-and-research-use-a6c46de9c83b",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-dark.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "dark"
+          },
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-light.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "light"
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.2",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.0",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical-terminologies-mcp.sidneybissoli.workers.dev/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-10T01:32:03.724221Z",
+          "publishedAt": "2026-06-10T01:32:03.724221Z",
+          "updatedAt": "2026-06-10T01:32:03.724221Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified MCP lookup server for ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10. 37 tools, MIT.",
+        "title": "Medical Terminologies MCP",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.5.2",
+        "websiteUrl": "https://medium.com/@sbissoli76/seven-medical-terminologies-one-mcp-server-a-practical-walkthrough-for-clinical-and-research-use-a6c46de9c83b",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-dark.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "dark"
+          },
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-light.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "light"
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.2",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.0",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical-terminologies-mcp.sidneybissoli.workers.dev/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-10T01:32:03.724221Z",
+          "publishedAt": "2026-06-10T01:32:03.724221Z",
+          "updatedAt": "2026-06-10T01:32:03.724221Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified MCP lookup server for ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10. 37 tools, MIT.",
+        "title": "Medical Terminologies MCP",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.5.3",
+        "websiteUrl": "https://medium.com/@sbissoli76/seven-medical-terminologies-one-mcp-server-a-practical-walkthrough-for-clinical-and-research-use-a6c46de9c83b",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-dark.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "dark"
+          },
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-light.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "light"
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.3",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.0",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical-terminologies-mcp.sidneybissoli.workers.dev/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-11T03:47:14.199553Z",
+          "publishedAt": "2026-06-11T03:47:14.199553Z",
+          "updatedAt": "2026-06-11T03:47:14.199553Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified MCP lookup server for ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10. 37 tools, MIT.",
+        "title": "Medical Terminologies MCP",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.5.3",
+        "websiteUrl": "https://medium.com/@sbissoli76/seven-medical-terminologies-one-mcp-server-a-practical-walkthrough-for-clinical-and-research-use-a6c46de9c83b",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-dark.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "dark"
+          },
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-light.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "light"
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.3",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.0",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical-terminologies-mcp.sidneybissoli.workers.dev/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-11T03:47:14.199553Z",
+          "publishedAt": "2026-06-11T03:47:14.199553Z",
+          "updatedAt": "2026-06-11T03:47:14.199553Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified MCP lookup server for ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10. 37 tools, MIT.",
+        "title": "Medical Terminologies MCP",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.5.4",
+        "websiteUrl": "https://medium.com/@sbissoli76/seven-medical-terminologies-one-mcp-server-a-practical-walkthrough-for-clinical-and-research-use-a6c46de9c83b",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-dark.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "dark"
+          },
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-light.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "light"
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.4",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.0",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical.sidneybissoli.com/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-20T15:01:17.838013Z",
+          "publishedAt": "2026-06-20T15:01:17.838013Z",
+          "updatedAt": "2026-06-20T15:01:17.838013Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified MCP lookup server for ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10. 37 tools, MIT.",
+        "title": "Medical Terminologies MCP",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.5.4",
+        "websiteUrl": "https://medium.com/@sbissoli76/seven-medical-terminologies-one-mcp-server-a-practical-walkthrough-for-clinical-and-research-use-a6c46de9c83b",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-dark.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "dark"
+          },
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-light.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "light"
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.4",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.0",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical.sidneybissoli.com/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-20T15:01:17.838013Z",
+          "publishedAt": "2026-06-20T15:01:17.838013Z",
+          "updatedAt": "2026-06-20T15:01:17.838013Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified MCP lookup server for ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10. 37 tools, MIT.",
+        "title": "Medical Terminologies MCP",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.5.5",
+        "websiteUrl": "https://medium.com/@sbissoli76/seven-medical-terminologies-one-mcp-server-a-practical-walkthrough-for-clinical-and-research-use-a6c46de9c83b",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-dark.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "dark"
+          },
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-light.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "light"
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.5",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.0",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical.sidneybissoli.com/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-20T17:43:04.101791Z",
+          "publishedAt": "2026-06-20T17:43:04.101791Z",
+          "updatedAt": "2026-06-20T17:43:04.101791Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Unified MCP lookup server for ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10. 37 tools, MIT.",
+        "title": "Medical Terminologies MCP",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.5.5",
+        "websiteUrl": "https://medium.com/@sbissoli76/seven-medical-terminologies-one-mcp-server-a-practical-walkthrough-for-clinical-and-research-use-a6c46de9c83b",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-dark.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "dark"
+          },
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-light.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "light"
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.5",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.0",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical.sidneybissoli.com/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-20T17:43:04.101791Z",
+          "publishedAt": "2026-06-20T17:43:04.101791Z",
+          "updatedAt": "2026-06-20T17:43:04.101791Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Diagnoses, drugs & lab codes: ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10. 37 tools, MIT.",
+        "title": "Medical Terminologies MCP",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.5.6",
+        "websiteUrl": "https://medium.com/@sbissoli76/seven-medical-terminologies-one-mcp-server-a-practical-walkthrough-for-clinical-and-research-use-a6c46de9c83b",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-dark.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "dark"
+          },
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-light.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "light"
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.6",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.0",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical.sidneybissoli.com/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-21T00:51:38.936237Z",
+          "publishedAt": "2026-06-21T00:51:38.936237Z",
+          "updatedAt": "2026-06-21T00:51:38.936237Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Diagnoses, drugs & lab codes: ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10. 37 tools, MIT.",
+        "title": "Medical Terminologies MCP",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.5.6",
+        "websiteUrl": "https://medium.com/@sbissoli76/seven-medical-terminologies-one-mcp-server-a-practical-walkthrough-for-clinical-and-research-use-a6c46de9c83b",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-dark.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "dark"
+          },
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-light.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "light"
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.6",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.0",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical.sidneybissoli.com/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-21T00:51:38.936237Z",
+          "publishedAt": "2026-06-21T00:51:38.936237Z",
+          "updatedAt": "2026-06-21T00:51:38.936237Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Diagnoses, drugs & lab codes: ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10. 37 tools, MIT.",
+        "title": "Medical Terminologies MCP",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.5.7",
+        "websiteUrl": "https://medium.com/@sbissoli76/seven-medical-terminologies-one-mcp-server-a-practical-walkthrough-for-clinical-and-research-use-a6c46de9c83b",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-dark.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "dark"
+          },
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-light.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "light"
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.7",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.0",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical.sidneybissoli.com/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-21T01:37:38.549244Z",
+          "publishedAt": "2026-06-21T01:37:38.549244Z",
+          "updatedAt": "2026-06-21T01:37:38.549244Z",
+          "isLatest": true
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SidneyBissoli/medical-terminologies-mcp",
+        "description": "Diagnoses, drugs & lab codes: ICD-11, SNOMED, LOINC, RxNorm, MeSH, ATC, CID-10. 37 tools, MIT.",
+        "title": "Medical Terminologies MCP",
+        "repository": {
+          "url": "https://github.com/SidneyBissoli/medical-terminologies-mcp",
+          "source": "github"
+        },
+        "version": "1.5.7",
+        "websiteUrl": "https://medium.com/@sbissoli76/seven-medical-terminologies-one-mcp-server-a-practical-walkthrough-for-clinical-and-research-use-a6c46de9c83b",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-dark.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "dark"
+          },
+          {
+            "src": "https://raw.githubusercontent.com/SidneyBissoli/medical-terminologies-mcp/main/assets/icon-light.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ],
+            "theme": "light"
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.7",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools (5 tools); the server starts without it and other terminologies (LOINC, RxNorm, MeSH, ATC, CID-10) work unauthenticated. Get credentials at https://icd.who.int/icdapi.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools (snomed_search, snomed_concept, snomed_hierarchy, snomed_descriptions, snomed_ecl, plus map_snomed_to_icd10). Disabled by default because the historical public IHTSDO Snowstorm endpoint was retired (HTTP 410 Gone). Requires SNOMED_BASE_URL pointing at a working self-hosted Snowstorm.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance (e.g. https://my-snowstorm.example.com/snowstorm/snomed-ct). Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'. Composite values with q-weights depend on the upstream Snowstorm instance.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level (debug, info, warn, error, fatal). Optional; defaults to 'info'. Logs go to stderr only — never stdout (which is the MCP stdio transport).",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "medical-terminologies-mcp",
+            "version": "1.5.0",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3000/mcp"
+            },
+            "packageArguments": [
+              {
+                "type": "named",
+                "name": "--http"
+              },
+              {
+                "description": "TCP port to listen on. Update the transport URL above if you change this.",
+                "value": "3000",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Bind address. Defaults to 127.0.0.1 in CLI; 0.0.0.0 here so containers can route in.",
+                "value": "0.0.0.0",
+                "type": "named",
+                "name": "--host"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "WHO ICD-11 API Client ID. Required only for ICD-11 tools.",
+                "name": "WHO_CLIENT_ID"
+              },
+              {
+                "description": "WHO ICD-11 API Client Secret. Required only for ICD-11 tools.",
+                "isSecret": true,
+                "name": "WHO_CLIENT_SECRET"
+              },
+              {
+                "description": "ICD-11 release to query (e.g. 2024-01, 2025-01). Optional; defaults to 2024-01.",
+                "name": "WHO_ICD11_RELEASE_ID"
+              },
+              {
+                "description": "Set to 'true' to register the 6 SNOMED-dependent tools. Requires SNOMED_BASE_URL.",
+                "name": "ENABLE_SNOMED_TOOLS"
+              },
+              {
+                "description": "Base URL of a self-hosted Snowstorm instance. Required only when ENABLE_SNOMED_TOOLS is true.",
+                "name": "SNOMED_BASE_URL"
+              },
+              {
+                "description": "Accept-Language tag(s) for SNOMED responses (e.g. pt, pt-BR, es). Optional; defaults to 'en'.",
+                "name": "SNOMED_LANGUAGE"
+              },
+              {
+                "description": "pino log level. Optional; defaults to 'info'.",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://medical.sidneybissoli.com/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-21T01:37:38.549244Z",
+          "publishedAt": "2026-06-21T01:37:38.549244Z",
+          "updatedAt": "2026-06-21T01:37:38.549244Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:56.709Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

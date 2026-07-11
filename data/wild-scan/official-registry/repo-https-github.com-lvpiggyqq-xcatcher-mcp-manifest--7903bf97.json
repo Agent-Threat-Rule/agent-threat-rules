@@ -1,0 +1,426 @@
+{
+  "dedup_key": "repo:https://github.com/lvpiggyqq/xcatcher-mcp-manifest",
+  "package_identity": {
+    "type": "repository",
+    "key": "repo:https://github.com/lvpiggyqq/xcatcher-mcp-manifest",
+    "repositoryUrl": "https://github.com/lvpiggyqq/xcatcher-mcp-manifest"
+  },
+  "server_names": [
+    "io.github.lvpiggyqq/xcatcher"
+  ],
+  "versions_seen": [
+    "1.0.0",
+    "1.0.1",
+    "1.0.3"
+  ],
+  "registry_row_count": 3,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.lvpiggyqq/xcatcher",
+      "description": "High-throughput X/Twitter crawl via tasks; download XLSX; x402 USDC Base/Solana top-ups.",
+      "repository": {
+        "url": "https://github.com/lvpiggyqq/xcatcher-mcp-manifest",
+        "source": "github"
+      },
+      "version": "1.0.3",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://xcatcher.top/mcp/",
+          "headers": [
+            {
+              "description": "Bearer xc_live_... API key (required).",
+              "name": "Authorization"
+            },
+            {
+              "description": "application/json (required).",
+              "name": "Accept"
+            },
+            {
+              "description": "application/json (required for JSON-RPC POST).",
+              "name": "Content-Type"
+            }
+          ]
+        }
+      ],
+      "_meta": {
+        "io.modelcontextprotocol.registry/publisher-provided": {
+          "billingNotes": [
+            "Task billing (docs default): normal = 1 point/user; deep = 10 points/user. Actual cost is returned by create responses.",
+            "When MCP returns 402 PAYMENT_REQUIRED, pay using quote_id + on-chain proof, call x402_topup, then retry with the same idempotency_key."
+          ],
+          "category": [
+            "social-intelligence",
+            "osint",
+            "market-research",
+            "automation"
+          ],
+          "compatibilityNotes": [
+            "If CSV is needed, convert the downloaded XLSX to CSV client-side."
+          ],
+          "endpoints": {
+            "docs": "https://xcatcher.top/docs/",
+            "taskDownload": "https://xcatcher.top/api/v1/tasks/{task_id}/download"
+          },
+          "highlights": [
+            "Optimized for batch 'latest posts' retrieval across large sets of X users",
+            "Task-based flow: submit task → poll status → download result file",
+            "Results are provided as XLSX. If CSV is needed, convert the downloaded XLSX to CSV client-side",
+            "Supports x402 top-ups (USDC on Base or Solana) when points are insufficient (handle 402 then retry)"
+          ],
+          "keywords": [
+            "X",
+            "Twitter",
+            "high-throughput",
+            "concurrency",
+            "latest-posts",
+            "crawl",
+            "task",
+            "export",
+            "xlsx",
+            "csv",
+            "remote-mcp",
+            "streamable-http",
+            "x402",
+            "base",
+            "solana",
+            "usdc"
+          ],
+          "modes": {
+            "deep": "Deeper per-user collection/enrichment (slower; higher resource usage).",
+            "normal": "Fast latest-post snapshot at scale (fresh-feed monitoring)."
+          },
+          "payments": {
+            "mcpTool": "x402_topup",
+            "model": "x402",
+            "options": [
+              {
+                "asset": "USDC",
+                "label": "USDC on Base",
+                "network": "Base (eip155:8453)",
+                "proof": "txHash"
+              },
+              {
+                "asset": "USDC",
+                "label": "USDC (SPL) on Solana",
+                "network": "Solana (solana:mainnet)",
+                "proof": "signature"
+              }
+            ],
+            "quoteEndpoint": "https://xcatcher.top/api/v1/x402/quote?points={points}",
+            "topupEndpoint": "https://xcatcher.top/api/v1/x402/topup",
+            "topupRequiredHeader": "PAYMENT-SIGNATURE"
+          },
+          "performanceNotes": [
+            "Typical benchmark (Normal): ~1000 users → ~5000 tweets in ~2 minutes under normal conditions.",
+            "Actual throughput depends on time window, X platform rate limits, and network conditions. For very large sets, split into multiple tasks."
+          ],
+          "product": "Xcatcher",
+          "publisher": "lvpiggyqq"
+        }
+      }
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2025-12-24T01:11:15.46271Z",
+        "publishedAt": "2025-12-24T01:11:15.46271Z",
+        "updatedAt": "2025-12-24T01:11:15.46271Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.lvpiggyqq/xcatcher",
+        "description": "Remote MCP for X/Twitter crawling and XLSX export.",
+        "repository": {
+          "url": "https://github.com/lvpiggyqq/xcatcher-mcp-manifest",
+          "source": "github"
+        },
+        "version": "1.0.0",
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://xcatcher.top/mcp",
+            "headers": [
+              {
+                "description": "Bearer xc_live_... API key (required).",
+                "name": "Authorization"
+              }
+            ]
+          }
+        ],
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "auth": {
+              "header": "Authorization",
+              "note": "Keys are issued/rotated via REST auth endpoints. Missing/invalid keys return 401.",
+              "tokenPrefix": "Bearer",
+              "type": "bearer"
+            },
+            "capabilities": [
+              "Create crawl tasks for one or more X usernames",
+              "Poll task status until completion",
+              "Return a download URL for result files (still requires Bearer auth)",
+              "Cancel queued tasks (subject to backend policy)"
+            ],
+            "category": [
+              "social-intelligence",
+              "osint",
+              "market-research",
+              "automation"
+            ],
+            "endpoints": {
+              "baseUrl": "https://xcatcher.top",
+              "docs": "https://xcatcher.top/docs/",
+              "health": "https://xcatcher.top/mcp/health",
+              "mcp": "https://xcatcher.top/mcp",
+              "restApiBase": "https://xcatcher.top/api/v1"
+            },
+            "keywords": [
+              "X",
+              "Twitter",
+              "crawl",
+              "scrape",
+              "profiles",
+              "posts",
+              "threads",
+              "export",
+              "xlsx",
+              "signals",
+              "monitoring",
+              "remote-mcp",
+              "streamable-http"
+            ],
+            "product": "Xcatcher",
+            "publisher": "lvpiggyqq",
+            "recommendedFlow": [
+              "create_crawl_task",
+              "get_task_status (poll)",
+              "get_result_download_url",
+              "download via authenticated URL"
+            ]
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2025-12-20T18:41:53.681035Z",
+          "publishedAt": "2025-12-20T18:41:53.681035Z",
+          "updatedAt": "2025-12-20T18:41:53.681035Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.lvpiggyqq/xcatcher",
+        "description": "Remote MCP for high-throughput X/Twitter crawling and XLSX export.",
+        "repository": {
+          "url": "https://github.com/lvpiggyqq/xcatcher-mcp-manifest",
+          "source": "github"
+        },
+        "version": "1.0.1",
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://xcatcher.top/mcp",
+            "headers": [
+              {
+                "description": "Bearer xc_live_... API key (required).",
+                "name": "Authorization"
+              }
+            ]
+          }
+        ],
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "category": [
+              "social-intelligence",
+              "osint",
+              "market-research",
+              "automation"
+            ],
+            "highlights": [
+              "Optimized for batch 'latest posts' retrieval across large sets of X users",
+              "Normal mode targets fast turnaround for fresh-content monitoring",
+              "Deep mode targets deeper per-user collection (typically slower)"
+            ],
+            "keywords": [
+              "X",
+              "Twitter",
+              "high-throughput",
+              "concurrency",
+              "latest-posts",
+              "crawl",
+              "export",
+              "xlsx",
+              "remote-mcp",
+              "streamable-http"
+            ],
+            "modes": {
+              "deep": "Deeper per-user collection/enrichment (slower; higher resource usage).",
+              "normal": "Fast latest-post snapshot at scale (fresh-feed monitoring)."
+            },
+            "payments": {
+              "createEndpoint": "https://xcatcher.top/mcp/payment/create",
+              "options": [
+                {
+                  "label": "ETH transfer",
+                  "network": "Ethereum",
+                  "pay_currency": "eth"
+                },
+                {
+                  "label": "USDT (SPL) transfer",
+                  "network": "Solana",
+                  "pay_currency": "usdtsol"
+                }
+              ],
+              "statusEndpoint": "https://xcatcher.top/mcp/payment/status/{payment_id}"
+            },
+            "performanceNotes": [
+              "Typical benchmark (Normal): ~1000 users → ~5000 tweets in ~2 minutes under normal conditions.",
+              "Actual throughput depends on time window, X platform rate limits, and network conditions. For very large sets, split into multiple tasks."
+            ],
+            "product": "Xcatcher",
+            "publisher": "lvpiggyqq"
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2025-12-21T01:38:00.135773Z",
+          "publishedAt": "2025-12-21T01:38:00.135773Z",
+          "updatedAt": "2025-12-21T01:38:00.135773Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.lvpiggyqq/xcatcher",
+        "description": "High-throughput X/Twitter crawl via tasks; download XLSX; x402 USDC Base/Solana top-ups.",
+        "repository": {
+          "url": "https://github.com/lvpiggyqq/xcatcher-mcp-manifest",
+          "source": "github"
+        },
+        "version": "1.0.3",
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://xcatcher.top/mcp/",
+            "headers": [
+              {
+                "description": "Bearer xc_live_... API key (required).",
+                "name": "Authorization"
+              },
+              {
+                "description": "application/json (required).",
+                "name": "Accept"
+              },
+              {
+                "description": "application/json (required for JSON-RPC POST).",
+                "name": "Content-Type"
+              }
+            ]
+          }
+        ],
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "billingNotes": [
+              "Task billing (docs default): normal = 1 point/user; deep = 10 points/user. Actual cost is returned by create responses.",
+              "When MCP returns 402 PAYMENT_REQUIRED, pay using quote_id + on-chain proof, call x402_topup, then retry with the same idempotency_key."
+            ],
+            "category": [
+              "social-intelligence",
+              "osint",
+              "market-research",
+              "automation"
+            ],
+            "compatibilityNotes": [
+              "If CSV is needed, convert the downloaded XLSX to CSV client-side."
+            ],
+            "endpoints": {
+              "docs": "https://xcatcher.top/docs/",
+              "taskDownload": "https://xcatcher.top/api/v1/tasks/{task_id}/download"
+            },
+            "highlights": [
+              "Optimized for batch 'latest posts' retrieval across large sets of X users",
+              "Task-based flow: submit task → poll status → download result file",
+              "Results are provided as XLSX. If CSV is needed, convert the downloaded XLSX to CSV client-side",
+              "Supports x402 top-ups (USDC on Base or Solana) when points are insufficient (handle 402 then retry)"
+            ],
+            "keywords": [
+              "X",
+              "Twitter",
+              "high-throughput",
+              "concurrency",
+              "latest-posts",
+              "crawl",
+              "task",
+              "export",
+              "xlsx",
+              "csv",
+              "remote-mcp",
+              "streamable-http",
+              "x402",
+              "base",
+              "solana",
+              "usdc"
+            ],
+            "modes": {
+              "deep": "Deeper per-user collection/enrichment (slower; higher resource usage).",
+              "normal": "Fast latest-post snapshot at scale (fresh-feed monitoring)."
+            },
+            "payments": {
+              "mcpTool": "x402_topup",
+              "model": "x402",
+              "options": [
+                {
+                  "asset": "USDC",
+                  "label": "USDC on Base",
+                  "network": "Base (eip155:8453)",
+                  "proof": "txHash"
+                },
+                {
+                  "asset": "USDC",
+                  "label": "USDC (SPL) on Solana",
+                  "network": "Solana (solana:mainnet)",
+                  "proof": "signature"
+                }
+              ],
+              "quoteEndpoint": "https://xcatcher.top/api/v1/x402/quote?points={points}",
+              "topupEndpoint": "https://xcatcher.top/api/v1/x402/topup",
+              "topupRequiredHeader": "PAYMENT-SIGNATURE"
+            },
+            "performanceNotes": [
+              "Typical benchmark (Normal): ~1000 users → ~5000 tweets in ~2 minutes under normal conditions.",
+              "Actual throughput depends on time window, X platform rate limits, and network conditions. For very large sets, split into multiple tasks."
+            ],
+            "product": "Xcatcher",
+            "publisher": "lvpiggyqq"
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2025-12-24T01:11:15.46271Z",
+          "publishedAt": "2025-12-24T01:11:15.46271Z",
+          "updatedAt": "2025-12-24T01:11:15.46271Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:57.309Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

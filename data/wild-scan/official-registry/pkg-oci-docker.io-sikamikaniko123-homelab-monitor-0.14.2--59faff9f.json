@@ -1,0 +1,186 @@
+{
+  "dedup_key": "pkg:oci:docker.io/sikamikaniko123/homelab-monitor:0.14.2",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:oci:docker.io/sikamikaniko123/homelab-monitor:0.14.2",
+    "registryType": "oci",
+    "identifier": "docker.io/sikamikaniko123/homelab-monitor:0.14.2"
+  },
+  "server_names": [
+    "io.github.SikamikanikoBG/homelab-monitor"
+  ],
+  "versions_seen": [
+    "0.14.2"
+  ],
+  "registry_row_count": 1,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.SikamikanikoBG/homelab-monitor",
+      "description": "Self-hosted homelab dashboard with a built-in read-only MCP server (hosts, Docker, GPU, services).",
+      "title": "HomeLab Monitor",
+      "repository": {
+        "url": "https://github.com/SikamikanikoBG/homelab-monitor",
+        "source": "github"
+      },
+      "version": "0.14.2",
+      "websiteUrl": "https://sikamikanikobg.github.io/homelab-monitor/mcp/",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "docker.io/sikamikaniko123/homelab-monitor:0.14.2",
+          "transport": {
+            "type": "stdio"
+          },
+          "packageArguments": [
+            {
+              "value": "python",
+              "type": "positional"
+            },
+            {
+              "value": "/app/mcp_server.py",
+              "type": "positional"
+            }
+          ],
+          "environmentVariables": [
+            {
+              "description": "Base URL of the running HomeLab Monitor dashboard (e.g. http://YOUR-HUB:9800)",
+              "isRequired": true,
+              "name": "HOMELAB_MONITOR_URL"
+            },
+            {
+              "description": "Transport mode: stdio (default for this package entry) or http",
+              "default": "stdio",
+              "name": "MCP_TRANSPORT"
+            }
+          ]
+        }
+      ],
+      "_meta": {
+        "io.modelcontextprotocol.registry/publisher-provided": {
+          "categories": [
+            "monitoring",
+            "homelab",
+            "self-hosted",
+            "gpu",
+            "observability"
+          ],
+          "connect_http": "claude mcp add --transport http homelab http://YOUR-HUB:9810/mcp",
+          "connect_stdio": "docker run -i --rm -e HOMELAB_MONITOR_URL=http://YOUR-HUB:9800 -e MCP_TRANSPORT=stdio sikamikaniko123/homelab-monitor python /app/mcp_server.py",
+          "license": "MIT",
+          "summary": "HomeLab Monitor is a self-hosted dashboard for AI/homelab rigs. It ships a read-only MCP server (v0.14.0+) inside the same Docker image, serving 12 tools over streamable-HTTP — explore your fleet's hosts, containers, GPU usage, services, and alerts without touching the OS. MIT, no cloud dependency.",
+          "tools": [
+            "list_hosts",
+            "get_host",
+            "get_snapshot",
+            "get_containers",
+            "get_services",
+            "get_memory",
+            "get_gpu",
+            "get_ai_models",
+            "get_history",
+            "get_events",
+            "get_alerts",
+            "scan_disk"
+          ]
+        }
+      }
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-06-09T07:33:33.753776Z",
+        "publishedAt": "2026-06-09T07:33:33.753776Z",
+        "updatedAt": "2026-06-09T07:33:33.753776Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.SikamikanikoBG/homelab-monitor",
+        "description": "Self-hosted homelab dashboard with a built-in read-only MCP server (hosts, Docker, GPU, services).",
+        "title": "HomeLab Monitor",
+        "repository": {
+          "url": "https://github.com/SikamikanikoBG/homelab-monitor",
+          "source": "github"
+        },
+        "version": "0.14.2",
+        "websiteUrl": "https://sikamikanikobg.github.io/homelab-monitor/mcp/",
+        "packages": [
+          {
+            "registryType": "oci",
+            "identifier": "docker.io/sikamikaniko123/homelab-monitor:0.14.2",
+            "transport": {
+              "type": "stdio"
+            },
+            "packageArguments": [
+              {
+                "value": "python",
+                "type": "positional"
+              },
+              {
+                "value": "/app/mcp_server.py",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Base URL of the running HomeLab Monitor dashboard (e.g. http://YOUR-HUB:9800)",
+                "isRequired": true,
+                "name": "HOMELAB_MONITOR_URL"
+              },
+              {
+                "description": "Transport mode: stdio (default for this package entry) or http",
+                "default": "stdio",
+                "name": "MCP_TRANSPORT"
+              }
+            ]
+          }
+        ],
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "categories": [
+              "monitoring",
+              "homelab",
+              "self-hosted",
+              "gpu",
+              "observability"
+            ],
+            "connect_http": "claude mcp add --transport http homelab http://YOUR-HUB:9810/mcp",
+            "connect_stdio": "docker run -i --rm -e HOMELAB_MONITOR_URL=http://YOUR-HUB:9800 -e MCP_TRANSPORT=stdio sikamikaniko123/homelab-monitor python /app/mcp_server.py",
+            "license": "MIT",
+            "summary": "HomeLab Monitor is a self-hosted dashboard for AI/homelab rigs. It ships a read-only MCP server (v0.14.0+) inside the same Docker image, serving 12 tools over streamable-HTTP — explore your fleet's hosts, containers, GPU usage, services, and alerts without touching the OS. MIT, no cloud dependency.",
+            "tools": [
+              "list_hosts",
+              "get_host",
+              "get_snapshot",
+              "get_containers",
+              "get_services",
+              "get_memory",
+              "get_gpu",
+              "get_ai_models",
+              "get_history",
+              "get_events",
+              "get_alerts",
+              "scan_disk"
+            ]
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-09T07:33:33.753776Z",
+          "publishedAt": "2026-06-09T07:33:33.753776Z",
+          "updatedAt": "2026-06-09T07:33:33.753776Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:56.710Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

@@ -1,0 +1,273 @@
+{
+  "dedup_key": "repo:https://github.com/ahmedeid1/e-learning-platform",
+  "package_identity": {
+    "type": "repository",
+    "key": "repo:https://github.com/ahmedeid1/e-learning-platform",
+    "repositoryUrl": "https://github.com/ahmedEid1/E-Learning-Platform"
+  },
+  "server_names": [
+    "io.github.ahmedEid1/lumen"
+  ],
+  "versions_seen": [
+    "1.1.0"
+  ],
+  "registry_row_count": 1,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.ahmedEid1/lumen",
+      "description": "Self-hostable agentic-AI LMS: catalog, RAG tutor, FSRS reviews, AI authoring, ingest.",
+      "title": "Lumen",
+      "repository": {
+        "url": "https://github.com/ahmedEid1/E-Learning-Platform",
+        "source": "github",
+        "subfolder": "apps/backend/app/mcp"
+      },
+      "version": "1.1.0",
+      "websiteUrl": "https://github.com/ahmedEid1/E-Learning-Platform/blob/master/docs/mcp.md",
+      "_meta": {
+        "io.modelcontextprotocol.registry/publisher-provided": {
+          "authentication": {
+            "http": {
+              "grant_types": [
+                "client_credentials"
+              ],
+              "metadata_endpoint": "/.well-known/oauth-authorization-server",
+              "token_endpoint": "/oauth/token",
+              "type": "oauth2"
+            },
+            "stdio": {
+              "description": "Mint with `make mcp-token` on the Lumen instance; paste the printed client_secret into the env block.",
+              "env_var": "LUMEN_MCP_AUTH_TOKEN",
+              "type": "bearer"
+            }
+          },
+          "categories": [
+            "learning",
+            "education",
+            "agents",
+            "rag",
+            "spaced-repetition"
+          ],
+          "install": {
+            "claude_code": "LUMEN_MCP_AUTH_TOKEN=<client_secret> claude mcp add lumen -- python -m app.mcp --transport stdio",
+            "claude_desktop": {
+              "mcpServers": {
+                "lumen": {
+                  "args": [
+                    "-m",
+                    "app.mcp",
+                    "--transport",
+                    "stdio"
+                  ],
+                  "command": "python",
+                  "env": {
+                    "DATABASE_URL": "postgresql+asyncpg://lumen:lumen@localhost:5432/lumen",
+                    "LUMEN_MCP_AUTH_TOKEN": "<your-client-secret>"
+                  }
+                }
+              }
+            },
+            "notes": "Lumen is self-hosted: bring up your own backend, mint a token with `make mcp-token`, then register the server. No public artifact (PyPI / OCI) is shipped yet."
+          },
+          "license": "MIT",
+          "maintainer": {
+            "name": "Ahmed Hobeishy",
+            "url": "https://www.linkedin.com/in/ahmedhobeishy/"
+          },
+          "supported_transports": [
+            "stdio",
+            "streamable-http"
+          ],
+          "tools": [
+            {
+              "auth": "public",
+              "description": "List Lumen courses in the public catalog. Optional `filter` does free-text search over title + overview.",
+              "name": "list_courses"
+            },
+            {
+              "auth": "public",
+              "description": "Fetch one course by slug. Returns the full syllabus tree (modules + lessons) plus the course overview.",
+              "name": "get_course"
+            },
+            {
+              "auth": "user",
+              "description": "Semantic search across a course's lesson chunks. Returns top-K passages with lesson titles and pgvector cosine-distance scores (lower = better).",
+              "name": "search_lesson_content"
+            },
+            {
+              "auth": "user",
+              "description": "Ask the Lumen course tutor a question. Returns a cited answer or refusal if the course content doesn't cover the topic. Requires enrollment.",
+              "name": "ask_tutor"
+            },
+            {
+              "auth": "user",
+              "description": "Spaced-repetition queue for the calling user: cards whose FSRS-6 due-at has passed. Oldest-due first.",
+              "name": "list_my_due_reviews"
+            },
+            {
+              "auth": "user",
+              "description": "Submit one FSRS-6 rating against a review card. `rating` is 1=again, 2=hard, 3=good, 4=easy.",
+              "name": "grade_review_card"
+            },
+            {
+              "auth": "instructor",
+              "description": "Generate a course outline from a brief and persist it as a draft course owned by the calling instructor.",
+              "name": "create_course_draft"
+            },
+            {
+              "auth": "instructor",
+              "description": "Import a YouTube / Notion / Google Docs URL into a draft course. Creates a fresh course when `course_id` is omitted, otherwise appends.",
+              "name": "ingest_url_to_draft"
+            },
+            {
+              "auth": "user",
+              "description": "Per-enrolled-course completion + mastery rollup for the calling user. Newest enrollment first.",
+              "name": "list_my_progress"
+            }
+          ]
+        }
+      }
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-05-25T10:35:33.739974Z",
+        "publishedAt": "2026-05-25T10:35:33.739974Z",
+        "updatedAt": "2026-05-25T10:35:33.739974Z",
+        "isLatest": false
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.ahmedEid1/lumen",
+        "description": "Self-hostable agentic-AI LMS: catalog, RAG tutor, FSRS reviews, AI authoring, ingest.",
+        "title": "Lumen",
+        "repository": {
+          "url": "https://github.com/ahmedEid1/E-Learning-Platform",
+          "source": "github",
+          "subfolder": "apps/backend/app/mcp"
+        },
+        "version": "1.1.0",
+        "websiteUrl": "https://github.com/ahmedEid1/E-Learning-Platform/blob/master/docs/mcp.md",
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "authentication": {
+              "http": {
+                "grant_types": [
+                  "client_credentials"
+                ],
+                "metadata_endpoint": "/.well-known/oauth-authorization-server",
+                "token_endpoint": "/oauth/token",
+                "type": "oauth2"
+              },
+              "stdio": {
+                "description": "Mint with `make mcp-token` on the Lumen instance; paste the printed client_secret into the env block.",
+                "env_var": "LUMEN_MCP_AUTH_TOKEN",
+                "type": "bearer"
+              }
+            },
+            "categories": [
+              "learning",
+              "education",
+              "agents",
+              "rag",
+              "spaced-repetition"
+            ],
+            "install": {
+              "claude_code": "LUMEN_MCP_AUTH_TOKEN=<client_secret> claude mcp add lumen -- python -m app.mcp --transport stdio",
+              "claude_desktop": {
+                "mcpServers": {
+                  "lumen": {
+                    "args": [
+                      "-m",
+                      "app.mcp",
+                      "--transport",
+                      "stdio"
+                    ],
+                    "command": "python",
+                    "env": {
+                      "DATABASE_URL": "postgresql+asyncpg://lumen:lumen@localhost:5432/lumen",
+                      "LUMEN_MCP_AUTH_TOKEN": "<your-client-secret>"
+                    }
+                  }
+                }
+              },
+              "notes": "Lumen is self-hosted: bring up your own backend, mint a token with `make mcp-token`, then register the server. No public artifact (PyPI / OCI) is shipped yet."
+            },
+            "license": "MIT",
+            "maintainer": {
+              "name": "Ahmed Hobeishy",
+              "url": "https://www.linkedin.com/in/ahmedhobeishy/"
+            },
+            "supported_transports": [
+              "stdio",
+              "streamable-http"
+            ],
+            "tools": [
+              {
+                "auth": "public",
+                "description": "List Lumen courses in the public catalog. Optional `filter` does free-text search over title + overview.",
+                "name": "list_courses"
+              },
+              {
+                "auth": "public",
+                "description": "Fetch one course by slug. Returns the full syllabus tree (modules + lessons) plus the course overview.",
+                "name": "get_course"
+              },
+              {
+                "auth": "user",
+                "description": "Semantic search across a course's lesson chunks. Returns top-K passages with lesson titles and pgvector cosine-distance scores (lower = better).",
+                "name": "search_lesson_content"
+              },
+              {
+                "auth": "user",
+                "description": "Ask the Lumen course tutor a question. Returns a cited answer or refusal if the course content doesn't cover the topic. Requires enrollment.",
+                "name": "ask_tutor"
+              },
+              {
+                "auth": "user",
+                "description": "Spaced-repetition queue for the calling user: cards whose FSRS-6 due-at has passed. Oldest-due first.",
+                "name": "list_my_due_reviews"
+              },
+              {
+                "auth": "user",
+                "description": "Submit one FSRS-6 rating against a review card. `rating` is 1=again, 2=hard, 3=good, 4=easy.",
+                "name": "grade_review_card"
+              },
+              {
+                "auth": "instructor",
+                "description": "Generate a course outline from a brief and persist it as a draft course owned by the calling instructor.",
+                "name": "create_course_draft"
+              },
+              {
+                "auth": "instructor",
+                "description": "Import a YouTube / Notion / Google Docs URL into a draft course. Creates a fresh course when `course_id` is omitted, otherwise appends.",
+                "name": "ingest_url_to_draft"
+              },
+              {
+                "auth": "user",
+                "description": "Per-enrolled-course completion + mastery rollup for the calling user. Newest enrollment first.",
+                "name": "list_my_progress"
+              }
+            ]
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-25T10:35:33.739974Z",
+          "publishedAt": "2026-05-25T10:35:33.739974Z",
+          "updatedAt": "2026-05-25T10:35:33.739974Z",
+          "isLatest": false
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:56.760Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

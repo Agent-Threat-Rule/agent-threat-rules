@@ -1,0 +1,1018 @@
+{
+  "dedup_key": "pkg:pypi:pmquant",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:pypi:pmquant",
+    "registryType": "pypi",
+    "identifier": "pmquant"
+  },
+  "server_names": [
+    "io.github.crp4222/pmq"
+  ],
+  "versions_seen": [
+    "0.4.1",
+    "0.4.10",
+    "0.4.2",
+    "0.4.4",
+    "0.4.5",
+    "0.4.6",
+    "0.4.7",
+    "0.4.8",
+    "0.4.9",
+    "0.5.0",
+    "0.6.0",
+    "0.6.1",
+    "0.7.0"
+  ],
+  "registry_row_count": 13,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.crp4222/pmq",
+      "description": "Production-proven Polymarket CLOB V2 trading and data. Fail-closed fills; keys stay local.",
+      "title": "pmq (Polymarket CLOB V2)",
+      "repository": {
+        "url": "https://github.com/crp4222/pmq",
+        "source": "github"
+      },
+      "version": "0.7.0",
+      "packages": [
+        {
+          "registryType": "pypi",
+          "registryBaseUrl": "https://pypi.org",
+          "identifier": "pmquant",
+          "version": "0.7.0",
+          "runtimeHint": "uvx",
+          "transport": {
+            "type": "stdio"
+          },
+          "environmentVariables": [
+            {
+              "description": "Set to 1 to register the LIVE trading tools (fak_buy, fak_sell, cancel_and_reconcile). Overridden by PMQ_MCP_PAPER=1; with neither set the server is read-only.",
+              "name": "PMQ_MCP_LIVE"
+            },
+            {
+              "description": "Set to 1 for paper trading: trading tools simulate displayed top-of-book fills against real books. No keys or exchange orders. Wins over PMQ_MCP_LIVE.",
+              "name": "PMQ_MCP_PAPER"
+            },
+            {
+              "description": "Initial paper balance in USD when a new state file is created (default 1000). Only relevant when PMQ_MCP_PAPER=1.",
+              "name": "PMQ_MCP_PAPER_USD"
+            },
+            {
+              "description": "Per-order hard cap in USD enforced before any buy, live and paper alike (default 10).",
+              "name": "PMQ_MCP_MAX_USD"
+            },
+            {
+              "description": "Durable cumulative BUY budget per UTC day (off when unset). Unknown live results retain the requested reservation through that UTC day.",
+              "name": "PMQ_MCP_DAILY_USD"
+            },
+            {
+              "description": "Local durable paper-ledger and daily-budget file. Defaults to $XDG_STATE_HOME/pmq or ~/.local/state/pmq; it contains no key material.",
+              "name": "PMQ_MCP_STATE_FILE"
+            },
+            {
+              "description": "EOA private key used only to sign orders locally when trading tools are enabled. Never printed or transmitted. Not needed for the read-only tools.",
+              "isSecret": true,
+              "name": "POLY_PRIVATE_KEY"
+            },
+            {
+              "description": "Funder wallet address. Required with signature_type > 0 (deposit wallets); also an optional default for public account_portfolio reads.",
+              "name": "POLY_FUNDER"
+            },
+            {
+              "description": "Polymarket signature type: 0 EOA, 1 POLY_PROXY, 2 POLY_GNOSIS_SAFE, 3 POLY_1271 (app deposit wallet). Run pmq-doctor if unsure.",
+              "name": "POLY_SIG_TYPE"
+            },
+            {
+              "description": "Append-only file of this server's own order ids. Enables order attribution when several senders share one wallet: account totals then count only orders placed through this server. Optional; without it behavior is unchanged.",
+              "name": "POLY_ORDER_LOG"
+            },
+            {
+              "description": "Colon-separated registry files of the wallet's other order-senders. Reconciliation claims trades unknown to every registry. Sound only if every sender on the wallet keeps a registry.",
+              "name": "POLY_FOREIGN_ORDER_LOGS"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-07-10T18:11:39.704358Z",
+        "publishedAt": "2026-07-10T18:11:39.704358Z",
+        "updatedAt": "2026-07-10T18:11:39.704358Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.crp4222/pmq",
+        "description": "Fail-closed Polymarket CLOB V2 data and execution; trading tools gated behind PMQ_MCP_LIVE=1.",
+        "title": "pmq (Polymarket CLOB V2)",
+        "repository": {
+          "url": "https://github.com/crp4222/pmq",
+          "source": "github"
+        },
+        "version": "0.4.1",
+        "packages": [
+          {
+            "registryType": "pypi",
+            "registryBaseUrl": "https://pypi.org",
+            "identifier": "pmquant",
+            "version": "0.4.1",
+            "runtimeHint": "uvx",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Set to 1 to register the trading tools (fak_buy, fak_sell, cancel_and_reconcile). Unset or any other value keeps the server read-only.",
+                "name": "PMQ_MCP_LIVE"
+              },
+              {
+                "description": "Per-order hard cap in USD enforced before any live buy (default 10). Only relevant when PMQ_MCP_LIVE=1.",
+                "name": "PMQ_MCP_MAX_USD"
+              },
+              {
+                "description": "EOA private key used only to sign orders locally when trading tools are enabled. Never printed or transmitted. Not needed for the read-only tools.",
+                "isSecret": true,
+                "name": "POLY_PRIVATE_KEY"
+              },
+              {
+                "description": "Funder wallet address. Required with signature_type > 0 (deposit wallets). Only used when trading tools are enabled.",
+                "name": "POLY_FUNDER"
+              },
+              {
+                "description": "Polymarket signature type: 0 EOA, 1 POLY_PROXY, 2 POLY_GNOSIS_SAFE, 3 POLY_1271 (app deposit wallet). Run pmq-doctor if unsure.",
+                "name": "POLY_SIG_TYPE"
+              },
+              {
+                "description": "Optional bytes32 builder attribution code. Defaults to the maintainer's public zero-commission code (disclosed in the README); set your own or leave empty to opt out.",
+                "name": "POLY_BUILDER_CODE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-03T15:18:22.731968Z",
+          "publishedAt": "2026-07-03T15:18:22.731968Z",
+          "updatedAt": "2026-07-03T15:18:22.731968Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.crp4222/pmq",
+        "description": "Production-proven Polymarket CLOB V2 trading and data. Fail-closed fills; keys stay local.",
+        "title": "pmq (Polymarket CLOB V2)",
+        "repository": {
+          "url": "https://github.com/crp4222/pmq",
+          "source": "github"
+        },
+        "version": "0.4.10",
+        "packages": [
+          {
+            "registryType": "pypi",
+            "registryBaseUrl": "https://pypi.org",
+            "identifier": "pmquant",
+            "version": "0.4.10",
+            "runtimeHint": "uvx",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Set to 1 to register the LIVE trading tools (fak_buy, fak_sell, cancel_and_reconcile). Overridden by PMQ_MCP_PAPER=1; with neither set the server is read-only.",
+                "name": "PMQ_MCP_LIVE"
+              },
+              {
+                "description": "Set to 1 for paper trading: the trading tools are registered but fills are SIMULATED against the real live order books. No keys needed, no order ever reaches the exchange. Wins over PMQ_MCP_LIVE.",
+                "name": "PMQ_MCP_PAPER"
+              },
+              {
+                "description": "Paper starting balance in USD (default 1000). Only relevant when PMQ_MCP_PAPER=1.",
+                "name": "PMQ_MCP_PAPER_USD"
+              },
+              {
+                "description": "Per-order hard cap in USD enforced before any buy, live and paper alike (default 10).",
+                "name": "PMQ_MCP_MAX_USD"
+              },
+              {
+                "description": "Cumulative BUY budget per UTC day across the whole session (off when unset). Confirmed spend counts; unknown outcomes conservatively consume the requested amount until reconciled.",
+                "name": "PMQ_MCP_DAILY_USD"
+              },
+              {
+                "description": "EOA private key used only to sign orders locally when trading tools are enabled. Never printed or transmitted. Not needed for the read-only tools.",
+                "isSecret": true,
+                "name": "POLY_PRIVATE_KEY"
+              },
+              {
+                "description": "Funder wallet address. Required with signature_type > 0 (deposit wallets). Only used when trading tools are enabled.",
+                "name": "POLY_FUNDER"
+              },
+              {
+                "description": "Polymarket signature type: 0 EOA, 1 POLY_PROXY, 2 POLY_GNOSIS_SAFE, 3 POLY_1271 (app deposit wallet). Run pmq-doctor if unsure.",
+                "name": "POLY_SIG_TYPE"
+              },
+              {
+                "description": "Optional bytes32 builder attribution code. Defaults to the maintainer's public zero-commission code (disclosed in the README); set your own or leave empty to opt out.",
+                "name": "POLY_BUILDER_CODE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-05T11:24:18.151217Z",
+          "publishedAt": "2026-07-05T11:24:18.151217Z",
+          "updatedAt": "2026-07-05T11:24:18.151217Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.crp4222/pmq",
+        "description": "Production-proven Polymarket CLOB V2 trading and data. Fail-closed fills; keys stay local.",
+        "title": "pmq (Polymarket CLOB V2)",
+        "repository": {
+          "url": "https://github.com/crp4222/pmq",
+          "source": "github"
+        },
+        "version": "0.4.2",
+        "packages": [
+          {
+            "registryType": "pypi",
+            "registryBaseUrl": "https://pypi.org",
+            "identifier": "pmquant",
+            "version": "0.4.2",
+            "runtimeHint": "uvx",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Set to 1 to register the trading tools (fak_buy, fak_sell, cancel_and_reconcile). Unset or any other value keeps the server read-only.",
+                "name": "PMQ_MCP_LIVE"
+              },
+              {
+                "description": "Per-order hard cap in USD enforced before any live buy (default 10). Only relevant when PMQ_MCP_LIVE=1.",
+                "name": "PMQ_MCP_MAX_USD"
+              },
+              {
+                "description": "EOA private key used only to sign orders locally when trading tools are enabled. Never printed or transmitted. Not needed for the read-only tools.",
+                "isSecret": true,
+                "name": "POLY_PRIVATE_KEY"
+              },
+              {
+                "description": "Funder wallet address. Required with signature_type > 0 (deposit wallets). Only used when trading tools are enabled.",
+                "name": "POLY_FUNDER"
+              },
+              {
+                "description": "Polymarket signature type: 0 EOA, 1 POLY_PROXY, 2 POLY_GNOSIS_SAFE, 3 POLY_1271 (app deposit wallet). Run pmq-doctor if unsure.",
+                "name": "POLY_SIG_TYPE"
+              },
+              {
+                "description": "Optional bytes32 builder attribution code. Defaults to the maintainer's public zero-commission code (disclosed in the README); set your own or leave empty to opt out.",
+                "name": "POLY_BUILDER_CODE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-04T10:54:16.443936Z",
+          "publishedAt": "2026-07-04T10:54:16.443936Z",
+          "updatedAt": "2026-07-04T10:54:16.443936Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.crp4222/pmq",
+        "description": "Production-proven Polymarket CLOB V2 trading and data. Fail-closed fills; keys stay local.",
+        "title": "pmq (Polymarket CLOB V2)",
+        "repository": {
+          "url": "https://github.com/crp4222/pmq",
+          "source": "github"
+        },
+        "version": "0.4.4",
+        "packages": [
+          {
+            "registryType": "pypi",
+            "registryBaseUrl": "https://pypi.org",
+            "identifier": "pmquant",
+            "version": "0.4.4",
+            "runtimeHint": "uvx",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Set to 1 to register the trading tools (fak_buy, fak_sell, cancel_and_reconcile). Unset or any other value keeps the server read-only.",
+                "name": "PMQ_MCP_LIVE"
+              },
+              {
+                "description": "Per-order hard cap in USD enforced before any live buy (default 10). Only relevant when PMQ_MCP_LIVE=1.",
+                "name": "PMQ_MCP_MAX_USD"
+              },
+              {
+                "description": "EOA private key used only to sign orders locally when trading tools are enabled. Never printed or transmitted. Not needed for the read-only tools.",
+                "isSecret": true,
+                "name": "POLY_PRIVATE_KEY"
+              },
+              {
+                "description": "Funder wallet address. Required with signature_type > 0 (deposit wallets). Only used when trading tools are enabled.",
+                "name": "POLY_FUNDER"
+              },
+              {
+                "description": "Polymarket signature type: 0 EOA, 1 POLY_PROXY, 2 POLY_GNOSIS_SAFE, 3 POLY_1271 (app deposit wallet). Run pmq-doctor if unsure.",
+                "name": "POLY_SIG_TYPE"
+              },
+              {
+                "description": "Optional bytes32 builder attribution code. Defaults to the maintainer's public zero-commission code (disclosed in the README); set your own or leave empty to opt out.",
+                "name": "POLY_BUILDER_CODE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-04T11:39:55.439789Z",
+          "publishedAt": "2026-07-04T11:39:55.439789Z",
+          "updatedAt": "2026-07-04T11:39:55.439789Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.crp4222/pmq",
+        "description": "Production-proven Polymarket CLOB V2 trading and data. Fail-closed fills; keys stay local.",
+        "title": "pmq (Polymarket CLOB V2)",
+        "repository": {
+          "url": "https://github.com/crp4222/pmq",
+          "source": "github"
+        },
+        "version": "0.4.5",
+        "packages": [
+          {
+            "registryType": "pypi",
+            "registryBaseUrl": "https://pypi.org",
+            "identifier": "pmquant",
+            "version": "0.4.5",
+            "runtimeHint": "uvx",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Set to 1 to register the trading tools (fak_buy, fak_sell, cancel_and_reconcile). Unset or any other value keeps the server read-only.",
+                "name": "PMQ_MCP_LIVE"
+              },
+              {
+                "description": "Per-order hard cap in USD enforced before any live buy (default 10). Only relevant when PMQ_MCP_LIVE=1.",
+                "name": "PMQ_MCP_MAX_USD"
+              },
+              {
+                "description": "EOA private key used only to sign orders locally when trading tools are enabled. Never printed or transmitted. Not needed for the read-only tools.",
+                "isSecret": true,
+                "name": "POLY_PRIVATE_KEY"
+              },
+              {
+                "description": "Funder wallet address. Required with signature_type > 0 (deposit wallets). Only used when trading tools are enabled.",
+                "name": "POLY_FUNDER"
+              },
+              {
+                "description": "Polymarket signature type: 0 EOA, 1 POLY_PROXY, 2 POLY_GNOSIS_SAFE, 3 POLY_1271 (app deposit wallet). Run pmq-doctor if unsure.",
+                "name": "POLY_SIG_TYPE"
+              },
+              {
+                "description": "Optional bytes32 builder attribution code. Defaults to the maintainer's public zero-commission code (disclosed in the README); set your own or leave empty to opt out.",
+                "name": "POLY_BUILDER_CODE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-04T12:12:55.66603Z",
+          "publishedAt": "2026-07-04T12:12:55.66603Z",
+          "updatedAt": "2026-07-04T12:12:55.66603Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.crp4222/pmq",
+        "description": "Production-proven Polymarket CLOB V2 trading and data. Fail-closed fills; keys stay local.",
+        "title": "pmq (Polymarket CLOB V2)",
+        "repository": {
+          "url": "https://github.com/crp4222/pmq",
+          "source": "github"
+        },
+        "version": "0.4.6",
+        "packages": [
+          {
+            "registryType": "pypi",
+            "registryBaseUrl": "https://pypi.org",
+            "identifier": "pmquant",
+            "version": "0.4.6",
+            "runtimeHint": "uvx",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Set to 1 to register the trading tools (fak_buy, fak_sell, cancel_and_reconcile). Unset or any other value keeps the server read-only.",
+                "name": "PMQ_MCP_LIVE"
+              },
+              {
+                "description": "Per-order hard cap in USD enforced before any live buy (default 10). Only relevant when PMQ_MCP_LIVE=1.",
+                "name": "PMQ_MCP_MAX_USD"
+              },
+              {
+                "description": "EOA private key used only to sign orders locally when trading tools are enabled. Never printed or transmitted. Not needed for the read-only tools.",
+                "isSecret": true,
+                "name": "POLY_PRIVATE_KEY"
+              },
+              {
+                "description": "Funder wallet address. Required with signature_type > 0 (deposit wallets). Only used when trading tools are enabled.",
+                "name": "POLY_FUNDER"
+              },
+              {
+                "description": "Polymarket signature type: 0 EOA, 1 POLY_PROXY, 2 POLY_GNOSIS_SAFE, 3 POLY_1271 (app deposit wallet). Run pmq-doctor if unsure.",
+                "name": "POLY_SIG_TYPE"
+              },
+              {
+                "description": "Optional bytes32 builder attribution code. Defaults to the maintainer's public zero-commission code (disclosed in the README); set your own or leave empty to opt out.",
+                "name": "POLY_BUILDER_CODE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-04T12:47:45.727393Z",
+          "publishedAt": "2026-07-04T12:47:45.727393Z",
+          "updatedAt": "2026-07-04T12:47:45.727393Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.crp4222/pmq",
+        "description": "Production-proven Polymarket CLOB V2 trading and data. Fail-closed fills; keys stay local.",
+        "title": "pmq (Polymarket CLOB V2)",
+        "repository": {
+          "url": "https://github.com/crp4222/pmq",
+          "source": "github"
+        },
+        "version": "0.4.7",
+        "packages": [
+          {
+            "registryType": "pypi",
+            "registryBaseUrl": "https://pypi.org",
+            "identifier": "pmquant",
+            "version": "0.4.7",
+            "runtimeHint": "uvx",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Set to 1 to register the trading tools (fak_buy, fak_sell, cancel_and_reconcile). Unset or any other value keeps the server read-only.",
+                "name": "PMQ_MCP_LIVE"
+              },
+              {
+                "description": "Per-order hard cap in USD enforced before any live buy (default 10). Only relevant when PMQ_MCP_LIVE=1.",
+                "name": "PMQ_MCP_MAX_USD"
+              },
+              {
+                "description": "Cumulative BUY budget per UTC day across the whole session (off when unset). Confirmed spend counts; unknown outcomes conservatively consume the requested amount until reconciled.",
+                "name": "PMQ_MCP_DAILY_USD"
+              },
+              {
+                "description": "EOA private key used only to sign orders locally when trading tools are enabled. Never printed or transmitted. Not needed for the read-only tools.",
+                "isSecret": true,
+                "name": "POLY_PRIVATE_KEY"
+              },
+              {
+                "description": "Funder wallet address. Required with signature_type > 0 (deposit wallets). Only used when trading tools are enabled.",
+                "name": "POLY_FUNDER"
+              },
+              {
+                "description": "Polymarket signature type: 0 EOA, 1 POLY_PROXY, 2 POLY_GNOSIS_SAFE, 3 POLY_1271 (app deposit wallet). Run pmq-doctor if unsure.",
+                "name": "POLY_SIG_TYPE"
+              },
+              {
+                "description": "Optional bytes32 builder attribution code. Defaults to the maintainer's public zero-commission code (disclosed in the README); set your own or leave empty to opt out.",
+                "name": "POLY_BUILDER_CODE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-04T19:10:53.776289Z",
+          "publishedAt": "2026-07-04T19:10:53.776289Z",
+          "updatedAt": "2026-07-04T19:10:53.776289Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.crp4222/pmq",
+        "description": "Production-proven Polymarket CLOB V2 trading and data. Fail-closed fills; keys stay local.",
+        "title": "pmq (Polymarket CLOB V2)",
+        "repository": {
+          "url": "https://github.com/crp4222/pmq",
+          "source": "github"
+        },
+        "version": "0.4.8",
+        "packages": [
+          {
+            "registryType": "pypi",
+            "registryBaseUrl": "https://pypi.org",
+            "identifier": "pmquant",
+            "version": "0.4.8",
+            "runtimeHint": "uvx",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Set to 1 to register the LIVE trading tools (fak_buy, fak_sell, cancel_and_reconcile). Overridden by PMQ_MCP_PAPER=1; with neither set the server is read-only.",
+                "name": "PMQ_MCP_LIVE"
+              },
+              {
+                "description": "Set to 1 for paper trading: the trading tools are registered but fills are SIMULATED against the real live order books. No keys needed, no order ever reaches the exchange. Wins over PMQ_MCP_LIVE.",
+                "name": "PMQ_MCP_PAPER"
+              },
+              {
+                "description": "Paper starting balance in USD (default 1000). Only relevant when PMQ_MCP_PAPER=1.",
+                "name": "PMQ_MCP_PAPER_USD"
+              },
+              {
+                "description": "Per-order hard cap in USD enforced before any buy, live and paper alike (default 10).",
+                "name": "PMQ_MCP_MAX_USD"
+              },
+              {
+                "description": "Cumulative BUY budget per UTC day across the whole session (off when unset). Confirmed spend counts; unknown outcomes conservatively consume the requested amount until reconciled.",
+                "name": "PMQ_MCP_DAILY_USD"
+              },
+              {
+                "description": "EOA private key used only to sign orders locally when trading tools are enabled. Never printed or transmitted. Not needed for the read-only tools.",
+                "isSecret": true,
+                "name": "POLY_PRIVATE_KEY"
+              },
+              {
+                "description": "Funder wallet address. Required with signature_type > 0 (deposit wallets). Only used when trading tools are enabled.",
+                "name": "POLY_FUNDER"
+              },
+              {
+                "description": "Polymarket signature type: 0 EOA, 1 POLY_PROXY, 2 POLY_GNOSIS_SAFE, 3 POLY_1271 (app deposit wallet). Run pmq-doctor if unsure.",
+                "name": "POLY_SIG_TYPE"
+              },
+              {
+                "description": "Optional bytes32 builder attribution code. Defaults to the maintainer's public zero-commission code (disclosed in the README); set your own or leave empty to opt out.",
+                "name": "POLY_BUILDER_CODE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-05T10:29:20.977511Z",
+          "publishedAt": "2026-07-05T10:29:20.977511Z",
+          "updatedAt": "2026-07-05T10:29:20.977511Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.crp4222/pmq",
+        "description": "Production-proven Polymarket CLOB V2 trading and data. Fail-closed fills; keys stay local.",
+        "title": "pmq (Polymarket CLOB V2)",
+        "repository": {
+          "url": "https://github.com/crp4222/pmq",
+          "source": "github"
+        },
+        "version": "0.4.9",
+        "packages": [
+          {
+            "registryType": "pypi",
+            "registryBaseUrl": "https://pypi.org",
+            "identifier": "pmquant",
+            "version": "0.4.9",
+            "runtimeHint": "uvx",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Set to 1 to register the LIVE trading tools (fak_buy, fak_sell, cancel_and_reconcile). Overridden by PMQ_MCP_PAPER=1; with neither set the server is read-only.",
+                "name": "PMQ_MCP_LIVE"
+              },
+              {
+                "description": "Set to 1 for paper trading: the trading tools are registered but fills are SIMULATED against the real live order books. No keys needed, no order ever reaches the exchange. Wins over PMQ_MCP_LIVE.",
+                "name": "PMQ_MCP_PAPER"
+              },
+              {
+                "description": "Paper starting balance in USD (default 1000). Only relevant when PMQ_MCP_PAPER=1.",
+                "name": "PMQ_MCP_PAPER_USD"
+              },
+              {
+                "description": "Per-order hard cap in USD enforced before any buy, live and paper alike (default 10).",
+                "name": "PMQ_MCP_MAX_USD"
+              },
+              {
+                "description": "Cumulative BUY budget per UTC day across the whole session (off when unset). Confirmed spend counts; unknown outcomes conservatively consume the requested amount until reconciled.",
+                "name": "PMQ_MCP_DAILY_USD"
+              },
+              {
+                "description": "EOA private key used only to sign orders locally when trading tools are enabled. Never printed or transmitted. Not needed for the read-only tools.",
+                "isSecret": true,
+                "name": "POLY_PRIVATE_KEY"
+              },
+              {
+                "description": "Funder wallet address. Required with signature_type > 0 (deposit wallets). Only used when trading tools are enabled.",
+                "name": "POLY_FUNDER"
+              },
+              {
+                "description": "Polymarket signature type: 0 EOA, 1 POLY_PROXY, 2 POLY_GNOSIS_SAFE, 3 POLY_1271 (app deposit wallet). Run pmq-doctor if unsure.",
+                "name": "POLY_SIG_TYPE"
+              },
+              {
+                "description": "Optional bytes32 builder attribution code. Defaults to the maintainer's public zero-commission code (disclosed in the README); set your own or leave empty to opt out.",
+                "name": "POLY_BUILDER_CODE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-05T10:53:46.46121Z",
+          "publishedAt": "2026-07-05T10:53:46.46121Z",
+          "updatedAt": "2026-07-05T10:53:46.46121Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.crp4222/pmq",
+        "description": "Production-proven Polymarket CLOB V2 trading and data. Fail-closed fills; keys stay local.",
+        "title": "pmq (Polymarket CLOB V2)",
+        "repository": {
+          "url": "https://github.com/crp4222/pmq",
+          "source": "github"
+        },
+        "version": "0.5.0",
+        "packages": [
+          {
+            "registryType": "pypi",
+            "registryBaseUrl": "https://pypi.org",
+            "identifier": "pmquant",
+            "version": "0.5.0",
+            "runtimeHint": "uvx",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Set to 1 to register the LIVE trading tools (fak_buy, fak_sell, cancel_and_reconcile). Overridden by PMQ_MCP_PAPER=1; with neither set the server is read-only.",
+                "name": "PMQ_MCP_LIVE"
+              },
+              {
+                "description": "Set to 1 for paper trading: the trading tools are registered but fills are SIMULATED against the real live order books. No keys needed, no order ever reaches the exchange. Wins over PMQ_MCP_LIVE.",
+                "name": "PMQ_MCP_PAPER"
+              },
+              {
+                "description": "Paper starting balance in USD (default 1000). Only relevant when PMQ_MCP_PAPER=1.",
+                "name": "PMQ_MCP_PAPER_USD"
+              },
+              {
+                "description": "Per-order hard cap in USD enforced before any buy, live and paper alike (default 10).",
+                "name": "PMQ_MCP_MAX_USD"
+              },
+              {
+                "description": "Cumulative BUY budget per UTC day across the whole session (off when unset). Confirmed spend counts; unknown outcomes conservatively consume the requested amount until reconciled.",
+                "name": "PMQ_MCP_DAILY_USD"
+              },
+              {
+                "description": "EOA private key used only to sign orders locally when trading tools are enabled. Never printed or transmitted. Not needed for the read-only tools.",
+                "isSecret": true,
+                "name": "POLY_PRIVATE_KEY"
+              },
+              {
+                "description": "Funder wallet address. Required with signature_type > 0 (deposit wallets). Only used when trading tools are enabled.",
+                "name": "POLY_FUNDER"
+              },
+              {
+                "description": "Polymarket signature type: 0 EOA, 1 POLY_PROXY, 2 POLY_GNOSIS_SAFE, 3 POLY_1271 (app deposit wallet). Run pmq-doctor if unsure.",
+                "name": "POLY_SIG_TYPE"
+              },
+              {
+                "description": "Optional bytes32 builder attribution code. Defaults to the maintainer's public zero-commission code (disclosed in the README); set your own or leave empty to opt out.",
+                "name": "POLY_BUILDER_CODE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-05T18:03:18.308818Z",
+          "publishedAt": "2026-07-05T18:03:18.308818Z",
+          "updatedAt": "2026-07-05T18:03:18.308818Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.crp4222/pmq",
+        "description": "Production-proven Polymarket CLOB V2 trading and data. Fail-closed fills; keys stay local.",
+        "title": "pmq (Polymarket CLOB V2)",
+        "repository": {
+          "url": "https://github.com/crp4222/pmq",
+          "source": "github"
+        },
+        "version": "0.6.0",
+        "packages": [
+          {
+            "registryType": "pypi",
+            "registryBaseUrl": "https://pypi.org",
+            "identifier": "pmquant",
+            "version": "0.6.0",
+            "runtimeHint": "uvx",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Set to 1 to register the LIVE trading tools (fak_buy, fak_sell, cancel_and_reconcile). Overridden by PMQ_MCP_PAPER=1; with neither set the server is read-only.",
+                "name": "PMQ_MCP_LIVE"
+              },
+              {
+                "description": "Set to 1 for paper trading: the trading tools are registered but fills are SIMULATED against the real live order books. No keys needed, no order ever reaches the exchange. Wins over PMQ_MCP_LIVE.",
+                "name": "PMQ_MCP_PAPER"
+              },
+              {
+                "description": "Paper starting balance in USD (default 1000). Only relevant when PMQ_MCP_PAPER=1.",
+                "name": "PMQ_MCP_PAPER_USD"
+              },
+              {
+                "description": "Per-order hard cap in USD enforced before any buy, live and paper alike (default 10).",
+                "name": "PMQ_MCP_MAX_USD"
+              },
+              {
+                "description": "Cumulative BUY budget per UTC day across the whole session (off when unset). Confirmed spend counts; unknown outcomes conservatively consume the requested amount until reconciled.",
+                "name": "PMQ_MCP_DAILY_USD"
+              },
+              {
+                "description": "EOA private key used only to sign orders locally when trading tools are enabled. Never printed or transmitted. Not needed for the read-only tools.",
+                "isSecret": true,
+                "name": "POLY_PRIVATE_KEY"
+              },
+              {
+                "description": "Funder wallet address. Required with signature_type > 0 (deposit wallets). Only used when trading tools are enabled.",
+                "name": "POLY_FUNDER"
+              },
+              {
+                "description": "Polymarket signature type: 0 EOA, 1 POLY_PROXY, 2 POLY_GNOSIS_SAFE, 3 POLY_1271 (app deposit wallet). Run pmq-doctor if unsure.",
+                "name": "POLY_SIG_TYPE"
+              },
+              {
+                "description": "Optional bytes32 builder attribution code. Defaults to the maintainer's public zero-commission code; disclosure and configuration are documented in the README.",
+                "name": "POLY_BUILDER_CODE"
+              },
+              {
+                "description": "Append-only file of this server's own order ids. Enables order attribution when several senders share one wallet: account totals then count only orders placed through this server. Optional; without it behavior is unchanged.",
+                "name": "POLY_ORDER_LOG"
+              },
+              {
+                "description": "Colon-separated registry files of the wallet's other order-senders. Reconciliation claims trades unknown to every registry. Sound only if every sender on the wallet keeps a registry.",
+                "name": "POLY_FOREIGN_ORDER_LOGS"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-05T22:02:47.936611Z",
+          "publishedAt": "2026-07-05T22:02:47.936611Z",
+          "updatedAt": "2026-07-05T22:02:47.936611Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.crp4222/pmq",
+        "description": "Production-proven Polymarket CLOB V2 trading and data. Fail-closed fills; keys stay local.",
+        "title": "pmq (Polymarket CLOB V2)",
+        "repository": {
+          "url": "https://github.com/crp4222/pmq",
+          "source": "github"
+        },
+        "version": "0.6.1",
+        "packages": [
+          {
+            "registryType": "pypi",
+            "registryBaseUrl": "https://pypi.org",
+            "identifier": "pmquant",
+            "version": "0.6.1",
+            "runtimeHint": "uvx",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Set to 1 to register the LIVE trading tools (fak_buy, fak_sell, cancel_and_reconcile). Overridden by PMQ_MCP_PAPER=1; with neither set the server is read-only.",
+                "name": "PMQ_MCP_LIVE"
+              },
+              {
+                "description": "Set to 1 for paper trading: the trading tools are registered but fills are SIMULATED against the real live order books. No keys needed, no order ever reaches the exchange. Wins over PMQ_MCP_LIVE.",
+                "name": "PMQ_MCP_PAPER"
+              },
+              {
+                "description": "Paper starting balance in USD (default 1000). Only relevant when PMQ_MCP_PAPER=1.",
+                "name": "PMQ_MCP_PAPER_USD"
+              },
+              {
+                "description": "Per-order hard cap in USD enforced before any buy, live and paper alike (default 10).",
+                "name": "PMQ_MCP_MAX_USD"
+              },
+              {
+                "description": "Cumulative BUY budget per UTC day across the whole session (off when unset). Confirmed spend counts; unknown outcomes conservatively consume the requested amount until reconciled.",
+                "name": "PMQ_MCP_DAILY_USD"
+              },
+              {
+                "description": "EOA private key used only to sign orders locally when trading tools are enabled. Never printed or transmitted. Not needed for the read-only tools.",
+                "isSecret": true,
+                "name": "POLY_PRIVATE_KEY"
+              },
+              {
+                "description": "Funder wallet address. Required with signature_type > 0 (deposit wallets). Only used when trading tools are enabled.",
+                "name": "POLY_FUNDER"
+              },
+              {
+                "description": "Polymarket signature type: 0 EOA, 1 POLY_PROXY, 2 POLY_GNOSIS_SAFE, 3 POLY_1271 (app deposit wallet). Run pmq-doctor if unsure.",
+                "name": "POLY_SIG_TYPE"
+              },
+              {
+                "description": "Optional bytes32 builder attribution code. Defaults to the maintainer's public zero-commission code; disclosure and configuration are documented in the README.",
+                "name": "POLY_BUILDER_CODE"
+              },
+              {
+                "description": "Append-only file of this server's own order ids. Enables order attribution when several senders share one wallet: account totals then count only orders placed through this server. Optional; without it behavior is unchanged.",
+                "name": "POLY_ORDER_LOG"
+              },
+              {
+                "description": "Colon-separated registry files of the wallet's other order-senders. Reconciliation claims trades unknown to every registry. Sound only if every sender on the wallet keeps a registry.",
+                "name": "POLY_FOREIGN_ORDER_LOGS"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-06T13:30:15.040411Z",
+          "publishedAt": "2026-07-06T13:30:15.040411Z",
+          "updatedAt": "2026-07-06T13:30:15.040411Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.crp4222/pmq",
+        "description": "Production-proven Polymarket CLOB V2 trading and data. Fail-closed fills; keys stay local.",
+        "title": "pmq (Polymarket CLOB V2)",
+        "repository": {
+          "url": "https://github.com/crp4222/pmq",
+          "source": "github"
+        },
+        "version": "0.7.0",
+        "packages": [
+          {
+            "registryType": "pypi",
+            "registryBaseUrl": "https://pypi.org",
+            "identifier": "pmquant",
+            "version": "0.7.0",
+            "runtimeHint": "uvx",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Set to 1 to register the LIVE trading tools (fak_buy, fak_sell, cancel_and_reconcile). Overridden by PMQ_MCP_PAPER=1; with neither set the server is read-only.",
+                "name": "PMQ_MCP_LIVE"
+              },
+              {
+                "description": "Set to 1 for paper trading: trading tools simulate displayed top-of-book fills against real books. No keys or exchange orders. Wins over PMQ_MCP_LIVE.",
+                "name": "PMQ_MCP_PAPER"
+              },
+              {
+                "description": "Initial paper balance in USD when a new state file is created (default 1000). Only relevant when PMQ_MCP_PAPER=1.",
+                "name": "PMQ_MCP_PAPER_USD"
+              },
+              {
+                "description": "Per-order hard cap in USD enforced before any buy, live and paper alike (default 10).",
+                "name": "PMQ_MCP_MAX_USD"
+              },
+              {
+                "description": "Durable cumulative BUY budget per UTC day (off when unset). Unknown live results retain the requested reservation through that UTC day.",
+                "name": "PMQ_MCP_DAILY_USD"
+              },
+              {
+                "description": "Local durable paper-ledger and daily-budget file. Defaults to $XDG_STATE_HOME/pmq or ~/.local/state/pmq; it contains no key material.",
+                "name": "PMQ_MCP_STATE_FILE"
+              },
+              {
+                "description": "EOA private key used only to sign orders locally when trading tools are enabled. Never printed or transmitted. Not needed for the read-only tools.",
+                "isSecret": true,
+                "name": "POLY_PRIVATE_KEY"
+              },
+              {
+                "description": "Funder wallet address. Required with signature_type > 0 (deposit wallets); also an optional default for public account_portfolio reads.",
+                "name": "POLY_FUNDER"
+              },
+              {
+                "description": "Polymarket signature type: 0 EOA, 1 POLY_PROXY, 2 POLY_GNOSIS_SAFE, 3 POLY_1271 (app deposit wallet). Run pmq-doctor if unsure.",
+                "name": "POLY_SIG_TYPE"
+              },
+              {
+                "description": "Append-only file of this server's own order ids. Enables order attribution when several senders share one wallet: account totals then count only orders placed through this server. Optional; without it behavior is unchanged.",
+                "name": "POLY_ORDER_LOG"
+              },
+              {
+                "description": "Colon-separated registry files of the wallet's other order-senders. Reconciliation claims trades unknown to every registry. Sound only if every sender on the wallet keeps a registry.",
+                "name": "POLY_FOREIGN_ORDER_LOGS"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-10T18:11:39.704358Z",
+          "publishedAt": "2026-07-10T18:11:39.704358Z",
+          "updatedAt": "2026-07-10T18:11:39.704358Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:56.914Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

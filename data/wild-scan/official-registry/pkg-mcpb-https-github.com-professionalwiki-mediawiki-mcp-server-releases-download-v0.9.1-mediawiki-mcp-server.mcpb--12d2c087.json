@@ -1,0 +1,410 @@
+{
+  "dedup_key": "pkg:mcpb:https://github.com/professionalwiki/mediawiki-mcp-server/releases/download/v0.9.1/mediawiki-mcp-server.mcpb",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:mcpb:https://github.com/professionalwiki/mediawiki-mcp-server/releases/download/v0.9.1/mediawiki-mcp-server.mcpb",
+    "registryType": "mcpb",
+    "identifier": "https://github.com/ProfessionalWiki/MediaWiki-MCP-Server/releases/download/v0.9.1/MediaWiki-MCP-Server.mcpb"
+  },
+  "server_names": [
+    "io.github.ProfessionalWiki/mediawiki-mcp-server"
+  ],
+  "versions_seen": [
+    "0.9.1"
+  ],
+  "registry_row_count": 1,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.ProfessionalWiki/mediawiki-mcp-server",
+      "description": "MCP server enabling AI clients to interact with any MediaWiki wiki through standard tools",
+      "title": "MediaWiki MCP Server",
+      "repository": {
+        "url": "https://github.com/ProfessionalWiki/MediaWiki-MCP-Server",
+        "source": "github"
+      },
+      "version": "0.9.1",
+      "packages": [
+        {
+          "registryType": "mcpb",
+          "identifier": "https://github.com/ProfessionalWiki/MediaWiki-MCP-Server/releases/download/v0.9.1/MediaWiki-MCP-Server.mcpb",
+          "fileSha256": "3666cf96b0197c862a9d7c19617a3ca32586d1c63a1861df1f2c58c8fac8b87c",
+          "transport": {
+            "type": "stdio"
+          },
+          "environmentVariables": [
+            {
+              "description": "Path to your configuration file",
+              "format": "filepath",
+              "default": "config.json",
+              "name": "CONFIG"
+            },
+            {
+              "description": "Set to 'true' to allow HTTP startup when config.json has static credentials. Otherwise the server refuses to start, preventing silent shared-identity fallback for unauthenticated requests.",
+              "name": "MCP_ALLOW_STATIC_FALLBACK"
+            },
+            {
+              "description": "Byte cap for content bodies (wikitext, rendered HTML, diffs) returned by get-page, get-pages, parse-wikitext, and compare-pages. Oversized bodies are truncated with a trailing marker.",
+              "format": "number",
+              "default": "50000",
+              "name": "MCP_CONTENT_MAX_BYTES"
+            },
+            {
+              "description": "Minimum severity for logger output (stderr telemetry and sendLoggingMessage broadcast). Invalid values fail loudly on first log call.",
+              "default": "debug",
+              "choices": [
+                "debug",
+                "info",
+                "notice",
+                "warning",
+                "error",
+                "critical",
+                "alert",
+                "emergency",
+                "silent"
+              ],
+              "name": "MCP_LOG_LEVEL"
+            },
+            {
+              "description": "Maximum HTTP request body size on the StreamableHTTP transport. Accepts size strings like 1mb or 512kb.",
+              "default": "1mb",
+              "name": "MCP_MAX_REQUEST_BODY"
+            },
+            {
+              "description": "Set to 'true' to expose Prometheus metrics at GET /metrics on the HTTP transport. Has no effect on the stdio transport.",
+              "name": "MCP_METRICS"
+            },
+            {
+              "description": "Override the default OAuth credentials store path. Default: ~/.config/mediawiki-mcp/credentials.json on Linux/macOS, %APPDATA%\\mediawiki-mcp\\credentials.json on Windows.",
+              "format": "filepath",
+              "name": "MCP_OAUTH_CREDENTIALS_FILE"
+            },
+            {
+              "description": "Set to '1' to skip launching a browser during the OAuth dance and log the auth URL to stderr instead. Useful in headless environments and CI.",
+              "name": "MCP_OAUTH_NO_BROWSER"
+            },
+            {
+              "description": "Override the request-derived public URL used in the protected-resource discovery doc and WWW-Authenticate header. Set this when running behind a proxy that rewrites the request Host.",
+              "name": "MCP_PUBLIC_URL"
+            },
+            {
+              "description": "Maximum milliseconds to wait for in-flight /mcp calls to drain on SIGTERM/SIGINT before exiting. Capped at 600000.",
+              "format": "number",
+              "default": "10000",
+              "name": "MCP_SHUTDOWN_GRACE_MS"
+            },
+            {
+              "description": "Type of MCP server transport",
+              "default": "stdio",
+              "choices": [
+                "stdio",
+                "http"
+              ],
+              "name": "MCP_TRANSPORT"
+            },
+            {
+              "description": "Port used for StreamableHTTP transport",
+              "format": "number",
+              "default": "3000",
+              "name": "PORT"
+            }
+          ]
+        },
+        {
+          "registryType": "npm",
+          "identifier": "@professional-wiki/mediawiki-mcp-server",
+          "version": "0.9.1",
+          "runtimeHint": "npx",
+          "transport": {
+            "type": "stdio"
+          },
+          "environmentVariables": [
+            {
+              "description": "Path to your configuration file",
+              "format": "filepath",
+              "default": "config.json",
+              "name": "CONFIG"
+            },
+            {
+              "description": "Set to 'true' to allow HTTP startup when config.json has static credentials. Otherwise the server refuses to start, preventing silent shared-identity fallback for unauthenticated requests.",
+              "name": "MCP_ALLOW_STATIC_FALLBACK"
+            },
+            {
+              "description": "Byte cap for content bodies (wikitext, rendered HTML, diffs) returned by get-page, get-pages, parse-wikitext, and compare-pages. Oversized bodies are truncated with a trailing marker.",
+              "format": "number",
+              "default": "50000",
+              "name": "MCP_CONTENT_MAX_BYTES"
+            },
+            {
+              "description": "Minimum severity for logger output (stderr telemetry and sendLoggingMessage broadcast). Invalid values fail loudly on first log call.",
+              "default": "debug",
+              "choices": [
+                "debug",
+                "info",
+                "notice",
+                "warning",
+                "error",
+                "critical",
+                "alert",
+                "emergency",
+                "silent"
+              ],
+              "name": "MCP_LOG_LEVEL"
+            },
+            {
+              "description": "Maximum HTTP request body size on the StreamableHTTP transport. Accepts size strings like 1mb or 512kb.",
+              "default": "1mb",
+              "name": "MCP_MAX_REQUEST_BODY"
+            },
+            {
+              "description": "Set to 'true' to expose Prometheus metrics at GET /metrics on the HTTP transport. Has no effect on the stdio transport.",
+              "name": "MCP_METRICS"
+            },
+            {
+              "description": "Override the default OAuth credentials store path. Default: ~/.config/mediawiki-mcp/credentials.json on Linux/macOS, %APPDATA%\\mediawiki-mcp\\credentials.json on Windows.",
+              "format": "filepath",
+              "name": "MCP_OAUTH_CREDENTIALS_FILE"
+            },
+            {
+              "description": "Set to '1' to skip launching a browser during the OAuth dance and log the auth URL to stderr instead. Useful in headless environments and CI.",
+              "name": "MCP_OAUTH_NO_BROWSER"
+            },
+            {
+              "description": "Override the request-derived public URL used in the protected-resource discovery doc and WWW-Authenticate header. Set this when running behind a proxy that rewrites the request Host.",
+              "name": "MCP_PUBLIC_URL"
+            },
+            {
+              "description": "Maximum milliseconds to wait for in-flight /mcp calls to drain on SIGTERM/SIGINT before exiting. Capped at 600000.",
+              "format": "number",
+              "default": "10000",
+              "name": "MCP_SHUTDOWN_GRACE_MS"
+            },
+            {
+              "description": "Type of MCP server transport",
+              "default": "stdio",
+              "choices": [
+                "stdio",
+                "http"
+              ],
+              "name": "MCP_TRANSPORT"
+            },
+            {
+              "description": "Port used for StreamableHTTP transport",
+              "format": "number",
+              "default": "3000",
+              "name": "PORT"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-05-13T20:08:34.671573Z",
+        "publishedAt": "2026-05-13T20:08:34.671573Z",
+        "updatedAt": "2026-05-13T20:08:34.671573Z",
+        "isLatest": false
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.ProfessionalWiki/mediawiki-mcp-server",
+        "description": "MCP server enabling AI clients to interact with any MediaWiki wiki through standard tools",
+        "title": "MediaWiki MCP Server",
+        "repository": {
+          "url": "https://github.com/ProfessionalWiki/MediaWiki-MCP-Server",
+          "source": "github"
+        },
+        "version": "0.9.1",
+        "packages": [
+          {
+            "registryType": "mcpb",
+            "identifier": "https://github.com/ProfessionalWiki/MediaWiki-MCP-Server/releases/download/v0.9.1/MediaWiki-MCP-Server.mcpb",
+            "fileSha256": "3666cf96b0197c862a9d7c19617a3ca32586d1c63a1861df1f2c58c8fac8b87c",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Path to your configuration file",
+                "format": "filepath",
+                "default": "config.json",
+                "name": "CONFIG"
+              },
+              {
+                "description": "Set to 'true' to allow HTTP startup when config.json has static credentials. Otherwise the server refuses to start, preventing silent shared-identity fallback for unauthenticated requests.",
+                "name": "MCP_ALLOW_STATIC_FALLBACK"
+              },
+              {
+                "description": "Byte cap for content bodies (wikitext, rendered HTML, diffs) returned by get-page, get-pages, parse-wikitext, and compare-pages. Oversized bodies are truncated with a trailing marker.",
+                "format": "number",
+                "default": "50000",
+                "name": "MCP_CONTENT_MAX_BYTES"
+              },
+              {
+                "description": "Minimum severity for logger output (stderr telemetry and sendLoggingMessage broadcast). Invalid values fail loudly on first log call.",
+                "default": "debug",
+                "choices": [
+                  "debug",
+                  "info",
+                  "notice",
+                  "warning",
+                  "error",
+                  "critical",
+                  "alert",
+                  "emergency",
+                  "silent"
+                ],
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Maximum HTTP request body size on the StreamableHTTP transport. Accepts size strings like 1mb or 512kb.",
+                "default": "1mb",
+                "name": "MCP_MAX_REQUEST_BODY"
+              },
+              {
+                "description": "Set to 'true' to expose Prometheus metrics at GET /metrics on the HTTP transport. Has no effect on the stdio transport.",
+                "name": "MCP_METRICS"
+              },
+              {
+                "description": "Override the default OAuth credentials store path. Default: ~/.config/mediawiki-mcp/credentials.json on Linux/macOS, %APPDATA%\\mediawiki-mcp\\credentials.json on Windows.",
+                "format": "filepath",
+                "name": "MCP_OAUTH_CREDENTIALS_FILE"
+              },
+              {
+                "description": "Set to '1' to skip launching a browser during the OAuth dance and log the auth URL to stderr instead. Useful in headless environments and CI.",
+                "name": "MCP_OAUTH_NO_BROWSER"
+              },
+              {
+                "description": "Override the request-derived public URL used in the protected-resource discovery doc and WWW-Authenticate header. Set this when running behind a proxy that rewrites the request Host.",
+                "name": "MCP_PUBLIC_URL"
+              },
+              {
+                "description": "Maximum milliseconds to wait for in-flight /mcp calls to drain on SIGTERM/SIGINT before exiting. Capped at 600000.",
+                "format": "number",
+                "default": "10000",
+                "name": "MCP_SHUTDOWN_GRACE_MS"
+              },
+              {
+                "description": "Type of MCP server transport",
+                "default": "stdio",
+                "choices": [
+                  "stdio",
+                  "http"
+                ],
+                "name": "MCP_TRANSPORT"
+              },
+              {
+                "description": "Port used for StreamableHTTP transport",
+                "format": "number",
+                "default": "3000",
+                "name": "PORT"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "@professional-wiki/mediawiki-mcp-server",
+            "version": "0.9.1",
+            "runtimeHint": "npx",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Path to your configuration file",
+                "format": "filepath",
+                "default": "config.json",
+                "name": "CONFIG"
+              },
+              {
+                "description": "Set to 'true' to allow HTTP startup when config.json has static credentials. Otherwise the server refuses to start, preventing silent shared-identity fallback for unauthenticated requests.",
+                "name": "MCP_ALLOW_STATIC_FALLBACK"
+              },
+              {
+                "description": "Byte cap for content bodies (wikitext, rendered HTML, diffs) returned by get-page, get-pages, parse-wikitext, and compare-pages. Oversized bodies are truncated with a trailing marker.",
+                "format": "number",
+                "default": "50000",
+                "name": "MCP_CONTENT_MAX_BYTES"
+              },
+              {
+                "description": "Minimum severity for logger output (stderr telemetry and sendLoggingMessage broadcast). Invalid values fail loudly on first log call.",
+                "default": "debug",
+                "choices": [
+                  "debug",
+                  "info",
+                  "notice",
+                  "warning",
+                  "error",
+                  "critical",
+                  "alert",
+                  "emergency",
+                  "silent"
+                ],
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Maximum HTTP request body size on the StreamableHTTP transport. Accepts size strings like 1mb or 512kb.",
+                "default": "1mb",
+                "name": "MCP_MAX_REQUEST_BODY"
+              },
+              {
+                "description": "Set to 'true' to expose Prometheus metrics at GET /metrics on the HTTP transport. Has no effect on the stdio transport.",
+                "name": "MCP_METRICS"
+              },
+              {
+                "description": "Override the default OAuth credentials store path. Default: ~/.config/mediawiki-mcp/credentials.json on Linux/macOS, %APPDATA%\\mediawiki-mcp\\credentials.json on Windows.",
+                "format": "filepath",
+                "name": "MCP_OAUTH_CREDENTIALS_FILE"
+              },
+              {
+                "description": "Set to '1' to skip launching a browser during the OAuth dance and log the auth URL to stderr instead. Useful in headless environments and CI.",
+                "name": "MCP_OAUTH_NO_BROWSER"
+              },
+              {
+                "description": "Override the request-derived public URL used in the protected-resource discovery doc and WWW-Authenticate header. Set this when running behind a proxy that rewrites the request Host.",
+                "name": "MCP_PUBLIC_URL"
+              },
+              {
+                "description": "Maximum milliseconds to wait for in-flight /mcp calls to drain on SIGTERM/SIGINT before exiting. Capped at 600000.",
+                "format": "number",
+                "default": "10000",
+                "name": "MCP_SHUTDOWN_GRACE_MS"
+              },
+              {
+                "description": "Type of MCP server transport",
+                "default": "stdio",
+                "choices": [
+                  "stdio",
+                  "http"
+                ],
+                "name": "MCP_TRANSPORT"
+              },
+              {
+                "description": "Port used for StreamableHTTP transport",
+                "format": "number",
+                "default": "3000",
+                "name": "PORT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-13T20:08:34.671573Z",
+          "publishedAt": "2026-05-13T20:08:34.671573Z",
+          "updatedAt": "2026-05-13T20:08:34.671573Z",
+          "isLatest": false
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:56.678Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

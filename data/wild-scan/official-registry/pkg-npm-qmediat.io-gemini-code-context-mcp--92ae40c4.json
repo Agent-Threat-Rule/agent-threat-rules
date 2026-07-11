@@ -1,0 +1,1893 @@
+{
+  "dedup_key": "pkg:npm:@qmediat.io/gemini-code-context-mcp",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:npm:@qmediat.io/gemini-code-context-mcp",
+    "registryType": "npm",
+    "identifier": "@qmediat.io/gemini-code-context-mcp"
+  },
+  "server_names": [
+    "io.github.qmediat/gemini-code-context-mcp"
+  ],
+  "versions_seen": [
+    "1.10.0",
+    "1.11.0",
+    "1.12.0",
+    "1.12.1",
+    "1.13.0",
+    "1.14.0",
+    "1.14.1",
+    "1.14.2",
+    "1.14.3",
+    "1.14.4",
+    "1.15.0",
+    "1.15.1",
+    "1.15.2",
+    "1.15.3",
+    "1.16.0",
+    "1.16.1",
+    "1.16.2",
+    "1.16.3",
+    "1.5.2",
+    "1.7.0",
+    "1.7.2",
+    "1.7.3",
+    "1.8.0",
+    "1.9.0"
+  ],
+  "registry_row_count": 24,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.qmediat/gemini-code-context-mcp",
+      "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+      "repository": {
+        "url": "https://github.com/qmediat/gemini-code-context-mcp",
+        "source": "github"
+      },
+      "version": "1.16.3",
+      "packages": [
+        {
+          "registryType": "npm",
+          "identifier": "@qmediat.io/gemini-code-context-mcp",
+          "version": "1.16.3",
+          "transport": {
+            "type": "stdio"
+          },
+          "environmentVariables": [
+            {
+              "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+              "format": "string",
+              "name": "GEMINI_CREDENTIALS_PROFILE"
+            },
+            {
+              "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+              "format": "string",
+              "isSecret": true,
+              "name": "GEMINI_API_KEY"
+            },
+            {
+              "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+              "format": "string",
+              "name": "GEMINI_USE_VERTEX"
+            },
+            {
+              "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+              "format": "string",
+              "name": "GOOGLE_CLOUD_PROJECT"
+            },
+            {
+              "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+              "format": "string",
+              "name": "GEMINI_DAILY_BUDGET_USD"
+            },
+            {
+              "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+              "format": "string",
+              "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+            },
+            {
+              "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+              "format": "string",
+              "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+            },
+            {
+              "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+              "format": "string",
+              "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-05-01T14:25:01.060588Z",
+        "publishedAt": "2026-05-01T14:25:01.060588Z",
+        "updatedAt": "2026-05-01T14:25:01.060588Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.qmediat/gemini-code-context-mcp",
+        "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+        "repository": {
+          "url": "https://github.com/qmediat/gemini-code-context-mcp",
+          "source": "github"
+        },
+        "version": "1.10.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@qmediat.io/gemini-code-context-mcp",
+            "version": "1.10.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+                "format": "string",
+                "name": "GEMINI_CREDENTIALS_PROFILE"
+              },
+              {
+                "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+                "format": "string",
+                "isSecret": true,
+                "name": "GEMINI_API_KEY"
+              },
+              {
+                "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+                "format": "string",
+                "name": "GEMINI_USE_VERTEX"
+              },
+              {
+                "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+                "format": "string",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+                "format": "string",
+                "name": "GEMINI_DAILY_BUDGET_USD"
+              },
+              {
+                "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+              },
+              {
+                "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-28T06:01:31.094991Z",
+          "publishedAt": "2026-04-28T06:01:31.094991Z",
+          "updatedAt": "2026-04-28T06:01:31.094991Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.qmediat/gemini-code-context-mcp",
+        "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+        "repository": {
+          "url": "https://github.com/qmediat/gemini-code-context-mcp",
+          "source": "github"
+        },
+        "version": "1.11.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@qmediat.io/gemini-code-context-mcp",
+            "version": "1.11.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+                "format": "string",
+                "name": "GEMINI_CREDENTIALS_PROFILE"
+              },
+              {
+                "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+                "format": "string",
+                "isSecret": true,
+                "name": "GEMINI_API_KEY"
+              },
+              {
+                "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+                "format": "string",
+                "name": "GEMINI_USE_VERTEX"
+              },
+              {
+                "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+                "format": "string",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+                "format": "string",
+                "name": "GEMINI_DAILY_BUDGET_USD"
+              },
+              {
+                "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+              },
+              {
+                "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-28T06:25:23.019371Z",
+          "publishedAt": "2026-04-28T06:25:23.019371Z",
+          "updatedAt": "2026-04-28T06:25:23.019371Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.qmediat/gemini-code-context-mcp",
+        "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+        "repository": {
+          "url": "https://github.com/qmediat/gemini-code-context-mcp",
+          "source": "github"
+        },
+        "version": "1.12.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@qmediat.io/gemini-code-context-mcp",
+            "version": "1.12.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+                "format": "string",
+                "name": "GEMINI_CREDENTIALS_PROFILE"
+              },
+              {
+                "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+                "format": "string",
+                "isSecret": true,
+                "name": "GEMINI_API_KEY"
+              },
+              {
+                "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+                "format": "string",
+                "name": "GEMINI_USE_VERTEX"
+              },
+              {
+                "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+                "format": "string",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+                "format": "string",
+                "name": "GEMINI_DAILY_BUDGET_USD"
+              },
+              {
+                "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+              },
+              {
+                "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-28T06:59:18.908077Z",
+          "publishedAt": "2026-04-28T06:59:18.908077Z",
+          "updatedAt": "2026-04-28T06:59:18.908077Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.qmediat/gemini-code-context-mcp",
+        "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+        "repository": {
+          "url": "https://github.com/qmediat/gemini-code-context-mcp",
+          "source": "github"
+        },
+        "version": "1.12.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@qmediat.io/gemini-code-context-mcp",
+            "version": "1.12.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+                "format": "string",
+                "name": "GEMINI_CREDENTIALS_PROFILE"
+              },
+              {
+                "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+                "format": "string",
+                "isSecret": true,
+                "name": "GEMINI_API_KEY"
+              },
+              {
+                "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+                "format": "string",
+                "name": "GEMINI_USE_VERTEX"
+              },
+              {
+                "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+                "format": "string",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+                "format": "string",
+                "name": "GEMINI_DAILY_BUDGET_USD"
+              },
+              {
+                "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+              },
+              {
+                "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-28T07:56:16.66472Z",
+          "publishedAt": "2026-04-28T07:56:16.66472Z",
+          "updatedAt": "2026-04-28T07:56:16.66472Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.qmediat/gemini-code-context-mcp",
+        "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+        "repository": {
+          "url": "https://github.com/qmediat/gemini-code-context-mcp",
+          "source": "github"
+        },
+        "version": "1.13.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@qmediat.io/gemini-code-context-mcp",
+            "version": "1.13.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+                "format": "string",
+                "name": "GEMINI_CREDENTIALS_PROFILE"
+              },
+              {
+                "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+                "format": "string",
+                "isSecret": true,
+                "name": "GEMINI_API_KEY"
+              },
+              {
+                "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+                "format": "string",
+                "name": "GEMINI_USE_VERTEX"
+              },
+              {
+                "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+                "format": "string",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+                "format": "string",
+                "name": "GEMINI_DAILY_BUDGET_USD"
+              },
+              {
+                "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+              },
+              {
+                "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-28T13:51:35.730491Z",
+          "publishedAt": "2026-04-28T13:51:35.730491Z",
+          "updatedAt": "2026-04-28T13:51:35.730491Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.qmediat/gemini-code-context-mcp",
+        "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+        "repository": {
+          "url": "https://github.com/qmediat/gemini-code-context-mcp",
+          "source": "github"
+        },
+        "version": "1.14.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@qmediat.io/gemini-code-context-mcp",
+            "version": "1.14.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+                "format": "string",
+                "name": "GEMINI_CREDENTIALS_PROFILE"
+              },
+              {
+                "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+                "format": "string",
+                "isSecret": true,
+                "name": "GEMINI_API_KEY"
+              },
+              {
+                "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+                "format": "string",
+                "name": "GEMINI_USE_VERTEX"
+              },
+              {
+                "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+                "format": "string",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+                "format": "string",
+                "name": "GEMINI_DAILY_BUDGET_USD"
+              },
+              {
+                "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+              },
+              {
+                "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-28T20:15:27.884139Z",
+          "publishedAt": "2026-04-28T20:15:27.884139Z",
+          "updatedAt": "2026-04-28T20:15:27.884139Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.qmediat/gemini-code-context-mcp",
+        "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+        "repository": {
+          "url": "https://github.com/qmediat/gemini-code-context-mcp",
+          "source": "github"
+        },
+        "version": "1.14.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@qmediat.io/gemini-code-context-mcp",
+            "version": "1.14.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+                "format": "string",
+                "name": "GEMINI_CREDENTIALS_PROFILE"
+              },
+              {
+                "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+                "format": "string",
+                "isSecret": true,
+                "name": "GEMINI_API_KEY"
+              },
+              {
+                "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+                "format": "string",
+                "name": "GEMINI_USE_VERTEX"
+              },
+              {
+                "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+                "format": "string",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+                "format": "string",
+                "name": "GEMINI_DAILY_BUDGET_USD"
+              },
+              {
+                "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+              },
+              {
+                "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-29T11:05:15.822383Z",
+          "publishedAt": "2026-04-29T11:05:15.822383Z",
+          "updatedAt": "2026-04-29T11:05:15.822383Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.qmediat/gemini-code-context-mcp",
+        "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+        "repository": {
+          "url": "https://github.com/qmediat/gemini-code-context-mcp",
+          "source": "github"
+        },
+        "version": "1.14.2",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@qmediat.io/gemini-code-context-mcp",
+            "version": "1.14.2",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+                "format": "string",
+                "name": "GEMINI_CREDENTIALS_PROFILE"
+              },
+              {
+                "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+                "format": "string",
+                "isSecret": true,
+                "name": "GEMINI_API_KEY"
+              },
+              {
+                "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+                "format": "string",
+                "name": "GEMINI_USE_VERTEX"
+              },
+              {
+                "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+                "format": "string",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+                "format": "string",
+                "name": "GEMINI_DAILY_BUDGET_USD"
+              },
+              {
+                "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+              },
+              {
+                "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-29T20:02:21.527368Z",
+          "publishedAt": "2026-04-29T20:02:21.527368Z",
+          "updatedAt": "2026-04-29T20:02:21.527368Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.qmediat/gemini-code-context-mcp",
+        "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+        "repository": {
+          "url": "https://github.com/qmediat/gemini-code-context-mcp",
+          "source": "github"
+        },
+        "version": "1.14.3",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@qmediat.io/gemini-code-context-mcp",
+            "version": "1.14.3",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+                "format": "string",
+                "name": "GEMINI_CREDENTIALS_PROFILE"
+              },
+              {
+                "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+                "format": "string",
+                "isSecret": true,
+                "name": "GEMINI_API_KEY"
+              },
+              {
+                "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+                "format": "string",
+                "name": "GEMINI_USE_VERTEX"
+              },
+              {
+                "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+                "format": "string",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+                "format": "string",
+                "name": "GEMINI_DAILY_BUDGET_USD"
+              },
+              {
+                "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+              },
+              {
+                "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-29T20:38:58.904341Z",
+          "publishedAt": "2026-04-29T20:38:58.904341Z",
+          "updatedAt": "2026-04-29T20:38:58.904341Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.qmediat/gemini-code-context-mcp",
+        "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+        "repository": {
+          "url": "https://github.com/qmediat/gemini-code-context-mcp",
+          "source": "github"
+        },
+        "version": "1.14.4",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@qmediat.io/gemini-code-context-mcp",
+            "version": "1.14.4",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+                "format": "string",
+                "name": "GEMINI_CREDENTIALS_PROFILE"
+              },
+              {
+                "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+                "format": "string",
+                "isSecret": true,
+                "name": "GEMINI_API_KEY"
+              },
+              {
+                "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+                "format": "string",
+                "name": "GEMINI_USE_VERTEX"
+              },
+              {
+                "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+                "format": "string",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+                "format": "string",
+                "name": "GEMINI_DAILY_BUDGET_USD"
+              },
+              {
+                "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+              },
+              {
+                "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-30T16:09:55.218644Z",
+          "publishedAt": "2026-04-30T16:09:55.218644Z",
+          "updatedAt": "2026-04-30T16:09:55.218644Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.qmediat/gemini-code-context-mcp",
+        "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+        "repository": {
+          "url": "https://github.com/qmediat/gemini-code-context-mcp",
+          "source": "github"
+        },
+        "version": "1.15.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@qmediat.io/gemini-code-context-mcp",
+            "version": "1.15.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+                "format": "string",
+                "name": "GEMINI_CREDENTIALS_PROFILE"
+              },
+              {
+                "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+                "format": "string",
+                "isSecret": true,
+                "name": "GEMINI_API_KEY"
+              },
+              {
+                "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+                "format": "string",
+                "name": "GEMINI_USE_VERTEX"
+              },
+              {
+                "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+                "format": "string",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+                "format": "string",
+                "name": "GEMINI_DAILY_BUDGET_USD"
+              },
+              {
+                "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+              },
+              {
+                "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-30T16:48:12.305268Z",
+          "publishedAt": "2026-04-30T16:48:12.305268Z",
+          "updatedAt": "2026-04-30T16:48:12.305268Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.qmediat/gemini-code-context-mcp",
+        "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+        "repository": {
+          "url": "https://github.com/qmediat/gemini-code-context-mcp",
+          "source": "github"
+        },
+        "version": "1.15.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@qmediat.io/gemini-code-context-mcp",
+            "version": "1.15.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+                "format": "string",
+                "name": "GEMINI_CREDENTIALS_PROFILE"
+              },
+              {
+                "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+                "format": "string",
+                "isSecret": true,
+                "name": "GEMINI_API_KEY"
+              },
+              {
+                "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+                "format": "string",
+                "name": "GEMINI_USE_VERTEX"
+              },
+              {
+                "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+                "format": "string",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+                "format": "string",
+                "name": "GEMINI_DAILY_BUDGET_USD"
+              },
+              {
+                "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+              },
+              {
+                "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-30T17:52:57.409834Z",
+          "publishedAt": "2026-04-30T17:52:57.409834Z",
+          "updatedAt": "2026-04-30T17:52:57.409834Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.qmediat/gemini-code-context-mcp",
+        "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+        "repository": {
+          "url": "https://github.com/qmediat/gemini-code-context-mcp",
+          "source": "github"
+        },
+        "version": "1.15.2",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@qmediat.io/gemini-code-context-mcp",
+            "version": "1.15.2",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+                "format": "string",
+                "name": "GEMINI_CREDENTIALS_PROFILE"
+              },
+              {
+                "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+                "format": "string",
+                "isSecret": true,
+                "name": "GEMINI_API_KEY"
+              },
+              {
+                "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+                "format": "string",
+                "name": "GEMINI_USE_VERTEX"
+              },
+              {
+                "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+                "format": "string",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+                "format": "string",
+                "name": "GEMINI_DAILY_BUDGET_USD"
+              },
+              {
+                "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+              },
+              {
+                "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-30T20:09:22.175718Z",
+          "publishedAt": "2026-04-30T20:09:22.175718Z",
+          "updatedAt": "2026-04-30T20:09:22.175718Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.qmediat/gemini-code-context-mcp",
+        "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+        "repository": {
+          "url": "https://github.com/qmediat/gemini-code-context-mcp",
+          "source": "github"
+        },
+        "version": "1.15.3",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@qmediat.io/gemini-code-context-mcp",
+            "version": "1.15.3",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+                "format": "string",
+                "name": "GEMINI_CREDENTIALS_PROFILE"
+              },
+              {
+                "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+                "format": "string",
+                "isSecret": true,
+                "name": "GEMINI_API_KEY"
+              },
+              {
+                "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+                "format": "string",
+                "name": "GEMINI_USE_VERTEX"
+              },
+              {
+                "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+                "format": "string",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+                "format": "string",
+                "name": "GEMINI_DAILY_BUDGET_USD"
+              },
+              {
+                "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+              },
+              {
+                "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-30T20:32:45.427402Z",
+          "publishedAt": "2026-04-30T20:32:45.427402Z",
+          "updatedAt": "2026-04-30T20:32:45.427402Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.qmediat/gemini-code-context-mcp",
+        "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+        "repository": {
+          "url": "https://github.com/qmediat/gemini-code-context-mcp",
+          "source": "github"
+        },
+        "version": "1.16.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@qmediat.io/gemini-code-context-mcp",
+            "version": "1.16.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+                "format": "string",
+                "name": "GEMINI_CREDENTIALS_PROFILE"
+              },
+              {
+                "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+                "format": "string",
+                "isSecret": true,
+                "name": "GEMINI_API_KEY"
+              },
+              {
+                "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+                "format": "string",
+                "name": "GEMINI_USE_VERTEX"
+              },
+              {
+                "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+                "format": "string",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+                "format": "string",
+                "name": "GEMINI_DAILY_BUDGET_USD"
+              },
+              {
+                "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+              },
+              {
+                "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-30T20:48:06.544357Z",
+          "publishedAt": "2026-04-30T20:48:06.544357Z",
+          "updatedAt": "2026-04-30T20:48:06.544357Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.qmediat/gemini-code-context-mcp",
+        "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+        "repository": {
+          "url": "https://github.com/qmediat/gemini-code-context-mcp",
+          "source": "github"
+        },
+        "version": "1.16.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@qmediat.io/gemini-code-context-mcp",
+            "version": "1.16.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+                "format": "string",
+                "name": "GEMINI_CREDENTIALS_PROFILE"
+              },
+              {
+                "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+                "format": "string",
+                "isSecret": true,
+                "name": "GEMINI_API_KEY"
+              },
+              {
+                "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+                "format": "string",
+                "name": "GEMINI_USE_VERTEX"
+              },
+              {
+                "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+                "format": "string",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+                "format": "string",
+                "name": "GEMINI_DAILY_BUDGET_USD"
+              },
+              {
+                "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+              },
+              {
+                "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-30T20:54:02.375036Z",
+          "publishedAt": "2026-04-30T20:54:02.375036Z",
+          "updatedAt": "2026-04-30T20:54:02.375036Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.qmediat/gemini-code-context-mcp",
+        "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+        "repository": {
+          "url": "https://github.com/qmediat/gemini-code-context-mcp",
+          "source": "github"
+        },
+        "version": "1.16.2",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@qmediat.io/gemini-code-context-mcp",
+            "version": "1.16.2",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+                "format": "string",
+                "name": "GEMINI_CREDENTIALS_PROFILE"
+              },
+              {
+                "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+                "format": "string",
+                "isSecret": true,
+                "name": "GEMINI_API_KEY"
+              },
+              {
+                "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+                "format": "string",
+                "name": "GEMINI_USE_VERTEX"
+              },
+              {
+                "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+                "format": "string",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+                "format": "string",
+                "name": "GEMINI_DAILY_BUDGET_USD"
+              },
+              {
+                "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+              },
+              {
+                "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-30T21:56:57.279341Z",
+          "publishedAt": "2026-04-30T21:56:57.279341Z",
+          "updatedAt": "2026-04-30T21:56:57.279341Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.qmediat/gemini-code-context-mcp",
+        "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+        "repository": {
+          "url": "https://github.com/qmediat/gemini-code-context-mcp",
+          "source": "github"
+        },
+        "version": "1.16.3",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@qmediat.io/gemini-code-context-mcp",
+            "version": "1.16.3",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+                "format": "string",
+                "name": "GEMINI_CREDENTIALS_PROFILE"
+              },
+              {
+                "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+                "format": "string",
+                "isSecret": true,
+                "name": "GEMINI_API_KEY"
+              },
+              {
+                "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+                "format": "string",
+                "name": "GEMINI_USE_VERTEX"
+              },
+              {
+                "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+                "format": "string",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+                "format": "string",
+                "name": "GEMINI_DAILY_BUDGET_USD"
+              },
+              {
+                "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+              },
+              {
+                "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-01T14:25:01.060588Z",
+          "publishedAt": "2026-05-01T14:25:01.060588Z",
+          "updatedAt": "2026-05-01T14:25:01.060588Z",
+          "isLatest": true
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.qmediat/gemini-code-context-mcp",
+        "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+        "repository": {
+          "url": "https://github.com/qmediat/gemini-code-context-mcp",
+          "source": "github"
+        },
+        "version": "1.5.2",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@qmediat.io/gemini-code-context-mcp",
+            "version": "1.5.2",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+                "format": "string",
+                "name": "GEMINI_CREDENTIALS_PROFILE"
+              },
+              {
+                "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+                "format": "string",
+                "isSecret": true,
+                "name": "GEMINI_API_KEY"
+              },
+              {
+                "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+                "format": "string",
+                "name": "GEMINI_USE_VERTEX"
+              },
+              {
+                "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+                "format": "string",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+                "format": "string",
+                "name": "GEMINI_DAILY_BUDGET_USD"
+              },
+              {
+                "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+              },
+              {
+                "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-23T05:24:57.687247Z",
+          "publishedAt": "2026-04-23T05:24:57.687247Z",
+          "updatedAt": "2026-04-23T05:24:57.687247Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.qmediat/gemini-code-context-mcp",
+        "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+        "repository": {
+          "url": "https://github.com/qmediat/gemini-code-context-mcp",
+          "source": "github"
+        },
+        "version": "1.7.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@qmediat.io/gemini-code-context-mcp",
+            "version": "1.7.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+                "format": "string",
+                "name": "GEMINI_CREDENTIALS_PROFILE"
+              },
+              {
+                "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+                "format": "string",
+                "isSecret": true,
+                "name": "GEMINI_API_KEY"
+              },
+              {
+                "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+                "format": "string",
+                "name": "GEMINI_USE_VERTEX"
+              },
+              {
+                "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+                "format": "string",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+                "format": "string",
+                "name": "GEMINI_DAILY_BUDGET_USD"
+              },
+              {
+                "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+              },
+              {
+                "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-26T17:57:05.867279Z",
+          "publishedAt": "2026-04-26T17:57:05.867279Z",
+          "updatedAt": "2026-04-26T17:57:05.867279Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.qmediat/gemini-code-context-mcp",
+        "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+        "repository": {
+          "url": "https://github.com/qmediat/gemini-code-context-mcp",
+          "source": "github"
+        },
+        "version": "1.7.2",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@qmediat.io/gemini-code-context-mcp",
+            "version": "1.7.2",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+                "format": "string",
+                "name": "GEMINI_CREDENTIALS_PROFILE"
+              },
+              {
+                "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+                "format": "string",
+                "isSecret": true,
+                "name": "GEMINI_API_KEY"
+              },
+              {
+                "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+                "format": "string",
+                "name": "GEMINI_USE_VERTEX"
+              },
+              {
+                "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+                "format": "string",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+                "format": "string",
+                "name": "GEMINI_DAILY_BUDGET_USD"
+              },
+              {
+                "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+              },
+              {
+                "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-26T19:36:41.23384Z",
+          "publishedAt": "2026-04-26T19:36:41.23384Z",
+          "updatedAt": "2026-04-26T19:36:41.23384Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.qmediat/gemini-code-context-mcp",
+        "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+        "repository": {
+          "url": "https://github.com/qmediat/gemini-code-context-mcp",
+          "source": "github"
+        },
+        "version": "1.7.3",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@qmediat.io/gemini-code-context-mcp",
+            "version": "1.7.3",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+                "format": "string",
+                "name": "GEMINI_CREDENTIALS_PROFILE"
+              },
+              {
+                "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+                "format": "string",
+                "isSecret": true,
+                "name": "GEMINI_API_KEY"
+              },
+              {
+                "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+                "format": "string",
+                "name": "GEMINI_USE_VERTEX"
+              },
+              {
+                "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+                "format": "string",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+                "format": "string",
+                "name": "GEMINI_DAILY_BUDGET_USD"
+              },
+              {
+                "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+              },
+              {
+                "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-26T19:51:51.090693Z",
+          "publishedAt": "2026-04-26T19:51:51.090693Z",
+          "updatedAt": "2026-04-26T19:51:51.090693Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.qmediat/gemini-code-context-mcp",
+        "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+        "repository": {
+          "url": "https://github.com/qmediat/gemini-code-context-mcp",
+          "source": "github"
+        },
+        "version": "1.8.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@qmediat.io/gemini-code-context-mcp",
+            "version": "1.8.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+                "format": "string",
+                "name": "GEMINI_CREDENTIALS_PROFILE"
+              },
+              {
+                "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+                "format": "string",
+                "isSecret": true,
+                "name": "GEMINI_API_KEY"
+              },
+              {
+                "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+                "format": "string",
+                "name": "GEMINI_USE_VERTEX"
+              },
+              {
+                "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+                "format": "string",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+                "format": "string",
+                "name": "GEMINI_DAILY_BUDGET_USD"
+              },
+              {
+                "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+              },
+              {
+                "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-27T07:29:25.873471Z",
+          "publishedAt": "2026-04-27T07:29:25.873471Z",
+          "updatedAt": "2026-04-27T07:29:25.873471Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.qmediat/gemini-code-context-mcp",
+        "description": "Gemini 2M context cache for Claude Code — persistent; repeat queries ~8x faster, ~4x cheaper.",
+        "repository": {
+          "url": "https://github.com/qmediat/gemini-code-context-mcp",
+          "source": "github"
+        },
+        "version": "1.9.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@qmediat.io/gemini-code-context-mcp",
+            "version": "1.9.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Profile name in ~/.config/qmediat/credentials (chmod 0600). Created by `npx @qmediat.io/gemini-code-context-mcp init`. Recommended; keeps your API key out of ~/.claude.json.",
+                "format": "string",
+                "name": "GEMINI_CREDENTIALS_PROFILE"
+              },
+              {
+                "description": "Fallback Tier 3 auth. Your Gemini API key. Emits a warning at startup recommending you move it to the credentials profile via the init command.",
+                "format": "string",
+                "isSecret": true,
+                "name": "GEMINI_API_KEY"
+              },
+              {
+                "description": "Set to `true` to use Vertex AI backend via Application Default Credentials. Requires GOOGLE_CLOUD_PROJECT.",
+                "format": "string",
+                "name": "GEMINI_USE_VERTEX"
+              },
+              {
+                "description": "GCP project ID when using Vertex AI backend. Only read when GEMINI_USE_VERTEX=true.",
+                "format": "string",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "Hard daily USD cap enforced locally. Server refuses calls after the cap until UTC midnight. Unlimited if unset. Honoured by `ask`, `code`, and per-iteration by `ask_agentic`.",
+                "format": "string",
+                "name": "GEMINI_DAILY_BUDGET_USD"
+              },
+              {
+                "description": "Model alias (`latest-pro`, `latest-pro-thinking`, `latest-flash`, `latest-lite`, `latest-vision`) or literal model ID. Default: `latest-pro`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_DEFAULT_MODEL"
+              },
+              {
+                "description": "Context Cache TTL in seconds. Default: 3600 (1 hour). Hot workspaces (<10 min since last use) auto-refresh via background watcher.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "`debug` | `info` | `warn` | `error`. Default: `info`.",
+                "format": "string",
+                "name": "GEMINI_CODE_CONTEXT_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-27T18:37:36.520643Z",
+          "publishedAt": "2026-04-27T18:37:36.520643Z",
+          "updatedAt": "2026-04-27T18:37:36.520643Z",
+          "isLatest": false
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:57.607Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

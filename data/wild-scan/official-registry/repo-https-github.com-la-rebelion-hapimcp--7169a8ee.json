@@ -1,0 +1,545 @@
+{
+  "dedup_key": "repo:https://github.com/la-rebelion/hapimcp",
+  "package_identity": {
+    "type": "repository",
+    "key": "repo:https://github.com/la-rebelion/hapimcp",
+    "repositoryUrl": "https://github.com/la-rebelion/hapimcp"
+  },
+  "server_names": [
+    "ai.com.mcp/contabo",
+    "ai.com.mcp/lenny-rachitsky-podcast",
+    "ai.com.mcp/linkedin",
+    "ai.com.mcp/openai-tools",
+    "ai.com.mcp/petstore",
+    "ai.com.mcp/strava"
+  ],
+  "versions_seen": [
+    "0.6.0",
+    "1.0.0+0.7.1",
+    "3.0.0+0.7.1"
+  ],
+  "registry_row_count": 6,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.com.mcp/strava",
+      "description": "Strava MCP tools for AI: athletes, activities, segments, clubs, routes. Powered by HAPI MCP server.",
+      "title": "HAPI Strava MCP Server",
+      "repository": {
+        "url": "https://github.com/la-rebelion/hapimcp",
+        "source": "github"
+      },
+      "version": "3.0.0+0.7.1",
+      "websiteUrl": "https://run.mcp.com.ai",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://strava.run.mcp.com.ai/mcp"
+        }
+      ],
+      "_meta": {
+        "io.modelcontextprotocol.registry/publisher-provided": {
+          "documentation": "https://developers.strava.com/docs/",
+          "examples": [
+            {
+              "config": "Add 'https://strava.run.mcp.com.ai/mcp' as a remote MCP server in your MCP client, then sign in to Strava when prompted.",
+              "description": "Connect once and let your MCP client + HAPI handle OAuth2 Authorization Code flow and token exchange.",
+              "name": "Basic Connection"
+            },
+            {
+              "description": "This server exposes Strava operations as MCP tools for athlete, activities, segments, clubs, routes, uploads, and streams.",
+              "name": "What You Can Do",
+              "note": "Example tools include getLoggedInAthlete, getLoggedInAthleteActivities, getSegmentById, getClubById, createUpload, and getActivityStreams."
+            },
+            {
+              "config": "hapi deploy --name strava --project strava --openapi https://docs.mcp.com.ai/apis/openapi/strava.json --url https://www.strava.com/api/v3 --host https://strava.run.mcp.com.ai",
+              "description": "Publish your Strava MCP Server with a public host your clients can reach.",
+              "name": "Deploy your own in One Command"
+            }
+          ],
+          "keywords": [
+            "openapi",
+            "rest-api",
+            "strava",
+            "fitness",
+            "activities",
+            "oauth2",
+            "mcp",
+            "automation"
+          ],
+          "license": "Strava API Agreement",
+          "notes": [
+            "MCP clients must support OAuth2 Authorization Code flow for Strava integrations.",
+            "HAPI handles the heavy lifting for OAuth2 flow and API tool exposure.",
+            "Default Strava API base URL: https://www.strava.com/api/v3.",
+            "The --host value is required because ChatGPT, Claude, and other MCP clients connect to your server using that external FQDN/URL. Used to generate the absolute URLs as per MCP specification.",
+            "Use a public internet hostname (or VPN-reachable internal FQDN/IP) that clients can access.",
+            "OAuth endpoints: https://www.strava.com/oauth/authorize and https://www.strava.com/api/v3/oauth/token.",
+            "OpenAPI source: https://docs.mcp.com.ai/apis/openapi/strava.json",
+            "Documentation: https://docs.mcp.com.ai/deployment/"
+          ],
+          "publisher": "La Rebelion Labs"
+        }
+      }
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-02-19T16:39:20.668626Z",
+        "publishedAt": "2026-02-19T16:39:20.668626Z",
+        "updatedAt": "2026-02-19T16:39:20.668626Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "ai.com.mcp/contabo",
+        "description": "Contabo API (v1.0.0) as MCP tools for cloud provisioning, and management. Powered by HAPI MCP server",
+        "title": "Contabo (VPS) MCP Server",
+        "repository": {
+          "url": "https://github.com/la-rebelion/hapimcp",
+          "source": "github"
+        },
+        "version": "0.6.0",
+        "websiteUrl": "https://run.mcp.com.ai",
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://contabo.run.mcp.com.ai/mcp",
+            "headers": [
+              {
+                "description": "Bearer token for authenticating with the Contabo API. Obtain via the documented token endpoint.",
+                "isRequired": true,
+                "format": "string",
+                "isSecret": true,
+                "name": "Authorization"
+              },
+              {
+                "description": "Optional request ID for tracing (recommended for support/debugging)",
+                "format": "string",
+                "name": "x-request-id"
+              }
+            ]
+          }
+        ],
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "documentation": "https://api.contabo.com/#section/Introduction",
+            "examples": [
+              {
+                "config": "Add 'https://contabo.run.mcp.com.ai/mcp' as a remote MCP server in your MCP client. Ensure ACCESS_TOKEN is set in Authorization argument.",
+                "description": "Connect to the Contabo MCP server to manage cloud resources (VPS, VDS, Object Storage, etc.)",
+                "name": "Basic Connection"
+              },
+              {
+                "description": "List all your Contabo compute instances using the MCP tools",
+                "name": "Get Instances",
+                "note": "Ask the MCP client (i.e.: https://chat.mcp.com.ai) to invoke the 'listInstances' tool to retrieve your VPS and VDS instances"
+              },
+              {
+                "config": "curl -d 'client_id=...' -d 'client_secret=...' --data-urlencode 'username=...' --data-urlencode 'password=...' -d 'grant_type=password' 'https://auth.contabo.com/auth/realms/contabo/protocol/openid-connect/token' | jq -r '.access_token'",
+                "description": "Obtain ACCESS_TOKEN using documented OAuth2 flow (see docs and example curl in contabo.md)",
+                "name": "Authentication"
+              }
+            ],
+            "keywords": [
+              "openapi",
+              "rest-api",
+              "contabo",
+              "cloud",
+              "vps",
+              "bare-metal",
+              "automation",
+              "infrastructure"
+            ],
+            "license": "MIT",
+            "notes": [
+              "This MCP server exposes the full Contabo API as MCP tools for cloud automation.",
+              "Authentication is required for all operations. Obtain credentials from the Contabo Customer Control Panel.",
+              "Download the full API specification from https://api.contabo.com, or from the HAPI MCP server documentation: https://docs.mcp.com.ai/servers-apis/openapi/",
+              "See https://api.contabo.com/#section/Introduction and https://contabo.com/en-us/contabo-api/ for full API documentation.",
+              "Run your own HAPI MCP server using Docker: docker run -p 3030:3030  -v ~/.hapi:/app/.hapi serve contabo --port 3030 --headless --url https://api.contabo.com",
+              "Or the HAPI MCP CLI: hapi serve contabo --port 3030 --headless --url https://api.contabo.com --openapi https://docs.mcp.com.ai/apis/openapi/contabo.json",
+              "Documentation: https://docs.mcp.com.ai/deployment/"
+            ],
+            "publisher": "La Rebelion Labs"
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-01-08T13:19:46.430479Z",
+          "publishedAt": "2026-01-08T13:19:46.430479Z",
+          "updatedAt": "2026-01-08T13:19:46.430479Z",
+          "isLatest": true
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "ai.com.mcp/lenny-rachitsky-podcast",
+        "description": "MCP server for structured access to Lenny Rachitsky podcast transcripts. For content creators.",
+        "title": "Lenny Rachitsky Podcast Transcripts MCP Server",
+        "repository": {
+          "url": "https://github.com/la-rebelion/hapimcp",
+          "source": "github"
+        },
+        "version": "0.6.0",
+        "websiteUrl": "https://mcp.com.ai",
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://lenny-rachitsky.run.mcp.com.ai/mcp"
+          }
+        ],
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "documentation": "https://docs.mcp.com.ai/servers-apis/openapi/podcast-transcripts.yaml",
+            "examples": [
+              {
+                "config": "Add 'https://lenny-rachitsky.run.mcp.com.ai/mcp' as a remote MCP server in your MCP client.",
+                "description": "Connect to the Lenny Rachitsky Podcast MCP server to access and search podcast transcripts.",
+                "name": "Basic Connection"
+              },
+              {
+                "description": "The server exposes podcast transcript search, retrieval, and metadata operations as MCP tools.",
+                "name": "Available Operations",
+                "note": "See the OpenAPI spec for endpoints and schema: https://docs.mcp.com.ai/servers-apis/openapi/podcast-transcripts.yaml"
+              }
+            ],
+            "keywords": [
+              "openapi",
+              "rest-api",
+              "podcast",
+              "transcripts",
+              "lenny rachitsky",
+              "influencer",
+              "ai",
+              "content",
+              "search",
+              "archive",
+              "vlog",
+              "content creators"
+            ],
+            "license": "MIT",
+            "notes": [
+              "This MCP server is designed for influencers and content creators to make their content accessible to AI tools.",
+              "All that is needed are the transcripts in a structured format.",
+              "Lenny Rachitsky is a leading voice in product management and startups, hosting a popular podcast with industry experts.",
+              "The backend API is https://lenny-rachitsky.search.mcp.com.ai",
+              "No authentication required for public transcript access.",
+              "For production or private deployments, see the HAPI MCP server documentation.",
+              "OpenAPI spec: https://docs.mcp.com.ai/servers-apis/openapi/podcast-transcripts.yaml",
+              "Documentation: https://docs.mcp.com.ai"
+            ],
+            "publisher": "La Rebelion Labs"
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-01-16T11:08:36.481149Z",
+          "publishedAt": "2026-01-16T11:08:36.481149Z",
+          "updatedAt": "2026-01-16T11:08:36.481149Z",
+          "isLatest": true
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "ai.com.mcp/linkedin",
+        "description": "LinkedIn API as MCP tools to retrieve profile data and publish content. Powered by HAPI MCP.",
+        "title": "LinkedIn MCP Server",
+        "repository": {
+          "url": "https://github.com/la-rebelion/hapimcp",
+          "source": "github"
+        },
+        "version": "1.0.0+0.7.1",
+        "websiteUrl": "https://run.mcp.com.ai",
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://linkedin.run.mcp.com.ai/mcp"
+          }
+        ],
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "documentation": "https://learn.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow",
+            "examples": [
+              {
+                "config": "Add 'https://linkedin.run.mcp.com.ai/mcp' as a remote MCP server in your MCP client, then authenticate with your LinkedIn app credentials when prompted.",
+                "description": "Connect once and let your MCP client + HAPI orchestrate the OAuth2 Authorization Code flow.",
+                "name": "Basic Connection"
+              },
+              {
+                "description": "This server exposes 3 LinkedIn operations as MCP tools:",
+                "name": "What You Can Do",
+                "note": "createSharePost, getSharePosts, getPersonProfile."
+              },
+              {
+                "config": "hapi deploy --openapi https://docs.mcp.com.ai/apis/openapi/linkedin-connector.yaml --url https://api.linkedin.com --host https://linkedin.run.mcp.com.ai",
+                "description": "Publish your LinkedIn MCP Server with a public host your clients can reach.",
+                "name": "Deploy your own in One Command"
+              }
+            ],
+            "keywords": [
+              "openapi",
+              "rest-api",
+              "linkedin",
+              "social",
+              "oauth2",
+              "mcp",
+              "automation",
+              "publishing"
+            ],
+            "license": "LinkedIn API License",
+            "notes": [
+              "MCP clients must support OAuth2 Authorization Code flow for LinkedIn integrations.",
+              "HAPI handles the heavy lifting for OAuth2 flow and API tool exposure.",
+              "Default LinkedIn API base URL: https://api.linkedin.com.",
+              "The --host value is required because ChatGPT, Claude, and other MCP clients connect to your server using that external FQDN/URL. Used to generate the absolute URLs as per MCP specification.",
+              "Use a public internet hostname (or VPN-reachable internal FQDN/IP) that clients can access.",
+              "OpenAPI source: https://docs.mcp.com.ai/apis/openapi/linkedin-connector.yaml",
+              "Documentation: https://docs.mcp.com.ai/deployment/"
+            ],
+            "publisher": "La Rebelion Labs"
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-02-19T15:17:12.346134Z",
+          "publishedAt": "2026-02-19T15:17:12.346134Z",
+          "updatedAt": "2026-02-19T15:17:12.346134Z",
+          "isLatest": true
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "ai.com.mcp/openai-tools",
+        "description": "Focused MCP server for OpenAI image/audio generation (v2.0.0). Wraps endpoints via HAPI CLI.",
+        "title": "OpenAI Tools MCP Server",
+        "repository": {
+          "url": "https://github.com/la-rebelion/hapimcp",
+          "source": "github"
+        },
+        "version": "0.6.0",
+        "websiteUrl": "https://platform.openai.com/docs/api-reference",
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://openai-tools.run.mcp.com.ai/mcp",
+            "headers": [
+              {
+                "description": "Bearer token for authenticating with the OpenAI API. Obtain via the OpenAI dashboard. https://platform.openai.com/api-keys",
+                "isRequired": true,
+                "format": "string",
+                "isSecret": true,
+                "name": "Authorization"
+              }
+            ]
+          }
+        ],
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "documentation": "https://docs.mcp.com.ai/examples/mcp-servers-from-oas/openai-mcp",
+            "examples": [
+              {
+                "command": "docker run -p 3030:3030 hapimcp/hapi-cli:0.6.0 serve openai-tools --port 3030 --headless --url https://api.openai.com/v1 --openapi https://docs.mcp.com.ai/servers-apis/openapi/openai-tools.yaml",
+                "description": "Run the OpenAI Tools MCP server using Docker",
+                "name": "Docker Run"
+              },
+              {
+                "command": "hapi serve openai-tools --headless --port 3030 --url https://api.openai.com/v1",
+                "description": "Run using local HAPI CLI integration",
+                "name": "HAPI CLI"
+              },
+              {
+                "command": "hapi serve openai-tools --headless --port 3030 --url https://api.openai.com/v1 | bunx @modelcontextprotocol/inspector",
+                "description": "Inspect the available tools",
+                "name": "MCP Inspector"
+              }
+            ],
+            "keywords": [
+              "openai",
+              "ai",
+              "images",
+              "audio",
+              "dalle",
+              "whisper",
+              "generation",
+              "mcp",
+              "hapi"
+            ],
+            "license": "MIT",
+            "notes": [
+              "This focused server prevents token bloat by only exposing image and audio generation tools.",
+              "Requires an OpenAI API Key.",
+              "Uses the HAPI CLI to dynamically convert the OpenAI OpenAPI spec to MCP tools.",
+              "The OpenAPI spec is a skimmed version of the full OpenAI API.",
+              "For scaling info, see: https://mcp.com.ai/mcp-at-scale"
+            ],
+            "publisher": "La Rebelion Labs"
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-01-22T02:35:00.021804Z",
+          "publishedAt": "2026-01-22T02:35:00.021804Z",
+          "updatedAt": "2026-01-22T02:35:00.021804Z",
+          "isLatest": true
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "ai.com.mcp/petstore",
+        "description": "Swagger Petstore API (v1.0.27) as MCP for testing and prototyping powered by the HAPI MCP server",
+        "title": "Petstore MCP Server",
+        "repository": {
+          "url": "https://github.com/la-rebelion/hapimcp",
+          "source": "github"
+        },
+        "version": "0.6.0",
+        "websiteUrl": "https://run.mcp.com.ai",
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://petstore.run.mcp.com.ai/mcp"
+          }
+        ],
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "documentation": "https://docs.mcp.com.ai",
+            "examples": [
+              {
+                "config": "Add 'https://petstore.run.mcp.com.ai/mcp' as a remote MCP server in your MCP client",
+                "description": "Connect to the Petstore MCP server to access pet store operations",
+                "name": "Basic Connection"
+              },
+              {
+                "description": "The server exposes all Petstore API operations as MCP tools including: findPetsByStatus, getPetById, addPet, updatePet, deletePet, and more",
+                "name": "Available Operations",
+                "note": "See https://petstore3.swagger.io for the full API specification"
+              }
+            ],
+            "keywords": [
+              "openapi",
+              "rest-api",
+              "petstore",
+              "example",
+              "demo",
+              "swagger"
+            ],
+            "license": "MIT",
+            "notes": [
+              "This is a demo server hosted by La Rebelion Labs",
+              "The backend API is https://petstore3.swagger.io/api/v3",
+              "No authentication required for basic operations",
+              "Rate limits may apply",
+              "For production use, deploy your own HAPI MCP server"
+            ],
+            "publisher": "La Rebelion Labs"
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-01-07T14:13:05.674855Z",
+          "publishedAt": "2026-01-07T14:13:05.674855Z",
+          "updatedAt": "2026-01-07T14:13:05.674855Z",
+          "isLatest": true
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "ai.com.mcp/strava",
+        "description": "Strava MCP tools for AI: athletes, activities, segments, clubs, routes. Powered by HAPI MCP server.",
+        "title": "HAPI Strava MCP Server",
+        "repository": {
+          "url": "https://github.com/la-rebelion/hapimcp",
+          "source": "github"
+        },
+        "version": "3.0.0+0.7.1",
+        "websiteUrl": "https://run.mcp.com.ai",
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://strava.run.mcp.com.ai/mcp"
+          }
+        ],
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "documentation": "https://developers.strava.com/docs/",
+            "examples": [
+              {
+                "config": "Add 'https://strava.run.mcp.com.ai/mcp' as a remote MCP server in your MCP client, then sign in to Strava when prompted.",
+                "description": "Connect once and let your MCP client + HAPI handle OAuth2 Authorization Code flow and token exchange.",
+                "name": "Basic Connection"
+              },
+              {
+                "description": "This server exposes Strava operations as MCP tools for athlete, activities, segments, clubs, routes, uploads, and streams.",
+                "name": "What You Can Do",
+                "note": "Example tools include getLoggedInAthlete, getLoggedInAthleteActivities, getSegmentById, getClubById, createUpload, and getActivityStreams."
+              },
+              {
+                "config": "hapi deploy --name strava --project strava --openapi https://docs.mcp.com.ai/apis/openapi/strava.json --url https://www.strava.com/api/v3 --host https://strava.run.mcp.com.ai",
+                "description": "Publish your Strava MCP Server with a public host your clients can reach.",
+                "name": "Deploy your own in One Command"
+              }
+            ],
+            "keywords": [
+              "openapi",
+              "rest-api",
+              "strava",
+              "fitness",
+              "activities",
+              "oauth2",
+              "mcp",
+              "automation"
+            ],
+            "license": "Strava API Agreement",
+            "notes": [
+              "MCP clients must support OAuth2 Authorization Code flow for Strava integrations.",
+              "HAPI handles the heavy lifting for OAuth2 flow and API tool exposure.",
+              "Default Strava API base URL: https://www.strava.com/api/v3.",
+              "The --host value is required because ChatGPT, Claude, and other MCP clients connect to your server using that external FQDN/URL. Used to generate the absolute URLs as per MCP specification.",
+              "Use a public internet hostname (or VPN-reachable internal FQDN/IP) that clients can access.",
+              "OAuth endpoints: https://www.strava.com/oauth/authorize and https://www.strava.com/api/v3/oauth/token.",
+              "OpenAPI source: https://docs.mcp.com.ai/apis/openapi/strava.json",
+              "Documentation: https://docs.mcp.com.ai/deployment/"
+            ],
+            "publisher": "La Rebelion Labs"
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-02-19T16:39:20.668626Z",
+          "publishedAt": "2026-02-19T16:39:20.668626Z",
+          "updatedAt": "2026-02-19T16:39:20.668626Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:56.154Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

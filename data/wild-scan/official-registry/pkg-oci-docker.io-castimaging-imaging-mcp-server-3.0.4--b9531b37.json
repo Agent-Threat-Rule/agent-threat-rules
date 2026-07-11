@@ -1,0 +1,254 @@
+{
+  "dedup_key": "pkg:oci:docker.io/castimaging/imaging-mcp-server:3.0.4",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:oci:docker.io/castimaging/imaging-mcp-server:3.0.4",
+    "registryType": "oci",
+    "identifier": "docker.io/castimaging/imaging-mcp-server:3.0.4"
+  },
+  "server_names": [
+    "io.github.CAST-Extend/imaging-mcp-server"
+  ],
+  "versions_seen": [
+    "3.0.4"
+  ],
+  "registry_row_count": 1,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.CAST-Extend/imaging-mcp-server",
+      "description": "MCP server exposing CAST Imaging software architecture insights to AI agents",
+      "title": "CAST Imaging MCP Server",
+      "repository": {
+        "url": "https://github.com/CAST-Extend/CAST-Imaging-Mcp",
+        "source": "github"
+      },
+      "version": "3.0.4",
+      "icons": [
+        {
+          "src": "https://raw.githubusercontent.com/CAST-Extend/resources/master/com.castsoftware.imaging.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "docker.io/castimaging/imaging-mcp-server:3.0.4",
+          "runtimeHint": "docker",
+          "transport": {
+            "type": "streamable-http",
+            "url": "http://{HOST_CONTROL_PANEL}:{PORT_CONTROL_PANEL}/mcp",
+            "variables": {
+              "HOST_CONTROL_PANEL": {
+                "description": "Hostname or IP of your CAST Imaging Control Panel",
+                "isRequired": true
+              },
+              "PORT_CONTROL_PANEL": {
+                "description": "CAST Imaging Control Panel port",
+                "default": "8098"
+              }
+            }
+          },
+          "runtimeArguments": [
+            {
+              "value": "{MCP_SERVER_PORT}:8282",
+              "variables": {
+                "MCP_SERVER_PORT": {
+                  "description": "Host port to expose the MCP server on",
+                  "default": "8282"
+                }
+              },
+              "type": "named",
+              "name": "-p"
+            },
+            {
+              "isRequired": true,
+              "value": "HOST_CONTROL_PANEL={HOST_CONTROL_PANEL}",
+              "variables": {
+                "HOST_CONTROL_PANEL": {
+                  "description": "Hostname or IP of your CAST Imaging Control Panel"
+                }
+              },
+              "type": "named",
+              "name": "-e"
+            },
+            {
+              "value": "PORT_CONTROL_PANEL={PORT_CONTROL_PANEL}",
+              "variables": {
+                "PORT_CONTROL_PANEL": {
+                  "description": "Control Panel port",
+                  "default": "8098"
+                }
+              },
+              "type": "named",
+              "name": "-e"
+            },
+            {
+              "isRequired": true,
+              "value": "SERVICE_HOST={SERVICE_HOST}",
+              "variables": {
+                "SERVICE_HOST": {
+                  "description": "Hostname or IP of the machine running the MCP server (used for Eureka registration)"
+                }
+              },
+              "type": "named",
+              "name": "-e"
+            }
+          ],
+          "environmentVariables": [
+            {
+              "description": "CAST Imaging Control Panel hostname or IP",
+              "isRequired": true,
+              "name": "HOST_CONTROL_PANEL"
+            },
+            {
+              "description": "CAST Imaging Control Panel port",
+              "default": "8098",
+              "name": "PORT_CONTROL_PANEL"
+            },
+            {
+              "description": "Hostname or IP of the machine running the MCP server",
+              "isRequired": true,
+              "name": "SERVICE_HOST"
+            },
+            {
+              "description": "Internal port the MCP server container listens on",
+              "default": "8282",
+              "name": "MCP_SERVER_PORT"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-07-10T05:10:08.118809Z",
+        "publishedAt": "2026-07-10T05:10:08.118809Z",
+        "updatedAt": "2026-07-10T05:10:08.118809Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.CAST-Extend/imaging-mcp-server",
+        "description": "MCP server exposing CAST Imaging software architecture insights to AI agents",
+        "title": "CAST Imaging MCP Server",
+        "repository": {
+          "url": "https://github.com/CAST-Extend/CAST-Imaging-Mcp",
+          "source": "github"
+        },
+        "version": "3.0.4",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/CAST-Extend/resources/master/com.castsoftware.imaging.png",
+            "mimeType": "image/png"
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "oci",
+            "identifier": "docker.io/castimaging/imaging-mcp-server:3.0.4",
+            "runtimeHint": "docker",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://{HOST_CONTROL_PANEL}:{PORT_CONTROL_PANEL}/mcp",
+              "variables": {
+                "HOST_CONTROL_PANEL": {
+                  "description": "Hostname or IP of your CAST Imaging Control Panel",
+                  "isRequired": true
+                },
+                "PORT_CONTROL_PANEL": {
+                  "description": "CAST Imaging Control Panel port",
+                  "default": "8098"
+                }
+              }
+            },
+            "runtimeArguments": [
+              {
+                "value": "{MCP_SERVER_PORT}:8282",
+                "variables": {
+                  "MCP_SERVER_PORT": {
+                    "description": "Host port to expose the MCP server on",
+                    "default": "8282"
+                  }
+                },
+                "type": "named",
+                "name": "-p"
+              },
+              {
+                "isRequired": true,
+                "value": "HOST_CONTROL_PANEL={HOST_CONTROL_PANEL}",
+                "variables": {
+                  "HOST_CONTROL_PANEL": {
+                    "description": "Hostname or IP of your CAST Imaging Control Panel"
+                  }
+                },
+                "type": "named",
+                "name": "-e"
+              },
+              {
+                "value": "PORT_CONTROL_PANEL={PORT_CONTROL_PANEL}",
+                "variables": {
+                  "PORT_CONTROL_PANEL": {
+                    "description": "Control Panel port",
+                    "default": "8098"
+                  }
+                },
+                "type": "named",
+                "name": "-e"
+              },
+              {
+                "isRequired": true,
+                "value": "SERVICE_HOST={SERVICE_HOST}",
+                "variables": {
+                  "SERVICE_HOST": {
+                    "description": "Hostname or IP of the machine running the MCP server (used for Eureka registration)"
+                  }
+                },
+                "type": "named",
+                "name": "-e"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "CAST Imaging Control Panel hostname or IP",
+                "isRequired": true,
+                "name": "HOST_CONTROL_PANEL"
+              },
+              {
+                "description": "CAST Imaging Control Panel port",
+                "default": "8098",
+                "name": "PORT_CONTROL_PANEL"
+              },
+              {
+                "description": "Hostname or IP of the machine running the MCP server",
+                "isRequired": true,
+                "name": "SERVICE_HOST"
+              },
+              {
+                "description": "Internal port the MCP server container listens on",
+                "default": "8282",
+                "name": "MCP_SERVER_PORT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-10T05:10:08.118809Z",
+          "publishedAt": "2026-07-10T05:10:08.118809Z",
+          "updatedAt": "2026-07-10T05:10:08.118809Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:56.531Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

@@ -1,0 +1,2587 @@
+{
+  "dedup_key": "pkg:npm:@cyanheads/sanctions-screening-mcp-server",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:npm:@cyanheads/sanctions-screening-mcp-server",
+    "registryType": "npm",
+    "identifier": "@cyanheads/sanctions-screening-mcp-server"
+  },
+  "server_names": [
+    "io.github.cyanheads/sanctions-screening-mcp-server"
+  ],
+  "versions_seen": [
+    "0.1.0",
+    "0.1.1",
+    "0.1.2",
+    "0.1.3",
+    "0.1.4",
+    "0.1.5",
+    "0.1.6",
+    "0.1.7"
+  ],
+  "registry_row_count": 16,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.cyanheads/sanctions-screening-mcp-server",
+      "description": "Screen names against OFAC, EU, UK, UN sanctions lists; resolve entities via GLEIF. Screening aid.",
+      "repository": {
+        "url": "https://github.com/cyanheads/sanctions-screening-mcp-server",
+        "source": "github"
+      },
+      "version": "0.1.7",
+      "packages": [
+        {
+          "registryType": "npm",
+          "registryBaseUrl": "https://registry.npmjs.org",
+          "identifier": "@cyanheads/sanctions-screening-mcp-server",
+          "version": "0.1.7",
+          "runtimeHint": "node",
+          "transport": {
+            "type": "stdio"
+          },
+          "packageArguments": [
+            {
+              "value": "run",
+              "type": "positional"
+            },
+            {
+              "value": "start:stdio",
+              "type": "positional"
+            }
+          ],
+          "environmentVariables": [
+            {
+              "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+              "format": "string",
+              "default": "info",
+              "name": "MCP_LOG_LEVEL"
+            },
+            {
+              "description": "Filesystem path for the local SQLite mirror. All sources are keyless; no API key is required. Populate the mirror out-of-band with `bun run mirror:init`.",
+              "format": "string",
+              "default": "./data/sanctions.db",
+              "name": "SANCTIONS_MIRROR_PATH"
+            },
+            {
+              "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+              "format": "string",
+              "default": "0.85",
+              "name": "SANCTIONS_FUZZY_MIN_SCORE"
+            },
+            {
+              "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+              "format": "string",
+              "default": "50",
+              "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+            }
+          ]
+        },
+        {
+          "registryType": "npm",
+          "registryBaseUrl": "https://registry.npmjs.org",
+          "identifier": "@cyanheads/sanctions-screening-mcp-server",
+          "version": "0.1.7",
+          "runtimeHint": "node",
+          "transport": {
+            "type": "streamable-http",
+            "url": "http://localhost:3010/mcp"
+          },
+          "packageArguments": [
+            {
+              "value": "run",
+              "type": "positional"
+            },
+            {
+              "value": "start:http",
+              "type": "positional"
+            }
+          ],
+          "environmentVariables": [
+            {
+              "description": "The hostname for the HTTP server.",
+              "format": "string",
+              "default": "127.0.0.1",
+              "name": "MCP_HTTP_HOST"
+            },
+            {
+              "description": "The port to run the HTTP server on.",
+              "format": "string",
+              "default": "3010",
+              "name": "MCP_HTTP_PORT"
+            },
+            {
+              "description": "The endpoint path for the MCP server.",
+              "format": "string",
+              "default": "/mcp",
+              "name": "MCP_HTTP_ENDPOINT_PATH"
+            },
+            {
+              "description": "Authentication mode to use: 'none', 'jwt', or 'oauth'.",
+              "format": "string",
+              "default": "none",
+              "name": "MCP_AUTH_MODE"
+            },
+            {
+              "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+              "format": "string",
+              "default": "info",
+              "name": "MCP_LOG_LEVEL"
+            },
+            {
+              "description": "Filesystem path for the local SQLite mirror; a persistent volume on a hosted deployment. All sources are keyless; no API key is required.",
+              "format": "string",
+              "default": "./data/sanctions.db",
+              "name": "SANCTIONS_MIRROR_PATH"
+            },
+            {
+              "description": "Cron for the scheduled refresh of the sanctions lists + name index (HTTP transport only). GLEIF deltas are refreshed manually via mirror:refresh.",
+              "format": "string",
+              "default": "0 4 * * *",
+              "name": "SANCTIONS_REFRESH_CRON"
+            },
+            {
+              "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+              "format": "string",
+              "default": "0.85",
+              "name": "SANCTIONS_FUZZY_MIN_SCORE"
+            },
+            {
+              "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+              "format": "string",
+              "default": "50",
+              "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+            }
+          ]
+        }
+      ],
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://sanctions-screening.caseyjhand.com/mcp"
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-07-05T05:33:38.525261Z",
+        "publishedAt": "2026-07-05T05:33:38.525261Z",
+        "updatedAt": "2026-07-05T05:33:38.525261Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.cyanheads/sanctions-screening-mcp-server",
+        "description": "Screen names against OFAC, EU, UK, UN sanctions lists; resolve entities via GLEIF. Screening aid.",
+        "repository": {
+          "url": "https://github.com/cyanheads/sanctions-screening-mcp-server",
+          "source": "github"
+        },
+        "version": "0.1.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.0",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "stdio"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:stdio",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror. All sources are keyless; no API key is required. Populate the mirror out-of-band with `bun run mirror:init`.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.0",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3010/mcp"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:http",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "The hostname for the HTTP server.",
+                "format": "string",
+                "default": "127.0.0.1",
+                "name": "MCP_HTTP_HOST"
+              },
+              {
+                "description": "The port to run the HTTP server on.",
+                "format": "string",
+                "default": "3010",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "The endpoint path for the MCP server.",
+                "format": "string",
+                "default": "/mcp",
+                "name": "MCP_HTTP_ENDPOINT_PATH"
+              },
+              {
+                "description": "Authentication mode to use: 'none', 'jwt', or 'oauth'.",
+                "format": "string",
+                "default": "none",
+                "name": "MCP_AUTH_MODE"
+              },
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror; a persistent volume on a hosted deployment. All sources are keyless; no API key is required.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Cron for the scheduled refresh of sanctions lists + GLEIF deltas (HTTP transport only).",
+                "format": "string",
+                "default": "0 4 * * *",
+                "name": "SANCTIONS_REFRESH_CRON"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-13T18:15:54.021826Z",
+          "publishedAt": "2026-06-13T18:15:54.021826Z",
+          "updatedAt": "2026-06-13T18:15:54.021826Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.cyanheads/sanctions-screening-mcp-server",
+        "description": "Screen names against OFAC, EU, UK, UN sanctions lists; resolve entities via GLEIF. Screening aid.",
+        "repository": {
+          "url": "https://github.com/cyanheads/sanctions-screening-mcp-server",
+          "source": "github"
+        },
+        "version": "0.1.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.0",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "stdio"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:stdio",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror. All sources are keyless; no API key is required. Populate the mirror out-of-band with `bun run mirror:init`.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.0",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3010/mcp"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:http",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "The hostname for the HTTP server.",
+                "format": "string",
+                "default": "127.0.0.1",
+                "name": "MCP_HTTP_HOST"
+              },
+              {
+                "description": "The port to run the HTTP server on.",
+                "format": "string",
+                "default": "3010",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "The endpoint path for the MCP server.",
+                "format": "string",
+                "default": "/mcp",
+                "name": "MCP_HTTP_ENDPOINT_PATH"
+              },
+              {
+                "description": "Authentication mode to use: 'none', 'jwt', or 'oauth'.",
+                "format": "string",
+                "default": "none",
+                "name": "MCP_AUTH_MODE"
+              },
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror; a persistent volume on a hosted deployment. All sources are keyless; no API key is required.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Cron for the scheduled refresh of sanctions lists + GLEIF deltas (HTTP transport only).",
+                "format": "string",
+                "default": "0 4 * * *",
+                "name": "SANCTIONS_REFRESH_CRON"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-13T18:15:54.021826Z",
+          "publishedAt": "2026-06-13T18:15:54.021826Z",
+          "updatedAt": "2026-06-13T18:15:54.021826Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.cyanheads/sanctions-screening-mcp-server",
+        "description": "Screen names against OFAC, EU, UK, UN sanctions lists; resolve entities via GLEIF. Screening aid.",
+        "repository": {
+          "url": "https://github.com/cyanheads/sanctions-screening-mcp-server",
+          "source": "github"
+        },
+        "version": "0.1.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.1",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "stdio"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:stdio",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror. All sources are keyless; no API key is required. Populate the mirror out-of-band with `bun run mirror:init`.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.1",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3010/mcp"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:http",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "The hostname for the HTTP server.",
+                "format": "string",
+                "default": "127.0.0.1",
+                "name": "MCP_HTTP_HOST"
+              },
+              {
+                "description": "The port to run the HTTP server on.",
+                "format": "string",
+                "default": "3010",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "The endpoint path for the MCP server.",
+                "format": "string",
+                "default": "/mcp",
+                "name": "MCP_HTTP_ENDPOINT_PATH"
+              },
+              {
+                "description": "Authentication mode to use: 'none', 'jwt', or 'oauth'.",
+                "format": "string",
+                "default": "none",
+                "name": "MCP_AUTH_MODE"
+              },
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror; a persistent volume on a hosted deployment. All sources are keyless; no API key is required.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Cron for the scheduled refresh of sanctions lists + GLEIF deltas (HTTP transport only).",
+                "format": "string",
+                "default": "0 4 * * *",
+                "name": "SANCTIONS_REFRESH_CRON"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-14T10:58:42.795806Z",
+          "publishedAt": "2026-06-14T10:58:42.795806Z",
+          "updatedAt": "2026-06-14T10:58:42.795806Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.cyanheads/sanctions-screening-mcp-server",
+        "description": "Screen names against OFAC, EU, UK, UN sanctions lists; resolve entities via GLEIF. Screening aid.",
+        "repository": {
+          "url": "https://github.com/cyanheads/sanctions-screening-mcp-server",
+          "source": "github"
+        },
+        "version": "0.1.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.1",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "stdio"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:stdio",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror. All sources are keyless; no API key is required. Populate the mirror out-of-band with `bun run mirror:init`.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.1",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3010/mcp"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:http",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "The hostname for the HTTP server.",
+                "format": "string",
+                "default": "127.0.0.1",
+                "name": "MCP_HTTP_HOST"
+              },
+              {
+                "description": "The port to run the HTTP server on.",
+                "format": "string",
+                "default": "3010",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "The endpoint path for the MCP server.",
+                "format": "string",
+                "default": "/mcp",
+                "name": "MCP_HTTP_ENDPOINT_PATH"
+              },
+              {
+                "description": "Authentication mode to use: 'none', 'jwt', or 'oauth'.",
+                "format": "string",
+                "default": "none",
+                "name": "MCP_AUTH_MODE"
+              },
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror; a persistent volume on a hosted deployment. All sources are keyless; no API key is required.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Cron for the scheduled refresh of sanctions lists + GLEIF deltas (HTTP transport only).",
+                "format": "string",
+                "default": "0 4 * * *",
+                "name": "SANCTIONS_REFRESH_CRON"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-14T10:58:42.795806Z",
+          "publishedAt": "2026-06-14T10:58:42.795806Z",
+          "updatedAt": "2026-06-14T10:58:42.795806Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.cyanheads/sanctions-screening-mcp-server",
+        "description": "Screen names against OFAC, EU, UK, UN sanctions lists; resolve entities via GLEIF. Screening aid.",
+        "repository": {
+          "url": "https://github.com/cyanheads/sanctions-screening-mcp-server",
+          "source": "github"
+        },
+        "version": "0.1.2",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.2",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "stdio"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:stdio",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror. All sources are keyless; no API key is required. Populate the mirror out-of-band with `bun run mirror:init`.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.2",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3010/mcp"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:http",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "The hostname for the HTTP server.",
+                "format": "string",
+                "default": "127.0.0.1",
+                "name": "MCP_HTTP_HOST"
+              },
+              {
+                "description": "The port to run the HTTP server on.",
+                "format": "string",
+                "default": "3010",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "The endpoint path for the MCP server.",
+                "format": "string",
+                "default": "/mcp",
+                "name": "MCP_HTTP_ENDPOINT_PATH"
+              },
+              {
+                "description": "Authentication mode to use: 'none', 'jwt', or 'oauth'.",
+                "format": "string",
+                "default": "none",
+                "name": "MCP_AUTH_MODE"
+              },
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror; a persistent volume on a hosted deployment. All sources are keyless; no API key is required.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Cron for the scheduled refresh of sanctions lists + GLEIF deltas (HTTP transport only).",
+                "format": "string",
+                "default": "0 4 * * *",
+                "name": "SANCTIONS_REFRESH_CRON"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://sanctions-screening.caseyjhand.com/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-15T17:47:20.070735Z",
+          "publishedAt": "2026-06-15T17:47:20.070735Z",
+          "updatedAt": "2026-06-15T17:47:20.070735Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.cyanheads/sanctions-screening-mcp-server",
+        "description": "Screen names against OFAC, EU, UK, UN sanctions lists; resolve entities via GLEIF. Screening aid.",
+        "repository": {
+          "url": "https://github.com/cyanheads/sanctions-screening-mcp-server",
+          "source": "github"
+        },
+        "version": "0.1.2",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.2",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "stdio"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:stdio",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror. All sources are keyless; no API key is required. Populate the mirror out-of-band with `bun run mirror:init`.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.2",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3010/mcp"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:http",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "The hostname for the HTTP server.",
+                "format": "string",
+                "default": "127.0.0.1",
+                "name": "MCP_HTTP_HOST"
+              },
+              {
+                "description": "The port to run the HTTP server on.",
+                "format": "string",
+                "default": "3010",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "The endpoint path for the MCP server.",
+                "format": "string",
+                "default": "/mcp",
+                "name": "MCP_HTTP_ENDPOINT_PATH"
+              },
+              {
+                "description": "Authentication mode to use: 'none', 'jwt', or 'oauth'.",
+                "format": "string",
+                "default": "none",
+                "name": "MCP_AUTH_MODE"
+              },
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror; a persistent volume on a hosted deployment. All sources are keyless; no API key is required.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Cron for the scheduled refresh of sanctions lists + GLEIF deltas (HTTP transport only).",
+                "format": "string",
+                "default": "0 4 * * *",
+                "name": "SANCTIONS_REFRESH_CRON"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://sanctions-screening.caseyjhand.com/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-15T17:47:20.070735Z",
+          "publishedAt": "2026-06-15T17:47:20.070735Z",
+          "updatedAt": "2026-06-15T17:47:20.070735Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.cyanheads/sanctions-screening-mcp-server",
+        "description": "Screen names against OFAC, EU, UK, UN sanctions lists; resolve entities via GLEIF. Screening aid.",
+        "repository": {
+          "url": "https://github.com/cyanheads/sanctions-screening-mcp-server",
+          "source": "github"
+        },
+        "version": "0.1.3",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.3",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "stdio"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:stdio",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror. All sources are keyless; no API key is required. Populate the mirror out-of-band with `bun run mirror:init`.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.3",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3010/mcp"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:http",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "The hostname for the HTTP server.",
+                "format": "string",
+                "default": "127.0.0.1",
+                "name": "MCP_HTTP_HOST"
+              },
+              {
+                "description": "The port to run the HTTP server on.",
+                "format": "string",
+                "default": "3010",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "The endpoint path for the MCP server.",
+                "format": "string",
+                "default": "/mcp",
+                "name": "MCP_HTTP_ENDPOINT_PATH"
+              },
+              {
+                "description": "Authentication mode to use: 'none', 'jwt', or 'oauth'.",
+                "format": "string",
+                "default": "none",
+                "name": "MCP_AUTH_MODE"
+              },
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror; a persistent volume on a hosted deployment. All sources are keyless; no API key is required.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Cron for the scheduled refresh of sanctions lists + GLEIF deltas (HTTP transport only).",
+                "format": "string",
+                "default": "0 4 * * *",
+                "name": "SANCTIONS_REFRESH_CRON"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://sanctions-screening.caseyjhand.com/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-20T03:07:03.292325Z",
+          "publishedAt": "2026-06-20T03:07:03.292325Z",
+          "updatedAt": "2026-06-20T03:07:03.292325Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.cyanheads/sanctions-screening-mcp-server",
+        "description": "Screen names against OFAC, EU, UK, UN sanctions lists; resolve entities via GLEIF. Screening aid.",
+        "repository": {
+          "url": "https://github.com/cyanheads/sanctions-screening-mcp-server",
+          "source": "github"
+        },
+        "version": "0.1.3",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.3",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "stdio"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:stdio",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror. All sources are keyless; no API key is required. Populate the mirror out-of-band with `bun run mirror:init`.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.3",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3010/mcp"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:http",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "The hostname for the HTTP server.",
+                "format": "string",
+                "default": "127.0.0.1",
+                "name": "MCP_HTTP_HOST"
+              },
+              {
+                "description": "The port to run the HTTP server on.",
+                "format": "string",
+                "default": "3010",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "The endpoint path for the MCP server.",
+                "format": "string",
+                "default": "/mcp",
+                "name": "MCP_HTTP_ENDPOINT_PATH"
+              },
+              {
+                "description": "Authentication mode to use: 'none', 'jwt', or 'oauth'.",
+                "format": "string",
+                "default": "none",
+                "name": "MCP_AUTH_MODE"
+              },
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror; a persistent volume on a hosted deployment. All sources are keyless; no API key is required.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Cron for the scheduled refresh of sanctions lists + GLEIF deltas (HTTP transport only).",
+                "format": "string",
+                "default": "0 4 * * *",
+                "name": "SANCTIONS_REFRESH_CRON"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://sanctions-screening.caseyjhand.com/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-20T03:07:03.292325Z",
+          "publishedAt": "2026-06-20T03:07:03.292325Z",
+          "updatedAt": "2026-06-20T03:07:03.292325Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.cyanheads/sanctions-screening-mcp-server",
+        "description": "Screen names against OFAC, EU, UK, UN sanctions lists; resolve entities via GLEIF. Screening aid.",
+        "repository": {
+          "url": "https://github.com/cyanheads/sanctions-screening-mcp-server",
+          "source": "github"
+        },
+        "version": "0.1.4",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.4",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "stdio"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:stdio",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror. All sources are keyless; no API key is required. Populate the mirror out-of-band with `bun run mirror:init`.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.4",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3010/mcp"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:http",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "The hostname for the HTTP server.",
+                "format": "string",
+                "default": "127.0.0.1",
+                "name": "MCP_HTTP_HOST"
+              },
+              {
+                "description": "The port to run the HTTP server on.",
+                "format": "string",
+                "default": "3010",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "The endpoint path for the MCP server.",
+                "format": "string",
+                "default": "/mcp",
+                "name": "MCP_HTTP_ENDPOINT_PATH"
+              },
+              {
+                "description": "Authentication mode to use: 'none', 'jwt', or 'oauth'.",
+                "format": "string",
+                "default": "none",
+                "name": "MCP_AUTH_MODE"
+              },
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror; a persistent volume on a hosted deployment. All sources are keyless; no API key is required.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Cron for the scheduled refresh of sanctions lists + GLEIF deltas (HTTP transport only).",
+                "format": "string",
+                "default": "0 4 * * *",
+                "name": "SANCTIONS_REFRESH_CRON"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://sanctions-screening.caseyjhand.com/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-20T05:35:36.631466Z",
+          "publishedAt": "2026-06-20T05:35:36.631466Z",
+          "updatedAt": "2026-06-20T05:35:36.631466Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.cyanheads/sanctions-screening-mcp-server",
+        "description": "Screen names against OFAC, EU, UK, UN sanctions lists; resolve entities via GLEIF. Screening aid.",
+        "repository": {
+          "url": "https://github.com/cyanheads/sanctions-screening-mcp-server",
+          "source": "github"
+        },
+        "version": "0.1.4",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.4",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "stdio"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:stdio",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror. All sources are keyless; no API key is required. Populate the mirror out-of-band with `bun run mirror:init`.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.4",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3010/mcp"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:http",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "The hostname for the HTTP server.",
+                "format": "string",
+                "default": "127.0.0.1",
+                "name": "MCP_HTTP_HOST"
+              },
+              {
+                "description": "The port to run the HTTP server on.",
+                "format": "string",
+                "default": "3010",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "The endpoint path for the MCP server.",
+                "format": "string",
+                "default": "/mcp",
+                "name": "MCP_HTTP_ENDPOINT_PATH"
+              },
+              {
+                "description": "Authentication mode to use: 'none', 'jwt', or 'oauth'.",
+                "format": "string",
+                "default": "none",
+                "name": "MCP_AUTH_MODE"
+              },
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror; a persistent volume on a hosted deployment. All sources are keyless; no API key is required.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Cron for the scheduled refresh of sanctions lists + GLEIF deltas (HTTP transport only).",
+                "format": "string",
+                "default": "0 4 * * *",
+                "name": "SANCTIONS_REFRESH_CRON"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://sanctions-screening.caseyjhand.com/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-20T05:35:36.631466Z",
+          "publishedAt": "2026-06-20T05:35:36.631466Z",
+          "updatedAt": "2026-06-20T05:35:36.631466Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.cyanheads/sanctions-screening-mcp-server",
+        "description": "Screen names against OFAC, EU, UK, UN sanctions lists; resolve entities via GLEIF. Screening aid.",
+        "repository": {
+          "url": "https://github.com/cyanheads/sanctions-screening-mcp-server",
+          "source": "github"
+        },
+        "version": "0.1.5",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.5",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "stdio"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:stdio",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror. All sources are keyless; no API key is required. Populate the mirror out-of-band with `bun run mirror:init`.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.5",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3010/mcp"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:http",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "The hostname for the HTTP server.",
+                "format": "string",
+                "default": "127.0.0.1",
+                "name": "MCP_HTTP_HOST"
+              },
+              {
+                "description": "The port to run the HTTP server on.",
+                "format": "string",
+                "default": "3010",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "The endpoint path for the MCP server.",
+                "format": "string",
+                "default": "/mcp",
+                "name": "MCP_HTTP_ENDPOINT_PATH"
+              },
+              {
+                "description": "Authentication mode to use: 'none', 'jwt', or 'oauth'.",
+                "format": "string",
+                "default": "none",
+                "name": "MCP_AUTH_MODE"
+              },
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror; a persistent volume on a hosted deployment. All sources are keyless; no API key is required.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Cron for the scheduled refresh of sanctions lists + GLEIF deltas (HTTP transport only).",
+                "format": "string",
+                "default": "0 4 * * *",
+                "name": "SANCTIONS_REFRESH_CRON"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://sanctions-screening.caseyjhand.com/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-20T18:59:35.12581Z",
+          "publishedAt": "2026-06-20T18:59:35.12581Z",
+          "updatedAt": "2026-06-20T18:59:35.12581Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.cyanheads/sanctions-screening-mcp-server",
+        "description": "Screen names against OFAC, EU, UK, UN sanctions lists; resolve entities via GLEIF. Screening aid.",
+        "repository": {
+          "url": "https://github.com/cyanheads/sanctions-screening-mcp-server",
+          "source": "github"
+        },
+        "version": "0.1.5",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.5",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "stdio"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:stdio",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror. All sources are keyless; no API key is required. Populate the mirror out-of-band with `bun run mirror:init`.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.5",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3010/mcp"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:http",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "The hostname for the HTTP server.",
+                "format": "string",
+                "default": "127.0.0.1",
+                "name": "MCP_HTTP_HOST"
+              },
+              {
+                "description": "The port to run the HTTP server on.",
+                "format": "string",
+                "default": "3010",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "The endpoint path for the MCP server.",
+                "format": "string",
+                "default": "/mcp",
+                "name": "MCP_HTTP_ENDPOINT_PATH"
+              },
+              {
+                "description": "Authentication mode to use: 'none', 'jwt', or 'oauth'.",
+                "format": "string",
+                "default": "none",
+                "name": "MCP_AUTH_MODE"
+              },
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror; a persistent volume on a hosted deployment. All sources are keyless; no API key is required.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Cron for the scheduled refresh of sanctions lists + GLEIF deltas (HTTP transport only).",
+                "format": "string",
+                "default": "0 4 * * *",
+                "name": "SANCTIONS_REFRESH_CRON"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://sanctions-screening.caseyjhand.com/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-20T18:59:35.12581Z",
+          "publishedAt": "2026-06-20T18:59:35.12581Z",
+          "updatedAt": "2026-06-20T18:59:35.12581Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.cyanheads/sanctions-screening-mcp-server",
+        "description": "Screen names against OFAC, EU, UK, UN sanctions lists; resolve entities via GLEIF. Screening aid.",
+        "repository": {
+          "url": "https://github.com/cyanheads/sanctions-screening-mcp-server",
+          "source": "github"
+        },
+        "version": "0.1.6",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.6",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "stdio"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:stdio",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror. All sources are keyless; no API key is required. Populate the mirror out-of-band with `bun run mirror:init`.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.6",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3010/mcp"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:http",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "The hostname for the HTTP server.",
+                "format": "string",
+                "default": "127.0.0.1",
+                "name": "MCP_HTTP_HOST"
+              },
+              {
+                "description": "The port to run the HTTP server on.",
+                "format": "string",
+                "default": "3010",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "The endpoint path for the MCP server.",
+                "format": "string",
+                "default": "/mcp",
+                "name": "MCP_HTTP_ENDPOINT_PATH"
+              },
+              {
+                "description": "Authentication mode to use: 'none', 'jwt', or 'oauth'.",
+                "format": "string",
+                "default": "none",
+                "name": "MCP_AUTH_MODE"
+              },
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror; a persistent volume on a hosted deployment. All sources are keyless; no API key is required.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Cron for the scheduled refresh of sanctions lists + GLEIF deltas (HTTP transport only).",
+                "format": "string",
+                "default": "0 4 * * *",
+                "name": "SANCTIONS_REFRESH_CRON"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://sanctions-screening.caseyjhand.com/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-05T04:38:59.93901Z",
+          "publishedAt": "2026-07-05T04:38:59.93901Z",
+          "updatedAt": "2026-07-05T04:38:59.93901Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.cyanheads/sanctions-screening-mcp-server",
+        "description": "Screen names against OFAC, EU, UK, UN sanctions lists; resolve entities via GLEIF. Screening aid.",
+        "repository": {
+          "url": "https://github.com/cyanheads/sanctions-screening-mcp-server",
+          "source": "github"
+        },
+        "version": "0.1.6",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.6",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "stdio"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:stdio",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror. All sources are keyless; no API key is required. Populate the mirror out-of-band with `bun run mirror:init`.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.6",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3010/mcp"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:http",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "The hostname for the HTTP server.",
+                "format": "string",
+                "default": "127.0.0.1",
+                "name": "MCP_HTTP_HOST"
+              },
+              {
+                "description": "The port to run the HTTP server on.",
+                "format": "string",
+                "default": "3010",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "The endpoint path for the MCP server.",
+                "format": "string",
+                "default": "/mcp",
+                "name": "MCP_HTTP_ENDPOINT_PATH"
+              },
+              {
+                "description": "Authentication mode to use: 'none', 'jwt', or 'oauth'.",
+                "format": "string",
+                "default": "none",
+                "name": "MCP_AUTH_MODE"
+              },
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror; a persistent volume on a hosted deployment. All sources are keyless; no API key is required.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Cron for the scheduled refresh of sanctions lists + GLEIF deltas (HTTP transport only).",
+                "format": "string",
+                "default": "0 4 * * *",
+                "name": "SANCTIONS_REFRESH_CRON"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://sanctions-screening.caseyjhand.com/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-05T04:38:59.93901Z",
+          "publishedAt": "2026-07-05T04:38:59.93901Z",
+          "updatedAt": "2026-07-05T04:38:59.93901Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.cyanheads/sanctions-screening-mcp-server",
+        "description": "Screen names against OFAC, EU, UK, UN sanctions lists; resolve entities via GLEIF. Screening aid.",
+        "repository": {
+          "url": "https://github.com/cyanheads/sanctions-screening-mcp-server",
+          "source": "github"
+        },
+        "version": "0.1.7",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.7",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "stdio"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:stdio",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror. All sources are keyless; no API key is required. Populate the mirror out-of-band with `bun run mirror:init`.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.7",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3010/mcp"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:http",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "The hostname for the HTTP server.",
+                "format": "string",
+                "default": "127.0.0.1",
+                "name": "MCP_HTTP_HOST"
+              },
+              {
+                "description": "The port to run the HTTP server on.",
+                "format": "string",
+                "default": "3010",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "The endpoint path for the MCP server.",
+                "format": "string",
+                "default": "/mcp",
+                "name": "MCP_HTTP_ENDPOINT_PATH"
+              },
+              {
+                "description": "Authentication mode to use: 'none', 'jwt', or 'oauth'.",
+                "format": "string",
+                "default": "none",
+                "name": "MCP_AUTH_MODE"
+              },
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror; a persistent volume on a hosted deployment. All sources are keyless; no API key is required.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Cron for the scheduled refresh of the sanctions lists + name index (HTTP transport only). GLEIF deltas are refreshed manually via mirror:refresh.",
+                "format": "string",
+                "default": "0 4 * * *",
+                "name": "SANCTIONS_REFRESH_CRON"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://sanctions-screening.caseyjhand.com/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-05T05:33:38.525261Z",
+          "publishedAt": "2026-07-05T05:33:38.525261Z",
+          "updatedAt": "2026-07-05T05:33:38.525261Z",
+          "isLatest": true
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.cyanheads/sanctions-screening-mcp-server",
+        "description": "Screen names against OFAC, EU, UK, UN sanctions lists; resolve entities via GLEIF. Screening aid.",
+        "repository": {
+          "url": "https://github.com/cyanheads/sanctions-screening-mcp-server",
+          "source": "github"
+        },
+        "version": "0.1.7",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.7",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "stdio"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:stdio",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror. All sources are keyless; no API key is required. Populate the mirror out-of-band with `bun run mirror:init`.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/sanctions-screening-mcp-server",
+            "version": "0.1.7",
+            "runtimeHint": "node",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3010/mcp"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:http",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "The hostname for the HTTP server.",
+                "format": "string",
+                "default": "127.0.0.1",
+                "name": "MCP_HTTP_HOST"
+              },
+              {
+                "description": "The port to run the HTTP server on.",
+                "format": "string",
+                "default": "3010",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "The endpoint path for the MCP server.",
+                "format": "string",
+                "default": "/mcp",
+                "name": "MCP_HTTP_ENDPOINT_PATH"
+              },
+              {
+                "description": "Authentication mode to use: 'none', 'jwt', or 'oauth'.",
+                "format": "string",
+                "default": "none",
+                "name": "MCP_AUTH_MODE"
+              },
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Filesystem path for the local SQLite mirror; a persistent volume on a hosted deployment. All sources are keyless; no API key is required.",
+                "format": "string",
+                "default": "./data/sanctions.db",
+                "name": "SANCTIONS_MIRROR_PATH"
+              },
+              {
+                "description": "Cron for the scheduled refresh of the sanctions lists + name index (HTTP transport only). GLEIF deltas are refreshed manually via mirror:refresh.",
+                "format": "string",
+                "default": "0 4 * * *",
+                "name": "SANCTIONS_REFRESH_CRON"
+              },
+              {
+                "description": "Default Jaro-Winkler similarity floor (0-1) for fuzzy matches when the caller omits min_score.",
+                "format": "string",
+                "default": "0.85",
+                "name": "SANCTIONS_FUZZY_MIN_SCORE"
+              },
+              {
+                "description": "Hard cap on fuzzy candidates scored per query, to bound work on short queries.",
+                "format": "string",
+                "default": "50",
+                "name": "SANCTIONS_FUZZY_MAX_RESULTS"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://sanctions-screening.caseyjhand.com/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-05T05:33:38.525261Z",
+          "publishedAt": "2026-07-05T05:33:38.525261Z",
+          "updatedAt": "2026-07-05T05:33:38.525261Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:56.957Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

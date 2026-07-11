@@ -1,0 +1,1073 @@
+{
+  "dedup_key": "pkg:npm:@us-all/dbt-mcp",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:npm:@us-all/dbt-mcp",
+    "registryType": "npm",
+    "identifier": "@us-all/dbt-mcp"
+  },
+  "server_names": [
+    "io.github.us-all/dbt"
+  ],
+  "versions_seen": [
+    "0.1.0",
+    "0.1.1",
+    "1.0.3",
+    "1.0.4",
+    "1.0.5",
+    "1.0.6",
+    "1.0.7"
+  ],
+  "registry_row_count": 7,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.us-all/dbt",
+      "description": "dbt MCP — manifest/run_results/sources/catalog parsing + DQ result tables (BigQuery/Postgres)",
+      "repository": {
+        "url": "https://github.com/us-all/dbt-mcp-server",
+        "source": "github"
+      },
+      "version": "1.0.7",
+      "packages": [
+        {
+          "registryType": "npm",
+          "identifier": "@us-all/dbt-mcp",
+          "version": "1.0.7",
+          "transport": {
+            "type": "stdio"
+          },
+          "environmentVariables": [
+            {
+              "description": "Path to dbt project root (where dbt_project.yml lives).",
+              "isRequired": true,
+              "name": "DBT_PROJECT_DIR"
+            },
+            {
+              "description": "dbt target dir for manifest.json/run_results.json (default: $DBT_PROJECT_DIR/target).",
+              "name": "DBT_TARGET_DIR"
+            },
+            {
+              "description": "Optional dir for archived run_results.json history (glob-scanned).",
+              "name": "DBT_RUN_HISTORY_DIR"
+            },
+            {
+              "description": "DQ result table backend: 'bigquery' (default) or 'postgres'.",
+              "name": "DQ_BACKEND"
+            },
+            {
+              "description": "Fully qualified DQ checks table, e.g. 'project.data_ops.quality_checks'.",
+              "name": "DQ_RESULTS_TABLE"
+            },
+            {
+              "description": "Fully qualified DQ score-daily table, e.g. 'project.data_ops.quality_score_daily'.",
+              "name": "DQ_SCORE_TABLE"
+            },
+            {
+              "description": "Service account key path for BigQuery (ADC fallback supported).",
+              "name": "GOOGLE_APPLICATION_CREDENTIALS"
+            },
+            {
+              "description": "Explicit BigQuery project ID for DQ queries.",
+              "name": "BQ_PROJECT_ID"
+            },
+            {
+              "description": "Postgres connection string when DQ_BACKEND=postgres.",
+              "isSecret": true,
+              "name": "PG_CONNECTION_STRING"
+            },
+            {
+              "description": "Reserved for future write tools. Default read-only.",
+              "default": "false",
+              "name": "DBT_ALLOW_WRITE"
+            },
+            {
+              "description": "DQ result-table schema preset: 'generic' (default) or 'us-all'. Use DQ_COL_* env vars to override individual columns on top of the preset.",
+              "default": "generic",
+              "name": "DQ_SCHEMA"
+            },
+            {
+              "description": "Override for the timestamp/date column on the DQ checks table. Default depends on DQ_SCHEMA preset.",
+              "name": "DQ_COL_RUN_AT"
+            },
+            {
+              "description": "Override for the check-type column on the DQ checks table. Default 'check_type'.",
+              "name": "DQ_COL_CHECK_TYPE"
+            },
+            {
+              "description": "Override for the status column on the DQ checks table. Default 'status'.",
+              "name": "DQ_COL_STATUS"
+            },
+            {
+              "description": "Override for the dataset/source column on the DQ checks table. Default depends on preset.",
+              "name": "DQ_COL_DATASET"
+            },
+            {
+              "description": "Override for the table/target-name column on the DQ checks table. Default depends on preset.",
+              "name": "DQ_COL_TABLE_NAME"
+            },
+            {
+              "description": "Override for the severity/dimension column on the DQ checks table. Default depends on preset.",
+              "name": "DQ_COL_SEVERITY"
+            },
+            {
+              "description": "Override for the numeric failure-count column on the DQ checks table. Default depends on preset.",
+              "name": "DQ_COL_FAILURE_COUNT"
+            },
+            {
+              "description": "Override for the message column on the DQ checks table. Default depends on preset.",
+              "name": "DQ_COL_MESSAGE"
+            },
+            {
+              "description": "Override for the check_name column on the DQ checks table. Set to 'none'/'null'/'-' to synthesize check_name from check_type and table_name.",
+              "name": "DQ_COL_CHECK_NAME"
+            },
+            {
+              "description": "Override for the date column on the DQ score-daily table. Default depends on preset.",
+              "name": "DQ_COL_SCORE_DATE"
+            },
+            {
+              "description": "Override for the scope column on the DQ score-daily table. Set to 'none'/'null'/'-' if the table has no per-scope rollup.",
+              "name": "DQ_COL_SCOPE"
+            },
+            {
+              "description": "Override for the tier column on the DQ score-daily table. Set to 'none'/'null'/'-' if the table has no tier dimension.",
+              "name": "DQ_COL_TIER"
+            },
+            {
+              "description": "When no tier column is configured (us-all preset or DQ_COL_TIER=none), the overall_score threshold dq-tier-status compares against (default 99.5). Superseded by DBT_SLA_CONFIG_PATH tier_sla.1 if both are set.",
+              "name": "DQ_TIER1_TARGET_PCT"
+            },
+            {
+              "description": "Optional path to a YAML file that defines tier_sla (per-tier overall_score targets) and dbt_sla (test/freshness pass rates). When set, dq-tier-status and dq-tier-by-source read tier targets from this file, and dbt-sla-status compares run_results / sources pass rates against dbt_sla.test_pass_pct / freshness_pass_pct. Mtime cached.",
+              "name": "DBT_SLA_CONFIG_PATH"
+            },
+            {
+              "description": "Comma-separated category allowlist (dbt,quality,meta).",
+              "name": "DBT_TOOLS"
+            },
+            {
+              "description": "Comma-separated category disablelist.",
+              "name": "DBT_DISABLE"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-06-19T03:59:13.141201Z",
+        "publishedAt": "2026-06-19T03:59:13.141201Z",
+        "updatedAt": "2026-06-19T03:59:13.141201Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.us-all/dbt",
+        "description": "dbt MCP — manifest/run_results/sources/catalog parsing + DQ result tables (BigQuery/Postgres)",
+        "repository": {
+          "url": "https://github.com/us-all/dbt-mcp-server",
+          "source": "github"
+        },
+        "version": "0.1.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@us-all/dbt-mcp",
+            "version": "0.1.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Path to dbt project root (where dbt_project.yml lives).",
+                "isRequired": true,
+                "name": "DBT_PROJECT_DIR"
+              },
+              {
+                "description": "dbt target dir for manifest.json/run_results.json (default: $DBT_PROJECT_DIR/target).",
+                "name": "DBT_TARGET_DIR"
+              },
+              {
+                "description": "Optional dir for archived run_results.json history (glob-scanned).",
+                "name": "DBT_RUN_HISTORY_DIR"
+              },
+              {
+                "description": "DQ result table backend: 'bigquery' (default) or 'postgres'.",
+                "name": "DQ_BACKEND"
+              },
+              {
+                "description": "Fully qualified DQ checks table, e.g. 'project.data_ops.quality_checks'.",
+                "name": "DQ_RESULTS_TABLE"
+              },
+              {
+                "description": "Fully qualified DQ score-daily table, e.g. 'project.data_ops.quality_score_daily'.",
+                "name": "DQ_SCORE_TABLE"
+              },
+              {
+                "description": "Service account key path for BigQuery (ADC fallback supported).",
+                "name": "GOOGLE_APPLICATION_CREDENTIALS"
+              },
+              {
+                "description": "Explicit BigQuery project ID for DQ queries.",
+                "name": "BQ_PROJECT_ID"
+              },
+              {
+                "description": "Postgres connection string when DQ_BACKEND=postgres.",
+                "isSecret": true,
+                "name": "PG_CONNECTION_STRING"
+              },
+              {
+                "description": "Reserved for future write tools. Default read-only.",
+                "default": "false",
+                "name": "DBT_ALLOW_WRITE"
+              },
+              {
+                "description": "Comma-separated category allowlist (dbt,quality,meta).",
+                "name": "DBT_TOOLS"
+              },
+              {
+                "description": "Comma-separated category disablelist.",
+                "name": "DBT_DISABLE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-07T02:06:14.887962Z",
+          "publishedAt": "2026-05-07T02:06:14.887962Z",
+          "updatedAt": "2026-05-07T02:06:14.887962Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.us-all/dbt",
+        "description": "dbt MCP — manifest/run_results/sources/catalog parsing + DQ result tables (BigQuery/Postgres)",
+        "repository": {
+          "url": "https://github.com/us-all/dbt-mcp-server",
+          "source": "github"
+        },
+        "version": "0.1.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@us-all/dbt-mcp",
+            "version": "0.1.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Path to dbt project root (where dbt_project.yml lives).",
+                "isRequired": true,
+                "name": "DBT_PROJECT_DIR"
+              },
+              {
+                "description": "dbt target dir for manifest.json/run_results.json (default: $DBT_PROJECT_DIR/target).",
+                "name": "DBT_TARGET_DIR"
+              },
+              {
+                "description": "Optional dir for archived run_results.json history (glob-scanned).",
+                "name": "DBT_RUN_HISTORY_DIR"
+              },
+              {
+                "description": "DQ result table backend: 'bigquery' (default) or 'postgres'.",
+                "name": "DQ_BACKEND"
+              },
+              {
+                "description": "Fully qualified DQ checks table, e.g. 'project.data_ops.quality_checks'.",
+                "name": "DQ_RESULTS_TABLE"
+              },
+              {
+                "description": "Fully qualified DQ score-daily table, e.g. 'project.data_ops.quality_score_daily'.",
+                "name": "DQ_SCORE_TABLE"
+              },
+              {
+                "description": "Service account key path for BigQuery (ADC fallback supported).",
+                "name": "GOOGLE_APPLICATION_CREDENTIALS"
+              },
+              {
+                "description": "Explicit BigQuery project ID for DQ queries.",
+                "name": "BQ_PROJECT_ID"
+              },
+              {
+                "description": "Postgres connection string when DQ_BACKEND=postgres.",
+                "isSecret": true,
+                "name": "PG_CONNECTION_STRING"
+              },
+              {
+                "description": "Reserved for future write tools. Default read-only.",
+                "default": "false",
+                "name": "DBT_ALLOW_WRITE"
+              },
+              {
+                "description": "DQ result-table schema flavor: 'generic' (default) or 'us-all'.",
+                "default": "generic",
+                "name": "DQ_SCHEMA"
+              },
+              {
+                "description": "When DQ_SCHEMA=us-all, the overall_score threshold dq-tier-status compares against (default 99.5).",
+                "name": "DQ_TIER1_TARGET_PCT"
+              },
+              {
+                "description": "Comma-separated category allowlist (dbt,quality,meta).",
+                "name": "DBT_TOOLS"
+              },
+              {
+                "description": "Comma-separated category disablelist.",
+                "name": "DBT_DISABLE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-07T04:59:34.43728Z",
+          "publishedAt": "2026-05-07T04:59:34.43728Z",
+          "updatedAt": "2026-05-07T04:59:34.43728Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.us-all/dbt",
+        "description": "dbt MCP — manifest/run_results/sources/catalog parsing + DQ result tables (BigQuery/Postgres)",
+        "repository": {
+          "url": "https://github.com/us-all/dbt-mcp-server",
+          "source": "github"
+        },
+        "version": "1.0.3",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@us-all/dbt-mcp",
+            "version": "1.0.3",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Path to dbt project root (where dbt_project.yml lives).",
+                "isRequired": true,
+                "name": "DBT_PROJECT_DIR"
+              },
+              {
+                "description": "dbt target dir for manifest.json/run_results.json (default: $DBT_PROJECT_DIR/target).",
+                "name": "DBT_TARGET_DIR"
+              },
+              {
+                "description": "Optional dir for archived run_results.json history (glob-scanned).",
+                "name": "DBT_RUN_HISTORY_DIR"
+              },
+              {
+                "description": "DQ result table backend: 'bigquery' (default) or 'postgres'.",
+                "name": "DQ_BACKEND"
+              },
+              {
+                "description": "Fully qualified DQ checks table, e.g. 'project.data_ops.quality_checks'.",
+                "name": "DQ_RESULTS_TABLE"
+              },
+              {
+                "description": "Fully qualified DQ score-daily table, e.g. 'project.data_ops.quality_score_daily'.",
+                "name": "DQ_SCORE_TABLE"
+              },
+              {
+                "description": "Service account key path for BigQuery (ADC fallback supported).",
+                "name": "GOOGLE_APPLICATION_CREDENTIALS"
+              },
+              {
+                "description": "Explicit BigQuery project ID for DQ queries.",
+                "name": "BQ_PROJECT_ID"
+              },
+              {
+                "description": "Postgres connection string when DQ_BACKEND=postgres.",
+                "isSecret": true,
+                "name": "PG_CONNECTION_STRING"
+              },
+              {
+                "description": "Reserved for future write tools. Default read-only.",
+                "default": "false",
+                "name": "DBT_ALLOW_WRITE"
+              },
+              {
+                "description": "DQ result-table schema preset: 'generic' (default) or 'us-all'. Use DQ_COL_* env vars to override individual columns on top of the preset.",
+                "default": "generic",
+                "name": "DQ_SCHEMA"
+              },
+              {
+                "description": "Override for the timestamp/date column on the DQ checks table. Default depends on DQ_SCHEMA preset.",
+                "name": "DQ_COL_RUN_AT"
+              },
+              {
+                "description": "Override for the check-type column on the DQ checks table. Default 'check_type'.",
+                "name": "DQ_COL_CHECK_TYPE"
+              },
+              {
+                "description": "Override for the status column on the DQ checks table. Default 'status'.",
+                "name": "DQ_COL_STATUS"
+              },
+              {
+                "description": "Override for the dataset/source column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_DATASET"
+              },
+              {
+                "description": "Override for the table/target-name column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_TABLE_NAME"
+              },
+              {
+                "description": "Override for the severity/dimension column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_SEVERITY"
+              },
+              {
+                "description": "Override for the numeric failure-count column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_FAILURE_COUNT"
+              },
+              {
+                "description": "Override for the message column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_MESSAGE"
+              },
+              {
+                "description": "Override for the check_name column on the DQ checks table. Set to 'none'/'null'/'-' to synthesize check_name from check_type and table_name.",
+                "name": "DQ_COL_CHECK_NAME"
+              },
+              {
+                "description": "Override for the date column on the DQ score-daily table. Default depends on preset.",
+                "name": "DQ_COL_SCORE_DATE"
+              },
+              {
+                "description": "Override for the scope column on the DQ score-daily table. Set to 'none'/'null'/'-' if the table has no per-scope rollup.",
+                "name": "DQ_COL_SCOPE"
+              },
+              {
+                "description": "Override for the tier column on the DQ score-daily table. Set to 'none'/'null'/'-' if the table has no tier dimension.",
+                "name": "DQ_COL_TIER"
+              },
+              {
+                "description": "When no tier column is configured (us-all preset or DQ_COL_TIER=none), the overall_score threshold dq-tier-status compares against (default 99.5). Superseded by DBT_SLA_CONFIG_PATH tier_sla.1 if both are set.",
+                "name": "DQ_TIER1_TARGET_PCT"
+              },
+              {
+                "description": "Optional path to a YAML file that defines tier_sla (per-tier overall_score targets) and dbt_sla (test/freshness pass rates). When set, dq-tier-status and dq-tier-by-source read tier targets from this file, and dbt-sla-status compares run_results / sources pass rates against dbt_sla.test_pass_pct / freshness_pass_pct. Mtime cached.",
+                "name": "DBT_SLA_CONFIG_PATH"
+              },
+              {
+                "description": "Comma-separated category allowlist (dbt,quality,meta).",
+                "name": "DBT_TOOLS"
+              },
+              {
+                "description": "Comma-separated category disablelist.",
+                "name": "DBT_DISABLE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-21T05:47:37.491947Z",
+          "publishedAt": "2026-05-21T05:47:37.491947Z",
+          "updatedAt": "2026-05-21T05:47:37.491947Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.us-all/dbt",
+        "description": "dbt MCP — manifest/run_results/sources/catalog parsing + DQ result tables (BigQuery/Postgres)",
+        "repository": {
+          "url": "https://github.com/us-all/dbt-mcp-server",
+          "source": "github"
+        },
+        "version": "1.0.4",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@us-all/dbt-mcp",
+            "version": "1.0.4",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Path to dbt project root (where dbt_project.yml lives).",
+                "isRequired": true,
+                "name": "DBT_PROJECT_DIR"
+              },
+              {
+                "description": "dbt target dir for manifest.json/run_results.json (default: $DBT_PROJECT_DIR/target).",
+                "name": "DBT_TARGET_DIR"
+              },
+              {
+                "description": "Optional dir for archived run_results.json history (glob-scanned).",
+                "name": "DBT_RUN_HISTORY_DIR"
+              },
+              {
+                "description": "DQ result table backend: 'bigquery' (default) or 'postgres'.",
+                "name": "DQ_BACKEND"
+              },
+              {
+                "description": "Fully qualified DQ checks table, e.g. 'project.data_ops.quality_checks'.",
+                "name": "DQ_RESULTS_TABLE"
+              },
+              {
+                "description": "Fully qualified DQ score-daily table, e.g. 'project.data_ops.quality_score_daily'.",
+                "name": "DQ_SCORE_TABLE"
+              },
+              {
+                "description": "Service account key path for BigQuery (ADC fallback supported).",
+                "name": "GOOGLE_APPLICATION_CREDENTIALS"
+              },
+              {
+                "description": "Explicit BigQuery project ID for DQ queries.",
+                "name": "BQ_PROJECT_ID"
+              },
+              {
+                "description": "Postgres connection string when DQ_BACKEND=postgres.",
+                "isSecret": true,
+                "name": "PG_CONNECTION_STRING"
+              },
+              {
+                "description": "Reserved for future write tools. Default read-only.",
+                "default": "false",
+                "name": "DBT_ALLOW_WRITE"
+              },
+              {
+                "description": "DQ result-table schema preset: 'generic' (default) or 'us-all'. Use DQ_COL_* env vars to override individual columns on top of the preset.",
+                "default": "generic",
+                "name": "DQ_SCHEMA"
+              },
+              {
+                "description": "Override for the timestamp/date column on the DQ checks table. Default depends on DQ_SCHEMA preset.",
+                "name": "DQ_COL_RUN_AT"
+              },
+              {
+                "description": "Override for the check-type column on the DQ checks table. Default 'check_type'.",
+                "name": "DQ_COL_CHECK_TYPE"
+              },
+              {
+                "description": "Override for the status column on the DQ checks table. Default 'status'.",
+                "name": "DQ_COL_STATUS"
+              },
+              {
+                "description": "Override for the dataset/source column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_DATASET"
+              },
+              {
+                "description": "Override for the table/target-name column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_TABLE_NAME"
+              },
+              {
+                "description": "Override for the severity/dimension column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_SEVERITY"
+              },
+              {
+                "description": "Override for the numeric failure-count column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_FAILURE_COUNT"
+              },
+              {
+                "description": "Override for the message column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_MESSAGE"
+              },
+              {
+                "description": "Override for the check_name column on the DQ checks table. Set to 'none'/'null'/'-' to synthesize check_name from check_type and table_name.",
+                "name": "DQ_COL_CHECK_NAME"
+              },
+              {
+                "description": "Override for the date column on the DQ score-daily table. Default depends on preset.",
+                "name": "DQ_COL_SCORE_DATE"
+              },
+              {
+                "description": "Override for the scope column on the DQ score-daily table. Set to 'none'/'null'/'-' if the table has no per-scope rollup.",
+                "name": "DQ_COL_SCOPE"
+              },
+              {
+                "description": "Override for the tier column on the DQ score-daily table. Set to 'none'/'null'/'-' if the table has no tier dimension.",
+                "name": "DQ_COL_TIER"
+              },
+              {
+                "description": "When no tier column is configured (us-all preset or DQ_COL_TIER=none), the overall_score threshold dq-tier-status compares against (default 99.5). Superseded by DBT_SLA_CONFIG_PATH tier_sla.1 if both are set.",
+                "name": "DQ_TIER1_TARGET_PCT"
+              },
+              {
+                "description": "Optional path to a YAML file that defines tier_sla (per-tier overall_score targets) and dbt_sla (test/freshness pass rates). When set, dq-tier-status and dq-tier-by-source read tier targets from this file, and dbt-sla-status compares run_results / sources pass rates against dbt_sla.test_pass_pct / freshness_pass_pct. Mtime cached.",
+                "name": "DBT_SLA_CONFIG_PATH"
+              },
+              {
+                "description": "Comma-separated category allowlist (dbt,quality,meta).",
+                "name": "DBT_TOOLS"
+              },
+              {
+                "description": "Comma-separated category disablelist.",
+                "name": "DBT_DISABLE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-16T02:57:33.547692Z",
+          "publishedAt": "2026-06-16T02:57:33.547692Z",
+          "updatedAt": "2026-06-16T02:57:33.547692Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.us-all/dbt",
+        "description": "dbt MCP — manifest/run_results/sources/catalog parsing + DQ result tables (BigQuery/Postgres)",
+        "repository": {
+          "url": "https://github.com/us-all/dbt-mcp-server",
+          "source": "github"
+        },
+        "version": "1.0.5",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@us-all/dbt-mcp",
+            "version": "1.0.5",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Path to dbt project root (where dbt_project.yml lives).",
+                "isRequired": true,
+                "name": "DBT_PROJECT_DIR"
+              },
+              {
+                "description": "dbt target dir for manifest.json/run_results.json (default: $DBT_PROJECT_DIR/target).",
+                "name": "DBT_TARGET_DIR"
+              },
+              {
+                "description": "Optional dir for archived run_results.json history (glob-scanned).",
+                "name": "DBT_RUN_HISTORY_DIR"
+              },
+              {
+                "description": "DQ result table backend: 'bigquery' (default) or 'postgres'.",
+                "name": "DQ_BACKEND"
+              },
+              {
+                "description": "Fully qualified DQ checks table, e.g. 'project.data_ops.quality_checks'.",
+                "name": "DQ_RESULTS_TABLE"
+              },
+              {
+                "description": "Fully qualified DQ score-daily table, e.g. 'project.data_ops.quality_score_daily'.",
+                "name": "DQ_SCORE_TABLE"
+              },
+              {
+                "description": "Service account key path for BigQuery (ADC fallback supported).",
+                "name": "GOOGLE_APPLICATION_CREDENTIALS"
+              },
+              {
+                "description": "Explicit BigQuery project ID for DQ queries.",
+                "name": "BQ_PROJECT_ID"
+              },
+              {
+                "description": "Postgres connection string when DQ_BACKEND=postgres.",
+                "isSecret": true,
+                "name": "PG_CONNECTION_STRING"
+              },
+              {
+                "description": "Reserved for future write tools. Default read-only.",
+                "default": "false",
+                "name": "DBT_ALLOW_WRITE"
+              },
+              {
+                "description": "DQ result-table schema preset: 'generic' (default) or 'us-all'. Use DQ_COL_* env vars to override individual columns on top of the preset.",
+                "default": "generic",
+                "name": "DQ_SCHEMA"
+              },
+              {
+                "description": "Override for the timestamp/date column on the DQ checks table. Default depends on DQ_SCHEMA preset.",
+                "name": "DQ_COL_RUN_AT"
+              },
+              {
+                "description": "Override for the check-type column on the DQ checks table. Default 'check_type'.",
+                "name": "DQ_COL_CHECK_TYPE"
+              },
+              {
+                "description": "Override for the status column on the DQ checks table. Default 'status'.",
+                "name": "DQ_COL_STATUS"
+              },
+              {
+                "description": "Override for the dataset/source column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_DATASET"
+              },
+              {
+                "description": "Override for the table/target-name column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_TABLE_NAME"
+              },
+              {
+                "description": "Override for the severity/dimension column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_SEVERITY"
+              },
+              {
+                "description": "Override for the numeric failure-count column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_FAILURE_COUNT"
+              },
+              {
+                "description": "Override for the message column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_MESSAGE"
+              },
+              {
+                "description": "Override for the check_name column on the DQ checks table. Set to 'none'/'null'/'-' to synthesize check_name from check_type and table_name.",
+                "name": "DQ_COL_CHECK_NAME"
+              },
+              {
+                "description": "Override for the date column on the DQ score-daily table. Default depends on preset.",
+                "name": "DQ_COL_SCORE_DATE"
+              },
+              {
+                "description": "Override for the scope column on the DQ score-daily table. Set to 'none'/'null'/'-' if the table has no per-scope rollup.",
+                "name": "DQ_COL_SCOPE"
+              },
+              {
+                "description": "Override for the tier column on the DQ score-daily table. Set to 'none'/'null'/'-' if the table has no tier dimension.",
+                "name": "DQ_COL_TIER"
+              },
+              {
+                "description": "When no tier column is configured (us-all preset or DQ_COL_TIER=none), the overall_score threshold dq-tier-status compares against (default 99.5). Superseded by DBT_SLA_CONFIG_PATH tier_sla.1 if both are set.",
+                "name": "DQ_TIER1_TARGET_PCT"
+              },
+              {
+                "description": "Optional path to a YAML file that defines tier_sla (per-tier overall_score targets) and dbt_sla (test/freshness pass rates). When set, dq-tier-status and dq-tier-by-source read tier targets from this file, and dbt-sla-status compares run_results / sources pass rates against dbt_sla.test_pass_pct / freshness_pass_pct. Mtime cached.",
+                "name": "DBT_SLA_CONFIG_PATH"
+              },
+              {
+                "description": "Comma-separated category allowlist (dbt,quality,meta).",
+                "name": "DBT_TOOLS"
+              },
+              {
+                "description": "Comma-separated category disablelist.",
+                "name": "DBT_DISABLE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-16T05:49:10.671074Z",
+          "publishedAt": "2026-06-16T05:49:10.671074Z",
+          "updatedAt": "2026-06-16T05:49:10.671074Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.us-all/dbt",
+        "description": "dbt MCP — manifest/run_results/sources/catalog parsing + DQ result tables (BigQuery/Postgres)",
+        "repository": {
+          "url": "https://github.com/us-all/dbt-mcp-server",
+          "source": "github"
+        },
+        "version": "1.0.6",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@us-all/dbt-mcp",
+            "version": "1.0.6",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Path to dbt project root (where dbt_project.yml lives).",
+                "isRequired": true,
+                "name": "DBT_PROJECT_DIR"
+              },
+              {
+                "description": "dbt target dir for manifest.json/run_results.json (default: $DBT_PROJECT_DIR/target).",
+                "name": "DBT_TARGET_DIR"
+              },
+              {
+                "description": "Optional dir for archived run_results.json history (glob-scanned).",
+                "name": "DBT_RUN_HISTORY_DIR"
+              },
+              {
+                "description": "DQ result table backend: 'bigquery' (default) or 'postgres'.",
+                "name": "DQ_BACKEND"
+              },
+              {
+                "description": "Fully qualified DQ checks table, e.g. 'project.data_ops.quality_checks'.",
+                "name": "DQ_RESULTS_TABLE"
+              },
+              {
+                "description": "Fully qualified DQ score-daily table, e.g. 'project.data_ops.quality_score_daily'.",
+                "name": "DQ_SCORE_TABLE"
+              },
+              {
+                "description": "Service account key path for BigQuery (ADC fallback supported).",
+                "name": "GOOGLE_APPLICATION_CREDENTIALS"
+              },
+              {
+                "description": "Explicit BigQuery project ID for DQ queries.",
+                "name": "BQ_PROJECT_ID"
+              },
+              {
+                "description": "Postgres connection string when DQ_BACKEND=postgres.",
+                "isSecret": true,
+                "name": "PG_CONNECTION_STRING"
+              },
+              {
+                "description": "Reserved for future write tools. Default read-only.",
+                "default": "false",
+                "name": "DBT_ALLOW_WRITE"
+              },
+              {
+                "description": "DQ result-table schema preset: 'generic' (default) or 'us-all'. Use DQ_COL_* env vars to override individual columns on top of the preset.",
+                "default": "generic",
+                "name": "DQ_SCHEMA"
+              },
+              {
+                "description": "Override for the timestamp/date column on the DQ checks table. Default depends on DQ_SCHEMA preset.",
+                "name": "DQ_COL_RUN_AT"
+              },
+              {
+                "description": "Override for the check-type column on the DQ checks table. Default 'check_type'.",
+                "name": "DQ_COL_CHECK_TYPE"
+              },
+              {
+                "description": "Override for the status column on the DQ checks table. Default 'status'.",
+                "name": "DQ_COL_STATUS"
+              },
+              {
+                "description": "Override for the dataset/source column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_DATASET"
+              },
+              {
+                "description": "Override for the table/target-name column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_TABLE_NAME"
+              },
+              {
+                "description": "Override for the severity/dimension column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_SEVERITY"
+              },
+              {
+                "description": "Override for the numeric failure-count column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_FAILURE_COUNT"
+              },
+              {
+                "description": "Override for the message column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_MESSAGE"
+              },
+              {
+                "description": "Override for the check_name column on the DQ checks table. Set to 'none'/'null'/'-' to synthesize check_name from check_type and table_name.",
+                "name": "DQ_COL_CHECK_NAME"
+              },
+              {
+                "description": "Override for the date column on the DQ score-daily table. Default depends on preset.",
+                "name": "DQ_COL_SCORE_DATE"
+              },
+              {
+                "description": "Override for the scope column on the DQ score-daily table. Set to 'none'/'null'/'-' if the table has no per-scope rollup.",
+                "name": "DQ_COL_SCOPE"
+              },
+              {
+                "description": "Override for the tier column on the DQ score-daily table. Set to 'none'/'null'/'-' if the table has no tier dimension.",
+                "name": "DQ_COL_TIER"
+              },
+              {
+                "description": "When no tier column is configured (us-all preset or DQ_COL_TIER=none), the overall_score threshold dq-tier-status compares against (default 99.5). Superseded by DBT_SLA_CONFIG_PATH tier_sla.1 if both are set.",
+                "name": "DQ_TIER1_TARGET_PCT"
+              },
+              {
+                "description": "Optional path to a YAML file that defines tier_sla (per-tier overall_score targets) and dbt_sla (test/freshness pass rates). When set, dq-tier-status and dq-tier-by-source read tier targets from this file, and dbt-sla-status compares run_results / sources pass rates against dbt_sla.test_pass_pct / freshness_pass_pct. Mtime cached.",
+                "name": "DBT_SLA_CONFIG_PATH"
+              },
+              {
+                "description": "Comma-separated category allowlist (dbt,quality,meta).",
+                "name": "DBT_TOOLS"
+              },
+              {
+                "description": "Comma-separated category disablelist.",
+                "name": "DBT_DISABLE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-18T08:03:12.445204Z",
+          "publishedAt": "2026-06-18T08:03:12.445204Z",
+          "updatedAt": "2026-06-18T08:03:12.445204Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.us-all/dbt",
+        "description": "dbt MCP — manifest/run_results/sources/catalog parsing + DQ result tables (BigQuery/Postgres)",
+        "repository": {
+          "url": "https://github.com/us-all/dbt-mcp-server",
+          "source": "github"
+        },
+        "version": "1.0.7",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@us-all/dbt-mcp",
+            "version": "1.0.7",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Path to dbt project root (where dbt_project.yml lives).",
+                "isRequired": true,
+                "name": "DBT_PROJECT_DIR"
+              },
+              {
+                "description": "dbt target dir for manifest.json/run_results.json (default: $DBT_PROJECT_DIR/target).",
+                "name": "DBT_TARGET_DIR"
+              },
+              {
+                "description": "Optional dir for archived run_results.json history (glob-scanned).",
+                "name": "DBT_RUN_HISTORY_DIR"
+              },
+              {
+                "description": "DQ result table backend: 'bigquery' (default) or 'postgres'.",
+                "name": "DQ_BACKEND"
+              },
+              {
+                "description": "Fully qualified DQ checks table, e.g. 'project.data_ops.quality_checks'.",
+                "name": "DQ_RESULTS_TABLE"
+              },
+              {
+                "description": "Fully qualified DQ score-daily table, e.g. 'project.data_ops.quality_score_daily'.",
+                "name": "DQ_SCORE_TABLE"
+              },
+              {
+                "description": "Service account key path for BigQuery (ADC fallback supported).",
+                "name": "GOOGLE_APPLICATION_CREDENTIALS"
+              },
+              {
+                "description": "Explicit BigQuery project ID for DQ queries.",
+                "name": "BQ_PROJECT_ID"
+              },
+              {
+                "description": "Postgres connection string when DQ_BACKEND=postgres.",
+                "isSecret": true,
+                "name": "PG_CONNECTION_STRING"
+              },
+              {
+                "description": "Reserved for future write tools. Default read-only.",
+                "default": "false",
+                "name": "DBT_ALLOW_WRITE"
+              },
+              {
+                "description": "DQ result-table schema preset: 'generic' (default) or 'us-all'. Use DQ_COL_* env vars to override individual columns on top of the preset.",
+                "default": "generic",
+                "name": "DQ_SCHEMA"
+              },
+              {
+                "description": "Override for the timestamp/date column on the DQ checks table. Default depends on DQ_SCHEMA preset.",
+                "name": "DQ_COL_RUN_AT"
+              },
+              {
+                "description": "Override for the check-type column on the DQ checks table. Default 'check_type'.",
+                "name": "DQ_COL_CHECK_TYPE"
+              },
+              {
+                "description": "Override for the status column on the DQ checks table. Default 'status'.",
+                "name": "DQ_COL_STATUS"
+              },
+              {
+                "description": "Override for the dataset/source column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_DATASET"
+              },
+              {
+                "description": "Override for the table/target-name column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_TABLE_NAME"
+              },
+              {
+                "description": "Override for the severity/dimension column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_SEVERITY"
+              },
+              {
+                "description": "Override for the numeric failure-count column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_FAILURE_COUNT"
+              },
+              {
+                "description": "Override for the message column on the DQ checks table. Default depends on preset.",
+                "name": "DQ_COL_MESSAGE"
+              },
+              {
+                "description": "Override for the check_name column on the DQ checks table. Set to 'none'/'null'/'-' to synthesize check_name from check_type and table_name.",
+                "name": "DQ_COL_CHECK_NAME"
+              },
+              {
+                "description": "Override for the date column on the DQ score-daily table. Default depends on preset.",
+                "name": "DQ_COL_SCORE_DATE"
+              },
+              {
+                "description": "Override for the scope column on the DQ score-daily table. Set to 'none'/'null'/'-' if the table has no per-scope rollup.",
+                "name": "DQ_COL_SCOPE"
+              },
+              {
+                "description": "Override for the tier column on the DQ score-daily table. Set to 'none'/'null'/'-' if the table has no tier dimension.",
+                "name": "DQ_COL_TIER"
+              },
+              {
+                "description": "When no tier column is configured (us-all preset or DQ_COL_TIER=none), the overall_score threshold dq-tier-status compares against (default 99.5). Superseded by DBT_SLA_CONFIG_PATH tier_sla.1 if both are set.",
+                "name": "DQ_TIER1_TARGET_PCT"
+              },
+              {
+                "description": "Optional path to a YAML file that defines tier_sla (per-tier overall_score targets) and dbt_sla (test/freshness pass rates). When set, dq-tier-status and dq-tier-by-source read tier targets from this file, and dbt-sla-status compares run_results / sources pass rates against dbt_sla.test_pass_pct / freshness_pass_pct. Mtime cached.",
+                "name": "DBT_SLA_CONFIG_PATH"
+              },
+              {
+                "description": "Comma-separated category allowlist (dbt,quality,meta).",
+                "name": "DBT_TOOLS"
+              },
+              {
+                "description": "Comma-separated category disablelist.",
+                "name": "DBT_DISABLE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-19T03:59:13.141201Z",
+          "publishedAt": "2026-06-19T03:59:13.141201Z",
+          "updatedAt": "2026-06-19T03:59:13.141201Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:57.793Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

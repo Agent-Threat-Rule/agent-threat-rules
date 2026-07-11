@@ -1,0 +1,1987 @@
+{
+  "dedup_key": "pkg:npm:e-arveldaja-mcp",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:npm:e-arveldaja-mcp",
+    "registryType": "npm",
+    "identifier": "e-arveldaja-mcp"
+  },
+  "server_names": [
+    "io.github.iseppo/e-arveldaja-mcp"
+  ],
+  "versions_seen": [
+    "0.11.5",
+    "0.11.6",
+    "0.11.7",
+    "0.11.8",
+    "0.12.0",
+    "0.12.1",
+    "0.12.2",
+    "0.12.3",
+    "0.12.4",
+    "0.12.5",
+    "0.12.6",
+    "0.13.0",
+    "0.13.1",
+    "0.14.0",
+    "0.14.1",
+    "0.14.2",
+    "0.14.3",
+    "0.15.0",
+    "0.15.1",
+    "0.16.0",
+    "0.16.1",
+    "0.17.0",
+    "0.18.0",
+    "0.18.1",
+    "0.19.0",
+    "0.20.0",
+    "0.20.1"
+  ],
+  "registry_row_count": 27,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.iseppo/e-arveldaja-mcp",
+      "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+      "repository": {
+        "url": "https://github.com/iseppo/e-arveldaja-mcp",
+        "source": "github"
+      },
+      "version": "0.20.1",
+      "packages": [
+        {
+          "registryType": "npm",
+          "identifier": "e-arveldaja-mcp",
+          "version": "0.20.1",
+          "transport": {
+            "type": "stdio"
+          },
+          "environmentVariables": [
+            {
+              "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+              "format": "string",
+              "isSecret": true,
+              "name": "EARVELDAJA_API_KEY_ID"
+            },
+            {
+              "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+              "format": "string",
+              "isSecret": true,
+              "name": "EARVELDAJA_API_PUBLIC_VALUE"
+            },
+            {
+              "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+              "format": "string",
+              "isSecret": true,
+              "name": "EARVELDAJA_API_PASSWORD"
+            },
+            {
+              "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+              "format": "string",
+              "default": "live",
+              "name": "EARVELDAJA_SERVER"
+            },
+            {
+              "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+              "format": "string",
+              "name": "EARVELDAJA_ALLOWED_PATHS"
+            },
+            {
+              "description": "Set to \"1\" or \"true\" to disable MCP progress notifications. Workaround for clients that close the stdio transport when a progress notification arrives after the matching response has been processed.",
+              "format": "string",
+              "name": "EARVELDAJA_DISABLE_PROGRESS"
+            },
+            {
+              "description": "Absolute path to a regular file. When set, everything the server writes to stderr is also appended to this file (mode 0o600). Off by default. Cross-platform. Useful when the MCP host swallows stderr. Pipes, devices, sockets, /dev/stdout, and /proc/self/fd/* are refused so the tee cannot corrupt the MCP stdio transport.",
+              "format": "string",
+              "name": "EARVELDAJA_LOG_FILE"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-07-11T11:54:41.365927Z",
+        "publishedAt": "2026-07-11T11:54:41.365927Z",
+        "updatedAt": "2026-07-11T11:54:41.365927Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "MCP server for the Estonian e-arveldaja (RIK e-Financials) accounting API.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.11.5",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.11.5",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-22T02:49:10.959332Z",
+          "publishedAt": "2026-04-22T02:49:10.959332Z",
+          "updatedAt": "2026-04-22T02:49:10.959332Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.11.6",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.11.6",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-22T03:04:38.668039Z",
+          "publishedAt": "2026-04-22T03:04:38.668039Z",
+          "updatedAt": "2026-04-22T03:04:38.668039Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.11.7",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.11.7",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-22T03:16:36.998618Z",
+          "publishedAt": "2026-04-22T03:16:36.998618Z",
+          "updatedAt": "2026-04-22T03:16:36.998618Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.11.8",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.11.8",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-24T09:47:26.677797Z",
+          "publishedAt": "2026-04-24T09:47:26.677797Z",
+          "updatedAt": "2026-04-24T09:47:26.677797Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.12.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.12.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-25T17:36:37.66894Z",
+          "publishedAt": "2026-04-25T17:36:37.66894Z",
+          "updatedAt": "2026-04-25T17:36:37.66894Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.12.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.12.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-25T17:40:37.362454Z",
+          "publishedAt": "2026-04-25T17:40:37.362454Z",
+          "updatedAt": "2026-04-25T17:40:37.362454Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.12.2",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.12.2",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-26T00:48:45.741023Z",
+          "publishedAt": "2026-04-26T00:48:45.741023Z",
+          "updatedAt": "2026-04-26T00:48:45.741023Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.12.3",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.12.3",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              },
+              {
+                "description": "Set to \"1\" or \"true\" to disable MCP progress notifications. Workaround for clients that close the stdio transport when a progress notification arrives after the matching response has been processed.",
+                "format": "string",
+                "name": "EARVELDAJA_DISABLE_PROGRESS"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-26T01:20:38.729388Z",
+          "publishedAt": "2026-04-26T01:20:38.729388Z",
+          "updatedAt": "2026-04-26T01:20:38.729388Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.12.4",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.12.4",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              },
+              {
+                "description": "Set to \"1\" or \"true\" to disable MCP progress notifications. Workaround for clients that close the stdio transport when a progress notification arrives after the matching response has been processed.",
+                "format": "string",
+                "name": "EARVELDAJA_DISABLE_PROGRESS"
+              },
+              {
+                "description": "Absolute path to a regular file. When set, everything the server writes to stderr is also appended to this file (mode 0o600). Off by default. Cross-platform. Useful when the MCP host swallows stderr. Pipes, devices, sockets, /dev/stdout, and /proc/self/fd/* are refused so the tee cannot corrupt the MCP stdio transport.",
+                "format": "string",
+                "name": "EARVELDAJA_LOG_FILE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-26T19:14:14.166911Z",
+          "publishedAt": "2026-04-26T19:14:14.166911Z",
+          "updatedAt": "2026-04-26T19:14:14.166911Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.12.5",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.12.5",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              },
+              {
+                "description": "Set to \"1\" or \"true\" to disable MCP progress notifications. Workaround for clients that close the stdio transport when a progress notification arrives after the matching response has been processed.",
+                "format": "string",
+                "name": "EARVELDAJA_DISABLE_PROGRESS"
+              },
+              {
+                "description": "Absolute path to a regular file. When set, everything the server writes to stderr is also appended to this file (mode 0o600). Off by default. Cross-platform. Useful when the MCP host swallows stderr. Pipes, devices, sockets, /dev/stdout, and /proc/self/fd/* are refused so the tee cannot corrupt the MCP stdio transport.",
+                "format": "string",
+                "name": "EARVELDAJA_LOG_FILE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-26T23:35:03.539643Z",
+          "publishedAt": "2026-04-26T23:35:03.539643Z",
+          "updatedAt": "2026-04-26T23:35:03.539643Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.12.6",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.12.6",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              },
+              {
+                "description": "Set to \"1\" or \"true\" to disable MCP progress notifications. Workaround for clients that close the stdio transport when a progress notification arrives after the matching response has been processed.",
+                "format": "string",
+                "name": "EARVELDAJA_DISABLE_PROGRESS"
+              },
+              {
+                "description": "Absolute path to a regular file. When set, everything the server writes to stderr is also appended to this file (mode 0o600). Off by default. Cross-platform. Useful when the MCP host swallows stderr. Pipes, devices, sockets, /dev/stdout, and /proc/self/fd/* are refused so the tee cannot corrupt the MCP stdio transport.",
+                "format": "string",
+                "name": "EARVELDAJA_LOG_FILE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-28T19:00:08.708255Z",
+          "publishedAt": "2026-04-28T19:00:08.708255Z",
+          "updatedAt": "2026-04-28T19:00:08.708255Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.13.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.13.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              },
+              {
+                "description": "Set to \"1\" or \"true\" to disable MCP progress notifications. Workaround for clients that close the stdio transport when a progress notification arrives after the matching response has been processed.",
+                "format": "string",
+                "name": "EARVELDAJA_DISABLE_PROGRESS"
+              },
+              {
+                "description": "Absolute path to a regular file. When set, everything the server writes to stderr is also appended to this file (mode 0o600). Off by default. Cross-platform. Useful when the MCP host swallows stderr. Pipes, devices, sockets, /dev/stdout, and /proc/self/fd/* are refused so the tee cannot corrupt the MCP stdio transport.",
+                "format": "string",
+                "name": "EARVELDAJA_LOG_FILE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-29T02:06:42.946215Z",
+          "publishedAt": "2026-04-29T02:06:42.946215Z",
+          "updatedAt": "2026-04-29T02:06:42.946215Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.13.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.13.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              },
+              {
+                "description": "Set to \"1\" or \"true\" to disable MCP progress notifications. Workaround for clients that close the stdio transport when a progress notification arrives after the matching response has been processed.",
+                "format": "string",
+                "name": "EARVELDAJA_DISABLE_PROGRESS"
+              },
+              {
+                "description": "Absolute path to a regular file. When set, everything the server writes to stderr is also appended to this file (mode 0o600). Off by default. Cross-platform. Useful when the MCP host swallows stderr. Pipes, devices, sockets, /dev/stdout, and /proc/self/fd/* are refused so the tee cannot corrupt the MCP stdio transport.",
+                "format": "string",
+                "name": "EARVELDAJA_LOG_FILE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-03T14:58:45.83115Z",
+          "publishedAt": "2026-05-03T14:58:45.83115Z",
+          "updatedAt": "2026-05-03T14:58:45.83115Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.14.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.14.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              },
+              {
+                "description": "Set to \"1\" or \"true\" to disable MCP progress notifications. Workaround for clients that close the stdio transport when a progress notification arrives after the matching response has been processed.",
+                "format": "string",
+                "name": "EARVELDAJA_DISABLE_PROGRESS"
+              },
+              {
+                "description": "Absolute path to a regular file. When set, everything the server writes to stderr is also appended to this file (mode 0o600). Off by default. Cross-platform. Useful when the MCP host swallows stderr. Pipes, devices, sockets, /dev/stdout, and /proc/self/fd/* are refused so the tee cannot corrupt the MCP stdio transport.",
+                "format": "string",
+                "name": "EARVELDAJA_LOG_FILE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-09T12:24:30.857206Z",
+          "publishedAt": "2026-05-09T12:24:30.857206Z",
+          "updatedAt": "2026-05-09T12:24:30.857206Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.14.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.14.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              },
+              {
+                "description": "Set to \"1\" or \"true\" to disable MCP progress notifications. Workaround for clients that close the stdio transport when a progress notification arrives after the matching response has been processed.",
+                "format": "string",
+                "name": "EARVELDAJA_DISABLE_PROGRESS"
+              },
+              {
+                "description": "Absolute path to a regular file. When set, everything the server writes to stderr is also appended to this file (mode 0o600). Off by default. Cross-platform. Useful when the MCP host swallows stderr. Pipes, devices, sockets, /dev/stdout, and /proc/self/fd/* are refused so the tee cannot corrupt the MCP stdio transport.",
+                "format": "string",
+                "name": "EARVELDAJA_LOG_FILE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-09T17:38:34.529109Z",
+          "publishedAt": "2026-05-09T17:38:34.529109Z",
+          "updatedAt": "2026-05-09T17:38:34.529109Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.14.2",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.14.2",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              },
+              {
+                "description": "Set to \"1\" or \"true\" to disable MCP progress notifications. Workaround for clients that close the stdio transport when a progress notification arrives after the matching response has been processed.",
+                "format": "string",
+                "name": "EARVELDAJA_DISABLE_PROGRESS"
+              },
+              {
+                "description": "Absolute path to a regular file. When set, everything the server writes to stderr is also appended to this file (mode 0o600). Off by default. Cross-platform. Useful when the MCP host swallows stderr. Pipes, devices, sockets, /dev/stdout, and /proc/self/fd/* are refused so the tee cannot corrupt the MCP stdio transport.",
+                "format": "string",
+                "name": "EARVELDAJA_LOG_FILE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-31T19:20:06.608477Z",
+          "publishedAt": "2026-05-31T19:20:06.608477Z",
+          "updatedAt": "2026-05-31T19:20:06.608477Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.14.3",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.14.3",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              },
+              {
+                "description": "Set to \"1\" or \"true\" to disable MCP progress notifications. Workaround for clients that close the stdio transport when a progress notification arrives after the matching response has been processed.",
+                "format": "string",
+                "name": "EARVELDAJA_DISABLE_PROGRESS"
+              },
+              {
+                "description": "Absolute path to a regular file. When set, everything the server writes to stderr is also appended to this file (mode 0o600). Off by default. Cross-platform. Useful when the MCP host swallows stderr. Pipes, devices, sockets, /dev/stdout, and /proc/self/fd/* are refused so the tee cannot corrupt the MCP stdio transport.",
+                "format": "string",
+                "name": "EARVELDAJA_LOG_FILE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-01T12:25:30.289917Z",
+          "publishedAt": "2026-06-01T12:25:30.289917Z",
+          "updatedAt": "2026-06-01T12:25:30.289917Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.15.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.15.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              },
+              {
+                "description": "Set to \"1\" or \"true\" to disable MCP progress notifications. Workaround for clients that close the stdio transport when a progress notification arrives after the matching response has been processed.",
+                "format": "string",
+                "name": "EARVELDAJA_DISABLE_PROGRESS"
+              },
+              {
+                "description": "Absolute path to a regular file. When set, everything the server writes to stderr is also appended to this file (mode 0o600). Off by default. Cross-platform. Useful when the MCP host swallows stderr. Pipes, devices, sockets, /dev/stdout, and /proc/self/fd/* are refused so the tee cannot corrupt the MCP stdio transport.",
+                "format": "string",
+                "name": "EARVELDAJA_LOG_FILE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-15T03:44:56.271742Z",
+          "publishedAt": "2026-06-15T03:44:56.271742Z",
+          "updatedAt": "2026-06-15T03:44:56.271742Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.15.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.15.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              },
+              {
+                "description": "Set to \"1\" or \"true\" to disable MCP progress notifications. Workaround for clients that close the stdio transport when a progress notification arrives after the matching response has been processed.",
+                "format": "string",
+                "name": "EARVELDAJA_DISABLE_PROGRESS"
+              },
+              {
+                "description": "Absolute path to a regular file. When set, everything the server writes to stderr is also appended to this file (mode 0o600). Off by default. Cross-platform. Useful when the MCP host swallows stderr. Pipes, devices, sockets, /dev/stdout, and /proc/self/fd/* are refused so the tee cannot corrupt the MCP stdio transport.",
+                "format": "string",
+                "name": "EARVELDAJA_LOG_FILE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-15T15:56:27.995854Z",
+          "publishedAt": "2026-06-15T15:56:27.995854Z",
+          "updatedAt": "2026-06-15T15:56:27.995854Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.16.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.16.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              },
+              {
+                "description": "Set to \"1\" or \"true\" to disable MCP progress notifications. Workaround for clients that close the stdio transport when a progress notification arrives after the matching response has been processed.",
+                "format": "string",
+                "name": "EARVELDAJA_DISABLE_PROGRESS"
+              },
+              {
+                "description": "Absolute path to a regular file. When set, everything the server writes to stderr is also appended to this file (mode 0o600). Off by default. Cross-platform. Useful when the MCP host swallows stderr. Pipes, devices, sockets, /dev/stdout, and /proc/self/fd/* are refused so the tee cannot corrupt the MCP stdio transport.",
+                "format": "string",
+                "name": "EARVELDAJA_LOG_FILE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-16T16:49:44.455526Z",
+          "publishedAt": "2026-06-16T16:49:44.455526Z",
+          "updatedAt": "2026-06-16T16:49:44.455526Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.16.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.16.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              },
+              {
+                "description": "Set to \"1\" or \"true\" to disable MCP progress notifications. Workaround for clients that close the stdio transport when a progress notification arrives after the matching response has been processed.",
+                "format": "string",
+                "name": "EARVELDAJA_DISABLE_PROGRESS"
+              },
+              {
+                "description": "Absolute path to a regular file. When set, everything the server writes to stderr is also appended to this file (mode 0o600). Off by default. Cross-platform. Useful when the MCP host swallows stderr. Pipes, devices, sockets, /dev/stdout, and /proc/self/fd/* are refused so the tee cannot corrupt the MCP stdio transport.",
+                "format": "string",
+                "name": "EARVELDAJA_LOG_FILE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-16T19:02:05.103007Z",
+          "publishedAt": "2026-06-16T19:02:05.103007Z",
+          "updatedAt": "2026-06-16T19:02:05.103007Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.17.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.17.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              },
+              {
+                "description": "Set to \"1\" or \"true\" to disable MCP progress notifications. Workaround for clients that close the stdio transport when a progress notification arrives after the matching response has been processed.",
+                "format": "string",
+                "name": "EARVELDAJA_DISABLE_PROGRESS"
+              },
+              {
+                "description": "Absolute path to a regular file. When set, everything the server writes to stderr is also appended to this file (mode 0o600). Off by default. Cross-platform. Useful when the MCP host swallows stderr. Pipes, devices, sockets, /dev/stdout, and /proc/self/fd/* are refused so the tee cannot corrupt the MCP stdio transport.",
+                "format": "string",
+                "name": "EARVELDAJA_LOG_FILE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-17T12:31:09.793509Z",
+          "publishedAt": "2026-06-17T12:31:09.793509Z",
+          "updatedAt": "2026-06-17T12:31:09.793509Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.18.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.18.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              },
+              {
+                "description": "Set to \"1\" or \"true\" to disable MCP progress notifications. Workaround for clients that close the stdio transport when a progress notification arrives after the matching response has been processed.",
+                "format": "string",
+                "name": "EARVELDAJA_DISABLE_PROGRESS"
+              },
+              {
+                "description": "Absolute path to a regular file. When set, everything the server writes to stderr is also appended to this file (mode 0o600). Off by default. Cross-platform. Useful when the MCP host swallows stderr. Pipes, devices, sockets, /dev/stdout, and /proc/self/fd/* are refused so the tee cannot corrupt the MCP stdio transport.",
+                "format": "string",
+                "name": "EARVELDAJA_LOG_FILE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-04T15:09:13.729332Z",
+          "publishedAt": "2026-07-04T15:09:13.729332Z",
+          "updatedAt": "2026-07-04T15:09:13.729332Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.18.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.18.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              },
+              {
+                "description": "Set to \"1\" or \"true\" to disable MCP progress notifications. Workaround for clients that close the stdio transport when a progress notification arrives after the matching response has been processed.",
+                "format": "string",
+                "name": "EARVELDAJA_DISABLE_PROGRESS"
+              },
+              {
+                "description": "Absolute path to a regular file. When set, everything the server writes to stderr is also appended to this file (mode 0o600). Off by default. Cross-platform. Useful when the MCP host swallows stderr. Pipes, devices, sockets, /dev/stdout, and /proc/self/fd/* are refused so the tee cannot corrupt the MCP stdio transport.",
+                "format": "string",
+                "name": "EARVELDAJA_LOG_FILE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-04T16:16:42.395635Z",
+          "publishedAt": "2026-07-04T16:16:42.395635Z",
+          "updatedAt": "2026-07-04T16:16:42.395635Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.19.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.19.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              },
+              {
+                "description": "Set to \"1\" or \"true\" to disable MCP progress notifications. Workaround for clients that close the stdio transport when a progress notification arrives after the matching response has been processed.",
+                "format": "string",
+                "name": "EARVELDAJA_DISABLE_PROGRESS"
+              },
+              {
+                "description": "Absolute path to a regular file. When set, everything the server writes to stderr is also appended to this file (mode 0o600). Off by default. Cross-platform. Useful when the MCP host swallows stderr. Pipes, devices, sockets, /dev/stdout, and /proc/self/fd/* are refused so the tee cannot corrupt the MCP stdio transport.",
+                "format": "string",
+                "name": "EARVELDAJA_LOG_FILE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-09T23:45:55.901687Z",
+          "publishedAt": "2026-07-09T23:45:55.901687Z",
+          "updatedAt": "2026-07-09T23:45:55.901687Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.20.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.20.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              },
+              {
+                "description": "Set to \"1\" or \"true\" to disable MCP progress notifications. Workaround for clients that close the stdio transport when a progress notification arrives after the matching response has been processed.",
+                "format": "string",
+                "name": "EARVELDAJA_DISABLE_PROGRESS"
+              },
+              {
+                "description": "Absolute path to a regular file. When set, everything the server writes to stderr is also appended to this file (mode 0o600). Off by default. Cross-platform. Useful when the MCP host swallows stderr. Pipes, devices, sockets, /dev/stdout, and /proc/self/fd/* are refused so the tee cannot corrupt the MCP stdio transport.",
+                "format": "string",
+                "name": "EARVELDAJA_LOG_FILE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-10T15:20:45.619815Z",
+          "publishedAt": "2026-07-10T15:20:45.619815Z",
+          "updatedAt": "2026-07-10T15:20:45.619815Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.iseppo/e-arveldaja-mcp",
+        "description": "Estonian e-arveldaja (RIK e-Financials) accounting — invoices, bank import, reports.",
+        "repository": {
+          "url": "https://github.com/iseppo/e-arveldaja-mcp",
+          "source": "github"
+        },
+        "version": "0.20.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "e-arveldaja-mcp",
+            "version": "0.20.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "RIK e-arveldaja API key ID. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_KEY_ID"
+              },
+              {
+                "description": "RIK e-arveldaja API public value. Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PUBLIC_VALUE"
+              },
+              {
+                "description": "RIK e-arveldaja API password (HMAC signing secret). Can alternatively be supplied via a .env file or an apikey*.txt file in the working directory.",
+                "format": "string",
+                "isSecret": true,
+                "name": "EARVELDAJA_API_PASSWORD"
+              },
+              {
+                "description": "Which RIK server to target. \"live\" (default) or \"demo\".",
+                "format": "string",
+                "default": "live",
+                "name": "EARVELDAJA_SERVER"
+              },
+              {
+                "description": "Platform-separated (colon on Linux/macOS, semicolon on Windows) list of directories that file-reading tools are allowed to read from. Defaults to the working directory and the OS temp dir.",
+                "format": "string",
+                "name": "EARVELDAJA_ALLOWED_PATHS"
+              },
+              {
+                "description": "Set to \"1\" or \"true\" to disable MCP progress notifications. Workaround for clients that close the stdio transport when a progress notification arrives after the matching response has been processed.",
+                "format": "string",
+                "name": "EARVELDAJA_DISABLE_PROGRESS"
+              },
+              {
+                "description": "Absolute path to a regular file. When set, everything the server writes to stderr is also appended to this file (mode 0o600). Off by default. Cross-platform. Useful when the MCP host swallows stderr. Pipes, devices, sockets, /dev/stdout, and /proc/self/fd/* are refused so the tee cannot corrupt the MCP stdio transport.",
+                "format": "string",
+                "name": "EARVELDAJA_LOG_FILE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-11T11:54:41.365927Z",
+          "publishedAt": "2026-07-11T11:54:41.365927Z",
+          "updatedAt": "2026-07-11T11:54:41.365927Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:57.170Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

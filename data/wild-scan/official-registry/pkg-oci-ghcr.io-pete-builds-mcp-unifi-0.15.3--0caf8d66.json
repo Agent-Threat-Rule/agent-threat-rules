@@ -1,0 +1,256 @@
+{
+  "dedup_key": "pkg:oci:ghcr.io/pete-builds/mcp-unifi:0.15.3",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:oci:ghcr.io/pete-builds/mcp-unifi:0.15.3",
+    "registryType": "oci",
+    "identifier": "ghcr.io/pete-builds/mcp-unifi:0.15.3"
+  },
+  "server_names": [
+    "io.github.pete-builds/unifi"
+  ],
+  "versions_seen": [
+    "0.15.3"
+  ],
+  "registry_row_count": 1,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.pete-builds/unifi",
+      "description": "Safe-by-default UniFi MCP: Network + Protect + Access, multi-site, dry-run, audit log.",
+      "title": "UniFi Gateway",
+      "repository": {
+        "url": "https://github.com/pete-builds/mcp-unifi",
+        "source": "github"
+      },
+      "version": "0.15.3",
+      "websiteUrl": "https://pete-builds.github.io/mcp-unifi/",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/pete-builds/mcp-unifi:0.15.3",
+          "runtimeHint": "docker",
+          "transport": {
+            "type": "streamable-http",
+            "url": "http://localhost:3714/mcp"
+          },
+          "environmentVariables": [
+            {
+              "description": "When true, the server returns realistic mock data and requires no UniFi hardware. Defaults to true so the image is functional out of the box.",
+              "format": "string",
+              "default": "true",
+              "choices": [
+                "true",
+                "false"
+              ],
+              "name": "STUB_MODE"
+            },
+            {
+              "description": "IP address or hostname of the UniFi OS gateway (UCG-Fiber, UDM Pro, etc). Required when STUB_MODE=false and MCP_UNIFI_CONTROLLERS_FILE is unset.",
+              "format": "string",
+              "name": "UNIFI_HOST"
+            },
+            {
+              "description": "Local API key generated under Settings -> Control Plane -> Integrations on the gateway. Required when STUB_MODE=false and MCP_UNIFI_CONTROLLERS_FILE is unset.",
+              "format": "string",
+              "isSecret": true,
+              "name": "UNIFI_API_KEY"
+            },
+            {
+              "description": "UniFi controller site name. Defaults to 'default'.",
+              "format": "string",
+              "default": "default",
+              "name": "UNIFI_SITE"
+            },
+            {
+              "description": "Whether to verify the gateway's TLS certificate. Defaults to false because most home gateways use a self-signed cert.",
+              "format": "string",
+              "default": "false",
+              "choices": [
+                "true",
+                "false"
+              ],
+              "name": "UNIFI_VERIFY_SSL"
+            },
+            {
+              "description": "Path to a YAML file describing multiple named controllers for multi-site management. When set, the legacy UNIFI_HOST / UNIFI_API_KEY env vars are ignored. Each entry needs name, host, api_key, and optionally port, site, verify_ssl.",
+              "format": "string",
+              "name": "MCP_UNIFI_CONTROLLERS_FILE"
+            },
+            {
+              "description": "Comma-separated list of modules to load. Known values: 'network', 'protect', 'access'. Defaults to 'network'. Set to 'network,protect,access' to enable Protect and Access tools alongside Network. Access is read-only in v0.10.",
+              "format": "string",
+              "default": "network",
+              "name": "MCP_UNIFI_MODULES_ENABLED"
+            },
+            {
+              "description": "UniFi Access hub IP or hostname. Required when the access module is enabled and STUB_MODE=false. Often the same host as UNIFI_HOST.",
+              "format": "string",
+              "name": "UNIFI_ACCESS_HOST"
+            },
+            {
+              "description": "UniFi Access API key. Separate from the Network API key; generated on the Access controller's developer settings. Required when the access module is enabled and STUB_MODE=false.",
+              "format": "string",
+              "isSecret": true,
+              "name": "UNIFI_ACCESS_API_KEY"
+            },
+            {
+              "description": "HTTPS port for the Access hub. Defaults to 12445 (the direct Access app port).",
+              "format": "string",
+              "default": "12445",
+              "name": "UNIFI_ACCESS_PORT"
+            },
+            {
+              "description": "Audit log sink. One of 'file' (default), 'stdout', or 'syslog'. Every tool call is recorded to a JSONL stream with secrets scrubbed.",
+              "format": "string",
+              "default": "file",
+              "choices": [
+                "file",
+                "stdout",
+                "syslog"
+              ],
+              "name": "MCP_UNIFI_AUDIT_SINK"
+            },
+            {
+              "description": "Path for the audit log file when MCP_UNIFI_AUDIT_SINK=file. Defaults to audit.jsonl in the process CWD.",
+              "format": "string",
+              "default": "audit.jsonl",
+              "name": "MCP_UNIFI_AUDIT_PATH"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-06-14T13:34:53.221615Z",
+        "publishedAt": "2026-06-14T13:34:53.221615Z",
+        "updatedAt": "2026-06-14T13:34:53.221615Z",
+        "isLatest": false
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.pete-builds/unifi",
+        "description": "Safe-by-default UniFi MCP: Network + Protect + Access, multi-site, dry-run, audit log.",
+        "title": "UniFi Gateway",
+        "repository": {
+          "url": "https://github.com/pete-builds/mcp-unifi",
+          "source": "github"
+        },
+        "version": "0.15.3",
+        "websiteUrl": "https://pete-builds.github.io/mcp-unifi/",
+        "packages": [
+          {
+            "registryType": "oci",
+            "identifier": "ghcr.io/pete-builds/mcp-unifi:0.15.3",
+            "runtimeHint": "docker",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3714/mcp"
+            },
+            "environmentVariables": [
+              {
+                "description": "When true, the server returns realistic mock data and requires no UniFi hardware. Defaults to true so the image is functional out of the box.",
+                "format": "string",
+                "default": "true",
+                "choices": [
+                  "true",
+                  "false"
+                ],
+                "name": "STUB_MODE"
+              },
+              {
+                "description": "IP address or hostname of the UniFi OS gateway (UCG-Fiber, UDM Pro, etc). Required when STUB_MODE=false and MCP_UNIFI_CONTROLLERS_FILE is unset.",
+                "format": "string",
+                "name": "UNIFI_HOST"
+              },
+              {
+                "description": "Local API key generated under Settings -> Control Plane -> Integrations on the gateway. Required when STUB_MODE=false and MCP_UNIFI_CONTROLLERS_FILE is unset.",
+                "format": "string",
+                "isSecret": true,
+                "name": "UNIFI_API_KEY"
+              },
+              {
+                "description": "UniFi controller site name. Defaults to 'default'.",
+                "format": "string",
+                "default": "default",
+                "name": "UNIFI_SITE"
+              },
+              {
+                "description": "Whether to verify the gateway's TLS certificate. Defaults to false because most home gateways use a self-signed cert.",
+                "format": "string",
+                "default": "false",
+                "choices": [
+                  "true",
+                  "false"
+                ],
+                "name": "UNIFI_VERIFY_SSL"
+              },
+              {
+                "description": "Path to a YAML file describing multiple named controllers for multi-site management. When set, the legacy UNIFI_HOST / UNIFI_API_KEY env vars are ignored. Each entry needs name, host, api_key, and optionally port, site, verify_ssl.",
+                "format": "string",
+                "name": "MCP_UNIFI_CONTROLLERS_FILE"
+              },
+              {
+                "description": "Comma-separated list of modules to load. Known values: 'network', 'protect', 'access'. Defaults to 'network'. Set to 'network,protect,access' to enable Protect and Access tools alongside Network. Access is read-only in v0.10.",
+                "format": "string",
+                "default": "network",
+                "name": "MCP_UNIFI_MODULES_ENABLED"
+              },
+              {
+                "description": "UniFi Access hub IP or hostname. Required when the access module is enabled and STUB_MODE=false. Often the same host as UNIFI_HOST.",
+                "format": "string",
+                "name": "UNIFI_ACCESS_HOST"
+              },
+              {
+                "description": "UniFi Access API key. Separate from the Network API key; generated on the Access controller's developer settings. Required when the access module is enabled and STUB_MODE=false.",
+                "format": "string",
+                "isSecret": true,
+                "name": "UNIFI_ACCESS_API_KEY"
+              },
+              {
+                "description": "HTTPS port for the Access hub. Defaults to 12445 (the direct Access app port).",
+                "format": "string",
+                "default": "12445",
+                "name": "UNIFI_ACCESS_PORT"
+              },
+              {
+                "description": "Audit log sink. One of 'file' (default), 'stdout', or 'syslog'. Every tool call is recorded to a JSONL stream with secrets scrubbed.",
+                "format": "string",
+                "default": "file",
+                "choices": [
+                  "file",
+                  "stdout",
+                  "syslog"
+                ],
+                "name": "MCP_UNIFI_AUDIT_SINK"
+              },
+              {
+                "description": "Path for the audit log file when MCP_UNIFI_AUDIT_SINK=file. Defaults to audit.jsonl in the process CWD.",
+                "format": "string",
+                "default": "audit.jsonl",
+                "name": "MCP_UNIFI_AUDIT_PATH"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-14T13:34:53.221615Z",
+          "publishedAt": "2026-06-14T13:34:53.221615Z",
+          "updatedAt": "2026-06-14T13:34:53.221615Z",
+          "isLatest": false
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:57.477Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

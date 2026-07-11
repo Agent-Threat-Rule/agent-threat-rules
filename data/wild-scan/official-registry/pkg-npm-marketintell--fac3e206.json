@@ -1,0 +1,296 @@
+{
+  "dedup_key": "pkg:npm:marketintell",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:npm:marketintell",
+    "registryType": "npm",
+    "identifier": "marketintell"
+  },
+  "server_names": [
+    "ai.marketintell/marketintell"
+  ],
+  "versions_seen": [
+    "0.3.1"
+  ],
+  "registry_row_count": 1,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.marketintell/marketintell",
+      "description": "AI analyst desk for stocks, options & crypto with sourced trade setups and a public accuracy record.",
+      "repository": {
+        "url": "https://github.com/ravidsrk/marketintell",
+        "source": "github",
+        "subfolder": "apps/api"
+      },
+      "version": "0.3.1",
+      "websiteUrl": "https://marketintell.ai",
+      "packages": [
+        {
+          "registryType": "npm",
+          "identifier": "marketintell",
+          "version": "0.2.1",
+          "runtimeHint": "npx",
+          "transport": {
+            "type": "stdio"
+          },
+          "runtimeArguments": [
+            {
+              "description": "CLI subcommand that runs the stdio MCP proxy.",
+              "isRequired": true,
+              "value": "mcp",
+              "type": "positional"
+            }
+          ],
+          "environmentVariables": [
+            {
+              "description": "API key for the underlying MarketIntell account. Required for tool calls; optional for capability discovery.",
+              "isSecret": true,
+              "name": "MARKETINTELL_API_KEY"
+            }
+          ]
+        }
+      ],
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://api.marketintell.ai/mcp",
+          "headers": [
+            {
+              "description": "API key from https://marketintell.ai/signup (or SHA-256 PoW self-signup at https://api.marketintell.ai/v1/auth/challenge). Capability-discovery methods (initialize, tools/list, resources/list, prompts/list, ping) succeed without a key; tools/call and resources/read require one.",
+              "isSecret": true,
+              "name": "X-API-Key"
+            }
+          ]
+        },
+        {
+          "type": "sse",
+          "url": "https://api.marketintell.ai/mcp/sse",
+          "headers": [
+            {
+              "description": "API key. SSE transport is the legacy long-lived channel; new clients should prefer the Streamable HTTP endpoint above.",
+              "isSecret": true,
+              "name": "X-API-Key"
+            }
+          ]
+        }
+      ],
+      "_meta": {
+        "io.modelcontextprotocol.registry/publisher-provided": {
+          "accuracy": {
+            "live_widget": "https://api.marketintell.ai/widgets/accuracy.json",
+            "public_page": "https://marketintell.ai/accuracy"
+          },
+          "agent_card": "https://marketintell.ai/.well-known/agent.json",
+          "capabilities": {
+            "mcpApps": true,
+            "mcpAppsExtension": "io.modelcontextprotocol/ui",
+            "selfRegister": "https://api.marketintell.ai/v1/auth/challenge",
+            "structuredOutputs": true
+          },
+          "categories": [
+            "finance",
+            "research",
+            "crypto",
+            "equities",
+            "agents"
+          ],
+          "diagnostics": "https://api.marketintell.ai/mcp/diagnostics",
+          "documentation": "https://docs.marketintell.ai/docs/guides/mcp",
+          "homepage": "https://marketintell.ai",
+          "llms_txt": "https://marketintell.ai/llms.txt",
+          "openapi": "https://api.marketintell.ai/openapi.json",
+          "pricing": {
+            "free_daily_queries": 20,
+            "tiers": [
+              {
+                "name": "Free",
+                "usd_per_month": 0
+              },
+              {
+                "name": "Builder",
+                "usd_per_month": 49
+              },
+              {
+                "name": "Pro",
+                "usd_per_month": 99
+              },
+              {
+                "name": "Enterprise",
+                "usd_per_month": "from 5000"
+              }
+            ]
+          },
+          "skill": "https://marketintell.ai/skill.md",
+          "tool_count": 13,
+          "tools": [
+            "chat",
+            "chat_deep",
+            "alpha_signals",
+            "signal_performance",
+            "screener",
+            "portfolio_list",
+            "portfolio_create",
+            "portfolio_analyze",
+            "sessions_list",
+            "billing_status",
+            "health",
+            "register_challenge",
+            "register"
+          ]
+        }
+      }
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-06-01T22:07:15.763336Z",
+        "publishedAt": "2026-06-01T22:07:15.763336Z",
+        "updatedAt": "2026-06-01T22:07:15.763336Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "ai.marketintell/marketintell",
+        "description": "AI analyst desk for stocks, options & crypto with sourced trade setups and a public accuracy record.",
+        "repository": {
+          "url": "https://github.com/ravidsrk/marketintell",
+          "source": "github",
+          "subfolder": "apps/api"
+        },
+        "version": "0.3.1",
+        "websiteUrl": "https://marketintell.ai",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "marketintell",
+            "version": "0.2.1",
+            "runtimeHint": "npx",
+            "transport": {
+              "type": "stdio"
+            },
+            "runtimeArguments": [
+              {
+                "description": "CLI subcommand that runs the stdio MCP proxy.",
+                "isRequired": true,
+                "value": "mcp",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "API key for the underlying MarketIntell account. Required for tool calls; optional for capability discovery.",
+                "isSecret": true,
+                "name": "MARKETINTELL_API_KEY"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://api.marketintell.ai/mcp",
+            "headers": [
+              {
+                "description": "API key from https://marketintell.ai/signup (or SHA-256 PoW self-signup at https://api.marketintell.ai/v1/auth/challenge). Capability-discovery methods (initialize, tools/list, resources/list, prompts/list, ping) succeed without a key; tools/call and resources/read require one.",
+                "isSecret": true,
+                "name": "X-API-Key"
+              }
+            ]
+          },
+          {
+            "type": "sse",
+            "url": "https://api.marketintell.ai/mcp/sse",
+            "headers": [
+              {
+                "description": "API key. SSE transport is the legacy long-lived channel; new clients should prefer the Streamable HTTP endpoint above.",
+                "isSecret": true,
+                "name": "X-API-Key"
+              }
+            ]
+          }
+        ],
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "accuracy": {
+              "live_widget": "https://api.marketintell.ai/widgets/accuracy.json",
+              "public_page": "https://marketintell.ai/accuracy"
+            },
+            "agent_card": "https://marketintell.ai/.well-known/agent.json",
+            "capabilities": {
+              "mcpApps": true,
+              "mcpAppsExtension": "io.modelcontextprotocol/ui",
+              "selfRegister": "https://api.marketintell.ai/v1/auth/challenge",
+              "structuredOutputs": true
+            },
+            "categories": [
+              "finance",
+              "research",
+              "crypto",
+              "equities",
+              "agents"
+            ],
+            "diagnostics": "https://api.marketintell.ai/mcp/diagnostics",
+            "documentation": "https://docs.marketintell.ai/docs/guides/mcp",
+            "homepage": "https://marketintell.ai",
+            "llms_txt": "https://marketintell.ai/llms.txt",
+            "openapi": "https://api.marketintell.ai/openapi.json",
+            "pricing": {
+              "free_daily_queries": 20,
+              "tiers": [
+                {
+                  "name": "Free",
+                  "usd_per_month": 0
+                },
+                {
+                  "name": "Builder",
+                  "usd_per_month": 49
+                },
+                {
+                  "name": "Pro",
+                  "usd_per_month": 99
+                },
+                {
+                  "name": "Enterprise",
+                  "usd_per_month": "from 5000"
+                }
+              ]
+            },
+            "skill": "https://marketintell.ai/skill.md",
+            "tool_count": 13,
+            "tools": [
+              "chat",
+              "chat_deep",
+              "alpha_signals",
+              "signal_performance",
+              "screener",
+              "portfolio_list",
+              "portfolio_create",
+              "portfolio_analyze",
+              "sessions_list",
+              "billing_status",
+              "health",
+              "register_challenge",
+              "register"
+            ]
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-01T22:07:15.763336Z",
+          "publishedAt": "2026-06-01T22:07:15.763336Z",
+          "updatedAt": "2026-06-01T22:07:15.763336Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:56.171Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

@@ -1,0 +1,262 @@
+{
+  "dedup_key": "pkg:npm:@three-ws/mcp-bridge",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:npm:@three-ws/mcp-bridge",
+    "registryType": "npm",
+    "identifier": "@three-ws/mcp-bridge"
+  },
+  "server_names": [
+    "io.github.nirholas/x402-bridge"
+  ],
+  "versions_seen": [
+    "1.0.0"
+  ],
+  "registry_row_count": 1,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.nirholas/x402-bridge",
+      "description": "Pay any x402 endpoint on the open web: auto-paying bridge with Bazaar discovery and spend caps.",
+      "title": "x402 Universal Payer",
+      "repository": {
+        "url": "https://github.com/nirholas/three.ws",
+        "source": "github",
+        "subfolder": "mcp-bridge"
+      },
+      "version": "1.0.0",
+      "websiteUrl": "https://three.ws",
+      "icons": [
+        {
+          "src": "https://three.ws/three-ws-mcp-icon.svg",
+          "mimeType": "image/svg+xml",
+          "sizes": [
+            "any"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "registryType": "npm",
+          "identifier": "@three-ws/mcp-bridge",
+          "version": "1.0.0",
+          "runtimeHint": "npx",
+          "transport": {
+            "type": "stdio"
+          },
+          "environmentVariables": [
+            {
+              "description": "0x-prefixed 32-byte hex private key that funds USDC payments on EVM chains (Base, Arbitrum, …). At least one of the EVM/SVM keys is required. Treat like cash — use a dedicated low-balance wallet.",
+              "format": "string",
+              "isSecret": true,
+              "name": "MCP_BRIDGE_EVM_PRIVATE_KEY"
+            },
+            {
+              "description": "Solana secret key that funds USDC payments: base58 64-byte secret key (Phantom / solana-keygen format) or a JSON array of 64 integers. At least one of the EVM/SVM keys is required. Treat like cash.",
+              "format": "string",
+              "isSecret": true,
+              "name": "MCP_BRIDGE_SVM_PRIVATE_KEY"
+            },
+            {
+              "description": "Per-call spending cap in atomic units (USDC has 6 decimals). Payments above this abort with a clear reason.",
+              "format": "number",
+              "default": "100000",
+              "name": "MCP_BRIDGE_MAX_PRICE_PER_CALL_ATOMIC"
+            },
+            {
+              "description": "Cumulative session spending ceiling in atomic units. Once total spend would exceed it, further payments abort until restart.",
+              "format": "number",
+              "default": "1000000",
+              "name": "MCP_BRIDGE_MAX_TOTAL_ATOMIC"
+            },
+            {
+              "description": "Comma-separated payee allowlist. When set, any payment whose payTo address is not listed is refused.",
+              "format": "string",
+              "name": "MCP_BRIDGE_ALLOWED_PAYTO"
+            },
+            {
+              "description": "Comma-separated hostname allowlist for outbound paid requests. When set, any other host is refused before a request is signed.",
+              "format": "string",
+              "name": "MCP_BRIDGE_ALLOWED_HOSTS"
+            },
+            {
+              "description": "Set to 1 to allow http:// targets (local development only). https is enforced otherwise.",
+              "format": "boolean",
+              "default": "0",
+              "name": "MCP_BRIDGE_ALLOW_HTTP"
+            },
+            {
+              "description": "Max number of x402 Bazaar resources to register as dynamic tools at startup. Set 0 to disable discovery.",
+              "format": "number",
+              "default": "20",
+              "name": "MCP_BRIDGE_DISCOVER_LIMIT"
+            },
+            {
+              "description": "x402 Bazaar discovery endpoint. Override to point at a self-hosted or alternative bazaar.",
+              "format": "string",
+              "default": "https://api.cdp.coinbase.com/platform/v2/x402/discovery/resources",
+              "name": "MCP_BRIDGE_BAZAAR_URL"
+            },
+            {
+              "description": "How many request-amounts to deposit at once when opening an EVM batch-settlement channel.",
+              "format": "number",
+              "default": "5",
+              "name": "MCP_BRIDGE_BATCH_DEPOSIT_MULTIPLIER"
+            },
+            {
+              "description": "Hard cap in atomic units on a single batch-settlement channel deposit or top-up.",
+              "format": "number",
+              "default": "5000000",
+              "name": "MCP_BRIDGE_MAX_DEPOSIT_ATOMIC"
+            },
+            {
+              "description": "Directory for persisted batch-settlement channel state (survives client restarts).",
+              "format": "string",
+              "default": "~/.x402-mcp-bridge/channels",
+              "name": "X402_MCP_BRIDGE_CHANNELS_DIR"
+            },
+            {
+              "description": "Per-chain RPC override, one variable per chain id (RPC_URL_<chainId>, e.g. RPC_URL_8453 for Base). Defaults to viem's public RPC for that chain.",
+              "format": "string",
+              "name": "RPC_URL_8453"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-06-13T08:08:34.207121Z",
+        "publishedAt": "2026-06-13T08:08:34.207121Z",
+        "updatedAt": "2026-06-13T08:08:34.207121Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.nirholas/x402-bridge",
+        "description": "Pay any x402 endpoint on the open web: auto-paying bridge with Bazaar discovery and spend caps.",
+        "title": "x402 Universal Payer",
+        "repository": {
+          "url": "https://github.com/nirholas/three.ws",
+          "source": "github",
+          "subfolder": "mcp-bridge"
+        },
+        "version": "1.0.0",
+        "websiteUrl": "https://three.ws",
+        "icons": [
+          {
+            "src": "https://three.ws/three-ws-mcp-icon.svg",
+            "mimeType": "image/svg+xml",
+            "sizes": [
+              "any"
+            ]
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@three-ws/mcp-bridge",
+            "version": "1.0.0",
+            "runtimeHint": "npx",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "0x-prefixed 32-byte hex private key that funds USDC payments on EVM chains (Base, Arbitrum, …). At least one of the EVM/SVM keys is required. Treat like cash — use a dedicated low-balance wallet.",
+                "format": "string",
+                "isSecret": true,
+                "name": "MCP_BRIDGE_EVM_PRIVATE_KEY"
+              },
+              {
+                "description": "Solana secret key that funds USDC payments: base58 64-byte secret key (Phantom / solana-keygen format) or a JSON array of 64 integers. At least one of the EVM/SVM keys is required. Treat like cash.",
+                "format": "string",
+                "isSecret": true,
+                "name": "MCP_BRIDGE_SVM_PRIVATE_KEY"
+              },
+              {
+                "description": "Per-call spending cap in atomic units (USDC has 6 decimals). Payments above this abort with a clear reason.",
+                "format": "number",
+                "default": "100000",
+                "name": "MCP_BRIDGE_MAX_PRICE_PER_CALL_ATOMIC"
+              },
+              {
+                "description": "Cumulative session spending ceiling in atomic units. Once total spend would exceed it, further payments abort until restart.",
+                "format": "number",
+                "default": "1000000",
+                "name": "MCP_BRIDGE_MAX_TOTAL_ATOMIC"
+              },
+              {
+                "description": "Comma-separated payee allowlist. When set, any payment whose payTo address is not listed is refused.",
+                "format": "string",
+                "name": "MCP_BRIDGE_ALLOWED_PAYTO"
+              },
+              {
+                "description": "Comma-separated hostname allowlist for outbound paid requests. When set, any other host is refused before a request is signed.",
+                "format": "string",
+                "name": "MCP_BRIDGE_ALLOWED_HOSTS"
+              },
+              {
+                "description": "Set to 1 to allow http:// targets (local development only). https is enforced otherwise.",
+                "format": "boolean",
+                "default": "0",
+                "name": "MCP_BRIDGE_ALLOW_HTTP"
+              },
+              {
+                "description": "Max number of x402 Bazaar resources to register as dynamic tools at startup. Set 0 to disable discovery.",
+                "format": "number",
+                "default": "20",
+                "name": "MCP_BRIDGE_DISCOVER_LIMIT"
+              },
+              {
+                "description": "x402 Bazaar discovery endpoint. Override to point at a self-hosted or alternative bazaar.",
+                "format": "string",
+                "default": "https://api.cdp.coinbase.com/platform/v2/x402/discovery/resources",
+                "name": "MCP_BRIDGE_BAZAAR_URL"
+              },
+              {
+                "description": "How many request-amounts to deposit at once when opening an EVM batch-settlement channel.",
+                "format": "number",
+                "default": "5",
+                "name": "MCP_BRIDGE_BATCH_DEPOSIT_MULTIPLIER"
+              },
+              {
+                "description": "Hard cap in atomic units on a single batch-settlement channel deposit or top-up.",
+                "format": "number",
+                "default": "5000000",
+                "name": "MCP_BRIDGE_MAX_DEPOSIT_ATOMIC"
+              },
+              {
+                "description": "Directory for persisted batch-settlement channel state (survives client restarts).",
+                "format": "string",
+                "default": "~/.x402-mcp-bridge/channels",
+                "name": "X402_MCP_BRIDGE_CHANNELS_DIR"
+              },
+              {
+                "description": "Per-chain RPC override, one variable per chain id (RPC_URL_<chainId>, e.g. RPC_URL_8453 for Base). Defaults to viem's public RPC for that chain.",
+                "format": "string",
+                "name": "RPC_URL_8453"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-13T08:08:34.207121Z",
+          "publishedAt": "2026-06-13T08:08:34.207121Z",
+          "updatedAt": "2026-06-13T08:08:34.207121Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:57.424Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

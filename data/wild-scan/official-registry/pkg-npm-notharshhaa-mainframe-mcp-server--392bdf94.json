@@ -1,0 +1,1000 @@
+{
+  "dedup_key": "pkg:npm:@notharshhaa/mainframe-mcp-server",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:npm:@notharshhaa/mainframe-mcp-server",
+    "registryType": "npm",
+    "identifier": "@notharshhaa/mainframe-mcp-server"
+  },
+  "server_names": [
+    "io.github.NotHarshhaa/mainframe-mcp-server"
+  ],
+  "versions_seen": [
+    "1.0.0",
+    "2.0.0",
+    "2.1.0",
+    "2.2.0",
+    "2.5.0"
+  ],
+  "registry_row_count": 5,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.NotHarshhaa/mainframe-mcp-server",
+      "description": "MCP server for IBM z/OS jobs, datasets, USS, and operational diagnostics via Zowe SDK.",
+      "repository": {
+        "url": "https://github.com/NotHarshhaa/mainframe-mcp-server",
+        "source": "github"
+      },
+      "version": "2.5.0",
+      "packages": [
+        {
+          "registryType": "npm",
+          "identifier": "@notharshhaa/mainframe-mcp-server",
+          "version": "2.5.0",
+          "transport": {
+            "type": "stdio"
+          },
+          "environmentVariables": [
+            {
+              "description": "z/OSMF hostname or IP address",
+              "isRequired": true,
+              "format": "string",
+              "name": "ZOSMF_HOST"
+            },
+            {
+              "description": "z/OSMF HTTPS port (default 443)",
+              "format": "number",
+              "name": "ZOSMF_PORT"
+            },
+            {
+              "description": "Optional API gateway or mediation layer prefix for z/OSMF",
+              "format": "string",
+              "name": "ZOSMF_BASE_PATH"
+            },
+            {
+              "description": "z/OS user id (required with ZOSMF_PASSWORD unless ZOSMF_TOKEN is set)",
+              "format": "string",
+              "name": "ZOSMF_USER"
+            },
+            {
+              "description": "Password for basic auth (required with ZOSMF_USER unless ZOSMF_TOKEN is set)",
+              "format": "string",
+              "isSecret": true,
+              "name": "ZOSMF_PASSWORD"
+            },
+            {
+              "description": "Auth token (alternative to user/password)",
+              "format": "string",
+              "isSecret": true,
+              "name": "ZOSMF_TOKEN"
+            },
+            {
+              "description": "Token type when using ZOSMF_TOKEN (e.g. LTPA2)",
+              "format": "string",
+              "name": "ZOSMF_TOKEN_TYPE"
+            },
+            {
+              "description": "Verify TLS certificates (true in production)",
+              "format": "boolean",
+              "name": "ZOSMF_REJECT_UNAUTHORIZED"
+            },
+            {
+              "description": "Log level: fatal, error, warn, info, debug, trace, silent",
+              "format": "string",
+              "name": "LOG_LEVEL"
+            },
+            {
+              "description": "Transport: stdio (IDE) or sse (container/network)",
+              "format": "string",
+              "name": "MCP_TRANSPORT"
+            },
+            {
+              "description": "Listen port when MCP_TRANSPORT=sse",
+              "format": "number",
+              "name": "MCP_SSE_PORT"
+            },
+            {
+              "description": "Max lines returned from a single spool DD",
+              "format": "number",
+              "name": "MAX_JOB_OUTPUT_LINES"
+            },
+            {
+              "description": "Max lines returned from dataset or USS reads",
+              "format": "number",
+              "name": "MAX_DATASET_READ_LINES"
+            },
+            {
+              "description": "Max spool files fetched during diagnostics",
+              "format": "number",
+              "name": "MAX_JES_SPOOL_FILES"
+            },
+            {
+              "description": "Max RACF audit log lines per query",
+              "format": "number",
+              "name": "MAX_AUDIT_LINES"
+            },
+            {
+              "description": "CICSplex name or region APPLID (required for CICS tools)",
+              "format": "string",
+              "name": "CMCI_CONTEXT"
+            },
+            {
+              "description": "CMCI hostname (defaults to ZOSMF_HOST)",
+              "format": "string",
+              "name": "CMCI_HOST"
+            },
+            {
+              "description": "CMCI HTTPS port (default 1490)",
+              "format": "number",
+              "name": "CMCI_PORT"
+            },
+            {
+              "description": "CMCI REST base path",
+              "format": "string",
+              "name": "CMCI_BASE_PATH"
+            },
+            {
+              "description": "Db2 subsystem location name (required for Db2 tools)",
+              "format": "string",
+              "name": "DB2_LOCATION"
+            },
+            {
+              "description": "Db2 REST hostname (defaults to ZOSMF_HOST)",
+              "format": "string",
+              "name": "DB2_HOST"
+            },
+            {
+              "description": "Db2 REST port (default 50400)",
+              "format": "number",
+              "name": "DB2_PORT"
+            },
+            {
+              "description": "Db2 REST base path",
+              "format": "string",
+              "name": "DB2_BASE_PATH"
+            },
+            {
+              "description": "Optional SMF summary dataset for offline metrics",
+              "format": "string",
+              "name": "SMF_SUMMARY_DATASET"
+            },
+            {
+              "description": "Query z/OSMF RMF metrics when available",
+              "format": "boolean",
+              "name": "RMF_METRICS_ENABLED"
+            },
+            {
+              "description": "USS path to RACF audit log file",
+              "format": "string",
+              "name": "RACF_AUDIT_USS_PATH"
+            },
+            {
+              "description": "Sequential dataset containing RACF audit records",
+              "format": "string",
+              "name": "RACF_AUDIT_DATASET"
+            },
+            {
+              "description": "When true, blocks write tools such as submit_jcl",
+              "format": "boolean",
+              "name": "SECURITY_READ_ONLY"
+            },
+            {
+              "description": "Comma-separated allowlist of MCP tool names",
+              "format": "string",
+              "name": "SECURITY_ALLOWED_TOOLS"
+            },
+            {
+              "description": "Comma-separated blocklist of MCP tool names",
+              "format": "string",
+              "name": "SECURITY_BLOCKED_TOOLS"
+            },
+            {
+              "description": "Comma-separated dataset patterns (e.g. USERDEV.*,SYS1.*)",
+              "format": "string",
+              "name": "SECURITY_ALLOWED_DATASET_PATTERNS"
+            },
+            {
+              "description": "Comma-separated USS path prefixes",
+              "format": "string",
+              "name": "SECURITY_ALLOWED_USS_PATHS"
+            },
+            {
+              "description": "Log every tool invocation to stderr (SIEM-friendly JSON)",
+              "format": "boolean",
+              "name": "SECURITY_AUDIT_LOGGING"
+            },
+            {
+              "description": "Maximum inline JCL size for submit_jcl",
+              "format": "number",
+              "name": "SECURITY_MAX_JCL_BYTES"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-06-08T13:30:40.532638Z",
+        "publishedAt": "2026-06-08T13:30:40.532638Z",
+        "updatedAt": "2026-06-08T13:30:40.532638Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.NotHarshhaa/mainframe-mcp-server",
+        "description": "MCP server for IBM z/OS jobs, datasets, USS, and operational diagnostics via Zowe SDK.",
+        "repository": {
+          "url": "https://github.com/NotHarshhaa/mainframe-mcp-server",
+          "source": "github"
+        },
+        "version": "1.0.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@notharshhaa/mainframe-mcp-server",
+            "version": "1.0.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "z/OSMF hostname or IP address",
+                "isRequired": true,
+                "format": "string",
+                "name": "ZOSMF_HOST"
+              },
+              {
+                "description": "z/OSMF HTTPS port (default 443)",
+                "format": "number",
+                "name": "ZOSMF_PORT"
+              },
+              {
+                "description": "z/OS user id (required with ZOSMF_PASSWORD unless ZOSMF_TOKEN is set)",
+                "format": "string",
+                "name": "ZOSMF_USER"
+              },
+              {
+                "description": "Password for basic auth (required with ZOSMF_USER unless ZOSMF_TOKEN is set)",
+                "format": "string",
+                "isSecret": true,
+                "name": "ZOSMF_PASSWORD"
+              },
+              {
+                "description": "Auth token (alternative to user/password)",
+                "format": "string",
+                "isSecret": true,
+                "name": "ZOSMF_TOKEN"
+              },
+              {
+                "description": "Token type when using ZOSMF_TOKEN (e.g. LTPA2)",
+                "format": "string",
+                "name": "ZOSMF_TOKEN_TYPE"
+              },
+              {
+                "description": "Verify TLS certificates (true in production)",
+                "format": "boolean",
+                "name": "ZOSMF_REJECT_UNAUTHORIZED"
+              },
+              {
+                "description": "Log level: info, debug, warn, error, etc.",
+                "format": "string",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-02T12:21:38.993309Z",
+          "publishedAt": "2026-06-02T12:21:38.993309Z",
+          "updatedAt": "2026-06-02T12:21:38.993309Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.NotHarshhaa/mainframe-mcp-server",
+        "description": "MCP server for IBM z/OS jobs, datasets, USS, and operational diagnostics via Zowe SDK.",
+        "repository": {
+          "url": "https://github.com/NotHarshhaa/mainframe-mcp-server",
+          "source": "github"
+        },
+        "version": "2.0.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@notharshhaa/mainframe-mcp-server",
+            "version": "2.0.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "z/OSMF hostname or IP address",
+                "isRequired": true,
+                "format": "string",
+                "name": "ZOSMF_HOST"
+              },
+              {
+                "description": "z/OSMF HTTPS port (default 443)",
+                "format": "number",
+                "name": "ZOSMF_PORT"
+              },
+              {
+                "description": "z/OS user id (required with ZOSMF_PASSWORD unless ZOSMF_TOKEN is set)",
+                "format": "string",
+                "name": "ZOSMF_USER"
+              },
+              {
+                "description": "Password for basic auth (required with ZOSMF_USER unless ZOSMF_TOKEN is set)",
+                "format": "string",
+                "isSecret": true,
+                "name": "ZOSMF_PASSWORD"
+              },
+              {
+                "description": "Auth token (alternative to user/password)",
+                "format": "string",
+                "isSecret": true,
+                "name": "ZOSMF_TOKEN"
+              },
+              {
+                "description": "Token type when using ZOSMF_TOKEN (e.g. LTPA2)",
+                "format": "string",
+                "name": "ZOSMF_TOKEN_TYPE"
+              },
+              {
+                "description": "Verify TLS certificates (true in production)",
+                "format": "boolean",
+                "name": "ZOSMF_REJECT_UNAUTHORIZED"
+              },
+              {
+                "description": "Log level: info, debug, warn, error, etc.",
+                "format": "string",
+                "name": "LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-02T12:51:39.291737Z",
+          "publishedAt": "2026-06-02T12:51:39.291737Z",
+          "updatedAt": "2026-06-02T12:51:39.291737Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.NotHarshhaa/mainframe-mcp-server",
+        "description": "MCP server for IBM z/OS jobs, datasets, USS, and operational diagnostics via Zowe SDK.",
+        "repository": {
+          "url": "https://github.com/NotHarshhaa/mainframe-mcp-server",
+          "source": "github"
+        },
+        "version": "2.1.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@notharshhaa/mainframe-mcp-server",
+            "version": "2.1.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "z/OSMF hostname or IP address",
+                "isRequired": true,
+                "format": "string",
+                "name": "ZOSMF_HOST"
+              },
+              {
+                "description": "z/OSMF HTTPS port (default 443)",
+                "format": "number",
+                "name": "ZOSMF_PORT"
+              },
+              {
+                "description": "Optional API gateway or mediation layer prefix for z/OSMF",
+                "format": "string",
+                "name": "ZOSMF_BASE_PATH"
+              },
+              {
+                "description": "z/OS user id (required with ZOSMF_PASSWORD unless ZOSMF_TOKEN is set)",
+                "format": "string",
+                "name": "ZOSMF_USER"
+              },
+              {
+                "description": "Password for basic auth (required with ZOSMF_USER unless ZOSMF_TOKEN is set)",
+                "format": "string",
+                "isSecret": true,
+                "name": "ZOSMF_PASSWORD"
+              },
+              {
+                "description": "Auth token (alternative to user/password)",
+                "format": "string",
+                "isSecret": true,
+                "name": "ZOSMF_TOKEN"
+              },
+              {
+                "description": "Token type when using ZOSMF_TOKEN (e.g. LTPA2)",
+                "format": "string",
+                "name": "ZOSMF_TOKEN_TYPE"
+              },
+              {
+                "description": "Verify TLS certificates (true in production)",
+                "format": "boolean",
+                "name": "ZOSMF_REJECT_UNAUTHORIZED"
+              },
+              {
+                "description": "Log level: fatal, error, warn, info, debug, trace, silent",
+                "format": "string",
+                "name": "LOG_LEVEL"
+              },
+              {
+                "description": "Transport: stdio (IDE) or sse (container/network)",
+                "format": "string",
+                "name": "MCP_TRANSPORT"
+              },
+              {
+                "description": "Listen port when MCP_TRANSPORT=sse",
+                "format": "number",
+                "name": "MCP_SSE_PORT"
+              },
+              {
+                "description": "Max lines returned from a single spool DD",
+                "format": "number",
+                "name": "MAX_JOB_OUTPUT_LINES"
+              },
+              {
+                "description": "Max lines returned from dataset or USS reads",
+                "format": "number",
+                "name": "MAX_DATASET_READ_LINES"
+              },
+              {
+                "description": "Max spool files fetched during diagnostics",
+                "format": "number",
+                "name": "MAX_JES_SPOOL_FILES"
+              },
+              {
+                "description": "Max RACF audit log lines per query",
+                "format": "number",
+                "name": "MAX_AUDIT_LINES"
+              },
+              {
+                "description": "CICSplex name or region APPLID (required for CICS tools)",
+                "format": "string",
+                "name": "CMCI_CONTEXT"
+              },
+              {
+                "description": "CMCI hostname (defaults to ZOSMF_HOST)",
+                "format": "string",
+                "name": "CMCI_HOST"
+              },
+              {
+                "description": "CMCI HTTPS port (default 1490)",
+                "format": "number",
+                "name": "CMCI_PORT"
+              },
+              {
+                "description": "CMCI REST base path",
+                "format": "string",
+                "name": "CMCI_BASE_PATH"
+              },
+              {
+                "description": "Db2 subsystem location name (required for Db2 tools)",
+                "format": "string",
+                "name": "DB2_LOCATION"
+              },
+              {
+                "description": "Db2 REST hostname (defaults to ZOSMF_HOST)",
+                "format": "string",
+                "name": "DB2_HOST"
+              },
+              {
+                "description": "Db2 REST port (default 50400)",
+                "format": "number",
+                "name": "DB2_PORT"
+              },
+              {
+                "description": "Db2 REST base path",
+                "format": "string",
+                "name": "DB2_BASE_PATH"
+              },
+              {
+                "description": "Optional SMF summary dataset for offline metrics",
+                "format": "string",
+                "name": "SMF_SUMMARY_DATASET"
+              },
+              {
+                "description": "Query z/OSMF RMF metrics when available",
+                "format": "boolean",
+                "name": "RMF_METRICS_ENABLED"
+              },
+              {
+                "description": "USS path to RACF audit log file",
+                "format": "string",
+                "name": "RACF_AUDIT_USS_PATH"
+              },
+              {
+                "description": "Sequential dataset containing RACF audit records",
+                "format": "string",
+                "name": "RACF_AUDIT_DATASET"
+              },
+              {
+                "description": "When true, blocks write tools such as submit_jcl",
+                "format": "boolean",
+                "name": "SECURITY_READ_ONLY"
+              },
+              {
+                "description": "Comma-separated allowlist of MCP tool names",
+                "format": "string",
+                "name": "SECURITY_ALLOWED_TOOLS"
+              },
+              {
+                "description": "Comma-separated blocklist of MCP tool names",
+                "format": "string",
+                "name": "SECURITY_BLOCKED_TOOLS"
+              },
+              {
+                "description": "Comma-separated dataset patterns (e.g. USERDEV.*,SYS1.*)",
+                "format": "string",
+                "name": "SECURITY_ALLOWED_DATASET_PATTERNS"
+              },
+              {
+                "description": "Comma-separated USS path prefixes",
+                "format": "string",
+                "name": "SECURITY_ALLOWED_USS_PATHS"
+              },
+              {
+                "description": "Log every tool invocation to stderr (SIEM-friendly JSON)",
+                "format": "boolean",
+                "name": "SECURITY_AUDIT_LOGGING"
+              },
+              {
+                "description": "Maximum inline JCL size for submit_jcl",
+                "format": "number",
+                "name": "SECURITY_MAX_JCL_BYTES"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-04T17:14:30.867371Z",
+          "publishedAt": "2026-06-04T17:14:30.867371Z",
+          "updatedAt": "2026-06-04T17:14:30.867371Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.NotHarshhaa/mainframe-mcp-server",
+        "description": "MCP server for IBM z/OS jobs, datasets, USS, and operational diagnostics via Zowe SDK.",
+        "repository": {
+          "url": "https://github.com/NotHarshhaa/mainframe-mcp-server",
+          "source": "github"
+        },
+        "version": "2.2.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@notharshhaa/mainframe-mcp-server",
+            "version": "2.2.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "z/OSMF hostname or IP address",
+                "isRequired": true,
+                "format": "string",
+                "name": "ZOSMF_HOST"
+              },
+              {
+                "description": "z/OSMF HTTPS port (default 443)",
+                "format": "number",
+                "name": "ZOSMF_PORT"
+              },
+              {
+                "description": "Optional API gateway or mediation layer prefix for z/OSMF",
+                "format": "string",
+                "name": "ZOSMF_BASE_PATH"
+              },
+              {
+                "description": "z/OS user id (required with ZOSMF_PASSWORD unless ZOSMF_TOKEN is set)",
+                "format": "string",
+                "name": "ZOSMF_USER"
+              },
+              {
+                "description": "Password for basic auth (required with ZOSMF_USER unless ZOSMF_TOKEN is set)",
+                "format": "string",
+                "isSecret": true,
+                "name": "ZOSMF_PASSWORD"
+              },
+              {
+                "description": "Auth token (alternative to user/password)",
+                "format": "string",
+                "isSecret": true,
+                "name": "ZOSMF_TOKEN"
+              },
+              {
+                "description": "Token type when using ZOSMF_TOKEN (e.g. LTPA2)",
+                "format": "string",
+                "name": "ZOSMF_TOKEN_TYPE"
+              },
+              {
+                "description": "Verify TLS certificates (true in production)",
+                "format": "boolean",
+                "name": "ZOSMF_REJECT_UNAUTHORIZED"
+              },
+              {
+                "description": "Log level: fatal, error, warn, info, debug, trace, silent",
+                "format": "string",
+                "name": "LOG_LEVEL"
+              },
+              {
+                "description": "Transport: stdio (IDE) or sse (container/network)",
+                "format": "string",
+                "name": "MCP_TRANSPORT"
+              },
+              {
+                "description": "Listen port when MCP_TRANSPORT=sse",
+                "format": "number",
+                "name": "MCP_SSE_PORT"
+              },
+              {
+                "description": "Max lines returned from a single spool DD",
+                "format": "number",
+                "name": "MAX_JOB_OUTPUT_LINES"
+              },
+              {
+                "description": "Max lines returned from dataset or USS reads",
+                "format": "number",
+                "name": "MAX_DATASET_READ_LINES"
+              },
+              {
+                "description": "Max spool files fetched during diagnostics",
+                "format": "number",
+                "name": "MAX_JES_SPOOL_FILES"
+              },
+              {
+                "description": "Max RACF audit log lines per query",
+                "format": "number",
+                "name": "MAX_AUDIT_LINES"
+              },
+              {
+                "description": "CICSplex name or region APPLID (required for CICS tools)",
+                "format": "string",
+                "name": "CMCI_CONTEXT"
+              },
+              {
+                "description": "CMCI hostname (defaults to ZOSMF_HOST)",
+                "format": "string",
+                "name": "CMCI_HOST"
+              },
+              {
+                "description": "CMCI HTTPS port (default 1490)",
+                "format": "number",
+                "name": "CMCI_PORT"
+              },
+              {
+                "description": "CMCI REST base path",
+                "format": "string",
+                "name": "CMCI_BASE_PATH"
+              },
+              {
+                "description": "Db2 subsystem location name (required for Db2 tools)",
+                "format": "string",
+                "name": "DB2_LOCATION"
+              },
+              {
+                "description": "Db2 REST hostname (defaults to ZOSMF_HOST)",
+                "format": "string",
+                "name": "DB2_HOST"
+              },
+              {
+                "description": "Db2 REST port (default 50400)",
+                "format": "number",
+                "name": "DB2_PORT"
+              },
+              {
+                "description": "Db2 REST base path",
+                "format": "string",
+                "name": "DB2_BASE_PATH"
+              },
+              {
+                "description": "Optional SMF summary dataset for offline metrics",
+                "format": "string",
+                "name": "SMF_SUMMARY_DATASET"
+              },
+              {
+                "description": "Query z/OSMF RMF metrics when available",
+                "format": "boolean",
+                "name": "RMF_METRICS_ENABLED"
+              },
+              {
+                "description": "USS path to RACF audit log file",
+                "format": "string",
+                "name": "RACF_AUDIT_USS_PATH"
+              },
+              {
+                "description": "Sequential dataset containing RACF audit records",
+                "format": "string",
+                "name": "RACF_AUDIT_DATASET"
+              },
+              {
+                "description": "When true, blocks write tools such as submit_jcl",
+                "format": "boolean",
+                "name": "SECURITY_READ_ONLY"
+              },
+              {
+                "description": "Comma-separated allowlist of MCP tool names",
+                "format": "string",
+                "name": "SECURITY_ALLOWED_TOOLS"
+              },
+              {
+                "description": "Comma-separated blocklist of MCP tool names",
+                "format": "string",
+                "name": "SECURITY_BLOCKED_TOOLS"
+              },
+              {
+                "description": "Comma-separated dataset patterns (e.g. USERDEV.*,SYS1.*)",
+                "format": "string",
+                "name": "SECURITY_ALLOWED_DATASET_PATTERNS"
+              },
+              {
+                "description": "Comma-separated USS path prefixes",
+                "format": "string",
+                "name": "SECURITY_ALLOWED_USS_PATHS"
+              },
+              {
+                "description": "Log every tool invocation to stderr (SIEM-friendly JSON)",
+                "format": "boolean",
+                "name": "SECURITY_AUDIT_LOGGING"
+              },
+              {
+                "description": "Maximum inline JCL size for submit_jcl",
+                "format": "number",
+                "name": "SECURITY_MAX_JCL_BYTES"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-04T18:01:32.589028Z",
+          "publishedAt": "2026-06-04T18:01:32.589028Z",
+          "updatedAt": "2026-06-04T18:01:32.589028Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.NotHarshhaa/mainframe-mcp-server",
+        "description": "MCP server for IBM z/OS jobs, datasets, USS, and operational diagnostics via Zowe SDK.",
+        "repository": {
+          "url": "https://github.com/NotHarshhaa/mainframe-mcp-server",
+          "source": "github"
+        },
+        "version": "2.5.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@notharshhaa/mainframe-mcp-server",
+            "version": "2.5.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "z/OSMF hostname or IP address",
+                "isRequired": true,
+                "format": "string",
+                "name": "ZOSMF_HOST"
+              },
+              {
+                "description": "z/OSMF HTTPS port (default 443)",
+                "format": "number",
+                "name": "ZOSMF_PORT"
+              },
+              {
+                "description": "Optional API gateway or mediation layer prefix for z/OSMF",
+                "format": "string",
+                "name": "ZOSMF_BASE_PATH"
+              },
+              {
+                "description": "z/OS user id (required with ZOSMF_PASSWORD unless ZOSMF_TOKEN is set)",
+                "format": "string",
+                "name": "ZOSMF_USER"
+              },
+              {
+                "description": "Password for basic auth (required with ZOSMF_USER unless ZOSMF_TOKEN is set)",
+                "format": "string",
+                "isSecret": true,
+                "name": "ZOSMF_PASSWORD"
+              },
+              {
+                "description": "Auth token (alternative to user/password)",
+                "format": "string",
+                "isSecret": true,
+                "name": "ZOSMF_TOKEN"
+              },
+              {
+                "description": "Token type when using ZOSMF_TOKEN (e.g. LTPA2)",
+                "format": "string",
+                "name": "ZOSMF_TOKEN_TYPE"
+              },
+              {
+                "description": "Verify TLS certificates (true in production)",
+                "format": "boolean",
+                "name": "ZOSMF_REJECT_UNAUTHORIZED"
+              },
+              {
+                "description": "Log level: fatal, error, warn, info, debug, trace, silent",
+                "format": "string",
+                "name": "LOG_LEVEL"
+              },
+              {
+                "description": "Transport: stdio (IDE) or sse (container/network)",
+                "format": "string",
+                "name": "MCP_TRANSPORT"
+              },
+              {
+                "description": "Listen port when MCP_TRANSPORT=sse",
+                "format": "number",
+                "name": "MCP_SSE_PORT"
+              },
+              {
+                "description": "Max lines returned from a single spool DD",
+                "format": "number",
+                "name": "MAX_JOB_OUTPUT_LINES"
+              },
+              {
+                "description": "Max lines returned from dataset or USS reads",
+                "format": "number",
+                "name": "MAX_DATASET_READ_LINES"
+              },
+              {
+                "description": "Max spool files fetched during diagnostics",
+                "format": "number",
+                "name": "MAX_JES_SPOOL_FILES"
+              },
+              {
+                "description": "Max RACF audit log lines per query",
+                "format": "number",
+                "name": "MAX_AUDIT_LINES"
+              },
+              {
+                "description": "CICSplex name or region APPLID (required for CICS tools)",
+                "format": "string",
+                "name": "CMCI_CONTEXT"
+              },
+              {
+                "description": "CMCI hostname (defaults to ZOSMF_HOST)",
+                "format": "string",
+                "name": "CMCI_HOST"
+              },
+              {
+                "description": "CMCI HTTPS port (default 1490)",
+                "format": "number",
+                "name": "CMCI_PORT"
+              },
+              {
+                "description": "CMCI REST base path",
+                "format": "string",
+                "name": "CMCI_BASE_PATH"
+              },
+              {
+                "description": "Db2 subsystem location name (required for Db2 tools)",
+                "format": "string",
+                "name": "DB2_LOCATION"
+              },
+              {
+                "description": "Db2 REST hostname (defaults to ZOSMF_HOST)",
+                "format": "string",
+                "name": "DB2_HOST"
+              },
+              {
+                "description": "Db2 REST port (default 50400)",
+                "format": "number",
+                "name": "DB2_PORT"
+              },
+              {
+                "description": "Db2 REST base path",
+                "format": "string",
+                "name": "DB2_BASE_PATH"
+              },
+              {
+                "description": "Optional SMF summary dataset for offline metrics",
+                "format": "string",
+                "name": "SMF_SUMMARY_DATASET"
+              },
+              {
+                "description": "Query z/OSMF RMF metrics when available",
+                "format": "boolean",
+                "name": "RMF_METRICS_ENABLED"
+              },
+              {
+                "description": "USS path to RACF audit log file",
+                "format": "string",
+                "name": "RACF_AUDIT_USS_PATH"
+              },
+              {
+                "description": "Sequential dataset containing RACF audit records",
+                "format": "string",
+                "name": "RACF_AUDIT_DATASET"
+              },
+              {
+                "description": "When true, blocks write tools such as submit_jcl",
+                "format": "boolean",
+                "name": "SECURITY_READ_ONLY"
+              },
+              {
+                "description": "Comma-separated allowlist of MCP tool names",
+                "format": "string",
+                "name": "SECURITY_ALLOWED_TOOLS"
+              },
+              {
+                "description": "Comma-separated blocklist of MCP tool names",
+                "format": "string",
+                "name": "SECURITY_BLOCKED_TOOLS"
+              },
+              {
+                "description": "Comma-separated dataset patterns (e.g. USERDEV.*,SYS1.*)",
+                "format": "string",
+                "name": "SECURITY_ALLOWED_DATASET_PATTERNS"
+              },
+              {
+                "description": "Comma-separated USS path prefixes",
+                "format": "string",
+                "name": "SECURITY_ALLOWED_USS_PATHS"
+              },
+              {
+                "description": "Log every tool invocation to stderr (SIEM-friendly JSON)",
+                "format": "boolean",
+                "name": "SECURITY_AUDIT_LOGGING"
+              },
+              {
+                "description": "Maximum inline JCL size for submit_jcl",
+                "format": "number",
+                "name": "SECURITY_MAX_JCL_BYTES"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-08T13:30:40.532638Z",
+          "publishedAt": "2026-06-08T13:30:40.532638Z",
+          "updatedAt": "2026-06-08T13:30:40.532638Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:56.660Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

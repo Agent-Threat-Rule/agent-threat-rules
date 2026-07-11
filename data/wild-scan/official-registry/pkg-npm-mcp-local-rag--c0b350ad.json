@@ -1,0 +1,3353 @@
+{
+  "dedup_key": "pkg:npm:mcp-local-rag",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:npm:mcp-local-rag",
+    "registryType": "npm",
+    "identifier": "mcp-local-rag"
+  },
+  "server_names": [
+    "io.github.shinpr/mcp-local-rag"
+  ],
+  "versions_seen": [
+    "0.1.1",
+    "0.1.3",
+    "0.1.4",
+    "0.1.5",
+    "0.10.0",
+    "0.10.1",
+    "0.11.0",
+    "0.11.1",
+    "0.12.0",
+    "0.13.0",
+    "0.13.1",
+    "0.13.2",
+    "0.14.0",
+    "0.14.1",
+    "0.14.2",
+    "0.15.0",
+    "0.15.1",
+    "0.15.2",
+    "0.15.3",
+    "0.15.4",
+    "0.16.0",
+    "0.16.1",
+    "0.2.0",
+    "0.2.2",
+    "0.2.3",
+    "0.3.0",
+    "0.4.0",
+    "0.4.1",
+    "0.4.2",
+    "0.5.0",
+    "0.5.1",
+    "0.5.2",
+    "0.5.3",
+    "0.5.4",
+    "0.5.5",
+    "0.5.6",
+    "0.6.0",
+    "0.7.0",
+    "0.8.0",
+    "0.8.1",
+    "0.9.0"
+  ],
+  "registry_row_count": 41,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.shinpr/mcp-local-rag",
+      "description": "Easy-to-setup local RAG server with minimal configuration",
+      "repository": {
+        "url": "https://github.com/shinpr/mcp-local-rag",
+        "source": "github"
+      },
+      "version": "0.16.1",
+      "packages": [
+        {
+          "registryType": "npm",
+          "registryBaseUrl": "https://registry.npmjs.org",
+          "identifier": "mcp-local-rag",
+          "version": "0.16.1",
+          "transport": {
+            "type": "stdio"
+          },
+          "environmentVariables": [
+            {
+              "description": "Base directory for document storage (defaults to current working directory). Ignored when BASE_DIRS is set.",
+              "format": "string",
+              "name": "BASE_DIR"
+            },
+            {
+              "description": "JSON array of base directories (e.g. '[\"/a\",\"/b\"]'). Takes precedence over BASE_DIR.",
+              "format": "string",
+              "name": "BASE_DIRS"
+            },
+            {
+              "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+              "format": "string",
+              "name": "DB_PATH"
+            },
+            {
+              "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+              "format": "string",
+              "name": "CACHE_DIR"
+            },
+            {
+              "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+              "format": "string",
+              "name": "MODEL_NAME"
+            },
+            {
+              "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+              "format": "string",
+              "name": "MAX_FILE_SIZE"
+            },
+            {
+              "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+              "format": "string",
+              "name": "RAG_MAX_DISTANCE"
+            },
+            {
+              "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+              "format": "string",
+              "name": "RAG_GROUPING"
+            },
+            {
+              "description": "Maximum number of files to keep in search results. Results are filtered to include only chunks from the top N best-scoring files. For example, 1 returns only the single best-matching file's chunks. Unset means no file filtering.",
+              "format": "string",
+              "name": "RAG_MAX_FILES"
+            },
+            {
+              "description": "Minimum chunk length in characters (1-10000, defaults to 50). Chunks shorter than this threshold are filtered out during ingestion.",
+              "format": "string",
+              "name": "CHUNK_MIN_LENGTH"
+            },
+            {
+              "description": "Execution device for the embedder (defaults to cpu). Passed straight to ONNX Runtime; see the Transformers.js device source for the supported backend names. If the requested device fails to initialize, the server throws an error.",
+              "format": "string",
+              "name": "RAG_DEVICE"
+            },
+            {
+              "description": "Embedding quantization dtype for the embedder (defaults to fp32). Opt-in and pass-through; accepts any dtype the chosen model provides (fp32, fp16, q8, int8, ...). If the model has no variant for the requested dtype, the server throws an error. Changing this changes the embedding space — re-ingest existing data.",
+              "format": "string",
+              "name": "RAG_DTYPE"
+            },
+            {
+              "description": "Keyword boost factor for hybrid search (0.0-1.0, defaults to 0.6). 0 means semantic similarity only; higher values increase the keyword-match contribution to the final score.",
+              "format": "string",
+              "name": "RAG_HYBRID_WEIGHT"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-07-11T02:43:21.884433Z",
+        "publishedAt": "2026-07-11T02:43:21.884433Z",
+        "updatedAt": "2026-07-11T02:43:21.884433Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.1.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.1.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Text chunk size for splitting documents (defaults to 512)",
+                "format": "string",
+                "name": "CHUNK_SIZE"
+              },
+              {
+                "description": "Overlap between consecutive chunks (defaults to 100)",
+                "format": "string",
+                "name": "CHUNK_OVERLAP"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2025-10-31T17:18:11.820928Z",
+          "publishedAt": "2025-10-31T17:18:11.820928Z",
+          "updatedAt": "2025-10-31T17:18:11.820928Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.1.3",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.1.3",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Text chunk size for splitting documents (defaults to 512)",
+                "format": "string",
+                "name": "CHUNK_SIZE"
+              },
+              {
+                "description": "Overlap between consecutive chunks (defaults to 100)",
+                "format": "string",
+                "name": "CHUNK_OVERLAP"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2025-10-31T17:51:46.571565Z",
+          "publishedAt": "2025-10-31T17:51:46.571565Z",
+          "updatedAt": "2025-10-31T17:51:46.571565Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.1.4",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.1.4",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Text chunk size for splitting documents (defaults to 512)",
+                "format": "string",
+                "name": "CHUNK_SIZE"
+              },
+              {
+                "description": "Overlap between consecutive chunks (defaults to 100)",
+                "format": "string",
+                "name": "CHUNK_OVERLAP"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2025-11-02T06:39:44.525019Z",
+          "publishedAt": "2025-11-02T06:39:44.525019Z",
+          "updatedAt": "2025-11-02T06:39:44.525019Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.1.5",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.1.5",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Text chunk size for splitting documents (defaults to 512)",
+                "format": "string",
+                "name": "CHUNK_SIZE"
+              },
+              {
+                "description": "Overlap between consecutive chunks (defaults to 100)",
+                "format": "string",
+                "name": "CHUNK_OVERLAP"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2025-11-02T09:10:14.925884Z",
+          "publishedAt": "2025-11-02T09:10:14.925884Z",
+          "updatedAt": "2025-11-02T09:10:14.925884Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.10.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.10.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              },
+              {
+                "description": "Maximum number of files to keep in search results. Results are filtered to include only chunks from the top N best-scoring files. For example, 1 returns only the single best-matching file's chunks. Unset means no file filtering.",
+                "format": "string",
+                "name": "RAG_MAX_FILES"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-03-19T06:48:10.158326Z",
+          "publishedAt": "2026-03-19T06:48:10.158326Z",
+          "updatedAt": "2026-03-19T06:48:10.158326Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.10.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.10.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              },
+              {
+                "description": "Maximum number of files to keep in search results. Results are filtered to include only chunks from the top N best-scoring files. For example, 1 returns only the single best-matching file's chunks. Unset means no file filtering.",
+                "format": "string",
+                "name": "RAG_MAX_FILES"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-03-29T07:46:16.595749Z",
+          "publishedAt": "2026-03-29T07:46:16.595749Z",
+          "updatedAt": "2026-03-29T07:46:16.595749Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.11.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.11.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              },
+              {
+                "description": "Maximum number of files to keep in search results. Results are filtered to include only chunks from the top N best-scoring files. For example, 1 returns only the single best-matching file's chunks. Unset means no file filtering.",
+                "format": "string",
+                "name": "RAG_MAX_FILES"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-03-30T12:06:20.100002Z",
+          "publishedAt": "2026-03-30T12:06:20.100002Z",
+          "updatedAt": "2026-03-30T12:06:20.100002Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.11.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.11.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              },
+              {
+                "description": "Maximum number of files to keep in search results. Results are filtered to include only chunks from the top N best-scoring files. For example, 1 returns only the single best-matching file's chunks. Unset means no file filtering.",
+                "format": "string",
+                "name": "RAG_MAX_FILES"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-03-30T14:47:21.790365Z",
+          "publishedAt": "2026-03-30T14:47:21.790365Z",
+          "updatedAt": "2026-03-30T14:47:21.790365Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.12.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.12.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              },
+              {
+                "description": "Maximum number of files to keep in search results. Results are filtered to include only chunks from the top N best-scoring files. For example, 1 returns only the single best-matching file's chunks. Unset means no file filtering.",
+                "format": "string",
+                "name": "RAG_MAX_FILES"
+              },
+              {
+                "description": "Minimum chunk length in characters (1-10000, defaults to 50). Chunks shorter than this threshold are filtered out during ingestion.",
+                "format": "string",
+                "name": "CHUNK_MIN_LENGTH"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-02T04:18:06.778996Z",
+          "publishedAt": "2026-04-02T04:18:06.778996Z",
+          "updatedAt": "2026-04-02T04:18:06.778996Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.13.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.13.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              },
+              {
+                "description": "Maximum number of files to keep in search results. Results are filtered to include only chunks from the top N best-scoring files. For example, 1 returns only the single best-matching file's chunks. Unset means no file filtering.",
+                "format": "string",
+                "name": "RAG_MAX_FILES"
+              },
+              {
+                "description": "Minimum chunk length in characters (1-10000, defaults to 50). Chunks shorter than this threshold are filtered out during ingestion.",
+                "format": "string",
+                "name": "CHUNK_MIN_LENGTH"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-17T01:27:36.028092Z",
+          "publishedAt": "2026-04-17T01:27:36.028092Z",
+          "updatedAt": "2026-04-17T01:27:36.028092Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.13.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.13.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              },
+              {
+                "description": "Maximum number of files to keep in search results. Results are filtered to include only chunks from the top N best-scoring files. For example, 1 returns only the single best-matching file's chunks. Unset means no file filtering.",
+                "format": "string",
+                "name": "RAG_MAX_FILES"
+              },
+              {
+                "description": "Minimum chunk length in characters (1-10000, defaults to 50). Chunks shorter than this threshold are filtered out during ingestion.",
+                "format": "string",
+                "name": "CHUNK_MIN_LENGTH"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-07T07:17:19.917819Z",
+          "publishedAt": "2026-05-07T07:17:19.917819Z",
+          "updatedAt": "2026-05-07T07:17:19.917819Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.13.2",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.13.2",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              },
+              {
+                "description": "Maximum number of files to keep in search results. Results are filtered to include only chunks from the top N best-scoring files. For example, 1 returns only the single best-matching file's chunks. Unset means no file filtering.",
+                "format": "string",
+                "name": "RAG_MAX_FILES"
+              },
+              {
+                "description": "Minimum chunk length in characters (1-10000, defaults to 50). Chunks shorter than this threshold are filtered out during ingestion.",
+                "format": "string",
+                "name": "CHUNK_MIN_LENGTH"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-11T10:39:53.495538Z",
+          "publishedAt": "2026-05-11T10:39:53.495538Z",
+          "updatedAt": "2026-05-11T10:39:53.495538Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.14.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.14.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              },
+              {
+                "description": "Maximum number of files to keep in search results. Results are filtered to include only chunks from the top N best-scoring files. For example, 1 returns only the single best-matching file's chunks. Unset means no file filtering.",
+                "format": "string",
+                "name": "RAG_MAX_FILES"
+              },
+              {
+                "description": "Minimum chunk length in characters (1-10000, defaults to 50). Chunks shorter than this threshold are filtered out during ingestion.",
+                "format": "string",
+                "name": "CHUNK_MIN_LENGTH"
+              },
+              {
+                "description": "Execution device for the embedder (defaults to cpu). Passed straight to ONNX Runtime; see the Transformers.js device source for the supported backend names. If the requested device fails to initialize, the server throws an error.",
+                "format": "string",
+                "name": "RAG_DEVICE"
+              },
+              {
+                "description": "Keyword boost factor for hybrid search (0.0-1.0, defaults to 0.6). 0 means semantic similarity only; higher values increase the keyword-match contribution to the final score.",
+                "format": "string",
+                "name": "RAG_HYBRID_WEIGHT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-17T03:07:34.676554Z",
+          "publishedAt": "2026-05-17T03:07:34.676554Z",
+          "updatedAt": "2026-05-17T03:07:34.676554Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.14.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.14.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              },
+              {
+                "description": "Maximum number of files to keep in search results. Results are filtered to include only chunks from the top N best-scoring files. For example, 1 returns only the single best-matching file's chunks. Unset means no file filtering.",
+                "format": "string",
+                "name": "RAG_MAX_FILES"
+              },
+              {
+                "description": "Minimum chunk length in characters (1-10000, defaults to 50). Chunks shorter than this threshold are filtered out during ingestion.",
+                "format": "string",
+                "name": "CHUNK_MIN_LENGTH"
+              },
+              {
+                "description": "Execution device for the embedder (defaults to cpu). Passed straight to ONNX Runtime; see the Transformers.js device source for the supported backend names. If the requested device fails to initialize, the server throws an error.",
+                "format": "string",
+                "name": "RAG_DEVICE"
+              },
+              {
+                "description": "Keyword boost factor for hybrid search (0.0-1.0, defaults to 0.6). 0 means semantic similarity only; higher values increase the keyword-match contribution to the final score.",
+                "format": "string",
+                "name": "RAG_HYBRID_WEIGHT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-17T09:08:53.904203Z",
+          "publishedAt": "2026-05-17T09:08:53.904203Z",
+          "updatedAt": "2026-05-17T09:08:53.904203Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.14.2",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.14.2",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory). Ignored when BASE_DIRS is set.",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "JSON array of base directories (e.g. '[\"/a\",\"/b\"]'). Takes precedence over BASE_DIR.",
+                "format": "string",
+                "name": "BASE_DIRS"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              },
+              {
+                "description": "Maximum number of files to keep in search results. Results are filtered to include only chunks from the top N best-scoring files. For example, 1 returns only the single best-matching file's chunks. Unset means no file filtering.",
+                "format": "string",
+                "name": "RAG_MAX_FILES"
+              },
+              {
+                "description": "Minimum chunk length in characters (1-10000, defaults to 50). Chunks shorter than this threshold are filtered out during ingestion.",
+                "format": "string",
+                "name": "CHUNK_MIN_LENGTH"
+              },
+              {
+                "description": "Execution device for the embedder (defaults to cpu). Passed straight to ONNX Runtime; see the Transformers.js device source for the supported backend names. If the requested device fails to initialize, the server throws an error.",
+                "format": "string",
+                "name": "RAG_DEVICE"
+              },
+              {
+                "description": "Keyword boost factor for hybrid search (0.0-1.0, defaults to 0.6). 0 means semantic similarity only; higher values increase the keyword-match contribution to the final score.",
+                "format": "string",
+                "name": "RAG_HYBRID_WEIGHT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-23T12:04:54.759323Z",
+          "publishedAt": "2026-05-23T12:04:54.759323Z",
+          "updatedAt": "2026-05-23T12:04:54.759323Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.15.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.15.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory). Ignored when BASE_DIRS is set.",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "JSON array of base directories (e.g. '[\"/a\",\"/b\"]'). Takes precedence over BASE_DIR.",
+                "format": "string",
+                "name": "BASE_DIRS"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              },
+              {
+                "description": "Maximum number of files to keep in search results. Results are filtered to include only chunks from the top N best-scoring files. For example, 1 returns only the single best-matching file's chunks. Unset means no file filtering.",
+                "format": "string",
+                "name": "RAG_MAX_FILES"
+              },
+              {
+                "description": "Minimum chunk length in characters (1-10000, defaults to 50). Chunks shorter than this threshold are filtered out during ingestion.",
+                "format": "string",
+                "name": "CHUNK_MIN_LENGTH"
+              },
+              {
+                "description": "Execution device for the embedder (defaults to cpu). Passed straight to ONNX Runtime; see the Transformers.js device source for the supported backend names. If the requested device fails to initialize, the server throws an error.",
+                "format": "string",
+                "name": "RAG_DEVICE"
+              },
+              {
+                "description": "Keyword boost factor for hybrid search (0.0-1.0, defaults to 0.6). 0 means semantic similarity only; higher values increase the keyword-match contribution to the final score.",
+                "format": "string",
+                "name": "RAG_HYBRID_WEIGHT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-07T17:11:54.424304Z",
+          "publishedAt": "2026-06-07T17:11:54.424304Z",
+          "updatedAt": "2026-06-07T17:11:54.424304Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.15.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.15.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory). Ignored when BASE_DIRS is set.",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "JSON array of base directories (e.g. '[\"/a\",\"/b\"]'). Takes precedence over BASE_DIR.",
+                "format": "string",
+                "name": "BASE_DIRS"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              },
+              {
+                "description": "Maximum number of files to keep in search results. Results are filtered to include only chunks from the top N best-scoring files. For example, 1 returns only the single best-matching file's chunks. Unset means no file filtering.",
+                "format": "string",
+                "name": "RAG_MAX_FILES"
+              },
+              {
+                "description": "Minimum chunk length in characters (1-10000, defaults to 50). Chunks shorter than this threshold are filtered out during ingestion.",
+                "format": "string",
+                "name": "CHUNK_MIN_LENGTH"
+              },
+              {
+                "description": "Execution device for the embedder (defaults to cpu). Passed straight to ONNX Runtime; see the Transformers.js device source for the supported backend names. If the requested device fails to initialize, the server throws an error.",
+                "format": "string",
+                "name": "RAG_DEVICE"
+              },
+              {
+                "description": "Embedding quantization dtype for the embedder (defaults to fp32). Opt-in and pass-through; accepts any dtype the chosen model provides (fp32, fp16, q8, int8, ...). If the model has no variant for the requested dtype, the server throws an error. Changing this changes the embedding space — re-ingest existing data.",
+                "format": "string",
+                "name": "RAG_DTYPE"
+              },
+              {
+                "description": "Keyword boost factor for hybrid search (0.0-1.0, defaults to 0.6). 0 means semantic similarity only; higher values increase the keyword-match contribution to the final score.",
+                "format": "string",
+                "name": "RAG_HYBRID_WEIGHT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-12T12:17:33.491192Z",
+          "publishedAt": "2026-06-12T12:17:33.491192Z",
+          "updatedAt": "2026-06-12T12:17:33.491192Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.15.2",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.15.2",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory). Ignored when BASE_DIRS is set.",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "JSON array of base directories (e.g. '[\"/a\",\"/b\"]'). Takes precedence over BASE_DIR.",
+                "format": "string",
+                "name": "BASE_DIRS"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              },
+              {
+                "description": "Maximum number of files to keep in search results. Results are filtered to include only chunks from the top N best-scoring files. For example, 1 returns only the single best-matching file's chunks. Unset means no file filtering.",
+                "format": "string",
+                "name": "RAG_MAX_FILES"
+              },
+              {
+                "description": "Minimum chunk length in characters (1-10000, defaults to 50). Chunks shorter than this threshold are filtered out during ingestion.",
+                "format": "string",
+                "name": "CHUNK_MIN_LENGTH"
+              },
+              {
+                "description": "Execution device for the embedder (defaults to cpu). Passed straight to ONNX Runtime; see the Transformers.js device source for the supported backend names. If the requested device fails to initialize, the server throws an error.",
+                "format": "string",
+                "name": "RAG_DEVICE"
+              },
+              {
+                "description": "Embedding quantization dtype for the embedder (defaults to fp32). Opt-in and pass-through; accepts any dtype the chosen model provides (fp32, fp16, q8, int8, ...). If the model has no variant for the requested dtype, the server throws an error. Changing this changes the embedding space — re-ingest existing data.",
+                "format": "string",
+                "name": "RAG_DTYPE"
+              },
+              {
+                "description": "Keyword boost factor for hybrid search (0.0-1.0, defaults to 0.6). 0 means semantic similarity only; higher values increase the keyword-match contribution to the final score.",
+                "format": "string",
+                "name": "RAG_HYBRID_WEIGHT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-15T14:51:53.354435Z",
+          "publishedAt": "2026-06-15T14:51:53.354435Z",
+          "updatedAt": "2026-06-15T14:51:53.354435Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.15.3",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.15.3",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory). Ignored when BASE_DIRS is set.",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "JSON array of base directories (e.g. '[\"/a\",\"/b\"]'). Takes precedence over BASE_DIR.",
+                "format": "string",
+                "name": "BASE_DIRS"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              },
+              {
+                "description": "Maximum number of files to keep in search results. Results are filtered to include only chunks from the top N best-scoring files. For example, 1 returns only the single best-matching file's chunks. Unset means no file filtering.",
+                "format": "string",
+                "name": "RAG_MAX_FILES"
+              },
+              {
+                "description": "Minimum chunk length in characters (1-10000, defaults to 50). Chunks shorter than this threshold are filtered out during ingestion.",
+                "format": "string",
+                "name": "CHUNK_MIN_LENGTH"
+              },
+              {
+                "description": "Execution device for the embedder (defaults to cpu). Passed straight to ONNX Runtime; see the Transformers.js device source for the supported backend names. If the requested device fails to initialize, the server throws an error.",
+                "format": "string",
+                "name": "RAG_DEVICE"
+              },
+              {
+                "description": "Embedding quantization dtype for the embedder (defaults to fp32). Opt-in and pass-through; accepts any dtype the chosen model provides (fp32, fp16, q8, int8, ...). If the model has no variant for the requested dtype, the server throws an error. Changing this changes the embedding space — re-ingest existing data.",
+                "format": "string",
+                "name": "RAG_DTYPE"
+              },
+              {
+                "description": "Keyword boost factor for hybrid search (0.0-1.0, defaults to 0.6). 0 means semantic similarity only; higher values increase the keyword-match contribution to the final score.",
+                "format": "string",
+                "name": "RAG_HYBRID_WEIGHT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-20T23:04:48.108943Z",
+          "publishedAt": "2026-06-20T23:04:48.108943Z",
+          "updatedAt": "2026-06-20T23:04:48.108943Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.15.4",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.15.4",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory). Ignored when BASE_DIRS is set.",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "JSON array of base directories (e.g. '[\"/a\",\"/b\"]'). Takes precedence over BASE_DIR.",
+                "format": "string",
+                "name": "BASE_DIRS"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              },
+              {
+                "description": "Maximum number of files to keep in search results. Results are filtered to include only chunks from the top N best-scoring files. For example, 1 returns only the single best-matching file's chunks. Unset means no file filtering.",
+                "format": "string",
+                "name": "RAG_MAX_FILES"
+              },
+              {
+                "description": "Minimum chunk length in characters (1-10000, defaults to 50). Chunks shorter than this threshold are filtered out during ingestion.",
+                "format": "string",
+                "name": "CHUNK_MIN_LENGTH"
+              },
+              {
+                "description": "Execution device for the embedder (defaults to cpu). Passed straight to ONNX Runtime; see the Transformers.js device source for the supported backend names. If the requested device fails to initialize, the server throws an error.",
+                "format": "string",
+                "name": "RAG_DEVICE"
+              },
+              {
+                "description": "Embedding quantization dtype for the embedder (defaults to fp32). Opt-in and pass-through; accepts any dtype the chosen model provides (fp32, fp16, q8, int8, ...). If the model has no variant for the requested dtype, the server throws an error. Changing this changes the embedding space — re-ingest existing data.",
+                "format": "string",
+                "name": "RAG_DTYPE"
+              },
+              {
+                "description": "Keyword boost factor for hybrid search (0.0-1.0, defaults to 0.6). 0 means semantic similarity only; higher values increase the keyword-match contribution to the final score.",
+                "format": "string",
+                "name": "RAG_HYBRID_WEIGHT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-04T12:16:32.226055Z",
+          "publishedAt": "2026-07-04T12:16:32.226055Z",
+          "updatedAt": "2026-07-04T12:16:32.226055Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.16.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.16.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory). Ignored when BASE_DIRS is set.",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "JSON array of base directories (e.g. '[\"/a\",\"/b\"]'). Takes precedence over BASE_DIR.",
+                "format": "string",
+                "name": "BASE_DIRS"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              },
+              {
+                "description": "Maximum number of files to keep in search results. Results are filtered to include only chunks from the top N best-scoring files. For example, 1 returns only the single best-matching file's chunks. Unset means no file filtering.",
+                "format": "string",
+                "name": "RAG_MAX_FILES"
+              },
+              {
+                "description": "Minimum chunk length in characters (1-10000, defaults to 50). Chunks shorter than this threshold are filtered out during ingestion.",
+                "format": "string",
+                "name": "CHUNK_MIN_LENGTH"
+              },
+              {
+                "description": "Execution device for the embedder (defaults to cpu). Passed straight to ONNX Runtime; see the Transformers.js device source for the supported backend names. If the requested device fails to initialize, the server throws an error.",
+                "format": "string",
+                "name": "RAG_DEVICE"
+              },
+              {
+                "description": "Embedding quantization dtype for the embedder (defaults to fp32). Opt-in and pass-through; accepts any dtype the chosen model provides (fp32, fp16, q8, int8, ...). If the model has no variant for the requested dtype, the server throws an error. Changing this changes the embedding space — re-ingest existing data.",
+                "format": "string",
+                "name": "RAG_DTYPE"
+              },
+              {
+                "description": "Keyword boost factor for hybrid search (0.0-1.0, defaults to 0.6). 0 means semantic similarity only; higher values increase the keyword-match contribution to the final score.",
+                "format": "string",
+                "name": "RAG_HYBRID_WEIGHT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-09T07:22:42.410722Z",
+          "publishedAt": "2026-07-09T07:22:42.410722Z",
+          "updatedAt": "2026-07-09T07:22:42.410722Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.16.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.16.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory). Ignored when BASE_DIRS is set.",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "JSON array of base directories (e.g. '[\"/a\",\"/b\"]'). Takes precedence over BASE_DIR.",
+                "format": "string",
+                "name": "BASE_DIRS"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              },
+              {
+                "description": "Maximum number of files to keep in search results. Results are filtered to include only chunks from the top N best-scoring files. For example, 1 returns only the single best-matching file's chunks. Unset means no file filtering.",
+                "format": "string",
+                "name": "RAG_MAX_FILES"
+              },
+              {
+                "description": "Minimum chunk length in characters (1-10000, defaults to 50). Chunks shorter than this threshold are filtered out during ingestion.",
+                "format": "string",
+                "name": "CHUNK_MIN_LENGTH"
+              },
+              {
+                "description": "Execution device for the embedder (defaults to cpu). Passed straight to ONNX Runtime; see the Transformers.js device source for the supported backend names. If the requested device fails to initialize, the server throws an error.",
+                "format": "string",
+                "name": "RAG_DEVICE"
+              },
+              {
+                "description": "Embedding quantization dtype for the embedder (defaults to fp32). Opt-in and pass-through; accepts any dtype the chosen model provides (fp32, fp16, q8, int8, ...). If the model has no variant for the requested dtype, the server throws an error. Changing this changes the embedding space — re-ingest existing data.",
+                "format": "string",
+                "name": "RAG_DTYPE"
+              },
+              {
+                "description": "Keyword boost factor for hybrid search (0.0-1.0, defaults to 0.6). 0 means semantic similarity only; higher values increase the keyword-match contribution to the final score.",
+                "format": "string",
+                "name": "RAG_HYBRID_WEIGHT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-11T02:43:21.884433Z",
+          "publishedAt": "2026-07-11T02:43:21.884433Z",
+          "updatedAt": "2026-07-11T02:43:21.884433Z",
+          "isLatest": true
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.2.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.2.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Text chunk size for splitting documents (defaults to 512)",
+                "format": "string",
+                "name": "CHUNK_SIZE"
+              },
+              {
+                "description": "Overlap between consecutive chunks (defaults to 100)",
+                "format": "string",
+                "name": "CHUNK_OVERLAP"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2025-11-03T09:35:05.53526Z",
+          "publishedAt": "2025-11-03T09:35:05.53526Z",
+          "updatedAt": "2025-11-03T09:35:05.53526Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.2.2",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.2.2",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Text chunk size for splitting documents (defaults to 512)",
+                "format": "string",
+                "name": "CHUNK_SIZE"
+              },
+              {
+                "description": "Overlap between consecutive chunks (defaults to 100)",
+                "format": "string",
+                "name": "CHUNK_OVERLAP"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2025-12-02T04:21:06.82968Z",
+          "publishedAt": "2025-12-02T04:21:06.82968Z",
+          "updatedAt": "2025-12-02T04:21:06.82968Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.2.3",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.2.3",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Text chunk size for splitting documents (defaults to 512)",
+                "format": "string",
+                "name": "CHUNK_SIZE"
+              },
+              {
+                "description": "Overlap between consecutive chunks (defaults to 100)",
+                "format": "string",
+                "name": "CHUNK_OVERLAP"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2025-12-05T11:07:43.217078Z",
+          "publishedAt": "2025-12-05T11:07:43.217078Z",
+          "updatedAt": "2025-12-05T11:07:43.217078Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.3.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.3.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Text chunk size for splitting documents (defaults to 512)",
+                "format": "string",
+                "name": "CHUNK_SIZE"
+              },
+              {
+                "description": "Overlap between consecutive chunks (defaults to 100)",
+                "format": "string",
+                "name": "CHUNK_OVERLAP"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2025-12-24T10:21:05.932608Z",
+          "publishedAt": "2025-12-24T10:21:05.932608Z",
+          "updatedAt": "2025-12-24T10:21:05.932608Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.4.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.4.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2025-12-27T14:21:24.202729Z",
+          "publishedAt": "2025-12-27T14:21:24.202729Z",
+          "updatedAt": "2025-12-27T14:21:24.202729Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.4.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.4.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2025-12-27T15:29:19.728582Z",
+          "publishedAt": "2025-12-27T15:29:19.728582Z",
+          "updatedAt": "2025-12-27T15:29:19.728582Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.4.2",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.4.2",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2025-12-29T04:34:34.979445Z",
+          "publishedAt": "2025-12-29T04:34:34.979445Z",
+          "updatedAt": "2025-12-29T04:34:34.979445Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.5.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.5.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-01-01T02:31:56.987133Z",
+          "publishedAt": "2026-01-01T02:31:56.987133Z",
+          "updatedAt": "2026-01-01T02:31:56.987133Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.5.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.5.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-01-01T11:54:47.187961Z",
+          "publishedAt": "2026-01-01T11:54:47.187961Z",
+          "updatedAt": "2026-01-01T11:54:47.187961Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.5.2",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.5.2",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-01-06T13:56:06.371538Z",
+          "publishedAt": "2026-01-06T13:56:06.371538Z",
+          "updatedAt": "2026-01-06T13:56:06.371538Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.5.3",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.5.3",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-01-08T02:09:53.82602Z",
+          "publishedAt": "2026-01-08T02:09:53.82602Z",
+          "updatedAt": "2026-01-08T02:09:53.82602Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.5.4",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.5.4",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-01-24T04:58:03.491079Z",
+          "publishedAt": "2026-01-24T04:58:03.491079Z",
+          "updatedAt": "2026-01-24T04:58:03.491079Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.5.5",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.5.5",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-02-04T22:11:02.425162Z",
+          "publishedAt": "2026-02-04T22:11:02.425162Z",
+          "updatedAt": "2026-02-04T22:11:02.425162Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.5.6",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.5.6",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-02-20T08:42:06.250245Z",
+          "publishedAt": "2026-02-20T08:42:06.250245Z",
+          "updatedAt": "2026-02-20T08:42:06.250245Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.6.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.6.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              },
+              {
+                "description": "Maximum number of files to keep in search results. Results are filtered to include only chunks from the top N best-scoring files. For example, 1 returns only the single best-matching file's chunks. Unset means no file filtering.",
+                "format": "string",
+                "name": "RAG_MAX_FILES"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-02-22T10:02:45.016974Z",
+          "publishedAt": "2026-02-22T10:02:45.016974Z",
+          "updatedAt": "2026-02-22T10:02:45.016974Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.7.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.7.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              },
+              {
+                "description": "Maximum number of files to keep in search results. Results are filtered to include only chunks from the top N best-scoring files. For example, 1 returns only the single best-matching file's chunks. Unset means no file filtering.",
+                "format": "string",
+                "name": "RAG_MAX_FILES"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-02-24T05:45:48.771833Z",
+          "publishedAt": "2026-02-24T05:45:48.771833Z",
+          "updatedAt": "2026-02-24T05:45:48.771833Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.8.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.8.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              },
+              {
+                "description": "Maximum number of files to keep in search results. Results are filtered to include only chunks from the top N best-scoring files. For example, 1 returns only the single best-matching file's chunks. Unset means no file filtering.",
+                "format": "string",
+                "name": "RAG_MAX_FILES"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-03-07T14:45:01.022617Z",
+          "publishedAt": "2026-03-07T14:45:01.022617Z",
+          "updatedAt": "2026-03-07T14:45:01.022617Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.8.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.8.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              },
+              {
+                "description": "Maximum number of files to keep in search results. Results are filtered to include only chunks from the top N best-scoring files. For example, 1 returns only the single best-matching file's chunks. Unset means no file filtering.",
+                "format": "string",
+                "name": "RAG_MAX_FILES"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-03-17T03:47:01.450197Z",
+          "publishedAt": "2026-03-17T03:47:01.450197Z",
+          "updatedAt": "2026-03-17T03:47:01.450197Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.shinpr/mcp-local-rag",
+        "description": "Easy-to-setup local RAG server with minimal configuration",
+        "repository": {
+          "url": "https://github.com/shinpr/mcp-local-rag",
+          "source": "github"
+        },
+        "version": "0.9.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "mcp-local-rag",
+            "version": "0.9.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Base directory for document storage (defaults to current working directory)",
+                "format": "string",
+                "name": "BASE_DIR"
+              },
+              {
+                "description": "Path to LanceDB database directory (defaults to ./lancedb/)",
+                "format": "string",
+                "name": "DB_PATH"
+              },
+              {
+                "description": "Directory where Transformers.js models are cached (defaults to ./models/)",
+                "format": "string",
+                "name": "CACHE_DIR"
+              },
+              {
+                "description": "Embedding model name (defaults to Xenova/all-MiniLM-L6-v2)",
+                "format": "string",
+                "name": "MODEL_NAME"
+              },
+              {
+                "description": "Maximum file size in bytes (defaults to 104857600 / 100MB)",
+                "format": "string",
+                "name": "MAX_FILE_SIZE"
+              },
+              {
+                "description": "Maximum distance threshold for filtering search results. Results with distance greater than this value will be excluded. Lower values mean stricter filtering (e.g., 0.5 for high relevance only)",
+                "format": "string",
+                "name": "RAG_MAX_DISTANCE"
+              },
+              {
+                "description": "Grouping mode for quality filtering. 'similar' returns only the most similar group (stops at first distance jump). 'related' includes related groups (stops at second distance jump). Unset means no grouping filter",
+                "format": "string",
+                "name": "RAG_GROUPING"
+              },
+              {
+                "description": "Maximum number of files to keep in search results. Results are filtered to include only chunks from the top N best-scoring files. For example, 1 returns only the single best-matching file's chunks. Unset means no file filtering.",
+                "format": "string",
+                "name": "RAG_MAX_FILES"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-03-18T09:19:50.609107Z",
+          "publishedAt": "2026-03-18T09:19:50.609107Z",
+          "updatedAt": "2026-03-18T09:19:50.609107Z",
+          "isLatest": false
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:57.696Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

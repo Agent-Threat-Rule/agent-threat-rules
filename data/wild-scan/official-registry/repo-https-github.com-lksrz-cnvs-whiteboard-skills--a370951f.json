@@ -1,0 +1,261 @@
+{
+  "dedup_key": "repo:https://github.com/lksrz/cnvs-whiteboard-skills",
+  "package_identity": {
+    "type": "repository",
+    "key": "repo:https://github.com/lksrz/cnvs-whiteboard-skills",
+    "repositoryUrl": "https://github.com/lksrz/cnvs-whiteboard-skills"
+  },
+  "server_names": [
+    "app.cnvs/whiteboard"
+  ],
+  "versions_seen": [
+    "1.0.1",
+    "1.0.2"
+  ],
+  "registry_row_count": 2,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "app.cnvs/whiteboard",
+      "description": "Real-time collaborative whiteboard — AI agents and humans edit the same board live over MCP.",
+      "title": "cnvs.app",
+      "repository": {
+        "url": "https://github.com/lksrz/cnvs-whiteboard-skills",
+        "source": "github"
+      },
+      "version": "1.0.2",
+      "websiteUrl": "https://cnvs.app",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://cnvs.app/mcp"
+        }
+      ],
+      "_meta": {
+        "io.modelcontextprotocol.registry/publisher-provided": {
+          "authentication": {
+            "default": "none — the board ID is the access credential.",
+            "perBoardLock": {
+              "channels": {
+                "argument": "access_key on the tool / resource params",
+                "header": "X-Board-Key"
+              },
+              "endpoints": {
+                "lock": "POST https://cnvs.app/api/boards/<id>/lock",
+                "unlock": "POST https://cnvs.app/api/boards/<id>/unlock",
+                "verify": "POST https://cnvs.app/api/boards/<id>/verify-key"
+              },
+              "errorCode": -32001,
+              "keyFormat": "6 chars [a-z0-9]",
+              "modes": [
+                "write",
+                "all"
+              ],
+              "noRecovery": true
+            }
+          },
+          "documentation": "https://cnvs.app/llms.txt",
+          "openapi": "https://cnvs.app/openapi.json",
+          "protocolVersion": "2025-06-18",
+          "quotasManifest": "https://cnvs.app/quotas.json",
+          "resources": [
+            "cnvs://board/{id}/state.json",
+            "cnvs://board/{id}/preview.svg"
+          ],
+          "skills": [
+            {
+              "canonical": "https://cnvs.app/cnvs-whiteboard/SKILL.md",
+              "description": "How to collaborate on a cnvs.app board as an AI agent — read state, mutate via REST, subscribe via MCP.",
+              "name": "cnvs-whiteboard"
+            },
+            {
+              "canonical": "https://cnvs.app/mcp-listen/SKILL.md",
+              "description": "Generic Streamable-HTTP MCP notification pump — wraps cleanly under Claude Code's Monitor tool.",
+              "name": "mcp-listen"
+            }
+          ],
+          "subscribe": true,
+          "tools": [
+            "open_board",
+            "get_board",
+            "get_preview",
+            "add_text",
+            "add_link",
+            "add_image",
+            "draw_stroke",
+            "move",
+            "erase",
+            "wait_for_update"
+          ]
+        }
+      }
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-06-15T18:01:23.940241Z",
+        "publishedAt": "2026-06-15T18:01:23.940241Z",
+        "updatedAt": "2026-06-15T18:01:23.940241Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "app.cnvs/whiteboard",
+        "description": "Zero-auth real-time collaborative whiteboard with MCP — AI agents + humans edit the same board live.",
+        "title": "cnvs.app",
+        "repository": {
+          "url": "https://github.com/lksrz/cnvs-whiteboard-skills",
+          "source": "github"
+        },
+        "version": "1.0.1",
+        "websiteUrl": "https://cnvs.app",
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://cnvs.app/mcp"
+          }
+        ],
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "authentication": "none",
+            "documentation": "https://cnvs.app/llms.txt",
+            "openapi": "https://cnvs.app/openapi.json",
+            "protocolVersion": "2025-06-18",
+            "quotasManifest": "https://cnvs.app/quotas.json",
+            "resources": [
+              "cnvs://board/{id}/state.json",
+              "cnvs://board/{id}/preview.svg"
+            ],
+            "skills": [
+              {
+                "canonical": "https://cnvs.app/cnvs-whiteboard/SKILL.md",
+                "description": "How to collaborate on a cnvs.app board as an AI agent — read state, mutate via REST, subscribe via MCP.",
+                "name": "cnvs-whiteboard"
+              },
+              {
+                "canonical": "https://cnvs.app/mcp-listen/SKILL.md",
+                "description": "Generic Streamable-HTTP MCP notification pump — wraps cleanly under Claude Code's Monitor tool.",
+                "name": "mcp-listen"
+              }
+            ],
+            "subscribe": true,
+            "tools": [
+              "open_board",
+              "get_board",
+              "get_preview",
+              "add_text",
+              "add_link",
+              "add_image",
+              "draw_stroke",
+              "move",
+              "erase",
+              "wait_for_update"
+            ]
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-20T12:04:34.167685Z",
+          "publishedAt": "2026-04-20T12:04:34.167685Z",
+          "updatedAt": "2026-04-20T12:04:34.167685Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "app.cnvs/whiteboard",
+        "description": "Real-time collaborative whiteboard — AI agents and humans edit the same board live over MCP.",
+        "title": "cnvs.app",
+        "repository": {
+          "url": "https://github.com/lksrz/cnvs-whiteboard-skills",
+          "source": "github"
+        },
+        "version": "1.0.2",
+        "websiteUrl": "https://cnvs.app",
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://cnvs.app/mcp"
+          }
+        ],
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "authentication": {
+              "default": "none — the board ID is the access credential.",
+              "perBoardLock": {
+                "channels": {
+                  "argument": "access_key on the tool / resource params",
+                  "header": "X-Board-Key"
+                },
+                "endpoints": {
+                  "lock": "POST https://cnvs.app/api/boards/<id>/lock",
+                  "unlock": "POST https://cnvs.app/api/boards/<id>/unlock",
+                  "verify": "POST https://cnvs.app/api/boards/<id>/verify-key"
+                },
+                "errorCode": -32001,
+                "keyFormat": "6 chars [a-z0-9]",
+                "modes": [
+                  "write",
+                  "all"
+                ],
+                "noRecovery": true
+              }
+            },
+            "documentation": "https://cnvs.app/llms.txt",
+            "openapi": "https://cnvs.app/openapi.json",
+            "protocolVersion": "2025-06-18",
+            "quotasManifest": "https://cnvs.app/quotas.json",
+            "resources": [
+              "cnvs://board/{id}/state.json",
+              "cnvs://board/{id}/preview.svg"
+            ],
+            "skills": [
+              {
+                "canonical": "https://cnvs.app/cnvs-whiteboard/SKILL.md",
+                "description": "How to collaborate on a cnvs.app board as an AI agent — read state, mutate via REST, subscribe via MCP.",
+                "name": "cnvs-whiteboard"
+              },
+              {
+                "canonical": "https://cnvs.app/mcp-listen/SKILL.md",
+                "description": "Generic Streamable-HTTP MCP notification pump — wraps cleanly under Claude Code's Monitor tool.",
+                "name": "mcp-listen"
+              }
+            ],
+            "subscribe": true,
+            "tools": [
+              "open_board",
+              "get_board",
+              "get_preview",
+              "add_text",
+              "add_link",
+              "add_image",
+              "draw_stroke",
+              "move",
+              "erase",
+              "wait_for_update"
+            ]
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-15T18:01:23.940241Z",
+          "publishedAt": "2026-06-15T18:01:23.940241Z",
+          "updatedAt": "2026-06-15T18:01:23.940241Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:56.213Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

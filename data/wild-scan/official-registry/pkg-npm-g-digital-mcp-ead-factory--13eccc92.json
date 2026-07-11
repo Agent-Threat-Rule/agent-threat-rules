@@ -1,0 +1,1663 @@
+{
+  "dedup_key": "pkg:npm:@g-digital/mcp-ead-factory",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:npm:@g-digital/mcp-ead-factory",
+    "registryType": "npm",
+    "identifier": "@g-digital/mcp-ead-factory"
+  },
+  "server_names": [
+    "io.github.g-digital-by-Garrigues/ead-factory"
+  ],
+  "versions_seen": [
+    "1.0.0",
+    "1.0.1",
+    "1.0.10",
+    "1.0.11",
+    "1.0.12",
+    "1.0.13",
+    "1.0.14",
+    "1.0.15",
+    "1.0.2",
+    "1.0.3",
+    "1.0.4",
+    "1.0.5",
+    "1.0.6",
+    "1.0.7",
+    "1.0.8",
+    "1.1.0"
+  ],
+  "registry_row_count": 16,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.g-digital-by-Garrigues/ead-factory",
+      "description": "MCP server for EAD Factory: qualified evidence, signature, notifications and chat via AI agents.",
+      "repository": {
+        "url": "https://github.com/g-digital-by-Garrigues/EAD-Factory-MCP",
+        "source": "github"
+      },
+      "version": "1.1.0",
+      "packages": [
+        {
+          "registryType": "npm",
+          "identifier": "@g-digital/mcp-ead-factory",
+          "version": "1.1.0",
+          "transport": {
+            "type": "stdio"
+          },
+          "environmentVariables": [
+            {
+              "description": "Set to \"true\" to allow plain http:// fileUrl downloads in evidence_create (default https-only). Private/internal addresses are rejected regardless (resolution-time check; see the documented DNS TOCTOU limitation in the hosted-deployment runbook).",
+              "name": "MCP_ALLOW_INSECURE_FILE_URL"
+            },
+            {
+              "description": "Escape hatch for MCP_HTTP_PUBLIC=true WITHOUT inbound-token introspection: set to \"true\" ONLY when an upstream gateway already verifies Bearer tokens. The server logs a prominent warning and forwards tokens upstream unverified.",
+              "name": "MCP_ALLOW_UNVERIFIED_BEARER"
+            },
+            {
+              "description": "Comma-separated allowed Host headers. Empty = Host validation disabled (default). When set, requests with a Host outside the list are rejected.",
+              "name": "MCP_ALLOWED_HOSTS"
+            },
+            {
+              "description": "Comma-separated allowed browser Origins (DNS-rebinding defense). Empty = reject any request carrying an Origin header; non-browser clients (CLI/SDK) send no Origin and are always allowed. Use '*' to allow all.",
+              "name": "MCP_ALLOWED_ORIGINS"
+            },
+            {
+              "description": "Gateway ROOT URL (e.g. https://api.int.gcloudfactory.com) — each manager's path prefix is appended automatically; do NOT include a manager path here",
+              "name": "MCP_API_BASE_URL"
+            },
+            {
+              "description": "Full base URL override for the chat manager, used as-is (default: https://api.gcloudfactory.com/chat-bot-manager)",
+              "name": "MCP_API_BASE_URL_CHAT"
+            },
+            {
+              "description": "Full base URL override for the evidence manager, used as-is (default: https://api.gcloudfactory.com/digital-trust)",
+              "name": "MCP_API_BASE_URL_EVIDENCE"
+            },
+            {
+              "description": "Full base URL override for the notification manager, used as-is (default: https://api.gcloudfactory.com/notifications)",
+              "name": "MCP_API_BASE_URL_NOTIFICATION"
+            },
+            {
+              "description": "Full base URL override for the signature manager, used as-is (default: https://api.gcloudfactory.com/signature-manager)",
+              "name": "MCP_API_BASE_URL_SIGNATURE"
+            },
+            {
+              "description": "Interface the HTTP transport binds to. Default 127.0.0.1 (localhost only). Set 0.0.0.0 to expose on all interfaces (containers do this automatically).",
+              "name": "MCP_HTTP_HOST"
+            },
+            {
+              "description": "Maximum accepted POST /mcp request-body size in bytes (default 16777216 = 16 MiB — sized so base64 file uploads within the documented tool limits fit). Oversized requests get a 413 JSON-RPC error before/while reading — closes a memory-exhaustion DoS vector in public deployments. Note: base64 file sources are capped by this limit BEFORE MCP_FILE_MAX_BYTES applies.",
+              "name": "MCP_HTTP_MAX_BODY_BYTES"
+            },
+            {
+              "description": "Set to \"true\" for public/multi-tenant deployments. Activates Host validation and refuses to start unless (1) MCP_ALLOWED_ORIGINS or MCP_ALLOWED_HOSTS is set AND (2) inbound Bearer introspection is configured (MCP_SVC_INTROSPECT_URL + MCP_SVC_CLIENT_ID/SECRET) or MCP_ALLOW_UNVERIFIED_BEARER=true is set explicitly (fail-closed).",
+              "name": "MCP_HTTP_PUBLIC"
+            },
+            {
+              "description": "OAuth2 client_credentials client ID",
+              "isRequired": true,
+              "name": "MCP_SVC_CLIENT_ID"
+            },
+            {
+              "description": "OAuth2 client_credentials client secret (See https://digitaltrust.gcloudfactory.com for credential acquisition.)",
+              "isRequired": true,
+              "isSecret": true,
+              "name": "MCP_SVC_CLIENT_SECRET"
+            },
+            {
+              "description": "RFC 7662 token introspection URL for inbound Bearer verification in HTTP mode. Opt-in — reuses the service-account client id/secret above as the resource-server credentials.",
+              "name": "MCP_SVC_INTROSPECT_URL"
+            },
+            {
+              "description": "Optional OAuth2 scope for the service-account token request",
+              "name": "MCP_SVC_SCOPE"
+            },
+            {
+              "description": "Token endpoint URL for the OAuth2 client_credentials flow",
+              "isRequired": true,
+              "name": "MCP_SVC_TOKEN_URL"
+            },
+            {
+              "description": "HTTP port when running in hosted (HTTP) mode; ignored in stdio mode",
+              "name": "PORT"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-07-08T15:04:25.644523Z",
+        "publishedAt": "2026-07-08T15:04:25.644523Z",
+        "updatedAt": "2026-07-08T15:04:25.644523Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.g-digital-by-Garrigues/ead-factory",
+        "description": "EAD Factory MCP — Digital Trust services APIs for your agents",
+        "repository": {
+          "url": "https://github.com/g-digital-by-Garrigues/MCP_Market_Distribution",
+          "source": "github"
+        },
+        "version": "1.0.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@g-digital/mcp-ead-factory",
+            "version": "1.0.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Evidence Manager API base URL",
+                "isRequired": true,
+                "name": "API_BASE_URL"
+              },
+              {
+                "description": "Full flow base email — used to compose participant emails (user+signatory@domain, etc.)",
+                "isRequired": true,
+                "name": "FULL_FLOW_EMAIL_BASE"
+              },
+              {
+                "description": "Full flow default file path",
+                "isRequired": true,
+                "name": "FULL_FLOW_FILE_PATH"
+              },
+              {
+                "description": "HTTP_PORT",
+                "isRequired": true,
+                "name": "HTTP_PORT"
+              },
+              {
+                "description": "OKTA_CLIENT_ID",
+                "isRequired": true,
+                "name": "OKTA_CLIENT_ID"
+              },
+              {
+                "description": "OKTA_CLIENT_SECRET (See https://eadtrust.example.com/onboarding for credential acquisition.)",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "OKTA_CLIENT_SECRET"
+              },
+              {
+                "description": "OKTA_SCOPE",
+                "isRequired": true,
+                "name": "OKTA_SCOPE"
+              },
+              {
+                "description": "OAuth credentials (Okta client_credentials flow) Used both for calling Evidence Manager API and for verifying incoming Bearer tokens (HTTP mode)",
+                "isRequired": true,
+                "name": "OKTA_TOKEN_URL"
+              },
+              {
+                "description": "Polling configuration for evidence status",
+                "isRequired": true,
+                "name": "POLL_INTERVAL_MS"
+              },
+              {
+                "description": "POLL_MAX_ATTEMPTS",
+                "isRequired": true,
+                "name": "POLL_MAX_ATTEMPTS"
+              },
+              {
+                "description": "Signature Manager API base URL",
+                "isRequired": true,
+                "name": "SIGNATURE_API_BASE_URL"
+              },
+              {
+                "description": "Transport: \"stdio\" for local Claude Code, \"http\" for remote deployment with auth",
+                "isRequired": true,
+                "name": "TRANSPORT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-14T14:45:49.897124Z",
+          "publishedAt": "2026-05-14T14:45:49.897124Z",
+          "updatedAt": "2026-05-14T14:45:49.897124Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.g-digital-by-Garrigues/ead-factory",
+        "description": "EAD Factory MCP — Digital Trust services APIs for your agents",
+        "repository": {
+          "url": "https://github.com/g-digital-by-Garrigues/MCP_Market_Distribution",
+          "source": "github"
+        },
+        "version": "1.0.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@g-digital/mcp-ead-factory",
+            "version": "1.0.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Evidence Manager API base URL",
+                "isRequired": true,
+                "name": "API_BASE_URL"
+              },
+              {
+                "description": "Full flow base email — used to compose participant emails (user+signatory@domain, etc.)",
+                "isRequired": true,
+                "name": "FULL_FLOW_EMAIL_BASE"
+              },
+              {
+                "description": "Full flow default file path",
+                "isRequired": true,
+                "name": "FULL_FLOW_FILE_PATH"
+              },
+              {
+                "description": "HTTP_PORT",
+                "isRequired": true,
+                "name": "HTTP_PORT"
+              },
+              {
+                "description": "OKTA_CLIENT_ID",
+                "isRequired": true,
+                "name": "OKTA_CLIENT_ID"
+              },
+              {
+                "description": "OKTA_CLIENT_SECRET (See https://eadtrust.example.com/onboarding for credential acquisition.)",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "OKTA_CLIENT_SECRET"
+              },
+              {
+                "description": "OKTA_SCOPE",
+                "isRequired": true,
+                "name": "OKTA_SCOPE"
+              },
+              {
+                "description": "OAuth credentials (Okta client_credentials flow) Used both for calling Evidence Manager API and for verifying incoming Bearer tokens (HTTP mode)",
+                "isRequired": true,
+                "name": "OKTA_TOKEN_URL"
+              },
+              {
+                "description": "Polling configuration for evidence status",
+                "isRequired": true,
+                "name": "POLL_INTERVAL_MS"
+              },
+              {
+                "description": "POLL_MAX_ATTEMPTS",
+                "isRequired": true,
+                "name": "POLL_MAX_ATTEMPTS"
+              },
+              {
+                "description": "Signature Manager API base URL",
+                "isRequired": true,
+                "name": "SIGNATURE_API_BASE_URL"
+              },
+              {
+                "description": "Transport: \"stdio\" for local Claude Code, \"http\" for remote deployment with auth",
+                "isRequired": true,
+                "name": "TRANSPORT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-14T15:25:49.520414Z",
+          "publishedAt": "2026-05-14T15:25:49.520414Z",
+          "updatedAt": "2026-05-14T15:25:49.520414Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.g-digital-by-Garrigues/ead-factory",
+        "description": "EAD Factory MCP — Digital Trust services APIs for your agents",
+        "repository": {
+          "url": "https://github.com/g-digital-by-Garrigues/EAD-Factory-MCP",
+          "source": "github"
+        },
+        "version": "1.0.10",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@g-digital/mcp-ead-factory",
+            "version": "1.0.10",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Evidence Manager API base URL",
+                "isRequired": true,
+                "name": "API_BASE_URL"
+              },
+              {
+                "description": "Full flow base email — used to compose participant emails (user+signatory@domain, etc.)",
+                "isRequired": true,
+                "name": "FULL_FLOW_EMAIL_BASE"
+              },
+              {
+                "description": "Full flow default file path",
+                "isRequired": true,
+                "name": "FULL_FLOW_FILE_PATH"
+              },
+              {
+                "description": "TCP port for the HTTP transport. Used only when TRANSPORT=http; ignored in stdio mode.",
+                "isRequired": true,
+                "name": "HTTP_PORT"
+              },
+              {
+                "description": "Okta application client ID (client_credentials grant).",
+                "isRequired": true,
+                "name": "OKTA_CLIENT_ID"
+              },
+              {
+                "description": "Okta application client secret. See https://eadtrust.example.com/onboarding for credential acquisition.",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "OKTA_CLIENT_SECRET"
+              },
+              {
+                "description": "OAuth scope requested. Defaults to 'token' if not provided.",
+                "isRequired": true,
+                "name": "OKTA_SCOPE"
+              },
+              {
+                "description": "Okta token endpoint (client_credentials grant). Used both for outbound API calls and for verifying inbound Bearer tokens in HTTP mode.",
+                "isRequired": true,
+                "name": "OKTA_TOKEN_URL"
+              },
+              {
+                "description": "Polling interval in milliseconds for the evidence-status check.",
+                "isRequired": true,
+                "name": "POLL_INTERVAL_MS"
+              },
+              {
+                "description": "Maximum polling attempts before timing out the evidence-status check.",
+                "isRequired": true,
+                "name": "POLL_MAX_ATTEMPTS"
+              },
+              {
+                "description": "Signature Manager API base URL",
+                "isRequired": true,
+                "name": "SIGNATURE_API_BASE_URL"
+              },
+              {
+                "description": "Transport: \"stdio\" for local Claude Code, \"http\" for remote deployment with auth",
+                "isRequired": true,
+                "name": "TRANSPORT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-20T18:09:31.472198Z",
+          "publishedAt": "2026-05-20T18:09:31.472198Z",
+          "updatedAt": "2026-05-20T18:09:31.472198Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.g-digital-by-Garrigues/ead-factory",
+        "description": "EAD Factory MCP — Digital Trust services APIs for your agents",
+        "repository": {
+          "url": "https://github.com/g-digital-by-Garrigues/EAD-Factory-MCP",
+          "source": "github"
+        },
+        "version": "1.0.11",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@g-digital/mcp-ead-factory",
+            "version": "1.0.11",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Evidence Manager API base URL",
+                "isRequired": true,
+                "name": "API_BASE_URL"
+              },
+              {
+                "description": "Full flow base email — used to compose participant emails (user+signatory@domain, etc.)",
+                "isRequired": true,
+                "name": "FULL_FLOW_EMAIL_BASE"
+              },
+              {
+                "description": "Full flow default file path",
+                "isRequired": true,
+                "name": "FULL_FLOW_FILE_PATH"
+              },
+              {
+                "description": "TCP port for the HTTP transport. Used only when TRANSPORT=http; ignored in stdio mode.",
+                "isRequired": true,
+                "name": "HTTP_PORT"
+              },
+              {
+                "description": "Okta application client ID (client_credentials grant).",
+                "isRequired": true,
+                "name": "OKTA_CLIENT_ID"
+              },
+              {
+                "description": "Okta application client secret. See https://eadtrust.example.com/onboarding for credential acquisition.",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "OKTA_CLIENT_SECRET"
+              },
+              {
+                "description": "OAuth scope requested. Defaults to 'token' if not provided.",
+                "isRequired": true,
+                "name": "OKTA_SCOPE"
+              },
+              {
+                "description": "Okta token endpoint (client_credentials grant). Used both for outbound API calls and for verifying inbound Bearer tokens in HTTP mode.",
+                "isRequired": true,
+                "name": "OKTA_TOKEN_URL"
+              },
+              {
+                "description": "Polling interval in milliseconds for the evidence-status check.",
+                "isRequired": true,
+                "name": "POLL_INTERVAL_MS"
+              },
+              {
+                "description": "Maximum polling attempts before timing out the evidence-status check.",
+                "isRequired": true,
+                "name": "POLL_MAX_ATTEMPTS"
+              },
+              {
+                "description": "Signature Manager API base URL",
+                "isRequired": true,
+                "name": "SIGNATURE_API_BASE_URL"
+              },
+              {
+                "description": "Transport: \"stdio\" for local Claude Code, \"http\" for remote deployment with auth",
+                "isRequired": true,
+                "name": "TRANSPORT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-21T09:38:52.5911Z",
+          "publishedAt": "2026-05-21T09:38:52.5911Z",
+          "updatedAt": "2026-05-21T09:38:52.5911Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.g-digital-by-Garrigues/ead-factory",
+        "description": "EAD Factory MCP — Digital Trust services APIs for your agents",
+        "repository": {
+          "url": "https://github.com/g-digital-by-Garrigues/EAD-Factory-MCP",
+          "source": "github"
+        },
+        "version": "1.0.12",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@g-digital/mcp-ead-factory",
+            "version": "1.0.12",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Evidence Manager API base URL",
+                "isRequired": true,
+                "name": "API_BASE_URL"
+              },
+              {
+                "description": "Full flow base email — used to compose participant emails (user+signatory@domain, etc.)",
+                "isRequired": true,
+                "name": "FULL_FLOW_EMAIL_BASE"
+              },
+              {
+                "description": "Full flow default file path",
+                "isRequired": true,
+                "name": "FULL_FLOW_FILE_PATH"
+              },
+              {
+                "description": "TCP port for the HTTP transport. Used only when TRANSPORT=http; ignored in stdio mode.",
+                "isRequired": true,
+                "name": "HTTP_PORT"
+              },
+              {
+                "description": "Okta application client ID (client_credentials grant).",
+                "isRequired": true,
+                "name": "OKTA_CLIENT_ID"
+              },
+              {
+                "description": "Okta application client secret. See https://eadtrust.example.com/onboarding for credential acquisition.",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "OKTA_CLIENT_SECRET"
+              },
+              {
+                "description": "OAuth scope requested. Defaults to 'token' if not provided.",
+                "isRequired": true,
+                "name": "OKTA_SCOPE"
+              },
+              {
+                "description": "Okta token endpoint (client_credentials grant). Used both for outbound API calls and for verifying inbound Bearer tokens in HTTP mode.",
+                "isRequired": true,
+                "name": "OKTA_TOKEN_URL"
+              },
+              {
+                "description": "Polling interval in milliseconds for the evidence-status check.",
+                "isRequired": true,
+                "name": "POLL_INTERVAL_MS"
+              },
+              {
+                "description": "Maximum polling attempts before timing out the evidence-status check.",
+                "isRequired": true,
+                "name": "POLL_MAX_ATTEMPTS"
+              },
+              {
+                "description": "Signature Manager API base URL",
+                "isRequired": true,
+                "name": "SIGNATURE_API_BASE_URL"
+              },
+              {
+                "description": "Transport: \"stdio\" for local Claude Code, \"http\" for remote deployment with auth",
+                "isRequired": true,
+                "name": "TRANSPORT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-24T08:04:25.505455Z",
+          "publishedAt": "2026-05-24T08:04:25.505455Z",
+          "updatedAt": "2026-05-24T08:04:25.505455Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.g-digital-by-Garrigues/ead-factory",
+        "description": "EAD Factory MCP — Digital Trust services APIs for your agents",
+        "repository": {
+          "url": "https://github.com/g-digital-by-Garrigues/EAD-Factory-MCP",
+          "source": "github"
+        },
+        "version": "1.0.13",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@g-digital/mcp-ead-factory",
+            "version": "1.0.13",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Evidence Manager API base URL",
+                "isRequired": true,
+                "name": "API_BASE_URL"
+              },
+              {
+                "description": "Full flow base email — used to compose participant emails (user+signatory@domain, etc.)",
+                "isRequired": true,
+                "name": "FULL_FLOW_EMAIL_BASE"
+              },
+              {
+                "description": "Full flow default file path",
+                "isRequired": true,
+                "name": "FULL_FLOW_FILE_PATH"
+              },
+              {
+                "description": "HTTP_PORT",
+                "isRequired": true,
+                "name": "HTTP_PORT"
+              },
+              {
+                "description": "OKTA_CLIENT_ID",
+                "isRequired": true,
+                "name": "OKTA_CLIENT_ID"
+              },
+              {
+                "description": "OKTA_CLIENT_SECRET (See https://eadtrust.example.com/onboarding for credential acquisition.)",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "OKTA_CLIENT_SECRET"
+              },
+              {
+                "description": "OKTA_SCOPE",
+                "isRequired": true,
+                "name": "OKTA_SCOPE"
+              },
+              {
+                "description": "OAuth credentials (Okta client_credentials flow) Used both for calling Evidence Manager API and for verifying incoming Bearer tokens (HTTP mode)",
+                "isRequired": true,
+                "name": "OKTA_TOKEN_URL"
+              },
+              {
+                "description": "Polling configuration for evidence status",
+                "isRequired": true,
+                "name": "POLL_INTERVAL_MS"
+              },
+              {
+                "description": "POLL_MAX_ATTEMPTS",
+                "isRequired": true,
+                "name": "POLL_MAX_ATTEMPTS"
+              },
+              {
+                "description": "Signature Manager API base URL",
+                "isRequired": true,
+                "name": "SIGNATURE_API_BASE_URL"
+              },
+              {
+                "description": "Transport: \"stdio\" for local Claude Code, \"http\" for remote deployment with auth",
+                "isRequired": true,
+                "name": "TRANSPORT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-31T18:15:51.090332Z",
+          "publishedAt": "2026-05-31T18:15:51.090332Z",
+          "updatedAt": "2026-05-31T18:15:51.090332Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.g-digital-by-Garrigues/ead-factory",
+        "description": "EAD Factory MCP — Digital Trust services APIs for your agents",
+        "repository": {
+          "url": "https://github.com/g-digital-by-Garrigues/EAD-Factory-MCP",
+          "source": "github"
+        },
+        "version": "1.0.14",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@g-digital/mcp-ead-factory",
+            "version": "1.0.14",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Evidence Manager API base URL",
+                "isRequired": true,
+                "name": "API_BASE_URL"
+              },
+              {
+                "description": "Full flow base email — used to compose participant emails (user+signatory@domain, etc.)",
+                "isRequired": true,
+                "name": "FULL_FLOW_EMAIL_BASE"
+              },
+              {
+                "description": "Full flow default file path",
+                "isRequired": true,
+                "name": "FULL_FLOW_FILE_PATH"
+              },
+              {
+                "description": "HTTP_PORT",
+                "isRequired": true,
+                "name": "HTTP_PORT"
+              },
+              {
+                "description": "OKTA_CLIENT_ID",
+                "isRequired": true,
+                "name": "OKTA_CLIENT_ID"
+              },
+              {
+                "description": "OKTA_CLIENT_SECRET (See https://eadtrust.example.com/onboarding for credential acquisition.)",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "OKTA_CLIENT_SECRET"
+              },
+              {
+                "description": "OKTA_SCOPE",
+                "isRequired": true,
+                "name": "OKTA_SCOPE"
+              },
+              {
+                "description": "OAuth credentials (Okta client_credentials flow) Used both for calling Evidence Manager API and for verifying incoming Bearer tokens (HTTP mode)",
+                "isRequired": true,
+                "name": "OKTA_TOKEN_URL"
+              },
+              {
+                "description": "Polling configuration for evidence status",
+                "isRequired": true,
+                "name": "POLL_INTERVAL_MS"
+              },
+              {
+                "description": "POLL_MAX_ATTEMPTS",
+                "isRequired": true,
+                "name": "POLL_MAX_ATTEMPTS"
+              },
+              {
+                "description": "Signature Manager API base URL",
+                "isRequired": true,
+                "name": "SIGNATURE_API_BASE_URL"
+              },
+              {
+                "description": "Transport: \"stdio\" for local Claude Code, \"http\" for remote deployment with auth",
+                "isRequired": true,
+                "name": "TRANSPORT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-03T09:25:13.840125Z",
+          "publishedAt": "2026-06-03T09:25:13.840125Z",
+          "updatedAt": "2026-06-03T09:25:13.840125Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.g-digital-by-Garrigues/ead-factory",
+        "description": "EAD Factory MCP — Digital Trust services APIs for your agents",
+        "repository": {
+          "url": "https://github.com/g-digital-by-Garrigues/EAD-Factory-MCP",
+          "source": "github"
+        },
+        "version": "1.0.15",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@g-digital/mcp-ead-factory",
+            "version": "1.0.15",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Evidence Manager API base URL",
+                "isRequired": true,
+                "name": "API_BASE_URL"
+              },
+              {
+                "description": "Full flow base email — used to compose participant emails (user+signatory@domain, etc.)",
+                "isRequired": true,
+                "name": "FULL_FLOW_EMAIL_BASE"
+              },
+              {
+                "description": "Full flow default file path",
+                "isRequired": true,
+                "name": "FULL_FLOW_FILE_PATH"
+              },
+              {
+                "description": "HTTP_PORT",
+                "isRequired": true,
+                "name": "HTTP_PORT"
+              },
+              {
+                "description": "OKTA_CLIENT_ID",
+                "isRequired": true,
+                "name": "OKTA_CLIENT_ID"
+              },
+              {
+                "description": "OKTA_CLIENT_SECRET (See https://eadtrust.example.com/onboarding for credential acquisition.)",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "OKTA_CLIENT_SECRET"
+              },
+              {
+                "description": "OKTA_SCOPE",
+                "isRequired": true,
+                "name": "OKTA_SCOPE"
+              },
+              {
+                "description": "OAuth credentials (Okta client_credentials flow) Used both for calling Evidence Manager API and for verifying incoming Bearer tokens (HTTP mode)",
+                "isRequired": true,
+                "name": "OKTA_TOKEN_URL"
+              },
+              {
+                "description": "Polling configuration for evidence status",
+                "isRequired": true,
+                "name": "POLL_INTERVAL_MS"
+              },
+              {
+                "description": "POLL_MAX_ATTEMPTS",
+                "isRequired": true,
+                "name": "POLL_MAX_ATTEMPTS"
+              },
+              {
+                "description": "Signature Manager API base URL",
+                "isRequired": true,
+                "name": "SIGNATURE_API_BASE_URL"
+              },
+              {
+                "description": "Transport: \"stdio\" for local Claude Code, \"http\" for remote deployment with auth",
+                "isRequired": true,
+                "name": "TRANSPORT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-03T16:28:23.655169Z",
+          "publishedAt": "2026-06-03T16:28:23.655169Z",
+          "updatedAt": "2026-06-03T16:28:23.655169Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.g-digital-by-Garrigues/ead-factory",
+        "description": "EAD Factory MCP — Digital Trust services APIs for your agents",
+        "repository": {
+          "url": "https://github.com/g-digital-by-Garrigues/MCP_Market_Distribution",
+          "source": "github"
+        },
+        "version": "1.0.2",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@g-digital/mcp-ead-factory",
+            "version": "1.0.2",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Evidence Manager API base URL",
+                "isRequired": true,
+                "name": "API_BASE_URL"
+              },
+              {
+                "description": "Full flow base email — used to compose participant emails (user+signatory@domain, etc.)",
+                "isRequired": true,
+                "name": "FULL_FLOW_EMAIL_BASE"
+              },
+              {
+                "description": "Full flow default file path",
+                "isRequired": true,
+                "name": "FULL_FLOW_FILE_PATH"
+              },
+              {
+                "description": "HTTP_PORT",
+                "isRequired": true,
+                "name": "HTTP_PORT"
+              },
+              {
+                "description": "OKTA_CLIENT_ID",
+                "isRequired": true,
+                "name": "OKTA_CLIENT_ID"
+              },
+              {
+                "description": "OKTA_CLIENT_SECRET (See https://eadtrust.example.com/onboarding for credential acquisition.)",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "OKTA_CLIENT_SECRET"
+              },
+              {
+                "description": "OKTA_SCOPE",
+                "isRequired": true,
+                "name": "OKTA_SCOPE"
+              },
+              {
+                "description": "OAuth credentials (Okta client_credentials flow) Used both for calling Evidence Manager API and for verifying incoming Bearer tokens (HTTP mode)",
+                "isRequired": true,
+                "name": "OKTA_TOKEN_URL"
+              },
+              {
+                "description": "Polling configuration for evidence status",
+                "isRequired": true,
+                "name": "POLL_INTERVAL_MS"
+              },
+              {
+                "description": "POLL_MAX_ATTEMPTS",
+                "isRequired": true,
+                "name": "POLL_MAX_ATTEMPTS"
+              },
+              {
+                "description": "Signature Manager API base URL",
+                "isRequired": true,
+                "name": "SIGNATURE_API_BASE_URL"
+              },
+              {
+                "description": "Transport: \"stdio\" for local Claude Code, \"http\" for remote deployment with auth",
+                "isRequired": true,
+                "name": "TRANSPORT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-14T15:49:37.851941Z",
+          "publishedAt": "2026-05-14T15:49:37.851941Z",
+          "updatedAt": "2026-05-14T15:49:37.851941Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.g-digital-by-Garrigues/ead-factory",
+        "description": "EAD Factory MCP — Digital Trust services APIs for your agents",
+        "repository": {
+          "url": "https://github.com/g-digital-by-Garrigues/MCP_Market_Distribution",
+          "source": "github"
+        },
+        "version": "1.0.3",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@g-digital/mcp-ead-factory",
+            "version": "1.0.3",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Evidence Manager API base URL",
+                "isRequired": true,
+                "name": "API_BASE_URL"
+              },
+              {
+                "description": "Full flow base email — used to compose participant emails (user+signatory@domain, etc.)",
+                "isRequired": true,
+                "name": "FULL_FLOW_EMAIL_BASE"
+              },
+              {
+                "description": "Full flow default file path",
+                "isRequired": true,
+                "name": "FULL_FLOW_FILE_PATH"
+              },
+              {
+                "description": "TCP port for the HTTP transport. Used only when TRANSPORT=http; ignored in stdio mode.",
+                "isRequired": true,
+                "name": "HTTP_PORT"
+              },
+              {
+                "description": "Okta application client ID (client_credentials grant).",
+                "isRequired": true,
+                "name": "OKTA_CLIENT_ID"
+              },
+              {
+                "description": "Okta application client secret. See https://eadtrust.example.com/onboarding for credential acquisition.",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "OKTA_CLIENT_SECRET"
+              },
+              {
+                "description": "OAuth scope requested. Defaults to 'token' if not provided.",
+                "isRequired": true,
+                "name": "OKTA_SCOPE"
+              },
+              {
+                "description": "Okta token endpoint (client_credentials grant). Used both for outbound API calls and for verifying inbound Bearer tokens in HTTP mode.",
+                "isRequired": true,
+                "name": "OKTA_TOKEN_URL"
+              },
+              {
+                "description": "Polling interval in milliseconds for the evidence-status check.",
+                "isRequired": true,
+                "name": "POLL_INTERVAL_MS"
+              },
+              {
+                "description": "Maximum polling attempts before timing out the evidence-status check.",
+                "isRequired": true,
+                "name": "POLL_MAX_ATTEMPTS"
+              },
+              {
+                "description": "Signature Manager API base URL",
+                "isRequired": true,
+                "name": "SIGNATURE_API_BASE_URL"
+              },
+              {
+                "description": "Transport: \"stdio\" for local Claude Code, \"http\" for remote deployment with auth",
+                "isRequired": true,
+                "name": "TRANSPORT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-16T16:41:58.949171Z",
+          "publishedAt": "2026-05-16T16:41:58.949171Z",
+          "updatedAt": "2026-05-16T16:41:58.949171Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.g-digital-by-Garrigues/ead-factory",
+        "description": "EAD Factory MCP — Digital Trust services APIs for your agents",
+        "repository": {
+          "url": "https://github.com/g-digital-by-Garrigues/MCP_Market_Distribution",
+          "source": "github"
+        },
+        "version": "1.0.4",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@g-digital/mcp-ead-factory",
+            "version": "1.0.4",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Evidence Manager API base URL",
+                "isRequired": true,
+                "name": "API_BASE_URL"
+              },
+              {
+                "description": "Full flow base email — used to compose participant emails (user+signatory@domain, etc.)",
+                "isRequired": true,
+                "name": "FULL_FLOW_EMAIL_BASE"
+              },
+              {
+                "description": "Full flow default file path",
+                "isRequired": true,
+                "name": "FULL_FLOW_FILE_PATH"
+              },
+              {
+                "description": "TCP port for the HTTP transport. Used only when TRANSPORT=http; ignored in stdio mode.",
+                "isRequired": true,
+                "name": "HTTP_PORT"
+              },
+              {
+                "description": "Okta application client ID (client_credentials grant).",
+                "isRequired": true,
+                "name": "OKTA_CLIENT_ID"
+              },
+              {
+                "description": "Okta application client secret. See https://eadtrust.example.com/onboarding for credential acquisition.",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "OKTA_CLIENT_SECRET"
+              },
+              {
+                "description": "OAuth scope requested. Defaults to 'token' if not provided.",
+                "isRequired": true,
+                "name": "OKTA_SCOPE"
+              },
+              {
+                "description": "Okta token endpoint (client_credentials grant). Used both for outbound API calls and for verifying inbound Bearer tokens in HTTP mode.",
+                "isRequired": true,
+                "name": "OKTA_TOKEN_URL"
+              },
+              {
+                "description": "Polling interval in milliseconds for the evidence-status check.",
+                "isRequired": true,
+                "name": "POLL_INTERVAL_MS"
+              },
+              {
+                "description": "Maximum polling attempts before timing out the evidence-status check.",
+                "isRequired": true,
+                "name": "POLL_MAX_ATTEMPTS"
+              },
+              {
+                "description": "Signature Manager API base URL",
+                "isRequired": true,
+                "name": "SIGNATURE_API_BASE_URL"
+              },
+              {
+                "description": "Transport: \"stdio\" for local Claude Code, \"http\" for remote deployment with auth",
+                "isRequired": true,
+                "name": "TRANSPORT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-18T08:26:45.868483Z",
+          "publishedAt": "2026-05-18T08:26:45.868483Z",
+          "updatedAt": "2026-05-18T08:26:45.868483Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.g-digital-by-Garrigues/ead-factory",
+        "description": "EAD Factory MCP — Digital Trust services APIs for your agents",
+        "repository": {
+          "url": "https://github.com/g-digital-by-Garrigues/EAD-Factory-MCP",
+          "source": "github"
+        },
+        "version": "1.0.5",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@g-digital/mcp-ead-factory",
+            "version": "1.0.5",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Evidence Manager API base URL",
+                "isRequired": true,
+                "name": "API_BASE_URL"
+              },
+              {
+                "description": "Full flow base email — used to compose participant emails (user+signatory@domain, etc.)",
+                "isRequired": true,
+                "name": "FULL_FLOW_EMAIL_BASE"
+              },
+              {
+                "description": "Full flow default file path",
+                "isRequired": true,
+                "name": "FULL_FLOW_FILE_PATH"
+              },
+              {
+                "description": "TCP port for the HTTP transport. Used only when TRANSPORT=http; ignored in stdio mode.",
+                "isRequired": true,
+                "name": "HTTP_PORT"
+              },
+              {
+                "description": "Okta application client ID (client_credentials grant).",
+                "isRequired": true,
+                "name": "OKTA_CLIENT_ID"
+              },
+              {
+                "description": "Okta application client secret. See https://eadtrust.example.com/onboarding for credential acquisition.",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "OKTA_CLIENT_SECRET"
+              },
+              {
+                "description": "OAuth scope requested. Defaults to 'token' if not provided.",
+                "isRequired": true,
+                "name": "OKTA_SCOPE"
+              },
+              {
+                "description": "Okta token endpoint (client_credentials grant). Used both for outbound API calls and for verifying inbound Bearer tokens in HTTP mode.",
+                "isRequired": true,
+                "name": "OKTA_TOKEN_URL"
+              },
+              {
+                "description": "Polling interval in milliseconds for the evidence-status check.",
+                "isRequired": true,
+                "name": "POLL_INTERVAL_MS"
+              },
+              {
+                "description": "Maximum polling attempts before timing out the evidence-status check.",
+                "isRequired": true,
+                "name": "POLL_MAX_ATTEMPTS"
+              },
+              {
+                "description": "Signature Manager API base URL",
+                "isRequired": true,
+                "name": "SIGNATURE_API_BASE_URL"
+              },
+              {
+                "description": "Transport: \"stdio\" for local Claude Code, \"http\" for remote deployment with auth",
+                "isRequired": true,
+                "name": "TRANSPORT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-18T16:18:53.587553Z",
+          "publishedAt": "2026-05-18T16:18:53.587553Z",
+          "updatedAt": "2026-05-18T16:18:53.587553Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.g-digital-by-Garrigues/ead-factory",
+        "description": "EAD Factory MCP — Digital Trust services APIs for your agents",
+        "repository": {
+          "url": "https://github.com/g-digital-by-Garrigues/EAD-Factory-MCP",
+          "source": "github"
+        },
+        "version": "1.0.6",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@g-digital/mcp-ead-factory",
+            "version": "1.0.6",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Evidence Manager API base URL",
+                "isRequired": true,
+                "name": "API_BASE_URL"
+              },
+              {
+                "description": "Full flow base email — used to compose participant emails (user+signatory@domain, etc.)",
+                "isRequired": true,
+                "name": "FULL_FLOW_EMAIL_BASE"
+              },
+              {
+                "description": "Full flow default file path",
+                "isRequired": true,
+                "name": "FULL_FLOW_FILE_PATH"
+              },
+              {
+                "description": "TCP port for the HTTP transport. Used only when TRANSPORT=http; ignored in stdio mode.",
+                "isRequired": true,
+                "name": "HTTP_PORT"
+              },
+              {
+                "description": "Okta application client ID (client_credentials grant).",
+                "isRequired": true,
+                "name": "OKTA_CLIENT_ID"
+              },
+              {
+                "description": "Okta application client secret. See https://eadtrust.example.com/onboarding for credential acquisition.",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "OKTA_CLIENT_SECRET"
+              },
+              {
+                "description": "OAuth scope requested. Defaults to 'token' if not provided.",
+                "isRequired": true,
+                "name": "OKTA_SCOPE"
+              },
+              {
+                "description": "Okta token endpoint (client_credentials grant). Used both for outbound API calls and for verifying inbound Bearer tokens in HTTP mode.",
+                "isRequired": true,
+                "name": "OKTA_TOKEN_URL"
+              },
+              {
+                "description": "Polling interval in milliseconds for the evidence-status check.",
+                "isRequired": true,
+                "name": "POLL_INTERVAL_MS"
+              },
+              {
+                "description": "Maximum polling attempts before timing out the evidence-status check.",
+                "isRequired": true,
+                "name": "POLL_MAX_ATTEMPTS"
+              },
+              {
+                "description": "Signature Manager API base URL",
+                "isRequired": true,
+                "name": "SIGNATURE_API_BASE_URL"
+              },
+              {
+                "description": "Transport: \"stdio\" for local Claude Code, \"http\" for remote deployment with auth",
+                "isRequired": true,
+                "name": "TRANSPORT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-19T08:39:02.219179Z",
+          "publishedAt": "2026-05-19T08:39:02.219179Z",
+          "updatedAt": "2026-05-19T08:39:02.219179Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.g-digital-by-Garrigues/ead-factory",
+        "description": "EAD Factory MCP — Digital Trust services APIs for your agents",
+        "repository": {
+          "url": "https://github.com/g-digital-by-Garrigues/EAD-Factory-MCP",
+          "source": "github"
+        },
+        "version": "1.0.7",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@g-digital/mcp-ead-factory",
+            "version": "1.0.7",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Evidence Manager API base URL",
+                "isRequired": true,
+                "name": "API_BASE_URL"
+              },
+              {
+                "description": "Full flow base email — used to compose participant emails (user+signatory@domain, etc.)",
+                "isRequired": true,
+                "name": "FULL_FLOW_EMAIL_BASE"
+              },
+              {
+                "description": "Full flow default file path",
+                "isRequired": true,
+                "name": "FULL_FLOW_FILE_PATH"
+              },
+              {
+                "description": "TCP port for the HTTP transport. Used only when TRANSPORT=http; ignored in stdio mode.",
+                "isRequired": true,
+                "name": "HTTP_PORT"
+              },
+              {
+                "description": "Okta application client ID (client_credentials grant).",
+                "isRequired": true,
+                "name": "OKTA_CLIENT_ID"
+              },
+              {
+                "description": "Okta application client secret. See https://eadtrust.example.com/onboarding for credential acquisition.",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "OKTA_CLIENT_SECRET"
+              },
+              {
+                "description": "OAuth scope requested. Defaults to 'token' if not provided.",
+                "isRequired": true,
+                "name": "OKTA_SCOPE"
+              },
+              {
+                "description": "Okta token endpoint (client_credentials grant). Used both for outbound API calls and for verifying inbound Bearer tokens in HTTP mode.",
+                "isRequired": true,
+                "name": "OKTA_TOKEN_URL"
+              },
+              {
+                "description": "Polling interval in milliseconds for the evidence-status check.",
+                "isRequired": true,
+                "name": "POLL_INTERVAL_MS"
+              },
+              {
+                "description": "Maximum polling attempts before timing out the evidence-status check.",
+                "isRequired": true,
+                "name": "POLL_MAX_ATTEMPTS"
+              },
+              {
+                "description": "Signature Manager API base URL",
+                "isRequired": true,
+                "name": "SIGNATURE_API_BASE_URL"
+              },
+              {
+                "description": "Transport: \"stdio\" for local Claude Code, \"http\" for remote deployment with auth",
+                "isRequired": true,
+                "name": "TRANSPORT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-19T16:15:54.591545Z",
+          "publishedAt": "2026-05-19T16:15:54.591545Z",
+          "updatedAt": "2026-05-19T16:15:54.591545Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.g-digital-by-Garrigues/ead-factory",
+        "description": "EAD Factory MCP — Digital Trust services APIs for your agents",
+        "repository": {
+          "url": "https://github.com/g-digital-by-Garrigues/EAD-Factory-MCP",
+          "source": "github"
+        },
+        "version": "1.0.8",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@g-digital/mcp-ead-factory",
+            "version": "1.0.8",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Evidence Manager API base URL",
+                "isRequired": true,
+                "name": "API_BASE_URL"
+              },
+              {
+                "description": "Full flow base email — used to compose participant emails (user+signatory@domain, etc.)",
+                "isRequired": true,
+                "name": "FULL_FLOW_EMAIL_BASE"
+              },
+              {
+                "description": "Full flow default file path",
+                "isRequired": true,
+                "name": "FULL_FLOW_FILE_PATH"
+              },
+              {
+                "description": "TCP port for the HTTP transport. Used only when TRANSPORT=http; ignored in stdio mode.",
+                "isRequired": true,
+                "name": "HTTP_PORT"
+              },
+              {
+                "description": "Okta application client ID (client_credentials grant).",
+                "isRequired": true,
+                "name": "OKTA_CLIENT_ID"
+              },
+              {
+                "description": "Okta application client secret. See https://eadtrust.example.com/onboarding for credential acquisition.",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "OKTA_CLIENT_SECRET"
+              },
+              {
+                "description": "OAuth scope requested. Defaults to 'token' if not provided.",
+                "isRequired": true,
+                "name": "OKTA_SCOPE"
+              },
+              {
+                "description": "Okta token endpoint (client_credentials grant). Used both for outbound API calls and for verifying inbound Bearer tokens in HTTP mode.",
+                "isRequired": true,
+                "name": "OKTA_TOKEN_URL"
+              },
+              {
+                "description": "Polling interval in milliseconds for the evidence-status check.",
+                "isRequired": true,
+                "name": "POLL_INTERVAL_MS"
+              },
+              {
+                "description": "Maximum polling attempts before timing out the evidence-status check.",
+                "isRequired": true,
+                "name": "POLL_MAX_ATTEMPTS"
+              },
+              {
+                "description": "Signature Manager API base URL",
+                "isRequired": true,
+                "name": "SIGNATURE_API_BASE_URL"
+              },
+              {
+                "description": "Transport: \"stdio\" for local Claude Code, \"http\" for remote deployment with auth",
+                "isRequired": true,
+                "name": "TRANSPORT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-20T14:11:45.263558Z",
+          "publishedAt": "2026-05-20T14:11:45.263558Z",
+          "updatedAt": "2026-05-20T14:11:45.263558Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.g-digital-by-Garrigues/ead-factory",
+        "description": "MCP server for EAD Factory: qualified evidence, signature, notifications and chat via AI agents.",
+        "repository": {
+          "url": "https://github.com/g-digital-by-Garrigues/EAD-Factory-MCP",
+          "source": "github"
+        },
+        "version": "1.1.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@g-digital/mcp-ead-factory",
+            "version": "1.1.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Set to \"true\" to allow plain http:// fileUrl downloads in evidence_create (default https-only). Private/internal addresses are rejected regardless (resolution-time check; see the documented DNS TOCTOU limitation in the hosted-deployment runbook).",
+                "name": "MCP_ALLOW_INSECURE_FILE_URL"
+              },
+              {
+                "description": "Escape hatch for MCP_HTTP_PUBLIC=true WITHOUT inbound-token introspection: set to \"true\" ONLY when an upstream gateway already verifies Bearer tokens. The server logs a prominent warning and forwards tokens upstream unverified.",
+                "name": "MCP_ALLOW_UNVERIFIED_BEARER"
+              },
+              {
+                "description": "Comma-separated allowed Host headers. Empty = Host validation disabled (default). When set, requests with a Host outside the list are rejected.",
+                "name": "MCP_ALLOWED_HOSTS"
+              },
+              {
+                "description": "Comma-separated allowed browser Origins (DNS-rebinding defense). Empty = reject any request carrying an Origin header; non-browser clients (CLI/SDK) send no Origin and are always allowed. Use '*' to allow all.",
+                "name": "MCP_ALLOWED_ORIGINS"
+              },
+              {
+                "description": "Gateway ROOT URL (e.g. https://api.int.gcloudfactory.com) — each manager's path prefix is appended automatically; do NOT include a manager path here",
+                "name": "MCP_API_BASE_URL"
+              },
+              {
+                "description": "Full base URL override for the chat manager, used as-is (default: https://api.gcloudfactory.com/chat-bot-manager)",
+                "name": "MCP_API_BASE_URL_CHAT"
+              },
+              {
+                "description": "Full base URL override for the evidence manager, used as-is (default: https://api.gcloudfactory.com/digital-trust)",
+                "name": "MCP_API_BASE_URL_EVIDENCE"
+              },
+              {
+                "description": "Full base URL override for the notification manager, used as-is (default: https://api.gcloudfactory.com/notifications)",
+                "name": "MCP_API_BASE_URL_NOTIFICATION"
+              },
+              {
+                "description": "Full base URL override for the signature manager, used as-is (default: https://api.gcloudfactory.com/signature-manager)",
+                "name": "MCP_API_BASE_URL_SIGNATURE"
+              },
+              {
+                "description": "Interface the HTTP transport binds to. Default 127.0.0.1 (localhost only). Set 0.0.0.0 to expose on all interfaces (containers do this automatically).",
+                "name": "MCP_HTTP_HOST"
+              },
+              {
+                "description": "Maximum accepted POST /mcp request-body size in bytes (default 16777216 = 16 MiB — sized so base64 file uploads within the documented tool limits fit). Oversized requests get a 413 JSON-RPC error before/while reading — closes a memory-exhaustion DoS vector in public deployments. Note: base64 file sources are capped by this limit BEFORE MCP_FILE_MAX_BYTES applies.",
+                "name": "MCP_HTTP_MAX_BODY_BYTES"
+              },
+              {
+                "description": "Set to \"true\" for public/multi-tenant deployments. Activates Host validation and refuses to start unless (1) MCP_ALLOWED_ORIGINS or MCP_ALLOWED_HOSTS is set AND (2) inbound Bearer introspection is configured (MCP_SVC_INTROSPECT_URL + MCP_SVC_CLIENT_ID/SECRET) or MCP_ALLOW_UNVERIFIED_BEARER=true is set explicitly (fail-closed).",
+                "name": "MCP_HTTP_PUBLIC"
+              },
+              {
+                "description": "OAuth2 client_credentials client ID",
+                "isRequired": true,
+                "name": "MCP_SVC_CLIENT_ID"
+              },
+              {
+                "description": "OAuth2 client_credentials client secret (See https://digitaltrust.gcloudfactory.com for credential acquisition.)",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "MCP_SVC_CLIENT_SECRET"
+              },
+              {
+                "description": "RFC 7662 token introspection URL for inbound Bearer verification in HTTP mode. Opt-in — reuses the service-account client id/secret above as the resource-server credentials.",
+                "name": "MCP_SVC_INTROSPECT_URL"
+              },
+              {
+                "description": "Optional OAuth2 scope for the service-account token request",
+                "name": "MCP_SVC_SCOPE"
+              },
+              {
+                "description": "Token endpoint URL for the OAuth2 client_credentials flow",
+                "isRequired": true,
+                "name": "MCP_SVC_TOKEN_URL"
+              },
+              {
+                "description": "HTTP port when running in hosted (HTTP) mode; ignored in stdio mode",
+                "name": "PORT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-08T15:04:25.644523Z",
+          "publishedAt": "2026-07-08T15:04:25.644523Z",
+          "updatedAt": "2026-07-08T15:04:25.644523Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:57.110Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

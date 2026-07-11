@@ -1,0 +1,424 @@
+{
+  "dedup_key": "pkg:npm:claude-mcp-bridge",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:npm:claude-mcp-bridge",
+    "registryType": "npm",
+    "identifier": "claude-mcp-bridge"
+  },
+  "server_names": [
+    "io.github.hampsterx/claude-mcp-bridge"
+  ],
+  "versions_seen": [
+    "0.5.0",
+    "0.5.1",
+    "0.6.1"
+  ],
+  "registry_row_count": 3,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.hampsterx/claude-mcp-bridge",
+      "description": "Wraps Claude Code CLI as MCP tools: query, search, structured, ping, listSessions.",
+      "repository": {
+        "url": "https://github.com/hampsterx/claude-mcp-bridge",
+        "source": "github"
+      },
+      "version": "0.6.1",
+      "packages": [
+        {
+          "registryType": "npm",
+          "identifier": "claude-mcp-bridge",
+          "version": "0.6.1",
+          "transport": {
+            "type": "stdio"
+          },
+          "environmentVariables": [
+            {
+              "description": "Path to the claude CLI binary. Defaults to 'claude' on PATH.",
+              "format": "string",
+              "default": "claude",
+              "name": "CLAUDE_CLI_PATH"
+            },
+            {
+              "description": "Shared default model for all tools. Overridden by per-tool CLAUDE_<TOOL>_MODEL vars (QUERY, SEARCH, STRUCTURED).",
+              "format": "string",
+              "name": "CLAUDE_DEFAULT_MODEL"
+            },
+            {
+              "description": "Override model for the query tool.",
+              "format": "string",
+              "default": "sonnet",
+              "name": "CLAUDE_QUERY_MODEL"
+            },
+            {
+              "description": "Override model for the structured tool.",
+              "format": "string",
+              "default": "sonnet",
+              "name": "CLAUDE_STRUCTURED_MODEL"
+            },
+            {
+              "description": "Override model for the search tool.",
+              "format": "string",
+              "default": "sonnet",
+              "name": "CLAUDE_SEARCH_MODEL"
+            },
+            {
+              "description": "Model to use when the primary model hits a quota error. Set to 'none' to disable fallback.",
+              "format": "string",
+              "default": "haiku",
+              "name": "CLAUDE_FALLBACK_MODEL"
+            },
+            {
+              "description": "Maximum concurrent Claude CLI subprocesses (default 3).",
+              "format": "number",
+              "default": "3",
+              "name": "CLAUDE_MAX_CONCURRENT"
+            },
+            {
+              "description": "Set to '1' to forward ANTHROPIC_API_KEY to the CLI. Default is subscription-first: the CLI uses existing Max/Pro session and API key is NOT forwarded. Opt in only if you want API billing.",
+              "format": "string",
+              "default": "0",
+              "name": "CLAUDE_BRIDGE_USE_API_KEY"
+            },
+            {
+              "description": "Maximum USD spend per call (pass-through to --max-budget-usd). Only applies when using API key auth.",
+              "format": "number",
+              "name": "CLAUDE_MAX_BUDGET_USD"
+            },
+            {
+              "description": "Reasoning effort for the query tool (low|medium|high|max).",
+              "format": "string",
+              "name": "CLAUDE_QUERY_EFFORT"
+            },
+            {
+              "description": "Reasoning effort for the search tool (low|medium|high|max).",
+              "format": "string",
+              "name": "CLAUDE_SEARCH_EFFORT"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-05-04T03:46:30.124167Z",
+        "publishedAt": "2026-05-04T03:46:30.124167Z",
+        "updatedAt": "2026-05-04T03:46:30.124167Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.hampsterx/claude-mcp-bridge",
+        "description": "MCP server wrapping Claude Code CLI for query, review, search, structured output, sessions.",
+        "repository": {
+          "url": "https://github.com/hampsterx/claude-mcp-bridge",
+          "source": "github"
+        },
+        "version": "0.5.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "claude-mcp-bridge",
+            "version": "0.5.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Path to the claude CLI binary. Defaults to 'claude' on PATH.",
+                "format": "string",
+                "default": "claude",
+                "name": "CLAUDE_CLI_PATH"
+              },
+              {
+                "description": "Shared default model for all tools. Overridden by per-tool CLAUDE_<TOOL>_MODEL vars (QUERY, REVIEW, SEARCH, STRUCTURED).",
+                "format": "string",
+                "name": "CLAUDE_DEFAULT_MODEL"
+              },
+              {
+                "description": "Override model for the query tool.",
+                "format": "string",
+                "default": "sonnet",
+                "name": "CLAUDE_QUERY_MODEL"
+              },
+              {
+                "description": "Override model for the structured tool.",
+                "format": "string",
+                "default": "sonnet",
+                "name": "CLAUDE_STRUCTURED_MODEL"
+              },
+              {
+                "description": "Override model for the search tool.",
+                "format": "string",
+                "default": "sonnet",
+                "name": "CLAUDE_SEARCH_MODEL"
+              },
+              {
+                "description": "Override model for the review tool.",
+                "format": "string",
+                "default": "opus",
+                "name": "CLAUDE_REVIEW_MODEL"
+              },
+              {
+                "description": "Model to use when the primary model hits a quota error. Set to 'none' to disable fallback.",
+                "format": "string",
+                "default": "haiku",
+                "name": "CLAUDE_FALLBACK_MODEL"
+              },
+              {
+                "description": "Maximum concurrent Claude CLI subprocesses (default 3).",
+                "format": "number",
+                "default": "3",
+                "name": "CLAUDE_MAX_CONCURRENT"
+              },
+              {
+                "description": "Set to '1' to forward ANTHROPIC_API_KEY to the CLI. Default is subscription-first: the CLI uses existing Max/Pro session and API key is NOT forwarded. Opt in only if you want API billing.",
+                "format": "string",
+                "default": "0",
+                "name": "CLAUDE_BRIDGE_USE_API_KEY"
+              },
+              {
+                "description": "Maximum USD spend per call (pass-through to --max-budget-usd). Only applies when using API key auth.",
+                "format": "number",
+                "name": "CLAUDE_MAX_BUDGET_USD"
+              },
+              {
+                "description": "Reasoning effort for the query tool (low|medium|high|max).",
+                "format": "string",
+                "name": "CLAUDE_QUERY_EFFORT"
+              },
+              {
+                "description": "Reasoning effort for the review tool (low|medium|high|max).",
+                "format": "string",
+                "name": "CLAUDE_REVIEW_EFFORT"
+              },
+              {
+                "description": "Reasoning effort for the search tool (low|medium|high|max).",
+                "format": "string",
+                "name": "CLAUDE_SEARCH_EFFORT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-20T21:15:15.902189Z",
+          "publishedAt": "2026-04-20T21:15:15.902189Z",
+          "updatedAt": "2026-04-20T21:15:15.902189Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.hampsterx/claude-mcp-bridge",
+        "description": "MCP server wrapping Claude Code CLI for query, review, search, structured output, sessions.",
+        "repository": {
+          "url": "https://github.com/hampsterx/claude-mcp-bridge",
+          "source": "github"
+        },
+        "version": "0.5.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "claude-mcp-bridge",
+            "version": "0.5.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Path to the claude CLI binary. Defaults to 'claude' on PATH.",
+                "format": "string",
+                "default": "claude",
+                "name": "CLAUDE_CLI_PATH"
+              },
+              {
+                "description": "Shared default model for all tools. Overridden by per-tool CLAUDE_<TOOL>_MODEL vars (QUERY, REVIEW, SEARCH, STRUCTURED).",
+                "format": "string",
+                "name": "CLAUDE_DEFAULT_MODEL"
+              },
+              {
+                "description": "Override model for the query tool.",
+                "format": "string",
+                "default": "sonnet",
+                "name": "CLAUDE_QUERY_MODEL"
+              },
+              {
+                "description": "Override model for the structured tool.",
+                "format": "string",
+                "default": "sonnet",
+                "name": "CLAUDE_STRUCTURED_MODEL"
+              },
+              {
+                "description": "Override model for the search tool.",
+                "format": "string",
+                "default": "sonnet",
+                "name": "CLAUDE_SEARCH_MODEL"
+              },
+              {
+                "description": "Override model for the review tool.",
+                "format": "string",
+                "default": "opus",
+                "name": "CLAUDE_REVIEW_MODEL"
+              },
+              {
+                "description": "Model to use when the primary model hits a quota error. Set to 'none' to disable fallback.",
+                "format": "string",
+                "default": "haiku",
+                "name": "CLAUDE_FALLBACK_MODEL"
+              },
+              {
+                "description": "Maximum concurrent Claude CLI subprocesses (default 3).",
+                "format": "number",
+                "default": "3",
+                "name": "CLAUDE_MAX_CONCURRENT"
+              },
+              {
+                "description": "Set to '1' to forward ANTHROPIC_API_KEY to the CLI. Default is subscription-first: the CLI uses existing Max/Pro session and API key is NOT forwarded. Opt in only if you want API billing.",
+                "format": "string",
+                "default": "0",
+                "name": "CLAUDE_BRIDGE_USE_API_KEY"
+              },
+              {
+                "description": "Maximum USD spend per call (pass-through to --max-budget-usd). Only applies when using API key auth.",
+                "format": "number",
+                "name": "CLAUDE_MAX_BUDGET_USD"
+              },
+              {
+                "description": "Reasoning effort for the query tool (low|medium|high|max).",
+                "format": "string",
+                "name": "CLAUDE_QUERY_EFFORT"
+              },
+              {
+                "description": "Reasoning effort for the review tool (low|medium|high|max).",
+                "format": "string",
+                "name": "CLAUDE_REVIEW_EFFORT"
+              },
+              {
+                "description": "Reasoning effort for the search tool (low|medium|high|max).",
+                "format": "string",
+                "name": "CLAUDE_SEARCH_EFFORT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-20T21:58:15.832731Z",
+          "publishedAt": "2026-04-20T21:58:15.832731Z",
+          "updatedAt": "2026-04-20T21:58:15.832731Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.hampsterx/claude-mcp-bridge",
+        "description": "Wraps Claude Code CLI as MCP tools: query, search, structured, ping, listSessions.",
+        "repository": {
+          "url": "https://github.com/hampsterx/claude-mcp-bridge",
+          "source": "github"
+        },
+        "version": "0.6.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "claude-mcp-bridge",
+            "version": "0.6.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Path to the claude CLI binary. Defaults to 'claude' on PATH.",
+                "format": "string",
+                "default": "claude",
+                "name": "CLAUDE_CLI_PATH"
+              },
+              {
+                "description": "Shared default model for all tools. Overridden by per-tool CLAUDE_<TOOL>_MODEL vars (QUERY, SEARCH, STRUCTURED).",
+                "format": "string",
+                "name": "CLAUDE_DEFAULT_MODEL"
+              },
+              {
+                "description": "Override model for the query tool.",
+                "format": "string",
+                "default": "sonnet",
+                "name": "CLAUDE_QUERY_MODEL"
+              },
+              {
+                "description": "Override model for the structured tool.",
+                "format": "string",
+                "default": "sonnet",
+                "name": "CLAUDE_STRUCTURED_MODEL"
+              },
+              {
+                "description": "Override model for the search tool.",
+                "format": "string",
+                "default": "sonnet",
+                "name": "CLAUDE_SEARCH_MODEL"
+              },
+              {
+                "description": "Model to use when the primary model hits a quota error. Set to 'none' to disable fallback.",
+                "format": "string",
+                "default": "haiku",
+                "name": "CLAUDE_FALLBACK_MODEL"
+              },
+              {
+                "description": "Maximum concurrent Claude CLI subprocesses (default 3).",
+                "format": "number",
+                "default": "3",
+                "name": "CLAUDE_MAX_CONCURRENT"
+              },
+              {
+                "description": "Set to '1' to forward ANTHROPIC_API_KEY to the CLI. Default is subscription-first: the CLI uses existing Max/Pro session and API key is NOT forwarded. Opt in only if you want API billing.",
+                "format": "string",
+                "default": "0",
+                "name": "CLAUDE_BRIDGE_USE_API_KEY"
+              },
+              {
+                "description": "Maximum USD spend per call (pass-through to --max-budget-usd). Only applies when using API key auth.",
+                "format": "number",
+                "name": "CLAUDE_MAX_BUDGET_USD"
+              },
+              {
+                "description": "Reasoning effort for the query tool (low|medium|high|max).",
+                "format": "string",
+                "name": "CLAUDE_QUERY_EFFORT"
+              },
+              {
+                "description": "Reasoning effort for the search tool (low|medium|high|max).",
+                "format": "string",
+                "name": "CLAUDE_SEARCH_EFFORT"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-04T03:46:30.124167Z",
+          "publishedAt": "2026-05-04T03:46:30.124167Z",
+          "updatedAt": "2026-05-04T03:46:30.124167Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:57.142Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

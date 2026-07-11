@@ -1,0 +1,420 @@
+{
+  "dedup_key": "pkg:oci:docker.io/oleksandrkucherenko/obsidian-mcp:1.3.3",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:oci:docker.io/oleksandrkucherenko/obsidian-mcp:1.3.3",
+    "registryType": "oci",
+    "identifier": "docker.io/oleksandrkucherenko/obsidian-mcp:1.3.3"
+  },
+  "server_names": [
+    "io.github.OleksandrKucherenko/mcp-obsidian-via-rest"
+  ],
+  "versions_seen": [
+    "1.3.3"
+  ],
+  "registry_row_count": 1,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.OleksandrKucherenko/mcp-obsidian-via-rest",
+      "description": "Access Obsidian vaults via Local REST API - read, search, and interact with notes",
+      "title": "Obsidian Vault MCP Server",
+      "repository": {
+        "url": "https://github.com/OleksandrKucherenko/mcp-obsidian-via-rest",
+        "source": "github"
+      },
+      "version": "1.3.3",
+      "websiteUrl": "https://github.com/OleksandrKucherenko/mcp-obsidian-via-rest#readme",
+      "icons": [
+        {
+          "src": "https://raw.githubusercontent.com/OleksandrKucherenko/mcp-obsidian-via-rest/main/docs/obsidian-logo-bw.png",
+          "mimeType": "image/png",
+          "sizes": [
+            "256x256"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "registryType": "npm",
+          "identifier": "@oleksandrkucherenko/mcp-obsidian",
+          "version": "1.3.3",
+          "runtimeHint": "npx",
+          "transport": {
+            "type": "stdio"
+          },
+          "environmentVariables": [
+            {
+              "description": "Obsidian Local REST API key",
+              "isRequired": true,
+              "format": "string",
+              "isSecret": true,
+              "name": "API_KEY"
+            },
+            {
+              "description": "JSON array or semicolon-separated list of Obsidian REST API URLs for failover",
+              "isRequired": true,
+              "format": "string",
+              "name": "API_URLS"
+            },
+            {
+              "description": "Obsidian REST API host (legacy single-URL config)",
+              "format": "string",
+              "name": "API_HOST"
+            },
+            {
+              "description": "Obsidian REST API port (legacy single-URL config)",
+              "format": "number",
+              "name": "API_PORT"
+            }
+          ]
+        },
+        {
+          "registryType": "npm",
+          "identifier": "@oleksandrkucherenko/mcp-obsidian",
+          "version": "1.3.3",
+          "runtimeHint": "npx",
+          "transport": {
+            "type": "streamable-http",
+            "url": "http://localhost:{MCP_HTTP_PORT}/mcp"
+          },
+          "environmentVariables": [
+            {
+              "description": "Obsidian Local REST API key",
+              "isRequired": true,
+              "format": "string",
+              "isSecret": true,
+              "name": "API_KEY"
+            },
+            {
+              "description": "JSON array or semicolon-separated list of Obsidian REST API URLs for failover",
+              "isRequired": true,
+              "format": "string",
+              "name": "API_URLS"
+            },
+            {
+              "description": "Enabled transports (default: stdio,http)",
+              "format": "string",
+              "default": "stdio,http",
+              "name": "MCP_TRANSPORTS"
+            },
+            {
+              "description": "HTTP transport bind port (default: 3000)",
+              "format": "number",
+              "default": "3000",
+              "name": "MCP_HTTP_PORT"
+            },
+            {
+              "description": "HTTP transport bind host (default: 0.0.0.0)",
+              "format": "string",
+              "name": "MCP_HTTP_HOST"
+            },
+            {
+              "description": "Bearer token for HTTP transport authentication",
+              "format": "string",
+              "isSecret": true,
+              "name": "MCP_HTTP_TOKEN"
+            }
+          ]
+        },
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/oleksandrkucherenko/obsidian-mcp:1.3.3",
+          "runtimeHint": "docker",
+          "transport": {
+            "type": "streamable-http",
+            "url": "http://localhost:{MCP_HTTP_PORT}/mcp"
+          },
+          "environmentVariables": [
+            {
+              "description": "Obsidian Local REST API key",
+              "isRequired": true,
+              "format": "string",
+              "isSecret": true,
+              "name": "API_KEY"
+            },
+            {
+              "description": "JSON array of Obsidian REST API URLs (use host.docker.internal for local Obsidian)",
+              "isRequired": true,
+              "format": "string",
+              "name": "API_URLS"
+            },
+            {
+              "description": "Enabled transports (default: stdio,http)",
+              "format": "string",
+              "default": "stdio,http",
+              "name": "MCP_TRANSPORTS"
+            },
+            {
+              "description": "HTTP transport bind port (default: 3000)",
+              "format": "number",
+              "default": "3000",
+              "name": "MCP_HTTP_PORT"
+            },
+            {
+              "description": "Bearer token for HTTP transport authentication",
+              "format": "string",
+              "isSecret": true,
+              "name": "MCP_HTTP_TOKEN"
+            }
+          ]
+        },
+        {
+          "registryType": "oci",
+          "identifier": "docker.io/oleksandrkucherenko/obsidian-mcp:1.3.3",
+          "runtimeHint": "docker",
+          "transport": {
+            "type": "streamable-http",
+            "url": "http://localhost:{MCP_HTTP_PORT}/mcp"
+          },
+          "environmentVariables": [
+            {
+              "description": "Obsidian Local REST API key",
+              "isRequired": true,
+              "format": "string",
+              "isSecret": true,
+              "name": "API_KEY"
+            },
+            {
+              "description": "JSON array of Obsidian REST API URLs (use host.docker.internal for local Obsidian)",
+              "isRequired": true,
+              "format": "string",
+              "name": "API_URLS"
+            },
+            {
+              "description": "Enabled transports (default: stdio,http)",
+              "format": "string",
+              "default": "stdio,http",
+              "name": "MCP_TRANSPORTS"
+            },
+            {
+              "description": "HTTP transport bind port (default: 3000)",
+              "format": "number",
+              "default": "3000",
+              "name": "MCP_HTTP_PORT"
+            },
+            {
+              "description": "Bearer token for HTTP transport authentication",
+              "format": "string",
+              "isSecret": true,
+              "name": "MCP_HTTP_TOKEN"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-01-18T16:43:25.343862Z",
+        "publishedAt": "2026-01-18T16:43:25.343862Z",
+        "updatedAt": "2026-01-18T16:43:25.343862Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.OleksandrKucherenko/mcp-obsidian-via-rest",
+        "description": "Access Obsidian vaults via Local REST API - read, search, and interact with notes",
+        "title": "Obsidian Vault MCP Server",
+        "repository": {
+          "url": "https://github.com/OleksandrKucherenko/mcp-obsidian-via-rest",
+          "source": "github"
+        },
+        "version": "1.3.3",
+        "websiteUrl": "https://github.com/OleksandrKucherenko/mcp-obsidian-via-rest#readme",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/OleksandrKucherenko/mcp-obsidian-via-rest/main/docs/obsidian-logo-bw.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "256x256"
+            ]
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@oleksandrkucherenko/mcp-obsidian",
+            "version": "1.3.3",
+            "runtimeHint": "npx",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Obsidian Local REST API key",
+                "isRequired": true,
+                "format": "string",
+                "isSecret": true,
+                "name": "API_KEY"
+              },
+              {
+                "description": "JSON array or semicolon-separated list of Obsidian REST API URLs for failover",
+                "isRequired": true,
+                "format": "string",
+                "name": "API_URLS"
+              },
+              {
+                "description": "Obsidian REST API host (legacy single-URL config)",
+                "format": "string",
+                "name": "API_HOST"
+              },
+              {
+                "description": "Obsidian REST API port (legacy single-URL config)",
+                "format": "number",
+                "name": "API_PORT"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "identifier": "@oleksandrkucherenko/mcp-obsidian",
+            "version": "1.3.3",
+            "runtimeHint": "npx",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:{MCP_HTTP_PORT}/mcp"
+            },
+            "environmentVariables": [
+              {
+                "description": "Obsidian Local REST API key",
+                "isRequired": true,
+                "format": "string",
+                "isSecret": true,
+                "name": "API_KEY"
+              },
+              {
+                "description": "JSON array or semicolon-separated list of Obsidian REST API URLs for failover",
+                "isRequired": true,
+                "format": "string",
+                "name": "API_URLS"
+              },
+              {
+                "description": "Enabled transports (default: stdio,http)",
+                "format": "string",
+                "default": "stdio,http",
+                "name": "MCP_TRANSPORTS"
+              },
+              {
+                "description": "HTTP transport bind port (default: 3000)",
+                "format": "number",
+                "default": "3000",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "HTTP transport bind host (default: 0.0.0.0)",
+                "format": "string",
+                "name": "MCP_HTTP_HOST"
+              },
+              {
+                "description": "Bearer token for HTTP transport authentication",
+                "format": "string",
+                "isSecret": true,
+                "name": "MCP_HTTP_TOKEN"
+              }
+            ]
+          },
+          {
+            "registryType": "oci",
+            "identifier": "ghcr.io/oleksandrkucherenko/obsidian-mcp:1.3.3",
+            "runtimeHint": "docker",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:{MCP_HTTP_PORT}/mcp"
+            },
+            "environmentVariables": [
+              {
+                "description": "Obsidian Local REST API key",
+                "isRequired": true,
+                "format": "string",
+                "isSecret": true,
+                "name": "API_KEY"
+              },
+              {
+                "description": "JSON array of Obsidian REST API URLs (use host.docker.internal for local Obsidian)",
+                "isRequired": true,
+                "format": "string",
+                "name": "API_URLS"
+              },
+              {
+                "description": "Enabled transports (default: stdio,http)",
+                "format": "string",
+                "default": "stdio,http",
+                "name": "MCP_TRANSPORTS"
+              },
+              {
+                "description": "HTTP transport bind port (default: 3000)",
+                "format": "number",
+                "default": "3000",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "Bearer token for HTTP transport authentication",
+                "format": "string",
+                "isSecret": true,
+                "name": "MCP_HTTP_TOKEN"
+              }
+            ]
+          },
+          {
+            "registryType": "oci",
+            "identifier": "docker.io/oleksandrkucherenko/obsidian-mcp:1.3.3",
+            "runtimeHint": "docker",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:{MCP_HTTP_PORT}/mcp"
+            },
+            "environmentVariables": [
+              {
+                "description": "Obsidian Local REST API key",
+                "isRequired": true,
+                "format": "string",
+                "isSecret": true,
+                "name": "API_KEY"
+              },
+              {
+                "description": "JSON array of Obsidian REST API URLs (use host.docker.internal for local Obsidian)",
+                "isRequired": true,
+                "format": "string",
+                "name": "API_URLS"
+              },
+              {
+                "description": "Enabled transports (default: stdio,http)",
+                "format": "string",
+                "default": "stdio,http",
+                "name": "MCP_TRANSPORTS"
+              },
+              {
+                "description": "HTTP transport bind port (default: 3000)",
+                "format": "number",
+                "default": "3000",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "Bearer token for HTTP transport authentication",
+                "format": "string",
+                "isSecret": true,
+                "name": "MCP_HTTP_TOKEN"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-01-18T16:43:25.343862Z",
+          "publishedAt": "2026-01-18T16:43:25.343862Z",
+          "updatedAt": "2026-01-18T16:43:25.343862Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:56.667Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

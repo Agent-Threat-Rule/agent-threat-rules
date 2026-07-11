@@ -1,0 +1,966 @@
+{
+  "dedup_key": "pkg:oci:ghcr.io/pvliesdonk/markdown-vault-mcp:v1.20.0",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:oci:ghcr.io/pvliesdonk/markdown-vault-mcp:v1.20.0",
+    "registryType": "oci",
+    "identifier": "ghcr.io/pvliesdonk/markdown-vault-mcp:v1.20.0"
+  },
+  "server_names": [
+    "io.github.pvliesdonk/markdown-vault-mcp"
+  ],
+  "versions_seen": [
+    "1.20.0"
+  ],
+  "registry_row_count": 1,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.pvliesdonk/markdown-vault-mcp",
+      "description": "Markdown vault MCP server with FTS5 + semantic search and frontmatter indexing",
+      "title": "Markdown Vault MCP",
+      "repository": {
+        "url": "https://github.com/pvliesdonk/markdown-vault-mcp",
+        "source": "github"
+      },
+      "version": "1.20.0",
+      "websiteUrl": "https://pvliesdonk.github.io/markdown-vault-mcp/",
+      "packages": [
+        {
+          "registryType": "pypi",
+          "identifier": "markdown-vault-mcp",
+          "version": "1.20.0",
+          "runtimeHint": "uvx",
+          "transport": {
+            "type": "stdio"
+          },
+          "environmentVariables": [
+            {
+              "description": "Absolute path to the markdown vault directory",
+              "isRequired": true,
+              "format": "filepath",
+              "name": "MARKDOWN_VAULT_MCP_SOURCE_DIR"
+            },
+            {
+              "description": "Disable write tools",
+              "format": "boolean",
+              "default": "true",
+              "name": "MARKDOWN_VAULT_MCP_READ_ONLY"
+            },
+            {
+              "description": "Log level for FastMCP internals; app loggers default to INFO, -v overrides both to DEBUG",
+              "default": "INFO",
+              "choices": [
+                "DEBUG",
+                "INFO",
+                "WARNING",
+                "ERROR"
+              ],
+              "name": "FASTMCP_LOG_LEVEL"
+            },
+            {
+              "description": "Event store backend for HTTP session persistence (file:///path or memory://)",
+              "default": "file:///data/state/events",
+              "name": "MARKDOWN_VAULT_MCP_EVENT_STORE_URL"
+            },
+            {
+              "description": "MCP server name shown to clients",
+              "default": "markdown-vault-mcp",
+              "name": "MARKDOWN_VAULT_MCP_SERVER_NAME"
+            },
+            {
+              "description": "Directory for index and embeddings state files",
+              "format": "filepath",
+              "name": "MARKDOWN_VAULT_MCP_STATE_PATH"
+            },
+            {
+              "description": "Path to the FTS5 SQLite index file",
+              "format": "filepath",
+              "name": "MARKDOWN_VAULT_MCP_INDEX_PATH"
+            },
+            {
+              "description": "Path to the numpy embeddings file",
+              "format": "filepath",
+              "name": "MARKDOWN_VAULT_MCP_EMBEDDINGS_PATH"
+            },
+            {
+              "description": "Comma-separated frontmatter fields to index for search",
+              "name": "MARKDOWN_VAULT_MCP_INDEXED_FIELDS"
+            },
+            {
+              "description": "Comma-separated frontmatter fields required on every document",
+              "name": "MARKDOWN_VAULT_MCP_REQUIRED_FIELDS"
+            },
+            {
+              "description": "Comma-separated glob patterns to exclude from indexing",
+              "name": "MARKDOWN_VAULT_MCP_EXCLUDE"
+            },
+            {
+              "description": "Embedding provider to use",
+              "choices": [
+                "openai",
+                "ollama",
+                "fastembed",
+                "fastembed-gpu"
+              ],
+              "name": "EMBEDDING_PROVIDER"
+            },
+            {
+              "description": "OpenAI API key (required when EMBEDDING_PROVIDER=openai)",
+              "isSecret": true,
+              "name": "OPENAI_API_KEY"
+            },
+            {
+              "description": "Ollama embedding model name",
+              "default": "nomic-embed-text",
+              "name": "MARKDOWN_VAULT_MCP_OLLAMA_MODEL"
+            },
+            {
+              "description": "Force CPU-only inference for Ollama",
+              "format": "boolean",
+              "default": "false",
+              "name": "MARKDOWN_VAULT_MCP_OLLAMA_CPU_ONLY"
+            },
+            {
+              "description": "Ollama server base URL",
+              "default": "http://localhost:11434",
+              "name": "OLLAMA_HOST"
+            },
+            {
+              "description": "Git authentication token for push/pull",
+              "isSecret": true,
+              "name": "MARKDOWN_VAULT_MCP_GIT_TOKEN"
+            },
+            {
+              "description": "Remote git repository URL for managed mode",
+              "name": "MARKDOWN_VAULT_MCP_GIT_REPO_URL"
+            },
+            {
+              "description": "Git username for token auth",
+              "default": "x-access-token",
+              "name": "MARKDOWN_VAULT_MCP_GIT_USERNAME"
+            },
+            {
+              "description": "Git committer name",
+              "default": "markdown-vault-mcp",
+              "name": "MARKDOWN_VAULT_MCP_GIT_COMMIT_NAME"
+            },
+            {
+              "description": "Git committer email",
+              "default": "noreply@markdown-vault-mcp",
+              "name": "MARKDOWN_VAULT_MCP_GIT_COMMIT_EMAIL"
+            },
+            {
+              "description": "Seconds to wait before pushing (batches writes)",
+              "format": "number",
+              "default": "30",
+              "name": "MARKDOWN_VAULT_MCP_GIT_PUSH_DELAY_S"
+            },
+            {
+              "description": "Enable Git LFS support",
+              "format": "boolean",
+              "default": "true",
+              "name": "MARKDOWN_VAULT_MCP_GIT_LFS"
+            },
+            {
+              "description": "Seconds between periodic git pulls (0 to disable)",
+              "format": "number",
+              "default": "600",
+              "name": "MARKDOWN_VAULT_MCP_GIT_PULL_INTERVAL_S"
+            },
+            {
+              "description": "Comma-separated allowed attachment extensions, or * for all",
+              "name": "MARKDOWN_VAULT_MCP_ATTACHMENT_EXTENSIONS"
+            },
+            {
+              "description": "Maximum attachment size in MB (0 for unlimited)",
+              "format": "number",
+              "default": "10",
+              "name": "MARKDOWN_VAULT_MCP_MAX_ATTACHMENT_SIZE_MB"
+            },
+            {
+              "description": "Folder name for note templates within the vault",
+              "default": "_templates",
+              "name": "MARKDOWN_VAULT_MCP_TEMPLATES_FOLDER"
+            },
+            {
+              "description": "Path to user-defined MCP prompt templates",
+              "format": "filepath",
+              "name": "MARKDOWN_VAULT_MCP_PROMPTS_FOLDER"
+            },
+            {
+              "description": "Bearer token for authentication",
+              "isSecret": true,
+              "name": "MARKDOWN_VAULT_MCP_BEARER_TOKEN"
+            },
+            {
+              "description": "OIDC auth mode: 'remote' (JWKS validation) or 'oidc-proxy' (OAuth proxy). Auto-detected if not set.",
+              "name": "MARKDOWN_VAULT_MCP_AUTH_MODE"
+            },
+            {
+              "description": "Public base URL of this server (required for OIDC)",
+              "name": "MARKDOWN_VAULT_MCP_BASE_URL"
+            },
+            {
+              "description": "OIDC discovery endpoint URL",
+              "name": "MARKDOWN_VAULT_MCP_OIDC_CONFIG_URL"
+            },
+            {
+              "description": "OIDC client ID",
+              "name": "MARKDOWN_VAULT_MCP_OIDC_CLIENT_ID"
+            },
+            {
+              "description": "OIDC client secret",
+              "isSecret": true,
+              "name": "MARKDOWN_VAULT_MCP_OIDC_CLIENT_SECRET"
+            },
+            {
+              "description": "Signing key for OIDC session JWTs (critical on Linux/Docker)",
+              "isSecret": true,
+              "name": "MARKDOWN_VAULT_MCP_OIDC_JWT_SIGNING_KEY"
+            },
+            {
+              "description": "Expected OIDC token audience",
+              "name": "MARKDOWN_VAULT_MCP_OIDC_AUDIENCE"
+            },
+            {
+              "description": "Space-separated required OIDC scopes",
+              "default": "openid",
+              "name": "MARKDOWN_VAULT_MCP_OIDC_REQUIRED_SCOPES"
+            },
+            {
+              "description": "Verify access token JWT instead of id_token",
+              "format": "boolean",
+              "default": "false",
+              "name": "MARKDOWN_VAULT_MCP_OIDC_VERIFY_ACCESS_TOKEN"
+            },
+            {
+              "description": "Override Claude app domain for MCP Apps iframe sandboxing",
+              "name": "MARKDOWN_VAULT_MCP_APP_DOMAIN"
+            }
+          ]
+        },
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/pvliesdonk/markdown-vault-mcp:v1.20.0",
+          "transport": {
+            "type": "streamable-http",
+            "url": "http://localhost:{--port}/mcp"
+          },
+          "packageArguments": [
+            {
+              "description": "Port for the HTTP transport",
+              "default": "8000",
+              "type": "named",
+              "name": "--port"
+            }
+          ],
+          "environmentVariables": [
+            {
+              "description": "Path to the vault directory inside the container",
+              "format": "filepath",
+              "default": "/data/vault",
+              "name": "MARKDOWN_VAULT_MCP_SOURCE_DIR"
+            },
+            {
+              "description": "Disable write tools",
+              "format": "boolean",
+              "default": "true",
+              "name": "MARKDOWN_VAULT_MCP_READ_ONLY"
+            },
+            {
+              "description": "Log level for FastMCP internals; app loggers default to INFO, -v overrides both to DEBUG",
+              "default": "INFO",
+              "choices": [
+                "DEBUG",
+                "INFO",
+                "WARNING",
+                "ERROR"
+              ],
+              "name": "FASTMCP_LOG_LEVEL"
+            },
+            {
+              "description": "Event store backend for HTTP session persistence (file:///path or memory://)",
+              "default": "file:///data/state/events",
+              "name": "MARKDOWN_VAULT_MCP_EVENT_STORE_URL"
+            },
+            {
+              "description": "MCP server name shown to clients",
+              "default": "markdown-vault-mcp",
+              "name": "MARKDOWN_VAULT_MCP_SERVER_NAME"
+            },
+            {
+              "description": "Directory for index and embeddings state files",
+              "format": "filepath",
+              "default": "/data/state",
+              "name": "MARKDOWN_VAULT_MCP_STATE_PATH"
+            },
+            {
+              "description": "Path to the FTS5 SQLite index file",
+              "format": "filepath",
+              "name": "MARKDOWN_VAULT_MCP_INDEX_PATH"
+            },
+            {
+              "description": "Path to the numpy embeddings file",
+              "format": "filepath",
+              "name": "MARKDOWN_VAULT_MCP_EMBEDDINGS_PATH"
+            },
+            {
+              "description": "Comma-separated frontmatter fields to index for search",
+              "name": "MARKDOWN_VAULT_MCP_INDEXED_FIELDS"
+            },
+            {
+              "description": "Comma-separated frontmatter fields required on every document",
+              "name": "MARKDOWN_VAULT_MCP_REQUIRED_FIELDS"
+            },
+            {
+              "description": "Comma-separated glob patterns to exclude from indexing",
+              "name": "MARKDOWN_VAULT_MCP_EXCLUDE"
+            },
+            {
+              "description": "Embedding provider to use",
+              "choices": [
+                "openai",
+                "ollama",
+                "fastembed",
+                "fastembed-gpu"
+              ],
+              "name": "EMBEDDING_PROVIDER"
+            },
+            {
+              "description": "OpenAI API key (required when EMBEDDING_PROVIDER=openai)",
+              "isSecret": true,
+              "name": "OPENAI_API_KEY"
+            },
+            {
+              "description": "Ollama embedding model name",
+              "default": "nomic-embed-text",
+              "name": "MARKDOWN_VAULT_MCP_OLLAMA_MODEL"
+            },
+            {
+              "description": "Force CPU-only inference for Ollama",
+              "format": "boolean",
+              "default": "false",
+              "name": "MARKDOWN_VAULT_MCP_OLLAMA_CPU_ONLY"
+            },
+            {
+              "description": "Ollama server base URL",
+              "default": "http://localhost:11434",
+              "name": "OLLAMA_HOST"
+            },
+            {
+              "description": "Git authentication token for push/pull",
+              "isSecret": true,
+              "name": "MARKDOWN_VAULT_MCP_GIT_TOKEN"
+            },
+            {
+              "description": "Remote git repository URL for managed mode",
+              "name": "MARKDOWN_VAULT_MCP_GIT_REPO_URL"
+            },
+            {
+              "description": "Git username for token auth",
+              "default": "x-access-token",
+              "name": "MARKDOWN_VAULT_MCP_GIT_USERNAME"
+            },
+            {
+              "description": "Git committer name",
+              "default": "markdown-vault-mcp",
+              "name": "MARKDOWN_VAULT_MCP_GIT_COMMIT_NAME"
+            },
+            {
+              "description": "Git committer email",
+              "default": "noreply@markdown-vault-mcp",
+              "name": "MARKDOWN_VAULT_MCP_GIT_COMMIT_EMAIL"
+            },
+            {
+              "description": "Seconds to wait before pushing (batches writes)",
+              "format": "number",
+              "default": "30",
+              "name": "MARKDOWN_VAULT_MCP_GIT_PUSH_DELAY_S"
+            },
+            {
+              "description": "Enable Git LFS support",
+              "format": "boolean",
+              "default": "true",
+              "name": "MARKDOWN_VAULT_MCP_GIT_LFS"
+            },
+            {
+              "description": "Seconds between periodic git pulls (0 to disable)",
+              "format": "number",
+              "default": "600",
+              "name": "MARKDOWN_VAULT_MCP_GIT_PULL_INTERVAL_S"
+            },
+            {
+              "description": "Comma-separated allowed attachment extensions, or * for all",
+              "name": "MARKDOWN_VAULT_MCP_ATTACHMENT_EXTENSIONS"
+            },
+            {
+              "description": "Maximum attachment size in MB (0 for unlimited)",
+              "format": "number",
+              "default": "10",
+              "name": "MARKDOWN_VAULT_MCP_MAX_ATTACHMENT_SIZE_MB"
+            },
+            {
+              "description": "Folder name for note templates within the vault",
+              "default": "_templates",
+              "name": "MARKDOWN_VAULT_MCP_TEMPLATES_FOLDER"
+            },
+            {
+              "description": "Path to user-defined MCP prompt templates",
+              "format": "filepath",
+              "name": "MARKDOWN_VAULT_MCP_PROMPTS_FOLDER"
+            },
+            {
+              "description": "Run as this UID (Docker entrypoint)",
+              "format": "number",
+              "default": "1000",
+              "name": "PUID"
+            },
+            {
+              "description": "Run as this GID (Docker entrypoint)",
+              "format": "number",
+              "default": "1000",
+              "name": "PGID"
+            },
+            {
+              "description": "Bearer token for authentication",
+              "isSecret": true,
+              "name": "MARKDOWN_VAULT_MCP_BEARER_TOKEN"
+            },
+            {
+              "description": "OIDC auth mode: 'remote' (JWKS validation) or 'oidc-proxy' (OAuth proxy). Auto-detected if not set.",
+              "name": "MARKDOWN_VAULT_MCP_AUTH_MODE"
+            },
+            {
+              "description": "Public base URL of this server (required for OIDC)",
+              "name": "MARKDOWN_VAULT_MCP_BASE_URL"
+            },
+            {
+              "description": "OIDC discovery endpoint URL",
+              "name": "MARKDOWN_VAULT_MCP_OIDC_CONFIG_URL"
+            },
+            {
+              "description": "OIDC client ID",
+              "name": "MARKDOWN_VAULT_MCP_OIDC_CLIENT_ID"
+            },
+            {
+              "description": "OIDC client secret",
+              "isSecret": true,
+              "name": "MARKDOWN_VAULT_MCP_OIDC_CLIENT_SECRET"
+            },
+            {
+              "description": "Signing key for OIDC session JWTs (critical on Linux/Docker)",
+              "isSecret": true,
+              "name": "MARKDOWN_VAULT_MCP_OIDC_JWT_SIGNING_KEY"
+            },
+            {
+              "description": "Expected OIDC token audience",
+              "name": "MARKDOWN_VAULT_MCP_OIDC_AUDIENCE"
+            },
+            {
+              "description": "Space-separated required OIDC scopes",
+              "default": "openid",
+              "name": "MARKDOWN_VAULT_MCP_OIDC_REQUIRED_SCOPES"
+            },
+            {
+              "description": "Verify access token JWT instead of id_token",
+              "format": "boolean",
+              "default": "false",
+              "name": "MARKDOWN_VAULT_MCP_OIDC_VERIFY_ACCESS_TOKEN"
+            },
+            {
+              "description": "Override Claude app domain for MCP Apps iframe sandboxing",
+              "name": "MARKDOWN_VAULT_MCP_APP_DOMAIN"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-04-08T15:14:07.893447Z",
+        "publishedAt": "2026-04-08T15:14:07.893447Z",
+        "updatedAt": "2026-04-08T15:14:07.893447Z",
+        "isLatest": false
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.pvliesdonk/markdown-vault-mcp",
+        "description": "Markdown vault MCP server with FTS5 + semantic search and frontmatter indexing",
+        "title": "Markdown Vault MCP",
+        "repository": {
+          "url": "https://github.com/pvliesdonk/markdown-vault-mcp",
+          "source": "github"
+        },
+        "version": "1.20.0",
+        "websiteUrl": "https://pvliesdonk.github.io/markdown-vault-mcp/",
+        "packages": [
+          {
+            "registryType": "pypi",
+            "identifier": "markdown-vault-mcp",
+            "version": "1.20.0",
+            "runtimeHint": "uvx",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Absolute path to the markdown vault directory",
+                "isRequired": true,
+                "format": "filepath",
+                "name": "MARKDOWN_VAULT_MCP_SOURCE_DIR"
+              },
+              {
+                "description": "Disable write tools",
+                "format": "boolean",
+                "default": "true",
+                "name": "MARKDOWN_VAULT_MCP_READ_ONLY"
+              },
+              {
+                "description": "Log level for FastMCP internals; app loggers default to INFO, -v overrides both to DEBUG",
+                "default": "INFO",
+                "choices": [
+                  "DEBUG",
+                  "INFO",
+                  "WARNING",
+                  "ERROR"
+                ],
+                "name": "FASTMCP_LOG_LEVEL"
+              },
+              {
+                "description": "Event store backend for HTTP session persistence (file:///path or memory://)",
+                "default": "file:///data/state/events",
+                "name": "MARKDOWN_VAULT_MCP_EVENT_STORE_URL"
+              },
+              {
+                "description": "MCP server name shown to clients",
+                "default": "markdown-vault-mcp",
+                "name": "MARKDOWN_VAULT_MCP_SERVER_NAME"
+              },
+              {
+                "description": "Directory for index and embeddings state files",
+                "format": "filepath",
+                "name": "MARKDOWN_VAULT_MCP_STATE_PATH"
+              },
+              {
+                "description": "Path to the FTS5 SQLite index file",
+                "format": "filepath",
+                "name": "MARKDOWN_VAULT_MCP_INDEX_PATH"
+              },
+              {
+                "description": "Path to the numpy embeddings file",
+                "format": "filepath",
+                "name": "MARKDOWN_VAULT_MCP_EMBEDDINGS_PATH"
+              },
+              {
+                "description": "Comma-separated frontmatter fields to index for search",
+                "name": "MARKDOWN_VAULT_MCP_INDEXED_FIELDS"
+              },
+              {
+                "description": "Comma-separated frontmatter fields required on every document",
+                "name": "MARKDOWN_VAULT_MCP_REQUIRED_FIELDS"
+              },
+              {
+                "description": "Comma-separated glob patterns to exclude from indexing",
+                "name": "MARKDOWN_VAULT_MCP_EXCLUDE"
+              },
+              {
+                "description": "Embedding provider to use",
+                "choices": [
+                  "openai",
+                  "ollama",
+                  "fastembed",
+                  "fastembed-gpu"
+                ],
+                "name": "EMBEDDING_PROVIDER"
+              },
+              {
+                "description": "OpenAI API key (required when EMBEDDING_PROVIDER=openai)",
+                "isSecret": true,
+                "name": "OPENAI_API_KEY"
+              },
+              {
+                "description": "Ollama embedding model name",
+                "default": "nomic-embed-text",
+                "name": "MARKDOWN_VAULT_MCP_OLLAMA_MODEL"
+              },
+              {
+                "description": "Force CPU-only inference for Ollama",
+                "format": "boolean",
+                "default": "false",
+                "name": "MARKDOWN_VAULT_MCP_OLLAMA_CPU_ONLY"
+              },
+              {
+                "description": "Ollama server base URL",
+                "default": "http://localhost:11434",
+                "name": "OLLAMA_HOST"
+              },
+              {
+                "description": "Git authentication token for push/pull",
+                "isSecret": true,
+                "name": "MARKDOWN_VAULT_MCP_GIT_TOKEN"
+              },
+              {
+                "description": "Remote git repository URL for managed mode",
+                "name": "MARKDOWN_VAULT_MCP_GIT_REPO_URL"
+              },
+              {
+                "description": "Git username for token auth",
+                "default": "x-access-token",
+                "name": "MARKDOWN_VAULT_MCP_GIT_USERNAME"
+              },
+              {
+                "description": "Git committer name",
+                "default": "markdown-vault-mcp",
+                "name": "MARKDOWN_VAULT_MCP_GIT_COMMIT_NAME"
+              },
+              {
+                "description": "Git committer email",
+                "default": "noreply@markdown-vault-mcp",
+                "name": "MARKDOWN_VAULT_MCP_GIT_COMMIT_EMAIL"
+              },
+              {
+                "description": "Seconds to wait before pushing (batches writes)",
+                "format": "number",
+                "default": "30",
+                "name": "MARKDOWN_VAULT_MCP_GIT_PUSH_DELAY_S"
+              },
+              {
+                "description": "Enable Git LFS support",
+                "format": "boolean",
+                "default": "true",
+                "name": "MARKDOWN_VAULT_MCP_GIT_LFS"
+              },
+              {
+                "description": "Seconds between periodic git pulls (0 to disable)",
+                "format": "number",
+                "default": "600",
+                "name": "MARKDOWN_VAULT_MCP_GIT_PULL_INTERVAL_S"
+              },
+              {
+                "description": "Comma-separated allowed attachment extensions, or * for all",
+                "name": "MARKDOWN_VAULT_MCP_ATTACHMENT_EXTENSIONS"
+              },
+              {
+                "description": "Maximum attachment size in MB (0 for unlimited)",
+                "format": "number",
+                "default": "10",
+                "name": "MARKDOWN_VAULT_MCP_MAX_ATTACHMENT_SIZE_MB"
+              },
+              {
+                "description": "Folder name for note templates within the vault",
+                "default": "_templates",
+                "name": "MARKDOWN_VAULT_MCP_TEMPLATES_FOLDER"
+              },
+              {
+                "description": "Path to user-defined MCP prompt templates",
+                "format": "filepath",
+                "name": "MARKDOWN_VAULT_MCP_PROMPTS_FOLDER"
+              },
+              {
+                "description": "Bearer token for authentication",
+                "isSecret": true,
+                "name": "MARKDOWN_VAULT_MCP_BEARER_TOKEN"
+              },
+              {
+                "description": "OIDC auth mode: 'remote' (JWKS validation) or 'oidc-proxy' (OAuth proxy). Auto-detected if not set.",
+                "name": "MARKDOWN_VAULT_MCP_AUTH_MODE"
+              },
+              {
+                "description": "Public base URL of this server (required for OIDC)",
+                "name": "MARKDOWN_VAULT_MCP_BASE_URL"
+              },
+              {
+                "description": "OIDC discovery endpoint URL",
+                "name": "MARKDOWN_VAULT_MCP_OIDC_CONFIG_URL"
+              },
+              {
+                "description": "OIDC client ID",
+                "name": "MARKDOWN_VAULT_MCP_OIDC_CLIENT_ID"
+              },
+              {
+                "description": "OIDC client secret",
+                "isSecret": true,
+                "name": "MARKDOWN_VAULT_MCP_OIDC_CLIENT_SECRET"
+              },
+              {
+                "description": "Signing key for OIDC session JWTs (critical on Linux/Docker)",
+                "isSecret": true,
+                "name": "MARKDOWN_VAULT_MCP_OIDC_JWT_SIGNING_KEY"
+              },
+              {
+                "description": "Expected OIDC token audience",
+                "name": "MARKDOWN_VAULT_MCP_OIDC_AUDIENCE"
+              },
+              {
+                "description": "Space-separated required OIDC scopes",
+                "default": "openid",
+                "name": "MARKDOWN_VAULT_MCP_OIDC_REQUIRED_SCOPES"
+              },
+              {
+                "description": "Verify access token JWT instead of id_token",
+                "format": "boolean",
+                "default": "false",
+                "name": "MARKDOWN_VAULT_MCP_OIDC_VERIFY_ACCESS_TOKEN"
+              },
+              {
+                "description": "Override Claude app domain for MCP Apps iframe sandboxing",
+                "name": "MARKDOWN_VAULT_MCP_APP_DOMAIN"
+              }
+            ]
+          },
+          {
+            "registryType": "oci",
+            "identifier": "ghcr.io/pvliesdonk/markdown-vault-mcp:v1.20.0",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:{--port}/mcp"
+            },
+            "packageArguments": [
+              {
+                "description": "Port for the HTTP transport",
+                "default": "8000",
+                "type": "named",
+                "name": "--port"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Path to the vault directory inside the container",
+                "format": "filepath",
+                "default": "/data/vault",
+                "name": "MARKDOWN_VAULT_MCP_SOURCE_DIR"
+              },
+              {
+                "description": "Disable write tools",
+                "format": "boolean",
+                "default": "true",
+                "name": "MARKDOWN_VAULT_MCP_READ_ONLY"
+              },
+              {
+                "description": "Log level for FastMCP internals; app loggers default to INFO, -v overrides both to DEBUG",
+                "default": "INFO",
+                "choices": [
+                  "DEBUG",
+                  "INFO",
+                  "WARNING",
+                  "ERROR"
+                ],
+                "name": "FASTMCP_LOG_LEVEL"
+              },
+              {
+                "description": "Event store backend for HTTP session persistence (file:///path or memory://)",
+                "default": "file:///data/state/events",
+                "name": "MARKDOWN_VAULT_MCP_EVENT_STORE_URL"
+              },
+              {
+                "description": "MCP server name shown to clients",
+                "default": "markdown-vault-mcp",
+                "name": "MARKDOWN_VAULT_MCP_SERVER_NAME"
+              },
+              {
+                "description": "Directory for index and embeddings state files",
+                "format": "filepath",
+                "default": "/data/state",
+                "name": "MARKDOWN_VAULT_MCP_STATE_PATH"
+              },
+              {
+                "description": "Path to the FTS5 SQLite index file",
+                "format": "filepath",
+                "name": "MARKDOWN_VAULT_MCP_INDEX_PATH"
+              },
+              {
+                "description": "Path to the numpy embeddings file",
+                "format": "filepath",
+                "name": "MARKDOWN_VAULT_MCP_EMBEDDINGS_PATH"
+              },
+              {
+                "description": "Comma-separated frontmatter fields to index for search",
+                "name": "MARKDOWN_VAULT_MCP_INDEXED_FIELDS"
+              },
+              {
+                "description": "Comma-separated frontmatter fields required on every document",
+                "name": "MARKDOWN_VAULT_MCP_REQUIRED_FIELDS"
+              },
+              {
+                "description": "Comma-separated glob patterns to exclude from indexing",
+                "name": "MARKDOWN_VAULT_MCP_EXCLUDE"
+              },
+              {
+                "description": "Embedding provider to use",
+                "choices": [
+                  "openai",
+                  "ollama",
+                  "fastembed",
+                  "fastembed-gpu"
+                ],
+                "name": "EMBEDDING_PROVIDER"
+              },
+              {
+                "description": "OpenAI API key (required when EMBEDDING_PROVIDER=openai)",
+                "isSecret": true,
+                "name": "OPENAI_API_KEY"
+              },
+              {
+                "description": "Ollama embedding model name",
+                "default": "nomic-embed-text",
+                "name": "MARKDOWN_VAULT_MCP_OLLAMA_MODEL"
+              },
+              {
+                "description": "Force CPU-only inference for Ollama",
+                "format": "boolean",
+                "default": "false",
+                "name": "MARKDOWN_VAULT_MCP_OLLAMA_CPU_ONLY"
+              },
+              {
+                "description": "Ollama server base URL",
+                "default": "http://localhost:11434",
+                "name": "OLLAMA_HOST"
+              },
+              {
+                "description": "Git authentication token for push/pull",
+                "isSecret": true,
+                "name": "MARKDOWN_VAULT_MCP_GIT_TOKEN"
+              },
+              {
+                "description": "Remote git repository URL for managed mode",
+                "name": "MARKDOWN_VAULT_MCP_GIT_REPO_URL"
+              },
+              {
+                "description": "Git username for token auth",
+                "default": "x-access-token",
+                "name": "MARKDOWN_VAULT_MCP_GIT_USERNAME"
+              },
+              {
+                "description": "Git committer name",
+                "default": "markdown-vault-mcp",
+                "name": "MARKDOWN_VAULT_MCP_GIT_COMMIT_NAME"
+              },
+              {
+                "description": "Git committer email",
+                "default": "noreply@markdown-vault-mcp",
+                "name": "MARKDOWN_VAULT_MCP_GIT_COMMIT_EMAIL"
+              },
+              {
+                "description": "Seconds to wait before pushing (batches writes)",
+                "format": "number",
+                "default": "30",
+                "name": "MARKDOWN_VAULT_MCP_GIT_PUSH_DELAY_S"
+              },
+              {
+                "description": "Enable Git LFS support",
+                "format": "boolean",
+                "default": "true",
+                "name": "MARKDOWN_VAULT_MCP_GIT_LFS"
+              },
+              {
+                "description": "Seconds between periodic git pulls (0 to disable)",
+                "format": "number",
+                "default": "600",
+                "name": "MARKDOWN_VAULT_MCP_GIT_PULL_INTERVAL_S"
+              },
+              {
+                "description": "Comma-separated allowed attachment extensions, or * for all",
+                "name": "MARKDOWN_VAULT_MCP_ATTACHMENT_EXTENSIONS"
+              },
+              {
+                "description": "Maximum attachment size in MB (0 for unlimited)",
+                "format": "number",
+                "default": "10",
+                "name": "MARKDOWN_VAULT_MCP_MAX_ATTACHMENT_SIZE_MB"
+              },
+              {
+                "description": "Folder name for note templates within the vault",
+                "default": "_templates",
+                "name": "MARKDOWN_VAULT_MCP_TEMPLATES_FOLDER"
+              },
+              {
+                "description": "Path to user-defined MCP prompt templates",
+                "format": "filepath",
+                "name": "MARKDOWN_VAULT_MCP_PROMPTS_FOLDER"
+              },
+              {
+                "description": "Run as this UID (Docker entrypoint)",
+                "format": "number",
+                "default": "1000",
+                "name": "PUID"
+              },
+              {
+                "description": "Run as this GID (Docker entrypoint)",
+                "format": "number",
+                "default": "1000",
+                "name": "PGID"
+              },
+              {
+                "description": "Bearer token for authentication",
+                "isSecret": true,
+                "name": "MARKDOWN_VAULT_MCP_BEARER_TOKEN"
+              },
+              {
+                "description": "OIDC auth mode: 'remote' (JWKS validation) or 'oidc-proxy' (OAuth proxy). Auto-detected if not set.",
+                "name": "MARKDOWN_VAULT_MCP_AUTH_MODE"
+              },
+              {
+                "description": "Public base URL of this server (required for OIDC)",
+                "name": "MARKDOWN_VAULT_MCP_BASE_URL"
+              },
+              {
+                "description": "OIDC discovery endpoint URL",
+                "name": "MARKDOWN_VAULT_MCP_OIDC_CONFIG_URL"
+              },
+              {
+                "description": "OIDC client ID",
+                "name": "MARKDOWN_VAULT_MCP_OIDC_CLIENT_ID"
+              },
+              {
+                "description": "OIDC client secret",
+                "isSecret": true,
+                "name": "MARKDOWN_VAULT_MCP_OIDC_CLIENT_SECRET"
+              },
+              {
+                "description": "Signing key for OIDC session JWTs (critical on Linux/Docker)",
+                "isSecret": true,
+                "name": "MARKDOWN_VAULT_MCP_OIDC_JWT_SIGNING_KEY"
+              },
+              {
+                "description": "Expected OIDC token audience",
+                "name": "MARKDOWN_VAULT_MCP_OIDC_AUDIENCE"
+              },
+              {
+                "description": "Space-separated required OIDC scopes",
+                "default": "openid",
+                "name": "MARKDOWN_VAULT_MCP_OIDC_REQUIRED_SCOPES"
+              },
+              {
+                "description": "Verify access token JWT instead of id_token",
+                "format": "boolean",
+                "default": "false",
+                "name": "MARKDOWN_VAULT_MCP_OIDC_VERIFY_ACCESS_TOKEN"
+              },
+              {
+                "description": "Override Claude app domain for MCP Apps iframe sandboxing",
+                "name": "MARKDOWN_VAULT_MCP_APP_DOMAIN"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-08T15:14:07.893447Z",
+          "publishedAt": "2026-04-08T15:14:07.893447Z",
+          "updatedAt": "2026-04-08T15:14:07.893447Z",
+          "isLatest": false
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:57.601Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

@@ -1,0 +1,156 @@
+{
+  "dedup_key": "pkg:oci:ghcr.io/ironsecco/ironclaw-controlplane:v0.1.230",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:oci:ghcr.io/ironsecco/ironclaw-controlplane:v0.1.230",
+    "registryType": "oci",
+    "identifier": "ghcr.io/ironsecco/ironclaw-controlplane:v0.1.230"
+  },
+  "server_names": [
+    "io.github.IronSecCo/ironclaw"
+  ],
+  "versions_seen": [
+    "0.1.230"
+  ],
+  "registry_row_count": 1,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.IronSecCo/ironclaw",
+      "description": "Sandboxed shell exec for MCP clients: run untrusted agent commands in a gVisor container.",
+      "repository": {
+        "url": "https://github.com/IronSecCo/ironclaw",
+        "source": "github"
+      },
+      "version": "0.1.230",
+      "websiteUrl": "https://ironclaw.sh",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/ironsecco/ironclaw-controlplane:v0.1.230",
+          "runtimeHint": "docker",
+          "transport": {
+            "type": "stdio"
+          },
+          "runtimeArguments": [
+            {
+              "description": "Remove the container when the MCP session ends (ephemeral by design).",
+              "type": "named",
+              "name": "--rm"
+            },
+            {
+              "description": "Keep stdin open for the MCP stdio transport.",
+              "type": "named",
+              "name": "-i"
+            },
+            {
+              "description": "IronClaw launches each sandbox_exec run as a sibling gVisor container; it needs the host Docker socket to do so. This grants the MCP server control of the host Docker daemon -- review before enabling.",
+              "isRequired": true,
+              "value": "/var/run/docker.sock:/var/run/docker.sock",
+              "type": "named",
+              "name": "-v"
+            },
+            {
+              "description": "Override the control-plane daemon entrypoint to run the bundled ironctl MCP server instead.",
+              "value": "ironctl",
+              "type": "named",
+              "name": "--entrypoint"
+            }
+          ],
+          "packageArguments": [
+            {
+              "value": "mcp",
+              "type": "positional"
+            },
+            {
+              "value": "serve",
+              "type": "positional"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "deprecated",
+        "statusChangedAt": "2026-07-07T07:08:22.434788Z",
+        "statusMessage": "Superseded: this listing launched IronClaw via a host Docker-socket mount, which we do not endorse. A socket-free ironclaw-mcp image is in progress (IRO-414); the listing will be re-published against it.",
+        "publishedAt": "2026-07-07T06:23:48.237388Z",
+        "updatedAt": "2026-07-07T07:08:22.434788Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.IronSecCo/ironclaw",
+        "description": "Sandboxed shell exec for MCP clients: run untrusted agent commands in a gVisor container.",
+        "repository": {
+          "url": "https://github.com/IronSecCo/ironclaw",
+          "source": "github"
+        },
+        "version": "0.1.230",
+        "websiteUrl": "https://ironclaw.sh",
+        "packages": [
+          {
+            "registryType": "oci",
+            "identifier": "ghcr.io/ironsecco/ironclaw-controlplane:v0.1.230",
+            "runtimeHint": "docker",
+            "transport": {
+              "type": "stdio"
+            },
+            "runtimeArguments": [
+              {
+                "description": "Remove the container when the MCP session ends (ephemeral by design).",
+                "type": "named",
+                "name": "--rm"
+              },
+              {
+                "description": "Keep stdin open for the MCP stdio transport.",
+                "type": "named",
+                "name": "-i"
+              },
+              {
+                "description": "IronClaw launches each sandbox_exec run as a sibling gVisor container; it needs the host Docker socket to do so. This grants the MCP server control of the host Docker daemon -- review before enabling.",
+                "isRequired": true,
+                "value": "/var/run/docker.sock:/var/run/docker.sock",
+                "type": "named",
+                "name": "-v"
+              },
+              {
+                "description": "Override the control-plane daemon entrypoint to run the bundled ironctl MCP server instead.",
+                "value": "ironctl",
+                "type": "named",
+                "name": "--entrypoint"
+              }
+            ],
+            "packageArguments": [
+              {
+                "value": "mcp",
+                "type": "positional"
+              },
+              {
+                "value": "serve",
+                "type": "positional"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "deprecated",
+          "statusChangedAt": "2026-07-07T07:08:22.434788Z",
+          "statusMessage": "Superseded: this listing launched IronClaw via a host Docker-socket mount, which we do not endorse. A socket-free ironclaw-mcp image is in progress (IRO-414); the listing will be re-published against it.",
+          "publishedAt": "2026-07-07T06:23:48.237388Z",
+          "updatedAt": "2026-07-07T07:08:22.434788Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:56.617Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

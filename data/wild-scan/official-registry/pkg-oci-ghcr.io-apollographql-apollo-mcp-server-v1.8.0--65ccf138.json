@@ -1,0 +1,184 @@
+{
+  "dedup_key": "pkg:oci:ghcr.io/apollographql/apollo-mcp-server:v1.8.0",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:oci:ghcr.io/apollographql/apollo-mcp-server:v1.8.0",
+    "registryType": "oci",
+    "identifier": "ghcr.io/apollographql/apollo-mcp-server:v1.8.0"
+  },
+  "server_names": [
+    "io.github.apollographql/apollo-mcp-server"
+  ],
+  "versions_seen": [
+    "1.8.0"
+  ],
+  "registry_row_count": 1,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.apollographql/apollo-mcp-server",
+      "description": "MCP server that exposes GraphQL operations as tools for AI models.",
+      "title": "Apollo MCP Server",
+      "repository": {
+        "url": "https://github.com/apollographql/apollo-mcp-server",
+        "source": "github"
+      },
+      "version": "1.8.0",
+      "websiteUrl": "https://www.apollographql.com/docs/apollo-mcp-server/",
+      "icons": [
+        {
+          "src": "https://raw.githubusercontent.com/apollographql/apollo-client-devtools/main/assets/apollo-wordmark.svg",
+          "mimeType": "image/svg+xml",
+          "sizes": [
+            "any"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/apollographql/apollo-mcp-server:v1.8.0",
+          "transport": {
+            "type": "stdio"
+          },
+          "runtimeArguments": [
+            {
+              "description": "Mount your config file into the container",
+              "isRequired": true,
+              "value": "type=bind,src={config_path},dst=/config.yaml,readonly",
+              "variables": {
+                "config_path": {
+                  "description": "Path to your Apollo MCP Server configuration file on the host",
+                  "isRequired": true,
+                  "format": "filepath"
+                }
+              },
+              "type": "named",
+              "name": "--mount"
+            },
+            {
+              "description": "Mount your project data directory into the container (for local schema and operations)",
+              "value": "type=bind,src={data_path},dst=/data",
+              "variables": {
+                "data_path": {
+                  "description": "Path to your project directory containing schema and operation files",
+                  "isRequired": true,
+                  "format": "filepath"
+                }
+              },
+              "type": "named",
+              "name": "--mount"
+            },
+            {
+              "description": "Expose the HTTP Streamable transport port",
+              "value": "8000:8000",
+              "type": "named",
+              "name": "-p"
+            }
+          ],
+          "packageArguments": [
+            {
+              "value": "/config.yaml",
+              "type": "positional"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-02-26T02:11:21.501625Z",
+        "publishedAt": "2026-02-26T02:11:21.501625Z",
+        "updatedAt": "2026-02-26T02:11:21.501625Z",
+        "isLatest": false
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.apollographql/apollo-mcp-server",
+        "description": "MCP server that exposes GraphQL operations as tools for AI models.",
+        "title": "Apollo MCP Server",
+        "repository": {
+          "url": "https://github.com/apollographql/apollo-mcp-server",
+          "source": "github"
+        },
+        "version": "1.8.0",
+        "websiteUrl": "https://www.apollographql.com/docs/apollo-mcp-server/",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/apollographql/apollo-client-devtools/main/assets/apollo-wordmark.svg",
+            "mimeType": "image/svg+xml",
+            "sizes": [
+              "any"
+            ]
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "oci",
+            "identifier": "ghcr.io/apollographql/apollo-mcp-server:v1.8.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "runtimeArguments": [
+              {
+                "description": "Mount your config file into the container",
+                "isRequired": true,
+                "value": "type=bind,src={config_path},dst=/config.yaml,readonly",
+                "variables": {
+                  "config_path": {
+                    "description": "Path to your Apollo MCP Server configuration file on the host",
+                    "isRequired": true,
+                    "format": "filepath"
+                  }
+                },
+                "type": "named",
+                "name": "--mount"
+              },
+              {
+                "description": "Mount your project data directory into the container (for local schema and operations)",
+                "value": "type=bind,src={data_path},dst=/data",
+                "variables": {
+                  "data_path": {
+                    "description": "Path to your project directory containing schema and operation files",
+                    "isRequired": true,
+                    "format": "filepath"
+                  }
+                },
+                "type": "named",
+                "name": "--mount"
+              },
+              {
+                "description": "Expose the HTTP Streamable transport port",
+                "value": "8000:8000",
+                "type": "named",
+                "name": "-p"
+              }
+            ],
+            "packageArguments": [
+              {
+                "value": "/config.yaml",
+                "type": "positional"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-02-26T02:11:21.501625Z",
+          "publishedAt": "2026-02-26T02:11:21.501625Z",
+          "updatedAt": "2026-02-26T02:11:21.501625Z",
+          "isLatest": false
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:56.797Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

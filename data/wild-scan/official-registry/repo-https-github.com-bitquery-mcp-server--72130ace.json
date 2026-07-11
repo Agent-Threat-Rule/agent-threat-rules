@@ -1,0 +1,363 @@
+{
+  "dedup_key": "repo:https://github.com/bitquery/mcp-server",
+  "package_identity": {
+    "type": "repository",
+    "key": "repo:https://github.com/bitquery/mcp-server",
+    "repositoryUrl": "https://github.com/bitquery/mcp-server"
+  },
+  "server_names": [
+    "io.bitquery/mcp"
+  ],
+  "versions_seen": [
+    "1.0.1"
+  ],
+  "registry_row_count": 1,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.bitquery/mcp",
+      "description": "Real-time Blockchain Trading intelligence - Token prices, trades, marketcap, Traders, Charts",
+      "title": "Bitquery MCP",
+      "repository": {
+        "url": "https://github.com/bitquery/mcp-server",
+        "source": "github"
+      },
+      "version": "1.0.1",
+      "websiteUrl": "https://docs.bitquery.io/docs/mcp/trading/overview/",
+      "icons": [
+        {
+          "src": "https://bitquery.io/bitquery-logo.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://mcp.bitquery.io",
+          "headers": [
+            {
+              "description": "Bearer token from Bitquery OAuth (account.bitquery.io)",
+              "isRequired": true,
+              "format": "string",
+              "isSecret": true,
+              "name": "Authorization"
+            }
+          ]
+        }
+      ],
+      "_meta": {
+        "io.modelcontextprotocol.registry/publisher-provided": {
+          "io.bitquery": {
+            "auth": "OAuth via account.bitquery.io — https://docs.bitquery.io/docs/authorisation/how-to-generate/",
+            "categories": [
+              "crypto",
+              "defi",
+              "blockchain",
+              "trading",
+              "finance",
+              "analytics"
+            ],
+            "chains": [
+              "Ethereum",
+              "Solana",
+              "BSC",
+              "Base",
+              "Arbitrum",
+              "Optimism",
+              "Polygon",
+              "Tron"
+            ],
+            "example_calls": [
+              "What are the top 10 Solana tokens by USD volume in the last 24 hours? Skip wash-traded pools.",
+              "Pull every trade for wallet 7xKX… in the last 7 days. Compute realized PnL per token in USD.",
+              "Give me 1-minute OHLC for the WIF/USDC pool on Raydium for the last 6 hours.",
+              "Which Base tokens crossed $10M market cap in the last 24 hours?",
+              "Show me 24h volume per chain, but only counting clean (non-wash-traded) flow.",
+              "How many new tokens launched on Pump.fun in the last hour? How does that compare to the 24h average?",
+              "For each chain, show 24h DEX volume, number of trades, and number of unique traders.",
+              "Which Solana DEX is winning today's volume? Meteora vs Pumpswap vs Raydium vs Orca.",
+              "Find Solana wallets that bought any token in the first 60 seconds of its first Pumpfun trade in the last 24 hours, then sold within 10 minutes for a positive USD PnL.",
+              "For pool 0xabc… on the last 100 trades, compute realized slippage relative to the volume-weighted price.",
+              "Using the Bitquery MCP, show me the top 10 Solana tokens by USD volume in the last 24 hours. Skip wash-traded pools. Include latest market cap and price.",
+              "Using the Bitquery MCP, for wallet MfDuWeqSHEqTFVYZ7LoexgAK9dxk7cy4DFJWjWMGVWa, break down 24h activity per token: trade count, USD bought, USD sold, and net flow."
+            ],
+            "examples_url": "https://docs.bitquery.io/docs/mcp/trading/examples/",
+            "pitch": "Hosted MCP for Bitquery DEX data: token search, OHLC, prices, supply, traders & PnL across 8 chains.",
+            "tools": [
+              {
+                "description": "Net buyers of a token ranked by USD accumulated.",
+                "name": "accumulating_traders_by_token"
+              },
+              {
+                "description": "OHLC candles aggregated by currency across chains.",
+                "name": "currency_ohlcv"
+              },
+              {
+                "description": "Aggregated USD price for a well-known currency (USDC, ETH, etc.).",
+                "name": "currency_price"
+              },
+              {
+                "description": "Supply and market cap for a currency across chains.",
+                "name": "currency_supply"
+              },
+              {
+                "description": "Read-only SQL escape hatch against Bitquery trading ClickHouse.",
+                "name": "execute_sql"
+              },
+              {
+                "description": "Discover currencies by name or symbol.",
+                "name": "find_currencies"
+              },
+              {
+                "description": "Resolve a contract address to token id, symbol, price, volume.",
+                "name": "find_token_by_address"
+              },
+              {
+                "description": "Discover tokens by name/symbol; returns address, chain, 24h volume.",
+                "name": "find_tokens"
+              },
+              {
+                "description": "OHLC candles for a base/quote pair on one chain.",
+                "name": "pair_ohlcv"
+              },
+              {
+                "description": "Latest price for a base/quote pair on one chain.",
+                "name": "pair_price"
+              },
+              {
+                "description": "Traders ranked by estimated PnL on a token.",
+                "name": "profitable_traders_by_token"
+              },
+              {
+                "description": "OHLC candles for a token (1s–1h intervals).",
+                "name": "token_ohlcv"
+              },
+              {
+                "description": "Latest USD price, market cap, supply for one token.",
+                "name": "token_price"
+              },
+              {
+                "description": "Supply and market cap for one token on one chain.",
+                "name": "token_supply"
+              },
+              {
+                "description": "Top traders by volume across an entire chain.",
+                "name": "top_traders_by_network"
+              },
+              {
+                "description": "Top traders for a base/quote pair on one chain.",
+                "name": "top_traders_by_pair"
+              },
+              {
+                "description": "Rank wallets by volume or net buy for a token.",
+                "name": "top_traders_by_token"
+              },
+              {
+                "description": "Time-bucketed trading activity timeline for a wallet.",
+                "name": "trader_activity"
+              },
+              {
+                "description": "Per-token positions and estimated PnL for a wallet.",
+                "name": "trader_positions"
+              },
+              {
+                "description": "Summary stats for one wallet over a window.",
+                "name": "trader_profile"
+              },
+              {
+                "description": "Hot tokens by volume or price change over a time window.",
+                "name": "trending_tokens"
+              }
+            ],
+            "use_cases_url": "https://docs.bitquery.io/docs/mcp/trading/use-cases/"
+          }
+        }
+      }
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-05-20T06:50:28.527454Z",
+        "publishedAt": "2026-05-20T06:50:28.527454Z",
+        "updatedAt": "2026-05-20T06:50:28.527454Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.bitquery/mcp",
+        "description": "Real-time Blockchain Trading intelligence - Token prices, trades, marketcap, Traders, Charts",
+        "title": "Bitquery MCP",
+        "repository": {
+          "url": "https://github.com/bitquery/mcp-server",
+          "source": "github"
+        },
+        "version": "1.0.1",
+        "websiteUrl": "https://docs.bitquery.io/docs/mcp/trading/overview/",
+        "icons": [
+          {
+            "src": "https://bitquery.io/bitquery-logo.png",
+            "mimeType": "image/png"
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://mcp.bitquery.io",
+            "headers": [
+              {
+                "description": "Bearer token from Bitquery OAuth (account.bitquery.io)",
+                "isRequired": true,
+                "format": "string",
+                "isSecret": true,
+                "name": "Authorization"
+              }
+            ]
+          }
+        ],
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "io.bitquery": {
+              "auth": "OAuth via account.bitquery.io — https://docs.bitquery.io/docs/authorisation/how-to-generate/",
+              "categories": [
+                "crypto",
+                "defi",
+                "blockchain",
+                "trading",
+                "finance",
+                "analytics"
+              ],
+              "chains": [
+                "Ethereum",
+                "Solana",
+                "BSC",
+                "Base",
+                "Arbitrum",
+                "Optimism",
+                "Polygon",
+                "Tron"
+              ],
+              "example_calls": [
+                "What are the top 10 Solana tokens by USD volume in the last 24 hours? Skip wash-traded pools.",
+                "Pull every trade for wallet 7xKX… in the last 7 days. Compute realized PnL per token in USD.",
+                "Give me 1-minute OHLC for the WIF/USDC pool on Raydium for the last 6 hours.",
+                "Which Base tokens crossed $10M market cap in the last 24 hours?",
+                "Show me 24h volume per chain, but only counting clean (non-wash-traded) flow.",
+                "How many new tokens launched on Pump.fun in the last hour? How does that compare to the 24h average?",
+                "For each chain, show 24h DEX volume, number of trades, and number of unique traders.",
+                "Which Solana DEX is winning today's volume? Meteora vs Pumpswap vs Raydium vs Orca.",
+                "Find Solana wallets that bought any token in the first 60 seconds of its first Pumpfun trade in the last 24 hours, then sold within 10 minutes for a positive USD PnL.",
+                "For pool 0xabc… on the last 100 trades, compute realized slippage relative to the volume-weighted price.",
+                "Using the Bitquery MCP, show me the top 10 Solana tokens by USD volume in the last 24 hours. Skip wash-traded pools. Include latest market cap and price.",
+                "Using the Bitquery MCP, for wallet MfDuWeqSHEqTFVYZ7LoexgAK9dxk7cy4DFJWjWMGVWa, break down 24h activity per token: trade count, USD bought, USD sold, and net flow."
+              ],
+              "examples_url": "https://docs.bitquery.io/docs/mcp/trading/examples/",
+              "pitch": "Hosted MCP for Bitquery DEX data: token search, OHLC, prices, supply, traders & PnL across 8 chains.",
+              "tools": [
+                {
+                  "description": "Net buyers of a token ranked by USD accumulated.",
+                  "name": "accumulating_traders_by_token"
+                },
+                {
+                  "description": "OHLC candles aggregated by currency across chains.",
+                  "name": "currency_ohlcv"
+                },
+                {
+                  "description": "Aggregated USD price for a well-known currency (USDC, ETH, etc.).",
+                  "name": "currency_price"
+                },
+                {
+                  "description": "Supply and market cap for a currency across chains.",
+                  "name": "currency_supply"
+                },
+                {
+                  "description": "Read-only SQL escape hatch against Bitquery trading ClickHouse.",
+                  "name": "execute_sql"
+                },
+                {
+                  "description": "Discover currencies by name or symbol.",
+                  "name": "find_currencies"
+                },
+                {
+                  "description": "Resolve a contract address to token id, symbol, price, volume.",
+                  "name": "find_token_by_address"
+                },
+                {
+                  "description": "Discover tokens by name/symbol; returns address, chain, 24h volume.",
+                  "name": "find_tokens"
+                },
+                {
+                  "description": "OHLC candles for a base/quote pair on one chain.",
+                  "name": "pair_ohlcv"
+                },
+                {
+                  "description": "Latest price for a base/quote pair on one chain.",
+                  "name": "pair_price"
+                },
+                {
+                  "description": "Traders ranked by estimated PnL on a token.",
+                  "name": "profitable_traders_by_token"
+                },
+                {
+                  "description": "OHLC candles for a token (1s–1h intervals).",
+                  "name": "token_ohlcv"
+                },
+                {
+                  "description": "Latest USD price, market cap, supply for one token.",
+                  "name": "token_price"
+                },
+                {
+                  "description": "Supply and market cap for one token on one chain.",
+                  "name": "token_supply"
+                },
+                {
+                  "description": "Top traders by volume across an entire chain.",
+                  "name": "top_traders_by_network"
+                },
+                {
+                  "description": "Top traders for a base/quote pair on one chain.",
+                  "name": "top_traders_by_pair"
+                },
+                {
+                  "description": "Rank wallets by volume or net buy for a token.",
+                  "name": "top_traders_by_token"
+                },
+                {
+                  "description": "Time-bucketed trading activity timeline for a wallet.",
+                  "name": "trader_activity"
+                },
+                {
+                  "description": "Per-token positions and estimated PnL for a wallet.",
+                  "name": "trader_positions"
+                },
+                {
+                  "description": "Summary stats for one wallet over a window.",
+                  "name": "trader_profile"
+                },
+                {
+                  "description": "Hot tokens by volume or price change over a time window.",
+                  "name": "trending_tokens"
+                }
+              ],
+              "use_cases_url": "https://docs.bitquery.io/docs/mcp/trading/use-cases/"
+            }
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-20T06:50:28.527454Z",
+          "publishedAt": "2026-05-20T06:50:28.527454Z",
+          "updatedAt": "2026-05-20T06:50:28.527454Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:56.450Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

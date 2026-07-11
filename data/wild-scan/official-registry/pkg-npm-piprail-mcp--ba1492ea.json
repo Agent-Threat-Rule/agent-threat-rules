@@ -1,0 +1,1286 @@
+{
+  "dedup_key": "pkg:npm:@piprail/mcp",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:npm:@piprail/mcp",
+    "registryType": "npm",
+    "identifier": "@piprail/mcp"
+  },
+  "server_names": [
+    "io.github.piprail/mcp"
+  ],
+  "versions_seen": [
+    "0.2.1",
+    "0.2.2",
+    "0.2.3",
+    "0.2.4",
+    "0.2.9",
+    "0.3.0",
+    "0.3.3",
+    "0.4.0",
+    "0.4.1",
+    "0.5.0",
+    "0.5.1",
+    "0.6.0",
+    "0.6.1",
+    "0.7.0",
+    "0.8.0",
+    "0.9.0"
+  ],
+  "registry_row_count": 16,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.piprail/mcp",
+      "description": "Budget-bound x402 payment wallet for AI agents — pays HTTP 402 URLs, capped locally. No backend.",
+      "title": "PipRail",
+      "repository": {
+        "url": "https://github.com/piprail/piprail",
+        "source": "github",
+        "subfolder": "mcp"
+      },
+      "version": "0.9.0",
+      "websiteUrl": "https://piprail.com/mcp",
+      "packages": [
+        {
+          "registryType": "npm",
+          "identifier": "@piprail/mcp",
+          "version": "0.9.0",
+          "transport": {
+            "type": "stdio"
+          },
+          "environmentVariables": [
+            {
+              "description": "Your wallet's private key/seed for the chosen chain. Optional: omit it to run read-only (discover/quote/register/budget/guide); set it to let the agent pay. Stays on your machine; the spend policy caps every payment.",
+              "format": "string",
+              "isSecret": true,
+              "name": "PIPRAIL_PRIVATE_KEY"
+            },
+            {
+              "description": "Chain to pay on (default: base).",
+              "format": "string",
+              "name": "PIPRAIL_CHAIN"
+            },
+            {
+              "description": "Pay across several chains (instead of PIPRAIL_CHAIN): a comma-separated list, e.g. base,polygon,solana. Give each its own PIPRAIL_<CHAIN>_KEY (+ optional PIPRAIL_<CHAIN>_RPC_URL). The agent pays whichever chain a 402 asks for — the first listed that can settle — under one shared budget.",
+              "format": "string",
+              "name": "PIPRAIL_CHAINS"
+            },
+            {
+              "description": "Max spend per single payment, in token units (default: 0.10).",
+              "format": "string",
+              "name": "PIPRAIL_MAX_AMOUNT"
+            },
+            {
+              "description": "Lifetime spend cap per token, in token units (default: 10.00).",
+              "format": "string",
+              "name": "PIPRAIL_MAX_TOTAL"
+            },
+            {
+              "description": "Cross-token GRAND TOTAL: one spend cap per denomination across every stablecoin and chain, e.g. USD:20.00,EUR:5.00. Not a price oracle — sums tokens of the same unit, each counted 1:1. Native coins are excluded.",
+              "format": "string",
+              "name": "PIPRAIL_MAX_TOTAL_DENOM"
+            },
+            {
+              "description": "Lifetime cap on the NUMBER of payments, across every chain + token (e.g. 100).",
+              "format": "string",
+              "name": "PIPRAIL_MAX_PAYMENTS"
+            },
+            {
+              "description": "Cap on the number of payments within PIPRAIL_WINDOW_SECONDS (a rolling rate limit; set PIPRAIL_WINDOW_SECONDS too).",
+              "format": "string",
+              "name": "PIPRAIL_MAX_PAYMENTS_PER_WINDOW"
+            },
+            {
+              "description": "Emit an early-warning event when spend crosses this fraction of any cap, e.g. 0.8 (80%). Needs PIPRAIL_EVENT_LOG to be visible.",
+              "format": "string",
+              "name": "PIPRAIL_WARN_AT_FRACTION"
+            },
+            {
+              "description": "Path to a local append-only spend log. When set, the budget (lifetime, grand total, counts) SURVIVES a restart — hydrated from this file. No backend; you own the file.",
+              "format": "string",
+              "name": "PIPRAIL_SPEND_LOG"
+            },
+            {
+              "description": "Mirror payment events (settled / declined / budget-threshold) as one-line JSON to 'stderr' or a file path — the operator's notification stream. Default: off.",
+              "format": "string",
+              "name": "PIPRAIL_EVENT_LOG"
+            },
+            {
+              "description": "Comma-separated allowed token symbols, plus the alias 'native' for the chain's coin (default: USDC).",
+              "format": "string",
+              "name": "PIPRAIL_TOKENS"
+            },
+            {
+              "description": "Comma-separated payment schemes to settle (default: onchain-proof). Add 'exact' (onchain-proof,exact) to also pay standard x402 servers GASLESS on EVM + Solana (method auto-selected). Add 'upto' to also pay metered x402 servers on EVM (Permit2): sign a MAX, the server settles the actual <= max.",
+              "format": "string",
+              "name": "PIPRAIL_SCHEMES"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-06-20T14:35:49.266978Z",
+        "publishedAt": "2026-06-20T14:35:49.266978Z",
+        "updatedAt": "2026-06-20T14:35:49.266978Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.piprail/mcp",
+        "description": "Budget-bound x402 payment wallet for AI agents — pays HTTP 402 URLs, capped locally. No backend.",
+        "repository": {
+          "url": "https://github.com/piprail/piprail",
+          "source": "github"
+        },
+        "version": "0.2.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@piprail/mcp",
+            "version": "0.2.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Your wallet's private key/seed for the chosen chain. Stays on your machine; the spend policy caps every payment.",
+                "isRequired": true,
+                "format": "string",
+                "isSecret": true,
+                "name": "PIPRAIL_PRIVATE_KEY"
+              },
+              {
+                "description": "Chain to pay on (default: base).",
+                "format": "string",
+                "name": "PIPRAIL_CHAIN"
+              },
+              {
+                "description": "Max spend per single payment, in token units (default: 0.10).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_AMOUNT"
+              },
+              {
+                "description": "Lifetime spend cap per token, in token units (default: 10.00).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_TOTAL"
+              },
+              {
+                "description": "Comma-separated allowed token symbols, plus the alias 'native' for the chain's coin (default: USDC).",
+                "format": "string",
+                "name": "PIPRAIL_TOKENS"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-06T08:52:10.520239Z",
+          "publishedAt": "2026-06-06T08:52:10.520239Z",
+          "updatedAt": "2026-06-06T08:52:10.520239Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.piprail/mcp",
+        "description": "Budget-bound x402 payment wallet for AI agents — pays HTTP 402 URLs, capped locally. No backend.",
+        "repository": {
+          "url": "https://github.com/piprail/piprail",
+          "source": "github"
+        },
+        "version": "0.2.2",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@piprail/mcp",
+            "version": "0.2.2",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Your wallet's private key/seed for the chosen chain. Stays on your machine; the spend policy caps every payment.",
+                "isRequired": true,
+                "format": "string",
+                "isSecret": true,
+                "name": "PIPRAIL_PRIVATE_KEY"
+              },
+              {
+                "description": "Chain to pay on (default: base).",
+                "format": "string",
+                "name": "PIPRAIL_CHAIN"
+              },
+              {
+                "description": "Max spend per single payment, in token units (default: 0.10).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_AMOUNT"
+              },
+              {
+                "description": "Lifetime spend cap per token, in token units (default: 10.00).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_TOTAL"
+              },
+              {
+                "description": "Comma-separated allowed token symbols, plus the alias 'native' for the chain's coin (default: USDC).",
+                "format": "string",
+                "name": "PIPRAIL_TOKENS"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-06T11:36:00.806911Z",
+          "publishedAt": "2026-06-06T11:36:00.806911Z",
+          "updatedAt": "2026-06-06T11:36:00.806911Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.piprail/mcp",
+        "description": "Budget-bound x402 payment wallet for AI agents — pays HTTP 402 URLs, capped locally. No backend.",
+        "title": "PipRail",
+        "repository": {
+          "url": "https://github.com/piprail/piprail",
+          "source": "github",
+          "subfolder": "mcp"
+        },
+        "version": "0.2.3",
+        "websiteUrl": "https://piprail.com/mcp",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@piprail/mcp",
+            "version": "0.2.3",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Your wallet's private key/seed for the chosen chain. Stays on your machine; the spend policy caps every payment.",
+                "isRequired": true,
+                "format": "string",
+                "isSecret": true,
+                "name": "PIPRAIL_PRIVATE_KEY"
+              },
+              {
+                "description": "Chain to pay on (default: base).",
+                "format": "string",
+                "name": "PIPRAIL_CHAIN"
+              },
+              {
+                "description": "Max spend per single payment, in token units (default: 0.10).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_AMOUNT"
+              },
+              {
+                "description": "Lifetime spend cap per token, in token units (default: 10.00).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_TOTAL"
+              },
+              {
+                "description": "Comma-separated allowed token symbols, plus the alias 'native' for the chain's coin (default: USDC).",
+                "format": "string",
+                "name": "PIPRAIL_TOKENS"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-06T15:48:56.690648Z",
+          "publishedAt": "2026-06-06T15:48:56.690648Z",
+          "updatedAt": "2026-06-06T15:48:56.690648Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.piprail/mcp",
+        "description": "Budget-bound x402 payment wallet for AI agents — pays HTTP 402 URLs, capped locally. No backend.",
+        "title": "PipRail",
+        "repository": {
+          "url": "https://github.com/piprail/piprail",
+          "source": "github",
+          "subfolder": "mcp"
+        },
+        "version": "0.2.4",
+        "websiteUrl": "https://piprail.com/mcp",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@piprail/mcp",
+            "version": "0.2.4",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Your wallet's private key/seed for the chosen chain. Stays on your machine; the spend policy caps every payment.",
+                "isRequired": true,
+                "format": "string",
+                "isSecret": true,
+                "name": "PIPRAIL_PRIVATE_KEY"
+              },
+              {
+                "description": "Chain to pay on (default: base).",
+                "format": "string",
+                "name": "PIPRAIL_CHAIN"
+              },
+              {
+                "description": "Max spend per single payment, in token units (default: 0.10).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_AMOUNT"
+              },
+              {
+                "description": "Lifetime spend cap per token, in token units (default: 10.00).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_TOTAL"
+              },
+              {
+                "description": "Comma-separated allowed token symbols, plus the alias 'native' for the chain's coin (default: USDC).",
+                "format": "string",
+                "name": "PIPRAIL_TOKENS"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-08T16:15:03.212331Z",
+          "publishedAt": "2026-06-08T16:15:03.212331Z",
+          "updatedAt": "2026-06-08T16:15:03.212331Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.piprail/mcp",
+        "description": "Budget-bound x402 payment wallet for AI agents — pays HTTP 402 URLs, capped locally. No backend.",
+        "title": "PipRail",
+        "repository": {
+          "url": "https://github.com/piprail/piprail",
+          "source": "github",
+          "subfolder": "mcp"
+        },
+        "version": "0.2.9",
+        "websiteUrl": "https://piprail.com/mcp",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@piprail/mcp",
+            "version": "0.2.9",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Your wallet's private key/seed for the chosen chain. Stays on your machine; the spend policy caps every payment.",
+                "isRequired": true,
+                "format": "string",
+                "isSecret": true,
+                "name": "PIPRAIL_PRIVATE_KEY"
+              },
+              {
+                "description": "Chain to pay on (default: base).",
+                "format": "string",
+                "name": "PIPRAIL_CHAIN"
+              },
+              {
+                "description": "Max spend per single payment, in token units (default: 0.10).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_AMOUNT"
+              },
+              {
+                "description": "Lifetime spend cap per token, in token units (default: 10.00).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_TOTAL"
+              },
+              {
+                "description": "Comma-separated allowed token symbols, plus the alias 'native' for the chain's coin (default: USDC).",
+                "format": "string",
+                "name": "PIPRAIL_TOKENS"
+              },
+              {
+                "description": "Comma-separated payment schemes to settle (default: onchain-proof). Add 'exact' (onchain-proof,exact) to also pay standard x402 servers — EVM + EIP-3009 (USDC) only.",
+                "format": "string",
+                "name": "PIPRAIL_SCHEMES"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-09T21:31:10.299312Z",
+          "publishedAt": "2026-06-09T21:31:10.299312Z",
+          "updatedAt": "2026-06-09T21:31:10.299312Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.piprail/mcp",
+        "description": "Budget-bound x402 payment wallet for AI agents — pays HTTP 402 URLs, capped locally. No backend.",
+        "title": "PipRail",
+        "repository": {
+          "url": "https://github.com/piprail/piprail",
+          "source": "github",
+          "subfolder": "mcp"
+        },
+        "version": "0.3.0",
+        "websiteUrl": "https://piprail.com/mcp",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@piprail/mcp",
+            "version": "0.3.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Your wallet's private key/seed for the chosen chain. Stays on your machine; the spend policy caps every payment.",
+                "isRequired": true,
+                "format": "string",
+                "isSecret": true,
+                "name": "PIPRAIL_PRIVATE_KEY"
+              },
+              {
+                "description": "Chain to pay on (default: base).",
+                "format": "string",
+                "name": "PIPRAIL_CHAIN"
+              },
+              {
+                "description": "Max spend per single payment, in token units (default: 0.10).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_AMOUNT"
+              },
+              {
+                "description": "Lifetime spend cap per token, in token units (default: 10.00).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_TOTAL"
+              },
+              {
+                "description": "Comma-separated allowed token symbols, plus the alias 'native' for the chain's coin (default: USDC).",
+                "format": "string",
+                "name": "PIPRAIL_TOKENS"
+              },
+              {
+                "description": "Comma-separated payment schemes to settle (default: onchain-proof). Add 'exact' (onchain-proof,exact) to also pay standard x402 servers — EVM + EIP-3009 (USDC) only.",
+                "format": "string",
+                "name": "PIPRAIL_SCHEMES"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-10T09:08:36.398182Z",
+          "publishedAt": "2026-06-10T09:08:36.398182Z",
+          "updatedAt": "2026-06-10T09:08:36.398182Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.piprail/mcp",
+        "description": "Budget-bound x402 payment wallet for AI agents — pays HTTP 402 URLs, capped locally. No backend.",
+        "title": "PipRail",
+        "repository": {
+          "url": "https://github.com/piprail/piprail",
+          "source": "github",
+          "subfolder": "mcp"
+        },
+        "version": "0.3.3",
+        "websiteUrl": "https://piprail.com/mcp",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@piprail/mcp",
+            "version": "0.3.3",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Your wallet's private key/seed for the chosen chain. Stays on your machine; the spend policy caps every payment.",
+                "isRequired": true,
+                "format": "string",
+                "isSecret": true,
+                "name": "PIPRAIL_PRIVATE_KEY"
+              },
+              {
+                "description": "Chain to pay on (default: base).",
+                "format": "string",
+                "name": "PIPRAIL_CHAIN"
+              },
+              {
+                "description": "Max spend per single payment, in token units (default: 0.10).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_AMOUNT"
+              },
+              {
+                "description": "Lifetime spend cap per token, in token units (default: 10.00).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_TOTAL"
+              },
+              {
+                "description": "Comma-separated allowed token symbols, plus the alias 'native' for the chain's coin (default: USDC).",
+                "format": "string",
+                "name": "PIPRAIL_TOKENS"
+              },
+              {
+                "description": "Comma-separated payment schemes to settle (default: onchain-proof). Add 'exact' (onchain-proof,exact) to also pay standard x402 servers GASLESS on EVM + Solana (method auto-selected).",
+                "format": "string",
+                "name": "PIPRAIL_SCHEMES"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-13T08:51:34.977714Z",
+          "publishedAt": "2026-06-13T08:51:34.977714Z",
+          "updatedAt": "2026-06-13T08:51:34.977714Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.piprail/mcp",
+        "description": "Budget-bound x402 payment wallet for AI agents — pays HTTP 402 URLs, capped locally. No backend.",
+        "title": "PipRail",
+        "repository": {
+          "url": "https://github.com/piprail/piprail",
+          "source": "github",
+          "subfolder": "mcp"
+        },
+        "version": "0.4.0",
+        "websiteUrl": "https://piprail.com/mcp",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@piprail/mcp",
+            "version": "0.4.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Your wallet's private key/seed for the chosen chain. Stays on your machine; the spend policy caps every payment.",
+                "isRequired": true,
+                "format": "string",
+                "isSecret": true,
+                "name": "PIPRAIL_PRIVATE_KEY"
+              },
+              {
+                "description": "Chain to pay on (default: base).",
+                "format": "string",
+                "name": "PIPRAIL_CHAIN"
+              },
+              {
+                "description": "Max spend per single payment, in token units (default: 0.10).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_AMOUNT"
+              },
+              {
+                "description": "Lifetime spend cap per token, in token units (default: 10.00).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_TOTAL"
+              },
+              {
+                "description": "Comma-separated allowed token symbols, plus the alias 'native' for the chain's coin (default: USDC).",
+                "format": "string",
+                "name": "PIPRAIL_TOKENS"
+              },
+              {
+                "description": "Comma-separated payment schemes to settle (default: onchain-proof). Add 'exact' (onchain-proof,exact) to also pay standard x402 servers GASLESS on EVM + Solana (method auto-selected).",
+                "format": "string",
+                "name": "PIPRAIL_SCHEMES"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-13T12:00:39.561899Z",
+          "publishedAt": "2026-06-13T12:00:39.561899Z",
+          "updatedAt": "2026-06-13T12:00:39.561899Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.piprail/mcp",
+        "description": "Budget-bound x402 payment wallet for AI agents — pays HTTP 402 URLs, capped locally. No backend.",
+        "title": "PipRail",
+        "repository": {
+          "url": "https://github.com/piprail/piprail",
+          "source": "github",
+          "subfolder": "mcp"
+        },
+        "version": "0.4.1",
+        "websiteUrl": "https://piprail.com/mcp",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@piprail/mcp",
+            "version": "0.4.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Your wallet's private key/seed for the chosen chain. Optional: omit it to run read-only (discover/quote/register/budget/guide); set it to let the agent pay. Stays on your machine; the spend policy caps every payment.",
+                "format": "string",
+                "isSecret": true,
+                "name": "PIPRAIL_PRIVATE_KEY"
+              },
+              {
+                "description": "Chain to pay on (default: base).",
+                "format": "string",
+                "name": "PIPRAIL_CHAIN"
+              },
+              {
+                "description": "Max spend per single payment, in token units (default: 0.10).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_AMOUNT"
+              },
+              {
+                "description": "Lifetime spend cap per token, in token units (default: 10.00).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_TOTAL"
+              },
+              {
+                "description": "Comma-separated allowed token symbols, plus the alias 'native' for the chain's coin (default: USDC).",
+                "format": "string",
+                "name": "PIPRAIL_TOKENS"
+              },
+              {
+                "description": "Comma-separated payment schemes to settle (default: onchain-proof). Add 'exact' (onchain-proof,exact) to also pay standard x402 servers GASLESS on EVM + Solana (method auto-selected).",
+                "format": "string",
+                "name": "PIPRAIL_SCHEMES"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-13T14:32:47.019991Z",
+          "publishedAt": "2026-06-13T14:32:47.019991Z",
+          "updatedAt": "2026-06-13T14:32:47.019991Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.piprail/mcp",
+        "description": "Budget-bound x402 payment wallet for AI agents — pays HTTP 402 URLs, capped locally. No backend.",
+        "title": "PipRail",
+        "repository": {
+          "url": "https://github.com/piprail/piprail",
+          "source": "github",
+          "subfolder": "mcp"
+        },
+        "version": "0.5.0",
+        "websiteUrl": "https://piprail.com/mcp",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@piprail/mcp",
+            "version": "0.5.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Your wallet's private key/seed for the chosen chain. Optional: omit it to run read-only (discover/quote/register/budget/guide); set it to let the agent pay. Stays on your machine; the spend policy caps every payment.",
+                "format": "string",
+                "isSecret": true,
+                "name": "PIPRAIL_PRIVATE_KEY"
+              },
+              {
+                "description": "Chain to pay on (default: base).",
+                "format": "string",
+                "name": "PIPRAIL_CHAIN"
+              },
+              {
+                "description": "Pay across several chains (instead of PIPRAIL_CHAIN): a comma-separated list, e.g. base,polygon,solana. Give each its own PIPRAIL_<CHAIN>_KEY (+ optional PIPRAIL_<CHAIN>_RPC_URL). The agent pays whichever chain a 402 asks for — the first listed that can settle — under one shared budget.",
+                "format": "string",
+                "name": "PIPRAIL_CHAINS"
+              },
+              {
+                "description": "Max spend per single payment, in token units (default: 0.10).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_AMOUNT"
+              },
+              {
+                "description": "Lifetime spend cap per token, in token units (default: 10.00).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_TOTAL"
+              },
+              {
+                "description": "Comma-separated allowed token symbols, plus the alias 'native' for the chain's coin (default: USDC).",
+                "format": "string",
+                "name": "PIPRAIL_TOKENS"
+              },
+              {
+                "description": "Comma-separated payment schemes to settle (default: onchain-proof). Add 'exact' (onchain-proof,exact) to also pay standard x402 servers GASLESS on EVM + Solana (method auto-selected).",
+                "format": "string",
+                "name": "PIPRAIL_SCHEMES"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-14T13:49:46.087949Z",
+          "publishedAt": "2026-06-14T13:49:46.087949Z",
+          "updatedAt": "2026-06-14T13:49:46.087949Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.piprail/mcp",
+        "description": "Budget-bound x402 payment wallet for AI agents — pays HTTP 402 URLs, capped locally. No backend.",
+        "title": "PipRail",
+        "repository": {
+          "url": "https://github.com/piprail/piprail",
+          "source": "github",
+          "subfolder": "mcp"
+        },
+        "version": "0.5.1",
+        "websiteUrl": "https://piprail.com/mcp",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@piprail/mcp",
+            "version": "0.5.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Your wallet's private key/seed for the chosen chain. Optional: omit it to run read-only (discover/quote/register/budget/guide); set it to let the agent pay. Stays on your machine; the spend policy caps every payment.",
+                "format": "string",
+                "isSecret": true,
+                "name": "PIPRAIL_PRIVATE_KEY"
+              },
+              {
+                "description": "Chain to pay on (default: base).",
+                "format": "string",
+                "name": "PIPRAIL_CHAIN"
+              },
+              {
+                "description": "Pay across several chains (instead of PIPRAIL_CHAIN): a comma-separated list, e.g. base,polygon,solana. Give each its own PIPRAIL_<CHAIN>_KEY (+ optional PIPRAIL_<CHAIN>_RPC_URL). The agent pays whichever chain a 402 asks for — the first listed that can settle — under one shared budget.",
+                "format": "string",
+                "name": "PIPRAIL_CHAINS"
+              },
+              {
+                "description": "Max spend per single payment, in token units (default: 0.10).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_AMOUNT"
+              },
+              {
+                "description": "Lifetime spend cap per token, in token units (default: 10.00).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_TOTAL"
+              },
+              {
+                "description": "Comma-separated allowed token symbols, plus the alias 'native' for the chain's coin (default: USDC).",
+                "format": "string",
+                "name": "PIPRAIL_TOKENS"
+              },
+              {
+                "description": "Comma-separated payment schemes to settle (default: onchain-proof). Add 'exact' (onchain-proof,exact) to also pay standard x402 servers GASLESS on EVM + Solana (method auto-selected).",
+                "format": "string",
+                "name": "PIPRAIL_SCHEMES"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-15T04:19:58.027267Z",
+          "publishedAt": "2026-06-15T04:19:58.027267Z",
+          "updatedAt": "2026-06-15T04:19:58.027267Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.piprail/mcp",
+        "description": "Budget-bound x402 payment wallet for AI agents — pays HTTP 402 URLs, capped locally. No backend.",
+        "title": "PipRail",
+        "repository": {
+          "url": "https://github.com/piprail/piprail",
+          "source": "github",
+          "subfolder": "mcp"
+        },
+        "version": "0.6.0",
+        "websiteUrl": "https://piprail.com/mcp",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@piprail/mcp",
+            "version": "0.6.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Your wallet's private key/seed for the chosen chain. Optional: omit it to run read-only (discover/quote/register/budget/guide); set it to let the agent pay. Stays on your machine; the spend policy caps every payment.",
+                "format": "string",
+                "isSecret": true,
+                "name": "PIPRAIL_PRIVATE_KEY"
+              },
+              {
+                "description": "Chain to pay on (default: base).",
+                "format": "string",
+                "name": "PIPRAIL_CHAIN"
+              },
+              {
+                "description": "Pay across several chains (instead of PIPRAIL_CHAIN): a comma-separated list, e.g. base,polygon,solana. Give each its own PIPRAIL_<CHAIN>_KEY (+ optional PIPRAIL_<CHAIN>_RPC_URL). The agent pays whichever chain a 402 asks for — the first listed that can settle — under one shared budget.",
+                "format": "string",
+                "name": "PIPRAIL_CHAINS"
+              },
+              {
+                "description": "Max spend per single payment, in token units (default: 0.10).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_AMOUNT"
+              },
+              {
+                "description": "Lifetime spend cap per token, in token units (default: 10.00).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_TOTAL"
+              },
+              {
+                "description": "Comma-separated allowed token symbols, plus the alias 'native' for the chain's coin (default: USDC).",
+                "format": "string",
+                "name": "PIPRAIL_TOKENS"
+              },
+              {
+                "description": "Comma-separated payment schemes to settle (default: onchain-proof). Add 'exact' (onchain-proof,exact) to also pay standard x402 servers GASLESS on EVM + Solana (method auto-selected).",
+                "format": "string",
+                "name": "PIPRAIL_SCHEMES"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-15T08:36:51.198707Z",
+          "publishedAt": "2026-06-15T08:36:51.198707Z",
+          "updatedAt": "2026-06-15T08:36:51.198707Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.piprail/mcp",
+        "description": "Budget-bound x402 payment wallet for AI agents — pays HTTP 402 URLs, capped locally. No backend.",
+        "title": "PipRail",
+        "repository": {
+          "url": "https://github.com/piprail/piprail",
+          "source": "github",
+          "subfolder": "mcp"
+        },
+        "version": "0.6.1",
+        "websiteUrl": "https://piprail.com/mcp",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@piprail/mcp",
+            "version": "0.6.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Your wallet's private key/seed for the chosen chain. Optional: omit it to run read-only (discover/quote/register/budget/guide); set it to let the agent pay. Stays on your machine; the spend policy caps every payment.",
+                "format": "string",
+                "isSecret": true,
+                "name": "PIPRAIL_PRIVATE_KEY"
+              },
+              {
+                "description": "Chain to pay on (default: base).",
+                "format": "string",
+                "name": "PIPRAIL_CHAIN"
+              },
+              {
+                "description": "Pay across several chains (instead of PIPRAIL_CHAIN): a comma-separated list, e.g. base,polygon,solana. Give each its own PIPRAIL_<CHAIN>_KEY (+ optional PIPRAIL_<CHAIN>_RPC_URL). The agent pays whichever chain a 402 asks for — the first listed that can settle — under one shared budget.",
+                "format": "string",
+                "name": "PIPRAIL_CHAINS"
+              },
+              {
+                "description": "Max spend per single payment, in token units (default: 0.10).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_AMOUNT"
+              },
+              {
+                "description": "Lifetime spend cap per token, in token units (default: 10.00).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_TOTAL"
+              },
+              {
+                "description": "Comma-separated allowed token symbols, plus the alias 'native' for the chain's coin (default: USDC).",
+                "format": "string",
+                "name": "PIPRAIL_TOKENS"
+              },
+              {
+                "description": "Comma-separated payment schemes to settle (default: onchain-proof). Add 'exact' (onchain-proof,exact) to also pay standard x402 servers GASLESS on EVM + Solana (method auto-selected).",
+                "format": "string",
+                "name": "PIPRAIL_SCHEMES"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-15T10:25:14.574517Z",
+          "publishedAt": "2026-06-15T10:25:14.574517Z",
+          "updatedAt": "2026-06-15T10:25:14.574517Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.piprail/mcp",
+        "description": "Budget-bound x402 payment wallet for AI agents — pays HTTP 402 URLs, capped locally. No backend.",
+        "title": "PipRail",
+        "repository": {
+          "url": "https://github.com/piprail/piprail",
+          "source": "github",
+          "subfolder": "mcp"
+        },
+        "version": "0.7.0",
+        "websiteUrl": "https://piprail.com/mcp",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@piprail/mcp",
+            "version": "0.7.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Your wallet's private key/seed for the chosen chain. Optional: omit it to run read-only (discover/quote/register/budget/guide); set it to let the agent pay. Stays on your machine; the spend policy caps every payment.",
+                "format": "string",
+                "isSecret": true,
+                "name": "PIPRAIL_PRIVATE_KEY"
+              },
+              {
+                "description": "Chain to pay on (default: base).",
+                "format": "string",
+                "name": "PIPRAIL_CHAIN"
+              },
+              {
+                "description": "Pay across several chains (instead of PIPRAIL_CHAIN): a comma-separated list, e.g. base,polygon,solana. Give each its own PIPRAIL_<CHAIN>_KEY (+ optional PIPRAIL_<CHAIN>_RPC_URL). The agent pays whichever chain a 402 asks for — the first listed that can settle — under one shared budget.",
+                "format": "string",
+                "name": "PIPRAIL_CHAINS"
+              },
+              {
+                "description": "Max spend per single payment, in token units (default: 0.10).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_AMOUNT"
+              },
+              {
+                "description": "Lifetime spend cap per token, in token units (default: 10.00).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_TOTAL"
+              },
+              {
+                "description": "Comma-separated allowed token symbols, plus the alias 'native' for the chain's coin (default: USDC).",
+                "format": "string",
+                "name": "PIPRAIL_TOKENS"
+              },
+              {
+                "description": "Comma-separated payment schemes to settle (default: onchain-proof). Add 'exact' (onchain-proof,exact) to also pay standard x402 servers GASLESS on EVM + Solana (method auto-selected).",
+                "format": "string",
+                "name": "PIPRAIL_SCHEMES"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-15T16:16:16.425414Z",
+          "publishedAt": "2026-06-15T16:16:16.425414Z",
+          "updatedAt": "2026-06-15T16:16:16.425414Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.piprail/mcp",
+        "description": "Budget-bound x402 payment wallet for AI agents — pays HTTP 402 URLs, capped locally. No backend.",
+        "title": "PipRail",
+        "repository": {
+          "url": "https://github.com/piprail/piprail",
+          "source": "github",
+          "subfolder": "mcp"
+        },
+        "version": "0.8.0",
+        "websiteUrl": "https://piprail.com/mcp",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@piprail/mcp",
+            "version": "0.8.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Your wallet's private key/seed for the chosen chain. Optional: omit it to run read-only (discover/quote/register/budget/guide); set it to let the agent pay. Stays on your machine; the spend policy caps every payment.",
+                "format": "string",
+                "isSecret": true,
+                "name": "PIPRAIL_PRIVATE_KEY"
+              },
+              {
+                "description": "Chain to pay on (default: base).",
+                "format": "string",
+                "name": "PIPRAIL_CHAIN"
+              },
+              {
+                "description": "Pay across several chains (instead of PIPRAIL_CHAIN): a comma-separated list, e.g. base,polygon,solana. Give each its own PIPRAIL_<CHAIN>_KEY (+ optional PIPRAIL_<CHAIN>_RPC_URL). The agent pays whichever chain a 402 asks for — the first listed that can settle — under one shared budget.",
+                "format": "string",
+                "name": "PIPRAIL_CHAINS"
+              },
+              {
+                "description": "Max spend per single payment, in token units (default: 0.10).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_AMOUNT"
+              },
+              {
+                "description": "Lifetime spend cap per token, in token units (default: 10.00).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_TOTAL"
+              },
+              {
+                "description": "Cross-token GRAND TOTAL: one spend cap per denomination across every stablecoin and chain, e.g. USD:20.00,EUR:5.00. Not a price oracle — sums tokens of the same unit, each counted 1:1. Native coins are excluded.",
+                "format": "string",
+                "name": "PIPRAIL_MAX_TOTAL_DENOM"
+              },
+              {
+                "description": "Lifetime cap on the NUMBER of payments, across every chain + token (e.g. 100).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_PAYMENTS"
+              },
+              {
+                "description": "Cap on the number of payments within PIPRAIL_WINDOW_SECONDS (a rolling rate limit; set PIPRAIL_WINDOW_SECONDS too).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_PAYMENTS_PER_WINDOW"
+              },
+              {
+                "description": "Emit an early-warning event when spend crosses this fraction of any cap, e.g. 0.8 (80%). Needs PIPRAIL_EVENT_LOG to be visible.",
+                "format": "string",
+                "name": "PIPRAIL_WARN_AT_FRACTION"
+              },
+              {
+                "description": "Path to a local append-only spend log. When set, the budget (lifetime, grand total, counts) SURVIVES a restart — hydrated from this file. No backend; you own the file.",
+                "format": "string",
+                "name": "PIPRAIL_SPEND_LOG"
+              },
+              {
+                "description": "Mirror payment events (settled / declined / budget-threshold) as one-line JSON to 'stderr' or a file path — the operator's notification stream. Default: off.",
+                "format": "string",
+                "name": "PIPRAIL_EVENT_LOG"
+              },
+              {
+                "description": "Comma-separated allowed token symbols, plus the alias 'native' for the chain's coin (default: USDC).",
+                "format": "string",
+                "name": "PIPRAIL_TOKENS"
+              },
+              {
+                "description": "Comma-separated payment schemes to settle (default: onchain-proof). Add 'exact' (onchain-proof,exact) to also pay standard x402 servers GASLESS on EVM + Solana (method auto-selected).",
+                "format": "string",
+                "name": "PIPRAIL_SCHEMES"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-19T16:12:46.374026Z",
+          "publishedAt": "2026-06-19T16:12:46.374026Z",
+          "updatedAt": "2026-06-19T16:12:46.374026Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.piprail/mcp",
+        "description": "Budget-bound x402 payment wallet for AI agents — pays HTTP 402 URLs, capped locally. No backend.",
+        "title": "PipRail",
+        "repository": {
+          "url": "https://github.com/piprail/piprail",
+          "source": "github",
+          "subfolder": "mcp"
+        },
+        "version": "0.9.0",
+        "websiteUrl": "https://piprail.com/mcp",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@piprail/mcp",
+            "version": "0.9.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Your wallet's private key/seed for the chosen chain. Optional: omit it to run read-only (discover/quote/register/budget/guide); set it to let the agent pay. Stays on your machine; the spend policy caps every payment.",
+                "format": "string",
+                "isSecret": true,
+                "name": "PIPRAIL_PRIVATE_KEY"
+              },
+              {
+                "description": "Chain to pay on (default: base).",
+                "format": "string",
+                "name": "PIPRAIL_CHAIN"
+              },
+              {
+                "description": "Pay across several chains (instead of PIPRAIL_CHAIN): a comma-separated list, e.g. base,polygon,solana. Give each its own PIPRAIL_<CHAIN>_KEY (+ optional PIPRAIL_<CHAIN>_RPC_URL). The agent pays whichever chain a 402 asks for — the first listed that can settle — under one shared budget.",
+                "format": "string",
+                "name": "PIPRAIL_CHAINS"
+              },
+              {
+                "description": "Max spend per single payment, in token units (default: 0.10).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_AMOUNT"
+              },
+              {
+                "description": "Lifetime spend cap per token, in token units (default: 10.00).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_TOTAL"
+              },
+              {
+                "description": "Cross-token GRAND TOTAL: one spend cap per denomination across every stablecoin and chain, e.g. USD:20.00,EUR:5.00. Not a price oracle — sums tokens of the same unit, each counted 1:1. Native coins are excluded.",
+                "format": "string",
+                "name": "PIPRAIL_MAX_TOTAL_DENOM"
+              },
+              {
+                "description": "Lifetime cap on the NUMBER of payments, across every chain + token (e.g. 100).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_PAYMENTS"
+              },
+              {
+                "description": "Cap on the number of payments within PIPRAIL_WINDOW_SECONDS (a rolling rate limit; set PIPRAIL_WINDOW_SECONDS too).",
+                "format": "string",
+                "name": "PIPRAIL_MAX_PAYMENTS_PER_WINDOW"
+              },
+              {
+                "description": "Emit an early-warning event when spend crosses this fraction of any cap, e.g. 0.8 (80%). Needs PIPRAIL_EVENT_LOG to be visible.",
+                "format": "string",
+                "name": "PIPRAIL_WARN_AT_FRACTION"
+              },
+              {
+                "description": "Path to a local append-only spend log. When set, the budget (lifetime, grand total, counts) SURVIVES a restart — hydrated from this file. No backend; you own the file.",
+                "format": "string",
+                "name": "PIPRAIL_SPEND_LOG"
+              },
+              {
+                "description": "Mirror payment events (settled / declined / budget-threshold) as one-line JSON to 'stderr' or a file path — the operator's notification stream. Default: off.",
+                "format": "string",
+                "name": "PIPRAIL_EVENT_LOG"
+              },
+              {
+                "description": "Comma-separated allowed token symbols, plus the alias 'native' for the chain's coin (default: USDC).",
+                "format": "string",
+                "name": "PIPRAIL_TOKENS"
+              },
+              {
+                "description": "Comma-separated payment schemes to settle (default: onchain-proof). Add 'exact' (onchain-proof,exact) to also pay standard x402 servers GASLESS on EVM + Solana (method auto-selected). Add 'upto' to also pay metered x402 servers on EVM (Permit2): sign a MAX, the server settles the actual <= max.",
+                "format": "string",
+                "name": "PIPRAIL_SCHEMES"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-20T14:35:49.266978Z",
+          "publishedAt": "2026-06-20T14:35:49.266978Z",
+          "updatedAt": "2026-06-20T14:35:49.266978Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:57.588Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

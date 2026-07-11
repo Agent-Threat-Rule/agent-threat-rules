@@ -1,0 +1,1021 @@
+{
+  "dedup_key": "pkg:npm:@cyanheads/toolkit-mcp-server",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:npm:@cyanheads/toolkit-mcp-server",
+    "registryType": "npm",
+    "identifier": "@cyanheads/toolkit-mcp-server"
+  },
+  "server_names": [
+    "io.github.cyanheads/toolkit-mcp-server"
+  ],
+  "versions_seen": [
+    "2.0.0",
+    "2.0.1"
+  ],
+  "registry_row_count": 4,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.cyanheads/toolkit-mcp-server",
+      "description": "Generate IDs, QR codes, and hashes, encode values, geolocate IPs, plus gated host diagnostics.",
+      "repository": {
+        "url": "https://github.com/cyanheads/toolkit-mcp-server",
+        "source": "github"
+      },
+      "version": "2.0.1",
+      "packages": [
+        {
+          "registryType": "npm",
+          "registryBaseUrl": "https://registry.npmjs.org",
+          "identifier": "@cyanheads/toolkit-mcp-server",
+          "version": "2.0.1",
+          "runtimeHint": "bun",
+          "transport": {
+            "type": "stdio"
+          },
+          "packageArguments": [
+            {
+              "value": "run",
+              "type": "positional"
+            },
+            {
+              "value": "start:stdio",
+              "type": "positional"
+            }
+          ],
+          "environmentVariables": [
+            {
+              "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+              "format": "string",
+              "default": "info",
+              "name": "MCP_LOG_LEVEL"
+            },
+            {
+              "description": "Register the gated toolkit_check_network tool. Off by default — leave off for hosted/shared deployments.",
+              "format": "string",
+              "default": "false",
+              "name": "TOOLKIT_ENABLE_NET_DIAGNOSTICS"
+            },
+            {
+              "description": "Register the gated toolkit_check_system tool. Off by default — only meaningful on a local deployment.",
+              "format": "string",
+              "default": "false",
+              "name": "TOOLKIT_ENABLE_SYSTEM_INFO"
+            },
+            {
+              "description": "With network diagnostics enabled, permit private/reserved/loopback targets. The second explicit gate; off by default.",
+              "format": "string",
+              "default": "false",
+              "name": "TOOLKIT_ALLOW_PRIVATE_NETWORK"
+            },
+            {
+              "description": "IP-geolocation provider id. Default 'ip-api' is the keyless free tier.",
+              "format": "string",
+              "default": "ip-api",
+              "name": "TOOLKIT_GEO_PROVIDER"
+            },
+            {
+              "description": "API key for the geolocation provider, if it requires one. The default ip-api tier is keyless.",
+              "format": "string",
+              "isSecret": true,
+              "name": "TOOLKIT_GEO_API_KEY"
+            },
+            {
+              "description": "Base URL for the geolocation provider. Default is the keyless ip-api endpoint.",
+              "format": "string",
+              "default": "http://ip-api.com",
+              "name": "TOOLKIT_GEO_BASE_URL"
+            },
+            {
+              "description": "Geolocation cache TTL in seconds. Geolocation is stable, so repeats are cached.",
+              "format": "string",
+              "default": "3600",
+              "name": "TOOLKIT_GEO_CACHE_TTL_SECONDS"
+            },
+            {
+              "description": "Max geolocation requests per minute; excess requests are rejected with a retryable rate-limit error. Default 45 matches the ip-api free tier.",
+              "format": "string",
+              "default": "45",
+              "name": "TOOLKIT_GEO_RATE_LIMIT_PER_MIN"
+            }
+          ]
+        },
+        {
+          "registryType": "npm",
+          "registryBaseUrl": "https://registry.npmjs.org",
+          "identifier": "@cyanheads/toolkit-mcp-server",
+          "version": "2.0.1",
+          "runtimeHint": "bun",
+          "transport": {
+            "type": "streamable-http",
+            "url": "http://localhost:3010/mcp"
+          },
+          "packageArguments": [
+            {
+              "value": "run",
+              "type": "positional"
+            },
+            {
+              "value": "start:http",
+              "type": "positional"
+            }
+          ],
+          "environmentVariables": [
+            {
+              "description": "The hostname for the HTTP server.",
+              "format": "string",
+              "default": "127.0.0.1",
+              "name": "MCP_HTTP_HOST"
+            },
+            {
+              "description": "The port to run the HTTP server on.",
+              "format": "string",
+              "default": "3010",
+              "name": "MCP_HTTP_PORT"
+            },
+            {
+              "description": "The endpoint path for the MCP server.",
+              "format": "string",
+              "default": "/mcp",
+              "name": "MCP_HTTP_ENDPOINT_PATH"
+            },
+            {
+              "description": "Authentication mode to use: 'none', 'jwt', or 'oauth'.",
+              "format": "string",
+              "default": "none",
+              "name": "MCP_AUTH_MODE"
+            },
+            {
+              "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+              "format": "string",
+              "default": "info",
+              "name": "MCP_LOG_LEVEL"
+            },
+            {
+              "description": "Register the gated toolkit_check_network tool. Off by default — leave off for hosted/shared deployments.",
+              "format": "string",
+              "default": "false",
+              "name": "TOOLKIT_ENABLE_NET_DIAGNOSTICS"
+            },
+            {
+              "description": "Register the gated toolkit_check_system tool. Off by default — only meaningful on a local deployment.",
+              "format": "string",
+              "default": "false",
+              "name": "TOOLKIT_ENABLE_SYSTEM_INFO"
+            },
+            {
+              "description": "With network diagnostics enabled, permit private/reserved/loopback targets. The second explicit gate; off by default.",
+              "format": "string",
+              "default": "false",
+              "name": "TOOLKIT_ALLOW_PRIVATE_NETWORK"
+            },
+            {
+              "description": "IP-geolocation provider id. Default 'ip-api' is the keyless free tier.",
+              "format": "string",
+              "default": "ip-api",
+              "name": "TOOLKIT_GEO_PROVIDER"
+            },
+            {
+              "description": "API key for the geolocation provider, if it requires one. The default ip-api tier is keyless.",
+              "format": "string",
+              "isSecret": true,
+              "name": "TOOLKIT_GEO_API_KEY"
+            },
+            {
+              "description": "Base URL for the geolocation provider. Default is the keyless ip-api endpoint.",
+              "format": "string",
+              "default": "http://ip-api.com",
+              "name": "TOOLKIT_GEO_BASE_URL"
+            },
+            {
+              "description": "Geolocation cache TTL in seconds. Geolocation is stable, so repeats are cached.",
+              "format": "string",
+              "default": "3600",
+              "name": "TOOLKIT_GEO_CACHE_TTL_SECONDS"
+            },
+            {
+              "description": "Max geolocation requests per minute; excess requests are rejected with a retryable rate-limit error. Default 45 matches the ip-api free tier.",
+              "format": "string",
+              "default": "45",
+              "name": "TOOLKIT_GEO_RATE_LIMIT_PER_MIN"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-06-28T14:00:49.344868Z",
+        "publishedAt": "2026-06-28T14:00:49.344868Z",
+        "updatedAt": "2026-06-28T14:00:49.344868Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.cyanheads/toolkit-mcp-server",
+        "description": "Generate IDs, QR codes, and hashes, encode values, geolocate IPs, plus gated host diagnostics.",
+        "repository": {
+          "url": "https://github.com/cyanheads/toolkit-mcp-server",
+          "source": "github"
+        },
+        "version": "2.0.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/toolkit-mcp-server",
+            "version": "2.0.0",
+            "runtimeHint": "bun",
+            "transport": {
+              "type": "stdio"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:stdio",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Register the gated toolkit_check_network tool. Off by default — leave off for hosted/shared deployments.",
+                "format": "string",
+                "default": "false",
+                "name": "TOOLKIT_ENABLE_NET_DIAGNOSTICS"
+              },
+              {
+                "description": "Register the gated toolkit_check_system tool. Off by default — only meaningful on a local deployment.",
+                "format": "string",
+                "default": "false",
+                "name": "TOOLKIT_ENABLE_SYSTEM_INFO"
+              },
+              {
+                "description": "With network diagnostics enabled, permit private/reserved/loopback targets. The second explicit gate; off by default.",
+                "format": "string",
+                "default": "false",
+                "name": "TOOLKIT_ALLOW_PRIVATE_NETWORK"
+              },
+              {
+                "description": "IP-geolocation provider id. Default 'ip-api' is the keyless free tier.",
+                "format": "string",
+                "default": "ip-api",
+                "name": "TOOLKIT_GEO_PROVIDER"
+              },
+              {
+                "description": "API key for the geolocation provider, if it requires one. The default ip-api tier is keyless.",
+                "format": "string",
+                "isSecret": true,
+                "name": "TOOLKIT_GEO_API_KEY"
+              },
+              {
+                "description": "Base URL for the geolocation provider. Default is the keyless ip-api endpoint.",
+                "format": "string",
+                "default": "http://ip-api.com",
+                "name": "TOOLKIT_GEO_BASE_URL"
+              },
+              {
+                "description": "Geolocation cache TTL in seconds. Geolocation is stable, so repeats are cached.",
+                "format": "string",
+                "default": "3600",
+                "name": "TOOLKIT_GEO_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "Max geolocation requests per minute before backoff slows. Default 45 matches the ip-api free tier.",
+                "format": "string",
+                "default": "45",
+                "name": "TOOLKIT_GEO_RATE_LIMIT_PER_MIN"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/toolkit-mcp-server",
+            "version": "2.0.0",
+            "runtimeHint": "bun",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3010/mcp"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:http",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "The hostname for the HTTP server.",
+                "format": "string",
+                "default": "127.0.0.1",
+                "name": "MCP_HTTP_HOST"
+              },
+              {
+                "description": "The port to run the HTTP server on.",
+                "format": "string",
+                "default": "3010",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "The endpoint path for the MCP server.",
+                "format": "string",
+                "default": "/mcp",
+                "name": "MCP_HTTP_ENDPOINT_PATH"
+              },
+              {
+                "description": "Authentication mode to use: 'none', 'jwt', or 'oauth'.",
+                "format": "string",
+                "default": "none",
+                "name": "MCP_AUTH_MODE"
+              },
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Register the gated toolkit_check_network tool. Off by default — leave off for hosted/shared deployments.",
+                "format": "string",
+                "default": "false",
+                "name": "TOOLKIT_ENABLE_NET_DIAGNOSTICS"
+              },
+              {
+                "description": "Register the gated toolkit_check_system tool. Off by default — only meaningful on a local deployment.",
+                "format": "string",
+                "default": "false",
+                "name": "TOOLKIT_ENABLE_SYSTEM_INFO"
+              },
+              {
+                "description": "With network diagnostics enabled, permit private/reserved/loopback targets. The second explicit gate; off by default.",
+                "format": "string",
+                "default": "false",
+                "name": "TOOLKIT_ALLOW_PRIVATE_NETWORK"
+              },
+              {
+                "description": "IP-geolocation provider id. Default 'ip-api' is the keyless free tier.",
+                "format": "string",
+                "default": "ip-api",
+                "name": "TOOLKIT_GEO_PROVIDER"
+              },
+              {
+                "description": "API key for the geolocation provider, if it requires one. The default ip-api tier is keyless.",
+                "format": "string",
+                "isSecret": true,
+                "name": "TOOLKIT_GEO_API_KEY"
+              },
+              {
+                "description": "Base URL for the geolocation provider. Default is the keyless ip-api endpoint.",
+                "format": "string",
+                "default": "http://ip-api.com",
+                "name": "TOOLKIT_GEO_BASE_URL"
+              },
+              {
+                "description": "Geolocation cache TTL in seconds. Geolocation is stable, so repeats are cached.",
+                "format": "string",
+                "default": "3600",
+                "name": "TOOLKIT_GEO_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "Max geolocation requests per minute before backoff slows. Default 45 matches the ip-api free tier.",
+                "format": "string",
+                "default": "45",
+                "name": "TOOLKIT_GEO_RATE_LIMIT_PER_MIN"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-28T05:22:55.65895Z",
+          "publishedAt": "2026-06-28T05:22:55.65895Z",
+          "updatedAt": "2026-06-28T05:22:55.65895Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.cyanheads/toolkit-mcp-server",
+        "description": "Generate IDs, QR codes, and hashes, encode values, geolocate IPs, plus gated host diagnostics.",
+        "repository": {
+          "url": "https://github.com/cyanheads/toolkit-mcp-server",
+          "source": "github"
+        },
+        "version": "2.0.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/toolkit-mcp-server",
+            "version": "2.0.0",
+            "runtimeHint": "bun",
+            "transport": {
+              "type": "stdio"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:stdio",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Register the gated toolkit_check_network tool. Off by default — leave off for hosted/shared deployments.",
+                "format": "string",
+                "default": "false",
+                "name": "TOOLKIT_ENABLE_NET_DIAGNOSTICS"
+              },
+              {
+                "description": "Register the gated toolkit_check_system tool. Off by default — only meaningful on a local deployment.",
+                "format": "string",
+                "default": "false",
+                "name": "TOOLKIT_ENABLE_SYSTEM_INFO"
+              },
+              {
+                "description": "With network diagnostics enabled, permit private/reserved/loopback targets. The second explicit gate; off by default.",
+                "format": "string",
+                "default": "false",
+                "name": "TOOLKIT_ALLOW_PRIVATE_NETWORK"
+              },
+              {
+                "description": "IP-geolocation provider id. Default 'ip-api' is the keyless free tier.",
+                "format": "string",
+                "default": "ip-api",
+                "name": "TOOLKIT_GEO_PROVIDER"
+              },
+              {
+                "description": "API key for the geolocation provider, if it requires one. The default ip-api tier is keyless.",
+                "format": "string",
+                "isSecret": true,
+                "name": "TOOLKIT_GEO_API_KEY"
+              },
+              {
+                "description": "Base URL for the geolocation provider. Default is the keyless ip-api endpoint.",
+                "format": "string",
+                "default": "http://ip-api.com",
+                "name": "TOOLKIT_GEO_BASE_URL"
+              },
+              {
+                "description": "Geolocation cache TTL in seconds. Geolocation is stable, so repeats are cached.",
+                "format": "string",
+                "default": "3600",
+                "name": "TOOLKIT_GEO_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "Max geolocation requests per minute before backoff slows. Default 45 matches the ip-api free tier.",
+                "format": "string",
+                "default": "45",
+                "name": "TOOLKIT_GEO_RATE_LIMIT_PER_MIN"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/toolkit-mcp-server",
+            "version": "2.0.0",
+            "runtimeHint": "bun",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3010/mcp"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:http",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "The hostname for the HTTP server.",
+                "format": "string",
+                "default": "127.0.0.1",
+                "name": "MCP_HTTP_HOST"
+              },
+              {
+                "description": "The port to run the HTTP server on.",
+                "format": "string",
+                "default": "3010",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "The endpoint path for the MCP server.",
+                "format": "string",
+                "default": "/mcp",
+                "name": "MCP_HTTP_ENDPOINT_PATH"
+              },
+              {
+                "description": "Authentication mode to use: 'none', 'jwt', or 'oauth'.",
+                "format": "string",
+                "default": "none",
+                "name": "MCP_AUTH_MODE"
+              },
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Register the gated toolkit_check_network tool. Off by default — leave off for hosted/shared deployments.",
+                "format": "string",
+                "default": "false",
+                "name": "TOOLKIT_ENABLE_NET_DIAGNOSTICS"
+              },
+              {
+                "description": "Register the gated toolkit_check_system tool. Off by default — only meaningful on a local deployment.",
+                "format": "string",
+                "default": "false",
+                "name": "TOOLKIT_ENABLE_SYSTEM_INFO"
+              },
+              {
+                "description": "With network diagnostics enabled, permit private/reserved/loopback targets. The second explicit gate; off by default.",
+                "format": "string",
+                "default": "false",
+                "name": "TOOLKIT_ALLOW_PRIVATE_NETWORK"
+              },
+              {
+                "description": "IP-geolocation provider id. Default 'ip-api' is the keyless free tier.",
+                "format": "string",
+                "default": "ip-api",
+                "name": "TOOLKIT_GEO_PROVIDER"
+              },
+              {
+                "description": "API key for the geolocation provider, if it requires one. The default ip-api tier is keyless.",
+                "format": "string",
+                "isSecret": true,
+                "name": "TOOLKIT_GEO_API_KEY"
+              },
+              {
+                "description": "Base URL for the geolocation provider. Default is the keyless ip-api endpoint.",
+                "format": "string",
+                "default": "http://ip-api.com",
+                "name": "TOOLKIT_GEO_BASE_URL"
+              },
+              {
+                "description": "Geolocation cache TTL in seconds. Geolocation is stable, so repeats are cached.",
+                "format": "string",
+                "default": "3600",
+                "name": "TOOLKIT_GEO_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "Max geolocation requests per minute before backoff slows. Default 45 matches the ip-api free tier.",
+                "format": "string",
+                "default": "45",
+                "name": "TOOLKIT_GEO_RATE_LIMIT_PER_MIN"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-28T05:22:55.65895Z",
+          "publishedAt": "2026-06-28T05:22:55.65895Z",
+          "updatedAt": "2026-06-28T05:22:55.65895Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.cyanheads/toolkit-mcp-server",
+        "description": "Generate IDs, QR codes, and hashes, encode values, geolocate IPs, plus gated host diagnostics.",
+        "repository": {
+          "url": "https://github.com/cyanheads/toolkit-mcp-server",
+          "source": "github"
+        },
+        "version": "2.0.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/toolkit-mcp-server",
+            "version": "2.0.1",
+            "runtimeHint": "bun",
+            "transport": {
+              "type": "stdio"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:stdio",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Register the gated toolkit_check_network tool. Off by default — leave off for hosted/shared deployments.",
+                "format": "string",
+                "default": "false",
+                "name": "TOOLKIT_ENABLE_NET_DIAGNOSTICS"
+              },
+              {
+                "description": "Register the gated toolkit_check_system tool. Off by default — only meaningful on a local deployment.",
+                "format": "string",
+                "default": "false",
+                "name": "TOOLKIT_ENABLE_SYSTEM_INFO"
+              },
+              {
+                "description": "With network diagnostics enabled, permit private/reserved/loopback targets. The second explicit gate; off by default.",
+                "format": "string",
+                "default": "false",
+                "name": "TOOLKIT_ALLOW_PRIVATE_NETWORK"
+              },
+              {
+                "description": "IP-geolocation provider id. Default 'ip-api' is the keyless free tier.",
+                "format": "string",
+                "default": "ip-api",
+                "name": "TOOLKIT_GEO_PROVIDER"
+              },
+              {
+                "description": "API key for the geolocation provider, if it requires one. The default ip-api tier is keyless.",
+                "format": "string",
+                "isSecret": true,
+                "name": "TOOLKIT_GEO_API_KEY"
+              },
+              {
+                "description": "Base URL for the geolocation provider. Default is the keyless ip-api endpoint.",
+                "format": "string",
+                "default": "http://ip-api.com",
+                "name": "TOOLKIT_GEO_BASE_URL"
+              },
+              {
+                "description": "Geolocation cache TTL in seconds. Geolocation is stable, so repeats are cached.",
+                "format": "string",
+                "default": "3600",
+                "name": "TOOLKIT_GEO_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "Max geolocation requests per minute; excess requests are rejected with a retryable rate-limit error. Default 45 matches the ip-api free tier.",
+                "format": "string",
+                "default": "45",
+                "name": "TOOLKIT_GEO_RATE_LIMIT_PER_MIN"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/toolkit-mcp-server",
+            "version": "2.0.1",
+            "runtimeHint": "bun",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3010/mcp"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:http",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "The hostname for the HTTP server.",
+                "format": "string",
+                "default": "127.0.0.1",
+                "name": "MCP_HTTP_HOST"
+              },
+              {
+                "description": "The port to run the HTTP server on.",
+                "format": "string",
+                "default": "3010",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "The endpoint path for the MCP server.",
+                "format": "string",
+                "default": "/mcp",
+                "name": "MCP_HTTP_ENDPOINT_PATH"
+              },
+              {
+                "description": "Authentication mode to use: 'none', 'jwt', or 'oauth'.",
+                "format": "string",
+                "default": "none",
+                "name": "MCP_AUTH_MODE"
+              },
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Register the gated toolkit_check_network tool. Off by default — leave off for hosted/shared deployments.",
+                "format": "string",
+                "default": "false",
+                "name": "TOOLKIT_ENABLE_NET_DIAGNOSTICS"
+              },
+              {
+                "description": "Register the gated toolkit_check_system tool. Off by default — only meaningful on a local deployment.",
+                "format": "string",
+                "default": "false",
+                "name": "TOOLKIT_ENABLE_SYSTEM_INFO"
+              },
+              {
+                "description": "With network diagnostics enabled, permit private/reserved/loopback targets. The second explicit gate; off by default.",
+                "format": "string",
+                "default": "false",
+                "name": "TOOLKIT_ALLOW_PRIVATE_NETWORK"
+              },
+              {
+                "description": "IP-geolocation provider id. Default 'ip-api' is the keyless free tier.",
+                "format": "string",
+                "default": "ip-api",
+                "name": "TOOLKIT_GEO_PROVIDER"
+              },
+              {
+                "description": "API key for the geolocation provider, if it requires one. The default ip-api tier is keyless.",
+                "format": "string",
+                "isSecret": true,
+                "name": "TOOLKIT_GEO_API_KEY"
+              },
+              {
+                "description": "Base URL for the geolocation provider. Default is the keyless ip-api endpoint.",
+                "format": "string",
+                "default": "http://ip-api.com",
+                "name": "TOOLKIT_GEO_BASE_URL"
+              },
+              {
+                "description": "Geolocation cache TTL in seconds. Geolocation is stable, so repeats are cached.",
+                "format": "string",
+                "default": "3600",
+                "name": "TOOLKIT_GEO_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "Max geolocation requests per minute; excess requests are rejected with a retryable rate-limit error. Default 45 matches the ip-api free tier.",
+                "format": "string",
+                "default": "45",
+                "name": "TOOLKIT_GEO_RATE_LIMIT_PER_MIN"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-28T14:00:49.344868Z",
+          "publishedAt": "2026-06-28T14:00:49.344868Z",
+          "updatedAt": "2026-06-28T14:00:49.344868Z",
+          "isLatest": true
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.cyanheads/toolkit-mcp-server",
+        "description": "Generate IDs, QR codes, and hashes, encode values, geolocate IPs, plus gated host diagnostics.",
+        "repository": {
+          "url": "https://github.com/cyanheads/toolkit-mcp-server",
+          "source": "github"
+        },
+        "version": "2.0.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/toolkit-mcp-server",
+            "version": "2.0.1",
+            "runtimeHint": "bun",
+            "transport": {
+              "type": "stdio"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:stdio",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Register the gated toolkit_check_network tool. Off by default — leave off for hosted/shared deployments.",
+                "format": "string",
+                "default": "false",
+                "name": "TOOLKIT_ENABLE_NET_DIAGNOSTICS"
+              },
+              {
+                "description": "Register the gated toolkit_check_system tool. Off by default — only meaningful on a local deployment.",
+                "format": "string",
+                "default": "false",
+                "name": "TOOLKIT_ENABLE_SYSTEM_INFO"
+              },
+              {
+                "description": "With network diagnostics enabled, permit private/reserved/loopback targets. The second explicit gate; off by default.",
+                "format": "string",
+                "default": "false",
+                "name": "TOOLKIT_ALLOW_PRIVATE_NETWORK"
+              },
+              {
+                "description": "IP-geolocation provider id. Default 'ip-api' is the keyless free tier.",
+                "format": "string",
+                "default": "ip-api",
+                "name": "TOOLKIT_GEO_PROVIDER"
+              },
+              {
+                "description": "API key for the geolocation provider, if it requires one. The default ip-api tier is keyless.",
+                "format": "string",
+                "isSecret": true,
+                "name": "TOOLKIT_GEO_API_KEY"
+              },
+              {
+                "description": "Base URL for the geolocation provider. Default is the keyless ip-api endpoint.",
+                "format": "string",
+                "default": "http://ip-api.com",
+                "name": "TOOLKIT_GEO_BASE_URL"
+              },
+              {
+                "description": "Geolocation cache TTL in seconds. Geolocation is stable, so repeats are cached.",
+                "format": "string",
+                "default": "3600",
+                "name": "TOOLKIT_GEO_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "Max geolocation requests per minute; excess requests are rejected with a retryable rate-limit error. Default 45 matches the ip-api free tier.",
+                "format": "string",
+                "default": "45",
+                "name": "TOOLKIT_GEO_RATE_LIMIT_PER_MIN"
+              }
+            ]
+          },
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@cyanheads/toolkit-mcp-server",
+            "version": "2.0.1",
+            "runtimeHint": "bun",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:3010/mcp"
+            },
+            "packageArguments": [
+              {
+                "value": "run",
+                "type": "positional"
+              },
+              {
+                "value": "start:http",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "The hostname for the HTTP server.",
+                "format": "string",
+                "default": "127.0.0.1",
+                "name": "MCP_HTTP_HOST"
+              },
+              {
+                "description": "The port to run the HTTP server on.",
+                "format": "string",
+                "default": "3010",
+                "name": "MCP_HTTP_PORT"
+              },
+              {
+                "description": "The endpoint path for the MCP server.",
+                "format": "string",
+                "default": "/mcp",
+                "name": "MCP_HTTP_ENDPOINT_PATH"
+              },
+              {
+                "description": "Authentication mode to use: 'none', 'jwt', or 'oauth'.",
+                "format": "string",
+                "default": "none",
+                "name": "MCP_AUTH_MODE"
+              },
+              {
+                "description": "Sets the minimum log level for output (e.g., 'debug', 'info', 'warn').",
+                "format": "string",
+                "default": "info",
+                "name": "MCP_LOG_LEVEL"
+              },
+              {
+                "description": "Register the gated toolkit_check_network tool. Off by default — leave off for hosted/shared deployments.",
+                "format": "string",
+                "default": "false",
+                "name": "TOOLKIT_ENABLE_NET_DIAGNOSTICS"
+              },
+              {
+                "description": "Register the gated toolkit_check_system tool. Off by default — only meaningful on a local deployment.",
+                "format": "string",
+                "default": "false",
+                "name": "TOOLKIT_ENABLE_SYSTEM_INFO"
+              },
+              {
+                "description": "With network diagnostics enabled, permit private/reserved/loopback targets. The second explicit gate; off by default.",
+                "format": "string",
+                "default": "false",
+                "name": "TOOLKIT_ALLOW_PRIVATE_NETWORK"
+              },
+              {
+                "description": "IP-geolocation provider id. Default 'ip-api' is the keyless free tier.",
+                "format": "string",
+                "default": "ip-api",
+                "name": "TOOLKIT_GEO_PROVIDER"
+              },
+              {
+                "description": "API key for the geolocation provider, if it requires one. The default ip-api tier is keyless.",
+                "format": "string",
+                "isSecret": true,
+                "name": "TOOLKIT_GEO_API_KEY"
+              },
+              {
+                "description": "Base URL for the geolocation provider. Default is the keyless ip-api endpoint.",
+                "format": "string",
+                "default": "http://ip-api.com",
+                "name": "TOOLKIT_GEO_BASE_URL"
+              },
+              {
+                "description": "Geolocation cache TTL in seconds. Geolocation is stable, so repeats are cached.",
+                "format": "string",
+                "default": "3600",
+                "name": "TOOLKIT_GEO_CACHE_TTL_SECONDS"
+              },
+              {
+                "description": "Max geolocation requests per minute; excess requests are rejected with a retryable rate-limit error. Default 45 matches the ip-api free tier.",
+                "format": "string",
+                "default": "45",
+                "name": "TOOLKIT_GEO_RATE_LIMIT_PER_MIN"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-28T14:00:49.344868Z",
+          "publishedAt": "2026-06-28T14:00:49.344868Z",
+          "updatedAt": "2026-06-28T14:00:49.344868Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:56.959Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

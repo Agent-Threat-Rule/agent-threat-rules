@@ -1,0 +1,405 @@
+{
+  "dedup_key": "pkg:npm:@pulsemcp/pulse-fetch",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:npm:@pulsemcp/pulse-fetch",
+    "registryType": "npm",
+    "identifier": "@pulsemcp/pulse-fetch"
+  },
+  "server_names": [
+    "com.pulsemcp.servers/pulse-fetch",
+    "com.pulsemcp/pulse-fetch"
+  ],
+  "versions_seen": [
+    "0.2.14",
+    "0.3.2",
+    "0.3.3"
+  ],
+  "registry_row_count": 3,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+      "name": "com.pulsemcp/pulse-fetch",
+      "description": "MCP server for fetching web resources with content extraction and anti-bot bypass.",
+      "repository": {
+        "url": "https://github.com/pulsemcp/mcp-servers",
+        "source": "github",
+        "subfolder": "productionized/pulse-fetch"
+      },
+      "version": "0.3.3",
+      "packages": [
+        {
+          "registryType": "npm",
+          "registryBaseUrl": "https://registry.npmjs.org",
+          "identifier": "@pulsemcp/pulse-fetch",
+          "version": "0.3.3",
+          "runtimeHint": "npx",
+          "transport": {
+            "type": "stdio"
+          },
+          "runtimeArguments": [
+            {
+              "value": "-y",
+              "type": "positional"
+            }
+          ],
+          "environmentVariables": [
+            {
+              "description": "API key for Firecrawl service to bypass anti-bot measures.",
+              "isSecret": true,
+              "name": "FIRECRAWL_API_KEY"
+            },
+            {
+              "description": "Bearer token for BrightData Web Unlocker service.",
+              "isSecret": true,
+              "name": "BRIGHTDATA_API_KEY"
+            },
+            {
+              "description": "Path to markdown file containing scraping strategy configuration.",
+              "name": "STRATEGY_CONFIG_PATH"
+            },
+            {
+              "description": "Optimization strategy for scraping: cost or speed.",
+              "default": "cost",
+              "name": "OPTIMIZE_FOR"
+            },
+            {
+              "description": "Storage backend for saved resources: memory or filesystem.",
+              "default": "memory",
+              "name": "MCP_RESOURCE_STORAGE"
+            },
+            {
+              "description": "Directory for filesystem storage of resources.",
+              "default": "/tmp/pulse-fetch/resources",
+              "name": "MCP_RESOURCE_FILESYSTEM_ROOT"
+            },
+            {
+              "description": "Skip API authentication health checks at startup.",
+              "default": "false",
+              "name": "SKIP_HEALTH_CHECKS"
+            },
+            {
+              "description": "LLM provider for extraction: anthropic, openai, or openai-compatible.",
+              "name": "LLM_PROVIDER"
+            },
+            {
+              "description": "API key for the chosen LLM provider.",
+              "isSecret": true,
+              "name": "LLM_API_KEY"
+            },
+            {
+              "description": "Base URL for OpenAI-compatible LLM providers.",
+              "name": "LLM_API_BASE_URL"
+            },
+            {
+              "description": "Specific LLM model to use for extraction.",
+              "name": "LLM_MODEL"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-06-17T03:55:56.56345Z",
+        "publishedAt": "2026-06-17T03:55:56.56345Z",
+        "updatedAt": "2026-06-17T03:55:56.56345Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+        "name": "com.pulsemcp.servers/pulse-fetch",
+        "description": "MCP server that extracts clean, structured content from web pages with anti-bot bypass capabilities.",
+        "repository": {
+          "url": "https://github.com/pulsemcp/mcp-servers",
+          "source": "github",
+          "subfolder": "productionized/pulse-fetch"
+        },
+        "version": "0.2.14",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@pulsemcp/pulse-fetch",
+            "version": "0.2.14",
+            "runtimeHint": "npx",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "API key for Firecrawl service to bypass anti-bot measures",
+                "isSecret": true,
+                "name": "FIRECRAWL_API_KEY"
+              },
+              {
+                "description": "Bearer token for BrightData Web Unlocker service",
+                "isSecret": true,
+                "name": "BRIGHTDATA_API_KEY"
+              },
+              {
+                "description": "Path to markdown file containing scraping strategy configuration",
+                "default": "/tmp/pulse-fetch/strategy.md",
+                "name": "STRATEGY_CONFIG_PATH"
+              },
+              {
+                "description": "Optimization strategy for scraping: cost or speed",
+                "default": "cost",
+                "choices": [
+                  "cost",
+                  "speed"
+                ],
+                "name": "OPTIMIZE_FOR"
+              },
+              {
+                "description": "Storage backend for saved resources: memory or filesystem",
+                "default": "memory",
+                "choices": [
+                  "memory",
+                  "filesystem"
+                ],
+                "name": "MCP_RESOURCE_STORAGE"
+              },
+              {
+                "description": "Directory for filesystem storage (only used with filesystem type)",
+                "default": "/tmp/pulse-fetch/resources",
+                "name": "MCP_RESOURCE_FILESYSTEM_ROOT"
+              },
+              {
+                "description": "Skip API authentication health checks at startup",
+                "format": "boolean",
+                "default": "false",
+                "name": "SKIP_HEALTH_CHECKS"
+              },
+              {
+                "description": "LLM provider for extract feature: anthropic, openai, openai-compatible",
+                "choices": [
+                  "anthropic",
+                  "openai",
+                  "openai-compatible"
+                ],
+                "name": "LLM_PROVIDER"
+              },
+              {
+                "description": "API key for the chosen LLM provider",
+                "isSecret": true,
+                "name": "LLM_API_KEY"
+              },
+              {
+                "description": "Base URL for OpenAI-compatible providers",
+                "name": "LLM_API_BASE_URL"
+              },
+              {
+                "description": "Specific model to use for extraction",
+                "name": "LLM_MODEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "deprecated",
+          "statusChangedAt": "2026-05-17T23:31:23.602911Z",
+          "statusMessage": "Moved to com.pulsemcp/pulse-fetch under the new com.pulsemcp/* namespace. Latest version and all future releases will be published there. Update your MCP client config to reference com.pulsemcp/pulse-fetch instead.",
+          "publishedAt": "2025-09-09T00:19:19.119118Z",
+          "updatedAt": "2026-05-17T23:31:23.602911Z",
+          "isLatest": true
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+        "name": "com.pulsemcp/pulse-fetch",
+        "description": "MCP server for fetching web resources with content extraction and anti-bot bypass.",
+        "repository": {
+          "url": "https://github.com/pulsemcp/mcp-servers",
+          "source": "github",
+          "subfolder": "productionized/pulse-fetch"
+        },
+        "version": "0.3.2",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@pulsemcp/pulse-fetch",
+            "version": "0.3.2",
+            "runtimeHint": "npx",
+            "transport": {
+              "type": "stdio"
+            },
+            "runtimeArguments": [
+              {
+                "value": "-y",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "API key for Firecrawl service to bypass anti-bot measures.",
+                "isSecret": true,
+                "name": "FIRECRAWL_API_KEY"
+              },
+              {
+                "description": "Bearer token for BrightData Web Unlocker service.",
+                "isSecret": true,
+                "name": "BRIGHTDATA_API_KEY"
+              },
+              {
+                "description": "Path to markdown file containing scraping strategy configuration.",
+                "name": "STRATEGY_CONFIG_PATH"
+              },
+              {
+                "description": "Optimization strategy for scraping: cost or speed.",
+                "default": "cost",
+                "name": "OPTIMIZE_FOR"
+              },
+              {
+                "description": "Storage backend for saved resources: memory or filesystem.",
+                "default": "memory",
+                "name": "MCP_RESOURCE_STORAGE"
+              },
+              {
+                "description": "Directory for filesystem storage of resources.",
+                "default": "/tmp/pulse-fetch/resources",
+                "name": "MCP_RESOURCE_FILESYSTEM_ROOT"
+              },
+              {
+                "description": "Skip API authentication health checks at startup.",
+                "default": "false",
+                "name": "SKIP_HEALTH_CHECKS"
+              },
+              {
+                "description": "LLM provider for extraction: anthropic, openai, or openai-compatible.",
+                "name": "LLM_PROVIDER"
+              },
+              {
+                "description": "API key for the chosen LLM provider.",
+                "isSecret": true,
+                "name": "LLM_API_KEY"
+              },
+              {
+                "description": "Base URL for OpenAI-compatible LLM providers.",
+                "name": "LLM_API_BASE_URL"
+              },
+              {
+                "description": "Specific LLM model to use for extraction.",
+                "name": "LLM_MODEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-18T13:29:02.651378Z",
+          "publishedAt": "2026-05-18T13:29:02.651378Z",
+          "updatedAt": "2026-05-18T13:29:02.651378Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+        "name": "com.pulsemcp/pulse-fetch",
+        "description": "MCP server for fetching web resources with content extraction and anti-bot bypass.",
+        "repository": {
+          "url": "https://github.com/pulsemcp/mcp-servers",
+          "source": "github",
+          "subfolder": "productionized/pulse-fetch"
+        },
+        "version": "0.3.3",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@pulsemcp/pulse-fetch",
+            "version": "0.3.3",
+            "runtimeHint": "npx",
+            "transport": {
+              "type": "stdio"
+            },
+            "runtimeArguments": [
+              {
+                "value": "-y",
+                "type": "positional"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "API key for Firecrawl service to bypass anti-bot measures.",
+                "isSecret": true,
+                "name": "FIRECRAWL_API_KEY"
+              },
+              {
+                "description": "Bearer token for BrightData Web Unlocker service.",
+                "isSecret": true,
+                "name": "BRIGHTDATA_API_KEY"
+              },
+              {
+                "description": "Path to markdown file containing scraping strategy configuration.",
+                "name": "STRATEGY_CONFIG_PATH"
+              },
+              {
+                "description": "Optimization strategy for scraping: cost or speed.",
+                "default": "cost",
+                "name": "OPTIMIZE_FOR"
+              },
+              {
+                "description": "Storage backend for saved resources: memory or filesystem.",
+                "default": "memory",
+                "name": "MCP_RESOURCE_STORAGE"
+              },
+              {
+                "description": "Directory for filesystem storage of resources.",
+                "default": "/tmp/pulse-fetch/resources",
+                "name": "MCP_RESOURCE_FILESYSTEM_ROOT"
+              },
+              {
+                "description": "Skip API authentication health checks at startup.",
+                "default": "false",
+                "name": "SKIP_HEALTH_CHECKS"
+              },
+              {
+                "description": "LLM provider for extraction: anthropic, openai, or openai-compatible.",
+                "name": "LLM_PROVIDER"
+              },
+              {
+                "description": "API key for the chosen LLM provider.",
+                "isSecret": true,
+                "name": "LLM_API_KEY"
+              },
+              {
+                "description": "Base URL for OpenAI-compatible LLM providers.",
+                "name": "LLM_API_BASE_URL"
+              },
+              {
+                "description": "Specific LLM model to use for extraction.",
+                "name": "LLM_MODEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-17T03:55:56.56345Z",
+          "publishedAt": "2026-06-17T03:55:56.56345Z",
+          "updatedAt": "2026-06-17T03:55:56.56345Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:56.371Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

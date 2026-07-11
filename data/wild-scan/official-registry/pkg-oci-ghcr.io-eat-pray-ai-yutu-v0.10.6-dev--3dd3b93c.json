@@ -1,0 +1,252 @@
+{
+  "dedup_key": "pkg:oci:ghcr.io/eat-pray-ai/yutu:v0.10.6-dev",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:oci:ghcr.io/eat-pray-ai/yutu:v0.10.6-dev",
+    "registryType": "oci",
+    "identifier": "ghcr.io/eat-pray-ai/yutu:v0.10.6-dev"
+  },
+  "server_names": [
+    "io.github.eat-pray-ai/yutu"
+  ],
+  "versions_seen": [
+    "v0.10.6-dev"
+  ],
+  "registry_row_count": 1,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.eat-pray-ai/yutu",
+      "description": "A fully functional MCP server and CLI for YouTube",
+      "title": "yutu",
+      "repository": {
+        "url": "https://github.com/eat-pray-ai/yutu",
+        "source": "github",
+        "id": "643163403"
+      },
+      "version": "v0.10.6-dev",
+      "icons": [
+        {
+          "src": "https://raw.githubusercontent.com/eat-pray-ai/yutu/main/assets/yutu-ico.svg",
+          "mimeType": "image/svg+xml",
+          "sizes": [
+            "any"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/eat-pray-ai/yutu:v0.10.6-dev",
+          "runtimeHint": "docker",
+          "transport": {
+            "type": "streamable-http",
+            "url": "http://localhost:8216/mcp"
+          },
+          "runtimeArguments": [
+            {
+              "description": "UID and GID in the container to match host user",
+              "value": "{user}:{group}",
+              "variables": {
+                "group": {
+                  "description": "The current user's primary group, output of `id -g`"
+                },
+                "user": {
+                  "description": "The current user, output of `id -u`"
+                }
+              },
+              "type": "named",
+              "name": "--user"
+            },
+            {
+              "description": "Mount host directory containing credentials and token",
+              "value": "type=bind,source={hostPath},target=/app",
+              "variables": {
+                "hostPath": {
+                  "description": "The directory containing `client_secret.json` and `youtube.token.json`"
+                }
+              },
+              "type": "named",
+              "name": "--mount"
+            },
+            {
+              "description": "Publish MCP server port",
+              "isRequired": true,
+              "value": "8216:8216",
+              "type": "named",
+              "name": "-p"
+            }
+          ],
+          "packageArguments": [
+            {
+              "value": "mcp",
+              "type": "positional"
+            },
+            {
+              "value": "http",
+              "type": "named",
+              "name": "--mode"
+            }
+          ],
+          "environmentVariables": [
+            {
+              "description": "GCP project credential for yutu, base64 encoded JSON or path to JSON file",
+              "isRequired": true,
+              "format": "string",
+              "isSecret": true,
+              "name": "YUTU_CREDENTIAL"
+            },
+            {
+              "description": "YouTube authentication token, base64 encoded JSON or path to JSON file",
+              "isRequired": true,
+              "format": "string",
+              "isSecret": true,
+              "name": "YUTU_CACHE_TOKEN"
+            },
+            {
+              "description": "Log level",
+              "format": "string",
+              "default": "INFO",
+              "choices": [
+                "DEBUG",
+                "INFO",
+                "WARNING",
+                "ERROR"
+              ],
+              "name": "YUTU_LOG_LEVEL"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-02-23T14:24:52.596382Z",
+        "publishedAt": "2026-02-23T14:24:52.596382Z",
+        "updatedAt": "2026-02-23T14:24:52.596382Z",
+        "isLatest": false
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.eat-pray-ai/yutu",
+        "description": "A fully functional MCP server and CLI for YouTube",
+        "title": "yutu",
+        "repository": {
+          "url": "https://github.com/eat-pray-ai/yutu",
+          "source": "github",
+          "id": "643163403"
+        },
+        "version": "v0.10.6-dev",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/eat-pray-ai/yutu/main/assets/yutu-ico.svg",
+            "mimeType": "image/svg+xml",
+            "sizes": [
+              "any"
+            ]
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "oci",
+            "identifier": "ghcr.io/eat-pray-ai/yutu:v0.10.6-dev",
+            "runtimeHint": "docker",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:8216/mcp"
+            },
+            "runtimeArguments": [
+              {
+                "description": "UID and GID in the container to match host user",
+                "value": "{user}:{group}",
+                "variables": {
+                  "group": {
+                    "description": "The current user's primary group, output of `id -g`"
+                  },
+                  "user": {
+                    "description": "The current user, output of `id -u`"
+                  }
+                },
+                "type": "named",
+                "name": "--user"
+              },
+              {
+                "description": "Mount host directory containing credentials and token",
+                "value": "type=bind,source={hostPath},target=/app",
+                "variables": {
+                  "hostPath": {
+                    "description": "The directory containing `client_secret.json` and `youtube.token.json`"
+                  }
+                },
+                "type": "named",
+                "name": "--mount"
+              },
+              {
+                "description": "Publish MCP server port",
+                "isRequired": true,
+                "value": "8216:8216",
+                "type": "named",
+                "name": "-p"
+              }
+            ],
+            "packageArguments": [
+              {
+                "value": "mcp",
+                "type": "positional"
+              },
+              {
+                "value": "http",
+                "type": "named",
+                "name": "--mode"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "GCP project credential for yutu, base64 encoded JSON or path to JSON file",
+                "isRequired": true,
+                "format": "string",
+                "isSecret": true,
+                "name": "YUTU_CREDENTIAL"
+              },
+              {
+                "description": "YouTube authentication token, base64 encoded JSON or path to JSON file",
+                "isRequired": true,
+                "format": "string",
+                "isSecret": true,
+                "name": "YUTU_CACHE_TOKEN"
+              },
+              {
+                "description": "Log level",
+                "format": "string",
+                "default": "INFO",
+                "choices": [
+                  "DEBUG",
+                  "INFO",
+                  "WARNING",
+                  "ERROR"
+                ],
+                "name": "YUTU_LOG_LEVEL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-02-23T14:24:52.596382Z",
+          "publishedAt": "2026-02-23T14:24:52.596382Z",
+          "updatedAt": "2026-02-23T14:24:52.596382Z",
+          "isLatest": false
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:57.054Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

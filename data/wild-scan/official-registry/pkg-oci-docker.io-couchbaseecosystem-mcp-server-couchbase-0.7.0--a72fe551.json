@@ -1,0 +1,532 @@
+{
+  "dedup_key": "pkg:oci:docker.io/couchbaseecosystem/mcp-server-couchbase:0.7.0",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:oci:docker.io/couchbaseecosystem/mcp-server-couchbase:0.7.0",
+    "registryType": "oci",
+    "identifier": "docker.io/couchbaseecosystem/mcp-server-couchbase:0.7.0"
+  },
+  "server_names": [
+    "io.github.Couchbase-Ecosystem/mcp-server-couchbase"
+  ],
+  "versions_seen": [
+    "0.7.0"
+  ],
+  "registry_row_count": 1,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.Couchbase-Ecosystem/mcp-server-couchbase",
+      "description": "Couchbase Model Context Protocol Server to interact with Couchbase clusters",
+      "repository": {
+        "url": "https://github.com/Couchbase-Ecosystem/mcp-server-couchbase",
+        "source": "github"
+      },
+      "version": "0.7.0",
+      "packages": [
+        {
+          "registryType": "pypi",
+          "identifier": "couchbase-mcp-server",
+          "version": "0.7.0",
+          "transport": {
+            "type": "stdio"
+          },
+          "packageArguments": [
+            {
+              "description": "Couchbase connection string. Required for connecting to the cluster.",
+              "format": "string",
+              "type": "named",
+              "name": "--connection-string"
+            },
+            {
+              "description": "Couchbase database username. Required for basic authentication.",
+              "format": "string",
+              "type": "named",
+              "name": "--username"
+            },
+            {
+              "description": "Couchbase database password. Required for basic authentication.",
+              "format": "string",
+              "isSecret": true,
+              "type": "named",
+              "name": "--password"
+            },
+            {
+              "description": "Couchbase CA certificate path. Required for TLS authentication in non Capella clusters.",
+              "format": "string",
+              "type": "named",
+              "name": "--ca-cert-path"
+            },
+            {
+              "description": "Couchbase client certificate path. Required for mTLS authentication.",
+              "format": "string",
+              "type": "named",
+              "name": "--client-cert-path"
+            },
+            {
+              "description": "Couchbase client key path. Required for mTLS authentication.",
+              "format": "string",
+              "type": "named",
+              "name": "--client-key-path"
+            },
+            {
+              "description": "Couchbase read only mode. Set to true to disable write operations across both KV and query. KV write tools are not loaded and SQL++ queries that modify data are blocked. Set to false to allow data modification queries and tools.",
+              "format": "boolean",
+              "type": "named",
+              "name": "--read-only-mode"
+            },
+            {
+              "description": "[Deprecated] Couchbase read only query mode. Set to true to allow only read-only queries. Set to false to allow data modification queries. Use --read-only-mode instead.",
+              "format": "boolean",
+              "type": "named",
+              "name": "--read-only-query-mode"
+            },
+            {
+              "description": "Transport mode for the server (stdio, http or sse). Default is stdio",
+              "format": "string",
+              "type": "named",
+              "name": "--transport"
+            },
+            {
+              "description": "Host to run the MCP server on (default: 127.0.0.1). Used only for HTTP and SSE transport modes.",
+              "format": "string",
+              "type": "named",
+              "name": "--host"
+            },
+            {
+              "description": "Port to run the MCP server on (default: 8000). Used only for HTTP and SSE transport modes.",
+              "format": "number",
+              "type": "named",
+              "name": "--port"
+            },
+            {
+              "description": "Tools to disable. Accepts comma-separated tool names (e.g., 'tool_1,tool_2') or a file path containing one tool name per line.",
+              "format": "string",
+              "type": "named",
+              "name": "--disabled-tools"
+            },
+            {
+              "description": "Comma-separated tool names that require user confirmation before execution. Also accepts a file path containing one tool name per line. Requires the MCP client to support elicitation.",
+              "format": "string",
+              "type": "named",
+              "name": "--confirmation-required-tools"
+            }
+          ],
+          "environmentVariables": [
+            {
+              "description": "Couchbase connection string. Required for connecting to the cluster.",
+              "format": "string",
+              "name": "CB_CONNECTION_STRING"
+            },
+            {
+              "description": "Couchbase database username. Required for basic authentication.",
+              "format": "string",
+              "name": "CB_USERNAME"
+            },
+            {
+              "description": "Couchbase database password. Required for basic authentication.",
+              "format": "string",
+              "isSecret": true,
+              "name": "CB_PASSWORD"
+            },
+            {
+              "description": "Couchbase CA certificate path. Required for TLS authentication in non Capella clusters.",
+              "format": "string",
+              "name": "CB_CA_CERT_PATH"
+            },
+            {
+              "description": "Couchbase client certificate path. Required for mTLS authentication.",
+              "format": "string",
+              "name": "CB_CLIENT_CERT_PATH"
+            },
+            {
+              "description": "Couchbase client key path. Required for mTLS authentication.",
+              "format": "string",
+              "name": "CB_CLIENT_KEY_PATH"
+            },
+            {
+              "description": "Couchbase read only mode. Set to true to allow disable write operations across both KV and query. KV write tools are not loaded and SQL++ queries that modify data are blocked. Set to false to allow data modification queries and tools.",
+              "format": "boolean",
+              "name": "CB_MCP_READ_ONLY_MODE"
+            },
+            {
+              "description": "[Deprecated] Couchbase read only query mode. Set to true to allow only read-only queries. Set to false to allow data modification queries. Use CB_MCP_READ_ONLY_MODE instead.",
+              "format": "boolean",
+              "name": "CB_MCP_READ_ONLY_QUERY_MODE"
+            },
+            {
+              "description": "Transport mode for the server (stdio, http or sse). Default is stdio",
+              "format": "string",
+              "name": "CB_MCP_TRANSPORT"
+            },
+            {
+              "description": "Host to run the MCP server on (default: 127.0.0.1). Used only for HTTP and SSE transport modes.",
+              "format": "string",
+              "name": "CB_MCP_HOST"
+            },
+            {
+              "description": "Port to run the MCP server on (default: 8000). Used only for HTTP and SSE transport modes.",
+              "format": "number",
+              "name": "CB_MCP_PORT"
+            },
+            {
+              "description": "Tools to disable. Accepts comma-separated tool names (e.g., 'tool_1,tool_2') or a file path containing one tool name per line.",
+              "format": "string",
+              "name": "CB_MCP_DISABLED_TOOLS"
+            },
+            {
+              "description": "Comma-separated tool names that require user confirmation before execution. Also accepts a file path containing one tool name per line. Requires the MCP client to support elicitation.",
+              "format": "string",
+              "name": "CB_MCP_CONFIRMATION_REQUIRED_TOOLS"
+            }
+          ]
+        },
+        {
+          "registryType": "oci",
+          "identifier": "docker.io/couchbaseecosystem/mcp-server-couchbase:0.7.0",
+          "transport": {
+            "type": "stdio"
+          },
+          "environmentVariables": [
+            {
+              "description": "Couchbase connection string. Required for connecting to the cluster.",
+              "format": "string",
+              "name": "CB_CONNECTION_STRING"
+            },
+            {
+              "description": "Couchbase database username. Required for basic authentication.",
+              "format": "string",
+              "name": "CB_USERNAME"
+            },
+            {
+              "description": "Couchbase database password. Required for basic authentication.",
+              "format": "string",
+              "isSecret": true,
+              "name": "CB_PASSWORD"
+            },
+            {
+              "description": "Couchbase CA certificate path. Required for TLS authentication in non Capella clusters.",
+              "format": "string",
+              "name": "CB_CA_CERT_PATH"
+            },
+            {
+              "description": "Couchbase client certificate path. Required for mTLS authentication.",
+              "format": "string",
+              "name": "CB_CLIENT_CERT_PATH"
+            },
+            {
+              "description": "Couchbase client key path. Required for mTLS authentication.",
+              "format": "string",
+              "name": "CB_CLIENT_KEY_PATH"
+            },
+            {
+              "description": "Couchbase read only mode. Set to true to disable write operations across both KV and query. KV write tools are not loaded and SQL++ queries that modify data are blocked. Set to false to allow data modification queries and tools.",
+              "format": "boolean",
+              "name": "CB_MCP_READ_ONLY_MODE"
+            },
+            {
+              "description": "[Deprecated] Couchbase read only query mode. Set to true to allow only read-only queries. Set to false to allow data modification queries. Use CB_MCP_READ_ONLY_MODE instead.",
+              "format": "boolean",
+              "name": "CB_MCP_READ_ONLY_QUERY_MODE"
+            },
+            {
+              "description": "Transport mode for the server (stdio, http or sse). Default is stdio",
+              "format": "string",
+              "name": "CB_MCP_TRANSPORT"
+            },
+            {
+              "description": "Host to run the MCP server on (default: 127.0.0.1). Used only for HTTP and SSE transport modes.",
+              "format": "string",
+              "name": "CB_MCP_HOST"
+            },
+            {
+              "description": "Port to run the MCP server on (default: 8000). Used only for HTTP and SSE transport modes.",
+              "format": "number",
+              "name": "CB_MCP_PORT"
+            },
+            {
+              "description": "Tools to disable. Accepts comma-separated tool names (e.g., 'tool_1,tool_2') or a file path containing one tool name per line.",
+              "format": "string",
+              "name": "CB_MCP_DISABLED_TOOLS"
+            },
+            {
+              "description": "Comma-separated tool names that require user confirmation before execution. Also accepts a file path containing one tool name per line. Requires the MCP client to support elicitation.",
+              "format": "string",
+              "name": "CB_MCP_CONFIRMATION_REQUIRED_TOOLS"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "deprecated",
+        "statusChangedAt": "2026-07-02T11:13:07.15915Z",
+        "statusMessage": "Registry entry has been moved to io.github.couchbase/mcp-server-couchbase",
+        "publishedAt": "2026-04-01T09:09:28.827022Z",
+        "updatedAt": "2026-07-02T11:13:07.15915Z",
+        "isLatest": false
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.Couchbase-Ecosystem/mcp-server-couchbase",
+        "description": "Couchbase Model Context Protocol Server to interact with Couchbase clusters",
+        "repository": {
+          "url": "https://github.com/Couchbase-Ecosystem/mcp-server-couchbase",
+          "source": "github"
+        },
+        "version": "0.7.0",
+        "packages": [
+          {
+            "registryType": "pypi",
+            "identifier": "couchbase-mcp-server",
+            "version": "0.7.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "packageArguments": [
+              {
+                "description": "Couchbase connection string. Required for connecting to the cluster.",
+                "format": "string",
+                "type": "named",
+                "name": "--connection-string"
+              },
+              {
+                "description": "Couchbase database username. Required for basic authentication.",
+                "format": "string",
+                "type": "named",
+                "name": "--username"
+              },
+              {
+                "description": "Couchbase database password. Required for basic authentication.",
+                "format": "string",
+                "isSecret": true,
+                "type": "named",
+                "name": "--password"
+              },
+              {
+                "description": "Couchbase CA certificate path. Required for TLS authentication in non Capella clusters.",
+                "format": "string",
+                "type": "named",
+                "name": "--ca-cert-path"
+              },
+              {
+                "description": "Couchbase client certificate path. Required for mTLS authentication.",
+                "format": "string",
+                "type": "named",
+                "name": "--client-cert-path"
+              },
+              {
+                "description": "Couchbase client key path. Required for mTLS authentication.",
+                "format": "string",
+                "type": "named",
+                "name": "--client-key-path"
+              },
+              {
+                "description": "Couchbase read only mode. Set to true to disable write operations across both KV and query. KV write tools are not loaded and SQL++ queries that modify data are blocked. Set to false to allow data modification queries and tools.",
+                "format": "boolean",
+                "type": "named",
+                "name": "--read-only-mode"
+              },
+              {
+                "description": "[Deprecated] Couchbase read only query mode. Set to true to allow only read-only queries. Set to false to allow data modification queries. Use --read-only-mode instead.",
+                "format": "boolean",
+                "type": "named",
+                "name": "--read-only-query-mode"
+              },
+              {
+                "description": "Transport mode for the server (stdio, http or sse). Default is stdio",
+                "format": "string",
+                "type": "named",
+                "name": "--transport"
+              },
+              {
+                "description": "Host to run the MCP server on (default: 127.0.0.1). Used only for HTTP and SSE transport modes.",
+                "format": "string",
+                "type": "named",
+                "name": "--host"
+              },
+              {
+                "description": "Port to run the MCP server on (default: 8000). Used only for HTTP and SSE transport modes.",
+                "format": "number",
+                "type": "named",
+                "name": "--port"
+              },
+              {
+                "description": "Tools to disable. Accepts comma-separated tool names (e.g., 'tool_1,tool_2') or a file path containing one tool name per line.",
+                "format": "string",
+                "type": "named",
+                "name": "--disabled-tools"
+              },
+              {
+                "description": "Comma-separated tool names that require user confirmation before execution. Also accepts a file path containing one tool name per line. Requires the MCP client to support elicitation.",
+                "format": "string",
+                "type": "named",
+                "name": "--confirmation-required-tools"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Couchbase connection string. Required for connecting to the cluster.",
+                "format": "string",
+                "name": "CB_CONNECTION_STRING"
+              },
+              {
+                "description": "Couchbase database username. Required for basic authentication.",
+                "format": "string",
+                "name": "CB_USERNAME"
+              },
+              {
+                "description": "Couchbase database password. Required for basic authentication.",
+                "format": "string",
+                "isSecret": true,
+                "name": "CB_PASSWORD"
+              },
+              {
+                "description": "Couchbase CA certificate path. Required for TLS authentication in non Capella clusters.",
+                "format": "string",
+                "name": "CB_CA_CERT_PATH"
+              },
+              {
+                "description": "Couchbase client certificate path. Required for mTLS authentication.",
+                "format": "string",
+                "name": "CB_CLIENT_CERT_PATH"
+              },
+              {
+                "description": "Couchbase client key path. Required for mTLS authentication.",
+                "format": "string",
+                "name": "CB_CLIENT_KEY_PATH"
+              },
+              {
+                "description": "Couchbase read only mode. Set to true to allow disable write operations across both KV and query. KV write tools are not loaded and SQL++ queries that modify data are blocked. Set to false to allow data modification queries and tools.",
+                "format": "boolean",
+                "name": "CB_MCP_READ_ONLY_MODE"
+              },
+              {
+                "description": "[Deprecated] Couchbase read only query mode. Set to true to allow only read-only queries. Set to false to allow data modification queries. Use CB_MCP_READ_ONLY_MODE instead.",
+                "format": "boolean",
+                "name": "CB_MCP_READ_ONLY_QUERY_MODE"
+              },
+              {
+                "description": "Transport mode for the server (stdio, http or sse). Default is stdio",
+                "format": "string",
+                "name": "CB_MCP_TRANSPORT"
+              },
+              {
+                "description": "Host to run the MCP server on (default: 127.0.0.1). Used only for HTTP and SSE transport modes.",
+                "format": "string",
+                "name": "CB_MCP_HOST"
+              },
+              {
+                "description": "Port to run the MCP server on (default: 8000). Used only for HTTP and SSE transport modes.",
+                "format": "number",
+                "name": "CB_MCP_PORT"
+              },
+              {
+                "description": "Tools to disable. Accepts comma-separated tool names (e.g., 'tool_1,tool_2') or a file path containing one tool name per line.",
+                "format": "string",
+                "name": "CB_MCP_DISABLED_TOOLS"
+              },
+              {
+                "description": "Comma-separated tool names that require user confirmation before execution. Also accepts a file path containing one tool name per line. Requires the MCP client to support elicitation.",
+                "format": "string",
+                "name": "CB_MCP_CONFIRMATION_REQUIRED_TOOLS"
+              }
+            ]
+          },
+          {
+            "registryType": "oci",
+            "identifier": "docker.io/couchbaseecosystem/mcp-server-couchbase:0.7.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Couchbase connection string. Required for connecting to the cluster.",
+                "format": "string",
+                "name": "CB_CONNECTION_STRING"
+              },
+              {
+                "description": "Couchbase database username. Required for basic authentication.",
+                "format": "string",
+                "name": "CB_USERNAME"
+              },
+              {
+                "description": "Couchbase database password. Required for basic authentication.",
+                "format": "string",
+                "isSecret": true,
+                "name": "CB_PASSWORD"
+              },
+              {
+                "description": "Couchbase CA certificate path. Required for TLS authentication in non Capella clusters.",
+                "format": "string",
+                "name": "CB_CA_CERT_PATH"
+              },
+              {
+                "description": "Couchbase client certificate path. Required for mTLS authentication.",
+                "format": "string",
+                "name": "CB_CLIENT_CERT_PATH"
+              },
+              {
+                "description": "Couchbase client key path. Required for mTLS authentication.",
+                "format": "string",
+                "name": "CB_CLIENT_KEY_PATH"
+              },
+              {
+                "description": "Couchbase read only mode. Set to true to disable write operations across both KV and query. KV write tools are not loaded and SQL++ queries that modify data are blocked. Set to false to allow data modification queries and tools.",
+                "format": "boolean",
+                "name": "CB_MCP_READ_ONLY_MODE"
+              },
+              {
+                "description": "[Deprecated] Couchbase read only query mode. Set to true to allow only read-only queries. Set to false to allow data modification queries. Use CB_MCP_READ_ONLY_MODE instead.",
+                "format": "boolean",
+                "name": "CB_MCP_READ_ONLY_QUERY_MODE"
+              },
+              {
+                "description": "Transport mode for the server (stdio, http or sse). Default is stdio",
+                "format": "string",
+                "name": "CB_MCP_TRANSPORT"
+              },
+              {
+                "description": "Host to run the MCP server on (default: 127.0.0.1). Used only for HTTP and SSE transport modes.",
+                "format": "string",
+                "name": "CB_MCP_HOST"
+              },
+              {
+                "description": "Port to run the MCP server on (default: 8000). Used only for HTTP and SSE transport modes.",
+                "format": "number",
+                "name": "CB_MCP_PORT"
+              },
+              {
+                "description": "Tools to disable. Accepts comma-separated tool names (e.g., 'tool_1,tool_2') or a file path containing one tool name per line.",
+                "format": "string",
+                "name": "CB_MCP_DISABLED_TOOLS"
+              },
+              {
+                "description": "Comma-separated tool names that require user confirmation before execution. Also accepts a file path containing one tool name per line. Requires the MCP client to support elicitation.",
+                "format": "string",
+                "name": "CB_MCP_CONFIRMATION_REQUIRED_TOOLS"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "deprecated",
+          "statusChangedAt": "2026-07-02T11:13:07.15915Z",
+          "statusMessage": "Registry entry has been moved to io.github.couchbase/mcp-server-couchbase",
+          "publishedAt": "2026-04-01T09:09:28.827022Z",
+          "updatedAt": "2026-07-02T11:13:07.15915Z",
+          "isLatest": false
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:56.564Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

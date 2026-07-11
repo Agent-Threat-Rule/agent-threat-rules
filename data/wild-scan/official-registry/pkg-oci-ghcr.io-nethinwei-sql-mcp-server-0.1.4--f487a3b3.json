@@ -1,0 +1,224 @@
+{
+  "dedup_key": "pkg:oci:ghcr.io/nethinwei/sql-mcp-server:0.1.4",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:oci:ghcr.io/nethinwei/sql-mcp-server:0.1.4",
+    "registryType": "oci",
+    "identifier": "ghcr.io/nethinwei/sql-mcp-server:0.1.4"
+  },
+  "server_names": [
+    "io.github.nethinwei/sql-mcp-server"
+  ],
+  "versions_seen": [
+    "0.1.4"
+  ],
+  "registry_row_count": 1,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.nethinwei/sql-mcp-server",
+      "description": "Controlled SQL access gateway with policy, cost limits, tenant isolation, and safe tools.",
+      "title": "SQL MCP Server",
+      "repository": {
+        "url": "https://github.com/nethinwei/sql-mcp-server",
+        "source": "github"
+      },
+      "version": "0.1.4",
+      "websiteUrl": "https://github.com/nethinwei/sql-mcp-server",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/nethinwei/sql-mcp-server:0.1.4",
+          "runtimeHint": "docker",
+          "transport": {
+            "type": "stdio"
+          },
+          "runtimeArguments": [
+            {
+              "isRequired": true,
+              "value": "type=bind,src={config_path},dst=/config/config.yaml,readonly",
+              "variables": {
+                "config_path": {
+                  "description": "Absolute path to the SQL MCP Server YAML configuration",
+                  "isRequired": true,
+                  "format": "filepath"
+                }
+              },
+              "type": "named",
+              "name": "--mount"
+            }
+          ],
+          "packageArguments": [
+            {
+              "value": "serve",
+              "type": "positional"
+            },
+            {
+              "value": "/config/config.yaml",
+              "type": "named",
+              "name": "--config"
+            },
+            {
+              "value": "stdio",
+              "type": "named",
+              "name": "--transport"
+            }
+          ],
+          "environmentVariables": [
+            {
+              "description": "Database DSN referenced by ${DATABASE_DSN} in config.yaml",
+              "isSecret": true,
+              "name": "DATABASE_DSN"
+            }
+          ]
+        }
+      ],
+      "_meta": {
+        "io.modelcontextprotocol.registry/publisher-provided": {
+          "capabilities": {
+            "authentication": [
+              "shared-bearer-token",
+              "mTLS",
+              "trusted-proxy-identity"
+            ],
+            "providers": [
+              "postgres",
+              "mysql",
+              "oceanbase"
+            ],
+            "security": [
+              "generated-parameterized-sql",
+              "RBAC-and-row-policies",
+              "field-masking",
+              "fail-closed-cost-gates"
+            ],
+            "transports": [
+              "stdio",
+              "streamable-http"
+            ]
+          },
+          "documentation": {
+            "providers": "https://github.com/nethinwei/sql-mcp-server/blob/main/docs/provider-compatibility.md",
+            "quickstart": "https://github.com/nethinwei/sql-mcp-server/blob/main/docs/quickstart.md",
+            "security": "https://github.com/nethinwei/sql-mcp-server/blob/main/docs/security.md"
+          }
+        }
+      }
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-07-11T17:26:14.342686Z",
+        "publishedAt": "2026-07-11T17:26:14.342686Z",
+        "updatedAt": "2026-07-11T17:26:14.342686Z",
+        "isLatest": false
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.nethinwei/sql-mcp-server",
+        "description": "Controlled SQL access gateway with policy, cost limits, tenant isolation, and safe tools.",
+        "title": "SQL MCP Server",
+        "repository": {
+          "url": "https://github.com/nethinwei/sql-mcp-server",
+          "source": "github"
+        },
+        "version": "0.1.4",
+        "websiteUrl": "https://github.com/nethinwei/sql-mcp-server",
+        "packages": [
+          {
+            "registryType": "oci",
+            "identifier": "ghcr.io/nethinwei/sql-mcp-server:0.1.4",
+            "runtimeHint": "docker",
+            "transport": {
+              "type": "stdio"
+            },
+            "runtimeArguments": [
+              {
+                "isRequired": true,
+                "value": "type=bind,src={config_path},dst=/config/config.yaml,readonly",
+                "variables": {
+                  "config_path": {
+                    "description": "Absolute path to the SQL MCP Server YAML configuration",
+                    "isRequired": true,
+                    "format": "filepath"
+                  }
+                },
+                "type": "named",
+                "name": "--mount"
+              }
+            ],
+            "packageArguments": [
+              {
+                "value": "serve",
+                "type": "positional"
+              },
+              {
+                "value": "/config/config.yaml",
+                "type": "named",
+                "name": "--config"
+              },
+              {
+                "value": "stdio",
+                "type": "named",
+                "name": "--transport"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Database DSN referenced by ${DATABASE_DSN} in config.yaml",
+                "isSecret": true,
+                "name": "DATABASE_DSN"
+              }
+            ]
+          }
+        ],
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "capabilities": {
+              "authentication": [
+                "shared-bearer-token",
+                "mTLS",
+                "trusted-proxy-identity"
+              ],
+              "providers": [
+                "postgres",
+                "mysql",
+                "oceanbase"
+              ],
+              "security": [
+                "generated-parameterized-sql",
+                "RBAC-and-row-policies",
+                "field-masking",
+                "fail-closed-cost-gates"
+              ],
+              "transports": [
+                "stdio",
+                "streamable-http"
+              ]
+            },
+            "documentation": {
+              "providers": "https://github.com/nethinwei/sql-mcp-server/blob/main/docs/provider-compatibility.md",
+              "quickstart": "https://github.com/nethinwei/sql-mcp-server/blob/main/docs/quickstart.md",
+              "security": "https://github.com/nethinwei/sql-mcp-server/blob/main/docs/security.md"
+            }
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-11T17:26:14.342686Z",
+          "publishedAt": "2026-07-11T17:26:14.342686Z",
+          "updatedAt": "2026-07-11T17:26:14.342686Z",
+          "isLatest": false
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:57.415Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

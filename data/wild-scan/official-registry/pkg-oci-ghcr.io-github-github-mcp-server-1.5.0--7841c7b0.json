@@ -1,0 +1,160 @@
+{
+  "dedup_key": "pkg:oci:ghcr.io/github/github-mcp-server:1.5.0",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:oci:ghcr.io/github/github-mcp-server:1.5.0",
+    "registryType": "oci",
+    "identifier": "ghcr.io/github/github-mcp-server:1.5.0"
+  },
+  "server_names": [
+    "io.github.github/github-mcp-server"
+  ],
+  "versions_seen": [
+    "1.5.0"
+  ],
+  "registry_row_count": 1,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.github/github-mcp-server",
+      "description": "Connect AI assistants to GitHub - manage repos, issues, PRs, and workflows through natural language.",
+      "title": "GitHub",
+      "repository": {
+        "url": "https://github.com/github/github-mcp-server",
+        "source": "github"
+      },
+      "version": "1.5.0",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/github/github-mcp-server:1.5.0",
+          "transport": {
+            "type": "stdio"
+          },
+          "runtimeArguments": [
+            {
+              "description": "Publish the OAuth callback port to loopback so the in-container login callback is reachable",
+              "value": "127.0.0.1:8085:8085",
+              "type": "named",
+              "name": "-p"
+            },
+            {
+              "description": "Fixed OAuth callback port, matching the published port above",
+              "value": "GITHUB_OAUTH_CALLBACK_PORT=8085",
+              "type": "named",
+              "name": "-e"
+            },
+            {
+              "description": "Optional GitHub Personal Access Token. Omit to log in with OAuth on first use.",
+              "value": "GITHUB_PERSONAL_ACCESS_TOKEN={token}",
+              "variables": {
+                "token": {
+                  "format": "string",
+                  "isSecret": true
+                }
+              },
+              "type": "named",
+              "name": "-e"
+            }
+          ]
+        }
+      ],
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://api.githubcopilot.com/mcp/",
+          "headers": [
+            {
+              "description": "Authorization header with authentication token (PAT or App token)",
+              "isSecret": true,
+              "name": "Authorization"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-06-27T08:01:34.182941Z",
+        "publishedAt": "2026-06-27T08:01:34.182941Z",
+        "updatedAt": "2026-06-27T08:01:34.182941Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.github/github-mcp-server",
+        "description": "Connect AI assistants to GitHub - manage repos, issues, PRs, and workflows through natural language.",
+        "title": "GitHub",
+        "repository": {
+          "url": "https://github.com/github/github-mcp-server",
+          "source": "github"
+        },
+        "version": "1.5.0",
+        "packages": [
+          {
+            "registryType": "oci",
+            "identifier": "ghcr.io/github/github-mcp-server:1.5.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "runtimeArguments": [
+              {
+                "description": "Publish the OAuth callback port to loopback so the in-container login callback is reachable",
+                "value": "127.0.0.1:8085:8085",
+                "type": "named",
+                "name": "-p"
+              },
+              {
+                "description": "Fixed OAuth callback port, matching the published port above",
+                "value": "GITHUB_OAUTH_CALLBACK_PORT=8085",
+                "type": "named",
+                "name": "-e"
+              },
+              {
+                "description": "Optional GitHub Personal Access Token. Omit to log in with OAuth on first use.",
+                "value": "GITHUB_PERSONAL_ACCESS_TOKEN={token}",
+                "variables": {
+                  "token": {
+                    "format": "string",
+                    "isSecret": true
+                  }
+                },
+                "type": "named",
+                "name": "-e"
+              }
+            ]
+          }
+        ],
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://api.githubcopilot.com/mcp/",
+            "headers": [
+              {
+                "description": "Authorization header with authentication token (PAT or App token)",
+                "isSecret": true,
+                "name": "Authorization"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-27T08:01:34.182941Z",
+          "publishedAt": "2026-06-27T08:01:34.182941Z",
+          "updatedAt": "2026-06-27T08:01:34.182941Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:57.121Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

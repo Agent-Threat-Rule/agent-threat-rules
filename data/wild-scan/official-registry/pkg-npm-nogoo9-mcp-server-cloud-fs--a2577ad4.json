@@ -1,0 +1,920 @@
+{
+  "dedup_key": "pkg:npm:@nogoo9/mcp-server-cloud-fs",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:npm:@nogoo9/mcp-server-cloud-fs",
+    "registryType": "npm",
+    "identifier": "@nogoo9/mcp-server-cloud-fs"
+  },
+  "server_names": [
+    "io.github.nogoo9/mcp-server-cloud-fs"
+  ],
+  "versions_seen": [
+    "0.1.0",
+    "0.2.0",
+    "0.3.0",
+    "0.5.0",
+    "0.6.0",
+    "0.7.0"
+  ],
+  "registry_row_count": 6,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-16/server.schema.json",
+      "name": "io.github.nogoo9/mcp-server-cloud-fs",
+      "description": "Cloud replacement for mcp-server-filesystem — 20 tools for S3, Azure Blob, and GCS",
+      "repository": {
+        "url": "https://github.com/nogoo9/mcp-server-cloud-fs",
+        "source": "github"
+      },
+      "version": "0.7.0",
+      "packages": [
+        {
+          "registryType": "npm",
+          "registryBaseUrl": "https://registry.npmjs.org",
+          "identifier": "@nogoo9/mcp-server-cloud-fs",
+          "version": "0.7.0",
+          "runtimeHint": "bunx",
+          "transport": {
+            "type": "stdio"
+          },
+          "runtimeArguments": [
+            {
+              "description": "Cloud storage provider",
+              "isRequired": true,
+              "choices": [
+                "s3",
+                "azure",
+                "gcs"
+              ],
+              "type": "positional",
+              "valueHint": "s3|azure|gcs"
+            },
+            {
+              "description": "One or more cloud root URIs (e.g. s3://my-bucket, az://my-container, gs://my-bucket)",
+              "isRequired": true,
+              "type": "positional",
+              "valueHint": "s3://bucket[/prefix]",
+              "isRepeated": true
+            },
+            {
+              "description": "AWS region (S3 only, optional)",
+              "type": "named",
+              "name": "--region",
+              "valueHint": "us-east-1"
+            },
+            {
+              "description": "Custom endpoint URL for S3-compatible storage (MinIO, RustFS, etc.)",
+              "type": "named",
+              "name": "--endpoint",
+              "valueHint": "https://s3.example.com"
+            },
+            {
+              "description": "Cache store backend (default: memory)",
+              "default": "memory",
+              "choices": [
+                "memory",
+                "fs",
+                "redis"
+              ],
+              "type": "named",
+              "name": "--cache-store",
+              "valueHint": "memory|fs|redis"
+            },
+            {
+              "description": "Cache TTL in seconds (default: 60)",
+              "type": "named",
+              "name": "--cache-ttl",
+              "valueHint": "60"
+            },
+            {
+              "description": "Directory for filesystem cache store (required when --cache-store fs)",
+              "type": "named",
+              "name": "--cache-dir",
+              "valueHint": "/tmp/cloud-fs-cache"
+            },
+            {
+              "description": "Enable the delete_file tool (disabled by default for safety)",
+              "type": "named",
+              "name": "--enable-delete"
+            },
+            {
+              "description": "Maximum number of objects grep_files will scan per call (default: 1000)",
+              "default": "1000",
+              "type": "named",
+              "name": "--grep-max-objects",
+              "valueHint": "1000"
+            },
+            {
+              "description": "Enable the shell tool for POSIX-like commands on cloud storage (disabled by default)",
+              "type": "named",
+              "name": "--enable-shell"
+            }
+          ],
+          "environmentVariables": [
+            {
+              "description": "Azure Blob Storage connection string (required when using the azure provider)",
+              "isSecret": true,
+              "name": "AZURE_STORAGE_CONNECTION_STRING"
+            },
+            {
+              "description": "Google Cloud project ID (optional when using the gcs provider)",
+              "name": "GOOGLE_CLOUD_PROJECT"
+            },
+            {
+              "description": "AWS Access Key ID (optional for S3 — falls back to ~/.aws/credentials or IAM role)",
+              "isSecret": true,
+              "name": "AWS_ACCESS_KEY_ID"
+            },
+            {
+              "description": "AWS Secret Access Key (optional for S3 — falls back to ~/.aws/credentials or IAM role)",
+              "isSecret": true,
+              "name": "AWS_SECRET_ACCESS_KEY"
+            },
+            {
+              "description": "Redis connection URL (required when --cache-store redis, defaults to redis://localhost:6379)",
+              "name": "REDIS_URL"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-05-18T16:49:06.258687Z",
+        "publishedAt": "2026-05-18T16:49:06.258687Z",
+        "updatedAt": "2026-05-18T16:49:06.258687Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-16/server.schema.json",
+        "name": "io.github.nogoo9/mcp-server-cloud-fs",
+        "description": "Drop-in cloud replacement for mcp-server-filesystem — all 14 MCP tools over S3, Azure Blob, and GCS",
+        "repository": {
+          "url": "https://github.com/nogoo9/mcp-server-cloud-fs",
+          "source": "github"
+        },
+        "version": "0.1.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@nogoo9/mcp-server-cloud-fs",
+            "version": "0.1.0",
+            "runtimeHint": "bunx",
+            "transport": {
+              "type": "stdio"
+            },
+            "runtimeArguments": [
+              {
+                "description": "Cloud storage provider",
+                "isRequired": true,
+                "choices": [
+                  "s3",
+                  "azure",
+                  "gcs"
+                ],
+                "type": "positional",
+                "valueHint": "s3|azure|gcs"
+              },
+              {
+                "description": "One or more cloud root URIs (e.g. s3://my-bucket, az://my-container, gs://my-bucket)",
+                "isRequired": true,
+                "type": "positional",
+                "valueHint": "s3://bucket[/prefix]",
+                "isRepeated": true
+              },
+              {
+                "description": "AWS region (S3 only, optional)",
+                "type": "named",
+                "name": "--region",
+                "valueHint": "us-east-1"
+              },
+              {
+                "description": "Custom endpoint URL for S3-compatible storage (MinIO, RustFS, etc.)",
+                "type": "named",
+                "name": "--endpoint",
+                "valueHint": "https://s3.example.com"
+              },
+              {
+                "description": "Cache store backend (default: memory)",
+                "default": "memory",
+                "choices": [
+                  "memory",
+                  "fs",
+                  "redis"
+                ],
+                "type": "named",
+                "name": "--cache-store",
+                "valueHint": "memory|fs|redis"
+              },
+              {
+                "description": "Cache TTL in seconds (default: 60)",
+                "type": "named",
+                "name": "--cache-ttl",
+                "valueHint": "60"
+              },
+              {
+                "description": "Directory for filesystem cache store (required when --cache-store fs)",
+                "type": "named",
+                "name": "--cache-dir",
+                "valueHint": "/tmp/cloud-fs-cache"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Azure Blob Storage connection string (required when using the azure provider)",
+                "isSecret": true,
+                "name": "AZURE_STORAGE_CONNECTION_STRING"
+              },
+              {
+                "description": "Google Cloud project ID (optional when using the gcs provider)",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "AWS Access Key ID (optional for S3 — falls back to ~/.aws/credentials or IAM role)",
+                "isSecret": true,
+                "name": "AWS_ACCESS_KEY_ID"
+              },
+              {
+                "description": "AWS Secret Access Key (optional for S3 — falls back to ~/.aws/credentials or IAM role)",
+                "isSecret": true,
+                "name": "AWS_SECRET_ACCESS_KEY"
+              },
+              {
+                "description": "Redis connection URL (required when --cache-store redis, defaults to redis://localhost:6379)",
+                "name": "REDIS_URL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-04-27T16:31:29.719204Z",
+          "publishedAt": "2026-04-27T16:31:29.719204Z",
+          "updatedAt": "2026-04-27T16:31:29.719204Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-16/server.schema.json",
+        "name": "io.github.nogoo9/mcp-server-cloud-fs",
+        "description": "Cloud replacement for mcp-server-filesystem — 19 tools for S3, Azure Blob, and GCS",
+        "repository": {
+          "url": "https://github.com/nogoo9/mcp-server-cloud-fs",
+          "source": "github"
+        },
+        "version": "0.2.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@nogoo9/mcp-server-cloud-fs",
+            "version": "0.2.0",
+            "runtimeHint": "bunx",
+            "transport": {
+              "type": "stdio"
+            },
+            "runtimeArguments": [
+              {
+                "description": "Cloud storage provider",
+                "isRequired": true,
+                "choices": [
+                  "s3",
+                  "azure",
+                  "gcs"
+                ],
+                "type": "positional",
+                "valueHint": "s3|azure|gcs"
+              },
+              {
+                "description": "One or more cloud root URIs (e.g. s3://my-bucket, az://my-container, gs://my-bucket)",
+                "isRequired": true,
+                "type": "positional",
+                "valueHint": "s3://bucket[/prefix]",
+                "isRepeated": true
+              },
+              {
+                "description": "AWS region (S3 only, optional)",
+                "type": "named",
+                "name": "--region",
+                "valueHint": "us-east-1"
+              },
+              {
+                "description": "Custom endpoint URL for S3-compatible storage (MinIO, RustFS, etc.)",
+                "type": "named",
+                "name": "--endpoint",
+                "valueHint": "https://s3.example.com"
+              },
+              {
+                "description": "Cache store backend (default: memory)",
+                "default": "memory",
+                "choices": [
+                  "memory",
+                  "fs",
+                  "redis"
+                ],
+                "type": "named",
+                "name": "--cache-store",
+                "valueHint": "memory|fs|redis"
+              },
+              {
+                "description": "Cache TTL in seconds (default: 60)",
+                "type": "named",
+                "name": "--cache-ttl",
+                "valueHint": "60"
+              },
+              {
+                "description": "Directory for filesystem cache store (required when --cache-store fs)",
+                "type": "named",
+                "name": "--cache-dir",
+                "valueHint": "/tmp/cloud-fs-cache"
+              },
+              {
+                "description": "Enable the delete_file tool (disabled by default for safety)",
+                "type": "named",
+                "name": "--enable-delete"
+              },
+              {
+                "description": "Maximum number of objects grep_files will scan per call (default: 1000)",
+                "default": "1000",
+                "type": "named",
+                "name": "--grep-max-objects",
+                "valueHint": "1000"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Azure Blob Storage connection string (required when using the azure provider)",
+                "isSecret": true,
+                "name": "AZURE_STORAGE_CONNECTION_STRING"
+              },
+              {
+                "description": "Google Cloud project ID (optional when using the gcs provider)",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "AWS Access Key ID (optional for S3 — falls back to ~/.aws/credentials or IAM role)",
+                "isSecret": true,
+                "name": "AWS_ACCESS_KEY_ID"
+              },
+              {
+                "description": "AWS Secret Access Key (optional for S3 — falls back to ~/.aws/credentials or IAM role)",
+                "isSecret": true,
+                "name": "AWS_SECRET_ACCESS_KEY"
+              },
+              {
+                "description": "Redis connection URL (required when --cache-store redis, defaults to redis://localhost:6379)",
+                "name": "REDIS_URL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-11T17:38:10.651113Z",
+          "publishedAt": "2026-05-11T17:38:10.651113Z",
+          "updatedAt": "2026-05-11T17:38:10.651113Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-16/server.schema.json",
+        "name": "io.github.nogoo9/mcp-server-cloud-fs",
+        "description": "Cloud replacement for mcp-server-filesystem — 20 tools for S3, Azure Blob, and GCS",
+        "repository": {
+          "url": "https://github.com/nogoo9/mcp-server-cloud-fs",
+          "source": "github"
+        },
+        "version": "0.3.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@nogoo9/mcp-server-cloud-fs",
+            "version": "0.3.0",
+            "runtimeHint": "bunx",
+            "transport": {
+              "type": "stdio"
+            },
+            "runtimeArguments": [
+              {
+                "description": "Cloud storage provider",
+                "isRequired": true,
+                "choices": [
+                  "s3",
+                  "azure",
+                  "gcs"
+                ],
+                "type": "positional",
+                "valueHint": "s3|azure|gcs"
+              },
+              {
+                "description": "One or more cloud root URIs (e.g. s3://my-bucket, az://my-container, gs://my-bucket)",
+                "isRequired": true,
+                "type": "positional",
+                "valueHint": "s3://bucket[/prefix]",
+                "isRepeated": true
+              },
+              {
+                "description": "AWS region (S3 only, optional)",
+                "type": "named",
+                "name": "--region",
+                "valueHint": "us-east-1"
+              },
+              {
+                "description": "Custom endpoint URL for S3-compatible storage (MinIO, RustFS, etc.)",
+                "type": "named",
+                "name": "--endpoint",
+                "valueHint": "https://s3.example.com"
+              },
+              {
+                "description": "Cache store backend (default: memory)",
+                "default": "memory",
+                "choices": [
+                  "memory",
+                  "fs",
+                  "redis"
+                ],
+                "type": "named",
+                "name": "--cache-store",
+                "valueHint": "memory|fs|redis"
+              },
+              {
+                "description": "Cache TTL in seconds (default: 60)",
+                "type": "named",
+                "name": "--cache-ttl",
+                "valueHint": "60"
+              },
+              {
+                "description": "Directory for filesystem cache store (required when --cache-store fs)",
+                "type": "named",
+                "name": "--cache-dir",
+                "valueHint": "/tmp/cloud-fs-cache"
+              },
+              {
+                "description": "Enable the delete_file tool (disabled by default for safety)",
+                "type": "named",
+                "name": "--enable-delete"
+              },
+              {
+                "description": "Maximum number of objects grep_files will scan per call (default: 1000)",
+                "default": "1000",
+                "type": "named",
+                "name": "--grep-max-objects",
+                "valueHint": "1000"
+              },
+              {
+                "description": "Enable the shell tool for POSIX-like commands on cloud storage (disabled by default)",
+                "type": "named",
+                "name": "--enable-shell"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Azure Blob Storage connection string (required when using the azure provider)",
+                "isSecret": true,
+                "name": "AZURE_STORAGE_CONNECTION_STRING"
+              },
+              {
+                "description": "Google Cloud project ID (optional when using the gcs provider)",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "AWS Access Key ID (optional for S3 — falls back to ~/.aws/credentials or IAM role)",
+                "isSecret": true,
+                "name": "AWS_ACCESS_KEY_ID"
+              },
+              {
+                "description": "AWS Secret Access Key (optional for S3 — falls back to ~/.aws/credentials or IAM role)",
+                "isSecret": true,
+                "name": "AWS_SECRET_ACCESS_KEY"
+              },
+              {
+                "description": "Redis connection URL (required when --cache-store redis, defaults to redis://localhost:6379)",
+                "name": "REDIS_URL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-11T18:58:18.128388Z",
+          "publishedAt": "2026-05-11T18:58:18.128388Z",
+          "updatedAt": "2026-05-11T18:58:18.128388Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-16/server.schema.json",
+        "name": "io.github.nogoo9/mcp-server-cloud-fs",
+        "description": "Cloud replacement for mcp-server-filesystem — 20 tools for S3, Azure Blob, and GCS",
+        "repository": {
+          "url": "https://github.com/nogoo9/mcp-server-cloud-fs",
+          "source": "github"
+        },
+        "version": "0.5.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@nogoo9/mcp-server-cloud-fs",
+            "version": "0.5.0",
+            "runtimeHint": "bunx",
+            "transport": {
+              "type": "stdio"
+            },
+            "runtimeArguments": [
+              {
+                "description": "Cloud storage provider",
+                "isRequired": true,
+                "choices": [
+                  "s3",
+                  "azure",
+                  "gcs"
+                ],
+                "type": "positional",
+                "valueHint": "s3|azure|gcs"
+              },
+              {
+                "description": "One or more cloud root URIs (e.g. s3://my-bucket, az://my-container, gs://my-bucket)",
+                "isRequired": true,
+                "type": "positional",
+                "valueHint": "s3://bucket[/prefix]",
+                "isRepeated": true
+              },
+              {
+                "description": "AWS region (S3 only, optional)",
+                "type": "named",
+                "name": "--region",
+                "valueHint": "us-east-1"
+              },
+              {
+                "description": "Custom endpoint URL for S3-compatible storage (MinIO, RustFS, etc.)",
+                "type": "named",
+                "name": "--endpoint",
+                "valueHint": "https://s3.example.com"
+              },
+              {
+                "description": "Cache store backend (default: memory)",
+                "default": "memory",
+                "choices": [
+                  "memory",
+                  "fs",
+                  "redis"
+                ],
+                "type": "named",
+                "name": "--cache-store",
+                "valueHint": "memory|fs|redis"
+              },
+              {
+                "description": "Cache TTL in seconds (default: 60)",
+                "type": "named",
+                "name": "--cache-ttl",
+                "valueHint": "60"
+              },
+              {
+                "description": "Directory for filesystem cache store (required when --cache-store fs)",
+                "type": "named",
+                "name": "--cache-dir",
+                "valueHint": "/tmp/cloud-fs-cache"
+              },
+              {
+                "description": "Enable the delete_file tool (disabled by default for safety)",
+                "type": "named",
+                "name": "--enable-delete"
+              },
+              {
+                "description": "Maximum number of objects grep_files will scan per call (default: 1000)",
+                "default": "1000",
+                "type": "named",
+                "name": "--grep-max-objects",
+                "valueHint": "1000"
+              },
+              {
+                "description": "Enable the shell tool for POSIX-like commands on cloud storage (disabled by default)",
+                "type": "named",
+                "name": "--enable-shell"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Azure Blob Storage connection string (required when using the azure provider)",
+                "isSecret": true,
+                "name": "AZURE_STORAGE_CONNECTION_STRING"
+              },
+              {
+                "description": "Google Cloud project ID (optional when using the gcs provider)",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "AWS Access Key ID (optional for S3 — falls back to ~/.aws/credentials or IAM role)",
+                "isSecret": true,
+                "name": "AWS_ACCESS_KEY_ID"
+              },
+              {
+                "description": "AWS Secret Access Key (optional for S3 — falls back to ~/.aws/credentials or IAM role)",
+                "isSecret": true,
+                "name": "AWS_SECRET_ACCESS_KEY"
+              },
+              {
+                "description": "Redis connection URL (required when --cache-store redis, defaults to redis://localhost:6379)",
+                "name": "REDIS_URL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-13T19:08:40.121448Z",
+          "publishedAt": "2026-05-13T19:08:40.121448Z",
+          "updatedAt": "2026-05-13T19:08:40.121448Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-16/server.schema.json",
+        "name": "io.github.nogoo9/mcp-server-cloud-fs",
+        "description": "Cloud replacement for mcp-server-filesystem — 20 tools for S3, Azure Blob, and GCS",
+        "repository": {
+          "url": "https://github.com/nogoo9/mcp-server-cloud-fs",
+          "source": "github"
+        },
+        "version": "0.6.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@nogoo9/mcp-server-cloud-fs",
+            "version": "0.6.0",
+            "runtimeHint": "bunx",
+            "transport": {
+              "type": "stdio"
+            },
+            "runtimeArguments": [
+              {
+                "description": "Cloud storage provider",
+                "isRequired": true,
+                "choices": [
+                  "s3",
+                  "azure",
+                  "gcs"
+                ],
+                "type": "positional",
+                "valueHint": "s3|azure|gcs"
+              },
+              {
+                "description": "One or more cloud root URIs (e.g. s3://my-bucket, az://my-container, gs://my-bucket)",
+                "isRequired": true,
+                "type": "positional",
+                "valueHint": "s3://bucket[/prefix]",
+                "isRepeated": true
+              },
+              {
+                "description": "AWS region (S3 only, optional)",
+                "type": "named",
+                "name": "--region",
+                "valueHint": "us-east-1"
+              },
+              {
+                "description": "Custom endpoint URL for S3-compatible storage (MinIO, RustFS, etc.)",
+                "type": "named",
+                "name": "--endpoint",
+                "valueHint": "https://s3.example.com"
+              },
+              {
+                "description": "Cache store backend (default: memory)",
+                "default": "memory",
+                "choices": [
+                  "memory",
+                  "fs",
+                  "redis"
+                ],
+                "type": "named",
+                "name": "--cache-store",
+                "valueHint": "memory|fs|redis"
+              },
+              {
+                "description": "Cache TTL in seconds (default: 60)",
+                "type": "named",
+                "name": "--cache-ttl",
+                "valueHint": "60"
+              },
+              {
+                "description": "Directory for filesystem cache store (required when --cache-store fs)",
+                "type": "named",
+                "name": "--cache-dir",
+                "valueHint": "/tmp/cloud-fs-cache"
+              },
+              {
+                "description": "Enable the delete_file tool (disabled by default for safety)",
+                "type": "named",
+                "name": "--enable-delete"
+              },
+              {
+                "description": "Maximum number of objects grep_files will scan per call (default: 1000)",
+                "default": "1000",
+                "type": "named",
+                "name": "--grep-max-objects",
+                "valueHint": "1000"
+              },
+              {
+                "description": "Enable the shell tool for POSIX-like commands on cloud storage (disabled by default)",
+                "type": "named",
+                "name": "--enable-shell"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Azure Blob Storage connection string (required when using the azure provider)",
+                "isSecret": true,
+                "name": "AZURE_STORAGE_CONNECTION_STRING"
+              },
+              {
+                "description": "Google Cloud project ID (optional when using the gcs provider)",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "AWS Access Key ID (optional for S3 — falls back to ~/.aws/credentials or IAM role)",
+                "isSecret": true,
+                "name": "AWS_ACCESS_KEY_ID"
+              },
+              {
+                "description": "AWS Secret Access Key (optional for S3 — falls back to ~/.aws/credentials or IAM role)",
+                "isSecret": true,
+                "name": "AWS_SECRET_ACCESS_KEY"
+              },
+              {
+                "description": "Redis connection URL (required when --cache-store redis, defaults to redis://localhost:6379)",
+                "name": "REDIS_URL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-15T01:16:45.803159Z",
+          "publishedAt": "2026-05-15T01:16:45.803159Z",
+          "updatedAt": "2026-05-15T01:16:45.803159Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-16/server.schema.json",
+        "name": "io.github.nogoo9/mcp-server-cloud-fs",
+        "description": "Cloud replacement for mcp-server-filesystem — 20 tools for S3, Azure Blob, and GCS",
+        "repository": {
+          "url": "https://github.com/nogoo9/mcp-server-cloud-fs",
+          "source": "github"
+        },
+        "version": "0.7.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "registryBaseUrl": "https://registry.npmjs.org",
+            "identifier": "@nogoo9/mcp-server-cloud-fs",
+            "version": "0.7.0",
+            "runtimeHint": "bunx",
+            "transport": {
+              "type": "stdio"
+            },
+            "runtimeArguments": [
+              {
+                "description": "Cloud storage provider",
+                "isRequired": true,
+                "choices": [
+                  "s3",
+                  "azure",
+                  "gcs"
+                ],
+                "type": "positional",
+                "valueHint": "s3|azure|gcs"
+              },
+              {
+                "description": "One or more cloud root URIs (e.g. s3://my-bucket, az://my-container, gs://my-bucket)",
+                "isRequired": true,
+                "type": "positional",
+                "valueHint": "s3://bucket[/prefix]",
+                "isRepeated": true
+              },
+              {
+                "description": "AWS region (S3 only, optional)",
+                "type": "named",
+                "name": "--region",
+                "valueHint": "us-east-1"
+              },
+              {
+                "description": "Custom endpoint URL for S3-compatible storage (MinIO, RustFS, etc.)",
+                "type": "named",
+                "name": "--endpoint",
+                "valueHint": "https://s3.example.com"
+              },
+              {
+                "description": "Cache store backend (default: memory)",
+                "default": "memory",
+                "choices": [
+                  "memory",
+                  "fs",
+                  "redis"
+                ],
+                "type": "named",
+                "name": "--cache-store",
+                "valueHint": "memory|fs|redis"
+              },
+              {
+                "description": "Cache TTL in seconds (default: 60)",
+                "type": "named",
+                "name": "--cache-ttl",
+                "valueHint": "60"
+              },
+              {
+                "description": "Directory for filesystem cache store (required when --cache-store fs)",
+                "type": "named",
+                "name": "--cache-dir",
+                "valueHint": "/tmp/cloud-fs-cache"
+              },
+              {
+                "description": "Enable the delete_file tool (disabled by default for safety)",
+                "type": "named",
+                "name": "--enable-delete"
+              },
+              {
+                "description": "Maximum number of objects grep_files will scan per call (default: 1000)",
+                "default": "1000",
+                "type": "named",
+                "name": "--grep-max-objects",
+                "valueHint": "1000"
+              },
+              {
+                "description": "Enable the shell tool for POSIX-like commands on cloud storage (disabled by default)",
+                "type": "named",
+                "name": "--enable-shell"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Azure Blob Storage connection string (required when using the azure provider)",
+                "isSecret": true,
+                "name": "AZURE_STORAGE_CONNECTION_STRING"
+              },
+              {
+                "description": "Google Cloud project ID (optional when using the gcs provider)",
+                "name": "GOOGLE_CLOUD_PROJECT"
+              },
+              {
+                "description": "AWS Access Key ID (optional for S3 — falls back to ~/.aws/credentials or IAM role)",
+                "isSecret": true,
+                "name": "AWS_ACCESS_KEY_ID"
+              },
+              {
+                "description": "AWS Secret Access Key (optional for S3 — falls back to ~/.aws/credentials or IAM role)",
+                "isSecret": true,
+                "name": "AWS_SECRET_ACCESS_KEY"
+              },
+              {
+                "description": "Redis connection URL (required when --cache-store redis, defaults to redis://localhost:6379)",
+                "name": "REDIS_URL"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-18T16:49:06.258687Z",
+          "publishedAt": "2026-05-18T16:49:06.258687Z",
+          "updatedAt": "2026-05-18T16:49:06.258687Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:57.425Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

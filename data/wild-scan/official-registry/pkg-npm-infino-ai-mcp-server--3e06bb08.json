@@ -1,0 +1,521 @@
+{
+  "dedup_key": "pkg:npm:@infino-ai/mcp-server",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:npm:@infino-ai/mcp-server",
+    "registryType": "npm",
+    "identifier": "@infino-ai/mcp-server"
+  },
+  "server_names": [
+    "io.github.infino-ai/mcp-server"
+  ],
+  "versions_seen": [
+    "0.1.0",
+    "0.1.1",
+    "0.1.2",
+    "0.2.0",
+    "0.3.0",
+    "0.4.0",
+    "0.6.0"
+  ],
+  "registry_row_count": 7,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.infino-ai/mcp-server",
+      "description": "Keyword, vector, hybrid, and SQL retrieval over data on object storage, for AI agents.",
+      "repository": {
+        "url": "https://github.com/infino-ai/infino-mcp",
+        "source": "github"
+      },
+      "version": "0.6.0",
+      "packages": [
+        {
+          "registryType": "npm",
+          "identifier": "@infino-ai/mcp-server",
+          "version": "0.6.0",
+          "transport": {
+            "type": "stdio"
+          },
+          "environmentVariables": [
+            {
+              "description": "Data to serve: a local path or an s3://|az:// bucket URI. Optional — defaults to a durable per-user directory (~/.infino/mcp) so data persists across restarts, falling back to an ephemeral memory:// catalog only if that directory can't be created.",
+              "format": "string",
+              "name": "INFINO_MCP_URI"
+            },
+            {
+              "description": "Set (1/true/yes) to expose add/update/delete tools and allow DDL/DML through SQL. Read-only when unset.",
+              "format": "string",
+              "name": "INFINO_MCP_ENABLE_WRITES"
+            },
+            {
+              "description": "Embedding provider: 'local' (Hugging Face transformers.js, default) or 'openai' (any OpenAI-compatible /embeddings endpoint, including Azure OpenAI's /openai/v1 surface). Inferred as 'openai' when INFINO_MCP_EMBED_BASE_URL is set.",
+              "format": "string",
+              "name": "INFINO_MCP_EMBED_PROVIDER"
+            },
+            {
+              "description": "Base URL of the OpenAI-compatible embeddings API (e.g. https://api.openai.com/v1 or https://<resource>.openai.azure.com/openai/v1). Required when the provider is 'openai'; the server POSTs to <base>/embeddings.",
+              "format": "string",
+              "name": "INFINO_MCP_EMBED_BASE_URL"
+            },
+            {
+              "description": "API key for the 'openai' provider. Sent as both Authorization: Bearer and api-key so one value works for OpenAI and Azure OpenAI.",
+              "format": "string",
+              "name": "INFINO_MCP_EMBED_API_KEY"
+            },
+            {
+              "description": "Embedding model. local: a Hugging Face feature-extraction model (default Xenova/all-MiniLM-L6-v2, 384-dim). openai: the model/deployment name (e.g. text-embedding-3-small, 1536-dim). Must match the model that produced the table's stored vectors.",
+              "format": "string",
+              "name": "INFINO_MCP_EMBED_MODEL"
+            },
+            {
+              "description": "Set (1/true/yes) to probe the object store at startup, so bad credentials or an unreachable bucket fail then instead of on the first search.",
+              "format": "string",
+              "name": "INFINO_MCP_VALIDATE"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-07-09T07:36:27.592044Z",
+        "publishedAt": "2026-07-09T07:36:27.592044Z",
+        "updatedAt": "2026-07-09T07:36:27.592044Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.infino-ai/mcp-server",
+        "description": "Keyword, vector, hybrid, and SQL retrieval over data on object storage, for AI agents.",
+        "repository": {
+          "url": "https://github.com/infino-ai/infino-mcp",
+          "source": "github"
+        },
+        "version": "0.1.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@infino-ai/mcp-server",
+            "version": "0.1.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Data to serve: a local path or an s3://|gs://|az:// bucket URI.",
+                "isRequired": true,
+                "format": "string",
+                "name": "INFINO_MCP_URI"
+              },
+              {
+                "description": "Set (1/true/yes) to expose add/update/delete tools and allow DDL/DML through SQL. Read-only when unset.",
+                "format": "string",
+                "name": "INFINO_MCP_ENABLE_WRITES"
+              },
+              {
+                "description": "Hugging Face feature-extraction model for local embedding (default Xenova/all-MiniLM-L6-v2, 384-dim).",
+                "format": "string",
+                "name": "INFINO_MCP_EMBED_MODEL"
+              },
+              {
+                "description": "Custom S3 endpoint for non-AWS S3-compatible stores (Cloudflare R2, MinIO, Backblaze B2).",
+                "format": "string",
+                "name": "INFINO_MCP_S3_ENDPOINT"
+              },
+              {
+                "description": "Region sent with a custom S3 endpoint (default 'auto').",
+                "format": "string",
+                "name": "INFINO_MCP_S3_REGION"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-22T16:46:58.169815Z",
+          "publishedAt": "2026-06-22T16:46:58.169815Z",
+          "updatedAt": "2026-06-22T16:46:58.169815Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.infino-ai/mcp-server",
+        "description": "Keyword, vector, hybrid, and SQL retrieval over data on object storage, for AI agents.",
+        "repository": {
+          "url": "https://github.com/infino-ai/infino-mcp",
+          "source": "github"
+        },
+        "version": "0.1.1",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@infino-ai/mcp-server",
+            "version": "0.1.1",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Data to serve: a local path or an s3://|gs://|az:// bucket URI. Optional — defaults to an ephemeral in-process memory:// catalog if unset.",
+                "format": "string",
+                "name": "INFINO_MCP_URI"
+              },
+              {
+                "description": "Set (1/true/yes) to expose add/update/delete tools and allow DDL/DML through SQL. Read-only when unset.",
+                "format": "string",
+                "name": "INFINO_MCP_ENABLE_WRITES"
+              },
+              {
+                "description": "Hugging Face feature-extraction model for local embedding (default Xenova/all-MiniLM-L6-v2, 384-dim).",
+                "format": "string",
+                "name": "INFINO_MCP_EMBED_MODEL"
+              },
+              {
+                "description": "Custom S3 endpoint for non-AWS S3-compatible stores (Cloudflare R2, MinIO, Backblaze B2).",
+                "format": "string",
+                "name": "INFINO_MCP_S3_ENDPOINT"
+              },
+              {
+                "description": "Region sent with a custom S3 endpoint (default 'auto').",
+                "format": "string",
+                "name": "INFINO_MCP_S3_REGION"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-06-24T05:47:58.777476Z",
+          "publishedAt": "2026-06-24T05:47:58.777476Z",
+          "updatedAt": "2026-06-24T05:47:58.777476Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.infino-ai/mcp-server",
+        "description": "Keyword, vector, hybrid, and SQL retrieval over data on object storage, for AI agents.",
+        "repository": {
+          "url": "https://github.com/infino-ai/infino-mcp",
+          "source": "github"
+        },
+        "version": "0.1.2",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@infino-ai/mcp-server",
+            "version": "0.1.2",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Data to serve: a local path or an s3://|az:// bucket URI. Optional — defaults to a durable per-user directory (~/.infino/mcp) so data persists across restarts, falling back to an ephemeral memory:// catalog only if that directory can't be created.",
+                "format": "string",
+                "name": "INFINO_MCP_URI"
+              },
+              {
+                "description": "Set (1/true/yes) to expose add/update/delete tools and allow DDL/DML through SQL. Read-only when unset.",
+                "format": "string",
+                "name": "INFINO_MCP_ENABLE_WRITES"
+              },
+              {
+                "description": "Hugging Face feature-extraction model for local embedding (default Xenova/all-MiniLM-L6-v2, 384-dim).",
+                "format": "string",
+                "name": "INFINO_MCP_EMBED_MODEL"
+              },
+              {
+                "description": "Set (1/true/yes) to probe the object store at startup, so bad credentials or an unreachable bucket fail then instead of on the first search.",
+                "format": "string",
+                "name": "INFINO_MCP_VALIDATE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-01T11:39:20.621015Z",
+          "publishedAt": "2026-07-01T11:39:20.621015Z",
+          "updatedAt": "2026-07-01T11:39:20.621015Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.infino-ai/mcp-server",
+        "description": "Keyword, vector, hybrid, and SQL retrieval over data on object storage, for AI agents.",
+        "repository": {
+          "url": "https://github.com/infino-ai/infino-mcp",
+          "source": "github"
+        },
+        "version": "0.2.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@infino-ai/mcp-server",
+            "version": "0.2.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Data to serve: a local path or an s3://|az:// bucket URI. Optional — defaults to a durable per-user directory (~/.infino/mcp) so data persists across restarts, falling back to an ephemeral memory:// catalog only if that directory can't be created.",
+                "format": "string",
+                "name": "INFINO_MCP_URI"
+              },
+              {
+                "description": "Set (1/true/yes) to expose add/update/delete tools and allow DDL/DML through SQL. Read-only when unset.",
+                "format": "string",
+                "name": "INFINO_MCP_ENABLE_WRITES"
+              },
+              {
+                "description": "Hugging Face feature-extraction model for local embedding (default Xenova/all-MiniLM-L6-v2, 384-dim).",
+                "format": "string",
+                "name": "INFINO_MCP_EMBED_MODEL"
+              },
+              {
+                "description": "Set (1/true/yes) to probe the object store at startup, so bad credentials or an unreachable bucket fail then instead of on the first search.",
+                "format": "string",
+                "name": "INFINO_MCP_VALIDATE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-02T08:47:07.305719Z",
+          "publishedAt": "2026-07-02T08:47:07.305719Z",
+          "updatedAt": "2026-07-02T08:47:07.305719Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.infino-ai/mcp-server",
+        "description": "Keyword, vector, hybrid, and SQL retrieval over data on object storage, for AI agents.",
+        "repository": {
+          "url": "https://github.com/infino-ai/infino-mcp",
+          "source": "github"
+        },
+        "version": "0.3.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@infino-ai/mcp-server",
+            "version": "0.3.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Data to serve: a local path or an s3://|az:// bucket URI. Optional — defaults to a durable per-user directory (~/.infino/mcp) so data persists across restarts, falling back to an ephemeral memory:// catalog only if that directory can't be created.",
+                "format": "string",
+                "name": "INFINO_MCP_URI"
+              },
+              {
+                "description": "Set (1/true/yes) to expose add/update/delete tools and allow DDL/DML through SQL. Read-only when unset.",
+                "format": "string",
+                "name": "INFINO_MCP_ENABLE_WRITES"
+              },
+              {
+                "description": "Embedding provider: 'local' (Hugging Face transformers.js, default) or 'openai' (any OpenAI-compatible /embeddings endpoint, including Azure OpenAI's /openai/v1 surface). Inferred as 'openai' when INFINO_MCP_EMBED_BASE_URL is set.",
+                "format": "string",
+                "name": "INFINO_MCP_EMBED_PROVIDER"
+              },
+              {
+                "description": "Base URL of the OpenAI-compatible embeddings API (e.g. https://api.openai.com/v1 or https://<resource>.openai.azure.com/openai/v1). Required when the provider is 'openai'; the server POSTs to <base>/embeddings.",
+                "format": "string",
+                "name": "INFINO_MCP_EMBED_BASE_URL"
+              },
+              {
+                "description": "API key for the 'openai' provider. Sent as both Authorization: Bearer and api-key so one value works for OpenAI and Azure OpenAI.",
+                "format": "string",
+                "name": "INFINO_MCP_EMBED_API_KEY"
+              },
+              {
+                "description": "Embedding model. local: a Hugging Face feature-extraction model (default Xenova/all-MiniLM-L6-v2, 384-dim). openai: the model/deployment name (e.g. text-embedding-3-small, 1536-dim). Must match the model that produced the table's stored vectors.",
+                "format": "string",
+                "name": "INFINO_MCP_EMBED_MODEL"
+              },
+              {
+                "description": "Set (1/true/yes) to probe the object store at startup, so bad credentials or an unreachable bucket fail then instead of on the first search.",
+                "format": "string",
+                "name": "INFINO_MCP_VALIDATE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-08T12:46:21.965424Z",
+          "publishedAt": "2026-07-08T12:46:21.965424Z",
+          "updatedAt": "2026-07-08T12:46:21.965424Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.infino-ai/mcp-server",
+        "description": "Keyword, vector, hybrid, and SQL retrieval over data on object storage, for AI agents.",
+        "repository": {
+          "url": "https://github.com/infino-ai/infino-mcp",
+          "source": "github"
+        },
+        "version": "0.4.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@infino-ai/mcp-server",
+            "version": "0.4.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Data to serve: a local path or an s3://|az:// bucket URI. Optional — defaults to a durable per-user directory (~/.infino/mcp) so data persists across restarts, falling back to an ephemeral memory:// catalog only if that directory can't be created.",
+                "format": "string",
+                "name": "INFINO_MCP_URI"
+              },
+              {
+                "description": "Set (1/true/yes) to expose add/update/delete tools and allow DDL/DML through SQL. Read-only when unset.",
+                "format": "string",
+                "name": "INFINO_MCP_ENABLE_WRITES"
+              },
+              {
+                "description": "Embedding provider: 'local' (Hugging Face transformers.js, default) or 'openai' (any OpenAI-compatible /embeddings endpoint, including Azure OpenAI's /openai/v1 surface). Inferred as 'openai' when INFINO_MCP_EMBED_BASE_URL is set.",
+                "format": "string",
+                "name": "INFINO_MCP_EMBED_PROVIDER"
+              },
+              {
+                "description": "Base URL of the OpenAI-compatible embeddings API (e.g. https://api.openai.com/v1 or https://<resource>.openai.azure.com/openai/v1). Required when the provider is 'openai'; the server POSTs to <base>/embeddings.",
+                "format": "string",
+                "name": "INFINO_MCP_EMBED_BASE_URL"
+              },
+              {
+                "description": "API key for the 'openai' provider. Sent as both Authorization: Bearer and api-key so one value works for OpenAI and Azure OpenAI.",
+                "format": "string",
+                "name": "INFINO_MCP_EMBED_API_KEY"
+              },
+              {
+                "description": "Embedding model. local: a Hugging Face feature-extraction model (default Xenova/all-MiniLM-L6-v2, 384-dim). openai: the model/deployment name (e.g. text-embedding-3-small, 1536-dim). Must match the model that produced the table's stored vectors.",
+                "format": "string",
+                "name": "INFINO_MCP_EMBED_MODEL"
+              },
+              {
+                "description": "Set (1/true/yes) to probe the object store at startup, so bad credentials or an unreachable bucket fail then instead of on the first search.",
+                "format": "string",
+                "name": "INFINO_MCP_VALIDATE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-08T12:59:17.849245Z",
+          "publishedAt": "2026-07-08T12:59:17.849245Z",
+          "updatedAt": "2026-07-08T12:59:17.849245Z",
+          "isLatest": false
+        }
+      }
+    },
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.infino-ai/mcp-server",
+        "description": "Keyword, vector, hybrid, and SQL retrieval over data on object storage, for AI agents.",
+        "repository": {
+          "url": "https://github.com/infino-ai/infino-mcp",
+          "source": "github"
+        },
+        "version": "0.6.0",
+        "packages": [
+          {
+            "registryType": "npm",
+            "identifier": "@infino-ai/mcp-server",
+            "version": "0.6.0",
+            "transport": {
+              "type": "stdio"
+            },
+            "environmentVariables": [
+              {
+                "description": "Data to serve: a local path or an s3://|az:// bucket URI. Optional — defaults to a durable per-user directory (~/.infino/mcp) so data persists across restarts, falling back to an ephemeral memory:// catalog only if that directory can't be created.",
+                "format": "string",
+                "name": "INFINO_MCP_URI"
+              },
+              {
+                "description": "Set (1/true/yes) to expose add/update/delete tools and allow DDL/DML through SQL. Read-only when unset.",
+                "format": "string",
+                "name": "INFINO_MCP_ENABLE_WRITES"
+              },
+              {
+                "description": "Embedding provider: 'local' (Hugging Face transformers.js, default) or 'openai' (any OpenAI-compatible /embeddings endpoint, including Azure OpenAI's /openai/v1 surface). Inferred as 'openai' when INFINO_MCP_EMBED_BASE_URL is set.",
+                "format": "string",
+                "name": "INFINO_MCP_EMBED_PROVIDER"
+              },
+              {
+                "description": "Base URL of the OpenAI-compatible embeddings API (e.g. https://api.openai.com/v1 or https://<resource>.openai.azure.com/openai/v1). Required when the provider is 'openai'; the server POSTs to <base>/embeddings.",
+                "format": "string",
+                "name": "INFINO_MCP_EMBED_BASE_URL"
+              },
+              {
+                "description": "API key for the 'openai' provider. Sent as both Authorization: Bearer and api-key so one value works for OpenAI and Azure OpenAI.",
+                "format": "string",
+                "name": "INFINO_MCP_EMBED_API_KEY"
+              },
+              {
+                "description": "Embedding model. local: a Hugging Face feature-extraction model (default Xenova/all-MiniLM-L6-v2, 384-dim). openai: the model/deployment name (e.g. text-embedding-3-small, 1536-dim). Must match the model that produced the table's stored vectors.",
+                "format": "string",
+                "name": "INFINO_MCP_EMBED_MODEL"
+              },
+              {
+                "description": "Set (1/true/yes) to probe the object store at startup, so bad credentials or an unreachable bucket fail then instead of on the first search.",
+                "format": "string",
+                "name": "INFINO_MCP_VALIDATE"
+              }
+            ]
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-07-09T07:36:27.592044Z",
+          "publishedAt": "2026-07-09T07:36:27.592044Z",
+          "updatedAt": "2026-07-09T07:36:27.592044Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:57.165Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}

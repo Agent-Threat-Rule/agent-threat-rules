@@ -1,0 +1,442 @@
+{
+  "dedup_key": "pkg:oci:ghcr.io/dtkmn/mcp-zap-server:v0.8.0",
+  "package_identity": {
+    "type": "package",
+    "key": "pkg:oci:ghcr.io/dtkmn/mcp-zap-server:v0.8.0",
+    "registryType": "oci",
+    "identifier": "ghcr.io/dtkmn/mcp-zap-server:v0.8.0"
+  },
+  "server_names": [
+    "io.github.dtkmn/mcp-zap-server"
+  ],
+  "versions_seen": [
+    "0.8.0"
+  ],
+  "registry_row_count": 1,
+  "latest_registry_entry": {
+    "server": {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.github.dtkmn/mcp-zap-server",
+      "description": "Safe, self-hosted OWASP ZAP operator for guided AI security scans and reports.",
+      "title": "MCP ZAP Server",
+      "repository": {
+        "url": "https://github.com/dtkmn/mcp-zap-server",
+        "source": "github",
+        "id": "969625020"
+      },
+      "version": "0.8.0",
+      "websiteUrl": "https://danieltse.org/mcp-zap-server/",
+      "icons": [
+        {
+          "src": "https://raw.githubusercontent.com/dtkmn/mcp-zap-server/main/images/brand.png",
+          "mimeType": "image/png",
+          "sizes": [
+            "1024x1024"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/dtkmn/mcp-zap-server:v0.8.0",
+          "runtimeHint": "docker",
+          "transport": {
+            "type": "streamable-http",
+            "url": "http://localhost:7456/mcp",
+            "headers": [
+              {
+                "description": "MCP API key configured with MCP_API_KEY.",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "X-API-Key"
+              }
+            ]
+          },
+          "runtimeArguments": [
+            {
+              "description": "Docker network containing the separately running OWASP ZAP daemon.",
+              "value": "mcp-zap-network",
+              "type": "named",
+              "name": "--network"
+            },
+            {
+              "description": "Run with the standard zaproxy/zap-stable UID/GID so shared report workspace files remain writable by both containers.",
+              "value": "1000:1000",
+              "type": "named",
+              "name": "--user"
+            },
+            {
+              "description": "Expose the streamable HTTP MCP endpoint on localhost.",
+              "value": "127.0.0.1:7456:7456",
+              "type": "named",
+              "name": "-p"
+            },
+            {
+              "description": "Named report workspace volume. The external OWASP ZAP container must mount the same volume at /zap/wrk.",
+              "value": "mcp-zap-wrk:/zap/wrk",
+              "type": "named",
+              "name": "-v"
+            }
+          ],
+          "environmentVariables": [
+            {
+              "description": "Hostname or URL of a separately running OWASP ZAP daemon reachable from this container.",
+              "default": "mcp-zap-zap",
+              "name": "ZAP_API_URL"
+            },
+            {
+              "description": "OWASP ZAP API port.",
+              "default": "8090",
+              "name": "ZAP_API_PORT"
+            },
+            {
+              "description": "API key configured on the OWASP ZAP daemon.",
+              "isRequired": true,
+              "isSecret": true,
+              "name": "ZAP_API_KEY"
+            },
+            {
+              "description": "API key clients must send as X-API-Key.",
+              "isRequired": true,
+              "isSecret": true,
+              "name": "MCP_API_KEY"
+            },
+            {
+              "description": "Tool surface to expose. Use guided for the safer default workflow, or expert when clients need raw ZAP tools such as zap_report_read.",
+              "default": "guided",
+              "name": "MCP_SERVER_TOOLS_SURFACE"
+            },
+            {
+              "value": "api-key",
+              "name": "MCP_SECURITY_MODE"
+            },
+            {
+              "value": "true",
+              "name": "MCP_SECURITY_ENABLED"
+            },
+            {
+              "value": "false",
+              "name": "MCP_SECURITY_ALLOW_PLACEHOLDER_API_KEY"
+            }
+          ]
+        },
+        {
+          "registryType": "oci",
+          "identifier": "docker.io/dtkmn/mcp-zap-server:v0.8.0",
+          "runtimeHint": "docker",
+          "transport": {
+            "type": "streamable-http",
+            "url": "http://localhost:7456/mcp",
+            "headers": [
+              {
+                "description": "MCP API key configured with MCP_API_KEY.",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "X-API-Key"
+              }
+            ]
+          },
+          "runtimeArguments": [
+            {
+              "description": "Docker network containing the separately running OWASP ZAP daemon.",
+              "value": "mcp-zap-network",
+              "type": "named",
+              "name": "--network"
+            },
+            {
+              "description": "Run with the standard zaproxy/zap-stable UID/GID so shared report workspace files remain writable by both containers.",
+              "value": "1000:1000",
+              "type": "named",
+              "name": "--user"
+            },
+            {
+              "description": "Expose the streamable HTTP MCP endpoint on localhost.",
+              "value": "127.0.0.1:7456:7456",
+              "type": "named",
+              "name": "-p"
+            },
+            {
+              "description": "Named report workspace volume. The external OWASP ZAP container must mount the same volume at /zap/wrk.",
+              "value": "mcp-zap-wrk:/zap/wrk",
+              "type": "named",
+              "name": "-v"
+            }
+          ],
+          "environmentVariables": [
+            {
+              "description": "Hostname or URL of a separately running OWASP ZAP daemon reachable from this container.",
+              "default": "mcp-zap-zap",
+              "name": "ZAP_API_URL"
+            },
+            {
+              "description": "OWASP ZAP API port.",
+              "default": "8090",
+              "name": "ZAP_API_PORT"
+            },
+            {
+              "description": "API key configured on the OWASP ZAP daemon.",
+              "isRequired": true,
+              "isSecret": true,
+              "name": "ZAP_API_KEY"
+            },
+            {
+              "description": "API key clients must send as X-API-Key.",
+              "isRequired": true,
+              "isSecret": true,
+              "name": "MCP_API_KEY"
+            },
+            {
+              "description": "Tool surface to expose. Use guided for the safer default workflow, or expert when clients need raw ZAP tools such as zap_report_read.",
+              "default": "guided",
+              "name": "MCP_SERVER_TOOLS_SURFACE"
+            },
+            {
+              "value": "api-key",
+              "name": "MCP_SECURITY_MODE"
+            },
+            {
+              "value": "true",
+              "name": "MCP_SECURITY_ENABLED"
+            },
+            {
+              "value": "false",
+              "name": "MCP_SECURITY_ALLOW_PLACEHOLDER_API_KEY"
+            }
+          ]
+        }
+      ],
+      "_meta": {
+        "io.modelcontextprotocol.registry/publisher-provided": {
+          "dockerCompose": "https://github.com/dtkmn/mcp-zap-server/blob/main/docker-compose.yml",
+          "externalDependency": "OWASP ZAP is not bundled in the MCP server image. Start ZAP separately on the configured Docker network, initialize mcp-zap-wrk for UID/GID 1000:1000, and mount the same mcp-zap-wrk:/zap/wrk volume into ZAP so reports generated by ZAP are readable by MCP.",
+          "installation": "Docker Compose remains the easiest install path. OCI package installs require a separately running OWASP ZAP daemon reachable from the MCP container.",
+          "recommendedInstallDoc": "https://github.com/dtkmn/mcp-zap-server/blob/main/llms-install.md"
+        }
+      }
+    },
+    "_meta": {
+      "io.modelcontextprotocol.registry/official": {
+        "status": "active",
+        "statusChangedAt": "2026-05-10T12:11:56.825892Z",
+        "publishedAt": "2026-05-10T12:11:56.825892Z",
+        "updatedAt": "2026-05-10T12:11:56.825892Z",
+        "isLatest": true
+      }
+    }
+  },
+  "all_registry_entries": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "io.github.dtkmn/mcp-zap-server",
+        "description": "Safe, self-hosted OWASP ZAP operator for guided AI security scans and reports.",
+        "title": "MCP ZAP Server",
+        "repository": {
+          "url": "https://github.com/dtkmn/mcp-zap-server",
+          "source": "github",
+          "id": "969625020"
+        },
+        "version": "0.8.0",
+        "websiteUrl": "https://danieltse.org/mcp-zap-server/",
+        "icons": [
+          {
+            "src": "https://raw.githubusercontent.com/dtkmn/mcp-zap-server/main/images/brand.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "1024x1024"
+            ]
+          }
+        ],
+        "packages": [
+          {
+            "registryType": "oci",
+            "identifier": "ghcr.io/dtkmn/mcp-zap-server:v0.8.0",
+            "runtimeHint": "docker",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:7456/mcp",
+              "headers": [
+                {
+                  "description": "MCP API key configured with MCP_API_KEY.",
+                  "isRequired": true,
+                  "isSecret": true,
+                  "name": "X-API-Key"
+                }
+              ]
+            },
+            "runtimeArguments": [
+              {
+                "description": "Docker network containing the separately running OWASP ZAP daemon.",
+                "value": "mcp-zap-network",
+                "type": "named",
+                "name": "--network"
+              },
+              {
+                "description": "Run with the standard zaproxy/zap-stable UID/GID so shared report workspace files remain writable by both containers.",
+                "value": "1000:1000",
+                "type": "named",
+                "name": "--user"
+              },
+              {
+                "description": "Expose the streamable HTTP MCP endpoint on localhost.",
+                "value": "127.0.0.1:7456:7456",
+                "type": "named",
+                "name": "-p"
+              },
+              {
+                "description": "Named report workspace volume. The external OWASP ZAP container must mount the same volume at /zap/wrk.",
+                "value": "mcp-zap-wrk:/zap/wrk",
+                "type": "named",
+                "name": "-v"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Hostname or URL of a separately running OWASP ZAP daemon reachable from this container.",
+                "default": "mcp-zap-zap",
+                "name": "ZAP_API_URL"
+              },
+              {
+                "description": "OWASP ZAP API port.",
+                "default": "8090",
+                "name": "ZAP_API_PORT"
+              },
+              {
+                "description": "API key configured on the OWASP ZAP daemon.",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "ZAP_API_KEY"
+              },
+              {
+                "description": "API key clients must send as X-API-Key.",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "MCP_API_KEY"
+              },
+              {
+                "description": "Tool surface to expose. Use guided for the safer default workflow, or expert when clients need raw ZAP tools such as zap_report_read.",
+                "default": "guided",
+                "name": "MCP_SERVER_TOOLS_SURFACE"
+              },
+              {
+                "value": "api-key",
+                "name": "MCP_SECURITY_MODE"
+              },
+              {
+                "value": "true",
+                "name": "MCP_SECURITY_ENABLED"
+              },
+              {
+                "value": "false",
+                "name": "MCP_SECURITY_ALLOW_PLACEHOLDER_API_KEY"
+              }
+            ]
+          },
+          {
+            "registryType": "oci",
+            "identifier": "docker.io/dtkmn/mcp-zap-server:v0.8.0",
+            "runtimeHint": "docker",
+            "transport": {
+              "type": "streamable-http",
+              "url": "http://localhost:7456/mcp",
+              "headers": [
+                {
+                  "description": "MCP API key configured with MCP_API_KEY.",
+                  "isRequired": true,
+                  "isSecret": true,
+                  "name": "X-API-Key"
+                }
+              ]
+            },
+            "runtimeArguments": [
+              {
+                "description": "Docker network containing the separately running OWASP ZAP daemon.",
+                "value": "mcp-zap-network",
+                "type": "named",
+                "name": "--network"
+              },
+              {
+                "description": "Run with the standard zaproxy/zap-stable UID/GID so shared report workspace files remain writable by both containers.",
+                "value": "1000:1000",
+                "type": "named",
+                "name": "--user"
+              },
+              {
+                "description": "Expose the streamable HTTP MCP endpoint on localhost.",
+                "value": "127.0.0.1:7456:7456",
+                "type": "named",
+                "name": "-p"
+              },
+              {
+                "description": "Named report workspace volume. The external OWASP ZAP container must mount the same volume at /zap/wrk.",
+                "value": "mcp-zap-wrk:/zap/wrk",
+                "type": "named",
+                "name": "-v"
+              }
+            ],
+            "environmentVariables": [
+              {
+                "description": "Hostname or URL of a separately running OWASP ZAP daemon reachable from this container.",
+                "default": "mcp-zap-zap",
+                "name": "ZAP_API_URL"
+              },
+              {
+                "description": "OWASP ZAP API port.",
+                "default": "8090",
+                "name": "ZAP_API_PORT"
+              },
+              {
+                "description": "API key configured on the OWASP ZAP daemon.",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "ZAP_API_KEY"
+              },
+              {
+                "description": "API key clients must send as X-API-Key.",
+                "isRequired": true,
+                "isSecret": true,
+                "name": "MCP_API_KEY"
+              },
+              {
+                "description": "Tool surface to expose. Use guided for the safer default workflow, or expert when clients need raw ZAP tools such as zap_report_read.",
+                "default": "guided",
+                "name": "MCP_SERVER_TOOLS_SURFACE"
+              },
+              {
+                "value": "api-key",
+                "name": "MCP_SECURITY_MODE"
+              },
+              {
+                "value": "true",
+                "name": "MCP_SECURITY_ENABLED"
+              },
+              {
+                "value": "false",
+                "name": "MCP_SECURITY_ALLOW_PLACEHOLDER_API_KEY"
+              }
+            ]
+          }
+        ],
+        "_meta": {
+          "io.modelcontextprotocol.registry/publisher-provided": {
+            "dockerCompose": "https://github.com/dtkmn/mcp-zap-server/blob/main/docker-compose.yml",
+            "externalDependency": "OWASP ZAP is not bundled in the MCP server image. Start ZAP separately on the configured Docker network, initialize mcp-zap-wrk for UID/GID 1000:1000, and mount the same mcp-zap-wrk:/zap/wrk volume into ZAP so reports generated by ZAP are readable by MCP.",
+            "installation": "Docker Compose remains the easiest install path. OCI package installs require a separately running OWASP ZAP daemon reachable from the MCP container.",
+            "recommendedInstallDoc": "https://github.com/dtkmn/mcp-zap-server/blob/main/llms-install.md"
+          }
+        }
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "statusChangedAt": "2026-05-10T12:11:56.825892Z",
+          "publishedAt": "2026-05-10T12:11:56.825892Z",
+          "updatedAt": "2026-05-10T12:11:56.825892Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "collected_at": "2026-07-11T22:15:57.050Z",
+  "source": "https://registry.modelcontextprotocol.io/v0/servers"
+}
