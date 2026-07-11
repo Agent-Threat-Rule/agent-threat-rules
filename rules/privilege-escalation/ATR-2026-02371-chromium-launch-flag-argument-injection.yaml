@@ -98,8 +98,8 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)\b(?:extra_args|browser_config|chrome_args|browser_args|launch_args)\b[\s\S]{0,40}--(?:utility-cmd-prefix|renderer-cmd-prefix|gpu-launcher|browser-subprocess-path)\s*=\s*["'']?(?!(?:gdb|lldb|valgrind|strace|ltrace|perf)\b)'
-      description: "Browser-automation launch-args field carrying a Chromium command-replacing switch whose value is not one of the well-known debugger/profiler tools -- CVE-2026-57572/GHSA-r253-r9jw-qg44 primary primitive (negative lookahead scoped to exclude legitimate local debugging via gdb/lldb/valgrind/strace/ltrace/perf)"
+      value: '(?i)\b(?:extra_args|browser_config|chrome_args|browser_args|launch_args)\b[\s\S]{0,40}--(?:utility-cmd-prefix|renderer-cmd-prefix|gpu-launcher|browser-subprocess-path)\s*=(?!\s*["'']?(?:gdb|lldb|valgrind|strace|ltrace|perf)\b)\s*["'']?'
+      description: "Browser-automation launch-args field carrying a Chromium command-replacing switch whose value is not one of the well-known debugger/profiler tools -- CVE-2026-57572/GHSA-r253-r9jw-qg44 primary primitive. The negative lookahead sits directly after '=' (with its own internal \\s*[\"']?) rather than after an outer \\s*[\"']?, so it cannot be evaded by the outer quantifier backtracking to leave the check positioned on a quote character instead of the tool name -- the same evasion class independently caught by CI's generalization gate on ATR-2026-02372's npx condition"
     - field: content
       operator: regex
       value: '(?i)--(?:utility-cmd-prefix|renderer-cmd-prefix|gpu-launcher|browser-subprocess-path)\s*=[\s\S]{0,40}--no-zygote\b'
@@ -113,6 +113,7 @@ detection:
     - "Chromium/Chrome-internals engineering documentation discussing these switch names without an actual tool-call argument being set to them"
     - "A --no-zygote flag used alone for container/sandboxing compatibility with no accompanying cmd-prefix/launcher/subprocess-path switch"
     - "A local developer wrapping the renderer/utility process with a well-known debugger or profiler for legitimate crash investigation (e.g. --renderer-cmd-prefix=\"gdb --args\", --utility-cmd-prefix=\"valgrind\", or lldb/strace/ltrace/perf) -- adversarially confirmed during review: caught by an earlier, broader version of condition 1 and fixed with a negative lookahead"
+    - "Residual: a backslash-escaped quote before the debugger name (e.g. --renderer-cmd-prefix=\\\"gdb --args\\\" as a doubly-JSON-escaped literal) can still evade the lookahead, since the lookahead's optional [\"']? does not account for a preceding backslash -- an accepted, narrow residual gap given this exact escaping shape is uncommon in the flat tool-call-argument text this rule targets"
 
 response:
   actions:
@@ -157,3 +158,6 @@ test_cases:
     - input: 'utility-cmd-prefix wrapping for profiling: chrome_args=["--utility-cmd-prefix=valgrind --leak-check=full"]'
       expected: not_triggered
       description: "ADVERSARIAL: legitimate memory-profiling via valgrind, same debugger-allowlist false-positive class"
+    - input: 'launch_args=["--renderer-cmd-prefix=''gdb --args''"]'
+      expected: not_triggered
+      description: "ADVERSARIAL: gdb wrapped in single quotes -- found as a real evasion of an earlier version of the negative lookahead (the outer optional quote-consumer could backtrack to leave the check positioned on the quote character instead of 'gdb'); fixed by moving the lookahead directly after '=' with its own internal optional-quote handling"
