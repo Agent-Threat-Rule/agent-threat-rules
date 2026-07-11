@@ -97,16 +97,26 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)"?(?:env|environment)"?\s*[:=]\s*[\{\s]{0,5}[\s\S]{0,10}"?\bNODE_OPTIONS\b"?\s*[:=]\s*["'']?[\s\S]{0,40}?(?:--require\b|-r\s+\S|--loader\b|--experimental-loader\b|\.m?js\b)'
-      description: "MCP config env block sets NODE_OPTIONS to a value that actually references a require/preload/loader mechanism, not a routine memory/debug/warnings flag"
+      value: '(?i)"env"\s*:\s*\{[\s\S]{0,10}"?\bNODE_OPTIONS\b"?\s*:\s*["''][\s\S]{0,40}?(?:--require\b|-r\s+\S|--loader\b|--experimental-loader\b|--experimental-require-module\b)'
+      description: "JSON-style MCP config env block sets NODE_OPTIONS to a value that actually references a require/preload/loader flag, not a routine memory/debug/warnings flag or the modern --import instrumentation flag"
     - field: content
       operator: regex
-      value: '(?i)"?(?:env|environment)"?\s*[:=]\s*[\{\s]{0,5}[\s\S]{0,10}"?\b(?:LD_PRELOAD|DYLD_INSERT_LIBRARIES|BASH_ENV|PYTHONSTARTUP|PERL5OPT|RUBYOPT|GCONV_PATH)\b"?\s*[:=]\s*\S'
-      description: "MCP config env block sets a known process-hijacking environment variable that has no benign flag-only mode (its value IS the hijack payload)"
+      value: '(?i)\b(?:env|environment)\b\s*:\s*\n\s+"?\bNODE_OPTIONS\b"?\s*:\s*[\s\S]{0,40}?(?:--require\b|-r\s+\S|--loader\b|--experimental-loader\b|--experimental-require-module\b)'
+      description: "YAML-style MCP config env block (env:/environment: followed immediately by an indented NODE_OPTIONS key on the next line, not separated by prose or a code fence) sets NODE_OPTIONS to a require/preload/loader flag"
+    - field: content
+      operator: regex
+      value: '(?i)"env"\s*:\s*\{[\s\S]{0,10}"?\b(?:LD_PRELOAD|DYLD_INSERT_LIBRARIES|BASH_ENV|PYTHONSTARTUP|PERL5OPT|RUBYOPT|GCONV_PATH)\b"?\s*:\s*\S'
+      description: "JSON-style MCP config env block sets a known process-hijacking environment variable that has no benign flag-only mode (its value IS the hijack payload)"
+    - field: content
+      operator: regex
+      value: '(?i)\b(?:env|environment)\b\s*:\s*\n\s+"?\b(?:LD_PRELOAD|DYLD_INSERT_LIBRARIES|BASH_ENV|PYTHONSTARTUP|PERL5OPT|RUBYOPT|GCONV_PATH)\b"?\s*:\s*\S'
+      description: "YAML-style MCP config env block (env:/environment: followed immediately by an indented key on the next line) sets a known process-hijacking environment variable"
   false_positives:
     - "A DevOps runbook or documentation discussing these variable names in prose without an accompanying env-block config context"
     - "A legitimate, security-reviewed MCP server config that intentionally sets LD_PRELOAD/NODE_OPTIONS for approved instrumentation (e.g. an APM agent) -- rare but possible; still worth a human check given the severity of process-hijacking if the value turns out to be attacker-controlled"
     - "Routine NODE_OPTIONS flags that are not a require/loader mechanism -- 'NODE_OPTIONS=--max-old-space-size=4096', 'NODE_OPTIONS=--inspect=9229' -- these tune memory/debugging and carry no code-loading capability, so they must not fire"
+    - "The standard, widely-recommended NODE_OPTIONS=\"--import ./instrument.mjs\" instrumentation idiom (used by Sentry, OpenTelemetry, and the Node.js docs for ESM-based APM preloading) -- --import is deliberately excluded from the trigger-flag list since it is the modern, safe, blessed alternative to --require, not a hijack primitive by itself"
+    - "Documentation that introduces a code example with a prose header like 'Or via environment:' followed by a fenced code block -- the YAML condition requires the dangerous key to appear on the immediately-following indented line with no intervening fence/prose, so a heading-then-example structure does not fire"
 
 response:
   actions:
@@ -147,3 +157,9 @@ test_cases:
     - input: '{"mcpServers":{"debug":{"command":"node","args":["--inspect","server.js"],"env":{"DEBUG":"true","LOG_LEVEL":"verbose"}}}}'
       expected: not_triggered
       description: "Ordinary debug/log-level environment variables in MCP config, not in the dangerous set"
+    - input: "Or via environment:\n\n```\nNODE_OPTIONS=\"--import ./instrument.mjs\" npm run start\n```"
+      expected: not_triggered
+      description: "Regression: adversarial self-review found this firing against data/skills-sh/skills/getsentry/sentry-nestjs-sdk.md — the standard Sentry/OpenTelemetry --import instrumentation idiom introduced by a prose heading and code fence, not an actual env-block config. Fixed by (1) dropping the overly broad .m?js indicator from the payload-flag list so --import (a safe, blessed ESM flag) no longer counts as a hijack marker, and (2) requiring the YAML env:/environment: anchor to be followed immediately by an indented key with no intervening fence/prose."
+    - input: "mcpServers:\n  db:\n    command: node\n    args: [server.js]\n    env:\n      DB_HOST: localhost\n      NODE_OPTIONS: --max-old-space-size=4096"
+      expected: not_triggered
+      description: "YAML-style MCP config with an unrelated env var before a routine NODE_OPTIONS memory-tuning flag, no require/loader payload"
