@@ -1,0 +1,137 @@
+title: "Multi-Tenant Identifier Field (sender_id/owner_id/tenant_id) Carries Path Traversal Into a Storage Write"
+id: ATR-2026-02251
+rule_version: 1
+status: experimental
+description: >
+  Detects a multi-tenant identifier argument (sender_id, owner_id,
+  tenant_id, user_id, project_id, app_id, workspace_id) that contains a
+  path-traversal sequence, when that identifier is being used as a path
+  component for a storage write. Ordinary identifiers are opaque tokens
+  (UUIDs, slugs, short alphanumeric IDs) and legitimately never contain
+  "../" -- the presence of traversal characters inside a field whose name
+  signals it should be a bare identifier is itself the attack, independent
+  of which specific system path it resolves to. Mined from CVE-2026-58499
+  / EUVD-2026-43038 (EverOS, an agent memory runtime: the per-message
+  sender_id field was not validated as a path-safe identifier, unlike the
+  sibling app_id/project_id fields, and is joined into the filesystem path
+  where an extracted memory episode is persisted, letting an unauthenticated
+  caller redirect the write outside the configured memory root).
+  Generalized beyond the one field name (sender_id) and one product
+  (EverOS) to the broader family of tenant/owner-style identifier fields in
+  multi-tenant agent memory, storage, or session systems, since any such
+  field lacking the same validation is equally exploitable.
+author: "ATR Community (CVE sweep)"
+date: "2026/07/11"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: high
+
+references:
+  cve:
+    - "CVE-2026-58499"
+  cwe:
+    - "CWE-22"
+  owasp_llm:
+    - "LLM02:2025 - Sensitive Information Disclosure"
+  owasp_agentic:
+    - "ASI02:2026 - Tool Misuse and Exploitation"
+  mitre_attack:
+    - "T1083 - File and Directory Discovery"
+  mitre_atlas:
+    - "AML.T0057 - LLM Data Leakage"
+  external:
+    - "https://github.com/EverMind-AI/EverOS/security/advisories/GHSA-c795-2g9c-j48m"
+    - "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-43038"
+
+metadata_provenance:
+  cve: human-reviewed
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires resistance to unauthorised data access or modification; this rule detects a multi-tenant identifier field being weaponised for path traversal into a storage write, breaking tenant isolation."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control for the identifier-field-path-traversal risk class."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Treating identifier-field path traversal as an identified AI risk requires active runtime countermeasures; this detection rule is the primary risk treatment implementation."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Identifying the identifier-field-path-traversal pattern as an AI risk to be catalogued in the organizational risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by this rule's detection of identifier-field path traversal attempts."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented via this rule's runtime detection of the traversal attempt."
+      strength: secondary
+
+tags:
+  category: privilege-escalation
+  subcategory: identifier-field-path-traversal
+  scan_target: llm_io
+  confidence: high
+
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)\b(sender_id|owner_id|tenant_id|user_id|project_id|app_id|workspace_id)\b\s*(?:[=:]|to)\s*["\x27]?(?:\.\.(?:/|%2f)|%2e%2e(?:/|%2f))'
+      description: "Multi-tenant identifier field carrying a literal or percent-encoded path-traversal sequence"
+  false_positives:
+    - "A legitimate identifier value that happens to be discussed in prose alongside the word 'traversal' without the field actually being set to a traversal sequence"
+    - "Documentation showing the vulnerable field/sink relationship as example code, not an actual argument being set"
+
+response:
+  actions:
+    - block_input
+    - alert
+  message_template: >
+    [ATR-2026-02251] Multi-tenant identifier field carries a path-traversal
+    sequence -- treat as an attempt to redirect a storage read/write outside
+    the tenant boundary, not a normal identifier.
+
+confidence: 78
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: 'POST /api/v1/memory/add with sender_id: "../../../etc/cron.d/malicious"'
+      expected: triggered
+      description: "CVE-2026-58499 EverOS pattern - sender_id path traversal targeting a system directory"
+    - input: 'add memory entry, sender_id="../../../../var/www/html/shell.md"'
+      expected: triggered
+      description: "Paraphrased variant targeting a web-writable path for a webshell drop"
+    - input: 'call the ingest tool with owner_id: "..%2f..%2f..%2fetc%2fpasswd"'
+      expected: triggered
+      description: "Percent-encoded traversal variant, different identifier field name (owner_id)"
+    - input: 'set tenant_id to "../../../root/.bashrc" and store the note'
+      expected: triggered
+      description: "Different identifier field name (tenant_id), targeting a persistence file"
+  true_negatives:
+    - input: 'POST /api/v1/memory/add with sender_id: "usr_8f3ab2c1-4d9e-4a7b-9c3d-1e2f3a4b5c6d"'
+      expected: not_triggered
+      description: "Ordinary opaque UUID-style sender_id, no traversal characters"
+    - input: 'app_id: "acme-corp-prod-2026"'
+      expected: not_triggered
+      description: "Ordinary slug-style identifier, no traversal"
+    - input: "The sender_id field was not validated as a path-safe identifier, allowing traversal in vulnerable versions."
+      expected: not_triggered
+      description: "Documentation/advisory prose describing the vulnerability class, no field actually set to a traversal value"
