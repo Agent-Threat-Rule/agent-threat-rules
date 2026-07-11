@@ -100,7 +100,7 @@ detection:
       description: "Reverse key order variant -- capitalized `Name` appearing before lowercase `name`, since JSON object key order is not guaranteed"
     - field: content
       operator: regex
-      value: '(?:"jsonrpc"\s*:\s*"2\.0"|"tools/call")[\s\S]{0,150}"arguments"\s*:\s*\{[^{}]{0,150}\}[^{}]{0,60}"Arguments"\s*:'
+      value: '(?:"jsonrpc"\s*:\s*"2\.0"|"tools/call")[\s\S]{0,130}"arguments"\s*:\s*\{[^{}]{0,120}\}[^{}]{0,60}"Arguments"\s*:'
       description: "JSON-RPC/MCP tool-call message carrying both a lowercase `arguments` object and a capitalized `Arguments` object in the same params -- the flat-object bound (no nested braces inside each arguments value) covers the canonical exploit shape; deeply nested argument objects are a known limitation, see evasion_tests"
   false_positives:
     - "Security research documentation, RFC/spec excerpts (e.g. the JSON-RPC case-sensitivity spec text itself), or vulnerability write-ups that quote the example PoC JSON verbatim for explanatory purposes rather than an actual live tool-call message"
@@ -152,4 +152,4 @@ evasion_tests:
   - input: '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"greet","arguments":{"nested":{"a":1}},"Arguments":{"nested":{"b":2}}}}'
     expected: not_triggered
     bypass_technique: nested_braces_in_arguments_value
-    notes: "The arguments/Arguments condition bounds the first arguments value to a flat object with no nested braces ([^{}]{0,150}); a nested object breaks that bound and the pattern does not match. The name/Name conditions are unaffected by this limitation and still catch the tool-identity-swap variant of the same underlying bug."
+    notes: "The arguments/Arguments condition bounds the first arguments value to a flat object with no nested braces ([^{}]{0,120}); a nested object breaks that bound and the pattern does not match. The name/Name conditions are unaffected by this limitation and still catch the tool-identity-swap variant of the same underlying bug."
