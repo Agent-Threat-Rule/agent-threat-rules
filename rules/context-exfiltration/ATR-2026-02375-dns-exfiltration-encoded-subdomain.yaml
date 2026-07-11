@@ -100,16 +100,17 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)\b(?:ping|dig|nslookup|host)\b\s+(?:[-+][\w:]+\s+)*(?=[a-zA-Z0-9+/]*[0-9][a-zA-Z0-9+/]*[0-9][a-zA-Z0-9+/]*[0-9])[A-Za-z0-9+/]{20,}={0,2}(?:\.[a-z0-9-]+){2,}\b'
-      description: "ping/dig/nslookup/host command targeting a hostname whose leftmost label is a long base64-shaped, digit-bearing string -- CVE-2025-55284 DNS-exfiltration-of-encoded-secret pattern"
+      value: '\b(?:ping|dig|nslookup|host)\b\s+(?:[-+][\w:]+\s+)*(?=[a-zA-Z0-9+/]*[0-9][a-zA-Z0-9+/]*[0-9][a-zA-Z0-9+/]*[0-9])(?=[a-zA-Z0-9+/]*[g-zG-Z])[A-Za-z0-9+/]{20,}={0,2}(?:\.[a-z0-9-]+){2,}\b'
+      description: "ping/dig/nslookup/host command targeting a hostname whose leftmost label is a long, digit-bearing string containing at least one non-hex letter (g-z) -- CVE-2025-55284 DNS-exfiltration-of-encoded-secret pattern. The non-hex-letter requirement is deliberate: the engine matches regex case-insensitively regardless of a case_sensitive flag (verified against src/engine.ts evaluateArrayCondition, which always applies the 'i' flag for array-format conditions), so a mixed-case heuristic is NOT enforceable here -- requiring a letter outside the hex alphabet (0-9a-f) is a case-invariant way to distinguish base64-shaped data from lowercase-only hex hashes (git SHAs, CDN content hashes), since hex hash digests by definition never contain g-z"
     - field: content
       operator: regex
-      value: '(?i)\b(?:ping|dig|nslookup|host)\b\s+(?:[-+][\w:]+\s+)*AKIA[0-9A-Z]{16}(?:\.[a-z0-9-]+){2,}\b'
+      value: '\b(?:ping|dig|nslookup|host)\b\s+(?:[-+][\w:]+\s+)*AKIA[0-9A-Z]{16}(?:\.[a-z0-9-]+){2,}\b'
       description: "ping/dig/nslookup/host command targeting a hostname carrying an AWS-access-key-shaped label -- credential exfiltration via DNS query"
   false_positives:
     - "An ordinary CDN or tracking hostname with a short (under 20 characters) hash-like subdomain, e.g. ping a1b2c3d4.cdn.example.com"
     - "A ping/dig/host command targeting a normal, human-readable hostname (no long base64-shaped or credential-shaped leftmost label)"
     - "Documentation or a security write-up describing the DNS-exfiltration technique in prose without an actual ping/dig/nslookup/host invocation"
+    - "A long, digit-bearing hex hash used as a subdomain -- e.g. a CloudFront/CDN content hash or a git-commit-SHA-based deployment-preview hostname (common on platforms like Vercel/Netlify) -- ADVERSARIALLY CONFIRMED as real false positives during review; fixed by requiring the label contain at least one letter outside the hex alphabet (g-z), since hex digests by definition draw only from 0-9a-f while base64-encoded arbitrary data almost always includes at least one g-z letter"
 
 response:
   actions:
@@ -144,6 +145,15 @@ test_cases:
     - input: "dig +short a1b2c3d4.cdn.example.com"
       expected: not_triggered
       description: "Short (under 20 char) hash-like CDN subdomain, below the length threshold"
+    - input: "ping d3c3c1a2b8f9e0a1d2c3.cloudfront.net"
+      expected: not_triggered
+      description: "ADVERSARIAL: legitimate all-hex CDN content-hash subdomain -- found as a real false positive during adversarial self-review; fixed by requiring a non-hex letter (g-z), since hex digests never contain one"
+    - input: "dig +short 4f9a8b2c1d3e5f7890abcdef1234567890abcdef.preview.vercel.app"
+      expected: not_triggered
+      description: "ADVERSARIAL: legitimate git-commit-SHA-based deployment-preview hostname (common Vercel/Netlify pattern), all-lowercase hex -- same false-positive class"
+    - input: "run a quick check: ping -c 3 database-primary-us-east-1.rds.amazonaws.com"
+      expected: not_triggered
+      description: "Ordinary readable AWS RDS hostname, ping with a -c flag, no encoded-looking label"
     - input: "nslookup api.internal-service.example.com"
       expected: not_triggered
       description: "Ordinary readable internal hostname, not base64-shaped and no digit-density signal"

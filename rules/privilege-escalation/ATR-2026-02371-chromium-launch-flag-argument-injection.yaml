@@ -98,8 +98,8 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)\b(?:extra_args|browser_config|chrome_args|browser_args|launch_args)\b[\s\S]{0,40}--(?:utility-cmd-prefix|renderer-cmd-prefix|gpu-launcher|browser-subprocess-path)\s*='
-      description: "Browser-automation launch-args field carrying a Chromium command-replacing switch -- CVE-2026-57572/GHSA-r253-r9jw-qg44 primary primitive"
+      value: '(?i)\b(?:extra_args|browser_config|chrome_args|browser_args|launch_args)\b[\s\S]{0,40}--(?:utility-cmd-prefix|renderer-cmd-prefix|gpu-launcher|browser-subprocess-path)\s*=\s*["'']?(?!(?:gdb|lldb|valgrind|strace|ltrace|perf)\b)'
+      description: "Browser-automation launch-args field carrying a Chromium command-replacing switch whose value is not one of the well-known debugger/profiler tools -- CVE-2026-57572/GHSA-r253-r9jw-qg44 primary primitive (negative lookahead scoped to exclude legitimate local debugging via gdb/lldb/valgrind/strace/ltrace/perf)"
     - field: content
       operator: regex
       value: '(?i)--(?:utility-cmd-prefix|renderer-cmd-prefix|gpu-launcher|browser-subprocess-path)\s*=[\s\S]{0,40}--no-zygote\b'
@@ -112,6 +112,7 @@ detection:
     - "A launch-args field carrying ordinary Chromium flags with no command-replacing switch (e.g. extra_args=[\"--headless\", \"--disable-gpu\"])"
     - "Chromium/Chrome-internals engineering documentation discussing these switch names without an actual tool-call argument being set to them"
     - "A --no-zygote flag used alone for container/sandboxing compatibility with no accompanying cmd-prefix/launcher/subprocess-path switch"
+    - "A local developer wrapping the renderer/utility process with a well-known debugger or profiler for legitimate crash investigation (e.g. --renderer-cmd-prefix=\"gdb --args\", --utility-cmd-prefix=\"valgrind\", or lldb/strace/ltrace/perf) -- adversarially confirmed during review: caught by an earlier, broader version of condition 1 and fixed with a negative lookahead"
 
 response:
   actions:
@@ -150,3 +151,9 @@ test_cases:
     - input: 'extra_args=["--no-zygote"]'
       expected: not_triggered
       description: "Bare --no-zygote for container compatibility, no accompanying command-replacing switch"
+    - input: 'local dev config: launch_args=["--renderer-cmd-prefix=gdb --args"] for debugging the renderer process crash'
+      expected: not_triggered
+      description: "ADVERSARIAL: legitimate local debugging via gdb -- found as a real false positive during adversarial self-review against an earlier, broader version of condition 1; fixed with a negative lookahead excluding well-known debugger/profiler tool names"
+    - input: 'utility-cmd-prefix wrapping for profiling: chrome_args=["--utility-cmd-prefix=valgrind --leak-check=full"]'
+      expected: not_triggered
+      description: "ADVERSARIAL: legitimate memory-profiling via valgrind, same debugger-allowlist false-positive class"

@@ -98,15 +98,17 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)\b(?:validation|task|hub|worker|remote|agent)_commands?\b\s*[=:]\s*\[?\s*["''`]?\s*npm\s+install\b'
-      description: "Automated task/validation-command feed field invoking npm install -- GHSA-jxh8-jh77-xh6g lifecycle-script RCE primitive (validation_commands / task_commands / hub_commands / worker_commands / remote_commands / agent_commands)"
+      value: '(?i)\b(?:validation|task|hub|worker|remote|agent)_commands?\b\s*[=:]\s*\[?\s*["''`]?\s*npm\s+install\s+(?!-)[\w@]'
+      description: "Automated task/validation-command feed field invoking npm install of a specific, named package (not a bare dependency-lockfile install and not a --flag-only invocation) -- GHSA-jxh8-jh77-xh6g lifecycle-script RCE primitive (validation_commands / task_commands / hub_commands / worker_commands / remote_commands / agent_commands)"
     - field: content
       operator: regex
-      value: '(?i)\b(?:validation|task|hub|worker|remote|agent)_commands?\b\s*[=:]\s*\[?\s*["''`]?\s*npx\s+-y\b'
-      description: "Automated task/validation-command feed field invoking npx -y (auto-confirm, skips install prompt) -- same lifecycle-script RCE primitive"
+      value: '(?i)\b(?:validation|task|hub|worker|remote|agent)_commands?\b\s*[=:]\s*\[?\s*["''`]?\s*npx\s+-y\s+(?!(?:-p\s+)?(?:prettier|eslint|tsc|typescript|jest|vitest|webpack|vite|rollup|babel(?:-cli)?|husky|lint-staged|ts-node|tsx|mocha|cypress|playwright|npm-check-updates|depcheck|standard|stylelint)\b)'
+      description: "Automated task/validation-command feed field invoking npx -y (auto-confirm, skips install prompt) against a package that is not one of the common, well-known dev-tool packages -- same lifecycle-script RCE primitive"
   false_positives:
     - "A developer chat instruction like 'please run npm install to fix your build' -- this rule only fires on the specific task/validation/hub/worker-command field-name framing used by automated command-execution channels, not on ordinary conversational build instructions"
-    - "A CI/CD pipeline configuration file's own build step invoking npm install under a key literally named 'validation_commands' as part of routine, human-authored, version-controlled configuration -- review the source of the field before treating as an attack (this rule flags the pattern for the common case where the field is populated by an untrusted external feed, not local repo config)"
+    - "A bare 'npm install' with no package argument (installs from the existing package.json/lockfile) or an npm install invocation with only a --flag (e.g. --package-lock-only) -- ADVERSARIALLY CONFIRMED as a real false positive during review against an earlier, broader version of this rule; fixed by requiring an actual non-flag package-name argument"
+    - "npx -y invoking one of the common, well-known dev-tool packages (prettier, eslint, tsc, jest, husky, ts-node, etc.) -- ADVERSARIALLY CONFIRMED as a real false positive during review; fixed with a negative-lookahead allowlist of common dev tools"
+    - "A CI/CD pipeline configuration file's own build step invoking npm install of a specific, human-reviewed, version-controlled package under a key literally named 'validation_commands' -- review the source of the field before treating as an attack (this rule targets the common case where the field is populated by an untrusted external feed, not local repo config); residual risk is accepted since the field-name/argument-shape signal alone cannot distinguish a named legitimate package from a named malicious one"
 
 response:
   actions:
@@ -141,6 +143,15 @@ test_cases:
     - input: 'validation_commands: ["eslint .", "tsc --noEmit"]'
       expected: not_triggered
       description: "Ordinary lint/typecheck validation commands, no npm install / npx -y invocation"
+    - input: 'validation_commands: ["npm install"]  // installs project deps before running our own test suite'
+      expected: not_triggered
+      description: "ADVERSARIAL: bare npm install with no package argument -- found as a real false positive during adversarial self-review; fixed by requiring a non-flag package-name argument"
+    - input: 'hub_commands: ["npm install --package-lock-only"]'
+      expected: not_triggered
+      description: "ADVERSARIAL: npm install with only a --flag, no package name -- same false-positive class"
+    - input: 'task_commands = ["npx -y prettier --write ."]'
+      expected: not_triggered
+      description: "ADVERSARIAL: npx -y invoking the well-known prettier formatter -- found as a real false positive during adversarial self-review; fixed with a common-dev-tool negative-lookahead allowlist"
     - input: "The advisory explains that npm and npx were placed in the validator sandbox's hard executable allowlist."
       expected: not_triggered
       description: "Documentation describing the vulnerability class, no actual field being set to an install/exec command"

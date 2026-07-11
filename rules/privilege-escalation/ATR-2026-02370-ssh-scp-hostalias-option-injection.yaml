@@ -102,8 +102,8 @@ detection:
       description: "SSH/SCP host-identifier argument set to an OpenSSH option-injection flag (-oProxyCommand=/-oProxyJump=/-oPermitLocalCommand=) instead of an ordinary host name -- GHSA-p4h8-56qp-hpgv primary primitive"
     - field: content
       operator: regex
-      value: '(?i)\b(?:host[_-]?alias|ssh_?host|target_?host)\b\s*[=:]\s*["''`]?-w\s*\d*(?::\d+)?\b'
-      description: "SSH host-identifier argument carrying the -w (tunnel/port-forward) option-injection flag"
+      value: '(?i)\b(?:host[_-]?alias|ssh_?host|target_?host)\b\s*[=:]\s*["''`]?-w\s*\d+(?::\d+)?\b'
+      description: "SSH host-identifier argument carrying the -w (tunnel/port-forward) option-injection flag with real port-forward syntax (requires at least one digit, e.g. -w0:0 or -w2222) -- a bare '-w' with no digits is excluded to avoid flagging an implausible-but-conceivable literal alias name"
     - field: content
       operator: regex
       value: '(?i)\b(?:local|remote)_?path\b\s*[=:]\s*["''`]?[^"''`\n]{0,20}[&|^]\s*(?:calc\.exe|cmd\.exe|powershell|certutil|mshta|rundll32|wscript|cscript)\b'
@@ -112,6 +112,7 @@ detection:
     - "A hostAlias/ssh_host value that is an ordinary hostname or an entry from ~/.ssh/config, with no leading dash (e.g. hostAlias: \"prod-db-01\")"
     - "Documentation or a patch changelog discussing the -oProxyCommand option-injection class without an actual tool-call argument being set to it"
     - "A localPath/remotePath value that happens to contain an ampersand in a filename (e.g. 'Q&A notes.txt') with no following executable token"
+    - "A bare '-w' with no digits following it (e.g. an implausible but conceivable literal alias name) -- ADVERSARIALLY CONFIRMED as a corner-case during review; the -w condition now requires real port-forward syntax (at least one digit, e.g. -w0:0 or -w2222)"
 
 response:
   actions:
@@ -143,6 +144,9 @@ test_cases:
     - input: 'call ssh_connect with hostAlias: "prod-db-01.internal"'
       expected: not_triggered
       description: "Ordinary hostname with no leading dash"
+    - input: 'hostAlias: "-w"  // just a placeholder alias name some teams use for "west" datacenter'
+      expected: not_triggered
+      description: "ADVERSARIAL: bare -w with no digits -- found as a corner-case false positive during adversarial self-review; fixed by requiring real port-forward syntax (at least one digit)"
     - input: 'ssh_host: "bastion"'
       expected: not_triggered
       description: "Plain alias name from ~/.ssh/config, not an option flag"

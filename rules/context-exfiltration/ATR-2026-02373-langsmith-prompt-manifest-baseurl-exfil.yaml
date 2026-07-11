@@ -104,16 +104,17 @@ detection:
       description: "pull_prompt/pullPrompt call against a public owner/name identifier with the trust-boundary override flag explicitly set -- CVE-2026-45134 opt-in to the risky path"
     - field: content
       operator: regex
-      value: '(?i)"secrets_from_env"\s*:\s*true[\s\S]{0,40}"(?:base_url|openai_api_base|azure_endpoint)"\s*:\s*"https?://'
-      description: "Deserialized prompt-manifest kwargs combine secrets_from_env with an LLM-client base_url override -- CVE-2026-45134 credential-exfil + traffic-redirect primitive"
+      value: '(?i)"secrets_from_env"\s*:\s*true[\s\S]{0,40}"(?:base_url|openai_api_base|azure_endpoint)"\s*:\s*"https?://(?![^"]{0,60}\.(?:azure\.com|amazonaws\.com|googleapis\.com|openai\.com|anthropic\.com)\b|[^"]{0,60}\b(?:internal|corp|local)\b|localhost|127\.0\.0\.1|10\.\d{1,3}\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.)[^"]{0,80}"'
+      description: "Deserialized prompt-manifest kwargs combine secrets_from_env with an LLM-client base_url override to a non-major-cloud, non-internal-looking domain -- CVE-2026-45134 credential-exfil + traffic-redirect primitive"
     - field: content
       operator: regex
-      value: '(?i)"(?:base_url|openai_api_base|azure_endpoint)"\s*:\s*"https?://[^"]{0,80}"[\s\S]{0,40}"secrets_from_env"\s*:\s*true'
+      value: '(?i)"(?:base_url|openai_api_base|azure_endpoint)"\s*:\s*"https?://(?![^"]{0,60}\.(?:azure\.com|amazonaws\.com|googleapis\.com|openai\.com|anthropic\.com)\b|[^"]{0,60}\b(?:internal|corp|local)\b|localhost|127\.0\.0\.1|10\.\d{1,3}\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.)[^"]{0,80}"[\s\S]{0,40}"secrets_from_env"\s*:\s*true'
       description: "Same combination, base_url override appearing before secrets_from_env in the serialized manifest"
   false_positives:
     - "A pull_prompt/pullPrompt call against a public owner/name identifier WITHOUT the dangerously_pull_public_prompt override flag -- the SDK's default-safe path rejects this, so it is not exploitable and not flagged"
     - "A deserialized manifest setting secrets_from_env=true alone, or base_url alone, without the other -- each individually has legitimate uses (e.g. a trusted same-org prompt configuring a private Azure endpoint); only the combination that both reads env secrets AND redirects the endpoint is flagged"
     - "Documentation or a security advisory discussing the CVE-2026-45134 parameter names without an actual manifest or tool call setting them"
+    - "secrets_from_env combined with a base_url/openai_api_base/azure_endpoint pointing at a recognized major-cloud LLM domain (*.azure.com, *.amazonaws.com, *.googleapis.com, *.openai.com, *.anthropic.com) or an internal/corp/local/private-IP endpoint -- ADVERSARIALLY CONFIRMED as real false positives during review (a company's own Azure OpenAI deployment, and a self-hosted internal LiteLLM proxy); fixed with a negative-lookahead domain allowlist. Residual risk: an attacker-registered domain containing 'internal'/'corp'/'local' as a substring could evade this exclusion -- treated as an accepted precision/recall tradeoff for a pattern-tier rule"
 
 response:
   actions:
@@ -153,6 +154,12 @@ test_cases:
     - input: 'manifest kwargs: {"base_url": "https://api.openai.com/v1"}'
       expected: not_triggered
       description: "base_url alone pointing at the legitimate provider endpoint, no secrets_from_env"
+    - input: 'manifest kwargs: {"secrets_from_env": true, "azure_endpoint": "https://my-company.openai.azure.com/"}'
+      expected: not_triggered
+      description: "ADVERSARIAL: legitimate company-owned Azure OpenAI deployment -- found as a real false positive during adversarial self-review; fixed with a major-cloud-domain negative-lookahead allowlist"
+    - input: 'our internal config sets base_url to our self-hosted LiteLLM proxy: {"base_url": "https://litellm.internal.corp.com/v1", "secrets_from_env": true}'
+      expected: not_triggered
+      description: "ADVERSARIAL: legitimate self-hosted internal LiteLLM proxy endpoint -- found as a real false positive during adversarial self-review; fixed with an internal/corp/local negative-lookahead allowlist"
     - input: 'manifest kwargs: {"secrets_from_env": true}'
       expected: not_triggered
       description: "secrets_from_env alone for a trusted same-org prompt, no base_url override present"
