@@ -92,18 +92,19 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?:"jsonrpc"\s*:\s*"2\.0"|"tools/call")[\s\S]{0,120}"name"\s*:\s*"[^"]{1,100}"[^{}]{0,80}"Name"\s*:\s*"[^"]{1,100}"'
-      description: "JSON-RPC/MCP tool-call message carrying both a lowercase `name` and a capitalized `Name` key in the same params object -- span is bounded to the typical distance from the RPC envelope (id/jsonrpc/method) to the params object, not unbounded"
+      value: '"params"\s*:\s*\{\s*"name"\s*:\s*"[^"]{1,100}"[^{}]{0,80}"Name"\s*:\s*"[^"]{1,100}"'
+      description: "The tool-call params object's own `name` field (the tool identifier -- anchored to immediately follow the params opening brace) is duplicated with a capitalized `Name` sibling. Anchoring to `params: { name` (rather than a loose jsonrpc...name search) deliberately excludes an unrelated name/Name pair nested one level deeper inside an arguments payload (e.g. a CRM contact record with both a slug `name` and a display `Name`), which is a real-world false positive this rule must not fire on."
     - field: content
       operator: regex
-      value: '(?:"jsonrpc"\s*:\s*"2\.0"|"tools/call")[\s\S]{0,120}"Name"\s*:\s*"[^"]{1,100}"[^{}]{0,80}"name"\s*:\s*"[^"]{1,100}"'
-      description: "Reverse key order variant -- capitalized `Name` appearing before lowercase `name`, since JSON object key order is not guaranteed"
+      value: '"params"\s*:\s*\{\s*"Name"\s*:\s*"[^"]{1,100}"[^{}]{0,80}"name"\s*:\s*"[^"]{1,100}"'
+      description: "Reverse key order variant -- capitalized `Name` declared as the first key in params before lowercase `name`, since JSON object key order is not guaranteed. Same params-anchor rationale as the forward-order condition."
     - field: content
       operator: regex
-      value: '(?:"jsonrpc"\s*:\s*"2\.0"|"tools/call")[\s\S]{0,130}"arguments"\s*:\s*\{[^{}]{0,120}\}[^{}]{0,60}"Arguments"\s*:'
-      description: "JSON-RPC/MCP tool-call message carrying both a lowercase `arguments` object and a capitalized `Arguments` object in the same params -- the flat-object bound (no nested braces inside each arguments value) covers the canonical exploit shape; deeply nested argument objects are a known limitation, see evasion_tests"
+      value: '"params"\s*:\s*\{[^{}]{0,60}"arguments"\s*:\s*\{[^{}]{0,120}\}[^{}]{0,60}"Arguments"\s*:'
+      description: "The tool-call params object carries both a lowercase `arguments` object and a capitalized `Arguments` object as siblings -- anchored to the params opening brace (allowing the `name` field to sit before `arguments`, per the canonical PoC shape) so this does not fire on an unrelated arguments/Arguments pair nested deeper inside unrelated data. The flat-object bound on the first arguments value (no nested braces) covers the canonical exploit shape; deeply nested argument objects are a known limitation, see evasion_tests."
   false_positives:
     - "Security research documentation, RFC/spec excerpts (e.g. the JSON-RPC case-sensitivity spec text itself), or vulnerability write-ups that quote the example PoC JSON verbatim for explanatory purposes rather than an actual live tool-call message"
+    - "A tool-call arguments payload containing both a slug-style `name` and a display-style `Name` field for a data record being created/updated (e.g. a CRM contact, a form submission) -- this is nested one level inside the params object's `arguments` value, not a duplicate of the params-level tool-identity `name` field itself, and the params-anchored regex does not match it"
     - "ATR test fixtures containing this pattern as a labeled attack sample"
     - "A non-MCP JSON payload that happens to define both a `name` and unrelated `Name` field for legitimate display-vs-slug purposes -- mitigated by requiring the jsonrpc/tools-call envelope context, which ordinary data records do not carry"
 
@@ -147,6 +148,9 @@ test_cases:
     - input: '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"greet","arguments":{"firstName":"Ann","lastName":"Lee"}}}'
       expected: not_triggered
       description: "Fields containing 'Name' as a substring (firstName/lastName) are not the literal duplicated key 'Name' -- regex requires the exact quoted key"
+    - input: '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"create_contact","arguments":{"name":"jdoe","Name":"John Doe","email":"j@x.com"}}}'
+      expected: not_triggered
+      description: "ADVERSARIAL SELF-REVIEW FINDING (fixed): a legitimate create_contact tool call whose arguments payload has both a slug-style name and a display-style Name for the CONTACT record, not the tool identity itself. An earlier, un-anchored version of this rule's regex matched this (false positive) because its bounded gap could reach across object boundaries into the nested arguments; the params-anchored regex (requiring `name` to be the first key immediately after `params: {`) no longer matches nested duplicates and only fires on the actual tool-identity field."
 
 evasion_tests:
   - input: '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"greet","arguments":{"nested":{"a":1}},"Arguments":{"nested":{"b":2}}}}'
