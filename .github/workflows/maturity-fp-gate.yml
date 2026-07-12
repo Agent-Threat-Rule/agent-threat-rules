@@ -1,0 +1,35 @@
+name: Maturity FP gate
+
+# Blocks any PR that promotes a rule into the enforce (auto-block) lane
+# — maturity:stable / production — if that rule false-positives on the benign
+# corpus. The time-based promoter can promote on "≥60 days + 0 FP reports"
+# without ever scanning a benign corpus; this gate is the backstop that turns
+# such a promotion RED instead of letting it pollute the enforce lane.
+
+on:
+  pull_request:
+    paths:
+      - "rules/**"
+
+permissions:
+  contents: read
+
+jobs:
+  fp-gate:
+    name: Promoted rules must be FP-clean
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        run: npm ci
+      - name: Build ATR engine
+        run: npm run build
+      - name: Fetch base ref
+        run: git fetch --no-tags origin "${{ github.base_ref }}"
+      - name: Gate rules promoted to the enforce lane
+        run: npx tsx scripts/gate-promotion-fp.ts --base "origin/${{ github.base_ref }}"
