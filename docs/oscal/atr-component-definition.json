@@ -1,0 +1,150 @@
+{
+  "component-definition": {
+    "uuid": "4c4ea0e2-e264-423f-bea1-801df721c305",
+    "metadata": {
+      "title": "Agent Threat Rules (ATR) Detection Coverage for NIST SP 800-53 Rev 5",
+      "last-modified": "2026-06-30T00:00:00Z",
+      "version": "1.0.0",
+      "oscal-version": "1.2.2",
+      "remarks": "This OSCAL component-definition maps the Agent Threat Rules (ATR) open detection-rule standard to the detection and continuous-monitoring aspects of selected NIST SP 800-53 Rev 5 controls. ATR is an MIT-licensed, vendor-neutral open standard. It is detection content only: it contributes detection coverage and generates supporting evidence, and it does NOT by itself satisfy, meet, or fulfill any control. A control is satisfied by people, process, and multiple technologies together. NIST has not reviewed, adopted, endorsed, or approved ATR; this artifact is an independent community mapping. Authorship and conflict of interest: this mapping was prepared by a maintainer of ATR. It is a self-assessment by the standard's author, not an independent third-party evaluation; 'independent' here means independent of NIST, not independent of ATR. Source rule set verified live at generation time: 655 rule files across 10 categories (prompt-injection 223, agent-manipulation 106, context-exfiltration 104, tool-poisoning 68, skill-compromise 45, model-abuse 37, privilege-escalation 35, excessive-autonomy 29, data-poisoning 5, model-security 3), pinned at git commit cb749927a2c4f9bdcbcd1a5f3caecaa6b1f07c1f (origin/main) of the agent-threat-rules repository. Maturity disclosure (verified live on the pinned commit, 655 rules): ATR rules carry two distinct YAML fields, and both gate which rules fire; neither alone is canonical. The status field gates loading: rules with status draft or deprecated are never evaluated (engine skips them unconditionally), so on this commit 39 rules (37 draft + 2 deprecated by status) never fire and 616 are eligible to fire in the engine's default lane. The maturity field gates the optional detection lane: enforce fires stable maturity only, alert fires stable and test, and the default lane (hunt) fires all non-deprecated maturities; so at the default configuration maturity does not restrict firing. Only 125 rules are enforce-eligible (status not draft/deprecated AND maturity stable). Counts by maturity field: stable 132, test 448, experimental 61, draft 14 (no rules carry a deprecated maturity, and the single largest tier is test at 448, not experimental). Counts by status field: stable 59, experimental 557, draft 37, deprecated 2. By either field only a minority of rules carry a stable designation; the full rule count is not represented as production-grade. Detection is predominantly deterministic pattern/regex matching with documented limits: it can miss paraphrased attacks, semantic equivalents, non-English payloads, novel or undocumented attacks, multi-turn behavioral attacks, multi-modal inputs, token smuggling, and adversarial-suffix attacks. Deploy ATR as one layer in a defense-in-depth program; do not rely on it alone. Verify all counts live before external citation; on this pinned commit data/stats.json reports 655, matching the 655 rule files on disk (the earlier 652/655 drift is resolved at this commit), and disk remains authoritative."
+    },
+    "components": [
+      {
+        "uuid": "ea4b27d7-1f7c-40b2-a831-de4c8d4f1ce5",
+        "type": "standard",
+        "title": "Agent Threat Rules (ATR)",
+        "description": "Agent Threat Rules (ATR) is an MIT-licensed, open detection-rule standard for AI-agent security threats, including prompt injection and jailbreak, tool poisoning, skill compromise, malicious MCP servers, excessive autonomy, context and credential exfiltration, privilege escalation, and data and model abuse. ATR is a content layer: it defines pattern-based detection rules that produce detections and structured evidence as a fast first-pass filter against agent-layer input and tool traffic. It is not a runtime enforcement, blocking, or prevention system; an integrating engine or operator decides what action to take on a detection. ATR is not a compliance solution, certification, or attestation. This component maps ATR detection content to the detection and monitoring aspect of selected controls only.",
+        "purpose": "Provide open, executable detection content for AI-agent security threats that organizations can use as one contributing layer when implementing the detection and monitoring dimensions of security controls.",
+        "props": [
+          {
+            "name": "version",
+            "ns": "https://agentthreatrule.org/ns/oscal",
+            "value": "agent-threat-rules @ commit cb749927a2c4f9bdcbcd1a5f3caecaa6b1f07c1f (origin/main)"
+          }
+        ],
+        "links": [
+          {
+            "href": "https://github.com/usnistgov/oscal-content/tree/main/nist.gov/SP800-53/rev5",
+            "rel": "reference",
+            "text": "NIST SP 800-53 Rev 5 OSCAL content (control catalog this mapping references)"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "286316fb-2c22-4b86-b85e-b8c6bfddbd60",
+            "source": "https://raw.githubusercontent.com/usnistgov/oscal-content/main/nist.gov/SP800-53/rev5/json/NIST_SP-800-53_rev5_catalog-min.json",
+            "description": "ATR detection coverage mapped to the detection and monitoring aspect of selected NIST SP 800-53 Rev 5 controls. Each mapped requirement below identifies the specific ATR rule categories that contribute detection coverage to that control and states explicitly what ATR does not cover. ATR contributes detection content and generates supporting evidence only; it does not satisfy any control on its own.",
+            "props": [
+              {
+                "name": "scope",
+                "ns": "https://agentthreatrule.org/ns/oscal",
+                "value": "detection-and-monitoring-only",
+                "remarks": "Every mapping in this control-implementation is scoped to the detection and monitoring dimension of the referenced control. ATR does not implement policy, process, enforcement, remediation, or attestation aspects of any control."
+              }
+            ],
+            "implemented-requirements": [
+              {
+                "uuid": "bb26a0dc-21ed-46ca-88d0-91a07450bb94",
+                "control-id": "si-4",
+                "description": "ATR provides detection coverage for the system-monitoring aspect of SI-4 by detecting prompt injection, agent manipulation, tool and skill poisoning, privilege escalation, excessive autonomy, model abuse, model-security threats (such as behavior extraction, malicious fine-tuning data, and unsafe model deserialization), data poisoning (RAG, knowledge-base, and agent-memory poisoning), and context and credential exfiltration in AI-agent input and tool traffic. This is the anchor mapping: ATR is fundamentally agent-layer monitoring content spanning all 655 rules across all 10 categories (prompt-injection, agent-manipulation, context-exfiltration, tool-poisoning, skill-compromise, model-abuse, privilege-escalation, excessive-autonomy, data-poisoning, and model-security). ATR contributes detection coverage and generates supporting evidence only; SI-4 as a whole is satisfied by people, process, and multiple technologies.",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "ns": "https://agentthreatrule.org/ns/oscal",
+                    "value": "partial",
+                    "remarks": "Covers the detection and monitoring aspect of SI-4 only. ATR provides no collection or SIEM infrastructure, no alerting pipeline, no analyst response or triage workflow, and no network- or host-level monitoring outside the agent input and tool-call path."
+                  }
+                ],
+                "remarks": "Scope limit: ATR is agent-layer detection content. It does not collect, transport, store, or correlate events, and it does not constitute the monitoring program required by SI-4. Detection is predominantly deterministic pattern matching with documented limits (paraphrase, semantic equivalents, non-English, novel, multi-turn, multi-modal). Use as one contributing layer in a defense-in-depth monitoring strategy."
+              },
+              {
+                "uuid": "a448dd72-2d49-4de1-9734-b0c658096387",
+                "control-id": "si-10",
+                "description": "ATR provides detection coverage for the information-input-validation aspect of SI-10 as applied to AI-agent inputs by detecting malformed and adversarial instructions in untrusted input, including prompt injection (223 rules) and agent-manipulation patterns such as jailbreak and authority-escalation framing (106 rules). ATR contributes detection coverage and generates supporting evidence only; it does not perform input validation enforcement.",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "ns": "https://agentthreatrule.org/ns/oscal",
+                    "value": "partial",
+                    "remarks": "Covers detection of adversarial agent inputs only. ATR detects and flags; it does not validate structured business inputs generally, and it does not perform schema enforcement, input sanitization, or rejection of input by the system."
+                  }
+                ],
+                "remarks": "Scope limit: detection-and-flag of adversarial natural-language agent input, not validity checking or sanitization of general system inputs. Regex-based detection can miss paraphrased and non-English injection payloads."
+              },
+              {
+                "uuid": "02e44431-504c-41bf-9b8c-d50df381a470",
+                "control-id": "si-3",
+                "description": "ATR provides detection coverage for the malicious-code aspect of SI-3 as applied to the AI-agent toolchain by detecting malicious or backdoored skills (skill-compromise, 45 rules) and poisoned MCP tool definitions (tool-poisoning, 68 rules). SI-3 is scoped here to malicious code in the agent toolchain; ATR contributes detection coverage and generates supporting evidence only; it does not prevent, quarantine, or remove malicious code. ATR's data-poisoning category (RAG, knowledge-base, and agent-memory poisoning) is not mapped to SI-3 because it concerns poisoned data and memory content rather than malicious executable code; its input-injection content (including SQL injection in agent tool queries) is detection of adversarial input and is reflected under SI-10, not SI-3. ATR does not detect operating-system command injection or remote code execution under SI-3; the related shell-escape, eval-injection, and sandbox-escape detections live in ATR's privilege-escalation category and are reflected under AC-6.",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "ns": "https://agentthreatrule.org/ns/oscal",
+                    "value": "partial",
+                    "remarks": "Covers detection of malicious-code indicators in agent skill and tool artifacts only. ATR is not an antivirus or EDR engine; it provides no quarantine, removal, sandboxing, or signature-update mechanism, and it does not cover general binaries or operating-system-level malware."
+                  }
+                ],
+                "remarks": "Scope limit: detection of malicious-code signals within agent skills and MCP tool definitions (skill-compromise and tool-poisoning categories only), not endpoint malicious-code protection. No prevention or eradication. Data, knowledge-base, and memory poisoning are deliberately excluded from this SI-3 mapping (they are not executable malicious code), and ATR detects no OS-level command injection or RCE under SI-3."
+              },
+              {
+                "uuid": "446fb268-d785-4d45-9a89-3370f4763d2e",
+                "control-id": "sr-11",
+                "description": "ATR provides detection coverage for the component-authenticity aspect of SR-11 as applied to the AI-agent supply chain by detecting counterfeit, tampered, or poisoned third-party components entering the agent ecosystem, including malicious MCP servers (tool-poisoning, 68 rules) and trojaned skills (skill-compromise, 45 rules). ATR contributes detection coverage and generates supporting evidence only; it does not perform authenticity attestation.",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "ns": "https://agentthreatrule.org/ns/oscal",
+                    "value": "partial",
+                    "remarks": "Covers detection of malicious-component indicators only. ATR provides no provenance or signature verification, no SBOM generation or consumption, and no vendor attestation; it detects indicators of malicious components rather than verifying authenticity."
+                  }
+                ],
+                "remarks": "Scope limit: detection of indicators that a component is counterfeit, tampered, or poisoned, not verification of genuine component authenticity."
+              },
+              {
+                "uuid": "6a0a4ebe-b5d2-43bb-8de2-d4287a126e90",
+                "control-id": "cm-7",
+                "description": "ATR provides detection coverage for the least-functionality aspect of CM-7 as applied to AI agents by detecting an agent invoking capabilities beyond its intended scope, including over-broad tool use (tool-poisoning, 68 rules) and autonomous actions that exceed intended function such as server-side request forgery via fetch (excessive-autonomy, 29 rules). ATR contributes detection coverage and generates supporting evidence only; it does not define or enforce a least-functionality baseline.",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "ns": "https://agentthreatrule.org/ns/oscal",
+                    "value": "partial",
+                    "remarks": "Covers detection of functionality exceeding intended scope only. ATR does not define, configure, or enforce the allowed-function baseline; it flags apparent violations but does not restrict or disable functions."
+                  }
+                ],
+                "remarks": "Scope limit: detection of agent behavior exceeding intended functionality, not configuration or enforcement of least functionality."
+              },
+              {
+                "uuid": "3babf654-fd85-465d-87f0-b0831966a24f",
+                "control-id": "ac-6",
+                "description": "ATR provides detection coverage for the least-privilege aspect of AC-6 as applied to AI agents by detecting privilege-escalation attempts (privilege-escalation, 35 rules) and autonomous actions that exceed granted authority, such as a runaway agent action loop, resource exhaustion, and unauthorized autonomous financial actions (excessive-autonomy, 29 rules). ATR contributes detection coverage and generates supporting evidence only; it does not enforce access control.",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "ns": "https://agentthreatrule.org/ns/oscal",
+                    "value": "partial",
+                    "remarks": "Covers detection of privilege overreach signals only. ATR provides no IAM or RBAC enforcement and no privilege assignment or revocation; it detects apparent overreach rather than implementing least privilege."
+                  }
+                ],
+                "remarks": "Scope limit: detection of least-privilege-violation signals, not access-control enforcement."
+              },
+              {
+                "uuid": "36aea3e7-24cb-4c4e-883c-bb2727ca0c82",
+                "control-id": "au-2",
+                "description": "ATR informs the event-set aspect of AU-2 by identifying which agent security-relevant events warrant logging, derived from its detections of context and credential exfiltration (context-exfiltration, 104 rules), privilege escalation (privilege-escalation, 35 rules), and excessive autonomy (excessive-autonomy, 29 rules). ATR contributes detection content that supports defining the loggable event set and generates supporting evidence only; it does not perform logging.",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "ns": "https://agentthreatrule.org/ns/oscal",
+                    "value": "partial",
+                    "remarks": "Informs the set of auditable agent events only. ATR is not a logging subsystem: it does not generate, store, retain, or protect audit records; it identifies event types of interest that an organization may choose to log."
+                  }
+                ],
+                "remarks": "Scope limit: ATR identifies agent event types of interest to inform the AU-2 event set; it does not produce or retain the audit records themselves. Controls considered but deliberately not claimed: AU-6 (Audit Record Review, Analysis, and Reporting) is not claimed because ATR performs no analyst review, correlation, or reporting workflow; SI-7 (Software, Firmware, and Information Integrity) is not claimed because ATR detects tamper and integrity-manipulation attempts in agent traffic but does not establish or verify integrity baselines for software, firmware, or information; RA-3 (Risk Assessment) is not claimed because ATR is detection content, not a risk-assessment process or methodology; RA-5 (Vulnerability Monitoring and Scanning) is not claimed because ATR's CVE-derived rules detect attack payloads in agent traffic rather than scanning hosts or components for vulnerabilities; SR-3 (Supply Chain Controls and Processes) is not claimed because it covers supply-chain process and policy, whereas ATR detects only malicious-component indicators (which are reflected under SR-11, Component Authenticity)."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

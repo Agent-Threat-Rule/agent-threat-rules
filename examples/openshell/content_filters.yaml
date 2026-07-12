@@ -1,0 +1,34 @@
+# Example OpenShell L7 content-inspection policy wiring the ATR reference filter.
+#
+# Implements the contract proposed in NVIDIA/OpenShell#1272. The OpenShell
+# supervisor (running OUTSIDE the agent sandbox) executes the script against L7
+# request/response bodies; exit 1 => deny, exit 0 => allow. The script must be
+# baked into the supervisor image or mounted from the host — never from the
+# agent sandbox filesystem (an agent that can edit its own inspector bypasses it).
+#
+# atr-filter.sh runs the ATR engine (the ATR rule corpus, 10 categories, mapped
+# to OWASP Agentic Top 10 and MITRE ATLAS). Pure-regex evaluation is sub-ms, so
+# it fits comfortably inside a 100ms timeout budget.
+
+network_policies:
+  openai_api:
+    endpoints:
+      - host: api.openai.com
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        content_filters:
+          # Inbound model replies: catch indirect prompt injection before the
+          # agent acts on injected instructions.
+          - script: /etc/openshell/filters/atr-filter.sh
+            direction: response
+            timeout_ms: 100
+            on_timeout: open      # fail-open default; set "deny" for fail-closed
+          # Outbound request bodies: catch data exfiltration / secret leakage
+          # before the body leaves the sandbox boundary. Fail CLOSED here — a
+          # timed-out exfiltration check should block, not silently leak. (A
+          # large body or CPU spike could otherwise be used to evade inspection.)
+          - script: /etc/openshell/filters/atr-filter.sh
+            direction: request
+            timeout_ms: 100
+            on_timeout: deny

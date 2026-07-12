@@ -280,6 +280,8 @@ test_cases:
     <tr><td>MITRE ATLAS</td><td>Per-rule references</td><td>Per-rule <code>references.mitre_atlas</code></td></tr>
     <tr><td>NIST AI RMF (community OSCAL catalog)</td><td>4/4 functions</td><td><a href="https://github.com/Agent-Threat-Rule/ai-rmf-oscal-catalog" target="_blank" rel="noopener noreferrer">ai-rmf-oscal-catalog</a></td></tr>
     <tr><td>Five Eyes joint guidance (2026-04-30)</td><td>5-category mapping</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/FIVE-EYES-MAPPING.md" target="_blank" rel="noopener noreferrer">FIVE-EYES-MAPPING.md</a></td></tr>
+    <tr><td>CSA MAESTRO (2025)</td><td>7-layer architectural mapping</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/CSA-MAESTRO-MAPPING.md" target="_blank" rel="noopener noreferrer">CSA-MAESTRO-MAPPING.md</a></td></tr>
+    <tr><td>ETSI TS 104 223</td><td>13-principle mapping</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/ETSI-TS-104223-MAPPING.md" target="_blank" rel="noopener noreferrer">ETSI-TS-104223-MAPPING.md</a></td></tr>
   </tbody>
 </table>
 <p>NIST has not endorsed the community OSCAL catalog. The mapping is community-maintained.</p>`,
@@ -296,6 +298,8 @@ test_cases:
     <tr><td>MITRE ATLAS</td><td>Per-rule references</td><td>Per-rule <code>references.mitre_atlas</code></td></tr>
     <tr><td>NIST AI RMF (community OSCAL catalog)</td><td>4/4 functions</td><td><a href="https://github.com/Agent-Threat-Rule/ai-rmf-oscal-catalog" target="_blank" rel="noopener noreferrer">ai-rmf-oscal-catalog</a></td></tr>
     <tr><td>Five Eyes joint guidance (2026-04-30)</td><td>5-category mapping</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/FIVE-EYES-MAPPING.md" target="_blank" rel="noopener noreferrer">FIVE-EYES-MAPPING.md</a></td></tr>
+    <tr><td>CSA MAESTRO (2025)</td><td>7 層架構對應</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/CSA-MAESTRO-MAPPING.md" target="_blank" rel="noopener noreferrer">CSA-MAESTRO-MAPPING.md</a></td></tr>
+    <tr><td>ETSI TS 104 223</td><td>13 項原則對應</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/ETSI-TS-104223-MAPPING.md" target="_blank" rel="noopener noreferrer">ETSI-TS-104223-MAPPING.md</a></td></tr>
   </tbody>
 </table>
 <p>NIST 並未背書社群 OSCAL catalog。該對應由社群維護。</p>`,
