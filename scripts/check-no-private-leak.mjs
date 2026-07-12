@@ -40,13 +40,17 @@ function changedFiles() {
     // Files ADDED relative to base (what a PR would introduce).
     const out = execSync(`git diff --name-only --diff-filter=ACMR ${base}...HEAD`, {
       encoding: 'utf8',
+      maxBuffer: 1024 * 1024 * 64,
     });
     return out.split('\n').filter(Boolean);
   }
   const explicit = args.filter((a) => !a.startsWith('--'));
   if (explicit.length > 0) return explicit;
   // Default: staged files (pre-commit hook).
-  const out = execSync('git diff --cached --name-only', { encoding: 'utf8' });
+  const out = execSync('git diff --cached --name-only', {
+    encoding: 'utf8',
+    maxBuffer: 1024 * 1024 * 64,
+  });
   return out.split('\n').filter(Boolean);
 }
 
