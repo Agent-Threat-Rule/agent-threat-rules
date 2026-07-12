@@ -147,8 +147,8 @@ detection:
     # -- Layer 9: Markdown link/image injection --
     - field: content
       operator: regex
-      value: "(?i)(\\!?\\[([^\\]]{0,100})\\]\\s*\\(\\s*(javascript|data|vbscript)\\s*:|\\!?\\[([^\\]]{0,100}(ignore|override|system|instruction|execute|you\\s+must)[^\\]]{0,100})\\])"
-      description: "Markdown links with javascript/data URIs or injection text in alt/title"
+      value: "(?i)\\!?\\[[^\\]]{0,100}\\]\\s*\\(\\s*(javascript|vbscript)\\s*:"
+      description: "Markdown links with javascript/vbscript URI schemes (XSS injection vector); dangerous data: URIs are covered by the data-URI condition above"
 
     # -- Layer 10: White-on-white or same-color text technique --
     - field: content

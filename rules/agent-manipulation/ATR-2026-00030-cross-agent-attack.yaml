@@ -122,8 +122,8 @@ detection:
       description: "Instruction override attempt in inter-agent message"
     - field: content
       operator: regex
-      value: "(?i)\\[\\s*(?:SYSTEM|ADMIN|OVERRIDE|ROOT|SUDO|PRIORITY|URGENT)\\s*\\]|<<\\s*SYS\\s*>>|<\\|im_start\\|>system"
-      description: "Fake system-level message tags in agent communication"
+      value: "(?i)\\[\\s*(?:OVERRIDE|ROOT|SUDO)\\s*\\]|<<\\s*SYS\\s*>>|<\\|im_start\\|>system"
+      description: "Fake system-level message tags in agent communication (common benign labels [SYSTEM]/[ADMIN]/[PRIORITY]/[URGENT] dropped; kept override/root/sudo tags and chat-template markers)"
     - field: content
       operator: regex
       value: "(?i)(?:new\\s+instructions?|updated\\s+(?:prompt|directive)|revised\\s+(?:rules?|orders?)|emergency\\s+(?:override|protocol))\\s*[:=]"
@@ -146,24 +146,20 @@ detection:
       description: "Explicit attempt to override identity or permissions"
     - field: content
       operator: regex
-      value: "(?i)(?:execute|run|eval)\\s*\\(.*\\)|__import__|subprocess\\.|os\\.(?:system|popen|exec)|exec\\s*\\("
-      description: "Code execution payload in inter-agent message"
-    - field: content
-      operator: regex
       value: "(?i)(?:status|error|result)\\s*[:=]\\s*(?:failed|error|timeout|unauthorized).*(?:retry|fallback|use\\s+alternative|switch\\s+to)"
       description: "Fake error or status injection to trigger fallback behavior"
     - field: content
       operator: regex
-      value: "(?i)(?:message_type|msg_type|role)\\s*[:=]\\s*[\"']?(?:system|admin|orchestrator|supervisor)[\"']?"
-      description: "Message format manipulation to spoof system-level messages"
+      value: "(?i)(?:message_type|msg_type)\\s*[:=]\\s*[\"']?(?:admin|orchestrator|supervisor|root)[\"']?"
+      description: "Message format manipulation to spoof privileged inter-agent message roles (bare role:system dropped — legitimate chat-message format)"
     - field: content
       operator: regex
       value: "(?i)agent[_-]?id\\s*[:=]\\s*[\"']?(?:admin|system|orchestrator|supervisor|root)[\"']?"
       description: "Agent ID field set to privileged agent identity"
     - field: content
       operator: regex
-      value: "(?i)(?:priority\\s*[:=]\\s*(?:critical|emergency|urgent|override)|\\[PRIORITY:\\s*OVERRIDE\\])"
-      description: "Fake priority escalation to bypass normal processing"
+      value: "(?i)(?:priority\\s*[:=]\\s*override|\\[PRIORITY:\\s*OVERRIDE\\])"
+      description: "Fake priority escalation to bypass normal processing (benign priority:critical/urgent/emergency dropped; only explicit override framing kept)"
     - field: content
       operator: regex
       value: "(?i)(?:transfer|forward|route|redirect)\\s+(?:all|any|this)\\s+(?:data|output|results?|responses?)\\s+to\\s+(?:https?://|ftp://|\\d{1,3}\\.\\d{1,3})"

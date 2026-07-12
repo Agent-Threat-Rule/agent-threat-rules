@@ -98,7 +98,7 @@ detection:
     # "ignore your instructions", "ignore any instructions", "ignore all instructions"
     - field: user_input
       operator: regex
-      value: "(?i)\\b(ignore|disregard|forget|override|bypass|skip|abandon|drop|cancel|suppress|nullify|void|revoke|dismiss|discard|reject)\\s+(all\\s+)?(the\\s+|your\\s+|my\\s+|any\\s+|these\\s+|those\\s+)?(previous|prior|above|earlier|preceding|original|existing|current|initial|default|given|assigned|preset|established)?\\s*(instructions?|prompts?|rules?|guidelines?|directives?|constraints?|context|programming|training|protocols?|policies|configuration|parameters|boundaries|guardrails?|safeguards?|restrictions?|tasks?|assignments?|information|directions?|orders?|commands?)"
+      value: "(?i)\\b(ignore|disregard|forget|override|bypass|suppress|discard)\\s+(all\\s+)?(the\\s+|your\\s+|my\\s+|any\\s+|these\\s+|those\\s+)?(previous|prior|above|earlier|preceding|original|existing|current|initial|default|given|assigned|preset|established)?\\s*(instructions?|prompts?|rules?|guidelines?|directives?|constraints?|context|programming|training|protocols?|policies|configuration|parameters|boundaries|guardrails?|safeguards?|restrictions?|tasks?|assignments?|information|directions?|orders?|commands?)"
       description: "Instruction override with broad verb and noun synonym coverage, including determiners"
 
     # -- Layer 1b: Forget-everything / forget-all shorthand --
@@ -152,7 +152,7 @@ detection:
     # -- Layer 2: Persona switching / identity hijacking --
     - field: user_input
       operator: regex
-      value: "(?i)\\b(you\\s+are\\s+now|you\\s+have\\s+become|you\\s+will\\s+act\\s+as|you\\s+will\\s+be|you\\s+shall\\s+be|transform\\s+into|switch\\s+to\\s+being|become|morph\\s+into|adopt\\s+the\\s+persona|now\\s+you\\s+are|jetzt\\s+bist\\s+du|du\\s+bist\\s+(jetzt|nun)|stell\\s+dir\\s+vor\\s+du\\s+bist)\\s+(a|an|the|my|ein[ea]?)?\\s*[a-zA-Z\\u00C0-\\u024F]+"
+      value: "(?i)\\b(you\\s+are\\s+now|you\\s+have\\s+become|you\\s+will\\s+act\\s+as|you\\s+shall\\s+be|transform\\s+into|switch\\s+to\\s+being|morph\\s+into|adopt\\s+the\\s+persona|now\\s+you\\s+are|jetzt\\s+bist\\s+du|du\\s+bist\\s+(jetzt|nun)|stell\\s+dir\\s+vor\\s+du\\s+bist)\\s+(a|an|the|my|ein[ea]?)?\\s*[a-zA-Z\\u00C0-\\u024F]+"
       description: "Persona switching and identity reassignment attempts"
 
     # -- Layer 2b: Act-as roleplay with task assignment --
@@ -352,8 +352,8 @@ detection:
     # -- Layer 17: ALL CAPS embedded injection in normal text --
     - field: user_input
       operator: regex
-      value: "(DO\\s+NOT\\s+(ANSWER|LOOK|READ|USE|FOLLOW|CHECK|RESPOND)|FORGET\\s+EVERYTHING|IGNORE\\s+ALL)"
-      description: "ALL-CAPS embedded injection commands hidden in normal text"
+      value: "(DO\\s+NOT\\s+(ANSWER|RESPOND)\\b|FORGET\\s+EVERYTHING\\s+(ABOVE|BEFORE|PRIOR|PREVIOUS)|IGNORE\\s+ALL\\s+(PREVIOUS|PRIOR|ABOVE|PRECEDING))"
+      description: "ALL-CAPS embedded injection commands (narrowed: benign imperatives DO NOT USE/READ/FOLLOW/CHECK and bare IGNORE ALL/FORGET EVERYTHING dropped; requires injection-specific completion)"
 
     # -- Layer 18: Fictional framing with harmful role --
     - field: user_input
