@@ -74,17 +74,17 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: "(?i)>\\s*/dev/null\\s+2>&1\\s*&"
+      value: "(?i)(curl\\s|wget\\s|\\|\\s*(ba)?sh\\b|/dev/tcp|\\bnc\\s+-|bash\\s+-i|/tmp/\\S+\\.(sh|py|elf)|keylog|backdoor|miner|payload|reverse.?shell)[^\\n]{0,120}>\\s*/dev/null\\s+2>&1\\s*&"
       description: "Background execution with full output suppression"
 
     - field: content
       operator: regex
-      value: "(?i)\\bnohup\\s+.{1,200}(&|$)"
+      value: "(?i)\\bnohup\\s+[^\\n]{0,150}(curl|wget|\\|\\s*(ba)?sh\\b|/tmp/|/dev/tcp|\\bnc\\s+-|bash\\s+-i|keylog|backdoor|miner|payload|reverse.?shell|implant|\\.sh\\b)[^\\n]{0,80}(&|$)"
       description: "Persistent background process via nohup"
 
     - field: content
       operator: regex
-      value: "(?i)\\bsystemctl\\s+(enable|start|restart)\\s+\\S+"
+      value: "(?i)\\bsystemctl\\s+(enable|start|restart)\\s+\\S*(backdoor|reverse|shell|miner|payload|implant|malware|c2|evil|/tmp/)\\S*"
       description: "Service installation or activation"
 
     # `npm install -g <pkg>` is extremely common in setup docs (apify-cli, MCP
@@ -93,12 +93,12 @@ detection:
 
     - field: content
       operator: regex
-      value: "(?i)\\bscp\\s+.{1,200}\\S+@\\S+:"
+      value: "(?i)\\bscp\\s+[^\\n]{0,100}(/etc/(shadow|passwd|sudoers)|id_rsa|\\.ssh/|\\.aws/|\\.env\\b|secret|credential|\\.pem\\b)[^\\n]{0,100}\\S+@\\S+:"
       description: "SCP file transfer to remote host"
 
     - field: content
       operator: regex
-      value: "(?i)\\bscreen\\s+-dmS\\s+|\\btmux\\s+new-session\\s+-d"
+      value: "(?i)(screen\\s+-dmS|tmux\\s+new-session\\s+-d)\\s+[^\\n]{0,150}(curl|wget|\\|\\s*(ba)?sh\\b|/tmp/|/dev/tcp|\\bnc\\s+-|bash\\s+-i|keylog|backdoor|miner|payload)"
       description: "Detached screen/tmux session (hidden execution)"
 
   condition: any

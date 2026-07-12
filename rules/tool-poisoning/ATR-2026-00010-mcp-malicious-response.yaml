@@ -110,14 +110,14 @@ detection:
     # -- Layer 1: Destructive shell commands --
     - field: tool_response
       operator: regex
-      value: "(?i)(\\brm\\s+-[rRf]{1,3}[\\s/]|\\bmkfs\\b|\\bdd\\s+if=|\\bformat\\s+[a-z]:|\\bdeltree\\b|\\bshred\\s+-|\\bwipefs\\b|\\bfdisk\\b.*--delete|:\\(\\)\\s*\\{\\s*:\\|:\\s*&\\s*\\})"
-      description: "Destructive filesystem commands including fork bombs"
+      value: "(?i)(\\brm\\s+-[rRf]{1,3}\\s+(--no-preserve-root|/[\\s*]|/$|~[\\s/])|\\bmkfs\\b|\\bdd\\s+if=|\\bformat\\s+[a-z]:|\\bdeltree\\b|\\bshred\\s+-|\\bwipefs\\b|\\bfdisk\\b.*--delete|:\\(\\)\\s*\\{\\s*:\\|:\\s*&\\s*\\})"
+      description: "Destructive filesystem commands including fork bombs (rm -rf narrowed to root/home targets; benign rm -rf <dir> no longer fires)"
 
     # -- Layer 2: Command execution via interpreters --
     - field: tool_response
       operator: regex
-      value: "(?i)(\\bbash\\s+-[ci]|\\bsh\\s+-c|\\bzsh\\s+-c|\\bcmd(\\.exe)?\\s*/[ck]|\\bpowershell(\\.exe)?\\s+-(e(nc(odedcommand)?)?|c(ommand)?|nop|w\\s+hidden|ep\\s+bypass)|\\bpwsh\\s+-(e|c)|\\bpython[23]?\\s+-c|\\bruby\\s+-e|\\bperl\\s+-e|\\bnode\\s+-e|\\bphp\\s+-r)"
-      description: "Command execution through various interpreters"
+      value: "(?i)(\\bpowershell(\\.exe)?\\s+-(e(nc(odedcommand)?)?\\s+[A-Za-z0-9+/]{16,}|w(indowstyle)?\\s+hidden|ep\\s+bypass|exec(utionpolicy)?\\s+bypass)|\\bpwsh\\s+-enc)"
+      description: "PowerShell AV-evasion flags: -EncodedCommand <base64>, -WindowStyle hidden, -ExecutionPolicy bypass. Benign flags (-NoProfile) and bare cmd /c dropped; generic Unix interpreters covered by the reverse-shell/python/node layers"
 
     # -- Layer 3: Reverse shells (Unix) --
     - field: tool_response
@@ -128,8 +128,8 @@ detection:
     # -- Layer 4: Download-and-execute (pipe to shell) --
     - field: tool_response
       operator: regex
-      value: "(?i)(curl|wget|fetch|lwp-download|aria2c|invoke-webrequest|iwr|Invoke-RestMethod|irm)\\s+[^|]{0,200}\\|\\s*(bash|sh|zsh|python[23]?|perl|ruby|node|powershell|pwsh|cmd|source)"
-      description: "Download-and-execute via pipe to shell interpreter"
+      value: "(?i)(curl|wget|fetch|lwp-download|aria2c|invoke-webrequest|iwr|Invoke-RestMethod|irm)\\s+[^|]{0,200}(https?://\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|http://|\\$\\w|@)[^|]{0,120}\\|\\s*(bash|sh|zsh|python[23]?|perl|ruby|node|powershell|pwsh|cmd|source)"
+      description: "Download-and-execute pipe to shell, narrowed to malicious-leaning sources (raw IP, plain http://, shell-var, or userinfo@ URL). Benign https://official-domain installer pipes no longer auto-block (dual-use install idiom)"
 
     # -- Layer 5: Command substitution with dangerous commands --
     # NOTE (v2): the legacy backtick form `...` was removed — it is indistinguishable
@@ -140,8 +140,8 @@ detection:
     # + all true_positives; rule benign FP on a 3042 real-skill corpus dropped 2582 -> 198.
     - field: tool_response
       operator: regex
-      value: "\\$\\(\\s*[^)]{0,300}(curl|wget|nc|ncat|bash|python|perl|ruby|eval|exec|sh\\s+-c|base64\\s+-d)"
-      description: "$(...) command substitution containing dangerous commands"
+      value: "(?i)(\\$\\(\\s*[^)]{0,200}(curl|wget|fetch)[^)]{0,80}\\|\\s*(bash|sh|zsh|python[23]?|perl|ruby)|\\$\\(\\s*[^)]{0,120}(\\bnc\\s|\\bncat\\s|/dev/tcp|base64\\s+-d|\\beval\\s))"
+      description: "$(...) command substitution containing download-pipe-to-shell or reverse-shell/base64/eval. Bare $(python ...)/$(bash ...) dropped — indistinguishable from normal shell scripting"
 
     # -- Layer 6: Process substitution --
     - field: tool_response
@@ -164,8 +164,8 @@ detection:
     # -- Layer 9: Privilege escalation in tool response --
     - field: tool_response
       operator: regex
-      value: "(?i)(\\bchmod\\s+[ugo]*[+][sS]|\\bchmod\\s+[2467][0-7]{3}\\b|\\bchown\\s+(root|0)\\b|\\bsetuid\\b|\\bSUID\\b|\\bsudo\\s+-[SsinuHbEA]|\\bsudo\\s+[a-zA-Z/]|\\bpkexec\\b|\\bdoas\\b|\\brunuser\\b|\\bsu\\s+-\\s|\\bsu\\s+root)"
-      description: "Privilege escalation commands (setuid/setgid via 4-digit octal with special bits, sudo, chown root)"
+      value: "(?i)(\\bchmod\\s+[ugo]*[+][sS]\\b|\\bchmod\\s+[2467][0-7]{3}\\b|\\bchown\\s+(root|0)\\b|\\bsetuid\\s*\\(|\\bpkexec\\b|\\bdoas\\s|\\bsu\\s+root\\b)"
+      description: "Privilege escalation via setuid/setgid bit, chown root, pkexec/doas, su root. Bare sudo/su-flags dropped — dual-use (sudo apt install etc. is normal in tool output)"
 
     # -- Layer 10: PowerShell attack patterns --
     - field: tool_response
@@ -194,14 +194,14 @@ detection:
     # -- Layer 14: Data exfiltration via tool response --
     - field: tool_response
       operator: regex
-      value: "(?i)(curl\\s+(-X\\s+POST\\s+)?[^|]*\\s+(-d|--data|--data-binary|--data-raw)\\s+.{0,60}(env|password|secret|token|key|credential|session)|wget\\s+--post-(data|file)|\\bexfiltrat|send.{0,30}(to|via|through).{0,30}(webhook|endpoint|server|url|http))"
-      description: "Data exfiltration commands and patterns in tool response"
+      value: "(?i)(curl|wget)\\s+[^|\\n]{0,140}\\$\\(\\s*(cat|env|printenv|security\\s+find-generic|aws\\s+configure\\s+get)\\b"
+      description: "Data exfiltration: a download tool reading secrets via command substitution ($(cat ~/.aws/...), $(env), $(printenv)) into an outbound request. Prose branches (send-to-webhook, bare 'exfiltrate') dropped — they matched benign phrasing like 'send results to the server'"
 
     # -- Layer 15: Cron/scheduled task persistence --
     - field: tool_response
       operator: regex
-      value: "(?i)(\\bcrontab\\s+-[elr]|echo\\s+.{0,100}>>\\s*/etc/cron|\\bat\\s+-f\\b|\\bschtasks\\s+/create|\\bRegister-ScheduledTask|\\blaunchctl\\s+load|\\bsystemctl\\s+enable)"
-      description: "Persistence mechanisms via scheduled tasks or cron jobs"
+      value: "(?i)(echo\\s+.{0,100}>>\\s*/etc/cron|\\bcrontab\\s+.{0,60}(curl|wget|/tmp/|/dev/|bash\\s+-i|http)|\\bat\\s+-f\\b|\\bschtasks\\s+/create\\b|\\bRegister-ScheduledTask\\b|\\blaunchctl\\s+load)"
+      description: "Persistence: writing to /etc/cron, crontab loading a remote/tmp payload, schtasks/ScheduledTask creation, launchctl load. Benign systemctl enable and bare crontab -e/-l dropped (normal service management)"
 
   condition: any
   false_positives:
