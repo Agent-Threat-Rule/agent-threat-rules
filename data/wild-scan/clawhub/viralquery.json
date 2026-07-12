@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "viralquery",
+  "display_name": "ViralQuery",
+  "publisher": {
+    "handle": "tfcbot",
+    "display_name": "CoderBot",
+    "user_id": "s17ee747e56qbmkcrwys763sys83gdzz"
+  },
+  "summary": "Find the top viral videos for a mobile app through ViralQuery's protected HTTP API. Use when an agent receives an Apple App Store link or app name and needs...",
+  "description": "Find the top viral videos for a mobile app through ViralQuery's protected HTTP API. Use when an agent receives an Apple App Store link or app name and needs to list supported apps, retrieve the app's videos, request a missing app on Max, check request status, or answer prompts such as \"get the viral videos for this app.",
+  "content": "---\nname: viralquery\ndescription: Find the top viral videos for a mobile app through ViralQuery's protected HTTP API. Use when an agent receives an Apple App Store link or app name and needs to list supported apps, retrieve the app's videos, request a missing app on Max, check request status, or answer prompts such as \"get the viral videos for this app.\"\n---\n\n# ViralQuery\n\nUse ViralQuery to answer: “Get the top viral videos for this mobile app.”\n\n## Workflow\n\n1. Call the protected API at `https://api.viralquery.com/v1` with `Authorization: Bearer $VIRALQUERY_API_KEY`.\n   Read the key from the environment or the caller's configured secret; never request or print it in chat.\n2. Prefer an Apple App Store link. Extract its numeric ID, call `GET /apps`, and use an exact matching\n   `id` or `appStoreUrl`. For a name-only request, use an unambiguous listed match; never invent an ID.\n3. If listed, call `GET /apps/videos?id=APP_ID` once with that exact ID.\n4. If missing and the user supplied an App Store link, call `POST /app-requests` with the full link in JSON.\n   This is Max-only and uses the account's bounded new-app allowance.\n5. For `queued` or `joined`, call `GET /app-requests?id=REQUEST_ID` with the returned request ID. Poll at a bounded\n   interval while practical. When `ready`, call `getAppVideos` with the returned app ID. If work is\n   still running, report the status and request ID instead of claiming completion.\n6. Cite each returned source URL and video ID. Report only the data that ViralQuery\n   returns; clearly label any synthesis as your inference.\n7. Filter or sort returned fields locally when needed. Return a focused answer for the requested\n   app rather than broad, unrelated inspiration.\n\nDo not use a remote tool transport for this skill. Do not call catalog writes, ingestion controls, or maintenance endpoints.\n\nFor endpoint details, request and response fields, see [ViralQuery API docs](https://viralquery.com/docs).\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.1",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 89,
+    "installs": 0,
+    "stars": 0,
+    "versions": 2,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T15:48:57.924Z",
+  "updated_at": "2026-07-10T15:52:35.789Z",
+  "fetched_at": "2026-07-11T22:53:37.178Z",
+  "source_url": "https://clawhub.ai/tfcbot/skills/viralquery"
+}

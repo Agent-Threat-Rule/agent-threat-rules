@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "zhihu-article-fetcher",
+  "display_name": "Zhihu Article Fetcher",
+  "publisher": {
+    "handle": "woai36d",
+    "display_name": "woai36D",
+    "user_id": "s17e554k9egs3n44bgce0zpp6184gs54"
+  },
+  "summary": "知乎专栏文章抓取器。专门用于抓取 `zhuanlan.zhihu.com/p/xxx` 单篇文章的标题和正文内容。 支持三级认证降级（Browser Profile → File Cookie → 高仿真请求头），在无 Cookie 时也尝试绕过反爬。 当用户提供知乎专栏文章链接、要求抓取/保存知乎文章、或 `g...",
+  "description": "知乎专栏文章抓取器。专门用于抓取 `zhuanlan.zhihu.com/p/xxx` 单篇文章的标题和正文内容。\n支持三级认证降级（Browser Profile → File Cookie → 高仿真请求头），在无 Cookie 时也尝试绕过反爬。\n当用户提供知乎专栏文章链接、要求抓取/保存知乎文章、或 `git-repo-analyzer` 遇到知乎文章 403 无法获取时使用此技能替代。",
+  "content": "---\nname: zhihu-article-fetcher\ndescription: |\n  知乎专栏文章抓取器。专门用于抓取 `zhuanlan.zhihu.com/p/xxx` 单篇文章的标题和正文内容。\n  支持三级认证降级（Browser Profile → File Cookie → 高仿真请求头），在无 Cookie 时也尝试绕过反爬。\n  当用户提供知乎专栏文章链接、要求抓取/保存知乎文章、或 `git-repo-analyzer` 遇到知乎文章 403 无法获取时使用此技能替代。\n---\n\n# 知乎专栏文章抓取器 | Zhihu Article Fetcher\n\n## Overview\n\n本 skill 专门解决 **知乎专栏文章**（`zhuanlan.zhihu.com/p/xxx`）的内容获取问题。\n\n- 参考 `zhihu-fetcher` 的三级认证降级思路\n- 参考 `zhihu-keyword-content-search` 的结构化输出设计\n- 核心差异：抓取**单篇专栏文章**而非热榜或问答\n\n## 三级认证降级\n\n```\n优先级1: Browser Profile\n    使用 OpenClaw browser 已登录状态（预留接口）\n    ↓ 失败\n优先级2: File Cookie\n    读取 config/cookie.json 中的固化 Cookie\n    ↓ 失败或未配置\n优先级3: 高仿真请求头\n    无 Cookie，但携带完整浏览器指纹（UA/Referer/Sec-Fetch 等）尝试绕过反爬\n```\n\n## 安装依赖\n\n```bash\npip install requests beautifulsoup4\n```\n\n## 使用方法\n\n### 1. 直接抓取（无 Cookie，尝试高仿真请求头）\n\n```bash\npython3 scripts/fetch_article.py \"https://zhuanlan.zhihu.com/p/660571164\"\n```\n\n### 2. 配置 Cookie 后抓取（成功率更高）\n\n浏览器打开 https://www.zhihu.com → F12 → Network → 任意请求 → Request Headers → 复制 Cookie 中对应字段到 `config/cookie.json`：\n\n```json\n{\n  \"cookie\": {\n    \"_xsrf\": \"你的_xsrf\",\n    \"_zap\": \"你的_zap\",\n    \"d_c0\": \"你的_d_c0\",\n    \"z_c0\": \"你的_z_c0\",\n    \"SESSIONID\": \"你的_SESSIONID\"\n  }\n}\n```\n\n然后运行：\n\n```bash\npython3 scripts/fetch_article.py \"https://zhuanlan.zhihu.com/p/660571164\"\n```\n\n### 3. 保存到文件\n\n```bash\npython3 scripts/fetch_article.py \"https://zhuanlan.zhihu.com/p/660571164\" -o /tmp/article.json\n```\n\n## 输出格式\n\n```json\n{\n  \"meta\": {\n    \"source\": \"zhihu-zhuanlan\",\n    \"fetch_time\": \"2026-04-10T10:30:00\",\n    \"auth_method\": \"simulated_headers\",\n    \"url\": \"https://zhuanlan.zhihu.com/p/660571164\"\n  },\n  \"data\": {\n    \"title\": \"文章标题\",\n    \"url\": \"https://zhuanlan.zhihu.com/p/660571164\",\n    \"content\": \"正文纯文本，段落以 \\n\\n 分隔...\",\n    \"word_count\": 3520,\n    \"fetch_method\": \"simulated_headers\"\n  }\n}\n```\n\n## 与类似 skill 的对比\n\n| skill | 抓取目标 | 认证方式 | 你的场景匹配度 |\n|---|---|---|---|\n| `zhihu-fetcher` | 知乎热榜 | 三级降级 | ❌ 不支持单篇文章 |\n| `zhihu-keyword-content-search` | 知乎问答（按关键词搜索） | Cookie 必填 | ❌ 不支持专栏 URL |\n| `zhihu-article-fetcher` | 知乎专栏单篇文章 | 三级降级 | ✅ **正对症** |\n\n## 常见问题\n\n**Q: 返回 \"未能提取到正文内容\"**\nA: 知乎升级了反爬或页面结构。尝试配置有效 Cookie（方法2），或等待 skill 更新解析规则。\n\n**Q: 503/429 频繁出现**\nA: 脚本已内置动态延迟（1.5-2秒）。如仍被限，建议配置 Cookie 抓取，或间隔更长时间再试。\n\n## File Structure\n\n```\nzhihu-article-fetcher/\n├── SKILL.md                      # 本文档\n├── config/\n│   └── cookie.json               # Cookie 配置（需用户自行填入）\n└── scripts/\n    └── fetch_article.py          # 核心抓取脚本\n```\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 0,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T22:03:28.797Z",
+  "updated_at": "2026-07-11T22:03:28.797Z",
+  "fetched_at": "2026-07-11T22:31:23.478Z",
+  "source_url": "https://clawhub.ai/woai36d/skills/zhihu-article-fetcher"
+}

@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "zhuangji-assistant-skill",
+  "display_name": "DIY装机助手",
+  "publisher": {
+    "handle": "gongyu0918-debug",
+    "display_name": "gongyu0918-debug",
+    "user_id": "s172a0qxsw6kfdee064rcn06es83edse"
+  },
+  "summary": "中文市场台式机装机配置 OpenClaw Skill。用户明确在问预算装机、装机 DIY、硬件 DIY、配电脑、配置单、整机推荐、旧机升级、配置补全、搭配检查、硬件选择问答、预算分配、兼容性或硬件搭配原理，并且目标是选购、升级或评估台式机硬件时使用。触发后再按 3A/FPS、直播推流、本地 AI 编程/终端 ag...",
+  "description": "中文市场台式机装机配置 OpenClaw Skill。用户明确在问预算装机、装机 DIY、硬件 DIY、配电脑、配置单、整机推荐、旧机升级、配置补全、搭配检查、硬件选择问答、预算分配、兼容性或硬件搭配原理，并且目标是选购、升级或评估台式机硬件时使用。触发后再按 3A/FPS、直播推流、本地 AI 编程/终端 agent 硬件需求、ComfyUI/SD、PS/剪辑/AE/Blender/CAD、黑白海景房、无光或纯性能等用途路由；单独询问软件、游戏、agent 或教程使用方法时不要触发。必须用离线库和脚本查候选、算价格、做兼容性检查；不要凭记忆编型号、价格或兼容结论。",
+  "content": "---\r\nname: zhuangji-assistant-skill\r\ndescription: 中文市场台式机装机配置 OpenClaw Skill。用户明确在问预算装机、装机 DIY、硬件 DIY、配电脑、配置单、整机推荐、旧机升级、配置补全、搭配检查、硬件选择问答、预算分配、兼容性或硬件搭配原理，并且目标是选购、升级或评估台式机硬件时使用。触发后再按 3A/FPS、直播推流、本地 AI 编程/终端 agent 硬件需求、ComfyUI/SD、PS/剪辑/AE/Blender/CAD、黑白海景房、无光或纯性能等用途路由；单独询问软件、游戏、agent 或教程使用方法时不要触发。必须用离线库和脚本查候选、算价格、做兼容性检查；不要凭记忆编型号、价格或兼容结论。\nlicense: MIT\r\n---\r\n\r\n# DIY装机助手\n\r\n这是面向 OpenClaw/ClawHub 的装机配置 skill。只做 DIY 配置参考、兼容性检查和硬件知识解释，不执行下单、登录、支付、远程控制或系统隔离/安全策略配置。\r\n\r\n## 使用流程\r\n\r\n1. 先识别入口：整机推荐、旧机升级、给定部分配置补全、搭配检查、硬件选择问答/知识解释。\n   - 意图、预算段和配平入口读 `references/routing.md`。\n   - 确认要给具体型号、完整配置、升级、补全或搭配检查时，再读 `references/selection-policy.md`；只做硬件知识解释时不加载。\n   - 3A/FPS、直播、本地 agent 硬件配置、ComfyUI、PS/剪辑/AE/Blender/UE/CAD、黑白海景房、无光、ITX、背插、水冷显卡、RTX PRO 等具体场景读 `references/scenarios.md`。\n   - 升级、补全和检查模式读 `references/workflows.md`；若这些模式命中具体用途，再联读 `references/scenarios.md`。\n   - 硬件选择、性能释放、Win10/Win11、电源管理、XMP/EXPO、BIOS/驱动和同类软硬件协同问答读 `references/hardware-faq.md`。\n   - 用户问具体游戏帧率、跑满 240Hz/360Hz/500Hz、1K/2K/4K 帧数时，读 `references/game-performance.md` 并运行 `scripts/query_game_fps.py`；只引用已收录样本，查不到就说明未收录，不按硬件档位推算。\n   - 价格规则不清楚时读 `references/pricing.md`；兼容性字段含义不清楚时读 `references/compatibility.md`；硬件收录边界不清楚时读 `references/hardware-scope.md`。\n   - 用户明确要求 ITX、小机箱、背插、BTF 或 Project Zero 时，必须按对应形态读 `references/scenarios.md`，不要套普通 ATX 方案。\n2. 查候选只运行 `scripts/query_components.py`，不要直接读取 `data/*.yaml`。\r\n   - 完整配置至少分别查 CPU、主板、内存、硬盘、显卡、散热、电源、机箱。\r\n   - 中高端显卡/主板、系统盘/生产力 SSD、内存候选查询使用 `--sort tier`，不要把低价首屏当默认答案。\r\n   - 依赖收窄优先用脚本过滤器：`--model`、`--id`、`--socket`、`--chipset`、`--memory-gen`、`--form-factor`、`--max-length`、`--gpu-chip`、`--min-vram`、`--min-capacity`、`--max-capacity`。型号/ID 定位结果若缺价，只用于兼容检查，不参与总价；`--budget` 是单品价格上限，不是整机预算。\n   - 用户明确显卡芯片时，显卡查询加 `--gpu-chip RTX5060Ti|RTX5080|RTX5090D V2`，并把 Ti/D/V2/XT/GRE 等后缀写完整；明确要 16GB/24GB/32GB 等显存容量时再叠加 `--min-vram 16|24|32`。例如 RTX5060Ti 16GB 用 `--gpu-chip RTX5060Ti --min-vram 16`，避免其它 16GB 显卡或 8GB 低价候选压住首屏。\r\n   - 用户明确内存或 SSD 容量时，同时设置相同目标区间的 `--min-capacity` 和 `--max-capacity`，再用 `--sort tier`，避免更小或更大容量候选挤占首屏。\n   - 本地大模型/LLM 超高预算需要 RTX PRO 6000 时，显卡查询显式加 `--include-workstation-gpu`；普通高预算游戏或常规 ComfyUI 不加，避免工作站卡污染候选。\n   - 普通显卡查询默认加 `--gpu-cooling air`；只有用户明确要水冷显卡、显卡水冷、水神/水雕/水超龙/Neptune/WATERFORCE/LIQUID/LC，或 5080/5090 级高预算且明确追求低噪/展示效果时，才改用 `--gpu-cooling liquid`。CPU 水冷需求不能等同于显卡水冷需求。\n   - 显示器只在用户明确要求“带显示器/推荐显示器/屏幕”时用 `--category display` 或 `--category monitor` 单独查询；不要让显示器进入默认整机核心候选或兼容性检查。\n   - 风扇只在海景房补风扇、水冷夹汉堡、风道/无光风扇或用户明确要风扇时用 `--category fan` 单独查询；不要让风扇进入默认整机核心候选或兼容性检查。\n   - 优先选择有价格、价格日期和关键兼容字段的条目；海景房/好看需求查机箱时必须读取 `fan_mounts` 或 `fan_slots_count`；风道机箱若已自带大风扇，不默认补满风扇位。\n   - 养宠/防毛可用 `--dust-filter yes` 找候选；只有 `dust_filter_status=verified` 才能写成已确认防尘，`needs_verification` 必须提示核实滤网位置、覆盖范围和可拆洗方式。\n3. 最终配置必须运行 `scripts/check_compatibility.py --strict --require-complete`。\n   - 显卡长度、机箱显卡限长、供电、散热限高/冷排位、机箱版型、电源尺寸缺失时，不能写成完整通过。\n   - 退出码 `1` 表示硬不兼容，`2` 表示未发现硬不兼容但仍有待复核项；只有退出码 `0` 才可写“完整通过”。\n   - 主板 `m2_slots` / `sata_ports` 缺失不阻塞普通单 SSD 装机；多硬盘、旧 SATA 盘复用、剪辑素材盘、NAS/存储或工作站扩展需求必须补查。\r\n4. 只回答方向或原理且未给具体采购型号时，不强制套整机报价表；给出具体采购型号或配置单时，必须列出每个配件的参考单价、总价、预算差额、兼容性结论、取舍理由和复核项。\n   - CPU、主板、内存、硬盘、显卡、散热、电源、机箱分行列出，不合并。\n   - 内存写容量、频率和时序；硬盘写容量、接口和颗粒/定位信息。\n   - 价格参考日期优先取所选条目的 `price_date`；全单日期一致时写统一日期，不一致时写“价格参考日期以各行 price_date 为准”。整包参考日期读取 `data/components.yaml` / `data/cases.yaml` metadata，不在提示词硬编码；并说明价格来自网络公开信息整理，仅供参考，下单前复核实时价格、库存和具体型号后缀。\n   - 用户报告不要写脚本命令、`overall=pass`、`pass/error/warn/skipped`、`channel_quote`、`needs_market_quote` 等内部字段；改用“兼容性检查完成，未发现硬不兼容/仍有复核项”“离线渠道参考价”等自然表述。\n   - 用户关心游戏帧率时，报告只加 1-2 句大致帧率参考，并统一短提醒“帧率仅供装机选配参考，实际以同配置实测为准。”查不到样本就说未收录，不按硬件档位自行推算。\n\r\n## 门禁\n\n- 不编型号、不编价格、不编兼容性结果。\n- 内部缺价条目不参与总价；不要把内部价格状态字段写给用户。\n- 机箱必须计入总价；海景房/好看需求必须考虑风扇预算，风扇位缺字段时只提示自行核实，不编具体数量；风道机箱缺风扇位字段时不硬推具体加装风扇。\n- 显示器默认不计入整机配置和总价；用户明确要求时才单列显示器候选、参考价和“仅供参考，需按观感/接口/售后复核”的提醒。\n- 二手、99新、翻新、矿卡、返券后不确定价和主播直播间特殊到手价不属于默认推荐范围；主播截图只作为维护端预算结构观察。\n- 公开输出使用中性候选池表达，不输出品牌贬损、商业背书、维护端证据链或来源站点标识。\n- 普通 ATX/MATX 机箱默认搭 ATX 电源；ITX、背插、水冷显卡、RTX PRO 工作站卡等特殊路线只有在用户需求或场景明确时启用，并按 reference 复核限制。\n- 配置报告中 CPU、主板、内存、硬盘、显卡、散热、电源、机箱分别成行；内存写清容量/频率/时序，硬盘写清容量/接口/颗粒或定位，显卡写清芯片和显存容量。\n- 面向用户不要写脚本命令、退出码、完整度门禁、内部价格状态或脚本状态词；用自然语言说明“兼容性检查完成，未发现硬不兼容”或“现有型号信息不足，仍需复核显卡限长/线材/风扇位”等具体事项。\n\n## 脚本\n\n- `scripts/query_components.py`: 查询配件候选。\n- `scripts/check_compatibility.py`: 严格兼容性检查和字段完整度门禁。\n- `scripts/query_game_fps.py`: 查询已收录游戏帧率参考样本；不做硬件倍率推算。\n- `scripts/validate_library.py`: 发布前/维护时校验库结构和关键字段完整度。\n\n## 发布说明\n\r\n本包为 ClawHub/OpenClaw 发布面，元数据由 `SKILL.md` 和 `clawhub publish` 参数提供。GitHub 通用发布包另行维护，二者不要互相覆盖。\r\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "0.0.16",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 767,
+    "installs": 0,
+    "stars": 0,
+    "versions": 16,
+    "comments": 0
+  },
+  "created_at": "2026-07-01T15:30:35.065Z",
+  "updated_at": "2026-07-11T08:11:40.464Z",
+  "fetched_at": "2026-07-11T22:48:02.180Z",
+  "source_url": "https://clawhub.ai/gongyu0918-debug/skills/zhuangji-assistant-skill"
+}

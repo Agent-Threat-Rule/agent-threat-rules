@@ -1,0 +1,36 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "agent-bom-discover-snowflake",
+  "display_name": "agent-bom discover snowflake",
+  "publisher": {
+    "handle": "msaad00",
+    "display_name": "Agent Bom",
+    "user_id": "s173dmtq1jwv3yxcgnmcxnn45583ey2y"
+  },
+  "summary": "Discover Snowflake Cortex, Snowpark, notebook, Streamlit, MCP, and AI-observability assets from the operator's environment, emit canonical agent-bom inventor...",
+  "description": "Discover Snowflake Cortex, Snowpark, notebook, Streamlit, MCP, and AI-observability assets from the operator's environment, emit canonical agent-bom inventory JSON, and scan it without giving agent-bom long-lived Snowflake credentials. Use when a user asks to inventory Snowflake AI or Cortex infrastructure as canonical inventory.",
+  "content": "---\nname: agent-bom-discover-snowflake\ndescription: >-\n  Discover Snowflake Cortex, Snowpark, notebook, Streamlit, MCP, and\n  AI-observability assets from the operator's environment, emit canonical\n  agent-bom inventory JSON, and scan it without giving agent-bom long-lived\n  Snowflake credentials. Use when a user asks to inventory Snowflake AI or\n  Cortex infrastructure as canonical inventory.\nversion: 0.94.2\nlicense: Apache-2.0\ncompatibility: >-\n  Requires Python 3.11+, agent-bom installed with the snowflake extra, and\n  operator-controlled Snowflake read-only credentials. Prefer SSO, OAuth, or\n  key-pair auth over passwords.\nmetadata:\n  author: msaad00\n  homepage: https://github.com/msaad00/agent-bom\n  source: https://github.com/msaad00/agent-bom\n  pypi: https://pypi.org/project/agent-bom/\n  openclaw:\n    requires:\n      bins:\n        - python\n      env: []\n      credentials: snowflake-read-only\n    credential_policy: \"Use the operator's existing Snowflake SSO, OAuth, or key-pair auth context. Prefer SNOWFLAKE_PRIVATE_KEY_PATH or SNOWFLAKE_AUTHENTICATOR over SNOWFLAKE_PASSWORD. Do not ask users to paste passwords, private keys, or OAuth tokens into chat.\"\n    optional_env:\n      - SNOWFLAKE_ACCOUNT\n      - SNOWFLAKE_USER\n      - SNOWFLAKE_AUTHENTICATOR\n      - SNOWFLAKE_PRIVATE_KEY_PATH\n      - SNOWFLAKE_PRIVATE_KEY_PASSPHRASE\n      - SNOWFLAKE_TOKEN\n      - SNOWFLAKE_WAREHOUSE\n      - SNOWFLAKE_DATABASE\n      - SNOWFLAKE_SCHEMA\n      - SNOWFLAKE_ROLE\n    optional_bins:\n      - snow\n      - snowsql\n    emoji: \"search\"\n    homepage: https://github.com/msaad00/agent-bom\n    source: https://github.com/msaad00/agent-bom\n    license: Apache-2.0\n    os:\n      - darwin\n      - linux\n      - windows\n    credential_handling: \"Credentials stay in the operator environment. The skill invokes Snowflake discovery locally and writes canonical inventory JSON with source_type=skill_invoked_pull. agent-bom receives sanitized inventory only when the operator explicitly scans or pushes that inventory.\"\n    data_flow: \"Operator Snowflake account -> read-only Snowflake queries/API calls -> canonical inventory JSON -> optional local agent-bom inventory scan. No agent-bom-hosted service is required. Credential-like values are redacted before persistence/export.\"\n    file_reads:\n      - \"~/.snowflake/connections.toml\"\n      - \"~/.snowflake/config.toml\"\n      - \"operator-selected private key path when SNOWFLAKE_PRIVATE_KEY_PATH is set\"\n    file_writes:\n      - \"operator-selected inventory JSON output path\"\n    network_endpoints:\n      - url: \"https://{account}.snowflakecomputing.com\"\n        purpose: \"Snowflake inventory, Cortex, query history, and AI observability discovery\"\n        auth: true\n      - url: \"https://*.snowflakecomputing.com\"\n        purpose: \"Snowflake regional and organization account endpoints selected by the operator\"\n        auth: true\n    telemetry: false\n    persistence: false\n    privilege_escalation: false\n    always: false\n    autonomous_invocation: restricted\n---\n\n# agent-bom-discover-snowflake\n\nUse this skill to collect Snowflake AI and workload inventory as schema-valid\nagent-bom inventory. Default to discover-only: write JSON to an\noperator-selected path and stop.\n\n## Guardrails\n\n- Use only operator-approved Snowflake accounts, warehouses, databases, and\n  read-only roles.\n- Prefer SSO, OAuth, or key-pair auth. Do not request or display\n  `SNOWFLAKE_PASSWORD`, private key contents, passphrases, or OAuth tokens.\n- Do not modify Snowflake resources. This workflow is discovery-only.\n- Write inventory only to a path the operator chose.\n- Treat AI-generated prose as non-authoritative; schema-validated inventory JSON\n  is the evidence.\n\n## Workflow\n\n```bash\npython examples/operator_pull/snowflake_inventory_adapter.py \\\n  --account \"$SNOWFLAKE_ACCOUNT\" \\\n  --user \"$SNOWFLAKE_USER\" \\\n  --authenticator snowflake_jwt \\\n  --source snowflake-skill-invoked \\\n  --discovery-method skill_invoked_pull \\\n  --output snowflake-inventory.json\n```\n\nScan only when the operator asks for findings:\n\n```bash\nagent-bom scan --inventory snowflake-inventory.json --format json --output agent-bom-snowflake-findings.json\n```\n\n## Evidence Contract\n\nThe emitted inventory carries `discovery_provenance.source_type:\nskill_invoked_pull`, `observed_via: skill_invoked_pull, snowflake_sdk`,\nsanitized `metadata.permissions_used`, and redacted credential material. If\nschema validation fails, stop and fix the inventory instead of scanning a\nbest-effort summary.\n",
+  "category": null,
+  "tags": [
+    "Observability",
+    "Json"
+  ],
+  "topics": [
+    "Observability",
+    "Json"
+  ],
+  "latest_version": "0.94.2",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 1752,
+    "installs": 38,
+    "stars": 0,
+    "versions": 21,
+    "comments": 0
+  },
+  "created_at": "2026-05-01T01:53:52.640Z",
+  "updated_at": "2026-07-09T18:25:12.765Z",
+  "fetched_at": "2026-07-11T23:12:01.536Z",
+  "source_url": "https://clawhub.ai/msaad00/skills/agent-bom-discover-snowflake"
+}

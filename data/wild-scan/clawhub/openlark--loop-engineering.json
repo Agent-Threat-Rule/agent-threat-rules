@@ -1,0 +1,34 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "loop-engineering",
+  "display_name": "Loop Engineering",
+  "publisher": {
+    "handle": "openlark",
+    "display_name": "OpenLark",
+    "user_id": "s1727wv2g20pc729snzcm4nf8183hy72"
+  },
+  "summary": "Loop Engineering AI programming paradigm guide. Covers the core concepts of transitioning from single prompt calls to autonomous loop systems, key components, loop patterns, configuration examples",
+  "description": "Loop Engineering AI programming paradigm guide. Covers the core concepts of transitioning from single prompt calls to autonomous loop systems, key components, loop patterns, configuration examples, and anti-patterns.",
+  "content": "---\nname: loop-engineering\ndescription: Loop Engineering AI programming paradigm guide. Covers the core concepts of transitioning from single prompt calls to autonomous loop systems, key components, loop patterns, configuration examples, and anti-patterns. \n---\n\n# Loop Engineering\n\nLoop Engineering is a new AI programming paradigm -- designing autonomous loop systems that allow Agents to continuously execute tasks in an environment with goals, feedback, and self-verification, eliminating the need for manual prompting.\n\n## Use Cases\n\nUse when users need to learn about \"Loop Engineering\", \"AI loop systems\", \"autonomous Agent design\", \"/loop\", \"/goal\", \"AI programming paradigms\", or \"system architect\".\n\n## Core Concepts\n\nTransition from single prompt calls to continuous loop systems:\n\n| Paradigm | How It Works | Developer Role |\n|------|----------|------------|\n| Prompt Engineering | Manually enter prompts, model executes once, human judges results | Prompt Engineer |\n| Harness Engineering | Build a constrained environment for a single Agent with pre-checks/fixes/hooks, still requires human triggering | Harness Engineer |\n| Loop Engineering | Manage multi-Agent sequencing, decision-making, and autonomous loops, self-driven over long periods across many rounds | System Architect / Loop Engineer |\n\n## Key Components\n\n| Component | Purpose | Reference |\n|------|------|------|\n| **Automations** | Trigger tasks by time/event, support periodic execution and archiving | See [config-examples](references/config-examples.md) |\n| **Worktrees** | Manage task state and context, maintain memory and state persistence across rounds | See [config-examples](references/config-examples.md) |\n| **Skills** | Encapsulate reusable task capabilities as skill modules for the loop system to invoke | See [patterns](references/patterns.md) |\n| **Plugins/Connectors** | Extend system capabilities, interact with external tools or services | See [integration](references/integration.md) |\n| **Sub-agents** | Small specialized Agents for division of labor, supporting parallel multi-Agent task execution | See [patterns](references/patterns.md) / [config-examples](references/config-examples.md) |\n| **External Memory & Feedback Loops** | Achieve self-assessment and correction through mechanisms like logs, tests, and type checking | See [anti-patterns](references/anti-patterns.md) |\n\n## /loop and /goal Primitives\n\n| Primitive | Behavior | Use Case | Usage Tip |\n|------|------|----------|----------|\n| `/loop` | Execute tasks repeatedly on a cycle | Scheduled checks, periodic maintenance | Must set `maxRounds`; no termination condition = infinite loop |\n| `/goal` | Run continuously until verifiable conditions are met | Goal-oriented autonomous tasks, with an independent model checking completion each round | Completion conditions must be **objectively verifiable** (file exists, tests pass, metrics met) |\n\n## Quick Start\n\n1. **Define the goal**: Do you want scheduled patrols, or are you pursuing a verifiable objective? Use `/loop` for the former, `/goal` for the latter.\n2. **Choose a pattern**: Browse [common loop patterns](references/patterns.md) to find a design that matches your scenario.\n3. **Configure components**: Refer to [configuration examples](references/config-examples.md) to build the loop skeleton.\n4. **Avoid pitfalls**: Read [anti-patterns](references/anti-patterns.md) to prevent issues in your design early on.\n5. **Platform integration**: Refer to [platform integration](references/integration.md) to connect with your actual toolchain.\n\n## Design Principles\n\n- **Goal definition**: Specify verifiable completion conditions to prevent Agents from falling into meaningless loops\n- **Feedback mechanisms**: Enable Agents to self-assess through tests, validation, logs, and other mechanisms\n- **State management**: Use Worktrees to maintain cross-round context and memory\n- **Modularity**: Encapsulate reusable capabilities as Skills and Plugins\n- **Division of labor**: Reasonably partition Sub-agent responsibilities, parallelize to improve efficiency\n- **Graceful termination**: Set timeouts, max rounds, and abnormal exit conditions\n\n## File Navigation\n\n| File | Content | Who It's For |\n|------|------|--------|\n| [patterns.md](references/patterns.md) | 8 common loop patterns + selection guide | Need to quickly find a matching pattern |\n| [config-examples.md](references/config-examples.md) | Automation / Worktree / Sub-agent configuration examples | Starting to build a loop system |\n| [anti-patterns.md](references/anti-patterns.md) | Common mistakes + correction strategies | Troubleshooting or preventing issues |\n| [integration.md](references/integration.md) | OpenClaw / TaskFlow and other platform integration | Connecting to actual toolchains |",
+  "category": null,
+  "tags": [
+    "loop-engineering"
+  ],
+  "topics": [
+    "loop-engineering"
+  ],
+  "latest_version": "1.0.1",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 193,
+    "installs": 1,
+    "stars": 1,
+    "versions": 2,
+    "comments": 0
+  },
+  "created_at": "2026-06-22T04:08:47.546Z",
+  "updated_at": "2026-06-25T14:12:15.462Z",
+  "fetched_at": "2026-07-11T22:34:29.852Z",
+  "source_url": "https://clawhub.ai/openlark/skills/loop-engineering"
+}

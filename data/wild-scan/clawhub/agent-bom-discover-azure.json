@@ -1,0 +1,34 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "agent-bom-discover-azure",
+  "display_name": "agent-bom discover azure",
+  "publisher": {
+    "handle": "msaad00",
+    "display_name": "Agent Bom",
+    "user_id": "s173dmtq1jwv3yxcgnmcxnn45583ey2y"
+  },
+  "summary": "Discover Azure-hosted AI agent and MCP-relevant assets from the operator's environment, emit canonical agent-bom inventory JSON, and scan it without giving a...",
+  "description": "Discover Azure-hosted AI agent and MCP-relevant assets from the operator's environment, emit canonical agent-bom inventory JSON, and scan it without giving agent-bom long-lived Azure credentials. Use when a user asks to inventory Azure OpenAI, Container Apps, AKS, Functions, ML, or agentic Azure infrastructure as canonical inventory.",
+  "content": "---\nname: agent-bom-discover-azure\ndescription: >-\n  Discover Azure-hosted AI agent and MCP-relevant assets from the operator's\n  environment, emit canonical agent-bom inventory JSON, and scan it without\n  giving agent-bom long-lived Azure credentials. Use when a user asks to\n  inventory Azure OpenAI, Container Apps, AKS, Functions, ML, or agentic Azure\n  infrastructure as canonical inventory.\nversion: 0.94.2\nlicense: Apache-2.0\ncompatibility: >-\n  Requires Python 3.11+, agent-bom installed from this repository or PyPI, and\n  operator-controlled Azure read-only credentials from Azure CLI, workload\n  identity, managed identity, or service principal.\nmetadata:\n  author: msaad00\n  homepage: https://github.com/msaad00/agent-bom\n  source: https://github.com/msaad00/agent-bom\n  pypi: https://pypi.org/project/agent-bom/\n  openclaw:\n    requires:\n      bins:\n        - python\n      env: []\n      credentials: azure-read-only\n    credential_policy: \"Use the operator's existing Azure identity chain. Prefer Azure CLI, workload identity, managed identity, or short-lived service principal credentials. Do not ask users to paste client secrets. Do not print credential values.\"\n    optional_env:\n      - AZURE_SUBSCRIPTION_ID\n      - AZURE_TENANT_ID\n      - AZURE_CLIENT_ID\n      - AZURE_CLIENT_SECRET\n      - AZURE_AUTHORITY_HOST\n    optional_bins:\n      - az\n    emoji: \"search\"\n    homepage: https://github.com/msaad00/agent-bom\n    source: https://github.com/msaad00/agent-bom\n    license: Apache-2.0\n    os:\n      - darwin\n      - linux\n      - windows\n    credential_handling: \"Credentials stay in the operator environment. The skill invokes Azure SDK discovery locally and writes canonical inventory JSON with source_type=skill_invoked_pull. agent-bom receives sanitized inventory only when the operator explicitly scans or pushes that inventory.\"\n    data_flow: \"Operator Azure subscription -> read-only Azure SDK calls -> canonical inventory JSON -> optional local agent-bom inventory scan. No agent-bom-hosted service is required. Credential-like values are redacted before persistence/export.\"\n    file_reads:\n      - \"~/.azure/azureProfile.json\"\n      - \"~/.azure/config\"\n      - \"~/.azure/msal_token_cache.json\"\n    file_writes:\n      - \"operator-selected inventory JSON output path\"\n    network_endpoints:\n      - url: \"https://login.microsoftonline.com\"\n        purpose: \"Azure identity token exchange when the selected credential flow needs it\"\n        auth: true\n      - url: \"https://management.azure.com\"\n        purpose: \"Azure Resource Manager and service inventory\"\n        auth: true\n      - url: \"https://*.cognitiveservices.azure.com\"\n        purpose: \"Azure AI and OpenAI service metadata where available\"\n        auth: true\n    telemetry: false\n    persistence: false\n    privilege_escalation: false\n    always: false\n    autonomous_invocation: restricted\n---\n\n# agent-bom-discover-azure\n\nUse this skill to collect Azure AI and workload inventory as schema-valid\nagent-bom inventory. Default to discover-only: write JSON to an\noperator-selected path and stop.\n\n## Guardrails\n\n- Use only operator-approved Azure subscriptions and read-only identities.\n- Do not request or display raw `AZURE_CLIENT_SECRET`, access tokens, or\n  connection strings.\n- Do not modify Azure resources. This workflow is discovery-only.\n- Write inventory only to a path the operator chose.\n- Treat AI-generated prose as non-authoritative; schema-validated inventory JSON\n  is the evidence.\n\n## Workflow\n\n```bash\npython examples/operator_pull/azure_inventory_adapter.py \\\n  --subscription-id \"$AZURE_SUBSCRIPTION_ID\" \\\n  --source azure-skill-invoked \\\n  --discovery-method skill_invoked_pull \\\n  --output azure-inventory.json\n```\n\nScan only when the operator asks for findings:\n\n```bash\nagent-bom scan --inventory azure-inventory.json --format json --output agent-bom-azure-findings.json\n```\n\n## Evidence Contract\n\nThe emitted inventory carries `discovery_provenance.source_type:\nskill_invoked_pull`, `observed_via: skill_invoked_pull, azure_sdk`, sanitized\n`metadata.permissions_used`, and redacted credential material. If schema\nvalidation fails, stop and fix the inventory instead of scanning a best-effort\nsummary.\n",
+  "category": null,
+  "tags": [
+    "Json"
+  ],
+  "topics": [
+    "Json"
+  ],
+  "latest_version": "0.94.2",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 1737,
+    "installs": 37,
+    "stars": 0,
+    "versions": 21,
+    "comments": 0
+  },
+  "created_at": "2026-05-01T01:53:46.812Z",
+  "updated_at": "2026-07-09T18:25:00.590Z",
+  "fetched_at": "2026-07-11T23:12:04.925Z",
+  "source_url": "https://clawhub.ai/msaad00/skills/agent-bom-discover-azure"
+}

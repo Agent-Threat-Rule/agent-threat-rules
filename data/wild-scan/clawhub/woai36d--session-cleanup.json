@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "session-cleanup",
+  "display_name": "Session Cleanup",
+  "publisher": {
+    "handle": "woai36d",
+    "display_name": "woai36D",
+    "user_id": "s17e554k9egs3n44bgce0zpp6184gs54"
+  },
+  "summary": "Lightweight session cleanup tool for OpenClaw. Removes old session backups, checkpoints, and trajectory files to prevent disk bloat.",
+  "description": "Lightweight session cleanup tool for OpenClaw. Removes old session backups, checkpoints, and trajectory files to prevent disk bloat.",
+  "content": "---\nname: session-cleanup\ndescription: Lightweight session cleanup tool for OpenClaw. Removes old session backups, checkpoints, and trajectory files to prevent disk bloat.\nmetadata:\n  {\n    \"openclaw\":\n      {\n        \"emoji\": \"🧹\",\n        \"requires\": { \"bins\": [\"jq\"] },\n        \"install\":\n          [\n            {\n              \"id\": \"brew-jq\",\n              \"kind\": \"brew\",\n              \"formula\": \"jq\",\n              \"bins\": [\"jq\"],\n              \"label\": \"Install jq (brew)\",\n            },\n          ],\n      },\n  }\n---\n\n# session-cleanup\n\nClean up OpenClaw session artifacts to prevent disk bloat.\n\n## What It Cleans\n\n| Pattern | Description | Default Retention |\n|---------|-------------|-------------------|\n| `.jsonl.reset.*` | Session backups from `/new` or `/reset` | 7 days |\n| `.checkpoint.*.jsonl` | Auto-save checkpoints | 7 days |\n| `.trajectory.jsonl` | Trajectory/thinking logs | 3 days |\n| `.trajectory-path.json` | Trajectory index files | 3 days |\n| `.jsonl.lock` | Stale lock files | 1 day |\n\n## Usage\n\n```bash\n# Dry run - see what would be deleted\n~/.openclaw/workspace/skills/session-cleanup/cleanup.sh --dry-run\n\n# Clean with defaults (7d for backups, 3d for trajectories)\n~/.openclaw/workspace/skills/session-cleanup/cleanup.sh\n\n# Aggressive clean - keep only last 3 days of everything\n~/.openclaw/workspace/skills/session-cleanup/cleanup.sh --backup-days 3 --trajectory-days 1\n\n# Report only - show disk usage by session\n~/.openclaw/workspace/skills/session-cleanup/cleanup.sh --report\n```\n\n## Cron Setup\n\nAdd to your crontab for weekly cleanup:\n\n```cron\n# Weekly session cleanup, Sunday 3:06 AM\n6 3 * * 0 ~/.openclaw/workspace/skills/session-cleanup/cleanup.sh >> ~/.openclaw/logs/session-cleanup.log 2>&1\n```\n\nOr use OpenClaw cron:\n\n```bash\nopenclaw cron add --name \"session-cleanup\" --schedule \"0 3 * * 0\" --command \"~/.openclaw/workspace/skills/session-cleanup/cleanup.sh\"\n```\n\n## Safety\n\n- **Never deletes active sessions** (checks `.jsonl.lock` and recent modification time)\n- **Moves to `.trash/` first** instead of permanent deletion (recoverable for 30 days)\n- **Logs all actions** to `~/.openclaw/logs/session-cleanup.log`\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 0,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T22:03:08.325Z",
+  "updated_at": "2026-07-11T22:03:08.325Z",
+  "fetched_at": "2026-07-11T22:31:30.498Z",
+  "source_url": "https://clawhub.ai/woai36d/skills/session-cleanup"
+}

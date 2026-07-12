@@ -1,0 +1,38 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "scrapfly-sdk-typescript",
+  "display_name": "Scrapfly SDK TypeScript",
+  "publisher": {
+    "handle": "scrapfly",
+    "display_name": "Scrapfly",
+    "user_id": "s176kpxbhgjtnwza0q20m912g18a7jct"
+  },
+  "summary": "Web scraping from TypeScript or JavaScript with the Scrapfly SDK (`scrapfly-sdk`). Use when the user asks to scrape a URL, bypass anti-bot protection, render...",
+  "description": "Web scraping from TypeScript or JavaScript with the Scrapfly SDK (`scrapfly-sdk`). Use when the user asks to scrape a URL, bypass anti-bot protection, render...",
+  "content": "---\r\nname: scrapfly-sdk-typescript\r\ndescription: >-\r\n  Web scraping from TypeScript or JavaScript with the Scrapfly SDK\r\n  (`scrapfly-sdk`). Use when the user asks to scrape a URL, bypass anti-bot\r\n  protection, render JavaScript, capture screenshots, or extract structured\r\n  data from Node.js, Deno, or Bun.\r\n---\r\n\r\n# Scrapfly TypeScript SDK\r\n\r\nUse the `scrapfly-sdk` package to scrape web pages from TypeScript/JavaScript\r\nwith proxy rotation, anti-bot bypass (ASP), JavaScript rendering, screenshots,\r\nand AI extraction. Runs on Node.js, Deno, Bun, and edge runtimes\r\n(Cloudflare Workers, AWS Lambda).\r\n\r\n## When to use\r\n\r\n- Scraping web pages (HTML, JSON, text, markdown) from a TS/JS codebase\r\n- Bypassing anti-bot protections (Cloudflare, DataDome, PerimeterX, Kasada)\r\n- Rendering JavaScript-heavy pages with a headless browser\r\n- Capturing screenshots or extracting structured data\r\n- Concurrent scraping of many URLs\r\n\r\n## Setup\r\n\r\n```bash\r\nnpm install scrapfly-sdk\r\n# Deno / JSR: import from 'jsr:@scrapfly/scrapfly-sdk'\r\nexport SCRAPFLY_API_KEY=\"your-api-key\"\r\n```\r\n\r\nGet your API key at [scrapfly.io](https://scrapfly.io).\r\n\r\n## Basic scrape\r\n\r\n```typescript\r\nimport { ScrapflyClient, ScrapeConfig } from 'scrapfly-sdk';\r\n\r\nconst client = new ScrapflyClient({ key: process.env.SCRAPFLY_API_KEY });\r\n\r\nconst result = await client.scrape(\r\n    new ScrapeConfig({ url: 'https://web-scraping.dev/products' }),\r\n);\r\n\r\nconsole.log(result.result.content);\r\n```\r\n\r\n## Anti-bot bypass, geo-targeting, JS rendering\r\n\r\n`ScrapeConfig` uses snake_case option keys, matching the API.\r\n\r\n```typescript\r\nconst result = await client.scrape(\r\n    new ScrapeConfig({\r\n        url: 'https://web-scraping.dev/products',\r\n        asp: true,                          // bypass anti-bot\r\n        country: 'us',                      // proxy country (ISO 3166-1 alpha-2)\r\n        proxy_pool: 'public_residential_pool',\r\n        render_js: true,                    // headless browser rendering\r\n        wait_for_selector: 'div.product',   // requires render_js\r\n        rendering_wait: 5000,               // ms, requires render_js\r\n        format: 'markdown',                 // raw | clean_html | json | markdown | text\r\n    }),\r\n);\r\n```\r\n\r\n## Screenshots and extraction\r\n\r\n```typescript\r\nimport { ScreenshotConfig, ExtractionConfig } from 'scrapfly-sdk';\r\n\r\nconst shot = await client.screenshot(\r\n    new ScreenshotConfig({ url: 'https://web-scraping.dev/products' }),\r\n);\r\n// shot.image is the binary image data\r\n\r\nconst html = (await client.scrape(\r\n    new ScrapeConfig({ url: 'https://web-scraping.dev/reviews' }),\r\n)).result.content;\r\n\r\nconst data = await client.extract(\r\n    new ExtractionConfig({\r\n        body: html,\r\n        content_type: 'text/html',\r\n        extraction_prompt: 'extract the reviews as JSON with fields: review, date, rating, author',\r\n    }),\r\n);\r\nconsole.log(data.data);\r\n```\r\n\r\n## Concurrent scraping\r\n\r\n```typescript\r\nconst configs = [\r\n    new ScrapeConfig({ url: 'https://web-scraping.dev/products?page=1' }),\r\n    new ScrapeConfig({ url: 'https://web-scraping.dev/products?page=2' }),\r\n];\r\n\r\nfor await (const result of client.concurrentScrape(configs)) {\r\n    console.log(result.result.content.slice(0, 100));\r\n}\r\n```\r\n\r\n## Important notes\r\n\r\n- `render_js: true` is required for `rendering_wait`, `wait_for_selector`, and screenshots\r\n- `proxy_pool: 'public_residential_pool'` is recommended alongside `asp: true`\r\n- Use `format: 'markdown'` for clean, LLM-friendly content\r\n- The API key is read from the `key` constructor option (pass `process.env.SCRAPFLY_API_KEY`)\r\n- Read the page body via `result.result.content`\r\n",
+  "category": null,
+  "tags": [
+    "scrapfly-sdk",
+    "typescript",
+    "scrapfly-typescript-sdk"
+  ],
+  "topics": [
+    "scrapfly-sdk",
+    "typescript",
+    "scrapfly-typescript-sdk"
+  ],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 198,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-09T15:55:19.345Z",
+  "updated_at": "2026-07-09T16:04:43.558Z",
+  "fetched_at": "2026-07-11T23:12:55.567Z",
+  "source_url": "https://clawhub.ai/scrapfly/skills/scrapfly-sdk-typescript"
+}

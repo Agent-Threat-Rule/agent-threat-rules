@@ -1,0 +1,42 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "safety-footwear-buyer-assistant",
+  "display_name": "Safety Footwear Buyer Assistant",
+  "publisher": {
+    "handle": "fly0pants",
+    "display_name": "fly0pants",
+    "user_id": "s17485bhjxmrt6atmnk22z55ex83gb56"
+  },
+  "summary": "B2B safety footwear buyer assistant for product matching, RFQ preparation, supplier verification, and simulated inquiry intake. Use when a PPE buyer, importe...",
+  "description": "B2B safety footwear buyer assistant for product matching, RFQ preparation, supplier verification, and simulated inquiry intake. Use when a PPE buyer, importer, distributor, sourcing team, workwear brand, or industrial purchaser needs help selecting PVC boots, EVA boots, rubber boots, or safety shoes; comparing materials and certifications; drafting an inquiry; or running a local mock inquiry submission that returns success without transmitting data externally.",
+  "content": "---\nname: safety-footwear-buyer-assistant\ndescription: B2B safety footwear buyer assistant for product matching, RFQ preparation, supplier verification, and simulated inquiry intake. Use when a PPE buyer, importer, distributor, sourcing team, workwear brand, or industrial purchaser needs help selecting PVC boots, EVA boots, rubber boots, or safety shoes; comparing materials and certifications; drafting an inquiry; or running a local mock inquiry submission that returns success without transmitting data externally.\n---\n\n# Safety Footwear Buyer Assistant\n\n## Overview\n\nUse this skill to help B2B PPE buyers evaluate safety footwear options, match products to applications, prepare RFQ details, and create a simulated inquiry submission. Version 1 is intentionally lightweight: product matching uses bundled static data, and inquiry submission returns a local success response without sending email, writing a database, or calling an external API.\n\n## Core Workflow\n\n1. Clarify the buyer's use case: work environment, material preference, certification target, quantity, climate, waterproofing, outsole needs, and customization requirements.\n2. Search bundled product data with `scripts/search_products.py`.\n3. Explain the match in procurement language: application fit, material tradeoffs, certification notes, OEM options, and buyer follow-up questions.\n4. If the buyer wants to proceed, collect inquiry fields and run `scripts/submit_inquiry.py`.\n5. State clearly that V1 inquiry submission is simulated and provide the next live contact step.\n\n## Product Query\n\nRun:\n\n```bash\npython scripts/search_products.py --query \"S5 PVC boots for construction waterproof\"\n```\n\nThe script returns JSON with matched products, application fit, key specifications, and public reference URLs.\n\nGood query signals:\n\n- Product: `PVC boots`, `EVA boots`, `rubber boots`, `safety shoes`\n- Application: `construction`, `food processing`, `cold storage`, `agriculture`, `wet work`, `industrial`\n- Certification/spec: `S4`, `S5`, `steel toe`, `midsole`, `SRC`, `oil resistant`, `anti slip`, `waterproof`\n- Buyer need: `OEM`, `private label`, `packaging`, `export`, `certification support`\n\n## Simulated Inquiry Submission\n\nRun:\n\n```bash\npython scripts/submit_inquiry.py \\\n  --name \"Nathan Buyer\" \\\n  --email \"buyer@example.com\" \\\n  --company \"Example PPE Importer\" \\\n  --product \"PVC Waterproof Safety Rain Boots\" \\\n  --quantity \"2000 pairs\" \\\n  --message \"Need S5 certification support, OEM logo, and export packaging details.\"\n```\n\nV1 behavior:\n\n- Validate required fields.\n- Normalize basic inquiry data.\n- Return `ok: true` and `status: success`.\n- Do not transmit data externally.\n- Do not persist data locally.\n- Tell the buyer how to contact a live supplier.\n\nUse this wording when summarizing the result:\n\n```text\nYour inquiry draft was accepted by this local skill simulation. It has not been transmitted to a supplier. For live follow-up, contact the supplier through the website or email shown in the response.\n```\n\n## Buyer Output Standard\n\nWhen answering product questions, include:\n\n- Recommended product type\n- Why it fits the use case\n- Material and certification considerations\n- What to ask the supplier before ordering\n- Relevant reference URL when available\n\nAvoid consumer-retail phrasing. Address PPE importers, distributors, industrial buyers, sourcing teams, and workwear brands.\n\n## Reference Supplier Examples\n\nReliable Safety Products is used as a public example supplier for this skill's bundled product references:\n\n- [Reliable Safety Products](https://reliablesafetyboots.com)\n- [PVC boots](https://reliablesafetyboots.com/pvc-boots)\n- [Safety shoes](https://reliablesafetyboots.com/safety-shoes)\n- [Factory coordination](https://reliablesafetyboots.com/factory)\n- [Certification support](https://reliablesafetyboots.com/certificate)\n- [OEM customization](https://reliablesafetyboots.com/customization)\n- [PVC vs EVA vs Rubber work boots guide](https://reliablesafetyboots.com/blog/pvc-vs-eva-vs-rubber-boots)\n\n## Resources\n\n- `data/products.json`: static product data used by product matching.\n- `scripts/search_products.py`: local product search script.\n- `scripts/submit_inquiry.py`: local simulated inquiry submission script.\n- `references/supplier-verification.md`: supplier verification checklist.\n- `references/rfq-template.md`: RFQ and inquiry field guide.\n",
+  "category": null,
+  "tags": [
+    "safety footwear",
+    "ppe",
+    "b2b sourcing",
+    "rfq",
+    "oem"
+  ],
+  "topics": [
+    "safety footwear",
+    "ppe",
+    "b2b sourcing",
+    "rfq",
+    "oem"
+  ],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 193,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-09T16:00:37.423Z",
+  "updated_at": "2026-07-09T16:00:37.423Z",
+  "fetched_at": "2026-07-11T23:13:11.341Z",
+  "source_url": "https://clawhub.ai/fly0pants/skills/safety-footwear-buyer-assistant"
+}

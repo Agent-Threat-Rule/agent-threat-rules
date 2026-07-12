@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "whatsapp-voice-note",
+  "display_name": "WhatsApp Voice Note",
+  "publisher": {
+    "handle": "georgecot99",
+    "display_name": "George",
+    "user_id": "s17a1exdq71pr9tx01brx75ty58abav2"
+  },
+  "summary": "Send real WhatsApp VOICE NOTES (not audio files) from an OpenClaw agent. Use when the user asks the agent to 'send a voice message/note', reply by voice, or...",
+  "description": "Send real WhatsApp VOICE NOTES (not audio files) from an OpenClaw agent. Use when the user asks the agent to 'send a voice message/note', reply by voice, or read something out loud to a chat. Pipeline: ElevenLabs (natural, multilingual incl. Hebrew) or macOS `say` (free fallback) -> ffmpeg opus/ogg -> `openclaw message send --media`. Requires ffmpeg; ElevenLabs key optional but strongly recommended for non-English.",
+  "content": "---\nname: whatsapp-voice-note\ndescription: \"Send real WhatsApp VOICE NOTES (not audio files) from an OpenClaw agent. Use when the user asks the agent to 'send a voice message/note', reply by voice, or read something out loud to a chat. Pipeline: ElevenLabs (natural, multilingual incl. Hebrew) or macOS `say` (free fallback) -> ffmpeg opus/ogg -> `openclaw message send --media`. Requires ffmpeg; ElevenLabs key optional but strongly recommended for non-English.\"\nmetadata: { \"openclaw\": { \"emoji\": \"🎙️\" } }\n---\n\n# WhatsApp Voice Note\n\nTurns text into a real WhatsApp **voice note** (the kind with the waveform, `ptt:true`) and\nsends it through your OpenClaw WhatsApp channel. The plugin auto-sends any audio attachment\nas a voice note; this skill hands it clean opus/ogg for best quality.\n\n## Usage\n\n```bash\n./voice.sh --target +15555550100 --text \"Hi, on my way.\"\n./voice.sh --target +15555550100 --text-file /path/to/note.txt\n./voice.sh --text \"test\" --out-only /tmp/note.ogg     # build the file, don't send\n./voice.sh --target +15555550100 --text \"hello\" --dry-run\n```\n\n## Engines (auto-selected)\n\n- **elevenlabs** — natural, multilingual. Used automatically when `ELEVENLABS_API_KEY` is\n  set. Model is picked per language: most languages use `eleven_multilingual_v2`; Hebrew\n  text auto-switches to `eleven_v3` (the only model that speaks it properly — learned the\n  hard way).\n- **say** — macOS built-in, free, robotic. Fallback when no key. Force either with\n  `--engine elevenlabs|say`.\n\n## Config (`.env` next to the script, or env vars)\n\n```\nELEVENLABS_API_KEY=...            # enables the good engine\nELEVENLABS_VOICE_ID=...           # default: Daniel (male multilingual)\nELEVENLABS_MODEL=...              # override auto model pick (e.g. eleven_flash_v2_5 = ~half credits)\n```\n\n## Hard-won notes\n\n- WhatsApp voice notes must be **opus in ogg, mono** — ffmpeg flags in the script are the\n  ones that survive WhatsApp's transcoder without artifacts.\n- Put a policy line in your agent's rules about WHO may receive voice notes. An agent that\n  can voice-message anyone in your contacts is a liability, not a feature.\n- `--out-only` is great for piping into other channels (Telegram, casting to a speaker).\n\n---\n*From the **Build Your Own Chief** starter kit — skills, configs, and gotchas from a real\n24/7 household agent: https://chief.natalicot.com/kit/?utm=clawhub*\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "0.1.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 98,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T09:50:22.447Z",
+  "updated_at": "2026-07-11T09:50:22.447Z",
+  "fetched_at": "2026-07-11T22:46:47.028Z",
+  "source_url": "https://clawhub.ai/georgecot99/skills/whatsapp-voice-note"
+}

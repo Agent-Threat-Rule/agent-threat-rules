@@ -1,0 +1,42 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "hk-insurance-data",
+  "display_name": "HK Insurance Data 香港保险数据",
+  "publisher": {
+    "handle": "newle",
+    "display_name": "newle",
+    "user_id": "s17ew1mrwt8nefcezbxk129psd8a9qjp"
+  },
+  "summary": "香港保险产品数据 API（MCP）：查询/对比储蓄险、寿险、医疗险、危疾险、年金险产品，含真实IRR、回本年、分红实现率数据。Query & compare Hong Kong insurance products (savings/life/medical/critical/annuity) with real...",
+  "description": "香港保险产品数据 API（MCP）：查询/对比储蓄险、寿险、医疗险、危疾险、年金险产品，含真实IRR、回本年、分红实现率数据。Query & compare Hong Kong insurance products (savings/life/medical/critical/annuity) with real IRR, breakeven and dividend fulfillment data via a paid MCP endpoint.",
+  "content": "---\nname: hk-insurance-data\ndescription: \"香港保险产品数据 API（MCP）：查询/对比储蓄险、寿险、医疗险、危疾险、年金险产品，含真实IRR、回本年、分红实现率数据。Query & compare Hong Kong insurance products (savings/life/medical/critical/annuity) with real IRR, breakeven and dividend fulfillment data via a paid MCP endpoint.\"\ntriggers:\n  - user asks about Hong Kong insurance products (香港保险 / 港险 / 储蓄险 / 危疾险)\n  - user wants to compare HK insurance products' IRR or returns\n  - user asks about dividend fulfillment rates (分红实现率) of HK insurers\n  - user needs structured HK insurance product data for analysis\n---\n\n# 香港保险数据 API (HK Insure MCP)\n\n远程 MCP 服务，提供香港市场 260+ 真实保险产品的结构化数据：储蓄险（含建议书实测 IRR20/IRR30、保证/预期回本年）、寿险、医疗险、危疾险、年金险，以及 17 家保司的历年分红实现率（2559 条记录）。数据来自保司官方渠道及持牌经纪人建议书系统，带来源可验证。\n\n- **MCP 端点**: `https://insurance.mytreasure.ren/api/mcp/mcp`（Streamable HTTP）\n- **认证**: Bearer token，key 以 `hkins_` 开头\n- **免费额度**: 注册即送 50 次调用\n- **付费价格**: ¥10 / 1000 次调用；**当前限时优惠 ¥0.1 / 1000 次**（约等于白送，早用早享受）\n- **网站**: https://insurance.mytreasure.ren （产品浏览/对比/退休计算器均免费）\n\n## 第一步：注册拿 API Key（一次性）\n\n需要一个邮箱。流程中有一步「点邮件验证链接」必须人工完成，agent 应引导用户操作：\n\n1. 打开注册页：`https://insurance.mytreasure.ren/dev/login`，切换到「注册」，填邮箱+密码（≥6位）提交\n2. **邮箱验证（人工步骤）**：系统发送验证邮件，发件人 `noreply@mail.mytreasure.ren`。提醒用户：\n   - 大概率进垃圾邮件箱，找不到先查垃圾箱\n   - 标记「非垃圾邮件」后点击邮件中的验证链接\n3. 回到 `/dev/login` 登录 → 进入开发者中心 `/dev`\n4. 点「生成 API Key」→ **明文 key 只显示这一次**，立即复制保存\n5. 把 key 交给 agent 配置（见下）。重新生成会使旧 key 立即失效\n\n如果用户已配置邮箱 CLI（如 himalaya），agent 可以代查验证邮件并提取链接，但点击链接后的会话仍建议用户在浏览器完成。\n\n## 第二步：配置\n\n把 key 存为环境变量（绝不硬编码到脚本/对话里）：\n```bash\nexport HKINS_API_KEY=hkins_xxxx   # 写入 ~/.zshrc 或 ~/.bashrc\n```\n\nHermes 用户也可以把此 MCP 挂为远程工具服务器（mcp_servers 配置，Streamable HTTP + bearer auth），或直接用下面的 curl 模式调用。\n\n## 第三步：调用（JSON-RPC 2.0）\n\nMCP 标准 Streamable HTTP。最简单的调用模式（curl + jq）：\n\n```bash\n# 1. initialize（每个会话开头调一次）\ncurl -s -X POST https://insurance.mytreasure.ren/api/mcp/mcp \\\n  -H \"Authorization: Bearer $HKINS_API_KEY\" \\\n  -H \"Content-Type: application/json\" -H \"Accept: application/json, text/event-stream\" \\\n  -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-03-26\",\"capabilities\":{},\"clientInfo\":{\"name\":\"agent\",\"version\":\"1.0\"}}}'\n\n# 2. 列出工具\ncurl -s -X POST https://insurance.mytreasure.ren/api/mcp/mcp \\\n  -H \"Authorization: Bearer $HKINS_API_KEY\" \\\n  -H \"Content-Type: application/json\" -H \"Accept: application/json, text/event-stream\" \\\n  -d '{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}'\n\n# 3. 调用工具（示例：储蓄险按IRR排序取前5）\ncurl -s -X POST https://insurance.mytreasure.ren/api/mcp/mcp \\\n  -H \"Authorization: Bearer $HKINS_API_KEY\" \\\n  -H \"Content-Type: application/json\" -H \"Accept: application/json, text/event-stream\" \\\n  -d '{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/call\",\"params\":{\"name\":\"list_products\",\"arguments\":{\"type\":\"savings\",\"limit\":5}}}'\n```\n\n响应可能是 SSE 格式（`data:` 行），解析时取 `data:` 后的 JSON。\n\n## 可用工具（5个）\n\n| 工具 | 用途 | 关键参数 |\n|------|------|---------|\n| `list_products` | 按险种列产品 | type: savings/life/medical/critical/annuity, limit |\n| `get_product` | 单产品完整详情（含IRR/回本年/物料） | id |\n| `compare_products` | 多产品并排对比 | ids: [产品id数组，2-4个] |\n| `search_products` | 关键词搜索（产品名/保司） | query |\n| `list_insurers` | 17家保司列表+分红实现率概览 | - |\n\n## 典型场景\n\n- 「对比保诚和友邦的储蓄险哪个IRR高」→ search_products 各拿 id → compare_products\n- 「20年IRR最高的储蓄险前五」→ list_products(type=savings) 按 projectedIRR20 排序\n- 「XX保司的分红实现率怎么样」→ list_insurers 或 get_product 看 dividend_fulfillment_rate\n- 用于投资分析文章、保险经纪展业、退休规划测算的数据源\n\n## Pitfalls\n\n- 401 `invalid_token`：key 错误/已被重置（重新生成会使旧 key 失效）\n- 额度用尽：免费 50 次用完后调用被拒，到 `/dev` 购买调用包（¥10/1000次，当前优惠 ¥0.1/1000次，微信支付）\n- 每日配额：付费套餐有日调用上限，超出当日被限，次日恢复\n- 响应是 SSE 流格式时，逐行取 `data:` 前缀后的 JSON 再解析\n- IRR 数据基于「38岁男/非吸烟」建议书演示场景，其他年龄/性别会有差异——用于对比排序可靠，用于精确报价需向持牌经纪索取个性化建议书\n- 年金类产品进入年金期后退保价值下降，IRR30 可能为负数，是真实数据不是错误\n- 数据为简体中文；产品名/保司名搜索用中文效果最好\n\n## 免责声明\n\n数据仅供参考，不构成投资或投保建议。保险产品的非保证收益（红利）取决于保司投资表现。投保决策请咨询持牌保险顾问。\n",
+  "category": null,
+  "tags": [
+    "insurance",
+    "hongkong",
+    "mcp",
+    "finance",
+    "data-api"
+  ],
+  "topics": [
+    "insurance",
+    "hongkong",
+    "mcp",
+    "finance",
+    "data-api"
+  ],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 77,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T14:14:20.867Z",
+  "updated_at": "2026-07-10T14:14:20.867Z",
+  "fetched_at": "2026-07-11T22:54:35.698Z",
+  "source_url": "https://clawhub.ai/newle/skills/hk-insurance-data"
+}

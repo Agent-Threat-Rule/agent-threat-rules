@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "a-share-data",
+  "display_name": "A Share Data",
+  "publisher": {
+    "handle": "cooperiano",
+    "display_name": "Duanmu Junqi",
+    "user_id": "s17ac54vh7hy0d3t4tpfd8pkad8596et"
+  },
+  "summary": "A股数据层：行情/财务/板块/资金流向/K线，多数据源自动切换（AkShare/东方财富/新浪/腾讯），纯数据接口",
+  "description": "A股数据层：行情/财务/板块/资金流向/K线，多数据源自动切换（AkShare/东方财富/新浪/腾讯），纯数据接口",
+  "content": "---\nname: \"a-share-data\"\ndescription: \"A股数据层：行情/财务/板块/资金流向/K线，多数据源自动切换（AkShare/东方财富/新浪/腾讯），纯数据接口\"\nuser-invocable: true\nmetadata:\n  openclaw:\n    emoji: \"📡\"\n    tags: [\"a-share\", \"data\", \"akshare\", \"eastmoney\", \"finance\"]\n---\n\n# A-Share Data v2.0 — A股全能数据接口\n\n## 定位\n\nA 股数据的**唯一数据层 skill**。分析/交易 skill 通过本 skill 获取数据。纯数据，不做判断。\n\n## 数据源层次\n\n| 层 | 源 | 覆盖 | 特点 |\n|----|----|------|------|\n| 1 主力 | 东方财富（AkShare） | A股全量 | 最全最快，免费 |\n| 2 备用 | 腾讯财经 | 行情 | 稳定快速 |\n| 3 备用 | 新浪财经 | 行情+指数 | 老牌可靠 |\n| 4 备用 | 雪球 | 行情+市值 | 有市盈率 |\n| 5 扩展 | Tushare | 全量 | 需积分 |\n| 6 跨市场 | yfinance | 港股/美股/ETF | 免费有限流 |\n| 7 兜底 | Baostock | 基础行情 | 无需网络配置 |\n\n### 容错策略\n每个源内尝试 ≥3 种不同方法，全部失败才切换。首次失败不判定为不可用。\n\n---\n\n## 1. 实时行情\n\n```python\nimport akshare as ak\ndf = ak.stock_zh_a_spot_em()                          # 全A股实时\ndf[df['代码'] == '600519']                             # 单只筛选\n```\n\n回退：`https://hq.sinajs.cn/list=sh600519` / `https://qt.gtimg.cn/q=sh600519`\n\n---\n\n## 2. 历史K线\n\n```python\ndf = ak.stock_zh_a_hist(symbol=\"000001\", period=\"daily\",\n    start_date=\"20240101\", end_date=\"20241231\", adjust=\"qfq\")\n# period: daily/weekly/monthly  adjust: qfq/hfq/不复权\n```\n\n---\n\n## 3. 财务数据\n\n```python\ndf = ak.stock_financial_analysis_indicator(symbol=\"000001\")  # 核心指标\ndf = ak.stock_financial_abstract_ths(symbol=\"000001\", indicator=\"按报告期\")\n```\n\n---\n\n## 4. 板块/行业\n\n```python\nak.stock_board_industry_name_em()              # 行业板块行情\nak.stock_board_concept_name_em()               # 概念板块行情\nak.stock_board_industry_cons_em(symbol=\"半导体\") # 板块成分股\n```\n\n---\n\n## 5. 资金流向\n\n```python\nak.stock_individual_fund_flow(stock=\"000001\", market=\"sh\")\n```\n\n---\n\n## 6. 龙虎榜\n\n```python\nak.stock_lhb_detail_em(date=\"20240930\")        # 每日龙虎榜\nak.stock_zlzj_em()                              # 机构调研\n```\n\n---\n\n## 7. 新股/IPO\n\n```python\nak.stock_new_ipo_em()\n```\n\n---\n\n## 8. 融资融券\n\n```python\nak.stock_margin_sse(symbol=\"600000\")\nak.stock_rzrq_detail_em(symbol=\"600000\", date=\"20240930\")\n```\n\n---\n\n## 9. 筹码分布\n\n```python\nak.stock_cyq_em(symbol=\"000001\")\n```\n\n---\n\n## 10. 指数\n\n```python\nak.stock_zh_index_daily_em(symbol=\"sh000001\")  # 上证\n# 新浪: sh000001(上证) sh000300(沪深300) sz399006(创业板) sh000688(科创50) sh000016(上证50)\n```\n\n---\n\n## 11. 跨市场（yfinance）\n\n```python\nimport yfinance as yf\nticker = yf.Ticker(\"0700.HK\")      # 港股\nticker = yf.Ticker(\"AAPL\")         # 美股\nticker = yf.Ticker(\"510050.SS\")    # A股ETF\ninfo = ticker.info                 # 基本信息\nhist = ticker.history(period=\"1mo\") # 近月K线\n```\n\n---\n\n## 12. 外汇\n\n```python\nusd_cny = yf.Ticker(\"CNY=X\")\nrate = usd_cny.fast_info.get(\"lastPrice\")\n```\n\n---\n\n## 安装\n\n```bash\npip install akshare baostock yfinance\n```\n\n---\n\n## 使用原则\n\n1. 纯数据层，只取数、不分析、不给投资建议\n2. 标注数据来源和更新时间\n3. 失败时在同源换方法 ≥3 次再切换\n4. 数据仅供学习研究\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 84,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T03:45:55.643Z",
+  "updated_at": "2026-07-10T03:45:55.643Z",
+  "fetched_at": "2026-07-11T23:08:24.005Z",
+  "source_url": "https://clawhub.ai/cooperiano/skills/a-share-data"
+}

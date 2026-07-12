@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "kb-web-query",
+  "display_name": "Kb Web Query",
+  "publisher": {
+    "handle": "myd2002",
+    "display_name": "myd2002",
+    "user_id": "s175zrvz5m28epr76c6rt4dtex8474t6"
+  },
+  "summary": "Answer Research KB dialogue questions with team-overview-guided web search, external citations, optional reference attachments, and no QA persistence.",
+  "description": "Answer Research KB dialogue questions with team-overview-guided web search, external citations, optional reference attachments, and no QA persistence.",
+  "content": "---\nname: kb_web_query\ndescription: Answer Research KB dialogue questions with team-overview-guided web search, external citations, optional reference attachments, and no QA persistence.\n---\n\n# kb_web_query\n\n## 职责边界\n\n`kb_web_query` 用于“对话”页面中用户主动开启“联网搜索”的问答模式。它不是普通网页搜索聊天，也不是严格知识库问答；它必须先读取团队知识库 `overview/` 下六个团队级页面，理解团队当前研究方向、项目状态、资料覆盖、开放问题和整理路线，再根据用户问题进行更定向的联网搜索，最后把外部资料转化成贴合团队实际情况的回答。\n\n本 skill 不写入知识库正文，不创建或更新 `qa/`，不做资料源入库，也不把外部网页内容沉淀为长期团队结论。Java 后端负责登录、会话、附件上传和调度；OpenClaw 负责理解团队上下文、规划搜索、调用可用的 web/search/browser 工具、阅读外部资料、综合回答并列清来源；Python 脚本只负责读取 overview 上下文、读取可选 KB 补充页、校验答案来源、补齐参考来源格式并写出后端 result JSON。\n\n## 输入约定\n\n后端 payload 通常包含：\n\n- `skill`: `kb_web_query`。\n- `question`: 用户问题。\n- `webSearch`: `true`。\n- `conversationId`、`messageId`、`conversationHistory`。\n- `attachments[]`: 本轮临时参考附件。\n- `answerPolicy.allowExternalWebSources`: `true`。\n- `answerPolicy.teamOverviewGuidedSearch`: `true`。\n- `answerPolicy.writeHighValueAnswerToQa`: `false`。\n- `payloadFile`、`resultFile`、`sharedDir`。\n\n运行环境沿用 Research KB 配置：`GITEA_URL`、`GITEA_BOT_TOKEN`、`GITEA_BOT_USERNAME`、`GITEA_ORG`、`TEAM_KB_REPO`、`OPENCLAW_SHARED_DIR`。联网搜索优先使用 OpenClaw 原生 `web_search`、`web_fetch`、`browser`；如果 `web_search` 未配置，可用 `web_fetch`、`browser` 或小型 HTTP/API fallback。若配置 Tavily，可使用 `TAVILY_API_KEY` 或 OpenClaw 的 Tavily plugin。\n\n## 执行流程\n\n1. 准备团队上下文：\n\n```bash\npython3 scripts/run_task.py prepare --input <payload.json> --context-output <context.json>\n```\n\n`prepare` 会读取 `overview/team-overview.md`、`overview/research-map.md`、`overview/recent-updates.md`、`overview/source-summary.md`、`overview/open-questions.md`、`overview/roadmap.md`，并输出 `teamContext.overviewPages`。OpenClaw 必须先阅读这些内容，形成团队画像：团队在做什么、已有资料覆盖什么、当前缺口和开放问题是什么、路线图倾向是什么。\n\n2. 规划并执行联网搜索。\n\nOpenClaw 根据用户问题和团队画像构造搜索策略。搜索应优先使用权威来源：论文、官方文档、标准、厂商技术文档、可信报告、项目官网或重要开源仓库。不要只搜索泛泛关键词；应把团队关注方向、技术栈、开放问题或项目阶段转化为限定词。\n\n可用工具示例：\n\n```text\nweb_search(\"...\")\nweb_fetch(\"https://...\")\nbrowser 打开并阅读动态页面\n```\n\n如果 `web_search` 不可用，可以用 `web_fetch` 访问公开搜索/API 页面、arXiv API、官方站点搜索页，或用 Python/Node HTTP 请求做最小 fallback。不要编造搜索结果或引用。\n\n3. 可选读取补充 KB 页面。\n\n如果 overview 不足以理解团队问题，或回答中需要把其他 KB 页面列入 `teamSources`，必须写一个紧凑的 `<page-selection.json>`，再读取少量补充 KB 页面：\n\n```bash\npython3 scripts/run_task.py fetch --input <payload.json> --context <context.json> --selection <page-selection.json> --evidence-output <evidence.json>\n```\n\n如果不需要补充页面，也要用空选择运行 fetch：\n\n```json\n{\"selectedPages\":[],\"rationale\":\"overview pages are sufficient for team context\",\"unresolvedQuestions\":[]}\n```\n\n4. 生成 `<answer.json>`。\n\n`answer.json` 必须是严格合法 JSON，长 Markdown 答案建议用 `json.dump/json.dumps` 写出。必须包含外部来源，不得伪造引用。\n\n```json\n{\n  \"answer\": \"完整中文回答。必须说明外部信息如何贴合团队当前状况，结尾可以已有参考来源。\",\n  \"teamSources\": [\n    {\"path\": \"overview/research-map.md\", \"title\": \"研究方向地图\", \"role\": \"用于判断团队关注方向\"}\n  ],\n  \"webSources\": [\n    {\n      \"sourceType\": \"paper\",\n      \"title\": \"Paper or Page Title\",\n      \"url\": \"https://example.com/item\",\n      \"publisher\": \"arXiv / official docs / vendor / report publisher\",\n      \"authors\": [\"optional\"],\n      \"publishedAt\": \"2026 or exact date if available\",\n      \"accessedAt\": \"2026-07-09T00:00:00Z\",\n      \"snippet\": \"可选，说明该来源支撑了什么\"\n    }\n  ],\n  \"usedSearchQueries\": [\"query 1\", \"query 2\"],\n  \"usedAttachments\": [],\n  \"highValue\": false,\n  \"qa\": {\"write\": false},\n  \"errors\": []\n}\n```\n\n5. 应用答案并写 resultFile：\n\n```bash\npython3 scripts/run_task.py apply --input <payload.json> --context <context.json> --evidence <evidence.json> --answer <answer.json>\n```\n\n`apply` 会补齐 `## 参考来源`，分为“团队上下文”和“外部资料”，然后写出后端 result JSON。它只把六个 overview 页面或本轮 `fetch` 实际读取的补充 KB 页面作为可展示 `teamSources`，不合规的团队来源会被过滤并记录到 `errors/skippedSources`，不应导致已生成答案丢失；它只接受 http/https 外部链接作为 `webSources`，不会写入 `qa/`，也不会改动 Gitea 页面。\n\n6. 最终回复后端：\n\n```json\n{\"success\": true, \"resultFile\": \"<result.json>\"}\n```\n\n## 回答规则\n\n回答必须以用户问题为中心，但要体现团队上下文的定向作用。例如不要只说“业界常见做法是……”，而应说明“结合团队当前 KB 中体现出的研究方向/资料缺口/工程阶段，外部资料更支持优先关注……”。\n\n必须区分两类依据：\n\n- 团队上下文：来自 `overview/` 或少量补充 KB 页面，用来判断用户所在团队的实际情况和搜索方向。\n- 外部资料：来自联网搜索结果，用来支撑具体事实、论文结论、技术特性、方法比较、最新变化或推荐。\n\n如果搜索不到可核验外部来源，应明确说明本轮没有找到可靠外部来源，不要编造网站、论文、发布时间或链接。\n\n答案末尾必须包含：\n\n```markdown\n## 参考来源\n\n### 团队上下文\n- 团队总览 (`overview/team-overview.md`)\n\n### 外部资料\n- [paper] [Paper Title](https://...) — publisher; date; accessedAt\n```\n\n## 禁止事项\n\n- 禁止写入 `qa/` 或任何 KB 页面；后端也会防御性忽略联网模式返回的 QA 路径和页面写回字段。\n- 禁止把外部网页结论说成团队知识库已经沉淀的结论。\n- 禁止把 overview 页面当作外部事实来源。\n- 禁止无来源地编造论文、网站、官方文档、日期、作者、URL。\n- 禁止把临时附件当作稳定 KB 来源。\n- 禁止在没有实际搜索/抓取的情况下假装完成联网搜索。\r\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.1",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 285,
+    "installs": 0,
+    "stars": 0,
+    "versions": 2,
+    "comments": 0
+  },
+  "created_at": "2026-07-09T14:41:28.170Z",
+  "updated_at": "2026-07-09T16:25:25.797Z",
+  "fetched_at": "2026-07-11T23:12:46.692Z",
+  "source_url": "https://clawhub.ai/myd2002/skills/kb-web-query"
+}

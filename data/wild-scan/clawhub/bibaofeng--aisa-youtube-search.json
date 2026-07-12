@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "aisa-youtube-search",
+  "display_name": "AIsa Youtube Search",
+  "publisher": {
+    "handle": "bibaofeng",
+    "display_name": "bibaofeng",
+    "user_id": "s1740zrgcnwxsxgzt9bfj5a1jn842mag"
+  },
+  "summary": "Search YouTube videos, channels, and playlists through the AIsa YouTube relay with one API key. Use when the user asks for YouTube discovery, query expansion...",
+  "description": "Search YouTube videos, channels, and playlists through the AIsa YouTube relay with one API key. Use when the user asks for YouTube discovery, query expansion, or pagination without managing Google credentials.",
+  "content": "---\nname: aisa-youtube-search\ndescription: Search YouTube videos, channels, and playlists through the AIsa YouTube relay with one API key. Use when the user asks for YouTube discovery, query expansion, or pagination without managing Google credentials.\nauthor: AIsa\nversion: 1.0.1\nlicense: MIT-0\nhomepage: https://aisa.one\nsource: https://github.com/baofeng-tech/agent-skills-io/tree/main/targetSkills/aisa-youtube-search\nuser-invocable: true\nprimaryEnv: AISA_API_KEY\nrequires:\n  env:\n  - AISA_API_KEY\nmetadata:\n  aisa:\n    emoji: ▶️\n    requires:\n      env:\n      - AISA_API_KEY\n    primaryEnv: AISA_API_KEY\n    compatibility:\n    - openclaw\n    - claude-code\n    - hermes\n  openclaw:\n    emoji: ▶️\n    requires:\n      env:\n      - AISA_API_KEY\n    primaryEnv: AISA_API_KEY\n---\n\n# AIsa YouTube Search\n\nSearch YouTube videos, channels, and playlists through the AIsa YouTube relay with one API key.\n\n## When to use\n\n- The user wants to search YouTube videos, channels, or playlists.\n- The task needs region or language filters without direct Google API setup.\n- The workflow can call the AIsa YouTube search endpoint with `AISA_API_KEY`.\n\n## When NOT to use\n\n- The user needs browser automation, local scraping, or direct YouTube account actions.\n- The workflow must avoid sending search requests to `api.aisa.one`.\n- The request depends on a local helper script that is not part of this package.\n\n## Quick Reference\n\n- Required environment variable: `AISA_API_KEY`\n- Endpoint: `https://api.aisa.one/apis/v1/youtube/search`\n- This package is curl-first and does not ship a local Python client.\n\n## Setup\n\n```bash\nexport AISA_API_KEY=\"your-key\"\n```\n\n## Common Commands\n\n```bash\ncurl -s \"https://api.aisa.one/apis/v1/youtube/search?engine=youtube&q=machine+learning+tutorial\" \\\n  -H \"Authorization: Bearer $AISA_API_KEY\"\n\ncurl -s \"https://api.aisa.one/apis/v1/youtube/search?engine=youtube&q=AI+news&gl=us&hl=en\" \\\n  -H \"Authorization: Bearer $AISA_API_KEY\"\n\ncurl -s \"https://api.aisa.one/apis/v1/youtube/search?engine=youtube&q=python+tutorial&sp=EgIQAQ%3D%3D\" \\\n  -H \"Authorization: Bearer $AISA_API_KEY\"\n```\n\n## Capabilities\n\n- Search YouTube SERP results with `q`\n- Filter by locale with `gl` and `hl`\n- Apply pagination or narrowing via `sp`\n- Return structured results that may include `videos` or grouped `sections`\n\n## Guardrails\n\n- Do not ask for Google credentials or browser cookies.\n- Do not claim a result is local-only when it depends on relay requests.\n- Do not fabricate missing filters or parameters.\n\n## Security Notes\n\n- All search requests go to `api.aisa.one`.\n- Required secret: `AISA_API_KEY`.\n- This workflow does not require passwords, browser automation, or local scraping.\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.1",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 0,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T20:37:36.506Z",
+  "updated_at": "2026-07-11T20:37:36.506Z",
+  "fetched_at": "2026-07-11T22:34:59.869Z",
+  "source_url": "https://clawhub.ai/bibaofeng/skills/aisa-youtube-search"
+}

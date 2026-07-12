@@ -1,0 +1,42 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "tokensave",
+  "display_name": "Tokensave Publish",
+  "publisher": {
+    "handle": "raydatalab",
+    "display_name": "Ray",
+    "user_id": "s179gmr84mj3szjyrksyq2zv058a61mt"
+  },
+  "summary": "Use when the user explicitly asks to analyze token waste, costs, or API bills. Finds duplicate tool calls, context bloat, model mismatch, and heartbeat waste...",
+  "description": "Use when the user explicitly asks to analyze token waste, costs, or API bills. Finds duplicate tool calls, context bloat, model mismatch, and heartbeat waste. Analyze mode is 100% local, zero config.",
+  "content": "---\nname: tokensave\ndescription: Use when the user explicitly asks to analyze token waste, costs, or API bills. Finds duplicate tool calls, context bloat, model mismatch, and heartbeat waste. Analyze mode is 100% local, zero config.\nversion: 0.4.5\nauthor: raydatalab\nlicense: Apache-2.0\nplatforms: [linux, macos, wsl]\ntriggers:\n  - tokensave\n  - run tokensave\n  - analyze token waste\n  - analyze my session\n  - check token waste\n  - audit my tokens\n  - session cost analysis\n  - how much did this session cost\n  - analyze token usage\n  - optimize token cost\n  - reduce token cost\n  - model cost analysis\n  - duplicate tool calls\n  - context bloat\n  - token budget analysis\n  - analyze api spending\n  - analyze cost\n  - audit tokens\n  - token waste\n  - where is my money going\n  - cost breakdown\n  - estimate cost\n  - api fees\n  - check waste\nmetadata:\n  hermes:\n    tags: [cost-optimization, token-analysis, waste-detection, diagnostics]\n    homepage: https://github.com/raydatalab/tokensave\n    related_skills: [hermes-smart-router, hermes-cost-optimization]\n---\n\n# TokenSave\n\n## Overview\n\n```bash\n$ tokensave analyze\n\nSession 20260711_a1b2c3: 12,000 tokens, ~$0.05, 44% avoidable.\n\nTop wastes:\n  1. duplicate_tool_calls (5x): ~3,000 tokens — read_file called 5x with same path\n  2. context_bloat (1x): ~1,800 tokens — 40% of input is stale context\n  3. model_mismatch (3x): ~500 tokens — simple queries routed through pro\n\nSend to your agent: \"Before calling any tool, check if you already have\nthe result in a previous message...\"\n```\n\nOne session. 12K tokens. 44% could have been avoided — that's 5,300 tokens\nsaved with a single paste. Run after every session, bills drop immediately.\n\nAll numbers above are from `tests/test_analyzer.py` real test fixtures.\n12,000 input + output tokens, captured waste across all 4 detectors.\nNo made-up data.\n\n## When to Use\n\n- User explicitly asks to \"run tokensave\", \"analyze my session\", or similar\n- User provides a specific session ID or file path to analyze\n- User asks \"how much did this session cost\" with clear intent to run analysis\n- User mentions specific waste patterns like \"duplicate tool calls\" or \"context bloat\"\n\n## When NOT to Use — Read This First\n\n- Do NOT auto-analyze on general cost complaints (\"this is expensive\", \"save money\", \"too expensive\")\n- Do NOT read session data (~/.hermes/state.db) without explicit user confirmation\n- For general billing questions, explain that TokenSave can analyze a specific session\n  but wait for an explicit command like `tokensave analyze <session_id>`\n- Always prefer `tokensave analyze <session_id>` over auto-detecting the latest session\n  when the user has not explicitly asked for it\n\n## How It Works\n\nWhen the user has explicitly asked to run an analysis, use:\n\n```bash\ntokensave analyze\n```\n\nIf the user has provided a specific session ID or path, use that instead:\n\n```bash\ntokensave analyze <session_id>          # specific session from state.db\ntokensave analyze <file.json>           # error request dump\ntokensave analyze <directory/>          # latest JSON in directory\ntokensave analyze --detectors dup,bloat # specific detectors only\n```\n\nAlways confirm with the user before analyzing if they haven't provided a\nspecific session target. Auto-detect only when the user has explicitly\nasked for their \"latest session\" or \"current session.\"\n\nCopy the output and paste it into your response. The user sees:\n\n```\nSession abc123: 12,400 tokens, ~$0.19, 41% avoidable.\n\nTop wastes:\n  #1 duplicate_tool_calls (8x): ~4,800 tokens\n  #2 model_mismatch (5x): ~860 tokens\n  #3 context_bloat: ~3,700 tokens\n\nSend to your agent: \"Before reading a file, check if you already...\"\n```\n\n## What It Detects\n\nFour waste detectors run against your session:\n\n| Detector | What it finds |\n|----------|---------------|\n| Duplicate tool calls | Same tool + same args called 2+ times (exact + near-duplicate) |\n| Context bloat | Stale/redundant context, oversized tool outputs, unused tool definitions, session overhead |\n| Model mismatch | Simple queries running on expensive models — tells you which cheaper model to use |\n| Heartbeat waste | Cron jobs and idle/status checks that could run on a cheaper model |\n\n## Data Sources\n\nTokenSave reads from two sources (no config needed):\n\n| Source | Format | What's there |\n|--------|--------|-------------|\n| `~/.hermes/state.db` | SQLite | Primary — full session transcripts with token counts, costs, and metadata |\n| `~/.hermes/sessions/*.json` | JSON | API error request dumps — partial data but useful when SQLite is unavailable |\n\nAuto-detect tries SQLite first, falls back to JSON, then gives a clear error message.\n\n## What You Need\n\n- Python 3.10+\n- `pip install tokensave`\n- Analyze mode: nothing else — no API keys, no network, no config\n- Pipeline mode (separate): requires `OPENAI_API_KEY` and makes API calls\n\n## Pipeline Mode (Bonus — Requires Network)\n\ntokensave also works as a transparent OpenAI wrapper that cuts token usage\nautomatically. **This mode requires an API key and makes network calls to\nyour configured API endpoint.** If the user has installed it with\n`from tokensave import OpenAI`, their API calls go through normalize → cache\n→ compress. But that's automatic — you don't need to do anything.\n\nThis mode is separate from `tokensave analyze`. The analyze command never\nmakes network calls; it only reads local session data.\n\n## Tier Reference\n\n| Tier | What it checks | Output |\n|------|---------------|--------|\n| `analyze` | SQLite sessions + JSON error dumps | Waste report + fix prompt |\n| `pipeline` | Transparent proxy | Automatic token savings |\n\n## Common Pitfalls\n\n1. **No session data found.** If `tokensave analyze` returns no results, the session\n   may not have been written to `state.db` yet. Hermes writes state.db on session end —\n   try again after `/new`.\n2. **JSON fallback gives incomplete analysis.** JSON error dumps lack full metadata.\n   Always prefer SQLite mode (default). If you're seeing JSON fallback, the state.db\n   may be locked by another Hermes process.\n3. **Duplicate detection is generous.** Near-duplicate detection uses fuzzy matching\n   and may flag legitimate re-reads. Use the report as a starting point, not a verdict.\n4. **Pipeline mode doesn't work with all providers.** The transparent wrapper only\n   supports OpenAI-compatible APIs. Non-OpenAI providers will fall through to direct\n   calls.\n",
+  "category": null,
+  "tags": [
+    "costs",
+    "cost-optimization",
+    "hermes-agent",
+    "waste-detection",
+    "token-analysis"
+  ],
+  "topics": [
+    "costs",
+    "cost-optimization",
+    "hermes-agent",
+    "waste-detection",
+    "token-analysis"
+  ],
+  "latest_version": "0.4.5",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 147,
+    "installs": 1,
+    "stars": 0,
+    "versions": 8,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T00:15:15.335Z",
+  "updated_at": "2026-07-11T10:18:01.087Z",
+  "fetched_at": "2026-07-11T22:46:32.029Z",
+  "source_url": "https://clawhub.ai/raydatalab/skills/tokensave"
+}

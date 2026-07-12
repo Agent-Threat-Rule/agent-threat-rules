@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "proofkit",
+  "display_name": "ProofKit",
+  "publisher": {
+    "handle": "therealmacsteel",
+    "display_name": "therealmacsteel",
+    "user_id": "s17ctvvfxqme3bkbbw239q7j2s8a9zxa"
+  },
+  "summary": "Prove your AI agents actually did the work — catch fake-success, dry-run theater, and stub code before it ships. Static fake-success scanner + live-artifact...",
+  "description": "Prove your AI agents actually did the work — catch fake-success, dry-run theater, and stub code before it ships. Static fake-success scanner + live-artifact verification methodology.",
+  "content": "---\nname: proofkit\ndescription: Prove your AI agents actually did the work — catch fake-success, dry-run theater, and stub code before it ships. Static fake-success scanner + live-artifact verification methodology.\nhomepage: https://github.com/therealmacsteel\nmetadata:\n  {\n    \"openclaw\":\n      {\n        \"emoji\": \"🔬\",\n        \"category\": \"verification\",\n        \"requires\": { \"bins\": [\"python3\"] },\n        \"tier\": \"freemium\",\n        \"install\":\n          [\n            {\n              \"id\": \"copy\",\n              \"kind\": \"script\",\n              \"label\": \"Install proofkit scanner\",\n              \"bins\": [\"python3\"],\n            },\n          ],\n      },\n  }\n---\n\n# proofkit — proof-of-work verification for AI agents\n\n**The #1 way autonomous agents fail is quietly: they report success they never\nachieved.** `ok=True` with no side effect. A `message_id: 0` \"delivery\". A\n`random` simulator dressed as a metric. A dry-run marked \"done\". proofkit is the\nadversarial layer that assumes your agent is lying until a real artifact proves\notherwise.\n\nBuilt and battle-tested running a 39-agent autonomous fleet at $0/month.\n\n## Why this exists (the pain)\n\n~60% of failed agent deployments share one root cause: **unverified success**.\nThe agent's log says it worked. The code says `return True`. Nobody checked the\nactual side effect. proofkit turns \"it looks done\" into \"here is the live\nartifact that proves it ran.\"\n\n## Free tier — the scanner + the method\n\n### 1. Static fake-success scan\n```bash\npython3 proofkit/verify_real_scan.py <file> [<file> ...]\n```\nFlags the tells that let code report success without doing the work:\n- `return True` / hardcoded `success=True` / `message_id: 0`\n- `random.*` simulators returning fabricated \"metrics\"\n- `TODO` / `NotImplementedError` / empty `pass` bodies\n- demo/sample/fixture data on a production path\n- `except: pass` that swallows an error then reports success\n- dry-run defaults masquerading as live runs\n\nPrecise by design (word-boundary matched — `exist_ok=True` won't trip it), and\nit prints the honest caveat: **a clean static scan is necessary, not sufficient.**\n\n### 2. The /verify-real method (3 steps)\n1. Static pre-scan (above).\n2. **Demand a LIVE artifact** — real stdout numbers, a non-zero `message_id`, a\n   file that now exists + its bytes, an HTTP 200 from a served page, a real DB\n   row that changed. Use a *tripwire*: assert the downstream never runs if a\n   false pass would ship.\n3. **Verdict:** `VERIFIED LIVE` / `BUILT-BUT-UNVERIFIED` / `FAKE-BROKEN` — with\n   the artifact as evidence. Never call it done because it *looks* done.\n\n## Premium tier — the enforcement suite\n\nEverything free, plus the parts that make it a standing guarantee, not a manual pass:\n\n- **/redteam** — adversarial multi-pass verifier: N independent skeptics per\n  claim, each prompted to *refute*, kill on majority. Follows the data one layer\n  down (the \"real API\" wrapper is where the fake usually hides).\n- **gatecheck** — 6+ guard-invariant proofs (kill-switch reachable, trading\n  blocked, injection defense intact, quality gate fail-closed) as a PASS/DRIFT\n  table you run before every ship.\n- **Tripwire harness generator** — auto-wraps a build step so a false \"pass\" is\n  impossible: the downstream throws unless the real artifact exists.\n- **CI hook** — fail the pipeline on any fake-success flag or missing live\n  artifact; proof-of-work required to merge.\n- **Fleet mode** — run the whole suite across N agents, ranked report of who's\n  shipping fake success.\n\n## Use cases\n- Autonomous posting/trading/outreach agents (prove the post/order/email really happened)\n- Multi-agent fleets where one agent's fake success corrupts the next's input\n- CI for AI-generated code (block stubs + fabricated results from merging)\n- Any \"the agent said it worked\" moment you can't afford to trust blind\n\n## Install\nCopy `verify_real_scan.py` into your project (free) or install the full skill\nfrom ClawHub for the premium enforcement suite. Zero paid dependencies — pure\nPython stdlib + your existing local model for the adversarial pass.\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 62,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T17:40:59.120Z",
+  "updated_at": "2026-07-10T17:40:59.120Z",
+  "fetched_at": "2026-07-11T22:53:04.685Z",
+  "source_url": "https://clawhub.ai/therealmacsteel/skills/proofkit"
+}

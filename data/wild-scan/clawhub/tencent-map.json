@@ -1,0 +1,43 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "tencent-map",
+  "display_name": "Tencent Map",
+  "publisher": {
+    "handle": "zhangifonly",
+    "display_name": "zhangifonly",
+    "user_id": "s177g1r0fwwn78mtc60nke0fas8841hj"
+  },
+  "summary": "腾讯位置服务 WebService API 工具与微信小程序 LBS 指南。Use for: (1) 用附带的零依赖 CLI 查地理编码/POI/路线/IP定位, (2) 微信小程序地图开发（腾讯地图是微信官方推荐）, (3) GCJ-02 坐标系避坑。Tencent Maps WebService API CL...",
+  "description": "腾讯位置服务 WebService API 工具与微信小程序 LBS 指南。Use for: (1) 用附带的零依赖 CLI 查地理编码/POI/路线/IP定位, (2) 微信小程序地图开发（腾讯地图是微信官方推荐）, (3) GCJ-02 坐标系避坑。Tencent Maps WebService API CLI (zero-dependency) plus WeChat Mini-Program LBS integration guide.",
+  "content": "---\nname: \"腾讯地图\"\nversion: \"2.0.0\"\ndescription: \"腾讯位置服务 WebService API 工具与微信小程序 LBS 指南。Use for: (1) 用附带的零依赖 CLI 查地理编码/POI/路线/IP定位, (2) 微信小程序地图开发（腾讯地图是微信官方推荐）, (3) GCJ-02 坐标系避坑。Tencent Maps WebService API CLI (zero-dependency) plus WeChat Mini-Program LBS integration guide.\"\ntags: [\"tencent\", \"qqmap\", \"map\", \"lbs\", \"miniprogram\", \"cli\"]\nauthor: \"ClawSkills Team\"\ncategory: \"navigation\"\n---\n\n# 腾讯位置服务 Skill\n\n附带零依赖 CLI（`scripts/qqmap.py`，仅 Python 标准库）。腾讯地图的\n核心优势场景是**微信小程序**——微信官方推荐，坐标系同为 GCJ-02，\n小程序 map 组件无缝配合。\n\n## 快速开始\n\n```bash\n# lbs.qq.com 免费申请 Key，启用 WebServiceAPI\nexport QQMAP_KEY=你的key\n\npython3 scripts/qqmap.py geocode \"北京市海淀区中关村\"\npython3 scripts/qqmap.py search 咖啡 北京\npython3 scripts/qqmap.py driving 39.984154,116.307490 39.90816,116.434446\n```\n\n脚本行为声明：仅请求 `apis.map.qq.com`，不读写本地文件。\n\n## 命令手册\n\n| 命令 | 作用 |\n|------|------|\n| `geocode <地址>` | 地址 → 坐标 |\n| `regeo <lat,lng>` | 坐标 → 结构化地址 |\n| `search <关键词> <城市>` | POI 搜索 |\n| `suggestion <关键词> <城市>` | 输入联想（做搜索框补全） |\n| `driving / walking <起点> <终点>` | 路线规划 |\n| `ip [地址]` | IP 定位 |\n| `call <path> k=v ...` | 通用兜底：调任意 /ws/ 接口 |\n\n**⚠️ 坐标顺序陷阱**：腾讯地图是 `纬度,经度`（lat,lng），\n与高德的 `经度,纬度`（lng,lat）**相反**。跨平台迁移最容易在这里翻车——\n症状是坐标点跑到完全不相关的地方（不是偏移几百米，是差出几千公里）。\n\n## 微信小程序 LBS 要点（腾讯地图主场）\n\n1. **选型**：小程序内嵌地图只能用 map 组件（腾讯地图内核），\n   配套 API 用腾讯位置服务是阻力最小路径\n2. **域名白名单**：小程序后台把 `https://apis.map.qq.com` 加入\n   request 合法域名，否则真机必挂（开发者工具不校验，最易漏）\n3. **小程序 SDK**：官方提供 `qqmap-wx-jssdk`，封装了本 skill 同款\n   WebService 接口\n4. **用户定位授权**：`wx.getLocation` 需在 app.json 声明\n   `requiredPrivateInfos` 并配置隐私协议，审核收紧后未声明直接拒审\n\n## Agent 典型用法\n\n1. **小程序开发排障**：真机地图接口失败 → 按序查域名白名单、Key 的\n   WebServiceAPI 是否启用、Key 是否绑定了小程序 AppID 校验\n2. **找地点**：`geocode` + `search` 组合，结果按距离整理\n3. **搜索框补全**：`suggestion` 接口做输入联想数据源\n\n## 高频错误码（实测）\n\n| status | 含义 | 处理 |\n|--------|------|------|\n| 311 | Key 格式错误 | 检查 Key 拼写 |\n| 306 | 请求有护网校验/签名错误 | 控制台开了 SK 签名就必须算 sig |\n| 301 | 缺少必要参数 | 对照文档补参数 |\n| 120x | 配额/QPS 超限 | 免费版每接口日配额独立计算，次日重置 |\n\n签名说明：控制台启用 SK 后，`sig=md5(路径?按key排序的参数&sk=SECRET)`，\n本脚本未内置签名，启用 SK 的 Key 请用 `call` 前自行关闭或换 Key。\n\n## 与其他平台对比\n\n微信小程序 → 腾讯（本 skill）；导航/车机 → 高德（`gaode` skill）；\n百度系集成/全景 → 百度（`baidu-map` skill）。坐标系迁移见各 skill\n的坐标系章节，腾讯↔高德同为 GCJ-02 可直接互用。\n\n## 本 skill 不做什么\n\n- 不含 JavaScript API GL（前端渲染）细节，只覆盖服务端 WebService\n- 不提供绕过配额或反爬的方法\n",
+  "category": "navigation",
+  "tags": [
+    "tencent",
+    "qqmap",
+    "map",
+    "lbs",
+    "miniprogram",
+    "cli"
+  ],
+  "topics": [
+    "Map",
+    "Tencent",
+    "Lbs",
+    "Navigation",
+    "开发"
+  ],
+  "latest_version": "2.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 1113,
+    "installs": 35,
+    "stars": 0,
+    "versions": 3,
+    "comments": 0
+  },
+  "created_at": "2026-03-15T02:23:29.500Z",
+  "updated_at": "2026-07-11T13:30:46.631Z",
+  "fetched_at": "2026-07-11T22:44:43.626Z",
+  "source_url": "https://clawhub.ai/zhangifonly/skills/tencent-map"
+}

@@ -1,0 +1,36 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "api-doc-gen",
+  "display_name": "Api Doc Gen",
+  "publisher": {
+    "handle": "shenghoo123-png",
+    "display_name": "shenghoo123-png",
+    "user_id": "s17dv44xed17vb7n7v728mr4dd846y7m"
+  },
+  "summary": "自动从 Flask、Django、FastAPI、Express.js 代码生成统一格式的API文档，支持Markdown、OpenAPI和Postman导出。",
+  "description": "自动从 Flask、Django、FastAPI、Express.js 代码生成统一格式的API文档，支持Markdown、OpenAPI和Postman导出。",
+  "content": "# api-doc-gen — API 文档自动生成器\n\n## 痛点\n- 手写 API 文档费时费力，格式不统一\n- 前后端接口对接时，文档经常滞后于代码\n- 不同项目文档风格不一致，维护成本高\n- Swagger/OpenAPI 写起来复杂，容易出错\n\n## 场景\n- 写好一个 Flask/Django/FastAPI 接口，直接生成完整 API 文档\n- 根据代码注释自动推断参数类型和返回值\n- 导出 OpenAPI 3.0 (Swagger) JSON/YAML 格式\n- 导出 Markdown 格式给非技术团队查看\n- 导出 Postman Collection 方便调试\n\n## 定价\n- **免费**：基础文档生成（Markdown 格式，单文件）\n- **Pro 19元**：OpenAPI 3.0 + Postman Collection + 多端点支持\n- **Team 49元**：批量处理 + HTML 文档站 + 自定义模板\n\n## 支持框架\n- FastAPI\n- Flask\n- Django DRF\n- Express.js\n- 通用函数/类（基于注释推断）\n\n## 输出格式\n- `--format markdown` — Markdown 格式 API 文档\n- `--format openapi` — OpenAPI 3.0 JSON\n- `--format openapi-yaml` — OpenAPI 3.0 YAML\n- `--format postman` — Postman Collection JSON\n\n## 指令格式\n\n### 基本用法\n```\napi-doc-gen analyze <file_or_code> [选项]\n```\n\n### 示例\n```bash\n# 分析 Python Flask 文件\napi-doc-gen analyze app.py --framework flask --format markdown\n\n# 分析 FastAPI 代码\napi-doc-gen analyze main.py --framework fastapi --format openapi\n\n# 分析 Express.js 文件\napi-doc-gen analyze routes.js --framework express --format postman\n\n# 从代码字符串生成\napi-doc-gen analyze \"def hello(name: str) -> str: ...\" --language python --format markdown\n\n# 批量处理目录\napi-doc-gen batch ./api/ --framework fastapi --format openapi -o docs/\n```\n\n## 字段推断规则\n\n基于 Python type hints / JSDoc / 代码注释自动推断：\n- 参数类型：string, integer, number, boolean, array, object\n- 是否必填：默认必填，有默认值则可选\n- 描述：优先使用注释，其次参数名\n- 格式：email, phone, url, date, datetime 等\n\n## 内置响应模板\n\n| 场景 | 状态码 | 响应结构 |\n|:---|:---|:---|\n| 成功 | 200 | `{code: 0, data: {}, message: \"success\"}` |\n| 创建成功 | 201 | `{code: 0, data: {id}, message: \"created\"}` |\n| 参数错误 | 400 | `{code: 400, data: null, message: \"参数错误\"}` |\n| 未授权 | 401 | `{code: 401, data: null, message: \"未授权\"}` |\n| 服务器错误 | 500 | `{code: 500, data: null, message: \"服务器错误\"}` |\n\n## 技术细节\n\n- **语言**：Python 3.8+\n- **依赖**：仅标准库（无外部依赖）\n- **安装**：pip install -r requirements.txt\n- **CLI**：基于 argparse\n",
+  "category": null,
+  "tags": [
+    "Email",
+    "文档"
+  ],
+  "topics": [
+    "Email",
+    "文档"
+  ],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 397,
+    "installs": 13,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-04-06T03:18:00.979Z",
+  "updated_at": "2026-05-11T09:40:32.806Z",
+  "fetched_at": "2026-07-11T22:41:50.900Z",
+  "source_url": "https://clawhub.ai/shenghoo123-png/skills/api-doc-gen"
+}

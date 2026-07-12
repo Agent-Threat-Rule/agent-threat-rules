@@ -1,0 +1,34 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "obsidian-cli",
+  "display_name": "Obsidian Cli",
+  "publisher": {
+    "handle": "psprosen-dev",
+    "display_name": "Prosenjit Paul (aka Ps Prosen)",
+    "user_id": "s17dpgz67bycjr0z10r414pz2h87eq34"
+  },
+  "summary": "Interact with Obsidian vaults using the Obsidian CLI to read, create, search, and manage notes, tasks, properties, and more. Also supports plugin and theme development with commands to reload plugins, run JavaScript, capture errors, take screenshots, and inspect the DOM. Use when the user asks to in",
+  "description": "Interact with Obsidian vaults using the Obsidian CLI to read, create, search, and manage notes, tasks, properties, and more. Also supports plugin and theme development with commands to reload plugins, run JavaScript, capture errors, take screenshots, and inspect the DOM. Use when the user asks to in",
+  "content": "---\r\nname: obsidian-cli\r\ndescription: Interact with Obsidian vaults using the Obsidian CLI to read, create, search, and manage notes, tasks, properties, and more. Also supports plugin and theme development with commands to reload plugins, run JavaScript, capture errors, take screenshots, and inspect the DOM. Use when the user asks to interact with their Obsidian vault, manage notes, search vault content, perform vault operations from the command line, or develop and debug Obsidian plugins and themes.\r\n---\r\n\r\n# Obsidian CLI\r\n\r\nUse the `obsidian` CLI to interact with a running Obsidian instance. Requires Obsidian to be open.\r\n\r\n## Command reference\r\n\r\nRun `obsidian help` to see all available commands. This is always up to date. Full docs: https://help.obsidian.md/cli\r\n\r\n## Syntax\r\n\r\n**Parameters** take a value with `=`. Quote values with spaces:\r\n\r\n```bash\r\nobsidian create name=\"My Note\" content=\"Hello world\"\r\n```\r\n\r\n**Flags** are boolean switches with no value:\r\n\r\n```bash\r\nobsidian create name=\"My Note\" silent overwrite\r\n```\r\n\r\nFor multiline content use `\\n` for newline and `\\t` for tab.\r\n\r\n## File targeting\r\n\r\nMany commands accept `file` or `path` to target a file. Without either, the active file is used.\r\n\r\n- `file=<name>` — resolves like a wikilink (name only, no path or extension needed)\r\n- `path=<path>` — exact path from vault root, e.g. `folder/note.md`\r\n\r\n## Vault targeting\r\n\r\nCommands target the most recently focused vault by default. Use `vault=<name>` as the first parameter to target a specific vault:\r\n\r\n```bash\r\nobsidian vault=\"My Vault\" search query=\"test\"\r\n```\r\n\r\n## Common patterns\r\n\r\n```bash\r\nobsidian read file=\"My Note\"\r\nobsidian create name=\"New Note\" content=\"# Hello\" template=\"Template\" silent\r\nobsidian append file=\"My Note\" content=\"New line\"\r\nobsidian search query=\"search term\" limit=10\r\nobsidian daily:read\r\nobsidian daily:append content=\"- [ ] New task\"\r\nobsidian property:set name=\"status\" value=\"done\" file=\"My Note\"\r\nobsidian tasks daily todo\r\nobsidian tags sort=count counts\r\nobsidian backlinks file=\"My Note\"\r\n```\r\n\r\nUse `--copy` on any command to copy output to clipboard. Use `silent` to prevent files from opening. Use `total` on list commands to get a count.\r\n\r\n## Plugin development\r\n\r\n### Develop/test cycle\r\n\r\nAfter making code changes to a plugin or theme, follow this workflow:\r\n\r\n1. **Reload** the plugin to pick up changes:\r\n   ```bash\r\n   obsidian plugin:reload id=my-plugin\r\n   ```\r\n2. **Check for errors** — if errors appear, fix and repeat from step 1:\r\n   ```bash\r\n   obsidian dev:errors\r\n   ```\r\n3. **Verify visually** with a screenshot or DOM inspection:\r\n   ```bash\r\n   obsidian dev:screenshot path=screenshot.png\r\n   obsidian dev:dom selector=\".workspace-leaf\" text\r\n   ```\r\n4. **Check console output** for warnings or unexpected logs:\r\n   ```bash\r\n   obsidian dev:console level=error\r\n   ```\r\n\r\n### Additional developer commands\r\n\r\nRun JavaScript in the app context:\r\n\r\n```bash\r\nobsidian eval code=\"app.vault.getFiles().length\"\r\n```\r\n\r\nInspect CSS values:\r\n\r\n```bash\r\nobsidian dev:css selector=\".workspace-leaf\" prop=background-color\r\n```\r\n\r\nToggle mobile emulation:\r\n\r\n```bash\r\nobsidian dev:mobile on\r\n```\r\n\r\nRun `obsidian help` to see additional developer commands including CDP and debugger controls.\r\n",
+  "category": null,
+  "tags": [
+    "obsidian-cli"
+  ],
+  "topics": [
+    "obsidian-cli"
+  ],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 131,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-09T16:50:41.844Z",
+  "updated_at": "2026-07-09T16:50:41.844Z",
+  "fetched_at": "2026-07-11T23:12:30.018Z",
+  "source_url": "https://clawhub.ai/psprosen-dev/skills/obsidian-cli"
+}

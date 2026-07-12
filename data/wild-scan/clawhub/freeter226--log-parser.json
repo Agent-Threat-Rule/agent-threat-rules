@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "log-parser",
+  "display_name": "Log Parser",
+  "publisher": {
+    "handle": "freeter226",
+    "display_name": "freeter226",
+    "user_id": "s173w5m1mkxvbtwycc5tp8r0yx83f0q3"
+  },
+  "summary": "Parse and analyze various log formats (nginx, apache, syslog, application logs). Extract key information and generate reports.",
+  "description": "Parse and analyze various log formats (nginx, apache, syslog, application logs). Extract key information and generate reports.",
+  "content": "---\nname: log-parser\ndescription: Parse and analyze various log formats (nginx, apache, syslog, application logs). Extract key information and generate reports.\nmetadata: { \"openclaw\": { \"emoji\": \"📋\", \"requires\": { \"bins\": [\"python3\"] } } }\n---\n\n# Log Parser\n\nA log parsing and analysis tool for security operations and DevOps.\n\n## Features\n\n- **Multi-format Support** - nginx, apache, syslog, application logs\n- **Auto-detection** - Automatically detect log format\n- **Key Extraction** - Extract IPs, timestamps, error codes, URLs\n- **Filtering** - Filter logs by IP, status code, time range\n- **Statistics** - Generate summary reports\n- **Error Detection** - Identify and highlight error entries\n\n## Usage\n\n```bash\npython3 skills/log-parser/scripts/log_parser.py <action> [options]\n```\n\n## Actions\n\n| Action | Description |\n|--------|-------------|\n| `parse` | Parse log file and extract fields |\n| `stats` | Generate statistics report |\n| `filter` | Filter logs by criteria |\n| `errors` | Extract error entries only |\n| `top` | Top N items (IPs, URLs, etc.) |\n\n## Options\n\n| Option | Type | Default | Description |\n|--------|------|---------|-------------|\n| `--file` | string | - | Log file path |\n| `--format` | string | auto | Log format (auto, nginx, apache, syslog) |\n| `--limit` | int | 100 | Max results to return |\n| `--filter-ip` | string | - | Filter by IP address |\n| `--filter-status` | string | - | Filter by status code |\n| `--top-field` | string | - | Field for top N (ip, url, status) |\n\n## Supported Log Formats\n\n### nginx\n```\n192.168.1.1 - - [22/Mar/2026:14:00:00 +0800] \"GET /api/test HTTP/1.1\" 200 1234\n```\n\n### apache\n```\n192.168.1.1 - - [22/Mar/2026:14:00:00 +0800] \"GET /api/test HTTP/1.1\" 200 1234\n```\n\n### syslog\n```\nMar 22 14:00:00 server sshd[12345]: Failed password for root from 192.168.1.1\n```\n\n### application logs (JSON)\n```json\n{\"timestamp\": \"2026-03-22T14:00:00Z\", \"level\": \"ERROR\", \"message\": \"...\"}\n```\n\n## Examples\n\n```bash\n# Parse log file\npython3 skills/log-parser/scripts/log_parser.py parse --file /var/log/nginx/access.log\n\n# Generate statistics\npython3 skills/log-parser/scripts/log_parser.py stats --file /var/log/nginx/access.log\n\n# Filter by IP\npython3 skills/log-parser/scripts/log_parser.py filter --file /var/log/nginx/access.log --filter-ip 192.168.1.1\n\n# Get top 10 IPs\npython3 skills/log-parser/scripts/log_parser.py top --file /var/log/nginx/access.log --top-field ip --limit 10\n\n# Extract errors\npython3 skills/log-parser/scripts/log_parser.py errors --file /var/log/nginx/access.log\n```\n\n## Use Cases\n\n1. **Security Analysis** - Identify suspicious IPs, failed logins\n2. **Performance Monitoring** - Find slow requests, errors\n3. **Traffic Analysis** - Top URLs, user agents\n4. **Debugging** - Extract error entries quickly\n\n## Output Format\n\nAll results are returned in JSON format:\n\n```json\n{\n  \"success\": true,\n  \"total\": 1000,\n  \"parsed\": 998,\n  \"entries\": [...],\n  \"stats\": {...}\n}\n```\n\n## Current Status\n\nIn development.\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 621,
+    "installs": 20,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-03-22T06:17:53.111Z",
+  "updated_at": "2026-05-11T09:35:03.506Z",
+  "fetched_at": "2026-07-11T23:12:21.588Z",
+  "source_url": "https://clawhub.ai/freeter226/skills/log-parser"
+}

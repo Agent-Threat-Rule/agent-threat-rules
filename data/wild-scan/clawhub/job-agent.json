@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "job-agent",
+  "display_name": "Job Agent for AgentMesh360",
+  "publisher": {
+    "handle": "jiyangnan",
+    "display_name": "AriesWarrior",
+    "user_id": "s175tfssqre5q4j26wqn02j1s588b4ts"
+  },
+  "summary": "Use AgentMesh Job Agent for resume-driven job discovery, signed review and automatic selected delivery on Boss直聘, 猎聘, 智联招聘 and 51Job.",
+  "description": "Use AgentMesh Job Agent for resume-driven job discovery, signed review and automatic selected delivery on Boss直聘, 猎聘, 智联招聘 and 51Job.",
+  "content": "---\nname: job-agent\ndescription: Use AgentMesh Job Agent for resume-driven job discovery, signed review and automatic selected delivery on Boss直聘, 猎聘, 智联招聘 and 51Job.\nversion: 0.3.14\nmetadata:\n  openclaw:\n    emoji: \"💼\"\n    homepage: https://jobagent.agentmesh360.com/\n    requires:\n      bins:\n        - jobagent\n    envVars:\n      - name: JOBAGENT_API_BASE\n        required: false\n        description: Optional Job Agent API override for testing.\n---\n\n# AgentMesh Job Agent\n\nDrive the official Job Agent CLI while keeping the user in control of credentials, login and review overrides.\n\n## Safety Contract\n\n- Never invent an API Key. Ask the user to create one at `https://agentmesh360.com/app/` and wait.\n- Run Boss直聘 -> 猎聘 -> 智联招聘 -> 51Job serially. Never operate their shared browser concurrently.\n- Stop whenever `requires_user_action=true`; relay `user_prompt` exactly and wait.\n- Report `selected / review / rejected`, then automatically deliver the signed `selected` list without asking again.\n- Show `skipped_delivered` when present and never add those jobs back to the send list.\n- Never promote `review` without IDs chosen by the user and `--confirm-promote`. Never auto-promote `rejected`.\n- Starting the round authorizes real actions for `selected`; send commands have no per-platform confirmation flag.\n- On Boss, a platform default introduction is not the reviewed greeting. Require the CLI's exact personalized-delivery verification.\n- Never stop after one platform. Follow `workflow.next_suggested` while `workflow.continue_required=true`; only `workflow.workflow_complete=true` ends the round.\n- Skip a platform only after explicit user approval with `jobagent round skip --platform <platform> --confirm-skip`.\n\n## Install and Profile\n\nmacOS/Linux:\n\n```bash\ncurl -fsSL https://raw.githubusercontent.com/jiyangnan/AgentMesh-JobAgent/main/scripts/install.sh | bash\n```\n\nWindows PowerShell:\n\n```powershell\nirm https://raw.githubusercontent.com/jiyangnan/AgentMesh-JobAgent/main/scripts/install.ps1 | iex\n```\n\n```bash\njobagent init --key <your_api_key>\njobagent doctor env\njobagent resume analyze --file <resume-path> --target-role \"<role>\" --target-cities <cities>\n```\n\nEach completed platform Discover accepts at most 100 candidate jobs. AgentMesh 360 is currently in free-open mode: every account has unlimited access and Discover deducts 0 credits. Treat the signed cloud response as authoritative for future policy changes.\n\n## Platform Flow\n\n```bash\njobagent round status\n```\n\nAfter every command, read the returned `workflow` object. Each audit must advance to the next platform until the four-platform round is complete.\n\nBoss直聘:\n\n```bash\njobagent boss login --check\njobagent boss discover\njobagent boss greet preview\njobagent boss greet send\njobagent boss audit\n```\n\n猎聘:\n\n```bash\njobagent liepin login --check\njobagent liepin discover\njobagent liepin apply review\njobagent liepin apply send\njobagent liepin audit\n```\n\n智联招聘:\n\n```bash\njobagent zhilian login --check\njobagent zhilian discover\njobagent zhilian apply review\njobagent zhilian apply send\njobagent zhilian audit\n```\n\n51Job:\n\n```bash\njobagent 51job login --check\njobagent 51job discover\njobagent 51job apply review\njobagent 51job apply send\njobagent 51job audit\n```\n\nRun each send line automatically after review. Do not ask for per-platform approval. 猎聘 must verify both the account resume and the exact signed personalized greeting; a platform default introduction is not enough. 智联 and 51Job submit resumes only. 51Job's web chat is QR-only.\n\n## Review Override\n\n```bash\njobagent <platform> apply review --promote <job-id> --confirm-promote\n```\n\nFor Boss use `greet preview` in place of `apply review`.\n\n## Completion Report\n\nInclude round ID, platform, Discover ID, category counts, credits, explicit overrides, attempted/delivered/failed/skipped counts, audit evidence and remaining platforms. Never report overall completion unless `workflow.workflow_complete=true`. Relay the optional one-time GitHub star prompt only if the CLI emits it.\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "0.3.14",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 561,
+    "installs": 7,
+    "stars": 0,
+    "versions": 17,
+    "comments": 0
+  },
+  "created_at": "2026-06-09T10:02:12.818Z",
+  "updated_at": "2026-07-11T17:13:28.247Z",
+  "fetched_at": "2026-07-11T22:36:14.043Z",
+  "source_url": "https://clawhub.ai/jiyangnan/skills/job-agent"
+}

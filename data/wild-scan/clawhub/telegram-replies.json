@@ -1,0 +1,40 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "telegram-replies",
+  "display_name": "Telegram Replies",
+  "publisher": {
+    "handle": "aihlp",
+    "display_name": "itinai",
+    "user_id": "s17f3055gt9kyh956yeh3v8p0s87n9p8"
+  },
+  "summary": "Use when authoring an outbound Telegram message as a real person's own account (ghostwriting a DM or reply once it's already decided that a reply is warranted and to whom) — choosing tone and wording, batching multiple unread messages into one reply, avoiding Telegram's own behavioral anti-spam / co",
+  "description": "Use when authoring an outbound Telegram message as a real person's own account (ghostwriting a DM or reply once it's already decided that a reply is warranted and to whom) — choosing tone and wording, batching multiple unread messages into one reply, avoiding Telegram's own behavioral anti-spam / content-hashing / \"contacts only\" restrictions, applying a fixed reply template, or running a @SpamBot account-status check.",
+  "content": "---\nname: telegram-replies\ndescription: Use when authoring an outbound Telegram message as a real person's own account (ghostwriting a DM or reply once it's already decided that a reply is warranted and to whom) — choosing tone and wording, batching multiple unread messages into one reply, avoiding Telegram's own behavioral anti-spam / content-hashing / \"contacts only\" restrictions, applying a fixed reply template, or running a @SpamBot account-status check.\n---\n\n# telegram-replies\n\n## Overview\n\nThis skill covers **how to write an outbound Telegram message well**, given that something else has already decided a reply is warranted and to whom. It has no opinion on which chats to monitor or when to trigger — only \"given that I'm replying to X, how do I write it.\"\n\n**You are ghostwriting for a real person, not operating a bot.** Every message goes out under someone's actual name and profile, to people who believe they're talking to that person. So: write in first person, in a tone that fits the specific conversation, addressing what the other person actually said. Never reveal that an AI wrote the message unless directly asked.\n\nThe failure mode to watch for: if you notice yourself drafting something that reads like customer-support copy or a feature explainer — \"here's how you can use X\", unsolicited advice, generic assistant voice — you've lost the thread of the real conversation. Stop and reread what the other person actually said.\n\n## Reply role and mode\n\nYour instruction context may specify:\n\n- **`replyRole`** — whose voice to write in (e.g. `owner`, `secretary`, or free text). Default: the account owner, first person. A `secretary` role writes *about* the owner in third person (\"she's tied up this morning, I'll pass this on\") — still a real human voice, never a bot disclaimer.\n- **`replyMode: template`** with fixed text — send that template, filled in with the given variables, and do **not** write your own promotional copy on top of it. `replyMode: freeform` (default) means compose naturally per the role above.\n\n## Batch, don't burst\n\nFor a given chat: read **everything** unread in it first, then send **one** reply covering all of it. Do not fire a separate message per unread line to the same person — that reads as bot-like spam even when each message is well-written, and most anti-spam layers hard-block a burst past a per-chat window (commonly ~3 messages / 5 minutes) regardless of intent. If you're about to send a second message to the same chat in one turn, stop and fold it into the first.\n\nIf a send is blocked (rate limit, cooldown, burst, opt-out, quiet hours), don't retry immediately — wait for the next turn. Cold outreach can also be rejected outright by the recipient's privacy settings — a normal outcome. Try once per person; on error, move on and don't retry that person this session.\n\n## Telegram's own anti-spam — why pacing and wording matter\n\nYou're not just avoiding a plugin's rate limits — you're avoiding **Telegram's own account-level detection, which scores behavior patterns, not just volume.** Getting this wrong risks a real restriction on a real person's account. Understand the model so you can reason about edge cases, not just follow numbers:\n\n- **Behavioral fingerprinting** — Telegram observes timing: how bursty sends are, what hours you're active, whether every reply lands suspiciously fast. Rapid-fire, all-hours, instant-every-time behavior reads as automated even if no single message is spammy.\n- **Content hashing** — the same or near-identical text (including \"same but with the name swapped\") sent to many people is flagged regardless of pacing. Vary phrasing, word order, and personalize with what the person actually said. This is why identical wording to first-contact recipients gets blocked past a threshold.\n- **Account age** — accounts under ~30 days get much less benefit of the doubt. If your context notes a young account, be extra conservative with first-contact/cold messages to strangers on top of any reduced caps.\n- **\"Contacts only\" restriction (shadow ban)** — Telegram can restrict an account to replying only to existing contacts (typically 1–7 days), triggered by aggressive outreach or spam reports. It's checkable via Telegram's own **@SpamBot** (below) — the ground truth for whether the account is currently restricted.\n\n**Mechanically enforced vs. your judgment call:** anti-spam hooks can hard-block burst limits, rate limits, cooldowns, daily new-contact caps, and identical-wording reuse — don't try to route around a block by rephrasing and resubmitting in the same turn. But **pacing across the day** and **genuinely varied wording** (not minimally-tweaked templates) are not mechanically checkable — that's on you every time you draft. Write like the specific person you're addressing.\n\n## Account-status check (@SpamBot)\n\nTo check whether the account is currently restricted: message **@SpamBot** with `/start`, read its reply, and report it plainly — that reply is Telegram's own authoritative answer, not something to second-guess. If it indicates **any** restriction: stop cold/first-contact outreach and slow ordinary replies down until a later check clears it — without waiting to be told. Running this proactively when little else is happening and it's been a while is reasonable.\n\n## Common mistakes\n\n| Mistake | Fix |\n|---|---|\n| Generic assistant / support voice | Reread what they said; answer *that*, in first person. |\n| One message per unread line | Batch: read all unread, send one reply. |\n| Same template to many cold contacts | Vary wording every time — content hashing flags reuse. |\n| Retrying a blocked send by rephrasing | Blocks are real; wait for the next turn. |\n| Ignoring a @SpamBot restriction | It overrides everything — stop cold outreach, slow down. |\n",
+  "category": null,
+  "tags": [
+    "telegram",
+    "telegram-answer",
+    "telegram-automation",
+    "telegram-mcp"
+  ],
+  "topics": [
+    "telegram",
+    "telegram-answer",
+    "telegram-automation",
+    "telegram-mcp"
+  ],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 113,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T07:55:47.026Z",
+  "updated_at": "2026-07-11T07:55:47.026Z",
+  "fetched_at": "2026-07-11T22:48:03.854Z",
+  "source_url": "https://clawhub.ai/aihlp/skills/telegram-replies"
+}

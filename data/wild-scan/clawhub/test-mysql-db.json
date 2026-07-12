@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "test-mysql-db",
+  "display_name": "Test Mysql Db",
+  "publisher": {
+    "handle": "extraskittles",
+    "display_name": "extraskittles",
+    "user_id": "s170d4kr7e86mm6graje5ezwvx89why3"
+  },
+  "summary": "Connect to test-environment MySQL databases for troubleshooting, data verification, schema inspection, and controlled validation queries. Use when the user a...",
+  "description": "Connect to test-environment MySQL databases for troubleshooting, data verification, schema inspection, and controlled validation queries. Use when the user asks to query or validate test/dev database data, investigate test-environment issues, check whether new Java/service code wrote expected records, inspect table structure, compare before/after data, or perform explicitly approved low-risk data correction in a test MySQL database.",
+  "content": "---\nname: test-mysql-db\ndescription: Connect to test-environment MySQL databases for troubleshooting, data verification, schema inspection, and controlled validation queries. Use when the user asks to query or validate test/dev database data, investigate test-environment issues, check whether new Java/service code wrote expected records, inspect table structure, compare before/after data, or perform explicitly approved low-risk data correction in a test MySQL database.\n---\n\n# Test MySQL DB\n\nUse this skill to query and validate test-environment MySQL data while keeping credentials and write operations controlled.\n\n## Safety Rules\n\n- Treat all database credentials as secrets. Do not write hostnames, usernames, passwords, or DSNs into skill files, repo files, chat, logs, or generated artifacts unless the user explicitly asks for a redacted template.\n- Prefer read-only operations. For `INSERT`, `UPDATE`, `DELETE`, DDL, or stored procedure calls, get explicit user confirmation in the current conversation and state the target environment, database, table, predicate, expected row count, and rollback plan first.\n- Never run destructive broad statements such as unconstrained `DELETE`, unconstrained `UPDATE`, `DROP`, `TRUNCATE`, or schema changes unless the user explicitly asks and the target is confirmed as a disposable test database.\n- Use narrow predicates, `LIMIT`, and transactions where possible. For write validation, capture before/after query results.\n- Redact passwords, tokens, personal data, payment data, and secrets in final responses.\n\n## Connection Discovery\n\nFind connection details from the safest available source:\n\n1. Existing project configuration for the test/dev profile, such as Spring `application-dev.yml`, `application-test.yml`, Nacos/Apollo/local config, Docker Compose, `.env`, CI variables, or documented runbooks.\n2. Environment variables already present in the shell, preferably:\n   - `TEST_MYSQL_HOST`\n   - `TEST_MYSQL_PORT`\n   - `TEST_MYSQL_USER`\n   - `TEST_MYSQL_PASSWORD`\n   - `TEST_MYSQL_DATABASE`\n3. A user-provided one-time value in chat, redacted after use in summaries.\n\nIf multiple test databases are plausible, identify the service/module and ask only for the missing disambiguation.\n\n## Query Workflow\n\n1. Clarify the business key to query: order number, request id, trace id, user id, batch id, table name, or service/module.\n2. Inspect relevant code/config first when the table or database is unclear. Use `rg` to find mapper XML, repository methods, entity classes, migration files, and datasource config.\n3. Build the smallest SQL that answers the question. Prefer selecting explicit columns over `SELECT *` when the table is wide or sensitive.\n4. Run read-only SQL with `scripts/mysql_query.py` when Python MySQL drivers are available, or use the local `mysql` client if the environment already provides it.\n5. Summarize findings with redacted values and include the exact safe SQL shape when useful.\n\n## Write Or Validation Workflow\n\nFor new code that writes database data:\n\n1. Read the implementation path to determine affected database, table, and expected fields.\n2. Query the before state if possible.\n3. Trigger or wait for the relevant test action if the user asks for end-to-end validation.\n4. Query the after state with a narrow predicate.\n5. Compare actual rows with the expected code behavior, including default values, enum values, timestamps, and nullable fields.\n\nFor explicit test-data fixes:\n\n1. Draft the SQL and a rollback SQL first.\n2. Ask for explicit confirmation unless the user has already given a direct command for that exact SQL and target.\n3. Run inside a transaction when supported by the operation.\n4. Verify affected row count and final state.\n\n## Helper Script\n\nUse `scripts/mysql_query.py` for repeatable CLI execution:\n\n```bash\npython scripts/mysql_query.py --sql \"select 1\"\npython scripts/mysql_query.py --database order_deve --sql-file work/query.sql --format table\npython scripts/mysql_query.py --allow-write --sql-file work/fix.sql\n```\n\nThe script reads connection values from `TEST_MYSQL_*` environment variables by default. It rejects non-read SQL unless `--allow-write` is passed.\n\n## Output Style\n\n- For troubleshooting, lead with the conclusion and the rows or fields that prove it.\n- For validation, report expected vs actual database state.\n- For failed connections, report which non-secret part is missing or failed, such as host, port, network reachability, driver availability, or database name.\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 223,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-09T11:17:28.857Z",
+  "updated_at": "2026-07-09T11:17:28.857Z",
+  "fetched_at": "2026-07-11T23:16:26.493Z",
+  "source_url": "https://clawhub.ai/extraskittles/skills/test-mysql-db"
+}

@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "ghost-eye",
+  "display_name": "Ghost Eye",
+  "publisher": {
+    "handle": "hunter-crk",
+    "display_name": "hunter-crk",
+    "user_id": "s179nt0fhpj5npbanyqj0jmhhs8a6kyq"
+  },
+  "summary": "Ghost Eye 👁️ — Let any pure-text LLM see images through any vision model. OCR + visual summary in one shot.",
+  "description": "Ghost Eye 👁️ — Let any pure-text LLM see images through any vision model. OCR + visual summary in one shot.",
+  "content": "---\nname: \"ghost-eye\"\ndescription: \"Ghost Eye 👁️ — Let any pure-text LLM see images through any vision model. OCR + visual summary in one shot.\"\nmetadata:\n  {\n    \"openclaw\":\n      {\n        \"emoji\": \"👁️\",\n        \"requires\": { \"env\": [\"NEXN2_API_KEY\"] },\n        \"primaryEnv\": \"NEXN2_API_KEY\",\n      },\n  }\n---\n\n# Ghost Eye 👁️\n\nGive your text-only LLM the power to see. Ghost Eye is a lightweight image preprocessing bridge: when an image enters the conversation, it calls any OpenAI-compatible vision model (default: `nex-agi/Nex-N2-Pro`), produces a structured plain-text output (full OCR + visual summary), and feeds it back into the conversation — so your pure-text model can \"see\" without ever touching a multimodal API.\n\n## What it does\n\n```\nUser sends image → Ghost Eye detects → vision model analyzes → OCR text + scene summary → your LLM answers\n```\n\n## Two modes\n\n### Mode 1: Auto-preprocess (recommended)\nWhen `multimodalPreprocess` is configured, Ghost Eye fires automatically on any inbound image. The user never knows it's there — they just get answers about images.\n\n### Mode 2: Tool-call mode\nRegistered as `analyze_image_by_nexn2` tool (name stays for backward compatibility). Your LLM calls it explicitly when it sees an image. Add this to the system prompt:\n\n> When the user sends an image, screenshot, photo, or document scan, call the analyze_image_by_nexn2 tool to extract text and describe the image, then answer based on the returned content.\n\n## Workflow\n\n### Step 1: Receive image\n\n**Priority: `--image-path` > `--image-url` > `--image-base64`**\n\n⛔ Always prefer `--image-path` to avoid command-line `Argument list too long` errors with large base64 strings. Only fall back to `--image-url` or `--image-base64` when no local path is available.\n\n```bash\n# Preferred: local file path (no size limit)\npython3 {baseDir}/scripts/analyze.py --image-path \"<absolute path>\"\n\n# Fallback: public URL\npython3 {baseDir}/scripts/analyze.py --image-url \"<url>\"\n\n# Last resort: base64 (small images only, <50KB)\npython3 {baseDir}/scripts/analyze.py --image-base64 \"<base64>\"\n```\n\nThe script handles:\n- Format validation (JPG/PNG/WebP/GIF/BMP via magic bytes)\n- Cache check / read / write (MD5-based, 7-day TTL)\n- Image compression (Pillow, max 1920px longest edge, quality 85%)\n- API call with 1 automatic retry\n- Structured JSON output\n\n### Step 2: Parse JSON output\n\nSuccess:\n```json\n{\"success\": true, \"content\": \"【OCR文字提取】\\n...\\n\\n【画面内容总结】\\n...\", \"metadata\": {\"model\": \"...\", \"tokens_used\": 1200, \"cached\": false, \"process_time_ms\": 1500}}\n```\n\nError:\n```json\n{\"success\": false, \"content\": \"error message\", \"metadata\": {}}\n```\n\nPass `content` directly into the LLM conversation context.\n\n### Step 3: Caching\n\n- Cache directory: `{baseDir}/cache/` (auto-created)\n- Cache key: MD5 hash of raw image bytes\n- TTL: 7 days (`NEXN2_CACHE_TTL_DAYS`)\n- Clear cache: delete all `.json` files in `{baseDir}/cache/`\n- Toggle: `NEXN2_CACHE_ENABLE=true/false`\n\n## Environment variables\n\n| Variable | Required | Default |\n|----------|----------|---------|\n| NEXN2_API_KEY | ✅ Yes | — |\n| NEXN2_BASE_URL | No | https://api.siliconflow.cn/v1 |\n| NEXN2_MODEL_NAME | No | nex-agi/Nex-N2-Pro |\n| NEXN2_PROMPT_TEMPLATE | No | Built-in structured template |\n| NEXN2_IMAGE_COMPRESS | No | true |\n| NEXN2_CACHE_ENABLE | No | true |\n| NEXN2_CACHE_TTL_DAYS | No | 7 |\n| NEXN2_TIMEOUT_MS | No | 30000 |\n\nIf `NEXN2_API_KEY` is not set, returns a friendly Chinese error message.\n\n## Error handling\n\n| Scenario | Returns |\n|----------|---------|\n| Network/API failure (after retry) | Friendly \"service unavailable\" message |\n| Unsupported format | \"Please use JPG/PNG/WebP format\" |\n| Content safety block | \"Image flagged by safety filter\" |\n| Empty model output | \"No content returned, try a different image\" |\n\n⚠️ Errors never crash the conversation — structured JSON response is always returned.\n\n## Setup\n\nIn `openclaw.json` under `skills.entries`:\n\n```json5\n\"ghost-eye\": {\n  \"enabled\": true,\n  \"apiKey\": { \"source\": \"env\", \"provider\": \"default\", \"id\": \"NEXN2_API_KEY\" },\n  \"env\": {\n    \"NEXN2_BASE_URL\": \"https://api.siliconflow.cn/v1\",\n    \"NEXN2_MODEL_NAME\": \"nex-agi/Nex-N2-Pro\",\n    \"NEXN2_IMAGE_COMPRESS\": \"true\",\n    \"NEXN2_CACHE_ENABLE\": \"true\",\n    \"NEXN2_CACHE_TTL_DAYS\": \"7\",\n    \"NEXN2_TIMEOUT_MS\": \"30000\"\n  }\n}\n```\n\nFor `multimodalPreprocess` auto-mode, see `references/multimodal-config.md`.\n\n## Supported platforms\n\n- SiliconFlow (default, China-accessible)\n- OpenRouter\n- Any OpenAI-compatible chat completions endpoint\n\n## Safety\n\n- ⛔ Image base64 is never logged or written to conversation text\n- ⛔ API key is never hardcoded\n- ⛔ Temporary files are cleaned up immediately after processing\n- ⚠️ Output is always plain text / Markdown — never binary, never images\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.4",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 387,
+    "installs": 0,
+    "stars": 1,
+    "versions": 5,
+    "comments": 0
+  },
+  "created_at": "2026-07-09T15:33:17.319Z",
+  "updated_at": "2026-07-09T15:59:25.635Z",
+  "fetched_at": "2026-07-11T23:13:18.753Z",
+  "source_url": "https://clawhub.ai/hunter-crk/skills/ghost-eye"
+}

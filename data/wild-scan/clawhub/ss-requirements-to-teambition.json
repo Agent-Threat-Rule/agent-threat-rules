@@ -1,0 +1,34 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "ss-requirements-to-teambition",
+  "display_name": "SS需求→Teambition任务",
+  "publisher": {
+    "handle": "zpeng6834-arch",
+    "display_name": "azusa",
+    "user_id": "s17bz6sf0msd2h2zewdmwaey1x86ky9c"
+  },
+  "summary": "从 SaleSmartly 客服会话中自动采集带标签的对话，经 AI 分析提取需求，创建 Teambition 任务。用于客服反馈→需求管理自动化。触发词：SS需求采集、客服需求整理、SaleSmartly会话转任务、聊天记录转需求、客户反馈建任务、采集会话创建TB任务。当用户想把 SaleSmartly 中的客...",
+  "description": "从 SaleSmartly 客服会话中自动采集带标签的对话，经 AI 分析提取需求，创建 Teambition 任务。用于客服反馈→需求管理自动化。触发词：SS需求采集、客服需求整理、SaleSmartly会话转任务、聊天记录转需求、客户反馈建任务、采集会话创建TB任务。当用户想把 SaleSmartly 中的客户会话整理成 Teambition 需求任务时使用。",
+  "content": "---\nname: ss-requirements-to-teambition\ndescription: 从 SaleSmartly 客服会话中自动采集带标签的对话，经 AI 分析提取需求，创建 Teambition 任务。用于客服反馈→需求管理自动化。触发词：SS需求采集、客服需求整理、SaleSmartly会话转任务、聊天记录转需求、客户反馈建任务、采集会话创建TB任务。当用户想把 SaleSmartly 中的客户会话整理成 Teambition 需求任务时使用。\n---\n\n# SS Requirements → Teambition\n\n从 SaleSmartly 客服会话中采集对话 → AI 分析提取需求 → 自动创建 Teambition 任务。\n\n## 前置条件\n\n1. **SaleSmartly API Key** — SS 后台 → 设置 → API 管理\n2. **Teambition MCP** — 见 [tb_mcp_setup.md](references/tb_mcp_setup.md)\n\n## 快速开始\n\n### 1. 配置\n\n```bash\ncp scripts/config.example.json scripts/config.json\n```\n\n编辑 `scripts/config.json`，填入你的配置。各字段含义和获取方式见 [config_fields.md](references/config_fields.md)。\n\n### 2. 采集数据（纯脚本，0 token）\n\n```bash\ncd scripts && python3 collect.py\n```\n\n输出：`scripts/data/ss_sessions_YYYY-MM-DD.json`\n\n### 3. AI 分析 + 创建任务\n\n对 AI 说：「读取 `scripts/data/` 下最新的 JSON，分析会话内容，按 config.json 配置创建 TB 任务」\n\nAI 会按 [analysis_template.md](references/analysis_template.md) 中的规则执行。\n\n## 定时自动化（可选）\n\n在 OpenClaw 中配置 cron：\n\n```json\n{\n  \"schedule\": { \"kind\": \"cron\", \"expr\": \"0 10 * * *\", \"tz\": \"Asia/Shanghai\" },\n  \"sessionTarget\": \"isolated\",\n  \"payload\": {\n    \"kind\": \"agentTurn\",\n    \"message\": \"执行 SS 需求采集：1) cd scripts && python3 collect.py 2) 读取 data/ 下最新 JSON 3) 按 config.json 配置分析并创建 TB 任务\"\n  }\n}\n```\n\n## 文件结构\n\n```\nscripts/\n├── collect.py              # 数据采集（0 token）\n├── config.example.json     # 配置模板\n└── config.json             # 你的配置（不入库）\nreferences/\n├── tb_mcp_setup.md         # TB MCP 配置指南\n├── config_fields.md        # 配置项获取指南\n└── analysis_template.md    # AI 分析 + 任务创建模板\n```\n\n## 关键约束\n\n- SS API 限流 10 QPS，脚本内置 200ms 间隔\n- 增量采集：`state.json` 记录上次时间戳，下次从该点开始\n- 创建任务前先查重，避免同一会话重复建任务\n- 数据文件保留 7 天自动清理",
+  "category": null,
+  "tags": [
+    "会话"
+  ],
+  "topics": [
+    "会话"
+  ],
+  "latest_version": "1.0.4",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 766,
+    "installs": 11,
+    "stars": 0,
+    "versions": 5,
+    "comments": 0
+  },
+  "created_at": "2026-05-12T08:10:12.408Z",
+  "updated_at": "2026-07-09T12:59:43.655Z",
+  "fetched_at": "2026-07-11T23:14:34.662Z",
+  "source_url": "https://clawhub.ai/zpeng6834-arch/skills/ss-requirements-to-teambition"
+}

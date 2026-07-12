@@ -1,0 +1,48 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "smart-travel",
+  "display_name": "Smart Travel",
+  "publisher": {
+    "handle": "travel-skills",
+    "display_name": "旅行技能",
+    "user_id": "s175e1acy2vdpc6w041zc2tcgs887xev"
+  },
+  "summary": "一站式AI旅行助手，16项工具覆盖机票/酒店/火车票/景点/美食/天气全场景。飞猪+高德+同程+途牛多源数据直连，零配置即装即用。",
+  "description": "一站式AI旅行助手，16项工具覆盖机票/酒店/火车票/景点/美食/天气全场景。飞猪+高德+同程+途牛多源数据直连，零配置即装即用。",
+  "content": "---\nname: smart-travel\ndisplay_name: \"全能旅行助手\"\ndescription: 一站式AI旅行助手，16项工具覆盖机票/酒店/火车票/景点/美食/天气全场景。飞猪+高德+同程+途牛多源数据直连，零配置即装即用。\ntags: [旅行, 行程规划, 机票, 酒店, 火车票, 景点门票, 比价, 美食, 天气, 万豪, 打车]\ntools:\n  - name: travel_plan\n    description: 智能行程规划，推荐行程方案\n    primaryEnv: FLIGGY_PROXY_URL\n    env:\n      - name: FLIGGY_PROXY_URL\n        description: 飞猪代理URL（自动配置）\n        required: false\n      - name: PROXY_TOKEN\n        description: 代理认证Token（自动配置）\n        required: false\n    parameters:\n      - name: params\n        type: string\n        description: 自然语言查询，如\"3天2晚上海游\"\n        required: true\n  - name: search_train\n    description: 搜索火车票/高铁票\n    parameters:\n      - name: params\n        type: string\n        description: 自然语言查询，如\"北京到上海明天的火车\"\n        required: true\n  - name: search_flight\n    description: 搜索国内航班机票\n    parameters:\n      - name: params\n        type: string\n        description: 自然语言查询，如\"上海到三亚7月1号机票\"\n        required: true\n  - name: search_hotel\n    description: 搜索酒店，返回实时价格、星级、品牌、地址和预订链接\n    parameters:\n      - name: params\n        type: string\n        description: 自然语言查询，如\"杭州西湖附近酒店\"\n        required: true\n  - name: search_poi\n    description: 搜索景点门票\n    parameters:\n      - name: params\n        type: string\n        description: 自然语言查询，如\"上海迪士尼门票\"\n        required: true\n  - name: search_marriott_hotel\n    description: 搜索万豪集团酒店\n    parameters:\n      - name: params\n        type: string\n        description: 自然语言查询，如\"上海万豪酒店\"\n        required: true\n  - name: get_marriott_hotel_info\n    description: 获取万豪酒店详情\n    parameters:\n      - name: params\n        type: string\n        description: 酒店名称或关键词\n        required: true\n  - name: search_marriott_package\n    description: 搜索万豪酒店套餐\n    parameters:\n      - name: params\n        type: string\n        description: 自然语言查询，如\"万豪含早套餐\"\n        required: true\n  - name: search_food\n    description: 搜索附近美食推荐\n    parameters:\n      - name: params\n        type: string\n        description: 自然语言查询，如\"外滩附近美食\"\n        required: true\n  - name: search_transport\n    description: 查询市内交通方案\n    parameters:\n      - name: params\n        type: string\n        description: 自然语言查询，如\"浦东机场到外滩（上海）\"\n        required: true\n  - name: search_weather\n    description: 查询目的地天气预报\n    parameters:\n      - name: params\n        type: string\n        description: 自然语言查询，如\"三亚天气预报\"\n        required: true\n  - name: take_taxi_link\n    description: 生成高德一键打车链接\n    parameters:\n      - name: params\n        type: string\n        description: 自然语言查询，如\"从浦东机场到外滩（上海）\"\n        required: true\n  - name: bus_search\n    description: 搜索长途汽车票和城际大巴班次\n    parameters:\n      - name: params\n        type: string\n        description: 自然语言查询，如\"上海到苏州明天的汽车票\"\n        required: true\n  - name: travel_search\n    description: 搜索跟团游和自由行旅游产品\n    parameters:\n      - name: params\n        type: string\n        description: 自然语言查询，如\"三亚跟团游\"或\"日本亲子游\"\n        required: true\n  - name: cruise_search\n    description: 搜索邮轮旅游产品，支持按航线查询\n    parameters:\n      - name: params\n        type: string\n        description: 自然语言查询，如\"日本邮轮\"或\"东南亚航线\"\n        required: true\n  - name: holiday_search\n    description: 搜索度假旅游线路产品，支持按关键词和出发城市筛选\n    parameters:\n      - name: params\n        type: string\n        description: 自然语言查询，如\"三亚度假\"或\"从上海出发去日本\"\n        required: true\n---\n\n# 全能旅行助手\n\n> 你的AI旅行搭子 — 一句话搞定机酒火车景点美食，16项工具全包，装了就用。\n\n🔥 **为什么选我？**\n- **全** — 16项工具覆盖机票、酒店、火车票、景点门票、美食、天气、打车、万豪、汽车票、跟团游、邮轮、度假线路、行程规划、市内交通，一个技能替代十个\n- **真** — 飞猪+高德+同程+途牛多平台实时数据，不是AI编的，价格都是真的\n- **快** — 零配置，装了就能用，不用装CLI，不用配Key\n\n🎯 **试试这样说：**\n1. \"帮我规划3天2晚的上海游\"\n2. \"查明天北京到上海的机票\"\n3. \"三亚亚特兰蒂斯酒店多少钱\"\n\n## 能做什么\n\n- **行程规划**：智能推荐行程方案，涵盖景点+酒店+交通\n- **火车票搜索**：查车次、票价、余票\n- **机票搜索**：查航班价格、时刻、航司\n- **酒店搜索**：按城市/区域/品牌查酒店，返回价格、星级、品牌、地址、地标、装修时间、预订链接和酒店图片\n- **景点门票**：查景点门票价格和预订链接\n- **万豪酒店**：搜索万豪集团旗下酒店详情和套餐\n- **美食推荐**：搜索附近美食，含评分和距离\n- **市内交通**：查询公交/地铁/驾车路线\n- **天气查询**：查询目的地天气预报\n- **打车链接**：生成高德一键打车链接\n- **汽车票搜索**：查长途汽车票和城际大巴班次，显示发车时间、票价和余票\n- **跟团游搜索**：搜跟团游和自由行产品，显示天数、价格和出发日期\n- **邮轮搜索**：按港口和月份搜航线，显示航线、天数、价格和出发日期\n- **度假线路**：按关键词和出发城市搜度假产品，显示亮点、天数和价格\n\n## 使用示例\n\n1. \"帮我规划一个3天2晚的上海游\"\n2. \"查北京到上海明天的火车票\"\n3. \"三亚天气预报\"\n4. \"上海万豪酒店有什么套餐\"\n5. \"从浦东机场到外滩怎么走\"\n6. \"上海到苏州明天的汽车票\"\n7. \"日本亲子跟团游\"\n8. \"日本邮轮航线\"\n9. \"从上海出发去三亚度假\"\n\n## 注意事项\n\n- 价格实时变动，以实际预订页面为准\n- 查询通过云端代理转发到飞猪旅行+高德地图+同程旅行+途牛旅游API，代理不存储用户数据\n\n## 🔗 专项比价工具\n\n想要更精准的跨平台最低价对比？试试这些专项工具：\n- **酒店比价** — 飞猪+途牛+同程+美团+RG 5源并发比价\n- **机票比价** — 飞猪+途牛+同程+美团+RG 5平台直飞航班对比\n- **景点门票比价** — 美团+飞猪+途牛 3平台门票最低价",
+  "category": null,
+  "tags": [
+    "旅行",
+    "行程规划",
+    "机票",
+    "酒店",
+    "火车票",
+    "景点门票",
+    "比价",
+    "美食",
+    "天气",
+    "万豪",
+    "打车"
+  ],
+  "topics": [
+    "旅行助手",
+    "旅游规划",
+    "出行规划",
+    "旅行推荐",
+    "度假"
+  ],
+  "latest_version": "3.2.2",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 721,
+    "installs": 8,
+    "stars": 0,
+    "versions": 11,
+    "comments": 0
+  },
+  "created_at": "2026-06-08T11:56:35.563Z",
+  "updated_at": "2026-07-11T03:52:28.122Z",
+  "fetched_at": "2026-07-11T22:49:10.676Z",
+  "source_url": "https://clawhub.ai/travel-skills/skills/smart-travel"
+}

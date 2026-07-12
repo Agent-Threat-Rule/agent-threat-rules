@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "linkfox-sellersprite-traffic-keyword",
+  "display_name": "卖家精灵-流量关键词",
+  "publisher": {
+    "handle": "linkfox-ai",
+    "display_name": "linkfox-ai",
+    "user_id": "s171g8b6m2khwdy9ye8bxj0wx183vd4z"
+  },
+  "summary": "使用卖家精灵流量词反查能力，按ASIN查询关键词流量来源、流量占比类型、转化类型、自然位与广告位等指标，支持历史月份与多维排序。当用户提到ASIN反查流量词、流量关键词列表、关键词流量结构、自然词/广告词分析、关键词转化类型、SellerSprite traffic keyword、Amazon traffic...",
+  "description": "使用卖家精灵流量词反查能力，按ASIN查询关键词流量来源、流量占比类型、转化类型、自然位与广告位等指标，支持历史月份与多维排序。当用户提到ASIN反查流量词、流量关键词列表、关键词流量结构、自然词/广告词分析、关键词转化类型、SellerSprite traffic keyword、Amazon traffic...",
+  "content": "---\r\nname: linkfox-sellersprite-traffic-keyword\r\ndescription: 使用卖家精灵流量词反查能力，按ASIN查询关键词流量来源、流量占比类型、转化类型、自然位与广告位等指标，支持历史月份与多维排序。当用户提到ASIN反查流量词、流量关键词列表、关键词流量结构、自然词/广告词分析、关键词转化类型、SellerSprite traffic keyword、Amazon traffic keywords、reverse ASIN keywords时触发此技能。即使用户未明确提及\"卖家精灵\"，只要需求是围绕某个ASIN查看其关键词流量来源与词列表，也应触发此技能。\r\n---\r\n\r\n# SellerSprite Traffic Keyword\r\n\r\nThis skill helps query and analyze traffic keyword lists for an Amazon ASIN via SellerSprite.\r\n\r\n## Core Concepts\r\n\r\n- **ASIN 反查词**：以商品 ASIN 为输入，查看该商品获得流量的关键词列表。\r\n- **流量占比类型**（`trafficKeywordTypes`）：主要流量词、精准流量词、以及 schema 中的 `preciseLongTail`（工具文案为「转化流失词」）等。\r\n- **转化类型**（`conversionKeywordTypes`）：如转化优质词、平稳词、流失词等。\r\n- **词标签**（`badges`）：如自然搜索词、Amazon Choice 推荐词等。\r\n\r\n## 调用方式\r\n\r\n- **API 端点**：`POST /sellersprite/traffic/keyword`（完整参数/响应/错误码见 `references/api.md`）\r\n- **Python 脚本**：`python scripts/sellersprite_traffic_keyword.py '<JSON 参数>' [--inline]`\r\n- **成本约束**：本工具会消耗积分；同一会话同一参数组合默认只调用一次，脚本带 24h 本地缓存。失败/空结果不得自动换关键词、翻页或改邮编连续试探；需要继续检索时先向用户说明会产生额外消耗。\r\n\r\n**输出策略（脚本默认行为）**：\r\n- **始终**将完整响应写入 `<cwd>/linkfox/<YYYY-MM-DD>/<session>/data/linkfox-sellersprite-traffic-keyword-<timestamp>.json`（`<cwd>` 为脚本执行时的工作目录，在 Claude Code 里即当前项目目录；`<session>` 取自环境变量 `SESSION_ID`，按用户任务自动聚合；**禁止写入 /tmp**，当前目录不可写则报错）\r\n- 响应体 ≤ 8 KB：落盘后把完整 JSON 打印到 stdout\r\n- 响应体 > 8 KB：落盘后 stdout 只输出摘要（顶层字段、常见计数如 `total`/`costToken`、最大列表字段的长度 + 前 3 条样本）\r\n- 加 `--inline` 强制全量打印到 stdout（同样落盘）\r\n\r\n**读数据建议**：先看摘要判断是否足够；需要具体字段时优先用 `jq`或`ConvertFrom-Json` 从保存的 json 文件按需抽取，避免整份 JSON 进入上下文。\r\n## Key Parameters\r\n\r\n| Parameter | Type | Required | Description |\r\n|-----------|------|----------|-------------|\r\n| marketplace | string | Yes | 市场站点，默认 `US` |\r\n| asin | string | Yes | 要反查的商品 ASIN |\r\n| month | string | No | 历史月份，格式 `yyyyMM`；不传默认最近30天 |\r\n| page | integer | No | 页码，默认 1 |\r\n| size | integer | No | 每页数量，默认 50，最大 100 |\r\n| keyword | string | No | 关键词筛选 |\r\n| badges | string | No | 词标签，多值逗号分隔 |\r\n| trafficKeywordTypes | string | No | 流量占比类型，多值逗号分隔 |\r\n| conversionKeywordTypes | string | No | 转化类型，多值逗号分隔 |\r\n| orderField | string | No | 排序字段，默认 `rankPosition` |\r\n| orderDesc | boolean | No | 是否倒序，默认 `false` |\r\n\r\n## Usage Examples\r\n\r\n```json\r\n{\r\n  \"marketplace\": \"US\",\r\n  \"asin\": \"B0XXXXXXXXX\",\r\n  \"size\": 50,\r\n  \"orderField\": \"rankPosition\",\r\n  \"orderDesc\": false\r\n}\r\n```\r\n\r\n```json\r\n{\r\n  \"marketplace\": \"US\",\r\n  \"asin\": \"B0XXXXXXXXX\",\r\n  \"month\": \"202507\",\r\n  \"trafficKeywordTypes\": \"primary,precise\",\r\n  \"conversionKeywordTypes\": \"excellent,stable\",\r\n  \"page\": 1,\r\n  \"size\": 100\r\n}\r\n```\r\n\r\n## Display Rules\r\n\r\n1. 结果优先展示：关键词、自然位、广告位、流量占比类型、转化类型。\r\n2. 明确标注查询周期（最近30天或历史月份）。\r\n3. 当存在分页时，告知总数与当前页。\r\n4. 不输出与接口无关的主观商业建议，除非用户明确要求。\r\n\r\n## Important Limitations\r\n\r\n- 必填参数：`marketplace`、`asin`\r\n- 单次每页最多 100 条\r\n- 历史查询需传 `yyyyMM`\r\n\r\n**Feedback:**\r\n\r\nAuto-detect and report feedback via the Feedback API when any of the following apply:\r\n1. The functionality or purpose described in this skill does not match actual behavior\r\n2. The skill's results do not match the user's intent\r\n3. The user expresses dissatisfaction or praise about this skill\r\n4. Anything you believe could be improved\r\n\r\nCall the feedback API as specified in `references/api.md`. Do not interrupt the user's flow.\r\n\r\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.4",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 604,
+    "installs": 15,
+    "stars": 0,
+    "versions": 4,
+    "comments": 0
+  },
+  "created_at": "2026-04-29T03:32:50.478Z",
+  "updated_at": "2026-07-10T04:48:56.191Z",
+  "fetched_at": "2026-07-11T23:03:01.848Z",
+  "source_url": "https://clawhub.ai/linkfox-ai/skills/linkfox-sellersprite-traffic-keyword"
+}

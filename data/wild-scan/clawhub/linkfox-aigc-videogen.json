@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "linkfox-aigc-videogen",
+  "display_name": "AIGC视频生成",
+  "publisher": {
+    "handle": "linkfox-ai",
+    "display_name": "linkfox-ai",
+    "user_id": "s171g8b6m2khwdy9ye8bxj0wx183vd4z"
+  },
+  "summary": "AI生视频工具（首尾帧/单图模式），根据原图和提示词生成视频，支持可选尾帧图控制结束画面。支持模型KLING可灵/WAN万相/SEED豆包/SEED_FAST/HAILUO海螺。用户说\"生成视频\"、\"AI视频\"、\"图生视频\"、\"做个视频\"、\"video generation\"、\"generate video\"、\"...",
+  "description": "AI生视频工具（首尾帧/单图模式），根据原图和提示词生成视频，支持可选尾帧图控制结束画面。支持模型KLING可灵/WAN万相/SEED豆包/SEED_FAST/HAILUO海螺。用户说\"生成视频\"、\"AI视频\"、\"图生视频\"、\"做个视频\"、\"video generation\"、\"generate video\"、\"图片转视频\"、\"动态视频\"时触发。",
+  "content": "---\nname: linkfox-aigc-videogen\ndescription: AI生视频工具（首尾帧/单图模式），根据原图和提示词生成视频，支持可选尾帧图控制结束画面。支持模型KLING可灵/WAN万相/SEED豆包/SEED_FAST/HAILUO海螺。用户说\"生成视频\"、\"AI视频\"、\"图生视频\"、\"做个视频\"、\"video generation\"、\"generate video\"、\"图片转视频\"、\"动态视频\"时触发。\n---\n\n# AI 生视频（首尾帧/单图模式）\n\n根据原图（首帧）和可选尾帧图生成视频，支持多种 AI 视频模型，异步创建任务后轮询获取结果。\n\n## 核心特点\n\n- **5 种模型选择**：覆盖不同风格和时长需求。\n- **首尾帧控制**：可选尾帧图控制视频结束画面。\n- **丰富参数**：支持 Pro 模式、声音生成、运镜控制、宽高比等。\n- **异步模式**：创建任务立即返回 taskId，脚本自动轮询直到完成（超时 20 分钟）。\n\n## 模型说明\n\n| 模型（videoType） | 说明 | 支持时长       |\n|------|------|------------|\n| KLING | 可灵 | 5秒/10秒     |\n| WAN | 万相 | 5秒/10秒/15秒 |\n| SEED | Seedance/豆包 | 5秒/10秒/15秒 |\n| SEED_FAST | Seedance 2.0 Fast | 5秒/10秒/15秒 |\n| HAILUO | 海螺 | 6秒/10秒     |\n\n## 参数概览\n\n- **必填字段**：`imageUrl`、`videoType`、`videoTime`\n- **可选核心**：`lastFrameImageUrl`（尾帧图）、`prompt`（2000字以内）\n\n完整参数表、响应字段结构与错误码，见 [`references/api.md`](references/api.md)。\n\n## 调用方式\n\n- **创建任务**：`POST /aigc/videoGenAsync` → 返回 `{taskId}`\n- **轮询结果**：`POST /aigc/taskQuery` → 传入 `{taskId}` → 返回状态和结果\n- **Python 脚本**：`python scripts/aigc_videogen.py '<JSON 参数>'`（脚本内部自动完成创建+轮询）\n\n**异步流程**：\n1. 脚本调用 `/aigc/videoGenAsync` 创建任务，获得 `taskId`\n2. 等待 2 分钟后开始轮询 `/aigc/taskQuery`，每 10 秒一次，最长等待 20 分钟\n3. 成功后自动下载视频到会话 `media/` 目录\n\n**输出策略（脚本默认行为）**：\n- 脚本会自动把生成的视频**下载转存**到会话 `media/` 目录，stdout 输出一行 `Saved full response: <路径数组>`。\n- 原始 API 响应静默落盘到 `data/`，仅在无视频产物时才在 stdout 提示其路径。\n\n**读数据建议**：**禁止** Read 转存的视频文件内容。直接把 `Saved full response:` 后的本地路径提供给用户即可。\n\n## 使用指引\n\n1. **模型选择**：一般商品视频用 `KLING`；长时长用 `WAN`/`SEED`。\n2. **首尾帧**：传 `imageUrl`（首帧，必传）+ 可选 `lastFrameImageUrl`（尾帧），支持模型：KLING仅Pro / WAN / SEED。\n3. **时长匹配**：必须传模型支持的时长值，否则报错。\n4. **提示词**：可选，2000 字以内，描述期望的动态效果。\n\n### 示例\n\n**1. KLING — 商品展示**\n```json\n{\"imageUrl\": \"https://example.com/product.jpg\", \"videoType\": \"KLING\", \"videoTime\": 10, \"prompt\": \"商品展示视频\"}\n```\n\n\n**3. WAN 万相 — 带声音和运镜**\n```json\n{\"imageUrl\": \"https://example.com/scene.jpg\", \"videoType\": \"WAN\", \"videoTime\": 15, \"voice\": true, \"camera\": \"single\"}\n```\n\n**4. SEED — 高分辨率**\n```json\n{\"imageUrl\": \"https://example.com/scene.jpg\", \"videoType\": \"SEED\", \"videoTime\": 10, \"resolution\": \"1080p\", \"aspectRatio\": \"16:9\"}\n```\n\n## 展示规则\n\n- **只展示转存后的本地路径**：把 `Saved full response:` 后的本地视频路径告诉用户，例如「视频已保存至：xxx/a.mp4」。\n- **禁止** Read 视频文件、**禁止**展示 base64 内容。\n- **禁止**把原始 API 返回的临时 URL 直接给用户（带签名、会过期）。\n\n## 限制\n\n- 提示词最大 2000 字符。\n- 生成时间较长，通常 100-600 秒。脚本自动轮询，超时 20 分钟。\n- KLING 尾帧图仅 Pro 模式下支持。\n- 本接口仅支持单图/首尾帧模式。多参考图请使用 `linkfox-aigc-videogen-multi`。\n- 失败时不重试（仅尝试 1 次）。\n\n## 不适用\n**不适用**：\n- 多参考图生视频 → `linkfox-aigc-videogen-multi`\n- 图片生成 → `linkfox-aigc-imagegen`\n- 文本生成 → `linkfox-aigc-textgen`\n\n## 反馈\n\n参见 `references/api.md`。\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.2",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 180,
+    "installs": 1,
+    "stars": 0,
+    "versions": 3,
+    "comments": 0
+  },
+  "created_at": "2026-07-02T12:34:02.403Z",
+  "updated_at": "2026-07-10T04:48:51.247Z",
+  "fetched_at": "2026-07-11T23:04:48.536Z",
+  "source_url": "https://clawhub.ai/linkfox-ai/skills/linkfox-aigc-videogen"
+}

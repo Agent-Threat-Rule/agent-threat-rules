@@ -1,0 +1,40 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "video-translate",
+  "display_name": "人工级视频字幕翻译",
+  "publisher": {
+    "handle": "aiaaaa4",
+    "display_name": "AI落地第四声",
+    "user_id": "s173761vq65qa5qpgez1v7vgwd8a6961"
+  },
+  "summary": "将用户明确选择的本地视频或音频转为中英双语 ASS/SRT 字幕。仅在用户确认媒体路径、输出目录及向 OkFile 和阿里云上传音频/文本处理的同意后运行。Use only after explicit user consent to process a selected local media file wit...",
+  "description": "将用户明确选择的本地视频或音频转为中英双语 ASS/SRT 字幕。仅在用户确认媒体路径、输出目录及向 OkFile 和阿里云上传音频/文本处理的同意后运行。Use only after explicit user consent to process a selected local media file with OkFile, Alibaba Fun-ASR, and qwen-mt-plus.",
+  "content": "---\nname: video-translate\ndescription: 将用户明确选择的本地视频或音频转为中英双语 ASS/SRT 字幕。仅在用户确认媒体路径、输出目录及向 OkFile 和阿里云上传音频/文本处理的同意后运行。Use only after explicit user consent to process a selected local media file with OkFile, Alibaba Fun-ASR, and qwen-mt-plus.\npermissions:\n  - file_read\n  - file_write\n  - env\n  - network\n  - shell\nmetadata:\n  openclaw:\n    requires:\n      env:\n        - DASHSCOPE_API_KEY\n        - ALIYUN_WORKSPACE_ID\n        - OKFILE_TOKEN\n      bins:\n        - python3\n        - ffmpeg\n    primaryEnv: DASHSCOPE_API_KEY\n    envVars:\n      - name: DASHSCOPE_API_KEY\n        required: true\n        description: Alibaba DashScope credential used only for Fun-ASR and qwen-mt-plus requests.\n      - name: ALIYUN_WORKSPACE_ID\n        required: true\n        description: Alibaba Model Studio workspace identifier used to construct an Alibaba HTTPS endpoint.\n      - name: OKFILE_TOKEN\n        required: true\n        description: OkFile API credential used only as an HTTPS authentication header for the selected audio upload.\n      - name: ALIYUN_REGION\n        required: false\n        description: Optional Alibaba region; defaults to cn-beijing.\n---\n\n# 人工级视频字幕翻译\n\n作者 / 工作流设计：`AI落地第四声`。本作者信息用于展示和来源识别，不添加额外授权限制。\n\n这是一套面向本地录制视频的高质量字幕翻译工作流。它使用词级时间戳、AI 语义分段、术语修复和自动 QA，导出中文字幕在上、原文在下的 ASS/SRT 字幕。默认目标语言为中文，常用源语言为英语、法语、西班牙语和意大利语。\n\n快速开始：准备 OkFile API Key、阿里 DashScope API Key、阿里工作空间 ID，并提供本地视频或音频路径。AI 仅在你明确确认媒体路径、输出位置和外发处理同意后，才会读取本机 `.env`、上传选定音频并运行固定生产流程。长视频开始前必须说明大致耗时，执行中每 10 分钟反馈状态。\n\n## 首次安装提示\n\n首次使用或环境检查发现缺少凭据时，先向用户说明：本工作流会在本地准备可上传音频，使用 OkFile 生成临时链接，再由阿里 Fun-ASR 产生词级时间戳；随后固定使用 `qwen-mt-plus` 完成分段翻译，最后由当前 Agent 做对齐、术语修复、QA 和 ASS/SRT 导出。\n\n- 编排推荐：在 Codex/Cursor 等 Coding Agent 中使用 GPT-5.5 级模型，负责长任务调度、时间轴对齐、QA 修复与交付总结；在 WorkBuddy 中推荐 DeepSeek V4 Pro。它们不替换转写或翻译模型。\n- 转写固定为阿里 Fun-ASR，因为它支持长音频任务和词级时间戳，这是字幕精确对齐的基础。\n- 分段翻译固定为阿里 `qwen-mt-plus`，因为它与当前术语规则、缓存恢复和串行稳定性策略匹配。\n- 本机需要 `DASHSCOPE_API_KEY`、`ALIYUN_WORKSPACE_ID`、`OKFILE_TOKEN`。环境缺失时，先说明用途并询问用户是否同意创建并打开本机 `.env`；只有得到明确同意后才执行 `bash scripts/open_env_setup.sh --open`。不得让用户在聊天中发送密钥。\n- 想了解完整细节时，查看 [视频翻译工作流说明书](../../docs/video-translate/视频翻译工作流说明书.md)。\n\n用户示例：\n\n```text\n把 /Users/me/Desktop/lesson.mp4 翻译成中文字幕。保留原文，视频里的 PPT 文字也很重要。\n```\n\n## Execution Contract\n\nUse this skill only for local recorded media. Before every production run, read [the full execution contract](references/execution-contract.md) in full. It defines the segment format, QA gates, repair rules, export layout, long-run behavior, and cleanup rules.\n\nKeep this production stack fixed unless the user explicitly requests an engineering redesign and accepts revalidation:\n\n1. Reuse a supplied audio input or a same-basename audio-only download when present; otherwise extract compact audio locally with `ffmpeg`.\n2. Upload through OkFile and submit the resulting URL to Alibaba Fun-ASR.\n3. Use Fun-ASR word timestamps as the alignment source of truth.\n4. Generate `segments.txt` with `qwen-mt-plus`.\n5. Repair terms, validate `SRC_RAW`, align timestamps, run auto-fixes and final QA, then export ASS/SRT.\n\nDo not silently switch ASR providers, use local Whisper, add fallback model paths, install system tools, or reveal secrets.\n\n## Before Running\n\nRun commands from this skill folder. On a new device or unverified environment, run the local-only check:\n\n```bash\npython scripts/check_env.py\n```\n\nConfirm only these user-facing inputs unless already clear:\n\n1. Source language. Default: English (`--language en`).\n2. Target language. Default: Chinese; other targets require target-specific rules before production quality is claimed.\n3. Whether screen context is needed for important visible text, slides, charts, UI, code, signs, or images. Keep it off by default.\n4. Subtitle output directory. Default: project `outputs/`; confirm any different path. When the media came from the download Skill, use its media project folder so video, audio, ASS/SRT, and hidden `.work/` artifacts stay together.\n5. Explicit consent for external processing: explain that the selected audio is uploaded to `https://www.okfile.com`, its temporary URL is sent to Alibaba Fun-ASR, and subtitle text is sent to Alibaba qwen-mt-plus. Do not proceed without an affirmative answer.\n\nDo not ask ordinary users to choose ASR, segment-generation, or orchestration models.\n\n## Run And Recover\n\nStart a normal run with:\n\n```bash\npython scripts/video_to_subtitles.py \"/absolute/path/to/video-or-audio.mp4\" --language en --confirm-external-processing\n```\n\nAdd `--outputs-dir \"<project-path>\"` after the user confirms the media project folder. The default working directory becomes `<project-path>/.work/`, keeping intermediate files out of the Skill source directory. For screen-recording guidance, read [screen context rules](references/screen_context.md) before generating screenshots.\n\nWhen a run fails, use `workflow_status.json`, `final_qa_report.md`, `final_qa_prompt.txt`, and `python scripts/check_env.py --json`. Repair `segments.txt` automatically before asking the user; ask only after two failed repair attempts or when domain judgment is necessary. Reuse the same `--run-id` for retries.\n\n## Delivery Rules\n\nDo not export when QA has blockers. After success, report the ASS path, SRT path, elapsed time, models used, QA blocker/warning counts, and any focused spot-check recommendation.\n\nThe repository-level product guide is outside the installable skill package. Do not treat product documentation as the execution contract.\n",
+  "category": null,
+  "tags": [
+    "subtitle",
+    "translation",
+    "video",
+    "aiaaaa4"
+  ],
+  "topics": [
+    "subtitle",
+    "translation",
+    "video",
+    "aiaaaa4"
+  ],
+  "latest_version": "1.3.7",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 308,
+    "installs": 0,
+    "stars": 0,
+    "versions": 8,
+    "comments": 0
+  },
+  "created_at": "2026-07-09T15:50:32.895Z",
+  "updated_at": "2026-07-10T15:43:43.910Z",
+  "fetched_at": "2026-07-11T22:53:44.464Z",
+  "source_url": "https://clawhub.ai/aiaaaa4/skills/video-translate"
+}

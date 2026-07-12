@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "comment-wordcloud",
+  "display_name": "Comment Wordcloud",
+  "publisher": {
+    "handle": "dkgee",
+    "display_name": "dkgee",
+    "user_id": "s1786wtvdxk30gxkmfr6h6xb2h83gfv8"
+  },
+  "summary": "Generate word frequency statistics and word cloud from social media comments",
+  "description": "Generate word frequency statistics and word cloud from social media comments",
+  "content": "---\nname: comment-wordcloud\nversion: 1.0.0\ndescription: Generate word frequency statistics and word cloud from social media comments\nwhenToUse: When you need to analyze hot topics in social media comments\n---\n\n## Overview\n\nThis skill generates word frequency statistics and word cloud images from social media comment data.\n\n## Usage\n\nProvide comment data in JSON format. The script will automatically:\n\n1. Read and parse comment data\n2. Use jieba for Chinese word segmentation\n3. Filter stop words\n4. Calculate word frequency\n5. Generate word cloud\n6. Output word frequency JSON and word cloud PNG\n\n## Input Format\n\nComment data should be in JSON format, each element contains a `content` field:\n\n```json\n[\n  {\"content\": \"This product is very useful\"},\n  {\"content\": \"High cost performance, recommend purchase\"}\n]\n```\n\n## Output Format\n\n- `{output_dir}/word_freq.json`: Word frequency statistics\n- `{output_dir}/word_cloud.png`: Word cloud image\n\n## Tech Stack\n\n- Python 3.11+\n- jieba 0.42.1\n- wordcloud 1.9.3\n- matplotlib 3.9.0\n\n## Parameters\n\n- `data_source`: Comment data file path (required)\n- `output_dir`: Output directory (required)\n- `stop_words`: Stop words file path (optional)\n- `custom_words`: Custom vocabulary (optional, comma separated)\n- `max_words`: Max words in word cloud (optional, default 200)\n\n## Example\n\n```bash\npython scripts/generate_wordcloud.py references/sample_comments.json output/ --max-words 10\n```\n\n## Notes\n\n1. Need to install Python dependencies: jieba, wordcloud, matplotlib\n2. Need Chinese font file (use system font by default)\n3. Stop words file is a text file with one word per line\n4. Custom vocabulary will be added to tokenizer with priority\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 59,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T14:14:53.667Z",
+  "updated_at": "2026-07-11T14:14:53.667Z",
+  "fetched_at": "2026-07-11T22:43:40.603Z",
+  "source_url": "https://clawhub.ai/dkgee/skills/comment-wordcloud"
+}

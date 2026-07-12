@@ -1,0 +1,42 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "skill-daily",
+  "display_name": "Clawhub Daily",
+  "publisher": {
+    "handle": "edwardwason",
+    "display_name": "AI花生",
+    "user_id": "s177q4wcvafq6fzfkhk2g3cwth83y01d"
+  },
+  "summary": "每日扫描 ClawHub 全球 Skill 平台（500 个 Skill），通过 6 维度全维度推荐算法 为用户推荐 8 个有价值、不重复、值得关注的 AI Agent Skill，并通过飞书推送完整简报。 触发场景： - 用户希望每日/定时收到 ClawHub Skill 推荐简报 - 用户希望跟踪 AI Ag...",
+  "description": "每日扫描 ClawHub 全球 Skill 平台（500 个 Skill），通过 6 维度全维度推荐算法\n为用户推荐 8 个有价值、不重复、值得关注的 AI Agent Skill，并通过飞书推送完整简报。\n\n触发场景：\n- 用户希望每日/定时收到 ClawHub Skill 推荐简报\n- 用户希望跟踪 AI Agent 生态的最新 Skill 趋势\n- 用户希望按痛点场景（自动化办公/开发工具/内容创作/数据采集/AI 增强/中文支持/金融分析）匹配推荐\n- 用户希望避免重复推荐，结合 7 天跨维度去重\n\n核心能力：\n- 真实抓取 ClawHub Top 500 Skill（基于 Convex API，0 token 消耗）\n- 适配新 API 数据结构（stats.installs / categories / badges.verified / changelog）\n- 6 维度全维度推荐：trending / quality / newcomers / panorama / actively_maintained / verified\n- 降级策略：候选不足时自动放宽阈值（fallback_fn）\n- optional 维度：verified 候选为 0 时自动跳过，不占配额\n- 7 天跨维度去重，避免重复推荐\n- 痛点匹配去重展示：同一 Skill 只在第一个命中场景展示\n- changelog 展示：有最近变更摘要的 Skill 展示\"最近变更\"字段\n- 痛点加权：基于 7 大场景库个性化排序\n- 飞书云文档 + Top 5 卡片消息推送（含云文档直达链接）\n- 简报中文化：中文一句话 + 英文原文 `<details>` 折叠",
+  "content": "---\nname: clawhub-daily\ndescription: |\n  每日扫描 ClawHub 全球 Skill 平台（500 个 Skill），通过 6 维度全维度推荐算法\n  为用户推荐 8 个有价值、不重复、值得关注的 AI Agent Skill，并通过飞书推送完整简报。\n\n  触发场景：\n  - 用户希望每日/定时收到 ClawHub Skill 推荐简报\n  - 用户希望跟踪 AI Agent 生态的最新 Skill 趋势\n  - 用户希望按痛点场景（自动化办公/开发工具/内容创作/数据采集/AI 增强/中文支持/金融分析）匹配推荐\n  - 用户希望避免重复推荐，结合 7 天跨维度去重\n\n  核心能力：\n  - 真实抓取 ClawHub Top 500 Skill（基于 Convex API，0 token 消耗）\n  - 适配新 API 数据结构（stats.installs / categories / badges.verified / changelog）\n  - 6 维度全维度推荐：trending / quality / newcomers / panorama / actively_maintained / verified\n  - 降级策略：候选不足时自动放宽阈值（fallback_fn）\n  - optional 维度：verified 候选为 0 时自动跳过，不占配额\n  - 7 天跨维度去重，避免重复推荐\n  - 痛点匹配去重展示：同一 Skill 只在第一个命中场景展示\n  - changelog 展示：有最近变更摘要的 Skill 展示\"最近变更\"字段\n  - 痛点加权：基于 7 大场景库个性化排序\n  - 飞书云文档 + Top 5 卡片消息推送（含云文档直达链接）\n  - 简报中文化：中文一句话 + 英文原文 `<details>` 折叠\n---\n\n# ClawHub Daily Skill 洞察技能\n\n> 每日扫描 ClawHub 全球 AI Agent Skill 平台，生成 6 维度精选简报\n\n## 核心能力\n\n- **真实数据**：直接调用 ClawHub Convex API（`wry-manatee-359.convex.cloud`），抓取 Top 500 Skill\n- **新 API 适配**：`stats.installs`（非 `installsCurrent`）、`categories`（非 `capabilityTags`）、`badges.verified`、`latestVersion.changelog` 等嵌套字段\n- **6 维度全维度推荐**：每天遍历全部 6 个维度，用户每天看全貌\n  - 🔥 trending × 3（活跃安装≥100，降级≥30）\n  - ⭐ quality × 1（下载≥1000+口碑≥0.5%，降级≥500+0.3%）\n  - 🚀 newcomers × 1（≤60天+安装≥10+星≥3，降级≤90天+5+2）\n  - 🏆 panorama × 2（评论≥1）\n  - 🔧 actively_maintained × 1（90天内更新+版本≥3，降级180天+版本≥2）\n  - 🛡️ verified × 1（平台安全审计通过，候选为空时跳过）\n- **降级策略**：候选不足时自动放宽阈值（fallback_fn）\n- **optional 维度**：verified 候选为 0 时自动跳过，不占配额\n- **7 天跨维度去重**：同一 Skill 在不同维度和不同天都不会重复\n- **痛点匹配去重**：同一 Skill 只在第一个命中场景展示（按权重排序）\n- **changelog 展示**：有最近变更摘要的 Skill 展示\"最近变更\"字段\n- **痛点匹配**：基于 7 大场景库（自动化办公/开发工具/内容创作/数据采集/AI 增强/中文支持/金融分析）加权\n- **简报中文化**：中文一句话解读 + 英文原文 `<details>` 折叠（0 token 消耗）\n- **飞书推送**：完整云文档（6 维度全部展示）+ Top 5 卡片消息（含云文档直达链接）\n\n## 使用模式（二选一）\n\n本技能支持 **2 种使用模式**，首次安装请阅读 [`references/setup-wizard.md`](references/setup-wizard.md)：\n\n### 模式 A：常规对话模式 💬\n\n**触发词**（在 Agent 对话中输入任一即可）：\n- \"每日推荐\"\n- \"ClawHub 日报\"\n- \"今天有什么好 Skill\"\n- \"帮我推荐技能\"\n- \"扫描 ClawHub\"\n\n### 模式 B：Cron 定时任务模式 ⏰\n\n**支持平台**：Trae SOLO / qclaw / WorkBuddy / OpenClaw / Hermes / 纯脚本\n\n**预制提示词**：见 [`references/prompt-templates.md`](references/prompt-templates.md)\n\n**推荐节奏**：每 2 天 1 次（与 10 天去重窗口完美匹配 → 5 个独立周期全覆盖 200 个 Skill）\n\n## 适用场景\n\n- AI Agent 开发者跟踪生态趋势\n- 内容创作者寻找新的 AI 工具\n- 团队 leader 评估可纳入工作流的 Skill\n- 对 ClawHub 平台感兴趣的所有用户\n\n## 不适用场景\n\n- 需要中文 Skill 专项分析（请使用 `skillhub-daily` 技能）\n- 需要即时的单次查询（请直接使用 Convex `listPublicPageV4` API）\n- 需要下载/安装 Skill 本身（本技能只做推荐分析）\n\n## 依赖\n\n- Python 3.8+\n- `requests`（HTTP 抓取）\n- 飞书应用凭证（可选，用于推送）\n- 网络可访问 `wry-manatee-359.convex.cloud`\n\n## 快速开始\n\n### 1. 首次安装：选择使用模式\n\n阅读 [`references/setup-wizard.md`](references/setup-wizard.md) 选择 A 或 B。\n\n### 2. 配置凭证（仅模式 B 推送时需要）\n\n编辑 `references/config.json`：\n```json\n{\n  \"feishu_app_id\": \"<your_feishu_app_id>\",\n  \"feishu_app_secret\": \"<your_feishu_app_secret>\",\n  \"feishu_user_open_id\": \"<your_user_open_id>\"\n}\n```\n\n### 3. 手动运行\n\n```bash\n# 抓取数据\npython scripts/fetch_clawhub.py --num 200 --output data/snapshots/2026-06-03.json\n\n# 计算指标\npython scripts/compute_metrics.py --input data/snapshots/2026-06-03.json\n\n# 生成推荐\npython scripts/daily_recommend.py --date 2026-06-03 --dimension trending\n\n# 4. 推送到飞书\npython scripts/push_to_feishu.py --recommendation data/recommended/2026-06-03.json\n\n# 5. 推送到 IMA 知识库（可选）\npython scripts/push_to_ima.py --recommendation data/recommended/2026-06-03.json\n```\n\n### 4. 一键执行\n\n```bash\npython clawhub_daily_executor.py\n```\n\n## 推荐维度\n\n| 维度 | cron 标识 | 重点模块 | 频率 |\n|------|---------|---------|------|\n| **D1 趋势** | `trending` | 热装 + 痛点 + 回顾 | 第 1, 5, 9, ... 天 |\n| **D2 质量** | `quality` | 口碑 + 痛点 + 回顾 | 第 2, 6, 10, ... 天 |\n| **D3 新星** | `newcomers` | 新星 + 痛点 + 回顾 | 第 3, 7, 11, ... 天 |\n| **D4 全景** | `panorama` | 热议 + 分类 + 回顾 | 第 4, 8, 12, ... 天 |\n\n维度根据 `日期 % 4` 自动计算。\n\n## 输出物\n\n- `data/snapshots/YYYY-MM-DD.json` - 当日 200 个 Skill 原始数据\n- `data/snapshots/YYYY-MM-DD.metrics.json` - 计算后的指标\n- `data/recommended/YYYY-MM-DD.json` - 8-10 个推荐结果\n- `data/recommended/YYYY-MM-DD.md` - 简报 Markdown\n\n## 飞书/IMA 消息结构\n\n### 飞书卡片消息\n\n包含：\n- **标题**：🦞 ClawHub 每日洞察 | 日期（维度）\n- **元信息**：扫描数、推荐数、去重数、匹配场景\n- **Top 3 详细解读**：每个 Skill 含数据、推荐理由、下一步\n- **CTA 按钮**：查看完整简报（飞书文档）\n- **备注**：执行时间 + 数据日期\n\n总字数控制在 **200-400 字**（让用户决定是否点开）。\n\n### IMA 知识库推送\n\n完整 Markdown 简报，含：\n- 标题 + 元信息\n- Top 10 推荐详情\n- 痛点匹配分组\n- 翻页式浏览，可在 IMA 内检索\n\n## 详细文档\n\n- [使用向导](references/setup-wizard.md) - **首次安装必读**\n- [Cron 提示词模板](references/prompt-templates.md) - **定时任务必读**\n- [API 契约](references/api-contract.md)\n- [数据字段](references/source-data-schema.md)\n- [简报模板](references/briefing-template.md)\n- [痛点库](references/pain-points.md)\n- [使用指南](README.md)\n- [CHANGELOG](CHANGELOG.md)\n\n## 限制与边界\n\n- **数据源单一**：仅 ClawHub Convex API，不抓取 SkillHub\n- **去重窗口 10 天**：超出 10 天的会重新推荐\n- **简报长度 8-10 个**：超过不会推送（避免信息过载）\n- **语言**：中文为主，英文原文 `<details>` 折叠（0 token 消耗方案）\n\n## 版本\n\n- v1.0.0 (2026-06-03) - 初始版本，参考 skillhub-daily v6.2.0 架构设计\n",
+  "category": null,
+  "tags": [
+    "内容创作",
+    "金融分析",
+    "创作",
+    "定时",
+    "开发"
+  ],
+  "topics": [
+    "内容创作",
+    "金融分析",
+    "创作",
+    "定时",
+    "开发"
+  ],
+  "latest_version": "2.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 437,
+    "installs": 10,
+    "stars": 1,
+    "versions": 6,
+    "comments": 0
+  },
+  "created_at": "2026-06-03T13:32:45.182Z",
+  "updated_at": "2026-07-11T11:16:04.255Z",
+  "fetched_at": "2026-07-11T22:46:13.421Z",
+  "source_url": "https://clawhub.ai/edwardwason/skills/skill-daily"
+}

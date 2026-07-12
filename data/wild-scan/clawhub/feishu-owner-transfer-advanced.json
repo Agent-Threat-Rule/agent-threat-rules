@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "feishu-owner-transfer-advanced",
+  "display_name": "Feishu Owner Transfer Advanced",
+  "publisher": {
+    "handle": "freedompixels",
+    "display_name": "freedompixels",
+    "user_id": "s17cmvaw2cy01v6y6fpq1h7yts84k0r0"
+  },
+  "summary": "飞书文档/多维表格所有权转移工具（增强版）。支持单个/批量转移，支持wiki空间扫描，支持lark-cli和Python两种调用方式。 触发词：转移所有权、转移文档、转移owner、文档转给我、所有权转移、批量转移、transfer owner、feishu owner",
+  "description": "飞书文档/多维表格所有权转移工具（增强版）。支持单个/批量转移，支持wiki空间扫描，支持lark-cli和Python两种调用方式。\n触发词：转移所有权、转移文档、转移owner、文档转给我、所有权转移、批量转移、transfer owner、feishu owner",
+  "content": "---\nname: feishu-owner-transfer-advanced\ndescription: |\n  飞书文档/多维表格所有权转移工具（增强版）。支持单个/批量转移，支持wiki空间扫描，支持lark-cli和Python两种调用方式。\n  触发词：转移所有权、转移文档、转移owner、文档转给我、所有权转移、批量转移、transfer owner、feishu owner\nversion: \"1.0.0\"\n---\n\n# 飞书文档所有权转移 Skill（增强版）\n\n将 AI 机器人创建的飞书文档所有权转移给指定用户。\n\n## 核心能力\n\n- ✅ 单个文件转移（docx / sheet / bitable / mindnote / file）\n- ✅ 扫描根目录批量转移\n- ⚠️ Wiki节点：节点本身由创建者（通常是老板）所有，无需转移\n  - Wiki节点指向的文档(obj_token)，若owner非目标用户才需转移\n- ✅ 支持 lark-cli 和 Python requests 两种调用方式\n- ✅ 自动过滤：跳过已是人类所有者的文件\n\n---\n\n## 方式一：lark-cli（推荐，已配置好环境）\n\n### 单个转移\n```bash\npython3 ~/.qclaw/skills/feishu-owner-transfer-advanced/scripts/transfer_owner.py \\\n  --target ou_b2d0ace4a1175bb8d914678b0e9b1f10 \\\n  --token docx:文档token\n```\n\n### 扫描根目录批量转移\n```bash\npython3 ~/.qclaw/skills/feishu-owner-transfer-advanced/scripts/transfer_owner.py \\\n  --target ou_b2d0ace4a1175bb8d914678b0e9b1f10 \\\n  --all\n```\n\n### Dry-run（只列出，不转移）\n```bash\npython3 ~/.qclaw/skills/feishu-owner-transfer-advanced/scripts/transfer_owner.py \\\n  --target ou_b2d0ace4a1175bb8d914678b0e9b1f10 \\\n  --all --list\n```\n\n### 扫描wiki空间批量转移\n```bash\npython3 ~/.qclaw/skills/feishu-owner-transfer-advanced/scripts/transfer_wiki.py \\\n  --target ou_b2d0ace4a1175bb8d914678b0e9b1f10 \\\n  --space 7530421454261829636\n```\n\n---\n\n## 方式二：Python requests（韩博原始脚本）\n\n适合需要自定义参数时使用。\n\n```python\nimport requests\n\n# -------- 配置区 --------\nAPP_ID = \"cli_xxxxxxxx\"\nAPP_SECRET = \"xxxxxxxxxxxxxxxxxxxxxxxx\"\nTENANT_TOKEN = \"t-xxxxxxxxxxxxxxxxxxxxxxxx\"  # AI智能体的tenant_access_token\nFILE_TOKEN = \"doxcnxxxxxxxxxxxxxxxxxxxxxxxx\"  # 要转的文档token\nMY_USER_ID = \"ou_xxxxxxxxxxxxxxxxxxxxxxxx\"   # 你的openid\n# --------------------------------------\n\nurl = \"https://open.feishu.cn/open-apis/drive/permission/member/transfer\"\nheaders = {\n    \"Authorization\": f\"Bearer {TENANT_TOKEN}\",\n    \"Content-Type\": \"application/json\"\n}\ndata = {\n    \"type\": \"doc\",  # doc / sheet / bitable / file\n    \"token\": FILE_TOKEN,\n    \"owner\": {\n        \"member_type\": \"openid\",\n        \"member_id\": MY_USER_ID\n    },\n    \"remove_old_owner\": False,\n    \"cancel_notify\": False\n}\nresp = requests.post(url, json=data, headers=headers)\nprint(resp.json())\n```\n\n---\n\n## 常用参数\n\n| 参数 | 值 | 说明 |\n|------|-----|------|\n| type | `docx` | 在线文档 |\n| type | `sheet` | 电子表格 |\n| type | `bitable` | 多维表格 |\n| type | `mindnote` | 思维导图 |\n| type | `file` | 普通文件 |\n| member_type | `openid` | 用户ID类型（默认openid） |\n| remove_old_owner | `False` | 保留AI机器人权限 |\n\n---\n\n## 老板的固定配置\n\n- 目标用户 open_id：`ou_b2d0ace4a1175bb8d914678b0e9b1f10`（韩博）\n- lark-cli 已安装并登录，开箱即用\n\n---\n\n## 快速命令汇总\n\n```bash\n# 转移单个文档（最常用）\npython3 ~/.qclaw/skills/feishu-owner-transfer-advanced/scripts/transfer_owner.py \\\n  --target ou_b2d0ace4a1175bb8d914678b0e9b1f10 \\\n  --token docx:doxcnxxxxxxxxxxxxxxxxxxxxxxxx\n\n# 扫描所有文件并批量转移\npython3 ~/.qclaw/skills/feishu-owner-transfer-advanced/scripts/transfer_owner.py \\\n  --target ou_b2d0ace4a1175bb8d914678b0e9b1f10 --all\n```\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 43,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T01:39:28.631Z",
+  "updated_at": "2026-07-11T01:39:28.631Z",
+  "fetched_at": "2026-07-11T22:50:36.898Z",
+  "source_url": "https://clawhub.ai/freedompixels/skills/feishu-owner-transfer-advanced"
+}

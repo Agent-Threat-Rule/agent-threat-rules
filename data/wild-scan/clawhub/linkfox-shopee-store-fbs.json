@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "linkfox-shopee-store-fbs",
+  "display_name": "Shopee-店铺FBS",
+  "publisher": {
+    "handle": "linkfox-ai",
+    "display_name": "linkfox-ai",
+    "user_id": "s171g8b6m2khwdy9ye8bxj0wx183vd4z"
+  },
+  "summary": "Shopee（虾皮）FBS 巴西仓储（与 linkfox-shopee-store-auth 同系列），经 /shopee/developerProxy 转发 Shopee Open API FBS 模块全部 4 个接口：query_br_shop_enrollment_status、query_br_shop_...",
+  "description": "Shopee（虾皮）FBS 巴西仓储（与 linkfox-shopee-store-auth 同系列），经 /shopee/developerProxy 转发 Shopee Open API FBS 模块全部 4 个接口：query_br_shop_enrollment_status、query_br_shop_...",
+  "content": "---\r\nname: linkfox-shopee-store-fbs\r\ndescription: Shopee（虾皮）FBS 巴西仓储（与 linkfox-shopee-store-auth 同系列），经 /shopee/developerProxy 转发 Shopee Open API FBS 模块全部 4 个接口：query_br_shop_enrollment_status、query_br_shop_invoice_error、query_br_shop_block_status、query_br_sku_block_status。当用户提到 Shopee FBS、巴西FBS、店铺入驻状态、发票错误、封禁状态、query_br_shop_enrollment_status 时触发。即使未明确提及\"FBS\"，只要涉及已授权 Shopee 巴西店铺的 FBS 入驻/封禁/发票状态查询，也应触发。\r\n---\r\n\r\n# Shopee FBS 巴西仓储\r\n\r\nShopee Open Platform **FBS 模块**（4 个 API，均为 GET，面向巴西 BR）。**依赖 `linkfox-shopee-store-auth`**：先取 `accessToken`，再经 **`POST /shopee/developerProxy`** 转发（`path` 须 `api/v2/fbs/...`）。\r\n\r\n## 调用方式\r\n\r\n- **API 端点**：`POST /shopee/developerProxy`（不同操作通过请求体区分；完整参数/响应/错误码见 `references/api.md`）\r\n- **Python 脚本**：`python scripts/<脚本名>.py '<JSON 参数>' [--inline]`（可用脚本见上文脚本一览）\r\n- **成本约束**：本工具会消耗积分；失败/空结果不得自动换关键词、翻页或连续试探；需要继续检索时先向用户说明会产生额外消耗。\r\n\r\n**输出策略（脚本默认行为）**：\r\n- **始终**将完整响应写入 `<cwd>/linkfox/<YYYY-MM-DD>/<session>/data/linkfox-shopee-store-fbs-<timestamp>.json`（`<cwd>` 为脚本执行时的工作目录，在 Claude Code 里即当前项目目录；`<session>` 取自环境变量 `SESSION_ID`，按用户任务自动聚合；**禁止写入 /tmp**，当前目录不可写则报错）\r\n- 响应体 ≤ 8 KB：落盘后把完整 JSON 打印到 stdout\r\n- 响应体 > 8 KB：落盘后 stdout 只输出摘要（顶层字段、常见计数如 `total`/`costToken`、最大列表字段的长度 + 前 3 条样本）\r\n- 加 `--inline` 强制全量打印到 stdout（同样落盘）\r\n\r\n**读数据建议**：先看摘要判断是否足够；需要具体字段时优先用 `jq`或`ConvertFrom-Json` 从保存的 json 文件按需抽取，避免整份 JSON 进入上下文。\r\n\r\n## 官方参考\r\n\r\nFBS 模块索引：[v2.fbs.query_br_shop_enrollment_status](https://open.shopee.com/documents/v2/v2.fbs.query_br_shop_enrollment_status?module=126&type=1)\r\n\r\n---\r\n\r\n## Prerequisites\r\n\r\n1. 运行 `python scripts/check_auth_dependency.py`；exit code **42** → 先安装 **`linkfox-shopee-store-auth`**。\r\n2. 通用 SBS 仓储 → `linkfox-shopee-store-sbs`；物流 → `linkfox-shopee-store-logistics`。\r\n\r\n## 可用脚本（4 个 API）\r\n\r\n| 脚本 | API | Method |\r\n|------|-----|--------|\r\n| `query_br_shop_enrollment_status.py` | query_br_shop_enrollment_status | GET |\r\n| `query_br_shop_invoice_error.py` | query_br_shop_invoice_error | GET |\r\n| `query_br_shop_block_status.py` | query_br_shop_block_status | GET |\r\n| `query_br_sku_block_status.py` | query_br_sku_block_status | GET |\r\n| `fbs_api.py` | 通用入口 | — |\r\n\r\n## Usage Scenarios\r\n\r\n### 1. 查巴西 FBS 店铺状态\r\n1. `query_br_shop_enrollment_status.py` 入驻状态\r\n2. `query_br_shop_block_status.py` 店铺封禁\r\n3. `query_br_sku_block_status.py` SKU 封禁\r\n\r\n### 2. 排查发票问题\r\n`query_br_shop_invoice_error.py` 查发票错误\r\n\r\n## Not Applicable\r\n\r\n- 店铺授权 → `linkfox-shopee-store-auth`\r\n- SBS 通用仓储库存 → `linkfox-shopee-store-sbs`\r\n- 物流发货 → `linkfox-shopee-store-logistics`\r\n- 商品 listing → `linkfox-shopee-store-product`\r\n\r\n**Feedback:** 见 `references/api.md`。\r\n\r\n\r\n---\r\n*For more high-quality, professional cross-border e-commerce skills, visit [LinkFox Skills](https://skill.linkfox.com/).*\r\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.2",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 150,
+    "installs": 0,
+    "stars": 0,
+    "versions": 3,
+    "comments": 0
+  },
+  "created_at": "2026-07-02T13:46:31.174Z",
+  "updated_at": "2026-07-10T04:48:51.247Z",
+  "fetched_at": "2026-07-11T23:04:34.406Z",
+  "source_url": "https://clawhub.ai/linkfox-ai/skills/linkfox-shopee-store-fbs"
+}

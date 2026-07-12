@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "poyo-generate-lyrics",
+  "display_name": "Poyo Generate Lyrics",
+  "publisher": {
+    "handle": "coolhackboy",
+    "display_name": "coolhackboy",
+    "user_id": "s177pant1v4gn5k13ffg1fp5b183nb02"
+  },
+  "summary": "Generate song lyrics on PoYo / poyo.ai via `https://api.poyo.ai/api/generate/submit`; use for `generate-lyrics`, lyric drafts, verses and choruses, theme-bas...",
+  "description": "Generate song lyrics on PoYo / poyo.ai via `https://api.poyo.ai/api/generate/submit`; use for `generate-lyrics`, lyric drafts, verses and choruses, theme-based songwriting, mood or genre guidance, music-generation preparation, callbacks, and music detail retrieval.",
+  "content": "---\nname: poyo-generate-lyrics\ndescription: Generate song lyrics on PoYo / poyo.ai via `https://api.poyo.ai/api/generate/submit`; use for `generate-lyrics`, lyric drafts, verses and choruses, theme-based songwriting, mood or genre guidance, music-generation preparation, callbacks, and music detail retrieval.\nmetadata: {\"openclaw\":{\"homepage\":\"https://poyo.ai/models/generate-lyrics\",\"requires\":{\"bins\":[\"curl\"],\"env\":[\"POYO_API_KEY\"]},\"primaryEnv\":\"POYO_API_KEY\"}}\n---\n\n# PoYo Generate Lyrics\n\n## PoYo Links\n\n- Model page: <https://poyo.ai/models/generate-lyrics>\n- API docs: <https://docs.poyo.ai/api-manual/music-series/generate-lyrics>\n- API key page: <https://poyo.ai/dashboard/api-key>\n\nUse this skill to turn a theme, mood, genre, or story direction into a PoYo `generate-lyrics` request and retrieve the resulting lyric text.\n\n## Use When\n\n- The user asks for generated lyrics, lyric ideas, verses, choruses, a song theme, or `generate-lyrics`.\n- The output will feed a later Generate Music request.\n- The workflow needs an async task, callback, or music-detail lookup.\n\n## Key Inputs\n\n- `model` must be `generate-lyrics`.\n- `input.prompt` is required and should state the theme, mood, genre feel, language, or story direction.\n- Keep the prompt within the current documented limit of 200 words.\n- `callback_url` is optional and useful for production workflows.\n\n## Security Rules\n\n- Keep `POYO_API_KEY` server-side and out of browser code, repositories, logs, screenshots, and chat output.\n- Do not include private customer information, unreleased lyrics, or confidential campaign text unless sharing it with PoYo is acceptable.\n- Make live calls only when the user explicitly asks in a trusted environment.\n\n## Execution\n\n- Read `references/api.md` for the request and result flow.\n- Use `scripts/submit_generate_lyrics.sh` with a reviewed payload file.\n- Save the returned `task_id` and query music detail or wait for the callback.\n- Treat generated lyrics as a draft that may need originality, rights, and policy review before publication.\n\n## Output Expectations\n\nInclude the final prompt or payload summary, returned `task_id` when submitted, result retrieval method, and whether the lyrics will be passed into a music-generation workflow.\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 42,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T01:20:36.598Z",
+  "updated_at": "2026-07-11T01:20:36.598Z",
+  "fetched_at": "2026-07-11T22:50:55.831Z",
+  "source_url": "https://clawhub.ai/coolhackboy/skills/poyo-generate-lyrics"
+}

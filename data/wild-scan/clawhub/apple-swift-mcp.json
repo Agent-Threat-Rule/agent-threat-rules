@@ -1,0 +1,34 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "apple-swift-mcp",
+  "display_name": "Tmp.4uayFOrqT8",
+  "publisher": {
+    "handle": "chrischall",
+    "display_name": "chrischall",
+    "user_id": "s17cjx1a349nz5apaqp02vgz4h85728z"
+  },
+  "summary": "This skill should be used when the user asks about Apple app data via the native Swift MCP — Calendar, Reminders, Contacts, Maps, Mail, Messages, Notes, or P...",
+  "description": "This skill should be used when the user asks about Apple app data via the native Swift MCP — Calendar, Reminders, Contacts, Maps, Mail, Messages, Notes, or Photos on macOS. Triggers on phrases like \"check my calendar\", \"find contact\", \"send iMessage\", \"search my notes\", \"recent emails\", \"find photos of\", or any macOS-native app automation. Requires macOS 14+ on Apple Silicon; faster than the AppleScript-backed Node variant.",
+  "content": "---\nname: apple-swift-mcp\ndescription: This skill should be used when the user asks about Apple app data via the native Swift MCP — Calendar, Reminders, Contacts, Maps, Mail, Messages, Notes, or Photos on macOS. Triggers on phrases like \"check my calendar\", \"find contact\", \"send iMessage\", \"search my notes\", \"recent emails\", \"find photos of\", or any macOS-native app automation. Requires macOS 14+ on Apple Silicon; faster than the AppleScript-backed Node variant.\n---\n\n# apple-swift-mcp\n\nNative Swift MCP server for Apple apps. Compiled binary with embedded TCC usage descriptions — Calendar, Reminders, Contacts, and Maps talk to EventKit / Contacts / MapKit directly. Mail, Messages, Notes still go through AppleScript (no public framework exists) but run in-process via `NSAppleScript` instead of spawning `osascript`. Photos combines PhotoKit (structured search, albums, favorites, export/import) with the same in-process AppleScript for title/description/keyword metadata and free-text search.\n\n- **GitHub:** [github.com/chrischall/apple-swift-mcp](https://github.com/chrischall/apple-swift-mcp)\n\n## Install\n\nDownload the latest `.mcpb` from [GitHub Releases](https://github.com/chrischall/apple-swift-mcp/releases) and double-click to install in Claude Desktop. First run prompts for TCC permissions (Calendar, Reminders, Contacts, full disk if reading `chat.db`).\n\nRequires **macOS 14+ on Apple Silicon**. Intel users can build from source (`swift build -c release`).\n\n## Tools\n\n### Calendar / Reminders\n- `calendar` — list, search, create, update, delete events\n- `reminders` — list reminder lists and items; create, complete, delete\n\n### Contacts / Maps\n- `contacts` — search by name, phone, or email\n- `maps` — directions, search nearby places\n\n### Mail / Messages / Notes (AppleScript-backed)\n- `mail` — search, read, send, reply, forward; Messages.app-style threading\n- `messages` — send iMessage / SMS, query `chat.db` for history, group chats\n- `notes` — list, search, read, create notes\n\n### Photos (PhotoKit + AppleScript)\n- `photos` — list/search assets and albums, get asset detail, favorite/organize/import/export, get a JPEG rendition, set title/description/keywords, free-text search\n\n## Environment\n\nOptional user config (set in Claude Desktop → Settings → MCP):\n\n- `APPLE_MCP_DEFAULT_CALENDAR` — default calendar name for event creation\n- `APPLE_MCP_DEFAULT_REMINDER_LIST` — default list name for reminder creation\n\n## Notes\n\n- Binary is arm64-only because some transitive MCP SDK deps (swift-collections, swift-service-lifecycle) don't declare x86_64.\n- EventKit / Contacts / MapKit-backed tools are orders of magnitude faster than the equivalent AppleScript path.\n- Messages tool reads `chat.db` directly for history; sending uses AppleScript.\n",
+  "category": null,
+  "tags": [
+    "Calendar"
+  ],
+  "topics": [
+    "Calendar"
+  ],
+  "latest_version": "1.2.1",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 618,
+    "installs": 11,
+    "stars": 0,
+    "versions": 4,
+    "comments": 0
+  },
+  "created_at": "2026-05-29T21:41:28.790Z",
+  "updated_at": "2026-07-09T18:33:20.073Z",
+  "fetched_at": "2026-07-11T23:11:56.667Z",
+  "source_url": "https://clawhub.ai/chrischall/skills/apple-swift-mcp"
+}

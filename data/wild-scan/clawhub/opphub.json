@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "opphub",
+  "display_name": "Opphub",
+  "publisher": {
+    "handle": "mtty-ai",
+    "display_name": "mtty",
+    "user_id": "s17ampw22fp45rj3rm81m8ssd989v9cx"
+  },
+  "summary": "偶合 OppHub · 商业撮合 + 能力交换 · 公开 OPC · 5 通道独立推送 · 邮箱 / 手机号注册",
+  "description": "偶合 OppHub · 商业撮合 + 能力交换 · 公开 OPC · 5 通道独立推送 · 邮箱 / 手机号注册",
+  "content": "---\nname: opphub\ndescription: 偶合 OppHub · 商业撮合 + 能力交换 · 公开 OPC · 5 通道独立推送 · 邮箱 / 手机号注册\nversion: 2.9.15\nauthor: opphub-dev\nlicense: MIT-0\nhomepage: https://api.opphub.ruiplus.cn\n# skillhub.cn (中文社区) frontmatter —— 与 clawhub 字段并存、未识别字段忽略\n# slug 与 clawhub 对齐用 'opphub' (clawhub 同名, skillhub 2026-07-07 拿到权限归 mtty123456)\n# 老的 opphub-cn v1.0.5 已废弃, slug 重用为 'opphub'\nslug: opphub\ndisplayName: 偶合 OppHub\nsummary: 偶合 OppHub · 商业撮合 + 能力交换 · 公开 OPC · 5 通道独立推送\nmetadata:\n  emoji: 🤝\n  openclaw:\n    skillKey: opphub\n    requires:\n      bins:\n        - opphub\n      env: []\n      config: []\n    primaryEnv: OPPHUB_AUTH\n    envVars:\n      - name: OPPHUB_AUTH\n        required: false\n        description: 偶合服务器登录 token。未提供时由 `opphub login` 交互写入 ~/.opphub/auth.json\n      - name: OPPHUB_API_BASE\n        required: false\n        description: 偶合服务器 base URL；默认 https://api.opphub.ruiplus.cn\n      - name: OPPHUB_NO_COOLDOWN\n        required: false\n        description: 设为 1 跳过验证码 cooldown（仅调试）\n      - name: OPPHUB_RETRY\n        required: false\n        description: 自定义验证码自动重试次数\n      - name: OPPHUB_STATE\n        required: false\n        description: 偶合 client 状态文件路径；默认 ~/.opphub/state.json\n    os:\n      - macos\n      - linux\n---\n\n# 偶合 OppHub · 公开 OPC Skill\n\n**面向 OPC（一人公司 / AI 创业者）的撮合 + 能力交换平台。**\n\n本 skill 是偶合的官方客户端。装好后, 在 chat 里说“偶合注册 / 偶合状态 / 偶合商机” 即可使用。\n\n## 是什么\n\n- ✅ 做什么: 商业撮合 + 能力交换市场 + 5 通道独立推送\n- ❌ 不做什么: 不做支付、不做信用分、不做链上账本、不做授权分级(未立项)\n\n## 安装\n\n**方式 1 · ClawHub 商店**\n```bash\nclawhub install opphub\n```\n\n### 安装后必读 (P0 修复提示)\n\n> ⚠️ **普通用户必看 (v2.9.7 修复)**: 如果你装完运行 `opphub login` 报 `permission denied` 或 `No such file or directory`, 说明装包时丢了可执行位或个别 bin 文件. **跑一次下面这条修复**:\n>\n> ```bash\n> # 1. 找装在哪\n> SKILL_DIR=$(dirname $(which opphub 2>/dev/null) 2>/dev/null || ls -d ~/.openclaw/*/skills/opphub | head -1)\n> # 2. 修权限 + 补缺文件 (从 GitHub 最新版同步)\n> chmod +x \"$SKILL_DIR\"/bin/* 2>/dev/null\n> curl -fsSL https://raw.githubusercontent.com/mtty123456/opphub/main/bin/opphub-login -o \"$SKILL_DIR/bin/opphub-login\" && chmod +x \"$SKILL_DIR/bin/opphub-login\"\n> ```\n>\n> 这是 v2.9.5 → v2.9.6 → v2.9.7 期间 clawhub/skillhub 打 tar 时丢 +x / 漏文件遗留问题. v2.9.7 之后会内置 post-install 自动修.\n\n**方式 2 · 一行 curl 装**\n```bash\ncurl -fsSL https://api.opphub.ruiplus.cn/install/skill.sh | bash\n```\n\n## 第一次使用\n\n1. 跑 `opphub status` 看账号状态\n2. 未注册: 跑 `opphub register`, 用邮箱 / 手机号 + 验证码注册\n3. 注册后: 跑 `opphub channel setup --auto` 绑至少 1 个 IM 通知通道\n4. 完成了: 说“偶合商机 / 偶合匹配” 即可\n\n## 命令一览\n\n```bash\n# 账号\nopphub register           # 注册 + 引导\nopphub login              # 登录\nopphub logout             # 登出\nopphub passwd             # 改密码\nopphub status             # 看状态\n\n# 通道\nopphub channel list       # 已绑通道\nopphub channel add        # 加通道\nopphub channel remove     # 删通道\n\n# 实时推送 (v2.9.13, 老板 17:14 拍推送全做)\nopphub push enable        # 开启实时推送 (建 cron job, 55s 轮询)\nopphub push disable       # 关闭实时推送\nopphub push add           # 增加一个推送通道 binding\nopphub push remove        # 删除一个推送通道 binding\nopphub push list          # 看所有 binding + cron job 状态\nopphub push status        # 看 cron job 跑情况\n\n# 业务\nopphub profile            # 个人 / 公司 / 能力 profile\nopphub opportunities      # 需求池 / 商机\nopphub suppliers          # 推荐供应商 / 能力方\nopphub matches            # 撮合引擎 (需求 ↔ 能力)\nopphub notify             # 推送历史 / 配置\n```\n\n## 5 通道独立 IM 通知\n\n绑了哪个通道, 就推送到哪里。通道独立增删, 互不影响。\n\n- feishu (飞书)\n- dingtalk (钉钉)\n- wecom (企业微信)\n- sms (短信)\n- email (邮箱)\n\n## 错误码\n\n| 错误码 | 处理 |\n|---|---|\n| `missing_agent_token` | 跑 `opphub status`, 引导重新注册 |\n| `invalid_agent_token` / `expired_agent_token` | 同上 |\n| `quota_exceeded` | 告诉用户今日配额用完 |\n| `invalid_code` / `expired_code` | 重新走注册流程 |\n| `rate_limited` | 提示等待再试 |\n\n## 反馈\n\n- ⭐ ClawHub star: https://clawhub.ai/mtty123456/skills/opphub\n- 🐛 GitHub issue: https://github.com/mtty123456/opphub/issues\n\n## 许可证\n\nMIT-0. 任何人都可商用, 无需署名.\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "2.9.15",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 637,
+    "installs": 2,
+    "stars": 1,
+    "versions": 57,
+    "comments": 0
+  },
+  "created_at": "2026-07-03T02:13:41.814Z",
+  "updated_at": "2026-07-11T09:56:20.037Z",
+  "fetched_at": "2026-07-11T22:46:42.884Z",
+  "source_url": "https://clawhub.ai/mtty-ai/skills/opphub"
+}

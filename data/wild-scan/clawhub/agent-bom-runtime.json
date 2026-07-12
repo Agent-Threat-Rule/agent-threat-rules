@@ -1,0 +1,34 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "agent-bom-runtime",
+  "display_name": "agent-bom runtime",
+  "publisher": {
+    "handle": "msaad00",
+    "display_name": "Agent Bom",
+    "user_id": "s173dmtq1jwv3yxcgnmcxnn45583ey2y"
+  },
+  "summary": "AI runtime security monitoring — context graph analysis, runtime audit log correlation with CVE findings, and vulnerability analytics queries. Use when the u...",
+  "description": "AI runtime security monitoring — context graph analysis, runtime audit log correlation with CVE findings, and vulnerability analytics queries. Use when the user mentions runtime monitoring, context graphs, lateral movement analysis, audit log correlation, or vulnerability analytics.",
+  "content": "---\nname: agent-bom-runtime\ndescription: >-\n  AI runtime security monitoring — context graph analysis, runtime audit log\n  correlation with CVE findings, and vulnerability analytics queries. Use when\n  the user mentions runtime monitoring, context graphs, lateral movement analysis,\n  audit log correlation, or vulnerability analytics.\nversion: 0.94.2\nlicense: Apache-2.0\ncompatibility: >-\n  Requires Python 3.11+. Install via pipx or pip. Optional: kubectl for\n  Kubernetes context, ClickHouse for analytics storage. No API keys required.\nmetadata:\n  author: msaad00\n  homepage: https://github.com/msaad00/agent-bom\n  source: https://github.com/msaad00/agent-bom\n  pypi: https://pypi.org/project/agent-bom/\n  scorecard: https://securityscorecards.dev/viewer/?uri=github.com/msaad00/agent-bom\n  tests: 7239\n  install:\n    pipx: agent-bom\n    pip: agent-bom\n  openclaw:\n    requires:\n      bins: []\n      env: []\n      credentials: none\n    credential_policy: \"Zero credentials required. Optional ClickHouse URL enables analytics storage. Never auto-discovered or inferred.\"\n    credential_handling: \"Runtime audit data may include credential environment variable names but must not include raw values. Optional analytics credentials are operator-supplied and must not be displayed or inferred.\"\n    optional_env: []\n    optional_bins:\n      - kubectl\n    emoji: \"\\U0001F4CA\"\n    homepage: https://github.com/msaad00/agent-bom\n    source: https://github.com/msaad00/agent-bom\n    license: Apache-2.0\n    os:\n      - darwin\n      - linux\n      - windows\n    data_flow: \"Operates on scan results in memory and user-provided audit log files. Optional ClickHouse connection for persistent analytics (user-configured, not auto-discovered).\"\n    file_reads:\n      - \"user-provided audit log files (JSONL format from agent-bom proxy)\"\n    file_writes: []\n    network_endpoints: []\n    telemetry: false\n    persistence: false\n    privilege_escalation: false\n    always: false\n    autonomous_invocation: restricted\n---\n\n# agent-bom-runtime — AI Runtime Security Monitoring\n\nContext graph analysis, runtime audit log correlation with CVE findings, and\nvulnerability analytics queries.\n\n## Install\n\n```bash\npipx install agent-bom\n```\n\n## Tools (3)\n\n| Tool | Description |\n|------|-------------|\n| `context_graph` | Agent context graph with lateral movement analysis |\n| `analytics_query` | Query vulnerability trends, posture history, and runtime events |\n| `runtime_correlate` | Cross-reference runtime audit logs with CVE findings |\n\n## Example Workflows\n\n```\n# Build context graph from scan results\ncontext_graph()\n\n# Correlate runtime audit with CVE data\nruntime_correlate(audit_file=\"proxy-audit.jsonl\")\n\n# Query analytics\nanalytics_query(query=\"top_cves\", days=30)\n```\n\n## Privacy & Data Handling\n\nOperates on scan results already in memory and user-provided audit log files.\nNo automatic file discovery. No network calls unless you configure an optional\nClickHouse endpoint for persistent analytics.\n\n## Verification\n\n- **Source**: [github.com/msaad00/agent-bom](https://github.com/msaad00/agent-bom) (Apache-2.0)\n- **7,100+ tests** with CodeQL + OpenSSF Scorecard\n- **No telemetry**: Zero tracking, zero analytics\n",
+  "category": null,
+  "tags": [
+    "Vulnerability"
+  ],
+  "topics": [
+    "Vulnerability"
+  ],
+  "latest_version": "0.94.2",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 2687,
+    "installs": 72,
+    "stars": 0,
+    "versions": 59,
+    "comments": 0
+  },
+  "created_at": "2026-03-12T20:20:33.098Z",
+  "updated_at": "2026-07-09T18:24:48.179Z",
+  "fetched_at": "2026-07-11T23:12:08.444Z",
+  "source_url": "https://clawhub.ai/msaad00/skills/agent-bom-runtime"
+}

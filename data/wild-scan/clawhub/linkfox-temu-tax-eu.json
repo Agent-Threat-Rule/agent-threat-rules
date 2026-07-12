@@ -1,0 +1,38 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "linkfox-temu-tax-eu",
+  "display_name": "Temu欧洲站-税务",
+  "publisher": {
+    "handle": "linkfox-ai",
+    "display_name": "linkfox-ai",
+    "user_id": "s171g8b6m2khwdy9ye8bxj0wx183vd4z"
+  },
+  "summary": "Temu 欧洲站电商税务（Tax）API，经 LinkFox 网关转发 Partner EU 7 个 temu.pay.tax.* 接口：导出报表、Galerie签名、发票查询/下载、商家报表下载/上传发票等。当用户提到 Temu EU Tax、temu.pay.tax.invoice、VAT、发票上传、expo...",
+  "description": "Temu 欧洲站电商税务（Tax）API，经 LinkFox 网关转发 Partner EU 7 个 temu.pay.tax.* 接口：导出报表、Galerie签名、发票查询/下载、商家报表下载/上传发票等。当用户提到 Temu EU Tax、temu.pay.tax.invoice、VAT、发票上传、expo...",
+  "content": "---\r\nname: linkfox-temu-tax-eu\r\ndescription: Temu 欧洲站电商税务（Tax）API，经 LinkFox 网关转发 Partner EU 7 个 temu.pay.tax.* 接口：导出报表、Galerie签名、发票查询/下载、商家报表下载/上传发票等。当用户提到 Temu EU Tax、temu.pay.tax.invoice、VAT、发票上传、export report、Galerie signature、site=eu 税务 时触发。商品管理用 linkfox-temu-manage-product-eu。\r\n---\r\n\r\n# Temu 欧洲站 — 电商税务（Tax）\r\n\r\n本 skill（`linkfox-temu-tax-eu`）覆盖 Partner Platform for EU **Tax / 电商税务** 相关 OpenAPI（`menu_code` 与各 `sub_menu_code` 以 Partner 后台为准，见 [partner-eu-catalog.md](./references/partner-eu-catalog.md)）。\r\n\r\n> 当前已接入 **7** 个接口；其余 Tax 接口将按 Partner 文档逐条补充。\r\n\r\n**网关（本 skill 内置）**：\r\n\r\n| 能力 | 方法 | 路径 |\r\n|------|------|------|\r\n| 税务 OpenAPI（`eu_tax_*`、`temu_eu_proxy`） | POST | `https://tool-gateway.linkfox.com/temu/proxy` |\r\n| 加签文件下载 | POST | `https://tool-gateway.linkfox.com/temu/fileDownload` |\r\n\r\n## 相关 skill\r\n\r\n| 场景 | skill |\r\n|------|--------|\r\n| 商品列表/编辑/合规（含 `taxCodeInfo` 等字段） | `linkfox-temu-manage-product-eu` |\r\n| 订单金额（含税/不含税明细） | `linkfox-temu-order-eu` |\r\n| 价格/供货价 | `linkfox-temu-price-eu` |\r\n| 买家/卖家取消订单 | `linkfox-temu-cancel-order-eu` |\r\n| 发品 | `linkfox-temu-add-product-us`（`site=eu`） |\r\n| 网关与 Temu token | 本 skill `scripts/` |\r\n\r\n## 调用方式\r\n\r\n- **API 端点**：`POST /temu/proxy`（不同操作通过请求体区分；完整参数/响应/错误码见 `references/api.md`）\r\n- **Python 脚本**：`python scripts/<脚本名>.py '<JSON 参数>' [--inline]`（可用脚本见上文脚本一览）\r\n- **成本约束**：本工具会消耗积分；失败/空结果不得自动换关键词、翻页或连续试探；需要继续检索时先向用户说明会产生额外消耗。\r\n\r\n**输出策略（脚本默认行为）**：\r\n- **始终**将完整响应写入 `<cwd>/linkfox/<YYYY-MM-DD>/<session>/data/linkfox-temu-tax-eu-<timestamp>.json`（`<cwd>` 为脚本执行时的工作目录，在 Claude Code 里即当前项目目录；`<session>` 取自环境变量 `SESSION_ID`，按用户任务自动聚合；**禁止写入 /tmp**，当前目录不可写则报错）\r\n- 响应体 ≤ 8 KB：落盘后把完整 JSON 打印到 stdout\r\n- 响应体 > 8 KB：落盘后 stdout 只输出摘要（顶层字段、常见计数如 `total`/`costToken`、最大列表字段的长度 + 前 3 条样本）\r\n- 加 `--inline` 强制全量打印到 stdout（同样落盘）\r\n\r\n**读数据建议**：先看摘要判断是否足够；需要具体字段时优先用 `jq`或`ConvertFrom-Json` 从保存的 json 文件按需抽取，避免整份 JSON 进入上下文。\r\n\r\n## 默认参数\r\n\r\n| 字段 | 默认 | 说明 |\r\n|------|------|------|\r\n| site | `eu` | Partner EU |\r\n| managementType | `semi-managed` | 半托管 |\r\n| tokenPurpose | `product-inventory` | 酷鸟卖家助手 token（若 Partner 要求其它 purpose，以文档为准） |\r\n\r\n## 鉴权\r\n\r\n1. **LinkFox**：`LINKFOXAGENT_API_KEY` → Header `Authorization` + `Token`\r\n2. **Temu**：`accessToken` 或 `storeKey`（`storeKey` 时建议带 `tokenPurpose=product-inventory`）\r\n\r\n## Scripts（按 type）\r\n\r\n| 脚本 | type | 状态 |\r\n|------|------|------|\r\n| `eu_tax_apply_export_report.py` | `temu.pay.tax.apply.export.report` | 已接入 |\r\n| `eu_tax_get_galerie_signature.py` | `temu.pay.tax.get.galerie.signature` | 已接入 |\r\n| `eu_tax_invoice_detail_query.py` | `temu.pay.tax.invoice.detail.query` | 已接入 |\r\n| `eu_tax_invoice_info_query.py` | `temu.pay.tax.invoice.info.query` | 已接入 |\r\n| `eu_tax_invoice_pdf_download.py` | `temu.pay.tax.invoice.pdf.download` | 已接入 |\r\n| `eu_tax_merchant_report_download.py` | `temu.pay.tax.merchant.report.download` | 已接入 |\r\n| `eu_tax_merchant_upload_invoice.py` | `temu.pay.tax.merchant.upload.invoice` | 已接入 |\r\n| `temu_eu_proxy.py` | 任意 `type` | 通用 |\r\n| `temu_eu_file_download.py` | 加签文件下载 | 通用 |\r\n\r\n## 接入新接口（约定）\r\n\r\n你每提供一条 Partner 文档（HTML/URL + `type` + Request/Response 表 + 可选 `sub_menu_code`），将：\r\n\r\n1. 新增 `references/apis/<type-slug>.md`（入参/出参层级全部展开）\r\n2. 新增 `scripts/eu_tax_<slug>.py`（调用 `_eu_tax_script.run_cli`）\r\n3. 更新 [partner-eu-catalog.md](./references/partner-eu-catalog.md)、[apis/README.md](./references/apis/README.md) 与本表\r\n\r\n## 示例\r\n\r\n```bash\r\nexport LINKFOXAGENT_API_KEY=\"<key>\"\r\n\r\n# 发票信息查询（最多 20 个父单号）\r\npython scripts/eu_tax_invoice_info_query.py '{\r\n  \"accessToken\": \"TOKEN\",\r\n  \"tokenPurpose\": \"product-inventory\",\r\n  \"site\": \"eu\",\r\n  \"request\": {\r\n    \"parentOrderSnList\": [\"PO-123456789\"]\r\n  }\r\n}'\r\n\r\n# 申请导出税务报表（月份 YYYY-MM）\r\npython scripts/eu_tax_apply_export_report.py '{\r\n  \"accessToken\": \"TOKEN\",\r\n  \"request\": {\r\n    \"reportMonth\": \"2025-04\",\r\n    \"requestId\": \"req-uuid-001\"\r\n  }\r\n}'\r\n```\r\n\r\n**Feedback：** `skillName`：`linkfox-temu-tax-eu`\r\n\r\n## 网关与授权脚本\r\n\r\n授权说明：[references/access-token.md](./references/access-token.md)\r\n\r\n",
+  "category": null,
+  "tags": [
+    "Invoice",
+    "发票",
+    "接口"
+  ],
+  "topics": [
+    "Invoice",
+    "发票",
+    "接口"
+  ],
+  "latest_version": "1.0.3",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 526,
+    "installs": 12,
+    "stars": 0,
+    "versions": 3,
+    "comments": 0
+  },
+  "created_at": "2026-05-28T06:37:16.024Z",
+  "updated_at": "2026-07-10T04:48:52.718Z",
+  "fetched_at": "2026-07-11T23:04:02.712Z",
+  "source_url": "https://clawhub.ai/linkfox-ai/skills/linkfox-temu-tax-eu"
+}

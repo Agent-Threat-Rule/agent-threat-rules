@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "terminal-in-chrome",
+  "display_name": "terminal-in-chrome",
+  "publisher": {
+    "handle": "yayayahei",
+    "display_name": "yayayahei",
+    "user_id": "s173s71asexydbawgcvj1w88w983nk0f"
+  },
+  "summary": "Manages the Web Terminal Chrome Extension local backend server. Use this skill to start, stop, or check the status of the local terminal server running on port 8989.",
+  "description": "Manages the Web Terminal Chrome Extension local backend server. Use this skill to start, stop, or check the status of the local terminal server running on port 8989.",
+  "content": "---\nname: terminal-in-chrome\ndescription: Manages the Web Terminal Chrome Extension local backend server. Use this skill to start, stop, or check the status of the local terminal server running on port 8989.\nrepository: https://github.com/yayayahei/skills/tree/main/terminal-in-chrome\n---\n\n# Web Terminal Extension Skill\n\n## Repository\n[https://github.com/yayayahei/skills/tree/main/terminal-in-chrome](https://github.com/yayayahei/skills/tree/main/terminal-in-chrome)\n\n## Overview\nThis skill manages the local backend server for the Web Terminal Chrome Extension, which injects a fully functional, resizable local terminal into any website via `xterm.js`.\n\n## Architecture\n1. **Server (`/server`)**: A lightweight Node.js backend running locally (`ws://localhost:8989`) that spawns the actual terminal process (`bash` or `zsh`) using `node-pty`.\n2. **Extension (`/extension`)**: A Chrome extension that injects `xterm.js` into websites and connects back to the local server via WebSockets.\n\n## Operations\n\n### Start the Server\nTrigger phrases: \"start web terminal\", \"run terminal server\", \"start terminal backend\"\n\n**Action:**\nNavigate to the `server` directory and start the Node.js server in the background.\n```bash\ncd server\nnpm start\n```\nThe server will run on port `8989`.\n\n### Stop the Server\nTrigger phrases: \"stop web terminal\", \"kill terminal server\", \"stop terminal backend\"\n\n**Action:**\nFind the process running on port 8989 and kill it.\n```bash\nlsof -i :8989\nkill -9 <PID>\n```\n\n### Check Status\nTrigger phrases: \"web terminal status\", \"is terminal running?\", \"check terminal server\"\n\n**Action:**\nCheck if port 8989 is in use to determine if the server is running.\n```bash\nlsof -i :8989\n```\n\n## User Instructions for Extension\nIf the user asks how to use the extension, provide these steps:\n1. Open Google Chrome and navigate to `chrome://extensions/`\n2. Enable **Developer mode** (toggle in the top right corner).\n3. Click **Load unpacked**.\n4. Select the `extension` folder from this project (`web-terminal-extension/extension`).\n5. Go to any website.\n6. Press **`Ctrl + \\``** or **`Cmd + J`** to toggle the terminal.\n7. Drag the top border to resize it.\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.1.30",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 536,
+    "installs": 12,
+    "stars": 0,
+    "versions": 25,
+    "comments": 0
+  },
+  "created_at": "2026-06-06T16:45:38.329Z",
+  "updated_at": "2026-07-09T21:23:41.587Z",
+  "fetched_at": "2026-07-11T23:11:03.609Z",
+  "source_url": "https://clawhub.ai/yayayahei/skills/terminal-in-chrome"
+}

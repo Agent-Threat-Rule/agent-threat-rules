@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "xrowgmbh-gitlab-agent-profile",
+  "display_name": "GitLab Agent Profile",
+  "publisher": {
+    "handle": "xrowgmbh",
+    "display_name": "xrow GmbH",
+    "user_id": "s17aekq8k9ea9rzxqpwjjz8ea987ze4c"
+  },
+  "summary": "Maintain the GitLab agent profile page and static contribution performance chart.",
+  "description": "Maintain the GitLab agent profile page and static contribution performance chart.",
+  "content": "---\nname: gitlab-agent-profile\ndescription: Maintain the GitLab agent profile page and static contribution performance chart.\nmetadata: { \"openclaw\": { \"requires\": { \"bins\": [\"glab\", \"python3\"] }, \"primaryEnv\": \"GITLAB_TOKEN\" } }\n\n---\n\n# GitLab Agent Profile Skill\n\nUse this skill to keep the GitLab Agent profile assets current with monthly contribution performance statistics.\n\nYour profile's location is `https://<gitlab-instance>/<gitlab-username>/<gitlab-username>.git`.\n\n## Goal\n\nMaintain static profile assets for the agent with:\n\n* Static SVG and WebP chart files showing the last 12 months of merged merge requests, owner direct commits to `main`, and contribution score.\n* Categories for owner-authored work, agent-authored work with owner review/merge, agent-authored work without owner review/merge, and the combined total.\n* A legend and bar labels with the exact counts behind the chart.\n* A JSON proof file with the counted records sorted by date descending.\n\n## Daily update routine\n\n* [ ] Check GitLab auth works\n* [ ] Run `{baseDir}/scripts/update-profile-stats.py` helper.\n* [ ] Commit and push the assets in the `assets/` folder, if they changed.\n\n## Inputs\n\nThe script accepts these environment variables:\n\n* `GITLAB_AGENT_PROFILE_CHART_OUTPUT`: Static SVG chart file to update. Defaults to `assets/gitlab-agent-profile.svg`.\n* `GITLAB_AGENT_PROFILE_WEBP_OUTPUT`: Static WebP chart file to update. Defaults to `assets/gitlab-agent-profile.webp`.\n* `GITLAB_AGENT_PROFILE_RECORDS_OUTPUT`: JSON proof file to update. Defaults to `assets/gitlab-agent-profile-records.json`.\n* `GITLAB_AGENT_PROFILE_WORKSPACE`: Workspace root used for relative output paths. Defaults to the current directory.\n* `GITLAB_AGENT_PROFILE_ROOT_GROUP`: Root group used to expand short project names. Defaults to `xrow-public`.\n* `GITLAB_AGENT_PROFILE_PROJECTS`: Space, comma, or newline separated project paths or project names. Defaults to `helm-openclaw ci-tools claw-support`.\n* `GITLAB_AGENT_PROFILE_AGENT_USERNAME`: Agent username. Defaults to the authenticated `glab` user.\n* `GITLAB_AGENT_PROFILE_OWNER_USERNAME`: Owner username. Defaults to `xrow`.\n* `GITLAB_AGENT_PROFILE_MONTHS`: Number of months to render. Defaults to `12`.\n\nRelative output values are resolved from `GITLAB_AGENT_PROFILE_WORKSPACE`.\nProject names without `/` are expanded with `GITLAB_AGENT_PROFILE_ROOT_GROUP`, so `ci-tools` becomes `xrow-public/ci-tools`.\n\n## Classification\n\nFor merged merge requests:\n\n* Owner: author username matches `GITLAB_AGENT_PROFILE_OWNER_USERNAME`.\n* Agent + reviewer: author username matches `GITLAB_AGENT_PROFILE_AGENT_USERNAME` and the owner is a reviewer or merge user.\n* Agent (autonomous): author username matches `GITLAB_AGENT_PROFILE_AGENT_USERNAME` and the owner is neither reviewer nor merge user.\n* Merged total: sum of the three MR categories.\n* Direct owner commits: commits on `main` authored or committed by the owner that are not known MR merge/squash commits and do not start with `skip:`, `skip(...)`, `chore:`, `chore(...)`, `docs:`, `docs(...)`, or `revert`.\n* MRs with `type::fix` or `type::feature` labels count toward MR totals and contribution score.\n* If a merged MR has no type label, a Conventional Commit title beginning with `fix:`/`fix(...)` or `feat:`/`feat(...)` is used as a fallback type.\n* MRs beginning with `skip:`, `skip(...)`, `chore:`, `chore(...)`, `docs:`, or `docs(...)` are never counted, even if they have a counted type label.\n* MR contribution score: each counted MR starts at `1` point and is multiplied by its size factor.\n* Size factor: `size::small` = `1`, `size::medium` = `2`, `size::large` = `3`, `size::xlarge` = `5`; missing size labels default to `1`.\n* Direct owner commits count `0.2` point each.\n\nThe script ignores merge requests authored by other users.\n\n## Bootstrap\n\n* [ ] Add this cron, if it existed and was enabled then leave it enabled.\n\n```json\n{\n  \"name\": \"GitLab Agent\",\n  \"enabled\": false,\n  \"deleteAfterRun\": false,\n  \"schedule\": {\n    \"kind\": \"every\",\n    \"everyMs\": 900000\n  },\n  \"sessionTarget\": \"isolated\",\n  \"wakeMode\": \"now\",\n  \"payload\": {\n    \"kind\": \"agentTurn\",\n    \"message\": \"Read skill `gitlab-agent-profile` and run.\",\n    \"thinking\": \"high\",\n    \"timeoutSeconds\": 3600,\n    \"model\": \"openai/gpt-5.5\"\n  },\n  \"delivery\": {\n    \"mode\": \"none\",\n    \"bestEffort\": false\n  }\n}\n```\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.72.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 1337,
+    "installs": 11,
+    "stars": 0,
+    "versions": 36,
+    "comments": 0
+  },
+  "created_at": "2026-06-11T15:54:40.173Z",
+  "updated_at": "2026-07-11T12:10:19.482Z",
+  "fetched_at": "2026-07-11T22:45:32.206Z",
+  "source_url": "https://clawhub.ai/xrowgmbh/skills/xrowgmbh-gitlab-agent-profile"
+}

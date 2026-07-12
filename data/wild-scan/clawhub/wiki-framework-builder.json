@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "wiki-framework-builder",
+  "display_name": "Wiki Framework Builder",
+  "publisher": {
+    "handle": "leadleo",
+    "display_name": "Leadleo",
+    "user_id": "s178g1sz8rve2akwnkarv6yz8h8a99ve"
+  },
+  "summary": "在 research-task-scope-definition 之后使用，或当用户要求搭建咨询风格报告框架、行业报告大纲、可行性研究结构、市场进入框架、排名/背书报告框架、政府研究报告大纲、政策/咨询报告结构时使用。本技能消费 task-scope JSON 交接文件，选择并重组工程化研究维度，产出固定格式的对...",
+  "description": "在 research-task-scope-definition 之后使用，或当用户要求搭建咨询风格报告框架、行业报告大纲、可行性研究结构、市场进入框架、排名/背书报告框架、政府研究报告大纲、政策/咨询报告结构时使用。本技能消费 task-scope JSON 交接文件，选择并重组工程化研究维度，产出固定格式的对外 Word 报告框架、Markdown 报告框架和 JSON 沟通文件，并确保内部 L1-L5/D1-D8 路由不出现在面向客户的输出中。",
+  "content": "---\nname: wiki-framework-builder\ndescription: 在 research-task-scope-definition 之后使用，或当用户要求搭建咨询风格报告框架、行业报告大纲、可行性研究结构、市场进入框架、排名/背书报告框架、政府研究报告大纲、政策/咨询报告结构时使用。本技能消费 task-scope JSON 交接文件，选择并重组工程化研究维度，产出固定格式的对外 Word 报告框架、Markdown 报告框架和 JSON 沟通文件，并确保内部 L1-L5/D1-D8 路由不出现在面向客户的输出中。\n---\n\n# 报告框架与研究维度梳理\n\n使用本技能，将已确认的研究任务简报转换为专业、面向外部交付的报告框架。\n\n## 必需的上游输入\n\n`problem_transform` 字段直接承接上游 scope.json，包含管理问题、研究问题和证据问题。不得因为管理问题仅为推断或仍待确认而中止执行。\n\n## 核心角色\n\n基于以下信息生成报告框架：\n\n- 研究对象和标准化名称（`normalize`）\n- 研究意图类型（`research_intent`），直接用于框架路由\n- 框架深度：简易 / 常规 / 深度（`framework_depth`）\n- 口径约束（`scope_caliber`），输出语言固定为中文\n- 工程化研究维度数据库\n- 写作风格和输出用途\n- 与后续 `industry-definition-research` 的兼容性\n- 上游问题转换背景（`problem_transform`），包括推断出的管理问题和研究问题\n\n## 不可协商规则\n\n- L1-L5 仅表示术语颗粒度。不要将其用作报告章节层级。\n- L1-L5 的使用规则必须保持内部使用。不要在对外框架或面向用户的摘要中输出关于 L1-L5 的解释性口径说明。\n- D1-D8 工程化研究维度属于内部框架选择逻辑。不要在对外 Word/Markdown 框架中暴露 D1-D8 编码。\n- 面向客户的输出应呈现为可直接使用的咨询报告框架：标题、目录、章节、研究内容、预期输出。\n- 将 JSON 和内部路由与对外框架分离。\n- 不要包含价格、预算或金额信息。\n- 不要在面向客户的 Word/Markdown 框架中暴露未经确认的管理问题假设、置信度分数或内部确认状态。必要时，只能将其转化为中性的报告目标或补充确认问题。\n- 除非用户明确要求，否则不要在对外框架中加入方法论理论解释。框架输出应保持为报告结构交付物，而不是方法论文章。\n- v1 中不要将复合型请求拆分成多个框架文件。应将主要意图和次要意图吸收到一个连贯的框架中。\n- 如果请求面向政府场景，使用政府研究/报告语言，例如“调研情况、存在问题、原因分析、对策建议”。\n- 如果请求面向可行性研究场景，使用可行性报告语言，例如“总论、行业分析、经营情况、财务状况、收益预测、可行性总结”。\n- 如果请求面向排名/背书场景，应包含口径、候选池、数据来源、市场地位验证和敏感性测试模块。\n\n## 工程化研究维度数据库\n\n仅将以下八个已确认维度作为内部数据库使用：\n\n1. 产业定义与历程\n2. 宏观环境与规制\n3. 产业链结构与价值链\n4. 市场空间与竞争格局\n5. 技术、产品与定价\n6. 用户、场景与决策\n7. 商业模式与财务情况\n8. 风险变量与压力测试\n\n阅读 `references/engineering_dimension_database.md` 以获取子维度。\n\n## 意图到框架的路由\n\n使用宽口径咨询类别：\n\n- `行业全景/市场洞察`：定义、政策、价值链、市场规模、竞争、趋势、风险。\n- `细分市场/产品机会`：市场空间、用户场景、产品/定价、竞争、机会。\n- `战略规划/市场进入/区域产业定位`：外部机会、区域资源、赛道筛选、能力匹配、实施路径。\n- `商业尽调/投资判断`：市场空间、竞争质量、商业模式、财务质量、风险验证。\n- `可行性研究/项目论证/经济影响评估`：必要性、产业基础、经营条件、财务/经济影响、可行性结论。\n- `竞争格局/排名背书/评价体系`：范围界定、候选池、评价指标、排名/份额验证、敏感性测试。\n- `政府调研/政策建议`：现状、成绩、问题、原因分析、对策建议。\n\n阅读 `references/framework_generation_rules.md` 以获取路由细则。\n\n## 深度处理\n\n- `简易`：3-5 个一级章节。仅使用必要维度和模块。\n- `常规`：6-8 个一级章节。覆盖主要维度和预期输出。\n- `深度`：8-12 个一级章节，或采用尽调/可行性研究结构。必要时包含证据、模型、验证占位。\n\n## 行业特定改写\n\n不要只输出通用章节名称。应围绕行业机制改写框架。\n\n不佳：\n\n- 市场规模分析\n- 用户分析\n- 竞争格局分析\n\n更好：\n\n- 高校 AI 应用能力评价体系与服务商影响力指标\n- 大科学装置周边产业生态与园区定位方向\n- 总部基地落地深圳的产业带动与区域经济影响\n- 天津文创产业发展现状、问题诊断与城市亮点转化路径\n\n## 对外输出风格\n\n对于 Word 和 Markdown 框架交付物，优先使用直接面向客户的结构：\n\n- 封面/标题\n- 目录或报告框架\n- 第一节 / 第一章等章节\n- 简洁的小节说明\n- 必要时给出预期输出\n\n不要暴露：\n\n- L1-L5\n- D1-D8\n- JSON 字段名\n- 框架路由内部逻辑\n- 隐藏置信度分数\n- 价格或金额信息\n\n使用 `references/external_framework_standard.md` 作为目标风格。\n\n## 输出契约\n\n返回四类输出：\n\n1. 简洁的聊天摘要：\n   - `框架定位`：框架类型、深度、章节数量和对外使用风格\n   - `研究维度梳理`：用客户可读语言展示选定研究维度，例如行业背景、政策环境、市场空间、竞争、用户/场景、商业模式、风险、实施路径；不要展示 D1-D8 编码\n   - `研究口径与待确认项`：在聊天回复中直接展示时间、地区、语言/来源范围、统计口径、输出用途、结论强度和其他待定口径字段\n   - `待补充问题`：列出会实质性改善框架质量的最重要补充问题\n   - `下一步建议`：如果用户回答问题，则重新运行本技能；如果未回答，则基于当前假设生成/推进固定格式 Word、Markdown 和 JSON 输出\n\n2. Word 文件：`report_framework.docx`\n   - 固定格式，面向外部交付。\n   - 必需的正式交付物。\n   - 使用封面/标题、目录和报告框架章节。\n   - 不包含内部编码。\n   - 通过 `scripts/generate_report_docx.py` 生成，输入为上一步产出的 `report_framework_handoff.json`。\n   - 调用方式：`python scripts/generate_report_docx.py report_framework_handoff.json report_framework.docx`\n   - JSON 中需包含以下字段供脚本使用：\n     - `report_framework.external_title`：报告主标题（封面）\n     - `report_framework.subtitle`：副标题（可选，封面）\n     - `report_framework.chapter_outline`：章节列表，每章包含 `chapter_title`、`external_subsections`、`descriptions`（可选）、`output_placeholders`（可选）\n     - `version`：版本号（可选，封面显示，默认\"框架稿\"）\n     - `date`：日期（可选，封面显示）\n\n3. Markdown 文件：`report_framework.md`\n   - 面向外部交付。\n   - 与 Word 内容一致，便于快速审阅/编辑。\n   - 不包含内部编码。\n\n4. JSON 文件：`report_framework_handoff.json`\n   - 携带内部映射、工程化研究维度、口径约束和 `definition_research_context`。\n   - 与后续 `industry-definition-research` 兼容。\n\n使用 `references/output_contract.md` 作为 JSON 结构依据。\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 134,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T05:08:57.913Z",
+  "updated_at": "2026-07-10T05:08:57.913Z",
+  "fetched_at": "2026-07-11T23:01:26.614Z",
+  "source_url": "https://clawhub.ai/leadleo/skills/wiki-framework-builder"
+}

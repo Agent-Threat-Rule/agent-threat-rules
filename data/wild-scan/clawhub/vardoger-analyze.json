@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "vardoger-analyze",
+  "display_name": "vardoger — Analyze History",
+  "publisher": {
+    "handle": "dstrupl",
+    "display_name": "dstrupl",
+    "user_id": "s170q73w5hdz7rfwgk64d9c4n985b7g5"
+  },
+  "summary": "Use when the user asks to personalize their assistant, to use vardoger, or to analyze their OpenClaw conversation history. Runs the vardoger CLI to read past...",
+  "description": "Use when the user asks to personalize their assistant, to use vardoger, or to analyze their OpenClaw conversation history. Runs the vardoger CLI to read past conversations and generate tailored instructions.",
+  "content": "---\nname: analyze\ndescription: \"Use when the user asks to personalize their assistant, to use vardoger, or to analyze their OpenClaw conversation history. Runs the vardoger CLI to read past conversations and generate tailored instructions.\"\nversion: \"0.3.2\"\nlicense: Apache-2.0\nhomepage: \"https://github.com/dstrupl/vardoger\"\nmetadata:\n  openclaw:\n    requires:\n      bins:\n        - vardoger\n---\n# Analyze conversation history and generate personalized instructions\n\nUse this skill to read your OpenClaw conversation history, extract behavioral patterns, and generate personalized instructions that help the assistant better understand your preferences and working style.\n\n## How it works\n\nvardoger prepares your conversation history in batches. You (the assistant) summarize each batch for behavioral signals, then synthesize all summaries into a personalization. vardoger writes the result.\n\n## Sandbox note (read before running any command)\n\nvardoger reads and writes files **outside** the current workspace:\n\n- Reads conversation history from the platform's session directory (e.g. `~/.codex/sessions/`, `~/.claude/projects/`, `~/.cursor/projects/`, `~/.openclaw/agents/`).\n- Writes a checkpoint state file to `~/.vardoger/state.json` (created on first run).\n- Writes the final personalization to the platform's rules file (e.g. `~/.codex/AGENTS.md`, `~/.claude/rules/vardoger.md`, `.cursor/rules/vardoger.md`, `~/.openclaw/skills/vardoger-personalization/SKILL.md`).\n\nWhen the host asks to approve a `vardoger` command, approve it with write access beyond the workspace. Otherwise the first `vardoger prepare` call will fail with `PermissionError: ... ~/.vardoger/state.tmp` because the sandbox blocks writes outside the current working directory.\n\n## Steps\n\n### 1. Verify vardoger is installed\n\n```bash\nif ! command -v vardoger >/dev/null 2>&1; then\n  cat <<'INSTALL_EOF'\nvardoger CLI is not installed.\n\nThis skill calls the vardoger CLI to read your conversation history and\nwrite a personalization file, so the CLI must be on PATH.\n\nInstall options:\n\n  # Recommended:\n  pipx install vardoger\n\n  # Or run without installing:\n  uvx vardoger --help\n\nIf you do not have pipx, see https://pipx.pypa.io/stable/installation/.\n\nProject page: https://github.com/dstrupl/vardoger\n\nAfter installing, re-run the personalization request.\nINSTALL_EOF\n  exit 1\nfi\n```\n\n### 2. Check if a refresh is needed\n\n```bash\nvardoger status --platform openclaw --json\n```\n\nIf the output shows `\"is_stale\": false`, tell the user their personalization is up to date and ask if they want to re-run anyway. If stale or never generated, continue with the analysis.\n\n### 3. Get batch metadata\n\n```bash\nvardoger prepare --platform openclaw\n```\n\nThis prints JSON like `{\"batches\": 3, \"total_conversations\": 29}`. Note the number of batches. Tell the user: \"Found N conversations in M batches. Analyzing...\"\n\n### 4. Summarize each batch\n\nFor each batch number from 1 to N, run:\n\n```bash\nvardoger prepare --platform openclaw --batch 1\n```\n\nThe output contains a summarization prompt and conversation data. Read the output carefully and produce a concise bullet-point summary of the behavioral signals you observe in that batch. Keep your summary for later.\n\nTell the user which batch you are processing: \"Analyzing batch 1 of N...\"\n\nRepeat for all batches (--batch 2, --batch 3, etc.).\n\n### 5. Get the synthesis prompt\n\n```bash\nvardoger prepare --platform openclaw --synthesize\n```\n\n### 6. Synthesize the personalization\n\nFollowing the synthesis prompt, combine all your batch summaries into a single personalization. The output should be clean markdown with actionable instructions for an AI assistant.\n\n### 7. Write the result\n\nPipe your personalization to vardoger:\n\n```bash\necho \"YOUR_PERSONALIZATION_HERE\" | vardoger write --platform openclaw --scope global\n```\n\nReplace `YOUR_PERSONALIZATION_HERE` with the actual personalization markdown you generated.\n\n### 8. Report to the user\n\nTell the user what was written and where. Mention they can ask you to re-run vardoger any time to update the personalization.\n\n## When to use\n\n- When the user asks to personalize their assistant\n- When the user asks to analyze their conversation history\n- When the user mentions \"vardoger\"\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "0.3.2",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 683,
+    "installs": 17,
+    "stars": 0,
+    "versions": 3,
+    "comments": 0
+  },
+  "created_at": "2026-04-22T17:09:04.712Z",
+  "updated_at": "2026-07-09T20:09:41.866Z",
+  "fetched_at": "2026-07-11T23:11:27.288Z",
+  "source_url": "https://clawhub.ai/dstrupl/skills/vardoger-analyze"
+}

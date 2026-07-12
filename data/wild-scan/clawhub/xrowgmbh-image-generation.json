@@ -1,0 +1,36 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "xrowgmbh-image-generation",
+  "display_name": "Image Generation",
+  "publisher": {
+    "handle": "xrowgmbh",
+    "display_name": "xrow GmbH",
+    "user_id": "s17aekq8k9ea9rzxqpwjjz8ea987ze4c"
+  },
+  "summary": "Create or revise document, PDF, web, or review images with the requested format, sharp raster output, and artifact validation.",
+  "description": "Create or revise document, PDF, web, or review images with the requested format, sharp raster output, and artifact validation.",
+  "content": "---\nname: image-generation\ndescription: Create or revise document, PDF, web, or review images with the requested format, sharp raster output, and artifact validation.\n---\n\n# Image Generation Skill\n\nUse this skill when creating, regenerating, or reviewing images, diagrams, screenshots, or generated graphics for Markdown, PDF, DOCX, web pages, merge requests, or release artifacts.\n\n## What Went Wrong In claw-support !1\n\nThe image review loop failed because the work drifted between SVG and PNG, optimized technical metadata before preserving the requested format, and claimed image quality based on checks that did not match the maintainer's desired output. Treat this as the default failure mode to prevent.\n\n## Rules\n\n- Preserve the requested output format. If the reviewer asks for PNG, do not switch to SVG unless they explicitly accept that change.\n- Preserve the requested style or earlier format when asked. Do not redesign a diagram as a workaround for readability feedback.\n- Render raster images directly at the final source resolution. Never upscale a smaller bitmap and call it high resolution.\n- For PDF-bound PNGs, use at least 300 DPI metadata and enough pixels for the printed/displayed size.\n- Scale text, line widths, arrows, borders, spacing, and icons together. Large canvases with tiny text still fail review.\n- Prefer vector-like drawing primitives rendered into the final PNG canvas for diagrams. Avoid screenshots or nested raster snippets unless the screenshot is the actual subject.\n- Keep source-of-truth files clear: if the deliverable is PNG, make the build pipeline consume PNGs directly and avoid hidden SVG dependencies unless SVG is explicitly the editable source.\n- Use `*.image.genai` prompt files as the source-of-intent convention for generated repository images. For `example.image.genai`, generate sibling `example.svg`, `example.png`, and `example.webp` files unless the task explicitly narrows the output formats.\n- Do not add broad image-generation rules to repository `AGENTS.md` unless asked. Prefer a reusable skill or a task-local note.\n\n## Workflow\n\n1. Read the requested artifact path, target consumer, and exact format from the issue or MR discussion.\n2. Inspect existing artifacts before editing: dimensions, format, DPI metadata, source generator, and where each image is embedded.\n3. If a `*.image.genai` file exists or a new generated image is needed, treat that file as the editable prompt/brief and create the matching `.svg`, `.png`, and `.webp` siblings next to it.\n4. Make the smallest change that satisfies the reviewer: format, resolution, clarity, or embedding.\n5. Rebuild every downstream artifact that embeds the image, such as Markdown previews, PDFs, DOCX files, and release bundles.\n6. Validate the actual output, not only the source file.\n\n## `*.image.genai` Convention\n\n- Keep the file next to the intended generated assets, for example `docs/architecture.image.genai`.\n- Store the image brief, required dimensions, style constraints, text that must appear in the image, and downstream consumers in the prompt file.\n- Generate all sibling formats from the same brief: `docs/architecture.svg`, `docs/architecture.png`, and `docs/architecture.webp`.\n- Prefer the SVG sibling for diagrams and scalable documentation, the PNG sibling for PDFs or places that need stable raster rendering, and the WebP sibling for web delivery.\n- Regenerate all siblings together after prompt changes so the formats do not drift.\n- Before final review, run `{baseDir}/scripts/check-image-genai.py --root <workspace>` to find prompt files without generated image siblings and generated images that are older than their prompt.\n- Mention the prompt file and the generated sibling dimensions in MR notes.\n\n## Validation Checklist\n\n- Image files have the requested extension and MIME format.\n- Every changed `*.image.genai` file has matching `.svg`, `.png`, and `.webp` siblings unless the MR explains why a format is intentionally omitted.\n- The generated image checker passes; add `All Images generated` to the final Definition of Done when it does.\n- PNG files are generated at source size, not post-upscaled.\n- PDF-bound PNG files have sufficient dimensions for their displayed size and about 300 DPI metadata when print quality is requested.\n- Text and fine lines are readable after the image is embedded in the final PDF or web page.\n- The PDF or DOCX contains the intended image objects and does not silently drop unsupported formats.\n- CI checks enforce the important invariants when the repository already has artifact validation.\n- MR notes state the exact format, dimensions, validation commands, and any remaining limitation.\n\n## GitLab Review Handling\n\nFor image-related MR feedback, answer the latest reviewer request first. If new feedback contradicts an earlier fix, stop extending the previous approach and explicitly revert or narrow it to the latest requested format. Resolve discussions only after the final artifact has been rebuilt and checked.\n",
+  "category": null,
+  "tags": [
+    "Image Generation",
+    "PDF"
+  ],
+  "topics": [
+    "Image Generation",
+    "PDF"
+  ],
+  "latest_version": "1.72.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 1428,
+    "installs": 14,
+    "stars": 0,
+    "versions": 39,
+    "comments": 0
+  },
+  "created_at": "2026-06-10T08:45:55.612Z",
+  "updated_at": "2026-07-11T12:10:13.764Z",
+  "fetched_at": "2026-07-11T22:45:35.993Z",
+  "source_url": "https://clawhub.ai/xrowgmbh/skills/xrowgmbh-image-generation"
+}

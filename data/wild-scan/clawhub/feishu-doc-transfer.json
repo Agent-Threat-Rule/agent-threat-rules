@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "feishu-doc-transfer",
+  "display_name": "Feishu Doc Transfer",
+  "publisher": {
+    "handle": "freedompixels",
+    "display_name": "freedompixels",
+    "user_id": "s17cmvaw2cy01v6y6fpq1h7yts84k0r0"
+  },
+  "summary": "转移飞书文档（文档、表格、多维表格、文件）的所有权给指定用户，支持多成员类型和文档格式。",
+  "description": "转移飞书文档（文档、表格、多维表格、文件）的所有权给指定用户，支持多成员类型和文档格式。",
+  "content": "---\nslug: feishu-doc-transfer\nname: 飞书文档转移\nversion: \"1.0.0\"\nauthor: 千策\n---\n\n# 飞书文档所有权转移 Skill\n\n## 功能说明\n转移飞书文档（文档/表格/多维表格/文件）的所有权给指定用户。\n\n## 使用方法\n\n### 方式1：命令行直接调用\n```bash\npython3 ~/.qclaw/skills/feishu-doc-transfer/scripts/transfer_owner.py \\\n  <tenant_token> \\\n  <file_token> \\\n  <owner_id> \\\n  <member_type> \\\n  [file_type]\n```\n\n### 方式2：通过 OpenClaw 调用\n```json\n{\n  \"tool\": \"exec\",\n  \"command\": \"python3 ~/.qclaw/skills/feishu-doc-transfer/scripts/transfer_owner.py t-xxx doxcnxxx ou_xxx openid doc\"\n}\n```\n\n## 参数说明\n- `tenant_token`: 租户Token（t-xxx开头，从飞书开放平台获取）\n- `file_token`: 文档Token（从URL提取，如 https://feishu.cn/docx/XXX → XXX）\n- `owner_id`: 新所有者的 open_id/user_id/union_id\n- `member_type`: 成员类型（openid/userid/unionid）\n- `file_type`: 文档类型（doc/sheet/bitable/file，默认doc）\n\n## 示例\n```bash\n# 转移文档所有权给千机\npython3 transfer_owner.py \\\n  t-xxxxxxxxxxxxxxxxxxxxxxxx \\\n  doxcnxxxxxxxxxxxxxxxxxxxxxxxx \\\n  ou_xxxxxxxxxxxxxxxxxxxxxxxx \\\n  openid \\\n  doc\n```\n\n## 注意事项\n1. 需要飞书开放平台的应用权限：`drive:drive`\n2. `tenant_token` 需要定期刷新（24小时过期）\n3. 转移后原所有者默认保留编辑权限（可通过 `remove_old_owner=True` 移除）\n4. 支持批量操作（脚本可循环调用）\n\n## 获取 Token\n1. 访问 https://open.feishu.cn/app\n2. 创建企业自建应用\n3. 获取 App ID 和 App Secret\n4. 调用 `/open-apis/auth/v3/tenant_access_token/internal` 获取 tenant_token\n\n## 错误处理\n- `99991663`: 没有权限（需要应用管理员授权）\n- `99991664`: 文档不存在或已被删除\n- `99991665`: 没有文档访问权限\n- `99991668`: 不支持的文档类型\n\n## 依赖\n- Python 3.6+\n- requests 库（`pip install requests`）\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 40,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T01:39:21.990Z",
+  "updated_at": "2026-07-11T01:39:21.990Z",
+  "fetched_at": "2026-07-11T22:50:38.878Z",
+  "source_url": "https://clawhub.ai/freedompixels/skills/feishu-doc-transfer"
+}

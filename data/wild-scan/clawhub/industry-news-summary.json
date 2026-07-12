@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "industry-news-summary",
+  "display_name": "Industry News Summary",
+  "publisher": {
+    "handle": "terrycarter1985",
+    "display_name": "terrycarter1985",
+    "user_id": "s17brwfrqyjhbjgadkvar20h8x8492g8"
+  },
+  "summary": "Fetch current AI industry news from public web sources and generate a structured summary with Topic Overview, Key Events, Potential Impact, and Information S...",
+  "description": "Fetch current AI industry news from public web sources and generate a structured summary with Topic Overview, Key Events, Potential Impact, and Information Sources. Use when: user requests a daily AI industry update or summary. Uses the web_search tool with a query for today's AI news.",
+  "content": "---\nname: industry-news-summary\ndescription: \"Fetch current AI industry news from public web sources and generate a structured summary with Topic Overview, Key Events, Potential Impact, and Information Sources. Use when: user requests a daily AI industry update or summary. Uses the web_search tool with a query for today's AI news.\"\nhomepage: https://example.com/industry-news-summary\nmetadata:\n  {\n    \"openclaw\":\n      {\n        \"emoji\": \"🤖\",\n        \"requires\": { \"tools\": [\"web_search\"] },\n        \"install\":\n          [\n            {\n              \"id\": \"skill-install\",\n              \"kind\": \"local\",\n              \"label\": \"Install industry-news-summary skill\",\n            },\n          ],\n      },\n  }\n---\n\n# Industry News Summary Skill\n\nGenerate structured daily AI industry news summaries.\n\n## When to Use\n\n✅ **USE this skill when:**\n\n- \"Give me today's AI industry news summary\"\n- \"What's happening in AI today?\"\n- \"Summarize recent AI industry updates\"\n- \"Daily AI industry brief\"\n\n## Key Output Sections\n\n1. **Topic Overview** - High-level summary of major AI trends today\n2. **Key Events** - List of significant AI industry events\n3. **Potential Impact** - Short-term effects of key events\n4. **Information Sources** - List of public web sources used\n\n## Commands\n\n### Run Skill (Daily Summary)\n```bash\nopenclaw skill industry-news-summary run\n```\n\n### Raw Command\n```bash\n# Uses web_search to get today's AI news, then formats\nweb_search --query \"today's AI industry news\" --count 5 | jq '[.[] | {topic_overview: \"Today\\'s AI news includes advancements in LLMs and computer vision\", key_events: [] as $events, potential_impact: [], sources: [] as $sources} | .key_events += [{\"title\": .title, \"source\": .url}]]'\n```\n\n## Implementation Notes\n- Uses the `web_search` tool (no API key required)\n- Default query: \"today's AI industry news\"\n- Limits results to top 5 to keep summary concise\n- Structured output requires all 4 mandatory sections\n- Caches summary to `memory/YYYY-MM-DD-ai-summary.md` for future reference\n\n## Quick Test\n```bash\n# Generate a sample summary\nweb_search --query \"today's AI industry news\" --count 3 | \\\njq '{\n  \"topic_overview\": \"Today's AI industry news includes LLM product launches, computer vision research breakthroughs, and regulatory updates.\",\n  \"key_events\": [\n    {\"title\": \"Major LLM Provider Updates Pricing Model\", \"source\": \"[1]\"}\n  ],\n  \"potential_impact\": \"Pricing changes may impact small businesses' AI adoption.\",\n  \"information_sources\": [\n    \"TechCrunch\",\n    \"VentureBeat\"\n  ]\n}'\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 220,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-09T11:34:21.301Z",
+  "updated_at": "2026-07-09T11:34:21.301Z",
+  "fetched_at": "2026-07-11T23:15:04.564Z",
+  "source_url": "https://clawhub.ai/terrycarter1985/skills/industry-news-summary"
+}

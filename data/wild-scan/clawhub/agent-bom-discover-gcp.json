@@ -1,0 +1,34 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "agent-bom-discover-gcp",
+  "display_name": "agent-bom discover gcp",
+  "publisher": {
+    "handle": "msaad00",
+    "display_name": "Agent Bom",
+    "user_id": "s173dmtq1jwv3yxcgnmcxnn45583ey2y"
+  },
+  "summary": "Discover GCP-hosted AI agent and MCP-relevant assets from the operator's environment, emit canonical agent-bom inventory JSON, and scan it without giving age...",
+  "description": "Discover GCP-hosted AI agent and MCP-relevant assets from the operator's environment, emit canonical agent-bom inventory JSON, and scan it without giving agent-bom long-lived GCP credentials. Use when a user asks to inventory Vertex AI, Cloud Run, Cloud Functions, GKE, or agentic GCP infrastructure as canonical inventory.",
+  "content": "---\nname: agent-bom-discover-gcp\ndescription: >-\n  Discover GCP-hosted AI agent and MCP-relevant assets from the operator's\n  environment, emit canonical agent-bom inventory JSON, and scan it without\n  giving agent-bom long-lived GCP credentials. Use when a user asks to\n  inventory Vertex AI, Cloud Run, Cloud Functions, GKE, or agentic GCP\n  infrastructure as canonical inventory.\nversion: 0.94.2\nlicense: Apache-2.0\ncompatibility: >-\n  Requires Python 3.11+, agent-bom installed from this repository or PyPI, and\n  operator-controlled GCP read-only credentials from ADC, workload identity, or\n  a scoped service account.\nmetadata:\n  author: msaad00\n  homepage: https://github.com/msaad00/agent-bom\n  source: https://github.com/msaad00/agent-bom\n  pypi: https://pypi.org/project/agent-bom/\n  openclaw:\n    requires:\n      bins:\n        - python\n      env: []\n      credentials: gcp-read-only\n    credential_policy: \"Use the operator's existing Application Default Credentials, workload identity, or short-lived service account credentials. Do not ask users to paste service account JSON into chat. Do not print credential values.\"\n    optional_env:\n      - GOOGLE_APPLICATION_CREDENTIALS\n      - GOOGLE_CLOUD_PROJECT\n      - CLOUDSDK_CONFIG\n    optional_bins:\n      - gcloud\n    emoji: \"search\"\n    homepage: https://github.com/msaad00/agent-bom\n    source: https://github.com/msaad00/agent-bom\n    license: Apache-2.0\n    os:\n      - darwin\n      - linux\n      - windows\n    credential_handling: \"Credentials stay in the operator environment. The skill invokes GCP SDK discovery locally and writes canonical inventory JSON with source_type=skill_invoked_pull. agent-bom receives sanitized inventory only when the operator explicitly scans or pushes that inventory.\"\n    data_flow: \"Operator GCP project -> read-only Google API calls -> canonical inventory JSON -> optional local agent-bom inventory scan. No agent-bom-hosted service is required. Credential-like values are redacted before persistence/export.\"\n    file_reads:\n      - \"~/.config/gcloud/configurations/config_default\"\n      - \"~/.config/gcloud/application_default_credentials.json\"\n      - \"~/.config/gcloud/credentials.db\"\n      - \"operator-selected service account JSON when GOOGLE_APPLICATION_CREDENTIALS is set\"\n    file_writes:\n      - \"operator-selected inventory JSON output path\"\n    network_endpoints:\n      - url: \"https://cloudresourcemanager.googleapis.com\"\n        purpose: \"Project and resource inventory\"\n        auth: true\n      - url: \"https://aiplatform.googleapis.com\"\n        purpose: \"Vertex AI inventory\"\n        auth: true\n      - url: \"https://run.googleapis.com\"\n        purpose: \"Cloud Run inventory\"\n        auth: true\n      - url: \"https://cloudfunctions.googleapis.com\"\n        purpose: \"Cloud Functions inventory\"\n        auth: true\n      - url: \"https://container.googleapis.com\"\n        purpose: \"GKE inventory\"\n        auth: true\n    telemetry: false\n    persistence: false\n    privilege_escalation: false\n    always: false\n    autonomous_invocation: restricted\n---\n\n# agent-bom-discover-gcp\n\nUse this skill to collect GCP AI and workload inventory as schema-valid\nagent-bom inventory. Default to discover-only: write JSON to an\noperator-selected path and stop.\n\n## Guardrails\n\n- Use only operator-approved projects and read-only credentials.\n- Do not request or display service account private keys, OAuth refresh tokens,\n  or bearer tokens.\n- Do not modify GCP resources. This workflow is discovery-only.\n- Write inventory only to a path the operator chose.\n- Treat AI-generated prose as non-authoritative; schema-validated inventory JSON\n  is the evidence.\n\n## Workflow\n\n```bash\npython examples/operator_pull/gcp_inventory_adapter.py \\\n  --project \"$GOOGLE_CLOUD_PROJECT\" \\\n  --region us-central1 \\\n  --source gcp-skill-invoked \\\n  --discovery-method skill_invoked_pull \\\n  --output gcp-inventory.json\n```\n\nScan only when the operator asks for findings:\n\n```bash\nagent-bom scan --inventory gcp-inventory.json --format json --output agent-bom-gcp-findings.json\n```\n\n## Evidence Contract\n\nThe emitted inventory carries `discovery_provenance.source_type:\nskill_invoked_pull`, `observed_via: skill_invoked_pull, gcp_sdk`, sanitized\n`metadata.permissions_used`, and redacted credential material. If schema\nvalidation fails, stop and fix the inventory instead of scanning a best-effort\nsummary.\n",
+  "category": null,
+  "tags": [
+    "Json"
+  ],
+  "topics": [
+    "Json"
+  ],
+  "latest_version": "0.94.2",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 1770,
+    "installs": 38,
+    "stars": 0,
+    "versions": 21,
+    "comments": 0
+  },
+  "created_at": "2026-05-01T01:53:49.900Z",
+  "updated_at": "2026-07-09T18:25:06.446Z",
+  "fetched_at": "2026-07-11T23:12:03.312Z",
+  "source_url": "https://clawhub.ai/msaad00/skills/agent-bom-discover-gcp"
+}

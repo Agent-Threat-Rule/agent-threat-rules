@@ -1,0 +1,34 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "tapo",
+  "display_name": "Tapo",
+  "publisher": {
+    "handle": "mihai-dinculescu",
+    "display_name": "mihai-dinculescu",
+    "user_id": "s170qz3n3mj61xe1kkkkmgge3n843903"
+  },
+  "summary": "Control TP-Link Tapo smart home devices (lights, plugs, power strips, hubs and sensors, cameras) via [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree...",
+  "description": "Control TP-Link Tapo smart home devices (lights, plugs, power strips, hubs and sensors, cameras) via [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp).",
+  "content": "---\nname: tapo\ndescription: Control TP-Link Tapo smart home devices (lights, plugs, power strips, hubs and sensors, cameras) via [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp).\nversion: 0.5.0\nmetadata:\n  {\n    \"openclaw\":\n      {\n        \"emoji\": \"📦\",\n        \"requires\": { \"bins\": [\"npx\"] },\n      },\n  }\n---\n\n# Tapo\n\nControl Tapo devices using `npx mcporter call tapo.<tool>`.\n\n## Setup\n\nYou need a [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp) server (v0.5.0 or later) running on your network (HTTP transport). Bearer token auth is recommended (and required when the server binds to a non-loopback address). When connecting by LAN IP or hostname, the server's `TAPO_MCP_ALLOWED_HOSTS` must include that host, or requests get `403 Forbidden`.\n\n1. **Add the Tapo server**:\n\n   ```bash\n   npx mcporter config add tapo http://<TAPO_MCP_IP> \\\n     --transport http \\\n     --header \"Authorization=Bearer <YOUR_TOKEN>\" \\\n     --scope home\n   ```\n\n2. **Verify**:\n   ```bash\n   npx mcporter list tapo --schema\n   ```\n   You should see `list_devices`, `check_device`, `get_device_state`, `control_device`, and `take_snapshot`.\n\nSee [references/setup.md](references/setup.md) for the full walkthrough, config management, and troubleshooting.\n\n## Tools\n\n### list_devices\n\nList all Tapo devices on the network.\n\n```bash\nnpx mcporter call tapo.list_devices\n```\n\nReturns each device's `id`, `name`, `model`, `ip`, `set_capabilities`, `get_capabilities`, and `children` (for power strips and the H100 hub).\n\n### check_device\n\nVerify a device ID matches at a given IP.\n\n```bash\nnpx mcporter call tapo.check_device id=\"<DEVICE_ID>\" ip=\"<IP>\"\n```\n\n### get_device_state\n\nGet a device's current state. Automatically runs `check_device` first.\n\n```bash\n# Device info\nnpx mcporter call tapo.get_device_state id=\"<DEVICE_ID>\" ip=\"<IP>\" capability='{\"type\": \"DeviceInfo\"}'\n\n# Trigger logs (S200, T100, T110, T300 hub children) — newest first\nnpx mcporter call tapo.get_device_state id=\"<CHILD_ID>\" ip=\"<HUB_IP>\" capability='{\"type\": \"TriggerLogs\", \"page_size\": 20, \"start_id\": 0}'\n\n# Last 24h temperature/humidity records (T310, T315 hub children)\nnpx mcporter call tapo.get_device_state id=\"<CHILD_ID>\" ip=\"<HUB_IP>\" capability='{\"type\": \"TemperatureHumidityRecords\"}'\n```\n\n### control_device\n\nControl a device. Automatically runs `check_device` first.\n\n```bash\n# Turn on\nnpx mcporter call tapo.control_device id=\"<DEVICE_ID>\" ip=\"<IP>\" capabilities='[{\"type\": \"OnOff\", \"value\": true}]'\n\n# Turn off\nnpx mcporter call tapo.control_device id=\"<DEVICE_ID>\" ip=\"<IP>\" capabilities='[{\"type\": \"OnOff\", \"value\": false}]'\n\n# Set brightness (1-100, lights only)\nnpx mcporter call tapo.control_device id=\"<DEVICE_ID>\" ip=\"<IP>\" capabilities='[{\"type\": \"Brightness\", \"value\": 50}]'\n\n# Set color (color lights only)\nnpx mcporter call tapo.control_device id=\"<DEVICE_ID>\" ip=\"<IP>\" capabilities='[{\"type\": \"Color\", \"value\": \"Coral\"}]'\n\n# Set multiple capabilities at once\nnpx mcporter call tapo.control_device id=\"<DEVICE_ID>\" ip=\"<IP>\" capabilities='[{\"type\": \"Color\", \"value\": \"Coral\"}, {\"type\": \"Brightness\", \"value\": 50}]'\n```\n\n### take_snapshot\n\nCapture a still JPEG snapshot from a Tapo camera (~640x360). Automatically runs `check_device` first. Requires `TAPO_MCP_CAMERA_USERNAME` and `TAPO_MCP_CAMERA_PASSWORD` configured on the server (Camera Settings > Advanced Settings > Camera Account in the Tapo app).\n\n```bash\nnpx mcporter call tapo.take_snapshot id=\"<DEVICE_ID>\" ip=\"<IP>\"\n```\n\n## Usage rules\n\n1. Always run `list_devices` first if you don't have a recent device list. Cache results for up to 30 minutes.\n2. Use the device `id` and `ip` from the list — never guess or hardcopy these values.\n3. For power strips (e.g. P304M) and the H100 hub, children have their own `id`. Use the child `id` with the parent's `ip`.\n",
+  "category": null,
+  "tags": [
+    "Smart Home"
+  ],
+  "topics": [
+    "Smart Home"
+  ],
+  "latest_version": "0.5.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 1120,
+    "installs": 35,
+    "stars": 1,
+    "versions": 8,
+    "comments": 0
+  },
+  "created_at": "2026-03-11T19:23:19.870Z",
+  "updated_at": "2026-07-11T12:13:53.698Z",
+  "fetched_at": "2026-07-11T22:45:28.176Z",
+  "source_url": "https://clawhub.ai/mihai-dinculescu/skills/tapo"
+}

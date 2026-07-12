@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "invoice-from-email",
+  "display_name": "邮箱发票自动整理",
+  "publisher": {
+    "handle": "leahlu0124-creator",
+    "display_name": "leahlu0124-creator",
+    "user_id": "s17d4kbz58v0dvnhz3bw0qeg8984ak11"
+  },
+  "summary": "从邮箱自动下载发票附件，整理合并为打印友好PDF，并生成费用清单Excel。触发词：邮箱发票整理、邮件发票下载、发票邮件处理、invoice from email、处理邮箱发票、下载发票附件、发票费用清单。",
+  "description": "从邮箱自动下载发票附件，整理合并为打印友好PDF，并生成费用清单Excel。触发词：邮箱发票整理、邮件发票下载、发票邮件处理、invoice from email、处理邮箱发票、下载发票附件、发票费用清单。",
+  "content": "---\nname: invoice-from-email\ndescription: 从邮箱自动下载发票附件，整理合并为打印友好PDF，并生成费用清单Excel。触发词：邮箱发票整理、邮件发票下载、发票邮件处理、invoice from email、处理邮箱发票、下载发票附件、发票费用清单。\nversion: 1.0.3\n---\n\n\n# 邮箱发票自动整理\n\n从指定邮箱搜索发票邮件 → 下载附件 → 合并发票+行程单PDF → 生成费用清单Excel → 放到桌面。\n\n## 依赖技能\n\n- **imap-smtp-email** — 邮件搜索与附件下载\n- **MinerU Document Extractor** — PDF文本提取（获取发票关键信息）\n- **invoice-pdf-merge** — 发票+行程单PDF智能合并\n- **minimax-xlsx** — 费用清单Excel生成\n\n## 运行前检查（每次必做）\n\n在开始工作流程之前，先执行以下检查：\n\n```bash\ncat ~/.workbuddy/skills/imap-smtp-email/.env 2>/dev/null\n```\n\n**判断逻辑：**\n- `.env` 存在且包含 `IMAP_PASS=` 非空值 → 配置已完成，跳到工作流程\n- 否则 → 暂停，执行下方首次授权引导\n\n## 首次使用：邮箱授权引导\n\n按以下步骤引导新用户完成配置（用自然语言与用户交互，不要直接写文件）：\n\n**第1步：询问邮箱地址**\n> \"请问你的发票邮箱地址是？（例如 you@example.com）\"\n\n**第2步：根据邮箱后缀判断服务商**\n\n| 后缀 | IMAP Host | 端口 | SMTP Host | 端口 | 密码类型 |\n|------|-----------|------|-----------|------|---------|\n| @163.com / @vip.163.com | imap.163.com | 993 | smtp.163.com | 465 | 授权码 |\n| @126.com / @vip.126.com | imap.126.com | 993 | smtp.126.com | 465 | 授权码 |\n| @qq.com | imap.qq.com | 993 | smtp.qq.com | 587 | 授权码 |\n| @gmail.com | imap.gmail.com | 993 | smtp.gmail.com | 587 | App Password |\n| @outlook.com | outlook.office365.com | 993 | smtp.office365.com | 587 | 正常密码 |\n\n**第3步：提醒获取授权码（关键！）**\n\n根据服务商提示用户：\n- **163/126/QQ**：登录网页邮箱 → 设置 → POP3/SMTP/IMAP → 开启 IMAP → 生成授权码（不是登录密码！）\n- **Gmail**：Google 账户 → 安全性 → 两步验证 → 应用专用密码\n- 详细步骤参考 `imap-smtp-email` SKILL.md 的 Configuration 章节\n\n**第4步：帮用户生成 `.env` 文件**\n\n收集到邮箱地址和授权码后，用 Write 工具写入：\n\n```\n路径：~/.workbuddy/skills/imap-smtp-email/.env\n```\n（参考 `imap-smtp-email` SKILL.md 中 Configuration 章节的模板）\n\n**第5步：测试连接**\n\n```bash\ncd ~/.workbuddy/skills/imap-smtp-email\nnode scripts/imap.js check --limit 1\n```\n\n- 成功 → 显示最近一封邮件标题，告知用户\"邮箱配置成功，开始处理发票\"\n- 失败 → 根据报错引导排查（见下方常见问题）\n\n**常见错误：**\n| 报错 | 原因 | 解决方案 |\n|------|------|---------|\n| `Authentication failed` | 授权码错误，或未开启 IMAP | 重新生成授权码，确认 IMAP 已开启 |\n| `Connection timeout` | 主机名/端口错误 | 核对上表，确认网络可访问对应端口 |\n| `unrecognized arguments` | 脚本参数名错误 | 检查 `merge_invoices.py` 参数名是否为 `gen_excel`（非 `generate_excel`） |\n\n## 前置提醒（每次运行务必先告知用户）\n\n在正式开始搜索邮件之前，必须先用一句话提醒用户：\n\n> ⚠️ 请确认发到邮箱里的发票/行程单附件是 **PDF 格式**。本技能只处理 PDF：OFD、XML、图片等其他格式无法自动提取文本和合并，会出现清单缺数据或合并失败。如已收到非 PDF，请让开票方重新发送 PDF 版，或自行转换为 PDF 后再发到邮箱。\n\n理由：工作流依赖 MinerU 提取 PDF 文本、invoice-pdf-merge 合并 PDF，非 PDF 附件会被跳过。\n\n## 工作流程\n\n### 第一步：搜索邮件\n\n```bash\ncd ~/.workbuddy/skills/imap-smtp-email\nnode scripts/imap.js search --recent 24h --limit 50\n```\n\n从输出中找到含发票附件的邮件 UID、发件人、主题。\n\n### 第二步：下载附件\n\n```bash\n# 单封邮件全部附件\nnode scripts/imap.js download <UID> --dir <工作目录>\n\n# 指定附件名\nnode scripts/imap.js download <UID> --dir <工作目录> --file \"文件名.pdf\"\n```\n\n工作目录：新建 `invoices_YYYYMMDD/`（按当天日期命名，建议放在当前工作区或 ~/Downloads 下）\n\n### 第三步：解压 zip（12306 邮件）\n\n```bash\ncd <工作目录>\nunzip -o *.zip 2>/dev/null\n```\n\n### 第四步：用 MinerU 提取所有发票和行程单信息（必须保存并读取结果）\n\n对每一张发票 PDF 和行程单 PDF，分别用 MinerU 提取文本，**保存结果到独立文件**，**必须读取所有结果文件后再进入下一步**：\n\n```bash\n# 对每封邮件的发票PDF和行程单PDF各跑一次\nmineru-open-api flash-extract \"发票文件.pdf\" -o /tmp/inv_<序号>.md\nmineru-open-api flash-extract \"行程单文件.pdf\" -o /tmp/trip_<序号>.md\n```\n\n**关键：提取完成后，必须逐一读取 /tmp/inv_*.md 和 /tmp/trip_*.md，从中解析出：**\n- 发票号码、开票日期、销售方名称、不含税金额、税额、价税合计\n- 行程单：上车时间、出发地、目的地、车型、金额\n\n**这些解析出的数据必须全部用于第六步生成 Excel，不得省略或用占位符代替。**\n\n> ⚠️ 常见错误：只跑 MinerU 但不读结果 → Excel 里出现\"（行程单见合并PDF）\"占位文字，用户需要额外打开 PDF 查看。\n\n### 第五步：合并发票PDF\n\n```bash\npython3 ~/.workbuddy/skills/invoice-pdf-merge/scripts/merge_invoices.py <工作目录> <工作目录>/merged\n```\n\n脚本会自动：\n- 按文件名【】前缀配对发票+行程单\n- 上下布局合并输出到 `merged/` 目录\n- 12306 纯数字文件名不会自动配对，需手动合并（见下方）\n\n**手动合并两张火车票（12306）：**\n用 PyMuPDF 将两张 PDF 上下拼合到一张 A4：\n\n```python\nimport fitz\na = fitz.open(\"票1.pdf\")\nb = fitz.open(\"票2.pdf\")\nout = fitz.open()\npage = out.new_page(width=595, height=842)\npage.show_pdf_page(fitz.Rect(0, 0, 595, 421), a, 0)\npage.show_pdf_page(fitz.Rect(0, 421, 595, 842), b, 0)\nout.save(\"merged/12306火车票_往返_合并.pdf\")\n```\n\n### 第六步：生成费用清单 Excel（必须使用 MinerU 提取结果）\n\n用 openpyxl 生成含两个 Sheet 的 Excel，**所有数据来源必须是第四步 MinerU 提取的结果文件**，不得用占位符：\n\n**读取以下文件获取数据：**\n- `/tmp/inv_*.md` → 发票号码、开票日期、销售方、不含税金额、税额、价税合计\n- `/tmp/trip_*.md` → 上车时间、出发地、目的地、车型、金额\n\n**Sheet1「费用清单」列：**\n序号、发票号码、开票日期、销售方、项目名称（含行程描述）、金额(不含税)、税额、价税合计\n\n**Sheet2「行程单汇总」列：**\n序号、日期、时间、交通工具、车次/服务商、出发地、目的地、座位/车型、金额\n\n参考格式：\n- 标题：`2026年X月X日-X日 差旅报销费用清单`（合并单元格居中）\n- 表头：蓝色底白字（4472C4）\n- 合计行：红色加粗，金额右对齐\n\n### 第七步：放到桌面（文件夹形式）\n\n```bash\n# 在桌面创建当天日期文件夹\nmkdir -p ~/Desktop/发票整理_YYYYMMDD\n\n# 将 merged/ 所有文件移入桌面文件夹\ncp <工作目录>/merged/* ~/Desktop/发票整理_YYYYMMDD/\n```\n\n> **命名规则**：文件夹名 = `发票整理_YYYYMMDD`，例如 `发票整理_20260613`\n> \n> 目的：避免所有文件直接散落在桌面，保持桌面整洁。\n\n### 第八步：清理工作区（可选）\n\n```bash\nrm -f <工作目录>/*.ofd <工作目录>/*.zip <工作目录>/*.xml\n```\n\n如果用户说\"可以删了\"或\"清理一下\"，则删除整个工作目录。\n\n## 注意事项\n\n- **12306 发票**：文件名是纯数字，无【】前缀，`merge_invoices.py` 不会自动配对，需手动合并两张往返票\n- **高德打车**：发件人通常是\"高德打车\"或聚合出行服务商（风韵、妥妥E行、快来车、雷利出行），附件含发票PDF + 行程单PDF 各一份\n- **邮箱配置**：读取 `~/.workbuddy/skills/imap-smtp-email/.env` 获取邮箱地址和密码\n- **Excel 预览问题**：`open_result_view` 对 .xlsx 支持不好，需用 HTML 渲染预览或让用户直接用 Excel 打开\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.3",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 74,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T14:43:48.538Z",
+  "updated_at": "2026-07-10T14:43:48.538Z",
+  "fetched_at": "2026-07-11T22:53:59.834Z",
+  "source_url": "https://clawhub.ai/leahlu0124-creator/skills/invoice-from-email"
+}

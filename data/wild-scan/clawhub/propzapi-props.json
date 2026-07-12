@@ -1,0 +1,38 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "propzapi-props",
+  "display_name": "Propzapi Props",
+  "publisher": {
+    "handle": "paperandbeyond23-gif",
+    "display_name": "paperandbeyond23-gif",
+    "user_id": "s17edc087rn1cph1p54zwj4p6x8997hf"
+  },
+  "summary": "Player props & fixtures via propzapi.com. Two tools — pull normalized player props (points, rebounds, passing yards, etc.) for upcoming games, plus fixtures...",
+  "description": "Player props & fixtures via propzapi.com. Two tools — pull normalized player props (points, rebounds, passing yards, etc.) for upcoming games, plus fixtures and live scores. The prop markets most odds APIs skip, in one JSON shape across books.",
+  "content": "---\nname: propzapi-props\nversion: 1.0.0\ndescription: Player props & fixtures via propzapi.com. Two tools — pull normalized player props (points, rebounds, passing yards, etc.) for upcoming games, plus fixtures and live scores. The prop markets most odds APIs skip, in one JSON shape across books.\nlicense: MIT-0\nauthor: propzapi\nhomepage: https://propzapi.com\nrepository: https://github.com/paperandbeyond23-gif/propzapi-skills\ntags:\n  - propzapi\n  - player-props\n  - sports-odds\n  - odds-api\n  - sports-betting\n  - api\n  - mcp\nmetadata:\n  openclaw:\n    primaryEnv: PROPZAPI_KEY\n    homepage: https://propzapi.com\n    requires:\n      env:\n        - PROPZAPI_KEY\n---\n\n# propzapi-props\n\nPlayer props and fixtures via [propzapi.com](https://propzapi.com). Use when the user **explicitly asks** for player props on an upcoming game, or the schedule/scores for a league — and wants real sourced numbers.\n\nPlayer props (a player's points, rebounds, passing yards, strikeouts, and the over/under on each) are the markets most odds APIs cover thinly. This skill is built around them, normalized across sportsbooks into one JSON shape.\n\n## When to use this skill\n\nCalls spend propzapi credits (`get_props` costs 5, `get_events` costs 1), so this activates only when the request is genuinely about props or fixtures — not when a player merely comes up.\n\n**DO use when the user:**\n\n- Asks for player props / a player's line (points, rebounds, yards, etc.) → `get_props`\n- Asks what games are on, live scores, or the schedule → `get_events`\n\n**Do NOT use** for season stats, historical results, or a betting *pick* — return the numbers, not advice.\n\n## Tools\n\n### `get_props` — player props\nPlayer props for upcoming games. Args: `league` (e.g. `NBA`, `NFL`, `MLB`), `sport` (e.g. `basketball`), `limit` (1–100, default 25). Costs 5 credits.\n\n### `get_events` — fixtures & live scores\nGames and live scores, no odds. Args: `league`, `sport`, `status` (`upcoming` | `live` | `final`), `limit` (1–100, default 25). Costs 1 credit.\n\n## Authentication\n\nSet `PROPZAPI_KEY` to your propzapi key (`pk_live_...`), sent as the `X-API-Key` header.\n\n```bash\nexport PROPZAPI_KEY=\"pk_live_...\"\n```\n\nGet a free key (500 free credits, no card) at <https://propzapi.com/app>.\n\n## Pricing\n\nMetered by market; the exact charge is returned in the `X-Credits-Cost` header. Free 500/mo · Indie $19 (25k) · Pro $49 (100k) · Scale $149 (1M). See <https://propzapi.com/pricing>.\n\n## Errors\n\nEach function returns a dict; on failure it has an `error` key: `auth_required`, `auth_invalid`, `out_of_credits` (with `upgrade_url`), `not_found`, `rate_limit_exceeded`, `upstream_unavailable`, `invalid_argument`, `network`, or `HTTP <code>`.\n\n## Independence\n\npropzapi is an independent developer tool that aggregates publicly listed sportsbook odds. It is not a sportsbook, does not accept wagers, and does not provide betting advice. Odds are informational and may be delayed.\n",
+  "category": null,
+  "tags": [
+    "propzapi",
+    "player-props",
+    "sports-odds",
+    "odds-api",
+    "sports-betting",
+    "api",
+    "mcp"
+  ],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 79,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T03:56:39.969Z",
+  "updated_at": "2026-07-10T03:56:39.969Z",
+  "fetched_at": "2026-07-11T23:07:49.206Z",
+  "source_url": "https://clawhub.ai/paperandbeyond23-gif/skills/propzapi-props"
+}

@@ -1,0 +1,34 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "x402-cli",
+  "display_name": "x402-cli",
+  "publisher": {
+    "handle": "razvanmacovei",
+    "display_name": "Razvan Macovei",
+    "user_id": "s178x7x847xynzsw1cwz5tfpqd885kkv"
+  },
+  "summary": "Pay for x402 payment-gated HTTP endpoints using USDC stablecoins",
+  "description": "Pay for x402 payment-gated HTTP endpoints using USDC stablecoins",
+  "content": "---\nname: x402-cli\ndescription: Pay for x402 payment-gated HTTP endpoints using USDC stablecoins\nversion: 1.0.3\nmetadata:\n  openclaw:\n    requires:\n      env: [EVM_PRIVATE_KEY]\n      bins: [x402-cli]\n    primaryEnv: EVM_PRIVATE_KEY\n    install:\n      - kind: brew\n        formula: razvanmacovei/tap/x402-cli\n        bins: [x402-cli]\n      - kind: go\n        package: github.com/razvanmacovei/x402-cli@latest\n        bins: [x402-cli]\n    homepage: https://github.com/razvanmacovei/x402-cli\n---\n\n# x402-cli\n\nPay for x402 payment-gated HTTP endpoints using USDC stablecoins.\n\n## When to use\n\nUse this tool when you need to access an API that returns HTTP 402 Payment Required with x402 payment requirements. The tool handles the full payment flow: probe → sign → pay → return response.\n\n## Prerequisites\n\nSet `EVM_PRIVATE_KEY` environment variable with a wallet private key that holds USDC on the target network (e.g., Base Sepolia for testnet).\n\n## Usage\n\n### Probe an endpoint (check price without paying)\n\n```bash\nx402-cli --json --skip-verify <url>\n```\n\nReturns JSON with `probe.paymentRequirements` containing the price, network, and asset.\n\n### Pay and access an endpoint\n\n```bash\nx402-cli --json -y <url>\n```\n\nReturns JSON with `payment.body` containing the backend response and `payment.paymentResponse` containing the transaction hash.\n\n### POST with body\n\n```bash\nx402-cli --json -y -X POST -d '{\"query\": \"hello\"}' -H 'Content-Type: application/json' <url>\n```\n\n### Self-signed TLS (local development)\n\n```bash\nx402-cli --json -y -k <url>\n```\n\n## Exit codes\n\n- `0` — Success (payment accepted or probe completed)\n- `1` — Error (network, config, or unexpected failure)\n- `2` — Payment rejected by facilitator\n- `3` — Route is free (no payment needed)\n\n## JSON output structure\n\n```json\n{\n  \"status\": \"accepted\",\n  \"probe\": {\n    \"statusCode\": 402,\n    \"paymentRequired\": true,\n    \"paymentRequirements\": { \"...x402 requirements...\" }\n  },\n  \"payment\": {\n    \"statusCode\": 200,\n    \"accepted\": true,\n    \"signer\": \"0x...\",\n    \"paymentResponse\": { \"success\": true, \"transaction\": \"0x...\", \"network\": \"eip155:84532\" },\n    \"body\": \"...backend response...\"\n  }\n}\n```\n\n## Key fields to parse\n\n- `.status` — `\"free\"`, `\"payment_required\"`, `\"accepted\"`, `\"rejected\"`, `\"error\"`\n- `.probe.paymentRequirements.accepts[0].amount` — price in atomic units\n- `.probe.paymentRequirements.accepts[0].network` — chain ID (e.g., `eip155:84532`)\n- `.payment.body` — the actual backend response after payment\n- `.payment.paymentResponse.transaction` — on-chain transaction hash\n",
+  "category": null,
+  "tags": [
+    "Payment"
+  ],
+  "topics": [
+    "Payment"
+  ],
+  "latest_version": "1.0.3",
+  "license": null,
+  "stats": {
+    "downloads": 1025,
+    "installs": 35,
+    "stars": 0,
+    "versions": 4,
+    "comments": 0
+  },
+  "created_at": "2026-02-25T09:36:35.515Z",
+  "updated_at": "2026-05-18T04:07:25.051Z",
+  "fetched_at": "2026-07-11T23:13:44.989Z",
+  "source_url": "https://clawhub.ai/razvanmacovei/skills/x402-cli"
+}

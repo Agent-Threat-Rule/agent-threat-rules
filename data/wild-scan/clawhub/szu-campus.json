@@ -1,0 +1,42 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "szu-campus",
+  "display_name": "深圳大学校园事务 CLI",
+  "publisher": {
+    "handle": "awesomehou",
+    "display_name": "Awesome",
+    "user_id": "s177ytqtbveveq765ygdtwta8x840vez"
+  },
+  "summary": "当用户需要通过本地 szu-cli 查询或操作深圳大学校园事务时使用，包括登录检查、公文通、我的课表、全校课表、成绩、绩点排名、培养方案、学业完成、思政学分、创新讲座、宿舍电费、体育场馆预约、图书馆馆藏、知网和万方检索。指导 agent 使用 JSON 输出、安全处理隐私，并对预约和取消执行 dry-run/co...",
+  "description": "当用户需要通过本地 szu-cli 查询或操作深圳大学校园事务时使用，包括登录检查、公文通、我的课表、全校课表、成绩、绩点排名、培养方案、学业完成、思政学分、创新讲座、宿舍电费、体育场馆预约、图书馆馆藏、知网和万方检索。指导 agent 使用 JSON 输出、安全处理隐私，并对预约和取消执行 dry-run/co...",
+  "content": "---\r\nname: szu-campus\r\ndescription: 当用户需要通过本地 szu-cli 查询或操作深圳大学校园事务时使用，包括登录检查、公文通、我的课表、全校课表、成绩、绩点排名、培养方案、学业完成、思政学分、创新讲座、宿舍电费、体育场馆预约、图书馆馆藏、知网和万方检索。指导 agent 使用 JSON 输出、安全处理隐私，并对预约和取消执行 dry-run/confirm 规则。\r\nlicense: MIT\r\nmetadata:\r\n  compatible_cli: \">=0.2.0\"\r\n---\r\n\r\n# 深圳大学校园事务 CLI Skill\r\n\r\n以本地 `szu-cli` 为唯一事实来源。本 skill 只提供调用指引，不在此实现校园网站抓取、浏览器自动化或业务逻辑。\r\n\r\n## 开始前\r\n\r\n执行校园查询前，先检查本地环境：\r\n\r\n```bash\r\nnode --version\r\nszu-cli --version\r\n```\r\n\r\n`szu-cli` 要求 Node.js 20 或更高版本。若 Node.js 缺失或版本过低，先提示用户安装或升级。\r\n\r\n若未安装 `szu-cli`，变更用户环境前先征得同意，再让用户执行：\r\n\r\n```bash\r\nnpm install -g szu-cli\r\n```\r\n\r\n安装后验证 CLI：\r\n\r\n```bash\r\nszu-cli doctor --json\r\nszu-cli auth status --json\r\n```\r\n\r\n不要静默安装 CLI。需要登录时，让用户执行：\r\n\r\n```bash\r\nszu-cli auth login\r\n```\r\n\r\n用户应在 CLI 打开的浏览器窗口中完成登录。\r\n\r\n## 工作流\r\n\r\n1. 将用户请求映射到最小可用的只读命令。\r\n2. 使用 `--json` 执行；仅在需要可视浏览器时添加 `--headed`。\r\n3. `ok: false` 时，按 `references/errors.md` 中的 `error.code` 处理。\r\n4. `ok: true` 时，只基于返回字段作答，并仅保留必要的隐私数据。\r\n\r\n## 操作规则\r\n\r\n- Agent 工作流使用并解析 `--json`，不要依赖 stdout 文案。\r\n- 优先只读命令。任何会改变状态的操作都需要用户明确确认。\r\n- 体育预约先使用 `sports bookings`、`sports slots`、`sports reserve --dry-run` 或 `sports cancel --dry-run`；预约必须用 `--field` 指定唯一场地。除非用户明确指定唯一目标，否则不要运行 `sports reserve --confirm`、`sports cancel --confirm`、支付或重复尝试。\r\n- 不要索取密码、Cookie、令牌或浏览器 profile 文件。\r\n- 不要绕过认证、验证码、WebVPN 限制、限流、下载控制或访问控制。\r\n- 不要激进重试。遇到 `RATE_LIMITED` 立即停止；登录和网络错误各处理一次。\r\n- 成绩、绩点、排名、身份字段和学习记录均为隐私；只回显用户所需内容。\r\n- 要求 `szu-cli >= 0.2.0`。\r\n\r\n## 按需读取参考文件\r\n\r\n仅读取当前任务需要的文件：\r\n\r\n- `references/commands.md`：模块级路由，用于确定请求属于哪个命令域。\r\n- `references/examples.md`：自然语言到 CLI 的示例；用户用日常语言提问或命令形式不明确时读取。\r\n- `references/academic-databases.md`：知网、万方的元数据检索、引用导出、条目详情和单篇可见按钮下载规则。\r\n- `references/errors.md`：结构化错误、重试限制与后续命令。\r\n- `references/privacy-safety.md`：密码、Cookie、profile、下载、隐私数据和状态变更边界。\r\n\r\n信息冲突时，以已安装 `szu-cli` 的实际行为和随 CLI 发布的 `docs/cli-contract.md` 为准。\r\n",
+  "category": null,
+  "tags": [
+    "深圳大学",
+    "校园事务",
+    "CLI",
+    "agent",
+    "szu-cli"
+  ],
+  "topics": [
+    "深圳大学",
+    "校园事务",
+    "CLI",
+    "agent",
+    "szu-cli"
+  ],
+  "latest_version": "0.2.1",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 157,
+    "installs": 1,
+    "stars": 0,
+    "versions": 2,
+    "comments": 0
+  },
+  "created_at": "2026-07-07T23:26:08.121Z",
+  "updated_at": "2026-07-11T08:56:28.080Z",
+  "fetched_at": "2026-07-11T22:46:58.267Z",
+  "source_url": "https://clawhub.ai/awesomehou/skills/szu-campus"
+}

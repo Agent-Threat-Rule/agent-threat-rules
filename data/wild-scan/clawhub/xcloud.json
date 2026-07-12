@@ -1,0 +1,41 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "xcloud",
+  "display_name": "xCloud Agent Skills",
+  "publisher": {
+    "handle": "asif2bd",
+    "display_name": "Asif",
+    "user_id": "s172w5rqenpwn4qb4g5n563hx9845890"
+  },
+  "summary": "Official xCloud Public API plugin for agents: manage servers, sites, WordPress, SSL, account data, and API-driven hosting operations.",
+  "description": "Official xCloud Public API plugin for agents: manage servers, sites, WordPress, SSL, account data, and API-driven hosting operations.",
+  "content": "---\nname: xcloud-agent-skills\ndescription: \"Official xCloud Public API plugin for agents: manage servers, sites, WordPress, SSL, account data, and API-driven hosting operations.\"\nversion: 3.0.3\nauthor: xCloudDev\nhomepage: https://xcloud.host\ncategory: deployment\ntags: [xcloud, xcloud-agent-skills, wordpress, hosting, deployment, devops, ssl, servers, sites, automation]\nopenclaw: \">=2026.2\"\nmetadata:\n  {\n    \"openclaw\":\n      {\n        \"emoji\": \"☁️\",\n        \"requires\": { \"bins\": [\"bash\", \"curl\", \"jq\"] },\n        \"install\":\n          [\n            {\n              \"id\": \"xcloud-site\",\n              \"kind\": \"link\",\n              \"label\": \"xCloud\",\n              \"url\": \"https://xcloud.host\",\n            },\n            {\n              \"id\": \"dashboard\",\n              \"kind\": \"link\",\n              \"label\": \"xCloud Dashboard\",\n              \"url\": \"https://app.xcloud.host\",\n            },\n            {\n              \"id\": \"user-guide\",\n              \"kind\": \"link\",\n              \"label\": \"User Guide\",\n              \"url\": \"https://github.com/xCloudDev/xcloud-agent-skills/blob/main/docs/USER_GUIDE.md\",\n            },\n            {\n              \"id\": \"install-guide\",\n              \"kind\": \"link\",\n              \"label\": \"Install Guide\",\n              \"url\": \"https://github.com/xCloudDev/xcloud-agent-skills/blob/main/docs/SKILLS-GUIDE.md\",\n            },\n            {\n              \"id\": \"github\",\n              \"kind\": \"link\",\n              \"label\": \"Official GitHub\",\n              \"url\": \"https://github.com/xCloudDev/xcloud-agent-skills\",\n            },\n            {\n              \"id\": \"docs\",\n              \"kind\": \"link\",\n              \"label\": \"API Docs\",\n              \"url\": \"https://app.xcloud.host/api/v1/docs\",\n            },\n            {\n              \"id\": \"tutorial\",\n              \"kind\": \"link\",\n              \"label\": \"OpenClaw Tutorial\",\n              \"url\": \"https://xcloud.host/openclaw-skills-and-clawhub-on-xcloud-openclaw-agent/\",\n            },\n            {\n              \"id\": \"video\",\n              \"kind\": \"link\",\n              \"label\": \"Tutorial Video\",\n              \"url\": \"https://www.youtube.com/watch?v=oEE9OHo3_48\",\n            },\n          ],\n      },\n  }\n---\n\n# xCloud Agent Skills v3.0.3\n\n[![Version](https://img.shields.io/badge/version-3.0.3-brightgreen.svg)](https://github.com/xCloudDev/xcloud-agent-skills/blob/main/CHANGELOG.md)\n[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/xCloudDev/xcloud-agent-skills/blob/main/LICENSE)\n[![xCloud](https://img.shields.io/badge/xCloud-hosting-0EA5E9.svg)](https://xcloud.host)\n[![ClawHub](https://img.shields.io/badge/ClawHub-xcloud-blue.svg)](https://clawhub.ai/asif2bd/skills/xcloud)\n[![OpenClaw](https://img.shields.io/badge/OpenClaw-skill-purple.svg)](https://openclaw.ai)\n\nBuilt for xCloud hosting operators by [xCloud](https://xcloud.host) · [GitHub](https://github.com/xCloudDev/xcloud-agent-skills) · [User Guide](https://github.com/xCloudDev/xcloud-agent-skills/blob/main/docs/USER_GUIDE.md) · [Install Guide](https://github.com/xCloudDev/xcloud-agent-skills/blob/main/docs/SKILLS-GUIDE.md) · [API Docs](https://app.xcloud.host/api/v1/docs) · [OpenClaw Tutorial](https://xcloud.host/openclaw-skills-and-clawhub-on-xcloud-openclaw-agent/) · [Tutorial Video](https://www.youtube.com/watch?v=oEE9OHo3_48) · [Security Notes](https://github.com/xCloudDev/xcloud-agent-skills/blob/main/SECURITY.md)\n\n> **Security notice:** agent-only xCloud operations toolkit. This package contains skill routing instructions, reference docs, and a small `bash`/`curl` wrapper. It ships no API tokens and only calls the xCloud API after a user or agent explicitly invokes a skill with `XCLOUD_API_TOKEN` configured.\n\n---\n\nThis root skill describes the official xCloud Public API plugin bundle for agent marketplaces such as ClawHub and skills.mp.com.\n\nThe runnable skills live under `plugins/xcloud/skills/` and are invoked as:\n\n- `xcloud:servers`\n- `xcloud:sites`\n- `xcloud:wordpress`\n- `xcloud:ssl`\n- `xcloud:account`\n\n## What It Provides\n\nUse this package when an agent needs to operate xCloud hosting infrastructure through the xCloud Public API:\n\n- Manage servers, services, monitoring, PHP versions, databases, firewall rules, fail2ban, and snapshots\n- Manage sites, domains, cache, backups, deployment logs, rescue workflows, SSH/SFTP, cron jobs, and access logs\n- Manage Git deployment settings and trigger manual Git deployments for xCloud sites\n- Manage WordPress health, updates, plugins, themes, vulnerabilities, PageSpeed, WP_DEBUG, and magic-login URLs\n- Run team-wide vulnerability rollups across all xCloud sites\n- Manage SSL certificates, renewals, custom certificates, certificate status, and Cloudflare certificates\n- Read account identity, API health, API tokens, Cloudflare integrations, and WordPress blueprints\n\n## Agent Experience\n\n- Every user-facing reply is xCloud branded with a clear header and `_via\n  xcloud:*_` footer.\n- The first xCloud interaction greets the user and shows the xCloud startup\n  banner once per conversation.\n- If no token is configured, xCloud proactively explains how to create a scoped\n  API token and store it in the agent runtime as `XCLOUD_API_TOKEN`; it does not\n  ask users to paste production tokens into chat by default.\n- After token setup, xCloud verifies the connection with `/health` and `/user`\n  before continuing operational tasks.\n\n## Setup\n\nCreate an xCloud API token from:\n\nhttps://app.xcloud.host/settings/api-tokens\n\nThen configure your runtime:\n\n```bash\nexport XCLOUD_API_TOKEN=\"your-token-here\"\nexport XCLOUD_API_BASE_URL=\"https://app.xcloud.host\"\n```\n\nThe shared command wrapper is:\n\n```bash\n\"${CLAUDE_PLUGIN_ROOT}\"/scripts/xcloud.sh GET /user\n```\n\n## Official Links\n\n- xCloud: https://xcloud.host\n- Dashboard: https://app.xcloud.host\n- User guide: https://github.com/xCloudDev/xcloud-agent-skills/blob/main/docs/USER_GUIDE.md\n- Install guide: https://github.com/xCloudDev/xcloud-agent-skills/blob/main/docs/SKILLS-GUIDE.md\n- Official repository: https://github.com/xCloudDev/xcloud-agent-skills\n- Development fork: https://github.com/Asif2BD/xcloud-agent-skills\n- Public API docs: https://app.xcloud.host/api/v1/docs\n- OpenClaw + ClawHub tutorial: https://xcloud.host/openclaw-skills-and-clawhub-on-xcloud-openclaw-agent/\n- Tutorial video: https://www.youtube.com/watch?v=oEE9OHo3_48\n\n## Safety\n\nThis package contains documentation, skill routing instructions, and a small shell wrapper. It does not include real API tokens and does not run API calls during installation. Network requests are made only after a user or agent explicitly invokes an xCloud skill with an API token configured in the environment.\n",
+  "category": "deployment",
+  "tags": [
+    "xcloud",
+    "xcloud-agent-skills",
+    "wordpress",
+    "hosting",
+    "deployment",
+    "devops",
+    "ssl",
+    "servers",
+    "sites",
+    "automation"
+  ],
+  "topics": [],
+  "latest_version": "3.0.3",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 161,
+    "installs": 0,
+    "stars": 0,
+    "versions": 3,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T06:36:57.090Z",
+  "updated_at": "2026-07-10T19:31:07.299Z",
+  "fetched_at": "2026-07-11T22:52:35.689Z",
+  "source_url": "https://clawhub.ai/asif2bd/skills/xcloud"
+}

@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "memkeeper-mcp-setup",
+  "display_name": "Memkeeper for OpenClaw",
+  "publisher": {
+    "handle": "teflon07",
+    "display_name": "Steve Edwards",
+    "user_id": "s17d2tr9j4s78s8v2bqm0d30pn8a9417"
+  },
+  "summary": "Install, configure, verify, or remove local-first Memkeeper memory for OpenClaw. Use when an OpenClaw user needs Memkeeper's local embedding and reranking mo...",
+  "description": "Install, configure, verify, or remove local-first Memkeeper memory for OpenClaw. Use when an OpenClaw user needs Memkeeper's local embedding and reranking models, a safe MCP tool profile, or diagnosis of a failed Memkeeper MCP connection.",
+  "content": "---\nname: memkeeper-openclaw\ndescription: Install, configure, verify, or remove local-first Memkeeper memory for OpenClaw. Use when an OpenClaw user needs Memkeeper's local embedding and reranking models, a safe MCP tool profile, or diagnosis of a failed Memkeeper MCP connection.\n---\n\n# Memkeeper for OpenClaw\n\nConfigure Memkeeper as a local stdio MCP server. Keep embedding and reranking\nlocal by default. Do not select an OpenClaw reasoning model, configure a model\nprovider, install a Gateway service, or enable a messaging channel unless the\nuser explicitly asks.\n\n## Set up local semantic memory\n\nUse a user-level store unless the user requests project isolation.\n\n```bash\nMEMKEEPER_BIN=\"${MEMKEEPER_BIN:-$HOME/.local/bin/memkeeper}\"\nMEMKEEPER_STORE=\"${MEMKEEPER_STORE:-$HOME/.memkeeper/store.sqlite}\"\n```\n\nIf `MEMKEEPER_BIN` is absent, download the public installer to a temporary file,\ninspect it, and run it. Do not paste secrets into a command or config file.\n\n```bash\ncurl -fsSL https://raw.githubusercontent.com/teflon07/memkeeper/main/install.sh \\\n  -o /tmp/memkeeper-install.sh\nbash /tmp/memkeeper-install.sh\n```\n\nDownload the local models, initialize the store, and require semantic retrieval:\n\n```bash\n\"$MEMKEEPER_BIN\" pull-models\n\"$MEMKEEPER_BIN\" init --store \"$MEMKEEPER_STORE\" --json\nMEMKEEPER_REQUIRE_SEMANTIC=1 \\\n  \"$MEMKEEPER_BIN\" doctor --store \"$MEMKEEPER_STORE\" --json\n```\n\nRequire the final doctor output to report semantic models as ready. Treat a\nmissing model as a setup failure, not as permission to use lexical fallback.\n\n## Register the MCP server\n\nRegister Memkeeper through OpenClaw's MCP command. Expose the tested 12-tool\nprofile first:\n\n```bash\nopenclaw mcp add memkeeper \\\n  --command \"$MEMKEEPER_BIN\" \\\n  --arg mcp \\\n  --env \"MEMKEEPER_STORE=$MEMKEEPER_STORE\" \\\n  --env \"MEMKEEPER_REQUIRE_SEMANTIC=1\" \\\n  --include \"stats,search,get,memory_list,entity_search,graph_neighbors,graph_context,dream_graph,remember,pack,candidate_submit,candidate_list\" \\\n  --timeout 30 \\\n  --connect-timeout 30\n```\n\nKeep `forget`, `entity_upsert`, `relationship_upsert`, and `verify` disabled\nuntil the operator explicitly needs deletion or direct graph/metadata mutation.\n\n## Verify and report\n\nProve the live stdio connection after registration:\n\n```bash\nopenclaw mcp doctor memkeeper --probe --json\n```\n\nReport the configured store path, enabled tool count, and probe result. Do not\nprint stored memory contents, API keys, tokens, or other sensitive environment\nvalues.\n\nThe MCP connection test does not require an OpenClaw reasoning provider, a\nGateway daemon, or messaging channels. Those are independent, user-selected\nchoices.\n\n## Handle non-local embedding only on request\n\nDo not change the local mxBai embedding and reranking defaults without explicit\noperator direction. An API embedding or reranking provider receives memory text\noutside the machine and changes the store's vector backend. Use a separate store\nor deliberately re-embed before switching.\n\nFor removal, unregister the MCP server with `openclaw mcp unset memkeeper`.\nLeave the local store and models in place unless the user explicitly requests\ntheir removal.\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.1",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 94,
+    "installs": 0,
+    "stars": 0,
+    "versions": 2,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T13:29:33.355Z",
+  "updated_at": "2026-07-10T13:31:53.172Z",
+  "fetched_at": "2026-07-11T22:55:15.861Z",
+  "source_url": "https://clawhub.ai/teflon07/skills/memkeeper-mcp-setup"
+}

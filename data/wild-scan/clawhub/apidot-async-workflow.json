@@ -1,0 +1,42 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "apidot-async-workflow",
+  "display_name": "Apidot Async Workflow",
+  "publisher": {
+    "handle": "jiehao71727",
+    "display_name": "jiehao71727",
+    "user_id": "s174aa83rask47yt221gxcrwy588cqnm"
+  },
+  "summary": "Use APIDot async workflow for AI generation APIs, including task submission, task_id handling, polling API, task status API, callback_url, webhook API, retry...",
+  "description": "Use APIDot async workflow for AI generation APIs, including task submission, task_id handling, polling API, task status API, callback_url, webhook API, retry guidance, idempotent webhook handling, image generation, video generation, music generation, and 3D generation based on APIDot docs.",
+  "content": "---\nname: apidot-async-workflow\ndescription: \"Use APIDot async workflow for AI generation APIs, including task submission, task_id handling, polling API, task status API, callback_url, webhook API, retry guidance, idempotent webhook handling, image generation, video generation, music generation, and 3D generation based on APIDot docs.\"\nhomepage: https://apidot.ai/docs/webhooks\nmetadata:\n  openclaw:\n    homepage: https://apidot.ai/docs\n    primaryEnv: APIDOT_API_KEY\n    envVars:\n      - name: APIDOT_API_KEY\n        required: false\n        description: APIDot API key for real API calls. Store it server-side only.\n---\n\n# APIDot Async Workflow\n\nUse APIDot's async workflow for generation tasks that return a `task_id`, then complete through polling or webhook delivery.\n\nThis skill is for routing async integration questions to the right APIDot docs, examples, and production workflow guidance. It is documentation-only: it includes no executable files, setup-time automation, bundled API clients, automatic network calls, or stored credentials.\n\n## Start on APIDot\n\nUse these APIDot entry points when coming from ClawHub:\n\n- Read the APIDot quickstart: https://apidot.ai/docs/quickstart\n- Read APIDot webhook guidance: https://apidot.ai/docs/webhooks\n- Open the account dashboard: https://apidot.ai/dashboard/api-key\n- Use official APIDot examples: https://github.com/APIDotAI/apidot-examples\n\n## When To Use\n\nUse this skill when the user asks to:\n\n- Build an async APIDot integration for image, video, music, or 3D generation.\n- Understand task submission, `task_id` persistence, polling API, task status API, `callback_url`, or webhook API behavior.\n- Decide when to use polling versus webhook delivery.\n- Design backend storage for task state, result URLs, retries, and user ownership.\n- Make webhook handlers idempotent and safe for duplicate callback delivery.\n- Find APIDot async workflow docs, webhook docs, model pages, or runnable examples.\n\n## Security Rules\n\n- Treat `APIDOT_API_KEY` as a secret.\n- Keep APIDot API keys in server-side environment variables or a backend secret manager.\n- Never place an API key in browser code, frontend bundles, public repos, logs, screenshots, or chat output.\n- Do not make live API calls unless the user explicitly asks and provides a safe server-side environment.\n- Do not invent API facts, pricing, model availability, reliability claims, refund behavior, or competitor comparisons.\n- Use current APIDot docs and model pages for model-specific request fields and current product details.\n\n## Async Workflow\n\nUse this stable flow when explaining APIDot generation tasks:\n\n1. Choose the model and request fields from the current APIDot docs.\n2. Submit the generation request through the documented APIDot async generation flow.\n3. Persist the returned `data.task_id` before waiting, retrying, polling, or showing progress.\n4. Use the documented task status API for local testing, simple backend jobs, or short-lived workflows.\n5. Use `callback_url` webhook delivery for production queues or user workflows that may outlive the current page.\n6. Store final result URLs only after the task reaches a terminal success state.\n\nDo not guess model-specific payload fields. If the user needs copyable request examples, point them to the current APIDot docs or the matching APIDot GitHub example repository.\n\n## Polling Guidance\n\n- Use polling for local testing, admin tools, small backend jobs, and workflows where the user stays in the current session.\n- Store `task_id`, selected model, request owner, request status, created time, and last checked time together.\n- Use moderate polling intervals and stop polling after a terminal task state.\n- Do not block a user-facing request lifecycle while waiting for long-running media generation.\n- Treat unknown or delayed states as pending until the current APIDot docs say otherwise.\n\n## Webhook Guidance\n\n- Use webhook delivery when generation may take longer than the current page, tab, or request lifecycle.\n- Pass `callback_url` only to a backend endpoint controlled by the application.\n- Verify task ownership before attaching callback results to a user-visible record.\n- Make webhook handlers idempotent because duplicate deliveries can happen.\n- Persist callback events before downstream processing when the workflow needs auditability.\n- Return a success response quickly after accepting a valid callback, then process heavier work in the backend.\n- Avoid logging API keys, private prompts, source media URLs, final result URLs, or callback URLs.\n\n## Retry And Failure Guidance\n\n- Retry transient network or timeout failures with backoff.\n- Do not retry invalid payloads unchanged.\n- Keep submit retries separate from status polling retries so duplicate tasks are not created by accident.\n- Reconcile webhook results and polling results by `task_id`.\n- Use current APIDot docs for terminal statuses, error classes, and model-specific failure behavior.\n\n## Model Routing\n\nStart from the user's async workflow, then open the matching APIDot source:\n\n| User Goal | Start Here |\n| --- | --- |\n| Read APIDot docs | https://apidot.ai/docs |\n| Learn APIDot quickstart flow | https://apidot.ai/docs/quickstart |\n| Implement webhooks | https://apidot.ai/docs/webhooks |\n| Browse APIDot models | https://apidot.ai/models |\n| Use general APIDot examples | https://github.com/APIDotAI/apidot-examples |\n| Build image workflows | https://clawhub.ai/jiehao71727/apidot-image-generation-api |\n| Build video workflows | https://clawhub.ai/jiehao71727/apidot-video-generation-api |\n| Use the broad APIDot skill | https://clawhub.ai/jiehao71727/apidot-ai-api |\n\nUse this skill for async workflow design across APIDot model families. Use the image, video, or broad APIDot skills when the user needs model-category guidance.\n\n## Official Links\n\n- Website: https://apidot.ai\n- Docs: https://apidot.ai/docs\n- Quickstart: https://apidot.ai/docs/quickstart\n- Webhooks: https://apidot.ai/docs/webhooks\n- Models: https://apidot.ai/models\n- API key dashboard: https://apidot.ai/dashboard/api-key\n- Main examples: https://github.com/APIDotAI/apidot-examples\n- GitHub organization: https://github.com/APIDotAI\n- Support: support@apidot.ai\n",
+  "category": null,
+  "tags": [
+    "Webhook",
+    "Image Generation",
+    "Music Generation",
+    "Video Generation",
+    "Docs"
+  ],
+  "topics": [
+    "Webhook",
+    "Image Generation",
+    "Music Generation",
+    "Video Generation",
+    "Docs"
+  ],
+  "latest_version": "1.0.1",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 216,
+    "installs": 4,
+    "stars": 0,
+    "versions": 2,
+    "comments": 0
+  },
+  "created_at": "2026-06-16T02:22:28.594Z",
+  "updated_at": "2026-07-11T02:12:13.721Z",
+  "fetched_at": "2026-07-11T22:50:14.884Z",
+  "source_url": "https://clawhub.ai/jiehao71727/skills/apidot-async-workflow"
+}

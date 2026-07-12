@@ -1,0 +1,36 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "simpleerp-db",
+  "display_name": "Simpleerp DB",
+  "publisher": {
+    "handle": "icystssi-lang",
+    "display_name": "icystssi-lang",
+    "user_id": "s17dhsy7kxqq78v1qybpqkynns84djgj"
+  },
+  "summary": "Read-only Oracle SQL and live schema export for SimpleERP. Runs npm run setup (export DDL + regenerate references) then SELECT/WITH/EXPLAIN PLAN via scripts/run-sql.mjs. Use when the user asks about SimpleERP database tables, columns, joins, row counts, or ad-hoc SQL reports. Requires credentials",
+  "description": "Read-only Oracle SQL and live schema export for SimpleERP. Runs npm run setup (export DDL + regenerate references) then SELECT/WITH/EXPLAIN PLAN via scripts/run-sql.mjs. Use when the user asks about SimpleERP database tables, columns, joins, row counts, or ad-hoc SQL reports. Requires credentials",
+  "content": "---\r\nname: simpleerp-db\r\ndescription: >-\r\n  Read-only Oracle SQL and live schema export for SimpleERP. Runs npm run setup\r\n  (export DDL + regenerate references) then SELECT/WITH/EXPLAIN PLAN via\r\n  scripts/run-sql.mjs. Use when the user asks about SimpleERP database tables,\r\n  columns, joins, row counts, or ad-hoc SQL reports. Requires Oracle credentials.\r\nversion: 1.0.0\r\nmetadata:\r\n  openclaw:\r\n    skillKey: simpleerp-db\r\n    emoji: \"🗄️\"\r\n    requires:\r\n      env:\r\n        - DB_USER\r\n        - DB_PASSWORD\r\n        - DB_CONNECT_STRING\r\n      bins:\r\n        - node\r\n        - npm\r\n    primaryEnv: DB_USER\r\n    envVars:\r\n      - name: DB_USER\r\n        required: true\r\n        description: Oracle database user for read-only queries.\r\n      - name: DB_PASSWORD\r\n        required: true\r\n        description: Oracle password (never echo in chat).\r\n      - name: DB_CONNECT_STRING\r\n        required: true\r\n        description: \"Easy Connect string, e.g. host:1521/SERVICE_NAME\"\r\n      - name: DB_SCHEMA\r\n        required: false\r\n        description: Schema owner for DDL export (default SIMPLEERP).\r\n      - name: SETUP_MAX_AGE_DAYS\r\n        required: false\r\n        description: Re-run npm run setup when status file is older than this.\r\n      - name: SIMPLEERP_TABLES_SQL\r\n        required: false\r\n        description: Override path to TABLES.sql (dev only).\r\n    install:\r\n      - kind: node\r\n        package: oracledb\r\n        bins: []\r\n---\r\n\r\n# SimpleERP DB\r\n\r\nRead-only Oracle analyst for the SimpleERP schema. Query-only — no DML/DDL through this skill.\r\n\r\n## First use (required)\r\n\r\nBefore any query or schema lookup:\r\n\r\n```bash\r\nnpm install\r\ncp .env.example .env   # set DB_USER, DB_PASSWORD, DB_CONNECT_STRING\r\nnpm run setup\r\n```\r\n\r\nThe agent **must** run `npm run check` and, if setup is missing or stale, `npm run setup` before using `references/*.md` or running SQL.\r\n\r\nIf `DB_*` credentials are missing: tell the user to copy `.env.example` → `.env`. **Never** ask for `DB_PASSWORD` in chat.\r\n\r\n**Windows (PowerShell):** run `Set-ExecutionPolicy RemoteSigned -Scope Process` in the session before `npm run` if scripts are blocked. See [references/bootstrap.md](references/bootstrap.md) for per-OS commands (`Copy-Item` vs `cp`, cmd, macOS/Linux).\r\n\r\n## Quick commands\r\n\r\n```bash\r\nnpm run check\r\nnpm run setup\r\nnpm run sql -- \"SELECT 1 AS x FROM DUAL\"\r\nnpm run sql:save -- \"SELECT COUNT(*) AS c FROM PRODUCT\"\r\nnpm run export-schema\r\nnpm run table-index\r\n```\r\n\r\n## Reference map\r\n\r\n| Doc | Contents |\r\n|-----|----------|\r\n| [references/bootstrap.md](references/bootstrap.md) | Setup flow and prerequisites |\r\n| [references/tools.md](references/tools.md) | Commands, env vars, outputs |\r\n| [references/playbook.md](references/playbook.md) | Credentials, safety, agent rules |\r\n| [references/table-index.md](references/table-index.md) | Table name discovery (after setup) |\r\n| [references/table-reference.md](references/table-reference.md) | Columns and types (after setup) |\r\n| [references/table-relationships.md](references/table-relationships.md) | Join hints (after setup) |\r\n| [references/journal-pattern.md](references/journal-pattern.md) | `*_JNL` audit tables |\r\n\r\n## Agent policy\r\n\r\n- Execute `npm run setup` and `npm run sql` yourself when the task needs them.\r\n- Read `references/table-reference.md` before writing SQL.\r\n- Use only SELECT / WITH / EXPLAIN PLAN through `run-sql.mjs`.\r\n- Prefer `FETCH FIRST n ROWS ONLY` when exploring large tables.\r\n\r\n## Publish\r\n\r\nSee [PUBLISH.md](PUBLISH.md) for ClawHub upload checklist.\r\n",
+  "category": null,
+  "tags": [
+    "simpleerp",
+    "query"
+  ],
+  "topics": [
+    "simpleerp",
+    "query"
+  ],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 136,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T04:52:35.239Z",
+  "updated_at": "2026-07-10T04:52:35.239Z",
+  "fetched_at": "2026-07-11T23:01:36.191Z",
+  "source_url": "https://clawhub.ai/icystssi-lang/skills/simpleerp-db"
+}

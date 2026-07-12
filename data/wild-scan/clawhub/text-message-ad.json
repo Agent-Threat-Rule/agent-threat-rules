@@ -1,0 +1,36 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "text-message-ad",
+  "display_name": "Text Message Ad",
+  "publisher": {
+    "handle": "oasiseng",
+    "display_name": "Oasis Engineering",
+    "user_id": "s17cnytngezw9fmhens6qh4ah9858mwv"
+  },
+  "summary": "Create animated iMessage-style conversation ads (HTML + 1080x1920 MP4 with synthesized message sounds) for marketing and product demos. Use this skill whenever the user asks for a \"text message ad\", \"iMessage ad\", \"fake text conversation\" ad, a chat-style promo video, or a short vertical video ad wh",
+  "description": "Create animated iMessage-style conversation ads (HTML + 1080x1920 MP4 with synthesized message sounds) for marketing and product demos. Use this skill whenever the user asks for a \"text message ad\", \"iMessage ad\", \"fake text conversation\" ad, a chat-style promo video, or a short vertical video ad where someone texts a friend about a product — including when they only say \"make an ad for my product\" or \"another version for X\". Also use it for the social captions that accompany these videos.",
+  "content": "---\nname: text-message-ad\ndescription: Create animated iMessage-style conversation ads (HTML + 1080x1920 MP4 with synthesized message sounds) for marketing and product demos. Use this skill whenever the user asks for a \"text message ad\", \"iMessage ad\", \"fake text conversation\" ad, a chat-style promo video, or a short vertical video ad where someone texts a friend about a product — including when they only say \"make an ad for my product\" or \"another version for X\". Also use it for the social captions that accompany these videos.\n---\n\n# Text-Message Ad Maker\n\nBuilds a short (~15s) vertical video ad styled as an iMessage conversation:\nsomeone texts a friend about a problem, the friend recommends the product with\na link card, and the video ends on a branded end card with a CTA. Output is a\nself-contained animated HTML file plus a 1080×1920 MP4 with synthesized\nsend/receive sounds.\n\n**Intended use:** marketing creative and product demos only. The conversations\nare fictional dramatizations between invented characters — a recognizable ad\nformat, not an attempt to pass off a real conversation. Never use real,\nidentifiable people as the characters, never present the exchange as a genuine\ntestimonial, and add a \"Dramatization\" line to the end card if a platform\nrequires disclosure. Do not use this skill to fabricate conversations meant to\ndeceive (fake evidence, impersonation, etc.).\n\n## Workflow\n\n### 1. Collect the brand inputs\nRead `references/brand-checklist.md` and gather what it lists from the user:\nlogo, product name/price/domain, the customer pain point, one proof point, the\nexpensive alternative for the price anchor, and an accent color. It also\ncontains the color-theming pattern, copy voice rules, and caption formulas.\n\n### 2. Write the conversation\n7 visible messages is the sweet spot for ~15s. The canonical beat structure\n(matching the template):\n\n| Row | Type | Beat |\n|---|---|---|\n| 0 | out (blue) | Hook — customer states the pain |\n| 1 | typing | |\n| 2 | in | Friend reframes / names what's actually needed |\n| 3 | in | Friend names product + price + one proof point |\n| 4 | in, link card | Product link preview |\n| 5 | out | Surprise / objection beat (\"Wait, I can do that??\") |\n| 6 | typing | |\n| 7 | in | Friend closes with speed/ease proof (\"Took me 10 minutes 🙌\") |\n| 8 | out | Action beat (\"Doing it now 🙏\") |\n\nKeep each bubble under ~90 characters. Follow the positive-framing rules in\n`references/brand-checklist.md`.\n\n### 3. Create the HTML\nCopy `assets/template.html` (blue theme, placeholder copy in [brackets]) and\nstring-replace: contact name + avatar letter, timestamp, all bubble texts,\nlink-card preview text + meta title + domain, end-card brand name / tagline /\nprice anchor / CTA text, and the theme colors per\n`references/brand-checklist.md`. Replace the `.logoimg` base64 data URI with\nthe user's logo (trimmed, on white, base64-embedded). The HTML autoplays with\na replay button — deliver it alongside the MP4 so the user can edit and\nre-record later.\n\n### 4. Render the MP4\nRequirements: Playwright + Chromium, ffmpeg, Python with numpy (all present in\nthe Claude environment).\n\nWrite a timeline config JSON:\n\n```json\n{\n  \"html\": \"/abs/path/to/ad.html\",\n  \"framesDir\": \"/home/claude/frames_myad\",\n  \"durationMs\": 15000,\n  \"ts\": 400,\n  \"shows\": [900, 2000, 3500, 4700, 5900, 7200, 8100, 9600, 10900],\n  \"hides\": {\"1\": 3500, \"6\": 9600},\n  \"endcard\": 12700,\n  \"rowKinds\": [\"send\", \"typ\", \"recv\", \"recv\", \"recv\", \"send\", \"typ\", \"recv\", \"send\"]\n}\n```\n\n- `shows[i]` = ms when row *i* appears (rows in DOM order). `hides` = when\n  typing rows disappear (usually the moment the next bubble appears).\n- These default timings work for the canonical 9-row structure; scale them if\n  the conversation is longer/shorter. `endcard` ≈ last message + 1800ms;\n  `durationMs` ≈ `endcard` + 2300ms.\n- `rowKinds` drives the audio: `send` = outgoing swoosh, `recv` = incoming ding\n  (bubbles and link cards), `typ` = soft pop, `none` = silent.\n\nThen:\n\n```bash\nnode scripts/render.js config.json          # deterministic frame stepping (audio-sync exact)\npython3 scripts/make_audio.py config.json   # writes <framesDir>.wav\nffmpeg -y -framerate 30 -i <framesDir>/%04d.png -i <framesDir>.wav \\\n  -c:v libx264 -crf 20 -pix_fmt yuv420p -c:a aac -b:a 128k \\\n  -shortest -movflags +faststart output.mp4\n```\n\nWhy frame-stepping instead of screen recording: the renderer pauses each CSS\nanimation at an exact negative delay per frame, so the video timeline matches\nthe config exactly and the audio lands sample-accurate on every bubble.\n\n### 5. Verify before delivering\nView 2–3 frames (an early bubble, the link card, the end card) or check pixel\nstats (accent-color and white-plate pixel counts) to confirm the theme and logo\nrendered. Confirm MP4 specs with ffprobe (1080-wide, ~15s, h264 + aac). Deliver\nboth the MP4 and the HTML.\n\n### 6. Captions (if asked, or offer)\nUse the caption formulas in `references/brand.md` for YouTube (title +\ndescription + hashtags) and Instagram (hook-beat caption + lowercase hashtags).\n",
+  "category": null,
+  "tags": [
+    "marketing-imessage-ad",
+    "advertsing"
+  ],
+  "topics": [
+    "marketing-imessage-ad",
+    "advertsing"
+  ],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 214,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-09T12:48:41.193Z",
+  "updated_at": "2026-07-09T12:49:05.589Z",
+  "fetched_at": "2026-07-11T23:14:38.311Z",
+  "source_url": "https://clawhub.ai/oasiseng/skills/text-message-ad"
+}

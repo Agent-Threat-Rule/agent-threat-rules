@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "agent-coordinator",
+  "display_name": "Agent Coordinator",
+  "publisher": {
+    "handle": "chen6896qqwee",
+    "display_name": "chen6896qqwee",
+    "user_id": "s17d04jj6mht3atggbc0865zph83hbzy"
+  },
+  "summary": "Multi-agent coordination protocol — task distribution, result aggregation, and parallel execution across multiple AI agents. Distilled from Claude Code Team...",
+  "description": "Multi-agent coordination protocol — task distribution, result aggregation, and parallel execution across multiple AI agents. Distilled from Claude Code Team mode.",
+  "content": "---\nname: agent-coordinator\ndescription: Multi-agent coordination protocol — task distribution, result aggregation, and parallel execution across multiple AI agents. Distilled from Claude Code Team mode.\nmetadata:\n  openclaw:\n    requires:\n      bins: [python3]\n---\n\n# Agent Coordinator\n\nDistilled from Claude Code Team mode (TeamCreate/SendMessage protocol).\nCoordinates multiple AI agents to work on tasks in parallel, then aggregates results.\n\n## When to use\n\n- Parallel data collection (scrape multiple sources)\n- Parallel analysis (analyze multiple stocks/documents)\n- Task decomposition (break complex task into subtasks)\n- Review pipeline (one agent writes, another reviews)\n- Ensemble decision (multiple agents vote on a decision)\n\n## How it works\n\n1. **Task Decomposition** — Break a complex task into parallel subtasks\n2. **Agent Dispatch** — Assign each subtask to an agent worker\n3. **Parallel Execution** — Run agents concurrently\n4. **Result Aggregation** — Collect and merge results\n5. **Conflict Resolution** — Handle conflicting outputs\n\n## Usage\n\n`\bash\n# Decompose and run a complex task\npython3 {baseDir}/coordinator.py --task \"Analyze top 5 tech stocks\" --workers 3\n\n# Run with custom subtasks\npython3 {baseDir}/coordinator.py --subtasks subtasks.json\n\n# Review pipeline (one writes, another reviews)\npython3 {baseDir}/coordinator.py --pipeline review --input report.md\n\n# Ensemble decision\npython3 {baseDir}/coordinator.py --ensemble \"Should we buy?\" --voters 3\n\n# Export results\npython3 {baseDir}/coordinator.py --task \"Research AI trends\" --export results.json\n`\n\n## Task format\n\n`json\n[\n  {\"id\": \"subtask-1\", \"description\": \"Analyze AAPL financials\", \"agent\": \"analyst\"},\n  {\"id\": \"subtask-2\", \"description\": \"Analyze GOOGL financials\", \"agent\": \"analyst\"},\n  {\"id\": \"subtask-3\", \"description\": \"Compare results\", \"agent\": \"reviewer\"}\n]\n`\n\n## Built-in coordination patterns\n\n| Pattern | Description |\n|---------|-------------|\n| fan-out | Same task to multiple agents, aggregate results |\n| pipeline | Agent1 -> Agent2 -> Agent3 (sequential) |\n| ensemble | Multiple agents vote, majority wins |\n| decompose | Break task into subtasks, run in parallel |\n| review | One agent produces, another reviews |\n\n## Algorithm reference\n\nBased on Claude Code Team mode:\n- Task queue with priority\n- Agent worker pool with concurrency limit\n- Result aggregation with conflict resolution\n- Timeout per subtask\n- Progress tracking",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 123,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T01:52:04.305Z",
+  "updated_at": "2026-07-10T01:52:04.305Z",
+  "fetched_at": "2026-07-11T23:09:21.285Z",
+  "source_url": "https://clawhub.ai/chen6896qqwee/skills/agent-coordinator"
+}

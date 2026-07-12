@@ -1,0 +1,34 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "agent-bom-ingest",
+  "display_name": "agent-bom ingest",
+  "publisher": {
+    "handle": "msaad00",
+    "display_name": "Agent Bom",
+    "user_id": "s173dmtq1jwv3yxcgnmcxnn45583ey2y"
+  },
+  "summary": "Validate and ingest operator-pushed agent-bom inventory JSON from AWS, Azure, GCP, Snowflake, CMDB, or endpoint collectors. Use when a user has canonical inv...",
+  "description": "Validate and ingest operator-pushed agent-bom inventory JSON from AWS, Azure, GCP, Snowflake, CMDB, or endpoint collectors. Use when a user has canonical inventory JSON and wants local findings, graph, policy, provenance, or auditor-ready exports without giving agent-bom direct cloud credentials.",
+  "content": "---\nname: agent-bom-ingest\ndescription: >-\n  Validate and ingest operator-pushed agent-bom inventory JSON from AWS, Azure,\n  GCP, Snowflake, CMDB, or endpoint collectors. Use when a user has canonical\n  inventory JSON and wants local findings, graph, policy, provenance, or\n  auditor-ready exports without giving agent-bom direct cloud credentials.\nversion: 0.94.2\nlicense: Apache-2.0\ncompatibility: >-\n  Requires Python 3.11+ and agent-bom 0.84.4+. Inventory must conform to the\n  packaged inventory.schema.json contract.\nmetadata:\n  author: msaad00\n  homepage: https://github.com/msaad00/agent-bom\n  source: https://github.com/msaad00/agent-bom\n  pypi: https://pypi.org/project/agent-bom/\n  openclaw:\n    requires:\n      bins:\n        - agent-bom\n      env: []\n      credentials: none\n    credential_policy: \"No cloud credentials are required. Optional control-plane push uses an operator-provided agent-bom API token; never ask users to paste that token into chat and never print it.\"\n    optional_env:\n      - AGENT_BOM_API_KEY\n      - AGENT_BOM_PUSH_URL\n    optional_bins: []\n    emoji: \"inbox\"\n    homepage: https://github.com/msaad00/agent-bom\n    source: https://github.com/msaad00/agent-bom\n    license: Apache-2.0\n    os:\n      - darwin\n      - linux\n      - windows\n    credential_handling: \"Inventory is schema-validated before it is trusted. Env var values, URL credentials, launch arguments, discovery_provenance, permissions_used, and security intelligence pass through the sanitizer/redaction contract before display/export.\"\n    data_flow: \"Operator-generated inventory JSON -> packaged inventory.schema.json validation -> local agent-bom scan/graph/export. Optional push to an operator-owned control plane goes only to the URL the operator provided.\"\n    file_reads:\n      - \"operator-selected inventory JSON file\"\n      - \"packaged agent_bom/data/inventory.schema.json\"\n    file_writes:\n      - \"operator-selected JSON/SARIF/HTML/Markdown export path\"\n    network_endpoints:\n      - url: \"operator-provided AGENT_BOM_PUSH_URL\"\n        purpose: \"Optional push into the operator-owned agent-bom control plane\"\n        auth: true\n        optional: true\n      - url: \"https://api.osv.dev/v1\"\n        purpose: \"Optional package vulnerability lookup during local scan\"\n        auth: false\n        optional: true\n      - url: \"https://api.github.com/advisories\"\n        purpose: \"Optional GitHub Advisory enrichment during local scan\"\n        auth: false\n        optional: true\n    telemetry: false\n    persistence: false\n    privilege_escalation: false\n    always: false\n    autonomous_invocation: restricted\n---\n\n# agent-bom-ingest\n\nUse this skill when the operator already produced canonical inventory JSON with\nan operator-pull adapter, endpoint collector, CMDB export, or AI-agent workflow.\nThe default path is local validation plus local scan/export.\n\n## Guardrails\n\n- Validate inventory with the packaged schema before treating it as evidence.\n- Require `discovery_provenance` and `permissions_used` where the source claims\n  cloud/operator-pushed discovery.\n- Require a trustworthy `discovery_provenance.source_type` such as\n  `operator_pushed_inventory` or `skill_invoked_pull`; do not infer it from\n  prose.\n- Do not invent provenance, permissions, cloud scopes, or credential posture.\n- Do not push to a control plane unless the operator provides the destination\n  URL and auth method explicitly.\n- Do not print raw tokens, URL credentials, private keys, or env var values.\n\n## Workflow\n\nValidate first:\n\n```bash\nagent-bom mcp validate inventory.json\n```\n\nScan locally:\n\n```bash\nagent-bom scan --inventory inventory.json --format json --output agent-bom-findings.json\n```\n\nChoose output by consumer:\n\n- SARIF for CI/code-scanning gates\n- JSON for graph, API, and automation\n- HTML or Markdown for human review\n- CycloneDX/SPDX for SBOM consumers\n\n## Evidence Contract\n\nValid inventory preserves `discovery_provenance`, `permissions_used`,\n`cloud_origin`, redaction state, package identity, server identity, tools, and\nsecurity intelligence. If the inventory is malformed or missing required trust\nfields, stop and ask the operator to regenerate it rather than scanning a\nbest-effort summary.\n",
+  "category": null,
+  "tags": [
+    "Json"
+  ],
+  "topics": [
+    "Json"
+  ],
+  "latest_version": "0.94.2",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 1769,
+    "installs": 38,
+    "stars": 0,
+    "versions": 21,
+    "comments": 0
+  },
+  "created_at": "2026-05-01T01:53:55.375Z",
+  "updated_at": "2026-07-09T18:25:18.581Z",
+  "fetched_at": "2026-07-11T23:11:59.899Z",
+  "source_url": "https://clawhub.ai/msaad00/skills/agent-bom-ingest"
+}

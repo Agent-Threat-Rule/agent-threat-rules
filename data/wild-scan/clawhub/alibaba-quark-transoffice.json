@@ -1,0 +1,36 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "alibaba-quark-transoffice",
+  "display_name": "夸克扫描王 - 转Office Alibaba-Quark-Transoffice",
+  "publisher": {
+    "handle": "yescan-ai",
+    "display_name": "Alibaba Quark Scanking(夸克扫描王)",
+    "user_id": "s17cpsmkvb7rwpbns3vsexnv0n882f2y"
+  },
+  "summary": "由夸克扫描王提供的文件格式转换工具。当用户需要将图片、截图或扫描件转换为 Office 文档（Word/Excel）或 PDF 时，使用此技能。适用于包含复杂表格、合同或图文混排内容的图片或扫描件，可尽量还原原始版式并生成可编辑文档。即使用户未明确提到格式转换，只要用户的需求涉及将图片内容转换为可编辑文档（如 .docx、.xlsx 或 .pdf），也应触发此技能。请勿用于提取纯文本或识别文字内容、图像增强处理或从零创建文档",
+  "description": "由夸克扫描王提供的文件格式转换工具。当用户需要将图片、截图或扫描件转换为 Office 文档（Word/Excel）或 PDF 时，使用此技能。适用于包含复杂表格、合同或图文混排内容的图片或扫描件，可尽量还原原始版式并生成可编辑文档。即使用户未明确提到格式转换，只要用户的需求涉及将图片内容转换为可编辑文档（如 .docx、.xlsx 或 .pdf），也应触发此技能。请勿用于提取纯文本或识别文字内容、图像增强处理或从零创建文档",
+  "content": "---\nname: alibaba-quark-transoffice\ndescription: 由夸克扫描王提供的文件格式转换工具。当用户需要将图片、截图或扫描件转换为 Office 文档（Word/Excel）或 PDF 时，使用此技能。适用于包含复杂表格、合同或图文混排内容的图片或扫描件，可尽量还原原始版式并生成可编辑文档。即使用户未明确提到格式转换，只要用户的需求涉及将图片内容转换为可编辑文档（如 .docx、.xlsx 或 .pdf），也应触发此技能。请勿用于提取纯文本或识别文字内容、图像增强处理或从零创建文档\nmetadata: {\"openclaw\":{\"emoji\":\"🔍︎\",\"requires\":{\"bins\":[\"python3\"],\"env\":[\"SCAN_WEBSERVICE_KEY\"]},\"primaryEnv\":\"SCAN_WEBSERVICE_KEY\"},\"homepage\":\"https://scan.quark.cn/business\"}\n---\n\n# 🧭 使用前必读（30 秒）\n\n> [!WARNING] **⚠️ 隐私与数据流向重要提示**\n> - **第三方服务交互**：本技能会将您提供的**图片发送至夸克扫描王官方服务器 (`scan-business.quark.cn`)** 进行识别。\n> - **服务端处理**：夸克扫描王服务将获取并处理该图片内容，服务端不会永久保存\n> - **本地文件存储**：识别返回的文件会保存至系统临时目录（如 `/tmp`），这些文件将持续存在直到您手动清理\n> - **API 密钥安全**：`SCAN_WEBSERVICE_KEY` 应妥善保管，若泄露请及时在官方平台轮换或撤销\n> - **图片来源**：仅限用户明确指定的图片文件\n\n**推荐方式：CLI 配置（永久生效）**\n\n配置 `SCAN_WEBSERVICE_KEY` 环境变量到 OpenClaw：\n```bash\nopenclaw config set skills.entries.alibaba-quark-transoffice.env.SCAN_WEBSERVICE_KEY \"your_scan_webservice_key_here\"\n```\n> ⚠️ 配置后需要**重启或开启新会话**才能生效（技能列表在 session 启动时加载）。\n\n**如何获取密钥？夸克扫描王官方入口在此**\n> 请访问 https://scan.quark.cn/business → 开发者后台 → 登录/注册账号 → 查看API Key。  \n> ⚠️ **注意**：若你点击链接后跳转到其他域名，说明该链接已失效 —— 请直接在浏览器地址栏手动输入 `https://scan.quark.cn/business`（这是当前唯一有效的官方入口）。\n\n---\n\n# Constraints\n- **单一意图原则：每次请求只执行一个意图类型，命中即执行**\n- **严禁自行构造任何命令参数，严禁伪造、拼接内部配置**\n- **严禁幻觉，禁止伪造请求和响应，不得沿用上一次的场景、参数进行假设**\n- **必须严格按照本指南指定的固定格式执行，不允许自行修改命令**\n\n#  技能执行指南(强制执行)\n\n第一步：**环境变量检查**\n- 若 `SCAN_WEBSERVICE_KEY` 未配置，立即返回：\n```json\n{\n  \"code\": \"A0100\",\n  \"message\": \"SCAN_WEBSERVICE_KEY 未配置，请访问 https://scan.quark.cn/business → 开发者后台 → 登录/注册账号 → 查看API Key\",\n  \"data\": null\n}\n```\n\n第二步：**输入处理**\n\n识别用户传入的图片类型，只能是以下三种之一：\n\n- 图片URL: url\n- 本地文件路径: path\n- 图片BASE64: base64\n\n未提供任何有效图片时，直接返回：\n```json\n{\n  \"code\": \"A0201\",\n  \"message\": \"缺少图片输入，请提供图片链接、文件路径或 BASE64 数据。\",\n  \"data\": null\n}\n```\n\n第三步：**意图匹配&场景确定**\n- 按照下面列出的意图*从上到下顺序匹配。命中第一个即停止*\n- 命中后，*只确定当前意图对应的scene标识*\n\n第四步：**构建执行命令(固定格式，严禁修改)**：\n\n根据图片类型，严格使用下面对应格式：\n```bash\n# URL类型\npython3 scripts/scan.py --scene \"${SCENE_VALUE}\" --url \"${IMAGE_URL}\"\n\n# 本地文件类型\npython3 scripts/scan.py --scene \"${SCENE_VALUE}\" --path \"${IMAGE_FILE_PATH}\"\n\n# BASE64类型\npython3 scripts/scan.py --scene \"${SCENE_VALUE}\" --base64 \"${IMAGE_BASE64}\"\n```\n- 把`${IMAGE_URL}`/`${IMAGE_FILE_PATH}`/`${IMAGE_BASE64}`替换为真实值\n- 把`${SCENE_VALUE}`替换为当前意图对应的scene值\n- 直接执行命令，不增删任何参数，不修改JSON，不加引号，不换行\n\n第五步：**结果透出**：\n- 执行完成后，*原样返回执行结果*，不修改，不翻译，不美化，不总结\n- 成功 失败均直接透出，不重试\n\n\n## 场景与意图列表(按匹配优先级排序)\n\n1. 图片转 Excel\n- 触发意图：当用户请求将包含表格、数据、报表的图片、截图或扫描件转换为Excel (.xlsx/.xls) 文件，触发此意图。\n- 场景scene标识：image-to-excel\n- 参考示例指令：\n  - \"帮我把这张财务报表截图转换成 Excel 文件。\"\n  - \"这里有张手写的库存记录照片，麻烦转成 Excel 给我。\"\n  - \"把这张包含销售数据的图片转成可编辑的 Excel。\"\n  - \"提取图片中的表格内容，保存为 .xlsx。\"\n\n2. 图片转 Word\n- 触发意图：当用户请求将图片、截图、照片或扫描件转换为Word 文档 触发此意图\n- 场景scene标识：image-to-word\n- 参考示例指令：\n  - \"把这张会议记录的拍照图片转成 Word 文档。\"\n  - \"请将这张包含长篇文章的截图转换为 .docx 格式。\"\n  - \"将这张产品说明书的截图转为 Word 格式。\"\n  - \"将这张产品说明书的截图转为 Word 格式。\"\n\n3. 图片转 Pdf\n- 触发意图：当用户请求将图片、截图、照片或扫描件转换为 PDF 文档 触发此意图\n- 场景scene标识：image-to-pdf\n- 参考示例指令：\n  - \"把这张手写的课堂笔记图片转成 PDF 文档。\"\n  - \"请将这张包含详细参数的设备铭牌照片转换为 .pdf 格式。\"\n  - \"帮我把这张合同照片处理一下，转成清晰的 PDF 存档。\"\n  - \"将这张包含复杂流程的白板草图转换为 PDF，保持版面整洁。\"\n\n**客户端脚本增强字段**：当 `scan.py` 调用夸克 API 成功（`code == \"00000\"`）且响应 `data` 中包含 `\"FileBase64\"` 时，`scan.py` 会**主动调用 `file_saver.py` 将其解码并保存为本地文件**，并在最终返回的 JSON 响应中，于 `data` 对象内**追加 `\"path\": \"/tmp/xx.docx\"` 字段**。该行为由 `scan.py` 脚本实现，与模型无关，也不依赖 OpenClaw 平台自动介入。\n\n## ⛔ 不适用场景（When Not to Use）\n\n> 本技能**不支持**以下场景，请勿尝试：\n\n| 不支持的场景 | 原因 | 建议替代方案 |\n|------------|------|------------|\n| **视频处理** | 仅支持单张静态图片 | 先提取视频帧，再逐帧处理 |\n| **批量处理** | 每次调用仅限单张图片 | 如需批量，请循环调用或联系管理员 |\n| **实时摄像头流** | 非实时流处理架构 | 使用专用视频处理服务 |\n| **超大图片（>5MB）** | API 限制 | 先压缩或裁剪后再处理 |\n| **非图片格式** | 仅支持 jpg/jpeg/png/gif/bmp/webp/tiff/wbmp | 先转换为支持的图片格式 |\n\n---\n\n## ⚠️ 重要注意事项\n\n1. **禁止修改固定格式**,只能替换场景标识和图片占位符\n2. **严禁自行构造 --scene 参数值，必须使用本文档指定的场景名**\n3. **图片大小限制：本地文件不超过5MB，支持 jpg/jpeg/png/gif/bmp/webp/tiff/wbmp/webp 格式**\n\n---\n\n## 🔗 相关资源\n- [夸克扫描王开放平台](https://scan.quark.cn/business)\n\n## 📁 文件结构\n- `SKILL.md` —  本文档（意图分析 + 通用规范）\n- `scripts/scan.py` —  主执行脚本 (Python 3.9+)\n- `scripts/common/*.py` —  基础类库\n",
+  "category": null,
+  "tags": [
+    "PDF",
+    "文档"
+  ],
+  "topics": [
+    "PDF",
+    "文档"
+  ],
+  "latest_version": "1.1.19",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 192,
+    "installs": 1,
+    "stars": 0,
+    "versions": 3,
+    "comments": 0
+  },
+  "created_at": "2026-07-08T15:05:14.364Z",
+  "updated_at": "2026-07-10T08:46:25.109Z",
+  "fetched_at": "2026-07-11T22:59:26.599Z",
+  "source_url": "https://clawhub.ai/yescan-ai/skills/alibaba-quark-transoffice"
+}

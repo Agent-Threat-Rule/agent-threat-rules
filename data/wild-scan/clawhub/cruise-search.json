@@ -1,0 +1,43 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "cruise-search",
+  "display_name": "邮轮搜索",
+  "publisher": {
+    "handle": "travel-skills",
+    "display_name": "旅行技能",
+    "user_id": "s175e1acy2vdpc6w041zc2tcgs887xev"
+  },
+  "summary": "全球邮轮航线实时搜索与智能推荐，接入途牛实时API，覆盖日韩、东南亚、地中海、加勒比海、长江三峡等航线。支持按目的地/出发地/日期/价格智能筛选，提供口碑之选/性价比首选/热门推荐/航线精选多维度推荐。新增产品详情（预订须知/取消条款/促销）、舱位房型查询（价格/面积/楼层/阳台）、船舶信息查询（船舶参数/餐饮设...",
+  "description": "全球邮轮航线实时搜索与智能推荐，接入途牛实时API，覆盖日韩、东南亚、地中海、加勒比海、长江三峡等航线。支持按目的地/出发地/日期/价格智能筛选，提供口碑之选/性价比首选/热门推荐/航线精选多维度推荐。新增产品详情（预订须知/取消条款/促销）、舱位房型查询（价格/面积/楼层/阳台）、船舶信息查询（船舶参数/餐饮设施/娱乐项目），含实时价格、满意度、预订人数和一键预订链接。",
+  "content": "---\nname: cruise-search\ndisplay_name: \"邮轮搜索\"\ndescription: 全球邮轮航线实时搜索与智能推荐，接入途牛实时API，覆盖日韩、东南亚、地中海、加勒比海、长江三峡等航线。支持按目的地/出发地/日期/价格智能筛选，提供口碑之选/性价比首选/热门推荐/航线精选多维度推荐。新增产品详情（预订须知/取消条款/促销）、舱位房型查询（价格/面积/楼层/阳台）、船舶信息查询（船舶参数/餐饮设施/娱乐项目），含实时价格、满意度、预订人数和一键预订链接。\nversion: 3.0.0\ntags: [邮轮搜索, 邮轮推荐, 海上邮轮, 长江三峡, 日韩邮轮, 地中海邮轮]\ntools:\n  - name: search_cruise\n    description: 按条件搜索邮轮航线（目的地/出发地/日期/价格）\n    primaryEnv: PROXY_URL\n    env:\n      - name: PROXY_URL\n        description: 途牛邮轮API代理地址\n        required: true\n      - name: PROXY_TOKEN\n        description: 代理认证Token\n        required: true\n    parameters:\n      - name: params\n        type: string\n        description: JSON格式参数，支持字段：destination(目的地,如\"日本\")、departure(出发城市,如\"上海\")、days(未来天数,默认90)、price_max(最高价格)、tag(标签筛选,如\"亲子\")\n        required: true\n  - name: recommend_cruise\n    description: 智能推荐邮轮（按口碑/性价比/热门/航线分组推荐）\n    parameters:\n      - name: params\n        type: string\n        description: JSON格式参数，支持字段：days(未来天数,默认90)\n        required: true\n  - name: cruise_detail\n    description: 查询邮轮产品详情（含预订须知、取消条款、当前促销、行程概览）\n    parameters:\n      - name: params\n        type: string\n        description: JSON格式参数，必填：product_id(产品ID)；可选：days(搜索天数,默认90)、route(航线关键词辅助定位,如\"日本\")\n        required: true\n  - name: cruise_cabin\n    description: 查询邮轮舱位房型（舱等类型、价格、面积、楼层、阳台、成人/儿童价）\n    parameters:\n      - name: params\n        type: string\n        description: JSON格式参数，必填：product_id(产品ID)、depart_date(出发日期YYYY-MM-DD)\n        required: true\n  - name: cruise_ship_info\n    description: 查询邮轮船舶信息（船舶参数、舱型说明、餐饮设施、娱乐设施）\n    parameters:\n      - name: params\n        type: string\n        description: JSON格式参数，必填：product_id(产品ID)\n        required: true\nprimaryEnv: PROXY_URL\n\n---\n\n# 邮轮搜索 — 途牛实时数据，全球航线智能搜索与推荐\n\n> 接入途牛实时API，覆盖全球主要邮轮航线，支持搜索、推荐、产品详情、舱位查询、船舶信息全流程。\n\n🔥 **核心亮点：**\n- **实时数据** — 接入途牛API，价格/库存/评价均为实时数据，非静态demo\n- **智能推荐** — 4大推荐维度：口碑之选/性价比首选/热门推荐/航线精选\n- **产品详情** — 预订须知、取消条款、当前促销优惠、行程概览\n- **舱位查询** — 舱等类型（内舱/海景/阳台/套房）、实时价格、面积楼层、阳台信息\n- **船舶信息** — 船舶参数（吨位/尺寸/载客）、餐饮设施（免费/收费）、娱乐项目\n- **全球覆盖** — 日韩、东南亚、地中海、加勒比海、阿拉斯加、长江三峡等\n- **品牌齐全** — 皇家加勒比、MSC、歌诗达、爱达、维京、世纪游轮、黄金游轮等\n- **零配置** — 免申请Key，装上就能用\n\n## 快速入门\n\n**5个开场白示例，复制即用：**\n\n1. \"暑假有什么邮轮推荐\"\n2. \"上海出发去日本的邮轮\"\n3. \"3000以内的三峡邮轮\"\n4. \"产品320717790的详情和取消条款\"\n5. \"这艘船有什么餐厅和娱乐设施\"\n\n## 核心能力\n\n1. **条件搜索** — 按目的地/出发城市/日期范围/价格/标签精准搜索\n2. **智能推荐** — 无需明确目的地，自动按4个维度推荐最佳航线\n3. **产品详情** — 查看预订须知、取消条款、促销优惠、行程概览\n4. **舱位查询** — 各舱等房型价格、面积、楼层、是否阳台、成人/儿童价\n5. **船舶信息** — 船舶参数、5种舱型说明、餐饮设施（含免费/收费标注）、娱乐项目\n6. **一键预订** — 每条结果附带途牛预订链接，可直接跳转下单\n\n## 能做什么\n\n- 搜索全球各航线邮轮产品，返回实时价格和预订链接\n- 按出发城市、目的地、预算范围、出行场景筛选\n- 查看产品详情：取消条款、付款规则、签证须知、促销优惠\n- 查看舱位价格：内舱房¥3532起、阳台房¥5237起，含面积楼层等\n- 查看船舶设施：30家餐厅（4家免费）、15项娱乐设施、船舶参数\n- 智能推荐：自动分出口碑/性价比/热门/航线精选4类推荐\n\n## 不能做什么\n\n- 不支持在线下单（提供预订链接跳转途牛完成）\n- 不支持邮轮公司官网直连查询\n- 不支持历史价格走势图\n\n## 使用提示\n\n- 用户说\"邮轮推荐\"时，优先用recommend_cruise，分维度展示\n- 用户有明确目的地或出发地时，用search_cruise精准搜索\n- 用户问某个产品详情/取消条款时，用cruise_detail（需productId）\n- 用户问舱位价格/哪种房型好时，用cruise_cabin（需productId+出发日期）\n- 用户问船上有什么吃的/玩的/船多大时，用cruise_ship_info（需productId）\n- 邮轮价格随舱位浮动，建议尽早预订锁定低价\n- 结果最多展示10条，按综合评分排序\n\n## 🔗 搭配使用\n\n- **途牛旅行助手** — 酒店/机票/火车票/门票一站式查询\n- **酒店智能搜索** — 邮轮出发港附近酒店预订\n- **高德地图全能版** — 导航到邮轮港口\n- **全球航班查询** — 查询前往出发港的航班\n\n## 数据流向\n\n用户输入 → 本技能 → 途牛代理API → 途牛邮轮数据库 → 返回实时结果。代理不存储用户数据。\n",
+  "category": null,
+  "tags": [
+    "邮轮搜索",
+    "邮轮推荐",
+    "海上邮轮",
+    "长江三峡",
+    "日韩邮轮",
+    "地中海邮轮"
+  ],
+  "topics": [
+    "邮轮",
+    "邮轮预订",
+    "游轮旅行",
+    "海上度假",
+    "邮轮航线"
+  ],
+  "latest_version": "1.0.8",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 772,
+    "installs": 5,
+    "stars": 0,
+    "versions": 9,
+    "comments": 0
+  },
+  "created_at": "2026-06-13T05:19:39.015Z",
+  "updated_at": "2026-07-11T05:59:58.237Z",
+  "fetched_at": "2026-07-11T22:48:38.312Z",
+  "source_url": "https://clawhub.ai/travel-skills/skills/cruise-search"
+}

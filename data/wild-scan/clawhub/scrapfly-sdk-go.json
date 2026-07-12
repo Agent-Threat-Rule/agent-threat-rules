@@ -1,0 +1,38 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "scrapfly-sdk-go",
+  "display_name": "Scrapfly SDK Go",
+  "publisher": {
+    "handle": "scrapfly",
+    "display_name": "Scrapfly",
+    "user_id": "s176kpxbhgjtnwza0q20m912g18a7jct"
+  },
+  "summary": "Web scraping from Go with the Scrapfly SDK (`github.com/scrapfly/go-scrapfly`). Use when the user asks to scrape a URL, bypass anti-bot protection, render Ja...",
+  "description": "Web scraping from Go with the Scrapfly SDK (`github.com/scrapfly/go-scrapfly`). Use when the user asks to scrape a URL, bypass anti-bot protection, render Ja...",
+  "content": "---\r\nname: scrapfly-sdk-go\r\ndescription: >-\r\n  Web scraping from Go with the Scrapfly SDK\r\n  (`github.com/scrapfly/go-scrapfly`). Use when the user asks to scrape a URL,\r\n  bypass anti-bot protection, render JavaScript, capture screenshots, or\r\n  extract structured data from a Go program.\r\n---\r\n\r\n# Scrapfly Go SDK\r\n\r\nUse the `go-scrapfly` module to scrape web pages from Go with proxy rotation,\r\nanti-bot bypass (ASP), JavaScript rendering, screenshots, and AI extraction.\r\nIt ships a built-in `goquery` selector for parsing the response.\r\n\r\n## When to use\r\n\r\n- Scraping web pages (HTML, JSON, text, markdown) from a Go codebase\r\n- Bypassing anti-bot protections (Cloudflare, DataDome, PerimeterX, Kasada)\r\n- Rendering JavaScript-heavy pages with a headless browser\r\n- Capturing screenshots or extracting structured data\r\n\r\n## Setup\r\n\r\n```bash\r\ngo get github.com/scrapfly/go-scrapfly\r\nexport SCRAPFLY_API_KEY=\"your-api-key\"\r\n```\r\n\r\nThe package name is `scrapfly`. Get your API key at [scrapfly.io](https://scrapfly.io).\r\n\r\n## Basic scrape\r\n\r\n```go\r\npackage main\r\n\r\nimport (\r\n    \"fmt\"\r\n    \"log\"\r\n    \"os\"\r\n\r\n    \"github.com/scrapfly/go-scrapfly\"\r\n)\r\n\r\nfunc main() {\r\n    client, err := scrapfly.New(os.Getenv(\"SCRAPFLY_API_KEY\"))\r\n    if err != nil {\r\n        log.Fatalf(\"failed to create client: %v\", err)\r\n    }\r\n\r\n    apiResponse, err := client.Scrape(&scrapfly.ScrapeConfig{\r\n        URL: \"https://web-scraping.dev/product/1\",\r\n    })\r\n    if err != nil {\r\n        log.Fatalf(\"scrape failed: %v\", err)\r\n    }\r\n\r\n    fmt.Println(apiResponse.Result.Content)\r\n}\r\n```\r\n\r\n## Anti-bot bypass, geo-targeting, JS rendering\r\n\r\n`ScrapeConfig` fields are Go-idiomatic PascalCase. `ProxyPool` takes a typed\r\nconstant.\r\n\r\n```go\r\napiResponse, err := client.Scrape(&scrapfly.ScrapeConfig{\r\n    URL:             \"https://web-scraping.dev/product/1\",\r\n    ASP:             true,                            // bypass anti-bot\r\n    Country:         \"us\",                            // proxy country (ISO 3166-1 alpha-2)\r\n    ProxyPool:       scrapfly.PublicResidentialPool,  // or scrapfly.PublicDataCenterPool\r\n    RenderJS:        true,                            // headless browser rendering\r\n    WaitForSelector: \"div.product\",                  // requires RenderJS\r\n    RenderingWait:   5000,                            // ms, requires RenderJS\r\n    Format:          \"markdown\",                      // raw | clean_html | json | markdown | text\r\n})\r\n```\r\n\r\n## Built-in HTML selector\r\n\r\n```go\r\nselector, err := apiResponse.Selector() // goquery document\r\nif err != nil {\r\n    log.Fatal(err)\r\n}\r\nfmt.Println(\"Title:\", selector.Find(\"h3\").First().Text())\r\n```\r\n\r\n## Screenshots and extraction\r\n\r\n```go\r\nshot, err := client.Screenshot(&scrapfly.ScreenshotConfig{\r\n    URL: \"https://web-scraping.dev/products\",\r\n})\r\n\r\ndata, err := client.Extract(&scrapfly.ExtractionConfig{\r\n    Body:             []byte(apiResponse.Result.Content),\r\n    ContentType:      \"text/html\",\r\n    ExtractionPrompt: \"extract all product names and prices\",\r\n})\r\n```\r\n\r\n## Important notes\r\n\r\n- `RenderJS: true` is required for `RenderingWait`, `WaitForSelector`, and screenshots\r\n- `scrapfly.PublicResidentialPool` is recommended alongside `ASP: true`\r\n- Use `Format: \"markdown\"` for clean, LLM-friendly content\r\n- Read the page body via `apiResponse.Result.Content`; parse with `apiResponse.Selector()`\r\n",
+  "category": null,
+  "tags": [
+    "scrapfly-sdk",
+    "golang",
+    "scrapfly-golang-sdk"
+  ],
+  "topics": [
+    "scrapfly-sdk",
+    "golang",
+    "scrapfly-golang-sdk"
+  ],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 196,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-09T15:55:09.515Z",
+  "updated_at": "2026-07-09T16:04:03.051Z",
+  "fetched_at": "2026-07-11T23:12:57.543Z",
+  "source_url": "https://clawhub.ai/scrapfly/skills/scrapfly-sdk-go"
+}

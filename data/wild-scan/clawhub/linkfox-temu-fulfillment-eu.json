@@ -1,0 +1,34 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "linkfox-temu-fulfillment-eu",
+  "display_name": "Temu欧洲站-发货",
+  "publisher": {
+    "handle": "linkfox-ai",
+    "display_name": "linkfox-ai",
+    "user_id": "s171g8b6m2khwdy9ye8bxj0wx183vd4z"
+  },
+  "summary": "Temu 欧洲站电商履行/发货 API（合一）：Buy-Shipping购标面单、合作仓履约、卖家自发货、物流跟踪、自配送POD上传与审核等30个接口。当用户提到 Temu EU 发货、购标、POD、proof of delivery、self delivery pod、合作仓、自发货、tracking、orde...",
+  "description": "Temu 欧洲站电商履行/发货 API（合一）：Buy-Shipping购标面单、合作仓履约、卖家自发货、物流跟踪、自配送POD上传与审核等30个接口。当用户提到 Temu EU 发货、购标、POD、proof of delivery、self delivery pod、合作仓、自发货、tracking、order-shipping 时触发。订单用 linkfox-temu-order-eu。",
+  "content": "---\nname: linkfox-temu-fulfillment-eu\ndescription: Temu 欧洲站电商履行/发货 API（合一）：Buy-Shipping购标面单、合作仓履约、卖家自发货、物流跟踪、自配送POD上传与审核等30个接口。当用户提到 Temu EU 发货、购标、POD、proof of delivery、self delivery pod、合作仓、自发货、tracking、order-shipping 时触发。订单用 linkfox-temu-order-eu。\n---\n\n# Temu 欧洲站 — 电商履行 / 发货（Fulfillment）\n\n本 skill（`linkfox-temu-fulfillment-eu`）合并原 **Buy-Shipping**、**Co-Warehouse**、**Self-Fulfilled Shipments**、**Tracking** 四个 skill，覆盖 Partner EU **Fulfillment** 域 **30** 个已接入 `type`。\n\n| 域 | 脚本前缀 | 接口数 |\n|----|----------|--------|\n| Buy-Shipping | `eu_buy_shipping_*` | 17 |\n| Co-Warehouse | `eu_co_warehouse_*` | 4 |\n| Self-Fulfilled | `eu_self_fulfilled_*` | 5 |\n| Tracking | `eu_tracking_*` | 1 |\n| Self-Delivery POD | `eu_self_fulfilled_*pod*` | 3 |\n\n详见 [partner-eu-catalog.md](./references/partner-eu-catalog.md)。\n\n**网关**：\n\n| 能力 | 方法 | 路径 |\n|------|------|------|\n| 履约 OpenAPI | POST | `https://tool-gateway.linkfox.com/temu/proxy` |\n| 加签文件下载 | POST | `https://tool-gateway.linkfox.com/temu/fileDownload` |\n\n## 调用方式\n\n- **API 端点**：`POST /temu/proxy`（不同操作通过请求体区分；完整参数/响应/错误码见 `references/api.md`）\n- **Python 脚本**：`python scripts/<脚本名>.py '<JSON 参数>' [--inline]`（可用脚本见上文脚本一览）\n- **成本约束**：本工具会消耗积分；失败/空结果不得自动换关键词、翻页或连续试探；需要继续检索时先向用户说明会产生额外消耗。\n\n**输出策略（脚本默认行为）**：\n- **始终**将完整响应写入 `<cwd>/linkfox/<YYYY-MM-DD>/<session>/data/<skill-name>-<timestamp>.json`（`<cwd>` 为脚本执行时的工作目录，在 Claude Code 里即当前项目目录；`<session>` 取自环境变量 `SESSION_ID`，按用户任务自动聚合；**禁止写入 /tmp**，当前目录不可写则报错）\n- 响应体 ≤ 8 KB：落盘后把完整 JSON 打印到 stdout\n- 响应体 > 8 KB：落盘后 stdout 只输出摘要（顶层字段、常见计数如 `total`/`costToken`、最大列表字段的长度 + 前 3 条样本）\n- 加 `--inline` 强制全量打印到 stdout（同样落盘）\n\n**读数据建议**：先看摘要判断是否足够；需要具体字段时优先用 `jq`或`ConvertFrom-Json` 从保存的 json 文件按需抽取，避免整份 JSON 进入上下文。\n\n## 相关 skill\n\n| 场景 | skill |\n|------|--------|\n| 订单列表/详情/地址 | `linkfox-temu-order-eu` |\n| 取消订单 | `linkfox-temu-cancel-order-eu` |\n| 商品管理 | `linkfox-temu-manage-product-eu` |\n| 退货退款 | `linkfox-temu-returns-refunds-eu` |\n| 美国站履约/发货 | `linkfox-temu-fulfillment-us` |\n| 全球站履约 | `linkfox-temu-fulfillment-global`（无 Scan Form） |\n\n## 默认参数\n\n| 字段 | 默认 |\n|------|------|\n| site | `eu` |\n| managementType | `semi-managed` |\n| tokenPurpose | `order-shipping` |\n\n## Scripts（按域）\n\n### Buy-Shipping（`eu_buy_shipping_*`）\n\n购标、面单、Scan Form、上门揽收等 — 见 [apis/README.md](./references/apis/README.md#buy-shipping购标面单scan-form)。\n\n### Co-Warehouse（`eu_co_warehouse_*`）\n\n`bg.cooperativewarehouse.*` — 合作仓授权、提交/取消履约。\n\n### Self-Fulfilled（`eu_self_fulfilled_*`）\n\n`bg.logistics.shipment.v2.*`、`shippingtype.update` 等 — 卖家自带运单号。\n\n### Tracking（`eu_tracking_*`）\n\n`temu.track.trackinginfo.get`\n\n### Self-Delivery POD（`eu_self_fulfilled_*pod*`）\n\n- `temu.logistics.self.delivery.pod.upload.signature.query`\n- `temu.logistics.self.delivery.pod.upload`\n- `temu.logistics.self.delivery.pod.audit.result.get`\n\n### 通用\n\n| 脚本 | 说明 |\n|------|------|\n| `temu_eu_proxy.py` | 任意 `type` |\n| `temu_eu_file_download.py` | 加签文件下载 |\n\n薄封装统一调用 **`_eu_fulfillment_script.run_cli`**。\n\n## 示例\n\n```bash\nexport LINKFOXAGENT_API_KEY=\"<key>\"\n\n# Buy-Shipping 购标\npython scripts/eu_buy_shipping_logistics_shipment_create.py '{\n  \"accessToken\": \"TOKEN\",\n  \"tokenPurpose\": \"order-shipping\",\n  \"request\": { }\n}'\n\n# 卖家自发货更新跟踪号\npython scripts/eu_self_fulfilled_logistics_shipment_shippingtype_update.py '{\n  \"accessToken\": \"TOKEN\",\n  \"request\": { \"editPackageRequestList\": [{ \"packageSn\": \"PKG-1\", \"trackingNumber\": \"1Z...\" }] }\n}'\n```\n\n**Feedback：** `skillName`：`linkfox-temu-fulfillment-eu`\n\n",
+  "category": null,
+  "tags": [
+    "接口"
+  ],
+  "topics": [
+    "接口"
+  ],
+  "latest_version": "1.0.3",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 503,
+    "installs": 12,
+    "stars": 0,
+    "versions": 3,
+    "comments": 0
+  },
+  "created_at": "2026-05-27T06:27:07.839Z",
+  "updated_at": "2026-07-10T04:48:54.628Z",
+  "fetched_at": "2026-07-11T23:03:27.337Z",
+  "source_url": "https://clawhub.ai/linkfox-ai/skills/linkfox-temu-fulfillment-eu"
+}

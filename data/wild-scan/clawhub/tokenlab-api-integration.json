@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "tokenlab-api-integration",
+  "display_name": "Tokenlab Api Integration",
+  "publisher": {
+    "handle": "hedging8563",
+    "display_name": "hedging8563",
+    "user_id": "s179rmxvstkbe8mkf3phsjrqmx8a97gy"
+  },
+  "summary": "Integrates TokenLab chat, image, audio, video, and other API families into code with runnable examples, model discovery, public contract checks, and agent-fi...",
+  "description": "Integrates TokenLab chat, image, audio, video, and other API families into code with runnable examples, model discovery, public contract checks, and agent-first recovery paths. Use when the user wants to add TokenLab APIs to an app or script.",
+  "content": "---\nname: tokenlab-api-integration\ndescription: Integrates TokenLab chat, image, audio, video, and other API families into code with runnable examples, model discovery, public contract checks, and agent-first recovery paths. Use when the user wants to add TokenLab APIs to an app or script.\nlicense: MIT\nmetadata:\n  category: coding\n---\n\n# TokenLab API Integration\n\nBuilt for runnable integration work for TokenLab chat, image, audio, video, and other API families across coding agents.\n\n## What this skill should deliver\n\n- A minimal runnable example using the fewest moving parts possible.\n- The exact base URL, auth shape, install command, and environment variables required to run the example.\n- A concise note on when to stay on the OpenAI-compatible path versus switching to a native Anthropic or Gemini route.\n- For non-chat APIs, a model discovery or contract check before hardcoding request shape details.\n- A concrete default model choice that is plausible on TokenLab, not a generic placeholder.\n- A short explanation of the agent-first recovery path when the model, endpoint, or route guess is wrong.\n\n## Preferred approach\n\n1. Clarify the user's goal, inputs, and required deliverable.\n2. Read [references/usage-notes.md](references/usage-notes.md) before acting.\n3. Produce one concrete output before adding explanation.\n4. Use the following operating rules:\n\n- Start with the smallest working example before introducing abstractions or helper layers.\n- State the base URL explicitly and keep the environment setup copy-pasteable.\n- When model selection is open, show how to discover models through `/v1/models` or `https://api.tokenlab.sh/llms.txt` instead of hardcoding one option.\n- For non-chat model selection, prefer `GET /v1/models?recommended_for=<scene>` where `<scene>` is one of `image`, `video`, `music`, `3d`, `tts`, `stt`, `embedding`, `rerank`, or `translation`.\n- Before retrying a failed non-chat request, read `GET /v1/models/:model` and align with the public contract, including `supported_operations`, `supported_parameters`, `request_endpoint`, `request_shape_mode`, and `recommended_request`.\n- Use native Anthropic or Gemini examples only when the request explicitly needs provider-specific behavior.\n\n## Output format\n\n- One short intro sentence explaining what the example does.\n- One runnable code block only.\n- One shell setup block showing both dependency install and the exact environment variable export.\n- One short model discovery note.\n- One short routing note explaining when to stay on the OpenAI-compatible path and when a response header or provider-specific feature suggests a native Anthropic or Gemini route.\n\n## Avoid\n\n- Do not return pseudo-code when runnable code is expected.\n- Do not hide required environment variables, auth headers, or base URLs.\n- Do not over-claim pricing, speed, or compatibility without grounding it in a concrete example or source.\n- Do not claim an exact platform-wide model count; say \"hundreds of models\" unless the current API response is being quoted directly.\n- Do not silently drop unsupported non-chat fields. If removing a field would change user intent, safety, billing, or response guarantees, surface the contract error and fail closed.\n\n## Inputs\n\n- Natural-language user request\n- Referenced files or URLs\n- Existing project context, if available\n\n## Outputs\n\n- A concrete deliverable, recommendation, or implementation result\n- Short notes on assumptions, caveats, or next actions when needed\n\n## Edge Cases\n\n- If required inputs are missing, state exactly what is missing.\n- If the request only partially matches this skill, handle the matching portion and clearly scope the rest.\n- If a risk, safety, or compliance concern appears, surface it before producing the final output.\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 79,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T15:57:30.626Z",
+  "updated_at": "2026-07-10T15:57:30.626Z",
+  "fetched_at": "2026-07-11T22:53:35.509Z",
+  "source_url": "https://clawhub.ai/hedging8563/skills/tokenlab-api-integration"
+}

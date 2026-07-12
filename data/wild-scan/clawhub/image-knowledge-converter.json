@@ -1,0 +1,36 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "image-knowledge-converter",
+  "display_name": "Image Knowledge Converter",
+  "publisher": {
+    "handle": "haoyiyong985",
+    "display_name": "haoyiyong985",
+    "user_id": "s177ypfpgdqaxv59njm2a6m56989wm4b"
+  },
+  "summary": "图片截图转知识库工具（OCR + AI）。触发词：第一次使用、配置图片工具、处理新图片",
+  "description": "图片截图转知识库工具（OCR + AI）。触发词：第一次使用、配置图片工具、处理新图片",
+  "content": "---\r\nname: image-knowledge-converter\r\ndescription: \"图片截图转知识库工具（OCR + AI）。触发词：第一次使用、配置图片工具、处理新图片\"\r\nversion: 1.2.8\r\ntags: [image-processing, ocr, knowledge-management]\r\n---\r\n\r\n# 🔧 执行指令\r\n\r\n**配置向导触发词：**\r\n当用户说 `第一次使用` / `第一次使用图片处理工具` / `配置图片工具` 时，**AI 启动对话式配置向导**。\r\n\r\n**处理图片触发词：**\r\n当用户说 `处理新图片` / `截图转文档` / `整理截图` 时（这三个触发词等价，均执行相同的处理流程），执行：\r\n\r\n**自动检测工作目录**（优先从以下路径检测）：\r\n1. 命令行参数 `--work-dir <路径>`\r\n2. 环境变量 `WORK_DIR`\r\n3. 脚本所在目录（兜底）\r\n\r\n```\r\n# 方式1：显式指定工作目录（推荐）\r\npython auto_process_all_v9_4.py --work-dir \"D:\\WorkBuddy-Projects\\图片知识库\"\r\n\r\n# 方式2：在工作目录中直接运行\r\ncd \"D:\\WorkBuddy-Projects\\图片知识库\"\r\npython auto_process_all_v9_4.py\r\n\r\n# 方式3：使用环境变量\r\nset WORK_DIR=D:\\WorkBuddy-Projects\\图片知识库\r\npython auto_process_all_v9_4.py\r\n```\r\n\r\n---\r\n\r\n## 📋 对话式配置向导（5步）\r\n\r\n**安全原则：API 密钥不通过对话传递，用户直接在本地模板文件中填写。**\r\n\r\n### 第1步：AI 询问工作文件夹位置\r\n\r\n当用户说\"第一次使用\"时，AI 先询问用户想把工具安装到哪个文件夹：\r\n\r\n```\r\n🤖 我来帮你完成配置！首先需要确定工作文件夹位置。\r\n\r\n这个文件夹将用来存放：\r\n• 你的待处理图片\r\n• 生成的文档\r\n• 配置文件\r\n\r\n请告诉我你想使用的文件夹路径，例如：\r\n  D:\\图片知识库\r\n  或桌面上的任意位置\r\n\r\n（直接回车将使用默认位置）\r\n```\r\n\r\n> **关键**：工作文件夹由用户指定，不是写死的路径。\r\n\r\n### 第2步：AI 创建配置模板\r\n\r\nAI 在用户指定的工作文件夹下创建配置模板：\r\n```\r\n{工作文件夹}\\config\\api_keys_template.txt\r\n```\r\n\r\n### 第3步：AI 引导用户填写\r\n\r\nAI 告诉用户：\r\n```\r\n✅ 配置模板已创建！\r\n\r\n📝 请打开文件并填写配置：\r\n   {工作文件夹}\\config\\api_keys_template.txt\r\n\r\n【填写说明】\r\n\r\n1️⃣  OCR 模式（必选一项，删除前面的 # 启用）：\r\n    # OCR_MODE: cloud    ← 云端方案（腾讯+百度）\r\n    # OCR_MODE: local     ← 本地方案（Tesseract）\r\n    # OCR_MODE: hybrid    ← 兜底方案（云端+本地）\r\n\r\n2️⃣  填写 API 密钥（根据上一步选择填写）：\r\n    - 腾讯云 SecretId/SecretKey\r\n    - 百度云 API Key/Secret Key\r\n    - 或启用 use_tesseract: true\r\n\r\n3️⃣  LLM 配置（如需 AI 智能分析）：\r\n    # 注意：混元(Hunyuan)使用与腾讯云OCR相同的密钥，无需单独配置\r\n    # 如需使用其他LLM，请参考代码中的配置项\r\n    llm_enabled: true\r\n    llm_provider: hunyuan\r\n\r\n4️⃣  IMA 同步（如需自动同步到 IMA，必须改为 true）：\r\n    # 启用：将下方 false 改为 true，并填写 client_id 和 api_key\r\n    # 获取方法：IMA 设置 → API → 创建新的 API Key\r\n    ima_enabled: true          ← 必须改为 true 才能启用\r\n    ima_api_key: 你的API密钥\r\n    ima_client_id: 你的ClientID\r\n\r\n5️⃣  填写完成后保存文件，然后对我说「配置已填写完毕」\r\n```\r\n\r\n### 第4步：AI 处理配置\r\n\r\n用户说「配置已填写完毕后」，AI 自动：\r\n```\r\n# 运行配置处理器（自动检测工作目录）\r\npython wizard_processor.py\r\n\r\n# 或显式指定工作目录\r\npython wizard_processor.py --work-dir \"D:\\WorkBuddy-Projects\\图片知识库\"\r\n```\r\n1. wizard_processor.py 读取模板\r\n2. 生成 `config/api_keys.yaml`\r\n3. 验证配置并显示摘要\r\n\r\n### 第5步：放入图片并处理\r\n\r\n```\r\n✅ 配置完成！\r\n\r\n📁 请把图片放入：\r\n   {工作文件夹}\\待处理图片\r\n\r\n然后对我说「处理新图片」\r\n```\r\n\r\n---\r\n\r\n## 🚀 快速上手\r\n\r\n### 首次使用\r\n1. 说 `第一次使用图片处理工具`\r\n2. AI 创建配置模板\r\n3. 用户直接编辑模板文件（密钥不在对话框中）\r\n4. 用户说「配置已填写完毕」\r\n5. AI 处理配置并验证\r\n6. 放入图片，说「处理新图片」\r\n\r\n### 日常使用\r\n1. 把图片放入 `待处理图片\\`\r\n2. 说「处理新图片」\r\n\r\n---\r\n\r\n## 触发词\r\n\r\n**首次配置（启动向导）：**\r\n- `第一次使用`\r\n- `第一次使用图片处理工具`\r\n- `配置图片工具`\r\n- `首次配置`\r\n\r\n**开始处理（运行脚本）：**\r\n- `处理新图片`\r\n- `截图转文档`\r\n- `整理截图`\r\n\r\n---\r\n\r\n## 目录结构\r\n\r\n```\r\n{工作文件夹}\\           ← 所有文件都在用户指定的工作目录下\r\n├── auto_process_all_v9_4.py ← 主处理脚本（V9.5 支持 --work-dir）\r\n├── wizard_processor.py     ← 配置处理器\r\n├── setup_wizard.py          ← 交互式配置向导（可选）\r\n├── config\\\r\n│   ├── api_keys_template.txt  ← 用户在此填写（本地）\r\n│   └── api_keys.yaml          ← 自动生成\r\n├── 待处理图片\\\r\n├── 已处理图片\\\r\n├── 处理结果\\\r\n│   ├── *.md                  ← 生成的 Markdown 文档\r\n│   ├── *.docx                ← 生成的 Word 文档\r\n│   ├── process.log           ← 运行日志\r\n│   └── 处理报告.json         ← 处理统计报告\r\n└── progress\\                 ← 分批处理状态（自动创建）\r\n```\r\n\r\n---\r\n\r\n## 版本历史\r\n\r\n**v1.2.7 (2026-05-20)**\r\n- ✅ **混元签名修复**：修复 TC3-HMAC-SHA256 签名算法，添加 `x-tc-action` 到 CanonicalHeaders 和 SignedHeaders\r\n- ✅ **Content-Type 修复**：改为 `application/json; charset=utf-8` 与腾讯云官方一致\r\n- ✅ **SDK 依赖移除**：无需安装 `tencentcloud-sdk-python-v3`，只需 `requests` 库\r\n\r\n**v1.2.6 (2026-05-20)**\r\n- ✅ **SDK 依赖移除**：改用腾讯云 REST API 调用混元 LLM，无需安装 `tencentcloud-sdk-python-v3`\r\n- ✅ **混元调用优化**：使用 TC3-HMAC-SHA256 签名认证，与其他 LLM（硅基流动/Kimi/Doubao）一样只需 `requests` 库\r\n- ✅ **LLM 说明优化**：SKILL.md 明确说明混元使用与腾讯云OCR相同的密钥，无需单独配置\r\n- ✅ **配置文件修复**：重新生成 api_keys.yaml 确保嵌套结构正确\r\n\r\n**v1.2.5 (2026-05-20)**\r\n- ✅ **IMA 解析修复**：wizard_processor.py 现在同时支持注释和无注释格式的 `ima_enabled`\r\n- ✅ **模板解析修复**：优先用冒号分隔（支持 base64 值中含 `=` 的情况）\r\n- ✅ **IMA 模板优化**：api_keys_template.txt 中 IMA 配置说明更清晰，明确标注\"必须改为 true\"\r\n- ✅ **SKILL.md 更新**：配置向导第3步中 IMA 配置说明更详细\r\n\r\n**v1.2.4 (2026-05-20)**\r\n- ✅ **核心修复**：`auto_process_all_v9_4.py` 支持 `--work-dir` 命令行参数指定工作目录\r\n- ✅ **路径统一**：所有路径引用（配置/输入/输出/日志）改为基于工作目录，不再依赖脚本所在目录\r\n- ✅ **向后兼容**：不指定工作目录时，自动使用脚本所在目录（保持原有行为）\r\n\r\n**v1.2.3 (2026-05-20)**\r\n- ✅ **路径修复**：`wizard_processor.py` 的 `get_work_folder()` 不再硬编码默认路径，改为动态检测脚本目录\r\n- ✅ **路径修复**：`SKILL.md` 移除所有硬编码示例路径，改为 `{工作文件夹}` 占位符\r\n- ✅ **流程优化**：配置向导明确要求 AI 先询问用户指定工作文件夹位置\r\n\r\n**v1.2.2 (2026-05-20)**\r\n- ✅ **安全升级**：API 密钥完全不在对话中传输，用户直接编辑本地模板文件\r\n- ✅ **流程优化**：从 6 步优化为 5 步（新增第1步：AI 询问用户指定工作文件夹）\r\n- ✅ **IMA 修复**：修复了 IMA 配置无法加载的问题（添加 client_id 支持）\r\n- ✅ **OCR 新增 C 兜底选项**\r\n\r\n**v1.2.1 (2026-05-20)**\r\n- ✅ **安全升级**：API 密钥统一写入模板文件后由系统处理\r\n- ✅ **OCR 新增兜底方案**：A（云端）、B（本地）、C（A+B 兜底）\r\n- ✅ **自动验证配置**\r\n\r\n**v1.2.0 (2026-05-10)**\r\n- ✅ 重构为对话式配置向导\r\n\r\n**v1.1.0 (2026-04-27)**\r\n- ✅ 初始版本\r\n",
+  "category": null,
+  "tags": [
+    "image-processing",
+    "ocr",
+    "knowledge-management"
+  ],
+  "topics": [
+    "ocr-image-processing-knowledge-management"
+  ],
+  "latest_version": "1.2.8",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 240,
+    "installs": 2,
+    "stars": 0,
+    "versions": 4,
+    "comments": 0
+  },
+  "created_at": "2026-07-04T03:04:55.565Z",
+  "updated_at": "2026-07-11T05:48:32.395Z",
+  "fetched_at": "2026-07-11T22:48:40.979Z",
+  "source_url": "https://clawhub.ai/haoyiyong985/skills/image-knowledge-converter"
+}

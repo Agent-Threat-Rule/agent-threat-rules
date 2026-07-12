@@ -1,0 +1,42 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "sougou-map",
+  "display_name": "Sougou Map",
+  "publisher": {
+    "handle": "zhangifonly",
+    "display_name": "zhangifonly",
+    "user_id": "s177g1r0fwwn78mtc60nke0fas8841hj"
+  },
+  "summary": "搜狗地图历史档案与迁移指南：搜狗地图已于2022年5月正式下线，本 skill 帮助用户理解停服背景、处理遗留代码与坐标数据、迁移到高德/百度/腾讯地图。Sogou Maps was shut down in May 2022; this skill covers migration of legacy code...",
+  "description": "搜狗地图历史档案与迁移指南：搜狗地图已于2022年5月正式下线，本 skill 帮助用户理解停服背景、处理遗留代码与坐标数据、迁移到高德/百度/腾讯地图。Sogou Maps was shut down in May 2022; this skill covers migration of legacy code and coordinates to Amap, Baidu Maps, or Tencent Maps.",
+  "content": "---\nname: \"Sougou Map\"\nversion: \"1.1.0\"\ndescription: \"搜狗地图历史档案与迁移指南：搜狗地图已于2022年5月正式下线，本 skill 帮助用户理解停服背景、处理遗留代码与坐标数据、迁移到高德/百度/腾讯地图。Sogou Maps was shut down in May 2022; this skill covers migration of legacy code and coordinates to Amap, Baidu Maps, or Tencent Maps.\"\ntags: [\"sougou\", \"map\", \"discontinued\", \"migration\", \"china\"]\nauthor: \"ClawSkills Team\"\ncategory: \"navigation\"\n---\n\n# 搜狗地图（已停止服务）历史档案与迁移指南\n\n## 关键事实\n\n- 搜狗地图前身是 **图行天下（Go2Map）**，1999 年创立，是中国最早的\n  互联网地图服务商之一，2005 年被搜狐收购后发展为搜狗地图\n- 搜狗被腾讯收购完成业务整合后，**搜狗地图于 2022 年 5 月 15 日正式\n  下线**，官网与 App 停止服务，官方引导用户迁移至腾讯地图\n\n## Agent 典型用法\n\n1. 用户问\"搜狗地图怎么打不开了\" → 告知已于 2022 年停服，不是网络\n   故障，并给出迁移方案（见下表）\n2. 用户的旧代码/文档里引用搜狗地图 API → 提示接口已全部失效，\n   给出等价替代平台与需要改动的点（Key 重新申请、参数格式适配）\n3. 历史数据中存有搜狗地图坐标 → 提示搜狗使用自有加密坐标系，\n   迁移到新平台时必须做坐标系转换，否则位置会偏移\n\n## 替代方案对比\n\n| 平台 | 开放平台 | 坐标系 | 适合场景 |\n|------|----------|--------|----------|\n| 高德地图 | lbs.amap.com | GCJ-02 | 导航/驾车生态，阿里系集成 |\n| 百度地图 | lbsyun.baidu.com | BD-09 | POI 检索丰富，百度系集成 |\n| 腾讯地图 | lbs.qq.com | GCJ-02 | 微信小程序原生支持 |\n\n选型建议：微信小程序场景选腾讯地图（同为 GCJ-02，且是微信官方推荐）；\n通用 Web/App 场景高德与百度均可，按已有技术栈生态选择。\n\n## 坐标系迁移要点\n\n中国地图坐标系常识（迁移必读）：\n\n- **WGS-84**：GPS 原始坐标，境内互联网地图不能直接使用\n- **GCJ-02**（火星坐标）：国家测绘局加密标准，高德/腾讯使用\n- **BD-09**：百度在 GCJ-02 基础上二次加密，仅百度使用\n- 各平台开放平台均提供官方坐标转换接口，批量转换优先用官方接口\n\n## 相关 Skill\n\n本团队维护的 `gaode`、`baidu-map`、`tencent-map` skill 提供\n三家现役地图平台的详细开发指引。\n",
+  "category": "navigation",
+  "tags": [
+    "sougou",
+    "map",
+    "discontinued",
+    "migration",
+    "china"
+  ],
+  "topics": [
+    "Map",
+    "Sougou",
+    "Lbs",
+    "Navigation",
+    "开发"
+  ],
+  "latest_version": "1.1.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 780,
+    "installs": 21,
+    "stars": 0,
+    "versions": 3,
+    "comments": 0
+  },
+  "created_at": "2026-03-15T02:23:55.164Z",
+  "updated_at": "2026-07-11T06:05:30.570Z",
+  "fetched_at": "2026-07-11T22:48:35.186Z",
+  "source_url": "https://clawhub.ai/zhangifonly/skills/sougou-map"
+}

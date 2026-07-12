@@ -1,0 +1,40 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "critical-thinking",
+  "display_name": "Critical Thinking",
+  "publisher": {
+    "handle": "ysskrishna",
+    "display_name": "Siva Sai",
+    "user_id": "s179sf51p2b5yvrgd0v8emqrf9871q4z"
+  },
+  "summary": "Use this skill when the user asks for critical thinking (including naming it or directing use/apply/run with obvious misspellings; decisive) or wants to eval...",
+  "description": "Use this skill when the user asks for critical thinking (including naming it or directing use/apply/run with obvious misspellings; decisive) or wants to evaluate a claim, argument, plan, or belief: clarify assertions, weigh evidence, surface assumptions, test reasoning for gaps or fallacies, scan biases, consider alternatives, and stress-test conclusions—whether they phrase it plainly (\"red team\", \"devil's advocate\", \"what am I missing\", steel/straw man, bias scan) or indirectly (decision-quality review, epistemic calibration). Skip for execution-only tasks with no evaluative angle, or when they only want wording, tone, layout, or open-ended brainstorming with no request to audit reasons, assumptions, or evidence.",
+  "content": "---\nname: critical-thinking\ndescription: >\n  Use this skill when the user asks for critical thinking (including naming it\n  or directing use/apply/run with obvious misspellings; decisive) or wants to\n  evaluate a claim, argument, plan, or belief: clarify assertions, weigh evidence,\n  surface assumptions, test reasoning for gaps or fallacies, scan biases,\n  consider alternatives, and stress-test conclusions—whether they phrase it\n  plainly (\"red team\", \"devil's advocate\", \"what am I missing\", steel/straw\n  man, bias scan) or indirectly (decision-quality review, epistemic\n  calibration). Skip for execution-only tasks with no evaluative angle, or when\n  they only want wording, tone, layout, or open-ended brainstorming with no\n  request to audit reasons, assumptions, or evidence.\nlicense: MIT\nmetadata:\n  author: ysskrishna\n  version: \"2026.5.18\"\n---\n\n# Critical Thinking\n\n**Critical thinking** is disciplined inquiry that keeps **description** separate from **evaluation**: surface assumptions, weigh evidence, test logic, consider alternatives, then state a proportionate conclusion. If the conventional view is well-supported, say so — this is inquiry, not contrarianism by default.\n\n**How to run it with this skill:** one phase per clearly headed section, always in this order: Clarify → Information → Assumptions → Reasoning → Alternatives → Conclusion. Always include **Conclusion** unless the user explicitly stops the whole review early.\n\n---\n\n## Setup (run before starting)\n\nIn one short block:\n\n1. **Focus** — the specific claim, proposal, or question under review\n2. **Pass** — Clarify → Information → Assumptions → Reasoning → Alternatives → Conclusion (fixed sequence; state this line once in the setup block so the user sees the path)\n\nIf essential context is missing, ask at most 3 questions in one message, then proceed. Note any remaining gaps or working guesses in plain language (no bracket tags in Setup).\n\n---\n\n## The Phases\n\n### Clarify\n\nRestate the target in one precise sentence. Separate **factual** vs **normative** claims. Name success criteria if a decision is involved.\n\n### Information\n\nWhat evidence exists? Each bullet starts with **`[CITED]`** or **`[MISSING]`**:\n\n- **`[CITED]`** — a traceable basis (user text, repo, doc, link, study, etc.); in the same bullet, name the basis and one line on strength or limits (no extra strength tags).\n- **`[MISSING]`** — no traceable basis yet for that point, or evidence was requested but not available.\n\n### Assumptions\n\nList tacit premises. For each: **Assumption:** … — **If false:** …\n\nWhen the **Focus** mixes **is** and **should**, surface **value / normative** premises too (e.g. **Value premise:** … — **If rejected:** …) alongside factual assumptions where it clarifies the chain.\n\n### Reasoning\n\nTrace the argument chain. Flag **leaps**, **circular** patterns, **correlation vs causation**, and **missing steps**. No new factual assertions here — only structure. If a premise is needed but was never established in **Information**, do **not** assert it as true; label it as an **ungrounded premise** (structural gap only). When **values** and **evidence** both do work in the chain, show which links depend on which.\n\n**Bias and fallacy pass (compact):** add a short sub-list — only items that apply; omit the rest rather than padding.\n\n- **Biases to scan:** confirmation; anchoring; survivorship; undue authority; sunk cost — plus any other bias clearly relevant to the case.\n- **Fallacies to name if present** (tie each to the chain above): ad hominem; straw man; false dichotomy; slippery slope; hasty generalization; begging the question.\n\nIf none apply, state that plainly in one line.\n\n### Alternatives\n\nCredible competing explanations, plans, or frames. Do not collapse into debate rhetoric; keep alternatives plausible.\n\n### Conclusion\n\n1. **Judgment** — answer the **Focus** directly; when factual and normative claims were both in play, separate **what follows from the cited evidence** from **what depends on value premises** (short clauses are enough). Close with **one sentence in plain language** on how strong the case is given `[CITED]` vs `[MISSING]` evidence.\n\n2. **What would change the judgment** — concrete falsifiers or new data; phrase relative to the **Focus** (e.g. the claim-holder’s view, a named third party, or *this assessment* when the review is impersonal).\n\n---\n\n## Execution Rules\n\n1. Run phases in one response unless the user requests step-by-step pacing.\n2. Never merge **Information** and **Reasoning** in the same bullet block.\n3. Do not smuggle new unsupported facts into **Conclusion**; only synthesize prior phases.\n4. If the user is emotionally fused with a position, name it neutrally and continue the phase plan.\n5. Be intellectually honest: acknowledge strong opposing evidence and uncertainty where the phases support it.\n\n---\n\n## Checklist (verify before responding)\n\n- [ ] Setup block: **Focus** and stated **Pass** (fixed sequence)\n- [ ] Each phase is its own section in canonical order (Clarify through Conclusion)\n- [ ] Information: each bullet starts with `[CITED]` (basis + limits in-bullet) or `[MISSING]`\n- [ ] Assumptions use **Assumption** / **If false** pairs; **Value premise** / **If rejected** when the Focus mixes facts and shoulds\n- [ ] Reasoning references only what earlier phases established; flags **ungrounded premises** where needed; bias/fallacy pass done or explicitly \"none identified\"\n- [ ] Conclusion: judgment (evidence vs values when both apply, plus one plain sentence on strength of case from Information), falsifiers phrased for the **Focus**\n",
+  "category": null,
+  "tags": [
+    "critical-thinking",
+    "reasoning",
+    "mental-models",
+    "analysis"
+  ],
+  "topics": [
+    "critical-thinking",
+    "reasoning",
+    "mental-models",
+    "analysis"
+  ],
+  "latest_version": "2026.5.18",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 503,
+    "installs": 16,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-05-19T11:51:47.407Z",
+  "updated_at": "2026-05-19T11:51:58.742Z",
+  "fetched_at": "2026-07-11T22:57:08.027Z",
+  "source_url": "https://clawhub.ai/ysskrishna/skills/critical-thinking"
+}

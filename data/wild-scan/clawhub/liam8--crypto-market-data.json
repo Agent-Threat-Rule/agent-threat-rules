@@ -1,0 +1,40 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "crypto-market-data",
+  "display_name": "Crypto Market Data Skill (No Key Required)",
+  "publisher": {
+    "handle": "liam8",
+    "display_name": "Liam",
+    "user_id": "s1799h7r1a9zkkxfgq8a9mnb8983heqm"
+  },
+  "summary": "No API KEY needed for free tier. Professional-grade cryptocurrency and stock market data integration for real-time prices, company profiles, and global analytics. Powered by Node.js with zero external dependencies.",
+  "description": "No API KEY needed for free tier. Professional-grade cryptocurrency and stock market data integration for real-time prices, company profiles, and global analytics. Powered by Node.js with zero external dependencies.",
+  "content": "---\nname: Crypto & Stock Market Data (Node.js)\ndescription: No API KEY needed for free tier. Professional-grade cryptocurrency and stock market data integration for real-time prices, company profiles, and global analytics. Powered by Node.js with zero external dependencies.\n---\n\n# Crypto & Stock Market Data Skill (Node.js)\n\nA comprehensive suite of tools for retrieving real-time and historical cryptocurrency and stock market data. This skill interfaces with a dedicated market data server to provide high-performance, authenticated access to global financial statistics. Built entirely on Node.js standard libraries — no `npm install` required.\n\n## Key Capabilities\n\n| Category | Description |\n| :--- | :--- |\n| **Real-time Prices** | Fetch current valuations, market caps, 24h volumes, and price changes for crypto & stocks. |\n| **Market Discovery** | Track trending assets and top-performing coins by market capitalization. |\n| **Smart Search** | Quickly find coin IDs or stock tickers by searching names or symbols. |\n| **Deep Details** | Access exhaustive asset information, from community links to company profiles. |\n| **Precise Charts** | Retrieve OHLC candlestick data and historical price/volume time-series. |\n| **Global Metrics** | Monitor total market capitalization and public company treasury holdings. |\n\n## Tool Reference\n\n| Script Name | Primary Function | Command Example |\n| :--- | :--- | :--- |\n| `get_crypto_price.js` | Multi-coin price fetch | `node scripts/get_crypto_price.js bitcoin` |\n| `get_stock_quote.js` | Real-time stock quotes | `node scripts/get_stock_quote.js AAPL MSFT` |\n| `get_company_profile.js` | Company overview | `node scripts/get_company_profile.js AAPL` |\n| `search_stocks.js` | Find stock tickers | `node scripts/search_stocks.js apple` |\n| `get_trending_coins.js` | 24h trending assets | `node scripts/get_trending_coins.js` |\n| `get_top_coins.js` | Market leaderboards | `node scripts/get_top_coins.js --per_page=20` |\n| `search_coins.js` | Asset discovery | `node scripts/search_coins.js solana` |\n| `get_coin_details.js` | Comprehensive metadata | `node scripts/get_coin_details.js ethereum` |\n| `get_coin_ohlc_chart.js` | Candlestick data | `node scripts/get_coin_ohlc_chart.js bitcoin` |\n| `get_coin_historical_chart.js` | Time-series data | `node scripts/get_coin_historical_chart.js bitcoin` |\n| `get_global_market_data.js` | Macro market stats | `node scripts/get_global_market_data.js` |\n| `get_public_companies_holdings.js` | Treasury holdings | `node scripts/get_public_companies_holdings.js bitcoin` |\n| `get_supported_currencies.js` | Valuation options | `node scripts/get_supported_currencies.js` |\n\n---\n\n## Usage Details\n\n### 1. `get_crypto_price.js`\nFetch real-time pricing and basic market metrics for one or more cryptocurrencies.\n\n**Syntax:**\n```bash\nnode scripts/get_crypto_price.js <coin_id_1> [coin_id_2] ... [--currency=usd]\n```\n\n**Parameters:**\n- `coin_id`: The unique identifier for the coin (e.g., `bitcoin`, `solana`).\n- `--currency`: The target currency for valuation (default: `usd`).\n\n**Example:**\n```bash\nnode scripts/get_crypto_price.js bitcoin ethereum cardano --currency=jpy\n```\n\n---\n\n### 2. `get_top_coins.js`\nRetrieve a list of the top cryptocurrencies ranked by market capitalization.\n\n**Syntax:**\n```bash\nnode scripts/get_top_coins.js [--currency=usd] [--per_page=10] [--page=1] [--order=market_cap_desc]\n```\n\n**Parameters:**\n- `--currency`: Valuation currency (default: `usd`).\n- `--per_page`: Number of results (1-250, default: `10`).\n- `--order`: Sorting logic (e.g., `market_cap_desc`, `volume_desc`).\n\n---\n\n### 3. `get_coin_ohlc_chart.js`\nGet Open, High, Low, Close (candlestick) data for technical analysis.\n\n**Syntax:**\n```bash\nnode scripts/get_coin_ohlc_chart.js <coin_id> [--currency=usd] [--days=7]\n```\n\n**Allowed `days` values:** `1, 7, 14, 30, 90, 180, 365`.\n\n| Range | Resolution |\n| :--- | :--- |\n| 1-2 Days | 30 Minute intervals |\n| 3-30 Days | 4 Hour intervals |\n| 31+ Days | 4 Day intervals |\n\n---\n\n### 4. `get_coin_historical_chart.js`\nRetrieve detailed historical time-series data for price, market cap, and volume.\n\n**Syntax:**\n```bash\nnode scripts/get_coin_historical_chart.js <coin_id> [--currency=usd] [--days=30]\n```\n\n---\n\n### 5. `get_stock_quote.js`\nFetch real-time stock prices for one or more ticker symbols.\n\n**Syntax:**\n```bash\nnode scripts/get_stock_quote.js <SYMBOL_1> [SYMBOL_2] ...\n```\n\n---\n\n### 6. `get_company_profile.js`\nGet a comprehensive company profile, including description, industry, and CEO.\n\n**Syntax:**\n```bash\nnode scripts/get_company_profile.js <SYMBOL>\n```\n\n---\n\n## Important Guidelines\n\n### Cryptos: Use IDs | Stocks: Use Tickers\n- **Cryptocurrencies**: Always use **Coin IDs** (slugs) instead of ticker symbols (e.g., `bitcoin`, `BTC`).\n- **Stocks**: Always use **Ticker Symbols** (e.g., `AAPL`, `Apple`).\n\nUse `search_coins.js` if you are unsure of the correct ID.\n\n### Authentication\nAuthentication is handled **automatically** by the internal `api_client.js`. Here is how it works simply:\n\n- **Endpoint**: `GET https://api.igent.net/api/token`\n- **Mechanism**:\n    1.  **Automatic Retrieval**: The first time you use a tool, it asks the server for a temporary session token.\n    2.  **Local Storage**: This token is stored in a hidden `.token` file locally so it can be reused for subsequent requests.\n    3.  **Automatic Headers**: The client automatically includes this token in every request to prove you are authorized.\n    4.  **Auto-Refresh**: If a token expires, the client automatically fetches a new one without you needing to do anything.\n\nNo manual API keys or configuration are required.\n\n### Rate Limiting\nWhile the system is robust, please avoid burst requests (more than 30 per minute) to maintain service stability for all users.\n\n### Agent Integration\nThis skill is fully compatible with OpenClaw and other agents using the **AgentSkills** standard. Execute scripts directly from the `scripts/` directory.\n",
+  "category": null,
+  "tags": [
+    "Crypto",
+    "Cryptocurrency",
+    "Stock Market",
+    "Data Integration"
+  ],
+  "topics": [
+    "Crypto",
+    "Cryptocurrency",
+    "Stock Market",
+    "Data Integration"
+  ],
+  "latest_version": "1.0.2",
+  "license": null,
+  "stats": {
+    "downloads": 16853,
+    "installs": 533,
+    "stars": 11,
+    "versions": 3,
+    "comments": 3
+  },
+  "created_at": "2026-02-08T09:11:02.102Z",
+  "updated_at": "2026-05-17T03:36:39.478Z",
+  "fetched_at": "2026-07-11T22:34:50.896Z",
+  "source_url": "https://clawhub.ai/liam8/skills/crypto-market-data"
+}

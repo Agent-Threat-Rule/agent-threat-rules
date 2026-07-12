@@ -1,0 +1,39 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "thunder",
+  "display_name": "Thunder",
+  "publisher": {
+    "handle": "zhangifonly",
+    "display_name": "zhangifonly",
+    "user_id": "s177g1r0fwwn78mtc60nke0fas8841hj"
+  },
+  "summary": "迅雷专用链接工具：thunder:// 链接与普通 URL 互相转换（纯本地零依赖脚本），支持 qqdl:// 与 flashget:// 解码。Decode/encode Thunder (Xunlei) thunder:// download links to plain URLs locally, also...",
+  "description": "迅雷专用链接工具：thunder:// 链接与普通 URL 互相转换（纯本地零依赖脚本），支持 qqdl:// 与 flashget:// 解码。Decode/encode Thunder (Xunlei) thunder:// download links to plain URLs locally, also supports qqdl:// and flashget:// formats.",
+  "content": "---\nname: \"Thunder\"\nversion: \"1.1.0\"\ndescription: \"迅雷专用链接工具：thunder:// 链接与普通 URL 互相转换（纯本地零依赖脚本），支持 qqdl:// 与 flashget:// 解码。Decode/encode Thunder (Xunlei) thunder:// download links to plain URLs locally, also supports qqdl:// and flashget:// formats.\"\ntags: [\"thunder\", \"xunlei\", \"download\", \"link-converter\", \"tools\"]\nauthor: \"ClawSkills Team\"\ncategory: \"tools\"\n---\n\n# 迅雷链接编解码 Skill\n\n迅雷（Thunder/Xunlei）是中国广泛使用的下载工具。网络上大量下载资源以\n`thunder://` 专用链接形式分发，普通下载器（wget/aria2/浏览器）无法直接\n使用。本 skill 提供**纯本地、零依赖**的链接互转能力。\n\n> 迅雷产品本身的完整使用指引见本团队的 `xunlei` skill，本 skill 专注\n> 链接编解码这一可执行工具能力。\n\n## 链接格式原理（公开算法）\n\n- `thunder://` = Base64 编码的 `AA + 原始URL + ZZ`\n- `qqdl://`（QQ旋风，已停运）= Base64 编码的原始 URL\n- `flashget://`（快车）= Base64 编码的 `[FLASHGET]原始URL[FLASHGET]`\n\n## 使用脚本\n\n```shell\n# 专链转普通 URL（自动识别 thunder/qqdl/flashget）\npython3 scripts/thunderlink.py decode 'thunder://QUFodHRwOi8vZXhhbXBsZS5jb20vZmlsZS56aXBaWg=='\n# 输出: http://example.com/file.zip\n\n# 普通 URL 转 thunder://\npython3 scripts/thunderlink.py encode 'http://example.com/file.zip'\n```\n\n脚本仅做 Base64 字符串变换，**不联网、不读写其他本地文件**。\n\n## Agent 典型用法\n\n1. 用户贴来一个 `thunder://` 链接问\"这是什么\" → 解码出真实 URL，\n   分析文件名与来源域名，提示安全性\n2. 用户想用 wget/aria2 下载迅雷专链 → 解码后给出标准下载命令\n3. 批量转换：把老资源页面里的专链清单整理为普通 URL 列表\n\n## 边界与提示\n\n- 新版迅雷也支持磁力链（magnet:）与私有 P2P 资源，这类内容不经过\n  thunder:// 编码，无需本工具\n- 解码结果的可下载性取决于源站是否存活，本 skill 不保证资源有效\n- 迅雷官网：https://www.xunlei.com\n",
+  "category": "tools",
+  "tags": [
+    "thunder",
+    "xunlei",
+    "download",
+    "link-converter",
+    "tools"
+  ],
+  "topics": [
+    "Download",
+    "Redirect"
+  ],
+  "latest_version": "1.1.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 777,
+    "installs": 21,
+    "stars": 0,
+    "versions": 3,
+    "comments": 0
+  },
+  "created_at": "2026-03-16T00:43:15.177Z",
+  "updated_at": "2026-07-11T06:04:13.454Z",
+  "fetched_at": "2026-07-11T22:48:36.925Z",
+  "source_url": "https://clawhub.ai/zhangifonly/skills/thunder"
+}

@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "untappd-mcp",
+  "display_name": "Tmp.MBOpZlcIRK",
+  "publisher": {
+    "handle": "chrischall",
+    "display_name": "chrischall",
+    "user_id": "s17cjx1a349nz5apaqp02vgz4h85728z"
+  },
+  "summary": "Search Untappd beers, breweries, and venues; read user profiles, check-ins, wishlists, distinct beers, badges, friends, and your friend activity feed; and po...",
+  "description": "Search Untappd beers, breweries, and venues; read user profiles, check-ins, wishlists, distinct beers, badges, friends, and your friend activity feed; and post check-ins, toasts, and comments to your own Untappd account. Use when the user asks about beer ratings, what a beer or brewery is like on Untappd, someone's Untappd check-ins or wishlist, or wants to log/toast/comment on a beer.",
+  "content": "---\nname: untappd-mcp\ndescription: Search Untappd beers, breweries, and venues; read user profiles, check-ins, wishlists, distinct beers, badges, friends, and your friend activity feed; and post check-ins, toasts, and comments to your own Untappd account. Use when the user asks about beer ratings, what a beer or brewery is like on Untappd, someone's Untappd check-ins or wishlist, or wants to log/toast/comment on a beer.\n---\n\n# Untappd MCP\n\nTalks to Untappd's mobile (v4) API using your own account. Logs in via the app's\n`xauth` endpoint (username + password → access token) and calls the same\nendpoints the iPad app uses.\n\n## Setup\n\nSet four environment variables (see the README for details):\n\n- `UNTAPPD_USERNAME`, `UNTAPPD_PASSWORD` — your Untappd login.\n- `UNTAPPD_CLIENT_ID`, `UNTAPPD_CLIENT_SECRET` — the Untappd mobile app client\n  credentials (obtained by intercepting the app's traffic; see README).\n\nRun `untappd_healthcheck` to confirm login works.\n\n## Read tools\n\n- `untappd_search_beer` / `untappd_beer_info` — find beers, then get full detail by bid.\n- `untappd_search_brewery` / `untappd_brewery_info` — breweries.\n- `untappd_search_venue` / `untappd_venue_info` — bars, breweries, restaurants.\n- `untappd_user_info` — a user's profile (omit `username` for your own).\n- `untappd_user_checkins` — recent check-ins (page with `max_id`).\n- `untappd_user_wishlist` — wishlist beers.\n- `untappd_user_beers` — distinct beers ever checked in.\n- `untappd_user_badges` / `untappd_user_friends`.\n- `untappd_activity_feed` — your friend feed (page with `max_id`).\n- `untappd_checkin_info` — full detail of one check-in.\n\nMost user tools default `username` to your configured account when omitted.\n\n## Write tools (confirm-gated — these post to your public account)\n\nEach returns a dry-run preview and makes NO network call unless called with\n`confirm: true`:\n\n- `untappd_toast` — toast/like a check-in (this endpoint is a toggle).\n- `untappd_add_comment` — comment on a check-in.\n- `untappd_checkin` — post a new beer check-in to your feed (needs a `bid` from\n  `untappd_search_beer`; optional `rating` 0–5 in 0.25 steps, `shout`, venue).\n\nPhoto attachment and wishlist add/remove are not yet supported.\n\n## Check-in cache\n\nThe API can't answer \"has this user ever had beer X?\" without paging their whole\nhistory (50/page, rate-limited). These tools keep a SQLite mirror so that\nquestion is answered instantly with **no** API calls. On the stdio server the\nmirror is a local file (`UNTAPPD_CACHE_DB`, default `~/.untappd-mcp/checkins.db`);\non the remote connector it's a per-user Durable Object. Same tools either way.\n\n**Sync first, then query:**\n\n- `untappd_sync_checkins` — fetch check-ins into the cache. Incremental (stops at\n  already-cached check-ins) and resumable: while the backfill is incomplete it\n  pages backwards up to `max_pages` per call (default 10) and saves progress\n  after every page. If the returned `another_run_needed` is true, call it again\n  until it is false (covers both the backfill and catching up large bursts of\n  new check-ins). Omit `username` for your own account;\n  syncing another user needs their account public or a friend (friends-only, same\n  as `untappd_user_checkins`).\n- `untappd_cache_has_had` — has the user had a beer? By exact `bid` or a\n  case-insensitive `beer_name` substring.\n- `untappd_cache_has_had_many` — batch had/not-had for a list of `bids` in one\n  call (venue-menu cross-check).\n- `untappd_cache_not_had` — given a list of `bids`, return only the ones the user\n  has NOT had (\"what's new to me on this menu?\").\n- `untappd_cache_query` — filter cached check-ins by brewery, style, `min_rating`,\n  venue, and date range, with sort + limit.\n\nEvery cache read returns a `freshness` block (and a `caveat` when the backfill is\nincomplete) so you can flag that a \"not found\" may be a false negative until the\nsync finishes.\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.5.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 474,
+    "installs": 1,
+    "stars": 0,
+    "versions": 7,
+    "comments": 0
+  },
+  "created_at": "2026-07-08T18:34:39.811Z",
+  "updated_at": "2026-07-11T21:58:12.086Z",
+  "fetched_at": "2026-07-11T22:34:18.365Z",
+  "source_url": "https://clawhub.ai/chrischall/skills/untappd-mcp"
+}

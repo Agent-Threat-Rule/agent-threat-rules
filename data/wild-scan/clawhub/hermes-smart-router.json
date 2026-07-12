@@ -1,0 +1,40 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "hermes-smart-router",
+  "display_name": "Smart Router Publish",
+  "publisher": {
+    "handle": "raydatalab",
+    "display_name": "Ray",
+    "user_id": "s179gmr84mj3szjyrksyq2zv058a61mt"
+  },
+  "summary": "Use when switching models, saving costs, or routing queries. Automatically picks the cheapest model that can handle the job — \"translate hello\" routes to $0/...",
+  "description": "Use when switching models, saving costs, or routing queries. Automatically picks the cheapest model that can handle the job — \"translate hello\" routes to $0/M local, \"design a database\" routes to $3/M pro. 100% local classification, zero API calls for routing.",
+  "content": "---\nname: hermes-smart-router\ndescription: Use when switching models, saving costs, or routing queries. Automatically picks the cheapest model that can handle the job — \"translate hello\" routes to $0/M local, \"design a database\" routes to $3/M pro. 100% local classification, zero API calls for routing.\nversion: 0.2.2\nauthor: raydatalab\nlicense: MIT\nplatforms: [linux, macos, wsl]\ntriggers:\n  - model switch\n  - change model\n  - /model\n  - /tier\n  - switch to\n  - use local\n  - use flash\n  - use pro\n  - too slow\n  - wasting tokens\n  - cheaper model\n  - downgrade\n  - upgrade model\n  - routing\n  - tier selection\n  - local model\n  - what model\n  - which model\n  - speed up\n  - save cost\n  - 切换模型\n  - 太慢了\n  - 换模型\n  - 用什么模型\nmetadata:\n  hermes:\n    tags: [routing, model, cost-optimization, ollama]\n    homepage: https://github.com/raydatalab/hermes-smart-router\n    related_skills: [hermes-cost-optimization]\n---\n\n# Smart Router\n\n## Overview\n\n```\n\"Translate hello to German\"       → local   $0/M tok\n\"Explain how DNS works\"           → flash   $0.15/M tok  (GPT-4o-mini)\n\"Design a distributed database\"   → pro     $3/M tok  (Claude Sonnet)\n```\n\nSmart Router classifies every query locally (Ollama embeddings + semantic-router)\nand picks the cheapest tier that can handle it. Simple queries route to free local\nmodels. Complex reasoning routes to frontier models. You pay for what you need —\nnot what your config happens to be set to.\n\nClassification runs entirely on your machine. Zero API calls for routing decisions.\nZero keys needed. ~3s on first call, <1ms after.\n\n## When to Use\n\nLoad this skill when:\n- The user is toggling between models manually (wasting tokens on simple queries)\n- The user asks about cost saving, model switching, or routing\n- The user mentions `/model`, `/tier`, or switches models mid-session\n- The agent is about to answer a complex question and should verify the current tier\n\nDo NOT load for: greetings, one-liners, translations, queries under 20 characters.\n\n## CRITICAL — Agent Instructions\n\n**Call `router.resolve()` before answering any non-trivial query.**\n\n```python\nfrom smart_router.router import get_router\n\nrouter = get_router()\ndecision = router.resolve(user_message, current_tier=ACTIVE_TIER)\n# → {\"tier\": \"pro\", \"model\": {...}, \"needs_switch\": true,\n#    \"reason\": \"Upgrade from flash to pro — Complex code...\",\n#    \"recommendation\": \"💡 Switch to pro: `/model anthropic claude-sonnet-4` — ...\"}\n```\n\n**If `decision[\"recommendation\"]` is not None**, paste it at the top of your\nresponse — it's ready to use, no formatting needed.\n\n**If `decision[\"recommendation\"]` is None**, just answer normally.\n**If the call errors or times out**, skip it and answer — never retry.\n\n`ACTIVE_TIER` is your current tier (local/flash/pro). Check with `/tier` or ask.\n\n### When to Skip\n\nSkip routing for: greetings (\"hello\", \"thanks\"), translations, one-liner facts,\nqueries under 20 characters. Everything else — route.\n\n### When to Route\n\n- **Complex:** 3+ tool calls, reasoning, architecture, multi-step code, debugging → route\n- **Unsure:** If it takes more than a sentence to answer → route\n- **Default:** If in doubt, route. Routing cost (~3s first call, <1ms after) is always\n  less than answering from the wrong tier.\n\n## Tier Reference\n\n| Tier | Example Model | Input Price/1M tok | Use When |\n|------|-------------|-------------------|----------|\n| `local` | Ollama (llama3, qwen, etc.) | $0 | Simple Q&A, translations, offline |\n| `flash` | GPT-4o-mini, Gemini Flash, Claude Haiku | ~$0.15–0.80 | General knowledge, casual coding |\n| `pro` | Claude Sonnet, GPT-4o, Gemini Pro | ~$2.50–3 | Complex reasoning, architecture |\n\nPricing per official API pages (OpenAI, Anthropic, Google). See individual provider\ndocs for exact rates. Per-token pricing means a single 1K-token question costs\n$0.003 on flash vs $0.003 on pro — but over thousands of queries per month, the\ndifference compounds.\n\n## Prerequisites\n\n- Hermes Agent v0.17+\n- Ollama installed\n- `semantic-router[ollama]` and `smart_router`\n\n## Configuration\n\n```yaml\nsmart_router:\n  enabled: true\n  default_tier: flash\n  encoder_model: nomic-embed-text\n  tiers:\n    local:\n      provider: custom\n      model: llama3.2:3b\n      base_url: http://localhost:11434/v1\n    flash:\n      provider: openai\n      model: gpt-4o-mini\n    pro:\n      provider: anthropic\n      model: claude-sonnet-4\n  ollama:\n    auto_start: true\n    idle_timeout: 300\n```\n\n## Slash Commands\n\n| Command | Description |\n|---------|-------------|\n| `/route <query>` | Show tier selection (dry run) |\n| `/route-stats` | Session routing statistics |\n| `/ollama start / stop / status` | Ollama lifecycle |\n| `/tier` | Show current tier and model |\n\n## Common Pitfalls\n\n1. **Agent forgets to call `router.resolve()`.** The most common failure mode.\n   If the agent answers without routing, manually trigger with `/route <query>`.\n2. **Ollama not running.** If `decision[\"ollama_ready\"]` is false, start Ollama\n   first (`/ollama start`) or skip routing for this query.\n3. **Slow first call.** First `router.resolve()` pulls `nomic-embed-text` (~274MB).\n   Subsequent calls are instant. Warm up with `python3 -m smart_router route \"test\"`\n   before heavy sessions.\n4. **Fast-path false negatives.** Queries under 20 chars skip embedding. If a short\n   query needs pro-level reasoning, the router won't catch it — use `/model` manually.\n\n## Testing\n\n```bash\nbash scripts/install.sh\npython3 -m smart_router route \"What is the capital of France?\"\npython3 -m smart_router chat\npython3 -m pytest tests/\n```\n",
+  "category": null,
+  "tags": [
+    "hermes",
+    "model-routing",
+    "cost-optimization",
+    "ollama"
+  ],
+  "topics": [
+    "hermes",
+    "model-routing",
+    "cost-optimization",
+    "ollama"
+  ],
+  "latest_version": "0.2.2",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 555,
+    "installs": 0,
+    "stars": 0,
+    "versions": 9,
+    "comments": 0
+  },
+  "created_at": "2026-07-09T06:19:24.986Z",
+  "updated_at": "2026-07-11T01:35:25.520Z",
+  "fetched_at": "2026-07-11T22:50:42.792Z",
+  "source_url": "https://clawhub.ai/raydatalab/skills/hermes-smart-router"
+}

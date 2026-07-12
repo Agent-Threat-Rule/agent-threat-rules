@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "report-generator",
+  "display_name": "Generate responsive HTML pages suitable for reporting, supporting resizing and screenshot capture.",
+  "publisher": {
+    "handle": "juguangyuan520-dotcom",
+    "display_name": "Juguangyuan",
+    "user_id": "s17875rpn69m98g6z36hr19g0h83g41a"
+  },
+  "summary": "Generates a structured report HTML based on a specific template. Invoke when user wants to create a report, slide, or summary card from raw content.",
+  "description": "Generates a structured report HTML based on a specific template. Invoke when user wants to create a report, slide, or summary card from raw content.",
+  "content": "---\nname: \"report-generator\"\ndescription: \"Generates a structured report HTML based on a specific template. Invoke when user wants to create a report, slide, or summary card from raw content.\"\n---\n\n# Report Generator Skill\n \n This skill generates a beautifully formatted HTML report based on a clean, minimal business template style (Light & Concise).\n\n## Capabilities\n\n1. **Refine Content**: Structures raw text into a 4-quadrant format (Goal, Q1-Q4 details, Summary).\n2. **Generate HTML**: Creates a responsive HTML file.\n3. **Screenshot**: (Instruction) Guides the agent to convert the HTML to an image using the browser tool.\n\n## Usage\n\n### 1. Prepare Data\n\nYou need to extract the following information from the user's input:\n\n- **title**: Report Title\n- **goal**: One-sentence goal (Top section)\n- **q1** to **q4**: Four main sections, each containing:\n  - `title`: Short title (e.g., \"稳交付\")\n  - `subtitle`: Explanatory subtitle\n  - `slogan`: Catchy slogan\n  - `items`: List of bullet points (Array of strings)\n- **summary**: Array of 4 keywords for the bottom summary\n\n### 2. Run Generation Script\n\nExecute the python script with the JSON data:\n\n```bash\npython3 scripts/generate.py --output \"workspace/reports\" --data '{\"title\": \"...\", ...}'\n```\n\n### 3. Convert to Image (Agent Action)\n\nAfter the script returns the `html_path`, use the **browser** tool to screenshot it:\n\n1. Open the file: `file://<html_path>`\n2. Take a screenshot of the full page.\n\n## Example Data Structure\n\n```json\n{\n  \"title\": \"2024 Q3 述职报告\",\n  \"goal\": \"构建可规模化的非平台件能力体系\",\n  \"q1\": {\n    \"title\": \"稳交付\",\n    \"subtitle\": \"解决扛量问题\",\n    \"slogan\": \"保交付，争第一\",\n    \"items\": [\"保障核心需求上线\", \"降低事故概率\"]\n  },\n  \"q2\": { ... },\n  \"q3\": { ... },\n  \"q4\": { ... },\n  \"summary\": [\"稳定性\", \"增长\", \"效率\", \"反馈\"]\n}\n```\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.2",
+  "license": null,
+  "stats": {
+    "downloads": 7045,
+    "installs": 239,
+    "stars": 0,
+    "versions": 3,
+    "comments": 2
+  },
+  "created_at": "2026-02-11T13:25:39.842Z",
+  "updated_at": "2026-05-17T03:50:41.355Z",
+  "fetched_at": "2026-07-11T22:39:22.979Z",
+  "source_url": "https://clawhub.ai/juguangyuan520-dotcom/skills/report-generator"
+}

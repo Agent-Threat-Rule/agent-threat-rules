@@ -1,0 +1,42 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "accessible-travel-guide",
+  "display_name": "无障碍旅行助手",
+  "publisher": {
+    "handle": "travel-skills",
+    "display_name": "旅行技能",
+    "user_id": "s175e1acy2vdpc6w041zc2tcgs887xev"
+  },
+  "summary": "无障碍出行助手，查询景点/酒店/交通无障碍设施，覆盖轮椅/视障/听障/婴儿车/老年5类需求，30+热门景区和主流酒店品牌实地数据，零配置即装即用。暑期无障碍出行，残障友好设施查询",
+  "description": "无障碍出行助手，查询景点/酒店/交通无障碍设施，覆盖轮椅/视障/听障/婴儿车/老年5类需求，30+热门景区和主流酒店品牌实地数据，零配置即装即用。暑期无障碍出行，残障友好设施查询",
+  "content": "---\nname: accessible-travel-guide\ndisplay_name: 无障碍旅行助手\ndescription: 无障碍出行助手，查询景点/酒店/交通无障碍设施，覆盖轮椅/视障/听障/婴儿车/老年5类需求，30+热门景区和主流酒店品牌实地数据，零配置即装即用。暑期无障碍出行，残障友好设施查询\ntags: [无障碍旅行, 轮椅出行, 银发旅游, 婴儿车出行, 无障碍设施]\ntools:\n  - name: spot_accessibility\n    description: 查询景点的无障碍设施信息，包括轮椅通道、无障碍卫生间、轮椅租借、无障碍路线等\n    primaryEnv: PROXY_TOKEN\n    env:\n      - name: PROXY_TOKEN\n        description: 代理认证Token（自动配置，无需手动设置）\n        required: false\n    parameters:\n      - name: spot_name\n        type: string\n        description: 景点名称，如\"故宫\"\"西湖\"\"兵马俑\"\n        required: true\n      - name: need_type\n        type: string\n        description: 无障碍需求类型，可选：wheelchair(轮椅)、visual(视障)、hearing(听障)、stroller(婴儿车)、elderly(老年人)\n        required: false\n  - name: hotel_accessibility\n    description: 查询酒店品牌的无障碍房型和设施信息，包括无障碍客房、扶手、宽门、电梯等\n    primaryEnv: PROXY_TOKEN\n    env:\n      - name: PROXY_TOKEN\n        description: 代理认证Token（自动配置，无需手动设置）\n        required: false\n    parameters:\n      - name: hotel_brand\n        type: string\n        description: 酒店品牌或名称，如\"万豪\"\"如家\"\"全季\"\n        required: true\n      - name: city\n        type: string\n        description: 城市名称，如\"北京\"\"上海\"\n        required: false\n  - name: travel_tips\n    description: 根据出行类型和目的地提供无障碍旅行实用建议，包括交通、装备、预约等\n    parameters:\n      - name: destination\n        type: string\n        description: 目的地，如\"北京\"\"西安\"\"成都\"\n        required: true\n      - name: accessibility_need\n        type: string\n        description: 无障碍需求类型，可选：wheelchair(轮椅)、visual(视障)、hearing(听障)、stroller(婴儿车)、elderly(老年人)\n        required: true\n      - name: travel_mode\n        type: string\n        description: 出行方式，可选：plane(飞机)、train(火车)、self_drive(自驾)\n        required: false\n---\n\n# 无障碍旅行助手 — 轮椅/视障/听障/婴儿车/老年，5类需求全覆盖\n\n> 覆盖30+热门5A景区和10+主流酒店品牌实地数据，为无障碍出行提供设施查询和实用建议。\n\n🔥 **核心亮点：**\n- **5类需求覆盖** — 轮椅/视障/听障/婴儿车/老年，一个技能全搞定\n- **30+景区数据** — 故宫/西湖/兵马俑等热门5A景区实地调研数据\n- **酒店无障碍** — 万豪/如家/全季等品牌无障碍客房和设施查询\n- **实用建议** — 交通选择、装备清单、预约渠道、优惠政策\n- **零配置** — 装上就能用\n\n## 快速入门\n\n**3个开场白示例，复制即用：**\n\n1. \"故宫轮椅能进吗\"\n2. \"带老人去杭州西湖方便吗\"\n3. \"万豪酒店有没有无障碍房\"\n\n## 核心能力\n\n1. **景点无障碍查询** — 轮椅通道、无障碍卫生间、轮椅租借点、无障碍路线\n2. **酒店无障碍查询** — 无障碍客房房型、房门宽度、浴室扶手、电梯规格\n3. **出行建议** — 根据需求类型和目的地，提供交通/装备/预约/优惠建议\n4. **5类需求** — 轮椅使用者、视障、听障、婴儿车、老年人各有专属建议\n5. **优惠政策** — 国内5A景区残障人士免票或半价政策提示\n6. **预约渠道** — 免费轮椅租借提前预约渠道和方法\n\n## 能做什么\n\n- 查询景点的无障碍设施信息（轮椅通道/卫生间/租借/路线）\n- 查询酒店品牌的无障碍房型和设施详情\n- 根据需求类型和目的地提供出行建议\n- 标注景区对残障人士的优惠政策\n\n## 不能做什么\n\n- 不提供实时无障碍设施变更信息（如临时维修关闭）\n- 不覆盖所有景点和酒店，目前仅收录30+热门5A景区和10+主流品牌\n- 不提供无障碍出租车在线预约\n- 不替代医院的出行医疗建议\n\n## 使用提示\n\n- 查询景点时加上城市名更准确，如\"北京故宫\"而非仅\"故宫\"\n- wheelchair类型涵盖轮椅和婴儿车，两者对通道宽度需求高度重合\n- 部分景点提供免费轮椅租借但数量有限，建议提前预约\n- 景区无障碍路线通常比常规路线长但坡度缓，预留更多时间\n- 老年出行建议侧重路线平缓度和休息点\n\n## 🔗 搭配使用\n\n- **亲子出行助手** — 带娃出行的全面规划\n- **高德地图全能版** — 导航到景点，查周边无障碍设施\n- **景点智能推荐** — 适合无障碍游览的景点推荐\n\n## 数据流向\n\n所有数据为本地内置，不发送任何外部请求，不收集用户数据。\n",
+  "category": null,
+  "tags": [
+    "无障碍旅行",
+    "轮椅出行",
+    "银发旅游",
+    "婴儿车出行",
+    "无障碍设施"
+  ],
+  "topics": [
+    "Accessible Travel",
+    "无障碍旅行",
+    "无障碍设施",
+    "Wheelchair Travel",
+    "婴儿车出行"
+  ],
+  "latest_version": "1.0.2",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 331,
+    "installs": 5,
+    "stars": 0,
+    "versions": 3,
+    "comments": 0
+  },
+  "created_at": "2026-06-13T21:51:41.735Z",
+  "updated_at": "2026-07-11T02:36:08.433Z",
+  "fetched_at": "2026-07-11T22:49:24.331Z",
+  "source_url": "https://clawhub.ai/travel-skills/skills/accessible-travel-guide"
+}

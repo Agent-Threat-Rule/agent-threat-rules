@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "linkfox-shopee-store-media",
+  "display_name": "Shopee-店铺媒体",
+  "publisher": {
+    "handle": "linkfox-ai",
+    "display_name": "linkfox-ai",
+    "user_id": "s171g8b6m2khwdy9ye8bxj0wx183vd4z"
+  },
+  "summary": "Shopee（虾皮）媒体上传 Media 模块（与 linkfox-shopee-store-auth 同系列），经 /shopee/developerProxy 转发 Shopee Open API Media 模块全部 6 个接口：upload_image、init_video_upload、upload_v...",
+  "description": "Shopee（虾皮）媒体上传 Media 模块（与 linkfox-shopee-store-auth 同系列），经 /shopee/developerProxy 转发 Shopee Open API Media 模块全部 6 个接口：upload_image、init_video_upload、upload_video_part、complete_video_upload、get_video_upload_result、cancel_video_upload。path 为 api/v2/media/...（module=130）。当用户提到 Shopee media 上传、v2.media.upload_image、media模块上传图片 时触发。与 media_space（module=91）接口名相同但 path 不同，按网关白名单选用。",
+  "content": "---\nname: linkfox-shopee-store-media\ndescription: Shopee（虾皮）媒体上传 Media 模块（与 linkfox-shopee-store-auth 同系列），经 /shopee/developerProxy 转发 Shopee Open API Media 模块全部 6 个接口：upload_image、init_video_upload、upload_video_part、complete_video_upload、get_video_upload_result、cancel_video_upload。path 为 api/v2/media/...（module=130）。当用户提到 Shopee media 上传、v2.media.upload_image、media模块上传图片 时触发。与 media_space（module=91）接口名相同但 path 不同，按网关白名单选用。\n---\n\n# Shopee 媒体 Media\n\nShopee Open Platform **Media 模块**（6 个 API，**`api/v2/media/...`**，module=130）。**依赖 `linkfox-shopee-store-auth`**：先取 `accessToken`，再经 **`POST /shopee/developerProxy`** 转发。\n\n## 调用方式\n\n- **API 端点**：`POST /shopee/developerProxy`（不同操作通过请求体区分；完整参数/响应/错误码见 `references/api.md`）\n- **Python 脚本**：`python scripts/media_api.py '<JSON 参数>' [--inline]`（可用脚本见上文脚本一览）\n- **成本约束**：本工具会消耗积分；失败/空结果不得自动换关键词、翻页或连续试探；需要继续检索时先向用户说明会产生额外消耗。\n\n**输出策略（脚本默认行为）**：\n- **始终**将完整响应写入 `<cwd>/linkfox/<YYYY-MM-DD>/<session>/data/<skill-name>-<timestamp>.json`（`<cwd>` 为脚本执行时的工作目录，在 Claude Code 里即当前项目目录；`<session>` 取自环境变量 `SESSION_ID`，按用户任务自动聚合；**禁止写入 /tmp**，当前目录不可写则报错）\n- 响应体 ≤ 8 KB：落盘后把完整 JSON 打印到 stdout\n- 响应体 > 8 KB：落盘后 stdout 只输出摘要（顶层字段、常见计数如 `total`/`costToken`、最大列表字段的长度 + 前 3 条样本）\n- 加 `--inline` 强制全量打印到 stdout（同样落盘）\n\n**读数据建议**：先看摘要判断是否足够；需要具体字段时优先用 `jq`或`ConvertFrom-Json` 从保存的 json 文件按需抽取，避免整份 JSON 进入上下文。\n\n## 官方参考\n\nMedia 模块索引：[v2.media.upload_image](https://open.shopee.com/documents/v2/v2.media.upload_image?module=130&type=1)\n\n---\n\n## Media vs MediaSpace\n\n| Skill | path 前缀 | module |\n|-------|-----------|--------|\n| **本 skill** `linkfox-shopee-store-media` | `api/v2/media/...` | 130 |\n| `linkfox-shopee-store-media-space` | `api/v2/media_space/...` | 91 |\n\n接口名称相同（`upload_image`、`init_video_upload` 等），但 **path 前缀不同**。请按 LinkFox 网关白名单选择对应 skill。\n\n---\n\n## Prerequisites\n\n1. 运行 `python scripts/check_auth_dependency.py`；exit code **42** → 先安装 **`linkfox-shopee-store-auth`**。\n2. **不要**在本 skill 内实现授权/令牌逻辑。\n\n## 可用脚本（6 个 API）\n\n| 脚本 | API | Method |\n|------|-----|--------|\n| `upload_image.py` | upload_image | POST |\n| `init_video_upload.py` | init_video_upload | POST |\n| `upload_video_part.py` | upload_video_part | POST |\n| `complete_video_upload.py` | complete_video_upload | POST |\n| `get_video_upload_result.py` | get_video_upload_result | GET |\n| `cancel_video_upload.py` | cancel_video_upload | POST |\n| `media_api.py` | 通用入口 | — |\n\n## Usage Scenarios\n\n### 上传图片\n`upload_image.py` → 获取 Shopee 图片 URL → 用于 `linkfox-shopee-store-product` 的 `add_item`\n\n### 分片上传视频\n`init_video_upload` → `upload_video_part`(×N) → `complete_video_upload` → `get_video_upload_result`\n\n## Not Applicable\n\n- 店铺授权 → `linkfox-shopee-store-auth`\n- MediaSpace（`api/v2/media_space/...`）→ `linkfox-shopee-store-media-space`\n- 视频发布/效果 → `linkfox-shopee-store-video`\n\n**Feedback:** 见 `references/api.md`。\n\n---\n*For more high-quality, professional cross-border e-commerce skills, visit [LinkFox Skills](https://skill.linkfox.com/).*\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.2",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 150,
+    "installs": 0,
+    "stars": 0,
+    "versions": 3,
+    "comments": 0
+  },
+  "created_at": "2026-07-02T14:52:28.189Z",
+  "updated_at": "2026-07-10T04:48:49.101Z",
+  "fetched_at": "2026-07-11T23:05:45.575Z",
+  "source_url": "https://clawhub.ai/linkfox-ai/skills/linkfox-shopee-store-media"
+}

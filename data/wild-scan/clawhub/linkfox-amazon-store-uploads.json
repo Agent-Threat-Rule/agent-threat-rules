@@ -1,0 +1,34 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "linkfox-amazon-store-uploads",
+  "display_name": "亚马逊-店铺上传",
+  "publisher": {
+    "handle": "linkfox-ai",
+    "display_name": "linkfox-ai",
+    "user_id": "s171g8b6m2khwdy9ye8bxj0wx183vd4z"
+  },
+  "summary": "亚马逊店铺文件上传（与 linkfox-amazon-store-auth 等同系列），经 /spApi/developerProxy 调用 Uploads API v2020-11-01 的 createUploadDestinationForResource，再向返回 URL 上传文件，供 A+ Conten...",
+  "description": "亚马逊店铺文件上传（与 linkfox-amazon-store-auth 等同系列），经 /spApi/developerProxy 调用 Uploads API v2020-11-01 的 createUploadDestinationForResource，再向返回 URL 上传文件，供 A+ Conten...",
+  "content": "---\r\nname: linkfox-amazon-store-uploads\r\ndescription: 亚马逊店铺文件上传（与 linkfox-amazon-store-auth 等同系列），经 /spApi/developerProxy 调用 Uploads API v2020-11-01 的 createUploadDestinationForResource，再向返回 URL 上传文件，供 A+ Content、Messaging 等 API 使用。当用户提到上传文件、createUploadDestinationForResource、upload destination、contentMD5、预签名上传、SP-API 上传、A+ 图片上传、Messaging 附件上传 时触发。\r\n---\r\n\r\n# Amazon 店铺 Uploads（文件上传）\r\n\r\n本 skill 专用于 **向 Amazon 申请上传目的地并上传文件**，与 **`linkfox-amazon-store-auth`** 同系列：先 **`storeTokens`**，再 **`developerProxy`** 调用 **createUploadDestinationForResource**，最后用 **`upload_to_destination.py`** 对返回的 URL 执行 **PUT**（不经网关）。\r\n\r\n> 这是 **Uploads API**，不是 Orders 订单接口。订单见 **`linkfox-amazon-store-orders`**；批量 Feed 文件见 **`linkfox-amazon-store-feeds`**。\r\n\r\n## 调用方式\r\n\r\n- **API 端点**：`POST /spApi/developerProxy`（不同操作通过请求体区分；完整参数/响应/错误码见 `references/api.md`）\r\n- **Python 脚本**：`python scripts/<脚本名>.py '<JSON 参数>' [--inline]`（可用脚本见上文脚本一览）\r\n- **成本约束**：本工具会消耗积分；失败/空结果不得自动换关键词、翻页或连续试探；需要继续检索时先向用户说明会产生额外消耗。\r\n\r\n**输出策略（脚本默认行为）**：\r\n- **始终**将完整响应写入 `<cwd>/linkfox/<YYYY-MM-DD>/<session>/data/linkfox-amazon-store-uploads-<timestamp>.json`（`<cwd>` 为脚本执行时的工作目录，在 Claude Code 里即当前项目目录；`<session>` 取自环境变量 `SESSION_ID`，按用户任务自动聚合；**禁止写入 /tmp**，当前目录不可写则报错）\r\n- 响应体 ≤ 8 KB：落盘后把完整 JSON 打印到 stdout\r\n- 响应体 > 8 KB：落盘后 stdout 只输出摘要（顶层字段、常见计数如 `total`/`costToken`、最大列表字段的长度 + 前 3 条样本）\r\n- 加 `--inline` 强制全量打印到 stdout（同样落盘）\r\n\r\n**读数据建议**：先看摘要判断是否足够；需要具体字段时优先用 `jq`或`ConvertFrom-Json` 从保存的 json 文件按需抽取，避免整份 JSON 进入上下文。\r\n\r\n## 官方参考\r\n\r\n[createUploadDestinationForResource](https://developer-docs.amazon.com/sp-api/reference/createuploaddestinationforresource) · [Create an upload destination](https://developer-docs.amazon.com/sp-api/docs/create-an-upload-destination)\r\n\r\n---\r\n\r\n## Prerequisites\r\n\r\n1. 依赖 **`linkfox-amazon-store-auth`**。\r\n2. **`resource`** 须与下游 API 文档一致（例如 A+：`aplus/2020-11-01/contentDocuments`；Messaging 为对应 messages 资源路径）。\r\n3. **`contentMD5`** 为待上传文件内容的 **Base64 MD5 摘要**；传 **`filePath`** / **`content`** 时脚本可自动计算。\r\n\r\n---\r\n\r\n## 工作流\r\n\r\n```text\r\ncreate_upload_destination_for_resource  →  uploadDestination { uploadDestinationId, url, headers }\r\nupload_to_destination (PUT url + headers)  →  在 A+/Messaging 等 API 中引用 uploadDestinationId\r\n```\r\n\r\n---\r\n\r\n## Scripts\r\n\r\n| 脚本 | 说明 |\r\n|------|------|\r\n| `create_upload_destination_for_resource.py` | POST `uploads/2020-11-01/uploadDestinations/{resource}` |\r\n| `upload_to_destination.py` | PUT 到返回的 `url`（带 `headers`） |\r\n| `_spapi_uploads_common.py` | 内部公共模块 |\r\n\r\n---\r\n\r\n## 示例\r\n\r\n```bash\r\nexport LINKFOXAGENT_API_KEY=\"<your-key>\"\r\n\r\n# 1) 创建上传目的地（自动根据 filePath 计算 contentMD5）\r\npython scripts/create_upload_destination_for_resource.py '{\r\n  \"sellerId\":\"A1...\",\r\n  \"region\":\"NA\",\r\n  \"resource\":\"aplus/2020-11-01/contentDocuments\",\r\n  \"marketplaceId\":\"ATVPDKIKX0DER\",\r\n  \"filePath\":\"/path/to/banner.jpg\",\r\n  \"contentType\":\"image/jpeg\"\r\n}'\r\n\r\n# 2) 上传文件（将上一步 stdout 中的 uploadDestination 传入）\r\npython scripts/upload_to_destination.py '{\r\n  \"uploadDestination\": { \"url\": \"...\", \"headers\": { } },\r\n  \"filePath\": \"/path/to/banner.jpg\"\r\n}'\r\n```\r\n\r\n---\r\n\r\n## Display Rules\r\n\r\n1. 成功创建目的地常为 **HTTP 201**；先看 **`developerProxy`**，再看 **`uploadDestination`**。\r\n2. **`resource`** 不要带前导 `/`；path 中会对 `/` 做编码。\r\n3. 网关需放行 **`uploads/2020-11-01/`** 前缀。\r\n\r\n**Feedback：** `skillName`：`linkfox-amazon-store-uploads`。\r\n\r\n---\r\n*更多跨境 skill：[LinkFox Skills](https://skill.linkfox.com/)*\r\n\r\n",
+  "category": null,
+  "tags": [
+    "Messaging"
+  ],
+  "topics": [
+    "Messaging"
+  ],
+  "latest_version": "1.0.4",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 612,
+    "installs": 13,
+    "stars": 0,
+    "versions": 5,
+    "comments": 0
+  },
+  "created_at": "2026-05-20T08:05:56.821Z",
+  "updated_at": "2026-07-10T04:48:54.628Z",
+  "fetched_at": "2026-07-11T23:03:44.297Z",
+  "source_url": "https://clawhub.ai/linkfox-ai/skills/linkfox-amazon-store-uploads"
+}

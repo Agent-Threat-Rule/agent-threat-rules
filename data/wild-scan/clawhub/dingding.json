@@ -1,0 +1,43 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "dingding",
+  "display_name": "Dingding",
+  "publisher": {
+    "handle": "zhangifonly",
+    "display_name": "zhangifonly",
+    "user_id": "s177g1r0fwwn78mtc60nke0fas8841hj"
+  },
+  "summary": "钉钉群机器人工具与开放平台开发指南。Use for: (1) 用附带的零依赖 CLI 向钉钉群发通知——文本/markdown/链接卡片，支持加签安全模式和@人, (2) CI/监控/日报等自动化通知场景, (3) 钉钉开放平台 API（token/审批/通讯录）开发指导。DingTalk group-robot...",
+  "description": "钉钉群机器人工具与开放平台开发指南。Use for: (1) 用附带的零依赖 CLI 向钉钉群发通知——文本/markdown/链接卡片，支持加签安全模式和@人, (2) CI/监控/日报等自动化通知场景, (3) 钉钉开放平台 API（token/审批/通讯录）开发指导。DingTalk group-robot CLI (zero-dependency, HMAC-signed webhook) plus Open Platform development guide.",
+  "content": "---\nname: \"钉钉\"\nversion: \"2.0.0\"\ndescription: \"钉钉群机器人工具与开放平台开发指南。Use for: (1) 用附带的零依赖 CLI 向钉钉群发通知——文本/markdown/链接卡片，支持加签安全模式和@人, (2) CI/监控/日报等自动化通知场景, (3) 钉钉开放平台 API（token/审批/通讯录）开发指导。DingTalk group-robot CLI (zero-dependency, HMAC-signed webhook) plus Open Platform development guide.\"\ntags: [\"dingtalk\", \"dingding\", \"bot\", \"webhook\", \"enterprise\", \"cli\"]\nauthor: \"ClawSkills Team\"\ncategory: \"enterprise\"\n---\n\n# 钉钉 Skill\n\n附带零依赖 CLI（`scripts/dingbot.py`，仅 Python 标准库），agent 可直接\n向钉钉群发通知——这是 agent 自动化里最高频的钉钉需求：任务完成、\n构建结果、监控告警、定时日报，一条命令送达。\n\n## 快速开始\n\n```bash\n# 群设置 → 智能群助手 → 添加机器人 → 自定义。安全设置选\"加签\"\nexport DING_WEBHOOK='https://[REDACTED-DINGTALK_WEBHOOK]'\nexport DING_SECRET='SECxxxxxx'   # 加签密钥；用关键词/IP模式则不设\n\npython3 scripts/dingbot.py text \"部署完成 ✅\" @all\npython3 scripts/dingbot.py markdown \"巡检日报\" report.md\npython3 scripts/dingbot.py link \"新版本发布\" \"点击查看详情\" https://example.com\n```\n\n脚本行为声明：仅请求 `oapi.dingtalk.com`；`markdown` 命令的第二参数\n若是本地文件路径则读取该文件，其余不读写本地文件。\n\n## 命令手册\n\n| 命令 | 作用 |\n|------|------|\n| `text <内容> [@手机号,手机号\\|@all]` | 文本消息，可@指定成员或所有人 |\n| `markdown <标题> <md文件或内容>` | markdown 消息（标题显示在会话列表） |\n| `link <标题> <正文> <跳转URL> [图片URL]` | 链接卡片 |\n\n加签算法已内置：`sign = base64(hmac_sha256(secret, \"{毫秒时间戳}\\n{secret}\"))`\n再 urlencode 拼进 URL——手写这个签名是接钉钉机器人最常见的翻车点。\n\n## Agent 典型用法\n\n1. **CI/CD 通知**：构建、测试、部署完成后 `text` 一条结果到项目群\n2. **监控告警**：脚本巡检发现异常 → `markdown` 发结构化告警\n   （标题带级别 emoji，正文列指标）\n3. **定时日报**：cron 任务生成 md 报告 → `markdown` 推送\n4. **@ 精确提醒**：告警 @值班人手机号 而不是打扰全群\n\n## 实战要点与错误码（实测）\n\n| errcode | 含义 | 处理 |\n|---------|------|------|\n| 300005 | token 不存在 | webhook URL 拼错或机器人被移除 |\n| 310000 | 安全设置校验失败 | 关键词模式=内容必须含设定词；加签模式=检查 DING_SECRET；IP模式=出口IP不在白名单 |\n| 130101 | 发送太快被限流 | 每机器人 **20 条/分钟**，超限封 10 分钟 |\n\n- 安全模式三选一（关键词/加签/IP 白名单），**推荐加签**：关键词模式\n  会强迫每条消息都带那个词，IP 模式对动态出口不友好\n- markdown 支持的语法是子集：标题/引用/加粗/链接/图片/有序无序列表，\n  **不支持表格**——需要表格就发正文截图或链接卡片\n- @手机号 只在 `text` 类型生效；markdown 里 @ 需正文含 `@手机号` 且\n  at 字段同时传（本脚本 text 已封装）\n\n## 开放平台开发速查（服务端 API）\n\n- 旧版域名 `oapi.dingtalk.com`（gettoken 参数式），新版 `api.dingtalk.com`\n  （token 放 Header `x-acs-dingtalk-access-token`），新旧接口长期并存\n- access_token：`GET /gettoken?appkey=&appsecret=`，有效期 7200 秒，\n  必须中心化缓存\n- 常用能力：工作通知（`/topapi/message/corpconversation/asendv2`）、\n  审批实例、通讯录、考勤打卡数据。参数以 open.dingtalk.com 文档为准\n- 企业内部应用最简单（免审核）；第三方应用要走应用市场审核\n\n## 本 skill 不做什么\n\n- 不含钉钉个人号自动化（协议逆向属封号高危区）\n- Stream 模式回调、AI 助理（钉钉 AI PaaS）等新能力未覆盖，\n  以官方文档 open.dingtalk.com 为准\n- 群发通知打扰面大，@all 使用前 agent 应向用户确认\n",
+  "category": "enterprise",
+  "tags": [
+    "dingtalk",
+    "dingding",
+    "bot",
+    "webhook",
+    "enterprise",
+    "cli"
+  ],
+  "topics": [
+    "Bot",
+    "Enterprise",
+    "Im",
+    "开发",
+    "钉钉"
+  ],
+  "latest_version": "2.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 1050,
+    "installs": 33,
+    "stars": 2,
+    "versions": 3,
+    "comments": 0
+  },
+  "created_at": "2026-03-14T01:48:23.758Z",
+  "updated_at": "2026-07-11T13:35:36.935Z",
+  "fetched_at": "2026-07-11T22:44:39.464Z",
+  "source_url": "https://clawhub.ai/zhangifonly/skills/dingding"
+}

@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "linkfox-amazon-store-catalog",
+  "display_name": "亚马逊-店铺目录",
+  "publisher": {
+    "handle": "linkfox-ai",
+    "display_name": "linkfox-ai",
+    "user_id": "s171g8b6m2khwdy9ye8bxj0wx183vd4z"
+  },
+  "summary": "亚马逊店铺商品目录 Catalog（与 linkfox-amazon-store-auth / report / listings / pricing / orders / feeds 同系列），经 /spApi/developerProxy 调用 SP-API Catalog Items：v0 listCata...",
+  "description": "亚马逊店铺商品目录 Catalog（与 linkfox-amazon-store-auth / report / listings / pricing / orders / feeds 同系列），经 /spApi/developerProxy 调用 SP-API Catalog Items：v0 listCata...",
+  "content": "---\r\nname: linkfox-amazon-store-catalog\r\ndescription: 亚马逊店铺商品目录 Catalog（与 linkfox-amazon-store-auth / report / listings / pricing / orders / feeds 同系列），经 /spApi/developerProxy 调用 SP-API Catalog Items：v0 listCatalogCategories；v2022-04-01（默认）或 v2020-12-01 的 searchCatalogItems、getCatalogItem。当用户提到亚马逊目录、Catalog Items、listCatalogCategories、searchCatalogItems、getCatalogItem、按 ASIN 查目录、关键词搜商品目录、类目节点、includedData、summaries/images 时触发。\r\n---\r\n\r\n# Amazon 店铺 Catalog Items\r\n\r\n本 skill 与 **`linkfox-amazon-store-auth`** 等同属 **Amazon Store** 系列：先 **`POST /spApi/storeTokens`**，再 **`POST /spApi/developerProxy`** 转发 **GET**。\r\n\r\n## 调用方式\r\n\r\n- **API 端点**：`POST /spApi/developerProxy`（不同操作通过请求体区分；完整参数/响应/错误码见 `references/api.md`）\r\n- **Python 脚本**：`python scripts/<脚本名>.py '<JSON 参数>' [--inline]`（可用脚本见上文脚本一览）\r\n- **成本约束**：本工具会消耗积分；失败/空结果不得自动换关键词、翻页或连续试探；需要继续检索时先向用户说明会产生额外消耗。\r\n\r\n**输出策略（脚本默认行为）**：\r\n- **始终**将完整响应写入 `<cwd>/linkfox/<YYYY-MM-DD>/<session>/data/linkfox-amazon-store-catalog-<timestamp>.json`（`<cwd>` 为脚本执行时的工作目录，在 Claude Code 里即当前项目目录；`<session>` 取自环境变量 `SESSION_ID`，按用户任务自动聚合；**禁止写入 /tmp**，当前目录不可写则报错）\r\n- 响应体 ≤ 8 KB：落盘后把完整 JSON 打印到 stdout\r\n- 响应体 > 8 KB：落盘后 stdout 只输出摘要（顶层字段、常见计数如 `total`/`costToken`、最大列表字段的长度 + 前 3 条样本）\r\n- 加 `--inline` 强制全量打印到 stdout（同样落盘）\r\n\r\n**读数据建议**：先看摘要判断是否足够；需要具体字段时优先用 `jq`或`ConvertFrom-Json` 从保存的 json 文件按需抽取，避免整份 JSON 进入上下文。\r\n\r\n## 官方参考索引\r\n\r\n| 能力 | 文档 |\r\n|------|------|\r\n| listCatalogCategories | [listCatalogCategories](https://developer-docs.amazon.com/sp-api/reference/listcatalogcategories) |\r\n| searchCatalogItems | [searchCatalogItems](https://developer-docs.amazon.com/sp-api/reference/searchcatalogitems) |\r\n| getCatalogItem | [getCatalogItem](https://developer-docs.amazon.com/sp-api/reference/getcatalogitem) |\r\n\r\n---\r\n\r\n## Prerequisites\r\n\r\n1. 依赖 **`linkfox-amazon-store-auth`**；`python scripts/check_auth_dependency.py`，exit **42** 时需先安装授权 skill。\r\n2. 应用需具备 **Catalog Items** 相关角色；`searchCatalogItems` 按 **identifiers+SKU** 检索时 query 须带 **`sellerId`**（脚本在 `identifiersType=SKU` 时自动使用入参 `sellerId`）。\r\n\r\n---\r\n\r\n## Current Capabilities\r\n\r\n| 能力 | path | 脚本 |\r\n|------|------|------|\r\n| listCatalogCategories | `catalog/v0/categories` | `list_catalog_categories.py` |\r\n| searchCatalogItems | `catalog/{2022-04-01\\|2020-12-01}/items` | `search_catalog_items.py` |\r\n| getCatalogItem | `catalog/{version}/items/{asin}` | `get_catalog_item.py` |\r\n\r\n默认 Catalog Items 版本：**`2022-04-01`**；入参 **`catalogItemsVersion`** 可改为 **`2020-12-01`**。\r\n\r\n共享模块：**`_spapi_catalog_common.py`**。\r\n\r\n---\r\n\r\n## Quick Parameters\r\n\r\n- **listCatalogCategories**：`marketplaceId` + **`asin`** 或 **`sellerSku`**（二选一）。\r\n- **searchCatalogItems**：`marketplaceIds` + **`keywords`** 或 **`identifiers` + `identifiersType`**（互斥）；可选 `includedData`、`brandNames`、`classificationIds`、`pageSize`、`pageToken`。\r\n- **getCatalogItem**：`asin`、`marketplaceIds`；可选 `includedData`、`locale`。\r\n\r\n---\r\n\r\n## Scripts\r\n\r\n```bash\r\nexport LINKFOXAGENT_API_KEY=\"<your-key>\"\r\n\r\npython scripts/list_catalog_categories.py '{\"sellerId\":\"A1...\",\"region\":\"NA\",\"marketplaceId\":\"ATVPDKIKX0DER\",\"asin\":\"B08N5WRWNW\"}'\r\n\r\npython scripts/search_catalog_items.py '{\"sellerId\":\"A1...\",\"region\":\"NA\",\"marketplaceIds\":[\"ATVPDKIKX0DER\"],\"keywords\":[\"wireless mouse\"]}'\r\n\r\npython scripts/get_catalog_item.py '{\"sellerId\":\"A1...\",\"region\":\"NA\",\"asin\":\"B08N5WRWNW\",\"marketplaceIds\":[\"ATVPDKIKX0DER\"],\"includedData\":[\"summaries\",\"images\"]}'\r\n```\r\n\r\n---\r\n\r\n## Display Rules\r\n\r\n1. 先看 **`developerProxy.errcode` / `httpStatus`**，再读 **`categories`** / **`catalogItems`** / **`catalogItem`**。\r\n2. **listCatalogCategories** 使用 v0 查询键 **`MarketplaceId`**（单数），与 search/get 的 **`marketplaceIds`** 不同。\r\n3. 网关 path 白名单需包含 **`catalog/v0/`** 与 **`catalog/2022-04-01/`**（或 `2020-12-01`）。\r\n\r\n---\r\n\r\n## Important Limitations\r\n\r\n- 本 skill 读的是 **Amazon 商品目录（Catalog）**，不是卖家订单；订单见 **`linkfox-amazon-store-orders`**。\r\n- `includedData`、返回字段以 Amazon schema 为准，详见 **`references/api.md`**。\r\n\r\n**Feedback：** `skillName`：`linkfox-amazon-store-catalog`。\r\n\r\n---\r\n*更多跨境 skill：[LinkFox Skills](https://skill.linkfox.com/)*\r\n\r\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.4",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 651,
+    "installs": 14,
+    "stars": 0,
+    "versions": 5,
+    "comments": 0
+  },
+  "created_at": "2026-05-20T07:03:14.351Z",
+  "updated_at": "2026-07-10T04:48:54.628Z",
+  "fetched_at": "2026-07-11T23:03:55.652Z",
+  "source_url": "https://clawhub.ai/linkfox-ai/skills/linkfox-amazon-store-catalog"
+}

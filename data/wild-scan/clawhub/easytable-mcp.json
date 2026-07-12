@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "easytable-mcp",
+  "display_name": "Tmp.6y6CG0U2aH",
+  "publisher": {
+    "handle": "chrischall",
+    "display_name": "chrischall",
+    "user_id": "s17cjx1a349nz5apaqp02vgz4h85728z"
+  },
+  "summary": "Use when the user wants to check restaurant availability or make, change, or cancel a table reservation at a restaurant that books through easyTable (a book....",
+  "description": "Use when the user wants to check restaurant availability or make, change, or cancel a table reservation at a restaurant that books through easyTable (a book.easytable.com/book/?id=<id> widget). Covers listing booking areas, dates and times, looking up existing bookings by phone, and creating/modifying/cancelling reservations.",
+  "content": "---\nname: easytable-mcp\ndescription: Use when the user wants to check restaurant availability or make, change, or cancel a table reservation at a restaurant that books through easyTable (a book.easytable.com/book/?id=<id> widget). Covers listing booking areas, dates and times, looking up existing bookings by phone, and creating/modifying/cancelling reservations.\n---\n\n# easyTable reservations\n\neasyTable is a restaurant table-booking system. Each restaurant has a public\nbooking widget at `https://book.easytable.com/book/?id=<restaurantId>` — the\n`id` is the only identifier (there's no login). This MCP drives that widget\nthrough the user's own signed-in, Cloudflare-cleared browser tab via the\nfetchproxy bridge; the site blocks any server-side request.\n\n## Setup (one time)\n\n1. Install the fetchproxy browser extension (https://github.com/chrischall/fetchproxy).\n2. Open a booking widget in Chrome: `https://book.easytable.com/book/?id=<restaurantId>`.\n   Let the page finish loading — its Cloudflare Turnstile check solves itself.\n3. The first tool call prints a one-time pair code; approve it in the extension.\n\n## Typical flow\n\n1. `easytable_list_types` — the restaurant's booking areas (e.g. indoor, bar);\n   note the `type` id.\n2. `easytable_list_dates` — bookable dates for that `type` + party size.\n3. `easytable_list_times` — time slots (HH:MM) for a chosen date.\n4. `easytable_create_booking` — make the reservation (needs name + mobile).\n\nTo change or cancel, first `easytable_find_bookings` with the mobile the\nbooking was made under, then `easytable_modify_booking` /\n`easytable_cancel_booking` with the returned booking id.\n\n## Writes are confirm-gated\n\n`create`, `modify`, and `cancel` do nothing without `confirm: true` — they\nreturn a dry-run preview first. Re-run with `confirm: true` to apply.\n\n`create` and `modify` submit a Cloudflare Turnstile token the MCP reads from\nthe widget tab's hidden input, so a `book.easytable.com/book/?id=<id>` tab must\nbe open and loaded when you confirm. The token is single-use and expires after\na few minutes; if a create fails on the token, reload the tab and retry.\n`cancel` needs no token.\n\n## Notes\n\n- Times are HH:MM; the widget internally uses minute-of-day.\n- All reads and the whole booking flow are the user's own actions on their own\n  browser session — no easyTable account or API key is involved.\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "0.1.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 146,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-09T22:15:45.919Z",
+  "updated_at": "2026-07-09T22:15:45.919Z",
+  "fetched_at": "2026-07-11T23:10:56.500Z",
+  "source_url": "https://clawhub.ai/chrischall/skills/easytable-mcp"
+}

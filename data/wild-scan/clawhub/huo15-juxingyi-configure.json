@@ -1,0 +1,37 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "huo15-juxingyi-configure",
+  "display_name": "Juxingyi Configure",
+  "publisher": {
+    "handle": "zhaobod1",
+    "display_name": "Job Zhao",
+    "user_id": "s17f6q72skfgyjycm2frgdc8dn83v5mk"
+  },
+  "summary": "LLM 大模型聚合 SaaS 平台的配置与运维指南。涵盖供应商接入、模型路由、定价策略、网关增强、部署运维等。",
+  "description": "LLM 大模型聚合 SaaS 平台的配置与运维指南。涵盖供应商接入、模型路由、定价策略、网关增强、部署运维等。",
+  "content": "---\nname: huo15-juxingyi-configure\ndisplay_name: \"Juxingyi 聚星逸配置指南\"\ndescription: \"LLM 大模型聚合 SaaS 平台的配置与运维指南。涵盖供应商接入、模型路由、定价策略、网关增强、部署运维等。\"\ntags:\n  - llm\n  - gateway\n  - saas\n  - openai-compatible\n  - api-aggregation\n  - devops\nversion: 1.0.0\n---\n\n# Juxingyi 聚星逸配置指南\n\n> 聚星逸（Juxingyi / Fireworks Hub）— LLM 大模型聚合 SaaS 平台。一个 OpenAI 兼容密钥调用 50+ 主流大模型，按量计费、多供应商自动故障切换。\n\n## 平台架构\n\n| 层 | 技术栈 | 域名/位置 |\n|---|---|---|\n| 后端 | Node + Fastify + Prisma + PostgreSQL 18 + Redis 7 | `fireworks-simulator-api.huo15.com` → `127.0.0.1:8787` |\n| 前端控制台 | Vue3 + Vite + TS + Pinia | `fireworks-simulator.huo15.com/app/` |\n| 营销静态页 | 原生 HTML/CSS/JS | `fireworks-simulator.huo15.com` |\n| 部署 | Docker Compose + 宝塔 Nginx 反代 | 服务器 `47.104.78.121` |\n\n## 核心能力\n\n- **OpenAI 兼容网关**：`/v1/chat/completions`、`/v1/models`、`/v1/images/generations`、`/v1/videos/generations`\n- **多供应商故障切换**：`Model`（对外模型+售价）↔ `ModelRoute`（→Provider 上游模型+优先级/成本/健康度）↔ `Provider`；按 priority 选路，失败自动切下一家，连续失败 3 次熔断 60s\n- **Cheapest-First 选路**：多供应商路由按 `costInputPrice + costOutputPrice` 综合成本排序，成本最低的优先\n- **多 Key 轮询**：一个供应商挂多把上游 key（`ProviderKey` 表），每 key 独立健康度\n- **欠费动态降级**：上游报「余额不足」即该线路长冷却 30min 自动下线\n- **协议感知选路**：同优先级内入站协议（openai/anthropic）匹配的上游优先\n- **三账户钱包**：现金余额 / 赠送额度 / 佣金；扣费先扣赠送再扣现金\n- **计费**：词元订阅套餐 + 阶梯预充；分段倍率定价；缓存命中折价；分组倍率\n- **邀请返佣**：注册双方赠额度 + 好友消费按比例返现金佣金\n\n## 供应商接入指南\n\n### 当前已接入供应商\n\n| 供应商 | Slug | 协议 | Base URL | 说明 |\n|---|---|---|---|---|\n| Sidus / Sophnet | `sidus` | OpenAI | `https://model.sidus-ai.com/api/open-apis/v1` | 主供应商，7+ 模型 |\n| 润嘉云 | `alipower` | OpenAI | `https://llm.ai-token.com.cn/v1` | 8 文本 + 2 生图 |\n| OpenSand | `opensand` / `opensand-anthropic` | OpenAI + Anthropic | `https://api.opensand.ai/v1` | 双协议 new-api 站 |\n| DeepSeek 官方 | `deepseek-offical` / `deepseek-anthropic` | OpenAI + Anthropic | `api.deepseek.com` / `api.deepseek.com/anthropic/v1` | 原生双协议 |\n| 智谱清言 | `zhipu` | OpenAI | `https://open.bigmodel.cn/api/paas/v4` | GLM 直连 |\n| MiniMax | `minimax` | OpenAI | `https://api.minimaxi.com/v1` | Token Plan 套餐 |\n\n### 添加新供应商步骤\n\n1. **后台新增供应商**：「供应商」→ 新增，填写 Base URL（含 `/v1`）+ API Key\n2. **测试连通性**：点「测试」按钮，拉 `/models` 看该 key 能用哪些模型（注意：`/v1/models` 列表 ≠ 授权子集，需逐个实调验证）\n3. **给模型加路由**：到「模型」→ 选对外模型 → 加该供应商「路由」（填上游模型名 + 成本 + 优先级）\n4. **设定优先级**：按 Cheapest-First 原则，成本最低的 priority=1，次便宜=2，兜底=999\n\n### ⚠️ 常见坑\n\n- **列表 ≠ 授权**：`/v1/models` 返回的是平台全目录，不一定都是 key 授权的，要逐个实调验证\n- **Key 格式**：智谱清言 key 格式为 `{apiKey}.{secret}`\n- **URL 清洗**：客户粘贴的 URL/key 入库前用 `cleanUrl()` 清洗隐形字符\n- **AES 加密**：上游 Key 落库必须 AES 加密（`src/lib/crypto.ts` encryptSecret），不存明文\n- **OpenClaw 接入**：provider ID 必须用 `yanhua`，严禁用 `fireworks`（会触发 OpenClaw 专属改写）\n\n## 定价体系\n\n### 定价规则\n\n- **售价**挂 `Model`（`inputPrice` / `outputPrice`），单位：元/千 token\n- **成本**挂 `ModelRoute`（`costInputPrice` / `costOutputPrice`）\n- **利润**：售价 ≈ 成本 × 1.4~1.5（分段倍率：≤0.01×1.7 / ≤0.05×1.55 / ≤0.30×1.45 / >0.30×1.4）\n- **生图按张**：`outputPrice` = 每张售价，张数记 `Usage.completionTokens`\n- **视频按秒**：`outputPrice` = 每秒售价，秒数记 `Usage.completionTokens`（以轮询返回的 `usage.duration` 为准）\n- **缓存命中折价**：命中缓存输入按 `售价 × Setting('pricing.cacheSellRatio', 0.5)` 计\n- **分组倍率**：`User.priceGroup` × `Setting('group.multipliers')`（default=1 / vip=0.9 / enterprise=0.82 / reseller=0.75）\n\n### 向客户展示\n\n- **模型广场**：`/model-square.html`，未登录隐藏价格，登录后显示价格 + 官网折扣\n- **控制台模型页**：`/app/#/models`，显示每百万 token 价格 + 模型 ID 复制\n\n## 部署运维\n\n### 服务器信息\n\n- **服务器**：`47.104.78.121`（阿里云 + 宝塔 + Nginx + Docker）\n- **后端目录**：`/www/wwwroot/fireworks-simulator/backend`（docker compose：api + db + redis）\n- **前端目录**：`/www/wwwroot/fireworks-simulator/frontend`（根=营销页，`app/`=SPA）\n\n### 前端部署\n\n```bash\ncd frontend && npm run build\nrsync -av --delete frontend/dist/ root@47.104.78.121:/www/wwwroot/fireworks-simulator/frontend/app/\nscp site/*.html site/*.js site/*.svg root@47.104.78.121:/www/wwwroot/fireworks-simulator/frontend/\nssh root@47.104.78.121 \"chown -R www-data:www-data /www/wwwroot/fireworks-simulator/frontend\"\n```\n\n### 后端部署\n\n```bash\nrsync -av --delete --exclude='node_modules' --exclude='.env' --exclude='dist' backend/ root@47.104.78.121:/www/wwwroot/fireworks-simulator/backend/\nssh root@47.104.78.121 \"cd /www/wwwroot/fireworks-simulator/backend && docker compose build api && docker compose up -d\"\n```\n\n### 常用运维命令\n\n```bash\n# 查看容器状态\nssh root@47.104.78.121 \"cd /www/wwwroot/fireworks-simulator/backend && docker compose ps\"\n\n# 查看后端日志\nssh root@47.104.78.121 \"cd /www/wwwroot/fireworks-simulator/backend && docker compose logs --tail=50 api\"\n\n# 重启后端\nssh root@47.104.78.121 \"cd /www/wwwroot/fireworks-simulator/backend && docker compose restart api\"\n\n# 查看数据库\nssh root@47.104.78.121 \"cd /www/wwwroot/fireworks-simulator/backend && docker compose exec db psql -U fireworks -d fireworks -c 'SQL_HERE'\"\n\n# 重置路由熔断状态\nssh root@47.104.78.121 \"cd /www/wwwroot/fireworks-simulator/backend && docker compose exec db psql -U fireworks -d fireworks -c 'UPDATE \\\"ModelRoute\\\" SET \\\"consecutiveFailures\\\"=0, \\\"disabledUntil\\\"=NULL, \\\"lastError\\\"=NULL;'\"\n```\n\n## 红线\n\n- ❌ 不提交 secrets：`backend/.env` 已 gitignore，永不入库\n- ❌ 上游 Key 落库必须 AES 加密，不存明文\n- ❌ 用户网关 Key 只存 sha256，明文仅创建时返回一次\n- ❌ 发版仅 `git push origin master`（gitee 单 remote）\n\n## 关键文件索引\n\n| 文件 | 作用 |\n|---|---|\n| `backend/src/lib/gateway.ts` | 网关核心：选路、故障切换、熔断、SSE 流式 |\n| `backend/src/lib/pricing.ts` | 分段倍率定价 |\n| `backend/src/lib/billing.ts` | 钱包扣费逻辑 |\n| `backend/src/lib/orders.ts` | 邀请返佣 |\n| `backend/src/routes/admin.ts` | 管理后台 API |\n| `backend/src/routes/gateway.ts` | OpenAI 兼容网关路由 |\n| `backend/src/routes/public.ts` | 公开 API（模型广场用） |\n| `backend/prisma/schema.prisma` | 数据库 schema |\n| `frontend/src/views/admin/Admin.vue` | 管理后台界面 |\n| `frontend/src/views/Models.vue` | 控制台模型价格页 |\n| `site/model-square.html` | 营销页模型广场 |\n| `docs/供应商比价与路由策略.md` | 各模型路由优先级表 |\n| `docs/PRD.md` | 产品需求全貌 |\n| `docs/接手指南.md` | 部署 SOP / 凭据 / 常见操作 |\n",
+  "category": null,
+  "tags": [
+    "llm",
+    "gateway",
+    "saas",
+    "openai-compatible",
+    "api-aggregation",
+    "devops"
+  ],
+  "topics": [],
+  "latest_version": "1.1.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 84,
+    "installs": 1,
+    "stars": 0,
+    "versions": 2,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T13:47:21.409Z",
+  "updated_at": "2026-07-11T14:03:12.748Z",
+  "fetched_at": "2026-07-11T22:44:02.370Z",
+  "source_url": "https://clawhub.ai/zhaobod1/skills/huo15-juxingyi-configure"
+}

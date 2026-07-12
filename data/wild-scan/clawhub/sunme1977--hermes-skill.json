@@ -1,0 +1,34 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "hermes-skill",
+  "display_name": "Hermesclawzero Auto Memory",
+  "publisher": {
+    "handle": "sunme1977",
+    "display_name": "Hansjoerg Hofer",
+    "user_id": "s175wsc9sw9jq93z4ck1ty7kes89zj1v"
+  },
+  "summary": "Auto-capture chat to Hermes DB, load context on fresh chats, scheduled DB maintenance.",
+  "description": "Auto-capture chat to Hermes DB, load context on fresh chats, scheduled DB maintenance.",
+  "content": "---\nname: \"hermesclawzero-auto-memory\"\ndescription: \"Auto-capture chat to Hermes DB, load context on fresh chats, scheduled DB maintenance.\"\n---\n\n# HermesClawZero Auto Memory\n\nAutomatically saves meaningful chat input to HermesClawZero DB, loads user context on fresh sessions, and manages automated DB maintenance.\n\n## ⚠️ Privacy & Consent\n\nThis skill **captures and persistently stores conversation content** in a local PostgreSQL+pgvector database. By activating this skill you consent to automatic memory capture.\n\n- **Data stays local** — all processing runs via the Sidecar API on your machine; no third-party data sharing\n- **Background jobs** (cron) are only created when you explicitly ask to set them up\n- **Captures only meaningful facts** — the agent summaries and saves key information, not raw chat logs\n\n## Script Path\n\nThe `memory.py` CLI lives alongside the sidecar at:\n`C:\\dev\\HermesClawZero-ConfigSidecar\\memory.py`\n\nIt reads API config from `.env` or env vars (`MEM_PUBLIC_URL`, `API_KEY`) automatically.\n\n## 1. Auto-Load on Fresh Chat\n\nWhen a new session starts, load the user's profile and recent context:\n- Execute: `python C:\\dev\\HermesClawZero-ConfigSidecar\\memory.py search \"user profile preferences current project state\" 5`\n- Silently absorb the context. Do not output raw JSON to the user unless they ask.\n\n## 2. Auto-Save (Continuous Capture)\n\nDuring conversation, if the user shares a new fact, instruction, preference, project detail, or anything worth remembering, immediately capture it:\n- Execute: `python C:\\dev\\HermesClawZero-ConfigSidecar\\memory.py capture \"<Concise summary of the user's input or new fact>\"`\n- Optionally pass a `scope_id` (e.g. project name) for logical grouping.\n- Do **not** pass a `chat_id` — that makes memories unfindable via default search. Omitting it stores in `chat_id=global`.\n\n## 3. Full Chat History Sync (On Request)\n\nIf the user asks to back up the current session:\n1. Use `sessions_history` to get the current visible session.\n2. Format messages into a text summary.\n3. Execute: `python C:\\dev\\HermesClawZero-ConfigSidecar\\memory.py autosave \"<formatted_chat_history>\" \"chat_backup.md\"`\n\n## 4. Automated Database Maintenance (Cron Jobs)\n\nHermesClawZero requires periodic background jobs for tagging memories and push reminders.\n\nWhen the user asks to \"setup memory background jobs\", create these cron jobs:\n\n**A. Nightly Memory Gardener (Auto-tagging):**\n- Name: `hermes-memory-gardener`\n- Expression: `0 3 * * *` (3:00 AM daily)\n- Session target: isolated\n- AgentTurn message: `exec python C:\\dev\\HermesClawZero-ConfigSidecar\\gardener.py`\n\n**B. Daily Memory Highlight (Telegram Push):**\n- Name: `hermes-daily-reminder`\n- Expression: `0 9 * * *` (9:00 AM daily)\n- Session target: isolated\n- AgentTurn message: `exec python C:\\dev\\HermesClawZero-ConfigSidecar\\daily_reminder.py`\n\nCurrent cron jobs already exist for both (checked during setup).\n",
+  "category": null,
+  "tags": [
+    "memory"
+  ],
+  "topics": [
+    "memory"
+  ],
+  "latest_version": "0.1.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 52,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T12:05:11.834Z",
+  "updated_at": "2026-07-11T12:05:11.834Z",
+  "fetched_at": "2026-07-11T22:45:43.717Z",
+  "source_url": "https://clawhub.ai/sunme1977/skills/hermes-skill"
+}

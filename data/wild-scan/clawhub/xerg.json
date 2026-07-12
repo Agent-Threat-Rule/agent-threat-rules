@@ -1,0 +1,42 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "xerg",
+  "display_name": "Xerg",
+  "publisher": {
+    "handle": "xerg",
+    "display_name": "Xerg",
+    "user_id": "s1744aaf2z3hps1qjj909r2ctd83y71m"
+  },
+  "summary": "Audit and reduce AI agent spend in dollars. Use when the user asks about AI costs, agent spend, token waste, retry loops, model downgrades, per-agent spend,...",
+  "description": "Audit and reduce AI agent spend in dollars. Use when the user asks about AI costs, agent spend, token waste, retry loops, model downgrades, per-agent spend, or wants to measure whether a workflow or model change saved money. Works with OpenClaw, Hermes, Claude Code, Cursor, and any framework via event ingest.",
+  "content": "---\nname: xerg\ndescription: Audit and reduce AI agent spend in dollars. Use when the user asks about AI costs, agent spend, token waste, retry loops, model downgrades, per-agent spend, or wants to measure whether a workflow or model change saved money. Works with OpenClaw, Hermes, Claude Code, Cursor, and any framework via event ingest.\nhomepage: https://xerg.ai\nmetadata:\n  xerg:\n    homepage: https://xerg.ai\n    links:\n      skill: https://xerg.ai/skill.md\n      documentation: https://xerg.ai/docs\n    primaryEnv: XERG_API_KEY\n    requires:\n      anyBins:\n        - xerg\n        - npx\n      config:\n        - ~/.xerg/config.json\n        - ~/.config/xerg/credentials.json\n        - ~/.xerg/remotes.json\n    install:\n      - kind: node\n        package: \"@xerg/cli\"\n        bins:\n          - xerg\n    envVars:\n      - name: XERG_API_KEY\n        required: false\n        description: Optional Xerg Cloud workspace API key for explicit push, connect, and hosted MCP setup.\n      - name: XERG_API_URL\n        required: false\n        description: Optional override for the Xerg API endpoint; defaults to https://api.xerg.ai.\n    dependencies:\n      - name: \"@xerg/cli\"\n        type: npm\n        url: https://www.npmjs.com/package/@xerg/cli\n      - name: ssh\n        type: other\n        url: https://www.openssh.com/\n      - name: rsync\n        type: other\n        url: https://rsync.samba.org/\n      - name: railway\n        type: npm\n        repository: https://github.com/railwayapp/cli\n---\n\n# Xerg\n\nXerg is a local-first CLI for finding wasted AI spend in OpenClaw, Hermes, Claude Code, and Cursor — plus any other framework that can export a JSON event payload. It audits dollars instead of raw token counts, separates confirmed waste from savings opportunities, attributes spend per agent (including delegated sub-agent spend where the source supports it), and uses `--compare` to measure whether a workflow or model change actually helped.\n\n## First run (agent execution path)\n\nUse the non-interactive commands. Do not run `xerg init` unless the user explicitly asks for guided interactive setup — it is TTY-only and prompts for input.\n\n```bash\nnpx @xerg/cli@latest doctor\nnpx @xerg/cli@latest audit --json\n```\n\n1. Run `doctor` first. It reports which local sources exist (OpenClaw, Hermes, Claude Code) and which default paths were checked.\n2. Run `audit --json`. If more than one runtime is detected, add `--runtime openclaw`, `--runtime hermes`, or `--runtime claude-code`.\n3. Summarize the result for the user in dollars: total spend, confirmed waste (`wasteSpendUsd`), the top findings, and the per-agent spend breakdown (`spendByAgent`) when present. Confirmed waste and savings opportunities are different claims — do not present opportunities as proven waste.\n4. If the user applies a fix, re-run the same audit with `--compare` to report the before/after delta:\n\n```bash\nnpx @xerg/cli@latest audit --json --compare\n```\n\nIf no local data is found, `doctor` prints the paths it checked. Fallbacks:\n\n- Cursor usage CSV export: `npx @xerg/cli@latest audit --cursor-usage-csv ./cursor-usage.csv`\n- Claude Code transcripts elsewhere: `--claude-code-dir <path>`\n- Any framework's exported event payload: `npx @xerg/cli@latest ingest --file payload.json`\n- Remote OpenClaw over SSH: `npx @xerg/cli@latest audit --remote user@host`\n- Railway-hosted OpenClaw: `npx @xerg/cli@latest audit --railway`\n\nIf `xerg` is installed globally, use `xerg` in place of `npx @xerg/cli@latest`.\n\n## What It Audits\n\n- OpenClaw gateway logs and session transcripts\n- Hermes logs and session transcripts\n- Claude Code session transcripts via `xerg audit --runtime claude-code`\n- Cursor usage CSV exports via `xerg audit --cursor-usage-csv ./cursor-usage.csv`\n- Any framework's exported event payload via `xerg ingest --file payload.json`\n\n## What It Finds\n\n- Retry waste from failed calls before a later success (explicit or transcript-inferred on session sources)\n- Loop waste from runs that exceed efficient iteration bounds, and repeated identical tool sequences\n- Context bloat from unusually large inputs, and per-session context growth that compaction would cut\n- Cache-write churn where prompt-cache premiums are paid without reuse\n- Downgrade candidates where cheaper models may be enough\n- Idle spend from fixed-cadence scheduled loops\n- Per-agent spend attribution, including delegated sub-agent spend for Claude Code sidechains and ingest payloads\n- Cost per outcome when runs carry outcome signals; declare outcomes with `xerg outcome --workflow <name> --status success|failure`\n\nCosts are priced across input, output, cache read, and cache write tokens using a catalog covering hundreds of current models. Run `xerg doctor --verbose` to see per-file extraction coverage (which economic signals the parser found).\n\n## Optional Cloud\n\nLocal audits need no account. Hosted sync and hosted MCP are optional workspace features and only run when you explicitly use `xerg connect`, `xerg audit --push`, `xerg push`, or `xerg mcp-setup`.\n\n## Links\n\n- Docs: [xerg.ai/docs](https://xerg.ai/docs)\n- Skill: [xerg.ai/skill.md](https://xerg.ai/skill.md)\n- npm: [@xerg/cli](https://www.npmjs.com/package/@xerg/cli)\n- Support: `query@xerg.ai`\n",
+  "category": null,
+  "tags": [
+    "agents",
+    "cost",
+    "audit",
+    "cursor",
+    "finops"
+  ],
+  "topics": [
+    "agents",
+    "cost",
+    "audit",
+    "cursor",
+    "finops"
+  ],
+  "latest_version": "0.7.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 268,
+    "installs": 0,
+    "stars": 2,
+    "versions": 9,
+    "comments": 0
+  },
+  "created_at": "2026-06-20T16:36:53.137Z",
+  "updated_at": "2026-07-11T20:51:47.116Z",
+  "fetched_at": "2026-07-11T22:34:37.807Z",
+  "source_url": "https://clawhub.ai/xerg/skills/xerg"
+}

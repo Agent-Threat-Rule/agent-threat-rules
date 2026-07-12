@@ -1,0 +1,34 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "exec-guard",
+  "display_name": "exec-guard",
+  "publisher": {
+    "handle": "cypress927",
+    "display_name": "cypress927",
+    "user_id": "s1738ees7yy776gncdfe6w2az183ppkz"
+  },
+  "summary": "Safe command execution for AI agents with timeout control, 8KB ring buffer memory protection, background process management, and multi-agent sharing via HTTP...",
+  "description": "Safe command execution for AI agents with timeout control, 8KB ring buffer memory protection, background process management, and multi-agent sharing via HTTP service. Use when executing system commands, running long tasks, starting services, or managing background processes. Supports CLI and HTTP server modes.",
+  "content": "---\nname: exec-guard\ndescription: Safe command execution for AI agents with timeout control, 8KB ring buffer memory protection, background process management, and multi-agent sharing via HTTP service. Use when executing system commands, running long tasks, starting services, or managing background processes. Supports CLI and HTTP server modes.\n---\n\n# exec-guard - AI Agent Command Execution Module\n\nSafe and reliable system command execution for AI agents.\n\n## Quick Start\n\n### CLI Mode\n\n```bash\necho '{\"command\": \"ls -la\"}' | node scripts/dist/index.js\n```\n\n### HTTP Service Mode\n\n```bash\nnode scripts/dist/index.js --server --port 8080\ncurl -X POST http://localhost:8080/exec -H \"Content-Type: application/json\" -d '{\"command\": \"ls -la\"}'\n```\n\n## Core Capabilities\n\n| Capability | Description |\n|------------|-------------|\n| **Sync Execution** | Execute command with timeout, wait for result |\n| **Background Execution** | Start long tasks, get PID, query later |\n| **Watch Window** | Confirm service startup before returning |\n| **8KB Ring Buffer** | Head-Tail dual buffer prevents OOM |\n| **Process Management** | Query status, get logs, terminate processes |\n| **Multi-Agent Sharing** | HTTP service allows multiple agents to share state |\n\n## API Reference\n\n### POST /exec\n\nExecute a command:\n\n```json\n{\n  \"command\": \"required - system command\",\n  \"workingDir\": \"optional - working directory\",\n  \"timeoutSeconds\": \"optional - default 30\",\n  \"runInBackground\": \"optional - default false\",\n  \"watchDurationSeconds\": \"optional - for service startup\",\n  \"env\": \"optional - custom environment variables\"\n}\n```\n\n### GET /process/:pid\n\nQuery process status.\n\n### GET /process/:pid/logs\n\nGet process output logs.\n\n### DELETE /process/:pid\n\nTerminate a process.\n\n### GET /processes\n\nList all background processes.\n\n## Response Status\n\n| Status | Meaning |\n|--------|---------|\n| `success` | Command completed, exit code 0 |\n| `failed` | Command failed, non-zero exit |\n| `timeout` | Command killed after timeout |\n| `killed` | Process manually terminated |\n| `running` | Background process active |\n\n## Best Practices\n\n1. **Set reasonable timeout** - Prevent stuck commands\n2. **Use watch window for services** - Confirm startup success\n3. **Use background mode for long tasks** - Training, data processing\n4. **Clean up processes** - Terminate when done\n\n## Full Documentation\n\nSee `references/AGENT_GUIDE.md` for detailed usage guide and examples.\n\n## License\n\nMIT",
+  "category": null,
+  "tags": [
+    "Multi Agent"
+  ],
+  "topics": [
+    "Multi Agent"
+  ],
+  "latest_version": "1.0.6",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 1282,
+    "installs": 43,
+    "stars": 0,
+    "versions": 6,
+    "comments": 0
+  },
+  "created_at": "2026-03-27T16:17:32.067Z",
+  "updated_at": "2026-05-18T04:37:41.987Z",
+  "fetched_at": "2026-07-11T23:09:42.246Z",
+  "source_url": "https://clawhub.ai/cypress927/skills/exec-guard"
+}

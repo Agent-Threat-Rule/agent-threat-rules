@@ -1,0 +1,34 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "unified-search",
+  "display_name": "Unified Search - 统一智能搜索",
+  "publisher": {
+    "handle": "coder-knock",
+    "display_name": "三产",
+    "user_id": "s173zsg1x4ahke7658ets2nsy1885tcb"
+  },
+  "summary": "统一搜索技能！中文用百度，英文用 DuckDuckGo，加密货币用 CoinGecko",
+  "description": "统一搜索技能！中文用百度，英文用 DuckDuckGo，加密货币用 CoinGecko",
+  "content": "---\nname: unified-search\ndescription: 统一搜索技能！中文用百度，英文用 DuckDuckGo，加密货币用 CoinGecko\n---\n\n# 🔍 Unified Search - 统一搜索技能\n\n**智能融合多种搜索引擎，一个脚本搞定所有搜索！**\n- 🇨🇳 中文查询 → 自动用百度\n- 🇺🇸 英文查询 → 自动用 DuckDuckGo\n- 💰 加密货币 → 自动用 CoinGecko 实时价格\n\n---\n\n## 🚀 快速开始\n\n### 方式1：使用统一智能搜索脚本（最推荐 ⭐⭐⭐⭐⭐⭐）\n\n**自动选择最佳搜索引擎！** 一行命令，智能搞定！\n\n```bash\ncd skills/baidu-search\n\n# 中文搜索 → 自动用百度\npython scripts/unified_search.py \"Python 教程\" --format\n\n# 英文搜索 → 自动用 DuckDuckGo\npython scripts/unified_search.py \"Python tutorial\" --format\n\n# 加密货币 → 自动用 CoinGecko\npython scripts/unified_search.py \"btc价格\" --format\n```\n\n### 方式2：使用 Playwright 浏览器搜索（推荐 ⭐⭐⭐⭐⭐）\n\n最稳定、最可靠的方式，使用 ClawX 内置的 browser 工具：\n\n```javascript\n// 1. 启动浏览器\nbrowser(action=\"start\")\n\n// 2. 打开百度或 Bing\nbrowser(action=\"open\", targetUrl=\"https://www.baidu.com\")\n// 或 browser(action=\"open\", targetUrl=\"https://www.bing.com\")\n\n// 3. 获取页面快照\nbrowser(action=\"snapshot\")\n\n// 4. 在搜索框输入关键词（找到搜索框的 ref，如 e12）\nbrowser(action=\"act\", request={\n  kind: \"type\",\n  ref: \"e12\",\n  text: \"搜索词\"\n})\n\n// 5. 按回车搜索\nbrowser(action=\"act\", request={\n  kind: \"press\",\n  ref: \"e12\",\n  key: \"Enter\"\n})\n\n// 6. 获取搜索结果\nbrowser(action=\"snapshot\")\n```\n\n### 方式3：使用智能 Python 脚本搜索（备选）\n\n```bash\ncd skills/baidu-search\npython scripts/smart_search.py \"你的搜索词\" --format\n```\n\n### 方式4：使用原始百度 Python 脚本\n\n```bash\ncd skills/baidu-search\npython scripts/baidu_search.py \"你的搜索词\" --format\n```\n\n---\n\n## 📋 功能对比\n\n| 功能 | 统一智能搜索 | Playwright 浏览器 | 智能脚本 | 原始百度 |\n|------|------------|-----------------|---------|---------|\n| 中文自动用百度 | ✅ | ⭐⭐⭐⭐⭐ 手动 | ✅ | ✅ |\n| 英文自动用 DDG | ✅ | ⭐⭐⭐⭐⭐ 手动 | ❌ | ❌ |\n| 加密货币实时价 | ✅ | ❌ 需手动 | ✅ | ❌ |\n| 多数据源集成 | ✅ 百度+DDG+API | ❌ 单一引擎 | ✅ 百度+Bing+API | ❌ 仅百度 |\n| 易用性 | ⭐⭐⭐⭐⭐ 一行命令 | ⭐⭐⭐⭐ 需多步 | ⭐⭐⭐⭐⭐ 一行 | ⭐⭐⭐⭐⭐ 一行 |\n| 推荐度 | ⭐⭐⭐⭐⭐⭐ 首选 | ⭐⭐⭐⭐⭐ 备选 | ⭐⭐⭐⭐ 备选 | ⭐⭐⭐ 备选 |\n\n---\n\n## 🎯 触发模式\n\n| 触发短语 | 说明 |\n|---------|------|\n| 搜索[查询内容] | 使用统一智能搜索 |\n| 统一搜索[查询内容] | 使用统一智能搜索 |\n| 百度搜索[查询内容] | 使用百度搜索 |\n| 浏览器搜索[查询内容] | 使用 Playwright 搜索 |\n| baidu-search [查询内容] | 使用百度搜索 |\n\n---\n\n## 💡 最佳实践\n\n### 日常搜索推荐流程\n\n1. **首选**：`unified_search.py` - 自动选择，最方便\n2. **备选**：Playwright 浏览器搜索 - 最稳定，可处理验证码\n3. **备选**：`smart_search.py` - 百度 + Bing 双保险\n\n### 选择指南\n\n| 场景 | 推荐方式 |\n|------|---------|\n| 快速搜索任何内容 | unified_search.py |\n| 中文内容搜索 | unified_search.py → 百度 |\n| 英文内容搜索 | unified_search.py → DuckDuckGo |\n| BTC/ETH 价格查询 | unified_search.py → CoinGecko |\n| 需要完整网页截图 | Playwright 浏览器搜索 |\n\n---\n\n## 🛠️ 故障排除\n\n### 问题：统一搜索脚本找不到模块\n\n**解决方案**：确保 ddg-search 技能存在于 skills 目录中\n\n```bash\n# 检查目录结构\nls C:\\Users\\opens\\.openclaw\\workspace\\skills\\\n# 应该能看到 baidu-search 和 ddg-search\n```\n\n### 问题：DuckDuckGo 搜索失败\n\n**解决方案**：安装 duckduckgo-search 库\n\n```bash\npip install duckduckgo-search\n# 或者在 ddg-search 目录中安装\ncd skills/ddg-search\npip install -r requirements.txt\n```\n\n### 问题：百度搜索遇到验证码\n\n**解决方案**：\n- 使用 Playwright 浏览器搜索方式（可以人工处理验证码）\n- 或者使用 unified_search.py，它会自动降级到 DuckDuckGo\n\n---\n\n## 📁 目录结构\n\n```\nskills/baidu-search/\n├── SKILL.md                      # 本文件\n├── README.md                     # 用户友好的说明\n├── OPTIMIZATION_SUMMARY.md       # 优化总结\n├── requirements.txt              # Python 依赖\n├── example_usage.js              # 使用示例\n├── quick_test.py                 # 快速测试\n└── scripts/\n    ├── unified_search.py         # ⭐ 统一智能搜索（推荐）\n    ├── smart_search.py           # 智能搜索脚本\n    └── baidu_search.py           # 原始百度脚本\n```\n\n---\n\n## 🔧 依赖安装\n\n如需使用 Python 脚本搜索方式：\n\n```bash\ncd skills/baidu-search\npip install requests beautifulsoup4\n\n# 如果使用统一搜索，还需要安装 DuckDuckGo 依赖\ncd ../ddg-search\npip install -r requirements.txt\n```\n\n---\n\n## ✨ 统一搜索特色功能\n\n1. **🧠 智能语言检测**\n   - 自动识别中文/英文查询\n   - 选择最佳搜索引擎\n\n2. **💰 加密货币支持**\n   - BTC/ETH/比特币/以太坊自动识别\n   - CoinGecko 实时价格\n   - 美元 + 人民币双币种\n\n3. **🔄 自动 Fallback**\n   - 百度失败 → 自动用 DDG\n   - DDG 失败 → 自动用百度\n   - 双重保障\n\n4. **📊 标明来源**\n   - 每个结果显示来源（百度/DuckDuckGo/CoinGecko）\n   - 清楚知道数据来自哪里\n\n---\n\n**统一搜索，一个脚本搞定所有！首选 unified_search.py！** 🎉\n",
+  "category": null,
+  "tags": [
+    "加密货币"
+  ],
+  "topics": [
+    "加密货币"
+  ],
+  "latest_version": "2.0.0",
+  "license": null,
+  "stats": {
+    "downloads": 913,
+    "installs": 32,
+    "stars": 0,
+    "versions": 1,
+    "comments": 1
+  },
+  "created_at": "2026-03-03T08:18:33.102Z",
+  "updated_at": "2026-05-17T05:12:47.919Z",
+  "fetched_at": "2026-07-11T23:08:48.204Z",
+  "source_url": "https://clawhub.ai/coder-knock/skills/unified-search"
+}

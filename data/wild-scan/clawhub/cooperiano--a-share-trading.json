@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "a-share-trading",
+  "display_name": "A Share Trading",
+  "publisher": {
+    "handle": "cooperiano",
+    "display_name": "Duanmu Junqi",
+    "user_id": "s17ac54vh7hy0d3t4tpfd8pkad8596et"
+  },
+  "summary": "A股交易层：自选股管理/实时监控/大盘情绪/热点板块/买卖策略/止盈止损/仓位管理/价格预警",
+  "description": "A股交易层：自选股管理/实时监控/大盘情绪/热点板块/买卖策略/止盈止损/仓位管理/价格预警",
+  "content": "---\nname: \"a-share-trading\"\ndescription: \"A股交易层：自选股管理/实时监控/大盘情绪/热点板块/买卖策略/止盈止损/仓位管理/价格预警\"\nuser-invocable: true\nmetadata:\n  openclaw:\n    emoji: \"🎯\"\n    tags: [\"a-share\", \"trading\", \"monitoring\", \"portfolio\"]\n---\n\n# A-Share Trading v2.0\n\n## 定位\n\nA 股**唯一交易执行层**。数据→`a-share-data`，分析→`a-share-analysis`。\n\n---\n\n## 1. 自选股管理\n\n纯文本存储，无数据库依赖：\n\n### 文件\n- 自选股：`~/.openclaw/a_share/watchlist.txt`（`代码|名称`）\n- 交易记录：`~/.openclaw/a_share/transactions.txt`（`日期|代码|买卖|价格|数量|备注`）\n- 预警：`~/.openclaw/a_share/alerts.txt`（`代码|类型|目标价|当前价|日期`）\n\n### 操作\n```bash\npython3 scripts/add_stock.py <代码> [名称]\npython3 scripts/remove_stock.py <代码>\npython3 scripts/list_stocks.py\npython3 scripts/summarize_performance.py\n```\n\n---\n\n## 2. 行情监控\n\n- 自选股汇总：每票价格/涨跌幅/来源\n- 大盘指数：上证/深证/沪深300/创业板/科创50\n- 大盘情绪：涨跌比+成交量+板块轮动 → 风险等级(低/中/高)\n\n---\n\n## 3. 热点板块\n\n- 行业/概念板块涨幅排行\n- 主线(连续强势) vs 情绪(单日爆发)\n- 每个热点列龙头股\n\n---\n\n## 4. 交易策略\n\n### 代码识别\n60xxxx(沪) / 00xxxx(深) / 30xxxx(创业板) / 68xxxx(科创板)\n\n### 操作模板\n```\n【操作建议】XX股(XXXXXX)\n方向：做多/观望/回避\n入场区间：XX-XX元 | 止损：XX元 | 止盈：XX元\n仓位：XX% | 逻辑：[2-3条] | 风险：[1-2条]\n```\n\n### 时间维度\n- 短线(1-5天)：催化剂+严格止损\n- 中线(1-3月)：趋势+分批建仓\n\n---\n\n## 5. 仓位管理\n\n- 单票 ≤20% | 单行业 ≤40%\n- 总仓位随情绪调整：高风险≤30% 中风险≤60% 低风险≤90%\n- 永留现金\n\n---\n\n## 6. 价格预警\n\n预警类型：突破/跌破/放量/金叉死叉\n记录到 alerts.txt，定时检查\n\n---\n\n## 7. 定时任务\n\n```bash\n25 9 * * 1-5  market_open.py       # 开盘准备\n30 10,13,14 * * 1-5 intraday_check.py  # 盘中检查\n30 15 * * 1-5  summarize_performance.py # 收盘汇总\n```\n\n---\n\n## 安全\n\n- 数据标注来源和时间\n- 避免绝对化表述\n- 不构成投资建议\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 37,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T03:46:08.358Z",
+  "updated_at": "2026-07-10T03:46:08.358Z",
+  "fetched_at": "2026-07-11T23:08:22.272Z",
+  "source_url": "https://clawhub.ai/cooperiano/skills/a-share-trading"
+}

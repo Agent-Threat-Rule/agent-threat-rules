@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "socialdatax-sensitive-check",
+  "display_name": "敏感词检测与违禁词检查",
+  "publisher": {
+    "handle": "devinchen2014",
+    "display_name": "DevinChen2014",
+    "user_id": "s1777wgr53fwsangwq5485w3jd85913j"
+  },
+  "summary": "用于敏感词检测、违禁词检测、文案发布前检查、内容安全检查、文案合规审核、能不能发判断、平台风险提示和改写建议。支持小红书、抖音、快手和通用文本场景，来自 SocialDataX 社媒数据助手。",
+  "description": "用于敏感词检测、违禁词检测、文案发布前检查、内容安全检查、文案合规审核、能不能发判断、平台风险提示和改写建议。支持小红书、抖音、快手和通用文本场景，来自 SocialDataX 社媒数据助手。",
+  "content": "---\nname: \"socialdatax-sensitive-check\"\ndescription: \"用于敏感词检测、违禁词检测、文案发布前检查、内容安全检查、文案合规审核、能不能发判断、平台风险提示和改写建议。支持小红书、抖音、快手和通用文本场景，来自 SocialDataX 社媒数据助手。\"\nsource_client: \"socialdatax-skills\"\nsource_platform: \"clawhub\"\nsource_skill: \"socialdatax-sensitive-check\"\nmetadata: {\"openclaw\":{\"requires\":{\"env\":[\"SOCIALDATAX_API_KEY\"],\"bins\":[\"node\",\"npm\"]},\"primaryEnv\":\"SOCIALDATAX_API_KEY\",\"install\":[{\"kind\":\"node\",\"package\":\"socialdatax-skills\",\"bins\":[]}],\"emoji\":\"🛡️\",\"homepage\":\"https://socialdatax.com/?from=clawhub\"}}\n---\n<!-- AUTO-GENERATED from socialdatax-skill-source. Do not edit directly; run `node scripts/generate_socialdatax_skills.mjs`. -->\n\n# 敏感词检测与违禁词检查\n\n## 适用场景\n\n用于敏感词检测、违禁词检测、文案发布前检查、内容安全检查、文案合规审核、能不能发判断、平台风险提示和改写建议。支持小红书、抖音、快手和通用文本场景，来自 SocialDataX 社媒数据助手。\n\n## 快速开始\n\n- 粘贴要检测的文案，并按需要指定平台：`generic`、`xhs`、`douyin` 或 `kuaishou`。\n- 你通常会得到：是否违规、风险等级、命中类型、风险片段和改写建议。\n\n## API Key 获取\n\n获取或管理 API Key：访问 <https://socialdatax.com/?from=clawhub>，按官网的 API Key 申请/管理入口操作。环境变量名固定使用 `SOCIALDATAX_API_KEY`；不要引导用户使用其他域名。\n\n## 直接调用命令\n\n优先使用 direct CLI；能运行 shell 命令的 Agent 不需要额外配置 MCP server：\n\n```bash\nnpx -y socialdatax-skills@latest sensitive-check text --text \"<content>\" --platform xhs --pretty --source-client socialdatax-skills --source-platform clawhub --source-skill socialdatax-sensitive-check\n```\n\n## 参数说明\n\n通用：\n- 必填：`sensitive-check text --text <content>`：必填文本；使用用户要检查的文案进行分析，但不要把原文保存在 skill 文案里。\n- 可选：`--platform <generic|xhs|douyin|kuaishou>`：平台上下文，可选；默认是 `generic`。\n- 可选：`--pretty`：只影响输出格式，不改变实际请求结果。\n- 可选：`--source-client socialdatax-skills --source-platform clawhub --source-skill socialdatax-sensitive-check`：这是当前 Agent Skill 的来源标记；按本 Skill 示例执行时保持这些值不变。\n\n适用于敏感词检测、违禁词检查、文案发布前检查、content safety review、文案合规审核、能不能发判断和 safer rewrite suggestions for draft text.\n命令返回 JSON，包含 `platform`、`tool` 和 `data`，不会在 CLI 参数区回显原文。服务会在可用时返回 `violation`、`risk_level`、`types`、`highlights`、`summary`、`platform` 和 `suggestions`。\n服务端会保存提交文本和结构化检测结果，用于历史记录、计费和问题排查；本地 CLI 不会把 API Key 写入本地文件，也不会写本地文本副本。\n当前 v1 只支持文本敏感检测；图片敏感检测要等单独的图片能力发布后再支持。\n\n## 输出建议\n\n优先输出是否违规、风险等级、命中类型、关键提示和可执行改写建议。\n\n输出时说明是否违规、风险等级、命中的类型、关键提示，以及可执行的改写建议。\n除非用户明确要求，否则不要回显完整原文；优先给出简短提示和更安全的改写建议。\n\n## MCP 工具\n\n与上面 direct CLI 命令对应的 MCP 工具：\n\n- `check_sensitive_text`\n\n如果当前 Agent 已可直接调用 MCP 工具，使用 `check_sensitive_text`，传入 `text`，并可选传 `platform`：`generic`、`xhs`、`douyin` 或 `kuaishou`。\n\n## 安全边界\n\n这是只读 skill。运行时使用用户环境变量中的 `SOCIALDATAX_API_KEY`；生成的 Skill 文件不包含 API Key。不会读取本地浏览器数据，也不会执行登录、发帖、点赞、评论或账号修改。\n\n## 示例结果\n\n- 示例展示格式，不代表固定字段：风险=是否违规/风险等级/命中类型；建议=可替换表达和发布前注意点。\n\n## 异常处理\n\n- 网络或 API 异常：保留错误信息，检查 `SOCIALDATAX_API_KEY`、参数和链接格式后原样重试一次。\n- 重试仍失败：说明当前调用不可用，给出可替代输入方式。\n\n## 常见问题\n\n- 没结果：确认输入对象完整，再缩小分析范围。\n- 调用失败：先确认 `SOCIALDATAX_API_KEY` 已配置，再重试。\n- 担心账号安全：这是只读能力，不登录、不发帖、不点赞、不评论。\n- 想继续分析：把最相关的 1-3 条结果发回来，继续缩小范围。\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "0.1.3",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 174,
+    "installs": 0,
+    "stars": 0,
+    "versions": 4,
+    "comments": 0
+  },
+  "created_at": "2026-07-02T12:07:16.270Z",
+  "updated_at": "2026-07-10T10:02:00.717Z",
+  "fetched_at": "2026-07-11T22:57:23.462Z",
+  "source_url": "https://clawhub.ai/devinchen2014/skills/socialdatax-sensitive-check"
+}

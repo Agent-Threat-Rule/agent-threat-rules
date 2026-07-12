@@ -1,0 +1,42 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "hermes-skill",
+  "display_name": "hermes-agent 平替 openclaw 自进化技能",
+  "publisher": {
+    "handle": "devrobbin",
+    "display_name": "devrobbin",
+    "user_id": "s176mpexqds4r1eyq6jfv6s44584ztv1"
+  },
+  "summary": "🤖 AI 自进化技能包 — 自动从复杂任务创建可复用技能，HOT/WARM/COLD 分层记忆管理，智能 Nudge 提醒与定时自检，持续让 AI 越用越聪明。追踪 NousResearch/Hermes-Agent 上游演进。",
+  "description": "🤖 AI 自进化技能包 — 自动从复杂任务创建可复用技能，HOT/WARM/COLD 分层记忆管理，智能 Nudge 提醒与定时自检，持续让 AI 越用越聪明。追踪 NousResearch/Hermes-Agent 上游演进。",
+  "content": "---\nname: hermes-skill\ndescription: 🤖 AI 自进化技能包 — 自动从复杂任务创建可复用技能，HOT/WARM/COLD 分层记忆管理，智能 Nudge 提醒与定时自检，持续让 AI 越用越聪明。追踪 NousResearch/Hermes-Agent 上游演进。\nversion: \"1.1.0\"\nauthor: devrobbin\nhomepage: https://github.com/devrobbin/hermes-skill\nlicense: MIT\nkeywords:\n  - self-improving\n  - auto-skill\n  - memory\n  - nudge\n  - ai-evolution\n  - hermes\n  - self-learning\n  - openclaw-skill\n  - upstream-tracker\n  - auto-evolution\ntriggers:\n  - 自进化\n  - 自我学习\n  - 自动创建技能\n  - 记忆管理\n  - 学习系统\n  - 类似 Hermes\n  - 持续改进\n  - 上游追踪\n  - Hermes Agent\n---\n\n# HermesSkill — AI 自进化技能包\n\n让 AI Agent 拥有**持续进化的能力**——像 Hermes Agent 一样，从经验中学习、自我改进。\n\n## 核心模块\n\n| 模块 | 脚本 | 说明 |\n|------|------|------|\n| 记忆管理 | `memory_tool.py` | HOT/WARM/COLD 三层记忆、搜索、增删 |\n| Nudge 提醒 | `nudge_system.py` | 定时自检、智能提醒、知识保存触发 |\n| 技能创建 | `auto_skill_creator.py` | 复杂任务自动生成可复用 skill |\n| 技能评估 | `skill_evaluator.py` | 评分反馈、自动改进、usage 追踪 |\n| 自检 | `self_check_cron.sh` | cron 定时健康检查 |\n| **上游追踪** | `upstream_tracker.py` | 追踪 Hermes Agent 最新演进 |\n\n## 上游追踪系统\n\n### 追踪目标\n**NousResearch/hermes-agent** — GitHub 56k+ Stars，自进化 AI Agent 标杆\n\n### 追踪文件映射\n| 上游路径 | 本地对应 |\n|----------|----------|\n| `agent/memory_manager.py` | `memory_tool.py` |\n| `agent/memory_provider.py` | `memory_tool.py` |\n| `agent/skill_commands.py` | `auto_skill_creator.py` |\n| `agent/skill_utils.py` | `auto_skill_creator.py` |\n| `agent/prompt_builder.py` | `nudge_system.py` |\n\n### 使用方式\n\n```bash\n# 检查上游新提交并分析融合价值\npython3 scripts/evo_main.py upstream check\n\n# 查看追踪状态\npython3 scripts/evo_main.py upstream status\n\n# 显示具体文件对比\npython3 scripts/evo_main.py upstream diff agent/memory_manager.py\n\n# 查看融合推荐\npython3 scripts/evo_main.py upstream fuse\n\n# 列出追踪的核心文件\npython3 scripts/evo_main.py upstream list\n```\n\n### 工作原理\n\n1. **Fetch** — 从 GitHub API 获取 nousresearch/hermes-agent/main 最新 30 条 commit\n2. **Detect** — 找出涉及核心模块的变更（memory、skill、prompt 等）\n3. **Analyze** — 提取新增的类/方法/模式，对比本地实现，计算融合价值\n4. **Record** — 高价值 diff 存入 `upstream-tracker/state.json` + 追加到 `changelog.md`\n5. **Notify** — 每日 09:00 自动检查，有高价值发现时推送摘要\n\n### 融合价值评估\n\n| 分数 | 含义 |\n|------|------|\n| 7-10/10 | 上游重大新能力，值得深度融合 |\n| 3-6/10 | 有借鉴价值，选择性融合 |\n| 1-2/10 | 边缘改进，记录即可 |\n\n### 存储位置\n- 追踪状态: `~/self-improving/upstream-tracker/state.json`\n- 变更记录: `~/self-improving/upstream-tracker/changelog.md`\n\n## 自进化统一入口\n\n```bash\npython3 scripts/evo_main.py nudge [type]          # 检查/触发 nudge\npython3 scripts/evo_main.py remember <text>       # 添加记忆\npython3 scripts/evo_main.py forget <text>         # 删除记忆\npython3 scripts/evo_main.py search <query>        # 搜索记忆\npython3 scripts/evo_main.py stats                 # 记忆统计\npython3 scripts/evo_main.py skills                # 列出 auto skills\npython3 scripts/evo_main.py eval <skill,rating>   # 评估 skill\npython3 scripts/evo_main.py improve <skill,notes>  # 改进 skill\npython3 scripts/evo_main.py upstream <cmd>        # 上游追踪 (check|status|diff|list|fuse)\npython3 scripts/evo_main.py check                 # 完整自检\n```\n\n## 定时任务\n- 每小时: Nudge 自检（检查知识保存、记忆整理）\n- 每天 09:00: Hermes Agent 上游追踪检查\n\n## 版本历史\n- v1.0.0: 初始版本（HOT/WARM/COLD + nudge + auto-skill）\n- v1.1.0: 新增上游追踪系统，对接 Hermes Agent 主线演进\n\n## 开发规范（重要）\n\n本技能包本身是自进化系统，任何模块有改进时必须遵守以下规则：\n\n### GitHub 同步规则\n> **每次自身技能进化必须同步到 GitHub 仓库**\n\n改进流程：\n1. 在本地 `~/.qclaw/skills/hermes-skill/` 改进代码\n2. `git add` + `git commit -m \"描述\"`\n3. `git push` 推送到 origin/main\n4. 同步更新 `SKILL.md` / `README.md` 说明（如果功能有变化）\n\n### Changelog 追加规则\n> 新增模块、重大重构或 API 变更 → 在 `upstream-tracker/changelog.md` 底部追加条目\n\n格式：\n```\n## YYYY-MM-DD — vX.X.X\n- [改进描述]\n- [文件变更]\n```\n\n### 避免事项\n- ❌ 只在本地改，不 push\n- ❌ 更新代码但不更新文档\n- ❌ 破坏已有的 upstream-tracker 状态文件\n",
+  "category": null,
+  "tags": [
+    "Hermes",
+    "Nudge",
+    "Self Improving",
+    "Ai Evolution",
+    "Auto Evolution"
+  ],
+  "topics": [
+    "Hermes",
+    "Nudge",
+    "Self Improving",
+    "Ai Evolution",
+    "Auto Evolution"
+  ],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 648,
+    "installs": 21,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-04-16T16:40:09.429Z",
+  "updated_at": "2026-05-18T03:45:09.186Z",
+  "fetched_at": "2026-07-11T22:45:43.716Z",
+  "source_url": "https://clawhub.ai/devrobbin/skills/hermes-skill"
+}

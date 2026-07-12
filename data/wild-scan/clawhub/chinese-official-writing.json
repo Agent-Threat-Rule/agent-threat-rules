@@ -1,0 +1,40 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "chinese-official-writing",
+  "display_name": "中文公文写作",
+  "publisher": {
+    "handle": "gongyu0918-debug",
+    "display_name": "gongyu0918-debug",
+    "user_id": "s172a0qxsw6kfdee064rcn06es83edse"
+  },
+  "summary": "用于中文公文和机关企事业单位、学校等正式事务材料的起草、改写、压缩和复核；当用户明确要求写申请、请示、报告、通知、通告、意见、决定、决议、议案、公报、命令、函、复函、批复、说明、方案、纪要、公告、公示、通报、征求意见函、工作要点、总结、调研、讲话、致辞、采购公告、可研、审查材料、AI 算力等正式文本，或要求对这类...",
+  "description": "用于中文公文和机关企事业单位、学校等正式事务材料的起草、改写、压缩和复核；当用户明确要求写申请、请示、报告、通知、通告、意见、决定、决议、议案、公报、命令、函、复函、批复、说明、方案、纪要、公告、公示、通报、征求意见函、工作要点、总结、调研、讲话、致辞、采购公告、可研、审查材料、AI 算力等正式文本，或要求对这类...",
+  "content": "---\r\nname: chinese_official_writing\r\ndescription: 用于中文公文和机关企事业单位、学校等正式事务材料的起草、改写、压缩和复核；当用户明确要求写申请、请示、报告、通知、通告、意见、决定、决议、议案、公报、命令、函、复函、批复、说明、方案、纪要、公告、公示、通报、征求意见函、工作要点、总结、调研、讲话、致辞、采购公告、可研、审查材料、AI 算力等正式文本，或要求对这类材料做文种校验、格式核验、去口语化、降 AI 味时使用。不用于英文、文学、营销、社媒、论文、个人求职、批量语料或替代法律/财务/采购/审计判断。\r\nlicense: MIT-0\r\ncategory: writing\r\ntags:\r\n  - chinese\r\n  - official-document\r\n  - writing\r\n  - gongwen\r\n  - ai-compute\r\nmetadata:\r\n  version: \"1.5.7\"\r\n  compatible_agents:\r\n    - codex\r\n    - claude-code\r\n    - openclaw\r\n    - hermes\r\n    - qwen-code\r\n    - minimax-skills\r\n    - glm-skills\r\n    - autoclaw\r\n    - kimi-code-cli\r\n    - trae\r\n    - baidu-comate-ai-ide\r\n    - generic-agent-skills\r\n  qwen_code:\r\n    install_personal: \"~/.qwen/skills/chinese-official-writing\"\r\n    install_project: \".qwen/skills/chinese-official-writing\"\r\n    entry: \"SKILL.md\"\r\n  openclaw:\r\n    version: \"1.5.7\"\r\n    emoji: \"📝\"\r\n    tags:\r\n      - chinese\r\n      - official-document\r\n      - writing\r\n      - gongwen\r\n      - ai-compute\r\n---\r\n\r\n# 中文公文写作 Skill\r\n\r\n让你的 AI Agent 写出更像正式公文的请示、报告、通知、方案和讲话稿：文种不乱、行文关系不乱、办理要素不漏，尽量减少 AI 腔。\r\n\r\n装上后，你可以直接说：\r\n\r\n- “帮我起草一份项目请示”：按一文一事、请批事项、依据和请批语组织正文。\r\n- “审查这份方案有没有 AI 味”：检查旁白式写法、教学腔、口语化判断和二元包装句。\r\n- “写一份 AI 算力租赁方案”：按需求来源、Token/资源测算、成本边界、SLA、安全和验收组织正文。\r\n- “把这份报告压缩到 800 字”：顺稿、去重、去口语化，同时保留关键办理要素。\r\n\r\n覆盖 27+ 种中文正式文种。不用于文学创作、营销文案、社交媒体贴文、英文写作、批量语料生成或规避人工审核。法律、财务、采购、审计和正式签发结论仍需人工复核。\r\n\r\n## 安装\r\n\r\n```bash\r\nopenclaw skills install chinese-official-writing\r\n```\r\n\r\n旧版 CLI 兼容命令：`clawhub install chinese-official-writing`。\r\n\r\n其他平台如 Codex、Claude Code、Hermes、deepseek-tui 的安装 Prompt，请看 GitHub 仓库 README：\r\nhttps://github.com/gongyu0918-debug/chinese-official-writing-skill\r\n\r\n当前版本：`chinese-official-writing@1.5.7`\r\n\r\nClawHub 页面只展示摘要；安装包内包含精简入口和完整 `references/`。关键边界以本入口规则和 `references/` 为准，canonical 全文见 GitHub 仓库。\r\n\r\n## 适用场景\r\n\r\n| 你需要的 | 直接说 |\r\n| --- | --- |\r\n| 法定公文 | 通知、请示、报告、函、批复、意见、决定、公告、通告、通报、纪要等 |\r\n| 事务材料 | 方案、可研、总结、调研报告、讲话稿、致辞、述职报告 |\r\n| 技术材料 | AI 算力可研、GPU/服务器租赁、SLA 保障、成本对比 |\r\n| 审稿润色 | 顺稿、压缩、去口语化、降 AI 味、格式核验 |\r\n\r\n## 核心能力\r\n\r\n### 起草\r\n\r\n- 文种路由：判断该用请示、报告、通知、函还是其他文种。\r\n- 办理要素核对：检查主体、对象、事项、时限、附件、反馈渠道是否齐全。\r\n- 论证链条：按文种组织正文逻辑，请示先写请批事项，方案先写目标任务。\r\n- 视角控制：从发文单位、报告单位或项目单位视角写，不写成教程。\r\n\r\n### 审稿\r\n\r\n- 低 AI 味审查：检查旁白句、教学腔、二元包装句和口语化判断。\r\n- 重复事项检测：提示相邻段落换词重复、胶水段落和空泛套话。\r\n- 标题核验：检查正文是否跑题，标题是否漂移或过度承诺。\r\n- 交付完整性：检查落款、日期、用户指定事项和未完成占位是否处理干净。\r\n\r\n### 算力和租赁材料\r\n\r\n- 按“需求来源 -> Token/资源测算 -> 成本边界 -> SLA/安全/验收”组织材料。\r\n- 不写技术空话，每项成本和服务要求尽量落到业务场景、边界和验收。\r\n\r\n## 快速试用\r\n\r\n```text\r\n起草一份关于举办中小学人工智能教师培训的请示。要求一文一事，写清经费来源，结尾使用“妥否，请批示。”\r\n```\r\n\r\n```text\r\n审查这份建设方案，指出文种错位、视角错位、AI 腔、重复事项和未完成占位。\r\n```\r\n\r\n```text\r\n起草一段算力资源租赁技术服务需求，写清并发、SLA、数据安全、费用上限和验收指标，不指定品牌和型号。\r\n```\r\n\r\n## 质量保证\r\n\r\n270 条合成反例用于发布前规则回归检查，主要验证文种、占位符、AI 腔和结构风险是否退化；该指标不代表真实业务胜率。完整评测方法、测试脚本和多平台安装说明见 GitHub 仓库。\r\n\r\n## 反馈\r\n\r\n- 问题和建议：https://github.com/gongyu0918-debug/chinese-official-writing-skill/issues\r\n- ClawHub 页面：https://clawhub.ai/gongyu0918-debug/chinese-official-writing\r\n\r\n## License\r\n\r\nMIT-0\r\n\r\n## Agent 使用规则\r\n\r\n安装后执行写作任务时，仍按以下规则处理：\r\n\r\n1. 先判断文种，再抽取办理要素，再选择论证链条，最后进入语言和格式复核。\r\n2. 文种判断以官方规范、`references/genre-routing.md` 和 `references/genre-playbooks.md` 为准；社区模板不得替代文种功能。\r\n3. 起草前按 `references/handling-elements.md` 核对发文主体、受文对象、事项、依据、时限、责任、附件、反馈渠道和请批事项。\r\n4. 成文时按 `references/argument-chains.md` 组织段落，每段服务一个论点，通常按“结论前置、事实支撑、判断归纳、事项落点”展开。\r\n5. 材料稀疏、短稿、低上下文局部修改或用户明确不新增事实时，先按 `references/task-route-cards.md` 处理已给事实和少量缺口；复杂长文、多材料或结构锁定再转读 `references/workflow.md`。起草、改稿、复核、排版交付先判定任务模式；用户已有提纲、模板、标题顺序时优先保留；事实不足时先完成可用正文，再在正文后列待确认事项或“补充以下信息后，文章会更完整”，不在正文前中断成稿或连续追问；用户明示某些事项未提供且这些事项影响办理落地时，正文后短列用户点名的缺项，不漏列、不扩展成调查问卷；用户明确要求只输出正文、只输出改后稿或不解释且未同时允许文后提示时，不附任何正文外说明或提示，缺项不补造，也不在正文中解释“未提供”；用户只允许某类文后提示时，只附其允许的内容；去 AI 味、变换句式或调整清单结构不得补写未给解释、原因、影响、流程、人员、字段或整改动作；后续轮次用户未补齐事实时仍继续执行本轮修改，不把待确认事项升级为阻断条件。\r\n6. 多材料合稿按 `references/workflow.md` 区分原文已有事实、压实合并表达和待确认补充；数据冲突不得默认就高或自选最优。\r\n7. 起草或改写输出正式正文；用户要求检查、审一下、格式核验或语气检查时，审稿或复核输出问题位置、风险层级和修改建议，不默认重写全文，不做 0-100 分评分。\r\n8. 从发文单位、报告单位、项目单位或主管单位视角写，不使用旁观者、教师或评论员口吻。\r\n9. 数据和判断要可追溯；不编造实际数据，测算和预估必须标明性质。\r\n10. 起草算力、采购、租赁或服务器租赁材料时，论证重点放在需求来源、Token/资源换算、成本比较、SLA、并发、安全、交付和验收。\r\n11. 联网搜索只用于事实核查、双重验证和时效性来源；默认不外搜，只有用户明确要求搜索或核验公开来源，或任务含“最新/当前/今日/现行政策/近期数据”等时效事实时才可联网核验。搜索后在正文外说明来源、日期或检索口径；不因出现单位名称就搜索单位公开样文、固定格式或写作风格。\r\n12. 用户要求 Word、docx、GB/T 9704、红头、发文字号、签发、版记或正式文件时，先按 `references/format-gbt9704.md` 做正式交付前要素核对卡和缺项清单，再交给 DOCX/document 技能或现有文档工具；不得编造文号、签发人、印章、密级、版记等要素。\r\n13. 最终正文不得残留 `〔签发日期〕`、`〔会议时间〕`、`〔待补充〕`、`[具体项目名称]`、`XXXX万元`、`YYYY年MM月DD日`、`（签发日期）`、`（成文日期待确认）` 等未完成占位；缺项按第5条的交付命令处理，只有用户允许文后提示时，才在正文外提示确认。用户明示成文日期缺失、待确认或需另行确认时，不使用当前日期补落款；当前日期只可用于其他已允许的草稿落款，不得替代维护时间、会议时间、实施期限、政策依据或业务数据。\r\n14. 正式 Word 输出前不得残留 Markdown `**`、代码块或标题井号；检查 `.txt`、`.md` 或 `.docx` 草稿时，可使用 `scripts/prose_lint.py`。脚本只提示风险，不自动改写。\r\n15. 成稿前按 `references/proofreading-checklist.md` 顺手做 AI 写稿轻量校对，只看语言、引用保真和稿内一致性风险；用户给定领导讲话、古诗词、名言和政策原文默认同语境原样保留，成语只有明显误引或不合语境时才替换；真实性核验不属于默认修正范围，不默认联网反查。\r\n16. 轻量语气替换只作建议层，不新增硬清洗；去口语化必须保留原文事实，不补造依据、数据、成效或责任安排；`老板关心`、`钱花得值`、`马上要搞` 等口语来源不得自动升级成 `领导高度关注`、`投入产出清晰`、`推进较为紧迫`、`按程序推进` 等强判断；去 AI 味看成簇问题，不把单个正式词或单个转折当作硬清洗理由；句群节奏和模板化痕迹只作软性审稿项，公文去 AI 味不是聊天化，不加入第一人称、反问、口语插入或情绪化表达；正文调整只能使用已给事实，不为显得自然或完整补造解释、原因、影响、流程、人员、字段或整改动作。\r\n17. 社区技能和公开样文只借鉴流程思路、检查维度和 prompt/markdown 组织方式；不复制社区代码、脚本、正则、模板正文、大段 prompt 或固定话术，也不扩大默认联网、强制确认、硬清洗或重排版范围。\r\n18. 长篇限字稿件先做篇幅预算，压缩铺垫、重复和套话，保留措施、责任、时限和结尾落点，避免头重脚轻或草草收尾。\r\n19. OpenClaw 安装包以本入口规则和 `references/final-review-layers.md`、`references/review-checklist.md` 为准；遇到事实、文种、行文关系、用户模板或结构锁定问题，必须回看包内 `references/`，不要假设市场页摘要已经包含完整边界。canonical 全文见 GitHub 仓库。\r\n",
+  "category": null,
+  "tags": [
+    "chinese",
+    "official-document",
+    "writing",
+    "gongwen",
+    "ai-compute"
+  ],
+  "topics": [
+    "official-writing",
+    "gongwen",
+    "chinese-writing"
+  ],
+  "latest_version": "1.5.7",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 2649,
+    "installs": 56,
+    "stars": 0,
+    "versions": 54,
+    "comments": 0
+  },
+  "created_at": "2026-05-08T08:46:26.946Z",
+  "updated_at": "2026-07-11T10:46:05.770Z",
+  "fetched_at": "2026-07-11T22:46:28.313Z",
+  "source_url": "https://clawhub.ai/gongyu0918-debug/skills/chinese-official-writing"
+}

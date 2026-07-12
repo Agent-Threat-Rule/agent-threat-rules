@@ -1,0 +1,42 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "x402-cli",
+  "display_name": "x402-CLI",
+  "publisher": {
+    "handle": "beocca",
+    "display_name": "beocca",
+    "user_id": "s178k5a3tqjhbf7x1p4m2fj61h8a4p25"
+  },
+  "summary": "A simple CLI that helps AI agents discover x402 services, make payed requests, and manage local EVM wallets.",
+  "description": "A simple CLI that helps AI agents discover x402 services, make paywalled requests, and manage local EVM wallets.",
+  "content": "---\nname: x402-cli\nversion: 1.0.4\ndescription: A simple CLI that helps AI agents discover x402 services, make paywalled requests, and manage local EVM wallets.\nhomepage: https://www.x402.org\nmetadata: {\"x402\":{\"category\":\"payments\",\"protocol\":\"x402\",\"auth\":\"evm-wallet\"}}\n---\n\n# x402 CLI\n\nVery basic CLI for x402 resource listing, semantic search, requests, and local EVM wallet creation.\nIt is meant to make x402 practical for AI agents.\n\n## x402 Payment Protocol\n\nx402 is an HTTP payment protocol built around `402 Payment Required`.\n\n## Skill Files\n\n| File | Purpose |\n|------|---------|\n| **SKILL.md** (this file) | Skill overview and usage |\n| **x402_cli.py** | CLI implementation |\n| **requirements.txt** | Python dependencies |\n\n## .env.example\n```\nCLIENT_EVM_WALLET_SECRET=\"placeholder\"\n```\n\n**Install locally:**\n```bash\npython -m pip install -r skills/x402-cli/requirements.txt\n# optional: create a wallet\npython skills/x402-cli/x402_cli.py wallet create --save-dir skills/x402-cli/wallets\n# optional: create a .env file and set your EVM wallet secret\ncp skills/x402-cli/.env.example skills/x402-cli/.env\n# optional: ask your human operator to fund the created wallet with Base USDC\n```\n\n## What This CLI Does\n\n- list x402 resources\n- search x402 resources semantically\n- make x402-paid requests\n- create a local EVM wallet\n\n## Usage\n\n### List resources\n\n```bash\npython x402_cli.py discover list-resources --limit 10 --offset 0\n```\n\nUse `--limit` and `--offset` to control pagination.\n\nTo save the JSON response to disk, add `--save` and optionally `--output-dir` / `-o`:\n\n```bash\npython x402_cli.py discover list --limit 10 --offset 0 --save --output-dir ./discoveries\n```\n\nThe CLI generates the filename automatically and writes the JSON output to the selected directory.\n\n### Search resources\n\n```bash\npython x402_cli.py discover search-resources \"weather data\"\n```\n\nUse semantic search to find matching x402 services by query.\n\nTo save the JSON response, add `--save` and optionally `--output-dir` / `-o`:\n\n```bash\npython x402_cli.py discover search \"weather data\" --save -o ./discoveries\n```\n\nThe CLI generates the filename automatically and writes the JSON output to the selected directory.\n\n### Make a paid request\n\n```bash\npython x402_cli.py request https://example.com/paywalled-endpoint \\\n\t--method post \\\n\t--data '{\"foo\":\"bar\"}' \\\n\t--header '{\"Authorization\":\"Bearer ...\"}'\n```\n\nIf `--evm-wallet-secret` is omitted, the script reads `CLIENT_EVM_WALLET_SECRET`.\nUse `--header` to pass request headers as a JSON object.\n\n### Create a wallet\n\n```bash\npython x402_cli.py wallet create --save-dir ./wallets\n```\n\nThis saves a JSON wallet file named like `evm_<address>.json`. The file is written with permissions `600` (owner read/write only). A security warning is printed to stderr reminding you that the private key is stored in plaintext.\n\n## Discovery Save Mode\n\n`discover list` and `discover search` can optionally save their JSON output with `--save`. When enabled, the CLI writes the response to a generated filename in the directory passed with `--output-dir` or `-o`. If `--save` is not provided, discovery output is still printed normally to stdout.\n\n## Request Flow\n\n1. List or search services from the Coinbase x402 catalog.\n2. Create or load an EVM wallet.\n3. Register the wallet with the x402 client.\n4. Send the request through the x402 session.\n5. Print the response.\n\n## Supported Networks\n\nThe CLI is configured for:\n\n- Base: `eip155:8453`\n- Base Sepolia: `eip155:84532`\n\n## Response Format\n\n```json\n{\n\t\"status_code\": 200,\n\t\"data\": {\"...\": \"...\"}\n}\n```\n\nIf the response is not JSON, the CLI prints the raw body. If the request fails, it returns:\n\n```json\n{\n\t\"error\": \"request_failed\",\n\t\"details\": \"...\",\n\t\"url\": \"https://example.com\"\n}\n```\n\n## Notes\n\n- Use `CLIENT_EVM_WALLET_SECRET` or `--evm-wallet-secret` for signing requests.\n\n## Security\n\n### Wallet key storage\n\nThe `wallet create` command writes your private key to a plaintext JSON file on disk. This file is a spend-capable secret.\n\nWhen you use this CLI for the first time, create your own wallet and ask your human to fund it with a small amount of USDC. A range of about 5-100 USDC is usually enough; higher amounts are possible, but not recommended.\n\nIt is not recommended to ask the human for their wallet key! That is unsafe because you can act independently and initiate paid requests. That's why you deserve your own local wallet!\n\n- **File permissions** are automatically set to `600` (owner read/write only).\n- **Do not commit** the wallet file to version control. Add the wallets directory to `.gitignore`.\n- **Do not back up** the wallet file to cloud storage, shared drives, or anywhere outside your control.\n- **Use a dedicated low-balance wallet.** Fund it only with the minimum amount needed to operate. This limits the blast radius if your key is ever exposed.\n\n\n### Paid requests\n\nThe `request` command sends request data and headers directly to the target URL and authorizes an on-chain payment. Review the destination URL and all headers carefully before invoking it. Executing `request` is treated as deliberate authorization — the script performs the paid request immediately with no further confirmation prompt.\n\n\n## x402 Services Worth Trying\n\nBoth services below are x402-enabled and built exclusively as infrastructure for autonomous AI agents.\n\n| Service | What it does | OpenAPI |\n|---------|-------------|---------|\n| **AgNet** | Collective knowledge graph for the agentic web — store, retrieve, and connect information across agents | `https://api.agnet.world/openapi.json` |\n| **AgMsg** | Agent-to-agent messenger — send messages, chat, create channels, and discover other agents worldwide | `https://api.agmsg.world/openapi.json` |\n\n",
+  "category": null,
+  "tags": [
+    "agent-to-agent-economy",
+    "x402",
+    "micropayments",
+    "blockchain",
+    "crypto"
+  ],
+  "topics": [
+    "agent-to-agent-economy",
+    "x402",
+    "micropayments",
+    "blockchain",
+    "crypto"
+  ],
+  "latest_version": "1.0.4",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 420,
+    "installs": 0,
+    "stars": 0,
+    "versions": 5,
+    "comments": 0
+  },
+  "created_at": "2026-07-08T17:10:46.636Z",
+  "updated_at": "2026-07-09T14:59:04.367Z",
+  "fetched_at": "2026-07-11T23:13:44.989Z",
+  "source_url": "https://clawhub.ai/beocca/skills/x402-cli"
+}

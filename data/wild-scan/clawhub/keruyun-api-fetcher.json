@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "keruyun-api-fetcher",
+  "display_name": "Keruyun Api Fetcher",
+  "publisher": {
+    "handle": "woai36d",
+    "display_name": "woai36D",
+    "user_id": "s17e554k9egs3n44bgce0zpp6184gs54"
+  },
+  "summary": "Fetch and organize detailed Keruyun open platform API metadata including endpoints, parameters, response examples, and module categorization for 178 APIs.",
+  "description": "Fetch and organize detailed Keruyun open platform API metadata including endpoints, parameters, response examples, and module categorization for 178 APIs.",
+  "content": "# 客如云(Keruyun)开放平台 Skill\n\n> 📅 数据更新: 2026-04-28（校验修正）\n> 📊 模块: 20 个 | 接口: **178** 个 | 全部含路径+参数+示例\n\n## 客如云 API 模块\n\n| 模块 | 接口数 | 路径例 | 说明 |\n|------|--------|--------|------|\n| **supply** (供应链) | 62 | `/open/standard/supply/...` | 库存/采购/配送/资金/分账 |\n| **report** (报表) | 24 | `/open/standard/report/...` | 营收/支付/菜品/储值/反结账 |\n| **employee** (员工) | 12 | `/open/standard/employee/...` | 总部/门店员工CRUD |\n| **第三方提供** (通知) | 12 | — | 各类业务消息回调 |\n| **book** (预订) | 10 | `/open/standard/book/...` | 正餐预订（含C端）|\n| **crm** (会员) | 17 | `/open/standard/crm/...` | 会员创建/查询/标签/资产/等级 |\n| **purchase** (采购) | 7 | `/open/standard/purchase/...` | 销售计划/千元用量 |\n| **dish** (商品) | 5 | `/open/standard/dish/...` | 门店商品查询/改价/库存 |\n| **oauth** (认证) | 3 | `/open/standard/oauth/...` | accessToken 获取/刷新 |\n| **order** (订单) | 2 | `/open/standard/order/...` | 订单列表/详情 |\n| **basic** (基础) | 2 | `/open/standard/basic/...` | 组织/供应商查询 |\n| **produce** (生产) | 2 | `/open/standard/produce/...` | 加工品BOM/生产单 |\n| **procurement** | 2 | `/open/standard/procurement/...` | 采购入库 |\n| **delivery** | 2 | `/open/standard/delivery/...` | 配送验收 |\n| **auth** | 2 | `/open/standard/auth/...` | 授权二维码/机构查询 |\n| **org** | 2 | `/open/standard/org/...` | 组织机构 |\n| **posreturn** | 1 | `/open/standard/posreturn/...` | 退菜入库 |\n| **shop** | 1 | `/open/standard/shop/...` | 门店 |\n| **snack** | 1 | `/open/standard/snack/...` | 快餐 |\n| **table** | 1 | `/open/standard/table/...` | 桌台 |\n| **kposlocal** | 7 | `/open/kposlocal/...` | 券模板/合约等本地接口 |\n| **消息/回调** | 13 | — | 各类业务消息推送 |\n\n**总计：178 个接口**\n\n## 数据质量\n\n| 指标 | 值 |\n|------|-----|\n| 有完整路径 | ✅ 158/158 |\n| 有请求参数 | ✅ 158/158 |\n| 有响应示例 | ✅ 150/158 |\n| HTTP 方法 | POST（全部）|\n\n## 数据格式\n\n```json\n{\n  \"name\": \"会员创建\",\n  \"method\": \"POST\",\n  \"path\": \"/open/standard/crm/CustomerOpenFacade/createCustomer\",\n  \"auth\": \"品牌授权\",\n  \"request_params\": [\n    {\"name\": \"name\", \"type\": \"String\", \"required\": true, \"description\": \"会员姓名\"}\n  ],\n  \"response_example\": { \"code\": 2001, \"message\": \"请求成功\", \"result\": {...} }\n}\n```\n\n## 使用方式\n\n```bash\n# 全量数据\ncat references/_all_apis_complete.json\n\n# 按模块查看\npython3 -c \"\nimport json\nwith open('references/_modules_organized.json') as f:\n    data = json.load(f)\nprint('\\\\n'.join(f'{k}: {v[\\\"api_count\\\"]} APIs' for k,v in data.items()))\n\"\n```\n\n## 客如云 vs 企迈 对比\n\n| 维度 | 企迈 | 客如云 |\n|------|------|--------|\n| 菜单技术 | qm-tree (Vue) | Tailwind ul/li |\n| 路由方式 | tree click + SPA | URL hash `/docs/zh/<id>` |\n| 接口数 | 307 | 158 |\n| HTTP 方法 | GET + POST | POST only |\n| 路径风格 | `/v3/{模块}/{功能}/{方法}` | `/open/standard/{模块}/{服务}/{方法}` |\n| 供应链占比 | 13% (41/307) | 39% (62/158) |\n| QPS 标注 | ❌ 无 | ✅ 每个接口标明QPS |\n\n## 参考链接\n\n- 客如云开放平台：https://open.keruyun.com/official/developer.html\n- API文档：点击 \"API文档\" tab\n- 客如云官网：https://www.keruyun.com\n\n## 更新日志\n\n### 2026-04-27 v2\n- 🎯 全量详情抓取：158 API，含路径/请求参数/响应示例\n- 📊 按路径前缀自动归类 16 个模块\n- ⚠️ description 字段含菜单噪音（待优化）\n\n### 2026-04-27 v1\n- 首次抓取：160 个 API 基本信息（名称+路径）\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 0,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T22:00:43.554Z",
+  "updated_at": "2026-07-11T22:00:43.554Z",
+  "fetched_at": "2026-07-11T22:34:14.623Z",
+  "source_url": "https://clawhub.ai/woai36d/skills/keruyun-api-fetcher"
+}

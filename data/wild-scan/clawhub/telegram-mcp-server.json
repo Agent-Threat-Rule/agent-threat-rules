@@ -1,0 +1,42 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "telegram-mcp-server",
+  "display_name": "Telegram Mcp Server",
+  "publisher": {
+    "handle": "aihlp",
+    "display_name": "itinai",
+    "user_id": "s17f3055gt9kyh956yeh3v8p0s87n9p8"
+  },
+  "summary": "Use when calling, operating, or diagnosing the telegram-mcp MCP server (a Telethon/MTProto user-account server, not the Bot API) — making list_chats/get_messages/send_message/wait_for_settled_message calls, an MCP tool call errors or times out, the server appears \"sleeping\"/unregistered, a Telethon",
+  "description": "Use when calling, operating, or diagnosing the telegram-mcp MCP server (a Telethon/MTProto user-account server, not the Bot API) — making list_chats/get_messages/send_message/wait_for_settled_message calls, an MCP tool call errors or times out, the server appears \"sleeping\"/unregistered, a Telethon session is invalid or expired, or you need to select or switch between multiple TELEGRAM_SESSION_STRING accounts.",
+  "content": "---\nname: telegram-mcp-server\ndescription: Use when calling, operating, or diagnosing the telegram-mcp MCP server (a Telethon/MTProto user-account server, not the Bot API) — making list_chats/get_messages/send_message/wait_for_settled_message calls, an MCP tool call errors or times out, the server appears \"sleeping\"/unregistered, a Telethon session is invalid or expired, or you need to select or switch between multiple TELEGRAM_SESSION_STRING accounts.\n---\n\n# Operating the telegram-mcp Server\n\n## Overview\n\n`telegram-mcp` is an MCP server (backed by Telethon/MTProto) that exposes a **real Telegram user account** as stateless tools — not a bot, no bot token, no Bot API. This skill covers one thing: **how to make a successful call to that server and know it worked** — lifecycle, diagnostics, auth, multi-account. It has no opinion on monitoring flows or reply voice.\n\nOpenClaw owns the server's stdio child process like any `mcp.servers` entry: it launches lazily on the first tool call and reaps it after `mcp.sessionIdleTtlMs` idle (default 10 min). \"Sleeping\" is normal — the next call respawns it transparently. **Never** run `uv run main.py &`, `pkill`, or any manual process command against it — that fights OpenClaw's supervision and can leave a second conflicting Telethon session logged in under the same account.\n\n## Making a call (do this first)\n\n**Just call it.** Call `mcp__telegram-mcp__list_chats`. If the server was idle, the first call may take a moment to respawn — that's expected, don't retry-loop on it. Once it succeeds, proceed with whatever you were doing; don't re-run diagnostics mid-turn after a success.\n\n## When a call errors — diagnose, don't guess\n\nRun these in order (via your exec tool). Read structured output, not free text.\n\n1. `openclaw mcp status telegram-mcp --verbose` — static, read-only, opens no connection. Tells you whether the server is registered under `mcp.servers` in `openclaw.json` and whether it's enabled.\n2. `openclaw mcp doctor telegram-mcp --probe --json` — actually connects and returns a structured `issues` list. Read `issues`.\n\nThen match the failure:\n\n| Symptom | Meaning | Action |\n|---|---|---|\n| Not registered at all | Operator setup gap | Report the exact missing piece + the one-time `openclaw mcp add` (below). Don't invent a path or silently patch. |\n| Registered, `doctor --probe` reports a config issue (bad command, missing cwd, disabled) | Config problem | Report the specific issue text. Don't patch blindly. |\n| `status`/`doctor` are clean but the tool call still errors with an auth failure | Telethon session invalid/expired | Cannot be fixed from here — needs a human-run QR login. See Auth below. |\n\n**Registration command** (only report it — don't run it for the operator):\n```\nopenclaw mcp add telegram-mcp --command uv \\\n  --arg --directory --arg <path-to-telegram-mcp> --arg run --arg main.py\n```\nplus the required env: `TELEGRAM_API_ID`, `TELEGRAM_API_HASH`, and a session string (see Auth). Don't invent a path you don't actually know.\n\n## Auth failure (the one thing you can't fix)\n\nA Telethon session string that is invalid or expired won't show up in `doctor`'s static checks — `doctor` doesn't understand Telegram app-level auth, so it only surfaces as an error from the real tool call. Generating a new session string requires an **interactive QR login in a real, human-attended terminal**:\n\n```\nuv run session_string_generator.py --qr\n```\n\nThis cannot be scripted, piped, or run through a non-TTY automation shell. Tell the user precisely that; do **not** attempt to run the generator or edit the session string yourself, and never expose a session string or API key in output.\n\n## Multi-account\n\nThe server never picks or remembers an \"active\" account — it just accepts an optional `account` param on every tool call once more than one `TELEGRAM_SESSION_STRING_<LABEL>` is configured in its env. Tracking \"active\" is a caller/plugin concern, not the server's.\n\n- If your instruction context names an **active account label**, pass `account: \"<that label>\"` on every `list_chats`/`get_messages`/`wait_for_settled_message`/`send_message` call this turn. Don't switch labels mid-turn.\n- `TELEGRAM_API_ID`/`TELEGRAM_API_HASH` are shared across all accounts (one app registration can log in as many accounts). Only the session string varies per label.\n- To test one account's auth specifically, call `list_chats` once per configured account and report which succeed vs. error — plain `list_chats` only tests whichever account you happened to pass.\n- Adding a brand-new account still requires the human-run QR login above — you cannot generate a session string yourself, for a first account or an additional one.\n\n## Tool reference (prefix: `mcp__telegram-mcp__`)\n\n| Tool | Purpose |\n|---|---|\n| `list_chats()` | List available chats/groups and their IDs (also the simplest connectivity/auth probe) |\n| `get_messages(chat_id, limit)` | Read messages from a chat |\n| `send_message(chat_id, text)` | Send a message as the account |\n| `wait_for_settled_message(settle_ms=6000, max_wait_ms=50000)` | Wait for new messages arriving during the window, with debouncing — does **not** return pre-existing backlog |\n| `search_messages(...)` / `search_global(...)` | Search message history |\n| `get_chat(chat_id)` | Chat info |\n| `get_history(chat_id, ...)` | Message history |\n\n## Error handling\n\n1. On an MCP tool error, retry at most once after a short delay, in the same turn.\n2. Still failing → run the `status` / `doctor --probe` diagnosis above rather than looping or guessing.\n3. Never expose the session string or API keys in any output or log.\n",
+  "category": null,
+  "tags": [
+    "telegram",
+    "telegram-mcp",
+    "telegram-automation",
+    "telegram-agent",
+    "mcp"
+  ],
+  "topics": [
+    "telegram",
+    "telegram-mcp",
+    "telegram-automation",
+    "telegram-agent",
+    "mcp"
+  ],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 115,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T07:52:37.895Z",
+  "updated_at": "2026-07-11T07:52:37.895Z",
+  "fetched_at": "2026-07-11T22:48:07.056Z",
+  "source_url": "https://clawhub.ai/aihlp/skills/telegram-mcp-server"
+}

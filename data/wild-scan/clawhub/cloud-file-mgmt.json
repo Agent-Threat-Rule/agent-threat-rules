@@ -1,0 +1,40 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "cloud-file-mgmt",
+  "display_name": "网盘文件管理",
+  "publisher": {
+    "handle": "aiaaaa4",
+    "display_name": "AI落地第四声",
+    "user_id": "s173761vq65qa5qpgez1v7vgwd8a6961"
+  },
+  "summary": "在 Mac 本地通过 AList WebDAV 统一管理已配置的多种网盘、对象存储与文件协议，并用 Agent 执行服务启动、状态检查、Finder 挂载、流式上传下载及确认后删除。Use when Codex needs to manage cloud drives or storage mounts conf...",
+  "description": "在 Mac 本地通过 AList WebDAV 统一管理已配置的多种网盘、对象存储与文件协议，并用 Agent 执行服务启动、状态检查、Finder 挂载、流式上传下载及确认后删除。Use when Codex needs to manage cloud drives or storage mounts configured in the user's local AList instance, operate AList or aria2 services, upload local files, download a remote file, remove a confirmed remote file, or mount/unmount WebDAV in Finder.",
+  "content": "---\nname: cloud-file-mgmt\ndescription: 在 Mac 本地通过 AList WebDAV 统一管理已配置的多种网盘、对象存储与文件协议，并用 Agent 执行服务启动、状态检查、Finder 挂载、流式上传下载及确认后删除。Use when Codex needs to manage cloud drives or storage mounts configured in the user's local AList instance, operate AList or aria2 services, upload local files, download a remote file, remove a confirmed remote file, or mount/unmount WebDAV in Finder.\n---\n\n# 网盘文件管理\n\n作者 / 工作流设计：`AI落地第四声`。本作者信息用于展示和来源识别，不添加额外授权限制。\n\n这是一套面向 Mac 本地多网盘管理的工作流。用户不需要记住 AList、WebDAV、aria2、curl 和 Finder 挂载命令，只需要告诉 AI 想上传、下载、删除、启动服务、查看状态或挂载网盘。AI 会先确认目标网盘、路径和是否涉及删除，再调用 Skill 自带脚本完成操作。\n\n核心价值：把本地 AList WebDAV 服务、aria2 服务以及多个存储挂载的流式上传下载、删除和 Finder 管理放进同一个可复用流程。AList 官方驱动覆盖阿里云盘、115、123 云盘、百度网盘、夸克、UC、天翼云盘、移动云盘、联通云盘、OneDrive、Google Drive、Dropbox、PikPak、迅雷、腾讯微云、蓝奏云、MEGA、S3、WebDAV、SMB、FTP/SFTP 等；完整范围见 [AList 官方存储驱动目录](https://alistgo.com/guide/drivers/)。不同驱动和账号的上传、删除、移动、直链及限速能力并不完全相同，以 AList 当前版本和上游平台规则为准。\n\n快速开始：在 Skill 目录运行 `scripts/init-runtime.sh` 初始化本地 `runtime/`，放入或指定 AList 可执行文件，在 AList 中添加需要的存储驱动，然后让 AI 执行“启动网盘服务”“上传这个文件到 OneDrive 挂载”“删除夸克挂载里的某个文件”“在 Finder 挂载 AList WebDAV”等任务。脚本的第一个参数使用 AList 中真实的顶层挂载名称，不限制为固定品牌。密码、Token、数据库、日志和下载文件都保留在本地，不进入 GitHub。\n\n关于速度：Skill 会管理本地 aria2 运行环境，为后续的直链传输准备基础，但当前脚本不绕过百度网盘或其他平台的会员、版权、风控和带宽限制。任何传输速度都取决于直链、账号权限和平台规则。\n\n效果示例：\n\n```text\n用户：把这个文件夹上传到夸克网盘，远程名叫 reports/2026-demo.zip。\nAI：我会先确认目标为 quark，源路径存在，并确认远程路径；如果源路径是文件夹，会临时打包成 zip，上传完成后删除临时包。\n```\n\n以下从 “English Execution Contract” 开始是给 AI 执行者读取的正式规则；上面的中文说明只用于 SkillHub、ClawHub、skills.sh 和用户理解，不替代执行合同。\n\n# English Execution Contract\n\nUse this skill only for the user's local Mac cloud-file workflow. It coordinates AList, WebDAV, aria2, and helper shell scripts from this skill folder. Any top-level AList mount name is accepted; actual operations depend on the configured driver and upstream account permissions.\n\n## Local Setup\n\nRun commands from the skill folder. The scripts expect a local `runtime/` directory that is ignored by Git.\n\n1. Initialize local runtime directories and aria2 config when missing:\n\n```bash\nscripts/init-runtime.sh\n```\n\n2. Put the AList binary at `runtime/alist/alist`, or set `ALIST_BIN` to an executable AList binary path.\n\n3. Keep secrets local:\n   - `ALIST_PASSWORD` may be exported before upload/delete commands, or entered interactively.\n   - `ARIA2_RPC_SECRET` may be exported before status checks. If omitted, scripts read `runtime/aria2/rpc-secret` when present.\n\nDo not commit `runtime/`, `.env`, logs, database files, downloaded files, or cloud account credentials.\n\n## Common Commands\n\nCheck service status:\n\n```bash\nscripts/status.sh\n```\n\nStart both AList and aria2 in detached screen sessions:\n\n```bash\nscripts/start-services.sh\n```\n\nStop both services:\n\n```bash\nscripts/stop-services.sh\n```\n\nUpload a file or folder:\n\n```bash\nscripts/cloud-upload.sh \"alist-mount-name\" \"/path/to/local-file-or-folder\" \"optional/remote-name\"\n```\n\nDownload a remote file with a direct streaming request. Use this for important, Office, video, or large files instead of dragging from Finder:\n\n```bash\nscripts/cloud-download.sh \"alist-mount-name\" \"remote/name.ext\" \"/path/to/local-directory-or-file\"\n```\n\nDelete a remote file:\n\n```bash\nscripts/cloud-delete.sh \"alist-mount-name\" \"remote/name.ext\"\n```\n\nMount or unmount AList WebDAV in Finder:\n\n```bash\nscripts/mount-finder.sh\nscripts/unmount-finder.sh\n```\n\nThe default Finder mount point is `~/AList-WebDAV`, outside the repository, so moving or updating a Skill project does not disconnect the mounted drive. Set `ALIST_MOUNT_POINT` only when a different local mount location is required.\n\n## Operating Rules\n\n- Confirm destructive deletes before running `cloud-delete.sh`.\n- Confirm the exact AList top-level mount name and remote name before uploading large files or folders.\n- Confirm the exact source mount, remote path, and local destination before downloading. `cloud-download.sh` writes to a temporary local file and moves it into place only after the transfer succeeds.\n- If a folder is uploaded, `cloud-upload.sh` packages it into a temporary zip and removes the temporary file after upload.\n- Use Finder WebDAV for browsing and confirmed deletes. On macOS, dragging a file to a Baidu WebDAV folder can fail because Finder first creates an empty placeholder file, which Baidu rejects; use `cloud-upload.sh` for uploads and `cloud-download.sh` for larger downloads.\n- Use `status.sh` after starting or stopping services.\n- If a command fails, inspect only local logs under `runtime/logs/`; never print passwords, API keys, cookies, tokens, or AList database contents.\n",
+  "category": null,
+  "tags": [
+    "cloud-storage",
+    "alist",
+    "webdav",
+    "aiaaaa4"
+  ],
+  "topics": [
+    "cloud-storage",
+    "alist",
+    "webdav",
+    "aiaaaa4"
+  ],
+  "latest_version": "1.2.2",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 347,
+    "installs": 1,
+    "stars": 0,
+    "versions": 5,
+    "comments": 0
+  },
+  "created_at": "2026-07-09T15:50:44.798Z",
+  "updated_at": "2026-07-11T18:44:18.667Z",
+  "fetched_at": "2026-07-11T22:35:40.173Z",
+  "source_url": "https://clawhub.ai/aiaaaa4/skills/cloud-file-mgmt"
+}

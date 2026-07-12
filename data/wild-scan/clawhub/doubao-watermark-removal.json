@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "doubao-watermark-removal",
+  "display_name": "去豆包水印",
+  "publisher": {
+    "handle": "dororoliu666",
+    "display_name": "Moonstay",
+    "user_id": "s175p0mt0qckhm4qkq60v42b4x8a9xhv"
+  },
+  "summary": "Batch remove Doubao (豆包 AI) watermarks from images using OpenCV inpainting. Use when the user asks to remove watermarks, batch remove watermarks, 去水印, 批量去水印,...",
+  "description": "Batch remove Doubao (豆包 AI) watermarks from images using OpenCV inpainting. Use when the user asks to remove watermarks, batch remove watermarks, 去水印, 批量去水印, or 去豆包水印. Also use for general batch watermark removal when the user provides a directory of images and knows the watermark area.",
+  "content": "---\nname: doubao-watermark-removal\ndescription: Batch remove Doubao (豆包 AI) watermarks from images using OpenCV inpainting. Use when the user asks to remove watermarks, batch remove watermarks, 去水印, 批量去水印, or 去豆包水印. Also use for general batch watermark removal when the user provides a directory of images and knows the watermark area.\n---\n\n# 去豆包水印\n\n批量去除豆包 AI 生成图片右下角水印，基于 OpenCV 图像修复（inpainting）。同样适用于其他固定位置水印的批量去除。\n\n## 前置条件\n\n首次使用需安装依赖：\n\n```bash\npython3 -m pip install -r <skill-dir>/requirements.txt\n```\n\n如果系统默认 Python 太旧（pip 版本 <9.0.3），使用项目 Python：\n\n```bash\n\"/Users/liuyue/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3\" -m pip install -r <skill-dir>/requirements.txt\n```\n\n## 水印位置参考\n\n豆包生成的角色资源图通常有两种尺寸，水印均位于右下角。已验证的水印区域：\n\n| 图片尺寸 | 用途 | 参数 | 说明 |\n|----------|------|------|------|\n| 1254×1254 | 精确去除 | `1015,1170,220,70` | 标准水印区域 |\n| 1254×1254 | 去残留 | `1000,1160,240,85` | 放大区域，覆盖更多边缘 |\n| 2048×2048 | 精确去除 | `1650,1890,398,158` | 右下角水印较大、更靠边 |\n\n2048×2048 图片四角通常还有小标记，需同时清理：\n\n```text\n--rect 1650,1890,398,158 --rect 0,0,24,24 --rect 2024,0,24,24 --rect 0,2024,24,24 --rect 2024,2024,24,24\n```\n\n**如果图片尺寸不同**，先取一张图用 `python3 -c \"import cv2; img=cv2.imread('<path>'); print(img.shape)\"` 查看尺寸，再按比例估算水印位置，或让用户截图标注。\n\n## 批量去水印\n\n```bash\npython3 <skill-dir>/scripts/batch_remove_watermark.py <input_dir> <output_dir> --rect 1015,1170,220,70 --clear-alpha\n```\n\n- `<input_dir>` — 含源图的目录\n- `<output_dir>` — 输出目录，自动创建\n- `--rect X,Y,W,H` — 水印矩形区域（左上角坐标 + 宽高），可重复使用\n- `--clear-alpha` — 对透明 PNG，将水印区域设为完全透明（否则 inpainting 会在透明通道留下痕迹）\n- `--recursive` — 递归处理子文件夹\n- `--force` — 覆盖已有输出\n- `--radius N` — inpainting 半径，默认 3，大块水印可调至 5-7\n- `--only FILENAME` — 只处理匹配的文件名，可重复使用（如 `--only 女孩_走路.png --only 女孩_正面.png`）\n\n### 1254×1254 图片\n\n```bash\npython3 <skill-dir>/scripts/batch_remove_watermark.py \\\n  \"/Users/liuyue/Desktop/some-folder\" \\\n  \"/Users/liuyue/Desktop/some-folder-clean\" \\\n  --rect 1015,1170,220,70 \\\n  --clear-alpha \\\n  --force\n```\n\n### 2048×2048 图片\n\n```bash\npython3 <skill-dir>/scripts/batch_remove_watermark.py \\\n  <input_dir> <output_dir> \\\n  --rect 1650,1890,398,158 \\\n  --rect 0,0,24,24 \\\n  --rect 2024,0,24,24 \\\n  --rect 0,2024,24,24 \\\n  --rect 2024,2024,24,24 \\\n  --clear-alpha --force\n```\n\n### 只处理指定文件\n\n```bash\npython3 <skill-dir>/scripts/batch_remove_watermark.py \\\n  <input_dir> <output_dir> \\\n  --rect 1650,1890,398,158 \\\n  --rect 0,0,24,24 --rect 2024,0,24,24 --rect 0,2024,24,24 --rect 2024,2024,24,24 \\\n  --clear-alpha --force \\\n  --only 女孩_走路.png --only 女孩_正面.png\n```\n\n### 边缘残留处理\n\n如果处理后有残留水印边缘，放大区域重新处理：\n\n```bash\npython3 <skill-dir>/scripts/batch_remove_watermark.py \\\n  <input_dir> <output_dir> \\\n  --rect 1000,1160,240,85 \\\n  --clear-alpha --force\n```\n\n## 自定义水印位置\n\n如果水印不在右下角或图片尺寸不同：\n\n1. 让用户截一张图，标注水印位置\n2. 用图像工具获取水印的像素坐标 `(X, Y, W, H)`\n3. 代入 `--rect X,Y,W,H` 运行\n\n### 多个水印区域\n\n```bash\npython3 <skill-dir>/scripts/batch_remove_watermark.py \\\n  <input_dir> <output_dir> \\\n  --rect 1015,1170,220,70 \\\n  --rect 20,30,180,48 \\\n  --clear-alpha\n```\n\n## 工作流程\n\n1. 确认用户要处理的图片目录\n2. 抽一张图查看尺寸，确认水印位置\n3. 如果尺寸与预设（1254×1254 / 2048×2048）匹配，直接用预设参数\n4. 如果尺寸不同，按比例调整或请用户提供水印区域\n5. 运行批量去水印命令\n6. 核对输出结果（`Processed: N, skipped: 0, failed: 0`）\n\n## 常见问题\n\n- **`Missing dependency: cv2`** — 重新执行前置条件中的 pip install\n- **`Input folder does not exist`** — 检查输入路径，注意空格和中文\n- **pip 版本过旧** — 使用 Codex 自带 Python\n- **处理后有残留** — 放大 `--rect` 区域或增大 `--radius`\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.1",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 106,
+    "installs": 0,
+    "stars": 1,
+    "versions": 2,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T09:04:59.752Z",
+  "updated_at": "2026-07-10T10:14:02.058Z",
+  "fetched_at": "2026-07-11T22:57:19.768Z",
+  "source_url": "https://clawhub.ai/dororoliu666/skills/doubao-watermark-removal"
+}

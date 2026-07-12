@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "goto-codedev-manager",
+  "display_name": "GoTo CodeDev Manager",
+  "publisher": {
+    "handle": "feixuelingcloud",
+    "display_name": "feixuelingcloud",
+    "user_id": "s17b4nmt3qefh82daww4mw43as83yhtk"
+  },
+  "summary": "多 IDE / 多 AI 编程 Agent 统一调度 Skill，连接 Codex/Claude Code/QoerCN(Lingma 兼容)/Trae/VS Code/Cursor/Qoder 完成代码开发、Git Diff 分析、EF Core 实体识别、Migration 生成、数据库变更交接单产出、测试构...",
+  "description": "多 IDE / 多 AI 编程 Agent 统一调度 Skill，连接 Codex/Claude Code/QoerCN(Lingma 兼容)/Trae/VS Code/Cursor/Qoder 完成代码开发、Git Diff 分析、EF Core 实体识别、Migration 生成、数据库变更交接单产出、测试构建与开发报告生成",
+  "content": "---\nname: goto-codedev-manager\nversion: 1.0.0\ndescription: 多 IDE / 多 AI 编程 Agent 统一调度 Skill，连接 Codex/Claude Code/QoerCN(Lingma 兼容)/Trae/VS Code/Cursor/Qoder 完成代码开发、Git Diff 分析、EF Core 实体识别、Migration 生成、数据库变更交接单产出、测试构建与开发报告生成\nauthor: GotoPlan Team\nlicense: MIT\n\ntrigger_keywords:\n  - 代码开发\n  - 开发任务\n  - 写代码\n  - Codex\n  - Claude Code\n  - Cursor\n  - 通义灵码\n  - Lingma\n  - QoerCN\n  - Qoer\n  - Trae\n  - Qoder\n  - VS Code\n  - Git Diff\n  - 代码变更\n  - 实体识别\n  - EF Core\n  - Migration\n  - 数据库变更\n  - 建表草案\n  - 开发同步\n  - 跑测试\n  - 开发报告\n\ncapabilities:\n  - list_adapters              # 列出可用的编程 Agent/IDE 适配器\n  - open_workspace             # 打开工作区\n  - read_project               # 读取项目结构、识别技术栈\n  - detect_stack               # 返回语言/框架/迁移工具\n  - read_project_context       # 当前分支、改动文件、技术栈\n  - get_task_progress          # 读取所选 Agent 的任务状态\n  - analyze_git_diff           # git diff → 结构化变更（Agent 无关）\n  - detect_entities            # 解析新增/修改的 EF Core 实体字段\n  - detect_database_changes    # 判断是否需要数据库结构变更\n  - run_tests                  # dotnet test\n  - run_build                  # dotnet build\n  - generate_schema_contract   # 生成 .db-contract/ 交接单\n  - generate_report            # 生成中文开发同步报告\n  - assign_coding_task         # 经所选适配器执行开发任务（需确认）\n  - generate_migration         # dotnet ef migrations add（需确认）\n  - apply_migration_local      # 仅对本地/测试库 dotnet ef database update（需确认）\n  - git_commit                 # 生成提交说明并提交（需确认）\n\nsupported_agents:\n  - codex                # Codex CLI（priority 1）\n  - claude_code          # Claude Code CLI（priority 2）\n  - qoer                 # QoerCN CLI（priority 3，Lingma 升级后正式入口）\n  - lingma               # Lingma 兼容入口，实际走 Qoer CLI（priority 4）\n  - trae                 # Trae CLI（priority 5）\n  - vscode               # VS Code CLI（priority 6）\n  - cursor               # Cursor CLI（priority 7）\n  - qoder                # Qoder CLI（priority 8）\n  - generic              # 通用 CLI / 工作区兜底\n\nsupported_stacks:\n  - dotnet               # .NET / EF Core（MVP）\n  # node / python / java 预留扩展位\n\nentry_point: core/dispatcher.py\nconfig_dir: config/\n\n# OpenClaw 在 /skill install 时自动安装以下依赖\ndependencies:\n  python: \">=3.11\"\n  packages:\n    - pyyaml>=6.0.1\n    - python-dotenv>=1.0.0\n    - pydantic>=2.5.0\n    - jinja2>=3.1.2\n    - structlog>=23.0.0\n\nrequires_confirmation:\n  - assign_coding_task\n  - generate_migration\n  - apply_migration_local\n  - git_commit\n\nforbidden_actions:\n  - apply_migration_prod       # 直连生产库执行 Migration\n  - force_push                 # git push --force\n  - drop_migration_history     # 删除/重置 Migration 历史\n  - reset_hard                 # git reset --hard\n  - delete_branch\n\nexample_prompts:\n  - \"用 Codex 在 GotoPlan 后台开发计划模板中心接口，并识别需要新增的数据库表\"\n  - \"分析当前工作区的 Git Diff，看看有没有新增实体需要建表\"\n  - \"为 gotoplan-backend 生成 Customer 表的数据库变更交接单\"\n  - \"生成 AddPlanTemplates 这个 EF Core Migration 并在测试库验证\"\n  - \"列出当前可用的编程工具适配器\"\n---\n\n# goto-codedev-manager\n\nGotoPlan / OpenClaw 生态中的**多 IDE / 多 AI 编程 Agent 统一调度能力层**——不绑死任何单一 IDE，\n统一连接 Codex、Claude Code、QoerCN（Lingma 兼容）、Trae、VS Code、Cursor、Qoder 等编程工具，对本地项目完成开发任务分派、\nGit Diff 分析、数据库变更识别、Migration 生成、测试构建，并产出「数据库变更交接单」(Schema Contract)，\n交给 goto-devops-orchestrator → goto-cloudserver-manager 安全落库。**绝不直连生产数据库。**\n\n## 两条正交适配轴\n\n- **编程 Agent / IDE 轴**（`adapters/`）：谁来改代码、怎么下任务。Codex/Claude Code/QoerCN/Trae/VS Code/Cursor/Qoder 均通过 CLI 控制。\n- **后端技术栈轴**（`stacks/`）：怎么识别实体、怎么生成 Migration。MVP = dotnet/efcore。\n\n> 核心原则：**谁修改了代码不重要**，所有 Agent 都作用在同一项目工作区；codedev-manager 始终通过\n> 「项目结构 + Git Diff + 测试/构建命令」理解开发进度，因此变更分析与建表识别是 Agent 无关的。\n\n## 三级权限\n\n- 只读（读代码、分析 Diff、生成 Migration 草案/交接单、跑测试）自动执行；\n- 写操作（下开发任务、生成 Migration、测试库落库、提交）先给计划再确认；\n- 危险操作（直连生产库、强推、重置历史）直接拒绝。\n\n## 快速使用\n\n```\n# 列出可用编程工具\n列出当前可用的编程工具适配器\n\n# 让 Codex 开发并识别数据库变更\n用 Codex 在 gotoplan-backend 开发\"计划模板中心\"接口，并生成数据库变更交接单\n\n# 仅基于已写代码生成交接单\n分析 gotoplan-backend 的改动，为新增实体生成建表交接单\n```\n\n更多配置（`config/workspaces.yaml`、`config/adapters.yaml`）和与 goto-devops-orchestrator /\ngoto-cloudserver-manager 的协同说明见 [README.md](README.md)。\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 200,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-09T14:20:37.541Z",
+  "updated_at": "2026-07-09T14:20:37.541Z",
+  "fetched_at": "2026-07-11T23:14:11.641Z",
+  "source_url": "https://clawhub.ai/feixuelingcloud/skills/goto-codedev-manager"
+}

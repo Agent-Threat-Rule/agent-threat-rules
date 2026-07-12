@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "poyo-seedream-5-pro",
+  "display_name": "Poyo Seedream 5 Pro",
+  "publisher": {
+    "handle": "coolhackboy",
+    "display_name": "coolhackboy",
+    "user_id": "s177pant1v4gn5k13ffg1fp5b183nb02"
+  },
+  "summary": "Seedream 5.0 Pro image generation and editing on PoYo / poyo.ai via `https://api.poyo.ai/api/generate/submit`; use for `seedream-5.0-pro`, `seedream-5.0-pro-...",
+  "description": "Seedream 5.0 Pro image generation and editing on PoYo / poyo.ai via `https://api.poyo.ai/api/generate/submit`; use for `seedream-5.0-pro`, `seedream-5.0-pro-edit`, text-to-image, reference-image editing, 1K or 2K output, aspect-ratio control, and multi-image output.",
+  "content": "---\nname: poyo-seedream-5-pro\ndescription: Seedream 5.0 Pro image generation and editing on PoYo / poyo.ai via `https://api.poyo.ai/api/generate/submit`; use for `seedream-5.0-pro`, `seedream-5.0-pro-edit`, text-to-image, reference-image editing, 1K or 2K output, aspect-ratio control, and multi-image output.\nmetadata: {\"openclaw\":{\"homepage\":\"https://poyo.ai/models/seedream-5-api\",\"requires\":{\"bins\":[\"curl\"],\"env\":[\"POYO_API_KEY\"]},\"primaryEnv\":\"POYO_API_KEY\"}}\n---\n\n# PoYo Seedream 5.0 Pro Image Generation and Editing\n\n## PoYo Links\n\n- Model page: <https://poyo.ai/models/seedream-5-api>\n- API docs: <https://docs.poyo.ai/api-manual/image-series/seedream-5>\n- API key page: <https://poyo.ai/dashboard/api-key>\n\nUse this skill for Seedream 5.0 Pro image jobs on PoYo. It helps agents select generation or edit mode, prepare an async request, and track the returned task.\n\n## Use When\n\n- The user mentions Seedream 5.0 Pro, `seedream-5.0-pro`, or `seedream-5.0-pro-edit`.\n- The task is text-to-image generation or editing with reference images.\n- The workflow needs PoYo request fields, shell submission, polling, or webhook guidance.\n\n## Model Selection\n\n- `seedream-5.0-pro`: generate images from a text prompt.\n- `seedream-5.0-pro-edit`: edit or combine supplied reference images with a prompt.\n\n## Key Inputs\n\n- `prompt` is required for both models.\n- `image_urls` is required for edit mode, accepts up to 10 images, and is not supported in generation mode.\n- `size` accepts `1K`, `2K`, `1:1`, `3:4`, `4:3`, `16:9`, or `9:16`.\n- `n` controls the output count from 1 to 6.\n- `output_format` can be `jpeg` or `png`.\n- `enable_safety_checker` is optional.\n\n## Security Rules\n\n- Treat `POYO_API_KEY` as a secret and keep it in a server-side environment variable or secret manager.\n- Never place the key in browser code, public repositories, logs, screenshots, or chat output.\n- Do not submit private reference images or callback URLs unless the user trusts PoYo and the callback receiver.\n- Make live API calls only when the user explicitly requests them in a trusted server-side environment.\n\n## Execution\n\n- Read `references/api.md` before preparing a request.\n- Use `scripts/submit_seedream_5_pro.sh` only with a reviewed JSON payload.\n- Report the returned `task_id` and the selected model clearly.\n- Poll the unified task status endpoint or wait for the configured webhook.\n\n## Output Expectations\n\nInclude the selected model, mode, final payload or parameter summary, reference-image count, output settings, returned `task_id` when submitted, and the next status-check step.\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 41,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T01:20:28.453Z",
+  "updated_at": "2026-07-11T01:20:28.453Z",
+  "fetched_at": "2026-07-11T22:50:57.784Z",
+  "source_url": "https://clawhub.ai/coolhackboy/skills/poyo-seedream-5-pro"
+}

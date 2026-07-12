@@ -1,0 +1,36 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "linkfox-sellersprite-market-research",
+  "display_name": "卖家精灵-市场调研（列表）",
+  "publisher": {
+    "handle": "linkfox-ai",
+    "display_name": "linkfox-ai",
+    "user_id": "s171g8b6m2khwdy9ye8bxj0wx183vd4z"
+  },
+  "summary": "使用卖家精灵选市场列表能力，基于类目维度筛选亚马逊细分市场，支持市场规模、竞争度、头部集中度、卖家结构、新品占比、价格/评分/毛利区间等大量条件，用于发现可进入市场与评估选品方向。当用户提到亚马逊市场调研、细分类目研究、市场机会筛选、市场集中度分析、新品机会、选市场、SellerSprite market res...",
+  "description": "使用卖家精灵选市场列表能力，基于类目维度筛选亚马逊细分市场，支持市场规模、竞争度、头部集中度、卖家结构、新品占比、价格/评分/毛利区间等大量条件，用于发现可进入市场与评估选品方向。当用户提到亚马逊市场调研、细分类目研究、市场机会筛选、市场集中度分析、新品机会、选市场、SellerSprite market res...",
+  "content": "---\r\nname: linkfox-sellersprite-market-research\r\ndescription: 使用卖家精灵选市场列表能力，基于类目维度筛选亚马逊细分市场，支持市场规模、竞争度、头部集中度、卖家结构、新品占比、价格/评分/毛利区间等大量条件，用于发现可进入市场与评估选品方向。当用户提到亚马逊市场调研、细分类目研究、市场机会筛选、市场集中度分析、新品机会、选市场、SellerSprite market research、category market research时触发此技能。即使用户未明确提及\"卖家精灵\"，只要需求是按类目维度筛选和评估亚马逊市场，也应触发此技能。\r\n---\r\n\r\n# SellerSprite Market Research\r\n\r\nThis skill helps screen and rank Amazon category markets using SellerSprite market-research data.\r\n\r\n## Core Concepts\r\n\r\n- **类目市场级分析**：不是商品级列表，而是按类目/节点聚合后的市场画像。\r\n- **市场规模**：月均销量、月均销售额、商品数量等。\r\n- **竞争结构**：卖家/品牌集中度、头部集中度、自营占比、FBA/FBM 占比。\r\n- **入参刻度**：筛选用的 **GoodsCrn / BrandCrn / SellerCrn / EbcProportion / FbaProportion / FbmProportion / AmazonSelfProportion**（`min*`/`max*`）须为 **0～1 小数**，见下文参数表与 `references/api.md`。\r\n- **新品机会**：新品数量、新品占比、新品均价/评分/销量等。\r\n\r\n## 调用方式\r\n\r\n- **API 端点**：`POST /sellersprite/market/research`（完整参数/响应/错误码见 `references/api.md`）\r\n- **Python 脚本**：`python scripts/sellersprite_market_research.py '<JSON 参数>' [--inline]`\r\n- **成本约束**：本工具会消耗积分；同一会话同一参数组合默认只调用一次，脚本带 24h 本地缓存。失败/空结果不得自动换关键词、翻页或改邮编连续试探；需要继续检索时先向用户说明会产生额外消耗。\r\n\r\n**输出策略（脚本默认行为）**：\r\n- **始终**将完整响应写入 `<cwd>/linkfox/<YYYY-MM-DD>/<session>/data/linkfox-sellersprite-market-research-<timestamp>.json`（`<cwd>` 为脚本执行时的工作目录，在 Claude Code 里即当前项目目录；`<session>` 取自环境变量 `SESSION_ID`，按用户任务自动聚合；**禁止写入 /tmp**，当前目录不可写则报错）\r\n- 响应体 ≤ 8 KB：落盘后把完整 JSON 打印到 stdout\r\n- 响应体 > 8 KB：落盘后 stdout 只输出摘要（顶层字段、常见计数如 `total`/`costToken`、最大列表字段的长度 + 前 3 条样本）\r\n- 加 `--inline` 强制全量打印到 stdout（同样落盘）\r\n\r\n**读数据建议**：先看摘要判断是否足够；需要具体字段时优先用 `jq`或`ConvertFrom-Json` 从保存的 json 文件按需抽取，避免整份 JSON 进入上下文。\r\n## Key Parameters\r\n\r\n> 接口筛选项与工具 `_sellersprite_market_research` 一致（70+）；下表为常用子集，**完整参数与出参字段见 `references/api.md`**。\r\n\r\n| 参数 | 类型 | 必填 | 说明 |\r\n|------|------|------|------|\r\n| marketplace | string | 是 | 站点编码，默认 `US` |\r\n| month | string | 否 | `nearly` 或 `yyyyMM` |\r\n| nodeIdPath | string | 否 | 类目节点路径 |\r\n| departmentKeyword | string | 否 | 类目关键字路径 |\r\n| page / size | integer | 否 | 分页，默认 1/50，`size` 最大 200 |\r\n| orderField / orderDesc | string/boolean | 否 | 排序字段与方向；`orderDesc` 默认 `true`（降序） |\r\n| minAvgRevenue / maxAvgRevenue | number | 否 | 月均销售额范围 |\r\n| minAvgUnits / maxAvgUnits | integer | 否 | 月均销量范围 |\r\n| minGoodsCount / maxGoodsCount | integer | 否 | 商品数量范围 |\r\n| minGoodsCrn / maxGoodsCrn | number | 否 | 商品集中度（**小数 0～1**，如 `0.4` 表示 40%，勿用整数 `40`） |\r\n| minSellerCrn / maxSellerCrn | number | 否 | 卖家集中度（**小数 0～1**） |\r\n| minBrandCrn / maxBrandCrn | number | 否 | 品牌集中度（**小数 0～1**） |\r\n| minAmazonSelfProportion / maxAmazonSelfProportion | number | 否 | Amazon 自营占比（**小数 0～1**） |\r\n| minFbaProportion / maxFbaProportion | number | 否 | FBA 占比（**小数 0～1**） |\r\n| minFbmProportion / maxFbmProportion | number | 否 | FBM 占比（**小数 0～1**） |\r\n| minEbcProportion / maxEbcProportion | number | 否 | A+ 数量占比（**小数 0～1**） |\r\n| minNewProportion / maxNewProportion | number | 否 | 新品占比（刻度可能与上列不同，以 `references/api.md` / schema 为准） |\r\n| minAvgPrice / maxAvgPrice | number | 否 | 平均价格范围 |\r\n| minAvgRating / maxAvgRating | number | 否 | 平均评分范围 |\r\n| minAvgProfit / maxAvgProfit | number | 否 | 平均毛利率（%） |\r\n\r\n## Usage Example\r\n\r\n```json\r\n{\r\n  \"marketplace\": \"US\",\r\n  \"month\": \"nearly\",\r\n  \"minAvgRevenue\": 10000,\r\n  \"maxGoodsCrn\": 0.4,\r\n  \"minNewProportion\": 10,\r\n  \"maxSellerCrn\": 0.5,\r\n  \"orderField\": \"total_amount\",\r\n  \"orderDesc\": true,\r\n  \"page\": 1,\r\n  \"size\": 50\r\n}\r\n```\r\n\r\n## Display Rules\r\n\r\n1. 先给出市场候选 Top N，再展示核心指标（市场规模、集中度、新品占比）。\r\n2. **入参回显**：`GoodsCrn` / `BrandCrn` / `SellerCrn` / `EbcProportion` / `FbaProportion` / `FbmProportion` / `AmazonSelfProportion` 对应筛选为 **0～1 小数**；向用户说明时可换算为百分数（如传 `0.4` 可表述为「商品集中度上限 40%」）。响应 `data[]` 里若仍带「(%)」字段，与入参刻度可能不同，以返回为准。\r\n3. 其它比例/毛利率等字段的单位以 `references/api.md` 为准。\r\n4. 显示筛选条件回显，便于用户复现。\r\n5. 若结果过少或过多，建议用户调整关键阈值（如集中度、规模阈值）。\r\n\r\n## Important Limitations\r\n\r\n- 必填参数：`marketplace`\r\n- 每页最多 200 条\r\n- 历史月份范围受第三方限制（通常近24个月）\r\n\r\n**Feedback:**\r\n\r\nAuto-detect and report feedback via the Feedback API when any of the following apply:\r\n1. The functionality or purpose described in this skill does not match actual behavior\r\n2. The skill's results do not match the user's intent\r\n3. The user expresses dissatisfaction or praise about this skill\r\n4. Anything you believe could be improved\r\n\r\nCall the feedback API as specified in `references/api.md`. Do not interrupt the user's flow.\r\n\r\n",
+  "category": null,
+  "tags": [
+    "Market Research",
+    "市场调研"
+  ],
+  "topics": [
+    "Market Research",
+    "市场调研"
+  ],
+  "latest_version": "1.0.5",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 750,
+    "installs": 20,
+    "stars": 0,
+    "versions": 5,
+    "comments": 0
+  },
+  "created_at": "2026-04-29T03:32:43.968Z",
+  "updated_at": "2026-07-10T04:48:56.191Z",
+  "fetched_at": "2026-07-11T23:03:05.181Z",
+  "source_url": "https://clawhub.ai/linkfox-ai/skills/linkfox-sellersprite-market-research"
+}

@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "linkfox-temu-product-query",
+  "display_name": "Temu商品查询",
+  "publisher": {
+    "handle": "linkfox-ai",
+    "display_name": "linkfox-ai",
+    "user_id": "s171g8b6m2khwdy9ye8bxj0wx183vd4z"
+  },
+  "summary": "按多维度筛选 Temu 商品（关键词/商品 ID/店铺 ID、前后台类目、价格、评分、评论、总/周/日销量、上架时间、全托管/半托管、半托管地区、标签等）。当用户提到 Temu 商品、Temu 选品、拼多多跨境、Temu 爆款、Temu 半托管、全托管商品、Temu product query、temu item...",
+  "description": "按多维度筛选 Temu 商品（关键词/商品 ID/店铺 ID、前后台类目、价格、评分、评论、总/周/日销量、上架时间、全托管/半托管、半托管地区、标签等）。当用户提到 Temu 商品、Temu 选品、拼多多跨境、Temu 爆款、Temu 半托管、全托管商品、Temu product query、temu items 时触发。即使用户未提及工具名，只要在 Temu 上搜商品、看销量/评分/价格或筛品，也应触发此技能。",
+  "content": "---\nname: linkfox-temu-product-query\ndescription: 按多维度筛选 Temu 商品（关键词/商品 ID/店铺 ID、前后台类目、价格、评分、评论、总/周/日销量、上架时间、全托管/半托管、半托管地区、标签等）。当用户提到 Temu 商品、Temu 选品、拼多多跨境、Temu 爆款、Temu 半托管、全托管商品、Temu product query、temu items 时触发。即使用户未提及工具名，只要在 Temu 上搜商品、看销量/评分/价格或筛品，也应触发此技能。\n---\n\n# Temu 商品查询\n\n## 要点\n\n- **分页**：`page` 从 1 起；`pageSize` 默认 20、最大 100（建议 ≤50）。\n- **区间入参**：`*Begin` / `*End` 成对出现（价格、评分、评论、总/周/日销量、上架时间），组成上游区间。\n- **类目**：`categoryHome` 前台类目 ID、`categoryBackend` 后台类目 ID；可先用 Temu 品类检索拿到 id。\n- **托管模式**：`isLocal`（0=全托管，1=半托管）；半托管可用 `region` 限定地区（多个逗号分隔）。\n- **上下架**：`soldOut`（0=上架，1=下架）。\n- **标签**：`tags` / `customTags` 多个用逗号分隔。\n- **排序**：`sortBy` 为「字段-方向」字符串，如 `order_week-0`（周销量降序，默认）、`price-0`、`order_total-0`、`rating-0`。\n\n## 脚本（可选）\n\n命令行调试：`python scripts/temu_product_query.py '<JSON>'`（需 `LINKFOXAGENT_API_KEY`）。详见 [references/api.md](references/api.md) 末尾。\n\n## 参考\n\n入参/出参表见 [references/api.md](references/api.md)。\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.6",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 310,
+    "installs": 1,
+    "stars": 0,
+    "versions": 3,
+    "comments": 0
+  },
+  "created_at": "2026-07-09T05:20:19.298Z",
+  "updated_at": "2026-07-10T05:40:49.169Z",
+  "fetched_at": "2026-07-11T23:01:08.047Z",
+  "source_url": "https://clawhub.ai/linkfox-ai/skills/linkfox-temu-product-query"
+}

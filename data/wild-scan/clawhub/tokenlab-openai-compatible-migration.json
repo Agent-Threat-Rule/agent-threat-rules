@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "tokenlab-openai-compatible-migration",
+  "display_name": "Tokenlab Openai Compatible Migration",
+  "publisher": {
+    "handle": "hedging8563",
+    "display_name": "hedging8563",
+    "user_id": "s179rmxvstkbe8mkf3phsjrqmx8a97gy"
+  },
+  "summary": "Migrate OpenAI-compatible apps, SDKs, examples, and environment variables to TokenLab while preserving request semantics and adding live model discovery.",
+  "description": "Migrate OpenAI-compatible apps, SDKs, examples, and environment variables to TokenLab while preserving request semantics and adding live model discovery.",
+  "content": "---\nname: tokenlab-openai-compatible-migration\ndescription: Migrate OpenAI-compatible apps, SDKs, examples, and environment variables to TokenLab while preserving request semantics and adding live model discovery.\nlicense: MIT\nmetadata:\n  category: coding\n---\n\n# TokenLab OpenAI-Compatible Migration\n\nUse this skill when a user wants to move an existing OpenAI-compatible integration, OpenRouter setup, LiteLLM config, LangChain/LlamaIndex app, or custom SDK wrapper to TokenLab.\n\n## What this skill should deliver\n\n- A minimal diff or config change that preserves the existing user path.\n- The correct TokenLab base URL and API key environment variable.\n- A model migration note with live discovery commands.\n- A native endpoint note when the old code actually needs Responses, Anthropic Messages, Gemini, media, audio, embeddings, rerank, or translation behavior.\n- A rollback note that restores the previous provider config.\n\n## Default migration rules\n\n- OpenAI-compatible SDKs:\n  - base URL: `https://api.tokenlab.sh/v1`\n  - auth: `Authorization: Bearer $TOKENLAB_API_KEY`\n  - chat path: `/v1/chat/completions`\n- Anthropic-native clients:\n  - base URL: `https://api.tokenlab.sh`\n  - messages path: `/v1/messages`\n- Gemini-native clients:\n  - base URL: `https://api.tokenlab.sh`\n  - generateContent path: `/v1beta/models/{model}:generateContent`\n- Live discovery:\n  - `GET https://api.tokenlab.sh/v1/models`\n  - `GET https://api.tokenlab.sh/v1/models?recommended_for=<scene>`\n  - `GET https://api.tokenlab.sh/v1/models/:model`\n\n## Preferred approach\n\n1. Locate the current provider config, environment variables, and model IDs.\n2. Make the smallest possible change first:\n   - replace base URL\n   - replace API key variable\n   - keep SDK/client shape intact\n3. Add model discovery only where the app currently hardcodes provider-specific models.\n4. Keep native semantics when the source integration uses Responses, Anthropic Messages, Gemini content parts, tools, media, audio, embeddings, rerank, or translation.\n5. Provide a smoke test command for the migrated path.\n\n## Output format\n\n- One short explanation of the migration surface.\n- A focused diff, config block, or runnable replacement snippet.\n- One smoke test command.\n- One model discovery command.\n- One rollback line naming the previous base URL/env vars.\n\n## Avoid\n\n- Do not rewrite the user's SDK architecture if a base URL change is enough.\n- Do not flatten native Anthropic or Gemini payloads into generic chat unless the user explicitly accepts that behavior change.\n- Do not silently change models when the user's existing model has no obvious TokenLab equivalent.\n- Do not embed API keys in source files or prompts.\n- Do not claim feature parity without checking the model details endpoint.\n\n## Edge Cases\n\n- If an app has separate base URLs for chat, embeddings, and media, migrate one family at a time.\n- If the existing app uses OpenRouter model slugs, map to TokenLab public model IDs only after catalog lookup.\n- If the user's previous provider had provider-specific headers, keep only headers that TokenLab documents or that the user's app still needs.\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 75,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T15:58:26.279Z",
+  "updated_at": "2026-07-10T15:58:26.279Z",
+  "fetched_at": "2026-07-11T22:53:28.130Z",
+  "source_url": "https://clawhub.ai/hedging8563/skills/tokenlab-openai-compatible-migration"
+}

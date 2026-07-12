@@ -1,0 +1,38 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "claw-markdown-preview",
+  "display_name": "Claw Markdown Preview",
+  "publisher": {
+    "handle": "webkixi",
+    "display_name": "天天修改",
+    "user_id": "s171neyed37y95yer64vfgs0j9880zss"
+  },
+  "summary": "Local Markdown preview skill. Trigger when the user explicitly asks to preview a markdown file — e.g. \"preview this markdown file\", \"open markdown preview\", \"markdown preview\", or the Chinese \"预览这个 markdown 文件\" / \"打开 markdown 预览\" / \"markdown 预览一下\".",
+  "description": "Local Markdown preview skill. Trigger when the user explicitly asks to preview a markdown file — e.g. \"preview this markdown file\", \"open markdown preview\", \"markdown preview\", or the Chinese \"预览这个 markdown 文件\" / \"打开 markdown 预览\" / \"markdown 预览一下\".",
+  "content": "---\nname: claw-markdown-preview\ndescription: Local Markdown preview skill. Trigger when the user explicitly asks to preview a markdown file — e.g. \"preview this markdown file\", \"open markdown preview\", \"markdown preview\", or the Chinese \"预览这个 markdown 文件\" / \"打开 markdown 预览\" / \"markdown 预览一下\".\nversion: 1.4.9\nmetadata:\n  openclaw:\n    emoji: \"📄\"\n    os: [\"darwin\", \"linux\", \"win32\"]\n    requires:\n      bins: [\"python3\"]\n    install: []\n    permissions:\n      - filesystem:read\n      - filesystem:write\n      - network:localhost\n      - process:spawn\n---\n\n# Markdown 编辑、多风格预览 / Markdown Editing & Multi-style Preview\n\n通过浏览器编辑、预览AI生成的 Markdown 内容、用户本地 MarkDown 文件。支持多主题风格切换、实时编辑、富文本复制（可粘贴到公众号/知乎）、图片粘贴  \n\nEdit & preview AI-generated or local Markdown in the browser. Multi-theme switching, live editing, rich-text copy (for WeChat/Zhihu), and image paste.\n\n## 触发方式 / Trigger\n\n当用户明确请求预览 Markdown 文件时触发，例如：\"预览这个 markdown 文件\" / \"打开 markdown 预览\" / \"markdown 预览一下\"。非 Markdown 预览请求（如普通文本渲染、图片查看）不触发。  \n\nTriggers when the user explicitly asks to preview a Markdown file, e.g. \"预览这个 markdown 文件\" / \"打开 markdown 预览\" / \"markdown 预览一下\". Not for generic text rendering or image viewing.\n\n## 执行入口\n\n**前提检查：**\n- 确认目标文件路径存在且为 `.md` 文件\n- 确认 `scripts/preview_server.py` 存在且可用（路径相对于技能目录）\n\n**执行（两步，替换 `<MD_FILE_PATH>` 后运行）：**\n\n**第 1 步 —— 以「托管后台任务」方式启动服务（关键：必须是脱离命令进程树的独立任务，绝不能用命令内 `&` 把服务挂到返回命令的进程树下，否则命令一返回、进程树被清理，服务就跟着死）：**\n\n```bash\npkill -f preview_server.py 2>/dev/null; rm -f /tmp/claw-markdown-preview.pid\n# 注意：上面这行会终止本技能此前运行的所有预览服务实例（若你已在别处开着预览，会被一并关闭）。\n# 这是当前单实例清理逻辑；多实例共存为待办项，启用后改为只终止自身实例。\npython3 scripts/preview_server.py --file \"<MD_FILE_PATH>\" --no-open --heartbeat-timeout 30 > /tmp/claw-md-preview.log 2>&1\n```\n\n> 用 Bash 工具的后台 / 托管任务模式运行上面整条命令，让服务常驻、不随某条命令返回而结束。若运行环境没有托管任务机制，退而用 `setsid python3 … &` 把服务拆到独立会话，效果等同。\n\n**第 2 步 —— 探测端口并打开浏览器（普通命令即可）：**\n\n```bash\n# 就绪轮询：服务绑定端口后即可响应，不必固定等待 2 秒（跨平台通用，不依赖任何运行时专属能力）\nPORT=8765\nfor i in $(seq 1 20); do\n  if curl -s -o /dev/null -w '%{http_code}' --max-time 1 \"http://127.0.0.1:$PORT/\" | grep -q 200; then\n    break\n  fi\n  sleep 0.1\ndone\n# 若默认端口仍未就绪（如端口冲突），从日志提取实际端口\nif ! curl -s -o /dev/null -w '%{http_code}' --max-time 1 \"http://127.0.0.1:$PORT/\" | grep -q 200; then\n  PORT=$(grep -oE '127\\.0\\.0\\.1:[0-9]+' /tmp/claw-md-preview.log | head -1 | sed 's/.*://')\nfi\nlsof -iTCP:$PORT -sTCP:LISTEN -t | head -1 > /tmp/claw-markdown-preview.pid\nopen \"http://127.0.0.1:$PORT\"\n```\n\n**说明：**\n- 第 1 步把服务跑成托管后台任务（常驻、脱离启动命令的进程树），第 2 步再探测端口并打开浏览器。两步拆分是为了让服务不被启动命令的进程树回收而误杀。\n- 服务启动后：`curl` 快速探测默认端口 8765 → 被占用时从日志精确提取端口 → 记录 PID → 打开浏览器。\n- 首次运行用默认端口 8765，`curl` 直通不进正则分支；仅端口冲突时才走日志提取降级路径。\n- 心跳 30 秒纯为兜底——页面关闭后最多等待 30 秒自停，正常预览流程碰不到超时。\n\n> **不要用 `present_files`**，内置浏览器窗口太挤，用系统命令 `open` 打开外部浏览器。\n\n## 可选参数\n\n| 参数 | 说明 |\n|------|------|\n| `--file <路径>` | 预览指定 markdown 文件 |\n| `--port <端口>` | 指定端口，默认 `8765` |\n| `--stdin` | 从标准输入读取 markdown 内容 |\n| `--no-open` | 不自动打开系统浏览器（后台/Agent 场景必加） |\n| `--verbose` | 输出访问日志，便于调试 |\n| `--heartbeat-timeout <秒>` | 心跳超时秒数，页面关闭后超时自动停止服务（默认 `10`，Agent 场景建议 `30`） |\n\n如果没有指定 `--file` 或 `--stdin`，服务启动后页面显示空编辑器，用户可自行粘贴 markdown。\n\n## 功能说明\n\n1. **编辑模式**：CodeMirror 编辑器，编辑 Markdown 原文\n2. **预览模式**：渲染后的富文本预览，支持主题切换\n3. **双栏模式**：编辑器和预览左右并排，支持滚动同步\n4. **手机预览**：以手机宽度（500px）居中渲染预览\n\n## 主题\n\n22 种预览主题 + 9 种代码高亮主题，可在页面顶部下拉选择。\n\n## 富文本复制\n\n点击预览区的复制按钮，将当前主题样式内联后的 HTML 写入剪贴板，可直接粘贴到公众号编辑器等平台。复制时会 `fetch` 本地预览服务（仅监听 `127.0.0.1`）的图片并内联为 base64，不访问任何其它外部地址，公众号粘贴后自动识别本地图片。\n\n## 粘贴图片\n\n在编辑模式或双栏模式下，可直接粘贴剪贴板中的图片（Ctrl+V / Cmd+V）。预览页会拦截默认粘贴动作，将图片经由本地预览服务（仅监听 `127.0.0.1`）的 `/api/image` 端点写入本地磁盘、保存到被预览 Markdown 同目录的 `images/` 文件夹，并插入本地引用 `![](images/img-xxx.png)`。整个过程不出本机、不经任何外部服务器。\n\n- 单张图片大小限制 5MB\n- 图片以文件形式存储，跟随 md 文件，换浏览器/电脑不丢失\n\n## 注意事项\n\n- 预览服务运行在 `assets/` 子目录上，文件由 `preview_server.py` 自动定位\n- 端口默认 8765，被占用时自动递增寻找空闲端口（+20 以内）\n- **热更新**：使用 `--file` 模式时，页面每 3 秒轮询文件内容变化，在 Agent 中修改文件后页面自动刷新（弹出\"外部内容已更新\"提示）\n- **心跳自停**：页面每 5 秒发送心跳，关闭页面后服务自动停止（正常关闭立即停止，异常退出最多等待 `--heartbeat-timeout` 秒后停止）\n- **⚠️ 编辑即自动保存并覆盖原文件**：在编辑器中修改后停顿约 5 秒，内容会自动经 `/api/save` 写回被预览的 md 文件并覆盖原内容（无备份）；也可点\"保存\"按钮手动保存。关闭预览页面**不会**自动保存，如有未保存改动会提示确认离开，离开则未保存内容丢弃。\n- `--stdin` 模式不支持热更新和粘贴图片（内容固定）\n- 服务终止方式：`kill $(cat /tmp/claw-markdown-preview.pid)`\n\n## 后台运行说明\n\n执行入口第 1 步以「托管后台任务」方式常驻服务（脱离启动命令的进程树，命令返回也不会被回收）；第 2 步负责端口探测（curl）/ PID 获取（lsof）/ 残留清理（pkill）。若需手动启动，参考上述命令结构，务必使用 `python3`（与 frontmatter `requires: python3` 一致）而非绝对路径；切勿用命令内 `&` 把服务挂到返回命令的进程树下的写法，否则服务会被进程树清理杀掉。\n",
+  "category": null,
+  "tags": [
+    "markdown",
+    "agent",
+    "preview"
+  ],
+  "topics": [
+    "markdown",
+    "agent",
+    "preview"
+  ],
+  "latest_version": "1.4.9",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 591,
+    "installs": 0,
+    "stars": 0,
+    "versions": 9,
+    "comments": 0
+  },
+  "created_at": "2026-07-07T19:38:29.724Z",
+  "updated_at": "2026-07-11T16:17:56.006Z",
+  "fetched_at": "2026-07-11T22:40:46.862Z",
+  "source_url": "https://clawhub.ai/webkixi/skills/claw-markdown-preview"
+}

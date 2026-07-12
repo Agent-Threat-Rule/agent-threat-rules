@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "speculative-exec",
+  "display_name": "Speculative Exec",
+  "publisher": {
+    "handle": "chen6896qqwee",
+    "display_name": "chen6896qqwee",
+    "user_id": "s17d04jj6mht3atggbc0865zph83hbzy"
+  },
+  "summary": "Speculative execution engine — predict and pre-load context the agent is likely to need next. Distilled from Claude Code speculation module.",
+  "description": "Speculative execution engine — predict and pre-load context the agent is likely to need next. Distilled from Claude Code speculation module.",
+  "content": "---\nname: speculative-exec\ndescription: Speculative execution engine — predict and pre-load context the agent is likely to need next. Distilled from Claude Code speculation module.\nmetadata:\n  openclaw:\n    requires:\n      bins: [python3]\n---\n\n# Speculative Exec\n\nDistilled from Claude Code speculation module. Predicts the next likely action\nand pre-loads the needed context in parallel with LLM response generation.\nReduces perceived latency by 30-60% for common workflows.\n\n## When to use\n\n- User asks to \"analyze\" something → pre-load data sources\n- User asks to \"read\" a file → pre-load the file content\n- User asks to \"search\" → pre-load search index\n- User asks to \"compare\" → pre-load both items\n- User asks to \"write\" a report → pre-load template\n- Any repetitive workflow where the next step is predictable\n\n## How it works\n\n1. **Pattern Recognition** — Match user intent against known workflow patterns\n2. **Context Prediction** — Predict what files/data/tools will be needed\n3. **Pre-load Queue** — Start loading predicted resources in background\n4. **Cache Delivery** — When the agent actually needs the resource, serve from cache\n\n## Usage\n\n```bash\n# Start speculative pre-load based on user message\npython3 {baseDir}/speculator.py --message \"帮我分析这个股票\"\n\n# Predict next actions from conversation history\npython3 {baseDir}/speculator.py --history conversation.json\n\n# Train on custom workflow patterns\npython3 {baseDir}/speculator.py --train workflows.json\n\n# Check cache status\npython3 {baseDir}/speculator.py --status\n```\n\n## Output\n\n```json\n{\n  \"prediction\": \"read_stock_data\",\n  \"confidence\": 0.92,\n  \"preloaded\": [\"stock_price\", \"financial_report\", \"news\"],\n  \"estimated_save_ms\": 1200\n}\n```\n\n## Built-in workflow patterns\n\n| Intent Pattern | Predicted Next Action | Pre-loads |\n|---------------|----------------------|-----------|\n| 分析/analyze | Read data source | Data files, reports |\n| 对比/compare | Read both items | Item A, Item B |\n| 搜索/search | Search index | Index files |\n| 写/write | Template + context | Templates, examples |\n| 修改/edit | Read target file | Target file |\n| 安装/install | Read docs | Documentation |\n| 测试/test | Read test files | Test files, fixtures |\n| 部署/deploy | Read config | Config files |\n\n## Algorithm reference\n\nBased on Claude Code speculation module:\n- Intent classification via keyword + regex patterns\n- Weighted prediction scoring\n- Parallel pre-load with timeout\n- Cache invalidation on context change\n- Confidence threshold gating (default: 0.7)\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 122,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T01:47:50.183Z",
+  "updated_at": "2026-07-10T01:47:50.183Z",
+  "fetched_at": "2026-07-11T23:09:33.404Z",
+  "source_url": "https://clawhub.ai/chen6896qqwee/skills/speculative-exec"
+}

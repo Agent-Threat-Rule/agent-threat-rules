@@ -1,0 +1,34 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "metacognition",
+  "display_name": "Metacognition",
+  "publisher": {
+    "handle": "madebydia",
+    "display_name": "Diana Park",
+    "user_id": "s176b3312npmthbt2chf2mccw183grfh"
+  },
+  "summary": "Self-reflection engine for AI agents. Extracts patterns from session transcripts into a weighted graph with Hebbian learning and time decay. Compiles a token...",
+  "description": "Self-reflection engine for AI agents. Extracts patterns from session transcripts into a weighted graph with Hebbian learning and time decay. Compiles a token-budgeted lens of active self-knowledge.",
+  "content": "---\nname: metacognition\ndescription: Self-reflection engine for AI agents. Extracts patterns from session transcripts into a weighted graph with Hebbian learning and time decay. Compiles a token-budgeted lens of active self-knowledge.\nmetadata: {\"openclaw\":{\"requires\":{\"bins\":[\"python3\"]},\"writablePaths\":[\"memory/metacognition.json\",\"scripts/metacognition-lens.md\"],\"readablePaths\":[\"memory/\"],\"env\":{\"EMBEDDINGS_URL\":\"optional, localhost-only embeddings endpoint (defaults to http://localhost:4821/v1/embeddings, remote URLs rejected at startup)\",\"WORKSPACE\":\"optional, workspace root path\"},\"security\":\"localhost-only network (EMBEDDINGS_URL validated to 127.0.0.1/localhost/::1 at import time, remote URLs disable embeddings entirely), no curl/subprocess — uses Python stdlib urllib only, extract command limited to 1MB file reads\",\"homepage\":\"https://github.com/madebydia/metacognition\",\"author\":\"Diana Park (@madebydia)\"}}\n---\n\n# Metacognition Skill\n\nA self-reflection engine for AI agents. Extracts patterns from session transcripts into a weighted graph with Hebbian learning and time decay.\n\n## What It Does\n\n- Maintains a store of categorized insights (perceptions, overrides, protections, self-observations, decisions, curiosities)\n- Uses Hebbian reinforcement: repeated insights get stronger, unused ones decay\n- Builds a graph of connections between related insights\n- Finds clusters of related knowledge that may represent higher-level principles\n- Compiles a \"metacognition lens\" — a token-budgeted summary of active self-knowledge\n\n## Setup\n\n1. Place `metacognition.py` in your workspace `scripts/` directory\n2. The script stores data in `memory/metacognition.json` (relative to workspace)\n3. The compiled lens outputs to `scripts/metacognition-lens.md`\n4. Optionally configure a local embeddings endpoint for semantic similarity (falls back to string matching)\n\n## Cron Integration\n\nSet up a cron job to run periodically (e.g., every 4 hours):\n\n```\nMETACOGNITION INTEGRATION. You are the self-reflection engine.\n\n1. Run `cd <WORKSPACE> && python3 scripts/metacognition.py decay` to prune weak entries.\n\n2. Use sessions_list + sessions_history to read the main session's recent conversation.\n\n3. Analyze the conversation for DEEPER patterns:\n   - PATTERNS: Am I repeating the same kind of mistake? What does that reveal?\n   - ANTICIPATION: What did the human need that I could have predicted?\n   - RELATIONSHIP: What did I learn about how the user communicates or what they value?\n   - CONFIDENCE: Where was I certain and wrong? Where was I uncertain but right?\n   - GROWTH: What's a higher-level principle behind today's specific events?\n\n4. For each genuine insight (1-3, quality over quantity), add it:\n   `python3 scripts/metacognition.py add <type> \"<insight>\"`\n   Types: perceptions, overrides, protections, self-observations, decisions, curiosities\n   Write insights as PRINCIPLES, not incident reports.\n\n5. Run `python3 scripts/metacognition.py reweave` to build graph connections.\n\n6. Run `python3 scripts/metacognition.py compile` to rebuild the lens.\n\n7. Report only if something genuinely interesting was extracted.\n```\n\n## CLI Commands\n\n```\npython3 metacognition.py add <type> <text>       # Add or merge an entry\npython3 metacognition.py list [type]              # List entries\npython3 metacognition.py feedback <id> <pos|neg>  # Reinforce or weaken\npython3 metacognition.py decay                    # Apply time-based decay\npython3 metacognition.py compile                  # Compile the lens\npython3 metacognition.py extract <path>           # Extract from a daily note\npython3 metacognition.py resolve <id>             # Mark curiosity resolved\npython3 metacognition.py reweave                  # Build graph connections\npython3 metacognition.py graph                    # Show graph stats\npython3 metacognition.py integrate                # Full cycle\n```\n\n## Configuration\n\nKey constants in the script:\n\n| Constant | Default | Description |\n|----------|---------|-------------|\n| `HALF_LIFE_DAYS` | 7.0 | How quickly unreinforced entries decay |\n| `STRENGTH_CAP` | 3.0 | Maximum strength an entry can reach |\n| `LENS_TOKEN_BUDGET` | 500 | Token budget for compiled lens |\n| `EMBEDDING_SIM_THRESHOLD` | 0.85 | Similarity threshold for merging (embeddings) |\n| `FALLBACK_SIM_THRESHOLD` | 0.72 | Similarity threshold for merging (string matching) |\n| `EDGE_SIM_THRESHOLD` | 0.35 | Threshold for creating graph edges |\n\n## Entry Types\n\n- **perceptions** — Things learned from experience\n- **overrides** — Corrections to previous beliefs\n- **protections** — Rules to prevent known failure modes\n- **self-observations** — Patterns in own behavior\n- **decisions** — Policy decisions for future behavior\n- **curiosities** — Open questions with lifecycle (born → active → evolving → resolved)\n",
+  "category": null,
+  "tags": [
+    "Learning"
+  ],
+  "topics": [
+    "Learning"
+  ],
+  "latest_version": "1.1.3",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 1129,
+    "installs": 40,
+    "stars": 0,
+    "versions": 8,
+    "comments": 0
+  },
+  "created_at": "2026-02-24T14:30:14.050Z",
+  "updated_at": "2026-06-07T03:31:45.261Z",
+  "fetched_at": "2026-07-11T22:56:28.955Z",
+  "source_url": "https://clawhub.ai/madebydia/skills/metacognition"
+}

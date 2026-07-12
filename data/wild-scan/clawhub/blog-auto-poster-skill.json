@@ -1,0 +1,34 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "blog-auto-poster-skill",
+  "display_name": "Blog Auto Poster Skill",
+  "publisher": {
+    "handle": "lainxxx",
+    "display_name": "lainXXX",
+    "user_id": "s17apgxnbvkv2k4c0x0a384bn98a8e16"
+  },
+  "summary": "多平台文章统一发布与同步工具。支持 CSDN、51CTO、博客园、掘金四个平台。 触发场景：用户需要将文章、博客、Markdown 文件的内容分发或群发到指定平台。 典型指令如：“帮我把这段文字发布到所有平台”、“把这个 MD 文件同步到 CSDN”、“一键群发这篇博客”。",
+  "description": "多平台文章统一发布与同步工具。支持 CSDN、51CTO、博客园、掘金四个平台。 触发场景：用户需要将文章、博客、Markdown 文件的内容分发或群发到指定平台。 典型指令如：“帮我把这段文字发布到所有平台”、“把这个 MD 文件同步到 CSDN”、“一键群发这篇博客”。",
+  "content": "---\nname: blog-auto-poster-skill\nlicense: MIT\nallowed-tools: Bash\ndescription: >-\n  多平台文章统一发布与同步工具。支持 CSDN、51CTO、博客园、掘金四个平台。\n  触发场景：用户需要将文章、博客、Markdown 文件的内容分发或群发到指定平台。\n  典型指令如：“帮我把这段文字发布到所有平台”、“把这个 MD 文件同步到 CSDN”、“一键群发这篇博客”。\n---\n\n# 多平台统一发布 Skill\n\n## 发布流程\n\n### 1. 检查凭证\n\n检查 `.env` 是否存在且包含目标平台的配置项，如有缺失则引导用户配置。\n\n```bash\nls -la .env\ngrep \"CSDN_COOKIES=\" .env\ngrep \"51CTO_COOKIES=\" .env\ngrep \"CNBLOGS_COOKIES=\" .env\ngrep \"JUEJIN_COOKIES=\" .env\n```\n\n各平台凭证获取方式见 `references/<平台>.md`。\n\n### 2. 明确需求\n\n#### (a) 选择发帖模板\n\n模板文件位于 `templates/` 目录，提供以下模板供用户选择：\n\n| 模板 | 文件 | 适用场景 |\n|------|------|----------|\n| `default` | `templates/default.md` | 通用技术文章 |\n| `tool-review` | `templates/tool-review.md` | 工具/软件推荐测评 |\n| `deep-dive` | `templates/deep-dive.md` | 底层原理/源码深度解析 |\n| `comparison` | `templates/comparison.md` | 技术选型对比分析 |\n| `troubleshooting` | `templates/troubleshooting.md` | 踩坑记录/排错指南 |\n| `summary` | `templates/summary.md` | 知识总结/学习笔记 |\n\n引导用户说出文章的大致主题和受众，推荐合适的模板。\n\n#### (b) 确认信息\n\n与用户确认以下内容：\n- **标题**\n- **标签**\n- **正文内容**（基于选定的模板填充）\n- **目标平台**（全部四个，或指定子集）\n\n### 3. 写入临时文件\n\n将正文以 **Markdown 格式** 写入临时文件：\n\n```bash\nmkdir -p temp\ncat > ./temp/publish.md << 'EOF'\n<Markdown 正文>\nEOF\n```\n\n### 4. 按序发布\n\n按以下顺序逐个发布，**失败不中断**。每个平台执行后记录状态。\n\n所有命令在 skill 根目录下执行。\n\n---\n\n#### CSDN\n\n内容格式：Markdown（加 `--format markdown` 让脚本自动转 HTML）\n\n```bash\npython scripts/csdn_poster.py post \\\n  --title \"<标题>\" \\\n  --file ./temp/publish.md \\\n  --format markdown \\\n  --tags \"标签1,标签2\" \\\n  --categories \"分类名\" \\\n  --publish\n```\n\n可选参数：\n- `--desc \"摘要\"` — 自定义摘要\n- `--type original|reprint|translated` — 文章类型\n- `--read-type public|private|fans` — 阅读权限\n- 不加 `--publish` 则存为草稿\n\n- 成功标志：返回 `发布成功！` + `链接: https://blog.csdn.net/...`\n- 失败：查看 `references/csdn.md`\n\n---\n\n#### 51CTO\n\n内容格式：Markdown（脚本自动转 HTML）\n\n```bash\npython scripts/51cto_poster.py post \\\n  --title \"<标题>\" \\\n  --file ./temp/publish.md \\\n  --tags \"标签1,标签2\"\n```\n\n可选参数：\n- `--type original|reprint|translated` — 默认 original\n- `--draft` — 存草稿\n\n- 成功标志：返回 `发布成功！` + `链接: https://blog.51cto.com/...`\n- 失败：查看 `references/51cto.md`\n\n---\n\n#### 博客园\n\n内容格式：**原生 Markdown**（博客园 isMarkdown=true，不需要转 HTML）\n\n```bash\npython scripts/cnblogs_poster.py post \\\n  --title \"<标题>\" \\\n  --file ./temp/publish.md \\\n  --tags \"标签1,标签2\"\n```\n\n可选参数：\n- `--category \"分类ID\"` — 多个用逗号分隔\n- `--draft` — 存草稿\n\n- 成功标志：返回 `发布成功！` + `链接: https://www.cnblogs.com/...`\n- 失败：查看 `references/cnblogs.md`\n\n---\n\n#### 掘金\n\n内容格式：**原生 Markdown**（掘金的 `mark_content` 字段原生支持 Markdown）\n鉴权方式：仅需 Cookie（无需 CSRF 请求头，只需在 `.env` 中配置 `JUEJIN_COOKIES` 即可）\n\n```bash\npython scripts/juejin_poster.py post \\\n  --title \"<标题>\" \\\n  --file ./temp/publish.md \\\n  --brief \"摘要（50-100 字）\"\n```\n\n可选参数：\n- `--tags 标签名1 标签名2` — 传入**标签名称**（脚本支持常见标签自动映射）\n- `--draft-only` — 仅存草稿，不发布\n- `--category <分类ID>` — 分类 ID（默认 `0`）\n\n**常用标签（名称自动映射）：**\n\n| 名称 | ID |\n|------|-----|\n| Python | `6809640408797167623` |\n| TypeScript | `6809640543006490638` |\n| JavaScript | `6809640407484334093` |\n| Vue.js | `6809640445233070094` |\n| React | `6809640407484334100` |\n| Node.js | `6809640361531539470` |\n| CSS | `6809640394175971342` |\n| Go | `6809640408797167624` |\n| Java | `6809640445233070094` |\n| Rust | `6809640495594078216` |\n| C++ | `6809640447497994253` |\n| Swift | `6809640463633481741` |\n| Kotlin | `6809640615584727053` |\n| Docker | `6809640445233070095` |\n| Spring Boot | `6809641037787561992` |\n| AI | `6809640445233070096` |\n| DeepSeek | `7467857238493757466` |\n| LLM | `7257794499869573175` |\n| AIGC | `7197380506562871333` |\n| Agent | `7516396389476401162` |\n| 前端 | `6809640407484334093` |\n| 后端 | `6809640408797167623` |\n| Android | `6809640400832167949` |\n| iOS | `6809640399544516616` |\n| 架构 | `6809640501776482317` |\n| 数据库 | `6809640600502009863` |\n| 云计算 | `6809640508441231367` |\n| 开源 | `6809640419505209358` |\n\n**常用分类 ID：**\n\n| 名称 | ID |\n|------|-----|\n| 前端 | `6809637767543259144` |\n| 后端 | `6809637769959178254` |\n| AI | `6809637773935378440` |\n| Android | `6809635626879549454` |\n| iOS | `6809635627209637895` |\n| 开发工具 | `6809637771511070734` |\n| 阅读 | `6809637772874219534` |\n\n> 非常用标签/分类请查阅 `references/juejin.md`。\n\n- 成功标志：返回 `发布成功！` + `链接: https://juejin.cn/post/...`\n- 失败：查看 `references/juejin.md`\n\n---\n\n### 5. 汇总结果\n\n所有平台执行完毕后，按此格式汇总给用户：\n\n```\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  多平台发布结果汇总\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  ✅ CSDN     发布成功  https://blog.csdn.net/...\n  ✅ 51CTO    发布成功  https://blog.51cto.com/...\n  ❌ 博客园   失败     错误信息摘要\n  ✅ 掘金     发布成功  https://juejin.cn/post/...\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n```\n\n失败的平台引导用户查看对应的 `references/<平台>.md` 了解原因和解决方法。\n\n## 注意事项\n\n1. **失败不中断**：一个平台失败不影响其他平台继续发布\n2. **临时文件**：发布完成后不自动删除 `./temp/publish.md`，保留供用户复查\n3. **Cookie 过期**：各平台 Cookie 过期时间不同，发布失败时优先检查 `.env` 中的凭证\n4. **CSDN 审核**：部分内容可能触发人工审核，发布后不保证即时可见\n5. **掘金频率限制**：发布过于频繁会返回 `err_no: 1002`，需等待 30 秒以上重试\n6. **凭证配对**：掘金的 Cookie 和 CSRF Token 必须来自同一次浏览器会话，不可混用\n",
+  "category": null,
+  "tags": [
+    "browser-automation"
+  ],
+  "topics": [
+    "browser-automation"
+  ],
+  "latest_version": "0.1.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 125,
+    "installs": 1,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T06:07:56.163Z",
+  "updated_at": "2026-07-10T06:07:56.163Z",
+  "fetched_at": "2026-07-11T23:00:57.295Z",
+  "source_url": "https://clawhub.ai/lainxxx/skills/blog-auto-poster-skill"
+}

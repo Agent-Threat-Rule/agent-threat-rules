@@ -1,0 +1,40 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "douyin-video-to-txt",
+  "display_name": "Douyin Video To Txt",
+  "publisher": {
+    "handle": "afeicn",
+    "display_name": "afeicn",
+    "user_id": "s1764p5yr71a3nnatyxkt1pnhh86p8vm"
+  },
+  "summary": "抖音视频转文本知识库 — Download Douyin videos, transcribe to text via faster-whisper, save to Obsidian knowledge base.",
+  "description": "抖音视频转文本知识库 — Download Douyin videos, transcribe to text via faster-whisper, save to Obsidian knowledge base.",
+  "content": "---\nname: douyin-video-to-txt\ndescription: 抖音视频转文本知识库 — Download Douyin videos, transcribe to text via faster-whisper, save to Obsidian knowledge base.\nargs: <douyin_url> - 抖音视频链接\nversion: 2.0.1\n---\n\n# 抖音视频转文本知识库（douyin-video-to-txt）\n\n下载抖音视频 → 提取音频 → faster-whisper 转写文字 → 输出双版本字幕 → 写入 Obsidian 知识库\n\n纯本地运行，不需要任何外部 API Key。\n\n## Prerequisites\n\n| 工具 | 用途 | 安装 |\n| --- | --- | --- |\n| **yt-dlp** | 下载抖音视频 | `brew install yt-dlp` |\n| **FFmpeg** | 提取音频 | `brew install ffmpeg` |\n| **faster-whisper** | 语音转文字 | `pip3 install faster-whisper` |\n\n环境变量（可选，用于 Obsidian 知识库路径）：\n- `OBSIDIAN_VAULT_PATH` — Obsidian vault 根目录，默认 `~/Documents`\n\n## Workflow\n\n### Step 1: 获取视频信息并下载\n\n```bash\nmkdir -p /tmp/douyin_analysis/{VIDEO_ID}\ncd /tmp/douyin_analysis/{VIDEO_ID}\nyt-dlp --print-json \"{DOUYIN_URL}\" 2>/dev/null | python3 -c \"\nimport json, sys\nd = json.load(sys.stdin)\nprint(f'ID={d[\\\"id\\\"]}')\nprint(f'Title={d[\\\"title\\\"]}')\nprint(f'Duration={d[\\\"duration\\\"]}')\nprint(f'Uploader={d.get(\\\"uploader\\\",\\\"\\\")}')\nprint(f'UploadDate={d.get(\\\"upload_date\\\",\\\"\\\")}')\n\"\nyt-dlp -o \"video.mp4\" \"{DOUYIN_URL}\" 2>/dev/null\n```\n\n### Step 2: 提取音频\n\n```bash\nffmpeg -i video.mp4 -ar 16000 -ac 1 -c:a pcm_s16le audio.wav -y 2>/dev/null\n```\n\n### Step 3: 语音转文字（双版本输出）\n\n```python\nfrom faster_whisper import WhisperModel\n\nmodel = WhisperModel('small', device='auto', compute_type='auto')\nsegments, info = model.transcribe('/tmp/douyin_analysis/{VIDEO_ID}/audio.wav', language='zh')\n\nall_segments = []\nfor seg in segments:\n    all_segments.append(seg)\n\n# 输出 1: 带时间戳版本\nwith open('/tmp/douyin_analysis/{VIDEO_ID}/text.txt', 'w', encoding='utf-8') as f:\n    for seg in all_segments:\n        line = f'[{seg.start:.1f}s -> {seg.end:.1f}s] {seg.text.strip()}'\n        f.write(line + '\\n')\n\n# 输出 2: 纯文字稿（无时间戳）\nplain_lines = []\nfor seg in all_segments:\n    plain_lines.append(seg.text.strip())\nplain_text = '\\n'.join(plain_lines)\n\nwith open('/tmp/douyin_analysis/{VIDEO_ID}/text_plain.txt', 'w', encoding='utf-8') as f:\n    f.write(plain_text)\n```\n\n### Step 4: 写入 Obsidian 知识库\n\n把纯文字稿保存到知识库中合适的目录下。每条视频保存为一个独立的 markdown 文件，格式如下：\n\n```markdown\n---\nsource: 抖音\nurl: {DOUYIN_URL}\nauthor: {UPLOADER}\ndate: {UPLOAD_DATE}\nduration: {DURATION}s\ntags: [抖音转录, {AUTHOR}]\n---\n\n# {TITLE}\n\n**来源：** 抖音 | **作者：** {UPLOADER} | **时长：** {DURATION}s\n\n---\n\n## 文字稿\n\n{PLAIN_TEXT}\n```\n\n知识库路径规则：\n- 优先写入 `$OBSIDIAN_VAULT_PATH/douyin_text/{TITLE_SLUG}.md`\n- 如果 `OBSIDIAN_VAULT_PATH` 未设置，默认 `~/Documents/douyin_text/`\n- 自动创建目录（如果不存在）\n\n```bash\nVAULT=\"${OBSIDIAN_VAULT_PATH:-$HOME/Documents}\"\nTARGET_DIR=\"$VAULT/douyin_text\"\nmkdir -p \"$TARGET_DIR\"\n\n# 用视频标题做文件名（清理特殊字符）\nSAFE_TITLE=$(echo \"$VIDEO_TITLE\" | sed 's/[\\/:*?\"<>|]/_/g' | cut -c1-60)\nNOTE_PATH=\"$TARGET_DIR/${SAFE_TITLE}.md\"\n\npython3 << 'PYEOF'\nimport os\nurl = \"{DOUYIN_URL}\"\ntitle = \"\"\"{TITLE}\"\"\"\nuploader = \"{UPLOADER}\"\ndate = \"{UPLOAD_DATE}\"\nduration = \"{DURATION}\"\n\nwith open('/tmp/douyin_analysis/{VIDEO_ID}/text_plain.txt', 'r', encoding='utf-8') as f:\n    plain_text = f.read()\n\nnote = f\"\"\"---\nsource: 抖音\nurl: {url}\nauthor: {uploader}\ndate: {date}\nduration: {duration}s\ntags: [抖音转录, {uploader}]\n---\n\n# {title}\n\n**来源：** [抖音]({url}) | **作者：** {uploader} | **时长：** {duration}s\n\n---\n\n## 文字稿\n\n{plain_text}\n\"\"\"\n\nwith open('{NOTE_PATH}', 'w', encoding='utf-8') as f:\n    f.write(note)\nPYEOF\n```\n\n### Step 5: 生成 AI 总结\n\n读取 text.txt 和 text_plain.txt，用 AI 生成：\n1. AI 标题（不超过 30 字）\n2. AI 摘要（200-300 字）\n3. 核心要点（3-5 条结构化要点）\n\n同时把 AI 总结追加写入 Obsidian 笔记文件（在文字稿下方追加 `## AI 总结` 和 `### 核心要点` 部分）。\n\n### 完整示例（一镜到底）\n\n```bash\n# 装依赖（首次）\nbrew install yt-dlp ffmpeg 2>/dev/null\npip3 install faster-whisper 2>&1 | tail -3\n\nURL=\"https://www.douyin.com/video/xxxxx\"\nVID=\"xxx\"\nmkdir -p /tmp/douyin_analysis/$VID\ncd /tmp/douyin_analysis/$VID\n\n# 下载\nyt-dlp -o \"video.mp4\" \"$URL\"\n\n# 提取音频\nffmpeg -i video.mp4 -ar 16000 -ac 1 -c:a pcm_s16le audio.wav -y 2>/dev/null\n\n# 转写（双版本）\npython3 << 'PYEOF'\nfrom faster_whisper import WhisperModel\nmodel = WhisperModel('small', device='auto', compute_type='auto')\nsegments, info = model.transcribe('audio.wav', language='zh')\nsegs = [seg for seg in segments]\n\nwith open('text.txt', 'w', encoding='utf-8') as f:\n    for seg in segs:\n        f.write(f'[{seg.start:.1f}s -> {seg.end:.1f}s] {seg.text.strip()}\\n')\n\nplain = '\\n'.join(s.text.strip() for s in segs)\nwith open('text_plain.txt', 'w', encoding='utf-8') as f:\n    f.write(plain)\nPYEOF\n\n# 写入知识库\nVAULT=\"${OBSIDIAN_VAULT_PATH:-$HOME/Documents}\"\nTARGET=\"$VAULT/douyin_text\"\nmkdir -p \"$TARGET\"\ncp text_plain.txt \"$TARGET/video-title.txt\"\n```\n\n## Output\n\n### 临时文件（`/tmp/douyin_analysis/{VIDEO_ID}/`）\n\n| 文件 | 内容 |\n| --- | --- |\n| `video.mp4` | 下载的原视频 |\n| `audio.wav` | 提取的音频（16kHz 单声道） |\n| `text.txt` | **带时间戳**的完整字幕文本 |\n| `text_plain.txt` | **纯文字稿**（无时间戳，连续文本） |\n\n### 知识库文件\n\n| 路径 | 内容 |\n| --- | --- |\n| `$OBSIDIAN_VAULT/douyin_text/{标题}.md` | 含元数据 + 完整文字稿 + AI 总结的笔记 |\n\n## 注意事项\n\n- **首次运行** faster-whisper 会从 HuggingFace 下载模型（small 约 466MB），需要网络连接\n- **Apple Silicon** 上使用 `device='auto'` 会自动用 MPS（Metal）加速，速度很快\n- **Proxy 问题**：如果 yt-dlp 下载失败，检查是否有代理在跑\n- **标题清理**：文件名的特殊字符（`/ : * ? \" < > |`）会自动替换为 `_`\n- **AI 总结**：由 AI 在转写后生成，会追加到 Obsidian 笔记的文字稿下方\n\n## 已知问题\n\n- 长视频（>30分钟）转写时间较长，small 模型大约 1:1 实时\n- Obsidian vault 路径优先从环境变量 `OBSIDIAN_VAULT_PATH` 读取，默认 `~/Documents`\n",
+  "category": null,
+  "tags": [
+    "知识库",
+    "Knowledge Base",
+    "抖音",
+    "知识"
+  ],
+  "topics": [
+    "知识库",
+    "Knowledge Base",
+    "抖音",
+    "知识"
+  ],
+  "latest_version": "2.0.3",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 476,
+    "installs": 8,
+    "stars": 0,
+    "versions": 6,
+    "comments": 0
+  },
+  "created_at": "2026-06-14T03:15:43.253Z",
+  "updated_at": "2026-07-10T06:25:30.731Z",
+  "fetched_at": "2026-07-11T23:00:52.247Z",
+  "source_url": "https://clawhub.ai/afeicn/skills/douyin-video-to-txt"
+}

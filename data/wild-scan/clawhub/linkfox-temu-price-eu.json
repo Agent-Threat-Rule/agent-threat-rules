@@ -1,0 +1,34 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "linkfox-temu-price-eu",
+  "display_name": "Temu欧洲站-定价",
+  "publisher": {
+    "handle": "linkfox-ai",
+    "display_name": "linkfox-ai",
+    "user_id": "s171g8b6m2khwdy9ye8bxj0wx183vd4z"
+  },
+  "summary": "Temu 欧洲站商品价格管理 API，经 LinkFox 网关转发 Partner EU 价格接口：定价单列表查询(bg.local.goods.priceorder.query)、批量改 SKU 基础价(bg.local.goods.priceorder.change.sku.price)、推荐供货价/基础价估...",
+  "description": "Temu 欧洲站商品价格管理 API，经 LinkFox 网关转发 Partner EU 价格接口：定价单列表查询(bg.local.goods.priceorder.query)、批量改 SKU 基础价(bg.local.goods.priceorder.change.sku.price)、推荐供货价/基础价估...",
+  "content": "---\r\nname: linkfox-temu-price-eu\r\ndescription: Temu 欧洲站商品价格管理 API，经 LinkFox 网关转发 Partner EU 价格接口：定价单列表查询(bg.local.goods.priceorder.query)、批量改 SKU 基础价(bg.local.goods.priceorder.change.sku.price)、推荐供货价/基础价估算等。当用户提到 Temu EU 价格、Temu欧洲站定价单、priceorder query、priceAuditList、改供货价、批量改价、site=eu 改价、recommendedprice query、baseprice recommend 时触发。商品管理用 linkfox-temu-manage-product-eu；订单/发品等其它域可用 US skill 并设 site=eu。\r\n---\r\n\r\n# Temu 欧洲站价格 API（linkfox-temu-price-eu）\r\n\r\n美国站请用 **`linkfox-temu-price-us`**；全球站（非 US/EU）请用 **`linkfox-temu-price-global`**。\r\n\r\n本 skill（`linkfox-temu-price-eu`）覆盖 Partner Platform for EU **Price** 菜单（`menu_code=dfff38c23adf498d8a7cd55052bd3648`）下与**价格/供货价**相关的 `bg.local.*` / `temu.local.*` 接口（`type` 与 US 版对齐，默认 `site=eu`）。\r\n\r\n> 当前已接入 **4** 个接口；其余价格接口将按 Partner 文档逐条补充到 `references/apis/` 与 `eu_price_*.py`。\r\n\r\n**网关（本 skill 内置）**：\r\n\r\n| 能力 | 方法 | 路径 |\r\n|------|------|------|\r\n| 价格 OpenAPI（`eu_price_*`、`temu_eu_proxy`） | POST | `https://tool-gateway.linkfox.com/temu/proxy` |\r\n| 加签文件下载 | POST | `https://tool-gateway.linkfox.com/temu/fileDownload` |\r\n\r\n## 相关 skill\r\n\r\n| 场景 | skill |\r\n|------|--------|\r\n| 商品列表/详情/编辑/库存/上下架 | `linkfox-temu-manage-product-eu` |\r\n| 订单查询、发货、物流 | `linkfox-temu-order-us` |\r\n| 取消订单（买家+卖家） | `linkfox-temu-cancel-order-us` |\r\n\r\n| 履约/发货（含自发货） | `linkfox-temu-fulfillment-eu` |\r\n| 发品、类目、V2 add | `linkfox-temu-add-product-us` |\r\n| 半托管 `temu.goods.price.list.get`（`productSkuIds`） | `linkfox-temu-add-product-us` → `us_goods_price_list.py` |\r\n| 网关与 Temu token | 本 skill `scripts/` |\r\n\r\n## 调用方式\r\n\r\n- **API 端点**：`POST /temu/proxy`（不同操作通过请求体区分；完整参数/响应/错误码见 `references/api.md`）\r\n- **Python 脚本**：`python scripts/<脚本名>.py '<JSON 参数>' [--inline]`（可用脚本见上文脚本一览）\r\n- **成本约束**：本工具会消耗积分；失败/空结果不得自动换关键词、翻页或连续试探；需要继续检索时先向用户说明会产生额外消耗。\r\n\r\n**输出策略（脚本默认行为）**：\r\n- **始终**将完整响应写入 `<cwd>/linkfox/<YYYY-MM-DD>/<session>/data/<skill-name>-<timestamp>.json`（`<cwd>` 为脚本执行时的工作目录，在 Claude Code 里即当前项目目录；`<session>` 取自环境变量 `SESSION_ID`，按用户任务自动聚合；**禁止写入 /tmp**，当前目录不可写则报错）\r\n- 响应体 ≤ 8 KB：落盘后把完整 JSON 打印到 stdout\r\n- 响应体 > 8 KB：落盘后 stdout 只输出摘要（顶层字段、常见计数如 `total`/`costToken`、最大列表字段的长度 + 前 3 条样本）\r\n- 加 `--inline` 强制全量打印到 stdout（同样落盘）\r\n\r\n**读数据建议**：先看摘要判断是否足够；需要具体字段时优先用 `jq`或`ConvertFrom-Json` 从保存的 json 文件按需抽取，避免整份 JSON 进入上下文。\r\n\r\n## 默认参数\r\n\r\n| 字段 | 默认 | 说明 |\r\n|------|------|------|\r\n| site | `eu` | Partner EU |\r\n| managementType | `semi-managed` | 半托管 |\r\n| tokenPurpose | `product-inventory` | 酷鸟卖家助手 token |\r\n\r\n## 鉴权\r\n\r\n1. **LinkFox**：`LINKFOXAGENT_API_KEY` → Header `Authorization` + `Token`\r\n2. **Temu**：`accessToken` 或 `storeKey`\r\n\r\n## Scripts（按 type）\r\n\r\n| 脚本 | type | 状态 |\r\n|------|------|------|\r\n| `eu_price_baseprice_recommend.py` | `temu.local.goods.baseprice.recommend` | 已接入 |\r\n| `eu_price_recommendedprice_query.py` | `temu.local.goods.recommendedprice.query` | 已接入 |\r\n| `eu_price_priceorder_query.py` | `bg.local.goods.priceorder.query` | 已接入 |\r\n| `eu_price_priceorder_change_sku_price.py` | `bg.local.goods.priceorder.change.sku.price` | 已接入 |\r\n| `temu_eu_proxy.py` | 任意 `type` | 通用 |\r\n| `temu_eu_file_download.py` | 加签文件下载 | 通用 |\r\n\r\n> 新增接口后在此表与 [partner-eu-catalog.md](./references/partner-eu-catalog.md) 同步登记。\r\n\r\n## 示例\r\n\r\n```bash\r\nexport LINKFOXAGENT_API_KEY=\"<key>\"\r\n\r\n# 推荐基础价/供货价估算（须 catId + supplierPriceEstimateSkuQryList）\r\npython scripts/eu_price_baseprice_recommend.py '{\r\n  \"accessToken\": \"TOKEN\",\r\n  \"request\": {\r\n    \"supplierPriceEstimateQry\": {\r\n      \"goodsBasicInfo\": { \"catId\": 12345 },\r\n      \"supplierPriceEstimateSkuQryList\": [\r\n        {\r\n          \"specIdList\": [9001],\r\n          \"externPlatformPriceInfo\": { \"amount\": \"19.99\", \"currency\": \"EUR\" }\r\n        }\r\n      ]\r\n    }\r\n  }\r\n}'\r\n\r\n# 推荐供货价查询（须 recommendedPriceType + goodsIdList，1～100 个 goodsId）\r\npython scripts/eu_price_recommendedprice_query.py '{\r\n  \"accessToken\": \"TOKEN\",\r\n  \"request\": {\r\n    \"recommendedPriceType\": 10,\r\n    \"goodsIdList\": [123456789]\r\n  }\r\n}'\r\n\r\n# 定价单列表查询（白名单；分页 page/size，可选筛选）\r\npython scripts/eu_price_priceorder_query.py '{\r\n  \"accessToken\": \"TOKEN\",\r\n  \"request\": {\r\n    \"page\": 1,\r\n    \"size\": 20,\r\n    \"priceOrderType\": 1,\r\n    \"orderBy\": \"order_create_time\",\r\n    \"orderByType\": 0\r\n  }\r\n}'\r\n\r\n# 批量修改 SKU 基础价（白名单；须 goodsId + changeSkuPriceDTOList）\r\npython scripts/eu_price_priceorder_change_sku_price.py '{\r\n  \"accessToken\": \"TOKEN\",\r\n  \"request\": {\r\n    \"goodsId\": 123456,\r\n    \"changeSkuPriceDTOList\": [\r\n      {\r\n        \"skuChangePriceBaseDTOList\": [\r\n          {\r\n            \"skuId\": 58224724203874,\r\n            \"newSupplierPrice\": { \"amount\": \"15.99\", \"currency\": \"EUR\" }\r\n          }\r\n        ]\r\n      }\r\n    ]\r\n  }\r\n}'\r\n```\r\n\r\n**Feedback：** `skillName`：`linkfox-temu-price-eu`\r\n\r\n## 网关与授权脚本\r\n\r\n| 脚本 | 说明 |\r\n|------|------|\r\n| `check_linkfox_token.py` | 校验 LinkFox 用户 Token |\r\n| `temu_token_guide.py` | Temu accessToken 后台授权步骤 |\r\n| `save_temu_access_token.py` | 保存 accessToken 到本地 |\r\n| `list_temu_access_tokens.py` | 列出已保存 token |\r\n| `get_temu_access_token.py` | 读取已保存 token |\r\n| `temu_proxy.py` | 通用网关转发（多 site） |\r\n| `temu_file_download.py` | 加签文件下载（多 site） |\r\n\r\n授权说明：[references/access-token.md](./references/access-token.md)\r\n\r\n",
+  "category": null,
+  "tags": [
+    "接口"
+  ],
+  "topics": [
+    "接口"
+  ],
+  "latest_version": "1.0.3",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 476,
+    "installs": 11,
+    "stars": 0,
+    "versions": 3,
+    "comments": 0
+  },
+  "created_at": "2026-05-27T08:33:30.824Z",
+  "updated_at": "2026-07-10T04:48:52.718Z",
+  "fetched_at": "2026-07-11T23:04:16.889Z",
+  "source_url": "https://clawhub.ai/linkfox-ai/skills/linkfox-temu-price-eu"
+}

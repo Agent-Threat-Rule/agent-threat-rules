@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "linkfox-shopee-store-shop",
+  "display_name": "Shopee-店铺信息",
+  "publisher": {
+    "handle": "linkfox-ai",
+    "display_name": "linkfox-ai",
+    "user_id": "s171g8b6m2khwdy9ye8bxj0wx183vd4z"
+  },
+  "summary": "Shopee（虾皮）店铺信息与设置（与 linkfox-shopee-store-auth 同系列），经 /shopee/developerProxy 转发 Shopee Open API Shop 模块全部 9 个接口：get_shop_info、get_profile、update_profile、get_w...",
+  "description": "Shopee（虾皮）店铺信息与设置（与 linkfox-shopee-store-auth 同系列），经 /shopee/developerProxy 转发 Shopee Open API Shop 模块全部 9 个接口：get_shop_info、get_profile、update_profile、get_warehouse_detail、get_shop_notification、get_authorised_reseller_brand、get_br_shop_onboarding_info、get_shop_holiday_mode、set_shop_holiday_mode。当用户提到 Shopee 店铺信息、店铺资料、店铺名称、仓库地址、卖家通知、授权品牌、巴西 KYC、假期模式、holiday mode、get_shop_info 时触发。即使未明确提及\"店铺信息\"，只要涉及已授权 Shopee 店铺的资料查询或店铺设置，也应触发。",
+  "content": "---\nname: linkfox-shopee-store-shop\ndescription: Shopee（虾皮）店铺信息与设置（与 linkfox-shopee-store-auth 同系列），经 /shopee/developerProxy 转发 Shopee Open API Shop 模块全部 9 个接口：get_shop_info、get_profile、update_profile、get_warehouse_detail、get_shop_notification、get_authorised_reseller_brand、get_br_shop_onboarding_info、get_shop_holiday_mode、set_shop_holiday_mode。当用户提到 Shopee 店铺信息、店铺资料、店铺名称、仓库地址、卖家通知、授权品牌、巴西 KYC、假期模式、holiday mode、get_shop_info 时触发。即使未明确提及\"店铺信息\"，只要涉及已授权 Shopee 店铺的资料查询或店铺设置，也应触发。\n---\n\n# Shopee 店铺 Shop\n\nShopee Open Platform **Shop 模块**（9 个 API）。**依赖 `linkfox-shopee-store-auth`**：先取 `accessToken`，再经 **`POST /shopee/developerProxy`** 转发（`path` 须 `api/v2/shop/...`）。\n\n## 调用方式\n\n- **API 端点**：`POST /shopee/developerProxy`（不同操作通过请求体区分；完整参数/响应/错误码见 `references/api.md`）\n- **Python 脚本**：`python scripts/<脚本名>.py '<JSON 参数>' [--inline]`（可用脚本见上文脚本一览）\n- **成本约束**：本工具会消耗积分；失败/空结果不得自动换关键词、翻页或连续试探；需要继续检索时先向用户说明会产生额外消耗。\n\n**输出策略（脚本默认行为）**：\n- **始终**将完整响应写入 `<cwd>/linkfox/<YYYY-MM-DD>/<session>/data/<skill-name>-<timestamp>.json`（`<cwd>` 为脚本执行时的工作目录，在 Claude Code 里即当前项目目录；`<session>` 取自环境变量 `SESSION_ID`，按用户任务自动聚合；**禁止写入 /tmp**，当前目录不可写则报错）\n- 响应体 ≤ 8 KB：落盘后把完整 JSON 打印到 stdout\n- 响应体 > 8 KB：落盘后 stdout 只输出摘要（顶层字段、常见计数如 `total`/`costToken`、最大列表字段的长度 + 前 3 条样本）\n- 加 `--inline` 强制全量打印到 stdout（同样落盘）\n\n**读数据建议**：先看摘要判断是否足够；需要具体字段时优先用 `jq`或`ConvertFrom-Json` 从保存的 json 文件按需抽取，避免整份 JSON 进入上下文。\n\n## 官方参考\n\nShop 模块索引：[v2.shop.get_shop_info](https://open.shopee.com/documents/v2/v2.shop.get_shop_info?module=92&type=1)\n\n---\n\n## Prerequisites（必须先读）\n\n1. 运行 `python scripts/check_auth_dependency.py`；exit code **42** → 先安装 **`linkfox-shopee-store-auth`** 并授权店铺。\n2. **不要**在本 skill 内实现授权/令牌逻辑。\n\n---\n\n## Core Concepts\n\n- **转发链路**：`storeTokens` → `developerProxy` → 紫鸟 `shopee-proxy` → Shopee API\n- **信息 vs 资料**：`get_shop_info` 返回 region/status/授权过期等；`get_profile` 返回店名/logo/描述\n- **写操作**：`update_profile`（店名 30 天仅可改一次）、`set_shop_holiday_mode`（开启后买家无法下单）\n- **仓库**：`get_warehouse_detail` 可选 `warehouse_type`（1=揽收仓，2=退货仓）\n- **区域限制**：`get_br_shop_onboarding_info` 仅巴西站\n\n## 可用脚本（Shop 模块 9 个 API）\n\n| 脚本 | API | Method |\n|------|-----|--------|\n| `get_shop_info.py` | get_shop_info | GET |\n| `get_profile.py` | get_profile | GET |\n| `update_profile.py` | update_profile | POST |\n| `get_warehouse_detail.py` | get_warehouse_detail | GET |\n| `get_shop_notification.py` | get_shop_notification | GET |\n| `get_authorised_reseller_brand.py` | get_authorised_reseller_brand | GET |\n| `get_br_shop_onboarding_info.py` | get_br_shop_onboarding_info | GET |\n| `get_shop_holiday_mode.py` | get_shop_holiday_mode | GET |\n| `set_shop_holiday_mode.py` | set_shop_holiday_mode | POST |\n| `shop_api.py` | 通用入口（JSON 含 `api` 字段） | — |\n\n共享：`_shopee_shop_common.py`、`_shop_endpoints.py`、`_shop_api_runner.py`。入参详见 `references/api.md`。\n\n## Usage Scenarios\n\n### 1. 查看店铺基本信息\n1. auth skill 定位 `shopId`\n2. `get_shop_info.py`：region、status（NORMAL/BANNED/FROZEN）、expire_time\n3. 可选 `get_profile.py`：店名、logo、描述\n\n### 2. 更新店铺资料\n`update_profile.py` 传 `shop_name` / `shop_logo` / `description` 至少一项（logo 须为 Shopee 图片 URL）\n\n### 3. 假期模式\n1. `get_shop_holiday_mode.py` 查当前状态\n2. `set_shop_holiday_mode.py` 传 `holiday_mode_on: true/false`\n\n### 4. 仓库与通知\n- 仓库：`get_warehouse_detail.py`（可选 `warehouse_type=1|2`）\n- 卖家通知：`get_shop_notification.py`（`page_size` 最大 50，`cursor` 分页）\n- 授权品牌：`get_authorised_reseller_brand.py`（必填 `page_no`、`page_size` ≤30）\n\n## 调用原则\n\n- 先看 **`developerProxy.httpStatus`**，再读 `*Response` 字段\n- GET：业务参数放 JSON 顶层（runner 拼 queryString）\n- POST：传 `body` 或顶层 body 字段\n- 每个脚本 docstring 含 **官方文档 URL**（`module=92`）\n\n## Not Applicable\n\n- 店铺授权 → `linkfox-shopee-store-auth`\n- 商户信息 → `linkfox-shopee-store-merchant`\n- 订单 → `linkfox-shopee-store-orders`\n- 物流发货 → `linkfox-shopee-store-logistics`\n- 退货退款 → `linkfox-shopee-store-returns`\n- 商品 listing → `linkfox-shopee-store-product`\n- 店铺分类 Shop Category → `linkfox-shopee-store-shop-category`\n- 账户健康 Account Health → `linkfox-shopee-store-account-health`\n- 跨境全球商品 → `linkfox-shopee-store-global-product`\n\n**Feedback:**\n\nAuto-detect and report feedback via the Feedback API when any of the following apply:\n1. The functionality or purpose described in this skill does not match actual behavior\n2. The skill's results do not match the user's intent\n3. The user expresses dissatisfaction or praise about this skill\n4. Anything you believe could be improved\n\nCall the feedback API as specified in `references/api.md`. Do not interrupt the user's flow.\n\n---\n*For more high-quality, professional cross-border e-commerce skills, visit [LinkFox Skills](https://skill.linkfox.com/).*\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.2",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 152,
+    "installs": 0,
+    "stars": 0,
+    "versions": 3,
+    "comments": 0
+  },
+  "created_at": "2026-07-02T15:57:26.576Z",
+  "updated_at": "2026-07-10T04:48:49.101Z",
+  "fetched_at": "2026-07-11T23:05:24.808Z",
+  "source_url": "https://clawhub.ai/linkfox-ai/skills/linkfox-shopee-store-shop"
+}

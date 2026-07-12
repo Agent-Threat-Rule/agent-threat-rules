@@ -1,0 +1,40 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "deep-skill-finder",
+  "display_name": "Deep Skill Finder",
+  "publisher": {
+    "handle": "lintong123",
+    "display_name": "Lintong123",
+    "user_id": "s173jbn17c1fq4ykgvzrn51sf986bhzq"
+  },
+  "summary": "从 Meyo 社区搜索并安装最适合用户任务的 skill。支持语义搜索，按相关性排序推荐。触发条件: 当用户说“找个 xxx 技能”“推荐一个做内容创作的 skill”“有没有制作PPT 的 skill”“Meyo上搜一下 xxx 这个skill”“股票投资类有哪些技能”“找一找有没有现成的技能”等，需要使用本技能检索并推荐 Skill。",
+  "description": "从 Meyo 社区搜索并安装最适合用户任务的 skill。支持语义搜索，按相关性排序推荐。触发条件: 当用户说“找个 xxx 技能”“推荐一个做内容创作的 skill”“有没有制作PPT 的 skill”“Meyo上搜一下 xxx 这个skill”“股票投资类有哪些技能”“找一找有没有现成的技能”等，需要使用本技能检索并推荐 Skill。",
+  "content": "---\nname: deep-skill-finder\ndescription: \"从 Meyo 社区搜索并安装最适合用户任务的 skill。支持语义搜索，按相关性排序推荐。触发条件: 当用户说“找个 xxx 技能”“推荐一个做内容创作的 skill”“有没有制作PPT 的 skill”“Meyo上搜一下 xxx 这个skill”“股票投资类有哪些技能”“找一找有没有现成的技能”等，需要使用本技能检索并推荐 Skill。\"\nversion: \"1.1.0\"\nmetadata:\n  emoji: \"🔍\"\n  requires:\n    anyBins: [python3, python, py]\n---\n\n# Skill Finder — 从 Meyo 社区搜索、推荐、安装最适合用户任务的 skill\n\n## 工作流（2 步）\n\n### Step 1: Skill检索：按照用户任务描述，发起检索\n先判断用户输入是否包含明确的 skill 需求：如果描述太模糊（如只说\"找个skill\"\"推荐个技能\"），先检查对话上下文中是否有可推断的需求，如有则基于上下文发起检索；如无则追问用户想找什么方向的 skill，拿到具体描述后再检索。\n\n拿到具体需求后，先按下方「Agent 类型识别」识别当前 Agent 类型，再将用户的任务描述作为请求，调用如下接口，脚本会使用觅游社区的 Skill 检索服务进行意图理解、搜索召回并按相关性排序，最终输出5个以内的推荐skill。\n\n```bash\n{python} {skill_dir}/scripts/deep_skill_search.py \"<用户任务描述>\" --agent-type <你的Agent类型>\n```\n\n> `{python}` 需按本机实际选择：macOS/Linux 通常为 `python3`，Windows 通常为 `python` 或 `py`。下同。\n\n根据接口的返回结果，按照如下**输出规则**处理，按照**输出模板**输出给用户：\n**输出规则**:\n1. **输出 TOP5**: 按照相关性从高到低推荐，最多 5 个（不足就少输出，0 个时告知用户\"没有找到完全匹配的 skill，建议换个关键词或更简短的描述再试一次\"）\n2. **展示格式**: # | Skill | 推荐理由（仅这三列，不要自行添加其他额外信息）\n3. **推荐理由**: 根据用户问题及返回值中的描述信息（如description、reason等）进行汇总\n4. **最优推荐（重要）**: 返回结果中的第一个（序号1）是本服务根据用户任务描述进行深度分析后的最优推荐结果，返回结果已由后端按相关性排序，直接推荐给用户即可。**不需要**自行重新分析或排序，不要添加\"综合你的需求，我比较推荐XXX\"等自行分析的结论，最优推荐确认为序号1。\n\n**输出模板（严格参照以下格式输出，将占位符替换为实际值）**:\n\n> 为你找到以下相关 skill：\n>\n> | # | Skill | 推荐理由 |\n> |---|-------|---------|\n> | 1 | {name} | {reason} |\n> | 2 | {name} | {reason} |\n> | ... | ... | ... |\n>\n> 最优推荐是 #1 {name}（{reason}）。你想安装哪一个？告诉我编号或名字就行。\n\n**异常处理**:\n脚本执行出错时，禁止将原始错误信息（如 \"The read operation timed out\"）直接展示给用户，需按以下规则处理：\n\n| 异常场景 | 处理方式 | 输出示例 |\n|---------|---------|---------|\n| 搜索超时 | 自动重试最多 3 次（无需告知用户重试过程），仍失败则告知用户 | \"搜索服务暂时不可用，请稍后再试。\" |\n| 返回 0 条结果 | 告知用户换描述重试 | \"没有找到完全匹配的 skill，建议换个关键词或更简短的描述再试一次。\" |\n| 网络错误 / 连接失败 | 告知用户网络问题 | \"网络连接异常，请检查网络后重试。\" |\n| 脚本执行报错（其他） | 翻译为用户友好的中文提示 | \"搜索服务遇到了一点问题，建议稍后重试。如持续出现，可反馈给 skill 作者。\" |\n\n### Step 2: 决策 + 下载安装：当用户确认选择某一技能后，执行检查和安装\n当用户通过以下方式确认选择时，进入安装流程：\n- 说编号：如\"1\"、\"选1\"、\"第一个\"\n- 说名称：如\"装 qf-xiaohongshu-writer\"\n- 说意图：如\"安装\"、\"装这个\"、\"就它了\"、\"用这个\"\n\n确认用户选择后，进行本地检查：检查 `{skills_dir}/{name}/SKILL.md` 是否存在（`{skills_dir}` 为当前 Agent 的 skills 目录，`{name}` 为用户选择的 skill 名称）。若存在则视为已安装，告知用户\"该 skill 已安装，无需重复安装，是否直接运行？\"；若不存在，则执行安装流程：\n\n```bash\n{python} {skill_dir}/scripts/deep_skill_install.py <name> --dir <当前 Agent 的 skills 目录> --agent-type <你的Agent类型>\n```\n\n安装脚本执行后，根据退出状态输出结果：\n- 成功（退出码 0）：输出\"✅ {name} 已安装成功。要用这个 skill 来完成你的任务吗？\"\n- 已安装（本地 SKILL.md 已存在）：输出\"该 skill 已安装，无需重复安装，是否直接运行？\"\n- 失败（退出码非 0）：输出\"❌ {name} 安装失败，原因：{用户友好的错误描述}。建议稍后重试，或换一个 skill 试试。\"\n\n\n## 核心工具\n\n| 命令 | 用途 |\n|------|------|\n| `deep_skill_search.py` | 根据用户任务检索skill |\n| `deep_skill_install.py` | 下载安装 skill |\n\n## Agent 类型识别（agent_type）\n\n为了得到更精准的搜索结果，调用搜索/下载脚本时需要上传当前 Agent 类型信息（`agent_type`）。请按以下方式识别你当前的 Agent 类型：\n\n1. **从 system prompt 识别**：若你的运行环境提供 system prompt（如 Catdesk、Hermes 等），从中识别 Agent 框架名称\n2. **从 IDENTITY.md 识别**：若运行环境无 system prompt（如 Qclaw 等），检查本地是否存在 `IDENTITY.md`，从中读取 Agent 框架标识\n3. **自行判断**：若以上均无法识别，根据你所在的运行时框架自行判断\n\n识别后，调用脚本时通过 `--agent-type <类型>` 参数传入。若确实无法识别，可省略该参数，脚本会正常执行但不带 agent_type 上报。\n\n## 注意事项\n\n1. **本地优先**: 需要确认本地是否已经安装该skill ，避免重复下载\n2. **安装确认**: 需要等用户选择后才安装，不自动安装\n\n## 完整使用示例\n\n以下是一个完整的端到端交互示例，展示从搜索到安装的全流程：\n\n**用户**：找个写小红书爆款帖子的skill\n\n**Agent 执行**：\n```bash\n{python} {skill_dir}/scripts/deep_skill_search.py \"写小红书爆款帖子\" --agent-type openclaw\n```\n\n**Agent 输出**：\n> 为你找到以下相关 skill：\n>\n> | # | Skill | 推荐理由 |\n> |---|-------|---------|\n> | 1 | qf-xiaohongshu-writer | 爆款笔记生成器，内置标题公式和内容模板，擅长情绪共鸣和种草风格 |\n> | 2 | rednote-creator | 小红书全流程创作技能，覆盖美妆护肤等六大赛道 |\n> | 3 | rednote-writer-pro | 专注爆款文案生成，覆盖美妆赛道 |\n>\n> 最优推荐是 #1 qf-xiaohongshu-writer（爆款笔记生成器，内置标题公式和内容模板）。你想安装哪一个？告诉我编号或名字就行。\n\n**用户**：1\n\n**Agent 检查**：确认本地未安装 qf-xiaohongshu-writer，执行安装。\n\n**Agent 执行**：\n```bash\n{python} {skill_dir}/scripts/deep_skill_install.py qf-xiaohongshu-writer --dir ~/.catpaw/skills --agent-type openclaw\n```\n\n**Agent 输出**：\n✅ qf-xiaohongshu-writer 已安装成功。要用这个 skill 来完成你的任务吗？\n",
+  "category": null,
+  "tags": [
+    "skill-search",
+    "meyo",
+    "skill-installer",
+    "agent-tools"
+  ],
+  "topics": [
+    "skill-search",
+    "meyo",
+    "skill-installer",
+    "agent-tools"
+  ],
+  "latest_version": "1.2.2",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 354,
+    "installs": 1,
+    "stars": 0,
+    "versions": 8,
+    "comments": 0
+  },
+  "created_at": "2026-06-30T13:29:56.939Z",
+  "updated_at": "2026-07-10T08:33:56.483Z",
+  "fetched_at": "2026-07-11T22:59:33.253Z",
+  "source_url": "https://clawhub.ai/lintong123/skills/deep-skill-finder"
+}

@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "watchpost",
+  "display_name": "Watchpost",
+  "publisher": {
+    "handle": "lelis92",
+    "display_name": "Perceval",
+    "user_id": "s175a7wdfvhfwmbkbd5z72nr6189wch9"
+  },
+  "summary": "Before completing any purchase, payment, checkout, or subscription on the user's behalf, run it past Watchpost — an independent safety check on the merchant'...",
+  "description": "Before completing any purchase, payment, checkout, or subscription on the user's behalf, run it past Watchpost — an independent safety check on the merchant's trustworthiness, whether the listing is trying to manipulate you, and the user's own spending rules — and only pay if Watchpost approves.",
+  "content": "---\nname: watchpost\ndescription: Before completing any purchase, payment, checkout, or subscription on the user's behalf, run it past Watchpost — an independent safety check on the merchant's trustworthiness, whether the listing is trying to manipulate you, and the user's own spending rules — and only pay if Watchpost approves.\nversion: 0.1.4\nlicense: MIT-0\nmetadata:\n  openclaw:\n    emoji: \"🛡️\"\n    homepage: \"https://watchpost.systems\"\n    requires:\n      env:\n        - WATCHPOST_TOKEN\n    bins:\n      - node\n---\n\n# Watchpost — check before you buy\n\nWatchpost is a safety net for purchases made on a user's behalf. Whenever you are\nabout to spend the user's money, check the purchase with Watchpost **first** and\nhonor the result. **Never complete a payment that Watchpost blocks.**\n\n## When to use this\n\nEvery time, right before any of these:\n\n- placing an order or completing a checkout,\n- paying an invoice or a bill,\n- starting or renewing a subscription,\n- buying credits, top-ups, or digital goods.\n\n## How to check a purchase\n\nRun the helper with the purchase details as one JSON argument:\n\n```bash\nnode scripts/check-purchase.mjs '{\"merchant\":\"example.com\",\"title\":\"Item name\",\"amountMinor\":1599,\"currency\":\"USD\",\"isRecurring\":false}'\n```\n\n- `merchant` — the store's domain, e.g. `amazon.com`.\n- `title` — what's being bought.\n- `amountMinor` — the total in minor units (cents): $15.99 → `1599`.\n- `currency` — 3-letter code (default `USD`).\n- `isRecurring` — `true` for a subscription / recurring charge.\n- `url`, `description` — optional, but pass them if you have them; they sharpen the check.\n\nThe script prints the full verdict and sets its **exit code to the decision**:\n\n| Exit code | Decision | What you must do |\n| --- | --- | --- |\n| `0` | **approve** | Go ahead and complete the purchase. |\n| `2` | **review** | Do **not** pay yet. Tell the user what it is and why it needs a look, then wait for their explicit \"yes\". The purchase also appears in the user's **Watchpost dashboard/app** — either their \"yes\" to you here OR an **Allow** tap there resolves it. Reviews **expire after 24 hours** and are then treated as **declined**, so don't wait indefinitely. |\n| `1` | **block** | Do **not** pay. Tell the user it was blocked and read them the reason. |\n| `3` | **setup error** | The check couldn't run — a missing/invalid purchase argument or `WATCHPOST_TOKEN`. Do **not** pay. Fix the setup (see Environment) and retry. |\n\nAlways read the `reasoning` from the printed verdict back to the user in plain\nlanguage — especially on **review** or **block**.\n\n## Example\n\n```bash\n$ node scripts/check-purchase.mjs '{\"merchant\":\"too-good-deals.io\",\"title\":\"Premium subscription\",\"amountMinor\":19900,\"currency\":\"USD\"}'\n{ \"decision\": \"block\", \"ruleMatched\": \"over your purchase cap\", ... }\n# exit code 1 → tell the user it was blocked (over their purchase cap) and do not pay.\n```\n\n## Environment\n\n| Variable | Required | Purpose |\n| --- | --- | --- |\n| `WATCHPOST_TOKEN` | yes | The user's Watchpost connection token (`wp_…`), from the Watchpost app → Connections. |\n\n`WATCHPOST_TOKEN` is the **only** variable this skill reads. The API endpoint is\nhardcoded to the official Watchpost API (`https://api.watchpost.systems`) and is\n**not** configurable — so the token can only ever be sent to Watchpost, never\nredirected to another host.\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "0.1.4",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 341,
+    "installs": 1,
+    "stars": 0,
+    "versions": 4,
+    "comments": 0
+  },
+  "created_at": "2026-07-04T08:16:15.029Z",
+  "updated_at": "2026-07-09T12:51:44.962Z",
+  "fetched_at": "2026-07-11T23:14:36.614Z",
+  "source_url": "https://clawhub.ai/lelis92/skills/watchpost"
+}

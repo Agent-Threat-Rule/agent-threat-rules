@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "linkfox-amazon-store-customer-feedback",
+  "display_name": "亚马逊-店铺买家反馈",
+  "publisher": {
+    "handle": "linkfox-ai",
+    "display_name": "linkfox-ai",
+    "user_id": "s171g8b6m2khwdy9ye8bxj0wx183vd4z"
+  },
+  "summary": "亚马逊店铺买家反馈洞察（与 linkfox-amazon-store-auth 等同系列），经 /spApi/developerProxy 调用 SP-API Customer Feedback v2024-06-01：getItemReviewTopics、getItemBrowseNode、getBrowse...",
+  "description": "亚马逊店铺买家反馈洞察（与 linkfox-amazon-store-auth 等同系列），经 /spApi/developerProxy 调用 SP-API Customer Feedback v2024-06-01：getItemReviewTopics、getItemBrowseNode、getBrowse...",
+  "content": "---\r\nname: linkfox-amazon-store-customer-feedback\r\ndescription: 亚马逊店铺买家反馈洞察（与 linkfox-amazon-store-auth 等同系列），经 /spApi/developerProxy 调用 SP-API Customer Feedback v2024-06-01：getItemReviewTopics、getItemBrowseNode、getBrowseNodeReviewTopics、getItemReviewTrends、getBrowseNodeReviewTrends、getBrowseNodeReturnTopics、getBrowseNodeReturnTrends。当用户提到评论主题、评价趋势、退货主题、browse node 反馈、Customer Feedback API、MENTIONS、STAR_RATING_IMPACT、ASIN 评论洞察、类目节点评价 时触发。\r\n---\r\n\r\n# Amazon 店铺 Customer Feedback\r\n\r\n本 skill 与 **`linkfox-amazon-store-auth`** 等同属 **Amazon Store** 系列：先 **`POST /spApi/storeTokens`**，再 **`POST /spApi/developerProxy`** 转发 **GET**。\r\n\r\n> 说明：接口属于 **Customer Feedback（买家评论/退货洞察）**，不是 Orders 订单 API。订单见 **`linkfox-amazon-store-orders`**。\r\n\r\n## 调用方式\r\n\r\n- **API 端点**：`POST /spApi/developerProxy`（不同操作通过请求体区分；完整参数/响应/错误码见 `references/api.md`）\r\n- **Python 脚本**：`python scripts/<脚本名>.py '<JSON 参数>' [--inline]`（可用脚本见上文脚本一览）\r\n- **成本约束**：本工具会消耗积分；失败/空结果不得自动换关键词、翻页或连续试探；需要继续检索时先向用户说明会产生额外消耗。\r\n\r\n**输出策略（脚本默认行为）**：\r\n- **始终**将完整响应写入 `<cwd>/linkfox/<YYYY-MM-DD>/<session>/data/linkfox-amazon-store-customer-feedback-<timestamp>.json`（`<cwd>` 为脚本执行时的工作目录，在 Claude Code 里即当前项目目录；`<session>` 取自环境变量 `SESSION_ID`，按用户任务自动聚合；**禁止写入 /tmp**，当前目录不可写则报错）\r\n- 响应体 ≤ 8 KB：落盘后把完整 JSON 打印到 stdout\r\n- 响应体 > 8 KB：落盘后 stdout 只输出摘要（顶层字段、常见计数如 `total`/`costToken`、最大列表字段的长度 + 前 3 条样本）\r\n- 加 `--inline` 强制全量打印到 stdout（同样落盘）\r\n\r\n**读数据建议**：先看摘要判断是否足够；需要具体字段时优先用 `jq`或`ConvertFrom-Json` 从保存的 json 文件按需抽取，避免整份 JSON 进入上下文。\r\n\r\n## 官方参考索引\r\n\r\n| 能力 | 文档 |\r\n|------|------|\r\n| getItemReviewTopics | [getItemReviewTopics](https://developer-docs.amazon.com/sp-api/reference/getitemreviewtopics) |\r\n| getItemBrowseNode | [getItemBrowseNode](https://developer-docs.amazon.com/sp-api/reference/getitembrowsenode) |\r\n| getBrowseNodeReviewTopics | [getBrowseNodeReviewTopics](https://developer-docs.amazon.com/sp-api/reference/getbrowsenodereviewtopics) |\r\n| getItemReviewTrends | [getItemReviewTrends](https://developer-docs.amazon.com/sp-api/reference/getitemreviewtrends) |\r\n| getBrowseNodeReviewTrends | [getBrowseNodeReviewTrends](https://developer-docs.amazon.com/sp-api/reference/getbrowsenodereviewtrends) |\r\n| getBrowseNodeReturnTopics | [getBrowseNodeReturnTopics](https://developer-docs.amazon.com/sp-api/reference/getbrowsenodereturntopics) |\r\n| getBrowseNodeReturnTrends | [getBrowseNodeReturnTrends](https://developer-docs.amazon.com/sp-api/reference/getbrowsenodereturntrends) |\r\n\r\n---\r\n\r\n## Prerequisites\r\n\r\n1. 依赖 **`linkfox-amazon-store-auth`**。\r\n2. 通常需 **Brand Analytics** 或 **Selling Partner Insights** 等角色；站点以官方为准（常见 US/UK/DE 等）。\r\n3. **ASIN** 一般为**子体 ASIN**；topics 类接口需 **`sortBy`**：`MENTIONS` 或 `STAR_RATING_IMPACT`（常各调一次对比）。\r\n\r\n---\r\n\r\n## Current Capabilities\r\n\r\n| 脚本 | path 要点 |\r\n|------|-----------|\r\n| `get_item_review_topics.py` | `.../items/{asin}/reviews/topics` |\r\n| `get_item_browse_node.py` | `.../items/{asin}/browseNode` |\r\n| `get_item_review_trends.py` | `.../items/{asin}/reviews/trends` |\r\n| `get_browse_node_review_topics.py` | `.../browseNodes/{browseNodeId}/reviews/topics` |\r\n| `get_browse_node_review_trends.py` | `.../browseNodes/{browseNodeId}/reviews/trends` |\r\n| `get_browse_node_return_topics.py` | `.../browseNodes/{browseNodeId}/returns/topics` |\r\n| `get_browse_node_return_trends.py` | `.../browseNodes/{browseNodeId}/returns/trends` |\r\n\r\n前缀均为 **`customerFeedback/2024-06-01/`**。共享模块：**`_spapi_customer_feedback_common.py`**。\r\n\r\n---\r\n\r\n## Quick Parameters\r\n\r\n- 公共：`sellerId`、`region`、`marketplaceId`（或 `marketplaceIds` 取首项）。\r\n- ASIN 类：`asin`；topics 类另需 **`sortBy`**。\r\n- Browse node 类：`browseNodeId`（可先 `get_item_browse_node` 取得）。\r\n\r\n---\r\n\r\n## Scripts\r\n\r\n```bash\r\nexport LINKFOXAGENT_API_KEY=\"<your-key>\"\r\n\r\npython scripts/get_item_review_topics.py '{\"sellerId\":\"A1...\",\"region\":\"NA\",\"asin\":\"B0...\",\"marketplaceId\":\"ATVPDKIKX0DER\",\"sortBy\":\"MENTIONS\"}'\r\n\r\npython scripts/get_item_browse_node.py '{\"sellerId\":\"A1...\",\"region\":\"NA\",\"asin\":\"B0...\",\"marketplaceId\":\"ATVPDKIKX0DER\"}'\r\n\r\npython scripts/get_browse_node_review_topics.py '{\"sellerId\":\"A1...\",\"region\":\"NA\",\"browseNodeId\":\"123456\",\"marketplaceId\":\"ATVPDKIKX0DER\",\"sortBy\":\"STAR_RATING_IMPACT\"}'\r\n```\r\n\r\n---\r\n\r\n## Display Rules\r\n\r\n1. 先看 **`developerProxy.errcode` / `httpStatus`**，再读各脚本解析字段（如 **`itemReviewTopics`**）。\r\n2. 网关白名单需包含 **`customerFeedback/2024-06-01/`**。\r\n3. 数据刷新频率以 Amazon 为准（通常按周）。\r\n\r\n**Feedback：** `skillName`：`linkfox-amazon-store-customer-feedback`。\r\n\r\n---\r\n*更多跨境 skill：[LinkFox Skills](https://skill.linkfox.com/)*\r\n\r\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.4",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 650,
+    "installs": 14,
+    "stars": 0,
+    "versions": 5,
+    "comments": 0
+  },
+  "created_at": "2026-05-20T07:03:23.310Z",
+  "updated_at": "2026-07-10T04:48:54.628Z",
+  "fetched_at": "2026-07-11T23:03:53.559Z",
+  "source_url": "https://clawhub.ai/linkfox-ai/skills/linkfox-amazon-store-customer-feedback"
+}

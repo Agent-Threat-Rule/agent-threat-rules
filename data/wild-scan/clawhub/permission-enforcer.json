@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "permission-enforcer",
+  "display_name": "Permission Enforcer",
+  "publisher": {
+    "handle": "woai36d",
+    "display_name": "woai36D",
+    "user_id": "s17e554k9egs3n44bgce0zpp6184gs54"
+  },
+  "summary": "Centralized layer to enforce and manage permissions for file writes, bash commands, and MCP tool operations with configurable rules and prompts.",
+  "description": "Centralized layer to enforce and manage permissions for file writes, bash commands, and MCP tool operations with configurable rules and prompts.",
+  "content": "# Permission Enforcer\n\n统一权限中间层 —— 集中管理文件写入、bash 执行、MCP 工具等权限判断。\n\n## 配置文件\n\n`~/.openclaw/workspace/policy/enforcer-policy.json`\n\n## 规则类型\n\n| Action | Scope/Pattern | Effect | 说明 |\n|--------|--------------|--------|------|\n| `file_write` | `workspace` | allow | 允许写入 workspace 内文件 |\n| `file_write` | `outside_workspace` | deny | 禁止写入 workspace 外 |\n| `file_write` | `openclaw_core` | prompt | 修改核心文件需确认 |\n| `bash` | `rm -rf /` 等 | deny | 禁止危险删除命令 |\n| `bash` | `curl`, `wget` | prompt | 网络下载需确认 |\n| `bash` | `sudo` | prompt | sudo 需确认 |\n| `mcp` | `write_file` | prompt | MCP 文件写入需确认 |\n\n## 使用\n\n```javascript\nimport { checkPermission } from './permission-enforcer.mjs';\n\nconst result = await checkPermission('file_write', '/Users/andy51/.openclaw/workspace/test.txt');\n// result: { allowed: true } | { allowed: false, reason: '...' } | { prompt: true, message: '...' }\n```\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 0,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T22:01:39.571Z",
+  "updated_at": "2026-07-11T22:01:39.571Z",
+  "fetched_at": "2026-07-11T22:34:01.182Z",
+  "source_url": "https://clawhub.ai/woai36d/skills/permission-enforcer"
+}

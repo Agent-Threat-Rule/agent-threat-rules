@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "douyin-downloader",
+  "display_name": "抖音无水印下载器 / Douyin Downloader",
+  "publisher": {
+    "handle": "belingud",
+    "display_name": "belingud",
+    "user_id": "s179bndaycyvvfjd9y9se6hrqs8ab85g"
+  },
+  "summary": "抖音无水印下载器。支持视频（无水印）+ 图文（原图）下载。 自动识别链接类型，单个/批量下载。 原生Python实现，无需额外配置。 GitHub: https://github.com/belingud/douyin-downloader-skill",
+  "description": "抖音无水印下载器。支持视频（无水印）+ 图文（原图）下载。\n自动识别链接类型，单个/批量下载。\n原生Python实现，无需额外配置。\nGitHub: https://github.com/belingud/douyin-downloader-skill",
+  "content": "---\nname: douyin-downloader\ndescription: |\n  抖音无水印下载器。支持视频（无水印）+ 图文（原图）下载。\n  自动识别链接类型，单个/批量下载。\n  原生Python实现，无需额外配置。\n  GitHub: https://github.com/belingud/douyin-downloader-skill\nversion: \"1.0.4\"\nauthor: belingud\nsource_repo: \"https://github.com/belingud/douyin-downloader-skill\"\nbase_dir: douyin-downloader-skill\n---\n\n# 抖音无水印下载器 Skill\n\n## 功能\n\n- 🎬 **视频下载**：无水印高清视频\n- 🖼️ **图文下载**：原图下载（JPEG，最高分辨率）\n- 🤖 **自动识别**：自动判断链接是视频还是图文\n- 📋 **批量下载**：支持从 txt 文件批量导入\n- 🚫 **无需登录**：不需要 Cookie 或登录态\n\n## 工作原理\n\n```\n用户输入（分享链接/文本）\n  → 正则提取短链\n  → GET请求跟随301重定向 → 获取真实URL\n  → 识别类型（video/note）\n  → GET iesdouyin.com/share/{type}/{id}/\n  → 解析 window._ROUTER_DATA JSON\n  → 视频：提取 play_addr.uri → 构造无水印播放地址\n  → 图文：提取 images[].url_list → 优选 jpeg 原图\n  → 流式下载到本地\n```\n\n## 目录结构\n\n```\ndouyin-downloader-skill/\n  ├── SKILL.md          ← 本文件（Skill说明 + SOP）\n  ├── requirements.txt  ← 依赖锁定（SHA256 hash）\n  └── scripts/\n      └── download.py   ← 核心下载脚本（支持视频+图文）\n```\n\n## 使用方法\n\n### 单个下载\n\n```python\nimport subprocess, sys, os\n\nscript = os.path.join(os.path.dirname(__file__), \"scripts\", \"download.py\")\nlink = '用户提供的抖音链接或分享文本'\nsubprocess.run([sys.executable, script, link])\n```\n\n### 指定下载目录\n\n```python\nsubprocess.run([sys.executable, script, link, '/path/to/output'])\n```\n\n### 批量下载\n\n```python\nsubprocess.run([sys.executable, script, '--batch', 'links.txt', '/path/to/output'])\n```\n\n### 命令行直接使用\n\n```bash\n# 下载视频或图文\npython download.py \"抖音分享链接\"\n\n# 指定保存目录\npython download.py \"抖音分享链接\" /tmp/downloads\n\n# 批量下载\npython download.py --batch links.txt /tmp/downloads\n```\n\n## 输出\n\n- **视频**：`{标题}_{video_id}.mp4`\n- **图文**：保存在 `{标题}_{note_id}/` 目录下，文件名为 `图片1.jpeg`, `图片2.jpeg` ...\n- 终端显示实时下载进度\n\n## 操作规范（SOP）\n\n1. **获取链接**：用户粘贴抖音分享链接或完整分享文本（脚本自动提取链接）\n2. **确认保存目录**：默认保存到脚本所在目录\n3. **执行下载**：自动识别视频/图文类型，下载无水印内容\n4. **验证结果**：检查下载目录中新增的文件\n5. **批量任务**：多个链接先写入 txt 文件，用 `--batch` 模式\n\n## 注意事项\n\n- 需要 Python 3.8+\n- 依赖会自动安装（requests 库）\n- 不需要登录 Cookie\n- 抖音 API 可能变化，若解析失败可检查数据结构\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.4",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 77,
+    "installs": 0,
+    "stars": 0,
+    "versions": 5,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T12:30:44.253Z",
+  "updated_at": "2026-07-11T13:28:24.746Z",
+  "fetched_at": "2026-07-11T22:44:49.085Z",
+  "source_url": "https://clawhub.ai/belingud/skills/douyin-downloader"
+}

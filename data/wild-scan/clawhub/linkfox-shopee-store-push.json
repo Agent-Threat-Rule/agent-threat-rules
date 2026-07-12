@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "linkfox-shopee-store-push",
+  "display_name": "Shopee-店铺推送",
+  "publisher": {
+    "handle": "linkfox-ai",
+    "display_name": "linkfox-ai",
+    "user_id": "s171g8b6m2khwdy9ye8bxj0wx183vd4z"
+  },
+  "summary": "Shopee（虾皮）Push 推送机制（与 linkfox-shopee-store-auth 同系列），经 /shopee/developerProxy 转发 Shopee Open API Push 模块全部 4 个接口：set_app_push_config、get_app_push_config、get_...",
+  "description": "Shopee（虾皮）Push 推送机制（与 linkfox-shopee-store-auth 同系列），经 /shopee/developerProxy 转发 Shopee Open API Push 模块全部 4 个接口：set_app_push_config、get_app_push_config、get_...",
+  "content": "---\r\nname: linkfox-shopee-store-push\r\ndescription: Shopee（虾皮）Push 推送机制（与 linkfox-shopee-store-auth 同系列），经 /shopee/developerProxy 转发 Shopee Open API Push 模块全部 4 个接口：set_app_push_config、get_app_push_config、get_lost_push_message、confirm_consumed_lost_push_message。当用户提到 Shopee Push、推送回调、Push Mechanism、set_app_push_config、丢失推送补推、webhook 配置 时触发。即使未明确提及\"Push\"，只要涉及 Shopee 开放平台 Push 配置或补推消息管理，也应触发。\r\n---\r\n\r\n# Shopee Push 推送机制\r\n\r\nShopee Open Platform **Push 模块**（4 个 API）。**依赖 `linkfox-shopee-store-auth`** 作为同系列前置；经 **`POST /shopee/developerProxy`** 转发（`path` 须 `api/v2/push/...`）。\r\n\r\n## 调用方式\r\n\r\n- **API 端点**：`POST /shopee/developerProxy`（不同操作通过请求体区分；完整参数/响应/错误码见 `references/api.md`）\r\n- **Python 脚本**：`python scripts/<脚本名>.py '<JSON 参数>' [--inline]`（可用脚本见上文脚本一览）\r\n- **成本约束**：本工具会消耗积分；失败/空结果不得自动换关键词、翻页或连续试探；需要继续检索时先向用户说明会产生额外消耗。\r\n\r\n**输出策略（脚本默认行为）**：\r\n- **始终**将完整响应写入 `<cwd>/linkfox/<YYYY-MM-DD>/<session>/data/<skill-name>-<timestamp>.json`（`<cwd>` 为脚本执行时的工作目录，在 Claude Code 里即当前项目目录；`<session>` 取自环境变量 `SESSION_ID`，按用户任务自动聚合；**禁止写入 /tmp**，当前目录不可写则报错）\r\n- 响应体 ≤ 8 KB：落盘后把完整 JSON 打印到 stdout\r\n- 响应体 > 8 KB：落盘后 stdout 只输出摘要（顶层字段、常见计数如 `total`/`costToken`、最大列表字段的长度 + 前 3 条样本）\r\n- 加 `--inline` 强制全量打印到 stdout（同样落盘）\r\n\r\n**读数据建议**：先看摘要判断是否足够；需要具体字段时优先用 `jq`或`ConvertFrom-Json` 从保存的 json 文件按需抽取，避免整份 JSON 进入上下文。\r\n\r\n## 官方参考\r\n\r\nPush 模块索引：[v2.push.set_app_push_config](https://open.shopee.com/documents/v2/v2.push.set_app_push_config?module=105&type=1)\r\n\r\n---\r\n\r\n## Prerequisites\r\n\r\n1. 运行 `python scripts/check_auth_dependency.py`；exit code **42** → 先安装 **`linkfox-shopee-store-auth`**。\r\n2. OAuth / Partner 公共接口 → `linkfox-shopee-store-public`。\r\n\r\n## 可用脚本（4 个 API）\r\n\r\n| 脚本 | API | Method |\r\n|------|-----|--------|\r\n| `set_app_push_config.py` | set_app_push_config | POST |\r\n| `get_app_push_config.py` | get_app_push_config | GET |\r\n| `get_lost_push_message.py` | get_lost_push_message | GET |\r\n| `confirm_consumed_lost_push_message.py` | confirm_consumed_lost_push_message | POST |\r\n| `push_api.py` | 通用入口 | — |\r\n\r\n## Usage Scenarios\r\n\r\n### 1. 配置 Push 回调\r\n1. `set_app_push_config.py` 传完整 POST `body`（回调 URL 等）\r\n2. `get_app_push_config.py` 确认配置\r\n\r\n### 2. 补推丢失消息\r\n1. `get_lost_push_message.py` 拉取丢失消息\r\n2. `confirm_consumed_lost_push_message.py` 确认已消费\r\n\r\n## Not Applicable\r\n\r\n- 用户侧授权流程 → `linkfox-shopee-store-auth`\r\n- Public OAuth / Partner 查询 → `linkfox-shopee-store-public`\r\n- 订单/商品等业务 API → 对应业务 skill\r\n\r\n**Feedback:** 见 `references/api.md`。\r\n\r\n\r\n---\r\n*For more high-quality, professional cross-border e-commerce skills, visit [LinkFox Skills](https://skill.linkfox.com/).*\r\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.2",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 178,
+    "installs": 1,
+    "stars": 0,
+    "versions": 3,
+    "comments": 0
+  },
+  "created_at": "2026-07-02T15:56:16.393Z",
+  "updated_at": "2026-07-10T04:48:49.101Z",
+  "fetched_at": "2026-07-11T23:05:30.540Z",
+  "source_url": "https://clawhub.ai/linkfox-ai/skills/linkfox-shopee-store-push"
+}

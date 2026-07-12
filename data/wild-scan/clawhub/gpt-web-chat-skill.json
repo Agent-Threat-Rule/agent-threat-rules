@@ -1,0 +1,40 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "gpt-web-chat-skill",
+  "display_name": "GPT Web Chat Skill",
+  "publisher": {
+    "handle": "lainxxx",
+    "display_name": "lainXXX",
+    "user_id": "s17apgxnbvkv2k4c0x0a384bn98a8e16"
+  },
+  "summary": "ChatGPT 网页版自动化技能。用于通过浏览器自动化操作 chatgpt.com，包括发送 Prompt、获取回复、检测登录状态、维护会话。典型请求包括：\"帮我问 ChatGPT\"、\"用 GPT 回答\"、\"把这段话发给 ChatGPT\"。如果只是询问 ChatGPT 的功能、模型、API、价格或使用方法，而不需...",
+  "description": "ChatGPT 网页版自动化技能。用于通过浏览器自动化操作 chatgpt.com，包括发送 Prompt、获取回复、检测登录状态、维护会话。典型请求包括：\"帮我问 ChatGPT\"、\"用 GPT 回答\"、\"把这段话发给 ChatGPT\"。如果只是询问 ChatGPT 的功能、模型、API、价格或使用方法，而不需要实际操作 ChatGPT 网页，则不要使用本 Skill。",
+  "content": "---\nname: gpt-web-chat-skill\ndescription: ChatGPT 网页版自动化技能。用于通过浏览器自动化操作 chatgpt.com，包括发送 Prompt、获取回复、检测登录状态、维护会话。典型请求包括：\"帮我问 ChatGPT\"、\"用 GPT 回答\"、\"把这段话发给 ChatGPT\"。如果只是询问 ChatGPT 的功能、模型、API、价格或使用方法，而不需要实际操作 ChatGPT 网页，则不要使用本 Skill。\n\nallowed-tools:\n  - Read\n  - Write\n  - Edit\n  - Grep\n  - Glob\n  - Bash\n---\n\n# ChatGPT Web Automation\n\n## Mission\n\n本 Skill 负责维护 **ChatGPT Runtime**。职责包括：\n\n- 将 Prompt 发送给 ChatGPT 并获取完整回复\n- 维护 ChatGPT Session（登录状态、页面状态、会话状态）\n- 在页面变化后恢复 Runtime\n\n除此之外，不承担任何通用浏览器自动化任务。\n\n本 Skill 将 `scripts/chat.py` 视为 ChatGPT Runtime API。SKILL.md 负责调度，业务逻辑由 Runtime 实现，Reference 提供设计知识。\n\n---\n\n## 默认行为\n\n`scripts/chat.py` 是 Runtime 唯一入口。所有日常任务统一通过它完成。\n\nAgent 不判断是否首次运行，不判断是否已登录，不判断浏览器状态。所有环境检测、Runtime 恢复、登录检查、浏览器管理均由 `chat.py` 自动处理。\n\n除首次部署和页面维护外，不要绕过 `chat.py` 直接操作浏览器。\n\n---\n\n## Runtime Lifecycle\n\n```\nchat.py\n  │\n  ├── Stage 1: 环境\n  │   ├── .env 不存在 → ENV_NOT_FOUND\n  │   ├── userdata/ 不存在 → 自动创建\n  │   └── 网络不可达 → NETWORK_ERROR\n  │\n  ├── Stage 2: Runtime\n  │   ├── Chrome 运行中 → CDP 连接\n  │   └── 未运行 → 自动启动 Chrome\n  │\n  ├── Stage 3: 页面\n  │   ├── ChatGPT Tab 存在 → 复用\n  │   ├── 未登录 → LOGIN_REQUIRED\n  │   └── 不存在 → 打开 ChatGPT\n  │\n  └── Stage 4: 对话\n      ├── 发送 Prompt\n      ├── 等待回复\n      └── 返回 JSON\n```\n\nAgent 始终处于 Stage 4 视角：调用 → 等待 → 得到结果。无需要关心前三个阶段。`bootstrap.py` 仅在 `LOGIN_REQUIRED` 时作为登录向导执行。\n\n---\n\n## 三个入口\n\n| 用途 | 脚本 | 频率 |\n|------|------|------|\n| **日常对话** | `scripts/chat.py` | 99% |\n| **登录向导** | `scripts/bootstrap.py` | 仅首次 / 登录过期 |\n\n---\n\n## 日常对话（Hot Path）\n\n日常任务默认直接调用 `scripts/chat.py`。除非发生初始化或页面维护，否则不要运行其它脚本。\n\n`scripts/chat.py` 返回结构化 JSON。Agent 仅根据 `success`、`reply`、`error.code`、`next_action` 决定下一步，不解析浏览器内部状态。\n\n```\n执行 scripts/chat.py \"提示词\"\n  │\n  ▼\n解析返回 JSON\n  │\n  ├── ok: true  → 将 reply 返回给用户\n  │\n  └── ok: false → 按 next_action / error.code 路由\n```\n\n### 可选参数\n\n| 参数 | 作用 |\n|------|------|\n| `-a image.png` | 附带图片 |\n| `--headed` | 保持浏览器窗口在前台（默认最小化到后台） |\n| `--health` | 健康检查（不执行对话，返回运行时状态） |\n\n### 错误路由\n\n优先依据 `next_action`。仅当 `next_action` 缺失时，根据 `error.code` 处理。\n\n| next_action / error.code | Agent 动作 |\n|-------------------------|-----------|\n| `next_action: \"RUN_BOOTSTRAP\"` / `LOGIN_REQUIRED` | 执行 `scripts/bootstrap.py` |\n| `next_action: \"CREATE_ENV\"` / `ENV_NOT_FOUND` | 提示用户复制 `.env.example` → `.env` 并配置 |\n| `next_action: \"CHECK_PROXY\"` / `NETWORK_ERROR` | 提示用户检查代理配置或网络 |\n| `CHROME_NOT_FOUND` | 提示用户检查 CHROME_PATH |\n| 未列出 | 直接向用户返回 `error.message`，不自行推测原因 |\n\n---\n\n## 初始化 & 登录\n\n### 首次使用\n\n### 登录\n\n运行 `scripts/bootstrap.py` 启动 Chrome 并打开 ChatGPT 登录页，手动登录后即可开始使用。\n\n### 页面改版\n\n当 ChatGPT 页面更新导致脚本失效时，更新 `references/chatgpt.md` 中的选择器。\n\n---\n\n## Reference\n\n按需读取，不主动加载全部文档。\n\n| 当需要…… | 读取 |\n|---------|------|\n| 修改运行架构 | `references/architecture.md` |\n| 修改页面交互 | `references/chatgpt.md` |\n| 修复页面改版 | `references/maintenance.md` |\n\n---\n\n## 核心原则\n\n1. **Runtime API First** — 所有日常任务统一通过 `scripts/chat.py` 完成，Agent 不直接操作浏览器\n2. **Runtime First** — 优先复用已有 Session，仅在必要时冷启动\n3. **Lifecycle 下沉** — Agent 不判断运行环境，所有状态管理由 Runtime 内部自动完成\n4. **Fail Fast** — 超时立即失败并返回结构化错误；异常时收集截图/HTML/URL，不重试\n\n## 窗口行为\n\n默认 Chrome 以 **headless** 方式运行在后台，不干扰用户。\n需要查看浏览器时加 `--headed` 参数保持窗口在前台。\n",
+  "category": null,
+  "tags": [
+    "chatgpt",
+    "ai-agent",
+    "browser-automation",
+    "chrome-automation"
+  ],
+  "topics": [
+    "chatgpt",
+    "ai-agent",
+    "browser-automation",
+    "chrome-automation"
+  ],
+  "latest_version": "0.1.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 119,
+    "installs": 0,
+    "stars": 1,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T06:07:50.303Z",
+  "updated_at": "2026-07-10T06:07:50.303Z",
+  "fetched_at": "2026-07-11T23:00:58.932Z",
+  "source_url": "https://clawhub.ai/lainxxx/skills/gpt-web-chat-skill"
+}

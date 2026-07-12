@@ -1,0 +1,34 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "session-cleanup",
+  "display_name": "Session Cleanup",
+  "publisher": {
+    "handle": "xaiohuangningde",
+    "display_name": "xaiohuangningde",
+    "user_id": "s178heanqfwdps3x5dqwqqasyh884z76"
+  },
+  "summary": "定期清理过期会话，评估并保存有价值信息，自动清理无价值会话。",
+  "description": "定期清理过期会话，评估并保存有价值信息，自动清理无价值会话。",
+  "content": "---\nname: session-cleanup\ndescription: 定期清理过期会话，评估并保存有价值信息，自动清理无价值会话。\n---\n\n# Session Cleanup\n\n定期检查和清理过期会话，评估会话价值并保存重要信息。\n\n## 能力轮廓\n\n- **输入**：会话目录路径\n- **输出**：清理报告 + 保存的有价值会话\n- **核心**：过期检测 → 价值评估 → 选择性清理\n\n## 工作流\n\n```\n1. 扫描会话目录\n2. 检查过期会话（7天无活动）\n3. 评估会话价值（关键词匹配）\n4. 保存有价值会话到记忆\n5. 清理无价值会话\n6. 生成报告\n```\n\n## 目标目录\n\n| 目录 | 说明 |\n|------|------|\n| ~/.openclaw/cron/runs/ | 定时任务运行记录 |\n| ~/.openclaw/delivery-queue/ | 消息投递队列 |\n| ~/.openclaw/telegram/ | Telegram 会话数据 |\n| ~/.openclaw/subagents/ | 子智能体会话 |\n\n## 过期规则\n\n- **cron runs**: 超过 3 天\n- **delivery-queue**: 超过 1 天（已完成/失败的）\n- **telegram**: 超过 7 天\n- **subagents**: 超过 7 天\n\n## 价值评估关键词\n\n| 类别 | 关键词 |\n|------|--------|\n| 重要决策 | decision, important, remember, 重要, 决策 |\n| 学习 | learn, study, understand, 学习, 理解 |\n| 问题解决 | fix, bug, error, 修复, 问题, 错误 |\n| 创建 | create, build, new, 创建, 新建 |\n\n## 主动性\n\n- 每周执行一次\n- 自动评估并保存有价值内容\n- 汇报清理结果\n\n## 使用方式\n\n```bash\n# 手动执行\n~/.openclaw/workspace/skills/session-cleanup/cleanup.sh\n\n# 配置定时任务（每周日凌晨3点）\ncron job add session-cleanup \"0 3 * * 0\" ~/.openclaw/workspace/skills/session-cleanup/run.sh\n```\n",
+  "category": null,
+  "tags": [
+    "会话"
+  ],
+  "topics": [
+    "会话"
+  ],
+  "latest_version": "1.0.0",
+  "license": null,
+  "stats": {
+    "downloads": 1053,
+    "installs": 37,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-03-01T11:23:44.974Z",
+  "updated_at": "2026-05-17T05:03:46.565Z",
+  "fetched_at": "2026-07-11T22:31:30.496Z",
+  "source_url": "https://clawhub.ai/xaiohuangningde/skills/session-cleanup"
+}

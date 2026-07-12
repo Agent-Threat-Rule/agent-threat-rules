@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "smart-downloader",
+  "display_name": "Smart Downloader",
+  "publisher": {
+    "handle": "dkgee",
+    "display_name": "dkgee",
+    "user_id": "s1786wtvdxk30gxkmfr6h6xb2h83gfv8"
+  },
+  "summary": "Smart file downloader with multi-threading, resumable downloads, and progress display",
+  "description": "Smart file downloader with multi-threading, resumable downloads, and progress display",
+  "content": "---\nname: smart-downloader\nversion: 1.0.0\ndescription: Smart file downloader with multi-threading, resumable downloads, and progress display\nwhenToUse: When you need to download multiple files or large files\n---\n\n## Overview\n\nSmart file downloader with multi-threaded concurrent downloads, resumable download support, progress display, and file integrity verification.\n\n## Core Features\n\n- **Multi-threaded concurrent downloads**: Use Semaphore to control concurrency, improve download speed\n- **Resumable downloads**: Support resuming from breakpoint, avoid repeated downloads\n- **Progress display**: Rich progress bar showing download progress, speed, remaining time\n- **File integrity verification**: Automatically verify file integrity after download\n- **Custom request headers**: Support custom User-Agent, Referer, etc.\n- **Error retry**: Automatically retry failed downloads, default max 5 times\n- **Proxy support**: Support HTTP/HTTPS/SOCKS5 proxies\n- **Temporary file management**: Download to temporary directory, automatically move to target directory after completion\n\n## Usage\n\nProvide a list of download URLs, and the script will automatically download all files.\n\n## Parameters\n\n- `urls`: List of download URLs (required, comma separated or file path)\n- `output_dir`: Output directory (required)\n- `max_workers`: Max concurrency (optional, default 4)\n- `chunk_size`: Chunk size (optional, default 2MB)\n- `timeout`: Request timeout (optional, default 10 seconds)\n- `retry`: Max retry times (optional, default 5)\n- `headers`: Custom request headers (optional, JSON format)\n- `proxy`: Proxy address (optional)\n\n## Example\n\n```bash\npython scripts/smart_download.py urls.txt output/\npython scripts/smart_download.py \"https://example.com/file1.jpg,https://example.com/file2.jpg\" output/\npython scripts/smart_download.py urls.txt output/ --max-workers 8 --timeout 30\npython scripts/smart_download.py urls.txt output/ --proxy http://127.0.0.1:7890\n```\n\n## URL File Format\n\nSupports two ways to provide URLs:\n\n1. **Command line comma separated**:\n   ```\n   python scripts/smart_download.py \"url1,url2,url3\" output/\n   ```\n\n2. **File path** (one URL per line):\n   ```\n   https://example.com/file1.jpg\n   https://example.com/file2.jpg\n   https://example.com/file3.mp4\n   ```\n\n## Output Format\n\n- Files are saved in `output_dir` directory\n- Temporary files are saved in `{output_dir}/.temp/` directory\n- Temporary directory is automatically cleaned after download\n\n## Progress Display\n\nDuring download, the following information is displayed:\n- File name\n- Download progress (percentage)\n- Download speed (MB/s)\n- Remaining time\n- Downloaded/Total size\n\n## Tech Stack\n\n- Python 3.11+\n- httpx 0.28.1\n- aiofiles 25.1.0\n- rich 14.3.3\n\n## Performance Optimization Tips\n\n1. **Concurrency**: Adjust based on network and target server (recommended 4-8)\n2. **Chunk size**: For large files (>100MB), consider increasing to 4-8MB\n3. **Timeout**: For slow networks, consider increasing to 30-60 seconds\n4. **Retry times**: For unstable networks, consider increasing to 10 times\n\n## Error Handling\n\n- Automatically retry failed downloads\n- Display detailed error information\n- Failed download files are logged\n- Support manual cleanup and re-download\n\n## Legal Disclaimer\n\nThis skill is for learning and research purposes only.\n\nUsers must comply with the following principles when using this skill:\n1. Not for any commercial use\n2. Comply with target platform's terms of service and robots.txt rules\n3. Do not conduct large-scale downloads or cause operational disruption to the platform\n4. Reasonably control request frequency to avoid burdening the target platform\n5. Do not use for any illegal or improper purposes\n\nBy using this skill, you agree to comply with the above principles.\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 63,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T14:15:19.164Z",
+  "updated_at": "2026-07-11T14:15:19.164Z",
+  "fetched_at": "2026-07-11T22:43:37.148Z",
+  "source_url": "https://clawhub.ai/dkgee/skills/smart-downloader"
+}

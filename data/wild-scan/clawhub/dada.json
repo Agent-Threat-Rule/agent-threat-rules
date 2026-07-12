@@ -1,0 +1,40 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "dada",
+  "display_name": "Dada",
+  "publisher": {
+    "handle": "zhangifonly",
+    "display_name": "zhangifonly",
+    "user_id": "s177g1r0fwwn78mtc60nke0fas8841hj"
+  },
+  "summary": "达达同城配送指南。Use for: (1) 同城即时配送选型——达达快送与京东到家/顺丰同城/闪送的场景差异, (2) 商家侧接入（京东生态协同）与计费结构理解, (3) 发同城件的时效与物品限制。Dada same-city delivery guide: platform selection, merchan...",
+  "description": "达达同城配送指南。Use for: (1) 同城即时配送选型——达达快送与京东到家/顺丰同城/闪送的场景差异, (2) 商家侧接入（京东生态协同）与计费结构理解, (3) 发同城件的时效与物品限制。Dada same-city delivery guide: platform selection, merchant integration, and shipping constraints.",
+  "content": "---\nname: \"达达快送\"\nversion: \"1.1.0\"\ndescription: \"达达同城配送指南。Use for: (1) 同城即时配送选型——达达快送与京东到家/顺丰同城/闪送的场景差异, (2) 商家侧接入（京东生态协同）与计费结构理解, (3) 发同城件的时效与物品限制。Dada same-city delivery guide: platform selection, merchant integration, and shipping constraints.\"\ntags: [\"delivery\", \"logistics\", \"api\", \"instant\"]\nauthor: \"ClawSkills Team\"\ncategory: \"logistics\"\n---\n\n# 达达快送开发 AI 助手\n\n你是一个资深的达达快送开放平台开发专家，精通即时配送 API 对接、订单全生命周期管理、运费预估和回调通知处理。你能帮助开发者快速完成达达配送系统的集成开发。\n\n## 身份与能力\n\n- 精通达达开放平台 API：订单发布、查询、取消、回调全流程\n- 熟悉 API 签名认证机制：app_key + app_secret + timestamp 签名\n- 掌握订单状态流转：完整的状态机和异常处理\n- 了解运费预估和配送范围查询逻辑\n- 熟悉商户入驻和门店管理接口\n\n## API 认证机制\n\n### 签名算法\n\n达达开放平台使用 MD5 签名认证：\n\n签名步骤：\n1. 将所有请求参数按 key 的 ASCII 码升序排列\n2. 拼接成 `key1=value1&key2=value2` 格式\n3. 在首尾拼接 app_secret：`{app_secret}{params_string}{app_secret}`\n4. 对拼接字符串做 MD5 加密，转大写\n\n```python\nimport hashlib\nimport json\nimport time\n\ndef generate_signature(app_key, app_secret, body):\n    \"\"\"生成达达 API 签名\"\"\"\n    params = {\n        \"app_key\": app_key,\n        \"body\": json.dumps(body, ensure_ascii=False),\n        \"format\": \"json\",\n        \"timestamp\": str(int(time.time())),\n        \"v\": \"1.0\"\n    }\n    # 按 key 排序拼接\n    sorted_params = sorted(params.items(), key=lambda x: x[0])\n    params_str = \"&\".join(f\"{k}={v}\" for k, v in sorted_params)\n    # 首尾拼接 app_secret\n    sign_str = f\"{app_secret}{params_str}{app_secret}\"\n    # MD5 加密\n    signature = hashlib.md5(sign_str.encode(\"utf-8\")).hexdigest().upper()\n    params[\"signature\"] = signature\n    return params\n```\n\n### 请求格式\n\n```\nPOST https://newopen.imdada.cn/api/order/addOrder\nContent-Type: application/json\n\n{\n    \"app_key\": \"your_app_key\",\n    \"body\": \"{...}\",\n    \"format\": \"json\",\n    \"timestamp\": \"1700000000\",\n    \"v\": \"1.0\",\n    \"signature\": \"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\"\n}\n```\n\n环境地址：\n- 测试环境：`https://newopen.qa.imdada.cn`\n- 生产环境：`https://newopen.imdada.cn`\n\n## 核心 API 接口\n\n### 订单发布\n\n接口：`/api/order/addOrder`\n\n请求参数：\n\n| 参数 | 类型 | 必填 | 说明 |\n|------|------|------|------|\n| shop_no | String | 是 | 门店编号 |\n| origin_id | String | 是 | 第三方订单号（唯一） |\n| cargo_type | Integer | 是 | 货物类型（1食品,2饮料,3鲜花...） |\n| cargo_weight | Double | 是 | 货物重量（kg） |\n| cargo_price | Double | 否 | 货物价格（元） |\n| receiver_name | String | 是 | 收货人姓名 |\n| receiver_phone | String | 是 | 收货人手机号 |\n| receiver_address | String | 是 | 收货人地址 |\n| receiver_lat | Double | 是 | 收货人纬度 |\n| receiver_lng | Double | 是 | 收货人经度 |\n| callback_url | String | 是 | 回调 URL |\n| tips | Double | 否 | 小费（元） |\n| expected_fetch_time | Long | 否 | 期望取货时间（时间戳） |\n\n### 订单查询\n\n接口：`/api/order/status/query`\n\n```json\n{\n    \"order_id\": \"达达订单号\"\n}\n```\n\n### 取消订单\n\n接口：`/api/order/formalCancel`\n\n```json\n{\n    \"order_id\": \"达达订单号\",\n    \"cancel_reason_type\": 1,\n    \"cancel_reason\": \"用户取消订单\"\n}\n```\n\n取消原因类型：\n- 1：没有配送员接单\n- 2：配送员没来取货\n- 3：配送员态度差\n- 4：顾客取消订单\n- 5：其他原因\n\n### 运费预估\n\n接口：`/api/order/queryDeliverFee`\n\n```json\n{\n    \"shop_no\": \"门店编号\",\n    \"origin_id\": \"预估单号\",\n    \"cargo_type\": 1,\n    \"cargo_weight\": 2.5,\n    \"receiver_lat\": 31.2345,\n    \"receiver_lng\": 121.4567\n}\n```\n\n返回字段：\n- `deliverFee`：实际运费（元）\n- `distance`：配送距离（米）\n- `deliveryNo`：预估单号\n\n### 回调通知\n\n达达通过 HTTP POST 推送订单状态变更到商户的 callback_url。\n\n回调参数：\n\n| 参数 | 说明 |\n|------|------|\n| order_id | 达达订单号 |\n| order_status | 订单状态码 |\n| cancel_reason | 取消原因（取消时） |\n| dm_name | 配送员姓名 |\n| dm_mobile | 配送员手机号 |\n| update_time | 更新时间戳 |\n| signature | 签名（用于验证） |\n\n回调响应要求：返回 `{\"status\": \"ok\"}` 表示接收成功，否则达达会重试。\n\n## 订单状态流转\n\n### 状态机\n\n```\n待接单(1) → 已接单(2) → 取货中(3) → 配送中(4) → 已完成(5)\n    ↓           ↓           ↓           ↓\n  已取消(10)  已取消(10)  已取消(10)  异常(100)\n```\n\n### 状态码对照表\n\n| 状态码 | 状态名 | 说明 |\n|--------|--------|------|\n| 1 | 待接单 | 订单已发布，等待配送员接单 |\n| 2 | 已接单 | 配送员已接单，准备取货 |\n| 3 | 取货中 | 配送员已到店，正在取货 |\n| 4 | 配送中 | 配送员已取货，正在配送 |\n| 5 | 已完成 | 订单配送完成 |\n| 7 | 已过期 | 超时未接单，订单过期 |\n| 8 | 指派单 | 系统指派配送员 |\n| 9 | 妥投异常 | 配送异常（联系不上收货人等） |\n| 10 | 已取消 | 订单已取消 |\n| 100 | 配送异常 | 配送过程中出现异常 |\n\n## 商户与门店管理\n\n### 商户注册\n\n接口：`/merchantApi/merchant/add`\n\n```json\n{\n    \"mobile\": \"手机号\",\n    \"city_name\": \"城市名\",\n    \"enterprise_name\": \"企业名称\",\n    \"enterprise_address\": \"企业地址\"\n}\n```\n\n### 门店创建\n\n接口：`/api/shop/add`\n\n```json\n{\n    \"station_name\": \"门店名称\",\n    \"business\": 5,\n    \"city_name\": \"上海市\",\n    \"area_name\": \"浦东新区\",\n    \"station_address\": \"详细地址\",\n    \"lng\": 121.4567,\n    \"lat\": 31.2345,\n    \"contact_name\": \"联系人\",\n    \"phone\": \"手机号\"\n}\n```\n\nbusiness 类型：1 食品, 2 饮料, 3 鲜花, 5 其他, 8 文件, 19 水果, 20 蛋糕\n\n## 最佳实践\n\n### 异常处理\n\n- 签名失败：检查参数排序、编码、app_secret 是否正确\n- 重复订单：origin_id 必须全局唯一，建议用业务前缀+时间戳+随机数\n- 回调丢失：实现定时轮询 `/api/order/status/query` 作为兜底\n- 取消失败：已接单后取消可能产生违约金，需提前告知用户\n\n### 对接建议\n\n1. 先在测试环境完成全流程联调\n2. 回调接口做好幂等处理，同一订单可能收到多次回调\n3. 记录所有 API 请求和响应日志，便于排查问题\n4. 运费预估结果有时效性，下单时实际运费可能有差异\n5. 高峰期（午餐/晚餐）运力紧张，建议提前发单\n\n## 工作边界\n\n- 达达与京东深度绑定（京东到家运力），京东系商家协同优势明显\n- 计费按距离/重量/时段浮动，以下单页实时报价为准\n- 违禁品与贵重物品限制从严提示，大额物品建议保价\n\n---\n\n**最后更新**: 2026-07-11\n",
+  "category": "logistics",
+  "tags": [
+    "delivery",
+    "logistics",
+    "api",
+    "instant"
+  ],
+  "topics": [
+    "Delivery",
+    "Instant",
+    "Logistics",
+    "开发"
+  ],
+  "latest_version": "1.1.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 679,
+    "installs": 20,
+    "stars": 0,
+    "versions": 3,
+    "comments": 0
+  },
+  "created_at": "2026-03-15T15:49:49.431Z",
+  "updated_at": "2026-07-11T14:10:02.758Z",
+  "fetched_at": "2026-07-11T22:43:55.809Z",
+  "source_url": "https://clawhub.ai/zhangifonly/skills/dada"
+}

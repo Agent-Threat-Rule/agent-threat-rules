@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "realtor-price-reduction-decision",
+  "display_name": "Real Estate — Pricing & Price-Reduction Decision",
+  "publisher": {
+    "handle": "deciqai",
+    "display_name": "deciqAI",
+    "user_id": "s17a4mqcnk515kvaca5ze55d0x88pfpx"
+  },
+  "summary": "Activate when: a listing isn't selling and the agent must decide list price or a price reduction; 'should we drop the price', 'how much and when', days-on-ma...",
+  "description": "Activate when: a listing isn't selling and the agent must decide list price or a price reduction; 'should we drop the price', 'how much and when', days-on-market rising, showings without offers. Do NOT activate when: the property is priced right and getting offers (no decision).",
+  "content": "---\nname: realtor-price-reduction-decision\ndescription: \"Activate when: a listing isn't selling and the agent must decide list price or a price reduction; 'should we drop the price', 'how much and when', days-on-market rising, showings without offers. Do NOT activate when: the property is priced right and getting offers (no decision).\"\n---\n\n# Real Estate — Pricing & Price-Reduction Decision\n\n> **Industry front door for decision-tree.** Adds domain triggers, example, packs. Parent Process unchanged.\n> **Not appraisal advice.**\n\n**Activate when:** setting a list price; a listing stalls (DOM up, showings without offers); deciding reduction timing/size; managing seller expectations.\n**Do NOT activate when:** priced correctly with active offers.\n\n## Why this variant\nThe parent decision-tree maps sequential choices under uncertainty. Pricing and reductions are a decision tree: hold vs reduce, by how much, when — against showing/offer feedback, carrying cost, and market trend, rolling back to expected net proceeds and time-to-sell.\n\n## Domain inputs → the tree\n- Read the signals: showings-to-offer ratio, DOM vs market median, feedback themes, comparable adjustments.\n- Branch: hold (if fresh/undersampled), small reduction (nudge into a search bracket), meaningful reduction (reset if far off).\n- Value the branches by expected net proceeds × probability × carrying cost of extra DOM. *Gate: reductions below a portal price bracket (e.g. $505k→$499k) capture a new buyer pool — size to brackets, not round guesses.*\n\n## Worked example\n30 showings, no offers, DOM 2× median, feedback \"overpriced vs the one down the street.\"\n→ Tree: this is a pricing (not marketing/condition) problem; a token cut won't fix a bracket miss. Reduce into the correct search bracket in one decisive move; slow drip prolongs DOM and signals weakness.\n\n## Packs\n- **Solo agent**: showings-to-offer + DOM decision card; bracket-aware reduction sizing.\n- **Team**: weekly stale-listing review triggering the decision.\n\n## Red flags\n- Blaming marketing when the data says price.\n- Tiny drip reductions that prolong DOM.\n- Reductions not aligned to portal search brackets.\n\n## Verification\n- [ ] Showing/offer + DOM signals reviewed vs comps\n- [ ] Problem diagnosed (price vs condition vs marketing)\n- [ ] Reduction sized to search brackets, not round numbers\n- [ ] Expected net proceeds vs carrying cost weighed\n\n---\n*Part of **deciqAI Knowledge Skills** — 223 open-source thinking skills that make rigor executable for AI agents. The same skills power every deciqAI agent, which runs them autonomously to operate your company. **See it run → https://www.deciqai.com/c/realtor-price-reduction-decision** · ⭐ Star the repo → https://github.com/deciqAI/knowledge-skills · Contributions welcome.*\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 98,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T09:25:59.141Z",
+  "updated_at": "2026-07-10T09:25:59.141Z",
+  "fetched_at": "2026-07-11T22:58:11.816Z",
+  "source_url": "https://clawhub.ai/deciqai/skills/realtor-price-reduction-decision"
+}

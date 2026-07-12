@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "hyperframes-registry",
+  "display_name": "Hyperframes Registry",
+  "publisher": {
+    "handle": "heygen-com",
+    "display_name": "HeyGen",
+    "user_id": "s17fpgb0p797dzkbtbrxw5x1hh89qs64"
+  },
+  "summary": "Install and wire registry blocks and components into HyperFrames compositions. Use when running hyperframes add, installing a block or component, wiring an i...",
+  "description": "Install and wire registry blocks and components into HyperFrames compositions. Use when running hyperframes add, installing a block or component, wiring an installed item into index.html, or working with hyperframes.json. Covers the add command, install locations, block sub-composition wiring, component snippet merging, registry discovery, and authoring a new block or component to contribute upstream (idea → scaffold → validate → PR).",
+  "content": "---\nname: hyperframes-registry\ndescription: Install and wire registry blocks and components into HyperFrames compositions. Use when running hyperframes add, installing a block or component, wiring an installed item into index.html, or working with hyperframes.json. Covers the add command, install locations, block sub-composition wiring, component snippet merging, registry discovery, and authoring a new block or component to contribute upstream (idea → scaffold → validate → PR).\n---\n\n# HyperFrames Registry\n\nThe registry provides reusable blocks and components installable via `hyperframes add <name>`.\n\n- **Blocks** — standalone sub-compositions (own dimensions, duration, timeline). Included via `data-composition-src` in a host composition.\n- **Components** — effect snippets (no own dimensions). Pasted directly into a host composition's HTML.\n\n## Quick reference\n\n```bash\nhyperframes add data-chart              # install a block\nhyperframes add grain-overlay           # install a component\nhyperframes add shimmer-sweep --dir .   # target a specific project\nhyperframes add data-chart --json       # machine-readable output\nhyperframes add data-chart --no-clipboard  # skip clipboard (CI/headless)\n```\n\nAfter install, the CLI prints which files were written and a snippet to paste into your host composition. The snippet is a starting point — you'll need to add `data-composition-id` (must match the block's internal composition ID), `data-start`, and `data-track-index` attributes when wiring blocks.\n\nNote: `hyperframes add` only works for blocks and components. For examples, use `hyperframes init <dir> --example <name>` instead.\n\n## Install locations\n\nBlocks install to `compositions/<name>.html` by default.\nComponents install to `compositions/components/<name>.html` by default.\n\nThese paths are configurable in `hyperframes.json`:\n\n```json\n{\n  \"registry\": \"https://raw.githubusercontent.com/heygen-com/hyperframes/main/registry\",\n  \"paths\": {\n    \"blocks\": \"compositions\",\n    \"components\": \"compositions/components\",\n    \"assets\": \"assets\"\n  }\n}\n```\n\nSee [install-locations.md](./references/install-locations.md) for full details.\n\n## Wiring blocks\n\nBlocks are standalone compositions — include them via `data-composition-src` in your host `index.html`:\n\n```html\n<div\n  data-composition-id=\"data-chart\"\n  data-composition-src=\"compositions/data-chart.html\"\n  data-start=\"2\"\n  data-duration=\"15\"\n  data-track-index=\"1\"\n  data-width=\"1920\"\n  data-height=\"1080\"\n></div>\n```\n\nKey attributes:\n\n- `data-composition-src` — path to the block HTML file\n- `data-composition-id` — must match the block's internal ID\n- `data-start` — when the block appears in the host timeline (seconds)\n- `data-duration` — how long the block plays\n- `data-width` / `data-height` — block canvas dimensions\n- `data-track-index` — layer ordering (higher = in front)\n\nSee [wiring-blocks.md](./references/wiring-blocks.md) for full details.\n\n## Wiring components\n\nComponents are snippets — paste their HTML into your composition's markup, their CSS into your style block, and their JS into your script (if any):\n\n1. Read the installed file (e.g., `compositions/components/grain-overlay.html`)\n2. Copy the HTML elements into your composition's `<div data-composition-id=\"...\">`\n3. Copy the `<style>` block into your composition's styles\n4. Copy any `<script>` content into your composition's script (before your timeline code)\n5. If the component exposes GSAP timeline integration (see the comment block in the snippet), add those calls to your timeline\n\nSee [wiring-components.md](./references/wiring-components.md) for full details.\n\n## Discovery\n\nBrowse available items:\n\n```bash\n# Read the registry manifest\ncurl -s https://raw.githubusercontent.com/heygen-com/hyperframes/main/registry/registry.json\n```\n\nEach item's `registry-item.json` contains: name, type, title, description, tags, dimensions (blocks only), duration (blocks only), and file list.\n\nSee [discovery.md](./references/discovery.md) for details on filtering by type and tags.\n\n## Contributing a new block or component\n\nTo author a NEW registry item (caption style, VFX block, transition, lower third, or a reusable component) and ship it as an upstream PR — not install an existing one — follow the full idea → scaffold → build → validate → preview → ship workflow in [contributing.md](./references/contributing.md). Copy-paste starter templates (caption / VFX / component / `registry-item.json`) are in [templates.md](./references/templates.md).\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.1",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 25,
+    "installs": 0,
+    "stars": 0,
+    "versions": 2,
+    "comments": 0
+  },
+  "created_at": "2026-07-01T10:07:04.822Z",
+  "updated_at": "2026-07-10T22:49:37.230Z",
+  "fetched_at": "2026-07-11T22:51:26.249Z",
+  "source_url": "https://clawhub.ai/heygen-com/skills/hyperframes-registry"
+}

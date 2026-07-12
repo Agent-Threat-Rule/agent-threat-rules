@@ -1,0 +1,34 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "linkfox-amazon-store-feeds",
+  "display_name": "亚马逊-店铺数据上传",
+  "publisher": {
+    "handle": "linkfox-ai",
+    "display_name": "linkfox-ai",
+    "user_id": "s171g8b6m2khwdy9ye8bxj0wx183vd4z"
+  },
+  "summary": "亚马逊店铺 Feeds（与 linkfox-amazon-store-auth / report / listings / pricing / orders 同系列），经 /spApi/developerProxy 调用 SP-API Feeds v2021-06-30：createFeedDocument、ge...",
+  "description": "亚马逊店铺 Feeds（与 linkfox-amazon-store-auth / report / listings / pricing / orders 同系列），经 /spApi/developerProxy 调用 SP-API Feeds v2021-06-30：createFeedDocument、ge...",
+  "content": "---\r\nname: linkfox-amazon-store-feeds\r\ndescription: 亚马逊店铺 Feeds（与 linkfox-amazon-store-auth / report / listings / pricing / orders 同系列），经 /spApi/developerProxy 调用 SP-API Feeds v2021-06-30：createFeedDocument、getFeedDocument、createFeed、getFeed、getFeeds、cancelFeed；另含 upload_feed_document 向预签名 URL 上传内容。当用户提到亚马逊 Feed、提交库存/Listing Feed、POST_FLAT_FILE、feedType、feedDocumentId、feedId、取消 Feed、查询 Feed 处理状态、Feeds API、SP-API 上传文件 时触发。\r\n---\r\n\r\n# Amazon 店铺 Feeds\r\n\r\n本 skill 与 **`linkfox-amazon-store-auth`** 等同属 **Amazon Store** 系列：先 **`POST /spApi/storeTokens`**，再 **`POST /spApi/developerProxy`** 转发 **GET / POST / DELETE**。\r\n\r\n## 调用方式\r\n\r\n- **API 端点**：`POST /spApi/developerProxy`（不同操作通过请求体区分；完整参数/响应/错误码见 `references/api.md`）\r\n- **Python 脚本**：`python scripts/<脚本名>.py '<JSON 参数>' [--inline]`（可用脚本见上文脚本一览）\r\n- **成本约束**：本工具会消耗积分；失败/空结果不得自动换关键词、翻页或连续试探；需要继续检索时先向用户说明会产生额外消耗。\r\n\r\n**输出策略（脚本默认行为）**：\r\n- **始终**将完整响应写入 `<cwd>/linkfox/<YYYY-MM-DD>/<session>/data/linkfox-amazon-store-feeds-<timestamp>.json`（`<cwd>` 为脚本执行时的工作目录，在 Claude Code 里即当前项目目录；`<session>` 取自环境变量 `SESSION_ID`，按用户任务自动聚合；**禁止写入 /tmp**，当前目录不可写则报错）\r\n- 响应体 ≤ 8 KB：落盘后把完整 JSON 打印到 stdout\r\n- 响应体 > 8 KB：落盘后 stdout 只输出摘要（顶层字段、常见计数如 `total`/`costToken`、最大列表字段的长度 + 前 3 条样本）\r\n- 加 `--inline` 强制全量打印到 stdout（同样落盘）\r\n\r\n**读数据建议**：先看摘要判断是否足够；需要具体字段时优先用 `jq`或`ConvertFrom-Json` 从保存的 json 文件按需抽取，避免整份 JSON 进入上下文。\r\n\r\n## 官方参考索引\r\n\r\n| 能力 | 文档 |\r\n|------|------|\r\n| createFeedDocument | [createFeedDocument](https://developer-docs.amazon.com/sp-api/reference/createfeeddocument) |\r\n| getFeedDocument | [getFeedDocument](https://developer-docs.amazon.com/sp-api/reference/getfeeddocument) |\r\n| createFeed | [createFeed](https://developer-docs.amazon.com/sp-api/reference/createfeed) |\r\n| getFeed | [getFeed](https://developer-docs.amazon.com/sp-api/reference/getfeed) |\r\n| getFeeds | [getFeeds](https://developer-docs.amazon.com/sp-api/reference/getfeeds) |\r\n| cancelFeed | [cancelFeed](https://developer-docs.amazon.com/sp-api/reference/cancelfeed) |\r\n\r\n---\r\n\r\n## Prerequisites\r\n\r\n1. 依赖 **`linkfox-amazon-store-auth`**；运行 `python scripts/check_auth_dependency.py`，exit **42** 时需先安装授权 skill。\r\n2. 应用需具备 **Feeds** 相关角色；`feedType` 须与上传文件格式匹配（见 Amazon Feed Type Values 文档）。\r\n\r\n---\r\n\r\n## 典型工作流\r\n\r\n1. **`create_feed_document.py`** → 得到 `feedDocumentId` 与 **`url`**（上传地址）。\r\n2. **`upload_feed_document.py`** → 对 `url` **PUT** 上传 feed 文件（**不经** developerProxy）。\r\n3. **`create_feed.py`** → 传入 `inputFeedDocumentId`、`feedType`、`marketplaceIds`。\r\n4. **`get_feed.py`** / **`get_feeds.py`** → 轮询 `processingStatus`（如 IN_QUEUE、IN_PROGRESS、DONE、FATAL）。\r\n5. 处理完成后用 **`get_feed_document.py`** 下载 **resultFeedDocumentId** 对应文档（再按返回 URL 自行下载结果文件）。\r\n\r\n---\r\n\r\n## Current Capabilities\r\n\r\n| 能力 | path | method | 脚本 |\r\n|------|------|--------|------|\r\n| createFeedDocument | `feeds/2021-06-30/documents` | POST | `create_feed_document.py` |\r\n| getFeedDocument | `feeds/2021-06-30/documents/{feedDocumentId}` | GET | `get_feed_document.py` |\r\n| createFeed | `feeds/2021-06-30/feeds` | POST | `create_feed.py` |\r\n| getFeed | `feeds/2021-06-30/feeds/{feedId}` | GET | `get_feed.py` |\r\n| getFeeds | `feeds/2021-06-30/feeds` | GET | `get_feeds.py` |\r\n| cancelFeed | `feeds/2021-06-30/feeds/{feedId}` | DELETE | `cancel_feed.py` |\r\n| 上传文档内容 | createFeedDocument 返回的 URL | PUT | `upload_feed_document.py` |\r\n\r\n共享模块：**`_spapi_feeds_common.py`**。\r\n\r\n---\r\n\r\n## Scripts 示例\r\n\r\n```bash\r\nexport LINKFOXAGENT_API_KEY=\"<your-key>\"\r\n\r\npython scripts/create_feed_document.py '{\"sellerId\":\"A1...\",\"region\":\"NA\",\"contentType\":\"text/tab-separated-values; charset=UTF-8\"}'\r\n\r\npython scripts/upload_feed_document.py '{\"uploadUrl\":\"<from createFeedDocument>\",\"contentType\":\"text/tab-separated-values; charset=UTF-8\",\"filePath\":\"./inventory.tsv\"}'\r\n\r\npython scripts/create_feed.py '{\"sellerId\":\"A1...\",\"region\":\"NA\",\"feedType\":\"POST_FLAT_FILE_INVLOADER_DATA\",\"marketplaceIds\":[\"ATVPDKIKX0DER\"],\"inputFeedDocumentId\":\"<feedDocumentId>\"}'\r\n```\r\n\r\n---\r\n\r\n## Display Rules\r\n\r\n1. 先看 **`developerProxy.errcode` / `httpStatus`**；createFeedDocument 常为 **201**，createFeed 常为 **202**。\r\n2. **getFeeds** 分页：仅用上一页 **`nextToken`** 作为下一请求的 **`paginationToken` 参数名在 Amazon 侧为 `nextToken`**（脚本字段名 `nextToken`）。\r\n3. **upload** 失败与 SP-API 网关无关，检查 `uploadUrl` 是否过期、**Content-Type** 是否与 createFeedDocument 一致。\r\n4. 网关 path 白名单需包含 **`feeds/2021-06-30/`** 前缀。\r\n\r\n---\r\n\r\n## Important Limitations\r\n\r\n- 本 skill **不**代替 Amazon 侧 feed 文件 schema 校验；`feedType`、TSV/XML 格式以官方为准。\r\n- 下载 **getFeedDocument** 返回的 **url** 内容需另行 HTTP GET（与 upload 类似，不经 developerProxy）。\r\n- 详见 **`references/api.md`**。\r\n\r\n**Feedback：** `skillName`：`linkfox-amazon-store-feeds`。\r\n\r\n---\r\n*更多跨境 skill：[LinkFox Skills](https://skill.linkfox.com/)*\r\n\r\n",
+  "category": null,
+  "tags": [
+    "Document"
+  ],
+  "topics": [
+    "Document"
+  ],
+  "latest_version": "1.0.4",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 641,
+    "installs": 14,
+    "stars": 0,
+    "versions": 5,
+    "comments": 0
+  },
+  "created_at": "2026-05-20T07:03:33.339Z",
+  "updated_at": "2026-07-10T04:48:54.628Z",
+  "fetched_at": "2026-07-11T23:03:51.567Z",
+  "source_url": "https://clawhub.ai/linkfox-ai/skills/linkfox-amazon-store-feeds"
+}

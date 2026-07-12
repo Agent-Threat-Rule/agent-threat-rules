@@ -1,0 +1,34 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "kugou-skill",
+  "display_name": "酷狗",
+  "publisher": {
+    "handle": "shamo88",
+    "display_name": "shamo88",
+    "user_id": "s17817v0twfch5vbdchhmj7nh588v7tg"
+  },
+  "summary": "酷狗，酷狗音乐，酷狗skill，酷狗音乐skill，酷狗音乐助手\n提供歌曲搜索、每日推荐、相似推荐、收藏管理、听歌统计、酷狗榜单、创建歌单等功能。\n\n**触发场景**（满足任一即使用本技能）：\n- 用户要求推荐歌曲、听歌建议\n- 用户要求搜索歌曲、查找歌手作品\n- 用户要求查看音乐榜单（飙升榜、TOP500、抖音热歌等）\n- 用户要求查看收藏、最近播放、听歌统计\n- 用户要求创建歌单、自建歌单\n- 用户提供 secret（base64 字符串）要求登录或导入身份\n- 用户提到\"酷狗\"、\"kugou\"、\"每日推荐\"、\"相似歌曲\"\n\n**与其他音乐技能的区别**：酷狗音乐以推荐算法见长，榜单数据实",
+  "description": "酷狗，酷狗音乐，酷狗skill，酷狗音乐skill，酷狗音乐助手\n提供歌曲搜索、每日推荐、相似推荐、收藏管理、听歌统计、酷狗榜单、创建歌单等功能。\n\n**触发场景**（满足任一即使用本技能）：\n- 用户要求推荐歌曲、听歌建议\n- 用户要求搜索歌曲、查找歌手作品\n- 用户要求查看音乐榜单（飙升榜、TOP500、抖音热歌等）\n- 用户要求查看收藏、最近播放、听歌统计\n- 用户要求创建歌单、自建歌单\n- 用户提供 secret（base64 字符串）要求登录或导入身份\n- 用户提到\"酷狗\"、\"kugou\"、\"每日推荐\"、\"相似歌曲\"\n\n**与其他音乐技能的区别**：酷狗音乐以推荐算法见长，榜单数据实时更新，适合获取热门歌曲和个性化推荐。\n\n安装方式：npm install -g @kg-ai/kugou-skill",
+  "content": "---\nname: kugou-skill\ndescription: |\n  酷狗，酷狗音乐，酷狗skill，酷狗音乐skill，酷狗音乐助手\n  提供歌曲搜索、每日推荐、相似推荐、收藏管理、听歌统计、酷狗榜单、创建歌单等功能。\n  \n  **触发场景**（满足任一即使用本技能）：\n  - 用户要求推荐歌曲、听歌建议\n  - 用户要求搜索歌曲、查找歌手作品\n  - 用户要求查看音乐榜单（飙升榜、TOP500、抖音热歌等）\n  - 用户要求查看收藏、最近播放、听歌统计\n  - 用户要求创建歌单、自建歌单\n  - 用户提供 secret（base64 字符串）要求登录或导入身份\n  - 用户提到\"酷狗\"、\"kugou\"、\"每日推荐\"、\"相似歌曲\"\n  \n  **与其他音乐技能的区别**：酷狗音乐以推荐算法见长，榜单数据实时更新，适合获取热门歌曲和个性化推荐。\n  \n  安装方式：npm install -g @kg-ai/kugou-skill\n---\n\n# kugou-skill\n\n## AI 使用工作流（优先阅读）\n\n使用本工具时的标准流程：\n\n```\n1. 检查安装 → npm install -g @kg-ai/kugou-skill\n2. 检查登录 → kugou-cli auth status\n3. 未登录 → 引导用户执行登录流程（详见 references/auth.md）\n4. 执行用户请求的音乐命令（详见 references/music.md）\n5. 解析 JSON 输出，按展示规范展示给用户（详见 references/output-format.md）\n```\n\n### 关键注意事项\n\n- **登录流程极简**（详见 [references/auth.md](references/auth.md)）：\n  1. `auth login` - 获取二维码图片，输出包含 `qrcode` 和 `qrcode_img_path`（**必须将图片发送给用户**）\n  2. `auth status` - 循环调用此命令检查登录状态：已登录返回 `logged_in: true`；未登录但有 pending qrcode 时内部自动检查扫码状态，扫码成功则自动完成登录\n- **直接导入 secret 登录**：当用户**已经持有**一个有效的 base64 secret 字符串（从别处获取的），直接调用 `kugou-cli auth set-secret \"<secret>\"` 即可完成登录，**跳过扫码流程**。这与扫码登录保存到同一份 `auth.json`，效果完全一致。secret 字符串含 `+` `/` `=` 是正常的，shell 里务必用引号包起来。\n- **登出 (auth logout)**：会**先**与服务端同步登出，**确认成功后才**清理本地登录态。失败时本地态保留、可重试；未登录时幂等直接返回成功。\n- **登录态自动失效**：当任意 `music` 命令遇到登录态过期时，CLI 会**自动清理**本地登录态，并在 stderr 输出 `账号登录过期，请重新登录`。Agent 收到该错误后**直接引导用户重新登录**（`auth login` / `auth set-secret`），无需手动清理。\n- **音乐命令依赖登录**：除了 `auth`、`install`、`version`、`--help` 以外，所有 `music` 子命令都需要先登录。如果收到 `\"not logged in\"` 错误，引导用户执行登录流程。\n- **自动更新机制**：每次启动任意命令时会自动检测 npm 远端版本，若有新版会**自动执行** `npm install -g @kg-ai/kugou-skill@latest`，无需手动 `kugou-cli update`：\n  - 关闭自动检查：加 `--no-update-check` 标志，或设置环境变量 `KUGOU_CLI_NO_UPDATE_CHECK=1`\n  - 手动检查/触发：`kugou-cli update` 跳过本地缓存直接查远端并自动安装；`kugou-cli update --check` 仅检查不安装\n  - 非 npm 安装（手动编译/容器）会打印提示和升级命令但不会自动执行\n- **输出均为 JSON**：所有命令输出原始 JSON 到 stdout，错误输出到 stderr。解析 `errcode` 字段判断成功与否（`0` 为成功）。\n- **歌曲展示规范**（详见 [references/output-format.md](references/output-format.md)）：**禁止**只返回歌曲名、歌手名，**必须**以 Markdown 链接格式展示播放链接。\n- **创建歌单的调用原则**（详见 [references/music.md#8-创建歌单](references/music.md#8-创建歌单)）：\n  1. **被动调用**：必须用户**明确**要求创建歌单时才调用 `music create-playlist`，禁止在用户仅说\"推荐/搜歌\"时主动创建\n  2. **主动询问**：当通过搜索、推荐（猜你喜欢/相似/文本）等方式给出一批歌曲后，**必须**询问用户是否需要将当前这批歌曲创建为歌单，等用户确认后再调用 `music create-playlist --songs \"<mix_song_id 列表>\"`\n\n---\n\n## 基础信息\n\n- **npm 包**: @kg-ai/kugou-skill\n- **二进制命令**: kugou-cli\n- **安装方式**: `npm install -g @kg-ai/kugou-skill`\n\n---\n\n## 详细文档索引\n\n| 文档 | 说明 |\n|------|------|\n| [references/auth.md](references/auth.md) | 认证命令：扫码登录、直接设置 secret、查看状态、登出 |\n| [references/music.md](references/music.md) | 音乐命令：搜索、推荐、收藏、统计、榜单、创建歌单 |\n| [references/install.md](references/install.md) | 安装命令：SKILL.md 安装到各平台 |\n| [references/update.md](references/update.md) | 更新命令：检查/执行自动更新 |\n| [references/output-format.md](references/output-format.md) | 输出格式与展示规范 |\n| [references/error-handling.md](references/error-handling.md) | 错误处理与常见错误 |\n\n---\n\n## 完整使用流程\n\n```bash\n# 1. 登录（极简流程，详见 references/auth.md）\nkugou-cli auth login                      # 获取二维码\n# 循环执行以下命令直到 logged_in=true\nkugou-cli auth status\n\n# 1'. 或者直接导入已持有的 secret（跳过扫码）\nkugou-cli auth set-secret \"<base64-secret>\"\n\n# 2. 搜索歌曲\nkugou-cli music search \"周杰伦\"\n\n# 3. 获取猜你喜欢\nkugou-cli music recommend guess\n\n# 4. 查看我的收藏\nkugou-cli music favorites\n\n# 5. 查看最近播放\nkugou-cli music recent\n\n# 6. 查看听歌统计\nkugou-cli music stats\n\n# 7. 查看抖音热歌榜\nkugou-cli music charts 52144\n\n# 8. 创建歌单\nkugou-cli music create-playlist \"我的空歌单\"\nkugou-cli music create-playlist \"我的批量歌单\" --songs \"32068120,233125060\"\n```\n",
+  "category": null,
+  "tags": [
+    "音乐"
+  ],
+  "topics": [
+    "音乐"
+  ],
+  "latest_version": "0.1.4",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 238,
+    "installs": 4,
+    "stars": 0,
+    "versions": 2,
+    "comments": 0
+  },
+  "created_at": "2026-06-17T09:20:08.387Z",
+  "updated_at": "2026-07-10T10:43:52.051Z",
+  "fetched_at": "2026-07-11T22:56:15.632Z",
+  "source_url": "https://clawhub.ai/shamo88/skills/kugou-skill"
+}

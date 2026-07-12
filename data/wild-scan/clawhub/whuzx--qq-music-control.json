@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "qq-music-control",
+  "display_name": "Qq Music Control",
+  "publisher": {
+    "handle": "whuzx",
+    "display_name": "BIgpanda",
+    "user_id": "s17dy8hpcf5fhq91f0ky8p56wh8abjkw"
+  },
+  "summary": "控制 macOS QQ 音乐客户端播放、暂停、下一首、随机播放等",
+  "description": "控制 macOS QQ 音乐客户端播放、暂停、下一首、随机播放等",
+  "content": "---\nname: qq-music-control\nversion: 1.0.0\ndescription: 控制 macOS QQ 音乐客户端播放、暂停、下一首、随机播放等\ntrigger:\n  - 播放音乐\n  - 放首歌\n  - 下一首\n  - 上一首\n  - 随机播放\n  - 暂停音乐\n  - QQ音乐\n  - 音量\n  - play music\n  - next song\n  - shuffle\n---\n\n# QQ 音乐控制 Skill\n\n通过 macOS MediaRemote 私有框架控制 QQ 音乐客户端，**无需 Accessibility 权限**。\n\n## 支持的命令\n\n| 用户说的 | 执行命令 | 说明 |\n|----------|----------|------|\n| \"播放音乐\" / \"放首歌\" / \"暂停\" | `play` | 切换播放/暂停 |\n| \"下一首\" / \"换一首\" | `next` | 跳到下一首 |\n| \"上一首\" | `prev` | 回到上一首 |\n| \"随机播放一首\" / \"随便来首歌\" | `random` | 随机跳转 1-5 次后播放 |\n| \"音量大一点\" | `volume-up` | 增加音量 |\n| \"音量小一点\" | `volume-down` | 减小音量 |\n| \"QQ音乐状态\" / \"QQ音乐在运行吗\" | `status` | 检查运行状态 |\n\n## 执行方式\n\n所有命令通过 Python 脚本执行。脚本仅使用 Python 标准库（ctypes, subprocess），任何 Python 3 均可运行：\n\n```bash\n# 优先使用系统 Python（任何 Python 3 都行）\npython3 ~/.workbuddy/skills/qq-music-control/scripts/qq_music.py <command>\n\n# 或使用 WorkBuddy 管理 Python\n~/.workbuddy/binaries/python/versions/3.13.12/bin/python3 ~/.workbuddy/skills/qq-music-control/scripts/qq_music.py <command>\n```\n\n命令列表：`play` `start` `pause` `next` `prev` `random` `volume-up` `volume-down` `status` `launch`\n\n## 技术原理\n\n- **控制方式**：通过 `MediaRemote.framework`（macOS 私有框架）的 `MRMediaRemoteSendCommand` 函数发送媒体控制命令\n- **命令常量**：Play=0, Pause=1, Toggle=2, Stop=3, Next=4, Previous=5, VolUp=6, VolDown=7\n- **优势**：不需要 Accessibility 权限、不需要 AppleScript 自动化权限，系统级媒体控制\n- **作用范围**：QQ 音乐作为当前 \"Now Playing\" 应用接收命令\n- **前提条件**：QQ 音乐已安装（`/Applications/QQMusic.app`），首次使用会自动启动\n- **无需安装任何依赖**：仅使用 ctypes（Python 内置）调用系统框架\n\n## 多机器使用\n\n此 Skill 安装在 `~/.workbuddy/skills/` 用户级别目录，所有项目通用。\n在多台 Mac 上各自安装一份，每台机器控制本机的 QQ 音乐客户端。\n只需确保：\n1. 每台 Mac 都安装了 QQ 音乐（`/Applications/QQMusic.app`）\n2. 每台 Mac 都有 Python 3（macOS 自带或通过 brew/miniforge 安装）\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 129,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T04:36:20.129Z",
+  "updated_at": "2026-07-11T04:36:20.129Z",
+  "fetched_at": "2026-07-11T22:48:55.461Z",
+  "source_url": "https://clawhub.ai/whuzx/skills/qq-music-control"
+}

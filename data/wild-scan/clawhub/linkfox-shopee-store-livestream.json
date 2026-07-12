@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "linkfox-shopee-store-livestream",
+  "display_name": "Shopee-店铺直播",
+  "publisher": {
+    "handle": "linkfox-ai",
+    "display_name": "linkfox-ai",
+    "user_id": "s171g8b6m2khwdy9ye8bxj0wx183vd4z"
+  },
+  "summary": "Shopee（虾皮）直播 Livestream（与 linkfox-shopee-store-auth 同系列），经 /shopee/developerProxy 转发 Shopee Open API Livestream 模块全部 25 个接口：create_session、start_session、add_...",
+  "description": "Shopee（虾皮）直播 Livestream（与 linkfox-shopee-store-auth 同系列），经 /shopee/developerProxy 转发 Shopee Open API Livestream 模块全部 25 个接口：create_session、start_session、add_item_list、get_session_detail、get_session_metric、post_comment、upload_image 等。当用户提到 Shopee 直播、Livestream、创建直播场次、直播商品、直播评论、session_id、upload_image 时触发。即使未明确提及\"直播\"，只要涉及已授权 Shopee 店铺的 Livestream 场次/商品/互动管理，也应触发。",
+  "content": "---\nname: linkfox-shopee-store-livestream\ndescription: Shopee（虾皮）直播 Livestream（与 linkfox-shopee-store-auth 同系列），经 /shopee/developerProxy 转发 Shopee Open API Livestream 模块全部 25 个接口：create_session、start_session、add_item_list、get_session_detail、get_session_metric、post_comment、upload_image 等。当用户提到 Shopee 直播、Livestream、创建直播场次、直播商品、直播评论、session_id、upload_image 时触发。即使未明确提及\"直播\"，只要涉及已授权 Shopee 店铺的 Livestream 场次/商品/互动管理，也应触发。\n---\n\n# Shopee 直播 Livestream\n\nShopee Open Platform **Livestream 模块**（25 个 API）。**依赖 `linkfox-shopee-store-auth`**：先取 `accessToken`，再经 **`POST /shopee/developerProxy`** 转发（`path` 须 `api/v2/livestream/...`）。\n\n## 调用方式\n\n- **API 端点**：`POST /shopee/developerProxy`（不同操作通过请求体区分；完整参数/响应/错误码见 `references/api.md`）\n- **Python 脚本**：`python scripts/livestream_api.py '<JSON 参数>' [--inline]`（可用脚本见上文脚本一览）\n- **成本约束**：本工具会消耗积分；失败/空结果不得自动换关键词、翻页或连续试探；需要继续检索时先向用户说明会产生额外消耗。\n\n**输出策略（脚本默认行为）**：\n- **始终**将完整响应写入 `<cwd>/linkfox/<YYYY-MM-DD>/<session>/data/<skill-name>-<timestamp>.json`（`<cwd>` 为脚本执行时的工作目录，在 Claude Code 里即当前项目目录；`<session>` 取自环境变量 `SESSION_ID`，按用户任务自动聚合；**禁止写入 /tmp**，当前目录不可写则报错）\n- 响应体 ≤ 8 KB：落盘后把完整 JSON 打印到 stdout\n- 响应体 > 8 KB：落盘后 stdout 只输出摘要（顶层字段、常见计数如 `total`/`costToken`、最大列表字段的长度 + 前 3 条样本）\n- 加 `--inline` 强制全量打印到 stdout（同样落盘）\n\n**读数据建议**：先看摘要判断是否足够；需要具体字段时优先用 `jq`或`ConvertFrom-Json` 从保存的 json 文件按需抽取，避免整份 JSON 进入上下文。\n\n## 官方参考\n\nLivestream 模块索引：[v2.livestream.upload_image](https://open.shopee.com/documents/v2/v2.livestream.upload_image?module=125&type=1)\n\n---\n\n## Prerequisites\n\n1. 运行 `python scripts/check_auth_dependency.py`；exit code **42** → 先安装 **`linkfox-shopee-store-auth`**。\n2. 店铺短视频 Video → `linkfox-shopee-store-video`；图片上传 Media → `linkfox-shopee-store-media`。\n\n## 可用脚本（25 个 API）\n\n| 脚本 | API | Method |\n|------|-----|--------|\n| `upload_image.py` | upload_image | POST |\n| `create_session.py` | create_session | POST |\n| `update_session.py` | update_session | POST |\n| `start_session.py` | start_session | POST |\n| `end_session.py` | end_session | POST |\n| `get_session_detail.py` | get_session_detail | GET |\n| `add_item_list.py` | add_item_list | POST |\n| `delete_item_list.py` | delete_item_list | POST |\n| `update_item_list.py` | update_item_list | POST |\n| `get_item_count.py` | get_item_count | GET |\n| `get_item_list.py` | get_item_list | GET |\n| `update_show_item.py` | update_show_item | POST |\n| `delete_show_item.py` | delete_show_item | POST |\n| `get_show_item.py` | get_show_item | GET |\n| `get_like_item_list.py` | get_like_item_list | GET |\n| `get_recent_item_list.py` | get_recent_item_list | GET |\n| `get_item_set_list.py` | get_item_set_list | GET |\n| `get_item_set_item_list.py` | get_item_set_item_list | GET |\n| `apply_item_set.py` | apply_item_set | POST |\n| `get_session_metric.py` | get_session_metric | GET |\n| `get_session_item_metric.py` | get_session_item_metric | GET |\n| `get_latest_comment_list.py` | get_latest_comment_list | GET |\n| `post_comment.py` | post_comment | POST |\n| `ban_user_comment.py` | ban_user_comment | POST |\n| `unban_user_comment.py` | unban_user_comment | POST |\n| `livestream_api.py` | 通用入口 | — |\n\n## Usage Scenarios\n\n### 1. 创建并开播\n1. `upload_image.py` 上传封面/素材\n2. `create_session.py` 创建场次\n3. `add_item_list.py` 添加商品\n4. `start_session.py` 开始直播\n\n### 2. 直播中管理\n1. `update_show_item.py` 切换展示商品\n2. `get_latest_comment_list.py` / `post_comment.py` 评论互动\n3. `get_session_metric.py` 查看数据\n\n## Not Applicable\n\n- 店铺授权 → `linkfox-shopee-store-auth`\n- 店铺短视频 Video → `linkfox-shopee-store-video`\n- 通用图片/视频上传 Media / MediaSpace → 对应 media skill\n- 商品 listing → `linkfox-shopee-store-product`\n\n**Feedback:** 见 `references/api.md`。\n\n---\n*For more high-quality, professional cross-border e-commerce skills, visit [LinkFox Skills](https://skill.linkfox.com/).*\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.2",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 147,
+    "installs": 1,
+    "stars": 0,
+    "versions": 3,
+    "comments": 0
+  },
+  "created_at": "2026-07-02T14:51:23.209Z",
+  "updated_at": "2026-07-10T04:48:49.101Z",
+  "fetched_at": "2026-07-11T23:05:48.969Z",
+  "source_url": "https://clawhub.ai/linkfox-ai/skills/linkfox-shopee-store-livestream"
+}

@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "piccc-ai-skills",
+  "display_name": "Piccc AI Skills",
+  "publisher": {
+    "handle": "xiaoyaocz",
+    "display_name": "xiaoyaocz",
+    "user_id": "s17d4nz97fhj3qj7erq9pnpe9d86hwph"
+  },
+  "summary": "Generate images, videos, and audio with Piccc AI (皮可AI), or query and download existing media tasks. Use when the user asks to create visual or audio media with Piccc AI, discover its current models or voices, check an asynchronous task, or download completed results. Do not use for editing existing",
+  "description": "Generate images, videos, and audio with Piccc AI (皮可AI), or query and download existing media tasks. Use when the user asks to create visual or audio media with Piccc AI, discover its current models or voices, check an asynchronous task, or download completed results. Do not use for editing existing local media.",
+  "content": "---\nname: piccc-ai\ndescription: Generate images, videos, and audio with Piccc AI (皮可AI), or query and download existing media tasks. Use when the user asks to create visual or audio media with Piccc AI, discover its current models or voices, check an asynchronous task, or download completed results. Do not use for editing existing local media.\n---\n\n# Piccc AI\n\nUse `{baseDir}/scripts/piccc.mjs` for every Piccc AI request. `{baseDir}` is the directory containing this file.\n\n## Before the first request\n\nRun `node {baseDir}/scripts/piccc.mjs auth status`. If it reports `authenticated: false`, run `node {baseDir}/scripts/piccc.mjs auth login`, give the user the displayed authorization link and verification code, and wait for the command to finish. Never ask the user to create, copy, or paste an API Key.\n\n## Workflow\n\n1. Unless the user names a model or asks for higher quality, run `models TYPE --economy` and use its selected model and defaults. Prefer lower cost over speed or quality.\n2. Let explicit user requirements override economy defaults. Otherwise use one output, the lowest supported resolution and quality, the shortest supported video duration, no audio or web search, and the lowest supported audio sample rate.\n3. If `special_offer` is true or the selected model name or description says `特价`, `折扣`, `special offer`, `discount`, or `promo`, tell the user before submission: “特价模型可能生成较慢、稳定性较差。”\n4. Select only values advertised by the live model response. Never invent model IDs, voice IDs, formats, ratios, resolutions, modes, or durations.\n5. Put long or multiline prompts in a UTF-8 file and use `--prompt-file`.\n6. When the user expects a finished file, use `--wait --output-dir DIR` in the initial request. Do not create another task while waiting.\n7. On timeout, return the task ID and latest status so the same task can be resumed. Treat `completed`, `failed`, and `cancelled` as terminal.\n8. For audio, call the initial 10 credits a precharge and use `actual_cost` from the completed task as the final cost.\n\n## Commands\n\n```bash\nnode {baseDir}/scripts/piccc.mjs models image\nnode {baseDir}/scripts/piccc.mjs models video\nnode {baseDir}/scripts/piccc.mjs models audio\nnode {baseDir}/scripts/piccc.mjs models image --economy\nnode {baseDir}/scripts/piccc.mjs voices --model MODEL_ID --search Chinese\n\nnode {baseDir}/scripts/piccc.mjs generate image --model MODEL_ID --prompt-file PROMPT.txt --wait --output-dir OUTPUT_DIR\nnode {baseDir}/scripts/piccc.mjs generate video --model MODEL_ID --prompt-file PROMPT.txt --wait --output-dir OUTPUT_DIR\nnode {baseDir}/scripts/piccc.mjs generate audio --model MODEL_ID --prompt-file SCRIPT.txt --wait --output-dir OUTPUT_DIR\n\nnode {baseDir}/scripts/piccc.mjs task get TASK_ID\nnode {baseDir}/scripts/piccc.mjs task wait TASK_ID --output-dir OUTPUT_DIR\nnode {baseDir}/scripts/piccc.mjs tasks --type image --status completed --page 1 --page-size 20\nnode {baseDir}/scripts/piccc.mjs auth login\nnode {baseDir}/scripts/piccc.mjs auth status\nnode {baseDir}/scripts/piccc.mjs auth logout\nnode {baseDir}/scripts/piccc.mjs --help\n```\n\nRead [references/api.md](references/api.md) when selecting generation parameters or handling task responses.\n\n## Guardrails\n\n- Ask for clarification only when a missing creative choice would materially change the result.\n- Do not raise resolution, quality, duration, output count, audio, or web search above the economy defaults unless the user requests it or the task requires it.\n- Always surface the special-offer reliability warning before creating a paid task; a script warning is only a backup and does not replace telling the user.\n- Never claim success before status is `completed` and at least one output URL exists.\n- Never expose the API Key in command arguments, prompts, logs, or project files. Let the script manage its private credentials file.\n- Always use the authorization command for first-time setup; do not teach environment-variable setup unless the user explicitly requests it.\n- Do not create a replacement task while checking status; task reads must not trigger new charges.\n- Preserve the API response when reporting parameter, content-policy, billing, or upstream failures.\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "0.1.2",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 119,
+    "installs": 0,
+    "stars": 0,
+    "versions": 3,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T11:15:33.991Z",
+  "updated_at": "2026-07-11T13:49:32.483Z",
+  "fetched_at": "2026-07-11T22:44:20.125Z",
+  "source_url": "https://clawhub.ai/xiaoyaocz/skills/piccc-ai-skills"
+}

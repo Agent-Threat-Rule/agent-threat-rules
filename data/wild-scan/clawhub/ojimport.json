@@ -1,0 +1,34 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "ojimport",
+  "display_name": "搬题姬",
+  "publisher": {
+    "handle": "fslong520",
+    "display_name": "fslong",
+    "user_id": "s179dxbepyx3dhgg6vsaj80yt583nxj7"
+  },
+  "summary": "从 OJ 平台搬运题目（含AtCoder/Codeforces等），生成标准化题目文件包；也可根据用户提供的题目仅生成测试数据。用户说\"搬运\"\"搬题\"\"搬道题\"\"导入题目\"均适用",
+  "description": "从 OJ 平台搬运题目（含AtCoder/Codeforces等），生成标准化题目文件包；也可根据用户提供的题目仅生成测试数据。用户说\"搬运\"\"搬题\"\"搬道题\"\"导入题目\"均适用",
+  "content": "---\nname: 搬题姬\nversion: 2.5.3\ndescription: 从 OJ 平台搬运题目（含AtCoder/Codeforces等），生成标准化题目文件包；也可根据用户提供的题目仅生成测试数据。用户说\"搬运\"\"搬题\"\"搬道题\"\"导入题目\"均适用\nallowed-tools:\n  - Read\n  - Write\n  - Edit\n  - AskUserQuestion\n  - BrowserUse\n\nmetadata:\n  slug: ojimport\n  trigger: OJ题目、搬题、算法题搬运、搬运题目、搬道题、搬一下、AtCoder、Codeforces、GESP、题目导入、测试点、生成数据、测试数据\n---\n\n## Keywords\n\nOJ题目、搬题、搬运、搬运题目、算法题搬运、搬道题、搬一下、AtCoder、Codeforces、GESP、测试点、测试数据\n\n## Summary\n\n自OJ搬题，生标准化题包（题面+标程+数据）；或依用户所供，仅生测试数据（.in/.out）。\n\n## Strategy\n\n### 基路径\n\n自动检测用户桌面路径（支持 Linux/macOS/Windows），工作目录创建于桌面。\n步骤中 `{WORK_DIR}` 即 `{BASE_DIR}/work_{PID}_{标题简写}`，其中 `{BASE_DIR}` 为 `detect_desktop()` 检测结果。\n检测逻辑见 `steps/01-init.md`。\n\n### 参考文档\n\n生成测试数据前，先读 **`references/testdata-design.md`**，按题目类型选取边界清单与 Hack 策略。\n所有步骤文件（`07-testdata.md`）中的测试数据细节均引用该文档。\n\n### 单题搬运\n\n1. 读 steps/00-detect-url.md → 辨类型\n2. 初始化：`BASE_DIR=$(detect_desktop); cp -r question $BASE_DIR/work_{PID}_{标题简写}`（详 01-init.md）\n3. 取题面：按来源\n   - URL：urlgo 访问 → snapshot → 解析（urlgo不可用时用 BrowserUse/WebFetch）\n   - 文件：读 steps/09-from-file.md → 自本地文件取题面\n   - 文本：读 steps/10-from-text.md → 自用户文本取题面\n4. 读 steps/03-gesp.md → 定等级\n5. 读 steps/04-problem.md → 生题面\n6. 读 steps/05-config.md → 写配置\n7. 实现标程 std.cpp\n8. 读 steps/07-testdata.md → 生数据（⚠️ 只改 mkin.h，勿动 mkdata.cpp）\n9. 读 steps/08-audit.md → 审计（文件完整性、模板一致、GESP等级、分值的复核）\n10. 打包：`zip -r $BASE_DIR/{PID}_{标题简写}.zip $BASE_DIR/work_{PID}_{标题简写}`（审计未过不打包）\n\n### ⚠️ 比赛搬运（必先创题面汇总文件）\n\n1. 读 steps/contest/01-list.md → 创题面汇总文件 `{contest_id}.md`\n2. 读 steps/contest/02-problem.md → **逐题译之，追加写入汇总文件**\n3. 读 steps/contest/03-move.md → **自文件读题面**，逐题生完整题包（含审计）\n4. **打包合集**：所有题目 zip 打包到同一 `{contest_id}.zip` 内，不散包\n\n### 生成测试点\n\n用户已有完整题面，仅需测试数据（.in/.out + config.yaml）。\n\n**触发词**：用户言\"生成测试点\"、\"出测试数据\"、\"想测试数据\"、\"写测试数据\"等。\n\n**流程：**\n\n1. 读 steps/00-detect-url.md → 辨输入类型\n2. 初始化：`BASE_DIR=$(detect_desktop); cp -r question $BASE_DIR/work_{PID}_{标题简写}`（详 01-init.md）\n3. 取题面信息：\n   - URL：urlgo/BrowserUse/WebFetch 访问并解析\n   - 文件：读 steps/09-from-file.md 取题面（仅内部参考，不生正式 problem_zh.md）\n   - 文本：读 steps/10-from-text.md 自文本取题面\n4. 读 steps/07-testdata.md → **以「仅测点」模式走流程：实现标程 + 生测试数据 + 打包 testdata.zip + 交付**\n5. **跳过**：题面格式化（04-problem.md）、GESP 定级（03-gesp.md）、配置写入（05-config.md）、审计（08-audit.md）、全局打包（09-package.md）\n\n## AVOID\n\n- AVOID 不读步骤文档即执行\n- ⚠️ **AVOID 跳过审计（08-audit.md）：题包生成后必审计，未过不打包**\n- ⚠️ **AVOID 不按模板格式**\n- AVOID 测试数据只写样例\n- AVOID GESP等级乱判\n- AVOID 忘清理工作目录（`work_*`）\n- AVOID PID 格式错误（用小写 abc451a）\n- ⚠️ **AVOID tag 只写 GESP 等级：必含 1~3 个知识点标签 + 1 个等级标签，禁单标签敷衍**\n- ⚠️ **AVOID 自对话上下文记忆题面，必自文件读取**\n- ⚠️ **AVOID 生成数据时修改 mkdata.cpp，只许修改 mkin.h**\n- ⚠️ **AVOID 测试数据缺少特殊性质和 hack 数据**\n- ⚠️ **AVOID 写完 std 不验样例：所有样例输入逐一喂入，输出须与题面完全一致，全过方可进入数据生成**\n- ⚠️ **AVOID 修改样例：样例输入/输出必原样复制，禁增删改任何字符**\n- ⚠️ **AVOID 删除图片链接：题面中 `![](url)`、`<img>` 标签等所有图片语法必原样保留**\n- ⚠️ **AVOID 删除示意图：题面原有示意图、表格、公式必完整保留**\n- ⚠️ **生成测试点时 AVOID 生成 problem_zh.md、problem.yaml**\n- ⚠️ **生成测试点时 AVOID 全局打包（09-package.md 之整个工作目录 zip），只打包 testdata/ 下文件**\n- ⚠️ **生成测试点时 AVOID 跳过 std.cpp：无标程则 .out 不出**\n- ⚠️ **生成测试点时 AVOID 只写样例数据：25 组全覆盖（含 Hack）**\n- ⚠️ **生成测试点时 AVOID 交付前不验证：必查 .in 格式、.out 与样例一致、文件成对存在**\n\n---\n\n## 入口\n\n读 steps/00-detect-url.md\n",
+  "category": null,
+  "tags": [
+    "测试"
+  ],
+  "topics": [
+    "测试"
+  ],
+  "latest_version": "2.5.3",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 1651,
+    "installs": 41,
+    "stars": 6,
+    "versions": 34,
+    "comments": 0
+  },
+  "created_at": "2026-04-16T13:15:59.205Z",
+  "updated_at": "2026-07-11T14:57:04.754Z",
+  "fetched_at": "2026-07-11T22:43:02.858Z",
+  "source_url": "https://clawhub.ai/fslong520/skills/ojimport"
+}

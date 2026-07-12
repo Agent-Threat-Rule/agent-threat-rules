@@ -1,0 +1,42 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "agent-bark-notify",
+  "display_name": "Agent Bark Notify",
+  "publisher": {
+    "handle": "lumen01",
+    "display_name": "二狗子你变了",
+    "user_id": "s17dv4tf5j8ta3eh6hph7m1hns8a6ts5"
+  },
+  "summary": "Use when the user asks an agent to send a Bark push notification, notify them from the terminal, test Bark notification delivery, or use a Bark notification...",
+  "description": "Use when the user asks an agent to send a Bark push notification, notify them from the terminal, test Bark notification delivery, or use a Bark notification skill.",
+  "content": "---\nname: bark-notify\ndescription: Use when the user asks an agent to send a Bark push notification, notify them from the terminal, test Bark notification delivery, or use a Bark notification skill.\n---\n\n# Bark Notify\n\n## Overview\n\nUse this skill to send Bark notifications from an agent. The bundled script is `scripts/bark-notify.py`, resolved relative to this `SKILL.md`.\n\n## Safety\n\n- Never print, commit, or quote `BARK_KEY`.\n- Do not put Bark keys in repository files.\n- Prefer local private config at `~/.config/bark-notify.env`.\n- Do not put a real key after `--key` in a shell command: it can be retained in shell history or exposed to local process inspection. Use the private config file or `--key-stdin` for setup.\n- Use `--agent <name>` for agent-originated pushes so group/icon metadata can come from config.\n- Only pass `--server`, `--key`, `--group`, or `--icon` when the user explicitly asks to override defaults.\n- If command output could include sensitive config, summarize it instead of pasting raw output.\n\n## Send\n\nRun the bundled script from this skill directory:\n\n```bash\npython3 scripts/bark-notify.py \"Title\" \"Body\"\npython3 scripts/bark-notify.py Title Body words without quoting the body\npython3 scripts/bark-notify.py --agent codex --level active \"Build finished\" \"Codex completed the requested task\"\npython3 scripts/bark-notify.py --agent codex --level passive \"Progress update\" \"Tests are running\"\n```\n\nUse explicit overrides only when requested:\n\n```bash\npython3 scripts/bark-notify.py --agent codex --group Custom --icon \"https://example.com/custom.png\" \"Title\" \"Body\"\n```\n\n## Notification Level\n\nChoose the lowest Bark interruption level that fits the situation:\n\n| Situation | Level |\n| --- | --- |\n| Progress update, background status, FYI | `passive` |\n| Requested task completed, or user explicitly asked for a normal notification | `active` |\n| Agent is blocked and needs user input soon | `timeSensitive` |\n| Deployment failed, service is unavailable, long task crashed | `timeSensitive` |\n| User explicitly requested an emergency/critical alert | `critical` |\n\nRules:\n\n- Default to `active` when notifying that a user-requested task is complete. It is a normal visible notification.\n- Use `passive` for intermediate progress updates that should not light up the screen.\n- Use `timeSensitive` only when the user should notice promptly.\n- Use `critical` only when explicitly requested or clearly safety/incident critical; do not use it for routine task failures.\n- If the user specifies a level, obey the user.\n\n## Configure\n\nCreate `~/.config/bark-notify.env` manually when possible. It is private local configuration and the script saves it with mode `0600`:\n\n```bash\nmkdir -p ~/.config\nchmod 700 ~/.config\n```\n\nTo initialize it without putting the key in shell history, pass the key through standard input:\n\n```bash\nread -rs BARK_KEY; printf '\\n'\nprintf '%s\\n' \"$BARK_KEY\" | python3 scripts/bark-notify.py --save-config --key-stdin\nunset BARK_KEY\n```\n\nAgent metadata is optional and lives outside the repository at `~/.config/bark-notify-agents.json`:\n\n```json\n{\n  \"codex\": {\n    \"group\": \"Codex\",\n    \"icon\": \"https://example.com/icons/codex.png\"\n  }\n}\n```\n\nBark icons must be URLs reachable by the receiving device. Local `.app`, `.icns`, or filesystem paths are not valid notification icon values. If no icon URL is configured, omit the icon and still send the notification.\n\n## Check\n\n```bash\npython3 scripts/bark-notify.py --help\npython3 scripts/bark-notify.py --ping\npython3 scripts/bark-notify.py --doctor\npython3 scripts/bark-notify.py --dry-run --agent codex --level active \"Done\" \"Ready\"\n```\n\n`--doctor` reports the selected server, config-file permissions, agent/group/icon resolution, and ping result without printing the key. `--dry-run` prints the final request payload with `device_key` masked and never sends a notification.\n\nIf sending fails, first check `--doctor`; then inspect the reported server/network status. Preserve HTTP status and short messages without exposing credentials.\n",
+  "category": null,
+  "tags": [
+    "bark",
+    "claudecode",
+    "codex",
+    "opencode",
+    "notify"
+  ],
+  "topics": [
+    "bark",
+    "claudecode",
+    "codex",
+    "opencode",
+    "notify"
+  ],
+  "latest_version": "0.1.1",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 247,
+    "installs": 0,
+    "stars": 0,
+    "versions": 2,
+    "comments": 0
+  },
+  "created_at": "2026-07-09T14:45:09.518Z",
+  "updated_at": "2026-07-10T13:31:16.538Z",
+  "fetched_at": "2026-07-11T22:55:17.507Z",
+  "source_url": "https://clawhub.ai/lumen01/skills/agent-bark-notify"
+}

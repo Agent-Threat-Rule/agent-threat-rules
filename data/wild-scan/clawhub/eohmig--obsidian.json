@@ -1,0 +1,34 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "obsidian",
+  "display_name": "Obsidian",
+  "publisher": {
+    "handle": "eohmig",
+    "display_name": "eohmig",
+    "user_id": "s171t271r1meje79y24tb1yy1d83err8"
+  },
+  "summary": "Work with Obsidian vaults (plain Markdown notes) and automate via obsidian-cli.",
+  "description": "Work with Obsidian vaults (plain Markdown notes) and automate via obsidian-cli.",
+  "content": "---\nname: obsidian\ndescription: Work with Obsidian vaults (plain Markdown notes) and automate via obsidian-cli.\nhomepage: https://help.obsidian.md\nmetadata: {\"clawdbot\":{\"emoji\":\"💎\",\"requires\":{\"bins\":[\"obsidian-cli\"]},\"install\":[{\"id\":\"brew\",\"kind\":\"brew\",\"formula\":\"yakitrak/yakitrak/obsidian-cli\",\"bins\":[\"obsidian-cli\"],\"label\":\"Install obsidian-cli (brew)\"}]}}\n---\n\n# Obsidian\n\nObsidian vault = a normal folder on disk.\n\nVault structure (typical)\n- Notes: `*.md` (plain text Markdown; edit with any editor)\n- Config: `.obsidian/` (workspace + plugin settings; usually don’t touch from scripts)\n- Canvases: `*.canvas` (JSON)\n- Attachments: whatever folder you chose in Obsidian settings (images/PDFs/etc.)\n\n## Find the active vault(s)\n\nObsidian desktop tracks vaults here (source of truth):\n- `~/Library/Application Support/obsidian/obsidian.json`\n\n`obsidian-cli` resolves vaults from that file; vault name is typically the **folder name** (path suffix).\n\nFast “what vault is active / where are the notes?”\n- If you’ve already set a default: `obsidian-cli print-default --path-only`\n- Otherwise, read `~/Library/Application Support/obsidian/obsidian.json` and use the vault entry with `\"open\": true`.\n\nNotes\n- Multiple vaults common (iCloud vs `~/Documents`, work/personal, etc.). Don’t guess; read config.\n- Avoid writing hardcoded vault paths into scripts; prefer reading the config or using `print-default`.\n\n## obsidian-cli quick start\n\nPick a default vault (once):\n- `obsidian-cli set-default \"<vault-folder-name>\"`\n- `obsidian-cli print-default` / `obsidian-cli print-default --path-only`\n\nSearch\n- `obsidian-cli search \"query\"` (note names)\n- `obsidian-cli search-content \"query\"` (inside notes; shows snippets + lines)\n\nCreate\n- `obsidian-cli create \"Folder/New note\" --content \"...\" --open`\n- Requires Obsidian URI handler (`obsidian://…`) working (Obsidian installed).\n- Avoid creating notes under “hidden” dot-folders (e.g. `.something/...`) via URI; Obsidian may refuse.\n\nMove/rename (safe refactor)\n- `obsidian-cli move \"old/path/note\" \"new/path/note\"`\n- Updates `[[wikilinks]]` and common Markdown links across the vault (this is the main win vs `mv`).\n\nDelete\n- `obsidian-cli delete \"path/note\"`\n\nPrefer direct edits when appropriate: open the `.md` file and change it; Obsidian will pick it up.\n",
+  "category": null,
+  "tags": [
+    "obsidian"
+  ],
+  "topics": [
+    "obsidian"
+  ],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 48,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-06-26T01:59:07.123Z",
+  "updated_at": "2026-06-26T01:59:07.123Z",
+  "fetched_at": "2026-07-11T23:12:36.710Z",
+  "source_url": "https://clawhub.ai/eohmig/skills/obsidian"
+}

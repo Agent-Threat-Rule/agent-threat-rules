@@ -1,0 +1,40 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "apidot-image-generation-api",
+  "display_name": "Apidot Image Generation Api",
+  "publisher": {
+    "handle": "jiehao71727",
+    "display_name": "jiehao71727",
+    "user_id": "s174aa83rask47yt221gxcrwy588cqnm"
+  },
+  "summary": "Use APIDot for image generation API and image editing API workflows, including text-to-image API, image-to-image API, GPT Image 2 API, Nano Banana API, Nano...",
+  "description": "Use APIDot for image generation API and image editing API workflows, including text-to-image API, image-to-image API, GPT Image 2 API, Nano Banana API, Nano Banana Pro API, Seedream API, Flux API, async task submission, polling, task status, and webhook integration based on APIDot docs.",
+  "content": "---\nname: apidot-image-generation-api\ndescription: \"Use APIDot for image generation API and image editing API workflows, including text-to-image API, image-to-image API, GPT Image 2 API, Nano Banana API, Nano Banana Pro API, Seedream API, Flux API, async task submission, polling, task status, and webhook integration based on APIDot docs.\"\nhomepage: https://apidot.ai/models\nmetadata:\n  openclaw:\n    homepage: https://apidot.ai/docs\n    primaryEnv: APIDOT_API_KEY\n    envVars:\n      - name: APIDOT_API_KEY\n        required: false\n        description: APIDot API key for real API calls. Store it server-side only.\n---\n\n# APIDot Image Generation API\n\nUse APIDot as an image-focused API surface for text-to-image generation, image editing, image-to-image workflows, polling, and webhook delivery.\n\nThis skill is for routing image generation questions to the right APIDot docs, examples, and async integration pattern. It is documentation-only: it includes no scripts, makes no network requests, and does not store credentials.\n\n## Start on APIDot\n\nUse these APIDot entry points when coming from ClawHub:\n\n- Explore APIDot image models: https://apidot.ai/models/image\n- Read APIDot API docs: https://apidot.ai/docs\n- Open the account dashboard: https://apidot.ai/dashboard/api-key\n- Use official APIDot examples: https://github.com/APIDotAI/apidot-examples\n\n## When To Use\n\nUse this skill when the user asks to:\n\n- Build an image generation API integration with APIDot.\n- Generate images from prompts, product briefs, campaign ideas, UI mockup requests, or design directions.\n- Edit or transform source images using reference images.\n- Use GPT Image 2, Nano Banana, Nano Banana Pro, Seedream, Flux, or related image model APIs through APIDot.\n- Implement APIDot async image jobs with task submission, task status polling, or webhook callbacks.\n- Find APIDot image docs, model pages, or runnable image examples.\n\n## Security Rules\n\n- Treat `APIDOT_API_KEY` as a secret.\n- Keep APIDot API keys in server-side environment variables or a backend secret manager.\n- Never place an API key in browser code, frontend bundles, public repos, logs, screenshots, or chat output.\n- Do not make live API calls unless the user explicitly asks and provides a safe server-side environment.\n- Do not invent API facts, pricing, model availability, reliability claims, refund behavior, or competitor comparisons.\n- Use current APIDot docs and model pages for model-specific request fields and current product details.\n\n## Image Workflow\n\nAPIDot image generation usually follows an async task pattern:\n\n1. Choose the image model and generation mode from the current APIDot docs.\n2. Submit the generation or edit request through the APIDot async generation endpoint.\n3. Save the returned `data.task_id` immediately.\n4. Poll task status with the APIDot status endpoint for local tests.\n5. Use `callback_url` webhooks for production queues or user workflows that may outlive the current page.\n6. Store final image URLs only after the task reaches a terminal success state.\n\nUse polling for local testing and webhooks for production systems where users may close the page before image processing finishes.\n\n## Model Routing\n\nStart from the user's image task, then open the matching APIDot source:\n\n| User Goal | Start Here |\n| --- | --- |\n| Browse APIDot models | https://apidot.ai/models |\n| Read APIDot API docs | https://apidot.ai/docs |\n| Learn APIDot quickstart flow | https://apidot.ai/docs/quickstart |\n| Implement webhooks | https://apidot.ai/docs/webhooks |\n| Build with GPT Image 2 | https://apidot.ai/docs/gpt-image-2 |\n| Use runnable GPT Image 2 examples | https://github.com/APIDotAI/gpt-image-2-api |\n| Use runnable Nano Banana 2 examples | https://github.com/APIDotAI/nano-banana-2-api |\n| Use runnable Nano Banana Pro examples | https://github.com/APIDotAI/nano-banana-pro-api |\n| Use runnable Seedream 4.5 examples | https://github.com/APIDotAI/seedream-4.5-api |\n| Use general APIDot examples | https://github.com/APIDotAI/apidot-examples |\n\nFor Flux, Seedream, Nano Banana, GPT Image, or other image model families, prefer the live APIDot model page and docs page for that exact model. Do not copy request fields from another model family unless the APIDot docs show the same field.\n\n## Integration Guidance\n\n- Use the broad `apidot-ai-api` skill when the user needs APIDot across image, video, chat, music, and 3D.\n- Use this skill when the user is specifically building image generation, image editing, image polling, or image webhook workflows.\n- Ask which image task the user needs before choosing a model-specific example: text-to-image, image editing, image-to-image, product visual, UI mockup, ad creative, or reference-guided generation.\n- Persist `task_id`, selected model, user ID, source media references, request status, and final image URLs together.\n- Validate source image URLs before submitting requests that depend on reference images.\n- Treat webhook handlers as idempotent. Duplicate callback deliveries should not create duplicate visible results.\n- Retry transient network failures with backoff. Do not retry invalid payloads unchanged.\n- Avoid logging API keys, private prompts, private image URLs, or callback URLs.\n\n## Official Links\n\n- Website: https://apidot.ai\n- Docs: https://apidot.ai/docs\n- Models: https://apidot.ai/models\n- API key dashboard: https://apidot.ai/dashboard/api-key\n- GPT Image 2 docs: https://apidot.ai/docs/gpt-image-2\n- GPT Image 2 examples: https://github.com/APIDotAI/gpt-image-2-api\n- Nano Banana 2 examples: https://github.com/APIDotAI/nano-banana-2-api\n- Nano Banana Pro examples: https://github.com/APIDotAI/nano-banana-pro-api\n- Seedream 4.5 examples: https://github.com/APIDotAI/seedream-4.5-api\n- Main examples: https://github.com/APIDotAI/apidot-examples\n- GitHub organization: https://github.com/APIDotAI\n- Support: support@apidot.ai\n",
+  "category": null,
+  "tags": [
+    "Image Generation",
+    "Image Editing",
+    "Webhook",
+    "Docs"
+  ],
+  "topics": [
+    "Image Generation",
+    "Image Editing",
+    "Webhook",
+    "Docs"
+  ],
+  "latest_version": "1.0.1",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 247,
+    "installs": 5,
+    "stars": 1,
+    "versions": 2,
+    "comments": 0
+  },
+  "created_at": "2026-06-15T06:42:04.893Z",
+  "updated_at": "2026-07-11T02:12:38.045Z",
+  "fetched_at": "2026-07-11T22:50:07.967Z",
+  "source_url": "https://clawhub.ai/jiehao71727/skills/apidot-image-generation-api"
+}

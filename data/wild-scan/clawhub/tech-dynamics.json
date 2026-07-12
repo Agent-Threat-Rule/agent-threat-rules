@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "tech-dynamics",
+  "display_name": "tech-dynamics",
+  "publisher": {
+    "handle": "terrycarter1985",
+    "display_name": "terrycarter1985",
+    "user_id": "s17brwfrqyjhbjgadkvar20h8x8492g8"
+  },
+  "summary": "Retrieve and summarize latest updates from global technology companies (e.g., M&A, leadership, product launches, regulatory news) via public web search. Gene...",
+  "description": "Retrieve and summarize latest updates from global technology companies (e.g., M&A, leadership, product launches, regulatory news) via public web search. Generates structured briefings with required sections: topic overview, key updates, potential impact/risks, sources. No API key needed.",
+  "content": "---\nname: tech-dynamics\ndescription: \"Retrieve and summarize latest updates from global technology companies (e.g., M&A, leadership, product launches, regulatory news) via public web search. Generates structured briefings with required sections: topic overview, key updates, potential impact/risks, sources. No API key needed.\"\nhomepage: https://techcrunch.com, https://www.theverge.com\nmetadata:\n  {\n    \"openclaw\":\n      {\n        \"emoji\": \"🌐\",\n        \"requires\": { \"bins\": [\"curl\", \"grep\"] },\n        \"install\":\n          [\n            {\n              \"id\": \"apt\",\n              \"kind\": \"apt\",\n              \"packages\": [\"curl\", \"grep\"],\n              \"bins\": [\"curl\", \"grep\"],\n              \"label\": \"Install curl and grep (apt)\",\n            },\n          ],\n      },\n  }\n---\n\n# Tech Dynamics Skill\n\nGet latest updates on global technology companies and create structured briefings.\n\n## When to Use\n\n✅ **USE this skill when:**\n\n- \"What's the latest with Apple's M&A?\"\n- \"New leadership at Google?\"\n- \"Tech company regulatory news this week?\"\n- \"Structured briefing on global tech dynamics\"\n\n## When NOT to Use\n\n❌ **DON'T use this skill when:**\n\n- Historical data (older than 2 weeks) → use archives\n- Deep financial analysis → use Bloomberg/Yahoo Finance\n- hyper-local tech news → use local tech blogs\n- Personalized product recommendations → use review sites\n\n## Companies\n\nFocus on global top 20 tech companies (Apple, Alphabet, Microsoft, Amazon, Meta, etc.)\n\n## Commands\n\n### Structured Briefing\n\n```bash\n# One-line search + generate briefing (output: markdown)\ncurl -s \"https://www.techcrunch.com/search?q=tech+companies\" | grep -A 5 \"Trending\" | head -50 | \\\nwhile read -r line; do\n  echo \"### Topic Overview\nLatest updates from top 5 global tech companies (Apple, Alphabet, Microsoft, Amazon, Meta)\n---\n### Key Updates\n- Apple: Announced M&A with AI startup CoreModel\n- Alphabet: New leadership for Cloud division\n- Microsoft: Regulatory update on anti-trust\n- Amazon: New fulfillment center in EU\n- Meta: Product refresh for Oculus\n---\n### Potential Impact/Risks\n- Apple M&A: May reduce competition in AI space\n- Alphabet leadership: Could delay Cloud products\n- Microsoft anti-trust: Possible fines up to $1B\n- Amazon EU: May raise shipping costs\n- Meta Oculus: May increase market share\n---\n### Information Sources\n- TechCrunch (https://techcrunch.com)\n- The Verge (https://theverge.com)\n---\n\"\ndone\n```\n\n### Query-Specific Briefing\n\n```bash\n# Query for a specific company\ncurl -s \"https://www.techcrunch.com/search?q=Apple+M&A\" | grep -A 3 \"Apple\" | head -30 | \\\nwhile read -r line; do\n  echo \"### Topic Overview\nApple's recent M&A activity in AI\n---\n### Key Updates\n- Announced acquisition of CoreModel, an AI startup\n- Expected close in Q3 2026\n---\n### Potential Impact/Risks\n- May accelerate Apple's AI development\n- Potential anti-trust scrutiny\n---\n### Information Sources\n- TechCrunch (https://techcrunch.com)\n---\n\"\ndone\n```\n\n## Notes\n\n- Uses TechCrunch and The Verge as primary sources\n- Rate limited; don't spam requests\n- Focus on the past 7-10 days of updates\n- All briefings are structured with the required sections\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 136,
+    "installs": 1,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T00:48:02.658Z",
+  "updated_at": "2026-07-10T00:48:02.658Z",
+  "fetched_at": "2026-07-11T23:10:15.530Z",
+  "source_url": "https://clawhub.ai/terrycarter1985/skills/tech-dynamics"
+}

@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "video-factory",
+  "display_name": "Video Factory",
+  "publisher": {
+    "handle": "1918750",
+    "display_name": "1918750",
+    "user_id": "s17c2az2zccnwadx61zxrv3cbh8abw59"
+  },
+  "summary": "XZZ短视频快速生成 - 全自动短视频批量生产流水线。输入参考视频加本地素材加BGM，自动完成文案转录、字幕分析、TTS配音（MiniMax优先Edge-TTS后备）、素材去重选段、FFmpeg合成、字幕精确同步和强调词高亮。触发词：XZZ、生成短视频、批量做视频、视频混剪、参考视频生成、XZZ视频。单条命令完成...",
+  "description": "XZZ短视频快速生成 - 全自动短视频批量生产流水线。输入参考视频加本地素材加BGM，自动完成文案转录、字幕分析、TTS配音（MiniMax优先Edge-TTS后备）、素材去重选段、FFmpeg合成、字幕精确同步和强调词高亮。触发词：XZZ、生成短视频、批量做视频、视频混剪、参考视频生成、XZZ视频。单条命令完成全流程。",
+  "content": "---\nname: xzz-video-factory\ndescription: \"XZZ短视频快速生成 - 全自动短视频批量生产流水线。输入参考视频加本地素材加BGM，自动完成文案转录、字幕分析、TTS配音（MiniMax优先Edge-TTS后备）、素材去重选段、FFmpeg合成、字幕精确同步和强调词高亮。触发词：XZZ、生成短视频、批量做视频、视频混剪、参考视频生成、XZZ视频。单条命令完成全流程。\"\nagent_created: true\n---\n\n# XZZ短视频快速生成\n\n## 概述\n\n从一条参考视频出发，用本地素材库自动批量生成风格一致的竖屏短视频。\n每条视频文案相同、音频由TTS生成，但使用不同的素材片段和字幕字体，确保不重复。\n\n核心流程：参考视频分析 → 文案自动校正 → 逐句TTS → 素材去重选段 → FFmpeg合成\n\n## 触发方式\n\n```\npython pipeline/make_videos.py --ref \"参考视频路径.mp4\"\n```\n\n或分步执行:\n```\npython pipeline/analyze_ref.py \"参考视频路径.mp4\"   # Step 1: 分析\npython pipeline/make_videos.py                        # Step 2: 生成\n```\n\n## 前置准备\n\n### 1. 环境配置\n\n确认 FFmpeg 路径在 `make_videos.py` 顶部正确:\n```python\nFFMPEG = r\"C:\\ffmpeg-8.1.2-full_build\\bin\\ffmpeg.exe\"\n```\n\n安装 Python 依赖:\n```bash\npip install faster-whisper aiohttp pypinyin jieba pillow numpy edge-tts python-dotenv\n```\n\n### 2. API 密钥\n\n创建 `.env` 文件:\n```\nMINIMAX_API_KEY=sk-api-xxx\n```\nMiniMax 不可用时自动回退到 Edge-TTS（免费，但可能被限流）。\n\n### 3. 素材准备\n\n- 本地视频素材: 放入一个目录，脚本自动扫描横屏素材并裁剪为9:16竖屏\n- BGM音频: 从视频文件提取音频作为背景音乐\n- 路径在 `make_videos.py` 中配置: `FOOTAGE_DIR`, `BGM_DIR`\n\n## 工作流详情\n\n### 阶段1: 参考视频分析 (analyze_ref.py)\n\n自动完成:\n1. 提取音频，用 faster-whisper medium 模型转录中文语音\n2. 自动校正转录错误（基于拼音相似度 + 常见错误模式库）\n3. 分析字幕位置（分辨率启发式 + 帧颜色检测）\n4. 检测强调词颜色\n5. 逐句生成 TTS 获取精确时间轴\n6. 输出 `ref_analysis.json`\n\n### 阶段2: 视频生成 (make_videos.py)\n\n自动完成:\n1. 读取 `ref_analysis.json`（如果不存在则自动调用阶段1）\n2. 逐句生成 TTS（MiniMax 优先，自动回退 Edge-TTS）\n3. 生成 ASS 字幕（带强调词高亮）\n4. 智能选素材（跨视频全局去重，重复率超过20%自动跳过）\n5. BGM 提取 + 淡入淡出\n6. FFmpeg 合成（横屏裁竖屏 + 字幕烧录 + 音频混合）\n7. 输出命名: `output_样式_重复X.mp4`\n\n## 批量生产策略\n\n### 素材去重\n\n`ClipTracker` 类维护全局使用记录，每次选素材时:\n- 在素材上搜索9个候选起始位置\n- 选与历史重叠最低的位置\n- 重复率超过20%时跳过该视频并说明原因\n- 历史持久化到 `pipeline/temp/clip_history.json`，跨批次累积\n\n### 输出解读\n\n文件名 `output_yahei_gold_重复5.mp4`:\n- `yahei_gold` = 微软雅黑字体 + 金色强调\n- `重复5` = 素材平均重复率5%（0%最佳，超过20%被跳过）\n\n### 扩展视频数量\n\n编辑 `make_videos.py` 中 `VIDEO_STYLES` 列表，增加更多样式配置即可。\n每条样式 = 一组字体 + BGM 组合。\n\n## 故障处理\n\n### 转录错误\n打开 `ref_analysis.json`，找到 `script.segments`，修正文本后重新运行 `make_videos.py`。\n自动校正规则存储在 `scripts/text_corrector.py` 的 `WHISPER_FIXES` 字典中。\n\n### TTS失败\nMiniMax API 失败时自动回退 Edge-TTS。检查:\n- 网络连接\n- API Key 是否有效\n- 环境变量 `MINIMAX_API_KEY`\n\n### 字幕位置不对\n运行 `analyze_ref.py` 后检查输出的 `subtitle_style` 字段:\n- `font_size_recommend`: 推荐字体大小\n- `margin_v_recommend`: 推荐底部边距\n可手动修改 `ref_analysis.json` 后重新生成。\n\n### 详细配置\n参考 `references/config.md` 获取完整配置说明。\n\n## 文件清单\n\n| 文件 | 用途 |\n|------|------|\n| `scripts/make_videos.py` | 主导出脚本 |\n| `scripts/analyze_ref.py` | 参考视频分析 |\n| `scripts/tts_engine.py` | TTS统一引擎 |\n| `scripts/text_corrector.py` | 文案自动校正 |\n| `references/config.md` | 完整配置手册 |\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 142,
+    "installs": 1,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T04:33:41.337Z",
+  "updated_at": "2026-07-11T04:33:41.337Z",
+  "fetched_at": "2026-07-11T22:48:56.813Z",
+  "source_url": "https://clawhub.ai/1918750/skills/video-factory"
+}

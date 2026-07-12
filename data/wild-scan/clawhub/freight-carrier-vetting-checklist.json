@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "freight-carrier-vetting-checklist",
+  "display_name": "Freight Broker — Carrier Vetting Checklist",
+  "publisher": {
+    "handle": "deciqai",
+    "display_name": "deciqAI",
+    "user_id": "s17a4mqcnk515kvaca5ze55d0x88pfpx"
+  },
+  "summary": "Activate when: a freight broker is booking a carrier and must vet authority/insurance/safety before tendering a load; 'is this carrier legit', onboarding a n...",
+  "description": "Activate when: a freight broker is booking a carrier and must vet authority/insurance/safety before tendering a load; 'is this carrier legit', onboarding a new carrier, preventing fraud/double-brokering. Do NOT activate when: the carrier is an established, already-vetted partner with current records on file.",
+  "content": "---\nname: freight-carrier-vetting-checklist\ndescription: \"Activate when: a freight broker is booking a carrier and must vet authority/insurance/safety before tendering a load; 'is this carrier legit', onboarding a new carrier, preventing fraud/double-brokering. Do NOT activate when: the carrier is an established, already-vetted partner with current records on file.\"\n---\n\n# Freight Broker — Carrier Vetting Checklist\n\n> **Industry front door for checklist.** Adds domain triggers, a worked example, and packs. The engine is the parent checklist skill; parent content unchanged.\n> **Not legal advice.** Verify against current FMCSA rules and your broker authority/bond obligations.\n\n**Activate when:** onboarding/booking a carrier; a load is about to be tendered; a carrier looks too cheap/too eager; rebuilding your carrier-vetting SOP.\n**Do NOT activate when:** the carrier is a current, documented, insured partner.\n\n## Why this variant\nThe parent checklist is a must-not-skip gate. Booking an unvetted carrier is how brokers get hit with cargo loss, double-brokering fraud, and liability. This maps the parent's gate onto carrier due diligence.\n\n## Domain inputs → the checklist gate\n- **Active authority**: FMCSA operating authority (MC/DOT) active, not revoked; broker vs carrier authority correct for the move.\n- **Insurance**: cargo + auto liability on file, adequate limits, broker named as certificate holder, verified with the insurer (not just a PDF).\n- **Safety**: FMCSA safety rating / SMS BASIC scores; out-of-service history.\n- **Identity match**: phone/email/address match FMCSA record; watch VoIP + gmail + brand-new authority (fraud signals).\n- **Double-brokering guard**: confirm the carrier hauling = the carrier booked; no re-brokering without consent.\n\n## Worked example\nCarrier quotes 30% under market, authority active 3 weeks, gmail contact, address = a UPS store.\n→ Gate fails on identity + freshness fraud signals → do not tender; verify insurance directly with insurer and confirm equipment/driver before load.\n\n## Compliance anchors\n- FMCSA operating authority & insurance (49 CFR 387); broker surety bond (BMC-84/$75k); reasonable vetting standard.\n\n## Packs\n- **Solo broker**: 8-point pre-tender vetting card.\n- **Brokerage**: automated FMCSA + insurance re-check on every booking (feed the deadline/monitor agents).\n\n## Red flags\n- Rate far below market; authority < 6 months; VoIP/gmail; address mismatch; reluctance to verify insurance.\n\n## Verification\n- [ ] Authority active + correct type\n- [ ] Insurance verified with insurer, limits adequate\n- [ ] Safety scores/OOS history reviewed\n- [ ] Identity matches FMCSA; fraud signals cleared\n- [ ] Double-brokering consent confirmed\n\n---\n*Part of **deciqAI Knowledge Skills** — 223 open-source thinking skills that make rigor executable for AI agents. The same skills power every deciqAI agent, which runs them autonomously to operate your company. **See it run → https://www.deciqai.com/c/freight-carrier-vetting-checklist** · ⭐ Star the repo → https://github.com/deciqAI/knowledge-skills · Contributions welcome.*\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 94,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T09:22:26.387Z",
+  "updated_at": "2026-07-10T09:22:26.387Z",
+  "fetched_at": "2026-07-11T22:58:43.469Z",
+  "source_url": "https://clawhub.ai/deciqai/skills/freight-carrier-vetting-checklist"
+}

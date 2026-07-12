@@ -1,0 +1,42 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "gov-service-wechat-layout",
+  "display_name": "Gov Service Wechat Layout",
+  "publisher": {
+    "handle": "wuaron895-cpu",
+    "display_name": "wuaron895-cpu",
+    "user_id": "s179v4zj9p5skztm2yz6y6tyzd8abaca"
+  },
+  "summary": "民生政务公众号排版：6类内容模板+可换主题色，纯内联样式粘贴即发、不强制135。触发：社保/政务公众号排版、套用模板、换色。",
+  "description": "民生政务公众号排版：6类内容模板+可换主题色，纯内联样式粘贴即发、不强制135。触发：社保/政务公众号排版、套用模板、换色。",
+  "content": "---\nname: gov-service-wechat-layout\ndescription: 民生政务公众号排版：6类内容模板+可换主题色，纯内联样式粘贴即发、不强制135。触发：社保/政务公众号排版、套用模板、换色。\nagent_created: true\nversion: v1.0.0\n---\n\n# 民生政务公众号 · 排版模板\n\nProvide six content-type layout templates plus a swappable theme-color model for 民生政务 WeChat official accounts (社保/医保/公积金/税务/民政/公安政务等). Output is structured HTML an editor pastes directly into the WeChat official-account editor — formatting is preserved without 135 — or imports into 秀米/135 for richer visuals.\n\n## When to use\n\nTrigger when the request is to lay out, format, or apply a template to an article for a 社保 / 政务公众号, e.g. \"给这篇社保推文排版\"、\"套用办事指南模板\"、\"帮我把这篇政策解读排成公众号格式\". Do not trigger for 135 one-click publish packaging (use a 135-publisher skill for that); this skill produces the layout structure and color.\n\n## Content-type routing\n\nIdentify the article's content type, then load the matching template from `assets/`:\n\n| Type | Template asset | Use for |\n|---|---|---|\n| A 误区澄清/政策解读 | `assets/template-A-myth.md.html` | clarifying wrong beliefs about a policy; structured 误区N + ❎/✓ |\n| A2 新政解读 | `assets/template-A2-new-policy.md.html` | explaining a new policy with conditions, 举个例子, 办理途径, 热点问答 |\n| B 通知公告 | `assets/template-B-notice.md.html` | formal announcements; 落款 + 特此公告 |\n| C 办事指南 | `assets/template-C-guide.md.html` | how to apply/fill a form; conditional branches by date/situation |\n| D 案例故事/以案为鉴 | `assets/template-D-case.md.html` | cautionary cases; 案件介绍/结果 + 法律后果 |\n| E 互动答疑 | `assets/template-E-qa.md.html` | verified Q&A; Q1…大号 Q + 解答 |\n\nIf a piece fits two types, choose the one matching its primary purpose (e.g. a new policy that is mostly a how-to → C; mostly myth-busting → A).\n\n## Apply the color slot model\n\nUse exactly three color roles (see `references/color-slot-model.md`):\n\n- 主题色 brand `#ff6d4d` — **swappable**; section titles, accents, card left-borders, Q markers, IP name, links.\n- 警示红 warn `#ff0000` — **fixed**; ❎ errors, 注意/请注意, legal warnings, fraud alerts.\n- 正确绿 correct `#2E9E5B` — **fixed**; ✓ correct conclusions.\n\nPick one theme color per article from the candidate library in `references/color-slot-model.md` (default `#ff6d4d` 橙红). To recolor, replace every `#ff6d4d` in the chosen template with the article's theme color; never replace `#ff0000` or `#2E9E5B`. Run `scripts/apply_theme_color.py --input <file> --color <hex>` to do this deterministically, or instruct the editor to find-replace in 秀米/135's one-click theme-color feature.\n\n## Fill placeholders\n\nTemplates are de-identified. Replace these placeholders with the account's real values before output:\n\n- `{{IP名}}` — persona name (e.g. 顺小保 / 小保 / 社保小助手)\n- `{{城市}}` — city (e.g. 佛山)\n- `{{热线}}` — consultation hotline (e.g. 12345)\n- `{{公众号名}}` — official-account name (e.g. 顺德社保)\n- `{{机构全称}}` — issuing agency full name\n- `【…】` — per-article content placeholders (title, dates, amounts, fields)\n\nKeep the fixed footer wording pattern: `温馨提示 + 尊敬的参保人……拨打{{城市}}{{热线}}热线……`. Never fabricate phone numbers, document numbers, QR codes, or links — flag missing ones as `需编辑补充`.\n\n## Workflow\n\n1. Determine content type → load the matching `assets/template-*.md.html`.\n2. Apply theme color (replace `#ff6d4d`) per article; keep warn/correct fixed.\n3. Fill `{{…}}` account placeholders and `【…】` content placeholders from the approved copy. Preserve approved wording, dates, amounts, eligibility, and legal names exactly.\n4. Return the finished HTML for the editor to paste/import. Optionally note which modules to repeat (误区框 ×N, 案例框 ×N, Q&A ×N).\n\nFor the methodology behind the layouts (5-step style-replication SOP, dimension table) and the full component/typography spec, read `references/layout-sop.md` and `references/component-library.md` before non-trivial customization.\n\n## 发布路径：直接粘贴 vs 135\n\nTemplates use **inline styles only** — no `<style>` blocks, no `class`, no CSS variables, no scripts, no external fonts (verified). This is exactly the subset the WeChat official-account editor preserves on paste.\n\n- **直接粘贴进公众号后台（推荐，无需 135）**：复制渲染好的 HTML → 公众号后台图文编辑器粘贴 → 格式基本不变 → 发布。换主题色后即可用。适用于本 skill 的全部 6 类模板。\n- **走 135/秀米（可选，要富视觉时）**：若需米色网格、卡通插画、复杂卡片等超越内联样式能表达的视觉效果，导入 135/秀米编辑器内排版，再用其\"同步到公众号\"功能发布。注意：不要把 135/秀米导出的 HTML 直接粘贴进后台——它们靠 `class`+`<style>` 坃局，会被微信剥离导致\"css 变形\"。\n\nTradeoff: inline-style-only = 保守视觉 + 直接可发布；135/秀米 = 富视觉 + 必须在编辑器内同步。本 skill 选前者，换取\"粘贴即发布\"。\n\n## Resources\n\n- `assets/template-*.md.html` — six de-identified layout templates with the color slot applied.\n- `references/color-slot-model.md` — color roles, candidate library, recolor methods.\n- `references/component-library.md` — signature components, type scale, fonts, per-type skeletons.\n- `references/layout-sop.md` — the 5-step methodology and dissection dimensions for extending to new content types.\n- `README.md` — 安装与使用说明（含发布路径详解），随 skill 分发。\n- `scripts/apply_theme_color.py` — deterministic theme-color find-replace utility.\n",
+  "category": null,
+  "tags": [
+    "公众号排版",
+    "效率工具",
+    "排版模板",
+    "政务排版",
+    "gover-service"
+  ],
+  "topics": [
+    "公众号排版",
+    "效率工具",
+    "排版模板",
+    "政务排版",
+    "gover-service"
+  ],
+  "latest_version": "0.1.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 93,
+    "installs": 0,
+    "stars": 1,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T09:35:51.016Z",
+  "updated_at": "2026-07-11T13:45:26.366Z",
+  "fetched_at": "2026-07-11T22:44:26.243Z",
+  "source_url": "https://clawhub.ai/wuaron895-cpu/skills/gov-service-wechat-layout"
+}

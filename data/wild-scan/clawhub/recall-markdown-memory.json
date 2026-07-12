@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "recall-markdown-memory",
+  "display_name": "Recall Markdown Memory",
+  "publisher": {
+    "handle": "stevenybw",
+    "display_name": "Bowen Yu",
+    "user_id": "s1705fvvm9cxqv6enbagrtyxt588cq0x"
+  },
+  "summary": "Retrieve only relevant sections from Markdown memory, project notes, decision logs, and heading-structured knowledge bases with the mdselect CLI. Use when Co...",
+  "description": "Retrieve only relevant sections from Markdown memory, project notes, decision logs, and heading-structured knowledge bases with the mdselect CLI. Use when Codex needs to recall prior context, decisions, preferences, or history from user-specified memory files, paths declared by project instructions, MEMORY.md, memory/, or .agents/memory/. Use only in a shell-enabled environment with mdselect on PATH; do not use for modifying memory or searching non-Markdown files.",
+  "content": "---\nname: recall-markdown-memory\ndescription: Retrieve only relevant sections from Markdown memory, project notes, decision logs, and heading-structured knowledge bases with the mdselect CLI. Use when Codex needs to recall prior context, decisions, preferences, or history from user-specified memory files, paths declared by project instructions, MEMORY.md, memory/, or .agents/memory/. Use only in a shell-enabled environment with mdselect on PATH; do not use for modifying memory or searching non-Markdown files.\n---\n\n# Recall Markdown Memory\n\nRetrieve the smallest Markdown sections that answer the task. Keep the workflow\nread-only and avoid loading entire memory files when heading-aware selection is\navailable.\n\n## Check the dependency\n\n1. Run `mdselect --version` before reading memory.\n2. If the command is unavailable, stop the workflow and explain that `mdselect`\n   must be installed on `PATH`. Do not install software automatically.\n3. Offer these installation choices:\n\n   ```bash\n   pipx install mdselect\n   uv tool install mdselect\n   python -m pip install mdselect\n   ```\n\n4. If none of those package managers or a compatible Python runtime is\n   available, say that the execution environment must be prepared before this\n   skill can run. Resume only after `mdselect --version` succeeds.\n\n## Resolve memory sources\n\nUse the first applicable source in this order:\n\n1. Files or directories named by the user.\n2. Memory locations declared by applicable `AGENTS.md` or other project\n   instructions.\n3. Existing conventional locations: `MEMORY.md`, `memory/**/*.md`, and\n   `.agents/memory/**/*.md`.\n\nDo not scan every Markdown file in the repository by default. When a source is\na directory, narrow candidates with the task's distinctive terms. Prefer `rg`\nwhen it is available, but use another available file-search capability when it\nis not. Keep only Markdown candidates.\n\n## Retrieve relevant sections\n\n1. Run `mdselect outline <file>` for each promising candidate before reading a\n   large file in full.\n2. Choose the smallest heading path that covers the needed context.\n3. Run `mdselect select --mpath '<mpath>' <file>` and inspect the selected\n   subtree. Quote paths safely for the active shell.\n4. Prefer exact, anchored segments when heading names are known. Remember that\n   mpath segments are Python regular expressions, a leading slash anchors the\n   first segment to an H1, a trailing slash omits the matched heading, and a\n   slash cannot occur inside a segment. Run `mdselect select -h` when more\n   syntax detail is needed.\n5. Repeat selection only for additional sections needed to answer the task.\n   Do not surface or load unrelated subtrees.\n\nTreat empty standard output with status 0 as a successful no-match. Consult the\noutline and refine the mpath instead of reporting a command failure. If the\noutline is empty, the document may lack supported ATX headings. Fall back to a\nbounded line search, and read the whole document only when it is small enough\nfor the task context.\n\n## Use recalled context safely\n\n- Cite the source file and selected heading when presenting recalled material.\n- Reconcile conflicting memories explicitly instead of silently choosing one.\n- Treat memory as contextual evidence, not as authority for facts that may\n  have changed; verify current facts through an appropriate current source.\n- Follow the user's current request and applicable project instructions when\n  they conflict with stored memory.\n- Never create, edit, reorganize, or delete memory files under this skill.\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "0.1.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 115,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T06:48:35.612Z",
+  "updated_at": "2026-07-10T06:48:35.612Z",
+  "fetched_at": "2026-07-11T23:00:28.949Z",
+  "source_url": "https://clawhub.ai/stevenybw/skills/recall-markdown-memory"
+}

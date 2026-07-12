@@ -1,0 +1,40 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "video-download",
+  "display_name": "一键加速视频下载",
+  "publisher": {
+    "handle": "aiaaaa4",
+    "display_name": "AI落地第四声",
+    "user_id": "s173761vq65qa5qpgez1v7vgwd8a6961"
+  },
+  "summary": "使用 yt-dlp 与 FFmpeg 下载、保存、检查或提取公开视频/音频及最高质量原始封面，覆盖 YouTube、Shorts、Vimeo、TikTok、Instagram、Bilibili 等 yt-dlp 支持的来源。Use when Codex is asked to inspect available...",
+  "description": "使用 yt-dlp 与 FFmpeg 下载、保存、检查或提取公开视频/音频及最高质量原始封面，覆盖 YouTube、Shorts、Vimeo、TikTok、Instagram、Bilibili 等 yt-dlp 支持的来源。Use when Codex is asked to inspect available video qualities, choose resolution/container/codec, download a permitted video or playlist, save the best available source thumbnail as PNG, extract audio, merge streams, or save a media URL; list formats and confirm quality, output path, and filename before downloading.",
+  "content": "---\nname: video-download\ndescription: 使用 yt-dlp 与 FFmpeg 下载、保存、检查或提取公开视频/音频及最高质量原始封面，覆盖 YouTube、Shorts、Vimeo、TikTok、Instagram、Bilibili 等 yt-dlp 支持的来源。Use when Codex is asked to inspect available video qualities, choose resolution/container/codec, download a permitted video or playlist, save the best available source thumbnail as PNG, extract audio, merge streams, or save a media URL; list formats and confirm quality, output path, and filename before downloading.\n---\n\n# 一键加速视频下载\n\n作者 / 工作流设计：`AI落地第四声`。本作者信息用于展示和来源识别，不添加额外授权限制。\n\n这是一套面向视频和音频下载的确认优先工作流。用户只需要把链接交给 AI，AI 会先检查 `yt-dlp` 与 `ffmpeg` 环境，列出可用格式，解释实用选择，再确认画质、保存目录和文件名。只有用户确认后，AI 才会执行下载。\n\n核心价值：避免拿到链接就直接下载，减少下错清晰度、下错容器、文件名混乱、HDR/编码不兼容、输出位置不清楚等问题。默认适用于 YouTube、YouTube Shorts、Vimeo、TikTok、Instagram、X/Twitter、Facebook、Twitch、Bilibili、Dailymotion、SoundCloud、Bandcamp、Reddit 及其他 `yt-dlp` 支持的来源；完整范围以 [yt-dlp 官方站点清单](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md) 为准。播放列表只在用户明确要求时处理。\n\n快速开始：把视频链接发给 AI，并说明你想要“最高画质”“MP4 兼容”“小文件”“只要音频”或让 AI 推荐。默认推荐最高可用画质，而不是为了省空间主动降到 720p。下载时同时保存平台提供的最高质量作者封面并转为 `原始封面.png`。下载若会继续做字幕翻译，AI 会在你指定的位置建立一个以中文视频名和视频 ID 命名的小工程文件夹；视频、音频、字幕和封面都放在这里。`yt-dlp` 负责解析和下载；`ffmpeg` 负责合并音视频、转换容器、提取音频和转换封面格式。\n\n效果示例：\n\n```text\n用户：帮我下载这个 YouTube 视频，尽量清晰。\nAI：我会先列出可用格式，然后给你几个选择：最高画质、MP4 兼容、较小文件、仅音频。确认画质、保存路径和文件名后再下载。\n```\n\n以下从 “English Execution Contract” 开始是给 AI 执行者读取的正式规则；上面的中文说明只用于 SkillHub、ClawHub、skills.sh 和用户理解，不替代执行合同。\n\n# English Execution Contract\n\nUse this skill for reviewed video/audio downloads with `yt-dlp`. Do not download immediately after the user provides a link. First inspect available formats, summarize practical choices, and ask the user to choose. Before downloading, also confirm the download path and filename. Download only after the user confirms all required choices or explicitly delegates them.\n\n## Workflow\n\n1. Check tools if not already confirmed:\n\n```bash\ncommand -v yt-dlp\ncommand -v ffmpeg\n```\n\n2. List available formats:\n\n```bash\nyt-dlp --no-playlist -F \"VIDEO_URL\"\n```\n\nUse `--no-playlist` unless the user explicitly asks for a playlist.\n\n3. Summarize the useful choices:\n   - Best quality (default recommendation): highest available video plus best audio. Prefer H.264 video plus M4A/AAC in `mp4` when that preserves the highest available resolution; otherwise explain the container tradeoff.\n   - MP4 compatibility: H.264 video plus M4A/AAC audio, usually `mp4`.\n   - Smaller file: 1080p, 720p, or another clear cap.\n   - Audio only: best audio or M4A compatibility.\n\nMention format IDs or selectors, resolution, FPS, HDR/SDR, video codec, audio codec, estimated size when visible, and container.\n\n4. Ask the user which quality or format to download. Do not run the download command until they confirm.\n\n5. Confirm the parent download location and create a media project folder.\n   - Treat every download that may continue to subtitle translation as one media project, not a loose collection of files.\n   - Use the confirmed location as `PARENT_DIR`, then create `PROJECT_DIR` named `<localized video title> [<video id>]` beneath it. Localize the title to the user's requested language when asked.\n   - Save the video, an explicitly downloaded audio-only file, ASS/SRT outputs, and hidden working artifacts under `PROJECT_DIR`. Do not leave related files in the parent directory.\n   - Save only the best available platform thumbnail, convert it to PNG, and name it `原始封面.png` under `PROJECT_DIR`. Use `--write-thumbnail`, not `--write-all-thumbnails`.\n   - Pass the same `PROJECT_DIR` to video translation as both its `--outputs-dir` and the parent of its hidden `.work/` directory.\n\n6. Confirm the filename.\n   - Propose a default filename from the video metadata, normally:\n\n```text\n%(upload_date>%Y-%m-%d)s - %(title).200B [%(id)s].%(ext)s\n```\n\n   - Ask whether the user wants to update the filename.\n   - If yes, ask them to send the filename directly. Preserve or add the final extension based on the chosen container.\n   - Keep `[%(id)s]` in the default name to avoid collisions and preserve the source video ID, but remove it if the user requests a cleaner name.\n   - Use the confirmed filename or template as `OUTPUT_NAME`. When a localized project title is used, keep the same localized basename for video, audio, and subtitles.\n\n## Commands\n\nUse explicit reviewed IDs when possible:\n\n```bash\nyt-dlp --no-playlist --windows-filenames \\\n  --write-thumbnail --convert-thumbnails png \\\n  -f \"VIDEO_ID+AUDIO_ID\" \\\n  --merge-output-format mkv \\\n  -P \"OUTPUT_DIR\" \\\n  -o \"thumbnail:原始封面.%(ext)s\" \\\n  -o \"OUTPUT_NAME\" \\\n  \"VIDEO_URL\"\n```\n\nUse best quality after the user delegates selection:\n\n```bash\nyt-dlp --no-playlist --windows-filenames \\\n  --write-thumbnail --convert-thumbnails png \\\n  -f \"bv*+ba/b\" \\\n  --merge-output-format mkv \\\n  -P \"OUTPUT_DIR\" \\\n  -o \"thumbnail:原始封面.%(ext)s\" \\\n  -o \"OUTPUT_NAME\" \\\n  \"VIDEO_URL\"\n```\n\nUse MP4 compatibility after confirmation:\n\n```bash\nyt-dlp --no-playlist --windows-filenames \\\n  --write-thumbnail --convert-thumbnails png \\\n  -f \"bv*[ext=mp4][vcodec^=avc1]+ba[ext=m4a]/b[ext=mp4]/b\" \\\n  --merge-output-format mp4 \\\n  -P \"OUTPUT_DIR\" \\\n  -o \"thumbnail:原始封面.%(ext)s\" \\\n  -o \"OUTPUT_NAME\" \\\n  \"VIDEO_URL\"\n```\n\nUse audio only after confirmation:\n\n```bash\nyt-dlp --no-playlist --windows-filenames \\\n  --write-thumbnail --convert-thumbnails png \\\n  -f \"ba\" \\\n  -P \"OUTPUT_DIR\" \\\n  -o \"thumbnail:原始封面.%(ext)s\" \\\n  -o \"OUTPUT_NAME\" \\\n  \"VIDEO_URL\"\n```\n\n## Final Response\n\nAfter downloading, report the saved media path, `原始封面.png` path, file size, selected format IDs or selector, confirmed output directory, confirmed filename, and any important caveats such as HDR, MKV playback, subtitles, or audio language. If the platform exposes no thumbnail, report that clearly instead of substituting a video frame.\n\nRemind the user to download only content they have permission to save or use when relevant.\n",
+  "category": null,
+  "tags": [
+    "video",
+    "download",
+    "yt-dlp",
+    "aiaaaa4"
+  ],
+  "topics": [
+    "video",
+    "download",
+    "yt-dlp",
+    "aiaaaa4"
+  ],
+  "latest_version": "1.2.2",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 306,
+    "installs": 0,
+    "stars": 0,
+    "versions": 6,
+    "comments": 0
+  },
+  "created_at": "2026-07-09T15:50:18.414Z",
+  "updated_at": "2026-07-11T18:21:41.671Z",
+  "fetched_at": "2026-07-11T22:35:48.286Z",
+  "source_url": "https://clawhub.ai/aiaaaa4/skills/video-download"
+}

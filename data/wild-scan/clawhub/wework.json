@@ -1,0 +1,43 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "wework",
+  "display_name": "Wework",
+  "publisher": {
+    "handle": "zhangifonly",
+    "display_name": "zhangifonly",
+    "user_id": "s177g1r0fwwn78mtc60nke0fas8841hj"
+  },
+  "summary": "企业微信群机器人工具与服务端 API 指南。Use for: (1) 用附带的零依赖 CLI 向企微群发通知——文本/markdown/图片/文件, (2) CI/监控/日报自动化推送, (3) 企业微信服务端 API（通讯录/应用消息/客户联系）开发指导。WeCom (WeChat Work) group-ro...",
+  "description": "企业微信群机器人工具与服务端 API 指南。Use for: (1) 用附带的零依赖 CLI 向企微群发通知——文本/markdown/图片/文件, (2) CI/监控/日报自动化推送, (3) 企业微信服务端 API（通讯录/应用消息/客户联系）开发指导。WeCom (WeChat Work) group-robot CLI (zero-dependency: text/markdown/image/file) plus server-side API development guide.",
+  "content": "---\nname: \"企业微信\"\nversion: \"2.0.0\"\ndescription: \"企业微信群机器人工具与服务端 API 指南。Use for: (1) 用附带的零依赖 CLI 向企微群发通知——文本/markdown/图片/文件, (2) CI/监控/日报自动化推送, (3) 企业微信服务端 API（通讯录/应用消息/客户联系）开发指导。WeCom (WeChat Work) group-robot CLI (zero-dependency: text/markdown/image/file) plus server-side API development guide.\"\ntags: [\"wework\", \"wecom\", \"wechat-work\", \"bot\", \"webhook\", \"cli\"]\nauthor: \"ClawSkills Team\"\ncategory: \"enterprise\"\n---\n\n# 企业微信 Skill\n\n附带零依赖 CLI（`scripts/wecombot.py`，仅 Python 标准库），agent 可\n直接向企微群发通知，比钉钉机器人多两个实用能力：**直接发图片**\n（图表截图秒达）和**直接发文件**（日志、报表附件）。\n\n## 快速开始\n\n```bash\n# 群右键 → 添加群机器人 → 复制 webhook URL 里的 key= 部分\nexport WECOM_WEBHOOK_KEY=693a91f6-7xxx-4bc4-97a0-0ec2sifa5aaa\n\npython3 scripts/wecombot.py text \"部署完成 ✅\" @all\npython3 scripts/wecombot.py markdown report.md\npython3 scripts/wecombot.py image chart.png\npython3 scripts/wecombot.py file error.log\n```\n\n脚本行为声明：仅请求 `qyapi.weixin.qq.com`；image/file/markdown 命令\n读取指定的本地文件，不写本地文件。\n\n## 命令手册\n\n| 命令 | 作用 | 限制 |\n|------|------|------|\n| `text <内容> [@userid,userid\\|@all]` | 文本消息 | 2048 字节 |\n| `markdown <md文件或内容>` | markdown 消息 | 4096 字节，支持`<font color>`不支持表格 |\n| `image <图片文件>` | 发图片（自动 base64+md5） | ≤2MB，jpg/png |\n| `file <文件路径>` | 先传临时素材再发送 | ≤20MB |\n\n## Agent 典型用法\n\n1. **图表直达**：数据分析生成 PNG → `image` 直接发群里，\n   不用先传图床（钉钉机器人做不到这点）\n2. **附件送达**：异常日志、Excel 报表 → `file` 直接给到群\n3. **CI/监控/日报**：与钉钉场景相同，`text`/`markdown` 推送\n4. **@ 提醒**：text 的 mentioned_list 用企微 userid；只知道手机号时\n   可用 `mentioned_mobile_list`（本脚本 @ 参数传 userid）\n\n## 实战要点与错误码（实测）\n\n| errcode | 含义 | 处理 |\n|---------|------|------|\n| 93000 | webhook key 无效 | key 拼错或机器人被移除（报错信息会带查询链接） |\n| 45009 | 接口超限 | 每机器人 **20 条/分钟**，超限丢弃 |\n| 40008 | 消息类型不支持 | 检查 msgtype 拼写 |\n\n- 群机器人**免认证免审批**——不需要管理员开发权限，是企微自动化\n  阻力最小的入口；服务端 API 则需要管理后台配置\n- markdown 与钉钉一样不支持表格；企微独有 `<font color=\"warning\">`\n  三色高亮（info 绿/comment 灰/warning 橙），做告警分级很好用\n- 机器人只能发群消息，**不能单聊、不能读消息**；要读写单聊用\n  服务端 API 的应用消息\n\n## 服务端 API 速查（超出机器人能力时）\n\n- token：`GET /cgi-bin/gettoken?corpid=&corpsecret=`，7200 秒，中心化缓存；\n  **不同 secret 权限不同**（应用/通讯录/客户联系各一把）\n- 应用消息（可单聊）：`POST /cgi-bin/message/send`，需 agentid，\n  用户须在应用可见范围内\n- 客户联系（外部联系人/客户群/朋友圈）是企微对微信生态的独有打通，\n  也是 SCRM 系统的地基\n- 回调验证：URL 验证用 AES 解密 echostr，消息体加解密用\n  官方 WXBizMsgCrypt 库，别手写\n- 参数以 developer.work.weixin.qq.com 文档为准\n\n## 与钉钉/飞书机器人对比\n\n| 能力 | 企微机器人 | 钉钉机器人（见 `dingding` skill） |\n|------|-----------|----------------------------------|\n| 文本/markdown | ✅ | ✅（多 link 卡片） |\n| 直接发图片 | ✅ base64 | ❌ 只能 markdown 引外链图 |\n| 直接发文件 | ✅ ≤20MB | ❌ |\n| 安全机制 | key 即凭证 | 关键词/加签/IP 三选一 |\n| 频控 | 20 条/分钟 | 20 条/分钟 |\n\n## 本 skill 不做什么\n\n- 不含个人微信自动化；企微侧自动化也应使用官方 API 而非协议逆向\n- 群发与 @all 打扰面大，agent 使用前应向用户确认\n- 第三方服务商应用（代开发/应用市场）的授权流程未展开，以官方文档为准\n",
+  "category": "enterprise",
+  "tags": [
+    "wework",
+    "wecom",
+    "wechat-work",
+    "bot",
+    "webhook",
+    "cli"
+  ],
+  "topics": [
+    "Bot",
+    "CRM",
+    "Enterprise",
+    "WeChat Work",
+    "开发"
+  ],
+  "latest_version": "2.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 865,
+    "installs": 27,
+    "stars": 0,
+    "versions": 3,
+    "comments": 0
+  },
+  "created_at": "2026-03-14T02:49:23.138Z",
+  "updated_at": "2026-07-11T13:35:46.342Z",
+  "fetched_at": "2026-07-11T22:44:37.584Z",
+  "source_url": "https://clawhub.ai/zhangifonly/skills/wework"
+}

@@ -1,0 +1,40 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "steamedclaw-chess",
+  "display_name": "SteamedClaw Chess",
+  "publisher": {
+    "handle": "ckhaisty",
+    "display_name": "ckhaisty",
+    "user_id": "s178sde211ytrjffww7ajcmwp584gdrk"
+  },
+  "summary": "Chess position analysis — give me a FEN, I return the top candidate moves with evaluations and style archetypes (solid, aggressive, speculative) so your pers...",
+  "description": "Chess position analysis — give me a FEN, I return the top candidate moves with evaluations and style archetypes (solid, aggressive, speculative) so your personality picks the move.",
+  "content": "---\nname: steamedclaw-chess\ndescription: Chess position analysis — give me a FEN, I return the top candidate moves with evaluations and style archetypes (solid, aggressive, speculative) so your personality picks the move.\nversion: 1.0.0\nmetadata:\n  openclaw:\n    requires:\n      bins: [node]\n---\n\n# steamedclaw-chess\n\nAnalyse a chess position. Returns the top candidate moves, each classified\ninto a style archetype measured from the position (not guessed from the move's\nlooks), so you can choose a move that matches your personality or instructions\ninstead of calculating lines yourself.\n\n## When to use\n\nAny time you have a FEN and need to pick a move. This is most obviously useful\nwhen playing chess on SteamedClaw, but the skill is game-agnostic — pass any\nlegal FEN.\n\nIf you are not playing chess right now, this skill is a no-op. You should not\ncall it without a FEN.\n\n## Call\n\n```\nexec node ~/.openclaw/skills/steamedclaw-chess/chess-helper.js analyze <FEN>\n```\n\nOptional flags:\n\n- `--depth N` — search depth, integer 1–25 (default 15). Mapped to the engine's\n  five built-in strength levels; higher values search deeper but take longer.\n- `--movetime MS` — soft budget in milliseconds. Takes precedence over\n  `--depth`. The helper picks the strongest engine level likely to finish\n  inside the budget.\n- `--multipv N` — number of candidates returned, integer 1–5 (default 5).\n\n## Output\n\nPlaintext, one block per call. Example (sharp option available):\n\n```\ncandidates:\n  1. f3g5  (+0.83)  — aggressive: creates a concrete threat\n  2. b1c3  (+0.32)  — conservative: safe, ~0.5 pawns below best, keeps it quiet\n  3. e1g1  — conservative: safe, ~0.6 pawns below best, keeps it quiet, castles\n  4. d1e2  — conservative: safe, ~0.6 pawns below best, keeps it quiet\n  5. c4d3  — conservative: safe, ~0.6 pawns below best, keeps it quiet\nstyle guide: bold/attacking → 1 · solid/positional → 2, 3, 4, 5\nphase: opening\nassessment: quiet, white slightly better (+0.83)\n```\n\nMate-in-1:\n\n```\ncandidates:\n  1. e1e8  #mate  — delivers mate\n  2. e1a1  (+6.73)  — misses the forced mate\nstyle guide: mate on the board — play 1\nphase: endgame\nassessment: forced win for white\n```\n\n### Archetypes\n\nEach candidate carries one archetype, measured from two axes: **soundness**\n(how much evaluation it gives up vs. the engine's best move) and **sharpness**\n(whether the resulting position is forcing — checks, concrete threats, few\nsafe replies for the opponent).\n\n- **aggressive** — sound AND sharp: as good as the best move, and it forces\n  the issue (creates a threat, gives check, or leaves the opponent few safe\n  replies).\n- **solid** — sound AND quiet: as good as the best move, keeps the position\n  stable.\n- **conservative** — small concession (~0.3–1.5 pawns), keeps things quiet.\n- **speculative** — small concession that sharpens the game: an unbalancing,\n  double-edged try.\n- **dubious** — 1.5–3 pawns below best. Only for deliberate provocation.\n- **losing** — more than 3 pawns below best. The cost is stated; don't pick\n  it and call it boldness.\n- **delivers mate / misses the forced mate** — self-explanatory; when a mate\n  is on the board there is no style question.\n- **allows a forced mate** — the opponent mates after this move (shown with\n  `#-mate`). Never play it, whatever your persona.\n\n### Other fields\n\n- **style guide** — maps persona vocabulary directly to candidate numbers so\n  you can pick without chess knowledge. Buckets: `bold/attacking`\n  (aggressive + speculative), `solid/positional` (solid + conservative),\n  `avoid` (dubious, losing, misses or allows a forced mate). Empty buckets\n  are omitted.\n- **candidates** — top-N UCI moves (e.g. `e2e4`), each with an optional\n  centipawn evaluation `(+X.XX)`. Opening evals within ±0.3 pawns are\n  suppressed (all candidates are playable). Forced mates show `#mate` /\n  `#-mate`. Concrete facts (gives check, captures material, castles) are\n  appended after the archetype.\n- **phase** — `opening` (fullMove < 15), `middlegame` (15 ≤ fullMove < 40\n  with material on the board), or `endgame` (few pieces or fullMove ≥ 40).\n- **assessment** — one-sentence summary of the position from the\n  side-to-move's perspective.\n\n### Exit codes\n\n- `0` — analysis complete, candidates printed.\n- `2` — invalid FEN. Stdout starts with `err: invalid fen:`.\n- `4` — engine failure. Stdout starts with `err: engine failed:`.\n- `1` — usage / flag error. Stdout starts with `err:`.\n\n## Using the output\n\nPick the candidate that matches **your** personality or instructions — that is\nwhat the archetypes are for. **Don't mechanically pick #1.**\n\n- Bold, attacking, dynamic persona → prefer the `bold/attacking` bucket.\n- Cautious, positional, patient persona (e.g. \"play like Karpov\") → prefer\n  the `solid/positional` bucket.\n- Told to play for a win at all costs? A `speculative` candidate is your\n  unbalancing try.\n- Never pick from `avoid` — those moves are measured to lose material or miss\n  a mate; playing them is not a style, it's a blunder.\n- If the style guide says `mate on the board — play 1`, play 1.\n\nIf you are playing chess on SteamedClaw, submit the chosen UCI move via the\nSteamedClaw helper's `move` command. The chess skill never writes state, makes\nnetwork calls, or touches SteamedClaw files directly — it is pure local\nanalysis over a FEN you supply.\n\n## Engine\n\nThis skill ships a bundled pure-JS chess engine\n([`js-chess-engine`](https://github.com/josefjadrny/js-chess-engine), MIT).\nNo native binaries. No WASM. No CDN. No install step beyond\n`openclaw skills install steamedclaw-chess`. The engine source lives in\n`./engine/` with its upstream `LICENSE` preserved.\n\nThe skill requires Node.js (see frontmatter `requires.bins`).\n",
+  "category": null,
+  "tags": [
+    "chess",
+    "strategy",
+    "steamedclaw",
+    "game-strategy"
+  ],
+  "topics": [
+    "chess",
+    "strategy",
+    "steamedclaw",
+    "game-strategy"
+  ],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 152,
+    "installs": 1,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-09T21:26:50.505Z",
+  "updated_at": "2026-07-09T21:26:50.505Z",
+  "fetched_at": "2026-07-11T23:11:01.873Z",
+  "source_url": "https://clawhub.ai/ckhaisty/skills/steamedclaw-chess"
+}

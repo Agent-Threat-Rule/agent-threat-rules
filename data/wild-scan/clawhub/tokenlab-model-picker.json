@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "tokenlab-model-picker",
+  "display_name": "Tokenlab Model Picker",
+  "publisher": {
+    "handle": "hedging8563",
+    "display_name": "hedging8563",
+    "user_id": "s179rmxvstkbe8mkf3phsjrqmx8a97gy"
+  },
+  "summary": "Pick TokenLab models for chat, coding, image, video, audio, embeddings, reranking, and translation by reading public model catalog signals before recommendin...",
+  "description": "Pick TokenLab models for chat, coding, image, video, audio, embeddings, reranking, and translation by reading public model catalog signals before recommending concrete model IDs.",
+  "content": "---\nname: tokenlab-model-picker\ndescription: Pick TokenLab models for chat, coding, image, video, audio, embeddings, reranking, and translation by reading public model catalog signals before recommending concrete model IDs.\nlicense: MIT\nmetadata:\n  category: coding\n---\n\n# TokenLab Model Picker\n\nUse this skill when a user asks which TokenLab model to use, how to compare model options, or how to route a workload across model families.\n\n## What this skill should deliver\n\n- A short model shortlist with exact TokenLab model IDs.\n- The workload assumptions used to pick the models.\n- A public catalog lookup path that the user or agent can rerun.\n- A fallback model when the first choice is unavailable or too expensive.\n- A caveat when a recommendation depends on volatile pricing, availability, or benchmark data.\n\n## Preferred approach\n\n1. Identify the workload: chat, coding, agent loop, image, video, audio, embedding, rerank, translation, or multimodal.\n2. Use the public model catalog before recommending hardcoded IDs:\n   - General catalog: `GET https://api.tokenlab.sh/v1/models`\n   - Task shortlist: `GET https://api.tokenlab.sh/v1/models?recommended_for=<scene>`\n   - Model contract: `GET https://api.tokenlab.sh/v1/models/:model`\n   - Pricing detail: `GET https://api.tokenlab.sh/v1/models/:model/pricing`\n3. Prefer exact public model IDs over family names.\n4. Separate recommendation dimensions:\n   - quality or frontier capability\n   - cost sensitivity\n   - latency or fast iteration\n   - native endpoint needs\n   - multimodal input or output\n5. Return a compact table, then one runnable API example if useful.\n\n## Default shortlist patterns\n\n- Coding and agent work: choose a strong reasoning/coding model, a cheaper fallback, and a fast iteration model.\n- General chat: choose one balanced model and one lower-cost fallback.\n- Image or video: use `recommended_for=image` or `recommended_for=video` instead of guessing request shapes.\n- Embeddings, rerank, translation, TTS, STT, music, or 3D: use the task-specific shortlist and inspect the model contract before showing parameters.\n\n## Output format\n\n- One sentence naming the workload assumptions.\n- A table with `Use`, `Model ID`, `Why`, and `Fallback`.\n- One catalog command the user can rerun.\n- One warning line if availability, pricing, or provider-native behavior must be verified.\n\n## Avoid\n\n- Do not claim a single universal best model.\n- Do not recommend provider-prefixed or physical route names as public model IDs.\n- Do not invent prices or model counts.\n- Do not silently translate a native-only need into a generic chat completion.\n- Do not recommend a model that is absent from the current public catalog.\n\n## Edge Cases\n\n- If the user asks for the cheapest option, still include capability limits.\n- If the user asks for a benchmark winner, require a cited benchmark and observed date.\n- If the catalog is unavailable, say so and fall back to the last known examples only as examples, not truth.\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 71,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T15:58:01.808Z",
+  "updated_at": "2026-07-10T15:58:01.808Z",
+  "fetched_at": "2026-07-11T22:53:32.212Z",
+  "source_url": "https://clawhub.ai/hedging8563/skills/tokenlab-model-picker"
+}

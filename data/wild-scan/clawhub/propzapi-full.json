@@ -1,0 +1,41 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "propzapi-full",
+  "display_name": "Propzapi Full",
+  "publisher": {
+    "handle": "paperandbeyond23-gif",
+    "display_name": "paperandbeyond23-gif",
+    "user_id": "s17edc087rn1cph1p54zwj4p6x8997hf"
+  },
+  "summary": "Live sports odds & player props via propzapi.com. Four tools — pull moneyline/spreads/totals odds grouped by sportsbook, player props for upcoming games, fix...",
+  "description": "Live sports odds & player props via propzapi.com. Four tools — pull moneyline/spreads/totals odds grouped by sportsbook, player props for upcoming games, fixtures & live scores, and the list of covered books, normalized across books so you don't scrape each one.",
+  "content": "---\nname: propzapi-full\nversion: 1.0.0\ndescription: Live sports odds & player props via propzapi.com. Four tools — pull moneyline/spreads/totals odds grouped by sportsbook, player props for upcoming games, fixtures & live scores, and the list of covered books, normalized across books so you don't scrape each one.\nlicense: MIT-0\nauthor: propzapi\nhomepage: https://propzapi.com\nrepository: https://github.com/paperandbeyond23-gif/propzapi-skills\ntags:\n  - propzapi\n  - sports-odds\n  - odds-api\n  - player-props\n  - sports-betting\n  - moneyline\n  - spreads\n  - totals\n  - api\n  - mcp\nmetadata:\n  openclaw:\n    primaryEnv: PROPZAPI_KEY\n    homepage: https://propzapi.com\n    requires:\n      env:\n        - PROPZAPI_KEY\n---\n\n# propzapi-full\n\nLive sports odds and player props via [propzapi.com](https://propzapi.com). Use when the user **explicitly asks** for real sportsbook odds, player props, lines, or fixtures/scores for a game or league — and wants sourced numbers rather than a guess.\n\nOdds live behind a dozen different sportsbook sites, each with its own markup and its own idea of a \"market.\" propzapi normalizes moneyline, spreads, totals and player props across books into one JSON shape, so your agent gets a line it can trust in one call.\n\n## When to use this skill\n\nEach tool call spends propzapi credits (1 for a single market, 3 for all game markets, 5 for player props), so this skill activates only when the request is genuinely about live odds — not when a team or league merely comes up in passing.\n\n**DO use when the user:**\n\n- Asks for the odds / moneyline / spread / total on a game or league → `get_odds`\n- Asks for player props (points, rebounds, passing yards, etc.) → `get_props`\n- Asks what games are on, live scores, or the schedule → `get_events`\n- Asks which sportsbooks are covered → `get_books`\n\n**Do NOT use when:**\n\n- A team or league appears incidentally (news, small talk, a fantasy roster)\n- The user wants historical results or season stats — propzapi is live/upcoming odds, not a stats archive\n- The user is asking for betting *advice* or a *pick* — return the numbers, not a recommendation\n\nWhen intent is ambiguous, confirm the league before calling.\n\n## Tools\n\n### `get_odds` — game odds grouped by book\nMoneyline, spreads and totals for upcoming games, grouped by sportsbook. Args: `league` (e.g. `NBA`, `NFL`, `MLB`, `NHL`, `EPL`, `MLS`), `sport` (e.g. `basketball`), `market` (`h2h` | `spreads` | `totals` | `player_props`; omit for all game markets), `limit` (1–100, default 25). Costs 1 credit for a single market, 3 for all.\n\n### `get_props` — player props\nPlayer props for upcoming games — the markets most odds APIs skip. Args: `league`, `sport`, `limit` (1–100, default 25). Costs 5 credits.\n\n### `get_events` — fixtures & live scores\nGames and live scores, no odds. Args: `league`, `sport`, `status` (`upcoming` | `live` | `final`), `limit` (1–100, default 25). Costs 1 credit.\n\n### `get_books` — covered sportsbooks\nThe sportsbooks currently normalized. No args. Costs 1 credit.\n\n## Authentication\n\nSet `PROPZAPI_KEY` to your propzapi key. Keys are `pk_live_...` strings, sent as the `X-API-Key` header.\n\n```bash\nexport PROPZAPI_KEY=\"pk_live_...\"\n```\n\nGet a free key (500 free credits, no card required) at <https://propzapi.com/app>.\n\n## Pricing\n\nCalls are metered by market — the response returns the exact charge in the `X-Credits-Cost` header. Credits never expire.\n\n| Plan | Price | Credits / mo |\n|---|---|---|\n| Free | $0 | 500 |\n| Indie | $19/mo | 25,000 |\n| Pro | $49/mo | 100,000 |\n| Scale | $149/mo | 1,000,000 |\n\nManage plans at <https://propzapi.com/pricing>.\n\n## Errors\n\nAll functions return a Python dict. On success it's the API response; on failure it has an `error` key:\n\n- `{\"error\": \"auth_required\", ...}` — `PROPZAPI_KEY` not set (includes `signup_url`)\n- `{\"error\": \"auth_invalid\", ...}` — key rejected; mint a new one at `/app`\n- `{\"error\": \"out_of_credits\", ...}` — credit balance exhausted; includes `upgrade_url`\n- `{\"error\": \"not_found\", ...}` — no match for that league/event\n- `{\"error\": \"rate_limit_exceeded\", ...}` — plan request limit or too many free keys from this IP\n- `{\"error\": \"upstream_unavailable\", ...}` — an odds source was briefly unreachable; retry\n- `{\"error\": \"invalid_argument\", ...}` — bad `market` or `status` value\n- `{\"error\": \"network\" | \"HTTP <code>\" | \"unexpected\", ...}` — transport / other failures\n\n## API reference\n\n- Docs: <https://propzapi.com/docs>\n- OpenAPI spec: <https://api.propzapi.com/openapi.json>\n- Pricing: <https://propzapi.com/pricing>\n\n## Independence\n\npropzapi is an independent developer tool that aggregates publicly listed sportsbook odds. It is not a sportsbook, does not accept wagers, and does not provide betting advice. Odds are informational and may be delayed. Comply with the laws of your jurisdiction and each sportsbook's terms.\n",
+  "category": null,
+  "tags": [
+    "propzapi",
+    "sports-odds",
+    "odds-api",
+    "player-props",
+    "sports-betting",
+    "moneyline",
+    "spreads",
+    "totals",
+    "api",
+    "mcp"
+  ],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 79,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T03:56:23.081Z",
+  "updated_at": "2026-07-10T03:56:23.081Z",
+  "fetched_at": "2026-07-11T23:07:50.627Z",
+  "source_url": "https://clawhub.ai/paperandbeyond23-gif/skills/propzapi-full"
+}

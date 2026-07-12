@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "scraper-template",
+  "display_name": "Scraper Template",
+  "publisher": {
+    "handle": "woai36d",
+    "display_name": "woai36D",
+    "user_id": "s17e554k9egs3n44bgce0zpp6184gs54"
+  },
+  "summary": "通用开放平台 API 文档抓取模板，支持快速适配并提取菜单与接口详情，实现标准化 JSON 输出。",
+  "description": "通用开放平台 API 文档抓取模板，支持快速适配并提取菜单与接口详情，实现标准化 JSON 输出。",
+  "content": "# 开放平台抓取模板 (Scraper Template)\n\n## 简介\n\n基于企迈(qmai)开放平台抓取经验沉淀的通用模板，支持快速适配各种开放平台的 API 文档抓取。\n\n## 核心文件\n\n```\nscraper-template/\n├── SKILL.md                    # 本文件\n├── scripts/\n│   ├── scrape_base.py          # Playwright 抓取基类（抽象方法）\n│   └── manage_base.py          # 数据管理工具模板\n└── examples/\n    └── qmai_scraper.py         # 企迈抓取器（参考实现）\n```\n\n## 使用流程\n\n### 1. 创建新平台 Skill\n\n```bash\ncp -r scraper-template/ meituan-api-fetcher/\n# 或\nmkdir -p new-platform-api-fetcher/{scripts,references,docs,solutions}\n```\n\n### 2. 实现平台专属抓取器\n\n继承 `scrape_base.OpenPlatformScraper`，实现 3 个抽象方法：\n\n| 方法 | 作用 | 关键 |\n|------|------|------|\n| `expand_menu(page)` | 展开菜单，发现模块 | 找菜单组件（qm-tree/ant-menu/el-menu） |\n| `navigate_to_api(page, key, info)` | 导航到 API 详情 | 点击菜单项或直接跳转 URL |\n| `extract_api_detail(page)` | 提取 API 详情 | 解析表格（参数/返回值）|\n\n### 3. 抓取\n\n```bash\npython3 scripts/scrape.py\n```\n\n### 4. 使用管理工具\n\n```bash\n# 统计\npython3 scripts/manage.py --stats\n# 搜索\npython3 scripts/manage.py --search 门店\n# 列出模块\npython3 scripts/manage.py --modules\n```\n\n## 标准化输出格式\n\n每个模块输出一个 JSON 文件：\n\n```json\n{\n  \"module_id\": \"2.1\",\n  \"module_name\": \"门店管理\",\n  \"interface_count\": 15,\n  \"interfaces\": [\n    {\n      \"id\": \"2.1.1\",\n      \"name\": \"根据门店编码查询门店详情\",\n      \"method\": \"GET\",\n      \"path\": \"/v3/org/shop/getShopDetail\",\n      \"request_params\": [{ \"name\": \"code\", \"type\": \"string\", \"required\": true, \"description\": \"门店编码\" }],\n      \"response_params\": [{ \"name\": \"id\", \"type\": \"long\", \"description\": \"门店ID\" }],\n      \"response_example\": { \"code\": \"\", \"id\": 0 }\n    }\n  ]\n}\n```\n\n## 抓取策略参考\n\n| 平台类型 | 常见菜单组件 | 注意事项 |\n|----------|-------------|----------|\n| 自研 SPA | qm-tree, custom-menu | 动态加载，需展开后等待 |\n| Ant Design | ant-menu, ant-tree | 支持 data-key 定位 |\n| Element UI | el-menu, el-tree | el-tree-node 定位 |\n| 纯 HTML | ul/li, table | 直接解析，最简单 |\n\n## 已验证的平台\n\n| 平台 | 状态 | 模块数 | 接口数 |\n|------|------|--------|--------|\n| 企迈(qmai) | ✅ 完成 | 32 | 307 |\n\n## 更新日志\n\n### 2026-04-27\n- 🎯 从企迈抓取经验提炼通用框架\n- 📦 创建 scrape_base.py 抽象基类\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 0,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T22:02:52.193Z",
+  "updated_at": "2026-07-11T22:02:52.193Z",
+  "fetched_at": "2026-07-11T22:31:33.249Z",
+  "source_url": "https://clawhub.ai/woai36d/skills/scraper-template"
+}

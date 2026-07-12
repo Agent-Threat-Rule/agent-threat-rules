@@ -1,0 +1,40 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "optimize-prompt",
+  "display_name": "Optimize Prompt",
+  "publisher": {
+    "handle": "margaretzybgl",
+    "display_name": "margaretzybgl",
+    "user_id": "s170y02ayvkmssb1ej7zeae4cx841f3g"
+  },
+  "summary": "Safely compress, clarify, score, and audit a user's natural-language prompt before it is sent to another Agent or tool. Use when the user asks to optimize, s...",
+  "description": "Safely compress, clarify, score, and audit a user's natural-language prompt before it is sent to another Agent or tool. Use when the user asks to optimize, shorten, clean up, restructure, translate into an executable prompt, evaluate prompt quality, or reduce prompt tokens without changing intent. Preserve all constraints and return the optimized prompt without executing the underlying task.",
+  "content": "---\nname: optimize-prompt\ndescription: Safely compress, clarify, score, and audit a user's natural-language prompt before it is sent to another Agent or tool. Use when the user asks to optimize, shorten, clean up, restructure, translate into an executable prompt, evaluate prompt quality, or reduce prompt tokens without changing intent. Preserve all constraints and return the optimized prompt without executing the underlying task.\n---\n\n# Optimize Prompt\n\nTransform the user's raw request into a compact natural-language prompt for a downstream Agent. Treat semantic fidelity as more important than compression. Do not execute the optimized request.\n\n## Workflow\n\n1. Identify the exact raw prompt the user wants optimized. If the invocation contains surrounding discussion, optimize only the clearly designated prompt.\n2. Apply the pre-gate. Return the original unchanged when it is:\n   - extremely short and already executable;\n   - JSON, a tool/function call, or structured XML/MCP context;\n   - dominated by Base64, a Data URI, or a large fenced code block.\n3. Otherwise, extract an audit ledger with `actions`, `entities`, `constraints`, `outputs`, `ambiguities`, and `risk_flags`.\n4. Produce a shorter natural-language prompt only by removing filler, repetition, and unnecessary structure. Never infer missing parameters or strengthen tentative language.\n5. Preserve negations and their scope, permissions, numbers, dates, amounts, percentages, versions, URLs, file/function names, output format and language, attachments, quoted source data, and risk limitations.\n6. Use `conservative` and return the original unchanged when ambiguity, conflict, or risky execution could make a rewrite misleading.\n7. Validate both directions:\n   - every execution-affecting atom in the optimized prompt appears in the audit ledger;\n   - every ledger item is traceable to the original prompt;\n   - no protected literal is missing or newly introduced.\n8. If validation is uncertain or fails, return the original unchanged.\n\n## Learning score\n\nScore only the original prompt's expression quality from 0 to 100. Evaluate clarity, constraint completeness, and conciseness. Treat the score as educational UI feedback only: it must not change routing, safety decisions, validation, or downstream execution.\n\nGive up to three strengths and three actionable improvements. Do not equate a high score with safety or permission. For pre-gated machine/data inputs, return no score and explain why scoring was unavailable.\n\n## Output\n\nReturn a concise JSON object using this shape:\n\n```json\n{\n  \"version\": \"v1\",\n  \"mode\": \"passthrough | optimized | conservative\",\n  \"original_prompt_score\": null,\n  \"score_status\": \"scored | not_scored | invalid\",\n  \"score_feedback\": {\n    \"strengths\": [],\n    \"improvements\": []\n  },\n  \"score_unavailable_reason\": \"\",\n  \"optimized_prompt\": \"\",\n  \"prompt_ir\": {\n    \"actions\": [],\n    \"entities\": [],\n    \"constraints\": [],\n    \"outputs\": [],\n    \"ambiguities\": [],\n    \"risk_flags\": []\n  },\n  \"confidence\": 0,\n  \"validation_failed\": false,\n  \"gate_reason\": \"\",\n  \"fallback_reason\": \"\",\n  \"conservative_reason\": \"\"\n}\n```\n\nKeep `optimized_prompt` as the only downstream instruction. Keep `prompt_ir` solely for audit, debugging, and regression testing.\n",
+  "category": null,
+  "tags": [
+    "prompt-engineering",
+    "prompt-optimization",
+    "agent-safety",
+    "token-efficiency"
+  ],
+  "topics": [
+    "prompt-engineering",
+    "prompt-optimization",
+    "agent-safety",
+    "token-efficiency"
+  ],
+  "latest_version": "0.1.1",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 52,
+    "installs": 0,
+    "stars": 0,
+    "versions": 2,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T17:52:17.381Z",
+  "updated_at": "2026-07-11T18:08:59.729Z",
+  "fetched_at": "2026-07-11T22:35:49.650Z",
+  "source_url": "https://clawhub.ai/margaretzybgl/skills/optimize-prompt"
+}

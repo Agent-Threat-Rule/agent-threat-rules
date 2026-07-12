@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "tokenlab-cost-routing",
+  "display_name": "Tokenlab Cost Routing",
+  "publisher": {
+    "handle": "hedging8563",
+    "display_name": "hedging8563",
+    "user_id": "s179rmxvstkbe8mkf3phsjrqmx8a97gy"
+  },
+  "summary": "Choose TokenLab models and fallback chains using public pricing, task fit, latency expectations, and native endpoint needs before writing production routing...",
+  "description": "Choose TokenLab models and fallback chains using public pricing, task fit, latency expectations, and native endpoint needs before writing production routing code.",
+  "content": "---\nname: tokenlab-cost-routing\ndescription: Choose TokenLab models and fallback chains using public pricing, task fit, latency expectations, and native endpoint needs before writing production routing code.\nlicense: MIT\nmetadata:\n  category: coding\n---\n\n# TokenLab Cost Routing\n\nUse this skill when a user asks how to reduce TokenLab cost, compare model prices, pick fallbacks, or route requests by quality, latency, and budget.\n\n## What this skill should deliver\n\n- A compact routing recommendation with exact public TokenLab model IDs.\n- A cost-aware fallback chain for the user's workload.\n- A catalog/pricing lookup path that can be rerun.\n- A note on which endpoint family each model should use.\n- Guardrails for when not to switch models because doing so would change output, safety, or request semantics.\n\n## Preferred approach\n\n1. Identify the workload and constraints:\n   - chat, coding, agent loop, image, video, audio, embedding, rerank, translation, or multimodal\n   - quality floor\n   - latency target\n   - budget or cost ceiling\n   - native endpoint requirement\n2. Read live public catalog signals before recommending:\n   - `GET https://api.tokenlab.sh/v1/models`\n   - `GET https://api.tokenlab.sh/v1/models?recommended_for=<scene>`\n   - `GET https://api.tokenlab.sh/v1/models/:model`\n   - `GET https://api.tokenlab.sh/v1/models/:model/pricing`\n3. Build a chain with roles:\n   - primary quality model\n   - balanced default\n   - fast fallback\n   - budget fallback\n4. If the user asks for exact cost, compute from live pricing and their estimated token/media volume. State units and assumptions.\n5. For non-chat requests, inspect model details before changing parameters or endpoint family.\n\n## Output format\n\n- One sentence stating workload and assumptions.\n- A table with `Route role`, `Model ID`, `Endpoint`, `Why`, and `When to fall back`.\n- One catalog command and one pricing command.\n- A short implementation note for retries, rate limits, and user approval when quality would drop.\n\n## Avoid\n\n- Do not invent prices, discounts, or model counts.\n- Do not choose a cheaper model if that would silently remove required native behavior, tools, media support, safety constraints, or structured output guarantees.\n- Do not expose TokenLab internal channel, physical provider, or routing details.\n- Do not turn a user-provided model into a different model without saying why.\n- Do not hardcode a fallback list without saying when it was checked or how to refresh it.\n\n## Edge Cases\n\n- If catalog or pricing endpoints are unavailable, say that routing cannot be price-verified and provide only an example pattern.\n- If the user asks for \"cheapest\", include capability and reliability tradeoffs.\n- If billing risk is high, require explicit user approval before adding automatic fallback to paid media/video generation.\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 76,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T15:57:51.539Z",
+  "updated_at": "2026-07-10T15:57:51.539Z",
+  "fetched_at": "2026-07-11T22:53:33.885Z",
+  "source_url": "https://clawhub.ai/hedging8563/skills/tokenlab-cost-routing"
+}

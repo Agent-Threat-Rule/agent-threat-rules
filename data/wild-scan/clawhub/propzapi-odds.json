@@ -1,0 +1,40 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "propzapi-odds",
+  "display_name": "Propzapi Odds",
+  "publisher": {
+    "handle": "paperandbeyond23-gif",
+    "display_name": "paperandbeyond23-gif",
+    "user_id": "s17edc087rn1cph1p54zwj4p6x8997hf"
+  },
+  "summary": "Live game odds & fixtures via propzapi.com. Three tools — pull moneyline/spreads/totals grouped by sportsbook, fixtures and live scores, and the list of cove...",
+  "description": "Live game odds & fixtures via propzapi.com. Three tools — pull moneyline/spreads/totals grouped by sportsbook, fixtures and live scores, and the list of covered books. Normalized across books so you don't scrape each one.",
+  "content": "---\nname: propzapi-odds\nversion: 1.0.0\ndescription: Live game odds & fixtures via propzapi.com. Three tools — pull moneyline/spreads/totals grouped by sportsbook, fixtures and live scores, and the list of covered books. Normalized across books so you don't scrape each one.\nlicense: MIT-0\nauthor: propzapi\nhomepage: https://propzapi.com\nrepository: https://github.com/paperandbeyond23-gif/propzapi-skills\ntags:\n  - propzapi\n  - sports-odds\n  - odds-api\n  - moneyline\n  - spreads\n  - totals\n  - sports-betting\n  - api\n  - mcp\nmetadata:\n  openclaw:\n    primaryEnv: PROPZAPI_KEY\n    homepage: https://propzapi.com\n    requires:\n      env:\n        - PROPZAPI_KEY\n---\n\n# propzapi-odds\n\nLive game odds and fixtures via [propzapi.com](https://propzapi.com). Use when the user **explicitly asks** for the odds/moneyline/spread/total on a game or league, or the schedule/scores — and wants real sourced numbers.\n\nOdds live behind a dozen sportsbook sites, each with its own markup. This skill normalizes moneyline, spreads and totals across books into one JSON shape.\n\n## When to use this skill\n\nCalls spend propzapi credits (`get_odds` 1 for a single market / 3 for all game markets; `get_events` and `get_books` 1 each), so this activates only when the request is genuinely about live odds.\n\n**DO use when the user:**\n\n- Asks for the odds / moneyline / spread / total on a game or league → `get_odds`\n- Asks what games are on, live scores, or the schedule → `get_events`\n- Asks which sportsbooks are covered → `get_books`\n\n**Do NOT use** for player props (use `propzapi-props` / `propzapi-full`), season stats, or a betting *pick*.\n\n## Tools\n\n### `get_odds` — game odds grouped by book\nMoneyline, spreads and totals for upcoming games. Args: `league` (e.g. `NBA`, `NFL`, `MLB`, `NHL`, `EPL`, `MLS`), `sport`, `market` (`h2h` | `spreads` | `totals`; omit for all game markets), `limit` (1–100, default 25). Costs 1 credit for a single market, 3 for all.\n\n### `get_events` — fixtures & live scores\nGames and live scores, no odds. Args: `league`, `sport`, `status` (`upcoming` | `live` | `final`), `limit`. Costs 1 credit.\n\n### `get_books` — covered sportsbooks\nThe sportsbooks currently normalized. No args. Costs 1 credit.\n\n## Authentication\n\nSet `PROPZAPI_KEY` to your propzapi key (`pk_live_...`), sent as the `X-API-Key` header.\n\n```bash\nexport PROPZAPI_KEY=\"pk_live_...\"\n```\n\nGet a free key (500 free credits, no card) at <https://propzapi.com/app>.\n\n## Pricing\n\nMetered by market; the exact charge is returned in the `X-Credits-Cost` header. Free 500/mo · Indie $19 (25k) · Pro $49 (100k) · Scale $149 (1M). See <https://propzapi.com/pricing>.\n\n## Errors\n\nEach function returns a dict; on failure it has an `error` key: `auth_required`, `auth_invalid`, `out_of_credits` (with `upgrade_url`), `not_found`, `rate_limit_exceeded`, `upstream_unavailable`, `invalid_argument`, `network`, or `HTTP <code>`.\n\n## Independence\n\npropzapi is an independent developer tool that aggregates publicly listed sportsbook odds. It is not a sportsbook, does not accept wagers, and does not provide betting advice. Odds are informational and may be delayed.\n",
+  "category": null,
+  "tags": [
+    "propzapi",
+    "sports-odds",
+    "odds-api",
+    "moneyline",
+    "spreads",
+    "totals",
+    "sports-betting",
+    "api",
+    "mcp"
+  ],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 80,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T03:56:58.662Z",
+  "updated_at": "2026-07-10T03:56:58.662Z",
+  "fetched_at": "2026-07-11T23:07:47.855Z",
+  "source_url": "https://clawhub.ai/paperandbeyond23-gif/skills/propzapi-odds"
+}

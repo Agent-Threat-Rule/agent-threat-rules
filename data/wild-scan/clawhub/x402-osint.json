@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "x402-osint",
+  "display_name": "x402 OSINT",
+  "publisher": {
+    "handle": "jienweng",
+    "display_name": "Jien Weng",
+    "user_id": "s171t3t54wj8e5xwpcrvj7t48d84t32n"
+  },
+  "summary": "Perform paid OSINT lookups on usernames or emails to find public profiles and footprint data, paid in USDC on Base via x402 with no API keys needed.",
+  "description": "Perform paid OSINT lookups on usernames or emails to find public profiles and footprint data, paid in USDC on Base via x402 with no API keys needed.",
+  "content": "# x402 OSINT Skill\n\nPay-per-call OSINT for OpenClaw agents: find the public footprint behind a username\nor email, paid automatically in USDC on Base via x402. No API keys, no accounts.\n\n## Install\n\n```\nopenclaw skills install @JienWeng/x402-osint\n```\n\n## Prerequisites\n\n- `EVM_PRIVATE_KEY` — a Base wallet funded with a few dollars of USDC. The agent signs\n  the x402 payment; the facilitator covers gas (no ETH needed).\n- `MAX_SPEND_PER_CALL` — recommended `$0.05` (a full report is $0.05; a lookup is $0.01).\n\n## Activation triggers\n\n- \"look up the username <handle>\"\n- \"what accounts is <handle> on\"\n- \"check the email <address>\"\n- \"run an OSINT report on <handle>\"\n- \"profile this handle: <handle>\"\n\n## Commands (OpenClaw's x402 auto-handler pays + retries transparently)\n\n| Intent | Request | Price |\n|---|---|---|\n| Free trial | `GET https://x402-osint.tail66f665.ts.net/trial/osint/{username}` | free |\n| Username lookup | `GET https://x402-osint.tail66f665.ts.net/osint/{username}` | $0.01 |\n| Identity report | `GET https://x402-osint.tail66f665.ts.net/report/{username}` | $0.05 |\n| Email lookup | `GET https://x402-osint.tail66f665.ts.net/email/{address}` | $0.03 |\n\nEvery response includes a natural-language `summary` field the agent can use directly.\n\n## MCP alternative (free discovery tools)\n\n```json\n{ \"mcpServers\": { \"x402-osint\": { \"url\": \"https://x402-osint.tail66f665.ts.net:10000/mcp\" } } }\n```\nTools: `osint_lookup(username)`, `osint_email(address)`. For depth, use the paid HTTP endpoints.\n\n## Responsible use\n\nPublic profiles only. Use for legitimate purposes — recruiting research, prospecting,\ndue diligence, trust & safety, brand protection, or a person's own exposure audit.\nNot for harassment, stalking, or profiling specific individuals without a lawful basis.\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 88,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T11:59:53.171Z",
+  "updated_at": "2026-07-11T11:59:53.171Z",
+  "fetched_at": "2026-07-11T22:45:51.566Z",
+  "source_url": "https://clawhub.ai/jienweng/skills/x402-osint"
+}

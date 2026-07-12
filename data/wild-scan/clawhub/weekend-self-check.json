@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "weekend-self-check",
+  "display_name": "Weekend Self Check",
+  "publisher": {
+    "handle": "colbertlee",
+    "display_name": "colbertlee",
+    "user_id": "s17czvdf5kq47c4r80rv4t9pds857ye5"
+  },
+  "summary": "Automatically performs a comprehensive system, cron task, skill framework, data layer, and known issues check every Saturday at 10:00 and sends a detailed Fe...",
+  "description": "Automatically performs a comprehensive system, cron task, skill framework, data layer, and known issues check every Saturday at 10:00 and sends a detailed Fe...",
+  "content": "# weekend-self-check skill\n\n## 用途\n每周六 10:00 执行码虫周末全面自检，覆盖系统状态/Cron任务/技能体系/数据驱动层/已知问题，输出完整自检报告并发送飞书。\n\n## 触发\n- 时间：`0 10 * * 6`（周六 10:00）\n- 超时：`timeoutSeconds=600`（command payload 显式超时，HOT-20260515 高风险 10 分钟）\n- SIGTERM 真正可中断（v1.4）：脚本内置 signal handler + async Popen，主循环 0.5s 内检测中断，kill 子进程 + 发飞书告警 + exit 130\n\n## 执行流程\n\n### 第一步：系统状态核查\n```bash\nbash CODIS-DATA/sync.sh\npython3 CODIS-DATA/read_data.py all\nopenclaw cron list\nls -la skills/ | tail -5 && ls skills/ | wc -l\nls memory/ && ls memory/tasks/ | wc -l && ls memory/daily-reports/ | wc -l\n```\n\n### 第二步：Cron任务状态分析\n- 统计：total / ok / error / idle 数量\n- 列出所有 error 状态任务\n- 列出 idle 超7天的任务\n- 检查重复/冲突的 cron 任务\n\n### 第三步：技能体系全面核查\n- 检查 `CODIS-DATA/state/skills-stats.json`\n- 找出有反馈但无评分的技能\n- 检查最近7天/超过30天未更新的技能\n\n### 第四步：数据驱动层状态\n- `case-stats.json` — 案例数/有效率\n- `efficiency-stats.json` — entries数量\n- `corrections-summary.json` — corrections状态\n- `hot-rules.json` — HOT rules\n- `data-registry.json` — registry_version\n\n### 第五步：已知问题深度检查\n- `.learnings/ERRORS.md` — 错误记录\n- `.learnings/LEARNINGS.md` — 学习记录\n- `corrections-summary.json` — pending状态\n\n## 输出格式\n\n```markdown\n## 🛠 码虫周末全面自检 · YYYY-MM-DD [v1.2]\n\n### 📊 系统状态总览\n| 指标 | 数值 |\n|------|------|\n| 总技能数 | X |\n| Cron任务(total/ok/error/idle) | X/X/X/X |\n| 案例总数 | X |\n| 数据Registry版本 | vXX |\n\n### 📊 Cron任务状态\n（表格：任务名/Job ID/状态/最后执行/备注）\n\n🔴 问题任务（需要修复）：...\n🟡 长时间未执行：...\n\n### 🛠 技能体系状态\n| 指标 | 数值 |\n|------|------|\n| 有反馈技能 | X |\n| 有评分技能 | X |\n| 无反馈技能 | X |\n| 最近7天更新 | X |\n| 超过30天未更新 | X |\n\n⚠️ 有反馈无评分技能：...\n\n### 📊 数据驱动层状态\n（数据源/数值/状态表格）\n\n### 📋 已知问题检查\n- ERRORS.md 最新记录：...\n- LEARNINGS.md 最新记录：...\n- corrections 状态：total/new/active\n\n### 🐛 下周行动项\n1. ...\n2. ...\n\n---\n📌 整理：码虫 🐛\n🤖 模型：minimax/MiniMax-M3\n📡 来源：系统状态/Cron任务/技能体系/数据驱动层\n📅 日期：YYYY-MM-DD\n---\n🛠 技能：weekend-self-check\n```\n\n## 依赖\n- `CODIS-DATA/sync.sh`\n- `CODIS-DATA/read_data.py`\n- `CODIS-DATA/send_feishu_report.py`\n- `openclaw cron list`（系统命令）\n\n## 版本\n- v1.2：标准化尾部信息 + 五步骤结构化自检\n- v1.3 (2026-07-11)：SIGTERM-safe + 真实状态解析器（ERR-20260711-001 闭环 v1）\n  - 解析器：旧版依赖 ● ✓ ✗ 字符 → v1.3 按 status: 字段 fixed-width 匹配（OpenClaw 6.x 兼容）\n  - SIGTERM handler：捕获系统信号 → 打诊断 + 发飞书中断告警（best-effort 5s）\n  - --dry-run：验证流程，不发飞书\n  - --no-send：CI 模式，跑流程不发飞书\n  - 系统健康采集：内存/CPU/最近 OOM/gateway 状态全部进报告\n- v1.4 (2026-07-11)：SIGTERM 真正可中断 + 异步 sync（ERR-20260711-001 闭环 v2）\n  - **v1.3 缺陷**：handler 只设置 flag，主流程在 subprocess.run 同步阻塞期间 flag 无效 → 11:31 SIGTERM 时脚本 4.2s 内被外层 SIGKILL\n  - **v1.4 修复**：\n    - `safe_run_interruptible()`：Popen 启动子进程 + 主循环 0.5s poll `_INTERRUPTED`，检测到立即 SIGTERM 子进程 → 2s → SIGKILL\n    - `_check_interrupt(label)`：统一中断检查函数，每个 step 完成后调用\n    - sync.sh 改成异步调用，主循环每 0.5s 检测中断标志\n    - 加 `--skip-sync`：调试用，跳过 sync 步骤\n  - **cron timeoutSeconds: 540 → 600**（HOT-20260515 高风险 10 分钟对齐 SKILL.md）\n  - 验证：实测 SIGTERM 后 0.5s 内响应 + 退出码 130 + 子进程无残留\n\n## 验证命令\n```bash\n# 1. 语法检查\npython3 -c \"import ast; ast.parse(open('skills/weekend-self-check/weekend-self-check.py').read())\"\n\n# 2. Dry-run 完整流程\npython3 skills/weekend-self-check/weekend-self-check.py --dry-run\n\n# 3. SIGTERM 模拟（验证 v1.4 可中断）\n(python3 -u skills/weekend-self-check/weekend-self-check.py --dry-run > /tmp/wsc.log 2>&1) &\nWSC_PID=$!\nsleep 0.5\nkill -TERM $WSC_PID\nwait $WSC_PID; echo \"退出码=$?\"  # 应输出 130\ncat /tmp/wsc.log\n\n# 4. 真发送（手动触发，谨慎）\npython3 skills/weekend-self-check/weekend-self-check.py\n```",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.4.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 102,
+    "installs": 1,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-11T08:16:13.287Z",
+  "updated_at": "2026-07-11T08:16:13.287Z",
+  "fetched_at": "2026-07-11T22:47:58.635Z",
+  "source_url": "https://clawhub.ai/colbertlee/skills/weekend-self-check"
+}

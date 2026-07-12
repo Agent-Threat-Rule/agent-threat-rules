@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "feature-flags",
+  "display_name": "Feature Flags",
+  "publisher": {
+    "handle": "chen6896qqwee",
+    "display_name": "chen6896qqwee",
+    "user_id": "s17d04jj6mht3atggbc0865zph83hbzy"
+  },
+  "summary": "Remote feature flag / toggle system for AI agents — enable/disable features without redeploy. Distilled from Claude Code GrowthBook integration.",
+  "description": "Remote feature flag / toggle system for AI agents — enable/disable features without redeploy. Distilled from Claude Code GrowthBook integration.",
+  "content": "---\nname: feature-flags\ndescription: Remote feature flag / toggle system for AI agents — enable/disable features without redeploy. Distilled from Claude Code GrowthBook integration.\nmetadata:\n  openclaw:\n    requires:\n      bins: [python3]\n---\n\n# Feature Flags\n\nDistilled from Claude Code GrowthBook integration. Remote feature toggle system\nthat lets you enable/disable features, run A/B tests, and push configuration\nupdates without redeploying.\n\n## When to use\n\n- Roll out new features gradually (10% → 50% → 100%)\n- Kill switch for problematic features\n- A/B test different behaviors\n- Per-user/per-org feature gating\n- Remote configuration without redeploy\n\n## How it works\n\n1. **Flag Definitions** — JSON/YAML file defining all feature flags\n2. **Remote Polling** — Optional HTTP endpoint for remote flag updates\n3. **Local Override** — CLI to override flags for testing\n4. **Evaluation** — Check flag state with user/org context\n\n## Usage\n\n`\bash\n# Check a flag\npython3 {baseDir}/flags.py --check new-ui\n\n# List all flags\npython3 {baseDir}/flags.py --list\n\n# Override a flag locally\npython3 {baseDir}/flags.py --override new-ui=true\n\n# Set up remote polling\npython3 {baseDir}/flags.py --poll-url http://localhost:8080/flags\n\n# Export flags as JSON\npython3 {baseDir}/flags.py --export\n`\n\n## Flag definition format\n\n`json\n{\n  \"new-ui\": {\n    \"default\": false,\n    \"description\": \"New UI redesign\",\n    \"rules\": [\n      {\"condition\": \"user_id == 'admin'\", \"value\": true},\n      {\"condition\": \"org == 'beta'\", \"value\": true}\n    ]\n  },\n  \"experimental-search\": {\n    \"default\": false,\n    \"rollout\": 0.1,\n    \"description\": \"Experimental search v2 (10% rollout)\"\n  }\n}\n`\n\n## Algorithm reference\n\nBased on Claude Code GrowthBook integration:\n- JSON-based flag definitions\n- Remote polling with configurable interval\n- User/org context evaluation\n- Gradual rollout (percentage-based)\n- Forced override for testing\n- Feature usage tracking",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 69,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T01:49:55.820Z",
+  "updated_at": "2026-07-10T01:49:55.820Z",
+  "fetched_at": "2026-07-11T23:09:29.436Z",
+  "source_url": "https://clawhub.ai/chen6896qqwee/skills/feature-flags"
+}

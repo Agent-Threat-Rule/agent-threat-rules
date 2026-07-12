@@ -1,0 +1,38 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "fulcra-meeting-briefing",
+  "display_name": "Fulcra Meeting Briefing",
+  "publisher": {
+    "handle": "arc-claw-bot",
+    "display_name": "Arc from Fulcra.ai",
+    "user_id": "s177v15fjt9pn5v99vms8sqkfn86vdwr"
+  },
+  "summary": "Generate private meeting briefings from Fulcra calendar data with optional CRM notes and web research.",
+  "description": "Generate private meeting briefings from Fulcra calendar data with optional CRM notes and web research.",
+  "content": "---\nname: fulcra-meeting-briefing\ndescription: \"Generate private meeting briefings from Fulcra calendar data with optional CRM notes and web research.\"\nhomepage: https://fulcradynamics.com\n---\n\n# Fulcra Meeting Briefing\n\nUse this skill when the user wants upcoming-meeting prep, same-day meeting intel, next-day meeting briefings, attendee research, or CRM-assisted relationship context.\n\n## Inputs\n\n- Fulcra calendar events from the authenticated Fulcra CLI or API.\n- Optional CRM notes supplied by the user, a configured CRM directory, or files already in the current workspace.\n- Optional web research when the user asks for it or the CRM context is too thin.\n\n## Workflow\n\n1. Verify auth and get calendar events for the requested window with the Fulcra CLI or API.\n2. Qualify only meaningful meetings:\n   - include external meetings with attendees plus a meeting link or non-home location\n   - exclude solo blocks, personal appointments, health appointments, family events, internal-only events, and standing non-meeting blocks\n   - preserve the exact calendar title\n3. Identify the primary attendee from organizer, external attendees, title, email domain, or user-provided context.\n4. Build the briefing from available evidence:\n   - confirmed meeting facts: title, time, participants, location/link presence\n   - relationship context from CRM or prior notes\n   - company/domain context from attendee emails\n   - public research only when allowed and useful\n5. Fail closed when context is too thin. Do not post filler. Return a short diagnostic privately or say no reliable briefing could be generated.\n6. Save output only when the user asks or a local workflow has an explicit destination.\n\n## Fulcra Calendar Preflight\n\nUse the current CLI surfaces before building a briefing:\n\n```bash\nuv tool run fulcra-api user-info\nuv tool run fulcra-api data-updates \"1 day\"\nuv tool run fulcra-api calendar-events \"1 day\"\nuv tool run fulcra-api calendars\n```\n\nBefore using new auth or calendar options, inspect live help:\n\n```bash\nuv tool run fulcra-api auth login --help\nuv tool run fulcra-api calendar-events --help\nuv tool run fulcra-api data-updates --help\n```\n\nGitHub main may contain unreleased CLI options. Live `uv tool run fulcra-api ... --help` is the authority for commands the user can run now.\n\nWhen `data-updates` is available, use it as a calendar freshness preflight for the requested meeting window before attendee research. It is a summary signal only:\n\n- If `data-updates` shows calendar changes and `calendar-events` returns events, proceed with normal qualification.\n- If `data-updates` shows no calendar changes but `calendar-events` returns events, proceed; already-synced calendar state can still be valid.\n- If both are empty, say no qualifying meetings were found or calendar sync may be missing, depending on `calendars` and user context.\n- Do not start public web research until a real meeting target is confirmed.\n\n## Output\n\nKeep briefings concise and useful:\n\n- who the person is\n- why the meeting likely matters\n- relationship or prior-context notes\n- company or market context\n- Fulcra-relevant angle, if any\n- concrete questions or follow-ups\n\n## Privacy\n\n- Calendar, attendee, CRM, location, and briefing content are private.\n- Do not expose real calendar details, locations, private CRM notes, or attendee contact details in public examples.\n- Do not assume a local CRM path, local scripts, private credentials, or Arc-specific infrastructure.\n- Keep auth tokens out of chat. Device-code URLs are okay only when the user explicitly needs to authenticate.\n- In group channels, summarize only safe metadata unless the user explicitly approves real calendar details.\n- Public examples and tests must use synthetic events and synthetic attendees.\n\n## Generic Integration Notes\n\n- Preferred CLI base command: `uv tool run fulcra-api`.\n- If `calendar-events` returns empty, distinguish no meetings from missing sync/auth/data-source issues before generating a briefing.\n- Use `data-updates` when available to check whether calendar data changed in the requested window; do not treat update counts as meeting facts.\n- Use data availability/source diagnostics where configured, or ask the user to confirm Context app/calendar sync.\n- Use a configured CRM path only if one is provided, for example `FULCRA_MEETING_CRM_DIR`.\n- Use a configured output path only if one is provided, for example `FULCRA_MEETING_BRIEFINGS_DIR`.\n- Local Arc scripts may be useful examples, but ClawHub users should not need `projects/meeting-briefer/` or Arc's private CRM.\n",
+  "category": null,
+  "tags": [
+    "Meeting",
+    "CRM",
+    "Calendar"
+  ],
+  "topics": [
+    "Meeting",
+    "CRM",
+    "Calendar"
+  ],
+  "latest_version": "0.1.1",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 408,
+    "installs": 6,
+    "stars": 7,
+    "versions": 2,
+    "comments": 0
+  },
+  "created_at": "2026-06-03T14:09:44.966Z",
+  "updated_at": "2026-07-09T18:39:19.103Z",
+  "fetched_at": "2026-07-11T23:11:51.378Z",
+  "source_url": "https://clawhub.ai/arc-claw-bot/skills/fulcra-meeting-briefing"
+}

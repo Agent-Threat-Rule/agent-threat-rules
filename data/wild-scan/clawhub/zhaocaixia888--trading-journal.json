@@ -1,0 +1,40 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "trading-journal",
+  "display_name": "Trading Journal",
+  "publisher": {
+    "handle": "zhaocaixia888",
+    "display_name": "zhaocaixia888",
+    "user_id": "s179katse3ygkpwk1b6m97b9d1871r6s"
+  },
+  "summary": "Record and manage futures/stock trades with standardized templates, calculate P&L, analyze performance, search entries, and export journals in Markdown or CSV.",
+  "description": "Record, manage, and analyze futures/stock trading journals. Use when the user needs to: (1) log trade entries with standardized templates, (2) calculate P&L and statistical summaries, (3) archive and search trade notes, (4) generate performance analysis and reports, (5) export journals to Markdown or CSV format.",
+  "content": "---\nname: trading-journal\ndescription: Record, manage, and analyze futures/stock trading journals. Use when the user needs to: (1) log trade entries with standardized templates, (2) calculate P&L and statistical summaries, (3) archive and search trade notes, (4) generate performance analysis and reports, (5) export journals to Markdown or CSV format.\nemoji: 📓\nmetadata:\n  openclaw:\n    requires:\n      bins:\n        - python3\n---\n\n# Trading Journal — 交易日志管理\n\nRecord and analyze futures/stock trading journals. Supports structured trade logging, P&L tracking, performance analytics, and multi-format export.\n\n## Architecture\n\n```\nTrade Entry → [Journal] → Log → [Analysis] → Stats / Reports\n                 ↑                        ↓\n           Template Driven          Export (MD/CSV)\n```\n\n## Core Workflows\n\n### Workflow 1: Log a Trade Entry\n\nUse the standardized template to record a trade:\n\n**Template fields:**\n\n| Field | Description | Example |\n|:------|:------------|:--------|\n| date | Trade date | 2026-05-20 |\n| symbol | Contract/stock code | IF2606, 000001 |\n| direction | Long or Short | long / short |\n| entry_price | Entry price | 3850.0 |\n| exit_price | Exit price | 3900.0 |\n| quantity | Number of contracts/shares | 2 |\n| multiplier | Contract multiplier (futures) | 300 |\n| entry_time | Entry timestamp | 09:35 |\n| exit_time | Exit timestamp | 14:20 |\n| fees | Commission + slip | 45.60 |\n| strategy | Strategy tag | trend_follow |\n| notes | Free-text notes | \"突破前高入场\" |\n| tags | Custom tags | [\"股指\", \"日内\"] |\n\n**Full JSON template:**\n```json\n{\n  \"date\": \"2026-05-20\",\n  \"symbol\": \"IF2606\",\n  \"direction\": \"long\",\n  \"entry_price\": 3850.0,\n  \"exit_price\": 3900.0,\n  \"quantity\": 2,\n  \"multiplier\": 300,\n  \"entry_time\": \"09:35\",\n  \"exit_time\": \"14:20\",\n  \"fees\": 45.60,\n  \"strategy\": \"trend_follow\",\n  \"notes\": \"突破前高入场，尾盘止盈\",\n  \"tags\": [\"股指\", \"日内\", \"趋势\"]\n}\n```\n\nTo log a trade:\n1. Ask user for trade details, or accept them in free-text format\n2. Map to the standard template\n3. Append to the daily journal file via the `scripts/trade_logger.py` script\n4. Calculate P&L and confirm with user\n\n### Workflow 2: Calculate P&L\n\nAuto-calculated based on template fields:\n\n**Futures P&L:**\n```\nP&L = (exit_price - entry_price) × quantity × multiplier × direction_sign - fees\n```\n\n**Stock P&L:**\n```\nP&L = (exit_price - entry_price) × quantity - fees\n```\n\nWhere `direction_sign` = 1 for long, -1 for short.\n\nThe system handles:\n- Open trades (no exit price — show unrealized P&L using current market price)\n- Partial fills (quantity adjustments)\n- Multi-leg strategies (aggregate P&L)\n\n### Workflow 3: Performance Analysis\n\nRun analytics on journal entries using `scripts/trade_analyzer.py`:\n\n**Metrics computed:**\n\n| Metric | Formula |\n|:-------|:--------|\n| Win Rate | wins / total_closed × 100% |\n| Total P&L | Σ(closed_trade_P&L) |\n| Avg Win | Σ(win_P&L) / wins |\n| Avg Loss | Σ(loss_P&L) / losses |\n| Profit Factor | Σ(gross_profit) / Σ(gross_loss) |\n| Sharpe Ratio | avg_return / std_return × √252 |\n| Max Drawdown | Max peak-to-trough decline |\n| Best/Worst Trade | Max/min single trade P&L |\n| Daily Average | Total P&L / trading_days |\n\n**Analysis frequency:**\n- **Daily**: Quick summary of today's trades\n- **Weekly**: Performance trends, strategy comparison\n- **Monthly**: Full analytics report\n- **Custom**: Any date range specified by user\n\n### Workflow 4: Archive & Search\n\nJournal files are organized by date:\n\n```\njournals/\n├── 2026/\n│   ├── 2026-05/\n│   │   ├── 2026-05-18.json    # Day trades\n│   │   ├── 2026-05-19.json\n│   │   └── 2026-05-20.json\n│   └── 2026-06/\n│       └── 2026-06-01.json\n└── archive/\n    └── 2025-journal.jsonl\n```\n\nSearch across journals by:\n- Date range (YYYY-MM-DD to YYYY-MM-DD)\n- Symbol (e.g., IF, IC, CU)\n- Direction (long/short)\n- Strategy tag\n- P&L range\n- Custom text search in notes\n\n### Workflow 5: Export\n\nExport journals to preferred format:\n\n| Format | Use Case | Command |\n|:-------|:---------|:--------|\n| Markdown | Human-readable report, docs | `python journal_export.py --format md --output report.md` |\n| CSV | Spreadsheet analysis, import | `python journal_export.py --format csv --output trades.csv` |\n| JSON | Data interchange, backup | `python journal_export.py --format json --output trades.json` |\n\n## Usage Guide\n\n### A) Recording a New Trade\n\nWhen user says \"记一笔交易\" or provides trade details:\n\n1. Parse trade info from user's natural language\n2. Confirm parsed fields with user\n3. Run: `python scripts/trade_logger.py add <json_string>`\n4. Show calculated P&L and confirmation\n\n**Example interaction:**\n```\nUser: 今天IF2606做多2手，3850进场，3900平仓\nAgent: 📓 记录交易：\n  IF2606 | LONG | 3850 → 3900 | 2手\n  P&L: (3900-3850)×2×300 - 费用 = ¥29,954.40\n  确认记录？(是/否)\n```\n\n### B) Checking Performance\n\nWhen user asks \"看看收益\" / \"我的交易怎么样\":\n\n1. Determine time range (today/this week/this month/custom)\n2. Run analyzer: `python scripts/trade_analyzer.py --range 2026-05-01 2026-05-20`\n3. Present formatted results\n\n**Example output:**\n```\n📊 交易绩效报告 (2026-05-01 ~ 2026-05-20)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  总交易数:  24\n  胜率:      70.83% (17/24) 🟢\n  总盈亏:    +¥186,520.00 🟢\n  平均盈利:  +¥16,250.00\n  平均亏损:  -¥4,830.00\n  盈亏比:    3.36\n  最大回撤:  -¥12,400.00\n  最佳交易:  +¥45,000.00 (IF2606, 05-08)\n  最差交易:  -¥8,200.00 (IC2609, 05-12)\n```\n\n### C) Exporting Data\n\nWhen user asks to export:\n\n1. Confirm format and date range\n2. Run export script with appropriate parameters\n3. Show export path and summary\n\n## Scripts\n\n### `scripts/trade_logger.py`\nCore trade logging — add, edit, delete, and list journal entries.\n\n### `scripts/trade_analyzer.py`\nPerformance analysis — compute metrics, generate reports for any date range.\n\n### `scripts/journal_export.py`\nMulti-format export — output journals to Markdown, CSV, or JSON.\n\n## Special Notes\n\n- Journal files are stored in `journals/` directory within this skill folder\n- Each day gets one JSON file; multiple trades append to the same file\n- P&L is calculated on entry, not just on display\n- Open positions are tracked with `exit_price: null` and `open: true`\n- All monetary values are in CNY (¥)\n- Fees should include commission + slippage + stamp duty where applicable\n- Journal data is local-only — no external API calls\n",
+  "category": null,
+  "tags": [
+    "Trading",
+    "CSV",
+    "Stock",
+    "交易"
+  ],
+  "topics": [
+    "Trading",
+    "CSV",
+    "Stock",
+    "交易"
+  ],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 329,
+    "installs": 10,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-06-02T15:39:38.178Z",
+  "updated_at": "2026-06-02T15:39:38.178Z",
+  "fetched_at": "2026-07-11T23:08:14.340Z",
+  "source_url": "https://clawhub.ai/zhaocaixia888/skills/trading-journal"
+}

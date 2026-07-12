@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "xhs-research",
+  "display_name": "Xhs Research",
+  "publisher": {
+    "handle": "cooperiano",
+    "display_name": "Duanmu Junqi",
+    "user_id": "s17ac54vh7hy0d3t4tpfd8pkad8596et"
+  },
+  "summary": "小红书深度研究：话题搜索+总结/趋势分析/多模态报告/每日简报，支持发布回小红书",
+  "description": "小红书深度研究：话题搜索+总结/趋势分析/多模态报告/每日简报，支持发布回小红书",
+  "content": "---\nname: \"xhs-research\"\ndescription: \"小红书深度研究：话题搜索+总结/趋势分析/多模态报告/每日简报，支持发布回小红书\"\nuser-invocable: true\nmetadata:\n  openclaw:\n    emoji: \"🔬\"\n    tags: [\"xiaohongshu\", \"research\", \"analysis\", \"trends\", \"report\"]\n---\n\n# XHS Research v2.0\n\n## 定位\n分析研究层。数据→`xhs-data`，运营→`xhs-ops`。\n\n---\n\n## 研究流程\n1. 关键词扩展(主词+3-4长尾)\n2. 调用 `xhs-data` 搜索+去重，Top 20-50\n3. 爆款分析(登录态获取详情和评论)\n4. AI 多模态报告生成\n\n---\n\n## 爆款分析指标\n\n| 指标 | 公式 | 判断 |\n|------|------|------|\n| 赞藏比 | 点赞÷收藏 | <1实用, >3情绪 |\n| 评论比 | 评论÷点赞 | >0.1高互动 |\n| 入池差 | 平均互动-当前互动 | 判断是否入推荐池 |\n\n---\n\n## 报告模板\n\n```markdown\n# {主题} 小红书研究\n\n## 📱 速览(可转发)\n{2-3段口语化总结}\n\n## 📊 数据概览 | N篇/{likes}赞/{collects}藏\n\n## 🔝 Top 10\n1. **标题** @作者 | 👍{} 📁{} | [查看](link)\n\n## 🔍 深度分析\n{按主题归并，不逐帖罗列}\n\n## 💡 趋势洞察\n## 📎 原始数据路径\n```\n\n### 写作风格\n速览像朋友聊天，正文简洁，不用官腔。\n\n---\n\n## 每日简报工作流\n1. 前置：`mcporter` + `xiaohongshu-mcp` 配置\n2. 编辑 `config/topics.json`\n3. `python scripts/run_daily.py --topic <topic> --dry-run`\n4. 检查草稿 → 满意后 `--publish`\n\n---\n\n## 限制\n- 未登录可能获取不到详情\n- 搜索频率须保守\n- 不要自动全量发布\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 36,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T03:48:05.765Z",
+  "updated_at": "2026-07-10T03:48:05.765Z",
+  "fetched_at": "2026-07-11T23:08:02.770Z",
+  "source_url": "https://clawhub.ai/cooperiano/skills/xhs-research"
+}

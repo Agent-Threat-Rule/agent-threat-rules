@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "freight-lane-pricing-decision",
+  "display_name": "Freight Broker — Lane Pricing & Load Decision",
+  "publisher": {
+    "handle": "deciqai",
+    "display_name": "deciqAI",
+    "user_id": "s17a4mqcnk515kvaca5ze55d0x88pfpx"
+  },
+  "summary": "Activate when: a freight broker must quote a lane and decide accept/counter/pass on a load or carrier rate; 'what should I quote', 'is this rate any good', m...",
+  "description": "Activate when: a freight broker must quote a lane and decide accept/counter/pass on a load or carrier rate; 'what should I quote', 'is this rate any good', margin vs win-probability on a lane. Do NOT activate when: a contracted rate already governs the lane (no decision).",
+  "content": "---\nname: freight-lane-pricing-decision\ndescription: \"Activate when: a freight broker must quote a lane and decide accept/counter/pass on a load or carrier rate; 'what should I quote', 'is this rate any good', margin vs win-probability on a lane. Do NOT activate when: a contracted rate already governs the lane (no decision).\"\n---\n\n# Freight Broker — Lane Pricing & Load Decision\n\n> **Industry front door for decision-tree.** Adds domain triggers, example, packs. Parent Process unchanged.\n\n**Activate when:** quoting a shipper; deciding whether to accept a carrier's rate; spot vs contract; a tight-margin load; reposition/deadhead trade-offs.\n**Do NOT activate when:** a locked contract rate applies.\n\n## Why this variant\nThe parent decision-tree maps branching choices with payoffs and probabilities. A load quote is a decision tree: quote high (higher margin, lower win) vs low (win, thin margin) vs pass — against carrier cost, market rate, and relationship value.\n\n## Domain inputs → the tree\n- Branch on: market lane rate (DAT/Truckstop benchmarks), carrier cost to cover, shipper relationship value, reposition/deadhead, timing/urgency.\n- Roll back expected value: margin × win-probability, plus relationship option value for key shippers.\n- Decide accept / counter / pass; protect against covering below carrier cost.\n\n## Worked example\nShipper offers $1,800; market ~$2,100; a carrier will haul for $1,650.\n→ Tree: covering at $1,650 nets $150 — thin but the shipper is a top-5 account (relationship value). Counter to $1,950 first; if declined, take it to hold the account; pass only if no carrier covers profitably.\n\n## Packs\n- **Solo broker**: quick margin × win-rate card per lane.\n- **Brokerage**: benchmark-fed pricing rules; minimum-margin floors.\n\n## Red flags\n- Quoting off gut, not the market benchmark.\n- Covering below carrier cost to \"win.\"\n- Ignoring reposition/deadhead in true cost.\n\n## Verification\n- [ ] Market benchmark pulled for the lane\n- [ ] Carrier cost-to-cover known\n- [ ] Margin × win-probability compared across accept/counter/pass\n- [ ] Relationship/option value weighed for key accounts\n\n---\n*Part of **deciqAI Knowledge Skills** — 223 open-source thinking skills that make rigor executable for AI agents. The same skills power every deciqAI agent, which runs them autonomously to operate your company. **See it run → https://www.deciqai.com/c/freight-lane-pricing-decision** · ⭐ Star the repo → https://github.com/deciqAI/knowledge-skills · Contributions welcome.*\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 101,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T09:22:56.969Z",
+  "updated_at": "2026-07-10T09:22:56.969Z",
+  "fetched_at": "2026-07-11T22:58:38.223Z",
+  "source_url": "https://clawhub.ai/deciqai/skills/freight-lane-pricing-decision"
+}

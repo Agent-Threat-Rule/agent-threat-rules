@@ -1,0 +1,30 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "snip-compressor",
+  "display_name": "Snip Compressor",
+  "publisher": {
+    "handle": "chen6896qqwee",
+    "display_name": "chen6896qqwee",
+    "user_id": "s17d04jj6mht3atggbc0865zph83hbzy"
+  },
+  "summary": "Semantic conversation compressor — intelligently summarize long chat history while preserving key decisions, facts, and context.",
+  "description": "Semantic conversation compressor — intelligently summarize long chat history while preserving key decisions, facts, and context.",
+  "content": "---\nname: snip-compressor\ndescription: Semantic conversation compressor — intelligently summarize long chat history while preserving key decisions, facts, and context.\nmetadata:\n  openclaw:\n    requires:\n      bins: [python3]\n---\n\n# Snip Compressor\n\nDistilled from Claude Code's Snip compression engine. Analyzes conversation history and generates a compressed summary that preserves semantic continuity — not a simple truncation.\n\n## When to use\n\n- Conversation exceeds 60% of context window\n- User says \"continue\" / \"刚才说到哪了\" / \"where were we\"\n- Before compaction to preserve key context\n- Session handoff between agents\n\n## How it works\n\n1. **Parse** — Split conversation into segments (user messages, assistant replies, tool calls, tool results)\n2. **Score** — Each segment gets a retention score based on:\n   - Contains decision/agreement (high)\n   - Contains factual data/numbers (high)\n   - Contains tool results (medium, summarized)\n   - Contains greetings/small talk (low)\n3. **Compress** — Low-score segments get dropped or condensed; high-score segments preserved verbatim or lightly summarized\n4. **Rebuild** — Output a compressed transcript that reads naturally\n\n## Usage\n\n```bash\n# Compress a conversation file\npython3 {baseDir}/compressor.py --input conversation.json --output compressed.md\n\n# Compress with custom token budget\npython3 {baseDir}/compressor.py --input conversation.json --budget 2000\n\n# Compress from stdin\ncat conversation.json | python3 {baseDir}/compressor.py --budget 1500\n```\n\n## Input format\n\nJSON array of message objects:\n\n```json\n[\n  {\n    \"role\": \"user\",\n    \"content\": \"帮我分析一下这个股票\"\n  },\n  {\n    \"role\": \"assistant\",\n    \"content\": \"好的，我来看看...\",\n    \"tool_calls\": [\n      {\"name\": \"exec\", \"result\": \"{...}\"}\n    ]\n  }\n]\n```\n\n## Output\n\nMarkdown with sections:\n- **Summary**: 1-2 paragraph overview\n- **Key Decisions**: bullet list of decisions made\n- **Active Context**: what's currently in progress\n- **Compressed Transcript**: compressed conversation (token-optimized)\n\n## Algorithm reference\n\nBased on Claude Code's `src/services/snip/` module:\n- Semantic boundary detection: topic shift → new segment\n- Importance scoring: decision > data > tool_result > greeting\n- Token-aware truncation: respects model-specific limits\n- Cross-segment reference preservation: if segment B references segment A, both are retained\n",
+  "category": null,
+  "tags": [],
+  "topics": [],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 129,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T01:34:43.098Z",
+  "updated_at": "2026-07-10T01:34:43.098Z",
+  "fetched_at": "2026-07-11T23:09:43.873Z",
+  "source_url": "https://clawhub.ai/chen6896qqwee/skills/snip-compressor"
+}

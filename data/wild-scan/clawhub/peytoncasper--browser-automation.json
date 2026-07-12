@@ -1,0 +1,36 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "browser-automation",
+  "display_name": "Browser Automation",
+  "publisher": {
+    "handle": "peytoncasper",
+    "display_name": "peytoncasper",
+    "user_id": "s17by6p14wraesen3wryfstem9885j4n"
+  },
+  "summary": "Automate web browser interactions using natural language via CLI commands. Use when the user asks to browse websites, navigate web pages, extract data from websites, take screenshots, fill forms, click buttons, or interact with web applications.",
+  "description": "Automate web browser interactions using natural language via CLI commands. Use when the user asks to browse websites, navigate web pages, extract data from websites, take screenshots, fill forms, click buttons, or interact with web applications.",
+  "content": "---\nname: browser\ndescription: Automate web browser interactions using natural language via CLI commands. Use when the user asks to browse websites, navigate web pages, extract data from websites, take screenshots, fill forms, click buttons, or interact with web applications.\nallowed-tools: Bash\n---\n\n# Browser Automation\n\nAutomate browser interactions using Stagehand CLI with Claude.\n\n### First: Environment Selection (Local vs Remote)\n\nThe skill automatically selects between local and remote browser environments:\n- **If Browserbase API keys exist** (BROWSERBASE_API_KEY and BROWSERBASE_PROJECT_ID in .env file): Uses remote Browserbase environment\n- **If no Browserbase API keys**: Falls back to local Chrome browser\n- **No user prompting**: The selection happens automatically based on available configuration\n\n## Setup (First Time Only)\n\nCheck `setup.json` in this directory. If `setupComplete: false`:\n\n```bash\nnpm install    # Install dependencies\nnpm link       # Create global 'browser' command\n```\n\n## Commands\n\nAll commands work identically in both modes:\n\n```bash\nbrowser navigate <url>                    # Go to URL\nbrowser act \"<action>\"                    # Natural language action\nbrowser extract \"<instruction>\" ['{}']    # Extract data (optional schema)\nbrowser observe \"<query>\"                 # Discover elements\nbrowser screenshot                        # Take screenshot\nbrowser close                             # Close browser\n```\n\n## Quick Example\n\n```bash\nbrowser navigate https://example.com\nbrowser act \"click the Sign In button\"\nbrowser extract \"get the page title\"\nbrowser close\n```\n\n## Mode Comparison\n\n| Feature | Local | Browserbase |\n|---------|-------|-------------|\n| Speed | Faster | Slightly slower |\n| Setup | Chrome required | API key required |\n| Stealth mode | No | Yes |\n| Proxy/CAPTCHA | No | Yes |\n| Best for | Development | Production/scraping |\n\n## Best Practices\n\n1. **Always navigate first** before interacting\n2. **View screenshots** after each command to verify\n3. **Be specific** in action descriptions\n4. **Close browser** when done\n\n## Troubleshooting\n\n- **Chrome not found**: Install Chrome or use Browserbase mode\n- **Action fails**: Use `browser observe` to discover available elements\n- **Browserbase fails**: Verify API key and project ID are set\n\nFor detailed examples, see [EXAMPLES.md](EXAMPLES.md).\nFor API reference, see [REFERENCE.md](REFERENCE.md).\n",
+  "category": null,
+  "tags": [
+    "Browser Automation",
+    "Web Browser"
+  ],
+  "topics": [
+    "Browser Automation",
+    "Web Browser"
+  ],
+  "latest_version": "1.0.1",
+  "license": null,
+  "stats": {
+    "downloads": 47201,
+    "installs": 1589,
+    "stars": 64,
+    "versions": 2,
+    "comments": 3
+  },
+  "created_at": "2026-02-05T15:58:11.925Z",
+  "updated_at": "2026-05-17T03:27:59.927Z",
+  "fetched_at": "2026-07-11T23:08:38.022Z",
+  "source_url": "https://clawhub.ai/peytoncasper/skills/browser-automation"
+}

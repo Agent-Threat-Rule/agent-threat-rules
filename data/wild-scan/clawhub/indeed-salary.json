@@ -1,0 +1,42 @@
+{
+  "source": "clawhub",
+  "api_shape": "clawhub-api-v1-skills-detail-2026-07",
+  "slug": "indeed-salary",
+  "display_name": "Indeed Salary",
+  "publisher": {
+    "handle": "nikhonit",
+    "display_name": "nikhonit",
+    "user_id": "s17bw0r0f7p6r8jq5dxb2zcj4h86jrw9"
+  },
+  "summary": "Look up salary for an Indeed job posting via RolesAPI.com. Pass a job key or a pasted Indeed URL and get min, max, currency, period, and employer-vs-estimate...",
+  "description": "Look up salary for an Indeed job posting via RolesAPI.com. Pass a job key or a pasted Indeed URL and get min, max, currency, period, and employer-vs-estimate provenance. One script, minimum surface area.",
+  "content": "---\nname: indeed-salary\nversion: 1.0.0\ndescription: Look up salary for an Indeed job posting via RolesAPI.com. Pass a job key or a pasted Indeed URL and get min, max, currency, period, and employer-vs-estimate provenance. One script, minimum surface area.\nlicense: MIT-0\nauthor: RolesAPI\nhomepage: https://rolesapi.com\nrepository: https://github.com/nikhonit/indeed-skills\ntags:\n  - indeed\n  - jobs\n  - salary\n  - compensation\n  - api\n  - mcp\nmetadata:\n  openclaw:\n    primaryEnv: ROLESAPI_KEY\n    homepage: https://rolesapi.com\n    requires:\n      env:\n        - ROLESAPI_KEY\n---\n\n# indeed-salary\n\nFocused salary skill. Use only when the user **explicitly asks** what a job posting pays.\n\n## When to use this skill\n\n**DO use when the user asks:**\n\n- \"What does this job pay?\" (with an Indeed link)\n- \"Look up the salary for job key a1b2c3d4e5f60718\"\n- \"Is that nurse posting's salary from the employer or an estimate?\"\n- \"Compare pay on these three postings\"\n\n**Do NOT use when:**\n\n- The user asks about market-wide or average salaries rather than a specific posting\n- A posting appears incidentally in context\n- You also need the description, company, or benefits. Use [`indeed-full`](https://github.com/nikhonit/indeed-skills/tree/main/skills/indeed-full) instead, it bundles everything in one install.\n\n## Setup\n\nSet `ROLESAPI_KEY` to your RolesAPI key (format `rk_live_...`). Create one at <https://rolesapi.com/app/keys>. The free plan includes 100 credits at signup, no card required.\n\n```bash\nexport ROLESAPI_KEY=\"rk_live_...\"\n```\n\n## Scripts\n\n### `get_salary.py` (1 credit)\n\nAccepts either a 16-character job key or a pasted Indeed viewjob URL.\n\n```bash\npython3 scripts/get_salary.py 7dcf172c8d7fc756\npython3 scripts/get_salary.py \"https://www.indeed.com/viewjob?jk=7dcf172c8d7fc756\"\npython3 scripts/get_salary.py 7dcf172c8d7fc756 --country gb\n```\n\nReal output (job key path):\n\n```json\n{\n  \"data\": {\n    \"title\": \"Nursing\",\n    \"company\": {\n      \"name\": \"Golden Healthcare Services Inc\"\n    },\n    \"location\": \"Olympia Fields, IL 60461\",\n    \"salary\": {\n      \"min\": 30,\n      \"max\": 45,\n      \"period\": \"hour\",\n      \"source\": \"employer\",\n      \"currency\": \"USD\"\n    }\n  },\n  \"request_id\": \"a18e4fa32b51ce3e\"\n}\n```\n\n`source` is `employer` when the figure comes from the posting itself and `estimated` when it is an Indeed estimate. Postings with no salary information omit the `salary` key.\n\n## Pricing\n\n| Plan | Price | Credits | Rate limit |\n|---|---|---|---|\n| Free | $0 | 100 (one time at signup) | 20/min |\n| Monthly | $5/mo | 1,000/month | 200/min |\n| Annual | $54/yr | 12,000 upfront | 300/min |\n\nOne credit per lookup. Failed calls are not charged. Full pricing: <https://rolesapi.com/pricing/>.\n\n## Trademark\n\nRolesAPI is an independent service and is not affiliated with, endorsed by, or sponsored by Indeed. \"Indeed\" is a trademark of its owner.\n",
+  "category": null,
+  "tags": [
+    "indeed",
+    "jobs",
+    "salary",
+    "compensation",
+    "api",
+    "mcp"
+  ],
+  "topics": [
+    "indeed",
+    "jobs-api",
+    "job-postings",
+    "rolesapi"
+  ],
+  "latest_version": "1.0.0",
+  "license": "MIT-0",
+  "stats": {
+    "downloads": 107,
+    "installs": 0,
+    "stars": 0,
+    "versions": 1,
+    "comments": 0
+  },
+  "created_at": "2026-07-10T08:55:36.269Z",
+  "updated_at": "2026-07-10T08:55:36.269Z",
+  "fetched_at": "2026-07-11T22:59:21.498Z",
+  "source_url": "https://clawhub.ai/nikhonit/skills/indeed-salary"
+}
