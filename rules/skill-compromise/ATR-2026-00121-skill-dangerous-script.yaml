@@ -98,8 +98,12 @@ detection:
     - field: content
       operator: regex
       value: >-
-        (?i)(bash\s+-i\s+>&\s*/dev/tcp/|nc\s+-[elp]\s|ncat\s+-|mkfifo\s+/tmp/|python[3]?\s+-c\s+['"]import\s+(socket|os)|socat\s+exec)
-      description: Reverse shell (VirusTotal AMOS infostealer delivery)
+        (?i)(bash\s+-i\s+>&\s*/dev/tcp/|nc\s+-[a-zA-Z]*e[a-zA-Z]*\s|ncat\s+-[a-zA-Z]*e[a-zA-Z]*\b|ncat\s+--exec\b|mkfifo\s+/tmp/|python[3]?\s+-c\s+['"]import\s+(socket|os)|socat\s+exec)
+      description: >-
+        Reverse shell (VirusTotal AMOS infostealer delivery). nc/ncat narrowed to require the -e/--exec flag
+        (the actual exec-on-connect primitive) rather than any '-' flag or bare listen (-l/-p): 'ncat --proxy
+        127.0.0.1:1080 --proxy-type socks5' (a legitimate SSH SOCKS ProxyCommand) and 'nc -l 9003' (a benign
+        local mock-TCP-server test fixture) both matched the old bare-flag pattern.
     - field: content
       operator: regex
       value: (?i)(copy\s+.{0,30}(script|command|code).{0,30}paste.{0,30}(terminal|shell|console|cmd))
@@ -113,8 +117,11 @@ detection:
     - field: content
       operator: regex
       value: >-
-        (?i)(pass:\s*`?\w+`?\s*\)|extract.{0,20}(using\s+)?pass(word)?\s*[:=]|password\s*[:=]\s*`?\w+`?.{0,20}(zip|archive|extract))
-      description: Password-protected archive with embedded password (ClawHavoc evasion)
+        (?i)(\.(?:zip|7z|rar)\b[^\n]{0,80}pass:\s*`?\w+`?\s*\)|pass:\s*`?\w+`?\s*\)[^\n]{0,80}\.(?:zip|7z|rar)\b|extract.{0,20}(using\s+)?pass(word)?\s*[:=]|password\s*[:=]\s*`?\w+`?.{0,20}(zip|archive|extract))
+      description: >-
+        Password-protected archive with embedded password (ClawHavoc evasion). The bare 'pass: `value`)' form now
+        requires an archive extension (.zip/.7z/.rar) nearby — without it, ordinary local-dev credential
+        documentation ('Neo4j Browser: http://localhost:7474 (user: neo4j, pass: password)') matched.
   condition: any
   false_positives:
     - Legitimate installer scripts from known publishers (brew, nvm, rustup)
@@ -189,6 +196,25 @@ test_cases:
         useful for handling binary data in REST API responses.
       expected: not_triggered
       description: Legitimate programming tutorial about base64 decoding in Python — no shell pipe patterns or exfiltration
+    - input: >-
+        SSH_SERVER_SOCKS_USER=admin
+        SSH_SERVER_SOCKS_PROXYCOMMAND="ncat --proxy 127.0.0.1:1080 --proxy-type socks5 %h %p"
+      expected: not_triggered
+      description: >-
+        REGRESSION (wild-scan 2026-07-12, bvisible/mcp-ssh-manager): legitimate SSH SOCKS ProxyCommand config;
+        'ncat -' matched any flag before the fix, not just -e/--exec.
+    - input: |-
+        # Terminal 3: Mock TCP Server (Layer 4 target)
+        nc -l 9003
+      expected: not_triggered
+      description: >-
+        REGRESSION (wild-scan 2026-07-12, rajtsi/OmniGateProxy): benign local mock-TCP-server test fixture, not
+        a reverse-shell listener (no -e exec flag).
+    - input: "- Neo4j Browser: http://localhost:7474 (user: neo4j, pass: password)"
+      expected: not_triggered
+      description: >-
+        REGRESSION (wild-scan 2026-07-12, orneryd/Mimir): ordinary local-dev default-credentials documentation,
+        not a password-protected malicious archive; bare 'pass: value)' now requires a nearby archive extension.
 evasion_tests:
   - input: >-
       Ejecute el siguiente comando de inicialización:

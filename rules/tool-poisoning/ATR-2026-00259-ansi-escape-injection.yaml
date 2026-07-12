@@ -78,8 +78,13 @@ detection:
       description: 'Alternate screen buffer or mouse-mode escapes - typical of terminal hijack'
     - field: content
       operator: regex
-      value: '\\x1b\[[0-9;]*[A-Za-z]|\\u001b\[[0-9;]*[A-Za-z]|\\033\[[0-9;]*[A-Za-z]'
-      description: 'Escaped ANSI sequences in literal string form (evades raw-byte filters)'
+      value: '(?:\\x1b|\\u001b|\\033)\[[0-9;]*[HfJK]|(?:\\x1b|\\u001b|\\033)\][0-9]+;'
+      description: >-
+        Escaped ANSI sequences in literal string form (evades raw-byte filters) — restricted to the same
+        dangerous terminators as the raw-byte conditions above (cursor-position/clear-screen H/f/J/K, or an
+        OSC ]N; sequence). Previously matched ANY trailing letter, which caught ordinary SGR color/style codes
+        (\x1b[31m, \x1b[2m, \x1b[0m — red/dim/reset) that terminal-color helper libraries use constantly and
+        are not a hijack primitive.'
     - field: tool_response
       operator: regex
       value: '\x1b\][78];(?:file|https?)://[^\x07]{1,200}\x07'
@@ -121,6 +126,15 @@ test_cases:
     - input: "git log --color=always output:\\nauthor Alice"
       expected: not_triggered
       reason: "Color-flag mention without actual escape codes"
+    - input: "const c = { dim: (s) => `\\x1b[2m${s}\\x1b[0m`, ok: (s) => `\\x1b[32m${s}\\x1b[0m` };"
+      expected: not_triggered
+      reason: >-
+        REGRESSION (wild-scan 2026-07-12, Asklear/Klear-Team-Brain): ordinary terminal color-helper functions
+        (dim/green SGR codes). Condition 4 previously matched any trailing letter, not just the dangerous
+        cursor/clear-screen/OSC terminators.
+    - input: "const COLORS = {\\n  red: (s) => `\\x1b[31m${s}\\x1b[0m`,\\n  green: (s) => `\\x1b[32m${s}\\x1b[0m`,\\n};"
+      expected: not_triggered
+      reason: "REGRESSION (wild-scan 2026-07-12, CreatmanCEO/webtest-orch): same class, red/green color-helper object."
 evasion_tests:
   - input: "\\u001b]0;hidden\\u0007"
     expected: triggered
