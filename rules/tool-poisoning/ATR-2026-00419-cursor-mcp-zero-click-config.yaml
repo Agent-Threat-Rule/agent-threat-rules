@@ -103,13 +103,18 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)(?:\.cursor|\.windsurf|\.vscode|\.gemini|\.continue|\.claude)[/\\][^\n]{0,40}mcp(?:[_\-]?config)?\.(?:json|jsonc|yaml|yml)[\s\S]{0,400}"command"\s*:\s*"(?:bash|sh|cmd|powershell|curl|wget)"'
-      description: "IDE-bound MCP config path co-located with a shell-binary command field within 400 chars — RCE-ready zero-click setup (path mention alone is benign in docs)"
+      value: '(?i)(?:\.cursor|\.windsurf|\.vscode|\.gemini|\.continue|\.claude)[/\\][^\n]{0,40}mcp(?:[_\-]?config)?\.(?:json|jsonc|yaml|yml)[\s\S]{0,400}"command"\s*:\s*"(?:curl|wget)"'
+      description: "IDE-bound MCP config path co-located with a curl/wget command field within 400 chars — never a legitimate MCP stdio launcher (path mention alone is benign in docs)"
 
     - field: content
       operator: regex
-      value: '(?i)\{[^}]{0,400}"mcp(?:Servers?|_servers?)"\s*:\s*\{[^}]{0,800}"command"\s*:\s*"(?:bash|sh|cmd|powershell|curl|wget)"'
-      description: "MCP config JSON where command field resolves to a shell binary (bash/sh/cmd/powershell/curl/wget) — those are never legitimate MCP runtime command targets, unlike npx/node/python which are excluded here and caught by cond 2 with -c/-e flag instead"
+      value: '(?i)\{[^}]{0,400}"mcp(?:Servers?|_servers?)"\s*:\s*\{[^}]{0,800}"command"\s*:\s*"(?:curl|wget)"'
+      description: "MCP config JSON where command field resolves to curl/wget — those are never legitimate MCP stdio launcher targets"
+
+    - field: content
+      operator: regex
+      value: '(?i)"command"\s*:\s*"(?:bash|sh|cmd|powershell)"[^}\]]{0,300}"args"\s*:\s*\[[^\]]{0,300}(?:https?://|\|\s*(?:ba)?sh\b|-enc(?:odedcommand)?\b|base64|iwr\b|invoke-webrequest)'
+      description: "MCP config wrapper shell (bash/sh/cmd/powershell) whose args show a genuine payload marker (URL fetch, pipe-to-shell, base64/encoded-command). Excludes benign wrapper idioms lacking any such marker, e.g. 'cmd /c npx <pkg>' (standard Windows PATH workaround) or 'bash -c /absolute/path/to/own-built-binary --flag' (self-referential local launch)."
 
     - field: content
       operator: regex
@@ -118,8 +123,8 @@ detection:
 
     - field: content
       operator: regex
-      value: '(?i)(?:zero[_\s\-]?click|on[_\s\-]?open|workspace[_\s\-]?open|project[_\s\-]?open)[^\n]{0,80}(?:mcp|cursor|windsurf|claude\s+code|gemini\s+cli)[^\n]{0,160}(?:config|json|yaml)'
-      description: "Skill content describing zero-click / workspace-open trigger for MCP config loading"
+      value: '(?i)(?:zero[_\s\-]?click|workspace[_\s\-]?open|project[_\s\-]?open)[^\n]{0,80}(?:mcp|cursor|windsurf|claude\s+code|gemini\s+cli)[^\n]{0,160}(?:rce|exploit|malicious|compromis(?:e|ed)|silently|without\s+consent|no\s+consent)'
+      description: "Skill content describing zero-click / workspace-open trigger AND an explicit attack-outcome word — plain 'on-open'/'config' co-occurrence alone was too generic (matched benign feature descriptions like 'the extension opens its own MCP settings JSON')"
 
     - field: content
       operator: regex
@@ -128,13 +133,13 @@ detection:
 
     - field: content
       operator: regex
-      value: '(?i)(?:drop|compromise|tamper|inject)[^\n]{0,80}(?:\.cursor|\.windsurf|\.claude|\.vscode|\.gemini|\.continue)'
-      description: "Skill/document describing tampering with IDE-bound config dir — co-occurrence anchor"
+      value: '(?i)(?:(?:compromise|tamper|inject)[^\n]{0,80}(?:\.cursor|\.windsurf|\.claude|\.vscode|\.gemini|\.continue)|drop[^\n]{0,80}(?:\.cursor|\.windsurf|\.claude|\.vscode|\.gemini|\.continue)[^\n]{0,100}(?:\{|"command"|mcpServers))'
+      description: "Skill/document describing tampering with IDE-bound config dir. 'drop' alone is a common benign installation verb ('drop the folder into .claude/skills/'), so it additionally requires a nearby JSON-payload marker ({, \"command\", mcpServers) to disambiguate from ordinary install instructions; compromise/tamper/inject are unambiguous attacker framing and need no such gate."
 
     - field: content
       operator: regex
-      value: '(?i)(?:auto[-_\s]?load|on[-_\s]?open|no\s+consent\s+prompt)[^\n]{0,160}(?:cursor|windsurf|claude|gemini|vscode|mcp\.json)'
-      description: "Auto-load / no-consent property of IDE MCP config — co-occurrence anchor for compound-gate"
+      value: '(?i)no\s+consent\s+prompt[^\n]{0,160}(?:cursor|windsurf|claude|gemini|vscode|mcp\.json)'
+      description: "No-consent-prompt property of IDE MCP config — narrowed from a bare 'auto-load'/'on-open' trigger (which matched ordinary feature descriptions like 'opens its own MCP settings JSON') to the specific, rarely-benign phrase 'no consent prompt'"
 
 response:
   actions:
@@ -182,6 +187,21 @@ test_cases:
     - input: '{"mcpServers":{"weather":{"url":"https://api.weather.local/mcp","headers":{"Authorization":"Bearer xxx"}}}}'
       expected: not_triggered
       description: "Legitimate HTTP-transport MCP config — no command/args fields, no exec sink"
+    - input: '{"mcpServers":{"mcp-server-chart":{"command":"cmd","args":["/c","npx","-y","@antv/mcp-server-chart"]}}}'
+      expected: not_triggered
+      description: "REGRESSION (wild-scan 2026-07-12, antvis/mcp-server-chart): standard Windows PATH-workaround idiom documented across many MCP READMEs — cmd /c npx <pkg>, no payload marker in args"
+    - input: '{"mcpServers":{"teamcity-mcp":{"type":"stdio","command":"sh","args":["-c","cd /Users/marc/Developer/teamcity-mcp && node dist/index.js"],"env":{}}}}'
+      expected: not_triggered
+      description: "REGRESSION (wild-scan 2026-07-12, Daghis/teamcity-mcp): self-referential local dev launch of the project's own compiled entrypoint via sh -c — no URL/pipe/encoded payload"
+    - input: 'Drop the folder into `.claude/skills/` (Claude Code only) and restart.'
+      expected: not_triggered
+      description: "REGRESSION (wild-scan 2026-07-12, MobileReality/mdma): ordinary skill-installation instruction using 'drop' in its harmless sense, no JSON/command payload nearby"
+    - input: 'The VS Code extension opens its own MCP settings JSON from the Cline MCP configuration panel.'
+      expected: not_triggered
+      description: "REGRESSION (wild-scan 2026-07-12, icoretech/codex-pooler): generic feature description, no attack framing"
+    - input: '{"mcpServers":{"aks-mcp":{"type":"stdio","command":"bash","args":["-c","/home/you/.vs-kubernetes/tools/aks-mcp/aks-mcp --transport stdio"]}}}'
+      expected: not_triggered
+      description: "REGRESSION (wild-scan 2026-07-12, Azure/aks-mcp): official Microsoft doc launching the tool's own installed binary via bash -c absolute path — no payload marker"
 
 evasion_tests:
   - input: '{"mcpServers":{"x":{"command":"/tmp/dropped-binary"}}}'

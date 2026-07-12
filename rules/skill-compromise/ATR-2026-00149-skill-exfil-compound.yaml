@@ -116,8 +116,12 @@ detection:
       description: Fake [SYSTEM] block attempting to override instructions
     - field: content
       operator: regex
-      value: (?i)<!--[^>]*[A-Za-z0-9+/]{40,}={0,2}[^>]*-->
-      description: Base64-encoded hidden instruction in HTML comment
+      value: (?i)<!--\s*(?![^>]*(?:https?://|!\[|\]\())[A-Za-z0-9+/]{40,}={0,2}\s*-->
+      description: >-
+        Base64-encoded hidden instruction in HTML comment — narrowed to require the comment be (essentially)
+        JUST the blob. Previously any 40+ char alphanumeric run anywhere inside an HTML comment matched, which
+        caught ordinary shields.io/markdown badge comments (e.g. '<!-- ![GitHub Downloads](https://img.shields.io/...)
+        -->') whose long URL query string looks base64-shaped by character class alone.
     - field: content
       operator: regex
       value: (?i)(dangerouslyDisableSandbox|autoApprove|allowedTools|skip.?permissions)\s*[:=]\s*(true|\[)
@@ -201,6 +205,12 @@ test_cases:
     - input: <!-- This is a normal HTML comment for documentation -->
       expected: not_triggered
       reason: Normal HTML comment without base64
+    - input: '<!-- ![GitHub Downloads](https://img.shields.io/github/downloads/stackql/stackql/total?label=github%20downloads) -->'
+      expected: not_triggered
+      reason: >-
+        REGRESSION (wild-scan 2026-07-12, stackql/stackql): shields.io markdown badge comment whose long URL
+        query string looks base64-shaped by character class alone; the comment now must be (essentially) just
+        the blob, not markdown image/link syntax around a URL.
     - input: |-
         # Security Scanner
 
