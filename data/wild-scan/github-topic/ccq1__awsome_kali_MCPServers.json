@@ -1,0 +1,36 @@
+{
+  "full_name": "ccq1/awsome_kali_MCPServers",
+  "html_url": "https://github.com/ccq1/awsome_kali_MCPServers",
+  "description": "awsome kali MCPServers is a set of MCP servers tailored for Kali Linux",
+  "topics": [
+    "agent",
+    "kali-linux",
+    "llm",
+    "mcp-server",
+    "security",
+    "tools"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 106,
+  "forks": 16,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "Apache-2.0",
+  "default_branch": "master",
+  "created_at": "2025-03-31T16:49:19Z",
+  "last_pushed_at": "2025-11-16T17:48:43Z",
+  "fetched_at": "2026-07-11T22:58:45.874Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# awsome-kali-MCPServers\n\n## Overview\nWelcome to awsome-kali-MCPServers! This repository is a collection of Model Context Protocol (MCP) servers designed specifically for Kali Linux environments. The goal is to enhance reverse engineering, security testing, and automation workflows by integrating powerful tools and flexible features. Whether you're a security researcher or a developer, this project aims to streamline your tasks with Kali Linux.\n\n## Quick Start\nFollow these steps to quickly get started with `kali-mcps`:\n1. **Build the Docker Image**\nFirst, build the Docker image, temporarily named kali-mcps. Run the following command in the project root directory:\n```bash\ndocker build -t kali-mcps:latest .\n```\n2. **Launch an MCP Client**\nEnsure you have an MCP client installed, such as claude desktop, cline, goose, or roo code. Open your chosen MCP client.\n3. **Configure the MCP Client**\nIn your MCP client, create a configuration file (e.g., config.json) with the following content:\n```json\n{\n  \"mcpServers\": {\n    \"kali-docker\": {\n      \"command\": \"docker\",\n      \"args\": [\"run\", \"-i\", \"kali-mcps:latest\"]\n    }\n  }\n}\n```\n- `\"kali-docker\"` is the server name, which you can customize.\n- `\"command\": \"docker\"` specifies that Docker will be used to run the container.\n- `\"args\"` defines the Docker run parameters: `-i` enables interactive mode, and `kali-mcps:latest` is the image you just built.\n\n4. **Use Kali Tools**\nOnce configured, connect to the kali-mcps container via the MCP client and start using the built-in Kali tools (e.g., Nmap, nm, objdump, strings, tshark) for your tasks. Examples include:\n- Run `basic_scan` for basic network scanning.\n- Run `disassemble` to disassemble a target file.\n- Run `capture_live` to capture real-time network traffic.\n\n<p align=\"center\">\n  <img width=\"482\" alt=\"image\" src=\"https://github.com/user-attachments/assets/0e9fff0a-059d-424b-bb36-450a1d11adf9\" />\n</p>\n\n## What to Expect\nNetwork Analysis: Tools for sniffing and analyzing traffic.\nBinary Understanding: Support for reverse engineering and function analysis.\nAutomation: Scripts and servers to simplify repetitive tasks.\n\n## New Features\nSince the last update, we have added the following features, integrating a series of tools based on the FastMCP framework:\n\n### 1. Network Scanning (Nmap)\n- `basic_scan`: Basic network scanning.\n- `intense_scan`: In-depth network scanning.\n- `stealth_scan`: Stealth network scanning.\n- `quick_scan`: Quick network scanning.\n- `vulnerability_scan`: Vulnerability scanning.\n\n### 2. Symbol Analysis (nm)\n- `basic_symbols`: Lists basic symbols.\n- `dynamic_symbols`: Lists dynamic symbols.\n- `demangle_symbols`: Decodes symbols.\n- `numeric_sort`: Sorts symbols numerically.\n- `size_sort`: Sorts symbols by size.\n- `undefined_symbols`: Lists undefined symbols.\n\n### 3. Binary Analysis (objdump)\n- `file_headers`: Lists file headers.\n- `disassemble`: Disassembles the target file.\n- `symbol_table`: Lists the symbol table.\n- `section_headers`: Lists section headers.\n- `full_contents`: Lists full contents.\n\n### 4. String Extraction (strings)\n- `basic_strings`: Basic string extraction.\n- `min_length_strings`: Extracts strings with a specified minimum length.\n- `offset_strings`: Extracts strings with offsets.\n- `encoding_strings`: Extracts strings based on encoding.\n\n### 5. Network Traffic Analysis (Wireshark/tshark)\n- `capture_live`: Captures network traffic in real-time.\n- `analyze_pcap`: Analyzes pcap files.\n- `extract_http`: Extracts HTTP data.\n- `protocol_hierarchy`: Lists protocol hierarchy.\n- `conversation_statistics`: Provides conversation statistics.\n- `expert_info`: Analyzes expert information.\n### 6. Sandbox Support (Docker)\nA new sandbox feature has been added, enabling secure command execution in an isolated container environment:\n\nRuns commands using Docker containers, with the default image being ubuntu-systemd:22.04.\nConfigurable memory limit (default: 2GB), CPU limit (default: 1 core), network mode, and timeout duration.\nSupports bidirectional file copying between the host and the container.\nAutomatically cleans up container resources.\n\n\n## TODO\n- [ ] **Docker Sandbox Support**: Add containerized environments for safe testing and execution.\n- [ ] **Network Tools Integration**: Support for tools like Nmap and Wireshark for advanced network analysis.\n- [ ] **Reverse Engineering Tools**: Integrate Ghidra and Radare2 for enhanced binary analysis.\n- [ ] **Agent Support**: Enable agent-based functionality for distributed tasks or remote operations.\n \n## Current Status\nThis project is still in its early stages. I’m working on preparing the content, including server configurations, tool integrations, and documentation. Nothing is fully ready yet, but stay tuned—exciting things are coming soon!\n\n## Stay Updated\nFeel free to star or watch this repository to get updates as I add more features and files. Contributions and suggestions are welcome once the groundwork is laid out.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "app.py",
+    "size": 1069,
+    "content": "from src.mcp_server import mcp \nimport argparse  # 添加 argparse 模块\nimport docker\nfrom mcp.server.models import InitializationOptions\n\n\nif __name__ == \"__main__\":\n    # create arg parser\n    parser = argparse.ArgumentParser(description='MCP Server with Kali image configuration')\n    parser.add_argument('--kali-image', \n                       type=str,\n                       required=False,\n                       help='Specify the Kali Linux image name to use')\n    \n    args = parser.parse_args()\n    if args.kali_image:\n        image_name = args.kali_image\n        # use docker lib to check if the image exists\n        client = docker.from_env()\n        try:\n            client.images.get(image_name)\n            print(f\"Kali image {image_name} found\")\n            client.close()\n        except docker.errors.ImageNotFound:\n            print(f\"Kali image {image_name} not found\")\n            exit(1)\n        print(f\"Using Kali image: {image_name}\")\n    \n    print(\"Starting server is running\")\n    \n    # pass image name to mcp\n    mcp.run(transport=\"stdio\")"
+  },
+  "content_fetch_notes": []
+}

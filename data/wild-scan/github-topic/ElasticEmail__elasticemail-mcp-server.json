@@ -1,0 +1,33 @@
+{
+  "full_name": "ElasticEmail/elasticemail-mcp-server",
+  "html_url": "https://github.com/ElasticEmail/elasticemail-mcp-server",
+  "description": "Elastic Email MCP Server delivers full-scale email capabilities to the next generation of AI agents and MCP-compatible environments. This server speaks the same protocol as your favourite AI tools, giving them super-smooth access to all your email operations.",
+  "topics": [
+    "elasticemail",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "modelcontextprotocol"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "C#",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2025-10-30T13:50:45Z",
+  "last_pushed_at": "2025-11-03T17:58:06Z",
+  "fetched_at": "2026-07-12T00:42:54.598Z",
+  "readme": {
+    "path": "README.md",
+    "content": "## Requirments\n.NET SDK 10 or higher\nTo work properly, it needs connection to Elastic Email API.\nOpen port 5001 for http.\n\n## Copilot integration\nUse VS Code\nOpen Chat window.\nChoose 'Agent' mode\nUse settings.json file to connect to mcp server (open folder containing this file).\nYou should see little controls near \"servers\".\nAdd a settings file as a context to agent.\nOpen the \"Select tools...\" window (click on screwdriver and wrench icon)\nFind mcp server and make sure all tools selected.\nClick \"Start\"\n\n### example configuration for agent:\n```\n\"my-server-unique-number\": {\n    \"url\": \"http://localhost:5001/\",\n    \"headers\": {\n        \"X-Auth-Token\": <api_key>\n    }\n}\n```\n\n## Tools\n\n- HealthCheck.IsReady - tool to check Elastic Email api server is available and responding\n- CampaignManagement.CreateCampaign - creates campaign in the system\n- CampaignManagement.ListCampaigns - lists existing campaigns\n- CampaignManagement.GetCampaign - get campaign details\n- CampaignManagement.Pause -  stops campaign processing\n- CampaignManagement.UpdateCampaign - change campaign data (can be started again by a status edition)\n- CampaignManagement.GetAllCampaignStatistics - get all campaigns numbers like number of opened emails\n- CampaignManagement.GetCampaignStatistics - get campaign (by name) numbers like opened, clicked, etc\n- SegmentsManagement.CreateSegment - create new segment\n- SegmentsManagement.GetSegments - get list of existing segments\n- SegmentsManagement.GetSegment - get segment by name\n- TemplateManagement.FetchTemplate - get template details\n- TemplateManagement.FetchTemplates - get list of templates, filtering by type and accessibility\n- EmailSending.SendBulkEmails - send email to multiple users (can use contacts list), provide content or use template\n- EmailSending.SendTransactionalEmail - send email to contacts, can provide template\n- ContactsManagement.FetchContacts - get contacts list\n- ContactsManagement.FetchContactHistory - gets contact history (if enabled)\n- ContactsManagement.FetchLists - get all contact lists\n- ContactsManagement.FetchList - get contact list details\n- ContactsManagement.FetchListContacts - get contacts on list (by name)\n- ContactsManagement.AddContactToList - add contact to list\n- ContactsManagement.RemoveContactsToList - remove provided contact from list (by name)\n- ContactsManagement.CreateList - create new contacts list\n- ContactsManagement.AddContact - add new contact\n- ContactsManagement.DeleteContacts - delete contacts (provide emails)\n- ContactsManagement.UploadContacts - upload and add new contacts from file\n\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

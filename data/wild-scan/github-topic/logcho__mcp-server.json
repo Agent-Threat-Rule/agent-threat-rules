@@ -1,0 +1,37 @@
+{
+  "full_name": "logcho/mcp-server",
+  "html_url": "https://github.com/logcho/mcp-server",
+  "description": "This repository contains a simple MCP (Model Context Protocol) server that can be used with Modulo to extend its capabilities.",
+  "topics": [
+    "mcp",
+    "mcp-client",
+    "mcp-server",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-05-19T16:01:17Z",
+  "last_pushed_at": "2026-05-19T16:34:43Z",
+  "fetched_at": "2026-07-12T00:47:01.761Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP Server for Modulo\n\n## Description\n\nThis repository contains a simple MCP (Model Context Protocol) server that can be used with Modulo to extend its capabilities.\n\n## Installation\n\n1. **Clone the repository**:\n   ```bash\n   git clone <repository-url>\n   cd mcp-server\n   ```\n\n2. **Create a virtual environment**:\n   ```bash\n   python3 -m venv .venv\n   ```\n\n3. **Activate the virtual environment**:\n   On macOS/Linux:\n   ```bash\n   source .venv/bin/activate\n   ```\n   On Windows:\n   ```bash\n   .venv\\Scripts\\activate\n   ```\n\n4. **Install dependencies**:\n   ```bash\n   pip install fastmcp\n   ```\n\n## Usage\n\n1. **Start the MCP server**:\n   ```bash\n   python server.py\n   ```\n\n2. **Configure Modulo to use this server**:\n   Create or edit `mcp.json` in your Modulo directory:\n   ```json\n   {\n       \"mcpServers\": {\n           \"my-local-modulo-server\": {\n               \"command\": \"/path/to/mcp-server/.venv/bin/python\",\n               \"args\": [\n                   \"/path/to/mcp-server/server.py\"\n               ]\n           }\n       }\n   }\n   ```\n\n3. **Connect from Modulo**:\n   In Modulo, you should now be able to use the tools exposed by this server."
+  },
+  "descriptor_file": {
+    "path": "mcp.json",
+    "content": "{\n    \"mcpServers\": {\n        \"my-local-modulo-server\": {\n            \"command\": \"/Users/loganchoi/Desktop/mcp-server/.venv/bin/python3\",\n            \"args\": [\n                \"/Users/loganchoi/Desktop/mcp-server/server.py\"\n            ]\n        }\n    }\n}"
+  },
+  "entrypoint_file": {
+    "path": "server.py",
+    "size": 658,
+    "content": "from mcp.server.fastmcp import FastMCP\nimport sys\nfrom datetime import datetime\n\nimport webbrowser\n\n# Initialize MCP Server\nmcp = FastMCP(\"My First MCP Server\")\n\n# Expose a simple tool\n@mcp.tool()\ndef fetch_clock_data():\n    \"\"\"Fetches the current time\"\"\"\n    now = datetime.now()\n    return {\n        \"time\": now.isoformat(),\n        \"timezone\": str(now.tzinfo)\n    }\n\n# Expose tool to open YouTube\n@mcp.tool()\ndef open_youtube():\n    \"\"\"Opens YouTube\"\"\"\n    webbrowser.open(\"https://www.youtube.com\")\n    return {\n        \"status\": \"success\",\n        \"message\": \"YouTube opened successfully\"\n    }\n\nif __name__ == \"__main__\":\n    mcp.run(transport=\"stdio\")"
+  },
+  "content_fetch_notes": []
+}

@@ -1,0 +1,46 @@
+{
+  "full_name": "vllora/vllora",
+  "html_url": "https://github.com/vllora/vllora",
+  "description": "Debug your AI agents",
+  "topics": [
+    "agents",
+    "ai-agents",
+    "ai-gateway",
+    "anthropic",
+    "azure",
+    "claude",
+    "deepseek",
+    "gemini",
+    "google-adk",
+    "langchain",
+    "llm",
+    "llm-gateway",
+    "model-context-protocol",
+    "openai",
+    "router",
+    "rust-lang",
+    "tracing",
+    "vercelaisdk"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 809,
+  "forks": 48,
+  "open_issues": 29,
+  "language": "Rust",
+  "license": "NOASSERTION",
+  "default_branch": "main",
+  "created_at": "2025-01-27T05:49:35Z",
+  "last_pushed_at": "2026-06-30T12:18:48Z",
+  "fetched_at": "2026-07-11T23:12:04.028Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n\n<img src=\"assets/images/logos/logo_dark.svg\" width=\"200px\" alt=\"vLLora Logo\">\n\n#### Lightweight, Real-time Debugging for AI Agents\n\nDebug your Agents in Real Time. Trace, analyze, and optimize instantly. Seamless with LangChain, Google ADK, OpenAI, and all major frameworks.\n\n**[Documentation](https://vllora.dev/docs)** | **[Issues](https://github.com/vllora/vllora/issues)** \n\n\n</div>\n\n\n## Quick Start\n\nFirst, install [Homebrew](https://brew.sh) if you haven't already, then:\n\n```bash\nbrew tap vllora/vllora\nbrew install vllora\n```\n\n\n### Start the vLLora:\n\n```bash\nvllora\n```\n\n> The server will start on `http://localhost:9090` and the UI will be available at `http://localhost:9091`. \n\nvLLora uses OpenAI-compatible chat completions API, so when your AI agents make calls through vLLora, it automatically collects traces and debugging information for every \ninteraction.\n\n<div align=\"center\">\n\n![vLLora Demo](https://raw.githubusercontent.com/vllora/vllora/main/assets/gifs/traces.gif)\n\n\n</div>\n\n### Test Send your First Request\n\n1. **Configure API Keys**: Visit `http://localhost:9091` to configure your AI provider API keys through the UI\n2. **Make a request** to see debugging in action:\n\n```bash\ncurl http://localhost:9090/v1/chat/completions \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"model\": \"gpt-4o-mini\",\n    \"messages\": [{\"role\": \"user\", \"content\": \"What is the capital of France?\"}]\n  }'\n```\n\n### Rust streaming example (OpenAI-compatible)\n\nIn `llm/examples/openai_stream_basic/src/main.rs` you can find a minimal Rust example that:\n\n- **Builds an OpenAI-style request** using `CreateChatCompletionRequestArgs` with:\n  - `model(\"gpt-4.1-mini\")`\n  - a **system message**: `\"You are a helpful assistant.\"`\n  - a **user message**: `\"Stream numbers 1 to 20 in separate lines.\"`\n- **Constructs a `VlloraLLMClient`** and configures credentials via:\n\n```bash\nexport VLLORA_OPENAI_[REDACTED-GENERIC_KV_SECRET]\"\n```\n\nInside the example, the client is created roughly as:\n\n```rust\nlet client = VlloraLLMClient::new()\n    .with_credentials(Credentials::ApiKey(ApiKeyCredentials {\n        api_key: std::env::var(\"VLLORA_OPENAI_API_KEY\")\n            .expect(\"VLLORA_OPENAI_API_KEY must be set\")\n    }));\n```\n\nThen it **streams the completion** using the original OpenAI-style request:\n\n```rust\nlet mut stream = client\n    .completions()\n    .create_stream(openai_req)\n    .await?;\n\nwhile let Some(chunk) = stream.next().await {\n    let chunk = chunk?;\n    for choice in chunk.choices {\n        if let Some(delta) = choice.delta.content {\n            print!(\"{delta}\");\n        }\n    }\n}\n```\n\nThis will print the streamed response chunks (in this example, numbers 1 to 20) to stdout as they arrive.\n\n## Features\n\n**Real-time Tracing** - Monitor AI agent interactions as they happen with live observability of calls, tool interactions, and agent workflow. See exactly what your agents are doing in real-time.\n\n![Real-time Tracing](https://raw.githubusercontent.com/vllora/vllora/main/assets/images/traces-vllora.png)\n\n**MCP Support** - Full support for Model Context Protocol (MCP) servers, enabling seamless integration with external tools by connecting with MCP Servers through HTTP and SSE\n\n![MCP Configuration](https://raw.githubusercontent.com/vllora/vllora/main/assets/images/mcp-config.png)\n\n## Development\n\nTo get started with development:\n\n1. **Clone the repository**:\n```bash\ngit clone https://github.com/vllora/vllora.git\ncd vLLora\ncargo build --release\n```\n\nThe binary will be available at `target/release/vlora`.\n\n2. **Run tests**:\n```bash\ncargo test\n```\n\n## Contributing\n\nWe welcome contributions! Please check out our [Contributing Guide](CONTRIBUTING.md) for guidelines on:\n\n- How to submit issues\n- How to submit pull requests\n- Code style conventions\n- Development workflow\n- Testing requirements\n\nHave a bug report or feature request? Check out our [Issues](https://github.com/vllora/vllora/issues) to see what's being worked on or to report a new issue.\n\n## Roadmap\n\nCheck out our [Roadmap](https://vllora.dev/docs/roadmap) to see what's coming next!\n\n## License\n\nvLLora is [fair-code](https://faircode.io/) distributed under the [Elastic License 2.0 (ELv2)](https://github.com/vllora/vllora/blob/main/LICENSE.md).\n\nThe inner package `llm` is distributed under the [Apache License 2.0](llm/LICENSE-APACHE).\n\nvLLora includes [Distri](https://distri.dev/) as an optional component for AI agent functionality. Distri is distributed under the [Elastic License 2.0 (ELv2)](https://github.com/distrihub/distri/blob/main/LICENSE) and is downloaded separately at runtime. Distri is a separate project maintained by [DistriHub](https://github.com/distrihub).\n\n- **Source Available**: Always visible vLLora source code\n- **Self-Hostable**: Deploy vLLora anywhere you need\n- **Extensible**: Add your own providers, tools, MCP servers, and custom functionality\n\nFor Enterprise License, contact us at [hello@vllora.dev](mailto:hello@vllora.dev).\n\nAdditional information about the license model can be found in the docs.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

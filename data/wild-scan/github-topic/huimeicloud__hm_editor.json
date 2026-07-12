@@ -1,0 +1,43 @@
+{
+  "full_name": "huimeicloud/hm_editor",
+  "html_url": "https://github.com/huimeicloud/hm_editor",
+  "description": "一款轻量级、可扩展的、跨平台的、专为医疗信息化设计的电子病历编辑器内核，为EMR（电子病历系统）提供专业的结构化病历编辑与AI接入解决方案。",
+  "topics": [
+    "ai",
+    "ai-agents",
+    "ai-assistant",
+    "ckeditor4",
+    "contenteditable",
+    "cross-platform",
+    "editor",
+    "emr",
+    "html-editor",
+    "mcp",
+    "mcp-client",
+    "mcp-server",
+    "rich-text-editor"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 103,
+  "forks": 39,
+  "open_issues": 0,
+  "language": "HTML",
+  "license": "LGPL-2.1",
+  "default_branch": "main",
+  "created_at": "2025-06-18T15:49:52Z",
+  "last_pushed_at": "2026-07-10T02:44:53Z",
+  "fetched_at": "2026-07-11T22:59:43.669Z",
+  "readme": {
+    "path": "README.MD",
+    "content": "# 惠每电子病历编辑器 HmEditor\n\n[![License: LGPL v2.1](https://img.shields.io/badge/License-LGPL%20v2.1-blue.svg)](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html)\n![CKEditor4](https://img.shields.io/badge/CKEditor-4.x-blue)\n![JavaScript](https://img.shields.io/badge/JavaScript-ES6%2B-yellow)\n![Node.js](https://img.shields.io/badge/Node.js-%3E%3D12.0.0-brightgreen)\n![AI](https://img.shields.io/badge/AI-Ready-red)\n\n> 集成AI、满足信创、开源的医疗电子病历编辑器\n\n---\n\n## 目录\n- [惠每电子病历编辑器 HmEditor](#惠每电子病历编辑器-hmeditor)\n  - [目录](#目录)\n  - [项目简介](#项目简介)\n  - [特性亮点](#特性亮点)\n  - [快速开始](#快速开始)\n    - [1. Docker 部署（推荐）](#1-docker-部署推荐)\n    - [2. 源码编译部署](#2-源码编译部署)\n    - [3. 访问页面](#3-访问页面)\n  - [示例代码](#示例代码)\n  - [在线演示](#在线演示)\n  - [文档与二次开发](#文档与二次开发)\n  - [开源协议](#开源协议)\n  - [反馈与交流](#反馈与交流)\n\n---\n\n## 项目简介\n\nHmEditor 是一款专为医疗行业设计的智能电子病历编辑器插件，结合 CKEditor4 文本编辑功能与自研 AI 技术，为医院信息科和 EMR 厂商提供高效、灵活、智能化的病历编辑解决方案。支持多种病历模板创建与编辑，具备强大的数据绑定能力，并可与医疗信息系统无缝对接。\n\n---\n\n## 特性亮点\n- **完全开源**，LGPLv2.1 协议，开箱即用\n- 丰富数据元组件：文本、时间、单选、多选、下拉、表格、图片、示意图等\n- 原生 JS 开发，纯前端运行，易集成，支持多平台\n- 智能病历编辑：修订、只读、水印、AI 服务对接\n- 支持信创，兼容国产操作系统\n\n---\n\n## 快速开始\n\n### 1. Docker 部署（推荐）\n```bash\n# 安装 docker 和 docker-compose\n# 下载 docker-compose.yml\n# 启动服务\n$ docker-compose -f /path/to/docker-compose.prod.yml up -d\n```\n\n### 2. 源码编译部署\n```bash\n# 下载 hm_editor、hm_editor.service、hm_editor.admin.client\n# 进入 hm_editor 目录\nnpm install         # 安装依赖\ngrunt release       # 编译\nnodemon index.js    # 启动\n```\n\n### 3. 访问页面\n- 编辑器 SDK 演示：[http://127.0.0.1:7070/hmEditor/demo/index.html](http://127.0.0.1:7070/hmEditor/demo/index.html)\n- 后台管理演示：[http://127.0.0.1:7070/hmEditor/admin-client](http://127.0.0.1:7070/hmEditor/admin-client)\n\n---\n\n## 示例代码\n\n只需 15 行核心代码即可集成：\n```html\n<script src=\"https://editor.huimei.com/hmEditor/iframe/HmEditorIfame.js\"></script>\n<div id=\"editorContainer\" style=\"width:850px;height:500px;\"></div>\n<script>\nHMEditorLoader.createEditorAsync({\n  container: \"#editorContainer\",\n  sdkHost: \"https://editor.huimei.com/hmEditor\"\n}).then(function(editor) {\n  editor.setDocContent({\n    code: 'doc001',\n    docTplName: '测试病历名称',\n    docContent: '...'\n  });\n});\n</script>\n```\n> 更多 API 及用法详见 [官方文档](https://editor.huimei.com/)\n\n---\n\n## 在线演示\n- [编辑器 SDK 演示](https://editor.huimei.com/hmEditor/demo/index.html)\n- [后台管理演示](https://editor.huimei.com/hmEditor/admin-client)\n\n---\n\n## 文档与二次开发\n- [开发流程介绍](hmEditor/开发流程介绍.md)\n- [基础接口说明](hmEditor/extensions/base/README.MD)\n\n---\n\n## 开源协议\n\n本项目遵循 [LGPLv2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html) 协议，允许自由使用、修改和分发。\n\n---\n\n## 反馈与交流\n- 问题反馈：GitHub Issue（即将开放）\n- 钉钉交流群：81935038067\n\n![钉钉群二维码](https://alidocs.oss-cn-zhangjiakou.aliyuncs.com/res/2M9qP5joJg2VDO01/img/910afe1a-efe9-4296-aedd-f6d3c16aa6da.png)\n\n---\n\n> © 2025-2026 惠每云 HMCLOUD. 保留所有权利。\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "index.js",
+    "size": 3901,
+    "content": "var express = require('express');\nvar path = require('path');\nvar app = express();\nvar serveIndex = require('serve-index');\nvar editor = require('./src/editor.js');\nvar print = require('./src/print.js');\nvar mock = require('./src/mock');\nvar bodyParser = require('body-parser');\nconst mcpServer = require('./src/mcp-server.js');\nconst aiChat = require('./src/mcp-client/mcp-chat.js');\n\napp.use(bodyParser.json({ extended: true, limit: '200mb' })); // for parsing application/json\napp.use(bodyParser.urlencoded({ extended: true ,limit: '200mb' } )); // for parsing application/x-www-form-urlencoded\napp.use(bodyParser.text({ limit: '200mb' })); // for parsing text/plain\n\n// 日志中间件放在所有路由挂载之前\napp.use(function(req, res, next) {\n\tvar url = req.originalUrl;\n\tif (!/\\.(html|js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|map)(\\?|$)/i.test(url)) {\n\t\tconsole.log('[INDEX] 收到请求:', req.method, req.originalUrl);\n\t}\n\tnext();\n});\n\n// 路由前缀\nvar HM = '/hmEditor';\n\n// 显式挂载 demo 目录：本地/完整部署用 hmEditor/demo，Docker 构建用 editorDist/demo（grunt copy:demo 产出）\nvar fs = require('fs');\nvar demoDir = path.join(__dirname, 'hmEditor', 'demo');\nif (!fs.existsSync(demoDir)) {\n\tdemoDir = path.join(__dirname, 'editorDist', 'demo');\n}\nif (fs.existsSync(demoDir)) {\n\tvar demoStatic = express.static(demoDir, { index: ['index.html'] });\n\tapp.use('/demo', demoStatic);\n\tapp.use(HM + '/demo', demoStatic);\n}\n\n// 允许跨域请求\n// app.all('*', function (req, res, next) {\n//     res.header(\"Access-Control-Allow-Origin\", '*');\n//     res.header(\"Access-Control-Allow-Credentials\", \"true\");\n//     res.header(\"Access-Control-Allow-Headers\", \"*\");\n//     res.header(\"Access-Control-Allow-Methods\", \"PUT,POST,GET,DELETE,OPTIONS\");\n//     next();\n// });\n\n// dot\nvar dot = require('dot');\nvar dotPath;\napp.set('view engine', 'dot');  // 设置模板引擎\napp.set('views', dotPath);\napp.engine('dot',async function (path, options, callback) {\n    var fn = dot.template(require('fs').readFileSync(path).toString());\n    var html = fn(options);\n    callback(null, html);\n});\n\n// 静态资源\nvar staticStack = express.Router();\nstaticStack.use(express.static(__dirname + '/hmEditor'));\nstaticStack.use(express.static(__dirname + '/editorDist'));\nstaticStack.use(express.static(__dirname + '/'));\n\n// emr-editor 路由\nvar emrEditorRouter = express.Router();\nemrEditorRouter.use('/public', express.static(__dirname + '/public'));\nemrEditorRouter.use('/album', serveIndex(__dirname + '/album', { template: './album_public/directory.html' }));\nemrEditorRouter.use('/mock', mock);\nemrEditorRouter.use('/', editor);\n\n// 以下路由同时挂载在 path 与 HM + path\n[\n\t['/', staticStack],\n\t['/emr-editor', emrEditorRouter],\n\t['/hmEditor/emr-print', print],\n\t['/mcp-server', mcpServer.router],\n\t['/ai-chat', aiChat]\n].forEach(function (r) {\n\tapp.use(r[0], r[1]);\n\tapp.use(HM + r[0], r[1]);\n});\n\nvar server = app.listen(process.env.PORT||3071,'0.0.0.0',function(){\n\tvar port = process.env.PORT||3071;\n\tvar baseUrl = 'http://127.0.0.1:' + port;\n\t\n\tconsole.log('\\n========================================');\n\tconsole.log('欢迎使用 惠每智能电子病历编辑器');\n\tconsole.log('官网地址：https://editor.huimei.com/');\n\tconsole.log('========================================\\n');\n\t\n\tconsole.log('📄 Demo 页面地址（本地）：');\n\tconsole.log('   ' + baseUrl + HM + '/demo/index.html');\n\tconsole.log('   ' + baseUrl + HM + '/demo/ai-draft-demo.html');\n\tconsole.log('');\n\t\n\tconsole.log('📦 JS 引用方式：');\n\tconsole.log('   <script src=\"' + baseUrl + HM + '/iframe/HmEditorIfame.js\"></script>');\n\tconsole.log('');\n\t\n\tconsole.log('🔗 SDK Host 地址：');\n\tconsole.log('   ' + baseUrl + HM);\n\tconsole.log('\\n========================================\\n');\n\n});\n\n// 注册MCP WebSocket服务\nmcpServer.registerMcpWebSocket(server);\n"
+  },
+  "content_fetch_notes": []
+}

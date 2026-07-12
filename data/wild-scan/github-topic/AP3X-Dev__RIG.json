@@ -1,0 +1,41 @@
+{
+  "full_name": "AP3X-Dev/RIG",
+  "html_url": "https://github.com/AP3X-Dev/RIG",
+  "description": "Runtime Integration Gateway is the fastest way to ship safe agent tools. Install packs for any SDK, get versioned schema tools instantly, run them with approvals and audit, and export as MCP in one command.",
+  "topics": [
+    "agent-framework",
+    "agentic",
+    "agentic-framework",
+    "agentic-workflow",
+    "ai",
+    "ai-agent",
+    "ai-agents",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "npm",
+    "pip",
+    "sdk"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "master",
+  "created_at": "2026-01-13T04:33:37Z",
+  "last_pushed_at": "2026-01-13T07:47:44Z",
+  "fetched_at": "2026-07-12T00:22:00.935Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n  <img src=\".github/images/rig_header.png\" alt=\"RIG - Runtime Integration Gateway\" width=\"800\"/>\n</div>\n\n# RIG (Runtime Integration Gateway)\n\nRIG is a tool platform for AI agents that acts as an \"SDK tool operating system.\"\n\n## Core Functions\n\n- **Turns SDKs into tools** - Install \"packs\" (pip or npm packages) that wrap SDKs and expose them as structured tools with JSON schemas\n- **Runs tools safely** - Enforces validation, secrets isolation, policies, approvals, retries, and audit logging through RIG Runtime\n- **Exports as MCP** - Instantly exposes your tool catalog as an MCP server via RIG Bridge\n\n## Key Architecture\n\n- **Packs**: pip/npm packages that wrap SDKs (like \"drivers\")\n- **Registry**: Tool discovery and version management\n- **Runtime**: Policy enforcement kernel (approvals, secrets, retries, audit)\n- **RGP**: Native API for calling tools\n- **MCP Bridge**: Compatibility layer for MCP clients\n- **Hub**: Optional hosted control plane for teams\n\n## Quick Start\n\n### Installation\n\n```powershell\n# Clone the repository\ngit clone https://github.com/AP3X-Dev/runtime-integration-gateway.git\ncd runtime-integration-gateway\n\n# Install in development mode (Windows)\n.\\install-dev.ps1\n\n# Or manually (cross-platform)\npip install -e packages/rig-core\npip install -e packages/rig-protocol-rgp\npip install -e packages/rig-cli\npip install -e packages/rig-bridge-mcp\n```\n\n### Add to PATH (Windows)\n\n```powershell\n# PowerShell (run as Administrator)\n$userPath = [Environment]::GetEnvironmentVariable(\"Path\", \"User\")\n$scriptsPath = \"$env:LOCALAPPDATA\\Packages\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python312\\Scripts\"\n[Environment]::SetEnvironmentVariable(\"Path\", \"$userPath;$scriptsPath\", \"User\")\n\n# Restart your terminal, then verify\nrig --help\n```\n\n### Usage\n\n```bash\n# View available packs from the pack index\nrig packs --available\n\n# Install a pack (e.g., Stripe)\nrig install stripe\n\n# List installed tools\nrig list\n\n# Start the RGP server\nrig serve\n\n# Start the MCP server\nrig mcp\n```\n\n## Available Packs\n\n| Pack | Tools | Description |\n|------|-------|-------------|\n| [stripe](packages/rig-pack-stripe) | 8 | Payment processing |\n| [twilio](packages/rig-pack-twilio) | 5 | SMS, voice, verification |\n| [slack](packages/rig-pack-slack) | 4 | Team messaging |\n| [sendgrid](packages/rig-pack-sendgrid) | 2 | Email delivery |\n| [github](packages/rig-pack-github) | 4 | Repository management |\n| [google](packages/rig-pack-google) | 3 | Sheets, Drive, Gmail |\n| [notion](packages/rig-pack-notion) | 4 | Workspace management |\n| [airtable](packages/rig-pack-airtable) | 3 | Database management |\n| [supabase](packages/rig-pack-supabase) | 4 | Backend services |\n| [elevenlabs](packages/rig-pack-elevenlabs) | 2 | AI voice synthesis |\n\n**Total: 39 tools across 10 packs**\n\n## Documentation\n\n- [Quickstart Guide](examples/quickstart.md) - 5-minute setup guide\n- [Milestone 2 Summary](docs/milestone-2-complete.md) - Pack ecosystem details\n- [Pack Index](https://raw.githubusercontent.com/AP3X-Dev/runtime-integration-gateway/master/specs/pack-index-example.json) - Available packs registry\n\n## Example Usage\n\nInitialize config:\n\n```bash\nrig init\n```\n\nStart the gateway:\n\n```bash\nrig serve\n```\n\nList tools:\n\n```bash\nrig list\n```\n\nCall a tool:\n\n```bash\nrig call echo '{\"message\":\"hi\"}'\n```\n\nIf a tool requires approval, the call will return an approval_required error with a token. Approve it:\n\n```bash\nrig approve <token>\n```\n\n## Notes\n\n- The MCP bridge and updater are stubbed in this v0 repo.\n- Pack discovery uses Python entry points under the group rig.packs.\n\n\n## Node packs via rig-node-runner\n\nThis repo also includes a Node runner that can load npm packs and expose their tools to the Python runtime.\n\nFrom the repo root:\n\n```bash\nnpm install\nRIG_NODE_PACKS=@rig/pack-echo npm --workspace packages/rig-node-runner start\n```\n\nEnable the node runner in rig.yaml:\n\n```yaml\nnode_runner:\n  enabled: true\n  url: http://127.0.0.1:8790\n```\n\nNow start the RIG server and call the node tool:\n\n```bash\nrig serve\nrig list\nrig call echo_node '{\"message\":\"hi\"}'\n```\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

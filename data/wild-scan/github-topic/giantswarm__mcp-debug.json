@@ -1,0 +1,31 @@
+{
+  "full_name": "giantswarm/mcp-debug",
+  "html_url": "https://github.com/giantswarm/mcp-debug",
+  "description": "Command-line tool for debugging MCP servers",
+  "topics": [
+    "model-context-protocol"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 37,
+  "forks": 1,
+  "open_issues": 1,
+  "language": "Go",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2025-06-12T09:43:52Z",
+  "last_pushed_at": "2026-07-09T16:38:34Z",
+  "fetched_at": "2026-07-11T23:37:02.550Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP Debug\n\n[![Go Report Card](https://goreportcard.com/badge/github.com/giantswarm/mcp-debug)](https://goreportcard.com/report/github.com/giantswarm/mcp-debug)\n\n`mcp-debug` is a command-line tool for debugging MCP (Model Context Protocol) servers. It helps developers inspect MCP server capabilities, debug tool integrations, and test server notifications.\n\n## Key Features\n\n- **Connect to any MCP Server**: Works with servers using `streamable-http` transport.\n- **OAuth 2.1 Authentication**: Full MCP authorization specification (2025-11-25) compliance with security-first defaults\n  - Automatic discovery (RFC 9728 Protected Resource Metadata, RFC 8414 AS Metadata)\n  - Resource Indicators (RFC 8707) for token audience binding\n  - PKCE validation (required by MCP spec)\n  - Dynamic Client Registration (RFC 7591) and Client ID Metadata Documents\n  - Step-up authorization for runtime permission escalation\n  - Intelligent scope selection (auto and manual modes)\n- **Interactive REPL**: Explore available tools, resources, and prompts interactively.\n- **MCP Server Mode**: Acts as an MCP server itself, allowing integration with AI assistants like Cursor.\n- **Verbose Logging**: Detailed logging of JSON-RPC messages for in-depth debugging.\n- **Self-Update**: Keep the tool up-to-date with a single command.\n- **Shell Autocompletion**: Generates autocompletion scripts for Bash, Zsh, Fish, and PowerShell.\n\n## Getting Started\n\n### Installation\n\nTo build the tool from source and install it in your PATH:\n\n```bash\ngo install github.com/giantswarm/mcp-debug@latest\n```\n\n### Documentation\n\nFor detailed instructions on all features:\n\n- **[➡️ mcp-debug Usage Guide](./docs/usage.md)** - Complete feature guide\n- **[➡️ OAuth 2.1 Documentation](./docs/oauth/)** - Comprehensive OAuth authentication guide\n\n### OAuth 2.1 Quick Start\n\nConnect to a protected MCP server with automatic discovery:\n\n```bash\n./mcp-debug --oauth --endpoint https://mcp.example.com/mcp\n```\n\nThis automatically:\n- Discovers the authorization server (RFC 9728)\n- Validates PKCE support (required by MCP spec)\n- Uses the official [Client ID Metadata Document](https://giantswarm.github.io/mcp-debug/client.json) (CIMD)\n- Falls back to Dynamic Client Registration if CIMD is not supported\n- Opens your browser for authorization\n- Connects with audience-bound tokens (RFC 8707)\n\n#### Client ID Metadata Document (CIMD)\n\nmcp-debug uses CIMD by default for OAuth authentication. The official client metadata is hosted at:\n\n**https://giantswarm.github.io/mcp-debug/client.json**\n\nThis allows OAuth-protected MCP servers to identify mcp-debug without requiring pre-registration. The authorization server fetches the metadata from this URL and displays \"MCP Debugger CLI\" on the consent screen.\n\nIf you need to use a custom CIMD or disable it:\n\n```bash\n# Use a custom CIMD URL\n./mcp-debug --oauth --oauth-client-id-metadata-url https://example.com/my-client.json --endpoint https://mcp.example.com/mcp\n\n# Disable CIMD and force Dynamic Client Registration\n./mcp-debug --oauth --oauth-disable-cimd --endpoint https://mcp.example.com/mcp\n```\n\nSee the **[OAuth Documentation](./docs/oauth/)** for detailed guides, examples, and troubleshooting.\n\n## Basic Examples\n\n**Connect to a server and listen for notifications:**\n```bash\n./mcp-debug --endpoint http://localhost:8090/mcp\n```\n\n**Start the interactive REPL:**\n```bash\n./mcp-debug --repl\n```\n\n**Run as an MCP server for AI assistant integration:**\n```bash\n./mcp-debug --mcp-server\n```\n\nRefer to the [usage guide](./docs/usage.md) for more advanced examples.\n\n## Contributing\n\nContributions are welcome! Please open an issue or submit a pull request.\n\n## License\n\n`mcp-debug` is licensed under the Apache 2.0 License.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "main.go",
+    "size": 186,
+    "content": "package main\n\nimport \"github.com/giantswarm/mcp-debug/cmd\"\n\n// Version can be set during build with -ldflags\nvar version = \"dev\"\n\nfunc main() {\n\tcmd.SetVersion(version)\n\tcmd.Execute()\n}\n"
+  },
+  "content_fetch_notes": []
+}

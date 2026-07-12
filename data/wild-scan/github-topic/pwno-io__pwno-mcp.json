@@ -1,0 +1,33 @@
+{
+  "full_name": "pwno-io/pwno-mcp",
+  "html_url": "https://github.com/pwno-io/pwno-mcp",
+  "description": "MCP for Pwn",
+  "topics": [
+    "mcp",
+    "mcp-server",
+    "pwn",
+    "pwno",
+    "pwno-mcp"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 276,
+  "forks": 24,
+  "open_issues": 1,
+  "language": "Python",
+  "license": "NOASSERTION",
+  "default_branch": "main",
+  "created_at": "2025-07-18T13:18:49Z",
+  "last_pushed_at": "2026-03-12T16:30:29Z",
+  "fetched_at": "2026-07-11T22:44:53.795Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<picture>\n  <source media=\"(prefers-color-scheme: dark)\" srcset=\"assets/pwno-mcp-dark.png\">\n  <source media=\"(prefers-color-scheme: light)\" srcset=\"assets/pwno-mcp-light.png\">\n  <img alt=\"pwno-mcp banner\" src=\"assets/pwno-mcp-light.png\">\n</picture>\n\n<p align=\"center\">stateful system for autonomous <code>pwn</code> and binary research, designed for LLM agents.</p>\n\n## Overview\n\n`pwno-mcp` runs GDB + pwndbg in an isolated environment and exposes stateful debugging, exploit I/O, and helper tooling over MCP for agentic coding clients.\n\n## Features\n\n- Stateful debugger sessions via GDB + pwndbg\n- Deterministic execution control via GDB/MI\n- Fast context snapshots for registers, stack, disassembly, source, and backtrace\n- Interactive exploit-driver workflows with `pwncli`\n- Multi-session support for parallel workflows\n- Workspace automation helpers for commands, processes, Python, repos, and RetDec\n- HTTP and stdio transport support\n\n## Documentation\n\nThe full documentation is available at [docs.pwno.io](https://docs.pwno.io).\n\n## Quick Start\n\nCreate a local `workspace` directory, put your target binary there, then run the container.\n\n```bash\nmkdir -p ./workspace\ncp ./path/to/your/binary ./workspace/chal\nchmod +x ./workspace/chal\n```\n\n```bash\ndocker run --rm -p 5500:5500 \\\n  --cap-add=SYS_PTRACE \\\n  --cap-add=SYS_ADMIN \\\n  --security-opt seccomp=unconfined \\\n  --security-opt apparmor=unconfined \\\n  -v \"$PWD/workspace:/workspace\" \\\n  ghcr.io/pwno-io/pwno-mcp:latest\n```\n\nDefault MCP endpoint:\n\n```text\nhttp://127.0.0.1:5500/mcp\n```\n\nFor stdio mode, client configs, health checks, and attach-helper details, use the docs site: [docs.pwno.io/quickstart](https://docs.pwno.io/quickstart).\n\n## Development\n\nFor local development, architecture, and contributing guidance, see [docs.pwno.io/development](https://docs.pwno.io/development).\n\n## Usage\n\n- non-profit: yes\n- commercial: `oss@pwno.io`\n\n## Future Enhancements\n- WebSocket endpoint for streaming I/O\n- Advanced memory analysis tools\n- Heap exploitation helpers\n- ROP chain generation\n- Symbolic execution integration\n\n## License\n\nThis project is licensed under CC BY-NC-ND 4.0.\n\nSee `LICENSE` for details.\n\n## Contributing\n\nIssues and pull requests are welcome.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

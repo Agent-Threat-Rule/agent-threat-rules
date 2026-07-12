@@ -1,0 +1,30 @@
+{
+  "full_name": "jdmogollonp/fieldvision-mcp",
+  "html_url": "https://github.com/jdmogollonp/fieldvision-mcp",
+  "description": "MCP servers for precision agriculture computer vision tasks",
+  "topics": [
+    "mcp-servers",
+    "vision"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-10-13T19:01:11Z",
+  "last_pushed_at": "2026-02-03T15:41:29Z",
+  "fetched_at": "2026-07-12T00:23:11.547Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Field Vision - Experiments MCP\n\nThis repository is a practical fork of the FieldVision research project. It focuses on wiring containerized computer-vision pipelines into Model Context Protocol (MCP) servers so agentic clients can orchestrate the workflow.\n\n## What is implemented here\n\n- Containerized CV services: DroneZaic (mini-mosaics), COLMAP (SfM), Counting (YOLO11), SfM (VGGT).\n- MCP servers that expose those services as tools over stdio.\n\n## Current limitations / gaps\n\n- DroneZaic MCP upload uses a `file` form field, while the DroneZaic API expects `video`; this integration needs alignment.\n- DroneZaic MCP accepts `srt_path` but does not upload it yet.\n- File responses (e.g., DroneZaic ZIP) are not downloaded by the MCP server; metadata is returned instead.\n\n## Quickstart (MCP)\n\n1. `docker-compose -f docker-compose.mcp.yml up -d --build`\n2. Copy `mcp-config.json` into your Claude Desktop config directory.\n3. Verify services (host ports from `docker-compose.mcp.yml`):\n   - DroneZaic: `localhost:5001`\n   - COLMAP: `localhost:8003`\n   - Counting: `localhost:8001`\n   - SfM: `localhost:8002`\n\n## Docs\n\n- `README-MCP.md` - MCP server setup and tool reference\n- `docs/architecture-diagram.md` - system diagram\n- `docs/mcp-tools-reference.md` - parameters and response shape\n- `docs/api-discovery.md` - container API endpoints\n\n## Upstream context\n\nFieldVision's original goal is to combine RL, CV, and edge/offloading to optimize UAV workflows in agricultural settings. This repo focuses on the MCP tooling and container integration, not the upstream RL research.\n\nUpstream: https://github.com/SeanPeppers/FieldVision\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

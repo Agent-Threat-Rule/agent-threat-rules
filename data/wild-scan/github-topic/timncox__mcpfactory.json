@@ -1,0 +1,31 @@
+{
+  "full_name": "timncox/mcpfactory",
+  "html_url": "https://github.com/timncox/mcpfactory",
+  "description": "An MCP server that creates, manages, and tests other MCP servers. Built to work with both Claude Desktop and Claude Code agent teams.",
+  "topics": [
+    "agentic-ai",
+    "agentic-workflow",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "JavaScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-03-10T18:37:01Z",
+  "last_pushed_at": "2026-03-23T19:02:40Z",
+  "fetched_at": "2026-07-12T00:46:34.818Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP Factory\n\nAn MCP server that creates, manages, and tests other MCP servers. Built to work with both Claude Desktop and Claude Code agent teams.\n\n## How It Works\n\nMCP Factory is itself an MCP server. When invoked by Claude, it spawns a Claude agent (via `@anthropic-ai/claude-agent-sdk`) that writes, builds, tests, and installs a new MCP server — all from a natural language description.\n\nEach generated server uses stdio transport, so multiple agent team members can use the same server simultaneously (each spawns its own process).\n\n## Tools\n\n| Tool | Description |\n|------|-------------|\n| `create_mcp` | Create a new MCP server from a description. Spawns an agent to write, build, test, and install it. |\n| `list_mcps` | List all factory-created servers with installation status for both Claude Desktop and Claude Code. |\n| `remove_mcp` | Remove a server from both configs and delete its directory. |\n| `test_mcp` | Run the MCP JSON-RPC protocol handshake against an existing server. |\n\n## Installation\n\nAdd to your Claude Code settings (`~/.claude/settings.json`):\n\n```json\n{\n  \"mcpServers\": {\n    \"mcp-factory\": {\n      \"command\": \"node\",\n      \"args\": [\"/path/to/mcpfactory/dist/index.js\"]\n    }\n  }\n}\n```\n\nOr to Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json`):\n\n```json\n{\n  \"mcpServers\": {\n    \"mcp-factory\": {\n      \"command\": \"node\",\n      \"args\": [\"/path/to/mcpfactory/dist/index.js\"]\n    }\n  }\n}\n```\n\n## Building\n\n```bash\nnpm install\nnpm run build\n```\n\n## Creating a Server\n\nAsk Claude to create an MCP server:\n\n> \"Create an MCP server called weather-lookup that fetches current weather for a city using the OpenWeatherMap API\"\n\nThe factory will:\n1. Scaffold the project in `~/mcpfactory/servers/<name>/`\n2. Spawn a Claude agent to write the implementation\n3. Run `npm install` and `npx tsc` to verify compilation\n4. Test the server via JSON-RPC protocol handshake\n5. Install to both Claude Desktop and Claude Code settings\n\nYou can also specify tools explicitly:\n\n```json\n{\n  \"name\": \"weather-lookup\",\n  \"description\": \"Fetch current weather data\",\n  \"tools\": [\n    {\n      \"name\": \"get_weather\",\n      \"description\": \"Get current weather for a city\",\n      \"parameters\": {\n        \"city\": { \"type\": \"string\", \"description\": \"City name\", \"required\": true }\n      }\n    }\n  ],\n  \"env_vars\": {\n    \"OPENWEATHERMAP_API_KEY\": \"your-key-here\"\n  }\n}\n```\n\n## Agent Team Support\n\nCreated servers are installed to `~/.claude/settings.json` under the `mcp-factory-` prefix, making them available to Claude Code agent teams. Since each server uses stdio transport, every team member spawns its own isolated process — no concurrency issues.\n\n## Project Structure\n\n```\nmcpfactory/\n  src/\n    index.ts              # MCP server entry point (4 tools)\n    agent/\n      spawn.ts            # Claude agent spawning via SDK\n      prompts.ts          # System/user prompt templates\n    config/\n      desktop-config.ts   # Claude Desktop config management\n      claude-code-config.ts  # Claude Code settings management\n    tools/\n      create-mcp.ts       # Create server handler\n      list-mcps.ts        # List servers handler\n      remove-mcp.ts       # Remove server handler\n      test-mcp.ts         # Test server handler\n    testing/\n      mcp-tester.ts       # JSON-RPC protocol test runner\n  servers/                # Generated MCP servers live here\n```\n\n## Generated Server Conventions\n\nEvery server created by the factory follows these conventions:\n\n- TypeScript with ES2022 target and Node16 module resolution\n- `@modelcontextprotocol/sdk` for MCP protocol\n- `zod` for input schema validation\n- `StdioServerTransport` for communication\n- No `console.log` (stdout is reserved for JSON-RPC protocol)\n- Compiled output in `dist/`, source in `src/`\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

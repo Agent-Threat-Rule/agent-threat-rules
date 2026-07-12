@@ -1,0 +1,40 @@
+{
+  "full_name": "gsd-build/agent-inbox",
+  "html_url": "https://github.com/gsd-build/agent-inbox",
+  "description": "Give any AI agent a disposable email inbox in one tool call. MCP server for email verification, auth flows, and testing.",
+  "topics": [
+    "ai-agent",
+    "auth",
+    "claude",
+    "cursor",
+    "disposable-email",
+    "email",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "testing",
+    "verification",
+    "windsurf"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 54,
+  "forks": 5,
+  "open_issues": 1,
+  "language": "JavaScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-10T05:54:18Z",
+  "last_pushed_at": "2026-04-10T06:29:50Z",
+  "fetched_at": "2026-07-11T23:28:25.027Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# agent-inbox\n\nGive any AI agent a disposable email inbox in one tool call.\n\n## Install\n\n```bash\nnpx gsd-agent-inbox\n```\n\nThe interactive installer auto-detects your AI coding agents (Claude Code, Codex CLI, Cursor, Gemini CLI, Windsurf), configures the MCP server, and installs the optional skill for each.\n\nWhen launched by an MCP client (non-TTY), it starts the MCP server normally. When you run it from a terminal, you get the installer.\n\n## What it does\n\nAn [MCP server](https://modelcontextprotocol.io) that creates real, temporary email addresses on demand. Your agent can sign up for services, receive confirmation emails, extract verification links, and clean up — without you lifting a finger.\n\nNo API keys. No accounts. No configuration. Works with any email-sending service — Supabase, Resend, SendGrid, Postmark, AWS SES, whatever.\n\n## The problem\n\nAI agents hit a wall when a service requires email verification. They can fill out a sign-up form, but they can't receive the confirmation email. So they stop and ask you to do it.\n\n## The fix\n\n```\nAgent: create_inbox({ prefix: \"signup\", name: \"test\" })\n→ signup-1712345678@somedomain.com (name: test)\n\nAgent: [fills sign-up form with that email]\n\nAgent: verify_email({ address: \"test\", subject_contains: \"confirm\" })\n→ Email verified successfully!\n  Verification URL: https://myapp.supabase.co/auth/v1/verify?token=abc123\n  HTTP Status: 200\n\nAgent: delete_inbox({ address: \"test\" })\n→ Done.\n```\n\n## Manual setup\n\nIf you prefer to configure manually instead of using the installer:\n\n### Claude Code\n\n```bash\nclaude mcp add agent-inbox -- npx -y gsd-agent-inbox\n```\n\nOr add to `~/.claude/settings.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"agent-inbox\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"gsd-agent-inbox\"]\n    }\n  }\n}\n```\n\n### Codex CLI\n\nAdd to `~/.codex/config.toml`:\n\n```toml\n[mcp_servers.agent-inbox]\ncommand = \"npx\"\nargs = [\"-y\", \"gsd-agent-inbox\"]\nenv = { }\n```\n\n### Cursor\n\nAdd to `~/.cursor/mcp.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"agent-inbox\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"gsd-agent-inbox\"]\n    }\n  }\n}\n```\n\n### Gemini CLI\n\nAdd to `~/.gemini/settings.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"agent-inbox\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"gsd-agent-inbox\"]\n    }\n  }\n}\n```\n\n### Windsurf\n\nAdd to `~/.codeium/windsurf/mcp_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"agent-inbox\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"gsd-agent-inbox\"]\n    }\n  }\n}\n```\n\n### Any other MCP client\n\nAny client that supports stdio transport:\n\n```json\n{\n  \"command\": \"npx\",\n  \"args\": [\"-y\", \"gsd-agent-inbox\"]\n}\n```\n\n### Build from source\n\n```bash\ngit clone https://github.com/gsd-build/agent-inbox.git\ncd agent-inbox\nnpm install\nnpm run build\nnpm start\n```\n\n## Tools\n\n| Tool | What it does |\n|------|-------------|\n| `create_inbox` | Spin up a temporary email address. Optional `prefix` for readability, optional `name` for easy reference. |\n| `check_inbox` | Check for messages. Returns subjects, bodies, and auto-extracted verification links. |\n| `wait_for_email` | Poll until a matching email arrives. Filters by sender and subject. Auto-retries with backoff. |\n| `verify_email` | One-shot verification: polls for confirmation email, extracts the link, visits it via HTTP. Three steps in one tool call. |\n| `list_inboxes` | Show all active inboxes with names and providers. |\n| `delete_inbox` | Destroy an inbox and its backing account. |\n\n### Named inboxes\n\nGive inboxes a name for easy reference across multiple tool calls:\n\n```\ncreate_inbox({ prefix: \"signup\", name: \"main\" })\nwait_for_email({ address: \"main\", subject_contains: \"confirm\" })\ndelete_inbox({ address: \"main\" })\n```\n\n## Skill\n\nThe installer can optionally add a skill file that teaches your AI agent *when* and *how* to use agent-inbox — so it reaches for the inbox tools automatically when it encounters auth flows, email verification, or sign-up testing.\n\nTo install the skill manually:\n\n```bash\nmkdir -p ~/.claude/skills/agent-inbox\ncurl -fsSL https://raw.githubusercontent.com/gsd-build/agent-inbox/main/skill/SKILL.md \\\n  -o ~/.claude/skills/agent-inbox/SKILL.md\n```\n\n## How it works\n\nUses [mail.tm](https://mail.tm) as the primary provider with automatic fallback to [1secmail](https://www.1secmail.com) if mail.tm is down. No API keys or accounts required.\n\n- **Fallback providers** — if mail.tm fails, 1secmail kicks in automatically\n- **Cleanup on exit** — inboxes are deleted when the MCP server shuts down (SIGINT/SIGTERM)\n- **Smart polling** — `wait_for_email` retries with backoff (3s → 5s → 10s → 15s)\n- **Link extraction** — confirmation/verification URLs auto-detected via keyword matching\n\n## Limitations\n\n- Some services block disposable email domains. If sign-up is rejected, try a different service or provider.\n- Inboxes don't survive server restarts (in-memory only).\n- Text and HTML bodies only — no attachment support.\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

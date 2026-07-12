@@ -1,0 +1,35 @@
+{
+  "full_name": "tinystruct/tinystruct-mcp",
+  "html_url": "https://github.com/tinystruct/tinystruct-mcp",
+  "description": "The tinystruct-mcp is an extensible MCP server based on tinystruct framework via the Model Context Protocol (MCP).",
+  "topics": [
+    "awesome-mcp-servers",
+    "mcp",
+    "mcp-framework",
+    "mcp-server",
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 9,
+  "forks": 1,
+  "open_issues": 0,
+  "language": "Java",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-03-28T16:05:38Z",
+  "last_pushed_at": "2026-07-11T07:37:43Z",
+  "fetched_at": "2026-07-11T23:56:29.625Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# tinystruct MCP project\r\n\r\n**tinystruct MCP** is a demonstration project that showcases how to develop [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) tools using the [tinystruct framework](https://www.tinystruct.org). It provides a modular Java-based MCP server with built-in tools for file system management and GitHub operations.\r\n\r\nThis project is designed to bridge the gap between Large Language Models (LLMs) and external systems, enabling AI agents to interact with the physical file system and version control systems securely and efficiently.\r\n\r\n---\r\n\r\n## Key Features\r\n\r\n*   **Modular Architecture**: Built with Maven, allowing for easy expansion and isolation of tool sets.\r\n*   **Annotation-Driven**: Simplify tool development using `@Action` and `@Argument` annotations for automatic schema generation.\r\n*   **Ready-to-Use Tools**: Includes robust implementations for Git, GitHub API, and local FileSystem operations.\r\n*   **Extensible Design**: Inherits the flexibility of the tinystruct framework for building high-performance Java applications.\r\n*   **Standardized Communication**: Uses `org.tinystruct.data.component.Builder` for consistent JSON-based interaction.\r\n\r\n---\r\n\r\n## Project Structure\r\n\r\nThe project is organized into submodules, each representing a specific domain of tools:\r\n\r\n*   **`github/`**: Implements Git operations (clone, pull, push, status) and GitHub API integrations (issues, PRs, actions).\r\n*   **`filesystem/`**: Provides comprehensive local file system management (read, write, copy, move, delete, list).\r\n*   **`bin/`**: Contains scripts for server management and dispatching commands.\r\n\r\n---\r\n\r\n## Getting Started\r\n\r\n### Prerequisites\r\n\r\n*   Java 17 or higher\r\n*   Maven 3.8+\r\n\r\n### 1. Build the Project\r\n\r\nClone the repository and build the modules using Maven:\r\n\r\n```sh\r\ngit clone https://github.com/tinystruct/tinystruct-mcp.git\r\ncd tinystruct-mcp\r\nmvn clean install\r\n```\r\n\r\n### 2. Start the MCP Server\r\n\r\nYou can start the server programmatically or via the command line.\r\n\r\n#### Command Line (CLI)\r\n\r\nUse the `bin/dispatcher` (for Linux/macOS) or `bin/dispatcher.cmd` (for Windows) script to start the server:\r\n\r\n```sh\r\n# On Linux / macOS\r\nbin/dispatcher start --import org.tinystruct.system.HttpServer --import org.tinystruct.mcp.GitHub --import org.tinystruct.mcp.FileSystem --server-port 777\r\n\r\n# On Windows\r\nbin\\dispatcher.cmd start --import org.tinystruct.system.HttpServer --import org.tinystruct.mcp.GitHub --import org.tinystruct.mcp.FileSystem --server-port 777\r\n```\r\n\r\n#### Programmatic Startup (Java)\r\n\r\nInclude the following in your `Main` class to boot the server with integrated tools:\r\n\r\n```java\r\nimport org.tinystruct.ApplicationContext;\r\nimport org.tinystruct.application.Context;\r\nimport org.tinystruct.system.ApplicationManager;\r\nimport org.tinystruct.system.HttpServer;\r\nimport org.tinystruct.mcp.GitHub;\r\nimport org.tinystruct.mcp.FileSystem;\r\n\r\npublic class Main {\r\n    public static void main(String[] args) {\r\n        Context ctx = new ApplicationContext();\r\n        ctx.setAttribute(\"--server-port\", \"777\");\r\n        \r\n        ApplicationManager.init();\r\n        ApplicationManager.install(new GitHub());\r\n        ApplicationManager.install(new FileSystem());\r\n        ApplicationManager.install(new HttpServer());\r\n        \r\n        ApplicationManager.call(\"start\", ctx);\r\n    }\r\n}\r\n```\r\n\r\n---\r\n\r\n## Built-in Tools\r\n\r\n### GitHub Tool (`github/`)\r\n| Action | Description |\r\n| :--- | :--- |\r\n| `github/clone` | Clone a Git repository |\r\n| `github/pull` | Pull changes from a remote repository |\r\n| `github/push` | Push changes to a remote repository |\r\n| `github/status` | Get the current status of a local repository |\r\n| `github/issues` | Fetch GitHub issues for a repository |\r\n| `github/prs` | Fetch GitHub pull requests |\r\n| `github/actions` | List GitHub Actions workflows |\r\n\r\n### FileSystem Tool (`filesystem/`)\r\n| Action | Description |\r\n| :--- | :--- |\r\n| `filesystem/info` | Get metadata about a file or directory |\r\n| `filesystem/exists` | Check if a path exists |\r\n| `filesystem/read` | Read contents of a file (UTF-8 or Base64) |\r\n| `filesystem/write` | Write content to a file (overwrite or append) |\r\n| `filesystem/list` | List items in a directory |\r\n| `filesystem/copy` | Copy a file or directory |\r\n| `filesystem/move` | Move or rename a file or directory |\r\n| `filesystem/delete` | Delete a file or directory (recursive support) |\r\n| `filesystem/mkdir` | Create a new directory |\r\n\r\n---\r\n\r\n## Developing Your Own Tools\r\n\r\nCreating new MCP tools is straightforward. Simply extend the `MCPTool` class and annotate your methods.\r\n\r\n```java\r\n@Action(value = \"mytool/greet\", description = \"Greet a user\", arguments = {\r\n    @Argument(key = \"name\", description = \"User's name\", type = \"string\")\r\n})\r\npublic String greet(String name) {\r\n    return \"Hello, \" + name + \"!\";\r\n}\r\n```\r\n\r\nFor a detailed guide on creating custom tools, check out [**DEVELOPING_TOOLS.md**](DEVELOPING_TOOLS.md).\r\n\r\n---\r\n\r\n## License\r\n\r\nThis project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.\r\n\r\n**Note**: *MCP stands for Model Context Protocol.*\r\n\r\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

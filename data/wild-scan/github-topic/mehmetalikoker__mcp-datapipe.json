@@ -1,0 +1,32 @@
+{
+  "full_name": "mehmetalikoker/mcp-datapipe",
+  "html_url": "https://github.com/mehmetalikoker/mcp-datapipe",
+  "description": " MCP (Model Context Protocol) enables artificial intelligence models to access external tools and data sources via a standard protocol.",
+  "topics": [
+    "mcp-client",
+    "mcp-server",
+    "mcp-tools",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2026-05-03T07:50:26Z",
+  "last_pushed_at": "2026-05-19T14:09:19Z",
+  "fetched_at": "2026-07-12T00:51:21.407Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# My MCP Server\n\nNode.js ve TypeScript ile geliştirilmiş, **Model Context Protocol (MCP)** standardını uygulayan bir araç sunucusudur. Claude gibi yapay zeka asistanlarına not yönetimi ve sistem bilgisi sorgulama yetenekleri kazandırır.\n\n---\n\n## Nedir Bu Proje?\n\nMCP (Model Context Protocol), yapay zeka modellerinin dış araçlara ve veri kaynaklarına standart bir protokol üzerinden erişmesini sağlar. Bu sunucu, üç farklı araç sunarak Claude'un:\n\n- Yerel bir SQLite veritabanına **not kaydetmesini ve aramasını**\n- Çalıştığı makinenin **CPU, bellek ve platform bilgilerini okumasını**\n\nmümkün kılar.\n\n---\n\n## Özellikler\n\n### Araçlar (Tools)\n\n| Araç | Açıklama |\n|------|----------|\n| `add_note` | Başlık ve içerikle yeni bir not kaydeder |\n| `list_notes` | Tüm notları listeler; isteğe bağlı başlık araması destekler |\n| `get_system_info` | CPU, bellek veya platform bilgilerini döner |\n\n### `add_note`\n\n```json\n{\n  \"title\": \"Alışveriş Listesi\",\n  \"content\": \"Ekmek, süt, yumurta\"\n}\n```\n\nDönen yanıt: `Not başarıyla eklendi. ID: 3`\n\n---\n\n### `list_notes`\n\n```json\n{ \"search\": \"Alışveriş\" }\n```\n\n`search` alanı opsiyoneldir; verilmezse tüm notlar listelenir. Başlık üzerinden `LIKE` araması yapar.\n\n---\n\n### `get_system_info`\n\n```json\n{ \"topic\": \"cpu\" }\n```\n\n`topic` değerleri: `cpu` | `memory` | `platform` (varsayılan: `platform`)\n\n**cpu** örnek çıktısı:\n```json\n{\n  \"model\": \"Intel(R) Core(TM) i7-...\",\n  \"cores\": 8,\n  \"speed\": \"2400 MHz\"\n}\n```\n\n**memory** örnek çıktısı:\n```json\n{\n  \"total\": \"16.00 GB\",\n  \"used\": \"9.43 GB\",\n  \"free\": \"6.57 GB\"\n}\n```\n\n**platform** örnek çıktısı:\n```json\n{\n  \"platform\": \"win32\",\n  \"arch\": \"x64\",\n  \"release\": \"10.0.26200\",\n  \"hostname\": \"DESKTOP-ABC\"\n}\n```\n\n---\n\n## Proje Yapısı\n\n```\nmy-mcp-server/\n├── src/\n│   ├── index.ts                        # Sunucu giriş noktası, MCP bağlantısı\n│   ├── config/\n│   │   └── DatabaseConfig.ts           # SQLite singleton bağlantısı\n│   ├── controllers/\n│   │   └── MCPController.ts            # Araç şemaları ve istek yönlendirme\n│   ├── services/\n│   │   ├── INoteService.ts             # Not servisi arayüzü\n│   │   ├── NoteService.ts              # Not iş mantığı\n│   │   ├── ISystemService.ts           # Sistem servisi arayüzü\n│   │   └── SystemService.ts            # os modülü ile sistem bilgisi\n│   ├── repositories/\n│   │   ├── INoteRepository.ts          # Repository arayüzü\n│   │   └── SQLiteNoteRepository.ts     # SQLite CRUD işlemleri\n│   └── types/\n│       └── index.ts                    # Ortak tip tanımları\n├── tests/\n│   ├── systemTools.test.ts             # SystemService birim testleri\n│   └── noteTools.test.js               # NoteTools birim testleri\n├── build/                              # Derlenmiş JS çıktısı (tsc)\n├── mcp_data.db                         # SQLite veritabanı dosyası\n├── package.json\n└── tsconfig.json\n```\n\n---\n\n## Mimari\n\nProje, katmanlı bir mimari kullanır:\n\n```\nMCP İsteği\n    ↓\nMCPController      ← Zod şema doğrulaması, yönlendirme\n    ↓\nService Layer      ← İş mantığı (NoteService, SystemService)\n    ↓\nRepository Layer   ← Veri erişimi (SQLiteNoteRepository)\n    ↓\nSQLite Veritabanı  ← mcp_data.db\n```\n\nHer katman bir arayüz (`interface`) üzerinden bağlandığından bağımlılıklar kolayca değiştirilebilir ve test edilebilir.\n\n---\n\n## Kurulum\n\n### Gereksinimler\n\n- Node.js 18+\n- npm\n\n### Adımlar\n\n```bash\n# Bağımlılıkları yükle\nnpm install\n\n# TypeScript'i derle\nnpm run build\n\n# Sunucuyu çalıştır\nnpm start\n```\n\n---\n\n## Komutlar\n\n| Komut | Açıklama |\n|-------|----------|\n| `npm run build` | TypeScript'i `build/` dizinine derler |\n| `npm run watch` | TypeScript'i izleme modunda derler |\n| `npm start` | Derlenmiş sunucuyu çalıştırır |\n| `npm run inspector` | MCP Inspector arayüzünü açar (`localhost:6274`) |\n| `npm test` | Tüm birim testlerini çalıştırır |\n\n---\n\n## MCP Inspector ile Test\n\n```bash\nnpm run inspector\n```\n\nTarayıcıda `http://localhost:6274` adresine giderek araçları görsel arayüzden çağırabilirsin. Inspector, proxy sunucusunu `localhost:6277` üzerinde çalıştırır.\n\n---\n\n## Claude Desktop ile Entegrasyon\n\n`claude_desktop_config.json` dosyasına aşağıdaki ayarı ekle:\n\n```json\n{\n  \"mcpServers\": {\n    \"my-mcp-server\": {\n      \"command\": \"node\",\n      \"args\": [\"C:/Users/Mehmet/my-mcp-server/build/index.js\"]\n    }\n  }\n}\n```\n\nAyar dosyasının konumu:\n- **Windows:** `%APPDATA%\\Claude\\claude_desktop_config.json`\n- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`\n\n---\n\n## Kullanılan Teknolojiler\n\n| Teknoloji | Amaç |\n|-----------|------|\n| `@modelcontextprotocol/sdk` | MCP sunucu altyapısı |\n| `better-sqlite3` | Senkron SQLite erişimi |\n| `zod` | Çalışma zamanı şema doğrulaması |\n| TypeScript | Tip güvenliği |\n| Jest | Birim testleri |\n\n---\n\n## Ekran Görüntüsü\n<img width=\"1911\" height=\"929\" alt=\"333\" src=\"https://github.com/user-attachments/assets/200f98f1-0b4c-428c-9610-c41dbbfaf232\" />\n\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

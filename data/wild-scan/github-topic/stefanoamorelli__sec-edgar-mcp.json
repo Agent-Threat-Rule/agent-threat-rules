@@ -1,0 +1,43 @@
+{
+  "full_name": "stefanoamorelli/sec-edgar-mcp",
+  "html_url": "https://github.com/stefanoamorelli/sec-edgar-mcp",
+  "description": "A SEC EDGAR MCP (Model Context Protocol) Server",
+  "topics": [
+    "ai",
+    "artificial-intelligence",
+    "edgar",
+    "edgar-database",
+    "finance",
+    "genai",
+    "llm",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "model-context-protocol-server"
+  ],
+  "matched_query_topics": [
+    "mcp-server",
+    "model-context-protocol"
+  ],
+  "stars": 332,
+  "forks": 91,
+  "open_issues": 26,
+  "language": "Python",
+  "license": "AGPL-3.0",
+  "default_branch": "main",
+  "created_at": "2025-04-01T17:13:35Z",
+  "last_pushed_at": "2026-07-10T23:37:09Z",
+  "fetched_at": "2026-07-11T22:43:06.290Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# SEC EDGAR MCP\n\n<p align=\"center\">\n  <a href=\"https://pypi.org/project/sec-edgar-mcp/\"><img alt=\"PyPI\" src=\"https://img.shields.io/pypi/v/sec-edgar-mcp.svg\" /></a>\n  <a href=\"https://anaconda.org/stefanoamorelli/sec-edgar-mcp\"><img alt=\"Conda Version\" src=\"https://img.shields.io/conda/vn/stefanoamorelli/sec-edgar-mcp.svg\" /></a>\n  <img alt=\"Python: 3.11+\" src=\"https://img.shields.io/badge/python-3.11+-brightgreen.svg\" />\n  <img alt=\"License: AGPL-3.0\" src=\"https://img.shields.io/badge/license-AGPL--3.0-blue.svg\" />\n  <a href=\"https://mseep.ai/app/0132880c-5e83-410b-a1d5-d3df08ed7b5c\"><img alt=\"Verified on MseeP\" src=\"https://mseep.ai/badge.svg\" /></a>\n  <a href=\"https://doi.org/10.5281/zenodo.17123166\"><img alt=\"DOI\" src=\"https://zenodo.org/badge/DOI/10.5281/zenodo.17123166.svg\" /></a>\n  <a href=\"https://github.com/stefanoamorelli/sec-edgar-mcp/actions/workflows/evals.yml\"><img alt=\"Evals\" src=\"https://github.com/stefanoamorelli/sec-edgar-mcp/actions/workflows/evals.yml/badge.svg\" /></a>\n</p>\n\nMCP server for accessing SEC EDGAR filings. Connects AI assistants to company filings, financial statements, and insider trading data with exact numeric precision.\n\nBuilt on [edgartools](https://github.com/dgunning/edgartools).\n\nhttps://github.com/user-attachments/assets/d310eb42-b3ca-467d-92f7-7d132e6274fe\n\n<details>\n<summary>See demo video</summary>\n\n<a href=\"https://www.loom.com/share/17fcd7d891fe496f9a6b8fb85ede66bb\">\n  <img style=\"max-width:300px;\" src=\"https://cdn.loom.com/sessions/thumbnails/17fcd7d891fe496f9a6b8fb85ede66bb-7f8590d1d4bcc2fb-full-play.gif\">\n</a>\n\n</details>\n\n> [!NOTE]\n> This project is not affiliated with or endorsed by the U.S. Securities and Exchange Commission. EDGAR and SEC are trademarks of the SEC.\n\n## Quick Start\n\n```json\n{\n  \"mcpServers\": {\n    \"sec-edgar-mcp\": {\n      \"command\": \"docker\",\n      \"args\": [\n        \"run\", \"-i\", \"--rm\",\n        \"-e\", \"SEC_EDGAR_USER_AGENT=Your Name (your@email.com)\",\n        \"stefanoamorelli/sec-edgar-mcp:latest\"\n      ]\n    }\n  }\n}\n```\n\nThe `-i` flag is required for MCP's JSON-RPC communication.\n\nFor other installation methods (pip, conda, uv), see the [documentation](https://sec-edgar-mcp.amorelli.tech/setup/quickstart).\n\n## Tools\n\n| Category | Tools |\n|----------|-------|\n| **Company** | CIK lookup, company info, company facts |\n| **Filings** | 10-K, 10-Q, 8-K retrieval, section extraction |\n| **Financials** | Balance sheet, income statement, cash flow (XBRL-parsed) |\n| **Insider Trading** | Form 3/4/5 transactions |\n\nAll responses include SEC filing URLs for verification.\n\n## HTTP Transport\n\nFor platforms like [Dify](https://dify.ai), use streamable HTTP instead of stdio:\n\n```bash\npython -m sec_edgar_mcp.server --transport streamable-http --port 9870\n```\n\nNo authentication is included. Use only on private networks.\n\n## Evaluations\n\n[Promptfoo](https://github.com/promptfoo/promptfoo)-based test suite. See [`evals/`](evals/) for details.\n\n```bash\ncd evals && npm install && npm run eval\n```\n\n## Documentation\n\nFull docs: [sec-edgar-mcp.amorelli.tech](https://sec-edgar-mcp.amorelli.tech/)\n\n## Contributors\n\n<a href=\"https://github.com/stefanoamorelli/sec-edgar-mcp/graphs/contributors\">\n  <img src=\"https://contrib.rocks/image?repo=stefanoamorelli/sec-edgar-mcp\" />\n</a>\n\n## Citation\n\nIf you use this software in research, please cite it:\n\n[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17123166.svg)](https://doi.org/10.5281/zenodo.17123166)\n\n```bibtex\n@software{amorelli_sec_edgar_mcp_2025,\n  title = {{SEC EDGAR MCP (Model Context Protocol) Server}},\n  author = {Amorelli, Stefano},\n  version = {1.0.6},\n  year = {2025},\n  month = {9},\n  url = {https://doi.org/10.5281/zenodo.17123166},\n  doi = {10.5281/zenodo.17123166}\n}\n```\n\nSee [CITATION.cff](CITATION.cff) for additional formats.\n\n## License\n\n[AGPL-3.0](LICENSE). For commercial licensing: stefano@amorelli.tech\n\n"
+  },
+  "descriptor_file": {
+    "path": "server.json",
+    "content": "{\n  \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json\",\n  \"name\": \"io.github.stefanoamorelli/sec-edgar-mcp\",\n  \"description\": \"SEC EDGAR MCP server that provides access to the US public filings through the US SEC EDGAR API\",\n  \"status\": \"active\",\n  \"repository\": {\n    \"url\": \"https://github.com/stefanoamorelli/sec-edgar-mcp\",\n    \"source\": \"github\"\n  },\n  \"version\": \"1.0.5\",\n  \"packages\": [\n    {\n      \"registry_type\": \"pypi\",\n      \"registry_base_url\": \"https://pypi.org\",\n      \"identifier\": \"sec-edgar-mcp\",\n      \"version\": \"1.0.5\",\n      \"transport\": {\n        \"type\": \"stdio\"\n      },\n      \"environment_variables\": [\n        {\n          \"description\": \"The user agent to access the SEC EDGAR API\",\n          \"is_required\": true,\n          \"format\": \"string\",\n          \"is_secret\": false,\n          \"name\": \"SEC_EDGAR_USER_AGENT\"\n        }\n      ]\n    }\n  ]\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

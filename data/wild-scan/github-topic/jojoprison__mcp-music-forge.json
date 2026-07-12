@@ -1,0 +1,43 @@
+{
+  "full_name": "jojoprison/mcp-music-forge",
+  "html_url": "https://github.com/jojoprison/mcp-music-forge",
+  "description": "MCP tool: soundcloud / yandex music / youtube / spotify downloader, audio converter, audio tag editor",
+  "topics": [
+    "audio-conversion",
+    "audio-converter",
+    "audio-tag",
+    "audio-tagging",
+    "audio-tags",
+    "audio-tags-editor",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "soundcloud-downloader",
+    "spotify-download",
+    "spotify-downloader",
+    "yandex-music-downloader",
+    "youtube-download",
+    "youtube-downloader"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 5,
+  "forks": 1,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-09-22T04:22:16Z",
+  "last_pushed_at": "2026-05-31T18:18:32Z",
+  "fetched_at": "2026-07-12T00:34:00.159Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP Music Forge\n\nEnglish | **[Русский](docs/README_RU.md)**\n\n---\n\nA scalable MCP plugin/service for downloading and processing audio:\nSoundCloud (starting point), then YouTube/Yandex Music/Spotify; transcoding,\ntagging and cover art embedding, HTTP API, MCP tools, audio workers.\n\n## Quickstart\n\n### Variant A: Docker Compose (recommended)\n\n```bash\ncp .env.example .env\nmake upb       # build and start the stack\n```\n\n**Endpoints:**\n- API: http://localhost:8033\n- Admin: http://localhost:8033/admin\n- MCP HTTP: http://localhost:8033/mcp\n\n**Management:**\n```bash\nmake logs      # logs\nmake ps        # container status\nmake up        # just up\nmake down      # stop and remove\n```\n\n---\n\n### Variant B: Local (uv)\n\n```bash\nmake install   # create .venv, install deps, copy .env\nsource .venv/bin/activate\n\nmake lint      # ruff + black + mypy\nmake test      # mypy + pytest\n\n# run API\nuvicorn api.main:app --reload\n\n# MCP (stdio)\npython -m mcp_music_forge.mcp_app\n```\n\n## API Examples\n\n```bash\n# health check\ncurl -s http://localhost:8033/health | jq\n# {\"status\": \"ok\"}\n\n# enqueue download (SoundCloud URL with allowed download per ToU)\ncurl -s -X POST 'http://localhost:8033/download?url=https://soundcloud.com/artist/track' | jq\n# {\"job_id\": \"abc123\", \"status\": \"queued\"}\n\n# check job status\ncurl -s http://localhost:8033/jobs/<job_id> | jq\n```\n\n## MCP Tools\n\n- **`probe_url`**: provider detection and downloadability check.\n- **`enqueue_download`**: create/duplicate a job, put it in the queue.\n- **`get_job_status`**: status, artifacts, file links as MCP resources.\n- Resources: `forge://jobs/<job_id>/{original|final}/<filename>` (file bytes).\n\n## Project Overview\n\n- **MCP Server** (`mcp_music_forge/`): job management, resource provider, and MCP tools.\n- **HTTP API** (`api/`): `POST /download`, `GET /jobs/{id}`, `/health`, admin interface.\n- **Providers** (`providers/`): adapters for sources (starting with SoundCloud).\n- **Transcoder** (`transcoder/`): a wrapper around `ffmpeg`.\n- **Storage** (`storage/`): local FS (can be replaced with S3, etc.).\n- **Queue** (`core/services/queue.py`): ARQ + Redis; a wrapper in `workers/`.\n\n## Documentation\n\n- [Build / Run / Deploy](docs/BUILD_RUN_DEPLOY.md)\n- [Architecture](docs/ARCHITECTURE.md)\n- [CI/CD](docs/CI_CD.md)\n\n## Legal Notes\n\n- SoundCloud provider respects ToU: we only download if the track is downloadable (`downloadable`/`download_url`).\n- Cookie file support is available, but use it strictly within the service's rules.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

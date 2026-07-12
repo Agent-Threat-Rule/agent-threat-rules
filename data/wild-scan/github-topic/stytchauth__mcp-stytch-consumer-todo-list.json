@@ -1,0 +1,35 @@
+{
+  "full_name": "stytchauth/mcp-stytch-consumer-todo-list",
+  "html_url": "https://github.com/stytchauth/mcp-stytch-consumer-todo-list",
+  "description": "Workers + Stytch TODO App MCP Server",
+  "topics": [
+    "cloudflare",
+    "cloudflare-worker",
+    "cloudflare-workers",
+    "mcp",
+    "model-context-protocol",
+    "model-context-protocol-servers",
+    "stytch"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 27,
+  "forks": 11,
+  "open_issues": 3,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-03-21T18:08:25Z",
+  "last_pushed_at": "2026-03-12T17:45:16Z",
+  "fetched_at": "2026-07-11T23:46:10.935Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Workers + Stytch TODO App MCP Server\n\nThis is a Workers server that composes three functions:\n* A static website built using React and Vite on top of [Worker Assets](https://developers.cloudflare.com/workers/static-assets/)\n* A REST API built using Hono on top of [Workers KV](https://developers.cloudflare.com/kv/) \n* A [Model Context Protocol](https://modelcontextprotocol.io/introduction) Server built using on top of [Workers Durable Objects](https://developers.cloudflare.com/durable-objects/)\n\nUser and client identity is managed using [Stytch](https://stytch.com/). Put together, these three features show how to extend a traditional full-stack application for use by an AI agent.\n\nThis demo uses the [Stytch Consumer](https://stytch.com/b2c) product, which is purpose-built for Consumer SaaS authentication requirements.\nIf you are more interested in Stytch's [B2B](https://stytch.com/b2b) product, see [this demo](https://github.com/stytchauth/mcp-stytch-b2b-okr-manager/) instead.\n\n\n## Set up\n\nFollow the steps below to get this application fully functional and running using your own Stytch credentials.\n\n### In the Stytch Dashboard\n\n1. Create a [Stytch](https://stytch.com/) account. Within the sign up flow select **Consumer Authentication** as the authentication type you are interested in. Once your account is set up a Project called \"My first project\" will be automatically created for you.\n\n2. Navigate to [Frontend SDKs](https://stytch.com/dashboard/sdk-configuration?env=test) to enable the Frontend SDK in Test\n\n3. Navigate to [Connected Apps](https://stytch.com/dashboard/connected-apps?env=test) to enable Dynamic Client Registration\n\n4. Navigate to [Project Settings](https://stytch.com/dashboard/project-settings?env=test) to view your Project ID and API keys. You will need these values later.\n\n### On your machine\n\nIn your terminal clone the project and install dependencies:\n\n```bash\ngit clone https://github.com/stytchauth/mcp-stytch-consumer-todo-list.git\ncd mcp-stytch-consumer-todo-list\nnpm i\n```\n\nNext, create an `.env.local` file by running the command below which copies the contents of `.env.template`.\n\n```bash\ncp .env.template .env.local\n```\n\nOpen `.env.local` in the text editor of your choice, and set the environment variables using the `public_token` found on [Project Settings](https://stytch.com/dashboard/project-settings?env=test).\n\n```\n# This is what a completed .env.local file will look like\nVITE_STYTCH_PUBLIC_TOKEN=public-token-test-abc123-abcde-1234-0987-0000-abcd1234\n```\n\nCreate a `.dev.vars` file by running the command below which copies the contents of `.dev.vars.template`\n\n```bash\ncp .dev.vars.template .dev.vars\n```\n\nOpen `.dev.vars` in the text editor of your choice, and set the environment variables using the `Project ID`, `Secret`, and `Project Domain`  found on [Project Settings](https://stytch.com/dashboard/project-settings?env=test).\n\n```\n// This is what a completed .dev.vars file will look like\nSTYTCH_PROJECT_ID=project-test-6c20cd16-73d5-44f7-852c-9a7e7b2ccf62\nSTYTCH_SECRET=your-stytch-secret-key\nSTYTCH_DOMAIN=https://cname-word-1234.customers.stytch.dev\n```\n\n## Running locally\n\nAfter completing all the setup steps above the application can be run with the command:\n\n```bash\nnpm run dev\n```\n\nThe application will be available at [`http://localhost:3000`](http://localhost:3000) and the MCP server will be available at `http://localhost:3000/mcp`.\n\nTest your MCP server using the [MCP Inspector](https://modelcontextprotocol.io/docs/tools/inspector)\n```bash\nnpx @modelcontextprotocol/inspector@latest\n```\n\nNavigate to the URL where the Inspector is running, and input the following values:\n- Transport Type: `Streamable HTTP`\n- URL: `http://localhost:3000/mcp`\n\n##  Deploy to Cloudflare Workers\n\nClick the button - **you'll need to configure environment variables after the initial deployment**. \n\n[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/stytchauth/mcp-stytch-consumer-todo-list.git)\n\nOr, if you want to follow the steps by hand: \n\n1. Create a KV namespace for the TODO app to use\n\n```\nwrangler kv namespace create TODOS\n```\n\n2. Update the KV namespace ID in `wrangler.jsonc` with the ID you received:\n\n```\n\"kv_namespaces\": [\n   {\n      \"binding\": \"TODOS\",\n      \"id\": \"your-kv-namespace-id\"\n   }\n]\n```\n\n\n3. Upload your Stytch Env Vars for use by the worker\n\n```bash\nnpx wrangler secret bulk .dev.vars\n```\n\n4. Deploy the worker\n\n```\nnpm run deploy\n```\n\n5. Grant your deployment access to your Stytch project. Assuming your Stytch project was deployed at `https://mcp-stytch-consumer-todo-list.$YOUR_ACCOUNT_NAME.workers.dev`:\n   1. Add `https://mcp-stytch-consumer-todo-list.$YOUR_ACCOUNT_NAME.workers.dev/authenticate` as an allowed [Redirect URL](https://stytch.com/dashboard/redirect-urls?env=test)\n   2. Add `https://mcp-stytch-consumer-todo-list.$YOUR_ACCOUNT_NAME.workers.dev` as an allowed Authorized Application in the [Frontend SDKs](https://stytch.com/dashboard/sdk-configuration?env=test) configuration\n\n## Get help and join the community\n\n#### :speech_balloon: Stytch community Slack\n\nJoin the discussion, ask questions, and suggest new features in our [Slack community](https://stytch.com/docs/resources/support/overview)!\n\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

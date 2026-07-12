@@ -1,0 +1,45 @@
+{
+  "full_name": "theYahia/ifood-mcp",
+  "html_url": "https://github.com/theYahia/ifood-mcp",
+  "description": "MCP server for iFood — merchant integration, orders (Brazil). Part of WWmcp — 114 MCP servers for emerging markets.",
+  "topics": [
+    "ai-agents",
+    "anthropic",
+    "brazil",
+    "brazil-tech",
+    "claude",
+    "ecommerce",
+    "emerging-markets",
+    "food-delivery",
+    "ifood",
+    "latam",
+    "mcp",
+    "mcp-servers",
+    "model-context-protocol",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 1,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-01T15:32:34Z",
+  "last_pushed_at": "2026-06-23T11:39:25Z",
+  "fetched_at": "2026-07-12T00:08:31.604Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# ifood-mcp\n\nMCP server for [iFood](https://www.ifood.com.br/) merchant integration (Brazil) — manage orders, the store, and the catalog from any MCP client (Claude, etc.).\n\nTalks to the iFood **Merchant API** (`merchant-api.ifood.com.br`) using OAuth2 `client_credentials`. One shared, auto-refreshed token is used across all tools.\n\n## Quick Start\n\n```json\n{\n  \"mcpServers\": {\n    \"ifood\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@theyahia/ifood-mcp\"],\n      \"env\": {\n        \"IFOOD_CLIENT_ID\": \"<YOUR_IFOOD_CLIENT_ID>\",\n        \"IFOOD_CLIENT_SECRET\": \"<YOUR_IFOOD_CLIENT_SECRET>\"\n      }\n    }\n  }\n}\n```\n\nGet credentials from the [iFood Developer Portal](https://developer.ifood.com.br/) (create an application; this server uses the `client_credentials` grant, which reaches the merchants your application directly owns).\n\n## Order workflow\n\niFood delivers orders as **events** you must poll and acknowledge:\n\n1. `list_orders` — poll for new events (~every 30s). Returns events like `PLACED`, `CONFIRMED`, `CANCELLED`.\n2. `acknowledge_events` — acknowledge the event IDs you received, or **iFood redelivers them on every poll forever**.\n3. `get_order` — fetch full detail for an order ID from a `PLACED` event.\n4. `confirm_order` → `start_preparation` (optional) → `dispatch_order` (delivery) **or** `ready_to_pickup` (takeout/dine-in).\n5. To cancel: `get_cancellation_reasons` (get valid codes for that order) → `cancel_order` (with a code).\n\n## Tools (26)\n\n### Orders\n| Tool | What it does |\n|---|---|\n| `list_orders` | Poll order events (PLACED/CONFIRMED/…). |\n| `acknowledge_events` | Acknowledge events so they stop being redelivered. |\n| `get_order` | Get full order detail by ID. |\n| `confirm_order` | Confirm/accept an order. |\n| `start_preparation` | Mark an order as in preparation (optional). |\n| `ready_to_pickup` | Mark an order ready for pickup (required for takeout/dine-in). |\n| `dispatch_order` | Mark a delivery order as dispatched. |\n| `get_cancellation_reasons` | Get valid cancellation codes for an order. |\n| `cancel_order` | Request cancellation using a code. |\n\n### Merchant\n| Tool | What it does |\n|---|---|\n| `list_merchants` | List accessible merchants (paginated). |\n| `get_merchant` | Full merchant detail (name, address, operations). |\n| `get_merchant_status` | Availability per operation/sales channel. |\n| `get_opening_hours` | Read weekly opening hours. |\n| `set_opening_hours` | Replace the entire weekly schedule. |\n| `list_interruptions` | List active/future store pauses. |\n| `create_interruption` | Temporarily pause the store (the correct pause mechanism). |\n| `delete_interruption` | Resume the store. |\n\n### Catalog (v2.0)\n| Tool | What it does |\n|---|---|\n| `update_item_status` | Set an item AVAILABLE/UNAVAILABLE. |\n| `update_item_price` | Update an item's price. |\n| `update_option_status` | Set a complement/option AVAILABLE/UNAVAILABLE. |\n| `update_option_price` | Update a complement/option price. |\n| `list_catalogs` | List the merchant's catalogs. |\n| `list_categories` | List categories (use `include_items` to get item IDs). |\n| `list_items_by_category` | List items/products/options in a category. |\n| `list_products` | List products (paginated). |\n| `upsert_item` | Create or fully replace an item with its dependencies. |\n\nTo discover an `item_id` for the write tools: `list_merchants` → `list_catalogs` → `list_categories` (`include_items: true`).\n\nTools carry MCP [annotations](https://modelcontextprotocol.io/) (`readOnlyHint` / `destructiveHint` / `idempotentHint`) so clients can warn before write/destructive actions.\n\n## Environment Variables\n\n| Variable | Required | Default | Description |\n|---|---|---|---|\n| `IFOOD_CLIENT_ID` | Yes | — | OAuth client ID. |\n| `IFOOD_CLIENT_SECRET` | Yes | — | OAuth client secret. |\n| `IFOOD_BASE_URL` | No | `https://merchant-api.ifood.com.br` | Override the API base URL (staging/sandbox). |\n| `IFOOD_TOKEN_URL` | No | `<base>/authentication/v1.0/oauth/token` | Override the token endpoint. |\n| `IFOOD_TIMEOUT_MS` | No | `15000` | Per-request timeout in ms. |\n| `IFOOD_MAX_ATTEMPTS` | No | `3` | Total attempts (initial + retries) for transient failures. |\n\nThe client automatically: retries `429`/`5xx`/network/timeout with exponential backoff (honoring `Retry-After`), refreshes the OAuth token once on a `401`, and tolerates the empty `202`/`204` bodies iFood returns for state transitions.\n\n## Troubleshooting\n\n- **401 / auth errors** — check `IFOOD_CLIENT_ID`/`IFOOD_CLIENT_SECRET`; the client re-auths once automatically on a mid-session 401.\n- **Empty merchant list** — `client_credentials` only reaches merchants your application directly owns. The iFood *distribution* model (per-merchant `authorization_code` tokens) is not implemented here.\n- **429 rate limit** — `list_orders` polling is limited to ~one request per 30s per token; the client backs off automatically.\n- **`get_order` 404 right after PLACED** — order detail can lag the event; retry with backoff (up to ~10 min).\n\n## ⚠️ Endpoints pending verification\n\niFood's developer portal blocks automated access, so two endpoints were implemented from best available (cross-source) evidence rather than a verbatim spec read. **Verify against the live iFood docs / Postman collection before depending on them in production** (see code comments in the relevant tool files):\n\n- **`acknowledge_events`** — uses `POST /order/v1.0/events/acknowledgment`. The `events` path segment is a best-guess (the alternative is `/order/v1.0/acknowledgment`).\n- **`cancel_order`** — sends `{ \"reason\": \"<code>\" }`. The exact order-module body is uncertain (a two-field `{ reason, cancellationCode }` shape may belong to the shipping module).\n\n## Development\n\n```bash\nnpm ci\nnpm run build      # tsc → dist/\nnpm test           # vitest\nnpm run dev        # tsx src/index.ts\n```\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": {
+    "path": "server.json",
+    "content": "{\n  \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json\",\n  \"name\": \"io.github.theYahia/ifood-mcp\",\n  \"description\": \"MCP server for iFood — orders, store operations, and catalog management (Brazil).\",\n  \"version\": \"1.1.0\",\n  \"repository\": {\n    \"url\": \"https://github.com/theYahia/ifood-mcp\",\n    \"source\": \"github\"\n  },\n  \"packages\": [\n    {\n      \"registry_type\": \"npm\",\n      \"registry_base_url\": \"https://registry.npmjs.org\",\n      \"identifier\": \"@theyahia/ifood-mcp\",\n      \"version\": \"1.1.0\",\n      \"transport\": { \"type\": \"stdio\" },\n      \"environment_variables\": [\n        {\n          \"name\": \"IFOOD_CLIENT_ID\",\n          \"description\": \"iFood OAuth client ID\",\n          \"is_required\": true,\n          \"is_secret\": true\n        },\n        {\n          \"name\": \"IFOOD_CLIENT_SECRET\",\n          \"description\": \"iFood OAuth client secret\",\n          \"is_required\": true,\n          \"is_secret\": true\n        }\n      ]\n    }\n  ]\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

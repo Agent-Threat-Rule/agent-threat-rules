@@ -1,0 +1,47 @@
+{
+  "full_name": "xt765/mcp_documents_reader",
+  "html_url": "https://github.com/xt765/mcp_documents_reader",
+  "description": "Model Context Protocol (MCP) server exposes tools to read multiple document types including DOCX, PDF, Excel, and TXT. This has been tested on Trae Desktop.",
+  "topics": [
+    "ai-agents",
+    "claude",
+    "claude-code",
+    "cursor",
+    "docx",
+    "excel",
+    "mcp",
+    "mcp-client",
+    "mcp-gateway",
+    "mcp-server",
+    "mcp-servers",
+    "mcp-tools",
+    "pdf",
+    "trae",
+    "txt"
+  ],
+  "matched_query_topics": [
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 22,
+  "forks": 6,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-01-23T12:45:43Z",
+  "last_pushed_at": "2026-03-13T02:32:28Z",
+  "fetched_at": "2026-07-11T23:53:35.698Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<h1 align=\"center\">MCP Document Reader</h1>\n\n<!-- mcp-name: io.github.xt765/mcp_documents_reader -->\n\n<p align=\"center\"><strong>MCP (Model Context Protocol) Document Reader - A powerful MCP tool for reading documents in multiple formats, enabling AI agents to truly \"read\" your documents.</strong></p>\n\n<p align=\"center\">🌐 <strong>Language</strong>: <a href=\"README.md\">English</a> | <a href=\"README.zh-CN.md\">中文</a></p>\n\n<p align=\"center\">\n  <a href=\"https://blog.csdn.net/Yunyi_Chi\"><img src=\"https://img.shields.io/badge/CSDN-玄同765-orange.svg?style=flat&logo=csdn\" alt=\"CSDN\"></a>\n  <a href=\"https://github.com/xt765/mcp_documents_reader\"><img src=\"https://img.shields.io/badge/GitHub-mcp_documents_reader-black.svg?style=flat&logo=github\" alt=\"GitHub\"></a>\n  <a href=\"https://gitee.com/xt765/mcp_documents_reader\"><img src=\"https://img.shields.io/badge/Gitee-mcp_documents_reader-red.svg?style=flat&logo=gitee\" alt=\"Gitee\"></a>\n</p>\n<p align=\"center\">\n  <a href=\"LICENSE\"><img src=\"https://img.shields.io/badge/License-MIT-blue.svg?style=flat&logo=opensourceinitiative\" alt=\"License\"></a>\n  <a href=\"https://www.python.org/downloads/\"><img src=\"https://img.shields.io/badge/python-3.10+-blue.svg?style=flat&logo=python\" alt=\"Python\"></a>\n  <a href=\"https://pypi.org/project/mcp-documents-reader/\"><img src=\"https://img.shields.io/pypi/v/mcp-documents-reader.svg?logo=pypi\" alt=\"PyPI Version\"></a>\n  <a href=\"https://pepy.tech/project/mcp-documents-reader\"><img src=\"https://img.shields.io/pepy/dt/mcp-documents-reader.svg?logo=pypi&label=PyPI%20Downloads\" alt=\"PyPI Downloads\"></a>\n  <a href=\"https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.xt765/mcp_documents_reader\"><img src=\"https://img.shields.io/badge/MCP-Registry-blue?logo=modelcontextprotocol\" alt=\"MCP Registry\"></a>\n  <a href=\"https://mcp-marketplace.io/server/io-github-xt765-mcp-documents-reader\"><img src=\"https://img.shields.io/badge/MCP-Marketplace-22c55e.svg?style=flat&logo=shopify&logoColor=white\" alt=\"MCP Marketplace\"></a>\n</p>\n\n## Features\n\n- **Multi-format Support**: Supports 4 mainstream document formats: Excel (XLSX/XLS), DOCX, PDF, and TXT\n- **MCP Protocol**: Compliant with MCP standards, can be used as a tool for AI assistants like Trae IDE\n- **Easy Integration**: Simple configuration for immediate use\n- **Reliable Performance**: Successfully tested and running in Trae IDE\n- **File System Support**: Reads documents directly from the file system\n\n---\n\n## 📚 Documentation\n\n[User Guide](docs/en/USER_GUIDE.md) · [API Reference](docs/en/API.md) · [Contributing](docs/en/CONTRIBUTING.md) · [Changelog](docs/en/CHANGELOG.md) · [License](LICENSE)\n\n---\n\n## Architecture\n\n```mermaid\ngraph TB\n    A[AI Assistant / User] -->|Call read_document| B[MCP Document Reader]\n    B -->|Detect file type| C{File Type?}\n    C -->|.docx| D[DOCX Reader]\n    C -->|.pdf| E[PDF Reader]\n    C -->|.xlsx/.xls| F[Excel Reader]\n    C -->|.txt| G[Text Reader]\n    D -->|Extract text| H[Return Content]\n    E -->|Extract text| H\n    F -->|Extract text| H\n    G -->|Extract text| H\n    H -->|Text content| A\n    \n    style A fill:#e1f5ff\n    style B fill:#fff4e1\n    style C fill:#f0f0f0\n    style D fill:#e8f5e9\n    style E fill:#e8f5e9\n    style F fill:#e8f5e9\n    style G fill:#e8f5e9\n    style H fill:#fff9c4\n```\n\n## Supported Formats\n\n| Format | Extensions | MIME Type | Features |\n|--------|------------|-----------|----------|\n| Excel | .xlsx, .xls | application/vnd.openxmlformats-officedocument.spreadsheetml.sheet | Sheet and cell data extraction |\n| DOCX | .docx | application/vnd.openxmlformats-officedocument.wordprocessingml.document | Text and structure extraction |\n| PDF | .pdf | application/pdf | Text extraction |\n| Text | .txt | text/plain | Plain text reading |\n\n## Installation\n\n### Using pip (Recommended)\n\n```bash\npip install mcp-documents-reader\n```\n\n### From Source\n\n```bash\ngit clone https://github.com/xt765/mcp_documents_reader.git\ncd mcp_documents_reader\npip install -e .\n```\n\n## MCP Tools\n\nThis server provides the following tool:\n\n### `read_document`\n\nRead any supported document type with a unified interface.\n\n**Arguments:**\n- `filename` (string, required): Document file path, supports absolute or relative paths.\n\n## Configuration\n\n### Using in Trae IDE / Claude Desktop\n\nAdd the following to your MCP configuration file:\n\n**Option 1: Using PyPI (Recommended)**\n\n```json\n{\n  \"mcpServers\": {\n    \"mcp-document-reader\": {\n      \"command\": \"uvx\",\n      \"args\": [\n        \"mcp-documents-reader\"\n      ]\n    }\n  }\n}\n```\n\n**Option 2: Using GitHub repository**\n\n```json\n{\n  \"mcpServers\": {\n    \"mcp-document-reader\": {\n      \"command\": \"uvx\",\n      \"args\": [\n        \"--from\",\n        \"git+https://github.com/xt765/mcp_documents_reader\",\n        \"mcp_documents_reader\"\n      ]\n    }\n  }\n}\n```\n\n**Option 3: Using Gitee repository (Faster access in China)**\n\n```json\n{\n  \"mcpServers\": {\n    \"mcp-document-reader\": {\n      \"command\": \"uvx\",\n      \"args\": [\n        \"--from\",\n        \"git+https://gitee.com/xt765/mcp_documents_reader\",\n        \"mcp_documents_reader\"\n      ]\n    }\n  }\n}\n```\n\n## Usage\n\n### As an MCP Tool\n\nAfter configuration, AI assistants can directly call the following tool:\n\n```python\n# Read a DOCX file\nread_document(filename=\"example.docx\")\n\n# Read a PDF file\nread_document(filename=\"example.pdf\")\n\n# Read an Excel file\nread_document(filename=\"example.xlsx\")\n\n# Read a text file\nread_document(filename=\"example.txt\")\n```\n\n### As a Python Library\n\n```python\nfrom mcp_documents_reader import DocumentReaderFactory\n\n# Using factory (recommended)\nreader = DocumentReaderFactory.get_reader(\"document.pdf\")\ncontent = reader.read(\"/path/to/document.pdf\")\n\n# Check if format is supported\nif DocumentReaderFactory.is_supported(\"file.xlsx\"):\n    reader = DocumentReaderFactory.get_reader(\"file.xlsx\")\n    content = reader.read(\"/path/to/file.xlsx\")\n```\n\n## Tool Interface Details\n\n### read_document\n\nRead any supported document type.\n\n**Parameters:**\n\n| Parameter | Type | Required | Description |\n|-----------|------|----------|-------------|\n| filename | string | ✅ | Document file path, supports absolute or relative paths |\n\n## Dependencies\n\n### Core Dependencies\n- `mcp` >= 1.26.0 - MCP protocol implementation\n- `python-docx` >= 1.2.0 - DOCX file reading\n- `pypdf` >= 6.8.0 - PDF file reading (replaces PyPDF2)\n- `openpyxl` >= 3.1.5 - Excel file reading\n\n### Development Dependencies\n- `pytest` >= 8.0.0 - Testing framework\n- `pytest-asyncio` >= 0.24.0 - Async testing support\n- `pytest-cov` >= 6.0.0 - Coverage reporting\n- `basedpyright` >= 0.28.0 - Type checking\n- `ruff` >= 0.8.0 - Linting and formatting\n\n## License\n\nMIT License\n\n## Contributing\n\nIssues and Pull Requests are welcome!\n\n## Related Projects\n\n- [MCP Document Converter](https://github.com/xt765/mcp-document-converter) - MCP document converter supporting multiple format conversions\n- [Model Context Protocol](https://modelcontextprotocol.io/) - Official Model Context Protocol documentation\n"
+  },
+  "descriptor_file": {
+    "path": "server.json",
+    "content": "{\n  \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json\",\n  \"name\": \"io.github.xt765/mcp_documents_reader\",\n  \"title\": \"MCP Document Reader\",\n  \"description\": \"An MCP enabled multi-format document reader supporting DOCX, PDF, TXT, and Excel files\",\n  \"version\": \"1.3.1\",\n  \"license\": \"MIT\",\n  \"authors\": [\n    {\n      \"name\": \"xt765\"\n    }\n  ],\n  \"keywords\": [\n    \"mcp\",\n    \"document-reader\",\n    \"pdf\",\n    \"docx\",\n    \"excel\"\n  ],\n  \"repository\": {\n    \"url\": \"https://github.com/xt765/mcp_documents_reader\",\n    \"source\": \"github\"\n  },\n  \"packages\": [\n    {\n      \"registryType\": \"pypi\",\n      \"identifier\": \"mcp-documents-reader\",\n      \"version\": \"1.3.1\",\n      \"transport\": {\n        \"type\": \"stdio\"\n      }\n    }\n  ]\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

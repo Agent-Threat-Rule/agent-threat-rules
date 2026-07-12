@@ -1,0 +1,32 @@
+{
+  "full_name": "temesgen5335/The_Ledger",
+  "html_url": "https://github.com/temesgen5335/The_Ledger",
+  "description": "Agentic Event Store & Enterprise Audit Infrastructure. Building the immutable memory and governance backbone for multi-agent AI systems at production scale.",
+  "topics": [
+    "event-driven-architecture",
+    "event-sourcing",
+    "mcp-servers",
+    "multi-agent"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "master",
+  "created_at": "2026-03-18T15:49:49Z",
+  "last_pushed_at": "2026-03-19T11:32:10Z",
+  "fetched_at": "2026-07-12T00:15:33.328Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# The Ledger — Weeks 5-6 Starter Code\n\n## Quick Start\n\n```bash\n# 1. Install dependencies\npip install -r requirements.txt\n\n# 2. Start PostgreSQL\ndocker run -d -e POSTGRES_PASSWORD=apex -e POSTGRES_DB=apex_ledger -p 5432:5432 postgres:16\n\n# 3. Set environment\ncp .env.example .env\n# Edit .env — add your ANTHROPIC_API_KEY\n\n# 4. Generate all data (companies + documents + seed events → DB)\npython datagen/generate_all.py --db-url postgresql://postgres:apex@localhost/apex_ledger\n\n# 5. Validate schema (no DB needed)\npython datagen/generate_all.py --skip-db --skip-docs --validate-only\n\n# 6. Run Phase 0 tests (must pass before starting Phase 1)\npytest tests/test_schema_and_generator.py -v\n\n# 7. Begin Phase 1: implement EventStore\n# Edit: ledger/event_store.py\n# Test: pytest tests/test_event_store.py -v\n```\n\n## What Works Out of the Box\n\n- Full event schema (45 event types) — `ledger/schema/events.py`\n- Complete data generator (GAAP PDFs, Excel, CSV, 1,200+ seed events)\n- Event simulator (all 5 agent pipelines, deterministic)\n- Schema validator (validates all events against EVENT_REGISTRY)\n- Phase 0 tests: 10/10 passing\n\n## What You Implement\n\n| Component                 | File                            | Phase               |\n| ------------------------- | ------------------------------- | ------------------- |\n| EventStore                | `ledger/event_store.py`       | 1                   |\n| ApplicantRegistryClient   | `ledger/registry/client.py`   | 1                   |\n| Domain aggregates         | `ledger/domain/aggregates/`   | 2                   |\n| DocumentProcessingAgent   | `ledger/agents/base_agent.py` | 2                   |\n| CreditAnalysisAgent       | `ledger/agents/base_agent.py` | 2 (reference given) |\n| FraudDetectionAgent       | `ledger/agents/base_agent.py` | 3                   |\n| ComplianceAgent           | `ledger/agents/base_agent.py` | 3                   |\n| DecisionOrchestratorAgent | `ledger/agents/base_agent.py` | 3                   |\n| Projections + daemon      | `ledger/projections/`         | 4                   |\n| Upcasters                 | `ledger/upcasters.py`         | 4                   |\n| MCP server                | `ledger/mcp_server.py`        | 5                   |\n\n## Gate Tests by Phase\n\n```bash\npytest tests/test_schema_and_generator.py -v  # Phase 0: all must pass before Phase 1\npytest tests/test_event_store.py -v           # Phase 1\npytest tests/test_domain.py -v               # Phase 2\npytest tests/test_narratives.py -v           # Phase 3: all 5 must pass\npytest tests/test_projections.py -v          # Phase 4\npytest tests/test_mcp.py -v                  # Phase 5\n```\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

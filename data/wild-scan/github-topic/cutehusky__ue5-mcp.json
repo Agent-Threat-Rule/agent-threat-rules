@@ -1,0 +1,37 @@
+{
+  "full_name": "cutehusky/ue5-mcp",
+  "html_url": "https://github.com/cutehusky/ue5-mcp",
+  "description": "Python-based MCP server for Unreal Engine 5 Blueprints. Enables LLM-powered editing of Blueprints, graphs, variables, functions, and components.",
+  "topics": [
+    "blueprint",
+    "llm-tools",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "ue5",
+    "ue5-plugin",
+    "unreal-engine-5",
+    "visual-scripting"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 10,
+  "forks": 2,
+  "open_issues": 0,
+  "language": "C++",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-09-15T14:51:19Z",
+  "last_pushed_at": "2026-03-08T05:22:37Z",
+  "fetched_at": "2026-07-12T00:31:08.772Z",
+  "readme": {
+    "path": "README.md",
+    "content": "\n# UE5 Blueprint MCP Server\n\nA **Python-based MCP server** that wraps Unreal Engine 5 (UE5) Blueprint APIs, enabling **LLM-powered interactions** with Blueprints.\nThis allows AI agents to perform operations such as modifying Blueprints, editing visual scripting graphs, and managing variables, functions, and components.\n\n---\n\n## Features\n\nThe MCP server runs in **streamable HTTP mode**, built on **FastMCP** to call web APIs provided by a custom UE plugin.\nThe plugin exposes a web API by wrapping **UE Editor Utility C++ APIs**, supporting:\n\n### Blueprint Management\n\n* Create Blueprints\n* Compile Blueprints\n* Get Blueprint variables, functions, and graph details\n\n### Blueprint Functions\n\n* Create, edit, and delete functions\n\n### Blueprint Visual Scripting\n\n* Add function calls nodes\n* Add custom or built-in events nodes\n* Add variable getter/setter nodes\n* Add generic, math, cast, and struct nodes\n* Connect or break pin connections\n* Set pin default values\n* Get supported node types\n\n### Blueprint Variables\n\n* Add, delete, rename, and set default values\n\n### Blueprint Components\n\n* Get, add, rename, remove, or reparent components\n* Get and set component properties\n\n---\n\n## Installation\n\n1. Navigate to your project’s `Plugins` folder:\n\n   ```bash\n   cd <YourUEProject>/Plugins\n   ```\n\n2. Clone the repository:\n\n   ```bash\n   git clone https://github.com/cutehusky/ue5-mcp.git\n   ```\n\n3. Enable the plugin **UE5\\_MCP** in the UE5 **Plugins** tab.\n\n4. (Optional) Create a Python environment.\n\n5. Install Python dependencies for the MCP server:\n\n   ```bash\n   cd Python/MCP\n   pip install mcp httpx python-dotenv\n   ```\n\n---\n\n## Usage\n\n### Running the MCP Server\n\n1. In the UE5 Editor, go to **Windows > UE5\\_MCP** to start the Blueprint API.\n   Select the desired port.\n\n2. Configure the `.env` file with your UE API endpoint:\n\n   ```env\n   PORT=<your_port_to_run_mcp_server>\n   UE5_REST_API_URL=http://localhost:<your_port>\n   ```\n\n3. Start the MCP server:\n\n   ```bash\n   python mcp_server.py\n   ```\n\n---\n\n## Roadmap\n\n* Support for more UE5 node types (e.g., animations, AI behaviors).\n* Asset browser and asset management support.\n* Tools to fetch UE documentation for LLMs.\n* Enhanced error handling with detailed API failure messages.\n\n---\n\n## Contributing\n\nYou can contribute by:\n\n* Adding more tools wrapping additional UE5 Blueprint APIs.\n* Extending tooling to fetch UE documentation (built-in classes, graph nodes, methods).\n* Improving tool docstrings with LLM-friendly guidance.\n* Expanding graph manipulation to support additional node types.\n\n---\n\n## License\n\nMIT License\n\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

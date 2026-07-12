@@ -1,0 +1,48 @@
+{
+  "full_name": "golf-mcp/golf-scanner",
+  "html_url": "https://github.com/golf-mcp/golf-scanner",
+  "description": "Discover and audit MCP servers for security vulnerabilities across Claude Code, Cursor, VS Code, and more",
+  "topics": [
+    "agent-security",
+    "ai-security",
+    "audit",
+    "claude-code",
+    "cli",
+    "cursor",
+    "devsecops",
+    "go",
+    "golang",
+    "mcp",
+    "mcp-security",
+    "mcp-server",
+    "mcp-servers",
+    "model-context-protocol",
+    "risk-scoring",
+    "security",
+    "security-scanner",
+    "security-tools",
+    "supply-chain-security",
+    "vulnerability-scanner"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 7,
+  "forks": 2,
+  "open_issues": 3,
+  "language": "Go",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2026-03-03T10:54:39Z",
+  "last_pushed_at": "2026-06-23T02:23:26Z",
+  "fetched_at": "2026-07-11T23:57:33.213Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n\n  <h1 align=\"center\">\n    <br>\n    <span style=\"font-size: 80px;\">🔍 Golf Scanner</span>\n    <br>\n  </h1>\n\n  <h3 align=\"center\">\n    Discover and audit MCP servers across your IDEs\n  </h3>\n\n  <br>\n\n  <p>\n    <a href=\"https://opensource.org/licenses/Apache-2.0\"><img src=\"https://img.shields.io/badge/License-Apache%202.0-blue.svg\" alt=\"License\"></a>\n    <a href=\"https://github.com/golf-mcp/golf-scanner/pulls\"><img src=\"https://img.shields.io/badge/PRs-welcome-brightgreen.svg\" alt=\"PRs\"></a>\n    <a href=\"https://github.com/golf-mcp/golf-scanner/issues\"><img src=\"https://img.shields.io/badge/support-contact%20author-purple.svg\" alt=\"Support\"></a>\n  </p>\n\n  <p>\n    <a href=\"https://docs.golf.dev/scanner/overview\"><strong>📚 Documentation</strong></a> · <a href=\"https://docs.golf.dev/scanner/quickstart\"><strong>🚀 Quick Start</strong></a> · <a href=\"https://golf.dev\"><strong>⛳ Golf</strong></a>\n  </p>\n\n</div>\n\n---\n\nFree, open-source CLI that discovers MCP server configurations across your machine and runs security checks to produce a risk score. Single binary. Zero telemetry. No account required.\n\n## Quick Start\n\nInstall via Homebrew:\n\n```bash\nbrew install golf-mcp/tap/golf-scanner\n```\n\nOr with Go:\n\n```bash\ngo install github.com/golf-mcp/golf-scanner/cmd/golf-scanner@latest\n```\n\nDiscover your MCP servers:\n\n```bash\ngolf-scanner scan\n```\n\nRun a security audit:\n\n```bash\ngolf-scanner audit\n```\n\n## What It Does\n\nGolf Scanner is a single static binary (pure Go, 3 dependencies) that:\n\n1. **Discovers** MCP server configurations across 7 IDEs — Claude Code, Cursor, VS Code, Windsurf, Gemini CLI, Kiro, and Antigravity\n2. **Runs 20 security checks** — 9 offline (no network) + 11 online (queries OSV, GitHub, npm, PyPI, OCI registries, MCP Registry)\n3. **Produces a 0–100 risk score** per server with severity-weighted scoring and hard caps\n\nNo account required. Runs offline. Zero telemetry.\n\n### Supported IDEs\n\nClaude Code · Cursor · VS Code · Windsurf · Gemini CLI · Kiro · Antigravity\n\n## Usage\n\n### `audit`\n\nDiscover servers and run security checks with risk scoring.\n\n```bash\ngolf-scanner audit\n```\n\nSkip network checks (offline mode):\n\n```bash\ngolf-scanner audit --offline\n```\n\nVerbose output with remediation details:\n\n```bash\ngolf-scanner audit --verbose\n```\n\nCI/CD integration — fail if high or critical findings:\n\n```bash\ngolf-scanner audit --fail-on high --json\n```\n\n| Flag | Default | Description |\n|------|---------|-------------|\n| `--offline` | `false` | Skip network checks (OSV, GitHub, npm, PyPI, MCP Registry, OCI registries) |\n| `--format` | `table` | Output format: `table` or `json` |\n| `--json` | `false` | Shorthand for `--format json` |\n| `--fail-on` | | Exit code 1 if findings at or above severity: `note`, `medium`, `high`, `critical` |\n| `--verbose`, `-v` | `false` | Show full finding details including remediation |\n| `--quiet`, `-q` | `false` | Show only the summary table |\n\n`--verbose` and `--quiet` are mutually exclusive.\n\n## Security Checks\n\n| Check | What It Detects | Online |\n|-------|-----------------|--------|\n| Server Type | Classifies the server as package manager, container, binary, script, or HTTP | |\n| Command Safety | Identifies risky patterns including privilege escalation and shell injection threats | |\n| Credentials | Finds plaintext credentials in args, URLs, and environment variables | |\n| Script Location | Flags scripts running from unsafe locations like `/tmp` or home directories | |\n| Script Permissions | Detects world-writable script files | |\n| Binary Location | Assesses executable placement across system paths and home directories | |\n| Binary Permissions | Detects world-writable or group-writable binaries | |\n| Container Isolation | Flags `--privileged` mode, dangerous capabilities, host namespace sharing | |\n| Container Volumes | Flags dangerous volume mounts — root filesystem, `/etc`, Docker socket | |\n| Registry Listing | Confirms MCP Registry inclusion status | Yes |\n| Vulnerabilities | Queries OSV.dev for known CVEs and malware in npm/PyPI packages | Yes |\n| Typosquatting | Identifies similarly-named packages suggesting malicious imitation | Yes |\n| Distribution | Evaluates adoption through download metrics and package age | Yes |\n| Source Repository | Checks whether the package links to a source repository | Yes |\n| Unscoped Variant | Examines unscoped npm counterparts for security issues | Yes |\n| GitHub Trust | Evaluates repository signals like activity, licensing, and contributor count | Yes |\n| Container Image | Checks whether images use digest pinning (`@sha256:`) | Yes |\n| Container Registry | Validates image presence and flags potential tampering via digest mismatch | Yes |\n| Container Signature | Verifies cosign signatures with keyless authentication | Yes |\n| OAuth | Discovers OAuth/OIDC configuration. Flags missing authentication | Yes |\n\nFor full details on each check, see the [Security Checks reference](https://docs.golf.dev/scanner/security-checks).\n\n## Scoring\n\nEach server receives a **0–100 risk score**:\n\n1. Each check produces findings; the worst severity determines the per-check score (0–10)\n2. Scores are combined via **severity-weighted average** (critical 10x, high 7.5x, medium 5x, note 1x)\n3. The raw average is scaled to 0–100\n4. **Hard caps** apply: any critical finding caps the score at 30, any high finding caps at 59\n5. **Risk level**: Low (≥60), Moderate (>30), High (≤30)\n\nFor the full scoring explanation, see [Understanding Results](https://docs.golf.dev/scanner/understanding-results).\n\n## Environment Variables\n\n| Variable | Purpose |\n|----------|---------|\n| `GITHUB_TOKEN` | Optional. Increases GitHub API rate limit from 60 to 5,000 req/hr. |\n| `GOLF_GITHUB_TOKEN` | Optional. Fallback if `GITHUB_TOKEN` is not set. |\n\nNo token is needed for most scans. The scanner makes ~3 GitHub API calls per unique repo (metadata, commits, contributors) with results cached, so you'll only hit the unauthenticated limit if you have 20+ servers pointing to distinct GitHub repos.\n\n## Exit Codes\n\n| Code | Meaning |\n|------|---------|\n| 0 | Success |\n| 1 | No args, unknown command, `--fail-on` threshold exceeded, or flag conflict |\n| 2 | JSON error or invalid `--fail-on` value |\n\n## License\n\nApache 2.0 — see [LICENSE](LICENSE).\n\n<div align=\"center\">\nMade with ❤️ by the <a href=\"https://golf.dev\">Golf</a> team\n</div>\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

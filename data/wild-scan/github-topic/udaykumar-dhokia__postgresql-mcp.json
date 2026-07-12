@@ -1,0 +1,37 @@
+{
+  "full_name": "udaykumar-dhokia/postgresql-mcp",
+  "html_url": "https://github.com/udaykumar-dhokia/postgresql-mcp",
+  "description": "A Model Context Protocol (MCP) server that provides AI assistants (like Claude) with tools to directly interact with PostgreSQL databases securely.",
+  "topics": [
+    "ai-agents",
+    "database",
+    "llm",
+    "mcp",
+    "mcp-client",
+    "mcp-server",
+    "mcp-tools",
+    "postresql",
+    "sql"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-02-23T11:12:16Z",
+  "last_pushed_at": "2026-02-23T12:25:52Z",
+  "fetched_at": "2026-07-12T00:43:53.377Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# PostgreSQL MCP\n\nA Model Context Protocol (MCP) server that provides AI assistants (like Claude) with tools to directly interact with PostgreSQL databases securely.\n\n<img src=\"./demo.png\"/>\n<img src=\"./pgadmin.png\"/>\n\n## Features\n\n- **`create_table`**: Create a new table with custom columns.\n- **`list_tables`**: List all tables in the public schema.\n- **`describe_table`**: Get the schema and column details of a specific table.\n- **`execute_sql`**: Execute arbitrary SQL queries.\n- **Web Configurator**: A built-in local web UI to securely manage connection strings and generate API keys.\n\n## Installation\n\nYou can install and run this package easily using `uv`:\n\n```bash\n# Run without installing globally\nuvx postgresql-mcp\n\n# Or install globally for easy access\nuv tool install postgresql-mcp\n```\n\n## Setup & Configuration\n\nThis project requires an API Key mapped to your PostgreSQL database URL. To easily set this up, we provide a built-in Web Configurator.\n\n### 1. Generate an API Key\nRun the web configurator:\n```bash\npostgresql-mcp-web\n```\nOr, if running without global installation:\n```bash\nuvx --from . postgresql-mcp-web\n```\n\nOpen your browser to [http://localhost:8000](http://localhost:8000). Enter your database URL (`postgresql://user:pass@host/db`) and click \"Generate API Key\".\n\nThe application securely stores your credentials in `~/.sql-mcp/keys.json` and outputs a configuration snippet.\n\n### 2. Connect Claude Desktop\n\nCopy the generated snippet and add it to your Claude Desktop configuration file (typically located at `%APPDATA%\\Claude\\claude_desktop_config.json` on Windows or `~/Library/Application Support/Claude/claude_desktop_config.json` on macOS).\n\n```json\n{\n  \"mcpServers\": {\n    \"postgresql-mcp\": {\n      \"command\": \"uvx\",\n      \"args\": [\n        \"postgresql-mcp\"\n      ],\n      \"env\": {\n        \"[REDACTED-GENERIC_KV_SECRET]\"\n      }\n    }\n  }\n}\n```\n\nRestart Claude Desktop, and your AI assistant will now be able to interact with your database!\n\n## Usage Tracking\n\nThe server automatically tracks how many times each API key is utilized. You can view this data locally in `~/.sql-mcp/usage.json`.\n\n## Contributing\n\nWe welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to get started."
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

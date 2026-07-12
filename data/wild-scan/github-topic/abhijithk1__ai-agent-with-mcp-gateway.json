@@ -1,0 +1,35 @@
+{
+  "full_name": "abhijithk1/ai-agent-with-mcp-gateway",
+  "html_url": "https://github.com/abhijithk1/ai-agent-with-mcp-gateway",
+  "description": "AI agentic System With MCP Gateway and MCP servers",
+  "topics": [
+    "ai-agents",
+    "mcp",
+    "mcp-client",
+    "mcp-gateway",
+    "mcp-server",
+    "mcp-tools",
+    "model-context-protocol"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-06-22T10:57:40Z",
+  "last_pushed_at": "2025-07-22T05:32:05Z",
+  "fetched_at": "2026-07-12T00:52:43.373Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Model-Context-Protocol\n\nMCP is an open protocol that standardizes how applications provide context to LLMs. Think of MCP like a USB-C port for AI applications. Just as USB-C provides a standardized way to connect your devices to various peripherals and accessories, MCP provides a standardized way to connect AI models to different data sources and tools.\n\n---\n\n# AI Agent System with MCP Gateway\n\n![alt text](image.png)\n\n---\n\n## Prerequisite\n- Python `3.10` or higher installed.\n\n- You must use the Python MCP SDK `1.2.0` or higher.\n  \n- Install [`uv`](https://docs.astral.sh/uv/) package manager (***Optional***)\n\n---\n\n## Quickstart\n\n#### Clone the repository\n\n    ```bash\n    $ git clone <clone-url>\n    ```\n\n#### Run the MCP servers\n   \n   ```bash\n   $ cd mcp-servers/<perticular-server-folder>\n\n   $ python3 -m venv .venv\n   \n   $ source .venv/bin/activate # For Windows: .venv\\Scripts\\activate\n   \n   $ pip install -r requirements.txt # or uv sync\n\n   $ python <python-file>.py\n   ```\n\n#### Run MCP Client to test the MCP server (***Optional***)\n   \n1. Setup\n  \n```bash\n$ cd mcp-clients/simple-cient\n\n$ python3 -m venv .venv\n\n$ source .venv/bin/activate # For Windows: .venv\\Scripts\\activate\n\n$ pip install -r requirements.txt # or uv sync\n```\n\n2. Replace the MCP Server endpoint as `url` value in the `client.py`.\n    \n\n3. Run the Client (Currently, only listing the tools.)\n\n```bash\n$ python client.py\n```\n\n#### Run the MCP gateway\n   \n```bash\n$ cd mcp-gateway\n\n$ python3 -m venv .venv\n\n$ source .venv/bin/activate # For Windows: .venv\\Scripts\\activate\n\n$ pip install -r requirements.txt\n\n$ python gateway.py\n```\n\n#### Run the MCP Agent\n\n1. Go to the MCP agent directory.\n   \n```bash\n$ cd mcp-agent\n```\n\n2. Create a `.env` file\n\n```bash\nLLM_PROVIDER=gemini\nGOOGLE_API_KEY=<gemini-api-key>\n```\n\n3. Create virtual environment and install dependencies.\n\n```bash\n$ python3 -m venv .venv\n\n$ source .venv/bin/activate # For Windows: .venv\\Scripts\\activate\n\n$ pip install -r requirements.txt\n```\n   \n4. Run the agent.\n\n``` bash\n$ python main.py\n```\n\n#### Ask queries in the agent and find the result\n   \n#### Play around with the servers and agents.\n\n---\n   \n### Add New MCP Servers\nIf you want to add new MCP Servers to the gateway. Add it's endpoint to `SERVER_REGISTRY` dictonary in `gateway.py`.\n\n---\n\n\n## MCP Servers\n\nMCP servers the repository contains are created using FastMCP package from MCP Python SDK.\n\n- It uses `Streamable HTTP` transport.\n- Its `stateless`.\n\n\n## MCP Gateway\n\nAn **MCP Gateway** is a crucial piece of infrastructure that sits between MCP clients (***agents***) and a multitude of MCP servers (***tools***). It acts as a centralized control plane, offering:\n\n1. **Unified Access:** A single entry point to a wide range of tools.\n   \n2. **Security:** Centralized authentication, authorization, and secrets management.\n\n3. **Observability:** Monitoring, logging, and tracing of all tool interactions.\n   \n4. **Management:** A central place to register, discover, and manage available tools.\n\n## Agent\n\nSupported LLM provider"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

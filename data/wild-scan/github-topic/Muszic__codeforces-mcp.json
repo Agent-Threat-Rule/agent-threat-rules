@@ -1,0 +1,33 @@
+{
+  "full_name": "Muszic/codeforces-mcp",
+  "html_url": "https://github.com/Muszic/codeforces-mcp",
+  "description": "MCP server that gives Claude deep access to Codeforces — weakness analysis, personalized problem recommendations, rating roadmaps, virtual contests, and more. Your AI competitive programming coach.",
+  "topics": [
+    "claude-code",
+    "codeforces",
+    "codeforces-api",
+    "mcp",
+    "mcp-servers"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-03-04T17:43:23Z",
+  "last_pushed_at": "2026-03-04T17:46:39Z",
+  "fetched_at": "2026-07-12T00:22:05.008Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# codeforces-mcp\n\nA production-grade [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) server that gives Claude deep, structured access to the [Codeforces](https://codeforces.com) competitive programming platform.\n\n**Claude becomes your personal competitive programming coach, powered by your real Codeforces data.**\n\n## What It Does\n\n- Analyzes your submission history to find weaknesses and strengths\n- Recommends problems tailored to your skill level and weak areas\n- Generates roadmaps to reach a target rating\n- Builds virtual contests matched to your level\n- Tracks your progress, streaks, and trends over time\n- Compares your profile with other users\n- Finds problems your friends solved that you haven't\n\n## Quick Start\n\n### Install\n\nAdd to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json`):\n\n```json\n{\n  \"mcpServers\": {\n    \"codeforces\": {\n      \"command\": \"npx\",\n      \"args\": [\"codeforces-mcp\"],\n      \"env\": {\n        \"CF_HANDLE\": \"your_codeforces_handle\"\n      }\n    }\n  }\n}\n```\n\nThat's the entire setup. No API keys. No login. No backend.\n\n### First Conversation\n\n```\nYou: \"Set up my profile\"\nClaude: \"Got it! You're rated 1842 (Expert). I've loaded your submission history.\n        Want me to find your weak spots or pull your last unsolved problem?\"\n```\n\n## Example Prompts\n\n```\n\"What are my biggest weaknesses right now?\"\n\"Find me 5 graph problems I haven't solved rated around my level\"\n\"I want to hit 1600 in 2 months — make me a plan\"\n\"How did I perform in my last 10 contests?\"\n\"Give me a 2-hour virtual contest at my level\"\n\"Compare me with tourist and Petr\"\n\"Pull my last unsolved problem and help me with it\"\n\"What should I upsolve from Codeforces Round 950?\"\n\"Am I improving or plateauing? Be honest.\"\n\"What problems have my friends solved that I haven't?\"\n\"What's the next contest and when does it start?\"\n\"Which topic should I study this week to improve fastest?\"\n```\n\n## Tools\n\n### User Tools\n| Tool | Description |\n|------|-------------|\n| `get_profile` | Full user profile with rating, rank, solve count |\n| `get_submissions` | Submission history, filterable by verdict |\n| `get_rating_history` | Rating changes across all contests |\n| `get_solved_problems` | All solved problems, deduplicated |\n\n### Problem Tools\n| Tool | Description |\n|------|-------------|\n| `get_problem` | Fetch a specific problem (e.g., 1234A) |\n| `search_problems` | Search by tags, rating, solved status |\n| `get_unsolved_problems` | Problems attempted but never solved |\n| `get_last_unsolved` | Most recently attempted unsolved problem |\n| `get_recommended_problems` | Personalized recommendations based on weaknesses |\n\n### Analysis Tools\n| Tool | Description |\n|------|-------------|\n| `get_weakness_analysis` | Tag x verdict matrix, rating ceiling/wall, trends |\n| `get_contest_performance` | Contest stats with division breakdown |\n| `get_progress_report` | Period report with streaks and comparisons |\n| `get_roadmap` | Weekly plan to reach a target rating |\n\n### Contest Tools\n| Tool | Description |\n|------|-------------|\n| `get_upcoming_contests` | Upcoming contests within N days |\n| `get_contest_standings` | Standings for a specific contest |\n| `get_user_contest_history` | Contest participation history |\n| `build_virtual_contest` | Personalized virtual contest builder |\n| `get_upsolving_list` | Unsolved problems from a contest |\n\n### Compare Tools\n| Tool | Description |\n|------|-------------|\n| `compare_users` | Side-by-side comparison of users |\n| `get_problems_friends_solved` | Problems friends solved that you haven't |\n\n## Environment Variables\n\n| Variable | Required | Description |\n|----------|----------|-------------|\n| `CF_HANDLE` | Recommended | Default handle for \"my\" queries |\n| `CF_CACHE_TTL` | Optional | Override default cache TTL (seconds) |\n| `CF_REQUEST_DELAY` | Optional | Request delay in ms (default 250) |\n| `CF_LOG_LEVEL` | Optional | `debug` / `info` / `error` |\n\n## Development\n\n```bash\n# Install dependencies\nnpm install\n\n# Build\nnpm run build\n\n# Run tests\nnpm test\n\n# Watch mode\nnpm run dev\n```\n\n### Project Structure\n\n```\nsrc/\n  server.ts          # MCP server entry, tool registration\n  api/\n    client.ts        # CF API client with rate limiting + caching\n    cache.ts         # TTL cache\n    endpoints.ts     # API endpoint definitions\n  tools/\n    user.ts          # Profile, submissions, rating, solved\n    problems.ts      # Search, unsolved, recommendations\n    analysis.ts      # Weakness, contest perf, progress, roadmap\n    contests.ts      # Upcoming, standings, history, virtual\n    compare.ts       # User comparison, friend problems\n  engine/\n    weakness.ts      # Tag x verdict matrix analysis\n    recommender.ts   # Problem recommendation algorithm\n    roadmap.ts       # Rating goal -> weekly plan\n    virtual.ts       # Virtual contest builder\n  types/\n    cf.ts            # Zod schemas for CF API responses\n    mcp.ts           # Tool input/output types\n  utils/\n    constants.ts     # Tags, rating bands, tier names\n    math.ts          # Statistical helpers\n    format.ts        # Output formatters\n```\n\n## Contributing\n\n1. Create or add to a file in `src/tools/`\n2. Define a Zod input schema in `src/types/mcp.ts`\n3. Implement the handler with error handling\n4. Register in `src/server.ts`\n5. Add a unit test with fixture data\n6. Submit a PR\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

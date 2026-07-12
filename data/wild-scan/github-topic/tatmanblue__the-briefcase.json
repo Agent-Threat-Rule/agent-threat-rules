@@ -1,0 +1,36 @@
+{
+  "full_name": "tatmanblue/the-briefcase",
+  "html_url": "https://github.com/tatmanblue/the-briefcase",
+  "description": "Let your AI Agents search, read, create and update files without cluttering your project directory.",
+  "topics": [
+    "ai-agent",
+    "ai-agents",
+    "ai-tools",
+    "csharp",
+    "dotnet",
+    "mcp",
+    "mcp-server",
+    "mcp-servers"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 3,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "C#",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2026-04-24T12:41:45Z",
+  "last_pushed_at": "2026-05-06T18:52:31Z",
+  "fetched_at": "2026-07-12T00:02:31.556Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# The Briefcase\n\nLet your AI Agents search, read, create and update files without cluttering your project directory.  The briefcase is an MCP server that gives AI agents controlled access to files outside their working directory.\n\n## What is The Briefcase?\n\n![The Briefcase](docs/logo.svg)  \n\nAI agents — such as Claude Code, GitHub Copilot, or any MCP-compatible client — typically only see files inside their current working directory. The Briefcase solves this by acting as a secure file courier: it exposes a curated set of directories to agents through a structured API, without ever revealing the underlying file origins.\n\nYou configure which directories to share. The Briefcase assigns each file a stable ID (a GUID). Agents work entirely through those IDs — they never see real paths, cannot traverse the directory tree, and cannot access anything outside what you explicitly shared.\n\nAgents are able to search, read, create, and update the files made available through the Briefcase.\n\n\n## Video Demo\n\n[![The Briefcase Demo](https://img.youtube.com/vi/29OXo1NEDLc/0.jpg)](https://youtu.be/29OXo1NEDLc)\n\n## How It Works\n\n```\n  Your file system          The Briefcase MCP Server          AI Agent\n  ──────────────           ───────────────────────────       ─────────\n  C:\\docs\\notes.txt  ───►  briefcase://file/{guid}  ───►   list_files\n  C:\\docs\\report.md  ───►  briefcase://file/{guid}  ───►   read_file\n  D:\\shared\\data.csv ───►  briefcase://file/{guid}  ───►   (notifications)\n                           briefcase://file/{guid}  ◄───   create_file / update_file\n```\n\n1. You tell The Briefcase which directories to watch via the `BRIEFCASE_PATHS` environment variable.\n2. On startup, it scans those directories recursively and assigns each file a stable GUID.\n3. The GUID-to-path mapping is saved to `registry.json` so IDs survive server restarts — agents can hold onto a file's ID indefinitely.\n4. Agents call `list_files` to discover what's available and `read_file` to retrieve content.\n5. When files change on disk, The Briefcase sends MCP notifications so agents can react in real time.\n\n## Status\n\nVersion 1.2 — Prototype. Local file system only.\n\n## Setup\n\n- [Windows](docs/setup-windows.md)\n- [macOS](docs/setup-macos.md)\n\n## Available Tools\n\nSee [Tools Reference](docs/tools.md) for full parameter and return-value details.\n\n**File Tools**\n- `list_files` — discover all files known to The Briefcase; supports filtering by project, archive state, and sort order\n- `read_file` — retrieve a file's content by its GUID\n- `create_file` — write a new file into The Briefcase\n- `update_file` — replace the full content of an existing file\n- `search_files` — search files by name, content, or both; supports archive filtering\n- `archive_file` — soft-hide a file from listings and searches; file remains readable by ID\n- `unarchive_file` — restore an archived file to active status\n\n**Project Tools**\n- `create_project` — create a named group for organizing files\n- `list_projects` — list all projects with file counts\n- `get_project` — get a project's metadata and its file list\n- `add_file_to_project` — associate a file with a project\n- `remove_file_from_project` — remove a file from a project\n- `update_project` — rename or re-describe a project\n- `delete_project` — delete a project (files remain in The Briefcase)\n- `reindex_files` — rebuild the file registry and search cache\n\n**File Change Notifications**\n\nThe Briefcase watches configured directories in real time and sends standard MCP resource notifications when files are created, deleted, renamed, or modified. See [Tools Reference](docs/tools.md#file-change-notifications) for details.\n\n## Roadmap\n\n- [x] Search files by name and content\n- [x] Create file\n- [x] Update file content\n- [x] Projects — group files and filter by project\n- [x] Archive — soft-hide files from listings and searches\n- [ ] Plug in architecture for custom extensions\n- [ ] Cloud storage backends (e.g. S3, OneDrive, Google Drive)\n- [ ] HTTP with Server-Sent Events\n\n## License\n\nCopyright 2026 Matthew Raffel. Licensed under the [Apache License 2.0](LICENSE).\n\n## File Version\n1.3.0\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

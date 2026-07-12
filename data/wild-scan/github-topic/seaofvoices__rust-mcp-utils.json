@@ -1,0 +1,32 @@
+{
+  "full_name": "seaofvoices/rust-mcp-utils",
+  "html_url": "https://github.com/seaofvoices/rust-mcp-utils",
+  "description": "Extensions to the rust-mcp-sdk crate to build MCP servers in Rust easily",
+  "topics": [
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "rust"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 3,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Rust",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-08-20T21:37:00Z",
+  "last_pushed_at": "2026-04-28T14:37:49Z",
+  "fetched_at": "2026-07-12T00:35:35.404Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n\n[![checks](https://github.com/seaofvoices/rust-mcp-utils/actions/workflows/test.yml/badge.svg)](https://github.com/seaofvoices/rust-mcp-utils/actions/workflows/test.yml)\n[![version](https://img.shields.io/crates/v/mcp-utils)](https://crates.io/crates/mcp-utils)\n[![license](https://img.shields.io/crates/l/mcp-utils)](LICENSE.txt)\n[![GitHub top language](https://img.shields.io/github/languages/top/seaofvoices/rust-mcp-utils)](https://www.rust-lang.org/)\n\n[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/seaofvoices)\n\n</div>\n\n# Rust MCP Utils\n\nThis project extends the [`rust-mcp-sdk`](https://crates.io/crates/rust-mcp-sdk) with additional conveniences for building MCP servers in Rust with a **defined set of tools**. It provides two crates:\n\n- **`mcp-utils`** - Higher-level traits and abstractions that simplify tool definition and server setup beyond the base SDK\n- **`mcp-cli-builder`** - Command-line interface generation for MCP servers built with `mcp-utils`\n\nBoth crates are built on top of `rust-mcp-sdk` and provide ergonomic wrappers around its core functionality.\n\nDerive one of the tool traits from mcp-utils to get:\n\n- quick server setup: list your tools in `setup_tools!` and automatically get a server that can list your tools and handle tool calls\n- switch between `async` or not: no need to adjust anything beside the tool trait you implement\n- flexible output: return `Result` objects, plain strings, or anything that implements `Serialize`\n\n## Installation\n\nAdd the crates to your dependencies:\n\n```bash\ncargo add mcp-utils mcp-cli-builder\n```\n\n## Defining Tools\n\nThe `mcp-utils` crate provides several tool trait options you can implement:\n\n- **`TextTool`** – Returns plain text responses (synchronous)\n- **`StructuredTool`** – Returns structured JSON data (synchronous)\n- **`AsyncTextTool`** – Returns plain text responses (asynchronous)\n- **`AsyncStructuredTool`** – Returns structured JSON data (asynchronous)\n\nCreate tools by implementing one of these traits with the `#[mcp_tool]` attribute:\n\n```rust\nuse mcp_utils::tool_prelude::*;\n\n#[mcp_tool(\n    name = \"example_tool\",\n    description = \"An example tool for demonstration\",\n    title = \"Example Tool\",\n    idempotent_hint = true,\n    read_only_hint = true,\n    destructive_hint = false,\n    open_world_hint = false,\n)]\n#[derive(Debug, JsonSchema, Serialize, Deserialize)]\npub struct ExampleTool {\n    /// A message to process\n    pub message: String,\n}\n\nimpl TextTool for ExampleTool {\n    type Output = String;\n\n    fn call(&self) -> Self::Output {\n        format!(\"Processed: {}\", self.message)\n    }\n}\n```\n\nThe attribute macro `mcp_tool` is re-exported from the `rust-mcp-sdk` crate. You can find the available options to use in its [documentation](https://docs.rs/rust-mcp-sdk/latest/rust_mcp_sdk/macros/attr.mcp_tool.html).\n\n## Aggregating Tools\n\nUse the `setup_tools!` macro to create a tool collection. Map each tool to its kind like in the following example:\n\n```rust\nuse mcp_utils::server_prelude::*;\n\nsetup_tools!(pub MyTools, [\n    text(SimpleGreeter), // for TextTool\n    structured(TestTool), // for StructuredTool\n    async_text(FileReader), // for AsyncTextTool\n    async_structured(DataProcessor), // for AsyncStructuredTool\n]);\n```\n\nThis will generate a set of tools named `MyTools` that you can pass to the CLI builder to initialize the MCP server.\n\n## Command Line Builder\n\nGenerate a command-line interface that handles the MCP server startup. This will build a command line parser using [clap](https://docs.rs/clap/latest/clap/) with:\n\n- options to start the server in stdio mode or with server-sent events (with `--host` and `--port`)\n- a clear `help` command which includes the available tools.\n- an option to change the default request timeout (in [humantime](https://docs.rs/humantime/latest/humantime/) format)\n\n```rust\nuse mcp_utils::server_prelude::*;\n\n// Aggregate your tools together\nsetup_tools!(pub MyTools, [\n    text(ExampleTool),\n    // ...\n]);\n\nfn main() -> Result<(), String> {\n    let server = ServerBuilder::new()\n        .with_name(env!(\"CARGO_PKG_NAME\")) // uses the name from Cargo.toml\n        .with_version(env!(\"CARGO_PKG_VERSION\")) // uses the version from Cargo.toml\n        .with_title(\"My MCP Server\")\n        .with_instructions(\"A demonstration MCP server\");\n\n    mcp_cli_builder::run::<MyTools>(server)\n}\n```\n\n## License\n\nThis project is available under the MIT license. See [LICENSE.txt](LICENSE.txt) for details.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

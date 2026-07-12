@@ -1,0 +1,44 @@
+{
+  "full_name": "clanker-lover/spicebridge",
+  "html_url": "https://github.com/clanker-lover/spicebridge",
+  "description": "MCP server that gives AI assistants direct access to ngspice circuit simulation — design, simulate, and verify circuits through natural language",
+  "topics": [
+    "ai-circuit-design",
+    "analog-electronics",
+    "automation",
+    "circuit-design",
+    "circuit-simulation",
+    "claude-code",
+    "eda",
+    "electrical-engineering",
+    "electronic-design",
+    "electronic-design-automation",
+    "filter-design",
+    "mcp-server",
+    "model-context-protocol",
+    "ngspice",
+    "opamp",
+    "spice"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 25,
+  "forks": 5,
+  "open_issues": 2,
+  "language": "Python",
+  "license": "GPL-3.0",
+  "default_branch": "main",
+  "created_at": "2026-02-10T16:40:20Z",
+  "last_pushed_at": "2026-04-06T23:32:53Z",
+  "fetched_at": "2026-07-11T23:47:53.762Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# SPICEBridge\n\n\n<img width=\"1536\" height=\"1024\" alt=\"image\" src=\"https://github.com/user-attachments/assets/235461c1-122a-41bb-b802-cb6055fb8387\" />\n\n\n\nAI-powered circuit design through simulation — an [MCP](https://modelcontextprotocol.io/) server that gives language models direct access to SPICE circuit simulation via ngspice. Describe a circuit in plain English and let the AI handle netlist generation, simulation, measurement, and spec verification.\n\n## Features\n\n- **28 tools** covering the full circuit design workflow\n- **11 built-in templates** with automatic component value calculation (E24 series)\n- **Simulation**: AC sweep, transient, DC operating point\n- **Measurement**: bandwidth, gain, DC levels, transient metrics, power\n- **Monte Carlo & worst-case analysis** under component tolerances\n- **Multi-stage composition** — connect circuit stages with automatic port mapping\n- **Model wizard** — generate SPICE `.lib` models from datasheet parameters\n- **KiCad export** — output `.kicad_sch` schematics\n- **Web viewer** — interactive schematic viewer in the browser\n- **Cloud setup wizard** — one-command deployment with Cloudflare tunnels (`spicebridge setup-cloud`)\n- **Spec verification** — compare results against design targets\n\n## Install\n\n```bash\npip install spicebridge\n```\n\n## Requirements\n\n- Python 3.10+\n- [ngspice](https://ngspice.sourceforge.io/) installed and on PATH\n\n## Quick Start\n\n### Local (Claude Code / stdio)\n\nAdd to your `.mcp.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"spicebridge\": {\n      \"command\": \"spicebridge\"\n    }\n  }\n}\n```\n\n#### Cloud (Streamable HTTP)\n\n```bash\nspicebridge --transport streamable-http --port 8000\n```\n\n#### Cloud Setup Wizard\n\nOne command to go from a local install to a public MCP endpoint:\n\n```bash\nspicebridge setup-cloud          # interactive (named tunnel, permanent URL)\nspicebridge setup-cloud --quick  # quick tunnel (temporary URL, no account needed)\n```\n\nThe wizard handles the full deployment pipeline:\n\n1. **Installs cloudflared** automatically (macOS via Homebrew, Linux via APT) if not found\n2. **Authenticates** with Cloudflare (browser-based OAuth, named tunnel mode only)\n3. **Creates or reuses a tunnel** — prompts to pick an existing one or make a new one\n4. **Configures DNS routing** for your custom domain (named tunnel mode)\n5. **Generates an API key** for authentication\n6. **Starts the SPICEBridge server** and tunnel together\n7. **Prints connection info** with a ready-to-paste JSON config for Claude.ai\n\nQuick tunnels give you a temporary `trycloudflare.com` URL instantly — no Cloudflare account required. Named tunnels give you a permanent custom domain (e.g. `spicebridge.example.com`).\n\nAdditional options:\n\n```bash\nspicebridge setup-cloud --domain mcp.example.com  # specify custom domain\nspicebridge setup-cloud --port 9000                # custom port\nspicebridge setup-cloud --no-install               # skip cloudflared installation\n```\n\n## Example\n\n```\n1. load_template(\"rc_lowpass_1st\", specs={\"f_3dB_hz\": 1000})\n   -> netlist with R=1.6k, C=100nF, circuit_id: \"a1b2c3d4\"\n\n2. run_ac_analysis(circuit_id, start_freq=1, stop_freq=1e6)\n   -> frequency response data\n\n3. measure_bandwidth(circuit_id)\n   -> f_3dB_hz: 995\n\n4. compare_specs(circuit_id, specs={\"f_3dB_hz\": {\"target\": 1000, \"tolerance_pct\": 5}})\n   -> PASS\n\n5. draw_schematic(circuit_id)\n   -> schematic SVG\n```\n\n## Tools\n\n### Create & Configure\n\n| Tool | Description |\n|------|-------------|\n| `create_circuit` | Store a SPICE netlist, returns a circuit ID |\n| `delete_circuit` | Delete a stored circuit and clean up resources |\n| `list_templates` | List available circuit templates |\n| `load_template` | Load a template with parameter substitution |\n| `calculate_components` | Calculate component values from target specs |\n| `modify_component` | Change a component value in a stored circuit |\n| `validate_netlist` | Check a netlist for errors before simulation |\n\n### Simulate\n\n| Tool | Description |\n|------|-------------|\n| `run_ac_analysis` | AC frequency sweep |\n| `run_transient` | Transient (time-domain) analysis |\n| `run_dc_op` | DC operating point analysis |\n\n### Measure\n\n| Tool | Description |\n|------|-------------|\n| `measure_bandwidth` | Find -3 dB bandwidth from AC results |\n| `measure_gain` | Measure gain at a specific frequency |\n| `measure_dc` | Extract DC operating point values |\n| `measure_transient` | Measure time-domain characteristics |\n| `measure_power` | Calculate power dissipation |\n\n### Evaluate & Export\n\n| Tool | Description |\n|------|-------------|\n| `get_results` | Retrieve last simulation results |\n| `compare_specs` | Check measurements against target specs |\n| `draw_schematic` | Generate a schematic diagram (PNG/SVG) |\n| `export_kicad` | Export as KiCad 8 schematic (.kicad_sch) |\n| `open_viewer` | Start the interactive web schematic viewer |\n\n### Composition & Ports\n\n| Tool | Description |\n|------|-------------|\n| `set_ports` | Define port-to-node mappings for a circuit |\n| `get_ports` | Return port definitions (auto-detect if unset) |\n| `connect_stages` | Compose multiple stages into a single circuit |\n\n### Advanced Analysis\n\n| Tool | Description |\n|------|-------------|\n| `run_monte_carlo` | Monte Carlo analysis under component tolerances |\n| `run_worst_case` | Worst-case analysis at tolerance extremes |\n| `auto_design` | Full design loop in one call: template + simulate + verify |\n\n### Model Management\n\n| Tool | Description |\n|------|-------------|\n| `create_model` | Generate a SPICE .lib model from datasheet parameters |\n| `list_models` | List all saved models in the model library |\n\n## Development\n\n```bash\ngit clone https://github.com/clanker-lover/spicebridge.git\ncd spicebridge\npip install -e \".[dev]\"\npytest\n```\n\n## License\n\nGPL-3.0-or-later\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

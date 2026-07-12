@@ -1,0 +1,44 @@
+{
+  "full_name": "xjeway/mcp-manager",
+  "html_url": "https://github.com/xjeway/mcp-manager",
+  "description": "A cross-platform desktop app for managing MCP server configs across Claude Code, Codex, Cursor, VS Code, OpenCode, Gemini CLI, and more.",
+  "topics": [
+    "ai-tools",
+    "claude-code",
+    "codex",
+    "cross-platform",
+    "cursor",
+    "desktop-app",
+    "developer-tools",
+    "gemini",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "model-context-protocol",
+    "react",
+    "rust",
+    "tauri",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 3,
+  "forks": 2,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-03-21T06:14:10Z",
+  "last_pushed_at": "2026-05-08T13:53:15Z",
+  "fetched_at": "2026-07-12T00:03:06.244Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<p align=\"center\">\n  <img src=\"./src-tauri/icons/app-icon-rounded.png\" alt=\"MCP Manager logo\" width=\"160\" height=\"160\" />\n</p>\n\n<h1 align=\"center\">MCP Manager</h1>\n\n<p align=\"center\">\n  A cross-platform desktop app for managing MCP server configs across Claude Code, Codex, Cursor, VS Code, OpenCode, Gemini CLI, and more.\n</p>\n\n<p align=\"center\">\n  <a href=\"./LICENSE\"><img src=\"https://img.shields.io/badge/license-MIT-0f172a.svg\" alt=\"MIT License\" /></a>\n  <img src=\"https://img.shields.io/badge/Tauri-2-24c8db.svg\" alt=\"Tauri 2\" />\n  <img src=\"https://img.shields.io/badge/React-19-61dafb.svg\" alt=\"React 19\" />\n  <img src=\"https://img.shields.io/badge/Rust-stable-f74c00.svg\" alt=\"Rust stable\" />\n  <img src=\"https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-16a34a.svg\" alt=\"Cross-platform\" />\n</p>\n\n<p align=\"center\">\n  English | <a href=\"./README.zh-CN.md\">简体中文</a> | <a href=\"https://github.com/xjeway/mcp-manager/releases/latest\">Latest Release</a> | <a href=\"./docs/releasing.md\">Release Guide</a>\n</p>\n\n## Why MCP Manager\n\n`MCP Manager` is a cross-platform desktop app for people who do not want to hand-edit multiple MCP client configs.\n\n- Keep a unified MCP workspace for all configured servers\n- Import existing entries from local client configuration\n- Edit servers in form mode or raw JSON mode\n- Apply generated configuration to multiple supported clients\n- Review risky writes before files change\n- Keep backups and rollback support during apply\n- Use light mode, dark mode, or system theme\n- Work in English or Simplified Chinese\n\n## Screenshots\n\n![MCP Manager interface in English](./docs/page-en.png)\n\n## Download & Installation\n\n### System Requirements\n\n- Desktop packages are published for macOS, Windows, and Linux\n- Building from source requires Node.js 20+, npm 10+, Rust stable, and Tauri system dependencies for your platform\n\n### macOS\n\n#### Homebrew\n\n```bash\nbrew tap xjeway/mcp-manager\nbrew install --cask mcp-manager\nbrew update\nbrew upgrade --cask mcp-manager\n```\n\n#### Manual Download\n\nDownload from:\n\n- <https://github.com/xjeway/mcp-manager/releases/latest>\n\nExample macOS asset names:\n\n- `MCP-Manager-<version>-<arch>.dmg`\n\nArch guide:\n\n- Apple Silicon Macs: choose `arm64` or `aarch64` assets\n- Intel Macs: choose `x64` or `x86_64` assets\n\nAfter downloading the correct macOS asset, open it locally:\n\n```bash\nopen ~/Downloads/MCP-Manager*.dmg\n```\n\nCurrent public macOS releases may still be unsigned while Apple signing and notarization are being prepared. If Gatekeeper blocks `MCP Manager.app`, use this fallback flow:\n\n1. Drag `MCP Manager.app` into `/Applications`.\n2. In Finder, right-click the app once and choose `Open`.\n3. If macOS still says the app cannot be opened or is damaged, remove the quarantine flag and try again:\n\n```bash\nxattr -dr com.apple.quarantine \"/Applications/MCP Manager.app\"\nopen \"/Applications/MCP Manager.app\"\n```\n\n### Windows\n\n#### Manual Download\n\nDownload from:\n\n- <https://github.com/xjeway/mcp-manager/releases/latest>\n\nExample Windows asset names:\n\n- `MCP-Manager-<version>-<arch>-setup.exe`\n- `MCP-Manager-<version>-x64.msi`\n\nArch guide:\n\n- Windows on ARM devices: choose the `arm64` installer asset\n- Intel / AMD PCs: choose the `x64` or `x86_64` installer asset\n\nPackage guide:\n\n- `setup.exe`: available for both Windows x64 and Windows arm64\n- `.msi`: published for stable Windows x64 releases\n\nChoose the asset that matches your arch, then run it locally:\n\n```powershell\nStart-Process \"C:\\Path\\To\\MCP-Manager-Setup.exe\"\n# or\nmsiexec /i \"C:\\Path\\To\\MCP-Manager.msi\"\n```\n\n### Linux Users\n\nDownload the latest Linux build from the [Releases](https://github.com/xjeway/mcp-manager/releases/latest) page:\n\nExample Linux asset names:\n\n- `mcp-manager_<version>_<arch>.deb` (Debian/Ubuntu)\n- `mcp-manager-<version>.<arch>.rpm` (Fedora/RHEL/openSUSE)\n- `MCP-Manager-<version>-<arch>.AppImage` (Universal)\n\nExpanded distro guide:\n\n- `.deb`: Debian, Ubuntu, Linux Mint, Pop!_OS, elementary OS, and other Debian-based distributions\n- `.rpm`: Fedora, RHEL, Rocky Linux, AlmaLinux, openSUSE, and other RPM-based distributions\n- `.AppImage`: portable option for desktop Linux when you do not want a system package\n\nArch guide:\n\n- `x86_64` or `amd64` for most Intel and AMD 64-bit PCs\n- `arm64` or `aarch64` for ARM64 Linux devices, when that asset is published in the release\n\nInstall with the matching command:\n\n```bash\n# Debian / Ubuntu\nsudo dpkg -i ./mcp-manager_<version>_amd64.deb\n\n# Fedora / RHEL / openSUSE\nsudo rpm -i ./mcp-manager-<version>.x86_64.rpm\n\n# AppImage\nchmod +x ./MCP-Manager-<version>.AppImage\n./MCP-Manager-<version>.AppImage\n```\n\n### Build From Source\n\nInstall dependencies:\n\n```bash\nmake install\n```\n\nRun the desktop app:\n\n```bash\nmake tauri-dev\n```\n\nRun the web UI only:\n\n```bash\nmake dev\n```\n\n## Quick Start\n\n1. Launch `MCP Manager`.\n2. Import existing entries from local client configuration files.\n3. Edit servers in form mode or JSON mode.\n4. Apply the generated config to one or more supported clients.\n5. Review warnings, then write with backup and rollback protection.\n\n## Supported Clients\n\n### Available Now\n\n| Client | Import | Apply |\n| --- | --- | --- |\n| Claude Code | ✅ | ✅ |\n| Claude Desktop | ✅ | ✅ |\n| Codex | ✅ | ✅ |\n| Cursor | ✅ | ✅ |\n| OpenCode | ✅ | ✅ |\n| GitHub Copilot | ✅ | ✅ |\n| Gemini CLI | ✅ | ✅ |\n| Antigravity | ✅ | ✅ |\n| iFlow | ✅ | ✅ |\n| Qwen Code | ✅ | ✅ |\n| Cline | ✅ | ✅ |\n| Windsurf | ✅ | ✅ |\n| Kiro | ✅ | ✅ |\n| VS Code | ✅ | ✅ |\n\n## How It Works\n\n- The app reads local client configuration and converts it into the internal model\n- Apply writes client-specific output with atomic updates, backup, and rollback support\n\n## Scope\n\nCurrent scope is focused on configuration management. Runtime lifecycle management such as process start, stop, logs, and health checks is intentionally out of scope for v1.\n\n## Project Structure\n\n```text\nmcp-manager/\n  src/                frontend application\n  src-tauri/          tauri app + rust backend\n  public/             static assets and branding\n  docs/               release notes and design references\n  openspec/           change and spec tracking\n```\n\n### Backend Modules\n\n- `platform`: OS-aware path resolution and environment context\n- `adapters`: per-client import and apply logic\n- `core`: canonical config model and merge behavior\n- `parser`: YAML / JSON / TOML parsing and extraction\n- `storage`: atomic write, backup, and rollback\n- `commands`: Tauri commands exposed to the frontend\n\n## Development\n\n```bash\nmake install\nmake dev\nmake tauri-dev\nmake build\nmake test\nmake check\nmake tauri-build\n```\n\n## Release Automation\n\nThis repository includes GitHub Actions workflows for CI and desktop release packaging with the official Tauri release action.\n\nSee [`docs/releasing.md`](./docs/releasing.md) for:\n\n- tag-driven GitHub Release publishing\n- macOS, Windows, and Linux package generation\n- updater signing setup\n- optional platform code signing\n- version sync and git tag helper commands\n\n## Contributing\n\nIssues and pull requests are welcome.\n\nIf you plan to contribute a non-trivial change, open an issue or discussion first so the scope and direction are clear before implementation.\n\n### Local Development\n\n```bash\nmake install\nmake tauri-dev\n```\n\n### Before Opening a PR\n\n```bash\nmake test\nmake check\n```\n\nKeep [`README.md`](./README.md) and [`README.zh-CN.md`](./README.zh-CN.md) in sync when changing user-facing project documentation.\n\n## License\n\nMIT @ xJeway\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

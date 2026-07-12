@@ -1,0 +1,38 @@
+{
+  "full_name": "YCSE/nanobanana-mcp",
+  "html_url": "https://github.com/YCSE/nanobanana-mcp",
+  "description": "Gemini Vision & Image Generation MCP for Claude Desktop and Claude Code",
+  "topics": [
+    "ai",
+    "claude",
+    "claude-desktop",
+    "gemini",
+    "google-ai",
+    "image-generation",
+    "mcp",
+    "model-context-protocol",
+    "multimodal",
+    "vision-ai"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 29,
+  "forks": 5,
+  "open_issues": 0,
+  "language": "JavaScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-09-03T18:34:30Z",
+  "last_pushed_at": "2026-03-03T18:11:36Z",
+  "fetched_at": "2026-07-11T23:42:57.652Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# NanoBanana MCP\n\n[![npm](https://img.shields.io/npm/v/@ycse/nanobanana-mcp)](https://www.npmjs.com/package/@ycse/nanobanana-mcp)\n[![MCP](https://img.shields.io/badge/MCP-1.0.1-blue)](https://modelcontextprotocol.io)\n[![Gemini](https://img.shields.io/badge/Gemini-Image%20Models-orange)](https://ai.google.dev)\n[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)\n\nMCP server that brings Gemini's image generation and editing capabilities to Claude Desktop, Claude Code, and Cursor. Supports **Nano Banana 2** (Flash) and **Nano Banana Pro** models.\n\n## Features\n\n- **Image Generation** - Create 2K images from text prompts\n- **Image Editing** - Transform images with natural language instructions\n- **Session Consistency** - Maintain style/character across generations\n- **Runtime Model Switching** - Switch between Flash and Pro models without restart\n- **Multi-turn Chat** - Conversational context with image support\n\n## Quick Start\n\n### Prerequisites\n\n- Node.js 18+\n- Google AI API Key ([Get one here](https://makersuite.google.com/app/apikey))\n\n### Add to Claude Code\n\n```bash\nclaude mcp add nanobanana-mcp -- npx -y @ycse/nanobanana-mcp \\\n  -e \"GOOGLE_AI_API_KEY=your_api_key\"\n```\n\n### Add to Claude Desktop\n\nEdit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\\Claude\\claude_desktop_config.json` (Windows):\n\n```json\n{\n  \"mcpServers\": {\n    \"nanobanana-mcp\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@ycse/nanobanana-mcp\"],\n      \"env\": {\n        \"GOOGLE_AI_API_KEY\": \"your_api_key\"\n      }\n    }\n  }\n}\n```\n\n### Add to Cursor\n\nCreate or edit `.cursor/mcp.json` (project-level) or `~/.cursor/mcp.json` (global):\n\n```json\n{\n  \"mcpServers\": {\n    \"nanobanana-mcp\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@ycse/nanobanana-mcp\"],\n      \"env\": {\n        \"GOOGLE_AI_API_KEY\": \"your_api_key\"\n      }\n    }\n  }\n}\n```\n\nSee [Cursor MCP Documentation](https://cursor.com/docs/context/mcp) for more details.\n\n## Tools\n\n| Tool | Purpose |\n|------|---------|\n| `set_aspect_ratio` | **Required.** Set aspect ratio before image generation |\n| `set_model` | Switch between flash/pro models at runtime |\n| `gemini_generate_image` | Generate images from text prompts |\n| `gemini_edit_image` | Edit images with natural language |\n| `gemini_chat` | Multi-turn conversation with images |\n| `get_image_history` | View session image history |\n| `clear_conversation` | Reset session context |\n\n### set_aspect_ratio (Required)\n\nMust be called before generating or editing images.\n\n```\nValid ratios: 1:1, 9:16, 16:9, 3:4, 4:3, 3:2, 2:3, 5:4, 4:5, 21:9\n```\n\n### set_model\n\nSwitch models per-session without restarting:\n\n| Value | Model | Description |\n|-------|-------|-------------|\n| `flash` | gemini-3.1-flash-image-preview | Nano Banana 2 - Faster (default) |\n| `pro` | gemini-3-pro-image-preview | Nano Banana Pro - Higher quality |\n\n### gemini_generate_image\n\n```typescript\n{\n  prompt: string;              // Image description\n  aspect_ratio?: string;       // Override session ratio\n  output_path?: string;        // Save path (default: ~/Documents/nanobanana_generated/)\n  conversation_id?: string;    // Session ID\n  use_image_history?: boolean; // Use previous images for consistency\n  reference_images?: string[]; // Reference images for style\n}\n```\n\n### gemini_edit_image\n\n```typescript\n{\n  image_path: string;          // File path, \"last\", or \"history:N\"\n  edit_prompt: string;         // Edit instructions\n  aspect_ratio?: string;       // Override session ratio\n  output_path?: string;        // Save path\n  conversation_id?: string;    // Session ID\n  reference_images?: string[]; // Style references\n}\n```\n\n## Slash Commands\n\n### Claude Code\n\n```bash\nnpx @ycse/nanobanana-mcp --install-commands claude-code\n# Or manually:\n# mkdir -p ~/.claude/commands\n# cp commands/claude-code/*.md ~/.claude/commands/\n```\n\n### Cursor\n\n```bash\nnpx @ycse/nanobanana-mcp --install-commands cursor\n# Or manually:\n# mkdir -p .cursor/commands\n# cp commands/cursor/*.md .cursor/commands/\n```\n\nSee [Cursor Slash Commands](https://cursor.com/changelog/1-6) for more details.\n\n### Available Commands\n\n```\n/nb-flash  - Switch to Flash model (faster)\n/nb-pro    - Switch to Pro model (higher quality)\n```\n\n## Usage Examples\n\n### Basic Generation\n\n```\n1. Set aspect ratio: set_aspect_ratio(\"16:9\")\n2. Generate: \"A cyberpunk cityscape at sunset\"\n```\n\n### Character Consistency\n\n```typescript\n// First image\n{ prompt: \"A red-hat cat\", conversation_id: \"cat\" }\n\n// Second image - same character\n{ prompt: \"The cat taking a nap\", conversation_id: \"cat\", use_image_history: true }\n```\n\n### Edit with History Reference\n\n```typescript\n// Edit the last generated image\n{ image_path: \"last\", edit_prompt: \"Change hat to blue\" }\n\n// Edit specific image from history\n{ image_path: \"history:0\", edit_prompt: \"Add sunglasses\" }\n```\n\n### Switch Models Mid-Session\n\n```typescript\n// Start with Flash for quick iterations\nset_model({ model: \"flash\" })\n{ prompt: \"Draft concept art\" }\n\n// Switch to Pro for final render\nset_model({ model: \"pro\" })\n{ prompt: \"Final polished version\", use_image_history: true }\n```\n\n## Configuration\n\n### Environment Variables\n\n| Variable | Required | Description |\n|----------|----------|-------------|\n| `GOOGLE_AI_API_KEY` | Yes | Google AI API key |\n| `NANOBANANA_MODEL` | No | Default model (`gemini-3.1-flash-image-preview` or `gemini-3-pro-image-preview`) |\n\n### Output Location\n\nGenerated images save to `~/Documents/nanobanana_generated/`:\n- Generated: `generated_[timestamp].png`\n- Edited: `[original]_edited_[timestamp].png`\n\n## Development\n\n```bash\ngit clone https://github.com/YCSE/nanobanana-mcp.git\ncd nanobanana-mcp\nnpm install\nnpm run dev      # Development mode with hot reload\nnpm run build    # Production build\nnpm run start    # Run compiled server\n```\n\n## Troubleshooting\n\n**Image generation fails:**\n- Verify API key is valid\n- Check quota at [Google AI Studio](https://aistudio.google.com)\n- Ensure `set_aspect_ratio` was called first\n\n**Tools not showing:**\n1. Restart Claude Desktop/Code\n2. Check config file syntax\n3. Verify `npx -y @ycse/nanobanana-mcp` runs without errors\n\n## License\n\nMIT\n\n## Links\n\n- [npm Package](https://www.npmjs.com/package/@ycse/nanobanana-mcp)\n- [Report Issues](https://github.com/YCSE/nanobanana-mcp/issues)\n- [MCP Documentation](https://modelcontextprotocol.io)\n- [Google AI Studio](https://aistudio.google.com)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "full_name": "jaycrav3ns/LocalAgent-LLM",
+  "html_url": "https://github.com/jaycrav3ns/LocalAgent-LLM",
+  "description": "A modern, full-stack AI coding and task assistant leveraging local LLMs, a robust React, TypeScript, PostgreSQL stack, and a highly extensible component system.",
+  "topics": [
+    "agent",
+    "agentic",
+    "agentic-workflow",
+    "ai",
+    "frontend",
+    "lan",
+    "llm",
+    "mcp-tools",
+    "nodejs",
+    "ollama",
+    "rag-chatbot"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 2,
+  "forks": 1,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-06-17T17:04:15Z",
+  "last_pushed_at": "2026-01-18T17:43:20Z",
+  "fetched_at": "2026-07-12T00:38:20.613Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# LocalAgent-LLM\n\nLocalAgent-LLM is a full-stack TypeScript application designed as a powerful local AI assistant. It enables you to chat with a Large Language Model (LLM), execute code, manage files, and leverage custom tools. All from a clean, tabbed web interface.\n\n<img width=\"1325\" height=\"720\" alt=\"01\" src=\"https://github.com/user-attachments/assets/f903c9d6-66b0-4137-a52e-21c173caaf46\" />\n\n<a href=\"https://github.com/jaycrav3ns/LocalAgent-LLM/tree/main/screenshots\">Additional screenshots</a> | <a href=\"https://github.com/jaycrav3ns/LocalAgent-LLM/wiki\">Detailed overview</a>\n\n---\n\n## 🚀 Features\n\n- **Next-gen UI**: Built with React, Vite, TailwindCSS, shadcn/ui, and Radix primitives for a beautiful, accessible, and modular interface.\n- **Multi-Workspace Project Management**: Organize, browse, and control files and codebases.\n- **Command/Chat/Memory Tools**: Integrated agent command log, memory, and quick commands.\n- **Live Output**: Real-time rendering of LLM and system responses.\n- **LLM Model Switching**: Easily switch between supported models (Ollama, Gemini and OpenRouter API Keys).\n- **Authentication**: Local/passport or OIDC support (WIP).\n- **Database**: PostgreSQL via Drizzle ORM, with schema in `/shared/schema.ts`.\n- **Type-safe Sharing**: Shared types and schema between client and server.\n- **API-first**: RESTful Express API with session management.\n- **Component Aliasing**: Clean imports via Vite + tsconfig + shadcn/ui config.\n\n---\n\n## 🛠️ Tech Stack\n\n- **Frontend**: React + Vite + TypeScript\n- **Styling**: TailwindCSS, shadcn/ui, Radix UI, framer-motion, Lucide, FontAwesome\n- **Backend**: Express, TypeScript, REST API, ws (WebSockets)\n- **Database**: PostgreSQL, Drizzle ORM, drizzle-kit migrations\n- **Auth**: passport, passport-local\n- **Other**: axios, zod, TanStack Query, embla-carousel, recharts, etc.\n\n---\n\n## 🗂️ Monorepo Structure\n\n```\n.\n├── client/          # React frontend (Vite, Tailwind, shadcn/ui)\n│   └── src/\n├── server/          # Express backend (TypeScript)\n├── shared/          # Shared types & DB schema (TypeScript)\n├── drizzle/         # Drizzle ORM migration output\n├── dist/            # Build output (production)\n├── package.json\n├── tsconfig.json\n├── tailwind.config.ts\n├── vite.config.ts\n└── ...etc\n```\n\n---\n\n## ⚡️ Getting Started\n\n### 1. **Install Dependencies**\n\n```bash\nnpm install\n```\n\n### 2. **Configure DB & Environment**\n\n- <a href=\"https://github.com/jaycrav3ns/LocalAgent-LLM/wiki/Configuring-PostgreSQL\">How to setup PostgreSQL</a>\n\n- Edit the `.env` for your database, LLM endpoints, API keys etc.\n\n### 3. **Run Migrations**\n\n```bash\nnpm run migrate\n```\n\n### 4. **Start Development**\n\nRuns both backend and frontend using `concurrently` + `nodemon`:\n\n```bash\nnpm run dev\n```\n\n- Backend: [http://localhost:5000](http://localhost:5000)\n- Frontend: [http://localhost:5173](http://localhost:5173) (proxied API)\n\n### 5. **Build for Production**\n\n```bash\nnpm run build\nnpm start\n```\n\n---\n\n## 🧩 Component Aliases\n\nImport paths are aliased for DX:\n\n- `@/components`, `@/lib`, `@/hooks`, etc. → `client/src/...`\n- `@shared/*` → `shared/*`\n\nConfigured in `tsconfig.json`, `vite.config.ts`, and `components.json`.\n\n---\n\n## 🎨 Styling & UI\n\n- **Tailwind**: Uses custom color variables for themes/dark mode.\n- **shadcn/ui**: Modern UI kit (`components.json`).\n- **Radix UI**: Accessible primitives.\n\n---\n\n## 🗃️ Database & ORM\n\n- **Drizzle ORM**: Schema in `shared/schema.ts`\n- **Migrations**: `drizzle-kit` CLI (`npm run migrate`)\n- **Config**: See `drizzle.config.ts`\n\n---\n\n## 🏗️ Scripts\n\n| Script            | Purpose                            |\n|-------------------|------------------------------------|\n| `dev`             | Run client & server in parallel    |\n| `dev:client`      | Frontend only (Vite)              |\n| `dev:server`      | Backend only (Nodemon+TSX)        |\n| `build`           | Build frontend & bundle backend    |\n| `start`           | Run production server              |\n| `migrate`         | Run DB migrations                  |\n| `check`           | TypeScript check                   |\n\n---\n\n## 🧑‍💻 Contributing\n\n1. Fork & clone\n2. `npm install`\n3. PRs welcome!\n\n---\n\n## 📂 Related Configs\n\n- **postcss.config.js**: Tailwind + autoprefixer\n- **tailwind.config.ts**: Theme/colors, plugin setup\n- **components.json**: shadcn/ui config\n- **vite.config.ts**: Vite + aliases, proxy, etc.\n- **tsconfig.json**: Paths, strictness, etc.\n- **drizzle.config.ts**: DB config\n\n---\n\n## 🛡️ License\n\nMIT\n\n---\n\n## 💬 Questions?\n\nOpen an [issue](https://github.com/jaycrav3ns/LocalAgent-LLM/issues) or [discussions](https://github.com/jaycrav3ns/LocalAgent-LLM/discussions).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

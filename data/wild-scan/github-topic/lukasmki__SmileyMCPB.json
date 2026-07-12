@@ -1,0 +1,36 @@
+{
+  "full_name": "lukasmki/SmileyMCPB",
+  "html_url": "https://github.com/lukasmki/SmileyMCPB",
+  "description": "An MCP bundle toolkit for manipulating and interpreting SMILES strings",
+  "topics": [
+    "cheminformatics",
+    "chemistry",
+    "claude-desktop",
+    "mcp",
+    "mcp-tools",
+    "mcpb",
+    "rdkit",
+    "smiles"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 2,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-09-22T03:28:32Z",
+  "last_pushed_at": "2025-09-22T07:04:59Z",
+  "fetched_at": "2026-07-12T00:38:27.910Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# SmileyMCP: SMILES Toolkit in a Local MCP Server\n\nAn MCP bundle that provides operations on SMILES strings using SMARTS patterns via RDKit bindings. This project follows the MCPB (MCP Bundle) specification and is packaged as a `.mcpb` file for use with MCPB-compatible clients such as Claude Desktop.\n\n## Project layout\n\n```\nSmileyMCP\n├── manifest.json            # MCPB manifest\n├── README.md                # This file\n├── server/\n│   ├── main.py              # MCP server entrypoint (stdio MCP)\n│   ├── smileslib/           # SMILES module\n│   ├── tools.py             # SMILES tool definitions\n│   └── venv/                # Bundled virtual environment\n└── requirements.txt         # Development dependency list\n```\n\nNote: `server/venv` is included so the bundle can run on machines without the same Python environment. This makes the `.mcpb` larger but self-contained.\n\n## Toolkit\n\nThis bundle adds tools for working with chemical structures expressed as SMILES. The tools can compute descriptors of molecules or combinations of molecules, check if substructures are present, find the maximum common substructure of many molecules. It can also react, remove, and replace structures according to SMARTS fragments or reaction SMARTS patterns.\n\n- Commands available in the manifest:\n    - `SMILES_Info`\n    - `SMILES_Substructure`\n    - `SMILES_MaxCommonSubstructure`\n    - `SMILES_React`\n    - `SMILES_Add`\n    - `SMILES_Remove`\n    - `SMILES_Replace`\n- A Python MCP server implemented at `server/main.py`\n\n## Claude Desktop Installation\n\n1. Download [latest release](https://github.com/lukasmki/SmileyMCP/releases/tag/v0.1.0)\n2. Open Claude Desktop (Windows/macOS).\n3. Open Settings (File->Settings).\n4. Choose Extensions and open Advanced Settings.\n5. Click \"Install Extension\" and select `SmileyMCP.mcpb`.\n6. Follow the install prompts. Claude Desktop will register the MCP server and expose the SMILES tools.\n7. Verify the tool is enabled in the \"Search and Tool\" settings below the prompt text box in a new chat.\n\n## Verify Claude Desktop Installation\n\nTo verify the MCP server is working, here are some examples to get started:\n\n| Example | Claude Sonnet 4 |\n| ------- | --------------- |\n|```Using SmileyMCP tools, start with acetic acid (CC(=O)O) and apply the esterification reaction SMARTS: [C:1](=[O:2])O.[O:3]>>[C:1](=[O:2])[O:3] with ethanol as the nucleophile. Get molecular information for both the starting material and product. Explain how the carboxylic acid was converted to an ester and what bond formation occurred.``` | [Example output](https://claude.ai/share/e1d77101-18bb-42ee-978a-f7bd41b8ac4b) |\n| ```Using SmileyMCP tools, add benzene (`c1ccccc1`) and methanol (`CO`). Then get molecular information for both the individual components and the combined mixture. Compare the molecular weights and atom counts.```| [Example output](https://claude.ai/share/1bf7bfe4-9951-4ee6-bc3e-d872db2babc2) |\n|```Using SmileyMCP tools, check if aspirin (`CC(=O)OC1=CC=CC=C1C(=O)O`) contains a carboxylic acid group (SMARTS: `[C](=O)[OH]`). If it does, remove this substructure and show what remains. Explain what functional group was removed.``` | [Example output](https://claude.ai/share/5e2c11bf-d012-4b45-b1cd-5203d7d6d548) |\n|```Using SmileyMCP tools, find the maximum common substructure between caffeine (`CN1C=NC2=C1C(=O)N(C(=O)N2C)C`) and theobromine (`CN1C=NC2=C1C(=O)NC(=O)N2C`). Then get molecular information for the common substructure and explain what structural features these two compounds share.```| [Example output](https://claude.ai/share/17247b9e-c3ef-4906-b222-922fc5ccd327) |\n\n## Bundling\n\nPrerequisites:\n\n- Node.js and `npm` (for the `mcpb` CLI)\n- `@anthropic-ai/mcpb` installed globally or available in PATH\n- A Python installation to create the bundled virtual environment\n\nCreate the bundled virtual environment. Otherwise, you'll need to modify the `manifest.json` to use the python installation on your system.\n\n```shell\n$> python -m venv server/venv\n$> ./server/venv/bin/python -m pip install -r requirements.txt\n```\n\nInstall the [MCPB](https://github.com/anthropics/mcpb) bundler and pack the MCP server.\n```shell\n$> npm install @anthropic-ai/mcpb\n$> cd /path/to/repo/SmileyMCP\n$> mcpb pack .\n```\n\nThe command will validate `manifest.json` and write a `.mcpb` archive into the project root (e.g., `SmileyMCP.mcpb`).\n\n## License\n\nMIT\n\n\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

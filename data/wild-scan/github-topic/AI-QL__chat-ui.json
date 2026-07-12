@@ -1,0 +1,38 @@
+{
+  "full_name": "AI-QL/chat-ui",
+  "html_url": "https://github.com/AI-QL/chat-ui",
+  "description": "Single-File AI Chatbot UI with Multimodal & MCP Support: An All-in-One HTML File for a Streamlined Chatbot Conversational Interface",
+  "topics": [
+    "ai-chatbot",
+    "chat-ui",
+    "chatbot",
+    "chatgpt",
+    "html",
+    "llm",
+    "mcp",
+    "model-context-protocol",
+    "typescript",
+    "vue3"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 93,
+  "forks": 23,
+  "open_issues": 1,
+  "language": "HTML",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2024-07-09T14:00:15Z",
+  "last_pushed_at": "2025-09-27T14:05:55Z",
+  "fetched_at": "2026-07-11T23:20:54.524Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Chat UI\n\n[![](https://img.shields.io/badge/Vue3-brightgreen.svg)](https://vuejs.org)\n[![](https://img.shields.io/badge/Vuetify-blue.svg)](https://vuetifyjs.com)\n![](https://img.shields.io/badge/HTML-red.svg)\n[![Docker Pulls](https://img.shields.io/docker/pulls/aiql/chat-ui.svg)](https://hub.docker.com/repository/docker/aiql/chat-ui/tags?page=1&ordering=last_updated)\n[![LICENSE](https://img.shields.io/github/license/AI-QL/chat-ui)](https://github.com/AI-QL/chat-ui/blob/main/LICENSE)\n\nThe UI of Chat is becoming increasingly complex, often encompassing an entire front-end project along with deployment solutions.\n\nThis repository aims to construct the entire front-end UI using a single HTML file, aiming for a minimalist approach to create a chatbot.\n\nBy simplifying the structure and key functions, developers can quickly set up and experiment with a functional chatbot, adhering to a slimmed-down project design philosophy.\n\n## Features\n\n- Supports OpenAI-format requests, enabling compatibility with various backends such as `HuggingFace Text Generation Inference (TGI)`, `vLLM`, etc.\n\n- Automatically supports multiple response formats without additional configuration, including standard `OpenAI` response formats, `Cloudflare AI` response formats, and `plain text` responses\n\n- Support various `backend endpoints through custom configurations`, providing any project with a universal frontend chatbot\n\n- Support the `download of chat history`, interrupt the current generation, and repeat the previous generation to quickly test the backend inference capabilities\n\n- Support `MCP (Model Context Protocol)` by acting as a renderer and facilitating community interactions with the backend main process via IPC\n\n- Inquiries with image inputs can be made using `multimodal vision models`\n\n- Support for toggling between `original format` and `Markdown format` display\n\n- Support internationalization and localization `i18n`\n\n## How to use\n\n#### Option 1: Chat with demo [AIQL](https://chat.aiql.com/)\n> The demo will use `Llama-3.3-70B-Instruct` by default\n\n> Multimodal image upload is only supported for vision models\n\n> MCP tools call necessitates a desktop backend and LLM support in OpenAI format, referencing [Chat-MCP](https://github.com/AI-QL/chat-mcp)\n\n#### Option 2: Download [Index](./index.html) and open it locally (recommended)\n\n#### Option 3: Download [Index](./index.html) and deploy it by python\n```shell\ncd /path/to/your/directory\npython3 -m http.server 8000\n```\n> Then, open your browser and access `http://localhost:8000`\n\n#### Option 4: fork this repo and link it to [Cloudflare pages](https://developers.cloudflare.com/pages)\n> Demo: https://www2.aiql.com\n\n#### Option 5: Deploy your own Chatbot by [Docker](https://hub.docker.com/repository/docker/aiql/chat-ui/tags?page=1&ordering=last_updated)\n```shell\ndocker run -p 8080:8080 -d aiql/chat-ui\n```\n\n#### Option 6: Deploy within [Huggingface](https://huggingface.co/spaces/AI-QL/chat-ui)\n> Don't forget add `app_port: 8080` in `README.md`\n\n#### Option 7: Deploy within [K8s](#k8s-section)\n\n#### Option 8: Integrated as a renderer within the desktop application\n> Demo: [Chat-MCP](https://github.com/AI-QL/chat-mcp)\n\n## How to config\n\nBy default, the Chatbot will use API format as OpenAI ChatGPT. \n\nYou can insert your OpenAI `API Key` and change the `Endpoint` in configuration to use API from any other vendors\n\nYou can also download the config template from [example](./example/config) and insert your `API Key`, then use it for quick configuration\n\n## Trouble Shooting\n\nIf you're experiencing issues opening the page and a simple refresh isn't resolving the issue, please take the following steps:\n\n### Reset Interface Configuration\n1. Click `Refresh` icon on the upper right of `Interface Configuration`\n\n### Reset All Configuration\n1. Click hidden botton on the right side of the index page\n2. Click `Reset All Config` icon\n\n### Reset Cache\n1. Right-click your browser page and go to the `Network` section.\n2. Right-click on section table and clear your browser's cache and cookies to ensure you have the latest version of the page.\n3. Additionally, inspect the browser's Network section to see which resources are failing to load due to your location. This will provide you with more specific information about the issue.\n\n<a id=\"k8s-section\"></a>\n## K8s\n\n1. Introduce the image as sidecar container\n\n    ```yaml\n    spec:\n      template:\n        metadata:\n          labels:\n            app: my-app\n        spec:\n          containers:\n          - name: chat-ui\n            image: aiql/chat-ui\n            ports:\n            - containerPort: 8080\n    ```\n\n2. Add service\n\n    ```yaml\n    apiVersion: v1\n    kind: Service\n    metadata:\n      name: chat-ui-service\n    spec:\n      selector:\n        app: my-app\n      ports:\n      - protocol: TCP\n        port: 8080\n        targetPort: 8080\n      type: LoadBalancer\n    ```\n\n3. You can access the port or add other ingress\n\n    ```yaml\n    apiVersion: networking.k8s.io/v1\n    kind: Ingress\n    metadata:\n      name: my-app-ingress\n      annotations:\n        nginx.ingress.kubernetes.io/rewrite-target: /$1\n    spec:\n      rules:\n      - host: chat-ui.example.com\n        http:\n          paths:\n          - path: /\n            pathType: Prefix\n            backend:\n              service:\n                name: chat-ui-service\n                port:\n                  number: 8080\n    ```\n\n## Demo\n![](./demo.gif)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

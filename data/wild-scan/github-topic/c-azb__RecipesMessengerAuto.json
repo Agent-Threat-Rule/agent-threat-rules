@@ -1,0 +1,43 @@
+{
+  "full_name": "c-azb/RecipesMessengerAuto",
+  "html_url": "https://github.com/c-azb/RecipesMessengerAuto",
+  "description": "Messenger automation for recipes recommendations",
+  "topics": [
+    "agentic-ai",
+    "agentic-rag",
+    "gemini-api",
+    "gemini-embeddings",
+    "langchain",
+    "langgraph",
+    "llm",
+    "mcp-client",
+    "mcp-server",
+    "mcp-tools",
+    "messenger-api",
+    "messenger-chatbot",
+    "pinecone-db"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Jupyter Notebook",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-11-14T20:26:15Z",
+  "last_pushed_at": "2025-11-26T09:05:18Z",
+  "fetched_at": "2026-07-12T00:51:57.906Z",
+  "readme": {
+    "path": "README.md",
+    "content": "\n\n\n\nMessenger automation for recipe recommendations\n--\n\n[FastAPI](https://github.com/c-azb/RecipesMessengerAuto/blob/main/main.py) application with webhooks that connect with Meta Messenger to automate messages to recommend recipes based on user inputs.\n\n[Agent](https://github.com/c-azb/RecipesMessengerAuto/blob/main/src/recipes_agent.py) is a LangGraph graph that connects with [tools](https://github.com/c-azb/RecipesMessengerAuto/blob/main/src/tools.py) in a loop until it provides an answer. Tools available are a [vectordb search on Pinecone](https://github.com/c-azb/RecipesMessengerAuto/tree/main/vectordb_pinecone/vdb_mcp_search) for recipes (using Gemini API) and a [creative tool](https://github.com/c-azb/RecipesMessengerAuto/tree/main/src/creative_search_mcp) that calls an LLM to generate custom recipe ingredient ideas. Tools use MCP, so they are centralized and reusable for different applications.\n\nOnce the user sends a message on Meta Messenger, the agent will automatically be called and provide an answer about recipe recommendations.\n\nUsage example:\n\n![](print_demo.jpg)"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "main.py",
+    "size": 3564,
+    "content": "\nfrom dotenv import load_dotenv\nload_dotenv()\n\nfrom fastapi import FastAPI,Request\nfrom pyngrok import ngrok\nimport uvicorn\nimport requests\nfrom os import getenv\nfrom contextlib import asynccontextmanager\nfrom src.recipes_agent import RecipesAgent,LLMs\n\nNGROK_AUTH_TOKEN = getenv(\"NGROK_AUTH_TOKEN\")  #https://dashboard.ngrok.com/get-started/your-authtoken\nVERIFY_TOKEN = getenv('VERIFY_TOKEN')\nACCESS_TOKEN = getenv('ACCESS_TOKEN')\nPHONE_NUMBER_ID = getenv('PHONE_NUMBER_ID')\nAPPLICATION_PORT = 5000\n\n@asynccontextmanager\nasync def lifespan(app: FastAPI):\n    ngrok.set_auth_token(NGROK_AUTH_TOKEN)\n    public_url = ngrok.connect(APPLICATION_PORT)\n    print(f\"Ngrok tunnel \\\"{public_url}\\\" -> 'http://127.0.0.1:{APPLICATION_PORT}'\")\n    yield\n\n    ngrok.disconnect(public_url)\n    print(\"Ngrok tunnel closed\")\n\napp = FastAPI(lifespan=lifespan)\n\n@app.get('/')\nasync def root():\n    return {'msg':'welcome to reipes recommendations!'}\n\n@app.get(\"/webhook\")\nasync def verify(request: Request):\n    mode = request.query_params.get(\"hub.mode\")\n    token = request.query_params.get(\"hub.verify_token\")\n    challenge = request.query_params.get(\"hub.challenge\")\n    if mode == \"subscribe\" and token == VERIFY_TOKEN:\n        return int(challenge)\n    return {\"status\": \"error\"}\n\n\n@app.post(\"/webhook\")\nasync def webhook(request: Request):\n    try:\n        data = await request.json()\n        message = data['entry'][0]['messaging'][0]\n\n        sender_id = message[\"sender\"][\"id\"]\n        text = message[\"message\"].get(\"text\", \"\")\n        try:\n            response = await call_agent(text)\n        except Exception as e:\n            print(\"Error inside call_agent:\", e)\n            error_message = \"Sorry, something went wrong while processing your request.\"\n            send_messenger_message(sender_id, error_message)\n            return {\"status\": \"error-handled\"}\n        send_messenger_message(sender_id, response)\n        return {\"status\": \"ok\"}\n    except Exception as e:\n        print(\"Fatal webhook error:\", e)\n        return {\"status\": \"webhook-parsed-error\"}\n\ndef send_messenger_message(user_id, text):\n    url = \"https://graph.facebook.com/v21.0/me/messages\"\n    params = { \"access_token\": ACCESS_TOKEN }\n    payload = {\n        \"recipient\": { \"id\": user_id },\n        \"message\": { \"text\": text }\n    }\n    requests.post(url, params=params, json=payload)\n\n\n# Whatsapp setup\n# @app.post(\"/webhook\")\n# async def webhook(request: Request):\n#     data = await request.json()\n#     print(data)\n#     message = data['entry'][0]['changes'][0]['value']['messages'][0]\n#     from_number = message[\"from\"]\n\n#     text = message['text']['body']\n\n#     response = await call_agent(text)\n#     send_whatsapp_message(from_number, response)\n#     return {\"status\": \"ok\"}\n\n# def send_whatsapp_message(to: str, text: str):\n#     url = f\"https://graph.facebook.com/v22.0/{PHONE_NUMBER_ID}/messages\"\n#     headers = {\n#         \"Authorization\": f\"Bearer {ACCESS_TOKEN}\",\n#         \"Content-Type\": \"application/json\"\n#     }\n#     payload = {\n#         \"messaging_product\": \"whatsapp\",\n#         \"to\": to,\n#         \"type\": \"text\",\n#         \"text\": {\"body\": text}\n#     }\n#     r = requests.post(url, headers=headers, json=payload)\n#     print(r.json())\n\nasync def call_agent(query:str):\n    print(f'calling agent with query: {query}')\n    recipes_agent = RecipesAgent( LLMs() )\n    res= await recipes_agent.invoke_agent(query)\n    return res['messages'][-1].content\n\n\n\nif __name__ == \"__main__\":\n    uvicorn.run(\"main:app\", host=\"127.0.0.1\", port=APPLICATION_PORT, reload=True)\n\n\n"
+  },
+  "content_fetch_notes": []
+}

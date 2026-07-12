@@ -1,0 +1,52 @@
+{
+  "full_name": "palewire/datawrapper-mcp",
+  "html_url": "https://github.com/palewire/datawrapper-mcp",
+  "description": "A Model Context Protocol (MCP) server and app for creating Datawrapper charts using AI assistants.",
+  "topics": [
+    "ai",
+    "automation",
+    "charts",
+    "chat-application",
+    "claude",
+    "claude-desktop",
+    "claude-mcp",
+    "data-journalism",
+    "datawrapper",
+    "graphics",
+    "journalism",
+    "mcp",
+    "mcp-apps",
+    "mcp-server",
+    "mcp-servers",
+    "model-context-protocol",
+    "modelcontextprotocol",
+    "news",
+    "prefab-ui",
+    "python"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol",
+    "mcp-servers"
+  ],
+  "stars": 47,
+  "forks": 10,
+  "open_issues": 5,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-10-31T17:54:26Z",
+  "last_pushed_at": "2026-07-01T02:54:16Z",
+  "fetched_at": "2026-07-11T23:31:23.182Z",
+  "readme": {
+    "path": "README.md",
+    "content": "[![PyPI](https://img.shields.io/pypi/v/datawrapper-mcp)](https://pypi.org/project/datawrapper-mcp/)\n[![MCP Registry](https://img.shields.io/badge/MCP-Registry-blue)](https://registry.modelcontextprotocol.io/?q=datawrapper)\n[![Docker Hub](https://img.shields.io/docker/v/palewire/datawrapper-mcp?label=Docker%20Hub)](https://hub.docker.com/r/palewire/datawrapper-mcp)\n\nA Model Context Protocol (MCP) server and app for creating Datawrapper charts using AI assistants. Built on the [datawrapper Python library](https://github.com/chekos/datawrapper).\n\n<!-- mcp-name: io.github.palewire/datawrapper-mcp -->\n\n## Example Usage\n\nYou can provide a data file and simply ask for the chart you want. The draft will soon appear in the panel.\n\n![Books chat chart](.github/books.png)\n\nHere's a more complete example showing how to create, publish, update, and display a chart by chatting with the assistant:\n\n```\n\"Create a datawrapper line chart showing temperature trends with this data:\n2020, 15.5\n2021, 16.0\n2022, 16.5\n2023, 17.0\"\n# The assistant creates the chart and returns the chart ID, e.g., \"abc123\"\n\n\"Publish it.\"\n# The assistant publishes it and returns the public URL\n\n\"Update chart with new data for 2024: 17.2°C\"\n# The assistant updates the chart with the new data point\n\n\"Make the line color dodger blue.\"\n# The assistant updates the chart configuration to set the line color\n\n\"Show me the editor URL.\"\n# The assistant returns the Datawrapper editor URL where you can view/edit the chart\n\n\"Show me the PNG.\"\n# The assistant embeds the PNG image of the chart in its contained response.\n\n\"Suggest five ways to improve the chart.\"\n# See what happens!\n```\n\n## Tools\n\n| Tool               | Description                                        |\n| ------------------ | -------------------------------------------------- |\n| `list_chart_types` | List available chart types with descriptions       |\n| `get_chart_schema` | Get the full configuration schema for a chart type |\n| `create_chart`     | Create a new chart with data and configuration     |\n| `update_chart`     | Update an existing chart's data or styling         |\n| `publish_chart`    | Publish a chart to make it publicly accessible     |\n| `get_chart`        | Retrieve a chart's configuration and metadata      |\n| `delete_chart`     | Permanently delete a chart                         |\n| `export_chart_png` | Export a chart as a PNG image                      |\n\n## Chart Types\n\nbar, line, area, arrow, column, multiple column, scatter, stacked bar\n\nUse `list_chart_types` to see descriptions, then `get_chart_schema` to explore configuration options for any type.\n\n## Getting Started\n\n### Requirements\n\n- A Datawrapper account (sign up at https://datawrapper.de/signup/)\n- An MCP client such as [Claude](https://claude.ai/) or [OpenAI Codex](https://openai.com/codex/)\n- Python 3.10 or higher\n\n### Get Your API Token\n\n1. Go to https://app.datawrapper.de/account/api-tokens\n2. Create a new API token\n3. Add it to your MCP configuration as shown in the [installation guide](INSTALLATION.md)\n\n### Quick Start (Claude Code)\n\n```json\n{\n  \"mcpServers\": {\n    \"datawrapper\": {\n      \"command\": \"uvx\",\n      \"args\": [\"datawrapper-mcp\"],\n      \"env\": {\n        \"DATAWRAPPER_ACCESS_TOKEN\": \"your-token-here\"\n      }\n    }\n  }\n}\n```\n\nFor other clients (Claude Desktop, Cursor, VS Code Copilot, ChatGPT, OpenAI Codex) and Kubernetes deployment, see the [installation guide](INSTALLATION.md).\n\n### Using Your Own Token (Hosted Deployments)\n\nWhen connecting to a hosted instance of the server over HTTP, you can authenticate\nwith your own Datawrapper API token by sending it in the `Authorization` header:\n\n```\nAuthorization: Bearer <your-datawrapper-api-token>\n```\n\nThis ensures charts are created under your account instead of the server operator's.\nThe token is read from the header automatically — no need to include it in every\ntool call.\n\nYou can also pass `access_token` directly as a tool argument, which takes precedence\nover the header. When neither is provided, the server falls back to its\n`DATAWRAPPER_ACCESS_TOKEN` environment variable.\n\n### Supported Clients\n\n| Client          | Config file                  | Transport                |\n| --------------- | ---------------------------- | ------------------------ |\n| Claude Desktop  | `claude_desktop_config.json` | stdio or streamable-http |\n| Claude.ai       | Managed connector            | streamable-http          |\n| Claude Code     | `.claude/settings.json`      | stdio                    |\n| VS Code Copilot | `.vscode/mcp.json`           | stdio                    |\n| Cursor          | `.cursor/mcp.json`           | stdio or streamable-http |\n| ChatGPT         | Dev Mode settings            | streamable-http only     |\n| OpenAI Codex    | `~/.codex/config.toml`       | stdio                    |\n"
+  },
+  "descriptor_file": {
+    "path": "server.json",
+    "content": "{\n  \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json\",\n  \"name\": \"io.github.palewire/datawrapper-mcp\",\n  \"title\": \"Datawrapper\",\n  \"description\": \"A Model Context Protocol (MCP) server and app for creating Datawrapper charts using AI assistants\",\n  \"version\": \"0.1.0\",\n  \"repository\": {\n    \"url\": \"https://github.com/palewire/datawrapper-mcp\",\n    \"source\": \"github\"\n  },\n  \"packages\": [\n    {\n      \"registryType\": \"pypi\",\n      \"registryBaseUrl\": \"https://pypi.org\",\n      \"identifier\": \"datawrapper-mcp\",\n      \"version\": \"0.1.0\",\n      \"runtimeHint\": \"uvx\",\n      \"transport\": {\n        \"type\": \"stdio\"\n      },\n      \"environmentVariables\": [\n        {\n          \"name\": \"DATAWRAPPER_ACCESS_TOKEN\",\n          \"description\": \"Datawrapper API Access Token\",\n          \"isRequired\": true,\n          \"isSecret\": true\n        }\n      ]\n    }\n  ]\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

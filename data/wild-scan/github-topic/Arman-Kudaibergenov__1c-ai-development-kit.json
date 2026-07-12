@@ -1,0 +1,39 @@
+{
+  "full_name": "Arman-Kudaibergenov/1c-ai-development-kit",
+  "html_url": "https://github.com/Arman-Kudaibergenov/1c-ai-development-kit",
+  "description": "Comprehensive AI agents, skills and rules toolkit for 1C:Enterprise development in Cursor IDE",
+  "topics": [
+    "1c-enterprise",
+    "ai-agents",
+    "automation",
+    "bsl",
+    "code-generation",
+    "cursor-ide",
+    "development-tools",
+    "mcp-servers"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 146,
+  "forks": 18,
+  "open_issues": 2,
+  "language": "PowerShell",
+  "license": "AGPL-3.0",
+  "default_branch": "master",
+  "created_at": "2026-02-11T09:24:31Z",
+  "last_pushed_at": "2026-05-25T16:31:25Z",
+  "fetched_at": "2026-07-11T23:51:51.619Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# 1C AI Development Kit\n\n[![License: AGPL--3.0](https://img.shields.io/badge/License-AGPL_3.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)\n[![Claude Code](https://img.shields.io/badge/Claude_Code-supported-blue.svg)](https://claude.ai/code)\n[![Cursor IDE](https://img.shields.io/badge/Cursor_IDE-supported-purple.svg)](https://cursor.sh/)\n\n> Комплект инструментов для AI-ассистированной разработки на 1С:Предприятие 8.3.\n> Поддерживает **Claude Code** и **Cursor IDE**.\n\n---\n\n## Что это?\n\n**1C AI Development Kit** — готовая экосистема для разработки на 1С с помощью AI. Включает агентов, навыки (skills), правила, шаблоны конфигов и документацию по форматам 1С.\n\nПроект развился из нескольких решений сообщества (см. [Благодарности](#благодарности)) и объединяет их в единый рабочий комплект с поддержкой Claude Code.\n\n---\n\n## Что внутри\n\n### Claude Code Skills\n\n52 skills для автоматизации полного цикла разработки 1С. Вызываются как `/skill-name` в диалоге с Claude:\n\n| Группа | Skills |\n|--------|--------|\n| Объекты метаданных | `meta-compile`, `meta-edit`, `meta-remove` |\n| Формы | `form-compile`, `form-edit`, `form-add`, `form-remove`, `form-patterns`, `help-add` |\n| Обработки (EPF) | `epf-expert` (init, build, dump, bsp-init, bsp-add-command) |\n| Отчёты (ERF) | `erf-expert` (init, build, dump) |\n| СКД | `skd-compile`, `skd-edit` |\n| Макеты (MXL) | `mxl-expert` (compile, decompile, template-add, template-remove) |\n| Роли | `role-expert` (compile + audit) |\n| Подсистемы | `subsystem-expert` (compile, edit, interface-edit) |\n| Конфигурация | `cf-init`, `cf-edit` |\n| Расширения (CFE) | `cfe-init`, `cfe-borrow`, `cfe-patch-method`, `cfe-diff` |\n| Инспекция | `inspect` (cf, meta, form, skd, mxl, role, subsystem info) |\n| Валидация | `validate` (cf, cfe, meta, form, skd, mxl, role, subsystem) |\n| База данных | `db-create`, `db-list`, `db-run`, `db-update`, `db-dump-cf`, `db-load-cf`, `db-dump-xml`, `db-load-xml`, `db-load-git` |\n| Веб-клиент | `1c-web-session`, `web-publish`, `web-unpublish`, `web-info`, `web-stop`, `web-test` |\n| Workflow | `brainstorm`, `write-plan`, `subagent-dev`, `1c-help-mcp`, `1c-query-opt`, `1c-project-init`, `1c-test-runner`, `bsp-patterns`, `playwright-test`, `img-grid` |\n| OpenSpec | `openspec-proposal`, `openspec-apply`, `openspec-archive` |\n\n### Cursor IDE\n\n- **12 специализированных агентов** — ревью кода, генерация форм, оптимизация запросов, проектирование архитектуры и др.\n- **9 правил** — стандарты BSL, SDD workflow, выбор модели, использование MCP\n- **13 skill-групп** — навыки для Cursor\n\n### Документация — 29 спецификаций\n\nXML-форматы объектов 1С, JSON DSL для компиляции без знания XML, паттерны форм, гайды по работе с objects.\n\n### Шаблоны\n\n- `templates/mcp.json` — готовый конфиг MCP-серверов для нового проекта\n\n---\n\n## Быстрый старт\n\nСмотри [QUICK_START.md](QUICK_START.md) — там пошаговые инструкции для Claude Code и Cursor IDE.\n\n---\n\n## MCP-серверы\n\nДля полной функциональности рекомендуются MCP-серверы от [vibecoding1c.ru](https://vibecoding1c.ru/mcp_server):\n\n| Сервер | Назначение |\n|--------|-----------|\n| `1c-help` | Документация платформы 1С |\n| `1c-ssl` | Паттерны БСП (Standard Subsystems Library) |\n| `1c-templates` | Шаблоны кода 1С |\n| `1c-syntax-checker` | Проверка синтаксиса BSL |\n| `1c-code-checker` | Проверка логики через 1С:Напарник |\n| `1c-forms` | Схемы управляемых форм |\n| `rlm-toolkit` | Персистентная память между сессиями (от [@Dmitrii_Labintsev](https://habr.com/ru/articles/986702/)) |\n| `edt-mcp` | Интеграция с 1C:EDT (от [@DitriXNew](https://github.com/DitriXNew/EDT-MCP)) |\n\nНастройка MCP: [docs/guides/project-mcp-setup.md](docs/guides/project-mcp-setup.md)\n\n---\n\n## Требования\n\n- 1С:Предприятие 8.3.24+\n- PowerShell 5.1+\n- Git\n- Claude Code или Cursor IDE\n\n---\n\n## Благодарности\n\nПроект построен на работе сообщества. Полные благодарности: [ACKNOWLEDGMENTS.md](ACKNOWLEDGMENTS.md)\n\n| Проект | Автор | Вклад |\n|--------|-------|-------|\n| [cc-1c-skills](https://github.com/Nikolay-Shirokov/cc-1c-skills) | [@Nikolay-Shirokov](https://github.com/Nikolay-Shirokov) | Основа архитектуры Claude Code skills — 44+ skills, XML DSL, спецификации |\n| [cursor_rules_1c](https://github.com/comol/cursor_rules_1c) | [@comol](https://github.com/comol) | Skills для Cursor, JSON DSL, агенты, правила |\n| [1c-batch](https://github.com/vladimir-kharin/1c-batch) | [@vladimir-kharin](https://github.com/vladimir-kharin) | Bat-скрипты для пакетных операций с платформой 1С |\n| [mcp-bsl-lsp-bridge](https://github.com/SteelMorgan/mcp-bsl-lsp-bridge) | [@SteelMorgan](https://github.com/SteelMorgan) | MCP-сервер для BSL Language Server |\n| [1c-ai-sandbox](https://github.com/SteelMorgan/1c-ai-sandbox-client-server) | [@SteelMorgan](https://github.com/SteelMorgan) | Концепция безопасной sandbox-среды для AI-агентов |\n| [EDT-MCP](https://github.com/DitriXNew/EDT-MCP) | [@DitriXNew](https://github.com/DitriXNew) | MCP-сервер для интеграции с 1C:EDT |\n| [vibecoding1c.ru](https://vibecoding1c.ru) | [@comol_foa](https://t.me/comol_foa) | MCP-серверы, курсы, сообщество AI-разработки на 1С |\n\n---\n\n## Контакты\n\n- 💬 Telegram: [@Jefest9988](https://t.me/Jefest9988)\n- 📧 Email: arman.kudaibergenov.mail@gmail.com\n- 🐙 GitHub: [github.com/Arman-Kudaibergenov/1c-ai-development-kit](https://github.com/Arman-Kudaibergenov/1c-ai-development-kit)\n\n---\n\n**Сделано с ❤️ для сообщества 1С-разработчиков**\n\n---\n\n## Changelog\n\n### v1.1.0 (2026-03-05)\n\n**Консолидация skills: 14 granular skills объединены в 5 expert skills**\n\n- `epf-expert` — объединяет: `epf-add-form`, `epf-bsp-add-command`, `epf-bsp-init`, `epf-erf-build`, `epf-erf-dump`, `epf-erf-init`\n- `mxl-expert` — объединяет: `mxl-compile`, `mxl-decompile`, `template-add`, `template-remove`\n- `role-expert` — объединяет: `role-compile` + аудит прав\n- `subsystem-expert` — объединяет: `subsystem-compile`, `subsystem-edit`, `interface-edit`\n- `inspect` — заменяет 7 `*-info` skills (cf-info, meta-info, form-info, skd-info, mxl-info, role-info, subsystem-info)\n- `validate` — заменяет 11 `*-validate` skills\n\nИтого: 80 → 52 skills. Меньше overlap, полное domain coverage per skill.\n\n### v1.0.0\n\nПервый публичный релиз. 80 skills для полного цикла разработки на 1С.\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"rlm-toolkit\": {\n      \"type\": \"http\",\n      \"url\": \"http://YOUR_RLM_SERVER:8200/mcp\"\n    },\n    \"context-mode\": {\n      \"type\": \"stdio\",\n      \"command\": \"cmd\",\n      \"args\": [\"/c\", \"npx\", \"-y\", \"context-mode\"]\n    },\n    \"playwright\": {\n      \"command\": \"npx\",\n      \"args\": [\n        \"@playwright/mcp@latest\",\n        \"--timeout\",\n        \"500\"\n      ]\n    }\n  }\n}"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

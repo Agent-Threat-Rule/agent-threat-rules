@@ -1,0 +1,36 @@
+{
+  "full_name": "ReGenNow/ReGenNexus",
+  "html_url": "https://github.com/ReGenNow/ReGenNexus",
+  "description": "Ideal Communication Protocol: The Universal Agent Protocol (UAP)",
+  "topics": [
+    "adapter",
+    "ai-agents",
+    "api",
+    "automation",
+    "connect-devices",
+    "mcp-tools",
+    "robots",
+    "software-hardware"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 9,
+  "forks": 2,
+  "open_issues": 1,
+  "language": "Python",
+  "license": "NOASSERTION",
+  "default_branch": "main",
+  "created_at": "2025-04-07T21:41:48Z",
+  "last_pushed_at": "2026-01-12T16:43:11Z",
+  "fetched_at": "2026-07-12T00:31:33.093Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# RegenNexus UAP\r\n\r\n**Universal Adapter Protocol** - Connect devices, robots, apps, and AI agents with minimal latency and maximum security. MCP-compatible for seamless AI integration.\r\n\r\n![ReGenNexus Logo](https://raw.githubusercontent.com/ReGenNow/ReGenNexus/main/images/rguapa.png)\r\n\r\n## Installation\r\n\r\n```bash\r\npip install regennexus\r\n```\r\n\r\nOr with all features:\r\n```bash\r\npip install regennexus[full]\r\n```\r\n\r\n## Quick Start\r\n\r\n```python\r\nimport asyncio\r\nfrom regennexus import RegenNexusProtocol\r\n\r\nasync def main():\r\n    protocol = RegenNexusProtocol()\r\n    await protocol.initialize()\r\n\r\n    # Register entities\r\n    await protocol.registry.register_entity(\r\n        entity_id=\"sensor_01\",\r\n        entity_type=\"device\",\r\n        capabilities=[\"temperature\", \"humidity\"]\r\n    )\r\n\r\n    # Send messages\r\n    await protocol.send_message(\r\n        sender=\"controller\",\r\n        recipient=\"sensor_01\",\r\n        intent=\"read\",\r\n        payload={\"sensors\": [\"temperature\"]}\r\n    )\r\n\r\n    await protocol.shutdown()\r\n\r\nasyncio.run(main())\r\n```\r\n\r\n## Features\r\n\r\n### Device Support\r\n- **Raspberry Pi** - GPIO, PWM, camera, sensors\r\n- **Arduino** - Digital/analog I/O, serial commands\r\n- **NVIDIA Jetson** - GPU, CUDA, camera, inference\r\n- **IoT Devices** - MQTT, HTTP, CoAP protocols\r\n\r\n### Robotic Arms\r\n- **Amber B1** - 7-DOF control, gripper, trajectory\r\n- **Lucid One** - Cartesian control, force sensing, teach mode\r\n\r\n```python\r\nfrom regennexus.plugins import get_amber_b1_plugin\r\n\r\nAmberB1 = get_amber_b1_plugin()\r\narm = AmberB1(entity_id=\"arm_001\", mock_mode=True)\r\nawait arm.initialize()\r\n\r\n# Move joints\r\nawait arm.move_to([0, 45, -30, 0, 90, 0, 0], duration=2.0)\r\n\r\n# Gripper control\r\nawait arm.open_gripper()\r\nawait arm.close_gripper(force=15.0)\r\n```\r\n\r\n### Transport Layers\r\n| Transport | Latency | Use Case |\r\n|-----------|---------|----------|\r\n| IPC | < 0.1ms | Local processes |\r\n| UDP Multicast | 1-5ms | LAN discovery |\r\n| WebSocket | 10-50ms | Remote/internet |\r\n| Message Queue | Variable | Reliable delivery |\r\n\r\n### Security\r\n- **Encryption**: AES-128/256-GCM\r\n- **Key Exchange**: ECDH-384\r\n- **Authentication**: Tokens, API keys\r\n- **Rate Limiting**: Adaptive throttling\r\n\r\n### AI Integration (MCP)\r\n\r\nControl hardware directly from Claude Desktop or any MCP-compatible AI:\r\n\r\n```bash\r\n# Start MCP server for Claude Desktop\r\npython -m regennexus.mcp_server\r\n```\r\n\r\nConfigure in `claude_desktop_config.json`:\r\n```json\r\n{\r\n    \"mcpServers\": {\r\n        \"regennexus\": {\r\n            \"command\": \"python\",\r\n            \"args\": [\"-m\", \"regennexus.mcp_server\"]\r\n        }\r\n    }\r\n}\r\n```\r\n\r\nNow ask Claude:\r\n- \"Move the robot arm to pick position\"\r\n- \"Turn on GPIO pin 17\"\r\n- \"What's the temperature sensor reading?\"\r\n\r\n### LLM Bridge (Ollama, LM Studio)\r\n\r\nConnect local LLMs to hardware:\r\n\r\n```python\r\nfrom regennexus.bridges import LLMBridge, LLMConfig\r\n\r\nllm = LLMBridge(LLMConfig(provider=\"ollama\", model=\"llama3\"))\r\nresponse = await llm.chat(\"Turn on the lights\")\r\n```\r\n\r\n### Mesh Networking\r\n\r\nAuto-discovery across devices on the network:\r\n\r\n```python\r\nfrom regennexus.core import MeshNetwork, MeshConfig\r\n\r\nmesh = MeshNetwork(MeshConfig(\r\n    node_id=\"controller\",\r\n    capabilities=[\"command\"]\r\n))\r\nawait mesh.start()\r\n\r\n# Devices auto-discovered\r\nfor peer in mesh.get_peers():\r\n    print(f\"Found: {peer.node_id} ({peer.capabilities})\")\r\n```\r\n\r\n## Interactive Demos\r\n\r\nTry RegenNexus in Google Colab:\r\n\r\n- [Basic Demo](https://colab.research.google.com/github/ReGenNow/ReGenNexus/blob/main/examples/binder/colab_basic_demo.ipynb) - Core communication\r\n- [Security Demo](https://colab.research.google.com/github/ReGenNow/ReGenNexus/blob/main/examples/binder/colab_security_demo.ipynb) - Encryption & auth\r\n\r\n## CLI Usage\r\n\r\n```bash\r\n# Start server\r\nregen server --host 0.0.0.0 --port 8080\r\n\r\n# Run example\r\nregen run examples/robotic_arms/arm_demo.py\r\n\r\n# Version info\r\nregen version\r\n```\r\n\r\n## Optional Dependencies\r\n\r\n```bash\r\npip install regennexus[api]        # FastAPI server\r\npip install regennexus[mqtt]       # MQTT support\r\npip install regennexus[robotics]   # Robotic arms\r\npip install regennexus[arduino]    # Arduino support\r\npip install regennexus[dev]        # Development tools\r\n```\r\n\r\n## Documentation\r\n\r\n- [Getting Started](docs/getting_started.md)\r\n- [MCP Integration](docs/mcp_integration.md)\r\n- [Device Integration](docs/device_integration.md)\r\n- [Robotic Arms Guide](docs/robotic_arms.md)\r\n- [Security Guide](docs/security.md)\r\n- [API Reference](docs/api_reference.md)\r\n- [ROS Integration](docs/ros_integration.md)\r\n\r\n## Examples\r\n\r\n```\r\nexamples/\r\n├── simple_connection/    # Basic protocol usage\r\n├── mcp_integration/      # Claude Desktop & LLM demos\r\n├── mesh_network/         # Device auto-discovery\r\n├── llm_integration/      # Ollama/LM Studio demos\r\n├── robotic_arms/         # Amber B1 & Lucid One demos\r\n├── ros_integration/      # ROS 2 bridge examples\r\n├── security/             # Encryption & auth\r\n└── binder/               # Jupyter notebooks\r\n```\r\n\r\n## Docker\r\n\r\n```bash\r\ndocker-compose up\r\n```\r\n\r\nSee [Docker Deployment](docs/docker_deployment.md) for details.\r\n\r\n## Contributing\r\n\r\nWe welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.\r\n\r\n## License\r\n\r\nMIT License - see [LICENSE](LICENSE) for details.\r\n\r\n---\r\n\r\n**RegenNexus UAP** - Connect Everything, Securely.\r\n\r\nCopyright (c) 2024-2025 ReGen Designs LLC\r\n\r\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

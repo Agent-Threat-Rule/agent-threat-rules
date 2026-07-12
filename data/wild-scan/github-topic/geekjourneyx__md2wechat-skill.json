@@ -1,0 +1,50 @@
+{
+  "full_name": "geekjourneyx/md2wechat-skill",
+  "html_url": "https://github.com/geekjourneyx/md2wechat-skill",
+  "description": "Markdown to WeChat CLI | 一键排版发布到微信公众号：支持 40+ 排版样式和专业主题 、AI 配图 、批量发布 、多账号管理",
+  "topics": [
+    "agent-cli",
+    "ai-agent",
+    "ai-writing",
+    "claude-code",
+    "claude-skills",
+    "cli",
+    "go",
+    "markdown",
+    "markdown-converter",
+    "markdown-formatter",
+    "markdown-to-html",
+    "markdown-to-wechat",
+    "mcp-server",
+    "md2wechat",
+    "wechat",
+    "wechat-article",
+    "wechat-mp",
+    "wechat-official-account",
+    "wechat-public-account",
+    "weixin"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 3209,
+  "forks": 370,
+  "open_issues": 4,
+  "language": "Go",
+  "license": "NOASSERTION",
+  "default_branch": "main",
+  "created_at": "2026-01-11T06:36:13Z",
+  "last_pushed_at": "2026-07-08T15:11:49Z",
+  "fetched_at": "2026-07-11T22:29:40.637Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n\n<h1>\n  <img src=\"assets/favicon.ico\" alt=\"md2wechat logo\" width=\"28\" />\n  md2wechat\n</h1>\n\n<img src=\"assets/readme-header.gif\" alt=\"md2wechat CLI demo\" width=\"720\" />\n\n**面向 AI Agent 的微信公众号创作与发布 CLI**\n\n写 Markdown，生成公众号排版，制作封面和文章配图，预览校验后推送草稿箱。\n\n支持 Claude Code、Codex、WorkBuddy、Kimi Work、Hermes Agent、OpenClaw 等 Agent 通过 JSON discovery 稳定调用。\n\n[![Go Version](https://img.shields.io/badge/Go-1.26.1+-00ADD8?logo=go)](https://golang.org)\n[![License](https://img.shields.io/badge/license-Source%20Available-orange)](LICENSE)\n[![GitHub Release](https://img.shields.io/badge/download-latest-green)](https://github.com/geekjourneyx/md2wechat-skill/releases)\n[![Agent Ready](https://img.shields.io/badge/Agent-Ready-00b0aa)](#agent-工作流)\n[![API](https://img.shields.io/badge/API-Professional-blue)](#专业-api)\n\n<p>\n  <a href=\"https://trendshift.io/repositories/26638?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-26638\" target=\"_blank\" rel=\"noopener noreferrer\"><img src=\"https://trendshift.io/api/badge/trendshift/repositories/26638/daily?language=Go\" alt=\"geekjourneyx%2Fmd2wechat-skill | Trendshift\" width=\"250\" height=\"55\"/></a>\n  <a href=\"https://trendshift.io/repositories/26638?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-26638\" target=\"_blank\" rel=\"noopener noreferrer\"><img src=\"https://trendshift.io/api/badge/trendshift/repositories/26638/weekly?language=Go\" alt=\"geekjourneyx%2Fmd2wechat-skill | Trendshift\" width=\"250\" height=\"55\"/></a>\n</p>\n\n[快速开始](#快速开始) · [专业 API](#专业-api) · [Agent 工作流](#agent-工作流) · [高级排版](#高级排版) · [文档](#文档)\n\n</div>\n\n---\n\n## 这个项目解决什么问题\n\nmd2wechat 把公众号发布流程拆成一组可验证的 CLI 命令：\n\n| 场景 | md2wechat 提供 |\n|---|---|\n| Markdown 转微信 HTML | `convert`，支持预览、上传图片、创建草稿 |\n| 发布前检查 | `inspect --json` 输出标题、摘要、图片、cover、draft readiness |\n| 稳定排版 | API 模式返回确定性 HTML，支持 48 个主题和 43 个高级排版模块 |\n| Agent 自动化 | `capabilities`、`doctor`、`themes`、`layout`、`providers` 等 discovery 命令 |\n| 内容生产 | `write`、`humanize`、`title suggest`、`generate_cover`、`generate_infographic` |\n| 多账号发布 | 命名公众号账号，本地只读发现，不输出 Secret |\n| 微信白名单 | 高级 API 服务可提供微信接口固定出口能力 |\n\n---\n\n## 快速开始\n\n```bash\nnpm install -g @geekjourneyx/md2wechat\nmd2wechat config init\n```\n\n确认文章状态：\n\n```bash\nmd2wechat inspect article.md --json\nmd2wechat preview article.md\n```\n\n转换并创建微信草稿：\n\n```bash\nmd2wechat convert article.md --draft --cover cover.jpg\n```\n\n安装方式、微信凭证和 IP 白名单配置见：\n\n- [安装指南](docs/INSTALL.md)\n- [微信凭证与 IP 白名单指南](docs/WECHAT-CREDENTIALS.md)\n- [配置保姆级指南](docs/CONFIG-WALKTHROUGH.md)\n\n---\n\n## 专业 API\n\nAPI 模式适合需要稳定输出、多人协作、批量发布或 Agent 自动化的场景。\n\n| 能力 | 免费 AI 模式 | 专业 API 模式 |\n|---|---|---|\n| 输出方式 | 生成 prompt，由外部 LLM 继续处理 | 直接返回微信 HTML |\n| 主题 | 3 个基础主题 | 48 个专业主题 |\n| 高级排版模块 | 不支持 | 43 个 `:::module` 模块 |\n| 输出一致性 | 取决于外部 LLM | 同样输入得到同样输出 |\n| 响应速度 | 取决于外部 LLM | 秒级 |\n| 发布自动化 | 适合实验 | 适合团队、客户号、矩阵号 |\n\n专业能力包括：\n\n- 48 个微信渲染精调主题：[theme-gallery](https://md2wechat.app/theme-gallery)\n- 43 个高级排版模块：[docs/LAYOUT.md](docs/LAYOUT.md)\n- 多公众号账号：[docs/CONFIG.md](docs/CONFIG.md)\n- 微信接口固定出口：[docs/WECHAT-CREDENTIALS.md](docs/WECHAT-CREDENTIALS.md)\n- 发布前 readiness 检查：[docs/DISCOVERY.md](docs/DISCOVERY.md)\n\n申请 API 服务：关注公众号「极客杰尼」，备注「API咨询」。\n\n<p align=\"center\">\n<img src=\"assets/wechat.png\" alt=\"公众号：极客杰尼\" width=\"160\" />\n</p>\n\n---\n\n## Agent 工作流\n\nmd2wechat 给 Agent 提供可机读接口，减少猜测和误操作。\n\n```bash\nmd2wechat capabilities --json\nmd2wechat doctor --json\nmd2wechat inspect article.md --json\nmd2wechat themes list --json\nmd2wechat layout list --json\nmd2wechat title suggest article.md --json\nmd2wechat title suggest article.md --json --hook-level 2\nmd2wechat skills list --json\nmd2wechat skills read md2wechat --json\n```\n\n这些命令适合 Claude Code、Codex、WorkBuddy、Kimi Work、Hermes Agent、OpenClaw 以及其他能调用本地 CLI 的 Agent 使用。\n\nAgent 可以据此判断：\n\n- 当前 CLI 支持哪些命令\n- API、草稿、上传是否具备执行条件\n- 某篇文章能不能发草稿\n- 当前主题和排版模块是否可用\n- 标题建议是否应交给宿主 Agent / 外部模型完成\n- 当前二进制内置的 Agent SOP 是什么\n\nBrand Profile 支持把长期风格偏好写入 `~/.config/md2wechat/brand.md`，由 Agent 在写作和排版时读取。详见 [docs/BRAND-PROFILE.md](docs/BRAND-PROFILE.md)。\n\n---\n\n## 图片生成\n\nmd2wechat 支持两条图片路径。\n\n直接调用图片 provider：\n\n```bash\nmd2wechat generate_cover --article article.md\nmd2wechat generate_infographic --article article.md --preset infographic-comparison\n```\n\n支持 Volcengine、ModelScope、OpenRouter、OpenAI、Gemini 等服务。配置见 [docs/IMAGE_PROVISIONERS.md](docs/IMAGE_PROVISIONERS.md)。\n\n使用宿主 Agent 的 Image Gen：\n\n```bash\nmd2wechat generate_cover --article article.md --plan --json\nmd2wechat generate_infographic --article article.md --plan --json\n```\n\n计划模式返回 `IMAGE_PLAN_READY`，不请求图片 provider，不要求 `IMAGE_API_KEY`，也不会上传到微信。适合 Codex、WorkBuddy、Kimi Work、Hermes Agent 等运行时已经暴露 Image Gen 工具的 Agent。详见 [docs/AGENT_IMAGE_GEN.md](docs/AGENT_IMAGE_GEN.md)。\n\n---\n\n## 高级排版\n\nAPI 模式支持 `:::module` 语法，用 Markdown 写结构化公众号排版。\n\n```markdown\n:::hero\neyebrow: 深度观察\ntitle: AI 时代的公众号写作\nsubtitle: 为什么读者愿意继续读下去\n:::\n\n:::callout\n高级排版模块只在 API 模式渲染。\n:::\n```\n\n查看和验证模块：\n\n```bash\nmd2wechat layout list --json\nmd2wechat layout show hero --json\nmd2wechat layout validate --file article.md --json\n```\n\n<p align=\"center\">\n<img src=\"assets/theme-showcase/theme-showcase-default.png\" alt=\"default 主题效果\" width=\"180\" />\n<img src=\"assets/theme-showcase/theme-showcase-bytedance.png\" alt=\"bytedance 主题效果\" width=\"180\" />\n<img src=\"assets/theme-showcase/theme-showcase-elegant-gold.png\" alt=\"elegant-gold 主题效果\" width=\"180\" />\n</p>\n\n完整教程见 [docs/LAYOUT.md](docs/LAYOUT.md)。\n\n---\n\n## 常用命令\n\n| 命令 | 用途 |\n|---|---|\n| `inspect` | 检查文章元数据和发布 readiness |\n| `advise` | 为已有文章推荐可选的最小增强动作 |\n| `preview` | 本地预览，不上传、不创建草稿 |\n| `convert` | Markdown 转微信 HTML，可选创建草稿 |\n| `write` | 从想法生成文章 |\n| `humanize` | 重写 AI 文章，支持 `authentic` 强度 |\n| `title suggest` | 生成公众号标题建议的 AI 请求 |\n| `generate_cover` | 生成封面图或图片计划 |\n| `generate_infographic` | 生成信息图或图片计划 |\n| `upload_image` | 上传图片到微信素材库 |\n| `config wechat-accounts` | 查看本地多公众号账号配置 |\n| `doctor` | 本地配置体检 |\n\n---\n\n## 文档\n\n| 文档 | 内容 |\n|---|---|\n| [QUICKSTART](docs/QUICKSTART.md) | 新手主路径 |\n| [USAGE](docs/USAGE.md) | 命令完整说明 |\n| [DISCOVERY](docs/DISCOVERY.md) | Agent discovery 契约 |\n| [ADVISE](docs/ADVISE.md) | 已有文章的可选增强建议 |\n| [LAYOUT](docs/LAYOUT.md) | 43 个高级排版模块 |\n| [HUMANIZE](docs/HUMANIZE.md) | AI 去痕与 authentic 写作 |\n| [AGENT_IMAGE_GEN](docs/AGENT_IMAGE_GEN.md) | 宿主 Agent Image Gen 工作流 |\n| [CONFIG](docs/CONFIG.md) | 配置字段和环境变量 |\n| [FAQ](docs/FAQ.md) | 常见问题 |\n| [TROUBLESHOOTING](docs/TROUBLESHOOTING.md) | 故障排查 |\n\n---\n\n## 许可与商业使用\n\n本项目采用 Source Available License。个人使用、学习、评估、非营利使用免费。商业使用、SaaS、客户交付、白标、再分发和训练数据用途需要商业授权。\n\n商业授权和 API 服务：关注公众号「极客杰尼」备注「API咨询」，或联系 `skrphper@gmail.com`。\n\n---\n\n<div align=\"center\">\n\n[文档](docs) · [Issues](https://github.com/geekjourneyx/md2wechat-skill/issues) · [Commercial licensing](mailto:skrphper@gmail.com)\n\nMade by [geekjourneyx](https://jieni.ai)\n\n</div>\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "scripts/run.js",
+    "size": 691,
+    "content": "#!/usr/bin/env node\n\nconst fs = require(\"fs\");\nconst path = require(\"path\");\nconst { execFileSync } = require(\"child_process\");\n\nconst ext = process.platform === \"win32\" ? \".exe\" : \"\";\nconst binaryPath = path.join(__dirname, \"..\", \"bin\", `md2wechat${ext}`);\n\nif (!fs.existsSync(binaryPath)) {\n  console.error(\n    \"md2wechat binary is missing. Reinstall with `npm install -g @geekjourneyx/md2wechat`.\"\n  );\n  process.exit(1);\n}\n\ntry {\n  execFileSync(binaryPath, process.argv.slice(2), { stdio: \"inherit\" });\n} catch (error) {\n  if (typeof error.status === \"number\") {\n    process.exit(error.status);\n  }\n\n  console.error(`Failed to launch md2wechat: ${error.message}`);\n  process.exit(1);\n}\n"
+  },
+  "content_fetch_notes": []
+}

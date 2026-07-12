@@ -1,0 +1,36 @@
+{
+  "full_name": "MFYDev/ghost-mcp",
+  "html_url": "https://github.com/MFYDev/ghost-mcp",
+  "description": "A Model Context Protocol (MCP) server for interacting with Ghost CMS through LLM interfaces like Claude. Allow you to control your Ghost blog by simply asking Claude etc.",
+  "topics": [
+    "claude",
+    "claude-ai",
+    "ghost",
+    "ghost-blog",
+    "ghost-cms",
+    "mcp",
+    "mcp-server",
+    "modelcontextprotocol"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 210,
+  "forks": 59,
+  "open_issues": 7,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-02-11T06:23:30Z",
+  "last_pushed_at": "2026-04-27T03:50:34Z",
+  "fetched_at": "2026-07-11T22:47:41.613Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Ghost MCP Server\n\nA Model Context Protocol (MCP) server for interacting with Ghost CMS through LLM interfaces like Claude. This server provides secure and comprehensive access to your Ghost blog, leveraging JWT authentication and a rich set of MCP tools for managing posts, users, members, tiers, offers, and newsletters.\n\n![demo](./assets/ghost-mcp-demo.gif)\n\n## Features\n\n- Secure Ghost Admin API requests with `@tryghost/admin-api`\n- Comprehensive entity access including posts, users, members, tiers, offers, and newsletters\n- Advanced search functionality with both fuzzy and exact matching options\n- Detailed, human-readable output for Ghost entities\n- Robust error handling using custom `GhostError` exceptions\n- Integrated logging support via MCP context for enhanced troubleshooting\n\n## Usage\n\nTo use this with MCP clients, for instance, Claude Desktop, add the following to your `claude_desktop_config.json`:\n```json\n{\n  \"mcpServers\": {\n      \"ghost-mcp\": {\n        \"command\": \"npx\",\n        \"args\": [\"-y\", \"@fanyangmeng/ghost-mcp\"],\n        \"env\": {\n            \"GHOST_API_URL\": \"https://yourblog.com\",\n            \"GHOST_ADMIN_[REDACTED-GENERIC_KV_SECRET]\",\n            \"GHOST_API_VERSION\": \"v5.0\"\n        }\n      }\n    }\n}\n```\n\n## Available Resources\n\nThe following Ghost CMS resources are available through this MCP server:\n\n- **Posts**: Articles and content published on your Ghost site.\n- **Members**: Registered users and subscribers of your site.\n- **Newsletters**: Email newsletters managed and sent via Ghost.\n- **Offers**: Promotional offers and discounts for members.\n- **Invites**: Invitations for new users or staff to join your Ghost site.\n- **Roles**: User roles and permissions within the Ghost admin.\n- **Tags**: Organizational tags for posts and content.\n- **Tiers**: Subscription tiers and plans for members.\n- **Users**: Admin users and staff accounts.\n- **Webhooks**: Automated event notifications to external services.\n\n## Available Tools\n\nThis MCP server exposes a comprehensive set of tools for managing your Ghost CMS via the Model Context Protocol. Each resource provides a set of operations, typically including browsing, reading, creating, editing, and deleting entities. Below is a summary of the available tools:\n\n### Posts\n- **Browse Posts**: List posts with optional filters, pagination, and ordering.\n- **Read Post**: Retrieve a post by ID or slug.\n- **Add Post**: Create a new post with title, content, and status.\n- **Edit Post**: Update an existing post by ID.\n- **Delete Post**: Remove a post by ID.\n\n### Members\n- **Browse Members**: List members with filters and pagination.\n- **Read Member**: Retrieve a member by ID or email.\n- **Add Member**: Create a new member.\n- **Edit Member**: Update member details.\n- **Delete Member**: Remove a member.\n\n### Newsletters\n- **Browse Newsletters**: List newsletters.\n- **Read Newsletter**: Retrieve a newsletter by ID.\n- **Add Newsletter**: Create a new newsletter.\n- **Edit Newsletter**: Update newsletter details.\n- **Delete Newsletter**: Remove a newsletter.\n\n### Offers\n- **Browse Offers**: List offers.\n- **Read Offer**: Retrieve an offer by ID.\n- **Add Offer**: Create a new offer.\n- **Edit Offer**: Update offer details.\n- **Delete Offer**: Remove an offer.\n\n### Invites\n- **Browse Invites**: List invites.\n- **Add Invite**: Create a new invite.\n- **Delete Invite**: Remove an invite.\n\n### Roles\n- **Browse Roles**: List roles.\n- **Read Role**: Retrieve a role by ID.\n\n### Tags\n- **Browse Tags**: List tags.\n- **Read Tag**: Retrieve a tag by ID or slug.\n- **Add Tag**: Create a new tag.\n- **Edit Tag**: Update tag details.\n- **Delete Tag**: Remove a tag.\n\n### Tiers\n- **Browse Tiers**: List tiers.\n- **Read Tier**: Retrieve a tier by ID.\n- **Add Tier**: Create a new tier.\n- **Edit Tier**: Update tier details.\n- **Delete Tier**: Remove a tier.\n\n### Users\n- **Browse Users**: List users.\n- **Read User**: Retrieve a user by ID or slug.\n- **Edit User**: Update user details.\n- **Delete User**: Remove a user.\n\n### Webhooks\n- **Browse Webhooks**: List webhooks.\n- **Add Webhook**: Create a new webhook.\n- **Delete Webhook**: Remove a webhook.\n\n> Each tool is accessible via the MCP protocol and can be invoked from compatible clients. For detailed parameter schemas and usage, see the source code in `src/tools/`.\n\n\n## Error Handling\n\nGhost MCP Server employs a custom `GhostError` exception to handle API communication errors and processing issues. This ensures clear and descriptive error messages to assist with troubleshooting.\n\n## Contributing\n\n1. Fork repository\n2. Create feature branch\n3. Commit changes\n4. Create pull request\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "full_name": "YoushaaMurhij/MCP-AI-Gateway",
+  "html_url": "https://github.com/YoushaaMurhij/MCP-AI-Gateway",
+  "description": "Unified local MCP Gateway that routes across multiple providers",
+  "topics": [
+    "mcp",
+    "mcp-gateway",
+    "mcp-server",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-03-07T13:20:50Z",
+  "last_pushed_at": "2026-03-09T16:57:26Z",
+  "fetched_at": "2026-07-12T00:49:20.103Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP-AI-Gateway\n\n![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)\n![FastAPI](https://img.shields.io/badge/FastAPI-Async-009688?logo=fastapi&logoColor=white)\n![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)\n![MCP](https://img.shields.io/badge/MCP-Compatible-5B2D90)\n[![CI](https://github.com/YoushaaMurhij/MCP-AI-Gateway/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/YoushaaMurhij/MCP-AI-Gateway/actions/workflows/ci.yml)\n\nUnified local MCP AI Gateway that routes across Groq, OpenRouter, Mistral, and local Ollama providers, with OpenAI-compatible APIs, MCP tools, fallback/racing router, monitoring, and web dashboard.\n\n![Web UI](assets/web_ui.png)\n\n## 🚀 Features\n\n- Async Python gateway with provider abstraction layer\n- Built-in providers:\n  - Groq (`openai/gpt-oss-120b` default, plus `moonshotai/kimi-k2-instruct-0905`)\n  - OpenRouter (`openai/gpt-4o-mini` default)\n  - Mistral (`codestral-latest` default, plus `devstral-medium-latest`)\n  - Ollama\n- Intelligent router:\n  - priority routing\n  - fallback routing\n  - parallel racing mode\n  - rate-limit aware provider scoring\n- MCP server capabilities:\n  - tool registration/discovery\n  - prompt template discovery/rendering\n  - schema validation\n  - SSE and HTTP transport\n- OpenAI-compatible API:\n  - `POST /v1/chat/completions`\n  - `POST /v1/completions`\n  - `GET /v1/models`\n- Web UI (React + Vite + Tailwind):\n  - Dashboard\n  - Providers\n  - Models\n  - Chat\n  - Logs\n  - Stats\n  - Runtime gateway API key generation\n- Observability:\n  - Prometheus metrics (`/metrics`)\n  - structured logs\n  - SQLite request statistics\n- Extensible plugin system for additional providers\n- CLI: `mcp-ai start|stop|status|providers|models`\n- Docker + docker-compose support\n- GitHub Actions CI for backend lint/tests and frontend build\n\n## 🗂️ Repository Structure\n\n```text\nmcp-ai-gateway/\n  api/\n  providers/\n  router/\n  mcp_server/\n  plugins/\n  database/\n  web_ui/\n  config/\n  cli/\n  tests/\n  Dockerfile\n  docker-compose.yml\n  README.md\n```\n\n## ⚡ Quick Start (Local)\n\n### 1) 📦 Prerequisites\n\n- Python 3.11+\n- Node.js 20+\n- Optional: local Ollama daemon at `http://localhost:11434`\n\n### 2) 🐍 Install backend\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install --upgrade pip\npip install -e .[dev]\n```\n\n### 3) 🔐 Configure environment\n\n```bash\ncp .env.example .env\n# edit .env values\n```\n\n### 4) ⚙️ Edit config\n\n`config/config.yaml` controls providers, routing, security, and default models.\n\n### 5) ▶️ Start backend\n\n```bash\nuvicorn api.main:app --host 0.0.0.0 --port 8000 --reload\n```\n\n### 6) 🖥️ Start web UI\n\n```bash\ncd web_ui\nnpm install\nVITE_API_BASE=http://localhost:8000 VITE_API_KEY=change-me npm run dev\n```\n\nOpen [http://localhost:3000](http://localhost:3000)\n\n## 🐳 Docker Deployment\n\n```bash\ndocker compose up --build\n```\n\nServices:\n\n- Gateway API: [http://localhost:8000](http://localhost:8000)\n- Web UI: [http://localhost:3000](http://localhost:3000)\n- Redis: `localhost:6379` (optional cache/rate-limit backend)\n\n## 🧩 API Overview\n\n### OpenAI-Compatible 🤝\n\n- `POST /v1/chat/completions`\n- `POST /v1/completions`\n- `GET /v1/models`\n\nUse header `X-API-Key: <key>` (or `Authorization: Bearer <key>`).\n\n### MCP Endpoints 🔌\n\n- JSON-RPC MCP transport: `POST /mcp`\n- SSE streaming output: `POST /mcp/stream`\n\nSupported MCP methods:\n\n- `initialize`\n- `notifications/initialized`\n- `ping`\n- `tools/list`\n- `tools/call`\n- `prompts/list`\n- `prompts/get`\n\n### Dashboard APIs 📊\n\n- `GET /api/dashboard`\n- `GET /api/providers`\n- `POST /api/providers/{name}/toggle`\n- `POST /api/providers/{name}/priority`\n- `POST /api/providers/{name}/config`\n- `GET /api/models`\n- `GET /api/settings`\n- `POST /api/settings/default-model`\n- `POST /api/settings/api-key/generate`\n- `GET /api/logs`\n- `GET /api/stats`\n\n### Monitoring 📈\n\n- `GET /health`\n- `GET /metrics`\n\n## 🛠️ CLI\n\n```bash\nmcp-ai start\nmcp-ai status\nmcp-ai providers\nmcp-ai models\nmcp-ai stop\n```\n\n## 🧭 Warp MCP Integration\n\nAdd this to Warp MCP config:\n\n```json\n{\n  \"mcpServers\": {\n    \"mcp-ai-gateway\": {\n      \"url\": \"http://localhost:8000/mcp\",\n      \"headers\": {\n        \"Authorization\": \"[REDACTED-BEARER_TOKEN]\"\n      }\n    }\n  }\n}\n```\n\n## 🧱 Configuration Example\n\n```yaml\nproviders:\n  groq:\n    enabled: true\n    api_key: ${GROQ_API_KEY}\n    priority: 1\n    default_model: openai/gpt-oss-120b\n  mistral:\n    enabled: false\n    api_key: ${MISTRAL_API_KEY}\n    priority: 12\n    default_model: codestral-latest\n  openrouter:\n    enabled: true\n    priority: 2\n    default_model: openai/gpt-4o-mini\n  ollama:\n    enabled: true\n    priority: 3\nrouting:\n  fallback_enabled: true\n  racing_mode: false\n```\n\n## 🧪 Plugin Providers\n\nNew providers can be added under `plugins/` by implementing `ProviderPlugin` and enabling provider config in `config/config.yaml`.\n\nIncluded plugin examples:\n\n- `openai_provider.py`\n- `together_provider.py`\n- `openrouter_provider.py`\n\n## ✅ Testing\n\n```bash\npytest\n```\n\nCI runs on pushes and pull requests to `main` via `.github/workflows/ci.yml`:\n\n- Backend job: `ruff check .` and `pytest -q`\n- Frontend job: `npm install` and `npm run build` in `web_ui/`\n\n## 🔄 Release Workflow\n\n- Open PR from `dev/*` branch to `main`\n- Ensure CI is green\n- Merge using GitHub CLI or GitHub UI\n\n## 📚 Developer Guide\n\nDetailed guide: [docs/developer-guide.md](docs/developer-guide.md)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "main.py",
+    "size": 44,
+    "content": "from api.main import app\n\n__all__ = [\"app\"]\n"
+  },
+  "content_fetch_notes": []
+}

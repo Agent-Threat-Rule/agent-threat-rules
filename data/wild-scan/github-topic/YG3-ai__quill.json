@@ -1,0 +1,44 @@
+{
+  "full_name": "YG3-ai/quill",
+  "html_url": "https://github.com/YG3-ai/quill",
+  "description": "Two heads are better than one. Code with perspective. Quill mediates dialogue between multiple coding assistants. Quill assigns pair AI programmers. Quill helps the AI doing the work and a second AI giving perspective. Ask another mind. Ship better code.",
+  "topics": [
+    "ai",
+    "ai-agents",
+    "ai-coding",
+    "ai-tools",
+    "airesearch",
+    "claude-code",
+    "code-generation",
+    "codex-cli",
+    "coding-agent",
+    "coding-assistant",
+    "developer-tools",
+    "dual-agent",
+    "mcp-server",
+    "mcp-tools",
+    "multi-agent",
+    "pair-programming"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-05-15T16:55:56Z",
+  "last_pushed_at": "2026-05-21T17:17:15Z",
+  "fetched_at": "2026-07-12T00:39:42.234Z",
+  "readme": {
+    "path": "README.md",
+    "content": "![Quill — two heads are better than one.](imgs/quill_banner_readme.png)\n\n# Quill\n\n**Two AIs in conversation — one does the work, the other gives perspective.**\n\n```bash\npip install quill-mcp\n```\n\n[![PyPI](https://img.shields.io/pypi/v/quill-mcp.svg)](https://pypi.org/project/quill-mcp/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)\n\nFree, MIT-licensed. Built by [YG3](https://yg3.ai), where we use the internal version of Quill every day — it's saved us a serious amount of rework, catching wrong-direction decisions before they ship and surfacing ambiguous specs before we build the wrong thing.\n\n---\n\n## What it's for\n\nYou know how when you're stuck on a hard decision, asking *two* people who think differently is usually better than asking *one*? Even if they disagree — *especially* if they disagree, because the disagreement shows you what's actually hard about the choice.\n\nQuill is that, for coding. It puts two AIs in conversation: one does the work, the other gives perspective. You see what they agree on, what they disagree on, and what one spotted that the other missed.\n\n**If you already have a Claude Pro and a ChatGPT Plus subscription, you already have access to two AIs. Quill lets them talk to each other for free** — no API key, no per-token cost, just your existing subscriptions.\n\n## Does it actually help?\n\nWe tested it. Honestly — including the cases where it didn't.\n\n**For \"help me think this through\" questions** — *should we rewrite in Rust? what did we miss before tomorrow's launch? our settings page has 12 toggles and users are confused, what do we do?* — two AIs in dialogue beats one AI alone. **4 out of 4 scenarios** we tested, judged blind by a neutral third AI (Gemini). Average score: **~9.5/10** on *\"surfaced something one mind would have missed\"* vs ~5-7/10 for a single AI.\n\nOne scenario stands out: we asked *\"we're launching a payments integration tomorrow, what did we miss?\"* One of Quill's two AIs went and *actually looked at the codebase* — and noticed the payments integration didn't exist yet. The single AIs all just trusted the question and gave a generic launch checklist. **Two heads caught what one head couldn't even see.**\n\n**For \"just build this small thing\" questions** — design a CRUD endpoint, write a 200-word post — one AI is enough. Two AIs is overkill; the extra perspective shows up as noise, not signal. Our data confirms this: on artifact-production tasks, Quill's deepest \"mosaic mode\" actually *loses* to a single AI.\n\nSo Quill isn't a universal upgrade. It's a tool with a sweet spot: **decisions where you'd genuinely want a second opinion.** Skip it for routine building work; reach for it when the question is the kind you'd ask a senior colleague over coffee.\n\n→ Full data + methodology + honest caveats: [research/spike-004/findings.md](research/spike-004/findings.md). The arc of how we got here is in [research/spike-003/findings.md](research/spike-003/findings.md).\n\n## What's inside\n\nFour skills, available in any agentic CLI Quill is installed in:\n\n- **`consult`** — *when you're stuck.* The second AI reframes what's actually going on.\n- **`perspective`** — *when you're exploring.* The second AI layers in an angle the first hasn't taken.\n- **`assumptions`** — *when the AI's choices confuse you.* Translates technical assumptions into plain-language yes/no questions you can actually answer.\n- **`mosaic`** *(new in v0.2)* — *when the decision actually matters.* Two AIs work on different parts of the question in parallel (no peeking), then review each other's output for contradictions. The one the data showed wins most. ([MOSAIC_DESIGN.md](MOSAIC_DESIGN.md))\n\nIn Claude Code specifically, you also get safety hooks (gatekeeper for risky shell commands) and pre-push quality scans (secrets, debug statements, TODOs, .env files).\n\n## Quickstart (30 seconds)\n\nIf you use Claude Code + ChatGPT Plus (or vice versa), you're done — no API key, no per-token cost.\n\n```bash\npip install quill-mcp\n\n# Example: wire into Codex CLI, advised by your Claude Pro subscription\ncodex mcp add quill --env ADVISOR_BACKEND=claude_cli -- quill-mcp\n```\n\nTools available: `quill_consult`, `quill_perspective`, `quill_assumptions`, `quill_mosaic`.\n\nFor the Claude Code plugin path, Cursor / Cline / Continue setup, the API backend, the full backend matrix, and troubleshooting → [USER_GUIDE.md](USER_GUIDE.md).\n\n## Free, with a tip jar\n\nQuill is free and MIT-licensed. We built it because the team uses it daily and wanted others to have it too. Open source means you can read what it does, fork it, contribute, or just inspect it before you wire it into your workflow.\n\n[![Help keep Quill open and independent — Support via Stripe](imgs/support_quill_readme.png)](https://buy.stripe.com/5kQfZh5V30oabyO6ncb7y0i)\n\n100% of donations go to YG3 and fund continued development + the research direction below.\n\n## Research direction\n\nQuill is also a research instrument. The same framing through different advisor backends produces measurably different responses (Codex tends to cite specific files; Claude tends to reframe humanistically). That's a publishable observation, and a real research program is reachable from where this codebase already sits — voice differential studies, dual-agent benefit benchmarks, advisor-doer pairing matrices.\n\nSee [RESEARCH.md](RESEARCH.md) for the open questions and how to contribute.\n\n## Status\n\n**v0.2.2** — Windows compatibility fix: `CLAUDE_BIN` / `CODEX_BIN` must point to the `.cmd` binary on Windows (`C:\\...\\npm\\claude.cmd`) since Python's subprocess can't resolve npm shim scripts without the extension. Gatekeeper is now disabled by default for CLI-backend installs — it requires the `api` backend to make decisions, and without one it would silently time out and fall through to prompting the human. Skill HTTP timeout bumped from 60s to 180s for slower machines. `MAX_INPUT_CHARS` default raised from 1000 to 5000 so plan-review context isn't truncated to ~5 sentences. Dashboard link (`http://127.0.0.1:9000/dashboard`) is now printed at bridge startup. Default `ADVISOR_BACKEND` in `.env.example` changed from `api` to `codex_cli` with clearer pairing guidance.\n\n**v0.2.1** — mosaic mode shipped + tested + planner robustness fix. Core MCP server and the Claude Code FastAPI bridge are both validated against all three advisor backends (Codex CLI, Claude CLI, API). Mosaic mode is empirically tested (4/4 wins on decisions-under-tension tasks per [spike-004](research/spike-004/findings.md)). See [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) for what's next.\n\n## Maintainers\n\nJacqueline Carter · Sam Knox · Partha Unnava\n\n## Contributing\n\nIssues, pull requests, and research observations welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to set up a dev environment and what makes a good PR. Researchers interested in coding agent collaboration — see [RESEARCH.md](RESEARCH.md).\n\n## License\n\n[MIT](LICENSE). Copyright (c) 2026 YG3.\n\n---\n\n[User Guide](USER_GUIDE.md) · [Research](RESEARCH.md) · [Architecture](ARCHITECTURE.md) · [Open Questions](OPEN_QUESTIONS.md)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

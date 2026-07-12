@@ -1,0 +1,51 @@
+{
+  "full_name": "wazionapps/nexo",
+  "html_url": "https://github.com/wazionapps/nexo",
+  "description": "NEXO runtime core for NEXO Desktop: local memory, automation, MCP tools and update-managed runtime.",
+  "topics": [
+    "ai-memory",
+    "atkinson-shiffrin",
+    "autonomous-agent",
+    "claude-code",
+    "claude-code-plugin",
+    "codex",
+    "cognitive-architecture",
+    "knowledge-graph",
+    "local-first",
+    "mcp",
+    "mcp-server",
+    "memory",
+    "metacognition",
+    "model-context-protocol",
+    "natural-forgetting",
+    "rag",
+    "semantic-search",
+    "shared-brain",
+    "trust-scoring",
+    "vector-search"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 28,
+  "forks": 7,
+  "open_issues": 9,
+  "language": "Python",
+  "license": "NOASSERTION",
+  "default_branch": "main",
+  "created_at": "2026-03-22T23:44:19Z",
+  "last_pushed_at": "2026-07-03T18:20:00Z",
+  "fetched_at": "2026-07-11T23:44:48.454Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# NEXO runtime core\n\nThis repository contains the local runtime core that powers NEXO Desktop.\n\nNEXO Desktop is the public product and the supported user-facing installer,\nupdate channel, onboarding surface, settings UI, and support path. The legacy\n`nexo-brain` package and binary names remain temporarily for install/update\ncompatibility only; they are not a separate product line.\n\n## Current contract\n\n- Version `7.38.7` is the current packaged-runtime line\n- Public product: NEXO Desktop\n- Runtime role: local NEXO core bundled with Desktop\n- Active systems: local memory, Deep Sleep, Evolution support-ticket mode,\n  Skills, Watchdog, followups, doctor diagnostics, and MCP tooling\n- Evolution mode: enabled by default for Desktop-managed installs; it never\n  opens GitHub branches, pushes, PRs, transcripts, local databases, or raw\n  private evidence, and routes product-improvement requests through sanitized\n  support tickets\n- Distribution: Desktop installers and update manifests are published through\n  the NEXO Desktop release channel\n\nUse [nexo-desktop.com](https://nexo-desktop.com) for downloads, billing,\nsupport, and product information.\n\n## Client parity\n\nRelease changes that touch bootstrap, session handling, Deep Sleep, client\nsync, or shared runtime claims must also keep `docs/client-parity-checklist.md`\ncurrent.\n\n- Managed via bootstrap + Codex config `mcp_servers.nexo`\n- Managed MCP-only shared-brain metadata\n- Runtime doctor parity audit\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"nexo\": {\n      \"command\": \"${CLAUDE_PLUGIN_DATA}/.venv/bin/python3\",\n      \"args\": [\"${CLAUDE_PLUGIN_ROOT}/src/server.py\"],\n      \"env\": {\n        \"NEXO_HOME\": \"${CLAUDE_PLUGIN_DATA}\",\n        \"NEXO_CODE\": \"${CLAUDE_PLUGIN_ROOT}/src\"\n      }\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

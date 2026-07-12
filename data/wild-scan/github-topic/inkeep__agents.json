@@ -1,0 +1,48 @@
+{
+  "full_name": "inkeep/agents",
+  "html_url": "https://github.com/inkeep/agents",
+  "description": "Create AI Agents in a No-Code Visual Builder or TypeScript SDK with full 2-way sync. For shipping AI assistants and multi-agent AI workflows.",
+  "topics": [
+    "agent",
+    "agent-builder",
+    "agent-framework",
+    "agents-sdk",
+    "ai",
+    "ai-agent",
+    "ai-agents",
+    "aiagentframework",
+    "developer-sdk",
+    "inkeep",
+    "llms",
+    "low-code",
+    "mcp",
+    "mcp-server",
+    "mulit-agent",
+    "no-code",
+    "self-hosted",
+    "typescript",
+    "workflow",
+    "workflows"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 1279,
+  "forks": 148,
+  "open_issues": 38,
+  "language": "TypeScript",
+  "license": "NOASSERTION",
+  "default_branch": "main",
+  "created_at": "2025-09-05T12:23:24Z",
+  "last_pushed_at": "2026-07-10T18:47:41Z",
+  "fetched_at": "2026-07-11T22:33:31.900Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Inkeep Agents\n\nBuild AI Agents with a **No-Code Visual Builder** or **TypeScript SDK**. Agents can be edited in either with **full 2-way sync**, so technical and non-technical teams can create and manage Agents in one platform. \n\nGet started with the [docs](https://docs.inkeep.com) or [1-minute quick start](https://docs.inkeep.com/get-started/quick-start).\n\n## Two ways to build\n\n### No-Code Visual Builder\n\nA drag-and-drop canvas so any team can create and own the Agents they care about.\n\n<img\n  src=\"agents-docs/public/gifs/drag-n-drop.gif\"\n  alt=\"Visual Builder Demo\"\n  width=\"100%\"\n  style=\"border-radius: 10px\"\n/>\n\n### TypeScript Agents SDK\n\nA code-first framework so engineering teams can build with typesafety, intellisense, CI/CD, and the tools they expect.\n\n```typescript\nimport { agent, subAgent } from \"@inkeep/agents-sdk\";\nimport { consoleMcp } from \"./mcp\";\n\nconst helloAgent = subAgent({\n  id: \"hello-agent\",\n  name: \"Hello Agent\",\n  description: \"Says hello\",\n  canUse: () => [consoleMcp], \n  prompt: `Reply to the user and console log \"hello world\" with fun variations like h3llo world`,\n});\n\nexport const basicAgent = agent({\n  id: \"basic-agent\",\n  name: \"Basic Agent\",\n  description: \"A basic agent\",\n  defaultSubAgent: helloAgent,\n  subAgents: () => [helloAgent],\n});\n```\n\nThe **Visual Builder and TypeScript SDK are fully interoperable**: technical and non-technical teams can edit and manage Agents in either format and collaborate with others at any time.\n\n## Use Cases\n\nInkeep Agents can operate as real-time **AI Chat Assistants**, for example:\n- a customer experience agent for help centers, technical docs, or in-app experiences\n- an internal copilot to assist your support, sales, marketing, ops, and other teams\n\nAgents can also be used for **AI Workflow Automation** like:\n- Creating and updating knowledge bases, documentation, and blogs\n- Updating CRMs, triaging helpdesk tickets, and tackling repetitive tasks\n\n## Platform Overview\n\n**Inkeep Open Source** includes:\n- A Visual Builder & TypeScript SDK with 2-way sync\n- Multi-agent architecture to support teams of agents\n- MCP Tools with credential management\n- A UI component library for dynamic chat experiences\n- Triggering Agents via MCP, A2A, & Vercel SDK APIs\n- Observability via a Traces UI & OpenTelemetry\n- Easy deployment using Vercel or Docker\n\nFor a full overview, see the [Concepts](https://docs.inkeep.com/concepts) guide.\n\nInterested in a managed platform? Sign up for the [Inkeep Cloud waitlist](https://inkeep.com/cloud-waitlist) or learn about [Inkeep Enterprise](https://inkeep.com/enterprise).\n\n## Architecture\n\nThe Inkeep Agent Platform is composed of several key services and libraries that work together:\n\n- **agents-api**: An API that handles configuration of Agents, Sub Agents, MCP Servers, Credentials, and Projects with a REST API. Additionally, it exposes Agent execution and evaluation. The API tracks conversation state and emits OTEL traces.\n- **agents-manage-ui**: Visual Builder web interface for creating and managing Agents. Writes to the `agents-api`.\n- **agents-sdk**: TypeScript SDK (`@inkeep/agents-sdk`) for declaratively defining Agents and custom tools in code. Writes to `agents-api`.\n- **agents-cli**: Includes various handy utilities, including `inkeep push` and `inkeep pull` which sync your TypeScript SDK code with the Visual Builder.\n- **agents-ui**: A UI component library of chat interfaces for embedding rich, dynamic conversational AI experiences in web apps.\n\nUnder the hood, the framework uses the [Vercel AI SDK](https://ai-sdk.dev/docs/introduction) for interfacing with LLM providers, so it's compatible with Vercel's [`useChat`](https://ai-sdk.dev/docs/ai-sdk-ui) hook and other AI primatives.\n\n## License and Community\n\nThe Inkeep Agent Framework is licensed under the **Elastic License 2.0** ([ELv2](https://www.elastic.co/licensing/elastic-license)) subject to **Inkeep's Supplemental Terms** ([SUPPLEMENTAL_TERMS.md](https://github.com/inkeep/agents/blob/main/SUPPLEMENTAL_TERMS.md)). This is a [fair-code](https://faircode.io/), source-available license that allows broad usage while protecting against certain competitive uses.\n\nInkeep is designed to be extensible and open: use the LLM provider of your choice, use Agents via standard protocols, and easily deploy and self-host Agents in your own infra. \n\nIf you'd like to contribute, follow our [contribution guide](https://docs.inkeep.com/community/contributing/overview).\n\n[Join our community](https://docs.inkeep.com/community/inkeep-community) to get support, stay up to date, and share feedback.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

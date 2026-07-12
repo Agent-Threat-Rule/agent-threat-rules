@@ -1,0 +1,33 @@
+{
+  "full_name": "underdog-org/youtube-mcp",
+  "html_url": "https://github.com/underdog-org/youtube-mcp",
+  "description": "Fast, standard, and minimal MCP server for Youtuber",
+  "topics": [
+    "claude-code",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "youtube"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-07-06T00:38:02Z",
+  "last_pushed_at": "2026-07-06T02:21:01Z",
+  "fetched_at": "2026-07-12T00:20:20.460Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Youtube MCP\n\n> Fast, minimal, and reliable YouTube MCP for AI agents.\n\n![Banner](./public/Youtube-MCP-banner.png)\n\n## Install\n\n### Claude Code\n\n```bash\nclaude mcp add youtube -- uvx youtube-watch-mcp\n```\n\n> **Before publish (local dev):** point `uvx` at the checkout instead:\n> `claude mcp add youtube -- uvx --from /path/to/youtube-mcp youtube-watch-mcp`\n\n### Claude Desktop / Codex / other MCP clients\n\nAdd to the client's MCP config:\n\n```json\n{\n  \"mcpServers\": {\n    \"youtube\": {\n      \"command\": \"uvx\",\n      \"args\": [\"youtube-watch-mcp\"]\n    }\n  }\n}\n```\n\n### CLI only\n\n```bash\nuvx --from youtube-watch-mcp youtube-watch-mcp-cli info \"https://youtu.be/VIDEO_ID\"\n```\n\nThat's it. `uvx` pulls `youtube-watch-mcp`, `yt-dlp`, and dependencies into an isolated environment automatically. Nothing to install globally.\n\n> **Optional:** `ffmpeg` on PATH is required **only** for `--asr` (speech-to-text on caption-less videos). Core transcript extraction needs nothing.\n\n## Optional API key\n\nA YouTube Data API key is **not needed** to read videos. Add one only to enable cross-YouTube **search**:\n\n```bash\nclaude mcp add youtube -e YOUTUBE_API_KEY=your_key -- uvx youtube-watch-mcp\n```\n\nTranscript extraction never uses the key (YouTube only allows caption download for video owners).\n\n## Tools\n\n| Tool | Returns | Purpose |\n|------|---------|---------|\n| `get_info(url)` | title, duration, chapters, has_captions | Cheap probe before fetching. |\n| `get_transcript(url, asr=False)` | file path + word count + preview | Clean transcript to disk. Returns path, not full text. |\n| `search_transcript(url, query)` | timestamped snippets | Grep a long video without loading it all. |\n| `get_segment(url, start, end)` | text slice | Read one time range. |\n\nDesign principle: **pull, don't dump.** Transcripts write to a local cache file; tools return a path and a short preview. The agent reads or searches on demand — long videos never flood the context.\n\n\n```\n/get_info $url\n/get_transcript $url\n/search_transcript $url\n/get_segment $url\n```\n\n## Architecture\n\n```\nAdapters (thin):   cli.py   mcp_server.py   skill\n                        │  call\nCore (all logic):  fetch → clean → chunk → cache\n                        │  uses\nBackends:          youtube-transcript-api · yt-dlp · faster-whisper\n```\n\n**Fetch fallback chain:**\n\n1. `youtube-transcript-api` — fastest, no download\n2. `yt-dlp` auto-captions\n3. `yt-dlp` manual captions\n4. `--asr`: audio → local `faster-whisper`\n\nOn yt-dlp failure the engine self-updates yt-dlp and retries once — most breakage is a stale yt-dlp.\n\n**Caching:** results are keyed by video ID under `~/.cache/youtube-mcp/<id>/`. Repeat calls are instant.\n\n**Cleaning:** auto-captions are de-duplicated (rolling-caption overlap removed), stripped of timestamps and `[Music]` noise, and whitespace-collapsed before the agent ever sees them.\n\n## Requirements\n\n- Python 3.11+ (managed automatically by `uvx`)\n- `ffmpeg` — optional, only for `--asr`\n\n## Docs\n\n- [FAQ](./docs/FAQ.md) — keyless? no-caption videos? `--from` gotcha? long-video handling?\n- [Architecture](./docs/ARCHITECTURE.md) — core/adapter split, fetch chain, the cleaning moat, cache.\n\n## License\n\nMIT"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

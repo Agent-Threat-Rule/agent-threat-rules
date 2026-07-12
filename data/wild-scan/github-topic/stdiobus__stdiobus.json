@@ -1,0 +1,35 @@
+{
+  "full_name": "stdiobus/stdiobus",
+  "html_url": "https://github.com/stdiobus/stdiobus",
+  "description": "A deterministic C runtime providing transport-level routing for ACP/MCP-style agent protocols.",
+  "topics": [
+    "acp",
+    "mcp-client",
+    "mcp-servers",
+    "multi-agent",
+    "multi-agent-systems",
+    "protocol",
+    "runtime"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 17,
+  "forks": 1,
+  "open_issues": 0,
+  "language": "Shell",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2026-02-26T17:21:27Z",
+  "last_pushed_at": "2026-06-05T11:34:09Z",
+  "fetched_at": "2026-07-11T23:54:35.344Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<h1 align=\"center\" style=\"font-weight:500\">\n  stdio Bus </br> Agentic Orchestration Ecosystem\n</h1>\n\n<p align=\"center\">\n  A deterministic C runtime providing transport-level routing for ACP/MCP-style agent protocols.\n</p>\n\n<p align=\"center\">\n  <a href=\"https://github.com/stdiobus\"><img src=\"https://img.shields.io/badge/ecosystem-stdio%20Bus-ff4500?style=for-the-badge\" alt=\"stdioBus\"></a>\n</p>\n\n<p align=\"center\">\n  <a href=\"https://stdiobus.com/\" target=\"_blank\">stdio Bus Portal</a> • \n  <a href=\"https://hub.docker.com/r/stdiobus/stdiobus\" target=\"_blank\">Docker Hub</a>\n</p>\n\nstdio Bus kernel acts as a process supervisor and message router between external clients (IDEs, CLIs, services) and worker processes. It handles NDJSON-framed JSON-RPC messages with session-based routing, while remaining completely agnostic to protocol semantics.\n\n## Key Features\n\n- **Single-threaded**: One event loop using epoll (Linux) or kqueue (macOS)\n- **No external dependencies**: Only libc and POSIX APIs\n- **Protocol agnostic**: Forwards messages unchanged, parsing only routing fields\n- **Session affinity**: Messages with the same `sessionId` route to the same worker\n- **Backpressure management**: Configurable limits prevent memory exhaustion\n\n## Prerequisites\n\n- C11-compliant compiler (GCC 4.9+ or Clang 3.4+)\n- Make or CMake 3.10+\n- Node.js 18+ (for running example workers)\n\n\n## Binary Releases\n\nPre-compiled binaries for multiple platforms are available in the [`/releases`](./releases) directory. Each version contains ready-to-use `stdio_bus` binaries for different architectures:\n\n### Version 2.0.3\n\n**Available platforms**:\n- **macOS**: [`darwin-amd64`](./releases/v2.0.3/darwin-amd64) | [`darwin-arm64`](./releases/v2.0.3/darwin-arm64)\n- **Linux**: [`linux-amd64`](./releases/v2.0.3/linux-amd64) | [`linux-arm64`](./releases/v2.0.3/linux-arm64) | [`linux-armv7`](./releases/v2.0.3/linux-armv7)\n- **Linux (musl)**: [`linux-musl-amd64`](./releases/v2.0.3/linux-musl-amd64) | [`linux-musl-arm64`](./releases/v2.0.3/linux-musl-arm64)\n\n**Verification**: SHA256 checksums available at [`checksums.sha256`](./releases/v2.0.3/checksums.sha256)\n\nDownload the appropriate binary for your platform and make it executable:\n```bash\n# Example for Linux AMD64\ncurl -L -o stdio_bus https://github.com/stdiobus/stdiobus/releases/v2.0.3/linux-amd64/stdio_bus\nchmod +x stdio_bus\n```\n\n\n## Docker\n\nPre-built multi-architecture images available on Docker Hub:\n\n```bash\ndocker pull stdiobus/stdiobus:latest\n```\n\n**Supported platforms**: `linux/amd64`, `linux/arm64`, `linux/arm/v7`\n\n**Available tags**: `latest`, `v2.0.3`, `main`, `develop`\n\nSee [Docker Hub](https://hub.docker.com/r/stdiobus/stdiobus) for complete usage examples and configuration.\n\n\n## Implementations\n\nEmbedded stdio_bus runtime for your application process — no external daemon, no Docker, no TCP hop.\n\n| Language | Package | Status    |\n|----------|-------|-----------|\n| Rust | [`stdiobus`](https://crates.io/crates/stdiobus) | 🟩 Available |\n| Node.js | [`@stdiobus/node`](https://www.npmjs.com/package/@stdiobus/node) | 🟩 Available |\n| C++ | [`stdiobus`](https://github.com/stdiobus/stdiobus-cpp) | 🟩 Available   |\n| Python | [`stdiobus`](https://pypi.org/project/stdiobus/) | 🟩 Available   |\n| Go | — | Planned   |\n\n\n\n## MCP Orchestration\n\nMCP server that connects IDE clients to ACP-compatible agents through stdio Bus: [`@stdiobus/mcp-agentic`](https://github.com/stdiobus/mcp-agentic)\n\nExposes 8 MCP tools covering agent discovery, session lifecycle, one-shot delegation, and health checks. Supports in-process agents and external worker processes. Includes a Provider Factory API for OpenAI, Anthropic, and Google Gemini with a unified interface, runtime parameter control per session and per prompt, and a `defineProvider()` contract for custom or private LLM integrations.\n\nSee [mcp-agentic](https://github.com/stdiobus/mcp-agentic) for provider setup, tool reference, and IDE integration.\n\n\n## MCP Module Launcher\n\nManifest-driven CLI launcher for MCP server modules in the stdio Bus ecosystem: [`@stdiobus/mcpx`](https://github.com/stdiobus/mcpx)\n\nReplaces hardcoded shell commands in `mcp.json` with a single portable entrypoint — `mcpx run <module>`. Each module is described by a `module.json` manifest that defines runtime, entry point, environment defaults, and arguments. Supports Node.js, Python, Go, Rust, Shell, and Docker runtimes. Works with any MCP client: Kiro, Cursor, Claude Desktop, Windsurf.\n\nSee [mcpx](https://github.com/stdiobus/mcpx) for manifest reference and environment management.\n\n\n## Agent Skills\n\nStructured, validated, machine-readable skills for AI agents delivered over MCP via stdio Bus: [`@stdiobus/skills`](https://github.com/stdiobus/skills)\n\nAn MCP server that exposes agent skills as a machine-parseable knowledge base — not documentation for humans. Skills are organized in a 5-layer hierarchy (Concepts → API → Patterns → Guardrails → Diagnostics), CI-validated against real framework types, and served through five MCP tools: `list_skills`, `read_skill`, `list_references`, `read_reference`, `search_skills`. Ships with two skill collections: Runtime Web (12 skills for `@worktif/runtime`) and stdio Bus SDKs (C++, Node.js, Rust).\n\nSee [skills](https://github.com/stdiobus/skills) for the skill catalog and agent consumption protocol.\n\n## Workers\n\nProtocol workers for stdio Bus kernel: [`@stdiobus/workers-registry`](https://github.com/stdiobus/workers-registry)\n\nIncludes ACP Registry launcher for routing to any registered agent (Claude, Goose, Cline, GitHub Copilot and others), OpenAI-compatible endpoint bridge, MCP-to-ACP proxy for IDE integration, standalone ACP agent for protocol testing, and echo workers for protocol validation. Workers run as child processes of the kernel, communicating via NDJSON over stdin/stdout. Authentication supports API keys and OAuth 2.1 with PKCE (GitHub, Google, Azure AD, AWS Cognito, OIDC).\n\nSee [workers-registry](https://github.com/stdiobus/workers-registry) for the full worker catalog, configuration, and authentication setup.\n\n\n## License\n\nApache License, Version 2.0\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

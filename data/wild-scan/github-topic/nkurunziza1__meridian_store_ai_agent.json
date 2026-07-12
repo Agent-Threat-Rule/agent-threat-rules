@@ -1,0 +1,32 @@
+{
+  "full_name": "nkurunziza1/meridian_store_ai_agent",
+  "html_url": "https://github.com/nkurunziza1/meridian_store_ai_agent",
+  "description": "This ai assistant agent to help customers to get information they want in meridian electronics",
+  "topics": [
+    "ai-agents",
+    "ai-tools",
+    "mcp-server",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-04-30T17:30:41Z",
+  "last_pushed_at": "2026-04-30T17:55:23Z",
+  "fetched_at": "2026-07-12T00:48:23.405Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP chat stack \n\nMinimal **FastAPI** backend plus **React (Vite + TypeScript)** frontend using **atomic design** (atoms → molecules → organisms → templates → pages).\n\n## What it does\n\n1. **Catalog** — `GET /api/mcp/servers` reads `mcp_servers.json` (add more stdio MCP definitions there). Use **`GET /api/mcp/servers?include_tools=true`** to run `list_tools` on **every** catalog server and attach a `tools` array to each row (the UI loads this on startup so you see the full tool list).\n2. **Preview tools** — `POST /api/mcp/preview-tools` spins up **selected** servers briefly and returns each tool’s name/description/schema.\n3. **Session** — `POST /api/sessions` starts long-lived stdio MCP subprocesses and an **OpenAI Agents SDK** `Agent` wired to those servers (same idea as `6_mcp/1_lab1.ipynb`).\n4. **Chat** — `POST /api/sessions/{id}/messages` runs `Runner.run` with conversation history.\n\n## Prerequisites\n\n- Python **3.12+**, **uv**, **Node 20+** (or compatible).\n- **`uvx`** on your `PATH`** (used to launch `mcp-server-fetch` by default).\n- **API key** in environment (load from repo root `.env` when you start the API from this folder, or export manually):\n  - **`OPENROUTER_API_KEY`** (recommended) and optionally `OPENROUTER_MODEL` (default `openai/gpt-4o-mini`), **or**\n  - **`OPENAI_API_KEY`** and optionally `OPENAI_MODEL` (default `gpt-4o-mini`).\n\n**Tracing:** the OpenAI Agents SDK can export traces to **platform.openai.com** using `OPENAI_API_KEY`. With **OpenRouter only**, that often produces a **401** log (“Tracing client error”). This app calls **`set_tracing_disabled(True)`** when the model provider is OpenRouter. To turn tracing off for any setup, set **`OPENAI_AGENTS_DISABLE_TRACING=true`** in the environment (see the SDK’s `DefaultTraceProvider`).\n\n## Run locally\n\n**Terminal A — backend** (from this directory):\n\n```bash\ncd 2_openai/mcp_chat_stack\nuv sync\nuv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000\n```\n\n`app/settings.py` loads **`../../.env`** from the bootcamp repo root (`agents/.env`) when present, so you usually do not need to `export` keys manually.\n\n**Terminal B — frontend**:\n\n```bash\ncd 2_openai/mcp_chat_stack/frontend\nnpm install\nnpm run dev\n```\n\nOpen **http://localhost:5173**. The Vite dev server proxies `/api` to `http://127.0.0.1:8000`.\n\n## Later deployment (your plan)\n\n- **Backend:** Docker → **ECR** → **App Runner** (or ECS): run `uvicorn` with the same env vars; ensure `uvx` / MCP commands are available in the image or switch to HTTP MCP.\n- **Frontend:** `npm run build` → static `dist/` → **S3 + CloudFront**; set `VITE_API_URL` to your public API origin if the app is not served on the same host (otherwise leave unset and use same-origin `/api`).\n\n## Project layout\n\n**Note:** `mcp-server-fetch` normally exposes **one** tool named `fetch`. To see **more** tools in the inventory, add more entries to `mcp_servers.json` (each stdio server contributes its own tool list).\n\n```\nmcp_chat_stack/\n  app/                 # FastAPI + session manager + OpenAI Agents + MCP\n  mcp_servers.json     # Editable MCP server catalog (stdio)\n  frontend/src/\n    components/\n      atoms/\n      molecules/\n      organisms/\n      templates/\n    pages/\n    lib/\n```\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

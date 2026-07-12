@@ -1,0 +1,37 @@
+{
+  "full_name": "andr1an/marc-mcp",
+  "html_url": "https://github.com/andr1an/marc-mcp",
+  "description": "MCP server for accessing https://marc.info/ mailing list archives",
+  "topics": [
+    "linux",
+    "mailing-list",
+    "marc-info",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "unix"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Go",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-02-24T17:51:27Z",
+  "last_pushed_at": "2026-03-08T07:16:27Z",
+  "fetched_at": "2026-07-12T00:16:10.707Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# marc-mcp\n\nMCP server for accessing [marc.info](https://marc.info/) mailing list archives.\n\n## Features\n\n- Streamable HTTP MCP transport (stateless, SSE-capable)\n- Browse mailing lists by category and/or regex filter\n- List messages by month with page + per-page limit controls\n- Fetch full message content (headers + body)\n- Search within a list by subject, author, or body\n- Built-in SQLite cache with TTL for scraped results\n- Automatic retry with backoff for transient upstream errors\n- Optional JWT bearer-token authentication\n\n## Architecture\n\n```text\nmain.go\ninternal/\n  auth/\n  cache/\n  config/\n  httpserver/\n  marc/\n  middleware/\n  tools/\n  transport/\n```\n\n- `internal/marc`: HTML scraper client for marc.info\n- `internal/cache`: cache + FTS schema\n- `internal/tools`: MCP tool implementations\n- `internal/transport`: Streamable HTTP MCP handler\n- `internal/httpserver`: route wiring (`/health`, `/mcp`)\n\n## Requirements\n\n- Go 1.25+\n\n## Development\n\n```bash\nmake test\nmake build\n```\n\nAvailable targets:\n\n- `make test` - run unit tests\n- `make build` - build local binary `./marc-mcp`\n- `make build-all` - cross-build `marc-mcp-{os}-{arch}` binaries\n- `make print-version` - print linker version variables\n- `make clean` - remove generated binaries\n\n## Run\n\n```bash\ngo run .\n```\n\nServer defaults to `:8080`. `make build` produces a `marc-mcp` binary in the project root.\n\n## Configuration\n\n| Variable | Description | Default |\n|---|---|---|\n| `LISTEN_ADDR` | Server listen address | `:8080` |\n| `AUTH_MODE` | `disabled` or `jwt` | `disabled` |\n| `JWT_PUBLIC_KEY` | RSA public key path for JWT validation | (empty) |\n| `LOG_LEVEL` | `debug` / `info` / `warn` / `error` | `info` |\n| `MARC_TIMEOUT` | HTTP timeout for marc.info requests | `2m` |\n| `MARC_CACHE_DB` | Custom SQLite cache path | OS user cache dir + `/marc-mcp/cache.db` |\n| `MARC_CACHE_TTL` | Cache TTL (Go duration) | `24h` |\n| `READ_TIMEOUT` | HTTP read timeout | `15s` |\n| `WRITE_TIMEOUT` | HTTP write timeout | `60s` |\n| `IDLE_TIMEOUT` | HTTP idle timeout | `60s` |\n| `SHUTDOWN_TIMEOUT` | Graceful shutdown timeout | `10s` |\n| `MAX_HEADER_BYTES` | Max HTTP header bytes | `1048576` |\n\n`MARC_TIMEOUT` valid range is 10s to 15m.\n\n## Authentication (Optional)\n\nBearer token protection is supported with JWT validation.\n\nEnable with:\n\n```bash\nAUTH_MODE=jwt\nJWT_PUBLIC_KEY=public.pem\n```\n\nRequests must include:\n\n```text\nAuthorization: Bearer <token>\n```\n\n## Endpoints\n\n- `GET /health`\n- MCP Streamable HTTP transport at `/mcp`\n\n## Tools\n\n### `list_mailing_lists`\n\nList all available mailing lists, optionally filtered by category and/or name regex.\n\nParameters:\n- `category` (optional)\n- `filter` (optional, regex)\n\n### `list_messages`\n\nList messages from a mailing list with pagination.\n\nParameters:\n- `list` (required)\n- `month` (optional, `YYYYMM`, default current month)\n- `page` (optional, 1-based, default `1`)\n- `limit` (optional)\n\n### `get_message`\n\nFetch full content of a specific message.\n\nParameters:\n- `list` (required)\n- `message_id` (required)\n\n### `search_messages`\n\nSearch messages in a mailing list.\n\nParameters:\n- `list` (required)\n- `query` (required)\n- `search_type` (optional: `s` subject, `a` author, `b` body; default `s`)\n\n## Tests\n\n```bash\nmake test\n```\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "main.go",
+    "size": 2197,
+    "content": "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\t\"log/slog\"\n\t\"os\"\n\t\"os/signal\"\n\t\"syscall\"\n\t\"time\"\n\n\t\"github.com/andr1an/marc-mcp/internal/config\"\n\t\"github.com/andr1an/marc-mcp/internal/httpserver\"\n\t\"github.com/andr1an/marc-mcp/internal/tools\"\n)\n\nvar (\n\tversion = \"dev\"\n\tcommit  = \"none\"\n\tdate    = \"unknown\"\n)\n\nfunc main() {\n\tif len(os.Args) > 1 && os.Args[1] == \"version\" {\n\t\tfmt.Printf(\"version=%s commit=%s date=%s\\n\", version, commit, date)\n\t\treturn\n\t}\n\n\tcfg, err := config.Load()\n\tif err != nil {\n\t\tslog.Error(\"failed to load config\", \"error\", err)\n\t\tos.Exit(1)\n\t}\n\n\tlogger := newLogger(cfg.LogLevel)\n\tslog.SetDefault(logger)\n\n\tsrv, err := httpserver.New(cfg, logger, version)\n\tif err != nil {\n\t\tlogger.Error(\"failed to build server\", \"error\", err)\n\t\tos.Exit(1)\n\t}\n\n\tgo func() {\n\t\tlogger.Info(\"starting server\",\n\t\t\t\"addr\", srv.Addr,\n\t\t\t\"version\", version,\n\t\t\t\"commit\", commit,\n\t\t\t\"date\", date,\n\t\t\t\"read_timeout\", cfg.ReadTimeout,\n\t\t\t\"write_timeout\", cfg.WriteTimeout,\n\t\t\t\"idle_timeout\", cfg.IdleTimeout,\n\t\t)\n\n\t\tif err := srv.ListenAndServe(); err != nil && err.Error() != \"http: Server closed\" {\n\t\t\tlogger.Error(\"server exited with error\", \"error\", err)\n\t\t\tos.Exit(1)\n\t\t}\n\t}()\n\n\twaitForShutdown(logger, srv, cfg.ShutdownTimeout)\n}\n\nfunc newLogger(level string) *slog.Logger {\n\tvar slogLevel slog.Level\n\n\tswitch level {\n\tcase \"debug\":\n\t\tslogLevel = slog.LevelDebug\n\tcase \"warn\":\n\t\tslogLevel = slog.LevelWarn\n\tcase \"error\":\n\t\tslogLevel = slog.LevelError\n\tdefault:\n\t\tslogLevel = slog.LevelInfo\n\t}\n\n\thandler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slogLevel})\n\treturn slog.New(handler)\n}\n\nfunc waitForShutdown(logger *slog.Logger, srv *httpserver.Server, timeout time.Duration) {\n\tctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)\n\tdefer stop()\n\n\t<-ctx.Done()\n\tlogger.Info(\"shutdown signal received\")\n\n\tshutdownCtx, cancel := context.WithTimeout(context.Background(), timeout)\n\tdefer cancel()\n\n\tif err := srv.Shutdown(shutdownCtx); err != nil {\n\t\tlogger.Error(\"graceful shutdown failed\", \"error\", err)\n\t}\n\n\tif err := tools.Close(); err != nil {\n\t\tlogger.Error(\"failed to close marc client\", \"error\", err)\n\t}\n\n\tlogger.Info(\"server stopped\")\n}\n"
+  },
+  "content_fetch_notes": []
+}

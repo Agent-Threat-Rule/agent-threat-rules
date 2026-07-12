@@ -1,0 +1,49 @@
+{
+  "full_name": "paulburgess1357/nvim-mcp",
+  "html_url": "https://github.com/paulburgess1357/nvim-mcp",
+  "description": "MCP server that connects AI agents to your running Neovim instance via msgpack-RPC — no plugins required.",
+  "topics": [
+    "ai",
+    "artificial-intelligence",
+    "claude",
+    "claude-code",
+    "codex",
+    "cursor",
+    "large-language-model",
+    "llm",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "msgpack-rpc",
+    "neovim",
+    "neovim-config",
+    "nvim",
+    "openai",
+    "text-editor",
+    "vim"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 59,
+  "forks": 5,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2026-04-05T01:56:42Z",
+  "last_pushed_at": "2026-05-19T01:12:12Z",
+  "fetched_at": "2026-07-11T23:26:46.449Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# nvim-mcp\n\n[![PyPI](https://img.shields.io/pypi/v/nvim-mcp)](https://pypi.org/project/nvim-mcp/)\n\nAn [MCP](https://modelcontextprotocol.io/) server that gives AI agents first-class access to your running Neovim session. It connects through Neovim's native msgpack-RPC socket — no plugins required.\n\nWorks with Cursor, Claude Code, Codex, OpenCode, and any MCP-compatible client.\n\n_Before you connect an agent to Neovim, please read [Working safely](#working-safely)._\n\n## What agents can do\n\n- **See what you see** — editor mode, working directory, open buffers, window layout, cursor context, folds, selections, marks, and diagnostics.\n- **Edit buffers in memory** — find-and-replace or full rewrites with immediate feedback and full undo support. Nothing touches disk until you save.\n- **Run any Vim command** — `:w`, `:e`, `:vsplit`, macros, or anything else you could type at the command line.\n- **Send keystrokes** — navigate, enter insert mode, trigger mappings.\n- **Query LSP diagnostics** — errors, warnings, and hints across one buffer or the whole session.\n- **Annotate code with highlights and virtual text** — colored line highlights and inline/above/below text notes that never touch the buffer's real content.\n- **Work with multiple instances** — auto-discovers running sessions and connects to the right one. See [multiple instances](docs/MULTIPLE_INSTANCES.md).\n\nAnything you can do in Neovim, the agent can too. See the [full tool reference](docs/TOOLS.md) for details.\n\n## Demos\n\n<details open>\n<summary>Using nvim-mcp across two terminals</summary>\n\n<video src=\"https://github.com/user-attachments/assets/6de3f7a4-9c12-4a2f-96d9-d02d21935d37\"></video>\n\n</details>\n\n<details>\n<summary>Using nvim-mcp with a terminal inside Neovim</summary>\n\n<video src=\"https://github.com/user-attachments/assets/93fd17a6-0f93-48db-8428-d1cba51e29f2\"></video>\n\n</details>\n\n<details>\n<summary>Claude and Cursor collaborating in one Neovim instance</summary>\n\n<video src=\"https://github.com/user-attachments/assets/d92915ec-2108-4166-9911-4d09a5025865\"></video>\n\n</details>\n\n<details>\n<summary>Using nvim-mcp in Cursor</summary>\n\n<video src=\"https://github.com/user-attachments/assets/388f5f39-ab4d-4747-9eca-e09c666439ee\"></video>\n\n</details>\n\n<details>\n<summary>Multiple Neovim instances</summary>\n\n<video src=\"https://github.com/user-attachments/assets/15fa449e-0296-4815-8bfc-b9c33b5075bb\"></video>\n\n</details>\n\n## Quick start\n\nnvim-mcp runs via [uv](https://docs.astral.sh/uv/) (recommended) or [Nix](https://nixos.org/download/).\n\n> **Cursor users:** A [Marketplace plugin](https://cursor.com/marketplace) is pending review — once available, it installs the MCP server and agent rule together (you can skip to step 4). To activate the rule, start chats with something like _\"Connect to my Neovim instance\"_ — or set the rule to \"Always\" in **Settings → Rules** to apply it on every turn.\n\n1. **Install a launcher.**\n\n   <details open>\n   <summary><strong>uv</strong></summary>\n\n   ```bash\n   curl -LsSf https://astral.sh/uv/install.sh | sh\n   ```\n\n   </details>\n\n   <details>\n   <summary><strong>Nix</strong></summary>\n\n   Install [Nix](https://nixos.org/download/) — flakes must be enabled.\n\n   </details>\n\n2. **Register the MCP server** with your client. Example for Cursor (`.cursor/mcp.json`):\n\n   <details open>\n   <summary><strong>With uv</strong></summary>\n\n   ```json\n   {\n     \"mcpServers\": {\n       \"nvim-mcp\": {\n         \"command\": \"uvx\",\n         \"args\": [\"nvim-mcp\"]\n       }\n     }\n   }\n   ```\n\n   </details>\n\n   <details>\n   <summary><strong>With Nix</strong></summary>\n\n   ```json\n   {\n     \"mcpServers\": {\n       \"nvim-mcp\": {\n         \"command\": \"nix\",\n         \"args\": [\"run\", \"github:paulburgess1357/nvim-mcp\"]\n       }\n     }\n   }\n   ```\n\n   </details>\n\n   <br>\n\n   For Claude Code, Codex, Claude Desktop, OpenCode, and other clients, see the [configuration guide](config/README.md).\n\n3. **Add agent rules — do not skip this.** Without rules, the agent has the tools but doesn't know *when or how* to use them, and behavior will be unreliable. See the [configuration guide](config/README.md#2-add-agent-rules) for setup.\n\n4. **Start Neovim** — on most Linux systems it listens on a Unix socket automatically and is discovered by nvim-mcp. If auto-discovery doesn't work, see [environment variables](config/README.md#3-environment-variables-optional). Running multiple instances? See [multiple instances](docs/MULTIPLE_INSTANCES.md).\n\n## Verify it works\n\nOpen a file in Neovim and paste this into your AI agent:\n\n```\nFor each step: explain what you're about to do, then do it, then tell me\nwhat happened. Wait for me to say \"next\" before moving on.\n\n1. What file am I in? Highlight the function my cursor is in.\n2. Are there any diagnostics? Highlight any lines with errors or warnings.\n3. Add a docstring above the function, then show me the diff.\n4. Open a vertical split, write a short test for that function, and save both files.\n```\n\n## Working safely\n\nThe tools and agent rules are designed to use non-destructive operations — edits happen in memory, undo history is preserved, and the agent is steered toward buffer operations. But LLMs are non-deterministic, have full access to Neovim's API, and you should assume they will make mistakes. Work in a version-controlled directory.\n\n## Requirements\n\n- Linux\n- Python ≥ 3.10\n- Neovim ≥ 0.11 ([older versions](config/README.md#3-environment-variables-optional) work with `--listen` and `NVIM_ADDRESS`)\n\n## License\n\nMIT — see [LICENSE](LICENSE).\n"
+  },
+  "descriptor_file": {
+    "path": "mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"nvim-mcp\": {\n      \"command\": \"uvx\",\n      \"args\": [\"nvim-mcp\"]\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

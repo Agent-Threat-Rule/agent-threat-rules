@@ -1,0 +1,36 @@
+{
+  "full_name": "Valentino-Veljanovski/slack-multilingual-executive-assistant-snippets",
+  "html_url": "https://github.com/Valentino-Veljanovski/slack-multilingual-executive-assistant-snippets",
+  "description": "Slack-based multilingual AI executive assistant patterns in n8n with Outlook email, calendar, contacts, MCP tools, approval preview, and Azure OpenAI.",
+  "topics": [
+    "ai-agents",
+    "azure-openai",
+    "mcp-servers",
+    "microsoft",
+    "n8n",
+    "outlook",
+    "slack",
+    "workflow-automation"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "JavaScript",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-05-23T22:10:43Z",
+  "last_pushed_at": "2026-05-24T13:16:04Z",
+  "fetched_at": "2026-07-12T00:16:46.152Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Slack Multilingual Executive Assistant Snippets\n\nA public, safe overview of a Slack-based multilingual AI executive assistant built in n8n. The system uses a central AI agent with specialized MCP tool workflows for Outlook email, calendar, contacts, attachments, drafts, folders, web search, and date/time handling.\n\nThe assistant is designed for natural-language work requests. A user can write in one language, ask the assistant to draft an email in another language, look up the recipient from Outlook contacts, check calendar availability, preview the message, and send it only after approval.\n\nThis repository documents the architecture decisions and implementation approach from a private automation project. The examples are rewritten for public review so the technical work can be discussed without exposing personal data, workspace identifiers, credentials, n8n cloud endpoints, mailbox content, or raw workflow exports.\n\n> Original n8n workflow JSON, Slack channel IDs, user IDs, credential IDs, tenant configuration, private MCP URLs, contact records, calendar entries, and mailbox content are not part of this repository. The snippets are public-safe examples with neutral names and generic placeholders.\n\n---\n\n## What This Pattern Solves\n\nPersonal admin work often crosses several systems:\n\n- finding a person in contacts\n- checking the calendar for the next free time\n- drafting an email in the correct tone and language\n- attaching or referencing files when needed\n- creating drafts or folders\n- confirming what will happen before the action is executed\n\nARIA turns those steps into one Slack conversation while keeping a human approval gate before sensitive actions such as sending an email.\n\nExample request shape:\n\n```text\nWrite to my contact about today's lunch. Apologize in a friendly tone because I cannot make it. Check my next free calendar slot and include that date. Draft the email in Romanian and show it to me before sending.\n```\n\nThe assistant interprets the request, calls the right tools, prepares a preview, and waits for approval.\n\n---\n\n## Architecture at a Glance\n\n```text\nSlack message\n    |\n    v\nSmart Processor\n    |  normalizes text, user context, language, priority, attachments\n    v\nSmart Router\n    |------------------------------|\n    v                              v\nCommand Center                 ARIA Agent\n(help/status/quick actions)       |\n                                  | uses tools\n        -------------------------------------------------\n        |          |          |          |              |\n        v          v          v          v              v\n   Email MCP  Calendar MCP  Contacts MCP  Drafts MCP  Attachments MCP\n        |          |          |          |              |\n        -------------------------------------------------\n                                  |\n                                  v\n                          Approval Preview\n                                  |\n                                  v\n                         Slack confirmation\n```\n\nSee [`docs/architecture.md`](docs/architecture.md) for the full workflow breakdown.\n\n---\n\n## Repository Structure\n\n```text\n.\n|-- README.md\n|-- docs/\n|   |-- architecture.md\n|   |-- mcp-agents.md\n|   |-- approval-workflow.md\n|   `-- sanitization.md\n`-- snippets/\n    |-- README.md\n    |-- slack-message-normalizer.js\n    |-- smart-router.js\n    |-- approval-gate.js\n    |-- mcp-tool-registry.js\n    `-- response-cleaner.js\n```\n\nThe snippets are adapted from real n8n Code-node patterns. They show implementation shape and reliability decisions without republishing the original workflow exports.\n\n---\n\n## Tech Stack\n\n- **Orchestration:** n8n\n- **Control surface:** Slack trigger and Slack message delivery\n- **AI:** Azure OpenAI through n8n LangChain nodes\n- **Tool pattern:** MCP client tools and MCP trigger workflows\n- **Productivity tools:** Microsoft Outlook email, calendar, contacts, attachments, drafts, folders\n- **Search:** SerpAPI web search tool\n- **Code:** JavaScript in n8n Code nodes\n\n---\n\n## Purpose\n\nI use this repository to explain the technical structure behind a multilingual Slack AI assistant: how natural-language requests are normalized, routed, delegated to specialized tools, reviewed through an approval step, and confirmed back in Slack.\n\nThe full portfolio case study is available at [valentinoveljanovski.de/projects/slack-multilingual-executive-assistant](https://valentinoveljanovski.de/projects/slack-multilingual-executive-assistant).\n\n---\n\n## About\n\nBuilt by [Valentino Veljanovski](https://valentinoveljanovski.de), automation developer based in München.\n\n---\n\n## Viewing Notice\n\nThis repository is published for public review during hiring and collaboration conversations.\n\nAll code, documentation, diagrams, and content in this repository remain the intellectual property of the author. **All rights reserved.**\n\nNo license is granted, expressed or implied, for reuse, redistribution, modification, or commercial use of any material in this repository without prior written permission from the author.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

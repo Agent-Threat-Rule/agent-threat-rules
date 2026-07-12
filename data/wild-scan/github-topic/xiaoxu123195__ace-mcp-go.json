@@ -1,0 +1,36 @@
+{
+  "full_name": "xiaoxu123195/ace-mcp-go",
+  "html_url": "https://github.com/xiaoxu123195/ace-mcp-go",
+  "description": "Go-based MCP server for codebase indexing and semantic search (Augment-compatible)",
+  "topics": [
+    "ai-tools",
+    "augment",
+    "code-indexing",
+    "code-search",
+    "go",
+    "mcp",
+    "model-context-protocol",
+    "semantic-search"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 55,
+  "forks": 1,
+  "open_issues": 0,
+  "language": "Go",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-11-16T07:03:31Z",
+  "last_pushed_at": "2025-11-16T13:53:11Z",
+  "fetched_at": "2026-07-11T23:28:15.177Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Ace-MCP-Go\n\n> Go 语言实现的 Model Context Protocol (MCP) 服务器，为 AI 助手提供代码库索引和语义搜索能力\n\n[![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://go.dev/)\n[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)\n\n[English](README_EN.md) | 简体中文\n\n## 📖 简介\n\n**Ace-MCP-Go** 是一个使用 Go 语言实现的 MCP 服务器，旨在为 AI 助手（如 Claude、GPT、Cursor 等）提供强大的代码库索引和语义搜索功能。\n\n### 核心特性\n\n- **🚀 高性能**: 利用 Go 的并发特性，支持大规模代码库的快速索引\n- **🔍 语义搜索**: 基于外部 API 的智能代码检索\n- **📦 增量索引**: SHA-256 哈希去重，只处理变更文件\n- **🌐 跨平台**: 完整支持 Windows、Linux、macOS 和 WSL\n- **🎯 零配置**: 首次运行自动生成默认配置\n- **🖥️ Web 管理**: 实时日志、项目管理、配置编辑\n\n## 🎯 使用场景\n\n- AI 辅助代码审查和理解\n- Bug 调试和问题定位\n- 快速理解大型代码库\n- 代码重构辅助\n- 自动化文档生成\n\n## 🏗️ 架构设计\n\n```\nMCP 客户端 (Claude/Cursor)\n    ↕ stdio (JSON-RPC)\nMCP 服务器层\n    ↕\n业务逻辑层 (IndexManager)\n    ↕ 并发处理\n文件收集 → 哈希计算 → 批量上传\n    ↕\n外部 API + 本地数据库\n```\n\n### 并发模型\n\n- **文件收集**: Worker Pool 模式，并发度 = CPU 核数 × 2\n- **哈希计算**: 并发处理，并发度 = CPU 核数\n- **批量上传**: Semaphore 限流，最大 3 并发请求\n\n## 🚀 快速开始\n\n### 前置要求\n\n- Go 1.21 或更高版本\n- Git\n\n### 安装\n\n```bash\n# 克隆仓库\ngit clone https://github.com/yourusername/ace-mcp-go.git\ncd ace-mcp-go\n\n# 安装依赖\nmake install\n\n# 构建\nmake build\n```\n\n### 配置\n\n首次运行会自动生成配置文件 `~/.acemcp/settings.toml`：\n\n```toml\n[api]\nendpoint = \"https://api.example.com\"\ntoken = \"your-api-token-here\"\n\n[index]\nbatch_size = 10\nmax_lines = 800\nconcurrency = 0  # 0 = 自动检测\n\n[web_server]\nenabled = true\nhost = \"127.0.0.1\"\nport = 3000\n```\n\n编辑配置文件，设置您的 API 端点和令牌。\n\n### 运行\n\n```bash\n# MCP 服务器模式（stdio）\n./bin/acemcp\n\n# 带 Web 管理界面\n./bin/acemcp --web-server\n```\n\n### 与 Claude Desktop 集成\n\n编辑 Claude Desktop 配置文件：\n\n**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`\n**Windows**: `%APPDATA%\\Claude\\claude_desktop_config.json`\n\n```json\n{\n  \"mcpServers\": {\n    \"acemcp-go\": {\n      \"command\": \"/path/to/ace-mcp-go/bin/acemcp\"\n    }\n  }\n}\n```\n\n重启 Claude Desktop 即可使用 `search_context` 工具。\n\n## 📚 开发文档\n\n详细的开发文档请参阅 [DEVELOPMENT.md](DEVELOPMENT.md)。\n\n### 项目结构\n\n```\nace-mcp-go/\n├── cmd/acemcp/              # 主程序入口\n├── internal/                # 私有代码\n│   ├── config/             # 配置管理\n│   ├── logger/             # 日志系统\n│   ├── errors/             # 错误处理\n│   ├── index/              # 索引管理\n│   ├── tools/              # MCP 工具\n│   ├── web/                # Web 服务器\n│   └── utils/              # 工具函数\n├── pkg/apiclient/          # API 客户端\n└── configs/                # 配置示例\n```\n\n### 开发命令\n\n```bash\n# 运行测试\nmake test\n\n# 运行测试并生成覆盖率报告\nmake test-coverage\n\n# 运行性能测试\nmake bench\n\n# 格式化代码\nmake fmt\n\n# 开发模式（热重载）\nmake dev\n\n# 多平台构建\nmake build-all\n```\n\n## 🧪 测试\n\n```bash\n# 运行所有测试\nmake test\n\n# 查看覆盖率\nmake test-coverage\n# 在浏览器中打开 coverage.html\n\n# 性能测试\nmake bench\n```\n\n## 📦 构建\n\n```bash\n# 本地构建\nmake build\n\n# 多平台构建\nmake build-all\n# 生成文件：\n# - bin/acemcp-windows-amd64.exe\n# - bin/acemcp-linux-amd64\n# - bin/acemcp-darwin-amd64\n# - bin/acemcp-darwin-arm64\n```\n\n## 🛠️ 技术栈\n\n| 模块 | 技术 | 说明 |\n|------|------|------|\n| MCP SDK | `modelcontextprotocol/go-sdk` | 官方 SDK |\n| Web 框架 | `gin-gonic/gin` | 高性能 HTTP 框架 |\n| 日志 | `sirupsen/logrus` | 结构化日志 |\n| 配置 | `spf13/viper` | 配置管理 |\n| HTTP 客户端 | `go-resty/resty` | REST 客户端 |\n| WebSocket | `gorilla/websocket` | WebSocket 支持 |\n| 并发控制 | `golang.org/x/sync` | 官方并发库 |\n\n## 🤝 贡献\n\n欢迎贡献！请查看 [CONTRIBUTING.md](CONTRIBUTING.md) 了解详情。\n\n### 开发流程\n\n1. Fork 本仓库\n2. 创建特性分支 (`git checkout -b feature/amazing-feature`)\n3. 提交更改 (`git commit -m 'feat: add amazing feature'`)\n4. 推送到分支 (`git push origin feature/amazing-feature`)\n5. 创建 Pull Request\n\n## 📝 许可证\n\n本项目采用 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件。\n\n## 📧 联系方式\n\n- Issue: [GitHub Issues](https://github.com/xiaoxu123195/ace-mcp-go/issues)\n- Email: cherrytump@gmail.com\n\n## 🌟 致谢\n\n感谢所有贡献者和 MCP 社区的支持！\n\n---\n\n**注意**: 本项目目前处于活跃开发阶段，API 可能会有变更。\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

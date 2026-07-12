@@ -1,0 +1,39 @@
+{
+  "full_name": "hqn21/protocols-io-mcp-server",
+  "html_url": "https://github.com/hqn21/protocols-io-mcp-server",
+  "description": "An MCP server that enables MCP clients like Claude Desktop to interact with data from protocols.io.",
+  "topics": [
+    "ai",
+    "ai-integration",
+    "llm",
+    "llm-integration",
+    "llms",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "model-context-protocol",
+    "protocols-io",
+    "python"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 15,
+  "forks": 5,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-07-07T06:29:05Z",
+  "last_pushed_at": "2026-01-14T13:29:12Z",
+  "fetched_at": "2026-07-12T00:29:10.221Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Protocols.io MCP Server\n\nA Model Context Protocol (MCP) server that enables MCP clients like Claude Desktop to interact with [protocols.io](https://www.protocols.io), a popular platform for sharing scientific protocols and methods.\n\n## Available Tools\n\nThe server provides the following tools that can be used by MCP clients:\n\n### Search and Retrieval\n- `search_public_protocols` - Search for public protocols by keyword\n- `get_protocol` - Get basic protocol information by ID\n- `get_protocol_steps` - Get detailed steps for a specific protocol\n- `get_my_protocols` - Retrieve all protocols from your account\n\n### Protocol Creation and Management\n- `create_protocol` - Create a new protocol with title and description\n- `update_protocol_title` - Update the title of an existing protocol\n- `update_protocol_description` - Update the description of an existing protocol\n\n### Step Management\n- `set_protocol_steps` - Replace all steps in a protocol\n- `add_protocol_step` - Add a single step to the end of a protocol\n- `delete_protocol_step` - Delete a specific step from a protocol\n\n## Requirements\n\n- Python 3.10 or higher\n- protocols.io account with API credentials\n- MCP client (such as Claude Desktop)\n\n### Obtain Protocols.io API Credentials\n\n1. Visit [protocols.io/developers](https://www.protocols.io/developers)\n2. Sign in to your account\n3. Navigate to the **API Clients** section\n4. Click **ADD CLIENT** to create a new application\n5. Configure and copy the credentials based on your use case:\n   - **Client Access Token**: Copy the generated token for simple authentication (suitable for local STDIO transport)\n   - **Client ID** and **Client Secret**: For OAuth 2.0 authentication (suitable for remote HTTP/SSE transport):\n     - Set the redirect URL to `{your_mcp_base_url}/auth/callback`\n     - Copy the Client ID and Client Secret\n\n## Installation\n\n### Quick Start with Docker\n\n```bash\ndocker run -d -p 8000:8000 -e PROTOCOLS_IO_CLIENT_ID=\"your_client_id\" -e PROTOCOLS_IO_[REDACTED-GENERIC_KV_SECRET]\" -e PROTOCOLS_IO_MCP_BASE_URL=\"https://example.com\" --name protocols-io-mcp --restart always ghcr.io/hqn21/protocols-io-mcp:latest\n```\n\nThe server will be accessible at `http://0.0.0.0:8000/mcp` with HTTP transport\n\n### Install via pip\n\n```bash\npip install protocols-io-mcp\n```\n\n#### Set Environment Variables\n\n##### STDIO Transport\n\n```bash\nexport PROTOCOLS_IO_CLIENT_[REDACTED-GENERIC_KV_SECRET]\"\n```\n\n##### HTTP/SSE Transport\n\n```bash\nexport PROTOCOLS_IO_CLIENT_ID=\"your_client_id\"\nexport PROTOCOLS_IO_[REDACTED-GENERIC_KV_SECRET]\"\nexport PROTOCOLS_IO_MCP_BASE_URL=\"https://example.com\"\n```\n\n## Usage\n\n### Command Line Interface\n\nRun the MCP server with various transport options:\n\n```bash\n# Default: STDIO transport\nprotocols-io-mcp\n\n# HTTP transport\nprotocols-io-mcp --transport http --host 127.0.0.1 --port 8000\n\n# SSE transport\nprotocols-io-mcp --transport sse --host 127.0.0.1 --port 8000\n```\n\n#### CLI Options\n\n```\nUsage: protocols-io-mcp [OPTIONS]\n\n  Run the protocols.io MCP server.\n    \nOptions:\n  --transport [stdio|http|sse]  Transport protocol to use [default: stdio]\n  --host TEXT                   Host to bind to when using http and sse\n                                transport [default: 127.0.0.1]\n  --port INTEGER                Port to bind to when using http and sse\n                                transport [default: 8000]\n  --help                        Show this message and exit.\n```\n\n### Integration with Claude Desktop\n\nTo use this server with Claude Desktop, add the following configuration to your `claude_desktop_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"protocols-io\": {\n      \"command\": \"protocols-io-mcp\",\n      \"env\": {\n        \"PROTOCOLS_IO_CLIENT_[REDACTED-GENERIC_KV_SECRET]\"\n      }\n    }\n  }\n}\n```\n\n#### Troubleshooting\n\n##### MCP protocols-io: spawn protocols-io-mcp ENOENT\n\nThis error indicates that Claude Desktop cannot find the `protocols-io-mcp` command. To resolve this:\n1. Make sure you have installed the `protocols-io-mcp` package globally using pip.\n2. Change the `command` field in your `claude_desktop_config.json` to the full path of the `protocols-io-mcp` executable. You can find the path by running:\n   ```bash\n   which protocols-io-mcp\n   ```\n3. Your final configuration should look like:\n   ```json\n   {\n     \"mcpServers\": {\n       \"protocols-io\": {\n         \"command\": \"/full/path/to/protocols-io-mcp\",\n         \"env\": {\n           \"PROTOCOLS_IO_CLIENT_[REDACTED-GENERIC_KV_SECRET]\"\n         }\n       }\n     }\n   }\n   ```\n\n## Development\n\n### Running Tests\n\nEnsure you have set the `PROTOCOLS_IO_CLIENT_ACCESS_TOKEN` environment variable, then run:\n\n```bash\npytest\n```\n\n## License\n\nThis project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details."
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

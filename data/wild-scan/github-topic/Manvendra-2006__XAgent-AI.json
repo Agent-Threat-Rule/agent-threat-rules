@@ -1,0 +1,34 @@
+{
+  "full_name": "Manvendra-2006/XAgent-AI",
+  "html_url": "https://github.com/Manvendra-2006/XAgent-AI",
+  "description": "Autonomous AI Agent built with Node.js, Groq LLM & MCP — dynamic tool calling, SSE streaming, and recursive reasoning loops.",
+  "topics": [
+    "expressjs",
+    "grok-api",
+    "mcp-client",
+    "mcp-server",
+    "mcp-tools",
+    "nodejs"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 3,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "JavaScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-05-16T13:53:00Z",
+  "last_pushed_at": "2026-05-19T06:26:54Z",
+  "fetched_at": "2026-07-12T00:36:18.114Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# XAGent 🤖\n\nAn **MCP-based Autonomous AI Agent** built with Node.js, Groq LLM, and SSE (Server-Sent Events) transport. XAGent uses a custom MCP (Model Context Protocol) client-server architecture to enable dynamic tool calling, recursive reasoning, and external API integrations.\n\n---\n\n## 🧠 What is XAGent?\n\nXAGent is an autonomous agent that thinks, plans, and acts — it can call external tools dynamically, reason recursively over results, and integrate with APIs through a structured MCP pipeline.\n\n> **Note:** The Xdeveloper API integration is currently using **mock/simulated responses** as the paid version is not yet active. The architecture is fully wired and ready to swap in live responses.\n\n---\n\n## ✨ Features\n\n- 🔌 **MCP Client-Server Architecture** — Clean separation between the reasoning layer (client) and tool execution layer (server)\n- ⚡ **Groq LLM Integration** — Fast inference using Groq's API for agent reasoning\n- 📡 **SSE Transport** — Real-time, streaming communication between client and server via Server-Sent Events\n- 🔧 **Dynamic Tool Calling** — Agent discovers and calls tools at runtime based on task requirements\n- 🔁 **Recursive Reasoning** — Agent loops over tool results, re-reasons, and takes follow-up actions until the task is complete\n- 🌐 **External API Integrations** — Easily extendable with new MCP tools for any external service\n- 🧪 **Mock Mode** — Simulated Xdeveloper responses for local development and testing\n\n---\n\n## 📁 Folder Structure\n\n```\nXAGent/\n├── index.js              # MCP Client — Agent entry point, Groq LLM reasoning loop\n├── package.json\n├── package-lock.json\n├── .gitignore\n│\n└── server/\n    ├── index.js          # MCP Server — SSE transport, tool registry, request handler\n    ├── mcp.tool.js       # Tool definitions — all MCP tools (including Xdeveloper mock)\n    ├── package.json\n    ├── package-lock.json\n    └── .gitignore\n```\n\n### File Responsibilities\n\n| File | Role |\n|------|------|\n| `index.js` (root) | MCP Client: initializes Groq LLM, sends prompts, handles tool call responses, drives the recursive reasoning loop |\n| `server/index.js` | MCP Server: sets up SSE endpoint, receives tool call requests from client, routes to correct tool |\n| `server/mcp.tool.js` | Defines all available MCP tools — their names, descriptions, input schemas, and handler logic (Xdeveloper calls are mocked here) |\n\n---\n\n## 🚀 Getting Started\n\n### Prerequisites\n\n- Node.js v18+\n- A [Groq API Key](https://console.groq.com/)\n\n### Installation\n\n**1. Clone the repository**\n```bash\ngit clone https://github.com/Manvendra-2006/XAGent.git\ncd XAGent\n```\n\n**2. Install client dependencies**\n```bash\nnpm install\n```\n\n**3. Install server dependencies**\n```bash\ncd server\nnpm install\ncd ..\n```\n\n**4. Set up environment variables**\n\nCreate a `.env` file in the root:\n```env\nGROQ_[REDACTED-GENERIC_KV_SECRET]\n```\n\nCreate a `.env` file in `server/`:\n```env\nPORT=3001\n```\n\n---\n\n## ▶️ Running XAGent\n\n**Start the MCP Server first:**\n```bash\ncd server\nnode index.js\n```\n\n**Then start the MCP Client (Agent):**\n```bash\n# In root directory\nnode index.js\n```\n\nThe agent will connect to the server via SSE, receive available tools, and begin the autonomous reasoning loop.\n\n---\n\n## 🔄 How It Works\n\n```\nUser Prompt\n    │\n    ▼\nMCP Client (index.js)\n └─ Sends prompt to Groq LLM\n └─ Groq responds with tool_call or final answer\n    │\n    ├── If tool_call ──► SSE Request to MCP Server\n    │                        └─ server/index.js routes to mcp.tool.js\n    │                        └─ Tool executes (mock/live API)\n    │                        └─ Result streamed back via SSE\n    │\n    └── Result fed back into Groq context\n         └─ Loop continues until final answer\n              │\n              ▼\n         Final Response to User\n```\n\n---\n\n## 🧪 Mock Mode (Xdeveloper)\n\nSince the Xdeveloper paid API is not yet active, all Xdeveloper tool calls return **simulated responses** defined in `server/mcp.tool.js`. The structure mirrors the real API response so swapping in live calls requires only updating the handler logic.\n\n---\n\n## 🗺️ Roadmap\n\n- [ ] Activate live Xdeveloper API integration\n- [ ] Add memory/context persistence across sessions\n- [ ] Web UI for agent interaction\n- [ ] Support multiple concurrent agent sessions\n- [ ] Add more MCP tool integrations (search, code execution, etc.)\n\n---\n\n> Built with ❤️ using Node.js · Groq · MCP · SSE\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "full_name": "ylcnfrht/file-mcp-server",
+  "html_url": "https://github.com/ylcnfrht/file-mcp-server",
+  "description": null,
+  "topics": [
+    "ai",
+    "mcp-servers",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-10-15T22:30:35Z",
+  "last_pushed_at": "2025-10-15T22:30:38Z",
+  "fetched_at": "2026-07-12T00:15:42.868Z",
+  "readme": {
+    "path": "README.md",
+    "content": "## File MCP Server\n\nA tiny Model Context Protocol (MCP) server that exposes basic file system operations. Built with TypeScript and Zod. Easy to extend.\n\n### Quick Start\n\n```bash\nnpm install\nnpm run build && npm start\n```\n\nServer runs over stdio and operates on files within the current working directory (or `FILE_BASE_DIR` environment variable).\n\n### Development\n\n```bash\nnpm run dev\n```\n\n### Inspector\n\nInteractive testing with MCP Inspector:\n\n```bash\nnpm run build\nnpm run inspector\n```\n\nThis starts the server under the inspector so you can list tools and call them.\n\n### Tools\n\n- listFiles: lists all files in a directory\n- readFile: reads the content of a file\n- writeFile: writes content to a file (creates or overwrites)\n- deleteFile: deletes a file from the filesystem\n\nList tools request (MCP):\n\n```json\n{\n  \"method\": \"tools/list\",\n  \"params\": {}\n}\n```\n\nCall example:\n\n```json\n{\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"writeFile\",\n    \"arguments\": { \"filePath\": \"example.txt\", \"content\": \"Hello, World!\" }\n  }\n}\n```\n\nResponse example:\n\n```json\n{\n  \"content\": [{ \"type\": \"text\", \"text\": \"File \\\"example.txt\\\" written successfully.\" }]\n}\n```\n\n### Validation & Schemas\n\n- Input validation is done with Zod directly in `src/index.ts`.\n- `inputSchema` returned by `tools/list` is a JSON Schema object that MCP clients can use.\n\nFile path input schema (Zod):\n\n```ts\nconst readInput = z.object({ filePath: z.string().describe('Path to the file to read') });\n```\n\nFile path and content input schema (Zod):\n\n```ts\nconst writeInput = z.object({\n  filePath: z.string().describe('Path to the file to write'),\n  content: z.string().describe('Content to write'),\n});\n```\n\nJSON Schema (for MCP):\n\n```ts\nconst inputFilePathAndContentJsonSchema = {\n  type: 'object',\n  properties: {\n    filePath: { type: 'string', description: 'filePath' },\n    content: { type: 'string', description: 'content' },\n  },\n  required: ['filePath', 'content'],\n} as const;\n```\n\n### Project Structure\n\n```text\nsrc/\n  index.ts   # server setup, tool definitions, validation, and handlers\ndist/\n  index.js   # build output\n```\n\n### Extending (add a new tool)\n\nAll tools are defined in `src/index.ts` under the `tools` map. To add one:\n\n1. Add or reuse a Zod schema and corresponding JSON Schema.\n2. Implement an `execute` function.\n3. Register the tool in the `tools` map with `description`, `inputSchema`, `validate`, `execute`, and `format`.\n\n### Scripts\n\nFrom `package.json`:\n\n- `build`: compile TypeScript to `dist/`\n- `start`: run `node dist/index.js`\n- `dev`: `tsc && node dist/index.js`\n- `inspector`: `npx @modelcontextprotocol/inspector node dist/index.js`\n\n### Troubleshooting\n\n- \"Cannot find module …/x.js\": ensure ESM paths include `.js` extensions (tsconfig uses NodeNext).\n- \"File not found\": `readFile` throws when file doesn't exist.\n- \"Invalid arguments …\": Zod validation failed; ensure valid `filePath` and `content` strings.\n- \"Permission denied\": ensure the server has read/write permissions for the target directory.\n\n### License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

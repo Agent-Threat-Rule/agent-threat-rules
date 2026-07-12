@@ -1,0 +1,31 @@
+{
+  "full_name": "hannesrudolph/imessage-query-fastmcp-mcp-server",
+  "html_url": "https://github.com/hannesrudolph/imessage-query-fastmcp-mcp-server",
+  "description": "An MCP server that provides safe access to your iMessage database through Model Context Protocol (MCP). This server is built with the FastMCP framework and the imessagedb library, enabling LLMs to query and analyze iMessage conversations with proper phone number validation and attachment handling.",
+  "topics": [
+    "llm",
+    "mcp",
+    "mcp-server"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 79,
+  "forks": 18,
+  "open_issues": 3,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2024-12-15T07:00:12Z",
+  "last_pushed_at": "2026-02-03T23:54:27Z",
+  "fetched_at": "2026-07-11T23:08:29.165Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# iMessage Query MCP Server\n\nAn MCP server that provides safe access to your iMessage database through Model Context Protocol (MCP). This server is built with the FastMCP framework and the imessagedb library, enabling LLMs to query and analyze iMessage conversations with proper phone number validation and attachment handling.\n\n## 📋 System Requirements\n\n- macOS (required for iMessage database access)\n- Python 3.6+\n\n## 📦 Dependencies\n\nInstall all required dependencies:\n\n```bash\n# Using pip\npip install -r requirements.txt\n```\n\n### Required Packages\n- **fastmcp**: Framework for building Model Context Protocol servers\n- **imessagedb**: Python library for accessing and querying the macOS Messages database\n- **phonenumbers**: Google's phone number handling library for proper number validation and formatting\n\nAll dependencies are specified in `requirements.txt` for easy installation.\n\n## 📑 Table of Contents\n- [System Requirements](#-system-requirements)\n- [Dependencies](#-dependencies)\n- [MCP Tools](#%EF%B8%8F-mcp-tools)\n- [Getting Started](#-getting-started)\n- [Installation Options](#-installation-options)\n  - [Claude Desktop](#option-1-install-for-claude-desktop)\n  - [Cline VSCode Plugin](#option-2-install-for-cline-vscode-plugin)\n- [Safety Features](#-safety-features)\n- [Development Documentation](#-development-documentation)\n- [Environment Variables](#%EF%B8%8F-environment-variables)\n\n## 🛠️ MCP Tools\n\nThe server exposes the following tools to LLMs:\n\n### get_chat_transcript\nRetrieve message history for a specific phone number with optional date filtering. Includes:\n- Message text and timestamps\n- Attachment information (if any)\n- Proper phone number validation\n- Date range filtering\n\n## 🚀 Getting Started\n\nClone the repository:\n\n```bash\ngit clone https://github.com/hannesrudolph/imessage-query-fastmcp-mcp-server.git\ncd imessage-query-fastmcp-mcp-server\n```\n\n## 📦 Installation Options\n\nYou can install this MCP server in either Claude Desktop or the Cline VSCode plugin. Choose the option that best suits your needs.\n\n### Option 1: Install for Claude Desktop\n\nInstall using FastMCP:\n\n```bash\nfastmcp install imessage-query-server.py --name \"iMessage Query\"\n```\n\n### Option 2: Install for Cline VSCode Plugin\n\nTo use this server with the [Cline VSCode plugin](http://cline.bot):\n\n1. In VSCode, click the server icon (☰) in the Cline plugin sidebar\n2. Click the \"Edit MCP Settings\" button (✎)\n3. Add the following configuration to the settings file:\n\n```json\n{\n  \"imessage-query\": {\n    \"command\": \"uv\",\n    \"args\": [\n      \"run\",\n      \"--with\",\n      \"fastmcp\",\n      \"fastmcp\",\n      \"run\",\n      \"/path/to/repo/imessage-query-server.py\"\n    ]\n  }\n}\n```\n\nReplace `/path/to/repo` with the full path to where you cloned this repository (e.g., `/Users/username/Projects/imessage-query-fastmcp-mcp-server`)\n\n## 🔒 Safety Features\n\n- Read-only access to the iMessage database\n- Phone number validation using the phonenumbers library\n- Safe attachment handling with missing file detection\n- Date range validation\n- Progress output suppression for clean JSON responses\n\n## 📚 Development Documentation\n\nThe repository includes documentation files for development:\n\n- `dev_docs/imessagedb-documentation.txt`: Contains comprehensive documentation about the iMessage database structure and the imessagedb library's capabilities.\n\nThis documentation serves as context when developing features and can be used with LLMs to assist in development.\n\n## ⚙️ Environment Variables\n\nNo environment variables are required as the server automatically locates the iMessage database in the default macOS location."
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

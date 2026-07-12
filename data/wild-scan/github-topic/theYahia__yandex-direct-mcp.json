@@ -1,0 +1,44 @@
+{
+  "full_name": "theYahia/yandex-direct-mcp",
+  "html_url": "https://github.com/theYahia/yandex-direct-mcp",
+  "description": "MCP server for Yandex Direct — PPC campaigns, ads, keywords, stats (Russia). Part of WWmcp — 114 MCP servers for emerging markets.",
+  "topics": [
+    "advertising",
+    "ai-agents",
+    "anthropic",
+    "claude",
+    "emerging-markets",
+    "mcp",
+    "mcp-servers",
+    "model-context-protocol",
+    "russia",
+    "russian-api",
+    "typescript",
+    "yandex",
+    "yandex-direct"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 5,
+  "forks": 0,
+  "open_issues": 1,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-03-30T16:47:56Z",
+  "last_pushed_at": "2026-06-23T11:41:34Z",
+  "fetched_at": "2026-07-11T23:58:48.872Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# @theyahia/yandex-direct-mcp\n\nMCP-сервер для API Яндекс.Директ — управление контекстной рекламой из любого MCP-клиента (Claude, Cursor и др.): кампании, группы, объявления, ключевые слова, **ставки**, **минус-фразы**, статистика, баланс. **20 инструментов.**\n\n[![npm](https://img.shields.io/npm/v/@theyahia/yandex-direct-mcp)](https://www.npmjs.com/package/@theyahia/yandex-direct-mcp)\n[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)\n\n> Деньги — **в рублях** (бюджеты, ставки на вводе и выводе); сервер сам конвертирует в микроединицы API. Поддержаны **песочница** для безопасного теста и **агентский режим** (Client-Login).\n\n## Установка\n\n### Claude Desktop\n\n```json\n{\n  \"mcpServers\": {\n    \"yandex-direct\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@theyahia/yandex-direct-mcp\"],\n      \"env\": {\n        \"YANDEX_DIRECT_TOKEN\": \"ваш_токен\"\n      }\n    }\n  }\n}\n```\n\n### Claude Code\n\n```bash\nclaude mcp add yandex-direct -e YANDEX_DIRECT_TOKEN=ваш_токен -- npx -y @theyahia/yandex-direct-mcp\n```\n\n## Конфигурация (переменные окружения)\n\n| Переменная | Обязательна | Назначение |\n|------------|:-----------:|------------|\n| `YANDEX_DIRECT_TOKEN` | да | OAuth-токен Яндекс.Директ |\n| `YANDEX_DIRECT_SANDBOX` | нет | `1` — работа в [песочнице](https://yandex.ru/dev/direct/doc/concepts/sandbox.html) (изолированные данные, без трат). Тот же токен, отличается только URL |\n| `YANDEX_DIRECT_LOGIN` | нет | Логин клиента для агентских токенов (заголовок `Client-Login`). Обязателен, если токен агентский |\n\n### Как получить токен\n\nOAuth-токен выпускается для приложения, зарегистрированного в [Яндекс OAuth](https://oauth.yandex.ru/), с доступом к API Директа. Подробности — [регистрация приложения и получение токена](https://yandex.ru/dev/direct/doc/start/token.html). Доступ к API нужно [запросить в интерфейсе Директа](https://yandex.ru/dev/direct/doc/start/step1.html).\n\n## ⚠️ Внимание: реальные траты\n\nИнструменты `create_campaign`, `create_text_ad`, `add_keywords`, `set_keyword_bids` и др. меняют боевой рекламный аккаунт и могут **расходовать деньги**. Для отладки сценариев включайте песочницу (`YANDEX_DIRECT_SANDBOX=1`).\n\n## Инструменты (20)\n\n**Кампании**\n\n| Инструмент | Описание |\n|------------|----------|\n| `list_campaigns` | Список кампаний (фильтр по статусу/типу, пагинация) |\n| `get_campaign` | Детальная информация о кампании по ID |\n| `create_campaign` | Создать кампанию (бюджет в рублях, выбор стратегии) |\n| `update_campaign` | Обновить название/бюджет и/или статус (SUSPEND/RESUME/ARCHIVE/UNARCHIVE) |\n\n**Группы объявлений**\n\n| Инструмент | Описание |\n|------------|----------|\n| `list_ad_groups` | Группы объявлений выбранных кампаний |\n| `create_ad_group` | Создать группу с таргетингом по регионам |\n| `delete_ad_groups` | Удалить группы по ID |\n| `set_ad_group_negative_keywords` | Задать минус-фразы группы |\n\n**Объявления**\n\n| Инструмент | Описание |\n|------------|----------|\n| `list_ads` | Объявления в группах |\n| `create_text_ad` | Создать текстовое объявление (≤56/≤30/≤81) |\n| `update_text_ad` | Обновить заголовок/текст/ссылку |\n| `manage_ads` | suspend/resume/archive/unarchive/moderate/delete |\n\n**Ключевые слова и ставки**\n\n| Инструмент | Описание |\n|------------|----------|\n| `list_keywords` | Ключевые фразы в группах (ставки в рублях) |\n| `add_keywords` | Добавить ключевые фразы |\n| `set_keyword_bids` | Установить ставки (поиск/сети, рубли) на фразах/группах/кампаниях |\n| `manage_keywords` | suspend/resume/delete |\n| `set_campaign_negative_keywords` | Задать минус-фразы кампании |\n\n**Статистика, аккаунт, справочники**\n\n| Инструмент | Описание |\n|------------|----------|\n| `get_statistics` | Статистика за период (показы, клики, расход, CTR, CPC) |\n| `get_account_balance` | Баланс аккаунта (Live API v4) |\n| `get_regions` | Справочник кодов регионов (225 = Россия) |\n\n## Примеры запросов\n\n```\nПокажи все активные рекламные кампании\nСоздай кампанию \"Летняя распродажа\" с бюджетом 5000 ₽/день, старт 2026-05-01\nУстанови ставку 25 ₽ на ключевые фразы 111 и 222\nДобавь минус-фразы \"бесплатно\", \"скачать\" в кампанию 12345\nКакая статистика у кампаний 12345 и 67890 за последнюю неделю?\nНайди код региона для Новосибирска\nПокажи баланс аккаунта\n```\n\n## Разработка\n\n```bash\nnpm install\nnpm run build      # tsc → dist/\nnpm test           # vitest (моки fetch)\nnpm run dev        # tsx src/index.ts\n```\n\n## Лицензия\n\nMIT\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"yandex-direct\": {\n      \"command\": \"npx\",\n      \"args\": [\n        \"-y\",\n        \"@theyahia/yandex-direct-mcp\"\n      ],\n      \"env\": {\n        \"YANDEX_DIRECT_TOKEN\": \"YOUR_TOKEN\"\n      }\n    }\n  }\n}"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

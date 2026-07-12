@@ -1,0 +1,40 @@
+{
+  "full_name": "lzinga/us-gov-open-data-mcp",
+  "html_url": "https://github.com/lzinga/us-gov-open-data-mcp",
+  "description": "MCP server + TypeScript SDK for 40+ U.S. government data APIs — 250+ tools. Treasury, FRED, Congress, FDA, CDC, FEC, lobbying, and many more. Works with VS Code Copilot, Claude Desktop, Cursor.",
+  "topics": [
+    "api",
+    "cdc",
+    "claude",
+    "congress",
+    "fda",
+    "fred",
+    "government-data",
+    "lobbying",
+    "mcp",
+    "model-context-protocol",
+    "open-data",
+    "treasury"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 103,
+  "forks": 20,
+  "open_issues": 1,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-02-24T17:40:16Z",
+  "last_pushed_at": "2026-06-11T14:39:34Z",
+  "fetched_at": "2026-07-11T23:20:08.367Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n\n# US Government Open Data MCP\n\n**MCP Server + TypeScript SDK for 40+ U.S. Government APIs**\n\n[![npm version](https://img.shields.io/npm/v/us-gov-open-data-mcp)](https://www.npmjs.com/package/us-gov-open-data-mcp)\n[![npm downloads](https://img.shields.io/npm/dm/us-gov-open-data-mcp)](https://www.npmjs.com/package/us-gov-open-data-mcp)\n[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)\n\n300+ tools covering economic, fiscal, health, education, energy, environment, lobbying, housing, patents, safety, banking, consumer protection, workplace safety, transportation, seismic, clinical trials, pharma payments, research funding, procurement, and legislative data.\n\n**20+ APIs require no key** · The rest use free keys that take under a minute to get\n\n[Getting Started](https://lzinga.github.io/us-gov-open-data-mcp/guide/getting-started) · [API Reference](https://lzinga.github.io/us-gov-open-data-mcp/api/) · [Documentation](https://lzinga.github.io/us-gov-open-data-mcp/)\n\n</div>\n\n---\n\n## Features\n\n- **300+ tools** across 40+ government APIs — economic, health, legislative, financial, environmental, and more\n- **Cross-referencing** — built-in instructions guide the LLM to combine data from multiple agencies (e.g., FDA adverse events + lobbying spend + campaign contributions)\n- **Code mode** — WASM-sandboxed JavaScript execution reduces context window usage by 98-100% for large responses\n- **Selective loading** — load only the modules you need: `--modules fred,treasury,congress`\n- **Dual transport** — stdio for desktop clients, HTTP Stream for web/remote\n- **TypeScript SDK** — every API is importable as a standalone typed client, no MCP required\n- **Disk-backed caching** — responses cached to disk, survives restarts\n- **Rate limiting + retry** — token-bucket rate limiter with exponential backoff on 429/503\n\n## Quick Start\n\n### MCP Server\n\n```bash\nnpx us-gov-open-data-mcp\n```\n\nAdd to `.vscode/mcp.json` for VS Code / Copilot:\n\n```json\n{\n  \"servers\": {\n    \"us-gov-open-data\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"us-gov-open-data-mcp\"],\n      \"env\": {\n        \"FRED_API_KEY\": \"your_key\",\n        \"DATA_GOV_API_KEY\": \"your_key\"\n      }\n    }\n  }\n}\n```\n\nAdd to `claude_desktop_config.json` for Claude Desktop:\n\n```json\n{\n  \"mcpServers\": {\n    \"us-gov-open-data\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"us-gov-open-data-mcp\"],\n      \"env\": {\n        \"FRED_API_KEY\": \"your_key\",\n        \"DATA_GOV_API_KEY\": \"your_key\"\n      }\n    }\n  }\n}\n```\n\n## Example Prompts\n\nOnce connected, ask your AI assistant natural language questions:\n\n> **Economic:** \"What's the current state of the U.S. economy? Show me GDP, unemployment, inflation, and interest rates.\"\n\n> **Health:** \"Show me the adverse event profile for Ozempic including clinical trials, FDA reports, and pharma payments to doctors.\"\n\n> **Legislative:** \"What happened with the Inflation Reduction Act? Who sponsored it, how did the vote break down by party?\"\n\n> **Follow the money:** \"Which banking PACs gave money to members of the Senate Banking Committee, and how did those members vote on banking deregulation?\"\n\n> **Cross-reference:** \"How has federal spending on healthcare changed over the last 5 years, and what health outcomes has it produced?\"\n\n### TypeScript SDK\n\n```bash\nnpm install us-gov-open-data-mcp\n```\n\n```typescript\nimport { getObservations } from \"us-gov-open-data-mcp/sdk/fred\";\nimport { searchBills } from \"us-gov-open-data-mcp/sdk/congress\";\n\nconst gdp = await getObservations(\"GDP\", { sort: \"desc\", limit: 5 });\n```\n\nNo MCP server required. All functions include caching, retry, and rate limiting.\n\n## Documentation\n\nFull documentation at **[lzinga.github.io/us-gov-open-data-mcp](https://lzinga.github.io/us-gov-open-data-mcp/)**\n\n| | |\n|---|---|\n| [Getting Started](https://lzinga.github.io/us-gov-open-data-mcp/guide/getting-started) | MCP setup, SDK install, client configs |\n| [API Keys](https://lzinga.github.io/us-gov-open-data-mcp/guide/api-keys) | Which APIs need keys, where to get them |\n| [Data Sources](https://lzinga.github.io/us-gov-open-data-mcp/guide/data-sources) | All 40+ APIs grouped by category |\n| [API Reference](https://lzinga.github.io/us-gov-open-data-mcp/api/) | Auto-generated from TypeScript — every function and type |\n| [Examples](https://lzinga.github.io/us-gov-open-data-mcp/guide/sdk-usage) | SDK code, MCP prompts, analysis showcases |\n| [Architecture](https://lzinga.github.io/us-gov-open-data-mcp/guide/architecture) | How the system works |\n| [Adding Modules](https://lzinga.github.io/us-gov-open-data-mcp/guide/adding-modules) | Add a new API — just create a folder |\n\n## Data Sources\n\n| Category | APIs |\n|----------|------|\n| **Economic** | Treasury, FRED, BLS, BEA, EIA |\n| **Legislative** | Congress.gov, Federal Register, GovInfo, Regulations.gov |\n| **Financial** | FEC, Senate Lobbying, SEC, FDIC, CFPB |\n| **Spending** | USAspending, Open Payments |\n| **Health & Safety** | CDC, FDA, CMS, ClinicalTrials.gov, NIH, NHTSA, DOL |\n| **Environment** | EPA, NOAA, NREL, USGS |\n| **Justice** | FBI Crime Data, DOJ News |\n| **Education** | NAEP, College Scorecard, USPTO |\n| **Demographics** | Census, HUD, FEMA |\n| **Other** | BTS, USDA NASS, USDA FoodData, World Bank |\n\n## Disclaimer\n\nThis project integrates **a significant number of government APIs**, many of which have large, complex, or inconsistently documented schemas. AI is used as a tool throughout this project to help parse API documentation, generate type definitions, and scaffold tool implementations — making it possible to cover this much surface area and get people access to government data faster than would otherwise be feasible. While every effort has been made to ensure accuracy, some endpoints may return unexpected results, have incomplete parameter coverage, or behave differently than documented.\n\nThis is a community-driven effort — if you find something that's broken or could be improved, **please open an issue or submit a PR**. Contributions that fix edge cases, improve schema accuracy, or expand coverage are especially welcome. The goal is to make U.S. government data as accessible and reliable as possible, together.\n\nAll data is sourced from official U.S. government and international APIs — the server does not generate, modify, or editorialize any data.\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "full_name": "acscpt/beebjit-mcp",
+  "html_url": "https://github.com/acscpt/beebjit-mcp",
+  "description": "Model Context Protocol (MCP) integration for beebjit  enabling structured context exchange between the BBC Micro emulator beebjit and AI tools.  Also a Python harness for direct CI/CD integration or other testing pipelines.",
+  "topics": [
+    "bbc-micro",
+    "bbcmicro",
+    "beeb",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "python",
+    "testharness"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "develop",
+  "created_at": "2026-04-20T20:43:17Z",
+  "last_pushed_at": "2026-06-16T20:46:02Z",
+  "fetched_at": "2026-07-12T00:41:11.910Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# beebjit-MCP\n\n[![PyPI](https://img.shields.io/pypi/v/beebjit-mcp.svg)](https://pypi.org/project/beebjit-mcp/)\n[![PyPI Downloads](https://static.pepy.tech/personalized-badge/beebjit-mcp?period=total&units=INTERNATIONAL_SYSTEM&left_color=GRAY&right_color=RED&left_text=downloads)](https://pepy.tech/projects/beebjit-mcp)\n[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)\n[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)\n[![Tests](https://github.com/acscpt/beebjit-mcp/actions/workflows/tests.yml/badge.svg)](https://github.com/acscpt/beebjit-mcp/actions/workflows/tests.yml)\n[![codecov](https://codecov.io/gh/acscpt/beebjit-mcp/branch/master/graph/badge.svg)](https://codecov.io/gh/acscpt/beebjit-mcp)\n\nbeebjit-MCP is a Python-based [Model Context Protocol (MCP)](https://modelcontextprotocol.io/docs/getting-started/intro) server that lets an AI application instantiate, connect to, drive, capture output from, and interrogate a real [BBC Micro](https://en.wikipedia.org/wiki/BBC_Micro) emulator.\n\nAsk an AI agent something like:\n\n> Boot a BBC Model B, then type `PRINT \"HELLO\"` at the BASIC prompt, and read the screen back.\n\nA couple of seconds later `HELLO` appears in the tool-result pane. That's it.\n\nbeebjit-MCP drives [Chris Evans' beebjit](https://github.com/scarybeasts/beebjit), a cycle-accurate, high-performance BBC Micro emulator written in C. Install and configure beebjit before using beebjit-MCP. The [installation guide](docs/installation.md) walks through it.\n\n## What the AI agent can do with it\n\n- Boot a BBC B, Master 128 (MOS 3.20 or 3.50), or Master Compact session, with or without a disc image. DFS images use `.ssd` / `.dsd`; ADFS images use `.adl` / `.adf`.\n\n- Type ASCII into the keyboard and have it land as real BBC keypresses. SHIFT handling, CAPS LOCK control, and special keys like arrows and function keys are all wired.\n\n- Wait for text to appear on the MODE 7 screen, or for the BASIC `>` prompt.\n\n- Read or write BBC Micro RAM, read 6502 register state, and disassemble 6502 instructions.\n\n- Run a whole BBC BASIC program one-shot and capture the final screen.\n\n- Tear everything down cleanly when the client disconnects.\n\n## Python library for testing and CI/CD\n\nThe same package is a Python library as well as an MCP server. `BeebjitDriver` exposes the same operations as methods on an in-process class, with no MCP client or JSON-RPC framing in between.\n\nA pytest run boots a BBC, exercises a disc image, runs a program, and asserts on the resulting screen or memory, in-process and headless. The same run sits inside a GitHub Actions job, and a disc-image toolchain calls the library to check that its output boots on a cycle-accurate machine.\n\n```python\nfrom beebjit_mcp import BeebjitDriver, BeebModel\nfrom beebjit_mcp.screen import mode7TextContains\n\n\ndef test_hello_boots():\n    with BeebjitDriver.fromEnvironment(model=BeebModel.B) as bbc:\n        bbc.runCycles(2_000_000)              # boot to the BASIC prompt\n        bbc.typeText('PRINT \"HELLO\"\\n')\n        bbc.runCycles(2_000_000)\n        assert mode7TextContains(bbc.captureMode7Bytes(), \"HELLO\")\n```\n\nThe [Python API](docs/python-api.md) covers each method, and the [worked example](docs/python-example.md) boots a BBC, runs a colour MODE 7 program, and writes a PNG of the screen.\n\n## Licence\n\nMIT. See [LICENSE](LICENSE).\n\nbeebjit is GPLv3 and is never bundled in this repository or its release artefacts; the user installs beebjit themselves.\n\n## Acknowledgements\n\nThanks to **Chris Evans** (<scarybeasts@gmail.com>), creator and maintainer of [beebjit](https://github.com/scarybeasts/beebjit). Without his work, none of this would exist.\n\n## Fork Notice\n\nbeebjit-MCP currently depends on a [fork of beebjit](https://github.com/acscpt/beebjit) that carries the small set of fixes and flags it needs. See [installation](docs/installation.md#install-beebjit) for the exact list.\n\n## Disclaimer\n\nbeebjit-MCP is a separate project from [beebjit](https://github.com/scarybeasts/beebjit), and is not affiliated with, sponsored, or endorsed by [Chris Evans](mailto:scarybeasts@gmail.com) or the beebjit project.\n\nFor the canonical beebjit source and documentation, see [scarybeasts/beebjit](https://github.com/scarybeasts/beebjit).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

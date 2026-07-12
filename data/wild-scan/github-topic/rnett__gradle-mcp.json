@@ -1,0 +1,37 @@
+{
+  "full_name": "rnett/gradle-mcp",
+  "html_url": "https://github.com/rnett/gradle-mcp",
+  "description": "A comprehensive MCP server for Gradle.",
+  "topics": [
+    "agent",
+    "agent-skills",
+    "ai",
+    "build",
+    "developer-tools",
+    "gradle",
+    "mcp",
+    "mcp-server",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 55,
+  "forks": 3,
+  "open_issues": 10,
+  "language": "Kotlin",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2025-09-29T03:54:11Z",
+  "last_pushed_at": "2026-07-09T10:19:29Z",
+  "fetched_at": "2026-07-12T00:25:28.349Z",
+  "readme": {
+    "path": "README.md",
+    "content": "[![Maven Central Version](https://img.shields.io/maven-central/v/dev.rnett.gradle-mcp/gradle-mcp?style=for-the-badge)](https://central.sonatype.com/artifact/dev.rnett.gradle-mcp/gradle-mcp)\n[![Maven snapshots](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fdev%2Frnett%2Fgradle-mcp%2Fgradle-mcp%2Fmaven-metadata.xml&strategy=latestProperty&style=for-the-badge&label=SNAPSHOT&color=yellow)]()\n[![Documentation](https://img.shields.io/badge/Documentation-2C3E50?style=for-the-badge&logo=googledocs&logoColor=D7DBDD)](https://gradle-mcp.rnett.dev/latest/)\n[![GitHub License](https://img.shields.io/github/license/rnett/gradle-mcp?style=for-the-badge)](./LICENSE)\n\n# Gradle MCP server\n\nA Model Context Protocol (MCP) server for Gradle. It gives AI agents the tools they need to explore project structures, run tasks, audit dependencies, and interact with the JVM runtime.\n\n##### Features\n\n**Source downloading and indexing tools will be moving to a dedicated MCP/cli soon.**\n\n* **Agent Skills**: Built-in workflows that guide AI agents through complex Gradle tasks.\n* **Project Mapping**: Easily explore multi-project structures, modules, tasks, and properties.\n* **Smart Task Execution**: Run builds in the background, monitor progress, and capture specific task outputs without the noise. Supports advanced environment control and shell environment sourcing.\n* **Advanced Testing**: Run filtered test suites and get full access to logs and stack traces for every test case.\n* **Dependency & Source Search**: Search and browse dependency, JDK standard library, and Gradle source code.\n* **Interactive Kotlin REPL**: Test project utilities and explore APIs in a persistent REPL with access to all your classes.\n* **Compose UI Previews**: Render UI components directly to images from the project runtime for visual auditing.\n* **Gradle Documentation**: Instant access to searchable, indexed Gradle User Guides and DSL references.\n* **Develocity Build Scans**: Ask your agent to publishing of Build Scans for deep troubleshooting.\n* **Token Optimized**: Compact data formats designed to keep context usage low.\n\n### Configuration\n\nThe `GRADLE_MCP_PROJECT_ROOT` environment variable can be set to provide a default Gradle project root. This is used if no project root is specified in a tool call and there isn't exactly one MCP root configured.\n\n## Getting started\n\n> [!IMPORTANT]\n> JDK 25 or higher is required to run `gradle-mcp`.\n> You can use JBang to install JDKs too: [docs](https://www.jbang.dev/documentation/jbang/latest/javaversions.html).\n\nUse [jbang](https://www.jbang.dev/documentation/jbang/latest/installation.html):\n\n```shell\n# For releases\njbang run --quiet --fresh gradle-mcp@rnett\n\n# For snapshots\njbang run --quiet --fresh gradle-mcp-snapshot@rnett\n```\n\n```json\n{\n  \"mcpServers\": {\n    \"gradle\": {\n      \"command\": \"jbang\",\n      \"args\": [\n        \"run\",\n        \"--quiet\",\n        \"--fresh\",\n        \"gradle-mcp@rnett\"\n      ]\n    }\n  }\n}\n```\n\nAlternatively, run the GAV directly:\n\n```shell\njbang run --fresh dev.rnett.gradle-mcp:gradle-mcp:+\n```\n\n```json\n{\n  \"mcpServers\": {\n    \"gradle\": {\n      \"command\": \"jbang\",\n      \"args\": [\n        \"run\",\n        \"--fresh\",\n        \"dev.rnett.gradle-mcp:gradle-mcp:+\"\n      ]\n    }\n  }\n}\n```\n\n> [!TIP]\n> If you experience errors related to CDS (Class Data Sharing), typically caused by native JVMTI agents from security software (e.g., SentinelOne), you can disable it by adding `--no-cds` to the `jbang` command.\n> See the [documentation](https://gradle-mcp.rnett.dev/latest/) for more details.\n\n## Agent Skills\n\nAgent Skills are specialized guides that help AI agents navigate common Gradle workflows reliably.\n\nIncluded skills:\n\n- `gradle`: Running builds, tests, introspecting projects, creating modules, and diagnosing failures.\n- `exploring_dependency_sources`: Searching and reading dependency, plugin, and Gradle internal source code.\n- `managing_gradle_dependencies`: Auditing, updating, and adding dependencies.\n- `interacting_with_project_runtime`: Running Code in the Project's Environment (REPL).\n- `verifying_compose_ui`: Visually verifying Compose UI components.\n\nFor instructions on how to use these skills, see the [Agent Skills](https://gradle-mcp.rnett.dev/latest/skills/) documentation.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

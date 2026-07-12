@@ -1,0 +1,32 @@
+{
+  "full_name": "Raezil/weather-forecast-mcp",
+  "html_url": "https://github.com/Raezil/weather-forecast-mcp",
+  "description": null,
+  "topics": [
+    "golang",
+    "mcp",
+    "mcp-example",
+    "mcp-servers"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Go",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-05-02T10:22:38Z",
+  "last_pushed_at": "2025-07-13T10:16:30Z",
+  "fetched_at": "2026-07-12T00:09:35.337Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Weather Forecast 🚀\n\nWelcome to the **Weather Forecast** MCP tool! 🎉 This small but powerful service lets you fetch concise weather forecasts for any city and country over a date range, powered by Google’s GenAI Gemini model.\n\n## 🚀 Features\n\n* **Simple interface:** Call a single `weather` tool with `city`, `country`, and optional date range.\n* **GenAI-powered:** Leverages Google Gemini to generate human-friendly, contextual forecasts.\n* **Customizable dates:** Default to today, or specify `fromDate` and `toDate` in `YYYY-MM-DD` format.\n* **Extensible via MCP:** Built on the `mark3labs/mcp-go` framework for easy integration and expansion.\n\n## 📦 Prerequisites\n\n* Go **1.18+**\n* A valid **Google Cloud API key** with access to the Gemini API\n\n## 🛠 Installation\n\n1. Clone this repository:\n\n   ```bash\n   git clone https://github.com/Raezil/weather-forecast-mcp\n   cd weather-forecast-mcp\n   ```\n2. Install dependencies:\n\n   ```bash\n   go mod tidy\n   ```\n\n## 🔧 Configuration\n\nSet the following environment variable before running the server:\n\n```bash\nexport GOOGLE_[REDACTED-GENERIC_KV_SECRET]\"\n```\n\n*Tip:* Store your API key securely (e.g., in a secrets manager or `.env` file).\n\n## ▶️ Running the Server\n\nStart the MCP server over stdio:\n\n```bash\ngo run main.go\n```\n\nYou should see output indicating that the `weather` tool is registered:\n\n```\nWeather Forecast 🚀 v1.0.0 listening on stdio...\n```\n\n## 💬 Using the Client\n\nBelow is an example Go client that demonstrates calling the `weather` tool:\n\n```go\npackage main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\t\"log\"\n\n\t\"github.com/mark3labs/mcp-go/client\"\n\t\"github.com/mark3labs/mcp-go/client/transport\"\n\t\"github.com/mark3labs/mcp-go/mcp\"\n)\n\nfunc main() {\n\t// 1. Launch stdio transport, pointing to your MCP server binary\n\t//    Adjust the path to where your server executable resides\n\tstdio := transport.NewStdio(\"../server/my_mcp_server\", nil)\n\n\t// 2. Create the MCP client\n\tcli := client.NewClient(stdio)\n\tdefer cli.Close()\n\n\tctx := context.Background()\n\n\t// 3. Start communication\n\tif err := cli.Start(ctx); err != nil {\n\t\tlog.Fatalf(\"failed to start client: %v\", err)\n\t}\n\n\t// 4. Perform handshake & capability negotiation\n\tinitReq := mcp.InitializeRequest{}\n\tinitReq.Params.ProtocolVersion = \"0.4.0\"\n\tinitReq.Params.Capabilities = cli.GetClientCapabilities()\n\tinitReq.Params.ClientInfo = mcp.Implementation{\n\t\tName:    \"weather-client\",\n\t\tVersion: \"v1.0.0\",\n\t}\n\tif _, err := cli.Initialize(ctx, initReq); err != nil {\n\t\tlog.Fatalf(\"failed to initialize client: %v\", err)\n\t}\n\n\t// 5. Prepare the CallToolRequest for the \"weather\" tool\n\treq := mcp.CallToolRequest{}\n\treq.Params.Name = \"weather\"\n\treq.Params.Arguments = map[string]interface{}{\n\t\t\"city\":     \"Warsaw\",\n\t\t\"country\":  \"Poland\",\n\t\t\"fromDate\": \"2025-05-02\",\n\t\t\"toDate\":   \"2025-05-15\",\n\t}\n\n\t// 6. Call the tool\n\tresp, err := cli.CallTool(ctx, req)\n\tif err != nil {\n\t\tlog.Fatalf(\"tool call failed: %v\", err)\n\t}\n\n\t// 7. Extract and print the forecast text\n\tfor _, content := range resp.Content {\n\t\tif tc, ok := mcp.AsTextContent(content); ok {\n\t\t\tfmt.Println(tc.Text)\n\t\t}\n\t}\n}\n```\n\nWe’ve covered missing/invalid parameters, date parsing errors, and environment checks. Contributions of additional test scenarios are encouraged!\n\n## 🤝 Contributing\n\nWe’d love your help to make this even better:\n\n* Open issues for bugs or feature requests\n* Submit pull requests for new functionality or improvements\n* Add support for more transport layers or AI backends\n\n## 📝 License\n\nThis project is licensed under the **MIT License**. See [LICENSE](LICENSE) for details.\n\n---\n\nThanks for checking out **Weather Forecast**! Let’s build something amazing together. 🌟\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

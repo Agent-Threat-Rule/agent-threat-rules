@@ -1,0 +1,34 @@
+{
+  "full_name": "ezh0v/weather-mcp-server",
+  "html_url": "https://github.com/ezh0v/weather-mcp-server",
+  "description": "A lightweight Model Context Protocol (MCP) server that enables AI assistants like Claude to retrieve and interpret real-time weather data. Discuss on Hacker News:",
+  "topics": [
+    "go",
+    "golang",
+    "mcp",
+    "mcp-server",
+    "sse",
+    "stdio"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 246,
+  "forks": 18,
+  "open_issues": 2,
+  "language": "Go",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2025-04-07T12:22:42Z",
+  "last_pushed_at": "2026-03-01T16:47:11Z",
+  "fetched_at": "2026-07-11T22:46:09.577Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n<img alt=\"example output template\" src=\"assets/weather.svg\">\n\n<h1>Weather API MCP Server</h1>\n\n[![License](https://img.shields.io/badge/license-MIT-red.svg)](LICENSE)\n[![Go Version](https://img.shields.io/github/go-mod/go-version/ezh0v/weather-mcp-server)](go.mod)\n[![Go Report Card](https://goreportcard.com/badge/github.com/ezh0v/weather-mcp-server?cache)](https://goreportcard.com/report/github.com/ezh0v/weather-mcp-server)\n[![Build](https://github.com/ezh0v/weather-mcp-server/actions/workflows/go.yml/badge.svg?branch=master)](https://github.com/ezh0v/weather-mcp-server/actions?workflow=Build)\n[![Tests](https://github.com/ezh0v/weather-mcp-server/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/ezh0v/weather-mcp-server/actions?workflow=Test)\n\n<strong>[Report Bug](https://github.com/ezh0v/weather-mcp-server/issues/new?assignees=&labels=bug&projects=&template=bug_report.yml)</strong> | <strong>[Request Feature](https://github.com/ezh0v/weather-mcp-server/issues/new?assignees=&labels=enhancement&projects=&template=feature_request.yml)</strong>\n\n</div>\n\nA lightweight Model Context Protocol (MCP) server that enables AI assistants like Claude to retrieve and interpret real-time weather data.\n\n<div align=\"center\">\n<img alt=\"demo example\" src=\"assets/weather.gif\" width=\"480\">\n</div>\n\n## Installing on Claude Desktop\n\nTo use your MCP server with Claude Desktop, add it to your Claude configuration:\n\n#### 1. Local mode\n\n```json\n{\n  \"mcpServers\": {\n    \"weather-mcp-server\": {\n      \"command\": \"/path/to/weather-mcp-server\",\n      \"env\": {\n        \"WEATHER_API_KEY\": \"your-api-key\"\n      }\n    }\n  }\n}\n```\n\nYou can get an API key from your personal account on [WeatherAPI](https://www.weatherapi.com/my/).\n\n#### 2. Remote mode\n\n```json\n{\n  \"mcpServers\": {\n    \"weather-mcp-server\": {\n      \"url\": \"http://host:port/sse\"\n    }\n  }\n}\n```\n\n## Build from source\n\nYou can use `go` to build the binary in the `cmd/github-mcp-server` directory.\n\n```shell\ngo build -o weather-mcp-server ./cmd/weather-mcp-server\n```\n\n## Using MCP with Docker Containers\n\n#### 1. Build the Docker Image:\n\n```shell\ndocker build -t weather-mcp-server .\n```\n\n#### 2. Run the Docker Container:\n\n```shell\ndocker run -e WEATHER_API_KEY=your-api-key -d --name weather-mcp-server -p 8000:8000 weather-mcp-server\n```\n\nReplace `your-api-key` with your actual [WeatherAPI](https://www.weatherapi.com/my/) API key.\n\n## Tools\n\n- **current_weather** - Gets the current weather for a city\n\n  - `city`: The name of the city (string, required)\n\n## Project Structure\n\nThe project is organized into several key directories:\n\n```shell\n├── cmd\n│   └── weather-mcp-server\n├── internal\n│   └── server\n│       ├── handlers # MCP handlers\n│       ├── services # Business logic layer\n│       │   ├── core # Core application logic\n│       │   └── mock # Mock services for testing\n│       ├── tools # MCP tools\n│       └── view # Templates for displaying messages\n└── pkg\n```\n\n## Testing\n\nIf you're adding new features, please make sure to include tests for them.\n\n#### 1. Install the mockgen tool:\n\n```shell\ngo install go.uber.org/mock/mockgen@latest\n```\n\nSee the installation guide on [go.uber.org/mock](https://github.com/uber-go/mock?tab=readme-ov-file#installation).\n\n#### 2. Use the following command to generate mock files:\n\n```shell\nmake generate-mocks\n```\n\n#### 3. To run unit tests:\n\n```shell\nmake run-tests\n```\n\n## Contributing\n\nFeel free to open tickets or send pull requests with improvements. Thanks in advance for your help!\n\nPlease follow the [contribution guidelines](.github/CONTRIBUTING.md).\n\n## License\n\nThis MCP server is licensed under the [MIT License](LICENSE).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

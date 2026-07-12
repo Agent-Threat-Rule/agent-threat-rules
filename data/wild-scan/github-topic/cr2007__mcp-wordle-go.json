@@ -1,0 +1,34 @@
+{
+  "full_name": "cr2007/mcp-wordle-go",
+  "html_url": "https://github.com/cr2007/mcp-wordle-go",
+  "description": "MCP Server in Go for fetching Wordle solutions",
+  "topics": [
+    "mcp-go",
+    "mcp-servers",
+    "wordle-api",
+    "wordle-solution"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 3,
+  "forks": 0,
+  "open_issues": 1,
+  "language": "Go",
+  "license": null,
+  "default_branch": "master",
+  "created_at": "2025-06-30T04:52:42Z",
+  "last_pushed_at": "2026-06-29T17:23:46Z",
+  "fetched_at": "2026-07-12T00:00:38.942Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<!-- omit from toc -->\n# Wordle MCP - Go\n\n[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/cr2007/mcp-wordle-go)\n[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/cr2007/mcp-wordle-go)\n\n> [!NOTE]\n> To check out the Python version of this MCP Server, [click here](https://github.com/cr2007/mcp-wordle-python)\n\nA MCP Server implemented in Go for fetching the Wordle solutions via the Wordle API.\n\n> [!IMPORTANT]\n> Wordle solutions are only available from 2021-05-19, to 23 days in the future.<br>\n> Any other attempts at calling other dates will return an error from the API\n\n<!-- omit from toc -->\n# Index\n- [Get Started](#get-started)\n  - [Using Docker (recommended)](#using-docker-recommended)\n  - [Local Setup](#local-setup)\n    - [Setup](#setup)\n- [Examples on Claude Desktop](#examples-on-claude-desktop)\n- [Contributing](#contributing)\n\n---\n\n# Get Started\n\n## Using Docker (recommended)\n\nThe quickest and easiest method to get started. Ensure that you have [Docker](https://www.docker.com) installed.<br>\nAdd this to your MCP Server configuration:\n\n```json\n{\n  \"mcpServers\": {\n    \"Wordle-MCP-Go\": {\n      \"command\": \"docker\",\n      \"args\": [\n        \"run\",\n        \"--rm\",\n        \"-i\",\n        \"--init\",\n        \"-e\",\n        \"DOCKER_CONTAINER=true\",\n        \"ghcr.io/cr2007/mcp-wordle-go:latest\"\n      ]\n    }\n  }\n}\n```\n\n> [!IMPORTANT]\n> If you get an error on Claude Desktop for the first time, just make sure to pull the image before running.<br>\n> `docker pull ghcr.io/cr2007/mcp-wordle-go:latest`\n\n## Local Setup\n\nFor this setup, you need to make sure that you have the [Go programming language](https://go.dev/) installed on your machine.\n\n### Setup\n\nBefore adding this to your MCP Server, you need to do the following:\n\n```bash\n# Clone the Git repository\ngit clone https://github.com/cr2007/mcp-wordle-go\ncd mcp-wordle-go\n\n# Install the dependencies\ngo mod tidy\n\n# Build the executable\ngo build main.go\n```\n\nAdd this to your MCP server configuration:\n\n```json\n{\n  \"mcpServers\": {\n    \"Wordle-MCP-Go\":{\n        \"command\": \"ABSOLUTE//PATH//TO//main.go\",\n      }\n  }\n}\n```\n\n# Examples on Claude Desktop\n\n<div align=\"center\">\n    <img width=75%, src=\"./images/Claude_Chat-Example.png\">\n</div>\n\n# Contributing\n\nContributions are welcome! You may [fork](https://github.com/cr2007/mcp-wordle-go/fork) the repo, create your changes in a branch, and then create a [Pull Request](https://github.com/cr2007/mcp-wordle-go/compare)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "main.go",
+    "size": 1811,
+    "content": "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\t\"io\"\n\t\"net/http\"\n\n\t\"github.com/mark3labs/mcp-go/mcp\"\n\t\"github.com/mark3labs/mcp-go/server\"\n)\n\nfunc main() {\n\ts := server.NewMCPServer(\n\t\t\"Wordle MCP\",\n\t\t\"1.0.0\",\n\t\tserver.WithToolCapabilities(false),\n\t)\n\n\ttool := mcp.NewTool(\"get_wordle_solution\",\n\t\tmcp.WithDescription(\"Fetches the Wordle of a particular date provided between 2021-05-19 to 23 days future\"),\n\t\tmcp.WithString(\"date\",\n\t\t\tmcp.Required(),\n\t\t\tmcp.Description(\"The date to be passed on to the Wordle API (YYYY-MM-DD format)\")),\n\t)\n\n\ts.AddTool(tool, getWordleData)\n\n\tif err := server.ServeStdio(s); err != nil {\n\t\tfmt.Printf(\"Server error: %v\\n\", err)\n\t}\n}\n\nfunc getWordleData(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {\n\tdate, err := request.RequireString(\"date\")\n\n\tif err != nil {\n\t\treturn mcp.NewToolResultError(err.Error()), nil\n\t}\n\n\tvar url string = fmt.Sprintf(\"https://www.nytimes.com/svc/wordle/v2/%s.json\", date)\n\n\tres, err := http.Get(url)\n\tif err != nil {\n\t\tfmt.Println(\"There has been an issue with your GET request\")\n\t\tfmt.Println(err)\n\t\treturn mcp.NewToolResultErrorFromErr(\"unable to execute request\", err), nil\n\t}\n\tdefer res.Body.Close()\n\n\tif res.StatusCode > http.StatusOK {\n\t\tbody, _ := io.ReadAll(res.Body)\n\t\tfmt.Printf(\"Response failed with status code: %d and\\nbody: %s\\n\", res.StatusCode, body)\n\t\treturn mcp.NewToolResultErrorFromErr(\"unable to execute request\", err), nil\n\t}\n\n\tbody, err := io.ReadAll(res.Body)\n\tif err != nil {\n\t\tfmt.Println(err)\n\t\treturn mcp.NewToolResultError(err.Error()), nil\n\t}\n\n\t// var data WordleAPIData\n\t// err = json.Unmarshal(body, &data)\n\t// if err != nil {\n\t// \tfmt.Println(\"Error parsing JSON response\")\n\t// \treturn mcp.NewToolResultError( err.Error() ), nil\n\t// }\n\n\treturn mcp.NewToolResultText(string(body)), nil\n}\n"
+  },
+  "content_fetch_notes": []
+}

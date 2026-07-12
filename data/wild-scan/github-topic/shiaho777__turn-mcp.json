@@ -1,0 +1,46 @@
+{
+  "full_name": "shiaho777/turn-mcp",
+  "html_url": "https://github.com/shiaho777/turn-mcp",
+  "description": "Achieve infinite conversation turns in a single API request via turn-mcp.             Self-hosted MCP server with browser console for human-in-the-loop AI agents.",
+  "topics": [
+    "ai-agent",
+    "browser-console",
+    "claude",
+    "cursor",
+    "cursor-ai",
+    "human-in-the-loop",
+    "langchain-agent",
+    "langgraph",
+    "llm",
+    "mcp",
+    "model-context-protocol",
+    "nodejs",
+    "python",
+    "seed",
+    "self-hosted",
+    "typescript",
+    "webhook",
+    "windsurf-ai"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 25,
+  "forks": 6,
+  "open_issues": 2,
+  "language": "JavaScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-12-14T09:06:42Z",
+  "last_pushed_at": "2026-05-02T08:31:52Z",
+  "fetched_at": "2026-07-11T23:48:46.668Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# turn-mcp-web\n\nTurn a single agent request into a durable human-in-the-loop conversation.\n\n`turn-mcp-web` is a self-hosted MCP server with a browser console. An agent calls `turn.wait`, execution pauses, a human replies in the web UI, and the same run continues without starting over.\n\n[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)\n[![Node.js](https://img.shields.io/badge/node-%3E%3D18.17-brightgreen)](https://nodejs.org)\n\n[中文文档](./README.zh-CN.md)\n\n## Preview\n\n<p align=\"center\">\n  <img src=\"./assets/screenshots/live-review-session.png\" alt=\"Live review session\" width=\"100%\">\n</p>\n\n<p align=\"center\">\n  <img src=\"./assets/screenshots/settings-overview.png\" alt=\"Settings overview\" width=\"32%\">\n  <img src=\"./assets/screenshots/setup-snippets.png\" alt=\"Client setup snippets\" width=\"32%\">\n  <img src=\"./assets/screenshots/language-picker.png\" alt=\"First launch language picker\" width=\"32%\">\n</p>\n\n## Why It Exists\n\nMost agent integrations treat a human checkpoint as a dead end:\n\n- the model asks a question\n- the run stops\n- the next message starts a new run with partial context\n\n`turn-mcp-web` keeps that checkpoint inside the same execution loop.\n\n```text\nwork -> turn.wait -> human reply -> work -> turn.wait -> human reply\n```\n\nThat makes it useful for approvals, branching decisions, operator handoffs, review queues, and long-running assisted workflows.\n\n## What You Get\n\n- MCP tool aliases: `turn.wait`, `turn_wait`, `turn`\n- browser console for live replies\n- Streamable HTTP transport for IDE MCP clients\n- stdio entrypoint for desktop clients that spawn MCP servers\n- REST long-poll API for Python and non-MCP agent frameworks\n- persistent history and event logging\n- webhook and Telegram notifications\n- operator and viewer API roles\n- session list, quick replies, timeout controls, and live SSE updates\n- one-command local startup\n\n## Quick Start\n\n### macOS\n\nDouble-click `start.command`\n\n### Windows\n\nDouble-click `start.bat`\n\n### Linux\n\n```bash\nbash start.sh\n```\n\n### From Source\n\n```bash\nnpm install\nnpm run build\nnpm start\n```\n\nWeb console: `http://127.0.0.1:3737/`  \nMCP endpoint: `http://127.0.0.1:3737/mcp`\n\n## Core Workflow\n\n1. Start the server.\n2. Connect your MCP client to `http://127.0.0.1:3737/mcp` or launch the stdio entrypoint.\n3. Give the agent [`skills/turn-mcp-web/SKILL.md`](./skills/turn-mcp-web/SKILL.md) so it routes user-facing checkpoints through `turn.wait`.\n4. When the agent pauses, answer in the browser console.\n5. The same agent run resumes with your reply.\n\n## Client Setup\n\n### Streamable HTTP\n\nUse this for Cursor, Windsurf, VS Code, Claude Code, Antigravity, and other MCP clients that support remote HTTP servers.\n\n```json\n{\n  \"mcpServers\": {\n    \"turn-mcp-web\": {\n      \"url\": \"http://127.0.0.1:3737/mcp\"\n    }\n  }\n}\n```\n\nWindsurf uses `serverUrl` instead of `url`.\n\n### stdio\n\nUse this when the client launches MCP servers as local child processes.\n\n```json\n{\n  \"mcpServers\": {\n    \"turn-mcp-web\": {\n      \"command\": \"node\",\n      \"args\": [\"/absolute/path/to/dist/server-stdio.js\"]\n    }\n  }\n}\n```\n\nThe stdio process still opens the same web console on port `3737`.\n\n### Python\n\nUse the bundled Python client when your framework does not speak MCP directly.\n\n```bash\npip install ./python-client\n```\n\n```python\nfrom turn_mcp_client import TurnMcpClient, TurnMcpCanceled, TurnMcpTimeout\n\nclient = TurnMcpClient(\"http://127.0.0.1:3737\")\n\ntry:\n    reply = client.wait(\n        context=\"About to apply a production migration.\",\n        question=\"Should I proceed?\",\n        options=[\"Proceed\", \"Show SQL\", \"Cancel\"],\n        agent_name=\"MigrationAgent\",\n    )\n    print(reply)\nexcept TurnMcpTimeout:\n    print(\"No reply before timeout.\")\nexcept TurnMcpCanceled:\n    print(\"Canceled by operator.\")\n```\n\nMore examples: [`python-client/README.md`](./python-client/README.md)\n\n## Agent Contract\n\nGive the agent one of these files:\n\n- Skill entry: [`skills/turn-mcp-web/SKILL.md`](./skills/turn-mcp-web/SKILL.md)\n- 中文参考: [`skills/turn-mcp-web/references/skill.zh-CN.md`](./skills/turn-mcp-web/references/skill.zh-CN.md)\n\nThose files tell the agent to use `turn.wait` as the communication boundary instead of replying directly.\n\n## API\n\n### Public\n\n- `GET /healthz`\n- `GET /api/public-config`\n\n### Session and wait control\n\n- `GET /api/waits`\n- `GET /api/waits/:id`\n- `POST /api/waits/:id/respond`\n- `POST /api/waits/:id/cancel`\n- `POST /api/waits/:id/extend`\n- `POST /api/waits/cancel-all`\n- `POST /api/waits/create-and-wait`\n\n### History and events\n\n- `GET /api/history`\n- `GET /api/history/timeline`\n- `GET /api/events`\n- `GET /api/stream`\n\n### Runtime management\n\n- `GET /api/auth-check`\n- `GET /api/sessions`\n- `POST /api/settings`\n- `POST /api/auto-configure`\n- `POST /api/auto-unconfigure`\n\n## Environment\n\n| Variable | Default | Purpose |\n|---|---|---|\n| `TURN_MCP_HTTP_HOST` | `127.0.0.1` | HTTP bind host |\n| `TURN_MCP_HTTP_PORT` | `3737` | HTTP bind port |\n| `TURN_MCP_HTTP_PATH` | `/mcp` | MCP endpoint path |\n| `TURN_MCP_DEFAULT_TIMEOUT_SECONDS` | `600` | Default wait timeout |\n| `TURN_MCP_API_KEY` | unset | Operator key |\n| `TURN_MCP_VIEWER_API_KEY` | unset | Viewer key |\n| `TURN_MCP_REQUIRE_API_KEY` | auto | Enable auth |\n| `TURN_MCP_EVENT_LOG_FILE` | unset | JSONL event log path |\n| `TURN_MCP_HISTORY_FILE` | unset | JSONL history path |\n| `TURN_MCP_WEBHOOK_URL` | unset | Outbound webhook target |\n| `TURN_MCP_WEBHOOK_EVENTS` | unset | Comma-separated webhook events |\n| `TURN_MCP_WEBHOOK_SECRET` | unset | HMAC signing secret |\n| `TURN_MCP_WEBHOOK_FORMAT` | `json` | `json`, `slack`, or `discord` |\n| `TURN_MCP_TELEGRAM_BOT_TOKEN` | unset | Telegram bot token |\n| `TURN_MCP_TELEGRAM_CHAT_ID` | unset | Telegram target chat |\n| `TURN_MCP_TELEGRAM_EVENTS` | `wait_created` | Telegram event filter |\n| `TURN_MCP_RATE_LIMIT_MAX` | `120` | Requests per IP |\n| `TURN_MCP_RATE_LIMIT_WINDOW_SECONDS` | `60` | Rate limit window |\n| `TURN_MCP_MAX_CONCURRENT_WAITS_PER_SESSION` | `10` | Per-session concurrency cap |\n| `TURN_MCP_REINFORCEMENT_SUFFIX` | built-in | Appended reminder text |\n\n## Authentication\n\nAuth is off by default. When enabled, send either of these headers:\n\n```text\nx-turn-mcp-api-key: <key>\nAuthorization: Bearer <key>\n```\n\nRoles:\n\n- `operator`: full control\n- `viewer`: read-only inspection and SSE subscription\n\n## Docker\n\n```bash\ndocker build -t turn-mcp-web .\ndocker run --rm -p 3737:3737 \\\n  -e TURN_MCP_HTTP_HOST=0.0.0.0 \\\n  -e TURN_MCP_API_KEY=your_key \\\n  turn-mcp-web\n```\n\nCompose file: [`docker-compose.yml`](./docker-compose.yml)\n\n## Repository Layout\n\n```text\nsrc/            TypeScript server\npublic/         Browser console\npython-client/  Python client package\nassets/         README screenshots and demo video\n```\n\n## Contributing\n\nSee [`CONTRIBUTING.md`](./CONTRIBUTING.md).\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

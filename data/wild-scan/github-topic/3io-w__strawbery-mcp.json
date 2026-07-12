@@ -1,0 +1,35 @@
+{
+  "full_name": "3io-w/strawbery-mcp",
+  "html_url": "https://github.com/3io-w/strawbery-mcp",
+  "description": "An MCP server for counting the number of R's in Strawberry and more.",
+  "topics": [
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 3,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Go",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-01-13T13:34:17Z",
+  "last_pushed_at": "2026-01-13T14:47:30Z",
+  "fetched_at": "2026-07-12T00:02:03.866Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Strawbery-MCP\n\nAn MCP (Model Context Protocol) server that provides a tool to count the correct\nnumber of R's in \"strawberry\".\n\n## Features\n- Case-insensitive character counting\n- Supports Unicode characters, including CJK (Chinese, Japanese, Korean)\n- Returns count and 1-indexed positions of matches\n- JSON response format\n\n<img src=\"docs/images/opencode.png\" width=\"750\">\n\n## Tool: strawberry-count\n\n### Parameters\n- `input` (string, required): The string to search in\n- `character` (string, required): The single character to count (must be exactly one Unicode rune)\n\n```json\n{\n  \"character\": \"r\",\n  \"input\": \"strawberry\"\n}\n```\n\n### Response\nJSON object with:\n- `count` (int): Number of occurrences\n- `positions` (array of int): 1-indexed positions where the character appears\n\n```json\n{\n  \"count\": 3,\n  \"positions\": [\n    3,\n    8,\n    9\n  ]\n}\n```\n\n### Examples\n- Input: `{\"input\": \"strawberry\", \"character\": \"r\"}` → `{\"count\": 3, \"positions\": [3,6,8]}`\n- Input: `{\"input\": \"你好\", \"character\": \"你\"}` → `{\"count\": 1, \"positions\": [1]}`\n\n## Running the Server\n\nThis server uses SSE for MCP communication.\n\n### Local\n```bash\ngo run main.go\n```\n\n### Container\n```bash\ndocker build -t strawbery-mcp . && docker run -p 3001:3001 strawbery-mcp\n```\n\n### Add To OpenCode\nAdd to the `$.mcp` block of your `opencode.jsonc`\n\n```jsonc\n{\n\t\"$schema\": \"https://opencode.ai/config.json\",\n\t\"mcp\": {\n\t\t\"strawbery\": {\n\t\t\t\"type\": \"remote\",\n\t\t\t\"url\": \"http://localhost:3001/sse\",\n\t\t\t\"enabled\": true\n\t\t}\n\t}\n}\n```\n\n\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "main.go",
+    "size": 467,
+    "content": "package main\n\nimport (\n\t\"log\"\n\n\t\"github.com/3io-w/strawbery-mcp/internal/tool/count\"\n\t\"github.com/mark3labs/mcp-go/server\"\n)\n\nfunc main() {\n\ts := server.NewMCPServer(\n\t\t\"Strawbery-MCP\",\n\t\t\"1.0.0\",\n\t\tserver.WithToolCapabilities(true),\n\t)\n\n\ts.AddTool(count.CountTool, count.HandleCount)\n\n\tsseServer := server.NewSSEServer(s, server.WithSSEEndpoint(\"/sse\"))\n\n\tlog.Println(\"strawbery-mcp running\")\n\n\tif err := sseServer.Start(\":3001\"); err != nil {\n\t\tlog.Fatal(err)\n\t}\n}\n"
+  },
+  "content_fetch_notes": []
+}

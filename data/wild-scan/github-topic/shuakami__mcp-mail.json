@@ -1,0 +1,51 @@
+{
+  "full_name": "shuakami/mcp-mail",
+  "html_url": "https://github.com/shuakami/mcp-mail",
+  "description": "📧 MCP Mail Tool - AI-powered email management tool | 基于 MCP 的智能邮件管理工具",
+  "topics": [
+    "ai",
+    "ai-tools",
+    "anthropic",
+    "automation",
+    "chatgpt",
+    "cursor",
+    "developer-tools",
+    "email",
+    "email-automation",
+    "email-client",
+    "imap",
+    "mail-client",
+    "mail-service",
+    "mcp",
+    "model-context-protocol",
+    "nodejs",
+    "openai",
+    "productivity",
+    "smtp",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 48,
+  "forks": 9,
+  "open_issues": 8,
+  "language": "TypeScript",
+  "license": null,
+  "default_branch": "master",
+  "created_at": "2025-03-20T06:17:17Z",
+  "last_pushed_at": "2025-11-12T08:02:52Z",
+  "fetched_at": "2026-07-11T23:31:01.570Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Mail MCP 工具\n\n[![ISC License](https://img.shields.io/badge/License-ISC-9f7aea?style=flat-square)](https://opensource.org/licenses/ISC)\n[![Node.js](https://img.shields.io/badge/Node.js-18.x-38a169?style=flat-square)](https://nodejs.org/)\n[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-2b6cb0?style=flat-square)](https://www.typescriptlang.org/)\n[![Mail](https://img.shields.io/badge/Mail-MCP-ff69b4?style=flat-square)](https://github.com/shuakami/mcp-mail)\n[![smithery badge](https://smithery.ai/badge/@shuakami/mcp-mail)](https://smithery.ai/server/@shuakami/mcp-mail)\n\n[English Version (README-EN.md)](README-EN.md)\n\n## 这是什么\n\n这是一个基于 MCP (Model Context Protocol) 的邮件工具，它能让 AI 模型通过标准化接口访问电子邮件服务。\n\n简单来说，它让 AI 助手能够执行各种邮件操作，如发送邮件、阅读收件箱、处理附件等，无需用户手动输入复杂的API调用或切换到邮件客户端。\n\n<details>\n<summary><b>支持的功能</b> (点击展开)</summary>\n\n- **邮件发送**：普通文本邮件、HTML邮件、带附件邮件、群发邮件\n- **邮件接收与查询**：获取文件夹列表、列出邮件、高级搜索、获取邮件详情\n- **邮件管理**：标记已读/未读、删除邮件、移动邮件\n- **附件管理**：查看附件列表、下载附件、查看附件内容\n- **联系人管理**：获取联系人列表、搜索联系人\n</details>\n\n<details>\n<summary><b>功能特点</b> (点击展开)</summary>\n\n以下是 Mail MCP 工具的一些核心特点：\n\n- **高级搜索功能**：支持多文件夹、关键词、日期范围、发件人、收件人等复杂条件搜索\n- **智能联系人管理**：自动从邮件历史中提取联系人信息，包括联系频率分析\n- **内容范围控制**：可以分段查看大型邮件，避免加载过多内容\n- **多种邮件格式**：支持纯文本和HTML格式邮件的发送和显示\n- **附件处理能力**：智能识别附件类型，支持文本、图片等不同类型的附件预览\n- **安全可靠**：本地处理所有邮件操作，不通过第三方服务器转发敏感信息\n\n通过简单的自然语言指令，AI 可以帮助你完成上述所有操作，无需手动编写API调用或在邮件客户端中执行复杂操作。\n</details>\n\n## 快速上手\n\n### 0. 环境准备\n\n<details>\n<summary>如果你之前没有使用过 Node.js (点击展开)</summary>\n\n1. 安装 Node.js 和 npm\n   - 访问 [Node.js 官网](https://nodejs.org/)\n   - 下载并安装 LTS（长期支持）版本\n   - 安装时选择默认选项即可，安装包会同时安装 Node.js 和 npm\n\n2. 验证安装\n   - 安装完成后，打开命令提示符（CMD）或 PowerShell\n   - 输入以下命令确认安装成功：\n     ```bash\n     node --version\n     npm --version\n     ```\n   - 如果显示版本号，则表示安装成功\n\n3. 安装 Git（如果尚未安装）\n   - 访问 [Git 官网](https://git-scm.com/)\n   - 下载并安装 Git\n   - 安装时使用默认选项即可\n\n4. 安装 Python 3.11 或更高版本（必需）\n   - 访问 [Python 官网](https://www.python.org/downloads/)\n   - 下载并安装 Python 3.11 或更高版本\n   - **重要**：安装时必须勾选\"Add Python to PATH\"选项\n   - 安装完成后**重启电脑**，确保环境变量生效\n</details>\n\n### Installing via Smithery\n\nTo install Mail MCP Tool for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@shuakami/mcp-mail):\n\n```bash\nnpx -y @smithery/cli install @shuakami/mcp-mail --client claude\n```\n\n### 1. 克隆并安装\n\n```bash\ngit clone https://github.com/shuakami/mcp-mail.git\ncd mcp-mail\nnpm install\nnpm run build\n```\n\n### 2. 构建项目\n\n```bash\nnpm run build\n```\n\n### 3. 添加到 Cursor MCP 配置\n\n根据你的操作系统，按照以下步骤配置 MCP：\n\n<details>\n<summary><b>Windows 配置</b> (点击展开)</summary>\n\n1. 在 Cursor 中，打开或创建 MCP 配置文件：`C:\\\\Users\\\\你的用户名\\\\.cursor\\\\mcp.json`\n   - 注意：请将 `你的用户名` 替换为你的 Windows 用户名\n\n2. 添加或修改配置如下：\n\n```json\n{\n  \"mcpServers\": {\n    \"mail-mcp\": {\n      \"command\": \"pythonw\",\n      \"args\": [\n        \"C:/Users/你的用户名/mcp-mail/bridging_mail_mcp.py\"\n      ],\n      \"env\": {\n        \"SMTP_HOST\": \"smtp.qq.com\",\n        \"SMTP_PORT\": \"465\",\n        \"SMTP_SECURE\": \"true\",\n        \"SMTP_USER\": \"your.email@qq.com\",\n        \"SMTP_PASS\": \"your-app-specific-password\",\n        \"IMAP_HOST\": \"imap.qq.com\",\n        \"IMAP_PORT\": \"993\",\n        \"IMAP_SECURE\": \"true\",\n        \"IMAP_USER\": \"your.email@qq.com\",\n        \"IMAP_PASS\": \"your-app-specific-password\",\n        \"DEFAULT_FROM_NAME\": \"Your Name\",\n        \"DEFAULT_FROM_EMAIL\": \"your.email@qq.com\"\n      }\n    }\n  }\n}\n```\n\n> ⚠️ **请注意**:\n> - 将 `你的用户名` 替换为你的 Windows 用户名\n> - 确保路径正确指向你克隆或解压的项目目录\n> - 路径应该反映你将项目文件放置的实际位置\n> - **不要删除克隆或解压的文件夹**，这会导致 MCP 无法正常工作\n</details>\n\n<details>\n<summary><b>macOS 配置</b> (点击展开)</summary>\n\n1. 在 Cursor 中，打开或创建 MCP 配置文件：`/Users/你的用户名/.cursor/mcp.json`\n   - 注意：请将 `你的用户名` 替换为你的 macOS 用户名\n\n2. 添加或修改配置如下：\n\n```json\n{\n  \"mcpServers\": {\n    \"mail-mcp\": {\n      \"command\": \"pythonw\",\n      \"args\": [\n        \"/Users/你的用户名/mcp-mail/bridging_mail_mcp.py\"\n      ]\n    }\n  }\n}\n```\n\n> ⚠️ **请注意**:\n> - 将 `你的用户名` 替换为你的 macOS 用户名\n> - 确保路径正确指向你克隆或解压的项目目录\n> - 路径应该反映你将项目文件放置的实际位置\n> - **不要删除克隆或解压的文件夹**，这会导致 MCP 无法正常工作\n</details>\n\n<details>\n<summary><b>Linux 配置</b> (点击展开)</summary>\n\n1. 在 Cursor 中，打开或创建 MCP 配置文件：`/home/你的用户名/.cursor/mcp.json`\n   - 注意：请将 `你的用户名` 替换为你的 Linux 用户名\n\n2. 添加或修改配置如下：\n\n```json\n{\n  \"mcpServers\": {\n    \"mail-mcp\": {\n      \"command\": \"pythonw\",\n      \"args\": [\n        \"/home/你的用户名/mcp-mail/bridging_mail_mcp.py\"\n      ]\n    }\n  }\n}\n```\n\n> ⚠️ **请注意**:\n> - 将 `你的用户名` 替换为你的 Linux 用户名\n> - 确保路径正确指向你克隆或解压的项目目录\n> - 路径应该反映你将项目文件放置的实际位置\n> - **不要删除克隆或解压的文件夹**，这会导致 MCP 无法正常工作\n</details>\n\n### 4. 启动服务\n\n配置好之后，重启 Cursor 编辑器，它会自动启动 MCP 服务。然后你就可以开始使用了。\n\n<details>\n<summary>使用示例 (点击展开)</summary>\n\n你可以要求 AI 执行以下操作：\n- \"列出我的邮箱文件夹\"\n- \"显示收件箱中的最新5封邮件\"\n- \"发送一封主题为'测试邮件'的邮件给example@example.com\"\n- \"搜索包含'发票'关键词的邮件\"\n- \"查看UID为1234的邮件详情\"\n- \"下载邮件中的附件\"\n</details>\n\n## 工作原理\n\n<details>\n<summary>技术实现细节 (点击展开)</summary>\n\n本工具基于 **MCP (Model Context Protocol)** 标准实现，作为 AI 模型与电子邮件服务之间的桥梁。它使用 **nodemailer** 和 **node-imap** 作为底层邮件客户端，并通过 **Zod** 进行请求验证和类型检查。\n\n主要技术组件包括：\n- **SMTP 客户端**：负责所有邮件发送功能，支持HTML内容和附件\n- **IMAP 客户端**：负责连接邮箱服务器，获取邮件列表、详情和附件\n- **邮件解析器**：使用 **mailparser** 解析复杂的电子邮件格式\n- **内容处理**：智能处理HTML和纯文本内容，并支持分段加载大型邮件\n- **联系人提取**：从邮件历史中自动提取和整理联系人信息\n\n每个邮件操作都被封装为标准化的 MCP 工具，接收结构化参数并返回格式化结果。所有数据都经过处理，以确保以人类可读的格式呈现，使 AI 模型能够轻松理解电子邮件的内容结构。\n</details>\n\n## 许可证\n\nISC\n\n---\n\n如果这个项目对你有帮助，欢迎给个 Star ⭐️ (｡♥‿♥｡)\n"
+  },
+  "descriptor_file": {
+    "path": "smithery.yaml",
+    "content": "# Smithery configuration file: https://smithery.ai/docs/build/project-config\n\nstartCommand:\n  type: stdio\n  configSchema:\n    # JSON Schema defining the configuration options for the MCP.\n    type: object\n    required:\n      - smtpHost\n      - smtpPort\n      - smtpSecure\n      - smtpUser\n      - smtpPass\n      - imapHost\n      - imapPort\n      - imapSecure\n      - imapUser\n      - imapPass\n      - defaultFromName\n      - defaultFromEmail\n    properties:\n      smtpHost:\n        type: string\n        description: SMTP server host\n      smtpPort:\n        type: number\n        description: SMTP server port\n      smtpSecure:\n        type: boolean\n        description: Use secure SMTP (SSL/TLS)\n      smtpUser:\n        type: string\n        description: SMTP username\n      smtpPass:\n        type: string\n        description: SMTP password\n      imapHost:\n        type: string\n        description: IMAP server host\n      imapPort:\n        type: number\n        description: IMAP server port\n      imapSecure:\n        type: boolean\n        description: Use secure IMAP (SSL/TLS)\n      imapUser:\n        type: string\n        description: IMAP username\n      imapPass:\n        type: string\n        description: IMAP password\n      defaultFromName:\n        type: string\n        description: Default 'From' name\n      defaultFromEmail:\n        type: string\n        description: Default 'From' email address\n  commandFunction:\n    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.\n    |-\n    (config) => ({command: 'python3', args: ['bridging_mail_mcp.py'], env: {\n        SMTP_HOST: config.smtpHost,\n        SMTP_PORT: String(config.smtpPort),\n        SMTP_SECURE: String(config.smtpSecure),\n        SMTP_USER: config.smtpUser,\n        SMTP_PASS: config.smtpPass,\n        IMAP_HOST: config.imapHost,\n        IMAP_PORT: String(config.imapPort),\n        IMAP_SECURE: String(config.imapSecure),\n        IMAP_USER: config.imapUser,\n        IMAP_PASS: config.imapPass,\n        DEFAULT_FROM_NAME: config.defaultFromName,\n        DEFAULT_FROM_EMAIL: config.defaultFromEmail\n    }})\n  exampleConfig:\n    smtpHost: smtp.example.com\n    smtpPort: 465\n    smtpSecure: true\n    smtpUser: user@example.com\n    smtpPass: password123\n    imapHost: imap.example.com\n    imapPort: 993\n    imapSecure: true\n    imapUser: user@example.com\n    imapPass: password123\n    defaultFromName: John Doe\n    defaultFromEmail: user@example.com\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

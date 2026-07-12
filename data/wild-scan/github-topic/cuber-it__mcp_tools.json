@@ -1,0 +1,33 @@
+{
+  "full_name": "cuber-it/mcp_tools",
+  "html_url": "https://github.com/cuber-it/mcp_tools",
+  "description": "Modular MCP tool packages — standalone CLI + plugin mode. Shell,   Wekan, Mattermost, Wikipedia, and more.",
+  "topics": [
+    "ai-tools",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "python"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 1,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2026-03-13T11:35:11Z",
+  "last_pushed_at": "2026-03-30T07:12:17Z",
+  "fetched_at": "2026-07-12T00:46:24.396Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP Tools\n\nProduction-ready MCP tool packages — each usable standalone or as a plugin for the [mcp-server-framework](https://pypi.org/project/mcp-server-framework/).\n\nEvery package works in three ways:\n1. **Standalone MCP server** — `pip install` and run\n2. **Python library** — import and call functions directly\n3. **Framework plugin** — load via `register(mcp, config)`\n\n## Packages\n\n| Package | PyPI | Tools | Description |\n|---------|------|-------|-------------|\n| [shell](shell/) | [`mcp-shell-tools`](https://pypi.org/project/mcp-shell-tools/) | 26 | Filesystem, editor, search, shell, system diagnostics |\n| [homematic](homematic/) | [`mcp-homematic-tools`](https://pypi.org/project/mcp-homematic-tools/) | 60 | HomeMatic CCU3 / OpenCCU — devices, channels, rooms, programs, system variables |\n| [playwright](playwright/) | [`mcp-playwright-tools`](https://pypi.org/project/mcp-playwright-tools/) | 43 | Browser automation — navigation, interaction, content extraction, semantic locators |\n| [image](image/) | [`mcp-image-tools`](https://pypi.org/project/mcp-image-tools/) | 6 | Image processing — read, resize, crop, convert, base64 output |\n\n**135 tools** across 4 packages. All MIT licensed.\n\n## Quick Start\n\n```bash\npip install mcp-shell-tools\nmcp-shell-tools                    # starts stdio MCP server with 26 tools\n```\n\n### Claude Code / Claude Desktop\n\n```json\n{\n  \"mcpServers\": {\n    \"shell\": { \"command\": \"mcp-shell-tools\" },\n    \"playwright\": { \"command\": \"mcp-playwright-tools\" },\n    \"image\": { \"command\": \"mcp-image-tools\" }\n  }\n}\n```\n\n### As Python library\n\n```python\nfrom mcp_shell_tools.shell import tools\n\nresult = tools.file_read(\"/etc/hosts\")\nfiles = tools.glob_search(\"**/*.py\")\n```\n\n## Architecture\n\nEach package follows the same pattern:\n\n- `register(mcp, config)` — plugin interface for the framework\n- `main()` — standalone entry point (delegates to framework)\n- Zero or minimal dependencies beyond `mcp-server-framework`\n\n```\nmcp-server-framework (config, transport, health, plugin system)\n    |\n    +-- mcp-shell-tools      (stdlib only)\n    +-- mcp-homematic-tools  (+ httpx)\n    +-- mcp-playwright-tools (+ playwright)\n    +-- mcp-image-tools      (+ Pillow)\n```\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

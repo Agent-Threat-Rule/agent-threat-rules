@@ -1,0 +1,32 @@
+{
+  "full_name": "OpenGerwin/mcp",
+  "html_url": "https://github.com/OpenGerwin/mcp",
+  "description": "Open-source MCP servers",
+  "topics": [
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "open-source"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": null,
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-25T06:35:48Z",
+  "last_pushed_at": "2026-04-25T08:02:07Z",
+  "fetched_at": "2026-07-12T00:10:04.774Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# 🧩 OpenGerwin MCP Servers\n\nOpen-source [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) servers that give AI agents superpowers.\n\nEach server is a standalone package — install only what you need.\n\n---\n\n## Available Servers\n\n| Server | Description | Status | Install |\n|---|---|---|---|\n| 🔍 **[Google Agent Platform Docs](https://github.com/OpenGerwin/mcp-google-agent-platform-docs)** | Search & read Google AI platform documentation (GEAP + Vertex AI). 3400+ pages. | ✅ Ready | `pip install mcp-google-agent-platform-docs` |\n| 🚧 *More coming soon* | Bitrix24, WordPress, and others | Planned | — |\n\n---\n\n## What is MCP?\n\n[Model Context Protocol](https://modelcontextprotocol.io/) is an open standard that lets AI assistants (Claude, Cursor, VS Code Copilot, etc.) connect to external tools and data sources.\n\nInstead of hallucinating API details, your AI can **look up the real documentation** in real-time.\n\n```\n┌─────────────────┐     MCP      ┌──────────────────────┐\n│  AI Assistant    │◄────────────►│  MCP Server          │\n│  (Claude, etc.)  │   (stdio)    │  (your tools + data) │\n└─────────────────┘              └──────────────────────┘\n```\n\n## Quick Start\n\n### 1. Pick a server from the table above\n\n### 2. Install it\n\n```bash\npip install mcp-google-agent-platform-docs\n```\n\n### 3. Connect to your AI client\n\n<details>\n<summary><b>Claude Desktop</b></summary>\n\nAdd to `claude_desktop_config.json`:\n```json\n{\n  \"mcpServers\": {\n    \"google-agent-platform-docs\": {\n      \"command\": \"mcp-google-agent-platform-docs\"\n    }\n  }\n}\n```\n</details>\n\n<details>\n<summary><b>Cursor</b></summary>\n\nAdd to `.cursor/mcp.json`:\n```json\n{\n  \"mcpServers\": {\n    \"google-agent-platform-docs\": {\n      \"command\": \"mcp-google-agent-platform-docs\",\n      \"transport\": \"stdio\"\n    }\n  }\n}\n```\n</details>\n\n<details>\n<summary><b>VS Code</b></summary>\n\nAdd to `.vscode/mcp.json`:\n```json\n{\n  \"mcpServers\": {\n    \"google-agent-platform-docs\": {\n      \"command\": \"mcp-google-agent-platform-docs\",\n      \"transport\": \"stdio\"\n    }\n  }\n}\n```\n</details>\n\n<details>\n<summary><b>Antigravity (Google)</b></summary>\n\nAdd to `~/.gemini/antigravity/mcp_config.json`:\n```json\n{\n  \"mcpServers\": {\n    \"google-agent-platform-docs\": {\n      \"command\": \"uv\",\n      \"args\": [\n        \"--directory\",\n        \"/path/to/mcp-google-agent-platform-docs\",\n        \"run\",\n        \"mcp-google-agent-platform-docs\"\n      ]\n    }\n  }\n}\n```\n</details>\n\n---\n\n## Server Details\n\n### 🔍 Google Agent Platform Docs\n\n> **Repo:** [OpenGerwin/mcp-google-agent-platform-docs](https://github.com/OpenGerwin/mcp-google-agent-platform-docs)\n> **PyPI:** `pip install mcp-google-agent-platform-docs`\n\nMCP server providing real-time access to Google's AI platform documentation:\n\n- **Gemini Enterprise Agent Platform (GEAP)** — 2300+ pages (current platform)\n- **Vertex AI Generative AI** — 1100+ pages (legacy archive)\n\n**Tools:**\n| Tool | Description |\n|---|---|\n| `search_docs` | Full-text search across documentation |\n| `get_doc` | Read any documentation page |\n| `list_sections` | Browse documentation structure |\n| `list_models` | Reference of all available AI models |\n\n---\n\n## Contributing\n\nWe welcome contributions! Whether it's:\n- 🐛 Bug reports and fixes\n- ✨ New MCP server ideas\n- 📖 Documentation improvements\n\nEach server has its own repo — please open issues and PRs there.\n\nFor general questions or ideas about new servers, use [Discussions](https://github.com/OpenGerwin/mcp/discussions) in this repo.\n\n## License\n\nAll servers are released under the [MIT License](LICENSE).\n\n---\n\n<p align=\"center\">\n  <b>OpenGerwin</b> — Open-source tools for AI agents\n</p>\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

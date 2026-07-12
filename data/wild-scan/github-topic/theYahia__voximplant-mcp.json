@@ -1,0 +1,44 @@
+{
+  "full_name": "theYahia/voximplant-mcp",
+  "html_url": "https://github.com/theYahia/voximplant-mcp",
+  "description": "MCP server for Voximplant — cloud telephony, call history, SMS (Russia). Part of WWmcp — 114 MCP servers for emerging markets.",
+  "topics": [
+    "ai-agents",
+    "anthropic",
+    "claude",
+    "cpaas",
+    "emerging-markets",
+    "mcp",
+    "mcp-servers",
+    "model-context-protocol",
+    "russia",
+    "russian-api",
+    "telephony",
+    "typescript",
+    "voximplant"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 1,
+  "forks": 1,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-03-30T16:48:50Z",
+  "last_pushed_at": "2026-06-23T12:39:53Z",
+  "fetched_at": "2026-07-12T00:09:12.187Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# @theyahia/voximplant-mcp\n\n> 🌍 Часть **[WWmcp](https://github.com/theYahia/WWmcp)** — коллекции из 114 MCP-серверов для развивающихся рынков (Россия, СНГ, MENA, Gulf, SE Asia, Africa). Единственная коллекция MCP, покрывающая не-западные API.\n\nMCP-сервер для **Voximplant API** — облачная телефония: история и инициация звонков, SMS и A2P-рассылки, записи разговоров, сценарии VoxEngine, правила маршрутизации, состояние ACD/SmartQueue-очередей, телефонные номера и биллинг. **21 инструмент + 2 скилла.**\n\n[![npm](https://img.shields.io/npm/v/@theyahia/voximplant-mcp)](https://www.npmjs.com/package/@theyahia/voximplant-mcp)\n[![CI](https://github.com/theYahia/voximplant-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/theYahia/voximplant-mcp/actions/workflows/ci.yml)\n[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)\n\n## Установка\n\n### 1. Получите ключи\n\n`VOXIMPLANT_ACCOUNT_ID` и `VOXIMPLANT_API_KEY` — в [панели управления Voximplant](https://manage.voximplant.com) (раздел API).\n\n> Аутентификация по `api_key` официально помечена как *deprecated, но рабочая* — её достаточно, если доступ к аккаунту есть только у вас. Современная альтернатива — service-account JWT (RS256); этот сервер использует классический `account_id` + `api_key`.\n\n### 2. Подключите сервер\n\n**Claude Desktop** (`claude_desktop_config.json`):\n\n```json\n{\n  \"mcpServers\": {\n    \"voximplant\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@theyahia/voximplant-mcp\"],\n      \"env\": {\n        \"VOXIMPLANT_ACCOUNT_ID\": \"your-id\",\n        \"VOXIMPLANT_API_KEY\": \"your-key\"\n      }\n    }\n  }\n}\n```\n\n**Claude Code:**\n\n```bash\nclaude mcp add voximplant -e VOXIMPLANT_ACCOUNT_ID=your-id -e VOXIMPLANT_API_KEY=your-key -- npx -y @theyahia/voximplant-mcp\n```\n\n**VS Code / Cursor:**\n\n```json\n{\n  \"servers\": {\n    \"voximplant\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@theyahia/voximplant-mcp\"],\n      \"env\": {\n        \"VOXIMPLANT_ACCOUNT_ID\": \"your-id\",\n        \"VOXIMPLANT_API_KEY\": \"your-key\"\n      }\n    }\n  }\n}\n```\n\n**Streamable HTTP:**\n\n```bash\nnpx @theyahia/voximplant-mcp --http\n# Сервер: http://localhost:3000/mcp · health: http://localhost:3000/health · порт: PORT=8080\n```\n\n## Инструменты (21)\n\n| Инструмент | Описание |\n|------------|----------|\n| `get_call_history` | История звонков за период |\n| `start_call` | Инициировать исходящий звонок по правилу (номер передаётся сценарию через customData) |\n| `get_acd_state` | Состояние ACD-очередей: звонки в очереди, статусы операторов |\n| `get_sq_state` | Текущее состояние SmartQueue-очереди |\n| `get_recordings` | Ссылки на записи разговоров (и transcription_url) за период |\n| `get_record_storages` | Список хранилищ записей |\n| `send_sms` | Отправить SMS |\n| `get_sms_history` | История SMS за период |\n| `get_a2p_sms_history` | История доставки A2P-SMS |\n| `send_a2p_sms` | ⚠️ Массовая A2P-рассылка (до 100 номеров) — действие с оплатой |\n| `get_account_info` | Информация об аккаунте (баланс, тариф). Секреты (`api_key`, `callback_salt`) скрыты |\n| `get_transaction_history` | История биллинговых транзакций (расходы) |\n| `get_applications` | Список приложений (опц. с правилами/сценариями) |\n| `get_rules` | Правила маршрутизации приложения |\n| `get_phone_numbers` | Телефонные номера аккаунта (поддержка SMS, привязка) |\n| `get_caller_ids` | Caller ID и статус их верификации |\n| `get_queues` | ACD-очереди (опц. с навыками и числом операторов) |\n| `get_skills` | Каталог навыков ACD для маршрутизации |\n| `get_scenarios` | Список сценариев VoxEngine |\n| `update_scenario` | Обновить код/имя сценария VoxEngine |\n| `get_users` | Список пользователей |\n\n> **Формат вывода:** инструменты возвращают pretty-JSON ответа API; ошибки приходят как `{ \"error\": \"...\" }` с флагом `isError`. Ответ `get_account_info` проходит строгий витлист — секретные поля (`api_key`, `callback_salt`) в него не попадают.\n\n## Скиллы (2)\n\n| Скилл | Описание |\n|-------|----------|\n| `skill-call-history` | Сводка истории звонков за последние 24 часа |\n| `skill-account-info` | Информация об аккаунте Voximplant |\n\n## Примеры\n\n```\nПокажи историю звонков за вчера\nОтправь SMS на +79001234567\nЧто сейчас в ACD-очередях — кто свободен?\nПокажи баланс и расходы за январь\nКакие у меня номера с поддержкой SMS?\nОбнови сценарий 123 — добавь логирование\nНачни звонок на +79001234567 по правилу 456\nДай ссылки на записи звонков за вчера\n```\n\n## WWmcp — связки с соседними серверами\n\nVoximplant закрывает голос и SMS; соседние серверы из [WWmcp](https://github.com/theYahia/WWmcp) дополняют сценарий:\n\n- [`tgstat-mcp`](https://github.com/theYahia/tgstat-mcp) — аналитика Telegram-каналов\n- [`yookassa-mcp`](https://github.com/theYahia/yookassa-mcp) — платежи и чеки\n- [`vk-ads-mcp`](https://github.com/theYahia/vk-ads-mcp) — рекламные кампании VK Ads\n\nПример сценария: *«Найди должников по платежам (yookassa), обзвони их голосом по сценарию (voximplant) и отправь SMS-напоминание тем, кто не ответил»*.\n\n## Разработка\n\n```bash\nnpm install\nnpm run build      # компиляция в dist/ (тесты исключены)\nnpm run typecheck  # проверка типов, включая тесты\nnpm test           # vitest\n```\n\nПроверка живых предположений об API (имена методов, параметры) — в [`docs/VERIFICATION.md`](docs/VERIFICATION.md).\n\n## ⭐ Поддержать\n\nЕсли сервер полезен — поставьте звезду этому репозиторию и [WWmcp](https://github.com/theYahia/WWmcp). Это помогает другим найти коллекцию серверов для не-западных API.\n\n## Лицензия\n\nMIT\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"voximplant\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@theyahia/voximplant-mcp\"],\n      \"env\": {\n        \"VOXIMPLANT_ACCOUNT_ID\": \"\",\n        \"VOXIMPLANT_API_KEY\": \"\"\n      }\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

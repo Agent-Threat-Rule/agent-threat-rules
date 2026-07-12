@@ -1,0 +1,40 @@
+{
+  "full_name": "faridjafarlee/refero-styles-mcp-server",
+  "html_url": "https://github.com/faridjafarlee/refero-styles-mcp-server",
+  "description": "MCP server that finds and returns design.md specs from styles.refero.design matching your project",
+  "topics": [
+    "claude-code",
+    "claude-code-plugin",
+    "design",
+    "design-pattern",
+    "design-patterns",
+    "design-system",
+    "design-systems",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-05-14T22:56:37Z",
+  "last_pushed_at": "2026-05-14T22:56:40Z",
+  "fetched_at": "2026-07-12T00:17:42.268Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# refero-styles-mcp-server\n\nAn MCP server that searches [styles.refero.design](https://styles.refero.design) for design systems that match your project's idea, needs, and style — returning ready-to-use `design.md` documentation.\n\n## Tools\n\n| Tool | Description |\n|------|-------------|\n| `refero_list_styles` | Browse the curated catalog with pagination |\n| `refero_search_styles` | Search by keyword, mood, brand, or color |\n| `refero_get_design_md` | Fetch the full design.md for a specific style |\n| `refero_match_style` | **Primary tool** — match styles to your project description |\n\n## Quick Start\n\n```bash\nnpm install\nnpm run build\nnode dist/index.js\n```\n\n## Usage with Claude Desktop\n\nAdd to `~/Library/Application Support/Claude/claude_desktop_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"refero-styles\": {\n      \"command\": \"node\",\n      \"args\": [\"/path/to/refero-styles-mcp-server/dist/index.js\"]\n    }\n  }\n}\n```\n\n## Example Prompts\n\n```\nFind a design style for my dark SaaS dashboard targeting developers.\n```\n\n```\nMatch a design.md for a clean fintech mobile app, light theme.\n```\n\n```\nGet the full design.md for Linear's design system.\n```\n\n## How It Works\n\n1. **`refero_match_style`** fetches all styles from the Refero API (~60 styles across 3 pages)\n2. Scores each style against your description using mood detection, keyword matching, and color scheme alignment\n3. Returns the top N matches ranked by score with their reasons\n4. Fetches and returns the full design.md for the top match — ready to paste into your AI coding prompt\n\n## Project Structure\n\n```\nsrc/\n├── index.ts              # Server entry point\n├── constants.ts          # API URLs and limits\n├── types.ts              # TypeScript interfaces\n├── services/\n│   └── referoApi.ts      # API client for styles.refero.design\n├── tools/\n│   ├── listStyles.ts     # refero_list_styles\n│   ├── searchStyles.ts   # refero_search_styles\n│   ├── getDesignMd.ts    # refero_get_design_md\n│   └── matchStyle.ts     # refero_match_style\n└── utils/\n    ├── designMd.ts       # Generates design.md from JSON data\n    └── errors.ts         # API error handling\n```\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "full_name": "soth-ai/mcp-reticle",
+  "html_url": "https://github.com/soth-ai/mcp-reticle",
+  "description": "Reticle intercepts, visualizes, and profiles JSON-RPC traffic between your LLM and MCP servers in real-time, with zero latency overhead. Stop debugging blind. Start seeing everything.",
+  "topics": [
+    "agent",
+    "ai",
+    "ai-agents",
+    "analytics",
+    "anthropic-claude",
+    "awesome",
+    "debugging",
+    "debugging-tool",
+    "devops",
+    "mcp",
+    "mcp-client",
+    "mcp-security",
+    "mcp-server",
+    "mcp-tools",
+    "model-context-protocol",
+    "security",
+    "security-tools",
+    "tools"
+  ],
+  "matched_query_topics": [
+    "mcp-server",
+    "model-context-protocol",
+    "mcp-tools"
+  ],
+  "stars": 113,
+  "forks": 46,
+  "open_issues": 0,
+  "language": "Rust",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-12-22T19:44:27Z",
+  "last_pushed_at": "2026-01-06T10:48:52Z",
+  "fetched_at": "2026-07-11T22:57:28.583Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<p align=\"center\">\n  <picture>\n    <source media=\"(prefers-color-scheme: dark)\" srcset=\"https://raw.githubusercontent.com/labterminal/mcp-reticle/main/frontend/src/assets/logo-white.png\" />\n    <source media=\"(prefers-color-scheme: light)\" srcset=\"https://raw.githubusercontent.com/labterminal/mcp-reticle/main/frontend/src/assets/logo.png\" />\n    <img src=\"https://raw.githubusercontent.com/labterminal/mcp-reticle/main/frontend/src/assets/logo.png\" alt=\"Reticle Logo\" width=\"120\" />\n  </picture>\n</p>\n\n<h1 align=\"center\">RETICLE</h1>\n\n<p align=\"center\">\n  <strong>The Wireshark for the Model Context Protocol (MCP)</strong>\n</p>\n\n<p align=\"center\">\n  <a href=\"LICENSE\">\n    <img src=\"https://img.shields.io/badge/License-MIT-blue.svg\" alt=\"License: MIT\" />\n  </a>\n  <a href=\"https://www.npmjs.com/package/mcp-reticle\">\n    <img src=\"https://img.shields.io/npm/v/mcp-reticle.svg\" alt=\"npm\" />\n  </a>\n  <a href=\"https://pypi.org/project/mcp-reticle/\">\n    <img src=\"https://img.shields.io/pypi/v/mcp-reticle.svg\" alt=\"PyPI\" />\n  </a>\n  <a href=\"https://github.com/labterminal/mcp-reticle/wiki\">\n    <img src=\"https://img.shields.io/badge/docs-wiki-informational\" alt=\"Docs (Wiki)\" />\n  </a>\n  <img src=\"https://img.shields.io/badge/Platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey.svg\" alt=\"Platform\" />\n</p>\n\n<p align=\"center\">\n  <em>See what your agent sees.</em>\n</p>\n\n<p align=\"center\">\n  Reticle intercepts, visualizes, and profiles MCP JSON-RPC traffic in real time — designed for microsecond-level overhead.\n</p>\n\n<p align=\"center\">\n  <a href=\"#quick-start\">Quick start</a> ·\n  <a href=\"#installation\">Install</a> ·\n  <a href=\"#documentation\">Docs</a> ·\n  <a href=\"#security--privacy\">Security</a> ·\n  <a href=\"#contributing\">Contributing</a>\n</p>\n\n<p align=\"center\">\n  <img\n    src=\"https://raw.githubusercontent.com/labterminal/mcp-reticle/main/frontend/src/styles/reticle.png\"\n    alt=\"Reticle Screenshot\"\n    width=\"900\"\n  />\n</p>\n\n---\n\n## What is Reticle?\n\nReticle is a proxy + UI for debugging MCP integrations:\n- inspect raw JSON-RPC messages (requests / notifications / responses)\n- correlate request ↔ response instantly\n- profile latency and token estimates\n- capture server stderr and crashes\n- record sessions and export logs\n\nSupported transports: **stdio**, **Streamable HTTP**, **WebSocket**, **HTTP/SSE**.\n\n---\n\n## Quick start\n\n### 1) Install\n\n```bash\n# npm\nnpm install -g mcp-reticle\n\n# pip\npip install mcp-reticle\n\n# Homebrew\nbrew install labterminal/mcp-reticle/mcp-reticle\n```\n\n### 2) Wrap your MCP server (stdio)\n\nReplace your MCP server command with `mcp-reticle run --name <name> -- <command...>`.\n\nExample (Claude Desktop-style config):\n\n```json\n{\n  \"mcpServers\": {\n    \"filesystem\": {\n      \"command\": \"mcp-reticle\",\n      \"args\": [\"run\", \"--name\", \"filesystem\", \"--\", \"npx\", \"-y\", \"@modelcontextprotocol/server-filesystem\", \"/Users/me/work\"]\n    }\n  }\n}\n```\n\n### 3) Launch the UI\n\n```bash\nmcp-reticle ui\n```\n\n### Optional: log-only mode (no UI)\n\n```bash\nmcp-reticle run --log -- npx -y @modelcontextprotocol/server-memory\n```\n\n### Optional: proxy an HTTP-based MCP server\n\n```bash\nmcp-reticle proxy --name api --upstream http://localhost:8080 --listen 3001\n```\n\n---\n\n## Installation\n\nIf you prefer building from source:\n\n```bash\ngit clone https://github.com/labterminal/mcp-reticle.git\ncd mcp-reticle\njust build\n```\n\n---\n\n## Documentation\n\nAll guides and deep dives are in the [GitHub Wiki](https://github.com/labterminal/mcp-reticle/wiki):\n\n- [Getting started](https://github.com/labterminal/mcp-reticle/wiki/Getting-Started)\n- [CLI reference](https://github.com/labterminal/mcp-reticle/wiki/CLI)\n- [Client configuration](https://github.com/labterminal/mcp-reticle/wiki/Client-Configuration)\n- [Troubleshooting](https://github.com/labterminal/mcp-reticle/wiki/Troubleshooting)\n- [Architecture](https://github.com/labterminal/mcp-reticle/wiki/Architecture)\n- [Security & privacy](https://github.com/labterminal/mcp-reticle/wiki/Security)\n- [Development](https://github.com/labterminal/mcp-reticle/wiki/Development)\n- [Exports](https://github.com/labterminal/mcp-reticle/wiki/Exports)\n\n---\n\n## CLI overview\n\n| Command | Purpose |\n|---|---|\n| `mcp-reticle run` | Wrap stdio MCP servers and inspect traffic |\n| `mcp-reticle proxy` | Reverse proxy HTTP/SSE/WebSocket transports |\n| `mcp-reticle ui` | Launch the desktop UI |\n| `mcp-reticle daemon` | Headless telemetry hub |\n\nFull details: [CLI reference](https://github.com/labterminal/mcp-reticle/wiki/CLI)\n\n---\n\n## Security & privacy\n\nReticle can capture tool inputs/outputs and server stderr. Treat recordings and exports as **sensitive** artifacts.\n\nRecommended reading: [Security & privacy](https://github.com/labterminal/mcp-reticle/wiki/Security)\n\n---\n\n## Contributing\n\n- Repo guidelines: `CONTRIBUTING.md`\n- Dev setup and commands: [Development guide](https://github.com/labterminal/mcp-reticle/wiki/Development)\n\n---\n\n## License\n\nMIT — see `LICENSE`.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

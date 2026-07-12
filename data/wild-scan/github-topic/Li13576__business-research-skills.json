@@ -1,0 +1,34 @@
+{
+  "full_name": "Li13576/business-research-skills",
+  "html_url": "https://github.com/Li13576/business-research-skills",
+  "description": "专为商科生设计的 学术工具套件一条流水线：找文献 → 整理文献 → 跑 Stata 回归 → 写论文 → 审稿 → 定稿，全程自动调度。可直接串接 Stata MCP，让 ai 能操作 Stata 执行量化分析、生成结果表格、记录研究日志，不需要你手动切换工具。",
+  "topics": [
+    "academic",
+    "agent",
+    "mcp-tools",
+    "research",
+    "skills",
+    "stata"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 2,
+  "forks": 0,
+  "open_issues": 0,
+  "language": null,
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-05-25T06:06:30Z",
+  "last_pushed_at": "2026-05-25T06:50:57Z",
+  "fetched_at": "2026-07-12T00:37:51.364Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Business Research Skills\n\n**专为商科生设计的 Claude Code 学术工具套件**\n\n*An academic research toolkit for business students, powered by Claude Code.*\n\n---\n\n## 这是什么？\n\nBusiness Research Skills 是一套跑在 Claude Code 上的 Skill 套件，\n整合六大功能，支持从研究问题厘清到论文定稿的完整学术研究流程。\n\n一条流水线：**找文献 → 整理文献 → 跑 Stata 回归 → 写论文 → 审稿 → 定稿，全程自动调度。**\n\n最大特色：**可直接串接 Stata MCP，让 AI 能操作 Stata 执行量化分析、生成结果表格、记录研究日志，不需要你手动切换工具。**\n\n---\n\n## 六大 Skill\n\n| Skill                     | 功能                         | 触发范例                               |\n| ------------------------- | ---------------------------- | -------------------------------------- |\n| 🔍 deep-research           | 深度研究，14 代理，9 种模式  | 「帮我研究审计师任期与盈余管理的关系」 |\n| 📚 literature-review       | 文献综述，从零到可贴进论文   | 「帮我做信息不对称的文献综述」         |\n| 📊 quantitative-analysis   | 量化分析，串接 Stata MCP     | 「帮我跑固定效应回归」                 |\n| ✍️ academic-writing        | 论文写作，无 AI 味中文学术文 | 「帮我写第三章研究设计」               |\n| 🔬 academic-paper-reviewer | 审稿，7 代理模拟期刊委员会   | 「帮我审这篇论文」                     |\n| 🔄 research-pipeline       | 全流程调度，一键跑完         | 「帮我跑完整研究流程」                 |\n\n---\n\n## 跟其他工具的差异\n\n| 维度       | 一般 AI 工具 | 本套件                    |\n| ---------- | ------------ | ------------------------- |\n| 学科定位   | 通用         | 商科专攻（会计／经济学）  |\n| 量化分析   | 无法执行     | 串接 Stata MCP 直接跑     |\n| 中文数据库 | 不支持       | CNKI、CSSCI 搜索规范      |\n| 引用格式   | 基本支持     | GB/T 7714 + APA 7.0       |\n| 期刊等级   | 不辨别       | CSSCI T1 / SSCI Q1 分级   |\n| 诚信查核   | 无           | 强制两次假引用检测        |\n| 日志记录   | 无           | 研究日志 + Stata 执行日志 |\n\n---\n\n## 快速开始\n\n### 1. 安装 Claude Code\n\n```bash\nnpm install -g @anthropic-ai/claude-code\n```\n\n### 2. 安装 Stata MCP（量化分析功能需要）\n\n```bash\nclaude mcp add stata-mcp --scope user -- uvx stata-mcp\n```\n\n### 3. 下载本套件\n\n```bash\ngit clone https://github.com/你的用户名/business-research-skills.git\ncd business-research-skills\n```\n\n### 4. 启动 Claude Code\n\n```bash\nclaude\n```\n\n### 5. 开始使用\n\n```\n# 全流程\n帮我跑完整研究流程\n\n# 单一功能\n帮我研究 ESG 披露对审计费用的影响\n帮我做碳信息披露的文献综述\n帮我跑固定效应回归\n帮我写第三章研究设计\n帮我审这篇论文\n```\n\n---\n\n## 文件结构\n\n```\nbusiness-research-skills/\n├── .claude/\n│   └── CLAUDE.md                    ← 入口，统一调度\n│\n├── deep-research/\n│   └── SKILL.md                     ← 深度研究\n│\n├── literature-review/\n│   └── SKILL.md                     ← 文献综述\n│\n├── quantitative-analysis/\n│   └── SKILL.md                     ← 量化分析（Stata MCP）\n│\n├── academic-writing/\n│   └── SKILL.md                     ← 论文写作\n│\n├── academic-paper-reviewer/\n│   └── SKILL.md                     ← 审稿\n│\n├── research-pipeline/\n│   └── SKILL.md                     ← 全流程调度\n│\n├── shared/                          ← 共用规范\n│   ├── handoff_schemas.md\n│   ├── citation_standards.md\n│   ├── writing_quality_check.md\n│   └── journal_tiers.md\n│\n└── README.md\n```\n\n---\n\n## 系统要求\n\n- Claude Code（最新版）\n- Claude Max 计划或 API 密钥（建议：full pipeline 耗用 token 较多）\n- Stata（量化分析功能需要，支持 Stata 16+）\n- Python 3.8+（Stata MCP 需要）\n\n---\n\n## 使用场景范例\n\n**场景 1：硕士论文第二章**\n\n```\n帮我做「审计师任期与盈余管理」的文献综述，\n目标是 CSSCI 期刊，需要找 20-30 篇文献，\n输出可以直接贴进论文第二章的格式。\n```\n\n**场景 2：量化分析**\n\n```\n我的研究问题是「企业社会责任披露对融资成本的影响」，\n样本是 2010-2022 年 A 股上市公司，\n帮我设计变量、跑固定效应回归、做稳健性检验。\n```\n\n**场景 3：投稿前审稿**\n\n```\n帮我审这篇论文，重点看方法论，\n特别是内生性处理和稳健性检验。\n```\n\n---\n\n## 注意事项\n\n- 本套件生成的所有引用请自行验证，AI 有捏造引用的风险\n- 量化分析结果仅供参考，请结合专业判断使用\n- full pipeline 模式耗用 token 较多，建议使用 Claude Max 计划\n\n---\n\n## 授权\n\nCC-BY-NC 4.0 — 可自由使用和修改，不可商业使用，请保留出处。\n\n---\n\n## 致谢\n\n本套件的设计参考了 [Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills)，\n在其基础上针对商科领域进行了深度改造，并加入了 Stata MCP 串接功能。\n\n---\n\n*如有问题或建议，欢迎提交 Issue 或 Pull Request。*\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

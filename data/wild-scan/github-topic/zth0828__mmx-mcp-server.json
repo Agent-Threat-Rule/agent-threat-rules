@@ -1,0 +1,40 @@
+{
+  "full_name": "zth0828/mmx-mcp-server",
+  "html_url": "https://github.com/zth0828/mmx-mcp-server",
+  "description": "A unified Model Context Protocol server for MiniMax CLI (mmx)",
+  "topics": [
+    "ai",
+    "claude",
+    "claude-code",
+    "image-generation",
+    "llm-tools",
+    "mcp",
+    "mcp-server",
+    "minimax",
+    "model-context-protocol",
+    "multimodal",
+    "tts",
+    "video-generation"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 31,
+  "forks": 8,
+  "open_issues": 2,
+  "language": "JavaScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-17T05:21:06Z",
+  "last_pushed_at": "2026-04-17T07:30:06Z",
+  "fetched_at": "2026-07-11T23:41:23.136Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# mmx-mcp-server\n\n一个统一的 MiniMax 全模态 MCP Server，基于 `mmx` CLI 封装，支持文本、搜索、图像理解、图像生成、语音合成、视频生成、音乐生成和配额查询。\n\n![Preview](assets/preview.png)\n\n> [English README](README_EN.md)\n\n## 快速开始（一句话配置）\n\n如果你使用的是 Claude Code、OpenCode 或其他支持 MCP 的 AI CLI 工具，直接把下面这段话丢给 AI：\n\n> 帮我安装并配置 mmx-mcp-server：\n> 1. 全局安装 mmx-cli（`npm install -g mmx-cli`）\n> 2. 克隆 https://github.com/zth0828/mmx-mcp-server 到任意目录，执行 `npm install && npm run build`\n> 3. 在我的 MCP 配置文件（如 `~/.claude/settings.json`）里添加 `mmx` server，指向构建产物 `dist/index.js`\n> 4. 向我要 MiniMax API Key，并通过 `env.MINIMAX_API_KEY` 注入\n> 5. 完成后告诉我配置结果\n\n---\n\n## 手动安装\n\n### 1. 安装 mmx CLI（如果尚未安装）\n\n```bash\nnpm install -g mmx-cli\n```\n\n验证安装：\n\n```bash\nmmx --version\n```\n\n### 2. 安装并构建 MCP Server\n\n```bash\ngit clone https://github.com/zth0828/mmx-mcp-server.git\ncd mmx-mcp-server\nnpm install\nnpm run build\n```\n\n### 3. 配置 API Key\n\n在 MCP 客户端配置（如 `~/.claude/settings.json`）中添加：\n\n#### 方式一：环境变量传 API Key（推荐）\n\n```json\n{\n  \"mcpServers\": {\n    \"mmx\": {\n      \"command\": \"node\",\n      \"args\": [\"/path/to/mmx-mcp-server/dist/index.js\"],\n      \"env\": {\n        \"MINIMAX_API_KEY\": \"sk-xxxxx\"\n      }\n    }\n  }\n}\n```\n\n#### 方式二：命令行参数传 API Key\n\n适合不方便写 `env` 的 MCP 客户端：\n\n```json\n{\n  \"mcpServers\": {\n    \"mmx\": {\n      \"command\": \"node\",\n      \"args\": [\n        \"/path/to/mmx-mcp-server/dist/index.js\",\n        \"--api-key\",\n        \"sk-xxxxx\"\n      ]\n    }\n  }\n}\n```\n\n#### 方式三：依赖 `mmx` CLI 本地登录\n\n如果前两种方式都没配，Server 会自动回退到 `mmx` CLI 自身的认证状态（需提前执行 `mmx auth login --api-key sk-xxxxx`）。这种方式仅适合本机使用。\n\n---\n\n### 自定义输出目录（可选）\n\n默认情况下，生成的图片、视频、音乐、语音会自动保存到 **当前工作目录** 下的子文件夹：\n\n- `mmx_image/` — 图片\n- `mmx_video/` — 视频\n- `mmx_music/` — 音乐\n- `mmx_speech/` — 语音\n\n如果你希望统一放到其他位置，可以通过环境变量 `MMX_OUTPUT_DIR` 修改：\n\n```json\n{\n  \"mcpServers\": {\n    \"mmx\": {\n      \"command\": \"node\",\n      \"args\": [\"/path/to/mmx-mcp-server/dist/index.js\"],\n      \"env\": {\n        \"MINIMAX_API_KEY\": \"sk-xxxxx\",\n        \"MMX_OUTPUT_DIR\": \"/Users/xxx/Downloads/mmx-output\"\n      }\n    }\n  }\n}\n```\n\n> 不配置 `MMX_OUTPUT_DIR` 也完全不影响使用，文件会自动落在当前项目目录下。\n\n每次调用时也可以通过 `out` 参数指定单个文件的输出路径。\n\n## 提供的 Tools\n\n| Tool | 说明 |\n|------|------|\n| `mmx_search` | 网页搜索 |\n| `mmx_vision_describe` | 图像理解（支持自定义分析指令，如 UI critique） |\n| `mmx_text_chat` | 文本对话（支持 system prompt、JSON 模式） |\n| `mmx_image_generate` | 图像生成（支持 `out` 指定路径） |\n| `mmx_speech_synthesize` | 语音合成 TTS（支持 `out` 指定路径） |\n| `mmx_video_generate` | 视频生成（支持 `out` 指定路径） |\n| `mmx_music_generate` | 音乐生成（支持 `out` 指定路径） |\n| `mmx_quota_show` | 查看配额 |\n\n## 使用示例\n\n配置完成后，你可以在 Claude Code 中直接说：\n\n> \"帮我搜索 MiniMax 的最新新闻\"  \n> \"分析一下这个 UI 设计图，给出优化建议\"  \n> \"生成一张赛博朋克风格的城市夜景图\"  \n> \"把这段文字转成语音\"\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

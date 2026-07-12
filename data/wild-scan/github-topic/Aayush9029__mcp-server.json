@@ -1,0 +1,33 @@
+{
+  "full_name": "Aayush9029/mcp-server",
+  "html_url": "https://github.com/Aayush9029/mcp-server",
+  "description": "MCP SERVER",
+  "topics": [
+    "ai",
+    "ios",
+    "mcp",
+    "model-context-protocol",
+    "python"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 45,
+  "forks": 15,
+  "open_issues": 1,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-05-24T16:05:35Z",
+  "last_pushed_at": "2026-03-28T18:46:04Z",
+  "fetched_at": "2026-07-11T23:32:26.247Z",
+  "readme": {
+    "path": "README.md",
+    "content": "> [!NOTE]  \n> iOS app can be downloaded here\n>\n>  https://apps.apple.com/app/apple-store/id6746345658\n\n\n# MCP Client for iOS\n\n[![Auto Release](https://github.com/Aayush9029/mcp-server/actions/workflows/auto-release.yml/badge.svg)](https://github.com/Aayush9029/mcp-server/actions/workflows/auto-release.yml)\n[![pages-build-deployment](https://github.com/Aayush9029/mcp-server/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/Aayush9029/mcp-server/actions/workflows/pages/pages-build-deployment)\n[![PyPI version](https://badge.fury.io/py/task-mcp.svg)](https://pypi.org/project/task-mcp/)\n![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)\n![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)\n\n<p>\n\n![image](https://github.com/user-attachments/assets/a655c5ca-97e9-4ec6-af5b-95b8ebf07d5e)\n\n</p>\n\n### Verified with \n<img src=\"https://github.com/user-attachments/assets/c05449f1-4da8-4228-9bba-6821f70a3ab8\" width=\"40px\" />\n<img src=\"https://github.com/user-attachments/assets/caa206db-bf97-4376-81c1-20d542d5963a\" width=\"40px\" />\n<img src=\"https://github.com/user-attachments/assets/c2cbc255-af9b-4683-ba12-c36a4b1e6268\" width=\"40px\" />\n<img src=\"https://github.com/user-attachments/assets/ec6c1c3d-8209-406f-986d-4fb1d76b401b\" width=\"40px\" />\n<img src=\"https://github.com/user-attachments/assets/220a04be-f6f2-4a3d-b161-b961311d6775\" width=\"40px\" />\n<img src=\"https://github.com/user-attachments/assets/69781fbe-5888-4cd0-98d8-be71dbb14e8c\" width=\"40px\" />\n\n## Task Management MCP Server\n\nBridge AI assistants with real-world task management\n\nThis MCP server connects Claude Desktop, Cursor, and other AI tools to a powerful task management API, enabling intelligent workflows that create, update, and track tasks automatically on your iPhone.\n\n### What You Can Do\n\n- Ask Claude to create tasks during coding sessions\n- Let Cursor update task status as it completes work\n- Get notifications on your iPhone when AI assistants finish tasks\n- Track progress across multiple AI tools and automation scripts\n- Manage priorities with AI-suggested urgency levels\n\nPerfect for developers who want their AI assistants to collaborate on real projects with automatic task tracking and mobile notifications.\n\n## Quick Start\n\n### 1. Get Your API Key\n\nDownload the iOS app [here](https://apps.apple.com/app/apple-store/id6746345658)\n\n### 2. Choose Your Setup\n\n#### For Claude Desktop (Recommended)\n\nAdd this to `~/Library/Application Support/Claude/claude_desktop_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"task-manager\": {\n      \"command\": \"npx\",\n      \"args\": [\n        \"mcp-remote\",\n        \"https://task-mcp-server.aayushpokharel9029.workers.dev/sse?apiKey=YOUR_API_KEY\"\n      ]\n    }\n  }\n}\n```\n\n#### For Cursor or Other MCP Clients\n\n```json\n{\n  \"mcpServers\": {\n    \"task-manager\": {\n      \"url\": \"https://task-mcp-server.aayushpokharel9029.workers.dev/sse?apiKey=YOUR_API_KEY\"\n    }\n  }\n}\n```\n\nReplace `YOUR_API_KEY` with your actual API key.\n\n### 3. Start Using It\n\nOnce configured, your AI assistant can:\n\n- \"Create a high-priority task to review the pull request\"\n- \"Show me all pending tasks\"\n- \"Mark the deployment task as completed\"\n- \"Update the bug fix to urgent priority\"\n\n## Available Tools\n\nThe server provides these capabilities to AI assistants:\n\n### `create_task`\nCreate new tasks with title, description, priority, and notification settings.\n\n### `list_tasks`\nView all tasks with optional filtering by status, priority, or date.\n\n### `get_task`\nGet detailed information about any specific task.\n\n### `update_task`\nModify task properties including status, priority, and description.\n\n### `delete_task`\nRemove completed or cancelled tasks.\n\n## Technical Details\n\n### Documentation\n\n- **REST API Documentation**:\n  - [FastAPI Docs](https://mcpclient.lovedoingthings.com/docs)\n  - [ReDoc](https://mcpclient.lovedoingthings.com/redoc#tag/Tasks/operation/create_task_api_tasks__post)\n- **MCP Server Documentation**: [https://task-mcp-server.aayushpokharel9029.workers.dev](https://task-mcp-server.aayushpokharel9029.workers.dev)\n\n### API Details\n\n- **Authentication**: API key via `X-API-Key` header\n- **Supported Priorities**: LOW, MEDIUM, HIGH, URGENT\n- **Supported Statuses**: TODO, IN_PROGRESS, DONE, CANCELLED\n\n## Security & Privacy\n\n- **API Key Isolation**: Each key maintains completely separate task data\n- **No Cross-Access**: Tasks are never shared between different API keys\n- **Secure Communication**: All requests require authentication headers\n- **Real-time Updates**: Changes sync instantly to your iPhone app\n\n## Need Help?\n\nIf your AI assistant isn't connecting:\n\n1. Check that your API key is correctly formatted\n2. Verify the configuration file location\n3. Restart your MCP client after configuration changes\n\nFor issues or feature requests, visit the [GitHub Issues](https://github.com/Aayush9029/mcp-server/issues).\n\n---\n\nGitHub: [@Aayush9029](https://github.com/Aayush9029/mcp-server) • Twitter: [@aayushbuilds](https://twitter.com/aayushbuilds)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

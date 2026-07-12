@@ -1,0 +1,38 @@
+{
+  "full_name": "sanjibdevnathlabs/claude-plugins",
+  "html_url": "https://github.com/sanjibdevnathlabs/claude-plugins",
+  "description": "A collection of plugins for Claude Code — extending your AI coding assistant with dashboards, tools, and integrations.",
+  "topics": [
+    "anthropic",
+    "claude",
+    "claude-code",
+    "claude-plugin",
+    "cli-tools",
+    "developer-tools",
+    "mcp",
+    "mcp-management",
+    "mcp-servers",
+    "model-context-protocol"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "JavaScript",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2026-03-04T12:45:51Z",
+  "last_pushed_at": "2026-03-26T12:42:28Z",
+  "fetched_at": "2026-07-12T00:17:27.198Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Claude Plugins\n\n[![CI](https://github.com/sanjibdevnathlabs/claude-plugins/actions/workflows/ci.yml/badge.svg)](https://github.com/sanjibdevnathlabs/claude-plugins/actions/workflows/ci.yml)\n\nA collection of open-source plugins for [Claude Code](https://docs.anthropic.com/en/docs/claude-code), Anthropic's CLI for AI-assisted software development.\n\n## What are Claude Code plugins?\n\n[Claude Code](https://docs.anthropic.com/en/docs/claude-code) is Anthropic's command-line tool that brings Claude directly into your terminal. **Plugins** extend Claude Code with additional capabilities — hooks that run on events (like session start), skills that add new `/slash` commands, and MCP server configurations.\n\nPlugins can:\n- Add **hooks** that trigger on events (e.g., start a dashboard when Claude Code opens)\n- Add **skills** that register new `/commands` inside Claude Code\n- Bundle **MCP servers** for tool integrations\n\n## Plugins\n\n| Plugin | Description | Status |\n|--------|-------------|--------|\n| [mcp-manager](./mcp-manager/) | Web dashboard to toggle MCP servers on/off, view tools, and manage configs across workspaces | v1.0.0 |\n\n## Getting Started\n\n### Prerequisites\n\n1. **Install Claude Code** — Follow the [official guide](https://docs.anthropic.com/en/docs/claude-code) to install Claude Code\n2. **Run Claude Code at least once** — This creates the `~/.claude.json` config file that plugins depend on\n3. **Node.js 20+** and **npm** — Required to build and run plugins\n\n### How plugin installation works\n\nClaude Code uses a **marketplace** system. A marketplace is a GitHub repo (or local path) that contains one or more plugins. To install a plugin, you first register the marketplace, then install plugins from it.\n\n#### Step 1: Add a marketplace\n\nA marketplace is any repo with a `.claude-plugin/marketplace.json` at its root. Register it with:\n\n```bash\n# From a GitHub repo\nclaude plugin marketplace add github:<owner>/<repo>\n\n# From a local path\nclaude plugin marketplace add /path/to/marketplace\n```\n\n#### Step 2: Install a plugin from the marketplace\n\nOnce the marketplace is registered, install any plugin listed in it:\n\n```bash\nclaude plugin install <plugin-name>\n```\n\nThis clones the plugin, builds it, and registers its hooks and skills with Claude Code automatically.\n\n#### Step 3: Restart Claude Code\n\nStart a new Claude Code session for the plugin's hooks and skills to take effect.\n\n### Manage plugins and marketplaces\n\n```bash\n# List registered marketplaces\nclaude plugin marketplace list\n\n# Update marketplace catalogs\nclaude plugin marketplace update\n\n# List installed plugins\nclaude plugin list\n\n# Remove a plugin\nclaude plugin uninstall <plugin-name>\n\n# Remove a marketplace\nclaude plugin marketplace remove <marketplace-name>\n```\n\n### Install a plugin from this repo\n\nTo install **mcp-manager** from this repository:\n\n```bash\n# 1. Register this repo as a marketplace\nclaude plugin marketplace add github:sanjibdevnathlabs/claude-plugins\n\n# 2. Install the plugin\nclaude plugin install mcp-manager\n```\n\nThen start a new Claude Code session — you should see:\n\n```\nMCP Manager dashboard running at http://localhost:4111\n```\n\nSee the [mcp-manager README](./mcp-manager/README.md) for full setup and usage details.\n\n## Updating Plugins\n\nPlugin updates are a two-step process — first refresh the marketplace catalog, then update the plugin itself.\n\n### Check for updates\n\n```bash\n# 1. Refresh the marketplace catalog (pulls latest version info)\nclaude plugin marketplace update\n\n# 2. Open the plugin manager and select a plugin to update\nclaude plugin manage\n```\n\nSelect the plugin you want to update, then choose the **update** action. This will re-download the latest version and update your local cache.\n\n### How versioning works\n\nEach plugin declares a version in the marketplace manifest (`.claude-plugin/marketplace.json`) and in its own metadata (`.claude-plugin/plugin.json`). When the marketplace version differs from your installed version, the plugin is considered outdated.\n\n> **Note:** There are currently no automatic update notifications. To stay up to date, periodically run `claude plugin marketplace update` and check `/plugin manage` for available updates.\n\n## Contributing\n\nEach plugin lives in its own directory at the repo root. See the individual plugin READMEs for development setup:\n\n- [mcp-manager development guide](./mcp-manager/README.md#development)\n\n## License\n\n[MIT](./LICENSE)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

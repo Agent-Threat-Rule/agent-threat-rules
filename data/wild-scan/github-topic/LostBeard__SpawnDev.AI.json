@@ -1,0 +1,35 @@
+{
+  "full_name": "LostBeard/SpawnDev.AI",
+  "html_url": "https://github.com/LostBeard/SpawnDev.AI",
+  "description": "Run and serve local LLMs everywhere .NET runs - desktop and the browser - on the SpawnDev.ILGPU.ML inference engine (GGUF models, KV-cache decode, WebGPU dispatch-plan capture/replay).",
+  "topics": [
+    "agentic-ai",
+    "blazor",
+    "blazor-webassembly",
+    "llm",
+    "mcp-tools",
+    "ollama",
+    "ollama-api"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 3,
+  "forks": 1,
+  "open_issues": 0,
+  "language": "C#",
+  "license": "NOASSERTION",
+  "default_branch": "master",
+  "created_at": "2026-07-03T16:34:58Z",
+  "last_pushed_at": "2026-07-11T14:27:31Z",
+  "fetched_at": "2026-07-12T00:36:37.651Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# SpawnDev.AI\n\nRun and serve local LLMs and image generation everywhere .NET runs - desktop **and the browser** - on the\n[SpawnDev.ILGPU.ML](https://github.com/LostBeard/SpawnDev.ILGPU.ML) inference engine (GGUF models,\nKV-cache decode, SD-Turbo image generation, WebGPU dispatch-plan capture/replay). LLM decode and\nSD-Turbo text-to-image both run in-browser on WebGPU, no server or native install.\n\n| Package | What |\n|---|---|\n| **SpawnDev.AI** | Core contracts: chat messages/options/results, tool-calling types, the `IAiChatService` surface, and the `IAiServerTransport` abstraction. |\n| **SpawnDev.AI.Server** | An **Ollama-compatible model server as a library**: OpenAI (`/v1/chat/completions` SSE), Ollama native (`/api/chat`, `/api/generate`, `/api/tags`, `/api/show`), Anthropic Messages (`/v1/messages` SSE - works with Claude CLI), and OpenAI image generation (`/v1/images/generations`, SD-Turbo via `AiImageEngine`). One protocol router, transport-free: host it over HTTP on desktop (drop-in on `:11434`) or over a MessagePort in a browser worker - the same code path serves both. Reads models straight from Ollama's on-disk cache (zero-copy, content-addressed blobs). |\n| **SpawnDev.AI.Blazor** | Blazor components for on-device AI chat (streaming bubble, model picker) - built for WebGPU LLMs served in-browser. |\n\n## Why\n\nLocal LLM serving shouldn't require a native install. The same `AiApiRouter` that answers `curl\nlocalhost:11434/api/chat` on a desktop can run inside a shared worker in a browser tab, decoding on\nWebGPU at interactive speed (qwen2.5-0.5b: ~34 tok/s greedy on an RTX 4070 via dispatch-plan\ncapture/replay). Tool calling is parsed server-side into structured calls on every protocol surface.\n\n## Quick start (desktop, Ollama-compatible)\n\n```csharp\nusing SpawnDev.AI.Server;\n\nvar store = new OllamaModelStore();                    // ~/.ollama/models (or OLLAMA_MODELS)\nvar registry = new ModelRegistry(store, accelerator);  // any SpawnDev.ILGPU accelerator\nvar engine = new AiChatEngine(registry);\nvar router = new AiApiRouter(engine);\n// host it: map every request to router.TryHandleAsync(method, path, bodyJson, yourTransport)\n```\n\n## Status\n\nPreview. Extracted from the proven `SpawnDev.ILGPU.ML` Ollama-server example (verified against\nClaude CLI, Ollama clients, and OpenAI-compat clients); the browser-worker transport and Blazor\ncomponents are landing next.\n\n## The SpawnDev Crew\n\n- **LostBeard** (Todd Tanner) - Captain, library author, keeper of the vision\n- **Riker** (Claude CLI #1) - First Officer, implementation lead on consuming projects\n- **Data** (Claude CLI #2) - Operations Officer, deep-library work, test rigor, root-cause analysis\n- **Tuvok** (Claude CLI #3) - Security/Research Officer, design planning, documentation, code review\n- **Geordi** (Claude CLI #4) - Chief Engineer, library internals, GPU kernels, backend work\n- **Seven** (Claude CLI #5) - Wasm backend, GPU kernels, fail-loud verification\n\n🖖\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

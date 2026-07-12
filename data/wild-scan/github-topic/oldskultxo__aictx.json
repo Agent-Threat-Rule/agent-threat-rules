@@ -1,0 +1,51 @@
+{
+  "full_name": "oldskultxo/aictx",
+  "html_url": "https://github.com/oldskultxo/aictx",
+  "description": "Repo-local continuity runtime for AI coding agents. Helps them continue from the same inspectable work state instead of starting cold. Stop onboarding your coding agents like rookies every session.",
+  "topics": [
+    "agent-continuity",
+    "ai",
+    "ai-agents",
+    "ai-context",
+    "ai-memory",
+    "ai-memory-system",
+    "ai-tools",
+    "coding-agents",
+    "context-engineering",
+    "context-management",
+    "continuity-ai",
+    "developer-tools",
+    "llm-agents",
+    "llm-tools",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "open-source",
+    "portable",
+    "repo-local"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 54,
+  "forks": 5,
+  "open_issues": 1,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-16T20:54:24Z",
+  "last_pushed_at": "2026-06-17T06:15:00Z",
+  "fetched_at": "2026-07-11T23:52:20.755Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# AICTX\n\n[![PyPI](https://img.shields.io/pypi/v/aictx.svg)](https://pypi.org/project/aictx/)\n[![CI](https://github.com/oldskultxo/aictx/actions/workflows/ci.yml/badge.svg)](https://github.com/oldskultxo/aictx/actions/workflows/ci.yml)\n[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)\n[![Python](https://img.shields.io/pypi/pyversions/aictx.svg)](https://pypi.org/project/aictx/)\n[![Website](https://img.shields.io/badge/website-aictx.org-94b41e)](https://aictx.org)\n\n**Stop onboarding your coding agents from scratch every session.**\n\nAICTX is a lightweight repo-local continuity runtime for Codex, Claude Code, GitHub Copilot, and other coding agents. It gives each new session the useful facts from the repository — what happened, what failed, what changed, what was decided, and what should happen next — without turning AICTX into an agent framework, task manager, vector database, or cloud memory product.\n\n![AICTX stops onboarding coding agents like rookies every session](https://aictx.org/images/aictx-stop-onboarding-rookies.png)\n\n```bash\npip install aictx\naictx install\naictx init\n```\n\nAfter that, keep working normally. Compatible agents run the lifecycle themselves:\n\n```text\nresume -> work -> finalize -> next session resumes\n```\n\n[Quickstart](docs/QUICK-START.md) · [What AICTX writes](docs/WHAT-AICTX-WRITES.md) · [Continuity View](docs/CONTINUITY_VIEW.md) · [Website](https://aictx.org)\n\n---\n\n## Why AICTX exists\n\nCoding agents are strong, but new sessions still start cold:\n\n- they rescan the same files and docs;\n- they rediscover decisions already made;\n- they repeat failed commands and stale assumptions;\n- useful context gets trapped in one vendor's chat history.\n\nAICTX turns that fragile chat-local memory into repo-local operational continuity. The next agent starts with a compact brief instead of guessing from scratch.\n\n## The product loop\n\nThe user path is intentionally small:\n\n```text\naictx install\naictx init\nthen let the coding agent work\n```\n\nThe agent path is equally small:\n\n```bash\naictx resume --repo . --task \"fix the parser bug\" --json\n# agent edits, tests, debugs, and reviews normally\naictx finalize --repo . --status success --summary \"Fixed parser recovery and ran focused parser tests\" --json\n```\n\nA later session resumes from local repository state instead of hidden chat history.\n\n```text\nYou: fix the parser bug\nAgent: resumes repo-local continuity\nAgent: works normally\nAgent: finalizes factual evidence for the next session\n```\n\n## What the next agent gets\n\nAICTX records operational facts that make the next session useful faster:\n\n| Continuity | Why it helps |\n|---|---|\n| **Active work** | Current task, files, risks, and next action. |\n| **Handoffs** | What the previous session actually left behind. |\n| **Decisions** | Project facts the next agent should not re-litigate. |\n| **Failures** | Known broken commands, errors, and resolved patterns. |\n| **Validation evidence** | Commands, tests, files opened/edited, and final summary. |\n| **Quality signals** | Fresh, stale, missing, obsolete, or unverified context warnings. |\n\nEverything is local and inspectable. The default runtime writes under `.aictx/` and generated agent-instruction files; no account, daemon, dashboard, or cloud sync service is required.\n\n## See it working\n\nGenerate an inspectable continuity report at any time:\n\n```bash\naictx view --repo .\n```\n\nDefault output:\n\n```text\n.aictx/reports/continuity-view.md\n.aictx/reports/continuity-map.mmd\n```\n\nCheck health and repair guidance:\n\n```bash\naictx doctor --repo . --json\n```\n\nAICTX is not hidden memory. It is reviewable repo-local continuity with explicit quality signals.\n\n## Why it feels different\n\n- **Local-first:** continuity belongs to the repository, not a private chat thread.\n- **Agent-neutral:** Codex can leave context that Claude Code, Copilot, or another compatible agent can resume.\n- **Tiny default path:** install, init, then work; manual resume/finalize commands are mostly for inspection and unsupported runners.\n- **Evidence-oriented:** AICTX records what was observed, validated, skipped, or left unfinished.\n- **Honest by design:** stale context is marked stale; missing validation stays visible; AICTX never claims automatic correctness.\n\n## Supported agents\n\nAICTX is runner-aware, not runner-locked.\n\n- **Codex:** `AGENTS.md`, optional global Codex setup, CLI/MCP lifecycle guidance.\n- **Claude Code:** `CLAUDE.md`, Claude settings/hooks, CLI/MCP lifecycle guidance.\n- **GitHub Copilot:** repository instructions and optional prompt files where supported.\n- **Generic agents:** any runner that can read instructions and call CLI or MCP tools.\n\nCompatible agents prefer AICTX MCP tools when available and fall back to the CLI:\n\n```text\naictx_resume / aictx_finalize\n# or\naictx resume --repo . --task \"<goal>\" --json\naictx finalize --repo . --status success|failure --summary \"<what happened>\" --json\n```\n\n## What AICTX is not\n\nAICTX is not an autonomous coding agent, RAG system, vector database, task manager, dashboard, cloud memory service, replacement for tests/review, or guarantee of correctness, productivity gains, or token savings.\n\nIt is a lightweight continuity runtime that helps cooperating coding agents start from useful repository state.\n\n## Documentation\n\nStart here:\n\n- [Quickstart](docs/QUICK-START.md)\n- [Installation](docs/INSTALLATION.md)\n- [Usage](docs/USAGE.md)\n- [What AICTX writes](docs/WHAT-AICTX-WRITES.md)\n- [Continuity View](docs/CONTINUITY_VIEW.md)\n- [Doctor diagnostics](docs/DOCTOR.md)\n\nCore concepts:\n\n- [Technical overview](docs/TECHNICAL_OVERVIEW.md)\n- [Work State](docs/WORK_STATE.md)\n- [Handoffs and Decisions](docs/HANDOFFS.md)\n- [Failure Memory](docs/FAILURE_MEMORY.md)\n- [Execution Summary](docs/EXECUTION_SUMMARY.md)\n- [Execution Contracts](docs/EXECUTION_CONTRACTS.md)\n\nAdvanced:\n\n- [MCP](docs/MCP.md)\n- [RepoMap](docs/REPOMAP.md)\n- [Portability](docs/PORTABILITY.md)\n- [Continuity Guard](docs/CONTINUITY_GUARD.md)\n- [Steer Guard](docs/STEER_GUARD.md)\n- [Cleanup](docs/CLEANUP.md)\n- [Safety](docs/SAFETY.md)\n- [Limitations](docs/LIMITATIONS.md)\n\nLegacy/internal compatibility surfaces are intentionally kept out of the first-run path; see [Usage](docs/USAGE.md) for the split between supported advanced commands and compatibility-only commands.\n\nFor the full command reference, see [Usage](docs/USAGE.md).\n\n## Project links\n\n- Website: https://aictx.org\n- PyPI: https://pypi.org/project/aictx/\n- CLI: `aictx`\n- Official identity: [docs/OFFICIAL_PROJECT.md](docs/OFFICIAL_PROJECT.md)\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"_aictx\": {\n    \"block\": \"<AICTX>\",\n    \"kind\": \"aictx-managed\",\n    \"managed\": true\n  },\n  \"mcpServers\": {\n    \"aictx\": {\n      \"_aictx_block\": \"<AICTX>\",\n      \"_aictx_managed\": true,\n      \"args\": [\n        \"-m\",\n        \"aictx\",\n        \"mcp-server\",\n        \"--repo\",\n        \".\",\n        \"--profile\",\n        \"full\"\n      ],\n      \"command\": \".venv/bin/python\",\n      \"cwd\": \".\",\n      \"env\": {\n        \"PYTHONPATH\": \"src\"\n      },\n      \"transport\": \"stdio\",\n      \"type\": \"stdio\"\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

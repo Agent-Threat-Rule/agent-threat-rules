@@ -1,0 +1,40 @@
+{
+  "full_name": "wklee610/kafka-mcp",
+  "html_url": "https://github.com/wklee610/kafka-mcp",
+  "description": "MCP Server for Apache Kafka",
+  "topics": [
+    "apache-kafka",
+    "apache-kafka-consumer",
+    "apache-kafka-producer",
+    "claude-desktop",
+    "kafka",
+    "kafka-connector",
+    "kafka-python",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 12,
+  "forks": 3,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2026-02-18T01:36:54Z",
+  "last_pushed_at": "2026-03-08T09:28:24Z",
+  "fetched_at": "2026-07-11T23:56:02.367Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Kafka MCP Server\n![Python](https://img.shields.io/badge/python-3.10%2B-blue?style=flat-square&logo=python&logoColor=white)\n![License](https://img.shields.io/badge/license-Apache%202.0-blue?style=flat-square&logo=apache&logoColor=white)\n![Kafka](https://img.shields.io/badge/Kafka-Cluster%20Ops-black?logo=apachekafka)\n![MCP](https://img.shields.io/badge/MCP-Compatible-purple)\n\n---\n\nAn MCP server implementation for Kafka, allowing LLMs to interact with and manage Kafka clusters.\n\n## Features\n\n- **Cluster Management**: View broker details `describe_cluster`, `describe_brokers`.\n- **Topic Management**: List `list_topics`, create `create_topic`, delete `delete_topic`, describe `describe_topic`, and increase partitions `create_partitions`.\n- **Configuration Management**: View `describe_configs` and modify `alter_configs` dynamic configs for topics, brokers, and groups.\n- **Consumer Groups**: List `list_consumer_groups`, describe `describe_consumer_group`, and securely manage offsets with `reset_consumer_group_offset` and `rewind_consumer_group_offset_by_timestamp`. Advanced tools include state validation, dry runs, and execution audit logging.\n- **Messaging**: Consume messages `consume_messages` (from beginning, latest, or specific offsets) and produce messages `produce_message`.\n\n## Prerequisites\n\n- Python 3.10+\n- `uv` package manager (recommended)\n- A running Kafka cluster (e.g., local Docker, Confluent Cloud, etc.)\n\n## Installation\n\n1. Clone the repository.\n2. Install dependencies:\n   ```bash\n   uv sync\n   ```\n\n## Configuration\n\nThe server requires the `KAFKA_BOOTSTRAP_SERVERS` environment variable.\n\n- `KAFKA_BOOTSTRAP_SERVERS`: Comma-separated list of broker urls (e.g., `localhost:9092`).\n- `KAFKA_CLIENT_ID`: (Optional) Client ID for connection (default: `kafka-mcp`).\n\n## Usage\n\n### Running the Server\n\nYou can run the server directly using `uv` or `python`, or use Docker.\n\n#### Using uv (Recommended)\n\n```bash\nexport KAFKA_BOOTSTRAP_SERVERS=localhost:9092\nuv run kafka-mcp\n```\n\n#### Using Docker\n\n1. Build the Docker image:\n   ```bash\n   docker build -t kafka-mcp .\n   ```\n\n2. Run the container:\n   ```bash\n   docker run -i --rm -e KAFKA_BOOTSTRAP_SERVERS=host.docker.internal:9092 kafka-mcp\n   ```\n   *(Note: Use `host.docker.internal` instead of `localhost` if your Kafka cluster is running on the host machine.)*\n\n### Claude Desktop Configuration\n\nAdd the following to your Claude Desktop configuration file (claude_desktop_config.json):\n\n```json\n{\n  \"mcpServers\": {\n    \"kafka\": {\n      \"command\": \"<uv PATH>\",\n      \"args\": [\n        \"--directory\",\n        \"<kafka-mcp PATH>\",\n        \"run\",\n        \"kafka-mcp\"\n      ],\n      \"env\": {\n        \"KAFKA_BOOTSTRAP_SERVERS\": \"localhost:9092\"\n      }\n    }\n  }\n}\n```\n\n\n### Debugging / Development\n\nTo verify that the server can start and connect to your Kafka cluster (ensure your Kafka is running first):\n\n```bash\n# Set your bootstrap server\nexport KAFKA_BOOTSTRAP_SERVERS=localhost:9092\n\n# Run a quick check\nuv run python -c \"from src.kafka_mcp import main; print('Imports successful')\"\n```\n\n### Available Tools\n\n| Category | Tool Name | Description |\n|----------|-----------|-------------|\n| **Cluster** | `describe_cluster` | Get cluster metadata (controller, brokers). |\n| | `describe_brokers` | List all brokers. |\n| **Topics** | `list_topics` | List all available topics. |\n| | `describe_topic` | Get detailed info (partitions, replicas) for a topic. |\n| | `create_topic` | Create a new topic with partitions/replication factor. |\n| | `delete_topic` | Delete a topic. |\n| | `create_partitions` | Increase partitions for a topic. |\n| **Configs** | `describe_configs` | View dynamic configs for topic/broker/group. |\n| | `alter_configs` | Update dynamic configs. |\n| **Consumers** | `list_consumer_groups` | List all active consumer groups. |\n| | `describe_consumer_group` | Get members and state of a group. |\n| | `get_consumer_group_offsets` | Get committed offset, high/low watermarks, and calculate total lag for a topic. |\n| | `reset_consumer_group_offset` | Safely change consumer group offsets to earliest, latest, or a specific offset. |\n| | `rewind_consumer_group_offset_by_timestamp` | Rewind/advance consumer group offsets securely based on a timestamp. |\n| **Messages** | `consume_messages` | Consume messages from a topic (supports offsets, limits). |\n| | `produce_message` | Send a message to a topic. |\n\n## Project Structure\n\n```\nsrc/kafka_mcp/\n├── configs/       # Configuration handling\n├── connections/   # Kafka client factories (singleton)\n├── tools/         # Tool implementations\n│   ├── admin.py     # Topic & Config management\n│   ├── cluster.py   # Cluster metadata\n│   ├── consumer.py  # Consumer group & message consumption\n│   └── producer.py  # Message production\n└── main.py        # Entry point & MCP tool registration\n```\n\n## Troubleshooting\n\n- **Connection Refused**: Ensure `KAFKA_BOOTSTRAP_SERVERS` is correct and reachable.\n\n## TODO\n- SASL\n- JMX"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

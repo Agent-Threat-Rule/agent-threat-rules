@@ -1,0 +1,38 @@
+{
+  "full_name": "laplace-demon-ai/laravel-mcp-log",
+  "html_url": "https://github.com/laplace-demon-ai/laravel-mcp-log",
+  "description": "MCP tool for Laravel log analysing with AI",
+  "topics": [
+    "ai",
+    "laravel",
+    "llm",
+    "log-reader",
+    "logging",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "php8",
+    "rag"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 3,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "PHP",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2025-09-28T10:19:47Z",
+  "last_pushed_at": "2025-10-29T09:00:31Z",
+  "fetched_at": "2026-07-12T00:35:36.771Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Laravel MCP Log\nMCP tool for Laravel log analysing with AI.\n\n> This package uses the core log reading functionality provided by the [Laravel Log Reader](https://github.com/moe-mizrak/laravel-log-reader), so for the details about how the log reading works, please check that repository.\n\n## Installation\nYou can install the package (that you created with this template) via composer:\n  ```bash\n  composer require laplace-demon-ai/laravel-mcp-log\n  ```\n\nYou can publish the configuration file with:\n  ```bash\n  php artisan vendor:publish --tag=\"laravel-mcp-log\"\n  ```\n\n## Configuration\nYou can enable/disable the MCP Log Reader as:\n```php\n'enabled' => env('MCP_LOG_READER_ENABLED', true),\n```\n\nThe package supports two log storage drivers: `file` and `db` for now.\n\n### Database Logs\nIf your logs are stored in database (e.g. `log_entries` table), in the config file (`laravel-mcp-log.php`) set the **driver** to `db` as:\n```php\n'driver' => env('LOG_READER_DRIVER', LogDriverType::DB->value),\n```\n\nAnd set the other database related configurations as:\n```php\n'table' => env('LOG_DB_TABLE_NAME', 'log_entries'),\n'limit' => env('LOG_READER_DB_QUERY_LIMIT', 10000), // max number of records to fetch in queries\n\n// Column mapping: maps DB columns to LogData properties\n'columns' => [\n    LogTableColumnType::ID->value => 'id',\n    LogTableColumnType::LEVEL->value => 'level', // e.g. 'ERROR', 'INFO'\n    LogTableColumnType::MESSAGE->value => 'message', // main log message\n    LogTableColumnType::TIMESTAMP->value => 'created_at', // time of the log entry (e.g. 'created_at' or 'logged_at')\n    LogTableColumnType::CHANNEL->value => 'channel', // e.g. 'production', 'local'\n    LogTableColumnType::CONTEXT->value => 'context', // additional context info, often JSON e.g. '{\"action\":\"UserLogin\"}'\n    LogTableColumnType::EXTRA->value => 'extra', // any extra data, often JSON e.g. '{\"ip\":172.0.0.1, \"session_id\":\"abc\", \"user_id\":123}'\n],\n\n'searchable_columns' => [\n    ['name' => LogTableColumnType::MESSAGE->value, 'type' => ColumnType::TEXT->value],\n    ['name' => LogTableColumnType::CONTEXT->value, 'type' => ColumnType::JSON->value],\n    ['name' => LogTableColumnType::EXTRA->value, 'type' => ColumnType::JSON->value],\n],\n```\n\nBasically we do a mapping between the database columns of your log table and the package, so that it can read the logs properly.\n\n- The `searchable_columns` defines which columns are searchable and their types. It is used for the `search` queries. And we require `text` and `json` column types so that we choose the right search strategy (default is `text`).\n- The `limit` defines the maximum number of records to fetch in queries to avoid performance issues.\n\n### File Logs\nIf your logs are stored in files (`laravel.log`), in the config file (`laravel-mcp-log.php`) set the **driver** to `file` as:\n```php\n'driver' => env('LOG_READER_DRIVER', LogDriverType::FILE->value),\n```\n\nAnd set the log file path as:\n```php\n'path' => env('LOG_FILE_PATH', storage_path('logs/laravel.log')),\n'limit' => env('LOG_READER_FILE_QUERY_LIMIT', 10000), // max number of lines to read\n```\n\n- The `path` defines the full path to your Laravel log file.\n- The `limit` defines the maximum number of lines to read in queries to avoid performance issues\n\n## Usage\nThis package automatically registers MCP Server (`LogReaderServer`) and MCP tool (`LogReaderTool`) in `LaravelMcpLogServiceProvider`, so you don't need to register it manually within the ai.php in your Laravel application.\n\n> [!WARNING]\n> You only need to install official [Laravel MCP package](https://github.com/laravel/mcp) so that MCP can recognize this server.\n\nWe defined the log reader endpoint as following in the `LaravelMcpLogServiceProvider`:\n```php\nMcp::web('mcp/log-reader', LogReaderServer::class);\n```\n\nIt means that you can access the log reader MCP tool in your MCP dashboard at `your-app-url/mcp/log-reader` URL.\n\nFollowing is the video for a **quick demo** of how it works:\n\n- This is how you can use [localtunnel](https://github.com/localtunnel/localtunnel) to expose your local Laravel application to the internet for MCP access:\n\n[![Localtunnel and Chatgpt](assets/thumbnail_localtunnel.png)](https://youtu.be/DCo-NUpi6nU)\n\n- And this is a demo of how the MCP Log Reader works with sample prompts:\n\n[![Demo](assets/thumbnail_demo.png)](https://youtu.be/F5ZP6u4WTW4)\n\n## TODO (this is for [Laravel Log Reader](https://github.com/moe-mizrak/laravel-log-reader) )\n> - [ ] Add a `log_insights` migration/table which will be a normalized, summarized, and searchable table.\n  > - It unifies different log mechanisms into a single canonical format, enabling faster lookups over large data.\n  > - A background task should sync new log data periodically, basically everyday it summarizes the previous day's logs and inserts them into `log_insights`.\n  > - Be aware that summarization may lose some details (e.g., exact errors or stack traces).\n> - [ ] Add support for cloud log readers (AWS CloudWatch, Azure Monitor, Google Cloud Logging).\n> - [ ] Add streaming responses for overall logic.\n> - [ ] Use a cheap/free model to summarize large log files before search/filter (experimental approach).\n> - [ ] Laravel MCP Log can be integrated into coding agents where periodically logs are analysed by this tool, and issues are caught and reported to different channels (slack etc). And maybe even PRs can be generated by using the logs.\n\n## Contributing\n\n> **Your contributions are welcome!** If you'd like to improve this project, simply create a pull request with your changes. Your efforts help enhance its functionality and documentation.\n\n> If you find this project useful, please consider ⭐ it to show your support!\n\n## Authors\nThis project is created and maintained by [Moe Mizrak](https://github.com/moe-mizrak).\n\n## License\nLaravel Package Template is an open-sourced software licensed under the **[MIT license](LICENSE)**.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

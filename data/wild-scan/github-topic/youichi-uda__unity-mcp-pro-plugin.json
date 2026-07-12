@@ -1,0 +1,40 @@
+{
+  "full_name": "youichi-uda/unity-mcp-pro-plugin",
+  "html_url": "https://github.com/youichi-uda/unity-mcp-pro-plugin",
+  "description": "147 AI tools for Unity game development via MCP (Model Context Protocol). Connect Claude, Cursor, and AI assistants to your Unity editor.",
+  "topics": [
+    "ai",
+    "ai-tools",
+    "claude",
+    "csharp",
+    "cursor",
+    "game-development",
+    "mcp",
+    "model-context-protocol",
+    "unity",
+    "unity-editor",
+    "unity-plugin",
+    "websocket"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 76,
+  "forks": 6,
+  "open_issues": 3,
+  "language": "C#",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2026-03-01T04:40:33Z",
+  "last_pushed_at": "2026-07-01T01:14:39Z",
+  "fetched_at": "2026-07-11T23:22:22.910Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Unity MCP Pro — Plugin\n\nUnity editor plugin that connects AI assistants (Claude, Cursor, Windsurf, VS Code Copilot) to the Unity editor via WebSocket.\n\n**280+ tools across 50 categories** — scene management, GameObjects, scripts, prefabs, physics, lighting, animation, materials, terrain, particles, audio, UI, build pipeline, input simulation, screenshots, testing, 2D, timeline, splines, ECS, netcode, XR, and more.\n\n## Features\n\n- **Full Undo/Redo** — Every AI operation goes through Unity's Undo system (Ctrl+Z)\n- **Production-grade WebSocket** — Heartbeat, auto-reconnect with exponential backoff, port scanning (6605–6609)\n- **Smart Type Parsing** — Automatic conversion of strings to Vector3, Color, Quaternion, etc.\n- **Domain Reload Safe** — Survives script recompilation without losing connection state\n- **Server Setup Window** — Built-in editor window for configuring MCP server and IDE integration\n- **Unity 2021.3+** — Supports Unity 2022, 2023, and Unity 6 (Built-in, URP, HDRP)\n\n## 50 Tool Categories\n\n| Category | # | Category | # |\n|----------|---|----------|---|\n| Project | 7 | Animation | 7 |\n| Scene | 6 | Animation Extended | 5 |\n| GameObject | 11 | UI (Canvas) | 6 |\n| Script | 6 | Audio | 5 |\n| Editor | 5 | Particle | 5 |\n| Prefab | 6 | Navigation | 5 |\n| Material & Shader | 6 | Terrain | 4 |\n| Physics | 6 | Build Pipeline | 5 |\n| Lighting | 5 | Batch Operations | 6 |\n| Analysis & Profiling | 10 | Package Manager | 6 |\n| Input Simulation | 8 | Debug | 5 |\n| Runtime Extended | 7 | Screenshot & Visual | 4 |\n| Testing & QA | 6 | 2D Tools | 6 |\n| Controller | 4 | Timeline | 5 |\n| Environment | 6 | Spline | 5 |\n| Optimization | 7 | Shader Graph | 5 |\n| Camera / Cinemachine | 6 | Visual Scripting | 5 |\n| Post-Processing | 5 | Profiler | 4 |\n| AI Tools | 4 | Benchmark | 4 |\n| Game Systems | 5 | Playthrough | 4 |\n| Import Settings | 5 | Watch / Monitor | 3 |\n| Multi-Scene | 4 | Undo History | 3 |\n| Scene View Camera | 4 | Addressables | 5 |\n| Custom Editor | 4 | Localization | 4 |\n| Rigging | 4 | ECS / DOTS | 4 |\n| Netcode | 4 | XR / VR | 4 |\n\n## Installation\n\n### Option 1: Unity Package Manager (Git URL)\n\n1. Open Unity → **Window** → **Package Manager**\n2. Click **+** → **Add package from git URL...**\n3. Enter:\n   ```\n   https://github.com/youichi-uda/unity-mcp-pro-plugin.git\n   ```\n\n### Option 2: Clone to your project\n\n```bash\ncd YourUnityProject/Packages\ngit clone https://github.com/youichi-uda/unity-mcp-pro-plugin.git com.unity-mcp-pro\n```\n\n### Option 3: Download and copy\n\nDownload this repository and copy it into your project's `Packages/com.unity-mcp-pro/` directory.\n\n## Setup\n\nThis plugin is the **Unity-side component** of Unity MCP Pro. To use it with AI assistants, you also need the MCP server.\n\n1. **Install this plugin** (see above)\n2. **Get the MCP server** — Available at [unity-mcp.abyo.net](https://unity-mcp.abyo.net/)\n3. **Build the MCP server**:\n   ```bash\n   cd server && npm install && npm run build\n   ```\n4. **Configure your AI client** (or use the built-in **Window → Unity MCP Pro → Server Setup**):\n   ```json\n   {\n     \"mcpServers\": {\n       \"unity-mcp-pro\": {\n         \"command\": \"node\",\n         \"args\": [\"/path/to/server/build/index.js\"]\n       }\n     }\n   }\n   ```\n5. **Open Unity** — The plugin auto-connects when the editor starts. Check **Window → Unity MCP Pro** for connection status.\n\n## Architecture\n\n```\nAI Assistant  ←—stdio/MCP—→  Node.js MCP Server  ←—WebSocket—→  Unity Editor Plugin (this repo)\n```\n\nThe plugin runs a WebSocket client inside the Unity editor that connects to the MCP server on `127.0.0.1:6605–6609`. All tool calls are dispatched through the `CommandRouter` to domain-specific command handlers.\n\n## Multi-Editor Support\n\nRun multiple Unity editors simultaneously on ports `6605`-`6609`. Set the `UNITY_MCP_PORT` environment variable to target a specific instance.\n\n## Running Tests\n\n1. Open Unity → **Window** → **General** → **Test Runner**\n2. Select **EditMode** tab\n3. Click **Run All**\n\n## Requirements\n\n- Unity 2021.3 LTS or later\n- Node.js 18+ (for the MCP server)\n- Any MCP-compatible AI client\n\n## Links\n\n- [Website](https://unity-mcp.abyo.net/)\n- [Unity Asset Store](https://u3d.as/3TYe) — AI Bridge for Unity (MCP Pro)\n- [MCP Server (itch.io)](https://y1uda.itch.io/unity-mcp-pro)\n- [Discord](https://discord.gg/TMH2648mS2)\n\n## License\n\nMIT License — see [LICENSE](LICENSE)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

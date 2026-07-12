@@ -1,0 +1,38 @@
+{
+  "full_name": "raystack/compass",
+  "html_url": "https://github.com/raystack/compass",
+  "description": "Compass is a context engine that builds a knowledge graph of your organization's metadata, capturing   entities, relationships, and lineage across systems and time, making it discoverable and queryable for   both humans and AI agents.",
+  "topics": [
+    "ai-agents",
+    "context-engine",
+    "context-engineering",
+    "context-graph",
+    "knowledge-graph",
+    "mcp",
+    "model-context-protocol",
+    "semantic-search"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 69,
+  "forks": 9,
+  "open_issues": 4,
+  "language": "Go",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2021-03-22T17:24:43Z",
+  "last_pushed_at": "2026-04-21T21:32:57Z",
+  "fetched_at": "2026-07-11T23:24:00.466Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Compass\n\n![test workflow](https://github.com/raystack/compass/actions/workflows/test.yml/badge.svg)\n![release workflow](https://github.com/raystack/compass/actions/workflows/release.yml/badge.svg)\n[![Coverage Status](https://coveralls.io/repos/github/raystack/compass/badge.svg?branch=main)](https://coveralls.io/github/raystack/compass?branch=main)\n[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?logo=apache)](LICENSE)\n[![Version](https://img.shields.io/github/v/release/raystack/compass?logo=semantic-release)](Version)\n\nCompass is a context engine that builds a temporal knowledge graph of your organization — entities, relationships, and documents across every system — queryable by humans and AI agents alike. Search it. Traverse it. Reason over it.\n\n## Key Features\n\n- **AI-Native** -- Composable MCP tools let AI agents search, traverse, assess impact, and read documents over your organizational graph.\n- **Knowledge Graph** -- Typed, directed, temporal relationships between entities including lineage, ownership, and custom edge types.\n- **Context Assembly** -- Multi-hop bidirectional traversal builds a subgraph around any entity — the full picture in one call.\n- **Impact Analysis** -- Blast radius analysis traces what depends on what and what breaks when something changes.\n- **Hybrid Search** -- Keyword precision with semantic similarity using Postgres-native full-text search and pgvector embeddings.\n- **Documents** -- Attach any document to entities — runbooks, decisions, postmortems, design docs — all indexed for semantic search.\n- **Open Type System** -- Any entity type, any edge type, any properties. Hardware, software, operations, people — anything fits.\n\n## Documentation\n\n- [Quickstart](https://compass-raystack.vercel.app/docs/quickstart) -- Get running in 5 minutes\n- [Guides](https://compass-raystack.vercel.app/docs/guides/entities) -- Entities, edges, search, context, MCP, CLI, API\n- [Internals](https://compass-raystack.vercel.app/docs/internals/architecture) -- Architecture, search engine, storage\n\n## Installation\n\nInstall Compass on macOS, Windows, Linux, or via Docker.\n\n#### macOS\n\n```sh\nbrew install raystack/tap/compass\n```\n\n#### Linux\n\nDownload `.deb` or `.rpm` from [releases](https://github.com/raystack/compass/releases/latest):\n\n```sh\nsudo dpkg -i compass_*.deb\n```\n\n#### Docker\n\n```sh\ndocker pull raystack/compass:latest\n```\n\n#### Build from Source\n\n```sh\ngit clone https://github.com/raystack/compass.git\ncd compass && make\n```\n\n## Usage\n\n```bash\n# Start PostgreSQL\ndocker-compose up -d\n\n# Initialize and run\ncompass config init\ncompass server migrate\ncompass server start\n\n# Search the graph\ncompass entity search \"orders\" --mode hybrid\n\n# Explore context\ncompass entity context urn:bigquery:orders --depth 2\n\n# Analyze impact\ncompass entity impact urn:kafka:events --depth 3\n```\n\n### MCP Server\n\nConnect AI agents to Compass via MCP. Add to `.mcp.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"compass\": {\n      \"type\": \"sse\",\n      \"url\": \"http://localhost:8080/mcp\"\n    }\n  }\n}\n```\n\n## License\n\nCompass is [Apache 2.0](LICENSE) licensed.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "main.go",
+    "size": 1556,
+    "content": "package main\n\nimport (\n\t\"context\"\n\t\"errors\"\n\t\"fmt\"\n\t\"os\"\n\t\"os/signal\"\n\t\"strings\"\n\t\"syscall\"\n\n\t\"connectrpc.com/connect\"\n\t\"github.com/raystack/compass/cli\"\n\t\"github.com/raystack/compass/internal/config\"\n\tsaltconfig \"github.com/raystack/salt/config\"\n)\n\nconst (\n\texitOK    = 0\n\texitError = 1\n)\n\nfunc main() {\n\tcfg, err := loadConfig()\n\tif err != nil {\n\t\tfmt.Println(err)\n\t}\n\tctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)\n\tdefer cancel()\n\n\tif cmd, err := cli.New(cfg).ExecuteContextC(ctx); err != nil {\n\t\tprintError(err)\n\n\t\tmsg := err.Error()\n\t\tif strings.HasPrefix(msg, \"unknown command\") ||\n\t\t\tstrings.HasPrefix(msg, \"unknown flag\") ||\n\t\t\tstrings.HasPrefix(msg, \"unknown shorthand flag\") {\n\t\t\tif !strings.HasSuffix(msg, \"\\n\") {\n\t\t\t\tfmt.Println()\n\t\t\t}\n\t\t\tfmt.Println(cmd.UsageString())\n\t\t\tos.Exit(exitOK)\n\t\t}\n\t\tos.Exit(exitError)\n\t}\n}\n\nfunc loadConfig() (*config.Config, error) {\n\tvar cfg config.Config\n\n\terr := saltconfig.NewLoader(\n\t\tsaltconfig.WithFile(\"./config.yaml\"),\n\t\tsaltconfig.WithEnvPrefix(\"COMPASS\"),\n\t).Load(&cfg)\n\tif err != nil {\n\t\tloader := saltconfig.NewLoader(saltconfig.WithAppConfig(\"compass\"))\n\t\tif loadErr := loader.Load(&cfg); loadErr != nil {\n\t\t\treturn &cfg, fmt.Errorf(\"config not found: run \\\"compass config init\\\" to create one\")\n\t\t}\n\t}\n\treturn &cfg, nil\n}\n\nfunc printError(err error) {\n\tif connectErr := new(connect.Error); errors.As(err, &connectErr) {\n\t\tfmt.Fprintf(os.Stderr, \"Code: %s Error: %s\\n\", connectErr.Code(), connectErr.Message())\n\t\treturn\n\t}\n\tfmt.Fprintln(os.Stderr, err)\n}\n"
+  },
+  "content_fetch_notes": []
+}

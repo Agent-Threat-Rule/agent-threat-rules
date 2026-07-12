@@ -1,0 +1,51 @@
+{
+  "full_name": "cafferychen777/ChatSpatial",
+  "html_url": "https://github.com/cafferychen777/ChatSpatial",
+  "description": "MCP server for spatial transcriptomics analysis through natural language interfaces.",
+  "topics": [
+    "agentic-ai",
+    "bioinformatics",
+    "cell-communication",
+    "claude-desktop",
+    "computational-biology",
+    "deconvolution",
+    "genomics",
+    "llm-agent",
+    "machine-learning",
+    "mcp-server",
+    "model-context-protocol",
+    "python",
+    "pytorch",
+    "scanpy",
+    "single-cell",
+    "spatial-analysis",
+    "spatial-domains",
+    "spatial-transcriptomics",
+    "squidpy",
+    "visualization"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 40,
+  "forks": 11,
+  "open_issues": 13,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-05-06T05:40:10Z",
+  "last_pushed_at": "2026-06-15T07:25:10Z",
+  "fetched_at": "2026-07-11T23:34:38.421Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n\n# ChatSpatial\n\n**MCP server for spatial transcriptomics analysis via natural language**\n\n[![Paper](https://img.shields.io/badge/bioRxiv-2026.02.26.708361-b31b1b.svg)](https://doi.org/10.64898/2026.02.26.708361)\n[![MLGenX @ ICLR 2026](https://img.shields.io/badge/MLGenX%20@%20ICLR%202026-Oral-blue.svg)](https://openreview.net/forum?id=xZ814yNaUW)\n[![ENAR 2026](https://img.shields.io/badge/ENAR%202026-Oral-blue.svg)](https://www.enar.org/meetings/spring2026/)\n[![IBC 2026](https://img.shields.io/badge/IBC%202026-Oral-blue.svg)](https://www.ibc2026.org/home)\n[![CI](https://github.com/cafferychen777/ChatSpatial/actions/workflows/ci.yml/badge.svg)](https://github.com/cafferychen777/ChatSpatial/actions/workflows/ci.yml)\n[![PyPI](https://img.shields.io/pypi/v/chatspatial)](https://pypi.org/project/chatspatial/)\n[![Python 3.11-3.13](https://img.shields.io/badge/python-3.11--3.13-blue.svg)](https://www.python.org/downloads/)\n[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)\n[![Docs](https://img.shields.io/badge/docs-available-blue)](https://docs.cafferyang.com/)\n[![Docker](https://img.shields.io/badge/docker-ghcr.io-blue)](https://github.com/users/cafferychen777/packages/container/package/chatspatial)\n\n</div>\n\n<p align=\"center\">\n  <img src=\"assets/images/overview.jpg\" alt=\"ChatSpatial Overview\" width=\"900\">\n</p>\n\nChatSpatial replaces ad-hoc LLM code generation with **schema-enforced orchestration**. Instead of generating arbitrary scripts, the LLM selects tools and parameters from a curated registry, making spatial transcriptomics workflows more reproducible across sessions and clients.\n\nChatSpatial exposes **20 schema-validated MCP tools** that orchestrate **65 spatial transcriptomics methods** across **15 analytical categories**. The tools are the stable natural-language interface; the methods are the analysis backends selected through tool parameters.\n\n---\n\n## Start Here\n\n1. **Install ChatSpatial** — [Installation Guide](docs/installation.md) for Python/uv setup, or [Docker Guide](docs/docker.md) for the GHCR image\n2. **Configure your MCP client** — [Configuration Guide](docs/advanced/configuration.md)\n3. **Run your first analysis** — [Quick Start](docs/quickstart.md)\n\n**Docker quick start:**\n\n```bash\ndocker pull ghcr.io/cafferychen777/chatspatial:v1.2.10\n```\n\n**Minimal example prompt:**\n\n```text\nLoad /absolute/path/to/spatial_data.h5ad and show me the tissue structure\n```\n\nIf you use Docker, mount host data to `/data` and prompt with the container path, for example `/data/spatial_data.h5ad`.\n\n> ChatSpatial works with **any MCP-compatible client** — Claude Code, Claude Desktop, Codex, OpenCode, and other MCP-capable tools.\n\n---\n\n## Capabilities\n\nCurrent coverage includes 65 methods across 15 analytical categories, exposed through 20 MCP tools. Supports 10x Visium, Xenium, Slide-seq v2, MERFISH, seqFISH.\n\n| Category | Example methods |\n|----------|---------|\n| **Data Loading & Preprocessing** | Scanpy I/O, QC, Normalization, HVG, PCA, Neighbors |\n| **Visualization** | Spatial plots, Embedding plots, Gene expression overlays |\n| **Spatial Domain Identification** | SpaGCN, STAGATE, GraphST, BANKSY, Leiden, Louvain |\n| **Deconvolution** | FlashDeconv, Cell2location, RCTD, DestVI, Stereoscope, SPOTlight, Tangram, CARD |\n| **Cell-Cell Communication** | LIANA+, CellPhoneDB, CellChat (`cellchat_r`), FastCCC |\n| **Cell Type Annotation** | Tangram, scANVI, CellAssign, mLLMCelltype, scType, SingleR |\n| **Differential Expression** | Wilcoxon, t-test, Logistic Regression, pyDESeq2 |\n| **Trajectory Inference** | CellRank, Palantir, DPT |\n| **RNA Velocity** | scVelo, VeloVI |\n| **Spatial Statistics** | Moran's I, Local Moran, Geary's C, Getis-Ord Gi*, Ripley's K, Co-occurrence, Neighborhood Enrichment, Centrality Scores, Local Join Count, Network Properties |\n| **Enrichment Analysis** | GSEA, ORA, Enrichr, ssGSEA, Spatial EnrichMap |\n| **Spatially Variable Genes** | SpatialDE, SPARK-X, FlashS |\n| **Multi-sample Integration** | Harmony, BBKNN, Scanorama, scVI |\n| **CNV Analysis** | InferCNVPy, Numbat |\n| **Spatial Registration** | PASTE, STalign |\n\n---\n\n## Documentation\n\n| Guide | Use this when... |\n|-------|------------------|\n| [Installation](docs/installation.md) | You need to install ChatSpatial in a Python environment |\n| [Docker](docs/docker.md) | You want a reproducible container runtime or local dependency resolution fails |\n| [Configuration](docs/advanced/configuration.md) | You need exact MCP client syntax or the runtime path model |\n| [Quick Start](docs/quickstart.md) | ChatSpatial is installed and you want the first successful analysis |\n| [Concepts](docs/concepts.md) | You need to choose an analysis strategy from a biological question |\n| [Examples](docs/examples.md) | You want copy-pasteable natural-language workflow prompts |\n| [Methods Reference](docs/advanced/methods-reference.md) | You need canonical tool names, method names, parameters, and defaults |\n| [Troubleshooting](docs/advanced/troubleshooting.md) | Setup, data loading, or analysis behavior is not working |\n| [Full Docs](https://docs.cafferyang.com/) | You want the complete documentation site |\n\n---\n\n## Citation\n\nIf you use ChatSpatial in your research, please cite:\n\n```bibtex\n@article{Yang2026.02.26.708361,\n  author = {Yang, Chen and Zhang, Xianyang and Chen, Jun},\n  title = {ChatSpatial: Schema-Enforced Agentic Orchestration for Reproducible and Cross-Platform Spatial Transcriptomics},\n  elocation-id = {2026.02.26.708361},\n  year = {2026},\n  doi = {10.64898/2026.02.26.708361},\n  publisher = {Cold Spring Harbor Laboratory},\n  URL = {https://www.biorxiv.org/content/early/2026/03/01/2026.02.26.708361},\n  journal = {bioRxiv}\n}\n```\n\nChatSpatial orchestrates many excellent third-party methods. **Please also cite the original tools your analysis used.**\n\n---\n\n## Contributing\n\nDocumentation improvements, bug reports, and new analysis methods are all welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).\n\n<div align=\"center\">\n\n**MIT License** · [GitHub](https://github.com/cafferychen777/ChatSpatial) · [Issues](https://github.com/cafferychen777/ChatSpatial/issues)\n\n</div>\n\n<!-- mcp-name: io.github.cafferychen777/chatspatial -->\n"
+  },
+  "descriptor_file": {
+    "path": "server.json",
+    "content": "{\n  \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json\",\n  \"name\": \"io.github.cafferychen777/chatspatial\",\n  \"title\": \"ChatSpatial\",\n  \"description\": \"Natural language-driven spatial transcriptomics analysis with 60+ methods via MCP\",\n  \"repository\": {\n    \"url\": \"https://github.com/cafferychen777/ChatSpatial\",\n    \"source\": \"github\"\n  },\n  \"version\": \"1.2.10\",\n  \"packages\": [\n    {\n      \"registryType\": \"pypi\",\n      \"identifier\": \"chatspatial\",\n      \"version\": \"1.2.10\",\n      \"transport\": {\n        \"type\": \"stdio\"\n      },\n      \"runtime\": \"python\"\n    }\n  ]\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

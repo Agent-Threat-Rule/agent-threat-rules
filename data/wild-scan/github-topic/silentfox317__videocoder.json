@@ -1,0 +1,40 @@
+{
+  "full_name": "silentfox317/videocoder",
+  "html_url": "https://github.com/silentfox317/videocoder",
+  "description": "🎬 AI video editor in terminal chat. Describe what to do with your video — AI edits it using MCP-video tools (81 tools) and shell commands.",
+  "topics": [
+    "ai-agent",
+    "chat-interface",
+    "cli",
+    "ffmpeg",
+    "mcp",
+    "mcp-tools",
+    "opencode-fork",
+    "terminal",
+    "video-editing",
+    "video-editor"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Go",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-06-20T19:53:08Z",
+  "last_pushed_at": "2026-06-20T19:53:35Z",
+  "fetched_at": "2026-07-12T00:49:42.100Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n\n# 🎬 VideoCoder\n\n**AI video editor in terminal chat**\n\nJust describe what you want — VideoCoder edits your video using MCP-video tools (81 tools) and shell commands.\n\n[![Go](https://img.shields.io/badge/Go-1.24+-00ADD8?logo=go)](https://go.dev/)\n[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)\n[![Based on](https://img.shields.io/badge/Based%20on-OpenCode-000?logo=openai)](https://github.com/opencode-ai/opencode)\n\n---\n\nhttps://github.com/user-attachments/assets/placeholder\n\n*Talk to AI. Edit video. Done.*\n\n</div>\n\n## ✨ Features\n\n- **🎯 Chat-based editing** — describe what you want in plain language\n- **🔧 81 MCP-video tools** — trim, merge, subtitles, audio, effects, stabilize, transcribe\n- **🖥️ Shell access** — custom ffmpeg scripts when you need them\n- **🧠 Any LLM** — works with Mistral, OpenAI, Anthropic, local models\n- **📱 Social media presets** — YouTube, TikTok, Instagram, Reels\n\n## 🚀 Quick Start\n\n```bash\n# Download\ngit clone https://github.com/silentfox317/videocoder.git\ncd videocoder\n\n# Build\ngo build -o videocoder .\n\n# Configure\ncp .videocoder.example.json .videocoder.json\n# Edit .videocoder.json with your LLM provider settings\n\n# Run\n./videocoder\n```\n\n## 📖 Usage\n\nJust type what you want to do with your video:\n\n```\n> Trim the first 10 seconds from my video.mp4\n> Merge all clips from the ./raw folder\n> Add subtitles in Russian to this video\n> Extract the audio track as MP3\n> Split this long recording into chapters\n> Transcribe the speech in this video\n```\n\n## 🛠️ MCP Video Tools\n\nVideoCoder comes with **81 MCP-video tools** including:\n\n| Category | Tools |\n|----------|-------|\n| 📐 **Basic** | trim, merge, split, concatenate |\n| 📝 **Text** | subtitles, captions, text overlay |\n| 🎵 **Audio** | extract, replace, mix, volume |\n| ✨ **Effects** | filters, color grade, transitions |\n| 📐 **Resize** | crop, scale, aspect ratio |\n| 🔄 **Format** | transcode, compress, repurpose |\n| 🎯 **Analysis** | inspect, detect scenes, transcribe |\n| 🧊 **Stabilize** | stabilization, rolling shutter fix |\n| 🌐 **Social** | TikTok preset, Reels, YouTube Shorts |\n\n## ⚙️ Configuration\n\nSee `.videocoder.example.json` for all options.\n\n### LLM Providers\n\n```json\n{\n  \"providers\": {\n    \"openai-compatible\": {\n      \"model\": \"gpt-4o\",\n      \"baseUrl\": \"http://localhost:5000/v1\",\n      \"apiKey\": \"your-key\"\n    }\n  }\n}\n```\n\n### MCP Server\n\nVideoCoder uses `@kyanite/mcp-video` by default. Install it:\n\n```bash\nnpx @kyanite/mcp-video\n```\n\n## 🏗️ Architecture\n\nVideoCoder is a fork of [OpenCode](https://github.com/opencode-ai/opencode) by OpenAI, repurposed for video editing.\n\n- **Chat TUI** — Bubble Tea terminal UI\n- **LLM Agent** — tool-calling loop\n- **MCP Client** — connects to mcp-video server\n- **Shell** — ffmpeg access\n\n## 📄 License\n\nMIT License — see [LICENSE](LICENSE)\n\n---\n\n*Made for video creators who'd rather talk than click*\n\n</div>\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "main.go",
+    "size": 266,
+    "content": "package main\n\nimport (\n\t\"github.com/dirshunt/videocoder/cmd\"\n\t\"github.com/dirshunt/videocoder/internal/logging\"\n)\n\nfunc main() {\n\tdefer logging.RecoverPanic(\"main\", func() {\n\t\tlogging.ErrorPersist(\"VideoCoder terminated due to unhandled panic\")\n\t})\n\tcmd.Execute()\n}\n"
+  },
+  "content_fetch_notes": []
+}

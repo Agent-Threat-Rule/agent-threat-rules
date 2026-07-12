@@ -1,0 +1,44 @@
+{
+  "full_name": "theYahia/yandex-webmaster-mcp",
+  "html_url": "https://github.com/theYahia/yandex-webmaster-mcp",
+  "description": "MCP server for Yandex Webmaster — SEO, indexing, search queries (Russia). Part of WWmcp — 114 MCP servers for emerging markets.",
+  "topics": [
+    "ai-agents",
+    "anthropic",
+    "claude",
+    "emerging-markets",
+    "mcp",
+    "mcp-servers",
+    "model-context-protocol",
+    "russia",
+    "russian-api",
+    "seo",
+    "typescript",
+    "yandex",
+    "yandex-webmaster"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 3,
+  "forks": 1,
+  "open_issues": 2,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-03-30T16:47:58Z",
+  "last_pushed_at": "2026-06-23T11:32:33Z",
+  "fetched_at": "2026-07-12T00:02:19.980Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# @theyahia/yandex-webmaster-mcp\n\nMCP-сервер для API Яндекс.Вебмастер — сайты, индексация, поисковые запросы, sitemaps,\nдиагностика и переобход. 13 инструментов, вывод в компактном Markdown (или сыром JSON).\n\n[![npm](https://img.shields.io/npm/v/@theyahia/yandex-webmaster-mcp)](https://www.npmjs.com/package/@theyahia/yandex-webmaster-mcp)\n[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)\n\n## Установка\n\n### Claude Desktop\n\n```json\n{\n  \"mcpServers\": {\n    \"yandex-webmaster\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@theyahia/yandex-webmaster-mcp\"],\n      \"env\": {\n        \"YANDEX_WEBMASTER_TOKEN\": \"ваш_oauth_токен\"\n      }\n    }\n  }\n}\n```\n\n### Claude Code\n\n```bash\nclaude mcp add yandex-webmaster -e YANDEX_WEBMASTER_TOKEN=ваш_oauth_токен -- npx -y @theyahia/yandex-webmaster-mcp\n```\n\n## Авторизация\n\nНужен только **`YANDEX_WEBMASTER_TOKEN`** — OAuth-токен с правом `webmaster:api`.\n`user_id` определяется автоматически через `GET /user/`, задавать его руками не нужно.\n\nКак получить токен:\n\n1. Создайте приложение на <https://oauth.yandex.ru/> и выдайте ему право\n   **Яндекс.Вебмастер (`webmaster:api`)**.\n2. Получите OAuth-токен по\n   [инструкции Яндекса](https://yandex.ru/dev/id/doc/ru/access) и положите его в\n   `YANDEX_WEBMASTER_TOKEN`.\n\n### Переменные окружения\n\n| Переменная                 | Обяз. | Назначение                                                               |\n| -------------------------- | :---: | ------------------------------------------------------------------------ |\n| `YANDEX_WEBMASTER_TOKEN`   |  да   | OAuth-токен с правом `webmaster:api`                                     |\n| `YANDEX_WEBMASTER_USER_ID` |  нет  | Числовой user ID. Если не задан — определяется автоматически             |\n| `PORT`                     |  нет  | Порт HTTP-режима (по умолчанию `3100`)                                   |\n| `MCP_ALLOWED_HOSTS`        |  нет  | Разрешённые Host для HTTP (CSV). `*` — отключить защиту от DNS-rebinding |\n| `MCP_HTTP_AUTH_TOKEN`      |  нет  | Если задан — требует `Authorization: Bearer <token>` на `POST /mcp`      |\n\n## Инструменты (13)\n\n| Инструмент                   | Описание                                                               |\n| ---------------------------- | ---------------------------------------------------------------------- |\n| `get_hosts`                  | Список сайтов: URL, статус подтверждения                               |\n| `get_user_info`              | Данные аккаунта (user_id)                                              |\n| `get_popular_search_queries` | Поисковые запросы по сайту: показы, клики, средняя позиция (per-query) |\n| `get_query_analytics`        | Агрегированный тренд трафика во времени (НЕ per-query)                 |\n| `get_search_queries`         | ⚠️ deprecated — алиас `get_popular_search_queries`                     |\n| `get_indexing`               | Сводка индексации сайта                                                |\n| `get_indexing_history`       | Тренд проиндексированных/исключённых страниц                           |\n| `submit_url`                 | Отправить URL на переобход (расходует дневную квоту)                   |\n| `get_recrawl_quota`          | Остаток дневной квоты переобхода                                       |\n| `get_recrawl_task`           | Статус задачи переобхода по `task_id`                                  |\n| `get_sitemaps`               | Список sitemap'ов сайта                                                |\n| `get_diagnostics`            | Диагностика сайта: ошибки обхода, DNS, проблемы сервера                |\n| `get_important_urls`         | Мониторинг важных URL                                                  |\n\nУ каждого инструмента есть параметр `format`: `markdown` (по умолчанию, компактно) или\n`json` (сырой ответ API).\n\n## Примеры запросов\n\n```\nКакие сайты у меня в Вебмастере?\nПо каким запросам находят мой сайт за последнюю неделю?\nСколько страниц проиндексировано и есть ли деиндексация?\nОтправь https://example.com/new-page на переобход и покажи остаток квоты.\n```\n\n## HTTP-режим\n\nПомимо stdio сервер умеет работать по Streamable HTTP:\n\n```bash\nYANDEX_WEBMASTER_TOKEN=... npx @theyahia/yandex-webmaster-mcp --http\n# POST /mcp  — MCP endpoint\n# GET  /health — { \"status\": \"ok\", \"version\": \"...\" }\n```\n\nПо умолчанию включена защита от DNS-rebinding (разрешены только `localhost`/`127.0.0.1`).\nДля доступа с другого хоста задайте `MCP_ALLOWED_HOSTS`. Токен в HTTP-режиме общий\n(берётся из окружения) — multi-tenancy не поддерживается.\n\n## Разработка\n\n```bash\nnpm install\nnpm run dev          # запуск из исходников (tsx)\nnpm test             # тесты (vitest)\nnpm run typecheck    # tsc --noEmit (src + tests)\nnpm run lint         # eslint\nnpm run format       # prettier --check\nnpm run build        # сборка в dist/\n```\n\n## Лицензия\n\nMIT\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"yandex-webmaster\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@theyahia/yandex-webmaster-mcp\"],\n      \"env\": {\n        \"YANDEX_WEBMASTER_TOKEN\": \"YOUR_TOKEN\"\n      }\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

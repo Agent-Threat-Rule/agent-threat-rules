@@ -1,0 +1,43 @@
+{
+  "full_name": "Intina47/context-sync",
+  "html_url": "https://github.com/Intina47/context-sync",
+  "description": "Local persistent memory store for LLM applications including continue.dev, cursor, claude desktop, github copilot, codex, antigravity, etc.",
+  "topics": [
+    "ai",
+    "ai-memory",
+    "clawdbot",
+    "context-management",
+    "context-sync",
+    "developer-tools",
+    "mcp-server",
+    "memory",
+    "model-context-protocol",
+    "moltbot",
+    "openclaw",
+    "productivity",
+    "sqlite",
+    "workspace"
+  ],
+  "matched_query_topics": [
+    "mcp-server",
+    "model-context-protocol"
+  ],
+  "stars": 182,
+  "forks": 18,
+  "open_issues": 6,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-10-16T13:13:42Z",
+  "last_pushed_at": "2026-04-11T12:48:15Z",
+  "fetched_at": "2026-07-11T22:49:24.229Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Context Sync\n\nLocal-first project memory for AI coding tools over MCP.\n\nContext Sync gives an agent a persistent memory layer for a codebase:\n- project identity and tech stack\n- active work, decisions, constraints, and caveats\n- structured file exploration\n- git-aware context\n- optional read-only Notion lookup\n\n![Context Sync](image.png)\n\n## What It Does\n\nContext Sync is built for session continuity. Instead of relying on a model to remember earlier conversations, it stores the project context that matters and makes it retrievable through a small MCP tool surface.\n\nThe current core tools are:\n- `set_project`\n- `remember`\n- `recall`\n- `read_file`\n- `search`\n- `structure`\n- `git`\n- `notion`\n\n## Install\n\nInstall globally:\n\n```bash\nnpm install -g @context-sync/server\n```\n\nAuto-configuration runs during global install. After install, restart your AI tool.\n\nIf you install locally instead of globally, auto-config does not run. Use the manual config guide in [docs/CONFIG.md](docs/CONFIG.md).\n\n## Verify\n\nCheck that `context-sync` appears in your MCP tool list:\n- Claude Desktop: open the tools list\n- Cursor: open the tools list\n- VS Code / Copilot Chat Agent mode: check tools\n- Continue.dev: open the Continue panel\n- Codex CLI: `codex mcp list`\n- Claude Code: `claude mcp list`\n\nIf auto-config fails, use [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) and [docs/CONFIG.md](docs/CONFIG.md).\n\n## Optional Notion Setup\n\nRun the setup wizard if you want Notion integration:\n\n```bash\ncontext-sync-setup\n```\n\nor:\n\n```bash\nnpx context-sync-setup\n```\n\nNotion support is intentionally read-only at the tool surface:\n- `notion({ action: \"search\", query: \"...\" })`\n- `notion({ action: \"read\", pageId: \"...\" })`\n\n## First-Time Workflow\n\nStart every new session by setting the project first:\n\n```text\n1. set_project({ path: \"/absolute/path/to/project\" })\n2. recall()\n3. structure({ depth: 2 })\n4. read_file({ path: \"src/index.ts\" })\n5. remember({ type: \"decision\", content: \"Use SQLite for local storage\" })\n```\n\nRecommended pattern:\n- `set_project` once per project/session start\n- `recall` to recover context\n- `structure` and `search` to explore\n- `read_file` for focused inspection\n- `remember` when something should survive the current session\n\n## Git Integration\n\nWhen you run `set_project` inside a git repository, Context Sync can install hooks for automatic context capture.\n\nInstalled hooks:\n- `post-commit`\n- `pre-push`\n- `post-merge`\n- `post-checkout`\n\nHooks are marked with `Context Sync Auto-Hook`, and existing hooks are backed up first.\n\nThe `git` tool supports:\n- `status`\n- `context`\n- `hotspots`\n- `coupling`\n- `blame`\n- `analysis`\n\n## Data And Config\n\nDefault locations:\n- Database: `~/.context-sync/data.db`\n- Config: `~/.context-sync/config.json`\n- Install status: `~/.context-sync/install-status.json`\n\nCustom database options:\n- CLI: `context-sync --db-path /absolute/path/to/db`\n- Env var: `CONTEXT_SYNC_DB_PATH`\n\nSee [docs/DATA.md](docs/DATA.md) for storage details.\n\n## Supported Platforms\n\n- Claude Desktop\n- Cursor\n- VS Code + GitHub Copilot\n- Continue.dev\n- Zed\n- Windsurf\n- Codeium\n- TabNine\n- Codex CLI\n- Claude Code\n- Antigravity\n\n## Docs\n\n- [docs/TOOLS.md](docs/TOOLS.md)\n- [docs/CONFIG.md](docs/CONFIG.md)\n- [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)\n- [docs/DATA.md](docs/DATA.md)\n- [docs/RELEASE_NOTES.md](docs/RELEASE_NOTES.md)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "full_name": "sdivyanshu90/MCP-Zero-To-Hero",
+  "html_url": "https://github.com/sdivyanshu90/MCP-Zero-To-Hero",
+  "description": null,
+  "topics": [
+    "mcp",
+    "mcp-client",
+    "mcp-server",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-05-04T07:06:20Z",
+  "last_pushed_at": "2026-05-04T10:39:35Z",
+  "fetched_at": "2026-07-12T00:41:44.973Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP Zero to Hero\n\n> An open-source monorepo for learning, building, and scaling **Model Context Protocol (MCP)** servers — from a Hello World tool to research-grade agentic systems.\n\n---\n\n## What Is MCP?\n\nThe Model Context Protocol is an open standard that lets AI host applications (like Claude Desktop or IDE copilots) discover and use external capabilities through a single, typed, transport-agnostic protocol.\n\n```mermaid\nflowchart LR\n    subgraph Hosts[\"Host Applications\"]\n        H1[Claude Desktop]\n        H2[IDE Copilot]\n        H3[Custom App]\n    end\n    subgraph Protocol[\"MCP Protocol\\n(JSON-RPC 2.0)\"]\n    end\n    subgraph Servers[\"Your MCP Servers\"]\n        S1[Files]\n        S2[Databases]\n        S3[APIs]\n        S4[Custom Logic]\n    end\n\n    H1 <-->|stdio or SSE| Protocol\n    H2 <-->|stdio or SSE| Protocol\n    H3 <-->|stdio or SSE| Protocol\n    Protocol <--> S1\n    Protocol <--> S2\n    Protocol <--> S3\n    Protocol <--> S4\n\n    style Hosts fill:#dbeafe\n    style Protocol fill:#d1fae5\n    style Servers fill:#fef3c7\n```\n\nMCP servers expose three capability families:\n\n| Family        | What it does                   | Example                          |\n| ------------- | ------------------------------ | -------------------------------- |\n| **Tools**     | Executable operations          | `create_issue`, `query_table`    |\n| **Resources** | URI-addressed read-only data   | `schema://main/users`            |\n| **Prompts**   | Reusable interaction templates | `code_review`, `persona_greeter` |\n\n---\n\n## Repository Layout\n\n```\nMCP-Zero-To-Hero/\n├── theory/          ← 7 conceptual chapters: architecture → security\n├── modules/         ← shared helpers, templates, config snippets\n└── projects/\n    ├── beginner/    ← Projects 01-05: fundamentals\n    ├── intermediate/← Projects 06-12: real integrations\n    ├── advanced/    ← Projects 13-17: compound workflows\n    └── research/    ← Projects 18-20: agentic / sampling\n```\n\n---\n\n## Learning Path\n\n```mermaid\nflowchart LR\n    T[theory/\\n7 chapters] --> B[Beginner\\n01-05]\n    B --> I[Intermediate\\n06-12]\n    I --> A[Advanced\\n13-17]\n    A --> R[Research\\n18-20]\n\n    style T fill:#e0e7ff\n    style B fill:#dbeafe\n    style I fill:#d1fae5\n    style A fill:#fef3c7\n    style R fill:#fee2e2\n```\n\n| Track            | Projects | Core skills                                           |\n| ---------------- | -------- | ----------------------------------------------------- |\n| **Beginner**     | 01–05    | Tools, resources, prompts, input validation           |\n| **Intermediate** | 06–12    | Real APIs, filesystems, databases, automation         |\n| **Advanced**     | 13–17    | Vector DBs, cloud infra, pipelines, transport choices |\n| **Research**     | 18–20    | Host sampling, self-healing loops, semantic search    |\n\n---\n\n## Quick Start\n\n### Prerequisites\n\n- Node.js 20+ and npm 10+ (for TypeScript projects)\n- Python 3.10+ and pip (for Python projects)\n- A host app such as [Claude Desktop](https://claude.ai/download)\n\n### Run Your First Server (TypeScript)\n\n```bash\ncd projects/beginner/01-hello-world-server-ts\nnpm install\nnpm run build\nnpm start\n```\n\n### Run Your First Server (Python)\n\n```bash\ncd projects/beginner/02-local-file-system-reader-py\npip install -e .\npython3 server.py\n```\n\n### Register With Claude Desktop\n\nEach project README includes the exact config snippet. Paste it into `claude_desktop_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"hello-world-server\": {\n      \"command\": \"node\",\n      \"args\": [\"/absolute/path/to/dist/index.js\"]\n    }\n  }\n}\n```\n\n---\n\n## Repository Rules\n\n- TypeScript projects use `@modelcontextprotocol/sdk` (official SDK).\n- Python projects use the official `mcp` package.\n- `stdio` is the default transport for all projects.\n- Every project includes the exact `claude_desktop_config.json` snippet.\n- `stdout` is reserved for MCP protocol traffic only — all logs go to `stderr`.\n\n---\n\n## Contents\n\n- **[theory/README.md](./theory/README.md)** — conceptual foundation, 7 chapters\n- **[projects/README.md](./projects/README.md)** — full 20-project catalog with descriptions\n- **[modules/README.md](./modules/README.md)** — shared utilities and documentation templates\n\n---\n\n## Intended Audience\n\n- Beginners learning MCP concepts for the first time\n- Engineers building local MCP servers for personal or team use\n- DevRel teams teaching MCP with production-ready examples\n- Advanced practitioners exploring agentic and research-oriented MCP workflows\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

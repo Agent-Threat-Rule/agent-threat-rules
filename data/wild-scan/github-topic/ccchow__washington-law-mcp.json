@@ -1,0 +1,33 @@
+{
+  "full_name": "ccchow/washington-law-mcp",
+  "html_url": "https://github.com/ccchow/washington-law-mcp",
+  "description": "MCP server for offline access to Washington State laws (RCW) and court rules",
+  "topics": [
+    "claude-code",
+    "claude-desktop",
+    "mcp",
+    "mcp-server",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 1,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-09-10T01:28:03Z",
+  "last_pushed_at": "2025-09-11T21:23:05Z",
+  "fetched_at": "2026-07-12T00:42:10.350Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Washington Law MCP Server\n\nAn MCP (Model Context Protocol) server that provides offline access to Washington State's Revised Code of Washington (RCW) and Washington Administrative Code (WAC) for AI agents.\n\n## Features\n\n- **Completely Offline**: All law texts are stored locally in SQLite database\n- **Fast Access**: Instant retrieval of any RCW or WAC section\n- **Full-Text Search**: Search across all Washington laws using SQLite FTS5\n- **Comprehensive Coverage**: Access to all RCW titles, chapters, and sections\n- **MCP Compatible**: Works with any MCP-compatible AI client (Claude, etc.)\n\n## Architecture\n\nThe project consists of two main components:\n\n1. **Data Collection Phase** (one-time setup): Scrapers that download all RCW/WAC texts\n2. **MCP Server** (runtime): Serves law texts from local database with no external calls\n\n## Installation\n\n```bash\n# Clone the repository\ngit clone <repository-url>\ncd law_rule_mcp\n\n# Install dependencies\nnpm install\n\n# Initialize the database\nnpm run init:db\n\n# Scrape RCW data (this will take several hours)\nnpm run scrape:rcw\n\n# Build the TypeScript code\nnpm run build\n```\n\n## Usage\n\n### Running the MCP Server\n\n```bash\nnpm start\n```\n\n### Testing with MCP Inspector\n\n```bash\nnpm test\n```\n\n### Configuring with Claude Desktop\n\nAdd to your Claude Desktop configuration (`~/Library/Application Support/Claude/claude_desktop_config.json`):\n\n```json\n{\n  \"mcpServers\": {\n    \"washington-law\": {\n      \"command\": \"node\",\n      \"args\": [\"/path/to/law_rule_mcp/dist/index.js\"]\n    }\n  }\n}\n```\n\n## Available MCP Tools\n\n### `get_rcw`\nRetrieve the full text of a specific RCW section.\n- **Parameters**: \n  - `citation` (string): RCW citation (e.g., \"46.61.502\")\n\n### `get_wac`\nRetrieve the full text of a specific WAC section.\n- **Parameters**:\n  - `citation` (string): WAC citation (e.g., \"296-24-12005\")\n\n### `search_laws`\nSearch Washington laws by keywords or phrases.\n- **Parameters**:\n  - `query` (string): Search terms\n  - `limit` (number, optional): Max results (default: 20)\n\n### `list_rcw_titles`\nList all RCW titles with section counts.\n\n### `list_rcw_chapters`\nList all chapters within a specific RCW title.\n- **Parameters**:\n  - `titleNum` (string): Title number (e.g., \"46\")\n\n### `list_rcw_sections`\nList all sections within a specific RCW chapter.\n- **Parameters**:\n  - `chapterNum` (string): Chapter number (e.g., \"46.61\")\n\n### `get_statistics`\nGet database statistics including section counts and last update time.\n\n## Project Structure\n\n```\nlaw_rule_mcp/\n├── src/\n│   ├── index.ts              # MCP server entry point\n│   ├── database/\n│   │   ├── init.ts          # Database initialization\n│   │   └── database.ts      # Database access layer\n│   ├── scraper/\n│   │   └── rcw-scraper.ts   # RCW web scraper\n│   └── types.ts             # TypeScript type definitions\n├── data/\n│   └── washington-laws.db   # SQLite database (created after scraping)\n├── package.json\n├── tsconfig.json\n└── README.md\n```\n\n## Database Schema\n\nThe SQLite database contains:\n\n- **rcw** table: Full text and metadata for all RCW sections\n- **wac** table: Full text and metadata for all WAC sections  \n- **rcw_fts** / **wac_fts**: Full-text search indexes\n- **metadata** table: Database version and update timestamps\n- **scraper_progress** table: Tracks scraping progress\n\n## Updating the Database\n\nTo update the law database with the latest changes:\n\n```bash\n# Re-run the scraper to fetch updated laws\nnpm run scrape:rcw\n```\n\nThe scraper will update existing sections and add new ones.\n\n## Development\n\n```bash\n# Watch mode for development\nnpm run dev\n\n# Build TypeScript\nnpm run build\n\n# Test with MCP inspector\nnpm test\n```\n\n## Notes\n\n- Initial scraping takes several hours due to rate limiting (respectful crawling)\n- Database size is approximately 200-500 MB after compression\n- The server operates completely offline once data is scraped\n- All database queries are read-only during MCP server operation\n\n## License\n\nMIT"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "full_name": "chispham258/Virtual_Assistant_Agent",
+  "html_url": "https://github.com/chispham258/Virtual_Assistant_Agent",
+  "description": "Modular multi-agent virtual assistant framework using LangGraph and Claude for intelligent routing, with FastAPI streaming backend and Streamlit UI, integrating Notion, Gmail, and Google Calendar.",
+  "topics": [
+    "a2a",
+    "agent",
+    "agentic-ai",
+    "langchain",
+    "langgraph",
+    "mcp-servers",
+    "multi-agent-system"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-03-22T07:10:26Z",
+  "last_pushed_at": "2026-03-26T16:42:58Z",
+  "fetched_at": "2026-07-12T00:18:00.336Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Virtual Assistant Agent\n\nA **multi-agent virtual assistant** that integrates Notion, Gmail, and Google Calendar through a unified interface. The system uses a routing-based architecture to delegate user requests to specialized agents, enabling structured and scalable task execution.\n\n## Overview\n\nThis project is built around a **router–agent pattern**, where a central routing model determines which agent should handle a given request. Each agent is responsible for a specific domain and operates with its own tools and context.\n\nThe system combines:\n- **LangGraph** for orchestration\n- **Claude** for routing and reasoning\n- **MCP tools** for external service integration\n- **FastAPI + Streamlit** for real-time interaction\n\n\n\n## Project Structure\n```text=\nProject\n├── main.py                  # FastAPI backend\n├── app.py                   # Streamlit frontend\n│\n├── agents/\n│   ├── registry.py          # Agent definitions\n│   └── factory.py           # Agent creation logic\n│\n├── graph/\n│   └── orchestrator.py      # LangGraph workflow\n│\n├── prompts/                 # System prompts per agent\n│   ├── router.py\n│   ├── notion.py\n│   ├── gmail.py\n│   └── calendar.py\n│\n├── utils/\n│   └── mcp_loader.py        # MCP configuration loader\n│\n├── config/\n│   └── mcp_config.json      # MCP server definitions\n│\n└── .env                     # Environment variables\n```\n## Setup\n### Install dependencies\n\n```terminal=\nuv sync\n```\n\n### Configure environment\n\nCreate a `.env` file in the project root:\n\n```env=\nANTHROPIC_API_KEY=sk-ant-...\nNOTION_TOKEN=ntn_...\nGOOGLE_OAUTH_CREDENTIALS=/path/to/.calendar-mcp/gcp-oauth.keys.json\n```\n\n### Google OAuth setup\n\nThe Gmail and Google Calendar MCP servers use OAuth. On first run they will open a browser window to complete the OAuth flow. Credentials are cached locally afterward.\n\n### Run\n\nStart the backend (terminal 1):\n\n```terminal=\nuv run python main.py\n```\n\nStart the UI (terminal 2):\n\n```terminal=\nuv run streamlit run app.py\n```\n\nOpen [http://localhost:8501](http://localhost:8501) in your browser.\n\n\n## Adding a New Agent (Module)\nTo extend the system with a new capability, follow these steps:\n### 1. Define MCP server\nAdd a new entry in `config/mcp_config.json`:\n```json=\n{\n  \"my-service\": {\n    \"command\": \"npx\",\n    \"args\": [\"my-mcp-package\"],\n    \"env\": {\n      \"MY_TOKEN\": \"$MY_TOKEN\"\n    },\n    \"transport\": \"stdio\"\n  }\n}\n```\n### 2. Create system prompt\nAdd a new prompt file in `prompts/`:\n\n```python=\n# prompts/my_service.py\nSYSTEM_PROMPT = \"\"\"\n    You are an assistant specialized in ...\n\"\"\"\n```\n\n### 3. Register the agent\nUpdate `agents/registry.py`:\n\n```python=\nfrom prompts import my_service\n\nREGISTRY[\"my_service\"] = AgentDefinition(\n    server_key=\"my-service\",\n    description=\"Handles ... (used by router to decide when to call this agent)\",\n    system_prompt=my_service.SYSTEM_PROMPT,\n)\n```\n\n### 4. (Optional) Add environment variables\nIf the MCP server requires credentials, update `.env`:\n```=\nMY_TOKEN=...\n```\n\n### 5. Run the system\n\nRestart the backend to load the new agent:\n```terminal=\nuv run python main.py\n```\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "main.py",
+    "size": 2769,
+    "content": "from dotenv import load_dotenv\n\nload_dotenv()\n\nimport json\nfrom contextlib import asynccontextmanager\n\nfrom fastapi import FastAPI, HTTPException\nfrom fastapi.middleware.cors import CORSMiddleware\nfrom fastapi.responses import StreamingResponse\nfrom langchain_core.messages import AIMessageChunk, HumanMessage\nfrom langchain_mcp_adapters.client import MultiServerMCPClient\nfrom langgraph.checkpoint.memory import InMemorySaver\nfrom pydantic import BaseModel, Field\n\nfrom agents.registry import REGISTRY\nfrom graph.orchestrator import build_graph\nfrom utils.mcp_loader import load_mcp_config\n\ncheckpointer = InMemorySaver()\ngraph = None\n\n\n@asynccontextmanager\nasync def lifespan(app: FastAPI):\n    global graph\n\n    mcp_config = load_mcp_config()\n    client = MultiServerMCPClient(mcp_config)\n\n    # Load tools per server so each agent only gets its own tools\n    server_tools: dict = {}\n    for agent_def in REGISTRY.values():\n        server_key = agent_def.server_key\n        if server_key not in server_tools:\n            server_tools[server_key] = await client.get_tools(server_name=server_key)\n\n    graph = build_graph(server_tools, checkpointer)\n    print(f\"Graph built with agents: {list(REGISTRY.keys())}\")\n\n    yield\n\n\napp = FastAPI(lifespan=lifespan)\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=[\"*\"],\n    allow_methods=[\"*\"],\n    allow_headers=[\"*\"],\n)\n\n\nasync def stream_response(query: str, thread_id: str):\n    config = {\"configurable\": {\"thread_id\": thread_id}}\n\n    async for chunk, metadata in graph.astream(\n        {\"messages\": [HumanMessage(query)]},\n        stream_mode=\"messages\",\n        config=config,\n    ):\n        if isinstance(chunk, AIMessageChunk) and chunk.content:\n            data = {\n                \"type\": chunk.__class__.__name__,\n                \"content\": chunk.content,\n            }\n            if chunk.tool_calls:\n                data[\"tool_calls\"] = chunk.tool_calls\n\n            yield (json.dumps(data) + \"\\n\").encode()\n\n\n@app.get(\"/\")\nasync def root():\n    return {\"message\": \"Hello World\"}\n\n\nclass ChatRequest(BaseModel):\n    query: str = Field(..., description=\"The user's query\")\n    thread_id: str = Field(..., description=\"The thread ID for conversation memory\")\n\n\n@app.post(\"/chat_stream\")\nasync def chat_stream(request: ChatRequest):\n    if not request.query.strip():\n        raise HTTPException(status_code=400, detail=\"Empty prompt!\")\n\n    try:\n        return StreamingResponse(\n            stream_response(request.query, request.thread_id),\n            media_type=\"application/x-ndjson\",\n        )\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=f\"Server error: {e}\")\n\n\nif __name__ == \"__main__\":\n    import uvicorn\n\n    uvicorn.run(app=app, host=\"0.0.0.0\", port=8080)\n"
+  },
+  "content_fetch_notes": []
+}

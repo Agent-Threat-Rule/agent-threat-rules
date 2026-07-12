@@ -1,0 +1,38 @@
+{
+  "full_name": "xp-forge/mcp",
+  "html_url": "https://github.com/xp-forge/mcp",
+  "description": "Model Context Protocol",
+  "topics": [
+    "annotations",
+    "mcp-client",
+    "mcp-prompts",
+    "mcp-resouces",
+    "mcp-server",
+    "mcp-tools",
+    "modelcontextprotocol",
+    "php7",
+    "php8",
+    "xp-framework"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 5,
+  "language": "PHP",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-06-14T15:33:02Z",
+  "last_pushed_at": "2026-06-04T19:13:59Z",
+  "fetched_at": "2026-07-12T00:45:03.497Z",
+  "readme": {
+    "path": "README.md",
+    "content": "Model Context Protocol\n======================\n\n[![Build status on GitHub](https://github.com/xp-forge/mcp/workflows/Tests/badge.svg)](https://github.com/xp-forge/mcp/actions)\n[![XP Framework Module](https://raw.githubusercontent.com/xp-framework/web/master/static/xp-framework-badge.png)](https://github.com/xp-framework/core)\n[![BSD Licence](https://raw.githubusercontent.com/xp-framework/web/master/static/licence-bsd.png)](https://github.com/xp-framework/core/blob/master/LICENCE.md)\n[![Requires PHP 7.4+](https://raw.githubusercontent.com/xp-framework/web/master/static/php-7_4plus.svg)](http://php.net/)\n[![Supports PHP 8.0+](https://raw.githubusercontent.com/xp-framework/web/master/static/php-8_0plus.svg)](http://php.net/)\n[![Latest Stable Version](https://poser.pugx.org/xp-forge/mcp/version.svg)](https://packagist.org/packages/xp-forge/mcp)\n\nImplements the [Model Context Protocol](https://modelcontextprotocol.io/) for the XP Framework.\n\nClient\n------\nConnecting to an MCP server:\n\n```php\nuse io\\modelcontextprotocol\\McpClient;\nuse util\\cmd\\Console;\n\n// Use streamable HTTP\n$client= new McpClient('http://localhost:3001');\n\n// Use standard I/O\n$client= new McpClient(['docker', 'run', '--rm', '-i', 'mcp/time']);\n\n$response= $client->call('tools/list');\nConsole::writeLine($response->value());\n```\n\nServer\n------\nUses the [xp-forge/web](https://github.com/xp-forge/web) library:\n\n```php\nuse io\\modelcontextprotocol\\McpServer;\nuse io\\modelcontextprotocol\\server\\{Tool, Param};\nuse web\\Application;\n\nclass Test extends Application {\n\n  public function routes() {\n    return new McpServer([\n      'greeting' => new class() {\n\n        /** Sends a greeting */\n        #[Tool]\n        public function greet(#[Param('Whom to greet')] $name= null) {\n          return 'Hello, '.($name ?? 'unknown user');\n        }\n      }\n    ]);\n  }\n}\n```\n\nRun this via `xp -supervise web Test`.\n\nOrganizing code\n---------------\nMCP tools, resources and prompts may be organized into classes as follows:\n\n```php\nnamespace com\\example\\api;\n\nuse io\\modelcontextprotocol\\server\\{Resource, Prompt, Tool, Param, Implementation};\n\n#[Implementation]\nclass Greeting {\n\n  /** Dynamic greeting for a user */\n  #[Resource('greeting://user/{name}')]\n  public function get($name) {\n    return \"Hello {$name}\";\n  }\n\n  /** Greets users */\n  #[Prompt]\n  public function user(\n    #[Param('Whom to greet')] $name,\n    #[Param(type: ['type' => 'string', 'enum' => ['casual', 'friendly']])] $style= 'casual'\n  ) {\n    return \"Write a {$style} greeting for {$name}\";\n  }\n\n  /** Sends a given greeting by email */\n  #[Tool]\n  public function send(\n    #[Param('Recipient email address')] $recipient,\n    #[Param('The text to send')] $greeting\n  ) {\n    // TBI\n  }\n}}\n```\n\nThe web application then becomes this:\n\n```php\nuse io\\modelcontextprotocol\\McpServer;\nuse web\\Application;\n\nclass Test extends Application {\n\n  public function routes() {\n    return new McpServer('com.example.api');\n  }\n}\n```\n\nAuthentication\n--------------\nTo add OAuth2 authentication to your server, use the following:\n\n```php\nuse io\\modelcontextprotocol\\McpServer;\nuse io\\modelcontextprotocol\\server\\{ImplementationsIn, OAuth2Gateway, Clients, UseSessions};\nuse web\\Application;\nuse web\\session\\InFileSystem;\n\nclass Test extends Application {\n\n  public function routes() {\n    $clients= new class() extends Clients { /* TBI */ };\n\n    $sessions= (new InFileSystem())->named('oauth');\n    $gateway= new OAuth2Gateway('/oauth', $clients, new UseSessions($sessions));\n\n    $auth= /* Some class extending web.auth.Authentication */;\n\n    $server= new McpServer(new ImplementationsIn('impl'));\n    return [\n      '/mcp'   => $gateway->authenticate($server),\n      '/oauth' => $gateway->flow($auth, $sessions),\n      '/.well-known/oauth-protected-resource'   => $gateway->resource(),\n      '/.well-known/oauth-authorization-server' => $gateway->metadata(),\n    ];\n  }\n}\n```\n\nSee also\n--------\n* https://github.com/modelcontextprotocol/servers\n* https://modelcontextprotocol.io/docs/learn/server-concepts\n* https://modelcontextprotocol.io/specification/2025-06-18\n* https://deadprogrammersociety.com/2025/03/calling-mcp-servers-the-hard-way.html\n* https://blog.christianposta.com/understanding-mcp-authorization-with-dynamic-client-registration/"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

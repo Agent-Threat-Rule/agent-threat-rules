@@ -1,0 +1,41 @@
+{
+  "full_name": "CommonHuman-Lab/nyxstrike",
+  "html_url": "https://github.com/CommonHuman-Lab/nyxstrike",
+  "description": "AI Powered penetration testing Platform for offensive security research",
+  "topics": [
+    "ai",
+    "bug-bounty",
+    "ctf-tools",
+    "hexstrike",
+    "kali-linux",
+    "mcp",
+    "mcp-server",
+    "nyxstrike",
+    "ollama",
+    "pentest",
+    "pentest-tool",
+    "pentesting",
+    "security"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 124,
+  "forks": 31,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "NOASSERTION",
+  "default_branch": "master",
+  "created_at": "2026-02-11T07:35:15Z",
+  "last_pushed_at": "2026-07-05T14:08:24Z",
+  "fetched_at": "2026-07-11T22:55:50.493Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n\n<img src=\"assets/nyxstrike-logo.png\" alt=\"NyxStrike\" width=\"220\"/>\n\n# NyxStrike\n*Previously: Hexstrike AI Community Edition*\n\n### AI-powered offensive security orchestration engine\n\n### ⚡ From target → recon → exploit chain in minutes\n\n⭐ If NyxStrike improves your workflow, consider starring the repo — it helps others discover it.\n\n[![Python](https://img.shields.io/badge/Python-3.13%2B-blue.svg)](https://www.python.org/)\n[![License](https://img.shields.io/badge/License-AGPLv3-green.svg)](LICENSE)\n[![Security](https://img.shields.io/badge/Security-Penetration%20Testing-red.svg)](https://github.com/CommonHuman-Lab/nyxstrike)\n[![MCP](https://img.shields.io/badge/MCP-Compatible-purple.svg)](https://github.com/CommonHuman-Lab/nyxstrike)\n\n</div>\n\n## What is NyxStrike?\n\nNyxStrike connects LLM agents to real offensive security tools and executes full attack chains — from recon to exploitation.\n\n---\n\n## 🚀 Quick Start (Installation)\n\n> Get a full offensive security environment running in minutes.\n\n```bash\ngit clone https://github.com/CommonHuman-Lab/nyxstrike.git\ncd nyxstrike\n\n./nyxstrike.sh -a               # Setup + start server\n./nyxstrike.sh -a -ai           # + local AI model (~8.4 GB RAM)\n./nyxstrike.sh -a -ai-small     # + smaller AI model (~2.5 GB RAM)\n\n# Docker\ndocker compose up --build -d    # Build + start\ndocker compose down             # Stop\n\n```\n\n> Full flag reference: [Wiki — Installation & Flags](https://github.com/CommonHuman-Lab/nyxstrike/wiki/Installation-and-Flags)\n\n### Verify Setup\n\nOpen [http://localhost:8888](http://localhost:8888) to access the dashboard.\n\n> Some tools (e.g. `nmap`, `masscan`) require elevated privileges for specific scan modes. Use a dedicated test VM and least-privilege setup where possible.\n\n---\n\n## 🔌 AI Agent Integrations (MCP)\n\nConnect NyxStrike to any MCP-compatible AI client — OpenCode, Cursor, Claude Desktop, VS Code Copilot, Roo Code, and more.\n\n### Universal MCP Command\n\n```bash\n/path/to/nyxstrike/nyxstrike-env/bin/python3 \\\n  /path/to/nyxstrike/nyxstrike_mcp.py \\\n  --server http://127.0.0.1:8888 \\\n  --profile full\n```\n\n### OpenCode\n\n```json\n{\n  \"$schema\": \"https://opencode.ai/config.json\",\n  \"mcp\": {\n    \"nyxstrike\": {\n      \"type\": \"local\",\n      \"command\": [\n        \"/path/to/nyxstrike/nyxstrike-env/bin/python3\",\n        \"/path/to/nyxstrike/nyxstrike_mcp.py\",\n        \"--server\",\n        \"http://127.0.0.1:8888\",\n        \"--profile\",\n        \"full\"\n      ],\n      \"enabled\": true\n    }\n  }\n}\n```\n\n> Config snippets for Claude Desktop, Cursor, VS Code Copilot, and security options: [Wiki — MCP Setup](https://github.com/CommonHuman-Lab/nyxstrike/wiki/MCP-Setup)\n\n---\n\n## 🔧 Features\n\nNyxStrike does not just run tools — it orchestrates full attack chains using AI decision-making.\n\n- AI agents that chain tools automatically\n- 185+ offensive security tools, all agent-controllable\n- Full attack workflow: recon → enumeration → exploitation → reporting\n- Modular tool registry — add or remove tools without touching agent logic\n- MCP-compatible — plug into any AI client you already use\n- Real-time session dashboard with live command output and logs\n\n> [Full feature breakdown](https://github.com/CommonHuman-Lab/nyxstrike/wiki/Features) · [Session & workbench docs](https://github.com/CommonHuman-Lab/nyxstrike/wiki/Dashboard-and-Sessions)\n\n---\n\n## 🧰 Tool Arsenal\n\n185+ offensive security tools across 12 categories — all dynamically orchestrated by AI agents in real time.\n\n- Network reconnaissance\n- Web exploitation\n- Wireless security\n- OSINT & intelligence gathering\n- Password attacks\n- Cloud & API security\n\n> [Full tool list by category](https://github.com/CommonHuman-Lab/nyxstrike/wiki/Tool-Arsenal)\n\n---\n\n## ⚠️ Security Considerations\n\n> NyxStrike gives AI agents direct access to offensive security tooling.\n\n- Run only in isolated environments or dedicated security testing VMs  \n- AI agents may execute real commands — maintain operator oversight  \n- Monitor activity via dashboard and logs in real time  \n- Use `NYXSTRIKE_API_TOKEN` for any non-local deployment\n\n### Legal & Ethical Use\n\n| Allowed | Not Allowed |\n|---|---|\n| Authorized penetration testing (with written authorization) | Unauthorized testing of any system |\n| Bug bounty programs (within program scope and rules) | Malicious, illegal, or harmful activities |\n| CTF competitions and educational environments | Unauthorized data access or exfiltration |\n| Security research on owned or authorized systems | |\n| Red team exercises (with organizational approval) | |\n\n---\n\n## 📜 License\n\nLicensed under the [AGPLv3](LICENSE).\nYou are free to use, modify, and distribute this software. If you run it as a service or distribute it, the source must remain open.\n\nFor commercial licensing, contact the author.\n\n---\n\n## ⭐ Support the project\n\nIf NyxStrike is useful to your workflow:\n\n- Star the repository\n- Share it with others\n- Contribute improvements\n\nIt makes a real difference.\n\n---\n\n## Credits\n\nOriginally inspired by [hexstrike-ai](https://github.com/0x4m4/hexstrike-ai).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

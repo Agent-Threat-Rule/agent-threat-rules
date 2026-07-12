@@ -1,0 +1,37 @@
+{
+  "full_name": "phiponatchi/fs-mcp",
+  "html_url": "https://github.com/phiponatchi/fs-mcp",
+  "description": "Basic File System MCP Server, List and delete files",
+  "topics": [
+    "fastapi-mcp",
+    "fastmcp",
+    "fastmcp-3",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "uv"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-03-15T23:14:57Z",
+  "last_pushed_at": "2026-03-15T23:17:25Z",
+  "fetched_at": "2026-07-12T00:50:09.882Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# File System MCP Server\n\nThis is a FastMCP server that provides basic file system operations within a restricted directory (`fs/`).\n\n## Installation\n\nInstall the dependencies using pip:\n\n```bash\nuv sync\n```\n\n## Running the Server\n\nRun the server with:\n\n```bash\nuv run main.py\n```\n\nThe server communicates via stdio for MCP protocol.\n\n## Tools\n\n### delete\n\nDeletes a specified file from the file system.\n\n**Parameters:**\n- `filepath` (string): The full path to the file to delete. The path must start with the root directory to prevent unauthorized access.\n\n**Returns:**\n- `bool`: `true` if the file was successfully deleted, `false` otherwise (e.g., file not found, permission denied, or path outside the allowed root).\n\n**Example:**\n```json\n{\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"delete_file\",\n    \"arguments\": {\n      \"filepath\": \"/path/to/fs/file.txt\"\n    }\n  }\n}\n```\n\n### list_files\n\nLists all files in the root directory.\n\n**Parameters:** None\n\n**Returns:**\n- `list[string]`: A list of full paths to files in the root directory.\n\n**Example:**\n```json\n{\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"list_files\",\n    \"arguments\": {}\n  }\n}\n```\n\n## Security\n\nThe server restricts operations to the `fs/` directory relative to the script's location to prevent unauthorized file access.\n\n# License\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "main.py",
+    "size": 1287,
+    "content": "import os\nfrom pathlib import Path\n\nfrom fastmcp import FastMCP\n\nroot = f\"{Path(__file__).resolve().parent}/fs/\"\nprint(f\"Root directory: {root}\", file=os.sys.stderr)\n\n\nmcp = FastMCP(\"File System\")\n\n@mcp.tool(\n    name=\"delete_file\",\n    description=\"Delete a file from the file system\"\n)\ndef delete(filepath: str) -> bool:\n    \"\"\"Delete a file from the file system.\n\n    Args:\n        filepath (str): The full path to the file to delete. Must be within the allowed root directory.\n\n    Returns:\n        bool: True if the file was successfully deleted, False otherwise (e.g., file not found, permission denied, or path outside root).\n    \"\"\"\n    if not filepath or not filepath.startswith(root):\n        return False\n    try:\n        os.remove(filepath)\n        return True\n    except Exception as e:\n        print(f\"Error occurred while deleting file: {e}\", file=os.sys.stderr)\n        return False\n\n@mcp.tool(\n    name=\"list_files\",\n    description=\"List of files in the file system\"\n)\ndef list_files() -> list[str]:\n    \"\"\"List all files in the root directory.\n\n    Returns:\n        list[str]: A list of full paths to files in the root directory.\n    \"\"\"\n    files = os.listdir(root)\n    return [root + file for file in files]\n\nif __name__ == \"__main__\":\n    mcp.run(transport='stdio')"
+  },
+  "content_fetch_notes": []
+}

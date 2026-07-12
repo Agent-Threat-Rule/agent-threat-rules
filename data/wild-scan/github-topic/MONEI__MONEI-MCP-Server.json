@@ -1,0 +1,44 @@
+{
+  "full_name": "MONEI/MONEI-MCP-Server",
+  "html_url": "https://github.com/MONEI/MONEI-MCP-Server",
+  "description": "Agentic commerce infrastructure — connect MONEI payments to Claude, ChatGPT, and any MCP client",
+  "topics": [
+    "agentic-commerce",
+    "ai-agent",
+    "ai-agents",
+    "ai-tools",
+    "anthropic-claude",
+    "anthropic-claude-ai",
+    "fintech",
+    "graphql",
+    "graphql-api",
+    "mcp-server",
+    "mcp-servers",
+    "model-context-protocol",
+    "oauth2",
+    "openai-chatgpt",
+    "payments",
+    "payments-api"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 1,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-07T17:53:21Z",
+  "last_pushed_at": "2026-04-09T18:30:20Z",
+  "fetched_at": "2026-07-12T00:18:08.982Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MONEI MCP Server\n\nConnect your [MONEI](https://monei.com) payment account to AI assistants like [Claude](https://claude.ai) and ChatGPT using the [Model Context Protocol](https://modelcontextprotocol.io).\n\nGenerate payment links, check transaction status, and browse your payment history — all through natural language conversation.\n\n## Features\n\n- **🔗 Payment Links** — Create and share payment links with customers via AI\n- **🔍 Transaction Lookup** — Get payment details and status by ID\n- **📊 Payment History** — Search and filter your transaction history\n- **📋 Subscriptions** — View subscription details and status\n- **🏢 Account Info** — Access your merchant account configuration\n- **🔐 OAuth 2.0** — Secure merchant authentication with scoped permissions\n- **🛡️ Guardrails** — Restricted operations are hard-blocked, not just hidden\n\n## Security by Design\n\nThis server enforces strict guardrails on what operations AI assistants can perform. The following operations are **explicitly blocked** at the server level:\n\n| Blocked Operation | Reason |\n|---|---|\n| Refund payments | Financial risk — use [MONEI Dashboard](https://dashboard.monei.com) |\n| Charge cards/Bizum | Requires PCI context and cardholder consent flows |\n| Card payouts | Funds disbursement requires compliance controls |\n| Bizum payouts | Outbound money movement requires compliance controls |\n| Cancel subscriptions | Destructive action — use Dashboard |\n| Modify account settings | Security-sensitive — use Dashboard |\n\nEven if a tool call is crafted manually, restricted endpoints will reject it with a clear explanation and redirect to the Dashboard.\n\n## Quick Start\n\n### Prerequisites\n\n- Node.js 18+\n- A [MONEI account](https://dashboard.monei.com) with API credentials\n\n### Installation\n\n```bash\ngit clone https://github.com/MONEI/MONEI-MCP-Server.git\ncd MONEI-MCP-Server\nnpm install\n```\n\n### Configuration\n\n```bash\ncp .env.example .env\n```\n\nEdit `.env` with your MONEI credentials:\n\n```env\nMONEI_CLIENT_ID=your_client_id\nMONEI_[REDACTED-GENERIC_KV_SECRET]\nMONEI_API_KEY=your_api_key  # For development/testing\n```\n\n### Run\n\n```bash\n# Development (with hot reload)\nnpm run dev\n\n# Production\nnpm run build\nnpm start\n```\n\nThe server starts at `http://localhost:3000` with:\n\n- **Streamable HTTP (recommended):** `/mcp` — Connect AI assistants here\n- **Legacy SSE:** `/sse` — Backward compatibility\n- **Health check:** `/health` — Server status\n- **OAuth:** `/oauth/authorize` — Merchant authorization flow\n\n## Connecting to Claude\n\n### Claude.ai (Connectors Directory)\n\nOnce listed in the Anthropic Connectors Directory, merchants can connect with one click from **Customize → Connectors** in Claude.ai.\n\nFor custom connector setup:\n\n1. Go to **Customize → Connectors → Add**\n2. Add your server URL: `https://your-domain.com/mcp`\n3. Complete the OAuth authorization flow\n\n### Claude Desktop\n\nAdd to your `claude_desktop_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"monei\": {\n      \"url\": \"https://your-domain.com/mcp\"\n    }\n  }\n}\n```\n\n### Claude Code\n\n```bash\nclaude mcp add monei --transport http https://your-domain.com/mcp\n```\n\n## Available Tools\n\n### `generate_payment_link`\n\nCreate a shareable payment URL.\n\n```\n\"Generate a €25 payment link for order #1234 — customer is alex@example.com\"\n```\n\n### `get_payment`\n\nRetrieve payment details by ID.\n\n```\n\"What's the status of payment abc123?\"\n```\n\n### `list_payments`\n\nSearch and filter transaction history.\n\n```\n\"Show me all successful payments from last week\"\n```\n\n### `get_subscription`\n\nView subscription details.\n\n```\n\"Get the details of subscription sub_xyz\"\n```\n\n### `list_subscriptions`\n\nBrowse subscriptions.\n\n```\n\"List all active subscriptions\"\n```\n\n### `get_account_info`\n\nView merchant account details.\n\n```\n\"What payment methods do I have enabled?\"\n```\n\n## Architecture\n\n```\nsrc/\n├── index.ts              # Entry point — Streamable HTTP + SSE + OAuth routes\n├── server.ts             # MCP server setup + tool registration\n├── auth/\n│   ├── oauth.ts          # OAuth 2.0 + PKCE + scope validation\n│   ├── pkce.ts           # RFC 7636 PKCE implementation\n│   └── session.ts        # Single-use OAuth state manager (CSRF protection)\n├── api/\n│   └── monei-client.ts   # MONEI REST API client (allowed ops only)\n├── tools/\n│   ├── index.ts          # Tool registry + routing + restriction enforcement\n│   ├── payments.ts       # Payment tools with safety annotations\n│   ├── subscriptions.ts  # Subscription tools with safety annotations\n│   └── account.ts        # Account info tool with safety annotations\n├── middleware/\n│   ├── security.ts       # CORS, HTTPS, session validation, input guard\n│   ├── rate-limiter.ts   # Per-account sliding window rate limiter\n│   └── audit-logger.ts   # Structured JSON audit logging\n└── types/\n    └── index.ts          # Shared types + restricted operations registry\n\ntests/\n├── auth/                 # PKCE, session, scope validation tests\n├── middleware/            # Rate limiter, audit logger, security tests\n└── tools/                # Restriction enforcement, routing, validation tests\n```\n\n## Roadmap\n\n- [x] Streamable HTTP transport (Anthropic directory requirement)\n- [x] Tool safety annotations (readOnlyHint / destructiveHint)\n- [x] PKCE (RFC 7636) + CSRF state validation\n- [x] Security hardening (Helmet, CORS, rate limiting, audit logging)\n- [x] Comprehensive test suite\n- [ ] Production OAuth 2.0 integration with MONEI auth service\n- [ ] Persistent token storage (Redis/PostgreSQL)\n- [ ] Anthropic Connectors Directory submission\n- [ ] Webhook notifications for payment status changes\n- [ ] Docker container + deploy-to-cloud templates\n- [ ] NPM package publishing (`npx @monei/mcp-server`)\n- [ ] Claude Desktop Extension (.mcpb bundle)\n\n## API Documentation\n\n- [MONEI API Reference](https://docs.monei.com/api)\n- [MONEI Postman Collection](https://postman.monei.com)\n- [MCP Specification](https://modelcontextprotocol.io)\n\n## License\n\nMIT © [MONEI](https://monei.com)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "root contents listing failed (private, empty, or rate limited)"
+  ]
+}

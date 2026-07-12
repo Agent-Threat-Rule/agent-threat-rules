@@ -1,0 +1,34 @@
+{
+  "full_name": "DiscreteTom/agent-skills-mcp-rs",
+  "html_url": "https://github.com/DiscreteTom/agent-skills-mcp-rs",
+  "description": "Load Agent Skills for your agents",
+  "topics": [
+    "agent",
+    "agent-skills",
+    "agentic-ai",
+    "mcp",
+    "mcp-tools",
+    "skills"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 5,
+  "forks": 1,
+  "open_issues": 0,
+  "language": "Rust",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-01-30T12:35:14Z",
+  "last_pushed_at": "2026-03-17T06:01:44Z",
+  "fetched_at": "2026-07-12T00:34:22.296Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# agent-skills-mcp - Load [Agent Skills](https://agentskills.io/home) for your agents\n\n[![npm version](https://img.shields.io/npm/v/agent-skills-mcp)](https://www.npmjs.com/package/agent-skills-mcp)\n[![GitHub release](https://img.shields.io/github/v/release/DiscreteTom/agent-skills-mcp-rs)](https://github.com/DiscreteTom/agent-skills-mcp-rs/releases)\n\n## Usage\n\n### Full CLI Usage\n\n<details>\n\n<summary><code>agent-skills-mcp --help</code></summary>\n\n```sh\nAgent Skills MCP - Load Agent Skills for your agents\n\nUsage: agent-skills-mcp [OPTIONS]\n\nOptions:\n      --skill-folder <SKILL_FOLDER>  Path(s) to folder(s) containing skill markdown files (repeat or comma-separate) [env: SKILL_FOLDER=] [default: skills]\n      --mode <MODE>                  Operating mode [env: MODE=] [default: single_tool]\n  -h, --help                         Print help\n  -V, --version                      Print version\n```\n\n</details>\n\n### Setup\n\nFirst, put your skills in `~/skills`, e.g.\n\n```sh\ngit clone https://github.com/anthropics/skills.git ~/skills\n```\n\nThe server recursively searches for `SKILL.md` files and follows symlinks, allowing flexible skill organization.\n\nThen, add this to your MCP client configuration:\n\n[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/cn/install-mcp?name=skills&config=eyJlbnYiOnsiU0tJTExfRk9MREVSIjoifi9za2lsbHMifSwiY29tbWFuZCI6Im5weCAteSBhZ2VudC1za2lsbHMtbWNwIn0%3D)\n[![Add to Kiro](https://kiro.dev/images/add-to-kiro.svg)](https://kiro.dev/launch/mcp/add?name=skills&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22agent-skills-mcp%22%5D%2C%22env%22%3A%7B%22SKILL_FOLDER%22%3A%22~%2Fskills%22%7D%7D)\n\n```json\n{\n  \"mcpServers\": {\n    \"skills\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"agent-skills-mcp\"],\n      \"env\": {\n        \"SKILL_FOLDER\": \"~/skills\"\n      }\n    }\n  }\n}\n```\n\n### Multiple Skill Folders\n\nYou can load skills from multiple folders by repeating the `--skill-folder` flag or using a comma-separated list in the `SKILL_FOLDER` env var. A common pattern is to keep global skills in `~/skills` and workspace-specific skills in `./skills`:\n\n```json\n{\n  \"mcpServers\": {\n    \"skills\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"agent-skills-mcp\"],\n      \"env\": {\n        \"SKILL_FOLDER\": \"~/skills,./skills\"\n      }\n    }\n  }\n}\n```\n\n### Modes\n\n- `single_tool` (default): Register a single `get_skill` tool that accepts a skill name parameter, with all skills listed in the tool description. This reduces the number of tools exposed to the agent.\n- `tool`: Register each skill as a separate MCP tool (e.g., `get_skill_name1`, `get_skill_name2`)\n- `system_prompt`: Include skill information in MCP instructions\n\n## Install Standalone Binary\n\n<details>\n\n<summary>Shell (macOS/Linux)</summary>\n\n```sh\ncurl --proto '=https' --tlsv1.2 -LsSf https://github.com/DiscreteTom/agent-skills-mcp-rs/releases/latest/download/agent-skills-mcp-installer.sh | sh\n```\n\n</details>\n\n<details>\n\n<summary>PowerShell (Windows)</summary>\n\n```powershell\nirm https://github.com/DiscreteTom/agent-skills-mcp-rs/releases/latest/download/agent-skills-mcp-installer.ps1 | iex\n```\n\n</details>\n\n<details>\n\n<summary>npm</summary>\n\n```sh\nnpm install -g agent-skills-mcp\n```\n\n</details>\n\n## [CHANGELOG](./CHANGELOG.md)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

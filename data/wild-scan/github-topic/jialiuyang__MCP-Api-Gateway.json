@@ -1,0 +1,40 @@
+{
+  "full_name": "jialiuyang/MCP-Api-Gateway",
+  "html_url": "https://github.com/jialiuyang/MCP-Api-Gateway",
+  "description": "Enterprise MCP gateway that auto-discovers your microservices and exposes them as MCP tools for Cursor, Claude Code, Codex, Windsurf and other AI clients. Spring Boot + Vue 3, one-command Docker deploy.",
+  "topics": [
+    "ai-tools",
+    "api-gateway",
+    "cursor-plugin",
+    "mcp",
+    "mcp-api-gateway",
+    "mcp-gateway",
+    "mcp-protocol",
+    "mcp-server",
+    "mcp-tools",
+    "openapi",
+    "swagger",
+    "swagger-api"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Java",
+  "license": "NOASSERTION",
+  "default_branch": "main",
+  "created_at": "2026-06-28T08:10:06Z",
+  "last_pushed_at": "2026-06-28T08:57:04Z",
+  "fetched_at": "2026-07-12T00:48:54.218Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP Gateway Enterprise\n\n<p align=\"center\">\n  <a href=\"https://github.com/jialiuyang/MCP-Api-Gateway/actions/workflows/build.yml\">\n    <img src=\"https://img.shields.io/github/actions/workflow/status/jialiuyang/MCP-Api-Gateway/build.yml?branch=main&label=build&logo=github\" alt=\"Build\">\n  </a>\n  <img src=\"https://img.shields.io/github/languages/code-size/jialiuyang/MCP-Api-Gateway\" alt=\"Code size\">\n</p>\n\n<p align=\"center\">\n\n  <a href=\"https://github.com/jialiuyang/MCP-Api-Gateway/issues\">\n    <img src=\"https://img.shields.io/github/issues/jialiuyang/MCP-Api-Gateway\" alt=\"Issues\">\n  </a>\n  <a href=\"https://github.com/jialiuyang/MCP-Api-Gateway/pulls\">\n    <img src=\"https://img.shields.io/github/issues-pr/jialiuyang/MCP-Api-Gateway\" alt=\"PRs\">\n  </a>\n  <img src=\"https://img.shields.io/badge/PRs-welcome-brightgreen.svg\" alt=\"PRs Welcome\">\n</p>\n\n<p align=\"center\">\n  <img src=\"https://img.shields.io/badge/Java-17%2B-007396?logo=openjdk&logoColor=white\" alt=\"Java\">\n  <img src=\"https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=spring&logoColor=white\" alt=\"Spring Boot\">\n  <img src=\"https://img.shields.io/badge/Vue-3-4FC08D?logo=vuedotjs&logoColor=white\" alt=\"Vue 3\">\n  <img src=\"https://img.shields.io/badge/MCP-2025--03--26-orange\" alt=\"MCP Protocol\">\n  <img src=\"https://img.shields.io/badge/docker-ready-2496ED?logo=docker&logoColor=white\" alt=\"Docker\">\n</p>\n\n![MCP Gateway Enterprise](mcp-api.png)\n\n> Enterprise-grade [Model Context Protocol](https://modelcontextprotocol.io/) gateway that auto-discovers internal microservices and exposes them as MCP tools consumable by AI clients such as Cursor, Claude Code, Claude Desktop, Codex and Windsurf.\n\n[English](./README_EN.md) | 简体中文\n\n---\n\n## 它是什么\n\n**MCP Gateway Enterprise（简称 MCPG）** 是一个配置驱动的企业级 MCP 网关，让公司无需写一行业务代码，就能把全公司的微服务接入 Cursor 等 AI 编程客户端。\n\n平台运维同学只需在 Web 控制台做几件事：\n1. 配置服务注册中心（Nacos / Eureka 等）\n2. MCPG 自动发现服务、抓取 Swagger / OpenAPI、生成 MCP 工具\n3. 把生成的 MCP 接入地址配置到 Cursor 即可开始使用\n\n## 核心特性\n\n| 能力 | 描述 |\n|------|------|\n| 🔌 **多注册中心支持** | Nacos / Eureka 开箱即用；Consul / Polaris / K8s / ZK 占位，可按需扩展 |\n| 📚 **多种 OpenAPI 格式** | Swagger 2.0、OpenAPI 3.0 / 3.1（覆盖 Springdoc、Springfox、FastAPI 等主流框架） |\n| 🤖 **三档暴露策略** | `META`（元工具）、`DIRECT_ALL`（全部直暴露）、`HYBRID`（混合 + Promote 提升） |\n| 🛠️ **元工具搜索** | `list_services` / `search_api` / `get_api_schema` / `call_api` 四件套，解决大规模工具列表爆炸问题 |\n| ⏰ **定时刷新** | 每日定时拉取 Swagger，保持工具与接口同步；支持手动立即刷新 |\n| 🔒 **治理预留** | SSO、审计、环境隔离、写操作分级、限流——接口预留，UI 已上线 |\n| 🚀 **单 Jar / 单镜像部署** | `mvn package` 把 Vue 前端打入 Spring Boot Jar；`docker compose up` 即开即用 |\n\n## 🐳 Docker 一键启动\n\n### 方式 1：拉预构建镜像（真·一行命令）\n\n任何装了 Docker 的机器：\n\n```bash\ndocker run -d --name mcpg -p 8088:8088 ghcr.io/jialiuyang/mcp-api-gateway:latest\n```\n\n启动 <10s，浏览器打开 <http://localhost:8088/> 即可看到控制台。**无需 git clone / JDK / Maven / Node**。\n\n> 想持久化 H2 数据库与日志：再加 `-v <宿主目录>:/app/data`。\n> 镜像每次推送到 `main` 由 GitHub Actions 自动构建；可用 tag：`latest` / `sha-<7位>` / `main`。\n\n### 方式 2：从源码构建（适合二次开发）\n\n```bash\ngit clone https://github.com/jialiuyang/MCP-Api-Gateway.git\ncd MCP-Api-Gateway\ndocker compose -f docker-compose.demo.yml up --build -d\n```\n\n首次构建约 3–5 分钟（Maven 依赖 + Node 20 + Vue 打包）；之后启动 ≤10s。\n数据（H2 文件、日志）会落到本地 `./data/` 目录，重启后保留。\n停止：`docker compose -f docker-compose.demo.yml down`。\n\n### 启动后入口\n\n| 入口 | URL |\n|------|-----|\n| 控制台 UI | <http://localhost:8088/> |\n| 后端 API 文档（Swagger UI） | <http://localhost:8088/swagger-ui.html> |\n| 健康检查 | <http://localhost:8088/actuator/health> |\n| MCP 接入端点（推荐） | `http://localhost:8088/mcp` |\n| MCP 接入端点（SSE 旧客户端） | `http://localhost:8088/mcp/sse` |\n\n> 想跑生产体积更小的镜像？仓库根目录还提供单阶段 `Dockerfile`（要求宿主机先 `mvn package`），适合放进自家 CI/CD 流水线。\n\n## 快速开始（源码方式）\n\n### 前置要求\n\n- JDK 17+\n- Maven 3.9+\n- 网络可访问 Maven Central（前端依赖会由 Maven 自动下载 Node 20 与依赖）\n- （可选）本地或可访问的 Nacos / Eureka，用于服务自动发现\n\n### 构建并运行\n\n```bash\ngit clone https://github.com/jialiuyang/MCP-Api-Gateway.git\ncd MCP-Api-Gateway\nmvn clean package           # 一次性构建后端 + 前端，产物 mcpg-web/target/mcpg-web.jar\njava -jar mcpg-web/target/mcpg-web.jar\n```\n\n> 默认端口为 **8088**（避开 Nacos 默认占用的 8080/8848）。如需修改，设置环境变量 `MCPG_PORT=xxxx`。\n\n> 仅做后端开发想跳过前端打包，加参数：`mvn package -Dskip.frontend=true`\n\n## Cursor 接入示例\n\n在 Cursor 的 `~/.cursor/mcp.json`（或工作区 `.cursor/mcp.json`）中添加：\n\n```json\n{\n  \"mcpServers\": {\n    \"mcpg-local\": {\n      \"url\": \"http://localhost:8088/mcp\"\n    }\n  }\n}\n```\n\n完整 5 分钟 demo（含截图与典型 Prompt）见 [`docs/demo-cursor.md`](./docs/demo-cursor.md)。\n\n## 技术栈\n\n- **后端**：Java 17 + Spring Boot 3.5 + Spring Data JPA + H2 (开发) / MySQL (生产)\n- **MCP**：[`io.modelcontextprotocol.sdk:mcp`](https://github.com/modelcontextprotocol/java-sdk)\n- **OpenAPI**：[`io.swagger.parser.v3:swagger-parser`](https://github.com/swagger-api/swagger-parser)\n- **注册中心**：`nacos-client`、`eureka-client`\n- **前端**：Vue 3 + Vite + TypeScript + Element Plus + Pinia\n- **构建**：Maven 多模块 + frontend-maven-plugin（前端一键打包）\n\n详细架构图请见 [ARCHITECTURE.md](./ARCHITECTURE.md)（含 4 张 Mermaid 视图）；\n高清版可视化版本：[docs/architecture.html](./docs/architecture.html)（深色封面）与 [docs/flow.html](./docs/flow.html)（用户调用链路简版）。\n\n## 设计决策\n\n详见 [docs/design-decisions.md](./docs/design-decisions.md)。其中讨论了：\n\n- 为什么使用元工具模式而不是直接暴露所有接口\n- 为什么 Spring Boot 不直接做 stdio，需要单独的桥接 CLI\n- 为什么把生产数据库默认为只读副本\n- 三档暴露策略的取舍\n\n## 贡献\n\n欢迎提 Issue / PR！请先阅读 [CONTRIBUTING.md](./CONTRIBUTING.md)。\n\n如果这个项目对你有帮助，欢迎点个 ⭐ Star 让更多人看到。\n有问题或建议？提个 [Issue](https://github.com/jialiuyang/MCP-Api-Gateway/issues/new) 或参与 [Discussions](https://github.com/jialiuyang/MCP-Api-Gateway/discussions)。\n\n## 协议\n\n[Apache License 2.0](./LICENSE)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "full_name": "clubpay/ronykit",
+  "html_url": "https://github.com/clubpay/ronykit",
+  "description": "API Framework supporting REST and RPC.",
+  "topics": [
+    "ai-friendly",
+    "framework",
+    "go",
+    "golang",
+    "mcp",
+    "middleware",
+    "model-context-protocol",
+    "performance",
+    "performant",
+    "rest-api",
+    "restful-api",
+    "ronykit",
+    "router",
+    "rpc",
+    "rpc-framework",
+    "server",
+    "websocket"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 37,
+  "forks": 5,
+  "open_issues": 0,
+  "language": "Go",
+  "license": "BSD-3-Clause",
+  "default_branch": "main",
+  "created_at": "2021-12-26T07:19:20Z",
+  "last_pushed_at": "2026-07-10T12:21:40Z",
+  "fetched_at": "2026-07-11T23:36:58.537Z",
+  "readme": {
+    "path": "README.MD",
+    "content": "# RonyKIT\n\n[![codecov](https://codecov.io/gh/clubpay/ronykit/branch/main/graph/badge.svg?token=6DALKCyYXv)](https://codecov.io/gh/clubpay/ronykit)\n[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fclubpay%2Fronykit.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fclubpay%2Fronykit?ref=badge_shield&issueType=license)\n[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fclubpay%2Fronykit.svg?type=shield&issueType=security)](https://app.fossa.com/projects/git%2Bgithub.com%2Fclubpay%2Fronykit?ref=badge_shield&issueType=security)\n[![Go Report Card](https://goreportcard.com/badge/github.com/clubpay/ronykit)](https://goreportcard.com/report/github.com/clubpay/ronykit)\n\n\nA Go toolkit for building high-performance API servers. Define your contracts once, get type-safe handlers, auto-generated docs, and client stubs — all with minimal boilerplate.\n\n## Quick Start\n\n### 1. Install the scaffolding tool\n\nWith Homebrew (macOS/Linux):\n\n```bash\nbrew install clubpay/tap/ronyup\n```\n\nOn [Homebrew 6+](https://docs.brew.sh/Tap-Trust), third-party taps require explicit trust. The\nfully-qualified name above trusts and installs `ronyup` in one step. Upgrade with\n`brew upgrade clubpay/tap/ronyup`.\n\nOr with Go:\n\n```bash\ngo install github.com/clubpay/ronykit/ronyup@latest\n```\n\n### 2. Create a new Project/Workspace\n\nFor interactive setup, use:\n\n```bash\nrony setup\n```\n\nOr specify all options directly:\n\n```bash\nronyup setup workspace -r ./my-api -m github.com/you/my-api\n```\n\n### 3. Add a service\n\n```bash\ncd my-api\nronyup setup feature -p auth -n auth -t service\n```\n\n### 4. Run it\n\n```bash\ncd cmd/all-in-one && go run .\n```\n\nThat's it — you have a running API server with a scaffolded project structure, dependency injection, database migrations, and generated client stubs.\n\n> **Using an AI-powered IDE?** Set up the [ronyup MCP server](./docs/ronyup-guide.md#mcp-server) to let your AI assistant scaffold and implement services for you.\n\n## Hello World\n\nDon't want scaffolding? Here's a complete API server in one file:\n\n```go\npackage main\n\nimport (\n\t\"context\"\n\t\"os\"\n\n\t\"github.com/clubpay/ronykit/rony\"\n)\n\ntype GreetRequest struct {\n\tName string `json:\"name\"`\n}\n\ntype GreetResponse struct {\n\tMessage string `json:\"message\"`\n}\n\nfunc Greet(ctx *rony.SUnaryCtx, in GreetRequest) (*GreetResponse, error) {\n\treturn &GreetResponse{Message: \"Hello, \" + in.Name + \"!\"}, nil\n}\n\nfunc main() {\n\tsrv := rony.NewServer(\n\t\trony.Listen(\":8080\"),\n\t\trony.WithServerName(\"greeter\"),\n\t\trony.WithAPIDocs(\"/docs\"),\n\t\trony.UseSwaggerUI(),\n\t)\n\n\trony.Setup(srv, \"GreeterService\", rony.EmptyState(),\n\t\trony.WithUnary(Greet,\n\t\t\trony.GET(\"/hello/{name}\"),\n\t\t\trony.POST(\"/hello\"),\n\t\t),\n\t)\n\n\t_ = srv.Run(context.Background(), os.Interrupt, os.Kill)\n}\n```\n\n```bash\ncurl http://localhost:8080/hello/World\n# {\"message\":\"Hello, World!\"}\n```\n\nOpen http://localhost:8080/docs for auto-generated Swagger UI.\n\n## Why RonyKit\n\n- **Type-safe handlers** — request/response types are Go structs, validated at compile time\n- **Auto-generated API docs** — Swagger UI / ReDoc / Scalar served directly from your handler types\n- **Client stub generation** — generate Go and TypeScript clients from your service definitions\n- **One handler, multiple protocols** — serve REST and RPC (WebSocket) from the same handler\n- **Production-ready scaffolding** — `ronyup` generates projects with DI, repo layers, config, and migrations\n- **AI-assisted development** — `ronyup mcp` integrates with Cursor, GoLand, and other MCP-capable IDEs\n- **Minimal overhead** — built for performance with pluggable gateways (fasthttp, silverhttp)\n\n## Documentation\n\n| Guide                                        | Description                                                      |\n|----------------------------------------------|------------------------------------------------------------------|\n| [Getting Started](./docs/getting-started.md) | Installation, first server, core concepts                        |\n| [Cookbook](./docs/cookbook.md)               | Authentication, pagination, validation, error handling, and more |\n| [ronyup Guide](./docs/ronyup-guide.md)       | Scaffolding CLI and MCP server for AI-assisted development       |\n| [Architecture](./docs/architecture.md)       | How RonyKit works, project layout, component overview            |\n| [Advanced: Kit](./docs/advanced-kit.md)      | Low-level toolkit for custom gateways and protocols              |\n\n## AI-Powered Development with ronyup MCP\n\n`ronyup` includes a built-in [MCP server](https://modelcontextprotocol.io/) that lets AI assistants in your IDE scaffold workspaces, plan services, and generate implementation code — all following RonyKit best practices.\n\n```json\n{\n  \"mcpServers\": {\n    \"ronyup\": {\n      \"command\": \"ronyup\",\n      \"args\": [\"mcp\"]\n    }\n  }\n}\n```\n\nAdd this to `.cursor/mcp.json` (Cursor) or configure via Settings (GoLand). See the full [ronyup MCP Guide](./docs/ronyup-guide.md#mcp-server) for details.\n\n## Performance\n\nRonyKIT is designed for high throughput with minimal framework overhead. See the [TechEmpower JSON benchmark](https://www.techempower.com/benchmarks/#hw=ph&test=json&section=data-r22&l=zijocf-cn3) for a reference point.\n\n## Project Layout\n\n```\nrony/           Batteries-included framework (start here)\nkit/            Low-level core (advanced users)\nronyup/         Scaffolding CLI + MCP server\nstd/gateways/   Gateway implementations (fasthttp, silverhttp, fastws, mcp)\nstd/clusters/   Cluster implementations (redis, p2p)\nstub/           Client stub generation (Go, TypeScript)\nflow/           Workflow helpers (Temporal integration)\nx/              Extended utilities (di, telemetry, cache, i18n, apidoc, and more)\nexample/        Runnable examples\n```\n\n## Examples\n\nBrowse production-style patterns in the [Cookbook](./docs/cookbook.md) or explore the [runnable examples](./example) directory.\n\n## Build Commands\n\n```bash\nmake setup    # Install tools (gotestsum, golangci-lint)\nmake test     # Run tests across all modules\nmake lint     # Lint all modules\nmake vet      # go vet all modules\nmake tidy     # go mod tidy all modules\n```\n\n## License\n\nRonyKit is [BSD 3-Clause](LICENSE). Third-party licenses are tracked in [FOSSA](https://app.fossa.com/projects/git%2Bgithub.com%2Fclubpay%2Fronykit); see [docs/compliance.md](docs/compliance.md) for exports and resolving scan flags.\n\n[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fclubpay%2Fronykit.svg?type=large&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fclubpay%2Fronykit?ref=badge_large&issueType=license)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

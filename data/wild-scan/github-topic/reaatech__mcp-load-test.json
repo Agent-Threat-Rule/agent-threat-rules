@@ -1,0 +1,38 @@
+{
+  "full_name": "reaatech/mcp-load-test",
+  "html_url": "https://github.com/reaatech/mcp-load-test",
+  "description": "Load testing framework purpose-built for MCP servers. Realistic tool call sequences, concurrent multi-turn sessions, transport-aware profiling, and latency histograms per tool. Not wrk — MCP-native.",
+  "topics": [
+    "agentic-ai",
+    "ai",
+    "cli",
+    "developer-tools",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "model-context-protocol",
+    "testing",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-27T00:27:55Z",
+  "last_pushed_at": "2026-07-06T13:29:53Z",
+  "fetched_at": "2026-07-12T00:46:03.517Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# mcp-load-test\n\n[![CI](https://github.com/reaatech/mcp-load-test/actions/workflows/ci.yml/badge.svg)](https://github.com/reaatech/mcp-load-test/actions/workflows/ci.yml)\n[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)\n[![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue)](https://www.typescriptlang.org/)\n\n> Load testing framework purpose-built for [MCP (Model Context Protocol)](https://spec.modelcontextprotocol.io/) servers. Transport-aware, session-based, pattern-driven — with latency histograms, breaking point detection, and PR-ready reports.\n\nThis monorepo provides a CLI, an orchestration engine, MCP transport clients, and supporting infrastructure for stress-testing MCP servers under realistic concurrent workloads.\n\n## Features\n\n- **Transport-aware** — StreamableHTTP, SSE, and stdio have radically different concurrency profiles; this framework understands and accounts for each\n- **Session-based closed-loop concurrency** — long-lived sessions continuously execute weighted-random tool-call patterns, modeling real user behavior\n- **Realistic patterns** — explore-then-act, read-then-write, and multi-step workflows with template variables, think-time delays, and stateful context\n- **Latency histograms** — per-tool P50/P90/P95/P99 tracking with configurable bucket boundaries\n- **Breaking point detection** — adaptive threshold monitoring for error rates, latency spikes, timeout rates, and connection failures — with recovery time tracking\n- **Performance grading** — A/B/C/D/F letter grades for latency, concurrency, and error rate with per-tool-category benchmarks\n- **PR-ready reports** — console (ANSI-colored), markdown (GitHub-flavored), and JSON (CI/CD) output formats\n\n## Installation\n\n### Using the CLI\n\n```bash\nnpm install -g @reaatech/mcp-load-test-cli\n# or\npnpm add -g @reaatech/mcp-load-test-cli\n```\n\n### Using individual packages\n\n```bash\n# Core types, schemas, utilities, and logging\npnpm add @reaatech/mcp-load-test-core\n\n# Latency histograms and throughput collection\npnpm add @reaatech/mcp-load-test-metrics\n\n# Tool call patterns and executor\npnpm add @reaatech/mcp-load-test-patterns\n\n# Concurrency profile generators\npnpm add @reaatech/mcp-load-test-profiles\n\n# Breaking point detection and grading\npnpm add @reaatech/mcp-load-test-analysis\n\n# MCP transport clients (stdio, SSE, HTTP)\npnpm add @reaatech/mcp-load-test-client\n\n# Console, markdown, and JSON reporters\npnpm add @reaatech/mcp-load-test-reporters\n\n# Orchestration engine and session manager\npnpm add @reaatech/mcp-load-test-engine\n\n# Command-line interface\npnpm add @reaatech/mcp-load-test-cli\n```\n\n### Contributing\n\n```bash\n# Clone the repository\ngit clone https://github.com/reaatech/mcp-load-test.git\ncd mcp-load-test\n\n# Install dependencies\npnpm install\n\n# Build all packages\npnpm build\n\n# Run the test suite\npnpm test\n\n# Run linting\npnpm lint\n```\n\n## Quick Start\n\nRun a ramp test against an MCP server:\n\n```bash\nmcp-load-test load --endpoint https://api.example.com/mcp \\\n  --transport http \\\n  --profile ramp \\\n  --max-concurrency 100 \\\n  --duration 300 \\\n  --breaking-point \\\n  --format markdown \\\n  --output report.md\n```\n\nRun a soak test to detect memory leaks:\n\n```bash\nmcp-load-test soak --endpoint https://api.example.com/mcp \\\n  --concurrency 50 \\\n  --duration 1800 \\\n  --format json \\\n  --output soak-results.json\n```\n\nCompare two test runs:\n\n```bash\nmcp-load-test compare --baseline baseline.json --current soak-results.json\n```\n\n### Programmatic Usage\n\n```typescript\nimport { LoadEngine } from \"@reaatech/mcp-load-test-engine\";\nimport { MarkdownReporter } from \"@reaatech/mcp-load-test-reporters\";\n\nconst engine = new LoadEngine({\n  endpoint: \"https://api.example.com/mcp\",\n  transport: \"http\",\n  profile: {\n    type: \"ramp\",\n    minConcurrency: 1,\n    maxConcurrency: 100,\n    rampDurationMs: 300000,\n    holdDurationMs: 120000,\n  },\n  patterns: [\n    {\n      name: \"explore-then-act\",\n      weight: 1,\n      thinkTimeMs: 100,\n      onStepError: \"continue\",\n      steps: [\n        { tool: \"tools/list\", args: {} },\n        { tool: \"tools/call\", args: { name: \"echo\", arguments: {} } },\n      ],\n    },\n  ],\n  breakingPointDetection: true,\n  outputFormat: \"markdown\",\n});\n\nconst report = await engine.run();\nconst output = new MarkdownReporter().format(report);\nconsole.log(output);\n```\n\n## Packages\n\n| Package | Description |\n| ------- | ----------- |\n| [`@reaatech/mcp-load-test-core`](./packages/core) | Types, Zod schemas, utilities, and structured logging |\n| [`@reaatech/mcp-load-test-metrics`](./packages/metrics) | Latency histograms, throughput collection, and error tracking |\n| [`@reaatech/mcp-load-test-patterns`](./packages/patterns) | Tool call patterns and execution engine |\n| [`@reaatech/mcp-load-test-profiles`](./packages/profiles) | Concurrency profile generators (ramp, soak, spike, custom) |\n| [`@reaatech/mcp-load-test-analysis`](./packages/analysis) | Breaking point detection and performance grading |\n| [`@reaatech/mcp-load-test-client`](./packages/client) | MCP transport clients (stdio, SSE, StreamableHTTP) |\n| [`@reaatech/mcp-load-test-reporters`](./packages/reporters) | Console, markdown, and JSON output formatters |\n| [`@reaatech/mcp-load-test-engine`](./packages/engine) | Orchestration engine and session manager |\n| [`@reaatech/mcp-load-test-cli`](./packages/cli) | Command-line interface (`mcp-load-test` binary) |\n\n## Documentation\n\n- [`ARCHITECTURE.md`](./ARCHITECTURE.md) — System design, package relationships, and data flows\n- [`AGENTS.md`](./AGENTS.md) — Coding conventions and development guidelines\n- [`CONTRIBUTING.md`](./CONTRIBUTING.md) — Contribution workflow and release process\n\n\n## Comparison with mcp-server-doctor\n\n| Aspect | [mcp-server-doctor](https://github.com/reaatech/mcp-server-doctor) | mcp-load-test |\n|--------|---------------------------------------------------------------------|---------------|\n| Purpose | Diagnostics & compliance grading | Stress testing & breaking point |\n| Duration | Seconds | Minutes to hours |\n| Concurrency | Low (1–10) | High (1–100+) |\n| Focus | Correctness, protocol compliance | Performance, capacity limits |\n| Output | Report card grade | Breaking point analysis |\n| Use Case | Pre-deployment check | Capacity planning |\n\nTogether they provide complete MCP server quality assurance:\n- **Doctor** answers: \"Is the server correctly implemented?\"\n- **Load Test** answers: \"How much load can the server handle?\"\n\n## License\n\n[MIT](LICENSE)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

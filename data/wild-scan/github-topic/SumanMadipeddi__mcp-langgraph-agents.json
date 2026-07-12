@@ -1,0 +1,39 @@
+{
+  "full_name": "SumanMadipeddi/mcp-langgraph-agents",
+  "html_url": "https://github.com/SumanMadipeddi/mcp-langgraph-agents",
+  "description": "Build MCP servers with FastMCP and connect them to any LLM. Includes API server, browser automation and integration with LangChain using mcp-use.",
+  "topics": [
+    "ai-agents",
+    "fast-mcp",
+    "langchain",
+    "langgraph",
+    "langsmith",
+    "mcp-clients",
+    "mcp-inspector",
+    "mcp-servers",
+    "mcp-use"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "master",
+  "created_at": "2025-10-19T08:14:47Z",
+  "last_pushed_at": "2025-10-27T04:28:38Z",
+  "fetched_at": "2026-07-12T00:13:57.378Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP Server & LLM Integration\n\nA practical guide to building MCP servers with **FastMCP** and integrating them with any LLM using **mcp-use**.\n\n## Project Structure\n\n- **`server/`** - Basic weather MCP server using STDIO transport\n- **`mcpserver/`** - Weather MCP server with SSE/HTTP transport, includes client examples and Streamlit UI\n- **`mcpagent/`** - Simple MCP servers (math and weather) for agent integration examples\n- **`graph_agent/`** - LangGraph integration examples\n  - `main.ipynb` - Weather tool agent with LangSmith monitoring\n  - `main.py` - Competitor ads flow analysis using Playwright and DuckDuckGo search MCP servers\n- **`app.py`** - Browser automation example using mcp-use with Groq LLM\n\n## Quick Start\n\n```bash\n# Install UV (if needed)\npowershell -c \"irm https://astral.sh/uv/install.ps1 | iex\"\ncurl -LsSf https://astral.sh/uv/install.sh | sh\n\n# Install dependencies\nuv sync\n\n# Create .env file\necho \"GROQ_API_KEY=your_key_here\" > .env\necho \"GEMINI_API_KEY=your_key_here\" >> .env\n\n# Run the weather MCP server\nuv run python server/weather.py\n\n# Run the LLM agent (in another terminal)\nuv run python app.py\n```\n\n## Resources\n\n- **MCP Spec**: https://spec.modelcontextprotocol.io/\n- **FastMCP**: https://github.com/jlowin/fastmcp\n- **mcp-use**: https://github.com/ergut/mcp-use\n- **LangChain**: https://python.langchain.com/\n- **LangGraph**: https://docs.langchain.com/oss/python/langgraph/overview\n- **UV Docs**: https://docs.astral.sh/uv/\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "app.py",
+    "size": 741,
+    "content": "import asyncio\nimport os\nfrom dotenv import load_dotenv\nfrom langchain_groq import ChatGroq\nfrom mcp_use import MCPAgent, MCPClient\n\n\nasync def main():\n    load_dotenv()\n\n    config_file = \"browser_mcp.json\"\n    print(f\"Using config file: {config_file}\")\n\n    llm = ChatGroq(model=\"llama-3.3-70b-versatile\")\n    print(f\"Using model: {llm}\")\n\n    client = MCPClient.from_config_file(config_file)\n\n    agent = MCPAgent(\n        llm=llm,\n        client=client,\n        max_steps=30,\n        memory_enabled=True)\n\n    result=await agent.run(\"Open google and search for AI startups in SFO and give me the top 5 companies and what problem they are solving \")\n\n    print(f\"\\nResult: {result}\")\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n\n\n"
+  },
+  "content_fetch_notes": []
+}

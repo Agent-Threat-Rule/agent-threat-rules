@@ -1,0 +1,35 @@
+{
+  "full_name": "devil-imps/devil-mcp",
+  "html_url": "https://github.com/devil-imps/devil-mcp",
+  "description": "MCP Server that allow to manage devil server using AI assistants",
+  "topics": [
+    "ct8",
+    "hostuno",
+    "mcp-server",
+    "mcp-tools",
+    "mydevil",
+    "serv00",
+    "small"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 2,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "AGPL-3.0",
+  "default_branch": "inferno",
+  "created_at": "2025-08-20T10:02:26Z",
+  "last_pushed_at": "2025-08-20T10:25:53Z",
+  "fetched_at": "2026-07-12T00:38:29.518Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Devil MCP Server\n\nA **Model Context Protocol (MCP) server** that provides programmatic access to devil hosting platform management tools through a secure REST API interface.\n\n## Description\n\nDevil MCP Server is a comprehensive solution that bridges the gap between AI assistants and devil hosting platform management. It consists of two main components:\n\n- [**Devil API**](https://github.com/devil-imps/devil-api): A FastAPI-based REST API that communicates with the devil command-line tool via UNIX domain sockets\n- **Devil MCP Server**: An MCP server wrapper that exposes the Devil API functionality to AI assistants and other MCP-compatible clients\n\nThis allows AI assistants to manage hosting services including websites, databases, DNS records, SSL certificates, email accounts, and more through a standardized protocol.\n\n## Installation\n\nPrerequisites:\n- Python 3.11+\n- A devil service available via UNIX domain socket at /var/run/devil2.sock (running on the same host)\n- A valid API key to configure in your environment\n\n1. Clone the repository\n   ```sh\n   git clone --recurse-submodules https://github.com/devil-imps/devil-mcp.git\n   cd devil-mcp\n   ```\n\n2. Installation\n\n   a) Using [UV](https://docs.astral.sh/uv/) (recommended)\n   > Unfortunately, currently there is no UV installed on devil servers, you can use [Lilith: Devil's Package Manager](https://github.com/devil-imps/helpers/tree/inferno/lilith) to install UV.\n   ```sh\n   uv sync\n   ```\n\n   b) Using PIP editable install\n   ```sh\n   # Create and activate a virtual environment\n   virtualenv .venv\n   source .venv/bin/activate\n\n   # Install dependencies\n   pip install -e src/devil_api\n   pip install -e .\n   ```\n\n3. Set up environment variables:\n   ```sh\n   cp .env.example .env\n   ```\n   \n   Edit `.env` and configure your settings:\n   ```env\n   # Required API KEY, put here something strong\n   DEVIL_[REDACTED-GENERIC_KV_SECRET]\n\n   # Devil MCP Server Configuration\n   DEVIL_MCP_HOST=0.0.0.0\n   # Change port number to your reserved port, use `devil port add tcp random devil-mcp` to reserve random one\n   DEVIL_MCP_PORT=8000\n\n   # Optional configurations\n   READ_ONLY_MODE=false\n   RATE_LIMIT_ENABLED=false\n   RATE_LIMIT_MAX_REQUESTS=60\n   RATE_LIMIT_WINDOW_MINUTES=1\n\n   # Logging\n   LOG_LEVEL=INFO\n   ```\n\n## Usage\n\n### Starting the Server\n\n#### Using UV:\n```sh\n# Installed script\nuv run devil-mcp\n\n# Or standalone script\nuv run python run_server.py\n```\n\n#### Using virtualenv:\n```sh\n# Activate a virtual environment\nsource .venv/bin/activate\n\n# Installed script\ndevil-mcp\n\n# Or standalone script\npython run_server.py\n```\n\n### Configuration Options\n\nThe server can be configured through environment variables:\n\n```sh\n# Server Configuration\nexport DEVIL_MCP_HOST=\"0.0.0.0\"        # Bind to all interfaces\nexport DEVIL_MCP_PORT=\"8080\"           # Custom port\nexport DEVIL_API_KEY=\"your-api-key\"    # Required API key\n\n# Security Options\nexport READ_ONLY_MODE=\"true\"           # Enable read-only mode\nexport RATE_LIMIT_ENABLED=\"true\"       # Enable rate limiting\nexport RATE_LIMIT_MAX_REQUESTS=\"100\"   # Max requests per window\nexport RATE_LIMIT_WINDOW_MINUTES=\"5\"   # Rate limit window\n\n# Logging\nexport LOG_LEVEL=\"DEBUG\"               # Set log level\n```\n\n## Connecting to AI Assistants & IDEs\n\nThe Devil MCP Server can be integrated with various AI assistants and development environments that support the Model Context Protocol (MCP).\n\n### **Visual Studio Code**\n\n#### Using the MCP Extension\n\n1. **Install the MCP extension** in VS Code\n2. **Configure the server** in your VS Code settings or MCP configuration file:\n\n```json\n{\n  \"servers\": {\n    \"devil-mcp\": {\n      \"type\": \"http\",\n      \"url\": \"http://domain.tld:8000/mcp\",\n      \"headers\": {\n        \"Authorization\": \"[REDACTED-BEARER_TOKEN]\"\n      }\n    }\n  }\n}\n```\n\n### **Claude Desktop**\n\nSee [Claude Desktop Quickstart](https://modelcontextprotocol.io/docs/tutorials/use-remote-mcp-server)\n\n### **Web-based AI Assistants**\n\nFor web-based AI assistants that support HTTP MCP connections:\n\n```json\n{\n  \"mcp_servers\": [\n    {\n      \"name\": \"devil-mcp\",\n      \"type\": \"http\",\n      \"url\": \"http://domain.tld:8000/mcp\",\n      \"auth\": {\n        \"type\": \"bearer\",\n        \"token\": \"your_devil_api_key_here\"\n      }\n    }\n  ]\n}\n```\n\n## Contributing\n\nContributions, issues, and feature requests are welcome! Feel free to check the issues page or submit a pull request.\n\n## License\n\nThis project is licensed under the GNU AFFERO GENERAL PUBLIC LICENSE License. See the [LICENSE](LICENSE) file for details.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "full_name": "arvinsingh/take-notes",
+  "html_url": "https://github.com/arvinsingh/take-notes",
+  "description": "My agentic self-organizing notes app.",
+  "topics": [
+    "agentic-workflow",
+    "mcp-tools",
+    "rag-pipeline"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-06-23T16:54:49Z",
+  "last_pushed_at": "2026-07-06T15:23:38Z",
+  "fetched_at": "2026-07-12T00:48:15.620Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Take Notes\n\nSelf-organizing markdown note app built with agentic workflow.\n\nThe app retrieves related note sections, asks agent to propose destination and markdown update, then requires user approval before writing to disk.\n\n## Screenshots\n\n![Take Notes application with agent trace, note composer, proposal, and markdown map](assets/TN_app.png)\n\n![Agent-generated markdown proposal with destination controls and approval actions](assets/TN_proposal.png)\n\n## Architecture\n\nSee [System Design](docs/system-design.md) for HLD & LLD.\n\n```mermaid\nflowchart LR\n    UI[\"Browser UI\"] --> API[\"FastAPI\"]\n    API --> AGENT[\"Microsoft Agent Framework\"]\n    AGENT -->|chooses tools iteratively| TOOLS[\"Read-only Note Tools\"]\n    TOOLS --> RAG[\"Azure Embeddings + Chroma\"]\n    RAG --> NOTES[(\"Markdown Notes\")]\n    AGENT <-->|generation| FOUNDRY[\"Azure AI Foundry\"]\n    API -->|approved writes only| NOTES\n    MCP[\"FastMCP Server\"] --> TOOLS\n```\n\nKey behavior:\n\n- Agent dynamically chooses search, similarity, outline, and file-map tools.\n- Runs are bounded by model-round, tool-call, error, and timeout limits.\n- Ambiguous notes pause for inline user clarification, then resume same workflow.\n- Markdown sections are embedded with an Azure embedding model and stored in Chroma.\n- Changed sections are re-embedded; deleted sections are removed from the index.\n- Lexical retrieval is used when vector retrieval is unavailable.\n- Normalized relevance score of at least `0.80` is required to recommend appending.\n- Only approved proposals can reach markdown writer.\n\n\n## Stack\n\nPython, FastAPI, Microsoft Agent Framework, Azure AI Foundry, FastMCP, Chroma,\nPydantic, vanilla JavaScript, and `uv`.\n\n## Setup\n\n```bash\nuv sync --extra dev --extra foundry --extra rag\ncp .env.temp .env\n```\n\nConfigure `.env`:\n\n```dotenv\nTAKE_NOTES_AGENT_MODE=foundry\nTAKE_NOTES_RAG_MODE=vector\n\nFOUNDRY_MODEL_ENDPOINT=https://your-resource.services.ai.azure.com/openai/v1\nFOUNDRY_MODEL_NAME=your-chat-deployment\nAZURE_FOUNDRY_API_KEY=your-key\n\nFOUNDRY_EMBEDDING_ENDPOINT=https://your-resource.services.ai.azure.com\nFOUNDRY_EMBEDDING_MODEL=your-embedding-deployment\n```\n\nStart application\n\n```bash\nuv run uvicorn app.main:app --reload\n```\n\nOptionally run standalone MCP server\n\n```bash\nuv run python -m app.mcp_server\n```\n\nOpen [http://127.0.0.1:8000](http://127.0.0.1:8000)\n\n## Workflow\n\n1. Enter unstructured note.\n2. Agent chooses and calls read-only knowledge tools.\n3. It asks for clarification when evidence or intent is ambiguous.\n4. It generates structured placement proposal with Azure AI Foundry.\n5. Review or revise action, folder, file, section, and markdown.\n6. Approve write or reject it.\n\n## Tests\n\n```bash\nuv run pytest\n```\n\nTests cover vector indexing, semantic retrieval, incremental updates, stale-vector\ndeletion, lexical fallback, placement thresholds, and markdown writes.\n\n## Local Data\n\n- `notes/`: local markdown source of truth; ignored by Git by default\n- `.take-notes/`: proposal history and Chroma index\n- `.env`: credentials\n\n## License\nThis project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details."
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

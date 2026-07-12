@@ -1,0 +1,48 @@
+{
+  "full_name": "yusong652/itasca-mcp",
+  "html_url": "https://github.com/yusong652/itasca-mcp",
+  "description": "MCP server connecting AI agents to ITASCA engines (PFC, FLAC, 3DEC, MPoint, MassFlow) — run numerical simulations through natural conversation",
+  "topics": [
+    "3dec",
+    "ai-agent",
+    "claude",
+    "claude-code",
+    "codex",
+    "dem",
+    "discrete-element-method",
+    "flac",
+    "gemini-cli",
+    "geomechanics",
+    "itasca",
+    "itasca-pfc",
+    "llm-tools",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "particle-flow-code",
+    "pfc",
+    "simulation"
+  ],
+  "matched_query_topics": [
+    "mcp-server",
+    "model-context-protocol"
+  ],
+  "stars": 122,
+  "forks": 10,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-02-11T09:31:43Z",
+  "last_pushed_at": "2026-07-09T14:21:01Z",
+  "fetched_at": "2026-07-11T22:56:14.704Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<p align=\"center\">\n  <img src=\"https://raw.githubusercontent.com/yusong652/itasca-mcp/assets/header.webp\" alt=\"itasca-mcp\" width=\"70%\">\n</p>\n\n# itasca-mcp\n\n[English](https://github.com/yusong652/itasca-mcp/blob/main/README.md) | [简体中文](https://github.com/yusong652/itasca-mcp/blob/main/README.zh-CN.md)\n\n[![PyPI](https://img.shields.io/pypi/v/itasca-mcp)](https://pypi.org/project/itasca-mcp/)\n[![Downloads](https://static.pepy.tech/badge/itasca-mcp)](https://pepy.tech/project/itasca-mcp)\n[![GitHub stars](https://img.shields.io/github/stars/yusong652/itasca-mcp)](https://github.com/yusong652/itasca-mcp/stargazers)\n[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)\n[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)\n\n`itasca>model new ;now, with LLM.`\n\n**itasca-mcp** connects AI agents to [ITASCA](https://www.itascacg.com/)'s numerical modeling software — PFC, FLAC, 3DEC, MPoint, and MassFlow — through the [Model Context Protocol](https://modelcontextprotocol.io/). Browse documentation, run simulations, and execute code, all through natural conversation. Pick the engine with the `software` parameter.\n\n`itasca>model solve ;LLM solves.`\n\n![itasca-mcp demo](https://raw.githubusercontent.com/yusong652/itasca-mcp/assets/itasca-mcp.gif)\n\n## Tools (10)\n\n**5 documentation tools** — browse and search the selected engine's commands, Python API, and reference docs (`software` parameter). No bridge required.\n\n**5 execution tools** — interactive REPL, task submission, progress monitoring, interruption, and history. Requires bridge.\n\n## First-time Setup\n\n### Prerequisites\n\n- **An ITASCA engine installed** — PFC, FLAC, 3DEC, MPoint, or MassFlow. 9.0+ recommended; PFC 6.0 / 7.0 and FLAC 7.0 are also supported.\n- **[uv](https://docs.astral.sh/uv/getting-started/installation/)** installed (for `uvx`)\n\n### Agentic Setup (Recommended)\n\nCopy this to your AI agent and let it self-configure:\n\n```text\nFetch and follow this bootstrap guide end-to-end:\nhttps://raw.githubusercontent.com/yusong652/itasca-mcp/main/docs/agentic/itasca-mcp-bootstrap.md\n```\n\n### Manual Setup\n\n**1. Register the MCP server** with your agent.\n\nMost agents register it with a single command:\n\n```bash\n# Claude Code\nclaude mcp add itasca-mcp -- uvx itasca-mcp\n\n# Codex / Codex-cli\ncodex mcp add itasca-mcp -- uvx itasca-mcp\n\n# Gemini CLI\ngemini mcp add itasca-mcp uvx itasca-mcp\n```\n\nOr fill in the MCP config file manually:\n\n```json\n{\n  \"mcpServers\": {\n    \"itasca-mcp\": {\n      \"command\": \"uvx\",\n      \"args\": [\"itasca-mcp\"]\n    }\n  }\n}\n```\n\n**2. Start the bridge from inside the ITASCA engine:**\n\nDownload [`addon.py`](addon.py), then use either of these two flows inside the engine GUI (PFC, FLAC, 3DEC, ...):\n\n- Copy the file contents into the engine's IPython console and run them\n- Or download the file and execute it in the engine GUI\n\n<img src=\"https://raw.githubusercontent.com/yusong652/itasca-mcp/assets/addon.gif\" alt=\"addon.py demo\" width=\"60%\">\n\n### Verify\n\nRestart your AI agent (Claude Code, Codex CLI, Gemini CLI, etc.) and ask it to call `itasca_execute_code` to verify the connection.\n\n## Daily Startup\n\nOnce first-time setup is done, each new engine session only needs the bridge re-started — run this in the engine's IPython console and you're back online:\n\n```python\nimport itasca_mcp_bridge\nitasca_mcp_bridge.start()\n```\n\n`start()` checks PyPI for a newer bridge release and self-upgrades before starting. The MCP client config persists.\n\n## Features\n\n- **Multi-engine corpus** - command, Python API, and reference docs for PFC, FLAC, 3DEC, MPoint, and MassFlow, selected via the required `software` parameter\n- **Multi-version support** - command docs across engine versions (PFC: 6.0/7.0/9.0, FLAC: 7.0/9.0) via the `version` parameter\n- **Hierarchical documentation browsing** - agents navigate the engine command tree to discover capabilities and boundaries, reducing hallucinated commands\n- **Enhanced plot documentation** - plot items reference docs supplementing the official documentation\n- **Interactive REPL** - rapid iteration before committing to full scripts; agents can quickly test and refine code\n- **Task lifecycle management** - submit long-running simulations, monitor progress, interrupt running tasks, and browse task history\n- **Multi-client compatible** - works with Claude Code, Codex CLI, Gemini CLI, GitHub Copilot CLI, OpenCode, toyoura-nagisa, and other MCP clients\n\n## Troubleshooting\n\nSee [Troubleshooting](docs/agentic/itasca-mcp-bootstrap.md#troubleshooting) in the bootstrap guide.\n\n## Development\n\nSee [Developer Guide: Install and Run from Source](docs/development/source-install.md).\n\n<a href=\"https://glama.ai/mcp/servers/yusong652/itasca-mcp\">\n  <img width=\"200\" height=\"105\" src=\"https://glama.ai/mcp/servers/yusong652/itasca-mcp/badge\" alt=\"itasca-mcp MCP server\" />\n</a>\n\n## Contributing\n\nPRs and issues are welcome! See the [Developer Guide](docs/development/source-install.md) to get started.\n\n## License\n\nMIT - see [LICENSE](LICENSE).\n\n<!-- mcp-name: io.github.yusong652/itasca-mcp -->\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

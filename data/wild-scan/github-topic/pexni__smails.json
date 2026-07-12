@@ -1,0 +1,41 @@
+{
+  "full_name": "pexni/smails",
+  "html_url": "https://github.com/pexni/smails",
+  "description": "Agent-native disposable email — Cloudflare Workers + Durable Objects, with CLI & MCP. https://smails.dev",
+  "topics": [
+    "ai-agents",
+    "cli",
+    "cloudflare-workers",
+    "disposable-email",
+    "durable-objects",
+    "email-api",
+    "mcp",
+    "model-context-protocol",
+    "temporary-email",
+    "throwaway-email"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 31,
+  "forks": 4,
+  "open_issues": 1,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-06-24T14:59:55Z",
+  "last_pushed_at": "2026-06-26T11:48:04Z",
+  "fetched_at": "2026-07-11T23:41:54.934Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# smails\n\n[![npm](https://img.shields.io/npm/v/@smails/cli?color=000&label=%40smails%2Fcli)](https://www.npmjs.com/package/@smails/cli)\n[![smails.dev](https://img.shields.io/badge/try-smails.dev-000)](https://smails.dev)\n[![MIT](https://img.shields.io/badge/license-MIT-000)](./LICENSE)\n\n**Disposable email for humans and AI agents.** An instant, anonymous throwaway inbox for sign-ups, one-time codes, and confirmations — with a REST API, a CLI, and an **MCP server**, so your AI agent can receive verification emails too. No signup, no password.\n\n→ **[smails.dev](https://smails.dev)** · `npx @smails/cli create`\n\n> Give your agent its own inbox: plug the MCP server into Claude, Cursor, or any MCP client and it can create a mailbox and read incoming mail (verification codes, magic links) on its own.\n\n## Features\n\n- **Instant inbox** — open the site and you have an address, zero clicks\n- **Real-time** — new mail arrives over WebSocket, no polling\n- **Built for agents** — REST API, CLI, and an MCP server share the same mailbox\n- **Multi-domain** — pick from configurable receiving domains\n- **Self-cleaning** — mailboxes auto-expire after 7 days of inactivity\n- **Serverless** — Cloudflare Workers + Durable Objects (one DO per mailbox, SQLite storage)\n\n## Quick start\n\n### Web\n\nVisit **[smails.dev](https://smails.dev)** — an inbox is created for you on first load.\n\n### CLI\n\n```bash\nnpx @smails/cli create      # create a mailbox (token saved to ~/.smails)\nnpx @smails/cli inbox       # list messages\nnpx @smails/cli read <id>   # read a message (id prefix is enough)\nnpx @smails/cli whoami      # show the current address\nnpx @smails/cli create --force  # replace with a fresh mailbox\n```\n\n### MCP (for AI agents)\n\nAdd the server to any MCP client (e.g. Claude Desktop, `~/.claude/mcp.json`):\n\n```json\n{\n  \"mcpServers\": {\n    \"smails\": { \"command\": \"npx\", \"args\": [\"@smails/cli\", \"mcp\"] }\n  }\n}\n```\n\nTools: `create_mailbox`, `list_messages`, `read_message`, `delete_message`, `get_address`.\n\n### REST API\n\n```bash\n# create a mailbox\ncurl -X POST https://smails.dev/api/mailbox\n# → { \"address\": \"...\", \"token\": \"...\" }\n\n# list messages with the returned token\ncurl https://smails.dev/api/mailbox/messages \\\n  -H \"Authorization: Bearer <token>\"\n```\n\n| Method | Path | Description |\n|--------|------|-------------|\n| `POST` | `/api/mailbox` | Create a mailbox → `{ address, token }` |\n| `GET` | `/api/mailbox/messages` | List messages |\n| `GET` | `/api/mailbox/messages/:id` | Read a message (full parsed body) |\n| `DELETE` | `/api/mailbox/messages/:id` | Delete a message |\n| `WS` | `/api/mailbox/connect?token=` | Stream new-mail notifications |\n\nAuthenticate every request (except create) with `Authorization: Bearer <token>`.\n\n## How it works\n\n```\nInbound mail ──▶ Cloudflare Email Routing (catch-all)\n                          │\n                          ▼\n                  Worker  email() handler ──┐\n                                            ▼\n   Web / CLI / MCP ──REST + WS──▶  Durable Object  (one per mailbox)\n                                   ├─ SQLite (messages)\n                                   ├─ token auth\n                                   └─ 7-day alarm → cleanup\n```\n\n- Each mailbox is a single **Durable Object**, addressed by its name; messages live in the DO's SQLite.\n- The token is `{address}.{secret}`; the Worker routes by address, the DO verifies the full token.\n- A 7-day alarm wipes inactive mailboxes; any activity renews it.\n\n## Project structure\n\n```\nfrontend/   React Router SPA (prerendered) — Tailwind v4 + shadcn\nworker/     Cloudflare Worker + Durable Objects — Hono routing, postal-mime parsing\ncli/        npm package — CLI + MCP server (@smails/cli)\n```\n\n## Development\n\nEach package is independent (pnpm). Install per package.\n\n```bash\n# frontend\ncd frontend && pnpm install && pnpm dev\n\n# worker (API + Durable Objects)\ncd worker && pnpm install && pnpm dev\n\n# cli / mcp\ncd cli && pnpm install && pnpm build\nSMAILS_API_URL=http://localhost:8787 node dist/index.js create\n```\n\n## Deployment\n\nThere are two independent release tracks — pushing to `main` ships the service, but **not** the CLI.\n\n**Worker + frontend** — auto-deployed by [Cloudflare Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/) on every push to `main` (the frontend builds to static assets the Worker serves). No manual step. To deploy by hand instead:\n\n```bash\ncd frontend && pnpm build         # → build/client\ncd ../worker && pnpm run deploy   # wrangler deploy — serves assets + API + DOs\n```\n\n**CLI (`@smails/cli`) + MCP server** — *not* auto-deployed; publishing is a separate, manual release:\n\n1. Bump the version in `cli/package.json` (npm rejects re-publishing an existing version).\n2. Push to `main`.\n3. `gh release create cli-vX.Y.Z --target main` — creating the GitHub Release triggers `.github/workflows/publish-cli.yml`, which publishes to npm and syncs the [MCP registry](https://registry.modelcontextprotocol.io) listing from `server.json`.\n\n> `server.json`'s `description` must be ≤ 100 characters or the MCP registry publish step 422s.\n\nReceiving mail uses Cloudflare Email Routing (catch-all → the Worker's `email` handler). Configure receiving domains via the `DOMAINS` var and the route in `worker/wrangler.jsonc`.\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": {
+    "path": "server.json",
+    "content": "{\n  \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json\",\n  \"name\": \"io.github.pexni/smails\",\n  \"title\": \"smails\",\n  \"description\": \"Free disposable email for AI agents: a throwaway inbox to read verification codes over MCP.\",\n  \"websiteUrl\": \"https://smails.dev\",\n  \"repository\": {\n    \"url\": \"https://github.com/pexni/smails\",\n    \"source\": \"github\",\n    \"subfolder\": \"cli\"\n  },\n  \"version\": \"0.0.10\",\n  \"packages\": [\n    {\n      \"registryType\": \"npm\",\n      \"registryBaseUrl\": \"https://registry.npmjs.org\",\n      \"identifier\": \"@smails/cli\",\n      \"version\": \"0.0.10\",\n      \"transport\": {\n        \"type\": \"stdio\"\n      },\n      \"packageArguments\": [\n        {\n          \"type\": \"positional\",\n          \"value\": \"mcp\"\n        }\n      ]\n    }\n  ]\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

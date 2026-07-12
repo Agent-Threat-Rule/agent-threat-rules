@@ -1,0 +1,33 @@
+{
+  "full_name": "StealthNinja1O1/Nyxal",
+  "html_url": "https://github.com/StealthNinja1O1/Nyxal",
+  "description": "Nyxal is a self-hosted runtime and dashboard for character-driven LLM bots on Discord. It runs multiple bots from a single process, configured entirely through a web UI, with everything persisted to SQLite.",
+  "topics": [
+    "ai",
+    "discord",
+    "discord-bot",
+    "llm",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 2,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "GPL-3.0",
+  "default_branch": "main",
+  "created_at": "2026-06-18T14:08:39Z",
+  "last_pushed_at": "2026-07-07T16:48:37Z",
+  "fetched_at": "2026-07-12T00:38:16.087Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Nyxal\n\nNyxal is a self-hosted runtime and dashboard for character-driven LLM bots on\nDiscord. It runs multiple bots from a single process, configured entirely through\na web UI, with everything persisted to SQLite.\n\nIt is a port of\n[CharacterDiscordBot](https://github.com/StealthNinja1O1/CharacterDiscordBot),\nrewritten on Bun with a full-stack dashboard and several extensions. Consider the old project archived.\n\n![Overview](Images/overview.webp)\n\n## What it is\n\nEach bot roleplays as a character defined by a definition (name,\ndescription, examples, depth prompt, lorebook). Responses come from any\nOpenAI-compatible API, including local LLMs. The bot uses a DIY tool-calling\nsystem that works with any model, not just tool-calling ones: the model returns\nstructured JSON with a reply and an optional list of commands (reactions,\nstickers, image generation, lorebook edits), which Nyxal executes on Discord.\n\nEdits apply to a running bot without a restart, and a websocket feed streams\nstatus, logs, and usage stats in real time.\n\n![Per-command control](Images/per-command-control.png)\n\n## Features\n\n### Bots and characters\n- Run multiple bots from one process, each with its own config and character\n- Smart triggers: mentions, character name, configured keywords, random replies\n- Token-aware context that trims history to fit the model's limit\n- Timestamps and Discord presence/activities optionally included in context\n- Channel allowlists and ignored-bot filters\n\n### Tools and commands\n- **Per-command control** - toggle each tool on or off per bot, override its\n  description, with sensible defaults\n- Reactions (unicode + custom server emojis), nicknames, stickers\n- Dynamic memory: the bot can create and update its own lorebook entries as it\n  learns, without touching the read-only static lorebook\n- Image generation via ComfyUI\n- Web search\n- MCP (Model Context Protocol) servers for extending the tool set over HTTP\n\n### Prompts and lorebooks\n- **Per-character system prompt override** - edit the built-in template per bot,\n  or load the default as a starting point\n- Static lorebook (read-only) merged with the bot's\n  dynamic memory book\n- Depth prompts injected near the end of history for high-priority instructions\n- Character Card V2 import\n\n### Dashboard\n- Live overview with status cards, a token-usage chart, and a log stream\n- Bot detail tabs: behavior, character, tools, lorebook, memory, extensions\n- Mobile-friendly UI\n- Log history restored on reconnect, filterable by level, with retention pruning\n- SQLite local database, just do not delete it yourself\n\n### Runtime\n- Hot-reload for behavior, temperature, model/provider swaps, character edits,\n  and tool toggles (no restart needed)\n- \"Restart required\" badge for token or intent changes that need a reconnect\n- Discord access abstracted behind an adapter so the library is swappable\n\n## Quick start (development)\n\nRequirements: [Bun](https://bun.com) and a Discord bot token.\n\n```bash\nbun install\nbun run dev        # server on :3000, vite on :5173\n```\n\nOpen http://localhost:5173. The dev server proxies API and WebSocket traffic to\nthe backend.\n\n## Deployment\n\nNyxal ships as a single self-contained binary or as a Docker image. See releases or the [Docker compose file](/docker-compose.yml)\n\nQuick reference:\n\n```bash\n# run the prebuilt binary\n./nyxal              # opens http://localhost:3000\n\n# build a single-file binary\nbun run compile\n\n# docker\ndocker compose up -d\n```\n\nConfiguration is via environment variables: `NYXAL_PORT`, `NYXAL_DB_PATH`,\n`NYXAL_LOG_RETENTION_DAYS`, `NYXAL_LOG_HISTORY`. See `.env.example`.\n\n## Tech stack\n\n- **Backend:** Bun, Elysia, Drizzle ORM, bun:sqlite, discord.js\n- **Frontend:** Vite, Preact, @preact/signals, wouter\n- **Tooling:** Drizzle migrations, WebSocket for live updates, MCP SDK for\n  extensible tools\n\n## License\n\nSee [LICENSE](./LICENSE)."
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

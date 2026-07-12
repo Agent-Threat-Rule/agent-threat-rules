@@ -1,0 +1,46 @@
+{
+  "full_name": "txn2/kubefwd",
+  "html_url": "https://github.com/txn2/kubefwd",
+  "description": "Bulk port forwarding Kubernetes services for local development.",
+  "topics": [
+    "api-rest",
+    "developer-tools",
+    "devops",
+    "devops-tools",
+    "devtools",
+    "k8s",
+    "kubefwd",
+    "kubernetes",
+    "kubernetes-clusters",
+    "kubernetes-namespace",
+    "mcp-server",
+    "networking",
+    "port-forward",
+    "port-forwarding",
+    "proxy"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 4138,
+  "forks": 229,
+  "open_issues": 7,
+  "language": "Go",
+  "license": "Apache-2.0",
+  "default_branch": "master",
+  "created_at": "2018-08-05T22:05:58Z",
+  "last_pushed_at": "2026-07-10T21:27:05Z",
+  "fetched_at": "2026-07-11T22:29:14.857Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# kubefwd (Kube Forward)\n\n![kubefwd - kubernetes bulk port forwarding](kubefwd-mast2.jpg)\n\n[![CNCF Landscape](https://img.shields.io/badge/CNCF%20Landscape-5699C6?logo=cncf&logoColor=fff)](https://landscape.cncf.io/?item=app-definition-and-development--application-definition-image-build--kubefwd)\n[![GitHub license](https://img.shields.io/github/license/txn2/kubefwd.svg)](https://github.com/txn2/kubefwd/blob/master/LICENSE)\n[![codecov](https://codecov.io/gh/txn2/kubefwd/branch/master/graph/badge.svg)](https://codecov.io/gh/txn2/kubefwd)\n[![Go Report Card](https://goreportcard.com/badge/github.com/txn2/kubefwd)](https://goreportcard.com/report/github.com/txn2/kubefwd)\n[![GitHub release](https://img.shields.io/github/release/txn2/kubefwd.svg)](https://github.com/txn2/kubefwd/releases)\n[![GitHub Downloads](https://img.shields.io/github/downloads/txn2/kubefwd/total)](https://github.com/txn2/kubefwd/releases)\n[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/txn2/kubefwd/badge)](https://scorecard.dev/viewer/?uri=github.com/txn2/kubefwd)\n[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/11659/badge)](https://www.bestpractices.dev/projects/11659)\n[![SLSA 3](https://slsa.dev/images/gh-badge-level3.svg)](https://slsa.dev)\n\n\n**[Documentation](https://kubefwd.com)** | **[Getting Started](https://kubefwd.com/getting-started/)** | **[User Guide](https://kubefwd.com/user-guide/)** | **[API Reference](https://kubefwd.com/api-reference/)** | **[MCP (AI Integration)](https://kubefwd.com/mcp-integration/)**\n\n## Develop Locally, Connect to Kubernetes\n\n**kubefwd** enables developers to work on their local machine while seamlessly accessing services running in a Kubernetes cluster. If you're building a new API that needs to connect to a database at `db:5432`, an auth service at `auth:443`, and a cache at `redis:6379`, all running in your development cluster, kubefwd makes them available locally by their service names, exactly as they would appear in-cluster. No environment-specific configuration, no local service setup, no Docker Compose files. Just run `kubefwd` and your application's existing connection strings work.\n\nThis is the essential use case: **reduce or eliminate environment-specific connection setup and configurations** during local development. Your code uses `http://api-gateway:8080` in production? It works the same way on your laptop with kubefwd.\n\n> Bulk Kubernetes port forwarding with an interactive TUI, unique IPs per service, and automatic reconnection.\n\n**kubefwd** is a command-line utility that bulk port forwards Kubernetes services to your local workstation. Each service gets its own unique loopback IP (127.x.x.x), eliminating port conflicts and enabling realistic local development with cluster services accessible by name.\n\n![kubefwd TUI - Main View](docs/images/tui-110-main-active.png)\n\n## Quick Start\n\n```bash\n# Install (macOS)\nbrew install kubefwd\n\n# Forward all services in a namespace with the interactive TUI\nsudo -E kubefwd svc -n my-namespace --tui\n```\n\nPress `?` for help, `q` to quit. See [Getting Started](https://kubefwd.com/getting-started/) for detailed installation and setup.\n\n## How It Works\n\n<div align=\"center\">\n  <img width=\"654\" alt=\"kubefwd - Kubernetes Port Forward Diagram\" src=\"https://mk.imti.co/images/content/kubefwd-net.png\">\n</div>\n\nkubefwd discovers services in your namespace, assigns each a unique loopback IP, updates `/etc/hosts` with service names, and establishes port forwards through the Kubernetes API. Access services by name just like in-cluster:\n\n```bash\ncurl http://api-service:8080\nmysql -h database -P 3306\nredis-cli -h cache -p 6379\n```\n\n## Features\n\n- **Interactive TUI**: Real-time service monitoring with traffic metrics\n- **Unique IP per Service**: Each service gets its own 127.x.x.x address\n- **Auto-Reconnect**: Reconnects when pods restart or connections drop\n- **Bulk Forwarding**: Forward all services in a namespace with one command\n- **Live Traffic Monitoring**: See bytes in/out and HTTP activity\n- **Pod Log Streaming**: View container logs in the TUI\n- **REST API**: Programmatic control via HTTP endpoints\n- **MCP Support**: Integration with AI assistants (Claude Code, Cursor)\n\n## Installation\n\n**macOS:**\n```bash\nbrew install kubefwd\n```\n\n**Linux:** Download `.deb`, `.rpm`, or `.tar.gz` from [releases](https://github.com/txn2/kubefwd/releases)\n\n**Windows:**\n```powershell\nwinget install txn2.kubefwd\n# or\nscoop install kubefwd\n```\n\n**Docker:**\n```bash\ndocker run -it --rm --privileged \\\n  -v \"$HOME/.kube:/root/.kube:ro\" \\\n  txn2/kubefwd services -n my-namespace --tui\n```\n\n## Usage\n\n```bash\n# Interactive mode (recommended)\nsudo -E kubefwd svc -n default --tui\n\n# Multiple namespaces\nsudo -E kubefwd svc -n default,staging --tui\n\n# Filter by label\nsudo -E kubefwd svc -n default -l app=api --tui\n\n# With REST API enabled\nsudo -E kubefwd svc -n default --tui --api\n```\n\n## Why kubefwd?\n\nUnlike `kubectl port-forward`, kubefwd:\n\n| Feature | kubectl port-forward | kubefwd |\n|---------|---------------------|---------|\n| Services per command | One | All in namespace |\n| IP allocation | localhost only | Unique IP per service |\n| Port conflicts | Manual management | None (unique IPs) |\n| Service name resolution | Not supported | Automatic (/etc/hosts) |\n| Auto-reconnect | No | Yes |\n| Real-time monitoring | No | TUI with metrics |\n\nSee [Comparison](https://kubefwd.com/comparison/) for detailed comparisons with Telepresence, mirrord, and other tools.\n\n## Documentation\n\nFull documentation at **[kubefwd.com](https://kubefwd.com)**:\n\n- [Getting Started](https://kubefwd.com/getting-started/) - Installation and setup\n- [User Guide](https://kubefwd.com/user-guide/) - Interface and shortcuts\n- [Configuration](https://kubefwd.com/configuration/) - CLI options\n- [Advanced Usage](https://kubefwd.com/advanced-usage/) - Multi-cluster, selectors\n- [REST API](https://kubefwd.com/api-reference/) - API reference\n- [MCP Integration](https://kubefwd.com/mcp-integration/) - AI assistant setup\n- [Troubleshooting](https://kubefwd.com/troubleshooting/) - Common issues\n- [Architecture](https://kubefwd.com/architecture/) - Technical details\n- [Comparison](https://kubefwd.com/comparison/) - vs Telepresence, mirrord\n\n## Requirements\n\n- kubectl configured with cluster access\n- Root/sudo access (for /etc/hosts and network interfaces)\n\n## Contributing\n\nWe welcome contributions for bug fixes, tests, and documentation. Feature development is limited to maintainers. See [CONTRIBUTING.md](CONTRIBUTING.md).\n\n## License\n\n[Apache License 2.0](LICENSE)\n\n---\n\nOpen source by [Craig Johnston](https://twitter.com/cjimti), sponsored by [Deasil Works, Inc.](https://deasil.works/)\n"
+  },
+  "descriptor_file": {
+    "path": "server.json",
+    "content": "{\n  \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json\",\n  \"name\": \"io.github.txn2/kubefwd\",\n  \"description\": \"Kubernetes port forwarding for local development with automatic /etc/hosts entries.\",\n  \"repository\": {\n    \"url\": \"https://github.com/txn2/kubefwd\",\n    \"source\": \"github\"\n  },\n  \"version\": \"0.0.0\",\n  \"packages\": [\n    {\n      \"registryType\": \"mcpb\",\n      \"identifier\": \"https://github.com/txn2/kubefwd/releases/download/v0.0.0/kubefwd-0.0.0-darwin-arm64.mcpb\",\n      \"fileSha256\": \"PLACEHOLDER_SHA256\",\n      \"transport\": {\n        \"type\": \"stdio\"\n      }\n    },\n    {\n      \"registryType\": \"mcpb\",\n      \"identifier\": \"https://github.com/txn2/kubefwd/releases/download/v0.0.0/kubefwd-0.0.0-darwin-amd64.mcpb\",\n      \"fileSha256\": \"PLACEHOLDER_SHA256\",\n      \"transport\": {\n        \"type\": \"stdio\"\n      }\n    },\n    {\n      \"registryType\": \"mcpb\",\n      \"identifier\": \"https://github.com/txn2/kubefwd/releases/download/v0.0.0/kubefwd-0.0.0-windows-amd64.mcpb\",\n      \"fileSha256\": \"PLACEHOLDER_SHA256\",\n      \"transport\": {\n        \"type\": \"stdio\"\n      }\n    }\n  ],\n  \"tags\": [\n    \"kubernetes\",\n    \"k8s\",\n    \"port-forward\",\n    \"development\",\n    \"microservices\",\n    \"devops\"\n  ]\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

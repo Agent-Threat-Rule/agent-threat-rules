@@ -1,0 +1,34 @@
+{
+  "full_name": "Nex-Z/Synapse",
+  "html_url": "https://github.com/Nex-Z/Synapse",
+  "description": "Synapse 是一个零侵入的 API 适配层，它能直接解析 OpenAPI/Swagger 文档，动态生成符合 Model Context Protocol (MCP) 规范的服务端点。无需修改业务逻辑，无需迁移网关，一行命令，让 AI 立即拥有操作现有业务系统的能力。",
+  "topics": [
+    "gateway",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "openapi",
+    "swagger"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2025-12-24T16:15:08Z",
+  "last_pushed_at": "2026-03-04T14:04:21Z",
+  "fetched_at": "2026-07-12T00:21:06.092Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Synapse\n\n**让你传统项目上的 REST API 秒变 MCP Servers**\n\n[简体中文](README.md) | [English](README_en.md)\n\nSynapse 是一个零侵入的 API 适配层，它能直接解析 OpenAPI/Swagger 文档，动态生成符合 Model Context Protocol (MCP)\n规范的服务端点。无需修改业务逻辑，无需迁移网关，一行命令，让 AI 智能体立即拥有操作现有业务系统的能力。\n\n---\n\n## 🚀 为什么选择 Synapse?\n\n- **🤝 广泛的生态兼容**。 只要有 Swagger/OpenAPI 文档，就可以无缝接入。\n\n- **🔌 告别繁琐的手动封装**。快速地将服务中的接口，自由组合成一个立马可用的 MCP Server。\n\n- **🛡️ 零侵入式架构**。 不需要迁移网关，也不需要修改现有业务代码。它像一个“旁路挂件”，你的架构无需为 AI 做出伤筋动骨的改造。\n\n- **⚡️ 极速与轻量化**。没有复杂的外部依赖，也无需部署沉重的网关服务。\n\n## ✨ 核心特性\n\n* **动态协议转换**: 实时将 OpenAPI Schema 转换为 MCP 工具定义，自动处理复杂参数和引用。\n* **可视化管理控制台**: 基于 Vue 3 + Naive UI 构建的现代化响应式仪表板，用于管理微服务、编排工具包和监控系统状态。\n* **逻辑编排**:\n    * **组合 (Combinations)**: 将来自不同服务的特定端点分组为逻辑单元 (例如，“客户支持工具包”)。\n    * **MCP 服务 (MCP Servers)**: 将组合打包成具有唯一前缀的独立 MCP 服务端点 (例如 `http://.../mcp/finance`)。\n* **实时更新**: 基于 SSE 的通知机制确保连接的 AI 客户端即时收到工具列表变更，无需轮询或重启。\n* **强大的安全性**: 管理接口采用 RBAC 和 JWT 认证 (`admin`/`user` 角色)，同时保持 MCP 协议端点针对 Agent 访问的优化与开放。\n* **灵活的持久化**: 开箱即用的 SQLite 零配置设置，并通过 SQLAlchemy 和 Alembic 轻松扩展支持企业级 SQL 数据库。\n\n## 🛠️ 技术栈\n\n* **后端**: Python 3.12+, FastAPI\n* **前端**: Vue 3, TypeScript, Vite, Naive UI\n* **协议**: Model Context Protocol (MCP) v1 (HTTP + SSE 传输)。\n\n## 演示\n\n<img src=\"docs/home.png\" alt=\"首页\">\n<img src=\"docs/server_manager.png\" alt=\"服务管理\">\n<img src=\"docs/mcp_combination.png\" alt=\"MCP 组合\">\n<img src=\"docs/mcp_manager.png\" alt=\"MCP 管理\">\n\n## 🐳 Docker 一键部署\n\n```bash\n# 克隆项目\ngit clone https://github.com/yourname/Synapse.git\ncd Synapse\n\n# 一键启动\ndocker compose up -d\n\n# 访问 http://localhost:8000\n# 默认账户: admin / admin123\n```\n\n---\n\n## ⚡ 快速开始\n\n### 前置条件\n\n* **Python 3.12+** (推荐使用 `uv` 包管理器)\n* **Node.js 20+** (推荐使用 `pnpm`)\n\n### 1. 后端设置\n\n```bash\ncd backend\nuv sync\n\n# 默认管理员账户: admin / admin123\nuv run uvicorn main:app --reload --host 0.0.0.0 --port 8000\n```\n\n### 2. 前端设置\n\n```bash\ncd frontend\npnpm install\npnpm run dev\n```\n\n访问管理控制台：`http://localhost:5173`。\n\n## 🔌 客户端集成\n\n只需几秒钟即可将您的 AI 工具连接到 Synapse 的 MCP Severs。\n\n**端点格式:** `http://ip:port/mcp/{server_prefix}`\n\n### MCP 配置\n\n将以下内容添加到您的 MCP 设置中：\n\n```json\n{\n  \"mcpServers\": {\n    \"name-prefix\": {\n      \"type\": \"sse\",\n      \"url\": \"http://ip:port/mcp/synapse\"\n    }\n  }\n}\n```\n\n*注意: 请将 URL 中的 `synapse` 替换为您在 Synapse 仪表板中创建的 MCP 服务的具体前缀。*\n\n---\n\n## 🗺️ Roadmap\n\n- [x] OpenAPI 3.0 / Swagger 2.0 解析支持\n\n- [x] 可视化服务编排\n\n- [x] 编排即 MCP 服务\n\n- [x] 多数据库持久化支持\n\n- [x] Docker 一键部署镜像\n\n- [x] 支持更多鉴权方式 (API Key, Basic Auth, OAuth2)\n\n- [ ] 智能参数解析优化\n\n## ❓ FAQ\n\nQ: 这和 Nacos3.X / Higress 有什么区别？\n> A: 定位不同。 Nacos/Higress 是重型基础设施网关，解决的是服务治理和高并发流量。Synapse 是轻量级适配器，解决的是“怎么让已有项目\n> api 如何快速成为 Ai Tool ”的问题。Synapse 可以在你本地运行，无需改动现有基建。\n\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

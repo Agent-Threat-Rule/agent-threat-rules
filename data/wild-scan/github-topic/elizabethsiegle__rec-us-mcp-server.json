@@ -1,0 +1,44 @@
+{
+  "full_name": "elizabethsiegle/rec-us-mcp-server",
+  "html_url": "https://github.com/elizabethsiegle/rec-us-mcp-server",
+  "description": "Book a San Francisco tennis court via MCP server w/ auth",
+  "topics": [
+    "browser-rendering",
+    "cloudflare",
+    "cloudflare-browser-rendering",
+    "cloudflare-mcp",
+    "cloudflare-mcp-servers",
+    "cloudflare-workers",
+    "cloudflare-workers-ai",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "model-context-protocol",
+    "model-context-protocol-servers",
+    "modelcontextprotocol",
+    "stytch",
+    "stytch-auth",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 10,
+  "forks": 6,
+  "open_issues": 2,
+  "language": "TypeScript",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-07-24T17:31:30Z",
+  "last_pushed_at": "2025-08-27T23:17:57Z",
+  "fetched_at": "2026-07-11T23:56:23.624Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# SF Tennis Court Booking via Cloudflare MCP Server\n<img width=\"1079\" height=\"960\" alt=\"image\" src=\"https://github.com/user-attachments/assets/bbec40bb-2ac0-475b-ba31-03a6529fba03\" />\n\n\nAutomate tennis court bookings on San Francisco Recreation websites using a Cloudflare MCP (Model Context Protocol) server with browser automation. Never miss your favorite court and court time again! \n\nIt uses [Stytch](https://stytch.com) to authenticate the server so only certain emails (like mine) can book a court (in my name.)\n\n## Demo Video\n📹 [Watch the demo and a brief project explanation on YouTube](https://youtu.be/6s5f_25_qWI)\n\n## What This Does\n\nThis MCP server has **3 tennis booking tools**:\n\n- **Check Court Availability** - See available time slots for any court/date\n- **Book Court & Request SMS** - Automate booking flow up to SMS verification  \n- **Complete Booking with SMS** - Finish booking by entering your SMS code\n\n## Quick Deploy\n\n[![Deploy to Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/ai/tree/main/demos/remote-mcp-authless)\n\nThis will deploy your tennis booking MCP server to: `tennis-booking.<your-account>.workers.dev/sse`\n\nAlternatively, clone and deploy locally:\n```bash\nnpm create cloudflare@latest -- tennis-booking-mcp --template=cloudflare/ai/demos/remote-mcp-authless\n```\n\n## How the tennis booking works\n\n1. Check what's available:\n\n```javascript\ncheck_tennis_courts({\n  court: \"Alice Marble\", \n  date: \"2025-07-29\", \n  time: \"12:00 PM\"\n})\n```\n\n2. Start booking process (stops at SMS step)\n\n```javascript\nbook_and_request_sms({\n  court: \"Alice Marble\",\n  time: \"12:00 PM\", \n  date: \"2025-07-29\"\n})\n```\n\n3. Manual SMS + Automated Completion (User gets verification code from rec.us, types it in to MCP server message, this tool then runs)\n```javascript\nenter_sms_code_and_complete({code: \"123456\"})\n```\n\n## Setup Requirements\nYou need secrets for your Cloudflare Worker/MCP server:\n```bash\nREC_EMAIL=your-sf-rec-email@example.com\nREC_PASSWORD=your-sf-rec-password\n```\nYour wrangler.jsonc should have: \n```jsonc\n\"ai\": {\n\t\t\"binding\": \"AI\"\n\t},\n\t\"browser\": {\n\t\t\"binding\": \"MYBROWSER\"\n\t},\n```\n\n## Connect to MCP Clients\n1. Cloudflare LLM Playground\n\nGo to https://playground.ai.cloudflare.com/\nEnter your MCP server URL: `tennis-booking.<your-account>.workers.dev/sse`\nStart booking courts with natural language!\n\n2. Claude Desktop\nInstall the [mcp-remote proxy](https://www.npmjs.com/package/mcp-remote) and update Claude Desktop's config:\n```json\n{\n  \"mcpServers\": {\n    \"tennis-booking\": {\n      \"command\": \"npx\",\n      \"args\": [\n        \"mcp-remote\", \n        \"https://tennis-booking.<your-account>.workers.dev/sse\"\n      ]\n    }\n  }\n}\n```\nNow you can chat with Claude: \"Book Alice Marble court for tomorrow at 2 PM\" and it will handle the entire process!\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

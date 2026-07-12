@@ -1,0 +1,34 @@
+{
+  "full_name": "KorigamiK/markitdown_mcp_server",
+  "html_url": "https://github.com/KorigamiK/markitdown_mcp_server",
+  "description": "A Model Context Protocol (MCP) server that converts various file formats to Markdown using the MarkItDown utility.",
+  "topics": [
+    "mcp",
+    "mcp-server",
+    "python"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 85,
+  "forks": 17,
+  "open_issues": 2,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-01-28T13:38:06Z",
+  "last_pushed_at": "2025-12-21T14:18:32Z",
+  "fetched_at": "2026-07-11T23:06:14.940Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MarkItDown MCP Server\n\n[![smithery badge](https://smithery.ai/badge/@KorigamiK/markitdown_mcp_server)](https://smithery.ai/server/@KorigamiK/markitdown_mcp_server)\n\nA Model Context Protocol (MCP) server that converts various file formats to Markdown using the MarkItDown utility.\n\n<a href=\"https://glama.ai/mcp/servers/sbc6bljjg5\"><img width=\"380\" height=\"200\" src=\"https://glama.ai/mcp/servers/sbc6bljjg5/badge\" alt=\"MarkItDown Server MCP server\" /></a>\n\n## Supported Formats\n\n- PDF\n- PowerPoint\n- Word\n- Excel\n- Images (EXIF metadata and OCR)\n- Audio (EXIF metadata and speech transcription)\n- HTML\n- Text-based formats (CSV, JSON, XML)\n- ZIP files (iterates over contents)\n\n## Installation\n\n### Installing via Smithery\n\nTo install MarkItDown MCP Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@KorigamiK/markitdown_mcp_server):\n\n```bash\nnpx -y @smithery/cli install @KorigamiK/markitdown_mcp_server --client claude\n```\n\n### Manual Installation\n\n1. Clone this repository\n2. Install dependencies:\n```bash\nuv install\n```\n\n## Usage\n\n### As MCP Server\n\nThe server can be integrated with any MCP client. Here are some examples:\n\n#### Zed Editor\n\nAdd the following to your `settings.json`:\n\n```json\n\"context_servers\": {\n  \"markitdown_mcp\": {\n    \"settings\": {},\n    \"command\": {\n      \"path\": \"uv\",\n      \"args\": [\n        \"--directory\",\n        \"/path/to/markitdown_mcp_server\",\n        \"run\",\n        \"markitdown-mcp\"\n      ]\n    }\n  }\n}\n```\n\n### Commands\n\nThe server responds to the following MCP commands:\n\n- `/md <file>` - Convert the specified file to Markdown\n\nExample:\n```bash\n/md document.pdf\n```\n\n## Supported MCP Clients\n\nWorks with any MCP-compliant client listed at [modelcontextprotocol.io/clients](https://modelcontextprotocol.io/clients), including:\n\n- Zed Editor\n- Any other MCP-compatible editors and tools\n\n## License\n\nMIT License. See [LICENSE](LICENSE) for details.\n\n## Acknowledgements\n\nhttps://github.com/microsoft/markitdown#readme\n"
+  },
+  "descriptor_file": {
+    "path": "smithery.yaml",
+    "content": "# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml\n\nstartCommand:\n  type: stdio\n  configSchema:\n    # JSON Schema defining the configuration options for the MCP.\n    type: object\n    properties: {}\n  commandFunction:\n    # A function that produces the CLI command to start the MCP on stdio.\n    |-\n    () => ({command:'uv',args:['--directory', '/app', 'run', 'markitdown-mcp']})\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

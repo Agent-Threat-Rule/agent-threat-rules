@@ -1,0 +1,41 @@
+{
+  "full_name": "aza-ali/turbowebfetch",
+  "html_url": "https://github.com/aza-ali/turbowebfetch",
+  "description": "🌐 Real-browser web fetching for AI agents.",
+  "topics": [
+    "agentic-ai",
+    "ai-agents",
+    "anthropic",
+    "browser-automation",
+    "chrome",
+    "claude-code",
+    "llm-tools",
+    "mcp",
+    "mcp-server",
+    "npm-package",
+    "playwright",
+    "typescript",
+    "web-scraping"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 90,
+  "forks": 1,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-03-28T03:38:44Z",
+  "last_pushed_at": "2026-05-15T17:28:46Z",
+  "fetched_at": "2026-07-11T23:04:10.597Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# TurboWebFetch\n\n[![npm version](https://img.shields.io/npm/v/turbowebfetch?style=flat-square&logo=npm&logoColor=white)](https://www.npmjs.com/package/turbowebfetch)\n[![npm downloads](https://img.shields.io/npm/dt/turbowebfetch?style=flat-square&logo=npm&logoColor=white)](https://www.npmjs.com/package/turbowebfetch)\n[![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)\n[![GitHub stars](https://img.shields.io/github/stars/aza-ali/turbowebfetch?style=flat-square&logo=github)](https://github.com/aza-ali/turbowebfetch/stargazers)\n\n**Real browsers. Real content. Full fidelity.**\n\nYour AI agents need to read web pages. Documentation, product info, articles, research. But standard fetch tools use plain HTTP - they cannot handle modern client-side rendering or bot mitigation layers, and return empty shells.\n\nTurboWebFetch runs actual Chrome browsers. Your agents see what users see.\n\n**14 parallel browsers. Zero API keys. Runs locally.**\n\n---\n\n## Prerequisites\n\nBefore installing, verify you have:\n\n```bash\nnode --version    # Need 18+\npython3 --version # Need 3.8+\n```\n\nGoogle Chrome must be installed (not Chromium).\n\n---\n\n## Quick Start\n\n```bash\nclaude mcp add turbowebfetch npx turbowebfetch\n```\n\nThat's it. Your agents now have access to the `fetch` and `fetch_batch` tools.\n\n---\n\n## What This Is (And Isn't)\n\nTurboWebFetch helps your AI agents access content **you have the right to access**. It renders JavaScript-heavy pages that standard tools cannot handle.\n\n**It is for:**\n- Fetching documentation that requires JS rendering (React, Stripe, etc.)\n- Product research on e-commerce sites\n- Reading articles and news behind JS walls\n- Multi-source research for your AI agents\n\n**It is not for:**\n- Circumventing paywalls\n- Scraping data you don't have permission to collect\n- High-volume data harvesting (rate-limited by design)\n- Violating websites' Terms of Service\n\nThe challenge-handling exists because many legitimate sites use broad bot mitigation that affects even authorized access. If a site restricts access and you don't have permission, respect that.\n\n---\n\n## WebFetch vs TurboWebFetch\n\n| Scenario | WebFetch | TurboWebFetch |\n|----------|----------|---------------|\n| Static HTML pages | Works | Works (overkill) |\n| JavaScript SPAs | Empty content | Full render |\n| Sites with JS challenges | Fails | Negotiates automatically |\n| Bot mitigation layers | Fails | Negotiates automatically |\n| Parallel agents | One at a time | 14 simultaneous browsers |\n| JS-heavy sites (docs, e-commerce) | Blocked or empty | Works |\n\n**Rule of thumb:** Use WebFetch for simple pages. Use TurboWebFetch when that fails.\n\n---\n\n## Usage\n\n**Single page:**\n```\nmcp__turbowebfetch__fetch(url: \"https://react.dev/learn\", format: \"markdown\")\n```\n\n**Response:**\n```json\n{\n  \"success\": true,\n  \"url\": \"https://react.dev/learn\",\n  \"title\": \"Quick Start - React\",\n  \"content\": \"# Quick Start\\n\\nWelcome to the React documentation...\",\n  \"status\": 200\n}\n```\n\n**Batch (parallel):**\n```\nmcp__turbowebfetch__fetch_batch(\n  urls: [\n    \"https://react.dev/learn\",\n    \"https://nextjs.org/docs\",\n    \"https://www.target.com/p/some-product\"\n  ],\n  format: \"text\"\n)\n```\n\nAll three fetch simultaneously in separate browsers.\n\n---\n\n## Parameters\n\n| Parameter | Default | Description |\n|-----------|---------|-------------|\n| `url` | required | The URL to fetch |\n| `format` | `\"text\"` | `\"text\"`, `\"markdown\"`, or `\"html\"` |\n| `timeout` | `60000` | Milliseconds. Increase to 90000+ for slow sites |\n| `wait_for` | - | CSS selector to wait for (rarely needed) |\n\nThe tool auto-detects when content has loaded. Use `wait_for` only if auto-detection fails on a specific site.\n\n---\n\n## Known Limitations\n\n**Sites that don't work:**\n- **Login-required content** - This tool doesn't handle authentication\n- **Interactive CAPTCHAs** - It handles JS challenges, not image selection tasks\n- **Zillow** - Requires interactive verification\n- **Bloomberg** - Requires interactive verification\n\n**Performance:**\n- Adds 5-10 seconds per page (browser startup + rendering + human-like behavior)\n- Memory usage: ~200-400MB per browser instance\n- For 14 parallel fetches, expect ~4GB RAM usage\n\n**Not for scale:** This is a user assistant, not a scraping service. Rate-limited to 60 requests/minute per domain.\n\n---\n\n## Configuration\n\nOptional environment variables:\n\n| Variable | Default | Description |\n|----------|---------|-------------|\n| `TURBOFETCH_MAX_PROCESSES` | `14` | Max concurrent browsers |\n| `TURBOFETCH_HUMAN_MODE` | `true` | Human-like scrolling/delays |\n| `TURBOFETCH_HEADLESS` | `true` | Headless mode (auto-switches if blocked) |\n\nMost users won't need to change these.\n\n---\n\n## Troubleshooting\n\n**\"Python not found\"**\n```bash\n# macOS\nbrew install python3\n\n# Ubuntu/Debian\nsudo apt install python3 python3-venv\n```\n\n**\"Chrome not launching\"**\n\nInstall Google Chrome from https://google.com/chrome (not Chromium).\n\n**\"Content is empty\"**\n\nSome heavily lazy-loaded sites need an explicit selector:\n```\nmcp__turbowebfetch__fetch(\n  url: \"https://www.bestbuy.com/site/searchpage.jsp?st=laptop\",\n  wait_for: \"[class*=\\\"product\\\"]\",\n  timeout: 90000\n)\n```\n\n**\"Page not loading on [site]\"**\n\nSome sites require interactive verification that automated browsers cannot complete. Open an issue with the URL.\n\n---\n\n## How It Works\n\n1. Your agent calls the MCP tool\n2. TurboWebFetch spawns a Python process with Chrome (via nodriver)\n3. Chrome loads the page, executes JavaScript, negotiates any browser challenges\n4. Content is extracted and returned as clean text/markdown/HTML\n5. Browser closes, process exits\n\nEach fetch is isolated. No cookies or state persist between requests.\n\n---\n\n## Development\n\nClone and build locally:\n\n```bash\ngit clone https://github.com/aza-ali/turbowebfetch.git\ncd turbowebfetch\nnpm install\nnpm run build\n```\n\nPython setup (virtual environment + nodriver) runs automatically during `npm install`. If it fails, run manually:\n\n```bash\nnpm run setup:python\n```\n\nThen register with Claude Code:\n\n```bash\nclaude mcp add turbowebfetch node /path/to/turbowebfetch/dist/index.js\n```\n\n---\n\n## License\n\nMIT License. See [LICENSE](./LICENSE) for details.\n\nCopyright (c) 2026 [Mourtaza Ali](https://mourtaza.com)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

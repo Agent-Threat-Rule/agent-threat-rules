@@ -1,0 +1,37 @@
+{
+  "full_name": "seekrays/mcp-monitor",
+  "html_url": "https://github.com/seekrays/mcp-monitor",
+  "description": "A system monitoring tool that exposes system metrics via the Model Context Protocol (MCP). This tool allows LLMs to retrieve real-time system information through an MCP-compatible interface.",
+  "topics": [
+    "computer",
+    "mcp",
+    "mcp-server",
+    "monitor",
+    "monitoring",
+    "pc-monitor",
+    "system-monitoring"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 87,
+  "forks": 17,
+  "open_issues": 0,
+  "language": "Go",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2025-03-19T06:05:52Z",
+  "last_pushed_at": "2025-08-02T15:13:23Z",
+  "fetched_at": "2026-07-11T23:05:27.186Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP System Monitor\n![Go](https://github.com/seekrays/mcp-monitor/actions/workflows/go.yml/badge.svg)\n![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/seekrays/mcp-monitor?sort=semver)\n[![Discord](https://img.shields.io/badge/Discord-Join%20Chat-blue?style=flat&logo=discord)](https://discord.gg/kbMJ9Qpf)\n\nA system monitoring tool that exposes system metrics via the Model Context Protocol (MCP). This tool allows LLMs to retrieve real-time system information through an MCP-compatible interface.\n\n![](./doc/snapshot-1.png)\n\n## Features\n\nThis tool provides the following monitoring capabilities:\n\n- **CPU Information**: Usage percentage, core count, and detailed CPU info\n- **Memory Information**: Virtual and swap memory usage\n- **Disk Information**: Disk usage, partitions, and I/O statistics\n- **Network Information**: Network interfaces, connections, and traffic statistics\n- **Host Information**: System details, uptime, boot time, and users\n- **Process Information**: Process listing, sorting, and detailed per-process statistics\n\n\n## Available Tools\n\n### 1. CPU Information\n\n```\nTool: get_cpu_info\nDescription: Get CPU information and usage\nParameters:\n  - per_cpu (boolean, default: false): Whether to return data for each core\n```\n\n### 2. Memory Information\n\n```\nTool: get_memory_info\nDescription: Get system memory usage information\nParameters: None\n```\n\n### 3. Disk Information\n\n```\nTool: get_disk_info\nDescription: Get disk usage information\nParameters:\n  - path (string, default: \"/\"): Specify the disk path to query\n  - all_partitions (boolean, default: false): Whether to return information for all partitions\n```\n\n### 4. Network Information\n\n```\nTool: get_network_info\nDescription: Get network interface and traffic information\nParameters:\n  - interface (string, optional): Specify the network interface name to query\n```\n\n### 5. Host Information\n\n```\nTool: get_host_info\nDescription: Get host system information\nParameters: None\n```\n\n### 6. Process Information\n\n```\nTool: get_process_info\nDescription: Get process information\nParameters:\n  - pid (number, optional): Process ID to get detailed information for a specific process\n  - limit (number, default: 10): Limit the number of processes returned\n  - sort_by (string, default: \"cpu\"): Sort field (cpu, memory, pid, name)\n```\n\n\n## Installation\n\n```bash\ngit clone https://github.com/seekrays/mcp-monitor.git\ncd mcp-monitor\nmake build\n```\n\n## Usage\n\nRun the compiled binary:\n\n```bash\n./mcp-monitor\n```\n\nThe server starts in stdio mode, ready to communicate with an MCP-compatible LLM client.\n\n\n## Contributing\n\nContributions are welcome! Please feel free to submit a Pull Request. "
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "main.go",
+    "size": 1695,
+    "content": "package main\n\nimport (\n\t\"flag\"\n\t\"fmt\"\n\t\"log\"\n\n\t\"github.com/mark3labs/mcp-go/server\"\n\t\"github.com/seekrays/mcp-monitor/cpu\"\n\t\"github.com/seekrays/mcp-monitor/disk\"\n\t\"github.com/seekrays/mcp-monitor/host\"\n\t\"github.com/seekrays/mcp-monitor/memory\"\n\t\"github.com/seekrays/mcp-monitor/network\"\n\t\"github.com/seekrays/mcp-monitor/process\"\n)\n\nfunc main() {\n\t// Create MCP server\n\ts := server.NewMCPServer(\n\t\t\"System Monitor\",\n\t\t\"1.0.0\",\n\t)\n\n\t// Add CPU tool\n\ts.AddTool(cpu.NewTool(), cpu.Handler)\n\n\t// Add memory tool\n\ts.AddTool(memory.NewTool(), memory.Handler)\n\n\t// Add disk tool\n\ts.AddTool(disk.NewTool(), disk.Handler)\n\n\t// Add network tool\n\ts.AddTool(network.NewTool(), network.Handler)\n\n\t// Add host tool\n\ts.AddTool(host.NewTool(), host.Handler)\n\n\t// Add process tool\n\ts.AddTool(process.NewTool(), process.Handler)\n\n\ttransport := flag.String(\"transport\", \"stdio\", \"Transport type (stdio or sse)\")\n\tport := flag.Int(\"port\", 8080, \"TCP port for SSE transport\")\n\tbaseURL   := flag.String(\"base-url\", \"\",\n        \"Absolute base URL to announce in the first SSE frame. \"+\n        \"Leave blank to default to http://localhost:<port>\")\n\tflag.Parse()\n\n\tfmt.Printf(\"Starting MCP System Monitor server with %s transport...\\n\", *transport)\n\n\tif *transport == \"sse\" {\n\t\turl := *baseURL\n\t\tif url == \"\" {\n         \t\turl = fmt.Sprintf(\"http://localhost:%d\", *port)\n     \t\t}\n\t     \tsseServer := server.NewSSEServer(s, server.WithBaseURL(url))\n\t\tif err := sseServer.Start(fmt.Sprintf(\":%d\", *port)); err != nil {\n\t\t\tlog.Fatalf(\"Server error: %v\", err)\n\t\t}\n\t\tlog.Printf(\"SSE server listening on port %d\", *port)\n\t} else {\n\t\tif err := server.ServeStdio(s); err != nil {\n\t\t\tlog.Fatalf(\"Server error: %v\", err)\n\t\t}\n\t}\n}\n"
+  },
+  "content_fetch_notes": []
+}

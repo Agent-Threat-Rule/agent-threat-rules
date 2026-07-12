@@ -1,0 +1,46 @@
+{
+  "full_name": "tse-wei-chen/hs-sql-agent",
+  "html_url": "https://github.com/tse-wei-chen/hs-sql-agent",
+  "description": "C# SQL Agent MCP server featuring raw SQL input, strict AST validation, and an embedded Admin UI. Eliminates LLM hallucinations and security risks across 6 major databases.",
+  "topics": [
+    "accuracy",
+    "admin-panel",
+    "ai-safety",
+    "ai-safety-design",
+    "anti-hallucination",
+    "firebird",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "mysql",
+    "nl2sql",
+    "oracle",
+    "postgres",
+    "postgresql",
+    "security",
+    "sql-agent",
+    "sql-server",
+    "sqlite"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 8,
+  "forks": 1,
+  "open_issues": 1,
+  "language": "C#",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2026-04-03T08:10:29Z",
+  "last_pushed_at": "2026-07-08T07:27:08Z",
+  "fetched_at": "2026-07-11T23:56:47.133Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# hs-sql-agent\n> **The high-performance MCP server for instant SQL interaction and secure enterprise governance.**\n<img src=\"miscellaneous\\coverImage.png\" />\n\n[![License: Apache 2.0](https://img.shields.io/badge/license-Apache--2.0-green?logo=apache)](https://github.com/tse-wei-chen/hs-sql-agent/blob/main/LICENSE) [![Docker](https://github.com/tse-wei-chen/hs-sql-agent/actions/workflows/docker-publish.yml/badge.svg?event=release)](https://github.com/tse-wei-chen/hs-sql-agent/actions/workflows/docker-publish.yml) [![NuGet](https://img.shields.io/badge/NuGet-Install-0956cc?logo=nuget)](https://www.nuget.org/packages/HsSqlAgent.Server) [![CodeQL Advanced](https://github.com/tse-wei-chen/hs-sql-agent/actions/workflows/codeql.yml/badge.svg?event=release)](https://github.com/tse-wei-chen/hs-sql-agent/actions/workflows/codeql.yml) [![Tests](https://github.com/tse-wei-chen/hs-sql-agent/actions/workflows/test.yml/badge.svg)](https://github.com/tse-wei-chen/hs-sql-agent/actions/workflows/test.yml) [![Deploy on Zeabur](https://img.shields.io/badge/Deploy_on-Zeabur-blueviolet?logo=zeabur)](https://zeabur.com/templates/RFPWDU)\n\n`hs-sql-agent` is an HTTP MCP server for relational databases (SQLite, PostgreSQL, MySQL, SQL Server, Oracle, Firebird) with a built-in Admin Panel for governance.\n\n## 🤔 Why hs-sql-agent?\n\nMost \"Chat with your Data\" tools ask the LLM to write raw SQL — a recipe for hallucinations, dialect confusion, and injection risks. **hs-sql-agent takes a structured approach**: the AI can write SQL, the server parses it into structured definitions, validates the result, and rebuilds the final query through the SQL builder before execution. Zero hallucinated syntax, zero direct string injection into the database.\n\n- **Structured SQL Pipeline** — The AI can write SQL, but the server parses it into structured definitions, validates it, and rebuilds the final query through the SQL builder before execution.\n- **Universal DB Support** — One agent for SQLite, PostgreSQL, MySQL, SQL Server, Oracle, and Firebird. The same MCP endpoint switches engines transparently.\n- **Enterprise Governance** — Built-in Admin Web UI, key-level connection mapping, table whitelisting, per-key CORS, rate limiting, and full audit logs.\n- **Semantic Layer** — Map cryptic legacy column names to business-friendly labels so the LLM understands your schema.\n\n### Where to use it\n\n| Use case | Description |\n|----------|-------------|\n| **Cursor / Claude Desktop** | Let devs query dev/test DBs in natural language from their AI IDE. |\n| **Multi-DB agents** | One MCP server per database, each secured with its own API key. The agent aggregates multiple MCP connections to seamlessly orchestrate workflows across PostgreSQL, MySQL, and Oracle. |\n| **Enterprise chatbots** | Connect internal AI agents to ERP/CRM systems with table-level permission isolation. |\n| **Legacy modernization** | Bridge modern AI to decades-old databases via the semantic layer. |\n\n## 🚀 Quick Start\n\n```bash\ncp .env.example .env      # set HMAC_KEY and JWT_KEY (32+ bytes)\ndocker compose up -d       # http://localhost:8080\n```\n\n## 📦 NuGet for Existing .NET APIs\n\nAlready have an ASP.NET Core API? Embed the full MCP SQL Agent + Admin UI in minutes:\n\n```bash\ndotnet add package HsSqlAgent.Server\n```\n\n```csharp\nbuilder.Services.AddHsSqlAgent(options => { ... });\napp.UseHsSqlAgent();                    // API-only\n// app.UseHsSqlAgent().ServeAdminUi();  // with Admin UI\n```\n\n> The Admin UI is embedded in the DLL — no external files to deploy. See the [NuGet Package guide](https://github.com/tse-wei-chen/hs-sql-agent/wiki/NuGet-Package) for details.\n\n## 📖 Documentation\n\nDetailed docs are on the [Wiki](https://github.com/tse-wei-chen/hs-sql-agent/wiki):\n\n| Topic | Link |\n|-------|------|\n| 🚀 Getting Started | [Getting-Started](https://github.com/tse-wei-chen/hs-sql-agent/wiki/Getting-Started) |\n| ✨ Features | [Features](https://github.com/tse-wei-chen/hs-sql-agent/wiki/Features) |\n| 📘 MCP Tools | [MCP-Tools-Reference](https://github.com/tse-wei-chen/hs-sql-agent/wiki/MCP-Tools-Reference) |\n| 🖥️ Admin Panel | [Admin-Panel](https://github.com/tse-wei-chen/hs-sql-agent/wiki/Admin-Panel) |\n| ⚙️ Configuration | [Configuration](https://github.com/tse-wei-chen/hs-sql-agent/wiki/Configuration) |\n| 🐳 Deployment | [Deployment](https://github.com/tse-wei-chen/hs-sql-agent/wiki/Deployment) |\n| 🏠 Development | [Development](https://github.com/tse-wei-chen/hs-sql-agent/wiki/Development) |\n| 📡 API Reference | [API-Reference](https://github.com/tse-wei-chen/hs-sql-agent/wiki/API-Reference) |\n| ❓ FAQ | [FAQ](https://github.com/tse-wei-chen/hs-sql-agent/wiki/FAQ) |\n\n## SQL Execution Flow\n\n```mermaid\n%%{init: {\n  'theme': 'base',\n  'themeVariables': {\n    'primaryColor': '#18181B',\n    'primaryTextColor': '#FAFAFA',\n    'primaryBorderColor': '#27272A',\n    'lineColor': '#52525B',\n    'secondaryColor': '#27272A',\n    'tertiaryColor': '#09090B',\n    'mainBkg': '#09090B'\n  }\n}}%%\n\nflowchart TD\n    LLM([\"Client :: LLM / MCP Client\"])\n    MCP[\"Server :: HsSqlAgent\"]\n    AUTH[\"Middleware :: Authentication<br/>Access Key | DB Binding | Whitelist\"]\n    ROUTE{\"Gateway :: Router\"}\n\n    LLM -->|Call tool with SQL| MCP\n    MCP --> AUTH\n    AUTH --> ROUTE\n\n    subgraph Query_Flow [\" 🔍 Query Pipeline (SELECT) \"]\n        QPARSE[\"Parse Query SQL<br/>SqlDefinitionParser.ParseQuery\"]\n        QDEF[\"QueryDefinition<br/>AST Structure Data\"]\n        QVALID[\"DefinitionValidator<br/>Rule Verification\"]\n        QBUILD[\"SQL Strategy Compiler<br/>Compile Strategy\"]\n        QEXEC[\"Execution Engine<br/>Execute SELECT\"]\n        QRESULT([\"Result :: Rows / JSON\"])\n        \n        QPARSE --> QDEF\n        QDEF --> QVALID\n        QVALID --> QBUILD\n        QBUILD --> QEXEC\n        QEXEC --> QRESULT\n    end\n\n    subgraph DML_Flow [\" ✏️ Mutation Pipeline (DML) \"]\n        DPARSE[\"Parse Mutation SQL<br/>SqlDefinitionParser.ParseDml\"]\n        DDEF[\"DmlDefinition<br/>AST Structure Data\"]\n        DVALID[\"DefinitionValidator<br/>Rule Verification\"]\n        DRYRUN[\"Transaction Dry-run<br/>Uncommitted State\"]\n        ELICIT[\"MCP Elicitation<br/>User Approval Prompt\"]\n        DECIDE{\" Action :: Decision\"}\n        DEXEC[\"Transaction :: Commit<br/>Apply Changes\"]\n        DROLLBACK[\"Transaction :: Rollback<br/>Discard Changes\"]\n        \n        DPARSE --> DDEF\n        DDEF --> DVALID\n        DVALID --> DRYRUN\n        DRYRUN --> ELICIT\n        ELICIT --> DECIDE\n        \n        DECIDE -->|Allowed| DEXEC\n        DECIDE -->|Denied| DROLLBACK\n    end\n\n    ROUTE -->|execute_query_sql| QPARSE\n    ROUTE -->|execute_dml_sql| DPARSE\n\n    AUDIT[(\"Storage :: Async Audit Log\")]\n    \n    QRESULT --> AUDIT\n    DEXEC --> AUDIT\n    DROLLBACK --> AUDIT\n\n    classDef default fill:#18181B,stroke:#27272A,stroke-width:1px,color:#E4E4E7;\n    classDef client fill:#FAFAFA,stroke:#FAFAFA,stroke-width:1px,color:#09090B;\n    classDef server fill:#27272A,stroke:#3F3F46,stroke-width:1px,color:#F4F4F5;\n    classDef auth fill:#09090B,stroke:#27272A,stroke-width:1px,color:#A1A1AA;\n    classDef cond fill:#18181B,stroke:#FAFAFA,stroke-width:1.5px,color:#FAFAFA;\n    \n    classDef danger fill:#451A03,stroke:#7F1D1D,stroke-width:1px,color:#FCA5A5;\n    classDef success fill:#022C22,stroke:#064E3B,stroke-width:1px,color:#86EFAC;\n\n    class LLM client;\n    class MCP,AUDIT server;\n    class AUTH auth;\n    class ROUTE,DECIDE cond;\n    class QRESULT,DEXEC success;\n    class DROLLBACK danger;\n```\n\n### DML Approval Prompt\n\nThis is what the human-in-the-loop approval step looks like during `execute_dml_sql`:\n\n<img src=\"miscellaneous/dml-approval-prompt.png\" />\n\n## 🤝 Contributing\n\nSee [CONTRIBUTING.md](CONTRIBUTING.md) and the [Development](https://github.com/tse-wei-chen/hs-sql-agent/wiki/Development) wiki page.\n\n## 📜 License\n\n[Apache License 2.0](LICENSE)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

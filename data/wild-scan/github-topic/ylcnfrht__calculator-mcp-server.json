@@ -1,0 +1,31 @@
+{
+  "full_name": "ylcnfrht/calculator-mcp-server",
+  "html_url": "https://github.com/ylcnfrht/calculator-mcp-server",
+  "description": null,
+  "topics": [
+    "ai",
+    "mcp-servers",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-10-15T17:44:20Z",
+  "last_pushed_at": "2025-10-15T17:44:22Z",
+  "fetched_at": "2026-07-12T00:18:16.581Z",
+  "readme": {
+    "path": "README.md",
+    "content": "## Calculator MCP Server\n\nA tiny Model Context Protocol (MCP) server that exposes basic calculator tools. Built with TypeScript and Zod. Easy to extend.\n\n### Quick Start\n\n```bash\nnpm install\nnpm run build && npm start\n```\n\nServer runs over stdio and logs:\n\n```text\nCalculator MCP server is running...\n```\n\n### Development\n\n```bash\nnpm run dev\n```\n\n### Inspector\n\nInteractive testing with MCP Inspector:\n\n```bash\nnpm run build\nnpm run inspector\n```\n\nThis starts the server under the inspector so you can list tools and call them.\n\n### Tools\n\n- add: adds two numbers\n- subtract: subtracts two numbers\n- multiply: multiplies two numbers\n- divide: divides two numbers (throws on division by zero)\n\nList tools request (MCP):\n\n```json\n{\n  \"method\": \"tools/list\",\n  \"params\": {}\n}\n```\n\nCall example:\n\n```json\n{\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"add\",\n    \"arguments\": { \"a\": 3, \"b\": 5 }\n  }\n}\n```\n\nResponse example:\n\n```json\n{\n  \"content\": [{ \"type\": \"text\", \"text\": \"3 + 5 = 8\" }]\n}\n```\n\n### Validation & Schemas\n\n- Input validation is done with Zod directly in `src/index.ts`.\n- `inputSchema` returned by `tools/list` is a JSON Schema object that MCP clients can use.\n\nTwo-number input schema (Zod):\n\n```ts\nconst twoNumberInput = z.object({ a: z.number(), b: z.number() });\n```\n\nJSON Schema (for MCP):\n\n```ts\nconst twoNumberJsonSchema = {\n  type: 'object',\n  properties: {\n    a: { type: 'number', description: 'First number' },\n    b: { type: 'number', description: 'Second number' },\n  },\n  required: ['a', 'b'],\n} as const;\n```\n\n### Project Structure\n\n```text\nsrc/\n  index.ts   # server setup, tool definitions, validation, and handlers\ndist/\n  index.js   # build output\n```\n\n### Extending (add a new tool)\n\nAll tools are defined in `src/index.ts` under the `tools` map. To add one:\n\n1. Add or reuse a Zod schema and corresponding JSON Schema.\n2. Implement an `execute` function.\n3. Register the tool in the `tools` map with `description`, `inputSchema`, `validate`, `execute`, and `format`.\n\n### Scripts\n\nFrom `package.json`:\n\n- `build`: compile TypeScript to `dist/`\n- `start`: run `node dist/index.js`\n- `dev`: `tsc && node dist/index.js`\n- `inspector`: `npx @modelcontextprotocol/inspector node dist/index.js`\n\n### Troubleshooting\n\n- \"Cannot find module …/x.js\": ensure ESM paths include `.js` extensions (tsconfig uses NodeNext).\n- \"Division by zero error!\": `divide` throws when `b === 0`.\n- \"Invalid arguments …\": Zod validation failed; ensure numeric `a` and `b`.\n\n### License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

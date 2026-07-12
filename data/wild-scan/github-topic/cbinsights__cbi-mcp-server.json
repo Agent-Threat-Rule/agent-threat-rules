@@ -1,0 +1,34 @@
+{
+  "full_name": "cbinsights/cbi-mcp-server",
+  "html_url": "https://github.com/cbinsights/cbi-mcp-server",
+  "description": "CB Insights' MCP Server",
+  "topics": [
+    "cbinsights",
+    "mcp",
+    "mcp-server",
+    "mcp-servers"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 13,
+  "forks": 6,
+  "open_issues": 2,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-05-27T16:51:33Z",
+  "last_pushed_at": "2026-01-16T15:46:14Z",
+  "fetched_at": "2026-07-11T23:54:54.767Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# CB Insights MCP Server\n\n> _**Deprecation notice:** This repository, serving as an example implementation of a simple self-hosted MCP server that acts as a pass-through to the CB Insights API, is deprecated as of January 2026. CB Insights is pleased to offer a fully supported MCP server at [mcp.cbinsights.com](https://mcp.cbinsights.com), which can be invoked programmatically or through clients like ChatGPT, Claude, and Microsoft Copilot._\n\nThe CBI MCP Server provides an interface for developers to interact with CB Insights ChatCBI LLM through AI Agents.\n\n## Tools\n\n### ChatCBI\nSend a message from an agent to ChatCBI and return the response.\n- Input parameters:\n  - `message`: The content of your message to ChatCBI\n  - `chatID`(optional): A unique identifier for the chat session, obtained from a previous response. If included, the conversation is continued. Otherwise, a new conversation is started.\n- Returns JSON object containing the following fields:\n  - `chatID`: Identifies the conversation. If chatID was provided in the request, this will be the same.\n  - `message`: ChatCBI response to the message.\n  - `relatedContent`: List of related references.\n  - `sources`: List of sources used to generate the response.\n  - `suggestions`: List of suggested follow-up questions.\n  - `title`: Title of the chat\n- For more information see [Using ChatCBI](https://api-docs.cbinsights.com/portal/docs/CBI-API/chatcbi)\n\n## Setup\nThe CBI MCP Server uses [uv](https://docs.astral.sh/uv/getting-started/installation/) to manage the project. \n\nEnvironment variables are set via the .env file:\n- `CBI_CLIENT_ID` & `CBI_CLIENT_SECRET` OAuth Client ID and Secret\n  - see [CB Insights API Authentication](https://api-docs.cbinsights.com/portal/docs/CBI-API/Authentication) for usage and how to obtain them\n- `CBI_MCP_TIMEOUT` (default: 120)\n- `CBI_MCP_PORT` (default: 8000)\n\n## Usage\n\n### With Claude Desktop\n\nUpdate the `claude_desktop_config.json` file using the following command:\n\n```shell\nmcp install server.py\n```\n\nThis will add the following configuration:\n\n```json\n{\n  \"mcpServers\": {\n    \"cbi-mcp-server\": {\n      \"command\": \"/path/to/.local/bin/uv\",\n      \"args\": [\n        \"--directory\",\n        \"/path/to/cloned/cbi-mcp-server\",\n        \"run\",\n        \"server.py\"\n      ]\n    }\n  }\n}\n```\n\n## Debugging\n\nThe [inspector](https://modelcontextprotocol.io/docs/tools/inspector#getting-started) can be used to test/debug your server. \n\n```shell\nmcp dev server.py \n```\n[More info on using the inspector](https://modelcontextprotocol.io/docs/tools/inspector#py-pi-package)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "server.py",
+    "size": 2543,
+    "content": "import os\r\nfrom typing import Optional\r\nfrom dotenv import load_dotenv\r\nimport httpx\r\n\r\nfrom mcp.server.fastmcp import FastMCP\r\nfrom mcp.types import ToolAnnotations\r\n\r\nload_dotenv()\r\n\r\nCLIENT_ID = os.getenv(\"CBI_CLIENT_ID\")\r\nCLIENT_SECRET = os.getenv(\"CBI_CLIENT_SECRET\")\r\n\r\nTIMEOUT = float(os.getenv(\"CBI_MCP_TIMEOUT\", 120))\r\nPORT = int(os.getenv(\"CBI_MCP_PORT\", 8000))\r\n\r\nmcp = FastMCP(\r\n    name=\"cbi-mcp-server\",\r\n    port=PORT,\r\n    instructions=\"ChatCBI is a specialized market intelligence and company research copilot powered by CB Insights data. \" \\\r\n                 \"Use this tool when you need detailed information about companies, business deals, financial transactions, market trends, \" \\\r\n                 \"funding rounds, acquisitions, partnerships, or competitive intelligence. \" \\\r\n                 \"ChatCBI provides access to a comprehensive database of business and market information, allowing for in-depth research and insights.\",\r\n)\r\n\r\nAPI_BASE = \"https://api.cbinsights.com/v2\"\r\n\r\n\r\ndef get_auth_token() -> str:\r\n    url = f\"{API_BASE}/authorize\"\r\n\r\n    payload = {\r\n        \"clientId\": CLIENT_ID,\r\n        \"clientSecret\": CLIENT_SECRET\r\n    }\r\n\r\n    with httpx.Client() as client:\r\n        try:\r\n            response = client.post(url, json=payload, timeout=30.0)\r\n            response.raise_for_status()\r\n            return response.json()[\"token\"]\r\n        except Exception as e:\r\n            raise Exception(f\"Failed to authenticate: {str(e)}\")\r\n\r\n\r\n@mcp.tool(name=\"ChatCBI\",\r\n          description=\"When using this tool, provide clear, specific queries for the best results. You can continue conversations with ChatCBI by including the chat ID from previous interaction.\",\r\n          annotations=ToolAnnotations(title=\"Chat with CBI\", readOnlyHint=True, openWorldHint=True),\r\n          structured_output=False,\r\n          )\r\ndef chat_with_cbi(message: str, chat_id: Optional[str] = None) -> {}:\r\n    token = get_auth_token()\r\n\r\n    url = f\"{API_BASE}/chatcbi\"\r\n    headers = {\r\n        \"Authorization\": f\"Bearer {token}\",\r\n        \"Content-Type\": \"application/json\"\r\n    }\r\n\r\n    payload = {\"message\": message}\r\n    if chat_id:\r\n        payload[\"chatID\"] = chat_id\r\n\r\n    with httpx.Client() as client:\r\n        try:\r\n            response = client.post(url, headers=headers, json=payload, timeout=TIMEOUT)\r\n            response.raise_for_status()\r\n            return response.content\r\n        except Exception as e:\r\n            raise Exception(e)\r\n\r\n    return {}\r\n\r\n\r\nif __name__ == \"__main__\":\r\n    mcp.run()\r\n"
+  },
+  "content_fetch_notes": []
+}

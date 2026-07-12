@@ -1,0 +1,32 @@
+{
+  "full_name": "haroldadmin/fastify-mcp",
+  "html_url": "https://github.com/haroldadmin/fastify-mcp",
+  "description": "A Fastify plugin to run Model Context Protocol (MCP) servers",
+  "topics": [
+    "ai",
+    "fastify",
+    "javascript",
+    "model-context-protocol"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 27,
+  "forks": 8,
+  "open_issues": 4,
+  "language": "TypeScript",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2025-03-02T23:53:49Z",
+  "last_pushed_at": "2026-05-12T21:15:50Z",
+  "fetched_at": "2026-07-11T23:45:55.270Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# fastify-mcp\n\nIntegrate [Model Context Protocol](https://modelcontextprotocol.io/) servers with your [Fastify](https://www.fastify.dev) app.\n\nSupports the [Streamable HTTP transport](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports#streamable-http) as well as the legacy [HTTP+SSE transport](https://modelcontextprotocol.io/specification/2024-11-05/basic/transports#http-with-sse).\n\n## Usage\n\nFirst, define your MCP server.\n\n```ts\nfunction createServer() {\n  const mcpServer = new McpServer({\n    name: \"...\",\n    version: \"...\",\n  });\n\n  mcpServer.tool(\"...\");\n  mcpServer.resource(\"...\");\n\n  return mcpServer.server;\n}\n```\n\nCreate a Fastify app and register the plugin.\n\n```ts\nimport { fastify } from \"fastify\";\nimport { streamableHttp } from \"fastify-mcp\";\nimport { StreamableHTTPServerTransport } from \"@modelcontextprotocol/sdk/server/streamableHttp.js\";\n\nconst app = fastify();\n\napp.register(streamableHttp, {\n  // Set to `true` if you want a stateful server\n  stateful: false,\n  mcpEndpoint: \"/mcp\",\n  sessions: new Sessions<StreamableHTTPServerTransport>()\n  createServer,\n});\n\napp.listen({ port: 8080 });\n```\n\nSee the [examples](./examples) directory for more detailed examples.\n\n## Installation\n\n```bash\n# npm\nnpm install fastify-mcp\n\n# yarn\nyarn add fastify-mcp\n```\n\n## Session Management\n\nThe official [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk) does not support managing multiple sessions out of the box, and therefore it's the host server's responsibility to do so.\n\nThis package uses an in-memory mapping of each active session against its session ID to manage multiple sessions, as recommended by the MCP SDK examples.\n\n### Session Events\n\nThe `Sessions` class emits the following events:\n\n- `connected`: Emitted when a new session is added.\n- `terminated`: Emitted when a session is removed.\n- `error`: Emitted when an asynchronous event handler throws an error.\n\n```ts\nconst sessions = new Sessions<StreamableHTTPServerTransport>();\n\nsessions.on(\"connected\", (sessionId) => {\n  console.log(`Session ${sessionId} connected`);\n});\n\nsessions.on(\"terminated\", (sessionId) => {\n  console.log(`Session ${sessionId} terminated`);\n});\n```\n\n## Contributing\n\nPlease file an issue if you encounter a problem when using this package. Pull requests for new features or bug fixes are also welcome.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

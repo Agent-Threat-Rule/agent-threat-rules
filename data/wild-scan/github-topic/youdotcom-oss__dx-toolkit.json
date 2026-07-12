@@ -1,0 +1,36 @@
+{
+  "full_name": "youdotcom-oss/dx-toolkit",
+  "html_url": "https://github.com/youdotcom-oss/dx-toolkit",
+  "description": "Open-source toolkit enabling developers to integrate You.com's AI capabilities into their workflows",
+  "topics": [
+    "ai-integration",
+    "ai-sdk",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "vercel-ai",
+    "you-api",
+    "youcom"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 23,
+  "forks": 6,
+  "open_issues": 2,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-09-23T22:07:43Z",
+  "last_pushed_at": "2026-07-07T20:02:11Z",
+  "fetched_at": "2026-07-11T23:50:43.062Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# You.com for AI agents\n\nAdd real-time web search, research, and content extraction to any agent. Hosted MCP server, free tier with no API key, plus first-party plugins for the Vercel AI SDK and LangChain.\n\n```jsonc\n// Add this to your MCP client config (Claude Desktop, Cursor, Windsurf, etc.)\n// Free tier — no API key, no signup.\n{\n  \"mcpServers\": {\n    \"you\": {\n      \"command\": \"npx\",\n      \"args\": [\"@youdotcom-oss/mcp\"],\n      \"env\": { \"YDC_PROFILE\": \"free\" }\n    }\n  }\n}\n```\n\nIf your client supports remote MCP, point it at `https://api.you.com/mcp?profile=free` directly — no local process needed.\n\n## Why You.com\n\n- **Real web index** — backed by You.com's production search infrastructure, not a scraper.\n- **Free tier, no signup** — `?profile=free` exposes `you-search` to any MCP client with zero auth.\n- **Listed in the official MCP registry** as [`io.github.youdotcom-oss/mcp`](https://registry.modelcontextprotocol.io/?q=io.github.youdotcom-oss%2Fmcp).\n- **Works with every major agent stack** — Claude, Cursor, Windsurf, VS Code, Vercel AI SDK, LangChain.\n- **One hosted endpoint** — all packages here are thin clients over `https://api.you.com/mcp`.\n\n## Quick start\n\nEvery snippet below works against the free tier. To unlock `you-research` and `you-contents`, drop the `YDC_PROFILE` line and set `YDC_API_KEY` to a key from [you.com/platform/api-keys](https://you.com/platform/api-keys). `you-finance` is opt-in — pass `?tools=you-finance` on the URL or set `YDC_ALLOWED_TOOLS=you-finance`.\n\n### Claude Desktop\n\nEdit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\\Claude\\claude_desktop_config.json` (Windows):\n\n```jsonc\n{\n  \"mcpServers\": {\n    \"you\": {\n      \"command\": \"npx\",\n      \"args\": [\"@youdotcom-oss/mcp\"],\n      \"env\": { \"YDC_PROFILE\": \"free\" }\n    }\n  }\n}\n```\n\nAuthenticated (all default tools):\n\n```jsonc\n{\n  \"mcpServers\": {\n    \"you\": {\n      \"command\": \"npx\",\n      \"args\": [\"@youdotcom-oss/mcp\"],\n      \"env\": { \"YDC_API_KEY\": \"<your-key>\" }\n    }\n  }\n}\n```\n\n### Claude Code\n\n```bash\n# Free tier\nclaude mcp add you -e YDC_PROFILE=free -- npx @youdotcom-oss/mcp\n\n# Authenticated\nclaude mcp add you -e YDC_API_KEY=<your-key> -- npx @youdotcom-oss/mcp\n```\n\n### Cursor\n\nAdd to `~/.cursor/mcp.json` (or `.cursor/mcp.json` in a project):\n\n```jsonc\n{\n  \"mcpServers\": {\n    \"you\": {\n      \"command\": \"npx\",\n      \"args\": [\"@youdotcom-oss/mcp\"],\n      \"env\": { \"YDC_PROFILE\": \"free\" }\n    }\n  }\n}\n```\n\n### Windsurf\n\nAdd to `~/.codeium/windsurf/mcp_config.json`:\n\n```jsonc\n{\n  \"mcpServers\": {\n    \"you\": {\n      \"command\": \"npx\",\n      \"args\": [\"@youdotcom-oss/mcp\"],\n      \"env\": { \"YDC_PROFILE\": \"free\" }\n    }\n  }\n}\n```\n\n### VS Code\n\nAdd to your user or workspace `mcp.json`:\n\n```jsonc\n{\n  \"servers\": {\n    \"you\": {\n      \"command\": \"npx\",\n      \"args\": [\"@youdotcom-oss/mcp\"],\n      \"env\": { \"YDC_PROFILE\": \"free\" }\n    }\n  }\n}\n```\n\n### Any MCP client (remote)\n\nIf your client speaks streamable HTTP, skip the local bridge:\n\n```\nhttps://api.you.com/mcp?profile=free\n```\n\nAuthenticated:\n\n```\nhttps://api.you.com/mcp\nAuthorization: Bearer <your-key>\n```\n\n## Packages\n\n| Package | What it does |\n|---|---|\n| [`@youdotcom-oss/mcp`](./packages/mcp/) | STDIO bridge to the hosted MCP server. Use this when your client needs a local command. |\n| [`@youdotcom-oss/ai-sdk-plugin`](./packages/ai-sdk-plugin/) | Vercel AI SDK tools backed by the hosted MCP server. |\n| [`@youdotcom-oss/langchain`](./packages/langchain/) | LangChain.js tools backed by the hosted MCP server. |\n| [`@youdotcom-oss/cli`](./packages/cli/) | `ydc` CLI for listing tools, fetching schemas, and invoking remote tools from a shell. |\n\nThe free profile (`?profile=free`) exposes `you-search` only. The authenticated default exposes `you-search`, `you-research`, and `you-contents`. `you-finance` is available on request via `?tools=you-finance`.\n\n## Use cases\n\n### Web search inside Claude\n\nOnce `@youdotcom-oss/mcp` is wired into Claude Desktop (see above), ask Claude:\n\n> Search the web for the latest releases of Bun and summarize the changes since 1.2.\n\nClaude calls `you-search` directly. No code required.\n\n### Vercel AI SDK agent grounded in real-time web\n\n```ts\nimport { createAnthropic } from '@ai-sdk/anthropic';\nimport { generateText, stepCountIs } from 'ai';\nimport { createYouClient } from '@youdotcom-oss/ai-sdk-plugin';\n\nconst client = await createYouClient({ apiKey: process.env.YDC_API_KEY });\nconst tools = await client.tools();\n\nconst result = await generateText({\n  model: createAnthropic()('claude-sonnet-4-5-20250929'),\n  tools,\n  stopWhen: stepCountIs(5),\n  prompt: 'What shipped in the latest Bun release?',\n});\n\nconsole.log(result.text);\nawait client.close();\n```\n\n### LangChain agent with cited sources\n\n```ts\nimport { createAgent, initChatModel } from 'langchain';\nimport { createYouClient } from '@youdotcom-oss/langchain';\n\nconst client = await createYouClient({ apiKey: process.env.YDC_API_KEY });\nconst tools = await client.getTools();\n\nconst agent = createAgent({\n  model: await initChatModel('claude-haiku-4-5'),\n  tools,\n  systemPrompt: 'You are a research assistant. Always cite your sources.',\n});\n\nconst result = await agent.invoke({\n  messages: [{ role: 'user', content: 'Latest developments in quantum computing?' }],\n});\n\nconsole.log(result);\n```\n\n## Links\n\n- API keys: [you.com/platform/api-keys](https://you.com/platform/api-keys)\n- Platform docs: [documentation.you.com](https://documentation.you.com)\n- MCP registry listing: [`io.github.youdotcom-oss/mcp`](https://registry.modelcontextprotocol.io/?q=io.github.youdotcom-oss%2Fmcp)\n- Issues: [github.com/youdotcom-oss/dx-toolkit/issues](https://github.com/youdotcom-oss/dx-toolkit/issues)\n- Support: support@you.com\n\n## Contributing\n\nThis is a Bun workspace monorepo. Development setup, workspace commands, and code conventions live in [AGENTS.md](./AGENTS.md); contribution flow and PR conventions live in [CONTRIBUTING.md](./CONTRIBUTING.md). Issues and PRs welcome.\n\n## License\n\nMIT — see [LICENSE](./LICENSE).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

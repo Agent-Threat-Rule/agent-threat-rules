@@ -1,0 +1,48 @@
+{
+  "full_name": "bonnard-data/bonnard-cli",
+  "html_url": "https://github.com/bonnard-data/bonnard-cli",
+  "description": "Archived. Earlier Bonnard product. Current: bonnard.dev / @bonnard/mcp-charts",
+  "topics": [
+    "agentic",
+    "agentic-analytics",
+    "agentic-schema",
+    "ai-analytics",
+    "bigquery",
+    "data-catalog",
+    "databricks",
+    "dbt",
+    "embedded-analytics",
+    "mcp-server",
+    "metrics",
+    "metrics-layer",
+    "metrics-store",
+    "model-context-protocol",
+    "open-source",
+    "reliable-ai",
+    "semantic-layer",
+    "snowflake",
+    "structured-output",
+    "text-to-sql"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 49,
+  "forks": 4,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-02-17T17:44:57Z",
+  "last_pushed_at": "2026-07-03T10:52:25Z",
+  "fetched_at": "2026-07-11T23:30:04.937Z",
+  "readme": {
+    "path": "README.md",
+    "content": "> [!IMPORTANT]\n> **This repository is archived and no longer maintained.**\n> It was part of an earlier version of Bonnard. Our current products live at **[bonnard.dev](https://bonnard.dev)**. Start with **[`@bonnard/mcp-charts`](https://github.com/bonnard-data/mcp-charts)**.\n> Questions: pierre@bonnard.dev\n\n<p align=\"center\">\n  <a href=\"https://www.bonnard.dev\">\n    <picture>\n      <source media=\"(prefers-color-scheme: dark)\" srcset=\"./assets/banner-dark.png\" />\n      <source media=\"(prefers-color-scheme: light)\" srcset=\"./assets/banner-light.png\" />\n      <img alt=\"Bonnard: agent-native analytics. One schema, many surfaces.\" src=\"./assets/banner-light.png\" width=\"100%\" />\n    </picture>\n  </a>\n</p>\n\n<p align=\"center\">\n  <strong>Agent-native analytics. One schema, many surfaces.</strong>\n</p>\n\n<p align=\"center\">\n  <a href=\"https://www.npmjs.com/package/@bonnard/cli\"><img src=\"https://img.shields.io/npm/v/@bonnard/cli?style=flat-square&color=0891b2\" alt=\"npm version\" /></a>\n  <a href=\"https://github.com/bonnard-data/bonnard-cli/blob/main/LICENSE\"><img src=\"https://img.shields.io/github/license/bonnard-data/bonnard-cli?style=flat-square\" alt=\"MIT License\" /></a>\n  <a href=\"https://discord.com/invite/RQuvjGRz\"><img src=\"https://img.shields.io/badge/Discord-Join%20us-5865F2?style=flat-square&logo=discord&logoColor=white\" alt=\"Discord\" /></a>\n</p>\n\n<p align=\"center\">\n  <a href=\"https://docs.bonnard.dev/docs/\">Docs</a> &middot;\n  <a href=\"https://docs.bonnard.dev/docs/getting-started\">Getting Started</a> &middot;\n  <a href=\"https://docs.bonnard.dev/docs/changelog\">Changelog</a> &middot;\n  <a href=\"https://discord.com/invite/RQuvjGRz\">Discord</a> &middot;\n  <a href=\"https://www.bonnard.dev\">Website</a>\n</p>\n\n---\n\nBI tools serve one UI. Bonnard serves everything. Agents over MCP, apps over SDK, dashboards in markdown, internal tools via REST. One set of metric definitions, every consumer gets the same governed answer.\n\n<p align=\"center\">\n  <img src=\"./assets/architecture.png\" alt=\"Bonnard architecture -data sources flow through the semantic layer to AI agents, BI tools, and MCP clients\" width=\"100%\" />\n</p>\n## Why Bonnard?\n\nTraditional semantic layers were built for dashboards and retrofitted for AI. Agents get different answers than dashboards, metrics drift across tools, and every new surface means another integration. Bonnard was built agent-native from day one. MCP is a core feature, not a plugin. One CLI, one schema, every consumer gets the same governed answer.\n\n## Quick Start\n\nNo install required. Run directly with npx:\n\n```bash\nnpx @bonnard/cli init\n```\n\nOr install globally:\n\n```bash\nnpm install -g @bonnard/cli\n```\n\nThen follow the setup flow:\n\n```bash\nbon init                      # Scaffold project + agent configs\nbon datasource add            # Connect your warehouse\nbon validate                  # Check your models locally\nbon login                     # Authenticate\nbon deploy -m \"initial deploy\" # Ship it\n```\n\nYour semantic layer is now live. Agents, dashboards, and the SDK all query the same governed metrics.\n\nNo warehouse yet? Start exploring with a full retail demo dataset:\n\n```bash\nbon datasource add --demo\n```\n\nRequires Node.js 20+.\n\n## What You Get\n\n- **Agent context out of the box.** `bon init` generates rules and skills for [Claude Code, Cursor, and Codex](https://docs.bonnard.dev/docs/cli) so agents understand your semantic layer from the first prompt.\n- **[MCP server](https://docs.bonnard.dev/docs/mcp)** for governed agent queries. Set up with `bon mcp`, test with `bon mcp test`.\n- **[Markdown dashboards](https://docs.bonnard.dev/docs/dashboards)** with BigValue, LineChart, BarChart, AreaChart, PieChart, and DataTable components. Preview locally with `bon dashboard dev`, deploy with `bon dashboard deploy`.\n- **[JSON and SQL querying](https://docs.bonnard.dev/docs/querying)** from the terminal via `bon query` and `bon schema`, or programmatically via the REST API.\n- **Deployment versioning** with change tracking (`bon diff`), annotations (`bon annotate`), and full history (`bon deployments`).\n- **CI/CD support.** Run `bon deploy --ci -m \"message\"` for non-interactive pipelines.\n\n## Supported Data Sources\n\n**Warehouses:** Snowflake (including Snowpark), Google BigQuery, Databricks (SQL warehouses and Unity Catalog), PostgreSQL (including Supabase, Neon, and RDS), Amazon Redshift, DuckDB (including MotherDuck)\n\n**Data tools:** dbt (model and profile import), Dagster, Prefect, Airflow (orchestration), Looker, Cube, Evidence (existing BI layers), SQLMesh, Soda, Great Expectations (data quality)\n\nBonnard auto-detects your warehouses and data tools. Point it at your project and it discovers schemas, tables, and relationships.\n\n## Ecosystem\n\n- **[@bonnard/sdk](https://www.npmjs.com/package/@bonnard/sdk)**: query the semantic layer from any JavaScript or TypeScript application\n- **[@bonnard/react](https://www.npmjs.com/package/@bonnard/react)**: React chart components and a markdown dashboard viewer\n\n## Commands\n\n| Command | Description |\n| --- | --- |\n| `bon init` | Scaffold a new project with agent configs |\n| `bon datasource add` | Connect a data source (or `--demo` for sample data) |\n| `bon validate` | Validate YAML syntax locally |\n| `bon deploy -m \"message\"` | Deploy to production |\n| `bon pull` | Download deployed models to local project |\n| `bon query` | Run queries (JSON or SQL) |\n| `bon schema` | Explore deployed measures, dimensions, and views |\n| `bon dashboard dev` | Preview a markdown dashboard locally |\n| `bon dashboard deploy` | Deploy a dashboard |\n| `bon mcp` | MCP server setup instructions |\n| `bon keys create` | Create a publishable or secret API key |\n| `bon docs` | Browse documentation from the CLI |\n\nSee the full [CLI reference](https://docs.bonnard.dev/docs/cli) for all commands and flags.\n\n## Documentation\n\n| Guide | Description |\n| --- | --- |\n| [Getting Started](https://docs.bonnard.dev/docs/getting-started) | From zero to deployed in minutes |\n| [CLI Reference](https://docs.bonnard.dev/docs/cli) | Every command, flag, and option |\n| [Modeling Guide](https://docs.bonnard.dev/docs/modeling/cubes) | Cubes, views, metrics, and dimensions |\n| [Dashboards](https://docs.bonnard.dev/docs/dashboards) | Markdown dashboards with charts, inputs, and theming |\n| [SDK](https://docs.bonnard.dev/docs/sdk) | TypeScript SDK and React components |\n| [Querying](https://docs.bonnard.dev/docs/querying) | JSON and SQL query syntax |\n| [Changelog](https://docs.bonnard.dev/docs/changelog) | What shipped and when |\n\n## Community\n\n- [Discord](https://discord.com/invite/RQuvjGRz): ask questions, share feedback, connect with the team\n- [GitHub Issues](https://github.com/bonnard-data/bonnard-cli/issues): bug reports and feature requests\n- [LinkedIn](https://www.linkedin.com/company/bonnarddev/): follow for updates\n- [Website](https://www.bonnard.dev): learn more about Bonnard\n\nContributions are welcome. If you find a bug or have an idea, open an issue or submit a pull request.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

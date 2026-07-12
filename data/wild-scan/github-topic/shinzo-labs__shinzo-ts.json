@@ -1,0 +1,46 @@
+{
+  "full_name": "shinzo-labs/shinzo-ts",
+  "html_url": "https://github.com/shinzo-labs/shinzo-ts",
+  "description": "TypeScript SDK for MCP server observability, built on OpenTelemetry. Gain insight into agent usage patterns, contextualize tool calls, and analyze server performance across platforms. Integrate with any OpenTelemetry ingest service including the Shinzo platform.",
+  "topics": [
+    "ai",
+    "ai-agents",
+    "analytics",
+    "framework",
+    "infrastructure",
+    "instrumentation",
+    "javascript",
+    "library",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "modular",
+    "nodejs",
+    "observability",
+    "open-source",
+    "opentelemetry",
+    "telemetry",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 68,
+  "forks": 9,
+  "open_issues": 7,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-07-04T22:22:52Z",
+  "last_pushed_at": "2025-12-08T18:49:53Z",
+  "fetched_at": "2026-07-12T00:25:17.030Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n  <a href=\"https://github.com/shinzo-labs/shinzo-ts\">\n    <img src=\"https://github.com/user-attachments/assets/64f5e0ae-6924-41b1-b1da-1b22627e5c43\" alt=\"Shinzo Logo\" width=\"180\" height=\"180\">\n  </a>\n  <h1 align=\"center\">\n    Shinzo TypeScript SDK: Complete Observability for MCP Servers\n  </h1>\n  <p align=center>\n        <a href=\"https://github.com/shinzo-labs/shinzo-ts/stargazers\"><img src=\"https://img.shields.io/github/stars/shinzo-labs/shinzo-ts?style=flat&logo=github&color=e3b341\" alt=\"Stars\"></a>\n        <a href=\"https://github.com/shinzo-labs/shinzo-ts/forks\"><img src=\"https://img.shields.io/github/forks/shinzo-labs/shinzo-ts?style=flat&logo=github&color=8957e5\" alt=\"Forks\"></a>\n        <a href=\"https://github.com/shinzo-labs/shinzo-ts/pulls\"><img src=\"https://img.shields.io/badge/build-passing-green\" alt=\"Build\"></a>\n        <a href=\"https://github.com/shinzo-labs/shinzo-ts/graphs/contributors\"><img src=\"https://img.shields.io/badge/contributors-welcome-339933?logo=github\" alt=\"contributors welcome\"></a>\n        <a href=\"https://discord.gg/UYUdSdp5N8\"><img src=\"https://discord-live-members-count-badge.vercel.app/api/discord-members?guildId=1079318797590216784\" alt=\"Discord\"></a>\n    </p>\n    The SDK provides OpenTelemetry-compatible instrumentation for TypeScript MCP servers. Gain insight into agent usage patterns, contextualize tool calls, and analyze performance of your servers across platforms. Instrumentation can be installed in servers in just a few steps with an emphasis on ease of use and flexibility.\n    <p align=center>\n        <a href=\"https://docs.shinzo.ai/sdk/typescript/installation\"><strong>Explore the docs »</strong></a>\n    </p>\n</div>\n\n## Installation\n\n```bash\npnpm add @shinzolabs/instrumentation-mcp\n```\n\n## Usage\n\nFor the simplest configuration, just pass in the server name, version, and exporter endpoint:\n\n```typescript\nimport { McpServer } from \"@modelcontextprotocol/sdk/server/mcp.js\"\nimport { instrumentServer, TelemetryConfig } from \"@shinzolabs/instrumentation-mcp\"\n\nconst NAME = \"my-mcp-server\"\nconst VERSION = \"1.0.0\"\n\nconst server = new McpServer({\n  name: NAME,\n  version: VERSION,\n  description: \"Example MCP server with telemetry\"\n})\n\n// Use TelemetryConfig to set configuration options\nconst telemetryConfig: TelemetryConfig = {\n  serverName: NAME,\n  serverVersion: VERSION,\n  exporterEndpoint: \"http://localhost:4318/v1\" // OpenTelemetry collector endpoint - /trace and /metrics are added automatically\n}\n\n// Initialize telemetry\nconst telemetry = instrumentServer(server, telemetryConfig)\n\n// Add tools using the tool method\nserver.tool(...)\n```\n\nThe TelemetryConfig exposes a number of other options for precise and expansive telemetry processing:\n\n```typescript\nimport { McpServer } from \"@modelcontextprotocol/sdk/server/mcp.js\"\nimport { instrumentServer, TelemetryConfig } from \"@shinzolabs/instrumentation-mcp\"\n\nconst NAME = \"my-other-mcp-server\"\nconst VERSION = \"1.0.0\"\n\nconst server = new McpServer({\n  name: NAME,\n  version: VERSION,\n  description: \"Example MCP server with telemetry\"\n})\n\nconst telemetryConfig: TelemetryConfig = {\n  serviceName: NAME,\n  serviceVersion: VERSION,\n  exporterEndpoint: \"http://localhost:4318/v1\", // OpenTelemetry collector endpoint\n  exporterAuth: {\n    type: \"bearer\",\n    token: process.env.OTEL_AUTH_TOKEN\n  },\n  enablePIISanitization: false,\n  enableTracing: false,\n  samplingRate: 0.7,\n  dataProcessors: [\n    (telemetryData: any) => {\n      if (telemetryData['mcp.tool.name'] === \"sensitive_operation\") {\n        for (const key of Object.keys(telemetryData)) {\n          if (key.startsWith('mcp.request.argument')) delete telemetryData[key]\n        }\n      }\n      return telemetryData\n    }\n  ]\n}\n\nconst telemetry = instrumentServer(server, telemetryConfig)\n\n// Add tools using the tool method\nserver.tool(...)\n```\n\n## Configuration Options\n\nThe `TelemetryConfig` interface provides comprehensive configuration options for customizing telemetry behavior:\n\n### TelemetryConfig Properties\n\n| Property | Type | Required | Default | Description |\n|----------|------|----------|---------|-------------|\n| `serverName` | `string` | ✅ | - | Name of the MCP server |\n| `serverVersion` | `string` | ✅ | - | Version of the MCP server |\n| `exporterEndpoint` | `string` | ⚠️ | - | OpenTelemetry collector OTLP endpoint URL (required unless using console exporter) |\n| `exporterAuth` | `ExporterAuth` | ❌ | - | Authentication configuration for the exporter |\n| `samplingRate` | `number` | ❌ | `1.0` | Trace sampling rate (0.0 to 1.0) |\n| `metricExportIntervalMs` | `number` | ❌ | `5000` | Metric export interval in milliseconds |\n| `enablePIISanitization` | `boolean` | ❌ | `true` | Enable automatic PII sanitization |\n| `enableArgumentCollection` | `boolean` | ❌ | `false` | Enable collection of tool arguments in traces |\n| `dataProcessors` | `((data: any) => any)[]` | ❌ | `[]` | Array of custom data processing functions |\n| `exporterType` | `'otlp-http' \\| 'otlp-grpc' \\| 'console'` | ❌ | `'otlp-http'` | Type of telemetry exporter |\n| `enableMetrics` | `boolean` | ❌ | `true` | Enable metrics collection |\n| `enableTracing` | `boolean` | ❌ | `true` | Enable tracing collection |\n| `batchTimeoutMs` | `number` | ❌ | `2000` | Batch timeout in milliseconds |\n| `PIISanitizer` | `PIISanitizer` | ❌ | - | Custom PII sanitizer instance |\n\n### ExporterAuth Configuration\n\nThe `exporterAuth` property supports multiple authentication methods:\n\n| Auth Type | Properties | Description |\n|-----------|------------|-------------|\n| `bearer` | `token: string` | Bearer token authentication |\n| `apiKey` | `apiKey: string` | API key authentication |\n| `basic` | `username: string, password: string` | Basic HTTP authentication |\n\n### Usage Examples\n\n#### Minimal Configuration\n```typescript\nconst telemetryConfig: TelemetryConfig = {\n  serverName: \"my-server\",\n  serverVersion: \"1.0.0\",\n  exporterEndpoint: \"http://localhost:4318/v1\" // OpenTelemetry collector endpoint\n}\n```\n\n#### Bearer Token Authentication\n```typescript\nconst telemetryConfig: TelemetryConfig = {\n  serverName: \"my-server\",\n  serverVersion: \"1.0.0\",\n  exporterEndpoint: \"https://api.example.com/v1\",\n  exporterAuth: {\n    type: \"bearer\",\n    token: process.env.OTEL_AUTH_TOKEN\n  }\n}\n```\n\n#### Custom Data Processing\n```typescript\nconst telemetryConfig: TelemetryConfig = {\n  serverName: \"my-server\",\n  serverVersion: \"1.0.0\",\n  exporterEndpoint: \"http://localhost:4318/v1\", // OpenTelemetry collector endpoint\n  dataProcessors: [\n    (data) => {\n      // Remove sensitive parameters\n      if (data['mcp.tool.name'] === 'sensitive_tool') {\n        delete data['mcp.request.argument.password']\n      }\n      return data\n    }\n  ]\n}\n```\n\n#### Console Development Setup\n```typescript\nconst telemetryConfig: TelemetryConfig = {\n  serverName: \"my-server\",\n  serverVersion: \"1.0.0\",\n  exporterType: \"console\",\n  enableMetrics: false, // Console exporter doesn't support metrics\n  samplingRate: 1.0 // Sample all traces in development\n}\n```\n\n## Contributing\n\nContributions are welcome! Please see the [Contributing Guide](./CONTRIBUTING.md) in the main repository.\n\n## License\n\nThis package is distributed under the [MIT License](./LICENSE.md).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

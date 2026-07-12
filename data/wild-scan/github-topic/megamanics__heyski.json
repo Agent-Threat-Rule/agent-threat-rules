@@ -1,0 +1,38 @@
+{
+  "full_name": "megamanics/heyski",
+  "html_url": "https://github.com/megamanics/heyski",
+  "description": "native macOS notifications from your terminal — one command, one banner",
+  "topics": [
+    "homebrew",
+    "homebrew-tap",
+    "human-computer-interaction",
+    "human-in-the-loop",
+    "macos",
+    "mcp",
+    "mcp-servers",
+    "mcp-tools",
+    "notifications"
+  ],
+  "matched_query_topics": [
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 1,
+  "open_issues": 0,
+  "language": null,
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-06-07T00:12:58Z",
+  "last_pushed_at": "2026-06-07T02:57:18Z",
+  "fetched_at": "2026-07-12T00:24:18.919Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# heyski\n\n> \"tell me when it's done.\"\n> \"i will.\"\n> \"and when the agent wants to nuke prod?\"\n> \"...i'll ask you first.\"\n\nnative macOS notifications from your terminal. one command. it taps you on the\nshoulder when the long thing finishes, clicking it jumps you back to where you\nwere — and when an AI agent needs a human, it asks *you*, on *your* mac, and\ntakes no for an answer.\n\nno daemon. no menu bar clutter. no electron. it shows up, says its piece, and\ngets out of your way.\n\n---\n\n## install\n\n```bash\nbrew install --cask megamanics/tap/heyski\n```\n\nthen prove it works:\n\n```bash\nheyski \"it works\"\n```\n\na banner slides in. you feel powerful. that is the whole pitch.\n\nprefer no homebrew? grab the latest `.zip` from [releases](../../releases),\nunzip it into `/Applications`, and put `HeySKi.app/Contents/MacOS/heyski` on\nyour `PATH`.\n\n---\n\n## the menu\n\n```bash\nheyski \"build finished\"                 # the quick way: message as a word\nheyski -m \"deploy done\"                 # explicit, if you like ceremony\necho \"tests passed\" | heyski            # from a pipe\nheyski -m \"pr merged\" --from \"CI\"       # add a source label\nheyski -m \"open the dashboard\" --open https://example.com   # click does something\n```\n\n| flag | what it does |\n|------|--------------|\n| `-m`, `--message` | the body. also takes a positional word or stdin. |\n| `-t`, `--title` | override the \"Hey &lt;you&gt;\" greeting |\n| `--from` | a source label, e.g. \"CI\" |\n| `--sound [name]` | make noise. bare = default, or a name like Glass |\n| `-g`, `--group` | stack related notifications together |\n| `--open <url\\|path>` | click opens a url or file |\n| `--execute <cmd>` | click runs a command |\n| `--no-activate` | click does nothing |\n| `--actions <a,b,c>` | buttons; prints the label you click |\n| `-r`, `--reply [text]` | a reply field; prints what you type |\n| `--timeout <secs>` | auto-close an interactive alert |\n| `--json` | print the result as a structured event object |\n| `--approve` | Approve/Deny gate; prints a fail-closed approval receipt |\n| `heyski mcp` | speak MCP over stdio, for AI agents |\n\ntypo a flag and it fixes it for you, then prints the corrected command so your\nscript can learn.\n\n---\n\n## real use cases\n\n### 1. the long build you keep babysitting\n\nyou start a build. you switch to read the news. twenty minutes later you\nremember the build exists.\n\n```bash\nmake release && heyski \"release built\" || heyski \"release broke\"\n```\n\nnow the build tells you. go read the news in peace.\n\n### 2. the step that finishes whenever it feels like it\n\n```bash\n./deploy.sh; heyski -m \"deploy exited $?\" --from \"deploy\"\n```\n\nworks whether it succeeds or fails. the exit code rides along.\n\n### 3. the click that takes you back to work\n\n```bash\nlong-thing; heyski -m \"done — open the folder\" --open ~/work\n```\n\nclick the banner, the folder opens, you are back in it. notifications that\nrespect your time.\n\n### 4. ask a question, act on the answer\n\nheyski can do more than tell you things. it can ask. `--actions` gives you\nbuttons and prints the one you click; `--reply` gives you a text field and\nprints what you type.\n\n```bash\ncase \"$(heyski -m \"deploy to prod now?\" --actions \"Yes,No,Later\" --timeout 30)\" in\n  Yes)   ./deploy.sh prod ;;\n  Later) at now + 1 hour <<< './deploy.sh prod' ;;\n  *)     echo \"skipped\" ;;\nesac\n```\n\nthe job doesn't just finish. it asks what to do next, and you answer from the\nbanner without touching the terminal.\n\n### 5. the human gate for your AI agent\n\nhand a terminal to an autonomous agent and eventually it tries something stupid.\na poisoned readme tells it to `rm -rf` the prod bucket and it says sure. the\nagent's words can lie. its logs can lie. your thumb on a banner cannot.\n\n```bash\n$ heyski --approve -m \"delete 14 prod buckets?\" --policy delete-prod --timeout 60\n{\"decision\":\"denied\",\"sentinel\":\"@TIMEOUT\",\"type\":\"approval\", ...}\n```\n\nnobody clicked, so the answer is no. deny, dismiss, time out — all of it means\nno. the only `\"approved\"` comes from you, physically tapping **Approve**. every\nreceipt lands in `~/Library/Application Support/heyski/receipts.jsonl`, so \"prove\na human approved that\" is a folder of receipts, not a shrug.\n\nand it speaks **MCP**, so any agent can call it. drop this into your agent's mcp\nconfig — claude desktop, copilot, cursor all read the same shape:\n\n```json\n{\n  \"mcpServers\": {\n    \"heyski\": { \"command\": \"heyski\", \"args\": [\"mcp\"] }\n  }\n}\n```\n\nthree tools show up: `notify_human` (tap me on the shoulder), `ask_human` (ask\nme something, wait for the answer), and `request_approval` (the gate above,\nreturned as a receipt). the agent can be as autonomous as it likes. the human\ngate is the one door it cannot pick.\n\n---\n\n## the rules\n\n- it greets you by your name, because it knows who you are. it is not creepy\n  about it.\n- no subtitle unless you ask for one with `--from`. quiet by default.\n- when it asks permission, silence means no. fail-closed, every time.\n- one binary. notifications, questions, and approvals. that is the whole job.\n\n---\n\n## first run\n\nmacOS is cautious about apps it has not met. if the first launch gets a stern\nlook, open `HeySKi.app` from your Applications folder once (right‑click → Open),\nsay yes, and you will never think about it again.\n\nif macOS still blocks it after unzip, clear quarantine recursively (the\nattribute can sit on files inside the bundle, not just the `.app` folder):\n\n```bash\nxattr -dr com.apple.quarantine /Applications/HeySKi.app\n```\n\nrequires macOS 11 (Big Sur) or later.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

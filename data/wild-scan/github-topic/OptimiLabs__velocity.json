@@ -1,0 +1,40 @@
+{
+  "full_name": "OptimiLabs/velocity",
+  "html_url": "https://github.com/OptimiLabs/velocity",
+  "description": "Local-first workspace for Claude Code, Codex CLI, and Gemini CLI with sessions, analytics, workflows, and tools",
+  "topics": [
+    "ai-coding",
+    "bun",
+    "claude-code",
+    "developer-tools",
+    "gemini-cli",
+    "local-first",
+    "model-context-protocol",
+    "nextjs",
+    "openai-codex",
+    "session-analytics",
+    "sqlite",
+    "workflow-automation"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 42,
+  "forks": 3,
+  "open_issues": 5,
+  "language": "TypeScript",
+  "license": "AGPL-3.0",
+  "default_branch": "main",
+  "created_at": "2026-02-11T00:27:30Z",
+  "last_pushed_at": "2026-03-05T00:26:53Z",
+  "fetched_at": "2026-07-11T23:33:26.296Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Velocity\n\nVelocity is a local-first command center for Claude Code, Codex CLI, and Gemini CLI.\nIt helps you run sessions, understand what happened, and turn repeated work into reliable workflows.\n\n[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)\n[![Built with Bun](https://img.shields.io/badge/Built_with-Bun-f9f1e1.svg)](https://bun.sh)\n[![Next.js 16](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org)\n\n## Why Velocity\n\nMost CLI-only workflows break down as your team scales:\n\n- session context is fragmented\n- routing/entrypoint behavior is opaque\n- reusable flows stay tribal knowledge\n\nVelocity addresses this with three core loops:\n\n1. **Run** work in local CLI sessions.\n2. **Inspect** usage, cost, latency, tools, and routing context.\n3. **Reuse** what works as agents, workflows, skills, and commands.\n\n## Preview\n\nThese GIFs are embedded directly in the README and render on GitHub.\n\n### Workflow Builder\nAI Assist setup -> finished workflow canvas -> AI prompt review -> node prompt editing.\n![Workflow Builder Demo](docs/assets/demo/workflows-demo.gif)\n\n### Routing Graph\nFullscreen routing deep-dive with readable node zoom and multi-node inspection.\n![Routing Demo](docs/assets/demo/routing-demo.gif)\n\n### Sessions Journey\nConsole -> Sessions -> Session Detail walkthrough with transcript filters and scrolling.\n![Sessions Journey Demo](docs/assets/demo/sessions-demo.gif)\n\n### Review Compare\nTwo-session review workspace with compare scope and analysis controls.\n![Review Compare Demo](docs/assets/demo/review-compare-demo.gif)\n\n### Back-to-Back Reel\nAll demos played continuously.\n![Back-to-Back Demo Reel](docs/assets/demo/demo-back-to-back.gif)\n\n### Stitched Reel\nContinuous reel with short holds between each section.\n![Stitched Demo Reel](docs/assets/demo/demo-stitched.gif)\n\nRegenerate all demos:\n\n```bash\npython3 scripts/demo/capture-demos.py --base-url http://127.0.0.1:3000 --provider claude --target-seconds 12\n```\n\n## Start in 60 Seconds\n\n```bash\ngit clone https://github.com/OptimiLabs/velocity.git\ncd velocity\nbun install\nbun dev\n```\n\nIf Console PTY launch fails on macOS during setup, run:\n\n```bash\nchmod +x node_modules/node-pty/prebuilds/*/spawn-helper\n```\n\nOpen [http://localhost:3000](http://localhost:3000).\n\n## Workflow-First Mental Model\n\nIf you only learn one thing, learn this:\n\n1. Use **Console** and **Sessions** to capture real work.\n2. Convert proven patterns into **Agents** and **Workflows**.\n3. Use **Routing** and **Analytics** to validate that automation is actually correct and cost-efficient.\n\n## Feature Inventory\n\nVelocity is organized into three layers:\n\n| Layer | Purpose | Key surfaces |\n| --- | --- | --- |\n| Workspace | Run and inspect | Console, Sessions, Review, Analytics, Usage |\n| Build | Reuse and automate | Agents, Workflows, Skills, Commands, Hooks, MCP, Routing |\n| Platform | Configure and extend | Models, Plugins, Marketplace, Settings |\n\nDetailed inventory: [docs/guides/functionality-inventory.md](docs/guides/functionality-inventory.md)\n\n## Provider Parity\n\n| Capability | Claude | Codex | Gemini |\n| --- | --- | --- | --- |\n| Sessions + analytics ingestion | Yes | Yes | Yes |\n| Agents (global + project scope) | Yes | Yes | Yes |\n| Workflows | Yes | Yes | Yes |\n| Skills + commands | Yes | Yes | Yes |\n| Routing graph | Yes | Yes | Yes |\n| Hooks | Yes | No | Yes |\n| Plugins | Yes | No | No |\n\n## Core Tech\n\n| Layer | Stack |\n| --- | --- |\n| Framework | Next.js 16 (App Router) |\n| Runtime / PM | Bun |\n| DB | SQLite (`better-sqlite3`) |\n| State | TanStack Query + Zustand |\n| Real-time | WebSocket + PTY manager |\n| Graph UI | `@xyflow/react` |\n| Tests | Vitest |\n\n## Docs\n\n- Feature docs: [`docs/features/`](docs/features/)\n- Install + config guides: [`docs/guides/`](docs/guides/)\n- Provider matrix: [`docs/guides/provider-capability-matrix.md`](docs/guides/provider-capability-matrix.md)\n\n## Troubleshooting\n\n### `better-sqlite3` binding errors\n\nReinstall with Bun:\n\n```bash\nrm -rf node_modules\nbun install\n```\n\n### Console terminal blank / stuck\n\n1. Verify `bun dev` starts without PTY errors.\n2. Hard refresh browser.\n3. Clear persisted local layout state.\n\n### `node-pty` spawn-helper permission denied (macOS)\n\nIf PTY launch fails because `spawn-helper` is not executable:\n\n```bash\nchmod +x node_modules/node-pty/prebuilds/darwin-arm64/spawn-helper\n# or (portable across prebuild folders)\nchmod +x node_modules/node-pty/prebuilds/*/spawn-helper\n```\n\nThen restart `bun dev`.\n\n## Security\n\nVelocity is local-first. Data stays on your machine by default.\nOptional remote calls are limited to explicit user-driven actions (for example marketplace sources).\n\nSee [SECURITY.md](SECURITY.md) for reporting and policy details.\n\n## Inquiries\n\nFor questions or inquiries, contact: `jaewonlee9642@gmail.com`\n\n## Contributing\n\nSee [CONTRIBUTING.md](CONTRIBUTING.md) for setup and PR workflow.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

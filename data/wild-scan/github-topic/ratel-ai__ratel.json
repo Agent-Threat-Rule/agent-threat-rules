@@ -1,0 +1,44 @@
+{
+  "full_name": "ratel-ai/ratel",
+  "html_url": "https://github.com/ratel-ai/ratel",
+  "description": "Context engineering for AI agents. ~80% fewer tokens. Fix tool overload. Skills and memory with in-process BM25 and semantic retrieval. No vector DB.",
+  "topics": [
+    "accuracy",
+    "agents",
+    "claude-skills",
+    "context",
+    "harness",
+    "llm",
+    "llm-routing",
+    "mcp",
+    "mcp-server",
+    "memory",
+    "optimization",
+    "rag",
+    "skills",
+    "token-optimization",
+    "tool-calling",
+    "tool-selection"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 186,
+  "forks": 9,
+  "open_issues": 17,
+  "language": "Rust",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-11-12T15:09:11Z",
+  "last_pushed_at": "2026-07-11T15:34:19Z",
+  "fetched_at": "2026-07-11T22:49:10.309Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n  <h1>Ratel</h1>\n  <p>Your AI agent is paying for tools it never uses. Ratel fixes that.</p>\n\n  <p>\n    <a href=\"https://docs.ratel.sh\">Docs</a> •\n    <a href=\"https://github.com/ratel-ai/skills\">Skills</a> •\n    <a href=\"https://discord.gg/75vAPdjYqT\">Discord</a>\n  </p>\n\n  <p>\n    <a href=\"https://www.npmjs.com/package/@ratel-ai/sdk\"><img src=\"https://img.shields.io/npm/v/@ratel-ai/sdk?label=npm&color=cb3837\" alt=\"npm\" /></a>\n    <a href=\"https://crates.io/crates/ratel-ai-core\"><img src=\"https://img.shields.io/crates/v/ratel-ai-core?label=crates.io&color=e57300\" alt=\"crates.io\" /></a>\n    <a href=\"https://github.com/ratel-ai/ratel/stargazers\"><img src=\"https://img.shields.io/github/stars/ratel-ai/ratel?style=social\" alt=\"GitHub stars\" /></a>\n    <a href=\"#license\"><img src=\"https://img.shields.io/badge/license-Apache--2.0%20%26%20MIT-blue\" alt=\"license\" /></a>\n  </p>\n</div>\n\n<div align=\"center\">\n  <img src=\"./docs/assets/hero.webp\" width=\"960\" alt=\"Ratel hero animation\" />\n</div>\n\n## Introduction\n\nThe context engineering layer for AI agents. Selects only the tools and skills relevant to each turn, recovering accuracy lost to tool overload and cutting what you pay per call. No vector DB, no infra.\n\n## Why\n\n- **Cost:** Every tool schema sent to the model is tokens you pay for. Fewer tools in context means lower spend on every call.\n- **Accuracy:** Models get worse as tool lists grow. Some drop from 77% to 8% accuracy just from having too many options.\n- **Ratel fixes both:** by indexing your full catalog and injecting only the tools that match the current task, keeping the rest out of context entirely.\n\nAcross local, open-source, and frontier model setups, Ratel cuts token usage and recovers accuracy lost to tool overload — without embeddings or a vector DB. Full results: [benchmark.ratel.sh](https://benchmark.ratel.sh)\n\n## Install\n\n**Building an agent in TypeScript or Python?** Add the SDK:\n\n```bash\npnpm add @ratel-ai/sdk\n```\n```bash\npip install ratel-ai\n```\n\n<details>\n<summary>TypeScript example</summary>\n\n```ts\nimport { ToolCatalog, searchCapabilitiesTool, invokeToolTool } from \"@ratel-ai/sdk\";\n\nconst catalog = new ToolCatalog();\ncatalog.register({\n  id: \"read_file\",\n  name: \"read_file\",\n  description: \"Read a file from local disk.\",\n  inputSchema: { properties: { path: { type: \"string\" } } },\n  execute: async ({ path }) => ({ contents: await fs.readFile(path, \"utf8\") }),\n});\n\nconst search = searchCapabilitiesTool(catalog);\nconst invoke = invokeToolTool(catalog);\n```\n\n</details>\n\n<details>\n<summary>Python example</summary>\n\n```python\nfrom ratel_ai import ToolCatalog, ExecutableTool, search_capabilities_tool, invoke_tool_tool\n\ncatalog = ToolCatalog()\ncatalog.register(ExecutableTool(\n  id=\"read_file\",\n  name=\"read_file\",\n  description=\"Read a file from local disk.\",\n  input_schema={\"properties\": {\"path\": {\"type\": \"string\"}}},\n  execute=lambda args: {\"contents\": open(args[\"path\"]).read()},\n))\n\nsearch = search_capabilities_tool(catalog)\ninvoke = invoke_tool_tool(catalog)\n```\n\n</details>\n\nExamples: [Vercel AI SDK](examples/ai-sdk/README.md) · [Pydantic AI](examples/pydantic-ai/README.md)\n\n---\n\n**Using Claude Code, Cursor, or ChatGPT with MCP servers?** Drop Ratel in front of your existing setup with no code changes:\n\n```bash\nnpx -y @ratel-ai/mcp-server mcp import\n```\n\nFull docs: [ratel-ai/ratel-mcp](https://github.com/ratel-ai/ratel-mcp)\n\n## How it works\n\nWhen your agent needs to act, it calls `search_capabilities`. Ratel searches its internal index and returns only the most relevant tools. The model sees a short, focused list and picks correctly far more often.\n\nThe index uses BM25 by default, the same algorithm behind most search engines, applied to each tool's name and description. It is fast, deterministic, and adds no latency to your agent loop. Semantic and hybrid ranking are opt-in per catalog or per call, running a local embedding model in the same process.\n\n[Full docs](https://docs.ratel.sh)\n\n## The Ratel project\n\nRatel scales from an in-process library to a managed service — one engine, one catalog contract, all the way up:\n\n| | Repo | What it is |\n|---|---|---|\n| **Engine + platform** | [ratel-ai/ratel](https://github.com/ratel-ai/ratel) (this one) | The `ratel-ai-core` engine plus TS/Python SDKs, the [`protocol/`](protocol/README.md) catalog-source contract, and the OTel telemetry helpers. Embed it in your agent process today. |\n| **ratel-local** | [ratel-ai/ratel-mcp](https://github.com/ratel-ai/ratel-mcp) | The local distribution — Ratel in front of your MCP setup, today shipped as `ratel-mcp` / `@ratel-ai/mcp-server`. |\n| **ratel-cloud** | *coming* | Managed Ratel: the first hosted catalog source plus intelligence. SDKs reach it via `RATEL_URL` over the catalog-source contract. |\n| **ratel-bench** | [ratel-ai/ratel-bench](https://github.com/ratel-ai/ratel-bench) | The benchmark harness behind [benchmark.ratel.sh](https://benchmark.ratel.sh). |\n\nThe hosted cloud is decided direction ([ADR-0002](docs/adr/0002-product-split-engine-local-cloud.md)), not yet public; a standalone server is deferred ([ADR-0003](docs/adr/0003-catalog-source-interface.md)).\n\n## Repo layout\n\n```\nsrc/\n├── core/              # ratel-ai-core — Rust BM25 engine\n├── sdk/ts/            # @ratel-ai/sdk — TypeScript SDK (NAPI-bound)\n├── sdk/python/        # ratel-ai — Python SDK (PyO3-bound)\n└── telemetry/         # OTel conventions + helper packages\nprotocol/              # catalog-source wire contract\nexamples/              # End-to-end SDK examples\ndocs/                  # ADRs\n```\n\n## Build & test\n\nPrerequisites: Rust stable, Node 24+, pnpm 10.28+. Python SDK: Python 3.9+ and [`uv`](https://docs.astral.sh/uv/).\n\n```bash\ncargo build --workspace && cargo test --workspace   # Rust\npnpm install && pnpm -r build && pnpm -r test       # TypeScript\n# Python: see src/sdk/python/README.md\n```\n\n## Contributing\n\n- [CONTRIBUTING.md](CONTRIBUTING.md)\n- [AGENTS.md](AGENTS.md) — for coding agents working in this repo\n\n## License\n\nThe `ratel-ai-core` engine is licensed under [Apache-2.0](LICENSE-APACHE) — an explicit patent grant for the engine others embed. Everything else (SDKs, telemetry helpers, examples) is [MIT](LICENSE.md). See [ADR-0009](docs/adr/0009-licensing.md) for the rationale.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

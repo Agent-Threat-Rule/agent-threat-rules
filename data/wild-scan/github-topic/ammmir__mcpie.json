@@ -1,0 +1,35 @@
+{
+  "full_name": "ammmir/mcpie",
+  "html_url": "https://github.com/ammmir/mcpie",
+  "description": "MCPie - CLI tool for interacting with MCP (Model Context Protocol) servers",
+  "topics": [
+    "cli",
+    "mcp",
+    "mcp-client",
+    "mcp-tools",
+    "model-context-protocol"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Go",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2026-06-06T08:46:33Z",
+  "last_pushed_at": "2026-06-06T09:23:37Z",
+  "fetched_at": "2026-07-12T00:45:05.283Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCPie\n\n[HTTPie](https://httpie.io) for MCP servers. Connect to and call tools on [Model Context Protocol](https://modelcontextprotocol.io) servers from the terminal.\n\nSupports stdio, SSE, and streamable HTTP transports. Handles OAuth 2.1 PKCE automatically.\n\n## Install\n\n```sh\ngo install github.com/ammmir/mcpie@latest\n```\n\nOr grab a binary from [releases](https://github.com/ammmir/mcpie/releases).\n\n## Usage\n\nRegister a server:\n\n```sh\nmcpie connect streamable http://localhost:3000/mcp\nmcpie connect sse https://api.example.com/mcp --bearer mytoken\nmcpie connect stdio /usr/local/bin/my-mcp-server\n```\n\nList tools:\n\n```sh\nmcpie tools list\nmcpie tools list myhost -v   # verbose: descriptions and types\n```\n\nCall a tool:\n\n```sh\nmcpie tools call ping\nmcpie tools call list_users active_only:=true per_page:=25\nmcpie tools call create_item name=Test 'tags[]=vip' 'tags[]=pro'\nmcpie tools call nested 'data[user][name]=Alice' 'data[user][age]:=30'\n```\n\nArgument syntax mirrors HTTPie:\n\n| Syntax | Meaning |\n|---|---|\n| `key=value` | string |\n| `key:=value` | raw JSON (number, bool, null, object, array) |\n| `key[sub]=value` | nested object |\n| `key[]=value` | append to array |\n| `key[0]=value` | array by index |\n\nzsh users: quote arguments with `[]` or add `alias mcpie=\"noglob mcpie\"` to `~/.zshrc`.\n\nJSON output for scripting:\n\n```sh\nmcpie --json tools list | jq .\n```\n\nManage hosts:\n\n```sh\nmcpie hosts\nmcpie hosts show myhost\nmcpie hosts remove myhost\n```\n\n## Build\n\n```sh\nmake build    # local binary\nmake install  # go install\nmake test\n```\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "main.go",
+    "size": 499,
+    "content": "package main\n\nimport (\n\t\"os\"\n\n\t\"github.com/ammmir/mcpie/cmd\"\n\t\"github.com/ammmir/mcpie/internal/output\"\n)\n\nfunc main() {\n\t// Detect --json/-j before cobra runs so cobra-level errors (unknown\n\t// command, wrong arg count) are formatted the same way as RunE errors.\n\tjsonMode := false\n\tfor _, arg := range os.Args[1:] {\n\t\tif arg == \"--json\" || arg == \"-j\" {\n\t\t\tjsonMode = true\n\t\t\tbreak\n\t\t}\n\t}\n\n\tif err := cmd.Execute(); err != nil {\n\t\toutput.New(jsonMode, os.Stdout).PrintError(err)\n\t\tos.Exit(1)\n\t}\n}\n"
+  },
+  "content_fetch_notes": []
+}

@@ -1,0 +1,39 @@
+{
+  "full_name": "qwe4559999/scopus-mcp",
+  "html_url": "https://github.com/qwe4559999/scopus-mcp",
+  "description": "A Model Context Protocol (MCP) server for Elsevier Scopus. Allows AI assistants like Claude to search academic papers, retrieve abstracts, and analyze author profiles directly.",
+  "topics": [
+    "academic-search",
+    "ai-agent",
+    "claude",
+    "elsevier",
+    "mcp",
+    "model-context-protocol",
+    "python-research-tools",
+    "scopus"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 35,
+  "forks": 8,
+  "open_issues": 6,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-01-12T17:52:36Z",
+  "last_pushed_at": "2026-05-17T06:36:58Z",
+  "fetched_at": "2026-07-11T23:38:14.514Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Scopus MCP Server\n\n<!-- mcp-name: io.github.qwe4559999/scopus-mcp -->\n\n[中文](README_CN.md) | **English**\n\n> **💡 Check out the [Interaction Guide & Prompt Examples](USAGE_EXAMPLES.md) to see how to chat with this tool!**\n\nThis is a Model Context Protocol (MCP) server that provides access to the Elsevier Scopus API. It allows AI assistants to search for academic papers, retrieve abstracts, and look up author profiles.\n\n**Please note that requesting an Elsevier Scopus API key generally requires that your organization or institution has a subscription to Elsevier database services. Additionally, to run this tool without manual setup, your device must have the `uv` package manager installed.**\n\n## Configuration\n\n### Setup Steps\n1.  Go to [Elsevier Developer Portal](https://dev.elsevier.com/) to apply for an API key.\n2.  Create a `config.json` file in the project root (or copy from `config.json.example`) and fill in your key:\n    ```json\n    {\n      \"api_key\": \"YOUR_KEY_HERE\"\n    }\n    ```\n3.  Edit `MCP_tool_config.json`, modifying the folder path (pay attention to the slash direction).\n4.  Finally, import the configuration into your MCP client (e.g., Claude Desktop) by copying the content of `MCP_tool_config.json`.\n\n## 🚀 Quick Start (Zero Setup)\n\n**Prerequisite**: You must have `uv` installed.\n- Windows: `powershell -c \"irm https://astral.sh/uv/install.ps1 | iex\"`\n- macOS/Linux: `curl -LsSf https://astral.sh/uv/install.sh | sh`\n\nIf you use Claude Desktop, you can skip downloading the code and just configure it directly:\n\n1.  **Get Key**: Get a free API Key from [Elsevier Developer Portal](https://dev.elsevier.com/). (⚠️ **Note**: Educational/Institutional email is recommended; public email domains may be rejected).\n2.  **Configure**: Edit `%APPDATA%\\Claude\\claude_desktop_config.json` (Windows) or `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS).\n3.  **Add**:\n\n```json\n{\n  \"mcpServers\": {\n    \"scopus-assistant\": {\n      \"command\": \"uvx\",\n      \"args\": [\n        \"scopus-mcp\"\n      ],\n      \"env\": {\n        \"SCOPUS_[REDACTED-GENERIC_KV_SECRET]\"\n      }\n    }\n  }\n}\n```\n\n*(If you don't have `uv`, see [Installation](#installation) for manual setup)*\n\n### Using with Trae\n\nIn Trae Settings -> MCP Servers -> Click **Add** -> Select **Manual Configuration (JSON)**, then paste:\n\n```json\n{\n  \"mcpServers\": {\n    \"scopus-assistant\": {\n      \"command\": \"uvx\",\n      \"args\": [\n        \"scopus-mcp\"\n      ],\n      \"env\": {\n        \"SCOPUS_[REDACTED-GENERIC_KV_SECRET]\"\n      }\n    }\n  }\n}\n```\n\n### Using with Cursor\n\n1.  Open **Cursor Settings** -> **Features** -> **MCP Servers**.\n2.  Click **+ Add New MCP Server**.\n3.  Fill in the details:\n    *   **Name**: `scopus-mcp`\n    *   **Type**: `command` (stdio)\n    *   **Command**: `uvx scopus-mcp`\n4.  **Important**: You need to set `SCOPUS_API_KEY` in your system environment variables.\n\n## Installation\n\n1.  Ensure you have Python 3.10+ installed.\n2.  Install dependencies:\n    ```bash\n    pip install .\n    ```\n\n## Usage\n\n### Running the Server\n\nYou can run the server using `uvx` (recommended) or directly with python.\n\n```bash\n# Using uvx\nuvx --from . scopus-mcp\n\n# Or directly\npython -m scopus_mcp.server\n```\n\n### Available Tools\n\n1.  **`search_scopus`**\n    -   Searches the Scopus database using the standard query syntax.\n    -   Arguments:\n        -   `query` (string): The search query (e.g., `TITLE(\"Artificial Intelligence\")`).\n        -   `count` (integer): Number of results to return (default: 5).\n        -   `sort` (string): Sort order (e.g., `coverDate`).\n\n2.  **`get_abstract_details`**\n    -   Retrieves detailed information for a specific document.\n    -   Arguments:\n        -   `scopus_id` (string): The Scopus ID of the document.\n\n3.  **`get_author_profile`**\n    -   Retrieves an author's profile information.\n    -   Arguments:\n        -   `author_id` (string): The Scopus Author ID.\n\n## Development\n\nRun tests with:\n```bash\npytest\n```\n\n## License\n\nThis project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.\n\n## Acknowledgments & Contributors\n\n<a href=\"https://github.com/qwe4559999/scopus-mcp/graphs/contributors\">\n  <img alt=\"contributors\" src=\"https://contrib.rocks/image?repo=qwe4559999/scopus-mcp\" />\n</a>\n\n*   **[thinktraveller](https://github.com/thinktraveller)** - *Initial Work & Core Development*\n*   **[qwe4559999](https://github.com/qwe4559999)** - *Maintainer*\n"
+  },
+  "descriptor_file": {
+    "path": "server.json",
+    "content": "{\n  \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json\",\n  \"name\": \"io.github.qwe4559999/scopus-mcp\",\n  \"version\": \"0.1.8\",\n  \"description\": \"A Model Context Protocol server for the Elsevier Scopus API\",\n  \"repository\": {\n    \"url\": \"https://github.com/qwe4559999/scopus-mcp\",\n    \"source\": \"github\"\n  },\n  \"license\": \"MIT\",\n  \"keywords\": [\n    \"scopus\",\n    \"elsevier\",\n    \"academic\",\n    \"research\",\n    \"search\",\n    \"mcp\"\n  ],\n  \"packages\": [\n    {\n      \"registryType\": \"pypi\",\n      \"registryBaseUrl\": \"https://pypi.org\",\n      \"identifier\": \"scopus-mcp\",\n      \"version\": \"0.1.8\",\n      \"runtimeHint\": \"uvx\",\n      \"transport\": {\n        \"type\": \"stdio\"\n      },\n      \"environmentVariables\": [\n        {\n            \"name\": \"SCOPUS_API_KEY\",\n            \"description\": \"Your Elsevier Scopus API Key\",\n            \"isRequired\": true,\n            \"isSecret\": true\n        }\n      ]\n    }\n  ]\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

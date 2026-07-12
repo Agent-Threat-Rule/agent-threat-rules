@@ -1,0 +1,33 @@
+{
+  "full_name": "codixus/mcpready",
+  "html_url": "https://github.com/codixus/mcpready",
+  "description": "A spec-grounded readiness scorecard for MCP servers. Every finding cites the exact MCP spec clause it checks.",
+  "topics": [
+    "agent",
+    "ai",
+    "mcp",
+    "mcp-tools",
+    "model-context-protocol"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-07-03T23:38:04Z",
+  "last_pushed_at": "2026-07-04T15:27:42Z",
+  "fetched_at": "2026-07-12T00:46:31.870Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# mcpready\n\n**A readiness scorecard for MCP servers.** Point it at a Model Context Protocol\nserver and get a graded report where **every finding cites the exact spec clause\nit checks** (MUST / SHOULD), with a one-line fix.\n\n```bash\nnpx mcpready scan node ./my-server.js\n```\n\nNot a security scanner and not a debugger: mcpready judges whether your server\nis correct and pleasant for an agent to use, and tells you precisely why, with a\nlink to the rule in the spec.\n\n## What makes a finding trustworthy\n\nEach rule carries its provenance. A failing check looks like this:\n\n```\nFAIL  base-ping-empty-result   ping result is not an empty object\n  Top fix  Respond to ping with a success result of {} (an empty object).\n  MUST: The receiver MUST respond promptly with an empty response.\n  https://modelcontextprotocol.io/specification/2025-11-25/basic/utilities/ping\n```\n\nRules that are not spec-mandated are labelled `HEURISTIC` so you always know\nwhether a finding is a conformance failure or a quality suggestion.\n\n## Version aware\n\nThe MCP spec is a moving target (the discovery, session, and error-handling\nrules all changed between 2025-06-18 and 2025-11-25). mcpready reads the\n`protocolVersion` your server negotiates and applies the rule set for that\nrevision, so it does not flag a server for a requirement that did not exist yet.\n\n## Usage\n\nScan a server (stdio command or Streamable HTTP URL):\n\n```bash\nmcpready scan node ./my-server.js         # stdio server you launch\nmcpready scan https://mcp.example.com/mcp # remote Streamable HTTP server\nmcpready scan <target> --json             # machine-readable report (stable schema)\nmcpready scan <target> --min-grade B      # exit non-zero if the grade is below B (CI gate)\nmcpready scan <target> --fail-on error    # exit non-zero on any failed error/warn check\nmcpready scan <target> --timeout 5000\n```\n\nOther commands:\n\n```bash\nmcpready validate server.json             # validate against the official registry schema\nmcpready card <target>                    # draft an (experimental) Server Card from the server\nmcpready diff old.json new.json           # compare two scan --json reports (drift / rug-pull)\nmcpready preflight <target> --target claude|openai   # connector-directory submission readiness\n```\n\nExit codes: `0` pass, `1` grade below `--min-grade` / failing `--fail-on`\nseverity (or diff found changes / preflight NOT READY), `2` usage/connection error.\n\n## Directory pre-flight\n\n`mcpready preflight` checks the machine-verifiable submission requirements for\nthe **Claude connector directory** and the **OpenAI Apps directory** (HTTPS\ntransport, tool title + `readOnly`/`destructive`/`openWorld` hints, OAuth flow\nand S256 PKCE, widget MIME/CSP, metadata limits, privacy policy) and prints a\nREADY / NOT READY checklist plus the non-machine-checkable items for human review.\n\n```bash\nmcpready preflight https://mcp.example.com/mcp --target claude \\\n  --server-json server.json --manifest manifest.json --privacy-url https://example.com/privacy\n```\n\n## GitHub Action\n\nGate a PR on your server's grade and get a job-summary report + inline annotations:\n\n```yaml\n- uses: codixus/mcpready/packages/action@v1\n  with:\n    target: https://mcp.example.com/mcp\n    min-grade: B      # optional\n    fail-on: error    # optional\n```\n\nSee [`packages/action`](./packages/action) for all inputs.\n\n## What it checks\n\n- **Conformance** - lifecycle/handshake, version negotiation, JSON-RPC error\n  codes, ping, capability consistency.\n- **Transport** - stdio stream discipline and framing; Streamable HTTP Origin\n  validation, session-id semantics, content-type and protocol-version contracts.\n- **Tool quality** - valid input schemas, name format/uniqueness, description\n  quality, safety-annotation consistency.\n- **Context cost** - the token weight of `tools/list` and outlier descriptions.\n- **Directory pre-flight** - Claude / OpenAI connector-directory submission rules.\n- Every check is either tied to a spec clause or labelled `HEURISTIC`.\n\n## Programmatic use\n\nThe rule engine ships separately as [`mcpready-core`](https://www.npmjs.com/package/mcpready-core):\n\n```ts\nimport { probeHttp, buildReport } from \"mcpready-core\";\nconst report = buildReport(await probeHttp(\"https://mcp.example.com/mcp\"));\nconsole.log(report.score.grade);\n```\n\n## Status\n\nstdio and Streamable HTTP scanning both work, with the conformance, transport,\ntool-quality and context-cost rule sets, `validate` / `card` / `diff`, full\nClaude/OpenAI directory pre-flight, and a GitHub Action. A hosted web checker is\non the roadmap. The rules track the 2025-11-25 spec.\n\n## Develop\n\n```bash\nbun install\nbun run typecheck\nbun test\nbun run lint\n```\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

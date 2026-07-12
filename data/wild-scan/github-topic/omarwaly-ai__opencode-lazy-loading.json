@@ -1,0 +1,36 @@
+{
+  "full_name": "omarwaly-ai/opencode-lazy-loading",
+  "html_url": "https://github.com/omarwaly-ai/opencode-lazy-loading",
+  "description": "Opencode lazy load plugin Saves 85%+ on tools and MCP servers tokens per request. The LLM loads tool instructions on-demand instead of receiving thousands of tokens of schemas it never uses. ",
+  "topics": [
+    "context-management",
+    "lazy-loading",
+    "mcp-tools",
+    "opencode",
+    "opencode-plugin",
+    "token-optimization",
+    "token-saving",
+    "token-usage"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 5,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-06-15T08:24:46Z",
+  "last_pushed_at": "2026-06-26T05:48:55Z",
+  "fetched_at": "2026-07-12T00:34:17.852Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<p align=\"center\">\n<img width=\"auto\" height=\"120\" alt=\"OpenCode Lazy Load plugin\" src=\"https://github.com/user-attachments/assets/94a96fd7-ee09-41c9-842e-c33dd2f1b5d1\" />\n</p>\n\n<div align=\"center\">\n\n# OpenCode Lazy Loading\n\n**On-demand tool and MCP lazy loading plugin for [opencode](https://opencode.ai)**\n\nStrips tool definitions from every LLM request. Loads tools and MCPs only when needed — saving thousands of tokens per message.\n\n[![opencode](https://img.shields.io/badge/opencode-plugin-blue)](https://opencode.ai)\n[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)\n[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)\n\n</div>\n\n---\n\n## Overview\n\nEvery message sent to the LLM includes full tool definitions — descriptions, parameter schemas, JSON structures. With 12+ built-in tools and MCP servers, that's thousands of tokens consumed by tool schemas alone, on every single request, even if the LLM only uses one tool.\n\n**opencode lazy load plugin** eliminates this. It strips all tool definitions to a minimal pointer. The LLM calls `load_tool()` to retrieve the full instructions and schema before using a tool. Once loaded, the tool is restored for the remainder of the turn.\n\n**Use cases:**\n- 📉 **Reduce token usage** — cut tools and MCPs tokens by 95%+ per request\n- 🔌 **Scale MCP servers** — connect many MCP servers without bloating context\n- ⚡ **Faster responses** — less context to process means quicker LLM responses\n- 🧪 **Verify savings** — pair with [opencode-tokens-source](https://github.com/omarwaly-ai/OpenCode-tokens-source) to see exactly how many tokens each tool consumes before and after\n\n---\n\n## How Much Tokesns It Saves for tools and MCPs\nThe following example table  for defult Opencode setup which is ~10k Tokens + Chrom devtool MCP\n| Setup | Before | After | Saved |\n|---|---|---|---|\n| 12 built-in tools | ~6,900 tokens | ~323 tokens | **~95%** |\n| Chrom Devtool MCP | ~17,900 tokens | ZERO tokens | **100%** |\n| 12 built-in + Chrom Devtool MCP | ~24,800 tokens | ~323 tokens | **~98.7%** |\n\n**Reducing the opencode's total tokens from ~10k to ~3.7K**\nSavings scale with the number of tools. The more MCP servers you connect, the more you save.\n\n---\n## How It Works\n\nThe plugin intercepts tool definitions before they reach the LLM. It replaces full descriptions and schemas with a minimal pointer. When the LLM needs a tool, it calls `load_tool()` to retrieve the complete instructions.\n\nOnce a tool is loaded, it stays loaded for the current turn — no reload needed within the same request. On the next user message, the loaded state resets and the LLM loads tools fresh.\n\nThe plugin handles all tool types automatically: built-in tools, user-installed tools, and MCP server tools. No configuration needed — detection is automatic.\n\n---\n\n## Installation\n\n### Prerequisites\n\n- [opencode](https://opencode.ai) v1.14 or later\n\n### Mac / Linux\n\nClone the repo, then copy the plugin file into your project's `.opencode/plugin/` directory.\n\n### Windows\n\nSame — clone the repo, copy the plugin file into your project's `.opencode\\plugin\\` directory.\n\n### Verify\n\n1. Restart opencode\n2. Send any message (e.g., `hi`)\n3. The LLM will call `load_tool()` before using any tool\n\n### Uninstall\n\nDelete the file. Everything returns to normal immediately.\n\n---\n\n## Compatibility\n\n- **opencode** 1.17.10+\n- **All LLM providers** — DeepSeek, OpenAI, Anthropic, OpenRouter, and any OpenAI-compatible endpoint\n- **All MCP servers** — detected automatically\n- **Single file, zero dependencies** — no npm packages, no tokenizer, no background process\n- **No LLM calls triggered** — the plugin passively intercepts, never initiates requests\n\n---\n\n## Repository Structure\n\n```\nopencode-lazy-load/\n├── plugins/\n│   └── opencode-lazy-load.ts       # The plugin (copy to .opencode/plugin/)\n├── README.md\n├── LICENSE\n└── .gitignore\n```\n---\n\n## License\n\n[MIT](LICENSE)\n\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "full_name": "Crooj026/mcp-doctor",
+  "html_url": "https://github.com/Crooj026/mcp-doctor",
+  "description": "CLI tool to diagnose MCP configuration issues",
+  "topics": [
+    "anthropic",
+    "claude",
+    "cli",
+    "cursor",
+    "developer-tools",
+    "mcp",
+    "mcp-config",
+    "mcp-configuration-issues",
+    "mcp-tools",
+    "model-context-protocol"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-01-04T20:17:55Z",
+  "last_pushed_at": "2026-01-05T07:50:21Z",
+  "fetched_at": "2026-07-12T00:41:41.051Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# mcp-doctor\n\nDiagnose and fix MCP configuration issues across Claude Desktop, Cursor, VS Code, Claude Code, and more.\n\n## The Problem\n\nMCP configuration is fragile:\n\n- **Trailing commas** break JSON parsing silently\n- **Wrong paths** cause \"server not found\" errors\n- **Missing environment variables** lead to auth failures\n- **Server crashes** happen with unhelpful error messages\n\nYou end up spending hours debugging issues that should take seconds to find.\n\n## The Solution\n\n```bash\nnpm install -g mcp-doctor\nmcp-doctor\n```\n\nThat's it. It scans your configs and tells you exactly what's wrong:\n\n```\n🩺 MCP Doctor\n\nFound 2 config files:\n\n  Claude Desktop\n  ~/Library/Application Support/Claude/claude_desktop_config.json\n\n  Cursor (project)\n  ./.cursor/mcp.json\n\n❌ 1 Error\n\n  ~/.cursor/mcp.json:12\n  Trailing comma detected (not allowed in JSON)\n\n   10 │     \"github\": {\n   11 │       \"command\": \"npx\",\n > 12 │       \"args\": [\"-y\", \"@modelcontextprotocol/server-github\"],\n                                                                   ^\n   13 │     },\n   14 │   }\n\n  💡 Remove the comma before the closing bracket/brace\n\n⚠️  2 Warnings\n\n  ~/.cursor/mcp.json\n  Server \"github\": Environment variable GITHUB_TOKEN is not set\n  💡 Set it with: export GITHUB_TOKEN=\"your-value\"\n\n  ~/.cursor/mcp.json\n  Server \"myserver\": Using relative path \"./server.js\"\n  💡 Consider using absolute path: /Users/you/project/server.js\n\n🔌 Server Health: 3 healthy, 1 failed\n\n  ✓ filesystem (120ms)\n  ✓ fetch (89ms)\n  ✓ github (340ms)\n  ✗ broken-server\n    Timeout after 10000ms\n\n──────────────────────────────────────────────────\n\n❌ Found 1 error that needs fixing\n⚠️  3/4 servers responding\n```\n\n## What It Checks\n\n| Check                     | Description                                             |\n| ------------------------- | ------------------------------------------------------- |\n| **JSON Syntax**           | Catches trailing commas, missing brackets, invalid JSON |\n| **Path Validation**       | Verifies command paths exist and are executable         |\n| **Environment Variables** | Detects missing or empty env vars                       |\n| **Hardcoded Secrets**     | Warns about API keys in config files                    |\n| **Server Health**         | Actually starts each server and tests MCP handshake     |\n\n## Supported Clients\n\n- ✅ Claude Desktop (macOS, Windows, Linux)\n- ✅ Cursor\n- ✅ VS Code (with MCP extension)\n- ✅ Claude Code\n- ✅ Windsurf\n\n## Usage\n\n```bash\n# Check all configs (default)\nmcp-doctor\n\n# Same as above\nmcp-doctor check\n\n# Skip server health tests (faster)\nmcp-doctor check --skip-health\n\n# Validate a specific config file\nmcp-doctor --file ./my-config.json\nmcp-doctor --file ~/custom/location/config.json\n```\n\n## Installation\n\nRequires Node.js 18 or later.\n\n```bash\n# npm\nnpm install -g mcp-doctor\n\n# Or run directly with npx\nnpx mcp-doctor\n```\n\n## Config File Locations\n\n| Client                   | Location                                                          |\n| ------------------------ | ----------------------------------------------------------------- |\n| Claude Desktop (macOS)   | `~/Library/Application Support/Claude/claude_desktop_config.json` |\n| Claude Desktop (Windows) | `%APPDATA%/Claude/claude_desktop_config.json`                     |\n| Claude Desktop (Linux)   | `~/.config/claude/claude_desktop_config.json`                     |\n| Cursor                   | `~/.cursor/mcp.json`                                              |\n| VS Code                  | `~/Library/Application Support/Code/User/settings.json`           |\n| Claude Code              | `~/.claude.json` or `./.mcp.json`                                 |\n| Windsurf                 | `~/.codeium/windsurf/mcp_config.json`                             |\n\n## FAQ\n\n**Q: It says \"No MCP configuration files found\"**\n\nMake sure you have at least one MCP client configured. The tool looks in standard locations for each client.\n\n**Q: Server health check is timing out**\n\nSome servers take longer to start. The default timeout is 10 seconds. If your server needs more time, it might indicate a performance issue.\n\n**Q: Can it auto-fix issues?**\n\nNot yet. For now it tells you what's wrong and how to fix it. Auto-fix for simple issues (like trailing commas) is planned.\n\n## Contributing\n\nIssues and PRs welcome! https://github.com/Crooj026/mcp-doctor\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "dist/cli/index.js",
+    "size": 972,
+    "content": "#!/usr/bin/env node\nimport { Command } from \"commander\";\nimport { checkCommand } from \"./commands/check.js\";\nconst program = new Command();\nprogram\n    .name(\"mcp-doctor\")\n    .description(\"Diagnose and fix MCP configuration issues\")\n    .version(\"0.1.1\");\nprogram\n    .command(\"check\")\n    .description(\"Validate MCP configuration files\")\n    .option(\"--skip-health\", \"Skip server health checks\")\n    .option(\"--file <path>\", \"Validate a specific config file\")\n    .action(async (options) => {\n    await checkCommand({\n        skipHealth: options.skipHealth,\n        filePath: options.file,\n    });\n});\n// Default command (no subcommand) runs check\nprogram\n    .option(\"--skip-health\", \"Skip server health checks\")\n    .option(\"--file <path>\", \"Validate a specific config file\")\n    .action(async (options) => {\n    await checkCommand({\n        skipHealth: options.skipHealth,\n        filePath: options.file,\n    });\n});\nprogram.parse();\n//# sourceMappingURL=index.js.map"
+  },
+  "content_fetch_notes": []
+}

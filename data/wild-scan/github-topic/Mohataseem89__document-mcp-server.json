@@ -1,0 +1,44 @@
+{
+  "full_name": "Mohataseem89/document-mcp-server",
+  "html_url": "https://github.com/Mohataseem89/document-mcp-server",
+  "description": "A FastMCP-based document server that exposes files as MCP resources and tools for AI-powered document retrieval and search.",
+  "topics": [
+    "ai-tools",
+    "anthropic",
+    "api",
+    "fast-mcp",
+    "fastmcp",
+    "gemini-api",
+    "mcp",
+    "mcp-client",
+    "mcp-server",
+    "mcp-tools",
+    "model-context-protocol",
+    "model-context-protocol-server",
+    "python",
+    "rag",
+    "resources",
+    "tool-use"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-07-09T05:05:19Z",
+  "last_pushed_at": "2026-07-09T05:06:52Z",
+  "fetched_at": "2026-07-12T00:50:02.991Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# document-mcp-server\n\nA small, standalone [MCP](https://modelcontextprotocol.io) server exposing a persistent document store. Built as a reference/learning implementation that goes a bit further than most tutorial MCP servers - it demonstrates **tools**, **resources**, **prompts**, **resource subscriptions/notifications**, and **sampling** all in one place.\n\n## Features\n\n- **Tools**\n  - `list_documents` - list every document id\n  - `read_doc_contents` - read a document's contents\n  - `edit_document` - find-and-replace edit a document (persists to disk)\n  - `auto_tag_document` - uses **MCP sampling** to ask the connected client's own LLM to generate topical tags for a document\n- **Resources**\n  - `docs://documents` - list of all document ids (JSON)\n  - `docs://documents/{doc_id}` - a single document's contents\n  - Supports **subscriptions**: subscribe to a `docs://documents/{doc_id}` resource and get a `notifications/resources/updated` push whenever that doc is edited (by you or by another client talking to the same server)\n- **Prompts**\n  - `format` - rewrite a document in Markdown\n  - `summarize` - summarize a document in 2-4 sentences\n- **Persistence** - documents are stored as JSON on disk (default: `~/.document-mcp-server/documents_data.json`), so edits survive restarts. Seeded with two example docs on first run.\n\n## Install & run\n\n### Option 1: `uvx` (no install, always fresh)\n\n```bash\nuvx document-mcp-server\n```\n\n### Option 2: `pip install`\n\n```bash\npip install document-mcp-server\ndocument-mcp-server\n```\n\n### Option 3: from source (this repo)\n\n```bash\ngit clone https://github.com/mohataseem89/document-mcp-server\ncd document-mcp-server\npip install -e .\ndocument-mcp-server\n```\n\n### Run from a git URL without publishing to PyPI\n\n```bash\nuvx --from git+https://github.com/mohataseem89/document-mcp-server document-mcp-server\n```\n\nThe server speaks MCP over **stdio**, so you normally won't run it directly like this - your MCP client (Claude Desktop, Claude Code, a custom client, etc.) spawns it as a subprocess using the config below.\n\n## Configuring your MCP client\n\n### Claude Desktop / any client using `claude_desktop_config.json`-style config\n\n```json\n{\n  \"mcpServers\": {\n    \"documents\": {\n      \"command\": \"uvx\",\n      \"args\": [\"document-mcp-server\"]\n    }\n  }\n}\n```\n\nOn Windows, wrap it the same way official servers do:\n\n```json\n{\n  \"mcpServers\": {\n    \"documents\": {\n      \"command\": \"cmd\",\n      \"args\": [\"/c\", \"uvx\", \"document-mcp-server\"]\n    }\n  }\n}\n```\n\n### Custom Python MCP client\n\n```python\nfrom mcp import StdioServerParameters\n\nserver_params = StdioServerParameters(\n    command=\"uvx\",\n    args=[\"document-mcp-server\"],\n)\n```\n\n## Configuration\n\n| Option | Env var | Default | Description |\n|---|---|---|---|\n| `--data-dir` | `DOCUMENT_MCP_DATA_DIR` | `~/.document-mcp-server` | Where `documents_data.json` is stored |\n\n```bash\ndocument-mcp-server --data-dir /path/to/my/docs\n# or\nDOCUMENT_MCP_DATA_DIR=/path/to/my/docs document-mcp-server\n```\n\n## Why this exists / what it's demonstrating\n\nMost example MCP servers stop at tools + resources. This one also implements:\n\n- **Resource subscriptions** (`resources/subscribe`, `notifications/resources/updated`) - a client can watch a specific document and get pushed an update the moment it changes, instead of polling.\n- **Sampling** (`sampling/createMessage`) - the *server* asks the connected client's LLM to do a piece of work on its behalf (generating tags), rather than the usual direction of the client asking the server for data. This is one of the least-implemented parts of the MCP spec in the wild.\n\nIf you're building your own MCP server and want a small, readable reference for either of these, the full implementation is in [`src/document_mcp_server/server.py`](src/document_mcp_server/server.py).\n\n## Client compatibility note\n\nNot every MCP client supports sampling or resource subscriptions yet. If your client doesn't implement a `sampling_callback`, `auto_tag_document` will simply fail with an error from the client side (not a crash) - the rest of the tools work regardless.\n\n## Development\n\n```bash\ngit clone https://github.com/mohataseem89/document-mcp-server\ncd document-mcp-server\npip install -e .\ndocument-mcp-server --data-dir ./dev-data\n```\n\n## License\n\nMIT - see [LICENSE](LICENSE).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

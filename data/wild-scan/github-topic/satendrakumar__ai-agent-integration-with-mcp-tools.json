@@ -1,0 +1,34 @@
+{
+  "full_name": "satendrakumar/ai-agent-integration-with-mcp-tools",
+  "html_url": "https://github.com/satendrakumar/ai-agent-integration-with-mcp-tools",
+  "description": "AI Agent Integration with MPC tools",
+  "topics": [
+    "agentic-ai",
+    "google-adk",
+    "mcp-server",
+    "mcp-tools",
+    "ollama",
+    "python"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "NOASSERTION",
+  "default_branch": "main",
+  "created_at": "2025-08-23T13:12:17Z",
+  "last_pushed_at": "2025-08-23T13:38:55Z",
+  "fetched_at": "2026-07-12T00:44:19.054Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# ai-agent-integration-with-mcp-tools\n\n> **A smart financial assistant that combines Google Agent Development Kit with Model Context Protocol for real-time stock market data**\n\n## 🚀 Quick Start\n\n```bash\n# Clone and setup\ngit clone https://github.com/satendrakumar/ai-agent-integration-with-mcp-tools.git\ncd ai-agent-integration-with-mcp-tools\n\n# Install dependencies\nuv sync\n\n# Start MCP server\nuv run -m mcp_server.server\n\n# Configure environment (copy .env-example to .env)\ncp .env-example .env\n\n# Launch agent interface\nadk web\n```\n\nVisit `http://127.0.0.1:8000` and ask: *\"What's Apple's stock price today?\"*\n\n## 💡 What This Does\n\nTransform natural language into real-time financial insights:\n\n- **\"Get me Tesla's current price\"** → Live TSLA data with daily changes\n- **\"How is AAPL performing?\"** → Comprehensive Apple stock analysis  \n- **\"Show me Microsoft and Google prices\"** → Multi-stock comparison\n\n## 🏗️ Architecture\n\n```\n┌─────────────────┐    HTTP/MCP     ┌──────────────────┐    API Call    ┌─────────────┐\n│  Google ADK     │ ◄──────────────► │   MCP Server     │ ◄─────────────► │ Yahoo       │\n│  Agent          │                 │  (Tools Layer)   │                │ Finance     │\n│                 │                 │                  │                │             │\n│ • NL Processing │                 │ • get_stock_price│                │ • Real-time │\n│ • Conversation  │                 │ • Tool Discovery │                │ • Historical│\n│ • Context Mgmt  │                 │ • Error Handling │                │ • Metadata  │\n└─────────────────┘                 └──────────────────┘                └─────────────┘\n```\n\n### Components\n\n| Component | Purpose | Technology |\n|-----------|---------|------------|\n| **Agent Layer** | Natural language understanding & conversation | Google ADK |\n| **Protocol Layer** | Tool discovery & standardized communication | Model Context Protocol |\n| **Tools Layer** | Stock data retrieval & processing | Python + yfinance |\n| **Data Layer** | Real-time financial market data | Yahoo Finance API |\n\n## 📦 Installation\n\n### Prerequisites\n- Python 3.11+\n- UV package manager\n- Ollama (for local LLM) or API access to hosted models\n\n### Step-by-Step Setup\n\n1. **Install Dependencies**\n   ```bash\n   uv sync\n   ```\n\n2. **Configure Environment**\n   ```bash\n   cp .env-example .env\n   ```\n   \n   Edit `.env` with your settings:\n   ```env\n   AGENT_MODEL_NAME=ollama_chat/qwen3:1.7b\n   API_BASE=http://localhost:11434\n   MCP_SERVER_URL=http://localhost:8080/mcp\n   ```\n\n3. **Start MCP Server**\n   ```bash\n   uv run -m mcp_server.server\n   ```\n   Server runs on `http://localhost:8080/mcp`\n\n4. **Launch Agent Interface**\n   ```bash\n   adk web\n   ```\n   Opens `http://127.0.0.1:8000` in your browser\n\n### Verification\n\nTest the MCP server independently:\n```bash\nnpx @modelcontextprotocol/inspector\n```\n\n## 🛠️ Usage Examples\n\n### Basic Queries\n```\nUser: \"What's the current price of Apple?\"\nAgent: Apple (AAPL) is trading at $175.43, up $2.15 (+1.24%) today.\n\nUser: \"Get Tesla's stock info\"\nAgent: Tesla (TSLA) is at $248.87, down $5.32 (-2.09%) in current session.\n\nUser: \"How is MSFT performing?\"\nAgent: Microsoft (MSFT) shares are $378.91, up $4.55 (+1.22%) today.\n```\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

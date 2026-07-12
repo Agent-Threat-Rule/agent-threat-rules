@@ -1,0 +1,34 @@
+{
+  "full_name": "i2y/langchaingo-mcp-adapter",
+  "html_url": "https://github.com/i2y/langchaingo-mcp-adapter",
+  "description": "A Go adapter that bridges LangChain Go tools with Model Context Protocol (MCP) servers.",
+  "topics": [
+    "agent",
+    "go",
+    "golang",
+    "langchaingo",
+    "mcp",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 49,
+  "forks": 9,
+  "open_issues": 3,
+  "language": "Go",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-04-07T16:16:03Z",
+  "last_pushed_at": "2025-08-14T22:50:37Z",
+  "fetched_at": "2026-07-12T00:25:32.959Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# LangChainGo MCP Adapter\n\nA Go adapter that bridges LangChain Go tools with Model Context Protocol (MCP) servers.\n\n## Overview\n\nThis adapter allows you to use tools defined on an MCP server with the LangChain Go library. It implements the necessary interfaces to integrate MCP tools seamlessly with LangChain Go's agent infrastructure.\n\n## Features\n\n- Connect to any MCP server\n- Automatically discover MCP tools from a specified MCP server and make them available to LangChain Go\n- Wrap MCP tools as LangChain Go tools\n\n## Installation\n\n```bash\ngo get github.com/i2y/langchaingo-mcp-adapter\n```\n\n## Usage\n\n```go\npackage main\n\nimport (\n    \"context\"\n    \"log\"\n    \"os\"\n\n    \"github.com/i2y/langchaingo-mcp-adapter\"\n    \"github.com/mark3labs/mcp-go/client\"\n    \"github.com/tmc/langchaingo/agents\"\n    \"github.com/tmc/langchaingo/chains\"\n    \"github.com/tmc/langchaingo/llms/googleai\"\n    \"github.com/tmc/langchaingo/tools\"\n)\n\nfunc main() {\n    // Create an MCP client using stdio\n    mcpClient, err := client.NewStdioMCPClient(\n        \"./an-mcp-server\",  // Path to an MCP server executable\n        nil,                // Additional environment variables if needed\n    )\n    if err != nil {\n        log.Fatalf(\"Failed to create MCP client: %v\", err)\n    }\n    defer mcpClient.Close()\n\n    // Create the adapter\n    adapter, err := langchaingo_mcp_adapter.New(mcpClient)\n    if err != nil {\n        log.Fatalf(\"Failed to create adapter: %v\", err)\n    }\n\n    // Get all tools from MCP server\n    mcpTools, err := adapter.Tools()\n    if err != nil {\n        log.Fatalf(\"Failed to get tools: %v\", err)\n    }\n\n    ctx := context.Background()\n\n    // Create a Google AI LLM client\n    llm, err := googleai.New(\n        ctx,\n        googleai.WithDefaultModel(\"gemini-2.0-flash\"),\n        googleai.WithAPIKey(os.Getenv(\"GOOGLE_API_KEY\")),\n    )\n    if err != nil {\n        log.Fatalf(\"Create Google AI client: %v\", err)\n    }\n\n    // Create a agent with the tools\n    agent := agents.NewOneShotAgent(\n        llm,\n        mcpTools,\n        agents.WithMaxIterations(3),\n    )\n    executor := agents.NewExecutor(agent)\n\n    // Use the agent\n    question := \"Can you help me analyze this data using the available tools?\"\n    result, err := chains.Run(\n        ctx,\n        executor,\n        question,\n    )\n    if err != nil {\n        log.Fatalf(\"Agent execution error: %v\", err)\n    }\n\n    log.Printf(\"Agent result: %s\", result)\n}\n```\n\n## Example Applications\n\nSee the `example` directory for complete examples:\n\n- `example/agent`: Demonstrates how to use the adapter with various LLM providers (Google AI, OpenAI, Anthropic)\n- `example/server`: A minimal MCP server example that provides a URL fetching tool\n\nThe example agent supports multiple LLM providers:\n- **Google AI (Gemini)**: Set `GOOGLE_API_KEY`\n- **OpenAI**: Set `OPENAI_API_KEY`\n- **Anthropic (Claude)**: Set `ANTHROPIC_API_KEY`\n\nThe example is cross-platform and works on Windows, macOS, and Linux. The example automatically builds and runs the MCP server from source. See the [example README](./example/agent/README.md) for detailed setup instructions.\n\nThe mcp-curl server in this sample is based on the code from [this blog](https://k33g.hashnode.dev/creating-an-mcp-server-in-go-and-serving-it-with-docker).\n\n## Requirements\n\n- Go 1.23 or higher\n- [tmc/langchaingo](https://github.com/tmc/langchaingo)\n- [mark3labs/mcp-go](https://github.com/mark3labs/mcp-go)\n\n## License\n\nThis project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.\n\n## Contributing\n\nContributions are welcome! Please feel free to submit a Pull Request.\n\n1. Fork the repository\n2. Create your feature branch (`git checkout -b feature/amazing-feature`)\n3. Commit your changes (`git commit -m 'Add some amazing feature'`)\n4. Push to the branch (`git push origin feature/amazing-feature`)\n5. Open a Pull Request\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

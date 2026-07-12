@@ -1,0 +1,49 @@
+{
+  "full_name": "roampal-ai/roampal",
+  "html_url": "https://github.com/roampal-ai/roampal",
+  "description": "Memory that learns what works.",
+  "topics": [
+    "ai-assistant",
+    "ai-memory",
+    "chromadb",
+    "desktop-app",
+    "llm",
+    "lm-studio",
+    "local-ai",
+    "local-llm",
+    "mcp-server",
+    "model-context-protocol",
+    "offline-ai",
+    "ollama",
+    "outcome-learning",
+    "persistent-memory",
+    "privacy-first",
+    "rag",
+    "self-hosted",
+    "semantic-search",
+    "tauri",
+    "windows"
+  ],
+  "matched_query_topics": [
+    "mcp-server",
+    "model-context-protocol"
+  ],
+  "stars": 121,
+  "forks": 20,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "NOASSERTION",
+  "default_branch": "master",
+  "created_at": "2025-10-26T14:04:56Z",
+  "last_pushed_at": "2026-05-12T22:27:02Z",
+  "fetched_at": "2026-07-11T22:56:40.588Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Roampal\n\n[![Status](https://img.shields.io/badge/status-alpha-orange)](https://roampal.ai)\n[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)\n[![Built with Tauri](https://img.shields.io/badge/Built%20with-Tauri-FFC131?logo=tauri)](https://tauri.app/)\n[![Multi-Provider](https://img.shields.io/badge/LLM-Ollama%20%7C%20LM%20Studio-blue)](https://roampal.ai)\n[![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)\n\n**Memory that learns what works. So you can do more of it.**\n\n*Say it worked. Say it didn't. The AI remembers.*\n\nStop re-explaining yourself every conversation. Roampal remembers outcomes, learns from feedback, and gets smarter over time—all 100% private and local.\n\n<p align=\"center\">\n  <img src=\"screenshots/whatwebeenupto.png\" alt=\"Roampal - AI Chat with Persistent Memory\" width=\"800\">\n</p>\n\n> **85.8% non-adversarial on LoCoMo (1,986 questions). +23 pts over raw ingestion. Absorbs 1,135 poison memories losing only 4 pts.** [(Paper)](https://github.com/roampal-ai/roampal-labs)\n\n<p align=\"center\">\n  <a href=\"https://github.com/roampal-ai/roampal\">\n    <img src=\"https://img.shields.io/github/stars/roampal-ai/roampal?style=social\" alt=\"GitHub Stars\">\n  </a>\n</p>\n\n---\n\n## Benchmark Results\n\n*LoCoMo dataset (1,986 questions, 5 categories, corrected ground truths). Evaluated with [roampal-labs](https://github.com/roampal-ai/roampal-labs). Dual-graded by local 20B + MiniMax M2.7.*\n\n| Metric | Result |\n|--------|--------|\n| **Non-adversarial accuracy (MiniMax-regraded)** | **85.8%** |\n| **Overall (all 5 categories)** | **76.6%** |\n| **vs raw ingestion baseline** | **+23 pts** (76.6% vs 53.0%, p<0.0001) |\n| **Poison resilience** | **-4.2 pts** after 1,135 adversarial memories |\n| **No-memory baseline** | 6.0% (model has zero LoCoMo knowledge) |\n| **Architecture vs model** | Architecture: +23 pts. Model swap (GPT-4o-mini): 1.5-2.5 pts |\n\n- System learns through natural conversation, not transcript ingestion\n- Absorbs 1,135 poison memories with spoofed trust signals, retaining 72.4% accuracy\n- Wilson scoring hurts retrieval at every stage (p<0.001) — removed from ranking\n\n<details>\n<summary>Component-level retrieval ablation</summary>\n\n| Config | Hit@1 Clean | Hit@1 Poison | p-value |\n|--------|-------------|--------------|---------|\n| **TagCascade + cosine** | **27.3%** | **29.0%** | **baseline** |\n| Overlap + cosine | 25.8% | 28.0% | p=0.0003 |\n| Pure CE | 25.4% | 28.4% | — |\n| TagCascade + Wilson | 23.0% | 25.0% | p<0.0001 |\n\n- Cross-encoder: +17.8 Hit@1 over cosine (p<0.0001)\n- Tag routing (two-lane): +6.1 Hit@1 clean, +7.5 poison (p<0.0001)\n- Wilson: -4.3 Hit@1 in every configuration\n- Nursery slot: zero benefit (p=1.0)\n\nFull methodology in [roampal-labs](https://github.com/roampal-ai/roampal-labs)\n\n</details>\n\n---\n\n## Quick Start\n\n1. **[Download from roampal.ai](https://roampal.ai)** and extract\n2. Install [Ollama](https://ollama.com) or [LM Studio](https://lmstudio.ai)\n3. Right-click `Roampal.exe` → **Run as administrator**\n4. Download a model in the UI → Start chatting!\n\nYour AI starts learning about you immediately.\n\n---\n\n## Table of Contents\n\n- [Benchmark Results](#benchmark-results)\n- [Key Features](#key-features)\n- [MCP Integration](#mcp-integration)\n- [Architecture](#architecture)\n- [Supported Models](#supported-models)\n- [Documentation](#documentation)\n- [Pricing](#pricing)\n\n---\n\n## Key Features\n\n**Memory That Learns**\n- Outcome tracking: Scores every result (+0.2 worked, -0.3 failed)\n- Smart promotion: Good advice becomes permanent, bad advice auto-deletes\n- Cross-conversation: Recalls from ALL past chats\n\n**Your Knowledge Base**\n- Memory Bank: Permanent storage of preferences, identity, goals\n- Books: Upload .txt/.md docs as searchable reference\n- Pattern recognition: Detects what works across conversations\n\n**Privacy First**\n- 100% local: All data on your machine\n- Works offline: No internet after model download\n- No telemetry: Your data never leaves your computer\n\n---\n\n## MCP Integration\n\nConnect Roampal to **Claude Desktop, Cursor**, and other MCP-compatible tools.\n\n```\nSettings → Integrations → Connect → Restart your tool\n```\n\n**7 tools available**: `search_memory`, `add_to_memory_bank`, `update_memory`, `archive_memory`, `get_context_insights`, `record_response`, `score_memories`\n\n[Full MCP documentation →](dev/docs/architecture.md#mcp-integration)\n\n---\n\n## Architecture\n\n```\n┌─────────────────────────────────────────────────────────┐\n│                    5-TIER MEMORY                        │\n├─────────────┬─────────────┬─────────────┬──────────────┤\n│   Books     │   Working   │   History   │   Patterns   │\n│ (permanent) │   (24h)     │  (30 days)  │  (permanent) │\n├─────────────┴─────────────┴─────────────┴──────────────┤\n│                    Memory Bank                          │\n│            (permanent user identity/prefs)              │\n└─────────────────────────────────────────────────────────┘\n```\n\n**Core Technology:**\n- TagCascade Retrieval: Tag-routed search + cross-encoder reranking (ONNX)\n- Outcome-Based Learning: Memories adapt based on feedback\n- Sidecar LLM: Background model summarizes exchanges, extracts facts and tags\n\n[Architecture deep-dive →](dev/docs/architecture.md)\n\n---\n\n## Supported Models\n\nWorks with any tool-calling model via Ollama or LM Studio:\n\n| Model | Provider | Parameters |\n|-------|----------|------------|\n| Llama 3.x | Meta | 3B - 70B |\n| Qwen 2.5 | Alibaba | 3B - 72B |\n| Mistral/Mixtral | Mistral AI | 7B - 8x22B |\n| GPT-OSS | OpenAI (Apache 2.0) | 20B - 120B |\n\n---\n\n## Documentation\n\n| Document | Description |\n|----------|-------------|\n| [Architecture](dev/docs/architecture.md) | 5-tier memory, retrieval pipeline, technical deep-dive |\n| [Benchmarks](dev/docs/releases/v0.3.1/RELEASE_NOTES.md#benchmark-evidence) | LoCoMo evaluation, TagCascade results |\n| [Release Notes](dev/docs/releases/v0.3.3/RELEASE_NOTES.md) | Latest (v0.3.3): multimodal image input, dynamic capability + context detection, ChromaDB phantom-handling closing issue #8, atomic config writes, Harmony token cleanup |\n\n---\n\n## Important Notices\n\n**AI Safety**: LLMs may generate incorrect information. Always verify critical information. Don't rely on AI for medical, legal, or financial advice.\n\n**Model Licenses**: Downloaded models (Llama, Qwen, etc.) have their own licenses. Review before commercial use.\n\n---\n\n## Support\n\n- **Discord**: https://discord.gg/F87za86R3v\n- **Email**: roampal@protonmail.com\n- **GitHub**: https://github.com/roampal-ai/roampal/issues\n- **Author**: [Logan Teague](https://www.linkedin.com/in/logan-teague-6909901a5/)\n\n---\n\n## Pricing\n\n**Free & open-source** (Apache 2.0 License)\n\n- Build from source → completely free\n- Pre-built executable: **$19.99 one-time** (saves hours of setup)\n- Zero telemetry, full data ownership\n\n---\n\n**Made with love for people who want AI that actually remembers**\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

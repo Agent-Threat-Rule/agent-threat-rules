@@ -1,0 +1,38 @@
+{
+  "full_name": "Jordan-Jarvis/jenkins-mcp-enterprise",
+  "html_url": "https://github.com/Jordan-Jarvis/jenkins-mcp-enterprise",
+  "description": "The most advanced Jenkins MCP server available - Enterprise debugging, multi-instance management, AI-powered failure analysis, vector search, and configurable diagnostics for complex CI/CD pipelines.",
+  "topics": [
+    "ai",
+    "automation",
+    "ci-cd",
+    "debugging",
+    "devops",
+    "enterprise",
+    "jenkins",
+    "mcp",
+    "model-context-protocol",
+    "vector-search"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 29,
+  "forks": 12,
+  "open_issues": 13,
+  "language": "Python",
+  "license": "GPL-3.0",
+  "default_branch": "main",
+  "created_at": "2025-07-11T21:16:30Z",
+  "last_pushed_at": "2026-06-24T09:04:43Z",
+  "fetched_at": "2026-07-11T23:42:55.040Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Jenkins MCP Server Enterprise\n\n> Jenkins MCP server for multi-instance routing, build diagnostics, and optional vector search.\n\nA Model Context Protocol (MCP) server for Jenkins that provides build management, log inspection, failure diagnostics, and multi-instance configuration. The maintained setup paths in this repository are source install and Docker/Compose.\n\n## What It Does\n\n- Trigger builds synchronously or asynchronously\n- Find jobs before triggering or inspecting them\n- Inspect job definitions and source locations\n- Retrieve logs and run targeted log-search tools\n- Discover downstream and sub-build hierarchies\n- Inspect recent builds or a window around a specific build\n- Diagnose build failures with configurable recommendations\n- Route each tool call to the correct Jenkins instance based on `jenkins_url`\n- Expose `semantic_search` only when vector search is enabled\n- Expose `apply_job_edit` only when server-side job editing is enabled\n\n## Quick Start\n\n### Prerequisites\n\n- Python 3.10+\n- Jenkins API access\n- Jenkins username and API token\n- Docker and Docker Compose if you want container deployment\n- Qdrant if you want `semantic_search`\n\n### Install from Source\n\n```bash\ngit clone https://github.com/Jordan-Jarvis/jenkins-mcp-enterprise\ncd jenkins-mcp-enterprise\npython3 -m pip install -e .\n```\n\n### Understand the Two Config Layers\n\nThe server uses two configuration layers:\n\n- Primary server config: `config/mcp-config.yml`\n- Diagnostic config: loaded from one of:\n  - `--diagnostic-config /path/to/file.yml`\n  - `JENKINS_MCP_DIAGNOSTIC_CONFIG=/path/to/file.yml`\n  - `config/diagnostic-parameters.yml`\n  - bundled defaults in `jenkins_mcp_enterprise/diagnostic_config/diagnostic-parameters.yml`\n\nYou always need the primary server config. You only need a project-local diagnostic config file if you want to override the bundled diagnostic defaults.\n\n### Create the Primary Server Config\n\n```bash\nmkdir -p config\ncp config/mcp-config.example.yml config/mcp-config.yml\n```\n\nEdit `config/mcp-config.yml` with your Jenkins URLs and credentials.\n\nIf you want the optional Jenkins-managed job edit workflow for non-SCM-backed jobs, also set:\n\n```yaml\nsettings:\n  enable_job_editing: true\n  job_edit_workspace_dir: \"/tmp/mcp-jenkins/job-definitions\"\n```\n\n### Optional Project-Local Diagnostic Override\n\nCreate this only if you want to tune `diagnose_build_failure`:\n\n```bash\ncat > config/diagnostic-parameters.yml << 'ENDDIAG'\nsemantic_search:\n  min_diagnostic_score: 0.65\n  max_total_highlights: 4\n\nrecommendations:\n  max_recommendations: 5\nENDDIAG\n```\n\nIf you want semantic search, start the local vector stack and set `disable_vector_search: false` with `vector.host: \"http://localhost:6333\"`:\n\n```bash\n./scripts/start_dev_environment.sh\n```\n\n### Docker and Compose\n\n```bash\ncp config/mcp-config.example.yml config/mcp-config.yml\n./start-jenkins_mcp_enterprise.sh\n```\n\nSee [README-Docker.md](README-Docker.md) for the container deployment flow.\n\n### Start the Server\n\n```bash\njenkins_mcp_enterprise --config config/mcp-config.yml\n```\n\n### Connect to Claude Desktop\n\nAdd to `~/.claude_desktop_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"jenkins\": {\n      \"command\": \"jenkins_mcp_enterprise\",\n      \"args\": [\"--config\", \"config/mcp-config.yml\"]\n    }\n  }\n}\n```\n\n## Usage Notes\n\n- Pass full Jenkins build URLs when a tool or prompt relies on `jenkins_url`.\n- In multi-Jenkins setups, each tool call resolves exactly one configured instance from `jenkins_url`. The server does not fan out across all configured Jenkins instances for a single call.\n- `semantic_search` is available only when vector search is enabled.\n- `apply_job_edit` is available only when `settings.enable_job_editing: true`.\n- `get_job_definition` returns SCM location details for SCM-backed pipelines. For inline pipelines, it stages a local Groovy file for patch/edit/upload. For other Jenkins-managed jobs, it stages `config.xml`.\n- `diagnose_build_failure` always uses a diagnostic config layer. If you do not provide a project-local override, the bundled defaults are used.\n- The Docker image includes `ripgrep`, so `ripgrep_search` and `navigate_log` work in container deployments.\n\n## Common Usage Patterns\n\n```text\nAnalyze this failed build: https://jenkins.company.com/job/api-service/456/\nFind the root cause in this nested pipeline: https://jenkins.company.com/job/monorepo/job/main/789/\nShow me the test failure section from this build: https://jenkins.company.com/job/tests/321/\nFind similar authentication failures in recent builds\n```\n\n## Available Tools\n\n| Tool | Purpose |\n|------|---------|\n| `trigger_build` | Start a build and wait for completion |\n| `trigger_build_async` | Queue a build without waiting for completion |\n| `trigger_build_with_subs` | Trigger a build and track downstream/sub-build execution |\n| `get_jenkins_job_parameters` | Inspect job parameters before triggering builds |\n| `find_jobs` | Search jobs by name, path, or URL on one resolved Jenkins instance |\n| `list_job_builds` | List recent builds for a job, or a small window around a target build number |\n| `get_build_info` | Fetch metadata for a specific build or `lastBuild` |\n| `get_job_definition` | Inspect whether a job is SCM-backed, inline, multibranch, or XML-backed |\n| `ripgrep_search` | Search logs with regex and context windows |\n| `filter_errors_grep` | Filter logs with common error-oriented patterns |\n| `navigate_log` | Jump to sections or occurrences inside a log |\n| `get_log_context` | Fetch targeted log ranges or chunks |\n| `diagnose_build_failure` | AI-assisted failure diagnosis using logs, hierarchy data, and configured recommendations |\n| `semantic_search` | Vector-backed similarity search across log chunks when vector search is enabled |\n| `apply_job_edit` | Upload a locally edited staged job definition back to Jenkins when job editing is enabled |\n\n## Configuration Documentation\n\n- [Configuration Guide](config/README.md)\n- [Diagnostic Config Overview](config/README-diagnostic-config.md)\n- [Diagnostic Parameters Guide](config/diagnostic-parameters-guide.md)\n- [Diagnostic Parameters Quick Reference](config/diagnostic-parameters-quick-reference.md)\n\n## Development\n\n```bash\n# Start local supporting services when vector search is enabled\n./scripts/start_dev_environment.sh\n\n# Run tests\npython3 -m pytest tests/ -v\n\n# Format code\npython3 -m black .\n```\n\n## License\n\nGPL v3\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

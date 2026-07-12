@@ -1,0 +1,36 @@
+{
+  "full_name": "mikechao/balldontlie-mcp",
+  "html_url": "https://github.com/mikechao/balldontlie-mcp",
+  "description": "An MCP Server implementation that integrates the Balldontlie API, to provide information about players, teams and games for the NBA, NFL and MLB",
+  "topics": [
+    "mcp-server",
+    "mlb",
+    "model-context-protocol",
+    "nba",
+    "nfl"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 25,
+  "forks": 12,
+  "open_issues": 0,
+  "language": "JavaScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-04-08T17:55:06Z",
+  "last_pushed_at": "2026-03-30T17:37:00Z",
+  "fetched_at": "2026-07-11T23:48:15.779Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Balldontlie MCP Server\n[![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/mikechao/balldontlie-mcp)](https://archestra.ai/mcp-catalog/mikechao__balldontlie-mcp)\n\n[![smithery badge](https://smithery.ai/badge/@mikechao/balldontlie-mcp)](https://smithery.ai/server/@mikechao/balldontlie-mcp)\n\n[![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/07e29bcd-3fb7-46e6-b4b9-8908b3ef18f2)\n\n[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/mikechao-balldontlie-mcp-badge.png)](https://mseep.ai/app/mikechao-balldontlie-mcp)\n\n<a href=\"https://glama.ai/mcp/servers/@mikechao/balldontlie-mcp\">\n  <img width=\"380\" height=\"200\" src=\"https://glama.ai/mcp/servers/@mikechao/balldontlie-mcp/badge\" alt=\"balldontlie-mcp MCP server\" />\n</a>\n\nAn MCP Server implementation that integrates the [Balldontlie API](https://www.balldontlie.io/), to provide information about players, teams and games for the NBA, NFL and MLB.\n\n## Tools\n\n- **get_teams**\n\n  - Gets the list of team from one of the following leagues NBA (National Basketball Association), MLB (Major League Baseball), NFL (National Football League)\n  - Inputs:\n    - `league` (enum ['NBA', 'NFL', 'MLB']): The sports league to get teams for\n\n- **get_players**\n\n  - Gets the list of players from one of the following leagues NBA (National Basketball Association), MLB (Major League Baseball), NFL (National Football League)\n  - Inputs:\n    - `league` (enum ['NBA', 'NFL', 'MLB']): The sports league to get players for\n    - `firstName` (string, optional): The first name of the player to search for\n    - `lastName` (string, optional): The last name of the player to search for\n    - `cursor` (number, optional): Cursor for pagination\n\n- **get_games**\n\n  - Gets the list of games from one of the following leagues NBA (National Basketball Association), MLB (Major League Baseball), NFL (National Football League)\n  - Inputs:\n    - `league` (enum ['NBA', 'NFL', 'MLB']): The sports league to get games for\n    - `dates` (string[], optional): Get games for specific dates, format: YYYY-MM-DD\n    - `teamIds` (string[], optional): Get games for specific games\n    - `cursor` (number, optional): Cursor for pagination\n\n- **get_game**\n\n  - Get a specific game from one of the following leagues NBA (National Basketball Association), MLB (Major League Baseball), NFL (National Football League)\n  - Inputs:\n    - `league` (enum ['NBA', 'NFL', 'MLB']): The sports league to get the game for\n    - `gameId` (number): The id of the game from the get_games tool\n\n## Prompts\n\n- **schedule_generator**\n\nGiven a league (NBA, MLB, NFL), a starting date and ending date generates an interactive schedule in Claude Desktop.\n\n![claude desktop example](https://mikechao.github.io/images/schedule_geneartor_prompt.webp)\n\n## Sample queries\n\nWith this MCP Server installed you can ask Claude or other LLM questions like the following.\n\n```\nShow me today's baseball games.\nCan you find football players with the last name Purdy?\nHow many NBA players have the last name Ming?\n```\n\n## Configuration\n\n### Getting an API Key\n\n1. Sign up for account at [Balldontlie.io](https://www.balldontlie.io/)\n2. The free plan is enough for this MCP Server\n\n### Installing using Desktop Extension (DXT)\n\n1. Download the `dxt` file from the [Releases](https://github.com/mikechao/balldontlie-mcp/releases)\n2. Open it with Claude Desktop\n   or\n   Go to File -> Settings -> Extensions and drag the .DXT file to the window to install it\n\n### Installing via Smithery\n\nTo install balldontlie-mcp for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@mikechao/balldontlie-mcp):\n\n```bash\nnpx -y @smithery/cli install @mikechao/balldontlie-mcp --client claude\n```\n\n### Usage with Claude Desktop\n\nAdd this to your `claude_desktop_config.json`:\n\n```json\n{\n  \"mcp-servers\": {\n    \"balldontlie\": {\n      \"command\": \"npx\",\n      \"args\": [\n        \"-y\",\n        \"balldontlie-mcp\"\n      ],\n      \"env\": {\n        \"BALLDONTLIE_API_KEY\": \"YOUR API KEY HERE\"\n      }\n    }\n  }\n}\n```\n\n### Usage with LibreChat\n\n```yaml\nmcpServers:\n  balldontlie:\n    command: sh\n    args:\n      - -c\n      - BALLDONTLIE_[REDACTED-GENERIC_KV_SECRET] npx -y balldontlie-mcp\n```\n\n## License\n\nThis MCP server is licensed under the MIT License. This means you are free to use, modify, and distribute the software, subject to the terms and conditions of the MIT License. For more details, please see the LICENSE file in the project repository.\n\n## Disclaimer\n\nThis library is not officially associated with balldontlie.io. It is a third-party implementation of the balldontlie api with a MCP Server.\n\n## Hosted deployment\n\nA hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/mikechao-balldontlie-mcp).\n\n"
+  },
+  "descriptor_file": {
+    "path": "smithery.yaml",
+    "content": "# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml\n\nstartCommand:\n  type: stdio\n  configSchema:\n    # JSON Schema defining the configuration options for the MCP.\n    type: object\n    required:\n      - balldontlieApiKey\n    properties:\n      balldontlieApiKey:\n        type: string\n        description: API key for the Balldontlie service\n  commandFunction:\n    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.\n    |-\n      (config) => ({ command: 'node', args: ['dist/index.js'], env: { BALLDONTLIE_API_KEY: config.balldontlieApiKey } })\n  exampleConfig:\n    balldontlie[REDACTED-GENERIC_KV_SECRET]\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

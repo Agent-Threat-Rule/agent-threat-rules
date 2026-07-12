@@ -1,0 +1,52 @@
+{
+  "full_name": "LING71671/open-reverselab",
+  "html_url": "https://github.com/LING71671/open-reverselab",
+  "description": "Open-source reverse engineering lab: 197-article knowledge base + MCP tools + CTF/APK/PE automation toolchain. Agent-native.  Note:由于场景原因，目前有让几乎所有（除fable5）AI都会越狱的bug,静等官方修复,但是请在合法授权下进行安全测试😉(等我用上5.6再更新(ー_ー)!!)",
+  "topics": [
+    "ai-agent",
+    "ai-jailbreak",
+    "ai-jailbreak-universal",
+    "android-reverse-engineering",
+    "binary-analysis",
+    "claude-code",
+    "cryptography",
+    "ctf",
+    "frida",
+    "ghidra",
+    "knowledge-base",
+    "malware-analysis",
+    "mcp-server",
+    "model-context-protocol",
+    "pe-analysis",
+    "reverse-engineering",
+    "security-automation",
+    "vulnerability-research",
+    "web-security",
+    "x64dbg"
+  ],
+  "matched_query_topics": [
+    "mcp-server",
+    "model-context-protocol"
+  ],
+  "stars": 561,
+  "forks": 155,
+  "open_issues": 3,
+  "language": "Python",
+  "license": "GPL-3.0",
+  "default_branch": "main",
+  "created_at": "2026-06-17T14:31:38Z",
+  "last_pushed_at": "2026-07-08T04:51:46Z",
+  "fetched_at": "2026-07-11T22:39:21.031Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# ReverseLab\n\nOpen-source reverse engineering lab — 178-article knowledge base, 100+ MCP automation tools, covering CTF pentesting / APK reverse engineering / PE binary analysis / cryptography & protocol cracking / game cheating analysis. Agent-native, directory-as-convention.\n\n> [中文版](README.zh.md)\n\n## Routing\n\n```\nSignal → kb_router(board=) → kb_read_file → Attack chain → MCP tool mapping → Execution\n```\n\n| Signal Type | Board | KB Categories / Files | MCP Tool Family |\n|---|---|---|---|\n| HTTP/Web/API/CVE/Cloud/CAPTCHA | `ctf-website` | 26/118 | `http_probe` `run_ctf_tool` `kb_router` |\n| APK/DEX/SO/Frida/Java | `apk-reverse` | 8/20 | `android_app_baseline` `android_crypto_unpack_recipe` `android_frida_*` |\n| PE/x64/x86/malware/driver | `pe-reverse` | 9/22 | `triage_pe` `ghidra_headless_analyze` `make_x64dbg_breakpoint_script` `sample_full_workup` |\n| Crypto/Protocol/Cheat/IoT/Radio | `general` | 5/17 | `die_scan` `ghidra_*` `rizin_*` `python_re_tool_*` |\n\n## Knowledge Base\n\n```\nkb/\n├── ctf-website/techniques/   26 categories, 118 articles — Full web attack surface\n├── apk-reverse/techniques/    8 categories, 20 articles — APK/DEX reverse engineering\n├── pe-reverse/techniques/     9 categories, 22 articles — PE binary analysis\n└── general/techniques/        5 categories, 17 articles — Cryptography / Protocols / Kernel / Cheating / Methodology\n```\n\nEach technique file follows this structure: `Scenario → Input signal → Method → Attack chain → MCP tool mapping`\n\nAgent workflow: detect signal → `kb_router` lookup → `kb_read_file` → execute via MCP tool mapping.\n\n## Boards\n\n| Board | Trigger Signals |\n|---|---|\n| `boards/ctf-website` | URL, HTTP, JWT, SQLi, SSRF, CVE, API, CSP, OAuth, CAPTCHA, Cloudflare, ReDoS, Slowloris, DoS, Paywall |\n| `boards/android` | APK, DEX, adb, Frida, jadx, smali, SO, native |\n| `boards/windows` | PE, EXE, DLL, x64dbg, Ghidra, Procmon, packer, malware |\n| `boards/general` | AES/DES/RSA, protobuf, game cheat, EAC/BE/Vanguard, firmware, JTAG, SDR |\n| `boards/misc` | MCP config, skill installation, environment health check |\n\n## Directory Convention\n\n```\nsamples/      → Original samples + _quarantine/ + unpacked/\nexports/      → Tool outputs (triage / IOC / YARA / Sigma / Procmon / Ghidra summaries)\npatches/      → Patch artifacts (original samples are never modified)\nnotes/        → Analysis notes\nreports/      → Final reports\nscripts/      → Automation scripts\nprojects/     → Ghidra project files\ntemplates/    → Note / report / rule templates\nkb/           → Reusable attack knowledge base\ntools/        → Toolchain\ncases/        → Lightweight index — no large file copies\n```\n\n## Installation\n\nOn Windows, beginners can double-click `START_HERE.bat` or `START_HERE.cmd`\nfrom the repository root. It checks Python, uv, Git, workspace layout, and\n`reverse_lab_tools` MCP; creates core wrappers; runs real MCP tool calls; gives\ninstall advice for missing items; and writes `reports/misc/first-run-report.json`\nplus `reports/misc/mcp-smoke-report.json`.\n\nOn macOS/Linux, run `./START_HERE.sh` from the repository root. It performs the\nsame first-run checks and uses POSIX shell wrappers under `tools/bin/`; optional\nWindows GUI/PE tools are skipped or reported as Windows-only. Platform-specific\nrelease artifacts can stay separate: Windows full-toolchain releases ship\n`.bat`/PowerShell and GUI tools, while macOS/Linux releases ship the Python,\nMCP, shell-wrapper, and native CLI paths.\n\nTo have an AI Agent perform setup for you, copy the [AI install prompt](templates/prompts/ai-install.en.md) into Codex or Claude Code.\nIf you are not sure where to start, open [START.md](START.md).\n\n```powershell\ngit clone https://github.com/LING71671/open-reverselab.git\ncd open-reverselab\npython scripts/misc/first_run_check.py       # Check workspace + reverse_lab_tools MCP\nuv run --project tools/skills/mcp/ReverseLabToolsMCP python scripts/misc/mcp_smoke_check.py --write-report\n.\\scripts\\misc\\bootstrap.ps1              # Core script wrappers (no downloads)\n.\\scripts\\misc\\install_tools.ps1 -CTF       # Web tools\n.\\scripts\\misc\\install_tools.ps1 -Android   # APK tools\n.\\scripts\\misc\\install_tools.ps1 -Windows   # PE tools\n.\\scripts\\misc\\install_tools.ps1 -Common    # Ghidra + Maven\n```\n\nmacOS/Linux quick start:\n\n```sh\n./START_HERE.sh\n./scripts/misc/bootstrap.sh\nexport PATH=\"$PWD/tools/bin:$PWD/tools/ctf-website/bin:$PATH\"\npython scripts/misc/ai_toolcheck.py --board misc\n```\n\n## Agent Quick Start\n\n1. Clone into a stable local directory, for example `<workspace>/open-reverselab`.\n2. Windows: double-click `START_HERE.bat` or `START_HERE.cmd` for the first-run check. macOS/Linux: run `./START_HERE.sh`.\n3. Claude Code: `cd <workspace>/open-reverselab` before starting the session.\n4. Codex APP: open the existing `open-reverselab` folder directly.\n5. AI-assisted setup: copy [templates/prompts/ai-install.en.md](templates/prompts/ai-install.en.md) into your AI Agent.\n6. Create a task: `python scripts/misc/new_task.py --board ctf-website --name <name>`.\n7. After moving machines or changing MCP settings, run `uv run --project tools/skills/mcp/ReverseLabToolsMCP python scripts/misc/mcp_smoke_check.py --write-report` and confirm MCP tool calls pass.\n\nPost-install verification:\n\n```powershell\npython scripts/misc/lab_healthcheck.py\npython scripts/misc/ai_toolcheck.py --board misc\npython scripts/misc/public_release_check.py\n```\n\n`--board misc` verifies the fresh-clone core Agent scripts and lightweight tools. Run the full `python scripts/misc/ai_toolcheck.py` only after installing the Android, Windows, and CTF board toolchains you need.\n\n## Context Chain\n\nOn startup the Agent loads context along this chain:\n\n```\nCLAUDE.md → AGENTS.md → AI-USAGE.md → boards/<board>/AI-USAGE.md\n```\n\nPair with [codex-session-patcher](https://github.com/ryfineZ/codex-session-patcher) for one-click project-level `.codex/` environment and MCP server configuration.\n\n## Disclaimer\n\n**By accessing or using this project, you agree to be bound by the full disclaimer.**\n\nThe disclaimer covers: all versions and branches (retroactive and prospective), all users (direct and indirect), all derivatives (forks, copies, redistributions), legal compliance across all jurisdictions (including export controls and data protection laws), authorized purposes only, prohibited uses, no warranty, limitation of liability, indemnification, mandatory disclaimer retention in derivatives, anti-removal provisions, and educational communication protections, third-party transaction protections, and unauthorized distribution & impersonation protections, and AI/ML training protections.\n\n> 📄 Read the full legal disclaimer: [DISCLAIMER.md](DISCLAIMER.md) | [中文版](DISCLAIMER.zh.md)\n\n## License\n\nGPL-3.0-only. See [LICENSE](LICENSE) for details.\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"reverse_lab_tools\": {\n      \"command\": \"uv\",\n      \"args\": [\n        \"run\",\n        \"--project\",\n        \"tools/skills/mcp/ReverseLabToolsMCP\",\n        \"python\",\n        \"tools/skills/mcp/ReverseLabToolsMCP/reverse_lab_tools_mcp.py\"\n      ],\n      \"env\": {}\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "full_name": "Targetly-Labs/homebrew-tly",
+  "html_url": "https://github.com/Targetly-Labs/homebrew-tly",
+  "description": "Targetly lets developers deploy MCP tools and AI-powered services directly to the cloud using a simple command-line workflow. The tly CLI packages your project, builds a Docker container, assigns a public URL, and manages it on Targetly’s isolated runtime with automatic idle shutdown and easy restarts.",
+  "topics": [
+    "ai-agents",
+    "artificial-intelligence",
+    "deployment",
+    "devtools",
+    "docker-hosting",
+    "infra",
+    "mcp",
+    "mcp-servers"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 3,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Ruby",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-12-05T17:55:22Z",
+  "last_pushed_at": "2026-01-03T12:10:16Z",
+  "fetched_at": "2026-07-12T00:03:21.805Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Targetly CLI - Homebrew Tap\n\nOfficial Homebrew tap for the Targetly CLI (`tly`).\n\n## Installation\n\n```bash\n# Add the tap\nbrew tap Targetly-Labs/tly https://github.com/Targetly-Labs/homebrew-tly\n\n# Install tly\nbrew install tly\n```\n\n## Demo\n\n\nhttps://github.com/user-attachments/assets/fefc8802-a613-4111-bcfd-6dea242cbba3\n\n\n\n## Updating\n\n```bash\nbrew update\nbrew upgrade tly\n```\n\n## Usage\n\nAfter installation, you can use the `tly` command:\n\n```bash\ntly login\ntly deploy\n```\n\n## For Maintainers\n\n### Repository Naming\n\n> **Important**: For this to work as a Homebrew tap, this repository should be renamed from `brew-tly` to `homebrew-tly`. Homebrew requires the `homebrew-` prefix for tap repositories.\n\nIf you rename the repository to `homebrew-tly`, users can install with the shorter command:\n```bash\nbrew tap Targetly-Labs/tly\nbrew install tly\n```\n\n### Release Process\n\nWhen releasing a new version, follow these steps:\n\n#### 1. Build binaries for all platforms\n\nBuild the `tly` binary for each platform and create tar.gz archives with the following naming pattern:\n- `targetly-darwin-amd64-{version}.tar.gz` (macOS Intel)\n- `targetly-darwin-arm64-{version}.tar.gz` (macOS Apple Silicon)\n- `targetly-linux-amd64-{version}.tar.gz` (Linux x86_64)\n- `targetly-linux-arm64-{version}.tar.gz` (Linux ARM64)\n\nEach archive should contain a directory named `targetly-{platform}-{version}/` with:\n- `tly` (the CLI binary)\n- `targetly-api` (the API server binary - optional)\n- `README.md` (optional documentation)\n\n#### 2. Upload archives directly\n\nYou can upload your pre-built archives directly. Each archive should follow this structure:\n```\ntargetly-darwin-arm64-1.0.0/\n├── tly\n├── targetly-api\n└── README.md\n```\n\n#### 3. Calculate SHA256 checksums\n\n```bash\nshasum -a 256 targetly-darwin-amd64-1.0.0.tar.gz\nshasum -a 256 targetly-darwin-arm64-1.0.0.tar.gz\nshasum -a 256 targetly-linux-amd64-1.0.0.tar.gz\nshasum -a 256 targetly-linux-arm64-1.0.0.tar.gz\n```\n\n#### 4. Create GitHub release\n\n1. Go to https://github.com/Targetly-Labs/brew-tly/releases/new\n2. Create a new tag (e.g., `v1.0.0`)\n3. Upload all four `.tar.gz` files\n4. Publish the release\n\n#### 5. Update the formula\n\nEdit `Formula/tly.rb`:\n1. Update the `version` field\n2. Replace the `PLACEHOLDER_SHA256_*` values with the actual SHA256 checksums\n3. Commit and push the changes\n\nExample:\n```ruby\nversion \"1.0.0\"\n\non_macos do\n  if Hardware::CPU.arm?\n    url \"https://github.com/Targetly-Labs/brew-tly/releases/download/v#{version}/tly-darwin-arm64.tar.gz\"\n    sha256 \"abc123...\" # Replace with actual checksum\n  else\n    url \"https://github.com/Targetly-Labs/brew-tly/releases/download/v#{version}/tly-darwin-amd64.tar.gz\"\n    sha256 \"def456...\" # Replace with actual checksum\n  end\nend\n```\n\n### Testing Locally\n\nBefore releasing, you can test the formula locally:\n\n```bash\n# Install from local formula\nbrew install --build-from-source Formula/tly.rb\n\n# Or test the formula\nbrew test tly\n```\n\n### Quick Release Script\n\nHere's a helper script to calculate checksums after creating archives:\n\n```bash\n#!/bin/bash\necho \"=== SHA256 Checksums ===\"\necho \"\"\necho \"Darwin AMD64:\"\nshasum -a 256 tly-darwin-amd64.tar.gz | awk '{print $1}'\necho \"\"\necho \"Darwin ARM64:\"\nshasum -a 256 tly-darwin-arm64.tar.gz | awk '{print $1}'\necho \"\"\necho \"Linux AMD64:\"\nshasum -a 256 tly-linux-amd64.tar.gz | awk '{print $1}'\necho \"\"\necho \"Linux ARM64:\"\nshasum -a 256 tly-linux-arm64.tar.gz | awk '{print $1}'\n```\n\nSave this as `calculate-checksums.sh`, make it executable, and run it after creating your tar.gz files.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

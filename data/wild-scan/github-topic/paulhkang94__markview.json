@@ -1,0 +1,45 @@
+{
+  "full_name": "paulhkang94/markview",
+  "html_url": "https://github.com/paulhkang94/markview",
+  "description": "Native macOS markdown preview + MCP server for Claude Code. Swift/SwiftUI, GFM, Mermaid, syntax highlighting. No Electron.",
+  "topics": [
+    "ai-tools",
+    "claude",
+    "claude-code",
+    "developer-tools",
+    "gfm",
+    "macos",
+    "markdown",
+    "markdown-preview",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "native-app",
+    "swift",
+    "swiftui"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 35,
+  "forks": 3,
+  "open_issues": 6,
+  "language": "HTML",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-02-16T09:19:08Z",
+  "last_pushed_at": "2026-07-08T13:58:05Z",
+  "fetched_at": "2026-07-11T23:38:32.494Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MarkView\n\n[![App](https://img.shields.io/github/v/release/paulhkang94/markview?label=app&color=blue)](https://github.com/paulhkang94/markview/releases/latest)\n[![npm](https://img.shields.io/npm/v/mcp-server-markview?label=npm%20(MCP)&color=green)](https://www.npmjs.com/package/mcp-server-markview)\n[![Glama](https://glama.ai/mcp/servers/@paulhkang94/markview/badges/score.svg)](https://glama.ai/mcp/servers/@paulhkang94/markview)\n\nNative macOS markdown preview with MCP server for Claude Code. Claude writes markdown — MarkView renders it live, in a real native window, while you work.\n\n> **Versions:** The macOS app (`app` badge) and the npm MCP wrapper (`npm` badge) are versioned independently. App releases happen when the Swift binary changes; npm patches happen for MCP server improvements. Both badges always show the latest of each.\n\n![MarkView demo](docs/markview_demo.gif)\n\n| Preview only | Editor + Preview |\n|:---:|:---:|\n| ![Preview](docs/screenshots/preview-only.png) | ![Editor + Preview](docs/screenshots/editor-preview.png) |\n\n## Quick Start — Claude Code\n\nOne command to wire MarkView into every Claude Code session:\n\n```bash\nclaude mcp add --transport stdio --scope user markview -- npx mcp-server-markview\n```\n\nThat's it. Claude can now call `preview_markdown` to render any markdown string in a native macOS window, or `open_file` to open any `.md` file directly.\n\n| Tool | What it does |\n|------|-------------|\n| `preview_markdown` | Render markdown content in a live-reloading MarkView window |\n| `open_file` | Open an existing `.md` file in MarkView |\n\n### Claude Desktop Setup\n\nAdd to `~/Library/Application Support/Claude/claude_desktop_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"markview\": {\n      \"command\": \"npx\",\n      \"args\": [\"mcp-server-markview\"]\n    }\n  }\n}\n```\n\n> **Note:** MCP servers belong in `~/.claude.json` (Claude Code) or `claude_desktop_config.json` (Claude Desktop), not `~/.claude/settings.json`.\n\n## Installation\n\n### Homebrew (recommended)\n\n```bash\n# Full .app with Quick Look extension — Apple notarized, Gatekeeper approved\nbrew install --cask paulhkang94/markview/markview\n\n# CLI only (builds from source)\nbrew tap paulhkang94/markview\nbrew install markview\n```\n\n### Build from source\n\n**Prerequisites:** macOS 14+, Swift 6.0+ (Xcode Command Line Tools)\n\n```bash\ngit clone https://github.com/paulhkang94/markview.git\ncd markview\nswift build -c release\n```\n\n### Install as app (Open With support)\n\n```bash\nbash scripts/bundle.sh --install\n```\n\nCreates `MarkView.app` in `/Applications` and registers it with Launch Services for right-click > Open With in Finder.\n\n### Install CLI\n\n```bash\nbash scripts/install-cli.sh\n```\n\nCreates `mdpreview` and `md` symlinks in `~/.local/bin/`.\n\n## Usage\n\n### CLI\n\n```bash\nmdpreview README.md       # Open a file\nmdpreview                 # Open empty editor\n```\n\n### Finder\n\nRight-click any `.md`, `.markdown`, `.mdown`, `.mkd` file > **Open With** > **MarkView**\n\n### Programmatic\n\n```bash\nopen -a MarkView README.md\n```\n\n## Features\n\n- **GitHub Flavored Markdown** via swift-cmark (tables, strikethrough, autolinks, task lists, footnotes)\n- **Mermaid diagrams** — flowcharts, sequence, Gantt, ER, and pie charts\n- **Syntax highlighting** via Prism.js (18 languages)\n- **Quick Look integration** — spacebar-preview `.md` files in Finder without opening the app\n- **Markdown linting** with 9 built-in rules and status bar diagnostics\n- **Live split-pane editor** with WKWebView rendering and bidirectional scroll sync\n- **File watching** with DispatchSource — works with VS Code, Vim, and other editors\n- **Local image rendering** — inlines relative paths like `![](./image.png)` correctly\n- **Export** to HTML and PDF\n- **HTML sanitizer** — strips scripts, event handlers, and XSS vectors\n- **Drag and drop** — drop any `.md` file onto the window to open\n- **Find & Replace** — Cmd+F / Cmd+Option+F\n- **Format on save** — auto-applies lint fixes\n- **Auto-save**, **word count**, **line numbers**, **scroll position preservation**\n- **Dark mode** — system/light/dark theme options, 18 configurable settings\n\n## Architecture\n\n```\nSources/MarkViewCore/           # Library (no UI, fully testable)\n  MarkdownRenderer.swift        # cmark-gfm C API wrapper\n  FileWatcher.swift             # DispatchSource file monitoring\n  MarkdownLinter.swift          # 9-rule pure Swift linting engine\n  HTMLSanitizer.swift           # XSS prevention\n  LanguagePlugin.swift          # Plugin protocol + registry\n  Plugins/                      # CSV, HTML, Markdown plugins\n\nSources/MarkView/               # SwiftUI app (macOS 14+)\n  ContentView.swift             # Split-pane editor + preview\n  WebPreviewView.swift          # WKWebView with Prism.js\n  ExportManager.swift           # HTML/PDF export\n\nSources/MarkViewMCPServer/      # MCP server for AI tool integration\n  main.swift                    # stdio JSON-RPC (preview_markdown, open_file)\n\nTests/TestRunner/               # 403 standalone tests (no XCTest)\nTests/VisualTester/             # 5 visual regression tests + WCAG contrast\nTests/FuzzTester/               # 10K random input crash testing\nTests/DiffTester/               # Differential testing vs cmark-gfm CLI\n```\n\nSee [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for full details.\n\n## Testing\n\n```bash\nswift run MarkViewTestRunner    # 403 tests\npython3 scripts/verify.py       # Full verification (build + tests, writes stamp)\npython3 scripts/verify.py --extended  # + fuzz + differential\nbash scripts/test-mcp.sh        # MCP protocol tests\n```\n\n## Development\n\n```bash\nswift build\nswift run MarkView\nswift run MarkView /path/to/file.md\n```\n\n## Support\n\n- [GitHub Sponsors](https://github.com/sponsors/paulhkang94)\n- Star this repo to help others find it\n\n## License\n\nMIT — see [LICENSE](LICENSE).\n"
+  },
+  "descriptor_file": {
+    "path": "smithery.yaml",
+    "content": "name: markview\ndescription: >\n  Native macOS markdown previewer with MCP server for Claude Code.\n  Lets AI assistants preview markdown and open files in a native Swift app\n  with GFM rendering, Mermaid diagrams, syntax highlighting, and Quick Look integration.\nlicense: MIT\nhomepage: https://paulkang.dev\n\nbuild:\n  dockerfile: null\n\nstartCommand:\n  type: stdio\n  command: npx\n  args:\n    - \"-y\"\n    - \"mcp-server-markview\"\n\ntools:\n  - name: preview_markdown\n    description: >\n      Render a markdown string in MarkView's native macOS preview window.\n      Supports GFM, Mermaid diagrams, code syntax highlighting (Prism.js),\n      tables, task lists, and all CommonMark extensions.\n    inputSchema:\n      type: object\n      properties:\n        content:\n          type: string\n          description: Markdown source text to preview\n        filename:\n          type: string\n          description: Optional filename hint (default: preview.md)\n      required:\n        - content\n\n  - name: open_file\n    description: >\n      Open an existing markdown file from disk in MarkView.\n      The file must exist and have a markdown extension (.md, .markdown).\n    inputSchema:\n      type: object\n      properties:\n        path:\n          type: string\n          description: Absolute path to the .md file\n      required:\n        - path\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

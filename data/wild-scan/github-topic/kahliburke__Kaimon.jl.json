@@ -1,0 +1,49 @@
+{
+  "full_name": "kahliburke/Kaimon.jl",
+  "html_url": "https://github.com/kahliburke/Kaimon.jl",
+  "description": "MCP server giving AI agents full access to Julia's runtime via a live Gate — code execution, introspection, debugging, testing, and semantic search",
+  "topics": [
+    "agent",
+    "ai",
+    "claude",
+    "claude-code",
+    "cursor",
+    "debugging",
+    "developer-tools",
+    "gemini-cli",
+    "julia",
+    "julia-lang",
+    "llm",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "qdrant",
+    "repl",
+    "semantic-search",
+    "tui",
+    "vscode",
+    "zmq"
+  ],
+  "matched_query_topics": [
+    "mcp-server",
+    "model-context-protocol"
+  ],
+  "stars": 86,
+  "forks": 15,
+  "open_issues": 4,
+  "language": "Julia",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-02-27T08:43:55Z",
+  "last_pushed_at": "2026-07-11T06:59:15Z",
+  "fetched_at": "2026-07-11T23:05:41.314Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Kaimon.jl\n\n<p align=\"center\">\n  <img src=\"https://github.com/kahliburke/Kaimon.jl/releases/download/docs-assets/kaimon-logo.jpg\" alt=\"Kaimon\" width=\"320\" />\n</p>\n\n**Opening the gate between AI and Julia.**\n\n[![CI](https://github.com/kahliburke/Kaimon.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/kahliburke/Kaimon.jl/actions/workflows/CI.yml)\n[![Docs](https://img.shields.io/badge/docs-dev-blue.svg)](https://kahliburke.github.io/Kaimon.jl/dev/)\n[![Julia 1.12+](https://img.shields.io/badge/julia-1.12%2B-blue)](https://julialang.org)\n[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)\n\nKaimon is an MCP (Model Context Protocol) server that gives AI agents full access to\nJulia's runtime. Connect Claude Code, Cursor, or any MCP client to a live Julia session\nwith a focused default surface of 49 tools for code execution, introspection, debugging,\ntesting, and code search.\n\n## Key Features\n\n- **Live Code Execution** — evaluate Julia code in persistent REPL sessions with full\n  state, package access, and streaming output\n- **Deep Introspection** — inspect types, methods, lowered IR, type-inferred code, and\n  macro expansions directly from the agent\n- **The Gate** — connect external Julia processes and register custom tools via ZMQ.\n  Your app's domain logic becomes agent-callable with automatic schema generation\n- **Interactive Debugging** — Infiltrator.jl integration with breakpoints, variable\n  inspection, and expression evaluation at pause points\n- **Semantic Code Search** — index projects into Qdrant and search with natural language\n  queries like \"function that handles HTTP routing\"\n- **Terminal Dashboard** — real-time TUI monitoring sessions, tool calls, test runs,\n  and search results across all connected REPLs\n- **Security** — three modes (strict/relaxed/lax), API key management, IP allowlists\n- **Testing & Profiling** — run tests with pattern filtering and coverage, profile code,\n  stress-test with concurrent simulated agents\n\n## Quick Start\n\n```julia\n]app add Kaimon\n```\n\nThis installs the `kaimon` command to `~/.julia/bin/` (make sure it's on your `PATH`). Then:\n\n```bash\nkaimon\n```\n\nThe first run opens a setup wizard (security mode, API key, port). After that, the terminal dashboard launches:\n\n![Kaimon dashboard](docs/src/assets/kaimon_overview.gif)\n\nFrom the dashboard:\n- Press **`i`** in the Config tab to write MCP config for Claude Code, Cursor, VS Code, or Gemini CLI\n- Press **`g`** to add a Gate snippet to `~/.julia/config/startup.jl` so every Julia session auto-connects\n- Or connect manually from any REPL: `]add KaimonGate; using KaimonGate; KaimonGate.serve()`\n\n## Tool Categories\n\n| Category | Tools | Description |\n|----------|-------|-------------|\n| Code Execution | `ex`, `manage_repl` | Evaluate code, restart/shutdown sessions |\n| Introspection | `investigate_environment`, `search_methods`, `type_info`, `list_names`, `workspace_symbols`, `document_symbols`, `macro_expand` | Explore types, methods, and symbols |\n| Code Analysis | `code_lowered`, `code_typed`, `format_code`, `lint_package` | IR inspection, formatting, linting |\n| Navigation | `goto_definition`, `navigate_to_file` | Jump to definitions and source locations |\n| VS Code | `execute_vscode_command`, `list_vscode_commands` | VS Code command execution |\n| Debugging | `debug_ctrl`, `debug_eval`, `debug_exfiltrate`, `debug_safehouse` | Infiltrator.jl breakpoint debugging |\n| Packages | `pkg_add`, `pkg_rm` | Add/remove packages |\n| Testing | `run_tests`, `stress_test` | Test execution, load testing |\n| Search | `search_code`, `grep_code`, `qdrant_index_project`, `qdrant_sync_index`, `qdrant_reindex_file`, `qdrant_list_collections` | `search_code` finds code by meaning (hybrid semantic + lexical); `grep_code` runs an exact pattern/regex over the live tree and returns each hit's enclosing symbol |\n| Agents | `agent_open`, `agent_send`, `agent_run`, `agent_output`, `agent_status`, `agent_list`, `agent_interrupt`, `agent_close` | Spawn & drive headless `claude` agents |\n| Extensions | `extension_info`, `manage_extension` | Inspect & control extension lifecycle |\n| Info | `ping`, `usage_instructions`, `usage_quiz`, `tool_help` | Server status and documentation |\n\nAdvanced/infra tools (IR inspection `code_lowered`/`code_typed`, `macro_expand`, `profile_code`, `lint_package`, and the raw Qdrant vector-DB admin tools) are gated **off the default surface** to keep tool selection focused -- enable them per project in `.kaimon/tools.json`.\n\n## The Gate\n\nThe gate is a separately installable, lightweight package — **`KaimonGate`**\n(ZMQ + stdlib only, no heavy deps) — so you can drop it into any project, or\nonto a remote/compute node, without the full Kaimon dependency tree:\n\n```julia\n]add KaimonGate\n```\n\nConnect any Julia process and expose domain-specific tools to AI agents:\n\n```julia\nusing KaimonGate: GateTool, serve\n\nfunction analyze_data(path::String, threshold::Float64=0.95)\n    data = load(path)\n    filter(x -> x.score > threshold, data)\nend\n\n# Kaimon auto-generates the MCP schema from the function signature\nserve(tools=[GateTool(\"analyze_data\", analyze_data)])\n```\n\nThe connected REPL appears as a session in Kaimon's TUI. The agent can call\n`analyze_data` alongside all built-in tools, with full argument validation\nand type checking. The full `Kaimon` install bundles `KaimonGate` automatically\n(a deprecated `Kaimon.Gate` alias keeps old `Gate.serve()` snippets working).\n\n## Documentation\n\nFull documentation: [kahliburke.github.io/Kaimon.jl](https://kahliburke.github.io/Kaimon.jl/dev/)\n\n## Requirements\n\n- Julia 1.12+\n- Any MCP-compatible client (Claude Code, Cursor, VS Code with Copilot Chat or Continue, Gemini CLI). VS Code's Copilot Chat / Continue speak MCP natively — no extra extension needed; press `i` in the Config tab to write the client config (`.vscode/mcp.json`).\n- Optional: [Qdrant](https://qdrant.tech) for semantic code search\n- Optional: Kaimon's built-in VS Code extension — install from the Config tab with `v` (or run `Kaimon.install_vscode_remote_control()`) — to enable the in-editor command tools (`execute_vscode_command`, `list_vscode_commands`, `navigate_to_file`).\n\n## Contributing\n\nContributions are welcome. Please open an issue to discuss changes before submitting\na pull request.\n\n## License\n\nMIT\n\n---\n\n**Kaimon** (開門) — \"opening the gate.\" The gate between AI agents and the Julia\necosystem.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "full_name": "nickgnd/tmux-mcp",
+  "html_url": "https://github.com/nickgnd/tmux-mcp",
+  "description": "A MCP server for our beloved terminal multiplexer tmux.",
+  "topics": [
+    "mcp",
+    "mcp-server",
+    "tmux"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 296,
+  "forks": 56,
+  "open_issues": 18,
+  "language": "JavaScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-03-13T22:28:43Z",
+  "last_pushed_at": "2026-02-14T07:24:57Z",
+  "fetched_at": "2026-07-11T22:44:19.136Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Tmux MCP Server\n\nModel Context Protocol server that enables Claude Desktop to interact with and view tmux session content. This integration allows AI assistants to read from, control, and observe your terminal sessions.\n\n## Features\n\n- List and search tmux sessions\n- View and navigate tmux windows and panes\n- Capture and expose terminal content from any pane\n- Execute commands in tmux panes and retrieve results (use it at your own risk ⚠️)\n- Create new tmux sessions and windows\n- Split panes horizontally or vertically with customizable sizes\n- Kill tmux sessions, windows, and panes\n\nCheck out this short video to get excited!\n\n</br>\n\n[![youtube video](http://i.ytimg.com/vi/3W0pqRF1RS0/hqdefault.jpg)](https://www.youtube.com/watch?v=3W0pqRF1RS0)\n\n## Prerequisites\n\n- Node.js\n- tmux installed and running\n\n## Usage\n\n### Configure Claude Desktop\n\nAdd this MCP server to your Claude Desktop configuration:\n\n```json\n\"mcpServers\": {\n  \"tmux\": {\n    \"command\": \"npx\",\n    \"args\": [\"-y\", \"tmux-mcp\"]\n  }\n}\n```\n\n### MCP server options\n\nYou can optionally specify the command line shell you are using, if unspecified it defaults to `bash`\n\n```json\n\"mcpServers\": {\n  \"tmux\": {\n    \"command\": \"npx\",\n    \"args\": [\"-y\", \"tmux-mcp\", \"--shell-type=fish\"]\n  }\n}\n```\n\nThe MCP server needs to know the shell only when executing commands, to properly read its exit status.\n\n## Available Resources\n\n- `tmux://sessions` - List all tmux sessions\n- `tmux://pane/{paneId}` - View content of a specific tmux pane\n- `tmux://command/{commandId}/result` - Results from executed commands\n\n## Available Tools\n\n- `list-sessions` - List all active tmux sessions\n- `find-session` - Find a tmux session by name\n- `list-windows` - List windows in a tmux session\n- `list-panes` - List panes in a tmux window\n- `capture-pane` - Capture content from a tmux pane\n- `create-session` - Create a new tmux session\n- `create-window` - Create a new window in a tmux session\n- `split-pane` - Split a tmux pane horizontally or vertically with optional size\n- `kill-session` - Kill a tmux session by ID\n- `kill-window` - Kill a tmux window by ID\n- `kill-pane` - Kill a tmux pane by ID\n- `execute-command` - Execute a command in a tmux pane\n- `get-command-result` - Get the result of an executed command\n\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

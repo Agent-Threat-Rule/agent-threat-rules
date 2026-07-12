@@ -1,0 +1,32 @@
+{
+  "full_name": "lirantal/agent-files",
+  "html_url": "https://github.com/lirantal/agent-files",
+  "description": null,
+  "topics": [
+    "agent-rules",
+    "agent-skills",
+    "ai-agents",
+    "mcp-servers"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 2,
+  "language": "TypeScript",
+  "license": "NOASSERTION",
+  "default_branch": "main",
+  "created_at": "2025-08-21T12:19:32Z",
+  "last_pushed_at": "2026-07-03T18:44:27Z",
+  "fetched_at": "2026-07-12T00:15:38.059Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<!-- markdownlint-disable -->\n\n<p align=\"center\"><h1 align=\"center\">\n  agent-files\n</h1>\n</p>\n\n<p align=\"center\">\n  A library that provides, detects and parses MCP (Model Context Protocol) files used by coding agents and other AI tools\n</p>\n\n<p align=\"center\">\n  <a href=\"https://www.npmjs.com/package/agent-files\"><img src=\"https://badgen.net/npm/v/agent-files\" alt=\"npm version\"/></a>\n  <a href=\"https://www.npmjs.com/package/agent-files\"><img src=\"https://badgen.net/npm/license/agent-files\" alt=\"license\"/></a>\n  <a href=\"https://www.npmjs.com/package/agent-files\"><img src=\"https://badgen.net/npm/dt/agent-files\" alt=\"downloads\"/></a>\n  <a href=\"https://github.com/lirantal/agent-files/actions/workflows/ci.yml\"><img src=\"https://github.com/lirantal/agent-files/actions/workflows/ci.yml/badge.svg?branch=main\" alt=\"build\"/></a>\n  <a href=\"https://app.codecov.io/gh/lirantal/agent-files\"><img src=\"https://badgen.net/codecov/c/github/lirantal/agent-files\" alt=\"codecov\"/></a>\n</p>\n\n## Features\n\n- **🔍 MCP Discovery**: Automatically detect MCP servers across various AI applications and agentic IDEs based on pre-known file path registry.\n- **📁 Directory Bubbling**: Intelligent discovery of project-scoped MCP configs from nested directories, supporting project-scoped MCP Server configuration and global configurations.\n- **✅ MCP Linter**: Lint and validate MCP configuration files to ensure they are well-formed.\n- **📝 MCP Parser**: Parse `mcp.json` files from different IDEs and tools.\n\nExample usage with [./examples/mcp-config-parser.js](./examples/mcp-config-parser.js):\n\n```bash\n$ node examples/mcp-config-parser.js\n\nAttempting to parse: ~/repos/agent-files/examples/mcp.json\n\nParsed configuration result:\n{\n  \"raw\": {\n    \"servers\": [\n      {\n        \"protocol\": \"http\",\n        \"port\": 8080\n      }\n    ]\n  },\n  \"parsed\": true,\n  \"valid\": true,\n  \"servers\": {\n    \"0\": {\n      \"name\": \"0\",\n      \"command\": \"\"\n    }\n  }\n}\n\nIs the configuration file syntax valid? true\nNumber of servers found: 1\n```\n\n## Usage: API\n\nInstall the package:\n```bash\nnpm install agent-files\n```\n\nExample usage:\n\n```javascript\nimport { MCPPathRegistry, MCPConfigParser, DirectoryBubbleService } from 'agent-files';\n\n// Find all mcp.json files\nconst bubbleService = new DirectoryBubbleService();\nconst mcpFiles = await bubbleService.findMCPFiles();\n\n// Parse the files\nconst parser = new MCPConfigParser();\nfor (const file of mcpFiles) {\n  const config = await parser.parse(file);\n  console.log(config);\n}\n```\n\n## Documentation\n\nFor detailed information about the project architecture and features:\n\n- **[Project Overview](./docs/project.md)**: Comprehensive project analysis and architecture\n- **[Design Documentation](./docs/design.md)**: Technical design decisions and implementation details\n- **[Requirements](./docs/requirements.md)**: Functional and non-functional requirements\n- **[ESLint 10 Migration Plan](./docs/migration-eslint-10.md)**: Upgrade and migration checklist for contributors\n\n## Contributing\n\nPlease consult [CONTRIBUTING](./CONTRIBUTING.md) for guidelines on contributing to this project.\n\n## Author\n\n**agent-files** © [Liran Tal](https://github.com/lirantal), Released under the [Apache-2.0](./LICENSE) License.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

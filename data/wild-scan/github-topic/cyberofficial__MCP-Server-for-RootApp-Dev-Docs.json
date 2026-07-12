@@ -1,0 +1,33 @@
+{
+  "full_name": "cyberofficial/MCP-Server-for-RootApp-Dev-Docs",
+  "html_url": "https://github.com/cyberofficial/MCP-Server-for-RootApp-Dev-Docs",
+  "description": "MCP Server for the Docs from RooApp Chat Application",
+  "topics": [
+    "docs",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "rootapp"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 1,
+  "open_issues": 2,
+  "language": "JavaScript",
+  "license": "AGPL-3.0",
+  "default_branch": "main",
+  "created_at": "2026-02-12T03:50:36Z",
+  "last_pushed_at": "2026-02-13T00:48:55Z",
+  "fetched_at": "2026-07-12T00:15:59.305Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# RootApp Documentation MCP Server\n\nA simple MCP (Model Context Protocol) server that serves RootApp documentation files with search and retrieval capabilities using stdio transport.\n\n## Docs as of Feb 11 2026\n\nThis repository contains RootApp documentation files as of February 11, 2026.\n\n\n## Features\n\n- **Retrieve Documentation**: Access any markdown file in the DOCS directory\n- **List Directory**: Browse the documentation directory structure\n- **Search Files**: Case-insensitive search across file names and paths\n- **Search Content**: Search within the actual content of documentation files\n- **Dynamic Path Resolution**: Automatically resolves DOCS path relative to the project directory\n\n## Installation\n\n1. Install dependencies:\n```bash\nnpm install\n```\n\n2. Build the project:\n```bash\nnpm run build\n```\n\nFor detailed setup instructions, see [HOWTOUSE.md](HOWTOUSE.md).\n\n## MCP Configuration (for AI Assistants)\n\nThe MCP server uses stdio transport. Configure it in your Cline/VS Code MCP settings file:\n\n```json\n{\n  \"mcpServers\": {\n    \"rootapp-docs\": {\n      \"command\": \"node\",\n      \"args\": [\"<PATH_TO_REPO>/build/index.js\"],\n      \"type\": \"stdio\",\n      \"disabled\": false\n    }\n  }\n}\n```\n\nReplace `<PATH_TO_REPO>` with your local repository path (e.g., `/Users/yourname/MCP-Server-for-RootApp-Dev-Docs` on macOS/Linux or `d:/github/MCP-Server-for-RootApp-Dev-Docs` on Windows).\n\n### Alternative Configuration (VS Code native MCP)\n\nFor VS Code's native MCP support, use this format:\n\n```json\n{\n  \"mcpServers\": {\n    \"RootAppDocsSearchTool\": {\n      \"type\": \"stdio\",\n      \"command\": \"node\",\n      \"args\": [\n        \"d:/github/MCP-Server-for-RootApp-Dev-Docs/build/index.js\"\n      ]\n    }\n  }\n}\n```\n\nReplace the path with your actual local repository path.\n\n**Note:** After updating the MCP configuration, restart Cline or toggle MCP connections to apply the changes.\n\n## Available Tools\n\n### `get_documentation`\n\nRetrieve a specific documentation file by path.\n\n**Parameters:**\n- `path` (string): Path to the documentation file without `.md` extension\n  - Example: `\"bot/api/reference/classes/RootApiException\"`\n\n**Returns:** Raw markdown content\n\n### `list_directory`\n\nList files and directories in a documentation directory.\n\n**Parameters:**\n- `path` (string, optional): Path to the directory relative to DOCS root\n  - Default: root directory\n  - Example: `\"bot/api/reference/classes\"`\n\n**Returns:** Array of file/directory names\n\n### `search_documentation`\n\nSearch across all documentation files.\n\n**Parameters:**\n- `query` (string): Search query\n  - Example: `\"client\"`, `\"channel\"`, `\"class\"`\n\n**Returns:** Array of full file paths that match the query (case-insensitive on file names and full paths)\n\n### `search_content`\n\nSearch within the actual content of all documentation files. HTML tags are automatically stripped from content before searching to avoid false matches from HTML attributes like `class`, `id`, etc.\n\n**Parameters:**\n- `query` (string): Search query - keyword or phrase to search within file contents\n  - Example: `\"exception\"`, `\"createMessage\"`, `\"permission\"`\n- `limit` (number, optional): Maximum number of results to return (default: 20)\n- `includeSnippet` (boolean, optional): Include context snippets around matches (default: false)\n- `contextLength` (number, optional): Number of characters before and after match in snippet (default: 100)\n\n**Returns:** Array of matching files with paths, match counts, and optional snippets\n\n**Note:** HTML tags are automatically removed before searching, ensuring searches for terms like `class` or `id` only match actual content, not HTML attributes.\n\n**Example Response:**\n```json\n{\n  \"matches\": [\n    {\n      \"path\": \"bot/api/reference/classes/RootApiException.md\",\n      \"matchCount\": 15,\n      \"snippet\": \"...RootApiException is thrown when an API call fails...\"\n    }\n  ],\n  \"total\": 8,\n  \"query\": \"exception\"\n}\n```\n\n## Usage Examples\n\n```\n> List all classes in the reference documentation\n> Search for files about channels\n> Get the documentation for RootApiException\n```\n\n## Project Structure\n\n```\nMCP-Server-for-RootApp-Dev-Docs/\n├── DOCS/                    (documentation files)\n├── src/\n│   └── index.ts             (MCP server implementation)\n├── build/                   (compiled JavaScript)\n│   └── index.js\n├── package.json\n├── tsconfig.json\n└── .gitignore\n```\n\n## Development\n\nTo rebuild after changes:\n```bash\nnpm run build\n```\n\n## Notes\n\n- The server automatically resolves the DOCS path relative to the script location\n- No environment variables needed\n- All documentation files are indexed on server startup\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

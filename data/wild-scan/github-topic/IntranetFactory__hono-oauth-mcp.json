@@ -1,0 +1,39 @@
+{
+  "full_name": "IntranetFactory/hono-oauth-mcp",
+  "html_url": "https://github.com/IntranetFactory/hono-oauth-mcp",
+  "description": "Hono based mcp server template using oauth2 authentication and using Streamable HTTP, can be deployed to cloudflare, deno deploy and supabase",
+  "topics": [
+    "cloudflare-workers",
+    "deno",
+    "deno-deploy",
+    "hono",
+    "honojs",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "oauth2-authentication",
+    "supabase-auth",
+    "supabase-functions"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 3,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-01-15T13:20:07Z",
+  "last_pushed_at": "2026-01-17T19:36:04Z",
+  "fetched_at": "2026-07-12T00:36:29.743Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Hono OAuth MCP Server\n\nThis is a Hono-based MCP (Model Context Protocol) server that works with any MCP-compliant OAuth2 server for authentication. The server is configured for deployment to:\n- Supabase Edge Functions\n- Cloudflare Workers\n- Deno Deploy\n\n## Environment Variables\n\n### `AUTH_SERVER_URL`\nOAuth authorization server URL. Required for Cloudflare Workers and Deno Deploy deployments.\n\n**Optional when deployed as a Supabase Edge Function** - will be auto-constructed from the automatically available `SUPABASE_URL` environment variable.\n\nExample: `https://jdnlvjebzatlybaysdcp.supabase.co/auth/v1`\n\n## Supabase Edge Functions\n\nThis server supports MCP authentication from the Supabase OAuth2 server.\n\n**Environment**: When deployed as a Supabase Edge Function, the `SUPABASE_URL` environment variable is automatically available. The server will auto-construct the `AUTH_SERVER_URL` from it (as `{origin}/auth/v1`), so no additional environment configuration is needed.\n\n### Prerequisites\nSupabase CLI should be installed. If needed, install it as a dependency:\n```bash\n# Install as dev dependency\npnpm add -D supabase\n```\n\n### Development\n```bash\nsupabase functions serve\n```\n\n### Deployment\nFirst, link your project (one-time setup):\n```bash\nsupabase link --project-ref <your-project-ref>\n```\n*Note: Find your project ref in your Supabase dashboard URL: `https://supabase.com/dashboard/project/<your-project-ref>` or in Project Settings > General > Reference ID*\n\nThen deploy the function:\n```bash\nsupabase functions deploy mcp-oauth\n```\n\nOr deploy all functions:\n```bash\nsupabase functions deploy\n```\n\n> **Note on MCP Inspector Compatibility (January 2026):**\n> The MCP Inspector is not yet compliant with RFC 9728 and does not properly handle the `resource_metadata` parameter in WWW-Authenticate headers. This causes issues when the OAuth metadata endpoint is served at an uncommon path like `/functions/v1/mcp-oauth/.well-known/oauth-protected-resource`. Claude Desktop and Claude Web handle this correctly and will successfully discover the metadata endpoint. See [Inspector issue #576](https://github.com/modelcontextprotocol/inspector/issues/576) for details.\n\n## Cloudflare Workers\n\n### Development\n```bash\npnpm cloudflare:dev\n```\n\n### Deployment\n```bash\npnpm cloudflare:deploy\n```\n\n## Deno \n\n### Prerequisites\nInstall Deno:\n```bash\n# macOS/Linux\ncurl -fsSL https://deno.land/install.sh | sh\n\n# Windows\nirm https://deno.land/install.ps1 | iex\n```\n\n### Development\n```bash\npnpm deno:dev\n# or directly with deno\ndeno task dev\n```\n\n### Deployment \n\nFirst, create a new app (one-time setup):\n```bash\ndeno deploy create --org=<your-org>\n```\n\n```bash\n# Deploy to production\npnpm deno:deploy\n# or directly with deno\ndeno task deploy\n\n```\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "full_name": "pobo-builder/claude-plugin",
+  "html_url": "https://github.com/pobo-builder/claude-plugin",
+  "description": "Claude Code plugin for Pobo Page Builder.",
+  "topics": [
+    "claude",
+    "cluade-mcp",
+    "mcp",
+    "mcp-client",
+    "mcp-server",
+    "mcp-servers",
+    "mcp-tools",
+    "pagebuilder",
+    "pobo"
+  ],
+  "matched_query_topics": [
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": null,
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2026-06-12T21:22:17Z",
+  "last_pushed_at": "2026-07-03T09:47:30Z",
+  "fetched_at": "2026-07-12T00:23:22.213Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Pobo Page Builder — Claude Code plugin\n\nAI styling of [Pobo Page Builder](https://www.pobo.space) widgets to match your\ne-shop's design. Claude reads your e-shop's look (colors, fonts, buttons, border\nradius), generates matching styles, and deploys them through Pobo Page Builder —\nnothing runs on your machine, all logic lives on the backend.\n\nSupported platforms: Shoptet, Shopify, WooCommerce, PrestaShop, Upgates.\n\n## Installation\n\nIn [Claude Code](https://claude.com/claude-code), run:\n\n```\n/plugin marketplace add pobo-builder/claude-plugin\n/plugin install pobo@pobo-builder\n```\n\n## Connecting your Pobo Page Builder account\n\nIn the Pobo Page Builder admin, open the **\"Connect Claude\"** page and copy the\nready-made command (it already contains your personal token). Paste it into your\nterminal:\n\n```\nclaude mcp add -s user --transport http pobo https://api.pobo.space/mcp/client \\\n    --header \"Authorization: Bearer <token>\"\n```\n\nThat's it — no environment variables, no config files to edit. The connection persists\nacross all your projects. The token is shown only once; if you ever need to reconnect,\ngenerate a new one on the same page and run the command again (it overwrites the old\nconnection).\n\nNever commit the token to any repository — it is a per-user secret.\n\n## Usage\n\nJust tell Claude, for example:\n\n> Make my Pobo Page Builder widgets match my e-shop's design.\n\nClaude picks the e-shop, reads its design, generates the styles, and deploys them.\nYou can then review the changes on your e-shop (hard refresh) and iterate with\nfeedback. Deployed AI styles are also visible in the Pobo Page Builder admin, where\nyou can remove them at any time.\n\n## What's in the plugin\n\n- `skills/style-widgets/` — the workflow for AI styling of widgets\n\nThe connection to the Pobo Page Builder MCP server is set up by the `claude mcp add`\ncommand above, not bundled in the plugin (the token is per-user, so it cannot ship in\na public repo).\n\n## About\n\nMade by [Pobo Page Builder](https://www.pobo.space).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

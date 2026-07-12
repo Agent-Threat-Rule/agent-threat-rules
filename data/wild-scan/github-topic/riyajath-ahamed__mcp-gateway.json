@@ -1,0 +1,33 @@
+{
+  "full_name": "riyajath-ahamed/mcp-gateway",
+  "html_url": "https://github.com/riyajath-ahamed/mcp-gateway",
+  "description": "Gateway AI agent tool layer",
+  "topics": [
+    "agent",
+    "mcp",
+    "mcp-client",
+    "mcp-server",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 1,
+  "language": "Go",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-05-01T17:41:51Z",
+  "last_pushed_at": "2026-06-16T12:24:14Z",
+  "fetched_at": "2026-07-12T00:40:36.615Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# mcp-gateway\n\n> nginx for your AI agent tool layer\n\nA single Go binary that proxies N MCP servers behind a unified Streamable HTTP endpoint-with capability aggregation, health checks, circuit breakers, pluggable auth, and full observability.\n\n[![Go version](https://img.shields.io/badge/go-1.22-blue)](https://go.dev)\n[![npm](https://img.shields.io/npm/v/@configkits/mcp-gateway-client)](https://npmjs.com/package/@configkits/mcp-gateway-client)\n[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)\n\n---\n\n## The Problem\n\nProduction AI systems connect to 5–15 MCP servers simultaneously-each with their own connection management, auth, and failure modes. Clients carry all this complexity themselves.\n\n## The Solution\n\n```\nAI Client → mcp-gateway (:8080) → [filesystem-mcp, github-mcp, postgres-mcp, ...]\n```\n\nOne endpoint. All tools. Auto-routed.\n\n---\n\n## Quickstart\n\n```bash\n# Install\ngo install github.com/configkits/mcp-gateway/cmd/gateway@latest\n\n# Configure\ncp gateway.yaml.example gateway.yaml\n# edit gateway.yaml with your server URLs\n\n# Run\nmcp-gateway --config gateway.yaml\n# ✓ registered server  filesystem-mcp  tools=12\n# ✓ registered server  github-mcp      tools=31\n# ✓ capability aggregation complete    total=51 tools\n# ✓ gateway listening on :8080\n```\n\n### Docker\n\n```bash\ndocker run -v $(pwd)/gateway.yaml:/etc/mcp-gateway/gateway.yaml \\\n  -p 8080:8080 \\\n  ghcr.io/configkits/mcp-gateway:latest\n```\n\n### One-click deploy\n\n- [Deploy to Railway](https://railway.app/new/template?template=https://github.com/configkits/mcp-gateway)\n- [Deploy to Fly.io](https://fly.io/docs/speedrun/) using `deploy/fly.toml`\n\n---\n\n## Configuration\n\nSee [`gateway.yaml`](gateway.yaml) for a fully annotated example.\n\n```yaml\ngateway:\n  port: 8080\n  auth:\n    type: \"api-key\"\n    header: \"X-Gateway-Key\"\n    secret: \"${GATEWAY_API_KEY}\"\n\nservers:\n  - name: \"github-mcp\"\n    transport: \"http\"\n    url: \"http://localhost:3002\"\n    auth:\n      type: \"bearer\"\n      token: \"${GITHUB_MCP_TOKEN}\"\n    routing:\n      prefix: \"github_\"\n    circuit_breaker:\n      threshold: 3\n      timeout: \"30s\"\n```\n\n---\n\n## TypeScript SDK\n\n```bash\nnpm install @configkits/mcp-gateway-client\n```\n\n```typescript\nimport { MCPGatewayClient } from '@configkits/mcp-gateway-client'\n\nconst gateway = new MCPGatewayClient({\n  url: 'https://gateway.yourapp.com',\n  apiKey: process.env.MCP_GATEWAY_KEY,\n})\n\n// List all tools from all backends\nconst { tools } = await gateway.listTools()\n\n// Call any tool-routing is automatic\nconst result = await gateway.callTool({\n  name: 'github_create_issue',\n  arguments: { title: 'fix: gateway routing', body: '...' }\n})\n\n// Streaming support\nfor await (const chunk of gateway.callToolStream(params)) {\n  process.stdout.write(chunk)\n}\n```\n\n---\n\n## Architecture\n\n```\n┌─────────────────────┐\n│   AI Client / Agent │\n└──────────┬──────────┘\n           │ Streamable HTTP\n┌──────────▼──────────┐\n│      mcp-gateway    │  capability aggregation\n│  ┌─────────────────┐│  health checks + circuit breaker\n│  │  server registry││  auth (api-key / jwt / oauth)\n│  │  routing engine ││  OTel traces + metrics\n│  └─────────────────┘│\n└──┬──────┬───────┬───┘\n   │      │       │\n┌──▼──┐ ┌─▼──┐ ┌─▼──┐\n│ fs  │ │ gh │ │ pg │  ... N backends\n└─────┘ └────┘ └────┘\n```\n\n---\n\n## Features\n\n| Feature | Status |\n|---------|--------|\n| HTTP/SSE backend proxying | ✅ |\n| STDIO backend support | ✅ |\n| Capability aggregation | ✅ |\n| Tool routing (prefix, pattern) | ✅ |\n| Health checks | ✅ |\n| Circuit breaker | ✅ |\n| API key auth | ✅ |\n| JWT auth | 🚧 |\n| OAuth 2.0 | 🚧 |\n| OpenTelemetry traces | ✅ |\n| Prometheus metrics | ✅ |\n| TypeScript SDK | ✅ |\n| Docker image | ✅ |\n| Railway template | ✅ |\n| Fly.io template | ✅ |\n\n---\n\n## Observability\n\n```bash\n# Enable OTel tracing (Jaeger, Grafana Tempo, Honeycomb, Datadog...)\nexport OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318\n\n# Prometheus metrics\ncurl http://localhost:8080/metrics\n\n# Health endpoint\ncurl http://localhost:8080/health\n# {\"status\":\"healthy\",\"servers\":[{\"name\":\"github-mcp\",\"healthy\":true,...}]}\n```\n\n---\n\n## License\n\nMIT-configkits/mcp-gateway\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

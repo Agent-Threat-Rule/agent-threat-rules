@@ -1,0 +1,48 @@
+{
+  "full_name": "Tom-Ryder/AgentRunKit",
+  "html_url": "https://github.com/Tom-Ryder/AgentRunKit",
+  "description": "Swift 6 agent SDK: type-safe tools, streaming, cloud + on-device inference via MLX on Apple Silicon",
+  "topics": [
+    "agent-sdk",
+    "ai-agents",
+    "anthropic",
+    "apple-silicon",
+    "function-calling",
+    "generative-ai",
+    "ios",
+    "llm",
+    "local-llm",
+    "macos",
+    "mcp",
+    "mlx",
+    "model-context-protocol",
+    "multimodal",
+    "ollama",
+    "on-device-ai",
+    "openai",
+    "openrouter",
+    "swift",
+    "tool-calling"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 27,
+  "forks": 4,
+  "open_issues": 4,
+  "language": "Swift",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-01-17T04:02:53Z",
+  "last_pushed_at": "2026-06-25T05:13:39Z",
+  "fetched_at": "2026-07-11T23:45:37.864Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# AgentRunKit\n\n<p align=\"center\">\n  <img src=\"assets/logo-dark.png\" alt=\"AgentRunKit\" width=\"280\">\n</p>\n\n<p align=\"center\">\n  <a href=\"https://github.com/Tom-Ryder/AgentRunKit/actions/workflows/ci.yml\"><img src=\"https://github.com/Tom-Ryder/AgentRunKit/actions/workflows/ci.yml/badge.svg\" alt=\"CI\"></a>\n  <img src=\"https://img.shields.io/badge/Swift-6.0-orange\" alt=\"Swift 6.0\">\n  <img src=\"https://img.shields.io/badge/Platforms-iOS%2018%20%7C%20macOS%2015-blue\" alt=\"Platforms\">\n  <img src=\"https://img.shields.io/badge/On--Device-MLX%20%7C%20Foundation%20Models-8B5CF6\" alt=\"On-Device MLX + Foundation Models\">\n  <img src=\"https://img.shields.io/badge/SPM-compatible-brightgreen\" alt=\"SPM\">\n  <img src=\"https://img.shields.io/badge/License-MIT-lightgrey\" alt=\"License\">\n  <a href=\"https://swiftpackageindex.com/Tom-Ryder/AgentRunKit/documentation/agentrunkit\"><img src=\"https://img.shields.io/badge/Documentation-DocC-blue\" alt=\"Documentation\"></a>\n</p>\n\n<p align=\"center\">\n  A Swift 6 SDK for building LLM-powered agents with type-safe tool calling.\n</p>\n\n<p align=\"center\">\n  <b>Zero-dependency core</b> · <b>Full Sendable</b> · <b>Async/await</b> · <b>Cloud + Local</b> · <b>MCP</b>\n</p>\n\n---\n\n## Quick Start\n\n```swift\nimport AgentRunKit\n\nlet client = OpenAIClient.openAI(apiKey: \"sk-...\", model: \"gpt-5.4\")\n\nlet weatherTool = try Tool<WeatherParams, String, EmptyContext>(\n    name: \"get_weather\",\n    description: \"Get the current weather\"\n) { params, _ in\n    \"72°F and sunny in \\(params.city)\"\n}\n\nlet agent = Agent(client: client, tools: [weatherTool])\nlet result = try await agent.run(userMessage: \"What's the weather in SF?\", context: EmptyContext())\nif let content = result.content {\n    print(content)\n}\n```\n\n`result.content` is optional. Completed runs return finish-tool content, while structural terminal reasons such as max iterations or token budget exhaustion surface through `result.finishReason` with no final content.\n\n---\n\n## Documentation\n\nFull documentation including guides and API reference is available on [Swift Package Index](https://swiftpackageindex.com/Tom-Ryder/AgentRunKit/documentation/agentrunkit).\n\n---\n\n## Runnable Example\n\n`Examples/AgentCode` is an interactive terminal coding agent built with AgentRunKit. It demonstrates the full agent loop in a local workspace: streaming events, type-safe tools, approval-gated edits and command execution, bounded file access, transcript export, and deterministic offline mode.\n\n```bash\ncd Examples/AgentCode\nswift run agent-code\n```\n\nBy default it opens a bundled broken Swift package so you can ask it to fix failing tests. Set `OPENAI_API_KEY` for a live OpenAI-compatible provider, or run without a key to exercise the CLI with the offline test client.\n\n---\n\n## Installation\n\nAdd to your `Package.swift`:\n\n```swift\ndependencies: [\n    .package(url: \"https://github.com/Tom-Ryder/AgentRunKit.git\", from: \"5.3.0\")\n]\n```\n\n```swift\n.target(name: \"YourApp\", dependencies: [\"AgentRunKit\"])\n```\n\nFor on-device inference, additional targets are available:\n\n- `AgentRunKitMLX` for MLX on Apple Silicon (links [mlx-swift-lm](https://github.com/ml-explore/mlx-swift-lm))\n- `AgentRunKitFoundationModels` for Apple Foundation Models (iOS 26+ and macOS 26+, no external dependencies)\n\n---\n\n## Features\n\n- Agent loop with configurable iteration limits and token budgets\n- Streaming with `AsyncThrowingStream` and `@Observable` SwiftUI wrapper\n- Type-safe tools with compile-time JSON schema validation\n- Sub-agent composition with depth control and streaming propagation\n- Context management: automatic compaction, pruning, token budgets\n- Checkpoint and resume: per-iteration snapshots, file or in-memory backends\n- Tool approval: human-in-the-loop policies with session allowlists\n- Structured output with JSON schema constraints\n- Multimodal input: images, audio, video, PDF\n- Text-to-speech with concurrent chunking and MP3 concatenation\n- MCP client: stdio transport, tool discovery, JSON-RPC\n- Extended thinking / reasoning model support\n\n---\n\n## Providers\n\n| Provider | Description |\n|----------|-------------|\n| `OpenAIClient` | OpenAI and compatible APIs (OpenRouter with reasoning replay, Groq, Together, Ollama) |\n| `AnthropicClient` | Anthropic Messages API with same-substrate continuity replay |\n| `GeminiClient` | Google Gemini API |\n| `VertexAnthropicClient` | Anthropic models on Google Vertex AI with same-substrate continuity replay |\n| `VertexGoogleClient` | Google models on Vertex AI |\n| `ResponsesAPIClient` | OpenAI Responses API with same-substrate continuity replay and OpenRouter factory |\n| `FoundationModelsClient` | Apple on-device (macOS 26+ / iOS 26+) |\n| `MLXClient` | On-device via MLX on Apple Silicon |\n\n---\n\n## Requirements\n\n| Platform | Version |\n|----------|---------|\n| iOS | 18.0+ |\n| macOS | 15.0+ |\n| Swift | 6.0+ |\n| Xcode | 26+ for local development and CI |\n\n---\n\n## License\n\nMIT License. See [LICENSE](LICENSE) for details.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

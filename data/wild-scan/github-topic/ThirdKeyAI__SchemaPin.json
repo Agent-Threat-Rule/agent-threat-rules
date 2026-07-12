@@ -1,0 +1,48 @@
+{
+  "full_name": "ThirdKeyAI/SchemaPin",
+  "html_url": "https://github.com/ThirdKeyAI/SchemaPin",
+  "description": "The SchemaPin protocol for cryptographically signing and verifying AI agent tool schemas to prevent supply-chain attacks.",
+  "topics": [
+    "agent",
+    "agents",
+    "ai",
+    "ai-agents",
+    "ai-tools",
+    "cryptography",
+    "cybersecurity",
+    "encryption",
+    "information-security",
+    "mcp",
+    "mcp-client",
+    "mcp-server",
+    "mcp-tools",
+    "protocol",
+    "security",
+    "supply-chain",
+    "supplychain",
+    "tools",
+    "verification",
+    "verify"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 16,
+  "forks": 6,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-06-06T20:44:09Z",
+  "last_pushed_at": "2026-06-25T20:24:22Z",
+  "fetched_at": "2026-07-12T00:28:31.533Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# SchemaPin\n\nCryptographic tool schema verification for AI agents and MCP servers. Prevent \"MCP Rug Pull\" attacks with ECDSA signatures, DNS-anchored trust, and TOFU key pinning.\n\n**[Read the Documentation →](https://docs.schemapin.org)**\n\n## What It Does\n\nSchemaPin lets tool developers sign their schemas and skill folders with ECDSA P-256 keys, and lets AI agents verify that schemas haven't been tampered with. Public keys are discoverable via `.well-known/schemapin.json` (RFC 8615), and Trust-On-First-Use pinning protects against future key substitution.\n\n- **ECDSA P-256 + SHA-256** cryptographic signatures\n- **`.well-known` discovery** for public keys (RFC 8615)\n- **TOFU key pinning** to prevent key substitution attacks\n- **Key revocation** with standalone signed revocation documents and structured reasons\n- **Trust bundles** for offline and air-gapped verification\n- **Pluggable resolvers** — `.well-known`, local file, trust bundle, or chain\n- **Skill folder signing** for AgentSkills (SKILL.md + file manifests)\n- **Cross-language** — Python, JavaScript, Go, and Rust implementations\n\n> **v1.4.0-alpha.2** (all four languages): three additive optional features — [signature expiration (`expires_at`)](https://docs.schemapin.org/signature-expiration/) with degraded-not-failed verification, [DNS TXT cross-verification](https://docs.schemapin.org/dns-txt/) at `_schemapin.{domain}` for second-channel trust, and [schema version binding (`schema_version` + `previous_hash`)](https://docs.schemapin.org/schema-version-binding/) for opt-in lineage chain enforcement that defends against rug-pull substitutions. v1.3 verifiers ignore the new fields; v1.4 verifiers handle both. The remaining v1.4 items (canonicalization id, A2A context, A2A trust bundles, scan-aware sigs, cross-agent schema cache) ship in subsequent alphas before stable v1.4.0.\n\n## Quick Start\n\n```python\nfrom schemapin.crypto import KeyManager\nfrom schemapin.utils import SchemaSigningWorkflow, SchemaVerificationWorkflow\n\n# Sign a schema\nprivate_key, public_key = KeyManager.generate_keypair()\nsigner = SchemaSigningWorkflow(KeyManager.export_private_key_pem(private_key))\nsignature = signer.sign_schema({\"name\": \"my_tool\", \"parameters\": {...}})\n\n# Verify a schema\nverifier = SchemaVerificationWorkflow()\nresult = verifier.verify_schema(schema, signature, \"example.com/my_tool\", \"example.com\")\n```\n\n**[Getting Started Guide →](https://docs.schemapin.org/getting-started/)**\n\n## Installation\n\n### Python\n\n```bash\npip install schemapin\n```\n\n### JavaScript\n\n```bash\nnpm install schemapin\n```\n\n### Go\n\n```bash\ngo install github.com/ThirdKeyAi/schemapin/go/cmd/...@latest\n```\n\n### Rust\n\n```toml\n[dependencies]\nschemapin = \"1.3.0\"\n# v1.4.0-alpha.2 is also published — opt in for signature expiration,\n# DNS TXT cross-verification, and schema version binding:\n# schemapin = { version = \"1.4.0-alpha.2\", features = [\"dns\"] }\n```\n\n## Documentation\n\n| Topic | Link |\n|-------|------|\n| Getting Started | [docs.schemapin.org/getting-started](https://docs.schemapin.org/getting-started/) |\n| API Reference | [docs.schemapin.org/api-reference](https://docs.schemapin.org/api-reference/) |\n| Skill Signing | [docs.schemapin.org/skill-signing](https://docs.schemapin.org/skill-signing/) |\n| Trust Bundles | [docs.schemapin.org/trust-bundles](https://docs.schemapin.org/trust-bundles/) |\n| Revocation | [docs.schemapin.org/revocation](https://docs.schemapin.org/revocation/) |\n| Signature Expiration *(v1.4-alpha, all 4 langs)* | [docs.schemapin.org/signature-expiration](https://docs.schemapin.org/signature-expiration/) |\n| DNS TXT Cross-Verification *(v1.4-alpha, all 4 langs)* | [docs.schemapin.org/dns-txt](https://docs.schemapin.org/dns-txt/) |\n| Schema Version Binding *(v1.4-alpha, all 4 langs)* | [docs.schemapin.org/schema-version-binding](https://docs.schemapin.org/schema-version-binding/) |\n| Deployment | [docs.schemapin.org/deployment](https://docs.schemapin.org/deployment/) |\n| Troubleshooting | [docs.schemapin.org/troubleshooting](https://docs.schemapin.org/troubleshooting/) |\n| Technical Specification | [TECHNICAL_SPECIFICATION.md](TECHNICAL_SPECIFICATION.md) |\n\n## Project Structure\n\n```\npython/        # Python SDK (PyPI: schemapin)\njavascript/    # JavaScript SDK (npm: schemapin)\ngo/            # Go SDK\nrust/          # Rust SDK (crates.io: schemapin)\nserver/        # Production .well-known endpoint server\n```\n\n## License\n\nMIT — Jascha Wanger / [ThirdKey.ai](https://thirdkey.ai)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "root contents listing failed (private, empty, or rate limited)"
+  ]
+}

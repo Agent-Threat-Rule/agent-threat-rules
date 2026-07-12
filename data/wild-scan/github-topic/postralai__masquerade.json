@@ -1,0 +1,40 @@
+{
+  "full_name": "postralai/masquerade",
+  "html_url": "https://github.com/postralai/masquerade",
+  "description": "The Privacy Firewall for LLMs",
+  "topics": [
+    "anonymization",
+    "claude",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "pdf-processing",
+    "pdf-pseudonymization",
+    "pdf-redaction",
+    "privacy",
+    "private-llm",
+    "pseudonymization"
+  ],
+  "matched_query_topics": [
+    "mcp-server",
+    "model-context-protocol"
+  ],
+  "stars": 77,
+  "forks": 21,
+  "open_issues": 2,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-06-09T22:05:38Z",
+  "last_pushed_at": "2025-08-11T00:47:22Z",
+  "fetched_at": "2026-07-11T23:08:56.305Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Masquerade MCP: Redact. Replace. Retain Control.\n\n[![Demo video](https://github.com/user-attachments/assets/27e1580b-6fde-474c-8e88-44e77c3fb6a0)](https://github.com/user-attachments/assets/80b1d8ac-a012-41ce-8e92-64d567f2427f)\n\n🤐 **Problem:** Tools like Claude or GPT are incredibly powerful, but they require raw input. If you're dealing with contracts, medical records, or internal documents, that's risky.\n\n🛡️ **Solution:** Masquerade acts as a privacy firewall for your files. Just paste in the **file path** to a PDF, and Masquerade will:\n\n  - Automatically detect sensitive data (names, emails, dates, entities)\n  - Redact the sensitive data\n  - Let you preview before sending to an LLM\n\n## Architecture\n\n![Image](https://github.com/user-attachments/assets/96002c8b-5839-4499-814e-e603d95e7c82)\n\n1. **User Input**: The user asks Claude to redact a PDF by providing its file path.\n1. **PDF Processing**: MCP reads the PDF and converts it to text.\n1. **Sensitive Data Detection**: The text is sent to Tinfoil (an isolated AI platform using Llama 3.3 70B) to identify sensitive data.\n1. **Redaction**: MCP removes the sensitive data and creates a redacted PDF.\n1. **Summary Return**: MCP sends Claude a summary with:\n    - Masked versions of the sensitive data\n    - Redaction counts per page\n    - The path to the redacted file\n1. **Quering PDF with Claude**: The user can upload the redacted PDF to Claude if satisfied with the redactions.\n\n## Installation\n\n[![Setup video](https://github.com/user-attachments/assets/1402cd40-34df-4776-a8e4-f07d6f20c90b)](https://github.com/user-attachments/assets/76dedb64-1ef5-4ab4-afe1-11f399b3653b)\n\n1. Install [Claude desktop](https://claude.ai/download)\n1. Get [Tinfoil](https://tinfoil.sh) API key (create account and API key)\n1. Configure environment\n\n<details open>\n<summary><strong>Option 1: Automated</strong></summary>\n\n```bash\ncurl -O https://raw.githubusercontent.com/postralai/masquerade/main/setup.sh && bash setup.sh\n```\n\n4. Restart Claude desktop app (if successfully configured)\n\n</details>\n\n<details>\n<summary><strong>Option 2: Manual (click to expand)</strong></summary>\n\n4. Create a virtual environment with **Python \">=3.10, <=3.12\"**\n\n```bash\npython3.12 -m venv pdfmcp\nsource pdfmcp/bin/activate\npython --version\n```\n\n5. Install this repo with the command below\n\n```bash\npip install git+https://github.com/postralai/masquerade@main\n```\n\n6. Automate the Claude config setup (and skip the next steps)\n\n```bash\npython -m masquerade.configure_claude\n```\n\n7. Get Python path: `which python`\n1. Get MCP file path: `python -c \"import masquerade as m; print(f'{m.__path__[0]}/mcp_pdf_redaction.py')\"`\n1. Add (1) Python path, (2) MCP file path, and (3) Tinfoil API key to the JSON below and add that to `claude_desktop_config.json`. Instructions to find the config file are in the image below.\n1. Restart Claude\n\n```json\n{\n  \"mcpServers\": {\n    \"pdf-redaction\": {\n      \"command\": \"/path/to/python\", // Run `which python`\n      \"args\": [\"/path/to/mcp_pdf_redaction.py\"], // Run `python -c \"import masquerade as m; print(f'{m.__path__[0]}/mcp_pdf_redaction.py')\"`\n      \"env\": {\n        \"TINFOIL_API_KEY\": \"your_api_key\" // Create Tinfoil account and paste API key\n      }\n    }\n  }\n}\n```\n\n![Image](https://github.com/user-attachments/assets/cfa56a1a-bec0-40e5-95d9-f4f36c43b95a)\n\n</details>\n\n## How to use?\n\n1. Prompt Claude: \"Redact sensitive information from this PDF: /path/to/filename.pdf\"\n1. MCP opens the redacted and highlighted PDF files\n1. Manually upload the redacted PDF to Claude for quering\n\n**Note:** Don't upload the original PDF to Claude, only the file path.\n\n## Contributing\n\nIf you have a fix or improvement, feel free to submit a pull request. For significant changes, please open an issue first to discuss your proposed updates.\n\nSee the [Developer section](docs/developers.md) for the installation of this repository.\n\n## License\n\nThis project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.\n\n## Need Help?\n\nFor questions and common issues, please see the [FAQ section](docs/faq.md) or open an issue on GitHub.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

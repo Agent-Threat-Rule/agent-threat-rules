@@ -1,0 +1,37 @@
+{
+  "full_name": "OMGhozlan/Volatility-MCP-Server",
+  "html_url": "https://github.com/OMGhozlan/Volatility-MCP-Server",
+  "description": " MCP (Model Context Protocol) interface for Volatility 3, providing memory forensics capabilities through LLM-based tools. Query, analyze, and automate Volatility 3 plugins using natural language via API or agent-based workflows",
+  "topics": [
+    "agentic-ai",
+    "fastmcp",
+    "mcp-server",
+    "mcp-tools",
+    "memory-forensics",
+    "python3",
+    "volatility",
+    "volatility-framework",
+    "volatility3"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 1,
+  "open_issues": 2,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-05-17T11:23:02Z",
+  "last_pushed_at": "2025-10-07T19:52:12Z",
+  "fetched_at": "2026-07-12T00:39:14.741Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# ❄️ Volatility MCP Server\n\n[![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)\n[![Volatility 3](https://img.shields.io/badge/Volatility-3.x-success)](https://github.com/volatilityfoundation/volatility3)\n[![Docker (Not) Ready](https://img.shields.io/badge/Docker-Ready-green)](https://hub.docker.com/)\n[![FastMCP](https://img.shields.io/badge/FastMCP-Server-red.svg)](https://github.com/Textualize/fastmcp)\n\n---\n\n## 📌 Overview\n\nThe Volatility MCP Server is a powerful memory forensics automation toolkit powered by **Volatility 3**. It provides a modular, extensible interface for running Volatility plugins across Windows, Linux, and macOS memory dumps.\n\nIt makes memory analysis faster and more accessible via:\n\n✅ Plugin automation  \n✅ Cross-platform support (Windows, Linux, macOS)  \n✅ Modular plugin architecture  \n✅ Rich logging with beautiful formatting  \n✅ Easy plugin registration and management  \n\n---\n\n## 💡 Key Features\n\n- 🔍 Powered by **Volatility 3**\n- 🧠 Supports Windows, Linux, and macOS plugins\n- ⚙️ Asynchronous plugin execution\n- 📤 JSON output format\n- 📊 Built-in error handling and validation\n- 👨‍💻 FastMCP server interface\n- 🐳 Docker-ready environment\n\n---\n\n## 📦 Requirements\n\n```bash\npython 3.11+\npip install -r requirements.txt\n```\n\n**requirements.txt:**\n```\nfastmcp\nrich\npython-dotenv\n```\n\n---\n\n## 📁 Project Structure\n\n```\nVolatility-MCP-Server/\n├── volatility_mcp_server.py    # Main server implementation\n├── plugins/                    # Plugin modules\n│   ├── base_plugin.py         # Base plugin class\n│   ├── plugin_factory.py      # Plugin registration\n│   ├── windows/               # Windows plugins\n│   ├── linux/                 # Linux plugins\n│   ├── mac/                   # macOS plugins\n│   └── common/                # Common plugins\n├── requirements.txt           # Dependencies\n└── README.md                 # This file\n```\n\n---\n\n## 🖥️ Usage\n\n### 🔧 Local Connection\n#### Using `stdio`\nCreate a `.cursor/mcp.json` file with:\n\n```json\n{\n  \"mcpServers\": {\n    \"Volatility3\": {\n      \"command\": \"fastmcp\",\n      \"args\": [\"run\", \"path/to/volatility_mcp_server.py:mcp\", \"--transport\", \"stdio\"]\n    }\n  }\n}\n```\n#### Using `sse`\nRun the server using\n```pwsh\nfastmcp run volatility_mcp_server.py:mcp --transport sse\n```\nFor Claude desktop\n```json\n{\n    \"mcpServers\": {\n      \"volatility3\": {\n        \"command\": \"npx\",\n        \"args\": [\"mcp-remote\", \"http://localhost:8000/sse\"]\n      }\n    }\n  }\n```\nFor Cursor\n```json\n{\n  \"mcpServers\": {\n    \"Volatility3\": {\n      \"url\": \"http://localhost:8000/sse\"\n    }\n  }\n}\n```\n\n### 📊 Available Plugins\n\n#### Windows Plugins\n- Process: `PsList`, `PsTree`, `PsScan`\n- Memory: `Malfind`, `MemMap`\n- Network: `NetScan`\n- Registry: `RegistryHiveList`, `RegistryPrintKey`\n- System: `SvcScan`, `CmdLine`, `DllList`, `Handles`, `FileScan`\n- Disk: `ADS`, `MFTScan`, `ResidentData`\n\n#### Linux Plugins\n- Process: `PsList`, `PsTree`, `PsScan`, `PsAux`, `PsCallStack`\n- System: `Bash`, `Boottime`, `Capabilities`\n- Network: `IpAddr`, `IpLink`, `Netfilter`\n- Memory: `Malfind`, `ModuleExtract`\n- File System: `Files`, `InodePages`, `RecoverFs`\n\n#### macOS Plugins\n- Process: `PsList`, `PsTree`, `Psaux`\n- System: `Bash`, `Dmesg`, `Lsmod`\n- Network: `Ifconfig`, `Netstat`\n- Security: `Check_syscall`, `Check_sysctl`, `Check_trap_table`\n\n#### Common Plugins\n- Framework: `Banners`, `ConfigWriter`, `FrameworkInfo`, `IsfInfo`, `LayerWriter`\n- Scan: `RegExScan`, `YaraScan`, `Vmscan`\n- Timeline: `Timeliner`\n\n---\n\n## 🐳 Docker Usage (No idea what I wanted to do here but might be useful in the future)\n\n### ⚙️ 1. Build the Docker Image\n\nFrom the root directory:\n\n```bash\ndocker build -t volatility-mcp .\n```\n\n### ▶️ 2. Run the Server\n\n```bash\ndocker run --rm -it \\\n  -v $(pwd)/memdumps:/memdumps \\\n  -v $(pwd)/output:/output \\\n  volatility-mcp\n```\n\n---\n\n## 🔧 Developer/Contributor Guide\n\n### 🧱 Setup Virtual Environment\n\n```bash\npython3 -m venv venv\nsource venv/bin/activate\npip install -r requirements.txt\n```\n\n### 🧪 Run Locally\n\n```bash\npython volatility_mcp_server.py\n```\n\n---\n\n## ✍️ Customization Tips\n\n- 📀 Want to add a new plugin? Extend `BasePlugin` and register it in `plugin_factory.py`\n- 🧩 Want to add a new OS? Create a new plugin directory and implement the plugins\n- 📚 Want to add new features? The modular architecture makes it easy to extend\n\n---\n\n## 🙋 FAQ\n\n> 🟠 **Does this support Volatility 2.x?**  \n🔻 No. This server supports **Volatility 3 only** for modern plugin support.\n\n> 🔵 **Can I add custom plugins?**  \n✅ Yes! Just extend the `BasePlugin` class and register it in the factory.\n\n> 🔴 **Why use FastMCP?**  \nIt provides a clean, efficient interface for running Volatility plugins with proper error handling and async support.\n\n---\n\n## 📜 License\n\nMIT ©️ 2025\n\n---\n\n## 🌐 More Tools?\n\nYou may also like:\n- [Volatility Foundation](https://www.volatilityfoundation.org/)\n- [FastMCP Documentation](https://github.com/Textualize/fastmcp)\n- [Python-dotenv](https://github.com/theskumar/python-dotenv)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "full_name": "abcpro1/mcp-cli-catalog",
+  "html_url": "https://github.com/abcpro1/mcp-cli-catalog",
+  "description": "An MCP server that publishes CLI tools on your machine for discoverability by LLMs",
+  "topics": [
+    "ai",
+    "catalog",
+    "cli",
+    "coding-agents",
+    "discovery",
+    "llms",
+    "mcp-server",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 1,
+  "open_issues": 0,
+  "language": "JavaScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-11-16T20:46:54Z",
+  "last_pushed_at": "2025-11-16T20:50:03Z",
+  "fetched_at": "2026-07-12T00:42:27.518Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# mcp-cli-catalog\n\nAn MCP server that publishes the CLI tools on your machine. Coding agents already have shell access and are great at generating complex commands with pipes and filters. This just tells them what's available so they can use MCP tools more efficiently.\n\n## Why\n- LLM coding agents can effectively chain shell commands with pipes to filter and reshape complex data.\n- Declaring CLI tools as MCP tools makes them discoverable to the LLM.\n\n## How It Works\n- This server exposes your CLI tools as MCP tool definitions so the LLM knows what's available.\n- The MCP tools defined in the catalog only instruct the LLM to use the shell; they do not execute any tools themselves.\n- Shell access is required for the agent to actually run the commands.\n\n## Install\nAdd the server to your MCP config (e.g. for Claude Code):\n\n```json\n{\n  \"mcpServers\": {\n    \"cli-catalog\": {\n      \"command\": \"npx\",\n      \"args\": [\"mcp-cli-catalog\"]\n    }\n  }\n}\n```\n\nOr with a a custom catalog path:\n\n```json\n{\n  \"mcpServers\": {\n    \"cli-catalog\": {\n      \"command\": \"npx\",\n      \"args\": [\"mcp-cli-catalog\", \"--config\", \"./tools.json\"]\n    }\n  }\n}\n```\n\n## Configure Tools\nAdd a JSON catalog file (default: `~/.mcp-cli-catalog.json`) with the CLI tools you want to make discoverable:\n\n```jsonc\n{\n  // JSON Comments are allowed.\n  \"tools\": [\n    {\n      \"name\": \"knowledge-base-search\",\n      \"description\": \"Search full text across the knowledge base\",\n      \"usage\": \"knowledge-base-search 'pattern' | head\"\n    },\n    {\n      \"name\": \"knowledge-base-get\",\n      \"description\": \"Get a knowledge base file\",\n      \"usage\": \"knowledge-base-get path/to/file.md | sed -n '100,200p'\\nknowledge-base-get path/to/file.md | rg 'TODO'\"\n    }\n  ]\n}\n```\n\n- `name` and `description` are required.\n- `usage` (optional) shows up as a hint in responses.\n- `command` (optional) is the exact string to run. If you skip it, the tool `name` is used.\n- Point to a different catalog with `--config <path>` or `MCP_CLI_CATALOG_FILE=<path>`.\n\n## Test\nTest your server setup with the MCP Inspector:\n\n```bash\nnpx @modelcontextprotocol/inspector npx mcp-cli-catalog\n```\n\nOr with a custom catalog:\n\n```bash\nnpx @modelcontextprotocol/inspector npx mcp-cli-catalog --config ./tools.json\n```\n\n## Development\n- `npm run dev`: run directly from `src/index.js`\n- `npm run build`: compile to `dist/index.js` and fix permissions\n- `npm start`: run the built server from `dist/index.js`\n\n## Alternative approaches\nCloudflare’s “Code Mode”<sup>[1](https://blog.cloudflare.com/code-mode/)</sup> and Anthropic’s code‑execution‑with‑MCP post<sup>[2](https://www.anthropic.com/engineering/code-execution-with-mcp)</sup> explore a different way to solve MCP tooling challenges. Their approach provides MCP tools through an SDK to the LLM, which writes code to call and process those tools. This project takes a simpler path: build CLI tools and make them discoverable through the MCP tool catalog.\n\n---\n1. Cloudflare, “Code Mode,” 2025.  \n2. Anthropic, “Code execution with MCP,” 2025.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

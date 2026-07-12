@@ -1,0 +1,32 @@
+{
+  "full_name": "spences10/mcp-sequentialthinking-tools",
+  "html_url": "https://github.com/spences10/mcp-sequentialthinking-tools",
+  "description": "🧠 An adaptation of the MCP Sequential Thinking Server to guide tool usage. This server provides recommendations for which MCP tools would be most effective at each stage.",
+  "topics": [
+    "mcp",
+    "model-context-protocol",
+    "modelcontextprotocol",
+    "tool"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 583,
+  "forks": 87,
+  "open_issues": 12,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-01-24T11:02:14Z",
+  "last_pushed_at": "2026-07-10T15:57:27Z",
+  "fetched_at": "2026-07-11T23:12:48.692Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# mcp-sequentialthinking-tools\n\n[![built with vite+](https://img.shields.io/badge/built%20with-Vite+-646CFF?logo=vite&logoColor=white)](https://viteplus.dev)\n[![tested with vitest](https://img.shields.io/badge/tested%20with-Vitest-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev)\n\nA lightweight MCP server for recording sequential reasoning steps. It\nis a scratchpad with history, branching, revision metadata, and\noptional validation for model-authored tool plans.\n\nIt does **not** discover your other MCP tools and it does **not**\nchoose tools for the model. If you pass `available_tools` and\n`recommended_tools`, the server validates that the recommended names\nexist and stores the step.\n\n<a href=\"https://glama.ai/mcp/servers/zl990kfusy\">\n  <img width=\"380\" height=\"200\" src=\"https://glama.ai/mcp/servers/zl990kfusy/badge\" />\n</a>\n\n## Why use it?\n\nUse this when a task benefits from explicit, inspectable reasoning:\n\n- breaking a messy problem into steps;\n- revising or branching a plan;\n- keeping a small reasoning history by session;\n- validating tool-plan names against a supplied tool list;\n- clearing or inspecting reasoning history during a long agent run.\n\nDo not use it for trivial requests. It adds overhead.\n\n## Tools\n\n### `sequentialthinking_tools`\n\nRecords one thought.\n\nRequired parameters:\n\n- `thought` — current reasoning step\n- `thought_number` — current step number\n- `total_thoughts` — current estimate; automatically raised if lower\n  than `thought_number`\n- `next_thought_needed` — whether another thought is needed\n\nOptional parameters:\n\n- `session_id` — history bucket; defaults to `default`\n- `is_revision`, `revises_thought`\n- `branch_from_thought`, `branch_id`\n- `needs_more_thoughts`\n- `available_tools` — array of tool names or `{ name, description }`\n  objects\n- `recommended_tools` — model-authored recommendations to\n  validate/store\n- `remaining_steps` — short list of upcoming steps\n\nExample:\n\n```json\n{\n\t\"session_id\": \"svelte-debug\",\n\t\"thought\": \"First inspect the route files, then run the failing check.\",\n\t\"thought_number\": 1,\n\t\"total_thoughts\": 3,\n\t\"next_thought_needed\": true,\n\t\"available_tools\": [\"read\", \"bash\"],\n\t\"recommended_tools\": [\n\t\t{\n\t\t\t\"tool_name\": \"read\",\n\t\t\t\"confidence\": 0.9,\n\t\t\t\"rationale\": \"Need to inspect the relevant files before editing.\",\n\t\t\t\"priority\": 1\n\t\t}\n\t]\n}\n```\n\nIf `recommended_tools` contains a name not present in\n`available_tools`, the call returns `isError: true` and does not store\nthe thought.\n\n## Security posture\n\nThe server treats thought text, tool descriptions, rationales, and\nremaining-step text as untrusted input. Prompt-injection-like text is\nscanned and redacted before it is stored or returned in history. Calls\nwith redactions include `security_warnings` showing which fields\nmatched.\n\nThis is defensive filtering, not a guarantee that arbitrary\nadversarial text is safe. Do not put secrets in thoughts or tool\ndescriptions.\n\n### `get_thinking_history`\n\nReturns stored thoughts for a session.\n\nParameters:\n\n- `session_id` — defaults to `default`\n- `branch_id` — optional branch filter\n- `limit` — max records to return; default `50`, max `500`\n\n### `clear_thinking_history`\n\nClears one session or every session.\n\nParameters:\n\n- `session_id` — defaults to `default`\n- `all_sessions` — clear all history buckets\n\n## Prompt\n\n### `sequential-thinking-guidance`\n\nA short prompt that tells the model how to use this server honestly:\nas a scratchpad and validator, not as an external reasoning engine.\n\n## Configuration\n\n### Claude Desktop / compatible MCP clients\n\n```json\n{\n\t\"mcpServers\": {\n\t\t\"mcp-sequentialthinking-tools\": {\n\t\t\t\"command\": \"npx\",\n\t\t\t\"args\": [\"-y\", \"mcp-sequentialthinking-tools\"],\n\t\t\t\"env\": {\n\t\t\t\t\"MAX_HISTORY_SIZE\": \"1000\"\n\t\t\t}\n\t\t}\n\t}\n}\n```\n\n`MAX_HISTORY_SIZE` is per session and defaults to `1000`.\n\nThe server uses `tmcp` and includes a small stdio transport that\naccepts both standard `Content-Length` framed MCP messages and\nnewline-delimited JSON used by older `tmcp` tooling.\n\n## Development\n\n```bash\npnpm install\npnpm test\npnpm build\npnpm check\n```\n\nThis project uses `vite-plus` for build, test, format, and lint\norchestration.\n\n## Publishing\n\n```bash\npnpm changeset\npnpm changeset version\npnpm release\n```\n\n## License\n\nMIT License — see [LICENSE](LICENSE).\n\n## Acknowledgments\n\n- Built on the\n  [Model Context Protocol](https://github.com/modelcontextprotocol)\n- Adapted from the\n  [MCP Sequential Thinking Server](https://github.com/modelcontextprotocol/servers/blob/main/src/sequentialthinking/index.ts)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

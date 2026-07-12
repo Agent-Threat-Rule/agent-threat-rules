@@ -1,0 +1,42 @@
+{
+  "full_name": "QuinnAho/claudemap",
+  "html_url": "https://github.com/QuinnAho/claudemap",
+  "description": "google maps for vibecoders.",
+  "topics": [
+    "anthropic",
+    "claude",
+    "claude-code",
+    "claude-skills",
+    "code-visualization-tool",
+    "developer-tools",
+    "mcp",
+    "model-context-protocol",
+    "npm-cli",
+    "open-source",
+    "react",
+    "software-architecture"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 280,
+  "forks": 16,
+  "open_issues": 3,
+  "language": "JavaScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-11T16:16:48Z",
+  "last_pushed_at": "2026-04-20T19:39:17Z",
+  "fetched_at": "2026-07-11T23:15:32.050Z",
+  "readme": {
+    "path": "README.md",
+    "content": "Welcome to...\n\n![ClaudeMap](resources/img/ClaudeMapBranding.png)\n\n[![Version](https://img.shields.io/badge/version-v0.2.0-blue)](CHANGELOG.md) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE) ![npm downloads](https://img.shields.io/npm/dw/%40quinnaho%2Fclaudemap) ![GitHub stars](https://img.shields.io/github/stars/QuinnAho/claudemap)\n\n**Google Maps for vibecoders.**\n\nAI lets you build faster than ever, but the very tools that help our productivity are leaving us behind - you don't understand what you're building anymore. You can vibecode a full app in a weekend and not even start to explain how it works. ClaudeMap fixes that.\n\nUnlike traditional visualization tools, ClaudeMap organizes your code by what it actually does. Claude reads your project and groups it into concepts in a way you actually think about your project. Zoom out to see the big picture. Zoom in to see the details. Colors show what's healthy and what's broken. Use `/explain` and ask any question about your code, Claude will present directly on the map and explain step by step. Use `/show` to tell Claude what you want to find or see, and it moves the map for you.\n\nAll powered by the same AI you vibecode with.\n\n## See It In Action\n\n[![ClaudeMap Demo](resources/img/thumbnail.png)](https://www.loom.com/share/6a2ff0948ae64ae6994fb3817cb3607e)\n\n[Try the map](https://quinnaho.github.io/claudemap/) (standalone preview, Claude features require Claude Code or Codex)\n\n[Longer YouTube walkthrough](https://www.youtube.com/watch?v=mubRRx5mXzA)\n\n## Install\n\n```bash\nnpx @quinnaho/claudemap install\nclaude\n/setup-claudemap\n```\n\n**Codex support is here!**`npx @quinnaho/claudemap install --assistant codex` - see [Codex guide](docs/CODEX.md).\n\nIn Codex, run `/skills`, choose `codexmap-runtime`, or prefix natural-language requests with `$codexmap-runtime`, for example:\n\n```text\n$codexmap-runtime build the initial map for this repo\n```\n\n## Commands\n\n| Command | Description |\n|---------|-------------|\n| `/setup-claudemap` | Analyze your repo and generate the map |\n| `/refresh` | Update map after code changes |\n| `/explain` | AI-guided walkthroughs with visual highlighting |\n| `/show` | Navigate the map with natural language |\n\n## What's New in v0.2.0\n\n- **Sub-map support** - create scoped maps for larger codebases\n- **Codex support** - works with Claude Code and OpenAI Codex\n- **Stable map generation** - consistent layouts across rebuilds\n- **Iterative refinement** - tweak your map without starting over\n- **Better refresh UX** - smoother updates after code changes\n\n## Learn More\n\n- [Full Guide](docs/GUIDE.md) - setup walkthrough, commands, multi-map workflow\n- [Codex Guide](docs/CODEX.md) - Codex-specific setup and commands\n- [Changelog](CHANGELOG.md) - version history\n- [Contributing](CONTRIBUTING.md) - help improve ClaudeMap\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "bin/claudemap.js",
+    "size": 4465,
+    "content": "#!/usr/bin/env node\n\nconst fs = require('fs')\nconst path = require('path')\nconst { spawnSync } = require('child_process')\n\nconst PACKAGE_ROOT = path.resolve(__dirname, '..')\nconst INSTALL_SCRIPT_PATH = path.join(PACKAGE_ROOT, 'scripts', 'install-claudemap.js')\n\nasync function loadPathContracts() {\n  return import('../skill/lib/contracts/paths.js')\n}\n\nfunction printUsage() {\n  console.log('ClaudeMap CLI')\n  console.log('  claudemap [install] [target-repo] [--skip-install] [--dry-run] [--assistant claude|codex|auto]')\n  console.log('  claudemap update [target-repo] [--skip-install] [--dry-run] [--assistant claude|codex|auto]')\n}\n\nfunction hasHelpFlag(argv) {\n  return argv.includes('--help') || argv.includes('-h') || argv[0] === 'help'\n}\n\nfunction hasPositionalTarget(argv) {\n  // A positional is any non-flag arg, skipping arg values that belong to\n  // known value-taking flags. --assistant consumes the following arg.\n  const valueFlags = new Set(['--assistant', '--artifact'])\n\n  for (let index = 0; index < argv.length; index += 1) {\n    const argument = argv[index]\n\n    if (index === 0 && ['install', 'update'].includes(argument)) {\n      continue\n    }\n\n    if (valueFlags.has(argument)) {\n      index += 1 // skip the value\n      continue\n    }\n\n    if (!argument.startsWith('--')) {\n      return true\n    }\n  }\n\n  return false\n}\n\nfunction extractAssistantFlag(argv) {\n  const index = argv.indexOf('--assistant')\n  if (index === -1 || index === argv.length - 1) return null\n  return argv[index + 1]\n}\n\nfunction extractPositionalTarget(argv) {\n  const valueFlags = new Set(['--assistant', '--artifact'])\n  for (let index = 0; index < argv.length; index += 1) {\n    const argument = argv[index]\n    if (index === 0 && ['install', 'update'].includes(argument)) continue\n    if (valueFlags.has(argument)) { index += 1; continue }\n    if (!argument.startsWith('--')) return argument\n  }\n  return null\n}\n\nfunction resolveBundledArtifactRoot(paths, assistantFlag, targetRoot) {\n  const bundleDir = path.join(PACKAGE_ROOT, paths.NPM_BUNDLE_DIR_REL)\n  const claudeBundle = path.join(bundleDir, paths.NPM_BUNDLE_SUBDIR)\n  const codexBundle = path.join(bundleDir, `${paths.NPM_BUNDLE_SUBDIR}-codex`)\n\n  const resolveType = () => {\n    if (assistantFlag && assistantFlag !== 'auto') return assistantFlag\n    return paths.detectAssistant(targetRoot)\n  }\n\n  const assistantType = resolveType()\n  const bundle = assistantType === 'codex' ? codexBundle : claudeBundle\n\n  if (!fs.existsSync(bundle)) {\n    // Fallback: older tarballs only ship the Claude bundle. If the user\n    // explicitly asked for codex but only the Claude bundle is present,\n    // fail loudly rather than silently installing the wrong flavor.\n    if (assistantType === 'codex' && fs.existsSync(claudeBundle)) {\n      throw new Error(\n        `Codex bundle not found at ${codexBundle}. This ClaudeMap build only ships the Claude artifact. Reinstall from a newer tarball.`,\n      )\n    }\n    throw new Error(`Bundled ClaudeMap artifact not found at ${bundle}.`)\n  }\n\n  return bundle\n}\n\nfunction normalizeArgs(argv, bundledArtifactRoot) {\n  const nextArgs = [...argv]\n  const forwardedArgs = []\n\n  if (nextArgs[0] === 'install') {\n    nextArgs.shift()\n  } else if (nextArgs[0] === 'update') {\n    forwardedArgs.push('--update')\n    nextArgs.shift()\n  }\n\n  if (!hasPositionalTarget(nextArgs)) {\n    forwardedArgs.push(process.cwd())\n  }\n\n  forwardedArgs.push(...nextArgs)\n  forwardedArgs.push('--artifact', bundledArtifactRoot, '--skip-package')\n\n  return forwardedArgs\n}\n\nasync function main() {\n  const argv = process.argv.slice(2)\n\n  if (hasHelpFlag(argv)) {\n    printUsage()\n    return\n  }\n\n  const paths = await loadPathContracts()\n  const assistantFlag = extractAssistantFlag(argv)\n  const positionalTarget = extractPositionalTarget(argv)\n  const targetRoot = positionalTarget\n    ? path.resolve(process.cwd(), positionalTarget)\n    : process.cwd()\n  const bundledArtifactRoot = resolveBundledArtifactRoot(paths, assistantFlag, targetRoot)\n\n  const result = spawnSync(process.execPath, [INSTALL_SCRIPT_PATH, ...normalizeArgs(argv, bundledArtifactRoot)], {\n    cwd: process.cwd(),\n    stdio: 'inherit',\n  })\n\n  if (typeof result.status === 'number') {\n    process.exitCode = result.status\n    return\n  }\n\n  if (result.error) {\n    throw result.error\n  }\n\n  process.exitCode = 1\n}\n\nmain().catch((error) => {\n  console.error(`ClaudeMap CLI failed: ${error.message}`)\n  process.exitCode = 1\n})\n"
+  },
+  "content_fetch_notes": []
+}

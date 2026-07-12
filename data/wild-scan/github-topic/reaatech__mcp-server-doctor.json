@@ -1,0 +1,48 @@
+{
+  "full_name": "reaatech/mcp-server-doctor",
+  "html_url": "https://github.com/reaatech/mcp-server-doctor",
+  "description": "Lighthouse for MCP servers — CLI diagnostic and profiling tool that runs 8 checks against any MCP endpoint and produces a letter-graded report card with latency profiling, concurrency stress testing, schema validation, and CI/CD integration.",
+  "topics": [
+    "ai-agents",
+    "cicd",
+    "cli",
+    "developer-tools",
+    "devops",
+    "diagnostics",
+    "health-check",
+    "json-rpc",
+    "latency",
+    "load-testing",
+    "mcp",
+    "mcp-tools",
+    "model-context-protocol",
+    "nodejs",
+    "npm-package",
+    "observability",
+    "opentelemetry",
+    "profiling",
+    "testing",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-21T15:18:49Z",
+  "last_pushed_at": "2026-07-06T14:39:02Z",
+  "fetched_at": "2026-07-12T00:53:17.078Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# mcp-server-doctor\n\n[![CI](https://github.com/reaatech/mcp-server-doctor/actions/workflows/ci.yml/badge.svg)](https://github.com/reaatech/mcp-server-doctor/actions/workflows/ci.yml)\n[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)\n[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)\n\n> **Lighthouse for MCP servers** — A CLI diagnostic and profiling tool for Model Context Protocol (MCP) endpoints. Connects to any MCP server and runs 8 rigorous health checks, producing a graded A–F report card.\n\nThis monorepo provides the diagnostic engine, MCP transport client, multi-format reporters, observability instrumentation, and CLI entry point.\n\n## Features\n\n- **8 diagnostic checks** — transport negotiation, schema validation, latency profiling, auth verification, payload limits, error compliance, timeout analysis, concurrency stress\n- **Multi-transport client** — auto-negotiates stdio, SSE, and streamable HTTP transports\n- **A–F grading** — strict quantitative benchmarks for latency, error rate, concurrency, and payload\n- **Multi-format reports** — console (color-coded), JSON, markdown, and standalone HTML\n- **Watch mode** — continuous monitoring with configurable interval and alert thresholds\n- **OpenTelemetry** — structured Pino logging, metrics export, and distributed tracing\n\n## Installation\n\n### Using the packages\n\nPackages are published under the `@reaatech` scope and can be installed individually:\n\n```bash\n# CLI (includes the `doctor` and `mcp-server-doctor` binaries)\npnpm add @reaatech/mcp-server-doctor-cli\n\n# Core types, utilities, and grading\npnpm add @reaatech/mcp-server-doctor-core\n\n# MCP transport client\npnpm add @reaatech/mcp-server-doctor-client\n\n# Diagnostic engine (8 checks)\npnpm add @reaatech/mcp-server-doctor-engine\n\n# Report formatters (console, JSON, markdown, HTML)\npnpm add @reaatech/mcp-server-doctor-reporters\n\n# Observability (Pino logging + OpenTelemetry)\npnpm add @reaatech/mcp-server-doctor-observability\n```\n\n### Contributing\n\n```bash\n# Clone the repository\ngit clone https://github.com/reaatech/mcp-server-doctor.git\ncd mcp-server-doctor\n\n# Install dependencies\npnpm install\n\n# Build all packages\npnpm build\n\n# Run the test suite\npnpm test\n\n# Run linting\npnpm lint\n```\n\n## Quick Start\n\n```bash\n# Run the full diagnostic suite\ndoctor diagnose http://localhost:8080\n\n# Authenticated endpoint\ndoctor diagnose http://localhost:8080 --auth bearer --bearer-token $TOKEN\n\n# Export report as JSON\ndoctor diagnose http://localhost:8080 --format json --output report.json\n\n# Compare two diagnostic reports\ndoctor compare baseline.json current.json\n\n# Continuous monitoring with alerting\ndoctor watch http://localhost:8080 --interval 30 --alert-threshold B\n```\n\n## Packages\n\n| Package | Description |\n|---------|-------------|\n| [`@reaatech/mcp-server-doctor-core`](./packages/core) | Core types, Zerod schemas, grading, utilities, constants |\n| [`@reaatech/mcp-server-doctor-observability`](./packages/observability) | Structured Pino logging, OpenTelemetry metrics and tracing |\n| [`@reaatech/mcp-server-doctor-client`](./packages/client) | MCP transport client (stdio, SSE, streamable HTTP) |\n| [`@reaatech/mcp-server-doctor-engine`](./packages/engine) | Diagnostic engine with 8 health checks |\n| [`@reaatech/mcp-server-doctor-reporters`](./packages/reporters) | Report formatters (console, JSON, markdown, HTML) |\n| [`@reaatech/mcp-server-doctor-cli`](./packages/cli) | CLI entry point (diagnose, compare, watch) |\n\n## Grading Benchmarks\n\nGrades are assigned based on strict quantitative thresholds:\n\n| Grade | p99 Latency | Error Rate | Concurrency | Payload Limit |\n|:-----:|:-----------:|:----------:|:-----------:|:-------------:|\n| **A** | < 1 s       | 0%         | 50+         | > 5 MB        |\n| **B** | < 3 s       | < 1%       | 25+         | > 1 MB        |\n| **C** | < 5 s       | < 5%       | 10+         | > 500 KB      |\n| **D** | < 10 s      | < 10%      | 5+          | > 100 KB      |\n| **F** | ≥ 10 s      | ≥ 10%      | < 5         | ≤ 100 KB      |\n\n## CI/CD Integration\n\nIntegrate into your CI pipeline to enforce quality gates:\n\n```yaml\nname: MCP Server Health Check\non: [push, pull_request]\n\njobs:\n  health:\n    runs-on: ubuntu-latest\n    services:\n      mcp-server:\n        image: my-mcp-server:latest\n        ports: [8080:8080]\n    steps:\n      - uses: actions/checkout@v4\n      - run: npm install -g @reaatech/mcp-server-doctor-cli\n      - run: doctor diagnose http://localhost:8080 --format json --output report.json\n      - name: Fail on critical issues\n        run: |\n          GRADE=$(jq -r .overallGrade report.json)\n          if [ \"$GRADE\" = \"F\" ]; then exit 1; fi\n          if [ \"$GRADE\" = \"D\" ]; then exit 2; fi\n```\n\n## Documentation\n\n- [`ARCHITECTURE.md`](./ARCHITECTURE.md) — System design, package relationships, and data flows\n- [`AGENTS.md`](./AGENTS.md) — Coding conventions and development guidelines\n- [`CONTRIBUTING.md`](./CONTRIBUTING.md) — Contribution workflow and release process\n\n\n## License\n\n[MIT](LICENSE)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

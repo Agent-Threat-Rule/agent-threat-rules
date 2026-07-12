@@ -1,0 +1,35 @@
+{
+  "full_name": "shiftbloom-studio/myosotis",
+  "html_url": "https://github.com/shiftbloom-studio/myosotis",
+  "description": "Team-shared Agent Harness Builder to configure MCP Servers, Skills and AGENTS.md / CLAUDE.md for your team with cross-agent setups.",
+  "topics": [
+    "agent-framework",
+    "agent-harness",
+    "claude-code",
+    "codex",
+    "mcp-servers",
+    "openclaw",
+    "opencode"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2026-04-12T01:47:44Z",
+  "last_pushed_at": "2026-04-16T07:55:24Z",
+  "fetched_at": "2026-07-12T00:13:27.273Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Myosotis\n\n![Myosotis Filter Cover](docs/media/cover.jpg)\n\n[![License: Apache 2.0](https://img.shields.io/badge/license-Apache--2.0-black.svg)](./LICENSE)\n[![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)\n[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6)](https://www.typescriptlang.org/)\n[![Docker Compose](https://img.shields.io/badge/Deploy-Docker_Compose-2496ED)](./compose/docker-compose.yml)\n[![AWS](https://img.shields.io/badge/Infra-AWS-FF9900)](./infra/terraform/aws)\n\nMyosotis is an open-source control surface for AI-native workspace setup. \n\n**This is not another agent harness.**\n\nIts purpose is to solve **Configuration Fragmentation** and **Team-Wide Onboarding** in an era where AI skills, MCP servers, and best practices are releasing minutely. It provides a unified, syncable baseline for every developer on a team—ensuring every agent has the same tools and domain context while preserving local autonomy.\n\n## Why Myosotis?\n\nInstead of hiding your agent setups behind a database or a proprietary internal tool, Myosotis keeps the source of truth in **plain files** you can review, diff, fork, and ship.\n\n- **Instant Team Onboarding**: Turn hours of manual agent configuration into a 60-second bootstrap.\n- **Collective Intelligence**: Shared domain skills (backend, frontend, devops, pr-review) that the whole team uses and improves.\n- **File-Native**: MCP configs, skills, and instructions remain regular repository assets.\n- **Hybrid Execution**: A shared stack on AWS for long-running team workflows, mirrored by local developer environments.\n- **Project Anchors**: Consistent `.archon/`, `AGENTS.md`, and `CLAUDE.md` files synchronized into every product repo.\n\n## Control Surface\n\nMyosotis includes a Next.js-based control surface that lets you manage your AI workspace visually while keeping the source of truth in git.\n\n![Myosotis App Screenshot](docs/media/app-screenshot.png)\n\n## Repository Layout\n\n- `web/` Next.js application for the Myosotis workspace\n- `compose/` Docker Compose runtime and deployment helpers\n- `infra/terraform/aws/` AWS scaffold for EC2, RDS, Secrets Manager, and SSM\n- `templates/` global and project instruction templates\n- `mcp/` canonical MCP profile templates\n- `skills/` shared team skills (backend, frontend, devops, pr-review)\n- `bootstrap/` local sync and setup scripts\n- `checks/` verification scripts for local, project, and shared-stack setup\n- `docs/` architecture, onboarding, operations, and rollout guidance\n\n## Quick Start\n\n### Run Locally\n\n```bash\ncd web\nnpm install\nnpm run dev\n```\n\nOpen [http://localhost:3000](http://localhost:3000).\n\nThe UI reads from the repository root by default via `CONFIG_ROOT`, so you can edit the local `mcp/`, `skills/`, and `templates/` directories directly.\n\n### Build for Production\n\n```bash\ncd web\nnpm run lint\nnpm run build\n```\n\n## Self-Hosting\n\n### Docker Compose\n\n```bash\ncd compose\ncp .env.shared.example .env.shared\nbash deploy.sh\n```\n\n### AWS EC2\n\nThe repo ships with a minimal Terraform scaffold for:\n\n- EC2 runtime host\n- RDS PostgreSQL\n- Secrets Manager runtime config\n- IAM + SSM access\n- optional Route53 record\n\nStart here:\n\n```bash\ncd infra/terraform/aws\ncp terraform.tfvars.example terraform.tfvars\nterraform init\nterraform plan\nterraform apply\n```\n\nThen deploy the compose stack on the target host.\n\n## Contributing\n\nIssues, pull requests, and starter-pack improvements are welcome. Myosotis is structured to be reusable outside the originating organization, with a real starter kit included so you don't have to start from an empty shell.\n\nStart with:\n\n- [CONTRIBUTING.md](./CONTRIBUTING.md)\n- [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)\n- [SECURITY.md](./SECURITY.md)\n- [SUPPORT.md](./SUPPORT.md)\n\n## License\n\nLicensed under [Apache License 2.0](./LICENSE).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

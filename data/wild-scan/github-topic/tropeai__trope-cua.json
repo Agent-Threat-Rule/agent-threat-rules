@@ -1,0 +1,38 @@
+{
+  "full_name": "tropeai/trope-cua",
+  "html_url": "https://github.com/tropeai/trope-cua",
+  "description": "Background computer use for desktop agents on Windows and macOS",
+  "topics": [
+    "ai-agents",
+    "claude-code",
+    "codex",
+    "cursor-ai",
+    "desktop-automation",
+    "macos",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "windows"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 27,
+  "forks": 4,
+  "open_issues": 0,
+  "language": "Swift",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-25T06:01:10Z",
+  "last_pushed_at": "2026-05-10T22:57:06Z",
+  "fetched_at": "2026-07-12T00:27:04.571Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Trope CUA\n\nBackground computer use for desktop agents on Windows and macOS.\n\nTrope CUA lets an AI agent inspect and operate real desktop apps while avoiding accidental movement of your real mouse cursor or changes to your active app when the OS and target app support safe routes. It exposes screenshots, accessibility trees, action receipts, and trajectory recording over MCP, a daemon, or direct CLI calls.\n\nThe Windows implementation lives at the repository root. The macOS Swift implementation lives under [`native/macos/trope-cua`](native/macos/trope-cua).\n\n![Trope CUA: computer-use agents for Windows and macOS](assets/trope-cua-hero.png)\n\n## Demo\n\n<p align=\"center\">\n  <a href=\"https://x.com/mattchowx/status/2049134343801450559\">\n    <img src=\"assets/trope-cua-demo.gif\" alt=\"Trope CUA demo: an agent operates a desktop app in the background\">\n  </a>\n</p>\n\n<p align=\"center\">\n  Click the demo to watch the full video (redirects to X).\n</p>\n\n## Install From Source\n\nTrope CUA is distributed as source. Clone the repository, or download a GitHub-generated source archive from the [releases page](https://github.com/voctory/trope-cua/releases), then run the installer script locally.\n\nWindows requirements:\n\n- Windows 10 1903+ or Windows 11.\n- PowerShell.\n- .NET SDK matching [`global.json`](global.json).\n\nInstall a self-contained Windows build:\n\n```powershell\n.\\scripts\\install-windows.ps1 -SelfContained\n```\n\nmacOS requirements:\n\n- macOS 14 or newer.\n- Xcode Command Line Tools.\n- Accessibility and Screen Recording permissions for `TropeCUA.app`.\n\nInstall a local macOS build:\n\n```bash\n./scripts/install-macos.sh\n```\n\nVerify the installed command on either platform:\n\n```bash\ntrope-cua --help\ntrope-cua check_permissions\ntrope-cua list_windows\n```\n\nRegister with an MCP client:\n\n```powershell\ntrope-cua mcp-config\ntrope-cua mcp-config --client cursor\n```\n\nOr point any MCP client at:\n\n```text\ntrope-cua mcp\n```\n\n## Safety Contract\n\nMutating actions return receipts. Treat an action as background-safe only when all three fields say:\n\n```json\n{\n  \"background_safe\": true,\n  \"cursor_moved\": false,\n  \"foreground_changed\": false\n}\n```\n\n`ok=true` means the requested route completed. It does not by itself mean the route preserved the user's foreground work. Unsafe routes and fallbacks are reported in the receipt instead of being hidden.\n\n## Capabilities\n\n- List desktop windows and apps.\n- Snapshot a specific target window as pixels, accessibility tree, or both.\n- Click, type, press keys, scroll, and set values through background-safe routes when the target exposes them.\n- Run as an MCP stdio server, a long-running daemon, or direct CLI tool calls.\n- Show a visual agent cursor overlay without moving the user's hardware cursor.\n- Record and replay trajectories for debugging and regression work.\n- Refuse known unsafe parent-session routes instead of pretending delivery succeeded.\n\n## Known Limits\n\n- Trope CUA is not a VM or sandbox. Same-session tools operate on the real user desktop.\n- Not every app exposes a safe UIA/MSAA route.\n- Chromium and Electron parallel work need separate profiles and CDP ports for true isolation.\n- Games, DirectX, Unity, Unreal, raw-input surfaces, and many canvas-heavy apps need child-session or AppBroadcast-style isolation.\n- Trope CUA is distributed as source; install from the repository or GitHub source archive.\n\nRead the full [known limits](docs/limits.md) before giving an agent authority over authenticated apps.\n\n## First Loop\n\nUse MCP or the daemon for workflows that act on `element_index` values from a snapshot. With the daemon, keep `serve` running in one terminal and call tools from another:\n\n```powershell\ntrope-cua serve --instance demo\n```\n\n```powershell\ntrope-cua call --instance demo list_windows '{}'\ntrope-cua call --instance demo get_window_state '{\"pid\":1234,\"window_id\":456789}'\ntrope-cua call --instance demo click '{\"pid\":1234,\"window_id\":456789,\"element_index\":14}'\n```\n\nFor the full workflow, see the [quickstart](docs/quickstart.md).\n\n## Documentation\n\n- [Installation](docs/installation.md)\n- [Quickstart](docs/quickstart.md)\n- [Workflows](docs/workflows.md)\n- [Tools and command modes](docs/reference-tools.md)\n- [Safety](SAFETY.md)\n- [Privacy](PRIVACY.md)\n- [Threat model](docs/threat-model.md)\n- [Known limits](docs/limits.md)\n\n## Development\n\nWindows:\n\n```powershell\ndotnet build trope-cua.sln\n.\\scripts\\build.ps1\ndotnet format --verify-no-changes --no-restore --verbosity minimal\n.\\scripts\\run-tests.ps1\n```\n\nmacOS:\n\n```bash\ncd native/macos/trope-cua\nswift build\n./scripts/test.sh\n./scripts/install-local.sh\n```\n\nmacOS development and permission checks must run on macOS. Windows integration tests must run on Windows.\n\n## License\n\nTrope CUA is released under the MIT License. See [LICENSE](LICENSE) and [NOTICE](NOTICE).\n\n## Trademarks\n\nApple, macOS, Microsoft, Windows, OpenAI, Anthropic, Claude, Cua, and other referenced names are trademarks or registered trademarks of their respective owners. This project is not affiliated with or endorsed by those companies or projects.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

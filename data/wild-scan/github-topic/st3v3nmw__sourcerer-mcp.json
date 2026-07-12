@@ -1,0 +1,37 @@
+{
+  "full_name": "st3v3nmw/sourcerer-mcp",
+  "html_url": "https://github.com/st3v3nmw/sourcerer-mcp",
+  "description": "MCP for semantic code search & navigation that reduces token waste",
+  "topics": [
+    "claude-code",
+    "code-analysis",
+    "code-navigation",
+    "code-search",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "semantic-search"
+  ],
+  "matched_query_topics": [
+    "mcp-server",
+    "model-context-protocol"
+  ],
+  "stars": 119,
+  "forks": 12,
+  "open_issues": 1,
+  "language": "Go",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-08-07T17:17:00Z",
+  "last_pushed_at": "2025-11-10T17:34:40Z",
+  "fetched_at": "2026-07-11T22:56:58.472Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Sourcerer MCP 🧙\n\nAn MCP server for semantic code search & navigation that helps AI agents work\nefficiently without burning through costly tokens.\nInstead of reading entire files, agents can search conceptually and\njump directly to the specific functions, classes, and code chunks they need.\n\n## Demo\n\n[![asciicast](https://asciinema.org/a/736638.svg)](https://asciinema.org/a/736638)\n\n## Requirements\n\n- **OpenAI API Key**: Required for generating embeddings (local embedding support planned)\n- **Git**: Must be a git repository (respects `.gitignore` files)\n- **Add `.sourcerer/` to `.gitignore`**: This directory stores the embedded vector database\n\n## Installation\n\n### Go\n\n```shell\ngo install github.com/st3v3nmw/sourcerer-mcp/cmd/sourcerer@latest\n```\n\n### Homebrew\n\n```shell\nbrew tap st3v3nmw/tap\nbrew install st3v3nmw/tap/sourcerer\n```\n\n## Configuration\n\n### Claude Code\n\n```shell\nclaude mcp add sourcerer -e OPENAI_[REDACTED-GENERIC_KV_SECRET] -e SOURCERER_WORKSPACE_ROOT=$(pwd) -- sourcerer\n```\n\n### mcp.json\n\n```json\n{\n  \"mcpServers\": {\n    \"sourcerer\": {\n      \"command\": \"sourcerer\",\n      \"env\": {\n        \"OPENAI_[REDACTED-GENERIC_KV_SECRET]\",\n        \"SOURCERER_WORKSPACE_ROOT\": \"/path/to/your/project\"\n      }\n    }\n  }\n}\n```\n\n## How it Works\n\nSourcerer 🧙 builds a semantic search index of your codebase:\n\n### 1. Code Parsing & Chunking\n\n- Uses [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) to parse source files into ASTs\n- Extracts meaningful chunks (functions, classes, methods, types) with stable IDs\n- Each chunk includes source code, location info, and contextual summaries\n- Chunk IDs follow the format: `file.ext::Type::method`\n\n### 2. File System Integration\n\n- Watches for file changes using `fsnotify`\n- Respects `.gitignore` files via `git check-ignore`\n- Automatically re-indexes changed files\n- Stores metadata to track modification times\n\n### 3. Vector Database\n\n- Uses [chromem-go](https://github.com/philippgille/chromem-go) for persistent vector storage in `.sourcerer/db/`\n- Generates embeddings via OpenAI's API for semantic similarity\n- Enables conceptual search rather than just text matching\n- Maintains chunks, their embeddings, and metadata\n\n### 4. MCP Tools\n\n- `semantic_search`: Find relevant code using semantic search\n- `get_chunk_code`: Retrieve specific chunks by ID\n- `find_similar_chunks`: Find similar chunks\n- `index_workspace`: Manually trigger re-indexing\n- `get_index_status`: Check indexing progress\n\nThis approach allows AI agents to find relevant code without reading entire files,\ndramatically reducing token usage and cognitive load.\n\n## Supported Languages\n\nLanguage support requires writing [Tree-sitter queries](https://github.com/st3v3nmw/sourcerer-mcp/blob/main/internal/parser/go.go) to\nidentify functions, classes, interfaces, and other code structures for each language.\n\n**Supported:** Go, JavaScript, Markdown, Python, TypeScript\n\n**Planned:** C, C++, Java, Ruby, Rust, and others\n\n## Contributing\n\nAll contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md).\n\n```\n$ ls @stephenmwangi.com\n- gh:st3v3nmw/obsidian-spaced-repetition\n- gh:st3v3nmw/lsfr\n```\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

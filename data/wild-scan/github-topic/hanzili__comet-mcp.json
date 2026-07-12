@@ -1,0 +1,32 @@
+{
+  "full_name": "hanzili/comet-mcp",
+  "html_url": "https://github.com/hanzili/comet-mcp",
+  "description": "MCP Server connecting to Perplexity Comet browser",
+  "topics": [
+    "agentic-ai",
+    "agentic-browser",
+    "automation",
+    "mcp-server"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 164,
+  "forks": 32,
+  "open_issues": 4,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-01-03T05:05:45Z",
+  "last_pushed_at": "2026-01-13T05:34:37Z",
+  "fetched_at": "2026-07-11T22:51:20.851Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# comet-mcp\n\n[![npm version](https://img.shields.io/npm/v/comet-mcp.svg)](https://www.npmjs.com/package/comet-mcp)\n\n<a href=\"https://glama.ai/mcp/servers/@hanzili/comet-mcp\">\n  <img width=\"380\" height=\"200\" src=\"https://glama.ai/mcp/servers/@hanzili/comet-mcp/badge\" />\n</a>\n\n**Give Claude Code a browser that thinks.**\n\nAn MCP server that connects Claude Code to [Perplexity Comet](https://www.perplexity.ai/comet) - enabling agentic web browsing, deep research, and real-time task monitoring.\n\n![Demo](demo.gif)\n\n## Why?\n\nExisting web tools for Claude Code fall into two categories, both with limitations:\n\n### 1. Search APIs (Tavily, Perplexity API, WebFetch)\nReturn static text. No interaction, no login, no dynamic content. Great for quick lookups, but can't navigate complex sites or fill forms.\n\n### 2. Browser Automation (browser-use, Puppeteer MCP, Playwright MCP)\nCan interact with pages, but use a **one-agent-do-all** approach: the same reasoning model that's writing your code is also deciding where to click, what to type, and how to navigate. This overwhelms the context window and fragments focus.\n\n### 3. Comet MCP: Multi-Agent Delegation\n**Comet MCP takes a different approach.** Instead of Claude controlling a browser directly, it delegates to [Perplexity Comet](https://www.perplexity.ai/comet) - an AI purpose-built for web research and browsing.\n\n- **Claude** stays focused on your coding task\n- **Comet** handles the browsing: navigation, login walls, dynamic content, deep research\n- **Result**: Claude's coding intelligence + Perplexity's web intelligence, working together\n\n## Quick Start\n\n### 1. Configure Claude Code\n\nAdd to `~/.claude.json` or `.mcp.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"comet-bridge\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"comet-mcp\"]\n    }\n  }\n}\n```\n\n### 2. Install Comet Browser\n\nDownload and install [Perplexity Comet](https://www.perplexity.ai/comet).\n\nThat's it! The MCP server automatically launches Comet with remote debugging when needed.\n\n### 3. Use in Claude Code\n\n```\nYou: \"Use Comet to research the top AI frameworks in 2025\"\nClaude: [delegates to Comet, monitors progress, returns results]\n\nYou: \"Log into my GitHub and check my notifications\"\nClaude: [Comet handles the login flow and navigation]\n```\n\n## Tools\n\n| Tool | Description |\n|------|-------------|\n| `comet_connect` | Connect to Comet (auto-starts if needed) |\n| `comet_ask` | Send a task and wait for response |\n| `comet_poll` | Check progress on long-running tasks |\n| `comet_stop` | Stop current task |\n| `comet_screenshot` | Capture current page |\n| `comet_mode` | Switch modes: search, research, labs, learn |\n\n## How It Works\n\n```\nClaude Code  →  MCP Server  →  CDP  →  Comet Browser  →  Perplexity AI\n   (reasoning)     (bridge)                              (web browsing)\n```\n\nClaude sends high-level goals (\"research X\", \"log into Y\"). Comet figures out the clicks, scrolls, and searches. Results flow back to Claude.\n\n## Requirements\n\n- Node.js 18+\n- [Perplexity Comet Browser](https://www.perplexity.ai/comet)\n- Claude Code (or any MCP client)\n- **Supported platforms**: macOS, Windows, WSL2\n\n## Windows & WSL Support\n\n### Native Windows\nWorks out of the box. Comet MCP auto-detects Windows and launches Comet from its default install location.\n\n### WSL2 (Windows Subsystem for Linux)\nWSL2 requires **mirrored networking** to connect to Comet running on Windows:\n\n1. **Enable mirrored networking** (one-time setup):\n   ```\n   # Create/edit %USERPROFILE%\\.wslconfig (Windows side)\n   [wsl2]\n   networkingMode=mirrored\n   ```\n\n2. **Restart WSL**:\n   ```bash\n   wsl --shutdown\n   # Then reopen your WSL terminal\n   ```\n\n3. **That's it!** Comet MCP auto-detects WSL and uses PowerShell to communicate with Windows.\n\nIf mirrored networking isn't available, you'll see a helpful error message with setup instructions.\n\n### Custom Comet Path\nIf Comet is installed in a non-standard location:\n```json\n{\n  \"mcpServers\": {\n    \"comet-bridge\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"comet-mcp\"],\n      \"env\": {\n        \"COMET_PATH\": \"/path/to/your/Comet\"\n      }\n    }\n  }\n}\n```\n\n## Troubleshooting\n\n**\"Cannot connect to Comet\"**\n- **macOS**: Ensure Comet is installed at `/Applications/Comet.app`\n- **Windows**: Comet should be in `%LOCALAPPDATA%\\Perplexity\\Comet\\Application\\`\n- Check if port 9222 is available\n\n**\"WSL cannot connect to Windows localhost\"**\n- Enable mirrored networking (see WSL section above)\n- Or run Claude Code from Windows PowerShell instead of WSL\n\n**\"Tools not showing in Claude\"**\n- Restart Claude Code after config changes\n\n## License\n\nMIT\n\n---\n\n[Report Issues](https://github.com/hanzili/comet-mcp/issues) · [Contribute](https://github.com/hanzili/comet-mcp)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

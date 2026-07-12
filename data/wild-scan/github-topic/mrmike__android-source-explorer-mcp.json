@@ -1,0 +1,33 @@
+{
+  "full_name": "mrmike/android-source-explorer-mcp",
+  "html_url": "https://github.com/mrmike/android-source-explorer-mcp",
+  "description": "MCP server for exploring AOSP internals and Jetpack libraries",
+  "topics": [
+    "android",
+    "jetpack",
+    "jetpack-compose",
+    "mcp",
+    "mcp-server"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 97,
+  "forks": 5,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2026-03-12T19:19:01Z",
+  "last_pushed_at": "2026-03-16T18:53:16Z",
+  "fetched_at": "2026-07-11T23:01:47.298Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Android Source Explorer MCP Server\n\nMCP server for exploring AOSP internals and Jetpack libraries.\n\n<p align=\"center\">\n  <img src=\"project-logo.png\" width=\"600\" alt=\"Android Source Explorer Logo\">\n</p>\n\n## Purpose\n\nWhen building Android applications, AI tools often rely on outdated training data or incomplete summaries of the Android Framework. This MCP server provides **on-demand, precise access to the actual source code** (AOSP and AndroidX), enabling the AI to understand complex framework internals like the `Activity` lifecycle, `ViewModel` restoration, or `Compose` internals directly from the truth.\n\n---\n\n## Installation & Setup\n\n### Prerequisites\n- [uv](https://github.com/astral-sh/uv) (Recommended) or Python 3.11+\n- Git\n\n### Recommended Installation (via uv)\n\nThe easiest way to install and keep `android-source-explorer` up to date is using `uv`. It handles dependencies (including native ones like Tree-sitter and Cryptography) reliably across platforms.\n\n```bash\nuv tool install git+https://github.com/mrmike/android-source-explorer-mcp\n```\n\nThis will make the `android-source-explorer` command available globally in your PATH.\n\n### Initial Sync\n\nAfter installation, you need to perform an initial sync to fetch the Android source code:\n\n```bash\n# Sync API 36 (Android 16) and common AndroidX packages\nandroid-source-explorer sync --api-level 36 --androidx \"compose,lifecycle,activity\"\n\n# (Optional) Download LSP servers for cross-file features\nandroid-source-explorer sync --lsp\n```\n\nCheck sync status:\n```bash\nandroid-source-explorer status\n```\n\n---\n\n## Configuration\n\nAdd the MCP server to your configuration file (e.g., Claude Desktop, Cursor, Gemini CLI).\n\n### Global Usage (Recommended)\nIf installed via `uv tool install`, the tool is available globally.\n\n**Basic Setup:**\n```json\n{\n  \"mcpServers\": {\n    \"android-sources\": {\n      \"command\": \"android-source-explorer\",\n      \"args\": [\"serve\"]\n    }\n  }\n}\n```\n\n**With LSP Features Enabled:**\n```json\n{\n  \"mcpServers\": {\n    \"android-sources\": {\n      \"command\": \"android-source-explorer\",\n      \"args\": [\"serve\"],\n      \"env\": {\n        \"ANDROID_SOURCE_LSP\": \"true\"\n      }\n    }\n  }\n}\n```\n\n### Development Usage\nIf you cloned the repository and want to run it from the source:\n\n```json\n{\n  \"mcpServers\": {\n    \"android-sources\": {\n      \"command\": \"uv\",\n      \"args\": [\"run\", \"--directory\", \"/absolute/path/to/android-source-explorer\", \"android-source-explorer\", \"serve\"]\n    }\n  }\n}\n```\n\n---\n\n## How It Works\n\n### 1. Hybrid Architecture (Tree-sitter + LSP)\nThe server uses a **dual-engine approach** to balance speed and intelligence:\n- **Tree-sitter (Surgical Engine):** Provides near-instant (sub-10ms) AST parsing of single files. It precisely extracts method bodies (including Javadoc and annotations), class members, and inheritance hierarchies without the overhead of a full compiler.\n- **LSP (Global Engine):** Optionally leverages the **Eclipse JDT LS** (Java) and **Kotlin Language Server** for cross-file navigation. This enables finding references across millions of lines of code and resolving types that span multiple libraries.\n\n### 2. Local Sync Strategy\nTo ensure all lookups are instant and offline-ready, the server uses a `sync` command to pre-fetch sources into a local cache (`~/.android-sources/`):\n- **AOSP:** Fetches framework sources directly from `android.googlesource.com` using git sparse-checkouts.\n- **AndroidX:** Downloads `-sources.jar` files from the Google Maven repository (`dl.google.com/dl/android/maven2/`).\n- **Hybrid Indexing:** Prioritizes your local `$ANDROID_HOME` sources if available, supplemented by the downloaded cache.\n\n---\n\n## Available Tools\n\n| Tool | Engine | Description |\n|------|--------|-------------|\n| `search_classes` | Index | Search for classes by glob pattern or substring. |\n| `lookup_class` | FS | Retrieve the full source code for a specific class. |\n| `lookup_method` | Tree-sitter | Extract a precise method body + its Javadoc/annotations. |\n| `list_class_members` | Tree-sitter | List all method and field signatures in a class. |\n| `get_class_hierarchy` | Tree-sitter | Get the inheritance chain (superclass + interfaces). |\n| `search_in_source` | FS/Regex | Search for text/regex across the entire source tree. |\n| `goto_definition`* | LSP | Resolve the cross-file definition of a symbol. |\n| `find_references`* | LSP | Find all usages of a class/method across the whole tree. |\n| `get_type_info`* | LSP | Get documentation and type info via hover data. |\n\n*\\*Requires `ANDROID_SOURCE_LSP=true`*\n\n---\n\n## License\nApache License 2.0\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

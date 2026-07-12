@@ -1,0 +1,44 @@
+{
+  "full_name": "Context-Engine-AI/Context-Engine",
+  "html_url": "https://github.com/Context-Engine-AI/Context-Engine",
+  "description": "Context-Engine MCP - Agentic Context Compression Suite",
+  "topics": [
+    "ai",
+    "ai-agents",
+    "codex",
+    "compression",
+    "context",
+    "context-engine",
+    "cursor",
+    "decoder",
+    "glm",
+    "llm",
+    "llm-inference",
+    "mcp",
+    "mcp-server",
+    "ollama-api",
+    "qdrant",
+    "refrag"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 399,
+  "forks": 52,
+  "open_issues": 7,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "test",
+  "created_at": "2025-10-08T22:34:56Z",
+  "last_pushed_at": "2026-07-08T23:51:56Z",
+  "fetched_at": "2026-07-11T22:41:12.088Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<p align=\"center\">\n  <img src=\"static/logo.svg\" width=\"80\" alt=\"Context Engine\" />\n</p>\n\n<h1 align=\"center\">Context Engine</h1>\n\n<p align=\"center\">\n  <strong>Semantic code search, memory, and symbol intelligence for AI coding assistants.</strong>\n</p>\n<p align=\"center\">\n  <strong>Get your free account at dev.context-engine.ai</strong>\n</p>\n\n<p align=\"center\">\n  <a href=\"https://context-engine.ai\">Website</a> · <a href=\"https://context-engine.ai\">Get Started</a> · <a href=\"LICENSE\">License</a>\n</p>\n\n---\n\n## Install Skills\n\nContext Engine ships AI agent skills that teach your coding assistant how to use 30+ MCP tools for semantic search, symbol graph navigation, memory, and more.\n\n### Claude Code / Claude Desktop\n\n**Recommended:** Install natively from the public GitHub repo:\n\n```bash\n# Add the marketplace (one-time)\n/plugin marketplace add Context-Engine-AI/Context-Engine\n\n# Install the skill\n/plugin install context-engine\n```\n\nThis pulls the skill directly from GitHub and auto-loads MCP tool guidance into your session.\n\nAlternatively, copy the rules file manually:\n\n```bash\ncp -r skills/context-engine/ your-project/.claude/\n```\n\n### Cursor\n\nContext Engine rules are included in `.cursorrules` at the root of your workspace. Cursor picks this up automatically when the file is present.\n\n```bash\n# Copy to your project root\ncp .cursorrules your-project/.cursorrules\n```\n\n### Codex (OpenAI)\n\n**Recommended:** Install natively using the built-in skill installer — just ask Codex:\n\n> \"Install the context-engine skill from https://github.com/Context-Engine-AI/Context-Engine\"\n\nCodex will pull `.codex/skills/context-engine/` (including `SKILL.md` and reference docs) into `~/.codex/skills/` automatically.\n\nOr install manually:\n\n```bash\ncp -r .codex/skills/context-engine/ ~/.codex/skills/context-engine/\n```\n\n### Windsurf\n\n```bash\ncp -r .codex/skills/ your-project/.codex/skills/\n```\n\n### Augment Code\n\n```bash\ncp -r .augment/ your-project/.augment/\n```\n\n### Gemini\n\n```bash\ncp GEMINI.md your-project/GEMINI.md\n```\n\n### Any Other Assistant\n\nThe core skill file works with any AI assistant that supports custom instructions:\n\n```bash\ncp skills/context-engine/SKILL.md your-project/\n```\n\nThen tell your assistant: *\"Read SKILL.md for instructions on using Context Engine MCP tools.\"*\n\n---\n\n## CLI Setup (No VS Code)\n\nIf you use Claude Code, Codex, or another terminal-based MCP client, install the **MCP bridge** to connect your codebase to Context Engine without VS Code:\n\n```bash\nnpm install -g @context-engine-bridge/context-engine-mcp-bridge\n```\n\n### Quick start\n\n```bash\n# Authenticate, index your codebase, and start watching for changes\nctxce connect <your-api-key> --workspace /path/to/repo\n\n# Run as a background daemon (recommended)\nctxce connect <your-api-key> --workspace /path/to/repo --daemon\n```\n\n### Daemon management\n\n```bash\nctxce status          # Check if the daemon is running\nctxce stop            # Stop the background daemon\n```\n\n### Connect flags\n\n| Flag | Alias | Description |\n|------|-------|-------------|\n| `--workspace <path>` | `-w` | Workspace root (default: cwd) |\n| `--daemon` | `-d`, `--bg` | Run as background daemon |\n| `--interval <sec>` | | File watch interval in seconds (default: 30) |\n| `--no-watch` | `--once` | Index once, don't watch for changes |\n| `--skip-index` | `--auth-only` | Authenticate only, skip initial index |\n\n### Wire up the MCP server\n\nOnce connected, point your MCP client at the bridge:\n\n```bash\n# stdio mode (for Claude Code, Codex, etc.)\nctxce mcp-serve --workspace /path/to/repo\n\n# HTTP mode (for clients that speak HTTP)\nctxce mcp-http-serve --workspace /path/to/repo --port 30810\n```\n\nThe daemon and MCP server share auth via `~/.ctxce/auth.json`. Logs are at `~/.context-engine/daemon.log`.\n\nFor full bridge documentation, see [Context-Engine-MCP-Bridge](https://github.com/Context-Engine-AI/Context-Engine-MCP-Bridge).\n\n---\n\n## What Do the Skills Do?\n\nThe skills teach your AI assistant to:\n\n- **Use `search` as the default tool** — auto-routes queries to the best backend (semantic search, Q&A, symbol graph, tests, config)\n- **Navigate code with `symbol_graph`** — find callers, callees, definitions, importers, subclasses\n- **Run batch queries** — `batch_search`, `batch_symbol_graph`, `batch_graph_query` for 75%+ token savings\n- **Store and recall knowledge** — `memory_store` and `memory_find` for persistent context across sessions\n- **Trace cross-repo flows** — `cross_repo_search` with boundary tracing for multi-repo codebases\n- **Find structural patterns** — `pattern_search` for retry loops, error handling, singletons across languages\n- **Search git history** — `search_commits_for` and `change_history_for_path`\n\nSee [`skills/context-engine/SKILL.md`](skills/context-engine/SKILL.md) for the complete tool reference.\n\n---\n\n## Getting Started\n\n1. **Sign up** at [context-engine.ai](https://context-engine.ai)\n2. **Connect your codebase** — choose one:\n   - **VS Code** — install the [Context Engine Uploader](https://marketplace.visualstudio.com/items?itemName=context-engine.context-engine-uploader) extension\n   - **CLI** — `npm i -g @context-engine-bridge/context-engine-mcp-bridge && ctxce connect <api-key> --daemon`\n3. **Install the skill** for your AI assistant (see [Install Skills](#install-skills) above)\n4. **Start searching** — your assistant now has access to all 30+ MCP tools\n\n---\n\n## License\n\n[MIT License](LICENSE)\n\n© 2025 Context Engine Inc. and John Donalson.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "full_name": "iEasyData/EasyDataAgent",
+  "html_url": "https://github.com/iEasyData/EasyDataAgent",
+  "description": "让 AI Agent 理解并连接每一个业务系统。 ",
+  "topics": [
+    "agent",
+    "ai-agent",
+    "api-agent",
+    "data-agent",
+    "database-agent",
+    "easydata",
+    "easydata-agent",
+    "harness-engineering",
+    "mcp-tools",
+    "skills",
+    "task-agent"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": null,
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-05-13T01:32:58Z",
+  "last_pushed_at": "2026-05-14T08:03:23Z",
+  "fetched_at": "2026-07-12T00:49:18.035Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# EasyDataAgent\r\n\r\n让 AI Agent理解并连接每一个业务系统。 \r\n\r\n[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/iEasyData/EasyDataAgent)\r\n\r\n## 📖 项目简介\r\nEasyData 以智能体与业务系统连接为核心，通过 Data Agent 让 AI Agent 更好地理解业务系统、调用系统能力并协同完成业务任务，让企业沉淀的数据、流程与经验在智能化场景中自然流转，持续提升业务效率与智能化。\r\n\r\n## ✨ 核心特性\r\n\r\n### 🤖 AI 对话\r\n- **智能对话** - 基于大语言模型的自然语言对话\r\n- **多轮对话** - 支持上下文理解的多轮对话\r\n- **流式响应** - 打字机效果，实时显示 AI 回复（SSE）\r\n- **快捷提问** - 预设快捷问题，一键发送\r\n- **MCP 工具集成** - 支持 MCP (Model Context Protocol) 工具调用\r\n- **Markdown 渲染** - 支持代码高亮、表格、列表等格式\r\n- **自主规划并执行任务** - 自主规划并执行多步任务\r\n- **图像输入** - 支持在聊天窗口选择图片并以 Base64 方式发送给模型\r\n- **图片预览** - 支持待发送图片缩略图预览和聊天消息图片回放\r\n\r\n### 🔌 AI 模型支持\r\n- **OpenAI 兼容** - 支持 OpenAI API 格式\r\n- **阿里云通义** - 支持 DashScope API\r\n- **可配置模型** - 灵活切换不同 AI 服务商\r\n- **参数调节** - 支持 temperature、max_tokens 等参数配置\r\n\r\n### 🛠️ MCP 集成\r\n- **MCP Server** - 内置 MCP (Model Context Protocol) 服务器。\r\n- **工具调用** - 自主规划并调用工具。\r\n- **数据操作台** - 支持MySQL、SQL Server、MongoDB、Redis 等数据类型。\r\n- **接口服务中心** - 支持接口新增、编辑、执行等操作。\r\n- **任务计划中心** - 支持计划任务管理和执行\r\n- **Skills 集成** - 支持通过调用 skills\r\n\r\n### 🔐 安全与稳定性\r\n- **接口鉴权** - 已接入鉴权中间件\r\n- **会话隔离** - 会话和消息接口按当前登录用户隔离\r\n- **流式健壮性** - 前后端流式请求已兼容鉴权和分片 SSE 解析\r\n- **Session 清理** - MCP Streamable HTTP session 已补充回收逻辑\r\n\r\n### 📋 全模块 API 开放\r\n- 各个子系统接口均可以接入第三方系统或者智能体。\r\n\r\n### Docker 部署\r\n\r\n**构建镜像**\r\n```bash\r\ncd server\r\ndocker build -t EasyDataAgent .\r\n```\r\n\r\n**运行容器**\r\n```bash\r\ndocker run -d -p 32000:32000 --env-file .env --restart=always EasyDataAgent\r\n```\r\n\r\n**参数说明**\r\n- `-d` - 后台运行\r\n- `-p 32000:32000` - 端口映射\r\n- `--env-file .env` - 环境变量文件\r\n- `--restart=always` - 自动重启（容器停止或 Docker 重启时）\r\n\r\n## 🔌 MCP Server\r\n\r\n### MCP 端点\r\n\r\n- **URL**: `http://localhost:32000/mcp`\r\n- **传输**: Streamable HTTP\r\n\r\n### 配置 Claude Desktop\r\n\r\n在 Claude Desktop 配置文件中添加：\r\n\r\n**Windows**: `%APPDATA%\\Claude\\claude_desktop_config.json`\r\n**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`\r\n\r\n```json\r\n{\r\n  \"mcpServers\": {\r\n    \"EasyDataAgent\": {\r\n      \"url\": \"http://localhost:32000/mcp\"\r\n    }\r\n  }\r\n}\r\n```\r\n\r\n## 📋 使用指南\r\n\r\n### 聊天界面布局\r\n\r\n```\r\n┌─────────────────────────────────────────────────────┐\r\n│  [Logo] EasyDataAgent              [退出]               │\r\n├──────────────┬──────────────────────────────────────┤\r\n│  [新建对话]   │  [会话名]            [清空] [设置]   │\r\n│              ├──────────────────────────────────────┤\r\n│  - 会话 1     │                                      │\r\n│  - 会话 2     │           消息列表                    │\r\n│  - 会话 3     │                                      │\r\n│              │   [AI 欢迎消息]                        │\r\n│              │   [快捷操作按钮]                       │\r\n│              │                                      │\r\n│              │   ┌─────────────┐                    │\r\n│              │   │  消息气泡    │                    │\r\n│              │   └─────────────┘                    │\r\n│              │                                      │\r\n├──────────────┴──────────────────────────────────────┤\r\n│  AI 生成的内容可能不准确，请谨慎使用                   │\r\n│  © 2026 EasyData. All rights reserved.             │\r\n├─────────────────────────────────────────────────────┤\r\n│  ┌─────────────────────────────────────────────┐    │\r\n│  │  输入框...                      [发送]      │    │\r\n│  └─────────────────────────────────────────────┘    │\r\n└─────────────────────────────────────────────────────┘\r\n```\r\n\r\n#### 技术特性\r\n- 支持阿里云通义千问模型\r\n- 支持 OpenAI 兼容 API\r\n- 会话数据持久化存储\r\n- Ctrl+Enter 快捷发送\r\n- MCP 工具调用支持\r\n- MCP 资源访问\r\n\r\n### 配置 AI 模型\r\n\r\n在 `.env` 文件中配置 AI API：\r\n\r\n```bash\r\n# OpenAI\r\nAI_API_KEY=sk-xxx\r\nAI_API_BASE=https://api.openai.com/v1\r\nAI_DEFAULT_MODEL=gpt-3.5-turbo\r\n\r\n# 阿里百炼\r\nAI_API_KEY=sk-xxx\r\nAI_API_BASE=https://dashscope.aliyuncs.com/compatible-mode/v1\r\nAI_DEFAULT_MODEL=qwen3.6-plus\r\n```\r\n\r\n\r\n## 📄 许可证\r\n\r\nBSD 2-Clause License\r\n\r\n## 🤝 贡献\r\n\r\n欢迎提交 Issue 和 Pull Request！\r\n\r\n## 📮 联系方式\r\n\r\n- 项目地址：[GitHub](https://github.com/iEasyData/EasyDataAgent)\r\n- 问题反馈：[Issues](https://github.com/iEasyData/EasyDataAgent/issues)\r\n\r\n---\r\n\r\n**Made with ❤️ by EasyData Team**\r\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

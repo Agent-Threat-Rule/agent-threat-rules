@@ -1,0 +1,41 @@
+{
+  "full_name": "mai-yyy/multi-llm-mcp",
+  "html_url": "https://github.com/mai-yyy/multi-llm-mcp",
+  "description": "一个让 Claude Code 调用 Codex 干活，并可以同时调用多个模型（GPT、Kimi、DeepSeek 等）的 MCP 工具。",
+  "topics": [
+    "claude-code",
+    "codex",
+    "codex-cli",
+    "deepseek",
+    "fastmcp",
+    "kimi",
+    "llm",
+    "mcp",
+    "model-context-protocol",
+    "multi-llm",
+    "openai",
+    "python",
+    "qwen"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 129,
+  "forks": 1,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-05-29T02:52:06Z",
+  "last_pushed_at": "2026-05-30T00:50:08Z",
+  "fetched_at": "2026-07-11T23:18:54.610Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# multi-llm-mcp\n\n一个用于 Claude Code 的 MCP 工具，支持通过 MCP 调用 Codex CLI 执行任务，并支持多个模型（GPT、Kimi、DeepSeek、Qwen 等）并行调用。\n\n本项目基于 [FastMCP](https://github.com/jlowin/fastmcp) 开发，主要解决两个问题：\n\n1. 让 Claude Code 可以把任务交给 Codex CLI 执行，例如查看代码、修改文件、重构项目等。\n2. 让 Claude Code 可以同时调用多个大模型，从不同模型获得回答，便于对比、补充和交叉参考。\n\n## 功能特点\n\n1. **Codex CLI 异步任务执行**：通过 MCP 工具调用 Codex CLI，并使用 `job_id` + `wait_codex` 的方式等待长任务完成，避免 MCP 客户端单次工具调用超时。\n2. **支持 Codex 沙盒模式**：`read-only`、`workspace-write`、`danger-full-access` 三种级别。\n3. **单模型会话调用**：调用指定模型，并通过 `session_id` 保持多轮上下文。\n4. **多模型并行调用**：把同一个问题同时发送给多个模型（GPT、Kimi、DeepSeek、Qwen、Claude）。\n5. **长任务轮询机制**：对耗时较长的 Codex 任务或多模型调用，先返回 `job_id`，后续继续通过 `wait_*` 工具等待结果。\n6. **环境检查工具**：`health_check` 用于检查运行环境、Codex CLI 是否可用、各模型 API Key 是否配置等（不返回任何 key 内容）。\n\n## 工具列表\n\n| 工具名 | 作用 |\n|--------|------|\n| `ask` | 调用单个模型，支持多轮会话 |\n| `ask_many` | 同时调用多个模型 |\n| `wait_many` | 继续等待多模型并行调用任务 |\n| `review` | 让多个模型同时分析同一段内容 |\n| `ask_codex` | 调用 Codex CLI 执行任务 |\n| `wait_codex` | 继续等待 Codex CLI 任务 |\n| `clear_session` | 清除指定会话 |\n| `clear_all_sessions` | 清除全部会话 |\n| `list_sessions` | 查看当前内存中的会话 |\n| `health_check` | 检查 MCP 服务运行状态 |\n\n## 环境要求\n\n1. Python 3.10+\n2. FastMCP\n3. OpenAI Python SDK\n4. 可选：OpenAI Codex CLI\n\n安装依赖：\n\n```\npip install fastmcp openai\n```\n\n如果需要使用 `ask_codex`，还需确保本机已安装 Codex CLI，并能在命令行直接运行：\n\n```\ncodex\n```\n\n另外，在用 `ask_codex` 调度 Codex 之前，确保 Codex CLI 已经登录过账号（首次使用前先在命令行运行 `codex` 完成登录），否则任务会因为未认证而失败。\n\n## 模型配置\n\n项目中通过 `PROVIDERS` 配置不同模型服务，例如 DeepSeek、Kimi、Qwen、GPT 等。推荐使用环境变量保存模型密钥：\n\n| 模型 | 环境变量 |\n|------|----------|\n| DeepSeek | `DEEPSEEK_API_KEY` |\n| Kimi（Moonshot） | `MOONSHOT_API_KEY` |\n| Qwen（DashScope） | `DASHSCOPE_API_KEY` |\n| GPT（OpenAI） | `OPENAI_API_KEY` |\n| Claude（Anthropic，可选） | `ANTHROPIC_API_KEY` |\n\n在 Windows 上可以用 `setx` 把这些设为用户级环境变量（设完需重开终端 / 重启 Claude Code 才生效），按你要用的模型设即可：\n\n```\nsetx OPENAI_API_KEY \"your-key\"\nsetx DEEPSEEK_API_KEY \"your-key\"\n```\n\n（`MOONSHOT_API_KEY` / `DASHSCOPE_API_KEY` / `ANTHROPIC_API_KEY` 同理。）\n\n如果只是自己本地快速验证，也可以临时把 key 写到代码里的 `PROVIDERS` 中，方便测试。但不要把包含 key 的代码上传到 GitHub，也不要发给别人。准备开源或分享前，应改成环境变量方式，或确认代码中已经没有真实 key。\n\n### 启用 Claude（可选）\n\n代码里 `PROVIDERS` 的 `claude` 块默认是注释状态。要启用 Claude：\n\n1. 取消注释 `PROVIDERS` 中的 `claude` 块；\n2. 把 `\"claude\"` 加进 `ModelName`；\n3. 配置 `ANTHROPIC_API_KEY`。\n\n它走的是 Anthropic 的 OpenAI 兼容端点（`base_url=\"https://api.anthropic.com/v1/\"`），模型名填 Claude 的名称即可（如 `claude-opus-4-7`、`claude-sonnet-4-6`、`claude-haiku-4-5`）。\n\n> 小技巧：服务本身跑在 Claude Code 里，所以你可以反过来调度别的 Claude——比如用更便宜的 Haiku 去跑并行的苦力活，或者要一个干净上下文、不被当前对话带偏的 Claude 来做二次判断。\n\n## MCP 配置示例（Claude Code）\n\n在 Claude Code 中，推荐直接用 `claude mcp add` 命令添加本项目。基本格式：\n\n```\nclaude mcp add --scope user llm-mix -- python /absolute/path/to/LLM_MIX.py\n```\n\n其中：\n\n1. `llm-mix` 是这个 MCP 服务的名字，可以自己改。\n2. `--scope user` 表示该 MCP 对当前用户全局可用，不只限于某一个项目。\n3. `python` 是 Python 启动命令。\n4. `/absolute/path/to/LLM_MIX.py` 替换成你本地 `LLM_MIX.py` 的绝对路径。\n\nWindows 示例：\n\n```\nclaude mcp add --scope user llm-mix -- python \"C:\\path\\to\\LLM_MIX.py\"\n```\n\n如果上面那条添加后用不了（通常是 `python` 不在 PATH 上，或指向了别的 Python 环境），改用下面这条、写上 Python 解释器的完整路径：\n\n```\nclaude mcp add --scope user llm-mix -- \"C:\\path\\to\\python.exe\" \"C:\\path\\to\\LLM_MIX.py\"\n```\n\n添加完成后，可以用下面的命令查看是否添加成功：\n\n```\nclaude mcp list\n```\n\n进入 Claude Code 后，也可以输入 `/mcp` 查看 MCP 服务是否已连接。\n\n## 使用示例\n\n连接 MCP 后，可以直接让 Claude Code 使用这些能力：\n\n```\n用 Codex 查看当前项目结构。\n```\n\n```\n让 Codex 在当前目录创建一个测试文件。\n```\n\n```\n让 Codex 修改这个 Python 文件，修复明显的异常处理问题。\n```\n\n```\n把这个问题同时发给 GPT、Kimi、DeepSeek 和 Qwen。\n```\n\n```\n让多个模型一起分析这个方案有没有明显问题。\n```\n\n```\n让 DeepSeek 单独解释这段代码。\n```\n\n如果任务较长，工具可能会返回：\n\n```json\n{\n  \"success\": true,\n  \"status\": \"running\",\n  \"job_id\": \"xxxx\",\n  \"message\": \"任务仍在运行，使用 wait_codex 继续等待\"\n}\n```\n\n这时继续调用对应的 `wait_codex` 或 `wait_many` 即可。\n\n## Codex 沙盒使用建议\n\n1. 一般查看代码、分析项目时，优先使用 `read-only`。\n2. 需要 Codex 修改文件时，使用 `workspace-write`。\n3. 不建议随意使用 `danger-full-access`，因为这个模式会给 Codex 更高的本机权限。\n\n## 注意事项\n\n1. `ask_codex` 依赖本机 Codex CLI。\n2. 多模型调用是否可用，取决于你是否配置了对应模型服务（可用 `health_check` 查看）。\n3. 长任务建议使用 `job_id` + `wait_*` 的方式继续等待。\n4. 个人本地调试可以图方便，但公开仓库前要检查是否包含真实密钥、私人路径或其他敏感信息。\n\n## 社区 / 致谢\n\n本项目在 [LINUX DO](https://linux.do) 社区分享与讨论，感谢社区佬友的反馈与建议。\n\n## License\n\nMIT License\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

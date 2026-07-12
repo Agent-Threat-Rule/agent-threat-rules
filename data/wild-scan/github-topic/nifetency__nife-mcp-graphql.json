@@ -1,0 +1,32 @@
+{
+  "full_name": "nifetency/nife-mcp-graphql",
+  "html_url": "https://github.com/nifetency/nife-mcp-graphql",
+  "description": "Dynamic MCP server that auto-generates tools from any GraphQL schema",
+  "topics": [
+    "mcp",
+    "mcp-servers",
+    "nife",
+    "nife-io"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-11-28T07:59:17Z",
+  "last_pushed_at": "2026-04-14T12:17:23Z",
+  "fetched_at": "2026-07-12T00:24:02.648Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# GraphQL MCP Server\n\n![Python](https://img.shields.io/badge/python-3.11+-blue)\n![License](https://img.shields.io/badge/license-MIT-green)\n![MCP](https://img.shields.io/badge/MCP-compatible-purple)\n\nA dynamic Model Context Protocol (MCP) server that automatically discovers and generates tools from any GraphQL API schema. Point it at any GraphQL endpoint and it instantly exposes every query and mutation as an MCP tool — zero manual configuration.\n\n---\n\n## Documentation\n\nFor full documentation, guides, and examples, visit:\n\nhttps://nife.io/mcp_opensource\n\n--- \n\n## Installation\n\n```bash\npip install graphql-mcp-server\n```\n\n---\n\n## Configuration\n\nThere are **four ways** to configure the server. They are applied in priority order — higher entries win:\n\n| Priority | Method | Best for |\n|----------|--------|----------|\n| 1  | CLI arguments | One-off runs, testing |\n| 2 | Environment variables | Docker, CI/CD, shell scripts |\n| 3 | `.env` file | Local development |\n| 4  | Defaults | Nothing required by default |\n\n### Method 1 — CLI Arguments\n\n```bash\ngraphql-mcp-server --endpoint https://api.example.com/graphql --token mytoken\n```\n\nAll available flags:\n\n```\n--endpoint URL       GraphQL API endpoint (required if not set via env)\n--token TOKEN        API access token for authentication\n--mode stdio|http    Server mode (default: stdio)\n--port PORT          HTTP port, only used in http mode (default: 8080)\n--host HOST          HTTP host, only used in http mode (default: 0.0.0.0)\n--log-level LEVEL    Logging level: DEBUG, INFO, WARNING, ERROR (default: INFO)\n--env-file PATH      Path to a custom .env file\n--version            Show version and exit\n```\n\n### Method 2 — Environment Variables\n\n```bash\nexport GRAPHQL_ENDPOINT=https://api.example.com/graphql\nexport API_ACCESS_TOKEN=your_token_here\nexport MCP_MODE=stdio\n\ngraphql-mcp-server\n```\n\n### Method 3 — `.env` File\n\nCreate a `.env` file in your working directory:\n\n```env\nGRAPHQL_ENDPOINT=https://api.example.com/graphql\nAPI_ACCESS_TOKEN=your_token_here\nMCP_MODE=stdio\nLOG_LEVEL=INFO\n```\n\nThen just run:\n\n```bash\ngraphql-mcp-server\n```\n\n### Method 4 — Claude Desktop Config (most common for MCP use)\n\nNo `.env` file needed. Pass everything via the `env` block in `claude_desktop_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"graphql\": {\n      \"command\": \"graphql-mcp-server\",\n      \"env\": {\n        \"GRAPHQL_ENDPOINT\": \"https://api.example.com/graphql\",\n        \"API_ACCESS_TOKEN\": \"your_token_here\",\n        \"MCP_MODE\": \"stdio\",\n        \"ENABLE_HTTP_ENDPOINT\": \"false\"\n      }\n    }\n  }\n}\n```\n\nClaude Desktop injects the `env` block values directly into the process — this is the standard MCP pattern.\n\n---\n\n## Environment Variable Reference\n\n| Variable | Required | Default | Description |\n|----------|----------|---------|-------------|\n| `GRAPHQL_ENDPOINT` |  Yes | — | GraphQL API URL |\n| `API_ACCESS_TOKEN` | No | — | Bearer token for auth |\n| `MCP_MODE` | No | `stdio` | `stdio` or `http` |\n| `ENABLE_HTTP_ENDPOINT` | No | `true` | Enable HTTP health/metrics endpoints |\n| `MCP_SERVER_PORT` | No | `8080` | HTTP server port |\n| `MCP_SERVER_HOST` | No | `0.0.0.0` | HTTP server host |\n| `LOG_LEVEL` | No | `INFO` | Logging verbosity |\n| `QUERY_TIMEOUT` | No | `30` | Request timeout in seconds |\n| `SCHEMA_CACHE_TTL` | No | `3600` | Schema cache TTL in seconds |\n\n---\n\n## Operating Modes\n\n### MCP Mode (`stdio`) — for Claude Desktop, Cursor, MCP clients\n\n```bash\ngraphql-mcp-server --endpoint https://api.example.com/graphql --mode stdio\n```\n\nCommunicates via stdin/stdout. No HTTP server is started. This is the default.\n\n### HTTP Mode — for Docker, Kubernetes, server deployments\n\n```bash\ngraphql-mcp-server --endpoint https://api.example.com/graphql --mode http --port 8080\n```\n\nStarts an HTTP server with health and metrics endpoints:\n- `GET /health` — health check\n- `GET /metrics` — server metrics\n- `GET /schema` — schema summary\n- `GET /tools` — all generated tools\n\n---\n\n## Docker\n\n```bash\ndocker build -t graphql-mcp-server .\n\ndocker run -p 8080:8080 \\\n  -e GRAPHQL_ENDPOINT=https://api.example.com/graphql \\\n  -e API_ACCESS_TOKEN=your_token \\\n  -e MCP_MODE=http \\\n  graphql-mcp-server\n```\n\nOr with Docker Compose:\n\n```bash\ncp .env.example .env   # fill in your values\ndocker-compose up\n```\n\n---\n\n## Key Features\n\n- **Zero config queries** — auto-introspects any GraphQL schema and generates MCP tools\n- **Dual mode** — stdio for MCP clients, HTTP for server deployments\n- **Flexible config** — CLI args, env vars, .env file, or Claude Desktop env block\n- **Production ready** — Docker, Kubernetes, AWS ECS, Google Cloud Run compatible\n- **Self-documenting** — `list_available_queries`, `get_schema_info`, `get_query_signature` tools built in\n- **Documentation** — https://nife.io/mcp_opensource\n---\n\n## Troubleshooting\n\n**`[ERROR] GraphQL endpoint not configured`**\n\nSet `GRAPHQL_ENDPOINT` via any method above. The most common fix:\n```bash\ngraphql-mcp-server --endpoint https://your-api.com/graphql\n```\n\n**Port already in use**\n\nChange the port:\n```bash\ngraphql-mcp-server --mode http --port 9090\n```\n\n**Docker container exits immediately**\n\nMake sure you're using HTTP mode:\n```bash\ndocker run -e MCP_MODE=http -e GRAPHQL_ENDPOINT=... graphql-mcp-server\n```\n\n---\n\n\n\n\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

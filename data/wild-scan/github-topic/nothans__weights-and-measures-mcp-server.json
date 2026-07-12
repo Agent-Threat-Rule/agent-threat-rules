@@ -1,0 +1,35 @@
+{
+  "full_name": "nothans/weights-and-measures-mcp-server",
+  "html_url": "https://github.com/nothans/weights-and-measures-mcp-server",
+  "description": "MCP server that provides tools and resources for weights and measures conversions. This server enables AI assistants to perform accurate unit conversions and access comprehensive reference tables for different measurement systems.",
+  "topics": [
+    "mcp-resouces",
+    "mcp-server",
+    "mcp-tools",
+    "measures",
+    "python",
+    "uv",
+    "weights"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-11-15T16:35:41Z",
+  "last_pushed_at": "2025-11-15T16:41:31Z",
+  "fetched_at": "2026-07-12T00:40:20.638Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Weights and Measures MCP Server\n\nA Model Context Protocol (MCP) server that provides tools and resources for weights and measures conversions. This server enables AI assistants to perform accurate unit conversions and access comprehensive reference tables for different measurement systems.\n\n## Features\n\n### Tools\n\n1. **convert_unit** - Convert values between different units of measurement\n   - Supports weight conversions (Avoirdupois, Troy, Apothecaries', Metric)\n   - Supports length conversions (Imperial/US, Metric)\n   - Supports volume conversions (US Fluid, Imperial Fluid, Metric)\n   - Example: Convert 10 pounds to kilograms, or 5 miles to kilometers\n\n2. **get_conversion_factor** - Get the conversion multiplier between two units\n   - Returns the exact factor needed to convert from one unit to another\n   - Useful for understanding conversion relationships\n   - Example: Get the factor to convert troy ounces to grams\n\n3. **list_units** - List all available units, optionally filtered by category\n   - View all supported units\n   - Filter by category: weight, length, or volume\n   - Helps discover available conversion options\n\n### Resources\n\nAccess comprehensive reference tables for different measurement systems:\n\n**Weight Tables:**\n- `weights://tables/avoirdupois` - Commercial weight (pounds, ounces, grains)\n- `weights://tables/troy` - Precious metals weight (troy ounces, pennyweights)\n- `weights://tables/apothecaries` - Pharmacy weight (drams, scruples)\n- `weights://tables/metric-weight` - Metric weight (kilograms, grams)\n- `weights://tables/cross-system-weight` - Cross-system conversions\n\n**Length Tables:**\n- `length://tables/imperial-us` - Imperial/US measurements (miles, yards, feet, inches)\n- `length://tables/metric` - Metric measurements (kilometers, meters, centimeters)\n- `length://tables/cross-system` - Imperial/Metric conversions\n\n**Volume Tables:**\n- `volume://tables/us-fluid` - US fluid measurements (gallons, quarts, pints, cups)\n- `volume://tables/imperial-fluid` - Imperial fluid measurements\n- `volume://tables/metric-volume` - Metric volume (liters, milliliters)\n- `volume://tables/cross-system-volume` - Cross-system conversions\n\n**Additional:**\n- `units://all` - Complete list of all supported units\n\n## Installation\n\n### Prerequisites\n- Python 3.10 or higher\n- [uv](https://github.com/astral-sh/uv) package manager\n\n### Install Dependencies\n\n```bash\n# Clone the repository\ngit clone https://github.com/yourusername/weights-and-measures-mcp-server.git\ncd weights-and-measures-mcp-server\n\n# Install dependencies with uv\nuv sync\n```\n\n## Usage\n\n### With Claude Desktop\n\nAdd this configuration to your Claude Desktop config file:\n\n**macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`\n**Windows:** `%APPDATA%\\Claude\\claude_desktop_config.json`\n\n```json\n{\n  \"mcpServers\": {\n    \"weights-and-measures\": {\n      \"command\": \"uv\",\n      \"args\": [\n        \"--directory\",\n        \"/ABSOLUTE/PATH/TO/weights-and-measures-mcp-server\",\n        \"run\",\n        \"weights-and-measures-server\"\n      ]\n    }\n  }\n}\n```\n\nReplace `/ABSOLUTE/PATH/TO/` with the actual path to your cloned repository.\n\n### Standalone\n\nRun the server directly:\n\n```bash\nuv run weights-and-measures-server\n```\n\nOr with Python:\n\n```bash\npython -m weights_and_measures_server.server\n```\n\n## Example Usage\n\nOnce connected to an MCP client (like Claude Desktop), you can:\n\n**Convert units:**\n- \"Convert 10 pounds to kilograms\"\n- \"How many liters are in 5 gallons?\"\n- \"Convert 100 miles to kilometers\"\n\n**Get conversion factors:**\n- \"What's the conversion factor from troy ounces to grams?\"\n- \"How do I convert feet to meters?\"\n\n**Access reference tables:**\n- \"Show me the avoirdupois weight table\"\n- \"What are the metric length measurements?\"\n- \"List all available units for volume\"\n\n## Supported Units\n\n**Weight:**\n- Avoirdupois: gross_ton, net_ton, pound, ounce, grain\n- Troy: troy_pound, troy_ounce, pennyweight, troy_grain\n- Apothecaries: apothecaries_pound, apothecaries_ounce, dram, scruple, apothecaries_grain\n- Metric: metric_ton, kilogram, gram, decigram, centigram, milligram\n\n**Length:**\n- Imperial/US: mile, yard, foot, inch\n- Metric: kilometer, meter, decimeter, centimeter, millimeter\n\n**Volume:**\n- US Fluid: us_gallon, gallon, quart, pint, fluid_ounce, cup, tablespoon, teaspoon\n- Imperial: imperial_gallon, imperial_quart, imperial_pint, imperial_fluid_ounce\n- Metric: cubic_meter, liter, deciliter, centiliter, milliliter\n- Cubic: cubic_inch, cubic_foot\n\n## Development\n\n### Project Structure\n\n```\nweights-and-measures-mcp-server/\n├── weights_and_measures_server/\n│   ├── __init__.py\n│   ├── server.py          # MCP server implementation\n│   └── data.py            # Conversion factors and reference tables\n├── pyproject.toml         # Project configuration\n├── test_server.py         # Test suite\n└── README.md\n```\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

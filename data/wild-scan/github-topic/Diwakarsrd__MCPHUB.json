@@ -1,0 +1,38 @@
+{
+  "full_name": "Diwakarsrd/MCPHUB",
+  "html_url": "https://github.com/Diwakarsrd/MCPHUB",
+  "description": "The open registry for MCP servers — install any MCP server in one command",
+  "topics": [
+    "ai-agents",
+    "claude",
+    "cli",
+    "developer-tools",
+    "mcp",
+    "mcp-servers",
+    "model-context-protocol",
+    "npm",
+    "open-source",
+    "registry"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 2,
+  "forks": 1,
+  "open_issues": 1,
+  "language": "HTML",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-11T17:20:20Z",
+  "last_pushed_at": "2026-04-12T05:12:45Z",
+  "fetched_at": "2026-07-12T00:07:22.075Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n\n# MCPHub\n\n**The open registry for Model Context Protocol servers.**\n\n[![License: MIT](https://img.shields.io/badge/License-MIT-black.svg)](LICENSE)\n[![Registry](https://img.shields.io/badge/servers-22-brightgreen.svg)](registry/servers.json)\n[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)\n\n```bash\nnpm install -g mcphub\nmcphub search postgres\nmcphub install postgres\n```\n\n[Browse Registry](#featured-servers) · [Submit a Server](CONTRIBUTING.md) · [CLI Docs](cli/README.md)\n\n</div>\n\n---\n\nMCPHub is the community registry for [Model Context Protocol](https://modelcontextprotocol.io) servers — think npm, but for MCP. One place to discover, install, and publish the servers that connect AI agents to every tool, database, and API.\n\nThe registry is a single JSON file. The CLI writes directly to your config. No accounts, no lock-in, no proprietary dependencies.\n\n---\n\n## Install\n\n```bash\nnpm install -g mcphub\n```\n\nOr run without installing:\n\n```bash\nnpx mcphub <command>\n```\n\n**Requirements:** Node.js 18+\n\n---\n\n## CLI\n\n```bash\n# Search\nmcphub search postgres\nmcphub search \"browser automation\"\nmcphub search --category \"Dev Tools\"\n\n# Install a server into your MCP config\nmcphub install filesystem\nmcphub install github\nmcphub install postgres\n\n# Manage\nmcphub list              # show installed servers\nmcphub info stripe       # detailed info + tools\nmcphub remove slack      # remove from config\nmcphub update            # sync all to latest\n\n# Publish your own\nmcphub publish\n```\n\n---\n\n## Featured Servers\n\n| Server | Category | Stars | Install |\n|---|---|---|---|\n| `filesystem` | Storage | 12.4k | `mcphub install filesystem` |\n| `github` | Dev Tools | 9.8k | `mcphub install github` |\n| `postgres` | Databases | 7.2k | `mcphub install postgres` |\n| `memory` | AI/ML | 5.8k | `mcphub install memory` |\n| `slack` | Productivity | 5.4k | `mcphub install slack` |\n| `brave-search` | Search | 6.1k | `mcphub install brave-search` |\n| `stripe` | Payments | 4.8k | `mcphub install stripe` |\n| `sequential-thinking` | AI/ML | 4.9k | `mcphub install sequential-thinking` |\n| `sqlite` | Databases | 4.6k | `mcphub install sqlite` |\n| `puppeteer` | Automation | 5.1k | `mcphub install puppeteer` |\n\n[See all 22 servers in the registry →](registry/servers.json)\n\n---\n\n## How the registry works\n\nThe registry is [`registry/servers.json`](registry/servers.json) — a single file maintained by the community via pull requests. Every entry describes one MCP server:\n\n```json\n{\n  \"name\": \"my-server\",\n  \"author\": \"your-github-handle\",\n  \"description\": \"What it does.\",\n  \"category\": \"Dev Tools\",\n  \"tags\": [\"tag1\", \"tag2\"],\n  \"install\": \"npx my-mcp-server\",\n  \"homepage\": \"https://github.com/you/my-mcp-server\",\n  \"license\": \"MIT\",\n  \"tools\": [\n    { \"name\": \"tool_name\", \"description\": \"What this tool does.\" }\n  ]\n}\n```\n\nPull requests are reviewed within 48 hours.\n\n---\n\n## Project layout\n\n```\nmcphub/\n├── registry/\n│   ├── servers.json        # The canonical registry — edit this to add a server\n│   └── schema.json         # JSON Schema for validation\n├── cli/                    # npx mcphub — TypeScript CLI\n│   └── src/\n│       ├── commands/       # search, install, list, info, remove, update, publish\n│       └── utils/          # registry fetcher, claude config reader/writer\n├── website/\n│   └── index.html          # Full registry browser — zero build step, deploy anywhere\n├── scripts/\n│   └── validate.js         # Validate the registry before opening a PR\n└── .github/\n    └── workflows/          # CI validates registry + builds CLI on every PR\n```\n\n---\n\n## Hosting the website\n\nThe website is a single HTML file with no build step. Deploy it anywhere:\n\n**GitHub Pages (free, automatic):**\n1. Go to your repo → Settings → Pages\n2. Source: Deploy from branch → `main` → `/website`\n3. Done. Available at `https://Diwakarsrd.github.io/MCPHUB/website/`\n\n**Vercel (recommended, custom domain):**\n```bash\nnpx vercel website/\n```\n\n**Netlify:**\nDrag and drop the `website/` folder at netlify.com/drop.\n\n**Any static host:**\nJust serve `website/index.html`.\n\n---\n\n## Contributing\n\nSee [CONTRIBUTING.md](CONTRIBUTING.md) for full details.\n\nThe short version:\n1. Fork this repo\n2. Add your server to `registry/servers.json`\n3. Run `node scripts/validate.js` to check for errors\n4. Open a pull request\n\n---\n\n## Roadmap\n\n- [x] Registry JSON + schema validation\n- [x] CLI: install / search / list / info / remove / update\n- [x] Website: browse, search, filter, dark mode\n- [x] CI: auto-validate registry on every PR\n- [ ] CLI: `mcphub init` — scaffold a new MCP server\n- [ ] Server health badges (auto-tested weekly)\n- [ ] Verified publisher program\n- [ ] REST API: `GET /api/servers`\n- [ ] Weekly community digest\n\n---\n\n## Self-hosting the registry\n\nFork this repo and point the CLI at your own registry:\n\n```bash\nmcphub install myserver --registry https://raw.githubusercontent.com/YOUR_ORG/mcp-registry/main/registry/servers.json\n```\n\n---\n\n## License\n\nMIT — see [LICENSE](LICENSE).\n\nAll servers listed in the registry are independently licensed by their respective authors.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

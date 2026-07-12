@@ -1,0 +1,34 @@
+{
+  "full_name": "spider-rs/spider-claude-plugin",
+  "html_url": "https://github.com/spider-rs/spider-claude-plugin",
+  "description": null,
+  "topics": [
+    "claude-code-plugin",
+    "claude-code-skills",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": null,
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-06-25T20:28:46Z",
+  "last_pushed_at": "2026-06-25T20:30:07Z",
+  "fetched_at": "2026-07-12T00:51:49.881Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Spider Cloud plugin for Claude Code\n\nThe fastest web crawling, scraping, search, and browser automation for AI agents —\ndelivered through the hosted **Spider Cloud MCP server**, with built-in anti-bot\nbypass, proxy rotation, and AI-driven extraction.\n\nThis repository is **both a Claude Code plugin and its own marketplace**, so you\ncan install it in one step.\n\n- **Website:** https://spider.cloud\n- **MCP docs:** https://spider.cloud/mcp\n- **Get an API key:** https://spider.cloud/api-keys\n\n## Install\n\n```shell\n/plugin marketplace add spider-rs/spider-claude-plugin\n/plugin install spider@spider-tools\n```\n\nThen run `/reload-plugins` to activate it.\n\n## What this plugin ships\n\n- **1 MCP server** — the hosted Spider endpoint at `https://mcp.spider.cloud/mcp`, exposing crawl, scrape, search, links, screenshot, unblocker, transform, credits, AI extraction, and remote browser-automation tools.\n- **3 skills** — `spider` (overview + tool-selection guide), `spider-crawl-scrape` (crawling, scraping, search, bot bypass), and `spider-browser` (interactive browser sessions). Namespaced as `/spider:spider-crawl-scrape`, etc.\n\n## Authentication\n\nThe Spider MCP server uses **OAuth** — on first connection Claude Code prompts you\nto authorize in the browser, with no API key to paste. The bundled\n[`.mcp.json`](.mcp.json) just points at the hosted endpoint:\n\n```json\n{\n  \"mcpServers\": {\n    \"spider\": {\n      \"type\": \"http\",\n      \"url\": \"https://mcp.spider.cloud/mcp\"\n    }\n  }\n}\n```\n\nThe endpoint advertises OAuth via [protected-resource metadata](https://mcp.spider.cloud/.well-known/oauth-protected-resource/mcp)\nwith dynamic client registration and PKCE, so MCP clients authorize automatically.\n\n**API-key alternative.** The server also accepts a Bearer API key if you prefer\nnot to use OAuth — add an `Authorization` header to the config:\n\n```json\n\"headers\": { \"Authorization\": \"Bearer ${SPIDER_API_KEY}\" }\n```\n\nwith `SPIDER_API_KEY` from https://spider.cloud/api-keys.\n\nCore tools run on pay-per-use credits (no subscription required). The AI tools\nrequire an [AI subscription](https://spider.cloud/ai/pricing).\n\n## Network & credentials (for review)\n\n- **Endpoint called:** `https://mcp.spider.cloud/mcp` (the official Spider Cloud hosted MCP server) and its OAuth discovery/authorization endpoints under the same host. No other network endpoints.\n- **Credential:** none stored by the plugin. Auth is OAuth (browser authorization, tokens managed by Claude Code) or, optionally, a user-supplied `SPIDER_API_KEY` sent only as the `Authorization: Bearer` header to the endpoint above. The plugin ships no hooks or scripts, reads nothing from the filesystem, and collects no telemetry.\n\n## License\n\nMIT — see [LICENSE](LICENSE).\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"spider\": {\n      \"type\": \"http\",\n      \"url\": \"https://mcp.spider.cloud/mcp\",\n      \"note\": \"Official Spider Cloud hosted MCP server. Uses OAuth — on first connection the agent is prompted to authorize via browser; no API key to paste. Tools: crawl, scrape, search, links, screenshot, unblocker, transform, credits, AI extraction, and remote browser automation.\"\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "full_name": "reshaprio/reshapr",
+  "html_url": "https://github.com/reshaprio/reshapr",
+  "description": "The open source, no-code MCP Server for AI-Native API Access",
+  "topics": [
+    "agent-tools",
+    "ai-agents",
+    "ai-gateway",
+    "ai-infrastructure",
+    "ai-integration",
+    "ai-native",
+    "context-optimization",
+    "context-window",
+    "developer-tools",
+    "graphql-to-mcp",
+    "grpc",
+    "llm",
+    "llm-agents",
+    "mcp",
+    "mcp-server",
+    "openapi",
+    "rest-api",
+    "rest-to-mcp",
+    "token-optimization"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 108,
+  "forks": 20,
+  "open_issues": 27,
+  "language": "Java",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2026-03-04T10:46:21Z",
+  "last_pushed_at": "2026-07-10T11:07:50Z",
+  "fetched_at": "2026-07-11T22:58:34.768Z",
+  "readme": {
+    "path": "README.md",
+    "content": "[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/reshaprio/reshapr/build-verify.yml?logo=github&style=for-the-badge)](https://github.com/reshaprio/reshapr/actions)\n[![Container](https://img.shields.io/badge/dynamic/json?color=blueviolet&logo=docker&style=for-the-badge&label=Quay.io&query=tags[1].name&url=https://quay.io/api/v1/repository/reshapr/reshapr-ctrl/tag/?limit=10&page=1&onlyActiveTags=true)](https://quay.io/repository/reshapr/reshapr-ctrl?tab=tags)\n[![Version](https://img.shields.io/maven-central/v/io.reshapr/reshapr-parent?color=blue&logo=openjdk&style=for-the-badge)]((https://central.sonatype.com/search?q=io.reshapr))\n[![NPM](https://img.shields.io/npm/v/@reshapr/reshapr-cli?color=CB3837&logo=npm&style=for-the-badge)](https://www.npmjs.com/package/@reshapr/reshapr-cli)\n[![License](https://img.shields.io/github/license/reshaprio/reshapr?style=for-the-badge&logo=apache)](https://www.apache.org/licenses/LICENSE-2.0)\n[![Project Chat](https://img.shields.io/badge/discord-reshapr-pink.svg?color=7289da&style=for-the-badge&logo=discord)](https://discord.gg/KyDUdam34h)\n[![GitHub stars](https://img.shields.io/github/stars/reshaprio/reshapr?style=for-the-badge&logo=github&color=ffad05)](https://github.com/reshaprio/reshapr)\n\n# Welcome to reShapr 🚀\n\n[**Website**](https://reshapr.io/) | [**About**](https://reshapr.io/about) | [**Docs**](https://reshapr.io/docs/) | [**Blog**](https://reshapr.io/blog) | [**Community**](https://reshapr.io/community)\n\n---\n\n## ✨ What is reShapr?\n\n**reShapr** is the open source, no-code MCP Server for AI-Native API Access. It bridges the gap between traditional REST/GraphQL/gRPC services and LLMs by transforming complex services into discoverable, optimized MCP tools.\n\n<p align=\"center\">\n  <a href=\"https://reshapr.io/docs/tutorials/getting-started\">\n    <img src=\"https://raw.githubusercontent.com/reshaprio/.github/main/assets/demo-video-github-full.gif\" width=\"750\" alt=\"reShapr Demo - Click to get started\">\n  </a>\n  <br/>\n  <em>✨ Transform any API into lean LLM contexts in seconds.</em>\n</p>\n\n> [!IMPORTANT]\n> To get involved with our community, please familiarize yourself with the project's [Code of Conduct](./CODE_OF_CONDUCT.md).\n\n### 🧠 Solving the \"Context Window\" Problem\n\nOne of the biggest hurdles in building AI agents is **Context Overload**. Sending massive JSON responses to an LLM wastes tokens and degrades performance. \n\n[**reShapr introduces Context Control**](https://reshapr.io/blog/from-context-overload-to-context-control)\n\n## 🌟 Key Features\n\n* AI-Native Transformation: Auto-transform API services into LLM-friendly tools.\n* Context Control: Filter and slim down payloads before they reach the LLM.\n* Multi-Protocol: REST, GraphQL, and gRPC support.\n* No-Code: Configure and deploy in minutes.\n\n📖 [**Full Documentation**](https://reshapr.io/docs/) | [**Discord Community**](https://discord.gg/KyDUdam34h)\n\n## Quick Start\n\n### Install the CLI\n\n```sh\nnpm install -g @reshapr/reshapr-cli\n```\n\n### Choose your platform\n\nYou have two simple options:\n1. Use the [https://try.reshapr.io/](https://try.reshapr.io/) to try out the platform. Follow our detailed \n[Try reShapr online](https://reshapr.io/docs/tutorials/try-reshapr-online) guide.\n2. Run the platform locally using [containers and Docker runtime](https://reshapr.io/docs/how-to-guides/docker-compose). Follow the next section for details.\n\n### Run the platform locally\n\nAssuming you have Docker installed, you can run the platform locally with the following command:\n```sh\nreshapr run\n```\n\nYou should see a message like this:\n```sh\nℹ️  Resolved 'latest' to release '0.0.14'.\nℹ️  Downloading compose file from https://raw.githubusercontent.com/reshaprio/reshapr/refs/tags/0.0.14/install/docker-compose-all-in-one.yml...\n✅ Compose file saved to /Users/<you>/.reshapr/docker-compose-0.0.14.yml\nℹ️  Starting Reshapr containers (release: 0.0.14)...\n✅ Reshapr containers started successfully.\n```\n\nConnect to the control plane at http://localhost:5555 with default credentials (`admin/password`):\n```sh\nreshapr login -s http://localhost:5555 -u admin -p password\n```\n\nImport an OpenAPI file:\n```sh\nreshapr import -u https://raw.githubusercontent.com/open-meteo/open-meteo/refs/heads/main/openapi.yml \\\n  --backendEndpoint https://api.open-meteo.com\n```\n\nYou now have a fully functional MCP Server powered by reShapr at http://localhost:7777/mcp/reshapr/Open-Meteo+APIs/1.0 🎉\n\nYou can try it out using an MCP client, [explore the CLI](https://reshapr.io/docs/tutorials/getting-started) and \n[more features](https://reshapr.io/docs/references/features)!\n\n## Contributing\n\nWe ❤️ contributors! Reshapr is an open community, and we welcome contributions of **all kinds** — not just code. \nEvery contribution matters and helps make Reshapr better for everyone:\n\n- 🐛 **Report bugs** or submit support requests via [GitHub Issues](https://github.com/reshaprio/reshapr/issues)\n- 📖 **Improve documentation** — fix a typo, clarify a guide, or write a new tutorial\n- 🧪 **Write tests** to increase coverage and reliability\n- 🎥 **Create demos** or share your use cases with the community\n- 💻 **Submit code** — bug fixes, features, or refactors are all welcome\n- 💬 **Share testimonials** — tell us how you use Reshapr and help spread the word\n\n> 📋 Before contributing, please read our [Contributing Guide](./CONTRIBUTING.md) to learn about our development workflow, \ncoding conventions, and how to submit your changes.\n\nCome say hi on our [Discord server](https://discord.gg/KyDUdam34h) — whether you have questions, ideas, or just want to \nchat with the community. We'd love to hear from you! 🚀\n\n## Support the project! 🌟\n\nIf you think reShapr is useful for the AI ecosystem, [**give us a star** on our main repository](https://github.com/reshaprio/reshapr)! It helps us get more visibility and keep the project growing.\n\n### Thanks!\n\n[![Stargazers repo roster for @reshaprio/reshapr](http://reporoster.com/stars/reshaprio/reshapr)](http://github.com/reshaprio/reshapr/stargazers)\n[![Forkers repo roster for @reshaprio/reshapr](http://reporoster.com/forks/reshaprio/reshapr)](http://github.com/reshaprio/reshapr/network/members)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

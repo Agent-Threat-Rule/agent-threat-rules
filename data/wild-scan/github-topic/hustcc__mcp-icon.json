@@ -1,0 +1,32 @@
+{
+  "full_name": "hustcc/mcp-icon",
+  "html_url": "https://github.com/hustcc/mcp-icon",
+  "description": "🦋 Generate infographic svg icons by Keyword, over 100,000 icons with semantic search support.",
+  "topics": [
+    "antvis",
+    "icon",
+    "infographic",
+    "mcp-servers"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-02-25T12:46:28Z",
+  "last_pushed_at": "2026-02-26T01:37:27Z",
+  "fetched_at": "2026-07-12T00:16:38.431Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n\n# 🎨 mcp-icon\n\n**A Model Context Protocol (MCP) server for semantic SVG icon search.**\n\nGenerate infographic SVG icons by keyword — over **100,000 icons** with semantic search support, powered by [AntV Infographic](https://infographic.antv.vision/icon).\n\n[![npm version](https://img.shields.io/npm/v/mcp-icon.svg)](https://www.npmjs.com/package/mcp-icon)\n[![Build](https://github.com/hustcc/mcp-icon/actions/workflows/build.yml/badge.svg)](https://github.com/hustcc/mcp-icon/actions/workflows/build.yml)\n[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)\n\n</div>\n\n---\n\n## 📋 Table of Contents\n\n- [✨ Features](#-features)\n- [🤖 Usage](#-usage)\n- [🚰 Transport Modes](#-transport-modes)\n- [🎮 CLI Options](#-cli-options)\n- [🔨 Development](#-development)\n- [📄 License](#-license)\n\n---\n\n## ✨ Features\n\n- 🔍 **Semantic search** — Find icons by meaning, not just exact names\n- 🖼️ **100,000+ SVG icons** — A massive library of high-quality infographic icons\n- ⚡ **Three transport modes** — `stdio`, `sse`, and `streamable-http`\n- 🪶 **Minimal dependencies** — Clean, focused implementation\n- 🧪 **Fully tested** — Unit tests with Vitest\n\n### Available Tool\n\n| Tool | Description |\n|------|-------------|\n| `search_icons` | Search for SVG icons by keyword. Returns a list of SVG URLs matching the semantic query. |\n\n**`search_icons` parameters:**\n\n| Parameter | Type | Required | Default | Description |\n|-----------|------|----------|---------|-------------|\n| `keyword` | string | ✅ | — | Search keyword or phrase (e.g. `\"data analysis\"`, `\"cloud\"`) |\n| `topK` | number | ❌ | `3` | Number of icons to return (1–20) |\n\n---\n\n## 🤖 Usage\n\nAdd to your MCP client configuration (e.g. Claude Desktop, VS Code, Cursor):\n\n**macOS / Linux:**\n\n```json\n{\n  \"mcpServers\": {\n    \"mcp-icon\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"mcp-icon\"]\n    }\n  }\n}\n```\n\n**Windows:**\n\n```json\n{\n  \"mcpServers\": {\n    \"mcp-icon\": {\n      \"command\": \"cmd\",\n      \"args\": [\"/c\", \"npx\", \"-y\", \"mcp-icon\"]\n    }\n  }\n}\n```\n\n---\n\n## 🚰 Transport Modes\n\n`mcp-icon` supports three standard MCP transport protocols.\n\n### stdio (default)\n\nUsed by desktop MCP clients (Claude Desktop, Cursor, etc.):\n\n```bash\nnpx mcp-icon\n# or explicitly:\nnpx mcp-icon --transport stdio\n```\n\n### SSE (Server-Sent Events)\n\n```bash\nnpx mcp-icon --transport sse --port 3456\n# Server available at: http://localhost:3456/sse\n```\n\n### Streamable HTTP\n\n```bash\nnpx mcp-icon --transport streamable --port 3456\n# Server available at: http://localhost:3456/mcp\n```\n\n---\n\n## 🎮 CLI Options\n\n```\nmcp-icon CLI\n\nOptions:\n  --transport, -t  Transport protocol: \"stdio\", \"sse\", or \"streamable\" (default: \"stdio\")\n  --host, -h       Host for SSE or streamable transport (default: localhost)\n  --port, -p       Port for SSE or streamable transport (default: 3456)\n  --endpoint, -e   Endpoint path:\n                   - For SSE: default is \"/sse\"\n                   - For streamable: default is \"/mcp\"\n  --help, -H       Show this help message\n```\n\n---\n\n## 🔨 Development\n\n```bash\n# Clone the repository\ngit clone https://github.com/hustcc/mcp-icon.git\ncd mcp-icon\n\n# Install dependencies\nnpm install\n\n# Build\nnpm run build\n\n# Run tests\nnpm test\n\n# Start with MCP inspector (for local debugging)\nnpm start\n```\n\n### Project Structure\n\n```\nsrc/\n├── index.ts          # CLI entry point\n├── server.ts         # MCP server + tool handlers\n├── services/\n│   ├── stdio.ts      # Stdio transport\n│   ├── sse.ts        # SSE transport\n│   └── streamable.ts # Streamable HTTP transport\n├── tools/\n│   └── search-icons.ts  # Tool definition\n└── utils/\n    ├── api.ts        # Icon search API client\n    └── logger.ts     # Logger utility\ntests/\n├── api.test.ts       # API client unit tests\n└── server.test.ts    # MCP server integration tests\n```\n\n---\n\n## 📄 License\n\nMIT © [hustcc](https://github.com/hustcc)\n\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "root contents listing failed (private, empty, or rate limited)"
+  ]
+}

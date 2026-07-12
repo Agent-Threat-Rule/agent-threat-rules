@@ -1,0 +1,40 @@
+{
+  "full_name": "golf-mcp/golf-testing",
+  "html_url": "https://github.com/golf-mcp/golf-testing",
+  "description": "Comprehensive MCP testing framework - test performance, security and compliance in one CLI",
+  "topics": [
+    "ci-cd",
+    "cicd",
+    "m",
+    "mcp",
+    "mcp-security",
+    "mcp-server",
+    "mcp-testing",
+    "mcp-tools",
+    "testing",
+    "testing-framework",
+    "testing-library",
+    "testing-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 5,
+  "forks": 3,
+  "open_issues": 1,
+  "language": "Python",
+  "license": "NOASSERTION",
+  "default_branch": "main",
+  "created_at": "2025-10-12T20:39:25Z",
+  "last_pushed_at": "2025-11-02T21:47:10Z",
+  "fetched_at": "2026-07-12T00:34:07.983Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n  <h1>🧪 MCP Testing</h1>\n  <p><strong>AI-powered testing framework for MCP servers</strong></p>\n  <p>Test your MCP servers with real AI agents conducting conversations and LLM judges evaluating results</p>\n</div>\n\n<div align=\"center\">\n  <a href=\"https://docs.golf.dev/mcp-testing/getting-started/quickstart\"><img src=\"https://img.shields.io/badge/docs-golf.dev-blue.svg\" alt=\"Documentation\"></a>\n  <a href=\"LICENSE\"><img src=\"https://img.shields.io/badge/license-Apache%202.0-blue.svg\" alt=\"License\"></a>\n  <a href=\"https://github.com/golf-mcp/golf-testing/pulls\"><img src=\"https://img.shields.io/badge/PRs-welcome-brightgreen.svg\" alt=\"PRs Welcome\"></a>\n  <a href=\"https://pypi.org/project/mcp-testing/\"><img src=\"https://img.shields.io/pypi/v/mcp-testing\" alt=\"PyPI\"></a>\n  <a href=\"#\"><img src=\"https://img.shields.io/badge/python-3.12+-blue.svg\" alt=\"Python\"></a>\n</div>\n\n## Why MCP Testing?\n\nTraditional testing doesn't work for MCP servers. You can't write unit tests for natural language interactions. MCP Testing solves this with:\n\n- **🤖 Real AI Agents** - Claude and ChatGPT actually use your MCP server\n- **👤 User Simulation** - AI simulates realistic multi-turn user behavior\n- **⚖️ LLM-as-a-Judge** - Intelligent evaluation instead of brittle assertions\n- **🎭 Comprehensive Testing** - Security, compliance and performace all in one framework\n- **🔌 Multiple Transports** - Supports HTTP and stdio servers\n\n## Quick Start\n\nGet testing in 3 steps:\n\n1. **Install & Setup**\n\n   ```bash\n   pip install mcp-testing\n   export ANTHROPIC_API_KEY=\"sk-ant-...\"  # For AI agents\n   export OPENAI_API_KEY=\"sk-...\"         # For LLM judge\n   ```\n\n2. **Interactive Onboarding**\n\n   ```bash\n   mcp-t quickstart  # Creates your first server & test suite\n   ```\n\n3. **Run Tests**\n   ```bash\n   mcp-t run <suite-id> <server-id>\n   # Example: mcp-t run example_suite_001 hackernews_mcp_server\n   ```\n\n## Core Concepts\n\n### Test Flow\n\n```\nYour Test Case → AI Agent (Claude/GPT-4) → Your MCP Server\n      ↓                    ↓                      ↓\n User Message         Tool Calls            Server Response\n      ↓                    ↓                      ↓\nUser Simulator      Conversation Loop         More Tools\n      ↓                    ↓                      ↓\n   LLM Judge       Complete Transcript      Pass/Fail + Reasoning\n```\n\n### Configuration Files\n\n**Server Config - HTTP** (`examples/server.json`):\n\n```json\n{\n  \"name\": \"linear_mcp_server\",\n  \"transport\": \"http\",\n  \"url\": \"https://mcp.linear.app/mcp\"\n}\n```\n\n**Server Config - stdio** (`examples/servers/time-server-stdio.json`):\n\n```json\n{\n  \"name\": \"Time Server\",\n  \"transport\": \"stdio\",\n  \"command\": \"npx -y @modelcontextprotocol/server-time\"\n}\n```\n\n**Server Config - stdio with env** (`examples/servers/brave-search-stdio.json`):\n\n```json\n{\n  \"name\": \"Brave Search\",\n  \"transport\": \"stdio\",\n  \"command\": \"npx -y @modelcontextprotocol/server-brave-search\",\n  \"env\": {\n    \"BRAVE_[REDACTED-GENERIC_KV_SECRET]\"\n  }\n}\n```\n\n**Test Suite** (`examples/suite.json`):\n\n```json\n{\n  \"suite_id\": \"example_suite_001\",\n  \"name\": \"Hacker News MCP Server Tests\",\n  \"test_cases\": [\n    {\n      \"test_id\": \"hackernews_greeting\",\n      \"user_message\": \"Hello! Can you help me browse Hacker News?\",\n      \"success_criteria\": \"Agent should respond politely and explain Hacker News capabilities\",\n      \"max_turns\": 5\n    }\n  ]\n}\n```\n\n### Test Types\n\n- **💬 Conversational** - Real user workflows\n- **🔒 Security** - Authentication & vulnerabilities\n- **✅ Compliance** - MCP protocol validation\n\n## Commands\n\n### Test Execution\n\n```bash\nmcp-t run <suite-id> <server-id>           # Run specific suite\nmcp-t run example_suite_001 hackernews_mcp_server -v   # Verbose output\n```\n\n### Configuration Management\n\n```bash\nmcp-t quickstart                 # Complete onboarding\nmcp-t create server              # Interactive server setup\nmcp-t create suite               # Create test suite\nmcp-t create test-case           # Add test to suite\nmcp-t list                       # Show all configs\nmcp-t show suite example_suite_001   # View specific config\n```\n\n### Test Generation\n\nRun wizard that analyzes your MCP server and automatically generates comprehensive test cases\n\n```bash\nmcp-t generate\n```\n\n## Test Results\n\n### Understanding Evaluation\n\n```json\n{\n  \"test_id\": \"hackernews_stories\",\n  \"verdict\": \"PASS\",\n  \"confidence_score\": 0.89,\n  \"judge_reasoning\": \"The agent successfully fetched and displayed Hacker News stories. Good use of available tools and clear presentation of results.\",\n  \"conversation_quality\": 0.87,\n  \"tool_calls\": [\n    { \"tool\": \"get_top_stories\", \"args\": {} },\n    { \"tool\": \"get_story_details\", \"args\": { \"story_id\": 123 } }\n  ]\n}\n```\n\n## Support\n\n- [Documentation](https://docs.golf.dev/mcp-testing/getting-started/quickstart)\n- [Contributing Guide](CONTRIBUTING.md)\n\n---\n\n<div align=\"center\">\n  <p>Built with ❤️ for the MCP ecosystem</p>\n  <p><sub>Made in San Francisco, CA</sub></p>\n</div>\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

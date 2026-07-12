@@ -1,0 +1,41 @@
+{
+  "full_name": "swiftlens/swiftlens",
+  "html_url": "https://github.com/swiftlens/swiftlens",
+  "description": "SwiftLens is a Model Context Protocol (MCP) server that provides deep, semantic-level analysis of Swift codebases to any AI models. By integrating directly with Apple's SourceKit-LSP, SwiftLens enables AI models to understand Swift code with compiler-grade accuracy.",
+  "topics": [
+    "claude-code",
+    "cursor",
+    "developer-tools",
+    "gemini-cli",
+    "ios-developer-tools",
+    "ios-development",
+    "lsp",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "swift",
+    "xcode"
+  ],
+  "matched_query_topics": [
+    "mcp-server",
+    "model-context-protocol"
+  ],
+  "stars": 125,
+  "forks": 7,
+  "open_issues": 4,
+  "language": "Python",
+  "license": "NOASSERTION",
+  "default_branch": "main",
+  "created_at": "2025-07-08T04:58:33Z",
+  "last_pushed_at": "2025-07-17T17:21:01Z",
+  "fetched_at": "2026-07-11T22:55:42.627Z",
+  "readme": {
+    "path": "README.md",
+    "content": "[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/swiftlens-swiftlens-badge.png)](https://mseep.ai/app/swiftlens-swiftlens)\n\n# SwiftLens: First MCP Server that provides Semantic-Lelvel Analysis for iOS/Swift Development\n\n**SwiftLens** is a Model Context Protocol (MCP) server that provides deep, semantic-level analysis of Swift codebases to AI agents. By integrating directly with Apple's SourceKit-LSP, SwiftLens enables AI models to understand Swift code with compiler-grade accuracy.\n\n## Features\n\nSwiftLens bridges AI models and Swift development through:\n\n```\nAI Agent (Claude/GPT) → MCP Protocol → SwiftLens → SourceKit-LSP → Swift Code\n```\n\n### Core Capabilities\n\n- **LSP-Powered Semantic Analysis**: Leverages SourceKit-LSP for Xcode-grade accuracy\n- **Token-Optimized Output**: Minimizes token usage for AI interactions\n- **Real-time Code Understanding**: Analyzes Swift files with full language feature support\n- **Cross-file Navigation**: Symbol references, definitions, and project-wide analysis\n- **Code Modification Tools**: Safe, atomic file operations for AI-driven refactoring\n- **Zero Configuration**: Works out-of-the-box with standard Swift projects\n\n### Supported Swift Features\n\n- Modern Swift syntax (actors, async/await, property wrappers, result builders)\n- Generic types and protocols\n- Swift Package Manager and Xcode projects\n- Unicode identifiers and symbols\n- Complex nested types and extensions\n\n## Installation\n\n### Prerequisites\n\n- **macOS** (required for SourceKit-LSP)\n- **Python 3.10+**\n- **Xcode** (full installation from App Store, not just Command Line Tools)\n\n## Quick Start\n\n### Configure for Claude Code / Gemini CLI\n\nAdd to your json configuration file mcpServers section:\n\n```json\n{\n  \"mcpServers\": {\n    \"swiftlens\": {\n      \"command\": \"uvx\",\n      \"args\": [\"swiftlens\"]\n    }\n  }\n}\n```\n\n## SourceKit LSP Index\n\nSwiftLens will need proper sourcekit-lsp index in order to work properly you can either\n\n### Ask AI to build your index\n\n```bash\n\"hey claude, run swift_build_index tool\"\n```\n\n### Building Your Project Index Manually\n\nSwiftLens requires an index store for cross-file analysis. Build it with:\n\n```bash\n# Navigate to your Swift project\ncd /path/to/your/swift/project\n\n# Build with index store\nswift build -Xswiftc -index-store-path -Xswiftc .build/index/store\n```\n\n**Important**: Rebuilding of the index is required when you:\n\n- Add new Swift files\n- Change public interfaces\n- Notice missing symbol references\n\n### Available Tools\n\nSwiftLens provides 15 tools for Swift code analysis:\n\n#### Single-File Analysis (No Index Required)\n\n- `swift_analyze_file` - Analyze structure and symbols in a Swift file\n- `swift_analyze_multiple_files` - Batch analyze multiple files\n- `swift_summarize_file` - Get symbol counts and file summary\n- `swift_get_symbols_overview` - Extract top-level type declarations\n- `swift_get_declaration_context` - Get fully-qualified symbol paths\n- `swift_get_file_imports` - Extract import statements\n- `swift_validate_file` - Validate syntax and types with swiftc\n- `swift_check_environment` - Verify Swift development setup\n- `swift_build_index` - Build index store db of current project for sourcekit-lsp\n\n#### Cross-File Analysis (Requires Index)\n\n- `swift_find_symbol_references` - Find all references to a symbol\n- `swift_get_symbol_definition` - Jump to symbol definition\n- `swift_get_hover_info` - Get type info and documentation\n\n#### Code Modification\n\n- `swift_replace_symbol_body` - Replace function/type body\n\n#### Utilities\n\n- `swift_search_pattern` - Search with regex patterns\n- `get_tool_help` - Get help for any tool\n\n### Example Usage\n\nAsk your AI agent:\n\n```\n\"Analyze the UserManager.swift file and find all references to the login() method\"\n```\n\nThe AI will use SwiftLens tools to:\n\n1. Analyze the file structure\n2. Locate the login method\n3. Find all project-wide references\n4. Provide insights based on the analysis\n\n## Real-time Dashboard (CURRENT NOT WORKING, REWORK IMPLEMENTATION PLANNED)\n\nSwiftLens includes a web dashboard for monitoring AI interactions:\n\n- **URL**: http://localhost:53729 (when server is running)\n- **Features**: Live tool execution logs, usage analytics, session tracking\n- **Security**: Localhost-only access, no external connections\n\n## Troubleshooting\n\n### \"Symbol not found\" or \"No references found\"\n\nRebuild your index:\n\n```bash\nswift build -Xswiftc -index-store-path -Xswiftc .build/index/store\n```\n\n### New files not recognized\n\nNew files need to be indexed:\n\n```bash\nswift build -Xswiftc -index-store-path -Xswiftc .build/index/store\n```\n\n### SourceKit-LSP not found\n\nEnsure Xcode is properly installed:\n\n```bash\nxcode-select -p  # Should show Xcode path\nxcrun sourcekit-lsp --help  # Should show help text\n```\n\n## SourceKit-LSP Limitations\n\n### Known SourceKit-LSP Limitations\n\nThe SwiftLens MCP Server accurately reflects SourceKit-LSP's capabilities. The following are known limitations of SourceKit-LSP itself, not bugs in this tool:\n\n#### Hover Information\n- **Limited support for local variables**: Hover info may not be available for local variables within function bodies\n- **Property access issues**: Expressions like `object.property` often don't provide hover information when inside functions\n- **Method call limitations**: Hover on method calls with parameters may return incorrect or no information\n- **Success rate**: Hover typically works well for type declarations, method signatures, and top-level symbols, but has approximately 44% success rate for expressions within function bodies\n\nThese limitations exist because SourceKit-LSP:\n- Does not perform background indexing\n- May skip function body analysis in certain configurations\n- Is still in early development with acknowledged \"rough edges\"\n\nFor the most up-to-date status, see the [SourceKit-LSP repository](https://github.com/swiftlang/sourcekit-lsp).\n\n## Development\n\n### Running Tests\n\n```bash\n# All tests\nmake test\n\n# Unit tests only (fast, no LSP required)\nmake test-unit\n\n# LSP integration tests\nmake test-lsp\n\n# Check environment\nmake check-env\n```\n\n### Code Quality\n\n```bash\n# Format code\n./format.sh\n\n# Check formatting\n./format.sh check\n```\n\n## License - FULLY AVAILABLE TO YOU FOR FREE (PERSONAL USE ONLY UNDER LICENSE)\n\n- ✅ Free for personal use and evaluation\n- ⚠️ Commercial use requires a license\n\nSee [LICENSE.md](./LICENSE.md) for details.\n\n## Contributing\n\nWe welcome contributions! Areas where you can help:\n\n- 🐛 Bug reports and fixes\n- 📝 Documentation improvements\n- 🧪 Test coverage expansion\n- 🔧 New analysis capabilities\n\n## Support\n\n- **Issues**: [GitHub Issues](https://github.com/swiftlens/swiftlens/issues)\n\n---\n\nSwiftLens - Bringing compiler-grade Swift understanding to AI development\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

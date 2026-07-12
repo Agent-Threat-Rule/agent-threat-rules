@@ -1,0 +1,51 @@
+{
+  "full_name": "aartiq/servicenow-mcp",
+  "html_url": "https://github.com/aartiq/servicenow-mcp",
+  "description": "Production-ready ServiceNow MCP server — 450+ tools + 26 AI capabilities, multi-transport (stdio/SSE/HTTP), A2A protocol, dynamic schema discovery & BYOK. Connect Claude, ChatGPT, Gemini, Cursor & any AI to ServiceNow. Part of the NowAIKit suite.",
+  "topics": [
+    "ai",
+    "ai-agent",
+    "ai-tools",
+    "anthropic",
+    "automation",
+    "chatgpt",
+    "claude",
+    "cmdb",
+    "gemini",
+    "itom",
+    "itsm",
+    "llm",
+    "mcp",
+    "model-context-protocol",
+    "servicenow",
+    "servicenow-ai",
+    "servicenow-developer",
+    "servicenow-integration",
+    "servicenow-mcp",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 207,
+  "forks": 85,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "NOASSERTION",
+  "default_branch": "main",
+  "created_at": "2026-02-12T22:38:38Z",
+  "last_pushed_at": "2026-06-25T08:27:29Z",
+  "fetched_at": "2026-07-11T23:16:53.819Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n\n<img src=\"docs/assets/banner.svg\" alt=\"NowAIKit — ServiceNow MCP Server\" width=\"100%\"/>\n\n[![npm](https://img.shields.io/npm/v/nowaikit?style=flat-square&color=00D4AA&label=npm)](https://www.npmjs.com/package/nowaikit)\n[![Tools](https://img.shields.io/badge/450%2B%20tools-all%20modules-0F4C81?style=flat-square)](docs/TOOLS.md)\n[![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-0F4C81?style=flat-square)](https://modelcontextprotocol.io)\n[![License: Source Available](https://img.shields.io/badge/license-Source%20Available-f59e0b?style=flat-square)](LICENSE)\n\n# NowAIKit — ServiceNow MCP Server\n\n**Connect Claude, ChatGPT, Gemini, Cursor, Copilot — or any AI — to ServiceNow.**\n\n450+ tools across ITSM, ITOM, CMDB, HRSD, CSM, Flow Designer, scripting & portal. Read, build, query and automate any instance in plain English.\n\n</div>\n\n---\n\n## 🚀 Install (2 minutes)\n\n> Requires **Node.js 20+**.\n\n```bash\n# 1 — install\nnpm install -g nowaikit\n\n# 2 — run the wizard: it detects your AI clients and writes their config for you\nnpx nowaikit setup\n```\n\nRestart your AI client (Claude Desktop, Cursor, …) and start asking. Done.\n\n> Prefer a UI? `npx nowaikit web` for a local dashboard — or use **[NowAIKit Cloud](https://cloud.nowaikit.com)** (nothing to install).\n\n---\n\n## 🔌 Manual setup (skip the wizard)\n\nAdd this to your client's MCP config (Claude Desktop `claude_desktop_config.json`, Cursor `~/.cursor/mcp.json`, etc.):\n\n```json\n{\n  \"mcpServers\": {\n    \"nowaikit\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"nowaikit\"],\n      \"env\": {\n        \"SERVICENOW_INSTANCE_URL\": \"https://yourcompany.service-now.com\",\n        \"SERVICENOW_BASIC_USERNAME\": \"your_username\",\n        \"SERVICENOW_BASIC_PASSWORD\": \"your_password\"\n      }\n    }\n  }\n}\n```\n\nOAuth, multiple instances, and per-client steps → **[Client setup](docs/CLIENT_SETUP.md)** · **[OAuth setup](docs/SERVICENOW_OAUTH_SETUP.md)**.\n\nNo instance? Grab a free Personal Developer Instance at **[developer.servicenow.com](https://developer.servicenow.com)**.\n\n---\n\n## 💬 Use it — just ask\n\n- *\"How many active P1 incidents are open right now?\"*\n- *\"Show me the 5 most recent changes and their risk.\"*\n- *\"Create a business rule on the incident table that…\"*\n- *\"Run the ATF suite for the HR onboarding flow.\"*\n- *\"What's the CMDB health for our prod CIs?\"*\n- *\"Look up GlideRecord.addEncodedQuery in the ServiceNow docs and show the syntax.\"*\n\n**Read-only by default.** Write, scripting and CMDB changes are opt-in flags — prod can't be modified by accident.\n\n---\n\n## 📚 Docs\n\n| | |\n|---|---|\n| [Installation](docs/INSTALLATION.md) · [Client setup](docs/CLIENT_SETUP.md) | [All 450+ tools](docs/TOOLS.md) · [Tool packages](docs/TOOL_PACKAGES.md) |\n| [Multi-instance](docs/MULTI_INSTANCE.md) · [OAuth](docs/SERVICENOW_OAUTH_SETUP.md) | [Scripting](docs/SCRIPTING.md) · [ATF](docs/ATF.md) · [Reporting](docs/REPORTING.md) |\n\nFull guides & product home → **[nowaikit.com](https://nowaikit.com)**\n\n---\n\n## 🧩 Part of the NowAIKit suite\n\n- 🌐 **[nowaikit.com](https://nowaikit.com)** — docs, guides & product home\n- ☁️ **[NowAIKit Cloud](https://cloud.nowaikit.com)** — the toolkit in your browser, no install\n- 📦 **[`nowaikit-sdk`](https://www.npmjs.com/package/nowaikit-sdk)** — TypeScript ServiceNow client library\n- 🧰 **NowAIKit Builder** (VS Code) · **NowAIKit Utils** (browser extension)\n\n> **⚠️ Official distribution only:** install from **npm (`nowaikit`)** or **[nowaikit.com](https://nowaikit.com)**. NowAIKit is never shipped as a downloadable GitHub `.zip` — beware copycat \"download\" repos.\n\n---\n\n© 2026 AartiQ (Hardik Benani) · [NowAIKit Source Available License](LICENSE)\n"
+  },
+  "descriptor_file": {
+    "path": "server.json",
+    "content": "{\n  \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json\",\n  \"name\": \"io.github.aartiq/nowaikit\",\n  \"title\": \"NowAIKit — ServiceNow MCP Server\",\n  \"description\": \"ServiceNow MCP server — 450+ tools (ITSM, ITOM, CMDB, scripting) for Claude, ChatGPT & any AI.\",\n  \"version\": \"4.1.6\",\n  \"websiteUrl\": \"https://nowaikit.com\",\n  \"repository\": {\n    \"url\": \"https://github.com/aartiq/nowaikit\",\n    \"source\": \"github\"\n  },\n  \"packages\": [\n    {\n      \"registryType\": \"npm\",\n      \"identifier\": \"nowaikit\",\n      \"version\": \"4.1.6\",\n      \"transport\": {\n        \"type\": \"stdio\"\n      },\n      \"environmentVariables\": [\n        {\n          \"name\": \"SERVICENOW_INSTANCE_URL\",\n          \"description\": \"Your ServiceNow instance URL (e.g. https://yourinstance.service-now.com)\",\n          \"required\": true\n        },\n        {\n          \"name\": \"SERVICENOW_AUTH_METHOD\",\n          \"description\": \"Authentication method: 'basic' or 'oauth'\",\n          \"required\": true\n        },\n        {\n          \"name\": \"SERVICENOW_BASIC_USERNAME\",\n          \"description\": \"ServiceNow username (for basic auth)\"\n        },\n        {\n          \"name\": \"SERVICENOW_BASIC_PASSWORD\",\n          \"description\": \"ServiceNow password (for basic auth)\"\n        },\n        {\n          \"name\": \"WRITE_ENABLED\",\n          \"description\": \"Enable write operations (true/false, default: false)\"\n        },\n        {\n          \"name\": \"SCRIPTING_ENABLED\",\n          \"description\": \"Enable scripting operations (true/false, default: false)\"\n        },\n        {\n          \"name\": \"CMDB_WRITE_ENABLED\",\n          \"description\": \"Enable CMDB write operations (true/false, default: false)\"\n        },\n        {\n          \"name\": \"NOW_ASSIST_ENABLED\",\n          \"description\": \"Enable Now Assist AI features (true/false, default: false)\"\n        },\n        {\n          \"name\": \"ATF_ENABLED\",\n          \"description\": \"Enable ATF test execution (true/false, default: false)\"\n        },\n        {\n          \"name\": \"MCP_TOOL_PACKAGE\",\n          \"description\": \"Role-based tool package: full, service_desk, platform_developer, etc.\"\n        },\n        {\n          \"name\": \"TRANSPORT\",\n          \"description\": \"Transport mode: stdio (default), sse, or http\"\n        },\n        {\n          \"name\": \"PORT\",\n          \"description\": \"HTTP server port (default: 3000, for sse/http transport)\"\n        },\n        {\n          \"name\": \"NOWAIKIT_API_KEY\",\n          \"description\": \"Bearer token for API authentication (sse/http transport)\"\n        },\n        {\n          \"name\": \"FLUENT_ENABLED\",\n          \"description\": \"Enable Fluent SDK tools (true/false, default: false)\"\n        }\n      ]\n    }\n  ]\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

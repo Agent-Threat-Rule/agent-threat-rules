@@ -1,0 +1,38 @@
+{
+  "full_name": "glifxyz/glif-mcp-server",
+  "html_url": "https://github.com/glifxyz/glif-mcp-server",
+  "description": "Easily run glif.app AI workflows inside your LLM: image generators, memes, selfies, and more. Glif supports all major multimedia AI models inside one app",
+  "topics": [
+    "generative-ai",
+    "glif",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "workflows"
+  ],
+  "matched_query_topics": [
+    "mcp-server",
+    "mcp-servers"
+  ],
+  "stars": 192,
+  "forks": 31,
+  "open_issues": 3,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-02-15T20:20:36Z",
+  "last_pushed_at": "2026-01-07T21:00:00Z",
+  "fetched_at": "2026-07-11T22:48:50.810Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# glif-mcp-server\n\nMCP server for running AI workflows from glif.app.\n\nFor more info check out https://glif.app or join our Discord server: https://discord.gg/glif\n\n## Features\n\n- Run workflows with inputs\n- Get detailed information about workflows, runs, and users\n- Search and discover workflows\n- Browse and load agents\n\n## Setup\n\n### Running via npx (recommended)\n\nIf you have nodejs installed, you can run our [@glifxyz/glif-mcp-server](https://www.npmjs.com/package/@glifxyz/glif-mcp-server) package via npx:\n\n1. Get your API token from https://glif.app/settings/api-tokens\n2. Add the server in your Claude Desktop config file. On macOS this is: `~/Library/Application Support/Claude/claude_desktop_config.json`\n\n   ```json\n   {\n     \"mcpServers\": {\n       \"glif\": {\n         \"command\": \"npx\",\n         \"args\": [\"-y\", \"@glifxyz/glif-mcp-server@latest\"],\n         \"env\": {\n           \"GLIF_API_TOKEN\": \"your-token-here\"\n         }\n       }\n     }\n   }\n   ```\n\n### Running from a local checkout\n\n```sh\ngit clone https://github.com/glifxyz/glif-mcp-server\ncd glif-mcp-server\nnpm install\nnpm run build\n```\n\nThen configure your MCP client:\n\n   ```json\n   {\n     \"mcpServers\": {\n       \"glif\": {\n         \"command\": \"node\",\n         \"args\": [\"/path/to/glif-mcp/build/index.js\"],\n         \"env\": {\n           \"GLIF_API_TOKEN\": \"your-token-here\"\n         }\n       }\n     }\n   }\n   ```\n\nYou can also specify workflow IDs (comma-separated) which will be loaded automatically:\n\n```json\n{\n  \"mcpServers\": {\n    \"glif\": {\n      \"command\": \"node\",\n      \"args\": [\"/path/to/glif-mcp/build/index.js\"],\n      \"env\": {\n        \"GLIF_API_TOKEN\": \"your-token-here\",\n        \"GLIF_IDS\": \"cm2v9aiga00008vfqdiximl2m,cm2v98jk6000r11afslqvooil\"\n      }\n    }\n  }\n}\n```\n\n## Configuration\n\nEnvironment variables:\n\n- `GLIF_API_TOKEN` - **Required.** Your API token from https://glif.app/settings/api-tokens\n- `GLIF_IDS` - Optional. Comma-separated workflow IDs to load as tools automatically\n- `IGNORE_DISCOVERY_TOOLS` - Set to `true` to disable discovery tools\n- `AGENT_TOOLS` - Set to `true` to enable agent tools\n\n## Tools\n\n### Core Tools\n\n- `run_workflow` - Run a workflow with the specified ID and inputs\n- `workflow_info` - Get detailed information about a workflow\n\n### Discovery Tools (enabled by default)\n\n- `list_featured_workflows` - Get a curated list of featured workflows\n- `search_workflows` - Search for workflows by name or description\n- `my_workflows` - Get a list of your workflows\n- `my_user_info` - Get detailed information about your account\n\n### Agent Tools (disabled by default, enable with `AGENT_TOOLS=true`)\n\n- `list_agents` - Get a list of agents with optional filtering\n- `load_agent` - Load an agent and get its details including personality and workflows\n\n## Resources\n\n- `glif://{id}` - Get workflow metadata\n- `glifRun://{id}` - Get run details\n- `glifUser://{id}` - Get user profile\n\n## Development\n\n```bash\nnpm install\nnpm run build\nnpm run dev     # auto-rebuild\nnpm run test    # run tests\n```\n\n### Debugging\n\n```bash\nnpm run inspector\n```\n\n### Releasing\n\n1. Edit `package.json` and `src/index.ts` and bump the version\n2. Run `npm install` to update lockfile\n3. Commit and push to main\n4. Run `npm run release` (requires `gh` CLI)\n\n## License\n\nMIT - see [LICENSE](LICENSE)\n"
+  },
+  "descriptor_file": {
+    "path": "smithery.yaml",
+    "content": "# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml\n\nstartCommand:\n  type: stdio\n  configSchema:\n    # JSON Schema defining the configuration options for the MCP.\n    type: object\n    required:\n      - glifApiToken\n    properties:\n      glifApiToken:\n        type: string\n        description: API token for glif authentication, obtainable from\n          https://glif.app/settings/api-tokens\n  commandFunction:\n    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.\n    |-\n    (config) => ({\n      command: 'node',\n      args: ['build/index.js'],\n      env: { GLIF_API_TOKEN: config.glifApiToken }\n    })\n  exampleConfig:\n    glifApiToken: example-token-123\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

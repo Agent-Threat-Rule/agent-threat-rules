@@ -1,0 +1,34 @@
+{
+  "full_name": "KOE73/SPLA",
+  "html_url": "https://github.com/KOE73/SPLA",
+  "description": "Portable local AI assistant for safe filesystem and project automation with local LLM runtimes, Avalonia UI, MCP tools, and plugin support.",
+  "topics": [
+    "agent",
+    "agentic-ai",
+    "avalonia",
+    "cli",
+    "llm",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "C#",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-06-11T10:49:08Z",
+  "last_pushed_at": "2026-07-11T18:16:28Z",
+  "fetched_at": "2026-07-12T00:44:52.678Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# SPLA - local AI assistant\n\n<p align=\"center\">\n  <img src=\"Images/MainLogo.png\" alt=\"SPLA Logo\" width=\"300\" />\n</p>\n\nPortable local AI assistant.\n\n**Connect** a local LLM, **open** a project, and start **working**.\n\n## Typical Tasks\n\n- Analyze a codebase.\n- Explain project architecture.\n- Search and modify files.\n- Run builds and tests.\n- Diagnose network problems.\n- Work with domain-specific plugins such as 1C.\n\n## Why SPLA\n\n- Local-first.\n- OpenAI-compatible.\n- Project-oriented.\n- Extensible through plugins.\n- Explicit permission model.\n\n## Core Capabilities\n\n1. **Local LLMs.** SPLA is designed for local models and OpenAI-compatible APIs. The default setup is LM Studio at `http://127.0.0.1:1234/v1`, but another compatible runtime can be used.\n2. **Extensible tool system.** Tools are registered through the MCP host and plugins.\n3. **Project organization.** An SPLA project is described by a `.spla` file in the working directory. It defines the workspace, agent mode, instructions, documentation, ignored paths, LLM endpoint, plugins, and permissions. The file can be associated with the application and opened as a dedicated workspace.\n4. **Security modes.** The `Chat`, `Research`, `Inspect`, `Edit`, and `Agent` modes restrict file reads, writes, shell commands, network access, and agent autonomy.\n\n## Tools\n\n- Basic system tools: read, write, create, delete, patch, find files, search text, run commands, current date/time, context, `dotnet build`, `dotnet test`, web fetch, web search.\n- Network tools: host info, LAN scan, port scan, ping, nslookup, HTTP GET, HTTP HEAD, port check, traceroute.\n\n## Quick Start and Building from Source\n\nRequirements:\n- build: .NET 10.\n- runtime: a local LLM runtime, such as LM Studio, and .NET 10 Runtime.\n\n1. Build the desktop app, CLI, plugins, and ZIP package with the shared script:\n\n```powershell\n.\\PublishAll.cmd\n```\n\nThe ready-to-use application folder is created at `.publish/work/`. You can move that folder elsewhere and run SPLA from there. The ZIP archive is created at `.publish/zip/SPLA.zip`.\n\n2. Start LM Studio or another local OpenAI-compatible endpoint, or make sure you have access to one.\n3. Run the desktop UI from `.publish/work/` and set the path to your LLM endpoint.\n\nYou can also run the CLI version from `.publish/work/` to work through the terminal.\n\nThe settings screen contains a short description. A project can be created in any folder. In practice, it is a `*.spla` file with settings that can be opened through the UI or CLI. The project defines permissions, instructions, documentation, ignored paths, plugins, and related settings.\n\nOne window means one project. If you need to work with several projects, open several windows. Projects are isolated from each other, while still being able to use the same plugins and tools.\n\n## Security\n\nSPLA uses 5 agent modes:\n\n| Mode | Purpose |\n|--------|--------|\n| Chat | Discussion only |\n| Research | Read and analyze |\n| Inspect | Diagnostics and inspection |\n| Edit | Modify project files |\n| Agent | Autonomous multi-step execution |\n\n## Plugins\n\nPlugins are located next to the published application in the `plugins/` directory. Each plugin has its own `meta.yaml` and can add tools, prompt instructions, and, when needed, Avalonia UI panels. Tool naming rules and plugin metadata are described in [plugins.md](agents/plugins.md).\n\n## Responsible Use\n\nSPLA network tools are intended for research, diagnostics, inventory, and the normal work of network administrators on systems and networks they own, operate, or are explicitly authorized to assess.\n\nDo not use SPLA for unauthorized scanning, probing, access attempts, disruption, or any activity against third-party networks without permission.\n\n## License\n\nThis project is licensed under the [MIT License](LICENSE).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

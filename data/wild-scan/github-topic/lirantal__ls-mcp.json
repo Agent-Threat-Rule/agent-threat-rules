@@ -1,0 +1,36 @@
+{
+  "full_name": "lirantal/ls-mcp",
+  "html_url": "https://github.com/lirantal/ls-mcp",
+  "description": "List MCP Server configurations in your system used by AI applications like Cursor, Claude Desktop, VS Code and others",
+  "topics": [
+    "claude-ai",
+    "claude-desktop",
+    "cursor",
+    "cursor-ai",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol"
+  ],
+  "matched_query_topics": [
+    "mcp-server",
+    "model-context-protocol"
+  ],
+  "stars": 84,
+  "forks": 8,
+  "open_issues": 1,
+  "language": "TypeScript",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2025-05-26T05:21:18Z",
+  "last_pushed_at": "2026-07-06T12:05:51Z",
+  "fetched_at": "2026-07-11T23:06:41.667Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<!-- markdownlint-disable -->\n\n<p align=\"center\"><h1 align=\"center\">\n  ls-mcp\n  </h1>\n</p>\n\n<p align=\"center\">\n  Detect Configured MCP (Model Context Protocol) in your local dev environment\n</p>\n\n<p align=\"center\">\n  <a href=\"https://www.npmjs.com/package/ls-mcp\"><img src=\"https://badgen.net/npm/v/ls-mcp\" alt=\"npm version\"/></a>\n  <a href=\"https://www.npmjs.com/package/ls-mcp\"><img src=\"https://badgen.net/npm/license/ls-mcp\" alt=\"license\"/></a>\n  <a href=\"https://www.npmjs.com/package/ls-mcp\"><img src=\"https://badgen.net/npm/dt/ls-mcp\" alt=\"downloads\"/></a>\n  <a href=\"https://github.com/lirantal/ls-mcp/actions/workflows/ci.yml\"><img src=\"https://github.com/lirantal/ls-mcp/actions/workflows/ci.yml/badge.svg?branch=main\" alt=\"build\"/></a>\n  <a href=\"https://app.codecov.io/gh/lirantal/ls-mcp\"><img src=\"https://badgen.net/codecov/c/github/lirantal/ls-mcp\" alt=\"codecov\"/></a>\n  <a href=\"./SECURITY.md\"><img src=\"https://img.shields.io/badge/Security-Responsible%20Disclosure-yellow.svg\" alt=\"Responsible Disclosure Policy\" /></a>\n</p>\n\n<div align=\"center\">\n  <img src=\"https://raw.githubusercontent.com/lirantal/ls-mcp/refs/heads/main/.github/ls-mcp-logo.png\" alt=\"ls-mcp logo\"/>\n</div>\n\n## Features\n\n- **🔍 MCP Discovery**: Automatically detect MCP servers across various AI applications and agentic IDEs\n- **📁 Directory Bubbling**: Intelligent discovery of project-scoped MCP configs from nested directories, supporting project-scoped MCP Server configuration and global configurations\n- **🔄 Process Detection**: Real-time status of running MCP servers\n- **🔒 Credential Analysis**: Security analysis of environment variables and API keys for potentially exposed credentials in MCP Servers\n\n## Usage: CLI\n\n```bash\nnpx ls-mcp\n```\n\n### Analyze Specific Files\n\nTo analyze specific MCP configuration files instead of using automatic discovery, use the `--files` flag. This flag **replaces** automatic discovery and only analyzes the files you specify:\n\n```bash\n# Single file\nnpx ls-mcp --files ./mcp-config.json\n\n# Multiple files (comma-separated)\nnpx ls-mcp --files ./config1.json,./config2.json\n\n# Multiple files (space-separated)\nnpx ls-mcp --files ./config1.json ./config2.json\n```\n\nThe `--files` flag automatically detects the configuration structure in your files, supporting various formats including:\n- `servers` - Standard MCP configuration key\n- `mcpServers` - Alternative MCP configuration key\n- `mcp.servers` - Nested configuration format\n- `context_servers` - Context-based configuration format\n\n### Show All Providers\n\nBy default, `ls-mcp` hides providers that have zero configured servers to reduce clutter. To show all providers including those with empty configurations, use the `--all` or `-a` flag:\n\n```bash\n# Show all providers including empty ones\nnpx ls-mcp --all\n\n# Short form\nnpx ls-mcp -a\n\n# Combine with JSON output\nnpx ls-mcp --all --json\n```\n\n**Note**: When using `--files` to analyze specific configuration files, the custom group is always shown even if it contains zero servers, as you explicitly requested to analyze those files.\n\n### JSON Output\n\nTo output results in JSON format (useful for programmatic consumption):\n\n```bash\nnpx ls-mcp --json\n\n# Combine with --files flag\nnpx ls-mcp --files ./config.json --json\n```\n\nThis will return a structured JSON object containing:\n- `mcpFiles`: Complete MCP server configurations organized by provider (only includes providers with configured servers unless `--all` is specified)\n- `summary`: Statistics including total servers, running servers, credential warnings, and transport breakdown\n\n### Debug Mode\n\nTo enable verbose debugging output, set the `NODE_DEBUG` environment variable:\n\n```bash\n# Enable debug logging for ls-mcp\nNODE_DEBUG=ls-mcp npx ls-mcp\n\n# Enable all debug logging\nNODE_DEBUG=* npx ls-mcp\n```\n\n## Documentation\n\nFor detailed information about the project architecture and features:\n\n- **[Project Overview](./docs/project.md)**: Comprehensive project analysis and architecture\n- **[Design Documentation](./docs/design.md)**: Technical design decisions and implementation details\n- **[Requirements](./docs/requirements.md)**: Functional and non-functional requirements\n- **[Custom File Analysis](./docs/custom-files-analysis.md)**: Analyze specific MCP configuration files with the `--files` flag\n- **[Directory Bubbling](./docs/directory-bubbling.md)**: Intelligent directory traversal feature\n- **[URL Hostname Extraction](./docs/url-hostname-extraction.md)**: Clean display of hostnames for URL-based servers\n- **[Credential Detection](./docs/credential-detection.md)**: Security analysis features\n\n## Documentation\n\n- [Project documentation](./docs/README.md) - development, testing, architecture, and conventions.\n\n## Contributing\n\nPlease consult [CONTRIBUTING](./CONTRIBUTING.md) for guidelines on contributing to this project.\n\n## Author\n\n**ls-mcp** © [Liran Tal](https://github.com/lirantal), Released under the [Apache-2.0](./LICENSE) License.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

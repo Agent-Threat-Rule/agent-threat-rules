@@ -1,0 +1,37 @@
+{
+  "full_name": "hungpdn/mcp2grule",
+  "html_url": "https://github.com/hungpdn/mcp2grule",
+  "description": "MCP Server for Grule.",
+  "topics": [
+    "golang",
+    "grule",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "rule",
+    "rules-engine"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Go",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-08-24T17:48:44Z",
+  "last_pushed_at": "2025-09-17T00:40:40Z",
+  "fetched_at": "2026-07-12T00:19:10.700Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# mcp2grule\n\nmcp2grule is a production-ready, high-performance Go server that exposes the Grule rule engine to Large Language Models (LLMs) and other AI applications via the Model Context Protocol (MCP).\n\n## Quick start\n\n1. Clone and build:\n\n    ```bash\n    git clone https://github.com/hungpdn/mcp2grule.git\n    cd mcp2grule\n    go mod tidy\n    go build -o mcp2grule\n    ```\n\n2. Run the server (defaults to stdio transport):\n\n    ```bash\n    ./mcp2grule server\n    ```\n\n3. Or run with HTTP transport for easy testing (streamable-HTTP):\n\n    ```bash\n    MCP_TRANSPORT=streamable-http DATABASE_TYPE=memory ./mcp2grule server\n    ```\n\n## Configuration\n\nAll configuration is provided via environment variables (see `internal/config/config.go`). The minimal values you may set locally are in `.env.example`:\n\n```bash\nMCP_TRANSPORT=streamable-http\nDATABASE_TYPE=memory\n```\n\nKey env vars\n\n- `MCP_TRANSPORT`: `stdio`, `sse`, or `streamable-http` (default: `stdio`)\n- `DATABASE_TYPE`: `memory`, `sqlite`, or `postgresql` (default: `memory`)\n- `HTTP_HOST` / `HTTP_PORT`: used for SSE / streamable-http transports\n\n## Project Structure\n\n```text\nmcp2grule/\n├─ cmd/                # CLI entrypoint (wires services and starts server)\n├─ internal/\n│  ├─ api/\n│  │  ├─ server.go     # MCP transport selection (stdio / sse / streamable-http), tool registration, graceful shutdown\n│  │  └─ tool.go       # MCP tool registration (grule.evaluate, grule.create, ...)\n│  │  └─ handler/      # MCP handlers that map requests to domain DTOs\n│  ├─ grule/\n│  │  └─ grule.go      # Domain service: constructs grule engine, Evaluate/Create/Update/Delete logic\n│  ├─ storage/\n│  │  ├─ storage.go    # IRulesetStorage interface and common errors\n│  │  ├─ memory.go     # In-memory ruleset storage (default for local dev)\n│  │  └─ postgres.go   # Postgres driver (optional; implements IRulesetStorage)\n│  ├─ config/\n│  │  └─ config.go     # Environment variable parsing and typed config\n│  └─ pkg/\n│     ├─ exitcode/     # Canonical exit codes for CLI/startup failures\n│     └─ logger/       # Logging helpers and context wiring\n├─ ...\n└─ README.md           \n```\n\n## MCP tools provided\n\nThe server registers these MCP tools (exact names used by clients):\n\n- `grule.evaluate` - Evaluate facts against a named ruleset\n- `grule.create` - Create a new ruleset\n- `grule.update` - Update an existing ruleset\n- `grule.delete` - Delete ruleset by name\n- `grule.list` - List all rulesets\n- `grule.detail` - Get ruleset details by name\n\nSee `internal/api/tool.go` for the registration and `internal/api/handler/mcp.go` for request/response handling examples.\n\n## Linters & formatting\n\nThis repo uses `golangci-lint`. A starter config is present at `.golangci.yml`. Run:\n\n```bash\ngolangci-lint run\n```\n\n## Docker\n\nA multi-stage `Dockerfile` is included. It builds a static binary and copies it into a minimal distroless runtime image. Example build:\n\n```bash\ndocker build -t mcp2grule:latest .\ndocker run -e MCP_TRANSPORT=streamable-http -e DATABASE_TYPE=memory -p 9000:9000 mcp2grule:latest\n```\n\nSecurity note: builder images can contain OS-level CVEs. Consider scanning images in CI and using patched base images.\n\n## Testing\n\nThere are currently no unit tests in the repo. Recommended next steps:\n\n- Add unit tests for `internal/storage` and `internal/grule` (happy path + error conditions).\n- Add a CI workflow to run `go test ./...` and `golangci-lint run` on PRs.\n\n## TODO\n\n- [ ] Add tests.\n- [ ] Add CI.\n- [ ] Add pprofing.\n- [ ] Add middleware for auth, metrics and logging.\n- [ ] Add postgres storage.\n- [ ] Add migration.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "main.go",
+    "size": 181,
+    "content": "package main\n\nimport (\n\t\"os\"\n\n\t\"github.com/hungpdn/mcp2grule/cmd\"\n\t\"github.com/hungpdn/mcp2grule/internal/pkg/exitcode\"\n)\n\nfunc main() {\n\tcmd.Execute()\n\tos.Exit(exitcode.Success)\n}\n"
+  },
+  "content_fetch_notes": []
+}

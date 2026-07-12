@@ -1,0 +1,48 @@
+{
+  "full_name": "zahhar/zefix-mcp",
+  "html_url": "https://github.com/zahhar/zefix-mcp",
+  "description": "Unofficial MCP server for zefix.ch - Switzerland Central Business Name Index",
+  "topics": [
+    "business-register",
+    "business-registry",
+    "claude-desktop",
+    "claude-ecosystem",
+    "claude-extensions",
+    "claude-plugin",
+    "company-data",
+    "company-search",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "search-functionality",
+    "swiss-ai",
+    "swiss-business",
+    "swiss-made",
+    "swiss-open-data",
+    "switzerland",
+    "unofficial-client",
+    "unofficial-extension",
+    "zefix"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 5,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "JavaScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-03-15T09:50:08Z",
+  "last_pushed_at": "2026-07-03T06:07:22Z",
+  "fetched_at": "2026-07-11T23:59:09.478Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Zefix MCP\n[![Zefix Search on MCP Marketplace](https://mcp-marketplace.io/api/badge?slug=zefix-search)](https://mcp-marketplace.io/server/zefix-search)\n\n> ⚠️ **Unofficial** MCP server for [zefix.ch – Switzerland Central Business Name Index](https://www.zefix.ch).\n\\\nThis project is not affiliated with or endorsed by the Federal Department of Justice and Police (FDJP) - Federal Office of Justice (FOJ) who are developing and maintaining zefix.ch.\n\n## Features and Use-cases\n\n- Allows your AI-assistant to search for companies incorporated in Switzerland by their name or UID (`CHE-nnn.nnn.nnn`) with optional filters by canton of incorporation, legal form, location, previous names, etc. (mimics all filters in Zefix GUI).\n- Equips your AI-assistant with full company details available in Zefix (business names and identifiers, purpose, address,  auditors, change history, capital, names of legal representatives, merges & acquisitions) to build further automation workflows or answer business-specific questions. \n\n## Sample questions MCP can answer\n\n**Company lookup**\n- *\"Find if Google has a legal body in Switzerland and show me their registered address.\"*\n- *\"Was ist der vollständige rechtliche Name und die UID des Unternehmens, das als Migros bekannt ist?\"*\n- *\"Recherche le CHE-169.865.482 et dis-moi tout ce que tu sais à son sujet.\"*\n\n**Filtering & discovery**\n- *\"List all active Treuhand companies headquartered in canton Schaffhausen.\"*\n- *\"Finde Einzelunternehmen im Bereich Malerei, die irgendwo in der Grossregion Zürich eingetragen sind.\"*\n- *\"Dresse une liste des adresses et des représentants légaux de toutes les banques en Romandie.\"*\n\n**History & changes**\n- *\"What is the new name of the company formerly known as 'SwissAir'?\"*\n- *\"Zeig mir die vollständige Namens- und Eigentümergeschichte von Credit Suisse.\"*\n- *\"Y a-t-il des entreprises qui ont repris ou fusionné avec UBS AG ?\"*\n\n**Due diligence & research**\n- *\"Who is listed as auditor for Zurich Insurance Group?\"*\n- *\"Ich stehe kurz vor der Unterzeichnung eines Vertrags mit Hans Müller als Vertreter von Lindt & Sprüngli – ist er dazu bevollmächtigt?\"*\n- *\"Vérifie que Bollinger est une entreprise active spécialisée dans la plomberie, et dis-moi depuis combien de temps elle existe et quel est son capital enregistré.\"*\n\n## Requirements\n\n- MCP host application (Claude, LLM Studio, VSCode+GHCP/Cline, Cursor, Dive, LibreChat, DeepChat, Chainlit etc.)\n- LLM that supports Tool calling (GPT-4.1+ Claude Sonnet/Opus, Gemini, Llama 3.1+, Qwen3.5, etc.)\n- (optional) [Node.js](https://nodejs.org/) 24+ (*for development or local run without npx*)\n\n## Installation\n\n### As a Claude Desktop Extension (easiest)\n\n1. Go to the [Releases page](https://github.com/zahhar/zefix-mcp/releases) and download the latest `zefix.mcpb` file.\n2. Double-click it — Claude Desktop opens automatically.\n3. Click **Install**.\n\nRestart Claude Desktop if you do not see `zefix` tool in the list of available tools.\n\n### Via npx (recommended for all other MCP hosts)\n\nAdd to your MCP host config:\n\n```json\n{\n  \"mcpServers\": {\n    \"zefix\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"zefix-mcp-unofficial\"]\n    }\n  }\n}\n```\nnpx downloads, caches, and runs the package automatically. No local install required.\n\n### From source\n\n```bash\ngit clone https://github.com/your-org/zefix-mcp-unofficial.git\ncd zefix-mcp-unofficial\nnpm install\nnpm run build\n```\n\nThan add this section to config file of your MCP host application (syntax may vary, check documentation for your MCP host app):\n\n```json\n{\n  \"mcpServers\": {\n    \"zefix\": {\n      \"command\": \"node\",\n      \"args\": [\"/absolute/path/to/zefix-mcp-unofficial/dist/index.js\"]\n    }\n  }\n}\n```\n\n## Tool reference\n\n### `get_companies`\n\nSearch the Zefix registry. All parameters except `name_or_uid` are optional.\n\n| Parameter | Type | Description |\n|---|---|---|\n| `name_or_uid` | string | Company name or UID (`CHE-nnn.nnn.nnn`). |\n| `language_key` | string | Response language: `en`, `de`, `fr`, `it`. Default: `en`. |\n| `cantons` | string[] | Filter by canton codes, e.g. `[\"ZH\", \"BE\"]`. |\n| `locations` | string[] | Filter by legal seat town names, e.g. `[\"Zurich\", \"Bern\"]`. |\n| `legalForms` | string[] | Filter by legal form, e.g. `[\"AG\", \"GmbH\"]`. |\n| `exactSearch` | boolean | Search from start of name (default: `true`). Set `false` for substring/wildcard (`*`) search. |\n| `phoneticSearch` | boolean | Enable phonetic/fuzzy matching. |\n| `includeDeleted` | boolean | Include deregistered companies (default: `false`). |\n| `includeFormerNames` | boolean | Also search former company names (default: `false`). |\n\n**Tips:**\n- If you know the UID, use it — it will return the most accurate full-detail result.\n- If `exactSearch: true` returns no results, retry with `exactSearch: false` and `phoneticSearch: true` combination.\n- Results are returned in YAML format, with detail level depending on amount of found companies:\n   - 1 result → full details including SOGC publication history;\n   - 2–10 → detailed summaries, but without full history and list of legal representatives;\n   - 11+ → name/UID/status list only.\n- Results are capped at 100 items.\n- The server communicates over stdio (MCP standard transport) — it won't print anything to the terminal when run directly.\n- When MCP server queries Zefix REST API at `https://www.zefix.ch/ZefixREST/api/v1/` (public, no authentication required) it submits `User-Agent: zefix-mcp-unofficial` for transparency. You may want to change uf if using this MCP as part of your larger solution. \n\n---\n\n## Development and Debugging\n\n### Build\n\n```bash\nnpm run build\n# Compiled output goes to dist/index.js\n```\n\n### Inspect\n\nUse the [MCP Inspector](https://github.com/modelcontextprotocol/inspector) to interactively call tools and inspect responses:\n\n```bash\nnpx @modelcontextprotocol/inspector node dist/index.js\n```\n\nThe first run will prompt you to install `@modelcontextprotocol/inspector`. After startup, open the URL shown in the terminal (usually `http://localhost:5173`) to access the inspector UI.\n\n**Workflow:**\n1. Select the `get_companies` tool in the left panel.\n2. Fill in parameters (e.g. `name_or_uid: \"Berg Digital\"`).\n3. Click **Run** and inspect the raw response.\n\n### Publishing a new release\n\nPushing a `v*` tag triggers the GitHub Actions release workflow, which runs two jobs **in parallel**:\n\n| Job | What it does | Where it lands |\n|---|---|---|\n| **Publish to npm** | `npm run build`, `npm publish` | [npmjs.com](https://www.npmjs.com/package/zefix-mcp-unofficial) |\n| **Publish Claude plugin** | `npm run build`, `npx @anthropic-ai/mcpb pack`, uploads the `.mcpb` asset | GitHub Releases |\n\n```bash\n# 1. Bump version in BOTH files (npm will reject publishing over an existing version):\n#    - package.json  → \"version\": \"x.y.z\"\n#    - manifest.json → \"version\": \"x.y.z\"\n\n# 2. Commit, tag, push — the tag MUST point to the version-bump commit:\ngit add package.json manifest.json\ngit commit -m \"chore: release vX.Y.Z\"\ngit tag vX.Y.Z\ngit push && git push --tags\n```\n\n> ⚠️ **Common mistake:** creating the tag *before* editing `package.json`/`manifest.json`.\n> CI publishes whatever version string is in `package.json` at the tagged commit — the tag name itself is ignored by npm.\n> If you tagged too early, move the tag to the correct commit:\n> ```bash\n> git tag -d vX.Y.Z                   # delete local tag\n> git push origin :refs/tags/vX.Y.Z   # delete remote tag\n> # edit package.json + manifest.json, then:\n> git add package.json manifest.json\n> git commit -m \"chore: release vX.Y.Z\"\n> git tag vX.Y.Z\n> git push && git push --tags\n> ```\n\n> **First-time setup (one-off):**\n> - **npm token:** create an *Access token* at npmjs.com → add it as a *Repository secret* named `NPM_TOKEN` in *GitHub → Settings → Secrets and variables → Actions*; token lifetime is 90 days (max) - update regularly.\n> - **GitHub releases:** no extra setup needed — the workflow uses the built-in `GITHUB_TOKEN` with `contents: write` permission\n\n---\n\n## License\n\n- [MIT](LICENSE).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "full_name": "Mahima-Sanketh-Git/mcp-foundry",
+  "html_url": "https://github.com/Mahima-Sanketh-Git/mcp-foundry",
+  "description": "🤖 Explore Model Context Protocol (MCP) with Google Gemini. TypeScript monorepo covering MCP servers, clients, tool calling, and agentic AI workflows.",
+  "topics": [
+    "agentic-ai",
+    "gemini-ai",
+    "mcp",
+    "mcp-client",
+    "mcp-server",
+    "mcp-tools",
+    "model-context-protocol",
+    "ts",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "JavaScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-05-13T16:55:08Z",
+  "last_pushed_at": "2026-05-15T05:57:01Z",
+  "fetched_at": "2026-07-12T00:46:12.285Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# 🌤️ mcp-foundry\n\nAn MCP (Model Context Protocol) server providing AI-powered weather tools via Google Generative AI.\n\n![License](https://img.shields.io/badge/license-MIT-blue.svg)\n![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)\n![TypeScript](https://img.shields.io/badge/typescript-%3E%3D6.0.0-blue)\n\n---\n\n## Table of Contents\n\n- [Overview](#overview)\n- [Features](#features)\n- [Tech Stack](#tech-stack)\n- [Project Structure](#project-structure)\n- [Prerequisites](#prerequisites)\n- [Installation](#installation)\n- [Configuration](#configuration)\n- [Usage / Quick Start](#usage--quick-start)\n- [Scripts](#scripts)\n- [Contributing](#contributing)\n- [License](#license)\n\n---\n\n## Overview\n\n`mcp-foundry` is a monorepo implementing the Model Context Protocol (MCP) architecture with a weather service backend. It consists of an MCP server that provides weather tools and an AI agent host that uses Google Generative AI (Gemini) to intelligently invoke those tools. The system demonstrates how LLMs can orchestrate tool calls through the MCP standard for structured, reliable tool integration.\n\n---\n\n## Features\n\n- 🌦️ Real-time weather data via OpenWeather API\n- 🤖 AI-powered tool orchestration with Gemini\n- 📡 Model Context Protocol (MCP) implementation\n- 🔌 Stdio-based server transport for inter-process communication\n- 🎯 Type-safe tool definitions with Zod schema validation\n- 📦 Monorepo structure with separate server and host applications\n\n---\n\n## Tech Stack\n\n| Technology | Purpose | Version |\n|-----------|---------|---------|\n| **TypeScript** | Language | ^6.0.3 |\n| **Node.js** | Runtime | >=18.0.0 |\n| `@modelcontextprotocol/sdk` | MCP server/client implementation | ^1.29.0 |\n| `@google/genai` | Google Generative AI SDK | ^2.2.0 |\n| `dotenv` | Environment variable management | ^17.4.2 |\n| `zod` | Runtime schema validation | ^3.25.76 |\n\n---\n\n## Project Structure\n\n```\nmcp-foundry/\n├── apps/\n│   ├── mcp-server/              # MCP server providing weather tools\n│   │   ├── src/\n│   │   │   └── index.ts         # Weather tool definitions and MCP server setup\n│   │   ├── build/               # Compiled JavaScript\n│   │   └── tsconfig.json\n│   │\n│   └── mcp-host/                # AI agent host orchestrating tool calls\n│       ├── src/\n│       │   ├── agent.ts         # Gemini AI agent loop\n│       │   ├── client.ts        # MCP client connecting to server\n│       │   └── mcp-client/      # Client transport layer\n│       ├── build/               # Compiled JavaScript\n│       └── tsconfig.json\n│\n├── package.json                 # Workspace dependencies and scripts\n├── tsconfig.base.json           # Base TypeScript configuration\n├── .env                         # Environment variables (local)\n├── .github/\n│   └── copilot-instructions.md  # Copilot README generation rules\n└── README.md                    # This file\n```\n\n---\n\n## Prerequisites\n\n- [Node.js](https://nodejs.org/) >=18.0.0\n- [npm](https://www.npmjs.com/) >=9.0.0\n- [OpenWeather API Key](https://openweathermap.org/api)\n- [Google Generative AI API Key](https://ai.google.dev/)\n\n---\n\n## Installation\n\n1. Clone the repository:\n\n```bash\ngit clone <repository-url>\ncd mcp-foundry\n```\n\n2. Install dependencies:\n\n```bash\nnpm install\n```\n\n3. Build the projects:\n\n```bash\nnpm run build\n```\n\nExpected output:\n```bash\n# output\n# compiles apps/mcp-server/src/**/*.ts → apps/mcp-server/build/\n# compiles apps/mcp-host/src/**/*.ts → apps/mcp-host/build/\n```\n\n---\n\n## Configuration\n\nCreate a `.env` file in the repository root with the following variables:\n\n| Variable | Description | Required | Example |\n|----------|-------------|----------|---------|\n| `OPEN_WEATHER_API` | OpenWeather API key for weather data | ✅ | `abc123def456` |\n| `GEMINI_API_KEY` | Google Generative AI API key | ✅ | `AIzaXxxx...` |\n\n**.env example:**\n\n```env\nOPEN_WEATHER_API=your_openweather_api_key_here\nGEMINI_[REDACTED-GENERIC_KV_SECRET]\n```\n\n> ⚠️ Never commit `.env` to version control. Add it to `.gitignore`.\n\n---\n\n## Usage / Quick Start\n\n1. Build the projects:\n\n```bash\nnpm run build\n```\n\n2. Start the agent:\n\n```bash\nnpm start\n```\n\n3. Invoke the agent with a natural language query:\n\n```bash\nnode apps/mcp-host/build/agent.js \"What's the weather in New York?\"\n```\n\nExpected output:\n```bash\n# output\nConnected to MCP server\n[Gemini response with weather information for New York]\n```\n\n---\n\n## Scripts\n\n| Script | Command | Description |\n|--------|---------|-------------|\n| `build` | `npm run build:server && npm run build:host` | Compile both MCP server and host |\n| `build:server` | `tsc -p apps/mcp-server` | Compile MCP server TypeScript to JavaScript |\n| `build:host` | `tsc -p apps/mcp-host` | Compile agent host TypeScript to JavaScript |\n| `start` | `node apps/mcp-host/build/agent.js` | Run the AI agent |\n| `dev` | `npm run build && npm start` | Build and run in one command |\n\n---\n\n---\n\n## Contributing\n\nContributions are welcome! This project is open to community input and improvements.\n\n**Getting Started:**\n\n1. Fork the repository\n2. Create a feature branch: `git checkout -b feat/your-feature` (or `fix/`, `docs/`, `chore/` as needed)\n3. Make your changes and commit: `git commit -m \"description of changes\"`\n4. Push to your fork: `git push origin your-branch-name`\n5. Open a pull request with a description of your changes\n\n**Guidelines (non-strict):**\n\n- Keep commits logically organized and descriptive\n- Add tests if you're adding new functionality\n- Update documentation if your changes affect the API or usage\n- Be respectful and collaborative in discussions\n\nAll contribution levels are welcome — from typo fixes to new features!\n\n---\n\n## License\n\nDistributed under the MIT License. See LICENSE for more information.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "full_name": "nickyroot/mcp-router",
+  "html_url": "https://github.com/nickyroot/mcp-router",
+  "description": "One MCP server. Unlimited accounts. Route a single MCP endpoint to multiple accounts per provider — with contexts, sticky defaults, and hot reload.",
+  "topics": [
+    "ai",
+    "ai-agents",
+    "claude",
+    "llm",
+    "mcp",
+    "mcp-tools",
+    "model-context-protocol",
+    "multiaccount",
+    "router",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-07-04T10:05:02Z",
+  "last_pushed_at": "2026-07-04T10:30:02Z",
+  "fetched_at": "2026-07-12T00:44:32.106Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP Router\n\n> One MCP server. Unlimited accounts. *(working title — see naming note below)*\n\nMCP Router is a local-first, open-source MCP server that sits between an AI\nclient (Claude Desktop, Cursor, …) and your other MCP servers, and solves one\nproblem exceptionally well: **multiple accounts per provider** — three Notion\nworkspaces, two GitHub identities, several Slack teams — through a single\nMCP endpoint, with account selection that feels native to the model.\n\n![MCP Router: one user with work-1, work-2 and personal contexts, routed through one MCP server to multiple Notion and Slack accounts](docs/overview.svg)\n\n**In plain terms:** AI tools like Claude can connect to apps such as Notion or\nSlack, but each connection only knows about one account — and most people\nhave several. Two jobs, a client, a personal life. Instead of installing the\nsame connector three times and drowning in duplicate tools, you install the\nrouter once and tell it about all your accounts. To the AI it looks like a\nsingle, ordinary connection; behind the scenes the router quietly holds one\nconnection per account and delivers each request to the right one. You choose\nwhere things go the way you'd tell a colleague — \"use my work-1 stuff for\nnow\", \"actually, search my personal Notion\" — or group whole setups into\ncontexts, so switching from work-1 to personal flips Notion, Slack, and\neverything else in one move. Every reply says which account it used, so\nnothing lands in the wrong workspace silently, and adding a new account is\njust a few lines in a config file — the running router picks it up the moment\nyou save.\n\n## Works with any MCP client\n\nThe router speaks plain, standards-track MCP on both sides — there is nothing\nClaude-specific in the contract (a deliberate constraint; see\n[ADR-012](docs/adr/012-mcp-spec-evolution.md)). The `account` parameter is\nordinary JSON Schema, the \"which account?\" prompt is an ordinary text result,\nand `switch_account`/`switch_context` are ordinary tools. Claude Desktop,\nCursor, Windsurf, Zed, VS Code, or a homegrown agent on any model can all sit\nupstream. Two qualifiers: the *experience* scales with the model (reading the\nenum, obeying the ask-message, and fanning out across accounts are model\nbehaviors — weaker models just get asked more often), and each client has its\nown ritual for registering a local stdio server.\n\n## Design philosophy\n\n> Invisible plumbing, visible decisions. The router presents the model with a\n> single coherent identity layer; the machinery stays hidden, but which\n> account a request was routed to — especially a write — is always visible.\n\n## Status\n\n**v0.2.** v0.1 was validated in production (Claude Desktop, three live Notion\nworkspaces — see the ADR-003 validation note). Architecture is recorded in\n[docs/adr](docs/adr/README.md) — start with\n[ADR-000](docs/adr/000-design-philosophy.md) and the index.\n\n```sh\nnpm install && npm run build\nnode dist/cli/index.js init       # writes ~/.config/mcp-router/config.yaml\nnode dist/cli/index.js validate\nnode dist/cli/index.js run        # speaks MCP on stdio\nnode dist/cli/index.js stats      # metrics snapshot of the running router\nnpm test                          # 40 tests incl. InMemoryTransport e2e\n```\n\nWorking today: config schema + validation, downstream stdio/HTTP clients with\ngraceful per-account failure, tool merging with the injected `account` enum,\nthe five-step route resolver (explicit > sticky > context > singleton > ask),\naccount markers on implicit routes, `switch_account`/`current_account` sticky\ndefaults, cross-provider contexts (`switch_context`/`current_context`/\n`list_contexts`), config hot reload (save the file — changed accounts\nreconnect and the tool list updates live; a broken save keeps the last known\ngood config), auth-aware account health in `list_accounts`, `router stats`\n(persisted metrics snapshot), `router providers|accounts|contexts`,\n`router init --import` from `claude_desktop_config.json`, and\n`router secret set/rm` (OS keychain, hidden input).\n\nMilestones:\n\n- **v0.1** (shipped) — multiple accounts, one provider; merged virtual tools;\n  explicit `account` parameter; `router init|validate|run`.\n- **v0.2** (shipped) — sticky active account, per-account call health,\n  `router stats`.\n- **v0.3** (this) — cross-provider contexts surfaced as tools; config hot\n  reload; expanded CLI.\n- **Next** — Streamable HTTP upstream (per-session state via\n  `Mcp-Session-Id`, URL-based client wiring).\n\nNaming: \"MCP Router\" describes the mechanism, not the concept; a rename is\ndeliberately deferred until pre-v1 (cheap then, a distraction now).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

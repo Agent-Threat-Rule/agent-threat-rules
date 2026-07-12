@@ -1,0 +1,41 @@
+{
+  "full_name": "spences10/mcp-omnisearch",
+  "html_url": "https://github.com/spences10/mcp-omnisearch",
+  "description": "🔍 A Model Context Protocol (MCP) server providing unified access to multiple search engines (Tavily, Brave, Kagi, Exa), AI tools (Kagi FastGPT, Exa, Linkup), and content extraction services (Firecrawl, Tavily, Kagi). Includes GitHub search. All through a single interface.",
+  "topics": [
+    "brave",
+    "exa",
+    "firecrawl",
+    "github-search",
+    "kagi",
+    "linkup",
+    "mcp",
+    "model-context-protocol",
+    "search",
+    "tavily"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 333,
+  "forks": 49,
+  "open_issues": 7,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-03-08T17:54:53Z",
+  "last_pushed_at": "2026-07-11T21:15:33Z",
+  "fetched_at": "2026-07-11T23:14:50.344Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# mcp-omnisearch\n\n[![built with vite+](https://img.shields.io/badge/built%20with-Vite+-646CFF?logo=vite&logoColor=white)](https://viteplus.dev)\n[![tested with vitest](https://img.shields.io/badge/tested%20with-Vitest-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev)\n\nA Model Context Protocol (MCP) server that provides unified access to\nTavily, Brave, Kagi, Exa AI, GitHub, Linkup, and Firecrawl through\nfour consolidated tools.\n\n<a href=\"https://glama.ai/mcp/servers/gz5wgmptd8\">\n  <img width=\"380\" height=\"200\" src=\"https://glama.ai/mcp/servers/gz5wgmptd8/badge\" alt=\"Glama badge\" />\n</a>\n\n## Quick start\n\n```bash\npnpm install\npnpm run build\nnode ./dist/index.js\n```\n\nConfigure the server in your MCP client with whichever provider keys\nyou have. Providers without keys are skipped and the rest keep\nworking.\n\n```json\n{\n\t\"mcpServers\": {\n\t\t\"mcp-omnisearch\": {\n\t\t\t\"command\": \"node\",\n\t\t\t\"args\": [\"/path/to/mcp-omnisearch/dist/index.js\"],\n\t\t\t\"env\": {\n\t\t\t\t\"TAVILY_API_KEY\": \"your-tavily-key\",\n\t\t\t\t\"KAGI_API_KEY\": \"your-kagi-key\",\n\t\t\t\t\"BRAVE_API_KEY\": \"your-brave-key\",\n\t\t\t\t\"GITHUB_[REDACTED-GENERIC_KV_SECRET]\",\n\t\t\t\t\"EXA_API_KEY\": \"your-exa-key\",\n\t\t\t\t\"LINKUP_API_KEY\": \"your-linkup-key\",\n\t\t\t\t\"FIRECRAWL_[REDACTED-GENERIC_KV_SECRET]\"\n\t\t\t}\n\t\t}\n\t}\n}\n```\n\n## Tools\n\n### `web_search`\n\nSearch the web with Tavily, Brave, Kagi, Exa, or Kagi Enrichment.\n\n```json\n{\n\t\"query\": \"sveltekit remote functions site:docs.svelte.dev\",\n\t\"provider\": \"brave\",\n\t\"limit\": 10\n}\n```\n\n### `ai_search`\n\nGet sourced AI answers with Kagi FastGPT, Exa Answer, or Linkup.\n\n```json\n{\n\t\"query\": \"Explain the differences between REST and GraphQL\",\n\t\"provider\": \"kagi_fastgpt\"\n}\n```\n\n### `github_search`\n\nSearch GitHub code, repositories, or users.\n\n```json\n{\n\t\"query\": \"filename:remote.ts @sveltejs/kit\",\n\t\"search_type\": \"code\",\n\t\"limit\": 5\n}\n```\n\n### `web_extract`\n\nExtract, crawl, scrape, summarize, or find similar content with\nTavily, Kagi, Firecrawl, or Exa.\n\n```json\n{\n\t\"url\": \"https://example.com/long-article\",\n\t\"provider\": \"kagi\",\n\t\"mode\": \"summarize\"\n}\n```\n\n## Documentation\n\n- [Provider selection](docs/provider-selection.md) — choose providers\n  by task, key, mode, and capability.\n- [Search operators](docs/search-operators.md) — operator support\n  matrix and tested examples.\n- [Large results](docs/large-results.md) — inline vs file response\n  behavior and remote deployment caveats.\n- [Deployment](docs/deployment.md) — MCP client, WSL, Docker, cloud,\n  and Firecrawl setup.\n- [Troubleshooting](docs/troubleshooting.md) — keys, access,\n  validation, rate limits, and common failures.\n\n## Environment variables\n\n- `TAVILY_API_KEY`\n- `KAGI_API_KEY`\n- `BRAVE_API_KEY`\n- `GITHUB_API_KEY`\n- `EXA_API_KEY`\n- `LINKUP_API_KEY`\n- `FIRECRAWL_API_KEY`\n- `FIRECRAWL_BASE_URL` optional, for self-hosted Firecrawl\n- `OMNISEARCH_LARGE_RESULT_MODE` optional, `file` default or `inline`\n\n## Development\n\n```bash\npnpm install\npnpm run build\npnpm test\n```\n\nPlease read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR.\n\n## License\n\nMIT License - see [LICENSE](LICENSE).\n\n## Acknowledgments\n\nBuilt on\n[Model Context Protocol](https://github.com/modelcontextprotocol),\n[Tavily](https://tavily.com), [Kagi](https://kagi.com),\n[Brave Search](https://search.brave.com), [Exa AI](https://exa.ai),\n[Linkup](https://linkup.so), and [Firecrawl](https://firecrawl.dev).\n"
+  },
+  "descriptor_file": {
+    "path": "server.json",
+    "content": "{\n\t\"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json\",\n\t\"name\": \"io.github.spences10/mcp-omnisearch\",\n\t\"description\": \"MCP server for integrating Omnisearch with LLMs\",\n\t\"status\": \"active\",\n\t\"repository\": {\n\t\t\"url\": \"https://github.com/spences10/mcp-omnisearch\",\n\t\t\"source\": \"github\"\n\t},\n\t\"version\": \"0.0.15\",\n\t\"packages\": [\n\t\t{\n\t\t\t\"registry_type\": \"npm\",\n\t\t\t\"registry_base_url\": \"https://registry.npmjs.org\",\n\t\t\t\"identifier\": \"mcp-omnisearch\",\n\t\t\t\"version\": \"0.0.15\",\n\t\t\t\"transport\": {\n\t\t\t\t\"type\": \"stdio\"\n\t\t\t}\n\t\t}\n\t]\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

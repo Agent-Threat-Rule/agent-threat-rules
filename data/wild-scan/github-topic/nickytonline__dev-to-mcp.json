@@ -1,0 +1,32 @@
+{
+  "full_name": "nickytonline/dev-to-mcp",
+  "html_url": "https://github.com/nickytonline/dev-to-mcp",
+  "description": "A remote Model Context Protocol (MCP) server for interacting with the dev.to public API without requiring authentication.",
+  "topics": [
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 44,
+  "forks": 15,
+  "open_issues": 1,
+  "language": "TypeScript",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-07-27T16:57:33Z",
+  "last_pushed_at": "2025-10-09T12:22:34Z",
+  "fetched_at": "2026-07-11T23:52:33.335Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Dev.to MCP Server\n\nA remote Model Context Protocol (MCP) server for interacting with the dev.to public API without requiring authentication.\n\n## Features\n\nThis MCP server provides access to the following dev.to public API endpoints:\n\n- **get_articles** - Get articles from dev.to with optional filters (username, tag, state, pagination)\n- **get_article** - Get a specific article by ID or path\n- **get_user** - Get user information by ID or username\n- **get_tags** - Get popular tags from dev.to\n- **get_comments** - Get comments for a specific article\n- **search_articles** - Search articles using query parameters\n\n## Installation\n\n### Using npm\n\nIf you want to install and build from source using npm:\n\n```bash\nnpm install\nnpm run build\n```\n\n## Usage\n\nThe server runs as a remote HTTP server on port 3000 (or the PORT environment variable) and can be used with any MCP-compatible client.\n\n```bash\nnpm start\n```\n\nThe server will be available at `http://localhost:3000` for MCP connections.\n\n## Development\n\n```bash\n# Build the project\nnpm run build\n\n# Watch mode for development\nnpm run dev\n\n# Linting\nnpm run lint\nnpm run lint:fix\n\n# Formatting\nnpm run format\nnpm run format:check\n```\n\n## Docker\n\n### Using Pre-built Image\n\nPull and run the pre-built Docker image:\n\n```bash\n# Pull the image\ndocker pull docker.io/nickytonline/dev-to-mcp:latest\n\n# Run it\ndocker run -d \\\n  --name dev-to-mcp \\\n  -e NODE_ENV=production \\\n  -e PORT=3000 \\\n  -p 3000:3000 \\\n  --restart unless-stopped \\\n  docker.io/nickytonline/dev-to-mcp:latest\n```\n\nOnce it's up, check health status via:\n\n```bash\ncurl -fsS http://127.0.0.1:3000/mcp\n```\n\nThe server will be available at `http://localhost:3000/mcp` for MCP connections.\n\n### Building from Source\n\nBuild and run the MCP server using Docker:\n\n```bash\n# Build the Docker image\ndocker build -t dev-to-mcp .\n\n# Run the container\ndocker run -p 3000:3000 dev-to-mcp\n```\n\n### Docker Compose\n\nUsing the pre-built image with Docker Compose:\n\n```yaml\nservices:\n  dev-to-mcp:\n    image: docker.io/nickytonline/dev-to-mcp:latest\n    container_name: dev-to-mcp\n    restart: unless-stopped\n    environment:\n      NODE_ENV: production\n      PORT: 3000\n    networks:\n      - main\n    healthcheck:\n      # Uses $PORT at runtime; defaults to 3000 if not set\n      test:\n        [\n          \"CMD-SHELL\",\n          \"curl -fsS http://127.0.0.1:${PORT:-3000}/mcp >/dev/null || exit 1\",\n        ]\n      interval: 15s\n      timeout: 5s\n      retries: 5\n      start_period: 30s\n\nnetworks:\n  main: {}\n```\n\nFor development with a local build, you can also use Docker Compose:\n\n```yaml\n# docker-compose.yml\nversion: \"3.8\"\nservices:\n  dev-to-mcp:\n    build: .\n    ports:\n      - \"3000:3000\"\n    environment:\n      - PORT=3000\n```\n\n```bash\ndocker-compose up --build\n```\n\n## API Endpoints\n\nAll endpoints use the public dev.to API (`https://dev.to/api`) and do not require authentication.\n\n### get_articles\n\nGet articles with optional filtering:\n\n- `username` - Filter by author username\n- `tag` - Filter by tag\n- `top` - Top articles (1, 7, 30, or infinity days)\n- `page` - Pagination page (default: 1)\n- `per_page` - Articles per page (default: 30, max: 1000)\n- `state` - Filter by state (fresh, rising, all)\n\n### get_article\n\nGet a specific article:\n\n- `id` - Article ID\n- `path` - Article path (e.g., \"username/article-slug\")\n\n### get_user\n\nGet user information:\n\n- `id` - User ID\n- `username` - Username\n\n### get_tags\n\nGet popular tags:\n\n- `page` - Pagination page (default: 1)\n- `per_page` - Tags per page (default: 10, max: 1000)\n\n### get_comments\n\nGet comments for an article:\n\n- `article_id` - Article ID (required)\n\n### search_articles\n\nSearch articles:\n\n- `q` - Search query (required)\n- `page` - Pagination page (default: 1)\n- `per_page` - Articles per page (default: 30, max: 1000)\n- `search_fields` - Fields to search (title, body_text, tag_list)\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

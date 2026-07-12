@@ -1,0 +1,48 @@
+{
+  "full_name": "ktol1/RedTeam-Agent",
+  "html_url": "https://github.com/ktol1/RedTeam-Agent",
+  "description": " RedTeam-Agent: AI-Powered Autonomous Red Team Framework via Model Context Protocol. AI红队与内网渗透自动化框架，支持 gogo, fscan, httpx, nuclei, impacket, playwright 等 15+ 渗透工具，让 LLM 直接化身安全审计黑客。",
+  "topics": [
+    "active-directory",
+    "ai-agent",
+    "ai-security",
+    "bloodhound",
+    "cybersecurity",
+    "ethical-hacking",
+    "fscan",
+    "impacket",
+    "lateral-movement",
+    "llm-tools",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "nuclei",
+    "offensive-security",
+    "penetration-testing",
+    "pentesting",
+    "red-team",
+    "redteam",
+    "windows-security"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 63,
+  "forks": 6,
+  "open_issues": 0,
+  "language": "C",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-02-28T12:16:58Z",
+  "last_pushed_at": "2026-04-24T02:38:36Z",
+  "fetched_at": "2026-07-11T23:25:51.585Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# RedTeam-Agent\n\n<div align=\"center\">\n\n<img src=\"assets/logo.png\" alt=\"RedTeam-Agent\" width=\"200\"/>\n\n### AI-Powered Autonomous Red Team Framework\n\n**Let AI become your security audit hacker**\n\n[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)\n[![Python](https://img.shields.io/badge/Python-3.8+-blue?style=for-the-badge)](https://www.python.org/)\n[![Skill](https://img.shields.io/badge/Workflow-Skill--First-brightgreen?style=for-the-badge)](./.github/skills/redteam/SKILL.md)\n[![Stars](https://img.shields.io/github/stars/ktol1/RedTeam-Agent?style=for-the-badge)](https://github.com/ktol1/RedTeam-Agent/stargazers)\n\n[English](./README.md) | [简体中文](./README_zh.md) | [Documentation](./.github/skills/redteam/SKILL.md) | [Quick Start](#quick-start)\n\n</div>\n\n---\n\n## Overview\n\nRedTeam-Agent is an AI-powered red team framework using a skill-first terminal workflow. AI reads project skills, discovers tools, executes commands in terminal, and summarizes high-signal findings.\n\nCore philosophy: no manual tool-by-tool operation. Let AI orchestrate the workflow end-to-end.\n\n## Key Features\n\n- Plug and play: 15+ tools with automated setup\n- AI-driven workflow: Skill + terminal execution\n- Token optimized: output filtering and file-first strategy\n- AD coverage: BloodHound + impacket + Responder chain\n- Multi-client support: Cursor, Claude Desktop, VS Code/Cline\n\n---\n\n## Tool Matrix\n\n### Network\n\n- gogo: fast asset discovery\n- fscan: comprehensive host/service scan\n\n### Web\n\n- httpx: HTTP probing and fingerprinting\n- nuclei: template-based vulnerability validation\n- ffuf: directory and parameter fuzzing\n\n### Active Directory\n\n- SharpHound / bloodhound-python\n- impacket (GetNPUsers, GetUserSPNs, secretsdump, ntlmrelayx, etc.)\n- pywerview, ldapdomaindump\n\n### Lateral Movement\n\n- nxc (NetExec)\n- impacket-wmiexec\n- impacket-psexec\n\n---\n\n## Quick Start\n\n### 1. Requirements\n\n```text\nPython 3.8+\nWindows 10/11 or Linux/macOS\n8GB+ RAM recommended\n```\n\n### 2. Installation\n\n```bash\ngit clone https://github.com/ktol1/RedTeam-Agent.git\ncd RedTeam-Agent\n\npython -m venv venv\n# Windows PowerShell\n.\\venv\\Scripts\\Activate.ps1\n# Linux/macOS\nsource venv/bin/activate\n\n# Windows\npython scripts/install_tools.py\n\n# Linux/macOS\npython scripts/install_tools_linux.py\n```\n\n### 3. Enable Skills Terminal Mode\n\nNo extra server setup is required.\n\n```bash\ncd RedTeam-Agent\ndir .\\tools\n```\n\nAI will read the repository skill and `.github/copilot-instructions.md`, then execute terminal commands directly.\n\n### 4. Example Prompts\n\n```text\nFirst load the redteam skill, then scan 192.168.1.0/24 in terminal,\nwrite output to scan.txt, and summarize high-value findings.\n\nUse SharpHound to collect corp.local data and summarize attack paths.\n\nSet up a chisel proxy and provide upload/run commands.\n```\n\n---\n\n## AD Attack Flow\n\n1. Recon: gogo / fscan / kerbrute / pywerview\n2. Collection: SharpHound or bloodhound-python\n3. Analysis: BloodHound GUI or scripts/bloodhound_analysis.py\n4. Attack: Kerberoast / AS-REP Roast / secretsdump / relay\n5. Lateral: nxc / wmiexec / psexec / getST\n\n---\n\n## Terminal Commands (Skill-driven)\n\n| # | Tool | Function | Command |\n|---|------|----------|---------|\n| 1 | gogo | Fast asset probe | `gogo -t 100 -l hosts.txt -q -f gogo.txt` |\n| 2 | fscan | Network scanner | `fscan -h 192.168.1.0/24 -np -silent -nocolor -o fscan.txt` |\n| 3 | httpx | Web fingerprinting | `httpx -l urls.txt -sc -title -server -td -silent -o httpx.txt` |\n| 4 | nuclei | POC scanner | `nuclei -l urls.txt -tags cve,rce -s high,critical -nc -o nuclei.txt` |\n| 5 | ffuf | Directory fuzzing | `ffuf -u http://target/FUZZ -w wordlist.txt -mc 200,301,302 -s -o ffuf.txt` |\n| 6 | nxc | Lateral movement | `nxc smb 192.168.1.0/24 -u user -p pass --shares` |\n| 7 | kerbrute | Kerberos enum | `kerbrute userenum -d corp.local --dc 192.168.1.10 users.txt -o valid_users.txt` |\n| 8 | SharpHound | Data collection | `SharpHound.exe -c Default -d corp.local` |\n| 9 | pywerview | Domain enum | `pywerview.py get-domain-user -d corp.local --dc-ip 192.168.1.10 -u user -p pass` |\n| 10 | ldapdomaindump | LDAP dump | `ldapdomaindump ldap://192.168.1.10 -u 'corp\\\\user' -p 'password' -o .\\\\ldapdump` |\n| 11 | responder | LLMNR spoofing | `responder -I eth0 -v` |\n| 12 | wmiexec | WMI exec | `impacket-wmiexec domain/user:pass@target 'whoami'` |\n| 13 | psexec | Service exec | `impacket-psexec domain/user:pass@target cmd.exe` |\n| 14 | secretsdump | Credential dump | `impacket-secretsdump corp.local/user:pass@dc -just-dc` |\n| 15 | ntlmrelayx | NTLM relay | `impacket-ntlmrelayx -t ldap://dc --smb2support` |\n\n---\n\n## Output Optimization\n\n- Remove ANSI colors\n- Compress blank lines\n- Truncate excessive output\n- Prefer file-first output for large scans\n- Summarize only high-signal findings\n\n---\n\n## Documentation\n\n- [SKILL.md](./.github/skills/redteam/SKILL.md)\n- [.github/copilot-instructions.md](./.github/copilot-instructions.md)\n\n## Contributing\n\nIssues and pull requests are welcome.\n\n<div align=\"center\">\n\nMIT License - Copyright (c) 2024-2026 ktol1\n\n</div>\n\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "full_name": "YachtsyAI/yachtsy-mcp-server",
+  "html_url": "https://github.com/YachtsyAI/yachtsy-mcp-server",
+  "description": null,
+  "topics": [
+    "agents",
+    "deep-research-agent",
+    "listings",
+    "marine",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "openai",
+    "sailboats",
+    "smithery-ai",
+    "yachts"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 1,
+  "open_issues": 2,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-10-19T18:55:10Z",
+  "last_pushed_at": "2025-10-19T20:14:10Z",
+  "fetched_at": "2026-07-12T00:45:16.101Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Yachtsy: MCP for Yacht Marketplace Intelligence\n\n[![smithery badge](https://smithery.ai/badge/@YachtsyAI/yachtsy-mcp-server)](https://smithery.ai/server/@YachtsyAI/yachtsy-mcp-server)\n\nYachtsy AI\n\nThe Yachtsy MCP server provides AI-powered yacht and boat marketplace intelligence by integrating with the Yachtsy Agent API. Access 25,000+ boat listings, get expert sailing advice, and find your perfect vessel within Claude Desktop, Cursor, and other popular MCP clients.\n\n## Features\n\n✅ **Intelligent Agent Routing** - Automatically routes your queries to the best specialized agent:\n   - **Listings Agent** - Search 25,000+ boat listings with advanced filtering\n   - **General Boat Expert (Small Talk Agent)** - General sailing and boating questions\n   - **Deep Research Agent** - Comprehensive yacht market analysis\n\n✅ **Comprehensive Boat Listings** - Search and filter by:\n   - Make, model, and class\n   - Price range and currency\n   - Location (city, country, region)\n   - Year, length, and specifications\n   - Broker and dealer information\n\n✅ **Expert Sailing Knowledge** - Get advice on:\n   - Boat selection and recommendations\n   - Bluewater cruising preparation\n   - Sailing techniques and best practices\n   - Yacht maintenance and systems\n\n## Get Your Yachtsy API Key\n\nTo use Yachtsy MCP, you need to:\n\n1. Sign up for a free account at [Yachtsy.ai](https://www.yachtsy.ai/signup)\n2. Navigate to **API Keys** in your dashboard\n3. Generate a new API key\n4. Use this API key in your configuration as the `YACHTSY_API_KEY` value\n\n## Prerequisites\n\nBefore installing or running Yachtsy MCP, you need to have `npx` (which comes with Node.js and npm) installed on your system.\n\n### Mac (macOS)\n\n1. **Install Homebrew** (if you don't have it):\n   ```bash\n   /bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"\n   ```\n2. **Install Node.js (includes npm and npx):**\n   ```bash\n   brew install node\n   ```\n\n3. **Verify installation:**\n   ```bash\n   node -v\n   npm -v\n   npx -v\n   ```\n\n### Windows\n\n1. **Download the Node.js installer:**\n   - Go to [https://nodejs.org/](https://nodejs.org/) and download the LTS version for Windows.\n2. **Run the installer** and follow the prompts. This will install Node.js, npm, and npx.\n3. **Verify installation:**\n   Open Command Prompt and run:\n   ```cmd\n   node -v\n   npm -v\n   npx -v\n   ```\n\n## Installation\n\n### Running on Claude Desktop\n\nTo configure Yachtsy MCP for Claude Desktop:\n\n1. Open Claude Desktop\n2. Go to Settings > Developer > Edit Config\n3. Add the following to your `claude_desktop_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"yachtsy-mcp-server\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"yachtsy-mcp@latest\"],\n      \"env\": {\n        \"YACHTSY_[REDACTED-GENERIC_KV_SECRET]\"\n      }\n    }\n  }\n}\n```\n\n4. Restart Claude for the changes to take effect\n\n### Running on Cursor\n\n**Note:** Requires Cursor version 0.45.6+\n\nTo configure Yachtsy MCP in Cursor:\n\n1. Open Cursor Settings\n2. Go to Features > MCP Servers \n3. Click \"+ Add New MCP Server\"\n4. Enter the following:\n   - Name: \"yachtsy-mcp\" (or your preferred name)\n   - Type: \"command\"\n   - Command: `env YACHTSY_[REDACTED-GENERIC_KV_SECRET] npx -y yachtsy-mcp`\n\n> If you are using Windows and are running into issues, try `cmd /c \"set YACHTSY_[REDACTED-GENERIC_KV_SECRET] && npx -y yachtsy-mcp\"`\n\nReplace `your-yachtsy-api-key` with your Yachtsy API key.\n\nAfter adding, refresh the MCP server list to see the new tools. The Composer Agent will automatically use Yachtsy MCP when appropriate for yacht-related queries.\n\n### Running on Windsurf\n\nAdd this to your `./codeium/windsurf/model_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"yachtsy-mcp-server\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"yachtsy-mcp@latest\"],\n      \"env\": {\n        \"YACHTSY_[REDACTED-GENERIC_KV_SECRET]\"\n      }\n    }\n  }\n}\n```\n\n### Running with npx\n\n```bash\nenv YACHTSY_[REDACTED-GENERIC_KV_SECRET] npx -y yachtsy-mcp\n```\n\n### Manual Installation\n\n```bash\nnpm install -g yachtsy-mcp\n```\n\n## Available Tools\n\n### yachtsy-agent\n\n**[YACHT MARKETPLACE INTELLIGENCE]** Main Yachtsy agent with automatic routing to specialized sub-agents.\n\n**Capabilities:**\n- Search 25,000+ boat and yacht listings\n- Filter by make, model, price, location, year, length, and more\n- Get detailed yacht specifications and broker information\n- Receive expert sailing and cruising advice\n- Research yacht market trends and values\n- Get boat buying and selling recommendations\n\n**Best for:** Any yacht or boat-related query - the agent will automatically select the best specialized sub-agent for your needs.\n\n**Example queries:**\n```\nShow me Catalina 34 sailboats under $100k\nFind Tayana 37 listings in good condition\nWhat are the best bluewater cruising boats between 40-50 feet?\nFind me yacht listings in the Caribbean under $200k\nTell me about the Hallberg-Rassy 42\nWhat should I look for when buying a used cruising sailboat?\nCompare the Island Packet 380 vs Pacific Seacraft 40\nShow me center cockpit sailboats suitable for ocean crossing\nWhat are the maintenance costs for a 40-foot sailboat?\nFind me aluminum hulled sailboats for world cruising\n```\n\n## Example Use Cases\n\n### Boat Shopping\n```\n\"Show me Catalina 34 sailboats under $80,000 in California\"\n\"Find bluewater cruising boats between 38-45 feet suitable for a couple\"\n\"What Hallberg-Rassy boats are available in Europe?\"\n```\n\n### Yacht Research\n```\n\"Tell me about the Tayana 37 and its reputation for offshore cruising\"\n\"Compare the Island Packet 380 vs the Passport 40 for liveaboard cruising\"\n\"What are the common issues with the Beneteau Oceanis 46?\"\n```\n\n### Sailing Advice\n```\n\"What should I look for when buying a used bluewater cruising sailboat?\"\n\"Recommend a good first sailboat for a family of four under $50k\"\n\"What are the best boats for single-handed sailing?\"\n```\n\n### Market Intelligence\n```\n\"What's the typical price range for a 1985 Tayana 37 in good condition?\"\n\"Show me market trends for 40-foot cruising catamarans\"\n\"Find me the most popular boats for sale under $100k\"\n```\n\n## Documentation\n\nFor comprehensive documentation on Yachtsy AI agents, please visit:\n[https://www.yachtsy.ai](https://www.yachtsy.ai)\n\n## Troubleshooting\n\n1. **API Key Issues**: Ensure your Yachtsy API key is correctly set in the environment or config file.\n2. **Connection Issues**: Verify that `https://api.yachtsy.ai` is accessible from your network.\n3. **Rate Limiting**: If you encounter rate limiting, reduce the frequency of your requests.\n\n## Environment Variables\n\n```bash\nYACHTSY_[REDACTED-GENERIC_KV_SECRET]              # Required\nYACHTSY_API_BASE_URL=https://api.yachtsy.ai/v1  # Optional, defaults to production\n```\n\n## License\n\nMIT\n\n## About Yachtsy\n\nYachtsy AI is the intelligent yacht marketplace assistant that helps sailors and yacht enthusiasts find their perfect vessel. With access to over 25,000 listings and expert sailing knowledge, Yachtsy makes boat shopping and sailing research effortless.\n\nVisit [www.yachtsy.ai](https://www.yachtsy.ai) to learn more.\n\n---\n\n⭐ Star this repo if you find it helpful!\n"
+  },
+  "descriptor_file": {
+    "path": "smithery.yaml",
+    "content": "runtime: \"typescript\"\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

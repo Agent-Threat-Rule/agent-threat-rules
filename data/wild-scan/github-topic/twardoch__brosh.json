@@ -1,0 +1,37 @@
+{
+  "full_name": "twardoch/brosh",
+  "html_url": "https://github.com/twardoch/brosh",
+  "description": "MCP server and CLI tool for browser screenshots (using Playwright and Python)",
+  "topics": [
+    "browser",
+    "browser-screenshot",
+    "claude-code",
+    "llm",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "python",
+    "screenshot"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 3,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-06-12T16:29:13Z",
+  "last_pushed_at": "2026-07-05T07:50:13Z",
+  "fetched_at": "2026-07-12T00:01:52.183Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# brosh\n\n<img src=\"docs/assets/icon.png\" alt=\"A browser window unspooling a whole web page into one long scroll\" width=\"180\" align=\"right\">\n\nFull-page browser screenshots, from the command line or from your own code, with the pixels, the text, and the HTML all handed back together.\n\nBrosh drives a real browser (Chrome, Edge, or Safari) via Playwright, scrolls through a page, and captures each section as an image — plus the visible text as Markdown and, if you want it, the underlying HTML. Built for AI agents that need to *see* a page, not just fetch its source.\n\n- Scrolling capture: single shot, frame series, or animated PNG of the whole scroll\n- Extracts visible text (Markdown) and optionally minified HTML alongside every screenshot\n- CLI, sync/async Python API, and an MCP server for Claude and other AI tools\n- Connects to your existing Chrome/Edge session (cookies, logins, extensions included) or launches a fresh one\n- Cross-platform: macOS, Windows, Linux\n\n## Quick Start\n\n```bash\npip install brosh\nplaywright install\n```\n\nThat second command matters: Playwright needs its own browser binaries, and `pip install brosh` doesn't fetch them. Skip it and every capture fails with a browser-not-found error.\n\nThen:\n\n```bash\nbrosh shot \"https://example.com\"\n```\n\nScreenshots land in `~/Pictures/brosh` by default, named `{domain}-{timestamp}-{scroll%}-{section}.png`.\n\n## Installation\n\n```bash\n# uv (recommended)\nuv tool install brosh\n\n# pip\npip install brosh\n\n# run without installing\nuvx brosh shot \"https://example.com\"\n```\n\nWhichever route you pick, don't forget `playwright install` afterward.\n\nSee [Installation](https://twardoch.github.io/brosh/installation) for binary releases, pipx, and from-source setups.\n\n## CLI Usage\n\n```bash\n# Basic capture\nbrosh shot \"https://example.com\"\n\n# Animated PNG of the whole scroll\nbrosh shot \"https://example.com\" --output_format apng\n\n# Custom viewport, JSON output with HTML included\nbrosh --width 1920 --height 1080 shot \"https://example.com\" --fetch_html --json > page.json\n\n# Reuse a running browser instance across multiple shots\nbrosh --app chrome run\nbrosh --app chrome shot \"https://example.com\"\nbrosh --app chrome quit\n```\n\nGlobal options (`--app`, `--width`, `--height`, `--zoom`, `--output_dir`, `--subdirs`, `--verbose`, `--json`) go *before* the command; command options go after. Full option tables: [CLI Reference](https://twardoch.github.io/brosh/cli-reference).\n\n## Python API\n\n```python\nfrom brosh import capture_webpage\n\nresult = capture_webpage(\n    url=\"https://example.com\",\n    width=1280,\n    height=720,\n    output_format=\"jpg\",\n    scale=75,\n)\nfor path, metadata in result.items():\n    print(path, metadata[\"text\"][:80])\n```\n\n```python\nimport asyncio\nfrom brosh import capture_webpage_async\n\nasync def main():\n    result = await capture_webpage_async(\n        url=\"https://docs.python.org/3/\",\n        fetch_html=True,\n        max_frames=3,\n    )\n    print(list(result))\n\nasyncio.run(main())\n```\n\nBoth APIs return a dict mapping saved file paths to metadata (`selector`, `text`, optionally `html`). Details and convenience functions: [Python API](https://twardoch.github.io/brosh/python-api).\n\n## MCP Server Mode\n\nBrosh ships an MCP server so AI tools can request a screenshot mid-conversation.\n\n```bash\nclaude mcp add brosh -- brosh-mcp\n```\n\nOr drop this into your MCP client's config:\n\n```json\n{\n  \"mcpServers\": {\n    \"brosh\": {\n      \"command\": \"brosh-mcp\"\n    }\n  }\n}\n```\n\nRestart your client, then ask it to \"use brosh to capture example.com and show me the text.\" Full setup, including `uvx`-based configs: [MCP Server Mode](https://twardoch.github.io/brosh/mcp-server).\n\n## Documentation\n\nEverything else — architecture, full command reference, output/JSON format, troubleshooting — lives at **[twardoch.github.io/brosh](https://twardoch.github.io/brosh/)**.\n\n## License\n\nMIT. See [LICENSE](LICENSE).\n\nBuilt by [Adam Twardoch](https://github.com/twardoch) on [Playwright](https://playwright.dev/), [python-fire](https://github.com/google/python-fire), and [FastMCP](https://github.com/jlowin/fastmcp).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

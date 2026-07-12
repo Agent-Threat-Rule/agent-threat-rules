@@ -1,0 +1,34 @@
+{
+  "full_name": "chris-dare/pontifex",
+  "html_url": "https://github.com/chris-dare/pontifex",
+  "description": "Build Enterprise-grade MCP servers",
+  "topics": [
+    "ai-agent",
+    "ai-safety",
+    "governance",
+    "mcp",
+    "mcp-security",
+    "mcp-servers"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 19,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-05-23T11:36:19Z",
+  "last_pushed_at": "2026-06-29T09:45:04Z",
+  "fetched_at": "2026-07-12T00:09:32.259Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Pontifex MCP\n\nThe security and governance layer for MCP servers, built on the official [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk).\n\nThis is the home of **[pontifex-mcp](https://pypi.org/project/pontifex-mcp/)** — a Python library for building [MCP](https://modelcontextprotocol.io) servers that connect AI agents to real systems **without giving up control over who can call what**. You write the tools; it handles authentication, per-caller scopes, rate limits, and a full audit trail.\n\n## The idea\n\nAI agents are ready to do real work against your systems. What the MCP SDK gives you is a *server* that exposes tools. What it doesn't give you is the control that makes a server safe to point at production data: *who* is calling, *what* they're allowed to touch, *how often*, and a *record* of what happened.\n\n`pontifex-mcp` is that control layer. It turns your existing APIs, data stores, and internal services into **governed tools any AI agent can call** — and it runs on your own infrastructure, so your data never leaves your environment.\n\n- **Secure by default** — OAuth 2.1 JWTs *and* `sk_…` API keys; every tool call is authenticated, against any OIDC provider (Auth0, Entra, Clerk, Keycloak).\n- **Least-privilege scopes** — `namespace:resource:action`, checked before every call. Callers can't widen their own access.\n- **Auditable** — every call recorded: who, what, when, data source, cache hit, latency.\n- **Resilient** — per-caller rate limiting, adapter failover, circuit breaking.\n- **Observable** — Logfire / OpenTelemetry tracing and metrics wired in.\n- **Built on the MCP SDK** — keep its tools, protocol, and transports; add the controls a production server needs.\n- **Coding-agent friendly** — bundles an official agent skill (`uvx library-skills`) so your coding agent builds on guidance that matches your installed version.\n\n## Install\n\n```bash\npip install pontifex-mcp     # or: uv add pontifex-mcp\n```\n\nRequires Python 3.12+ — and nothing else to get started. A `PontifexMCP` server runs with no database, no Redis, and no auth; you add Postgres and Redis only when you turn on API-key enforcement. The full quickstart — the zero-infra floor, graduating to enforced auth and durable audit, the security model — lives in **[core/README.md](core/README.md)** and the [documentation](https://chris-dare.github.io/pontifex/).\n\n## This repository\n\nA [uv workspace](https://docs.astral.sh/uv/concepts/workspaces/) holding the library and a worked example:\n\n```\ncore/pontifex_mcp/   The pontifex-mcp library — auth, scopes, audit, resilience, observability\n                     (incl. migrations/ — the core schema, shipped in the wheel)\nexamples/gse/        Ghana Stock Exchange — a worked example built on the library\nalembic/             Monorepo migration config (the in-package core branch + the gse demo branch)\ntests/               core + example tests\ndeploy/              Dockerfiles, fly.toml\nscripts/             Operational scripts (seed, export audit, health check)\n```\n\n**Core has zero domain knowledge.** A namespace is a self-contained folder under `examples/` — a settings class, one or more data adapters, and tools wrapped with `tool_runtime`. Adding one requires no changes to core. The GSE namespace is the reference: see **[examples/gse/README.md](examples/gse/README.md)**.\n\n## Develop\n\n```bash\ngit clone https://github.com/chris-dare/pontifex && cd pontifex\ndocker compose up -d redis postgres   # infrastructure\nuv sync                               # install the workspace\nuv run alembic -c alembic/alembic.ini upgrade heads   # run migrations (core + gse)\nuv run pytest                         # tests\n```\n\nLint with `uv run ruff check .`, format with `uv run ruff format .`, type-check with `uv run ty check`.\n\n## Documentation\n\n- **Docs site** — [https://chris-dare.github.io/pontifex/](https://chris-dare.github.io/pontifex/)\n- **Package README** — [core/README.md](core/README.md) (also rendered on [PyPI](https://pypi.org/project/pontifex-mcp/))\n- **Demo namespace** — [examples/gse/README.md](examples/gse/README.md)\n\n## License\n\nApache-2.0 © Chris Dare. Part of [Argonauts](https://argonauts.chrisdare.me)."
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

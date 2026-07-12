@@ -1,0 +1,35 @@
+{
+  "full_name": "spongycode/email-mcp-server",
+  "html_url": "https://github.com/spongycode/email-mcp-server",
+  "description": "Lightweight MCP server to send emails to multiple recipients with optional CC and attachments.",
+  "topics": [
+    "email",
+    "gemini-api",
+    "mcp",
+    "mcp-server",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "JavaScript",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-07-06T09:50:19Z",
+  "last_pushed_at": "2025-07-11T15:16:53Z",
+  "fetched_at": "2026-07-12T00:43:30.390Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Email MCP Server – Lightweight Multi-Recipient Mail Sender\n## Demo:\n<p align=\"center\"> \n  <img src=\"https://github.com/user-attachments/assets/5c1db1d6-bf89-43d5-ba8a-4b517f1e1068\" width=\"90%\" title=\"demo using google gemini cli\"/>\n</p>\n\n## Usage:\nAdd the `.env` file with the correct credentials:\n```.env\nGMAIL_USER=yourmail@gmail.com\nGMAIL_PASS=yourpasscode\n```\n\n### Usage with [Google Gemini CLI](https://github.com/google-gemini/gemini-cli):\n\nAdd this to your `.gemini/settings.json` file:\n```json\n{\n  \"theme\": \"Default Light\",\n  \"selectedAuthType\": \"oauth-personal\",\n  \"mcpServers\": {\n    \"email-node-server\": {\n      \"command\": \"node\",\n      \"args\": [\"index.js\", \"--verbose\"],\n      \"cwd\": \"<YOUR_PATH_TO_DIRECTORY>/email-mcp-server\"\n    }\n  }\n}\n```\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "index.js",
+    "size": 3112,
+    "content": "import { McpServer } from \"@modelcontextprotocol/sdk/server/mcp.js\";\nimport { StdioServerTransport } from \"@modelcontextprotocol/sdk/server/stdio.js\";\nimport { z } from \"zod\";\nimport nodemailer from \"nodemailer\";\nimport dotenv from \"dotenv\";\nimport path from \"path\";\ndotenv.config();\n\nconst mcpServer = new McpServer({\n    name: \"basic-tools-server\",\n    version: \"0.0.1\",\n});\n\nconst sendEmail = async ({ to, cc, subject, body, attachments}) => {\n    try {\n        const transport = nodemailer.createTransport({\n            host: \"smtp.gmail.com\",\n            port: 465,\n            secure: true,\n            auth: {\n                user: process.env.GMAIL_USER,\n                pass: process.env.GMAIL_PASS\n            }\n        });\n\n        const mailOptions = {\n            from: process.env.GMAIL_USER,\n            to: to,\n            cc: cc,\n            subject: subject,\n            html: body,\n            attachments: attachments\n        };\n        await transport.sendMail(mailOptions);\n    } catch (error) {\n        throw new Error(error.message || \"Email sending failed\");\n    }\n};\n\nmcpServer.registerTool(\n    \"send email\",\n    {\n        description: \"Send an email with optional CC and attachments to multiple recipients.\",\n        inputSchema: {\n            to: z.array(z.string()).describe(\"Recipient email addresses\").describe(\"List of recipient email addresses\"),\n            cc: z.array(z.string()).optional().describe(\"Optional CC email addresses\").describe(\"List of CC email addresses\"),\n            subject: z.string().describe(\"Email subject\"),\n            body: z.string().describe(\"Email body content\"),\n            attachments: z.array(z.object({\n                filename: z.string().describe(\"Name of the file to attach\"),\n                path: z.string().describe(\"Path to the file to attach\"),\n            })).optional().describe(\"Optional attachments for the email\")\n        },\n    },\n    async ({ to, cc, subject, body, attachments }) => {\n        try {\n            await sendEmail({\n                to: to,\n                cc: cc,\n                subject: subject,\n                body: body,\n                attachments: attachments ? attachments.map(att => ({\n                    filename: att.filename,\n                    path: att.path ? path.resolve(att.path) : undefined\n                })) : []\n            });\n            return {\n                content: [\n                    {\n                        type: \"text\",\n                        text: \"Email sent successfully!\",\n                    },\n                ],\n            };\n        } catch (error) {\n            return {\n                content: [\n                    {\n                        type: \"text\",\n                        text: `Failed to send email: ${error.message}`,\n                    },\n                ],\n            };\n        }\n    }\n);\n\nasync function main() {\n    const transport = new StdioServerTransport();\n    await mcpServer.connect(transport);\n    console.log(\"MCP server is running...\");\n}\n\nmain().catch((error) => {\n    console.error(\"Server error:\", error);\n    process.exit(1);\n});\n"
+  },
+  "content_fetch_notes": []
+}

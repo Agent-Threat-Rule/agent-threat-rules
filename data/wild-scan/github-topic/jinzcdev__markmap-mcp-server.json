@@ -1,0 +1,39 @@
+{
+  "full_name": "jinzcdev/markmap-mcp-server",
+  "html_url": "https://github.com/jinzcdev/markmap-mcp-server",
+  "description": "An MCP server for converting Markdown to interactive mind maps with export support (PNG/JPG/SVG).",
+  "topics": [
+    "ai",
+    "llm",
+    "markmap",
+    "mcp",
+    "mcp-server",
+    "mindmap",
+    "mindnode",
+    "xmind"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 268,
+  "forks": 36,
+  "open_issues": 1,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-04-28T12:53:55Z",
+  "last_pushed_at": "2026-03-18T07:55:48Z",
+  "fetched_at": "2026-07-11T22:45:12.387Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Markmap MCP Server\n\n![Sample Mindmap](./docs/markmap.svg)\n\n[![NPM Version](https://img.shields.io/npm/v/@jinzcdev/markmap-mcp-server.svg)](https://www.npmjs.com/package/@jinzcdev/markmap-mcp-server)\n[![NPM Downloads](https://img.shields.io/npm/dm/@jinzcdev/markmap-mcp-server.svg)](https://www.npmjs.com/package/@jinzcdev/markmap-mcp-server)\n[![GitHub License](https://img.shields.io/github/license/jinzcdev/markmap-mcp-server.svg)](LICENSE)\n[![中文文档](https://img.shields.io/badge/简体中文-查看-blue)](README_zh-CN.md)\n[![Stars](https://img.shields.io/github/stars/jinzcdev/markmap-mcp-server)](https://github.com/jinzcdev/markmap-mcp-server)\n\nMarkmap MCP Server is based on the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) that allows one-click conversion of Markdown text to interactive mind maps, built on the open source project [markmap](https://github.com/markmap/markmap). The generated mind maps support rich interactive operations and can be exported in various image formats.\n\n## Features\n\n- 🌠 **Markdown to Mind Map**: Convert Markdown text to interactive mind maps\n- 🖼️ **Multi-format Export**: Support for exporting as PNG, JPG, and SVG images\n- 🔄 **Interactive Operations**: Support for zooming, expanding/collapsing nodes, and other interactive features\n- 📋 **Markdown Copy**: One-click copy of the original Markdown content\n- 🌐 **Automatic Browser Preview**: Option to automatically open generated mind maps in the browser\n\n## Prerequisites\n\n1. Node.js (v20 or above)\n\n## Installation\n\n### Installing via Smithery\n\nTo install Markmap MCP Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@jinzcdev/markmap-mcp-server):\n\n```bash\nnpx -y @smithery/cli install @jinzcdev/markmap-mcp-server --client claude\n```\n\n### Manual Installation\n\n```bash\n# Install from npm\nnpm install @jinzcdev/markmap-mcp-server -g\n\n# Basic run\nnpx -y @jinzcdev/markmap-mcp-server\n\n# Specify output directory\nnpx -y @jinzcdev/markmap-mcp-server --output /path/to/output/directory\n```\n\nAlternatively, you can clone the repository and run locally:\n\n```bash\n# Clone the repository\ngit clone https://github.com/jinzcdev/markmap-mcp-server.git\n\n# Navigate to the project directory\ncd markmap-mcp-server\n\n# Build project\nnpm install && npm run build\n\n# Run the server\nnode build/index.js\n```\n\n## Usage\n\nAdd the following configuration to your MCP client configuration file:\n\n```json\n{\n  \"mcpServers\": {\n    \"markmap\": {\n      \"type\": \"stdio\",\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@jinzcdev/markmap-mcp-server\"],\n      \"env\": {\n        \"MARKMAP_DIR\": \"/path/to/output/directory\"\n      }\n    }\n  }\n}\n```\n\n> [!TIP]\n>\n> The service supports the following environment variables:\n>\n> - `MARKMAP_DIR`: Specify the output directory for mind maps (optional, defaults to system temp directory)\n>\n> **Priority Note**:\n>\n> When both the `--output` command line argument and the `MARKMAP_DIR` environment variable are specified, the command line argument takes precedence.\n\n## Available Tools\n\n### markdown-to-mindmap\n\nConvert Markdown text into an interactive mind map.\n\n**Parameters:**\n\n- `markdown`: The Markdown content to convert (required string)\n- `open`: Whether to automatically open the generated mind map in the browser (optional boolean, default is false)\n\n**Return Value:**\n\n```json\n{\n  \"content\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"JSON_DATA_OF_MINDMAP_FILEPATH\"\n    }\n  ]\n}\n```\n\n## Related Projects\n\n🎉 Explore More Mind Mapping Tools:\n\n| Project                                                                         | Description                                                                                                                                                                                                    |\n| ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n| **[MarkXMind Online](https://github.com/jinzcdev/markxmind)**                   | Create XMind mind maps with Markdown online. Supports real-time preview, one-click export as `.xmind` / `.md` / `.png` / `.svg`, and importing existing XMind files. [Try it now →](https://markxmind.js.org/) |\n| **[Obsidian MarkXMind Plugin](https://github.com/jinzcdev/obsidian-markxmind)** | An Obsidian plugin that supports rendering XMindMark syntax as XMind mind maps inside `xmind` code blocks.                                                                                                     |\n\n## License\n\nThis project is licensed under the [MIT](./LICENSE) License.\n"
+  },
+  "descriptor_file": {
+    "path": "smithery.yaml",
+    "content": "# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml\n\nstartCommand:\n    type: stdio\n    configSchema:\n        # JSON Schema defining the configuration options for the MCP.\n        type: object\n        required: []\n        properties:\n            output:\n                type: string\n                description: Output directory for mind map HTML files (optional). If not specified, the default is the system's temporary directory.\n    commandFunction:\n        # A JS function that produces the CLI command based on the given config to start the MCP on stdio.\n        |-\n        (config) => ({\n          command: 'node',\n          args: [\n            'build/index.js',\n            ...(config.output ? ['--output', config.output] : [])\n          ]\n        })\n    exampleConfig:\n        output: /tmp/markmap\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

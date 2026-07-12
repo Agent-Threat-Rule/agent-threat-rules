@@ -1,0 +1,35 @@
+{
+  "full_name": "aira-security/mcp-armor",
+  "html_url": "https://github.com/aira-security/mcp-armor",
+  "description": "MCP Armor continuously secures and monitors Model Context Protocol operations through static and dynamic scans, revealing hidden risks in agent-to-tool communications.",
+  "topics": [
+    "agentic-ai",
+    "ai",
+    "ai-agents",
+    "aira",
+    "mcp",
+    "model-context-protocol",
+    "security"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 115,
+  "forks": 9,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2025-11-07T21:35:56Z",
+  "last_pushed_at": "2026-03-27T09:08:57Z",
+  "fetched_at": "2026-07-11T23:19:39.310Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<p align=\"center\" style=\"margin-bottom: 0; line-height: 0;\">\n<img src=\"https://github.com/aira-security/mcp-armor/blob/main/mcp-armor.png\" width=\"350\"> \n</p>\n<h3 align=\"center\" margin-top: -20px; margin-bottom: 70px;>\n   MCP Armor\n</h3>\n\n<br>\n\n## 🚀 Overview\n\nMCP Armor is a comprehensive security scanner for Model Context Protocol (MCP). Automatically discovers, analyzes, and secures MCP servers integrated with all major Agentic IDEs, Agents and Clients.\n\n<br>\n\n![MCP Armor](https://github.com/aira-security/mcp-armor/blob/main/mcp-armor-v2.gif?raw=true)\n\n\n## 💡 Features\n\n- **🔍 Auto-Discovery**: Finds known MCP configurations for popular Agentic IDEs like Cursor, Windsurf, VS Code, Claude Desktop, and more\n- **🔧 Tool, Resource & Prompt Inventory**: Connects to MCP servers and catalogs available tools, resources, and prompt templates\n- **🛡️ Security Analysis**: Specialized security checks including Prompt Injection, Rug Pull Attack, Cross-server Tool Shadowing, Tool Poisoning, Tool Name Ambiguity, [and more..](#beginner-security-checks)\n- **🧭 Baseline Drift Detection**: Captures approved MCP components and detects rug pulls attacks\n- **📊 Comprehensive Reporting**: Generates JSON and Markdown reports with actionable findings\n- **📜 Audit Trail**: Timestamped baselines and reports for full traceability of changes and findings\n\n\n## 🧰 Installation\n\n```bash\npip install mcp-armor\n```\n\n## 🏃 Quick Start\n\n```bash\n# Scan all configurations with security analysis (auto-detects baseline.json if present)\nmcp-armor scan\n\n# Inspect configurations and generate baseline (defaults to baseline.json)\nmcp-armor inspect\n\n# Use custom configuration file\nmcp-armor scan --config /path/to/config.json\n\n# Scan multiple configuration files\n mcp-armor scan \\\n   --config /path/to/cursor.mcp.json \\\n   --config /path/to/vscode.mcp.json\n\n# Use custom baseline file path\nmcp-armor inspect --baseline /path/to/my-baseline.json\nmcp-armor scan --baseline /path/to/my-baseline.json\n\n# Generate markdown report\nmcp-armor scan --report-type md\n\n# Save to custom file\nmcp-armor scan --output my-report.json\nmcp-armor scan --report-type md --output my-report.md\n```\n\n#### ⚙️ Command Options\n\n| Option                    | Description                                                         |\n|---------------------------|---------------------------------------------------------------------|\n| `--config`                | Custom configuration file path (can be used multiple times)         |\n| `--baseline`              | Baseline file for drift detection (scan) or creation (inspect)      |\n| `--report-type {json,md}` | Output format (default: json)                                       |\n| `--output`                | Custom output file path                                             |\n| `--verbose`               | Detailed terminal output                                            |\n| `--show-logs`             | Display debug logs in terminal                                      |\n\n\n## 🔰 Security Checks\n\n### 🛡️ Standard Checks\n\n- **Prompt Injection**  \n- **Indirect Prompt Injection**\n- **Cross-Server Tool Shadowing**\n- **Tool Poisoning**\n  - **Prompt Injection in Tool Description, Name and Args**\n  - **Command Injection in Tool Description, Name and Args**\n- **Tool Name Ambiguity**\n- **Command Injection**\n- **Excessive Tool Permissions**\n- **Hardcoded Secrets**\n\n### 🧭 Baseline Checks\n\nDetects deviations from approved MCP components (requires a baseline generated via `inspect` mode):\n\n- **Rug Pull Attack**\n  - **Tool Modified**\n  - **Resource Modified**\n  - **Resource Template Modified**\n  - **Prompt Modified**\n\n### 📃 Logging\n\nLogs are automatically saved to `logs/mcp_armor.log`:\n\n```bash\n# Default: logs saved to file only\nmcp-armor scan\n\n# Show logs in terminal too\nmcp-armor scan --show-logs\n```\n\n\n### 🧪 Demo\n\nTest MCP Armor using our intentionally vulnerable MCP servers. For details, see the [demo guide](demo-mcp-server/README.md).\n\n\n### ⚡ Want More?\n\nThis open-source version covers static MCP configuration scanning. For teams that need deeper protection, [Aira Security](https://airasecurity.ai) offers a full enterprise platform with:\n\n| Capability | Open Source | Aira Platform |\n|---|:---:|:---:|\n| MCP config scanning | ✅ | ✅ |\n| Prompt & command injection detection | ✅ | ✅ |\n| Tool poisoning & shadowing checks | ✅ | ✅ |\n| Hardcoded secrets detection | ✅ | ✅ |\n| **Runtime enforcement & blocking** | ❌ | ✅ |\n| **Agent behavior policy enforcement** (toxic flow analysis) | ❌ | ✅ |\n| **Skills scanner** (agentic workflow & capability analysis) | ❌ | ✅ |\n| **Custom security policies** | ❌ | ✅ |\n| **Aira dashboard** (centralized visibility & alerting) | ❌ | ✅ |\n| **Complete Agentic Security** (beyond MCP — Agents, Workflows, and Skills) | ❌ | ✅ |\n\n\n🚀 [See Aira in Action](https://calendly.com/mohan-/aira-security) to experience the full platform.\n\n\n### 🌟 Community\n\n [Join our Slack](https://join.slack.com/t/airasecurityc-jwt3316/shared_invite/zt-3iar5tm3k-R5js~WfnDIHRNtSgd7D0Bg) - a space for developers and security engineers building together to secure AI agents.\n\n### ❓ FAQs\n\n**Q: Is my source code ever shared, or does everything run locally?**\n\nMCP Armor runs entirely locally. Inspect and scan modes analyze your MCP configurations, detect MCP servers integrated with your agents, and evaluate them directly on your machine. Prompt injection checks use our open-source model `Aira-security/FT-Llama-Prompt-Guard-2`, downloaded from Hugging Face to your local environment, ensuring your data and code is never shared externally.\n\n\n### ⚖️ License\n\nDistributed under the Apache 2.0 License. See [LICENSE](https://github.com/aira-security/mcp-armor/blob/main/LICENSE) for more information."
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

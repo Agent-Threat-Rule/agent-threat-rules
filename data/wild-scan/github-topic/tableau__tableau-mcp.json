@@ -1,0 +1,32 @@
+{
+  "full_name": "tableau/tableau-mcp",
+  "html_url": "https://github.com/tableau/tableau-mcp",
+  "description": "Tableau's official MCP Server. Helping agents see and understand data.",
+  "topics": [
+    "mcp",
+    "mcp-server",
+    "modelcontextprotocol",
+    "tableau"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 304,
+  "forks": 124,
+  "open_issues": 27,
+  "language": "TypeScript",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2025-05-02T20:16:03Z",
+  "last_pushed_at": "2026-07-11T18:11:59Z",
+  "fetched_at": "2026-07-11T22:44:04.569Z",
+  "readme": {
+    "path": "README.md",
+    "content": " # Tableau MCP\n\n[![Tableau Supported](https://img.shields.io/badge/Support%20Level-Tableau%20Supported-53bd92.svg)](https://www.tableau.com/support-levels-it-and-developer-tools)\n\n[![Build and Test](https://github.com/tableau/tableau-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/tableau/tableau-mcp/actions/workflows/ci.yml)\n\n[![npm](https://img.shields.io/npm/v/@tableau/mcp-server)](https://www.npmjs.com/package/@tableau/mcp-server)\n\n## Overview\n\nTableau MCP is a suite of developer primitives, including tools, resources and prompts, that will\nmake it easier for developers to build AI applications that integrate with Tableau.\n\n## Official Documentation\n\nhttps://tableau.github.io/tableau-mcp/\n\n## Getting Started\n\n### Hosted Tableau MCP (Recommended for Tableau Cloud)\n\nTableau MCP is available as a managed service at **`https://mcp.tableau.com`**. It uses OAuth 2.1 so every user signs in with their own Tableau Cloud identity, and all existing per-user permissions are enforced automatically.\n\nPoint any MCP-compatible client at `https://mcp.tableau.com` and complete the OAuth sign-in flow when prompted.\n\nSee [Popular Client Integrations](https://tableau.github.io/tableau-mcp/docs/hosted-tableau-mcp/client-integrations) for step-by-step setup instructions for Slack, Claude, ChatGPT, and other common AI clients.\n\n> **Tableau Server customers** and Cloud customers who require self-hosted infrastructure should see the [Enterprise Deployment](https://tableau.github.io/tableau-mcp/docs/enterprise) and [Self-Hosted Getting Started](https://tableau.github.io/tableau-mcp/docs/getting-started) guides.\n\n### Self-Hosted / Local (npx)\n\nThe quickest way to run Tableau MCP locally. Requires [Node.js](https://nodejs.org/en/download) 22.7.5 or later — no cloning or building needed. Configure your AI tool (MCP client) with:\n\n```json\n{\n  \"mcpServers\": {\n    \"tableau\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@tableau/mcp-server@latest\"],\n      \"env\": {\n        \"SERVER\": \"https://my-tableau-server.com\",\n        \"SITE_NAME\": \"my_site\",\n        \"PAT_NAME\": \"my_pat\",\n        \"PAT_VALUE\": \"pat_value\"\n      }\n    }\n  }\n}\n```\n\nFor Docker, building from source, and other self-hosted options, see the [Getting Started guide](https://tableau.github.io/tableau-mcp/docs/getting-started).\n\n## Deploy to Heroku\n\n[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://www.heroku.com/deploy?template=https://github.com/tableau/tableau-mcp)\n\n## Example Prompts to Client\n\n#### Prompt #1: Querying Data\n\n```\nFor the Superstore Datasource, what are the top 5 states with the most sales in 2025?\n```\n\n#### Response\n\n```\nBased on the Superstore Datasource, here are the top 5 states with the most sales in 2025:\n  1. California - $146,388.34\n  2. New York - $93,922.99\n  3. Washington - $65,539.90\n  4. Texas - $43,421.76\n  5. Pennsylvania - $42,688.31\nCalifornia leads by a significant margin with over $146,000 in sales, followed by New York with nearly $94,000. These two states alone account for a substantial portion of the total sales across the top 5 states.\n```\n\n#### Prompt #2: Content Exploration\n\n```\nFind me the most viewed workbook within the last year.\n```\n\n#### Response\n\n```\nThe most viewed workbook within the last year is:\n\nGlobal Connections\n- Owner: John Doe\n- Project: Marketing\n- Views in last year: 523\n- Last Modified: September 2, 2025\n- Workbook ID: 111fb672-9401-4913-a167-17b3d89a3e4f\n```\n\n#### Prompt #3: Getting a View\n\n```\nShow me the \"Economy\" view in the \"Finances\" project.\n```\n\n#### Response\n\n![Economy View Image](docs/static/img/economy-view.png)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

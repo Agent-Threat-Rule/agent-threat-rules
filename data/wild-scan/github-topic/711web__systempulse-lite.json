@@ -1,0 +1,48 @@
+{
+  "full_name": "711web/systempulse-lite",
+  "html_url": "https://github.com/711web/systempulse-lite",
+  "description": "Native macOS system monitor + cleanup utility built for Claude Code, MCP servers, and agentic AI workflows. Activity Monitor alternative with named-process grouping, MCP inspector, and graceful bulk-quit.",
+  "topics": [
+    "activity-monitor",
+    "agentic-ai",
+    "ai-tools",
+    "anthropic",
+    "apple-silicon",
+    "claude-code",
+    "cursor",
+    "developer-tools",
+    "mac",
+    "macos",
+    "mcp",
+    "mcp-servers",
+    "menu-bar",
+    "notarized",
+    "performance-monitoring",
+    "ram-monitor",
+    "swift",
+    "swiftui",
+    "system-monitor",
+    "universal-binary"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": null,
+  "license": "NOASSERTION",
+  "default_branch": "main",
+  "created_at": "2026-05-27T17:08:42Z",
+  "last_pushed_at": "2026-05-27T17:09:11Z",
+  "fetched_at": "2026-07-12T00:20:29.879Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# SystemPulse Lite\n\n> The native macOS system monitor + cleanup utility purpose-built for Claude Code, Cursor with MCP servers, ollama, Docker, and other agentic AI development workflows.\n\n[Download Lite (free, notarized)](https://systempulse.711web.com/downloads/SystemPulse-Lite-1.0.10.dmg) · [Product page](https://systempulse.711web.com) · [Pro upgrade ($15/yr, was $30 — 50% off launch)](https://systempulse.711web.com/#pricing)\n\n![SystemPulse hero — CPU, RAM, disk, thermal tiles plus the top processes labelled by app (Claude Code, MCP servers, Chrome helpers)](https://systempulse.711web.com/og.png)\n\n## Why this exists\n\nActivity Monitor was designed in 2009. It still shows every process as `node`, `python`, or `Cursor Helper #7`. When you run agentic dev workflows in 2026 — Claude Code chewing 8 GB, eleven MCP servers each forking subprocesses, Chrome's twenty-three renderer helpers — you can't tell which one is actually leaking. You can't see that one specific `@modelcontextprotocol/server-X` is misbehaving. You can't bulk-quit Chrome's helpers without 23 per-tab dialogs.\n\nSystemPulse names everything.\n\n## Lite vs Pro\n\n|  | Lite (free, MIT) | Pro ($15/yr, 50% off launch · was $30) |\n|---|:---:|:---:|\n| Live CPU / RAM / disk / thermal tiles | ✓ | ✓ |\n| Menu-bar live number | ✓ | ✓ |\n| Floating widget | ✓ | ✓ |\n| Process list (read-only) | ✓ | ✓ |\n| Notarized DMG + (Sparkle) auto-update | ✓ | ✓ |\n| Per-PID kill / graceful per-app quit | — | ✓ |\n| Cache + build-artefact cleanup with audit log | — | ✓ |\n| **MCP server inspector** (the moat) | — | ✓ |\n| Free RAM via `memory_pressure` + targeted SIGTERM | — | ✓ |\n| Deep purge (sudo) with admin prompt | — | ✓ |\n| Claude Code session detector | — | ✓ |\n| Action history viewer + audit log + CSV export | — | ✓ |\n| Two Macs per licence · 7-day free trial | — | ✓ |\n\n[Compare full feature list →](https://systempulse.711web.com/#pricing)\n\n## Install (free Lite)\n\nThe fastest path is the notarized DMG — drag the app to Applications and you're done:\n\n```bash\ncurl -fL https://systempulse.711web.com/downloads/SystemPulse-Lite-1.0.10.dmg -o /tmp/sp-lite.dmg\nhdiutil attach /tmp/sp-lite.dmg -nobrowse\ncp -R \"/Volumes/SystemPulse Lite/SystemPulseLite.app\" /Applications/\nhdiutil detach \"/Volumes/SystemPulse Lite\"\nopen \"/Applications/SystemPulseLite.app\"\n```\n\nFirst launch auto-registers SystemPulse as a Login Item (configurable in Settings → General), so it boots to the menu bar on every restart.\n\n## Spec sheet (for the curious)\n\n| | |\n|---|---|\n| **Latest version** | v1.0.10 |\n| **Stack** | Swift 6.3, SwiftUI, AppKit, SwiftPM |\n| **Architecture** | Universal binary (Apple Silicon arm64 + Intel x86_64) since v1.0.8 |\n| **Minimum macOS** | 13.0 Ventura |\n| **Distribution** | Direct download (notarized DMG). Not on the Mac App Store — sandboxing prohibits the kill / clean features. |\n| **File size** | ~3.8 MB per variant |\n| **Self footprint at runtime** | ~50 MB RAM, 3–5% CPU at the default 2-second poll interval |\n| **Signing** | Developer ID Application: Mohammad Rizwan (L97K8Z344A), valid through 2031-05-27 |\n| **Hardened runtime** | Yes, secure timestamped + notarized + stapled |\n| **Telemetry** | Lite: zero. Pro: one daily licence-validation request, plus Sparkle update checks if opted in. |\n| **Auto-launch on login** | On by default (Settings → General to disable) |\n\n## Roadmap\n\nThis repository will host the **Lite-buildable source** alongside upcoming releases. Today it's a public-launch placeholder while the source extraction lands in **v1.0.11**.\n\nTracked here:\n- [ ] v1.0.11 — Extract Lite-only source files into this repo (drop Cleaner / MCPInspector / AutoOptimizer / kill-clean UI; keep Sampler / Models / process grouping / read-only views / menu bar / widget)\n- [ ] v1.0.11 — Compile-time `#if !LITE_BUILD` stripping of Cleaner methods in the upstream private repo\n- [ ] v1.1 — License validator (Ed25519 signed keys) + 7-day trial gate\n- [ ] v1.1 — Lemon Squeezy storefront → license-key issuance\n- [ ] v1.1 — Sparkle auto-update (EdDSA-signed appcast hosted on this repo)\n- [ ] v1.2 — Per-MCP-server history (RAM over time, call-rate)\n- [ ] v1.2 — AI workload cost card (rough $/hour estimate of running Claude Code + MCP)\n- [ ] v1.2 — Claude Code session detector (active session count + token-spend ballpark)\n\nHave a request? [Open an issue](https://github.com/711web/systempulse-lite/issues/new).\n\n## Differentiators vs. other Mac monitors\n\n- **vs. Activity Monitor** — SystemPulse names MCP servers and Claude Code's children. Activity Monitor shows them all as `node` / `python`.\n- **vs. [iStat Menus](https://bjango.com/mac/istatmenus/)** — SystemPulse focuses on agentic AI workloads with the MCP inspector + named-process grouping. iStat Menus is a generic system-stats menu bar.\n- **vs. [Stats](https://github.com/exelban/stats)** — SystemPulse adds cleanup actions, graceful bulk-quit, and named-process grouping. Stats is monitoring-only.\n- **vs. MenuMeters** — SystemPulse is a full app with cleanup + process management; MenuMeters is menu bar only.\n- **vs. htop** — SystemPulse is a native macOS GUI with the MCP inspector and Mac-aware grouping; htop is a terminal tool.\n\n## How SystemPulse samples your Mac\n\nFor transparency, here's exactly what the running app does each tick:\n\n- `host_statistics64(HOST_VM_INFO64)` — system memory pressure\n- `host_processor_info(PROCESSOR_CPU_LOAD_INFO)` — per-core CPU ticks (aggregated to overall %)\n- `proc_listallpids` + `proc_pidinfo` — per-process CPU/RAM/threads with cached static metadata\n- `sysctl KERN_PROCARGS2` — argv parsing for naming (this is how it knows that `node` is actually `@modelcontextprotocol/server-postgres`)\n- `statfs(\"/\")` — disk free / total\n- `ProcessInfo.thermalState` — thermal pressure (debounced 30s to avoid false alarms on Intel MBPs under sustained load)\n\nAll read-only. The Pro-only Cleaner shells out for the few write actions (`/bin/rm`, `/usr/bin/memory_pressure`, `/usr/sbin/purge`, `osascript tell app to quit`), and every action is appended to `~/Library/Logs/SystemPulse/actions.log` in TSV format with timestamps and freed bytes.\n\n## License\n\nThe eventual Lite source in this repository will be **MIT-licensed** — fork, study, modify, and redistribute freely. The Pro-only modules (`Cleaner`, `MCPInspector`, `AutoOptimizer`, the Optimize and Cleanup tabs, the Pro-side license validator) ship in a separate closed-source binary distributed through https://systempulse.711web.com.\n\n## Built by\n\n[711 Web Services LLP](https://711web.com) — independent software, India-registered. Refunds: refund@711web.com. General: hello@711web.com.\n\nIf SystemPulse saves you a single afternoon of \"why is my Mac suddenly slow\" → [Pro is $15/yr](https://systempulse.711web.com/#pricing) and pays for one developer to keep building it.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

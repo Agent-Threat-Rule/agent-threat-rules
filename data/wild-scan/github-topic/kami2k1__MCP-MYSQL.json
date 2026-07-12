@@ -1,0 +1,34 @@
+{
+  "full_name": "kami2k1/MCP-MYSQL",
+  "html_url": "https://github.com/kami2k1/MCP-MYSQL",
+  "description": "mcp mysql kami2k1",
+  "topics": [
+    "mcp",
+    "mcp-client",
+    "mcp-mysql",
+    "mcp-server",
+    "mcp-tools",
+    "mysql-server"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-08-12T11:51:15Z",
+  "last_pushed_at": "2025-08-12T11:51:19Z",
+  "fetched_at": "2026-07-12T00:41:14.266Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# 🚀 MCP MySQL Server - Full Control Database Tool\n\n**⚠️ CẢNH BÁO: Tool này có thể làm mất dữ liệu! Hãy cẩn thận khi sử dụng!**\n\nMCP (Model Context Protocol) Server cho MySQL với quyền truy cập đầy đủ. Tool này được phát triển bởi AI và hướng dẫn bởi **kami2k1**.\n\n## 📋 Tính năng\n\n### 🔍 Truy vấn & Phân tích\n- **Xem danh sách bảng**: Hiển thị tất cả bảng với thông tin chi tiết\n- **Mô tả cấu trúc bảng**: Xem cột, kiểu dữ liệu, ràng buộc\n- **Phân tích bảng**: Thống kê số hàng, kích thước, index\n- **Thực thi SQL**: Chạy bất kỳ lệnh SQL nào\n\n### 📝 Thao tác dữ liệu\n- **Thêm dữ liệu**: Insert record mới\n- **Cập nhật dữ liệu**: Update record theo điều kiện\n- **Xóa dữ liệu**: Delete record theo điều kiện\n- **Truy vấn tùy chỉnh**: SELECT với điều kiện phức tạp\n\n### 🛠️ Quản trị hệ thống\n- **Xem biến hệ thống**: SHOW VARIABLES\n- **Backup bảng**: Tạo bản sao lưu\n- **Tối ưu bảng**: OPTIMIZE TABLE\n- **Quản lý user**: Tạo/xóa user MySQL\n- **Cấp quyền**: GRANT/REVOKE permissions\n\n## ⚙️ Cài đặt\n\n### 1. Cài đặt dependencies\n```bash\npip install -r requirements.txt\n```\n\n### 2. Cấu hình database\nTạo file `.env`:\n```env\nMYSQL_HOST=localhost\nMYSQL_PORT=3306\nMYSQL_USER=root\nMYSQL_PASSWORD=your_password\nMYSQL_DATABASE=your_database\nDEBUG=True\n```\n\n### 3. Cấu hình VS Code\nThêm vào `mcp.json`:\n```json\n{\n  \"servers\": {\n    \"mysql-server\": {\n      \"command\": \"python\",\n      \"args\": [\"main_fastmcp_fixed.py\"],\n      \"cwd\": \"đường/dẫn/tới/thư/mục/này\",\n      \"env\": {\n        \"PYTHONPATH\": \".\"\n      }\n    }\n  }\n}\n```\n\n### 4. Khởi động server\n```bash\npython main_fastmcp_fixed.py\n```\n\n## 🎯 Cách sử dụng trong VS Code\n\n### Xem cấu trúc database\n```\nHãy hiển thị tất cả bảng trong database\n```\n\n### Truy vấn dữ liệu\n```\nCho tôi xem 10 user đầu tiên trong bảng users\n```\n\n### Thêm dữ liệu\n```\nThêm user mới với tên 'john', email 'john@example.com'\n```\n\n### Cập nhật dữ liệu\n```\nCập nhật tên của user có id = 1 thành 'Jane Doe'\n```\n\n### Backup dữ liệu\n```\nTạo backup của bảng users với tên users_backup\n```\n\n## ⚠️ CẢNH BÁO QUAN TRỌNG\n\n### 🚨 Rủi ro cao\n- Tool này có quyền **FULL ACCESS** vào MySQL\n- Có thể **XÓA TOÀN BỘ DATABASE** nếu sử dụng sai\n- Có thể **THAY ĐỔI CẤU TRÚC BẢNG** không thể khôi phục\n- Có thể **XÓA USERS & PERMISSIONS** của MySQL\n\n### 🛡️ Biện pháp an toàn\n1. **LUÔN BACKUP** trước khi sử dụng\n2. **KIỂM TRA KỸ** các lệnh SQL trước khi thực thi\n3. **SỬ DỤNG USER** có quyền hạn chế, không dùng root\n4. **TEST TRÊN DATABASE TEST** trước khi dùng production\n5. **GIÁM SÁT** tất cả thay đổi được thực hiện\n\n### 🚫 Không khuyến nghị\n- Sử dụng trên database production quan trọng\n- Để AI tự động thực thi lệnh mà không xem xét\n- Cấp quyền root cho connection\n- Sử dụng mà không hiểu SQL\n\n## 🔧 Các tool có sẵn\n\n| Tool | Mô tả | Mức độ rủi ro |\n|------|-------|---------------|\n| `get_tables` | Xem danh sách bảng | ✅ An toàn |\n| `describe_table` | Xem cấu trúc bảng | ✅ An toàn |\n| `analyze_table` | Phân tích bảng | ✅ An toàn |\n| `execute_query` | Thực thi SQL | ⚠️ Rủi ro cao |\n| `insert_data` | Thêm dữ liệu | ⚠️ Rủi ro trung bình |\n| `update_data` | Cập nhật dữ liệu | 🚨 Rủi ro cao |\n| `delete_data` | Xóa dữ liệu | 🚨 Rủi ro rất cao |\n| `backup_table` | Backup bảng | ✅ An toàn |\n| `optimize_table` | Tối ưu bảng | ⚠️ Rủi ro trung bình |\n| `show_variables` | Xem biến hệ thống | ✅ An toàn |\n\n## 👨‍💻 Thông tin phát triển\n\n- **Được phát triển bởi**: AI Assistant\n- **Hướng dẫn bởi**: kami2k1\n- **Ngôn ngữ**: Python 3.12+\n- **Framework**: FastMCP (Model Context Protocol)\n- **Database**: MySQL/MariaDB\n\n## 📞 Hỗ trợ\n\nNếu gặp vấn đề:\n1. Kiểm tra logs trong terminal\n2. Xác nhận cấu hình `.env` đúng\n3. Đảm bảo MySQL server đang chạy\n4. Kiểm tra quyền truy cập database\n\n## 📜 License\n\nTool này được cung cấp \"AS IS\" không có bảo hành. Người sử dụng chịu trách nhiệm toàn bộ cho việc sử dụng tool.\n\n---\n**🚨 LƯU Ý CUỐI: Tool này rất mạnh mẽ nhưng cũng rất nguy hiểm. Hãy sử dụng cẩn thận!**\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

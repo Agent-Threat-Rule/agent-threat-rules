@@ -1,0 +1,42 @@
+{
+  "full_name": "skwallace36/Pepper",
+  "html_url": "https://github.com/skwallace36/Pepper",
+  "description": "iOS dynamic library MCP for agents",
+  "topics": [
+    "accessibility",
+    "ai-agent",
+    "claude",
+    "debugging",
+    "dylib",
+    "ios",
+    "ios-simulator",
+    "llm-agent",
+    "mcp",
+    "mcp-server",
+    "swift"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 102,
+  "forks": 11,
+  "open_issues": 39,
+  "language": "Swift",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-03-24T04:16:57Z",
+  "last_pushed_at": "2026-04-29T22:48:10Z",
+  "fetched_at": "2026-07-11T23:00:07.770Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Pepper\n\nPepper gives AI agents eyes and hands inside iOS Simulator apps.\n\nIt injects a shared library into any running simulator app — no source changes, no SDK, no build step. Your agent sees the screen as structured data, taps buttons, inspects live objects, intercepts network calls, reads the heap, and debugs layout issues. Dylib injection requires the simulator; device support uses a different mechanism.\n\nhttps://github.com/user-attachments/assets/42ab3f1b-21f8-48e6-820f-7ca4012fb03b\n\n*Claude navigating and inspecting [Ice Cubes](https://github.com/Dimillian/IceCubesApp) (Mastodon client) with zero source access.*\n\nWorks with Claude Code · Cursor · Claude Desktop · any [MCP](https://modelcontextprotocol.io) client\n\n## Quickstart\n\nRequires macOS 14+, Python 3.10+, and an iOS Simulator runtime.\n\n```bash\npip install pepper-ios\npepper-ctl deploy            # inject into the frontmost simulator app\npepper-ctl look              # see what's on screen\n```\n\nThen ask your agent:\n\n> \"Tap through the onboarding flow and make sure every screen looks right\"\n\nThat's it. The agent uses Pepper's MCP tools to see, tap, and inspect — no extra config needed.\n\n<details>\n<summary>Other MCP clients (Cursor, Claude Desktop, etc.)</summary>\n\n```json\n{\n  \"mcpServers\": {\n    \"pepper\": {\n      \"command\": \"pepper-mcp\"\n    }\n  }\n}\n```\n\n</details>\n\n<details>\n<summary>Homebrew</summary>\n\n```bash\nbrew install --HEAD skwallace36/pepper/pepper\n```\n\nTap: [`skwallace36/homebrew-pepper`](https://github.com/skwallace36/homebrew-pepper)\n\n</details>\n\n## What It Does\n\n```\n$ pepper-ctl look\nScreen: navigation_stack  (9 interactive, 4 text)\n\n       seg  \"Trending\"                       → tap text:\"Trending\"\n       btn  \"Sheryl Weikal, Right wing tech bros: we love St...\"\n                                              → tap text:\"Sheryl Weikal, Right wing tech bros: we ...\"\n       seg  \"Settings\"                       → tap text:\"Settings\"\n\n$ pepper-ctl tap --text \"Settings\"\nAction: Tapped Settings\nScreen: navigation_stack  Title: \"Settings\"  (15 interactive, 3 text)\n\n       btn  \"App Icon\"                       → tap text:\"App Icon\"\n       btn  \"Display Settings\"              → tap text:\"Display Settings\"\n       ...\n```\n\nEvery element comes with its tap command. The agent sees the screen, acts, and gets the new state back in one round trip.\n\n### Things you can ask your agent\n\nThese work against any app — no setup beyond `deploy`.\n\n> \"Why is this list empty? Check the network request and see what the API returned\"\n\n> \"What objects are holding a reference to DeviceActuationService? I think it's leaking\"\n\n> \"Switch to dark mode and look for any text that's invisible against the background\"\n\n> \"The login button isn't responding — check the responder chain and see what's intercepting taps\"\n\n> \"Profile the scroll performance on the feed. Is anything hitching?\"\n\n> \"Read what's in the keychain after logout — nothing should be left\"\n\n> \"Turn off the feature flag for new-nav and make sure the old flow still works\"\n\nView hierarchy, network interception, heap inspection, console capture, crash logs, performance profiling, accessibility audits, constraint debugging, keychain/UserDefaults/CoreData access, locale and orientation control, feature flags, push notifications — 60+ tools in total. Parameter docs are built into every tool; your MCP client surfaces them automatically.\n\n## How It Works\n\nPepper uses macOS's dynamic linker (`DYLD_INSERT_LIBRARIES`) to load a dylib into the simulator process at launch. The dylib starts a WebSocket server on a local port. `pepper-mcp` connects to that WebSocket and translates MCP tool calls into commands executed inside the app.\n\nBecause it runs in-process, Pepper has access to the full view hierarchy, the ObjC runtime, live object graphs, network delegates, and the HID event system. All touch input goes through native input events (IOHIDEvent) — the same path real fingers take. No private APIs, no entitlements — just `dyld`.\n\n## Development\n\n[`dylib/DYLIB.md`](dylib/DYLIB.md) — architecture and adding commands · [`tools/TOOLS.md`](tools/TOOLS.md) — MCP tool layer · [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) — common issues\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"pepper\": {\n      \"command\": \"./.venv/bin/python3\",\n      \"args\": [\"./tools/pepper-mcp\"],\n      \"env\": {\n        \"PYTHONUNBUFFERED\": \"1\"\n      }\n    },\n    \"playwright\": {\n      \"command\": \"npx\",\n      \"args\": [\n        \"@playwright/mcp\",\n        \"--headless\",\n        \"--user-data-dir\", \"${HOME}/.pepper/chrome-profile\"\n      ]\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

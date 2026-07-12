@@ -1,0 +1,30 @@
+{
+  "full_name": "nanbingxyz/mcpsvr",
+  "html_url": "https://github.com/nanbingxyz/mcpsvr",
+  "description": "Discover Exceptional MCP Servers",
+  "topics": [
+    "mcp-server",
+    "modelcontextprotocol"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 308,
+  "forks": 50,
+  "open_issues": 1,
+  "language": "TypeScript",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-02-19T06:07:43Z",
+  "last_pushed_at": "2026-07-08T10:17:33Z",
+  "fetched_at": "2026-07-11T22:43:47.494Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<p align=\"center\">\n  <img src=\"./public/logo.png\" width=\"68\" alt=\"MCPSvr logo\" />\n</p>\n\n# MCPSvr\n\n> A community-driven directory for discovering, reviewing, and contributing MCP servers.\n\n<p align=\"center\">\n  <a href=\"https://github.com/nanbingxyz/mcpsvr/stargazers\"><img src=\"https://img.shields.io/github/stars/nanbingxyz/mcpsvr?style=flat-square\" alt=\"GitHub stars\" /></a>\n  <a href=\"https://github.com/nanbingxyz/mcpsvr/commits/master\"><img src=\"https://img.shields.io/github/last-commit/nanbingxyz/mcpsvr?style=flat-square\" alt=\"Last commit\" /></a>\n  <img src=\"https://img.shields.io/badge/Next.js-15-black?style=flat-square\" alt=\"Next.js 15\" />\n  <img src=\"https://img.shields.io/badge/MCP-community%20directory-6f42c1?style=flat-square\" alt=\"Community directory\" />\n</p>\n\n[中文说明](./README_cn.md)\n\nMCPSvr is a lightweight web directory for Model Context Protocol servers. It helps developers browse available servers, understand how each one is configured, and contribute new entries through pull requests.\n\nThe repository centers on a curated `public/servers.json` registry, so MCP clients such as [5ire](http://github.com/nanbingxyz/5ire) can install and run supported servers directly.\n\nhttps://github.com/user-attachments/assets/3d1ec8db-2041-4f2d-b72c-eb8ae17ab31c\n\n## Table of Contents\n- [Why MCPSvr](#why-mcpsvr)\n- [What You Can Do](#what-you-can-do)\n- [Project Structure](#project-structure)\n- [Run Locally](#run-locally)\n- [How to Add a Server](#how-to-add-a-server)\n- [Server Schema](#server-schema)\n- [Parameter Placeholders](#parameter-placeholders)\n- [Contribution Notes](#contribution-notes)\n\n## Why MCPSvr\n\nMCP servers are growing fast, but good discovery is still fragmented. MCPSvr gives the ecosystem a simple shared registry with enough metadata for humans to evaluate tools and for clients to automate setup.\n\n## What You Can Do\n\n- Discover MCP servers from a single browsable directory\n- Review runtime commands, arguments, environment variables, and homepage links\n- Contribute new servers or improve existing metadata via pull requests\n- Reuse the registry in MCP clients that support direct installation\n\n## Project Structure\n\n```text\n.\n├── app/                # Next.js app router pages\n├── components/         # Reusable UI components\n├── lib/                # Utility helpers\n├── public/\n│   ├── logo.png\n│   └── servers.json    # Central MCP server registry\n└── README_cn.md        # Chinese README\n```\n\n## Run Locally\n\n### Prerequisites\n- Node.js 18+\n- npm (or another package manager compatible with `package-lock.json`)\n\n### Install\n```bash\nnpm install\n```\n\n### Start the development server\n```bash\nnpm run dev\n```\n\nThen open `http://localhost:3000`.\n\n### Build for production\n```bash\nnpm run build\nnpm run start\n```\n\n## How to Add a Server\n\nAll registered MCP servers are maintained in `public/servers.json`. To contribute a new entry:\n\n1. Fork the repository\n2. Add or update a server object in `public/servers.json`\n3. Keep keys consistently ordered\n4. Open a pull request with links to the project homepage or docs\n\n## Server Schema\n\n```json\n{\n  \"name\": \"Server Identifier\",\n  \"key\": \"Unique alphanumeric identifier\",\n  \"description\": \"Concise implementation overview\",\n  \"command\": \"Execution environment specifier (for example uvx, npx, python, node)\",\n  \"args\": [\n    \"Required runtime arguments\"\n  ],\n  \"env\": {\n    \"ENVIRONMENT_VARIABLE\": \"Value assignment\"\n  },\n  \"homepage\": \"Official documentation URL\"\n}\n```\n\n### Field Guidelines\n- `key` must be unique, alphanumeric, and start with a letter\n- `name` is optional and falls back to `key` when omitted\n- `env` and `homepage` are optional but strongly recommended\n- Keep descriptions short and practical so clients can display them cleanly\n\n## Parameter Placeholders\n\nWhen a server needs user-provided input, use the placeholder format below:\n\n```text\n{{paramName@paramType::paramDescription}}\n```\n\nExample:\n\n```json\n{\n  \"name\": \"File System Access Control\",\n  \"key\": \"FileSystem\",\n  \"command\": \"npx\",\n  \"description\": \"Enforces directory-level operation restrictions through specified arguments\",\n  \"args\": [\n    \"-y\",\n    \"@modelcontextprotocol/server-filesystem\",\n    \"{{dirs@list::directories you are about to access, include trailing slash}}\"\n  ],\n  \"homepage\": \"https://github.com/modelcontextprotocol/servers\"\n}\n```\n\nSupported placeholder types include `string`, `list`, and `number`.\n\n## Contribution Notes\n\n- Prefer accurate metadata over marketing copy\n- Double-check command arguments before submitting\n- Include a homepage or docs link whenever possible\n- If you add a new field in the future, keep the schema backwards compatible for downstream clients\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

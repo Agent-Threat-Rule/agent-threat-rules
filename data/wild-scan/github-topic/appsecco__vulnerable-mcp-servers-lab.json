@@ -1,0 +1,39 @@
+{
+  "full_name": "appsecco/vulnerable-mcp-servers-lab",
+  "html_url": "https://github.com/appsecco/vulnerable-mcp-servers-lab",
+  "description": "A collection of servers which are deliberately vulnerable to learn Pentesting MCP Servers.",
+  "topics": [
+    "ai-red-teaming",
+    "ai-research",
+    "appsecco",
+    "bugbounty",
+    "hacking",
+    "learning-pentesting",
+    "mcp",
+    "mcp-client",
+    "mcp-server",
+    "pentesting",
+    "vulnerable-labs"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 265,
+  "forks": 52,
+  "open_issues": 1,
+  "language": "JavaScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-12-18T08:31:23Z",
+  "last_pushed_at": "2025-12-18T12:07:51Z",
+  "fetched_at": "2026-07-11T22:45:24.931Z",
+  "readme": {
+    "path": "README.md",
+    "content": "Vulnerable MCP Servers Lab\n==========================\n\nThis repository contains **intentionally vulnerable** implementations of Model Context Protocol (MCP) servers (both local and remote). Each server lives in its own folder and includes a dedicated `README.md` with full details on **what it does**, **how to run it**, and **how to demonstrate/attack the vulnerability**.\n\n**Do not run any of this outside a controlled lab environment.**\n\n## What this repo is for\n\n- **Security training / research** into common MCP server and tool-integration failure modes.\n- **Hands-on demos** of how vulnerable MCP servers can lead to data exposure, instruction injection, supply-chain compromise, and code execution.\n\n## Safety / lab guidance\n\n- **Use a disposable VM/container** and avoid using real secrets or personal data.\n- Prefer running on an **isolated network**; several servers make outbound network calls.\n- Treat **all tool output and retrieved content as untrusted data**.\n- If you expose any server over HTTP, assume it may be reachable/abused unless you add proper controls.\n\n## Getting started\n\n- **Pick a server** from the index below.\n- Open its per-server README and follow the instructions there.\n- Many servers include a `claude_config.json` snippet intended to be merged into Claude Desktop’s MCP configuration.\n\n## MCP servers in this repo\n\n- **Filesystem Workspace Actions (path traversal + code exec)**: Tools for reading/writing/listing a “workspace” plus Python execution; vulnerable to naive path joining and unsandboxed code execution.\n  - README: [`vulnerable-mcp-server-filesystem-workspace-actions/README.md`](vulnerable-mcp-server-filesystem-workspace-actions/README.md)\n\n- **Indirect Prompt Injection (local stdio)**: Document retrieval/search that returns documents verbatim, including embedded hidden instructions.\n  - README: [`vulnerable-mcp-server-indirect-prompt-injection/README.md`](vulnerable-mcp-server-indirect-prompt-injection/README.md)\n\n- **Indirect Prompt Injection (remote MCP over HTTP+SSE)**: Network-accessible MCP server (HTTP + SSE) returning untrusted documents verbatim; models risk of connecting to untrusted remote MCP endpoints.\n  - README: [`vulnerable-mcp-server-indirect-prompt-injection-remote-mcp/README.md`](vulnerable-mcp-server-indirect-prompt-injection-remote-mcp/README.md)\n\n- **Malicious Code Execution (eval-based RCE)**: “Quote of the day” tool with an unsafe formatting feature that `eval()`s attacker-controlled JavaScript.\n  - README: [`vulnerable-mcp-server-malicious-code-exec/README.md`](vulnerable-mcp-server-malicious-code-exec/README.md)\n\n- **Malicious Tools (instruction injection / fabricated tool output)**: Appears to return status data, but injects misleading instructions and can fabricate plausible-looking incidents.\n  - README: [`vulnerable-mcp-server-malicious-tools/README.md`](vulnerable-mcp-server-malicious-tools/README.md)\n\n- **Namespace Typosquatting (`twittter-mcp`)**: Demonstrates supply-chain/trust issues via a lookalike server name intended to be mistaken for a legitimate package.\n  - README: [`vulnerable-mcp-server-namespace-typosquatting/README.md`](vulnerable-mcp-server-namespace-typosquatting/README.md)\n\n- **Outdated Packages (supply chain risk)**: Read-only system/filesystem inspection tools whose primary purpose is to demonstrate risk from outdated/deprecated/vulnerable dependencies.\n  - README: [`vulnerable-mcp-server-outdated-pacakges/README.md`](vulnerable-mcp-server-outdated-pacakges/README.md)\n\n- **Secrets + PII Exposure**: “Utilities” tools (IP/weather/news) but with embedded sensitive values in source code and leakage via logs.\n  - README: [`vulnerable-mcp-server-secrets-pii/README.md`](vulnerable-mcp-server-secrets-pii/README.md)\n\n- **Wikipedia (remote, Streamable HTTP)**: Wikipedia search/retrieval over HTTP; returns untrusted public content without sanitization or instruction/data separation (remote-content prompt injection risk).\n  - README: [`vulnerable-mcp-server-wikipedia-http-streamable/README.md`](vulnerable-mcp-server-wikipedia-http-streamable/README.md)\n\n## About Appsecco\n\n**Appsecco** is a cybersecurity company specializing in product security testing, penetration testing, and security assessments. We hack SaaS products, AI Agents, MCP Servers and cloud/K8s infrastructure like attackers do, focusing on pragmatic, high-signal outcomes for real-world systems.\n\nThis lab repository exists to support security research and hands-on training for pentesters, who are on their journey to becoming AI Red Teamers, around MCP server vulnerabilities and the risks of integrating untrusted tools and untrusted content into AI agent workflows.\n\n### Contact\n\n- **Website**: [`https://appsecco.com`](https://appsecco.com)\n- **Email**: [`HackMyProduct@appsecco.com`](mailto:hackmyproduct@appsecco.com)\n- **LinkedIn**: [`https://linkedin.com/company/appsecco`](https://linkedin.com/company/appsecco)\n\n## License\n\nSee [`LICENSE`](LICENSE).\n\n## Links to Appsecco Resources\n\n- [Appsecco LinkedIn](https://www.linkedin.com/company/appsecco/)\n- [Appsecco YouTube](https://www.youtube.com/@Appsecco)\n- [Appsecco Website](https://appsecco.com)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

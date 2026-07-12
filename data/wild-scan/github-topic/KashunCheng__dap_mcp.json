@@ -1,0 +1,35 @@
+{
+  "full_name": "KashunCheng/dap_mcp",
+  "html_url": "https://github.com/KashunCheng/dap_mcp",
+  "description": "Model Context Protocol (MCP) server that interacts with a Debugger",
+  "topics": [
+    "dap",
+    "debug",
+    "debug-adapter-protocol",
+    "debugging",
+    "llm",
+    "mcp",
+    "model-context-protocol"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 40,
+  "forks": 6,
+  "open_issues": 1,
+  "language": "Python",
+  "license": "AGPL-3.0",
+  "default_branch": "main",
+  "created_at": "2025-03-15T10:05:58Z",
+  "last_pushed_at": "2025-09-24T00:19:36Z",
+  "fetched_at": "2026-07-11T23:34:54.882Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# dap-mcp\n\n**dap-mcp** is an implementation of the [Model Context Protocol (MCP)](https://example.com/mcp-spec) tailored for managing Debug Adapter Protocol (DAP) sessions. MCP provides a standardized framework to optimize and extend the context window of large language models, and in this project, it is used to enhance and streamline debugging workflows.\n\n## Features\n\n- **Debug Adapter Protocol Integration:** Interact with debuggers using a standardized protocol.\n- **MCP Framework:** Leverage MCP to optimize context and enhance debugging workflows.\n- **Rich Debugging Tools:** Set, list, and remove breakpoints; control execution (continue, step in/out/next); evaluate expressions; change stack frames; and view source code.\n- **Flexible Configuration:** Customize debugger settings, source directories, and other parameters via a JSON configuration file.\n## Installation\n\n### Prerequisites\n\n- Python 3.10 or higher\n- [uv](https://github.com/astral-sh/uv) (optional, for running the server)\n\n### Installing and Running the Server\n\nInstall **dap-mcp** and its dependencies:\n\n```bash\npip install dap-mcp\npython -m dap_mcp --config config.json\n\n# Or, if you have uv installed\nuvx dap-mcp@latest --config config.json\n```\n\n## Configuration\n\nThe project uses a JSON configuration file (e.g., `.config.json`) to specify debugger settings and source directories. An example configuration:\n\n```json5\n{\n  \"type\": \"debugpy\",\n  \"debuggerPath\": \"/path/to/python/with/debugpy\",\n  \"debuggerArgs\": [\n    \"-m\",\n    \"debugpy.adapter\"\n  ],\n  // source directories for resolving file paths\n  // if you always use absolute paths, you can omit this\n  \"sourceDirs\": [\n    \"/path/to/source/code\"\n  ],\n  // debugger-specific settings start here\n  // configurations for debugpy can be found at\n  // https://github.com/microsoft/debugpy/wiki/Debug-configuration-settings\n  \n  // you can use \"program\" instead of \"module\" to specify the program to debug\n  \"module\": \"pytest\",\n  // the python executable to use to run the debuggee\n  \"python\": [\"/path/to/python\"],\n  \"cwd\": \"/path/to/working/directory\"\n}\n```\n\nThis configuration informs the debugger about:\n- The path to the debugger executable and its arguments.\n- The source directories for resolving file paths during breakpoint operations.\n- Other settings (such as module, working directory, and interpreter path) necessary for launching the debuggee.\n\n### Available Debugger Types\n| Type    | Example Path        | Example Args                |\n|---------|---------------------|-----------------------------|\n| debugpy | `/usr/bin/python3`  | `[\"-m\", \"debugpy.adapter\"]` |\n| lldb    | `/usr/bin/lldb-dap` | `[]`                        |\n\n## Available Tools\n\nThe project exposes several tools that can be invoked via the MCP framework:\n\n- **launch:** Launch the debuggee program.\n- **set_breakpoint:** Set a breakpoint at a specified file and line (with an optional condition).\n- **remove_breakpoint:** Remove a breakpoint from a specified file and line.\n- **list_all_breakpoints:** List all breakpoints currently set in the debugger.\n- **continue_execution:** Continue program execution after hitting a breakpoint.\n- **step_in:** Step into a function call.\n- **step_out:** Step out of the current function.\n- **next:** Step over to the next line of code.\n- **evaluate:** Evaluate an expression in the current debugging context.\n- **change_frame:** Switch to a different stack frame.\n- **view_file_around_line:** View source code around a specified line (using the last provided file if none is specified).\n- **terminate:** Terminate the debugging session.\n\nThese tools provide XML-rendered output for integration with MCP clients.\n\n## Extending with Other DAP Servers\n\nTo support additional DAP servers, you can simply add a new DAP-specific configuration class in the `dap_mcp/config.py` file. All DAP configurations extend from the base `DAPConfig` class. Each new subclass should:\n  \n- Define a unique `type` value (using a `Literal`) to act as a discriminator.\n- Include any additional fields or settings specific to that debugger.\n\nFor example, to add support for a hypothetical DAP server called \"mydap\", you might add:\n\n```python\nclass MyDAP(DAPConfig):\n    type: Literal[\"mydap\"]\n    # Add any additional settings for MyDAP here\n    customSetting: Optional[str] = Field(\n        None, description=\"A custom setting for MyDAP.\"\n    )\n```\n\nAfter creating your new configuration class, update the union type used for debugger-specific configurations by including your new class. For example:\n\n```python\nDebuggerSpecificConfig = Annotated[Union[DebugPy, MyDAP], Field(..., discriminator=\"type\")]\n```\n\nNow, when you supply a configuration JSON with `\"type\": \"mydap\"`, it will be parsed and validated using your new `MyDAP` class, and your DAP server extension will be fully integrated.\n\n### Contributing\n\nContributions are welcome! To contribute:\n1. Fork the repository.\n2. Create a new branch for your feature or bug fix.\n3. Write tests and ensure all checks pass.\n4. Submit a pull request.\n\nPlease follow the coding guidelines and include appropriate tests with your changes.\n\n## License\n\nThis project is licensed under the AGPL-3.0 License. See the [LICENSE](LICENSE) file for details."
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

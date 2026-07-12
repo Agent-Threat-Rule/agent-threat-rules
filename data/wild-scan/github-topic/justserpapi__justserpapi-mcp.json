@@ -1,0 +1,33 @@
+{
+  "full_name": "justserpapi/justserpapi-mcp",
+  "html_url": "https://github.com/justserpapi/justserpapi-mcp",
+  "description": "Connect AI assistants to JustSerpAPI via MCP: discover endpoints, inspect schemas, call APIs, paginate results, and check usage or credits.",
+  "topics": [
+    "google-ai",
+    "google-mcp",
+    "google-search-mcp",
+    "mcp",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-06-24T04:11:55Z",
+  "last_pushed_at": "2026-06-24T12:14:24Z",
+  "fetched_at": "2026-07-12T00:50:16.572Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# JustSerpAPI MCP Server\n\nUse JustSerpAPI from Codex, Claude Desktop, Cursor, and other MCP-compatible AI\nassistants.\n\nThis MCP server helps your assistant find the right JustSerpAPI endpoint, inspect\nthe required parameters, call the API, and continue paginated results when the\nAPI returns a next-page token or offset.\n\n## Quick Start\n\n### Remote HTTP\n\nRemote HTTP is the recommended setup.\n\n```json\n{\n  \"mcpServers\": {\n    \"justserpapi\": {\n      \"url\": \"https://mcp.justserpapi.com/mcp\",\n      \"headers\": {\n        \"Authorization\": \"Bearer your_api_key\"\n      }\n    }\n  }\n}\n```\n\n### Local stdio\n\nYou can also run the MCP server locally with `npx`.\n\n```json\n{\n  \"mcpServers\": {\n    \"justserpapi\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"justserpapi-mcp\"],\n      \"env\": {\n        \"JUSTSERPAPI_API_KEY\": \"your_api_key\"\n      }\n    }\n  }\n}\n```\n\n## Supported Clients\n\nJustSerpAPI MCP works with MCP-compatible clients that support remote HTTP or\nlocal stdio servers, including:\n\n- Codex\n- Claude Desktop\n- Cursor\n- Claude Code\n- OpenAI Agents SDK\n- Other MCP-compatible AI assistants\n\n## Authentication\n\nUse your JustSerpAPI API key:\n\n```text\nAuthorization: Bearer your_api_key\n```\n\nFor local stdio, set:\n\n```text\nJUSTSERPAPI_API_KEY=your_api_key\n```\n\n## Available Tools\n\n- `search_endpoints`: Find the best JustSerpAPI endpoint from a natural-language request.\n- `get_endpoint_schema`: Inspect required parameters, optional parameters, and pagination hints.\n- `call_endpoint`: Call a JustSerpAPI endpoint and return raw JSON data.\n- `get_account_balance`: Check your subscription and remaining credits.\n- `get_usage_summary`: Review recent API usage, consumed credits, and endpoint trends.\n- `list_services`: List available services such as Google Search, Google Maps, Google Trends, and Web.\n- `refresh_catalog`: Refresh the endpoint catalog from JustSerpAPI docs.\n\n## Example Prompts\n\nAsk your AI assistant naturally:\n\n```text\nFind the Google search API and show me the required parameters.\n```\n\n```text\nSearch Google for \"best running shoes\" in the United States.\n```\n\n```text\nFind the Google Maps reviews endpoint and tell me how to request the next page.\n```\n\n```text\nGet Google Trends trending-now results for the US.\n```\n\n```text\nFind the Google Shopping search API and call it for \"iphone 16 case\".\n```\n\n```text\nConvert this web page to Markdown: https://example.com\n```\n\n```text\nContinue to the next page of the previous JustSerpAPI result.\n```\n\n```text\nCheck my remaining JustSerpAPI credits.\n```\n\n```text\nShow my API usage for the last 30 days.\n```\n\n```text\nThe API returned code 402. Explain what it means and what I should check.\n```\n\n## Response Format\n\n`call_endpoint` returns the JustSerpAPI response data as raw JSON. Large arrays\nand long text fields may be shortened so the AI assistant can read the result\nreliably. When that happens, the response includes `truncated: true` and the\npaths that were shortened.\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

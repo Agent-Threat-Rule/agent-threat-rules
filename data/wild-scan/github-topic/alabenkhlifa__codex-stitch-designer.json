@@ -1,0 +1,48 @@
+{
+  "full_name": "alabenkhlifa/codex-stitch-designer",
+  "html_url": "https://github.com/alabenkhlifa/codex-stitch-designer",
+  "description": "Codex and Claude Code plugin for designing UI screens with Google Stitch MCP",
+  "topics": [
+    "agent-skills",
+    "ai-agent",
+    "ai-design",
+    "ai-design-assistant",
+    "claude-agents",
+    "claude-code",
+    "claude-plugin",
+    "claude-skills",
+    "codex",
+    "codex-plugin",
+    "design-system",
+    "frontend-design",
+    "google-stitch",
+    "mcp",
+    "mcp-tools",
+    "product-design",
+    "stitch",
+    "stitch-mcp",
+    "ui-design",
+    "ux-design"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": null,
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-05-26T15:52:24Z",
+  "last_pushed_at": "2026-05-30T16:35:56Z",
+  "fetched_at": "2026-07-12T00:44:59.959Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n\n# Codex Stitch Designer\n\nDesign Google Stitch screens from Codex or Claude Code.\n\n[Website](https://alabenkhlifa.github.io/codex-stitch-designer/) |\n[Install](#install) |\n[Usage](#usage) |\n[Feedback](#feedback)\n\n![GitHub release](https://img.shields.io/github/v/release/alabenkhlifa/codex-stitch-designer?label=release)\n![License](https://img.shields.io/github/license/alabenkhlifa/codex-stitch-designer)\n![Codex](https://img.shields.io/badge/Codex-plugin-111827)\n![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-191919)\n![Google Stitch](https://img.shields.io/badge/Google_Stitch-MCP-4285F4)\n\n</div>\n\nCodex Stitch Designer is a plugin package that gives Codex and Claude Code a practical workflow for Google Stitch MCP: choose or create the right Stitch project, inspect existing screens and design systems, write stronger prompts, generate variants, critique output, and prepare implementation handoffs.\n\n## Why Use It\n\n| Need | What the plugin does |\n| --- | --- |\n| Start a new UI direction | Creates Stitch-ready prompts for mobile apps, web apps, dashboards, landing pages, and games. |\n| Match an existing product | Inspects the current Stitch project before generating screens that follow the same design language. |\n| Explore options | Generates conservative, distinctive, and experimental variants with the same functional requirements. |\n| Improve a weak result | Critiques hierarchy, contrast, inactive states, accessibility, density, and implementation risk. |\n| Move toward code | Produces a frontend handoff with tokens, components, states, localization notes, and risks. |\n\n## Install\n\n### Requirements\n\n- Codex with plugin support, for the Codex package.\n- Claude Code with plugin support, for the Claude package.\n- Google Stitch MCP configured in your assistant session.\n- A Stitch API key and MCP setup from the official docs: <https://stitch.withgoogle.com/docs/mcp/setup>.\n\n### Codex\n\n```bash\ncodex plugin marketplace add https://github.com/alabenkhlifa/codex-stitch-designer.git\ncodex plugin list --marketplace codex-stitch-designer\ncodex plugin add stitch-designer@codex-stitch-designer\n```\n\nIf your Codex client requires sparse paths:\n\n```bash\ncodex plugin marketplace add \\\n  https://github.com/alabenkhlifa/codex-stitch-designer.git \\\n  --sparse '.agents/plugins' \\\n  --sparse 'plugins'\n```\n\n### Claude Code\n\n```bash\nclaude plugin marketplace add alabenkhlifa/codex-stitch-designer\nclaude plugin install stitch-designer@stitch-designer\n```\n\nFor local development:\n\n```bash\nclaude plugin validate .\nclaude plugin validate ./claude/stitch-designer\nclaude plugin marketplace add ./\nclaude plugin install stitch-designer@stitch-designer\n```\n\nThe Claude package is isolated under `claude/stitch-designer/`, so it does not change the Codex plugin files.\n\n## Usage\n\nAsk Codex or Claude Code to use `stitch-designer`:\n\n```text\nUse stitch-designer to create a mobile onboarding screen in Stitch.\n```\n\n```text\nUse stitch-designer to inspect my existing Stitch project and create a billing settings screen that matches its current design language.\n```\n\n```text\nUse stitch-designer to generate three variants for an incident operations dashboard: conservative, distinctive, and experimental.\n```\n\nIf you do not provide a Stitch project ID, the plugin should ask whether to reuse an existing project, create a new project, or work without Stitch and produce a design spec or handoff.\n\n## What It Includes\n\n| Package | Path | Contents |\n| --- | --- | --- |\n| Codex marketplace | `.agents/plugins/marketplace.json` | Marketplace entry for Codex. |\n| Codex plugin | `plugins/stitch-designer/` | Skill, agent metadata, examples, and Codex manifest. |\n| Claude marketplace | `.claude-plugin/marketplace.json` | Marketplace entry for Claude Code. |\n| Claude plugin | `claude/stitch-designer/` | Claude Code skill, subagent, and plugin manifest. |\n\n## Verify\n\nUseful checks for contributors:\n\n```bash\nclaude plugin validate .\nclaude plugin validate ./claude/stitch-designer\npython3 -m json.tool .agents/plugins/marketplace.json >/dev/null\npython3 -m json.tool plugins/stitch-designer/.codex-plugin/plugin.json >/dev/null\n```\n\nTo confirm Claude Code sees the installed package:\n\n```bash\nclaude plugin details stitch-designer@stitch-designer\n```\n\nExpected inventory:\n\n```text\nSkills (1)  stitch-designer\nAgents (1)  stitch-designer\n```\n\n## Troubleshooting\n\n| Problem | Check |\n| --- | --- |\n| Stitch tools are missing | Verify the Stitch MCP setup and restart or reload your assistant. |\n| Plugin installs but skill is not visible | Reload plugins or restart the client. |\n| Stitch generation times out | Inspect the project before retrying; the operation may have completed. |\n| Project matching is ambiguous | Provide the Stitch project ID directly. |\n\n## Feedback\n\nFeedback is welcome:\n\n- Install problems: <https://github.com/alabenkhlifa/codex-stitch-designer/issues>\n- Design workflow ideas: <https://github.com/alabenkhlifa/codex-stitch-designer/discussions>\n\nPlease include your Codex or Claude Code version, install command, Stitch project shape, and screenshots when relevant.\n\n## Roadmap\n\n- More examples for ecommerce, fintech, education, internal tools, and games.\n- A deeper implementation handoff template for React, React Native, and Tailwind.\n- More troubleshooting notes for Stitch MCP setup and timeout behavior.\n- Optional screenshots or short videos showing the full install and design flow.\n- A companion workflow for turning Stitch output into frontend code.\n\n## Scope\n\nThis plugin does not configure Stitch MCP for you, convert Stitch output into production code by itself, or create persistent Stitch projects without confirmation. It gives your assistant a better workflow for using Stitch.\n\n<details>\n<summary>Search terms</summary>\n\nCodex plugin, Claude Code plugin, Claude plugin, Claude skills, Claude agents, Google Stitch, Stitch MCP, MCP design tool, UI design, UX design, frontend design, product design, design systems, AI design workflow, AI design assistant.\n\n</details>\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

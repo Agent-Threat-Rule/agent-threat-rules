@@ -1,0 +1,34 @@
+{
+  "full_name": "dvcrn/mcp-server-siri-shortcuts",
+  "html_url": "https://github.com/dvcrn/mcp-server-siri-shortcuts",
+  "description": "MCP for calling Siri Shorcuts from LLMs",
+  "topics": [
+    "llm",
+    "mcp",
+    "model-context-protocol",
+    "siri-shortcuts"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 190,
+  "forks": 19,
+  "open_issues": 9,
+  "language": "TypeScript",
+  "license": "GPL-3.0",
+  "default_branch": "main",
+  "created_at": "2025-02-25T09:40:16Z",
+  "last_pushed_at": "2026-03-02T00:32:51Z",
+  "fetched_at": "2026-07-11T23:17:29.268Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Siri Shortcuts MCP Server\n\nThis MCP server provides access to Siri shortcuts functionality via the Model Context Protocol (MCP). It allows listing, opening, and running shortcuts from the macOS Shortcuts app.\n\n![screenshot](./screenshot.png)\n\n## Features\n\n- Exposes _all_ shortcuts, meaning the LLM can call anything that is available in the Shortcuts app.\n- List all available shortcuts\n- Open shortcuts in the Shortcuts app\n- Run shortcuts with optional input parameters\n- Dynamically generated tools for each available shortcut\n\n## Tools\n\n### Base Tools\n\n1. `list_shortcuts`\n\n   - Lists all available Siri shortcuts on the system\n   - No input required\n   - Returns: Array of shortcut names\n\n   ```json\n   {\n     \"shortcuts\": [{ \"name\": \"My Shortcut 1\" }, { \"name\": \"My Shortcut 2\" }]\n   }\n   ```\n\n2. `open_shortcut`\n\n   - Opens a shortcut in the Shortcuts app\n   - Input:\n     - `name` (string): Name of the shortcut to open\n\n3. `run_shortcut`\n   - Runs a shortcut with optional input\n   - Input:\n     - `name` (string): Name or identifier (UUID) of the shortcut to run\n     - `input` (string, optional): Text input or filepath to pass to the shortcut\n\n### Dynamic Tools\n\nThe server automatically generates additional tools for each available shortcut in the format:\n\n- Tool name: `run_shortcut_[sanitized_shortcut_name]`\n- Description: Runs the specific shortcut\n- Input:\n  - `input` (string, optional): Text input or filepath to pass to the shortcut\n\n## Configuration\n\nThe server supports the following environment variables:\n\n- `GENERATE_SHORTCUT_TOOLS` (default: `true`): When set to `false`, disables the generation of dynamic shortcut tools. Only the base tools (`list_shortcuts`, `open_shortcut`, `run_shortcut`) will be available.\n- `INJECT_SHORTCUT_LIST` (default: `false`): When set to `true`, injects the list of available shortcuts into the `run_shortcut` tool description to help the LLM understand which shortcuts are available.\n\n## Usage with Claude\n\nAdd to your Claude configuration:\n\n```json\n{\n  \"mcpServers\": {\n    \"siri-shortcuts\": {\n      \"command\": \"npx\",\n      \"args\": [\"mcp-server-siri-shortcuts\"],\n      \"env\": {\n        \"GENERATE_SHORTCUT_TOOLS\": \"true\",\n        \"INJECT_SHORTCUT_LIST\": \"false\"\n      }\n    }\n  }\n}\n```\n\n## Implementation Details\n\n- Uses the macOS `shortcuts` CLI command under the hood\n- Sanitizes shortcut names for tool naming compatibility\n- Supports both direct text input and file-based input\n- Returns shortcut output when available\n- Implements standard MCP error handling\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "index.ts",
+    "size": 531,
+    "content": "#!/usr/bin/env node\n\nimport { StdioServerTransport } from \"@modelcontextprotocol/sdk/server/stdio.js\";\nimport { createServer } from \"./shortcuts.js\";\n\nasync function main() {\n  const transport = new StdioServerTransport();\n  const { server, cleanup } = createServer();\n\n  await server.connect(transport);\n\n  // Cleanup on exit\n  process.on(\"SIGINT\", async () => {\n    await cleanup();\n    await server.close();\n    process.exit(0);\n  });\n}\n\nmain().catch((error) => {\n  console.error(\"Server error:\", error);\n  process.exit(1);\n});\n"
+  },
+  "content_fetch_notes": []
+}

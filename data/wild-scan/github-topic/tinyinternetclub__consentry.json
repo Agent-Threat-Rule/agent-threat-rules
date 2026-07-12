@@ -1,0 +1,38 @@
+{
+  "full_name": "tinyinternetclub/consentry",
+  "html_url": "https://github.com/tinyinternetclub/consentry",
+  "description": "A local policy gate for AI agent tool calls.",
+  "topics": [
+    "agents",
+    "ai-agents",
+    "logging",
+    "mcp-servers",
+    "mcp-tools",
+    "proxy",
+    "tool-calling",
+    "tool-calling-agent",
+    "tool-calls"
+  ],
+  "matched_query_topics": [
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-06-16T02:47:52Z",
+  "last_pushed_at": "2026-06-16T05:35:56Z",
+  "fetched_at": "2026-07-12T00:22:12.585Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Consentry\n\nConsentry is a local policy layer for AI tool use.\n\nIt sits between your assistant and the tools it wants to call, checks each request against your rules, and then either lets it through, blocks it, or asks you first. The goal is simple: make agent actions visible and keep the risky stuff from happening quietly.\n\nFull documentation lives at [tinyinternetclub.com/docs/consentry](https://tinyinternetclub.com/docs/consentry).\n\n## What it does\n\n- Wraps local MCP servers so tool calls can be checked before they run\n- Hooks Claude Code remote connectors before they hit Gmail, Slack, Notion, and similar services\n- Stores activity locally in SQLite under `~/.consentry/`\n- Gives you a dashboard for approvals, policy, and recent activity\n- Starts with practical defaults instead of making you design a policy from scratch\n\nOut of the box, the general shape is:\n\n- Reads are usually fine\n- Writes and deletes usually ask first\n- Obviously dangerous actions can be blocked outright\n\nYou can tighten or loosen that however you want.\n\n## How it works\n\nWithout Consentry:\n\n```text\nassistant -> tool\n```\n\nWith Consentry:\n\n```text\nassistant -> consentry -> policy check -> allow / ask first / block\n```\n\nThere are two interception paths:\n\n- Local MCP servers go through the proxy path\n- Claude Code remote connectors go through the hook path\n\nIf you use both, you can enable both.\n\n## What it does not cover\n\nConsentry does not intercept every possible agent surface.\n\n- Local MCP protection is the reliable path for Claude Desktop, OpenClaw, PicoClaw, ZeroClaw, and Claude Code local MCP\n- Remote connector pre-execution interception is currently a Claude Code-specific path\n- OpenClaw, PicoClaw, and ZeroClaw now have an in-progress remote MCP reverse-proxy path for HTTP/SSE connectors, but only the proxy itself has been real-proven so far, not full end-to-end agent runs\n- Claude Desktop installed extensions are not a reliable pre-execution enforcement surface\n- Claude chat / `claude.ai` connector calls cannot be intercepted before they run\n\nIf a tool path is not routed through the proxy or the Claude Code hook, Consentry should not be treated as the thing enforcing it.\n\nFor the latest state of the reverse-proxy work and real testing, see [docs/remote-proxy-real-testing.md](docs/remote-proxy-real-testing.md).\n\n## A quick look\n\nThe dashboard shows what Consentry found, what is protected, and what needs your attention.\n\n![Consentry dashboard servers view](media/readme/navigate-to-servers.gif)\n\nApprovals and policy changes happen in the same place, so you do not have to piece things together from chat history.\n\n![Consentry dashboard policy view](media/readme/navigate-to-policy.gif)\n\n## Install\n\nRequirements:\n\n- Node.js 20+\n- macOS or Linux\n- Claude Desktop, OpenClaw, PicoClaw, or ZeroClaw for local MCP protection, and/or Claude Code for remote connector protection\n\nFrom source:\n\n```bash\ngit clone https://github.com/tinyinternetclub/consentry.git\ncd consentry\nnpm install\nnpm run build\nnpm link\n```\n\nVerify:\n\n```bash\nconsentry --help\n```\n\n## Get started\n\nIf you want the easiest path, use the dashboard:\n\n```bash\n# terminal 1\nconsentry serve\n\n# terminal 2\ncd dashboard\nnpm install\nnpm run dev\n```\n\nThen open `http://localhost:5173`.\n\nFrom there you can:\n\n- detect supported local MCP clients\n- install the Claude Code hook\n- pick a starting policy\n- review and respond to approval requests\n\nIf you prefer to set things up manually:\n\n- Local MCP servers in Claude Desktop, OpenClaw, PicoClaw, or ZeroClaw: `consentry init`\n- Claude Code remote connectors: install the `PreToolUse` hook\n\nThe short version of support is:\n\n- Claude Desktop, OpenClaw, PicoClaw, and ZeroClaw are covered through the local proxy path\n- Claude Code can use both the local proxy path and the remote-connector hook path\n- The hook path is Claude Code-specific\n\n## Where to go next\n\n- Docs home: [tinyinternetclub.com/docs/consentry](https://tinyinternetclub.com/docs/consentry)\n- Installation: [tinyinternetclub.com/docs/consentry/getting-started/installation](https://tinyinternetclub.com/docs/consentry/getting-started/installation)\n- Dashboard: [tinyinternetclub.com/docs/consentry/dashboard](https://tinyinternetclub.com/docs/consentry/dashboard)\n- Claude Desktop proxy: [tinyinternetclub.com/docs/consentry/getting-started/claude-desktop-proxy](https://tinyinternetclub.com/docs/consentry/getting-started/claude-desktop-proxy)\n- Claude Code hook: [tinyinternetclub.com/docs/consentry/getting-started/claude-code-hook](https://tinyinternetclub.com/docs/consentry/getting-started/claude-code-hook)\n- CLI reference: [tinyinternetclub.com/docs/consentry/cli-reference](https://tinyinternetclub.com/docs/consentry/cli-reference)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

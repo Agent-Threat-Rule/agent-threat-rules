@@ -1,0 +1,48 @@
+{
+  "full_name": "hyprmcp/mcp-gateway",
+  "html_url": "https://github.com/hyprmcp/mcp-gateway",
+  "description": "MCP OAuth Proxy incl. dynamic client registration (DCR), MCP prompt analytics and MCP firewall to build enterprise grade MCP servers.",
+  "topics": [
+    "agents",
+    "api-gateway",
+    "authentication-middleware",
+    "devops",
+    "dex",
+    "docker",
+    "federation",
+    "golang",
+    "hyprmcp",
+    "llm-agents",
+    "mcp",
+    "mcp-gateway",
+    "mcp-proxy",
+    "model-context-protocol",
+    "oauth2",
+    "oauth2-proxy",
+    "observability",
+    "prompt-engineering"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 92,
+  "forks": 14,
+  "open_issues": 13,
+  "language": "Go",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-07-10T13:56:41Z",
+  "last_pushed_at": "2026-04-21T15:49:44Z",
+  "fetched_at": "2026-07-11T23:20:56.943Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Hypr MCP Gateway\n\n[![Go Report Card](https://goreportcard.com/badge/github.com/hyprmcp/mcp-gateway)](https://goreportcard.com/report/github.com/hyprmcp/mcp-gateway)\n[![GoDoc](https://godoc.org/github.com/hyprmcp/mcp-gateway?status.svg)](https://godoc.org/github.com/hyprmcp/mcp-gateway)\n\nHypr MCP Gateway featuring 1-click plug-in OAuth authorization including dynamic client registration\nand MCP prompt analytics for streamable HTTP MCP servers.\n\n## Main Features\n\n- OAuth Proxy (incl. dynamic client registration)\n- Prompt Telemetry\n- MCP request logging and payload inspection\n\n```\n┌──────────────┐     OAuth2       ┌──────────────┐\n│   End User   │ ───────────────▶ │   Hypr MCP   │\n└──────────────┘  Single Login    │   Gateway    │\n                                  └──────┬───────┘\n                                         │\n                               ┌─────────┼───────────┐\n                               │         │           │\n                          ┌────▼───┐ ┌───▼────┐ ┌────▼───┐\n                          │ Tool A │ │ Tool B │ │ Tool C │\n                          └────────┘ └────────┘ └────────┘\n```\n\n## Examples\n\nDo you want to see the Hypr MCP gateway in action?\n\nCheck out our [`examples/who-am-i`](examples/who-am-i/README.md) featuring an upstream MCP server that\nis able to return the authorization state.\n\n## Why did we build Hypr MCP Gateway?\n\nAdding OAuth2 support to an MCP server has lots of footguns and poses a significant challenge with to many developers.\nBy shifting the task to a separate infrastructure component, your MCP server can remain lean and be fully spec-compliant without you having to write a single line of code.\nWe have created a write-up on [_Building Supabase-like OAuth Authentication For MCP Servers_](https://hyprmcp.com/blog/mcp-server-authentication/)\non our [blog](https://hyprmcp.com/blog/) that goes into the details on MCP Server authentication. \n\n\n## Contributing & Local development\n\nCheck out our [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed instructions.\n\n## Hypr MCP Cloud\n\nWe also provide fully-managed MCP server and gateway hosting at Hypr MCP cloud, featuring\n1-click OAuth authorization and [MCP analytics](https://hyprmcp.com/mcp-analytics/).\n\n**Make sure to join our waitlist for early access:**\n\n<kbd>[**Join our waitlist**](https://hyprmcp.com/waitlist/)</kbd>\n\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "main.go",
+    "size": 179,
+    "content": "package main\n\nimport (\n\t\"os\"\n\n\t_ \"crypto/sha256\"\n\n\t\"github.com/hyprmcp/mcp-gateway/cmd\"\n)\n\nfunc main() {\n\tif err := cmd.NewRootCommand().Execute(); err != nil {\n\t\tos.Exit(1)\n\t}\n}\n"
+  },
+  "content_fetch_notes": []
+}

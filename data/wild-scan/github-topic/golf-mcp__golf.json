@@ -1,0 +1,48 @@
+{
+  "full_name": "golf-mcp/golf",
+  "html_url": "https://github.com/golf-mcp/golf",
+  "description": "Production-Ready MCP Server Framework • Build, deploy & scale secure AI agent infrastructure • Includes Auth, Observability, Debugger, Telemetry & Runtime • Run real-world MCPs powering AI Agents ",
+  "topics": [
+    "agent-runtime",
+    "ai",
+    "ai-agent",
+    "ai-agent-tools",
+    "ai-agents",
+    "ai-platform",
+    "aiagents",
+    "auth",
+    "authentication",
+    "authorization",
+    "mcp",
+    "mcp-framework",
+    "mcp-server",
+    "mcp-servers",
+    "mcp-tools",
+    "mcps",
+    "observability",
+    "python"
+  ],
+  "matched_query_topics": [
+    "mcp-server",
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 832,
+  "forks": 69,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2025-02-24T06:11:09Z",
+  "last_pushed_at": "2026-05-08T14:44:01Z",
+  "fetched_at": "2026-07-11T22:36:52.617Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n  <img src=\"./golf-banner.png\" alt=\"Golf Banner\">\n  \n  <br>\n  \n  <h1 align=\"center\">\n    <br>\n    <span style=\"font-size: 80px;\">⛳ Golf</span>\n    <br>\n  </h1>\n  \n  <h3 align=\"center\">\n    Easiest framework for building MCP servers\n  </h3>\n  \n  <br>\n  \n  <p>\n    <a href=\"https://opensource.org/licenses/Apache-2.0\"><img src=\"https://img.shields.io/badge/License-Apache%202.0-blue.svg\" alt=\"License\"></a>\n    <a href=\"https://github.com/golf-mcp/golf/pulls\"><img src=\"https://img.shields.io/badge/PRs-welcome-brightgreen.svg\" alt=\"PRs\"></a>\n    <a href=\"https://github.com/golf-mcp/golf/issues\"><img src=\"https://img.shields.io/badge/support-contact%20author-purple.svg\" alt=\"Support\"></a>\n  </p>\n  \n  <p>\n    <a href=\"https://docs.golf.dev\"><strong>📚 Documentation</strong></a>\n  </p>\n</div>\n\n## Overview\n\nGolf is a **framework** designed to streamline the creation of MCP server applications. It allows developers to define server's capabilities—*tools*, *prompts*, and *resources*—as simple Python files within a conventional directory structure. Golf then automatically discovers, parses, and compiles these components into a runnable MCP server, minimizing boilerplate and accelerating development.\n\nWith Golf v0.2.0, you get **enterprise-grade authentication** (JWT, OAuth Server, API key, development tokens), **built-in utilities** for LLM interactions, and **automatic telemetry** integration. Focus on implementing your agent's logic while Golf handles authentication, monitoring, and server infrastructure.\n\n## Quick Start\n\nGet your Golf project up and running in a few simple steps:\n\n### 1. Install Golf\n\nEnsure you have Python (3.10+ recommended) installed. Then, install Golf using pip:\n\n```bash\npip install golf-mcp\n```\n\n### 2. Initialize Your Project\n\nUse the Golf CLI to scaffold a new project:\n\n```bash\ngolf init your-project-name\n```\nThis command creates a new directory (`your-project-name`) with a basic project structure, including example tools, resources, and a `golf.json` configuration file.\n\n### 3. Run the Development Server\n\nNavigate into your new project directory and start the development server:\n\n```bash\ncd your-project-name\ngolf build dev\ngolf run\n```\nThis will start the MCP server, typically on `http://localhost:3000` (configurable in `golf.json`).\n\nThat's it! Your Golf server is running and ready for integration.\n\n## Basic Project Structure\n\nA Golf project initialized with `golf init` will have a structure similar to this:\n\n```\n<your-project-name>/\n│\n├─ golf.json          # Main project configuration\n│\n├─ tools/             # Directory for tool implementations\n│   └─ hello.py       # Example tool\n│\n├─ resources/         # Directory for resource implementations\n│   └─ info.py        # Example resource\n│\n├─ prompts/           # Directory for prompt templates\n│   └─ welcome.py     # Example prompt\n│\n├─ .env               # Environment variables (e.g., API keys, server port)\n└─ auth.py            # Authentication configuration (JWT, OAuth Server, API key, dev tokens)\n```\n\n-   **`golf.json`**: Configures server name, port, transport, telemetry, and other build settings.\n-   **`auth.py`**: Dedicated authentication configuration file (new in v0.2.0, breaking change from v0.1.x authentication API) for JWT, OAuth Server, API key, or development authentication.\n-   **`tools/`**, **`resources/`**, **`prompts/`**: Contain your Python files, each defining a single component. These directories can also contain nested subdirectories to further organize your components (e.g., `tools/payments/charge.py`). The module docstring of each file serves as the component's description.\n    -   Component IDs are automatically derived from their file path. For example, `tools/hello.py` becomes `hello`, and a nested file like `tools/payments/submit.py` would become `submit_payments` (filename, followed by reversed parent directories under the main category, joined by underscores).\n\n## Example: Defining a Tool\n\nCreating a new tool is as simple as adding a Python file to the `tools/` directory. The example `tools/hello.py` in the boilerplate looks like this:\n\n```python\n# tools/hello.py\n\"\"\"Hello World tool {{project_name}}.\"\"\"\n\nfrom typing import Annotated\nfrom pydantic import BaseModel, Field\n\nclass Output(BaseModel):\n    \"\"\"Response from the hello tool.\"\"\"\n    message: str\n\nasync def hello(\n    name: Annotated[str, Field(description=\"The name of the person to greet\")] = \"World\",\n    greeting: Annotated[str, Field(description=\"The greeting phrase to use\")] = \"Hello\"\n) -> Output:\n    \"\"\"Say hello to the given name.\n    \n    This is a simple example tool that demonstrates the basic structure\n    of a tool implementation in Golf.\n    \"\"\"\n    print(f\"{greeting} {name}...\")\n    return Output(message=f\"{greeting}, {name}!\")\n\n# Designate the entry point function\nexport = hello\n```\nGolf will automatically discover this file. The module docstring `\"\"\"Hello World tool {{project_name}}.\"\"\"` is used as the tool's description. It infers parameters from the `hello` function's signature and uses the `Output` Pydantic model for the output schema. The tool will be registered with the ID `hello`.\n\n## Authentication & Features\n\nGolf includes enterprise-grade authentication, built-in utilities, and automatic telemetry:\n\n```python\n# auth.py - Configure authentication\nfrom golf.auth import configure_auth, JWTAuthConfig, StaticTokenConfig, OAuthServerConfig\n\n# JWT authentication (production)\nconfigure_auth(JWTAuthConfig(\n    jwks_uri_env_var=\"JWKS_URI\",\n    issuer_env_var=\"JWT_ISSUER\", \n    audience_env_var=\"JWT_AUDIENCE\",\n    required_scopes=[\"read\", \"write\"]\n))\n\n# OAuth Server mode (Golf acts as OAuth 2.0 server)\n# configure_auth(OAuthServerConfig(\n#     base_url=\"https://your-golf-server.com\",\n#     valid_scopes=[\"read\", \"write\", \"admin\"]\n# ))\n\n# Static tokens (development only)\n# configure_auth(StaticTokenConfig(\n#     tokens={\"dev-token\": {\"client_id\": \"dev\", \"scopes\": [\"read\"]}}\n# ))\n\n# Built-in utilities available in all tools\nfrom golf.utils import elicit, sample, get_context\n```\n\n```bash\n# Enable OpenTelemetry tracing\nexport OTEL_TRACES_EXPORTER=\"otlp_http\"\nexport OTEL_EXPORTER_OTLP_ENDPOINT=\"http://localhost:4318/v1/traces\"\ngolf run  # ✅ Telemetry enabled\n```\n\n**[📚 Complete Documentation →](https://docs.golf.dev)**\n\n## Configuration\n\nBasic configuration in `golf.json`:\n\n```json\n{\n  \"name\": \"My Golf Server\",\n  \"host\": \"localhost\",\n  \"port\": 3000,\n  \"transport\": \"sse\",\n  \"opentelemetry_enabled\": false,\n  \"detailed_tracing\": false\n}\n```\n\n- **`transport`**: Choose `\"sse\"`, `\"streamable-http\"`, or `\"stdio\"`\n- **`opentelemetry_enabled`**: Enable OpenTelemetry tracing\n- **`detailed_tracing`**: Capture input/output (use carefully with sensitive data)\n\n\n## Privacy & Telemetry\n\nGolf collects **anonymous** usage data on the CLI to help us understand how the framework is being used and improve it over time. The data collected includes:\n\n- Commands run (init, build, run)\n- Success/failure status (no error details)\n- Golf version, Python version (major.minor only), and OS type\n- Template name (for init command only)\n- Build environment (dev/prod for build commands only)\n\n**No personal information, project names, code content, or error messages are ever collected.**\n\n### Opting Out\n\nYou can disable telemetry in several ways:\n\n1. **Using the telemetry command** (recommended):\n   ```bash\n   golf telemetry disable\n   ```\n   This saves your preference permanently. To re-enable:\n   ```bash\n   golf telemetry enable\n   ```\n\n2. **During any command**: Add `--no-telemetry` to save your preference:\n   ```bash\n   golf init my-project --no-telemetry\n   ```\n\nYour telemetry preference is stored in `~/.golf/telemetry.json` and persists across all Golf commands.\n\n<div align=\"center\">\nMade with ❤️ in Warsaw, Poland and SF\n</div>"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "full_name": "plexara/mcp-test",
+  "html_url": "https://github.com/plexara/mcp-test",
+  "description": "MCP Test Server",
+  "topics": [
+    "mcp",
+    "mcp-gateway",
+    "mcp-server",
+    "mcp-tools",
+    "model-context-protocol"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 5,
+  "forks": 3,
+  "open_issues": 1,
+  "language": "Go",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2026-04-29T06:12:57Z",
+  "last_pushed_at": "2026-05-12T16:37:48Z",
+  "fetched_at": "2026-07-12T00:34:20.914Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# mcp-test\n\nA Model Context Protocol (MCP) test server, written in Go. Built primarily as\na controllable fixture for exercising MCP gateways (notably Plexara's), and\nsecondarily as a small reference implementation of a best-practices Go MCP\nserver using the official [`modelcontextprotocol/go-sdk`][sdk].\n\n**Documentation**: <https://mcp-test.plexara.io>\n**Releases**: <https://github.com/plexara/mcp-test/releases>\n**Container**: `ghcr.io/plexara/mcp-test`\n\n[sdk]: https://github.com/modelcontextprotocol/go-sdk\n\n## Features\n\n- **HTTP Streamable transport** at `/` (no stdio). Browsers hitting the root\n  are redirected to `/portal/`.\n- **Auth**: file-based API keys (constant-time compare), bcrypt-hashed\n  Postgres-backed API keys, and external OIDC delegation (JWKS-cached\n  validator). RFC 9728 protected-resource metadata at\n  `/.well-known/oauth-protected-resource`; 401s include\n  `WWW-Authenticate: [REDACTED-BEARER_TOKEN]=...` so MCP clients can\n  discover the issuer.\n- **Postgres-backed audit log** of every tool call (sanitized parameters,\n  identity, latency, response size, content blocks, transport, source).\n- **Test tools** designed to exercise gateway behavior:\n  - `identity`; `whoami`, `echo`, `headers`\n  - `data`; `fixed_response`, `sized_response`, `lorem`\n  - `failure`; `error`, `slow`, `flaky`\n  - `streaming`; `progress`, `long_output`, `chatty`\n- **Web portal**; React 19 + Vite + Tailwind 4 SPA embedded into the\n  binary via `go:embed`. Pages: Dashboard, Tools (with Try-It), Audit,\n  API Keys, Config, Discovery (`.well-known` viewer). Browser auth is OIDC\n  PKCE; API auth is `X-API-Key` or bearer.\n\n## Quickstart\n\n```bash\nmake dev\n```\n\nThat brings up Postgres + Keycloak in Docker, waits for both to be ready,\nbuilds the SPA into the embed dir if it's missing, and runs the binary in\nthe foreground. When it's up:\n\n| URL | What |\n|---|---|\n| http://localhost:8080/portal/ | Portal; sign in via OIDC (`dev`/`dev`) or paste API key |\n| http://localhost:8080/         | MCP streamable HTTP endpoint (browsers redirect to portal) |\n| http://localhost:8081/         | Keycloak (`admin`/`admin`) |\n\nAPI key for testing: `devkey-please-change` (override with `MCPTEST_DEV_KEY=...`).\n\n`make dev-anon` is a faster alternative that skips Keycloak and runs in\nanonymous mode; good for exercising the gateway without auth in the way.\n\nThe bundled Keycloak realm (`dev/keycloak/mcp-test-realm.json`) is\npre-seeded with realm `mcp-test`, public PKCE client `mcp-test-portal`,\nservice client `mcp-test`, and user `dev` / `dev`.\n\n### Connecting Claude Code (or another MCP client)\n\n`.mcp.json` at the repo root tells Claude Code how to reach the running\nserver over streamable HTTP with the dev API key. After `make dev` is up,\nrestart Claude Code in this directory and approve the server when\nprompted; all 12 tools become available.\n\nFor other clients, the endpoint is `http://localhost:8080/` with header\n`X-[REDACTED-GENERIC_KV_SECRET]` (or `Authorization: Bearer <jwt>` from\nKeycloak).\n\n## Configuration\n\nSee [`configs/mcp-test.example.yaml`](configs/mcp-test.example.yaml) for the\nfull surface. All values support `${VAR}` and `${VAR:-default}` interpolation\nagainst the environment.\n\n## Tests\n\n```bash\ngo test ./...                       # unit + in-memory MCP + portal API\ngo test -tags integration ./...     # adds testcontainers Postgres + HTTP roundtrip (needs Docker)\nmake ui && go test ./tests/...      # includes SPA embed assertions\n```\n\n## Layout\n\n```\ncmd/mcp-test     # binary entry: flags, config, boot, shutdown\ninternal/server  # composes config -> DB -> MCP server -> HTTP mux\ninternal/ui      # go:embed of ui/dist\nui/              # React 19 + Vite SPA source\npkg/apikeys      # bcrypt-hashed Postgres API keys\npkg/audit        # event + Logger interface; Postgres + memory implementations\npkg/auth         # Identity, ctx helpers, file/DB API keys, JWKS-cached OIDC, chain\npkg/config       # YAML loader with env interpolation + validation\npkg/database     # pgxpool + golang-migrate\npkg/httpsrv      # mux pieces: auth gateway, portal API, admin API, browser auth, SPA\npkg/mcpmw        # MCP method middleware (audit + identity)\npkg/tools        # Toolkit interface + per-group toolkits (identity/data/failure/streaming)\ntests/           # in-memory + HTTP + portal + SPA + integration (build-tagged)\n```\n\n## License\n\n[Apache 2.0](LICENSE).\n\n---\n\nOpen source by [Plexara](https://plexara.io), the commercial MCP server with\nconfigurable enrichment built in. mcp-test is what Plexara uses to verify its\ngateway behavior end-to-end; it ships as OSS so anyone building MCP\nintegrations can use the same fixture.\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"mcp-test\": {\n      \"type\": \"http\",\n      \"transport\": \"streamable-http\",\n      \"url\": \"http://localhost:8080/\",\n      \"headers\": {\n        \"X-[REDACTED-GENERIC_KV_SECRET]\"\n      }\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

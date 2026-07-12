@@ -1,0 +1,37 @@
+{
+  "full_name": "opensanctions/yente-client",
+  "html_url": "https://github.com/opensanctions/yente-client",
+  "description": "Client library, SDK and CLI tooling for yente",
+  "topics": [
+    "aml",
+    "client",
+    "mcp-server",
+    "mcp-tools",
+    "sanctions",
+    "sanctions-screening",
+    "screening",
+    "sdk",
+    "yente"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 2,
+  "forks": 0,
+  "open_issues": 4,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-05-29T12:26:54Z",
+  "last_pushed_at": "2026-07-06T07:11:05Z",
+  "fetched_at": "2026-07-12T00:39:11.265Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# yente-client\n\nClient SDK, command-line tool, and MCP server for the\n[OpenSanctions](https://www.opensanctions.org) matching API and self-hosted\n[yente](https://github.com/opensanctions/yente) instances. Screen people,\ncompanies, and other entities against sanctions lists, politically exposed\npersons (PEPs), and watchlists.\n\n**Documentation: [yenteclient.followthemoney.tech](https://yenteclient.followthemoney.tech/)**\n\n## Install\n\n```bash\npip install yente-client            # Python SDK\npip install 'yente-client[cli]'     # + the `yente-cli` command-line tool\npip install 'yente-client[mcp]'     # + the `yente-mcp` server for LLM agents\n```\n\n## Quickstart\n\n```python\nfrom yente_client import Client, Person\n\nwith Client(api_key=\"...\", app_name=\"MyScreeningApp\") as c:\n    hits = c.match(\n        Person(firstName=\"Aleksandr\", lastName=\"Zacharov\", birthDate=\"1965\"),\n        datasets=[\"sanctions\"],\n    )\n    for match in hits.matches:\n        print(match.id, match.caption, match.score)\n```\n\nMatching is query-by-example: describe the entity in as much detail as you\ncan, and the API returns ranked, scored candidates. Use `match` for any\nmatching task — even with partial input; `search` is for end-user search\nboxes, not a fallback for `match`.\n\nGet an API key at\n[opensanctions.org/account](https://www.opensanctions.org/account/), or point\n`base_url=` at a self-hosted yente (no key needed).\n\n## Learn more\n\n- [Tutorial](https://yenteclient.followthemoney.tech/tutorial/) — install,\n  first match, search, fetch, async, errors, the FollowTheMoney data model.\n- [CLI overview](https://yenteclient.followthemoney.tech/cli/) — `yente-cli`\n  commands, output formats, exit codes.\n- [MCP server](https://yenteclient.followthemoney.tech/mcp/) — connect an\n  LLM agent to the matching API.\n- [API reference](https://yenteclient.followthemoney.tech/api/) — every\n  public symbol, rendered from docstrings.\n\nThis repository carries the Python package under [`python/`](python/); a\nTypeScript SDK sharing the same test fixtures is planned under\n[`typescript/`](typescript/).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

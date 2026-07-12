@@ -1,0 +1,32 @@
+{
+  "full_name": "Sidharth-e/MCP-search-and-match-JavaScript",
+  "html_url": "https://github.com/Sidharth-e/MCP-search-and-match-JavaScript",
+  "description": "A full-stack solution for AI-powered resume and job description parsing/matching, consisting of:  Frontend: Next.js Client – Clean UI for pasting and comparing resumes and JDs. Backend: Express.js MCP Server – Stateless HTTP/JSON-RPC API serving parser/matcher tools, with streaming support (SSE).",
+  "topics": [
+    "mcp-servers",
+    "nextjs15",
+    "nodejs-server",
+    "openai"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-07-11T16:48:32Z",
+  "last_pushed_at": "2025-07-11T16:59:36Z",
+  "fetched_at": "2026-07-12T00:11:09.913Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Search & Match Tool + MCP Server\n\nA full-stack solution for AI-powered resume and job description parsing/matching, consisting of:\n\n- **Frontend:** Next.js Client – Clean UI for pasting and comparing resumes and JDs.\n- **Backend:** Express.js MCP Server – Stateless HTTP/JSON-RPC API serving parser/matcher tools, with streaming support (SSE).\n\n---\n\n## 🖼️ Screenshots\n\n![MCP Inspector](/mcp-server-nodejs/screenshot/mcp.png)\n![MCP Inspector](/mcp-server-nodejs/screenshot/mcp(1).png)\n![MCP Inspector](/mcp-client-nextjs/screenshot/UI.png)\n\n\n---\n\n## 🧩 Features (End-to-End)\n\n- **Frontend Client (Next.js):**\n  - Paste resume & job description; one-click matching.\n  - Shows parsed resume, parsed JD, match result & gap summary.\n  - Beautiful, responsive interface (TailwindCSS).\n  - File Parsing(Docx,TXT)\n  - Error & loading handling.\n- **Backend Server (Express.js, MCP protocol):**\n  - `/mcp` endpoint exposing:\n    - `parseResume` – Resume parser\n    - `parseJD` – Job description parser\n    - `matchResumeToJd` – Resume/JD matching\n    - `summarizeGap` – Qualification gap summary\n  - JSON-RPC 2.0 protocol with `text/event-stream` streaming responses.\n  - CORS for local dev; easy to add more tools.\n\n---\n\n## 🛠️ Prerequisites\n\n- **Node.js** v18+ (recommended for backend; 16+ for client)\n- **npm** or **yarn**\n- **OpenAI API key** (if using OpenAI in backend)\n- (Optional) `.env` file for server configuration\n\n---\n\n## 🚀 Quickstart\n\n### 1. MCP Server (Backend)\n\nClone & set up the backend server:\n\n```bash\ngit clone <your-repo>\ncd <project-folder>\nnpm install\n# Optional: cp .env.example .env   # edit credentials if needed\nnpm start                         # or: node server.js\n```\nServer runs at: [http://localhost:3000/mcp](http://localhost:3000/mcp)\n\n#### Endpoint\n\n- `POST /mcp`  \nSee “Example payload” below.\n\n### 2. Next.js Client (Frontend)\n\nIn a separate terminal:\n\n```bash\ncd search-match-tool-frontend    # if in a subfolder, else stay in your root\nnpm install\nnpm run dev\n```\nApp runs at: [http://localhost:3001](http://localhost:3001) or [http://localhost:3000](http://localhost:3000)\n\n**Set MCP endpoint** in the frontend code if needed (default is `http://localhost:3000/mcp`).\n\n---\n\n## 🖱️ How To Use\n\n1. **Paste resume** (left box)\n2. **Paste job description** (right box)\n3. Click **Submit & Parse**\n4. Instantly see results: parsed output, match %, and qualification gap summary below\n\n---\n\n## 🗂️ Project Structure\n\n```txt\nrepo-root/\n├── mcp-client-nextjs\n├── mcp-server-nodejs\n│   ├── tools/\n│   ├── parseResume.js\n│   ├── parseJD.js\n│   ├── matchResumeToJd.js\n│   └── summarizeGap.js\n├── service/\n│   └── openai.ts   # Shared OpenAI API logic used by tools\n├── server.js       # Your main MCP Express server file\n├── package.json\n└── .env\n```\n\n---\n\n## 📑 Example Server Payload\n\n**POST** `/mcp`\n```json\n{\n  \"jsonrpc\": \"2.0\",\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"parseResume\",\n    \"arguments\": { \"resume\": \"Paste your resume text here.\" }\n  },\n  \"id\": \"some-id\"\n}\n```\n**Response:** streamed via Server-Sent Events (SSE, `text/event-stream`).\n\n---\n\n## 🛡️ CORS\n\nIn `server.js` (MCP backend), update `allowedOrigins` as needed, e.g.:\n```js\nconst allowedOrigins = [\n  \"http://localhost:3000\",\n  \"http://localhost:3001\",\n  ...\n];\n```\n\n---\n\n## 🔧 Adding/Customizing Tools\n\n- Create a new handler in `tools/` (e.g. `tools/myTool.js`)\n- Import and register in `getServer()` using:\n  ```js\n  server.tool(name, description, inputSchema, handler);\n  ```\n\n---\n\n## 🧑‍💻 Development & Testing\n\n- **MCP Inspector:** GUI for testing MCP server (see original server readme for usage).\n- To test CORS, streaming, etc, use the provided Next/React frontend.\n\n---\n\n## 🐞 Troubleshooting\n\n- **CORS errors:** Add your client’s URL to `allowedOrigins` in the server.\n- **Handler/tool errors:** Each tool should export `.name`, `.schema`, `.handler`.\n- **Port conflicts:** Change `PORT` in `.env`.\n- **API/streaming errors:** Ensure backend response is event-stream, and frontend reads it as such.\n\n---\n\n## 📄 License\n\nMIT\n\n---\n\n## 👨‍👩‍💻 Authors & Credits\n\n- [Sidharth e](https://github.com/Sidharth-e)\n- [Senthil Vijayakumar](https://github.com/senthilv83)\n- [Model Context Protocol SDK](https://github.com/modelcontextprotocol/modelcontextprotocol-sdk)\n- [nabadeep25](https://github.com/nabadeep25/mcp-server-nodejs)\n- [vikrambhat2](https://github.com/vikrambhat2/AgenticRAG/tree/main/MCP)\n\n---\n\n**Happy Matching! 🚀**\n\n---\n\n**_For more details, see code comments and per-folder readmes. PRs & suggestions welcome!_**"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

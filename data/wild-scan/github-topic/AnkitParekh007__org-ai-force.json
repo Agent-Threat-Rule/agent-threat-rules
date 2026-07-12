@@ -1,0 +1,46 @@
+{
+  "full_name": "AnkitParekh007/org-ai-force",
+  "html_url": "https://github.com/AnkitParekh007/org-ai-force",
+  "description": "Enterprise Angular 21 AI agent workspace with NestJS orchestrator, RAG, MCP tools, SSE streaming, Playwright workers, admin console, and internal pilot workflows.",
+  "topics": [
+    "admin-console",
+    "agent-workspace",
+    "ai-agents",
+    "angular",
+    "copilot",
+    "docker",
+    "enterprise-ui",
+    "frontend-architecture",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "nestjs",
+    "playwright",
+    "prisma",
+    "rag",
+    "sse",
+    "sse-streaming",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 7,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-05-02T20:39:52Z",
+  "last_pushed_at": "2026-05-15T14:55:56Z",
+  "fetched_at": "2026-07-12T00:52:02.572Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Org AI Force\n\nEnterprise Angular 21 agent workspace prototype with a NestJS orchestrator, admin-governed tools, RAG-ready services, MCP-style integrations, SSE streaming hooks, Playwright/browser workers, and internal pilot operations.\n\nThis repo is a **prototype and architecture proof project**, not a claim of production enterprise adoption. It is designed to show how an internal AI agent workspace could be structured across frontend, backend, admin governance, and pilot rollout concerns.\n\n## What Is Implemented Vs Mock Vs Planned\n\n### Implemented\n\n- Angular 21 workspace shell with routes for agents, admin, pilot, ops, logs, readiness, and debug tools\n- NestJS server modules for auth, agents, tools, RAG, connectors, pilot ops, observability, and browser workers\n- role and permission guards for the frontend and backend\n- Docker and Docker Compose setup for a local or pilot-style environment\n- Prisma schemas for SQLite and PostgreSQL-oriented deployment paths\n- mock-safe workspace behavior for agent sessions, artifacts, tool events, approvals, and test-worker style flows\n\n### Mock Or Demo-Safe\n\n- many agent responses and runtime events in frontend demo mode\n- demo tools, demo workflows, demo approvals, and pilot feedback seed data\n- browser and Playwright worker experience when used as a safe prototype path\n- some admin and pilot dashboard content when running without a fully wired backend stack\n\n### Planned Or Still Maturing\n\n- deeper production-grade provider integration and hardening\n- fuller RAG citation and retrieval UX\n- richer evaluation dashboards and agent scorecards\n- multi-tenant controls and broader connector coverage\n- stronger production observability and automated validation coverage\n\n## Architecture\n\n```mermaid\nflowchart LR\n    User[\"Internal user\"] --> Frontend[\"Angular 21 workspace\"]\n    Frontend --> Agents[\"Agent workspace routes\"]\n    Frontend --> Admin[\"Admin console\"]\n    Frontend --> Pilot[\"Pilot hub\"]\n    Frontend --> Ops[\"Ops and readiness views\"]\n    Frontend --> Api[\"NestJS orchestrator API\"]\n\n    Api --> Auth[\"Auth and RBAC\"]\n    Api --> Orchestrator[\"Agent orchestration\"]\n    Api --> RAG[\"RAG and context layer\"]\n    Api --> Tools[\"Tool registry and approvals\"]\n    Api --> MCP[\"MCP-style integrations\"]\n    Api --> Browser[\"Browser and Playwright workers\"]\n    Api --> Observability[\"Metrics, readiness, logs\"]\n    Api --> Data[\"Prisma with SQLite or PostgreSQL\"]\n```\n\n## Local Docker Quick Start\n\n1. Copy the environment template:\n\n```bash\ncp .env.docker.example .env\n```\n\n2. Set required values in `.env`, especially secrets such as `POSTGRES_PASSWORD`, JWT values, and provider keys when needed.\n\n3. Start the stack:\n\n```bash\ndocker compose up --build\n```\n\n4. Open the frontend:\n\n```text\nhttp://localhost:8080\n```\n\nUse local development instead if you want to run frontend and backend separately.\n\n## Local Development\n\nFrontend:\n\n```bash\nnpm install\nnpm start\n```\n\nBackend:\n\n```bash\ncd server\nnpm install\nnpm run build\nnpm run start:dev\n```\n\n## Demo Routes\n\n- `/login`\n- `/dashboard`\n- `/agents`\n- `/agents/:slug`\n- `/admin`\n- `/pilot`\n- `/pilot/metrics`\n- `/pilot/readiness`\n- `/agent-readiness`\n- `/ops`\n- `/mcp-debug`\n- `/internal-tools-debug`\n- `/browser-test-debug`\n\n## Demo Surfaces\n\n- agent workspace with chat, artifacts, approvals, tool window, and runtime events\n- admin overview with visible mock tools, workflows, approvals, and platform summary\n- pilot hub with rollout guidance, feedback loops, and readiness framing\n- readiness report showing priority-agent status\n\n## Screenshots\n\nAvailable assets:\n\n- `docs/assets/screenshots/workspace.png`\n- `docs/assets/screenshots/admin-dashboard.png`\n- `docs/assets/screenshots/pilot-hub.png`\n- `docs/assets/screenshots/readiness-report.png`\n- `docs/assets/screenshots/tool-execution-timeline.png`\n- `docs/assets/screenshots/org-ai-force-demo.gif`\n\n<p align=\"center\">\n  <img src=\"docs/assets/screenshots/workspace.png\" alt=\"Org AI Force workspace screenshot\" width=\"900\" />\n</p>\n\n<p align=\"center\">\n  <img src=\"docs/assets/screenshots/admin-dashboard.png\" alt=\"Org AI Force admin dashboard screenshot\" width=\"900\" />\n</p>\n\n<p align=\"center\">\n  <img src=\"docs/assets/screenshots/pilot-hub.png\" alt=\"Org AI Force pilot hub screenshot\" width=\"900\" />\n</p>\n\n<p align=\"center\">\n  <img src=\"docs/assets/screenshots/readiness-report.png\" alt=\"Org AI Force readiness report screenshot\" width=\"900\" />\n</p>\n\n<p align=\"center\">\n  <img src=\"docs/assets/screenshots/tool-execution-timeline.png\" alt=\"Org AI Force tool execution timeline screenshot\" width=\"900\" />\n</p>\n\nCapture guidance:\n- [docs/screenshot-capture-guide.md](docs/screenshot-capture-guide.md)\n\n## Security Model\n\n- no secrets should be committed to the repo\n- admin and debug routes are permission-gated\n- tool execution and approvals are treated as governed flows\n- mock mode exists for safe demoing when live systems are unavailable\n- Docker and environment templates are examples, not a substitute for real vaulting, HTTPS, or production secret handling\n\nStart with:\n- [docs/security-model.md](docs/security-model.md)\n\n## Documentation\n\n- [System architecture](docs/system-architecture.md)\n- [Agent orchestration](docs/agent-orchestration.md)\n- [RAG and tool layer](docs/rag-and-tool-layer.md)\n- [Admin console](docs/admin-console.md)\n- [Pilot rollout](docs/pilot-rollout.md)\n- [Security model](docs/security-model.md)\n- [Observability](docs/observability.md)\n- [Recruiter review guide](docs/recruiter-review-guide.md)\n\n## Recruiter Review\n\nFor the fastest walkthrough, use:\n- [docs/recruiter-review-guide.md](docs/recruiter-review-guide.md)\n\n## Validation Commands\n\nFrontend:\n\n```bash\nnpm run build\nnpm run typecheck\n```\n\nBackend:\n\n```bash\ncd server\nnpm run build\nnpm run typecheck\n```\n\nDocker:\n\n```bash\ndocker compose config\n```\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

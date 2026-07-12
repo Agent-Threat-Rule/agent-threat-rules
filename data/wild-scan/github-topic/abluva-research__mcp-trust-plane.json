@@ -1,0 +1,40 @@
+{
+  "full_name": "abluva-research/mcp-trust-plane",
+  "html_url": "https://github.com/abluva-research/mcp-trust-plane",
+  "description": "Composable data security plane for Model Context Protocol. Pluggable layers — collect, analyze, guard — across 50+ enterprise providers. Open architecture.",
+  "topics": [
+    "access-control",
+    "agentic-ai",
+    "ai-agents",
+    "data-governance-and-ai",
+    "data-security",
+    "enterprise-security",
+    "guardrails",
+    "llm-security",
+    "mcp",
+    "model-context-protocol",
+    "open-source",
+    "trust-plane"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 60,
+  "forks": 14,
+  "open_issues": 0,
+  "language": "JavaScript",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2026-06-18T08:14:29Z",
+  "last_pushed_at": "2026-06-19T14:25:55Z",
+  "fetched_at": "2026-07-11T23:26:35.553Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP Trust Plane\n\nA pluggable, language-agnostic filter framework for Model Context Protocol\n(MCP) traffic. Each filter is a tiny HTTP service that decides whether a\ntool call should be allowed, blocked, modified, or truncated.\n\n## Why\n\nMCP gives agents direct access to tools and data sources. That's powerful\nand dangerous in equal measure. Filters give you a place to enforce\nguardrails — block destructive SQL, redact PII before it reaches the\nmodel, throttle abusive agents, cap response sizes, redact columns —\nwithout modifying the upstream MCP server or the agent runtime.\n\n## How it works\n\n```\n                    pre-request                       post-response\n   Client ─▶ MCP Gateway ─────────▶ Engine ─▶ filter ─┐\n                │     ◀────────────────── allow/block ┘\n                │\n                ▼ (forward)\n            MCP Server\n                │\n                ▼\n   Client ◀ MCP Gateway ◀──── Engine ─▶ filter ─┐\n                                ◀───── allow/truncate/modify ┘\n```\n\n- An MCP gateway sits in front of the upstream MCP server.\n- For every `tools/call`, the gateway asks an **engine** \"what should I do\n  for target X at execution_point Y?\".\n- The engine looks up the policies assigned to that target and, for each\n  filter in those policies, calls `POST {filter_url}/filter`.\n- Filters are completely independent processes. They can be written in\n  any language. They share no state with the gateway or the engine.\n\nA reference engine and gateway live in the parent repo\n(`secure-ai-plane-x/mcp-filter-gateway`). This sub-project ships only the\nfilter implementations and the contract.\n\n## The Filter Contract\n\nEvery filter MUST expose two HTTP endpoints:\n\n### `POST /filter`\n\nRequest body:\n\n```json\n{\n  \"config\":    { \"max_rows\": 1000 },\n  \"arguments\": {\n    \"sql\": \"SELECT * FROM employees\",\n    \"response_count\": 8000,\n    \"response_rows\": [\"row-1\", \"row-2\", \"...\"]\n  },\n  \"metadata\": {\n    \"agent_id\":   \"demo_agent\",\n    \"agent_name\": \"demo_agent\",\n    \"member_id\":  \"f5d9e4ec-…\",\n    \"project_id\": \"b0000000-…\",\n    \"tool_name\":  \"run_sql\"\n  }\n}\n```\n\nResponse body:\n\n```json\n{\n  \"action\": \"allow | block | truncate | modify\",\n  \"reason\": \"human-readable string surfaced to the user and audit log\",\n  \"modified_response\": { \"...optional...\" },\n  \"original_count\":    8000,\n  \"truncated_to\":      1000\n}\n```\n\n- `allow` — let the request through unchanged.\n- `block` — reject. The gateway returns an MCP error using `reason`.\n- `truncate` — return a smaller payload (`modified_response`) and an\n  audit notice. Used by post-response filters like Row Limiter.\n- `modify` — replace the payload with `modified_response`. Used by\n  redactors and maskers.\n\nFilters MUST be idempotent and side-effect free with respect to the\nagent's behaviour (with the obvious exception of audit / rate limiter\nstate). Filter execution time should stay under 50ms p95; the engine\ntreats slow filters as `allow` to fail-open.\n\n### `GET /health`\n\nReturns `200 { \"status\": \"healthy\", \"filter\": \"<slug>\", \"version\": \"...\" }`.\nUsed by orchestrators to gate traffic.\n\n## Common filters\n\nCross-cutting guards under `common/` (Apache 2.0):\n\n| Filter           | Slug              | Phase          | Default port |\n|------------------|-------------------|----------------|--------------|\n| SQL Guard        | sql-guard         | pre-request    | 6001         |\n| PII Redactor     | pii-redactor      | post-response  | 6002         |\n| Row Limiter      | row-limiter       | post-response  | 6003         |\n| Schema Validator | schema-validator  | pre-request    | 6005         |\n| Rate Limiter     | rate-limiter      | pre-request    | 6007         |\n| Field Masker     | field-masker      | post-response  | 6008         |\n\n## Provider filters\n\nIntegration-specific guards under `provider/<vendor>/data-guard/` — **54\nproviders** today (AWS, GitHub, Stripe, Snowflake, Slack, PostgreSQL,\nNotion, Terraform, and more). See `provider/README.md` and\n`provider/manifest.json` for the full list and ports (6301–6354).\n\n| Provider (sample) | Slug                   | Default port |\n|-------------------|------------------------|--------------|\n| AWS               | `aws-data-guard`       | 6301         |\n| GitHub            | `github-data-guard`    | 6305         |\n| PostgreSQL        | `postgresql-data-guard`| 6341         |\n| Stripe            | `stripe-data-guard`    | 6348         |\n| Slack             | `slack-data-guard`     | 6345         |\n\nRun `node provider/scripts/generate-providers.js` after editing\n`provider/manifest.json` to scaffold new vendors.\n\n## Quickstart\n\n```sh\ncd common/sql-guard\nnpm install\nPORT=6001 node index.js\n```\n\nOr bring up all filters with Docker:\n\n```sh\ndocker compose up\n```\n\nThen register the filter against an engine:\n\n```sql\nINSERT INTO ablv_mcp_filters (slug, name, filter_url, execution_point, ...)\nVALUES ('sql-guard', 'SQL Guard', 'http://sql-guard:6001/filter',\n        'pre-request', ...);\n```\n\nSee `docs/ADDING_FILTERS.md` for a step-by-step walkthrough of writing\nyour own filter.\n\n## Layout\n\n```\nmcp-filters/\n├── README.md              # this file\n├── LICENSE                # Apache 2.0\n├── docker-compose.yml     # common + provider filters\n├── docs/\n│   ├── CONTRACT.md        # full HTTP contract + JSON schema\n│   ├── ARCHITECTURE.md    # how filters compose with gateway + engine\n│   └── ADDING_FILTERS.md  # write-your-own walkthrough\n├── common/                # cross-cutting filters (any MCP server)\n│   ├── sql-guard/\n│   ├── pii-redactor/\n│   ├── row-limiter/\n│   ├── schema-validator/\n│   ├── rate-limiter/\n│   └── field-masker/\n├── provider/              # vendor-specific data guards (54 providers)\n│   ├── manifest.json\n│   ├── scripts/generate-providers.js\n│   ├── _lib/\n│   └── <vendor>/data-guard/\n└── tests/\n    ├── contract.js        # HTTP contract for every filter\n    └── behaviour.js       # decision-logic regression tests\n```\n## CII-Best-Practices Badge\n[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13305/badge)](https://www.bestpractices.dev/projects/13305)\n\n## OpenSSF Scorecard\n[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/abluva-research/mcp-trust-plane/badge)](https://securityscorecards.dev/viewer/?uri=github.com/abluva-research/mcp-trust-plane)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

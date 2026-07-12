@@ -1,0 +1,41 @@
+{
+  "full_name": "930m310n/geomelon-mcp",
+  "html_url": "https://github.com/930m310n/geomelon-mcp",
+  "description": "MCP server for the Geomelon geographic API — stdio and remote HTTP transports",
+  "topics": [
+    "geo",
+    "geospatial",
+    "gis",
+    "mcp-server",
+    "mcp-servers",
+    "mcp-tools",
+    "model-context-protocol",
+    "model-context-protocol-server",
+    "model-context-protocol-servers"
+  ],
+  "matched_query_topics": [
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-05-10T13:38:46Z",
+  "last_pushed_at": "2026-05-25T16:46:55Z",
+  "fetched_at": "2026-07-12T00:09:47.275Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# geomelon-mcp\n\nMCP server for the [Geomelon](https://rapidapi.com/hom3chuk/api/geomelon) geographic API. Exposes cities, countries, regions, and languages as tools any MCP-compatible AI client can call.\n\nLooking for other ways to integrate? See all official libraries at [geomelon.dev/libraries](https://geomelon.dev/libraries/).\n\nTwo transports are included:\n\n| Binary | Transport | Use case |\n|---|---|---|\n| `geomelon-mcp` | stdio | Claude Desktop, Cursor, Cline, Continue |\n| `geomelon-mcp-http` | HTTP (Streamable) | Claude Code, remote / hosted server |\n\n## Requirements\n\n- Node.js 18+\n- A [RapidAPI](https://rapidapi.com/hom3chuk/api/geomelon) key with the Geomelon API subscribed\n\n---\n\n## Claude Code (HTTP)\n\nCreate a `.env` file in the directory you'll run the server from:\n\n```bash\ncp .env.example .env\n# then edit .env and set GEOMELON_API_KEY\n```\n\nStart the server (dotenv loads `.env` automatically):\n\n```bash\nnpx geomelon-mcp-http\n```\n\nRegister it with Claude Code:\n\n```bash\nclaude mcp add --transport http geomelon http://localhost:3000/mcp\n```\n\nVerify it's connected:\n\n```bash\nclaude mcp list\n```\n\nThe server must be running whenever you use Claude Code. To use a different port set `PORT=your_port` and update the URL in the `claude mcp add` command accordingly.\n\n---\n\n## Claude Desktop (stdio)\n\nAdd to `~/Library/Application Support/Claude/claude_desktop_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"geomelon\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"geomelon-mcp\"],\n      \"env\": {\n        \"GEOMELON_[REDACTED-GENERIC_KV_SECRET]\"\n      }\n    }\n  }\n}\n```\n\nRestart Claude Desktop after saving.\n\n---\n\n## Cursor / Windsurf / Cline (stdio)\n\nAdd to your editor's MCP config:\n\n```json\n{\n  \"geomelon\": {\n    \"command\": \"npx\",\n    \"args\": [\"-y\", \"geomelon-mcp\"],\n    \"env\": {\n      \"GEOMELON_[REDACTED-GENERIC_KV_SECRET]\"\n    }\n  }\n}\n```\n\n---\n\n## Remote / hosted HTTP server\n\nCreate a `.env` file on your server:\n\n```bash\ncp .env.example .env\n# set GEOMELON_API_KEY and PORT in .env\n```\n\nStart the server:\n\n```bash\nnpx geomelon-mcp-http\n```\n\nThen register with any MCP client using `http://your-host:3000/mcp` as the URL.\n\nThe HTTP transport is stateless — each request is independent, no session management needed.\n\n---\n\n## Available tools\n\n### Cities\n\n| Tool | Description |\n|---|---|\n| `search_cities` | Search by name, country code, region, population range, sort order |\n| `get_city` | Full details for a city by UUID |\n| `get_city_translations` | All name translations for a city by UUID |\n| `get_city_settlement_types` | Settlement-type classifications for a city by UUID |\n| `cities_by_coordinates_closest` | Cities nearest to a lat/lon, ordered by distance |\n| `cities_by_coordinates_largest` | Largest cities near a lat/lon, ordered by population |\n| `cities_distance` | Distance in km between two cities |\n\n### Countries\n\n| Tool | Description |\n|---|---|\n| `list_countries` | List countries, filter by name prefix or telephone dialing code |\n| `get_country` | Full details for a country by UUID (includes translations and regions) |\n| `get_country_translations` | Name translations for a country by UUID |\n| `get_country_regions` | All administrative regions for a country by UUID |\n\n### Regions\n\n| Tool | Description |\n|---|---|\n| `list_regions` | List regions, filter by country UUID |\n| `get_region` | Full details for a region by UUID |\n| `get_region_translations` | Name translations for a region by UUID |\n\n### Languages\n\n| Tool | Description |\n|---|---|\n| `list_languages` | List all languages in the database |\n| `get_language` | Details for a language by UUID |\n\n### Oneshot prefix search (free, no API key)\n\nFast country-scoped city prefix search served as static files. No RapidAPI subscription needed. See [geomelon.dev/free-city-autocomplete-api](https://geomelon.dev/free-city-autocomplete-api/) for the HTTP endpoint, supported country/language pairs, and response shape. This MCP server does not wrap the oneshot endpoint — call it directly.\n\n---\n\n### Compound tools\n\nThese tools chain multiple API calls internally to save round-trips.\n\n| Tool | Description |\n|---|---|\n| `find_cities_near_city` | Given a city UUID, find nearby cities ordered by distance or population |\n| `city_context` | Fetch a city together with its full country and region details in one call |\n| `country_overview` | Fetch a country (by UUID or name), its regions, and top cities by population |\n| `compare_cities` | Fetch two cities and the distance between them in one call |\n| `search_cities_in_country` | Search cities using a country name instead of an ISO code |\n"
+  },
+  "descriptor_file": {
+    "path": "server.json",
+    "content": "{\n  \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json\",\n  \"name\": \"io.github.930m310n/geomelon-mcp\",\n  \"description\": \"MCP server for the Geomelon geographic API — stdio and remote HTTP transports\",\n  \"repository\": {\n    \"url\": \"https://github.com/930m310n/geomelon-mcp\",\n    \"source\": \"github\"\n  },\n  \"version\": \"1.0.8\",\n  \"packages\": [\n    {\n      \"registryType\": \"npm\",\n      \"identifier\": \"geomelon-mcp\",\n      \"version\": \"1.0.8\",\n      \"transport\": {\n        \"type\": \"stdio\"\n      },\n      \"environmentVariables\": [\n        {\n          \"description\": \"Your RapidAPI key for Geomelon\",\n          \"isRequired\": true,\n          \"format\": \"string\",\n          \"isSecret\": true,\n          \"name\": \"GEOMELON_API_KEY\"\n        },\n        {\n          \"description\": \"Port to run HTTP MCP on\",\n          \"isRequired\": false,\n          \"format\": \"string\",\n          \"isSecret\": true,\n          \"name\": \"PORT\"\n        }\n      ]\n    }\n  ]\n}"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

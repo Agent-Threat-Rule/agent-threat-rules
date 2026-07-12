@@ -1,0 +1,31 @@
+{
+  "full_name": "avanishd-3/math-mcp",
+  "html_url": "https://github.com/avanishd-3/math-mcp",
+  "description": "Math MCP server to boost LLMs math abilities",
+  "topics": [
+    "mcp",
+    "mcp-server",
+    "mcp-servers"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-08-09T00:56:32Z",
+  "last_pushed_at": "2025-09-17T19:19:01Z",
+  "fetched_at": "2026-07-12T00:11:07.466Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Math MCP Server\n\n## Overview\n\nThis is an MCP (Model Context Protocol) server that can do basic arithmetic in 64 bit precision, along with matrix multiplication.\n\n<a href=\"https://glama.ai/mcp/servers/@avanishd-3/math-mcp\">\n  <img width=\"380\" height=\"200\" src=\"https://glama.ai/mcp/servers/@avanishd-3/math-mcp/badge\" alt=\"Math Server MCP server\" />\n</a>\n\n## Features\n- Addition \n- Subtraction \n- Multiplication\n- Division\n\n- Matrix multiplication\n\n## Installation\n\n### Prerequisities\nEnsure you have the following installed:\n- Python 3.13+\n- uv\n\n#### Installing UV\nSee [installation guide](https://docs.astral.sh/uv/getting-started/installation/#standalone-installer) for all options.\n\n##### Unix/MacOS\n\n```\ncurl -LsSf https://astral.sh/uv/install.sh | sh\n```\n\nor\n\n```\nbrew install uv\n```\n##### Windows\n\n```\nwinget install --id=astral-sh.uv  -e\n```\n\n### Clone the Repository\n```\ngit clone https://github.com/avanishd-3/math-mcp.git\ncd math-mcp-server\nuv sync\n```\n\n## Integration with Clients\n\n### Claude Code\nfastmcp install claude-code src/math_server.py:math_mcp\n\n### Claude Desktop\nfastmcp install claude-desktop src/math_server.py:math_mcp\n\n### Cursor\nfastmcp install cursor src/math_server.py:math_mcp\n\n### VS Code\nAdd the following .vscode/mcp.json and use your actual path.\n\n```\n{\n  \"servers\": {\n    \"Math MCP Server\": {\n      \"command\": \"uv\",\n      \"args\": [\n        \"run\",\n        \"--with\",\n        \"fastmcp\",\n        \"--with\",\n        \"numpy\",\n        \"fastmcp\",\n        \"run\",\n        \"/absolute/path/Desktop/to/math-mcp-server/src/math_server.py:math_mcp\"\n      ]\n    }\n  },\n}\n```\n\n## Contributing\n1. Fork the repository\n\n2. Create a new branch:\n```\ngit checkout -b add-feature\n```\n\n3. Make changes and commit (remember to add unit tests in test/ directory)\n```\ngit commit -m \"Added a new feature\"\n```\n\n4. Push to your fork\n```\ngit push origin add-feature\n```\n\n5. Open a pull request.\n\n## Project Structure\n```text\n/\n├── src\n│   └── math_server.py\n├── tests\n│   ├── test_arithmetic.py\n│   │   └── astro.svg\n│   ├── test_linear_algebra.py\n├── pytest.ini\n├── pyproject.toml\n└── uv.lock\n```\n\n### Architecture\nThis MCP server uses [Fast MCP 2.0](https://gofastmcp.com/getting-started/welcome), which provides many more features than\nFast MCP 1.0, which is what the official Python SDK for MCP uses.\n\nAlso, the unit tests are written with Pytest, which is what Fast MCP 2.0 recommends. \n\nLastly, if you don't know, uv is a much faster version of pip that also provides a lockfile for project dependencies (this will be familiar if you've used npm or cargo before). The MCP Python SDK itself uses uv, and I use it for all new Python projects, because it's 10-100x faster than pip, and the lockfile makes dependency version management much simpler.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

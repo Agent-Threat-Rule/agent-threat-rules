@@ -1,0 +1,32 @@
+{
+  "full_name": "SDGLBL/mcp-claude-code",
+  "html_url": "https://github.com/SDGLBL/mcp-claude-code",
+  "description": "MCP implementation of Claude Code capabilities and more",
+  "topics": [
+    "claude",
+    "claude-code",
+    "mcp",
+    "mcp-server"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 303,
+  "forks": 36,
+  "open_issues": 7,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2025-03-18T10:55:31Z",
+  "last_pushed_at": "2025-08-29T13:41:08Z",
+  "fetched_at": "2026-07-11T22:44:08.777Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP Claude Code\n\nAn implementation of Claude Code capabilities using the Model Context Protocol (MCP).\n\n## Overview\n\nThis project provides an MCP server that implements Claude Code-like functionality, allowing Claude to directly execute instructions for modifying and improving project files. By leveraging the Model Context Protocol, this implementation enables seamless integration with various MCP clients including Claude Desktop.\n\n![example](./doc/example2.gif)\n\n## Features\n\n- **Code Understanding**: Analyze and understand codebases through file access and pattern searching\n- **Code Modification**: Make targeted edits to files with proper permission handling\n- **Enhanced Command Execution**: Run commands and scripts in various languages with improved error handling and shell support\n- **File Operations**: Manage files with proper security controls through shell commands\n- **Code Discovery**: Find relevant files and code patterns across your project with high-performance searching\n- **Agent Delegation**: Delegate complex tasks to specialized sub-agents that can work concurrently\n- **Multiple LLM Provider Support**: Configure any LiteLLM-compatible model for agent operations\n- **Jupyter Notebook Support**: Read and edit Jupyter notebooks with full cell and output handling\n\n## Tools Implemented\n\n| Tool              | Description                                                                                                                       |\n| ----------------- | --------------------------------------------------------------------------------------------------------------------------------- |\n| `read`            | Read file contents with line numbers, offset, and limit capabilities                                                              |\n| `write`           | Create or overwrite files                                                                                                         |\n| `edit`            | Make line-based edits to text files                                                                                               |\n| `multi_edit`      | Make multiple precise text replacements in a single file operation with atomic transactions                                       |\n| `directory_tree`  | Get a recursive tree view of directories                                                                                          |\n| `grep`            | Fast pattern search in files with ripgrep integration for best performance ([docs](./doc/migration_SearchContentTool_to_Grep.md)) |\n| `content_replace` | Replace patterns in file contents                                                                                                 |\n| `grep_ast`        | Search code with AST context showing matches within functions, classes, and other structures                                      |\n| `run_command`     | Execute shell commands (also used for directory creation, file moving, and directory listing)                                     |\n| `notebook_read`   | Extract and read source code from all cells in a Jupyter notebook with outputs                                                    |\n| `notebook_edit`   | Edit, insert, or delete cells in a Jupyter notebook                                                                               |\n| `think`           | Structured space for complex reasoning and analysis without making changes                                                        |\n| `dispatch_agent`  | Launch one or more agents that can perform tasks using read-only tools concurrently                                               |\n| `batch`           | Execute multiple tool invocations in parallel or serially in a single request                                                     |\n| `todo_write`      | Create and manage a structured task list                                                                                          |\n| `todo_read`       | Read a structured task list                                                                                                       |\n\n## Getting Started\n\nFor detailed installation and configuration instructions, please refer to [INSTALL.md](./doc/INSTALL.md).\n\nFor detailed tutorial of 0.3 version, please refer to [TUTORIAL.md](./doc/TUTORIAL.md)\n\n## Security\n\nThis implementation follows best practices for securing access to your filesystem:\n\n- Permission prompts for file modifications and command execution\n- Restricted access to specified directories only\n- Input validation and sanitization\n- Proper error handling and reporting\n\n## Development\n\nTo contribute to this project:\n\n1. Fork the repository\n2. Create a feature branch (`git checkout -b feature/amazing-feature`)\n3. Commit your changes (`git commit -m 'Add some amazing feature'`)\n4. Push to the branch (`git push origin feature/amazing-feature`)\n5. Open a Pull Request\n\n## License\n\nThis project is licensed under the MIT License - see the LICENSE file for details.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

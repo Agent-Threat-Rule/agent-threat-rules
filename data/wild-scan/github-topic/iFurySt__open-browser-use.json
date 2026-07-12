@@ -1,0 +1,48 @@
+{
+  "full_name": "iFurySt/open-browser-use",
+  "html_url": "https://github.com/iFurySt/open-browser-use",
+  "description": "🔮 Platform-neutral Browser Use for AI agents: real Chrome automation with a CLI + SDKs, no lock-in, dead simple.",
+  "topics": [
+    "ai-agent",
+    "ai-agents",
+    "browser-automation",
+    "browser-use",
+    "browser-use-agent",
+    "cdp",
+    "chrome-automation",
+    "chrome-devtools-protocol",
+    "chrome-extension",
+    "cli",
+    "codex",
+    "javascript-sdk",
+    "mcp",
+    "model-context-protocol",
+    "native-messaging",
+    "open-browser-use",
+    "openai-codex",
+    "python-sdk",
+    "sdk",
+    "web-automation"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 196,
+  "forks": 17,
+  "open_issues": 0,
+  "language": "JavaScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-24T14:37:24Z",
+  "last_pushed_at": "2026-07-08T02:31:44Z",
+  "fetched_at": "2026-07-11T23:17:15.021Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Open Browser Use\n\n[![English](https://img.shields.io/badge/English-Click-yellow)](./README.md)\n[![简体中文](https://img.shields.io/badge/简体中文-点击查看-orange)](./README.zh-CN.md)\n[![Release](https://img.shields.io/github/v/release/iFurySt/open-browser-use)](https://github.com/iFurySt/open-browser-use/releases)\n[![npm SDK](https://img.shields.io/npm/v/open-browser-use-sdk?label=npm%20SDK)](https://www.npmjs.com/package/open-browser-use-sdk)\n[![PyPI SDK](https://img.shields.io/pypi/v/open-browser-use-sdk?label=PyPI%20SDK)](https://pypi.org/project/open-browser-use-sdk/)\n[![Go SDK](https://pkg.go.dev/badge/github.com/ifuryst/open-browser-use/packages/open-browser-use-go.svg)](https://pkg.go.dev/github.com/ifuryst/open-browser-use/packages/open-browser-use-go)\n[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/iFurySt/open-browser-use)\n\n---\n\n> [!TIP]\n> Interested in Computer Use? Check out [open-computer-use](https://github.com/iFurySt/open-codex-computer-use).\n\n`open-browser-use` is a browser automation layer that stays neutral across\nagent runtimes. It is also an open-source alternative to the Chrome Browser Use\ncapability recently shipped in Codex.app. For the story behind it, see the\n[Browser Use Deep Dive](https://www.ifuryst.com/en/blog/2026/open-browser-use/).\n\nUnder the hood, it pairs a browser extension with the `open-browser-use` CLI.\nYou can integrate it through the JavaScript SDK, Python SDK, Go SDK, or the CLI.\n\nhttps://github.com/user-attachments/assets/bcfba878-f6a8-44b9-b84b-29c7e0285687\n\n## Quick Start\n\n```bash\nnpm i -g open-browser-use\nopen-browser-use setup\n```\n\n### Install the CLI\n\n```bash\n# npm (macOS, Linux, Windows)\nnpm i -g open-browser-use\n\n# Homebrew (macOS, Linux)\nbrew tap iFurySt/open-browser-use && brew install open-browser-use\n\n# Upgrade\nnpm update -g open-browser-use\n```\n\n### Set Up Chrome\n\nRegister the native host for the extension. The setup command also opens the\nChrome Web Store page so you can install or enable the matching Chrome\nextension, then restart Chrome if needed.\n\n```bash\nopen-browser-use setup\n```\n\nIf the Chrome Web Store item is temporarily unavailable, use\n`open-browser-use setup beta` to prepare a keyed release ZIP for manual\ninstallation from `chrome://extensions/`.\n\n### Use It\n\n#### SDK\n\n```bash\n# JavaScript / TypeScript\nnpm install open-browser-use-sdk\n\n# Python\npip install open-browser-use-sdk\n\n# Go\ngo get github.com/ifuryst/open-browser-use/packages/open-browser-use-go\n```\n\nThe SDK package name is `open-browser-use-sdk` on both npm and PyPI. Python\ncode imports it as `open_browser_use`; Go code imports the SDK package as\n`obu`.\n\n#### Skill\n\nInstall the skill directly:\n\n```bash\n# Install for Codex\nnpx skills add iFurySt/open-browser-use -g -a codex --skill open-browser-use -y\nnpx skills ls -g -a codex | rg 'open-browser-use'\ncodex exec --skip-git-repo-check \"Use open-browser-use to check today’s Hacker News and summarize the most worth-reading posts.\"\n\n# Install for Claude Code\nnpx skills add iFurySt/open-browser-use -g -a claude-code --skill open-browser-use -y\n```\n\nUpdate an existing global install, including the Codex install created above:\n\n```bash\nnpx skills update open-browser-use -g -y\n\n# `upgrade` is an alias for `update`\nnpx skills upgrade open-browser-use -g -y\n```\n\nYou can also manually download and install the\n[`open-browser-use` skill](./skills/open-browser-use), then start using it from\nyour agent.\n\nDownloadable `.skill` and `.zip` packages are available in\n[GitHub Releases](https://github.com/iFurySt/open-browser-use/releases).\n\n#### MCP\n\nInstall the MCP server into all supported global agent configs:\n\n```bash\nnpx add-mcp \"obu mcp\" --name open_browser_use --all -g -y\nnpx add-mcp list -g\n```\n\nYou can also configure an agent runtime with local MCP stdio support manually:\n\n```toml\n[mcp_servers.open_browser_use]\ncommand = \"obu\"\nargs = [\"mcp\"]\n```\n\nThe server exposes browser tools for tab listing, opening, claiming,\nnavigation, CDP, action plans, and cleanup.\n\n## License\n\n[MIT](./LICENSE)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

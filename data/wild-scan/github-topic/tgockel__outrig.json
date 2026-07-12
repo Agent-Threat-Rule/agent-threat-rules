@@ -1,0 +1,31 @@
+{
+  "full_name": "tgockel/outrig",
+  "html_url": "https://github.com/tgockel/outrig",
+  "description": "Harness LLM MCP Tools in a PodMan Container",
+  "topics": [
+    "harness",
+    "llm-tools",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 2,
+  "language": "Rust",
+  "license": "Apache-2.0",
+  "default_branch": "trunk",
+  "created_at": "2026-05-02T17:32:38Z",
+  "last_pushed_at": "2026-07-11T17:14:58Z",
+  "fetched_at": "2026-07-12T00:48:37.675Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# outrig\n\n![CI](https://github.com/tgockel/outrig/actions/workflows/ci.yml/badge.svg)\n\n`outrig` runs an LLM agent on the host and connects it to MCP servers inside a podman-managed\ncontainer, so tools like filesystem and shell access stay inside the sandbox you've set up.\n\nCrate names matter: depend on `outrig` when embedding the library, and install\n`outrig-cli` when you want the command-line tool that provides the `outrig` binary. Both\ncrates publish from this repository.\n\nYou define the sandbox in your repository: a `Dockerfile` for the container, an\n`.agents/outrig/config.toml` describing which MCP servers run inside it and which LLM the agent\ntalks to. Then you run `outrig run` from your shell, and outrig drops you into a stdin/stdout REPL\nwhere you talk to the agent.\n\nThe agent layer is the [Rig](https://github.com/0xPlaygrounds/rig) crate -- outrig's job is to run\nRig in the host process and give it a container-isolated MCP tool set.\n\n## Install\n\nInstall the CLI package to get the `outrig` command:\n\n```sh\n$ cargo install outrig-cli\n```\n\nFor library use, depend on the `outrig` crate from your Rust package.\n\n## At a glance\n\n```sh\n$ outrig run\n[outrig] agent: coding (model: fast / provider: openai / gpt-4o-mini)\n[outrig] container outrig-20260502T103412-3f2a started\n[outrig] mcp servers: fs, shell\n> what's in this repo?\nThis repo is a Rust project named \"outrig\". The top level contains Cargo.toml,\nsrc/, and doc/. src/ has lib.rs and main.rs...\n> ^D\n[outrig] session 20260502T103412-3f2a ended\n```\n\n## Documentation\n\nThe full docs live in [`doc/`](doc/README.md) and render as an mdbook. The latest `trunk`\nbuild is published at <https://tgockel.github.io/outrig/>. To preview locally from the\nproject root:\n\n```sh\nmdbook serve   # live preview at http://localhost:3000\nmdbook build   # static HTML in target/book/\n```\n\nStart at the [Introduction](doc/README.md) or jump to the [Quickstart](doc/quickstart.md).\n\n## Contributing\n\nSee [CONTRIBUTING.md](CONTRIBUTING.md) for local checks, the e2e test invocation, and docs\nbuild instructions.\n\n## License\n\nLicensed under the Apache License, Version 2.0. See [LICENSE](LICENSE).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

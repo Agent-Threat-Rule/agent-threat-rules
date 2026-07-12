@@ -1,0 +1,38 @@
+{
+  "full_name": "the-samarium/Research-paper-mcp-server",
+  "html_url": "https://github.com/the-samarium/Research-paper-mcp-server",
+  "description": "A research paper discovery and ingestion tool built on top of arXiv, ChromaDB, and FastMCP. Originally developed as a FastAPI backend with local LLM inference via Ollama, then migrated to an MCP server so that an LLM host (like Claude) handles all reasoning.",
+  "topics": [
+    "ai",
+    "ai-tools",
+    "backend",
+    "backendapi",
+    "fastapi",
+    "mcp-server",
+    "mcp-tools",
+    "python"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-05-30T09:32:03Z",
+  "last_pushed_at": "2026-06-07T18:01:07Z",
+  "fetched_at": "2026-07-12T00:48:33.052Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Research MCP Server\n\nA research paper discovery and ingestion tool built on top of arXiv, ChromaDB, and FastMCP.\nOriginally developed as a FastAPI backend with local LLM inference via Ollama, then migrated to an MCP server so that an LLM host (like Claude) handles all reasoning — keeping the server lean and focused on retrieval.\n\n---\n\n## Project Evolution\n\n### Phase 1 — FastAPI + Local LLM\nThe project started as a standalone FastAPI backend. It used `langchain-ollama` to run a local LLM, built a RAG pipeline that retrieved relevant chunks from ChromaDB, and returned fully synthesized answers from the server itself.\n\n### Phase 2 — MCP Server (current)\nThe LLM layer was removed from the server entirely. The backend now exposes retrieval tools via FastMCP. The connected LLM host (Claude or any MCP-compatible client) receives raw document chunks and does the reasoning. This is a cleaner separation of concerns — the server does search and retrieval, the LLM does thinking.\n\n---\n\n## Project Structure\n\n```\npatent-ip-research-mcp/\n├── server.py                  # FastMCP entry point\n├── pyproject.toml\n├── backend/\n│   ├── __init__.py\n│   ├── app.py                 # FastAPI app with router\n│   ├── main.py                # APIRouter with all route definitions\n│   ├── fncs.py                # All business logic functions\n│   └── rag_pipeline/\n│       ├── __init__.py\n│       ├── rag.py             # Embedding + ChromaDB persistence\n│       └── retriver.py        # Vector store retrieval\n├── assets/                    # Downloaded PDFs (auto-created)\n└── chromaDB/                  # Persisted Chroma vector DB (auto-created)\n```\n\n---\n\n## Installation\n\n### Prerequisites\n- Python >= 3.10\n- [uv](https://github.com/astral-sh/uv) package manager\n- [Ollama](https://ollama.com/) installed and running (required for the embedding model)\n\n### Setup\n\n```powershell\n# Clone the repo\ngit clone https://github.com/your-username/patent-ip-research-mcp.git\ncd patent-ip-research-mcp\n\n# Create and activate virtual environment\nuv venv\n.\\.venv\\Scripts\\Activate.ps1\n\n# Install dependencies\nuv pip install .\n```\n\n---\n\n## Running as an MCP Server\n\n### Via FastMCP CLI (inspector / dev mode)\n```powershell\nuv run fastmcp dev inspector server.py\n```\n\n### Via MCP Inspector UI\nSet the following in the Inspector:\n- **Command:** `uv`\n- **Arguments:** `run fastmcp run server.py`\n\n### Registering with Claude Desktop\nAdd the following to your `claude_desktop_config.json`:\n```json\n{\n  \"mcpServers\": {\n    \"patent-ip-research\": {\n      \"command\": \"uv\",\n      \"args\": [\"run\", \"fastmcp\", \"run\", \"server.py\"],\n      \"cwd\": \"C:\\\\path\\\\to\\\\patent-ip-research-mcp\"\n    }\n  }\n}\n```\n\n---\n\n## Running as a FastAPI Server (legacy mode)\n\n```powershell\nuvicorn backend.app:appp --reload\n```\n\nAPI docs available at `http://127.0.0.1:8000/docs`.\n\n---\n\n## API / MCP Tools\n\n| Endpoint | Description |\n|---|---|\n| `GET /search?query=<term>` | Fetch up to 20 papers from arXiv matching the query |\n| `GET /search/rag?query=<term>&top_k=<n>&wipe_db=<bool>` | Fetch papers, download PDFs, embed and persist to ChromaDB |\n| `GET /query?query=<term>&top_k=<n>` | Retrieve relevant document chunks from ChromaDB for a query |\n| `GET /wipe` | Wipe the ChromaDB vector database |\n| `GET /clear-assets` | Delete the downloaded PDFs in `assets/` |\n\n---\n\n## Storage\n\n| Path | Contents |\n|---|---|\n| `assets/` | Downloaded PDF files from arXiv, auto-created at project root |\n| `chromaDB/` | Persisted Chroma vector database, auto-created at project root |\n\nBoth directories are created automatically at the project root when first used. Paths are resolved from `fncs.py`'s location so they always land in the right place regardless of working directory.\n\n---\n\n## Dependencies\n\nKey packages from `pyproject.toml`:\n\n- `fastmcp` — MCP server framework\n- `fastapi` — underlying HTTP layer\n- `langchain-chroma` — ChromaDB vector store integration\n- `langchain-ollama` — Ollama embeddings (embedding only, LLM inference removed)\n- `langchain-text-splitters` — document chunking\n- `pypdf` — PDF text extraction\n- `feedparser` — arXiv Atom feed parsing\n\n---\n\n## Notes\n\n- Ollama is still required for **embeddings** (`nomic-embed-text` or similar). Only the LLM inference step was removed during the MCP migration.\n- If `wipe_db=true` is passed to `/search/rag`, the existing vector DB is released from memory and cleared before re-indexing. This is important on Windows where ChromaDB file locks can prevent deletion.\n- The `assets/` folder must exist and contain PDFs before `/query` will return results. Run `/search/rag` first."
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "server.py",
+    "size": 178,
+    "content": "from fastmcp import FastMCP\nfrom backend.app import appp\n\nmcp = FastMCP.from_fastapi(\n    app=appp,\n    name=\"Research-paper-MCP-server\"\n)\n\nif __name__==\"__main__\":\n    mcp.run()"
+  },
+  "content_fetch_notes": []
+}

@@ -1,0 +1,47 @@
+{
+  "full_name": "rigour-labs/rigour",
+  "html_url": "https://github.com/rigour-labs/rigour",
+  "description": "The immune system for AI coding agents",
+  "topics": [
+    "agentic-workflow",
+    "ai",
+    "ai-agents",
+    "claude-code",
+    "code-quality",
+    "developer-productivity",
+    "devtools",
+    "gaurdrail",
+    "guardrails",
+    "lint",
+    "llm",
+    "mcp",
+    "model-context-protocol",
+    "software-engineering",
+    "static-analysis",
+    "typescript",
+    "typesystem",
+    "vibe-coding",
+    "vibecoding"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 23,
+  "forks": 1,
+  "open_issues": 4,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-01-04T04:35:38Z",
+  "last_pushed_at": "2026-04-27T14:13:10Z",
+  "fetched_at": "2026-07-11T23:50:44.910Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Rigour\n\n[![npm version](https://img.shields.io/npm/v/@rigour-labs/cli?color=cyan&label=cli)](https://www.npmjs.com/package/@rigour-labs/cli)\n[![cli downloads](https://img.shields.io/npm/dm/@rigour-labs/cli?color=blue&label=cli+downloads)](https://www.npmjs.com/package/@rigour-labs/cli)\n[![mcp downloads](https://img.shields.io/npm/dm/@rigour-labs/mcp?color=blue&label=mcp+downloads)](https://www.npmjs.com/package/@rigour-labs/mcp)\n[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)\n[![MCP Registry](https://img.shields.io/badge/MCP-Listed-green)](https://rigour.run)\n[![OWASP](https://img.shields.io/badge/OWASP-Project-red)](https://rigour.run)\n\n**Your AI agent just tried to commit an AWS secret. Rigour blocked it in <100ms.**\n\n## Try it now (zero config)\n\n```bash\nnpx rigour-scan\n```\n\nWorks on any repo. No init, no config, no setup. Instant results in your terminal:\n\n```\n  HARDCODED SECRET DETECTED\n  AWS_SECRET_ACCESS_KEY found in src/config.ts:23\n\n  + 22 more violations across 847 files (2.1s)\n\n  Score        ████░░░░░░░░░░░░░░░░  34/100\n  AI Health    ███░░░░░░░░░░░░░░░░░░  28/100\n\n  Gates:  ✅ file-size  ❌ security  ❌ ast  ✅ deps\n\n  Brain: learned 12 patterns · trend: improving ↑\n```\n\n## Add to your AI IDE (30 seconds)\n\n```json\n{ \"mcpServers\": { \"rigour\": { \"command\": \"npx\", \"args\": [\"-y\", \"@rigour-labs/mcp\"] } } }\n```\n\n| IDE / Agent | MCP Tools | Live Dashboard | Real-Time Feed |\n|---|---|---|---|\n| **Claude Desktop** | ✅ | ✅ MCP App | ✅ Logging |\n| **VS Code Copilot** | ✅ | ✅ MCP App | ✅ Logging |\n| **ChatGPT** | ✅ | ✅ MCP App | ✅ Logging |\n| **Goose** | ✅ | ✅ MCP App | ✅ Logging |\n| **Claude Code** | ✅ | — | ✅ Logging |\n| **Cursor** | ✅ | — | ✅ Logging |\n| **Cline** | ✅ | — | ✅ Logging |\n| **Windsurf** | ✅ | — | ✅ Logging |\n| **Codex** | ✅ | — | ✅ Logging |\n\n## Live governance dashboard (MCP App)\n\nIn supported editors, a real-time dashboard appears automatically as your agent works:\n\n```\n┌─ Rigour Governance ──────────────────────────┐\n│  Score: 94/100  ✅ PASS                      │\n│                                               │\n│  14:32:01  rigour_check → FAIL (34/100)       │\n│  14:32:03  fix_packet → 8 fixes               │\n│  14:32:15  rigour_check → 71/100 (+37)        │\n│  14:32:22  rigour_check → ✅ PASS 94/100      │\n│                                               │\n│  Brain: 47 patterns · trend: improving ↑      │\n└───────────────────────────────────────────────┘\n```\n\nNo extra commands. The dashboard appears when the agent calls Rigour tools. Watch your agent self-heal in real time.\n\n## What it catches\n\n| Category | Gates |\n|---|---|\n| **Security** | Hardcoded secrets (29+ patterns), SQL injection, XSS, CSRF, prototype pollution, Shannon entropy |\n| **Structural** | File size, cyclomatic complexity, method count, parameter count, nesting depth, TODO/FIXME |\n| **AI Drift** | Hallucinated imports, phantom APIs, context drift, retry loop detection |\n| **Governance** | Agent team isolation, checkpoint supervision, memory DLP |\n\nAST-based. Not heuristics. **TypeScript, JavaScript, Python, Go, Ruby, C#, Java, Kotlin, Rust.**\n\n## How it works\n\n```\nAgent writes code → Rigour gates fire → FAIL? → Fix Packet (JSON)\n                                           ↓\n                                    Agent reads exact instructions\n                                           ↓\n                                    Agent fixes → PASS ✓\n```\n\nNo human in the loop. The agent gets told exactly what's wrong, on which line, and how to fix it — in JSON it can consume.\n\n## The Brain — learns your codebase\n\nEvery scan reinforces patterns. Patterns decay when absent. At `strength: 0.9`, they promote to hard rules. Your project's own immune system — trained locally, zero telemetry.\n\n```\nFirst week:  catches 12 violations\nFirst month: catches 8 violations  ← learning your patterns\nThird month: catches 3 violations  ← your agents have adapted\n```\n\n## How it's different\n\n| | Rigour | ESLint | Cloud tools |\n|---|---|---|---|\n| Runs locally, zero telemetry | ✅ | ✅ | ❌ |\n| Learns YOUR codebase (Brain) | ✅ | ❌ | ❌ |\n| Agent self-healing (Fix Packets) | ✅ | ❌ | ❌ |\n| Works offline (GGUF sidecar) | ✅ | ✅ | ❌ |\n| AI-native drift detection | ✅ | ❌ | ❌ |\n| MCP-native (26 tools) | ✅ | ❌ | ❌ |\n\n## Used in production\n\n- **19,000+ total installs** across CLI and MCP\n- **Organically forked by Alibaba iFlow**\n- **OWASP project** — listed\n- **Cursor MCP directory** — listed\n- **Zero false positives** on 202-finding production audit\n\n## Quick reference\n\n```bash\nnpx rigour-scan                              # zero-config scan\nnpx @rigour-labs/cli init                    # add gates to your project\nnpx @rigour-labs/cli check                   # run gates\nnpx @rigour-labs/cli check --deep            # + local AI analysis\nnpx @rigour-labs/cli check --deep --provider claude -k sk-ant-xxx  # cloud AI\nnpx @rigour-labs/cli studio                  # monitoring dashboard\n```\n\n## Architecture\n\n| Package | Purpose |\n|---|---|\n| `@rigour-labs/core` | Gate engine, AST analysis, Fix Packets, Brain |\n| `@rigour-labs/cli` | `init`, `check`, `scan`, `run`, `studio` |\n| `@rigour-labs/mcp` | MCP server — 26 tools for agent integration |\n| `rigour-scan` | Zero-config shortcut: `npx rigour-scan` |\n\n**Stack:** TypeScript strict, web-tree-sitter, Zod, Vitest.\n\n---\n\n**[Full docs](https://docs.rigour.run)** | **[Technical Spec](docs/SPEC.md)** | **[Philosophy](docs/PHILOSOPHY.md)**\n\nMIT © [Rigour Labs](https://github.com/rigour-labs) — Built by [Ashutosh](https://github.com/erashu212)\n\n*If Rigour caught something real in your codebase — [tell us](https://github.com/rigour-labs/rigour/discussions).*\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

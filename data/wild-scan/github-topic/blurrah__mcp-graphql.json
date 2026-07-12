@@ -1,0 +1,36 @@
+{
+  "full_name": "blurrah/mcp-graphql",
+  "html_url": "https://github.com/blurrah/mcp-graphql",
+  "description": "Model Context Protocol server for GraphQL",
+  "topics": [
+    "ai",
+    "llm",
+    "mcp",
+    "mcp-server",
+    "modelcontextprotocol"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 397,
+  "forks": 60,
+  "open_issues": 15,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2024-12-21T14:05:45Z",
+  "last_pushed_at": "2025-09-08T14:28:14Z",
+  "fetched_at": "2026-07-11T22:41:17.651Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# mcp-graphql\n\n[![smithery badge](https://smithery.ai/badge/mcp-graphql)](https://smithery.ai/server/mcp-graphql)\n\nA Model Context Protocol server that enables LLMs to interact with GraphQL APIs. This implementation provides schema introspection and query execution capabilities, allowing models to discover and use GraphQL APIs dynamically.\n\n<a href=\"https://glama.ai/mcp/servers/4zwa4l8utf\"><img width=\"380\" height=\"200\" src=\"https://glama.ai/mcp/servers/4zwa4l8utf/badge\" alt=\"mcp-graphql MCP server\" /></a>\n\n## Usage\n\nRun `mcp-graphql` with the correct endpoint, it will automatically try to introspect your queries.\n\n### Environment Variables (Breaking change in 1.0.0)\n\n> **Note:** As of version 1.0.0, command line arguments have been replaced with environment variables.\n\n| Environment Variable | Description | Default |\n|----------|-------------|---------|\n| `ENDPOINT` | GraphQL endpoint URL | `http://localhost:4000/graphql` |\n| `HEADERS` | JSON string containing headers for requests | `{}` |\n| `ALLOW_MUTATIONS` | Enable mutation operations (disabled by default) | `false` |\n| `NAME` | Name of the MCP server | `mcp-graphql` |\n| `SCHEMA` | Path to a local GraphQL schema file or URL (optional) | - |\n\n### Examples\n\n```bash\n# Basic usage with a local GraphQL server\nENDPOINT=http://localhost:3000/graphql npx mcp-graphql\n\n# Using with custom headers\nENDPOINT=https://api.example.com/graphql HEADERS='{\"Authorization\":\"Bearer token123\"}' npx mcp-graphql\n\n# Enable mutation operations\nENDPOINT=http://localhost:3000/graphql ALLOW_MUTATIONS=true npx mcp-graphql\n\n# Using a local schema file instead of introspection\nENDPOINT=http://localhost:3000/graphql SCHEMA=./schema.graphql npx mcp-graphql\n\n# Using a schema file hosted at a URL\nENDPOINT=http://localhost:3000/graphql SCHEMA=https://example.com/schema.graphql npx mcp-graphql\n```\n\n## Resources\n\n- **graphql-schema**: The server exposes the GraphQL schema as a resource that clients can access. This is either the local schema file, a schema file hosted at a URL, or based on an introspection query.\n\n## Available Tools\n\nThe server provides two main tools:\n\n1. **introspect-schema**: This tool retrieves the GraphQL schema. Use this first if you don't have access to the schema as a resource.\nThis uses either the local schema file, a schema file hosted at a URL, or an introspection query.\n\n2. **query-graphql**: Execute GraphQL queries against the endpoint. By default, mutations are disabled unless `ALLOW_MUTATIONS` is set to `true`.\n\n## Installation\n\n### Installing via Smithery\n\nTo install GraphQL MCP Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/mcp-graphql):\n\n```bash\nnpx -y @smithery/cli install mcp-graphql --client claude\n```\n\n### Installing Manually\n\nIt can be manually installed to Claude:\n```json\n{\n    \"mcpServers\": {\n        \"mcp-graphql\": {\n            \"command\": \"npx\",\n            \"args\": [\"mcp-graphql\"],\n            \"env\": {\n                \"ENDPOINT\": \"http://localhost:3000/graphql\"\n            }\n        }\n    }\n}\n```\n\n## Security Considerations\n\nMutations are disabled by default as a security measure to prevent an LLM from modifying your database or service data. Consider carefully before enabling mutations in production environments.\n\n## Customize for your own server\n\nThis is a very generic implementation where it allows for complete introspection and for your users to do whatever (including mutations). If you need a more specific implementation I'd suggest to just create your own MCP and lock down tool calling for clients to only input specific query fields and/or variables. You can use this as a reference.\n"
+  },
+  "descriptor_file": {
+    "path": "smithery.yaml",
+    "content": "# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml\n\nstartCommand:\n  type: stdio\n  configSchema:\n    # JSON Schema defining the configuration options for the MCP.\n    type: object\n    required:\n      - endpoint\n    properties:\n      endpoint:\n        type: string\n        description: The GraphQL server endpoint URL.\n      headers:\n        type: string\n        description: Optional JSON string of headers to send with the GraphQL requests.\n  commandFunction:\n    # A function that produces the CLI command to start the MCP on stdio.\n    |-\n    (config) => ({ command: 'node', args: ['/app/dist/index.js', '--endpoint', config.endpoint].concat(config.headers ? ['--headers', config.headers] : []), env: {} })"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

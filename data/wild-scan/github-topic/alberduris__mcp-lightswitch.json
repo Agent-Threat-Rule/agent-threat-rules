@@ -1,0 +1,31 @@
+{
+  "full_name": "alberduris/mcp-lightswitch",
+  "html_url": "https://github.com/alberduris/mcp-lightswitch",
+  "description": "Ultra-lightweight MCP enable/disable manager for Claude Code. Toggle your Model Context Protocol servers like a lightswitch and avoid Context Bloating & Prompt Overloading.",
+  "topics": [
+    "claude-code",
+    "mcp",
+    "mcp-servers"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 1,
+  "forks": 1,
+  "open_issues": 1,
+  "language": "Shell",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-09-23T19:06:06Z",
+  "last_pushed_at": "2025-09-23T19:06:32Z",
+  "fetched_at": "2026-07-12T00:10:42.768Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP Lightswitch\n\nUltra-lightweight MCP enable/disable manager for **Claude Code**. Toggle your Model Context Protocol servers on and off like a lightswitch - no hassle, minimal maintenance.\n\n## Why MCP Lightswitch?\n\nClaude Code loads **all configured MCPs at startup**, consuming significant context tokens even when you're not using them. MCP Lightswitch solves this by providing instant enable/disable functionality with automatic configuration sync.\n\n**Key Benefits:**\n- **Low maintenance** - sync command discovers new MCPs\n- **Ultra lightweight** - only essential commands, no bloat\n- **Friendly names** - use intuitive names instead of technical MCP names\n- **Dynamic** - works with any MCP without hardcoding\n\n## Quick Start\n\n### 1. Copy Files\nDownload these files to your Claude Code project directory:\n- `mcp-manager.sh`\n- `package.json`\n- `mcp-configs.json`\n\n### 2. Setup\n```bash\n# Make script executable\nchmod +x mcp-manager.sh\n\n# Initialize with your existing MCPs (if any)\nnpm run mcp:sync\n```\n\n### 3. Use\n```bash\n# Dynamic enable/disable\nnpm run mcp:enable -- notion\nnpm run mcp:disable -- github\n\n# Enable all configured MCPs\nnpm run mcp:all\n\n# Check status\nnpm run mcp:status\n\n# Sync new MCPs\nnpm run mcp:sync\n```\n\n## How It Works\n\nMCP Lightswitch maintains a local `mcp-configs.json` that acts as persistent memory for your MCP configurations. When you:\n\n1. **Install a new MCP** with `claude mcp add`\n2. **Run sync** with `npm run mcp:sync`\n3. **It auto-discovers** and adds the new MCP to your config\n\nThe sync **never removes** MCPs from your config - it only adds newly discovered ones.\n\n## Configuration\n\n### Basic Structure\n```json\n{\n  \"mcps\": {\n    \"friendly-name\": {\n      \"name\": \"actual-mcp-name\",\n      \"command\": \"-- npx some-mcp-server\",\n      \"transport\": \"stdio\",\n      \"description\": \"Human readable description\"\n    }\n  }\n}\n```\n\n### Friendly Names\nYou can use intuitive names in your config:\n```json\n{\n  \"mcps\": {\n    \"browser\": {                    // ← Friendly name (customizable)\n      \"name\": \"playwright-ext\",     // ← Real MCP ID (DO NOT change)\n      \"command\": \"-- npx @playwright/mcp@latest\",\n      \"transport\": \"stdio\"\n    },\n    \"files\": {                      // ← Friendly name (customizable)\n      \"name\": \"filesystem\",         // ← Real MCP ID (DO NOT change)\n      \"command\": \"-- npx -y @modelcontextprotocol/server-filesystem /allowed/path\",\n      \"transport\": \"stdio\"\n    }\n  }\n}\n```\n\nThen use: `npm run mcp:enable -- browser` instead of remembering `playwright-ext`.\n\n## Commands\n\n### Core Commands\n```bash\nnpm run mcp:status       # Show active MCPs\nnpm run mcp:sync         # Discover & add new MCPs\nnpm run mcp:enable -- <name>   # Enable specific MCP\nnpm run mcp:disable -- <name>  # Disable specific MCP\nnpm run mcp:all          # Enable all from config\nnpm run mcp:disable-all  # Disable all active MCPs\n```\n\n## Examples\n\n### Basic Workflow\n```bash\n# Start fresh\nnpm run mcp:disable-all\n\n# Enable only what you need\nnpm run mcp:enable -- github\nnpm run mcp:enable -- browser\n\n# Check what's active\nnpm run mcp:status\n\n# Add a new MCP to Claude Code\nclaude mcp add memory -- npx -y @modelcontextprotocol/server-memory\n\n# Sync it to your config\nnpm run mcp:sync\n\n# Now you can toggle it\nnpm run mcp:enable -- memory\nnpm run mcp:disable -- memory\n```\n\n### Configuration Example\nSee `mcp-configs.example.json` for a complete example with popular MCPs like:\n- GitHub (repository access)\n- Memory (persistent knowledge)\n- Playwright (browser automation)\n- Notion (workspace integration)\n- Linear (project management)\n- Gmail (email integration)\n\n## Technical Notes\n\n### npm as Script Runner\nThe `package.json` uses npm as a universal script runner rather than Node.js project metadata. This is a common pattern because npm is ubiquitous in development environments, provides familiar syntax (`npm run command`), autocompletion support, and cross-platform compatibility. Essentially using npm as a \"command menu\" for non-JavaScript projects, leveraging its universal availability rather than creating custom tooling.\n\n### Claude Code vs Claude Desktop\nThis tool is **specifically for Claude Code** (the CLI/editor), not Claude Desktop. They use different MCP storage systems.\n\n## License\n\nMIT"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

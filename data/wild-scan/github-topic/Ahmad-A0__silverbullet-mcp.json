@@ -1,0 +1,38 @@
+{
+  "full_name": "Ahmad-A0/silverbullet-mcp",
+  "html_url": "https://github.com/Ahmad-A0/silverbullet-mcp",
+  "description": "A Model Context Protocol (MCP) server to interact with your SilverBullet notes and data.",
+  "topics": [
+    "end-user-programming",
+    "knowledge-management",
+    "markdown",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "note-taking",
+    "personal-knowledge-management",
+    "silverbullet",
+    "silverbullet-plugins"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 34,
+  "forks": 8,
+  "open_issues": 1,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-05-23T16:34:59Z",
+  "last_pushed_at": "2026-04-10T20:29:56Z",
+  "fetched_at": "2026-07-11T23:38:36.576Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# SilverBullet MCP Server\n\nThis project provides a Model Context Protocol (MCP) server that acts as a bridge to your [SilverBullet](https://silverbullet.md) instance. It enables Large Language Models (LLMs) and other MCP-compatible clients to interact with your SilverBullet notes and data by exposing them through standardized MCP `tools` and `resources`.\n\nThe server is designed to be run via Docker Compose alongside your existing SilverBullet Docker container. It handles authentication and provides a secure way for external applications to access and manipulate your SilverBullet space.\n\n![Retirement Prompt Demo](retirement-prompt.gif)\n> Asking Claude to create a retirement projection, based on my notes.\n\n\n\n\n## Prerequisites\n\n*   Docker\n*   Docker Compose\n\n## Getting Started\n\n1.  **Clone the repository:**\n    ```bash\n    git clone <repository-url>\n    cd <repository-name>\n    ```\n\n2.  **Create an environment file:**\n    Copy the contents of `.env.example` to a new file named `.env`.\n    ```bash\n    cp .env.example .env\n    ```\n    Update the `.env` file with your specific values:\n    *   `SB_AUTH_TOKEN`: A secure token for SilverBullet to authenticate with this MCP server and for this MCP server to authenticate with SilverBullet.\n    *   `MCP_TOKEN`: A secure token for clients (e.g., your AI model) to authenticate with this MCP server.\n    *   `SB_API_BASE_URL`: (Optional if running via docker-compose as defined) The base URL for the SilverBullet API. Defaults to `http://silverbullet:3000` in the `docker-compose.yml`.\n    *   `PORT`: (Optional if running via docker-compose as defined) The port the MCP server will listen on. Defaults to `4000`.\n\n3.  **Build and run the services using Docker Compose:**\n    ```bash\n    docker-compose up --build\n    ```\n    This command will:\n    *   Build the Docker image for the `silverbullet-mcp-server` if it doesn't exist or if `Dockerfile` or related files have changed.\n    *   Pull the latest `silverbulletmd/silverbullet` image.\n    *   Start both the SilverBullet instance and the MCP server.\n\n    The SilverBullet instance will be accessible at `http://localhost:3000`.\n    The MCP server will be accessible at `http://localhost:4000`.\n\n## Connecting to the MCP Server\n\nThis MCP server runs as part of a Docker Compose setup and will be accessible at `http://localhost:4000` by default.\n\nYou can connect to this server using an MCP client. The method of connection and authentication depends on the client's capabilities.\n\n### Using `mcp-remote` (for stdio-only clients)\n\nIf your MCP client only supports `stdio` connections (e.g., older versions of Claude Desktop, Cursor, Windsurf), you can use `mcp-remote` to bridge the connection to this HTTP-based MCP server.\n\n`mcp-remote` acts as a local stdio MCP server that proxies requests to a remote HTTP MCP server, handling authentication in the process.\n\n**Client Configuration with Authentication:**\n\nThis MCP server requires token-based authentication. Configure your MCP client (e.g., in `claude_desktop_config.json`, `~/.cursor/mcp.json`, or `~/.codeium/windsurf/mcp_config.json`) to use `mcp-remote` and pass the `MCP_TOKEN` via a custom header:\n\n```jsonc\n{\n  \"mcpServers\": {\n    \"silverbullet-mcp\": {\n      \"command\": \"npx\",\n      \"args\": [\n        \"mcp-remote\",\n        \"http://localhost:4000/mcp\", \n        \"--transport\",\n        \"http-only\",\n        \"--header\",\n        \"Authorization:Bearer ${MCP_SERVER_TOKEN}\" \n      ],\n      \"env\": {\n        \"MCP_SERVER_TOKEN\": \"your_actual_mcp_token_from_dotenv\"\n      }\n    }\n  }\n}\n```\n**Important:**\n* Replace `\"your_actual_mcp_token_from_dotenv\"` with the actual value of `MCP_TOKEN` you have set in your `.env` file for the `silverbullet-mcp-server`.\n* Some clients (like Cursor and Claude Desktop on Windows) have issues with spaces in `args`. The example above (`Authorization:Bearer ${MCP_SERVER_TOKEN}`) avoids this.\n* Ensure `npx` can find `mcp-remote`. You might need to add `-y` as the first argument to `args` (e.g., `[\"-y\", \"mcp-remote\", ...]`) or install `mcp-remote` globally (`npm install -g mcp-remote`).\n\nRefer to the [`mcp-remote` documentation](https://github.com/modelcontextprotocol/mcp-remote) for more advanced configurations, including OAuth support (not used by this server's default auth), different transport strategies, and troubleshooting.\n\n### Direct Connection (for Streamable HTTP clients)\n\nIf your MCP client supports Streamable HTTP transport and can send custom headers, you can connect to it directly.\n\nThe server supports two methods for token-based authentication:\n\n1.  **Authorization Header (Recommended)**:\n    *   Header Name: `Authorization`\n    *   Header Value: `Bearer YOUR_MCP_TOKEN`\n\n2.  **Query Parameter**:\n    *   Append `?token=YOUR_MCP_TOKEN` to the server URL.\n    *   Example: `http://localhost:4000/mcp?token=YOUR_MCP_TOKEN`\n\nReplace `YOUR_MCP_TOKEN` with the actual value of the `MCP_TOKEN` environment variable set in your `.env` file.\n\n**Endpoint**: `http://localhost:4000/mcp` (or as configured by `PORT` if not using Docker Compose defaults).\n\nConsult your MCP client's documentation on how to configure connections to remote HTTP MCP servers, including how to send custom headers or append query parameters.\n\n\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "full_name": "theYahia/vk-ads-mcp",
+  "html_url": "https://github.com/theYahia/vk-ads-mcp",
+  "description": "MCP server for VK Ads — campaigns, targeting, budgets, statistics (Russia). Part of WWmcp — 114 MCP servers for emerging markets.",
+  "topics": [
+    "advertising",
+    "ai-agents",
+    "anthropic",
+    "claude",
+    "emerging-markets",
+    "mcp",
+    "mcp-servers",
+    "model-context-protocol",
+    "russia",
+    "russian-api",
+    "typescript",
+    "vk",
+    "vk-ads"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 4,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-01T15:10:35Z",
+  "last_pushed_at": "2026-06-23T11:55:11Z",
+  "fetched_at": "2026-07-12T00:00:10.394Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# @theyahia/vk-ads-mcp\n\nMCP-сервер для **VK Ads API v2** (`ads.vk.com/api/v2`) — кампании, группы объявлений, объявления, статистика, баланс. 8 инструментов.\n\n[![npm](https://img.shields.io/npm/v/@theyahia/vk-ads-mcp)](https://www.npmjs.com/package/@theyahia/vk-ads-mcp)\n[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)\n\n> Модель данных VK Ads: **`ad_plans` (кампании) → `ad_groups` (группы) → `banners` (объявления)**.\n> Имена инструментов оставлены дружелюбными (`list_campaigns`, `list_ads`), но обращаются к реальным v2-ресурсам.\n\n## Установка\n\n### Claude Desktop\n\n```json\n{\n  \"mcpServers\": {\n    \"vk-ads\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@theyahia/vk-ads-mcp\"],\n      \"env\": {\n        \"VK_ADS_TOKEN\": \"ваш_токен\"\n      }\n    }\n  }\n}\n```\n\n### Claude Code\n\n```bash\nclaude mcp add vk-ads -e VK_ADS_TOKEN=ваш_токен -- npx -y @theyahia/vk-ads-mcp\n```\n\n## Авторизация\n\n| Переменная | Обязательна | Назначение |\n|---|---|---|\n| `VK_ADS_TOKEN` | ✅ | OAuth2 Bearer access_token VK Ads API |\n| `VK_ADS_CLIENT_ID` | — | для авто-обновления токена (refresh) |\n| `VK_ADS_CLIENT_SECRET` | — | для авто-обновления токена (refresh) |\n| `VK_ADS_REFRESH_TOKEN` | — | для авто-обновления токена (refresh) |\n\n`access_token` живёт ~1 день. Если заданы все три refresh-переменные, сервер на `401` сам обновит токен\nчерез `grant_type=refresh_token`. Иначе — обновляйте `VK_ADS_TOKEN` вручную.\n\n**Кабинет выбирается токеном, а не параметром.** В VK Ads v2 нет `account_id` в запросах: агентство/менеджер\nполучает отдельный per-client токен (`agency_client_credentials`) и подписывает им запросы нужного кабинета.\n\n## Инструменты (8)\n\n| Инструмент | Метод | Описание |\n|------------|-------|----------|\n| `list_campaigns` | `GET /ad_plans.json` | Кампании (ad_plans), фильтр по статусу, авто-пагинация |\n| `create_campaign` | `POST /ad_plans.json` | Создать кампанию: `name`, `objective`, `budget_limit`, `budget_limit_day` |\n| `update_campaign` | `POST /ad_plans/{id}.json` | Обновить: `name`/бюджет/`action` (activate/stop/delete) |\n| `list_ad_groups` | `GET /ad_groups.json` | Группы объявлений с таргетингом (delivery), фильтр по кампаниям |\n| `list_ads` | `GET /banners.json` | Объявления (banners), фильтр по группам, авто-пагинация |\n| `create_ad` | `POST /banners.json` | Создать объявление: `ad_group_id`, `textblocks`, `urls`, `content` |\n| `get_statistics` | `GET /statistics/{type}/{period}.json` | Показы (`shows`), клики, расход; `period` = day/summary |\n| `get_account` | `GET /user.json` | Кабинет и баланс (нужен scope `read_payments`) |\n\nВсе инструменты используют MCP-аннотации (`readOnlyHint`/`destructiveHint`/`idempotentHint`), а read-инструменты —\n`outputSchema` + `structuredContent` для типизированного и компактного ответа. Списки пагинируются автоматически\n(до 200 объектов; больше — флаг `truncated` в ответе).\n\n## Примеры запросов\n\n```\nПокажи активные кампании\nСоздай кампанию \"Осенняя акция\" с целью traffic и бюджетом 50000\nОстанови кампанию 12345\nКакие группы объявлений в кампании 12345?\nСтатистика кампании 12345 за январь 2026 по дням\nПокажи баланс кабинета\n```\n\n## Миграция 1.x → 2.0 (breaking)\n\nВерсия 1.x обращалась к **легаси** API (`/campaigns.json`, `/ads.json`, плоский `/statistics.json`, `account_id`,\nчисловые статусы) и фактически не работала против `ads.vk.com/api/v2`. В 2.0 переписан весь API-слой:\n\n- `account_id` **удалён** из всех инструментов — кабинет задаётся токеном.\n- `update_campaign`: вместо `status: 1/0` → `action: activate|stop|delete` (строковые статусы `active/blocked/deleted`).\n- Бюджет: `all_limit` → `budget_limit` / `budget_limit_day` (валюта кабинета, не копейки).\n- `create_campaign`: `type` → `objective` (цель кампании).\n- `create_ad`: вместо `{ad_format,title,description,link_url}` → `{ad_group_id, textblocks, urls, content}`.\n- `get_statistics`: `ids_type`/`period=week|month|overall` → `object_type` и `period=day|summary` в пути URL.\n- `list_targeting_groups` → **`list_ad_groups`** (таргетинг живёт на группе объявлений).\n- `get_budget` → **`get_account`** (баланс читается из `/user.json`).\n\n## Точность API\n\nЭндпоинты и поля подтверждены официальной документацией `target.vk.ru` и 5 независимыми рабочими клиентами.\nНесколько деталей помечены в коде `// VERIFY:` (единицы бюджета, поле баланса, полный enum `objective`, путь update)\nи требуют подтверждения живым токеном — см. **[`docs/VERIFICATION.md`](docs/VERIFICATION.md)** (~10 минут).\n\n## Возможный follow-up (вне текущего объёма)\n\nМассовые действия (`mass_action`), список клиентов агентства (`agency/clients`), загрузка креативов\n(`upload_creative`), состояние лимитов (`throttling`), справочники таргетинга (`regions`/`interests`),\nконверсии и remarketing-аудитории.\n\n## Разработка\n\n```bash\nnpm install\nnpm run build      # tsc\nnpm test           # vitest\nnpm run dev        # tsx src/index.ts (читает .env — см. .env.example)\n```\n\n## Лицензия\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

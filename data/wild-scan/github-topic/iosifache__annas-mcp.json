@@ -1,0 +1,31 @@
+{
+  "full_name": "iosifache/annas-mcp",
+  "html_url": "https://github.com/iosifache/annas-mcp",
+  "description": "MCP server and CLI tool for searching and downloading documents from Anna's Archive",
+  "topics": [
+    "annas-archive",
+    "cli",
+    "mcp-server"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 933,
+  "forks": 60,
+  "open_issues": 1,
+  "language": "Go",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-07-09T07:56:18Z",
+  "last_pushed_at": "2026-06-26T07:54:30Z",
+  "fetched_at": "2026-07-11T22:36:04.545Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Anna's Archive MCP Server (and CLI Tool)\n\n[An MCP server](https://modelcontextprotocol.io/introduction) and CLI tool for searching and downloading documents (books and articles) from [Anna's Archive](https://annas-archive.gl), with optional automatic selection of a mirror reported as healthy by [SLUM](https://open-slum.org/).\n\n> [!NOTE]\n> Notwithstanding prevailing public sentiment regarding Anna's Archive, the platform serves as a comprehensive repository for automated retrieval of documents released under permissive licensing frameworks (including Creative Commons publications and public domain materials). This software does not endorse unauthorized acquisition of copyrighted content and should be regarded solely as a utility. Users are urged to respect the intellectual property rights of authors and acknowledge the considerable effort invested in document creation.\n\n> [!WARNING]\n> Please refer to [Mirror Selection](#mirror-selection) if any of the links lead to a non-functional Anna's Archive server.\n\n## Requirements\n\nSearch works without any required environment variables.\n\nDownloads require:\n\n- [A donation to Anna's Archive](https://annas-archive.gl/donate), which grants JSON API access\n- [An API key](https://annas-archive.gl/faq#api)\n- An MCP client, such as [Claude Desktop](https://claude.ai/download), if using the project as an MCP server\n\n## Setup\n\nDownload the appropriate binary from [the GitHub Releases section](https://github.com/iosifache/annas-mcp/releases).\n\nIf you plan to use the tool for its MCP server functionality, you need to integrate it into your MCP client. If you are using Claude Desktop, please consider the following example configuration:\n\n```json\n\"anna-mcp\": {\n    \"command\": \"/Users/iosifache/Downloads/annas-mcp\",\n    \"args\": [\"mcp\"],\n    \"env\": {\n        \"ANNAS_[REDACTED-GENERIC_KV_SECRET]\",\n        \"ANNAS_DOWNLOAD_PATH\": \"/Users/iosifache/Downloads\",\n        \"ANNAS_BASE_URL\": \"annas-archive.gl\"\n    }\n}\n```\n\n## Configuration\n\nThe tool can be configured with environment variables. These variables can also be stored in an `.env` file in the folder containing the binary.\n\n### Download Environment Variables\n\nDownloads use:\n\n- `ANNAS_SECRET_KEY`: The Anna's Archive API key.\n- `ANNAS_DOWNLOAD_PATH`: The path where the documents should be downloaded.\n\n### Mirror Selection\n\nAnna's Archive has multiple mirrors, and their availability can change over time. By default, this project uses `ANNAS_BASE_URL`, or `annas-archive.gl` when `ANNAS_BASE_URL` is not set.\n\nOptionally, you can set:\n\n- `ANNAS_BASE_URL`: The Anna mirror to use (defaults to `annas-archive.gl`). When automatic mirror discovery is enabled, this becomes the fallback mirror.\n- `ANNAS_AUTO_BASE_URL`: Set to `true` to discover the best available Anna mirror automatically from [SLUM](https://open-slum.org/).\n\nAutomatic discovery is opt-in: when `ANNAS_AUTO_BASE_URL=true`, the tool reads the public status page, ranks discovered Anna mirror candidates by recent health and latency, probes them locally, and uses the best reachable mirror. If discovery or probing fails, the tool falls back to `ANNAS_BASE_URL`, then to the built-in default mirror.\n\n### Timeouts\n\nHTTP requests default to a 1 hour timeout. For CLI usage, override this with `--timeout`, for example:\n\n```bash\nannas-mcp --timeout 1h book-download abc123def456 \"my-book.pdf\"\n```\n\nFor MCP usage, tools accept an optional `timeout_seconds` parameter, for example `3600` for 1 hour.\n\n## Demo\n\n### As an MCP Server\n\n<img src=\"screenshots/claude.png\" width=\"600px\"/>\n\n### As a CLI Tool\n\n<img src=\"screenshots/cli.png\" width=\"400px\"/>\n\n## Available Operations\n\n| Operation                                      | MCP Tool           | CLI Command         | Example                                                      |\n| ---------------------------------------------- | ------------------ | ------------------- | ------------------------------------------------------------ |\n| Search for books by title, author, or topic   | `book_search`      | `book-search`       | `book-search \"machine learning python\"`                     |\n| Download a book by its MD5 hash                | `book_download`    | `book-download`     | `book-download abc123def456 \"my-book.pdf\"`                  |\n| Search for articles by DOI or keywords        | `article_search`   | `article-search`    | `article-search \"10.1038/nature12345\"` or `article-search \"neural networks\"` |\n| Download an article by its DOI                 | `article_download` | `article-download`  | `article-download \"10.1038/nature12345\"`                    |\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

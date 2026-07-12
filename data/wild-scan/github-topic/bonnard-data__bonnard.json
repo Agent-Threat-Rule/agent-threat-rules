@@ -1,0 +1,48 @@
+{
+  "full_name": "bonnard-data/bonnard",
+  "html_url": "https://github.com/bonnard-data/bonnard",
+  "description": "Archived. Earlier Bonnard product. Current: bonnard.dev / @bonnard/mcp-charts",
+  "topics": [
+    "agentic",
+    "agentic-analytics",
+    "agentic-schema",
+    "ai-analytics",
+    "bigquery",
+    "data-modeling",
+    "dbt",
+    "duckdb",
+    "mcp-server",
+    "metrics-layer",
+    "metrics-store",
+    "model-context-protocol",
+    "open-source",
+    "postgresql",
+    "reliable-ai",
+    "semantic-layer",
+    "snowflake",
+    "structured-output",
+    "text-to-sql",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 28,
+  "forks": 2,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2026-03-03T14:19:28Z",
+  "last_pushed_at": "2026-07-03T10:52:24Z",
+  "fetched_at": "2026-07-11T23:45:20.143Z",
+  "readme": {
+    "path": "README.md",
+    "content": "> [!IMPORTANT]\n> **This repository is archived and no longer maintained.**\n> It was part of an earlier version of Bonnard. Our current products live at **[bonnard.dev](https://bonnard.dev)**. Start with **[`@bonnard/mcp-charts`](https://github.com/bonnard-data/mcp-charts)**.\n> Questions: pierre@bonnard.dev\n\n<p align=\"center\">\n  <a href=\"https://www.bonnard.dev\">\n    <picture>\n      <source media=\"(prefers-color-scheme: dark)\" srcset=\"./assets/banner-dark.png\" />\n      <source media=\"(prefers-color-scheme: light)\" srcset=\"./assets/banner-light.png\" />\n      <img alt=\"Bonnard: agent-native analytics. One schema, many surfaces.\" src=\"./assets/banner-light.png\" width=\"100%\" />\n    </picture>\n  </a>\n</p>\n\n<p align=\"center\">\n  <strong>Self-hosted semantic layer for AI agents.</strong>\n</p>\n\n<p align=\"center\">\n  <a href=\"https://github.com/bonnard-data/bonnard/blob/main/LICENSE\"><img src=\"https://img.shields.io/badge/License-Apache%202.0-blue?style=flat-square\" alt=\"Apache 2.0 License\" /></a>\n  <a href=\"https://ghcr.io/bonnard-data/bonnard\"><img src=\"https://img.shields.io/badge/Docker-ghcr.io-2496ED?style=flat-square&logo=docker&logoColor=white\" alt=\"Docker\" /></a>\n  <a href=\"https://discord.com/invite/RQuvjGRz\"><img src=\"https://img.shields.io/badge/Discord-Join%20us-5865F2?style=flat-square&logo=discord&logoColor=white\" alt=\"Discord\" /></a>\n</p>\n\n<p align=\"center\">\n  <a href=\"https://docs.bonnard.dev/docs/\">Docs</a> &middot;\n  <a href=\"https://www.npmjs.com/package/@bonnard/cli\">CLI</a> &middot;\n  <a href=\"https://discord.com/invite/RQuvjGRz\">Discord</a> &middot;\n  <a href=\"https://www.bonnard.dev\">Website</a>\n</p>\n\n---\n\nBonnard is an agent-native semantic layer — one set of metric definitions, every consumer (AI agents, apps, dashboards) gets the same governed answer. This repo is the self-hosted Docker deployment: run Bonnard on your own infrastructure with no cloud account needed.\n\n## Quick Start\n\n```bash\n# 1. Scaffold project\nnpx @bonnard/cli init --self-hosted\n\n# 2. Configure your data source\n#    Edit .env with your database credentials\n\n# 3. Start the server\ndocker compose up -d\n\n# 4. Define your semantic layer\n#    Add cube/view YAML files to bonnard/cubes/ and bonnard/views/\n\n# 5. Deploy models to the server\nbon deploy\n\n# 6. Verify your semantic layer\nbon schema\n\n# 7. Connect AI agents\nbon mcp\n```\n\nRequires [Node.js 20+](https://nodejs.org) and [Docker](https://docs.docker.com/engine/install/).\n\n## What's Included\n\n- **MCP server** — AI agents query your semantic layer over the [Model Context Protocol](https://docs.bonnard.dev/docs/mcp)\n- **Cube semantic layer** — SQL-based metric definitions with caching, access control, and multi-database support\n- **Cube Store** — pre-aggregation cache for fast analytical queries\n- **Admin UI** — browse deployed models, views, and measures at `http://localhost:3000`\n- **Deploy API** — push model updates via `bon deploy` without restarting containers\n- **Health endpoint** — `GET /health` for uptime monitoring\n\n## Connecting AI Agents\n\nRun `bon mcp` to see connection config for your setup. Examples below.\n\n### Claude Desktop / Cursor\n\n```json\n{\n  \"mcpServers\": {\n    \"bonnard\": {\n      \"url\": \"https://bonnard.example.com/mcp\",\n      \"headers\": {\n        \"Authorization\": \"[REDACTED-BEARER_TOKEN]\"\n      }\n    }\n  }\n}\n```\n\n### Claude Code\n\n```json\n{\n  \"mcpServers\": {\n    \"bonnard\": {\n      \"type\": \"url\",\n      \"url\": \"https://bonnard.example.com/mcp\",\n      \"headers\": {\n        \"Authorization\": \"[REDACTED-BEARER_TOKEN]\"\n      }\n    }\n  }\n}\n```\n\n### CrewAI (Python)\n\n```python\nfrom crewai import MCPServerAdapter\n\nmcp = MCPServerAdapter(\n    url=\"https://bonnard.example.com/mcp\",\n    transport=\"streamable-http\",\n    headers={\"Authorization\": \"[REDACTED-BEARER_TOKEN]\"}\n)\n```\n\n## Production Deployment\n\n### Authentication\n\nProtect your endpoints by setting `ADMIN_TOKEN` in `.env`:\n\n```env\nADMIN_TOKEN=your-secret-token-here\n```\n\nAll API and MCP endpoints will require `Authorization: Bearer <token>`. The `/health` endpoint remains open for monitoring.\n\nRestart after changing `.env`:\n\n```bash\ndocker compose up -d\n```\n\n### TLS with Caddy\n\n[Caddy](https://caddyserver.com) provides automatic HTTPS via Let's Encrypt.\n\nCreate a `Caddyfile` next to your `docker-compose.yml`:\n\n```\nbonnard.example.com {\n    reverse_proxy localhost:3000\n}\n```\n\nAdd Caddy to your `docker-compose.yml`:\n\n```yaml\n  caddy:\n    image: caddy:2\n    ports:\n      - \"80:80\"\n      - \"443:443\"\n    volumes:\n      - ./Caddyfile:/etc/caddy/Caddyfile:ro\n      - caddy_data:/data\n    restart: unless-stopped\n```\n\nAdd the volume at the top level:\n\n```yaml\nvolumes:\n  models: {}\n  caddy_data: {}\n```\n\nThen remove the Bonnard port mapping (`ports: - \"3000:3000\"`) since Caddy handles external traffic.\n\n### Deploy to a VM\n\n```bash\n# Copy project files to your server\nscp -r . user@your-server:~/bonnard/\n\n# SSH in and start\nssh user@your-server\ncd ~/bonnard\ndocker compose up -d\n```\n\n## Configuration\n\n| Variable | Description | Default |\n|----------|-------------|---------|\n| `CUBEJS_DB_TYPE` | Database driver (`postgres`, `duckdb`, `snowflake`, `bigquery`, `databricks`, `redshift`, `clickhouse`) | `duckdb` |\n| `CUBEJS_DB_*` | Database connection settings (host, port, name, user, pass) | — |\n| `CUBEJS_DATASOURCES` | Comma-separated list for multi-datasource setups | `default` |\n| `CUBEJS_API_SECRET` | HS256 secret for Cube JWT auth (auto-generated by `bon init`) | — |\n| `ADMIN_TOKEN` | Bearer token for API/MCP authentication | — (open) |\n| `CUBE_PORT` | Cube API port | `4000` |\n| `BONNARD_PORT` | Bonnard server port | `3000` |\n| `CORS_ORIGIN` | Allowed CORS origins | `*` |\n| `CUBE_VERSION` | Cube Docker image tag | `v1.6` |\n| `BONNARD_VERSION` | Bonnard Docker image tag | `latest` |\n\nSee `.env.example` for a full annotated configuration file.\n\n## Architecture\n\n| Service | Image | Role |\n|---------|-------|------|\n| `cube` | `cubejs/cube` | Semantic layer engine — executes queries against your warehouse |\n| `cubestore` | `cubejs/cubestore` | Pre-aggregation cache — stores materialized results for fast reads |\n| `bonnard` | `ghcr.io/bonnard-data/bonnard` | MCP server, admin UI, deploy API — the interface layer for agents and tools |\n\nAll three services communicate over an internal Docker network. Only `bonnard` (port 3000) and optionally `cube` (port 4000) are exposed externally.\n\n## Monitoring\n\n```bash\n# Health check\ncurl http://localhost:3000/health\n\n# View logs\ndocker compose logs -f\n\n# View active MCP sessions\ncurl -H \"Authorization: Bearer <token>\" http://localhost:3000/api/mcp/sessions\n```\n\n## Deploying Schema Updates\n\nFrom your development machine:\n\n```bash\nbon deploy\n```\n\nThis pushes your cube/view YAML files to the running server. No restart needed — Cube picks up changes automatically.\n\n## Pinning Versions\n\nControl image versions via `.env`:\n\n```env\nCUBE_VERSION=v1.6\nBONNARD_VERSION=latest\n```\n\n## Supported Data Sources\n\n**Warehouses:** Snowflake, Google BigQuery, Databricks, PostgreSQL (including Supabase, Neon, RDS), Amazon Redshift, DuckDB (including MotherDuck), ClickHouse\n\nSee the [full documentation](https://docs.bonnard.dev/docs/getting-started) for connection guides.\n\n## Ecosystem\n\n- **[@bonnard/cli](https://www.npmjs.com/package/@bonnard/cli)** — scaffold projects, deploy models, connect agents\n- **[@bonnard/sdk](https://www.npmjs.com/package/@bonnard/sdk)** — query the semantic layer from JavaScript/TypeScript\n- **[@bonnard/react](https://www.npmjs.com/package/@bonnard/react)** — React chart components and dashboard viewer\n\n## Community\n\n- [Discord](https://discord.com/invite/RQuvjGRz): ask questions, share feedback, connect with the team\n- [GitHub Issues](https://github.com/bonnard-data/bonnard/issues): bug reports and feature requests\n- [LinkedIn](https://www.linkedin.com/company/bonnarddev/): follow for updates\n- [Website](https://www.bonnard.dev): learn more about Bonnard\n\n## License\n\n[Apache 2.0](./LICENSE)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

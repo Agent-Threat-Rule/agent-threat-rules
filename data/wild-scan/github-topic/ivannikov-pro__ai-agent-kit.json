@@ -1,0 +1,48 @@
+{
+  "full_name": "ivannikov-pro/ai-agent-kit",
+  "html_url": "https://github.com/ivannikov-pro/ai-agent-kit",
+  "description": "🛠️ CLI + MCP server for installing AI agent skills, workflows, and MCP configs. Your personal toolkit for AI-powered development.",
+  "topics": [
+    "agent-mcp",
+    "agent-skill",
+    "agent-skills",
+    "agent-workflow",
+    "agent-workflows",
+    "ai-agent",
+    "ai-agent-mcp",
+    "ai-skill",
+    "ai-skills",
+    "ai-skills-manager",
+    "ai-tools",
+    "antigravity",
+    "claude",
+    "gemini",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "skill",
+    "skills",
+    "workflow"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2026-03-24T22:12:52Z",
+  "last_pushed_at": "2026-03-30T09:36:56Z",
+  "fetched_at": "2026-07-12T00:22:42.150Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# @ivannikov-pro/ai-agent-kit\n\n🛠️ CLI + MCP server + web catalog for AI agent skills, workflows, and MCP configs.\n\nYour personal toolkit for AI-powered development — browse the catalog, install curated skills into any project, or let your AI agent manage its own toolset via MCP.\n\n## Monorepo Structure\n\n```\nai-agent-kit/\n├── packages/cli/     — @ivannikov-pro/ai-agent-kit (npm CLI + MCP server)\n├── packages/web/     — Web catalog (Next.js, deployed to GitHub Pages)\n├── skills/           — Embedded skills (SKILL.md + assets)\n├── workflows/        — Embedded workflows\n├── registry.json     — Central resource manifest\n└── docs/             — Architecture & contributing guides\n```\n\n## Quick Start\n\n```bash\n# List all available resources\nnpx @ivannikov-pro/ai-agent-kit@latest list\n\n# Install a skill into your project\nnpx @ivannikov-pro/ai-agent-kit@latest add skill-base\n\n# Install globally\nnpx @ivannikov-pro/ai-agent-kit@latest add find-docs --global\n\n# Interactive project setup\nnpx @ivannikov-pro/ai-agent-kit@latest init\n```\n\n## CLI Commands\n\n| Command | Description |\n| --- | --- |\n| `ai-agent-kit list` | List all available resources |\n| `ai-agent-kit list --skills` | List only skills |\n| `ai-agent-kit add <name>` | Install a skill or workflow |\n| `ai-agent-kit add <name> --global` | Install globally (`~/.agents/`) |\n| `ai-agent-kit remove <name>` | Remove an installed resource |\n| `ai-agent-kit init` | Interactive project initialization |\n| `ai-agent-kit mcp` | Start as MCP server (stdio) |\n\n## As MCP Server\n\nAdd to your AI agent's MCP config:\n\n```json\n{\n  \"mcpServers\": {\n    \"ai-agent-kit\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@ivannikov-pro/ai-agent-kit@latest\", \"mcp\"]\n    }\n  }\n}\n```\n\n### MCP Tools\n\n| Tool | Description |\n| --- | --- |\n| `list_resources` | List skills, workflows, and MCP configs |\n| `install_resource` | Install a resource by name |\n| `search_resources` | Search by keyword or tag |\n\n## Programmatic API\n\n```typescript\nimport { AgentKit } from \"@ivannikov-pro/ai-agent-kit\";\n\nconst kit = new AgentKit();\n\nconst resources = await kit.list();\nawait kit.install(\"find-docs\");\n```\n\n## Available Resources\n\n### Skills\n\n| Name | Description |\n| --- | --- |\n| `skill-base` | How to create, maintain, and distribute AI agent skills |\n| `find-docs` | Documentation lookup via Context7 MCP |\n\n### MCP Configs\n\n| Name | Package |\n| --- | --- |\n| `ai-notify-tg` | `@ivannikov-pro/ai-notify-tg` |\n\n## Development\n\n```bash\npnpm install              # Install all deps\npnpm build                # Build all packages\npnpm --filter web dev     # Web catalog dev server\npnpm --filter cli build   # Build CLI only\n```\n\n## Documentation\n\n- [Architecture](docs/ARCHITECTURE.md) — components, data flow, build system\n- [Contributing](docs/CONTRIBUTING.md) — how to add skills and workflows\n\n## Environment Variables\n\n| Variable | Description |\n| --- | --- |\n| `GITHUB_TOKEN` / `GH_TOKEN` | GitHub token for higher API rate limits |\n\n## License\n\n[MIT](./LICENSE)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

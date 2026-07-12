@@ -1,0 +1,46 @@
+{
+  "full_name": "h1ddenpr0cess20/mcp",
+  "html_url": "https://github.com/h1ddenpr0cess20/mcp",
+  "description": "A collection of FastMCP servers — web search, shell/SSH sandbox, Android & Fire TV control, finance, Last.fm, and LLM sub-agents",
+  "topics": [
+    "adb",
+    "agents",
+    "ai",
+    "android",
+    "fastmcp",
+    "finance",
+    "lastfm",
+    "llm",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "model-context-protocol",
+    "python",
+    "searxng",
+    "ssh",
+    "tool-use",
+    "web-search",
+    "yfinance"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-10-28T05:14:49Z",
+  "last_pushed_at": "2026-06-30T05:24:09Z",
+  "fetched_at": "2026-07-12T00:10:30.223Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP Servers Collection\n\nA collection of Model Context Protocol (MCP) servers built with FastMCP, each serving different APIs and data sources.\n\n## Available Servers\n\n### Last.fm MCP (`lastfm_mcp/`)\nFastMCP server exposing the entire Last.fm API as MCP tools. Categories include:\n- Artist information, similar artists, top tracks/albums\n- Album metadata and tracks\n- Track details, similar tracks, love/scrobble functionality\n- User profiles, listening history, charts\n- Global charts, geo-specific data\n- Tag-based content and search\n\n**Requirements**: Last.fm API key (free from https://www.last.fm/api)\n\n### Yahoo Finance MCP (`yfinance_mcp/`)\nFastMCP server exposing Yahoo Finance data as MCP tools. No API key required.\n- Real-time quotes, market summary, market status\n- Historical OHLCV data with configurable intervals\n- Symbol search\n- Company profiles, income statements, balance sheets, earnings\n- Analyst price targets and recommendations\n- Options chains and news\n\n### Web MCP (`web_mcp/`)\nFastMCP server for web search and URL fetching. No API key required.\n- Web search via a local self-managed SearXNG instance (auto-installs on first run)\n- News search with time filtering\n- URL fetch with content extraction (Markdown, text, or raw HTML)\n- Queries multiple engines simultaneously: Google, Bing, Brave, DuckDuckGo, Startpage, and more\n\n### Android MCP (`android_mcp/`)\nFastMCP server for controlling an Android device via ADB. Screenshots are served over HTTPS for vision model analysis.\n- Shell commands, UI interaction (tap, swipe, type, key press), UI hierarchy dump\n- App management (install, uninstall, launch, stop, list, clear data)\n- Screenshot capture with compression, served via built-in HTTPS file server\n- Device info, file push/pull, screen wake/state\n\n**Requirements**: `adb` and `openssl` on PATH, connected Android device with USB debugging enabled\n\n### Shell MCP (`shell_mcp/`)\nFastMCP server for shell execution and file operations over SSH. Optionally auto-provisions a VirtualBox VM (Debian 13) as an isolated sandbox.\n- Execute commands, read/write files, upload/download via SFTP\n- List directories, get system info (memory, disk, uptime)\n- Fetch generated files via a local HTTP URL\n- Auto-creates and manages a Debian VM if VirtualBox is installed; otherwise connects to any SSH host\n\n**Requirements**: SSH-accessible target, or VirtualBox with `vboxmanage` on PATH\n\n### Subagent MCP (`subagent_mcp/`)\nFastMCP server for delegating tasks to local LLM sub-agents via LM Studio or any OpenAI-compatible endpoint.\n- Named agents with persistent system prompts, per-agent model selection, and MCP server access\n- Agentic tool-use loop: agents can use tools from other MCP servers (web search, shell, Android, etc.)\n- Parallel execution across multiple models or agents with auto-calibrated concurrency\n- Multi-turn conversations with history tracking\n- MCP server pool with `.env` pre-registration and runtime management\n\n**Requirements**: OpenAI-compatible endpoint with Responses API support (e.g. LM Studio)\n\n### WebShell MCP (`webshell_mcp/`)\nCombined FastMCP server: sandboxed shell execution + web search and fetching, all in one VM. SearXNG runs inside the VM as a systemd service.\n- All shell tools: execute commands, read/write files, upload/download via SFTP, system info, file serving\n- All web tools: SearXNG web/news search, URL fetch with content extraction\n- Auto-provisions a dedicated VM (`ai-webshell`) with SearXNG installed and running on first launch\n\n**Requirements**: VirtualBox with `vboxmanage` on PATH, or an SSH target with SearXNG already running\n\n### Fire TV MCP (`firetv_mcp/`)\nFastMCP server for controlling Amazon Fire TV devices via ADB over WiFi.\n- D-pad navigation, media playback control, volume, now-playing info\n- App management with 30+ friendly aliases (netflix, prime, disney+, etc.), deep linking, sideloading\n- Content search, open settings sections directly\n- Screenshot capture served via HTTPS, screen recording, UI hierarchy dump\n- Device info, network info, storage, brightness, bluetooth, reboot\n- Auto-discovers Fire TV on the network if no IP is configured\n\n**Requirements**: `adb` and `openssl` on PATH, ADB debugging enabled on Fire TV\n\n### RapidAPI MCP (`rapidapi_mcp/`)\nSuite of FastMCP servers wrapping the RapidAPI integrations used in the [Tyumi](http://github.com/h1ddenpr0cess20/Tyumi) project. Each domain (jobs, finance, food, entertainment, social, real estate, news, search) runs as a separate FastMCP instance.\n\n**Requirements**: RapidAPI key (`RAPIDAPI_KEY` environment variable or `.env`)\n\n## Common Setup\nEach server follows a similar structure:\n```\npackage_name/\n├── pyproject.toml      # Modern Python packaging\n├── requirements.txt    # Dependencies\n├── server.py          # FastMCP server and tool definitions\n├── README.md          # Server-specific documentation\n└── client_lib/        # Core business logic\n    ├── __init__.py\n    └── client.py      # API/scraping implementation\n```\n\n## Running Servers\n```bash\n# Example for an MCP server\ncd server_directory\npython -m venv .venv && source .venv/bin/activate  # On Windows: .venv\\Scripts\\activate\npip install -r requirements.txt\npython server.py  # Launches MCP server for client integration\n```\n\nSee individual server READMEs for specific setup instructions and configuration.\n\n## Development\n- Built with FastMCP for MCP compatibility\n- Clean architecture with separation of concerns\n- Python 3.9+ required\n- Each server can be used as a standalone package\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

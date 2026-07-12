@@ -1,0 +1,40 @@
+{
+  "full_name": "mcpexplorer/mcp",
+  "html_url": "https://github.com/mcpexplorer/mcp",
+  "description": "Docs + MCP server manifest for MCPExplorer — the search engine and trust layer for MCP servers. https://mcpexplorer.com",
+  "topics": [
+    "ai-agents",
+    "claude",
+    "llm-tools",
+    "mcp",
+    "mcp-directory",
+    "mcp-registry",
+    "mcp-server",
+    "mcp-servers",
+    "model-context-protocol"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": null,
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-07-01T07:50:14Z",
+  "last_pushed_at": "2026-07-07T12:01:47Z",
+  "fetched_at": "2026-07-12T00:11:04.645Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCPExplorer\n\n**The search engine and trust layer for MCP servers.**\n\n### → [mcpexplorer.com](https://mcpexplorer.com)\n\n[![Website](https://img.shields.io/badge/website-mcpexplorer.com-f6821f)](https://mcpexplorer.com)\n[![MCP Server](https://img.shields.io/badge/MCP-server%20live-3f9142)](https://mcpexplorer.com/mcp)\n\nMCPExplorer indexes [Model Context Protocol](https://mcpexplorer.com/what-is-an-mcp-server)\nservers and **verifies each one with a live handshake** — so you can see the real\ntools a server exposes, each labeled by risk, plus a trust score, *before* you\ninstall it.\n\n> Every \"awesome MCP\" list is a static, unverified README. MCPExplorer actually\n> runs the servers.\n\nThis repo is the public home for MCPExplorer's docs and its MCP server manifest.\nThe product itself lives at **[mcpexplorer.com](https://mcpexplorer.com)**.\n\n---\n\n## The problem\n\nAs the MCP ecosystem grew past thousands of servers, the lists stopped being\nuseful. From a name and a one-line description you can't tell:\n\n- what tools a server *actually* exposes,\n- whether those tools are read-only or can delete your data,\n- whether it needs credentials,\n- or whether it's still maintained —\n\nuntil you install it and hope.\n\n## What MCPExplorer does\n\n- **Verifies, doesn't just list.** It runs the real MCP `tools/list` handshake on\n  every server — remote servers over the network, local/stdio servers in a\n  hardened, ephemeral Docker sandbox — and extracts the true tool surface.\n- **Labels tool risk.** Every tool is tagged **read / write / destructive**, so you\n  know what a server can do before you connect it.\n- **Scores trust.** A deterministic score from provenance, verification, adoption,\n  and freshness — with every contributing factor shown on the page, not a black box.\n- **Stays fresh.** Every fact carries provenance and a \"last checked\" timestamp.\n\n**Currently ~1,000 servers indexed · 3,500+ tools extracted · 278 handshake-verified.**\n\n## Start here\n\n- 🔍 **Explore the index** — <https://mcpexplorer.com/explore>\n- ⭐ **Best MCP servers** (ranked) — <https://mcpexplorer.com/best-mcp-servers>\n- 📖 **What is an MCP server?** — <https://mcpexplorer.com/what-is-an-mcp-server>\n- 📊 **State of MCP report** — <https://mcpexplorer.com/reports>\n\n---\n\n## The MCPExplorer MCP server\n\nMCPExplorer exposes its own MCP server, so you can **search, vet, and assemble\nservers from inside your agent** — without leaving your client. Hand `plan_toolset`\na plain-language goal and get back a recommended, governed toolset.\n\n**Endpoint:** `https://mcpexplorer.com/mcp` (Streamable HTTP, no auth)\n\n**Add it to Claude Code:**\n\n```bash\nclaude mcp add --transport http mcpexplorer https://mcpexplorer.com/mcp\n```\n\n**Or add it to any MCP client:**\n\n```json\n{\n  \"mcpServers\": {\n    \"mcpexplorer\": {\n      \"type\": \"streamable-http\",\n      \"url\": \"https://mcpexplorer.com/mcp\"\n    }\n  }\n}\n```\n\n**Tools (14):**\n\n| Tool | What it does |\n|---|---|\n| `search_servers` | Search the index by capability, transport, and risk |\n| `get_server` | A server's verified tools, install command, and trust breakdown |\n| `get_capability` | Servers that provide a given capability |\n| `compare_servers` | Side-by-side comparison of two servers |\n| `get_alternatives` | Servers similar to a given one |\n| `check_trust` | Explainable trust score and reasoning for a server |\n| `generate_runtime_config` | Ready-to-paste client config for a server |\n| `list_capabilities` | The capability slugs you can search and look up by |\n| `list_runtimes` | Runtimes `generate_runtime_config` supports |\n| `get_ecosystem_stats` | Live totals + provenance/transport breakdowns |\n| `list_loadouts` | Curated server kits for a job (GTM, coding, research, …) |\n| `get_loadout` | One kit with live trust + aggregated tool-risk |\n| `plan_toolset` | Plain-language goal → a recommended governed toolset |\n| `report_broken_server` | Flag a stale or broken listing |\n\n---\n\n## How verification works\n\nEvery server flows through a crawler pipeline:\n\n```\ndiscover → fetch → parse → normalize → resolve → enrich →\nclassify → verify (live handshake) → score trust → decide indexability\n```\n\nThe **verify** stage is the heart of it. Remote servers are probed over the\nnetwork; local/stdio servers are executed in a locked-down container\n(`--read-only`, `--cap-drop ALL`, `--security-opt no-new-privileges`, no host\nmounts, no secrets, memory/CPU/PID limits, auto-removed) that runs only known\nlaunchers (`npx`/`uvx`/`uv`/`pnpm`/`bunx`). The handshake extracts the real\n`tools/list`, and each tool's risk is derived from its name and schema.\n\nA page is only indexed once it has real MCP-server evidence **and** enough\nverified facts — so the index stays servers, not framework repos or link lists.\n\n## For agents & programmatic access\n\n- **MCP server:** `https://mcpexplorer.com/mcp` (see above)\n- **llms.txt:** <https://mcpexplorer.com/llms.txt>\n\n## Submit a server\n\nMissing something? Submit it at <https://mcpexplorer.com/submit> — it enters the\nsame verification pipeline as everything else.\n\n## FAQ\n\n**Is this affiliated with Anthropic?**\nNo. MCP is Anthropic's open protocol; MCPExplorer is an independent index built on\ntop of it.\n\n**Is the trust score a black box?**\nNo. It's deterministic, and every `+`/`−` factor is shown on each server's page.\n\n**How do you run untrusted servers safely?**\nLocal/stdio servers only ever run inside the hardened, ephemeral container\ndescribed above — never on the host, never with secrets.\n\n---\n\n<sub>MCPExplorer · [mcpexplorer.com](https://mcpexplorer.com) · a discovery, trust,\nand capability graph for MCP servers.</sub>\n"
+  },
+  "descriptor_file": {
+    "path": "server.json",
+    "content": "{\n  \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json\",\n  \"name\": \"io.github.mcpexplorer/mcpexplorer\",\n  \"title\": \"MCPExplorer\",\n  \"description\": \"Search, vet & assemble MCP servers from your agent: verified tools, risk labels, and trust scores.\",\n  \"version\": \"1.0.0\",\n  \"websiteUrl\": \"https://mcpexplorer.com\",\n  \"repository\": {\n    \"url\": \"https://github.com/mcpexplorer/mcp\",\n    \"source\": \"github\"\n  },\n  \"remotes\": [\n    {\n      \"type\": \"streamable-http\",\n      \"url\": \"https://mcpexplorer.com/mcp\"\n    }\n  ]\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

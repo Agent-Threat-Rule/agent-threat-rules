@@ -1,0 +1,43 @@
+{
+  "full_name": "Raunaksplanet/xcode-mcp-server",
+  "html_url": "https://github.com/Raunaksplanet/xcode-mcp-server",
+  "description": "MCP (Model Context Protocol) server that bridges AI assistants with Xcode, enabling full control over Xcode projects, builds, simulators, testing, and debugging — all without touching Xcode manually.",
+  "topics": [
+    "apple-silicon",
+    "coding",
+    "ios",
+    "ios-app",
+    "ios-swift",
+    "ios11",
+    "iosdevelopment",
+    "mcp",
+    "mcp-client",
+    "mcp-server",
+    "mcp-servers",
+    "mcp-tools",
+    "programming",
+    "xcode"
+  ],
+  "matched_query_topics": [
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-06-04T04:35:55Z",
+  "last_pushed_at": "2026-06-04T04:40:55Z",
+  "fetched_at": "2026-07-12T00:15:14.709Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# xcode-mcp\n\nMCP (Model Context Protocol) server that bridges AI assistants with Xcode, enabling full control over Xcode projects, builds, simulators, testing, and debugging — all without touching Xcode manually.\n\n**macOS only. Xcode 14+ required. Node 18+ required.**\n\n## Quick Install\n\n**macOS / Linux:**\n```bash\ncurl -sL https://raw.githubusercontent.com/Raunaksplanet/xcode-mcp-server/main/install.sh | bash\n# or locally:\n./install.sh\n```\n\n**Windows (PowerShell):**\n```powershell\n.\\install.ps1\n```\n\nThe installer: checks prerequisites, installs deps, builds, prompts for your Xcode project path, and registers with OpenCode automatically.\n\n## Manual Setup\n\n```bash\nnpm install\nnpm run build\nexport XCODE_PROJECT_PATH=/path/to/YourApp.xcodeproj\nnpm start\n```\n\n## OpenCode Integration\n\nClone the repo and add to `~/.config/opencode/opencode.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"xcode\": {\n      \"command\": \"node\",\n      \"args\": [\"path/to/xcode-mcp/dist/index.js\"],\n      \"env\": {\n        \"XCODE_PROJECT_PATH\": \"/path/to/YourApp.xcodeproj\",\n        \"XCODE_DEFAULT_SCHEME\": \"YourApp\"\n      }\n    }\n  }\n}\n```\n\n## Environment Variables\n\n| Variable | Required | Description |\n|----------|----------|-------------|\n| `XCODE_PROJECT_PATH` | Yes | Path to `.xcodeproj` or `.xcworkspace` |\n| `XCODE_DEFAULT_SCHEME` | No | Default scheme for build/test operations |\n| `XCODE_DEFAULT_SIMULATOR` | No | Default simulator UDID or name |\n| `XCODE_DERIVED_DATA_PATH` | No | Custom DerivedData path |\n| `XCODE_MCP_LOG_LEVEL` | No | Log level: debug/info/warn/error (default: info) |\n| `XCODE_MCP_BUILD_TIMEOUT` | No | Build timeout in seconds (default: 300) |\n| `XCODE_MCP_TEST_TIMEOUT` | No | Test timeout in seconds (default: 600) |\n\n## Configuration File\n\nPlace `.xcode-mcp.json` next to your `.xcodeproj`:\n\n```json\n{\n  \"default_scheme\": \"MyApp\",\n  \"default_simulator\": \"iPhone 16 Pro\",\n  \"excluded_paths\": [\"Pods\", \"vendor\"],\n  \"build_pre_hooks\": [\"echo 'Starting build...'\"],\n  \"build_post_hooks\": [\"echo 'Build complete!'\"],\n  \"custom_destinations\": [\"platform=iOS Simulator,name=iPhone 16,OS=latest\"]\n}\n```\n\n## Available Tools\n\n### Project Management\n- `xcode_open_project` — Open project in Xcode\n- `xcode_get_project_info` — Get project info (targets, schemes, configs)\n- `xcode_list_targets` — List all targets\n- `xcode_list_schemes` — List all schemes\n- `xcode_list_files` — List project files\n- `xcode_add_file` — Add file to project\n- `xcode_remove_file` — Remove file from project\n- `xcode_get_build_settings` — Get resolved build settings\n- `xcode_set_build_setting` — Modify build settings\n- `xcode_resolve_packages` — Resolve SPM dependencies\n\n### Build Tools\n- `xcode_build` — Build the project\n- `xcode_build_for_testing` — Build for testing\n- `xcode_archive` — Archive for distribution\n- `xcode_clean` — Clean build artifacts\n- `xcode_get_build_errors` — Parse build errors/warnings\n- `xcode_get_analyzer_results` — Run static analyzer\n\n### Simulator Control\n- `xcode_list_simulators` — List available simulators\n- `xcode_boot_simulator` — Boot a simulator\n- `xcode_shutdown_simulator` — Shutdown simulator\n- `xcode_install_app` — Install app on simulator\n- `xcode_launch_app` — Launch app on simulator\n- `xcode_terminate_app` — Terminate app\n- `xcode_get_simulator_logs` — Fetch simulator logs\n- `xcode_screenshot_simulator` — Take screenshot\n- `xcode_record_simulator` — Record video\n- `xcode_open_url_simulator` — Open URL (deep link testing)\n- `xcode_set_simulator_location` — Set location\n- `xcode_push_notification_simulator` — Simulate push notification\n- `xcode_reset_simulator` — Reset to factory state\n\n### Testing\n- `xcode_run_tests` — Run all tests\n- `xcode_run_single_test` — Run specific test\n- `xcode_get_test_results` — Parse xcresult bundle\n- `xcode_get_code_coverage` — Get coverage report\n\n### Code Management\n- `xcode_read_file` — Read file content\n- `xcode_write_file` — Write file content\n- `xcode_edit_file` — Find and replace in file\n- `xcode_get_swift_symbols` — Extract Swift symbols\n- `xcode_format_file` — Format with swift-format\n- `xcode_search_in_project` — Search across project files\n\n### Code Signing\n- `xcode_list_certificates` — List signing certificates\n- `xcode_list_provisioning_profiles` — List provisioning profiles\n- `xcode_set_signing` — Configure signing settings\n- `xcode_validate_signing` — Verify code signature\n\n### Diagnostics\n- `xcode_get_warnings` — Get build warnings\n- `xcode_profile_app` — Profile with Instruments\n- `xcode_add_spm_package` — Add SPM dependency\n\n## Resources\n\n- `xcode://project/structure` — Project file tree\n- `xcode://project/settings` — All build settings\n- `xcode://build/latest_log` — Latest build log\n- `xcode://build/errors` — Parsed build errors\n- `xcode://simulators/list` — Available simulators\n\n## Prompts\n\n- `fix_build_error` — Fix a build error with context\n- `create_swift_feature` — Implement a Swift feature\n- `write_xctest` — Generate XCTest cases\n- `review_swift_code` — Swift best practices review\n\n## Architecture\n\n```\nxcode-mcp/\n├── src/\n│   ├── index.ts          # Entry point\n│   ├── server.ts         # MCP server setup\n│   ├── tools/            # Tool implementations\n│   ├── lib/              # Core libraries\n│   │   ├── xcode_runner.ts    # xcodebuild/xcrun wrappers\n│   │   ├── pbxproj_parser.ts  # PBXProject parser\n│   │   ├── pbxproj_writer.ts  # PBXProject writer\n│   │   ├── simulator_manager.ts # simctl wrapper\n│   │   ├── process_manager.ts  # Process lifecycle\n│   │   ├── logger.ts           # Structured logging\n│   │   ├── error_handler.ts    # Error mapping\n│   │   └── config.ts          # Configuration\n│   ├── types/            # TypeScript type definitions\n│   ├── resources/        # MCP resource providers\n│   └── prompts/          # MCP prompt templates\n├── package.json\n└── tsconfig.json\n```\n\n## Security\n\n- All file paths are validated against the project root\n- Command injection prevented via `execFile` with args arrays\n- Sensitive data (certificates, keys) never logged\n- Concurrent xcodebuild calls are queued (max 2)\n- Path traversal detection on all file operations\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "root contents listing failed (private, empty, or rate limited)"
+  ]
+}

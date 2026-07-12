@@ -1,0 +1,33 @@
+{
+  "full_name": "jonfairbanks/mcp-gateway",
+  "html_url": "https://github.com/jonfairbanks/mcp-gateway",
+  "description": "Secure MCP gateway that routes, caches, monitors, and controls access to multiple upstream MCP servers",
+  "topics": [
+    "mcp",
+    "mcp-proxy",
+    "mcp-security",
+    "mcp-server",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2026-03-13T04:46:03Z",
+  "last_pushed_at": "2026-04-10T04:38:19Z",
+  "fetched_at": "2026-07-12T00:47:12.979Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP Gateway\n\n`mcp-gateway` is an MCP aggregation proxy for teams that want one MCP endpoint in front of many upstream MCP servers.\n\nIt is intended for operators and platform engineers who need to:\n\n- expose one stable MCP endpoint to clients\n- route requests to multiple upstream MCP servers\n- enforce access control and per-upstream deny rules\n- share cache and audit state across replicas\n- observe tool usage and upstream health\n\nThe gateway speaks MCP over `POST /mcp` and currently supports MCP protocol versions `2025-03-26` and `2025-11-25`, defaulting to `2025-11-25`.\n\n<img src=\"docs/mcp-gateway-architecture.svg\" alt=\"MCP Gateway Architecture\" width=\"75%\">\n\n<img src=\"docs/mcp-gateway-runtime-flow.svg\" alt=\"MCP Gateway Runtime Flow\" width=\"75%\">\n\n## What It Does\n\nFor MCP clients:\n\n- presents one MCP endpoint at `POST /mcp`\n- fans out discovery requests such as `initialize`, `tools/list`, `resources/list`, and `prompts/list`\n- routes `tools/call` to one upstream based on tool ownership\n\nFor operators:\n\n- supports `stdio` and remote `streamable_http` upstreams\n- stores audit logs, shared cache entries, and shared rate-limit state in Postgres\n- exposes Prometheus metrics at `GET /metrics`\n- supports single shared bearer auth or Postgres-backed API keys with RBAC\n- keeps the HTTP surface focused on MCP traffic, runtime visibility, and self-service; use CLI commands for operator workflows\n\n## Prerequisites\n\nBefore deploying, make sure you have:\n\n- Python 3.11+ available for the gateway process\n- a reachable Postgres database\n- credentials or tokens for each upstream MCP you want to expose\n- runtime dependencies for any `stdio` upstreams such as `npx`, `uvx`, or vendor CLIs\n\n## Quick Start\n\n1. Start from [`config.example.yaml`](config.example.yaml).\n2. For local development, you can run it directly. For deployment-specific use, copy it to `config.yaml` and replace the getting-started defaults.\n3. Apply the schema:\n\n```bash\npsql \"$DATABASE_URL\" -f schema.sql\n```\n\n4. Install and start the gateway:\n\n```bash\npip install .\ncp config.example.yaml config.yaml\nexport MCP_GATEWAY_API_KEY='change-me'\nexport DATABASE_URL='postgresql://postgres:postgres@localhost:5432/mcp_gateway'\nmcp-gateway serve --config ./config.yaml\n```\n\nIf a `.env` file is present in the working directory, `mcp-gateway` loads it automatically at startup.\n\n5. Verify the service:\n\n```bash\ncurl http://localhost:8080/healthz\ncurl http://localhost:8080/readyz\ncurl -H 'Authorization: Bearer change-me' http://localhost:8080/tools\n```\n\n## Minimal Config Example\n\n```yaml\ngateway:\n  auth_mode: \"single_shared\"\n  api_key: \"${MCP_GATEWAY_API_KEY}\"\n\nlogging:\n  stdout_json: true\n\ncache:\n  enabled: true\n  default_ttl_minutes: 60\n\nupstreams:\n  - id: \"context7\"\n    name: \"Context7 MCP\"\n    transport: \"stdio\"\n    command: \"npx\"\n    args:\n      - \"-y\"\n      - \"@upstash/context7-mcp\"\n\n  - id: \"github\"\n    name: \"GitHub MCP\"\n    transport: \"streamable_http\"\n    endpoint: \"https://api.githubcopilot.com/mcp/\"\n    bearer_token_env_var: \"GITHUB_PAT_TOKEN\"\n    timeout_ms: 30000\n```\n\n`config.yaml` supports explicit env interpolation:\n\n- `${NAME}` requires the environment variable to be set\n- `${NAME:-default}` uses `default` when the variable is unset or empty\n\nThe checked-in example config is intentionally runnable and enables `context7` by default. Uncomment, remove, or customize the other example integrations to match your deployment. See [docs/configuration.md](docs/configuration.md) for the full configuration surface.\n\n## Guide Map\n\n- Deployment guide: [docs/deployment-guide.md](docs/deployment-guide.md)\n- Client configuration: [docs/client-configuration.md](docs/client-configuration.md)\n- Operations guide: [docs/operations.md](docs/operations.md)\n- Configuration reference: [docs/configuration.md](docs/configuration.md)\n- RBAC onboarding: [docs/rbac-onboarding.md](docs/rbac-onboarding.md)\n- Development and testing: [docs/development.md](docs/development.md)\n- Database schema: [schema.sql](schema.sql)\n\n## Automated Releases\n\nThis repository includes a GitHub Actions workflow at `.github/workflows/release.yml` that runs on pushes to `main` and on manual dispatch.\n\nThe workflow uses `python-semantic-release` to:\n\n- determine version bumps from Conventional Commit messages\n- update `pyproject.toml` and `src/mcp_gateway/__init__.py`\n- create a Git tag and GitHub Release\n- maintain `CHANGELOG.md`\n\nExamples of release-driving commits:\n\n- `fix: handle stderr severity mapping`\n- `feat: add upstream warmup summary endpoint`\n- `feat!: remove legacy transport mode`\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

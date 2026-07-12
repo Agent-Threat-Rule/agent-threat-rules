@@ -1,0 +1,37 @@
+{
+  "full_name": "CaoMeiYouRen/tinyfish-mcp",
+  "html_url": "https://github.com/CaoMeiYouRen/tinyfish-mcp",
+  "description": "一个基于 TinyFish 免费搜索 API 的 MCP（Model Context Protocol）服务，为 AI 助手提供实时网络搜索能力。支持通过 Stdio 和 HTTP 两种标准协议进行便捷集成，方便开发者将搜索功能接入到各类 AI 应用中。",
+  "topics": [
+    "ai-agents",
+    "docker",
+    "hono",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "search",
+    "tinyfish",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 1,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2026-05-17T09:47:30Z",
+  "last_pushed_at": "2026-07-08T18:31:50Z",
+  "fetched_at": "2026-07-12T00:43:50.611Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<h1 align=\"center\">tinyfish-mcp </h1>\n<p>\n  <img alt=\"Version\" src=\"https://img.shields.io/github/package-json/v/CaoMeiYouRen/tinyfish-mcp.svg\" />\n  <a href=\"https://hub.docker.com/r/caomeiyouren/tinyfish-mcp\" target=\"_blank\">\n    <img alt=\"Docker Pulls\" src=\"https://img.shields.io/docker/pulls/caomeiyouren/tinyfish-mcp\">\n  </a>\n  <a href=\"https://app.codecov.io/gh/CaoMeiYouRen/tinyfish-mcp\" target=\"_blank\">\n    <img alt=\"Codecov\" src=\"https://img.shields.io/codecov/c/github/CaoMeiYouRen/tinyfish-mcp\">\n  </a>\n  <a href=\"https://github.com/CaoMeiYouRen/tinyfish-mcp/actions?query=workflow%3ARelease\" target=\"_blank\">\n    <img alt=\"GitHub Workflow Status\" src=\"https://img.shields.io/github/actions/workflow/status/CaoMeiYouRen/tinyfish-mcp/release.yml?branch=master\">\n  </a>\n  <img src=\"https://img.shields.io/badge/node-%3E%3D20-blue.svg\" />\n  <a href=\"https://github.com/CaoMeiYouRen/tinyfish-mcp#readme\" target=\"_blank\">\n    <img alt=\"Documentation\" src=\"https://img.shields.io/badge/documentation-yes-brightgreen.svg\" />\n  </a>\n  <a href=\"https://github.com/CaoMeiYouRen/tinyfish-mcp/graphs/commit-activity\" target=\"_blank\">\n    <img alt=\"Maintenance\" src=\"https://img.shields.io/badge/Maintained%3F-yes-green.svg\" />\n  </a>\n  <a href=\"https://github.com/CaoMeiYouRen/tinyfish-mcp/blob/master/LICENSE\" target=\"_blank\">\n    <img alt=\"License: MIT\" src=\"https://img.shields.io/github/license/CaoMeiYouRen/tinyfish-mcp?color=yellow\" />\n  </a>\n</p>\n\n\n> 一个基于 TinyFish 免费搜索 API 的 MCP（Model Context Protocol）服务，为 AI 助手提供实时网络搜索与网页内容获取能力。支持 **Stdio** 和 **HTTP** 两种传输方式接入。\n\n## 功能\n\n- **网络搜索** — 通过 `search` 工具进行关键词搜索，返回标题、摘要、URL 等结构化结果\n- **低质域名过滤** — 默认过滤一批内容农场和低原创价值站点，并支持按请求或环境变量追加排除域名\n- **网页内容抓取** — 通过 `fetch` 工具获取指定 URL 的完整网页内容（Markdown / HTML / JSON）\n- **双协议支持** — Stdio 模式（本地进程）和 HTTP 模式（远程服务）均可\n- **鉴权保护** — HTTP 模式下支持 Bearer Token 鉴权，可配置多个 Token\n- **速率限制** — HTTP 模式下内置限流保护，防止接口滥用\n- **多云部署** — 支持 Docker、Vercel 等多种部署方式\n\n## 可用工具\n\n| 工具名 | 描述 |\n|---|---|\n| `search` | 网络搜索，返回结构化结果（标题、URL、摘要） |\n| `fetch` | 获取指定 URL 的完整网页内容，支持 Markdown/HTML/JSON 格式 |\n\n## 快速开始\n\n### 准备\n\n1. 前往 [agent.tinyfish.ai/api-keys](https://agent.tinyfish.ai/api-keys) 获取 API Key\n2. 设置环境变量 `TINYFISH_API_KEY`\n\n### Stdio 模式（推荐用于个人开发）\n\n在 MCP 客户端（Claude Desktop / Cursor / Windsurf 等）配置文件中添加：\n\n```json\n{\n  \"mcpServers\": {\n    \"tinyfish-search\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"tinyfish-mcp\"],\n      \"env\": {\n        \"TINYFISH_API_KEY\": \"<your-api-key>\"\n      }\n    }\n  }\n}\n```\n\n### HTTP 模式（推荐用于团队共享）\n\n```bash\n# 1. 创建 .env 文件\ncat > .env << EOF\nTINYFISH_API_KEY=<your-api-key>\nAUTH_TOKEN=<your-auth-token>\nEOF\n\n# 2. 启动服务\nnpx -y tinyfish-mcp-server\n# 服务运行在 http://localhost:3000\n```\n\n在 MCP 客户端中配置：\n\n```json\n{\n  \"mcpServers\": {\n    \"tinyfish-search\": {\n      \"url\": \"http://localhost:3000/mcp\",\n      \"headers\": {\n        \"Authorization\": \"Bearer <your-auth-token>\"\n      }\n    }\n  }\n}\n```\n\n## 环境变量\n\n| 变量名 | 说明 | 默认值 | 适用模式 |\n|---|---|---|---|\n| `TINYFISH_API_KEY` | TinyFish API Key（必填） | — | 通用 |\n| `SEARCH_EXCLUDED_DOMAINS` | 额外排除的搜索域名列表，逗号分隔 | — | 通用 |\n| `AUTH_TOKEN` | 鉴权 Token | — | HTTP |\n| `AUTH_TOKENS` | 多 Token（逗号分隔） | — | HTTP |\n| `AUTH_ENABLED` | 鉴权开关 | `true` | HTTP |\n| `RATE_LIMIT_ENABLED` | 限流开关 | `true` | HTTP |\n| `RATE_LIMIT_WINDOW` | 限流窗口（ms） | `60000` | HTTP |\n| `RATE_LIMIT_MAX` | 窗口内最大请求数 | `30` | HTTP |\n| `PORT` | HTTP 端口 | `3000` | HTTP |\n\n## 文档\n\n- [部署指南](./docs/deployment.md) — Docker / Vercel / Cloudflare Workers 部署\n- [使用指南](./docs/usage.md) — 详细配置与 MCP 客户端接入\n- [设计文档](./docs/plan.md) — 架构设计与技术方案\n\n## 🛠️ 开发\n\n### 依赖要求\n\n- node >=20\n\n### 常用命令\n\n```sh\npnpm install       # 安装依赖\npnpm run dev       # 开发模式\npnpm run build     # 编译\npnpm run typecheck # 类型检查\npnpm run lint      # 代码检查\npnpm run test      # 运行测试\n```\n\n## 👤 作者\n\n\n**CaoMeiYouRen**\n\n-   Website: [https://blog.cmyr.ltd/](https://blog.cmyr.ltd/)\n-   GitHub: [@CaoMeiYouRen](https://github.com/CaoMeiYouRen)\n\n## 🤝 贡献\n\n欢迎 贡献、提问或提出新功能！<br />如有问题请查看 [issues page](https://github.com/CaoMeiYouRen/tinyfish-mcp/issues). <br/>贡献或提出新功能可以查看[contributing guide](https://github.com/CaoMeiYouRen/tinyfish-mcp/blob/master/CONTRIBUTING.md).\n\n## 💰 支持\n\n如果觉得这个项目有用的话请给一颗⭐️，非常感谢\n\n<a href=\"https://afdian.com/@CaoMeiYouRen\">\n  <img src=\"https://oss.cmyr.dev/images/202306192324870.png\" width=\"312px\" height=\"78px\" alt=\"在爱发电支持我\">\n</a>\n\n## 🌟 Star History\n\n[![Star History Chart](https://api.star-history.com/svg?repos=CaoMeiYouRen/tinyfish-mcp&type=Date)](https://star-history.com/#CaoMeiYouRen/tinyfish-mcp&Date)\n\n## 📝 License\n\nCopyright © 2026 [CaoMeiYouRen](https://github.com/CaoMeiYouRen).<br />\nThis project is [MIT](https://github.com/CaoMeiYouRen/tinyfish-mcp/blob/master/LICENSE) licensed.\n\n***\n_This README was generated with ❤️ by [cmyr-template-cli](https://github.com/CaoMeiYouRen/cmyr-template-cli)_\n\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

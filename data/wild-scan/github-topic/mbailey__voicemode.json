@@ -1,0 +1,43 @@
+{
+  "full_name": "mbailey/voicemode",
+  "html_url": "https://github.com/mbailey/voicemode",
+  "description": "Natural voice conversations with Claude Code",
+  "topics": [
+    "anthropic",
+    "asr",
+    "claude",
+    "claudecode",
+    "kokoro",
+    "livekit",
+    "mcp",
+    "mcp-server",
+    "tts",
+    "voice",
+    "voicemode",
+    "whisper"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 1269,
+  "forks": 179,
+  "open_issues": 16,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2025-06-08T16:16:19Z",
+  "last_pushed_at": "2026-07-10T11:20:44Z",
+  "fetched_at": "2026-07-11T22:33:33.606Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# VoiceMode\n\n> Natural voice conversations with Claude Code (and other MCP capable agents)\n\n[![PyPI Downloads](https://static.pepy.tech/badge/voice-mode)](https://pepy.tech/project/voice-mode)\n[![PyPI Downloads](https://static.pepy.tech/badge/voice-mode/month)](https://pepy.tech/project/voice-mode)\n[![PyPI Downloads](https://static.pepy.tech/badge/voice-mode/week)](https://pepy.tech/project/voice-mode)\n\nVoiceMode enables natural voice conversations with Claude Code. Voice isn't about replacing typing - it's about being available when typing isn't.\n\n**Perfect for:**\n\n- Walking to your next meeting\n- Cooking while debugging\n- Giving your eyes a break after hours of screen time\n- Holding a coffee (or a dog)\n- Any moment when your hands or eyes are busy\n\n## See It In Action\n\n[![VoiceMode Demo](https://img.youtube.com/vi/cYdwOD_-dQc/maxresdefault.jpg)](https://www.youtube.com/watch?v=cYdwOD_-dQc)\n\n## Quick Start\n\n**Requirements:** Computer with microphone and speakers\n\n### Option 1: Claude Code Plugin (Recommended)\n\nThe fastest way for Claude Code users to get started:\n\n```bash\n# Add the VoiceMode marketplace\nclaude plugin marketplace add mbailey/voicemode\n\n# Install VoiceMode plugin\nclaude plugin install voicemode@voicemode\n\n## Install dependencies (CLI, Local Voice Services)\n\n/voicemode:install\n\n# Start talking!\n/voicemode:converse\n```\n\n### Option 2: Python installer package\n\nInstalls dependencies and the VoiceMode Python package.\n\n```bash\n# Install UV package manager (if needed)\ncurl -LsSf https://astral.sh/uv/install.sh | sh\n\n# Run the installer (sets up dependencies and local voice services)\nuvx voice-mode-install\n\n# Add to Claude Code\nclaude mcp add --scope user voicemode -- uvx --refresh --from voice-mode voicemode-mcp-launcher\n\n# Optional: Add OpenAI API key as fallback for local services\nexport OPENAI_API_KEY=your-openai-key\n\n# Start a conversation\nclaude converse\n```\n\nFor manual setup, see the [Getting Started Guide](docs/tutorials/getting-started.md).\n\n## Features\n\n- **Natural conversations** - speak naturally, hear responses immediately\n- **Works offline** - optional local voice services (Whisper STT, Kokoro TTS)\n- **Low latency** - fast enough to feel like a real conversation\n- **Smart silence detection** - stops recording when you stop speaking\n- **Privacy options** - run entirely locally or use cloud services\n\n## Compatibility\n\n**Platforms:** Linux, macOS, Windows (native or WSL), NixOS\n**Python:** 3.10-3.14\n\n## Configuration\n\nVoiceMode works out of the box. For customization:\n\n```bash\n# Set OpenAI API key (if using cloud services)\nexport OPENAI_API_KEY=\"your-key\"\n\n# Or configure via file\nvoicemode config edit\n```\n\nSee the [Configuration Guide](docs/guides/configuration.md) for all options.\n\n## Permissions Setup (Optional)\n\nTo use VoiceMode without permission prompts, add to `~/.claude/settings.json`:\n\n```json\n{\n  \"permissions\": {\n    \"allow\": [\n      \"mcp__voicemode__converse\",\n      \"mcp__voicemode__service\"\n    ]\n  }\n}\n```\n\nSee the [Permissions Guide](docs/guides/permissions.md) for more options.\n\n## Local Voice Services\n\nFor privacy or offline use, install local speech services:\n\n- **[Whisper.cpp](docs/guides/whisper-setup.md)** - Local speech-to-text\n- **[Kokoro](docs/guides/kokoro-setup.md)** - Local text-to-speech with multiple voices\n\nThese provide the same API as OpenAI, so VoiceMode switches seamlessly between them.\n\n## Installation Details\n\n<details>\n<summary><strong>System Dependencies by Platform</strong></summary>\n\n#### Ubuntu/Debian\n\n```bash\nsudo apt update\nsudo apt install -y ffmpeg gcc libasound2-dev libasound2-plugins libportaudio2 portaudio19-dev pulseaudio pulseaudio-utils python3-dev\n```\n\n**WSL2 users**: The pulseaudio packages above are required for microphone access.\n\n#### Fedora/RHEL\n\n```bash\nsudo dnf install alsa-lib-devel ffmpeg gcc portaudio portaudio-devel python3-devel\n```\n\n#### macOS\n\n```bash\nbrew install ffmpeg node portaudio\n```\n\n#### NixOS\n\n```bash\n# Use development shell\nnix develop github:mbailey/voicemode\n\n# Or install system-wide\nnix profile install github:mbailey/voicemode\n```\n\n</details>\n\n<details>\n<summary><strong>Alternative Installation Methods</strong></summary>\n\n#### From source\n\n```bash\ngit clone https://github.com/mbailey/voicemode.git\ncd voicemode\nuv tool install -e .\n```\n\n#### NixOS system-wide\n\n```nix\n# In /etc/nixos/configuration.nix\nenvironment.systemPackages = [\n  (builtins.getFlake \"github:mbailey/voicemode\").packages.${pkgs.system}.default\n];\n```\n\n</details>\n\n## Troubleshooting\n\n\n| Problem | Solution |\n|---------|----------|\n| No microphone access | Check terminal/app permissions. WSL2 needs pulseaudio packages. |\n| UV not found | Run `curl -LsSf https://astral.sh/uv/install.sh \\| sh` |\n| OpenAI API error | Verify `OPENAI_API_KEY` is set correctly |\n| No audio output | Check system audio settings and available devices |\n\n\n### Save Audio for Debugging\n\n```bash\nexport VOICEMODE_SAVE_AUDIO=true\n# Files saved to ~/.voicemode/audio/YYYY/MM/\n```\n\n## Documentation\n\n- [Getting Started](docs/tutorials/getting-started.md) - Full setup guide\n- [Configuration](docs/guides/configuration.md) - All environment variables\n- [Whisper Setup](docs/guides/whisper-setup.md) - Local speech-to-text\n- [Kokoro Setup](docs/guides/kokoro-setup.md) - Local text-to-speech\n- [Development Setup](docs/tutorials/development-setup.md) - Contributing guide\n\nFull documentation: [voicemode.dev](https://voicemode.dev)\n\n## Links\n\n- **Website**: [voicemode.dev](https://voicemode.dev)\n- **GitHub**: [github.com/mbailey/voicemode](https://github.com/mbailey/voicemode)\n- **PyPI**: [pypi.org/project/voice-mode](https://pypi.org/project/voice-mode/)\n- **YouTube**: [@getvoicemode](https://youtube.com/@getvoicemode)\n- **Twitter/X**: [@getvoicemode](https://twitter.com/getvoicemode)\n- **Newsletter**: [![Subscribe](https://img.shields.io/badge/Subscribe-Newsletter-orange?style=flat-square)](https://buttondown.com/voicemode)\n\n## License\n\nMIT - A [Failmode](https://failmode.com) Project\n\n---\nmcp-name: dev.voicemode/voicemode\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"voicemode\": {\n      \"type\": \"stdio\",\n      \"command\": \"uv\",\n      \"args\": [\n        \"run\",\n        \"voicemode\"\n      ],\n      \"env\": {\n        \"#VOICEMODE_SAVE_ALL\": \"true\"\n      }\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

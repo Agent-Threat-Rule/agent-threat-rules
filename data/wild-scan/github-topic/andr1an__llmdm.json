@@ -1,0 +1,35 @@
+{
+  "full_name": "andr1an/llmdm",
+  "html_url": "https://github.com/andr1an/llmdm",
+  "description": "Go MCP server for D&D campaign state management, dice rolling, and session memory",
+  "topics": [
+    "dnd",
+    "dnd5e",
+    "dnd5e-tools",
+    "dungeons-and-dragons",
+    "mcp",
+    "mcp-server",
+    "mcp-servers"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Go",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-03-08T17:55:27Z",
+  "last_pushed_at": "2026-03-25T18:04:43Z",
+  "fetched_at": "2026-07-12T00:23:15.475Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# llmdm\n\nA Go MCP server for D&D campaign state management, dice rolling, and session memory.\n\n## What It Does\n\n- Serves Model Context Protocol (MCP) toolset over stdio or HTTP\n- Stores campaign data in per-campaign SQLite databases\n- Tracks characters, plot hooks, world flags, roll history, and session summaries\n- Generates session briefs and markdown recaps for fast DM context restoration\n- Compresses session logs using Anthropic API with local fallback\n\n## How to Play\n\nThe `game/` directory contains a ready-to-play workspace for running D&D campaigns.\n\n### Setup\n\n1. Build and copy the server:\n   ```bash\n   make build\n   cp bin/dnd-mcp game/dnd-mcp\n   ```\n\n2. (Optional) Set up AI session compression:\n   ```bash\n   cd game\n   echo \"ANTHROPIC_API_KEY=your-key-here\" > .env\n   ```\n\n### Running Campaigns\n\n1. Navigate to game directory and start Claude Code:\n   ```bash\n   cd game\n   claude\n   ```\n\n2. Start a new campaign or continue existing:\n   ```\n   /create-campaign\n   /continue\n   ```\n\n3. Play! Claude acts as DM with:\n   - Real dice rolls via MCP server\n   - Persistent character sheets in SQLite\n   - AI-compressed session history\n   - Automatic plot hook tracking\n\n4. End your session:\n   ```\n   /end\n   ```\n\n### Model Recommendations\n\n- **Sonnet 4.5**: Best for regular play (creativity + speed + cost)\n- **Opus 4.5**: Use for major story moments and boss fights\n- **Haiku**: Quick queries only (not recommended for gameplay)\n\n### Context Window Management\n\nCampaign state persists in SQLite, so start fresh Claude Code sessions without losing progress.\n\n**When to start fresh:**\n\n- After 2-3 D&D sessions (50k-150k tokens each)\n- When responses become slow or repetitive\n- At natural story break points\n- When context exceeds ~150k tokens\n\n**Resume after refresh:**\n\n```bash\nexit\nclaude\n/continue\n```\n\nCampaign data is stored in `./data/campaigns/` - never needs cleaning.\n\n## Documentation\n\nComplete documentation in [`docs/`](./docs/):\n\n- [Quick Start Guide](./docs/guides/quick-start.md) - Step-by-step tutorial\n- [Tool Reference](./docs/tools/) - All 22 MCP tools documented\n- [Deployment Guide](./docs/guides/deployment.md) - Server setup & configuration\n- [Architecture Guide](./docs/guides/architecture.md) - Technical details\n- [Troubleshooting](./docs/guides/troubleshooting.md) - Common issues & solutions\n\n## Tech Stack\n\n- Go 1.25.6 | MCP SDK: `github.com/modelcontextprotocol/go-sdk`\n- SQLite: `modernc.org/sqlite` | Config: `.env` via `github.com/joho/godotenv`\n\n## Build & Run\n\n```bash\nmake build\nmake test\nmake run\n```\n\nSee [Deployment Guide](./docs/guides/deployment.md) for transport modes and configuration.\n\n## License\n\nMIT License\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

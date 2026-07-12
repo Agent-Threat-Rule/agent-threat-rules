@@ -1,0 +1,48 @@
+{
+  "full_name": "Mindburn-Labs/helm-ai-kernel",
+  "html_url": "https://github.com/Mindburn-Labs/helm-ai-kernel",
+  "description": "Fail-closed execution firewall for AI agents: quarantine MCP tools, proxy OpenAI-compatible requests, emit signed receipts, and verify EvidencePacks offline.",
+  "topics": [
+    "agent-security",
+    "ai-agents",
+    "ai-security",
+    "cli",
+    "developer-tools",
+    "devsecops",
+    "evidencepack",
+    "execution-boundary",
+    "go",
+    "llm-security",
+    "mcp",
+    "model-context-protocol",
+    "offline-verification",
+    "openai-compatible",
+    "policy-engine",
+    "proofgraph",
+    "sandbox",
+    "self-hosted",
+    "signed-receipts",
+    "zero-trust"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 50,
+  "forks": 2,
+  "open_issues": 9,
+  "language": "Go",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2026-02-15T12:51:47Z",
+  "last_pushed_at": "2026-07-11T22:09:35Z",
+  "fetched_at": "2026-07-11T23:29:53.795Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# HELM AI Kernel\n\n**A local firewall for AI-agent actions.**\n\nHELM sits between Claude Code, Codex, MCP tools, shell commands, and other agent\nactions. It decides `ALLOW`, `DENY`, or `ESCALATE`, then writes a signed receipt\nyou can verify later.\n\n![HELM AI Kernel: one boundary, one decision, one receipt](docs/assets/readme-boundary-preview.png)\n\n## Try It\n\n```bash\nbrew tap mindburn-labs/tap\nbrew trust mindburn-labs/tap   # recent Homebrew requires trusting third-party taps\nbrew install helm-ai-kernel\nhelm-ai-kernel setup claude-code --yes\n# Codex: helm-ai-kernel setup codex --yes\n```\n\nAsk your agent to do something risky. HELM blocks or escalates the action before\nit runs, then records the decision.\n\n```bash\nhelm-ai-kernel workstation verify-decision \\\n  --receipt ~/.helm-ai-kernel/receipts/hooks/<decision>.json\n```\n\nNo cloud account. No model key. No Docker. No production credentials.\n\n## What It Does\n\n| Agent tries to... | HELM does this | Proof |\n| --- | --- | --- |\n| Run a destructive shell command | `DENY` | signed receipt |\n| Use an unknown MCP tool | `ESCALATE` | quarantine record |\n| Read protected secrets | `DENY` | fail-closed receipt |\n| Run approved work | `ALLOW` | receipt + evidence |\n| Export a review bundle | verify offline | EvidencePack |\n\nHELM only governs effects that reach its boundary. For example, evals showed\nnetwork egress blocks firing when an agent actually dispatched a LAN or\nnon-allowlisted HTTPS request. Prompt-only manipulation, model refusal, or an\nagent that never attempts the tool call needs model, app, and sandbox controls\nalongside HELM.\n\n## One Example\n\n```text\nAgent asks: delete the production database\nHELM sees: protected data + irreversible action\nHELM says: DENY\nYou get:  a signed receipt you can verify offline\n```\n\n## Where To Go Next\n\n| Need | Link |\n| --- | --- |\n| 5-minute local proof | [Quickstart](docs/QUICKSTART.md) |\n| End-to-end proof loop | [HELM Proof Loop](docs/PROOF_LOOP.md) |\n| Local AI-agent risk audit | [Agent Risk Scan](docs/reference/agent-risk-scan.md) |\n| CLI commands | [CLI reference](docs/reference/cli.md) |\n| Security model | [Execution security model](docs/EXECUTION_SECURITY_MODEL.md) |\n| MCP tool quarantine | [MCP integration](docs/INTEGRATIONS/mcp.md) |\n| Evidence verification | [Verification](docs/VERIFICATION.md) |\n| AI security category map | [AI Security Categories](docs/AI_SECURITY_CATEGORIES.md) |\n\n## What It Is Not\n\n- Not Kubernetes Helm.\n- Not the hosted HELM Enterprise product.\n- Not a vague AI-safety claim.\n\nIt is the open-source execution boundary: policy in, action checked, receipt out.\n\n## Source Build\n\n```bash\ngit clone https://github.com/Mindburn-Labs/helm-ai-kernel.git\ncd helm-ai-kernel\nmake build\nbin/helm-ai-kernel setup claude-code --yes\n```\n\n## Project\n\n| Release target | SDK pointers after publication |\n| --- | --- |\n| `v0.7.1` | `github.com/Mindburn-Labs/helm-ai-kernel/sdk/go@v0.7.1` |\n| `v0.7.1` | `io.github.mindburnlabs:helm-sdk:0.7.1` |\n\nApache-2.0. See [LICENSE](LICENSE), [SECURITY.md](SECURITY.md), and\n[CONTRIBUTING.md](CONTRIBUTING.md).\n\n## Where HELM Fits\n\nExamples are illustrative. HELM is the execution boundary, not the agent,\norchestrator, cloud control plane, or observability tool.\n\n| Category | Examples | What They Do | Where They Stop | HELM AI Kernel |\n| --- | --- | --- | --- | --- |\n| **Agent permission modes** | Claude Code Auto Mode | Let agents work faster with fewer prompts. | Permission automation is not execution governance. | **HELM makes every governed action produce a verdict and proof.** |\n| **Model-vendor agents** | OpenAI Agents, ChatGPT Agent, Claude agents | Provide agent runtimes, tools, guardrails, and HITL flows. | They are tied to their own agent stack and do not create neutral execution evidence. | **HELM is model-neutral: any agent can route actions through the same boundary.** |\n| **Coding agents** | GitHub Copilot, Devin, Cursor, Replit Agent | Write, edit, test, and ship code faster. | They optimize developer productivity, not cross-runtime authority. | **HELM governs what the agent is allowed to execute.** |\n| **Agent orchestration** | LangGraph, CrewAI, AutoGen, n8n | Decide what agents should do next. | Orchestration chooses attempts; it does not prove authorization. | **HELM decides whether the attempted action may happen.** |\n| **MCP gateways and security** | Runlayer, Lasso, Obot, MintMCP, Operant | Route, scan, filter, and secure MCP/tool traffic. | Gateways protect traffic; they do not define the final authority record. | **HELM quarantines tools, issues verdicts, and records signed receipts.** |\n| **Enterprise agent control planes** | Microsoft Agent 365, Entra Agent ID, ServiceNow AI Control Tower | Register, manage, and monitor agents inside enterprise platforms. | Identity and control-plane visibility are not portable execution proof. | **HELM proves whether a side effect was authorized under policy.** |\n| **Cloud-native agent governance** | AWS Bedrock AgentCore, Google Agent Gateway / Model Armor | Govern agents inside cloud-provider ecosystems. | Strong inside one cloud estate; weaker as neutral cross-platform evidence. | **HELM provides a portable boundary and verifier.** |\n| **Observability and evals** | LangSmith, Braintrust, Arize, Helicone, Weave | Show traces, metrics, evals, and debugging timelines. | Logs explain what happened after the fact. | **HELM decides before execution and leaves verifiable proof after.** |\n| **AI security platforms** | Zenity, Noma, WitnessAI, HiddenLayer, Lakera | Detect, scan, monitor, and protect AI systems broadly. | Broad security coverage can blur runtime authority. | **HELM is narrow by design: fail-closed execution control.** |\n| **Receipt and proof projects** | PipeLab / AAR, ACTA, Signet, ZeroClaw | Create receipts, signed records, or action proof. | Receipts alone do not equal governed execution. | **HELM binds receipt to policy verdict, effect, reason code, and EvidencePack.** |\n\n**Bottom line:** most tools help agents act. HELM decides whether the action is\nallowed, blocks it when it is not, and leaves proof an outside reviewer can\nverify.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

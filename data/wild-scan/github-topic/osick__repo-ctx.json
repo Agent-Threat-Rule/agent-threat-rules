@@ -1,0 +1,43 @@
+{
+  "full_name": "osick/repo-ctx",
+  "html_url": "https://github.com/osick/repo-ctx",
+  "description": "MCP server that gives AI assistants deep, searchable access to any Git repository — symbol extraction, dependency graphs, architecture analysis across 12 languages",
+  "topics": [
+    "ai-tool",
+    "claude",
+    "code-analysis",
+    "codeanalysis",
+    "context-engineering",
+    "copilot",
+    "cursor",
+    "developer-tools",
+    "gemini",
+    "git",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "python",
+    "tree-sitter"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 1,
+  "language": "Python",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2025-11-23T11:35:28Z",
+  "last_pushed_at": "2026-03-01T20:47:06Z",
+  "fetched_at": "2026-07-12T00:20:11.288Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# repo-ctx\n\n[![PyPI](https://img.shields.io/pypi/v/repo-ctx)](https://pypi.org/project/repo-ctx/)\n[![Python](https://img.shields.io/pypi/pyversions/repo-ctx)](https://pypi.org/project/repo-ctx/)\n[![License](https://img.shields.io/github/license/osick/repo-ctx)](LICENSE)\n\n## ***Give your AI assistant deep understanding of any codebase.***\n\nYour AI assistant can only help with code it can see. repo-ctx gives it searchable access to any Git repository — with real symbol extraction, dependency graphs, and architecture analysis across 12+ languages. Set up in one command.\n\n---\n\n## The Problem\n\nAI coding assistants are powerful — but blind. They only know what's in the current file or what you paste in. When you need help understanding a dependency, navigating an unfamiliar codebase, or analyzing architecture across repositories, you're on your own.\n\n**repo-ctx solves this.** It indexes Git repositories and exposes them to AI assistants through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/), giving tools like Claude Code, Cursor, and VS Code Copilot real, structured access to codebases.\n\n---\n\n## What Makes repo-ctx Different\n\n### 1. Built for AI Assistants\n\nrepo-ctx isn't a code browser you query manually. It's an MCP server — your AI assistant calls its tools directly when it needs to understand code.\n\n```\nYou: \"How does the authentication flow work in our API?\"\n\nClaude (using repo-ctx):\n  → ctx-search \"authentication\" across 3 indexed repos\n  → ctx-analyze auth_service.py → extracts 12 symbols, 4 dependencies\n  → ctx-graph ./src/auth → maps the full dependency chain\n  → Gives you a complete, accurate answer\n```\n\n### 2. Multi-Repo, Multi-Provider\n\nIndex everything in one place. GitHub, GitLab, and local repositories — search across all of them.\n\n```bash\nrepo-ctx index ./my-project              # Local repo\nrepo-ctx index fastapi/fastapi           # GitHub\nrepo-ctx index my-company/backend        # GitLab\nrepo-ctx index --group my-org            # Entire GitHub org\n```\n\nThen your AI assistant can search, analyze, and cross-reference all of them simultaneously.\n\n### 3. Deep Code Understanding\n\nNot just text search — real structural analysis:\n\n- **Symbol extraction** — functions, classes, methods, interfaces across Python, Java, JavaScript, TypeScript, Kotlin, Go, Rust, C/C++, Ruby, PHP, C#, Bash\n- **Dependency graphs** — who calls what, import chains, coupling analysis\n- **Architecture analysis** — Design Structure Matrix, cycle detection, layer identification, complexity metrics\n- **Joern CPG** — optional deep analysis with call graphs, data flow tracking, and CPGQL queries\n\n---\n\n## Quick Start\n\n```bash\n# Install\npip install repo-ctx\n\n# Index a repository\nrepo-ctx index fastapi/fastapi\n\n# Search it\nrepo-ctx search \"middleware\"\n\n# Analyze code locally\nrepo-ctx analyze ./src --language python\n```\n\n---\n\n## MCP Setup\n\nAdd to your MCP configuration (`~/.config/claude/mcp.json` for Claude Code):\n\n```json\n{\n  \"mcpServers\": {\n    \"repo-ctx\": {\n      \"command\": \"uvx\",\n      \"args\": [\"repo-ctx\", \"-m\"],\n      \"env\": {\n        \"GITHUB_TOKEN\": \"${GITHUB_TOKEN}\"\n      }\n    }\n  }\n}\n```\n\nWorks immediately with local and public GitHub repos — no tokens required for those.\n\nFor private repos: set `GITHUB_TOKEN` or `GITLAB_TOKEN` + `GITLAB_URL`.\n\n### 18 MCP Tools\n\n| Category | Tools |\n|----------|-------|\n| **Repository** | `ctx-index`, `ctx-list`, `ctx-search`, `ctx-docs` |\n| **Code Analysis** | `ctx-analyze`, `ctx-symbol`, `ctx-symbols`, `ctx-graph` |\n| **Architecture** | `ctx-dsm`, `ctx-cycles`, `ctx-layers`, `ctx-architecture`, `ctx-metrics` |\n| **Export** | `ctx-llmstxt`, `ctx-dump` |\n| **CPG (Joern)** | `ctx-query`, `ctx-export`, `ctx-status` |\n\nFull reference: [MCP Tools Reference](docs/mcp_tools_reference.md)\n\n---\n\n## Also Works As\n\n**CLI** — standalone searching, indexing, and analysis from the terminal.\n\n**Python library** — embed repo-ctx in your own tools and workflows.\n\n```python\nfrom repo_ctx.client import RepoCtxClient\n\nasync with RepoCtxClient() as client:\n    await client.index_repository(\"fastapi/fastapi\", provider=\"github\")\n    results = await client.search(\"middleware\")\n```\n\n---\n\n## Documentation\n\n- [User Guide](docs/user_guide.md) — usage, examples, configuration\n- [Developer Guide](docs/dev_guide.md) — architecture, contributing\n- [MCP Tools Reference](docs/mcp_tools_reference.md) — all 18 tools documented\n- [Architecture Analysis Guide](docs/architecture_analysis_guide.md) — DSM, cycles, metrics\n\n---\n\n## License\n\nApache 2.0 — see [LICENSE](LICENSE).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

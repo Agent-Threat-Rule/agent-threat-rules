@@ -1,0 +1,39 @@
+{
+  "full_name": "78488393929/fastmcp-web-explorer",
+  "html_url": "https://github.com/78488393929/fastmcp-web-explorer",
+  "description": "MCP",
+  "topics": [
+    "ai-agents",
+    "claude-desktop",
+    "llm-tools",
+    "mcp",
+    "mcp-client",
+    "mcp-server",
+    "mcp-tools",
+    "mcpe-server",
+    "web-scraper"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-06-28T17:45:05Z",
+  "last_pushed_at": "2026-06-28T19:46:11Z",
+  "fetched_at": "2026-07-12T00:47:52.212Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# FastMCP Web Explorer 🚀\n\nA fast, lightweight Model Context Protocol (MCP) server built with Python. This MCP server provides a `web_search` tool that allows AI models and AI assistants (like Claude Desktop) to perform live internet searches using DuckDuckGo (without requiring any API keys).\n\n## 🌟 Features\n- Fast web search without API keys (Powered by DuckDuckGo).\n- Native support for Anthropic's **Model Context Protocol (MCP)** via the `mcp` library.\n- Easy to run locally and plug into any MCP client.\n\n## ⚙️ Installation\n\n1. Clone this repository:\n```bash\ngit clone https://github.com/YOUR_USERNAME/fastmcp-web-explorer.git\ncd fastmcp-web-explorer\n```\n\n2. Create a virtual environment and install the dependencies:\n```bash\npython -m venv venv\n# On Windows:\n.\\venv\\Scripts\\activate\n# On Mac/Linux:\nsource venv/bin/activate\n\npip install -r requirements.txt\n```\n\n## 🚀 Usage\n\n### With Claude Desktop\nAdd this server to your `claude_desktop_config.json`:\n```json\n{\n  \"mcpServers\": {\n    \"fastmcp-web-explorer\": {\n      \"command\": \"python\",\n      \"args\": [\n        \"C:/Absolute/Path/To/fastmcp-web-explorer/main.py\"\n      ]\n    }\n  }\n}\n```\n\n### With MCP Inspector (UI Testing)\nYou can test the tools visually using the MCP Inspector:\n```bash\nnpx @modelcontextprotocol/inspector python main.py\n```\n\n## 🛠 Tools Exposed\n- `web_search`: Takes a `query` (string) and an optional `max_results` (int) parameter. Returns the top web search results formatted as JSON.\n- `visit_website`: Takes a `url` (string) and an optional `max_length` (int) parameter. Visits the website, removes ads/menus, and returns the pure article text.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "main.py",
+    "size": 2850,
+    "content": "import asyncio\nimport json\nimport requests\nfrom bs4 import BeautifulSoup\nfrom mcp.server.fastmcp import FastMCP\nfrom ddgs import DDGS\n\n# Create an MCP server instance\nmcp = FastMCP(\"FastMCP Web Explorer\")\n\n@mcp.tool()\nasync def web_search(query: str, max_results: int = 5) -> str:\n    \"\"\"\n    Perform a web search using DuckDuckGo and return the results.\n    Useful for answering questions about recent events, stocks, or anything requiring internet access.\n    \n    Args:\n        query: The search term or question to look up on the web.\n        max_results: The maximum number of results to return (default 5).\n    \"\"\"\n    try:\n        # Run synchronous duckduckgo_search in a thread pool to avoid blocking async event loop\n        results = await asyncio.to_thread(_perform_search, query, max_results)\n        return json.dumps(results, ensure_ascii=False, indent=2)\n    except Exception as e:\n        return f\"Error performing web search: {str(e)}\"\n\n@mcp.tool()\nasync def visit_website(url: str, max_length: int = 10000) -> str:\n    \"\"\"\n    Visit a specific website URL and extract the main article or text content.\n    Useful for reading the full content of a news article or documentation page found via web_search.\n    It automatically removes ads, menus, and boilerplate text.\n    \n    Args:\n        url: The web URL to visit and read.\n        max_length: The maximum number of characters to return (default 10000) to prevent token overflow.\n    \"\"\"\n    try:\n        results = await asyncio.to_thread(_fetch_and_extract, url)\n        if not results:\n            return \"Error: Could not extract text content from the given URL. The site might be blocking bots or requires JavaScript.\"\n        \n        if len(results) > max_length:\n            results = results[:max_length] + f\"\\n... (Text truncated due to length limit of {max_length} characters)\"\n            \n        return results\n    except Exception as e:\n        return f\"Error visiting website: {str(e)}\"\n\ndef _perform_search(query: str, max_results: int):\n    ddgs = DDGS()\n    results = list(ddgs.text(query, max_results=max_results))\n    return results\n\ndef _fetch_and_extract(url: str) -> str:\n    headers = {\n        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'\n    }\n    response = requests.get(url, headers=headers, timeout=10)\n    response.raise_for_status()\n    \n    soup = BeautifulSoup(response.text, 'html.parser')\n    \n    # Remove script, style, header, footer, and nav tags to clean up the text\n    for element in soup([\"script\", \"style\", \"header\", \"footer\", \"nav\", \"aside\", \"noscript\"]):\n        element.decompose()\n        \n    text = soup.get_text(separator=' ', strip=True)\n    return text\n\nif __name__ == \"__main__\":\n    # Start the server using stdio transport\n    mcp.run()\n"
+  },
+  "content_fetch_notes": []
+}

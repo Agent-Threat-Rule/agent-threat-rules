@@ -1,0 +1,34 @@
+{
+  "full_name": "rakeshgangwar/erpnext-mcp-server",
+  "html_url": "https://github.com/rakeshgangwar/erpnext-mcp-server",
+  "description": "Connect AI assistants to your ERPNext instance via the Model Context Protocol (MCP) using the official Frappe API.",
+  "topics": [
+    "agent",
+    "ai-agents",
+    "erp",
+    "erpnext",
+    "mcp",
+    "model-context-protocol"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 108,
+  "forks": 38,
+  "open_issues": 5,
+  "language": "JavaScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-03-28T21:00:20Z",
+  "last_pushed_at": "2026-04-25T06:23:30Z",
+  "fetched_at": "2026-07-11T23:19:53.496Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# ERPNext MCP Server\n\nA Model Context Protocol server for ERPNext integration\n\nThis is a TypeScript-based MCP server that provides integration with ERPNext/Frappe API. It enables AI assistants to interact with ERPNext data and functionality through the Model Context Protocol.\n\n## Features\n\n### Resources\n- Access ERPNext documents via `erpnext://{doctype}/{name}` URIs\n- JSON format for structured data access\n\n### Tools\n- `get_doctypes` - Get a list of all available DocTypes\n- `get_doctype_fields` - Get fields list for a specific DocType\n- `get_documents` - Get a list of documents for a specific doctype\n- `get_document` - Get a single document by name, including all child tables\n- `create_document` - Create a new document in ERPNext\n- `update_document` - Update an existing document in ERPNext\n- `delete_document` - Permanently delete a document\n- `submit_document` - Submit a document (set docstatus to 1)\n- `cancel_document` - Cancel a submitted document (set docstatus to 2)\n- `call_method` - Call an ERPNext/Frappe whitelisted server-side API method\n- `run_report` - Run an ERPNext report\n\n## Configuration\n\nThe server requires the following environment variables:\n- `ERPNEXT_URL` - The base URL of your ERPNext instance\n- `ERPNEXT_API_KEY` (optional) - API key for authentication\n- `ERPNEXT_API_SECRET` (optional) - API secret for authentication\n\n## Development\n\nInstall dependencies:\n```bash\nnpm install\n```\n\nBuild the server:\n```bash\nnpm run build\n```\n\nFor development with auto-rebuild:\n```bash\nnpm run watch\n```\n\n## Installation\n\nTo use with Claude Desktop, add the server config:\n\nOn MacOS: `~/Library/Application Support/Claude/claude_desktop_config.json`\nOn Windows: `%APPDATA%/Claude/claude_desktop_config.json`\n\n```json\n{\n  \"mcpServers\": {\n    \"erpnext\": {\n      \"command\": \"node\",\n      \"args\": [\"/path/to/erpnext-server/build/index.js\"],\n      \"env\": {\n        \"ERPNEXT_URL\": \"http://your-erpnext-instance.com\",\n        \"ERPNEXT_API_KEY\": \"your-api-key\",\n        \"ERPNEXT_API_SECRET\": \"your-api-secret\"\n      }\n    }\n  }\n}\n```\n\nTo use with Claude in VSCode, add the server config to:\n\nOn MacOS: `~/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`\nOn Windows: `%APPDATA%/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`\n\n### Debugging\n\nSince MCP servers communicate over stdio, debugging can be challenging. We recommend using the [MCP Inspector](https://github.com/modelcontextprotocol/inspector), which is available as a package script:\n\n```bash\nnpm run inspector\n```\n\nThe Inspector will provide a URL to access debugging tools in your browser.\n\n## Usage Examples\n\n### Get Customer List\n```\n<use_mcp_tool>\n<server_name>erpnext</server_name>\n<tool_name>get_documents</tool_name>\n<arguments>\n{\n  \"doctype\": \"Customer\"\n}\n</arguments>\n</use_mcp_tool>\n```\n\n### Get Customer Details\n```\n<access_mcp_resource>\n<server_name>erpnext</server_name>\n<uri>erpnext://Customer/CUSTOMER001</uri>\n</access_mcp_resource>\n```\n\n### Create New Item\n```\n<use_mcp_tool>\n<server_name>erpnext</server_name>\n<tool_name>create_document</tool_name>\n<arguments>\n{\n  \"doctype\": \"Item\",\n  \"data\": {\n    \"item_code\": \"ITEM001\",\n    \"item_name\": \"Test Item\",\n    \"item_group\": \"Products\",\n    \"stock_uom\": \"Nos\"\n  }\n}\n</arguments>\n</use_mcp_tool>\n```\n\n### Get Item Fields\n```\n<use_mcp_tool>\n<server_name>erpnext</server_name>\n<tool_name>get_doctype_fields</tool_name>\n<arguments>\n{\n  \"doctype\": \"Item\"\n}\n</arguments>\n</use_mcp_tool>\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

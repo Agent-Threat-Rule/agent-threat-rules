@@ -1,0 +1,35 @@
+{
+  "full_name": "sheshbabu/zen",
+  "html_url": "https://github.com/sheshbabu/zen",
+  "description": "Selfhosted notes app. Single golang binary, notes stored as markdown within SQLite, full-text search, very low resource usage",
+  "topics": [
+    "markdown",
+    "mcp-server",
+    "notes",
+    "preact",
+    "sqlite"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 1118,
+  "forks": 64,
+  "open_issues": 2,
+  "language": "JavaScript",
+  "license": "AGPL-3.0",
+  "default_branch": "master",
+  "created_at": "2025-01-30T11:34:54Z",
+  "last_pushed_at": "2026-04-29T09:40:54Z",
+  "fetched_at": "2026-07-11T22:35:21.745Z",
+  "readme": {
+    "path": "readme.md",
+    "content": "<p align=\"center\">\n  <img width=\"256\" src=\"assets/android-chrome-512x512.png\">\n  <h1 align=\"center\">Zen</h1>\n  <p align=\"center\">\n    <a href=\"https://zendemo.fly.dev\">Live Demo</a> •\n    <a href=\"http://sheshbabu.com/zen/\">Features</a> •\n    <a href=\"https://x.com/sheshbabu\">Updates</a>\n  </p>\n</p>\n\n<p align=\"center\"><img src=\"https://github.com/sheshbabu/zen/blob/master/docs/screenshot.png?raw=true\"/></p>\n\n### Features\n* Single Go binary or Docker Compose\n* Low resource usage\n* Standard Markdown files, local SQLite database\n* Organize with flexible tags, not rigid folders\n* Markdown features like tables, code blocks, task lists, highlights, and more\n* Full-text search with BM25 ranking\n* Import and export data with full portability\n* Templates\n* Pinned notes\n* Archive and soft delete notes\n* Minimal dependency footprint\n* Automated backups (via [Zen Backup](https://github.com/sheshbabu/zen-backup))\n\n\n### Experimental Features\n* Canvas for spatial organization of notes and images (stored as [JSON Canvas](https://jsoncanvas.org/docs/apps/))\n* Semantic search for notes and images (via [Zen Intelligence](https://github.com/sheshbabu/zen-intelligence))\n* Similar images (via [Zen Intelligence](https://github.com/sheshbabu/zen-intelligence))\n* MCP for searching, listing and reading notes\n\n\n\n### Installation\nBuild from source\n```shell\n$ make build\n```\n\n\n### Local Development\nRun the application using default configuration\n```shell\n$ make dev\n```\n\nRun the application in watch mode\n\nInstall [air](https://github.com/air-verse/air) and [esbuild](https://esbuild.github.io)\n\n```shell\n$ go install github.com/air-verse/air@latest\n$ go install github.com/evanw/esbuild/cmd/esbuild@latest\n```\n\n```shell\n$ make watch\n```\n\n\n### Schema Migrations\n* Create new migration file under `./migrations`\n* Use the format `<version>_<title>.sql`\n\n\n### Image Versioning\n```bash\n$ git tag x.y.z\n$ git push origin x.y.z\n```\n\n\n### Contributions\nThis is a personal project built for my own use. The codebase is available for forking and modifications. Note that I may not actively review pull requests or respond to issues due to time constraints.\n\n\n### Thanks\n* [go-sqlite3](https://github.com/mattn/go-sqlite3)\n* [Standalone Preact Builder](https://standalonepreact.satge.net)\n* [markdown-it](https://markdown-it.github.io)\n* [highlight.js](https://highlightjs.org)\n* [Lucide Icons](https://lucide.dev)\n* [CSS Reset](https://www.joshwcomeau.com/css/custom-css-reset/)\n* [Konva.js](https://konvajs.org)"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "index.js",
+    "size": 2418,
+    "content": "import { h, render } from './assets/preact.esm.js';\nimport Router from './commons/components/Router.jsx';\nimport Route from './commons/components/Route.jsx';\nimport useAuth from './commons/auth/useAuth.jsx';\nimport LoadingPage from './commons/components/LoadingPage.jsx';\nimport NotesPage from \"./features/notes/NotesPage.jsx\";\nimport TemplatesPage from \"./features/templates/TemplatesPage.jsx\";\nimport CanvasPage from \"./features/canvas/CanvasPage.jsx\";\nimport CanvasesPage from \"./features/canvas/CanvasesPage.jsx\";\nimport LoginPage from './features/users/LoginPage.jsx';\nimport navigateTo from './commons/utils/navigateTo.js';\nimport SearchMenu from './features/search/SearchMenu.jsx';\nimport OfflineIndicator from './commons/components/OfflineIndicator.jsx';\nimport Tooltip from './commons/components/Tooltip.js';\nimport { AppProvider } from './commons/contexts/AppContext.jsx';\nimport ThemePreferences from './commons/preferences/ThemePreferences.js';\n\ndocument.addEventListener('DOMContentLoaded', () => {\n  ThemePreferences.applyTheme();\n  Tooltip.init();\n  render(\n    <App />,\n    document.body\n  );\n});\n\ndocument.addEventListener(\"keydown\", e => {\n  if (e.ctrlKey && e.key === 'n') {\n    e.preventDefault();\n    navigateTo(\"/notes/new\");\n    return;\n  }\n\n  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {\n    e.preventDefault();\n    render(<SearchMenu />, document.querySelector('.modal-root'));\n  }\n\n  if (e.key === 'Escape') {\n    if (document.querySelector('.modal-root').firstChild) {\n      e.preventDefault();\n      render(null, document.querySelector('.modal-root'));\n    }\n  }\n});\n\nfunction App() {\n  const { isLoading, shouldShowLogin, shouldShowOnboarding } = useAuth();\n\n  if (isLoading) {\n    return <LoadingPage />;\n  }\n\n  if (shouldShowLogin) {\n    return <LoginPage />;\n  }\n\n  if (shouldShowOnboarding) {\n    return <LoginPage isOnboarding />;\n  }\n\n  return (\n    <AppProvider>\n      <OfflineIndicator />\n      <Router>\n        <Route path=\"/\" component={NotesPage} />\n        <Route path=\"/notes/\" component={NotesPage} />\n        <Route path=\"/notes/:noteId\" component={NotesPage} />\n        <Route path=\"/templates/\" component={TemplatesPage} />\n        <Route path=\"/templates/:templateId\" component={TemplatesPage} />\n        <Route path=\"/canvases/\" component={CanvasesPage} />\n        <Route path=\"/canvases/:canvasId\" component={CanvasPage} />\n      </Router>\n    </AppProvider>\n  );\n}"
+  },
+  "content_fetch_notes": []
+}

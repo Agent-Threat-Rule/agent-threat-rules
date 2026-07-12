@@ -1,0 +1,47 @@
+{
+  "full_name": "AndreaBonn/claude-code-available-tools",
+  "html_url": "https://github.com/AndreaBonn/claude-code-available-tools",
+  "description": "Your Claude Code setup is powerful, but hard to see at a glance. This tool fixes that. A fast, interactive TUI that scans your global and project configurations, showing every slash command, subagent, skill, MCP server, hook, and env variable with live filtering and auto-refresh. Zero config required.",
+  "topics": [
+    "ai-tools",
+    "anthropic",
+    "claude",
+    "claude-code",
+    "claude-code-extensions",
+    "cli-tool",
+    "configuration-explorer",
+    "cross-platform",
+    "developer-tools",
+    "devtools",
+    "mcp",
+    "mcp-servers",
+    "model-context-protocol",
+    "python",
+    "rich",
+    "slash-commands",
+    "terminal-ui",
+    "textual",
+    "tui"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2026-04-25T23:09:01Z",
+  "last_pushed_at": "2026-06-14T20:56:40Z",
+  "fetched_at": "2026-07-12T00:19:02.145Z",
+  "readme": {
+    "path": "README.md",
+    "content": "**English** | [Italiano](README.it.md)\n\n# Claude Code Available Tools by Bonn\n\nInteractive explorer for Claude Code tools and configuration. Scans and displays slash commands, subagents, skills, MCP servers, hooks, and environment variables from both global (`~/.claude/`) and project-level (`.claude/`) configurations.\n\n[![CI](https://github.com/AndreaBonn/claude-code-available-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/AndreaBonn/claude-code-available-tools/actions/workflows/ci.yml)\n[![Tests](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/AndreaBonn/claude-code-available-tools/main/badges/test-badge.json)](https://github.com/AndreaBonn/claude-code-available-tools/actions/workflows/ci.yml)\n[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/AndreaBonn/claude-code-available-tools/main/badges/coverage-badge.json)](https://github.com/AndreaBonn/claude-code-available-tools/actions/workflows/ci.yml)\n[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)\n[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)\n[![Security Policy](https://img.shields.io/badge/Security-Policy-blueviolet.svg)](SECURITY.md)\n\n![cctools TUI overview](assets/cc-tools-home.png)\n\n## Features\n\n- Three display modes: full-screen TUI (Textual), inline text report (Rich), and external terminal window\n- Scans global and project-level Claude Code configurations\n- Visual scope indicators: green for global, yellow for project resources\n- Live filtering and auto-refresh (3s interval) in TUI mode\n- Minimal YAML frontmatter parser with no external YAML dependency\n- Cross-platform: Linux, macOS, Windows\n- Integrates as `/tools` slash command inside Claude Code sessions\n\n<details>\n<summary>Screenshots</summary>\n\n| Slash Commands | Subagents |\n|:-:|:-:|\n| ![Slash Commands](assets/cc-tools-commands.png) | ![Subagents](assets/cc-tools-subagents.png) |\n\n| Skills | MCP Servers |\n|:-:|:-:|\n| ![Skills](assets/cc-tools-skills.png) | ![MCP Servers](assets/cc-tools-mcp.png) |\n\n</details>\n\n## Architecture\n\n```mermaid\n%%{init: {'theme': 'default'}}%%\ngraph LR\n    classDef core fill:#2563eb,stroke:#1d4ed8,color:#fff\n    classDef engine fill:#059669,stroke:#047857,color:#fff\n    classDef data fill:#d97706,stroke:#b45309,color:#fff\n    classDef ext fill:#6b7280,stroke:#4b5563,color:#fff\n\n    cli[\"cli.py<br/>Entry Point\"]:::core\n\n    subgraph display[\"Display Backends\"]\n        direction TB\n        tui[\"tui.py<br/>Textual TUI\"]:::core\n        inline_mod[\"inline.py<br/>Rich Report\"]:::core\n    end\n\n    terminal[\"terminal.py<br/>Terminal Detection\"]:::ext\n    ext_term([\"External Terminal\"]):::ext\n\n    scanner[\"scanner.py<br/>Discovery Engine\"]:::engine\n\n    subgraph config[\"Configuration Sources\"]\n        direction TB\n        global_cfg[\"~/.claude/<br/>Global Config\"]:::data\n        project_cfg[\".claude/<br/>Project Config\"]:::data\n    end\n\n    cli --> tui\n    cli --> inline_mod\n    cli --> terminal\n    terminal -.-> ext_term\n\n    tui --> scanner\n    inline_mod --> scanner\n\n    scanner --> global_cfg\n    scanner --> project_cfg\n```\n\nFor detailed diagrams (scanner discovery, CLI dispatch, CI pipeline) see [Architecture docs](docs/ARCHITECTURE.md).\n\n## Installation\n\nRequires Python 3.10+ and one of: pipx, uv, or pip.\n\n```bash\n# Clone the repository\ngit clone https://github.com/AndreaBonn/claude-code-available-tools.git\ncd claude-code-available-tools\n\n# Run the universal installer (auto-detects OS)\n./install.sh\n\n# Or use platform-specific installers\n./installers/install_linux.sh       # Linux\n./installers/install_macos.sh       # macOS\n.\\install.bat                       # Windows\n```\n\nThe installer does four things:\n\n1. Checks for Python 3.10+\n2. Installs the `cctools` package (via pipx, uv, or pip)\n3. Copies the `/tools` slash command to `~/.claude/commands/tools.md`\n4. Runs a smoke test\n\nManual installation:\n\n```bash\npip install .\n# or\npipx install .\n# or\nuv tool install .\n```\n\n### Platform support\n\n| OS | TUI | Inline | External | Installer |\n|----|-----|--------|----------|-----------|\n| Linux | Yes | Yes | gnome-terminal, konsole, xfce4-terminal, xterm | `install_linux.sh` |\n| macOS | Yes | Yes | Terminal.app via osascript | `install_macos.sh` |\n| Windows | Yes | Yes | Not available | `install_windows.ps1` |\n\n## Usage\n\n```bash\n# Auto mode (TUI if terminal >= 80 columns, otherwise inline)\ncctools\n\n# Explicit modes\ncctools --mode tui\ncctools --mode inline\ncctools --mode external\n\n# Filter resources by name or description\ncctools --mode inline --filter mcp\n```\n\nFrom within a Claude Code session:\n\n```\n/tools                  # Opens TUI in external terminal\n/tools inline           # Prints report in chat\n/tools tui              # Opens TUI in current terminal\n/tools inline mcp       # Filtered inline report\n```\n\n### TUI keybindings\n\n| Key | Action |\n|-----|--------|\n| `/` | Open filter bar |\n| `Escape` | Close filter, clear filter text |\n| `r` | Manual refresh |\n| `q` | Quit |\n\n## Configuration\n\n`cctools` reads existing Claude Code configuration files. No additional configuration is required.\n\nThe only optional environment variable is `CLAUDE_CONFIG_DIR`, which overrides the default `~/.claude/` config directory. The scanner also detects `CLAUDE_*` and `ANTHROPIC_*` variables from the shell environment.\n\n### Custom hook descriptions\n\nClaude Code hooks don't natively include a display description. You can add an optional `description` field to any hook definition, and `cctools` will use it as the display text instead of the raw command:\n\n```json\n{\n  \"hooks\": {\n    \"PreToolUse\": [{\n      \"matcher\": \"Bash\",\n      \"hooks\": [{\n        \"type\": \"command\",\n        \"command\": \"./scripts/validate.sh\",\n        \"description\": \"Validate input before Bash execution\"\n      }]\n    }]\n  }\n}\n```\n\nWithout `description`, cctools shows `[command] ./scripts/validate.sh`. With it, the human-readable text is displayed instead.\n\n![Hooks and MCP Servers view](assets/cc-tools-hooks.png)\n\n### Custom MCP server descriptions\n\nSimilarly, MCP server entries don't include a display description. You can add an optional `description` field to any server definition:\n\n```json\n{\n  \"mcpServers\": {\n    \"my-server\": {\n      \"type\": \"stdio\",\n      \"command\": \"npx\",\n      \"args\": [\"@mcp/my-server\"],\n      \"description\": \"Project knowledge base and search\"\n    }\n  }\n}\n```\n\nWithout `description`, cctools shows `[stdio] npx @mcp/my-server`. With it, the human-readable text is displayed instead. Claude Code ignores unknown fields, so this does not affect MCP functionality.\n\n## Testing\n\n```bash\nuv sync --dev\nuv run pytest tests/ -v --cov=cctools\nuv run ruff check src/ tests/\nuv run ruff format src/ tests/\n```\n\n## Contributing\n\nContributions are welcome via pull request. Before submitting:\n\n1. Run tests and ensure they pass\n2. Run `ruff check` and `ruff format`\n3. Run `mypy` for type checking\n4. Keep commits focused and descriptive\n\n## Security\n\nFor vulnerability reports, see the [security policy](SECURITY.md).\n\n## License\n\nReleased under the Apache License 2.0 -- see [LICENSE](LICENSE).\n\n## Author\n\nAndrea Bonacci -- [@AndreaBonn](https://github.com/AndreaBonn)\n\n## Support the project\n\nClaude Code Available Tools is free to use. If it helps you and you want to give something back, you can leave a tip via PayPal. The amount is up to you and it is entirely optional.\n\n<div align=\"center\">\n\n[![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?logo=paypal&logoColor=white&style=for-the-badge)](https://paypal.me/AndreaBonacci19)\n\n</div>\n\n---\n\nIf this project is useful to you, a star on GitHub is appreciated.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

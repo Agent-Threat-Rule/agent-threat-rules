@@ -1,0 +1,44 @@
+{
+  "full_name": "theYahia/tilda-mcp",
+  "html_url": "https://github.com/theYahia/tilda-mcp",
+  "description": "MCP server for Tilda — website builder, page management (Russia). Part of WWmcp — 114 MCP servers for emerging markets.",
+  "topics": [
+    "ai-agents",
+    "anthropic",
+    "claude",
+    "cms",
+    "emerging-markets",
+    "mcp",
+    "mcp-servers",
+    "model-context-protocol",
+    "russia",
+    "russian-api",
+    "tilda",
+    "typescript",
+    "website-builder"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 6,
+  "forks": 2,
+  "open_issues": 1,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-03-30T16:48:57Z",
+  "last_pushed_at": "2026-06-23T11:00:48Z",
+  "fetched_at": "2026-07-11T23:58:26.253Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# @theyahia/tilda-mcp\n\nMCP-сервер для Tilda API — проекты, страницы, экспорт. **7 инструментов.** Stdio + HTTP.\n\n[![npm](https://img.shields.io/npm/v/@theyahia/tilda-mcp)](https://www.npmjs.com/package/@theyahia/tilda-mcp)\n[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)\n\nЧасть серии [Russian API MCP](https://github.com/theYahia/russian-mcp) (50 серверов) by [@theYahia](https://github.com/theYahia).\n\n## Установка\n\n### Claude Desktop\n\n```json\n{\n  \"mcpServers\": {\n    \"tilda\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@theyahia/tilda-mcp\"],\n      \"env\": { \"TILDA_PUBLIC_KEY\": \"your-public-key\", \"TILDA_SECRET_KEY\": \"your-secret-key\" }\n    }\n  }\n}\n```\n\n### Claude Code\n\n```bash\nclaude mcp add tilda -e TILDA_PUBLIC_KEY=your-public-key -e TILDA_SECRET_KEY=your-secret-key -- npx -y @theyahia/tilda-mcp\n```\n\n### VS Code / Cursor\n\n```json\n{ \"servers\": { \"tilda\": { \"command\": \"npx\", \"args\": [\"-y\", \"@theyahia/tilda-mcp\"], \"env\": { \"TILDA_PUBLIC_KEY\": \"your-public-key\", \"TILDA_SECRET_KEY\": \"your-secret-key\" } } } }\n```\n\n### Streamable HTTP\n\n```bash\nTILDA_PUBLIC_KEY=xxx TILDA_SECRET_KEY=yyy npx @theyahia/tilda-mcp --http --port 3001\n# Endpoint: http://localhost:3001/mcp  (stateless, CORS включён)\n# Health:   http://localhost:3001/health  → {\"status\":\"ok\",\"tools\":7}\n```\n\nHTTP-режим работает в **stateless**-режиме: на каждый POST создаётся свежий сервер+транспорт (подходит для чистой API-обёртки, поддерживает несколько клиентов без коллизий сессий). Принимает `POST`/`OPTIONS` на `/mcp`; прочие методы → `405`.\n\n### Smithery\n\n```bash\nnpx @smithery/cli install @theyahia/tilda-mcp\n```\n\n> Требуется `TILDA_PUBLIC_KEY` и `TILDA_SECRET_KEY`. Получите в [настройках аккаунта Tilda](https://tilda.cc/identity/apikeys/).\n\n## Инструменты (7)\n\nПолное покрытие всех 7 методов Tilda API.\n\n| Инструмент | Метод API | Описание |\n|------------|-----------|----------|\n| `get_projects` | `getprojectslist` | Список проектов |\n| `get_project_info` | `getprojectinfo` | Информация о проекте (домен, настройки экспорта). Опц. `webconfig=htaccess\\|nginx` → пример конфига веб-сервера |\n| `get_pages` | `getpageslist` | Список страниц проекта |\n| `get_page` | `getpagefull` | Полная страница (HTML c `<head>`, CSS, JS; ссылки на Tilda CDN) |\n| `get_page_body` | `getpage` | Только тело страницы (HTML без `<head>`; ссылки на CDN) — для быстрого чтения/preview |\n| `get_page_export` | `getpagefullexport` | Экспорт полной страницы с локализованными ассетами `{from,to}` — для самостоятельного хостинга |\n| `get_page_export_body` | `getpageexport` | Экспорт тела страницы с локализованными ассетами — для вставки в свой шаблон/CMS |\n\n**Экономия контекста:** инструменты страниц (`get_page*`) принимают опц. `metadata_only: true` — вернуть только метаданные без `html`/`css`/`js` (полезно для больших страниц).\n\n**Экспорт всего проекта:** отдельного метода нет — получите `get_pages`, затем по каждому `id` вызовите `get_page_export` (или `get_page_export_body`).\n\n> **Лимит Tilda API:** 150 запросов в час. Клиент делает ретраи с экспоненциальной задержкой и учитывает заголовок `Retry-After`.\n\n> **Безопасность:** Tilda API принимает ключи только как query-параметры (`publickey`/`secretkey`) — это особенность самого API. Сервер не логирует URL с ключами; держите ключи в env, не передавайте их в незашифрованные логи/прокси.\n\n## Скиллы\n\n| Скилл | Триггер |\n|-------|---------|\n| `/skill-get-pages` | Покажи все страницы сайта |\n| `/skill-export-page` | Экспортируй страницу |\n\n## Примеры\n\n```\nПокажи мои проекты в Tilda\nИнформация о проекте 12345 с конфигом nginx\nСписок страниц проекта 12345\nПокажи содержимое страницы 67890\nПокажи только метаданные страницы 67890\nЭкспортируй страницу 67890 для своего хостинга\nЭкспортируй тело страницы 67890 для вставки в шаблон\n```\n\n## Лицензия\n\nMIT\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"tilda\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@theyahia/tilda-mcp\"],\n      \"env\": {\n        \"TILDA_PUBLIC_KEY\": \"\",\n        \"TILDA_SECRET_KEY\": \"\"\n      }\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

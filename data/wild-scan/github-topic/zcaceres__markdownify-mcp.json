@@ -1,0 +1,37 @@
+{
+  "full_name": "zcaceres/markdownify-mcp",
+  "html_url": "https://github.com/zcaceres/markdownify-mcp",
+  "description": "A Model Context Protocol server for converting almost anything to Markdown",
+  "topics": [
+    "ai",
+    "anthropic",
+    "anthropic-ai",
+    "anthropic-claude",
+    "markdown",
+    "mcp",
+    "model-context-protocol",
+    "ocr",
+    "tools"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 2775,
+  "forks": 233,
+  "open_issues": 22,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2024-12-18T21:14:52Z",
+  "last_pushed_at": "2026-07-09T05:23:59Z",
+  "fetched_at": "2026-07-11T23:10:49.931Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Markdownify MCP Server\n\n![markdownify mcp logo](logo.jpg)\n\nMarkdownify is a Model Context Protocol (MCP) server that converts various file types and web content to Markdown format. It provides a set of tools to transform PDFs, images, audio files, web pages, and more into easily readable and shareable Markdown text.\n\n<a href=\"https://glama.ai/mcp/servers/bn5q4b0ett\"><img width=\"380\" height=\"200\" src=\"https://glama.ai/mcp/servers/bn5q4b0ett/badge\" alt=\"Markdownify Server MCP server\" /></a>\n\n## Features\n\n- Convert multiple file types to Markdown:\n  - PDF\n  - Images\n  - Audio (with transcription)\n  - DOCX\n  - XLSX\n  - PPTX\n- Convert web content to Markdown:\n  - YouTube video transcripts\n  - Bing search results\n  - General web pages\n- Retrieve existing Markdown files\n\n## Getting Started\n\n1. Clone this repository\n2. Install dependencies:\n   ```\n   bun install\n   ```\n\n   The `preinstall` step creates a Python virtual environment at `.venv` and installs `markitdown[all]`.\n\n3. Build the project:\n   ```\n   bun run build\n   ```\n4. Start the server:\n   ```\n   bun start\n   ```\n\n## Development\n\n- Use `bun run dev` to start the TypeScript compiler in watch mode\n- Modify `src/server.ts` to customize server behavior\n- Add or modify tools in `src/tools.ts`\n\n## Usage with Desktop App\n\nTo integrate this server with a desktop app, add the following to your app's server configuration:\n\n```js\n{\n  \"mcpServers\": {\n    \"markdownify\": {\n      \"command\": \"node\",\n      \"args\": [\n        \"{ABSOLUTE PATH TO FILE HERE}/dist/index.js\"\n      ]\n    }\n  }\n}\n```\n\n### Environment variables\n\nAll paths default to sensible values; override only when the defaults don't fit your install layout.\n\n| Variable | Default | Purpose |\n|---|---|---|\n| `MARKITDOWN_PATH` | `<project>/.venv/bin/markitdown`, then `markitdown` on `PATH` | Absolute path to the `markitdown` executable. Set this when you've installed markitdown system-wide (e.g. `pipx install \"markitdown[pdf]\"`) instead of using the bundled venv. |\n| `REPOMIX_PATH` | `<project>/node_modules/.bin/repomix`, then `repomix` on `PATH` | Absolute path to the `repomix` executable used by `git-repo-to-markdown`. |\n| `MD_ALLOWED_PATHS` | unset (unrestricted) | Path-delimiter-separated list (`:` on POSIX, `;` on Windows) of directories the server is allowed to read. When set, all file-input tools (`pdf-to-markdown`, `get-markdown-file`, etc.) reject paths outside these directories. |\n| `MD_SHARE_DIR` | unset | Deprecated alias for `MD_ALLOWED_PATHS` (single directory). Still honored for backward compatibility. |\n\n## Usage with Docker\n\nBuild and run:\n```sh\ndocker build -t markdownify-mcp .\ndocker run --rm -i \\\n  -v \"$HOME/Documents:/data:ro\" \\\n  -e MD_ALLOWED_PATHS=/data \\\n  markdownify-mcp\n```\n\nNotes for the Docker MCP catalog (`mcp/markdownify`):\n- Mount any host directories you want the server to read into the container, then pass the **container** paths to the tools (e.g. `/data/foo.pdf`, not `/Users/you/Documents/foo.pdf`).\n- Set `MD_ALLOWED_PATHS` to the colon-separated list of mounted directories so the server enforces a read boundary that matches the bind mount.\n- The published Docker image installs `markitdown[pdf]` only — audio transcription and image OCR (`audio-to-markdown`, `image-to-markdown`) require the `[all]` extras and will fail in the slim image. Use the local install (`bun install`) for the full feature set.\n\n## Available Tools\n\n- `youtube-to-markdown`: Convert YouTube videos to Markdown\n- `pdf-to-markdown`: Convert PDF files to Markdown\n- `bing-search-to-markdown`: Convert Bing search results to Markdown\n- `webpage-to-markdown`: Convert web pages to Markdown\n- `image-to-markdown`: Convert images to Markdown with metadata\n- `audio-to-markdown`: Convert audio files to Markdown with transcription\n- `docx-to-markdown`: Convert DOCX files to Markdown\n- `xlsx-to-markdown`: Convert XLSX files to Markdown\n- `pptx-to-markdown`: Convert PPTX files to Markdown\n- `get-markdown-file`: Retrieve an existing Markdown file. File extension must end with: *.md, *.markdown.\n\n  OPTIONAL: set `MD_ALLOWED_PATHS` to restrict every file-input tool to a list of directories, e.g. `MD_ALLOWED_PATHS=/data/in:/data/out bun start`.\n\n## Contributing\n\nContributions are welcome! Please feel free to submit a Pull Request.\n\n## License\n\nThis project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "full_name": "takashiishida/arxiv-latex-mcp",
+  "html_url": "https://github.com/takashiishida/arxiv-latex-mcp",
+  "description": "MCP server that uses arxiv-to-prompt to fetch and process arXiv LaTeX sources for precise interpretation of mathematical expressions in scientific papers.",
+  "topics": [
+    "arxiv",
+    "claude-desktop",
+    "cursor-ai",
+    "latex",
+    "llm",
+    "mcp-server"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 140,
+  "forks": 14,
+  "open_issues": 5,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-04-07T13:34:29Z",
+  "last_pushed_at": "2026-06-30T02:25:56Z",
+  "fetched_at": "2026-07-11T22:53:52.853Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# arxiv-latex MCP Server\n[![PyPI version](https://badge.fury.io/py/arxiv-latex-mcp.svg)](https://pypi.org/project/arxiv-latex-mcp/)\n[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)\n[![GitHub Release](https://img.shields.io/github/v/release/takashiishida/arxiv-latex-mcp)](https://github.com/takashiishida/arxiv-latex-mcp/releases)\n[![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/takashiishida/arxiv-latex-mcp)](https://archestra.ai/mcp-catalog/takashiishida__arxiv-latex-mcp)\n\n\nAn MCP server that enables [Claude Desktop](https://claude.ai/download), [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Cursor](https://www.cursor.com/), or other MCP clients to directly access and process arXiv papers by fetching the LaTeX source. It uses [arxiv-to-prompt](https://github.com/takashiishida/arxiv-to-prompt) under the hood to handle downloading and processing the LaTeX.\n\nWhy use the LaTeX source instead of uploading PDFs? Many PDF chat applications often struggle with mathematical content and equation-heavy papers. By utilizing the original LaTeX source code from arXiv papers, the LLM can accurately understand and handle equations and notations. This approach is particularly valuable for fields like computer science, mathematics, and engineering where precise interpretation of mathematical expressions is crucial.\n\n## Installation\n\nIf you are using Claude Desktop, you can utilize Desktop Extensions by double-clicking on the `.mcpb` file to install.\nDownload the `.mcpb` file from [here](https://github.com/takashiishida/arxiv-latex-mcp/releases/).\nSupported on macOS, Windows, and Linux.\n\nOtherwise, you can run the server directly from PyPI with `uvx`:\n```json\n{\n  \"mcpServers\": {\n    \"arxiv-latex-mcp\": {\n      \"command\": \"uvx\",\n      \"args\": [\"arxiv-latex-mcp\"]\n    }\n  }\n}\n```\n\nYou can also install it with `pip install arxiv-latex-mcp` and run `arxiv-latex-mcp`, or use:\n```bash\npython -m arxiv_latex_mcp\n```\n\nIf you prefer to run from a local checkout, add the following configuration to your config file:\n```json\n{\n  \"mcpServers\": {\n      \"arxiv-latex-mcp\": {\n          \"command\": \"uv\",\n          \"args\": [\n              \"--directory\",\n              \"/ABSOLUTE/PATH/TO/arxiv-latex-mcp\",\n              \"run\",\n              \"python\",\n              \"-m\",\n              \"arxiv_latex_mcp\"\n          ]\n      }\n  }\n}\n```\n\nYou may need to replace the `command` field with the full path of `uv`: check this by running `which uv` (MacOS/Linux) or `where uv` (Windows).\n\nRestart the application after saving the above.\n\nFor Claude Desktop, click on the hammer icon, and you should see the following in the list of \"Available MCP tools\":\n- `get_paper_prompt` — Get the full flattened LaTeX of a paper\n- `get_paper_abstract` — Get just the abstract\n- `list_paper_sections` — List section headings of a paper\n- `get_paper_section` — Get a specific section by path\n\n## Example\nTry asking questions about a paper from arXiv, e.g., \"Explain the first theorem in 2202.00395\"\n\n<div align=\"center\">\n  <img src=\"example.png\" alt=\"Example of using arXiv LaTeX MCP with Claude Desktop\" width=\"600\">\n</div>\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

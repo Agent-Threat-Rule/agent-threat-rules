@@ -1,0 +1,34 @@
+{
+  "full_name": "xandwr/mcpd",
+  "html_url": "https://github.com/xandwr/mcpd",
+  "description": "An MCP daemon for automated tool registration.",
+  "topics": [
+    "mcp",
+    "mcp-server",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 6,
+  "forks": 2,
+  "open_issues": 0,
+  "language": "Rust",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-12-05T22:53:59Z",
+  "last_pushed_at": "2026-02-10T19:31:37Z",
+  "fetched_at": "2026-07-12T00:33:20.486Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# mcpd\n\nA daemon that aggregates multiple MCP (Model Context Protocol) servers into one. Implements the [MCP spec](https://spec.modelcontextprotocol.io/) (2025-11-25).\n\nRegister any MCP server once with mcpd, then point your MCP client at mcpd. Add or remove servers at any time — agents discover new tools, resources, and prompts in realtime.\n\n## Installation\n\n```bash\ncargo install mcpd\n```\n\nor for local:\n\n```bash\ncargo install --path .\n```\n\n## Usage\n\n### Register a server\n\n```bash\nmcpd register <name> <command> [args...]\n```\n\nExamples:\n\n```bash\n# Register a Node.js MCP server\nmcpd register filesystem npx -y @anthropic/mcp-filesystem /home/user/documents\n\n# Register a Python server\nmcpd register mytools python -m my_mcp_server\n\n# Register with environment variables\nmcpd register api-tools node server.js -e API_KEY=sk-xxx -e DEBUG=1\n```\n\n### List registered servers\n\n```bash\nmcpd list\n```\n\n### Remove a server\n\n```bash\nmcpd unregister <name>\n```\n\n### Run the daemon\n\n```bash\nmcpd serve\n```\n\nThis starts mcpd in stdio mode, ready to accept MCP connections.\n\n## Client Configuration\n\nPoint your MCP client at mcpd instead of individual servers.\n\n**Claude Code** (`~/.claude/settings.json`):\n\n```json\n{\n  \"mcpServers\": {\n    \"mcpd\": {\n      \"command\": \"mcpd\",\n      \"args\": [\"serve\"]\n    }\n  }\n}\n```\n\n**Claude Desktop** (`claude_desktop_config.json`):\n\n```json\n{\n  \"mcpServers\": {\n    \"mcpd\": {\n      \"command\": \"mcpd\",\n      \"args\": [\"serve\"]\n    }\n  }\n}\n```\n\n**VSCode** (Ctrl+Shift+P, search 'MCP', click 'MCP: Add Server', select 'stdio', type `mcpd serve`)\n\n## How It Works\n\nmcpd aggregates all three MCP primitives — **tools**, **resources**, and **prompts** — from every registered backend into a single server.\n\n### Tools (dual-layer)\n\nmcpd exposes exactly **two meta-tools** to the MCP client, regardless of how many backend servers are registered:\n\n- **`list_tools`** — Queries all registered backends and returns their tools (names, descriptions, input schemas).\n- **`use_tool`** — Invokes a backend tool by its fully-qualified name (`server__tool`) with the given arguments.\n\nThe agent naturally calls `list_tools` first (it's the only way to know what's available), then calls `use_tool` to invoke what it needs. You can register or unregister backends at any time — the agent just calls `list_tools` again to see the latest.\n\n### Resources\n\nmcpd natively proxies `resources/list` and `resources/read`. Resources from all backends are aggregated and namespaced:\n\n- URIs are prefixed: `mcpd://servername/original-uri`\n- Names are prefixed: `servername__resourcename`\n\nBackends that don't support resources are silently skipped.\n\n### Prompts\n\nmcpd natively proxies `prompts/list` and `prompts/get`. Prompts from all backends are aggregated and namespaced:\n\n- Names are prefixed: `servername__promptname`\n\nBackends that don't support prompts are silently skipped.\n\n```\n┌─────────────────┐\n│   MCP Client    │\n│ (Claude, etc.)  │\n└────────┬────────┘\n         │ tools, resources, prompts\n         ▼\n┌─────────────────┐\n│      mcpd       │\n└──┬─────┬─────┬──┘\n   │     │     │ stdio (spawned on-demand)\n   ▼     ▼     ▼\n┌─────┐┌─────┐┌─────┐\n│ srv1││ srv2││ srv3│\n└─────┘└─────┘└─────┘\n```\n\n### Workflow\n\n1. You register MCP servers with mcpd (stored in `~/.config/mcpd/registry.json`)\n2. Your MCP client connects to mcpd and sees two meta-tools (`list_tools`, `use_tool`) plus aggregated resources and prompts\n3. Agent calls `list_tools` to discover available backend tools\n4. Agent calls `use_tool(tool_name=\"server__tool\", arguments={...})` to invoke them\n5. Client can also call `resources/list`, `resources/read`, `prompts/list`, `prompts/get` directly\n6. mcpd spawns backend servers on-demand and proxies the call\n\n### Example\n\nAfter registering a filesystem server:\n\n```\nAgent calls: list_tools()\nReturns:\n  [{\"name\": \"filesystem__read_file\", \"description\": \"Read a file\", \"input_schema\": {...}},\n   {\"name\": \"filesystem__write_file\", \"description\": \"Write a file\", \"input_schema\": {...}}]\n\nAgent calls: use_tool(tool_name=\"filesystem__read_file\", arguments={\"path\": \"/tmp/hello.txt\"})\nReturns: contents of the file\n```\n\nResources and prompts work via standard MCP methods:\n\n```\nClient calls: resources/list\nReturns:\n  [{\"uri\": \"mcpd://myserver/file:///docs/readme.md\", \"name\": \"myserver__readme\", ...}]\n\nClient calls: resources/read(uri=\"mcpd://myserver/file:///docs/readme.md\")\nReturns: resource contents\n\nClient calls: prompts/list\nReturns:\n  [{\"name\": \"myserver__summarize\", \"description\": \"Summarize a document\", ...}]\n\nClient calls: prompts/get(name=\"myserver__summarize\", arguments={\"text\": \"...\"})\nReturns: prompt messages\n```\n\n## Why mcpd?\n\n- **Register once**: Add servers to mcpd, not to every client\n- **Full MCP proxy**: Aggregates tools, resources, and prompts from all backends\n- **Hot reload**: Register/unregister servers while mcpd is running — the registry is re-read on every request, and clients are notified via `list_changed` notifications\n- **Stable interface**: Clients always see exactly two meta-tools, no matter how many backends exist\n- **Namespace isolation**: Tools, resources, and prompts from different servers can't collide (`server__name` format)\n- **On-demand**: Backend servers only spawn when actually needed\n- **Graceful degradation**: Backends that don't support resources or prompts are silently skipped\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"mcpd\": {\n      \"command\": \"mcpd\",\n      \"args\": [\"serve\"]\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

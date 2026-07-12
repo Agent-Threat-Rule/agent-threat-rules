@@ -1,0 +1,46 @@
+{
+  "full_name": "MoisesTapia/wazuh-mcp",
+  "html_url": "https://github.com/MoisesTapia/wazuh-mcp",
+  "description": "mcp for Wazuh",
+  "topics": [
+    "ai",
+    "ai-mcmp",
+    "claude-desktop",
+    "claude-skills",
+    "mcp",
+    "mcp-client",
+    "mcp-security",
+    "mcp-server",
+    "mcp-tools",
+    "owasp-llm",
+    "python",
+    "security-tools",
+    "siem",
+    "sre",
+    "wazuh",
+    "wazuh-api",
+    "wazuh-integration",
+    "wazuh-siem"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-06-22T22:45:40Z",
+  "last_pushed_at": "2026-07-02T09:17:27Z",
+  "fetched_at": "2026-07-12T00:46:08.006Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Wazuh MCP Server\n\n**206 tools** that expose the [Wazuh](https://wazuh.com/) Security Platform as\n[Model Context Protocol](https://modelcontextprotocol.io/) tools for Claude,\nClaude Code and any MCP-compatible client.\n\nThe server covers the full **Wazuh Manager REST API** (agents, rules, cluster,\nRBAC, FIM, SCA, MITRE…) plus a **SOC layer** that queries the Wazuh Indexer\ndirectly for alerts, CVEs and threat analysis, and a **SOAR layer** for active\nresponse (block IPs, isolate agents, kill processes, run YARA scans).\n\n```\nClaude Desktop / Claude Code\n        │  stdio  (or HTTP + Bearer auth when MCP runs in Docker)\n        ▼\n┌─────────────────────┐    HTTPS :55000    ┌────────────────────────┐\n│   wazuh-mcp server  │ ──────────────────► │   wazuh.manager        │\n│   (FastMCP 2.0+)    │                     │   REST API + Filebeat  │\n│                     │    HTTPS :9200      └────────────┬───────────┘\n│  audit · circuit    │ ─────────────┐                   │\n│  breaker · sanitize │              ▼                   │\n└─────────────────────┘   ┌────────────────────────┐    │\n                          │   wazuh.indexer        │◄───┘\n                          │   OpenSearch (SOC data)│\n                          └────────────┬───────────┘\n                                       │\n                          ┌────────────▼───────────┐\n                          │   wazuh.dashboard       │\n                          │   Web UI :443           │\n                          └─────────────────────────┘\n```\n\n---\n\n## Documentation\n\nThe full documentation lives in the [`docs/`](docs/) folder, organized by topic:\n\n| Guide | What's inside |\n|-------|---------------|\n| [Installation](docs/installation.md) | Requirements, quick start, SSL certificates, Docker stack, first run |\n| [Configuration](docs/configuration.md) | Environment variables, credentials, changing passwords, Indexer setup |\n| [Claude integration](docs/claude-integration.md) | Claude Desktop and Claude Code setup (stdio and HTTP) |\n| [Tools catalog](docs/tools.md) | All 206 tools by module, with real usage examples |\n| [SOC & SOAR](docs/soc.md) | Alerts, CVEs, threat analysis and active response via the Indexer |\n| [Security model](docs/security.md) | Audit log, circuit breaker, output sanitization, HTTP Bearer auth, TLS |\n| [Architecture](docs/architecture.md) | Request flow, module layout, Docker dependencies |\n| [Development](docs/development.md) | Running tests, adding modules, code conventions |\n| [DevSecOps](docs/devsecops.md) | Security scanning in CI and locally: pip-audit, pip-licenses, bandit, hadolint |\n| [Troubleshooting](docs/troubleshooting.md) | Common errors and fixes |\n| [Makefile reference](docs/makefile.md) | Every `make` target explained |\n\n---\n\n## Quick start\n\n```bash\ngit clone <repo-url>\ncd wazuh-mcp\n\nmake install                 # create .venv and install the package\ncp .env.example .env         # fill in WAZUH_USER / WAZUH_PASSWORD\n\nmake certs                   # generate SSL certificates (first time only)\nmake docker-up               # start manager + indexer + dashboard\n\nsource .venv/bin/activate\nmake setup-claude-desktop    # register the MCP in Claude Desktop\n```\n\nRestart Claude Desktop and try:\n\n```\nCall ping_wazuh and tell me the Wazuh version that is running.\n```\n\n> On Linux you must set `vm.max_map_count=262144` before `make docker-up`.\n> See [Installation](docs/installation.md#linux-vmmax_map_count) for details.\n\nFull walkthrough: **[docs/installation.md](docs/installation.md)**.\n\n---\n\n## Features\n\n| Feature | Detail |\n|---|---|\n| **206 tools** in 23 modules | Full Wazuh 4.9 REST API + SOC + SOAR coverage |\n| **SOC layer** | Alerts, CVEs and threat analysis queried directly from the Indexer |\n| **SOAR layer** | Block/unblock IPs, isolate agents, kill processes, YARA scans, custom AR |\n| **Full local stack** | Manager + Indexer (OpenSearch) + Dashboard in Docker |\n| **Retry with backoff** | 429/502/503/504 and connection errors retried automatically |\n| **Circuit breaker** | Fails fast when the Manager is down, recovers automatically |\n| **JWT auto-refresh** | Token renewed transparently before expiry or on 401 |\n| **Audit logging** | One structured JSON line per tool call, secrets auto-redacted |\n| **Output sanitization** | Prompt-injection neutralization + secret redaction on tool output |\n| **HTTP Bearer auth** | API key required in HTTP mode; loopback-only host by default |\n| **Dual transport** | `stdio` for local use, `http` for Docker deployments |\n| **278 unit tests** | No Docker or network required |\n\nDetails for each capability are in the [documentation](#documentation) above.\n\n---\n\n## Requirements\n\n| Resource | Minimum | Recommended |\n|---------|--------|-------------|\n| CPU | 4 cores | 4+ cores |\n| RAM | 8 GB | 16 GB |\n| Disk | 20 GB free | 50 GB free |\n| Python | 3.11+ | 3.12+ |\n| Docker Desktop | 4.x+ | Latest |\n| Docker Compose | v2 (`docker compose`) | Latest |\n\nSee [docs/installation.md](docs/installation.md#requirements) for platform notes.\n\n---\n\n## License\n\nMIT — see [LICENSE](LICENSE) for details.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "full_name": "neo4j-contrib/mcp-neo4j",
+  "html_url": "https://github.com/neo4j-contrib/mcp-neo4j",
+  "description": "Neo4j Labs Model Context Protocol servers",
+  "topics": [
+    "database",
+    "mcp",
+    "mcp-server",
+    "neo4j",
+    "stdio"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 978,
+  "forks": 254,
+  "open_issues": 23,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2024-12-03T15:44:25Z",
+  "last_pushed_at": "2026-04-10T18:53:37Z",
+  "fetched_at": "2026-07-11T22:35:51.089Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Neo4j Labs MCP Servers\n\n## Neo4j Labs\n\nThese MCP servers are a part of the [Neo4j Labs](https://neo4j.com/labs/) program. \nThey are developed and maintained by the Neo4j Field GenAI team and welcome contributions from the larger developer community. \nThese servers are frequently updated with new and experimental features, but are not supported by the Neo4j product team. \n\n**They are actively developed and maintained, but we don’t provide any SLAs or guarantees around backwards compatibility and deprecation.**\n\nIf you are looking for the official product Neo4j MCP server please find it [here](https://github.com/neo4j/mcp).\n\n## Overview\n\nModel Context Protocol (MCP) is a [standardized protocol](https://modelcontextprotocol.io/introduction) for managing context between large language models (LLMs) and external systems. \n\nThis lets you use Claude Desktop, or any other MCP Client (VS Code, Cursor, Windsurf, Gemini CLI), to use natural language to accomplish things with Neo4j and your Aura account, e.g.:\n\n* What is in this graph?\n* Render a chart from the top products sold by frequency, total and average volume\n* List my instances\n* Create a new instance named mcp-test for Aura Professional with 4GB and Graph Data Science enabled\n* Store the fact that I worked on the Neo4j MCP Servers today with Andreas and Oskar\n\n## Servers\n\n### `mcp-neo4j-cypher` - natural language to Cypher queries\n\n[Details in Readme](./servers/mcp-neo4j-cypher/)\n\nGet database schema for a configured database and execute generated read and write Cypher queries on that database.\n\n**Requirement**: Requires the [APOC plugin](https://neo4j.com/docs/apoc/current/installation/) to be installed and enabled on the Neo4j instance for schema inspection.\n\n### `mcp-neo4j-memory` - knowledge graph memory stored in Neo4j\n\n[Details in Readme](./servers/mcp-neo4j-memory/)\n\nStore and retrieve entities and relationships from your personal knowledge graph in a local or remote Neo4j instance.\nAccess that information over different sessions, conversations, clients.\n\n### `mcp-neo4j-cloud-aura-api` - Neo4j Aura cloud service management API\n\n[Details in Readme](./servers/mcp-neo4j-cloud-aura-api//)\n\nManage your [Neo4j Aura](https://console.neo4j.io) instances directly from the comfort of your AI assistant chat.\n\nCreate and destroy instances, find instances by name, scale them up and down and enable features.\n\n### `mcp-neo4j-data-modeling` - interactive graph data modeling and visualization\n\n[Details in Readme](./servers/mcp-neo4j-data-modeling/)\n\nCreate, validate, and visualize Neo4j graph data models. Allows for model import/export from Arrows.app.\n\n## Transport Modes\n\nAll servers support multiple transport modes:\n\n- **STDIO** (default): Standard input/output for local tools and Claude Desktop integration\n- **SSE**: Server-Sent Events for web-based deployments\n- **HTTP**: Streamable HTTP for modern web deployments and microservices\n\n### HTTP Transport Configuration\n\nTo run a server in HTTP mode, use the `--transport http` flag:\n\n```bash\n# Basic HTTP mode\nmcp-neo4j-cypher --transport http\n\n# Custom HTTP configuration\nmcp-neo4j-cypher --transport http --host 127.0.0.1 --port 8080 --path /api/mcp/\n```\n\nEnvironment variables are also supported:\n\n```bash\nexport NEO4J_TRANSPORT=http\nexport NEO4J_MCP_SERVER_HOST=127.0.0.1\nexport NEO4J_MCP_SERVER_PORT=8080\nexport NEO4J_MCP_SERVER_PATH=/api/mcp/\nmcp-neo4j-cypher\n```\n\n## Cloud Deployment\n\nAll servers in this repository are containerized and ready for cloud deployment on platforms like AWS ECS Fargate and Azure Container Apps. Each server supports HTTP transport mode specifically designed for scalable, production-ready deployments with auto-scaling and load balancing capabilities.\n\n📋 **[Complete Cloud Deployment Guide →](README-Cloud.md)**\n\nThe deployment guide covers:\n- **AWS ECS Fargate**: Step-by-step deployment with auto-scaling and Application Load Balancer\n- **Azure Container Apps**: Serverless container deployment with built-in scaling and traffic management\n- **Configuration Best Practices**: Security, monitoring, resource recommendations, and troubleshooting\n- **Integration Examples**: Connecting MCP clients to cloud-deployed servers\n\n## Contributing\n\nContributions are welcome! Please feel free to submit a Pull Request.\n\n## Blog Posts\n\n* [Everything a Developer Needs to Know About the Model Context Protocol (MCP)](https://neo4j.com/blog/developer/model-context-protocol/)\n* [Claude Converses With Neo4j Via MCP - Graph Database & Analytics](https://neo4j.com/blog/developer/claude-converses-neo4j-via-mcp/)\n* [Building Knowledge Graphs With Claude and Neo4j: A No-Code MCP Approach - Graph Database & Analytics](https://neo4j.com/blog/developer/knowledge-graphs-claude-neo4j-mcp/)\n* [Using the Neo4j Extension in Gemini CLI](https://cloud.google.com/blog/topics/developers-practitioners/using-the-neo4j-extension-in-gemini-cli)\n\n## License\n\nMIT License\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

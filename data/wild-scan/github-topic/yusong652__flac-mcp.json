@@ -1,0 +1,45 @@
+{
+  "full_name": "yusong652/flac-mcp",
+  "html_url": "https://github.com/yusong652/flac-mcp",
+  "description": "MCP server connecting AI agents to ITASCA FLAC — run continuum simulations through natural conversation",
+  "topics": [
+    "ai-agent",
+    "claude",
+    "claude-code",
+    "codex",
+    "continuum-mechanics",
+    "finite-difference-method",
+    "flac",
+    "flac3d",
+    "gemini-cli",
+    "geomechanics",
+    "itasca",
+    "itasca-flac",
+    "llm-tools",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "simulation"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 37,
+  "forks": 4,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-05-19T14:05:24Z",
+  "last_pushed_at": "2026-06-27T10:30:11Z",
+  "fetched_at": "2026-07-11T23:36:56.577Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# flac-mcp\n\n> [!WARNING]\n> **`flac-mcp` is deprecated and frozen.** It is superseded by\n> [**`itasca-mcp`**](https://github.com/yusong652/itasca-mcp) — a single\n> multi-engine MCP server covering FLAC, PFC, 3DEC, MPoint, and MassFlow.\n> Update your MCP client config from `uvx flac-mcp` to `uvx itasca-mcp`\n> (select FLAC docs via the `software` parameter). No further releases are\n> planned here.\n\n<p align=\"center\">\n  <img src=\"https://raw.githubusercontent.com/yusong652/flac-mcp/assets/header.png\" width=\"70%\" alt=\"flac-mcp — MCP Server for ITASCA FLAC\">\n</p>\n\n[English](https://github.com/yusong652/flac-mcp/blob/main/README.md) | [简体中文](https://github.com/yusong652/flac-mcp/blob/main/README.zh-CN.md)\n\n[![PyPI](https://img.shields.io/pypi/v/flac-mcp)](https://pypi.org/project/flac-mcp/)\n[![Downloads](https://static.pepy.tech/badge/flac-mcp)](https://pepy.tech/project/flac-mcp)\n[![GitHub stars](https://img.shields.io/github/stars/yusong652/flac-mcp)](https://github.com/yusong652/flac-mcp/stargazers)\n[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)\n[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)\n\n`flac3d>model new ;now, with LLM.`\n\n**flac-mcp** connects AI agents to [ITASCA FLAC](https://www.itascacg.com/software/flac3d) through the [Model Context Protocol](https://modelcontextprotocol.io/) — browse documentation, run simulations, and execute code, all through natural conversation.\n\n`flac3d>model solve ;LLM solves.`\n\n## Tools (10)\n\n**5 documentation tools** — browse and search FLAC commands, Python API, and reference docs. No bridge required.\n\n**5 execution tools** — interactive REPL, task submission, progress monitoring, interruption, and history. Requires bridge.\n\n## First-time Setup\n\n### Prerequisites\n\n- **ITASCA FLAC 6.0, 7.0, or 9.0** installed\n- **[uv](https://docs.astral.sh/uv/getting-started/installation/)** installed (for `uvx`)\n\n### Agentic Setup (Recommended)\n\nCopy this to your AI agent and let it self-configure:\n\n```text\nFetch and follow this bootstrap guide end-to-end:\nhttps://raw.githubusercontent.com/yusong652/flac-mcp/main/docs/agentic/flac-mcp-bootstrap.md\n```\n\n### Manual Setup\n\n**1. Register the MCP server** in your client config:\n\n```json\n{\n  \"mcpServers\": {\n    \"flac-mcp\": {\n      \"command\": \"uvx\",\n      \"args\": [\"flac-mcp\"]\n    }\n  }\n}\n```\n\n**2. Start the bridge from inside FLAC:**\n\nDownload [`addon.py`](addon.py), then use either of these two flows inside FLAC:\n\n- Copy the file contents into the FLAC IPython console and run them\n- Or download the file and execute it in FLAC GUI\n\n### Verify\n\nRestart your AI agent (Claude Code, Codex CLI, Gemini CLI, etc.) and ask it to call `flac_execute_code` to verify the connection.\n\n## Daily Startup\n\nOnce first-time setup is done, each new FLAC session only needs the bridge re-started — run this in FLAC's IPython console and you're back online:\n\n```python\nimport itasca_mcp_bridge\nitasca_mcp_bridge.start()\n```\n\n`start()` checks PyPI for a newer bridge release and self-upgrades before starting. The MCP client config persists.\n\n## Features\n\n- **Multi-version FLAC support** - command docs for FLAC 6.0, 7.0, and 9.0 via the `version` parameter\n- **Hierarchical documentation browsing** - agents navigate the FLAC command tree to discover capabilities and boundaries, reducing hallucinated commands\n- **Enhanced plot documentation** - plot items reference docs supplementing the official documentation\n- **Interactive REPL** - rapid iteration before committing to full scripts; agents can quickly test and refine code\n- **Task lifecycle management** - submit long-running simulations, monitor progress, interrupt running tasks, and browse task history\n- **Multi-client compatible** - works with Claude Code, Codex CLI, Gemini CLI, GitHub Copilot CLI, OpenCode, toyoura-nagisa, and other MCP clients\n\n## Troubleshooting\n\nSee [Troubleshooting](docs/agentic/flac-mcp-bootstrap.md#troubleshooting) in the bootstrap guide.\n\n## Development\n\nSee [Developer Guide: Install and Run from Source](docs/development/source-install.md).\n\n## Contributing\n\nPRs and issues are welcome! See the [Developer Guide](docs/development/source-install.md) to get started.\n\n## License\n\nMIT - see [LICENSE](LICENSE).\n\n<!-- mcp-name: io.github.yusong652/flac-mcp -->\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "full_name": "ContextJet-ai/mcpvitals",
+  "html_url": "https://github.com/ContextJet-ai/mcpvitals",
+  "description": "Vital signs for your MCP servers: a one-command health check with a score, token-cost x-ray, tool-confusion detection, security hygiene, and 2026-07-28 migration readiness.",
+  "topics": [
+    "agent-tools",
+    "ai",
+    "ai-agents",
+    "anthropic",
+    "cli",
+    "developer-tools",
+    "linter",
+    "llm",
+    "llm-tools",
+    "llmops",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "mcp-tools",
+    "model-context-protocol",
+    "testing"
+  ],
+  "matched_query_topics": [
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-07-05T20:25:38Z",
+  "last_pushed_at": "2026-07-05T20:42:40Z",
+  "fetched_at": "2026-07-12T00:16:34.291Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n\n# mcpvitals\n\n**Vital signs for your MCP servers. One command gives you a health score, plus the checks nobody else runs.**\n\n[![tests](https://github.com/ContextJet-ai/mcpvitals/actions/workflows/tests.yml/badge.svg)](https://github.com/ContextJet-ai/mcpvitals/actions/workflows/tests.yml)\n[![PyPI](https://img.shields.io/pypi/v/mcpvitals?color=1f6feb)](https://pypi.org/project/mcpvitals/)\n[![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey.svg)](LICENSE)\n[![by ContextJet.ai](https://img.shields.io/badge/by-ContextJet.ai-1f6feb)](https://www.contextjetai.com)\n\n</div>\n\n> [!NOTE]\n> An audit of ~1,850 public MCP servers found **52% abandoned and only 17% production-ready**, and a separate benchmark traced **56.7% of agent failures to tool misuse** (wrong tool, bad arguments). Registries have no health signal, so a broken server looks identical to a good one. `mcpvitals` is the checkup.\n\n## 60-second start\n\nNo install. Point it at any MCP server (a stdio command or an http url):\n\n```bash\nuvx mcpvitals check \"npx -y @your/mcp-server\"\n```\n\n```text\nmcp health: 40 (F)\n\n  x MV020 [run_sql] tool 'run_sql' appears to contain a hard-coded secret\n      -> never ship keys in tool metadata; use env vars\n  x MV022 [run_sql] description contains model-directed instructions (poisoning surface)\n      -> tool descriptions should describe, not instruct the model\n  ! MV030 [run_sql] tool 'run_sql' costs ~410 tokens to expose\n      -> trim the description/schema; it inflates every request\n  ! MV040 tools 'get_user' and 'fetch_user' are 0.91 similar; agents may pick the wrong one\n      -> differentiate names/descriptions or merge them\n  i MV050 protocol 2025-03-26 predates the 2026-07-28 stateless spec\n```\n\n## What it checks\n\nMost linters stop at basic conformance. `mcpvitals` runs those, plus four things no other tool does:\n\n| Area | What it catches |\n|---|---|\n| **Conformance** | empty tool descriptions, duplicate tool names, malformed schemas |\n| **Reliability** | parameters with no `required` list, untyped params, error-path gaps |\n| **Security hygiene** | secrets in tool metadata, over-broad tools (`run_sql`, `exec`), model-directed instructions in descriptions (the tool-poisoning surface) |\n| **Token cost** | how many tokens each tool burns in the context window, and the total cost to connect the server |\n| **Tool confusion** | pairs of tools an agent will mix up, predicted from name/description overlap *before* it happens in production |\n| **Migration readiness** | what breaks under the 2026-07-28 stateless spec |\n\nEvery check is a pure function scored deterministically. Run `mcpvitals check --json` for machine output.\n\n## Add the health badge to your README\n\n`mcpvitals` emits a shareable badge so a good score is visible at a glance:\n\n```bash\nmcpvitals check \"npx your-server\" --badge badge.svg\n```\n\nOr use the shields.io endpoint output to keep it live.\n\n## Use it in CI\n\nGate your server on every push with the bundled GitHub Action:\n\n```yaml\n- uses: ContextJet-ai/mcpvitals@v0\n  with:\n    target: \"python -m your_server\"\n    strict: \"true\"   # fail the build on any error-level finding\n```\n\n## Track and monitor (not just a one-shot check)\n\nPin a server's tools and get alerted when they change. This catches **rug-pulls**, where a server you already approved silently mutates a tool's schema or description after the fact:\n\n```bash\nmcpvitals watch \"npx your-server\"           # pins tools to mcp.lock\nmcpvitals watch \"npx your-server\" --check    # re-run in CI; fails if a pinned tool changed\n```\n\nProbe a running server for live health (uptime and latency):\n\n```bash\nmcpvitals monitor \"https://your-server/mcp\" --count 5\n# probe 1/5: up 210ms ... uptime 100.0%  avg 207ms\n```\n\n## Why this exists\n\nThe MCP ecosystem grew faster than the tooling around it. There are thousands of servers and no standard way to tell whether one is any good, safe, or cheap to run. `mcpvitals` gives authors a one-command checkup before they publish, and gives everyone else a way to vet a server before they trust it.\n\nBuilt by [ContextJet.ai](https://www.contextjetai.com). MIT licensed. Contributions welcome, see [CONTRIBUTING.md](CONTRIBUTING.md).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

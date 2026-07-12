@@ -1,0 +1,38 @@
+{
+  "full_name": "chrisreddington/turn-based-game-mcp",
+  "html_url": "https://github.com/chrisreddington/turn-based-game-mcp",
+  "description": "A turn-based games app built with Next.js and TypeScript that features Tic-Tac-Toe and Rock Paper Scissors games with AI opponents powered by the Model Context Protocol (MCP), offering three difficulty levels.",
+  "topics": [
+    "ai",
+    "ai-opponent",
+    "fortheloveofcode",
+    "game-development",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "nextjs",
+    "turn-based-games",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 31,
+  "forks": 25,
+  "open_issues": 21,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-07-30T09:34:16Z",
+  "last_pushed_at": "2026-06-28T21:58:35Z",
+  "fetched_at": "2026-07-11T23:41:46.336Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Turn-Based Games Web App and MCP Server\n\nThis app is intended as a demo to showcase an example of MCP visually. It is not intended to be a production-ready application, but a learning tool for developers interested in building with the Model Context Protocol (MCP). \n\nIt is a modern turn-based games platform featuring a Next.js 15 frontend (and API), as well as an MCP (Model Context Protocol) server that can interact with the API and act as an AI opponent.\n\n## Features\n\n- **Next.js Web Application**: Modern, responsive UI built with TailwindCSS 4\n- **MCP Server**: AI opponent powered by Model Context Protocol\n- **Shared Logic**: Common game logic and types across all packages\n- **Multiple Games**: Tic-Tac-Toe and Rock Paper Scissors (extensible for more)\n- **AI Difficulty Levels**: Easy, Medium, and Hard AI opponents\n- **Real-time Gameplay**: Smooth, interactive game experience\n- **Comprehensive Testing**: Hundreds of test cases across all workspaces with high coverage on core logic\n- **Professional Documentation**: Full TSDoc documentation and testing guidelines\n- **Component Architecture**: Reusable UI patterns and shared components\n\n## Project Structure\n\n```\nturn-based-mcp/\n├── shared/                       # Shared types, utilities, and game logic\n├── web/                         # Next.js frontend application  \n│   ├── src/components/\n│   │   ├── games/              # Game-specific components\n│   │   ├── ui/                 # Reusable UI components\n│   │   └── shared/             # MCP and game-related shared components\n│   └── src/app/\n│       ├── api/games/          # API routes for game management\n│       └── games/              # Game-specific pages\n├── mcp-server/                  # MCP server for AI opponent\n├── docs/                        # Documentation and guidelines  \n├── package.json                 # Root package.json with workspaces\n└── README.md\n```\n\n## Games\n\n### Tic-Tac-Toe\n- Classic 3x3 grid game\n- AI difficulty levels: Easy (random), Medium (strategic), Hard (minimax)\n- Real-time move validation and game state updates\n\n### Rock Paper Scissors\n- Best of 3 rounds format\n- AI strategies: Random, Adaptive (learns from patterns), Pattern-based\n- Score tracking and round history\n\n## API Endpoints\n\n### Tic-Tac-Toe\n- `GET /api/games/tic-tac-toe` - List all games\n- `POST /api/games/tic-tac-toe` - Create new game\n- `POST /api/games/tic-tac-toe/[id]/move` - Make a move\n- `GET /api/games/tic-tac-toe/mcp` - MCP integration endpoint (sanitized data)\n\n### Rock Paper Scissors\n- `GET /api/games/rock-paper-scissors` - List all games\n- `POST /api/games/rock-paper-scissors` - Create new game  \n- `POST /api/games/rock-paper-scissors/[id]/move` - Make a move\n- `GET /api/games/rock-paper-scissors/mcp` - MCP integration endpoint (sanitized data)\n\n## MCP Tools\n\n### Available Tools\n- `create_tic_tac_toe_game` - Create new Tic-Tac-Toe game\n- `play_tic_tac_toe` - Make AI move in Tic-Tac-Toe\n- `create_rock_paper_scissors_game` - Create new Rock Paper Scissors game\n- `play_rock_paper_scissors` - Make AI choice in Rock Paper Scissors\n- `wait_for_player_move` - Wait for human player to make their move\n- `analyze_game` - Analyze current game state and provide insights\n\n### MCP Configuration\n\nThe project includes VS Code MCP configuration in `.vscode/mcp.json`:\n\n```json\n{\n  \"servers\": {\n    \"turn-based-games\": {\n      \"command\": \"node\",\n      \"args\": [\"dist/index.js\"],\n      \"cwd\": \"./mcp-server\"\n    }\n  }\n}\n```\n\nTo use the MCP server, ensure it's built first:\n```bash\nnpm run build --workspace=mcp-server\n```\n\n## Getting Started\n\n### Prerequisites\n\n- Node.js 18 or higher\n- npm or pnpm\n\n### Installation\n\n1. Clone the repository and install dependencies:\n```bash\nnpm install\n```\n\n2. Build the shared package (required first):\n```bash\nnpm run build --workspace=shared\n```\n\n> **Important**: The shared package must be built before other packages can be developed or built, as both web and mcp-server depend on it.\n\n3. Start the development servers:\n\n**Frontend (Next.js):**\n```bash\nnpm run dev --workspace=web\n```\n\n**MCP Server:**\n```bash\nnpm run dev --workspace=mcp-server\n```\n\n### Development\n\n- **Frontend**: Visit `http://localhost:3000` to access the web application\n- **MCP Server**: The server runs on stdio and can be integrated with MCP-compatible clients\n\n## Development Workflow\n\n### Adding New Games\n1. **Implement game logic** in `shared/src/games/`\n2. **Create UI components** in `web/src/components/games/`\n3. **Add game page** in `web/src/app/games/[game-type]/`\n4. **Add API routes** in `web/src/app/api/games/[game-type]/`\n5. **Implement AI** in `mcp-server/src/ai/`\n6. **Add MCP tools** in `mcp-server/src/server.ts`\n7. **Write comprehensive tests** for all components\n8. **Update documentation** with new game details\n\n### Code Quality Standards\n- **TypeScript Strict Mode**: Full compliance across all workspaces\n- **ESLint Rules**: Consistent code style and best practices\n- **Test Coverage**: Target 90% for shared logic, 80% for web components\n- **Documentation**: TSDoc comments for all public APIs\n\n## Contributing\n\n1. Fork the repository\n2. Create a feature branch\n3. Make your changes in the appropriate package\n4. Ensure all packages build successfully and tests pass\n5. Write tests for new functionality\n6. Update documentation as needed\n7. Submit a pull request\n\n### Development Setup\n```bash\n# Install dependencies\nnpm install\n\n# Build shared package first (required)\nnpm run build --workspace=shared\n\n# Start development servers\nnpm run dev --workspace=web       # Web app on :3000\nnpm run dev --workspace=mcp-server # MCP server (stdio)\n```\n\n### Alternative Commands\n```bash\n# Root-level shortcuts\nnpm run dev        # Runs web dev server\nnpm run dev:mcp    # Runs MCP server\nnpm run build      # Builds all packages\nnpm run test       # Runs all tests\n```\n\n## License\n\nMIT License. See [LICENSE](LICENSE) for details.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

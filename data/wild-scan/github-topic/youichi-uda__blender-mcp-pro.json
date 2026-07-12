@@ -1,0 +1,38 @@
+{
+  "full_name": "youichi-uda/blender-mcp-pro",
+  "html_url": "https://github.com/youichi-uda/blender-mcp-pro",
+  "description": "AI-powered MCP server for Blender with 100+ tools. Control lights, modifiers, animation, shader nodes, geometry nodes, and more from Claude, Cursor, or Windsurf.",
+  "topics": [
+    "3d",
+    "ai",
+    "blender",
+    "blender-addon",
+    "blender-mcp",
+    "claude",
+    "cursor",
+    "mcp",
+    "model-context-protocol",
+    "windsurf"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 23,
+  "forks": 5,
+  "open_issues": 1,
+  "language": "Python",
+  "license": null,
+  "default_branch": "master",
+  "created_at": "2026-03-07T16:23:53Z",
+  "last_pushed_at": "2026-04-15T12:28:57Z",
+  "fetched_at": "2026-07-11T23:50:22.171Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Blender MCP Pro\n\nControl Blender entirely from AI assistants (Claude Code, Claude Desktop, Cursor, Windsurf) via MCP.\n\n**120+ tools across 17 categories** — Scene management, materials, shader nodes, lights, modifiers, animation, geometry nodes (with scatter/array templates), camera, rendering, import/export, UV/texture, batch processing, asset integration (Poly Haven, Sketchfab), rigging, rig diagnostics, scene utilities, workflow presets, and code execution.\n\n## Pricing\n\n| | Subscription | One-Time Purchase |\n|---|---|---|\n| **Price** | $5/month (7-day free trial) | $15 |\n| **Platform** | [Gumroad](https://y1uda.gumroad.com/l/bmp) | [itch.io](https://y1uda.itch.io/blender-mcp-pro) |\n| **Updates** | Included while subscribed | Lifetime updates |\n\n## Get Started\n\n1. **Purchase on [itch.io](https://y1uda.itch.io/blender-mcp-pro)** ($15 one-time) or **subscribe on [Gumroad](https://y1uda.gumroad.com/l/bmp)** ($5/month with 7-day free trial)\n2. Download the ZIP containing the MCP server and this addon\n3. Follow the setup instructions below\n\n## Requirements\n\n- **Blender 4.0+** (5.0 recommended)\n- **Python 3.10+** (for the MCP server)\n- MCP-compatible client (Claude Code / Claude Desktop / Cursor / Windsurf)\n\n## Installation\n\n### 1. Install MCP server dependencies\n\n```bash\ncd server\npip install -r requirements.txt\n```\n\n### 2. Install the Blender addon\n\n1. Open Blender → **Edit > Preferences > Add-ons > Install**\n2. Select the `addon/` folder from the downloaded ZIP\n3. Enable **\"Blender MCP Pro\"**\n4. Open the 3D Viewport sidebar (N key) → **BM Pro** tab → **Start Server**\n\n### 3. Configure your MCP client\n\nAdd the following to your MCP client config. Replace `<path>` with the actual path where you extracted the ZIP.\n\n#### Claude Code (`~/.claude.json`)\n\n```json\n{\n  \"mcpServers\": {\n    \"blender-mcp-pro\": {\n      \"command\": \"python\",\n      \"args\": [\"<path>/server/server.py\"],\n      \"env\": {\n        \"BLENDER_MCP_PRO_LICENSE\": \"YOUR-LICENSE-KEY\"\n      }\n    }\n  }\n}\n```\n\n#### Claude Desktop (`claude_desktop_config.json`)\n\n```json\n{\n  \"mcpServers\": {\n    \"blender-mcp-pro\": {\n      \"command\": \"python\",\n      \"args\": [\"<path>/server/server.py\"],\n      \"env\": {\n        \"BLENDER_MCP_PRO_LICENSE\": \"YOUR-LICENSE-KEY\"\n      }\n    }\n  }\n}\n```\n\n#### Cursor / Windsurf\n\nAdd `server/server.py` in your MCP settings with the `BLENDER_MCP_PRO_LICENSE` environment variable.\n\n## Updating\n\nWhen a new version is released:\n\n1. Download the latest ZIP from your Gumroad library or itch.io\n2. Extract and overwrite the existing `server/` folder\n3. In Blender: **Edit > Preferences > Add-ons** → remove the old \"Blender MCP Pro\"\n4. Install the new `addon/` folder and enable it\n5. Restart Blender\n\nYour MCP client config and license key do not need to change.\n\n## Usage\n\n1. Start the addon server in Blender (N panel → **BM Pro** → **Start Server**)\n2. Launch your MCP client (e.g., Claude Code)\n3. Control Blender with natural language!\n\n### Streamable HTTP Transport (optional)\n\nBy default, the MCP server uses stdio transport. For remote connections or web-based clients, you can use Streamable HTTP:\n\n```bash\npython server/server.py --transport streamable-http --port 8000\n```\n\nThen configure your MCP client to connect to `http://127.0.0.1:8000/mcp/`.\n\n### Examples\n\n```\n\"Create a Suzanne and add SubSurf and Bevel modifiers\"\n\"Create a glass material and apply it\"\n\"Set up three-point lighting\"\n\"Set the camera to 85mm lens and track the object\"\n\"Add a rotation animation\"\n\"Render at 1920x1080 with Cycles\"\n```\n\n## Architecture\n\n```\nAI Assistant (Claude / Cursor / Windsurf)\n    │\n    │ MCP Protocol (stdio)\n    ▼\nMCP Server (server.py)\n    │\n    │ TCP Socket (localhost:9877)\n    ▼\nBlender Addon (this repo)\n    │\n    │ bpy API (main thread)\n    ▼\nBlender\n```\n\n## Tool Categories\n\n| Category | Description |\n|----------|-------------|\n| Scene & Objects | Create, transform, delete objects, manage collections |\n| Materials | Principled BSDF material setup |\n| Shader Nodes | Full node tree control |\n| Lights | Point/Sun/Spot/Area, three-point lighting |\n| Modifiers | 22 modifier types (SubSurf, Bevel, Boolean, Array...) |\n| Animation | Keyframes, interpolation, actions, NLA |\n| Geometry Nodes | Build node networks, scatter setup, array along curve |\n| Camera | Lens, DOF, tracking, auto-framing |\n| Render | Engine settings, render to file, viewport screenshot |\n| Import/Export | FBX, OBJ, GLTF/GLB, USD, STL, DAE, PLY, SVG, ABC |\n| UV & Texture | 7 unwrap methods, texture baking |\n| Batch Processing | Multi-camera render, turntable |\n| Assets | Poly Haven, Sketchfab integration |\n| Rigging | Armature, bones, vertex groups, constraints |\n| Rig Diagnostics | Rig health check, bone naming fix, weight normalization, bone mirroring |\n| Scene Utilities | Scene cleanup, batch rename, apply transforms, mesh analysis |\n| Workflows | One-command PBR material, studio render setup, export preparation |\n\n## Lazy Loading\n\nOnly 15 core tools are loaded initially. Use `list_tool_categories()` to see all categories, then `enable_tools(category)` to activate on demand.\n\n### Eager mode (for clients without `tools/list_changed` support)\n\nSome MCP clients — notably **VS Code GitHub Copilot Chat** — ignore the `notifications/tools/list_changed` message that `enable_tools()` sends, so newly activated tools never become visible in the tool picker. If you hit this, launch the server with `BLENDER_MCP_PRO_EAGER=1` to pre-register every category at startup:\n\n```json\n{\n  \"mcpServers\": {\n    \"blender-mcp-pro\": {\n      \"command\": \"python\",\n      \"args\": [\"<path>/server.py\"],\n      \"env\": {\n        \"BLENDER_MCP_PRO_LICENSE\": \"YOUR-LICENSE-KEY\",\n        \"BLENDER_MCP_PRO_EAGER\": \"1\"\n      }\n    }\n  }\n}\n```\n\nClaude Desktop and Claude Code handle `list_changed` correctly and do not need this flag.\n\n## License\n\n- **Blender Addon** (`addon/`) — MIT License\n- **MCP Server** — Proprietary. Distributed via [Gumroad](https://y1uda.gumroad.com/l/bmp) and [itch.io](https://y1uda.itch.io/blender-mcp-pro).\n\n## Author\n\n[@youichi-uda](https://github.com/youichi-uda)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

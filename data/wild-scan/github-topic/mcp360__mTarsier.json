@@ -1,0 +1,37 @@
+{
+  "full_name": "mcp360/mTarsier",
+  "html_url": "https://github.com/mcp360/mTarsier",
+  "description": "mTarsier - The Open Source MCP & Skill Manager for Claude, Cursor, VS Code & any AI client.",
+  "topics": [
+    "agent-skills",
+    "mcp",
+    "mcp-apps",
+    "mcp-manager",
+    "mcp-toolbox",
+    "mcp-tools",
+    "model-context-protocol",
+    "skills"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol",
+    "mcp-tools"
+  ],
+  "stars": 42,
+  "forks": 6,
+  "open_issues": 9,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-03-06T11:32:37Z",
+  "last_pushed_at": "2026-04-20T17:56:58Z",
+  "fetched_at": "2026-07-11T23:33:33.519Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# mTarsier\n\n[![mTarsier — MCP & Skills Management, without the chaos.](https://raw.githubusercontent.com/mcp360/mTarsier/main/src/assets/mtarsier-readme-banner.svg)](https://mcp360.ai/mtarsier)\n\n[![GitHub Stars](https://img.shields.io/github/stars/mcp360/mTarsier?style=social)](https://github.com/mcp360/mTarsier)\n\n**MCP & Skills Management, without the chaos.**\n\n\nmTarsier is an open-source platform for managing MCP servers, Skills, and clients — so Claude, Cursor, VS Code and every AI tool you use always has the right MCP connections and Skills installed, without the chaos.\n\n> Built in Rust 🦀. Lightweight. Fast.\n\n---\n\n## Features\n\n### MCP Servers\n- **Unified Dashboard** — all MCP servers across every client in one view\n- **Client Detection** — auto-detects Claude Desktop, Cursor, Windsurf, VS Code, and more\n- **Config Editor** — read/write config files with syntax highlighting and live JSON validation\n- **Marketplace** — browse and install MCP servers into any client in a few clicks\n- **Auto-backup** — backs up configs before every change with one-click rollback\n\n### Skills\n- **Skills Manager** — view, create, and manage skills across all supported clients\n- **Skills Marketplace** — discover and install skills from marketplace registry\n- **One-click Install** — install skills to one or multiple clients at once\n- **Custom Skills** — create your own skills with the built-in editor or upload SKILL.md files\n- **Copy & Share** — copy skills between clients with a single click\n- **Featured Picks** — curated top skills like frontend-design, code-review, and more\n\n### General\n- **CLI Tool** — `tsr` command for terminal-based management of both MCP servers and Skills\n- **Multi-theme** — dark biopunk, light, and system themes\n\n---\n\n## Supported Clients\n\n| Client | Type | Config |\n|---|---|---|\n| Claude Desktop | Desktop | `~/Library/Application Support/Claude/claude_desktop_config.json` |\n| ChatGPT Desktop | Desktop | Web-managed |\n| Codex | Desktop | `~/.codex/config.toml` |\n| GitHub Copilot (VS Code) | IDE | `~/Library/Application Support/Code/User/mcp.json` |\n| Cursor | IDE | `~/.cursor/mcp.json` |\n| Windsurf | IDE | `~/.codeium/windsurf/mcp_config.json` |\n| VS Code | IDE | `~/Library/Application Support/Code/User/mcp.json` |\n| Antigravity | IDE | `~/.antigravity/mcp.json` |\n| Claude Code | CLI | `~/.claude.json` |\n| GitHub Copilot CLI | CLI | `~/.copilot/mcp-config.json` |\n| Gemini CLI | CLI | `~/.gemini/settings.json` |\n| Codex CLI | CLI | `~/.codex/config.toml` |\n| Open Code | CLI | `~/.opencode/config.json` |\n| Claude (web) | Web | Remote only |\n| ChatGPT (web) | Web | Remote only |\n\n---\n\n## Installation\n\nGrab the latest release from the [Releases](https://github.com/mcp360/mTarsier/releases/latest) page:\n\n| Platform | File |\n|---|---|\n| macOS Apple Silicon | `mTarsier_*_aarch64.dmg` |\n| macOS Intel | `mTarsier_*_x64.dmg` |\n| Windows | `mTarsier_*_x64-setup.exe` |\n| Linux | `mTarsier_*_amd64.AppImage` / `mTarsier_*_amd64.deb` |\n\n### Homebrew (coming soon)\n\n```bash\nbrew install mcp360/tap/tsr\n```\n\n---\n\n## CLI — `tsr`\n\nInstall from the app: **Settings → CLI Tool → Install tsr CLI**\n\n```bash\n# MCP server management\n$ tsr list\n  filesystem      → Claude Desktop, Cursor, Windsurf\n  brave-search    → Claude Desktop\n  github          → Cursor, Windsurf\n\n$ tsr clients\n  ✓  claude-desktop   ~/Library/Application Support/Claude/...\n  ✓  cursor           ~/.cursor/mcp.json\n  ✓  windsurf         ~/.codeium/windsurf/mcp_config.json\n\n$ tsr install brave-search   # install from marketplace\n$ tsr config cursor --edit   # open config in $EDITOR\n$ tsr ping <name>            # ping a server\n\n# Skills management\n$ tsr skills list --client claude-code\n$ tsr skills search \"frontend design\"\n$ tsr skills install anthropics/courses/prompt-eng --client claude-code\n$ tsr skills remove skill-name --client claude-code\n```\n\n---\n\n## 🤝 Community\n\nJoin our community to get help, share ideas, and stay updated:\n\n- 💬 [Discord Community](https://discord.gg/Nq5vyrbm)\n- 🐦 Follow us on X — [@0fficialRohit](https://x.com/0fficialRohit) · [@rege_dev](https://x.com/rege_dev)\n- ⭐ [Star us on GitHub](https://github.com/mcp360/mTarsier)\n\n---\n\n## Development\n\n```bash\ngit clone https://github.com/mcp360/mTarsier.git\ncd mTarsier\npnpm install\ncd src-tauri && bash scripts/prepare-sidecar.sh && cd ..\npnpm tauri dev\n```\n\nRequires Rust 1.77+, Node.js 20+, and pnpm 10.28+. See [CONTRIBUTING.md](CONTRIBUTING.md) for platform-specific dependencies, troubleshooting, and project structure.\n\n---\n\n## Contributing\n\nContributions are welcome. Please open an issue before submitting a large pull request. See [CONTRIBUTING.md](CONTRIBUTING.md) for full setup guide and code conventions.\n\n**Maintainers:** [@0fficialRohit](https://x.com/0fficialRohit) · [@rege_dev](https://x.com/rege_dev)\n\n---\n\n## License\n\nMIT — see [LICENSE](LICENSE)\n\n---\n\n## Conservation\n\nTarsier, one of the world's smallest and most endangered primates — [learn more](https://www.iucnredlist.org/search?query=tarsius).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

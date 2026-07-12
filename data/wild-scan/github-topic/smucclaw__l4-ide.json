@@ -1,0 +1,39 @@
+{
+  "full_name": "smucclaw/l4-ide",
+  "html_url": "https://github.com/smucclaw/l4-ide",
+  "description": "L4 - Rules-as-code - is an open-source functional specification language for business rules, legal contracts, and legislation/regulation, with a CNL syntax for isomorphism.",
+  "topics": [
+    "contracts",
+    "l4",
+    "legal",
+    "legislation",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "regulation",
+    "rules",
+    "rules-as-code",
+    "webmcp"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 37,
+  "forks": 9,
+  "open_issues": 77,
+  "language": "Haskell",
+  "license": "NOASSERTION",
+  "default_branch": "main",
+  "created_at": "2024-11-26T07:57:58Z",
+  "last_pushed_at": "2026-07-05T23:14:08Z",
+  "fetched_at": "2026-07-12T00:26:30.430Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# L4 with IDE\n\n**L4** is a domain-specific programming language for law. It formalizes legal rules and contracts as executable specifications, bringing software engineering rigor to legal drafting and analysis.\n\nThis repository contains the L4 compiler, IDE tooling (VS Code extension, LSP, REPL, web editor), and a decision service that exposes L4 rules as REST APIs and MCP tools.\n\n## What You Get From a Single L4 File\n\n- **REST APIs** — Expose functions as HTTP endpoints with `@export` annotations\n- **AI tool integration** — MCP server for Claude, Cursor, and VS Code Copilot; WebMCP for in-browser agents\n- **Interactive visualizations** — Ladder diagrams and evaluation traces rendered via GraphViz\n- **Audit-grade explainability** — Every evaluation produces a trace you can follow from the top-level question down to the deciding condition\n- **Test suites** — Golden-file tests and assertions\n- **Generated schemas** — OpenAPI 3.0 specs and JSON schemas for integration\n\n## Getting Started\n\n- **Install the VS Code extension:** [L4 Rules-as-code on the Marketplace](https://marketplace.visualstudio.com/items?itemName=Legalese.l4-vscode)\n- **Try the web editor:** <https://jl4.legalese.com/>\n- **Learn L4:** [Foundation Course](doc/courses/foundation/README.md) — no prior programming experience required\n- **Full documentation:** [doc/README.md](doc/README.md)\n\n## Repository Layout\n\n**Haskell (Cabal):**\n\n| Package                                   | Purpose                                                  |\n| ----------------------------------------- | -------------------------------------------------------- |\n| [jl4-core](jl4-core/)                     | Core language (parser, typechecker, evaluator)           |\n| [jl4](jl4/)                               | CLI tool and JSON schema generator                       |\n| [jl4-lsp](jl4-lsp/)                       | Language Server Protocol for IDE support                 |\n| [jl4-repl](jl4-repl/)                     | Interactive REPL                                         |\n| [jl4-service](jl4-service/)               | REST API for decision evaluation                         |\n| [jl4-websessions](jl4-websessions/)       | Session persistence service                              |\n| [jl4-query-plan](jl4-query-plan/)         | Query planning utilities                                 |\n| [jl4-actus-analyzer](jl4-actus-analyzer/) | Static analyzer classifying L4 contracts by ACTUS / FIBO |\n| [jl4-wasm](jl4-wasm/)                     | WebAssembly build of L4 for browser/Node.js              |\n| [jl4-mlir](jl4-mlir/)                     | MLIR/WASM compiler backend: L4 → `.wasm` decision binary |\n\n**TypeScript (npm workspaces + Turborepo):**\n\n| Package                             | Purpose                                    |\n| ----------------------------------- | ------------------------------------------ |\n| [ts-apps/vscode](ts-apps/vscode/)   | VS Code extension                          |\n| [ts-apps/jl4-web](ts-apps/jl4-web/) | Web-based editor (Svelte)                  |\n| [ts-shared](ts-shared/)             | Shared libraries (RPC client, visualizers) |\n\n**Documentation:** See [doc/](doc/) for the language reference, tutorials, courses, and concept guides.\n\n## Building From Source\n\n```bash\ncabal build all          # Haskell\nnpm ci && npm run build  # TypeScript\n```\n\nSee [AGENTS.md](AGENTS.md) for repository conventions and workflow, and [dev-start.sh](dev-start.sh) for running services locally.\n\n**Requirements:** GHC 9.10.2, Cabal 3.10+, Node.js ≥ 20, and GraphViz (`dot`). Nix users can run `nix-shell nix/shell.nix` for a ready environment.\n\n## The REPL\n\nAn interactive Read-Eval-Print Loop for exploring L4 code:\n\n```bash\ncabal run jl4-repl -- path/to/file.l4\n```\n\nThe REPL provides live evaluation, module reloading (`:load`, `:reload`), query planning (`:decides`, `:queryplan`), and trace output (`:trace`, `:traceascii`, `:tracefile`). See [jl4-repl/README.md](jl4-repl/README.md) for the full command list.\n\n## VS Code Extension\n\nProvides syntax highlighting, type checking, inline evaluation, `@export` previews, deployment management, a built-in Legalese AI chat tab, and an automatically-registered local MCP server for any AI agent that speaks the protocol (Copilot, Claude Code, Cursor, ...). Connects to [Legalese Cloud](https://legalese.cloud) or a self-hosted `jl4-service` instance. See [ts-apps/vscode/README.md](ts-apps/vscode/README.md).\n\n## Trace Visualization\n\nEvery tool in this repo can render an L4 evaluation as a GraphViz diagram:\n\n- **CLI:** `l4 trace myfile.l4 > trace.dot`, then `dot -Tsvg trace.dot > trace.svg` (or `l4 trace myfile.l4 --format svg -o out/` to generate SVG files directly)\n- **REPL:** `:trace <expression>`, or `:tracefile traces/session` to capture numbered `.dot` files\n- **Decision Service:** `POST /deployments/{id}/functions/{fn}/evaluation?trace=full&graphviz=true`\n\nInstall GraphViz with `brew install graphviz` or `apt-get install graphviz` to render PNG/SVG outputs.\n\n## Application Libraries\n\nL4 ships with foundational libraries for building legal and commercial applications:\n\n- [Jurisdiction](jl4-core/libraries/jurisdiction.l4) — ISO 3166 country codes, US states, Canadian provinces, EU\n- [Currency](jl4-core/libraries/currency.l4) — ISO 4217 currency codes with integer minor-unit storage\n- [Legal Persons](jl4-core/libraries/legal-persons.l4) — individuals, corporations, partnerships, LLCs, trusts\n- [Holdings](jl4-core/libraries/holdings.l4) — ownership structures and beneficial ownership\n\n## Real-World Impact\n\nL4 has been piloted with organizations in both public and private sectors:\n\n- **Government regulatory compliance** — encoded secondary legislation to auto-generate citizen-facing web wizards; formal verification discovered a double-bind where contradictory clauses required and prohibited the same action.\n- **Insurance policy analysis** — formalized contracts from major global providers, uncovering payout-formula ambiguities linked to significant claims leakage.\n- **Legislative drafting** — working with government drafting offices on rules-as-code initiatives.\n- **Commercial agreements** — transformed complex fee schedules and payment terms into L4, served via REST for enterprise integration.\n\n## Community\n\n- **[Discord](https://discord.gg/Q7a7NSEdNy)** — chat with the community\n- **[GitHub Issues](https://github.com/legalese/l4-ide/issues)** — report bugs, request features\n- **[Legalese](https://legalese.com)** — professional implementation services\n\nL4 is published under the [Apache-2.0 License](LICENSE).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

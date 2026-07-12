@@ -1,0 +1,33 @@
+{
+  "full_name": "dstier-git/displacement-radar",
+  "html_url": "https://github.com/dstier-git/displacement-radar",
+  "description": "Competitor displacement intelligence for seller teams: discover competitor signals, map affected accounts with Apollo, and generate evidence-backed outreach drafts to be sent manually or with the Gmail MCP.",
+  "topics": [
+    "apollo",
+    "business-analytics",
+    "business-intelligence",
+    "go-to-market",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-04-16T15:52:00Z",
+  "last_pushed_at": "2026-06-15T20:26:37Z",
+  "fetched_at": "2026-07-12T00:46:06.666Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# displacement-radar\n\nDraft-only competitor displacement intelligence for seller teams.\nBuilt during the Apollo x Google Cloud Hackathon.\n\n## What It Does\n\n`displacement-radar` helps a seller team turn competitor pain signals into reviewed outbound drafts.\n\n- Discover or enter competitors.\n- Identify recent competitor signals from public sources.\n- Map signals to likely affected accounts and buyer personas.\n- Use Apollo to find decision makers and contact data.\n- Generate evidence-backed outreach drafts for human review.\n\nThe product boundary is intentionally draft-only: it does not send emails, create Gmail messages, or enroll contacts in sequences without external human action.\n\n## Main Workflow\n\n1. Enter your company and product.\n2. Add competitors manually or use model-assisted competitor discovery.\n3. Run a scan to collect and rank competitor signals.\n4. Review signal-backed opportunities and impacted accounts.\n5. Select decision makers found through Apollo.\n6. Generate draft outreach for selected contacts.\n7. Review, edit, and approve any external action outside the app.\n\n## Preview screenshots from frontend\n**Using the Apollo MCP to identify decision makers at potential customer companies (from auto-discovered displacement opportunities):**\n\n<img width=\"1426\" height=\"869\" alt=\"email drafts\" src=\"https://github.com/user-attachments/assets/443f75ca-24d2-46eb-b4f3-1da4175a9a7b\" />\n\n**Comprehensive competitive landscape report, generated from web-scraping, Claude-reviewed competitorrs, and Apollo GTM tools:**\n\n<img width=\"1351\" height=\"869\" alt=\"competitive landscape\" src=\"https://github.com/user-attachments/assets/f1a082db-8cd9-4910-a5f1-b2d91f18e0cd\" />\n\n**Opportunity graphs:**\n\n<img width=\"1382\" height=\"344\" alt=\"change graph\" src=\"https://github.com/user-attachments/assets/90d87c2c-d73a-4769-ac47-f1f4251f9359\" />\n<img width=\"401\" height=\"261\" alt=\"signal mix graph\" src=\"https://github.com/user-attachments/assets/badf4030-3a86-440a-85a6-cf72aa94e697\" />\n\n**Competitive landscape visualizations:**\n\n<img width=\"1054\" height=\"456\" alt=\"account map\" src=\"https://github.com/user-attachments/assets/96f098ee-a27a-4cb3-9d1b-5dbbcc796b33\" />\n\n\n## Quickstart\n\n```bash\npython -m venv .venv\nsource .venv/bin/activate\npip install -r apollo_hackathon/requirements.txt\nuvicorn apollo_hackathon.app.main:app --reload\n```\n\nThen open [http://127.0.0.1:8000](http://127.0.0.1:8000).\n\nThe canonical app lives in `apollo_hackathon/`.\n\n## Configuration\n\nCopy and fill values from:\n\n- `apollo_hackathon/.env.example`\n\nKey variables:\n\n- `APOLLO_API_KEY` - Apollo account/contact lookup.\n- `OPENAI_API_KEY` - OpenAI web-search prospecting.\n- `CLAUDE_MCP_CONFIG` - path to a Claude MCP config file.\n- `PREFER_CLAUDE_MCP_PROSPECTING` - prefer Claude MCP prospecting when configured.\n- `CLAUDE_DRAFT_EMAILS` - use Claude for draft email generation when configured.\n- `GOOGLE_CLOUD_PROJECT` / `GOOGLE_CLOUD_LOCATION` / `VERTEX_MODEL` - Vertex/Gemini options.\n- `DATA_PATH` / `SEED_DATA_PATH` - local app data and seed snapshot paths.\n\n## Testing\n\n```bash\npytest\n```\n\n`pyproject.toml` is configured to run tests under `apollo_hackathon/tests`.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

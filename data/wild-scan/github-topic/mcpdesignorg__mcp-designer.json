@@ -1,0 +1,34 @@
+{
+  "full_name": "mcpdesignorg/mcp-designer",
+  "html_url": "https://github.com/mcpdesignorg/mcp-designer",
+  "description": "MCP Designer is a web-based tool for designing and validating MCP servers with the MCP Design Specification (MCPDS).",
+  "topics": [
+    "ai",
+    "design-first",
+    "mcp",
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-07-08T12:18:15Z",
+  "last_pushed_at": "2026-07-09T11:02:43Z",
+  "fetched_at": "2026-07-12T00:17:30.739Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP Designer\n\n**Stop hand-writing MCP boilerplate. Design your server visually, ship the contract.**\n\n> Define your entire MCP server — identity, transports, auth, tools, resources, prompts — in a visual editor. Get a clean `*.mcp.yaml` on disk. Scaffold, document and configure from one source of truth.\n\n[![npm](https://img.shields.io/npm/v/mcp-designer)](https://www.npmjs.com/package/mcp-designer)\n[![license](https://img.shields.io/npm/l/mcp-designer)](LICENSE)\n[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/mcpdesignorg/mcp-designer)\n\n```bash\nnpx mcp-designer\n```\n\n*100% local · no account · no cloud · no telemetry*\n\n<!-- HERO GIF/SCREENSHOT HERE — this is the single most important element -->\n![MCP Designer in action](./docs/demo.gif)\n\n---\n\n## Why design-first?\n\nWriting an MCP server by hand means juggling tool schemas, transport config and\nauth across scattered code — and rewriting docs and client config every time\nsomething changes. OpenAPI solved this for REST. **MCPDS does it for MCP.**\n\nYou design the contract once. Implementation, docs, client configuration and\nregistry entries all follow it — not the other way around.\n\n| Without MCP Designer | With MCP Designer |\n|---|---|\n| Hand-write tool schemas in code | Visual JSON Schema builder |\n| Config drift between code and docs | One `*.mcp.yaml` source of truth |\n| Validate by running & failing | Live validation with inline errors |\n| Cloud tools that see your spec | Runs entirely on your machine |\n\n---\n\n## What you get\n\n- **Visual editors** for every MCPDS section — identity, transports, auth, tools, resources, prompts, components, packaging.\n- **JSON Schema builder** for tool input/output and prompt arguments — no more hand-writing schema by hand.\n- **Live validation** against the MCPDS schema with inline errors.\n- **Lossless YAML round-trip** — untouched files save byte-for-byte.\n- **Full file management** — templates, rename, duplicate, import by drop or paste.\n- **Local-first** — point it at a folder, get clean YAML on disk. That's it.\n\n---\n\n## Quick start\n\n```bash\nnpx mcp-designer [workspace-dir]\n```\n\nOpens a local editor in your browser. `[workspace-dir]` defaults to the current\ndirectory. The server binds to `127.0.0.1` — nothing leaves your machine.\n\n<details>\n<summary>Install globally / other run options</summary>\n\n**Homebrew:**\n```bash\nbrew install mcpdesignorg/tap/mcp-designer\nmcp-designer [workspace-dir]\n```\n\n**Global install:**\n```bash\nnpm install -g mcp-designer\nmcp-designer [workspace-dir]\n```\n\n- `MCP_DESIGNER_PORT` — choose a specific port.\n- `MCP_DESIGNER_NO_OPEN=1` — skip auto-opening the browser.\n\n**Requirements:** Node.js 20+ and npm.\n</details>\n\n---\n\n## Built on MCPDS\n\nMCP Designer reads and writes **[MCPDS (MCP Design Specification)](https://www.npmjs.com/package/@mcpds/spec)**:\na single, human-authored `*.mcp.yaml` that fully describes an MCP server and\nserves as the source of truth for scaffolding, documentation, client\nconfiguration and registry entries.\n\n---\n\n<details>\n<summary><b>Contributing & development</b></summary>\n\nTypeScript npm-workspaces monorepo.\n\n| Package | Name | Responsibility |\n|---|---|---|\n| `packages/core` | `@mcp-designer/core` | MCPDS types, YAML parse/serialize, schema validation. |\n| `packages/server` | `mcp-designer` | Published npm package + CLI, local Express REST API. |\n| `packages/web` | `@mcp-designer/web` | React + Vite single-page editor. |\n\n**Run from source:**\n```bash\nnpm install\n./scripts/run.sh [workspace-dir]   # macOS/Linux\nscripts\\run.bat [workspace-dir]    # Windows\n```\n\n**Develop:**\n```bash\nnpm run dev -w mcp-designer         # server + CLI\nnpm run dev -w @mcp-designer/web    # Vite dev server\nnpm run typecheck && npm test\n```\n</details>\n\n## From spec to server\n\nThe **[@mcpds/spec](https://www.npmjs.com/package/@mcpds/spec)** repo ships a\nskill that turns your `*.mcp.yaml` into working code. Design the contract in\nMCP Designer, then let the skill scaffold the entire MCP server from it —\ntools, transports and auth wired up straight from the spec.\n\nDesign-first, end to end: **visual editor → `*.mcp.yaml` → generated server.**\n\n## License\n\n[MIT](LICENSE) — created by Miroslav Holec ([@mirekholec](https://github.com/mirekholec))."
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

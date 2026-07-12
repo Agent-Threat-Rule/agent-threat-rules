@@ -1,0 +1,39 @@
+{
+  "full_name": "aminammar1/ai-agents-mcp-docker",
+  "html_url": "https://github.com/aminammar1/ai-agents-mcp-docker",
+  "description": "AI-powered GitHub repository assistant using Model-Context-Protocol (MCP). Features a local agent that queries GitHub APIs through a Dockerized MCP Gateway, delivering intelligent, context-aware answers about any repository.",
+  "topics": [
+    "agents",
+    "agno",
+    "docker",
+    "docker-compose",
+    "docker-mcp-toolkit",
+    "gpt-oss-20b",
+    "mcp",
+    "mcp-tools",
+    "openai"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-08-21T03:38:39Z",
+  "last_pushed_at": "2025-08-22T22:56:30Z",
+  "fetched_at": "2026-07-12T00:48:00.286Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# GitHub Repo Question-Answering Agent with Docker MCP Toolkit\n\nThis project demonstrates an AI agent that can answer questions about a GitHub repository. It uses the Model-Context-Protocol (MCP) Toolkit to interact with a GitHub MCP server running in a Docker container.\n\n## Overview\n\nThis setup connects a developer’s local agent to GitHub through a Dockerized MCP Gateway, with Docker Compose orchestrating the environment. Here’s how it works step-by-step:\n\n### User Interaction\n\n1.  The developer runs the agent from a CLI or terminal.\n2.  They type a question about a GitHub repository — e.g., “Where is the authentication logic implemented?”\n\n### Agent Processing\n\n1.  The Agent (LLM + MCPTools) receives the question.\n2.  The agent determines that it needs repository data and issues a tool call via MCPTools.\n\n### MCPTools → MCP Gateway\n\n1.  MCPTools sends the request using `streamable-http` to the MCP Gateway running in Docker.\n2.  This gateway is defined in `docker-compose.yml` and configured for the GitHub server (`--servers=github --port=8080`).\n\n### GitHub Integration\n\nThe MCP Gateway handles all GitHub API interactions — listing files, retrieving content, searching code — and returns structured results to the agent.\n\n### LLM Reasoning\n\n1.  The agent sends the retrieved GitHub context to an LLM (like OpenAI's GPT models) as part of a prompt.\n2.  The LLM reasons over the data and generates a clear, context-rich answer.\n\n### Response to User\n\nThe agent prints the final answer back to the CLI, often with file names and line references.\n\n## Folder Structure\n\n```\n.\n├── app.py                # Main application file for the agent\n├── docker-compose.yml    # Docker Compose file for services\n├── Dockerfile            # Dockerfile for the agent application\n├── requirements.txt      # Python dependencies\n└── README.md             # This file\n```\n\n## Prerequisites\n\n- [Docker](https://www.docker.com/get-started) and [Docker Compose](https://docs.docker.com/compose/install/)\n- [Python 3.8+](https://www.python.org/downloads/)\n- An API key from [OpenAI](https://platform.openai.com/api-keys) or [OpenRouter](https://openrouter.ai/keys)\n\n## Quick Start\n\n1.  **Clone the repository:**\n\n    ```bash\n    git clone https://github.com/aminammar1/ai-agents-mcp-docker.git\n    cd ai-agents-mcp-docker\n    ```\n\n2.  **Set up environment variables:**\n    Create a file named `.env` in the project root and add your API key:\n\n    ```\n    OPENAI_[REDACTED-GENERIC_KV_SECRET]\"\n    ```\n\n3.  **Install Python dependencies:**\n\n    ```bash\n    pip install -r requirements.txt\n    ```\n\n4.  **Start the MCP Gateway:**\n    Open a terminal and run the following command to start the GitHub MCP server in a Docker container:\n\n    ```bash\n    docker-compose up -d\n    ```\n\n5.  **Run the agent:**\n    In another terminal, run the agent application:\n\n    ```bash\n    python app.py\n    ```\n\n6.  **Interact with the agent:**\n    Once the agent is running, you can ask questions about any public GitHub repository. For example:\n    ```\n    Enter your query (type 'exit' to quit): repo=\"langchain-ai/langchain\" \"what is this repo about?\"\n    ```\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "app.py",
+    "size": 1154,
+    "content": "from agno.agent import Agent\nfrom agno.models.openai import OpenAIChat\nfrom dotenv import load_dotenv\nfrom agno.tools.mcp import MCPTools\nimport asyncio\nimport os\n\nload_dotenv()\n\nMCP_SERVER_URL = {\n    \"SERVER_URL\": \"http://localhost:8080\"\n}\n\nasync def main():\n    MCP_TOOLKIT = MCPTools(url=MCP_SERVER_URL[\"SERVER_URL\"], transport=\"streamable-http\")\n    await MCP_TOOLKIT.connect()\n\n    agent = Agent(\n        name=\"Github Repo Summarizer\",\n        role=\"summarize the github repository using available toolkit\",\n        tools=[\n            MCP_TOOLKIT\n        ],\n        model=OpenAIChat(\n            id=\"openai/gpt-oss-20b:free\",\n            api_key=os.getenv(\"OPENAI_API_KEY\"),\n            base_url=\"https://openrouter.ai/api/v1\"\n        ),\n        show_tool_calls=True,\n        debug_mode=True,\n        add_datetime_to_instructions=True\n    )\n\n    while True:\n        query = input(\"\\nEnter your query (type 'exit' to quit): \").strip()\n        if query.lower() == \"exit\":\n            print(\"Exiting...\")\n            break\n        \n        await agent.aprint_response(query)\n    MCP_TOOLKIT.close()\n\nif __name__ == \"__main__\":\n    asyncio.run(main())"
+  },
+  "content_fetch_notes": []
+}

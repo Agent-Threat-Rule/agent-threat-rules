@@ -1,0 +1,30 @@
+{
+  "full_name": "lazy404/exchange_rates",
+  "html_url": "https://github.com/lazy404/exchange_rates",
+  "description": "MCP that can convert between X and EUR using ECB api (might be useful for taxes)",
+  "topics": [
+    "claude",
+    "mcp-servers"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Rust",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-02-27T20:36:20Z",
+  "last_pushed_at": "2026-04-05T13:03:12Z",
+  "fetched_at": "2026-07-12T00:23:30.886Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# exchange_rates\n\n[![Rust](https://img.shields.io/badge/rust-2024_edition-orange?logo=rust)](https://www.rust-lang.org)\n[![MCP](https://img.shields.io/badge/MCP-compatible-blue?logo=anthropic)](https://modelcontextprotocol.io)\n[![Data source](https://img.shields.io/badge/data-ECB_Data_Portal-003591?logo=europeanunion&logoColor=white)](https://data-api.ecb.europa.eu)\n[![Build](https://img.shields.io/badge/build-cargo-green?logo=rust)](https://doc.rust-lang.org/cargo/)\n[![Release](https://img.shields.io/github/v/release/lazy404/exchange_rates)](https://github.com/lazy404/exchange_rates/releases)\n\nAn [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server that provides EUR exchange rates sourced directly from the **European Central Bank (ECB)**. Connect it to Claude to look up historical rates and convert amounts between EUR and 30 other currencies by date.\n\n## Tools\n\n| Tool | Description |\n|------|-------------|\n| `get_exchange_rate` | Returns the ECB rate for a given EUR/X currency pair and date |\n| `convert_currency` | Converts an amount between EUR and another currency using the ECB rate for a given date |\n\nIf the requested date falls on a weekend or public holiday, the server automatically returns the most recent available rate (looking back up to 10 days). Every response includes a direct link to the ECB CSV data for the date used, so the source can be verified.\n\n## Supported currencies\n\nAUD, BGN, BRL, CAD, CHF, CNY, CZK, DKK, GBP, HKD, HUF, IDR, ILS, INR, ISK, JPY, KRW, MXN, MYR, NOK, NZD, PHP, PLN, RON, SEK, SGD, THB, TRY, USD, ZAR\n\nConversions must involve EUR on one side (e.g. EUR→GBP or JPY→EUR). Cross-rate conversions (e.g. GBP→JPY) and EUR→EUR are not supported.\n\n## Prerequisites\n\n- [Rust](https://rustup.rs) (edition 2024, stable toolchain)\n\n## Installation\n\n### Download a release binary\n\nPre-built binaries for Linux x86_64, macOS arm64, and Windows x86_64 are attached to each [GitHub Release](https://github.com/lazy404/exchange_rates/releases). Download the binary for your platform and place it somewhere on your `PATH`.\n\n### Build from source\n\n```bash\ngit clone https://github.com/lazy404/exchange_rates.git\ncd exchange_rates\ncargo build --release\n```\n\nThe binary will be at `target/release/exchange_rates`.\n\n## Connecting to Claude\n\n### Claude Desktop\n\n1. Open (or create) the Claude Desktop configuration file:\n   - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`\n   - **Windows:** `%APPDATA%\\Claude\\claude_desktop_config.json`\n\n2. Add the server under `mcpServers`:\n\n```json\n{\n  \"mcpServers\": {\n    \"exchange-rates\": {\n      \"command\": \"/absolute/path/to/exchange_rates/target/release/exchange_rates\"\n    }\n  }\n}\n```\n\n3. Restart Claude Desktop. The exchange rate tools will appear in the tools panel.\n\n### Claude Code\n\nRegister the server with the Claude Code CLI:\n\n```bash\nclaude mcp add exchange-rates /absolute/path/to/exchange_rates/target/release/exchange_rates\n```\n\nOr add it to your project's `.mcp.json` so all project collaborators pick it up automatically:\n\n```json\n{\n  \"mcpServers\": {\n    \"exchange-rates\": {\n      \"command\": \"/absolute/path/to/exchange_rates/target/release/exchange_rates\"\n    }\n  }\n}\n```\n\n## Usage examples\n\nOnce connected, you can ask Claude naturally:\n\n- *\"What was the EUR/USD rate on 15 January 2025?\"*\n- *\"Convert 250 USD to EUR using the ECB rate for last Friday.\"*\n- *\"How much is €1,500 in Japanese yen as of 2024-12-31?\"*\n- *\"What's the EUR/GBP rate for today?\"*\n\n## Constraints\n\n- **Currencies:** EUR ↔ X only. Exactly one side of every conversion must be EUR (EUR→EUR is rejected).\n- **Dates:** rates are available only for ECB trading days. The server walks back up to 10 days to find the nearest published rate, so weekends and public holidays resolve automatically.\n- **Future dates:** rejected with an explicit error.\n- **Data source:** [ECB Data Portal](https://data-api.ecb.europa.eu) — rates are fetched live and cached in memory per (currency, calendar year) for the lifetime of the server process.\n\n## Development\n\n```bash\ncargo check          # fast compile check\ncargo test           # run tests — most require internet access (hits the live ECB API)\ncargo clippy         # lint\ncargo fmt            # format\n```\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

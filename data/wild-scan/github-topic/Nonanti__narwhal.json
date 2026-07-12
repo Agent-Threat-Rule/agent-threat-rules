@@ -1,0 +1,43 @@
+{
+  "full_name": "Nonanti/narwhal",
+  "html_url": "https://github.com/Nonanti/narwhal",
+  "description": "Multi-driver TUI database client with a built-in MCP server. Six databases (postgres, mysql, sqlite, duckdb, clickhouse, mssql), vim editing, Lua + WASM plugins, schema diff, audit log.",
+  "topics": [
+    "cli",
+    "clickhouse",
+    "database",
+    "duckdb",
+    "mcp",
+    "model-context-protocol",
+    "mysql",
+    "postgres",
+    "ratatui",
+    "rust",
+    "sql",
+    "sqlite",
+    "terminal",
+    "tui",
+    "vim"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 38,
+  "forks": 0,
+  "open_issues": 6,
+  "language": "Rust",
+  "license": "NOASSERTION",
+  "default_branch": "main",
+  "created_at": "2026-05-27T10:59:58Z",
+  "last_pushed_at": "2026-06-29T23:12:46Z",
+  "fetched_at": "2026-07-11T23:35:46.707Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n  <img src=\"./docs/img/logo.png\" alt=\"narwhal\" width=\"160\" />\n\n  # narwhal\n\n  **The agent-native database workbench for the terminal.**\n  *A DBA toolkit, an MCP server, and a vim-mode SQL editor — in one static binary.*\n\n  [![CI](https://github.com/Nonanti/narwhal/actions/workflows/ci.yml/badge.svg)](https://github.com/Nonanti/narwhal/actions/workflows/ci.yml)\n  [![Crates.io](https://img.shields.io/crates/v/narwhaldb.svg)](https://crates.io/crates/narwhaldb)\n  [![Downloads](https://img.shields.io/crates/d/narwhaldb.svg)](https://crates.io/crates/narwhaldb)\n  [![MSRV](https://img.shields.io/badge/rustc-1.85+-blue.svg)](https://blog.rust-lang.org/)\n  [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](#license)\n\n  [Install](#install) · [Quick start](#quick-start) · [Why narwhal](#why-narwhal) · [Docs](#documentation)\n</div>\n\n---\n\n![narwhal demo](./docs/img/demo.gif)\n\n## What is narwhal?\n\nnarwhal is a terminal database client built around two things every\nother client misses:\n\n1. **DBA-grade tooling, not a toy REPL.** Schema diff with dialect-aware\n   DDL emit, append-only audit log, capability-gated plugin sandbox,\n   streaming cancellable queries, ER diagrams, SSH tunnels, secret\n   vault — the operational surface a real database day needs.\n2. **First-class agent integration.** A built-in MCP server exposes\n   your connections, schema, and query execution to Claude, Cursor,\n   Zed, and any MCP-aware client. No proxy, no adapter — `narwhal mcp`\n   and you're wired.\n\nSix engines (Postgres, MySQL, SQLite, DuckDB, ClickHouse, SQL Server),\nthree editor modes (vim / basic / emacs), one static binary.\n\n## Install\n\n```sh\ncurl -fsSL https://github.com/Nonanti/narwhal/releases/latest/download/install.sh | sh\n```\n\nOther channels — `cargo install narwhaldb`, Homebrew, AUR, Nix flake,\nprebuilt tarballs — are listed in [`docs/install.md`](./docs/install.md).\n\n## Quick start\n\n```sh\nnarwhal                                    # launches the TUI\n```\n\nInside:\n\n1. `:add` — connection wizard, or `:url postgres://user:pass@host/db`\n2. `:open <name>` — connect; the sidebar fills with schemas and tables\n3. **F6** — run the buffer; results stream into the lower pane\n4. **F1** — full keymap\n\nHeadless:\n\n```sh\nnarwhal exec --conn prod 'SELECT count(*) FROM orders' --format json\n```\n\n## Agent-native: wire it to your editor\n\nnarwhal embeds an [MCP](https://modelcontextprotocol.io/) server over\nstdio. Run it once and your AI assistant can browse schema, sample\ndata, and run queries against your saved connections — with the same\nread-only / per-connection guards the TUI uses.\n\n```sh\nnarwhal mcp --read-only\n```\n\nClaude Desktop (`~/.config/Claude/claude_desktop_config.json`):\n\n```jsonc\n{\n  \"mcpServers\": {\n    \"narwhal\": {\n      \"command\": \"narwhal\",\n      \"args\": [\"mcp\", \"--read-only\"]\n    }\n  }\n}\n```\n\nCursor, Zed, Continue, Aider, and custom clients work the same way.\nFull setup: [`docs/mcp.md`](./docs/mcp.md).\n\n## Database support\n\n| Engine | Driver | TLS | Streaming | Cancel | DDL emit |\n|---|---|---|---|---|---|\n| PostgreSQL | `tokio-postgres` + rustls | verify-full | ✅ | ✅ | ✅ |\n| MySQL / MariaDB | `mysql_async` | ✅ | ✅ | ✅ | ✅ |\n| SQLite | `rusqlite` (bundled) | n/a | ✅ | — | ✅ |\n| DuckDB | `duckdb` (bundled) | n/a | ✅ | — | ✅ |\n| ClickHouse | HTTP + rustls | ✅ | ✅ | ✅ | ✅ |\n| SQL Server | `tiberius` + rustls | ✅ | buffered | — | ✅ |\n\n## Highlights\n\n- **Six engines, one TUI.** Switch with `:open`, every driver speaks the\n  same `Connection` trait — same streaming, same cancellation, same\n  schema introspection.\n- **Three editor modes.** vim (with motions, text objects, registers,\n  marks, macros), basic (modeless), emacs — sharing one buffer.\n- **Full mouse.** Click, drag-select, double / triple-click word and\n  line, middle-click paste, right-click context menu.\n- **Schema tooling.** ER diagrams in the terminal, `:schema-diff`\n  between two connections with dialect-aware DDL emit (Postgres ↔\n  MySQL ↔ MSSQL ↔ generic).\n- **Plugins.** Lua (trusted, fast) and WASM (sandboxed, capability-gated\n  filesystem / network / clipboard) — the same surface used by the\n  built-ins.\n- **Streaming, cancellable.** Rows arrive incrementally; `Ctrl-C`\n  cancels mid-run on every backend that supports it.\n- **Secrets.** Vault, 1Password, OS keyring, `~/.pgpass` — no\n  plaintext-on-disk fallback.\n- **Audit log.** Append-only JSONL with redaction rules, suitable as\n  compliance evidence.\n- **Inline output.** Charts, pivot tables, JSON viewer, row detail\n  pane, exports to CSV / JSON / Markdown / Parquet.\n- **SSH tunnels.** Single config block, no `~/.ssh/config` plumbing\n  required.\n\n## Documentation\n\n| Topic | File |\n|---|---|\n| Install (all methods) | [`docs/install.md`](./docs/install.md) |\n| Configuration | [`docs/configuration.md`](./docs/configuration.md) |\n| Editor modes | [`docs/editor-modes.md`](./docs/editor-modes.md) |\n| Mouse | [`docs/mouse.md`](./docs/mouse.md) |\n| MCP server | [`docs/mcp.md`](./docs/mcp.md) |\n| Headless `exec` | [`docs/headless.md`](./docs/headless.md) |\n| Plugins (Lua + WASM) | [`docs/plugins.md`](./docs/plugins.md) |\n| Connection vault | [`docs/vault.md`](./docs/vault.md) |\n| Audit log | [`docs/audit.md`](./docs/audit.md) |\n| Schema diff | [`docs/schema-diff.md`](./docs/schema-diff.md) |\n| Architecture | [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) |\n| Building from source | [`docs/dev/build.md`](./docs/dev/build.md) |\n| Upgrading | [`docs/upgrading.md`](./docs/upgrading.md) |\n\n## Contributing\n\nIssues and PRs welcome. See [`CONTRIBUTING.md`](./CONTRIBUTING.md).\nCommit messages follow [Conventional\nCommits](https://www.conventionalcommits.org/); the four CI checks\n(`fmt`, `clippy -D warnings`, `doc -D warnings`, `test`) must pass.\n\n## License\n\nDual-licensed under [MIT](./LICENSE-MIT) and\n[Apache 2.0](./LICENSE-APACHE), at your option.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

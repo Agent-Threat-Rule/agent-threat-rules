@@ -1,0 +1,37 @@
+{
+  "full_name": "njayp/ophis",
+  "html_url": "https://github.com/njayp/ophis",
+  "description": "Transform any Cobra CLI into an MCP server",
+  "topics": [
+    "cli",
+    "cobra",
+    "cobra-cli",
+    "go",
+    "golang",
+    "golang-library",
+    "mcp",
+    "mcp-server",
+    "open-source"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 89,
+  "forks": 13,
+  "open_issues": 4,
+  "language": "Go",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2025-06-09T21:28:39Z",
+  "last_pushed_at": "2026-02-18T16:07:10Z",
+  "fetched_at": "2026-07-11T23:05:02.130Z",
+  "readme": {
+    "path": "README.md",
+    "content": "![Project Logo](./logo.png)\n\n**Transform any Cobra CLI into an MCP server**\n\nOphis automatically converts your Cobra commands into MCP tools, and provides CLI commands for integration with Claude Desktop, VSCode, and Cursor.\n\n## Quick Start\n\n### Install\n\n```bash\ngo get github.com/njayp/ophis\n```\n\n### Add to your CLI\n\n```go\npackage main\n\nimport (\n    \"os\"\n    \"github.com/njayp/ophis\"\n)\n\nfunc main() {\n    rootCmd := createMyRootCommand()\n    rootCmd.AddCommand(ophis.Command(nil))\n\n    if err := rootCmd.Execute(); err != nil {\n        os.Exit(1)\n    }\n}\n```\n\n### Enable in Claude Desktop, VSCode, or Cursor\n\n```bash\n# Claude Desktop\n./my-cli mcp claude enable\n# Restart Claude Desktop\n\n# VSCode (requires Copilot in Agent Mode)\n./my-cli mcp vscode enable\n\n# Cursor\n./my-cli mcp cursor enable\n```\n\nYour CLI commands are now available as MCP tools!\n\n### Stream over HTTP\n\nExpose your MCP server over HTTP for remote access:\n\n```bash\n./my-cli mcp stream --host localhost --port 8080\n```\n\n## Commands\n\nThe `ophis.Command(nil)` adds these subcommands to your CLI (the default command name is `mcp`, configurable via `Config.CommandName`):\n\n```\nmcp\n├── start            # Start MCP server on stdio\n├── stream           # Stream MCP server over HTTP\n├── tools            # Export available MCP tools as JSON\n├── claude\n│   ├── enable       # Add server to Claude Desktop config\n│   ├── disable      # Remove server from Claude Desktop config\n│   └── list         # List Claude Desktop MCP servers\n├── vscode\n│   ├── enable       # Add server to VSCode config\n│   ├── disable      # Remove server from VSCode config\n│   └── list         # List VSCode MCP servers\n└── cursor\n    ├── enable       # Add server to Cursor config\n    ├── disable      # Remove server from Cursor config\n    └── list         # List Cursor MCP servers\n```\n\n## Configuration\n\nControl which commands and flags are exposed as MCP tools using selectors. By default, all commands and flags are exposed (except hidden/deprecated).\n\n```go\nconfig := &ophis.Config{\n    Selectors: []ophis.Selector{\n        {\n            CmdSelector: ophis.AllowCmdsContaining(\"get\", \"list\"),\n            LocalFlagSelector: ophis.ExcludeFlags(\"token\", \"secret\"),\n            InheritedFlagSelector: ophis.NoFlags,  // Exclude persistent flags\n\n            // Middleware wraps command execution\n            Middleware: func(ctx context.Context, req *mcp.CallToolRequest, in ophis.ToolInput, next func(context.Context, *mcp.CallToolRequest, ophis.ToolInput) (*mcp.CallToolResult, ophis.ToolOutput, error)) (*mcp.CallToolResult, ophis.ToolOutput, error) {\n                ctx, cancel := context.WithTimeout(ctx, time.Minute)\n                defer cancel()\n                return next(ctx, req, in)\n            },\n        },\n    },\n}\n\nrootCmd.AddCommand(ophis.Command(config))\n```\n\n### Custom Command Name\n\nBy default the ophis command is named `mcp`. If your CLI already uses `mcp` for something else, set `CommandName` to avoid the collision:\n\n```go\nconfig := &ophis.Config{\n    CommandName: \"agent\",\n}\n\nrootCmd.AddCommand(ophis.Command(config))\n```\n\nThe command tree, editor config (`enable`/`disable`), and internal filters all use the configured name automatically.\n\n### Default Environment Variables\n\nEditors launch MCP server subprocesses with a minimal environment. On macOS this means a PATH of just `/usr/bin:/bin:/usr/sbin:/sbin`, so tools like `helm`, `kubectl`, or `docker` installed via mise/homebrew/nix won't be found. Use `DefaultEnv` to capture the current PATH (or any other variables) at `enable` time:\n\n```go\nconfig := &ophis.Config{\n    DefaultEnv: map[string]string{\n        \"PATH\": os.Getenv(\"PATH\"),\n    },\n}\n\nrootCmd.AddCommand(ophis.Command(config))\n```\n\nThese are merged into the editor config written by `enable`. User-provided `--env` values take precedence on conflict.\n\nSee [docs/config.md](docs/config.md) for detailed configuration options.\n\n## How It Works\n\nOphis bridges Cobra commands and the Model Context Protocol:\n\n1. **Command Discovery**: Recursively walks your Cobra command tree\n2. **Schema Generation**: Creates JSON schemas from command flags and arguments ([docs/schema.md](docs/schema.md))\n3. **Tool Execution**: Spawns your CLI as a subprocess and captures output ([docs/execution.md](docs/execution.md))\n\n## Contributing\n\nContributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

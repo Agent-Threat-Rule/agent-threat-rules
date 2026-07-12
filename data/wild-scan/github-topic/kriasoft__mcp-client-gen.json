@@ -1,0 +1,50 @@
+{
+  "full_name": "kriasoft/mcp-client-gen",
+  "html_url": "https://github.com/kriasoft/mcp-client-gen",
+  "description": "Turn any MCP server into a type-safe TypeScript SDK in seconds - with    OAuth 2.1 and multi-provider support",
+  "topics": [
+    "ai",
+    "ai-agent",
+    "anthropic",
+    "bun",
+    "claude",
+    "code-generation",
+    "cursor",
+    "llm",
+    "llms",
+    "mcp",
+    "mcp-client",
+    "mcp-sdk",
+    "mcp-server",
+    "mcp-tools",
+    "model-context-protocol",
+    "oauth2",
+    "openai",
+    "typescript",
+    "zed"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 17,
+  "forks": 4,
+  "open_issues": 2,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-08-13T14:04:21Z",
+  "last_pushed_at": "2026-01-25T23:29:13Z",
+  "fetched_at": "2026-07-12T00:28:14.471Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP Client Generator\n\n[![npm](https://img.shields.io/npm/v/mcp-client-gen)](https://www.npmjs.com/package/mcp-client-gen)\n[![downloads](https://img.shields.io/npm/dw/mcp-client-gen)](https://www.npmjs.com/package/mcp-client-gen)\n[![Discord](https://img.shields.io/discord/643523529131950086?label=Chat)](https://discord.gg/bSsv7XM)\n[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)\n\nGenerate type-safe TypeScript clients from [MCP](https://modelcontextprotocol.io) servers.\n\n## Quick Start\n\n```bash\n# Generate client from URL\nnpx mcp-client-gen https://mcp.notion.com/mcp -o notion.ts\n\n# Use the generated client\n```\n\n```typescript\nimport { createNotionClient } from \"./notion\";\nimport { createMcpConnection } from \"mcp-client-gen\";\n\nconst connection = await createMcpConnection({\n  url: \"https://mcp.notion.com/mcp\",\n});\n\nconst notion = createNotionClient(connection);\n\n// Fully typed based on server schema\nconst pages = await notion.notionSearch({ query: \"Meeting Notes\" });\n```\n\n## Features\n\n- **Type-safe** — Generated TypeScript types from server schemas\n- **Zero config auth** — OAuth 2.1 with PKCE, just approve in browser\n- **Tree-shakable** — Only bundle the methods you import\n\n## Installation\n\n```bash\nnpm install -g mcp-client-gen\n# or\nbun add -g mcp-client-gen\n```\n\n## CLI Usage\n\n```bash\n# URL mode (primary)\nnpx mcp-client-gen <url>              # Output to stdout\nnpx mcp-client-gen <url> -o <file>    # Output to file\nnpx mcp-client-gen <url> <file>       # Shorthand\n\n# Config mode (reads .mcp.json, .cursor/, .vscode/)\nnpx mcp-client-gen                    # Interactive\nnpx mcp-client-gen -y                 # Accept defaults\n```\n\n### Config File Format\n\n```jsonc\n// .mcp.json\n{\n  \"mcpServers\": {\n    \"notion\": { \"url\": \"https://mcp.notion.com/mcp\" },\n    \"github\": { \"url\": \"https://api.githubcopilot.com/mcp/\" },\n  },\n}\n```\n\n## Authentication\n\nNo credentials required. OAuth-protected servers trigger automatic browser authentication via Dynamic Client Registration (RFC 7591) and PKCE.\n\n## License\n\nMIT — [Konstantin Tarkus](https://github.com/koistya)\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"notion\": {\n      \"type\": \"http\",\n      \"url\": \"https://mcp.notion.com/mcp\"\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

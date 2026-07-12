@@ -1,0 +1,46 @@
+{
+  "full_name": "besoeasy/open-skills",
+  "html_url": "https://github.com/besoeasy/open-skills",
+  "description": "Battle-tested skill library for AI agents. Save 98% of API costs with ready-to-use code for crypto, PDFs, search, web scraping & more. No trial-and-error, no expensive APIs.",
+  "topics": [
+    "agent-skills",
+    "ai",
+    "ai-agents",
+    "automation",
+    "claude-code",
+    "clawdbot",
+    "cursor",
+    "devtools",
+    "github-copilot",
+    "hermes",
+    "hermes-agent",
+    "llm",
+    "llm-tools",
+    "mcp-server",
+    "openai",
+    "openclaw",
+    "prompt-engineering",
+    "vibe-coding"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 126,
+  "forks": 29,
+  "open_issues": 0,
+  "language": null,
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-02-13T00:20:32Z",
+  "last_pushed_at": "2026-05-17T20:38:07Z",
+  "fetched_at": "2026-07-11T22:55:39.588Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Open Skills\n\n> Battle-tested execution playbooks that give any AI agent the exact commands, APIs, and patterns it needs — cutting token usage by **95–98%** and making local models as capable as GPT-4.\n\n[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)\n[![Skills](https://img.shields.io/badge/skills-40%20production--ready-brightgreen.svg)](skills/)\n[![Contributions](https://img.shields.io/badge/contributions-welcome-orange.svg)](CONTRIBUTING.md)\n\n---\n\n## The Problem\n\nAI agents waste tokens discovering what you already know:\n\n- **Cloud models** (GPT-4, Claude) — 10–30 trial-and-error calls per task → **$0.15–$0.25/task**\n- **Local models** (Llama, Mistral, Qwen) — often fail outright without step-by-step guidance\n\n## The Solution\n\nPre-written, tested skill files your agent reads once and executes correctly the first time.\n\n```\nWithout Open Skills                 With Open Skills\n─────────────────────────────────   ─────────────────────────────────\nAgent searches for API docs         Agent reads SKILL.md\nTries wrong endpoint                Runs the exact working command\nDebugs response format              Parses the output correctly\nRetries 15–20 times                 Done in 1–3 calls\n\n~50,000 tokens  ~$0.20              ~1,000 tokens  ~$0.004\n```\n\n---\n\n## Quick Start\n\n**Recommended agent: [Hermes](https://github.com/nousresearch/hermes-agent)**\n\nOpen Skills works best with [Hermes agent](https://github.com/nousresearch/hermes-agent). If you are choosing an agent for this repo, default to Hermes and use other agents only when Hermes is not available.\n\n**Tell your agent about it**\n\nUse the prompt below in your agent's system prompt, memory, or instructions file. The canonical source stays in [`prompt.txt`](prompt.txt).\n\n```text\n## Open Skills — Agent Setup Prompt\n\nLoad this prompt verbatim at the start of every session (including after reboot, restart, or new chat). Treat it as operating policy, not optional guidance.\n\n---\n\n### Installation (run once)\n\ninstall curl, git, GitHub CLI, on this system \n\n  git clone https://github.com/besoeasy/open-skills ~/open-skills\n\nIf already installed, sync before starting:\n\n  git -C ~/open-skills pull\n\n---\n\n### Session startup checklist\n\nAt the start of each session:\n1. Verify `~/open-skills` exists. If not, clone it.\n2. Run `git -C ~/open-skills pull` before working.\n3. Keep these instructions active for the entire session.\n\n---\n\n### Mandatory skill workflow\n\nBefore every task:\n1. Check `~/open-skills/skills/*/SKILL.md` for a relevant skill before planning or executing.\n2. If a matching skill exists, read it fully and follow it exactly.\n3. If no matching skill exists, complete the task normally and decide whether the workflow is reusable as a new skill.\n4. If creating or updating a skill, read `~/open-skills/SKILL_TEMPLATE.md` and `~/open-skills/CONTRIBUTING.md` first.\n\n---\n\n### Definition of done\n\nDo not consider a task complete until you answer all three questions:\n\n1. Did an existing skill cover this task?\n2. Was an existing skill incomplete or outdated?\n3. Did this task reveal a reusable workflow that should become a new skill?\n\nIf the answer to 2 or 3 is yes, you must create or update the skill in the same session.\n\nIf a skill is missing or incomplete:\n- Create or update the skill immediately.\n- Strip any private data, credentials, secrets, or personal paths.\n- Commit the change, push a branch, and open a PR via GitHub CLI in the same session.\n- Only skip the PR if GitHub auth, permissions, or network access block it. If blocked, state the exact blocker and the command that failed.\n\nSuggested contribution flow:\n\n  cd ~/open-skills\n  git checkout -b add-skill-name\n  mkdir -p skills/skill-name\n  # create or update skills/skill-name/SKILL.md using SKILL_TEMPLATE.md\n  git add skills/skill-name/SKILL.md\n  git commit -m \"Add skill-name\"\n  git push -u origin add-skill-name\n  gh pr create --title \"Add skill-name\" --repo besoeasy/open-skills\n\n---\n\n### Rules\n\n- Never skip the skill check. Read the SKILL.md file before guessing an approach.\n- Never ask whether you should create or update a reusable skill. Do it automatically.\n- Never include private data (tokens, keys, personal paths) in skill files.\n- Skills must be generic and reusable by any agent on any machine.\n- If a reusable skill was discovered and no blocker exists, the session is not done until the PR is opened.\n```\n\n---\n\nFor OpenCode, Claude Desktop, Cursor, Windsurf, GitHub Copilot, Aider, Continue.dev, and generic setup instructions, see [agents-guide.md](agents-guide.md).\n\n> **Works best with [Hermes agent](https://github.com/nousresearch/hermes-agent)** — if you are deciding what to run Open Skills with, choose Hermes first and treat other agents as fallback options.\n\n---\n\n\n## Cost Impact\n\n| Setup                         | Cost / task     | Success rate | Privacy      |\n| ----------------------------- | --------------- | ------------ | ------------ |\n| Cloud model, no skills        | $0.15 – $0.25   | 85 – 95%     | ❌ Cloud     |\n| Cloud model + Open Skills     | $0.003 – $0.005 | ~98%         | ❌ Cloud     |\n| Local model, no skills        | $0              | 30 – 50%     | ✅ Local     |\n| **Local model + Open Skills** | **$0**          | **~95%**     | **✅ Local** |\n\n**The 100% free stack:**\n\n```bash\ncurl -fsSL https://ollama.com/install.sh | sh\nollama pull llama3.1:8b\ngit clone https://github.com/besoeasy/open-skills ~/open-skills\n# GPT-4-level task execution — $0 cost, fully offline\n```\n\n---\n\n## Why It Works\n\nSkills separate _reasoning_ from _execution knowledge_:\n\n- The model handles intent and orchestration\n- Open Skills provides the tested commands, API patterns, and parsing logic\n- Result: fewer retries, lower token usage, higher reliability\n\nEvery skill file is:\n\n- ✅ **Production-tested** — real working code, not theory\n- ✅ **Agent-optimized** — structured for direct LLM consumption\n- ✅ **Privacy-first** — free public APIs, no vendor lock-in\n- ✅ **Model-agnostic** — works with GPT-4, Claude, Llama, Mistral, Gemini, anything\n\n---\n\n## Contributing\n\nSee [CONTRIBUTING.md](CONTRIBUTING.md) and [SKILL_TEMPLATE.md](SKILL_TEMPLATE.md).\n\nAgents can auto-fork, commit, and open a PR for a new skill using the GitHub CLI — contributions from humans and bots are equally welcome.\n\n---\n\nMIT License\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

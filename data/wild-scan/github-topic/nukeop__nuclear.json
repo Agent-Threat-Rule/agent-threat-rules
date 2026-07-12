@@ -1,0 +1,44 @@
+{
+  "full_name": "nukeop/nuclear",
+  "html_url": "https://github.com/nukeop/nuclear",
+  "description": "Streaming music player that finds free music for you",
+  "topics": [
+    "agent",
+    "ai",
+    "desktop-app",
+    "linux",
+    "mac",
+    "mcp",
+    "mcp-server",
+    "music",
+    "music-player",
+    "react",
+    "rust",
+    "spotify",
+    "streaming",
+    "tauri",
+    "typescript",
+    "windows"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 18031,
+  "forks": 1298,
+  "open_issues": 7,
+  "language": "TypeScript",
+  "license": "AGPL-3.0",
+  "default_branch": "master",
+  "created_at": "2016-09-22T22:58:21Z",
+  "last_pushed_at": "2026-07-11T09:45:49Z",
+  "fetched_at": "2026-07-11T22:27:53.087Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<p align=\"center\">\n  <picture>\n    <source alt=\"Nuclear Music Player\"  srcset=\"packages/docs/.gitbook/assets/readme-banner.png\">\n    <img alt=\"Nuclear Music Player\"  srcset=\"packages/docs/.gitbook/assets/readme-banner.png\">\n  </picture>\n\n\n</p>\n\n<div align=\"center\">\n\n# Nuclear \n\n</div>\n\n<div align=\"center\">\n\n  Nuclear is a free, open-source music player without ads or tracking. Search for any song or artist, build playlists, and start listening.<br>\n  Runs on Windows, macOS, and Linux.\n  \n</div>\n\n## Screenshots\n\n<p align=\"center\">\n  <img src=\"packages/docs/.gitbook/assets/dashboard-main.png\" alt=\"Nuclear Music Player - Dashboard\" width=\"100%\">\n</p>\n\nNuclear comes with multiple built-in themes:\n\n<p align=\"center\">\n  <img src=\"packages/docs/.gitbook/assets/dashboard-green.png\" alt=\"Green theme\" width=\"32%\">\n  <img src=\"packages/docs/.gitbook/assets/dashboard-aqua.png\" alt=\"Aqua theme\" width=\"32%\">\n  <img src=\"packages/docs/.gitbook/assets/dashboard-mint.png\" alt=\"Mint theme\" width=\"32%\">\n</p>\n<p align=\"center\">\n  <img src=\"packages/docs/.gitbook/assets/dashboard-orange.png\" alt=\"Orange theme\" width=\"32%\">\n  <img src=\"packages/docs/.gitbook/assets/dashboard-red.png\" alt=\"Red theme\" width=\"32%\">\n  <img src=\"packages/docs/.gitbook/assets/dashboard-violet.png\" alt=\"Violet theme\" width=\"32%\">\n</p>\n\n| | |\n|:---:|:---:|\n| ![Search artists](packages/docs/.gitbook/assets/search-artists.png) | ![Search albums](packages/docs/.gitbook/assets/search-albums.png) |\n| Artist search | Album search |\n| ![Playlists](packages/docs/.gitbook/assets/playlists.png) | ![Plugin store](packages/docs/.gitbook/assets/plugin-store.png) |\n| Playlists | Plugin store |\n| ![Installed plugins](packages/docs/.gitbook/assets/installed-plugins.png) | ![Preferences](packages/docs/.gitbook/assets/preferences.png) |\n| Installed plugins | Preferences |\n| ![What's new](packages/docs/.gitbook/assets/whats-new.png) | ![Log viewer](packages/docs/.gitbook/assets/log-viewer.png) |\n| What's new | Log viewer |\n\n## Download\n\nGrab the latest release for your platform from the [Releases page](https://github.com/nukeop/nuclear/releases).\n\n| Platform | Formats |\n|----------|---------|\n| Windows | `.exe` installer, `.msi` |\n| macOS | `.dmg` (Apple Silicon and Intel) |\n| Linux | `.AppImage`, `.deb`, `.rpm`, `.flatpak` |\n\n## Features\n\n- Search for music and stream it from any source\n- Browse artist pages with biographies, discographies, and similar artists\n- Browse album pages with track listings\n- Queue management with shuffle, repeat, and drag-and-drop reordering\n- Favorites (albums, artists, and tracks)\n- Playlists (create, import, export, import from varous services)\n- Powerful plugin system with a built-in plugin store\n- Themes (built-in and custom CSS themes)\n- MCP server lets your AI agent drive the player\n- Auto-updates\n- Keyboard shortcuts\n- Localized in multiple languages\n\n## Plugins\n\nNuclear has a powerful plugin system now! Every functionality has been redesigned to be driven by plugins.\n\nPlugins can provide streaming sources, metadata, playlists, dashboard content, and more. Browse and install plugins from the built-in plugin store, or write your own using the [@nuclearplayer/plugin-sdk](https://www.npmjs.com/package/@nuclearplayer/plugin-sdk).\n\n## MCP\n\nYou can enable the MCP server in Settings → Integrations.\n\nThen to add it to **Claude Code:**\n\n```bash\nclaude mcp add nuclear --transport http http://127.0.0.1:8800/mcp\n```\n\n**Codex CLI:**\n\n```bash\ncodex mcp add nuclear --url http://127.0.0.1:8800/mcp\n```\n\n**OpenCode:**\n\n```json\n{\n  \"mcp\": {\n    \"nuclear\": {\n      \"type\": \"remote\",\n      \"url\": \"http://127.0.0.1:8800/mcp\"\n    }\n  }\n}\n```\n\n**Claude Desktop / Cursor / Windsurf:**\n\n```json\n{\n  \"mcpServers\": {\n    \"nuclear\": {\n      \"url\": \"http://127.0.0.1:8800/mcp\"\n    }\n  }\n}\n```\n\nThe MCP is designed to be discoverable, but there's a skill you can load to get your AI up to speed: [Nuclear MCP Skill](./packages/docs/public/skills/nuclear-mcp.zip)\n\n## Development\n\nNuclear is a pnpm monorepo managed with Turborepo. The main app is built with Tauri (Rust + React).\n\n### Prerequisites\n\n- Node.js >= 22\n- pnpm >= 9\n- Rust (stable)\n- Platform-specific Tauri dependencies ([see Tauri docs](https://v2.tauri.app/start/prerequisites/))\n\n### Getting started\n\n```bash\ngit clone https://github.com/nukeop/nuclear.git\ncd nuclear\npnpm install\npnpm dev\n```\n\n### Useful commands\n\n```bash\npnpm dev            # Run the player in dev mode\npnpm dev:remote     # Same, but binds Vite to 0.0.0.0 so you can open the remote control UI from other devices on your LAN\npnpm build          # Build all packages\npnpm test           # Run all tests\npnpm lint           # Lint all packages\npnpm type-check     # TypeScript checks\npnpm storybook      # Run Storybook\n```\n\n## Community\n\n- [Discord](https://discord.gg/JqPjKxE)\n- [Mastodon](https://fosstodon.org/@nuclearplayer)\n- [Discussions](https://github.com/nukeop/nuclear/discussions)\n\n## License\n\nAGPL-3.0. See [LICENSE](LICENSE).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

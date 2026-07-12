@@ -1,0 +1,54 @@
+{
+  "full_name": "neverinfamous/sqlite-mcp-server",
+  "html_url": "https://github.com/neverinfamous/sqlite-mcp-server",
+  "description": "⚠️ DEPRECATED: Use https://github.com/neverinfamous/db-mcp instead.",
+  "topics": [
+    "ai",
+    "ai-integration",
+    "claude",
+    "cursor",
+    "data-analysis",
+    "data-science",
+    "database",
+    "database-management",
+    "database-monitoring",
+    "developer-tool",
+    "development-tools",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "mcp-tools",
+    "python",
+    "sqlite",
+    "sqlite-database",
+    "sqlite3",
+    "windsurf"
+  ],
+  "matched_query_topics": [
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 13,
+  "forks": 4,
+  "open_issues": 2,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2025-03-25T01:48:16Z",
+  "last_pushed_at": "2026-03-17T10:08:38Z",
+  "fetched_at": "2026-07-11T23:54:59.035Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# ⚠️ DEPRECATED - SQLite MCP Server\n\n> [!CAUTION]\n> **This repository has been deprecated and is no longer maintained.**\n>\n> Please use the new TypeScript version: **[db-mcp](https://github.com/neverinfamous/db-mcp)**\n\n---\n\n## 🚀 Migration Guide\n\nThe **db-mcp** server is a complete rewrite in TypeScript with significant improvements:\n\n| Feature | sqlite-mcp-server (deprecated) | db-mcp (new) |\n|---------|-------------------------------|--------------|\n| Language | Python | TypeScript |\n| Tools | 73 | 125+ |\n| MCP SDK | 1.14.x | 1.25+ (Modern) |\n| Protocol | MCP 2024-11-05 | MCP 2025-11-25 |\n| Transport | stdio | stdio, SSE, HTTP |\n| Docker | Available | Available |\n| NPM | N/A | [@anthropic-ai/db-mcp](https://www.npmjs.com/package/@anthropic-ai/db-mcp) |\n\n### Installation\n\n**NPM (Recommended):**\n```bash\nnpx @anthropic-ai/db-mcp\n```\n\n**Docker:**\n```bash\ndocker pull writenotenow/db-mcp:latest\n```\n\n**GitHub:**\n```bash\ngit clone https://github.com/neverinfamous/db-mcp.git\n```\n\n### Documentation\n\n- **GitHub:** [github.com/neverinfamous/db-mcp](https://github.com/neverinfamous/db-mcp)\n- **Docker Hub:** [hub.docker.com/r/writenotenow/db-mcp](https://hub.docker.com/repository/docker/writenotenow/db-mcp/general)\n- **NPM:** [@anthropic-ai/db-mcp](https://www.npmjs.com/package/@anthropic-ai/db-mcp)\n\n---\n\n## Archive Notice\n\nThis repository is archived for historical reference. No further updates, bug fixes, or security patches will be provided.\n\n**Last version:** v2.6.5\n\n---\n\n_Thank you to all contributors who helped build this project. Your work lives on in db-mcp!_\n"
+  },
+  "descriptor_file": {
+    "path": "server.json",
+    "content": "{\n  \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json\",\n  \"name\": \"io.github.neverinfamous/sqlite-mcp-server\",\n  \"title\": \"SQLite MCP Server\",\n  \"description\": \"SQLite MCP server with 73 tools for JSONB, full-text search, geospatial, and analytics.\",\n  \"version\": \"2.6.5\",\n  \"packages\": [\n    {\n      \"registryType\": \"pypi\",\n      \"identifier\": \"sqlite-mcp-server-enhanced\",\n      \"version\": \"2.6.5\",\n      \"transport\": {\n        \"type\": \"stdio\"\n      }\n    },\n    {\n      \"registryType\": \"oci\",\n      \"identifier\": \"docker.io/writenotenow/sqlite-mcp-server:v2.6.5\",\n      \"version\": \"2.6.5\",\n      \"transport\": {\n        \"type\": \"stdio\"\n      }\n    }\n  ],\n  \"keywords\": [\n    \"sqlite\",\n    \"database\",\n    \"jsonb\",\n    \"full-text-search\",\n    \"geospatial\",\n    \"semantic-search\",\n    \"statistics\",\n    \"analytics\",\n    \"backup\",\n    \"mcp\",\n    \"model-context-protocol\"\n  ],\n  \"author\": {\n    \"name\": \"Chris Adamic\",\n    \"email\": \"writenotenow@gmail.com\"\n  },\n  \"homepage\": \"https://github.com/neverinfamous/sqlite-mcp-server\",\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/neverinfamous/sqlite-mcp-server.git\",\n    \"source\": \"github\"\n  },\n  \"license\": \"MIT\"\n}\n"
+  },
+  "entrypoint_file": {
+    "path": "jsonb-utils.js",
+    "size": 4083,
+    "content": "/**\n * JSONB Utilities for SQLite MCP Server\n *\n * IMPORTANT: These JavaScript utilities are OPTIONAL helper functions.\n * The main SQLite MCP Server is Python-based and works without these utilities.\n *\n * These utilities are designed for advanced users who want to work with JSONB\n * binary format in SQLite 3.45.0+ using Node.js. They require better-sqlite3\n * which needs native compilation.\n *\n * For most users: Just use the Python MCP server directly - no JavaScript needed!\n *\n * @module jsonb-utils\n */\n\n// Note: This utility requires better-sqlite3 for database operations\n// Install with: npm install better-sqlite3 (requires Visual Studio C++ tools on Windows)\n// Alternative: Use the Python MCP server which handles SQLite operations natively\n\n/**\n * Validates if SQLite version supports JSONB\n * Requires SQLite 3.45.0+\n *\n * @param {Object} db - Database instance (better-sqlite3 compatible)\n * @returns {Object} Version information and support status\n */\nfunction checkJsonbSupport(db) {\n  const result = db.prepare(\"SELECT sqlite_version() as version\").get();\n  const version = result.version;\n\n  const versionParts = version.split(\".\").map((part) => parseInt(part, 10));\n  const hasJsonbSupport =\n    versionParts[0] > 3 || (versionParts[0] === 3 && versionParts[1] >= 45);\n\n  return {\n    version,\n    hasJsonbSupport,\n    versionParts,\n  };\n}\n\n/**\n * Validates JSON string format\n *\n * @param {string} jsonString - JSON string to validate\n * @returns {Object} Validation result with details\n */\nfunction validateJson(jsonString) {\n  if (!jsonString) {\n    return {\n      valid: false,\n      error: \"Empty JSON string\",\n      errorType: \"EmptyInput\",\n    };\n  }\n\n  try {\n    // Attempt to parse the JSON\n    const parsed = JSON.parse(jsonString);\n\n    return {\n      valid: true,\n      parsed,\n    };\n  } catch (error) {\n    // Extract position from error message if available\n    const positionMatch = error.message.match(/position (\\d+)/);\n    const position = positionMatch ? parseInt(positionMatch[1], 10) : null;\n\n    // Create helpful error context\n    let errorContext = null;\n    if (position !== null) {\n      const start = Math.max(0, position - 20);\n      const end = Math.min(jsonString.length, position + 20);\n      errorContext = jsonString.substring(start, end);\n    }\n\n    return {\n      valid: false,\n      error: error.message,\n      errorType: error.name,\n      position,\n      errorContext,\n    };\n  }\n}\n\n/**\n * Creates JSON validation triggers for a table\n *\n * @param {Object} db - Database instance (better-sqlite3 compatible)\n * @param {string} tableName - Name of the table\n * @param {string} columnName - Name of the JSON column\n * @returns {Object} Result of trigger creation\n */\nfunction createJsonValidationTriggers(db, tableName, columnName) {\n  const results = { created: [] };\n\n  try {\n    // Create trigger for INSERT operations\n    const insertTriggerName = `validate_${tableName}_${columnName}_insert`;\n    db.prepare(\n      `\n      CREATE TRIGGER IF NOT EXISTS ${insertTriggerName}\n      BEFORE INSERT ON ${tableName}\n      FOR EACH ROW\n      WHEN NEW.${columnName} IS NOT NULL AND NOT json_valid(NEW.${columnName})\n      BEGIN\n        SELECT RAISE(ABORT, 'Invalid JSON in ${columnName}');\n      END;\n    `,\n    ).run();\n    results.created.push(insertTriggerName);\n\n    // Create trigger for UPDATE operations\n    const updateTriggerName = `validate_${tableName}_${columnName}_update`;\n    db.prepare(\n      `\n      CREATE TRIGGER IF NOT EXISTS ${updateTriggerName}\n      BEFORE UPDATE OF ${columnName} ON ${tableName}\n      FOR EACH ROW\n      WHEN NEW.${columnName} IS NOT NULL AND NOT json_valid(NEW.${columnName})\n      BEGIN\n        SELECT RAISE(ABORT, 'Invalid JSON in ${columnName}');\n      END;\n    `,\n    ).run();\n    results.created.push(updateTriggerName);\n\n    return {\n      success: true,\n      results,\n    };\n  } catch (error) {\n    return {\n      success: false,\n      error: error.message,\n      results,\n    };\n  }\n}\n\nmodule.exports = {\n  checkJsonbSupport,\n  validateJson,\n  createJsonValidationTriggers,\n};\n"
+  },
+  "content_fetch_notes": []
+}

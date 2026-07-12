@@ -1,0 +1,45 @@
+{
+  "full_name": "MsheesAI/MCP_Detailed_With_Projects",
+  "html_url": "https://github.com/MsheesAI/MCP_Detailed_With_Projects",
+  "description": "Master the power of MCP (Model Context Protocol) with this beginner-to-advanced repository! This repo is designed to help developers understand how MCP enables seamless communication between AI models, tools, and external systems.",
+  "topics": [
+    "agentic-ai",
+    "ai",
+    "ai-agents",
+    "course",
+    "deployment",
+    "generative-ai",
+    "mcp",
+    "mcp-client",
+    "mcp-server",
+    "mcp-servers",
+    "msheesai",
+    "panaversity",
+    "projects",
+    "shees",
+    "with-projects"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 2,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-03-30T09:11:49Z",
+  "last_pushed_at": "2026-03-30T10:22:59Z",
+  "fetched_at": "2026-07-12T00:06:18.700Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP Detailed With Projects\nMaster the power of MCP (Model Context Protocol) with this beginner-to-advanced repository! This repo is designed to help developers understand how MCP enables seamless communication between AI models, tools, and external systems.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "main.py",
+    "size": 904,
+    "content": "from mcp.server.fastmcp import FastMCP\nimport json\n\nmcp = FastMCP(name=\"Simple Calculator server\")\n\n@mcp.tool()\ndef add(a: int, b: int) -> int:\n    \"\"\"Add two numbers.\"\"\"\n    return a + b\n\n@mcp.tool()\ndef subtract(a: int, b: int) -> int:\n    \"\"\"Subtract two numbers.\"\"\"\n    return a - b\n\n@mcp.tool()\ndef multiply(a: int, b: int) -> int:\n    \"\"\"Multiply two numbers.\"\"\"\n    return a * b\n\n@mcp.tool()\ndef divide(a: int, b: int) -> float:\n    \"\"\"Divide two numbers.\"\"\"\n    if b == 0:\n        raise ValueError(\"Cannot divide by zero.\")\n    return a / b\n\n@mcp.resource(\"info://server\")\ndef server_info():\n    \"\"\"Return information about the server.\"\"\"\n    info = {\n        \"name\":mcp.name,\n        \"version\":\"1.0\",\n        \"description\":\"A simple calculator server using FastMCP.\",\n        \"author\":\"Shees\"\n    }\n    return json.dumps(info)\n\nif __name__ == \"__main__\":\n    mcp.run(transport=\"streamable-http\")"
+  },
+  "content_fetch_notes": []
+}

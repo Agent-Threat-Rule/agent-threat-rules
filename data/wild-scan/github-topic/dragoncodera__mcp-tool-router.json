@@ -1,0 +1,36 @@
+{
+  "full_name": "dragoncodera/mcp-tool-router",
+  "html_url": "https://github.com/dragoncodera/mcp-tool-router",
+  "description": "🧭 智能 MCP 工具路由器 — 帮 AI 模型（尤其是函数调用能力弱的模型）正确发现、选择和使用 MCP 工具",
+  "topics": [
+    "agent-skill",
+    "ai-agent",
+    "function-calling",
+    "llm",
+    "mcp",
+    "mcp-tools",
+    "openclaw",
+    "tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Shell",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-06-03T12:36:50Z",
+  "last_pushed_at": "2026-06-03T12:44:27Z",
+  "fetched_at": "2026-07-12T00:48:08.234Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# 🧭 MCP Tool Router\n\n> 帮 AI 模型正确发现、选择和使用 MCP 工具的 Agent Skill\n\n## 适用场景\n\n很多 AI 模型（尤其是函数调用能力较弱的模型，如 MiMo 系列）在面对 MCP 工具时存在以下问题：\n\n- 🔍 **不知道有哪些工具** — 工具发现能力弱\n- 🎯 **不知道该用哪个** — 缺乏任务到工具的映射能力  \n- ⌨️ **调用语法写错** — 参数格式、selector 写法不正确\n- 🔗 **不会组合工具** — 复杂任务无法串联多个工具\n\n本 skill 提供一套完整的解决方案。\n\n## 它能做什么\n\n| 能力 | 说明 |\n|------|------|\n| 🔎 自动发现 | `mcporter list` 扫描所有可用 MCP 工具 |\n| 🧠 智能路由 | 根据任务自动匹配最佳工具 |\n| 📖 语法教学 | 正确的调用格式和常见错误 |\n| 🔧 工具组合 | 多工具串联完成复杂任务 |\n\n## 安装\n\n```bash\n# 确保已安装 mcporter\nnpm install -g mcporter\n\n# 克隆本仓库\ngit clone https://github.com/dragoncodera/mcp-tool-router.git\n\n# 将 skill 目录链接到你的 workspace\nln -s $(pwd)/mcp-tool-router ~/.openclaw/workspace/skills/mcp-tool-router\n```\n\n## 快速开始\n\n在你的 Agent 配置中引用本 skill，或直接在对话中加载：\n\n```\n请加载 mcp-tool-router skill，帮我用 MCP 工具完成 xxx 任务\n```\n\n## 工作原理\n\n```\n用户任务\n    ↓\n[1] 工具发现 — mcporter list 扫描可用工具\n    ↓\n[2] 任务分析 — 拆解任务需求\n    ↓\n[3] 智能匹配 — 决策树选最佳工具\n    ↓\n[4] 正确调用 — 标准语法执行\n    ↓\n[5] 结果验证 — 检查返回值\n```\n\n## 支持的工具生态\n\n- **MCP 协议工具** — 通过 mcporter 调用\n- **CLI 工具** — gh, git, docker 等\n- **OpenClaw 内置** — exec, read, write, web_search, web_fetch 等\n- **Agent Skills** — 与 OpenClaw skill 生态联动\n\n## 贡献\n\n欢迎提交 Issue 和 PR！\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

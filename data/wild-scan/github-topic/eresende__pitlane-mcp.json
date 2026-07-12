@@ -1,0 +1,38 @@
+{
+  "full_name": "eresende/pitlane-mcp",
+  "html_url": "https://github.com/eresende/pitlane-mcp",
+  "description": "Token-efficient navigation substrate for AI coding agents. Index code once and retrieve only the symbols you need.",
+  "topics": [
+    "ai",
+    "code-navigation",
+    "coding-agent",
+    "developer-tools",
+    "llm",
+    "mcp",
+    "model-context-protocol",
+    "rust",
+    "semantic-search",
+    "tree-sitter"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 78,
+  "forks": 9,
+  "open_issues": 4,
+  "language": "Rust",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2026-03-27T21:27:41Z",
+  "last_pushed_at": "2026-07-11T01:53:15Z",
+  "fetched_at": "2026-07-11T23:22:03.269Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# pitlane-mcp\n\n[![CI](https://github.com/eresende/pitlane-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/eresende/pitlane-mcp/actions/workflows/ci.yml)\n\n<p align=\"center\">\n  <img src=\"docs/branding/pitlane-mcp-logo.png\" alt=\"Pitlane MCP logo\" width=\"720\">\n</p>\n\nToken-efficient code intelligence MCP server for AI coding agents.\n\n`pitlane-mcp` indexes a codebase once with tree-sitter and lets agents retrieve the symbols they actually need instead of dumping whole files into context.\n\n## Project Status\n\n`pitlane-mcp` is feature-complete and currently in maintenance mode. New major features are not actively planned. Bug fixes, compatibility updates, documentation improvements, and focused contributions are still welcome.\n\n<p align=\"center\">\n  <a href=\"docs/demo/pitlane-demo.webm\">\n    <img src=\"docs/demo/pitlane-demo.gif\" alt=\"pitlane-mcp demo\">\n  </a>\n</p>\n\n## Why\n\nAI coding agents tend to over-read. `pitlane-mcp` gives them a smaller navigation surface and symbol-level reads so they can:\n\n- index code once\n- discover the right symbol or file\n- read the smallest useful unit\n- trace execution paths and change impact\n\nOn the benchmark corpora in this repo, that translates into large reductions in prompt footprint, often by one or two orders of magnitude, while keeping navigation grounded in the codebase.\n\n## What It Does\n\n- AST-based indexing for Rust, Python, JavaScript, TypeScript, Svelte, C, C++, Go, Java, C#, Ruby, Swift, Objective-C, PHP, Zig, Kotlin, Lua, Solidity, and Bash\n- BM25 symbol search plus optional semantic search\n- Small default MCP surface for agents\n- Composite navigation tools for discovery, reading, path tracing, and impact analysis\n- Incremental re-indexing and disk-persisted indexes\n- Fully local operation with no required external service\n\n## Installation\n\nDownload a pre-built binary from [GitHub Releases](https://github.com/eresende/pitlane-mcp/releases/latest) for Linux, macOS, and Windows.\n\nOr install via Homebrew:\n\n```bash\nbrew tap eresende/pitlane-mcp\nbrew install pitlane-mcp\n```\n\nOr install via `cargo-binstall`:\n\n```bash\ncargo binstall pitlane-mcp\n```\n\nOr install from crates.io:\n\n```bash\ncargo install pitlane-mcp\n```\n\nOr build from source:\n\n```bash\ncargo build --release\ncp target/release/pitlane-mcp ~/.local/bin/\ncp target/release/pitlane ~/.local/bin/\n```\n\n## Quickstart\n\n### Claude Code\n\n```bash\nclaude mcp add pitlane-mcp -- pitlane-mcp\n```\n\n### OpenCode\n\nAdd to `opencode.json` or `opencode.jsonc`:\n\n```json\n{\n  \"mcp\": {\n    \"pitlane-mcp\": {\n      \"type\": \"local\",\n      \"command\": [\"pitlane-mcp\"]\n    }\n  }\n}\n```\n\n### VS Code\n\nAdd to `.vscode/mcp.json`:\n\nOptional semantic-search variables go under `env`.\n\n```json\n{\n  \"mcp\": {\n    \"servers\": {\n      \"pitlane-mcp\": {\n        \"type\": \"stdio\",\n        \"command\": \"pitlane-mcp\",\n        \"args\": [],\n        \"env\": {}\n      }\n    }\n  }\n}\n```\n\n### Cursor / Kiro IDE\n\nAdd to `.cursor/mcp.json` or `.kiro/settings/mcp.json`:\n\nOptional semantic-search variables go under `env`.\n\n```json\n{\n  \"mcpServers\": {\n    \"pitlane-mcp\": {\n      \"type\": \"stdio\",\n      \"command\": \"pitlane-mcp\",\n      \"args\": [],\n      \"env\": {}\n    }\n  }\n}\n```\n\n## Default Workflow\n\nMost users should stay on the default tool tier:\n\n1. Call `ensure_project_ready` once at startup. It ensures the index exists and reports whether embeddings are still running, but it does not block on embeddings.\n2. Use `investigate` first for broad code questions such as subsystem, behavior, and execution-path questions.\n3. Use `locate_code` when you need discovery without full source.\n4. Use `read_code_unit` once you know the target.\n5. Use `trace_path` for explicit source-to-sink or config-to-effect questions.\n6. Use `analyze_impact` before edits or refactors.\n7. Use `search_content` only when you know a text fragment but not the owning symbol.\n\nDefault public tier:\n\n- `ensure_project_ready`\n- `investigate`\n- `locate_code`\n- `read_code_unit`\n- `trace_path`\n- `analyze_impact`\n- `get_index_stats`\n- `search_content`\n\nAdvanced primitives are hidden from `tools/list` by default. Set `PITLANE_MCP_TOOL_TIER=all` to expose the full surface.\n\n## Documentation\n\n- [Docs Index](docs/README.md)\n- [Tool Reference](docs/tools.md)\n- [Agent Guidance](docs/agent-guidance.md)\n- [Languages and Symbol Kinds](docs/languages.md)\n- [Benchmarks](docs/benchmarks.md)\n- [Security](docs/security.md)\n- [Semantic Search](SEMANTIC_SEARCH.md)\n- [Benchmark Harness](bench/harness/README.md)\n\n## CLI\n\nThe `pitlane` binary exposes the same code intelligence outside MCP.\n\nExamples:\n\n```bash\npitlane index /your/project\npitlane investigate /your/project \"How does ignore handling work?\"\npitlane search /your/project authenticate --kind method\npitlane symbol /your/project src/auth.rs::Auth::login[method]\npitlane usages /your/project src/auth.rs::Auth::login[method]\n```\n\nAll commands output JSON to stdout. Logs go to stderr and are controlled with `RUST_LOG`.\n\n## Supported Languages\n\n`pitlane-mcp` supports Rust, Python, JavaScript, TypeScript, Svelte, C, C++, Go, Java, C#, Bash, Ruby, Swift, Objective-C, PHP, Zig, Lua, Kotlin, and Solidity.\n\nFor the full extension matrix and symbol-kind coverage, see [Languages and Symbol Kinds](docs/languages.md).\n\n## Notes\n\n- `pitlane-mcp` is feature-complete and maintained as an OSS navigation tool.\n- Benchmark numbers in this repo are release-specific snapshots, not guarantees for every agent harness or model.\n\n## License\n\nLicensed under either of [MIT License](LICENSE-MIT) or [Apache License, Version 2.0](LICENSE-APACHE), at your option.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

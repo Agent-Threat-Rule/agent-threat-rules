@@ -1,0 +1,35 @@
+{
+  "full_name": "infragate/capa",
+  "html_url": "https://github.com/infragate/capa",
+  "description": "One capabilities.yaml wires skills, tools, rules, sub-agents, MCP servers, and plugins into Cursor, Claude Code, Codex, Windsurf, GitHub Copilot, and 30+ other AI coding agents",
+  "topics": [
+    "agentic-workflow",
+    "capabilities",
+    "mcp",
+    "mcp-gateway",
+    "mcp-server",
+    "package-manager",
+    "skills"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 620,
+  "forks": 18,
+  "open_issues": 7,
+  "language": "TypeScript",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-02-08T20:29:26Z",
+  "last_pushed_at": "2026-07-11T20:06:20Z",
+  "fetched_at": "2026-07-11T22:38:39.970Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<p align=\"center\">\n  <picture>\n    <source media=\"(prefers-color-scheme: dark)\" srcset=\"assets/banner-dark.svg\">\n    <source media=\"(prefers-color-scheme: light)\" srcset=\"assets/banner-light.svg\">\n    <img alt=\"CAPA\" src=\"assets/banner-light.svg\" width=\"280\">\n  </picture>\n</p>\n\n<h3 align=\"center\">Agentic Capabilities and Package Manager</h3>\n\n<p align=\"center\">\n  <a href=\"https://github.com/infragate/capa/releases/latest\"><img src=\"https://img.shields.io/github/v/release/infragate/capa?style=flat-square&label=latest&color=6366f1\" alt=\"Latest Release\"></a>\n  <a href=\"https://github.com/infragate/capa/actions/workflows/test.yml\"><img src=\"https://img.shields.io/github/actions/workflow/status/infragate/capa/test.yml?style=flat-square&label=tests&logo=github\" alt=\"Tests\"></a>\n  <a href=\"https://github.com/infragate/capa/actions/workflows/release.yml\"><img src=\"https://img.shields.io/github/actions/workflow/status/infragate/capa/release.yml?style=flat-square&label=release&logo=github\" alt=\"Release\"></a>\n  <a href=\"LICENSE\"><img src=\"https://img.shields.io/badge/license-MIT-blue?style=flat-square\" alt=\"License: MIT\"></a>\n  <a href=\"https://github.com/infragate/capa/releases/latest\"><img src=\"https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey?style=flat-square\" alt=\"Platforms\"></a>\n</p>\n\nCAPA is the package manager for AI coding agents. Declare your skills, tools, rules, sub-agents, MCP servers, and plugins once in `capabilities.yaml`, run `capa install`, and CAPA writes them into Cursor, Claude Code, Codex, Windsurf, GitHub Copilot, and 35+ other agents.\n\n\nhttps://github.com/user-attachments/assets/98442d19-44c9-43e6-b2c2-88156b189d5e\n\n\n\n## Why CAPA?\n\nAI coding agents need rules, tools, and conventions — and right now those live scattered across CLAUDE.md, .cursor/rules/, AGENTS.md, MCP configs, and a half-finished internal doc. No two setups match.\n\nCAPA collapses it into one `capabilities.yaml` next to your code: skills, tools, rules, sub-agents, plugins. capa install fans it out to every provider in its native format — .cursor/rules/ for Cursor, .claude/agents/ and CLAUDE.md for Claude Code, AGENTS.md for Codex, and so on. Capa-managed marker blocks keep your hand-written content untouched.\n\nOne file, version controlled, pinned by capabilities.lock, cached by SHA. The teammate who clones tomorrow gets the exact bytes you got today.\n\n## What it does\n\n- One `capabilities.yaml` manages the content for your agent. Write rules, hooks, and tools once — capa runs them natively, supporting 35+ agents (Cursor, Claude Code, Codex, Windsurf, Copilot, Gemini CLI, and more). No more keeping `.cursor/rules/`, `.claude/settings.json`, and `AGENTS.md` in sync by hand.\n- 19–40% cheaper inference, same quality. One MCP server per agent, tools lazy-load on demand instead of front-loading the whole catalog. Measured across 150 trials on claude-opus-4-8.\n- Sub-agents only see the tools they need. Each gets its own filtered MCP endpoint — so your research sub-agent isn't holding a git push tool it shouldn't touch.\n\n<p align=\"center\">\n  <img width=\"1305\" height=\"941\" alt=\"CAPA Architecture\" src=\"https://github.com/user-attachments/assets/a4db54a2-6ea5-43df-baa9-c61c189d30c1\" />\n</p>\n\n## Installation\n\n**macOS and Linux:**\n```bash\ncurl -LsSf https://capa.infragate.ai/install.sh | sh\n```\n\n**Windows:**\n```powershell\npowershell -ExecutionPolicy ByPass -c \"irm https://capa.infragate.ai/install.ps1 | iex\"\n```\n\n## Quick start\n\n### 1. Initialize your project\n\n```bash\ncd your-project\ncapa init\n```\n\nThis creates a `capabilities.yaml` next to your code.\n\n### 2. Install\n\n```bash\ncapa install\n```\n\n### 3. Boostrap (Optional)\nIf you are already working on a project, and would like to get all of it's capabilities be managed by CAPA, simply use the `/bootstrap` skill. The agent will scan your project for skills, MCPs, relevant tools, hooks, and rules.\n\n`capa install` resolves SHAs and downloads anything that isn't already in the cache. It then writes the per-provider files (`.cursor/rules/`, `.claude/agents/`, `AGENTS.md`, and so on) and registers one MCP endpoint with each agent on your list. The resolved SHAs land in `capabilities.lock` so the next clone gets the same bytes.\n\n### 4. Use `capa sh`\n\n```bash\ncapa sh                                  # list every configured tool\ncapa sh brave                            # list brave subcommands\ncapa sh brave search --query \"…\"         # run a tool directly\n```\n\nEvery tool you define is also a CLI command under `capa sh`. MCP tools live at `capa sh <server> <tool>`. Shell tools live at the top level (or under whatever `group` you assigned). \n\n## Documentation\n\nGuides, the full schema reference, and the registry catalog:\n\n**[https://capa.infragate.ai](https://capa.infragate.ai/docs/introduction)**\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

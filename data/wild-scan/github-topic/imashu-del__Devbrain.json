@@ -1,0 +1,40 @@
+{
+  "full_name": "imashu-del/Devbrain",
+  "html_url": "https://github.com/imashu-del/Devbrain",
+  "description": "🧠 DevBrain — The persistent memory layer for software development, powered by Cognee and Open source models",
+  "topics": [
+    "cognee",
+    "cognee-memory",
+    "hackathon-project",
+    "knowledge-graph",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "nextjs",
+    "vector-database"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "master",
+  "created_at": "2026-06-29T05:08:42Z",
+  "last_pushed_at": "2026-07-05T13:48:59Z",
+  "fetched_at": "2026-07-12T00:42:23.023Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# 🧠 DevBrain: The Persistent Memory Layer for Software Development\n> **Built for the Cognee 2026 Hackathon** — *Targeting the \"Best Use of Open Source\" Track*\n\n---\n\n## ⚡ What is DevBrain?\n\n**DevBrain** is a sovereign, persistent memory layer for developers. \n\nToday's AI coding assistants have a **\"Vegas Hangover\"** problem: *What happens in the chat tab, stays in the chat tab.* Every time you open a new chat window or restart your IDE, the AI forgets all of your architectural decisions, structural dependencies, and coding patterns.\n\nDevBrain solves this by decoupling your project's memory from the AI compute layer. It uses a background harvester and manual capture tools to build a local **Knowledge Graph** of your entire codebase using the **Cognee** framework. Any AI assistant (like Cursor, Claude, or Antigravity) can plug into DevBrain to instantly recall the exact architectural context of your project before it writes a single line of code.\n\n---\n\n## 🎛️ The Hybrid Architecture Paradigm Shift\n\nDevBrain has evolved into a premium developer engine that gives engineers complete control over both their storage topology and their model intelligence layer.\n\n```mermaid\ngraph TD\n    A[devbrain.py CLI] --> B(harvester.py Watcher)\n    A --> C(dashboard/ Next.js UI)\n    B -- Git Diffs --> D[devbrain_core.py Memory Engine]\n    C -- API Calls --> D\n    E[MCP IDE Plugin Cursor/Claude] -- Tool Calls --> D\n    \n    D -- cognee.remember --> F[(Local Kuzu Graph DB)]\n    D -- cognee.recall --> F\n    \n    F -- Context --> G{LLM Reasoning Layer}\n    G -- Offline --> H[Ollama: smollm3]\n    G -- High-Velocity --> I[Groq: qwen3.6-27b]\n```\n\n### 1. Storage Topology Router (`DEVBRAIN_MODE`)\n- **`local` (Default)**: Guarantees privacy-first isolation for secure internal repos. Operates 100% locally on embedded SQLite, LanceDB, and Kuzu Graph databases.\n\n### 2. Cognitive Processor Layer (`DEVBRAIN_LLM_PROVIDER`)\nDevelopers can explicitly choose their intelligence tier while keeping Cognee storage local:\n- **`openai-compatible`**: High-velocity cloud-hybrid tier. Routes reasoning to Groq's OpenAI-compatible API, while keeping graph storage local.\n- **`ollama`**: Sovereign local tier. Runs 100% offline through Ollama with `alibayram/smollm3` for absolute privacy.\n\n---\n\n## 🧠 How We Used Cognee (The Core Memory Lifecycle)\n\nDevBrain's entire intelligence is powered by **Cognee**, which acts as the orchestration layer for building the local knowledge graph. We utilized Cognee's exact four primitives to manage the memory lifecycle:\n\n### 1. `cognee.remember()`\n- **Role**: **Ingestion Engine.** \n- **How DevBrain Uses It**: When the background Harvester detects a git diff, or when a developer explicitly captures an architectural note via the CLI (`devbrain note`), DevBrain passes the raw text to `cognee.remember()`. Cognee automatically extracts the semantic meaning and injects the nodes into the vector space and Kuzu graph.\n\n### 2. `cognee.recall()`\n- **Role**: **Retrieval Engine.** \n- **How DevBrain Uses It**: When a user queries the DevBrain Assistant in the Dashboard, or when an AI agent requests context via MCP, DevBrain calls `cognee.recall(query_text)`. Cognee traverses the Kuzu graph to retrieve relevant structural decisions, which DevBrain formats into a Markdown manifest to guide the LLM's response.\n\n### 3. `cognee.improve()`\n- **Role**: **Graph Defragmenter.** \n- **How DevBrain Uses It**: Over time, memory can become tangled. DevBrain exposes an `optimize` CLI command and API route that triggers `cognee.improve()`. This prunes stale nodes, re-evaluates schema connections, and re-balances graph weights to maintain a clean repository ontology.\n\n### 4. `cognee.forget()`\n- **Role**: **Surgical Purge.** \n- **How DevBrain Uses It**: If a developer creates a prototype branch and wants to wipe the slate clean, DevBrain's \"Wipe Matrix\" UI button triggers `cognee.forget(dataset_name)`. This safely clears out all experimental nodes from the LanceDB vector store and Kuzu graph without corrupting the local project setup.\n\n---\n\n## 🔌 Supported Integrations\n\nDevBrain exposes your memory graph universally, supporting developers no matter what tools they use:\n\n1. **MCP (Model Context Protocol) Server:** Run `devbrain mcp` to connect DevBrain directly to Cursor, Claude Code, or Antigravity IDE. The AI tools can actively search the graph and write their own decisions into memory.\n2. **The Context Compiler:** Run `devbrain export` to compile the entire graph into a Markdown manifest. DevBrain automatically copies it to your clipboard so you can paste it into ChatGPT or Claude web.\n\n---\n\n## 🚀 Quick Start (Local Setup)\n\n### 1. Install DevBrain Globally\nEnsure you have Python 3.10+ and Node.js installed. Instead of just installing requirements, you can install DevBrain as a global CLI tool so it's accessible from any directory:\n```bash\npip install -e .\n```\nThis automatically installs all dependencies and registers the `devbrain` command globally on your system.\n\n### 2. Configure Environment Variables\nCreate a `.env` file in the project root. For absolute privacy, use the Ollama offline tier:\n```env\nDEVBRAIN_MODE=\"local\"\nDEVBRAIN_LLM_PROVIDER=\"ollama\"\nDEVBRAIN_MODEL_NAME=\"alibayram/smollm3\"\nDEVBRAIN_BASE_URL=\"http://localhost:11434\"\n```\n\n### 3. Initialize Cognee DB\nVerify the database migrations and schema run successfully:\n```bash\ndevbrain init\n```\n\n### 4. Launch the Developer Cockpit\nOpen the interactive Next.js visual dashboard:\n```bash\ndevbrain dashboard\n```\n*Next.js will automatically launch on http://localhost:3000.*\n\n---\n\n## 🛠️ Production Safeguards & Monkey Patching\n\nDuring development, we encountered limitations with small context windows in offline LLMs (e.g., `smollm3`). We proactively patched the `devbrain_core.py` to intercept `InstructorRetryException` loops, implementing a regex-salvage mechanism that extracts valid JSON payloads directly from error logs to prevent 8-minute hallucination loops on low-spec hardware.\n\n---\n\n## 🤖 Hackathon AI Usage Declaration\n\nIn compliance with the Cognee Hackathon rules, I am formally declaring the use of AI assistants in the creation of DevBrain:\n\n* **Gemini:** Used for high-level project strategy, architectural brainstorming, and refining the core value proposition of decoupling memory from compute.\n* **Antigravity IDE:** Used as the primary AI pair-programmer for hands-on development, debugging edge cases, patching backend routing logic, and generating UI layout structures.\n\nBoth tools were utilized to accelerate development while the core logic and integration with the Cognee framework were meticulously designed and verified by the developer.\n"
+  },
+  "descriptor_file": {
+    "path": "mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"devbrain\": {\n      \"command\": \"python\",\n      \"args\": [\n        \"C:/Users/user/Downloads/Devbrain/devbrain.py\",\n        \"mcp\"\n      ]\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

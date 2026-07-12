@@ -1,0 +1,46 @@
+{
+  "full_name": "dunialabs/peta-core",
+  "html_url": "https://github.com/dunialabs/peta-core",
+  "description": "The Control Plane for MCP — secure vault, managed runtime, audit trail, and policy-based approvals.",
+  "topics": [
+    "aiagent",
+    "authentication-middleware",
+    "developer-tools",
+    "function-calling",
+    "gateway",
+    "jwt",
+    "mcp",
+    "mcp-client",
+    "mcp-gateway",
+    "mcp-server",
+    "mcp-servers",
+    "model-context-protocol",
+    "modelcontextprotocol",
+    "oauth2",
+    "rest-to-mcp",
+    "restful-to-mcp",
+    "vault"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol",
+    "mcp-servers"
+  ],
+  "stars": 53,
+  "forks": 10,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "NOASSERTION",
+  "default_branch": "main",
+  "created_at": "2025-12-05T15:00:51Z",
+  "last_pushed_at": "2026-06-15T08:36:09Z",
+  "fetched_at": "2026-07-11T23:28:39.619Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Peta Core\n\nA control-plane runtime for MCP (Model Context Protocol). Gateway, vault, policy engine, and audit trail for every tool call between AI agents and downstream MCP servers.\n\nSupports the core infrastructure components required to run MCP in production: gateway routing, runtime supervision, policy enforcement, credential management, and audit logging.\n\n![Node](https://img.shields.io/badge/node-%3E%3D18-green.svg)\n![License](https://img.shields.io/badge/license-ELv2-blue.svg)\n![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-blue.svg)\n![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)\n\n**Key guarantees:**\n\n- **Credential vault.** Secrets stay encrypted at rest (PBKDF2 + AES-GCM) and are injected server-side at execution time. Clients never see raw credentials.\n- **Policy engine.** RBAC/ABAC with per-user, per-tool capability filtering. Optional human-in-the-loop approval for high-risk operations.\n- **Audit trail.** Every tool call is logged with caller identity, policy decision, and outcome. Secrets are never included in logs.\n- **Managed runtime.** Supervises downstream MCP servers with lifecycle controls and automated recovery.\n- **Protocol compatibility.** Standard MCP upstream, plus downstream compatibility for the shared gateway flows that Peta Core currently supports. Standard server-initiated reverse requests (`sampling`, `roots`, `elicitation`) are intentionally not exposed in the current shared runtime.\n- **Self-hosted.** On-premises deployment model. No hosted SaaS dependency.\n\n[Quick Start](https://peta.io/quick-start) | [Website](https://peta.io) | [Documentation](https://docs.peta.io)\n\n---\n\n## Architecture\n\n![Peta MCP Stack Overview](docs/overview.png)\n\nPeta Core sits between MCP clients (Claude, ChatGPT, Cursor, n8n, or any MCP-compatible client) and downstream MCP servers. From the client's perspective, it connects to a single MCP server. Behind that endpoint, Peta Core routes to multiple downstream servers using standard MCP for the shared forward-request flows it supports.\n\nPeta Core is one component of the Peta MCP stack:\n\n- **Peta Core** (this repository) — MCP gateway, credential vault, policy engine, and audit runtime.\n- **Peta Console** — Admin UI for users, servers, policies, approvals, and audit logs.\n- **Peta Desk** — Desktop client for approval workflows and per-user server configuration.\n\n> This repository contains only Peta Core. See [docs.peta.io](https://docs.peta.io) for the full stack.\n\n---\n\n## Features\n\n### MCP Gateway\n\n- Transparent MCP proxying. Acts as an MCP server upstream and an MCP client downstream. Routes tool calls via namespaced identifiers (`serverId::toolName`).\n- MCP `2026-07-28` support. Modern clients can use stateless `server/discover`, POST-only Streamable HTTP, `subscriptions/listen`, OAuth resource metadata, and per-request protocol metadata behind a rollout flag while legacy sessionful clients remain supported.\n- Built-in OAuth 2.0 authorization server. Authorization Code with PKCE, refresh tokens, dynamic client registration, token introspection, and revocation.\n- Anonymous public access mode. Optionally allow token-less access for selected public servers through `/mcp/public`, while authenticated traffic continues on the standard `/mcp` endpoint, with configurable anonymous rate limits.\n\n### Runtime & Extensions\n\n- Downstream server runtime. Lazy start on first request, health checks, idle timeouts, and capability caching.\n- Custom MCP tools (HTTPS or stdio). HTTPS-based custom tools remain supported, with stdio transport added for process-based tools.\n- Docker-safe `CustomStdio` execution. In Docker deployments, non-`docker` stdio commands are transparently executed inside `petaio/mcp-runner:latest`; explicit `docker` commands keep their original behavior.\n- REST API adapter. Register HTTP endpoints as MCP servers. Peta Core translates tool calls to HTTP requests without writing a custom MCP server.\n- Skill packages. Upload per-server ZIP bundles with `SKILL.md` metadata. Served as namespaced MCP tools, isolated by server ID.\n\n### Credential Vault\n\n- Server-side credential injection. Credentials are decrypted and injected at execution time. They never appear in client configs or prompts.\n- Encrypted configuration storage. Server launch configs and per-user configuration blobs are encrypted at rest.\n- OAuth token brokerage. Stores downstream OAuth configurations encrypted, refreshes access tokens automatically, and injects them into downstream calls. Refresh tokens are never exposed.\n\n### Policy Engine\n\n- Per-user, per-tool policy evaluation. RBAC/ABAC rules with content-aware DSL conditions and capability filtering.\n- Human-in-the-loop approvals. Durable approval queue with explicit lifecycle states and replay-safe retries.\n- Rate limiting and network controls. Per-user quotas with sliding window enforcement. Optional IP allow-lists per workspace.\n\n### Result Cache\n\n- Configurable result caching with per-entity policy controls (`tools`, `prompts`, `resources.inline`, `resources.exact`, `resources.patterns`).\n- Safe-by-default behavior for tool results: approval-gated or error results are not promoted into cache.\n- Scope-aware cache keys and purge controls, including exact purge with operation/entity-level targeting.\n\n### Progressive Disclosure\n\n- Configurable tool visibility. Three discovery modes (`FLAT`, `HYBRID`, `STRICT`) control whether tools are directly exposed or discoverable only through a catalog search interface.\n- Discovery profiles. Named profiles with rule-based exposure policies determine which tools are directly callable based on server identity and risk level.\n- Persistent catalog index. A searchable index of all tool capabilities across managed servers, with native `catalog.search`, `catalog.describe`, and `catalog.execute` tools for AI-driven discovery.\n\n### Audit & Observability\n\n- Audit trail. Records caller identity, tool name, policy decision, approval status, and outcome for every tool call. Secrets are excluded from log payloads.\n- Structured logging. Pino-based JSON logs with per-module child loggers. Integrates with external log aggregation via webhook.\n- Observability workflows. Audit records and structured logs support log views, export workflows, and usage dashboards.\n\n### Reliability\n\n- Stream resumption. Events are persisted to allow clients to resume via `Last-Event-ID` after disconnection.\n- Real-time notification channel. Socket.IO-based push for approval requests, capability updates, and server status changes.\n- Automatic server recovery. Consecutive downstream timeouts trigger a health ping and automatic reconnection.\n- Request-level retry. On downstream disconnection, the gateway reconnects and retries the call up to two times. Clients see a single request.\n\n---\n\n## Documentation\n\n- [Architecture & Internals](./docs/architecture.md) — System architecture, request flows, and core design patterns.\n- [Security & Permissions](./docs/security.md) — Vault encryption model and the three-layer permission system.\n- [Deployment & Configuration](./docs/deployment.md) — Docker, PM2 deployment, and environment variables.\n- [Reference](./docs/reference.md) — API surfaces, usage examples, and contributing.\n\n---\n\n## License\n\nLicensed under the [Elastic License 2.0 (ELv2)](./LICENSE).\n\nYou may use, modify, and self-host this software. You may not provide it to third parties as a hosted or managed service, remove license key functionality, or obscure licensing notices.\n\nFor detailed terms, see the [LICENSE](./LICENSE) file.\n\nCopyright &copy; 2026 [Dunia Labs, Inc.](https://dunialabs.io)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

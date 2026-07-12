@@ -1,0 +1,47 @@
+{
+  "full_name": "agenvoy/Agenvoy",
+  "html_url": "https://github.com/agenvoy/Agenvoy",
+  "description": "Make AI actually work for you - A personal agent that writes its own tools and repairs itself.",
+  "topics": [
+    "agent-framework",
+    "ai",
+    "ai-agents",
+    "claude",
+    "codex",
+    "deepseek",
+    "gemini",
+    "go",
+    "golang",
+    "grok",
+    "harness",
+    "mcp",
+    "mcp-client",
+    "mcp-server",
+    "multi-agent",
+    "nvidia-nim",
+    "openai",
+    "openrouter",
+    "self-improving"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 258,
+  "forks": 34,
+  "open_issues": 0,
+  "language": "Go",
+  "license": "Apache-2.0",
+  "default_branch": "master",
+  "created_at": "2026-02-05T02:16:07Z",
+  "last_pushed_at": "2026-07-11T18:55:22Z",
+  "fetched_at": "2026-07-11T22:45:34.126Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<p align=\"center\">\n  <picture style=\"margin-down: 1rem\">\n    <img src=\"./doc/logo.svg\" alt=\"Agenvoy\" width=\"320\">\n  </picture>\n</p>\n\n<p align=\"center\">\n  <strong>A local AI agent that can build, test, and reuse its own tools</strong>\n</p>\n\n<p align=\"center\">\n  Agenvoy runs on your machine, handles multi-step work, searches local files, schedules recurring tasks,<br>\n  and exposes its tool library to other agents through MCP.\n</p>\n\n<p align=\"center\">\n  <a href=\"https://github.com/pardnchiu/agenvoy/releases\"><img src=\"https://img.shields.io/github/v/tag/pardnchiu/agenvoy?include_prereleases&style=for-the-badge\" alt=\"Version\"></a>\n  <a href=\"LICENSE\"><img src=\"https://img.shields.io/github/license/pardnchiu/agenvoy?include_prereleases&style=for-the-badge\" alt=\"License\"></a>\n</p>\n\n<p align=\"center\">\n  <strong>English</strong> · <a href=\"./doc/README.zh.md\">繁體中文</a>\n</p>\n\n## Why Agenvoy\n\n- **Build missing tools instead of stopping**\n- **Share one sandboxed tool library across Agenvoy, Claude Code, Codex, and more**\n- **Run local workflows with scheduling, memory, and file search**\n- **Use it as both an agent app and an MCP server**\n\n## What you can do with it\n\n<table>\n<tr>\n<td width=\"50%\" valign=\"top\">\n\n### Ask for live answers\n\n> What's the weather in Taipei?\n>\n> The agent finds current data, calls tools, and gives you the answer.\n>\n> If a tool doesn't exist, it builds one.\n\n</td>\n<td width=\"50%\" valign=\"top\">\n\n### Turn one sentence into automation\n\n> Report TSMC stock price every morning at 8am\n>\n> The agent asks:\n> - Where to push results\n> - What format you want\n> - When to run\n>\n> Then creates the schedule automatically.\n\n</td>\n</tr>\n<tr>\n<td>\n\n[![](https://i.ytimg.com/vi/floMBsAfziY/maxresdefault.jpg)](https://youtu.be/floMBsAfziY)\n\n</td>\n<td>\n\n[![](https://i.ytimg.com/vi/5To3joKlFpU/maxresdefault.jpg)](https://youtu.be/5To3joKlFpU)\n\n</td>\n</tr>\n<tr>\n<td width=\"50%\" valign=\"top\">\n\n### Ask your local files questions\n\n> Find all invoices from last year\n>\n> Which document mentions Prompt guide?\n>\n> The agent searches your local files and answers directly.\n\n</td>\n<td width=\"50%\" valign=\"top\">\n\n### Finish multi-step work\n\n> Summarize today's GitHub commits and generate a progress report\n>\n> The agent breaks down the task, calls tools, combines results, and replies.\n\n</td>\n</tr>\n<tr>\n<td>\n\n[![](https://i.ytimg.com/vi/vqoQ6Qvl8qU/maxresdefault.jpg)](https://youtu.be/vqoQ6Qvl8qU)\n\n</td>\n<td>\n\n[![](https://i.ytimg.com/vi/nIV1xz_HIJg/maxresdefault.jpg)](https://youtu.be/nIV1xz_HIJg)\n\n</td>\n</tr>\n</table>\n\n### Works with the agents you already use\n\n> Agenvoy is also an MCP server.\n>\n> Claude Code, Codex, OpenCode, and other AI agents can connect and:\n> - Use all your sandboxed tools\n> - Auto-build new tools when none exist\n> - Share every tool across all agents\n>\n> One line of config. Instant shared tool library.\n> Tools created in the demo: [`fetch_weather`](doc/demo/fetch_weather/) · [`fetch_crypto_price`](doc/demo/fetch_crypto_price/)\n\n<table>\n<tr>\n<td width=\"33%\" valign=\"top\">\n\n#### Claude Code creates a weather tool (1)\n\n</td>\n<td width=\"33%\" valign=\"top\">\n\n#### Codex reuses it and creates a crypto tool (2)\n\n</td>\n<td width=\"33%\" valign=\"top\">\n\n#### Agenvoy tests both tools (3)\n\n</td>\n</tr>\n<tr>\n<td>\n\n[![](https://i.ytimg.com/vi/on5IaoxBO1E/maxresdefault.jpg)](https://youtu.be/on5IaoxBO1E)\n\n</td>\n<td>\n\n[![](https://i.ytimg.com/vi/2DDFCIcbnso/maxresdefault.jpg)](https://youtu.be/2DDFCIcbnso)\n\n</td>\n<td>\n\n[![](https://i.ytimg.com/vi/KPs4o9xDFjM/maxresdefault.jpg)](https://youtu.be/KPs4o9xDFjM)\n\n</td>\n</tr>\n</table>\n\n## Who it's for\n\nAgenvoy is for developers, technical operators, and AI-heavy workflows that need more than chat:\n\n- People who want local execution with guardrails\n- Teams that want reusable tools across agents\n- Users who need automation, file search, and scheduled reporting in one place\n\n***\n\n## Core capabilities\n\n| Capability | Description |\n| :- | :- |\n| Auto tool generation | Builds and saves tools when they're missing |\n| Self-scheduling | Create cron jobs with a single sentence |\n| Long-term memory | Retains key info and context |\n| File search | Answers from your local files |\n| Sub-Agent | Multi-agent collaboration |\n| MCP client | Connect to external MCP services |\n| MCP server | Expose sandboxed tools to any MCP-compatible agent |\n| Tool Market | Share and install tools |\n| Transcription | Audio and video to text |\n| Self-improvement | Auto-fixes after execution failures |\n\n***\n\n## Web Dashboard\n\nOpen **[web.agenvoy.com](https://web.agenvoy.com)** in your browser to reach the dashboard once the daemon is running on your machine.\n\n<p align=\"center\">\n  <a href=\"https://youtu.be/n8tHHSCwOjE\">\n    <img src=\"https://img.youtube.com/vi/n8tHHSCwOjE/maxresdefault.jpg\" alt=\"Agenvoy Web Dashboard demo\" width=\"640\">\n  </a>\n</p>\n\n<p align=\"center\">\n  <a href=\"https://youtu.be/n8tHHSCwOjE\">▶ Watch the Web Dashboard walkthrough</a>\n</p>\n\n## One-line install\n\n> On MacBook, also run `sudo pmset -c sleep 0` to prevent sleep from interrupting schedules.\n\n```bash\ncurl -fsSL https://agenvoy.com/scripts/install.sh | bash\n```\n\n***\n\n## How it compares\n\n| | **Agenvoy** | OpenClaw | Hermes-agent |\n|---|---|---|---|\n| Install | One command, single binary | pnpm monorepo | pip + docker |\n| Multi-model | Auto-picks | Manual switch | Manual switch |\n| Chat UI | Buttons / menus / modals | Text only | Text only |\n| Builds missing tools | ✅ | ❌ | ⚠️ Skill only |\n| Shares tools across agents | ✅ | ❌ | ❌ |\n| Works as MCP server | ✅ | ❌ | ❌ |\n| Chat verification | 6-digit code | Manual approval | Manual approval |\n| Cross-session push | ✅ | ❌ | ⚠️ Limited |\n| File search | Semantic + keyword | Chat memory only | Chat memory only |\n| Scheduled local workflows | ✅ | ❌ | ⚠️ Limited |\n\n***\n\n## Docs\n\nFull documentation at **[agenvoy.com/docs](https://agenvoy.com/docs/)**\n\n- [Getting Started](https://agenvoy.com/docs/getting-started)\n- [Sessions & Agents](https://agenvoy.com/docs/sessions)\n- [Providers](https://agenvoy.com/docs/providers)\n- [Built-in Tools](https://agenvoy.com/docs/built-in-tools)\n- [MCP Server](https://agenvoy.com/docs/mcp-server)\n- [MCP Client](https://agenvoy.com/docs/mcp-client)\n- [Memory System](https://agenvoy.com/docs/memory-system)\n- [Skill System](https://agenvoy.com/docs/skill-basics)\n- [Sandbox](https://agenvoy.com/docs/sandbox)\n- [Architecture](https://agenvoy.com/docs/architecture)\n\n## License\n\nThis project is licensed under the [Apache License 2.0](LICENSE).\n\n## Community Contributors\n\n<a href=\"https://github.com/pardnchiu/Agenvoy/issues/3\">\n  <img src=\"https://github.com/Azetry.png\" width=\"40\" height=\"40\" alt=\"Azetry\" style=\"border-radius:50%\" />\n</a>\n<a href=\"https://github.com/pardnchiu/agenvoy/issues/49\">\n  <img src=\"https://github.com/oceanasd.png\" width=\"40\" height=\"40\" alt=\"oceanasd\" style=\"border-radius:50%\" />\n</a>\n\n## Contributor\n\nJust [open an issue](https://github.com/pardnchiu/agenvoy/issues/new) to share an idea.\n\n<a href=\"https://github.com/pardnchiu/agenvoy/graphs/contributors\">\n  <img src=\"https://contrib.rocks/image?repo=pardnchiu/agenvoy&cache_bust=2026-05-12\" alt=\"Agenvoy contributors\" />\n</a>\n\n***\n\n©️ 2026 [邱敬幃 Pardn Chiu](https://www.linkedin.com/in/pardnchiu)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

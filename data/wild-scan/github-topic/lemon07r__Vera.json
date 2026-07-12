@@ -1,0 +1,47 @@
+{
+  "full_name": "lemon07r/Vera",
+  "html_url": "https://github.com/lemon07r/Vera",
+  "description": "Local code search combining BM25, vector similarity, and cross-encoder reranking. Parses 60+ languages with tree-sitter, runs entirely offline, and returns structured results with file paths, line ranges, and symbol metadata. Built in Rust.",
+  "topics": [
+    "bm25",
+    "cli",
+    "code-search",
+    "code-search-engine",
+    "cross-encoder",
+    "embeddings",
+    "local",
+    "mcp",
+    "mcp-server",
+    "onnx",
+    "rag",
+    "reranking",
+    "retrieval",
+    "rust",
+    "semantic-search",
+    "semantic-search-engine",
+    "skills",
+    "tree-sitter",
+    "vector-search"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 97,
+  "forks": 12,
+  "open_issues": 6,
+  "language": "Rust",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2026-03-22T05:41:30Z",
+  "last_pushed_at": "2026-05-13T04:55:44Z",
+  "fetched_at": "2026-07-11T23:01:55.308Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n\n<img width=\"1584\" height=\"539\" alt=\"vera\" src=\"https://github.com/user-attachments/assets/c866fc70-b1e6-400b-aaf7-fa68721a4955\" />\n\n# Vera\n\n[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/lemon07r/Vera/blob/master/LICENSE)\n[![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)\n[![GitHub release](https://img.shields.io/github/v/release/lemon07r/Vera?include_prereleases&sort=semver)](https://github.com/lemon07r/Vera/releases)\n[![Languages](https://img.shields.io/badge/languages-65%2B-green.svg)](docs/supported-languages.md)\n\n[Install Guide](docs/installation.md)\n·\n[Features](docs/features.md)\n·\n[Query Guide](docs/query-guide.md)\n·\n[Benchmarks](docs/benchmarks.md)\n·\n[How It Works](docs/how-it-works.md)\n·\n[Models](docs/models.md)\n·\n[Supported Languages](docs/supported-languages.md)\n\n**V**ector **E**nhanced **R**eranking **A**gent\n\nCode search that combines BM25 keyword matching, vector similarity, and cross-encoder reranking. Supports 65 languages (61 with tree-sitter parsing), runs locally, returns structured results with file paths, line ranges, symbol metadata, and relevance scores.\n\n</div>\n\n## Quick Start\n\n**1. Install**\n```bash\nbunx @vera-ai/cli install   # or: npx -y @vera-ai/cli install / uvx vera-ai install\n```\n\n**2. Set up models** (pick one)\n```bash\nvera setup                       # Interactive wizard (auto-detects your hardware)\nvera setup --api                 # API mode: works everywhere, no GPU needed (recommended)\nvera setup --onnx-jina-coreml    # Apple Silicon (M1/M2/M3/M4)\nvera setup --onnx-jina-cuda      # NVIDIA GPU\nvera setup --onnx-jina-rocm      # AMD GPU (ROCm, Linux)\nvera setup --onnx-jina-openvino  # Intel GPU (OpenVINO, Linux)\nvera setup --onnx-jina-directml  # DirectX 12 GPU (Windows)\n```\n\n**3. Index and search**\n```bash\nvera index .\nvera search \"authentication logic\"\n```\n\n## What Sets Vera Apart\n\n| | |\n|---|---|\n| **Cross-encoder reranking** | Most tools stop at retrieval. Vera scores query-candidate pairs jointly, lifting MRR@10 from 0.28 to 0.60. |\n| **Single binary, 65 languages** | One static binary with 61 tree-sitter grammars compiled in. No Python, no language servers, no per-language toolchains. |\n| **Built-in code intelligence** | Call graph analysis, reference finding, dead code detection, and project overview, all from the same index. |\n| **Token-efficient for agents** | Returns symbol-bounded chunks, not entire files. 75-95% fewer tokens on typical queries. |\n\nVera started after weeks of working on Pampax, a project I forked because it and other similar tools were missing what I wanted. I kept running into deep-rooted bugs, less-than-ideal design decisions, and thought I could build something better from the ground up. Every design choice comes from careful research, learning from other projects, benchmarking and evaluation. Take a look at the full [feature list](docs/features.md) to see everything Vera can do.\n\n## Installation\n\nUse the quick start above if you just want to get going. This section helps you pick the right backend.\n\n```bash\nbunx @vera-ai/cli install   # or: npx -y @vera-ai/cli install / uvx vera-ai install\n```\n\n### Pick Your Backend\n\nVera itself is always local: the index lives in `.vera/` per project, config and models in `$XDG_DATA_HOME/vera` (or `~/.vera` for existing installs). The backend choice only affects where embeddings and reranking run.\n\n| You have | Run this | What happens |\n|----------|----------|-------------|\n| Not sure | `vera setup` | Interactive wizard auto-detects your hardware |\n| Any hardware | `vera setup --api` | Models run remotely via any OpenAI-compatible API. No GPU needed. **Recommended.** |\n| Apple Silicon (M1/M2/M3/M4) | `vera setup --onnx-jina-coreml` | Downloads local models, uses CoreML GPU acceleration |\n| NVIDIA GPU | `vera setup --onnx-jina-cuda` | Downloads local models, uses CUDA. Fastest local option |\n| AMD GPU (Linux) | `vera setup --onnx-jina-rocm` | Downloads local models, uses ROCm |\n| Intel GPU (Linux) | `vera setup --onnx-jina-openvino` | Downloads local models, uses OpenVINO |\n| DirectX 12 GPU (Windows) | `vera setup --onnx-jina-directml` | Downloads local models, uses DirectML |\n\nAPI mode works with any OpenAI-compatible endpoint and needs no local compute. Local mode downloads two curated ONNX models and auto-detects your GPU; a GPU is recommended since CPU-only indexing is slow. After the first index, `vera update .` only re-embeds changed files, so incremental updates are fast on any backend. Full details: [docs/models.md](docs/models.md).\n\nFor step-by-step instructions, API provider options, Docker, building from source, and troubleshooting, see the full [Installation Guide](docs/installation.md).\n\n<details>\n<summary>MCP server</summary>\n\n```bash\nvera mcp   # or: bunx @vera-ai/cli mcp / uvx vera-ai mcp\n```\nExposes `search_code`, `get_stats`, `get_overview`, and `regex_search` tools. `search_code` auto-indexes and starts a file watcher on first use if no index exists.\nThe MCP surface stays intentionally small; use the CLI skill path when you need the full command set.\n\n</details>\n\n## Usage\n\n### Core Workflow\n\n```bash\nvera index .\nvera search \"authentication logic\"\nvera update .\n```\n\n### Search Patterns\n\n```bash\nvera search \"error handling\" --lang rust\nvera search \"routes\" --path \"src/**/*.ts\"\nvera search \"handler\" --type function --limit 5\nvera search \"OAuth token refresh\" \"JWT expiry handling\" \"auth middleware\"\nvera search \"config\" --intent \"find where database connection strings are loaded\"\nvera search \"config loading\" --deep\nvera search \"auth\" --compact\n```\n\n### Common Tasks\n\n| Task | Command |\n|------|---------|\n| Regex or exact text | `vera grep \"fn\\s+main\"` |\n| Find callers | `vera references foo` |\n| Find callees | `vera references foo --callees` |\n| Find dead code | `vera dead-code` |\n| Get a project overview | `vera overview` |\n| Keep the index fresh | `vera watch .` |\n| Check your setup | `vera doctor` |\n| Repair missing local assets | `vera repair` |\n| Install agent skills | `vera agent install` |\n\nSee the [query guide](docs/query-guide.md) for search tips, the [feature list](docs/features.md) for the full command surface, and `vera --help` for CLI details.\n\n### Output\n\nDefaults to markdown codeblocks (the most token-efficient format for AI agents):\n\n````\n```src/auth/login.rs:42-68 function:authenticate\npub fn authenticate(credentials: &Credentials) -> Result<Token> { ... }\n```\n````\n\nUse `--json` for compact JSON. `--raw` and `--timing` work with `vera search` and `vera grep`, and you can place them before or after the subcommand (for example, `vera --timing search \"auth\"` or `vera grep \"TODO\" --raw`).\n\n### Excluding Files\n\nVera respects `.gitignore` by default. Create a `.veraignore` file (gitignore syntax) for more control, or use `--exclude` flags. Details: [docs/features.md](docs/features.md#flexible-exclusions).\n\n## Benchmarks\n\n21-task benchmark across `ripgrep`, `flask`, `fastify`, and `turborepo`:\n\n| Metric | ripgrep | cocoindex | ColGREP (149M) | Vera |\n|--------|---------|-----------|----------------|------|\n| Recall@5 | 0.28 | 0.37 | 0.67 | **0.78** |\n| MRR@10 | 0.26 | 0.35 | 0.62 | **0.91** |\n| nDCG@10 | 0.29 | 0.52 | 0.56 | **0.84** |\n\nFull methodology and version history: [docs/benchmarks.md](docs/benchmarks.md).\n\n## Configure Your AI Agent\n\n`vera agent install` installs the Vera skill for supported coding agents and can add a short usage snippet to your project's `AGENTS.md`, `CLAUDE.md`, `COPILOT.md`, or editor rules file.\n\n```bash\nvera agent install\nvera agent install --client all\n```\n\nIf you use the [skills CLI](https://github.com/vercel-labs/skills), you can install Vera there too:\n\n```bash\nnpx skills add lemon07r/Vera\n```\n\nIf you skipped the prompt and want to add the instructions manually, use the snippet in the [Installation Guide](docs/installation.md#set-up-agent-skills).\n\n## Contributing\n\nSee [CONTRIBUTING.md](CONTRIBUTING.md).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

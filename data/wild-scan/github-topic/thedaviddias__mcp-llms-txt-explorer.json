@@ -1,0 +1,36 @@
+{
+  "full_name": "thedaviddias/mcp-llms-txt-explorer",
+  "html_url": "https://github.com/thedaviddias/mcp-llms-txt-explorer",
+  "description": "MCP to explore websites with llms.txt files",
+  "topics": [
+    "cursor",
+    "llms-txt",
+    "llmstxt",
+    "mcp",
+    "mcp-server"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 75,
+  "forks": 14,
+  "open_issues": 4,
+  "language": "JavaScript",
+  "license": "NOASSERTION",
+  "default_branch": "main",
+  "created_at": "2025-03-03T23:58:17Z",
+  "last_pushed_at": "2026-01-15T15:38:12Z",
+  "fetched_at": "2026-07-11T23:09:45.365Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP LLMS.txt Explorer\n\n<a href=\"https://glama.ai/mcp/servers/lhyj3pva0z\">\n  <img width=\"380\" height=\"200\" src=\"https://glama.ai/mcp/servers/lhyj3pva0z/badge\" alt=\"LLMS.txt Explorer MCP server\" />\n</a>\n\n[![smithery badge](https://smithery.ai/badge/@thedaviddias/mcp-llms-txt-explorer)](https://smithery.ai/server/@thedaviddias/mcp-llms-txt-explorer)\n\nA Model Context Protocol server for exploring websites with llms.txt files. This server helps you discover and analyze websites that implement the llms.txt standard.\n\n## Features\n\n### Resources\n- Check websites for llms.txt and llms-full.txt files\n- Parse and validate llms.txt file contents\n- Access structured data about compliant websites\n\n### Tools\n- `check_website` - Check if a website has llms.txt files\n  - Takes domain URL as input\n  - Returns file locations and validation status\n- `list_websites` - List known websites with llms.txt files\n  - Returns structured data about compliant websites\n  - Supports filtering by file type (llms.txt/llms-full.txt)\n\n## Development\n\nInstall dependencies:\n```bash\npnpm install\n```\n\nBuild the server:\n```bash\npnpm run build\n```\n\nFor development with auto-rebuild:\n```bash\npnpm run watch\n```\n\n## Installation\n\n### Installing via Smithery\n\nTo install mcp-llms-txt-explorer for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@thedaviddias/mcp-llms-txt-explorer):\n\n```bash\nnpx -y @smithery/cli install @thedaviddias/mcp-llms-txt-explorer --client claude\n```\n\n### Installing Manually\nTo use this server:\n\n```bash\n# Clone the repository\ngit clone https://github.com/thedaviddias/mcp-llms-txt-explorer.git\ncd mcp-llms-txt-explorer\n\n# Install dependencies\npnpm install\n\n# Build the server\npnpm run build\n```\n\n### Configuration with Claude Desktop\n\nTo use with Claude Desktop, add the server config:\n\nOn MacOS: `~/Library/Application Support/Claude/claude_desktop_config.json`\nOn Windows: `%APPDATA%/Claude/claude_desktop_config.json`\n\n```json\n{\n  \"mcpServers\": {\n    \"llms-txt-explorer\": {\n      \"command\": \"node\",\n      \"args\": [\"/path/to/llms-txt-explorer/build/index.js\"]\n    }\n  }\n}\n```\n\nFor npx usage, you can use:\n```json\n{\n  \"mcpServers\": {\n    \"llms-txt-explorer\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@thedaviddias/mcp-llms-txt-explorer\"]\n    }\n  }\n}\n```\n\n### Debugging\n\nSince MCP servers communicate over stdio, debugging can be challenging. We recommend using the [MCP Inspector](https://github.com/modelcontextprotocol/inspector), which is available as a package script:\n\n```bash\npnpm run inspector\n```\n\nThe Inspector will provide a URL to access debugging tools in your browser.\n\n## License\n\nThis project is licensed under the MIT License—see the LICENSE file for details.\n"
+  },
+  "descriptor_file": {
+    "path": "smithery.yaml",
+    "content": "# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml\n\nstartCommand:\n  type: stdio\n  configSchema:\n    # JSON Schema defining the configuration options for the MCP.\n    type: object\n    properties: {}\n  commandFunction:\n    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.\n    |-\n    (config) => ({\n      command: 'node',\n      args: ['build/index.js'],\n      env: {}\n    })\n  exampleConfig: {}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

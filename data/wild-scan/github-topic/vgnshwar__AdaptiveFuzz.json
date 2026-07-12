@@ -1,0 +1,34 @@
+{
+  "full_name": "vgnshwar/AdaptiveFuzz",
+  "html_url": "https://github.com/vgnshwar/AdaptiveFuzz",
+  "description": "LLM-Based Adaptive Fuzzing for Vulnerability Discovery",
+  "topics": [
+    "langchain",
+    "langchain-python",
+    "langgraph",
+    "langgraph-python",
+    "mcp",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 1,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-01-15T01:20:48Z",
+  "last_pushed_at": "2026-06-16T03:44:35Z",
+  "fetched_at": "2026-07-12T00:39:34.629Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# AdaptiveFuzz\n\n[![Status: Migrating](https://img.shields.io/badge/status-Migrating-blueviolet?style=flat-square)](https://github.com/vgnshwar/AdaptiveFuzz/issues)\n\n> [!WARNING]\n> **Notice: Architecture Update**\n>\n> The code in this `main` branch is the original Python proof-of-concept. I am completely rebuilding the project to a new, more mature agent architecture (Interpreter, Core Engine, Sandbox, RAG, etc.).\n> \n> All the active work is happening in the [`migrate/design-flow`](https://github.com/vgnshwar/AdaptiveFuzz/tree/migrate/design-flow) branch right now, and it will be merged here soon. If you want to see the new setup and architecture flow, please check that branch.\n\n🔗 [Watch a demo of AdaptiveFuzz in action](https://drive.google.com/file/d/11ldkNL88Gsc22rEQPEMN-XeqM0S3iD1S/view?usp=sharing)\n\n\nAdaptiveFuzz is an LLM-powered multi-agent framework designed to automate the reconnaissance (enumeration) phase of penetration testing. It moves beyond static scripts and predefined patterns by emulating the adaptive, step-by-step reasoning of a human red-team operator.\n\nThe system intelligently plans enumeration tasks, executes them, analyzes the results, and proposes new strategies based on its findings, all while keeping a human operator in the loop for final approval.\n\n---\n\n### Expected Outcome\n\n1. **Information Gathering**: Collect as much information as possible about a target's systems, networks, and infrastructure. \n\n2. **Vulnerability Identification**: This research aims to uncover weak points, open ports, and other vulnerabilities that can be exploited in later stages of an attack. \n\n3. **Attack Strategy Planning**: The gathered intelligence helps attackers tailor their approach and increases the chances of a successful breach.\n\n---\n\n### Installation\n\n1. Clone the repository:\n   ```bash\n   git clone https://github.com/vgnshwar/AdaptiveFuzz.git\n   cd AdaptiveFuzz\n   ```\n\n2. Create and activate a virtual environment:\n   ```bash\n   python3 -m venv .venv\n   source .venv/bin/activate\n   ```\n\n3. Configure & Install Dependencies\n\t```bash\n\tcp .env.example .env\n\tpip install -r requirements.txt\n\t```\n\n4. Run the application:\n   ```bash\n   langgraph dev\n   ```\n\n---\n\n### Core Concepts\n\nThis project is built on two key technologies: LangGraph and the Model Context Protocol (MCP).\n\n- **LangGraph**: The entire workflow is built using LangGraph. Each step in the reconnaissance process is a node in the graph, represented by a specialized LLM-powered agent. This makes the system modular, stateful, and easy to debug.\n\n- **Model Context Protocol (MCP)**: MCP is the communication bridge that allows the LLM agents to interact with actual security tools. The project uses `FastMCP` to serve Python-based reconnaissance tools, which the agents can call to scan targets and gather information.\n\n---\n\n### Architecture\n\nThe system operates as a team of specialized agents, each handling one part of the reconnaissance loop.\n\n```mermaid\n---\nconfig:\n  flowchart:\n    curve: CARDINAL\n---\ngraph TD;\n\t__start__([<p>__start__</p>]):::first\n\tconversational_handler(conversational_handler)\n\trecon_executor(recon_executor)\n\tweb_analyzer(web_analyzer)\n\tresult_interpreter(result_interpreter)\n\tstrategy_advisor(strategy_advisor)\n\thuman_in_loop(human_in_loop)\n\t__end__([<p>__end__</p>]):::last\n\t__start__ --> conversational_handler;\n\tconversational_handler -. &nbsp;review&nbsp; .-> human_in_loop;\n\tconversational_handler -. &nbsp;proceed&nbsp; .-> recon_executor;\n\thuman_in_loop -. &nbsp;stop&nbsp; .-> __end__;\n\thuman_in_loop -. &nbsp;continue&nbsp; .-> recon_executor;\n\trecon_executor --> web_analyzer;\n\tresult_interpreter --> strategy_advisor;\n\tstrategy_advisor --> human_in_loop;\n\tweb_analyzer --> result_interpreter;\n\tclassDef default fill:,line-height:1.2\n\tclassDef first fill-opacity:0\n\tclassDef last fill:\n```\n\n#### Workflow Loop\n\n1. **Conversational Handler**: The process begins here. The user provides a target IP and a high-level goal (e.g., \"Scan this target for web vulnerabilities\"). This agent decomposes that goal into a list of specific, executable tasks (e.g., port scanning, banner grabbing).\n\n2. **Recon Executor**: This agent receives the task list and executes each one by calling the appropriate MCP tool. It runs the tools to get raw data from the target.\n\n3. **Web Analyzer**: The raw tool output (e.g., \"Port 80 open, banner: Apache/2.4.18\") is passed to this agent. It uses the web_search tool to gather external context, such as identifying service versions, associated technologies, or known CVEs for the discovered services.\n\n4. **Result Interpreter**: This agent synthesizes all the information from the raw scan results and the web search context into a clean, human-readable list of concise security findings.\n\n5. **Strategy Advisor**: Based on the unified findings, this agent acts like a senior penetration tester. It reviews the situation and proposes exactly three prioritized, strategic next steps to continue the enumeration. These strategies are formatted as new tasks for the Recon Executor.\n\n6. **Human-in-the-Loop**: This is the critical control point. The system presents the findings and the three proposed strategies to the human user. The user must choose which strategy to pursue (1, 2, or 3) or type 'stop' to end the test.\n\nIf the user chooses a strategy, the graph routes back to the Recon Executor, which runs the new tasks. This iterative cycle of Execute -> Analyze -> Strategize -> Get Human Approval is what makes the system \"adaptive.\"\n\n---\n\n### MCP Tools\n\nThe framework is pre-configured with tools served via FastMCP:\n- `port_scanner`: Scans a target IP for a list of open ports.\n- `banner_grabber`: Connects to open ports to grab service banners.\n- `web_search`: Performs a Google web search to gather external intelligence.\n\n---\n\n### License\nThis project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

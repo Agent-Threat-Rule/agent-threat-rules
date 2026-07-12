@@ -1,0 +1,37 @@
+{
+  "full_name": "tkjskanesga/beep-music-arduino-mcp",
+  "html_url": "https://github.com/tkjskanesga/beep-music-arduino-mcp",
+  "description": "Simple Arduino Beep Music Control using MCP",
+  "topics": [
+    "ai-agent-tools",
+    "ai-tools",
+    "arduino",
+    "example-project",
+    "mcp-server",
+    "mcp-tools",
+    "testing-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "JavaScript",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-05-04T06:34:18Z",
+  "last_pushed_at": "2026-05-07T14:05:47Z",
+  "fetched_at": "2026-07-12T00:50:22.830Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Simple Arduino Beep Music Control using MCP\n\nThis project is a simple example of how to control an Arduino buzzer using MCP (Model Context Protocol). It allows you to send commands from Claude Desktop to an Arduino to play musical notes.\n\n## Features\n\n- Control Arduino buzzer with frequency and duration commands\n- Send commands via MCP from Claude Desktop\n- Real-time feedback from Arduino\n\n## Prerequisites\n\n- Arduino IDE installed\n- Node.js installed\n- npm (usually comes with Node.js)\n\n## Setup\n\n### Arduino Setup\n\n1. Open the Arduino IDE\n2. Go to `File > Open` and select the `arduino/arduino.ino` file\n3. Verify the code by clicking the checkmark icon\n4. Select your Arduino board and port\n5. Upload the code to your Arduino\n\n### Project Setup\n\n1. Open your terminal or command prompt\n2. Clone this repository and navigate to the project directory:\n   ```bash\n   git clone https://github.com/tkjskanesga/beep-music-arduino-mcp.git\n   cd beep-music-arduino\n   ```\n3. Install dependencies:\n   ```bash\n   bun install\n   ```\n\n\n## Usage\n\n1. Open Claude Desktop.\n2. Go to **Settings** > **Developer** > **Configuration**.\n3. Add the server to your `claude_desktop_config.json` file:\n   ```json\n   {\n     \"mcpServers\": {\n       \"beep-music\": {\n         \"command\": \"bun\",\n         \"args\": [\"D:/project/beep-music-arduino/server.js\"]\n       }\n     }\n   }\n   ```\n   *(Note: Ensure the path to `server.js` is correct for your system. If you use Node.js instead of Bun, change the command to `node`.)*\n4. Restart Claude Desktop.\n5. You can now use Claude to control the Arduino! Example: \"Play a C major scale\" or \"Play a short beep\".\n\n\n## Acknowledgments\n\n- [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)\n- [SerialPort library](https://serialport.io/)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "server.js",
+    "size": 1167,
+    "content": "import { McpServer } from \"@modelcontextprotocol/sdk/server/mcp.js\";\nimport { StdioServerTransport } from \"@modelcontextprotocol/sdk/server/stdio.js\";\nimport { z } from \"zod\";\nimport { SerialPort } from \"serialport\";\n\n// Change 'COM3' with port Arduino (example: /dev/ttyUSB0 on Linux)\nconst port = new SerialPort({ path: 'COM4', baudRate: 115200 });\n\nconst server = new McpServer({\n  name: \"ArduinoControl\",\n  version: \"1.0.0\",\n});\n\n// MCP Tools\nserver.tool(\n  \"send-buzzer-commands\",\n  \"Sending a package of note commands to Arduino to be executed independently\",\n  {\n    steps: z.array(z.object({\n      frequency: z.number().describe(\"Hz (0 for off)\"),\n      duration: z.number().describe(\"ms\")\n    }))\n  },\n  async ({ steps }) => {\n    // Change Array To String Like This: \"262,500|294,500|330,500\"\n    const commandString = steps\n      .map(s => `${s.frequency},${s.duration}`)\n      .join('|');\n    port.write(commandString + \"\\n\");\n\n    return {\n      success: true,\n      content: [{ type: \"text\", text: \"Command has been sent and is being processed by Arduino.\" }]\n    };\n  }\n);\n\nconst transport = new StdioServerTransport();\nawait server.connect(transport);"
+  },
+  "content_fetch_notes": []
+}

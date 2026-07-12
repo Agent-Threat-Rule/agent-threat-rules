@@ -1,0 +1,44 @@
+{
+  "full_name": "zhensherlock/sp500-mcp-server",
+  "html_url": "https://github.com/zhensherlock/sp500-mcp-server",
+  "description": "An MCP server and Next.js web app for querying S&P 500 company data from Supabase, with tools for company info, news, officers, and SEC filings, plus embedded MCP App UI resources, Elicitation, and Sampling support.",
+  "topics": [
+    "finance",
+    "mcp",
+    "mcp-apps",
+    "mcp-server",
+    "model-context-protocol",
+    "nextjs",
+    "pnpm",
+    "pnpm-workspace",
+    "react",
+    "sec-filings",
+    "sp500",
+    "stocks",
+    "supabase",
+    "turborepo",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-server",
+    "model-context-protocol"
+  ],
+  "stars": 105,
+  "forks": 1,
+  "open_issues": 1,
+  "language": "TypeScript",
+  "license": "AGPL-3.0",
+  "default_branch": "main",
+  "created_at": "2026-04-12T11:29:30Z",
+  "last_pushed_at": "2026-06-11T11:48:40Z",
+  "fetched_at": "2026-07-11T22:58:54.920Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# S&P 500 MCP Server\n\n<p align=\"center\">\n  <img src=\"assets/readme-poster.png\" alt=\"S&P 500 MCP promotional poster\" width=\"100%\" />\n</p>\n\nAn MCP (Model Context Protocol) server and Next.js web app for querying S&P 500 company data from Supabase. It exposes MCP tools for company fundamentals, annual financial metrics, historical price data, news sentiment, officers, and SEC filings, plus a web UI and embedded MCP App resources for browsing and testing those tools.\n\n## Tools\n\n| Tool                     | Description                                                           |\n| ------------------------ | --------------------------------------------------------------------- |\n| `get_company_info`       | Company basics, financials, leadership, address, and business summary |\n| `get_company_financials` | Annual financial metrics with chart-ready trends and matrix output    |\n| `get_company_price_data` | Historical daily OHLCV price rows with date filters                   |\n| `get_company_news`       | Recent company news with sentiment filtering                          |\n| `get_company_officers`   | Executive officers and compensation                                   |\n| `get_company_filings`    | SEC filings history, with filing type and date filters                |\n\n`search_companies` is an internal symbol resolver, not an exposed MCP tool. User queries are resolved through `getCompanySymbol`.\n\n## Tech Stack\n\n- **Workspace**: pnpm 10.33.3 + Turborepo\n- **Runtime**: Node 22 (`.nvmrc`)\n- **Web app**: Next.js 16 App Router, React 19, TypeScript strict mode (`apps/web`)\n- **MCP Apps**: Vite single-file React pages built from `apps/web-app` and served as tool UI resources\n- **MCP**: `mcp-handler` at `apps/web/app/[transport]/route.ts`; `/sse` is the public SSE endpoint\n- **Database**: Supabase client at `apps/web/app/[transport]/utils/supabase.ts`\n- **UI**: shared shadcn/Tailwind primitives in `packages/ui`\n\n## Getting Started\n\n### Prerequisites\n\n- Node.js 22\n- pnpm 10\n- Supabase project with the S&P 500 data tables used by the tools\n\n### Local Development\n\n1. Install dependencies:\n\n```sh\npnpm install\n```\n\n2. Create a local env file with Supabase credentials:\n\n```env\nSUPABASE_URL=your_supabase_url\nSUPABASE_ANON_KEY=your_supabase_anon_key\nMCP_MAX_DURATION=60\nREDIS_URL=your_redis_url\nLOGO_DEV_TOKEN=your_logo_dev_publishable_key\n```\n\n`SUPABASE_URL` and `SUPABASE_ANON_KEY` are required. `REDIS_URL` is only needed for production SSE. `LOGO_DEV_TOKEN` is required for the `/api/logo/*` proxy.\n\n3. Build the embedded MCP App HTML resources:\n\n```sh\npnpm --filter @apps/web-app build\n```\n\n4. Start the apps:\n\n```sh\npnpm dev\n```\n\nThe Next.js web app runs on `http://localhost:3000`; the MCP endpoint is `http://localhost:3000/sse`. The `apps/web-app` dev server proxies `/sse` to port 3000 when run separately.\n\n## Commands\n\n```sh\npnpm dev        # Start apps/* dev tasks via Turbo\npnpm build      # Build apps/web and apps/web-app via Turbo\npnpm start      # Start production server for apps/web\npnpm type-check # Type-check apps/web and apps/web-app\npnpm lint       # ESLint + Prettier rule checks\n```\n\nFocused commands:\n\n```sh\npnpm --filter @apps/web dev\npnpm --filter @apps/web-app dev\npnpm --filter @apps/web-app build\npnpm exec tsc -p apps/web/tsconfig.json --noEmit\npnpm exec tsc -p apps/web-app/tsconfig.json --noEmit\npnpm exec tsc -p packages/ui/tsconfig.json --noEmit\n```\n\n## Testing\n\nTests are integration tests that connect a real MCP client to `http://localhost:3000/sse`, so start the dev server first:\n\n```sh\npnpm --filter @apps/web-app build\npnpm dev\npnpm test\n```\n\nRun a single tool test:\n\n```sh\npnpm vitest run apps/web/tests/tools/get-company-info-tool.test.ts\n```\n\nGenerate coverage:\n\n```sh\npnpm coverage\n```\n\n## Project Layout\n\n```text\napps/web/\n  app/[transport]/route.ts      MCP GET/POST/DELETE handler\n  app/[transport]/tools/        MCP tool registrations\n  app/[transport]/utils/        Supabase, symbol resolution, summaries\n  app/api/tools/call/route.ts   HTTP proxy for the web tool tester\n  app/tools/                    Tool catalog page\n  components/                   App-specific UI\n  tests/tools/                  MCP integration tests\napps/web-app/\n  src/pages/                    Embedded MCP App pages, one per tool\n  src/components/               MCP App UI components\n  scripts/build-pages.js        Builds each page into dist/*.html\n  dist/                         Generated single-file HTML resources\npackages/ui/\n  src/components/               Shared shadcn UI primitives\n  src/styles/globals.css        Shared Tailwind CSS\n```\n\n`apps/web/app/[transport]/tools/app-resource.ts` reads generated HTML from `apps/web-app/dist`, so rebuild `apps/web-app` after changing embedded MCP App pages.\n\n## Vercel Deployment\n\n- Requires [Fluid compute](https://vercel.com/docs/functions/fluid-compute)\n- `MCP_MAX_DURATION` defaults to `60`; set a higher duration for long-running production calls when your Vercel plan supports it\n- SSE is enabled (`disableSse: false`); production SSE requires Redis via `REDIS_URL`\n\n## Docs\n\nFull guides and examples: https://sp500-mcp.vercel.app/\n\n## Contributing\n\nFeel free to dive in! [Open an issue](https://github.com/zhensherlock/sp500-mcp-server/issues/new/choose) or submit PRs.\n\nStandard Readme follows the [Contributor Covenant](http://contributor-covenant.org/version/1/3/0/) Code of Conduct.\n\n### Contributors\n\nThis project exists thanks to all the people who contribute.\n\n<a href=\"https://github.com/zhensherlock/sp500-mcp-server/graphs/contributors\">\n  <img src=\"https://contrib.rocks/image?repo=zhensherlock/sp500-mcp-server\" />\n</a>\n\n## License\n\n[GNU Affero General Public License v3.0](LICENSE) © MichaelSun\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

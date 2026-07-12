@@ -1,0 +1,30 @@
+{
+  "full_name": "tkausch/MCPUnixManual",
+  "html_url": "https://github.com/tkausch/MCPUnixManual",
+  "description": "An MCP implemented in swift to search and read man pages for macOS",
+  "topics": [
+    "mcp-server",
+    "mcp-servers"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Swift",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-03-06T19:48:45Z",
+  "last_pushed_at": "2026-03-06T20:24:33Z",
+  "fetched_at": "2026-07-12T00:10:06.275Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP Unix Manual\n\nA Model Context Protocol (MCP) server that provides access to Unix manual pages directly within Claude. Query man pages, search documentation, and explore Unix commands without leaving your conversation.\n\n## Features\n\n- **Read Manual Pages**: Get the full text of any Unix man page\n- **Search Documentation**: Find commands by keyword using `apropos`\n- **Browse Sections**: Explore the standard Unix manual page sections\n- **macOS Native**: Built with Swift for optimal performance on macOS\n\n## Available Tools\n\n| Tool | Description | Parameters |\n|------|-------------|------------|\n| `read_manpage` | Read a Unix manual page | `command` (required), `section` (optional) |\n| `search_manpages` | Search man pages by keyword | `query` (required) |\n| `list_man_sections` | List standard manual sections | None |\n\n### Example Usage\n\n```\nClaude, can you read the man page for grep?\nClaude, search for commands related to \"network\"\nClaude, show me the list of manual sections\n```\n\n## Requirements\n\n- macOS 13.0 or later\n- Swift 6.2 or later\n- Xcode (for building)\n\n## Installation\n\n### 1. Build the Server\n\nClone the repository and build a release version:\n\n```bash\ngit clone <repository-url>\ncd MCPUnixManual\nswift build -c release\n```\n\nThe executable will be located at `.build/release/mcp-unix-manual`.\n\n### 2. Configure Claude Desktop\n\n#### Step 1: Locate the Configuration File\n\nOpen the Claude Desktop configuration file:\n\n```bash\nopen ~/Library/Application\\ Support/Claude/claude_desktop_config.json\n```\n\nIf the file doesn't exist, create it:\n\n```bash\nmkdir -p ~/Library/Application\\ Support/Claude\ntouch ~/Library/Application\\ Support/Claude/claude_desktop_config.json\n```\n\n#### Step 2: Add the MCP Server\n\nAdd the following configuration to `claude_desktop_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"unix-manual\": {\n      \"command\": \"/absolute/path/to/MCPUnixManual/.build/release/mcp-unix-manual\"\n    }\n  }\n}\n```\n\n**Important**: Replace `/absolute/path/to/MCPUnixManual` with the actual absolute path to your cloned repository.\n\nTo find the absolute path, run this in your project directory:\n\n```bash\npwd\n```\n\nThen use that path in your configuration. For example:\n\n```json\n{\n  \"mcpServers\": {\n    \"unix-manual\": {\n      \"command\": \"/Users/yourname/Projects/MCPUnixManual/.build/release/mcp-unix-manual\"\n    }\n  }\n}\n```\n\n#### Step 3: Restart Claude Desktop\n\nCompletely quit and restart Claude Desktop for the changes to take effect.\n\n#### Step 4: Verify Integration\n\nOpen Claude Desktop and look for the MCP icon (🔌) in the bottom right corner. Click it to see available MCP servers - you should see \"unix-manual\" listed.\n\nYou can now ask Claude to use the Unix manual tools:\n- \"Read the man page for `ls`\"\n- \"Search for commands related to processes\"\n- \"What are the Unix manual sections?\"\n\n### Troubleshooting\n\n**MCP server not appearing:**\n- Verify the path in `claude_desktop_config.json` is absolute and correct\n- Check that the executable has execute permissions: `chmod +x .build/release/mcp-unix-manual`\n- Ensure you've restarted Claude Desktop completely\n\n**Permission errors:**\n- Make sure the executable is built and accessible\n- Try running the executable directly to check for errors: `.build/release/mcp-unix-manual`\n\n**JSON syntax errors:**\n- Validate your `claude_desktop_config.json` syntax\n- Ensure there are no trailing commas in the JSON\n\n## Claude Code Integration\n\nFor Claude Code (CLI), add the following to your MCP settings file:\n\n```json\n{\n  \"mcpServers\": {\n    \"unix-manual\": {\n      \"command\": \"/absolute/path/to/MCPUnixManual/.build/release/mcp-unix-manual\"\n    }\n  }\n}\n```\n\n## Development\n\n### Running in Development Mode\n\n```bash\nswift run mcp-unix-manual\n```\n\n### Running Tests\n\n```bash\nswift test\n```\n\n### Project Structure\n\n```\nMCPUnixManual/\n├── Package.swift              # Swift package manifest\n├── Sources/\n│   └── MCPUnixManual/\n│       └── MCP.swift         # Main server implementation\n└── README.md\n```\n\n## Security\n\nThis MCP server executes shell commands (`man`, `apropos`) to retrieve Unix manual pages. Input validation is performed to prevent command injection:\n\n- Only alphanumeric characters, dots, hyphens, and underscores are allowed in command names\n- Arguments are properly escaped before execution\n- Commands run with the same permissions as Claude Desktop\n\n## Platform Support\n\n- **macOS**: Full support (uses `Foundation.Process`)\n- **iOS/tvOS/watchOS/visionOS**: Compiles but returns error messages (Process unavailable)\n\nThis is intentional - Unix manual pages are only available on macOS.\n\n## License\n\n[Add your license here]\n\n## Contributing\n\nContributions are welcome! Please feel free to submit issues or pull requests.\n\n## Credits\n\nBuilt with the [MCP Swift SDK](https://github.com/modelcontextprotocol/swift-sdk) by Anthropic.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

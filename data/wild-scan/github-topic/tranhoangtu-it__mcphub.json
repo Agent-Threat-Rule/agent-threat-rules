@@ -1,0 +1,36 @@
+{
+  "full_name": "tranhoangtu-it/mcphub",
+  "html_url": "https://github.com/tranhoangtu-it/mcphub",
+  "description": "Curated MCP server hub — browse, search, and install 40+ MCP servers across AI clients",
+  "topics": [
+    "ai-agents",
+    "ai-tools",
+    "cli",
+    "developer-tools",
+    "mcp",
+    "mcp-servers",
+    "model-context-protocol",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 1,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-03-29T08:57:40Z",
+  "last_pushed_at": "2026-07-06T11:57:12Z",
+  "fetched_at": "2026-07-12T00:21:47.975Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# mcphub\n\nCentralized hub for curated MCP (Model Context Protocol) servers. Browse, search, and install MCP servers across multiple AI clients from a single CLI.\n\n## Why mcphub?\n\nSetting up MCP servers means finding the right packages, figuring out config formats for each AI client, and managing environment variables. mcphub solves this:\n\n- **40+ curated servers** — Verified configs ready to install in one command\n- **5 bundles** — Pre-built collections by use case (web-dev, data-science, devops, full-stack, productivity)\n- **5 AI clients** — Claude Desktop, VS Code, Cursor, Windsurf, Claude Code\n- **Auto-discovery** — Finds 400+ servers from npm automatically\n- **Zero config** — Works instantly with `npx`, no global install needed\n\n## Quick Start\n\n```bash\n# Install a single server\nnpx mcphub install filesystem\n\n# Install a bundle (multiple servers at once)\nnpx mcphub bundle install web-developer\n\n# Search servers\nnpx mcphub search database\n\n# List all available servers\nnpx mcphub list\n\n# Show server details\nnpx mcphub info postgres\n\n# Show bundle contents before installing\nnpx mcphub bundle show devops\n```\n\n## Available Bundles\n\n| Bundle | Servers | Use Case |\n|--------|---------|----------|\n| **web-developer** | filesystem, git, github, fetch, puppeteer, postgres, sequential-thinking | Frontend & backend web dev |\n| **data-science** | filesystem, postgres, sqlite, fetch, memory, sequential-thinking | Data analysis & AI workflows |\n| **devops** | docker, kubectl, aws, github, git, sentry | Infrastructure & deployment |\n| **full-stack** | filesystem, git, github, fetch, puppeteer, postgres, docker, sequential-thinking, memory | Complete dev setup |\n| **productivity** | slack, notion, linear, jira, github | Communication & project management |\n\n## How It Works\n\n> [View interactive architecture diagram on Excalidraw](https://excalidraw.com/#json=yPIOD2dxsstmfz2cvqpXk,zP-lcGRPTD5Hba3CtK1Jkw)\n\n```mermaid\nflowchart TD\n    A[\"npx mcphub install filesystem\"] --> B[\"Load from registry index.json\"]\n    B --> C[\"Resolve server config\"]\n    C --> D{\"mcpman installed?\"}\n    D -->|YES| E[\"Delegate to mcpman\\n(lockfile, rollback)\"]\n    D -->|NO| F[\"Detect AI clients\"]\n    F --> G[\"Write config to each\\nclient's JSON file\"]\n    E --> H[\"Done! Restart AI client\"]\n    G --> H\n```\n\nmcphub reads server configs from its curated registry and writes them to the correct config file for each detected AI client:\n\n| Client | Config Path | Root Key |\n|--------|------------|----------|\n| Claude Desktop | `%APPDATA%/Claude/claude_desktop_config.json` | `mcpServers` |\n| Cursor | `%APPDATA%/Cursor/User/globalStorage/cursor.mcp/mcp.json` | `mcpServers` |\n| VS Code | `~/.vscode/mcp.json` | `servers` |\n| Windsurf | `~/.windsurf/mcp.json` | `mcpServers` |\n| Claude Code | `~/.claude/settings.json` | `mcpServers` |\n\n## With mcpman\n\n[mcpman](https://github.com/user/mcpman) is a full-featured MCP package manager. mcphub integrates with it seamlessly:\n\n```mermaid\nflowchart LR\n    subgraph mcphub[\"mcphub (WHAT)\"]\n        R[Curated Registry]\n        B[Bundles]\n        D[Auto-Discovery]\n        S[Quality Scoring]\n    end\n    subgraph mcpman[\"mcpman (HOW)\"]\n        I[Smart Installer]\n        L[Lockfile]\n        RB[Rollback]\n        V[Vault]\n    end\n    DEV[\"Developer\"] --> mcphub\n    DEV --> mcpman\n    mcphub -->|delegates| mcpman\n    mcpman -->|resolves from| mcphub\n    mcpman --> AI[\"AI Clients\"]\n    mcphub -->|fallback| AI\n```\n\n**mcphub = what to install** (curated catalog, bundles, scoring)\n**mcpman = how to install** (lockfile, rollback, version management, 10+ clients)\n\n### Option 1: Automatic (Recommended)\n\nIf mcpman is installed globally, mcphub automatically delegates to it:\n\n```bash\nnpm install -g mcpman\nnpx mcphub install filesystem    # → automatically uses mcpman under the hood\n```\n\n### Option 2: mcpman Registry\n\nAdd mcphub as a registry source in mcpman:\n\n```bash\nmcpman registry add mcphub https://raw.githubusercontent.com/user/mcphub/main/registry/index.json\nmcpman install mcphub:filesystem\nmcpman install mcphub:postgres\n```\n\n### Option 3: mcpman Plugin\n\nFor richer integration (search, bundles via mcpman):\n\n```bash\n# Copy plugin to ~/.mcpman/plugins/mcphub/\nmcpman install mcphub:filesystem    # Resolves from mcphub registry\n```\n\n### Standalone (No mcpman)\n\nmcphub works perfectly without mcpman. It writes configs directly to your AI client files. mcpman just adds lifecycle features (lockfile, rollback, updates).\n\n## Server Categories\n\n| Category | Examples |\n|----------|---------|\n| **developer-tools** | filesystem, git, github, gitlab, eslint, storybook, context7, openapi |\n| **database** | postgres, sqlite, supabase |\n| **web** | fetch, brave-search, puppeteer, chrome-devtools, tavily, apify |\n| **ai** | memory, sequential-thinking |\n| **cloud** | aws, azure |\n| **devops** | docker, kubectl, circleci |\n| **productivity** | notion, linear, jira, clickup, salesforce, hubspot, google-calendar |\n| **analytics** | sentry, datadog, dynatrace |\n| **design** | figma, drawio |\n| **communication** | slack |\n\n## Contributing\n\nWant to add an MCP server? See [CONTRIBUTING.md](./CONTRIBUTING.md).\n\n**TL;DR:** Create a YAML file, submit a PR, CI validates automatically.\n\n## Project Structure\n\n```\nmcphub/\n├── registry/\n│   ├── servers/        # 40 curated server YAML configs\n│   ├── bundles/        # 5 curated bundles\n│   └── discovered/     # 400+ auto-discovered servers\n├── cli/                # Standalone CLI (npx mcphub)\n├── website/            # GitHub Pages static site\n├── schema/             # JSON Schema for validation\n├── scripts/            # Validate, build, discover, health-check\n└── .github/workflows/  # CI: validate PRs, build, release, discover, health\n```\n\n## License\n\n[MIT](./LICENSE)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

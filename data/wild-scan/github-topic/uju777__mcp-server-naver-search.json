@@ -1,0 +1,49 @@
+{
+  "full_name": "uju777/mcp-server-naver-search",
+  "html_url": "https://github.com/uju777/mcp-server-naver-search",
+  "description": "MCP server for Naver Search (Shopping, Cafe, News). Essential for Korean users.",
+  "topics": [
+    "anthropic",
+    "cafe",
+    "claude",
+    "claude-code",
+    "cursor",
+    "korea",
+    "korean",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "model-context-protocol",
+    "naver",
+    "naver-api",
+    "naver-news",
+    "naver-search",
+    "naver-search-tool",
+    "python",
+    "search-api",
+    "shopping"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-01-12T08:36:30Z",
+  "last_pushed_at": "2026-01-12T12:04:35Z",
+  "fetched_at": "2026-07-12T00:18:20.920Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Naver Search MCP Server\n\n<a href=\"https://glama.ai/mcp/servers/@uju777/mcp-server-naver-search\">\n  <img width=\"380\" height=\"200\" src=\"https://glama.ai/mcp/servers/@uju777/mcp-server-naver-search/badge\" />\n</a>\n\nConnecting Claude Desktop & Cursor to **Naver(Korea's #1 Search Engine)**.\nClaude에서 **네이버 쇼핑 최저가, 카페 리얼 후기, 실시간 뉴스**를 검색하세요.\n\n> **Why use this?**\n> Brave Search or Google often fail to retrieve local Korean information (Prices, Cafe posts, News).\n> This MCP serves as a bridge to Naver's robust database.\n\n## Key Features\n\n- **Shopping (쇼핑):** Compare lowest prices from Naver Shopping.\n- **Cafe (카페):** Search community posts (Naver Cafe) for real user reviews.\n- **News (뉴스):** Get real-time Korean news articles.\n- **Blog (블로그):** Find authentic reviews from Korean bloggers.\n\n## Quick Start\n\n### 1. Prerequisites\n- Python 3.10+\n- [Naver Developers API Key](https://developers.naver.com/apps/#/register) (Free 25,000 reqs/day)\n\n### 2. Installation\n\n<details>\n<summary><b>Claude Desktop</b></summary>\n\nAdd this to your `claude_desktop_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"naver-search\": {\n      \"command\": \"uv\",\n      \"args\": [\n        \"run\",\n        \"--with\", \"mcp[cli]\",\n        \"--with\", \"httpx\",\n        \"--with\", \"python-dotenv\",\n        \"/YOUR/PATH/TO/mcp-server-naver-search/server.py\"\n      ],\n      \"env\": {\n        \"NAVER_CLIENT_ID\": \"YOUR_ID\",\n        \"NAVER_CLIENT_SECRET\": \"YOUR_SECRET\"\n      }\n    }\n  }\n}\n```\n\n</details>\n\n<details>\n<summary><b>Claude Code (CLI)</b></summary>\n\nAdd this to your `~/.claude/settings.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"naver-search\": {\n      \"command\": \"sh\",\n      \"args\": [\n        \"-c\",\n        \"export PATH=\\\"$HOME/.local/bin:$PATH\\\" && cd /YOUR/PATH/TO/mcp-server-naver-search && uv run --with 'mcp[cli]' --with httpx --with python-dotenv python server.py\"\n      ],\n      \"env\": {\n        \"NAVER_CLIENT_ID\": \"YOUR_ID\",\n        \"NAVER_CLIENT_SECRET\": \"YOUR_SECRET\"\n      }\n    }\n  }\n}\n```\n\n> **Note:** Claude Code requires `sh -c` with PATH export because it doesn't inherit your shell's PATH configuration.\n\n</details>\n\n<details>\n<summary><b>Cursor</b></summary>\n\nAdd this to your Cursor MCP settings:\n\n```json\n{\n  \"mcpServers\": {\n    \"naver-search\": {\n      \"command\": \"uv\",\n      \"args\": [\n        \"run\",\n        \"--with\", \"mcp[cli]\",\n        \"--with\", \"httpx\",\n        \"--with\", \"python-dotenv\",\n        \"/YOUR/PATH/TO/mcp-server-naver-search/server.py\"\n      ],\n      \"env\": {\n        \"NAVER_CLIENT_ID\": \"YOUR_ID\",\n        \"NAVER_CLIENT_SECRET\": \"YOUR_SECRET\"\n      }\n    }\n  }\n}\n```\n\n</details>\n\n## Usage Examples (Try these!)\n\nAfter restarting Claude, ask:\n\n### 1. Shopping - Find Lowest Price\n```\n\"맥북 프로 M4 14인치 네이버 쇼핑 최저가 알려줘. 판매처랑 가격 비교해줘.\"\n(\"Find the lowest price for MacBook Pro M4 on Naver Shopping.\")\n```\n\n### 2. Cafe - Real Community Reviews\n```\n\"서울 성수동 데이트 코스 추천해줘. 네이버 카페 글 위주로 찾아줘.\"\n(\"Recommend date spots in Seongsu-dong using Naver Cafe posts.\")\n```\n\n### 3. News - Breaking News\n```\n\"오늘 삼성전자 주가 관련 뉴스 5개만 요약해줘.\"\n(\"Summarize 5 latest news articles about Samsung Electronics stock.\")\n```\n\n## License\n\nMIT License © 2026 [uju777](https://github.com/uju777)\n\nThis project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.\n\n---\n\n## Contributing\n\nIssues and Pull Requests are welcome!\n\n## Author\n\n**uju777** - [GitHub](https://github.com/uju777)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "server.py",
+    "size": 4129,
+    "content": "import os\nimport httpx\nfrom mcp.server.fastmcp import FastMCP\nfrom dotenv import load_dotenv\n\n# .env 파일 로드\nload_dotenv()\n\nNAVER_CLIENT_ID = os.getenv(\"NAVER_CLIENT_ID\")\nNAVER_CLIENT_SECRET = os.getenv(\"NAVER_CLIENT_SECRET\")\n\nif not NAVER_CLIENT_ID or not NAVER_CLIENT_SECRET:\n    raise ValueError(\"Error: .env 파일에 NAVER_CLIENT_ID와 NAVER_CLIENT_SECRET을 설정해주세요.\")\n\nmcp = FastMCP(\"Naver Search\")\n\n@mcp.tool()\nasync def search_naver(query: str, category: str = \"blog\", display: int = 5) -> str:\n    \"\"\"\n    네이버 검색 API를 사용하여 한국 현지 정보를 검색합니다.\n\n    Args:\n        query (str): 검색어 (예: \"맥북프로 M4 최저가\", \"삼성전자 주가 뉴스\")\n        category (str): 검색 카테고리\n            - \"shop\": 쇼핑 최저가 검색 (★인기 기능)\n            - \"cafe\": 네이버 카페 글 검색 (★찐 후기)\n            - \"news\": 실시간 뉴스 기사\n            - \"blog\": 블로그 리뷰\n            - \"local\": 맛집, 장소 전화번호\n        display (int): 가져올 결과 개수 (기본 5개)\n    \"\"\"\n\n    base_url = \"https://openapi.naver.com/v1/search\"\n    endpoints = {\n        \"shop\": f\"{base_url}/shop.json\",\n        \"cafe\": f\"{base_url}/cafearticle.json\",\n        \"news\": f\"{base_url}/news.json\",\n        \"blog\": f\"{base_url}/blog.json\",\n        \"local\": f\"{base_url}/local.json\"\n    }\n\n    url = endpoints.get(category, endpoints[\"blog\"])\n\n    headers = {\n        \"X-Naver-Client-Id\": NAVER_CLIENT_ID,\n        \"X-Naver-[REDACTED-GENERIC_KV_SECRET]\n    }\n\n    params = {\n        \"query\": query,\n        \"display\": display,\n        \"sort\": \"sim\"\n    }\n\n    async with httpx.AsyncClient() as client:\n        try:\n            response = await client.get(url, headers=headers, params=params)\n            response.raise_for_status()\n            data = response.json()\n            items = data.get('items', [])\n\n            if not items:\n                return \"검색 결과가 없습니다.\"\n\n            formatted_results = []\n\n            for idx, item in enumerate(items, 1):\n                title = item.get('title', '').replace('<b>', '').replace('</b>', '')\n\n                if category == \"shop\":\n                    # 쇼핑: 가격과 브랜드 정보 강조\n                    lprice = item.get('lprice', '0')\n                    mall = item.get('mallName', '')\n                    brand = item.get('brand', '')\n                    link = item.get('link', '')\n                    formatted_results.append(\n                        f\"### {idx}. {title}\\n\"\n                        f\"- **가격**: {int(lprice):,}원\\n\"\n                        f\"- **판매처**: {mall}\\n\"\n                        f\"- **브랜드**: {brand}\\n\"\n                        f\"- **링크**: {link}\\n\"\n                    )\n                elif category == \"cafe\":\n                    # 카페: 카페 이름과 글 내용 강조\n                    desc = item.get('description', '').replace('<b>', '').replace('</b>', '')\n                    cafename = item.get('cafename', '')\n                    link = item.get('link', '')\n                    formatted_results.append(\n                        f\"### {idx}. {title}\\n\"\n                        f\"- **출처**: {cafename} (네이버 카페)\\n\"\n                        f\"- **요약**: {desc}\\n\"\n                        f\"- **링크**: {link}\\n\"\n                    )\n                else:\n                    # 뉴스/블로그/지역\n                    desc = item.get('description', '').replace('<b>', '').replace('</b>', '')\n                    link = item.get('link', '')\n                    if category == \"local\":\n                        addr = item.get('roadAddress', '')\n                        formatted_results.append(f\"### {idx}. {title}\\n- 주소: {addr}\\n- 링크: {link}\")\n                    else:\n                        formatted_results.append(f\"### {idx}. {title}\\n- 내용: {desc}\\n- 링크: {link}\")\n\n            return \"\\n\".join(formatted_results)\n\n        except Exception as e:\n            return f\"오류 발생: {str(e)}\"\n\nif __name__ == \"__main__\":\n    mcp.run()\n"
+  },
+  "content_fetch_notes": []
+}

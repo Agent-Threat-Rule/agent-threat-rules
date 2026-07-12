@@ -1,0 +1,35 @@
+{
+  "full_name": "bakaut/actlane",
+  "html_url": "https://github.com/bakaut/actlane",
+  "description": "Actlane is a AI capability contracts, that defines the safe lane for AI agent actions by transforming fragmented tools and prompts into a single, policy-protected, and auditable contract",
+  "topics": [
+    "agent-tools",
+    "ai-agents",
+    "ai-safety",
+    "developer-tools",
+    "mcp-tools",
+    "model-context-protocol",
+    "policy-as-code"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 1,
+  "language": "Go",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2026-05-20T19:04:44Z",
+  "last_pushed_at": "2026-06-11T20:14:58Z",
+  "fetched_at": "2026-07-12T00:47:26.891Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Actlane\n\n**MCP gives agents hands. Actlane defines the safe lane for every action.**\n\nActlane is a pre-alpha open-source CLI for teams experimenting with AI coding agents.\n\nIt helps turn messy agent setup — `AGENTS.md`, `SKILL.md`, MCP configs, OpenCode/Codex rules, prompts, and human conventions — into small, reviewable capability packs.\n\nThe first practical goal is simple:\n\n> Let an AI agent create a safe GitHub draft PR without giving it broad raw tool access.\n\nActlane is currently focused on:\n\n- importing existing OpenCode and Codex setup;\n- generating Codex/OpenCode artifacts;\n- keeping generated files reviewable;\n- supporting `plan`, `apply`, and `remove`;\n- experimenting with policy-gated MCP actions.\n\nActlane is **not** a production security product yet.  \nIt is not a hosted service, marketplace, MCP gateway, or agent framework.\n\nIt is a small attempt to make AI-agent adoption less magical and more reviewable.\n\n## Quick Start Install\n\n```bash\ncurl -fsSL https://actlane.ru/install.sh | sh\nactlane version\n```\n\n## Use Case: Safe Draft PR Pack\n\nTry the bundled pack that teaches an agent how to create a safe GitHub draft PR:\n\n```bash\nactlane validate ./packs/create-github-draft-pr\nactlane generate ./packs/create-github-draft-pr --target codex\nactlane plan ./packs/create-github-draft-pr --target codex --project .\nactlane apply ./packs/create-github-draft-pr --target codex --project .\n```\n\nUse `--target opencode` to safely plan and apply the same pack for OpenCode.\nAn existing user-owned `opencode.jsonc` is reported as a conflict instead of\nbeing overwritten or automatically merged. Review the `plan` output before\n`apply`.\n\n## Use Case: Share Codex Config To OpenCode\n\nFor a local project, migrate project-local Codex configuration to OpenCode with\none reviewed apply:\n\n```bash\nactlane migrate opencode\n```\n\nUse `--dry-run` to preview without mutation, `--diff` for detailed changes, or\n`--yes` for non-interactive apply. The successful migration snapshot is kept at\n`.actlane/migrations/codex-to-opencode/` so unchanged Actlane-owned OpenCode\nfiles can be safely removed later:\n\n```bash\nactlane remove .actlane/migrations/codex-to-opencode --target opencode\n```\n\nThe migration facade transfers project-local objects only. Global objects,\ncredentials, hooks, sessions, history, and other personal runtime state remain\nexcluded.\n\nDeveloper A captures the current Codex agent setup into an Actlane pack:\n\n```bash\nactlane inspect --ai-agent codex\nactlane import --ai-agent codex\nactlane pack create\n```\n\nGlobal Codex skills and MCP servers are inventory-only by default. Import selected portable candidates explicitly:\n\n```bash\nactlane import --ai-agent codex \\\n  --include-global-skill code-review \\\n  --include-global-mcp github\n```\n\nCodex project skills are discovered and safely adopted under\n`.agents/skills`. Actlane still reads legacy `.codex/skills` installations for\nimport compatibility and reports a warning; newly generated Codex profiles use\n`.agents/skills`.\n\nThen Developer A sends `actlane-pack.zip` to Developer B through an approved file-transfer channel.\n\nThen Developer B inspects, materializes, reviews, and applies an OpenCode\nprofile from the received pack:\n\n```bash\nactlane pack inspect ./actlane-pack.zip\nactlane generate ./actlane-pack.zip --target opencode\nactlane plan ./actlane-pack.zip --target opencode\nactlane apply ./actlane-pack.zip --target opencode\n# for safe cleanup\nactlane remove ./actlane-pack.zip --target opencode\n```\n\n`generate` writes only `./generated/opencode/`. `plan` reads that staging\ndirectory without mutation, and `apply` is the only step that writes OpenCode\nproject files. `remove` reads the same staging directory and removes only\nunchanged Actlane-owned files and blocks.\n\nThis is the intended migration flow: `Codex config -> Actlane pack -> approved transfer -> OpenCode generation -> reviewed apply`. Environment values, hooks, credentials, auth, sessions, history, trust state, logs, caches, and SQLite state are never transferred.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

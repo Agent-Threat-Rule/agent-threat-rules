@@ -1,0 +1,38 @@
+{
+  "full_name": "hirebalzac/mcp",
+  "html_url": "https://github.com/hirebalzac/mcp",
+  "description": null,
+  "topics": [
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "mcp-tools",
+    "model-context-protocol",
+    "seo",
+    "seo-optimization",
+    "seo-tools",
+    "seotools"
+  ],
+  "matched_query_topics": [
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-03-19T11:37:11Z",
+  "last_pushed_at": "2026-03-27T22:34:04Z",
+  "fetched_at": "2026-07-12T00:14:58.947Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Balzac MCP Server\n\n[![npm version](https://img.shields.io/npm/v/balzac-mcp.svg)](https://www.npmjs.com/package/balzac-mcp)\n[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)\n\n**MCP server for the Balzac AI content platform** -- give AI agents native access to keyword research, article writing, and CMS publishing.\n\nThe Balzac MCP server implements the [Model Context Protocol](https://modelcontextprotocol.io) so that AI agents like Claude Desktop, OpenClaw, Claude Code, and any MCP-compatible client can manage your entire content pipeline through structured tool calls.\n\n---\n\n## Quick Start\n\n### 1. Get your API key\n\nLog in to [Balzac](https://app.hirebalzac.ai), go to **Settings > API Keys**, and generate a key.\n\n### 2. Configure your MCP client\n\nAdd to your MCP configuration (Claude Desktop, OpenClaw, or any MCP-compatible host):\n\n```json\n{\n  \"mcpServers\": {\n    \"balzac\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"balzac-mcp\"],\n      \"env\": {\n        \"BALZAC_[REDACTED-GENERIC_KV_SECRET]\"\n      }\n    }\n  }\n}\n```\n\nFor **Claude Desktop**, this file lives at `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\\Claude\\claude_desktop_config.json` (Windows).\n\n### 3. Start using it\n\nOnce configured, your AI agent can directly call Balzac tools:\n\n> \"Research keywords for my site and write an SEO article about the best opportunity\"\n>\n> \"Write 3 articles about our top keywords and publish them as drafts to WordPress\"\n>\n> \"Rewrite my latest article with a more professional tone\"\n\n---\n\n## Environment Variables\n\n| Variable | Required | Description |\n|----------|----------|-------------|\n| `BALZAC_API_KEY` | Yes | Your Balzac API key (starts with `bz_`) |\n| `BALZAC_API_URL` | No | API base URL (default: `https://api.hirebalzac.ai/v1`) |\n\n---\n\n## Available Tools\n\n### Workspaces\n\n| Tool | Description |\n|------|-------------|\n| `list_workspaces` | List all workspaces |\n| `get_workspace` | Get workspace details |\n| `create_workspace` | Create a workspace from a domain |\n| `update_workspace` | Update workspace settings |\n| `delete_workspace` | Delete a workspace |\n\n### Keywords\n\n| Tool | Description |\n|------|-------------|\n| `list_keywords` | List keywords (filter by status) |\n| `get_keyword` | Get keyword details (volume, competition, intent, difficulty, GSC metrics) |\n| `create_keyword` | Add a keyword |\n| `enable_keyword` | Enable a keyword |\n| `disable_keyword` | Disable a keyword |\n| `delete_keyword` | Delete a keyword |\n| `generate_keywords` | Generate new keywords with AI (async) |\n\n### Suggestions\n\n| Tool | Description |\n|------|-------------|\n| `list_suggestions` | List content suggestions |\n| `get_suggestion` | Get suggestion details |\n| `generate_suggestions` | Generate 10 new suggestions (1 credit) |\n| `accept_suggestion` | Accept and start writing (5 credits) |\n| `reject_suggestion` | Reject a suggestion |\n\n### Briefings\n\n| Tool | Description |\n|------|-------------|\n| `list_briefings` | List briefings |\n| `get_briefing` | Get briefing details |\n| `create_briefing` | Create a briefing and start writing (5 credits) |\n\n### Articles\n\n| Tool | Description |\n|------|-------------|\n| `list_articles` | List articles (filter by status, published) |\n| `get_article` | Get article details and content |\n| `update_article` | Update article metadata |\n| `delete_article` | Delete an article |\n| `rewrite_article` | Rewrite article content (3 credits) |\n| `regenerate_article_picture` | Regenerate main picture (1 credit) |\n| `publish_article` | Publish to an integration |\n| `schedule_article` | Schedule future publication |\n| `export_article` | Export as HTML, Markdown, or XML |\n\n### Competitors\n\n| Tool | Description |\n|------|-------------|\n| `list_competitors` | List competitor domains |\n| `create_competitor` | Add a competitor |\n| `delete_competitor` | Remove a competitor |\n\n### Links\n\n| Tool | Description |\n|------|-------------|\n| `list_links` | List reference links |\n| `create_link` | Add a reference link |\n| `delete_link` | Remove a link |\n\n### Settings\n\n| Tool | Description |\n|------|-------------|\n| `get_settings` | Get workspace settings |\n| `update_settings` | Update workspace settings |\n\n### Tones of Voice\n\n| Tool | Description |\n|------|-------------|\n| `list_tones` | List available tones |\n| `get_tone` | Get tone details |\n\n### Integrations\n\n| Tool | Description |\n|------|-------------|\n| `list_integrations` | List publishing integrations |\n| `get_integration` | Get integration details |\n| `create_integration` | Create an integration (WordPress, Webflow, Wix, GoHighLevel, Webhook) |\n| `update_integration` | Update integration settings |\n| `delete_integration` | Delete an integration |\n| `reconnect_integration` | Re-test integration connection |\n\n---\n\n## Credit Costs\n\n| Action | Credits |\n|--------|---------|\n| Writing an article (accept suggestion or create briefing) | 5 |\n| Generating 10 new suggestions | 1 |\n| Rewriting an article | 3 |\n| Regenerating a picture | 1 |\n\nIf your account doesn't have enough credits, the tool returns an error with the required and available credit counts.\n\n---\n\n## See Also\n\n- [Balzac CLI](https://github.com/hirebalzac/cli) -- Command-line interface\n- [API Documentation](https://developer.hirebalzac.ai) -- Full REST API reference\n\n---\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

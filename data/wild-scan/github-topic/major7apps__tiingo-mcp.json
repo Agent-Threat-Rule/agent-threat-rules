@@ -1,0 +1,47 @@
+{
+  "full_name": "major7apps/tiingo-mcp",
+  "html_url": "https://github.com/major7apps/tiingo-mcp",
+  "description": "MCP server for the Tiingo financial data API — stocks, forex, crypto, news, fundamentals & corporate actions",
+  "topics": [
+    "ai",
+    "ai-agents",
+    "ai-tools",
+    "crypto",
+    "fastmcp",
+    "finance",
+    "financial-data",
+    "forex",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "model-context-protocal",
+    "python",
+    "stocks",
+    "tiingo",
+    "tiingo-api"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 6,
+  "forks": 1,
+  "open_issues": 7,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-13T20:59:00Z",
+  "last_pushed_at": "2026-06-23T18:22:44Z",
+  "fetched_at": "2026-07-11T23:58:17.732Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# tiingo-mcp\n\n[![PyPI](https://img.shields.io/badge/PyPI-tiingo--mcp%20v1.1.0-blue)](https://pypi.org/project/tiingo-mcp/)\n[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)](https://pypi.org/project/tiingo-mcp/)\n[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)\n[![CI](https://github.com/wshobson/tiingo-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/wshobson/tiingo-mcp/actions/workflows/ci.yml)\n\nAn [MCP](https://modelcontextprotocol.io) server that wraps the [Tiingo](https://www.tiingo.com) financial data API. Covers stocks, forex, crypto, news, fundamentals, and corporate actions across 17 tools, 4 resources, and 5 prompts.\n\n## Installation\n\n```bash\nuvx tiingo-mcp\n# or\npip install tiingo-mcp\n```\n\nRequires Python 3.12+.\n\n## Configuration\n\n```bash\nexport TIINGO_[REDACTED-GENERIC_KV_SECRET]\"\n```\n\nFree API keys at [api.tiingo.com](https://api.tiingo.com). The free plan covers stocks, forex, crypto, news, and fundamentals. Dividends and splits endpoints need a [Power or Business plan](https://www.tiingo.com/account/billing/pricing).\n\n### Claude Desktop\n\nAdd to `claude_desktop_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"tiingo\": {\n      \"command\": \"uvx\",\n      \"args\": [\"tiingo-mcp\"],\n      \"env\": {\n        \"TIINGO_[REDACTED-GENERIC_KV_SECRET]\"\n      }\n    }\n  }\n}\n```\n\n### Claude Code\n\n```bash\nclaude mcp add tiingo -- uvx tiingo-mcp\n```\n\n### Other Clients\n\nAnything that speaks stdio:\n\n```bash\nTIINGO_API_KEY=your-key tiingo-mcp\n```\n\n## Tools\n\n### Stocks (EOD)\n| Tool | Description |\n|------|-------------|\n| `get_stock_metadata` | Ticker info — name, exchange, description, date range |\n| `get_stock_prices` | Historical EOD OHLCV with adjusted prices |\n\n### Real-Time & Intraday (IEX)\n| Tool | Description |\n|------|-------------|\n| `get_realtime_price` | Current IEX top-of-book quote |\n| `get_intraday_prices` | Intraday prices at 1min–1hour intervals |\n\n### Forex\n| Tool | Description |\n|------|-------------|\n| `get_forex_quote` | Current top-of-book rate |\n| `get_forex_prices` | Historical forex prices |\n\n### Crypto\n| Tool | Description |\n|------|-------------|\n| `get_crypto_quote` | Current prices (2,100+ tickers) |\n| `get_crypto_prices` | Historical crypto prices |\n| `get_crypto_metadata` | Ticker metadata and supported exchanges |\n\n### News\n| Tool | Description |\n|------|-------------|\n| `get_news` | Search financial articles by ticker, tag, source, date |\n\n### Fundamentals\n| Tool | Description |\n|------|-------------|\n| `get_fundamentals_definitions` | Metric definitions |\n| `get_financial_statements` | Income statements, balance sheets, cash flow |\n| `get_daily_fundamentals` | Daily metrics — market cap, P/E, EV/EBITDA |\n| `get_company_meta` | Sector, industry, location |\n\n### Corporate Actions\n| Tool | Description |\n|------|-------------|\n| `get_dividends` | Dividend and distribution history * |\n| `get_dividend_yield` | Dividend yield history |\n| `get_splits` | Stock split history * |\n\n\\* *Requires Power or Business plan*\n\n## Resources\n\nStatic reference data exposed as browsable MCP resources. No API calls consumed.\n\n| Resource | Description |\n|----------|-------------|\n| `tiingo://capabilities` | Server capabilities, asset classes, rate limits, plan restrictions |\n| `tiingo://fundamentals/definitions` | Curated reference of 20 key fundamental metrics |\n| `tiingo://guide/date-formats` | Date formats, resample frequencies, sort options |\n| `tiingo://guide/{asset_class}` | Usage guide per asset class (stocks, forex, crypto, news, fundamentals, corporate-actions) |\n\n## Prompts\n\nReusable workflow templates that guide LLMs through multi-step financial analysis.\n\n| Prompt | Arguments | Description |\n|--------|-----------|-------------|\n| `analyze-stock` | `ticker`, `include_news` | Comprehensive single-stock analysis |\n| `compare-stocks` | `ticker1`, `ticker2`, `period` | Side-by-side stock comparison |\n| `crypto-market-overview` | `tickers` | Crypto market snapshot with 7-day trends |\n| `earnings-report-analysis` | `ticker`, `earnings_date` | Earnings report with price reaction and news |\n| `forex-pair-analysis` | `pair`, `period` | Currency pair trend and volatility analysis |\n\n## Parameters\n\nDates are **YYYY-MM-DD** format.\n\n| Parameter | Used By | Description |\n|-----------|---------|-------------|\n| `start_date` | Most tools | Start of date range |\n| `end_date` | Most tools | End of date range |\n| `resample_freq` | Price tools | `daily`, `weekly`, `monthly`, `annually`, `1min`, `5min`, `1hour`, etc. |\n| `tickers` | Crypto, news, meta | Comma-separated list |\n\n## Rate Limits\n\n| Plan | Requests/Hour | Requests/Day |\n|------|---------------|--------------|\n| Free | 50 | 1,000 |\n| Power | 5,000 | 50,000 |\n| Business | Higher | Higher |\n\nThe server retries transient errors (2x) and returns JSON error objects for rate limits (429), auth failures (401), plan restrictions (403), and bad tickers (404).\n\n## Development\n\n```bash\ngit clone https://github.com/wshobson/tiingo-mcp.git\ncd tiingo-mcp\nuv sync\n\n# Unit tests (no API key needed)\nuv run pytest tests/test_client.py tests/test_server.py -v\n\n# Integration tests (needs TIINGO_API_KEY)\nuv run pytest tests/test_integration.py -v -s\n\n# All tests\nuv run pytest -v\n\n# Lint & format\nuv run ruff check src/ tests/\nuv run ruff format src/ tests/\n```\n\n## License\n\n[MIT](LICENSE)\n\n## Links\n\n- [Tiingo API docs](https://www.tiingo.com/documentation/general/overview)\n- [Model Context Protocol](https://modelcontextprotocol.io)\n- [FastMCP](https://gofastmcp.com)\n"
+  },
+  "descriptor_file": {
+    "path": "smithery.yaml",
+    "content": "# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml\n\nstartCommand:\n  type: stdio\n\nconfigSchema:\n  type: object\n  required:\n    - tiingoApiKey\n  properties:\n    tiingoApiKey:\n      type: string\n      description: Your Tiingo API key. Get one free at https://api.tiingo.com\n\ncommandFunction:\n  |-\n    config => ({ command: 'uvx', args: ['tiingo-mcp'], env: { TIINGO_API_KEY: config.tiingoApiKey } })\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "full_name": "devhelmhq/mcp-server",
+  "html_url": "https://github.com/devhelmhq/mcp-server",
+  "description": "DevHelm MCP server for AI agents",
+  "topics": [
+    "mcp-server",
+    "mcp-servers"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 9,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-09T09:22:11Z",
+  "last_pushed_at": "2026-07-05T14:29:07Z",
+  "fetched_at": "2026-07-12T00:12:06.853Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# DevHelm MCP Server\n\n<!-- mcp-name: io.github.devhelmhq/mcp-server -->\n\n[Model Context Protocol](https://modelcontextprotocol.io) (MCP) server for [DevHelm](https://devhelm.io) — gives AI coding assistants (Cursor, Claude Desktop, Windsurf, etc.) access to your uptime monitors, incidents, alerting, and more.\n\n## Quick Start\n\n### Hosted (recommended)\n\nUse the hosted server at `mcp.devhelm.io`. Two connection modes:\n\n**Bearer auth:**\n```\nURL: https://mcp.devhelm.io/mcp\nAuthorization: Bearer <your-api-token>\n```\n\n**API key in URL** (for clients that only accept a URL):\n```\nURL: https://mcp.devhelm.io/<your-api-token>/mcp\n```\n\n### Local (stdio)\n\n```bash\npip install devhelm-mcp-server\nexport DEVHELM_API_TOKEN=your-token\ndevhelm-mcp-server\n```\n\nOr with `uvx` (no install required):\n\n```bash\nexport DEVHELM_API_TOKEN=your-token\nuvx devhelm-mcp-server\n```\n\n### Cursor / Claude Desktop\n\nAdd to your MCP config:\n\n```json\n{\n  \"mcpServers\": {\n    \"devhelm\": {\n      \"url\": \"https://mcp.devhelm.io/<your-api-token>/mcp\"\n    }\n  }\n}\n```\n\n## Available Tools\n\n| Category | Tools |\n|----------|-------|\n| **Monitors** | list, get, create, update, delete, pause, resume, test, results, versions |\n| **Incidents** | list, get, create, resolve, delete |\n| **Alert Channels** | list, get, create, update, delete, test |\n| **Notification Policies** | list, get, create, update, delete, test |\n| **Environments** | list, get, create, update, delete |\n| **Secrets** | list, create, update, delete |\n| **Tags** | list, get, create, update, delete |\n| **Resource Groups** | list, get, create, update, delete, add member, remove member |\n| **Webhooks** | list, get, create, update, delete, test |\n| **API Keys** | list, create, revoke, delete |\n| **Dependencies** | list, get, track, delete |\n| **Deploy Lock** | acquire, current, release, force-release |\n| **Status** | overview |\n\n## Development\n\n```bash\nuv sync\nmake dev          # Start with MCP Inspector (stdio)\nmake serve        # Start HTTP server on :8000\nmake test         # Run unit tests\nmake lint         # Check formatting\nmake typecheck    # Run mypy\n```\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": {
+    "path": "server.json",
+    "content": "{\n  \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json\",\n  \"name\": \"io.github.devhelmhq/mcp-server\",\n  \"title\": \"DevHelm MCP Server\",\n  \"description\": \"Monitor uptime, manage incidents, configure alerting, and query dependency status via DevHelm\",\n  \"websiteUrl\": \"https://docs.devhelm.io/mcp-server\",\n  \"repository\": {\n    \"url\": \"https://github.com/devhelmhq/mcp-server\",\n    \"source\": \"github\"\n  },\n  \"version\": \"1.0.2\",\n  \"packages\": [\n    {\n      \"registryType\": \"pypi\",\n      \"identifier\": \"devhelm-mcp-server\",\n      \"version\": \"1.0.2\",\n      \"runtimeHint\": \"uvx\",\n      \"transport\": {\n        \"type\": \"stdio\"\n      },\n      \"environmentVariables\": [\n        {\n          \"description\": \"DevHelm API token for authentication\",\n          \"isRequired\": true,\n          \"format\": \"string\",\n          \"isSecret\": true,\n          \"name\": \"DEVHELM_API_TOKEN\"\n        }\n      ]\n    }\n  ]\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

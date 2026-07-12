@@ -1,0 +1,37 @@
+{
+  "full_name": "eshitakundu/hn-mcp-server",
+  "html_url": "https://github.com/eshitakundu/hn-mcp-server",
+  "description": "MCP server exposing Hacker News primitives: tools, resources and prompts - built with the official Python mcp SDK",
+  "topics": [
+    "hacker-news",
+    "llm",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "model-context-protocol",
+    "python"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-05-23T20:16:23Z",
+  "last_pushed_at": "2026-05-23T20:19:40Z",
+  "fetched_at": "2026-07-12T00:41:06.960Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# hn-mcp-server\n\nAn MCP server that exposes Hacker News as tools and resources — callable by any MCP client (Claude Desktop, Cursor, Claude Code).\n\nBuilt with the official Python `mcp` SDK. No API keys required.\n\n---\n\n## Demo\n\n![Tools List](screenshots/tools_list.png)\n\n![Tool Call and Response](screenshots/tool_call_and_response.gif)\n\n---\n\n## MCP Primitives\n\n### Tools\n\n| Tool | Description | Arguments |\n|---|---|---|\n| `get_top_story` | Fetch top N HN stories by score | `count: int = 10` |\n| `get_story_details` | Full details of a single story | `story_id: int` |\n| `search_hn` | Search HN via Algolia by keyword | `query: str`, `count: int = 10` |\n\n### Resources\n\n| URI | Description |\n|---|---|\n| `hn://top` | Top 5 HN stories as plain text context |\n\n![Resource Read](screenshots/resource_read.png)\n\n### Prompts\n\n| Name | Description |\n|---|---|\n| `hn_briefing` | Morning briefing prompt — instructs the LLM to fetch and summarize top stories |\n\n---\n\n## Setup\n\n```bash\ngit clone https://github.com/eshitakundu/hn-mcp-server\ncd hn-mcp-server\npython -m venv venv\n\n# Windows\nvenv\\Scripts\\activate\n\n# macOS/Linux\nsource venv/bin/activate\n\npip install -r requirements.txt\n```\n\n### Test with MCP Inspector\n\n```bash\nmcp dev server.py\n```\n\nOpens the MCP Inspector in your browser. From there you can list tools, call them with arguments, read resources, and inspect the raw JSON-RPC messages.\n\n---\n\n## Connect to Claude Desktop\n\nAdd to `%APPDATA%\\Claude\\claude_desktop_config.json` (Windows) or `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS):\n\n```json\n{\n  \"mcpServers\": {\n    \"hn-server\": {\n      \"command\": \"python\",\n      \"args\": [\"C:\\\\full\\\\path\\\\to\\\\hn-mcp-server\\\\server.py\"]\n    }\n  }\n}\n```\n\nRestart Claude Desktop. You can now ask Claude:\n\n- *\"What's trending on Hacker News today?\"*\n- *\"Search HN for anything about AI agents\"*\n- *\"Give me details on story 12345\"*\n\nClaude will call your tools automatically and use the results in its response.\n\n---\n\n## APIs Used\n\n| API | Usage | Auth |\n|---|---|---|\n| [HN Firebase API](https://hacker-news.firebaseio.com/v0/) | Story data, top story IDs | None |\n| [Algolia HN Search](https://hn.algolia.com/api) | Full-text search | None |\n\n---\n\n## Stack\n\n- Python 3.11+\n- [`mcp`](https://github.com/modelcontextprotocol/python-sdk) — official MCP Python SDK\n- [`httpx`](https://www.python-httpx.org/) — HTTP client"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "server.py",
+    "size": 3256,
+    "content": "import httpx\nfrom mcp.server.fastmcp import FastMCP\nfrom datetime import datetime\n\nmcp = FastMCP(\"hn-server\")\n\nHN_BASE = \"https://hacker-news.firebaseio.com/v0\"\nALGOLIA = \"https://hn.algolia.com/api/v1\"\n\n@mcp.tool()\ndef get_top_story(count: int = 10) -> list[dict]:\n    \"\"\"\n    Fetch top N stories from Hacker News on the basis of score.\n    \"\"\"\n    with httpx.Client() as client:\n        response = client.get(f\"{HN_BASE}/topstories.json\")\n        story_ids = response.json()[:count]\n\n        stories=[]\n        for story_id in story_ids:\n            r = client.get(f\"{HN_BASE}/item/{story_id}.json\")\n            data = r.json()\n            stories.append({\n                \"id\": story_id,\n                \"title\": data.get(\"title\"),\n                \"url\": data.get(\"url\"),\n                \"score\": data.get(\"score\"),\n                \"by\": data.get(\"by\"),\n                \"comments\": data.get(\"descendants\", 0)\n            })\n        return stories\n    \n@mcp.tool()\ndef get_story_details(story_id: int) -> dict:\n    \"\"\"\n    Get full details of a single HN story including comment count and metadata.\n    \"\"\"\n    with httpx.Client() as client:\n        r = client.get(f\"{HN_BASE}/item/{story_id}.json\")\n        data = r.json()\n        return {\n            \"id\": story_id,\n            \"title\": data.get(\"title\"),\n            \"url\": data.get(\"url\"),\n            \"text\": data.get(\"text\"),  \n            \"score\": data.get(\"score\"),\n            \"by\": data.get(\"by\"),\n            \"time\": datetime.fromtimestamp(data.get(\"time\")).isoformat(), \n            \"comments\": data.get(\"descendants\", 0),\n            \"type\": data.get(\"type\")\n        }\n    \n@mcp.tool()\ndef search_hn(query: str, count: int = 10) -> list[dict]:\n    \"\"\"\n    Search Hacker News stories by keyword using Algolia.\n    \"\"\"\n    with httpx.Client() as client:\n        r = client.get(\n            f\"{ALGOLIA}/search\",\n            params={\"query\": query, \"tags\": \"story\", \"hitsPerPage\": count}\n        )\n        data = r.json()\n        results = []\n        for hit in data.get(\"hits\", []):\n            results.append({\n                \"title\": hit.get(\"title\"),\n                \"url\": hit.get(\"url\"),\n                \"author\": hit.get(\"author\"),\n                \"points\": hit.get(\"points\"),\n                \"story_id\": hit.get(\"objectID\")\n            })\n        return results\n\n@mcp.resource(\"hn://top\")\ndef top_stories_resource() -> str:\n    \"\"\"\n    Top 5 HN stories as readable context.\n    \"\"\"\n    with httpx.Client() as client:\n        response = client.get(f\"{HN_BASE}/topstories.json\")\n        story_ids = response.json()[:5]\n\n        lines = []\n        for story_id in story_ids:\n            r = client.get(f\"{HN_BASE}/item/{story_id}.json\")\n            data = r.json()\n            lines.append(\n                f\"- {data.get('title')} (score: {data.get('score')}) \"\n                f\"by {data.get('by')} | {data.get('url', 'no url')}\"\n            )\n        return \"\\n\".join(lines)  \n\n@mcp.prompt()\ndef hn_briefing() -> str:\n    \"\"\"Morning briefing prompt for HN digest.\"\"\"\n    return (\n        \"You are a tech news assistant. \"\n        \"Fetch the top 5 HN stories and summarize each in one sentence. \"\n        \"Group them by topic if possible.\"\n    )\n\nif __name__ == \"__main__\":\n    mcp.run()"
+  },
+  "content_fetch_notes": []
+}

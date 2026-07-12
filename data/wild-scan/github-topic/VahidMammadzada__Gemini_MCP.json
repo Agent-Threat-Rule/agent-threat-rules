@@ -1,0 +1,32 @@
+{
+  "full_name": "VahidMammadzada/Gemini_MCP",
+  "html_url": "https://github.com/VahidMammadzada/Gemini_MCP",
+  "description": "An intelligent multi-agent AI assistant powered by Gemini LLM using the ReAct pattern to orchestrate five specialized agents (crypto, stocks, portfolio, RAG, web search) through MCP. Features a LangGraph supervisor with streaming Gradio UI.",
+  "topics": [
+    "agentic-ai",
+    "llm-agent",
+    "mcp-servers",
+    "rag-chatbot"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 6,
+  "forks": 1,
+  "open_issues": 1,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-10-29T17:01:07Z",
+  "last_pushed_at": "2025-12-11T20:20:11Z",
+  "fetched_at": "2026-07-11T23:58:35.389Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Gemini MCP\n\nA multi-agent AI assistant powered by Gemini LLM using the ReAct pattern to orchestrate specialized agents through Model Context Protocol (MCP). Features a LangGraph supervisor with streaming Streamlit and Gradio UIs.\n\n## ✨ Features\n\n- **ReAct-based supervisor** – dynamically routes queries to specialized agents\n- **5 Specialized Agents** – crypto, stocks, portfolio tracking, RAG document Q&A, web search\n- **Real-time streaming** – see AI reasoning steps as they happen\n- **Document upload** – chat with PDFs, TXT, and DOCX files\n- **Cloud integration** – ChromaDB Cloud for vectors, Google Cloud SQL for portfolio data\n- **Docker support** – containerized MCP servers\n\n## 🛠️ Tech Stack\n\n- **AI/LLM**: Google Gemini 2.5 Pro, LangChain, LangGraph\n- **UI**: Streamlit (main), Gradio 5.0+ (for demos)\n- **Agent Protocol**: FastMCP (Model Context Protocol)\n- **Databases**: ChromaDB Cloud (vectors), Google Cloud SQL (PostgreSQL)\n- **APIs**: Alpha Vantage, CoinGecko, DuckDuckGo\n- **DevOps**: Docker, Docker Compose\n\n\n## ⚙️ How It Works\n\nThe ReAct supervisor uses a reasoning loop (max 5 steps):\n1. **Think** – Analyze query and determine needed information\n2. **Act** – Call appropriate agent(s)\n3. **Observe** – Process agent responses\n4. **Repeat** – Continue until sufficient information gathered\n5. **Synthesize** – Generate final answer\n\n\n## 🚀 Quick Start\n```bash\n# Clone and install\ngit clone <repository-url>\ncd Gemini_MCP\npip install -r requirements.txt\n```\n\nCreate `.env` file:\n```bash\nGOOGLE_[REDACTED-GENERIC_KV_SECRET]\nCHROMA_[REDACTED-GENERIC_KV_SECRET]\nCHROMA_TENANT=your_tenant_id\nCHROMA_DATABASE=your_database_name\nALPHA_VANTAGE_[REDACTED-GENERIC_KV_SECRET]\nCOINGECKO_[REDACTED-GENERIC_KV_SECRET]\nGCP_PROJECT_ID=your_project_id\nCLOUD_SQL_INSTANCE_CONNECTION_NAME=project:region:instance\nCLOUD_SQL_DB_NAME=finance_tracker\nCLOUD_SQL_DB_USER=your_db_user\nCLOUD_SQL_DB_PASS=your_db_password\n```\n\nRun database schema:\n```bash\npsql -h <cloud-sql-host> -U <user> -d finance_tracker -f database_schema.sql\n```\n\nStart services:\n```bash\n# Start MCP Toolbox\ndocker-compose up -d\n\n# Run app\npython app.py\n```\n\nAccess at: http://localhost:7860\n\n## 💡 Usage Examples\n\n- Crypto: \"What's the current Bitcoin price?\"\n- Stocks: \"What's Tesla's stock price?\"\n- Portfolio: \"Add 10 shares of AAPL at $150\"\n- Documents: Upload PDF → \"Summarize this document\"\n- Search: \"Latest AI developments\"\n\n## 🔑 API Keys Setup\n\n- **Google AI**: [Get key](https://makersuite.google.com/app/apikey)\n- **ChromaDB**: [Sign up](https://www.trychroma.com/)\n- **Alpha Vantage**: [Get key](https://www.alphavantage.co/support/#api-key)\n- **CoinGecko**: [Get key](https://www.coingecko.com/)\n- **Google Cloud SQL**: Create project → Enable Cloud SQL API → Run `gcloud auth application-default login`\n\n\n## 📁 Project Structure\n```\nGemini_MCP/\n├── .github/              # CI/CD workflows\n├── .streamlit/           # Streamlit configuration\n├── docker/               # Docker containerization\n├── scripts/              # Startup and setup scripts\n├── src/                  # Main application source code\n├── tests/                # Unit test suite\n├── ui/                   # User interface applications\n├── requirements.txt      # Python dependencies (260+ packages)\n├── docker-compose.yml    # Multi-container orchestration\n├── database_schema.sql   # PostgreSQL schema\n└── fastapi_testing.ipynb # Jupyter notebook for API testing\n```\n---\n\nBuilt with Google Gemini, LangGraph, Streamlit and MCP"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

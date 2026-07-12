@@ -1,0 +1,34 @@
+{
+  "full_name": "qent/broxy",
+  "html_url": "https://github.com/qent/broxy",
+  "description": "Broxy fronts multiple upstream MCP servers as one, aggregates capabilities across protocols, and exposes only what presets allow. ",
+  "topics": [
+    "mcp",
+    "mcp-client",
+    "mcp-gateway",
+    "mcp-server",
+    "mcp-servers",
+    "model-context-protocol"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 3,
+  "forks": 0,
+  "open_issues": 3,
+  "language": "Kotlin",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2025-10-25T08:22:58Z",
+  "last_pushed_at": "2026-06-29T21:14:34Z",
+  "fetched_at": "2026-07-12T00:01:09.593Z",
+  "readme": {
+    "path": "README.md",
+    "content": "[![CI](https://github.com/qent/broxy/actions/workflows/ci.yml/badge.svg)](https://github.com/qent/broxy/actions/workflows/ci.yml)\n\n<div align=\"center\">\n  <h1>Broxy — your single MCP endpoint</h1>\n  <p>\n    Broxy fronts multiple upstream MCP servers as one, aggregates capabilities across protocols,\n    and exposes only what presets allow. It runs locally, can be securely accessed over the internet,\n    and supports OAuth plus dynamic client registration via upstream integrations where available.\n  </p>\n  <p>\n    <a href=\"https://broxy.run\">broxy.run</a> · <a href=\"#features\">Features</a> · <a href=\"#connections\">Connections</a> · <a href=\"#cli-jar\">CLI jar</a>\n  </p>\n</div>\n\n## Why Broxy\n\n<ul style=\"list-style: none; padding-left: 0;\">\n  <li>💰 Save tokens and money by exposing only the essential tools, prompts, and resources per task.</li>\n  <li>🎯 Build more efficient agents with focused toolsets and fewer distractions.</li>\n  <li>🔌 Connect ChatGPT and other HTTP-only MCP clients to local STDIO MCP servers.</li>\n  <li>⚡ Instantly context-switch by hot-swapping presets.</li>\n  <li>🔐 Sign in with Google to access the dashboard and remote connectivity features.</li>\n  <li>📄 Apache 2.0 licensed for personal or commercial use.</li>\n</ul>\n\n## Features\n\n<table role=\"presentation\">\n  <tr>\n    <td>\n      <img src=\"https://broxy.run/static/resources/features/mcp_list.png\" alt=\"Set up your MCP servers once, use it with any client\" />\n      <h3>Set up your MCP servers once</h3>\n      Centralize MCP servers without duplicating per-client settings. Connect local or remote servers over\n      STDIO, HTTP, SSE, or WebSocket, and add custom icons to keep large lists readable.\n      <br />\n      &nbsp;\n    </td>\n    <td>\n      <img src=\"https://broxy.run/static/resources/features/preset_creation.png\" alt=\"Mix capabilities from servers into one preset\" />\n      <h3>Mix capabilities from MCP servers</h3>\n      Build purpose-built presets by mixing tools, prompts, and resources from any connected server.\n      Each preset exposes only what an agent needs and reduces context noise.\n      <br />\n      &nbsp;\n    </td>\n  </tr>\n  <tr>\n    <td>\n      <img src=\"https://broxy.run/static/resources/features/chatgpt_to_local_mcp.png\" alt=\"Connect ChatGPT to local MCP servers\" />\n      <h3>Connect ChatGPT to local MCP servers</h3>\n      Use local MCP servers inside ChatGPT on web, desktop, or mobile. Broxy Cloud bridges the\n      connection securely so private tools are available anywhere you sign in.\n      <br />\n      &nbsp;\n    </td>\n    <td>\n      <img src=\"https://broxy.run/static/resources/features/popular_clients.png\" alt=\"Connect to popular clients in one click\" />\n      <h3>Connect to popular clients in one click</h3>\n      Auto-configure popular AI clients across HTTP, SSE, and STDIO modes. Broxy updates only the MCP\n      section so the rest of your client configuration stays untouched.\n      <br />\n      &nbsp;\n    </td>\n  </tr>\n  <tr>\n    <td>\n      <img src=\"https://broxy.run/static/resources/features/dynamic_client_with_oauth.png\" alt=\"Dynamic client registration with OAuth\" />\n      <h3>Dynamic client registration with OAuth</h3>\n      Authorize servers that require personal data without manual client setup. Broxy discovers OAuth\n      metadata, registers clients dynamically, and works even when the target client lacks OAuth support.\n      <br />\n      &nbsp;\n    </td>\n    <td>\n      <img src=\"https://broxy.run/static/resources/features/adapter_mode.png\" alt=\"Stable MCP surface for preset changes\" />\n      <h3>Stable MCP surface for preset changes</h3>\n      Expose a stable MCP surface so clients do not need to refresh capabilities when presets change.\n      Adapter mode also surfaces prompts and resources for clients that only support tools, including ChatGPT.\n      <br />\n      &nbsp;\n    </td>\n  </tr>\n</table>\n\n## Connections\n\n**STDIO (local connection)**\n\nUse STDIO when your client expects a local MCP process.\n\n```json\n{\n    \"mcpServers\": {\n        \"broxy\": {\n            \"command\": \"/Applications/broxy.app/Contents/MacOS/broxy\",\n            \"args\": [\n                \"--stdio-proxy\"\n            ]\n        }\n    }\n}\n```\n\n**Streamable HTTP**\n\nBroxy exposes Streamable HTTP on `http://localhost:3335/mcp` by default.\n\n```json\n{\n    \"mcpServers\": {\n        \"broxy\": {\n            \"url\": \"http://localhost:3335/mcp\"\n        }\n    }\n}\n```\n\n**SSE inbound**\n\nSSE is served on the same host and port at `/sse`.\n\n- `GET http://localhost:3335/sse` opens the SSE stream and returns the session endpoint.\n- `POST http://localhost:3335/sse?sessionId=...` forwards MCP JSON-RPC messages into the session.\n\n## Developer Documentation\n\nFor contributors and AI code agents:\n\n- Start with `docs/readme.md` (2-level docs index).\n- Use `docs/agent_quickstart.md` for task-to-doc mapping, invariants, and required checks.\n- Canonical runtime contracts are in:\n  - `docs/core_contracts.md`\n  - `docs/proxy_facade.md`\n  - `docs/inbound_transports.md`\n  - `docs/presets_and_filtering.md`\n  - `docs/configuration_and_hot_reload.md`\n\n## CLI jar\n\n**Build the jar**\n\n```bash\n./gradlew :cli:shadowJar\n```\n\nThe jar is generated at `cli/build/libs/broxy-cli.jar`.\n\n**Run STDIO**\n\n```bash\njava -jar cli/build/libs/broxy-cli.jar proxy \\\n  --preset-id <preset-id> \\\n  --config-dir ~/.config/broxy \\\n  --inbound stdio\n```\n\n**Run Streamable HTTP + SSE**\n\n```bash\njava -jar cli/build/libs/broxy-cli.jar proxy \\\n  --preset-id <preset-id> \\\n  --config-dir ~/.config/broxy \\\n  --inbound http \\\n  --url http://localhost:3335/mcp\n```\n\nThe CLI expects `mcp.json` and `preset_<id>.json` in the config directory (default `~/.config/broxy`).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

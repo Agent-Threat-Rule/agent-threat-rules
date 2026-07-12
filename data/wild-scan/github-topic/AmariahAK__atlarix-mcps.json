@@ -1,0 +1,43 @@
+{
+  "full_name": "AmariahAK/atlarix-mcps",
+  "html_url": "https://github.com/AmariahAK/atlarix-mcps",
+  "description": "Auto-synced MCP registry for Atlarix — merged index.json of Model Context Protocol servers (official npm packages + community). No server code; Atlarix installs via installUrl.",
+  "topics": [
+    "ai-coding",
+    "ai-tools",
+    "atlarix",
+    "automation",
+    "developer-tools",
+    "github-actions",
+    "marketplace",
+    "mcp",
+    "mcp-servers",
+    "model-context-protocol",
+    "nodejs",
+    "norahlabs",
+    "npx",
+    "opensource",
+    "registry"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 1,
+  "open_issues": 0,
+  "language": "JavaScript",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2026-05-15T17:47:50Z",
+  "last_pushed_at": "2026-07-06T00:40:44Z",
+  "fetched_at": "2026-07-12T00:21:09.268Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# atlarix-mcps\n\nPublic MCP registry for the [Atlarix](https://github.com/AmariahAK/Atlarix) MCP marketplace. This repo does **not** ship server code; it publishes a single JSON index Atlarix fetches over HTTPS.\n\n## Consumed URL (Atlarix default)\n\nAtlarix loads this raw file (schema: `McpRegistryIndex` — `version` + `mcps` array, each entry uses **`installUrl`**, not `installCommand`):\n\nhttps://raw.githubusercontent.com/AmariahAK/atlarix-mcps/main/index.json\n\nYou can mirror that file or point the app at a custom URL in settings.\n\n## Layout\n\n| Path | Purpose |\n|------|---------|\n| `index.json` | **Generated** merged registry (do not edit by hand) |\n| `registry.overrides.json` | Curated deep-merges and extra entries — **edit via PR** |\n| `scripts/sync.mjs` | Node 20+ sync: GitHub API + awesome README + overrides |\n\nOptional keys on entries (`verified`, `needsReview`) are ignored by Atlarix today but are kept for tooling and review; see [CONTRIBUTING.md](./CONTRIBUTING.md).\n\n## Upstream data\n\n- [modelcontextprotocol/servers](https://github.com/modelcontextprotocol/servers) and [modelcontextprotocol/servers-archived](https://github.com/modelcontextprotocol/servers-archived) — npm packages under `src/<dir>/package.json` (same `id` as directory name; main repo wins when both define a folder)\n- [punkpeye/awesome-mcp-servers](https://github.com/punkpeye/awesome-mcp-servers) — README bullets with a GitHub link and a `` `npx …` `` hint\n- [microsoft/mcp](https://github.com/microsoft/mcp) — skipped in automation (NuGet / non-`npx` templates)\n\n## Automation\n\nGitHub Actions (`.github/workflows/sync.yml`) runs on a weekly schedule (Monday 00:00 UTC), `workflow_dispatch`, and pushes to `main`. It regenerates `index.json` and commits only when the file changes (`chore: sync MCP registry [skip ci]`).\n\n## Local dry-run\n\nPer-source counts are printed to stdout (official main/archived dir counts, awesome line/hit counts, merged size, `needsReview` tally):\n\n```bash\nnpm run sync:dry-run\n# or: node scripts/sync.mjs --dry-run\n```\n\nUse `--print-json` with `--dry-run` to dump the merged payload without writing `index.json`. Set `GITHUB_TOKEN` for a higher GitHub API quota.\n\n## Contributing\n\nSee [CONTRIBUTING.md](./CONTRIBUTING.md) and the **Request a server** issue template.\n\n## License\n\nApache License 2.0 — see [LICENSE](./LICENSE).\n\n## Related Work\n\natlarix-mcps is part of the broader Atlarix ecosystem. The context management system that Blueprint and MCP tools operate within is documented in a published technical paper:\n\n**Blueprint: Section-Scoped Structural Graph Retrieval and Post-Turn Compression for Agentic LLM Coding in Multi-Repository Workspaces**  \nAmariah Kamau, NorahLabs — May 2026  \n[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20381860.svg)](https://doi.org/10.5281/zenodo.20381860)\n\nThe paper describes how Blueprint's section-scoped graph interacts with the tool layer — including how MCP tool results are handled in post-turn summarisation.\n\nAtlarix's harness is benchmarked too: [**atlarix.dev/benchmark**](https://atlarix.dev/benchmark) is the official, continually-updated home for every Atlarix benchmark — Terminal-Bench and beyond — with raw result files and full reproduction steps.\n\n## Related repos\n\n- **[atlarix-skills](https://github.com/AmariahAK/atlarix-skills)** — Apache-2.0 skill registry for Settings → Skills (**Pro / Workforce**).\n- **[atlarix-releases](https://github.com/AmariahAK/atlarix-releases)** — published desktop installers and update manifests.\n- **[AmariahAK/Atlarix](https://github.com/AmariahAK/Atlarix)** — application source (proprietary); product site [atlarix.dev](https://atlarix.dev).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

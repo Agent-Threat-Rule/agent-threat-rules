@@ -1,0 +1,41 @@
+{
+  "full_name": "Cleveland-RD/claude-image-gen",
+  "html_url": "https://github.com/Cleveland-RD/claude-image-gen",
+  "description": "GPT and Gemini image generation for Claude Desktop and Claude Code",
+  "topics": [
+    "claude",
+    "claude-code-plugin",
+    "claude-code-skill",
+    "claude-desktop",
+    "claude-plugin",
+    "claude-skills",
+    "gptimage2",
+    "image-generation",
+    "mcp",
+    "mcp-tools",
+    "nano-banana",
+    "plugins",
+    "skills"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-05-15T15:20:38Z",
+  "last_pushed_at": "2026-05-18T07:46:16Z",
+  "fetched_at": "2026-07-12T00:41:42.309Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# claude-image-gen\n\nOpen-source Claude plugin + stdio MCP server for generating and editing images via OpenAI `gpt-image-2` and Google Gemini (`gemini-3.1-flash-image-preview` / `gemini-3-pro-image-preview`). Bring your own OpenAI / Gemini API key(s).\n\n## Layout\n\n- `mcp/` — TypeScript stdio MCP. Canonical source. Built bundle lives at `mcp/dist/index.js` (gitignored).\n- `plugin/` — Claude plugin: the `image-gen` skill + `/image-gpt` and `/image-gemini` slash commands. Does **not** bundle the MCP — pair it with one of the MCP install paths below.\n- `mcpb/` — Build inputs for the `.mcpb` Desktop Extension. The published `.mcpb` (in `dist/`) is a Desktop-installable archive of the MCP plus sharp's native prebuild.\n\n## Install\n\nThe plugin and the MCP are independent artifacts. Most people install just the MCP; add the plugin if you want the skill workflow and slash commands.\n\n| Artifact | Surface | What it gives you |\n|---|---|---|\n| `image-gen-<os>-<arch>.mcpb` (per-platform — see install guide) | Claude Desktop (Install Extension) | MCP tools (`generate_image`, `check_image_job`) |\n| `image-gen-plugin.zip` | Claude Desktop (upload plugin) or Claude Code (`--plugin-dir` / marketplace) | `image-gen` skill + `/image-gpt` + `/image-gemini` |\n| `mcp/dist/index.js` | Manual `claude mcp add` (Claude Code) or `claude_desktop_config.json` (Desktop) | Same MCP, for advanced users who want full control |\n\nPer-platform `.mcpb` builds: `darwin-arm64`, `darwin-x64`, `win32-x64` (Claude Desktop's supported platforms). Linux users install via Claude Code's build-from-source path — see [docs/install/claude-code.md](docs/install/claude-code.md). The plugin zip is cross-platform (text only).\n\n### Setup guides\n\n- **[Claude Desktop](docs/install/claude-desktop.md)** — install the `.mcpb` and (optionally) the plugin.\n- **[Claude Code](docs/install/claude-code.md)** — `claude mcp add` for the MCP, optional plugin via `/plugin marketplace add Cleveland-RD/claude-image-gen`.\n- **Manual MCP config** — coming next.\n\n## License\n\nMIT — see `LICENSE`.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

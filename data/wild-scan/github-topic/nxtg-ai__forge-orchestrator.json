@@ -1,0 +1,46 @@
+{
+  "full_name": "nxtg-ai/forge-orchestrator",
+  "html_url": "https://github.com/nxtg-ai/forge-orchestrator",
+  "description": "Forge Orchestrator: Multi-AI task orchestration. File locking, knowledge capture, drift detection. Rust.",
+  "topics": [
+    "agent-orchestration",
+    "ai",
+    "ai-agents",
+    "ai-coding",
+    "ai-governance",
+    "claude",
+    "cli",
+    "codex",
+    "developer-tools",
+    "devops",
+    "drift-detection",
+    "gemini",
+    "governance",
+    "llm",
+    "mcp",
+    "model-context-protocol",
+    "orchestration",
+    "rust"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 128,
+  "forks": 18,
+  "open_issues": 1,
+  "language": "Rust",
+  "license": "NOASSERTION",
+  "default_branch": "main",
+  "created_at": "2026-02-09T05:47:53Z",
+  "last_pushed_at": "2026-05-06T06:22:18Z",
+  "fetched_at": "2026-07-11T23:18:55.884Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<p align=\"center\">\n  <img src=\"assets/forge-logo.png\" alt=\"Forge\" width=\"120\">\n</p>\n\n# forge-orchestrator\n\n[![CI](https://github.com/nxtg-ai/forge-orchestrator/actions/workflows/ci.yml/badge.svg)](https://github.com/nxtg-ai/forge-orchestrator/actions) [![GitHub stars](https://img.shields.io/github/stars/nxtg-ai/forge-orchestrator)](https://github.com/nxtg-ai/forge-orchestrator) [![crates.io](https://img.shields.io/crates/v/forge-orchestrator)](https://crates.io/crates/forge-orchestrator)\n\n**Orchestrate Claude Code, Codex CLI, and Gemini CLI on shared repos — single Rust binary, zero deps.**\n\nMulti-agent inside a single tool works fine. Claude Code runs 20 subagents and they stay aligned because the tool manages that orchestration internally. The problem is multi-tool: Claude Code, Codex CLI, and Gemini CLI on the same repo with no shared state. That's what the orchestrator solves.\n\nIt adds file locking, knowledge capture, task planning, drift detection, and multi-tool orchestration to your development workflow. Three tools reading from and writing to a single state directory. An 11-tool MCP server exposes the full orchestration state to any connected AI client.\n\nThe orchestrator exists because I ran two AI tools on the same codebase and watched them fail in the same ways human teams fail. Claude refactored a module. Codex updated tests against the pre-refactor interface. Both saved. Tests failed. Neither tool knew the other existed. I'd spent 23 years watching this exact scenario with talented human teams. The solution was always the same: orchestration infrastructure.\n\n## Install\n\n```bash\ncurl -fsSL https://forge.nxtg.ai/install.sh | sh\nforge init\n```\n\nSingle binary. 4.7 MB. No runtime dependencies.\n\n## Quick Demo\n\nFour commands from zero to task board:\n\n```bash\n# 1. Initialize — creates .forge/ directory with state, event log, knowledge base\nforge init\n\n# 2. Configure the AI brain — choose 'openai' (needs API key) or 'rule-based' (free)\nforge config brain openai\n\n# 3. Generate tasks — reads your SPEC.md or README, creates dependency-aware task graph\nforge plan --generate\n\n# 4. See the result — task board with assignments, dependencies, and project health\nforge status\n```\n\nFrom here you can:\n- `forge run` — execute tasks headlessly (autonomous mode, great for CI)\n- `forge dashboard --pty` — launch the TUI dashboard with interactive agent panes\n\n\n## Real-World Result: Stargate Mode\n\nFrom a 94-line specification, the orchestrator coordinated three AI coding tools to build a complete CLI toolkit:\n\n```\nSPEC.md (94 lines) → forge plan --generate → 15 tasks\n\nClaude Code:  6 design tasks     → completed\nCodex CLI:    6 implementation   → completed\nGemini CLI:   3 test/doc tasks   → completed\n\nResult: 5,306 lines of working code\n        10 auto-committed git entries\n        13 Python files (CLI + tests)\n        Zero file conflicts\n```\n\nThree companies. Three tools. One orchestrator. One command:\n\n```bash\nforge dashboard --pty\n```\n\n## What You Get\n\n| Feature | What It Does |\n|---------|-------------|\n| File locking | Exclusive locks prevent tools from editing the same file simultaneously |\n| Knowledge flywheel | Captures decisions, patterns, learnings across tools. Auto-classified and searchable. |\n| Plan generation | `forge plan --generate` decomposes specs into dependency-aware task graphs |\n| Drift detection | Compares in-progress work against specs, flags divergence early |\n| Task board | Dependency-tracked tasks, tool assignment, progress monitoring |\n| Multi-tool adapters | Claude Code (MCP stdio) + Codex CLI + Gemini CLI (filesystem) |\n| TUI dashboard | `forge dashboard`: live tool panes, task status, lock state |\n| Headless mode | `forge run`: autonomous execution for CI/CD pipelines |\n| MCP server | 11 tools accessible by any connected AI tool via stdio |\n\n## Key Commands\n\n```bash\nforge init                     # Initialize Forge in a project\nforge plan --generate          # Generate task plan from spec\nforge dashboard                # Live TUI dashboard\nforge dashboard --pty          # TUI with interactive agent panes (Stargate)\nforge run                      # Headless autonomous mode\nforge status                   # Current state summary\nforge verify                   # Run automated acceptance tests\nforge uat                      # Interactive UAT test runner\nforge ship                     # Release ceremony: changelog, archive, tag\n```\n\n## Architecture\n\nThe orchestrator is the policy core of Forge. All governance rules, file locks, and orchestration logic live here. The plugin (L1: Vibe Coder) and UI (L3: Ship Lord) are adapter surfaces. They present the orchestrator's state through different interfaces but don't make policy decisions.\n\n```\n┌──────────────────────────────────────┐\n│        forge-orchestrator            │\n│        (Rust, 4.7 MB, 378 tests)      │\n│                                      │\n│  File locking · Task planning        │\n│  Knowledge · Governance · MCP        │\n│  Multi-tool adapters                 │\n│                                      │\n│  Policy enforced here.               │\n│  Nowhere else.                       │\n└───────────┬──────────────────┬───────┘\n            │                  │\n   ┌────────┴────────┐  ┌────┴────────┐\n   │  forge-plugin   │  │  forge-ui   │\n   │  (L1 Safety)    │  │  (L3 MC)    │\n   │  Claude Code    │  │  React      │\n   │  adapter        │  │  dashboard  │\n   └─────────────────┘  └─────────────┘\n```\n\n**Communication**: `.forge/` filesystem + MCP stdio. No daemon. No database. State is files.\n\n**Tool adapters**: Claude Code uses MCP stdio. Codex CLI and Gemini CLI use filesystem conventions. Each tool reads its own config format. No Forge-specific configuration language.\n\n## How File Locking Works\n\nFile locking exists because I've watched teams lose days to conflicting edits.\n\nWhen Claude Code starts editing a file, the orchestrator acquires an exclusive lock in `.forge/locks/`. Codex CLI requesting the same file is queued with a notification of who holds the lock. Locks include timeouts (crashed tools don't hold locks forever) and deadlock detection.\n\n378 tests cover concurrent access, timeout behavior, multi-adapter locking, and edge cases.\n\n## How the Knowledge Flywheel Works\n\nThe knowledge flywheel exists because I've watched decisions evaporate between sprints.\n\nEvery decision, pattern, and learning from tool sessions is captured in `.forge/knowledge/`. Entries are auto-classified by category. Search across sessions and across tools. Knowledge captured during a Claude Code session is available to Codex CLI the next day.\n\nAfter a week, the system knows your conventions better than you remember them. New sessions start with context instead of from scratch.\n\n## Upgrade Path\n\nThe TUI dashboard shows everything. Forge UI shows it better.\n\nVisual dashboards. Governance HUD. Real-time agent collaboration network. And the Infinity Terminal: sessions that survive browser close, network drops, and server restarts. If you've lost a 3-hour agent session to a disconnected SSH pipe, you know why this matters.\n\n```bash\ngit clone https://github.com/nxtg-ai/forge-ui && npm install && npm run dev\n```\n\n58 components. 4,165 tests. 87% coverage.\n\n## Links\n\n- [Forge Product Page](https://forge.nxtg.ai)\n- [Forge Plugin](https://github.com/nxtg-ai/forge-plugin) (L1: Vibe Coder)\n- [Forge UI](https://github.com/nxtg-ai/forge-ui) (L3: Ship Lord)\n- [Documentation](https://forge.nxtg.ai/forge/docs)\n\n## License\n\nSource available under the [Functional Source License 1.1 (FSL-1.1-ALv2)](./LICENSE.md). Converts to Apache License 2.0 on 2028-03-18. See [LICENSE.md](./LICENSE.md) for full terms.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "full_name": "Upsonic/Upsonic",
+  "html_url": "https://github.com/Upsonic/Upsonic",
+  "description": "Build autonomous AI agents in Python.",
+  "topics": [
+    "agent",
+    "agent-framework",
+    "autonomous-agent",
+    "autonomous-agents",
+    "claude",
+    "computer-use",
+    "llms",
+    "mcp",
+    "model-context-protocol",
+    "openai",
+    "openclaw",
+    "rag",
+    "reliability",
+    "ucp",
+    "universal-commerce-protocol"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 7909,
+  "forks": 737,
+  "open_issues": 29,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2024-05-26T16:23:38Z",
+  "last_pushed_at": "2026-06-18T14:55:50Z",
+  "fetched_at": "2026-07-11T23:10:30.089Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n\n<img width=\"947\" alt=\"Upsonic_README\" src=\"https://github.com/user-attachments/assets/acb3f413-e4fe-44a6-9aff-40d4e9031188\" />\n\n# Upsonic\n\n**Build Autonomous AI Agents in Python**\n\n[![PyPI version](https://badge.fury.io/py/upsonic.svg)](https://badge.fury.io/py/upsonic)\n[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENCE)\n[![Python Version](https://img.shields.io/pypi/pyversions/upsonic.svg)](https://pypi.org/project/upsonic/)\n[![GitHub stars](https://img.shields.io/github/stars/Upsonic/Upsonic.svg?style=social&label=Star)](https://github.com/Upsonic/Upsonic)\n[![GitHub issues](https://img.shields.io/github/issues/Upsonic/Upsonic.svg)](https://github.com/Upsonic/Upsonic/issues)\n[![Documentation](https://img.shields.io/badge/docs-upsonic.ai-brightgreen.svg)](https://docs.upsonic.ai)\n[![Discord](https://img.shields.io/badge/Discord-Join%20Community-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/pmYDMSQHqY)\n\n[Documentation](https://docs.upsonic.ai) • [Quickstart](https://docs.upsonic.ai/get-started/quickstart) • [Examples](https://docs.upsonic.ai/examples) • [Discord](https://discord.gg/pmYDMSQHqY)\n\n</div>\n\n---\n\n## Overview\n\nUpsonic is a Python framework for building autonomous agents like OpenClaw and Claude Cowork, as well as more traditional agent systems.\n\n## Quick Start\n\n### Installation\n\n```bash\nuv pip install upsonic\n# pip install upsonic\n```\n\n### IDE Integration\n\nAdd Upsonic docs as a source in your coding tools:\n\n**Cursor:** Settings → Indexing & Docs → Add `https://docs.upsonic.ai/llms-full.txt`\n\nAlso works with VSCode, Windsurf, and similar tools.\n\n---\n\n## Create Autonomous Agent\n\n### Build Your Own\n\n```python\nfrom upsonic import AutonomousAgent, Task\n\nagent = AutonomousAgent(\n    model=\"anthropic/claude-sonnet-4-5\",\n    workspace=\"/path/to/logs\"\n)\n\ntask = Task(\"Analyze server logs and detect anomaly patterns\")\n\nagent.print_do(task)\n```\n\nAll file and shell operations are restricted to `workspace`. Path traversal and dangerous commands are blocked.\n\n### Use Our Prebuilt Ones\n\nPrebuilt autonomous agents are ready-to-run agents built by the Upsonic community, each packaging a skill, system prompt, and first message so you can go from install to running in seconds. The collection is [open to contributions](https://github.com/Upsonic/Upsonic/tree/master/src/upsonic/prebuilt), bring your agent and open a PR.\n\nLearn more: [Prebuilt Autonomous Agents](https://docs.upsonic.ai/concepts/prebuilt-autonomous-agents/overview)\n\n> **Next steps:** Connect a [Sandbox Provider (E2B)](https://docs.upsonic.ai/concepts/autonomous-agent/overview) for isolated cloud execution environments.\n\n---\n\n## Create Traditional Agent\n\n```python\nfrom upsonic import Agent, Task\n\nagent = Agent(model=\"anthropic/claude-sonnet-4-5\", name=\"Stock Analyst Agent\")\n\ntask = Task(description=\"Analyze the current market trends\")\n\nagent.print_do(task)\n```\n\n### Add Custom Tools\n\n```python\nfrom upsonic import Agent, Task\nfrom upsonic.tools import tool\n\n@tool\ndef sum_tool(a: float, b: float) -> float:\n    \"\"\"\n    Add two numbers together.\n\n    Args:\n        a: First number\n        b: Second number\n\n    Returns:\n        The sum of a and b\n    \"\"\"\n    return a + b\n\ntask = Task(\n    description=\"Calculate 15 + 27\",\n    tools=[sum_tool]\n)\n\nagent = Agent(model=\"anthropic/claude-sonnet-4-5\", name=\"Calculator Agent\")\n\nresult = agent.print_do(task)\n```\n\n> **Next steps:** Integrate [MCP Tools](https://docs.upsonic.ai/concepts/tools/mcp-tools/overview) to connect your agents to thousands of external data sources and services.\n\n---\n\n## OCR and Document Processing\n\nUpsonic provides a unified OCR interface with a layered pipeline: Layer 0 handles document preparation (PDF to image conversion, preprocessing), Layer 1 runs the OCR engine.\n\n```bash\nuv pip install \"upsonic[ocr]\"\n```\n\n```python\nfrom upsonic.ocr import OCR\nfrom upsonic.ocr.layer_1.engines import EasyOCREngine\n\nengine = EasyOCREngine(languages=[\"en\"])\nocr = OCR(layer_1_ocr_engine=engine)\n\ntext = ocr.get_text(\"invoice.pdf\")\nprint(text)\n```\n\nSupported engines: EasyOCR, RapidOCR, Tesseract, PaddleOCR, DeepSeek OCR, DeepSeek via Ollama.\n\nLearn more: [OCR Documentation](https://docs.upsonic.ai/concepts/ocr/overview)\n\n---\n\n## Check Our Videos\n\n<table>\n  <tr>\n    <td align=\"center\">\n      <a href=\"https://www.youtube.com/watch?v=GOYko0KfBtg\">\n        <img src=\"https://img.youtube.com/vi/GOYko0KfBtg/maxresdefault.jpg\" width=\"400\" alt=\"Upsonic Demo Video 1\"/>\n      </a>\n    </td>\n    <td align=\"center\">\n      <a href=\"https://www.youtube.com/watch?v=ulUEFIolesQ\">\n        <img src=\"https://img.youtube.com/vi/ulUEFIolesQ/maxresdefault.jpg\" width=\"400\" alt=\"Upsonic Demo Video 2\"/>\n      </a>\n    </td>\n  </tr>\n</table>\n\n---\n\n## Documentation and Resources\n\n- **[Documentation](https://docs.upsonic.ai)** - Complete guides and API reference\n- **[Quickstart Guide](https://docs.upsonic.ai/get-started/quickstart)** - Get started in 5 minutes\n- **[Examples](https://docs.upsonic.ai/examples)** - Real-world examples and use cases\n- **[API Reference](https://docs.upsonic.ai/reference)** - Detailed API documentation\n\n## Community and Support\n\n> **💬 [Join our Discord community!](https://discord.gg/pmYDMSQHqY)** — Ask questions, share what you're building, get help from the team, and connect with other developers using Upsonic.\n\n- **[Discord](https://discord.gg/pmYDMSQHqY)** - Chat with the community and get real-time support\n- **[Issue Tracker](https://github.com/Upsonic/Upsonic/issues)** - Report bugs and request features\n- **[Changelog](https://docs.upsonic.ai/changelog)** - See what's new in each release\n\n## License\n\nUpsonic is released under the MIT License. See [LICENCE](LICENCE) for details.\n\n## Contributing\n\nWe welcome contributions from the community! Please read our [Contributing Guide](CONTRIBUTING.md) and code of conduct before submitting pull requests."
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

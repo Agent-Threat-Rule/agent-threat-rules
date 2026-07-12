@@ -1,0 +1,33 @@
+{
+  "full_name": "Haohao-end/mcp-agent",
+  "html_url": "https://github.com/Haohao-end/mcp-agent",
+  "description": "A modular Python framework implementing the Model Context Protocol (MCP). It features a standardized client-server architecture over StdIO, integrating LLMs with external tools, real-time weather data fetching, and an advanced RAG (Retrieval-Augmented Generation) system.",
+  "topics": [
+    "graph-rag",
+    "llm",
+    "mcp",
+    "mcp-server",
+    "python"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 81,
+  "forks": 17,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-02-24T11:42:38Z",
+  "last_pushed_at": "2026-07-04T10:42:42Z",
+  "fetched_at": "2026-07-11T23:08:08.853Z",
+  "readme": {
+    "path": "README.md",
+    "content": "[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/haohao-end-mcp-agent-badge.png)](https://mseep.ai/app/haohao-end-mcp-agent)\n\n# MCP Agent Orchestrator\n\nThe **MCP Agent Orchestrator** is a professional-grade Python implementation of the **Model Context Protocol (MCP)**. It provides a structured environment for Large Language Models (LLMs) to interact with external tools and knowledge bases through a standardized communication layer. The project utilizes `FastMCP` for server-side tool definitions and an asynchronous client-side bridge to OpenAI-compatible interfaces.\n\n## System Architecture\n\nThe project follows a decoupled client-server architecture:\n\n1. **MCP Client**: Acts as the orchestrator. It manages the lifecycle of the MCP server, performs tool discovery, handles LLM completions, and executes tool calls returned by the model.\n2. **MCP Servers**: Independent services (Weather, RAG) that expose specific functions to the client via the Model Context Protocol.\n3. **Transport Layer**: Uses Standard Input/Output (StdIO) for high-performance, local inter-process communication.\n\n## Core Components\n\n### 1. Intelligent Client Bridge\n\nThe client implementation (`rag_agent.py`, `client.py`) facilitates:\n\n* Asynchronous lifecycle management using `AsyncExitStack`.\n* Automatic tool schema conversion for OpenAI-compatible function calling.\n* Persistent conversation state and multi-turn reasoning loops.\n\n### 2. Weather Service Server\n\nThe weather server (`server.py`) demonstrates real-time API integration:\n\n* Integration with external REST APIs (WeatherAPI).\n* Data normalization and formatting for LLM consumption.\n* Asynchronous request handling using `httpx`.\n\n### 3. RAG Knowledge Server\n\nThe RAG server (`rag_server.py`) provides advanced document intelligence:\n\n* **Data Ingestion**: Support for PDF and TXT formats using `LangChain`.\n* **Vector Database**: Persistent storage via `ChromaDB`.\n* **Search Optimization**: Implements Maximal Marginal Relevance (MMR) for diverse information retrieval.\n* **Embeddings**: Integration with HuggingFace transformer models.\n\n## Project Structure\n\n```text\n├── client.py             # Standard MCP client implementation\n├── rag_agent.py          # Specialized agent for RAG operations\n├── server.py             # Weather service MCP server\n├── rag_server.py         # RAG knowledge base MCP server\n├── test.py               # Connectivity test for LLM API\n├── .env                  # Environment configuration\n└── data/\n    ├── rag_db/           # Vector store persistence directory\n    └── text.txt # Sample knowledge base source\n\n```\n\n## Technical Stack\n\n* **Protocol**: Model Context Protocol (MCP)\n* **LLM Interface**: OpenAI SDK (Compatible with Qwen/DashScope)\n* **RAG Framework**: LangChain\n* **Vector Store**: ChromaDB\n* **Communication**: Asynchronous I/O (asyncio)\n\n## Installation\n\n### Prerequisites\n\n* Python 3.10+\n* Virtual environment (recommended)\n\n### Environment Setup\n\nCreate a `.env` file in the root directory with the following variables:\n\n```env\n[REDACTED-GENERIC_KV_SECRET]\nBASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1\nMODEL=qwen-plus\nEMBED_MODEL=sentence-transformers/all-MiniLM-L6-v2\n# Optional for You.com Search API (100 free searches/day work without this)\nYDC_[REDACTED-GENERIC_KV_SECRET]\n\n```\n\n### Dependencies\n\n```bash\npip install mcp langchain langchain-community langchain-openai chromadb httpx python-dotenv openai\n\n```\n\n## Usage\n\n### Running the Weather + Web Search Agent\n\nTo start the client and connect it to the MCP server:\n\n```bash\npython client.py server.py\n\n```\n\nThe server now exposes two tools:\n\n- `query_weather(city)`\n- `search_web(query, count=5)` using You.com Search API (`GET https://api.you.com/v1/agents/search`)\n\nExample prompts:\n\n- \"What's the weather in Shenzhen?\"\n- \"Search the web for MCP Python best practices\"\n\n### Running the RAG Agent\n\nTo initialize the knowledge base and start the RAG-enabled agent:\n\n```bash\npython rag_agent.py --server_script rag_server.py\n\n```\n\n## Protocol Implementation Details\n\nThe implementation strictly adheres to the MCP specification:\n\n1. **Initialization**: Client initializes the session and retrieves tool manifests.\n2. **Tool Discovery**: LLM is informed of available functions via JSON schema.\n3. **Execution**: Client intercepts `tool_calls`, executes the corresponding server function, and returns the result to the LLM for final synthesis.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

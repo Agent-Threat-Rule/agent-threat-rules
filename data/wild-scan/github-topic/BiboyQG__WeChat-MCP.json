@@ -1,0 +1,31 @@
+{
+  "full_name": "BiboyQG/WeChat-MCP",
+  "html_url": "https://github.com/BiboyQG/WeChat-MCP",
+  "description": "WeChat-MCP: let Openclaw/Claude/ChatGPT and other AI assistants read and reply to WeChat for you",
+  "topics": [
+    "mcp",
+    "mcp-server",
+    "wechat"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 218,
+  "forks": 68,
+  "open_issues": 11,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2025-12-04T04:11:36Z",
+  "last_pushed_at": "2026-03-09T19:49:18Z",
+  "fetched_at": "2026-07-11T22:47:07.069Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n\n# WeChat MCP Server\n\n[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)\n[![PyPI version](https://img.shields.io/pypi/v/wechat-mcp-server.svg)](https://pypi.org/project/wechat-mcp-server/)\n[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)\n\n[中文](docs/README_zh.md) | English\n\n</div>\n\nAn MCP server that automates WeChat on macOS using the Accessibility API and screen capture. It enables LLMs to interact with WeChat chats programmatically.\n\n## Features\n\n- 📨 Fetch recent messages from any chat (contact or group)\n- ✍️ Send automated replies based on chat history\n- 📷 Publish text-only Moments posts, with optional draft-only mode\n- 👥 Add contacts using WeChat ID with configurable privacy\n- 🔍 Smart chat search with exact name matching\n- 🤖 5 specialized Claude Code sub-agents for smart WeChat automation\n\n## Quick Start\n\n### Installation\n\n```bash\npip install wechat-mcp-server\n```\n\n### Setup with Claude Code\n\n```bash\n# If installed via pip\nclaude mcp add --transport stdio wechat-mcp -- wechat-mcp\n\n# If using uv for development\nclaude mcp add --transport stdio wechat-mcp -- uv --directory $(pwd) run wechat-mcp\n```\n\n<details>\n<summary>Setup with Claude Desktop</summary>\n\n```json\n// If installed via pip\n{\n  \"mcpServers\": {\n    \"wechat-mcp\": {\n      \"type\": \"stdio\",\n      \"command\": \"wechat-mcp\"\n    }\n  }\n}\n\n// If using uv for development\n{\n  \"mcpServers\": {\n    \"wechat-mcp\": {\n      \"type\": \"stdio\",\n      \"command\": \"uv\",\n      \"args\": [\n        \"--directory\",\n        \"{path/to/wechat-mcp}\",\n        \"run\",\n        \"wechat-mcp\"\n      ],\n    }\n  }\n}\n```\n\n</details>\n\n<details>\n<summary>Setup with Codex</summary>\n\n```bash\n# If installed via pip\ncodex mcp add wechat-mcp -- wechat-mcp\n\n# If using uv for development\ncodex mcp add wechat-mcp -- uv --directory $(pwd) run wechat-mcp\n```\n\n</details>\n\n### macOS Permissions\n\n⚠️ **Important**: Grant Accessibility permissions to your terminal:\n\n1. Open **System Settings → Privacy & Security → Accessibility**\n2. Add your terminal application (Terminal.app, iTerm2, etc.)\n3. Ensure WeChat is running before using the server\n\n## Usage\n\n### Basic Commands\n\n```bash\n# Run with default stdio transport\nwechat-mcp --transport stdio\n\n# Run with HTTP transport\nwechat-mcp --transport streamable-http\n\n# Run with SSE transport\nwechat-mcp --transport sse\n```\n\n### Available MCP Tools\n\n- **`fetch_messages_by_chat`** - Get recent messages from a chat\n- **`reply_to_messages_by_chat`** - Send a reply to a chat\n- **`add_contact_by_wechat_id`** - Add a new contact using a WeChat ID and send a friend request\n- **`publish_moment_without_media`** - Publish a text-only Moments post (no photos or videos); optionally only prepare a draft without posting via `publish=False`\n\nSee [detailed API documentation](docs/detailed-guide.md) for full tool specifications.\n\n## Claude Code Sub-Agents\n\nThis project includes 5 intelligent sub-agents designed specifically for WeChat automation. They enable natural language control of WeChat through Claude Code.\n\n### Available Sub-Agents\n\n1. **Chat-summarizer** - Summarize chat history and extract key information\n2. **Auto-replier** - Auto-generate and send appropriate replies\n3. **Message-searcher** - Search chat history for specific content\n4. **Multi-chat-checker** - Monitor multiple chats and prioritize messages\n5. **Chat-insights** - Analyze relationship dynamics and communication patterns\n\n📖 [View complete sub-agents guide](.claude/agents/README.md)\n\n## Development\n\n### Local Setup with uv\n\n```bash\n# Install uv\ncurl -LsSf https://astral.sh/uv/install.sh | sh\n\n# Clone and setup\ngit clone https://github.com/yourusername/WeChat-MCP.git\ncd WeChat-MCP\nuv sync\n\n# Run locally\nuv run wechat-mcp --transport stdio\n```\n\n## Documentation\n\n- 📘 [Detailed Guide](docs/detailed-guide.md) - Complete API documentation and architecture\n- 🤖 [Sub-Agents Guide](.claude/agents/README.md) - How to use Claude Code sub-agents\n\n## Requirements\n\n- macOS (uses Accessibility API)\n- WeChat for Mac installed and running\n- Python 3.12+\n- Accessibility permissions for terminal\n\n## Contributing\n\nContributions are welcome! Please feel free to submit a Pull Request.\n\n## License\n\nMIT License - see [LICENSE](LICENSE) file for details\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "full_name": "theYahia/yandex-speechkit-mcp",
+  "html_url": "https://github.com/theYahia/yandex-speechkit-mcp",
+  "description": "MCP server for Yandex SpeechKit — speech recognition, synthesis (Russia). Part of WWmcp — 114 MCP servers for emerging markets.",
+  "topics": [
+    "ai-agents",
+    "anthropic",
+    "claude",
+    "emerging-markets",
+    "mcp",
+    "mcp-servers",
+    "model-context-protocol",
+    "russia",
+    "russian-api",
+    "speech",
+    "speechkit",
+    "typescript",
+    "yandex"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 1,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-03-30T16:49:08Z",
+  "last_pushed_at": "2026-05-19T18:36:57Z",
+  "fetched_at": "2026-07-12T00:14:28.382Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# @theyahia/yandex-speechkit-mcp\n\nMCP server for Yandex SpeechKit API — speech recognition, synthesis, and voice listing. **5 tools.**\n\n[![npm](https://img.shields.io/npm/v/@theyahia/yandex-speechkit-mcp)](https://www.npmjs.com/package/@theyahia/yandex-speechkit-mcp)\n[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)\n\nPart of the [Russian API MCP](https://github.com/theYahia/russian-mcp) series by [@theYahia](https://github.com/theYahia).\n\n## Installation\n\n### Claude Desktop\n\n```json\n{\n  \"mcpServers\": {\n    \"yandex-speechkit\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@theyahia/yandex-speechkit-mcp\"],\n      \"env\": {\n        \"YANDEX_SPEECHKIT_API_KEY\": \"your-api-key\",\n        \"FOLDER_ID\": \"your-folder-id\"\n      }\n    }\n  }\n}\n```\n\n### Claude Code\n\n```bash\nclaude mcp add yandex-speechkit \\\n  -e YANDEX_SPEECHKIT_API_KEY=your-api-key \\\n  -e FOLDER_ID=your-folder-id \\\n  -- npx -y @theyahia/yandex-speechkit-mcp\n```\n\n### Streamable HTTP (remote / Docker)\n\n```bash\nYANDEX_SPEECHKIT_API_KEY=... FOLDER_ID=... npx @theyahia/yandex-speechkit-mcp --http\n# Listens on :8080/mcp (override with PORT env var)\n```\n\n### Smithery\n\nDeploy via [smithery.ai](https://smithery.ai) — config in `smithery.yaml`.\n\n## Authentication\n\n| Variable | Description |\n|----------|-------------|\n| `YANDEX_SPEECHKIT_API_KEY` | Yandex Cloud API key (preferred) |\n| `YANDEX_API_KEY` | Legacy alias (still works) |\n| `IAM_TOKEN` | Short-lived IAM token (alternative to API key) |\n| `FOLDER_ID` | Yandex Cloud folder ID (required) |\n| `YANDEX_FOLDER_ID` | Legacy alias for FOLDER_ID |\n\n> Get credentials at [Yandex Cloud Console](https://console.cloud.yandex.ru/).\n\n## Tools (5)\n\n| Tool | Type | Description |\n|------|------|-------------|\n| `recognize` | Core | Speech recognition (STT) — Base64 audio to text |\n| `synthesize` | Core | Speech synthesis (TTS) — text to Base64 audio |\n| `list_voices` | Core | List available TTS voices, filter by language |\n| `skill_transcribe` | Skill | High-level transcription — returns clean text |\n| `skill_synthesize` | Skill | High-level synthesis — smart defaults, auto-detects language from voice |\n\n## Examples\n\n```\nTranscribe this audio file\nSynthesize \"Hello, how are you?\" with voice filipp\nWhat voices are available in Russian?\nSpeak this text using the alena voice\n```\n\n## Development\n\n```bash\nnpm install\nnpm run build\nnpm test\nnpm run dev    # stdio mode\n```\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"yandex-speechkit\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@theyahia/yandex-speechkit-mcp\"],\n      \"env\": {\n        \"YANDEX_API_KEY\": \"\",\n        \"YANDEX_FOLDER_ID\": \"\"\n      }\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

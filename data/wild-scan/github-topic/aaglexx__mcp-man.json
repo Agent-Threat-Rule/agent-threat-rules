@@ -1,0 +1,41 @@
+{
+  "full_name": "aaglexx/mcp-man",
+  "html_url": "https://github.com/aaglexx/mcp-man",
+  "description": "Postman for MCP servers — inspect tools, test live, browse 150+ servers",
+  "topics": [
+    "claude",
+    "claude-mcp",
+    "cli",
+    "developer-tools",
+    "developer-tools-ai-agent",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "mcp-tools",
+    "model-context-protocol"
+  ],
+  "matched_query_topics": [
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 2,
+  "forks": 3,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-05-20T22:56:06Z",
+  "last_pushed_at": "2026-06-30T08:31:19Z",
+  "fetched_at": "2026-07-12T00:07:13.587Z",
+  "readme": {
+    "path": "README.md",
+    "content": "[![npm version](https://img.shields.io/npm/v/@aaglexx/mcp-man)](https://www.npmjs.com/package/@aaglexx/mcp-man)\n[![npm downloads](https://img.shields.io/npm/dm/@aaglexx/mcp-man)](https://www.npmjs.com/package/@aaglexx/mcp-man)\n[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)\n\n# mcp-man\n\n**Postman for MCP.** Search 156 servers, inspect their tools, test them live — all from the browser.\n\n```bash\nnpm install -g @aaglexx/mcp-man\nmcp-man ui\n```\n\n![Inspect tab showing tool schema](docs/screenshot-inspect.png)\n![Test tab showing live result](docs/screenshot-test.png)\n\n---\n\n## The problem\n\nThere are hundreds of MCP servers. But to know what any of them actually does, you have to dig through GitHub READMEs, guess at parameters, and figure out which env vars it needs. Every time.\n\n`mcp-man` fixes that. Connect to any MCP server and instantly see every tool, its full schema, required params, and types. Then call it with one click.\n\n---\n\n## What's inside\n\n| | |\n|---|---|\n| **Registry** | 156 servers, searchable by name or tag |\n| **Inspect** | Connect to any server, browse tools with full schema visualizer |\n| **Test** | Call any tool live with JSON args, see the raw response |\n| **Auth wizard** | Guided API key setup for 78 servers — with direct links to get each token |\n| **CLI** | Everything available from the terminal too |\n\n---\n\n## Get started\n\n```bash\n# No auth needed — works instantly\nnpx -y @modelcontextprotocol/server-memory\nnpx -y @modelcontextprotocol/server-filesystem /your/path\n\n# Needs a token — wizard will guide you\ngithub-mcp-server              → GITHUB_PERSONAL_ACCESS_TOKEN\n@notionhq/notion-mcp-server    → Notion integration token\n```\n\nJust paste any command into the Inspect field and hit go.\n\n---\n\n## CLI\n\n```bash\nmcp-man search github\nmcp-man search --tag database\nmcp-man inspect \"npx -y @modelcontextprotocol/server-memory\"\nmcp-man test read_graph --server \"npx -y @modelcontextprotocol/server-memory\"\n```\n\n---\n\n## Add your server\n\nEdit [`registry/servers.json`](./registry/servers.json) and open a PR:\n\n```json\n{\n  \"name\": \"@you/your-mcp-server\",\n  \"description\": \"One line about what it does\",\n  \"url\": \"https://github.com/you/your-server\",\n  \"tags\": [\"your\", \"tags\"],\n  \"author\": \"Your Name\",\n  \"license\": \"MIT\"\n}\n```\n\nIf your server needs credentials, add an `env` array — the auth wizard will pick it up automatically.\n\n---\n\n## Dev setup\n\n```bash\ngit clone https://github.com/aaglexx/mcp-man && cd mcp-man && npm install\n\n# Terminal 1\nnpm run dev:cli -- ui --dev\n\n# Terminal 2\nnpm run dev:web\n```\n\n---\n\n## Roadmap\n\n- [x] Registry with 156 servers\n- [x] Schema visualizer\n- [x] Auth wizard for 78 servers\n- [ ] Sandboxed runner — no local install needed\n- [ ] Health badge per server\n\n---\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "bin/mcp-man.js",
+    "size": 97,
+    "content": "#!/usr/bin/env node\nimport('../dist/cli.js').catch(e => { console.error(e); process.exit(1); });\n"
+  },
+  "content_fetch_notes": []
+}

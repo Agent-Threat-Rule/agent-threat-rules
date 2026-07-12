@@ -1,0 +1,50 @@
+{
+  "full_name": "hasmcp/hasmcp-ce",
+  "html_url": "https://github.com/hasmcp/hasmcp-ce",
+  "description": "HasMCP Community Edition",
+  "topics": [
+    "ai-agent",
+    "ai-agent-tools",
+    "ai-agents-framework",
+    "ai-automation",
+    "mcp",
+    "mcp-auth",
+    "mcp-authorization",
+    "mcp-builder",
+    "mcp-framework",
+    "mcp-gateway",
+    "mcp-host",
+    "mcp-protocol",
+    "mcp-security",
+    "mcp-server",
+    "mcp-servers",
+    "mcp-servers-directory",
+    "mcp-tools",
+    "model-context-protocol",
+    "openapi",
+    "self-hosted"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol",
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 60,
+  "forks": 6,
+  "open_issues": 1,
+  "language": "Go",
+  "license": "AGPL-3.0",
+  "default_branch": "main",
+  "created_at": "2025-11-27T06:21:50Z",
+  "last_pushed_at": "2026-06-06T06:25:19Z",
+  "fetched_at": "2026-07-11T23:26:23.136Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# HasMCP-CE\n\nHasMCP is a tool that converts API endpoints into MCP Server without writing a single line of code. It is practical alternative for developers and SaaS owners who prefers not to develop anad maintain MCP spec changes over time.\n\nHasMCP-CE shares the some logic for the commercial\nversions of the `HasMCP-Pro` and `HasMCP-Enterprise`.\n\nNOTE: `HasMCP-Pro` and `HasMCP-Enterprise` versions are maintained in private repositories and source codes are not available. HasMCP Cloud service itself uses the `HasMCP-Enterprise` edition on\nproduction.\n\n## HasMCP-CE Features\n\n- Automated MCP server creation using OpenAPI Spec v3+ and Swagger\n\n- Oauth2 authentication\n\n- Manual MCP from API endpoints\n\n- Toggle endpoints per MCP Server\n\n- Proxy headers (optional per MCP Server) to actual API endpoints\n\n- Long term, short-term authentication tokens per MCP Server\n\n- Real-time MCP Server method/tool call logs\n\n- Real-time MCP server analytics (added in v0.2.2)\n\n- Optional automated SSL with Let's encrypt\n\n## HasMCP Cloud Features\n\nCloud version is available with Hobby(with monthly free-tier) and Pro subscriptions at [hasmcp.com](https://hasmcp.com). It has some additonal features compared to the Community Edition:\n\n- Request/response payload optimization per tool with a minimum coding (interceptors). Up to 98% token reduction on MCP tool responses (depending on what is needed by the described tool).\n- Per tool call, per user usage analytics\n- Users, teams management (Pro and Enterprise only)\n- Audit logs (Enterprise only)\n\n**Why does it have cloud version?**\n\n- To support futher development\n- Help developers and companies those are not interested in running a server and maintain it\n- Entrepreneurship\n\n## HasMCP-CE Demo\n\n![HasMCP-CE Demo](demo/hasmcp-v0.1.0.gif)\n\n## Roadmap\n\n### Highest priority\n\n- [ ] Bug fixes (Highest priority)\n- [ ] Protocol updates\n\n### HasMCP-CE (including Pro and Enterprise) short term roadmap\n\n**Functionality and token optimizations**\n\n- [ ] MCP composition with Search/Add/Remove by LLMs directly (ETA: January 2026)\n- [ ] Toon format on responses (ETA: January 2026)\n\n**Extended protocol support**\n\n- [ ] GRPC support (ETA: February 2026)\n\n### Long term road map\n\n- [ ] Github integration (Git as source of truth)\n- [ ] Your requirements\n\n## Development\n\nHasMCP-CE is using monorepo approach that hosts both frontend and backend codes in the same\nrepository.\n\n### Directory Structure\n\n```\nhasmcp-ce\n|- backend            # backend for hasmcp-ce\n|- frontend           # front-end for hasmcp-ce\n|- COMMERCIAL_LICENSE # Commercial license\n|- Dockerfile         # Dockerfile\n|- LICENSE            # License file\n|- Makefile           # Handy Make commands to help developers\n|- README.md          # The current file that you are reading now\n```\n\nDevelopment environment requires 2 services up and running at the same time:\n\n1. Frontend\n\n```\ncd frontend\nnpm run dev # this will open port 5173\n```\n\n2. Backend\n\n```\ncd backend/cmd/server\ngo run main.go\n```\n\n3. Database\n\nBy default hasmcp-ce uses sqlite so you don't need to do anything. It is more than enough for single user experience.\n\nTo enable Postgres instead of Sqlite, you can add the following to the your `.env` file\n\n```\nPOSTGRES_ENABLED=false # set true to use postgres as production db\n\n# below are the your db connection details for postgres\nPOSTGRES_TIMEZONE=UTC\nPOSTGRES_USER=postgres\nPOSTGRES_PASSWORD=postgres\nPOSTGRES_HOST=localhost\nPOSTGRES_PORT=5432\nPOSTGRES_DBNAME=postgres\n```\n\n## Running the HasMCP-CE with Docker (recommended)\n\nThe recommended way of running HasMCP-CE version using docker. Please do not confuse using docker does not mean that\nusing the latest version. The following example is using the latest version, please adjust the version and changes based\non your needs!\n\n### Setup\n\nApply both `One time setup` and `Configurations` for the first run then you can use only `Configurations` section.\n\n**One time setup**\n\n```\nmkdir hasmcp\ncd hasmcp\nmkdir -p _certs _storage # creates folders\nchmod 0777 _certs\nchmod 0777 _storage\n```\n\n**.env file**\n\n`.env` overrides the default configurations. It is highly recommended to use .env constants to set the values to your desired values.\n\n```\ncd hasmcp # if you are not in this folder yet (if you continue from the previous step you should be inside this folder already)\nwget https://github.com/hasmcp/hasmcp-ce/blob/main/backend/cmd/server/.env.example -O .env\n```\n\nAfter downloading the example .env file, edit the content as you wish.\n\n### Run\n\nLatest version:\n\n```\ndocker stop hasmcp-ce || true; \\\n\tdocker rm hasmcp-ce || true; \\\n\tdocker image prune -f; \\\n\tdocker pull hasmcp/hasmcp-ce:latest; \\\n\tdocker run --env-file .env -p 80:80 -p 443:443 --name hasmcp-ce \\\n    -v ./_certs:/_certs \\\n    -v ./_storage:/_storage \\\n    -d --restart always hasmcp/hasmcp-ce:latest\n```\n\nOther known versions for example v0.2.3:\n\n```\nHASMCP_VERSION=v0.2.3 \\\n  docker stop hasmcp-ce || true; \\\n  docker rm hasmcp-ce || true; \\\n  docker image prune -f; \\\n  docker pull hasmcp/hasmcp-ce:$HASMCP_VERSION; \\\n  docker run --env-file .env -p 80:80 -p 443:443 \\\n    --name hasmcp-ce \\\n    -v ./_certs:/_certs \\\n    -v ./_storage:/_storage \\\n    -d \\\n    --restart always \\\n    hasmcp/hasmcp-ce:$HASMCP_VERSION\n```\n\n## Documentation\n\nDocumentation for tutorials and terminology are available at [docs.hasmcp.com](https://docs.hasmcp.com).\n\n## Licenses\n\n- [AGPL-3.0](./LICENSE)\n- [Commercial License](./COMMERCIAL_LICENSE) is available that removes the restrictions of GPLV3 with license purchase.\n\n(c) 2026 Contextual, Inc.\n[hasmcp.com](https://hasmcp.com)\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\n### Licenses of Dependencies\n\n#### Frontend\n\nAll front-end dependencies are ensured to have either MIT and Apache 2.0 licenses. In the future if any of them switches\nto another license, it might be evaluated again and replaced if needed.\n\nFor all frontend dependencies please see the [package.json](./frontend/package.json) file.\n\n#### Backend\n\nFor all backend dependencies please see the [go.mod](./backend/go.mod) file.\n\n##### MIT\n\n- github.com/glebarez/sqlite\n- github.com/gofiber/contrib/fiberzerolog\n- github.com/gofiber/fiber/v2\n- github.com/golang-jwt/jwt/v5\n- github.com/kaptinlin/jsonschema\n- github.com/robfig/cron/v3\n- github.com/rs/zerolog\n- github.com/valyala/fasthttp\n- gorm.io/driver/postgres\n- gorm.io/gorm\n\n##### Apache 2.0\n\n- github.com/mustafaturan/monoflake\n- gopkg.in/yaml.v3\n\n##### Other\n\n- [golang.org/x/crypto](https://cs.opensource.google/go/x/crypto/+/master:LICENSE)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "full_name": "arterialist/mcphero-skills",
+  "html_url": "https://github.com/arterialist/mcphero-skills",
+  "description": "Agent Skills for mcphero.app - let your OpenClaw or coding agents create deployed MCP servers on the fly in just 30 seconds.",
+  "topics": [
+    "agent-skills",
+    "agentskills",
+    "ai-agents",
+    "mcp",
+    "mcp-servers",
+    "openclaw",
+    "openclaw-skill",
+    "openclaw-skills",
+    "skills"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Shell",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-03-21T13:46:57Z",
+  "last_pushed_at": "2026-03-21T16:54:56Z",
+  "fetched_at": "2026-07-12T00:21:53.950Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCPHero Skills\n\n**Give your agent infinite tools — without infinite tokens.**\n\nEvery time an agent calls an API, parses a database, or runs a calculation, it burns tokens on context, schemas, error handling, and output parsing. [MCPHero](https://mcphero.app) flips this: the agent **builds the tool once**, deploys it as a persistent MCP server, and reuses it forever. A 50,000-token integration becomes a 50-token tool call on every subsequent run.\n\n**95-99% token savings. Self-evolving agents. Infinite tooling.**\n\nWorks with Claude Code, OpenCode, OpenClaw, Cursor, and any agent that supports the [Agent Skills spec](https://agentskills.io).\n\n## How It Works\n\n```\nWithout MCPHero                           With MCPHero\n─────────────────                         ─────────────\nAgent needs to query Postgres             Agent builds an MCP server\n  → Reads schema docs (tokens)              with query tools (one-time)\n  → Writes SQL (tokens)                     \n  → Parses results (tokens)             Agent calls the tool forever\n  → Handles errors (tokens)               → 1 tool call ≈ 50 tokens\n  → Repeats EVERY run (tokens)            vs. 50,000+ tokens per run\n```\n\nYour agent doesn't just *use* tools — it **creates** them. Describe what you need in plain English, and MCPHero generates, deploys, and hosts a production MCP server with the exact tools your agent requires. The agent then registers the server and calls it on demand. No re-generation. No re-explanation. No wasted context.\n\nThis is how agents evolve: they start with general capabilities, build specialized tools as they work, and accumulate a growing toolkit that makes every future task cheaper and faster.\n\n## Available Skills\n\n| Skill | Description |\n|-------|-------------|\n| [create-mcp-server](skills/create-mcp-server/) | Build MCP servers via the mcpheroctl CLI — ideal for scripting, automation, and CI/CD |\n| [meta-mcp-wizard](skills/meta-mcp-wizard/) | Build MCP servers interactively inside Claude Desktop, Cursor, or any MCP client |\n\n## Prerequisites\n\n### Install mcpheroctl (for create-mcp-server skill)\n\n```bash\n# via Homebrew (macOS/Linux)\nbrew install arterialist/mcpheroctl/mcpheroctl\n\n# via uv (cross-platform)\nuv tool install mcpheroctl\n```\n\nRequires Python >= 3.12.\n\n### Authenticate\n\n1. Log in to the [MCPHero Dashboard](https://mcphero.app).\n2. Go to **Settings** → **Organization** → **Developers**.\n3. Click **Create API key**.\n4. Copy the generated token and run:\n\n```bash\nmcpheroctl auth login --token <YOUR_ORG_TOKEN>\n```\n\nVerify with:\n\n```bash\nmcpheroctl auth status\n```\n\nConfig is stored at `~/.config/mcpheroctl/config.json`.\n\n> **Note:** The `meta-mcp-wizard` skill does not require mcpheroctl — it works through the MCP protocol directly.\n\n## Installation\n\n### Option 1: CLI Install (Recommended)\n\nUse [npx skills](https://github.com/vercel-labs/skills) to install skills directly:\n\n```bash\n# Install all skills\nnpx skills add arterialist/mcphero-skills\n\n# Install a specific skill\nnpx skills add arterialist/mcphero-skills --skill create-mcp-server\n\n# List available skills\nnpx skills add arterialist/mcphero-skills --list\n\n# Install globally\nnpx skills add arterialist/mcphero-skills -g\n```\n\n### Option 2: Claude Code Plugin\n\n```bash\n/plugin marketplace add arterialist/mcphero-skills\n/plugin install mcphero-skills\n```\n\n### Option 3: Manual Copy\n\n```bash\ngit clone git@github.com:arterialist/mcphero-skills.git\ncp -r mcphero-skills/skills/* ~/.claude/skills/\n```\n\n## Usage\n\n### create-mcp-server (CLI workflow)\n\nAsk your agent to build an MCP server using mcpheroctl:\n\n```\n\"Create an MCP server for my PostgreSQL database with tools to query users and orders\"\n\"Deploy a calculator MCP server with add, subtract, multiply, and divide tools\"\n\"Help me set up an MCP server that wraps my REST API\"\n```\n\nThe agent walks through the wizard pipeline: describe requirements, suggest tools, configure env vars, generate code, deploy. Once deployed, the server persists — the agent (and you) can call those tools on any future run for a fraction of the token cost.\n\n### meta-mcp-wizard (Interactive MCP workflow)\n\nConnect the Meta-MCP server to Claude Desktop or Cursor, then ask:\n\n```\n\"Build me an MCP server for my Notion workspace\"\n\"Create an MCP server that wraps our internal API\"\n```\n\nThe agent uses MCP tools directly — no CLI needed, no local setup beyond connecting the Meta-MCP server once.\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

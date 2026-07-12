@@ -1,0 +1,36 @@
+{
+  "full_name": "e2b-dev/mcp-server",
+  "html_url": "https://github.com/e2b-dev/mcp-server",
+  "description": "Giving Claude ability to run code with E2B via MCP (Model Context Protocol)",
+  "topics": [
+    "anthropic",
+    "claude",
+    "claude-3-5-sonnet",
+    "claude-ai",
+    "model-context-protocol"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 393,
+  "forks": 68,
+  "open_issues": 5,
+  "language": "JavaScript",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2024-12-01T17:26:15Z",
+  "last_pushed_at": "2026-04-16T15:51:25Z",
+  "fetched_at": "2026-07-11T23:14:32.394Z",
+  "readme": {
+    "path": "README.md",
+    "content": "![E2B MCP Server Preview Light](/readme-assets/mcp-server-light.png#gh-light-mode-only)\n![E2B MCP Server Preview Dark](/readme-assets/mcp-server-dark.png#gh-dark-mode-only)\n\n> **Deprecated:** This project is no longer actively maintained. It may not receive further updates or bug fixes.\n\n# E2B MCP Server\n\n[![smithery badge](https://smithery.ai/badge/e2b)](https://smithery.ai/server/e2b)\n\nThis repository contains the source code for the [E2B](https://e2b.dev) MCP server.\n\nThe E2B MCP server allows you to add [code interpreting capabilities](https://github.com/e2b-dev/code-interpreter) to your Claude Desktop app via the E2B Sandbox. See demo [here](https://x.com/mishushakov/status/1863286108433317958).\n\n\nAvailable in two editions:\n\n- [JavaScript](packages/js/README.md)\n\n- [Python](packages/python/README.md)\n\n\n### Installing via Smithery\n\nYou can also install E2B for Claude Desktop automatically via [Smithery](https://smithery.ai/server/e2b):\n\n```bash\nnpx @smithery/cli install e2b --client claude\n```\n"
+  },
+  "descriptor_file": {
+    "path": "smithery.yaml",
+    "content": "# Smithery configuration file: https://smithery.ai/docs/deployments\n\nbuild:\n  dockerBuildPath: .\nstartCommand:\n  type: stdio\n  configSchema:\n    # JSON Schema defining the configuration options for the MCP.\n    type: object\n    required:\n      - e2bApiKey\n    properties:\n      e2bApiKey:\n        type: string\n        description: The API key for the E2B server.\n  commandFunction:\n    # A function that produces the CLI command to start the MCP on stdio.\n    |-\n    (config) => ({ command: 'node', args: ['./build/index.js'], env: { E2B_API_KEY: config.e2bApiKey } })\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

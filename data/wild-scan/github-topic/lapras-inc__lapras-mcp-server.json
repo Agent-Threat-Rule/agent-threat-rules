@@ -1,0 +1,30 @@
+{
+  "full_name": "lapras-inc/lapras-mcp-server",
+  "html_url": "https://github.com/lapras-inc/lapras-mcp-server",
+  "description": "lapras.com 公式MCP Server",
+  "topics": [
+    "mcp",
+    "mcp-server"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 103,
+  "forks": 6,
+  "open_issues": 3,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-04-03T23:24:54Z",
+  "last_pushed_at": "2026-01-15T05:31:21Z",
+  "fetched_at": "2026-07-11T23:00:00.935Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# LAPRAS MCP Server\n\nhttps://lapras.com 公式のMCP Server\n\n[![npm version](https://img.shields.io/npm/v/@lapras-inc/lapras-mcp-server.svg)](https://www.npmjs.com/package/@lapras-inc/lapras-mcp-server)\n[![npm downloads](https://img.shields.io/npm/dt/@lapras-inc/lapras-mcp-server.svg)](https://www.npmjs.com/package/@lapras-inc/lapras-mcp-server)\n[![Docker Pulls](https://img.shields.io/docker/pulls/laprascom/lapras-mcp-server)](https://hub.docker.com/r/laprascom/lapras-mcp-server)\n[![CI Status](https://img.shields.io/github/actions/workflow/status/lapras-inc/lapras-mcp-server/ci.yml?branch=main)](https://github.com/lapras-inc/lapras-mcp-server/actions)\n\n\n##  Setup\n\nMCP Serverの設定（[Cursor](https://docs.cursor.com/context/model-context-protocol#configuring-mcp-servers)、[Claude Desktop](https://modelcontextprotocol.io/quickstart/user)）を参考に、mcp.jsonまたはclaude_desktop_config.jsonに以下を追記してください。  \nLAPRAS_API_KEYは職歴関連のツールを使う場合のみ必要です。https://lapras.com/config/api-key から取得できます。\n\n### Desktop Extension (DXT)\n\nClaude Desktopを使用している場合、Desktop Extension（.dxtファイル）を使って簡単にインストールできます。\n\n1. [リリースページ](https://github.com/lapras-inc/lapras-mcp-server/releases)から最新の`lapras-mcp-server.dxt`をダウンロード\n2. Claude Desktopの設定画面を開く\n3. ダウンロードした`.dxt`ファイルを設定画面にドラッグ＆ドロップ\n4. 必要に応じてLAPRAS_API_KEYを設定（LAPRAS_API_KEYを設定後はMCPの有効・無効の設定をトグルしてください）\n\n### npx\n\n```\n{\n  \"mcpServers\": {\n    \"lapras\": {\n      \"command\": \"npx\",\n      \"args\": [\n        \"-y\",\n        \"@lapras-inc/lapras-mcp-server\"\n      ],\n      \"env\": {\n        \"LAPRAS_API_KEY\": \"<YOUR_LAPRAS_API_KEY>\"\n      }\n    }\n  }\n}\n```\n\n> [!IMPORTANT]\n> Node.jsの環境によってはサーバー接続に失敗する可能性があります。その場合は下記のDocker経由での利用をお試しください。\n> また、WSL経由でnpxを実行する場合は、envの環境変数は読み取れません。argsで直接環境変数を指定する必要があります。\n> 例: `\"args\": [\"LAPRAS_API_KEY=<YOUR_LAPRAS_API_KEY>\", \"bash\", \"-c\", \"/home/bin/npx @lapras-inc/lapras-mcp-server\"]`\n\n\n### Docker\n\n```\n{\n  \"mcpServers\": {\n    \"lapras\": {\n      \"command\": \"docker\",\n      \"args\": [\n        \"run\",\n        \"-i\",\n        \"--rm\",\n        \"-e\",\n        \"LAPRAS_API_KEY\",\n        \"laprascom/lapras-mcp-server:v0.4.0\"\n      ],\n      \"env\": {\n        \"LAPRAS_API_KEY\": \"<YOUR_LAPRAS_API_KEY>\"\n      }\n    }\n  }\n}\n```\n\n### Gemini CLI\n\nGoogleのGemini CLIで利用する場合、上記の「**npx**」セクションにあるJSONコードを、お使いの`settings.json`ファイルに追記します。\n\n設定ファイルは通常、OSごとに以下のパスに配置されています。\n* **Windows**: `C:\\Users\\<ユーザー名>\\.gemini\\`\n* **macOS / Linux**: `~/.gemini/`\n\n> [!NOTE]\n> `gemini.conf.toml` を使用する場合は、以下のTOML形式で記述することも可能です。\n> ```toml\n> [mcpServers.lapras]\n> command = \"npx\"\n> args = [\"-y\", \"@lapras-inc/lapras-mcp-server\"]\n> \n> [mcpServers.lapras.env]\n> LAPRAS_API_KEY = \"<YOUR_LAPRAS_API_KEY>\"\n> ```\n\n\n## General notes\n> [!WARNING]\n> AIがMCPサーバー経由でLAPRASから取得した情報(個人情報等を含む)は、ご利用中のAIモデルに送信され、解釈・処理が行われます。\n> 利用されるAIサービスのデータ取扱いポリシー等をご確認の上、個人情報や機密情報の取り扱いにはご留意ください。\n\n## Examples\n\n#### シンプルな求人の検索例\n\n```\nフルリモートワーク可能でRustが使えるバックエンドの求人を探してください。年収は800万以上で。\n結果はMarkdownの表にまとめてください。\n```\n\n#### 自分にあった求人の検索例\n\n```\n<自分のキャリアがわかる画像 or URL を貼り付ける> \nこれが私の職歴です。私に合いそうな求人を探してください。\n```\n\n#### 自分に合った求人の検索例\n\n```\nLAPRASで職歴を取得して、私に合いそうな求人を探してください。\n```\n\n#### 職歴を更新する例\n\n```\n<自分のキャリアがわかる画像 or URL を貼り付ける> \nこれが私の職歴です。LARPASの職歴を更新してください。\n```\n\n#### LAPRASの職歴を改善する例\n\n```\nLAPRASの職歴を取得して、ブラッシュアップするための質問をしてください。\n改善後、LAPRASの職歴を更新してください。\n```\n\n#### 職務要約を更新する例\n\n```\n私のこれまでの職歴を整理し職務要約を作成して、LAPRASに登録してください。\n```\n\n#### 今後のキャリアでやりたいことを更新する例\n\n```\n私の職歴を取得して、今後のキャリアでやりたいことについて質問してください。\n回答をもとに、LAPRASの今後のキャリアでやりたいことを更新してください。\n```\n\nhttps://github.com/user-attachments/assets/9c61470f-f97d-4e6f-97ca-53718c796376\n\n## Tools\n###  `search_job` 求人検索\n- キーワード、ページ番号、最低年収などのパラメータを使用して求人を検索\n- 使用例: `search_job` ツールを呼び出し、特定の条件に合致する求人リストを取得\n\n### `get_job_detail` 求人詳細取得\n- 求人IDを指定して特定の求人の詳細情報を取得\n- 使用例: `get_job_detail` ツールを呼び出し、特定の求人の詳細情報を取得\n\n### `get_experiences` 職歴一覧取得\n- LAPRASに登録されている職歴情報の一覧を取得\n- 使用例: `get_experiences` ツールを呼び出し、登録済みの職歴一覧を取得\n\n### `create_experience` 職歴新規追加\n- LAPRASに新しい職歴情報を追加\n- 使用例: `create_experience` ツールを呼び出し、新しい職歴を登録\n\n### `update_experience` 職歴更新\n- LAPRASに登録されている職歴情報を更新\n- 使用例: `update_experience` ツールを呼び出し、既存の職歴を更新\n\n### `delete_experience` 職歴削除\n- LAPRASに登録されている職歴情報を削除\n- 使用例: `delete_experience` ツールを呼び出し、指定した職歴を削除\n\n### `get_job_summary` 職務要約取得\n- LAPRASに登録されている職務要約を取得\n- 使用例: `get_job_summary` ツールを呼び出し、登録済みの職務要約を取得\n\n### `update_job_summary` 職務要約更新\n- LAPRASに職務要約を登録または更新\n- 使用例: `update_job_summary` ツールを呼び出し、職務要約を更新\n\n### `get_want_to_do` キャリア志向取得\n- LAPRASに登録されている今後のキャリアでやりたいことを取得\n- 使用例: `get_want_to_do` ツールを呼び出し、やりたいことを取得\n\n### `update_want_to_do` キャリア志向更新\n- LAPRASに今後のキャリアでやりたいことを登録または更新\n- 使用例: `update_want_to_do` ツールを呼び出し、やりたいことを更新\n\n### `get_tech_skill` テックスキル取得\n- LAPRASに登録されている経験技術・スキル・資格\n一覧（スキルID・スキル名・経験年数）を取得\n- 使用例: `get_tech_skill` ツールを呼び出し、現在のテックスキルの状況を確認\n\n### `update_tech_skill` テックスキル更新\n- 経験技術・スキル・資格と経験年数（実数値）を指定して、LAPRASのテックスキルを更新\n- 使用例: `update_tech_skill` ツールを呼び出し、抽出したスキル情報をLAPRASに反映\n\n> [!NOTE]\n> 職歴関連のツールを使用するには、LAPRAS_API_KEYの設定が必要です。\n> APIキーは https://lapras.com/config/api-key から取得できます。\n\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "full_name": "Cicatriiz/consumer-rights-wiki-mcp",
+  "html_url": "https://github.com/Cicatriiz/consumer-rights-wiki-mcp",
+  "description": "Consumer Rights Wiki MCP",
+  "topics": [
+    "ai",
+    "claude",
+    "claude-desktop",
+    "consumer-reports",
+    "consumer-rights",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "open-source",
+    "oss"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 1,
+  "open_issues": 1,
+  "language": "TypeScript",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-07-21T01:12:47Z",
+  "last_pushed_at": "2025-07-21T01:13:01Z",
+  "fetched_at": "2026-07-12T00:21:00.988Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Consumer Rights Wiki MCP Server\n\nA Model Context Protocol (MCP) server that provides access to the Consumer Rights Wiki, a platform documenting modern consumer exploitation issues.\n\n## Overview\n\nThis MCP server enables AI assistants to interact with the Consumer Rights Wiki (https://consumerrights.wiki), which documents various forms of consumer exploitation including:\n\n- Privacy violations and data misuse\n- Dark patterns in user interfaces\n- Forced arbitration clauses\n- Ownership rights violations\n- Deceptive pricing practices\n- And more modern consumer issues\n\n## Features\n\nThe server provides the following tools:\n\n### 1. `search_wiki`\nSearch for articles in the Consumer Rights Wiki.\n- **Parameters:**\n  - `query` (required): Search terms\n  - `limit` (optional): Number of results (default: 10, max: 50)\n\n### 2. `get_page_content`\nRetrieve the full content of a specific wiki page.\n- **Parameters:**\n  - `title` (required): The page title\n  - `section` (optional): Specific section number to retrieve\n\n### 3. `get_page_info`\nGet metadata about a wiki page including revision history, categories, and protection status.\n- **Parameters:**\n  - `title` (required): The page title\n\n### 4. `get_recent_changes`\nView recent changes to the wiki.\n- **Parameters:**\n  - `limit` (optional): Number of changes to return (default: 10, max: 50)\n  - `namespace` (optional): Filter by namespace (0 = main articles)\n\n### 5. `get_categories`\nList all categories or pages within a specific category.\n- **Parameters:**\n  - `category` (optional): Category name (without \"Category:\" prefix)\n  - `limit` (optional): Number of results (default: 20, max: 50)\n\n### 6. `get_page_sections`\nGet the section structure of a wiki page.\n- **Parameters:**\n  - `title` (required): The page title\n\n## Installation\n\n1. Clone this repository or create a new directory:\n```bash\nmkdir consumer-rights-wiki-mcp\ncd consumer-rights-wiki-mcp\n```\n\n2. Save the provided files:\n   - `src/index.ts` (the main server code)\n   - `package.json`\n   - `tsconfig.json`\n\n3. Install dependencies:\n```bash\nnpm install\n```\n\n4. Build the TypeScript code:\n```bash\nnpm run build\n```\n\n## Configuration\n\n### For Claude Desktop\n\nAdd the following to your Claude Desktop configuration file:\n\n**On macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`\n**On Windows:** `%APPDATA%\\Claude\\claude_desktop_config.json`\n\n```json\n{\n  \"mcpServers\": {\n    \"consumer-rights-wiki\": {\n      \"command\": \"node\",\n      \"args\": [\"path/to/consumer-rights-wiki-mcp/build/index.js\"]\n    }\n  }\n}\n```\n\n### For Other MCP Clients\n\nThe server runs on stdio transport. Start it with:\n```bash\nnpm start\n```\n\n## Usage Examples\n\nOnce configured, you can ask your AI assistant to:\n\n1. **Search for companies:**\n   \"Search the Consumer Rights Wiki for information about X Corp\"\n\n2. **Get detailed article content:**\n   \"Get the full content of the X Corp article from Consumer Rights Wiki\"\n\n3. **Browse recent changes:**\n   \"Show me the most recent changes to Consumer Rights Wiki\"\n\n4. **Explore categories:**\n   \"What categories are available in Consumer Rights Wiki?\"\n   \"Show me all articles in the 'Privacy violations' category\"\n\n5. **Get page structure:**\n   \"What sections are in the 'Apple Inc.' article?\"\n\n## Development\n\nFor development with hot reloading:\n```bash\nnpm run dev\n```\n\nTo clean build artifacts:\n```bash\nnpm run clean\n```\n\n## API Limitations\n\n- The server uses the public MediaWiki API, which has rate limits\n- Search results are limited to 50 per query\n- Some content may require authentication for editing (not implemented in this version)\n\n## Contributing\n\nThis MCP server is designed to help expose consumer exploitation practices. Consider contributing to:\n- The Consumer Rights Wiki itself by documenting consumer issues\n- This MCP server by adding new features or improving existing ones\n\n## License\n\nMIT License\n\n## Related Resources\n\n- [Consumer Rights Wiki](https://consumerrights.wiki)\n- [Model Context Protocol Documentation](https://modelcontextprotocol.io)\n- [MediaWiki API Documentation](https://www.mediawiki.org/wiki/API:Main_page)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

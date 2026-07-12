@@ -1,0 +1,32 @@
+{
+  "full_name": "wangyj641/ai-mcp",
+  "html_url": "https://github.com/wangyj641/ai-mcp",
+  "description": "MCP server for AI agent, providing simple tools",
+  "topics": [
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "model-context-protocol"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-09-25T05:22:50Z",
+  "last_pushed_at": "2025-09-28T04:11:06Z",
+  "fetched_at": "2026-07-12T00:49:53.666Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# ai-mcp\n\nLightweight MCP server for agent, register tools.\n\n## Overview\n\nThis project creates minimal MCP services that expose small tools (examples: system info, weather lookup) and run them via standard input/output. It is intended as a reference for wiring functions into MCP FastMCP instances.\n\n## Files\n\n- `system_information_mcp.py` — implement system information MCP and register tool `get_system_info`.\n- `weather_mcp.py` — implement weather MCP and register tools to get weather info using the U.S. National Weather Service API.\n- `pyproject.toml` — project metadata and dependencies.\n- `.python-version` — recommended Python version (3.12).\n\n## Requirements\n\n- Python 3.12\n- Recommended: use a virtual environment\n\n## Configuration agent\n\nConfigure MCP server in Cline\n\n```bash\n \"system information mcp\": {\n      \"disabled\": false,\n      \"timeout\": 60,\n      \"type\": \"stdio\",\n      \"command\": \"uv\",\n      \"args\": [\n        \"--directory\",\n        \"D:/YJWANG/workspace/code/ai/ai-mcp\",\n        \"run\",\n        \"system_information_mcp.py\"\n      ]\n    },\n    \"weather mcp\": {\n      \"disabled\": false,\n      \"timeout\": 60,\n      \"type\": \"stdio\",\n      \"command\": \"uv\",\n      \"args\": [\n        \"--directory\",\n        \"D:/YJWANG/workspace/code/ai/ai-mcp\",\n        \"run\",\n        \"weather_mcp.py\"\n      ]\n    }\n```\n\nYou should change the path according to your envrionment.\n\n## Run\n\n- System info MCP:\n\n```bash\nuv run system_information_mcp.py\n```\n\n- Weather MCP (weather_mcp.py):\n\n```bash\nuv run weather_mcp.py\n```\n\nEach script creates a FastMCP instance, registers one or more tools, and runs in stdio mode. Use your MCP-compatible client or protocol over stdio to call the registered tools.\n\nThen, you can ask questions in agent, such as Cline\n\n```bash\nHow about tomorrow weather in Regina, SK\n```\n\n```bash\nWhat is your computer's OS?\n```\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

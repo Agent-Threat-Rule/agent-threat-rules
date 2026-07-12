@@ -1,0 +1,41 @@
+{
+  "full_name": "imdinu/apple-mail-mcp",
+  "html_url": "https://github.com/imdinu/apple-mail-mcp",
+  "description": "Apple Mail MCP server with full-coverage FTS5 body search. Reliable on large mailboxes where AppleScript-based servers timeout.",
+  "topics": [
+    "apple-mail",
+    "automation",
+    "claude",
+    "email",
+    "fts5",
+    "jxa",
+    "macos",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 47,
+  "forks": 17,
+  "open_issues": 8,
+  "language": "Python",
+  "license": "GPL-3.0",
+  "default_branch": "main",
+  "created_at": "2026-01-27T01:12:53Z",
+  "last_pushed_at": "2026-07-02T21:15:50Z",
+  "fetched_at": "2026-07-11T23:31:17.901Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Apple Mail MCP\n\n<!-- mcp-name: io.github.imdinu/apple-mail-mcp -->\n\n<p align=\"center\">\n  <img src=\"docs/assets/social-card.svg\" alt=\"Apple Mail MCP — Full-coverage FTS5 body search\" width=\"720\">\n</p>\n\n[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)\n[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)\n[![macOS](https://img.shields.io/badge/platform-macOS-lightgrey.svg)](https://www.apple.com/macos/)\n[![MCP](https://img.shields.io/badge/MCP-compatible-green.svg)](https://modelcontextprotocol.io/)\n[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)\n[![CI](https://github.com/imdinu/apple-mail-mcp/actions/workflows/lint.yml/badge.svg)](https://github.com/imdinu/apple-mail-mcp/actions/workflows/lint.yml)\n\nThe only Apple Mail MCP server with **full-coverage body search** — reliable on large mailboxes where AppleScript-based servers timeout. 8 tools for reading, searching, and extracting email content.\n\n**[Read the docs](https://imdinu.github.io/apple-mail-mcp/)** for the full guide.\n\n## Quick Start\n\n```bash\npipx install apple-mail-mcp\n```\n\nAdd to your MCP client:\n\n```json\n{\n  \"mcpServers\": {\n    \"mail\": {\n      \"command\": \"apple-mail-mcp\"\n    }\n  }\n}\n```\n\n### Build the Search Index (Recommended)\n\n```bash\n# Requires Full Disk Access for Terminal\n# System Settings → Privacy & Security → Full Disk Access → Add Terminal\n\napple-mail-mcp index --verbose\n```\n\n### Configure (Optional)\n\n```bash\napple-mail-mcp init   # writes ~/.apple-mail-mcp/config.toml\n```\n\nWrites a commented config file you can edit to set defaults like your\nprimary account or mailbox. Every key has a matching `APPLE_MAIL_*` env\nvar if you prefer environment-based config. See\n[Configuration](https://imdinu.github.io/apple-mail-mcp/configuration/)\nfor the full schema and precedence rules.\n\n## Tools\n\n| Tool | Purpose |\n|------|---------|\n| `list_accounts()` | List email accounts |\n| `list_mailboxes(account?)` | List mailboxes |\n| `get_emails(filter?, limit?)` | Get emails — all, unread, flagged, today, last_7_days |\n| `get_email(message_id)` | Get single email with full content + attachments |\n| `search(query, scope?, before?, after?, highlight?)` | Search — all, subject, sender, body, attachments |\n| `get_email_links(message_id)` | Extract links from an email |\n| `get_email_attachment(message_id, filename)` | Extract attachment content |\n| `get_attachment(message_id, filename)` | *Deprecated* — use `get_email_attachment()` |\n\n## Performance\n\nTested against [6 other Apple Mail MCP servers](https://imdinu.github.io/apple-mail-mcp/benchmarks/) on a real **~73K-message** mailbox:\n\n- **Only server with full-coverage body search.** Most competitors don't support body search at all; the one that does (BastianZim) live-scans only the 5000 most recent messages — silent miss on anything older. Our FTS5 index covers the entire mailbox.\n- **~3ms single email fetch** via disk-first `.emlx` reading (no JXA round-trip).\n- **~1ms `list_accounts` and ~5ms 50-email listing** via direct Envelope-Index SQLite reads (0.4+) — same path BastianZim/rusty/pl-lyfx use, with JXA as the correctness fallback.\n- **~7ms subject search** via FTS5 — competitive with native Rust on the same operation.\n- **Reliable across all 6 benchmarked operations** on a 73K mailbox; AppleScript-based servers timeout, throw syntax errors, or skip operations they don't support.\n\n![Capability Matrix](docs/benchmark_overview.png)\n\n## Configuration\n\nApple Mail MCP works out of the box. To customize defaults, run\n`apple-mail-mcp init` to generate a `config.toml` template — or use\nthe matching `APPLE_MAIL_*` environment variables. See the\n[Configuration docs](https://imdinu.github.io/apple-mail-mcp/configuration/)\nfor the full schema and the CLI > env > file > default precedence.\n\nPer-client env overrides via the MCP client's launch config also work:\n\n```json\n{\n  \"mcpServers\": {\n    \"mail\": {\n      \"command\": \"apple-mail-mcp\",\n      \"args\": [\"--watch\"],\n      \"env\": {\n        \"APPLE_MAIL_DEFAULT_ACCOUNT\": \"Work\"\n      }\n    }\n  }\n}\n```\n\n## CLI Usage\n\nAll tools are also available as standalone CLI commands (no MCP server needed):\n\n```bash\napple-mail-mcp search \"quarterly report\" --scope subject\napple-mail-mcp search \"invoice\" --after 2026-01-01 --limit 10\napple-mail-mcp read 12345\napple-mail-mcp emails --filter unread --limit 10\napple-mail-mcp accounts\napple-mail-mcp mailboxes --account Work\napple-mail-mcp extract 12345 invoice.pdf\n```\n\nAll commands output JSON. Generate a [Claude Code skill](https://imdinu.github.io/apple-mail-mcp/configuration/#cli-commands) for CLI-based access:\n\n```bash\napple-mail-mcp integrate claude > ~/.claude/skills/apple-mail.md\n```\n\n## Development\n\n```bash\ngit clone https://github.com/imdinu/apple-mail-mcp\ncd apple-mail-mcp\nuv sync\nuv run ruff check src/\nuv run pytest\n```\n\n## License\n\nGPL-3.0-or-later\n"
+  },
+  "descriptor_file": {
+    "path": "server.json",
+    "content": "{\n  \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json\",\n  \"name\": \"io.github.imdinu/apple-mail-mcp\",\n  \"title\": \"Apple Mail MCP\",\n  \"description\": \"Apple Mail MCP server with full-coverage FTS5 body search, reliable on large mailboxes.\",\n  \"repository\": {\n    \"url\": \"https://github.com/imdinu/apple-mail-mcp\",\n    \"source\": \"github\"\n  },\n  \"version\": \"0.4.2\",\n  \"packages\": [\n    {\n      \"registryType\": \"pypi\",\n      \"identifier\": \"apple-mail-mcp\",\n      \"version\": \"0.4.2\",\n      \"runtimeHint\": \"uvx\",\n      \"transport\": {\n        \"type\": \"stdio\"\n      }\n    }\n  ]\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

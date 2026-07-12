@@ -1,0 +1,36 @@
+{
+  "full_name": "grahamrowe82/mcp-quality-index",
+  "html_url": "https://github.com/grahamrowe82/mcp-quality-index",
+  "description": "Daily-updated quality scores for 12,653+ MCP servers. Machine-readable JSON. No auth required.",
+  "topics": [
+    "ai",
+    "dataset",
+    "developer-tools",
+    "json",
+    "mcp",
+    "mcp-servers",
+    "open-data",
+    "quality-scores"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": null,
+  "license": "CC-BY-4.0",
+  "default_branch": "main",
+  "created_at": "2026-03-27T09:47:51Z",
+  "last_pushed_at": "2026-04-07T09:39:54Z",
+  "fetched_at": "2026-07-12T00:09:43.430Z",
+  "readme": {
+    "path": "README.md",
+    "content": "[![Last Updated](https://img.shields.io/github/last-commit/grahamrowe82/mcp-quality-index?label=last%20updated)](https://github.com/grahamrowe82/mcp-quality-index/commits/main)\n[![Servers Scored](https://img.shields.io/badge/servers_scored-15241-blue)](#datasets)\n[![License](https://img.shields.io/github/license/grahamrowe82/mcp-quality-index)](LICENSE)\n\n# MCP Quality Index\n\nDaily-updated quality scores for 12,653+ MCP server repositories. Machine-readable JSON. No auth required.\n\n## What is this?\n\nEvery MCP registry today is a flat catalog — name, description, maybe a link. None of them tell you whether a server is maintained, adopted, or safe to depend on.\n\nThis dataset scores every MCP-domain repository on GitHub across four dimensions:\n\n| Component | Range | What it measures |\n|-----------|-------|-----------------|\n| **Maintenance** | 0-25 | Commit activity, push recency, archived status |\n| **Adoption** | 0-25 | Stars, package downloads, reverse dependents |\n| **Maturity** | 0-25 | License, published package (PyPI/npm), repo age |\n| **Community** | 0-25 | Forks, fork-to-star ratio |\n\nThe composite **quality score** (0-100) classifies each server into a tier:\n\n| Tier | Score | Count | Description |\n|------|-------|-------|-------------|\n| **Verified** | 70+ | 53 | Strong across all dimensions |\n| **Established** | 50-69 | 680 | Solid but gaps in one area |\n| **Emerging** | 30-49 | 3,078 | Early-stage, some traction |\n| **Experimental** | <30 | 8,842 | Minimal signals |\n\nRisk flags are computed per repo: `archived`, `no_license`, `stale_6m`, `no_package`, `no_dependents`.\n\nSee [METHODOLOGY.md](METHODOLOGY.md) for the full scoring model, and [`schema/`](schema/) for field-level documentation.\n\n## Datasets\n\nAll files are in [`data/`](data/):\n\n| File | Records | Description |\n|------|---------|-------------|\n| [`mcp-scores.json`](data/mcp-scores.json) | 12,653 | Quality scores with component breakdown and risk flags |\n| [`mcp-repos.json`](data/mcp-repos.json) | 12,512 | All active MCP repos with GitHub + package metrics |\n| [`projects.json`](data/projects.json) | 441 | Tracked AI projects with traction scores, lifecycle stages, velocity |\n| [`metadata.json`](data/metadata.json) | — | Export timestamp, record counts, schema version |\n\n## Usage\n\nFetch the raw JSON directly:\n\n```bash\ncurl -s https://raw.githubusercontent.com/grahamrowe82/mcp-quality-index/main/data/mcp-scores.json | jq '.[0]'\n```\n\n```json\n{\n  \"full_name\": \"n8n-io/n8n\",\n  \"quality_score\": 88,\n  \"quality_tier\": \"verified\",\n  \"maintenance_score\": 25,\n  \"adoption_score\": 20,\n  \"maturity_score\": 18,\n  \"community_score\": 25,\n  \"risk_flags\": [],\n  \"stars\": 72841,\n  \"downloads_monthly\": 1547893,\n  \"commits_30d\": 289\n}\n```\n\nFilter verified servers with jq:\n\n```bash\ncurl -s https://raw.githubusercontent.com/grahamrowe82/mcp-quality-index/main/data/mcp-scores.json \\\n  | jq '[.[] | select(.quality_tier == \"verified\")] | length'\n```\n\n## Live API\n\nThe same data is available via the PT-Edge API (no auth required):\n\n```\nGET https://mcp.phasetransitions.ai/api/v1/datasets/mcp-scores\nGET https://mcp.phasetransitions.ai/api/v1/datasets/mcp-scores?quality_tier=verified\nGET https://mcp.phasetransitions.ai/api/v1/datasets/mcp-scores?subcategory=gateway\nGET https://mcp.phasetransitions.ai/api/v1/datasets/mcp-repos\nGET https://mcp.phasetransitions.ai/api/v1/datasets/projects\n```\n\n## Update frequency\n\nData is refreshed daily from [PT-Edge](https://github.com/grahamrowe82/pt-edge), which tracks 166,000+ AI repositories across GitHub, PyPI, npm, Docker Hub, HuggingFace, and Hacker News.\n\n## License\n\nData: [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/). Attribution: PT-Edge (https://github.com/grahamrowe82/pt-edge).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "full_name": "wacht-platform/platform",
+  "html_url": "https://github.com/wacht-platform/platform",
+  "description": "Ship product, not plumbing. Open source framework for AI-first SaaS — identity, OAuth, API auth, webhooks, notifications, and agents in one stack.",
+  "topics": [
+    "ai-agents",
+    "ai-agents-platform",
+    "api-key-authentication",
+    "autentication",
+    "mcp-servers",
+    "oauth-provider",
+    "open-source",
+    "saas-framework",
+    "typescript",
+    "webhooks"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 19,
+  "forks": 1,
+  "open_issues": 0,
+  "language": "Rust",
+  "license": "AGPL-3.0",
+  "default_branch": "main",
+  "created_at": "2025-02-06T20:00:53Z",
+  "last_pushed_at": "2026-06-28T19:45:21Z",
+  "fetched_at": "2026-07-11T23:54:16.850Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<h1 align=\"center\">\n  <a href=\"https://wacht.dev\" style=\"text-decoration:none;\">Wacht Platform</a>\n</h1>\n\n<p align=\"center\">\n  <strong>The open-source identity, access, and agent runtime backend for modern SaaS.</strong>\n</p>\n\n<p align=\"center\">\n  <a href=\"https://github.com/wacht-platform/platform-api/blob/main/LICENSE.md\">\n    <img alt=\"License\" src=\"https://img.shields.io/badge/license-AGPL--3.0-blue?style=flat-square\" />\n  </a>\n  <img alt=\"Status\" src=\"https://img.shields.io/badge/status-public%20beta-blue?style=flat-square\" />\n  <img alt=\"Built with Rust\" src=\"https://img.shields.io/badge/built%20with-rust-orange?style=flat-square\" />\n</p>\n\n<p align=\"center\">\n  <a href=\"https://wacht.dev\">Website</a> ·\n  <a href=\"https://wacht.dev/docs\">Docs</a> ·\n  <a href=\"https://github.com/wacht-platform/platform-api/issues\">Issues</a> ·\n  <a href=\"https://wacht.dev/changelog\">Changelog</a>\n</p>\n\n---\n\n## Overview\n\nWacht Platform is the backend that powers [Wacht](https://wacht.dev) — a programmable\nidentity, access, and agent platform for B2B and SaaS products. It exposes the control plane,\nauthentication runtime, integration surface, and the agent execution engine that applications\nbuild on top of.\n\nIt is designed for teams that treat identity, authorization, and AI workflows as first-class\nproduct surfaces rather than commodity infrastructure.\n\n## Capabilities\n\n- **Multi-tenant authentication.** Sign-in, sign-up, MFA, sessions, and deployment-scoped policies.\n- **B2B access model.** Organizations, workspaces, roles, and a permission catalog suitable for\n  customer-facing admin UIs.\n- **Machine and user authorization.** Token issuance, API keys, scoped credentials, and\n  authorization decisions for both human and service callers.\n- **OAuth and integrations.** First-party OAuth provider plus relay flows for external services.\n- **Event-driven operations.** Webhooks, async workers, retries, notifications, usage metering,\n  and billing hooks.\n- **Agent runtime.** A first-class engine for long-running, tool-using agents with sandboxed\n  execution, scheduled work, and human-in-the-loop approvals.\n\n## Architecture\n\nThe system is organized into four planes:\n\n| Plane          | Responsibility                                                            |\n| -------------- | ------------------------------------------------------------------------- |\n| Control plane  | Configure deployments, policies, auth factors, and access models.         |\n| Runtime plane  | Execute sign-in/sign-up flows and authorization decisions at request time.|\n| Integration    | OAuth providers, webhooks, and external service connectors.               |\n| Operations     | Background workers, retries, notifications, usage and billing pipelines.  |\n\nThis repository is the backend for those four planes. It is consumed by:\n\n- **`console`** — operator UI for managing platform configuration.\n- **`frontend-api`** — end-user authentication flows embedded in application frontends.\n\n## Repository Layout\n\n```\nplatform/        HTTP entrypoints (console-api, frontend-api, oauth-relay)\nagent-engine/    Agent execution runtime, planner, tool dispatch\nworker/          Background job runner (webhooks, retries, schedules)\ncommands/        Write-side handlers (CQRS-style commands)\nqueries/         Read-side projections and query handlers\nmodels/          Domain models and persistence types\ndto/             Wire types shared across services\ntemplatekit/     Prompt and template assets for the agent engine\ncommon/          Shared utilities (telemetry, error, config)\noauth-relay/     OAuth relay service\nscripts/         Operational and developer scripts\n```\n\n## Quickstart\n\nRequirements: a recent stable Rust toolchain, PostgreSQL, and NATS.\n\n```bash\n# Verify the workspace builds\ncargo check --workspace\n\n# Run the console API\nCONSOLE_API_PORT=3001 cargo run -p platform --bin console-api\n\n# Run the background worker\ncargo run -p platform-worker --bin worker\n```\n\nSee the [documentation](https://wacht.dev/docs) for environment variables, schema migrations,\nand deployment guidance.\n\n## Status\n\nWacht Platform is in **public beta**. The HTTP surface and data model are stabilizing;\nbreaking changes are documented in the changelog. Production usage is supported with the\nexpectations typical of a beta release.\n\n## Contributing\n\nWe're not accepting pull requests yet — the contribution process isn't set up. Forks,\nself-hosting, and any other use the AGPL-3.0 allows are welcome. Self-hosting documentation\nis still in progress.\n\n## Support\n\n- Product and integration docs: [wacht.dev/docs](https://wacht.dev/docs).\n- Direct assistance: [engineering@intellinesia.com](mailto:engineering@intellinesia.com).\n\n## License\n\nLicensed under the GNU Affero General Public License v3.0 (AGPL-3.0-only).\nSee [LICENSE.md](./LICENSE.md) for the full text.\n\n---\n\n<sub>* This README was AI-generated.</sub>\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

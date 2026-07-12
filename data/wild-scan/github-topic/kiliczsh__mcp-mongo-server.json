@@ -1,0 +1,41 @@
+{
+  "full_name": "kiliczsh/mcp-mongo-server",
+  "html_url": "https://github.com/kiliczsh/mcp-mongo-server",
+  "description": "A Model Context Protocol Server for MongoDB",
+  "topics": [
+    "antrophic",
+    "claude",
+    "claude-desktop",
+    "cline",
+    "cursor",
+    "mcp",
+    "model-context-protocol",
+    "mongo",
+    "mongodb",
+    "windsurf"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 282,
+  "forks": 55,
+  "open_issues": 2,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2024-12-04T19:30:40Z",
+  "last_pushed_at": "2026-02-06T17:08:17Z",
+  "fetched_at": "2026-07-11T23:15:26.732Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP MongoDB Server\n---\n\n![NPM Version](https://img.shields.io/npm/v/mcp-mongo-server)\n![NPM Downloads](https://img.shields.io/npm/dm/mcp-mongo-server)\n![NPM License](https://img.shields.io/npm/l/mcp-mongo-server)\n[![smithery badge](https://smithery.ai/badge/mcp-mongo-server)](https://smithery.ai/server/mcp-mongo-server)\n[![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/e274a3dd-7fe6-4440-8c43-043bae668251)\n\nA Model Context Protocol server that enables LLMs to interact with MongoDB databases. This server provides capabilities for inspecting collection schemas and executing MongoDB operations through a standardized interface.\n\n## Demo\n\n[![MCP MongoDB Server Demo | Claude Desktop](https://img.youtube.com/vi/FI-oE_voCpA/0.jpg)](https://www.youtube.com/watch?v=FI-oE_voCpA)\n\n## Key Features\n\n- **Smart ObjectId Handling** - Configurable auto/none/force modes for string-to-ObjectId conversion\n- **Read-Only Mode** - Protection against write operations, uses secondary read preference\n- **Schema Inference** - Automatic collection schema detection from document samples\n- **Query & Aggregation** - Full MongoDB query and aggregation pipeline support with optional explain plans\n- **Write Operations** - Insert, update, and index creation (when not in read-only mode)\n- **Collection Completions** - Auto-complete collection names for LLM integration\n\n## Installation\n\n```bash\nnpx -y mcp-mongo-server mongodb://localhost:27017/database\n```\n\n## Usage\n\n```bash\n# Start server with MongoDB URI\nnpx -y mcp-mongo-server mongodb://muhammed:kilic@localhost:27017/database\n\n# Connect in read-only mode\nnpx -y mcp-mongo-server mongodb://muhammed:kilic@localhost:27017/database --read-only\n```\n\n### Environment Variables\n\n| Variable | Description |\n|----------|-------------|\n| `MCP_MONGODB_URI` | MongoDB connection URI |\n| `MCP_MONGODB_READONLY` | Enable read-only mode (`\"true\"`) |\n\n## Documentation\n\n- [Integration Guide](docs/integration.md) - Claude Desktop, Windsurf, Cursor, Docker\n- [Available Tools](docs/tools.md) - Query, aggregate, update, insert, and more\n- [Development](docs/development.md) - Setup, scripts, and debugging\n- [Contributing](CONTRIBUTING.md)\n\n## License\n\nMIT - see [LICENSE](LICENSE) for details.\n"
+  },
+  "descriptor_file": {
+    "path": "smithery.yaml",
+    "content": "# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml\n\nstartCommand:\n  type: stdio\n  configSchema:\n    # JSON Schema defining the configuration options for the MCP.\n    type: object\n    required:\n      - mongoUri\n    properties:\n      mongoUri:\n        type: string\n        description: The MongoDB URI to connect to the database.\n  commandFunction:\n    # A function that produces the CLI command to start the MCP on stdio.\n    |-\n    (config) => ({ command: 'node', args: ['build/index.js', config.mongoUri] })"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

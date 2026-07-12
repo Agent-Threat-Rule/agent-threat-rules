@@ -1,0 +1,35 @@
+{
+  "full_name": "hightemp/mcp-http-proxy",
+  "html_url": "https://github.com/hightemp/mcp-http-proxy",
+  "description": "MCP HTTP proxy and SSE server written in golang that aggregates tools from external MCP CLI servers and exposes them over a single HTTP/SSE endpoint.",
+  "topics": [
+    "golang",
+    "mcp-proxy",
+    "mcp-server",
+    "mcp-tools",
+    "sse-server"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Go",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-09-28T11:37:44Z",
+  "last_pushed_at": "2025-09-28T11:39:52Z",
+  "fetched_at": "2026-07-12T00:40:43.662Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# mcp-http-proxy\n\nMCP HTTP proxy and SSE server written in golang that aggregates tools from external MCP CLI servers and exposes them over a single HTTP/SSE endpoint.\n\n### Configuration\n\n```yaml\nserver:\n  address: \"localhost\"\n  port: 8080\n  name: \"MCP HTTP Proxy\"\n  version: \"1.0.0\"\n\nmcp_servers:\n  filesystem:\n    command: \"node\"\n    args: [\"/path/to/filesystem-server.js\"]\n    env:\n      NODE_ENV: \"production\"\n    workdir: \"/tmp\"\n    timeout: 30\n    options:\n      log_enabled: true\n      panic_if_invalid: false\n\n  github:\n    command: \"npx\"\n    args: [\"-y\", \"@modelcontextprotocol/server-github\"]\n    env:\n      GITHUB_PERSONAL_ACCESS_TOKEN: \"your_token_here\"\n    timeout: 60\n    options:\n      log_enabled: true\n      panic_if_invalid: true\n      tool_filter:\n        mode: \"block\"\n        list: [\"create_or_update_file\"]\n\n  database:\n    command: \"python\"\n    args: [\"-m\", \"mcp-server-sqlite\", \"--db-path\", \"/path/to/database.db\"]\n    timeout: 45\n    options:\n      log_enabled: false\n      panic_if_invalid: false\n\n  custom_tools:\n    command: \"/usr/local/bin/custom-mcp-server\"\n    args: [\"--config\", \"/etc/custom-mcp.conf\"]\n    env:\n      API_KEY: \"your_api_key\"\n      LOG_LEVEL: \"info\"\n    workdir: \"/var/lib/custom-mcp\"\n    timeout: 30\n    options:\n      log_enabled: true\n      panic_if_invalid: false\n      tool_filter:\n        mode: \"allow\"\n        list: [\"search\", \"analyze\", \"generate_report\"]\n```\n\n### License\n\nMIT\n\n![](https://asdertasd.site/counter/mcp-http-proxy)"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "main.go",
+    "size": 667,
+    "content": "package main\n\nimport (\n\t\"flag\"\n\t\"log\"\n\t\"mcp-http-proxy/config\"\n\t\"mcp-http-proxy/server\"\n)\n\nfunc main() {\n\tconfigPath := flag.String(\"config\", \"config.yaml\", \"Path to configuration file\")\n\tflag.Parse()\n\n\t// Загружаем конфигурацию\n\tcfg, err := config.LoadConfig(*configPath)\n\tif err != nil {\n\t\tlog.Fatalf(\"Failed to load config: %v\", err)\n\t}\n\n\t// Создаем и запускаем сервер\n\tsrv, err := server.NewServer(cfg)\n\tif err != nil {\n\t\tlog.Fatalf(\"Failed to create server: %v\", err)\n\t}\n\n\tlog.Printf(\"Starting MCP HTTP Proxy on %s\", cfg.Server.Address)\n\tif err := srv.Start(); err != nil {\n\t\tlog.Fatalf(\"Server failed: %v\", err)\n\t}\n}\n"
+  },
+  "content_fetch_notes": []
+}

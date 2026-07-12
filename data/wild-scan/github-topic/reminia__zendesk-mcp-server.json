@@ -1,0 +1,30 @@
+{
+  "full_name": "reminia/zendesk-mcp-server",
+  "html_url": "https://github.com/reminia/zendesk-mcp-server",
+  "description": "A Model Context Protocol server for Zendesk",
+  "topics": [
+    "mcp-server",
+    "zendesk"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 108,
+  "forks": 79,
+  "open_issues": 17,
+  "language": "Python",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2024-12-16T19:05:44Z",
+  "last_pushed_at": "2026-03-06T05:26:09Z",
+  "fetched_at": "2026-07-11T22:58:15.373Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Zendesk MCP Server\n\n![ci](https://github.com/reminia/zendesk-mcp-server/actions/workflows/ci.yml/badge.svg)\n[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)\n\nA Model Context Protocol server for Zendesk.\n\nThis server provides a comprehensive integration with Zendesk. It offers:\n\n- Tools for retrieving and managing Zendesk tickets and comments\n- Specialized prompts for ticket analysis and response drafting\n- Full access to the Zendesk Help Center articles as knowledge base\n\n![demo](https://res.cloudinary.com/leecy-me/image/upload/v1736410626/open/zendesk_yunczu.gif)\n\n## Setup\n\n- build: `uv venv && uv pip install -e .` or `uv build` in short.\n- setup zendesk credentials in `.env` file, refer to [.env.example](.env.example).\n- configure in Claude desktop:\n\n```json\n{\n  \"mcpServers\": {\n      \"zendesk\": {\n          \"command\": \"uv\",\n          \"args\": [\n              \"--directory\",\n              \"/path/to/zendesk-mcp-server\",\n              \"run\",\n              \"zendesk\"\n          ]\n      }\n  }\n}\n```\n\n### Docker\n\nYou can containerize the server if you prefer an isolated runtime:\n\n1. Copy `.env.example` to `.env` and fill in your Zendesk credentials. Keep this file outside version control.\n2. Build the image:\n\n   ```bash\n   docker build -t zendesk-mcp-server .\n   ```\n\n3. Run the server, providing the environment file:\n\n   ```bash\n   docker run --rm --env-file /path/to/.env zendesk-mcp-server\n   ```\n\n   Add `-i` when wiring the container to MCP clients over STDIN/STDOUT (Claude Code uses this mode). For daemonized runs, add `-d --name zendesk-mcp`.\n\nThe image installs dependencies from `requirements.lock`, drops privileges to a non-root user, and expects configuration exclusively via environment variables.\n\n#### Claude MCP Integration\n\nTo use the Dockerized server from Claude Code/Desktop, add an entry to Claude Code's `settings.json` similar to:\n\n```json\n{\n  \"mcpServers\": {\n    \"zendesk\": {\n      \"command\": \"/usr/local/bin/docker\",\n      \"args\": [\n        \"run\",\n        \"--rm\",\n        \"-i\",\n        \"--env-file\",\n        \"/path/to/zendesk-mcp-server/.env\",\n        \"zendesk-mcp-server\"\n      ]\n    }\n  }\n}\n```\n\nAdjust the paths to match your environment. After saving the file, restart Claude for the new MCP server to be detected.\n\n## Resources\n\n- zendesk://knowledge-base, get access to the whole help center articles.\n\n## Prompts\n\n### analyze-ticket\n\nAnalyze a Zendesk ticket and provide a detailed analysis of the ticket.\n\n### draft-ticket-response\n\nDraft a response to a Zendesk ticket.\n\n## Tools\n\n### get_tickets\n\nFetch the latest tickets with pagination support\n\n- Input:\n  - `page` (integer, optional): Page number (defaults to 1)\n  - `per_page` (integer, optional): Number of tickets per page, max 100 (defaults to 25)\n  - `sort_by` (string, optional): Field to sort by - created_at, updated_at, priority, or status (defaults to created_at)\n  - `sort_order` (string, optional): Sort order - asc or desc (defaults to desc)\n\n- Output: Returns a list of tickets with essential fields including id, subject, status, priority, description, timestamps, and assignee information, along with pagination metadata\n\n### get_ticket\n\nRetrieve a Zendesk ticket by its ID\n\n- Input:\n  - `ticket_id` (integer): The ID of the ticket to retrieve\n\n### get_ticket_comments\n\nRetrieve all comments for a Zendesk ticket by its ID\n\n- Input:\n  - `ticket_id` (integer): The ID of the ticket to get comments for\n\n### create_ticket_comment\n\nCreate a new comment on an existing Zendesk ticket\n\n- Input:\n  - `ticket_id` (integer): The ID of the ticket to comment on\n  - `comment` (string): The comment text/content to add\n  - `public` (boolean, optional): Whether the comment should be public (defaults to true)\n\n### create_ticket\n\nCreate a new Zendesk ticket\n\n- Input:\n  - `subject` (string): Ticket subject\n  - `description` (string): Ticket description\n  - `requester_id` (integer, optional)\n  - `assignee_id` (integer, optional)\n  - `priority` (string, optional): one of `low`, `normal`, `high`, `urgent`\n  - `type` (string, optional): one of `problem`, `incident`, `question`, `task`\n  - `tags` (array[string], optional)\n  - `custom_fields` (array[object], optional)\n\n### update_ticket\n\nUpdate fields on an existing Zendesk ticket (e.g., status, priority, assignee)\n\n- Input:\n  - `ticket_id` (integer): The ID of the ticket to update\n  - `subject` (string, optional)\n  - `status` (string, optional): one of `new`, `open`, `pending`, `on-hold`, `solved`, `closed`\n  - `priority` (string, optional): one of `low`, `normal`, `high`, `urgent`\n  - `type` (string, optional)\n  - `assignee_id` (integer, optional)\n  - `requester_id` (integer, optional)\n  - `tags` (array[string], optional)\n  - `custom_fields` (array[object], optional)\n  - `due_at` (string, optional): ISO8601 datetime\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

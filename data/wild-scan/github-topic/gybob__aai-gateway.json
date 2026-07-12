@@ -1,0 +1,38 @@
+{
+  "full_name": "gybob/aai-gateway",
+  "html_url": "https://github.com/gybob/aai-gateway",
+  "description": "AAI Gateway — Install MCP servers and skills once, share across all your AI agents. One-time setup, 90% less context overhead. The unified gateway for AI agent tooling.",
+  "topics": [
+    "aai",
+    "aai-gateway",
+    "ai-agents",
+    "ai-tools",
+    "claude",
+    "codex",
+    "mcp",
+    "mcp-server",
+    "openclaw",
+    "opencode"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 104,
+  "forks": 5,
+  "open_issues": 4,
+  "language": "TypeScript",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2026-02-09T16:00:19Z",
+  "last_pushed_at": "2026-04-22T17:45:59Z",
+  "fetched_at": "2026-07-11T22:59:25.713Z",
+  "readme": {
+    "path": "README.md",
+    "content": "[English](README.md) | [简体中文](README.zh-CN.md) | [日本語](README.ja.md) | [한국어](README.ko.md)\n\n---\n\n# AAI Gateway: Unified MCP & Skill Management, Shared Across AI Agents, 99% Context Token Savings\n\n[![npm version](https://img.shields.io/npm/v/aai-gateway)](https://www.npmjs.com/package/aai-gateway)\n[![license](https://img.shields.io/npm/l/aai-gateway)](./LICENSE)\n\n---\n\n## What Is It\n\n**AAI** = **Agent App Interface**\n\nAAI Gateway is the interaction gateway for Agent Apps.\n\nWhat is an **Agent App**? An Agent App is a collection of capabilities that an Agent can use. For example:\n\n- An **MCP Server** is an Agent App — it provides a set of tools\n- A **Skill package** is an Agent App — it provides one or more skills\n\nIn AAI Gateway, they are abstracted as **Agent Apps** under unified management. Import once, and all AI Agents can use them immediately.\n\n---\n\n## What Problems Does It Solve\n\n### Context Bloat\n\nTraditional: 10 MCPs × 5 tools = **50 full schemas ≈ 7,500 tokens** injected into every conversation.\n\nAAI Gateway: each Agent App needs only **fewer than 50 tokens for a summary**, with details loaded on demand. **99% token savings.**\n\n### Finding Tools Is Hard\n\nTraditional: search GitHub → read READMEs → copy JSON configs → debug connections → restart Agent.\n\nAAI Gateway: **tell your Agent \"use AAI to search for xxx\" — auto-searches, installs, ready to use**.\n\n> \"Use AAI to search for a browser automation tool\"\n>\n> → Search → finds Playwright MCP → Agent summarizes a one-line Agent App summary → install → ready to use, no restart needed\n\n> \"Use AAI to search for a PPT creation skill\"\n>\n> → Search → finds PPT Skill → uses skill description as Agent App summary → install → ready to use, no restart needed\n\n### Duplicate Config\n\nConfigure the same thing in Claude Code, Codex, and OpenCode separately? Import once through AAI Gateway, all Agents share instantly.\n\n---\n\n## Quick Start (30 Seconds)\n\n**Claude Code:**\n\n```bash\nclaude mcp add --scope user --transport stdio aai-gateway -- npx -y aai-gateway\n```\n\n**Codex:**\n\n```bash\ncodex mcp add aai-gateway -- npx -y aai-gateway\n```\n\n**OpenCode** — add to `~/.config/opencode/opencode.json`:\n\n```json\n{\n  \"mcp\": {\n    \"aai-gateway\": {\n      \"type\": \"local\",\n      \"command\": [\"npx\", \"-y\", \"aai-gateway\"],\n      \"enabled\": true\n    }\n  }\n}\n```\n\n**[OpenClaw](https://openclaw.ai):**\n\n```bash\nopenclaw plugins install openclaw-aai-gateway-plugin\n```\n\nOnce installed, just tell your Agent what you want to do.\n\n---\n\n## Built-in Tools\n\n| Tool | Description |\n|------|-------------|\n| `search:discover` | Search and install new tools with natural language |\n| `mcp:import` | Import an MCP Server as an Agent App |\n| `skill:import` | Import a Skill package as an Agent App |\n| `listAllAaiApps` | List all registered Agent Apps |\n| `enableApp` / `disableApp` | Enable or disable an Agent App per Agent |\n| `removeApp` | Remove an Agent App |\n| `aai:exec` | Execute a specific tool within an Agent App |\n\nEach imported Agent App generates an **`app_<app-id>`** tool that returns the full operation guide and tool list when called.\n\n### Preset Agent Apps (auto-discovered when locally installed)\n\n| App ID | Name | Description |\n|--------|------|-------------|\n| `claude` | Claude Code | AI coding assistant for code editing, analysis, and development |\n| `codex` | Codex | OpenAI-powered AI coding assistant |\n| `opencode` | OpenCode | AI development assistant for editing files and running commands |\n\n---\n\n## Architecture\n\n![Architecture](images/architecture.png)\n\n---\n\n## Developers: Get Your Agent App Auto-Discovered\n\nCreate an `aai.json` descriptor and submit it to `src/discovery/descriptors/`. When a user's local environment meets the `discovery.checks` conditions, the Agent will auto-discover your Agent App.\n\n```json\n{\n  \"schemaVersion\": \"2.0\",\n  \"version\": \"1.0.0\",\n  \"app\": {\n    \"name\": { \"default\": \"My App\" }\n  },\n  \"discovery\": {\n    \"checks\": [\n      { \"kind\": \"command\", \"command\": \"my-app\" }\n    ]\n  },\n  \"access\": {\n    \"protocol\": \"mcp\",\n    \"config\": {\n      \"command\": \"my-app-mcp\",\n      \"args\": [\"--stdio\"]\n    }\n  },\n  \"exposure\": {\n    \"summary\": \"Use when the user wants to do X.\"\n  }\n}\n```\n\n`discovery.checks` supports three check types: `command` (command exists), `file` (file exists), `path` (directory exists).\n\nSupported protocols: `mcp`, `skill`, `acp-agent`\n\nWelcome to [submit a PR](../../pulls) to contribute new Agent App descriptors, or [open an issue](../../issues) for feedback.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

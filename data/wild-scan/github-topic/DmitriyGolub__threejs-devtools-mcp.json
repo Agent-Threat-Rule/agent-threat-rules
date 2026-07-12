@@ -1,0 +1,40 @@
+{
+  "full_name": "DmitriyGolub/threejs-devtools-mcp",
+  "html_url": "https://github.com/DmitriyGolub/threejs-devtools-mcp",
+  "description": "Three.js MCP server — inspect and edit scenes, materials, shaders, lights in real time from any AI agent",
+  "topics": [
+    "ai",
+    "claude-code",
+    "cursor",
+    "devtools",
+    "mcp",
+    "mcp-server",
+    "react-three-fiber",
+    "three-js",
+    "threejs"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 75,
+  "forks": 8,
+  "open_issues": 1,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-03-15T17:12:04Z",
+  "last_pushed_at": "2026-04-07T20:12:15Z",
+  "fetched_at": "2026-07-11T23:10:26.020Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# threejs-devtools-mcp\n\n[![npm version](https://img.shields.io/npm/v/threejs-devtools-mcp)](https://www.npmjs.com/package/threejs-devtools-mcp)\n[![license](https://img.shields.io/npm/l/threejs-devtools-mcp)](LICENSE)\n[![build](https://github.com/DmitriyGolub/threejs-devtools-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/DmitriyGolub/threejs-devtools-mcp/actions)\n[![MCP Registry](https://img.shields.io/badge/MCP-Registry-blue)](https://mcp-marketplace.io/server/io-github-dmitriygolub-threejs-devtools)\n\nMCP server for inspecting and modifying Three.js scenes in real time — **59 tools** for objects, materials, shaders, textures, animations, performance monitoring, memory diagnostics, and code generation.\n\n**Zero changes to your project.** Works with vanilla Three.js, React Three Fiber, and any framework.\n\n![Annotated screenshot](docs/images/annotated.png)\n\n## Setup\n\n### 1. Add the MCP server\n\n<details open>\n<summary><strong>Claude Code</strong></summary>\n\n```bash\nclaude mcp add threejs-devtools-mcp -- npx threejs-devtools-mcp\n```\n\n</details>\n\n<details>\n<summary><strong>Claude Desktop</strong></summary>\n\nAdd to `claude_desktop_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"threejs-devtools-mcp\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"threejs-devtools-mcp\"]\n    }\n  }\n}\n```\n\n</details>\n\n<details>\n<summary><strong>Cursor</strong></summary>\n\nAdd to `.cursor/mcp.json` in your project:\n\n```json\n{\n  \"mcpServers\": {\n    \"threejs-devtools-mcp\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"threejs-devtools-mcp\"]\n    }\n  }\n}\n```\n\nOr use the HTTP transport — see [Cursor setup guide](docs/cursor-setup.md).\n\n</details>\n\n<details>\n<summary><strong>Windsurf</strong></summary>\n\nAdd to `~/.codeium/windsurf/mcp_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"threejs-devtools-mcp\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"threejs-devtools-mcp\"]\n    }\n  }\n}\n```\n\n</details>\n\n<details>\n<summary><strong>VS Code (Copilot)</strong></summary>\n\nAdd to `.vscode/mcp.json`:\n\n```json\n{\n  \"servers\": {\n    \"threejs-devtools-mcp\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"threejs-devtools-mcp\"]\n    }\n  }\n}\n```\n\n</details>\n\n<details>\n<summary><strong>OpenCode</strong></summary>\n\nAdd to `opencode.json` in your project:\n\n```json\n{\n  \"$schema\": \"https://opencode.ai/config.json\",\n  \"mcp\": {\n    \"threejs-devtools-mcp\": {\n      \"type\": \"local\",\n      \"command\": [\"npx\", \"-y\", \"threejs-devtools-mcp\"],\n      \"enabled\": true\n    }\n  }\n}\n```\n\n</details>\n\n### 2. Start your dev server and open the browser\n\nStart your Three.js dev server as usual (`npm run dev`). The MCP server auto-detects the port from `package.json` and opens a browser at `localhost:9222` with the devtools bridge injected.\n\n> **Keep the browser tab open.** The MCP server talks to your scene through a WebSocket bridge. Close the tab = tools stop working.\n\n### 3. Ask the AI about your scene\n\n```\n\"show me the scene tree\"\n\"why is my model invisible?\"\n\"make the car red\"\n\"check for memory leaks\"\n\"what's my FPS?\"\n\"generate a React component from character.glb\"\n```\n\n## In-browser overlay\n\nA built-in devtools panel with live performance stats, interactive scene graph, material editor, and 3D object preview. Activated automatically or via the `toggle_overlay` tool.\n\n![Overlay panel](docs/images/example.png)\n\n## Tip: name your objects\n\nUnnamed objects show as `(unnamed)` in the scene tree. Named objects are easier to find and modify:\n\n```js\n// Three.js\nmesh.name = \"player\";\n```\n\n```jsx\n// React Three Fiber\n<mesh name=\"player\" geometry={geometry} material={material} />\n```\n\n## Documentation\n\n- [Tools reference](docs/tools.md) — all 59 tools with parameters\n- [Advanced setup](docs/advanced.md) — animations, scene export, configuration, transports\n- [Cursor setup](docs/cursor-setup.md) — step-by-step guide for Cursor\n- [Token-efficient workflow](docs/workflow.md) — best practices for saving context\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": {
+    "path": "server.json",
+    "content": "{\n  \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json\",\n  \"name\": \"io.github.DmitriyGolub/threejs-devtools\",\n  \"description\": \"Inspect and edit Three.js scenes, materials, shaders, lights in real time from any AI agent\",\n  \"repository\": {\n    \"url\": \"https://github.com/DmitriyGolub/threejs-devtools-mcp\",\n    \"source\": \"github\"\n  },\n  \"title\": \"Three.js DevTools MCP\",\n  \"websiteUrl\": \"https://github.com/DmitriyGolub/threejs-devtools-mcp\",\n  \"version\": \"0.2.1\",\n  \"packages\": [\n    {\n      \"registryType\": \"npm\",\n      \"identifier\": \"threejs-devtools-mcp\",\n      \"version\": \"0.2.1\",\n      \"runtimeHint\": \"npx\",\n      \"transport\": {\n        \"type\": \"stdio\"\n      },\n      \"environmentVariables\": [\n        {\n          \"description\": \"Dev server port to proxy (auto-detected from package.json if not set)\",\n          \"isRequired\": false,\n          \"format\": \"string\",\n          \"isSecret\": false,\n          \"name\": \"DEV_PORT\"\n        },\n        {\n          \"description\": \"Bridge proxy port (default: 9222)\",\n          \"isRequired\": false,\n          \"format\": \"string\",\n          \"isSecret\": false,\n          \"name\": \"BRIDGE_PORT\"\n        },\n        {\n          \"description\": \"Set to 'none' to disable auto-opening browser\",\n          \"isRequired\": false,\n          \"format\": \"string\",\n          \"isSecret\": false,\n          \"name\": \"BROWSER\"\n        },\n        {\n          \"description\": \"Set to 'true' for headless browser mode (CI)\",\n          \"isRequired\": false,\n          \"format\": \"string\",\n          \"isSecret\": false,\n          \"name\": \"HEADLESS\"\n        },\n        {\n          \"description\": \"Custom Chrome/Edge executable path\",\n          \"isRequired\": false,\n          \"format\": \"string\",\n          \"isSecret\": false,\n          \"name\": \"CHROME_PATH\"\n        }\n      ]\n    }\n  ]\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

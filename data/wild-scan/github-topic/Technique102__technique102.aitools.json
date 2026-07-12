@@ -1,0 +1,38 @@
+{
+  "full_name": "Technique102/technique102.aitools",
+  "html_url": "https://github.com/Technique102/technique102.aitools",
+  "description": "Модуль предоставляет MCP-сервер с набором специализированных инструментов для упрощения AI-разработки, а так же необходимый контекст и структуру для генерации качественного кода под экосистему 1С-Битрикс.",
+  "topics": [
+    "ai",
+    "ai-tools",
+    "bitrix",
+    "bitrix-cms",
+    "bitrix-module",
+    "dev",
+    "developer-tools",
+    "mcp",
+    "mcp-server",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 5,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "PHP",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-09-05T13:40:02Z",
+  "last_pushed_at": "2026-04-13T05:14:59Z",
+  "fetched_at": "2026-07-12T00:33:41.541Z",
+  "readme": {
+    "path": "README.md",
+    "content": "## Введение\nМодуль предоставляет MCP-сервер с набором специализированных инструментов для упрощения AI-разработки, а так же необходимый контекст и структуру для генерации качественного кода под экосистему 1С-Битрикс.\n\n## Требования\n- PHP >=8.2\n- 1С-Битрикс >= 24.0.0\n\n## Установка\n1. Скопируйте папку модуля `technique102.aitools` в директорию `/local/modules/` вашего проекта 1С-Битрикс.\n2. В административной панели 1С-Битрикс перейдите в раздел \"Marketplace\" → \"Установленные решения\".\n3. Найдите модуль \"technique102.aitools\" и выполните установку, следуя инструкциям мастера.\n4. После установки убедитесь, что модуль активен.\n\n## Регистрация MCP-сервера\nДля регистрации сервера в выбранном вами редакторе используйте следующие данные:\n\nЧерез docker:\n```json\n{\n    \"mcpServers\": {\n        \"Technique102AiTools\": {\n            \"command\": \"docker\",\n            \"args\": [\n              \"exec\", \"-i\",\n              \"#Имя контейнера#\",\n              \"php\", \"#Путь до корня проекта#/local/technique102.aitools/tools/server.php\"\n            ]\n        }\n    }\n}\n```\n\nБез docker, php работает локально:\n```json\n{\n    \"mcpServers\": {\n        \"Technique102AiTools\": {\n            \"command\": \"php\",\n            \"args\": [\"#Путь в системе до корня проекта#/local/technique102.aitools/tools/server.php\"]\n        }\n    }\n}\n```\n\n## Доступные MCP-инструменты\n| Название               | Описание                             |\n|------------------------|--------------------------------------|\n| `get_application_info` | Версия PHP и 1С-Битрикс              |\n| `get_route_list`       | Список роутов проекта                |\n| `get_command_list`     | Список консольных команд             |\n| **Инфоблоки**          |                                      |\n| `get_iblock_list`      | Список инфоблоков                    |\n| `get_iblock_detail`    | Детали инфоблока со всеми свойствами |\n| `get_iblock_type_list` | Список типов инфоблоков              |\n| **HL-блоки**           |                                      |\n| `get_hlblock_list`     | Список HL-блоков                     |\n| `get_hlblock_detail`   | Детали HL-блока с полями             |\n| **Агенты**             |                                      |\n| `get_agent_list`       | Список агентов (cron-задач)          |\n\n## Добавление собственных MCP-инструментов\n\nЛюбой установленный модуль может расширять MCP-сервер своими инструментами двумя способами.\n\n### Через конфиг модуля\n\nВ файле `.settings.php` вашего модуля добавьте секцию `technique102.aitools`:\n\n```php\n// local/modules/my.module/.settings.php\nreturn [\n    'technique102.aitools' => [\n        'value' => [\n            'mcp' => [\n                'tools' => [\n                    // Простой вариант — FQCN класса с методами #[McpTool]\n                    \\My\\Module\\Tools\\MyTool::class,\n\n                    // Расширенный вариант — с явными метаданными\n                    [\n                        'handler'     => \\My\\Module\\Tools\\AnotherTool::class,\n                        'name'        => 'custom_tool_name',\n                        'description' => 'Описание инструмента',\n                    ],\n                ],\n            ],\n        ],\n    ],\n];\n```\n\n### Через событие\n\n**Шаг 1.** Создайте класс обработчика событий:\n\n```php\n// local/modules/my.module/lib/EventHandlers.php\nnamespace My\\Module;\n\nuse Bitrix\\Main\\Event;\nuse Bitrix\\Main\\EventResult;\n\nclass EventHandlers\n{\n    public static function onBuildMcpServerToolsList(Event $event): EventResult\n    {\n        return new EventResult(\n            EventResult::SUCCESS,\n            \\My\\Module\\Tools\\MyTool::class,\n        );\n\n        // Или с явными метаданными:\n        // return new EventResult(\n        //     EventResult::SUCCESS,\n        //     [\n        //         'handler'     => \\My\\Module\\Tools\\MyTool::class,\n        //         'name'        => 'custom_tool_name',\n        //         'description' => 'Описание инструмента',\n        //     ],\n        // );\n    }\n}\n```\n\n**Шаг 2.** Зарегистрируйте обработчик в `install/index.php` вашего модуля:\n\n```php\n// local/modules/my.module/install/index.php\nfunction DoInstall()\n{\n    RegisterModuleDependences(\n        'technique102.aitools',\n        'OnBuildMcpServerToolsList',\n        'my.module',\n        \\My\\Module\\EventHandlers::class,\n        'onBuildMcpServerToolsList',\n    );\n    // ...\n}\n\nfunction DoUninstall()\n{\n    UnRegisterModuleDependences(\n        'technique102.aitools',\n        'OnBuildMcpServerToolsList',\n        'my.module',\n        \\My\\Module\\EventHandlers::class,\n        'onBuildMcpServerToolsList',\n    );\n    // ...\n}\n```\n\nЗарегистрированные через `RegisterModuleDependences` обработчики хранятся в базе данных и срабатывают автоматически при загрузке модуля.\n\n### Создание класса инструмента\n\nИнструмент — это обычный PHP-класс, методы которого помечены атрибутом `#[McpTool]`:\n\n```php\nnamespace My\\Module\\Tools;\n\nuse Mcp\\Capability\\Attribute\\McpTool;\n\nfinal readonly class MyTool\n{\n    #[McpTool(\n        name: 'my_tool_action',\n        description: 'Описание того, что делает инструмент.',\n    )]\n    public function action(string $param): array\n    {\n        return ['result' => $param];\n    }\n}\n```\n\n## План развития модуля\n- Добавление MCP-инструментов для модулей из коробки 1С-Битрикс\n- Добавление гайдлайнов для работы с 1С-Битрикс и сопутствующих инструментов/технологий для AI-агентов\n- Добавление скилов и субагентов\n- Добавление демонстрации работы модуля\n- ...\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

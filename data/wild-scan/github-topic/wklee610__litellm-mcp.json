@@ -1,0 +1,36 @@
+{
+  "full_name": "wklee610/litellm-mcp",
+  "html_url": "https://github.com/wklee610/litellm-mcp",
+  "description": "MCP server for LiteLLM",
+  "topics": [
+    "litellm",
+    "litellm-ai-gateway",
+    "litellm-proxy",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 2,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-07-04T14:08:40Z",
+  "last_pushed_at": "2026-07-11T12:05:49Z",
+  "fetched_at": "2026-07-12T00:06:46.607Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# LiteLLM MCP Server\n\nAn MCP server for LiteLLM operations. At startup it reads the LiteLLM proxy\nOpenAPI document and registers one FastMCP tool per LiteLLM endpoint.\n\n## Features\n\n- **Full LiteLLM API coverage**: Registers every operation in `GET /openapi.json`.\n- **Version-aware tools**: Tool names come from LiteLLM `operationId` values, so\n  the exposed tools follow the running LiteLLM version.\n- **Discovery helpers**: Includes tools to list/search registered LiteLLM tools\n  and inspect individual endpoint mappings.\n- **Environment-based config**: Reads the LiteLLM URL and master key from env vars.\n\n## Prerequisites\n\n- Python 3.10+\n- `uv` package manager recommended\n- A reachable LiteLLM proxy\n- A LiteLLM master key or admin key\n\n## Installation\n\n```bash\nuv sync\n```\n\n## Configuration\n\nThe server reads LiteLLM connection settings from environment variables. It\nfetches `${LITELLM_URL}/openapi.json` during startup.\n\n- `LITELLM_URL`: LiteLLM proxy base URL, for example `http://localhost:4000`.\n- `LITELLM_MASTER_KEY`: LiteLLM master key or admin key.\n- `LITELLM_TIMEOUT_SECONDS`: Optional request timeout in seconds. Defaults to `30`.\n- `MCP_TRANSPORT`: MCP transport, either `stdio` (default) or `http`.\n- `MCP_HOST`: HTTP bind address. Defaults to `0.0.0.0`.\n- `MCP_PORT`: HTTP bind port. Defaults to `8000`.\n\n## Usage\n\n### Running the Server\n\n```bash\nexport LITELLM_URL=http://localhost:4000\nexport LITELLM_MASTER_KEY=sk-...\nuv run litellm-mcp\n```\n\nThe default transport is stdio. To expose the server through FastMCP's\nStreamable HTTP transport instead:\n\n```bash\nexport MCP_TRANSPORT=http\nexport MCP_HOST=0.0.0.0\nexport MCP_PORT=8000\nuv run litellm-mcp\n```\n\nClients can then connect to `http://localhost:8000/mcp`.\n\n### Using Docker\n\n```bash\ndocker build -t litellm-mcp .\ndocker run -i --rm \\\n  -e LITELLM_URL=http://host.docker.internal:4000 \\\n  -e LITELLM_MASTER_KEY=sk-... \\\n  litellm-mcp\n```\n\nFor Streamable HTTP:\n\n```bash\ndocker run --rm -p 8000:8000 \\\n  -e LITELLM_URL=http://host.docker.internal:4000 \\\n  -e LITELLM_MASTER_KEY=sk-... \\\n  -e MCP_TRANSPORT=http \\\n  litellm-mcp\n```\n\n### Claude Desktop Configuration\n\n```json\n{\n  \"mcpServers\": {\n    \"litellm\": {\n      \"command\": \"<uv PATH>\",\n      \"args\": [\n        \"--directory\",\n        \"<litellm-mcp PATH>\",\n        \"run\",\n        \"litellm-mcp\"\n      ],\n      \"env\": {\n        \"LITELLM_URL\": \"http://localhost:4000\",\n        \"LITELLM_MASTER_KEY\": \"sk-...\"\n      }\n    }\n  }\n}\n```\n\n## Tool Names\n\nTool names are generated from LiteLLM OpenAPI `operationId` values and are\nlimited to 64 characters. A numeric suffix is added within that limit when\nshortening produces a duplicate name.\n\nExamples from LiteLLM v1.84.8:\n\n| LiteLLM Endpoint | MCP Tool |\n|------------------|----------|\n| `GET /health/readiness` | `health_readiness_health_readiness_get` |\n| `GET /key/list` | `list_keys_key_list_get` |\n| `GET /key/info` | `info_key_fn_key_info_get` |\n| `GET /spend/logs/v2` | `ui_view_spend_logs_spend_logs_v2_get` |\n| `POST /chat/completions` | `chat_completion_chat_completions_post` |\n\nTwo helper tools are always registered:\n\n- `list_litellm_openapi_tools`: Search/list dynamically registered endpoint tools.\n- `get_litellm_openapi_tool`: Show the HTTP method, path, and parameter mapping\n  for one endpoint tool.\n\n## Project Structure\n\n```text\nsrc/litellm_mcp/\n├── configs/       # Environment configuration\n├── connections/   # LiteLLM HTTP client singleton\n├── tools/         # OpenAPI-driven FastMCP tool registration\n└── main.py        # Entry point and tool registration\n```\n\n## Security Notes\n\n`LITELLM_MASTER_KEY` can read and mutate sensitive LiteLLM state. Because this\nserver exposes every LiteLLM endpoint in the running proxy, including mutating\nadmin endpoints, prefer running it locally or in a trusted network.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

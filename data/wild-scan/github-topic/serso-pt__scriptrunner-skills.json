@@ -1,0 +1,39 @@
+{
+  "full_name": "serso-pt/scriptrunner-skills",
+  "html_url": "https://github.com/serso-pt/scriptrunner-skills",
+  "description": "AI agent skills for ScriptRunner Cloud development — Groovy (HAPI), TypeScript behaviours, and Jira discovery. Works with Claude Code, Codex, Gemini CLI, and OpenCode.",
+  "topics": [
+    "adaptavist",
+    "atlassian",
+    "atlassian-jira",
+    "claude-skill",
+    "codex-skill",
+    "jira",
+    "jira-cloud",
+    "jira-integration",
+    "mcp-tools",
+    "opencode-skills",
+    "scriptrunner"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": null,
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-05-22T12:55:10Z",
+  "last_pushed_at": "2026-05-31T21:40:46Z",
+  "fetched_at": "2026-07-12T00:46:23.072Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# ScriptRunner Skills for AI Coding Agents\n\nAgent skills for ScriptRunner Cloud development — Groovy scripting (HAPI API), TypeScript behaviours, and Jira instance discovery.\n\nWorks with Claude Code, Codex, Gemini CLI, and OpenCode.\n\n## Skills\n\n| Skill | Description |\n|-------|-------------|\n| [scriptrunner-groovy](skills/scriptrunner-groovy/SKILL.md) | Write/refactor Groovy scripts for listeners, script fields, jobs, escalation services, workflow post functions, conditions, validators, and additional scripts — including group management via the Atlassian Admin API |\n| [scriptrunner-behaviours](skills/scriptrunner-behaviours/SKILL.md) | Write/refactor TypeScript behaviours for field visibility, validation, and template pre-filling |\n| [scriptrunner-discovery](skills/scriptrunner-discovery/SKILL.md) | Discover Jira field IDs, test JQL queries, inspect issue data structures, look up workflow IDs (transition, role, issue type, link type), and resolve Atlassian Admin org/group IDs |\n\n## Installation\n\n### OpenCode (native)\n\n```bash\ngit clone https://github.com/serso-pt/scriptrunner-skills ~/.config/opencode/skills/scriptrunner-skills\n```\n\nOn Windows (PowerShell):\n\n```powershell\ngit clone https://github.com/serso-pt/scriptrunner-skills \"$env:USERPROFILE\\.config\\opencode\\skills\\scriptrunner-skills\"\n```\n\nSkills are auto-discovered after restart.\n\n### Claude Code\n\n```bash\ngit clone https://github.com/serso-pt/scriptrunner-skills ~/scriptrunner-skills\n\nmkdir -p ~/.claude/skills\nln -s ~/scriptrunner-skills/skills/scriptrunner-groovy ~/.claude/skills/\nln -s ~/scriptrunner-skills/skills/scriptrunner-behaviours ~/.claude/skills/\nln -s ~/scriptrunner-skills/skills/scriptrunner-discovery ~/.claude/skills/\n```\n\nOn Windows (PowerShell, admin):\n\n```powershell\n$repo = \"$env:USERPROFILE\\scriptrunner-skills\"\nNew-Item -ItemType Junction -Path \"$env:USERPROFILE\\.claude\\skills\\scriptrunner-groovy\" -Target \"$repo\\skills\\scriptrunner-groovy\"\nNew-Item -ItemType Junction -Path \"$env:USERPROFILE\\.claude\\skills\\scriptrunner-behaviours\" -Target \"$repo\\skills\\scriptrunner-behaviours\"\nNew-Item -ItemType Junction -Path \"$env:USERPROFILE\\.claude\\skills\\scriptrunner-discovery\" -Target \"$repo\\skills\\scriptrunner-discovery\"\n```\n\n### Codex\n\n```bash\ngit clone https://github.com/serso-pt/scriptrunner-skills ~/scriptrunner-skills\n\nmkdir -p ~/.codex/skills\nln -s ~/scriptrunner-skills/skills/scriptrunner-groovy ~/.codex/skills/\nln -s ~/scriptrunner-skills/skills/scriptrunner-behaviours ~/.codex/skills/\nln -s ~/scriptrunner-skills/skills/scriptrunner-discovery ~/.codex/skills/\n```\n\n### Gemini CLI\n\n```bash\ngit clone https://github.com/serso-pt/scriptrunner-skills ~/scriptrunner-skills\n\nmkdir -p ~/.gemini/skills\nln -s ~/scriptrunner-skills/skills/scriptrunner-groovy ~/.gemini/skills/\nln -s ~/scriptrunner-skills/skills/scriptrunner-behaviours ~/.gemini/skills/\nln -s ~/scriptrunner-skills/skills/scriptrunner-discovery ~/.gemini/skills/\n```\n\n### Usage\n\nAfter installation, restart your agent. Skills are auto-discovered — just describe your task and the agent will load the relevant skill.\n\n## Examples\n\nSee [examples/](examples/) for a minimal ScriptRunner Cloud project with sample configurations:\n\n- `extensions.yaml` — configuration for all feature types\n- `groovy/CommentOnCreate.groovy` — listener script using HAPI API\n- `typescript/bugDescriptionTemplate.ts` — behaviour pre-filling a bug report template on empty description\n\n## Atlassian MCP (Optional)\n\nThe [Atlassian Rovo MCP server](https://mcp.atlassian.com) lets your AI agent query Jira directly — discover field IDs, test JQL, fetch workflow transitions, inspect issue data, and more. The `scriptrunner-discovery` skill prefers MCP when it's available and falls back to the REST API or the ScriptRunner Console when it isn't.\n\nSee [MCP_INSTALL.md](MCP_INSTALL.md) for full setup instructions covering Claude Code, OpenCode, Cline, VS Code, Cursor, and Windsurf.\n\n## Prerequisites\n\n- A ScriptRunner Cloud-enabled Jira instance\n- For `scriptrunner-discovery` Method 1 (preferred): Atlassian MCP server — see [Atlassian MCP](#atlassian-mcp-optional)\n- For `scriptrunner-discovery` Method 2: Jira API token (REST fallback)\n- For `scriptrunner-discovery` Method 3: ScriptRunner Console access (no API token needed)\n- For deployment: JDK 17+ and the [ScriptRunner Dev & Deployment Tool](https://docs.adaptavist.com/sms/latest/scriptrunner-dev-and-deployment-tool)\n\n## Contributing\n\nContributions welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for how to add or improve skills. This project follows our [Code of Conduct](CODE_OF_CONDUCT.md).\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "full_name": "Walkoud/gemini-browser-mcp",
+  "html_url": "https://github.com/Walkoud/gemini-browser-mcp",
+  "description": "MCP server that bridges Claude Code to Google Gemini via a Chrome extension — no API key required.",
+  "topics": [
+    "ai-tools",
+    "claude-code",
+    "gemini",
+    "gemini-cli",
+    "gemini-pro",
+    "gemini-web",
+    "mcp",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "JavaScript",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-07-06T12:24:45Z",
+  "last_pushed_at": "2026-07-11T11:13:19Z",
+  "fetched_at": "2026-07-12T00:40:12.435Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Gemini Browser MCP\n\nMCP server that bridges **Claude Code** to **Google Gemini** via a Chrome extension — **no API keys required**.\n\nInstead of using the Gemini API, it interacts with the Gemini web app directly, meaning you get all the features available in your browser: Flash, Pro, Extended thinking, uploads, and more.\n\n![Preview](preview.png)\n\n---\n\n## Features\n\n- **No API keys needed** — uses your existing browser session.\n- **Support for all models** (Flash, Pro, Extended thinking) via the official web UI.\n- **Dual setup** — auto-configures Claude Code.\n- **Extension Popup** to manage connected tabs, set active targets, and view the active model at a glance.\n\n![Selector UI](preview-extension.png)\n\n---\n\n## Quick Start\n\n### 1. Install the Chrome Extension\n\n**Option A — Download a release:**  \nGrab the extension from the [GitHub releases page](https://github.com/Walkoud/gemini-browser-mcp/releases), unzip it, and load the folder in Chrome.\n\n**Option B — Use the repo directly:**  \nClone the repository and load `chrome-extension/` as an unpacked extension:\n\n1. Go to `chrome://extensions/`\n2. Enable **Developer mode** (top-right toggle)\n3. Click **Load unpacked** (top-left button)\n4. Select the `chrome-extension/` folder from this repository\n\nThen open a tab on [gemini.google.com](https://gemini.google.com) and confirm you are logged in.\n\n### 2. Configure Claude Code\n\nRun the automatic installer:\n\n```bash\nnpx gemini-browser-mcp\n```\n\nThis starts a local setup wizard that automatically registers the MCP server inside Claude Code.\n\n---\n\n## Usage\n\nIn Claude Code, you can now use the `ask_gemini_web` tool directly:\n\n```bash\n# Ask Gemini a question\nask_gemini_web 1+1\n\n# Give it a task\nask_gemini_web Explain quantum computing in simple terms\n```\n\n### Changing Models\n\nTo switch models, just change it on the active Gemini tab in Chrome. The extension will automatically detect the active model (Flash, Pro, Extended) and adapt the timeouts accordingly (up to 10 minutes wait for Extended thinking).\n\n---\n\n## Technical Details\n\n1. The Chrome extension connects to a local Node.js WebSocket server (port `8085`).\n2. Claude Code runs the MCP server on stdio.\n3. When you run `ask_gemini_web`, the MCP server relays the prompt to the Chrome extension.\n4. A content script injects the prompt, clicks send, waits for the response to stabilize in the DOM, and returns it to Claude.\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"gemini-bridge\": {\n      \"command\": \"node\",\n      \"args\": [\n        \"C:/Users/volka/Desktop/gemini-pro-help-me/gemini-bridge/server.js\"\n      ]\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

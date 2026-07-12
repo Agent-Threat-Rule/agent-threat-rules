@@ -1,0 +1,45 @@
+{
+  "full_name": "macuse-app/macuse-mcp",
+  "html_url": "https://github.com/macuse-app/macuse-mcp",
+  "description": "MCP server for Mac — give AI direct control of Calendar, Mail, Notes, Reminders, Messages, and any Mac app via Computer Use, on-device. Works with Claude Desktop, Cursor, Codex, Raycast, VS Code, Warp, Zed, LM Studio.",
+  "topics": [
+    "apple-calendar",
+    "apple-mail",
+    "apple-mcp",
+    "apple-notes",
+    "claude-desktop",
+    "computer-use",
+    "cursor",
+    "macos",
+    "mcp-bundle",
+    "mcp-server",
+    "mcp-servers",
+    "mcpb",
+    "raycast",
+    "ui-automation"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 34,
+  "forks": 2,
+  "open_issues": 0,
+  "language": "JavaScript",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-07-20T10:24:57Z",
+  "last_pushed_at": "2026-05-13T02:13:32Z",
+  "fetched_at": "2026-07-11T23:53:04.105Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Macuse — AI Superpowers for Every Mac App\n\nGive your AI direct control of Calendar, Mail, Notes, Reminders, Messages, and any other Mac app over the [Model Context Protocol](https://modelcontextprotocol.io) — an MCP server for Mac plus Computer Use for macOS, fully on-device.\n\nWorks with Claude Desktop, Cursor, Codex, Raycast, VS Code, Warp, Zed, LM Studio, Windsurf, and any MCP-compatible client.\n\n> This repo packages the **Claude Desktop `.mcpb` installer** for [Macuse](https://macuse.app). The macOS app and full docs live at [macuse.app](https://macuse.app).\n\n## What Macuse Does\n\nTwo complementary ways for AI to work with your Mac. Everything runs locally — your data never leaves your device.\n\n### Native App Integrations\n\nYour AI reads and writes directly to macOS apps through natural conversation.\n\n| Toolbox             | What you can ask                                                               |\n| ------------------- | ------------------------------------------------------------------------------ |\n| **Calendar**        | \"Schedule a meeting next Tuesday at 3pm\", find free time, manage events        |\n| **Mail**            | \"Draft a reply to this email\", search inbox, organize messages                 |\n| **Notes**           | \"Find notes mentioning the Q2 launch\", capture ideas, append to notes          |\n| **Reminders**       | Create tasks with due dates and priorities, mark complete, search across lists |\n| **Messages**        | Read and send iMessages, search conversations                                  |\n| **Stickies**        | Search, read, and create sticky notes in Apple Stickies                        |\n| **Contacts**        | Look up by name, email, phone, or company                                      |\n| **Maps & Location** | Place search, directions, travel time, current location                        |\n| **Shortcuts**       | Browse installed Shortcuts and run them with optional input                    |\n\n### Computer Use on macOS\n\nSee and control any Mac app — even ones without a dedicated integration. Macuse brings Computer Use to macOS for **any** MCP client, not just Claude or Codex.\n\n- Click any element, type text, navigate menus, drive any app\n- Fill out web forms, operate enterprise software, automate APIs that don't exist\n- Runs in the background — your cursor and active window stay untouched while AI works in another app\n\n## Install for Claude Desktop\n\nClaude Desktop doesn't support remote `http://` connectors directly, so this `.mcpb` is the one-click installer. For other MCP clients, see [Use With Other Clients](#use-with-other-mcp-clients) below.\n\n1. **Install Macuse:**\n   - Download from [macuse.app/download](https://macuse.app/download/)\n   - Drag `Macuse.app` to `/Applications` and launch it\n   - Grant the permissions the app prompts for\n2. **Install the bundle:** download `macuse.mcpb` from [Releases](https://github.com/macuse-app/macuse-mcp/releases) and double-click to open in Claude Desktop\n3. **Approve OAuth:** approve the authorization prompt that pops up — connection done\n\nTo uninstall, remove the entry from Claude Desktop settings.\n\n## Use With Other MCP Clients\n\nFor clients that accept a custom command (Cursor, Codex, Raycast, VS Code, Warp, Zed, LM Studio, Windsurf, ChatWise, and more), skip this bundle and configure directly:\n\n```json\n{\n  \"mcpServers\": {\n    \"macuse\": {\n      \"command\": \"/Applications/Macuse.app/Contents/MacOS/macuse\",\n      \"args\": [\"mcp\"]\n    }\n  }\n}\n```\n\nPer-client setup guides: [macuse.app/docs/clients](https://macuse.app/docs/clients/).\n\n## Privacy & Permissions\n\n- **Local-only.** All processing stays on your Mac. No cloud, no telemetry of your content.\n- **Per-app permissions.** Allow, deny, or one-time-approve each AI client for each app it touches. Sensitive apps like password managers and banking re-confirm every time. Revoking an AI client automatically clears its app permissions.\n- **Per-client OAuth.** Each MCP client gets its own authorization, manageable in Macuse settings.\n\n## How This Bundle Works\n\n`macuse-mcp` is a thin Node stdio wrapper (~130 LOC). It spawns `macuse mcp` (the CLI built into the Macuse macOS app) and forwards JSON-RPC over stdin/stdout. All MCP protocol handling, OAuth, and reconnection live inside the Macuse app — this bundle exists solely because Claude Desktop doesn't yet support `http://` remote connectors directly.\n\nOverride the binary path with the `MACUSE_BINARY` environment variable (configurable in the Claude Desktop bundle UI). Default: `/Applications/Macuse.app/Contents/MacOS/macuse`.\n\n## Requirements\n\n- macOS 13.0 (Ventura) or later — Apple Silicon or Intel\n- [Macuse](https://macuse.app) macOS app installed\n- Node 20.8.1+ (bundled by Claude Desktop's runtime)\n\n## Links\n\n- Website: [macuse.app](https://macuse.app/)\n- Download: [macuse.app/download](https://macuse.app/download/)\n- Docs: [macuse.app/docs](https://macuse.app/docs/)\n- Pricing: [macuse.app/pricing](https://macuse.app/pricing) — free tier with daily limits, or one-time Lifetime\n- MCP spec: [modelcontextprotocol.io](https://modelcontextprotocol.io/)\n\n## License\n\nThis MCPB bundle is MIT-licensed. The Macuse macOS application is a separate commercial product — see [macuse.app](https://macuse.app) for details.\n"
+  },
+  "descriptor_file": {
+    "path": "server.json",
+    "content": "{\n  \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json\",\n  \"name\": \"io.github.macuse-app/macuse\",\n  \"description\": \"MCP server for Mac. Lets AI assistants control native macOS apps (Calendar, Mail, Notes, Reminders, Messages, Contacts, Maps, Shortcuts) and any Mac app via Computer Use — all on-device with per-client OAuth. Works with Claude Desktop, Cursor, Codex, Raycast, and any MCP client.\",\n  \"repository\": {\n    \"url\": \"https://github.com/macuse-app/macuse\",\n    \"source\": \"github\"\n  },\n  \"version\": \"1.2.0\",\n  \"packages\": [\n    {\n      \"registryType\": \"mcpb\",\n      \"version\": \"1.2.0\",\n      \"identifier\": \"https://github.com/macuse-app/macuse-mcp/releases/download/v1.2.0/macuse-1.2.0.mcpb\",\n      \"fileSha256\": \"3b02af9423e8ce2ad2de599e4d1ac081caef7f61c5c9a23def53b0c71bb170a0\",\n      \"transport\": {\n        \"type\": \"stdio\"\n      },\n      \"file_sha256\": \"13a523bc21597efc1d8a766bbb26a0ec4ac2b0563a87535960bbfb63c62875c9\"\n    }\n  ]\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "full_name": "suekou/mcp-notion-server",
+  "html_url": "https://github.com/suekou/mcp-notion-server",
+  "description": "A Model Context Protocol server for connecting Notion to MCP-compatible clients",
+  "topics": [
+    "mcp",
+    "model-context-protocol",
+    "notion",
+    "notion-api",
+    "npm",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 913,
+  "forks": 181,
+  "open_issues": 7,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2024-11-30T10:01:30Z",
+  "last_pushed_at": "2026-07-03T07:16:44Z",
+  "fetched_at": "2026-07-11T23:11:48.385Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Notion MCP Server\n\nAI-friendly MCP server for the Notion API. It helps agents find, read, query, and update Notion workspaces while keeping responses compact enough for day-to-day AI workflows.\n\nThis server targets the Notion API `2026-03-11` and uses the current database/data source model. It exposes MCP tools, prompts, resources, structured tool results, and optional MCP Apps for interactive Notion workflows.\n\n## Highlights\n\n- Search and target discovery with `notion_find`.\n- Compact page reading with stable block IDs via `notion_read_page`.\n- Data source schema inspection with `notion_inspect_data_source`.\n- Schema-aware data source querying and item creation with simple values.\n- Simple page editing tools for paragraphs, headings, lists, todos, quotes, callouts, code blocks, dividers, and safe Markdown append.\n- Raw Notion API tools for advanced block, page, database, data source, comment, and user operations.\n- Optional MCP Apps: Data Source Explorer and Page Workbench.\n\n## Quick Start\n\nAdd this server to an MCP host such as Claude Desktop:\n\n```json\n{\n  \"mcpServers\": {\n    \"notion\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@suekou/mcp-notion-server\"],\n      \"env\": {\n        \"NOTION_API_TOKEN\": \"your-integration-token\"\n      }\n    }\n  }\n}\n```\n\nRestart your MCP host after saving the configuration.\n\n## Setup Guide\n\n### 1. Create a Notion integration\n\nOpen the [Notion integrations dashboard](https://www.notion.so/profile/integrations), then create a new internal integration.\n\n![Internal connections](docs/assets/setup/internal-connections.png)\n![New connections](docs/assets/setup/new-connection.png)\n\n### 2. Configure capabilities\n\nGrant only the capabilities you need:\n\n- Read content: required for search, page reads, data source retrieval, and queries.\n- Insert content: required for creating pages/items and appending blocks.\n- Update content: required for updating pages, blocks, and data source schemas.\n- Read comments / Insert comments: required only for comment tools.\n- User information: required only when using user lookup tools.\n\nFor full functionality during setup, enable read, insert, and update content. Add comment or user capabilities only if you plan to use those tools.\n\n![Notion integration capabilities](docs/assets/setup/capabilities.png)\n\n### 3. Grant content access\n\nOpen the **Content access** tab for your integration, then select the pages or databases you want the MCP server to read or edit.\n\nYou can also grant access from the target Notion page or database: open the `...` menu, choose **Connections**, then add your integration.\n\nNotion only lets an integration access pages and databases that have been shared with it. A connection added to a page can also access that page's children.\n\n![Edit integration content access](docs/assets/setup/edit-connection.png)\n\n### 4. Copy the internal integration token\n\nCopy the integration secret. This value becomes `NOTION_API_TOKEN` in your MCP host config.\n\n![Copy internal integration token](docs/assets/setup/access-token.png)\n\n### 5. Configure your MCP host\n\nFor Cursor, Claude Desktop, and other MCP hosts, add this server config to your MCP settings:\n\n```json\n{\n  \"mcpServers\": {\n    \"notion\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@suekou/mcp-notion-server\"],\n      \"env\": {\n        \"NOTION_API_TOKEN\": \"[REDACTED-NOTION_SECRET]\"\n      }\n    }\n  }\n}\n```\n\nFor a locally built checkout:\n\n```json\n{\n  \"mcpServers\": {\n    \"notion\": {\n      \"command\": \"node\",\n      \"args\": [\"/absolute/path/to/suekou-mcp-notion-server/build/index.js\"],\n      \"env\": {\n        \"NOTION_API_TOKEN\": \"[REDACTED-NOTION_SECRET]\"\n      }\n    }\n  }\n}\n```\n\n## Recommended Workflow\n\n1. Use `notion_find` to locate a page or data source.\n2. Use `notion_read_page` for page context and editable block IDs.\n3. Use `notion_inspect_data_source` before querying or creating data source items.\n4. Use `notion_query_data_source_by_values` and `notion_create_data_source_item_from_values` for common data source work.\n5. Use `notion_append_markdown`, `notion_append_content`, `notion_update_content`, or `notion_update_content_batch` for normal page edits.\n6. Fall back to raw JSON tools only when the simplified tools do not cover the Notion API shape you need.\n\n## For Developers\n\nThese references are mainly for development, customization, and advanced MCP workflows:\n\n- [Configuration](docs/configuration.md): environment variables, command-line arguments, MCP host examples, development commands, and troubleshooting.\n- [Tools](docs/tools.md): complete tool reference grouped by workflow area.\n- [Workflows](docs/workflows.md): practical read, write, data source, migration, and error-handling guidance.\n- [MCP Apps](docs/mcp-apps.md): interactive Data Source Explorer and Page Workbench details.\n\n## Development\n\nThis project uses Node.js 22 or newer and pnpm.\n\n```bash\npnpm install --frozen-lockfile\npnpm run build\npnpm test\n```\n\nUse the MCP inspector during local development:\n\n```bash\npnpm run inspector\n```\n\n## License\n\nThis MCP server is licensed under the MIT License. This means you are free to use, modify, and distribute the software, subject to the terms and conditions of the MIT License. For more details, please see the LICENSE file in the project repository.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

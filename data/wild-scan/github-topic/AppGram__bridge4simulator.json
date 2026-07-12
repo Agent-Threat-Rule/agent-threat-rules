@@ -1,0 +1,35 @@
+{
+  "full_name": "AppGram/bridge4simulator",
+  "html_url": "https://github.com/AppGram/bridge4simulator",
+  "description": "An MCP (Model Context Protocol) server that enables AI assistants to control iOS Simulator. Seamlessly integrates with Claude Desktop, Cursor, Claude Code, and other MCP-compatible clients.",
+  "topics": [
+    "ai",
+    "apple",
+    "autonomous-agents",
+    "ios",
+    "mcp",
+    "mcp-server",
+    "simulator"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 81,
+  "forks": 5,
+  "open_issues": 2,
+  "language": null,
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-01-02T13:27:21Z",
+  "last_pushed_at": "2026-01-12T20:55:41Z",
+  "fetched_at": "2026-07-11T23:07:54.259Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# bridge4simulator MCP Server\n\n> **MCP Server for iOS Simulator Control**\n\n<div align=\"center\">\n  <img src=\"bridge4simulator-showcase.gif\" alt=\"Bridge for Simulator Showcase\">\n</div>\n\n\nWatch full video on [YouTube](https://youtu.be/Smb9acnjams)\n</br>\n\nAn MCP (Model Context Protocol) server that enables AI assistants to control iOS Simulator. Seamlessly integrates with Claude Desktop, Cursor, Claude Code, and other MCP-compatible clients.\n\nBe sure to drop a ⭐️ if you find this project useful.\n\n---\n\n## Quick Install\n\nBrew:\n\n```bash\n  brew tap AppGram/tap\n  brew install bridge4simulator\n  bridge4simulator --version\n```\n\nInstaller:\n```bash\ncurl -fsSL https://github.com/AppGram/bridge4simulator/releases/latest/download/install.sh | bash\n```\n> Under the hood, MCP relies on a custom-built bridge. For inquiries about commercial use of the tool powering this CLI, be free to [contact us](mailto://nedim@nfxai.io)\n\n\n## Configuration\n\nFirst run, in terminal:\n``` bridge4simulator mcp --http```\n\n### Cursor IDE\n\nGo to **Settings > MCP** and add:\n\nThen add config\n```json\n    \"bridge4simulator\": {\n       \"url\": \"http://localhost:8080/mcp\"\n    },\n```\n\nOr in Claude Desktop config:\n```json\n{\n  \"mcpServers\": {\n    \"bridge4simulator\": {\n      \"command\": \"/usr/local/bin/bridge4simulator\",\n      \"args\": [\"mcp\", \"--enable-tools=screenshot\"]\n    }\n  }\n}\n```\n> Claude Desktop doesn't support url for local development MCPs.\n\n\n### Claude Code CLI\n\nAdd to `~/.claude/settings.json` or project `.mcp.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"ios-simulator\": {\n      \"command\": \"/usr/local/bin/bridge4simulator\",\n      \"args\": [\"mcp\", \"--enable-tools=screenshot\"]\n    }\n  }\n}\n```\n\n## Demo \n\nThis demo highlights autonomous navigation and the internal reasoning process behind task execution. Under the hood, MCP uses a powerful CLI tool that enables instant OCR and UI extraction while keeping token consumption minimal for rapid problem solving.\n\n| Apple Calendar Demo | Apple Maps Demo |\n|--------------------|------------------|\n| <p align=\"center\"><a href=\"https://youtu.be/axWLHZh2JKY\"><img src=\"https://img.youtube.com/vi/axWLHZh2JKY/maxresdefault.jpg\" alt=\"iOS Simulator Demo\"></a><br><i>Task was to create an event on specific date. Click to watch.</i></p> | <p align=\"center\"><a href=\"https://youtu.be/Smb9acnjams\"><img src=\"https://img.youtube.com/vi/Smb9acnjams/maxresdefault.jpg\" alt=\"Demo\"></a><br><i>Task is to find train route from Rome to Padova. Click to watch.</i></p> |\n\n---\n\n## Available Tools (21)\n\n| Category | Tools | Description |\n|----------|-------|-------------|\n| **Device** | `device_list`, `device_boot`, `device_shutdown`, `status` | Manage simulator devices |\n| **Input** | `tap`, `swipe`, `type_text` | Touch gestures and text input |\n| **Capture** | `screenshot`, `record_start`, `record_stop` | Screen capture and recording |\n| **Apps** | `app_install`, `app_launch`, `app_terminate` | Application lifecycle |\n| **Navigation** | `open_url` | Open URLs and deep links |\n| **UI** | `ui_describe`, `ui_find`, `ui_search`, `ui_summary`, `ui_point`, `ui_ocr` | Accessibility tree and OCR |\n| **Macros** | `macro_play`, `macro_list` | Automation sequences |\n\n---\n\n## Example Workflows\n\nOnce configured, ask your AI assistant:\n\n**UI Interaction:**\n> \"Find train route between Rome and Florance inside running app\"\n\n**Screenshot & Analysis:**\n> \"Take a screenshot of the iOS Simulator and describe what's on screen\"\n\n**Navigation:**\n> \"Scroll down the list and find the settings option\"\n\n**App Testing:**\n> \"Launch the app com.example.myapp and take a screenshot\"\n\n---\n\n## Requirements\n\n- **Xcode Command Line Tools**\n- **iOS Simulator** (via Xcode)\n---\n\n## Manual Download\n\n| Platform | Download |\n|----------|----------|\n| Apple Silicon (M1/M2/M3/M4/M5) | [bridge4simulator-darwin-arm64.tar.gz](https://github.com/AppGram/bridge4simulator/releases/latest/download/bridge4simulator-darwin-arm64.tar.gz) |\n| Intel Macs | [bridge4simulator-darwin-amd64.tar.gz](https://github.com/AppGram/bridge4simulator/releases/latest/download/bridge4simulator-darwin-amd64.tar.gz) |\n\n---\n\n## Running the Server\n\n```bash\n# Start MCP server (JSON-RPC over stdio)\nbridge4simulator mcp\n```\n\nThe server reads JSON-RPC 2.0 requests from stdin and writes responses to stdout.\n\n---\n\n## Support\n\n- **Documentation**: [GitHub](https://github.com/appgram/bridge4simulator)\n- **Issues**: [GitHub Issues](https://github.com/appgram/bridge4simulator/issues)\n- **Email**: support@appgram.dev\n\n---\n\n**Version 1.0.0** | [AppGram](https://appgram.dev)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

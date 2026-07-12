@@ -1,0 +1,36 @@
+{
+  "full_name": "conallob/mcp-jetkvm",
+  "html_url": "https://github.com/conallob/mcp-jetkvm",
+  "description": "A local MCP server to interact with a JetKVM device, including capturing screenshots or video from the JetKVM",
+  "topics": [
+    "ai",
+    "artificial-intelligence",
+    "conall-portfolio",
+    "homelab",
+    "ipkvm",
+    "jetkvm",
+    "mcp",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 1,
+  "open_issues": 2,
+  "language": "Go",
+  "license": "BSD-3-Clause",
+  "default_branch": "main",
+  "created_at": "2026-04-27T10:54:32Z",
+  "last_pushed_at": "2026-07-10T20:37:37Z",
+  "fetched_at": "2026-07-12T00:39:18.957Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# mcp-jetkvm\n\n[![codecov](https://codecov.io/gh/conallob/mcp-jetkvm/branch/main/graph/badge.svg)](https://codecov.io/gh/conallob/mcp-jetkvm)\n\nA local [MCP](https://modelcontextprotocol.io) server to interact with a [JetKVM](https://jetkvm.com) device, including capturing screenshots and video from the connected machine's display, and mounting/configuring virtual USB boot devices.\n\n## Tools\n\n| Tool | Description |\n|------|-------------|\n| `take_screenshot` | Capture a PNG screenshot from the JetKVM device. Returns the image inline or saves it to a file. |\n| `record_video` | Record an MP4 video clip from the JetKVM device for 1–60 seconds. |\n| `list_virtual_media_files` | List image files (ISO/IMG/QCOW2/WDI/VMDK) stored on the device, plus remaining storage space. |\n| `get_virtual_media_state` | Get the image currently mounted as a virtual USB boot device, if any. |\n| `check_virtual_media_url` | Check whether a remote HTTP(S) URL can be mounted directly without downloading it to the device first. |\n| `mount_virtual_media` | Mount an image (from device storage or an HTTP(S) URL) as a virtual USB CD/DVD or disk drive so the target host can boot from it. |\n| `unmount_virtual_media` | Unmount the currently mounted virtual USB boot device. |\n| `delete_virtual_media_file` | Delete an image file from the device's local storage. |\n| `get_usb_devices` | Get which virtual USB device classes (mice, keyboard, mass storage, serial console, audio) are presented to the host. |\n| `set_usb_devices` | Configure the full set of virtual USB device classes presented to the host. |\n| `set_usb_device_state` | Enable or disable a single virtual USB device class without changing the others. |\n| `get_usb_emulation_state` | Check whether the device's USB controller is currently bound to the host. |\n| `set_usb_emulation_state` | Bind or unbind the device's USB controller, turning all USB emulation on or off. |\n\n## Requirements\n\n- A JetKVM device on the local network\n- [ffmpeg](https://ffmpeg.org) in your `PATH` (used to decode H.264 video frames)\n\n## Installation\n\n### Homebrew (macOS / Linux)\n\n```sh\nbrew tap conallob/tap\nbrew install mcp-jetkvm\n```\n\nThis automatically installs `ffmpeg` as a dependency.\n\n### From source\n\n```sh\ngo install github.com/conallob/mcp-jetkvm/cmd/mcp-jetkvm@latest\n```\n\n## Configuration\n\nSet these environment variables before starting the server:\n\n| Variable | Required | Description |\n|----------|----------|-------------|\n| `JETKVM_HOST` | Yes | IP address or hostname of the JetKVM device (e.g. `192.168.1.100`) |\n| `JETKVM_PASSWORD` | No | Device password (leave empty if the device is in no-password mode) |\n\n## Usage with Claude Desktop\n\nAdd to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS):\n\n```json\n{\n  \"mcpServers\": {\n    \"jetkvm\": {\n      \"command\": \"mcp-jetkvm\",\n      \"env\": {\n        \"JETKVM_HOST\": \"192.168.1.100\",\n        \"JETKVM_PASSWORD\": \"your-password\"\n      }\n    }\n  }\n}\n```\n\n## How it works\n\nJetKVM streams the connected machine's display exclusively over WebRTC (H.264), and exposes device configuration (including virtual media and USB gadget settings) via JSON-RPC 2.0 over a WebRTC data channel. This server:\n\n1. Authenticates with the device (`POST /auth/login-local`)\n2. Establishes a WebRTC session via the legacy SDP exchange endpoint (`POST /webrtc/session`)\n3. For **screenshots/video**: receives the H.264 RTP video stream via [pion/webrtc](https://github.com/pion/webrtc)\n   - **screenshots**: captures the first IDR keyframe and decodes it to PNG via `ffmpeg`\n   - **video**: pipes H.264 NAL units into `ffmpeg` and muxes them into a fragmented MP4\n4. For **virtual media / USB device tools**: opens the `rpc` data channel and issues JSON-RPC 2.0 requests (e.g. `mountWithStorage`, `getUsbDevices`), matching responses by request ID\n\nEach tool call opens its own short-lived WebRTC session against the device and tears it down afterward.\n\n## Releases\n\nTagged releases are built automatically via GitHub Actions and published to GitHub Releases and the [homebrew-tap](https://github.com/conallob/homebrew-tap).\n\nTo release a new version:\n\n```sh\ngit tag v0.1.0\ngit push origin v0.1.0\n```\n\nAdd a `HOMEBREW_TAP_GITHUB_TOKEN` secret to the repository with a GitHub personal access token that has write access to `conallob/homebrew-tap`.\n\n## License\n\nBSD 3-Clause — see [LICENSE](LICENSE).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

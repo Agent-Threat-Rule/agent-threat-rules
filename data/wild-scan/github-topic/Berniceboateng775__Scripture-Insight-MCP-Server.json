@@ -1,0 +1,33 @@
+{
+  "full_name": "Berniceboateng775/Scripture-Insight-MCP-Server",
+  "html_url": "https://github.com/Berniceboateng775/Scripture-Insight-MCP-Server",
+  "description": "A modular MCP server that lets LLMs explore, analyze, and reason over the Bible—combining text retrieval, theology, language analysis, and historical context.  Think of it as a developer-friendly “Bible intelligence layer” that an AI agent can call into.",
+  "topics": [
+    "claude-desktop",
+    "fastmcp",
+    "mcp",
+    "mcp-servers",
+    "uv"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-04-27T15:19:18Z",
+  "last_pushed_at": "2026-04-29T10:57:21Z",
+  "fetched_at": "2026-07-12T00:23:23.608Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Scripture Insight MCP Server\n\n**A modular Model Context Protocol (MCP) server that lets LLMs explore, analyze, and reason over the Bible—combining text retrieval, theology, language analysis, and historical context.**\n\nThink of it as a developer-friendly “Bible intelligence layer” that an AI agent (like Claude) can call into natively.\n\n---\n\n## Architecture\n\n- **Host / Client:** Claude Desktop (The application hosting the AI model and initiating the connection).\n- **Server:** Python-based `FastMCP` server running locally on your machine (Exposes the tools to the Host).\n- **Resources:**\n  - **ChromaDB:** A local vector database (`chroma_db/`) holding semantic embeddings of scripture.\n  - **Embeddings:** `all-MiniLM-L6-v2` via HuggingFace for fast, local semantic vectorization.\n\n---\n\n## The 10 MCP Tools\n\n### 1. `search_verse`\n**Purpose:** Find Bible verses by keyword or phrase.\n* **Input:** `{ query: string, translation?: string }`\n* **Output:** Matching verses with references.\n* *Example:* \"faith without works\" → James 2:17\n\n![search_verse demo](assets/search_verse.png)\n\n### 2. `get_verse`\n**Purpose:** Retrieve a specific verse.\n* **Input:** `{ book: string, chapter: number, verse: number }`\n* **Output:** Exact verse text.\n\n![get_verse demo](assets/get_verse.png)\n\n### 3. `get_passage`\n**Purpose:** Retrieve a range of verses.\n* **Input:** `{ book: string, chapter: number, startVerse: number, endVerse: number }`\n\n![get_passage demo](assets/get_passage.png)\n\n### 4. `cross_reference`\n**Purpose:** Show related verses.\n* **Input:** `{ reference: string }`\n* **Output:** Linked verses (based on themes, citations, or study Bible data).\n* *Example:* John 3:16 → Romans 5:8, 1 John 4:9\n\n![cross_reference demo](assets/cross_reference.png)\n\n### 5. `topic_lookup`\n**Purpose:** Find verses by theological topic.\n* **Input:** `{ topic: string }`\n* *Examples:* Grace, Salvation, Faith, Covenant\n\n![topic_lookup demo](assets/topic_lookup.png)\n\n### 6. `original_language_lookup`\n**Purpose:** Analyze Hebrew/Greek words.\n* **Input:** `{ reference: string, word?: string }`\n* **Output:** Original word, Transliteration, Meaning, Strong’s number.\n\n![original_language_lookup demo](assets/original_language_lookup.png)\n\n### 7. `character_profile`\n**Purpose:** Get structured info about a biblical character.\n* **Input:** `{ name: string }`\n* **Output:** Key events, Associated verses, Relationships, Timeline summary.\n* *Examples:* Moses, David, Paul\n\n![character_profile demo](assets/character_profile.png)\n\n### 8. `timeline_event_lookup`\n**Purpose:** Place events in the biblical timeline.\n* **Input:** `{ event: string }`\n* **Output:** Approximate date, Related scriptures, Historical context.\n\n![timeline_event_lookup demo](assets/timeline_event_lookup.png)\n\n### 9. `summarize_passage`\n**Purpose:** Summarize scripture with context.\n* **Input:** `{ reference: string, style?: \"short\" | \"detailed\" | \"devotional\" }`\n\n![summarize_passage demo](assets/summarize_passage.png)\n\n### 10. `theological_analysis`\n**Purpose:** Deep reasoning tool (the “AI-heavy” feature).\n* **Input:** `{ \"reference\": \"string\", \"question\": \"string\" }`\n* **Output:** Interpretation, Doctrinal themes, Supporting verses, Multiple viewpoints (optional: denominational).\n\n![theological_analysis demo](assets/theological_analysis.png)\n![theological_analysis demo 2](assets/theological_analysis_2.png)\n\n\n## Setup Instructions\n\n### 1. Environment Setup\n```bash\n# Create and activate a virtual environment\npython -m venv venv\nvenv\\Scripts\\activate\n\n# Install dependencies\npip install -r requirements.txt\n```\n\n### 2. Database Ingestion\nBefore the server can search scripture, the database must be populated:\n```bash\npython scripture-mcp/database/ingest.py\n```\nThis fetches the biblical text, generates semantic embeddings, and stores them in the persistent `chroma_db/` directory.\n\n### 3. Claude Desktop Configuration\nTo connect Claude Desktop to your local MCP server, update your `claude_desktop_config.json` (located in `%APPDATA%\\Claude\\claude_desktop_config.json` or the local packages folder for the MS Store version):\n\n```json\n{\n  \"mcpServers\": {\n    \"scripture-insight\": {\n      \"command\": \"C:\\\\Absolute\\\\Path\\\\To\\\\venv\\\\Scripts\\\\python.exe\",\n      \"args\": [\n        \"C:\\\\Absolute\\\\Path\\\\To\\\\scripture-mcp\\\\server.py\"\n      ]\n    }\n  }\n}\n```\n*Note: Always use absolute paths for the command and args to ensure the sandbox resolves correctly.*\n\n---\n\n## Folder Structure\n\n```\nScripture Insight MCP Server/\n├── assets/                  # Screenshots demonstrating the tools\n├── requirements.txt         # Python dependencies\n├── scripture-mcp/\n│   ├── database/\n│   │   ├── chroma_db/       # Persistent local vector database storage\n│   │   ├── chroma_client.py # Database connection singleton\n│   │   └── ingest.py        # Script to populate the database\n│   ├── services/\n│   │   ├── bible_api.py     # Handles fetching external Bible data\n│   │   ├── embeddings.py    # HuggingFace sentence-transformers logic\n│   │   └── search_service.py# Core semantic search logic\n│   ├── tools/               # The 10 modular MCP tools (detailed below)\n│   └── server.py            # FastMCP server entrypoint & tool registration\n```\n*All functions and modules are documented using standard Python docstrings for clarity and maintainability.*\n\n---"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

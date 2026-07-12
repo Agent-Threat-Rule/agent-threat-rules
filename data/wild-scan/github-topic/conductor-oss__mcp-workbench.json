@@ -1,0 +1,33 @@
+{
+  "full_name": "conductor-oss/mcp-workbench",
+  "html_url": "https://github.com/conductor-oss/mcp-workbench",
+  "description": "A visual debugger and test client for Model Context Protocol (MCP) servers.",
+  "topics": [
+    "conductor",
+    "llms",
+    "mcp",
+    "mcp-servers",
+    "modelcontextprotocol"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 2,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-01-01T22:02:20Z",
+  "last_pushed_at": "2026-01-07T23:10:22Z",
+  "fetched_at": "2026-07-12T00:04:26.459Z",
+  "readme": {
+    "path": "README.md",
+    "content": "\n# MCP Workbench\n\nA visual debugger and test client for **Model Context Protocol (MCP)** servers.\n\nMCP Workbench lets you connect to an MCP server over **Streamable HTTP**, inspect protocol traffic, explore resources, and execute tools with zero guesswork. It’s built for developers who want fast feedback and full visibility into what their server is actually doing.\n\n## What This Tool Is For\n\n* Debugging MCP servers during development\n* Verifying protocol compliance (handshake, capabilities, message flow)\n* Manually testing tools, prompts, and resources\n* Inspecting raw JSON-RPC traffic in real time\n\nIf you’re building or maintaining an MCP server, this is your control panel.\n\n## Features\n\n  * Streamable HTTP Client**\n  * Session handling via `MCP-Session-Id`\n  * Auto-generated input forms from JSON Schema\n  * Execute tools and inspect raw responses\n  * Browse and inspect server-exposed resources\n  * List and test available prompts\n\n* **Authentication Support**\n\n  * OAuth 2.0 (Authorization Code flow with popup)\n  * API key support via custom headers\n\n* **Multi-Server Configs**\n\n  * Save, switch, and reuse multiple MCP server connections\n\n---\n\n## Getting Started\n\n### Requirements\n\n* Node.js **18+**\n* npm or yarn\n\n### Setup\n\n```bash\ngit clone https://github.com/conductoross/mcp-workbench.git\ncd mcp-workbench\nnpm install\nnpm run dev\n```\n\nOpen:\n\n```\nhttp://localhost:5173\n```\n\n---\n\n## Testing Local Stdio Servers (Node.js/Python)\n\nTo connect the Workbench to a local MCP server running over Stdio (e.g. `node server.js`), use the included Bridge script:\n\n1.  Run the bridge with your command:\n    ```bash\n    node scripts/stdio-bridge.js \"node my-server.js\"\n    # or for Python\n    node scripts/stdio-bridge.js \"uv run main.py\"\n    ```\n\n2.  Copy the URL printed (e.g., `http://localhost:3001/mcp`)\n3.  In Workbench, select **Streamable HTTP** and paste the URL.\n\n---\n\n## CORS Handling\n\nYour MCP server **must** allow cross-origin requests from the Workbench origin. If CORS is misconfigured, requests will fail silently in the browser.\n\nSafari requires an additional CORS header for localhost:\n```shell\nAccess-Control-Allow-Private-Network: true\n```\nAdd this to your server's CORS middleware. Chrome and Firefox are more permissive.\n\n\n---\n\n\n## Contributing\n\nPull requests are welcome. Keep changes focused, readable, and aligned with MCP specifications.\n\n---\n\n## License\n\n[MIT License](LICENSE)\n\n---\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

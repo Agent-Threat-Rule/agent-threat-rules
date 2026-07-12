@@ -1,0 +1,37 @@
+{
+  "full_name": "intelligexhq/garmx",
+  "html_url": "https://github.com/intelligexhq/garmx",
+  "description": "lightning fast mcp gateway and mcp registry built in go. it secures and provides auditing for all agentic comms with upstream mcp services. otel observability integration",
+  "topics": [
+    "golang",
+    "local-first",
+    "looking-for-contributors",
+    "looking-for-feedback",
+    "mcp-gateway",
+    "mcp-registry",
+    "mcp-server",
+    "mcp-tools",
+    "minimalistic"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Go",
+  "license": "NOASSERTION",
+  "default_branch": "main",
+  "created_at": "2026-07-07T22:25:31Z",
+  "last_pushed_at": "2026-07-10T20:18:13Z",
+  "fetched_at": "2026-07-12T00:47:06.733Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# GarmX\n\n[![CI](https://github.com/intelligexhq/garmx/actions/workflows/ci.yml/badge.svg)](https://github.com/intelligexhq/garmx/actions/workflows/ci.yml)\n[![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)\n[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/intelligexhq/garmx/pulls)\n[![Contributors Wanted](https://img.shields.io/badge/contributors-wanted-orange.svg)](CONTRIBUTING.md)\n[![Early Adopters Wanted](https://img.shields.io/badge/early%20adopters-wanted-blue.svg)](https://github.com/intelligexhq/garmx/issues)\n\n> Project Status: early stage release. The design is settled; implementation is in progress; can use project for early build - it is usable and available\n\n**GarmX** is the local-first observability & audit plane for MCP connections — see, audit, and trust what your AI coding agents and agentic apps actually do across every tool. OTel export. All in a single lean Go binary.\n\nTo any AI client, `GarmX` presents itself as **one** MCP server — it merges every\nregistered upstream's tools into a single catalog, routes each MCP call to the right\nserver, and records every transaction along the way.\n\n## Key strengths — observability & audit\n\nEvery AI client -> MCP transaction is captured and logged for auditing, can be vieved in a lean web UI, and exported over **OpenTelemetry** to Grafana / Prometheus / Loki / any platform which supports OTLP.\n\nThis is cross-server, cross-agent view.\n\n**Also:**\n\n- **Consolidate** — `garmx import` sweeps servers scattered across your client\n  configs into one catalog; you then point every AI client at just `garmx`.\n- **Curate** — per-agent profiles can expose the right number of tools you choose, not all of them at once: better tool-selection, lower token cost.\n- **Safe by default** — secrets and other sensitive data you choose are redacted before they reach the audit store; `garmx` daemon only binds to `127.0.0.1`\n\n## Quick start\n\n```sh\nmake build          # compile to bin/garmx\n./bin/garmx -h      # usage\nmake check          # full validation gate (run after every change)\nmake run            # build + run the daemon\n```\n\nThe `garmx` daemon binds `127.0.0.1:9735` by default — it holds every upstream's\ncredentials and must not be exposed publicly.\n\n## Development\n\nFor `GarmX` developers; `Makefile` includes multiple methods to validate, test and build the project.\n\n`make check` (`fmt` → `lint` → `vet` → `test` → `build`) is the quality gate; validate project with it after every\nchange.\n\nDev tools (`gofumpt`, `golangci-lint`, `templ`) are invoked via `go run` with the\npinned versions, so no global installs are required.\n\nStandards and conventions are outlined in the AI coding agent standards: [`AGENTS.md`](AGENTS.md).\n\n## Documentation\n\nWhile project is eveolving, concepts, design discussions and implementation plan are being captured in the living docs:\n\n- [`docs/architecture.md`](docs/architecture.md) — system design, aggregation\n  model, package layout, schemas.\n- [`docs/implementation.md`](docs/implementation.md) — phased build and implementation plan.\n- [`docs/discovery.md`](docs/discovery.md) — open research, decisions, and scope management.\n\n## Contributing\n\nContributions are welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md).\n\n## License\n\nGarmX is licensed under the **Apache License 2.0** — see [`LICENSE`](LICENSE).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

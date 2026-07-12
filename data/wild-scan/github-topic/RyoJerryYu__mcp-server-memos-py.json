@@ -1,0 +1,37 @@
+{
+  "full_name": "RyoJerryYu/mcp-server-memos-py",
+  "html_url": "https://github.com/RyoJerryYu/mcp-server-memos-py",
+  "description": "A Python package enabling LLM models to interact with the Memos server via the MCP interface for searching, creating, retrieving, and managing memos.",
+  "topics": [
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "memos",
+    "model-context-protocol",
+    "usememo"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 21,
+  "forks": 7,
+  "open_issues": 2,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2024-12-07T13:29:24Z",
+  "last_pushed_at": "2025-10-08T14:10:00Z",
+  "fetched_at": "2026-07-11T23:53:42.975Z",
+  "readme": {
+    "path": "README.md",
+    "content": "[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/ryojerryyu-mcp-server-memos-py-badge.png)](https://mseep.ai/app/ryojerryyu-mcp-server-memos-py)\n\n# MCP Server Memos 📝\n\n[![PyPI version](https://img.shields.io/pypi/v/mcp-server-memos.svg)](https://pypi.org/project/mcp-server-memos/)\n[![Python Version](https://img.shields.io/pypi/pyversions/mcp-server-memos.svg)](https://pypi.org/project/mcp-server-memos/)\n[![License](https://img.shields.io/github/license/RyoJerryYu/mcp-server-memos-py.svg)](https://github.com/RyoJerryYu/mcp-server-memos-py/blob/master/LICENSE)\n[![smithery badge](https://smithery.ai/badge/@RyoJerryYu/mcp-server-memos-py)](https://smithery.ai/server/@RyoJerryYu/mcp-server-memos-py)\n\nA Python package that provides LLM models with the ability to interact with [Memos](https://github.com/usememos/memos) server through the [MCP (Model Context Protocol)](https://modelcontextprotocol.io/introduction) interface.\n\n## 🚀 Features\n\n- 🔍 Search memos with keywords\n- ✨ Create new memos with customizable visibility\n- 📖 Retrieve memo content by ID\n- 🏷️ List and manage memo tags\n- 🔐 Secure authentication using access tokens\n\n## 🛠️ Usage\n\nYou can include this package in your config file as bellow, just as you use other Python MCP plugins.\n\n```jsonc\n{\n  ...,\n  \"mcpServers\": {\n    \"fetch\": { // other mcp servers\n      \"command\": \"uvx\",\n      \"args\": [\"mcp-server-fetch\"]\n    },\n    \"memos\": { // add this to your config\n      \"command\": \"uvx\",\n      \"args\": [\n        \"--prerelease=allow\",\n        \"mcp-server-memos\",\n        \"--host\",\n        \"localhost\",\n        \"--port\",\n        \"5230\",\n        \"--token\",\n        \"your-access-token-here\"\n      ]\n    }\n  }\n}\n```\n\n<details>\n<summary>Other ways to use this package</summary>\n\n### 📦 Installation\n\n#### Installing via Smithery\n\nTo install mcp-server-memos-py for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@RyoJerryYu/mcp-server-memos-py):\n\n```bash\nnpx -y @smithery/cli install @RyoJerryYu/mcp-server-memos-py --client claude\n```\n\n#### Installing Manually\n```bash\npip install mcp-server-memos\n```\n\n### Command Line\n\n```bash\nmcp-server-memos --host localhost --port 8080 --token YOUR_ACCESS_TOKEN\n```\n\n### As a Library\n\n```python\nfrom mcp_server_memos import Config, serve_stdio\n\nconfig = Config(\n    host=\"localhost\",\n    port=8080,\n    token=\"YOUR_ACCESS_TOKEN\"\n)\n\nawait serve_stdio(config=config)\n```\n\n</details>\n\n## 🔧 Configuration\n\n| Parameter | Description | Default |\n|-----------|-------------|---------|\n| `host` | Memos server hostname | `localhost` |\n| `port` | Memos server port | `8080` |\n| `token` | Access token for authentication | `\"\"` |\n\n## 🤝 Available Tools\n\nThis MCP server provides the following tools for interacting with Memos:\n\n| Tool Name | Description | Parameters |\n|-----------|-------------|------------|\n| `list_memo_tags` | List all existing memo tags | - `parent`: The parent who owns the tags (format: memos/{id}, default: \"memos/-\")<br>- `visibility`: Tag visibility (PUBLIC/PROTECTED/PRIVATE, default: PRIVATE) |\n| `search_memo` | Search for memos using keywords | - `key_word`: The keywords to search for in memo content |\n| `create_memo` | Create a new memo | - `content`: The content of the memo<br>- `visibility`: Memo visibility (PUBLIC/PROTECTED/PRIVATE, default: PRIVATE) |\n| `get_memo` | Get a specific memo by ID | - `name`: The name/ID of the memo (format: memos/{id}) |\n\n## 🤝 Contributing\n\nContributions are welcome! Please feel free to submit a Pull Request.\n\n## 📄 License\n\nThis project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.\n\n## 🙏 Acknowledgments\n\n- [Memos](https://github.com/usememos/memos) - A lightweight, self-hosted memo hub\n- [MCP (Model Context Protocol)](https://modelcontextprotocol.io/introduction) - Protocol for LLM model applications\n"
+  },
+  "descriptor_file": {
+    "path": "smithery.yaml",
+    "content": "# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml\n\nstartCommand:\n  type: stdio\n  configSchema:\n    # JSON Schema defining the configuration options for the MCP.\n    type: object\n    required:\n      - host\n      - port\n      - token\n    properties:\n      host:\n        type: string\n        default: localhost\n        description: Memos server hostname\n      port:\n        type: number\n        default: 8080\n        description: Memos server port\n      token:\n        type: string\n        default: \"\"\n        description: Access token for authentication\n  commandFunction:\n    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.\n    |-\n    (config) => ({\n      command: 'mcp-server-memos',\n      args: [\n        '--host', config.host,\n        '--port', String(config.port),\n        '--token', config.token\n      ],\n      env: {}\n    })\n  exampleConfig:\n    host: localhost\n    port: 5230\n    token: your-access-token-here\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

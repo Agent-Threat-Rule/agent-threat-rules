@@ -1,0 +1,45 @@
+{
+  "full_name": "zoharbabin/google-researcher-mcp",
+  "html_url": "https://github.com/zoharbabin/google-researcher-mcp",
+  "description": "⚠️ DEPRECATED — Use https://github.com/zoharbabin/web-researcher-mcp instead",
+  "topics": [
+    "academic-search",
+    "ai-assistant",
+    "ai-tools",
+    "anthropic",
+    "claude",
+    "google-search",
+    "llm",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "patent-search",
+    "research",
+    "typescript",
+    "web-scraping"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 33,
+  "forks": 5,
+  "open_issues": 3,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-05-03T21:46:16Z",
+  "last_pushed_at": "2026-06-10T14:55:41Z",
+  "fetched_at": "2026-07-11T23:39:47.915Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# google-researcher-mcp — DEPRECATED\n\n> **⚠️ This project has been superseded by [`web-researcher-mcp`](https://github.com/zoharbabin/web-researcher-mcp).**\n>\n> A complete rewrite in Go: same tools, but it cites real sources and stays honest — citation verification, retraction flagging, eight search providers behind one interface, and a single signed static binary. No Node.js, no npm.\n\n---\n\n## Migrate in one line\n\nYour **API keys and tool calls don't change** — only how the server is launched. Pick whichever you prefer (no Node required):\n\n```bash\n# macOS / Linux — installs the binary and registers it with Claude Code automatically:\ncurl -fsSL https://raw.githubusercontent.com/zoharbabin/web-researcher-mcp/main/install.sh | sh\n\n# Windows (PowerShell):\npowershell -ExecutionPolicy Bypass -c \"irm https://raw.githubusercontent.com/zoharbabin/web-researcher-mcp/main/install.ps1 | iex\"\n\n# Python users (uv) — run with no install:\nuvx web-researcher-mcp\n```\n\n### Before / after (MCP client config)\n\nThe config keeps the **same shape** — swap the `command`/`args`, keep your env:\n\n```jsonc\n// BEFORE — google-researcher-mcp (npx / Node)\n{\n  \"mcpServers\": {\n    \"google-researcher\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"google-researcher-mcp\"],\n      \"env\": { \"GOOGLE_CUSTOM_SEARCH_API_KEY\": \"…\", \"GOOGLE_CUSTOM_SEARCH_ID\": \"…\" }\n    }\n  }\n}\n\n// AFTER — web-researcher-mcp (installed binary; or use \"uvx\" + args [\"web-researcher-mcp\"])\n{\n  \"mcpServers\": {\n    \"web-researcher\": {\n      \"command\": \"web-researcher-mcp\",\n      \"env\": { \"GOOGLE_CUSTOM_SEARCH_API_KEY\": \"…\", \"GOOGLE_CUSTOM_SEARCH_ID\": \"…\" }\n    }\n  }\n}\n```\n\n> **Don't run both at once** — they register identical tool names. Remove the `google-researcher` entry before adding `web-researcher`.\n\n**→ [Full migration guide](https://github.com/zoharbabin/web-researcher-mcp/blob/main/docs/MIGRATION.md)**\n\nYour existing `GOOGLE_CUSTOM_SEARCH_API_KEY` and `GOOGLE_CUSTOM_SEARCH_ID` work unchanged.\n\n---\n\n## Why the Rewrite?\n\n| Open Issue | Resolution in web-researcher-mcp |\n|------------|----------------------------------|\n| [#108](https://github.com/zoharbabin/google-researcher-mcp/issues/108) — Orphan detection fails via npx | Go binary has native process lifecycle (EOF/SIGPIPE) — no npm wrapper |\n| [#107](https://github.com/zoharbabin/google-researcher-mcp/issues/107) — Google discontinuing 'entire web' search | Eight providers (Brave, Serper, SearXNG, SearchAPI, Tavily, Exa, DuckDuckGo + Google PSE for lenses) with automatic fallback |\n| [#55](https://github.com/zoharbabin/google-researcher-mcp/issues/55) — Support alternative search engines | Multiple engines behind one interface, plus a zero-config DuckDuckGo default |\n| [#72](https://github.com/zoharbabin/google-researcher-mcp/issues/72) — Add Redis caching | Hybrid cache: memory + AES-encrypted disk + optional Redis |\n| [#40](https://github.com/zoharbabin/google-researcher-mcp/issues/40) — Split server.ts into modules | Fully modular Go architecture (one package per concern) |\n\nPlus what's new: **verify_citation** and **audit_bibliography** (catch fabricated/retracted citations), academic / patent / SEC-filing / US-case-law / economic / clinical-trial search, and authority-weighted search lenses.\n\n---\n\n## Links\n\n- **New project**: https://github.com/zoharbabin/web-researcher-mcp\n- **Install (all methods)**: [README → Get started](https://github.com/zoharbabin/web-researcher-mcp#get-started-in-30-seconds)\n- **Docker**: `docker pull zoharbabin/web-researcher-mcp:latest`\n- **Releases**: https://github.com/zoharbabin/web-researcher-mcp/releases\n"
+  },
+  "descriptor_file": {
+    "path": "server.json",
+    "content": "{\n  \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json\",\n  \"name\": \"io.github.zoharbabin/google-researcher\",\n  \"description\": \"MCP server providing Google Search, web scraping, and multi-source research tools for AI assistants\",\n  \"version\": \"6.0.3\",\n  \"repository\": {\n    \"url\": \"https://github.com/zoharbabin/google-researcher-mcp\",\n    \"source\": \"github\"\n  },\n  \"packages\": [\n    {\n      \"registryType\": \"npm\",\n      \"identifier\": \"google-researcher-mcp\",\n      \"version\": \"6.0.3\",\n      \"runtimeHint\": \"node\",\n      \"transport\": {\n        \"type\": \"stdio\"\n      },\n      \"environmentVariables\": [\n        {\n          \"name\": \"GOOGLE_CUSTOM_SEARCH_API_KEY\",\n          \"description\": \"Google Custom Search API key\",\n          \"isRequired\": true,\n          \"isSecret\": true\n        },\n        {\n          \"name\": \"GOOGLE_CUSTOM_SEARCH_ID\",\n          \"description\": \"Google Programmable Search Engine ID\",\n          \"isRequired\": true,\n          \"isSecret\": false\n        }\n      ]\n    }\n  ]\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

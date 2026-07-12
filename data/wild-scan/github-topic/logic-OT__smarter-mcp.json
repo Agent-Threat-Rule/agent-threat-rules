@@ -1,0 +1,34 @@
+{
+  "full_name": "logic-OT/smarter-mcp",
+  "html_url": "https://github.com/logic-OT/smarter-mcp",
+  "description": "The highest-level Python framework for building, generating, and running MCP servers.",
+  "topics": [
+    "agentic-ai",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 2,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-05-21T18:28:28Z",
+  "last_pushed_at": "2026-06-13T09:06:45Z",
+  "fetched_at": "2026-07-12T00:07:46.345Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<img width=\"770\" height=\"159\" alt=\"image\" src=\"https://github.com/user-attachments/assets/2be86ef1-e7f6-4fc4-8b4c-89ab3b98124a\" />\n\n# Smarter-MCP 🚀\n\n> **The highest-level Python framework for building, generating, and running MCP servers.**\n\n*If Python can call it, Smarter-MCP can serve it.*\n\n```bash\npip install smarter-mcp\n```\n\n---\nSmarter-MCP sits on top of FastMCP and acts as the orchestration layer that handles everything a developer shouldn't have to think about:\n\n## Three ways in, one runtime\n\n### 1. Existing code — zero rewrites\n\nPoint at any module you already have (or anything on PyPI):\n\n```python\nimport pandas as pd\nfrom smarter_mcp import SmarterMCP\n\napp = SmarterMCP(\"data-tools\")\napp.discover_module(pd.DataFrame, include=[\"describe\", \"head\", \"tail\"])\napp.run()\n```\n\nOr scan an entire local codebase from the CLI:\n\n```bash\nsmarter-mcp serve ./src/mylib\n```\n\nThe dual-pass engine (AST + inspect) reads your signatures, builds JSON schemas, and serves them. Nothing to rewrite.\n\n---\n\n### 2. Stateful class tools\n\nWhen your tools need shared state (a DB connection, an API client, an ML model loaded once), `@toolkit` manages it:\n\n```python\nfrom smarter_mcp import tool, toolkit\n\n@toolkit(lifecycle=\"session\")\nclass DatabaseClient:\n    def __init__(self, host: str = \"localhost\", port: int = 5432):\n        self.conn = connect(host, port)\n\n    @tool(name=\"run_query\")\n    def query(self, sql: str) -> list[dict]:\n        \"\"\"Execute a SQL query and return results.\"\"\"\n        return self.conn.execute(sql).fetchall()\n```\n\nOne instance per session. Constructor args injected from config. Session instances are evicted via bounded LRU (max 256 entries) with best-effort resource cleanup (`close()`/`__exit__`) on eviction. You write the class, Smarter-MCP handles the plumbing.\n\n---\n\n### 3. ✍️ Fresh tools from scratch\n\n```python\nfrom smarter_mcp import SmarterMCP, tool, resource\n\napp = SmarterMCP(\"my-server\")\n\n@tool(\"Greet a user by name\")\ndef greet(name: str) -> str:\n    return f\"Hello, {name}!\"\n\n@resource(\"config://settings\")\ndef get_settings() -> dict:\n    return {\"debug\": True, \"version\": \"1.0\"}\n\napp.run()\n```\n\n---\n\n## ⚙️ What the runtime gives every tool\n\nRegardless of how a tool was registered, every call goes through:\n\n- ✅ **Schema validation** — parameters validated before your function is called. Clean errors back to the agent, not raw tracebacks.\n- ✅ **Type coercion** — agents send `\"42\"` instead of `42` constantly. Handled silently.\n- ✅ **Multimodal** — `PIL.Image` and `np.ndarray` parameters decoded from `ImageContent` automatically. Return images and they're wrapped back up.\n- ✅ **Instance lifecycle** — `session`, `singleton`, or `per-call`. Resolved and bound per request.\n- ✅ **Namespace routing** — auto-derived from module paths. No silent name collisions.\n- ✅ **Auth + rate limiting** — API key middleware and sliding-window rate limits, config-driven.\n\n---\n\n## ✨ AI-generated tool descriptions\n\nMost Python code in the wild has no docstrings. That's fine.\n\nPoint Smarter-MCP at an undocumented library and it will write the tool descriptions for you using Claude, GPT, or any OpenAI-compatible model. Every tool your agent sees gets a clean, accurate description regardless of what the original code looked like.\n\n```yaml\nllm:\n  enabled: true\n  provider: anthropic        # or openai, openrouter\n  model: claude-3-5-haiku-20241022\n  cache_path: .smarter-mcp/description-cache.json\n```\nor in code:\n\n```python\nserver = SmarterMCP(\n    \"my-server\",\n    llm_enabled=True,\n    llm_provider=\"anthropic\",\n    llm_model=\"claude-3-5-haiku-20241022\",\n)\nserver.run()\n```\n\n**Undocumented code stops being a blocker.**\n\n---\n\n## 📋 YAML manifest — no Python required\n\n```yaml\nname: my-server\nversion: 0.1.0\n\nserver:\n  host: 0.0.0.0\n  port: 8000\n  transport: sse\n\nsources:\n  - path: ./src/my_local_utils\n  - module: random\n    include: [choices, randint]\n    namespace: random_tools\n\nexpose:\n  include_private: false\n  unannotated_policy: warn\n```\n\n```bash\nsmarter-mcp serve --manifest smarter-mcp.yaml\n```\n\n---\n\n## 🚀 Getting started\n\n```bash\npip install smarter-mcp\n```\n\nFor multimodal support (PIL / numpy):\n\n```bash\npip install \"smarter-mcp[multimodal]\"\n```\n\nThen point it at your code:\n\n```bash\nsmarter-mcp serve ./src/mylib --port 8000\nsmarter-mcp validate ./my_tools.py\nsmarter-mcp test ./my_tools.py\n```\n\n---\n\n*Built on [FastMCP](https://github.com/jlowin/fastmcp).*\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

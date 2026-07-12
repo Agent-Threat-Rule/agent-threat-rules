@@ -1,0 +1,45 @@
+{
+  "full_name": "pivoshenko/pivoshenko.ai",
+  "html_url": "https://github.com/pivoshenko/pivoshenko.ai",
+  "description": "🧙‍♂️ pivoshenko's AI workspace",
+  "topics": [
+    "agent-skills",
+    "agentic-dev",
+    "agents",
+    "ai",
+    "ai-agents",
+    "ai-skills",
+    "ai-tools",
+    "anthropic",
+    "claude",
+    "claude-code",
+    "kasetto",
+    "llm",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "mcps",
+    "skills"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 2,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "HTML",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-03-01T18:33:12Z",
+  "last_pushed_at": "2026-07-05T08:18:41Z",
+  "fetched_at": "2026-07-12T00:04:12.905Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# pivoshenko.ai\n\n<p align=\"left\">\n  <a href=\"https://stand-with-ukraine.pp.ua/\">\n    <img alt=\"StandWithUkraine\" src=\"https://img.shields.io/badge/Support-Ukraine-FFC93C?style=flat-square&labelColor=07689F\">\n  </a>\n</p>\n\n## Overview\n\nThis repository is managed with [Kasetto](https://github.com/pivoshenko/kasetto) — it pulls personal **and** external skills, MCPs, and instructions from upstream repositories into one synced setup. The full source list lives in [`kasetto.yaml`](kasetto.yaml).\n\nWhat's in here?\n\n- Locally authored skills, see [`skills/`](skills)\n- Locally authored MCP definitions, see [`mcps/`](mcps)\n- Locally authored instructions (`CLAUDE.md` / `AGENTS.md` / `.cursor/rules` … rule fragments), see [`instructions/`](instructions)\n- External skills, MCPs, and instructions, see [`kasetto.yaml`](kasetto.yaml)\n\n## Main principles\n\n- Minimalism — keep only skills and MCPs that are used daily\n- Consistency — same conventions across all locally authored skills\n- Composability — skills are small, single-purpose, and chainable\n- Source of truth — upstream skills are pulled, not forked, so updates stay free\n\n## Installation\n\n1. Install Kasetto, see the [installation guide](https://github.com/pivoshenko/kasetto#installation)\n2. Sync skills and MCPs into your local Claude Code config — either run:\n\n```shell\nkst sync --config https://github.com/pivoshenko/pivoshenko.ai/blob/main/kasetto.yaml\n```\n\nOr add the source to `~/.config/kasetto/config.yaml` and then run `kst sync`:\n\n```yaml\nsource: https://github.com/pivoshenko/pivoshenko.ai/blob/main/kasetto.yaml\n```\n\n## Personal wiki (second brain)\n\nAn Obsidian vault maintained primarily by Claude Code, inspired by [Karpathy's LLM-maintained notes](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f). Three pieces, one job each:\n\n1. **Schema in the vault** — the vault's own `CLAUDE.md` holds all conventions (folder map, frontmatter contract, linking rules, standing duties); `INDEX.md` is the catalog the agent reads first; `LOG.md` is an append-only journal of agent actions. The schema is a live file in the vault — no repo mirror.\n2. **Workflow skills in this repo** — [`wiki-capture`](skills/wiki-capture), [`wiki-summarize`](skills/wiki-summarize), [`wiki-project`](skills/wiki-project), [`wiki-write`](skills/wiki-write), [`wiki-lint`](skills/wiki-lint), plus the [`obsidian-markdown`](skills/obsidian-markdown) syntax reference. Skills hold process only and defer to the vault schema — zero duplicated conventions.\n3. **Templates in the vault** — one note template per type under `99 TEMPLATES/`, usable both by the skills and manually via Obsidian (including mobile).\n\nSupporting decisions, so the setup stays repeatable:\n\n- **Memory in the wiki** — each `~/.claude/projects/<slug>/memory` is a symlink into the vault's `97 MEMORY/<project>/`, so Claude's persistent memories live in the wiki while the harness reads them natively. The migration rule lives in my global CLAUDE.md (see [Rules](#rules)).\n- **No premature tooling** — no Dataview, no Zettelkasten IDs, no embeddings; search is `rg` + `INDEX.md` until the vault passes ~200 notes, then [qmd](https://github.com/tobi/qmd).\n- **Audit + rollback** — `LOG.md` records what agents did; an external git mirror records the content. The mirror's `.git` lives at `~/.vault.git` (outside iCloud, invisible to Obsidian, local-only — never pushed), snapshotted hourly via [`scripts/vault-snapshot.sh`](scripts/vault-snapshot.sh). The scheduler is machine-local setup, deliberately not in dotfiles (it's OS-specific): macOS — a launchd plist in `~/Library/LaunchAgents` running the script hourly; Linux — a cron line (`0 * * * * sh .../scripts/vault-snapshot.sh`).\n\nTo repeat it: create the vault folders + `CLAUDE.md`/`INDEX.md`/`LOG.md` per the vault's own `CLAUDE.md`, copy the templates idea, and sync the `wiki-*` skills via Kasetto (see below).\n\n## Rules\n\nReusable agent rules — the behavioral guardrails that aren't project-specific — live in [`instructions/`](instructions), one Markdown file per rule. Kasetto distributes them as its **instruction** asset kind: each is transformed into the target agent's native instruction file (`CLAUDE.md`, `AGENTS.md`, `.cursor/rules`, …) and merged in as a managed block, so hand edits and other rules survive a re-sync.\n\nThe `instructions/` files **are** the source for my global rules — Kasetto syncs them into `~/.claude/CLAUDE.md` (as managed blocks). The old single `CLAUDE.md` in [`pivoshenko.dotfiles`](https://github.com/pivoshenko/pivoshenko.dotfiles) was dropped once these took over, so `dotfiles` no longer deploys it.\n\nOther CLAUDE.md files used outside this repository live with their owners:\n\n- The vault's `CLAUDE.md` (the wiki schema) — a live file inside the vault itself, no repo mirror\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

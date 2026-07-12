@@ -1,0 +1,39 @@
+{
+  "full_name": "ConstantineB6/comfy-pilot",
+  "html_url": "https://github.com/ConstantineB6/comfy-pilot",
+  "description": "MCP server + embedded terminal that lets Claude Code see and edit your ComfyUI workflows",
+  "topics": [
+    "ai",
+    "claude",
+    "claude-code",
+    "comfyui",
+    "comfyui-custom-node",
+    "generative-ai",
+    "image-generation",
+    "mcp",
+    "model-context-protocol",
+    "stable-diffusion",
+    "workflow-automation"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 223,
+  "forks": 44,
+  "open_issues": 13,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-01-28T05:38:18Z",
+  "last_pushed_at": "2026-02-16T09:58:06Z",
+  "fetched_at": "2026-07-11T23:16:22.537Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Comfy Pilot\n\n[![Stars](https://img.shields.io/github/stars/ConstantineB6/Comfy-Pilot)](https://github.com/ConstantineB6/Comfy-Pilot/stargazers)\n[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)\n[![ComfyUI Registry](https://img.shields.io/badge/ComfyUI-Registry-blue)](https://registry.comfy.org/publishers/constantine/nodes/comfy-pilot)\n\nTalk to your ComfyUI workflows. Comfy Pilot gives Claude Code direct access to see, edit, and run your workflows — with an embedded terminal right inside ComfyUI.\n\n![Comfy Pilot](thumbnail.jpg)\n\n## Why?\n\nBuilding ComfyUI workflows means manually searching for nodes, dragging connections, and tweaking values one at a time. With Comfy Pilot, you just describe what you want:\n\n- *\"Build me an SDXL workflow with ControlNet\"* — Claude creates all the nodes, connects them, and sets the parameters\n- *\"Look at the output and increase the detail\"* — Claude sees your generated image and adjusts the workflow\n- *\"Download the FLUX schnell model and set up a workflow for it\"* — Claude downloads the model and builds a workflow from scratch\n\nNo copy-pasting node names. No hunting through menus. Just say what you want.\n\n## Installation\n\n**CLI (Recommended):**\n```bash\ncomfy node install comfy-pilot\n```\n\n**ComfyUI Manager:**\n1. Open ComfyUI\n2. Click **Manager** → **Install Custom Nodes**\n3. Search for \"Comfy Pilot\"\n4. Click **Install**\n5. Restart ComfyUI\n\n**Git Clone:**\n```bash\ncd ~/Documents/ComfyUI/custom_nodes && git clone https://github.com/ConstantineB6/comfy-pilot.git\n```\n\nClaude Code CLI will be installed automatically if not found.\n\n## Requirements\n\n- ComfyUI\n- Python 3.8+\n\n## Features\n\n- **MCP Server** - Gives Claude Code direct access to view, edit, and run your ComfyUI workflows\n- **Embedded Terminal** - Full xterm.js terminal running Claude Code right inside ComfyUI\n- **Image Viewing** - Claude can see outputs from Preview Image and Save Image nodes\n- **Graph Editing** - Create, delete, move, and connect nodes programmatically\n\n## Demo\n\nhttps://github.com/user-attachments/assets/325b1194-2334-48a1-94c3-86effd1fef02\n\n## Usage\n\n1. Restart ComfyUI after installation\n2. The floating Claude Code terminal appears in the top-right corner\n3. The MCP server is automatically configured for Claude Code\n4. Ask Claude to help with your workflow:\n   - \"What nodes are in my current workflow?\"\n   - \"Add a KSampler node connected to my checkpoint loader\"\n   - \"Look at the preview image and tell me what you see\"\n   - \"Run the workflow up to node 5\"\n\n## MCP Tools\n\nThe MCP server provides these tools to Claude Code:\n\n| Tool | Description |\n|------|-------------|\n| `get_workflow` | Get the current workflow from the browser |\n| `summarize_workflow` | Human-readable workflow summary |\n| `get_node_types` | Search available node types with filtering |\n| `get_node_info` | Get detailed info about a specific node type |\n| `get_status` | Queue status, system stats, and execution history |\n| `run` | Run workflow (optionally up to a specific node) or interrupt |\n| `edit_graph` | Batch create, delete, move, connect, and configure nodes |\n| `view_image` | View images from Preview Image / Save Image nodes |\n| `search_custom_nodes` | Search ComfyUI Manager registry for custom nodes |\n| `install_custom_node` | Install a custom node from the registry |\n| `uninstall_custom_node` | Uninstall a custom node |\n| `update_custom_node` | Update a custom node to latest version |\n| `download_model` | Download models from Hugging Face, CivitAI, or direct URLs |\n\n### Example: Creating Nodes\n\n```\nCreate a KSampler and connect it to my checkpoint loader\n```\n\nClaude will use `edit_graph` to:\n1. Create the KSampler node\n2. Connect the MODEL output from CheckpointLoader to KSampler's model input\n3. Position it appropriately in the graph\n\n### Example: Viewing Images\n\n```\nLook at the preview image and describe what you see\n```\n\nClaude will use `view_image` to fetch and analyze the image output.\n\n### Example: Downloading Models\n\n```\nDownload the FLUX.1 schnell model for me\n```\n\nClaude will use `download_model` to download from Hugging Face to your ComfyUI models folder. Supports:\n- Hugging Face (including gated models with token auth)\n- CivitAI\n- Direct download URLs\n\n## Terminal Controls\n\n- **Drag** title bar to move\n- **Drag** bottom-right corner to resize\n- **−** Minimize\n- **×** Close\n- **↻** Reconnect session\n\n## Architecture\n\n```\n┌─────────────────────────────────────────────────────┐\n│  Browser (ComfyUI)                                  │\n│  ┌─────────────────┐  ┌──────────────────────────┐  │\n│  │  xterm.js       │  │  Workflow State          │  │\n│  │  Terminal       │  │  (synced to backend)     │  │\n│  └────────┬────────┘  └────────────┬─────────────┘  │\n│           │ WebSocket              │ REST API       │\n└───────────┼────────────────────────┼────────────────┘\n            │                        │\n            ▼                        ▼\n┌─────────────────────────────────────────────────────┐\n│  ComfyUI Server                                     │\n│  ┌─────────────────┐  ┌──────────────────────────┐  │\n│  │  PTY Process    │  │  Plugin Endpoints        │  │\n│  │  (claude CLI)   │  │  /claude-code/*          │  │\n│  └─────────────────┘  └──────────────────────────┘  │\n└─────────────────────────────────────────────────────┘\n            │                        │\n            │                        ▼\n            │           ┌──────────────────────────┐\n            └──────────▶│  MCP Server              │\n                        │  (stdio transport)       │\n                        └──────────────────────────┘\n```\n\n## Files\n\n- `__init__.py` - Plugin backend: WebSocket terminal, REST endpoints\n- `js/claude-code.js` - Frontend: xterm.js terminal, workflow sync\n- `mcp_server.py` - MCP server for Claude Code integration\n- `CLAUDE.md` - Instructions for Claude when working with ComfyUI\n\n## Troubleshooting\n\n### \"Command 'claude' not found\"\n\nInstall Claude Code CLI:\n\n**macOS / Linux / WSL:**\n```bash\ncurl -fsSL https://claude.ai/install.sh | bash\n```\n\n**Windows (PowerShell):**\n```powershell\nirm https://claude.ai/install.ps1 | iex\n```\n\n**Windows (CMD):**\n```cmd\ncurl -fsSL https://claude.ai/install.cmd -o install.cmd && install.cmd && del install.cmd\n```\n\n### MCP server not connecting\n\nThe plugin auto-configures MCP on startup. Check ComfyUI console for errors, or manually add to `~/.claude.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"comfyui\": {\n      \"command\": \"python3\",\n      \"args\": [\"/path/to/comfy-pilot/mcp_server.py\"]\n    }\n  }\n}\n```\n\n### Terminal disconnected\n\nClick the ↻ button to reconnect, or check ComfyUI console for errors.\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

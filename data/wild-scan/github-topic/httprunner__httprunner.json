@@ -1,0 +1,38 @@
+{
+  "full_name": "httprunner/httprunner",
+  "html_url": "https://github.com/httprunner/httprunner",
+  "description": "HttpRunner 是一款开源的 API/UI 测试框架，简单易用，功能强大，具有丰富的插件化机制和高度的可扩展能力。",
+  "topics": [
+    "adb",
+    "agent-tars",
+    "mcp-server",
+    "mcphost",
+    "testing",
+    "ui-tars",
+    "ui-testing",
+    "uiautomator2",
+    "wda",
+    "webdriveragent"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 4285,
+  "forks": 1285,
+  "open_issues": 501,
+  "language": "Go",
+  "license": "Apache-2.0",
+  "default_branch": "master",
+  "created_at": "2017-06-13T03:54:29Z",
+  "last_pushed_at": "2025-12-11T16:50:50Z",
+  "fetched_at": "2026-07-11T22:29:09.748Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# HttpRunner\n\n[![Github Actions](https://github.com/httprunner/httprunner/actions/workflows/unittest.yml/badge.svg)](https://github.com/httprunner/httprunner/actions)\n[![codecov](https://codecov.io/gh/httprunner/httprunner/branch/master/graph/badge.svg)](https://codecov.io/gh/httprunner/httprunner)\n[![Go Reference](https://pkg.go.dev/badge/github.com/httprunner/httprunner.svg)](https://pkg.go.dev/github.com/httprunner/httprunner)\n[![downloads](https://pepy.tech/badge/httprunner)](https://pepy.tech/project/httprunner)\n[![TesterHome](https://img.shields.io/badge/TTF-TesterHome-2955C5.svg)](https://testerhome.com/github_statistics)\n\n> ⚠️ HttpRunner v5 仅包含 Golang 版本，Python 版本的代码已迁移至 [httprunner/httprunner.py](https://github.com/httprunner/httprunner.py)\n\n`HttpRunner`（简称 hrp） 是一个开源测试框架，诞生于 2017 年，最开始应用于 API 接口、性能测试，后面逐步进化为了一款通用、可拓展的测试框架。\n\n在 2022 年，HttpRunner 开始新增支持 UI 自动化测试，当前已经支持了 Android/iOS/Harmony/Browser 多种系统平台，并在 v5 版本融入了大模型技术，成长成为了一款通用的智能自动化测试框架。\n\nHttpRunner 相比其它 UI 自动化框架，主要特点包括：\n\n- 采用纯视觉驱动方案（OCR/CV/VLM），追求通用性和尽可能低的性能损耗\n- 多端统一 API，降低学习和横向拓展的成本\n- 拥抱开源生态，充分复用开源组件\n- Golang 技术栈，二进制分发部署\n\n> [HttpRunner v5 用户指南（更新中）](https://debugtalk.feishu.cn/wiki/RqGuw17bsizGTik9WuNcGQyhnaf)\n> [HttpRunner DeepWiki](https://deepwiki.com/httprunner/httprunner)\n\n## 使用说明\n\nHttpRunner v5 安装完成后，你将获得一个 `hrp` 命令行工具，执行 `hrp -h` 即可查看到参数帮助说明。\n\n```text\n$ hrp -h\n\n██╗  ██╗████████╗████████╗██████╗ ██████╗ ██╗   ██╗███╗   ██╗███╗   ██╗███████╗██████╗\n██║  ██║╚══██╔══╝╚══██╔══╝██╔══██╗██╔══██╗██║   ██║████╗  ██║████╗  ██║██╔════╝██╔══██╗\n███████║   ██║      ██║   ██████╔╝██████╔╝██║   ██║██╔██╗ ██║██╔██╗ ██║█████╗  ██████╔╝\n██╔══██║   ██║      ██║   ██╔═══╝ ██╔══██╗██║   ██║██║╚██╗██║██║╚██╗██║██╔══╝  ██╔══██╗\n██║  ██║   ██║      ██║   ██║     ██║  ██║╚██████╔╝██║ ╚████║██║ ╚████║███████╗██║  ██║\n╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝\n\nHttpRunner: Enjoy your All-in-One Testing Solution ✨ 🚀 ✨\n\n💡 Simple Yet Powerful\n   - Natural language driven test scenarios powered by LLM\n   - User-friendly SDK API with IDE auto-completion\n   - Intuitive GoTest/YAML/JSON/Text testcase format\n\n📌 Comprehensive Testing Capabilities\n   - UI Automation: Android/iOS/Harmony/Browser\n   - API Testing: HTTP(S)/HTTP2/WebSocket/RPC\n   - Load Testing: run API testcase concurrently with boomer\n\n🧩 High Scalability\n   - Plugin system for custom functions\n   - Distributed testing support\n   - Cross-platform: macOS/Linux/Windows\n\n🛠 Easy Integration\n   - CI/CD friendly with JSON logs and HTML reports\n   - Rich ecosystem tools\n\nLearn more:\nWebsite: https://httprunner.com\nGitHub: https://github.com/httprunner/httprunner\n\nCopyright © 2017-present debugtalk. Apache-2.0 License.\n\nUsage:\n  hrp [command]\n\nAvailable Commands:\n  adb          simple utils for android device management\n  build        Build plugin for testing\n  completion   Generate the autocompletion script for the specified shell\n  convert      Convert multiple source format to HttpRunner JSON/YAML/gotest/pytest cases\n  help         Help about any command\n  ios          simple utils for ios device management\n  mcp-server   Start MCP server for UI automation\n  mcphost      Start a chat session to interact with MCP tools\n  pytest       Run API test with pytest\n  report       Generate HTML report from test results\n  run          Run API test with go engine\n  server       Start hrp server\n  startproject Create a scaffold project\n  wiki         visit https://httprunner.com\n\nFlags:\n  -h, --help               help for hrp\n      --log-json           set log to json format (default colorized console)\n  -l, --log-level string   set log level (default \"INFO\")\n      --venv string        specify python3 venv path\n  -v, --version            version for hrp\n\nUse \"hrp [command] --help\" for more information about a command.\n```\n\n## 用户案例\n\n<a href=\"https://httprunner.com/docs/cases/dji-ibg\"><img src=\"https://httprunner.com/image/logo/dji.jpeg\" title=\"大疆 - 基于 HttpRunner 构建完整的自动化测试体系\" width=\"60\"></a>\n<a href=\"https://httprunner.com/docs/cases/youmi\"><img src=\"https://httprunner.com/image/logo/youmi.png\" title=\"有米科技 - 基于 HttpRunner 建设自动化测试平台\" width=\"60\"></a>\n<a href=\"https://httprunner.com/docs/cases/umcare\"><img src=\"https://httprunner.com/image/logo/umcare.png\" title=\"通用环球医疗 - 使用 HttpRunner 实践接口自动化测试\" width=\"100\"></a>\n<a href=\"https://httprunner.com/docs/cases/mihoyo\"><img src=\"https://httprunner.com/image/logo/miHoYo.png\" title=\"米哈游 - 基于 HttpRunner 搭建接口自动化测试体系\" width=\"100\"></a>\n\n## Subscribe\n\n关注 HttpRunner 的微信公众号，第一时间获得最新资讯。\n\n<img src=\"https://httprunner.com/image/qrcode.png\" alt=\"HttpRunner\" width=\"400\">\n\n[HttpRunner]: https://github.com/httprunner/httprunner\n[boomer]: https://github.com/myzhan/boomer\n[locust]: https://github.com/locustio/locust\n[jmespath]: https://jmespath.org/\n[allure]: https://docs.qameta.io/allure/\n[HAR]: https://en.wikipedia.org/wiki/HAR_(file_format)\n[hashicorp plugin]: https://github.com/hashicorp/go-plugin\n[go plugin]: https://pkg.go.dev/plugin\n[版本发布日志]: docs/CHANGELOG.md\n[pushgateway]: https://github.com/prometheus/pushgateway\n[survey]: https://wj.qq.com/s2/9699514/0d19/\n[user-survey-report]: https://httprunner.com/blog/user-survey-report/\n[English]: README.en.md\n[pytest]: https://docs.pytest.org/\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

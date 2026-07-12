@@ -1,0 +1,36 @@
+{
+  "full_name": "jsynowiec/mcp-server-airly",
+  "html_url": "https://github.com/jsynowiec/mcp-server-airly",
+  "description": "An MCP server that integrates the Airly API, enabling natural language interaction with air quality data. Query real-time measurements, find nearby stations, and get air quality forecasts through any MCP-compatible client.",
+  "topics": [
+    "air-quality",
+    "airly",
+    "airly-api",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "model-context-protocol",
+    "model-context-protocol-server"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-09T14:48:23Z",
+  "last_pushed_at": "2026-06-30T09:58:29Z",
+  "fetched_at": "2026-07-12T00:53:13.092Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Airly MCP Server\n\n[![Sponsor][sponsor-badge]][sponsor]\n[![License][license-badge]][license]\n![NPM Version][npm-version]\n![NPM Downloads][npm-downloads]\n[![Socket][socket-badge]][socket-url]\n\nAn MCP server that integrates the [Airly API](https://github.com/airly-eu/api-docs), enabling natural language interaction with air quality data. Query real-time measurements, find nearby stations, and get air quality forecasts through any MCP-compatible client.\n\n## API Token\n\nAn [Airly API](https://developer.airly.org/) token is required. Set it using the `AIRLY_API_TOKEN` environment variable.\n\n## Installing\n\n### npx (Node.js)\n\n```json\n{\n  \"mcpServers\": {\n    \"airly\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@jsynowiec/mcp-server-airly\"],\n      \"env\": {\n        \"AIRLY_API_TOKEN\": \"your-api-token\"\n      }\n    }\n  }\n}\n```\n\n### bunx (Bun)\n\n```json\n{\n  \"mcpServers\": {\n    \"airly\": {\n      \"command\": \"bunx\",\n      \"args\": [\"--bun\", \"@jsynowiec/mcp-server-airly\"],\n      \"env\": {\n        \"AIRLY_API_TOKEN\": \"your-api-token\"\n      }\n    }\n  }\n}\n```\n\n### Local development\n\nBuild the project first, then point your MCP client at the local build output:\n\n```json\n{\n  \"mcpServers\": {\n    \"airly\": {\n      \"command\": \"node\",\n      \"args\": [\"/absolute/path/to/mcp-server-airly/dist/index.js\"],\n      \"env\": {\n        \"AIRLY_API_TOKEN\": \"your-api-token\"\n      }\n    }\n  }\n}\n```\n\n## Configuration\n\n| Variable                  | Required | Default | Description                         |\n| ------------------------- | -------- | ------- | ----------------------------------- |\n| `AIRLY_API_TOKEN`         | Yes      |         | Airly API key                       |\n| `AIRLY_DEFAULT_LATITUDE`  | No       |         | Default latitude (decimal degrees)  |\n| `AIRLY_DEFAULT_LONGITUDE` | No       |         | Default longitude (decimal degrees) |\n| `AIRLY_LANGUAGE`          | No       | `en`    | Response language (`en` or `pl`)    |\n\nDefault coordinates must be set together. When configured, location-based tools use them as a fallback when the LLM doesn't provide coordinates.\n\n## Tools\n\n### get_measurement\n\nGet interpolated air quality measurements for any location. Returns current pollutant concentrations, air quality index with health advice, and WHO standard compliance. Includes 24-hour history and forecast.\n\n### get_nearest_installation\n\nFind the nearest air quality monitoring stations to a given location, sorted by proximity. Returns station metadata including address, coordinates, and sensor type.\n\n### get_installation_measurements\n\nGet measurements from a specific station by its installation ID. Same response format as `get_measurement`.\n\n### get_installation\n\nGet metadata for a specific monitoring station.\n\n## Resources\n\n| URI                         | Description                                   |\n| --------------------------- | --------------------------------------------- |\n| `airly://meta/indexes`      | Air quality index types and level definitions |\n| `airly://meta/measurements` | Measurement types with labels and units       |\n| `airly://meta/standards`    | Air quality standards and pollutant limits    |\n\nResources are cached for the session lifetime.\n\n## Prompts\n\n| Prompt                 | Description                             |\n| ---------------------- | --------------------------------------- |\n| `check_air_quality`    | Check current air quality at a location |\n| `air_quality_forecast` | Get the 24-hour air quality forecast    |\n| `find_nearest_station` | Find nearby monitoring stations         |\n\n## Development\n\n### Prerequisites\n\n- [Bun](https://bun.sh/) >= 1.0 or Node.js >= 22\n- An [Airly API token](https://developer.airly.org/)\n\n### Setup\n\n```bash\nbun install\nbun run build\n```\n\n### Scripts\n\n```bash\nbun run build       # Compile TypeScript\nbun run lint        # Run ESLint\nbun run typecheck   # Type-check without emitting\nbun run fmtcheck    # Check Prettier formatting\nbun run format      # Apply Prettier formatting\nbun run test        # Run tests\nbun run dev:test    # Run tests in watch mode\n```\n\n### Testing with MCP Inspector\n\n```bash\nAIRLY_API_TOKEN=your-token npx @modelcontextprotocol/inspector node dist/index.js\n```\n\n### Release\n\nThe `prepublishOnly` script automatically runs build, lint, type-check, and tests before `npm publish`:\n\n```bash\nnpm publish --access public\n```\n\n## Disclaimer\n\nThis project is not affiliated with, endorsed by, or associated with [Airly](https://airly.org/) in any way. It is an independent, open-source integration built on the publicly available [Airly API](https://developer.airly.org/).\n\n## License\n\nReleased under the [MIT License][license].\n\n[license-badge]: https://img.shields.io/github/license/jsynowiec/mcp-server-airly.svg\n[license]: https://github.com/jsynowiec/mcp-server-airly/blob/master/LICENSE\n[sponsor-badge]: https://img.shields.io/badge/♥-Sponsor-fc0fb5.svg\n[sponsor]: https://github.com/sponsors/jsynowiec\n[npm-version]: https://img.shields.io/npm/v/@jsynowiec/mcp-server-airly\n[npm-downloads]: https://img.shields.io/npm/dm/@jsynowiec/mcp-server-airly\n[socket-badge]: https://badge.socket.dev/npm/package/@jsynowiec/mcp-server-airly\n[socket-url]: https://socket.dev/npm/package/@jsynowiec/mcp-server-airly/overview\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

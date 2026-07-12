@@ -1,0 +1,45 @@
+{
+  "full_name": "DTDucas/chm-converter",
+  "html_url": "https://github.com/DTDucas/chm-converter",
+  "description": "chm to markdown and vectorDB",
+  "topics": [
+    "chm",
+    "chm-markdown",
+    "chm-to-markdown",
+    "chm-vectordb",
+    "document",
+    "markdown",
+    "mcp",
+    "mcp-server",
+    "notebook",
+    "revit",
+    "revit-ai",
+    "revit-api",
+    "revit-mcp",
+    "revitapi",
+    "vector",
+    "vector-database",
+    "vectordb"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 85,
+  "forks": 22,
+  "open_issues": 2,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-04-13T07:52:21Z",
+  "last_pushed_at": "2026-07-08T07:11:55Z",
+  "fetched_at": "2026-07-11T23:06:18.499Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# CHM to Markdown Converter\n\nA Python utility for converting Compiled HTML Help (`.chm`) files into clean Markdown, with built-in support for multiple document types through a profile system.\n\nOriginally built for Autodesk Revit API documentation; the generic profile works with any CHM file.\n\n## Features\n\n- **Profile-based conversion** — `generic` profile for any CHM, `revit` profile for Autodesk Revit API docs\n- **Auto encoding detection** — handles UTF-8, GB18030, GBK, GB2312, and more via `chardet`\n- **Cross-platform 7-Zip detection** — finds `7z`/`7za`/`7zz` on PATH (Windows, Linux, macOS)\n- **Flexible CHM structure support** — handles `html/` subdirectory, flat, and deeply nested layouts (e.g. DirectX SDK)\n- **`--preserve-structure`** — optionally mirrors the CHM's internal folder hierarchy in the output instead of flattening everything into `data/`\n- **Code block preservation** — detects language from class names and named divs; supports C#, VB, C++, F#, Python, Java, JS/TS, Bash, SQL, XML, JSON\n- **Table normalization** — cleans and re-formats Markdown tables\n- **Index generation** — produces `file_index.json`, `id_lookup.json`, and `index.md` for search and AI integration\n- **Async + batched processing** — bounded concurrency and periodic GC prevent memory overflow on large CHM files (6 000+ pages)\n\n## Project Structure\n\n```\nchm_converter/           # Core package\n├── config.py            # ConversionConfig dataclass + built-in profiles\n├── encoding.py          # Encoding detection (chardet + CJK fallbacks)\n├── extractor.py         # CHM extraction via 7-Zip; HTML folder detection\n├── html_processor.py    # HTML cleaning, link rewriting, code block extraction\n├── md_converter.py      # HTML → Markdown conversion + post-processing\n├── indexer.py           # File dictionary building + index file generation\n└── pipeline.py          # High-level async pipeline (process_chm_file, process_all_chm_files)\n\nchm_to_markdown.py       # CLI entry point\nresources/               # Place CHM files here\noutput/                  # Generated Markdown (created automatically)\n```\n\n### Output layout\n\n```\noutput/\n└── <name>/\n    ├── core/\n    │   ├── file_index.json   # id → {title, filename, version}\n    │   ├── id_lookup.json    # lowercase id → {title, filename, keywords, version}\n    │   └── index.md          # alphabetical navigation page\n    └── data/\n        ├── Topic1.md\n        ├── Topic2.md\n        └── ...\n```\n\n## Requirements\n\n- Python 3.10+\n- [7-Zip](https://www.7-zip.org/) — `7z` must be reachable via the default install path or `PATH`\n  - Windows: installs to `C:\\Program Files\\7-Zip\\7z.exe` by default, or add to `PATH`\n  - Linux: `sudo apt install p7zip-full`\n  - macOS: `brew install p7zip`\n\n## Installation\n\n```bash\ngit clone https://github.com/DTDucas/chm-converter.git\ncd chm-converter\npip install -r requirements.txt\n```\n\n## Usage\n\nPlace `.chm` files in the `resources/` folder, then run:\n\n```bash\n# Interactive menu (lists available CHM files)\npython chm_to_markdown.py\n\n# Convert a single file\npython chm_to_markdown.py --single resources/docs.chm\n\n# Convert all CHM files in resources/\npython chm_to_markdown.py --all\n\n# Use the Revit API profile (strips Revit help-viewer boilerplate)\npython chm_to_markdown.py --all --profile revit\n\n# Preserve the original folder hierarchy inside data/ (e.g. for DirectX SDK)\npython chm_to_markdown.py --single resources/directx_sdk.chm --preserve-structure\n\n# Keep extracted HTML for debugging\npython chm_to_markdown.py --single resources/docs.chm --keep-html\n\n# Tune performance\npython chm_to_markdown.py --all --workers 4 --batch-size 25 --semaphore 10\n```\n\n### CLI arguments\n\n| Argument               | Short | Default   | Description                                                     |\n| ---------------------- | ----- | --------- | --------------------------------------------------------------- |\n| `--single FILE`        | `-s`  | —         | Convert a single CHM file                                       |\n| `--all`                | `-a`  | —         | Convert all CHM files in `resources/`                           |\n| `--profile`            | `-p`  | `generic` | Conversion profile: `generic` or `revit`                        |\n| `--keep-html`          | `-k`  | off       | Retain extracted HTML after conversion                          |\n| `--workers N`          | `-w`  | `8`       | Thread-pool size for CPU-bound conversion                       |\n| `--batch-size N`       | `-b`  | `50`      | Files processed per async batch                                 |\n| `--semaphore N`        | —     | `20`      | Max concurrent I/O operations                                   |\n| `--preserve-structure` | —     | off       | Mirror CHM folder hierarchy in `data/`; preserve relative links |\n\n## Profiles\n\n| Profile   | Description                                                                                                            |\n| --------- | ---------------------------------------------------------------------------------------------------------------------- |\n| `generic` | Minimal cleanup — works with any CHM file                                                                              |\n| `revit`   | Strips Autodesk Revit help-viewer UI chrome (collapsible regions, feedback links, code-tab toolbars, boilerplate text) |\n\nCustom profiles can be created programmatically:\n\n```python\nfrom chm_converter.config import ConversionConfig\nfrom chm_converter.pipeline import process_chm_file\nimport asyncio\n\ncfg = ConversionConfig(\n    classes_to_remove=[\"my-nav-bar\", \"site-footer\"],\n    ids_to_remove=[\"cookie-banner\"],\n    cleanup_patterns=[\n        (r\"Rate this article.*?---\", \"---\"),\n    ],\n)\n\nasyncio.run(process_chm_file(\"docs.chm\", \"extracted\", \"output\", cfg=cfg))\n```\n\n## AI Integration\n\nThe `core/` folder is designed for RAG and AI search pipelines:\n\n- `file_index.json` — maps every file ID to its title, filename, and version\n- `id_lookup.json` — lowercase-keyed with extracted keyword lists for full-text search\n- `index.md` — human-readable alphabetical index with anchor links\n\n## Troubleshooting\n\n| Problem                                         | Solution                                                                                   |\n| ----------------------------------------------- | ------------------------------------------------------------------------------------------ |\n| `7z not found`                                  | Install 7-Zip and ensure it is on `PATH`; see Requirements above                           |\n| Empty output / `No HTML files found`            | CHM uses a nested folder layout — add `--preserve-structure` to enable recursive traversal |\n| Revit 2025+ pages contain only a title, no body | Fixed in current version: `TopicContent` is no longer stripped from the Revit profile      |\n| Garbled CJK text                                | The tool auto-detects encoding via `chardet`; try `--profile generic` if issues persist    |\n| Memory errors on large CHM                      | Reduce `--workers` and `--batch-size`                                                      |\n| Permission errors                               | Run the terminal with administrator / sudo privileges                                      |\n\n## License\n\nMIT License\n\n## Author\n\n**Duong Tran Quang (DTDucas)**\nbaymax.contact@gmail.com\n[github.com/DTDucas](https://github.com/DTDucas)\nAuthor: [dtducas.com](https://dtducas.com)\n\n### Contributors\n\n- **Jiangxumin** — Chinese encoding support, cross-platform 7-Zip detection, memory-safe batch processing ([PR #11](https://github.com/DTDucas/chm-converter/pull/11))\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

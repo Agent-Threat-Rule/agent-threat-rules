@@ -1,0 +1,40 @@
+{
+  "full_name": "Calliehub/beodata",
+  "html_url": "https://github.com/Calliehub/beodata",
+  "description": "Beowulf meets agentic AI. An MCP server that gives LLMs structured access to the complete Old English text, dictionary, and linguistic annotations.",
+  "topics": [
+    "beowulf",
+    "data-eng",
+    "data-engineer",
+    "data-engineering",
+    "digital-humanities",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "nlp"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "HTML",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-07-22T17:43:09Z",
+  "last_pushed_at": "2026-03-18T19:47:32Z",
+  "fetched_at": "2026-07-12T00:10:32.988Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Beodata\n\nThis is a small Python toy for me to play around with architectural and coding styles. It's also a package for\nprocessing Beowulf text data from [Heorot.dk](https://heorot.dk/beo-ru.html). The data is then made available in an MCP\nserver for easy\nintegration into agentic applications.\n\nFor specific use cases of this tool, look in [./findings/](./findings) for case studies using the MCP server to augment\nClaude Code's knowledge of the Beowulf text. The foundation LLM knows the full Beowulf text from its training, but it's inconsistently\naligned, worded, and the translations are highly variable. Constraining Claude to the project's \"official\" Beowulf text\nmakes the results more consistent and comparable with each other.\n\n## Features\n\nThe `heorot.py` module can parse the dual-language edition of Beowulf and render the complete text in several formats:\n\n- as a List[BeowulfLine] instances in memory\n- as a single combined JSON file\n- as a single combined CSV\n- as separate .ASS (Advanced SubStation Alpha subtitle format) files, one file per fitt\n\nThe module follows the Heorot.dk line numbering and fitt numbering system. There are some missing lines and one missing\nfitt; this is expected since the historical Beowulf manuscript has missing pieces.\n\n## Installation\n\nGet on Python 3.13 and install poetry:\n\n```shell\ncurl -sSL https://install.python-poetry.org | python3 -\n```\n\n```shell\npoetry install\npre-commit install\n```\n\n## Usage\n\n### Running heorot.py\n\nTo process the Beowulf text and generate all output formats:\n\n```shell\npoetry run heorot\n```\n\nThis will:\n\n1. Fetch the HTML content from heorot.dk (if not already cached)\n2. Parse the dual-language text\n3. Generate JSON and CSV files in `./output`\n4. Create ASS subtitle files for each fitt in `./output`\n\nTo run the MCP server:\n\n```shell\npoetry run server\n```\n\nTo run the test suite:\n\n```shell\npoetry run pytest\n```\n\n### Required Files\n\nThe parsing script requires a blank ASS template file:\n\n- `./assets/blank.ass` - Template file for ASS subtitle formatting\n\n### Output Files\n\nAfter running the script, you'll find:\n\n**In `./output/`:**\n\n- `maintext.json` - Complete text data in JSON format\n- `maintext.csv` - Complete text data in CSV format\n- `maintext.html` - Cached HTML from heorot.dk\n\n**In `./output/`:**\n\n- `fitt_0.ass` through `fitt_43.ass` - ASS subtitle files for each fitt (except fitt 24, which doesn't exist)\n\n## Project Structure\n\nReader, please note: \"Sources\" here means \"Sources of Old English text\" not \"Source code\".\n\n- `sources/heorot.py` - Main parsing and processing logic for Heorot.DK HTML text\n- `sources/bosworth.py` - Bosworth-Toller Old English dictionary loader\n- `sources/abbreviations.py` - Dictionary abbreviation loader\n- `text/models.py` - Model classes for BeowulfLine objects\n- `text/numbering.py` - Fitt boundaries and text structure constants\n- `writers/` - Output writers (JSON, CSV, ASS subtitle formats)\n- `beowulf_mcp/` - MCP server for Beowulf data\n- `assets/` - Static data files (blank.ass template, oe_bt.csv, abbreviations XML)\n- `findings/` - Callie's attempts to put the MCP server to use in a Claude session\n- `output/` - Generated output (JSON, CSV, HTML, ASS subtitle files, DuckDB)\n\n## Old English Texts\n\nThe project uses several Old English texts as the basis for its data:\n\n1. [Heorot.dk](https://heorot.dk/beo-ru.html) - dual-language text of Beowulf\n2. [Germanic Lexicon Project](https://www.germanic-lexicon-project.org/texts/oe_bosworthtoller_about.html) - XML\n   abbreviation file\n3. [Bosworth-Toller Old English Dictionary](https://bosworthtoller.com/) - Old English dictionary site\n4. [Brunetti Beowulf](https://www.giuseppebrunetti.eu/Brunetti/OE/Varianti/) - Brunetti's lemmatized text\n\n## Token Structure\n\nEach token is a word-level unit with rich linguistic annotations imported from a pipe-delimited file\n(`assets/brunetti-length.txt`). The Token model stores:\n\n| Field                           | Purpose                                       |\n|:--------------------------------|:----------------------------------------------|\n| `fitt_id`, `para_id`, `line_id` | Structural position in the poem               |\n| `half_line`                     | 'a' or 'b' half of the Old English verse line |\n| `token_offset`                  | Position within the half-line                 |\n| `caesura_code`                  | Marks metrical pauses                         |\n| `pre_punc`, `post_punc`         | Surrounding punctuation                       |\n| `text`                          | The actual Old English word                   |\n| `syntax`, `parse`, `pos`        | Grammatical analysis                          |\n| `lemma`                         | Dictionary headword                           |\n| `gloss`                         | Modern English translation                    |\n| `with_length`                   | Text with vowel length markers                |\n\n## Key Design Choices\n\n1. **Pre-annotated corpus** - Tokens come from Brunetti's parsed Beowulf edition, not generated at runtime\n2. **Composite key** - Tokens are uniquely identified by\n   `(fitt_id, para_id, para_first, non_verse, line_id, half_line, token_offset)`\n3. **Half-line aware** - Respects Old English verse structure (each line has an 'a' and 'b' half)\n4. **Lemmatized** - Each token links to its canonical dictionary form (aka \"headword\") for vocabulary lookups\n\nThis is a scholarly tokenization aligned with traditional Old English philological practice rather than\nNLP-style tokenization.\n\n## Abbreviations\n\nYou can decode the cryptic references often found in dictionary entries:\n\n- Beo. Th. = The Anglo-Saxon Poem of Beowulf, edited by Benjamin Thorpe, Oxford, 1855\n- Exon. Th. = Codex Exoniensis, edited by Thorpe\n- Chr. Erl. = Two of the Saxon Chronicles parallel with supplementary extracts...\n\n```python\nfrom sources.abbreviations import Abbreviations\nwith Abbreviations() as abbv:\n    abbv.lookup(\"Chr. Erl\")\n```\n\n## OE Dictionary\n\nThere's a full Old English dictionary represented here, derived from [./assets/oe_bt.csv](./assets/oe_bt.csv). You can query it from Python:\n\n```python\nfrom sources.bosworth import BosworthToller\nwith BosworthToller() as bt:\n    bt.lookup(\"cyning\")\n```\n\n## Copyright\n\nThis work is copyright 2025-2026 by Callie Tweney, and licensed\nunder [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/?ref=chooser-v1).\n\nThe Heorot source text is copyright [Benjamin Slade](https://heorot.dk/) 2002-2020.\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"beowulf-mcp\": {\n      \"type\": \"stdio\",\n      \"command\": \"poetry\",\n      \"args\": [\"run\", \"server\"],\n      \"env\": {}\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

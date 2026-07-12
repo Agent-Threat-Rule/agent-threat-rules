@@ -1,0 +1,34 @@
+{
+  "full_name": "browser-use/vibetest-use",
+  "html_url": "https://github.com/browser-use/vibetest-use",
+  "description": "Vibetest MCP - automated QA testing using Browser-Use agents",
+  "topics": [
+    "agents",
+    "browser",
+    "claude",
+    "cursor",
+    "mcp",
+    "mcp-server"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 810,
+  "forks": 81,
+  "open_issues": 2,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-05-29T12:12:41Z",
+  "last_pushed_at": "2025-09-02T23:02:43Z",
+  "fetched_at": "2026-07-11T22:37:04.047Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Vibetest Use\n\nAutomated QA testing using Browser-Use agents. \n\n\nhttps://github.com/user-attachments/assets/9558d051-78bc-45fd-8694-9ac80eaf9494\n\n\nAn MCP server that launches multiple Browser-Use agents to test a vibe-coded website for UI bugs, broken links, accessibility issues, and other technical problems.\n\nPerfect for testing both live websites and localhost development sites. \n\nVibecode and vibetest until your website works.\n\n## Quick Start\n\n```bash\n# Install dependencies\nuv venv\nsource .venv/bin/activate\nuv pip install -e .\n\n# Install the browser\nplaywright install chromium --with-deps --no-shell\n```\n\n### 1) Claude Code\n\n```bash\n# Add MCP server via CLI\nclaude mcp add vibetest /full/path/to/vibetest-use/.venv/bin/vibetest-mcp -e GOOGLE_API_KEY=\"your_api_key\"\n\n# Test in Claude Code\n> claude\n\n> /mcp \n  ⎿  MCP Server Status\n\n     • vibetest: connected\n```\n\n### 2) Cursor (manually)\n\n1. **Install via MCP Settings UI:**\n   - Open Cursor Settings\n   - Click on \"MCP\" in the left sidebar  \n   - Click \"Add Server\" or the \"+\" button\n   - Manually edit config:\n  \n```json\n{\n  \"mcpServers\": {\n    \"vibetest\": {\n      \"command\": \"/full/path/to/vibetest-use/.venv/bin/vibetest-mcp\",\n      \"env\": {\n        \"GOOGLE_API_KEY\": \"your_api_key\"\n      }\n    }\n  }\n}\n\n```\n\n### Basic Prompts\n```\n> Vibetest my website with 5 agents: browser-use.com\n> Run vibetest on localhost:3000\n> Run a headless vibetest on localhost:8080 with 10 agents\n```\n\n### Parameters You Can Specify\n- **URL**: Any website (`https://example.com`, `localhost:3000`, `http://dev.mysite.com`)\n- **Number of agents**: `3` (default), `5 agents`, `2 agents` - more agents = more thorough testing\n- **Headless mode**: `non-headless` (default) or `headless`\n\n## Requirements\n\n- Python 3.11+\n- Google API key ([get one](https://developers.google.com/maps/api-security-best-practices)) (we support gemini-2.0-flash)\n- Cursor/Claude with MCP support\n\n## Full Demo\n\n\nhttps://github.com/user-attachments/assets/6450b5b7-10e5-4019-82a4-6d726dbfbe1f\n\n\n\n## License\n\nMIT\n\n---\n\nPowered by [Browser Use](https://github.com/browser-use/browser-use) \n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

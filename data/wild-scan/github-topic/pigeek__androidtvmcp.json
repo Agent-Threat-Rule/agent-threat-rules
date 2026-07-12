@@ -1,0 +1,36 @@
+{
+  "full_name": "pigeek/androidtvmcp",
+  "html_url": "https://github.com/pigeek/androidtvmcp",
+  "description": "A Model Context Protocol (MCP) server that provides Android TV remote control functionality to AI assistants and other MCP clients.",
+  "topics": [
+    "agentic-ai",
+    "androidtv",
+    "llm",
+    "mcp",
+    "mcp-client",
+    "mcp-server",
+    "mcp-servers",
+    "remote-control"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 8,
+  "forks": 3,
+  "open_issues": 1,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-06-21T01:22:11Z",
+  "last_pushed_at": "2026-03-04T03:11:18Z",
+  "fetched_at": "2026-07-11T23:57:01.342Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# AndroidTVMCP - Android TV Remote Control to MCP Bridge\n\nA Model Context Protocol (MCP) server that provides Android TV remote control functionality to AI assistants and other MCP clients.\n\n## Overview\n\nAndroidTVMCP bridges Android TV remote control capabilities with the Model Context Protocol, enabling seamless integration of Android TV control into AI-powered workflows and automation systems.\n\n## Features\n\n- **Device Discovery**: Automatic detection of Android TV devices on the local network\n- **Remote Control**: Full navigation and playback control capabilities\n- **App Management**: Launch and switch between Android TV applications\n- **State Monitoring**: Query device status and current state\n- **MCP Integration**: Standard MCP protocol compliance for easy integration\n\n## Quick Start\n\n### Installation\n\n#### Using Virtual Environment (Recommended)\n\n```bash\n# Create a virtual environment\npython -m venv androidtvmcp-env\n\n# Activate the virtual environment\n# On Linux/macOS:\nsource androidtvmcp-env/bin/activate\n# On Windows:\n# androidtvmcp-env\\Scripts\\activate\n\n# Install the package\npip install androidtvmcp\n```\n\n#### Global Installation\n\n```bash\npip install androidtvmcp\n```\n\n### Basic Usage\n\n1. Start the MCP server:\n\n```bash\nandroidtvmcp --host localhost --port 8080\n```\n\n2. Configure your MCP client to connect to the server\n\n3. Use Android TV control tools through your AI assistant\n\n### Example Commands\n\n- Navigate: \"Move up on the Android TV\"\n- Playback: \"Pause the current video\"\n- Apps: \"Launch Netflix on Android TV\"\n- Status: \"What's currently playing on Android TV?\"\n\n## Configuration\n\nCreate a configuration file `config.json`:\n\n```json\n{\n  \"devices\": {\n    \"discovery\": {\n      \"enabled\": true,\n      \"timeout\": 10\n    },\n    \"connection\": {\n      \"timeout\": 5,\n      \"retry_attempts\": 3\n    }\n  },\n  \"mcp\": {\n    \"host\": \"localhost\",\n    \"port\": 8080,\n    \"transport\": \"stdio\"\n  },\n  \"logging\": {\n    \"level\": \"INFO\",\n    \"file\": \"androidtvmcp.log\"\n  }\n}\n```\n\n## MCP Tools\n\n### Navigation Tools\n\n- `atv_navigate`: Navigate Android TV interface (up, down, left, right, select, menu, back, home)\n- `atv_input_text`: Send text input to Android TV\n\n### Playback Tools\n\n- `atv_playback`: Control media playback (play, pause, stop, fast_forward, rewind)\n- `atv_volume`: Adjust volume (up, down, mute)\n\n### App Management Tools\n\n- `atv_launch_app`: Launch specific applications\n- `atv_get_apps`: List available applications\n- `atv_switch_app`: Switch between running applications\n\n### Device Tools\n\n- `atv_get_devices`: List discovered Android TV devices\n- `atv_get_status`: Get current device status and state\n- `atv_power`: Power control (on, off, sleep)\n\n## MCP Resources\n\n### Device Information\n\n- `device://[device_id]/info`: Device capabilities and information\n- `device://[device_id]/status`: Current device status\n- `device://[device_id]/apps`: Available applications\n\n### Current State\n\n- `state://current_app`: Currently active application\n- `state://playback`: Current playback status\n- `state://volume`: Current volume level\n\n## Development\n\n### Setup Development Environment\n\n#### Using Virtual Environment (Recommended)\n\n```bash\n# Clone the repository\ngit clone https://github.com/pigeek/androidtvmcp.git\ncd androidtvmcp\n\n# Create and activate virtual environment\npython -m venv venv\n\n# Activate the virtual environment\n# On Linux/macOS:\nsource venv/bin/activate\n# On Windows:\n# venv\\Scripts\\activate\n\n# Install in development mode with dev dependencies\npip install -e \".[dev]\"\n```\n\n#### Alternative Setup\n\n```bash\ngit clone https://github.com/pigeek/androidtvmcp.git\ncd androidtvmcp\npip install -e \".[dev]\"\n```\n\n### Run Tests\n\n```bash\npytest\n```\n\n### Development Tools\n\nThe `devtools/` directory contains standalone scripts for manual testing and validation:\n\n```bash\ncd devtools\npython test_command_processor.py  # Test command processor functionality\npython test_mcp_client.py         # Test MCP client-server communication\npython test_mcp_integration.py    # Test MCP server integration\n```\n\nSee `devtools/README.md` for detailed information about each script.\n\n### Code Formatting\n\n```bash\nblack src/ tests/\nisort src/ tests/\n```\n\n### Type Checking\n\n```bash\nmypy src/\n```\n\n## Architecture\n\n```\n┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐\n│   MCP Client    │◄──►│  AndroidTVMCP   │◄──►│   Android TV    │\n│  (AI Assistant) │    │    Server       │    │   Devices       │\n└─────────────────┘    └─────────────────┘    └─────────────────┘\n```\n\n### Components\n\n- **MCP Server**: Handles MCP protocol communication\n- **Device Manager**: Manages Android TV device discovery and connections\n- **Command Processor**: Translates MCP requests to Android TV commands\n- **Network Layer**: Handles Android TV protocol communication\n\n## Requirements\n\n- Python 3.8+\n- Android TV devices on the same network\n- Network connectivity for device discovery\n\n## Troubleshooting\n\n### Common Issues\n\n1. **Device Not Found**\n\n   - Ensure Android TV is on the same network\n   - Check firewall settings\n   - Verify device discovery is enabled\n\n2. **Connection Failed**\n\n   - Check network connectivity\n   - Verify Android TV remote control is enabled\n   - Try restarting the Android TV device\n\n3. **Commands Not Working**\n   - Ensure device is powered on\n   - Check if device supports the command\n   - Verify connection status\n\n### Debug Mode\n\nEnable debug logging:\n\n```bash\nandroidtvmcp --log-level DEBUG\n```\n\n## Contributing\n\n1. Fork the repository\n2. Create a feature branch\n3. Make your changes\n4. Add tests\n5. Run the test suite\n6. Submit a pull request\n\n## License\n\nMIT License - see [LICENSE](LICENSE) file for details.\n\n## Support\n\n- [GitHub Issues](https://github.com/pigeek/androidtvmcp/issues)\n- [Documentation](https://androidtvmcp.readthedocs.io/)\n- [MCP Protocol Documentation](https://modelcontextprotocol.io/)\n\n## Related Projects\n\n- [androidtvremote2](https://github.com/tronikos/androidtvremote2) - Android TV remote control library\n- [Model Context Protocol](https://modelcontextprotocol.io/) - Protocol specification\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

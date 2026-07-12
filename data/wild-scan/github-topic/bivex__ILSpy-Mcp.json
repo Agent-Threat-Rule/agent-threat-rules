@@ -1,0 +1,39 @@
+{
+  "full_name": "bivex/ILSpy-Mcp",
+  "html_url": "https://github.com/bivex/ILSpy-Mcp",
+  "description": "🔓 UNLEASH ILSpy'S POWER. Reverse-engineer DOTNET code at GOD SPEED. AI-assisted debugging that THINKS with you. Decompile ANYTHING. 🚀",
+  "topics": [
+    "ai-assisted",
+    "code-analysis",
+    "debugging",
+    "decompiler",
+    "dotnet",
+    "god-speed",
+    "ilspy",
+    "mcp",
+    "model-context-protocol",
+    "reverse-engineering",
+    "unleashed"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 44,
+  "forks": 6,
+  "open_issues": 0,
+  "language": "C#",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-11-24T19:28:27Z",
+  "last_pushed_at": "2026-07-11T06:59:34Z",
+  "fetched_at": "2026-07-11T23:32:50.612Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# ILSpy MCP Server\n\nA Model Context Protocol (MCP) server that provides .NET assembly decompilation and analysis capabilities.\n\n## What is this?\n\nILSpy MCP Server enables AI assistants (like Claude Code, Cursor) to decompile and analyze .NET assemblies directly through natural language commands. It integrates [ILSpy](https://github.com/icsharpcode/ILSpy) to provide powerful reverse-engineering capabilities.\n\n## Quick Start\n\n### Prerequisites\n\n- .NET 9.0 SDK or higher\n- MCP-compatible client (Claude Code, Cursor, Claude Desktop, etc.)\n\n### Installation\n\nInstall as a global dotnet tool from NuGet:\n\n```bash\ndotnet tool install -g ILSpyMcp.Server\n```\n\nTo update to the latest version:\n\n```bash\ndotnet tool update -g ILSpyMcp.Server\n```\n\n### Configure MCP Client\n\nFor **Claude Code**, register the MCP server:\n\n```bash\nclaude mcp add ilspy-mcp --command \"ilspy-mcp\" --scope user\n```\n\nOr create/update `.mcp.json` in your project root:\n\n```json\n{\n  \"mcpServers\": {\n    \"ilspy-mcp\": {\n      \"type\": \"stdio\",\n      \"command\": \"ilspy-mcp\",\n      \"args\": []\n    }\n  }\n}\n```\n\nFor **Cursor**, add to your MCP settings:\n\n```json\n{\n  \"mcpServers\": {\n    \"ilspy-mcp\": {\n      \"command\": \"ilspy-mcp\",\n      \"args\": []\n    }\n  }\n}\n```\n\nFor **Claude Desktop**, add to `claude_desktop_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"ilspy-mcp\": {\n      \"command\": \"ilspy-mcp\",\n      \"args\": []\n    }\n  }\n}\n```\n\n## Usage Examples\n\n### Decompile a Type\n```\nDecompile the String class from /path/to/System.Runtime.dll\n```\n\n### List All Types\n```\nList all types in the assembly /path/to/MyLibrary.dll\n```\n\n### Find a Specific Method\n```\nFind the CalculateTotal method in /path/to/Calculator.dll\n```\n\n### Analyze Type Hierarchy\n```\nShow me the type hierarchy for ProductService in /path/to/ECommerce.dll\n```\n\n### Search Members\n```\nSearch for members containing \"Authenticate\" in /path/to/Auth.dll\n```\n\n## Available Tools\n\n| Tool | Description |\n|------|-------------|\n| `decompile_type` | Decompile and analyze a .NET type from a DLL |\n| `decompile_method` | Decompile and analyze a specific method |\n| `list_assembly_types` | List all types in an assembly |\n| `analyze_assembly` | Get architectural overview of an assembly |\n| `get_type_members` | Get complete API surface of a type |\n| `find_type_hierarchy` | Find inheritance relationships |\n| `search_members_by_name` | Search for members by name |\n| `find_extension_methods` | Find extension methods for a type |\n\n## Configuration\n\nThe server can be configured via environment variables:\n\n- `ILSpy__MaxDecompilationSize`: Maximum size of decompiled code in bytes (default: 1048576 = 1 MB)\n- `ILSpy__DefaultTimeoutSeconds`: Default timeout for operations in seconds (default: 30)\n- `ILSpy__MaxConcurrentOperations`: Maximum number of concurrent operations (default: 10)\n\n## Architecture\n\nThis server follows a clean architecture with clear separation of concerns:\n\n- **Domain**: Core business logic and entities\n- **Application**: Use cases and application services\n- **Infrastructure**: External system adapters (ILSpy, file system)\n- **Transport**: MCP protocol layer\n\n## Security\n\n- All operations are read-only (no file modifications)\n- Assembly path validation\n- Timeout and cancellation support\n- Request context propagation\n\n## License\n\nMIT — see [LICENSE](LICENSE) for details.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

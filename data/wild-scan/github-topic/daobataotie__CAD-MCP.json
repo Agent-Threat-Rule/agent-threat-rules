@@ -1,0 +1,33 @@
+{
+  "full_name": "daobataotie/CAD-MCP",
+  "html_url": "https://github.com/daobataotie/CAD-MCP",
+  "description": "CAD MCP Server",
+  "topics": [
+    "ai",
+    "cad",
+    "cadmcp",
+    "mcp",
+    "model-context-protocol"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 447,
+  "forks": 62,
+  "open_issues": 1,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-03-24T13:34:22Z",
+  "last_pushed_at": "2025-07-21T01:36:15Z",
+  "fetched_at": "2026-07-11T23:14:09.536Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# CAD-MCP Server (CAD Model Context Protocol Server)\n\n[English](/README_en.md) | [中文](/README_zh.md) \n\n## Project Introduction\n\nCAD-MCP is an innovative CAD control service that allows controlling CAD software for drawing operations through natural language instructions. This project combines natural language processing and CAD automation technology, enabling users to create and modify CAD drawings through simple text commands without manually operating the CAD interface.\n\n## Features\n\n### CAD Control Functions\n\n- **Multiple CAD Software Support**: Supports mainstream CAD software including AutoCAD, GstarCAD (GCAD) and ZWCAD\n- **Basic Drawing Functions**:\n  - Line drawing\n  - Circle drawing\n  - Arc drawing\n  - Rectangle drawing\n  - Polyline drawing\n  - Text addition\n  - Pattern filling\n  - Dimension annotation\n- **Layer Management**: Create and switch layers\n- **Drawing Save**: Save the current drawing as a DWG file\n\n### Natural Language Processing Functions\n\n- **Command Parsing**: Parse natural language instructions into CAD operation parameters\n- **Color Recognition**: Extract color information from text and apply it to drawing objects\n- **Shape Keyword Mapping**: Support recognition of various shape description words\n- **Action Keyword Mapping**: Recognize various drawing and editing actions\n\n## Demo\n\nThe following is the demo video.\n\n![Demo](imgs/demo.gif)\n\n## Installation Requirements\n\n### Dependencies\n\n```\npywin32>=228    # Windows COM interface support\nmcp>=0.1.0      # Model Control Protocol library\npydantic>=2.0.0 # Data validation\ntyping>=3.7.4.3 # Type annotation support\n```\n\n### System Requirements\n\n- Windows operating system\n- Installed CAD software (AutoCAD, GstarCAD, or ZWCAD)\n\n## Configuration\n\nThe configuration file is located at `src/config.json` and contains the following main settings:\n\n```json\n{\n    \"server\": {\n        \"name\": \"CAD MCP Server\",\n        \"version\": \"1.0.0\"\n    },\n    \"cad\": {\n        \"type\": \"AutoCAD\",  \n        \"startup_wait_time\": 20,\n        \"command_delay\": 0.5\n    },\n    \"output\": {\n        \"directory\": \"./output\",\n        \"default_filename\": \"cad_drawing.dwg\"\n    }\n}\n```\n\n- **server**: Server name and version information\n- **cad**: \n  - `type`: CAD software type (AutoCAD, GCAD, GstarCAD, or ZWCAD)\n  - `startup_wait_time`: CAD startup waiting time (seconds)\n  - `command_delay`: Command execution delay (seconds)\n- **output**: Output file settings\n\n## Usage\n\n### Starting the Service\n\n```\npython src/server.py\n```\n\n### Claude Desktop & Windsurf\n\n```bash\n# add to claude_desktop_config.json. Note: use your path  \n{\n    \"mcpServers\": {\n        \"CAD\": {\n            \"command\": \"python\",\n            \"args\": [\n                # your path, e.g.: \"C:\\\\cad-mcp\\\\src\\\\server.py\"\n                \"~/server.py\"\n            ]\n        }\n    }\n}\n```\n\n### Cursor\n\n```bash\n# Add according to the following diagram Cursor MCP. Note: use your path  \n```\n![Cursor config](imgs/cursor_config.png)\n\nNote：The new version of cursor has also been changed to JSON configuration, please refer to the previous section\n\n### MCP Inspector\n\n```bash\n# Note: use your path  \nnpx -y @modelcontextprotocol/inspector python C:\\\\cad-mcp\\\\src\\\\server.py\n```\n\n### Service API\n\nThe server provides the following main API functions:\n\n- `draw_line`: Draw a line\n- `draw_circle`: Draw a circle\n- `draw_arc`: Draw an arc\n- `draw_polyline`: Draw a polyline\n- `draw_rectangle`: Draw a rectangle\n- `draw_text`: Add text\n- `draw_hatch`: Draw a hatch pattern\n- `add_dimension`: Add linear dimension\n- `save_drawing`: Save the drawing\n- `process_command`: Process natural language commands\n\n## Project Structure\n\n```\nCAD-MCP/\n├── imgs/                # Images and video resources\n│   └── CAD-mcp.mp4     # Demo video\n├── requirements.txt     # Project dependencies\n└── src/                 # Source code\n    ├── __init__.py     # Package initialization\n    ├── cad_controller.py # CAD controller\n    ├── config.json     # Configuration file\n    ├── nlp_processor.py # Natural language processor\n    └── server.py       # Server implementation\n```\n\n## License\n\nMIT License\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

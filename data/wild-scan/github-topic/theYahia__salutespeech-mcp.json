@@ -1,0 +1,44 @@
+{
+  "full_name": "theYahia/salutespeech-mcp",
+  "html_url": "https://github.com/theYahia/salutespeech-mcp",
+  "description": "MCP server for SaluteSpeech — speech recognition and synthesis (Russia). Part of WWmcp — 114 MCP servers for emerging markets.",
+  "topics": [
+    "ai-agents",
+    "anthropic",
+    "claude",
+    "emerging-markets",
+    "mcp",
+    "mcp-servers",
+    "model-context-protocol",
+    "russia",
+    "russian-api",
+    "salutespeech",
+    "sber",
+    "speech",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 1,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-03-30T16:49:05Z",
+  "last_pushed_at": "2026-06-23T11:36:38Z",
+  "fetched_at": "2026-07-12T00:14:07.413Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# @theyahia/salutespeech-mcp\n\nMCP server for Sber SaluteSpeech API — speech recognition (STT) and synthesis (TTS). **5 tools.**\n\n[![npm](https://img.shields.io/npm/v/@theyahia/salutespeech-mcp)](https://www.npmjs.com/package/@theyahia/salutespeech-mcp)\n[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)\n\nPart of [Russian API MCP](https://github.com/theYahia/russian-mcp) (50 servers) by [@theYahia](https://github.com/theYahia).\n\n## Install\n\n### Claude Desktop\n\n```json\n{\n  \"mcpServers\": {\n    \"salutespeech\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@theyahia/salutespeech-mcp\"],\n      \"env\": { \"SALUTESPEECH_API_KEY\": \"your-base64-key\" }\n    }\n  }\n}\n```\n\n### Claude Code\n\n```bash\nclaude mcp add salutespeech -e SALUTESPEECH_API_KEY=your-key -- npx -y @theyahia/salutespeech-mcp\n```\n\n### Streamable HTTP mode\n\n```bash\nSALUTESPEECH_API_KEY=your-key npx @theyahia/salutespeech-mcp --http --port=3000\n# POST http://localhost:3000/mcp\n# GET  http://localhost:3000/health\n```\n\n## Auth\n\nThree options (checked in order):\n\n| Env var | Format |\n|---------|--------|\n| `SALUTESPEECH_API_KEY` | Base64-encoded `client_id:client_secret` |\n| `SALUTE_AUTH_KEY` | Same (legacy alias) |\n| `SALUTE_SPEECH_CLIENT_ID` + `SALUTE_SPEECH_CLIENT_SECRET` | Raw credentials (auto-encoded) |\n\nOAuth tokens are obtained and refreshed automatically. The scope defaults to\n`SALUTE_SPEECH_PERS` (individuals); set `SALUTE_SPEECH_SCOPE` for corporate accounts\n(`SALUTE_SPEECH_CORP` — postpaid, `SALUTE_SPEECH_B2B` — prepaid).\nGet credentials at [developers.sber.ru](https://developers.sber.ru).\n\n## Tools (5)\n\n| Tool | Description |\n|------|-------------|\n| `recognize_speech` | STT from Base64 audio |\n| `synthesize_speech` | TTS, returns Base64 audio |\n| `list_models` | List recognition models and synthesis voices |\n| `get_task_status` | Check async recognition task status |\n| `recognize_file` | STT from a local file path |\n\n## Skills\n\n- `skill-transcribe` — guided workflow for audio transcription\n- `skill-synthesize` — guided workflow for speech synthesis\n\n## Examples\n\n```\nTranscribe the audio file /tmp/meeting.wav\nSynthesize \"Hello world\" with voice Bys_24000 in wav16 format\nList available voices\n```\n\n## Limits\n\n`recognize_speech` / `recognize_file` use the **synchronous** endpoint, capped at\n**2 MB / 1 minute** of audio (larger input returns HTTP 413). For multi-channel audio only\nthe first channel is recognized. Longer recordings need the asynchronous flow\n(`data:upload` → `speech:async_recognize` → `task:get` → `data:download`) — not yet exposed\nas tools; `get_task_status` covers the polling step.\n\nSynthesis input is capped at **4000 characters** (incl. spaces and SSML markup).\n\n## Troubleshooting\n\n### `self-signed certificate in certificate chain` / `UNABLE_TO_VERIFY_LEAF_SIGNATURE`\n\nSber's endpoints use the **Russian Trusted Root CA (НУЦ Минцифры)**, which is **not** in\nNode.js's default trust store — so the very first OAuth call fails until you trust it.\n\nFix: download the root CA (`russian_trusted_root_ca_pem.crt`) from\n[gosuslugi.ru/crt](https://www.gosuslugi.ru/crt) and point Node at it:\n\n```bash\nexport NODE_EXTRA_CA_CERTS=/path/to/russian_trusted_root_ca_pem.crt\n```\n\nIn an MCP client, add it to the server's `env` block. **Do not** set\n`NODE_TLS_REJECT_UNAUTHORIZED=0` in production — it disables TLS verification entirely.\nOfficial guide: [SaluteSpeech certificates](https://developers.sber.ru/docs/ru/salutespeech/certificates).\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"salutespeech\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@theyahia/salutespeech-mcp\"],\n      \"env\": {\n        \"SALUTESPEECH_API_KEY\": \"\"\n      }\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "full_name": "CES-Ltd/Lumi",
+  "html_url": "https://github.com/CES-Ltd/Lumi",
+  "description": "Unified native desktop UI for Claude Code, Gemini CLI, Hermes, Crush, Codex, and Cursor — multi-agent, MCP-native, written in Rust + GPUI.",
+  "topics": [
+    "agent-framework",
+    "agents",
+    "ai",
+    "ai-agents",
+    "anthropic",
+    "claude",
+    "claude-code",
+    "codex",
+    "crush",
+    "cursor",
+    "desktop-app",
+    "gemini",
+    "gemini-cli",
+    "hermes",
+    "llm",
+    "llm-agent",
+    "llm-ui",
+    "mcp",
+    "model-context-protocol",
+    "multi-agent"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 25,
+  "forks": 4,
+  "open_issues": 0,
+  "language": "Rust",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-05-10T03:27:28Z",
+  "last_pushed_at": "2026-05-11T05:01:21Z",
+  "fetched_at": "2026-07-11T23:47:59.541Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Lumi\n\nNative desktop AI agent platform written in Rust. It can run with Claude, Crush, GeminiCLI, HERMES, CURSOR\nCargo workspace with a GPUI shell on top, a fleet of `lumi-*` crates for storage / memory / dispatch / policy / audit / pricing / cron / skills underneath, and per-team Claude Code instances driven over MCP for tool calling.\n\n![Chat workspace](apps/lumi-gpui/docs/media/01-chat.png)\n\n## What it is\n\nThe user-facing piece is **[lumi-gpui](apps/lumi-gpui/)** — a single binary hosting ten task surfaces in a left-rail layout:\n\n- **Chat** — lead conversation with streamed assistant text, tool-call bubbles, permission modals, slash commands (`/clear`, `/model`, `/runtime`, `/perm`, `/help`), file attachments, `@`-mention typeahead, and live sub-agent status mirroring.\n- **Cowork** — skill-tile launcher that primes the composer with a domain-specific prompt.\n- **Code** — repo browser + diff preview.\n- **Creative** — ComfyUI supervisor controls (start / stop / restart / open).\n- **Memory** — Search, Observations, Episodes, Knowledge (table + force-directed canvas), Drafts; with run-now buttons for the capture / consolidate / distil passes and side-by-side team compare.\n- **Analytics** — per-team turn / token / USD rollups, daily stacked-bar chart, per-Epic table, and an Audit sub-tab with filter pills + substring search.\n- **Sprint** — five-lane kanban grouped by Epic > Story > Task with collapsible epics and a status-pill click model.\n- **Plans** — surfaced plan files with an inline \"Open in Plans\" prompt above the chat.\n- **Agents** — roster panel for hiring / firing teammates against the active team.\n- **Settings** — theme, working dir, heartbeat, MCP servers (list + add HTTP), security toggles, governance templates, budgets, memory pipeline knobs, state-git init / commit / remote / push, skills library.\n\n![Team picker](apps/lumi-gpui/docs/media/02-team-picker.png)\n\n## Demo\n\nShort clip (~460 KB): [apps/lumi-gpui/docs/media/demo-short.mov](apps/lumi-gpui/docs/media/demo-short.mov)\n\nFull walkthrough (~16 MB): [apps/lumi-gpui/docs/media/demo-full.mov](apps/lumi-gpui/docs/media/demo-full.mov)\n\n## Running it\n\nFrom the workspace root:\n\n```bash\ncargo run -p lumi-gpui\n```\n\nRelease build:\n\n```bash\ncargo build -p lumi-gpui --release\n./target/release/lumi-gpui\n```\n\nState lives under `~/.lumi-lyra/`:\n\n- `teams.json` — team registry (default / cowork / creative are system teams; user teams are deletable from the picker).\n- `gpui-ui-state.json` — last-active tab.\n- `memory/` — per-team observations, episodes, KG triples, wiki drafts.\n- `audit/` — JSONL audit log read by Analytics → Audit.\n- `.git/` (optional) — state versioning, managed from Settings → State sync.\n\n![Workspace overview](apps/lumi-gpui/docs/media/03-workspace.png)\n\n## Repo layout\n\n```\nLumi/\n├── apps/\n│   └── lumi-gpui/          — desktop binary (GPUI + gpui-component)\n├── crates/\n│   ├── lumi-audit          — JSONL audit log + reader\n│   ├── lumi-auth           — auth & token wiring\n│   ├── lumi-bridge         — runtime ↔ UI event bridge\n│   ├── lumi-browse         — headless browser tool\n│   ├── lumi-core           — engine types\n│   ├── lumi-cron           — scheduled tasks\n│   ├── lumi-dispatch       — sub-agent dispatch registry\n│   ├── lumi-egress         — outbound network policy\n│   ├── lumi-mcp            — MCP server scaffolding\n│   ├── lumi-memory         — observations / episodes / KG / smart recall\n│   ├── lumi-policy         — permission & budget engine\n│   ├── lumi-pricing        — provider price tables\n│   ├── lumi-providers      — Claude / Anthropic providers\n│   ├── lumi-skills         — skill loader (seed + user dirs)\n│   ├── lumi-storage        — team / session / sprint JSON storage\n│   └── lumi-team           — persona merger\n├── resources/seed/         — seed personas, skills, templates\n└── docs/                   — design + spec docs\n```\n\n![Memory workspace](apps/lumi-gpui/docs/media/04-memory.png)\n\nThe lead Claude Code instance is launched per-team with an MCP config pointing at in-process servers (`memory_server`, `dispatch_server`, `persona_server`, `sprint_server`, `permission_server`, `skills_server`, `browse_server`, `payload_proxy_server`, `comfy_server`). Memory MCP only mounts when the active team has a `working_dir` set, and the config is rebuilt at conversation start — switch teams and `/clear` to pick up newly populated memory tools.\n\n## Contributing\n\nSee [CONTRIBUTING.md](CONTRIBUTING.md).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

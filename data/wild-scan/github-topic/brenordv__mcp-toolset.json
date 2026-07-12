@@ -1,0 +1,36 @@
+{
+  "full_name": "brenordv/mcp-toolset",
+  "html_url": "https://github.com/brenordv/mcp-toolset",
+  "description": "Collection of MCP servers for general use cases. Focusing on local-only operations, and privacy.",
+  "topics": [
+    "ai",
+    "ai-tools",
+    "dotnet",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "C#",
+  "license": null,
+  "default_branch": "master",
+  "created_at": "2026-06-07T16:56:12Z",
+  "last_pushed_at": "2026-07-10T02:32:18Z",
+  "fetched_at": "2026-07-12T00:15:46.558Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# RaccoonNinja MCP Toolset\n\nA collection of simple, cross-platform [Model Context Protocol](https://modelcontextprotocol.io) (MCP) servers that run **locally** on your machine.\n\nEach server is a small, self-contained .NET console app that speaks MCP over stdio. They're built to do one job well,\nhand structured (typed JSON) results back to the assistant, and keep your data on your machine: no cloud calls, no\nnetwork round-trips beyond the local process the assistant already talks to.\n\n## Goals\n\n- **Local-first.** Servers run as a local subprocess of your MCP client. Nothing is sent anywhere by these tools.\n- **Cross-platform.** Targets .NET 10, so the same server runs on Windows, macOS, and Linux.\n- **Simple and focused.** Each server wraps a single domain in a small set of typed tools rather than one do-everything endpoint.\n- **Safe by default.** Untrusted input is validated, scope is confined, and servers expose only what they advertise.\n\n## Servers\n\n- **[git-ops](src/RaccoonNinja.McpToolset.Server.GitOps/README.md)**: Local, read-only Git inspection; status, history, diffs, blame, and search exposed as typed tools that return JSON. The assistant never drives `git` through a shell, and no writing subcommands are wired up.\n- **[file-vault](src/RaccoonNinja.McpToolset.Server.FileVault/README.md)**: A personal, cross-conversation file vault: versioned notes in a local SQLite + snapshot store, with optimistic concurrency, tags, full-text search, hierarchy, and structure-aware markdown/JSON/YAML edits. Drop-in port of the Rust `vault-mcp` server, same on-disk store.\n\n## Repository layout\n\n```\nRaccoonNinja.McpToolset/\n├─ src/                       # one project per MCP server\n│  ├─ RaccoonNinja.McpToolset.Server.GitOps/\n│  └─ RaccoonNinja.McpToolset.Server.FileVault/\n├─ tests/                     # matching test project per server\n│  ├─ RaccoonNinja.McpToolset.Server.GitOps.Tests/\n│  └─ RaccoonNinja.McpToolset.Server.FileVault.Tests/\n├─ Directory.Build.props      # shared build settings (net10.0, analyzers, etc.)\n├─ Directory.Packages.props   # central package version management\n└─ RaccoonNinja.McpToolset.slnx\n```\n\n## Requirements\n\n- [.NET 10 SDK](https://dotnet.microsoft.com/download) to build, or the .NET 10 runtime to run a published server.\n- Any individual server may have its own prerequisites (for example, **git-ops** needs `git` on `PATH`). See each\n  server's README.\n\n## Building\n\n```bash\ndotnet build RaccoonNinja.McpToolset.slnx\ndotnet test  RaccoonNinja.McpToolset.slnx\n```\n\n## Continuous integration\n\nTwo GitHub Actions workflows live under [`.github/workflows`](.github/workflows):\n\n- **QA** (`qa.yml`): runs on every pull request and on pushes to `master`. It\n  verifies formatting (`dotnet format --verify-no-changes`), builds with\n  warnings treated as errors, and runs the unit tests. The build fails if any\n  of these fail. It is also a reusable workflow, so the release pipeline can\n  reuse it as a gate.\n- **Publish** (`publish.yml`): triggered by pushing a tag of the form\n  `release/vX.Y.Z` (for example `release/v1.0.0`). It first re-runs QA as a\n  hard gate, then cross-compiles a self-contained, single-file binary of each\n  MCP server for `win-x64`, `linux-x64`, `osx-x64`, and `osx-arm64`, packages\n  each as a named zip, and publishes them, together with a `SHA256SUMS.txt`\n  manifest, in a single atomic GitHub release.\n\n## Releases and verification\n\nEach release attaches one zip per server and platform, named\n`<ServerProject>-<version>-<rid>.zip`, plus a `SHA256SUMS.txt` manifest.\n\nTo check that a downloaded artifact is intact, verify its checksum against the\nmanifest:\n\n```bash\nsha256sum --check --ignore-missing SHA256SUMS.txt\n```\n\n> **Note on integrity vs. authenticity.** `SHA256SUMS.txt` is a *checksum*, not a cryptographic *signature*. \n> It lets you detect accidental corruption of a download, but because the manifest is published alongside the artifacts,\n> it does not by itself prove the artifacts were produced by this project.\n> We are using GitHub build-provenance attestation as a tamper-evident signing.\n\n## Recommended Claude configuration\nTo make it easier, you can allow all agents to use the mcp servers here, by adding the following to your `~/.claude/settings.json`:\n\n```json\n{\n  \"permissions\": {\n    \"allow\": [\n      \"mcp__git-ops\",\n      \"mcp__vault\"\n    ]\n  }\n}\n```\nThis will allow the agents to use the mcp servers autonomously, without having to ask you for permission every time.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

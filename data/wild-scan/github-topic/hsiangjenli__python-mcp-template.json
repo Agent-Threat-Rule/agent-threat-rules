@@ -1,0 +1,37 @@
+{
+  "full_name": "hsiangjenli/python-mcp-template",
+  "html_url": "https://github.com/hsiangjenli/python-mcp-template",
+  "description": "🚀 A DevOps-friendly template with CI/CD, Docker, and Documentation-as-Code (DaC) for building MCP server .",
+  "topics": [
+    "ci-cd",
+    "fastapi",
+    "fastmcp",
+    "mcp",
+    "mcp-servers",
+    "mcp-tools",
+    "python",
+    "python-template"
+  ],
+  "matched_query_topics": [
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 2,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-07-11T13:01:24Z",
+  "last_pushed_at": "2025-12-08T01:06:15Z",
+  "fetched_at": "2026-07-12T00:05:01.235Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n\n  <h1> Python MCP Template </h1>\n\n</div>\n\n> A DevOps-friendly template with CI/CD, Docker, and Documentation-as-Code (DaC) for building MCP server\n\n## 🚀 Core Idea\n\nThis template leverages **fastmcp** and **FastAPI** to seamlessly integrate MCP functionality while inheriting the original OpenAPI specifications.\n\n## 🌟 Features\n\n- **CI/CD Integration**: Automate your workflows with GitHub Actions.\n- **Dockerized Environment**: Consistent and portable development and production environments.\n- **Documentation-as-Code**: Automatically generate and deploy documentation using MkDocs. This process also utilizes the `openapi.json` file to ensure API documentation is up-to-date.\n- **FastAPI Integration**: Build robust APIs with OpenAPI support.\n\n## 🛠️ Getting Started\n\n### Local Development\n\n1. Install dependencies:\n  ```bash\n  uv sync\n  ```\n\n2. Run the MCP server:\n  ```bash\n  # stdio\n  uv run fastmcp run mcp_tools/main.py\n  ```\n\n  ```bash\n  # HTTP (Due to CORS middleware conflicts, additional setup is required)\n  uv run uvicorn mcp_tools.main_http:starlette_app --host 127.0.0.1 --port 8000\n  ```\n\n  > ![](https://github.com/user-attachments/assets/23339ea6-5888-493f-992d-bac6619457fc)\n  > - https://gofastmcp.com/deployment/http\n  > - https://github.com/jlowin/fastmcp/issues/840\n\n### Docker\n\n1. Build the Docker image:\n   ```bash\n   docker build -t python-mcp-template:latest .\n   ```\n\n2. Run the container:\n   ```bash\n   docker run -i --rm -p 8000:8000 python-mcp-template:latest\n   ```\n\n3. Run MCP Server:\n  ```json\n  {\n    \"mcpServers\": {\n      \"python-mcp-template\": {\n        \"command\": \"docker\",\n        \"args\": [\n          \"run\",\n          \"--rm\",\n          \"-i\",\n          \"-p\",\n          \"8000:8000\",\n          \"python-mcp-template:latest\"\n        ]\n      }\n    }\n  }\n  ```\n\n## 📚 Documentation\n\n- Documentation is built using MkDocs and deployed to GitHub Pages.\n- To build the documentation locally:\n  \n  ```bash\n  chmod +x scripts/build_docs.sh\n  scripts/build_docs.sh\n  mkdocs build\n  ```\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "full_name": "simonstrumse/claude-code-manager",
+  "html_url": "https://github.com/simonstrumse/claude-code-manager",
+  "description": "See all your MCP servers, skills, commands, rules, and CLAUDE.md files in one place — TUI for Claude Code",
+  "topics": [
+    "anthropic",
+    "claude",
+    "claude-code",
+    "cli",
+    "cli-tool",
+    "configuration-management",
+    "mcp",
+    "mcp-servers",
+    "python",
+    "terminal-ui",
+    "textual",
+    "tui"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 19,
+  "forks": 2,
+  "open_issues": 1,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2026-01-07T08:36:10Z",
+  "last_pushed_at": "2026-01-08T00:17:05Z",
+  "fetched_at": "2026-07-11T23:54:24.015Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Claude Code Manager\n\n> **See all your MCP servers, skills, commands, rules, and CLAUDE.md files in one place** — across every project on your machine\n\n[![PyPI](https://img.shields.io/pypi/v/ccmanager)](https://pypi.org/project/ccmanager/)\n[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/)\n[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)\n[![Claude Code](https://img.shields.io/badge/Claude%20Code-Compatible-orange)](https://claude.ai/code)\n[![Built with Textual](https://img.shields.io/badge/Built%20with-Textual-5A5A5A)](https://textual.textualize.io/)\n\n[Quick Start](#quick-start) | [Features](#features) | [Usage](#usage) | [Configuration](#what-it-scans) | [Contributing](#contributing)\n\n---\n\n![Claude Code Manager TUI](screenshots/interactive-mode.png)\n\n## Quick Start\n\n### Option 1: pip (simplest)\n\n```bash\npip install ccmanager\nccmanager ~/Projects\n```\n\n### Option 2: uv tool (fastest, isolated)\n\n```bash\nuv tool install ccmanager\nccmanager ~/Projects\n```\n\nDon't have `uv`? Install it: `curl -LsSf https://astral.sh/uv/install.sh | sh`\n\n### Option 3: From Source\n\n```bash\ngit clone https://github.com/simonstrumse/claude-code-manager.git\ncd claude-code-manager\npip install -e .\nccmanager ~/Projects\n```\n\n<details>\n<summary><strong>\"command not found\"?</strong></summary>\n\nOn macOS, pip installs to `~/Library/Python/3.x/bin/` which may not be in PATH. Fix:\n\n```bash\necho 'export PATH=\"$HOME/Library/Python/3.9/bin:$PATH\"' >> ~/.zshrc\nsource ~/.zshrc\n```\n\nOr use `uv tool` above — it handles PATH automatically.\n</details>\n\n---\n\n## Features\n\n- **Multi-Project Scanning** — Scan an entire folder of projects and see all configurations at a glance\n- **6 Configuration Tabs** — Projects, MCP Servers, Skills, Commands, Rules, CLAUDE.md\n- **Content Preview** — Press Enter to view full content of any skill, command, rule, or CLAUDE.md\n- **Cross-Navigation** — Jump between projects and their MCP servers with `g` and `s` keys\n- **Project Discovery** — Find Claude Code projects scattered across your system\n- **Usage Analytics** — See which MCP servers are used most across your projects\n- **Privacy Mode** — Toggle `p` to redact project names for screenshots\n\n---\n\n## Usage\n\n### Launch the TUI\n\n```bash\nccmanager ~/Projects      # Scan a projects folder\nccmanager                 # Scan current directory\n```\n\n### Keyboard Navigation\n\n| Key | Action |\n|-----|--------|\n| `1-6` | Switch tabs (1=Projects, 2=MCP, 3=Skills, 4=Commands, 5=Rules, 6=CLAUDE.md) |\n| `↑↓` | Navigate list items |\n| `Tab` | Move focus: list → detail panel |\n| `Enter` | Preview full content |\n| `g` | Go to project's MCP servers |\n| `s` | Show server's projects |\n| `o` | Open in Finder (macOS) |\n| `d` | Discover projects across system |\n| `p` | Toggle privacy mode |\n| `r` | Refresh scan |\n| `?` | Show help |\n| `q` | Quit |\n\n### Tabs Overview\n\n| Tab | What it shows |\n|-----|---------------|\n| **Projects** | All scanned projects with config counts |\n| **MCP** | All MCP servers ranked by usage |\n| **Skills** | User and project skills |\n| **Commands** | Slash commands (/commit, etc.) |\n| **Rules** | Always-on instruction files |\n| **CLAUDE.md** | Project documentation files |\n\n---\n\n## What It Scans\n\nThe tool understands Claude Code's configuration precedence:\n\n| Level | Location | Priority |\n|-------|----------|----------|\n| Enterprise | `/Library/Application Support/ClaudeCode/` | Highest |\n| Local | `~/.claude.json` → `projects[path]` | 2nd |\n| Project | `.mcp.json` | 3rd |\n| User | `~/.claude.json` → `mcpServers` | Lowest |\n\n### Scanned Locations\n\n- **MCP Servers**: Enterprise, User, Project, Local levels\n- **Skills**: `~/.claude/skills/*/SKILL.md` and `.claude/skills/*/SKILL.md`\n- **Commands**: `~/.claude/commands/*.md` and `.claude/commands/*.md`\n- **Rules**: `~/.claude/rules/**/*.md` and `.claude/rules/**/*.md`\n- **CLAUDE.md**: Root, `.claude/`, subdirectories, local variants\n\n---\n\n## Project Structure\n\n```\nclaude-code-manager/\n├── mcp_tui.py          # Main TUI application (Textual)\n├── mcp_scanner.py      # Configuration scanning logic\n├── mcp_data.py         # Data models and classes\n├── mcp_config.py       # User settings management\n├── mcp_operations.py   # Project move/consolidate operations\n├── requirements.txt    # Python dependencies\n└── CHANGELOG.md        # Development history\n```\n\n---\n\n## Contributing\n\nContributions welcome! This is a learning project, so please be patient and constructive.\n\n### Development Setup\n\n```bash\ngit clone https://github.com/YOUR_USERNAME/claude-code-manager.git\ncd claude-code-manager\npython3 -m venv venv && source venv/activate\npip install -e .\n```\n\n### Guidelines\n\n1. **Test your changes** — Make sure the TUI runs without crashing\n2. **Follow existing patterns** — Look at how similar features are implemented\n3. **Document changes** — Update CHANGELOG.md for significant changes\n4. **Keep it simple** — Prefer readable code over clever code\n\n---\n\n## Troubleshooting\n\n<details>\n<summary><strong>\"No projects found\"</strong></summary>\n\n- Make sure you're pointing to a directory that contains Claude Code projects\n- Projects need `.git`, `.mcp.json`, or `.claude/` folder to be detected\n</details>\n\n<details>\n<summary><strong>Not finding my MCP servers or skills</strong></summary>\n\nRun with `--debug` to see what paths are being checked:\n\n```bash\nccmanager --debug ~/Projects\n```\n\nThe scanner looks for:\n- **MCP servers**: `~/.claude.json` → `mcpServers` key (camelCase!)\n- **Skills**: `~/.claude/skills/*/SKILL.md` (each skill needs its own folder)\n- **Project MCP**: `.mcp.json` → `mcpServers` key in each project\n\nCommon issues:\n- Wrong key name (`mcp_servers` vs `mcpServers`)\n- Skills missing `SKILL.md` file inside the folder\n</details>\n\n<details>\n<summary><strong>TUI looks broken</strong></summary>\n\n- Make sure your terminal supports Unicode\n- Try a different terminal (iTerm2, Alacritty, Windows Terminal)\n- Ensure terminal is at least 100 columns wide\n</details>\n\n<details>\n<summary><strong>Preview not opening</strong></summary>\n\n- Tab to focus the detail panel first\n- Then press Enter\n- Press Escape or 'q' to close the preview\n</details>\n\n---\n\n## License\n\nMIT License — see [LICENSE](LICENSE) file.\n\n## Acknowledgments\n\n- Built with [Textual](https://textual.textualize.io/) — the amazing Python TUI framework\n- Inspired by the need to understand Claude Code's configuration system\n- Thanks to Anthropic for creating Claude Code\n\n---\n\n**Safe Computing Reminder**: Always review code from the internet before running it. This tool only reads your configuration files — it doesn't modify anything without your explicit action.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

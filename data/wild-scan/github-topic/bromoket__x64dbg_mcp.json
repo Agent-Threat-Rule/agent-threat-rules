@@ -1,0 +1,43 @@
+{
+  "full_name": "bromoket/x64dbg_mcp",
+  "html_url": "https://github.com/bromoket/x64dbg_mcp",
+  "description": "Drive x64dbg with your AI. MCP server: 23 mega-tools / 153 endpoints for breakpoints, memory, disasm, tracing, anti-debug & PE dumping. Claude/Cursor/Windsurf/Cline. All local.",
+  "topics": [
+    "ai-debugging",
+    "binary-analysis",
+    "claude",
+    "cpp",
+    "debugger",
+    "malware-analysis",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "plugin",
+    "reverse-engineering",
+    "typescript",
+    "x64dbg",
+    "x64dbg-plugin"
+  ],
+  "matched_query_topics": [
+    "mcp-server",
+    "model-context-protocol"
+  ],
+  "stars": 79,
+  "forks": 18,
+  "open_issues": 0,
+  "language": "C++",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2026-02-18T17:19:02Z",
+  "last_pushed_at": "2026-06-08T22:41:50Z",
+  "fetched_at": "2026-07-11T23:08:32.703Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# x64dbg MCP Server\n\n[![npm version](https://img.shields.io/npm/v/x64dbg-mcp-server)](https://www.npmjs.com/package/x64dbg-mcp-server)\n[![MCP Registry](https://img.shields.io/badge/MCP-registry-blue)](https://registry.modelcontextprotocol.io)\n[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)\n\n**Drive [x64dbg](https://x64dbg.com/) with your AI.** Talk to Claude, Cursor, Windsurf, Cline,\nor any MCP client in plain English and it sets breakpoints, reads memory, disassembles, traces,\ndumps PEs, and bypasses anti-debug — live, inside the debugger.\n\n**23 mega-tools** over **153 REST endpoints**, fully typed with Zod. A C++ plugin runs inside\nx64dbg; a tiny TypeScript server bridges it to your client over stdio. Everything stays on\n`127.0.0.1` — nothing leaves your machine.\n\n> **Latest — v2.3.0**\n> - **Hardened & crash-proof.** A malformed HTTP request can no longer crash x64dbg; the plugin\n>   server drains connections cleanly on stop and ships an **optional auth token** (CORS is\n>   locked down).\n> - **Real data from more tools.** `imports`/`exports`, `symbols` search/list, `patches` list,\n>   and `strings` now return actual parsed results instead of pointing you at a GUI view.\n> - **Live trace status.** New `/api/trace/status` (+ `tracing status`) reports whether a trace\n>   is running, and the exception/trace tools now honor every parameter they accept.\n> - Plus the v2.2.x fixes: x32dbg loads on current snapshots, and requests no longer time out\n>   on long operations.\n>\n> [Download the v2.3.0 plugins →](https://github.com/bromoket/x64dbg_mcp/releases/latest)\n\n---\n\n## What it looks like\n\n```\n\"Set a breakpoint on CreateFileW and run the program\"\n\"Disassemble the current function and explain what it does\"\n\"Search for 48 8B ?? 48 85 C0 in the main module and disassemble the hits\"\n\"Hide the debugger and bypass the anti-debug checks\"\n\"Trace into the VM dispatcher and log every instruction to a file\"\n\"Dump the main module to disk and fix the import table\"\n```\n\nReal use: tracing VMProtect'd code, finding anti-cheat scanner threads, decoding XOR'd class\nnames, mapping detection logic — all by asking, no manual scripting.\n\n## Install\n\n### 1 · Plugin (inside x64dbg)\n\n**Download** `x64dbg_mcp.dp64` / `.dp32` from the\n[latest release](https://github.com/bromoket/x64dbg_mcp/releases/latest) and drop them in:\n\n```\nx64dbg/x64/plugins/x64dbg_mcp.dp64    ← 64-bit targets\nx64dbg/x32/plugins/x64dbg_mcp.dp32    ← 32-bit targets\n```\n\n…or **build + install** it yourself (auto-detects your x64dbg — no path editing):\n\n```powershell\n.\\build.ps1 -Install\n```\n\nStart x64dbg; the log shows `[MCP] x64dbg MCP Server started on 127.0.0.1:27042`.\n\n### 2 · Server (your AI client)\n\nNo install — just point your client at npx. Claude Code:\n\n```json\n{\n  \"mcpServers\": {\n    \"x64dbg\": {\n      \"type\": \"stdio\",\n      \"command\": \"cmd\",\n      \"args\": [\"/c\", \"npx\", \"-y\", \"x64dbg-mcp-server\"]\n    }\n  }\n}\n```\n\nClaude Desktop / Cursor / Windsurf / Cline use the same block without the `cmd /c` wrapper:\n`{ \"command\": \"npx\", \"args\": [\"-y\", \"x64dbg-mcp-server\"] }`.\nFull per-client paths are in the [reference](docs/REFERENCE.md#configuration).\n\n### 3 · Go\n\nOpen a target in x64dbg and start talking to your assistant.\n\n## Tools at a glance\n\n23 action-based tools spanning the whole debugger:\n\n- **Control** — run/step/pause, raw commands, scripts, expression eval\n- **CPU & memory** — registers (incl. AVX-512), read/write/alloc/protect, memory map\n- **Stack** — call stack, SEH chain, return addresses\n- **Code analysis** — disassemble, assemble, xrefs, basic blocks, CFG, loops\n- **Breakpoints & tracing** — software/hardware/memory/conditional/logging, batch, trace logs\n- **Symbols & search** — labels, comments, bookmarks, AOB pattern + string scan\n- **Process & system** — threads/TEB, handles, TCP, PEB, **anti-debug hide**\n- **Patching & dumping** — byte patches, PE dump, IAT fix, patch export\n\nEvery tool, action, and endpoint is documented in **[docs/REFERENCE.md](docs/REFERENCE.md)**.\n\n## Links\n\n- **[Full reference](docs/REFERENCE.md)** — tools, architecture, build, config, troubleshooting\n- **[npm: x64dbg-mcp-server](https://www.npmjs.com/package/x64dbg-mcp-server)**\n- **[Releases](https://github.com/bromoket/x64dbg_mcp/releases)** — prebuilt plugin DLLs\n- **[x64dbg](https://x64dbg.com/)** — the debugger\n\n## Security\n\nThe plugin binds to `127.0.0.1` only; the server talks pure stdio. All traffic stays on\nlocalhost — no remote access, no telemetry, no data leaves your machine. For defense against\nother local processes, set a token in the plugin's **Settings** and pass it via\n`X64DBG_MCP_TOKEN` — every request must then carry it.\n\n## Author\n\n**bromo** — [GitHub](https://github.com/bromoket). Built with\n[Claude Code](https://claude.ai/claude-code). [MIT](LICENSE).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

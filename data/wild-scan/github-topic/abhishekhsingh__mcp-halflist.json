@@ -1,0 +1,45 @@
+{
+  "full_name": "abhishekhsingh/mcp-halflist",
+  "html_url": "https://github.com/abhishekhsingh/mcp-halflist",
+  "description": "CI-first conformance testing and benchmarking CLI for MCP servers. Lint your MCP server before your users do.",
+  "topics": [
+    "benchmarking",
+    "ci-cd",
+    "cli",
+    "conformance",
+    "developer-tools",
+    "github-actions",
+    "health-check",
+    "linter",
+    "mcp",
+    "mcp-security",
+    "mcp-server",
+    "mcp-testing",
+    "mcp-tools",
+    "model-context-protocol",
+    "python",
+    "testing",
+    "testing-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-28T05:36:26Z",
+  "last_pushed_at": "2026-05-29T06:35:16Z",
+  "fetched_at": "2026-07-12T00:47:49.738Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# mcp-halflist\n\nCI-first conformance, security, and benchmarking CLI for MCP servers.\n\n**Lint your MCP server before your users do.**\n\n[![CI](https://github.com/abhishekhsingh/mcp-halflist/actions/workflows/ci.yml/badge.svg)](https://github.com/abhishekhsingh/mcp-halflist/actions/workflows/ci.yml)\n![PyPI](https://img.shields.io/pypi/v/mcp-halflist)\n![License](https://img.shields.io/badge/license-MIT-blue)\n![Python](https://img.shields.io/pypi/pyversions/mcp-halflist)\n\n## What It Does\n\nPoint it at any [MCP](https://modelcontextprotocol.io) server (stdio or HTTP) and get a scored conformance report, security vulnerability scan (prompt injection, tool poisoning, data exfiltration), and per-tool latency benchmarks. Fully offline, zero API keys, CI-native. One `pip install`, one command, done.\n\n## See It In Action\n\n**Terminal output:**\n\n![halflist audit output](https://github.com/abhishekhsingh/mcp-halflist/blob/main/examples/terminal-output.png?raw=true)\n\n**HTML reports:**\n[Check report](https://github.com/abhishekhsingh/mcp-halflist/blob/main/examples/check-report.html) ·\n[Bench report](https://github.com/abhishekhsingh/mcp-halflist/blob/main/examples/bench-report.html) ·\n[Audit report](https://github.com/abhishekhsingh/mcp-halflist/blob/main/examples/audit-report.html)\n\n## Install\n\n```bash\npip install mcp-halflist\n```\n\n> macOS users: use `python3` instead of `python` in server commands.\n\n## Quick Start\n\n```bash\n# Full audit of the official MCP reference server (runs instantly, no setup)\nhalflist audit --stdio \"npx -y @modelcontextprotocol/server-everything\"\n\n# Security scan + conformance check\nhalflist check --stdio \"npx -y @modelcontextprotocol/server-everything\"\n\n# Benchmark tool latency\nhalflist bench --stdio \"npx -y @modelcontextprotocol/server-everything\" --all\n\n# Pin tools, then verify later for rug pull detection\nhalflist pin --stdio \"npx -y @modelcontextprotocol/server-everything\"\nhalflist check --stdio \"npx -y @modelcontextprotocol/server-everything\" --verify-pins\n\n# Your own server\nhalflist audit --stdio \"python3 my_server.py\"\n\n# HTTP transport (Streamable HTTP with SSE fallback)\nhalflist check --http http://localhost:8080/mcp\nhalflist audit --http http://localhost:8080/mcp\n\n# HTTP with auth\nhalflist check --http https://mcp.example.com/v1 --header \"Authorization: Bearer tok123\"\n\n# HTTP with OAuth2 client credentials\nhalflist audit --http https://mcp.example.com/v1 \\\n  --oauth-token-url https://auth.example.com/token \\\n  --oauth-client-id my-client \\\n  --oauth-client-secret my-secret\n\n# OAuth2 PKCE (automatic on 401, opens browser for authorization)\nhalflist check --http https://mcp.example.com/v1\n\n# OAuth2 PKCE headless mode (prints URL instead of opening browser)\nhalflist check --http https://mcp.example.com/v1 --no-browser\n\n# Skip automatic OAuth PKCE\nhalflist check --http https://mcp.example.com/v1 --no-auth\n\n# Custom tool arguments for tools that need specific inputs\n# args.json: {\"get_user\": {\"user_id\": \"abc123\"}}\nhalflist bench --http http://localhost:8080/mcp --tool get_user --args-file args.json\n\n# More real servers to try\nhalflist check --stdio \"npx -y @modelcontextprotocol/server-time\"\nhalflist check --stdio \"npx -y @modelcontextprotocol/server-filesystem /tmp\"\n```\n\n## CI Integration\n\nJUnit XML output works with GitHub Actions, GitLab CI, Jenkins, and any CI system that supports JUnit test reporters:\n\n```bash\n# Generate JUnit XML for CI test reporters\nhalflist check --stdio \"python3 server.py\" --format junit -o results.xml\nhalflist audit --stdio \"python3 server.py\" --format junit -o audit.xml\n```\n\n## Commands\n\n| Command | What it does |\n|---------|-------------|\n| `halflist check` | Protocol conformance + security scanning |\n| `halflist bench` | Per-tool latency benchmarking (p50/p95/p99) |\n| `halflist audit` | Combined check + bench in one shot |\n| `halflist watch` | Continuous health monitoring |\n| `halflist report` | Generate markdown, HTML reports, or SVG badges from JSON |\n| `halflist pin` | Save tool hashes for rug pull detection |\n\nSee the [full command reference](https://github.com/abhishekhsingh/mcp-halflist/blob/main/docs/commands.md) for all flags and examples.\n\n## Security Scanning\n\nhalflist scans tool descriptions for prompt injection, data exfiltration instructions, cross-tool manipulation, suspicious encoding (base64, zero-width characters), and rug pull attempts via tool pinning. All scanning runs locally: zero API calls, zero data sharing. Unlike [mcp-scan](https://github.com/invariantlabs-ai/mcp-scan) which sends tool descriptions to an external API, halflist runs entirely on your machine.\n\nSee [security scanning details](https://github.com/abhishekhsingh/mcp-halflist/blob/main/docs/security.md) for the full list of detection patterns.\n\n## Debug Logging\n\n```bash\n# Enable debug output\nhalflist check --stdio \"python3 server.py\" --debug\n\n# Save debug log to file\nhalflist audit --http https://example.com/mcp --debug-log debug.log\n\n# Environment variable (useful in CI)\nHALFLIST_LOG_LEVEL=DEBUG halflist audit --stdio \"python3 server.py\"\n```\n\n## Configuration\n\nCreate a `halflist.toml` in your project root:\n\n```toml\n[server]\ntransport = \"stdio\"\ncommand = \"python3 my_server.py\"\n\n[check]\ntimeout = 30\n\n[bench]\niterations = 20\nargs_file = \"args.json\"\n```\n\nThen just run:\n\n```bash\nhalflist check\nhalflist audit\n```\n\nCLI flags override config values. Use `${ENV_VAR}` for secrets:\n\n```toml\n[server.oauth]\nclient_secret = \"${MCP_CLIENT_SECRET}\"\n```\n\nConfig file discovery order: `halflist.toml` (cwd) > `.halflist.toml` (cwd) > `~/.halflist/config.toml`. Or pass `--config path/to/file.toml` explicitly.\n\n## Output Formats\n\nTerminal (colored, default) · JSON (`--format json`) · JUnit XML (`--format junit`) · Markdown · HTML · SVG Badge\n\nSee the [output format reference](https://github.com/abhishekhsingh/mcp-halflist/blob/main/docs/output-formats.md) for details.\n\n## How It Compares\n\n| Tool | Approach | Needs API key | Sends data externally |\n|------|----------|---------------|----------------------|\n| [MCP Inspector](https://github.com/modelcontextprotocol/inspector) | Interactive browser UI | No | No |\n| [mcp-probe](https://github.com/nicholasgriffintn/mcp-probe) | Interactive TUI (Rust) | No | No |\n| [mcp-server-tester](https://github.com/apify/mcp-server-tester) | LLM-generated tests | Yes (Anthropic) | Yes |\n| [mcp-scan](https://github.com/invariantlabs-ai/mcp-scan) | Security scanning | Yes (OpenAI for local) | Yes (Invariant API) |\n| **mcp-halflist** | **CI-first check + security + bench** | **No** | **No** |\n\n## GitHub Action\n\nAdd MCP server testing to your CI in 3 lines:\n\n```yaml\n- uses: abhishekhsingh/halflist-action@v1\n  with:\n    command: \"python3 my_server.py\"\n```\n\nSee [halflist-action](https://github.com/abhishekhsingh/halflist-action) for full docs.\n\n## Development\n\n```bash\ngit clone https://github.com/abhishekhsingh/mcp-halflist.git\ncd mcp-halflist\npip install -e \".[dev]\"\nruff check src/ tests/\nruff format --check src/ tests/\npytest -v --tb=short\n```\n\n## License\n\nMIT\n\n## Author\n\n[Abhishekh Singh](https://abhishekhsingh.github.io/)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

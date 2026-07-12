@@ -1,0 +1,40 @@
+{
+  "full_name": "aahl/mcp-aktools",
+  "html_url": "https://github.com/aahl/mcp-aktools",
+  "description": "📈 提供股票、加密货币的数据查询和分析功能MCP服务器",
+  "topics": [
+    "akshare",
+    "aktools",
+    "btc",
+    "crypto",
+    "llm",
+    "mcp",
+    "mcp-server",
+    "stock",
+    "trading"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 384,
+  "forks": 63,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-10-17T05:33:05Z",
+  "last_pushed_at": "2026-03-26T03:14:59Z",
+  "fetched_at": "2026-07-11T22:41:37.787Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# 📈 AkTools MCP Server\n\n<!-- mcp-name: io.github.aahl/mcp-aktools -->\n<!-- [![MCP Badge](https://lobehub.com/badge/mcp/aahl-mcp-aktools)](https://lobehub.com/mcp/aahl-mcp-aktools) -->\n<!-- [![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/1dd74d48-e77b-49f9-8d67-8c99603336e1) -->\n\n基于 akshare 的 MCP (Model Context Protocol) 服务器，提供股票、加密货币的数据查询和分析功能。\n\n\n## 功能\n\n- 🔍 **股票搜索**: 根据股票名称、公司简称等关键词查找股票代码\n- ℹ️ **股票信息**: 获取股票的详细信息，包括价格、市值等\n- 📊 **市场概况**: 获取A股市场的涨停板、龙虎榜、资金流向等\n- 💹 **历史价格**: 获取股票、加密货币历史价格数据，包含技术分析指标\n- 📰 **相关新闻**: 获取股票、加密货币相关的最新新闻资讯\n- 💸 **财务指标**: 支持A股和港美股的财务报告关键指标查询\n\n\n## 安装\n\n### 方式1: uvx\n```yaml\n{\n  \"mcpServers\": {\n    \"aktools\": {\n      \"command\": \"uvx\",\n      \"args\": [\"mcp-aktools\"],\n      \"env\": {\n        # 全部可选\n        \"OKX_BASE_URL\": \"https://okx.4url.cn\", # OKX地址，如果你的网络环境无法访问okx.com，可通过此选项配置反代地址\n        \"BINANCE_BASE_URL\": \"https://bian.4url.cn\", # 币安地址，默认: https://www.binance.com\n        \"NEWSNOW_BASE_URL\": \"https://newsnow.busiyi.world\", # Newsnow接口地址\n        \"NEWSNOW_CHANNELS\": \"wallstreetcn-quick,cls-telegraph,jin10\", # Newsnow资讯来源\n      }\n    }\n  }\n}\n```\n\n### 方式2: [Smithery](https://smithery.ai/server/@aahl/mcp-aktools)\n> 需要通过OAuth授权或Smithery key\n\n```yaml\n{\n  \"mcpServers\": {\n    \"aktools\": {\n      \"url\": \"https://server.smithery.ai/@aahl/mcp-aktools/mcp\" # Streamable HTTP\n    }\n  }\n}\n```\n\n### 方式3: Docker\n```bash\nmkdir /opt/mcp-aktools\ncd /opt/mcp-aktools\nwget https://raw.githubusercontent.com/aahl/mcp-aktools/refs/heads/main/docker-compose.yml\ndocker-compose up -d\n```\n```yaml\n{\n  \"mcpServers\": {\n    \"aktools\": {\n      \"url\": \"http://0.0.0.0:8808/mcp\" # Streamable HTTP\n    }\n  }\n}\n```\n\n### 快速开始\n- 在线体验: [![fastmcp.cloud](https://img.shields.io/badge/Cloud-+?label=FastMCP)](https://fastmcp.cloud/xiaomi/aktools/chat)\n- 在线体验: [![smithery.ai](https://smithery.ai/badge/@aahl/mcp-aktools)](https://smithery.ai/server/@aahl/mcp-aktools)\n- 添加到 Cursor [![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/zh/install-mcp?name=aktools&config=eyJjb21tYW5kIjoidXZ4IiwiYXJncyI6WyJtY3AtYWt0b29scyJdfQ%3D%3D)\n- 添加到 VS Code [![Install MCP Server](https://img.shields.io/badge/VS_Code-+?label=Add+MCP+Server&color=0098FF)](https://insiders.vscode.dev/redirect?url=vscode:mcp/install%3F%7B%22name%22%3A%22aktools%22%2C%22command%22%3A%22uvx%22%2C%22args%22%3A%5B%22mcp-aktools%22%5D%7D)\n- 添加到 Cherry Studio [![Install MCP Server](https://img.shields.io/badge/Cherry_Studio-+?label=Add+MCP+Server&color=FF5F5F)](https://gitee.com/link?target=cherrystudio%3A%2F%2Fmcp%2Finstall%3Fservers%3DeyJtY3BTZXJ2ZXJzIjp7ImFrdG9vbHMiOnsiY29tbWFuZCI6InV2eCIsImFyZ3MiOlsibWNwLWFrdG9vbHMiXX19fQ%3D%3D)\n- 添加到 Claude Code, 执行命令: `claude mcp add aktools -- uvx mcp-aktools`\n- 添加到 OpenAI CodeX, 执行命令: `codex mcp add aktools -- uvx mcp-aktools`\n\n------\n\n## 🛠️ 可用工具\n\n<details>\n<summary><strong>个股相关</strong></summary>\n\n- `search` - 查找股票代码，支持A股、港股、美股\n- `stock_info` - 获取股票信息\n- `stock_prices` - 获取股票历史价格\n- `stock_indicators_a` - A股关键指标\n- `stock_indicators_hk` - 港股关键指标\n- `stock_indicators_us` - 美股关键指标\n- `trading_suggest` - 给出投资建议\n\n</details>\n\n<details>\n<summary><strong>A股市场</strong></summary>\n\n- `get_current_time` - 获取当前时间及A股交易日信息\n- `stock_zt_pool_em` - A股涨停股池\n- `stock_zt_pool_strong_em` - A股强势股池\n- `stock_lhb_ggtj_sina` - A股龙虎榜统计\n- `stock_sector_fund_flow_rank` - A股概念资金流向\n\n</details>\n\n<details>\n<summary><strong>财经资讯</strong></summary>\n\n- `stock_news` - 获取个股/加密货币相关新闻\n- `stock_news_global` - 全球财经快讯\n\n</details>\n\n<details>\n<summary><strong>加密货币</strong></summary>\n\n- `okx_prices` - 获取加密货币历史价格\n- `okx_loan_ratios` - 获取加密货币杠杆多空比\n- `okx_taker_volume` - 获取加密货币主动买卖情况\n- `binance_ai_report` - 获取加密货币AI分析报告\n\n</details>\n\n\n------\n\n<a href=\"https://glama.ai/mcp/servers/@al-one/mcp-aktools\">\n  <img width=\"400\" src=\"https://glama.ai/mcp/servers/@al-one/mcp-aktools/badge\">\n</a>\n\n[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/aahl-mcp-aktools-badge.png)](https://mseep.ai/app/aahl-mcp-aktools)\n"
+  },
+  "descriptor_file": {
+    "path": "server.json",
+    "content": "{\n  \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json\",\n  \"name\": \"io.github.aahl/mcp-aktools\",\n  \"title\": \"AkTools MCP Server\",\n  \"description\": \"MCP Server for stock and crypto\",\n  \"repository\": {\n    \"url\": \"https://github.com/aahl/mcp-aktools\",\n    \"source\": \"github\"\n  },\n  \"version\": \"0.1.15\",\n  \"packages\": [\n    {\n      \"registryType\": \"pypi\",\n      \"identifier\": \"mcp-aktools\",\n      \"version\": \"0.1.15\",\n      \"transport\": {\"type\": \"stdio\"}\n    },\n    {\n      \"registryType\": \"oci\",\n      \"identifier\": \"ghcr.io/aahl/mcp-aktools:latest\",\n      \"transport\": {\"type\": \"stdio\"}\n    }\n  ]\n}"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

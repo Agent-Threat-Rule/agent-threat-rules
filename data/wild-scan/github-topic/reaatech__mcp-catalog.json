@@ -1,0 +1,38 @@
+{
+  "full_name": "reaatech/mcp-catalog",
+  "html_url": "https://github.com/reaatech/mcp-catalog",
+  "description": "Registry server for MCP server discovery across teams. Register, search, browse, and health-check organizational MCP servers. Agents discover tools dynamically via the catalog's own MCP interface.",
+  "topics": [
+    "agentic-ai",
+    "ai",
+    "ai-agents",
+    "developer-tools",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "model-context-protocol",
+    "service-discovery",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 1,
+  "open_issues": 4,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-26T23:10:57Z",
+  "last_pushed_at": "2026-07-06T14:32:54Z",
+  "fetched_at": "2026-07-12T00:53:15.212Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP Catalog\n\nA registry server for MCP (Model Context Protocol) server discovery within an organization.\n\n## Features\n\n- **Discovery**: Find MCP servers by capability\n- **Registration**: MCP servers self-register or are registered via CI/CD\n- **Health Monitoring**: Automatic health checks on registered servers\n- **Schema Aggregation**: Centralized view of all available tools and capabilities\n- **Access Control**: Fine-grained permissions for who can discover what\n- **Meta-Discovery**: The catalog itself is exposed as an MCP server\n\n## Tech Stack\n\n- **Runtime**: Node.js 20+\n- **Package Manager**: pnpm 9+\n- **Language**: TypeScript 5.x\n- **API Framework**: Fastify 4.x with Zod validation\n- **Database**: PostgreSQL 15+\n- **ORM**: Drizzle ORM\n- **UI**: React 18 + Vite + Tailwind CSS\n- **Testing**: Vitest\n\n## Project Structure\n\n```\nmcp-catalog/\n├── apps/\n│   ├── api/           # Main registry API server\n│   ├── web/           # Web UI for browsing/searching\n│   └── mcp-server/    # MCP server exposing catalog as tools\n├── packages/\n│   └── shared/        # Shared types, schemas, and utilities\n├── skills/            # Agent skills for development workflows\n├── docker-compose.yml # Local PostgreSQL\n└── package.json       # pnpm workspace root\n```\n\n## Getting Started\n\n### Prerequisites\n\n- Node.js 20+\n- pnpm 9+\n- PostgreSQL 15+ (or use Docker)\n\n### Development Setup\n\n```bash\n# Install dependencies\npnpm install\n\n# Copy environment variables\ncp .env.example .env\n# Edit .env with your configuration\n\n# Start PostgreSQL (using Docker)\ndocker-compose up -d postgres\n\n# Run database migrations\npnpm db:migrate\n\n# Seed development data\npnpm db:seed\n\n# Start development servers\npnpm dev\n```\n\n### Available Scripts\n\n```bash\n# Root level\npnpm dev              # Start all services in development mode\npnpm build            # Build all services\npnpm test             # Run all tests\npnpm lint             # Run linters\npnpm format           # Format code with Prettier\n\n# API\npnpm -F api dev       # Start API in development mode\npnpm -F api test      # Run API tests\npnpm -F api db:migrate # Run database migrations\n\n# Web\npnpm -F web dev       # Start web UI in development mode\n\n# MCP Server\npnpm -F mcp-server dev # Start MCP server\n```\n\n## API Documentation\n\nOnce the API is running, access the interactive documentation at:\nhttp://localhost:3000/documentation\n\n## Security Notes\n\n- **`JWT_SECRET` is required and must be at least 32 characters.** The API refuses\n  to start without it. Generate one with:\n  `node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"`\n- **`docker-compose.yml` ships with a hard-coded local Postgres password\n  (`mcp_catalog`) intended only for development on a developer machine.** For any\n  shared or production deployment, override `POSTGRES_PASSWORD` and the\n  `DATABASE_URL` via `.env`, a secret manager, or a separate compose override —\n  and never expose port `5432` outside the internal network.\n- Passwords are hashed with bcrypt; API keys are issued with a random 32-byte\n  body and a non-secret prefix so lookup stays O(1).\n- In `NODE_ENV=production` the health checker refuses to probe loopback,\n  private, link-local, or multicast addresses to mitigate SSRF from a malicious\n  server registration.\n\n## Development Phases\n\nSee [DEV_PLAN.md](DEV_PLAN.md) for the full development roadmap.\n\n## Contributing\n\nSee [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md) for development guidelines.\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "full_name": "imbenrabi/Financial-Modeling-Prep-MCP-Server",
+  "html_url": "https://github.com/imbenrabi/Financial-Modeling-Prep-MCP-Server",
+  "description": "A Model Context Protocol (MCP) implementation for Financial Modeling Prep, enabling AI assistants to access and analyze financial data, stock information, company fundamentals, and market insights.",
+  "topics": [
+    "ai",
+    "etf-investments",
+    "financial-modeling-prep",
+    "fmp",
+    "llm",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "smithery-ai",
+    "stock-data",
+    "stock-market"
+  ],
+  "matched_query_topics": [
+    "mcp-server",
+    "mcp-tools"
+  ],
+  "stars": 139,
+  "forks": 51,
+  "open_issues": 3,
+  "language": "TypeScript",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2025-05-22T14:01:13Z",
+  "last_pushed_at": "2026-07-02T17:24:51Z",
+  "fetched_at": "2026-07-11T22:53:57.268Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Financial Modeling Prep MCP Server\n\n[![npm version](https://img.shields.io/npm/v/financial-modeling-prep-mcp-server.svg)](https://www.npmjs.com/package/financial-modeling-prep-mcp-server)\n[![license](https://img.shields.io/npm/l/financial-modeling-prep-mcp-server.svg)](LICENSE)\n\nA Model Context Protocol (MCP) server for the [Financial Modeling Prep](https://financialmodelingprep.com/) API, exposing 250+ financial data tools to AI assistants.\n\n## Features\n\n- **250+ Financial Tools** across 24 categories — stocks, ETFs, crypto, forex, commodities, economics, and more\n- **Dynamic Tool Management** — built on [toolception](https://www.npmjs.com/package/toolception) for runtime enable/disable of toolsets via meta-tools\n- **Three Server Modes** — Dynamic (meta-tools), Static (pre-loaded toolsets), or All Tools (default)\n- **Flexible Deployment** — use the hosted instance or self-host via npm, Docker, or source\n- **HTTP/SSE Transport** — compatible with Claude.ai, Claude Desktop, and MCP registries\n\n## Quick Start\n\n### Hosted Instance (Fastest)\n\nNo installation required. Connect directly:\n\n```\nhttps://financial-modeling-prep-mcp-server-production.up.railway.app/mcp\n```\n\nProvide your `FMP_ACCESS_TOKEN` in session configuration and start using 5 meta-tools to load toolsets on demand.\n\n### Self-Hosted (One-Liner)\n\n```bash\nnpx financial-modeling-prep-mcp-server --fmp-token=YOUR_FMP_API_KEY\n```\n\nOr install globally:\n\n```bash\nnpm install -g financial-modeling-prep-mcp-server\nfmp-mcp --fmp-token=YOUR_FMP_API_KEY\n```\n\n> Get your API key at [financialmodelingprep.com](https://site.financialmodelingprep.com/).\n\n## Table of Contents\n\n- [Installation](docs/INSTALLATION.md)\n- [Configuration](docs/CONFIGURATION.md)\n- [Usage](docs/USAGE.md)\n- [API Reference](docs/API_REFERENCE.md)\n- [Registries](docs/REGISTRIES.md)\n- [Contributing](CONTRIBUTING.md)\n- [License](LICENSE)\n\n## Installation\n\n**Prerequisites:** Node.js 25.3.0 or higher (for v2.6.0+). For older versions (v2.5.x and below), Node.js 20+ is required.\n\nChoose the method that fits your workflow:\n\n- **NPM** — `npm install -g financial-modeling-prep-mcp-server`\n- **Docker** — build from source or pull a pre-built image\n- **Source** — clone and run with `npm install && npm run build`\n\nSee [docs/INSTALLATION.md](docs/INSTALLATION.md) for detailed steps per method.\n\n## Configuration\n\nThe server supports three operational modes controlled via CLI arguments, environment variables, or session configuration:\n\n| Mode | How to Enable | Description |\n|------|---------------|-------------|\n| **Dynamic** | `DYNAMIC_TOOL_DISCOVERY=true` | Starts with 5 meta-tools; load toolsets at runtime |\n| **Static** | `FMP_TOOL_SETS=search,company` | Pre-loads specified toolsets on session creation |\n| **All Tools (default)** | *(default)* | Loads all 250+ tools immediately |\n\nPrecedence: CLI args > Environment variables > Session config > Defaults.\n\nSee [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for the full configuration reference.\n\n## Usage\n\nConnect to the server via HTTP/SSE transport:\n\n- **Claude.ai / Claude Desktop** — add as a remote connector (Settings > Connectors)\n- **Custom clients** — POST to `/mcp` with `mcp-client-id` header\n- **MCP registries** — Smithery.ai, Glama.ai, and others\n\nSee [docs/USAGE.md](docs/USAGE.md) for client-specific setup, session headers, and request examples.\n\n## Available Tools\n\n24 categories covering:\n\nSearch · Directory & Symbol Lists · Company Information · Financial Statements · Financial Metrics & Analysis · Technical Indicators · Quotes & Price Data · Market Indexes & Performance · Market Data · News & Press Releases · SEC Filings · Insider & Institutional Trading · ETFs & Funds · Government Trading · Cryptocurrency & Forex · Earnings · Special Data Sets · Commodities · Economics · Bulk Data Tools\n\nSee [docs/API_REFERENCE.md](docs/API_REFERENCE.md) for the complete tool catalog.\n\n## Registries\n\nThis server is listed on multiple MCP registries for easy discovery:\n\n- [Smithery.ai](https://smithery.ai/server/@imbenrabi/financial-modeling-prep-mcp-server)\n- [Glama.ai](https://glama.ai/mcp/servers/@imbenrabi/financial-modeling-prep-mcp-server)\n\nSee [docs/REGISTRIES.md](docs/REGISTRIES.md) for registry-specific setup instructions.\n\n## Contributing\n\nContributions are welcome. Please see [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, testing, and pull request guidelines.\n\n## License\n\n[Apache-2.0](LICENSE)\n"
+  },
+  "descriptor_file": {
+    "path": "server.json",
+    "content": "{\n  \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json\",\n  \"name\": \"io.github.imbenrabi/financial-modeling-prep-mcp-server\",\n  \"title\": \"Financial Modeling Prep MCP Server\",\n  \"description\": \"MCP server for Financial Modeling Prep API with 250+ financial data tools\",\n  \"version\": \"2.6.12\",\n  \"websiteUrl\": \"https://github.com/imbenrabi/Financial-Modeling-Prep-MCP-Server\",\n  \"repository\": {\n    \"url\": \"https://github.com/imbenrabi/Financial-Modeling-Prep-MCP-Server\",\n    \"source\": \"github\"\n  },\n  \"packages\": [\n    {\n      \"registryType\": \"npm\",\n      \"registryBaseUrl\": \"https://registry.npmjs.org\",\n      \"identifier\": \"financial-modeling-prep-mcp-server\",\n      \"version\": \"2.6.12\",\n      \"runtimeHint\": \"npx\",\n      \"transport\": {\n        \"type\": \"streamable-http\",\n        \"url\": \"https://financial-modeling-prep-mcp-server-production.up.railway.app/mcp\"\n      },\n      \"packageArguments\": [\n        {\n          \"type\": \"named\",\n          \"name\": \"--fmp-token\",\n          \"description\": \"Financial Modeling Prep API access token\",\n          \"isRequired\": false,\n          \"format\": \"string\"\n        },\n        {\n          \"type\": \"named\",\n          \"name\": \"--port\",\n          \"description\": \"Port number for HTTP server mode\",\n          \"isRequired\": false,\n          \"format\": \"number\"\n        },\n        {\n          \"type\": \"named\",\n          \"name\": \"--dynamic-tool-discovery\",\n          \"description\": \"Enable dynamic tool discovery mode\",\n          \"isRequired\": false,\n          \"format\": \"boolean\"\n        },\n        {\n          \"type\": \"named\",\n          \"name\": \"--fmp-tool-sets\",\n          \"description\": \"Comma-separated list of tool sets to load\",\n          \"isRequired\": false,\n          \"format\": \"string\"\n        }\n      ],\n      \"environmentVariables\": [\n        {\n          \"name\": \"FMP_ACCESS_TOKEN\",\n          \"description\": \"Financial Modeling Prep API access token\",\n          \"isRequired\": false,\n          \"format\": \"string\",\n          \"isSecret\": true\n        },\n        {\n          \"name\": \"PORT\",\n          \"description\": \"Port number for HTTP server mode\",\n          \"isRequired\": false,\n          \"format\": \"number\"\n        },\n        {\n          \"name\": \"DYNAMIC_TOOL_DISCOVERY\",\n          \"description\": \"Enable dynamic tool discovery mode\",\n          \"isRequired\": false,\n          \"format\": \"boolean\"\n        },\n        {\n          \"name\": \"FMP_TOOL_SETS\",\n          \"description\": \"Comma-separated list of tool sets to load\",\n          \"isRequired\": false,\n          \"format\": \"string\"\n        }\n      ]\n    }\n  ]\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

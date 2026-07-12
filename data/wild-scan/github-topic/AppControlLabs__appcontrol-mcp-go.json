@@ -1,0 +1,45 @@
+{
+  "full_name": "AppControlLabs/appcontrol-mcp-go",
+  "html_url": "https://github.com/AppControlLabs/appcontrol-mcp-go",
+  "description": "AppControl MCP is a local server connecting AI agents and IDEs like Claude, Cursor, and Windsurf to system history provided by the AppControl desktop app. Ask which apps used CPU, GPU, RAM, or disk, and what caused slowdowns, heat spikes, or webcam, mic, and location access. Built for deep historical monitoring and useful real-world PC insights.",
+  "topics": [
+    "ai-agents",
+    "anthropic-claude",
+    "claude",
+    "claude-ai",
+    "claude-code",
+    "claude-desktop",
+    "cpu-monitoring",
+    "gpu-monitoring",
+    "mcp",
+    "model-context-protocol",
+    "performance-analysis",
+    "privacy",
+    "privacy-tools",
+    "process-monitoring",
+    "resource-monitor",
+    "windows",
+    "windows-desktop"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 31,
+  "forks": 1,
+  "open_issues": 1,
+  "language": "Go",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-08T15:10:07Z",
+  "last_pushed_at": "2026-04-09T14:36:02Z",
+  "fetched_at": "2026-07-11T23:41:04.450Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<p align=\"center\">\n  <a href=\"https://www.appcontrol.com\"><img src=\"img/logo.png\" width=\"512\" alt=\"AppControl logo\" /></a>\n</p>\n\n<h2 align=\"center\">AppControl MCP Server</h2>\n\n<p align=\"center\">\n  An <a href=\"https://modelcontextprotocol.io/\">MCP</a> server that gives AI agents and IDEs like Claude, Cursor, and Windsurf <strong>read-only</strong> access to historical resource usage and system security data gathered by the <a href=\"https://www.appcontrol.com\">AppControl</a> Windows app, including binaries, publishers, quarantine rules, events, and monitoring, all through natural language.\n</p>\n<P>\n<p align=\"center\">\n  <a href=\"https://github.com/AppControlLabs/appcontrol-mcp-go/releases/latest\">\n    <img alt=\"Download Latest Release\" src=\"https://img.shields.io/badge/Download-Latest%20Release-blue?style=for-the-badge\">\n  </a>\n</p>\n\n## Prerequisites\n\n- [AppControl](https://www.appcontrol.com) running with MCP API enabled\n- Windows only\n\n## Installation\n\nThere are two ways to install the server: as an **MCPB package** (recommended for Claude Desktop) or as a **standalone executable**.\n\n### Option A — MCPB Package (Claude Desktop)\n\n1. Download `appcontrol.mcpb` from the [latest release](https://github.com/AppControlLabs/appcontrol-mcp-go/releases/latest).\n2. Open Claude Desktop app, go to Settings -> Extensions -> Advanced Settings and click \"Install Extension\". Choose your newly downloaded `.mcpb` file — Claude Desktop will install it automatically.\n3. Restart Claude Desktop app by right-clicking the Claude tray icon and selecting \"Quit\" then start it again.\n\n### Option B - Claude Code plugin marketplace (Claude Code)\n\nAdd the marketplace in Claude Code:\n```bash\n/plugin marketplace add appcontrollabs/appcontrol-mcp-go\n```\n\nInstall the plugin:\n```bash\n/plugin install appcontrol-mcp@appcontrollabs\n```\n\nReload plugins:\n```bash\n/reload-plugins\n```\n\n### Option C — Standalone Executable\n\n1. Download `appcontrol-mcp.exe` from the [latest release](https://github.com/AppControlLabs/appcontrol-mcp-go/releases/latest).\n2. Place it somewhere permanent, e.g. `C:\\MCP\\appcontrol-mcp.exe`.\n3. Configure your AI client as shown below.\n\n## Configuration\n\nIf you installed via the MCPB package in Claude Desktop, no further configuration is needed. For the standalone executable, add the server to your AI client's MCP configuration.\n\n<details>\n<summary><strong>Claude Code (CLI)</strong></summary>\n\n```bash\nclaude mcp add appcontrol C:\\MCP\\appcontrol-mcp.exe\n```\n\n</details>\n\n<details>\n<summary><strong>OpenAI Codex (CLI)</strong></summary>\n\n```bash\ncodex mcp add appcontrol C:\\MCP\\appcontrol-mcp.exe\n```\n\n</details>\n\n<details>\n<summary><strong>OpenAI Codex (Codex Desktop)</strong></summary>\n\nOpen your Codex desktop app and navigate to File -> Settings -> MCP servers. Click \"Add server\" and fill the following fields:\n\n- **Name:** _AppControl_\n- **Command to launch:** _C:\\MCP\\appcontrol-mcp.exe_\n\nLeave the rest unchanged and click **Save**.\n\n</details>\n\n<details>\n<summary><strong>Gemini (CLI)</strong></summary>\n\nAdd to your Gemini configuration `~\\.gemini\\settings.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"appcontrol\": {\n      \"command\": \"C:/MCP/appcontrol-mcp.exe\",\n      \"args\": [],\n      \"timeout\": 15000\n    }\n  }\n\n}\n```\n\n</details>\n\n<details>\n<summary><strong>VS Code (Copilot / Continue / Cline)</strong></summary>\n\nAdd to your workspace `.vscode/mcp.json`:\n\n```json\n{\n  \"servers\": {\n    \"appcontrol\": {\n      \"command\": \"C:/MCP/appcontrol-mcp.exe\"\n    }\n  }\n}\n```\n\n</details>\n\n<details>\n<summary><strong>Cursor</strong></summary>\n\nAdd to `.cursor/mcp.json` in your project root:\n\n```json\n{\n  \"mcpServers\": {\n    \"appcontrol\": {\n      \"command\": \"C:/MCP/appcontrol-mcp.exe\"\n    }\n  }\n}\n```\n\n</details>\n\n<details>\n<summary><strong>Windsurf</strong></summary>\n\nAdd to `~/.codeium/windsurf/mcp_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"appcontrol\": {\n      \"command\": \"C:/MCP/appcontrol-mcp.exe\"\n    }\n  }\n}\n```\n\n</details>\n\n## Example Prompts\n\nOnce connected, try asking your AI assistant:\n\n- *\"What unsigned applications have been running on this system?\"*\n- *\"What binaries on my PC originate from outside the United States and what are the top countries?\"*\n- *\"Show me all AppControl blocked process events from the last 24 hours\"*\n- *\"Are there any binaries running from Temp or Downloads folders?\"*\n- *\"What's currently quarantined? Are unsigned apps blocked?\"*\n- *\"What new binaries appeared today? Are any of them suspicious?\"*\n- *\"While I walked up to my locked PC my fan was roaring, what was causing that?\"*\n- *\"Which publishers have the most binaries on this system?\"*\n- *\"Show me processes running with elevated privileges that aren't from Microsoft\"*\n- *\"Which binaries have had their hash change recently?\"*\n- *\"Did any applications access my webcam while my PC was idle, and if so which ones?\"*\n\n## Available Tools\n\nThe MCP server exposes 9 read-only tools:\n\n| Tool | Description |\n|------|-------------|\n| `get_stats` | Get service stats, current timestamp, and uptime/idle intervals showing when the PC was on, off, or idle. |\n| `list_binaries` | List tracked binaries with filters — unsigned-only, currently-running, first-seen-after date, path substring, or publisher ID. |\n| `get_binary` | Get detailed info for one or more binaries by ID (batch with comma-separated IDs) — path, hash, signature, publisher, first-seen time, and running status. |\n| `list_processes` | List currently running processes with binary ID, name, path, PID, and start time. Filterable by fields. |\n| `list_publishers` | List code-signing publishers (certificate identities) — name, country, and linked binary/rule counts. |\n| `list_rules` | List quarantine rules — blocked binaries and publishers with rule type and creation time. |\n| `query_history` | Query security event history — binary first-seen events, quarantine blocks, alerts, and process starts. Filterable by event type, time range, and binary ID. |\n| `get_monitoring` | Get time-series resource metrics — system-wide (CPU, memory, disk, GPU, temps) or per-binary with top-N/min-value filtering to find heavy resource consumers. |\n| `get_hardware` | Get CPU, GPU, and temperature sensor info for the monitored system. |\n\nAll tools are **read-only**. The MCP server cannot modify rules, block/allow binaries, or change any service configuration.\n\n\n## Building from Source\n\n```bash\ngo build -ldflags \"-s -w\" -o appcontrol-mcp.exe .\n```\n\n## License\n\nMIT\n\nThis repository contains the open MCP server for AppControl. The AppControl desktop application remains proprietary.\n\n*Claude is a trademark of Anthropic, PBC. Cursor, Windsurf, Gemini, VS Code, Copilot, and OpenAI Codex are trademarks of their respective owners. AppControl is not affiliated with or endorsed by any of these companies.*\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

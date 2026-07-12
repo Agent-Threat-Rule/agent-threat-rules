@@ -1,0 +1,33 @@
+{
+  "full_name": "drfccv/mcp-server-12306",
+  "html_url": "https://github.com/drfccv/mcp-server-12306",
+  "description": "12306 MCP Server​​ 是一个基于 ​​Model Context Protocol (MCP)​​ 的高性能火车票查询后端系统。它通过标准化接口提供官方 12306 的实时数据服务，包括余票查询、车站信息、列车经停站、中转换乘方案等核心功能。",
+  "topics": [
+    "12306",
+    "mcp-server"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 351,
+  "forks": 57,
+  "open_issues": 3,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-06-01T02:12:52Z",
+  "last_pushed_at": "2026-07-03T13:29:49Z",
+  "fetched_at": "2026-07-11T22:42:45.000Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# 🚄 MCP Server 12306\n\n![screenshot](https://img.shields.io/badge/12306-MCP-blue?logo=railway)\n![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)\n![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)\n\n---\n\n## ✨ 项目简介\n\nMCP Server 12306 是一款基于 Model Context Protocol (MCP) 的高性能火车票查询服务，支持官方 12306 余票、票价、车站、经停、换乘查询以及智能时间工具，适配 AI/自动化/智能助手等场景，开箱即用。\n\n\n---\n\n## 🚀 功能亮点\n\n- 实时余票/车次/座席/时刻/换乘一站式查询\n- 全国车站信息管理与模糊搜索，支持中文、拼音、简拼、三字码\n- 官方经停站、中转换乘方案全支持\n- 实时查询各车次票价信息\n- 智能时间工具，支持时区和时间戳\n- 双传输模式：Stdio（Claude Desktop 推荐）| Streamable HTTP（远程部署）\n- MCP 2025-03-26 标准，AI/自动化场景即插即用\n\n---\n\n## 🛠️ 快速上手\n\n本项目支持两种运行模式：\n1. **Stdio 模式**：适用于 Claude Desktop 等本地 MCP 客户端（推荐）。\n2. **Streamable HTTP 模式**：适用于远程部署或通过 SSE/POST 访问。\n\n---\n\n### 模式 1：Stdio 模式（Claude Desktop 推荐）\n\n在此模式下，MCP Server 通过标准输入/输出与客户端通信，无需占用网络端口。\n\n#### 方式 A：使用 uvx（推荐）\n\n`uvx` 是 `uv` 包管理器提供的工具，环境隔离且启动极快。\n\n```json\n{\n  \"mcpServers\": {\n    \"12306\": {\n      \"command\": \"uvx\",\n      \"args\": [\"mcp-server-12306\"]\n    }\n  }\n}\n```\n\n#### 方式 B：使用 pipx\n\n如果您更习惯使用 pipx：\n\n```json\n{\n  \"mcpServers\": {\n    \"12306\": {\n      \"command\": \"pipx\",\n      \"args\": [\"run\", \"--no-cache\", \"mcp-server-12306\"]\n    }\n  }\n}\n```\n\n#### 方式 C：本地源码运行\n\n适用于开发者调试：\n\n```bash\ncd mcp-server-12306\nuv sync\n```\n\n```json\n{\n  \"mcpServers\": {\n    \"12306\": {\n      \"command\": \"uv\",\n      \"args\": [\"--directory\", \"/path/to/mcp-server-12306\", \"run\", \"mcp-server-12306\"]\n    }\n  }\n}\n```\n\n\n---\n\n### 模式 2：Streamable HTTP 模式\n\n在此模式下，Server 启动一个 Web 服务（默认 8000 端口），支持 MCP 的 SSE 和 POST 交互。\n\n#### 方式 A：pip 安装后运行\n\n```bash\n# 安装 HTTP 模式（含 FastAPI / uvicorn）\npip install mcp-server-12306[http]\n# 启动\nmcp-12306\n```\n\n#### 方式 B：本地源码运行\n\n```bash\n# 1. 克隆并安装依赖\ngit clone https://github.com/drfccv/mcp-server-12306.git\ncd mcp-server-12306\nuv sync --extra http\n\n# 2. 启动服务器\nuv run python scripts/start_server.py\n```\n\n**MCP 客户端配置：**\n\n```json\n{\n  \"mcpServers\": {\n    \"12306\": {\n      \"url\": \"http://localhost:8000/mcp\"\n    }\n  }\n}\n```\n\n#### 方式 C：Docker 部署\n\n```bash\n# 拉取镜像并运行\ndocker run -d -p 8000:8000 --name mcp-server-12306 drfccv/mcp-server-12306:latest\n```\n\n---\n\n## 🤖 工具一览\n\n### 支持的主流程工具\n| 工具名                       | 功能描述                          |\n|-----------------------------|-----------------------------------|\n| `query-tickets`             | 余票/车次/座席/时刻一站式查询      |\n| `query-ticket-price`        | 实时查询各车次票价信息              |\n| `search-stations`           | 车站模糊搜索，支持中文/拼音/简拼    |\n| `query-transfer`            | 中转换乘方案，自动拼接最优路径      |\n| `get-train-route-stations`  | 查询指定列车经停站及时刻表          |\n| `get-train-no-by-train-code`| 车次号转官方唯一编号               |\n| `get-current-time`          | 当前时间与相对日期，辅助日期选择    |\n\n---\n\n## 📚 工具文档\n\n本项目所有主流程工具的详细功能、实现与使用方法，均已收录于 [`/docs`](./docs) 目录下：\n\n- [query_tickets.md](./docs/query_tickets.md) — 余票/车次/座席/时刻一站式查询\n- [query_ticket_price.md](./docs/query_ticket_price.md) — 实时查询各车次票价信息\n- [search_stations.md](./docs/search_stations.md) — 车站智能搜索\n- [query_transfer.md](./docs/query_transfer.md) — 中转换乘方案\n- [get_train_route_stations.md](./docs/get_train_route_stations.md) — 查询列车经停站\n- [get_current_time.md](./docs/get_current_time.md) — 获取当前时间与相对日期\n\n每个文档包含：\n- 工具功能说明\n- 实现方法\n- 请求参数与返回示例\n- 典型调用方式\n\n如需二次开发或集成，建议先阅读对应工具的文档。\n\n---\n\n## 🧩 目录结构\n\n```\nsrc/mcp_12306/          # 主源代码\n  ├─ http_server.py     # FastAPI HTTP 传输层\n  ├─ stdio_server.py    # Stdio 传输层 + CLI 入口\n  ├─ services/          # 业务逻辑\n  │   ├─ station_service.py  # 车站数据服务\n  │   └─ ticket_service.py   # 票务查询核心（stdio/HTTP 共享）\n  ├─ utils/             # 配置与日期工具\n  │   ├─ config.py\n  │   └─ date_utils.py\n  └─ resources/         # 静态资源（车站数据）\nscripts/                # 启动与数据更新脚本\n  ├─ start_server.py    # HTTP 模式一键启动\n  └─ update_stations.py # 更新车站数据\n```\n\n---\n\n## 📄 License\nMIT License\n\n---\n\n## ⚠️ 免责声明\n\n- 本项目仅供学习、研究与技术交流，严禁用于任何商业用途。\n- 本项目不存储、不篡改、不传播任何 12306 官方数据，仅作为官方公开接口的智能聚合与转发。\n- 使用本项目造成的任何后果（包括但不限于账号封禁、数据异常、法律风险等）均由使用者本人承担，项目作者不承担任何责任。\n- 请遵守中国法律法规及 12306 官方相关规定，合理合规使用。\n\n---\n\n\n"
+  },
+  "descriptor_file": {
+    "path": "server.json",
+    "content": "{\n  \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json\",\n  \"name\": \"io.github.drfccv/mcp-server-12306\",\n  \"description\": \"An MCP server that provides 12306 ticket query\",\n  \"repository\": {\n    \"url\": \"https://github.com/drfccv/mcp-server-12306\",\n    \"source\": \"github\"\n  },\n  \"version\": \"0.4.0.post20260703\",\n  \"packages\": [\n    {\n      \"registryType\": \"pypi\",\n      \"identifier\": \"mcp-server-12306\",\n      \"version\": \"0.4.0.post20260703\",\n      \"transport\": {\n        \"type\": \"stdio\"\n      }\n    }\n  ]\n}"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

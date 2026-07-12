@@ -1,0 +1,39 @@
+{
+  "full_name": "m2ai-portfolio/agentforge",
+  "html_url": "https://github.com/m2ai-portfolio/agentforge",
+  "description": "Current agent frameworks require manual intervention for failure recovery and version updates, causing downtime and inconsistent behavior in production AI systems.",
+  "topics": [
+    "adaptive-retraining",
+    "agent-framework",
+    "ai-developers",
+    "fault-detection",
+    "independent-developers",
+    "mcp-connector",
+    "mcp-servers",
+    "python",
+    "self-healing",
+    "server-operations",
+    "solo-developers"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2026-04-10T05:21:33Z",
+  "last_pushed_at": "2026-04-16T17:41:51Z",
+  "fetched_at": "2026-07-12T00:22:52.113Z",
+  "readme": {
+    "path": "README.md",
+    "content": "\n\n<html>\n  <p align=\"center\">\n    <img src=\"assets/infographic.png\" alt=\"AgentForge: Self-Healing MCP Agent Framework with Built-in Adaptive Orchestration\" width=\"800\">\n  </p>\n\n  <h3 align=\"center\">An open-source Python framework for building autonomous AI agents that self-diagnose failures, trigger retraining based on performance decay, and dynamically reconnect to MCP-enabled tools using Model Context Protocol.</h3>\n\n  <p align=\"center\">\n    <a href=\"#quick-start\">Quick Start</a> &bull;\n    <a href=\"#features\">Features</a> &bull;\n    <a href=\"#examples\">Examples</a> &bull;\n    <a href=\"#contributing\">Contributing</a>\n  </p>\n</html>\n\n## What is this?\nAgentForge equips solo AI developers with a self‑healing agent runtime that automatically detects faults, retrains models, and fails over MCP tools without manual intervention. It is ideal for anyone shipping MCP‑enabled servers who wants to reduce operational overhead.\n\n```\n$ agentforge run\n[AgentForge] Starting self-healing MCP agent...\nAgent ID: agent-001\nMCP Endpoint: localhost:8000\nHeartbeat interval: 30s\nReady.\n```\n\n## Problem\nCurrent agent frameworks require manual intervention for failure recovery and version updates, causing downtime and inconsistent behavior in production AI systems.\n\n## Features\n| Feature | Description |\n|---------|-------------|\n| Self‑Diagnosis & Failure Detection | Continuously monitors health metrics and emits a fault event within 200 ms of anomaly detection. |\n| Adaptive Retraining Trigger | Upon fault acknowledgment, schedules a retraining job within 1 second and persists job state for resume. |\n| Dynamic MCP Reconnection | Detects endpoint failure within 500 ms, fails over to a hot‑standby endpoint within 1 second, and transparently replays in‑flight requests. |\n| Pluggable Health Probes | Supports custom probes for CPU, latency, error rate, etc., via a simple registration API. |\n| Fault Event Bus | Emits structured fault events with trace IDs to standard output for observability. |\n| Heartbeat Monitoring | Sends a heartbeat every configurable interval to verify liveness of the agent core. |\n\n## Quick Start\n1. Clone the repository:  \n   ```bash\n   git clone https://github.com/m2ai-portfolio/agentforge.git\n   cd agentforge\n   ```\n2. Install the package in editable mode:  \n   ```bash\n   pip install -e .\n   ```\n3. (Optional) Set environment variables for logging and MCP endpoint:  \n   ```bash\n   export AGENTFORGE_LOG_LEVEL=DEBUG\n   export AGENTFORGE_MCP_ENDPOINT=localhost:8000\n   ```\n4. Run the agent:  \n   ```bash\n   agentforge run\n   ```\n   You should see the startup banner and confirmation that the agent is ready.\n\n## Examples\n**Basic Agent Startup**  \nLaunch the agent with default settings.  \n```\n$ agentforge run\n[AgentForge] Starting self-healing MCP agent...\nAgent ID: agent-001\nMCP Endpoint: localhost:8000\nHeartbeat interval: 30s\nReady.\n```\n\n**Trigger Fault Detection Test**  \nExecute the built‑in self‑test to verify fault event emission.  \n```\n$ agentforge self-heal test-fault-detect\n[TEST] Fault detection triggered\n[FAULT] TraceID: a1b2c3d4 | Description: Simulated latency spike | Timestamp: 2025-09-16T12:34:56Z\n```\n\n**Validate Adaptive Retraining Trigger**  \nRun the orchestrator test to confirm retraining job initiation.  \n```\n$ agentforge orchestrator test-retrain-trigger\n[INFO] Fault acknowledgment received\n[INFO] Loading model version 2.3.1 from registry\n[RETRAIN] Job started | JobID: rt-20250916-001 | Status: RUNNING\n```\n\n## File Structure\n```\nAgentForge: Self-Healing MCP Agent Framework with Built-in Adaptive Orchestration/\n  agentforge/          # Core source code\n    __init__.py\n    cli.py             # Command‑line interface entry point\n    core.py            # Agent core and heartbeat logic\n    self_heal.py       # Fault detection and self‑healing routines\n    orchestrator.py    # Retraining job scheduling and persistence\n    mcp_client.py      # MCP connector with hot‑standby failover\n    models.py          # Pydantic data models (AgentConfig, MCPToolSpec)\n  tests/               # Test suite\n    test_cli.py\n    test_core.py\n    test_self_heal.py\n    test_orchestrator.py\n    test_mcp_client.py\n  assets/\n    infographic.png    # Banner illustration used in README\n  .gitignore\n  LICENSE\n  README.md\n  pyproject.toml\n  spec.md\n```\n\n## Tech Stack\n| Technology | Purpose |\n|------------|---------|\n| Python 3.11+ | Core language runtime |\n| Click | Building the CLI (`agentforge` command) |\n| Pytest | Running unit and integration tests |\n\n## Contributing\nFork the repo, make your changes, run `pytest` to verify, and submit a pull request.\n\n## License\nMIT\n\n## Author\nMatthew Snow -- [M2AI](https://m2ai.co) | [@m2ai-portfolio](https://github.com/m2ai-portfolio)"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "full_name": "KuvopLLC/better-bear",
+  "html_url": "https://github.com/KuvopLLC/better-bear",
+  "description": null,
+  "topics": [
+    "ai",
+    "bear-app",
+    "bear-notes",
+    "claude",
+    "cli",
+    "cloudkit",
+    "context-library",
+    "llm",
+    "macos",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "notes"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 63,
+  "forks": 8,
+  "open_issues": 0,
+  "language": "Swift",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-02-16T13:51:16Z",
+  "last_pushed_at": "2026-04-23T09:10:45Z",
+  "fetched_at": "2026-07-11T23:25:47.504Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# better bear\n\n[![better-bear MCP server](https://glama.ai/mcp/servers/KuvopLLC/better-bear/badges/card.svg)](https://glama.ai/mcp/servers/KuvopLLC/better-bear)\n\n[![Build](https://github.com/KuvopLLC/better-bear/actions/workflows/build-on-merge.yml/badge.svg)](https://github.com/KuvopLLC/better-bear/actions/workflows/build-on-merge.yml)\n[![Release](https://img.shields.io/github/v/release/KuvopLLC/better-bear)](https://github.com/KuvopLLC/better-bear/releases/latest)\n[![npm](https://img.shields.io/npm/v/better-bear)](https://www.npmjs.com/package/better-bear)\n[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/KuvopLLC/better-bear/blob/main/LICENSE)\n[![better-bear MCP server](https://glama.ai/mcp/servers/KuvopLLC/better-bear/badges/score.svg)](https://glama.ai/mcp/servers/KuvopLLC/better-bear)\n[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-orange?logo=buy-me-a-coffee&logoColor=white)](https://buymeacoffee.com/mreider)\n\nMCP server and CLI for [Bear](https://bear.app) notes via CloudKit. Includes a **context library** — a curated, synced folder of notes optimized for LLM consumption, inspired by [Karpathy's LLM Knowledge Base](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) pattern.\n\n**Full docs: [better-bear.com](https://better-bear.com)**\n\n## Install\n\nInstall the CLI, then connect to Claude:\n\n```\ncurl -sL https://raw.githubusercontent.com/KuvopLLC/better-bear/main/install.sh | bash\nbcli auth\nbcli mcp install\n```\n\nThis installs the `bcli` binary, authenticates with iCloud, and sets up the MCP server for both Claude Desktop (via `.mcpb` bundle) and Claude Code.\n\n### Other install methods\n\n| Method | Command |\n|--------|---------|\n| Claude Desktop only | `bcli mcp install --desktop-only` |\n| Claude Code only | `bcli mcp install --code-only` |\n| Claude Code (direct) | `claude mcp add better-bear -- npx -y better-bear` |\n| Config file | `bcli mcp install --json` |\n| .mcpb bundle | Download from [latest release](https://github.com/KuvopLLC/better-bear/releases/latest) and double-click |\n\n### Manage\n\n```\nbcli mcp status      # check what's configured\nbcli mcp uninstall   # remove from Claude Desktop and Claude Code\nbcli mcp reinstall   # clean uninstall + install\nbcli upgrade         # upgrade bcli binary\n```\n\n## CLI\n\nAll commands also work standalone from the terminal:\n\n```\nbcli ls                          # list notes\nbcli search \"query\"              # full-text search\nbcli create \"Title\" -b \"Body\"    # create a note\nbcli edit <id> --append \"text\"   # append to a note\nbcli tags                        # list all tags\nbcli attach <id> photo.jpg       # attach a file\nbcli stats                       # library statistics\nbcli health                      # health check\n```\n\nSee [better-bear.com](https://better-bear.com) for the full command reference.\n\n## Context Library\n\nTurn a subset of your Bear notes into a synced, curated context folder that Claude can navigate using index-first retrieval. Tag notes with `#context` in Bear, sync, and Claude reads a compact index to find relevant files — loading only what it needs, not everything.\n\n```\nbcli context init                          # one-time setup\nbcli context sync                          # pull qualifying notes\nbcli context add <id> --subtag research    # tag a note for inclusion\nbcli context status                        # health check\n```\n\nOr tell Claude: *\"Set up a context library\"* — and it handles everything via MCP tools.\n\nThe architecture follows Karpathy's three-folder pattern: `bear/` (synced from CloudKit), `external/` (PDFs, exports, shared docs), and `inbox/` (drop zone for triage). An `index.md` manifest maps everything. See [better-bear.com](https://better-bear.com#context-library) for full documentation.\n\n## MCP Tools\n\n34 tools covering notes, tags, TODOs, attachments, search, front matter, stats, health checks, and the context library. See the [MCP server README](mcp-server/README.md) for the full list.\n\n## Contributors\n\n<a href=\"https://github.com/mreider\"><img src=\"https://avatars.githubusercontent.com/u/118036?v=4\" width=\"50\" height=\"50\" style=\"border-radius:50%\" alt=\"mreider\"></a>\n<a href=\"https://github.com/program247365\"><img src=\"https://avatars.githubusercontent.com/u/13910?v=4\" width=\"50\" height=\"50\" style=\"border-radius:50%\" alt=\"program247365\"></a>\n<a href=\"https://github.com/asabirov\"><img src=\"https://avatars.githubusercontent.com/u/733858?v=4\" width=\"50\" height=\"50\" style=\"border-radius:50%\" alt=\"asabirov\"></a>\n<a href=\"https://github.com/darronz\"><img src=\"https://avatars.githubusercontent.com/u/136805?v=4\" width=\"50\" height=\"50\" style=\"border-radius:50%\" alt=\"darronz\"></a>\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

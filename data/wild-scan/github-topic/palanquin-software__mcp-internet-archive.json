@@ -1,0 +1,33 @@
+{
+  "full_name": "palanquin-software/mcp-internet-archive",
+  "html_url": "https://github.com/palanquin-software/mcp-internet-archive",
+  "description": null,
+  "topics": [
+    "golang",
+    "internet-archive",
+    "mcp",
+    "mcp-server",
+    "mcp-servers"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Go",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-10-26T17:12:09Z",
+  "last_pushed_at": "2025-11-04T14:55:45Z",
+  "fetched_at": "2026-07-12T00:16:13.926Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div style=\"text-align: center\">\n<h2>\n  <a href=\"https://github.com/palanquin-software/mcp-internet-archive\">\n    <img src=\"docs/logo.png\" alt=\"MCP Internet Archive\" width=\"276\" height=\"119\">\n  </a>\n    <br />\n  MCP Internet Archive\n</h2>\n[![Project license](https://img.shields.io/github/license/palanquin-software/mcp-internet-archive.svg?style=flat-square)](LICENSE)\n[![Made by Palanquin Software](https://img.shields.io/badge/made%20by-Palanquin%20Software-blue?style=flat-square)](https://github.com/palanquin-software)\n\n</div>\n\n<details open=\"open\">\n<summary>Table of Contents</summary>\n\n- [About](#about)\n    - [Built With](#built-with)\n- [Getting Started](#getting-started)\n    - [Prerequisites](#prerequisites)\n    - [Installation](#installation)\n- [Usage](#usage)\n- [Roadmap](#roadmap)\n- [License](#license)\n</details>\n\n---\n\n## About\n\nMCP Internet Archive is a Model Context Protocol (MCP) server that provides AI assistants with the ability to search and\ndownload public domain and Creative Commons licensed audio content from the Internet Archive (archive.org).\n\nThis server enables AI systems to:\n\n- Search the vast Internet Archive audio collection\n- Retrieve detailed metadata about audio items\n- Download audio files with intelligent format selection\n- Automatically detect and concatenate multi-part audio files\n\nThe project was created to make the Internet Archive's treasure trove of public domain audio content easily accessible\nto AI assistants, enabling them to help users discover and retrieve historical recordings, radio broadcasts, music, and\nother audio materials.\n\n### Built With\n\n- [Go 1.25.2](https://go.dev/) - Primary language\n- [Model Context Protocol SDK](https://github.com/modelcontextprotocol/go-sdk) - MCP server implementation\n- [Resty](https://github.com/go-resty/resty) - HTTP client for Archive.org API\n- [caarlos0/env](https://github.com/caarlos0/env) - Environment variable configuration\n- [FFmpeg](https://ffmpeg.org/) - Audio file concatenation (optional)\n\n## Getting Started\n\n### Prerequisites\n\n- Go 1.25.2 or later\n- FFmpeg (optional, for multi-part file concatenation)\n\n### Installation\n\n**Using mise:**\n\n```bash\ngit clone https://github.com/palanquin-software/mcp-internet-archive.git\ncd mcp-internet-archive\nmake install\n```\n\n**Manual installation:**\n\n```bash\ngit clone https://github.com/palanquin-software/mcp-internet-archive.git\ncd mcp-internet-archive\ncd cmd/mcp\ngo build -o ~/bin/mcp-internet-archive\nchmod +x ~/bin/mcp-internet-archive\n```\n\n**Configure your MCP client:**\n\nAdd to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):\n\n```json\n{\n  \"mcpServers\": {\n    \"internet-archive\": {\n      \"command\": \"/Users/YOUR_USERNAME/bin/mcp-internet-archive\",\n      \"env\": {\n        \"IA_MAX_RESULTS\": \"10\",\n        \"IA_DOWNLOAD_DIR\": \"/Users/YOUR_USERNAME/Downloads\",\n        \"IA_FFMPEG\": \"ffmpeg\",\n        \"IA_CONCAT_ASK_THRESH\": \"5\"\n      }\n    }\n  }\n}\n```\n\n## Usage\n\nOnce configured, the MCP server provides three tools to your AI assistant:\n\n### search_audio\n\nSearch for audio content in the Internet Archive:\n\n```\nSearch for \"jazz recordings 1920s\"\n```\n\nThe assistant will use the `search_audio` tool to find matching public domain audio items.\n\n### get_metadata\n\nGet detailed information about a specific archive item:\n\n```\nGet metadata for archive item \"Greatest_Speeches_of_the_Century\"\n```\n\nReturns comprehensive metadata including all available audio files and their formats.\n\n### download_audio\n\nDownload audio files with intelligent format selection and optional concatenation:\n\n```\nDownload audio from \"Complete_Broadcast_Day_D-Day\"\n```\n\n**Multipart file handling:**\n\nThe server automatically detects multipart files (e.g., `Part_001.mp3`, `Part_002.mp3`, etc.). If 5 or more parts are\ndetected, it will suggest concatenation:\n\n```\nDownload audio from \"Complete_Broadcast_Day_D-Day\" with concat=true\n```\n\nThis will download all parts, concatenate them into a single file using ffmpeg, and clean up the individual parts.\n\n## Environment Variables\n\n| Variable               | Description                            | Default       |\n|------------------------|----------------------------------------|---------------|\n| `IA_S3_ACCESS_KEY`     | Internet Archive S3 access key         | (none)        |\n| `IA_S3_SECRET_KEY`     | Internet Archive S3 secret key         | (none)        |\n| `IA_MAX_RESULTS`       | Maximum search results to return       | `10`          |\n| `IA_DOWNLOAD_DIR`      | Directory for downloaded files         | `~/Downloads` |\n| `IA_FFMPEG`            | Path to ffmpeg binary                  | `ffmpeg`      |\n| `IA_CONCAT_ASK_THRESH` | Minimum parts to suggest concatenation | `5`           |\n\n## Roadmap\n\n### Planned Features\n\n- **Expand beyond audio**: Support for video, text, and image collections\n- **Advanced search filters**: Date ranges, creator filtering, collection browsing\n- **Playlist support**: Download entire playlists or collections\n- **Streaming support**: Stream audio directly without downloading\n- **Format conversion**: Built-in audio format conversion (e.g., FLAC → MP3)\n- **Progress reporting**: Real-time download progress for large files\n- **Batch operations**: Download multiple items in a single operation\n- **Cache management**: Intelligent disk usage and cleanup\n\n### Contributing\n\nContributions are welcome! Areas where help is needed:\n\n- Testing with various archive.org collections\n- Support for additional media types\n- Performance optimizations for large downloads\n- Documentation improvements\n\n## License\n\nThis project is licensed under the **MIT license**.\n\nSee [LICENSE](LICENSE) for more information.\n\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

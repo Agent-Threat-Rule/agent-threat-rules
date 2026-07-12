@@ -1,0 +1,32 @@
+{
+  "full_name": "xhuw/async-bash-mcp",
+  "html_url": "https://github.com/xhuw/async-bash-mcp",
+  "description": "An MCP to overcome the issues I was having with opencode's bash tool",
+  "topics": [
+    "bash",
+    "mcp",
+    "mcp-server",
+    "mcp-servers"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 6,
+  "forks": 2,
+  "open_issues": 2,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "develop",
+  "created_at": "2025-08-18T08:39:56Z",
+  "last_pushed_at": "2025-08-21T08:48:39Z",
+  "fetched_at": "2026-07-11T23:58:21.150Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# async-bash-mcp\n\n[![pypi](https://img.shields.io/pypi/v/async-bash-mcp)](https://pypi.org/project/async-bash-mcp/) [![Test](https://github.com/xhuw/async-bash-mcp/actions/workflows/test.yaml/badge.svg)](https://github.com/xhuw/async-bash-mcp/actions/workflows/test.yaml)\n\nAn MCP server for spawning and managing bash commands asynchronously. Run multiple shell commands in parallel and check their progress independently.\n\n## Usage with opencode\n\nAdd to your `opencode.json` config to replace the bash tool with async-bash-mcp:\n\n```json\n{\n  \"$schema\": \"https://opencode.ai/config.json\",\n  \"tools\": {\n    \"bash\": false\n  },\n  \"mcp\": {\n    \"async-bash\": {\n      \"type\": \"local\",\n      \"command\": [\"uvx\", \"async-bash-mcp\"],\n      \"enabled\": true\n    }\n  }\n}\n```\n\nThen use commands like:\n- \"Spawn a long-running build in the background\"\n- \"Run tests in parallel and show me the results\"\n- \"Start a server and tell me when it's ready\"\n\n## Why async bash?\n\nWhen working with long-running commands like builds, tests, or servers, the agent needs to:\n- Monitor progress incrementally without committing to a fixed timeout\n- Run multiple commands in parallel and check each independently\n- Make decisions about continuing or terminating based on partial output\n- Process real-time feedback as commands generate output\n\nThis tool provides the agent with better information for decision-making, leading to faster task completion and fewer confused responses.\n\n**Key advantages over the built-in bash tool:**\n- **Better decision making**: Agents can see partial output and make informed choices about continuing or terminating\n- **Parallel execution**: Run multiple commands simultaneously\n- **No timeout guessing**: Check progress incrementally instead of setting timeouts upfront\n- **Faster iterations**: No waiting for arbitrary timeouts when errors are already visible\n\nThis tool is designed to replace opencode's bash tool for any scenario involving potentially long-running commands, giving agents the information they need to make better decisions and save you time.\n\n## Tools\n\n**spawn** - Launch a bash command asynchronously\n- `command` (str): The bash command to run\n- `cwd` (str, optional): Working directory path\n- Returns a process ID for tracking\n\n**list_processes** - Show all running/recent processes\n- No parameters\n- Returns array of `{\"ID\": int, \"command\": str, \"done\": bool}`\n\n**poll** - Check progress of a spawned process\n- `process_id` (int): ID from spawn command\n- `wait` (int): Wait time in milliseconds\n- `terminate` (bool, optional): Kill process before returning results\n- Returns `{\"stdout\": str, \"stderr\": str, \"elapsedTime\": float, \"finished\": bool, \"exitCode\": int}`\n\n## Installation\n\n```bash\nuvx async-bash-mcp\n```\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

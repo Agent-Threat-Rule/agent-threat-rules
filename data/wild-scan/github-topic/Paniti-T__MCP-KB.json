@@ -1,0 +1,29 @@
+{
+  "full_name": "Paniti-T/MCP-KB",
+  "html_url": "https://github.com/Paniti-T/MCP-KB",
+  "description": "Personal dev knowledge base as an MCP server.",
+  "topics": [
+    "mcp-servers"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-06-02T18:09:54Z",
+  "last_pushed_at": "2026-06-02T18:33:54Z",
+  "fetched_at": "2026-07-12T00:24:03.979Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP-KB\n\nPersonal dev knowledge base as an MCP server. Log issues and gotchas hit while\nworking on projects, then let Claude recall them by full-text search before you\nre-debug the same thing.\n\n## Storage\n\nSQLite with FTS5 (`porter unicode61` tokenizer, bm25 ranking). The database lives\n**outside** this repo so it persists across clones and never gets committed. The\ndefault location is per-platform; override it anywhere with `KB_DB_PATH`:\n\n| OS | Default DB path |\n|---|---|\n| Linux | `$XDG_DATA_HOME/mcp-kb/kb.db` or `~/.local/share/mcp-kb/kb.db` |\n| macOS | `~/Library/Application Support/mcp-kb/kb.db` |\n| Windows | `%LOCALAPPDATA%\\mcp-kb\\kb.db` |\n\n## Platforms\n\nPure Python + stdlib `sqlite3`, no native dependencies — runs on Linux, macOS,\nand Windows. FTS5 ships in the official CPython builds (python.org installers,\nHomebrew) and most distro packages; the server checks for it at startup and\nfails with a clear message if a stripped build lacks it.\n\n## Tools\n\n| Tool | Purpose |\n|---|---|\n| `kb_add(project, title, problem, fix?, tags?)` | Save a new entry |\n| `kb_search(query, project?, limit?)` | Ranked full-text search |\n| `kb_get(entry_id)` | Fetch one full record |\n| `kb_recent(limit?, project?)` | Newest-first list |\n| `kb_projects()` | Projects with counts |\n| `kb_update(entry_id, ...)` | Edit fields (e.g. add `fix` later) |\n| `kb_delete(entry_id)` | Remove a record |\n\n## How agents use it\n\nThe server ships an `instructions` string (see `INSTRUCTIONS` in\n`src/mcp_kb/server.py`) that the MCP client passes to the model, telling it to\nuse the KB **proactively**:\n\n- **Before** debugging or investigating an error → `kb_search` the symptom\n  keywords (with `project` if known) to check for a prior fix.\n- **After** resolving a non-obvious bug, config trap, or surprising behavior →\n  `kb_add` it (`title`, `problem`, `fix`, `tags`, `project`).\n- Log an unsolved problem with an empty `fix`, then `kb_update` it once solved.\n- `kb_recent` / `kb_projects` to orient on what is already recorded.\n\nServer `instructions` are advisory — some clients show them, some weight them\nlightly. To make the behavior reliable in a given project, also add a line to\nthat project's `CLAUDE.md`, e.g.:\n\n```\nUse the kb_* MCP tools: search the KB before debugging, log gotchas after fixing.\n```\n\n## Prerequisites\n\n| Requirement | Why | Check |\n|---|---|---|\n| Python ≥ 3.11 | Runtime (uses `X \\| None` typing, modern stdlib) | `python --version` |\n| sqlite3 with FTS5 | Search index — bundled in official CPython builds | `python -c \"import sqlite3; sqlite3.connect(':memory:').execute('CREATE VIRTUAL TABLE t USING fts5(x)')\"` (no error = OK) |\n| pipx | Isolated, move-proof install | `pipx --version` |\n| git | Clone the repo | `git --version` |\n| An MCP client | Consumes the server (Claude Code, Claude Desktop, Cursor, …) | — |\n\nInstall pipx if missing: `python -m pip install --user pipx && pipx ensurepath`\n(or `sudo pacman -S python-pipx` on Arch, `brew install pipx` on macOS).\n\nThe server itself has one Python dependency, `mcp[cli]`, pulled in automatically\nby the install step — no manual install needed.\n\n## Setup (pipx — move-proof)\n\npipx installs into its own isolated venv, so the binary keeps working even if\nthis source directory is moved or deleted.\n\n```bash\ncd ~/works/MCP-KB\npipx install . --force      # binary -> ~/.local/bin/mcp-kb\n```\n\nAfter editing the code, re-sync the installed copy:\n\n```bash\npipx install ~/works/MCP-KB --force   # or: pipx reinstall mcp-kb\n```\n\n## Register with Claude Code (user scope = all projects)\n\n```bash\nclaude mcp add --scope user kb -- ~/.local/bin/mcp-kb\n```\n\nVerify: `claude mcp get kb` (Scope should say \"User config\"), then `/mcp`\ninside a session.\n\nOn Windows the pipx binary is `mcp-kb.exe` under `%USERPROFILE%\\.local\\bin\\`\n(run `pipx ensurepath` once so it is on PATH). Any MCP client works — point its\nconfig `command` at the full path to the binary.\n\n## FTS5 query tips\n\n- Plain words are OR-matched: `nginx realip`\n- Phrase: `\"set_real_ip_from\"`\n- Boolean: `nginx AND proxy`, `cert NOT letsencrypt`\n- Prefix: `prox*`\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

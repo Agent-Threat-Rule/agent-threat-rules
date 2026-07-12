@@ -1,0 +1,48 @@
+{
+  "full_name": "nanoapi-io/napi",
+  "html_url": "https://github.com/nanoapi-io/napi",
+  "description": "Software architecture tooling for the AI age",
+  "topics": [
+    "ai",
+    "apis",
+    "cli",
+    "code-analysis",
+    "code-visualization",
+    "csharp",
+    "devtools",
+    "java",
+    "legacy-code-refactoring",
+    "live-documentation",
+    "mcp-server",
+    "microservices",
+    "monolith",
+    "node",
+    "php",
+    "python",
+    "refactoring",
+    "software-modernization",
+    "source-code-analysis",
+    "system-design"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 321,
+  "forks": 11,
+  "open_issues": 4,
+  "language": "TypeScript",
+  "license": "NOASSERTION",
+  "default_branch": "main",
+  "created_at": "2022-04-20T12:17:15Z",
+  "last_pushed_at": "2026-04-12T14:42:35Z",
+  "fetched_at": "2026-07-11T22:43:27.858Z",
+  "readme": {
+    "path": "README.md",
+    "content": "![NanoAPI Banner](/media/github-banner.png)\n\n# napi - Better Software Architecture for the AI Age\n\n`napi` is a fully offline CLI that analyzes your codebase's architecture --\ndependencies, complexity, and structure -- then lets you visualize and refactor\nit, all without sending your code anywhere.\n\nIt generates dependency manifests from your source code, stores them locally,\nand serves an interactive graph visualizer directly from the CLI.\n\n![NanoAPI UI Overview](/media/hero-app.png)\n\n## Features\n\n- **🔍 Dependency Analysis**: Map every file, symbol, and dependency in your\n  codebase automatically.\n- **🚨 Audit**: Detect files and symbols that exceed complexity, size, or\n  coupling thresholds.\n- **📊 Interactive Visualizer**: Explore your architecture through Cytoscape.js\n  graphs served locally in your browser.\n- **📝 Symbol Extraction**: Extract specific functions, classes, or symbols into\n  standalone files for refactoring.\n- **🏷️ AI Labeling** (optional): Use OpenAI, Google, or Anthropic models to\n  auto-label dependencies.\n- **⚙️ CI/CD Ready**: Integrates into any pipeline -- generate manifests on\n  every push and track architecture over time.\n- **🔒 Fully Offline**: No accounts, no servers, no data leaves your machine.\n\n## Supported Languages\n\n| Language | Status         |\n| -------- | -------------- |\n| Python   | ✅ Supported   |\n| C#       | ✅ Supported   |\n| C        | ✅ Supported   |\n| Java     | ✅ Supported   |\n| C++      | 🚧 In Progress |\n| PHP      | 🚧 In Progress |\n| JS/TS    | 🚧 In Progress |\n\n## Installation\n\n### Unix (macOS, Linux)\n\n```bash\ncurl -fsSL https://raw.githubusercontent.com/nanoapi-io/napi/refs/heads/main/install_scripts/install.sh | bash\n```\n\nOr download a binary directly from\n[GitHub Releases](https://github.com/nanoapi-io/napi/releases/latest).\n\n### Windows\n\nUse [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) to run napi.\nNative Windows support is in progress.\n\n## Quick Start\n\n```bash\n# 1. Initialize your project (creates .napirc)\nnapi init\n\n# 2. Generate a dependency manifest\nnapi generate\n\n# 3. Open the visualizer in your browser\nnapi view\n```\n\nThat's it. Your manifest is saved locally in `.napi/manifests/` and the\nvisualizer opens at `http://localhost:3000`.\n\n## CLI Commands\n\n### `napi init`\n\nInteractive setup that creates a `.napirc` configuration file in your project\nroot.\n\nPrompts you for:\n\n- **Language** -- Python, C#, C, or Java\n- **Include/exclude patterns** -- which files to analyze\n- **Output directory** -- where extracted symbols are written\n- **AI labeling** (optional) -- provider and concurrency settings\n\n```bash\nnapi init\n```\n\n### `napi generate`\n\nAnalyzes your codebase and generates a dependency manifest. The manifest\ncaptures every file, symbol, dependency, and metric (lines, complexity,\ncoupling).\n\nManifests are saved as JSON files in `.napi/manifests/` with the naming pattern\n`{timestamp}-{commitSha}.json`.\n\n```bash\n# Interactive (prompts for branch/commit if not in git)\nnapi generate\n\n# Non-interactive (for CI)\nnapi generate --branch main --commit-sha abc1234 --commit-sha-date 2026-01-01T00:00:00Z\n```\n\nOptions:\n\n- `--branch` -- Git branch name (auto-detected if omitted)\n- `--commit-sha` -- Git commit hash (auto-detected if omitted)\n- `--commit-sha-date` -- Commit date in ISO 8601 format (auto-detected if\n  omitted)\n- `--labelingApiKey` -- API key for AI labeling (overrides global config)\n\n### `napi view`\n\nStarts a local web server and opens an interactive dependency visualizer in your\nbrowser.\n\n```bash\nnapi view\nnapi view --port 8080\n```\n\nThe viewer provides:\n\n- **Manifest list** -- browse all locally stored manifests by branch, commit,\n  and date\n- **Project graph** -- file-level dependency map with Cytoscape.js\n- **File graph** -- symbol-level view within a file (functions, classes,\n  variables)\n- **Symbol graph** -- transitive dependency chain for a specific symbol\n- **File explorer sidebar** -- navigate your codebase structure\n- **Audit alerts** -- visual indicators for files/symbols exceeding thresholds\n\n### `napi extract`\n\nExtracts specific symbols from your codebase into separate files using a local\nmanifest.\n\n```bash\n# Extract a function from a specific file\nnapi extract --symbol \"src/auth/login.py|authenticate\"\n\n# Extract multiple symbols\nnapi extract --symbol \"src/models.py|User\" --symbol \"src/models.py|Session\"\n\n# Use a specific manifest (defaults to latest)\nnapi extract --symbol \"src/main.py|run\" --manifestId 1712500000000-a1b2c3d\n```\n\nOutput is written to `{outDir}/extracted-{timestamp}/`.\n\n### `napi set apiKey`\n\nConfigure API keys for AI-powered dependency labeling. Keys are stored in the\nglobal config (not in your project).\n\n```bash\nnapi set apiKey\n```\n\nPrompts for:\n\n- **Provider** -- Google, OpenAI, or Anthropic\n- **API key** -- your provider API key\n\n## Local Manifest Storage\n\nAll manifests are stored in `.napi/manifests/` relative to your project root.\nEach manifest is a self-contained JSON file:\n\n```json\n{\n  \"id\": \"1712500000000-a1b2c3d\",\n  \"branch\": \"main\",\n  \"commitSha\": \"a1b2c3d4e5f6...\",\n  \"commitShaDate\": \"2026-04-07T10:00:00Z\",\n  \"createdAt\": \"2026-04-07T10:01:00Z\",\n  \"manifest\": {}\n}\n```\n\nAdd `.napi/` to your `.gitignore` or commit it to track architecture history in\nversion control -- your choice.\n\n## CI/CD Integration\n\nGenerate manifests automatically on every push:\n\n```yaml\n# .github/workflows/napi.yml\nname: Generate Manifest\non: [push]\njobs:\n  manifest:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n\n      - name: Install napi\n        run: curl -fsSL https://raw.githubusercontent.com/nanoapi-io/napi/refs/heads/main/install_scripts/install.sh | bash\n\n      - name: Generate manifest\n        run: napi generate --branch ${{ github.ref_name }} --commit-sha ${{ github.sha }} --commit-sha-date \"$(git log -1 --format=%cI)\"\n```\n\n## Configuration Reference\n\n### `.napirc`\n\nProject-level configuration created by `napi init`:\n\n```json\n{\n  \"language\": \"python\",\n  \"python\": { \"version\": \"3.10\" },\n  \"project\": {\n    \"include\": [\"src/**/*.py\"],\n    \"exclude\": [\".git/**\", \"**/__pycache__/**\", \"napi_out/**\"]\n  },\n  \"outDir\": \"napi_out\",\n  \"labeling\": {\n    \"modelProvider\": \"openai\",\n    \"maxConcurrency\": 5\n  }\n}\n```\n\n### Global Config\n\nStored in your OS config directory (`~/.config/napi/config.json` on Linux,\n`~/Library/Application Support/napi/config.json` on macOS). Managed via\n`napi set apiKey`.\n\n```json\n{\n  \"labeling\": {\n    \"apiKeys\": {\n      \"openai\": \"sk-...\",\n      \"google\": \"AIza...\",\n      \"anthropic\": \"sk-ant-...\"\n    }\n  }\n}\n```\n\n## Development\n\nRequires [Deno](https://deno.land/) v2.4+.\n\n```bash\n# Install dependencies\ndeno install --allow-scripts\n\n# Run CLI in dev mode\ndeno task dev\n\n# Run viewer dev server (hot-reload)\ndeno task dev:viewer\n\n# Build viewer for production\ndeno task build:viewer\n\n# Compile binary (includes viewer)\ndeno task compile\n\n# Run tests\ndeno task test\n\n# Lint\ndeno lint\n\n# Format\ndeno fmt\n```\n\n## Contributing\n\nWe welcome contributions from the community. Please read our\n[contributing guide](https://github.com/nanoapi-io/napi/blob/main/.github/CONTRIBUTING.md)\nfor details on how to get involved.\n\n## License\n\n`napi` is licensed under the\n[Sustainable Use License](https://github.com/nanoapi-io/napi/blob/main/LICENSE.md).\n\n## Further Reading\n\n- [Automating the Strangler Pattern with Microlithic Development](https://medium.com/@joel_40950/automating-the-strangler-pattern-with-microlithic-development-241e4e0dd79b)\n- [Rise of the \"Microlith\": Rethinking Microservices for Modern Developers](https://dev.to/nanojoel/open-sourcing-nanoapi-rethinking-microservices-for-modern-developers-14m2)\n\n## Donations\n\nNanoAPI is a fair-source project. Because of this, we feel it would be unethical\nto keep any donations to ourselves. Instead, here is how we will handle\ndonations:\n\n- Donations go into a pool\n- Money from the pool will be distributed to contributors\n- At the end of the year, any remaining money will be donated to a charity of\n  the community's choice\n\nWe will post regular updates on how much money is in the pool and how it is\nbeing distributed.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

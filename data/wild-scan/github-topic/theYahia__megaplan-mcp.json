@@ -1,0 +1,44 @@
+{
+  "full_name": "theYahia/megaplan-mcp",
+  "html_url": "https://github.com/theYahia/megaplan-mcp",
+  "description": "MCP server for Megaplan — tasks, deals, project management (Russia). Part of WWmcp — 114 MCP servers for emerging markets.",
+  "topics": [
+    "ai-agents",
+    "anthropic",
+    "claude",
+    "crm",
+    "emerging-markets",
+    "mcp",
+    "mcp-servers",
+    "megaplan",
+    "model-context-protocol",
+    "project-management",
+    "russia",
+    "russian-api",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 2,
+  "forks": 1,
+  "open_issues": 1,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-03-30T16:48:28Z",
+  "last_pushed_at": "2026-06-23T12:07:08Z",
+  "fetched_at": "2026-07-12T00:04:32.537Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# @theyahia/megaplan-mcp\n\nMCP server for **Megaplan** project management. Tasks, deals, projects, employees, comments via API v3.\n\n## Tools (8)\n\n| Tool | Description |\n|------|------------|\n| `get_tasks` | List tasks with filters by status, responsible, search |\n| `create_task` | Create a task with name, description, deadline |\n| `get_deals` | List deals with filters |\n| `create_deal` | Create a deal with pipeline, amount, contact |\n| `get_projects` | List projects with filters |\n| `get_employees` | List employees with search, department filter |\n| `get_comments` | List comments on task/deal/project |\n| `create_comment` | Add a comment to task/deal/project |\n\n## Skills (Prompts)\n\n| Skill | Description |\n|-------|------------|\n| `my-tasks-today` | \"Мои задачи на сегодня\" — active tasks sorted by urgency |\n| `create-deal-wizard` | \"Создай сделку\" — guided deal creation |\n\n## Setup\n\n### Option A: Access Token\n\n1. In Megaplan, go to **Settings > Integration > API**\n2. Generate an access token\n\n### Option B: Login + Password\n\nUse your Megaplan login credentials (email + password).\n\n## Usage with Claude Desktop\n\n```json\n{\n  \"mcpServers\": {\n    \"megaplan\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@theyahia/megaplan-mcp\"],\n      \"env\": {\n        \"MEGAPLAN_DOMAIN\": \"yourcompany\",\n        \"MEGAPLAN_TOKEN\": \"your-access-token\"\n      }\n    }\n  }\n}\n```\n\nOr with login/password:\n\n```json\n{\n  \"mcpServers\": {\n    \"megaplan\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@theyahia/megaplan-mcp\"],\n      \"env\": {\n        \"MEGAPLAN_DOMAIN\": \"yourcompany\",\n        \"MEGAPLAN_LOGIN\": \"user@example.com\",\n        \"MEGAPLAN_PASSWORD\": \"your-password\"\n      }\n    }\n  }\n}\n```\n\n## Streamable HTTP Transport\n\nRun with `--http` flag for HTTP-based transport (useful for remote/cloud deployments):\n\n```bash\nMEGAPLAN_DOMAIN=yourcompany MEGAPLAN_TOKEN=xxx npx @theyahia/megaplan-mcp --http\n# Listening on http://localhost:3000/mcp\n```\n\nCustom port via `PORT` env var.\n\n## Environment Variables\n\n| Variable | Required | Description |\n|----------|----------|-------------|\n| `MEGAPLAN_DOMAIN` | Yes | Megaplan subdomain (e.g. `yourcompany`) |\n| `MEGAPLAN_TOKEN` | One of | Bearer access token |\n| `MEGAPLAN_LOGIN` | One of | Login email (if no token) |\n| `MEGAPLAN_PASSWORD` | One of | Password (if no token) |\n| `PORT` | No | HTTP port for `--http` mode (default: 3000) |\n\n## Referral\n\nGet **20-50% recurring** commission by referring Megaplan:\n\n- [Megaplan Partner Program](https://megaplan.ru/partners/)\n- Sign up as a partner, get your referral link\n- Every client you bring = recurring revenue share\n\n## Development\n\n```bash\nnpm install\nnpm run build\nnpm test\nnpm run dev          # stdio mode with tsx\nnpm run start:http   # HTTP mode\n```\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"megaplan\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@theyahia/megaplan-mcp\"],\n      \"env\": {\n        \"MEGAPLAN_DOMAIN\": \"\",\n        \"MEGAPLAN_TOKEN\": \"\"\n      }\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

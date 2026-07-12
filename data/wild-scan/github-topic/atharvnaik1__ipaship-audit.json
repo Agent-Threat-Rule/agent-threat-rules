@@ -1,0 +1,44 @@
+{
+  "full_name": "atharvnaik1/ipaship-audit",
+  "html_url": "https://github.com/atharvnaik1/ipaship-audit",
+  "description": "Let your AI Agent review your iOS/Android apps for appstore policy & security bugs with ipaShip's web app,  cli, mcp or claude-skill with safety hooks layer any any llm agent you use - loopin fixes in dev stage only no more waits till submissions.",
+  "topics": [
+    "ai",
+    "ai-agent",
+    "ai-tools",
+    "android",
+    "apple",
+    "appstore",
+    "auditor",
+    "claude-skills",
+    "cli-tool",
+    "code-review",
+    "developer-tools",
+    "good-first-issue",
+    "ios",
+    "ios-app",
+    "mcp-tools",
+    "opensource"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 42,
+  "forks": 91,
+  "open_issues": 49,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-03-19T15:29:42Z",
+  "last_pushed_at": "2026-05-25T08:49:12Z",
+  "fetched_at": "2026-07-12T00:26:04.217Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# ipaShip - Mobile Apps Compliance Auditor (Open Source)\n\nAI-powered iOS App Store compliance auditor. Upload your `.ipa` file and get a comprehensive audit against Apple's Review Guidelines — before you submit.\n\nAdded kimi 2.5 as default with my own api key.\n\n**Live at: [opensource.ipaship.com](https://opensource.ipaship.com)**\n\n## Features\n\n- **IPA Analysis** — Upload `.ipa` files (up to 150MB) for automated compliance auditing\n- **Full Guidelines Coverage** — Checks all 6 major App Store Review Guideline categories: Safety, Performance, Business, Design, Legal & Privacy, and Technical\n- **Multi-Provider AI** — Bring your own key from Anthropic (Claude), OpenAI (GPT), Google Gemini, or OpenRouter\n- **Model Selection** — Choose specific models per provider (Kimi 2.5, Claude Sonnet 4, GPT-4o, Gemini 2.5 Flash, etc.)\n- **Real-Time Streaming** — Watch your audit report generate live as the AI analyzes your code\n- **Export Reports** — Download as Markdown or PDF\n- **Zero-Trust Security** — Files processed in ephemeral temp storage and deleted immediately. API keys stay in your browser, never on our servers\n- **100% Open Source** — Fully auditable codebase\n\n## Tech Stack\n\n| Layer | Technology |\n|-------|-----------|\n| Frontend | Next.js 15, React 19, TypeScript, Tailwind CSS, Framer Motion |\n| Backend | Next.js API Routes (Node.js) |\n| Database | MongoDB (Mongoose) |\n| AI Providers | Anthropic, OpenAI, Google Gemini, OpenRouter |\n| File Processing | Busboy (streaming uploads), `unzip` (IPA extraction) |\n| Export | html2pdf.js, React Markdown |\n\n## Getting Started\n\n### Prerequisites\n\n- Node.js 18+\n- MongoDB URI (Atlas or local)\n- API key from at least one AI provider\n- `unzip` installed on the server/runtime environment\n\n```bash\n# Ubuntu/Debian\nsudo apt-get update && sudo apt-get install -y unzip\n```\n\n### Setup\n\n```bash\n# Clone the repo\ngit clone https://github.com/atharvnaik1/ipaship-app-reviewer.git\ncd ipaship-app-reviewer\n\n# Install dependencies\nnpm install\n\n# Create environment file and fill in the required values\ncp .env.example .env.local\n\n# Start dev server\nnpm run dev\n```\n\nOpen [http://localhost:8080](http://localhost:8080) in your browser.\n\n### Production Build\n\n```bash\nnpm run build\nnpm start\n```\n\n## How It Works\n\n1. **Upload** — Drop your `.ipa` file. The server streams it to disk via Busboy without buffering in memory.\n2. **Extract** — The IPA is unzipped and all relevant source files are collected (`.swift`, `.m`, `.plist`, `.entitlements`, `.storyboard`, `.xcprivacy`, etc.). Binary files and build artifacts are skipped.\n3. **Analyze** — Source files are sent to your chosen AI provider with a structured audit prompt. The response streams back in real-time.\n4. **Report** — You get a structured compliance report with pass/fail indicators, severity ratings, and a prioritized remediation plan.\n\n## API Endpoints\n\n| Method | Endpoint | Purpose |\n|--------|----------|---------|\n| `POST` | `/api/audit` | Upload IPA, stream AI audit report |\n| `POST` | `/api/save-report` | Save report to MongoDB |\n| `GET` | `/api/visitor` | Increment and return visitor count |\n\n## Client Wrappers / SDKs\n\nipaShip provides ready-to-use boilerplate SDKs and wrappers for various ecosystems and languages. You can find them in the `wrappers/` directory. Each wrapper is skeletoned to pragmatically audit your `.ipa` files directly from your CI/CD pipelines, backend backend, or build environments!\n\n### Commands to Run Wrappers\n\nHere are quick commands to interact with the given wrappers:\n\n**Node.js / NPM**\n```bash\ncd wrappers/npm && npm install\nnode index.js\n```\n\n**Python**\n```bash\ncd wrappers/python\npython3 ipaship.py\n```\n\n**Rust**\n```bash\ncd wrappers/rust\ncargo run --release\n```\n\n**Go**\n```bash\ncd wrappers/go\ngo run ipaship.go\n```\n\n**Homebrew (MacOS CLI)**\n```bash\nbrew install ./wrappers/homebrew/ipaship.rb\nipaship /path/to/app.ipa\n```\n\n**C / C++**\n```bash\ncd wrappers/c && gcc ipaship.c -o ipaship && ./ipaship\ncd wrappers/cpp && g++ ipaship.cpp -o ipaship && ./ipaship\n```\n\n**Java & Kotlin**\n```bash\n# Java\ncd wrappers/java && mvn clean install\n# Kotlin\ncd wrappers/kotlin && ./gradlew build\n```\n\n**Ruby**\n```bash\ncd wrappers/ruby\ngem build ipaship.gemspec\n```\n\n**PHP**\n```bash\ncd wrappers/php\ncomposer install\n```\n\n**C# / .NET**\n```bash\ncd wrappers/csharp-dotnet\ndotnet build\n```\n\n**R**\n```R\n# Load inside your R script (wrappers/r)\nsource(\"R/ipaship.R\")\nipaship_audit(\"app.ipa\", \"API_KEY\")\n```\n\n**Linux (Bash CLI)**\n```bash\nchmod +x wrappers/linux/ipaship-cli.sh\n./wrappers/linux/ipaship-cli.sh /path/to/app.ipa \"YOUR_API_KEY\"\n```\n\n**Swift & Apple Frameworks (Obj-C / Cocoapods)**\n- Add `wrappers/swift-cocoapods` as a local Swift Package Dependency.\n- Integrate the Objective-C headers from `wrappers/objc` into your build.\n\n**Cross-Platform App Frameworks (Dart/Flutter, Expo, Ionic)**\n- **Flutter:** Import `wrappers/flutter-dart` via local path dependency in your `pubspec.yaml`.\n- **Expo:** Integrate `wrappers/expo/index.js` as an Expo config plugin.\n- **Ionic:** Use the `wrappers/ionic` wrapper with Capacitor.\n\n## Deployment\n\nA deployment script is included for Ubuntu 24.04 VMs:\n\n```bash\n# On the server, create .env.local first\ncp .env.example /opt/ipaship/.env.local\n\n# Ensure unzip is installed (required by /api/audit extraction)\nsudo apt-get update && sudo apt-get install -y unzip\n\n# Then run the deploy script\nchmod +x deploy.sh\n./deploy.sh\n```\n\nThe script sets up Node.js 20, PM2, Nginx (with streaming/upload support), and UFW firewall.\n\n## Security\n\n- **No cloud storage** — Files are processed in ephemeral `/tmp` directories and deleted immediately after audit\n- **BYOK (Bring Your Own Key)** — API keys are stored in your browser's localStorage, never sent to our servers\n- **No shell injection** — File extraction uses `execFile` (no shell), preventing command injection via filenames\n- **Binary detection** — Binary plists and compiled files are detected and skipped\n- **Rate limiting** — 5 requests per IP per minute via in-memory LRU cache\n- **Prompt injection guards** — System/user message separation with explicit instructions to treat file contents as data only\n\n## Contributing\n\nContributions are welcome! Feel free to open issues or submit pull requests.\n\n## License\n\nOpen source. See repository for details.\n\n---\n\nBuilt by [ipaShip](https://ipaship.com)\n© ipaShip – Original Creator: Atharv Naik\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

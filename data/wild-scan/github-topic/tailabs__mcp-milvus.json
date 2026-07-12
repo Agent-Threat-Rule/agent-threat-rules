@@ -1,0 +1,34 @@
+{
+  "full_name": "tailabs/mcp-milvus",
+  "html_url": "https://github.com/tailabs/mcp-milvus",
+  "description": "MCP server for Milvus vector database with session-aware connection management.",
+  "topics": [
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "milvus",
+    "session-management",
+    "vector-database"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 1,
+  "forks": 1,
+  "open_issues": 0,
+  "language": "Go",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2025-07-01T07:36:30Z",
+  "last_pushed_at": "2025-07-14T02:51:08Z",
+  "fetched_at": "2026-07-12T00:11:26.341Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP Milvus\n\nA [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server for Milvus vector database, providing comprehensive vector database operations.\n\n## 🚀 Features\n\n- **Complete Milvus Operations**: Full lifecycle management of databases, collections, and indexes\n- **High-Performance Vector Search**: Support for similarity search, hybrid search, and more retrieval methods\n- **Intelligent Session Management**: Efficient connection pooling based on Ristretto cache\n- **Engineering Architecture**: Modular design for easy extension and maintenance\n- **Middleware Support**: Built-in logging, authentication, and other middleware\n- **Docker Support**: Complete containerized deployment solution\n- **Type Safety**: Go's strong type system ensures API safety\n\n## 📋 Supported Tools\n\n### Database Management\n- `milvus_create_database` - Create database\n- `milvus_list_databases` - List all databases\n- `milvus_use_database` - Switch database\n\n### Collection Management\n- `milvus_create_collection` - Create collection\n- `milvus_drop_collection` - Drop collection\n- `milvus_list_collections` - List collections\n- `milvus_get_collection_info` - Get collection information\n- `milvus_rename_collection` - Rename collection\n- `milvus_load_collection` - Load collection into memory\n- `milvus_release_collection` - Release collection from memory\n\n### Index Management\n- `milvus_create_index` - Create index\n- `milvus_drop_index` - Drop index\n\n### Data Operations\n- `milvus_insert_data` - Insert data\n- `milvus_upsert` - Insert or update data\n- `milvus_delete_entities` - Delete entities\n- `milvus_query` - Conditional query\n- `milvus_vector_search` - Vector similarity search\n\n### Connection Management\n- `milvus_connector` - Establish Milvus connection\n\n## 🛠️ Installation and Usage\n\n### Prerequisites\n\n- Go 1.24 or higher\n- Running Milvus instance\n\n### Install from Source\n\n```bash\ngit clone https://github.com/tailabs/mcp-milvus.git\ncd mcp-milvus\nmake deps\nmake build\n```\n\nOr using Go directly:\n```bash\ngit clone https://github.com/tailabs/mcp-milvus.git\ncd mcp-milvus\ngo mod download\ngo build -o mcp-milvus ./cmd/mcp-milvus\n```\n\n### Docker Deployment\n\n```bash\n# Build image\ndocker build -t mcp-milvus .\n\n# Run container\ndocker run -p 8080:8080 mcp-milvus\n```\n\n### Usage\n\n1. **Start the server**\n```bash\n# Using Makefile\nmake run\n\n# Or directly\n./build/mcp-milvus\n```\n\n2. **Connect to Milvus**\nUse the `milvus_connector` tool to establish connection:\n```json\n{\n  \"address\": \"localhost:19530\",\n  \"token\": \"username:password\",\n  \"db_name\": \"default\"\n}\n```\n\n3. **Perform operations**\nAfter connection is established, you can use other tools for database operations.\n\n## 🏗️ Project Structure\n\n```\nmcp-milvus/\n├── cmd/mcp-milvus/          # Main application entry\n├── internal/\n│   ├── middleware/          # Middleware (logging, auth, etc.)\n│   ├── registry/            # Tool registry\n│   ├── schema/              # Schema builder\n│   ├── session/             # Session management\n│   └── tools/               # Milvus tool implementations\n├── Dockerfile               # Docker build file\n├── go.mod                   # Go module definition\n└── README.md               # Project documentation\n```\n\n## 🔧 Configuration\n\n### Environment Variables\n\n- `LOG_LEVEL`: Log level (debug/info/warn/error), default: info\n- `PORT`: Service port, default: 8080\n\n### Connection Configuration\n\nSupports the following connection parameters:\n- `address`: Milvus service address\n- `token`: Authentication token (format: username:password)\n- `db_name`: Database name\n\n## 🤝 Contributing\n\nWe welcome all forms of contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.\n\n### Development Workflow\n\n1. Fork this repository\n2. Create your feature branch (`git checkout -b feature/AmazingFeature`)\n3. Set up development environment (`make deps && make tools`)\n4. Make your changes and test (`make test && make lint`)\n5. Commit your changes (`git commit -m 'Add some AmazingFeature'`)\n6. Push to the branch (`git push origin feature/AmazingFeature`)\n7. Open a Pull Request\n\n### Available Make Commands\n\nRun `make help` to see all available commands:\n\n```bash\nmake help          # Show all available commands\nmake build         # Build binary\nmake test          # Run tests\nmake lint          # Run linter\nmake fmt           # Format code\nmake run           # Build and run\nmake dev           # Run with live reload\nmake docker        # Build Docker image\nmake build-all     # Build for all platforms\nmake release       # Prepare release\nmake clean         # Clean build artifacts\n```\n\n## 📝 License\n\nThis project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.\n\n## 🔗 Related Links\n\n- [Milvus Official Website](https://milvus.io/)\n- [Model Context Protocol](https://modelcontextprotocol.io/)\n- [MCP Go SDK](https://github.com/mark3labs/mcp-go)\n\n## 📞 Support\n\nIf you encounter any issues or have questions:\n\n1. Check [Issues](https://github.com/tailabs/mcp-milvus/issues) to see if similar issues exist\n2. Create a new Issue describing your problem\n3. Join discussions in Discussions\n\n## 🙏 Acknowledgments\n\n- [Milvus](https://github.com/milvus-io/milvus) - Excellent vector database\n- [MCP Go](https://github.com/mark3labs/mcp-go) - Go implementation of MCP\n- All contributors and users\n\n---\n\n**⭐ If this project helps you, please give it a Star!**\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

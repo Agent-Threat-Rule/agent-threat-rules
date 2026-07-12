@@ -1,0 +1,37 @@
+{
+  "full_name": "omnuron/omniclaw",
+  "html_url": "https://github.com/omnuron/omniclaw",
+  "description": "The first agentic payment network: policy-controlled, gasless, and real money-ready.  OmniClaw CLI + Financial Policy Engine let autonomous agents pay and earn safely at machine speed.",
+  "topics": [
+    "agent-economy",
+    "ai-agents",
+    "ai-payments",
+    "autonomous-agents",
+    "crypto-payment-acceptance",
+    "mcp-servers",
+    "payment-integration",
+    "usdc",
+    "web3"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 573,
+  "forks": 43,
+  "open_issues": 16,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-02-23T10:38:41Z",
+  "last_pushed_at": "2026-05-29T08:26:23Z",
+  "fetched_at": "2026-07-11T23:51:11.248Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# OmniClaw\n\nPolicy-controlled payment infrastructure for agent buyers.\n\nOmniClaw core is focused on one job: letting agents and applications pay through controlled, auditable rails without giving software unrestricted wallet authority.\n\n## Product Boundary\n\n| Product | Directory | Owns |\n| --- | --- | --- |\n| OmniClaw core | `src/omniclaw` | buyer SDK, policy engine, wallet/payment routing, x402 buyer execution, Gateway buyer readiness |\n\nCore should not include recipient-side paid endpoint hosting or settlement service code.\n\n## Core Capabilities\n\n- Financial Policy Engine for budgets, approvals, trust checks, and execution control\n- Python buyer SDK via `OmniClaw().pay(...)`\n- Agent buyer CLI via `omniclaw-cli pay`, `inspect-x402`, and `can-pay`\n- Circle Gateway buyer funding/readiness helpers\n- Standard x402 buyer flow for paying external paid endpoints\n- Ledger, idempotency, simulation, and payment-intent controls\n\n## Core Quickstart\n\nInstall:\n\n```bash\npip install omniclaw\n```\n\nStart the policy engine:\n\n```bash\ncp .env.example .env\n# Hybrid mode (default): leave OMNICLAW_BUYER_MODE=hybrid and fill CIRCLE_API_KEY,\n# ENTITY_SECRET, OMNICLAW_PRIVATE_KEY, OMNICLAW_AGENT_TOKEN, OMNICLAW_OWNER_TOKEN,\n# OMNICLAW_NETWORK, and OMNICLAW_RPC_URL.\n# x402-only Gateway mode: set OMNICLAW_BUYER_MODE=x402, leave CIRCLE_API_KEY and\n# ENTITY_SECRET empty unless you need optional Circle Gateway API helpers, and fill\n# OMNICLAW_PRIVATE_KEY, OMNICLAW_AGENT_TOKEN, OMNICLAW_OWNER_TOKEN,\n# OMNICLAW_NETWORK, and OMNICLAW_RPC_URL.\n\nmkdir -p examples/agent/buyer/runtime\ncp examples/agent/buyer/policy.example.json examples/agent/buyer/runtime/policy.json\n# Edit examples/agent/buyer/runtime/policy.json so the token matches OMNICLAW_AGENT_TOKEN.\n\ndocker compose -f examples/agent/buyer/docker-compose.yml --env-file .env up --build\n```\n\nThe policy file is stable configuration. Generated wallet state is written separately\nto `examples/agent/buyer/runtime/wallet-state.json`.\n\nBuyer-facing policy rails are:\n\n- `circle_transfer` for direct Circle Developer Wallet transfers.\n- `x402` for paid API payments. OmniClaw chooses Gateway nanopayment or the standard\n  x402 payment path internally based on seller accepts, buyer config, and Gateway balance.\n\nConfigure the buyer CLI:\n\n```bash\nset -a; source .env; set +a\nexport OMNICLAW_SERVER_URL=\"http://127.0.0.1:9091\"\nexport OMNICLAW_TOKEN=\"$OMNICLAW_AGENT_TOKEN\"\n```\n\nInspect and pay an x402 endpoint:\n\n```bash\nomniclaw-cli inspect-x402 --recipient \"http://127.0.0.1:4023/compute?size=20\"\nomniclaw-cli pay --recipient \"http://127.0.0.1:4023/compute?size=20\" --amount 0.10 --idempotency-key job-123\n```\n\n## Development\n\nRun core tests:\n\n```bash\nuv run pytest\n```\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

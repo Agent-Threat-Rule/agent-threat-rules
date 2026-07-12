@@ -1,0 +1,47 @@
+{
+  "full_name": "mcp-shark/mcp-shark-viewer-vscode",
+  "html_url": "https://github.com/mcp-shark/mcp-shark-viewer-vscode",
+  "description": "MCP Shark Viewer integrates MCP Shark into VS Code/Cursor so you can inspect MCP traffic without leaving your IDE",
+  "topics": [
+    "cursor",
+    "cursor-ai",
+    "cursor-ide",
+    "debugging",
+    "debugging-tool",
+    "devtools",
+    "devtools-extension",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "model-context-protocol",
+    "nodejs",
+    "observability",
+    "security",
+    "security-tools",
+    "traffic-inspection",
+    "vscode-extension"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 2,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "JavaScript",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2025-12-16T23:24:45Z",
+  "last_pushed_at": "2026-02-01T17:58:44Z",
+  "fetched_at": "2026-07-12T00:06:45.270Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n\n  <img src=\"./icon.png\" alt=\"MCP Shark Viewer\" width=\"128\" height=\"128\">\n\n  <h1>MCP Shark Viewer (VS Code / Cursor)</h1>\n\n  <p><strong>Inspect MCP traffic inside your IDE.</strong> Start/stop MCP Shark, open the inspector, and embed the MCP Shark UI in a webview.</p>\n\n</div>\n\n<p align=\"center\">\n  <img\n    src=\"https://raw.githubusercontent.com/mcp-shark/mcp-shark-viewer-vscode/main/how-to.gif\"\n    alt=\"MCP Shark Viewer walkthrough\"\n  />\n</p>\n\n## Table of Contents\n\n- [About](#about)\n- [Features](#features)\n- [Commands](#commands)\n- [Getting Started](#getting-started)\n- [Requirements](#requirements)\n- [Install (VSIX)](#install-vsix)\n- [Troubleshooting](#troubleshooting)\n- [Development](#development)\n- [Scripts](#scripts)\n- [Docs](#docs)\n- [Repo Layout](#repo-layout)\n- [License](#license)\n\n## About\n\nThis extension integrates **MCP Shark** into **VS Code / Cursor** (and other VS Code-compatible IDEs). It provides:\n\n- A sidebar view (Activity Bar) to access the inspector quickly\n- Commands to start/stop MCP Shark from the Command Palette\n- An embedded MCP Shark UI panel (webview iframe)\n\nMCP Shark (the server + UI) is the upstream project: [mcp-shark/mcp-shark](https://github.com/mcp-shark/mcp-shark/tree/main). For MCP Shark install/usage, see the upstream README: [README](https://github.com/mcp-shark/mcp-shark/blob/main/README.md).\n\n## Features\n\n- **Traffic Inspector View**: Activity Bar view `Traffic Inspector` (`mcp-shark-traffic`).\n- **Embedded UI**: Webview panel that iframes the MCP Shark UI (`http://localhost:9853`).\n- **Server lifecycle**: start/stop MCP Shark from inside the IDE.\n- **Settings fetch**: when MCP Shark is reachable, the extension calls `GET /api/settings` (API reference: [GET /api/settings](https://github.com/mcp-shark/mcp-shark/blob/main/docs/api-reference.md#get-apisettings)).\n\n## Commands\n\n| Command | Palette Title |\n| --- | --- |\n| `mcp-shark.viewer.startServer` | Start MCP Shark Server |\n| `mcp-shark.viewer.stopServer` | Stop MCP Shark Server |\n| `mcp-shark.viewer.openInspector` | Open Traffic Inspector |\n| `mcp-shark.viewer.showDatabasePanel` | MCP Shark Traffic inspector |\n| `mcp-shark.viewer.refresh` | Refresh |\n\n## Getting Started\n\n1. Open the Activity Bar → **MCP Shark** → **Traffic Inspector**\n2. Run **Start MCP Shark Server** (Command Palette)\n3. Run **Open Traffic Inspector** to open the embedded UI panel\n4. In the MCP Shark UI, go to **MCP Server Setup** and **start the MCP server** (select your IDE config / servers, then click **Start MCP Shark**)\n5. For full MCP Shark first-run + setup instructions, see: [Getting Started](https://github.com/mcp-shark/mcp-shark/blob/main/docs/getting-started.md)\n6. For MCP Shark install/CLI usage, see the upstream README: [mcp-shark/mcp-shark README](https://github.com/mcp-shark/mcp-shark/blob/main/README.md)\n\n## Requirements\n\n- **IDE**: VS Code / Cursor\n- **Node.js**: required if you want the extension to auto-start MCP Shark via `npx -y @mcp-shark/mcp-shark` (MCP Shark requires Node 18+; see upstream README: [mcp-shark/mcp-shark README](https://github.com/mcp-shark/mcp-shark/blob/main/README.md))\n\n## Install (VSIX)\n\nPackage:\n\n```bash\nvsce package\n# or:\n# npx @vscode/vsce package\n```\n\nInstall into Cursor / VS Code:\n\n```bash\ncursor --install-extension mcp-shark-viewer-for-vscode-0.0.1.vsix\ncode --install-extension mcp-shark-viewer-for-vscode-0.0.1.vsix\n```\n\nSee also: `docs/How.md`.\n\n## Troubleshooting\n\n- **UI opens but server isn’t “running”**: MCP Shark’s UI can be up even if an external MCP server failed to start. Open the MCP Shark UI and check the setup/logs (upstream docs: [mcp-shark/mcp-shark](https://github.com/mcp-shark/mcp-shark/tree/main)).\n- **Port already in use (9853)**: another MCP Shark instance (or other process) is already bound to `9853`. Stop it and try again.\n- **Start fails inside IDE**: ensure `npx` is available in the IDE environment and you can run `npx -y @mcp-shark/mcp-shark` in a terminal.\n\n## Development\n\n- Open this repo in VS Code/Cursor\n- Press **F5** to launch an **Extension Development Host**\n- Run:\n  - `npm run validate`\n  - `npm run lint`\n\n## Scripts\n\n- **validate**: `npm run validate` (runs `node scripts/validate.js`)\n- **lint**: `npm run lint` (Biome)\n- **format**: `npm run format`\n- **check**: `npm run check`\n\n## Docs\n\n- **Install/Package**: `docs/How.md`\n- **Validation workflow**: `docs/VALIDATION_PLAN.md`\n\n## Repo Layout\n\n- **Root entrypoint**: `extension.js` (thin shim exporting from `src/`)\n- **Source**: `src/`\n- **Validator**: `scripts/validate.js`\n- **Docs**: `docs/`\n- **Webview assets**: `media/` (e.g. `media/image.png`)\n\n## License\n\nSee `LICENSE`.\n\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "extension.js",
+    "size": 110,
+    "content": "const { activate, deactivate } = require(\"./src/extension\");\n\nmodule.exports = {\n  activate,\n  deactivate,\n};\n"
+  },
+  "content_fetch_notes": []
+}

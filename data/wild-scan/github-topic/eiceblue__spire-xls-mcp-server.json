@@ -1,0 +1,35 @@
+{
+  "full_name": "eiceblue/spire-xls-mcp-server",
+  "html_url": "https://github.com/eiceblue/spire-xls-mcp-server",
+  "description": "Spire.XLS MCP Server, using Spire.XLS on mcp tools",
+  "topics": [
+    "mcp",
+    "mcp-client",
+    "mcp-clients",
+    "mcp-servers",
+    "mcp-tools",
+    "spirexls"
+  ],
+  "matched_query_topics": [
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 6,
+  "forks": 3,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-06-05T06:04:08Z",
+  "last_pushed_at": "2025-09-15T03:40:45Z",
+  "fetched_at": "2026-07-11T23:58:19.759Z",
+  "readme": {
+    "path": "README.md",
+    "content": "## What is Spire.XLS MCP Server?\n\nThe Spire.XLS MCP Server is a robust solution that empowers AI agents to work with Excel files using the Model Context Protocol (MCP). It is totally independent and doesn't require Microsoft Office to be installed on system. This tool enables AI agents to [create](https://www.e-iceblue.com/Tutorials/Python/Spire.XLS-for-Python/Program-Guide/Document-Operation/Python-Create-Read-or-Update-Excel-Documents.html), read, [edit](https://www.e-iceblue.com/Tutorials/Python/Spire.XLS-for-Python/Program-Guide/Document-Operation/Python-Edit-Excel-Documents.html), and [convert Excel workbooks](https://www.e-iceblue.com/Tutorials/Python/Spire.XLS-for-Python/Program-Guide/Conversion/Python-Convert-Excel-to-PDF.html) seamlessly\n\n## Main Features: \n\n- Convert [Excel to PDF](https://www.e-iceblue.com/Tutorials/Python/Spire.XLS-for-Python/Program-Guide/Conversion/Python-Convert-Excel-to-PDF.html), [Excel to HTML](https://www.e-iceblue.com/Tutorials/Python/Spire.XLS-for-Python/Program-Guide/Conversion/Python-Convert-Excel-to-HTML-and-Vice-Versa.html), [Excel to CSV](https://www.e-iceblue.com/Tutorials/Python/Spire.XLS-for-Python/Program-Guide/Conversion/Python-Convert-Excel-to-CSV-and-Vice-Versa.html), Excel to image, Excel to XML, and more with high fidelity.\n- Create, modify, and manage Excel workbooks\n- Manage and control worksheets: [rename](https://www.e-iceblue.com/Tutorials/Python/Spire.XLS-for-Python/Program-Guide/Worksheet/Python-Change-Worksheet-Names-and-Set-Tab-Colors-in-Excel.html), move, hide, [freeze panes](https://www.e-iceblue.com/Tutorials/Python/Spire.XLS-for-Python/Program-Guide/Cells/Python-Freeze-or-Unfreeze-Panes-in-Excel.html), and more.\n- Manage worksheets and cell ranges\n- [Read and write data](https://www.e-iceblue.com/Tutorials/Python/Spire.XLS-for-Python/Program-Guide/Document-Operation/Python-Create-Read-or-Update-Excel-Documents.html)\n- Analyze Excel data\n- Add various chart types to create visual Excel dashboards from data\n- [Create and manipulate pivot tables](https://www.e-iceblue.com/Tutorials/Python/Spire.XLS-for-Python/Program-Guide/Pivot-Table/Python-Create-or-Operate-Pivot-Tables-in-Excel.html) to summarize, analyze, explore, and present Excel data.\n\n## How to use Spire.XLS MCP Server?\n\n### Prerequisites\n\n- Python 3.10 or higher\n\n### Installation\n\n1. Clone the repository:\n```bash\ngit clone https://github.com/eiceblue/spire-xls-mcp-server.git\ncd spire-xls-mcp-server\n```\n\n2. Install using uv:\n```bash\nuv pip install -e .\n```\n### Running the Server\n\nStart the server (default port 8000):\n```bash\nuv run spire-xls-mcp-server\n```\n\nCustom port (e.g., 8080):\n\n```bash\n# Bash/Linux/macOS\nexport FASTMCP_PORT=8080 && uv run spire-xls-mcp-server\n\n# Windows PowerShell\n$env:FASTMCP_PORT = \"8080\"; uv run spire-xls-mcp-server\n```\n\n## Integration with AI Tools\nThe following visual guide illustrates the three-step process to integrate Spire.XLS MCP Server with supported AI development environments:\n\n**Step 1 and Step 2**: Start the server and configure AI tool\n![Step 1 and Step 2: Start the server and configure AI tool](https://cdn.e-iceblue.com/images/art_images/spire-xls-mcp-server-integration-steps-0.png)\n\n**Step 3**: Use Excel features through AI interface\n![Step 3: Use Excel features through AI interface](https://cdn.e-iceblue.com/images/art_images/spire-xls-mcp-server-integration-steps-1.png)\n\n### Cursor IDE\n\n1. Add this configuration to Cursor:\n```json\n{\n  \"mcpServers\": {\n    \"excel\": {\n      \"url\": \"http://localhost:8000/sse\",\n      \"env\": {\n        \"EXCEL_FILES_PATH\": \"/path/to/excel/files\"\n      }\n    }\n  }\n}\n```\n2. The Excel tools will be available through your AI assistant.\n\n### Remote Hosting & Transport Protocols\n\nThis server uses Server-Sent Events (SSE) transport protocol. For different use cases:\n\n1. **Using with Claude Desktop (requires stdio):**\n   - Use [Supergateway](https://github.com/supercorp-ai/supergateway) to convert SSE to stdio\n\n2. **Hosting Your MCP Server:**\n   - [Remote MCP Server Guide](https://developers.cloudflare.com/agents/guides/remote-mcp-server/)\n\n## Environment Variables\n\n| Variable | Description | Default |\n|--------|------|--------|\n| `FASTMCP_PORT` | Server port | `8000` |\n| `EXCEL_FILES_PATH` | Directory for Excel files | `./excel_files` |\n\n## Available Tools\n\nThe server provides a comprehensive set of Excel manipulation tools. Here are the main categories:\n\n- **Basic Operations**: Create, read, write, and [delete Excel worksheets](https://www.e-iceblue.com/Tutorials/Python/Spire.XLS-for-Python/Program-Guide/Worksheet/Python-Move-or-Delete-Worksheets-in-Excel.html) or workbooks.\n- **Data Processing**: Read and write cell data, [apply formulas](https://www.e-iceblue.com/Tutorials/Python/Spire.XLS-for-Python/Program-Guide/Formula/Python-Add-or-Read-Formulas-in-Excel.html), sort and filter\n- **Formatting**: Apply styles, [merge cells](https://www.e-iceblue.com/Tutorials/Python/Spire.XLS-for-Python/Program-Guide/Cells/Python-Merge-or-Unmerge-Cells-in-Excel.html), set fonts and colors\n- **Advanced Features**: [Create charts](https://www.e-iceblue.com/Tutorials/Python/Spire.XLS-for-Python/Program-Guide/Chart/Python-Create-Column-Charts-in-Excel.html), pivot tables, [conditional formatting](https://www.e-iceblue.com/Tutorials/Python/Spire.XLS-for-Python/Program-Guide/Conditional-Formatting/Python-Apply-Conditional-Formatting-in-Excel.html)\n- **Conversion**: Convert Excel to PDF, HTML, CSV, image, XML, and more with high fidelity.\n\nSee [TOOLS.md](https://github.com/eiceblue/spire-xls-mcp-server/blob/main/TOOLS.md) for complete documentation of all available tools.\n\n## FAQ from Spire.XLS MCP Server?\n\nQ1. Can I use Spire.XLS MCP Server for any directory?\n\nYes, Spire.XLS MCP Serer works for any directory.\n\nQ2. Is Spire.XLS MCP Server free to use?\n\nYes, it is licensed under the MIT License, allowing free use and modification.\n\nQ3. What programming languages does Spire.XLS MCP Server support?\n\nIt is built with Python.\n\n## License\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

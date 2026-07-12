@@ -1,0 +1,42 @@
+{
+  "full_name": "agentcathq/agentcat-typescript-sdk",
+  "html_url": "https://github.com/agentcathq/agentcat-typescript-sdk",
+  "description": "AgentCat is an analytics platform for MCP server owners 🐱.",
+  "topics": [
+    "agent-runtime",
+    "agents",
+    "ai",
+    "ai-agents",
+    "ai-platform",
+    "ai-tools",
+    "analytics",
+    "debugging",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "mcps",
+    "observability"
+  ],
+  "matched_query_topics": [
+    "mcp-server",
+    "mcp-tools"
+  ],
+  "stars": 108,
+  "forks": 11,
+  "open_issues": 2,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-05-29T18:36:23Z",
+  "last_pushed_at": "2026-07-04T16:40:18Z",
+  "fetched_at": "2026-07-11T22:58:21.550Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n  <img alt=\"AgentCat — see exactly how agents experience your product\" src=\"docs/static/og-image.png\" width=\"80%\">\n</div>\n<h3 align=\"center\">\n    <a href=\"#getting-started\">Getting Started</a>\n    <span> · </span>\n    <a href=\"#why-use-agentcat-\">Features</a>\n    <span> · </span>\n    <a href=\"https://docs.agentcat.com\">Docs</a>\n    <span> · </span>\n    <a href=\"https://agentcat.com\">Website</a>\n    <span> · </span>\n    <a href=\"#free-for-open-source\">Open Source</a>\n    <span> · </span>\n    <a href=\"https://meet.agentcat.com/meet\">Schedule a Demo</a>\n</h3>\n<p align=\"center\">\n  <a href=\"https://badge.fury.io/js/agentcat\"><img src=\"https://badge.fury.io/js/agentcat.svg\" alt=\"npm version\"></a>\n  <a href=\"https://www.npmjs.com/package/agentcat\"><img src=\"https://img.shields.io/npm/dm/agentcat.svg\" alt=\"npm downloads\"></a>\n  <a href=\"https://opensource.org/licenses/MIT\"><img src=\"https://img.shields.io/badge/License-MIT-blue.svg\" alt=\"License: MIT\"></a>\n  <a href=\"https://www.typescriptlang.org/\"><img src=\"https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg\" alt=\"TypeScript\"></a>\n  <a href=\"https://github.com/agentcathq/agentcat-typescript-sdk/issues\"><img src=\"https://img.shields.io/github/issues/agentcathq/agentcat-typescript-sdk.svg\" alt=\"GitHub issues\"></a>\n  <a href=\"https://github.com/agentcathq/agentcat-typescript-sdk/actions\"><img src=\"https://github.com/agentcathq/agentcat-typescript-sdk/workflows/CI/badge.svg\" alt=\"CI\"></a>\n</p>\n\n> [!IMPORTANT]\n> **MCPcat is now AgentCat** 🐱 — same team, same product, new name. This package was previously published as [`mcpcat`](https://www.npmjs.com/package/mcpcat), which keeps working forever, but new features land here. Upgrading takes a few minutes — see the [migration guide](./MIGRATION.md).\n\n> [!NOTE]\n> Looking for the Python SDK? Check it out here [agentcat-python](https://github.com/agentcathq/agentcat-python-sdk).\n\nAgentCat is an analytics platform for MCP server owners 🐱. It captures user intentions and behavior patterns to help you understand what AI users actually need from your tools — eliminating guesswork and accelerating product development all with one-line of code.\n\nThis SDK also provides a free and simple way to forward telemetry like logs, traces, and errors to any Open Telemetry collector or popular tools like Datadog, Sentry, and PostHog.\n\n```bash\nnpm install -S agentcat\n```\n\nTo learn more about us, check us out [here](https://agentcat.com). For detailed guides visit our [documentation](https://docs.agentcat.com).\n\n## Why use AgentCat? 🤔\n\nAgentCat helps developers and product owners build, improve, and monitor their MCP servers by capturing user analytics and tracing tool calls.\n\nUse AgentCat for:\n\n- **User session replay** 🎬. Follow alongside your users to understand why they're using your MCP servers, what functionality you're missing, and what clients they're coming from.\n- **Trace debugging** 🔍. See where your users are getting stuck, track and find when LLMs get confused by your API, and debug sessions across all deployments of your MCP server.\n- **Existing platform support** 📊. Get logging and tracing out of the box for your existing observability platforms (OpenTelemetry, Datadog, Sentry) — eliminating the tedious work of implementing telemetry yourself.\n\n<img alt=\"AgentCat architecture — the AgentCat SDK inside your MCP server sends analytics to your observability vendors and session replay to the AgentCat dashboard\" src=\"docs/static/architecture.png\" />\n\n## Getting Started\n\nTo get started with AgentCat, first create an account and obtain your project ID by signing up at [agentcat.com](https://agentcat.com). For detailed setup instructions visit our [documentation](https://docs.agentcat.com).\n\nOnce you have your project ID, integrate AgentCat into your MCP server:\n\n```ts\nimport * as agentcat from \"agentcat\";\n\nconst mcpServer = new Server({ name: \"echo-mcp\", version: \"0.1.0\" });\n\n// Track the server with AgentCat\nagentcat.track(mcpServer, \"proj_0000000\");\n\n// Register your tools\n```\n\n### Identifying users\n\nYou can identify your user sessions with a simple callback AgentCat exposes, called `identify`.\n\n```ts\nagentcat.track(mcpServer, \"proj_0000000\", {\n  identify: async (request, extra) => {\n    const user = await myapi.getUser(request.params.arguments.token);\n    return {\n      userId: user.id,\n      userName: user.name,\n      userData: { favoriteColor: user.favoriteColor },\n    };\n  },\n});\n```\n\n### Redacting sensitive data\n\nAgentCat redacts all data sent to its servers and encrypts at rest, but for additional security, it offers a hook to do your own redaction on all text data returned back to our servers.\n\n```ts\nagentcat.track(mcpServer, \"proj_0000000\", {\n  redactSensitiveInformation: async (text) => await redact(text),\n  // or\n  redactSensitiveInformation: (text) => redact(text),\n});\n```\n\n### Existing Platform Support\n\nAgentCat seamlessly integrates with your existing observability stack, providing automatic logging and tracing without the tedious setup typically required. Export telemetry data to multiple platforms simultaneously:\n\n```typescript\nagentcat.track(server, \"proj_0000\", {\n  // Project ID can optionally be \"null\" if you just want to forward telemetry\n  exporters: {\n    otlp: {\n      type: \"otlp\",\n      endpoint: \"http://localhost:4318/v1/traces\",\n    },\n    datadog: {\n      type: \"datadog\",\n      apiKey: process.env.DD_API_KEY,\n      site: \"datadoghq.com\",\n      service: \"my-mcp-server\",\n    },\n    sentry: {\n      type: \"sentry\",\n      dsn: process.env.SENTRY_DSN,\n      environment: \"production\",\n    },\n    posthog: {\n      type: \"posthog\",\n      apiKey: process.env.POSTHOG_API_KEY,\n      host: \"https://us.i.posthog.com\", // Optional: defaults to US region\n    },\n  },\n});\n```\n\nLearn more about our free and open source [telemetry integrations](https://docs.agentcat.com/telemetry/integrations).\n\n### Internal diagnostics\n\nTo help us catch and fix broken installs, the SDK sends AgentCat a small, anonymized\nsignal when setup or runtime errors occur — never your tool calls, your responses,\nor anything about your users. Records carry only operational metadata, such as your\nproject ID (or an anonymous install ID when none is set). Your local `~/agentcat.log`\nis unchanged.\n\nDiagnostics are on by default and can be turned off completely with either:\n\n- `track(server, projectId, { disableDiagnostics: true })`, or\n- the `DISABLE_DIAGNOSTICS` environment variable.\n\n## Free for open source\n\nAgentCat is free for qualified open source projects. We believe in supporting the ecosystem that makes MCP possible. If you maintain an open source MCP server, you can access our full analytics platform at no cost.\n\n**How to apply**: Email hi@agentcat.com with your repository link\n\n_Already using AgentCat? We'll upgrade your account immediately._\n\n## Community Cats 🐱\n\nMeet the cats behind AgentCat! Add your cat to our community by submitting a PR with your cat's photo in the `docs/cats/` directory.\n\n<div align=\"left\">\n  <img src=\"docs/cats/bibi.png\" alt=\"bibi\" width=\"80\" height=\"80\">\n  <img src=\"docs/cats/zelda.jpg\" alt=\"zelda\" width=\"80\" height=\"80\">\n</div>\n\n_Want to add your cat? Create a PR adding your cat's photo to `docs/cats/` and update this section!_\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

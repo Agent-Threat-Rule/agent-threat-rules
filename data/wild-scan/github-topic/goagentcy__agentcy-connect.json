@@ -1,0 +1,51 @@
+{
+  "full_name": "goagentcy/agentcy-connect",
+  "html_url": "https://github.com/goagentcy/agentcy-connect",
+  "description": "A managed AI marketing agent that plugs into all your AI tools. MCP server configs, setup guides, and integrations for Claude, ChatGPT, Cursor, VS Code, and more.",
+  "topics": [
+    "ai",
+    "ai-agent",
+    "ai-agents",
+    "analytics",
+    "chatgpt",
+    "claude",
+    "digital-marketing",
+    "google-ads",
+    "google-analytics",
+    "llm",
+    "marketing",
+    "marketing-analytics",
+    "marketing-automation",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "model-context-protocol",
+    "seo",
+    "typescript",
+    "woocommerce"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 4,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Shell",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-12T14:50:51Z",
+  "last_pushed_at": "2026-04-12T16:24:27Z",
+  "fetched_at": "2026-07-12T00:35:12.650Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<p align=\"center\">\n  <img src=\"logo.svg\" alt=\"Agentcy\" width=\"120\" height=\"120\">\n</p>\n\n<h1 align=\"center\">Agentcy</h1>\n\n<p align=\"center\">\n  The AI marketing analyst that lives inside your favorite AI tools.<br>\n  Ask about your clients' marketing. Get insights and recommendations back — not raw data.\n</p>\n\n<p align=\"center\">\n  <a href=\"https://www.goagentcy.com\">Website</a> &bull;\n  <a href=\"https://www.goagentcy.com/docs\">Docs</a> &bull;\n  <a href=\"https://www.goagentcy.com/pricing\">Pricing</a> &bull;\n  <a href=\"https://www.goagentcy.com/integrations\">Integrations</a>\n</p>\n\n---\n\n## What is Agentcy?\n\nAgentcy is an AI marketing analyst that works inside the AI tools you already use. Ask questions about your clients' marketing in plain English — Agentcy analyzes the data across GA4, Search Console, Google Ads, WooCommerce, and more, then delivers synthesized insights and recommendations. Not a data dump. Not a spreadsheet. An analyst.\n\n**What makes it different:**\n- **Analyst, not a data pipe** — every response is a synthesized insight with recommendations, not raw JSON\n- **One connection, all your data** — GA4, GSC, Google Ads, WooCommerce, YouTube, GTM, HubSpot, SpyFu, and more\n- **Switch clients instantly** — use the `domain` parameter to query any client's data\n- **Minimal overhead** — 4 MCP tools, ~630 tokens vs. 100+ tools from separate MCPs\n- **Works everywhere** — Claude, ChatGPT, Cursor, VS Code, Windsurf, OpenClaw, and more\n\n## Quick Start\n\n### 1. Get your API key\n\nSign up at [goagentcy.com](https://www.goagentcy.com) and create an API key in the portal.\n\n### 2. Connect your AI assistant\n\nPick your client below and add the configuration.\n\n## Client Configurations\n\n### Claude Desktop\n\nUse the Connectors UI: **Settings → Connectors → Add → enter server URL and API key.**\n\nOr add to `claude_desktop_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"agentcy\": {\n      \"url\": \"https://data.goagentcy.com/mcp\",\n      \"headers\": {\n        \"Authorization\": \"[REDACTED-BEARER_TOKEN]\"\n      }\n    }\n  }\n}\n```\n\n### Claude Code\n\n```bash\nclaude mcp add agentcy \\\n  --transport http \\\n  https://data.goagentcy.com/mcp \\\n  --header \"Authorization: [REDACTED-BEARER_TOKEN]\"\n```\n\n### ChatGPT\n\nUse the ChatGPT UI: **Settings → Connectors → Add MCP Server → enter server URL and API key.**\n\n### Cursor\n\nAdd to `.cursor/mcp.json` in your project or `~/.cursor/mcp.json` globally:\n\n```json\n{\n  \"mcpServers\": {\n    \"agentcy\": {\n      \"url\": \"https://data.goagentcy.com/mcp\",\n      \"headers\": {\n        \"Authorization\": \"[REDACTED-BEARER_TOKEN]\"\n      }\n    }\n  }\n}\n```\n\n### VS Code (GitHub Copilot)\n\nAdd to `.vscode/mcp.json` in your project or user settings:\n\n```json\n{\n  \"servers\": {\n    \"agentcy\": {\n      \"type\": \"http\",\n      \"url\": \"https://data.goagentcy.com/mcp\",\n      \"headers\": {\n        \"Authorization\": \"[REDACTED-BEARER_TOKEN]\"\n      }\n    }\n  }\n}\n```\n\n### Windsurf\n\nAdd to `~/.codeium/windsurf/mcp_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"agentcy\": {\n      \"serverUrl\": \"https://data.goagentcy.com/mcp\",\n      \"headers\": {\n        \"Authorization\": \"[REDACTED-BEARER_TOKEN]\"\n      }\n    }\n  }\n}\n```\n\n### Cline\n\n```json\n{\n  \"mcpServers\": {\n    \"agentcy\": {\n      \"url\": \"https://data.goagentcy.com/mcp\",\n      \"type\": \"streamableHttp\",\n      \"headers\": {\n        \"Authorization\": \"[REDACTED-BEARER_TOKEN]\"\n      }\n    }\n  }\n}\n```\n\n### Roo Code\n\n```json\n{\n  \"mcpServers\": {\n    \"agentcy\": {\n      \"type\": \"streamable-http\",\n      \"url\": \"https://data.goagentcy.com/mcp\",\n      \"headers\": {\n        \"Authorization\": \"[REDACTED-BEARER_TOKEN]\"\n      }\n    }\n  }\n}\n```\n\n### JetBrains IDEs\n\nAdd to your MCP configuration (Settings → Tools → AI Assistant → MCP Servers):\n\n```json\n{\n  \"mcpServers\": {\n    \"agentcy\": {\n      \"url\": \"https://data.goagentcy.com/mcp\",\n      \"headers\": {\n        \"Authorization\": \"[REDACTED-BEARER_TOKEN]\"\n      }\n    }\n  }\n}\n```\n\n### Gemini CLI / Gemini Code Assist\n\nAdd to `~/.gemini/settings.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"agentcy\": {\n      \"httpUrl\": \"https://data.goagentcy.com/mcp\",\n      \"headers\": {\n        \"Authorization\": \"[REDACTED-BEARER_TOKEN]\"\n      }\n    }\n  }\n}\n```\n\n### Codex CLI\n\nAdd to `~/.codex/config.toml`:\n\n```toml\n[mcp_servers.agentcy]\nurl = \"https://data.goagentcy.com/mcp\"\nbearer_token_env_var = \"AGENTCY_API_KEY\"\n```\n\n### Mistral Le Chat\n\nUse the Le Chat UI: **Settings → Connectors → Add custom connector → enter server URL and API key.**\n\n### Other MCP Clients\n\nAgentcy works with any MCP client that supports Streamable HTTP transport. Use this configuration:\n\n- **Server URL:** `https://data.goagentcy.com/mcp`\n- **Transport:** Streamable HTTP\n- **Authentication:** Bearer token (your `agcy_` API key)\n\nSee the full list of supported clients at [goagentcy.com/integrations](https://www.goagentcy.com/integrations).\n\n## Data Sources\n\n| Source | Category | Auth |\n|--------|----------|------|\n| Google Analytics 4 | Analytics | Google OAuth |\n| Google Search Console | Search / SEO | Google OAuth |\n| Google Ads | Advertising | Google OAuth |\n| YouTube Analytics | Video / Content | Google OAuth |\n| Google Tag Manager | Tag Management | Google OAuth |\n| Google Sheets | Data / Spreadsheets | Google OAuth |\n| WooCommerce | E-commerce | API Key (BYOK) |\n| HubSpot | CRM / Marketing | API Key (BYOK) |\n| SpyFu | Competitive Intel | API Key (BYOK) |\n| Web Intelligence | Research | Included |\n| PageSpeed Insights | Performance | Included |\n| DNS Lookup | Infrastructure | Included |\n| SSL/TLS Analysis | Security | Included |\n| WHOIS / RDAP | Domain Info | Included |\n| Sitemap Analysis | SEO / Technical | Included |\n| Schema Markup | SEO / Structured Data | Included |\n| Readability Analysis | Content | Included |\n| Technology Detection | Competitive Intel | Included |\n| Data Visualization | Reporting | Included |\n\n## Example Questions\n\n```\n\"How did organic traffic perform last month vs the previous month?\"\n\"What are my top 10 landing pages by conversion rate?\"\n\"Show me my Google Ads campaigns — which ones are wasting budget?\"\n\"What keywords is my competitor ranking for that I'm not?\"\n\"Analyze my site speed and give me the top 3 fixes.\"\n\"What technologies is competitor.com using?\"\n\"How are my YouTube videos performing this quarter?\"\n\"Pull my latest WooCommerce orders and revenue trends.\"\n```\n\n## Links\n\n- **Website:** [goagentcy.com](https://www.goagentcy.com)\n- **Documentation:** [goagentcy.com/docs](https://www.goagentcy.com/docs)\n- **Integrations:** [goagentcy.com/integrations](https://www.goagentcy.com/integrations)\n- **Pricing:** [goagentcy.com/pricing](https://www.goagentcy.com/pricing)\n- **Troubleshooting:** [goagentcy.com/docs/troubleshooting](https://www.goagentcy.com/docs/troubleshooting)\n- **Privacy Policy:** [goagentcy.com/privacy](https://www.goagentcy.com/privacy)\n- **Status:** [status.goagentcy.com](https://status.goagentcy.com)\n\n## License\n\nConfiguration files and documentation in this repository are licensed under the [MIT License](LICENSE). The Agentcy MCP server is a hosted service — see [goagentcy.com/terms](https://www.goagentcy.com/terms) for service terms.\n"
+  },
+  "descriptor_file": {
+    "path": "smithery.yaml",
+    "content": "startCommand: http\nconfigSchema:\n  type: object\n  required:\n    - apiKey\n  properties:\n    apiKey:\n      type: string\n      description: \"Your Agentcy API key (starts with agcy_)\"\nserverUrl: https://data.goagentcy.com/mcp\nheaders:\n  Authorization: \"Bearer {{config.apiKey}}\"\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

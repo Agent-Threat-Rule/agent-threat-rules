@@ -1,0 +1,37 @@
+{
+  "full_name": "isaacpeel/solesonic-mcp-server",
+  "html_url": "https://github.com/isaacpeel/solesonic-mcp-server",
+  "description": "An enterprise-grade MCP server with built-in federated identity support for SSO across providers and secure, scalable access management.",
+  "topics": [
+    "ai",
+    "identity",
+    "java",
+    "mcp",
+    "mcp-security",
+    "mcp-server",
+    "mcp-tools",
+    "security",
+    "spring-boot-ai"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 3,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Java",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-08-13T11:48:32Z",
+  "last_pushed_at": "2026-07-08T13:09:21Z",
+  "fetched_at": "2026-07-12T00:35:38.171Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Solesonic MCP Server\n\n> A Spring Boot HTTP MCP (Model Context Protocol) server powered by Spring AI. Secured as an OAuth2 Resource Server (JWT) with group- and scope-based authorization, built-in Jira tooling, and an external Atlassian Token Broker integration.\n\n[![Java](https://img.shields.io/badge/Java-25-blue.svg)](https://www.oracle.com/java/technologies/downloads/)\n[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](docs/license.md)\n\n## Features\n\n- HTTP MCP Endpoint — JSON-RPC over HTTP at `POST /mcp`\n- Built-in Jira tools — create, get, and delete issues; guided agile board workflow\n- Date and Time tools — current date, time, and combined datetime with optional timezone\n- Demo utility tool — `weather_lookup` as a simple example\n- OAuth2 Resource Server (JWT) — JWT validation; group claims mapped to authorities\n- MCP Authorization & Dynamic Client Registration — see [Authorization](docs/authorization.md)\n- Group & Role Authorization — `groups` → `GROUP_<name>` `roles` → `ROLE_<role>`\n- Atlassian Token Broker — Client-credentials integration for short-lived Atlassian access tokens\n- Production SSL Ready — PKCS12 keystore via `ssl` profile; TLS 1.2/1.3\n- Web Search Tools — General, advanced, and news search via Tavily; content extraction\n- MCP Prompts — Server-exposed prompts for structured workflows and agent guidance\n- Elicitation Prompts — Guided workflows for structured user input and problem refinement\n\n## Quick Start\n\n### Prerequisites\n- Java 25+\n- Maven 3.9+\n- Docker (optional, for production-like run)\n\n### 1) Configure Environment\n> Note: OS environment variables take precedence over `.env`.\n\n\n```bash\n# JWT verification (use one of the following depending on your IdP)\nJWK_SET_URI=https://your-issuer/.well-known/jwks.json\n# or\nISSUER_URI=https://your-issuer\n\n# Jira tooling\nJIRA_URL_TEMPLATE=https://your-domain.atlassian.net/browse/{key}\nATLASSIAN_TOKEN_BROKER_URL=https://your-token-broker.example.com/broker/atlassian/token\nATLASSIAN_TOKEN_BROKER_ISSUER_URI=https://your-authz-server/oauth2/token\nATLASSIAN_TOKEN_BROKER_CLIENT_ID=your-client-id\nATLASSIAN_TOKEN_BROKER_[REDACTED-GENERIC_KV_SECRET]\nJIRA_CLOUD_ID_PATH=/path/to/your/cloud-id\n\n```\n\n> Note: OS environment variables take precedence over `.env`.\n\n### 2) Build and Run (Local)\n\n```bash\n# Build\n./mvnw clean verify\n\n# Run (default profiles)\n./mvnw spring-boot:run\n```\n\n- Base URL: https://localhost:9443 (when the `ssl` profile is active); otherwise http://localhost:9443\n- MCP endpoint: POST /mcp\n\n> Tip: To enable HTTPS locally, run with profiles `prod,ssl`:\n> ./mvnw spring-boot:run -Dspring-boot.run.profiles=prod,ssl\n\n### JVM Options for JDK 25+\n\nOn JDK 25+, Netty requires native access for optimal performance. To suppress warnings about restricted method calls, add the following JVM option:\n\n```\n--enable-native-access=ALL-UNNAMED\n```\n\n**Maven tests:** Already configured in `pom.xml` via `maven-surefire-plugin`.\n\n**IntelliJ IDEA:** Add to your run configuration under `VM options`:\n- Run > Edit Configurations > Select your configuration > Modify options > Add VM options\n- Add: `--enable-native-access=ALL-UNNAMED`\n\n**Command line (spring-boot:run):**\n```bash\n./mvnw spring-boot:run -Dspring-boot.run.jvmArguments=\"--enable-native-access=ALL-UNNAMED\"\n```\n\n**JAR execution:**\n```bash\njava --enable-native-access=ALL-UNNAMED -jar target/solesonic-mcp-server-1.2.0.jar\n```\n\n### 3) Verify Setup\nSend an MCP initialize request (replace placeholders):\n\n```bash\ncurl -k \\\n  -H \"Authorization: Bearer <YOUR_JWT_ACCESS_TOKEN>\" \\\n  -H \"Content-Type: application/json\" \\\n  -X POST https://localhost:9443/mcp \\\n  -d '{\n    \"jsonrpc\": \"2.0\",\n    \"id\": \"1\",\n    \"method\": \"initialize\",\n    \"params\": {\"protocolVersion\": \"2024-11-05\", \"client\": {\"name\": \"curl\", \"version\": \"1.0\"}}\n  }'\n```\n\n> For a richer client experience, see [Clients](docs/clients.md) for MCP Inspector and Claude Desktop examples.\n\n## MCP Server & Token Broker\n\n- The server exposes tools via the MCP protocol. Tool invocation is authorized using JWT scopes and/or group authorities.\n- Jira tools are first-class features. They rely on an external Atlassian Token Broker to mint short-lived access tokens from securely stored refresh tokens.\n\nSee:\n- [Endpoints](docs/endpoints.md)\n- [Tools](docs/tools.md)\n- [Security](docs/security.md)\n- [Configuration](docs/configuration.md)\n- [Prompts](docs/prompts.md)\n- [Web Search](docs/web-search.md)\n\n## Documentation\n\n- Start here: [Documentation](docs/documentation.md)\n- Deep dives: [Configuration](docs/configuration.md), [Security](docs/security.md), [Endpoints](docs/endpoints.md), [Tools](docs/tools.md), [Prompts](docs/prompts.md), [Web Search](docs/web-search.md), [Deployment](docs/deployment.md), [Troubleshooting](docs/troubleshooting.md)\n\n---\n\nReady to build with MCP? Jump into the [Quickstart](docs/quickstart.md).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

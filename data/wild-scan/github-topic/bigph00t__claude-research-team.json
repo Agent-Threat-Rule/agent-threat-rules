@@ -1,0 +1,47 @@
+{
+  "full_name": "bigph00t/claude-research-team",
+  "html_url": "https://github.com/bigph00t/claude-research-team",
+  "description": "Autonomous research agents for Claude Code - passively research and inject helpful context",
+  "topics": [
+    "agent-tools",
+    "ai",
+    "ai-agents",
+    "anthropic",
+    "bun",
+    "claude",
+    "claude-agent-sdk",
+    "claude-agents",
+    "claude-code",
+    "claude-code-plugin",
+    "claude-skills",
+    "context-injection",
+    "mcp-servers",
+    "passive-research",
+    "research",
+    "sqlite"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 8,
+  "forks": 1,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "AGPL-3.0",
+  "default_branch": "main",
+  "created_at": "2025-12-18T22:25:10Z",
+  "last_pushed_at": "2026-01-20T23:45:25Z",
+  "fetched_at": "2026-07-11T23:56:59.941Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Claude Research Team\n\nA research system for Claude Code that provides web search, documentation lookup, and AI synthesis through slash commands.\n\n## Features\n\n- **Multi-source search**: Serper, Brave, GitHub, StackOverflow, npm, PyPI, crates.io, Wikipedia, ArXiv, HackerNews, Reddit, MDN, and more\n- **AI synthesis**: Results synthesized by Claude or Gemini Flash\n- **Depth control**: Quick (~10s), medium (~30s), or deep (~60s) research\n- **Dashboard**: Web UI at http://localhost:3200\n\n## Quick Install\n\n### 1. Clone and build\n\n```bash\ngit clone https://github.com/bigph00t/claude-research-team\ncd claude-research-team\nnpm install\nnpm run build\n```\n\n### 2. Configure API keys\n\nCreate `.env` file:\n\n```bash\n# At least one search API required\nSERPER_API_KEY=xxx       # serper.dev (2,500/mo free)\nBRAVE_API_KEY=xxx        # brave.com/search/api (2,000/mo free)\n\n# Optional\nGITHUB_TOKEN=xxx         # For GitHub search\nGEMINI_API_KEY=xxx       # Alternative AI provider\n```\n\n### 3. Install commands\n\nCopy the slash commands to your Claude Code commands directory:\n\n```bash\ncp commands/*.md ~/.claude/commands/\n```\n\n### 4. Start the service\n\n```bash\nnpm run start\n```\n\n## Usage\n\n### Slash Commands\n\n| Command | Description |\n|---------|-------------|\n| `/research <query>` | Research a topic |\n| `/research-status` | Check service status |\n| `/research-detail <id>` | Get full details on a finding |\n| `/fetch <url>` | Fetch and extract content from a URL |\n\n### Research Depths\n\n```bash\n/research What is HTMX                              # quick (default for simple queries)\n/research How to implement rate limiting --depth medium\n/research Rust vs Go for CLI tools --depth deep\n```\n\n| Depth | Time | Best For |\n|-------|------|----------|\n| quick | ~10s | Facts, definitions |\n| medium | ~30s | How-to, documentation |\n| deep | ~60s | Comparisons, analysis |\n\n## Architecture\n\n```\n┌─────────────────────────────────────────────────┐\n│              Research Service (:3200)            │\n├─────────────────────────────────────────────────┤\n│                                                  │\n│  Coordinator                                     │\n│  └── Routes queries to specialist agents         │\n│                                                  │\n│  ├── WebSearchAgent     (Serper, Brave, DDG)    │\n│  ├── CodeExpertAgent    (GitHub, StackOverflow) │\n│  ├── DocsExpertAgent    (npm, PyPI, MDN, etc)   │\n│  ├── CommunityExpert    (HackerNews, Reddit)    │\n│  └── ResearchExpert     (Wikipedia, ArXiv)      │\n│                                                  │\n│  AI Synthesis (Claude SDK or Gemini Flash)       │\n│                                                  │\n└─────────────────────────────────────────────────┘\n```\n\n## Search Sources\n\n### Free (no API key)\n- DuckDuckGo, StackOverflow, npm, PyPI, crates.io, MDN, Dev.to, Wikipedia, ArXiv, HackerNews, Reddit\n\n### Requires API key\n- Serper (Google results), Brave Search, Tavily, GitHub\n\n## API\n\n```bash\n# Start research\nPOST /api/research\n{\"query\": \"...\", \"depth\": \"quick|medium|deep\"}\n\n# Check status\nGET /api/research/:id\n\n# Get findings\nGET /api/findings\n\n# Health check\nGET /api/health\n```\n\n## Dashboard\n\nOpen http://localhost:3200 to:\n- View research history\n- Configure settings\n- Monitor activity\n\n## Development\n\n```bash\nnpm install       # Install deps\nnpm run build     # Build\nnpm run dev       # Watch mode\nnpm run start     # Start service\n```\n\n## Project Structure\n\n```\nclaude-research-team/\n├── .claude-plugin/\n│   └── plugin.json       # Plugin manifest\n├── commands/             # Slash command definitions\n│   ├── research.md\n│   ├── research-status.md\n│   ├── research-detail.md\n│   └── fetch.md\n├── skills/               # Agent skills (SKILL.md files)\n├── src/                  # TypeScript source\n│   ├── agents/           # Specialist agents\n│   ├── crew/             # Multi-agent orchestration\n│   ├── service/          # HTTP server + dashboard\n│   └── ...\n└── dist/                 # Compiled output\n```\n\n## Troubleshooting\n\n**Service won't start**\n```bash\nlsof -i :3200        # Check if port in use\nnpm run start        # Start manually\n```\n\n**Commands not working**\n```bash\n# Verify commands are installed\nls ~/.claude/commands/research.md\n\n# Re-copy if missing\ncp commands/*.md ~/.claude/commands/\n```\n\n**No results**\n- Check API keys in `.env`\n- Verify service is running: `curl http://localhost:3200/api/health`\n\n## License\n\nAGPL-3.0\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"research\": {\n      \"type\": \"stdio\",\n      \"command\": \"node\",\n      \"args\": [\"${CLAUDE_PLUGIN_ROOT}/dist/mcp/research-server.js\"]\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "full_name": "artemkdr/company-info-api",
+  "html_url": "https://github.com/artemkdr/company-info-api",
+  "description": "Contains REST API and MCP tools for IBAN verification, VIES VAT, CH IDE, Insee SIRET, Bodacc validation",
+  "topics": [
+    "bodacc",
+    "ch-ide",
+    "iban",
+    "insee",
+    "mcp",
+    "mcp-tools",
+    "net",
+    "netcore",
+    "validation",
+    "vies"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "C#",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-06-23T13:19:51Z",
+  "last_pushed_at": "2026-07-06T07:49:38Z",
+  "fetched_at": "2026-07-12T00:48:52.034Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Company Info API\n\nA .NET 9 REST API service for retrieving and validating company information across multiple European registries and data sources.\n\n## Features\n\n| Feature | Description | External API |\n|---------|-------------|-------------|\n| **TVA Calculator** | Generate French intra-community VAT number from SIREN | Local computation |\n| **IBAN** | Validate IBAN locally and resolve BIC from local files (5 countries) or external providers | Local files + optional external fallback |\n| **VIES** | Validate EU VAT number format (local) and check active status via VIES | [EU VIES service](https://ec.europa.eu/taxation_customs/vies/) |\n| **CH IDE** | Look up and validate Swiss UID numbers | [Swiss UID Registry](https://www.uid.admin.ch/) |\n| **INSEE** | Look up French establishments by SIRET | [INSEE SIRENE API](https://api.insee.fr/) |\n| **BODACC** | Search French bankruptcy/dissolution records | [BODACC OpenDataSoft](https://bodacc-datadila.opendatasoft.com/) |\n\n## Getting Started\n\n### Prerequisites\n\n- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)\n\n### Run\n\n```bash\ndotnet run --project src/CompanyInfo.Api.csproj\n```\n\nThe API starts on `http://localhost:5035` by default.\n\n### Build\n\n```bash\ndotnet build src/CompanyInfo.Api.csproj\n```\n\n### Test\n\n```bash\n# Unit tests only\ndotnet test tests/CompanyInfo.Api.Tests.csproj --filter \"FullyQualifiedName~.Unit.\"\n\n# Architecture tests only\ndotnet test tests/CompanyInfo.Api.Tests.csproj --filter \"FullyQualifiedName~.Architecture.\"\n\n# All tests\ndotnet test tests/CompanyInfo.Api.Tests.csproj\n```\n\n## API Endpoints\n\nAll endpoints require the `X-Api-Key` header for authentication.\n\nAll endpoints support JSON (default) and XML response formats via:\n- Query parameter: `?format=json` or `?format=xml`\n- `Accept` header: `application/json` or `application/xml`\n\n### TVA Calculator\n\n```\nGET /api/v1/tva-calculator?siren={siren}\n```\n\nCalculates the French intra-community VAT number from a 9-digit SIREN number.\n\n### IBAN Verification\n\n```\nGET /api/v1/iban/verify?iban={iban}\n```\n\nValidates an IBAN locally using country length rules and MOD-97, then resolves the BIC using a two-tier strategy:\n1. **Local Lookup** (fast): Checks local CSV files for countries with bundled BIC data (CZ, FR, HU, PL, SK)\n2. **External Fallback** (when needed): Queries external BIC provider services for other countries\n\nSee [iban-bic-external-providers.md](docs/iban-bic-external-providers.md) for detailed architecture and configuration.\n\n### VIES VAT Validation\n\n```\nGET /api/v1/vies/validate?vatNumber={vatNumber}\n```\n\nValidates the **format** of an EU VAT number locally — no external service call, always fast and reliable.\n\n```\nGET /api/v1/vies/check-active?vatNumber={vatNumber}\n```\n\nChecks whether a VAT number is currently **active** in the EU VIES system. Calls the external VIES API with retry logic for `MS_MAX_CONCURRENT_REQ` errors. Results are cached.\n\n### CH IDE (Swiss UID)\n\n```\nGET /api/v1/ch-ide/{uid}\nGET /api/v1/ch-ide/{uid}/validate\n```\n\nLooks up or validates a Swiss UID number (`CHE-XXX.XXX.XXX` format) via the Swiss federal UID registry SOAP API.\n\n### INSEE (French SIRET)\n\n```\nGET /api/v1/insee/establishments/{siret}\n```\n\nRetrieves establishment information from the French INSEE SIRENE API. Requires an INSEE API key configured in settings.\n\n### BODACC\n\n```\nGET /api/v1/bodacc/search?companyName={name}&registrationNumber={siren}\n```\n\nSearches BODACC records for bankruptcies, dissolutions, and liquidations. At least one of `companyName` or `registrationNumber` is required.\n\n## Configuration\n\nSee [CONFIGURATION.md](CONFIGURATION.md) for detailed configuration options.\n\nKey settings in `appsettings.json`:\n\n| Setting | Description |\n|---------|-------------|\n| `ApiKeys` | Array of valid API keys for authentication |\n| `Cache:*ExpirationMinutes` | Per-feature cache TTLs |\n| `Iban:RegistryFilePath` | Path to IBAN registry text file (relative to app base directory or absolute) |\n| `ExternalApis:Insee:ApiKey` | INSEE SIRENE API key |\n| `ExternalApis:ChIde:BaseUrl` | Swiss UID registry SOAP endpoint |\n| `ExternalApis:Bodacc:BaseUrl` | BODACC OpenDataSoft API endpoint |\n\nIBAN registry path is configurable so the parser can be pointed to alternate files in different environments and tests:\n\n```json\n{\n  \"Iban\": {\n    \"RegistryFilePath\": \"Application/Features/Iban/Data/iban-registry-rules.txt\"\n  }\n}\n```\n\n- Relative paths are resolved from the app base directory.\n- Absolute paths are used as-is.\n\n## Project Structure\n\n```\nsrc/\n  Application/\n    Features/\n      TvaCalculator/     # TVA number calculation\n      Iban/              # IBAN validation + local BIC lookup\n      Vies/              # EU VAT validation\n      ChIde/             # Swiss UID lookup\n      Insee/             # French SIRET lookup\n      Bodacc/            # BODACC bankruptcy records\n  Shared/\n    Attributes/          # DI registration attribute\n    Converters/          # JSON converters\n    Extensions/          # Service registration extensions\n    Filters/             # Response format filter\n    Middleware/           # Exception handling\n    Security/            # API key authentication\ntests/\n  Architecture/          # Architecture constraint tests\n  Unit/                  # Unit tests per feature\ndocs/\n  *.http                 # REST Client test files\n```\n\n## Architecture\n\n- **Clean Architecture** with feature-based co-location\n- Features are independent — no cross-feature dependencies (enforced by architecture tests)\n- Auto-registration of services via `[RegisterService]` attribute\n- In-memory caching with configurable TTLs per feature\n- API key authentication via `X-Api-Key` header\n- IBAN verification is fully local; BIC resolution uses feature-local seed files derived from public central-bank data, with an optional external fallback provider when local data is missing\n\n## Development\n\n### Formatting\n\nThe project uses [CSharpier](https://csharpier.com/) for code formatting, enforced via a [Husky](https://alirezanet.github.io/Husky.Net/) pre-commit hook.\n\n### HTTP Test Files\n\nTest `.http` files are available in the `docs/` folder for use with the VS Code [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-clients) extension.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

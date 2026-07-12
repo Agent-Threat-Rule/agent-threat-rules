@@ -1,0 +1,37 @@
+{
+  "full_name": "264Gaurav/mcp_ai",
+  "html_url": "https://github.com/264Gaurav/mcp_ai",
+  "description": "MCP - Model Context Protocol . MCP Server creation, Connecting MCP servers to the clients, config. and Local LLMs ",
+  "topics": [
+    "claude-ai",
+    "cursor-ai",
+    "mcp",
+    "mcp-client",
+    "mcp-server",
+    "mcp-tools",
+    "model-context-protocol",
+    "model-context-protocol-server",
+    "ollama-client"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-11-06T21:00:37Z",
+  "last_pushed_at": "2025-11-12T19:19:12Z",
+  "fetched_at": "2026-07-12T00:41:46.331Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP Server Creation and MCP client connection (Agent-Claude,cursor or, custom server calling and integration with local LLMs).\n\nThis project demonstrates how to create and connect an MCP (Model Context Protocol) weather server using FastMCP.\n\n> 📖 **Want to learn more about MCP?** Check out our [Comprehensive MCP Guide](Readme_MCP.md) for detailed explanations, concepts, and best practices.\n\n## Prerequisites\n\n- Python 3.13+\n- `uv` package manager installed\n\n## Setup Instructions\n\n### 1. Initialize the Project\n\nInitialize a new project using `uv`:\n\n```bash\nuv init\n```\n\n### 2. Create Virtual Environment\n\nCreate a virtual environment for the project:\n\n```bash\nuv venv\n```\n\n### 3. Activate Virtual Environment\n\nActivate the virtual environment:\n\n**Windows:**\n```bash\n.venv\\Scripts\\activate\n```\n\n**Linux/Mac:**\n```bash\nsource .venv/bin/activate\n```\n\n### 4. Install MCP CLI\n\nAdd the MCP CLI package to enable fast MCP CLI commands:\n\n```bash\nuv add \"mcp[cli]\"\n```\n\n## Running the MCP Server\n\n### Development Mode\n\nTo run the MCP server in development mode:\n\n```bash\nuv run mcp dev server/weather.py\n```\n\n**Expected Output:**\n```\nStarting MCP inspector...\n\n⚙️ Proxy server listening on localhost:6277\n```\n\n## Connecting to Claude Desktop\n\n### Install Server to Claude\n\nAdd the weather server to Claude Desktop:\n\n```bash\nuv run mcp install server/weather.py\n```\n\n**Expected Output:**\n```\nAdded server 'weather' to Claude config \n\nSuccessfully installed weather in Claude app\n```\n\nOnce installed, you can ask Claude questions like:\n- \"What are the weather alerts in CA?\"\n- The MCP server will be called automatically and display the results.\n\n### Manual Configuration for Cursor or Other Clients\n\nFor Cursor or other clients, you'll need to manually configure the server using the Claude Desktop config file format.\n\n**Get the server configuration from:** `claude_desktop_config` file\n\n**Example Configuration:**\n```json\n\"weather\": {\n  \"command\": \"C:\\\\Users\\\\gaura\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python313\\\\Scripts\\\\uv.EXE\",\n  \"args\": [\n    \"run\",\n    \"--with\",\n    \"mcp[cli]\",\n    \"mcp\",\n    \"run\",\n    \"C:\\\\Users\\\\gaura\\\\OneDrive\\\\Desktop\\\\AI projects\\\\mcp_project\\\\server\\\\weather.py\"\n  ]\n}\n```\n\n**Note:** Update the paths in the configuration to match your system paths.\n\n**Usage in Cursor:**\n- Go to **MCP** → **mcp config.json**\n- Add the configuration above\n\n## Using MCP with Local LLMs (mcp-use)\n\n`mcp-use` allows you to connect to MCP servers directly without an AI agent for programmatic tool access. This is useful for custom server calling and integration with local LLMs.\n\n### Installation\n\nInstall the `mcp-use` package:\n\n```bash\nuv add mcp-use\n```\n\n### Configuration\n\nCreate a file named `weather.json` and add the following configuration to connect local LLMs to the MCP server:\n\n```json\n{\n  \"mcpServers\": {\n    \"weather\": {\n      \"command\": \"C:\\\\Users\\\\gaura\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python313\\\\Scripts\\\\uv.EXE\",\n      \"args\": [\n        \"run\",\n        \"--with\",\n        \"mcp[cli]\",\n        \"mcp\",\n        \"run\",\n        \"C:\\\\Users\\\\gaura\\\\OneDrive\\\\Desktop\\\\AI projects\\\\mcp_project\\\\server\\\\weather.py\"\n      ]\n    }\n  }\n}\n```\n\n**Note:** Update the paths in the configuration to match your system paths.\n\n## References\n\n- **FastMCP**: https://github.com/jlowin/fastmcp\n  - Create MCP servers and connect them to different clients like Claude, Cursor, etc.\n\n- **mcp-use**: https://github.com/mcp-use/mcp-use\n  - Connect to MCP servers directly without an AI agent for programmatic tool access (custom server calling and use)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

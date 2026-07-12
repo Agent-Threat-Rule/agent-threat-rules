@@ -1,0 +1,38 @@
+{
+  "full_name": "navaro1/qubitsok-mcp",
+  "html_url": "https://github.com/navaro1/qubitsok-mcp",
+  "description": "MCP server for quantum computing jobs, papers & researchers — connect any AI agent to qubitsok.com",
+  "topics": [
+    "arxiv",
+    "gemini-cli-extension",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "quantum-computing",
+    "quantum-jobs"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": null,
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-02-24T11:17:31Z",
+  "last_pushed_at": "2026-02-24T12:31:48Z",
+  "fetched_at": "2026-07-12T00:17:44.474Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# qubitsok MCP Server\n\nProduction MCP (Model Context Protocol) server for [qubitsok.com](https://qubitsok.com) — the quantum computing career and research platform.\n\n## Endpoint\n\n```\nhttps://qubitsok.com/mcp\n```\n\nTransport: **Streamable HTTP** (MCP spec 2025-11-25)\nAuthentication: **None** — all tools are read-only and publicly accessible.\n\n## Tools (7)\n\n| Tool | Description |\n|------|-------------|\n| `searchJobs` | AI-powered natural language quantum job search (500+ listings) |\n| `getJobDetails` | Full details for a specific job by ID |\n| `searchPapers` | Search arXiv quantum papers by topic, author, affiliation, date |\n| `getLatestPapers` | Today's quantum computing papers from arXiv |\n| `getPaperDetails` | Full paper analysis with abstract, methodology, gist |\n| `searchCollaborators` | Find quantum researchers by expertise, affiliation, topic (1000+ profiles) |\n| `getMarketOverview` | Job market and research landscape statistics |\n\n## Prompts (4)\n\n| Prompt | Description |\n|--------|-------------|\n| `quantum-job-search` | Guided quantum job search with formatted results |\n| `daily-paper-briefing` | Today's quantum paper highlights briefing |\n| `find-collaborator` | Discover researchers to collaborate with |\n| `quantum-market-pulse` | Market and research landscape overview |\n\n## Connect\n\n### Claude Desktop / Claude.ai\n\nAdd as remote MCP server in Settings > MCP:\n```\nhttps://qubitsok.com/mcp\n```\n\n### Claude Code\n\n```bash\nclaude mcp add --transport streamable-http qubitsok https://qubitsok.com/mcp\n```\n\n### ChatGPT (Developer Mode)\n\nSettings > Apps & Connectors > Advanced > Developer Mode > Add Connector:\n- URL: `https://qubitsok.com/mcp`\n- Name: qubitsok — Quantum Computing Jobs & Research\n\n### Gemini CLI\n\n```bash\ngemini extensions install github:navaro1/qubitsok-mcp\n```\n\n### Cursor / Windsurf / VS Code\n\nAdd to your MCP configuration:\n\n```json\n{\n  \"qubitsok\": {\n    \"transport\": \"streamable-http\",\n    \"url\": \"https://qubitsok.com/mcp\"\n  }\n}\n```\n\n### Grok (xAI API)\n\n```json\n{\n  \"mcp_servers\": [\n    { \"url\": \"https://qubitsok.com/mcp\", \"name\": \"qubitsok\" }\n  ]\n}\n```\n\n### Perplexity (Mac App)\n\nSettings > Connectors > Add MCP > `https://qubitsok.com/mcp`\n\n## Discovery\n\n```bash\ncurl https://qubitsok.com/.well-known/mcp.json\n```\n\n## Example Queries\n\n**Jobs**: \"Find senior quantum error correction engineer roles in Europe paying over 120k EUR\"\n\n**Papers**: \"Show me trapped ion papers from Google published this month\"\n\n**Researchers**: \"Who are the top quantum error correction researchers at MIT?\"\n\n**Market**: \"How's the quantum computing job market right now?\"\n\n## Safety\n\nAll 7 tools have `readOnlyHint: true` — no destructive operations. Read-only public data access.\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": {
+    "path": "server.json",
+    "content": "{\n  \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json\",\n  \"name\": \"com.qubitsok/mcp-server\",\n  \"title\": \"qubitsok — Quantum Computing Jobs, Papers & Researchers\",\n  \"description\": \"Quantum computing jobs, arXiv papers & researcher profiles from qubitsok.com\",\n  \"version\": \"1.0.0\",\n  \"websiteUrl\": \"https://qubitsok.com\",\n  \"remotes\": [\n    {\n      \"type\": \"streamable-http\",\n      \"url\": \"https://qubitsok.com/mcp\"\n    }\n  ],\n  \"_meta\": {\n    \"io.modelcontextprotocol.registry/publisher-provided\": {\n      \"categories\": [\"science\", \"jobs\", \"research\", \"education\"],\n      \"keywords\": [\"quantum computing\", \"quantum jobs\", \"arXiv\", \"quantum research\", \"quantum error correction\", \"researcher profiles\"],\n      \"authentication\": \"none\",\n      \"toolCount\": 7,\n      \"promptCount\": 4,\n      \"resourceCount\": 2,\n      \"tools\": [\n        \"searchJobs — AI-powered natural language quantum job search\",\n        \"getJobDetails — Full details for a specific job by ID\",\n        \"searchPapers — Search arXiv quantum papers by topic, author, date\",\n        \"getLatestPapers — Today's quantum papers from arXiv\",\n        \"getPaperDetails — Full paper analysis with abstract, methodology, gist\",\n        \"searchCollaborators — Find quantum researchers by expertise\",\n        \"getMarketOverview — Job market and research landscape stats\"\n      ]\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "full_name": "LucasHild/mcp-server-bigquery",
+  "html_url": "https://github.com/LucasHild/mcp-server-bigquery",
+  "description": "A Model Context Protocol server that provides access to BigQuery",
+  "topics": [
+    "bigquery",
+    "mcp",
+    "mcp-server"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 128,
+  "forks": 38,
+  "open_issues": 11,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2024-12-03T18:09:19Z",
+  "last_pushed_at": "2026-03-26T13:57:09Z",
+  "fetched_at": "2026-07-11T22:55:29.085Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# BigQuery MCP server\n\n[![smithery badge](https://smithery.ai/badge/mcp-server-bigquery)](https://smithery.ai/server/mcp-server-bigquery)\n\nA Model Context Protocol server that provides access to BigQuery. This server enables LLMs to inspect database schemas and execute queries.\n\n## Components\n\n### Tools\n\nThe server implements one tool:\n\n- `execute-query`: Executes a SQL query using BigQuery dialect\n- `list-tables`: Lists all tables in the BigQuery database\n- `describe-table`: Describes the schema of a specific table\n\n## Configuration\n\nThe server can be configured either with command line arguments or environment variables.\n\n| Argument     | Environment Variable | Required | Description                                                                                                                                                                                                                                                                                                                                                    |\n| ------------ | -------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n| `--project`  | `BIGQUERY_PROJECT`   | Yes      | The GCP project ID.                                                                                                                                                                                                                                                                                                                                            |\n| `--location` | `BIGQUERY_LOCATION`  | Yes      | The GCP location (e.g. `europe-west9`).                                                                                                                                                                                                                                                                                                                        |\n| `--dataset`  | `BIGQUERY_DATASETS`  | No       | Only take specific BigQuery datasets into consideration. Several datasets can be specified by repeating the argument (e.g. `--dataset my_dataset_1 --dataset my_dataset_2`) or by joining them with a comma in the environment variable (e.g. `BIGQUERY_DATASETS=my_dataset_1,my_dataset_2`). If not provided, all datasets in the project will be considered. |\n| `--key-file` | `BIGQUERY_KEY_FILE`  | No       | Path to a service account key file for BigQuery. If not provided, the server will use the default credentials.                                                                                                                                                                                                                                                 |\n| `--timeout`  | `BIGQUERY_TIMEOUT`   | No       | Maximum time in seconds to wait for a query to complete. If not provided, queries will wait indefinitely.                                                                                                                                                                                                                                                      |\n\n## Installation\n\n### Installing via Smithery\n\nTo install BigQuery Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/mcp-server-bigquery):\n\n```bash\nnpx -y @smithery/cli install mcp-server-bigquery --client claude\n```\n\n### Claude Code\n\n```bash\nclaude mcp add bigquery --scope user --transport stdio -- uvx mcp-server-bigquery --project {PROJECT_ID} --location {{LOCATION}}\n```\n\n### Claude Desktop\n\nOn MacOS: `~/Library/Application\\ Support/Claude/claude_desktop_config.json`  \nOn Windows: `%APPDATA%/Claude/claude_desktop_config.json`\n\n```json\n{\n  \"mcpServers\": {\n    \"bigquery\": {\n      \"command\": \"uvx\",\n      \"args\": [\"mcp-server-bigquery\"],\n      \"env\": {\n        \"BIGQUERY_PROJECT\": \"{{GCP_PROJECT_ID}}\",\n        \"BIGQUERY_LOCATION\": \"{{GCP_LOCATION}}\"\n      }\n    }\n  }\n}\n```\n\n## Cursor\n\n1. Open Cursor Settings → MCP\n2. Click Add new global MCP server\n3. Add an entry for the BigQuery MCP, following the pattern below:\n\n```json\n{\n  \"mcpServers\": {\n    \"bigquery\": {\n      \"command\": \"uvx\",\n      \"args\": [\"mcp-server-bigquery\"],\n      \"env\": {\n        \"BIGQUERY_PROJECT\": \"{{GCP_PROJECT_ID}}\",\n        \"BIGQUERY_LOCATION\": \"{{GCP_LOCATION}}\"\n      }\n    }\n  }\n}\n```\n"
+  },
+  "descriptor_file": {
+    "path": "smithery.yaml",
+    "content": "# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml\n\nstartCommand:\n  type: stdio\n  configSchema:\n    # JSON Schema defining the configuration options for the MCP.\n    type: object\n    required:\n      - project\n      - location\n    properties:\n      project:\n        type: string\n        description: The GCP project ID.\n      location:\n        type: string\n        description: The GCP location (e.g., europe-west9).\n      dataset:\n        type: array\n        items:\n          type: string\n        description: Specific BigQuery datasets to consider.\n  commandFunction:\n    # A function that produces the CLI command to start the MCP on stdio.\n    |-\n    (config) => ({ command: 'mcp-server-bigquery', args: ['--project', config.project, '--location', config.location, ...config.dataset.map(d => ['--dataset', d]).flat()] })\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

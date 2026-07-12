@@ -1,0 +1,39 @@
+{
+  "full_name": "yuniko-software/minecraft-mcp-server",
+  "html_url": "https://github.com/yuniko-software/minecraft-mcp-server",
+  "description": "A Minecraft MCP Server powered by Mineflayer API. It allows to control a Minecraft character in real-time, allowing AI assistants to build structures, explore the world, and interact with the game environment through natural language instruction",
+  "topics": [
+    "artificial-intelligence",
+    "claude",
+    "javascript",
+    "large-language-models",
+    "mcp",
+    "mcp-server",
+    "minecraft",
+    "modelcontextprotocol",
+    "natural-language-processing",
+    "nodejs",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 644,
+  "forks": 69,
+  "open_issues": 16,
+  "language": "TypeScript",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2025-03-20T17:59:31Z",
+  "last_pushed_at": "2026-04-04T20:59:29Z",
+  "fetched_at": "2026-07-11T22:38:14.856Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Minecraft MCP Server\n\n<a href=\"https://github.com/yuniko-software/minecraft-mcp-server/actions\">\n  <img alt=\"CI\" src=\"https://github.com/yuniko-software/minecraft-mcp-server/actions/workflows/build.yml/badge.svg\">\n</a>\n<a href=\"https://github.com/yuniko-software\">\n  <img alt=\"Contribution Welcome\" src=\"https://img.shields.io/badge/Contribution-Welcome-blue\">\n</a>\n<a href=\"https://github.com/yuniko-software/minecraft-mcp-server/releases/latest\">\n  <img alt=\"Latest Release\" src=\"https://img.shields.io/github/v/release/yuniko-software/minecraft-mcp-server?label=Latest%20Release\">\n</a>\n\n<img width=\"2063\" height=\"757\" alt=\"image\" src=\"https://github.com/user-attachments/assets/3f0f0438-f079-4226-90bd-87b9e1311d19\" />\n\n___\n\n> [!IMPORTANT]\n> Currently supports Minecraft version 1.21.11. Newer versions may not work with this MCP server, but we will add support as soon as possible.\n\nhttps://github.com/user-attachments/assets/6f17f329-3991-4bc7-badd-7cde9aacb92f\n\nA Minecraft bot powered by large language models and [Mineflayer API](https://github.com/PrismarineJS/mineflayer). This bot uses the [Model Context Protocol](https://github.com/modelcontextprotocol) (MCP) to enable Claude and other supported models to control a Minecraft character.\n\n<a href=\"https://glama.ai/mcp/servers/@yuniko-software/minecraft-mcp-server\">\n  <img width=\"380\" height=\"200\" src=\"https://glama.ai/mcp/servers/@yuniko-software/minecraft-mcp-server/badge\" alt=\"mcp-minecraft MCP server\" />\n</a>\n\n## Prerequisites\n\n- Git\n- Node.js (>= 20.10.0)\n- A running Minecraft game (the setup below was tested with Minecraft 1.21.8 Java Edition included in Microsoft Game Pass)\n- An MCP-compatible client. Claude Desktop will be used as an example, but other MCP clients are also supported\n\n## Getting started\n\nThis bot is designed to be used with Claude Desktop through the Model Context Protocol (MCP).\n\n### Run Minecraft\n\nCreate a singleplayer world and open it to LAN (`ESC -> Open to LAN`). Bot will try to connect using port `25565` and hostname `localhost`. These parameters could be configured in `claude_desktop_config.json` on a next step. \n\n### MCP Configuration\n\nMake sure that [Claude Desktop](https://claude.ai/download) is installed. Open `File -> Settings -> Developer -> Edit Config`. It should open installation directory. Find file with a name `claude_desktop_config.json` and insert the following code:\n\n```json\n{\n  \"mcpServers\": {\n    \"minecraft\": {\n      \"command\": \"npx\",\n      \"args\": [\n        \"-y\",\n        \"github:yuniko-software/minecraft-mcp-server\",\n        \"--host\",\n        \"localhost\",\n        \"--port\",\n        \"25565\",\n        \"--username\",\n        \"ClaudeBot\"\n      ]\n    }\n  }\n}\n```\n\nDouble-check that right `--port` and `--host` parameters were used. Make sure to completely reboot the Claude Desktop application (should be closed in OS tray). \n\n## Running\n\nMake sure Minecraft game is running and the world is opened to LAN. Then start Claude Desktop application and the bot should join the game. \n\n**It could take some time for Claude Desktop to boot the MCP server**. The marker that the server has booted successfully:\n\n<img width=\"885\" height=\"670\" alt=\"image\" src=\"https://github.com/user-attachments/assets/ccbb42f8-6544-462c-8ac1-8af13ddfcddd\" />\n\nYou can give bot any commands through any active Claude Desktop chat. You can also upload images of buildings and ask bot to build them 😁\n\nDon't forget to mention that bot should do something in Minecraft in your prompt. Because saying this is a trigger to run MCP server. It will ask for your permissions.\n\nUsing Claude Sonnet could give you some interesting results. The bot-agent would be really smart 🫡\n\nExample usage: [shared Claude chat](https://claude.ai/share/535d5f69-f102-4cdb-9801-f74ea5709c0b)\n\n## Available Commands\n\nOnce connected to a Minecraft server, Claude can use these commands:\n\n### Movement\n- `get-position` - Get the current position of the bot\n- `move-to-position` - Move to specific coordinates\n- `look-at` - Make the bot look at specific coordinates\n- `jump` - Make the bot jump\n- `move-in-direction` - Move in a specific direction for a duration\n\n### Flight\n- `fly-to` - Make the bot fly directly to specific coordinates\n\n### Inventory\n- `list-inventory` - List all items in the bot's inventory\n- `find-item` - Find a specific item in inventory\n- `equip-item` - Equip a specific item\n\n### Block Interaction\n- `place-block` - Place a block at specified coordinates\n- `dig-block` - Dig a block at specified coordinates\n- `get-block-info` - Get information about a block\n- `find-blocks` - Find one or more nearby blocks of a specific type\n\n### Furnace\n- `smelt-item` - Smelt items using a furnace-like block\n\n### Entity Interaction\n- `find-entity` - Find the nearest entity of a specific type\n\n### Communication\n- `send-chat` - Send a chat message in-game\n- `read-chat` - Get recent chat messages from players\n\n### Game State\n- `detect-gamemode` - Detect the gamemode on game\n\n## Contributing\n\nFeel free to submit pull requests or open issues for improvements. All refactoring commits, functional and test contributions, issues and discussion are greatly appreciated!\n\nTo get started with contributing, please see [CONTRIBUTING.md](CONTRIBUTING.md).\n\n---\n\n⭐ If you find this project useful, please consider giving it a star on GitHub! ⭐\n\nYour support helps make this project more visible to other people who might benefit from it.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

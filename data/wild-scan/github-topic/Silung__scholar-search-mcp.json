@@ -1,0 +1,32 @@
+{
+  "full_name": "Silung/scholar-search-mcp",
+  "html_url": "https://github.com/Silung/scholar-search-mcp",
+  "description": "An MCP server for academic paper search that integrates with AI assistants (e.g., Claude Code, Cursor), enabling them to search and retrieve academic paper metadata.",
+  "topics": [
+    "academic",
+    "academic-writing",
+    "agentic",
+    "mcp-server"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 216,
+  "forks": 4,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2026-03-08T14:56:45Z",
+  "last_pushed_at": "2026-05-22T08:35:05Z",
+  "fetched_at": "2026-07-11T22:47:14.930Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Scholar Search MCP\n\nAn MCP server for academic literature workflows in Claude, Cursor, and other MCP clients.\n\nIt combines Semantic Scholar and arXiv into one unified toolset, with fast parallel search, normalized outputs, source-aware deduplication, and practical research utilities (citations, references, author graph, recommendations, and arXiv source download).\n\n---\n\n## Table of Contents\n\n- [Why this project](#why-this-project)\n- [Demo videos](#demo-videos)\n- [Install](#install)\n- [Quick setup (Claude Desktop / Cursor)](#quick-setup-claude-desktop--cursor)\n- [Environment variables](#environment-variables)\n- [Tool list](#tool-list)\n- [Testing with MCP Inspector](#testing-with-mcp-inspector)\n- [Contributing](#contributing)\n\n---\n\n## Why this project\n\nMost paper tools force you to choose one source or one API style. `scholar-search-mcp` provides one MCP layer for literature search and graph retrieval:\n\n- **One MCP server, multiple scholarly sources**\n- **Free-first defaults** (`arXiv` works without keys)\n- **LLM-friendly outputs** for downstream reasoning and agent workflows\n- **Practical research actions**, not only search\n- **Unified search**: `search_papers` runs Semantic Scholar + arXiv in parallel and deduplicates by normalized title.\n- **Research graph tools**: details, citations, references, author profile/papers, and recommendations.\n- **Batch + source workflows**: fetch up to 500 papers, and download/extract arXiv LaTeX sources.\n- **Operational controls**: built-in caching plus env-based source toggles (enable/disable channels).\n- **Source strategy**: built-in Semantic Scholar + arXiv, free-first by default (`arXiv` key-free), optional API key for higher Semantic Scholar limits.\n\n## Demo videos\n\nAgent writes a survey paper with Scholar Search MCP.\n\n   <a href=\"https://youtu.be/C81rVeznoRY\"><img src=\"./static/scholar_search_demo.jpg\" alt=\"Agent uses Scholar Search MCP to write a survey paper\" width=\"640\" style=\"max-width: 100%; height: auto;\"></a>\n\n<br>\n\n## Install\n\n```bash\npip install scholar-search-mcp\n```\n\n> Requires Python 3.10+.\n\n## Quick setup (Claude Desktop / Cursor)\n\nUse the same server command in both clients:\n\n```json\n{\n  \"mcpServers\": {\n    \"scholar-search\": {\n      \"command\": \"python\",\n      \"args\": [\"-m\", \"scholar_search_mcp\"],\n      \"env\": {\n        \"SCHOLAR_SEARCH_ENABLE_SEMANTIC_SCHOLAR\": \"true\",\n        \"SCHOLAR_SEARCH_ENABLE_ARXIV\": \"true\"\n      }\n    }\n  }\n}\n```\n\n`SEMANTIC_SCHOLAR_API_KEY` is optional. Add it only if you want higher Semantic Scholar rate limits:\n\n```json\n{\n  \"mcpServers\": {\n    \"scholar-search\": {\n      \"command\": \"python\",\n      \"args\": [\"-m\", \"scholar_search_mcp\"],\n      \"env\": {\n        \"SCHOLAR_SEARCH_ENABLE_SEMANTIC_SCHOLAR\": \"true\",\n        \"SCHOLAR_SEARCH_ENABLE_ARXIV\": \"true\",\n        \"SEMANTIC_SCHOLAR_API_KEY\": \"your-key\"\n      }\n    }\n  }\n}\n```\n\nDifference:\n\n- **Claude Desktop**: edit local config file directly.\n- **Cursor**: add an MCP server in Cursor settings UI (or corresponding settings JSON).\n\nClaude Desktop config file locations:\n\n- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`\n- **Windows**: `%APPDATA%\\Claude\\claude_desktop_config.json`\n- **Linux**: `~/.config/Claude/claude_desktop_config.json`\n\n## Environment variables\n\n| Variable | Description |\n| --- | --- |\n| `SEMANTIC_SCHOLAR_API_KEY` | Optional. Increases Semantic Scholar rate limits. |\n| `SCHOLAR_SEARCH_ENABLE_SEMANTIC_SCHOLAR` | `true/false`, default `true`. |\n| `SCHOLAR_SEARCH_ENABLE_ARXIV` | `true/false`, default `true`. |\n| `SCHOLAR_SEARCH_CACHE_DIR` | Optional cache directory path. |\n| `SCHOLAR_SEARCH_CACHE_TTL_SECONDS` | Cache TTL in seconds, default `86400`. |\n| `SCHOLAR_ARXIV_SOURCE_DIR` | Default parent directory for extracted arXiv sources. |\n\nExample (`arXiv` only):\n\n```json\n{\n  \"SCHOLAR_SEARCH_ENABLE_SEMANTIC_SCHOLAR\": \"false\",\n  \"SCHOLAR_SEARCH_ENABLE_ARXIV\": \"true\"\n}\n```\n\n## Tool list\n\n| Tool | Purpose |\n| --- | --- |\n| `search_papers` | Search papers with optional `limit`, `fields`, `year`, `venue`. |\n| `get_paper_details` | Get one paper by DOI, arXiv ID, S2 ID, or URL. |\n| `get_paper_citations` | Get papers that cite a given paper. |\n| `get_paper_references` | Get references of a given paper. |\n| `get_author_info` | Get an author profile by ID. |\n| `get_author_papers` | Get papers by a given author. |\n| `get_paper_recommendations` | Get similar paper recommendations. |\n| `batch_get_papers` | Batch fetch paper details (up to 500 IDs). |\n| `download_arxiv_source` | Download and extract arXiv source bundle (`tar.gz`). |\n\n## Testing with MCP Inspector\n\n```bash\nnpm install -g @modelcontextprotocol/inspector\nmcp-inspector python -m scholar_search_mcp\n```\n\n## Contributing\n\nIssues and PRs are welcome: fork repo, create branch, add validation/tests, and open a PR with clear before/after behavior.\n\n## References\n\n- [Semantic Scholar API Docs](https://api.semanticscholar.org/api-docs)\n- [arXiv API User Manual](https://info.arxiv.org/help/api/user-manual.html)\n\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

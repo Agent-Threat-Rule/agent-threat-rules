@@ -1,0 +1,37 @@
+{
+  "full_name": "reaatech/mcp-schema-evolution",
+  "html_url": "https://github.com/reaatech/mcp-schema-evolution",
+  "description": "Safely evolve MCP tool schemas over time. Breaking change detection, backward-compatible wrappers, deprecation annotations, changelog generation, and CI checks. Protobuf evolution rules for MCP.",
+  "topics": [
+    "agentic-ai",
+    "ai",
+    "cli",
+    "developer-tools",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "model-context-protocol",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 2,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-28T00:44:32Z",
+  "last_pushed_at": "2026-07-06T15:50:30Z",
+  "fetched_at": "2026-07-12T00:44:54.584Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# mcp-schema-evolution\n\n[![CI](https://github.com/reaatech/mcp-schema-evolution/actions/workflows/ci.yml/badge.svg)](https://github.com/reaatech/mcp-schema-evolution/actions/workflows/ci.yml)\n[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)\n[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?logo=typescript)](https://www.typescriptlang.org/)\n\n> Enterprise-grade toolkit for safe, automated MCP schema evolution. Diff. Adapt. Ship with confidence.\n\nBring Protocol Buffers-style evolution rules to MCP tool schemas. Compare `Tool[]` snapshots between versions, classify every change as breaking or non-breaking, and enforce evolution policy in CI — before your consumers break.\n\n## Features\n\n- **Schema diffing** — compare two `Tool[]` snapshots and detect added, removed, changed, and renamed fields with recursive nested schema support\n- **Change classification** — every change is classified as `breaking`, `non-breaking`, or `patch` with severity and migration guidance\n- **Field rename detection** — heuristic-based similarity scoring with configurable confidence threshold\n- **CI validation** — validate snapshots in CI; fail on unacknowledged breaking changes with a pipe-delimited acknowledgment file\n- **PR reporting** — generate formatted markdown reports for pull request comments\n- **CLI** — single `mcp-evolution diff` command with human-readable and JSON output modes\n- **Result-based error handling** — all public APIs return `Result<T>` (never throws)\n\n## Installation\n\n### Using the packages\n\nPackages are published under the `@reaatech` scope and can be installed individually:\n\n```bash\n# Core library — diffing, classification, rename detection\npnpm add @reaatech/mcp-schema-evolution\n\n# CLI — diff snapshots from the command line\npnpm add @reaatech/mcp-schema-evolution-cli\n\n# CI integration — validate snapshots in pull requests\npnpm add -D @reaatech/mcp-schema-evolution-ci\n```\n\n### Contributing\n\n```bash\n# Clone the repository\ngit clone https://github.com/reaatech/mcp-schema-evolution.git\ncd mcp-schema-evolution\n\n# Install dependencies\npnpm install\n\n# Build all packages\npnpm build\n\n# Run the test suite\npnpm test\n\n# Run linting, typecheck, and tests\npnpm check\n```\n\n## Quick Start\n\n### Library API\n\n```typescript\nimport { diffToolSnapshots, loadToolsFromFile } from \"@reaatech/mcp-schema-evolution\";\n\nconst v1 = loadToolsFromFile(\"snapshots/v1.json\");\nconst v2 = loadToolsFromFile(\"snapshots/v2.json\");\n\nif (v1.ok && v2.ok) {\n  const result = diffToolSnapshots(v1.value, v2.value);\n\n  if (result.ok) {\n    const breaking = result.value.filter((c) => c.type === \"breaking\");\n    const nonBreaking = result.value.filter((c) => c.type === \"non-breaking\");\n\n    console.log(\n      `${result.value.length} changes: ${breaking.length} breaking, ${nonBreaking.length} non-breaking`\n    );\n\n    for (const change of result.value) {\n      console.log(`[${change.severity}] ${change.toolName}: ${change.description}`);\n      if (change.migration) {\n        console.log(`  → ${change.migration.suggestion}`);\n      }\n    }\n  }\n}\n```\n\n### CLI\n\n```bash\nmcp-evolution diff tools.v1.json tools.v2.json\nmcp-evolution diff tools.v1.json tools.v2.json --json\n```\n\n### CI Validation\n\n```bash\nnpx mcp-evolution-ci --base snapshots/base.json --head snapshots/head.json --format github-markdown\n```\n\n```typescript\nimport { validateSnapshot, formatReport } from \"@reaatech/mcp-schema-evolution-ci\";\n\nconst result = validateSnapshot({\n  baseSnapshot: \"snapshots/base.json\",\n  headSnapshot: \"snapshots/head.json\",\n  policy: { failOnBreaking: true, acknowledgmentFile: \".schema-breaking-allowed\" },\n});\n\nif (!result.ok) {\n  console.log(formatReport(result, { format: \"github-markdown\" }));\n  process.exit(1);\n}\n```\n\n## Packages\n\n| Package | Description |\n| ------- | ----------- |\n| [`@reaatech/mcp-schema-evolution`](./packages/core) | Schema diffing, change classification, field rename detection |\n| [`@reaatech/mcp-schema-evolution-cli`](./packages/cli) | `mcp-evolution` command-line interface |\n| [`@reaatech/mcp-schema-evolution-ci`](./packages/ci) | CI validation with acknowledgment-based policy enforcement |\n\n## Change Classification Reference\n\n| Change | Classification | Severity |\n| ------ | -------------- | -------- |\n| Removing a tool | `breaking` | `high` |\n| Removing a required field | `breaking` | `high` |\n| Adding a required field (no default) | `breaking` | `high` |\n| Renaming a field (without wrapper) | `breaking` | `high` |\n| Narrowing a type (`string` → `integer`) | `breaking` | `high` |\n| Tightening constraints (`minLength` increased) | `breaking` | `high` |\n| Removing enum values | `breaking` | `high` |\n| Field becoming required | `breaking` | `high` |\n| Adding an optional field | `non-breaking` | `medium` |\n| Adding a field with a default value | `non-breaking` | `medium` |\n| Widening a type (`integer` → `number`) | `non-breaking` | `medium` |\n| Adding enum values | `non-breaking` | `medium` |\n| Relaxing constraints | `non-breaking` | `medium` |\n| Adding a new tool | `non-breaking` | `low` |\n| Deprecating a field | `non-breaking` | `medium` |\n| Documentation-only changes | `patch` | `low` |\n| Default value changes | `patch` | `low` |\n\n## Acknowledging Breaking Changes\n\nWhen a breaking change is intentional, create a `.schema-breaking-allowed` file:\n\n```\n# Format: TOOL_NAME|CHANGE_CATEGORY|DESCRIPTION\nsearch|field_removed|Removed deprecated \"query\" param — replaced by \"q\" in v1.2.0\n*|field_added|New required \"trace_id\" field added for observability\n```\n\nLines beginning with `#` are ignored. Use `*` as a wildcard to match any tool or category.\n\n## Documentation\n\n- [ARCHITECTURE.md](./ARCHITECTURE.md) — System design, package relationships, and data flows\n- [AGENTS.md](./AGENTS.md) — Coding conventions and development guidelines for AI agents\n- [CONTRIBUTING.md](./CONTRIBUTING.md) — Contribution workflow and release process\n- [DEV_PLAN.md](./DEV_PLAN.md) — Development roadmap and planned features\n\n## License\n\n[MIT](LICENSE) © [reaatech](https://github.com/reaatech)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

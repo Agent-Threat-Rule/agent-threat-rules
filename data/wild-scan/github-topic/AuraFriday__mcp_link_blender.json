@@ -1,0 +1,33 @@
+{
+  "full_name": "AuraFriday/mcp_link_blender",
+  "html_url": "https://github.com/AuraFriday/mcp_link_blender",
+  "description": "Let AI drive Blender using MCP - Your favorite LLM can now do anything Blender can do!",
+  "topics": [
+    "blender",
+    "blender-addon",
+    "mcp",
+    "mcp-server",
+    "mcp-servers"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 5,
+  "forks": 3,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "GPL-3.0",
+  "default_branch": "main",
+  "created_at": "2026-01-03T02:49:17Z",
+  "last_pushed_at": "2026-01-03T11:20:01Z",
+  "fetched_at": "2026-07-11T23:58:45.624Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP-Link for Blender\n\n**Transform Blender into an AI-Controllable 3D Creation Platform**\n\nMCP-Link for Blender exposes Blender's entire Python API to AI agents through the Model Context Protocol (MCP). No hardcoded commands - just pure, generic API access that lets AI do anything Blender can do.\n\n![MCP-Link Screenshot](mcp_link_screenshot.png)\n\n## What Makes This Revolutionary\n\nUnlike traditional add-ons, MCP-Link provides **infrastructure**. It's a bridge that lets any AI agent - ChatGPT, Claude, Cursor, or custom agents - control Blender through natural language.\n\n### Three Levels of Power\n\n1. **Python Execution** - Run arbitrary Python code in Blender's runtime with full `bpy` access\n2. **Direct API Calls** - Execute any Blender operator or access any data\n3. **MCP Tool Integration** - Access 10+ tools (SQLite, browser, AI models, and more)\n\n## Features\n\n- ✅ **100% Generic API** - Works with ANY Blender command\n- ✅ **Full Python Access** - Run arbitrary Python code with complete `bpy` access\n- ✅ **Persistent Sessions** - Variables persist across multiple AI commands\n- ✅ **MCP Tool Ecosystem** - SQLite, browser automation, system control, and more\n- ✅ **Auto-Connect** - Extension connects to MCP-Link server on startup\n- ✅ **Auto-Reconnect** - Handles connection drops gracefully\n- ✅ **Thread-Safe** - Proper main-thread execution for Blender API calls\n\n## Requirements\n\n- **Blender 4.2+** - [Download from blender.org](https://www.blender.org/download/)\n- **MCP-Link Server** - [Free download from AuraFriday](https://aurafriday.com/downloads/)\n- **MCP-Compatible AI** - [Cursor](https://cursor.com/), Claude Code, or any MCP client\n\n## Installation\n\n### Method 1: From Blender Extensions\n\n1. Open Blender\n2. Go to **Edit → Preferences → Get Extensions**\n3. Search for \"MCP-Link\"\n4. Click **Install**\n\n### Method 2: From ZIP File\n\n1. Download `mcp_link_blender-x.x.x.zip` from [releases](https://github.com/AuraFriday/mcp_link_blender/releases)\n2. Open Blender\n3. Go to **Edit → Preferences → Add-ons**\n4. Click **Install from Disk...**\n5. Select the ZIP file\n\n### Method 3: Command Line\n\n```bash\nblender --command extension install-file -r user_default -e mcp_link_blender-1.0.0.zip\n```\n\n## Usage Examples\n\n### Create a 3D Cube\n\n```json\n{\n  \"operation\": \"execute_python\",\n  \"code\": \"import bpy\\nbpy.ops.mesh.primitive_cube_add(size=2, location=(0, 0, 1))\\nprint(f'Created: {bpy.context.active_object.name}')\"\n}\n```\n\n### Create a Complete Scene\n\n```json\n{\n  \"operation\": \"execute_python\",\n  \"code\": \"import bpy\\n\\n# Clear scene\\nbpy.ops.object.select_all(action='SELECT')\\nbpy.ops.object.delete()\\n\\n# Add ground plane\\nbpy.ops.mesh.primitive_plane_add(size=10)\\n\\n# Add a sphere\\nbpy.ops.mesh.primitive_uv_sphere_add(radius=1, location=(0, 0, 1))\\nsphere = bpy.context.active_object\\n\\n# Add material\\nmat = bpy.data.materials.new('Red')\\nmat.diffuse_color = (1, 0, 0, 1)\\nsphere.data.materials.append(mat)\\n\\nprint('Scene created!')\"\n}\n```\n\n### Render to File\n\n```json\n{\n  \"operation\": \"execute_python\",\n  \"code\": \"import bpy\\nbpy.context.scene.render.filepath = '/tmp/render.png'\\nbpy.ops.render.render(write_still=True)\\nprint('Rendered!')\"\n}\n```\n\n## Building from Source\n\n```bash\n# Clone the repository\ngit clone https://github.com/AuraFriday/mcp_link_blender.git\ncd MCP-Link-Blender\n\n# Build the extension\nmake build\n\n# Install to Blender\nmake install\n```\n\n### Makefile Commands\n\n| Command | Description |\n|---------|-------------|\n| `make` | Build the extension ZIP |\n| `make install` | Build and install to Blender |\n| `make clean` | Remove build artifacts |\n| `make version` | Show current version |\n| `make bump-patch` | Bump patch version (1.0.0 → 1.0.1) |\n| `make bump-minor` | Bump minor version (1.0.0 → 1.1.0) |\n| `make bump-major` | Bump major version (1.0.0 → 2.0.0) |\n\n## How It Works\n\n1. **Extension loads** when Blender starts\n2. **Auto-connects** to the local MCP-Link server via SSE\n3. **Registers \"blender\"** as a remote tool\n4. **Listens for commands** from AI agents\n5. **Executes on main thread** via `bpy.app.timers` for thread safety\n6. **Returns results** to the AI agent\n\n## Privacy & Security\n\n- ✅ **100% Local** - All processing happens on your machine\n- ✅ **No Cloud Dependencies** - Works completely offline\n- ✅ **No Data Collection** - Your designs never leave your computer\n- ✅ **Open Source** - Full transparency, auditable code\n- ✅ **GPL-3.0 License** - Free as in freedom\n\n## Troubleshooting\n\n### Extension not connecting\n\n1. Make sure MCP-Link server is running\n2. Check Blender's System Console for error messages\n3. Verify the server is listening on the expected port\n\n### Commands not executing\n\n1. Ensure Blender is in Object Mode for most operations\n2. Check that required objects exist before manipulating them\n3. Review the error message in the response\n\n## Contributing\n\nContributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.\n\n## License\n\nGPL-3.0-or-later - See [LICENSE](LICENSE) for details.\n\n## Credits\n\nCreated by [Aura Friday](https://aurafriday.com) - Trusted by 15,000+ users of previous add-ins.\n\n---\n\n**Links:**\n- [MCP-Link Server Download](https://aurafriday.com/downloads/)\n- [GitHub Repository](https://github.com/AuraFriday/mcp_link_blender/)\n- [Issue Tracker](https://github.com/AuraFriday/mcp_link_blender/issues)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

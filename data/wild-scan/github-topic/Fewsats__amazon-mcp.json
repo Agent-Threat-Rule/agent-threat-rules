@@ -1,0 +1,35 @@
+{
+  "full_name": "Fewsats/amazon-mcp",
+  "html_url": "https://github.com/Fewsats/amazon-mcp",
+  "description": "Amazon MCP server to search & buy products using the L402",
+  "topics": [
+    "ai-agents",
+    "aiagents",
+    "e-commerce",
+    "llm",
+    "mcp",
+    "mcp-server",
+    "shopping"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 80,
+  "forks": 10,
+  "open_issues": 6,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2025-04-01T08:18:58Z",
+  "last_pushed_at": "2026-04-24T05:36:23Z",
+  "fetched_at": "2026-07-11T23:08:27.405Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Amazon Shopping with Claude\n\n> **⚠️ This project has been discontinued and is no longer maintained.** No further updates, bug fixes, or support will be provided. The repository is archived for reference only.\n\nThis integration allows you to search and buy Amazon products directly through your AI assistant. Shop Amazon's vast catalog by simply chatting with Claude!\n\n## What You Need\n\n1. [Claude Desktop App](https://claude.ai/download) - Your AI shopping assistant\n2. [Fewsats Account](https://fewsats.com) - Required for secure payments (takes 2 minutes to set up)\n\n\n\n## Quick Setup Guide\n\n### Step 1: Install Claude Desktop App\n1. Download Claude from [claude.ai/download](https://claude.ai/download)\n2. Install and open the app\n\n### Step 2: Set Up Fewsats\n1. Go to [fewsats.com](https://fewsats.com) and create an account\n2. Add a payment method (credit card, Apple Pay, or Google Pay)\n3. Get your API key from [app.fewsats.com/api-keys](https://app.fewsats.com/api-keys)\n\n### Step 3: Configure Claude\n1. Find your Claude config file:\n   - Mac: Open Terminal and paste: `open ~/Library/Application\\ Support/Claude/claude_desktop_config.json`\n   - Windows: Press Win+R, type `%APPDATA%/Claude`, and open `claude_desktop_config.json`\n\n2. Add this configuration (replace YOUR_FEWSATS_API_KEY with your actual key):\n\n```json\n{\n  \"mcpServers\": {\n    \"Amazon\": {\n      \"command\": \"uvx\",\n      \"args\": [\n        \"amazon-mcp\"\n      ]\n    },\n    \"Fewsats\": {\n      \"command\": \"env\",\n      \"args\": [\n        \"FEWSATS_[REDACTED-GENERIC_KV_SECRET]\",\n        \"uvx\",\n        \"fewsats-mcp\"\n      ]\n    }\n  }\n}\n```\n\n### Step 4: Install UV\nUV is a small tool needed to run the Amazon integration:\n\n- Mac: Open Terminal and run:\n  ```\n  curl -LsSf https://astral.sh/uv/install.sh | sh\n  ```\n- Windows: Open PowerShell as Administrator and run:\n  ```\n  irm https://astral.sh/uv/install.ps1 | iex\n  ```\n\n## Start Shopping!\n\nThat's it! Now you can chat with Claude about Amazon products. Try these:\n\n- \"Find me a coffee maker under $50\"\n- \"I need running shoes, what do you recommend?\"\n- \"Can you search for kids' books about dinosaurs?\"\n\nClaude will help you search, compare products, and make purchases securely through Fewsats.\n\n## Using with Cursor (For Developers)\n\nIf you're a developer using Cursor, the setup is similar. In Cursor's settings, add:\n\n```json\n{\n  \"mcpServers\": {\n    \"Amazon\": {\n      \"command\": \"uvx\",\n      \"args\": [\n        \"amazon-mcp\"\n      ]\n    },\n    \"Fewsats\": {\n      \"command\": \"env\",\n      \"args\": [\n        \"FEWSATS_[REDACTED-GENERIC_KV_SECRET]\",\n        \"uvx\",\n        \"fewsats-mcp\"\n      ]\n    }\n  }\n}\n```\n\n## Security First: Policies\n\nWith Fewsats, you decide how purchases are handled:\n\n- **Custom Budget Limits**: Set monthly or per-transaction spending caps\n- **Approval Thresholds**: Auto-approve small purchases, review larger ones\n- **Manual Review**: Option to approve every purchase before it's processed\n- **Purchase History**: Track and review all transactions in one place\n\n\n## About\n\nThis integration is powered by [Fewsats](https://fewsats.com), providing secure payment infrastructure for AI assistants. All purchases are protected by Fewsats' buyer protection policy.\n\n[Amazon](https://www.amazon.com/) is the world's largest e-commerce platform, offering millions of products across diverse categories. With features like Prime shipping, competitive pricing, and extensive product reviews, Amazon provides a comprehensive shopping experience for customers worldwide.\n\n## Need Help?\n\nWrite to us on [X](https://x.com/Fewsats) or at [fewsats.com](https://fewsats.com) for assistance with payments or general questions.\n\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

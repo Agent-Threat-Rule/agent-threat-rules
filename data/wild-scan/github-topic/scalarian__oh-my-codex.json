@@ -1,0 +1,46 @@
+{
+  "full_name": "scalarian/oh-my-codex",
+  "html_url": "https://github.com/scalarian/oh-my-codex",
+  "description": "oh-my-codex (omx) — Orchestration layer for OpenAI Codex CLI. Async Claude Code delegation (no timeouts), structured workflows (autopilot, TDD, code review, planning), persistent state & memory. Like oh-my-zsh but for Codex.",
+  "topics": [
+    "agent-framework",
+    "ai-agents",
+    "ai-coding",
+    "ai-orchestration",
+    "async",
+    "claude",
+    "claude-code",
+    "cli",
+    "code-review",
+    "codex",
+    "codex-cli",
+    "developer-tools",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "openai",
+    "orchestration",
+    "tdd"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 71,
+  "forks": 18,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2026-02-08T07:11:46Z",
+  "last_pushed_at": "2026-04-01T14:21:20Z",
+  "fetched_at": "2026-07-11T23:23:18.046Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# oh-my-codex (OMX) v2\n\nCodex-native orchestration for builders who want one default path from a vague prompt to a durable multi-worker runtime.\n\nOMX v2 is not the old Codex-to-Claude bridge. It is a full Codex product built around:\n\n- durable `.omx/` state\n- tmux-aware team execution\n- a real agent catalog\n- a plugin SDK plus Codex plugin bridge\n- a first-party hook pack for Codex hooks\n- CLI, MCP, docs, demos, and packaged assets in one repo\n\n## What ships\n\n### CLI\n\n```bash\nomx setup\nomx doctor\nomx hud\nomx team\nomx explore\nomx session\nomx autoresearch\nomx agents\nomx plugins\nomx hooks\nomx version\n```\n\n### Skills\n\n- `$ultrawork`\n- `$deep-interview`\n- `$plan`\n- `$research`\n- `$team`\n- `$review`\n- `$tdd`\n- `$doctor`\n- `$hud`\n- `$trace`\n- `$autoresearch`\n- `$architect`\n- `$executor`\n- `$reviewer`\n\n### MCP families\n\n- `omx_task_*`\n- `omx_state_*`\n- `omx_memory_*`\n- `omx_note_*`\n- `omx_explore_*`\n- `omx_team_*`\n- `omx_plugin_*`\n- `omx_hook_*`\n- `omx_agent_*`\n\n### Durable contract\n\n```text\n.omx/\n├── hud-config.json\n├── logs/\n├── memory/\n├── plans/\n├── research/\n├── sessions/\n├── state/\n└── team/\n```\n\n## Product areas\n\n### Runtime\n\n- durable task graph, review queue, inbox, and execution ledger\n- tmux-first worker runtime on macOS/Linux, degraded mock mode when tmux is missing\n- resumable sessions and persistent team state\n\n### Agents\n\n- committed machine-readable catalog for architect, planner, researcher, executor, reviewer, operator\n- prompt templates under [templates/agents](/Users/staticpayload/Mainframe/oh-my-codex/templates/agents)\n- `omx agents list|show|install|validate`\n\n### Plugins\n\n- local plugin SDK using `.codex-plugin/plugin.json`\n- repo marketplace generation under [.agents/plugins/marketplace.json](/Users/staticpayload/Mainframe/oh-my-codex/.agents/plugins/marketplace.json)\n- first-party bundle at [plugins/omx-product](/Users/staticpayload/Mainframe/oh-my-codex/plugins/omx-product)\n- `omx plugins init|pack|validate|install-local|list|enable|disable|doctor`\n\n### Hooks\n\n- repo-local install to `<repo>/.codex/hooks.json`\n- optional personal install to `~/.codex/hooks.json`\n- shipped handlers for `SessionStart`, `PreToolUse`, `PostToolUse`, `UserPromptSubmit`, and `Stop`\n- presets: `memory`, `safety`, `review`, `telemetry`, `workspace-context`\n\n## Quick start\n\n### 1. Ask your agent - Paste this to your agent\n\n```bash\nInstall this to .codex - https://github.com/staticpayload/oh-my-codex/\n```\n\nThat does the full local onboarding flow:\n\n- installs workspace dependencies when needed\n- builds OMX\n- links the `omx` CLI globally with `npm link`\n- runs `omx setup`\n- runs `omx doctor`\n\n### 2. Use OMX in any project\n\nOnce `omx` is linked, move into the project you actually want to work on and run:\n\n```bash\nomx setup\n```\n\nIf you want the old manual path, it still works:\n\n```bash\nnpm install\nnpm run build\ncd packages/cli && npm link\nnode packages/cli/dist/bin.js setup apply\n```\n\n### 3. Check the environment\n\n```bash\nomx doctor\nomx hud\n```\n\n### 4. Work through the default path\n\n```text\n$ultrawork \"ship the feature end to end\"\n```\n\n## Command map\n\n### Setup\n\n```bash\nomx setup\nomx setup --force\nomx setup --dry-run\nomx setup repair\nomx setup uninstall\nomx setup migrate-v1\nomx setup --no-plugin --no-hooks\n```\n\n### Team runtime\n\n```bash\nomx team init\nomx team spawn executor\nomx team queue \"implement hook doctor\"\nomx team claim <taskId> executor\nomx team complete <taskId> executor \"implemented and verified\"\nomx team review <taskId> reviewer approved \"looks good\"\nomx team inbox\nomx team logs executor\nomx team shutdown\n```\n\n### Plugins\n\n```bash\nomx plugins validate\nomx plugins pack\nomx plugins install-local\nomx plugins doctor\n```\n\n### Hooks\n\n```bash\nomx hooks install --presets=workspace-context,memory,safety,review\nomx hooks status\nomx hooks explain safety\n```\n\n### Explore\n\n```bash\nomx explore index\nomx explore refs renderHud\nomx explore rename-preview oldName newName\nomx explore diagnostics\nomx explore tmux\n```\n\n## Repo layout\n\n```text\npackages/\n├── cli/\n├── core/\n└── mcp-server/\n\ncrates/\n└── omx-explore/\n\nplugins/\n└── omx-product/\n\nhooks/\n└── handlers/\n\ntemplates/\n└── agents/\n```\n\n## Docs\n\n- [Install guide](/Users/staticpayload/Mainframe/oh-my-codex/docs/INSTALL.md)\n- [Runtime guide](/Users/staticpayload/Mainframe/oh-my-codex/docs/RUNTIME.md)\n- [Plugin guide](/Users/staticpayload/Mainframe/oh-my-codex/docs/PLUGINS.md)\n- [Hook guide](/Users/staticpayload/Mainframe/oh-my-codex/docs/HOOKS.md)\n- [Agent guide](/Users/staticpayload/Mainframe/oh-my-codex/docs/AGENTS.md)\n- [Architecture](/Users/staticpayload/Mainframe/oh-my-codex/docs/ARCHITECTURE.md)\n- [Migration](/Users/staticpayload/Mainframe/oh-my-codex/docs/MIGRATION.md)\n- [Troubleshooting](/Users/staticpayload/Mainframe/oh-my-codex/docs/TROUBLESHOOTING.md)\n- [FAQ](/Users/staticpayload/Mainframe/oh-my-codex/docs/FAQ.md)\n- [Security notes](/Users/staticpayload/Mainframe/oh-my-codex/docs/SECURITY.md)\n\n## Demos\n\n- [Plugin authoring demo](/Users/staticpayload/Mainframe/oh-my-codex/demos/plugin-authoring/README.md)\n- [Repo marketplace demo](/Users/staticpayload/Mainframe/oh-my-codex/demos/repo-marketplace/README.md)\n- [Hook pack demo](/Users/staticpayload/Mainframe/oh-my-codex/demos/hook-pack/README.md)\n- [Team runtime demo](/Users/staticpayload/Mainframe/oh-my-codex/demos/team-runtime/README.md)\n- [Ultrawork demo](/Users/staticpayload/Mainframe/oh-my-codex/demos/ultrawork/README.md)\n\n## Development\n\n```bash\nnpm run build\nnpm run test\ncargo test -p omx-explore\n```\n\nCodex is the first-party executor in v2. There is no Claude bridge in this release.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

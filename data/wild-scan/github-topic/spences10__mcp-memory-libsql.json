@@ -1,0 +1,37 @@
+{
+  "full_name": "spences10/mcp-memory-libsql",
+  "html_url": "https://github.com/spences10/mcp-memory-libsql",
+  "description": "🧠 High-performance persistent memory system for Model Context Protocol (MCP) powered by libSQL. Features vector search, semantic knowledge storage, and efficient relationship management - perfect for AI agents and knowledge graph applications.",
+  "topics": [
+    "ai-tools",
+    "embeddings",
+    "knowledge-graph",
+    "libsql",
+    "mcp",
+    "model-context-protocol",
+    "persistent-storage",
+    "semantic-search",
+    "vector-search"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 85,
+  "forks": 17,
+  "open_issues": 12,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-01-14T20:09:43Z",
+  "last_pushed_at": "2026-07-08T11:16:12Z",
+  "fetched_at": "2026-07-11T23:21:14.086Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# mcp-memory-libsql\n\nA high-performance, persistent memory system for the Model Context\nProtocol (MCP) powered by libSQL with optimized text search for LLM\ncontext efficiency.\n\n<a href=\"https://glama.ai/mcp/servers/22lg4lq768\">\n  <img width=\"380\" height=\"200\" src=\"https://glama.ai/mcp/servers/22lg4lq768/badge\" alt=\"Glama badge\" />\n</a>\n\n## Features\n\n- 🚀 High-performance text search with relevance ranking\n- 💾 Persistent storage of entities and relations\n- 🔍 Flexible text search with fuzzy matching\n- 🎯 Context-optimized for LLM efficiency\n- 🔄 Knowledge graph management\n- 🌐 Compatible with local and remote libSQL databases\n- 🔒 Secure token-based authentication for remote databases\n\n## Configuration\n\nThis server is designed to be used as part of an MCP configuration.\nHere are examples for different environments:\n\n### Cline Configuration\n\nAdd this to your Cline MCP settings:\n\n```json\n{\n\t\"mcpServers\": {\n\t\t\"mcp-memory-libsql\": {\n\t\t\t\"command\": \"npx\",\n\t\t\t\"args\": [\"-y\", \"mcp-memory-libsql\"],\n\t\t\t\"env\": {\n\t\t\t\t\"LIBSQL_URL\": \"file:/path/to/your/database.db\"\n\t\t\t}\n\t\t}\n\t}\n}\n```\n\n### Claude Desktop with WSL Configuration\n\nFor a detailed guide on setting up this server with Claude Desktop in\nWSL, see\n[Getting MCP Server Working with Claude Desktop in WSL](https://scottspence.com/posts/getting-mcp-server-working-with-claude-desktop-in-wsl).\n\nAdd this to your Claude Desktop configuration for WSL environments:\n\n```json\n{\n\t\"mcpServers\": {\n\t\t\"mcp-memory-libsql\": {\n\t\t\t\"command\": \"wsl.exe\",\n\t\t\t\"args\": [\n\t\t\t\t\"bash\",\n\t\t\t\t\"-c\",\n\t\t\t\t\"source ~/.nvm/nvm.sh && LIBSQL_URL=file:/path/to/database.db /home/username/.nvm/versions/node/v20.12.1/bin/npx mcp-memory-libsql\"\n\t\t\t]\n\t\t}\n\t}\n}\n```\n\n### Database Configuration\n\nThe server supports both local SQLite and remote libSQL databases\nthrough the LIBSQL_URL environment variable:\n\nFor local SQLite databases:\n\n```json\n{\n\t\"env\": {\n\t\t\"LIBSQL_URL\": \"file:/path/to/database.db\"\n\t}\n}\n```\n\nFor remote libSQL databases (e.g., Turso):\n\n```json\n{\n\t\"env\": {\n\t\t\"LIBSQL_URL\": \"libsql://your-database.turso.io\",\n\t\t\"LIBSQL_AUTH_TOKEN\": \"your-auth-token\"\n\t}\n}\n```\n\nNote: When using WSL, ensure the database path uses the Linux\nfilesystem format (e.g., `/home/username/...`) rather than Windows\nformat.\n\nBy default, if no URL is provided, it will use `file:/memory-tool.db`\nin the current directory.\n\n## API\n\nThe server implements the standard MCP memory interface with optimized\ntext search:\n\n- Entity Management\n  - Create/Update entities with observations\n  - Delete entities\n  - Search entities by text with relevance ranking\n  - Explore entity relationships\n- Relation Management\n  - Create relations between entities\n  - Delete relations\n  - Query related entities\n\n## Architecture\n\nThe server uses a libSQL database with the following schema:\n\n- Entities table: Stores entity information with timestamps\n- Observations table: Stores entity observations\n- Relations table: Stores relationships between entities\n- Text search with relevance ranking (name > type > observation)\n\n## Development\n\n### Publishing\n\nDue to npm 2FA requirements, publishing needs to be done manually:\n\n1. Create a changeset (documents your changes):\n\n```bash\npnpm changeset\n```\n\n2. Version the package (updates version and CHANGELOG):\n\n```bash\npnpm changeset version\n```\n\n3. Publish to npm (will prompt for 2FA code):\n\n```bash\npnpm release\n```\n\n## Contributing\n\nContributions are welcome! Please read our contributing guidelines\nbefore submitting pull requests.\n\n## License\n\nMIT License - see the [LICENSE](LICENSE) file for details.\n\n## Acknowledgments\n\n- Built on the\n  [Model Context Protocol](https://github.com/modelcontextprotocol)\n- Powered by [libSQL](https://github.com/tursodatabase/libsql)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

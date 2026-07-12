@@ -1,0 +1,45 @@
+{
+  "full_name": "observee-ai/observee",
+  "html_url": "https://github.com/observee-ai/observee",
+  "description": "Observee (YC S25) lets you build AI agents with 1000+ integrations using MCPs with managed OAuth, Security and Observability",
+  "topics": [
+    "ai",
+    "ai-agents",
+    "anthropic",
+    "function-calling",
+    "gemini",
+    "gpt",
+    "groq",
+    "javascript",
+    "llm",
+    "mcp",
+    "model-context-protocol",
+    "python",
+    "tool-calling",
+    "typescript",
+    "ycombinator"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 42,
+  "forks": 7,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-07-22T22:46:00Z",
+  "last_pushed_at": "2025-08-11T00:24:45Z",
+  "fetched_at": "2026-07-11T23:33:45.586Z",
+  "readme": {
+    "path": "README.MD",
+    "content": "<div align=\"center\">\n  <picture>\n    <source media=\"(prefers-color-scheme: dark)\" srcset=\"./public/images/observee_white.png\">\n    <source media=\"(prefers-color-scheme: light)\" srcset=\"./public/images/observee_large.png\">\n    <img src=\"./public/images/observee_white.png\" width=\"80%\" style=\"margin: 20px auto;\" alt=\"Observee Logo\">\n  </picture>\n</div>\n\n\n<p align=\"center\">\n  <a href=\"https://observee.ai\">🌐 Website</a>  | \n  <a href=\"https://docs.observee.ai\">📚 Docs</a>  | \n  <a href=\"https://discord.com/invite/QCgXDSCNC6\">💬 Discord</a>  | \n  <a href=\"https://www.linkedin.com/company/observee\">💼 LinkedIn</a>  | \n  <a href=\"https://x.com/observeeinc\">𝕏</a>\n</p>\n\n<p align=\"center\">\n  ⭐ If you like Observee, <a href=\"https://github.com/observee-ai/observee\">please star us on GitHub!</a>\n</p>\n\n# Observee SDK\n\n**The complete Observee SDK - All-in-one package for using MCPs with AI agents, authentication management for MCPs, and complete observability for MCP Builders.**\n\nAvailable for both **TypeScript/JavaScript** and **Python**.\n\n## What's Included\n\nThis SDK includes all Observee components:\n\n- 🤖 **Agents** - MCP tool integration with LLM providers ([npm](https://www.npmjs.com/package/@observee/agents) | [pypi](https://pypi.org/project/mcp-agents/))\n- 🔐 **Auth** - OAuth authentication for 15+ services ([npm](https://www.npmjs.com/package/@observee/auth) | [pypi](https://pypi.org/project/agents-oauth/))\n- 📊 **Logger** - Structured logging and monitoring ([npm](https://www.npmjs.com/package/@observee/logger) | [pypi](https://pypi.org/project/mcp-logger/))\n\n## Quick Start\n\n### TypeScript/JavaScript\n\n```bash\n# Install everything at once\nnpm install @observee/sdk\n\n# Or install individual packages\nnpm install @observee/agents @observee/auth @observee/logger\n```\n\n### Python\n\n```bash\n# Install individual packages (no meta-package yet)\npip install mcp-agents agent-oauth mcp-logger\n\n# Or install all at once\npip install observee\n```\n\n### Usage Examples\n\n#### TypeScript/JavaScript\n\n**Option 1: Import from main package**\n\n```typescript\nimport { chatWithTools, callMcpAuthLogin, Logger } from \"@observee/sdk\";\n\n// Use agents\nconst result = await chatWithTools(\"Search for news\", {\n  provider: \"anthropic\",\n  observeeApiKey: \"obs_your_key\",\n});\n\n// Use auth\nconst authResponse = await callMcpAuthLogin({\n  authServer: \"gmail\",\n});\n\n// Use logger\nconst logger = new Logger({ apiKey: \"obs_your_key\" });\nlogger.info(\"Application started\");\n```\n\n**Option 2: Import from specific sub-packages**\n\n```typescript\nimport { chatWithTools } from \"@observee/agents\";\nimport { callMcpAuthLogin } from \"@observee/auth\";\nimport { Logger } from \"@observee/logger\";\n```\n\n#### Python\n\n```python\nfrom observee_agents import chat_with_tools\nfrom observee_auth import call_mcpauth_login\n\n# Use agents\nresult = chat_with_tools(\n    \"Search for news\",\n    provider=\"anthropic\",\n    observee_api_key=\"obs_your_key\"\n)\n\n# Use auth\nauth_response = call_mcpauth_login(auth_server=\"gmail\")\nprint(f\"Login URL: {auth_response['auth_url']}\")\n\n```\n\n## Complete Example\n\n### TypeScript/JavaScript\n\n```typescript\nimport { chatWithTools, callMcpAuthLogin, Logger } from \"@observee/sdk\";\n\n// Set up logging\nconst logger = new Logger({\n  apiKey: \"obs_your_key\",\n  service: \"my-app\",\n});\n\nasync function main() {\n  try {\n    // Authenticate with Gmail\n    logger.info(\"Starting Gmail authentication\");\n    const auth = await callMcpAuthLogin({\n      authServer: \"gmail\",\n    });\n    console.log(\"Visit:\", auth.url);\n\n    // Use AI agent with tools\n    logger.info(\"Starting AI chat with tools\");\n    const result = await chatWithTools(\"Search my emails for project updates\", {\n      provider: \"anthropic\",\n      observeeApiKey: \"obs_your_key\",\n    });\n\n    console.log(\"AI Response:\", result.content);\n    logger.info(\"AI chat completed\", {\n      toolsUsed: result.toolCalls?.length || 0,\n    });\n  } catch (error) {\n    logger.error(\"Application error\", { error: error.message });\n  }\n}\n\nmain();\n```\n\n### Python\n\n```python\nfrom observee_agents import chat_with_tools call_mcpauth_login\nimport asyncio\n\n\nasync def main():\n    try:\n        # Authenticate with Gmail\n        logger.info(\"Starting Gmail authentication\")\n        auth = call_mcpauth_login(auth_server=\"gmail\")\n        print(f\"Visit: {auth['auth_url']}\")\n\n        # Use AI agent with tools\n        logger.info(\"Starting AI chat with tools\")\n        result = await chat_with_tools(\n            \"Search my emails for project updates\",\n            provider=\"anthropic\",\n            observee_api_key=\"obs_your_key\"\n        )\n\n        print(f\"AI Response: {result['content']}\")\n    except Exception as error:\n        logger.error(\"Application error\", {\"error\": str(error)})\n\n# Run the async function\nasyncio.run(main())\n```\n\n## Features Overview\n\n### 🤖 AI Agents\n\n- **Multi-Provider Support**: Anthropic Claude, OpenAI GPT, Google Gemini\n- **MCP Tool Integration**: 15+ pre-built tools (Gmail, YouTube, Linear, etc.)\n- **Smart Filtering**: BM25, local embeddings, cloud-based filtering\n- **Streaming Support**: Real-time responses\n- **Conversation Memory**: Persistent chat history\n\n### 🔐 Authentication\n\n- **OAuth 2.0 Flows**: Gmail, Slack, Notion, Linear, GitHub, and more\n- **Simple Integration**: One-line authentication\n- **Secure Token Management**: Automatic storage and refresh\n- **Custom Redirects**: Support for self-hosted servers\n\n### 📊 Logging\n\n- **Structured Logging**: JSON-based log format\n- **Usage Tracking**: Monitor API usage and costs\n- **Multiple Transports**: Console, file, and cloud logging\n- **Performance Monitoring**: Track response times and errors\n\n## Support\n\n- 📖 [Documentation](https://docs.observee.ai)\n- 🐛 [Issue Tracker](https://github.com/observee-ai/observee/issues)\n- 💬 [Discord Community](https://discord.com/invite/QCgXDSCNC6)\n- 📧 [Email Support](mailto:founders@observee.ai)\n\n## Citation\n\nIf you use Observee in your research or project, please cite:\n\n```bibtex\n@software{observee,\n  title={Observee},\n  author={observee-ai},\n  year={2025},\n  publisher = {GitHub},\n  url={https://github.com/observee-ai/observee}\n}\n```\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "index.js",
+    "size": 506,
+    "content": "// Re-export everything from @observee/agents\nexport * from '@observee/agents';\n\n// Re-export everything from @observee/auth  \nexport * from '@observee/auth';\n\n// Re-export everything from @observee/logger\nexport * from '@observee/logger';\n\n// Named exports for convenience\nexport { chatWithTools, chatWithToolsStream, MCPAgent } from '@observee/agents';\nexport { callMcpAuthLogin, getAvailableServers, McpAuthClient } from '@observee/auth';\nexport { Logger, observeeUsageLogger } from '@observee/logger';\n"
+  },
+  "content_fetch_notes": []
+}

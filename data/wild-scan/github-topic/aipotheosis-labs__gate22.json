@@ -1,0 +1,42 @@
+{
+  "full_name": "aipotheosis-labs/gate22",
+  "html_url": "https://github.com/aipotheosis-labs/gate22",
+  "description": "Open-source MCP gateway and control plane for teams to govern which tools agents can use, what they can do, and how it’s audited—across agentic IDEs like Cursor, or other agents and AI tools.",
+  "topics": [
+    "agents",
+    "ai",
+    "ai-agents",
+    "control-plane",
+    "gateway",
+    "guardrails",
+    "llm",
+    "mcp",
+    "mcp-tools",
+    "oauth2",
+    "open-source",
+    "permissions",
+    "policy-as-code",
+    "rbac"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 177,
+  "forks": 22,
+  "open_issues": 23,
+  "language": "TypeScript",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2025-08-19T08:03:03Z",
+  "last_pushed_at": "2025-12-12T02:27:52Z",
+  "fetched_at": "2026-07-12T00:24:58.594Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<p align=\"center\">\n  <img src=\"frontend/public/aci-dev-full-logo-light-bg.svg\" alt=\"ACI.dev Logo\" width=\"100%\">\n</p>\n\n# Gate22: Open-Source MCP Gateway and Control Plane\n\n<p align=\"center\">\n  <a href=\"https://www.aci.dev/products/gate22\"><img src=\"https://img.shields.io/badge/Documentation-34a1bf\" alt=\"Documentation\"></a>\n  <a href=\"https://opensource.org/licenses/Apache-2.0\"><img src=\"https://img.shields.io/badge/License-Apache_2.0-blue.svg\" alt=\"License\"></a>\n  <a href=\"https://discord.com/invite/UU2XAnfHJh\"><img src=\"https://img.shields.io/discord/1349424813550342275?logo=discord&label=Discord&color=7289DA\" alt=\"Discord\"></a>\n  <a href=\"https://x.com/AipoLabs\"><img src=\"https://img.shields.io/twitter/follow/AipoLabs?style=social\" alt=\"Twitter Follow\"></a>\n</p>\n\n> [!NOTE]\n> This repo is for **Gate22**. If you're looking for the **Tool-calling Platform**, see [ACI](https://github.com/aipotheosis-labs/aci).\n\nGovern which tools agents can use, what they can do, and how it’s audited—across agentic IDEs like Cursor, or other agents and AI tools.\n\n**Gate22 is built for engineering organizations and teams** (Platform/Infra/DevEx, Security, Data/Analytics Eng). Admins onboard any remote MCP server (internal or external), set credential modes (org-shared or per-user), and define function-level allow lists per configuration. Developers then compose their own bundles from MCP configurations they’re permitted to use and expose them through a single unified MCP endpoint with just two functions — search and execute. Even if a bundle spans 20 MCPs/400+ tools, the unified endpoint discovers tools at call time, keeping IDE context lean while enforcing permissions.\n\n![Gate22 Architecture](frontend/public/gate22-architecture-light-bg.svg)\n\n<p align=\"center\">\n  Join us on <a href=\"https://discord.com/invite/UU2XAnfHJh\">Discord</a> to help shape the future of AI governance.<br/><br/>\n  🌟 <strong>Star Gate22 to stay updated on new releases!</strong><br/><br/>\n  <a href=\"https://github.com/aipotheosis-labs/mcp-gateway/stargazers\">\n    <img src=\"https://img.shields.io/github/stars/aipotheosis-labs/mcp-gateway?style=social\" alt=\"GitHub Stars\">\n  </a>\n</p>\n\n## 💻 Getting Started: Local Development\n\nTo run the full Gate22 platform (backend server and frontend portal) locally, follow the individual README files for each component:\n\n- **Backend:** [backend/README.md](backend/README.md)\n- **Frontend:** [frontend/README.md](frontend/README.md)\n\n## 👥 Who Should Use This Now\n\n- **Platform / Infra / DevEx teams** rolling out agentic IDEs or internal AI agents at org scale.\n- **Security / GRC** that need least-privilege execution and auditability for agent tool-use.\n- **Data & Analytics Engineering** that want governed access to internal tools/BI with minimal setup.\n\n**Not a great fit (yet):** single-user hobby setups; research sandboxes that don’t need governance.\n\n## 📺 Demo Video\n\n[![ACI.dev **Gate22** Tutorial](frontend/public/gate22-banner.png)](https://youtu.be/iYNtp5TSAqw)\n\n## ✨ Key Features in v0\n\n- Function allow-list permissioning (per MCP configuration).\n- Admin-set credential modes: org-shared or per-user (admins may publish both variants through separate MCP configurations of the same MCP server).\n- User-created bundles (private for now) → one endpoint (remote MCP URL) per bundle and only accessible to the bundle creator.\n- MCP tool list refresh & diff view (see what changed for an MCP server before you use it).\n- MCP bundles condense any number of MCPs and tools into just a single MCP endpoint and two functions--search and execute--to save context window.\n\n## 💡 Why Use Gate22?\n\nMaximize your ROI from AI tools through safe integrations with any MCP and have visibility and audit.\n\n- **Simple, least-privileged setup**: admins set MCP permissions; developers only see/execute what they’re allowed.\n- **No context bloat**: two function surface (search/execute) dynamically resolves tools at runtime.\n- **Separation of duties**: admins control configs/credentials; developers assemble bundles from permitted building blocks.\n- **Extend AI tools**: have ease of mind to let AI tools interact with the rest of your stack.\n\n## 🧰 Example\n\nAn admin connects Notion, Supabase, and Render MCPs as read-only for everyone, and adds internal MCPs with write actions limited to specific projects. Developers create their own bundles (from what they’re entitled to), link one endpoint in their IDE, and safely execute only allowed functions—every call audited.\n\n## 🔗 Quick Links\n\n- **Cloud Version:** [gate22.aci.dev](https://gate22.aci.dev/)\n- **Documentation:** [aci.dev/docs](https://gate22-docs.aci.dev/)\n- **Blog:** [aci.dev/blog](https://www.aci.dev/blog)\n- **Community:** [Discord](https://discord.com/invite/UU2XAnfHJh) | [Twitter/X](https://x.com/AipoLabs) | [LinkedIn](https://www.linkedin.com/company/aci-dev-by-aipolabs/posts/?feedView=all)\n\n## 🗺️ Near-Term Roadmap\n\n- Tool-call logs: per-call records (who/what/when/result/latency) with export.\n- Policy enforcement (P0): thin, policy-as-code starter (env/time-box/allow-list), fail-closed for risky ops.\n- MCP tool-change audit: persist diffs when servers refresh; searchable history.\n- Bundle sharing: opt-in sharing within team/workspace (role-scoped visibility).\n- Security hardening: pre-flight checks for tool poisoning / prompt-injection patterns on MCP servers/configs.\n\n## 🔭 Future (design RFCs)\n\n- Policy-as-code v2 (OPA/Cedar-style ABAC, approvals integration).\n- Quotas & budgets (per user/team/app/function).\n- Compliance (SIEM export, immutable audit logs).\n- Templates (“golden bundles”) for common stacks (Data/BI, SDLC, On-call).\n\n## 👋 Contributing\n\nWe welcome contributions! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for more information.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

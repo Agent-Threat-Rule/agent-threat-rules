@@ -1,0 +1,30 @@
+{
+  "full_name": "akbxr/zed-mcp-server-context7",
+  "html_url": "https://github.com/akbxr/zed-mcp-server-context7",
+  "description": "Context7 MCP Server for Zed",
+  "topics": [
+    "mcp",
+    "mcp-server"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 108,
+  "forks": 5,
+  "open_issues": 1,
+  "language": "Rust",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2025-04-17T17:02:12Z",
+  "last_pushed_at": "2025-10-01T00:02:46Z",
+  "fetched_at": "2026-07-11T22:58:31.773Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Context7 MCP Server for Zed\n\nThis extension integrates [Context7](https://context7.com/) as a Model Context Protocol (MCP) server for Zed's Assistant, providing up-to-date documentation for any prompt.\n\n## What is Context7?\n\nContext7 pulls up-to-date, version-specific documentation and code examples straight from the source and places them directly into your prompt context.\n\n### ❌ Without Context7\n\nLLMs rely on outdated or generic information about the libraries you use. You get:\n- ❌ Code examples are outdated and based on year-old training data\n- ❌ Hallucinated APIs that don't even exist\n- ❌ Generic answers for old package versions\n\n### ✅ With Context7\n\nContext7 fetches up-to-date, version-specific documentation and code examples straight from the source — and places them directly into your prompt.\n\nAdd `use context7` to your question in Zed Assistant:\n\n```\nHow do I use the new Next.js `after` function? use context7\n```\n\n```\nHow do I invalidate a query in React Query? use context7\n```\n\n```\nHow do I protect a route with NextAuth? use context7\n```\n\n## How It Works\n\n- 1️⃣ Ask your question naturally\n- 2️⃣ Tell the LLM to `use context7`\n- 3️⃣ Get working code answers\n\nNo tab-switching, no hallucinated APIs that don't exist, no outdated code generations.\n\n## Installation\n\nThis extension can be installed from the Zed extension.\n\n## Agent Mode Configuration\n\nIf you're using Zed's agent mode, you need to enable this context server for your assistant:\n\n1. Open Zed's assistant settings\n2. Enable the Context7 MCP server. If you see that the status of the tool is a red dot, make sure you toggle it so that becomes green.\n3. Enable the Context7 MCP Server in the active assistant profile. In the chat section, click on the `Write | Ask` button, then click on `tools`, then enable the Context7 MCP Server.\n\n## Environment Variables (Optional)\n\n- `context7_api_key`: Set the Context7 API key.\n\nExamples:\n\n```json\n{\n  \"context_server\": {\n    \"mcp-server-context7\": {\n      \"source\": \"extension\",\n      \"enabled\": true,\n      \"settings\": {\n        \"context7_[REDACTED-GENERIC_KV_SECRET]\",\n      }\n    }\n  }\n}\n```\n\n## Available Tools\n\nThe Context7 MCP Server provides these tools to the LLM:\n\n- `resolve-library-id`: Resolves a general library name into a Context7-compatible library ID.\n  - `libraryName` (optional): Search and rerank results\n\n- `get-library-docs`: Fetches documentation for a library using a Context7-compatible library ID.\n  - `context7CompatibleLibraryID` (required)\n  - `topic` (optional): Focus the docs on a specific topic (e.g., \"routing\", \"hooks\")\n  - `tokens` (optional, default 5000): Max number of tokens to return\n\n## Development\n\nClone the project and install dependencies:\n\n```\ncargo build\n```\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

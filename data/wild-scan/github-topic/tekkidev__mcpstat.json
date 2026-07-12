@@ -1,0 +1,44 @@
+{
+  "full_name": "tekkidev/mcpstat",
+  "html_url": "https://github.com/tekkidev/mcpstat",
+  "description": "Usage tracking and analytics for MCP servers",
+  "topics": [
+    "agent",
+    "ai",
+    "ai-agent",
+    "analytics",
+    "llm",
+    "logging",
+    "mcp",
+    "mcp-clients",
+    "mcp-sdk",
+    "mcp-tools",
+    "model-context-protocol",
+    "observability",
+    "python",
+    "statistics",
+    "token-tracking",
+    "tool-tracking-system"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 4,
+  "forks": 1,
+  "open_issues": 1,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-01-16T00:44:48Z",
+  "last_pushed_at": "2026-02-16T21:59:46Z",
+  "fetched_at": "2026-07-12T00:35:08.796Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# mcpstat\n\n[![PyPI - Version](https://img.shields.io/pypi/v/mcpstat)](https://pypi.org/project/mcpstat/)\n[![GitHub License](https://img.shields.io/github/license/tekkidev/mcpstat?color=yellow)](https://github.com/tekkidev/mcpstat/blob/main/LICENSE)\n[![PyPI - Python Version](https://img.shields.io/badge/python-3.10+-blue.svg)](https://pypi.org/project/mcpstat/)\n[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/tekkidev/mcpstat/tests.yaml)](https://github.com/tekkidev/mcpstat/actions/workflows/tests.yaml)\n[![PyPI - Downloads](https://img.shields.io/pypi/dm/mcpstat)](https://pypistats.org/packages/mcpstat)\n[![Checked with mypy](https://img.shields.io/badge/mypy-checked-blue)](http://mypy-lang.org/)\n[![Security: bandit](https://img.shields.io/badge/security-bandit-yellow.svg)](https://github.com/PyCQA/bandit)\n[![Codecov](https://codecov.io/gh/tekkidev/mcpstat/branch/main/graph/badge.svg)](https://codecov.io/gh/tekkidev/mcpstat)\n\n**Usage tracking and analytics for MCP servers.** Pure Python, zero required dependencies.\n\nTrack which tools get called, how often, and keep an audit trail - all in 3 lines of code.\n\n## Installation\n\n```bash\npip install mcpstat\n```\n\nWith MCP SDK:\n```bash\npip install \"mcpstat[mcp]\"\n```\n\n## Quick Start\n\n```python\nfrom mcp.server import Server\nfrom mcpstat import MCPStat\n\napp = Server(\"my-server\")\nstat = MCPStat(\"my-server\")\n\n@app.call_tool()\n@stat.track  # ← One decorator does everything!\nasync def handle_tool(name: str, arguments: dict):\n    # Your logic here - latency tracked automatically\n    return await my_logic(arguments)\n```\n\nThen ask your AI assistant: *\"Give me MCP usage stats\"*\n\n## Features\n\n- **SQLite-backed** - Stats persist across restarts\n- **Built-in MCP tools** - `get_tool_usage_stats`, `get_tool_catalog`\n- **Tag system** - Categorize and filter tools\n- **Token tracking** - Estimate or record actual token usage\n- **Latency tracking** - Measure execution duration, identify slow tools\n- **File logging** - Optional timestamped audit trail\n- **Async-first** - Thread-safe via `asyncio.Lock`\n\n## Documentation\n\n**[Full Documentation](https://github.com/tekkidev/mcpstat/tree/main/docs)** - Quick start, API reference, examples\n\n- [Quick Start](https://github.com/tekkidev/mcpstat/blob/main/docs/quickstart.md) - Get running in 5 minutes\n- [Configuration](https://github.com/tekkidev/mcpstat/blob/main/docs/configuration.md) - Customize paths, logging, presets\n- [API Reference](https://github.com/tekkidev/mcpstat/blob/main/docs/api.md) - Complete method reference\n- [Token Tracking](https://github.com/tekkidev/mcpstat/blob/main/docs/token-tracking.md) - Cost analysis features\n- [Latency Tracking](https://github.com/tekkidev/mcpstat/blob/main/docs/latency-tracking.md) - Performance monitoring\n\n## Examples\n\n```bash\n# Clone and run example server\ngit clone https://github.com/tekkidev/mcpstat.git\ncd mcpstat\npip install -e \".[mcp]\"\npython examples/example_server.py\n```\n\nSee [examples/](https://github.com/tekkidev/mcpstat/tree/main/examples/) for minimal and full integration patterns.\n\n## Contributing\n\nSee [CONTRIBUTING.md](https://github.com/tekkidev/mcpstat/blob/main/CONTRIBUTING.md). Run tests with:\n\n```bash\npip install \"mcpstat[dev]\"\npytest tests/\n```\n\n## License\n\nMIT - see [LICENSE](https://github.com/tekkidev/mcpstat/blob/main/LICENSE) for details.\n\n---\n\n*MCP is a trademark of its respective owners. This project is not affiliated with or endorsed by any trademark holders.*\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "full_name": "JossGeek/EcoMobilityAssistant",
+  "html_url": "https://github.com/JossGeek/EcoMobilityAssistant",
+  "description": "Sustainable mobility assistant",
+  "topics": [
+    "ai-agents",
+    "api-client",
+    "clean-architecture",
+    "mcp-clients",
+    "mcp-servers",
+    "mcp-tools",
+    "soa",
+    "unit-testing"
+  ],
+  "matched_query_topics": [
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "C#",
+  "license": null,
+  "default_branch": "master",
+  "created_at": "2026-02-08T20:17:11Z",
+  "last_pushed_at": "2026-03-11T15:15:31Z",
+  "fetched_at": "2026-07-12T00:16:33.028Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# EcoMobilityAssistant\n\nEcoMobilityAssistant is an AI-powered service that helps citizens choose sustainable transport solutions and provides general information about mobility facilities available in the Open Data Hub. The project leverages AI agents to assist users in making informed decisions about eco-friendly transportation options, promoting sustainable mobility practices.\n\n## Project Goal\n\nThe primary goal of EcoMobilityAssistant is to empower individuals and communities to adopt sustainable transportation habits by providing intelligent, data-driven recommendations. By integrating with Open Data Hub mobility facilities and utilizing advanced AI reasoning agents, the system offers personalized transport suggestions that consider environmental impact, efficiency, and user preferences.\n\n## Architecture and Modules Structure\n\nThe project follows Clean Architecture principles, organized into several layers and modules:\n\n### Core Modules\n\n- **Contracts** (`src/Contracts/EcoMob.Contracts`): Defines shared interfaces, enums, and models used across the application. This includes service contracts like `IIntentAgent`, `IReasoningAgent`, and `IValidatorAgent`, as well as data models for intent context and validation results.\n\n- **Core** (`src/Core/EcoMob.Core`): Contains the core business logic and domain services. The main service here is `EcoMobilityService`, which orchestrates the eco-mobility assistance functionality.\n\n- **Infrastructure** (`src/Infrastructure/EcoMob.Infra`): Handles external dependencies and infrastructure concerns. This includes:\n  - AI agents: `ContextValidatorAgent`, `IntentClassifierAgent`, `ReasoningAgent`\n  - Logging extensions\n  - Configuration settings\n  - Helper utilities\n\n- **UI** (`src/UI/EcoMob.Cli`): Provides the command-line interface for interacting with the EcoMobilityAssistant service.\n\n### MCP Server Modules\n\nThe MCP (Model Context Protocol) Server components are located under `src/McpServer/src/`:\n\n- **EcoMob.McpServer.Contracts**: Server-specific contracts and interfaces\n- **EcoMob.McpServer.Core**: Core server logic and configuration\n- **EcoMob.McpServer.Infra**: Server infrastructure components\n- **EcoMob.McpServer.Entry**: Server entry point\n- **EcoMob.McpSseServer.WebApp**: Web application for the MCP server with SSE (Server-Sent Events) support\n\n### Testing\n\n- **Tests** (`src/Tests/EcoMob.Tests`): Contains unit tests and architectural tests to ensure code quality and adherence to design principles.\n\n## Prerequisites\n\n- .NET 8.0 or later\n- Docker and Docker Compose (for containerized deployment)\n- Git\n\n## Running the Project\n\n### Option 1: Local Development (CLI)\n\nTo run the EcoMobilityAssistant CLI locally:\n\n1. Ensure you have .NET 8.0+ installed\n2. Make the run script executable (Linux/Mac):\n   ```bash\n   chmod +x run.sh\n   ```\n3. Execute the script:\n   ```bash\n   ./run.sh\n   ```\n\nThe script will:\n\n- Clean previous builds\n- Build the CLI project in Release configuration\n- Run the EcoMobilityAssistant CLI\n\n### Option 2: Docker Compose (Full Server Setup)\n\nTo run the complete system with MCP server and Redis using Docker Compose:\n\n1. Ensure Docker and Docker Compose are installed\n2. From the repository root, run:\n   ```bash\n   docker-compose up --build\n   ```\n\nThis will:\n\n- Build and start a Redis container (port 6379)\n- Build and start the MCP server container (port 5000)\n- The MCP server will be available at http://localhost:5000\n\nTo run in detached mode:\n\n```bash\ndocker-compose up -d --build\n```\n\nTo stop the services:\n\n```bash\ndocker-compose down\n```\n\n### Manual Docker Build (Alternative)\n\nIf you prefer to build manually:\n\n1. Navigate to the web app directory:\n\n   ```bash\n   cd src/McpServer/src/EcoMob.McpSseServer.WebApp\n   ```\n\n2. Build the Docker image:\n\n   ```bash\n   docker build -t eco-mcpserver .\n   ```\n\n3. Run the container:\n   ```bash\n   docker run -d -p 5000:80 --name eco-mcpserver eco-mcpserver\n   ```\n\n## Development\n\n### Building the Solution\n\nTo build all projects:\n\n```bash\ndotnet build EcoMobilityAssistant.sln\n```\n\n### Running Tests\n\n```bash\ndotnet test EcoMobilityAssistant.sln\n```\n\n### Code Structure\n\nThe project follows Clean Architecture with clear separation of concerns:\n\n- **Contracts**: Define what the system does\n- **Core**: Implement the business logic\n- **Infrastructure**: Handle external concerns (AI agents, logging, etc.)\n- **UI**: Provide user interfaces (CLI, Web)\n\nThe MCP Server extends this architecture to provide AI-powered mobility assistance through a web interface.\n\n## Contributing\n\nPlease see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute to this project.\n\n## License\n\n[Add license information here]\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

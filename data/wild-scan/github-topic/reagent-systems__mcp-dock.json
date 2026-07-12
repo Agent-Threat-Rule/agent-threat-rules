@@ -1,0 +1,30 @@
+{
+  "full_name": "reagent-systems/mcp-dock",
+  "html_url": "https://github.com/reagent-systems/mcp-dock",
+  "description": "Easy MCP Installs. Browse the MCP Registry and install servers in one place.  MCP Dock helps you discover MCP servers, review what they do, and install them into Cursor, Claude Code, and VS Code with a clean, focused workflow.",
+  "topics": [
+    "mcp",
+    "mcp-servers"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 2,
+  "forks": 0,
+  "open_issues": 5,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-05T14:29:18Z",
+  "last_pushed_at": "2026-05-02T04:06:15Z",
+  "fetched_at": "2026-07-12T00:05:29.734Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP Dock\n\nBrowse the MCP Registry and install servers into **Cursor**, **Claude Code**, and **VS Code**.\n\n- Desktop app: Electron + Vite + React (source in `src/` + `electron/`)\n- Website: SvelteKit workspace (source in `website/`)\n\n## Features\n\n- Browse MCP servers and view their metadata\n- Install server configs into supported clients (Cursor / Claude Desktop / VS Code)\n- Packaged releases for macOS + Windows\n\n## Requirements\n\n- Node.js 18+ (20+ recommended)\n- npm\n\n## Getting started\n\nInstall dependencies:\n\n```sh\nnpm install\n```\n\nRun the desktop app in dev mode:\n\n```sh\nnpm run dev\n```\n\nRun the website in dev mode:\n\n```sh\nnpm run dev:website\n```\n\n## Build\n\nDesktop app (packages into `release/<version>/`):\n\n```sh\nnpm run build\n```\n\nWebsite:\n\n```sh\nnpm run build:website\n```\n\n## Release artifacts\n\nBy default, Electron Builder outputs to `release/${version}/` (see `electron-builder.json`).\n\n- Windows (NSIS installer): `release/<version>/MCP-Dock_<version>.exe`\n- Windows (unpacked): `release/<version>/win-unpacked/`\n- macOS: `release/<version>/MCP-Dock_<version>.dmg` and `.zip`\n- Linux: `release/<version>/MCP-Dock_<version>.tar.gz`\n\n### Windows build (from macOS or Windows)\n\n```sh\nnpm run build -- --win --x64\n```\n\n### Signed + notarized macOS build\n\nThis repo includes `scripts/release-mac.sh` which runs a signed + notarized macOS build.\n\n```sh\nnpm run release:mac\n```\n\nThe script expects code-signing and notarization environment variables (see the top of `scripts/release-mac.sh`).\n\n## Repository layout\n\n```text\nelectron/            Electron main + preload source\nsrc/                 Renderer (React) source\npublic/              Static assets for the desktop app\ndist/                Renderer production build output\ndist-electron/        Electron production build output\nrelease/             Packaged installers and unpacked apps (by version)\nwebsite/             SvelteKit marketing site (npm workspace)\n```\n\n## Testing\n\n```sh\nnpm test\n```\n\n## License\n\nMIT — see `LICENSE`.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

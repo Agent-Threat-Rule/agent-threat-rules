@@ -1,0 +1,40 @@
+{
+  "full_name": "Code-MonkeyZhang/ticktick-mcp-enhanced",
+  "html_url": "https://github.com/Code-MonkeyZhang/ticktick-mcp-enhanced",
+  "description": "基于滴答清单官方API的本地MCP服务，让用户通过LLM和Agent应用轻松管理待办事项",
+  "topics": [
+    "ai",
+    "ai-",
+    "ai-agent-tools",
+    "ai-agents",
+    "chatgpt",
+    "claude-code",
+    "codex",
+    "llm",
+    "mcp",
+    "mcp-tools",
+    "openclaw",
+    "todolist"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 27,
+  "forks": 7,
+  "open_issues": 3,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-10-16T11:22:52Z",
+  "last_pushed_at": "2026-07-05T03:20:05Z",
+  "fetched_at": "2026-07-12T00:27:03.221Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<p align=\"center\">\n  <img src=\"logo.png\" width=\"128\" alt=\"TickTick MCP Logo\">\n</p>\n\n# 滴答清单 MCP 服务器\n\n[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)\n\n[English Version is Here!](README_en.md)\n\n这是一个基于滴答清单官方API的本地MCP服务，能让用户通过LLM和Agent应用轻松管理待办事项\n\n🔗 **API 文档**: [滴答清单官方 OpenAPI](https://developer.dida365.com/docs#/openapi)\n\n---\n\n## 📢 Update\n\n- **2026-07-04** 新增任务移动、已完成任务查询、项目更新、习惯管理模块 — 共 9 个新工具（move_tasks、get_completed_tasks、update_projects，以及习惯模块的 get_all_habits、get_habit、create_habits、update_habits、checkin_habits、get_habit_checkins）。\n- **2026-07-02** 重构认证系统 — 移除环境变量配置，改为运行时 `login` 工具直接传入 OAuth 凭据，支持中国版/国际版一键切换。\n- **2026-05-12** 提取工具描述 — 将所有工具的 Prompt 提取为独立 `.txt` 文件，便于维护和修改。\n- **2026-05-09** 新增提醒参数 — 创建和更新任务时支持 `reminders`，可设置到期前推送提醒。\n- **2026-01-29** 项目结构重构 — 迁移到 `src` 目录布局，代码组织更规范。\n- **2026-01-17** 日志系统升级 — 改为基于会话的纯文件日志，交互追踪更清晰。\n- **2026-01-12** 全面重构 — 实现无缝本地 OAuth 回调认证、统一日志追踪、移除 python-dotenv 依赖。\n- **2025-12-07** 修复时区处理问题。\n- **2025-10-17** 优化优先级参数自然语言映射及认证流程。\n\n## ✨ 功能特性\n\n- **🤖 让 AI Agent 管理你的任务**：通过自然语言指令创建、查询、更新和完成任务\n- **🔑 运行时 OAuth 认证**：通过 `login` 工具直接传入凭据，浏览器自动打开授权页面，无需配置环境变量\n- **📅 任务管理**：支持创建任务、项目、子任务，以及复杂的查询功能\n- **🔍 高级查询**：按日期范围、优先级、关键词等多维度筛选任务\n\n## 🚀 安装与使用\n\n### 前置条件\n\n- **Python 版本**：3.10 或更高\n- **LLM 客户端**（如 Claude Desktop、OpenCode 等）\n\n### 安装步骤\n\n```bash\n# 克隆项目\ngit clone https://github.com/Code-MonkeyZhang/ticktick-mcp-enhanced.git\ncd ticktick-mcp-enhanced\n\n# 创建虚拟环境并安装\nuv venv\nsource .venv/bin/activate  # macOS/Linux\n# .venv\\Scripts\\activate   # Windows\n\nuv pip install -e .\n```\n\n### 配置 LLM 客户端\n\n在 Claude Desktop 或其他 LLM 应用的配置文件中添加：\n\n- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`\n- **Windows**: `%APPDATA%/Claude/claude_desktop_config.json`\n\n```json\n{\n  \"mcpServers\": {\n    \"ticktick\": {\n      \"command\": [\"/path/to/ticktick-mcp-enhanced/.venv/bin/ticktick-mcp\"],\n      \"enabled\": true\n    }\n  }\n}\n```\n\n> **注意**：将 `/path/to/ticktick-mcp-enhanced` 替换为项目的实际绝对路径。Windows 用户请使用双反斜杠 `\\\\` 或正斜杠 `/`。\n\n### 🔑 获取 API 凭证\n\n在 [滴答清单开发者中心](https://developer.dida365.com/manage)（国内账号）或 [TickTick Developer Center](https://developer.ticktick.com/manage)（国外账号）注册一个应用。\n\n1. 点击 **\"New App\"**\n2. 设置 **Redirect URI** 为 `http://localhost:8000/callback`\n3. 保存你的 **Client ID** 和 **Client Secret**\n\n### 使用方法\n\n1. **重启 LLM 客户端**\n2. **登录滴答清单**\n   - 在对话中输入：\"帮我登录滴答清单\"，并提供你的 Client ID 和 Client Secret\n   - AI 会调用 `login` 工具，浏览器自动打开滴答清单授权页\n   - 在浏览器中点击允许，完成授权\n   - 登录状态保存在本地，后续使用无需重复登录\n3. **开始使用**\n   - 查看任务：\"查看我今天的任务\"\n   - 创建任务：\"创建一个任务：明天下午3点开会\"\n   - 查询项目：\"查看所有清单\"\n\n## 🧰 可用工具\n\n此 MCP 向你的 LLM 客户端公开以下工具。\n\n| 类别     | 工具名称                | 功能描述                                       |\n| :------- | :---------------------- | :--------------------------------------------- |\n| **认证** | `ticktick_status`       | 检查当前的连接和授权状态。                     |\n|          | `login`                 | 传入 OAuth 凭据，启动浏览器授权流程并完成登录。 |\n| **清单** | `get_all_projects`      | 获取所有清单列表。                             |\n|          | `get_project_info`      | 查看特定清单及其中的任务。                     |\n|          | `create_project`        | 创建一个新的项目。                             |\n|          | `update_projects`       | 原地修改项目名称、颜色、视图或类型（支持批量）。 |\n|          | `delete_projects`       | 删除项目。                                     |\n| **任务** | `create_tasks`          | 创建任务（支持智能时间识别）。                 |\n|          | `update_tasks`          | 修改任务标题、内容、日期或优先级。             |\n|          | `complete_tasks`        | 将任务标记为完成。                             |\n|          | `delete_tasks`          | 批量删除任务。                                 |\n|          | `create_subtasks`       | 为任务添加子任务。                             |\n|          | `move_tasks`            | 在不同项目之间移动任务（支持批量）。           |\n| **查询** | `query_tasks`           | 高级清单查询（支持日期范围、优先级、搜索词）。 |\n|          | `get_completed_tasks`   | 按项目和时间范围查询已完成的任务。             |\n| **习惯** | `get_all_habits`        | 获取所有习惯列表。                             |\n|          | `get_habit`             | 按 ID 查看单个习惯。                           |\n|          | `create_habits`         | 创建习惯（支持批量）。                         |\n|          | `update_habits`         | 原地修改习惯属性（支持批量）。                 |\n|          | `checkin_habits`        | 给习惯打卡，默认今天（支持批量与补打）。       |\n|          | `get_habit_checkins`    | 按日期范围查询习惯的打卡记录。                 |\n\n## 📂 项目结构\n\n```text\nticktick-mcp-enhanced/\n├── src/\n│   └── ticktick_mcp/\n│       ├── __init__.py          # 包入口\n│       ├── server.py            # MCP 服务入口\n│       ├── auth.py              # OAuth 逻辑与回调服务器\n│       ├── client_manager.py    # 客户端管理\n│       ├── log.py               # 日志配置\n│       ├── ticktick_client.py   # TickTick API 客户端\n│       ├── tools/               # 各类工具实现\n│       │   ├── project_tools.py # 清单工具\n│       │   ├── task_tools.py    # 任务工具\n│       │   ├── query_tools.py   # 查询工具\n│       │   ├── habit_tools.py   # 习惯工具\n│       │   └── prompts/         # 工具描述 (.txt)\n│       └── utils/               # 格式化与校验工具\n├── pyproject.toml              # 项目配置与依赖\n└── README.md                  # 本文档\n```\n\n## 📄 许可证\n\nMIT License - 详见 [LICENSE](LICENSE) 文件\n\n## 🙏 致谢\n\n- [Model Context Protocol](https://modelcontextprotocol.io/)\n- [滴答清单 Open API](https://developer.dida365.com/docs#/openapi)\n- [FastMCP](https://github.com/jlowin/fastmcp)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

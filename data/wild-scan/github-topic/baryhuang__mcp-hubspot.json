@@ -1,0 +1,37 @@
+{
+  "full_name": "baryhuang/mcp-hubspot",
+  "html_url": "https://github.com/baryhuang/mcp-hubspot",
+  "description": "A Model Context Protocol (MCP) server that enables AI assistants to interact with HubSpot CRM data, providing built-in vector storage and caching mechanisms help overcome HubSpot API limitations while improving response times.",
+  "topics": [
+    "crm",
+    "faiss",
+    "faiss-vector-database",
+    "hubspot",
+    "mcp-server",
+    "semantic-search"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 128,
+  "forks": 61,
+  "open_issues": 3,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2024-12-27T08:40:49Z",
+  "last_pushed_at": "2025-11-11T18:22:30Z",
+  "fetched_at": "2026-07-11T22:55:35.410Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# HubSpot MCP Server\n[![Docker Hub](https://img.shields.io/docker/pulls/buryhuang/mcp-hubspot?label=Docker%20Hub)](https://hub.docker.com/r/buryhuang/mcp-hubspot) \n[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)\n\n## Overview\n\nA Model Context Protocol (MCP) server that enables AI assistants to interact with HubSpot CRM data. This server bridges AI models with your HubSpot account, providing direct access to contacts, companies, and engagement data. Built-in vector storage and caching mechanisms help overcome HubSpot API limitations while improving response times.\n\nOur implementation prioritizes the most frequently used, high-value HubSpot operations with robust error handling and API stability. Each component is optimized for AI-friendly interactions, ensuring reliable performance even during complex, multi-step CRM workflows.\n\n## Why MCP-HubSpot?\n\n- **Direct CRM Access**: Connect Claude and other AI assistants to your HubSpot data without intermediary steps\n- **Context Retention**: Vector storage with FAISS enables semantic search across previous interactions\n- **Zero Configuration**: Simple Docker deployment with minimal setup\n\n## Example Prompts\n\n```\nCreate HubSpot contacts and companies from this LinkedIn profile:\n[Paste LinkedIn profile text]\n```\n\n```\nWhat's happening lately with my pipeline?\n```\n\n## Available Tools\n\nThe server offers tools for HubSpot management and data retrieval:\n\n| Tool | Purpose |\n|------|---------|\n| `hubspot_create_contact` | Create contacts with duplicate prevention |\n| `hubspot_create_company` | Create companies with duplicate prevention |\n| `hubspot_get_company_activity` | Retrieve activity for specific companies |\n| `hubspot_get_active_companies` | Retrieve most recently active companies |\n| `hubspot_get_active_contacts` | Retrieve most recently active contacts |\n| `hubspot_get_recent_conversations` | Retrieve recent conversation threads with messages |\n| `hubspot_search_data` | Semantic search across previously retrieved HubSpot data |\n\n## Performance Features\n\n- **Vector Storage**: Utilizes FAISS for efficient semantic search and retrieval\n- **Thread-Level Indexing**: Stores each conversation thread individually for precise retrieval\n- **Embedding Caching**: Uses SentenceTransformer with automatic caching\n- **Persistent Storage**: Data persists between sessions in configurable storage directory\n- **Multi-platform Support**: Optimized Docker images for various architectures\n\n## Setup\n\n### Prerequisites\n\nYou'll need a HubSpot access token with these scopes:\n- crm.objects.contacts (read/write)\n- crm.objects.companies (read/write)\n- sales-email-read\n\n### Quick Start\n\n```bash\n# Install via Smithery (recommended)\nnpx -y @smithery/cli@latest install mcp-hubspot --client claude\n\n# Or pull Docker image directly\ndocker run -e HUBSPOT_ACCESS_TOKEN=your_token buryhuang/mcp-hubspot:latest\n```\n\n### Docker Configuration\n\nFor manual configuration in Claude desktop:\n\n```json\n{\n  \"mcpServers\": {\n    \"hubspot\": {\n      \"command\": \"docker\",\n      \"args\": [\n        \"run\", \"-i\", \"--rm\",\n        \"-e\", \"HUBSPOT_ACCESS_TOKEN=your_token\",\n        \"-v\", \"/path/to/storage:/storage\",  # Optional persistent storage\n        \"buryhuang/mcp-hubspot:latest\"\n      ]\n    }\n  }\n}\n```\n\n### Building Docker Image\n\nTo build the Docker image locally:\n\n```bash\ngit clone https://github.com/buryhuang/mcp-hubspot.git\ncd mcp-hubspot\ndocker build -t mcp-hubspot .\n```\n\nFor multi-platform builds:\n\n```bash\ndocker buildx create --use\ndocker buildx build --platform linux/amd64,linux/arm64 -t buryhuang/mcp-hubspot:latest --push .\n```\n\n## Development\n\n```bash\npip install -e .\n```\n\n## License\n\nMIT License \n"
+  },
+  "descriptor_file": {
+    "path": "smithery.yaml",
+    "content": "# Smithery configuration file: https://smithery.ai/docs/deployments\n\nstartCommand:\n  type: stdio\n  configSchema:\n    # JSON Schema defining the configuration options for the MCP.\n    type: object\n    required:\n      - hubspotAccessToken\n    properties:\n      hubspotAccessToken:\n        type: string\n        description: The access token for the HubSpot API.\n  commandFunction:\n    # A function that produces the CLI command to start the MCP on stdio.\n    |-\n    config => ({ command: 'docker', args: ['run', '--rm', '-e', `HUBSPOT_ACCESS_TOKEN=${config.hubspotAccessToken}`, 'buryhuang/mcp-hubspot:latest'] })"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

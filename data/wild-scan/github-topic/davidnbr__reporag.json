@@ -1,0 +1,47 @@
+{
+  "full_name": "davidnbr/reporag",
+  "html_url": "https://github.com/davidnbr/reporag",
+  "description": "Fully local, zero-cost RAG knowledge layer for AI coding tools. Achieve near perfect codebase awareness with any AI tool. Supports Claude Code, Cursor, Codex, Antigravity",
+  "topics": [
+    "agents",
+    "agi",
+    "ai",
+    "ai-agents",
+    "antigravity",
+    "claude-code",
+    "codex",
+    "cursor",
+    "cursor-ai",
+    "cursor-ide",
+    "cursor-rules",
+    "developer-tools",
+    "llm",
+    "mcp",
+    "mcp-server",
+    "mcp-servers",
+    "rag",
+    "rag-pipeline",
+    "skills"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-05-25T21:40:52Z",
+  "last_pushed_at": "2026-07-02T17:15:18Z",
+  "fetched_at": "2026-07-12T00:15:16.575Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# reporag — Local RAG MCP Server\n\n**Fully local, zero-cost RAG knowledge layer for AI coding tools.**\nNo SaaS. No API keys. No pricing tiers. All computation on your machine.\n\nWorks with **agy (antigravity)**, **Claude Code**, **Cursor**, **Codex CLI**, and any MCP-compatible client.\n\n---\n\n## Why reporag\n\nYour AI assistant doesn't know your codebase. It hallucinates APIs, reinvents functions that already exist, and guesses at code it has never seen. reporag fixes this by giving the model real, retrieved context from *your* repo — locally.\n\n**The headline result:** on private or large codebases the model has never seen, reporag delivers a **+71–81% answer-quality improvement** — turning unusable baseline answers (1.1–1.3 / 5) into competent ones (3.8–4.2 / 5).\n\n| Codebase           | Files | Baseline |  RAG | Composite Δ |\n| ------------------ | ----: | -------: | ---: | ----------: |\n| private Go project |    74 |     2.24 | 3.84 |  **+71.3%** |\n| Django             | 2,955 |     2.35 | 4.25 |  **+81.1%** |\n\n_Claude-as-judge, baseline vs. RAG-injected context, scored on correctness, completeness, and hallucination avoidance (1–5). The less the model knows from training, the larger the gain._\n\n![LLM response quality: baseline vs RAG](https://github.com/user-attachments/assets/f338658b-c62c-4314-aad9-361736c98cf2)\n\n→ Full methodology, retrieval-recall tables, and anti-duplication (\"discovery\") results in **[docs/BENCHMARKS.md](docs/BENCHMARKS.md)**.\n\n---\n\n## Quick start\n\n**Prerequisite:** [`uv`](https://docs.astral.sh/uv/getting-started/installation/) — single binary, no Python needed upfront.\n\n```bash\n# 1. Install uv (if needed)\ncurl -LsSf https://astral.sh/uv/install.sh | sh\n\n# 2. Configure your client(s) — writes MCP config + proactive-use rules\nuvx --from \"reporag[ml-cpu] @ git+https://github.com/davidnbr/reporag.git\" \\\n    reporag setup --client all\n```\n\nRestart your client. That's it — the server launches automatically via `uvx`, indexes on first use, and retrieves context before the model answers.\n\n**Set up one tool at a time** instead of `--client all`:\n\n```bash\nreporag setup --client claude   # Claude Code  (installs hooks; register the server with `claude mcp add` — see docs/CLIENTS.md)\nreporag setup --client cursor   # Cursor       (~/.cursor/mcp.json + rules)\nreporag setup --client codex    # Codex CLI    (~/.codex/config.toml)\n```\n\n> agy (antigravity) uses the same MCP config format as Claude Code — see [docs/CLIENTS.md](docs/CLIENTS.md).\n> Use `reporag[ml]` instead of `[ml-cpu]` for CUDA-accelerated embedding on an NVIDIA GPU.\n\n→ Per-client manual config, hooks, and Cursor/Codex details in **[docs/CLIENTS.md](docs/CLIENTS.md)**.\n\n---\n\n## Tools\n\n| Tool             | What it does                                                                       |\n| ---------------- | --------------------------------------------------------------------------------- |\n| `index_codebase` | Parse, embed, and graph-index a project. Run once, then incrementally on changes. |\n| `query_code`     | Hybrid RAG retrieval (dense + BM25 + RRF + PPR + optional rerank).                 |\n| `find_existing`  | Pre-implementation discovery — surface code that already does the task.            |\n| `get_symbol`     | Exact symbol lookup by name.                                                       |\n| `remember` / `recall` | Persistent knowledge store across sessions.                                   |\n\n<details>\n<summary>Example calls</summary>\n\n```jsonc\n// index_codebase\n{ \"path\": \"/path/to/project\", \"incremental\": true, \"languages\": [\"go\", \"python\"] }\n\n// query_code — use `project` to scope when multiple repos are indexed\n{ \"query\": \"how does authentication work\", \"k\": 10, \"project\": \"/path/to/project\" }\n\n// find_existing — call BEFORE writing new code to avoid reimplementing\n{ \"task\": \"validate API error codes and map them to user messages\", \"project\": \"/path/to/project\" }\n\n// get_symbol\n{ \"name\": \"UserController\", \"language\": \"python\" }\n\n// remember / recall\n{ \"content\": \"Use JWT with 15min expiry for auth\", \"tags\": [\"auth\"], \"category\": \"decision\" }\n{ \"query\": \"auth token decisions\", \"tags\": [\"auth\"] }\n```\n\n`find_existing` runs the same hybrid pipeline as `query_code` (no reranker), deduplicated by file (max 2/file), with a `reuse_hint` per result. It prevents the \"model reimplements logic that already exists\" failure mode — see [discovery benchmarks](docs/BENCHMARKS.md#3-discovery-mode-anti-duplication).\n\n</details>\n\n---\n\n## How it works\n\n```\nAI tool (agy / Claude Code / Cursor / Codex)\n       │\n       ▼ MCP stdio\nreporag bridge          → thin stdio↔HTTP proxy, one per client (loads no ML)\n       │\n       ▼ streamable HTTP (127.0.0.1:7800, loopback only)\nreporag daemon          → ONE per machine; auto-spawned, deduplicated, idle-shutdown\n       ├── tree-sitter   → AST chunks + semantic text (per-language)\n       ├── SCIP CLIs     → compiler-grade dependency graph (+ heuristic fallback)\n       ├── LanceDB       → dense vector search (nomic-embed-text-v1, 768-dim, local)\n       ├── BM25          → sparse retrieval (k1=1.2, b=0.75)\n       ├── RRF k=60      → hybrid fusion\n       ├── Reverse PPR   → architectural hub ranking\n       ├── Cross-encoder → reranking (bge-reranker-base, local)\n       └── SQLite FTS5   → persistent memory store\n```\n\nEvery client still launches `reporag` the same way (via `uvx`), but each launch is now\na lightweight **bridge** that connects to a single shared **daemon**. The first bridge\nstarts the daemon; the rest reuse it — so N editor windows share **one** embedding model\nand **serialized** indexing instead of N copies competing for CPU/GPU. The daemon binds\nloopback only, and shuts itself down after 15 min idle (configurable). Set\n`REPORAG_NO_DAEMON=1` to revert to the classic self-contained per-client server.\n\n**Supported languages:** Python, JavaScript, TypeScript, Go, Rust, Java, C, C++.\n\n---\n\n## Documentation\n\n| Doc                                          | Contents                                                          |\n| -------------------------------------------- | ---------------------------------------------------------------- |\n| **[docs/BENCHMARKS.md](docs/BENCHMARKS.md)** | Full benchmarks: retrieval recall, LLM quality, discovery mode.  |\n| **[docs/CLIENTS.md](docs/CLIENTS.md)**       | Per-client config, hooks, Cursor rules, Codex managed block.     |\n| **[docs/CONFIGURATION.md](docs/CONFIGURATION.md)** | Config file, env vars, install variants, SCIP, development. |\n| [docs/codebase_rag_research.md](docs/codebase_rag_research.md) | Architectural & mathematical foundations.        |\n\n## License\n\nSee [LICENSE](LICENSE).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

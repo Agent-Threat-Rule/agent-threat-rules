@@ -1,0 +1,36 @@
+{
+  "full_name": "thejonali/agentic-dev-workflows",
+  "html_url": "https://github.com/thejonali/agentic-dev-workflows",
+  "description": "Provider-neutral AI developer workflows with reusable agents, commands, skills, and adapters for Codex, Claude Code, Cursor, AGENTS.md, and MCP tools.",
+  "topics": [
+    "agentic-ai",
+    "ai-agents",
+    "code-review",
+    "developer-tools",
+    "mcp-server",
+    "mcp-tools",
+    "python",
+    "workflow-automation"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 1,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2026-06-30T00:41:14Z",
+  "last_pushed_at": "2026-07-07T00:39:40Z",
+  "fetched_at": "2026-07-12T00:43:02.105Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Agentic Developer Workflows\n\n[![Validate workflow specifications](https://github.com/thejonali/agentic-dev-workflows/actions/workflows/validate.yml/badge.svg?branch=main)](https://github.com/thejonali/agentic-dev-workflows/actions/workflows/validate.yml)\n[![License: Apache-2.0](https://img.shields.io/github/license/thejonali/agentic-dev-workflows)](LICENSE)\n[![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](#verification)\n[![MCP workflow server](https://img.shields.io/badge/MCP-workflow%20server-5A45FF)](mcp/workflow-server/README.md)\n[![Providers: Codex | Claude Code | Cursor](https://img.shields.io/badge/providers-Codex%20%7C%20Claude%20Code%20%7C%20Cursor-4F46E5)](docs/provider-adapters.md)\n\nA provider-neutral library for maintaining reusable AI-assisted\nsoftware-development workflows across Codex, Claude Code, Cursor, and MCP\nclients. Canonical definitions live under `core/`; deterministic generators\nrender provider-native assets, while validation and snapshot checks prevent\nthose outputs from drifting from their source.\n\n## What It Provides\n\n- Canonical workflows covering repository setup, safe changes, testing,\n  reviews, documentation, releases, and visual design.\n- Deterministic validation for workflow, command, agent, template, and link\n  contracts.\n- Generated Codex, Claude Code, and Cursor adapters with checked-in,\n  drift-tested provider assets.\n- A local, read-only MCP server for workflow discovery, rendering, validation,\n  and repository health scoring.\n- Reproducible provider-installation and repository-guidance examples.\n\n## Status\n\nv0.1.0 defines the initial stable release. The planned implementation through\nPhase 9 is complete: the library generates Codex skills, agents, and commands;\nClaude Code skills and subagents; and Cursor rules and commands from the same\nprovider-neutral core. A local, read-only MCP server exposes five structured\ntools for discovery, rendering, validation, and repository health scoring.\nReproducible installation examples and release archives exercise the generated\nassets without becoming a second source of workflow behavior. The generic\nadapter remains deferred.\n\n## Use the Library\n\n- Start with the unified [installation guide](docs/installation.md) for release\n  archives, checksums, provider layouts, and MCP setup.\n- Browse the canonical specifications in the [core library](core/README.md).\n- Install generated Codex assets with the\n  [Codex installation guide](providers/codex/install.md).\n- Install generated Claude Code assets with the\n  [Claude Code installation guide](providers/claude/install.md).\n- Install generated Cursor assets with the\n  [Cursor installation guide](providers/cursor/install.md).\n- Install and configure the local server with the\n  [MCP workflow server guide](mcp/workflow-server/README.md).\n- Review installed snapshots and sample repository guidance in the\n  [Phase 8 examples](examples/README.md).\n\n## Repository Layout\n\n```text\ncore/       Canonical provider-neutral workflows, agents, commands, and schemas\nproviders/  Thin provider-specific adapters derived from the core\nmcp/        Local MCP servers that expose shared repository logic\nexamples/   Reproducible installations and illustrative repository guides\ndocs/       Architecture and contributor documentation\n```\n\nSee [the architecture overview](docs/architecture.md) for dependency rules and\nthe rendering model. Repository-specific guidance for coding agents is in\n[AGENTS.md](AGENTS.md).\n\nSee the [provider adapter guide](docs/provider-adapters.md) before regenerating\nor changing provider packaging.\n\n## Release Preparation\n\nThe [v0.1.0 release notes](docs/releases/v0.1.0.md) describe compatibility,\nartifacts, verification, and known limitations. See the [changelog](CHANGELOG.md)\nfor the release inventory and the [roadmap](ROADMAP.md) for post-v0.1.0 plans.\n\nBuild the four deterministic ZIP files and their SHA-256 manifest locally:\n\n```sh\npython3 -B scripts/build_release.py --version 0.1.0\n```\n\nGenerated files are written to the ignored `dist/` directory. Tagging and\npublishing remain separate, explicit release operations.\n\n## Design Principles\n\n- Keep canonical behavior provider-neutral.\n- Prefer small, composable workflows over broad prompts.\n- Make safety constraints and verification steps explicit.\n- Produce readable summaries of actions, results, and remaining risks.\n- Design scripts and tools for deterministic, agent-friendly use.\n\n## Verification\n\nPython 3.11 or newer is required for the complete validation and MCP workflow.\nRun the same checks used by CI from the repository root:\n\n```sh\npython3 -B -m unittest discover -s tests -v\npython3 -B scripts/validate_workflows.py\npython3 -B scripts/generate_provider_assets.py --check\npython3 -B scripts/generate_examples.py --check\ngit diff --check\n```\n\nThe MCP protocol integration test runs when the MCP server package is installed.\n\n## License\n\nLicensed under the [Apache License 2.0](LICENSE).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

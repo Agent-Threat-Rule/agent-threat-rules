@@ -1,0 +1,35 @@
+{
+  "full_name": "diegoaltoworks/localize-remote-mcp-server",
+  "html_url": "https://github.com/diegoaltoworks/localize-remote-mcp-server",
+  "description": "Bridge any remote HTTP MCP server into Claude Desktop.",
+  "topics": [
+    "claude",
+    "claude-desktop",
+    "claude-desktop-app",
+    "claude-desktop-integration",
+    "mcp-servers"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "JavaScript",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-04-12T16:10:48Z",
+  "last_pushed_at": "2026-04-12T17:30:53Z",
+  "fetched_at": "2026-07-12T00:23:44.777Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Localize Remote MCP Server\n\nBridge any remote HTTP MCP server into Claude Desktop.\n\n## The problem\n\nClaude Desktop only supports MCP servers that run locally as commands (stdio transport). It cannot connect to remote MCP servers over HTTP. The two transports are fundamentally incompatible:\n\n![The broken approach — Claude Desktop cannot connect directly to a remote HTTP/SSE MCP server](docs/mcp_broken_approach.png)\n\n## The solution\n\nThis package bridges the gap. You configure it in Claude Desktop's config file, Claude launches it automatically, and it translates between stdio and your remote server's HTTP endpoint. You never run this yourself — Claude does.\n\n![The working solution — localize-remote-mcp-server acts as a local stdio bridge](docs/mcp_working_solution.png)\n\n## Setup\n\n1. Open your Claude Desktop config file `claude_desktop_config.json`:\n   - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`\n   - **Windows**: `%APPDATA%\\Claude\\claude_desktop_config.json`\n\n2. Add your remote MCP server to the `mcpServers` section. Replace the URL with your remote server's MCP endpoint:\n\n```json\n{\n  \"mcpServers\": {\n    \"my-remote-server\": {\n      \"command\": \"npx\",\n      \"args\": [\n        \"@diegoaltoworks/localize-remote-mcp-server\",\n        \"https://my-remote-server.example.com/mcp\"\n      ]\n    }\n  }\n}\n```\n\n3. Restart Claude Desktop.\n\nThat's it. Claude Desktop will launch the bridge process in the background and your remote server's tools will appear in Claude.\n\n## How it works\n\nWhen Claude Desktop starts, it runs the `npx` command from your config. The bridge process:\n\n1. Receives JSON-RPC messages from Claude Desktop over stdin\n2. Forwards them as HTTP POST requests to your remote MCP server\n3. Parses the response (JSON or SSE) and writes it back to stdout\n\nClaude Desktop sees it as a normal local MCP server. Your remote server receives normal HTTP MCP requests. Neither side knows about the bridge.\n\n## HTTP proxy mode\n\nIf you need a local HTTP proxy instead of stdio (for other MCP clients), you can run it directly with `--port`:\n\n```bash\nnpx @diegoaltoworks/localize-remote-mcp-server --port 6969 https://my-remote-server.example.com/mcp\n```\n\nThis is not needed for Claude Desktop.\n\n## What it does\n\n- Bridges stdio and HTTP MCP transports\n- Parses SSE responses from remote servers\n- Forwards authorization headers and MCP session IDs\n- Zero dependencies — just Node.js\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "bin/cli.js",
+    "size": 1568,
+    "content": "#!/usr/bin/env node\n\n\"use strict\";\n\nvar args = process.argv.slice(2);\nvar port = null;\nvar remoteUrl = null;\nvar help = false;\n\nfor (var i = 0; i < args.length; i++) {\n  if (args[i] === \"-h\" || args[i] === \"--help\") {\n    help = true;\n  } else if (args[i] === \"-p\" || args[i] === \"--port\") {\n    port = parseInt(args[++i], 10);\n  } else if (!remoteUrl) {\n    remoteUrl = args[i];\n  }\n}\n\nif (help || !remoteUrl) {\n  console.log(\"\");\n  console.log(\"Usage: localize-remote-mcp-server [options] <remote-url>\");\n  console.log(\"\");\n  console.log(\"Proxy a remote HTTP MCP server for local use.\");\n  console.log(\"\");\n  console.log(\"Modes:\");\n  console.log(\"  Default (stdio)    Bridges stdin/stdout to the remote server.\");\n  console.log(\"                     Use this with Claude Desktop.\");\n  console.log(\"  --port <port>      Runs a local HTTP proxy server instead.\");\n  console.log(\"\");\n  console.log(\"Options:\");\n  console.log(\"  -p, --port <port>  Local port for HTTP proxy mode\");\n  console.log(\"  -h, --help         Show this help message\");\n  console.log(\"\");\n  console.log(\"Examples:\");\n  console.log(\"  npx @diegoaltoworks/localize-remote-mcp-server https://my-server.example.com/mcp\");\n  console.log(\"  npx @diegoaltoworks/localize-remote-mcp-server --port 6969 https://my-server.example.com/mcp\");\n  console.log(\"\");\n  process.exit(help ? 0 : 1);\n}\n\nif (port) {\n  var proxy = require(\"../src/proxy\");\n  proxy.createProxy({ remoteUrl: remoteUrl, port: port });\n} else {\n  var stdio = require(\"../src/stdio\");\n  stdio.createStdioBridge({ remoteUrl: remoteUrl });\n}\n"
+  },
+  "content_fetch_notes": []
+}

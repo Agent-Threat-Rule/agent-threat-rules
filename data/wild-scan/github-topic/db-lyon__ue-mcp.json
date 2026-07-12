@@ -1,0 +1,37 @@
+{
+  "full_name": "db-lyon/ue-mcp",
+  "html_url": "https://github.com/db-lyon/ue-mcp",
+  "description": "Complete Unreal Engine development toolkit exposed as MCP tools.",
+  "topics": [
+    "ai",
+    "blueprint",
+    "game-development",
+    "mcp-server",
+    "model-context-protocol",
+    "ue5",
+    "ue5-plugin",
+    "unreal-engine"
+  ],
+  "matched_query_topics": [
+    "mcp-server",
+    "model-context-protocol"
+  ],
+  "stars": 214,
+  "forks": 40,
+  "open_issues": 10,
+  "language": "C++",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-02-24T22:13:00Z",
+  "last_pushed_at": "2026-07-11T19:28:20Z",
+  "fetched_at": "2026-07-11T22:47:22.852Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# UE-MCP\n\n**Unreal Engine Model Context Protocol Server** - gives AI assistants deep read/write access to the Unreal Editor through <!-- count:tools -->23<!-- /count --> category tools covering <!-- count:actions -->678+<!-- /count --> actions, plus a YAML flow engine for multi-step workflows.\n\n```mermaid\nflowchart LR\n    AI[AI Assistant] -->|stdio| MCP[MCP Server<br/>TypeScript / Node.js]\n    MCP -->|WebSocket<br/>JSON-RPC| Plugin[C++ Bridge Plugin<br/>inside Unreal Editor]\n    Plugin -->|UE API| Editor[Editor Subsystems]\n    MCP -->|direct fs| FS[Config INI<br/>C++ Headers<br/>Asset Listing]\n```\n\nBlueprints, materials, levels, actors, animation, VFX, landscape, PCG, foliage, audio, UI, physics, navigation, AI, GAS, networking, sequencer, build pipeline — all programmable through natural language.\n\n## Quick Start\n\n```bash\nnpx ue-mcp init\n```\n\nThe interactive setup will:\n\n1. Find your `.uproject` (auto-detects in current directory)\n2. Let you choose which tool categories to enable\n3. Deploy the C++ bridge plugin to your project\n4. Enable required UE plugins (Niagara, PCG, GAS, etc.)\n5. Detect and configure your MCP client (Claude Code, Claude Desktop, Cursor, Codex)\n\nRestart the editor once after setup to load the bridge plugin. To update later: `npx ue-mcp update`\n\nThen ask your AI:\n\n```\nproject(action=\"get_status\")        — verify connection\nlevel(action=\"get_outliner\")        — see what's in the level\nasset(action=\"list\")                — browse project assets\n```\n\n### Manual Configuration\n\nIf you prefer to configure manually, add to your MCP client config:\n\n```json\n{\n  \"mcpServers\": {\n    \"ue-mcp\": {\n      \"command\": \"npx\",\n      \"args\": [\"ue-mcp\", \"C:/path/to/MyGame.uproject\"]\n    }\n  }\n}\n```\n\n## Documentation\n\n**[https://ue-mcp.com/docs](https://ue-mcp.com/docs)**\n\n- [Getting Started](https://ue-mcp.com/docs/getting-started/) — Installation, configuration, first run\n\n## What Can It Do?\n\n| Category | Examples |\n|----------|----------|\n| **Levels** | Place/move/delete actors, spawn lights and volumes, manage splines, actor bounds |\n| **Blueprints** | Read/write graphs, add nodes, connect pins, compile, CDO property access |\n| **Materials** | Create materials and instances, author expression graphs |\n| **Assets** | CRUD, import meshes/textures/animations, datatables, mesh bounds/collision/nav |\n| **Animation** | Anim blueprints, montages, blendspaces, skeletons |\n| **VFX** | Niagara systems, emitters, parameters |\n| **Landscape** | Sculpt terrain, paint layers, import heightmaps |\n| **PCG** | Author and execute Procedural Content Generation graphs |\n| **Gameplay** | Physics, collision, navigation, navmesh inspection, behavior trees, EQS, perception, PIE damage |\n| **GAS** | Gameplay Ability System — attributes, abilities, effects, cues |\n| **Networking** | Replication, dormancy, relevancy, net priority |\n| **UI** | UMG widgets, editor utility widgets and blueprints, runtime delegate inspection |\n| **Editor** | Console, Python, PIE, viewport, sequencer, build pipeline, logs |\n| **Reflection** | Class/struct/enum introspection, gameplay tags |\n\n## Supported Platforms\n\n- **Windows** — UE 5.4–5.8\n- **Linux** — UE 5.6+ (contributed by [@robinduckett](https://github.com/robinduckett))\n\nRequires `PythonScriptPlugin` (ships with UE 4.26+).\n\nIf you clone this repo to contribute, install [git-lfs](https://git-lfs.com) first - the bundled test project stores `.uasset` / `.umap` via LFS and plain `git clone` will leave them as pointer files.\n\n## Contributing\n\nIssues and pull requests welcome. If an AI agent had to fall back to `execute_python` during your session, it will offer to submit structured feedback automatically — this helps us prioritize which native handlers to add next.\n\n## License\n\nUE-MCP is licensed under the **MIT License**. Use it freely in personal, educational, and commercial projects. See [LICENSE](LICENSE).\n\nContributions are accepted under the same MIT License (inbound contributions are licensed under the project's outbound license).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

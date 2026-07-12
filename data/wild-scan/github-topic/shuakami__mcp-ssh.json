@@ -1,0 +1,41 @@
+{
+  "full_name": "shuakami/mcp-ssh",
+  "html_url": "https://github.com/shuakami/mcp-ssh",
+  "description": "🔐 SSH MCP Tool - AI-powered SSH management through MCP protocol | 基于MCP协议的SSH工具，为AI提供SSH远程操作能力",
+  "topics": [
+    "ai",
+    "ai-tools",
+    "automation",
+    "cursor",
+    "devops",
+    "mcp",
+    "model-context-protocol",
+    "nodejs",
+    "remote-management",
+    "ssh",
+    "terminal",
+    "tmux",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 69,
+  "forks": 20,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": null,
+  "default_branch": "master",
+  "created_at": "2025-03-23T08:07:40Z",
+  "last_pushed_at": "2026-02-01T04:59:59Z",
+  "fetched_at": "2026-07-11T23:23:55.925Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# SSH MCP 工具\n\n[![ISC License](https://img.shields.io/badge/License-ISC-718096?style=flat-square)](https://opensource.org/licenses/ISC)\n[![Node.js](https://img.shields.io/badge/Node.js-18.x-339933?style=flat-square)](https://nodejs.org/)\n[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6?style=flat-square)](https://www.typescriptlang.org/)\n[![SSH](https://img.shields.io/badge/SSH-MCP-0078d7?style=flat-square)](https://github.com/shuakami/mcp-ssh)\n\n[English Version (README-EN.md)](README-EN.md)\n\n## 这是什么\n\n这是一个基于 MCP (Model Context Protocol) 的 SSH 工具，它能让 AI 模型通过标准化接口访问和管理 SSH 连接。\n\n简单来说，它让 AI 助手能够执行各种 SSH 操作，如连接服务器、执行命令、管理文件等，无需用户手动输入复杂的命令或切换到终端。\n\n<details>\n<summary><b>支持的功能</b> (点击展开)</summary>\n\n- **连接管理**：创建、获取、列表、更新、删除 SSH 连接\n- **命令执行**：执行单条命令、复合命令、后台任务\n- **tmux 会话管理**：创建、获取、列表、发送按键、捕获输出\n- **文件操作**：上传、下载、查看文件内容\n- **进程管理**：检测阻塞进程、智能等待、超时处理\n- **安全控制**：密码/密钥认证、超时控制、错误处理\n</details>\n\n<details>\n<summary><b>功能特点</b> (点击展开)</summary>\n\n以下是 SSH MCP 工具的一些核心特点：\n\n- **智能命令执行**：自动检测并等待阻塞进程，避免会话卡死\n- **tmux 集成**：完整支持 tmux 会话管理，实现持久化终端会话\n- **复合命令支持**：智能处理包含 `&&` 和 `;` 的复合命令\n- **实时反馈**：命令执行状态实时更新，支持长时间运行的任务\n- **错误恢复**：自动处理断线重连、超时等异常情况\n- **安全可靠**：支持多种认证方式，保护敏感信息\n\n通过简单的自然语言指令，AI 可以帮助你完成上述所有操作，无需手动编写复杂的 SSH 命令或在终端中执行操作。\n</details>\n\n## 快速上手\n\n### 0. 环境准备\n\n<details>\n<summary>环境要求 (点击展开)</summary>\n\n1. **Python 3.11+（必需）**\n   - 访问 [Python 官网](https://www.python.org/downloads/)\n   - 下载并安装 Python 3.11 或更高版本\n   - **重要**：安装时请勾选\"Add Python to PATH\"选项\n   - **安装完成后请重启电脑**，确保环境变量生效\n\n2. **Node.js 和 npm**\n   - 访问 [Node.js 官网](https://nodejs.org/)\n   - 下载并安装 LTS（长期支持）版本\n   - 安装时选择默认选项即可，安装包会同时安装 Node.js 和 npm\n\n3. **Git**\n   - 访问 [Git 官网](https://git-scm.com/)\n   - 下载并安装 Git\n   - 安装时使用默认选项即可\n   \n4. **tmux** (远程服务器需要)\n   - 在远程服务器上安装 tmux\n   - 对于 Ubuntu/Debian: `sudo apt-get install tmux`\n   - 对于 CentOS/RHEL: `sudo yum install tmux`\n</details>\n\n### 1. 克隆并安装\n\n```bash\ngit clone https://github.com/shuakami/mcp-ssh.git\ncd mcp-ssh\nnpm install\nnpm run build\n```\n> ⚠️ **重要提示**：安装后请不要删除克隆或解压的文件，插件需要持续访问这些文件！\n\n### 2. 构建项目\n\n```bash\nnpm run build\n```\n\n### 3. 添加到 Cursor MCP 配置\n\n根据你的操作系统，按照以下步骤配置 MCP：\n\n<details>\n<summary><b>Windows 配置</b> (点击展开)</summary>\n\n1. 在 Cursor 中，打开或创建 MCP 配置文件：`C:\\\\Users\\\\你的用户名\\\\.cursor\\\\mcp.json`\n   - 注意：请将 `你的用户名` 替换为你的 Windows 用户名\n\n2. 添加或修改配置如下：\n\n```json\n{\n  \"mcpServers\": {\n    \"ssh-mcp\": {\n      \"command\": \"pythonw\",\n      \"args\": [\n        \"C:/Users/你的用户名/mcp-ssh/bridging_ssh_mcp.py\"\n      ]\n    }\n  }\n}\n```\n\n> ⚠️ **请注意**:\n> - 将 `你的用户名` 替换为你的 Windows 用户名\n> - 确保路径正确指向你克隆或解压的项目目录\n> - 路径应该反映你将项目文件放置的实际位置\n> - **不要删除克隆或解压的文件夹**，这会导致 MCP 无法正常工作\n</details>\n\n<details>\n<summary><b>macOS 配置</b> (点击展开)</summary>\n\n1. 在 Cursor 中，打开或创建 MCP 配置文件：`/Users/你的用户名/.cursor/mcp.json`\n   - 注意：请将 `你的用户名` 替换为你的 macOS 用户名\n\n2. 添加或修改配置如下：\n\n```json\n{\n  \"mcpServers\": {\n    \"ssh-mcp\": {\n      \"command\": \"python3\",\n      \"args\": [\n        \"/Users/你的用户名/mcp-ssh/bridging_ssh_mcp.py\"\n      ]\n    }\n  }\n}\n```\n\n> ⚠️ **请注意**:\n> - 将 `你的用户名` 替换为你的 macOS 用户名\n> - 确保路径正确指向你克隆或解压的项目目录\n> - 路径应该反映你将项目文件放置的实际位置\n> - **不要删除克隆或解压的文件夹**，这会导致 MCP 无法正常工作\n</details>\n\n<details>\n<summary><b>Linux 配置</b> (点击展开)</summary>\n\n1. 在 Cursor 中，打开或创建 MCP 配置文件：`/home/你的用户名/.cursor/mcp.json`\n   - 注意：请将 `你的用户名` 替换为你的 Linux 用户名\n\n2. 添加或修改配置如下：\n\n```json\n{\n  \"mcpServers\": {\n    \"ssh-mcp\": {\n      \"command\": \"python3\",\n      \"args\": [\n        \"/home/你的用户名/mcp-ssh/bridging_ssh_mcp.py\"\n      ]\n    }\n  }\n}\n```\n\n> ⚠️ **请注意**:\n> - 将 `你的用户名` 替换为你的 Linux 用户名\n> - 确保路径正确指向你克隆或解压的项目目录\n> - 路径应该反映你将项目文件放置的实际位置\n> - **不要删除克隆或解压的文件夹**，这会导致 MCP 无法正常工作\n</details>\n\n### 4. 启动服务\n\n配置好之后，重启 Cursor 编辑器，它会自动启动 MCP 服务。然后你就可以开始使用了。\n\n### 5. 配置 SSH 连接\n\n<details>\n<summary><b>如何配置 SSH 连接</b> (点击展开)</summary>\n\n1. 在 Cursor 编辑器中，使用 AI 助手创建新的 SSH 连接：\n   ```\n   请帮我创建一个新的 SSH 连接，连接到我的服务器\n   ```\n\n2. AI 助手会引导你提供以下信息：\n   - 主机地址（IP 或域名）\n   - 端口号（默认 22）\n   - 用户名\n   - 认证方式（密码或密钥）\n   - 其他可选配置（超时时间、密钥路径等）\n\n3. 连接创建后，你可以通过以下命令测试连接：\n   ```\n   请帮我测试刚才创建的 SSH 连接\n   ```\n</details>\n\n## 使用示例\n\n<details>\n<summary><b>基本命令执行</b> (点击展开)</summary>\n\n```\n请在服务器上执行 ls -la 命令\n```\n\nAI 助手会：\n1. 检查现有 SSH 连接\n2. 执行命令并返回结果\n3. 格式化输出以提高可读性\n</details>\n\n<details>\n<summary><b>tmux 会话管理</b> (点击展开)</summary>\n\n```\n请创建一个新的 tmux 会话并运行 top 命令\n```\n\nAI 助手会：\n1. 创建新的 tmux 会话\n2. 在会话中执行 top 命令\n3. 返回会话 ID 供后续使用\n</details>\n\n<details>\n<summary><b>文件操作</b> (点击展开)</summary>\n\n```\n请帮我查看 /var/log/syslog 文件的最后 100 行\n```\n\nAI 助手会：\n1. 检查文件权限\n2. 使用适当的命令读取文件\n3. 格式化并返回内容\n</details>\n\n## 高级功能\n\n### 阻塞检测\n\nSSH MCP 工具内置了智能的阻塞检测机制：\n\n- 自动检测交互式程序（如 vim、nano）\n- 识别后台运行的阻塞进程\n- 支持设置等待超时时间（最长10分钟）\n- 提供强制执行选项（使用 force 参数）\n\n### 复合命令处理\n\n支持执行包含 `&&` 和 `;` 的复合命令：\n\n- 智能拆分和执行多个命令\n- 保持命令执行顺序\n- 提供详细的执行状态\n- 支持错误处理和回滚\n\n### tmux 集成\n\n完整的 tmux 会话管理支持：\n\n- 创建和管理持久化会话\n- 支持发送按键序列\n- 实时捕获会话输出\n- 智能处理会话状态\n\n## 增强提示设置\n\n为了更好地使用 SSH MCP 工具与远程服务器协作，建议在 Cursor 中添加以下 CursorRules 设置：\n\n<details>\n<summary><b>推荐的 CursorRules 设置</b> (点击展开)</summary>\n\n```\n在**需要、或可能需要用户协助的**ssh任务时，可创建tmux，一个可共享的终端会话，并直接**告诉用户**可以通过什么命令链接到tmux来和你协作（不要在mcp内告诉用户，你应该输出出来）。然后再开始你的任务。\n\n**你必须在tmux内进行任务。可以使用tmux send-keys相关命令，mcp会自动返回当前运行的命令和上一个运行的命令的结果。**\n\n你应该先查看现有的tmux窗口再做决定。\n\n**注意：在命令运行时必须耐心等待（sleep命令）当前命令，不要/同时/后台/继续执行下一个任务/命令。**\n\n在用户没有明确要求时，你不应该创建帮助文件或者指南/报告文件。尤其是用户在找你帮忙的时候，你应该直接说出来。\n```\n\n</details>\n\n添加此设置后，AI 助手将能够更智能地处理 SSH 任务，特别是在需要用户协作的场景中，可以创建共享的 tmux 会话，让远程操作更加高效和透明。\n\n## 工作原理\n\n<details>\n<summary>技术实现细节 (点击展开)</summary>\n\n本工具基于 **MCP (Model Context Protocol)** 标准实现，作为 AI 模型与 SSH 服务之间的桥梁。它使用 **node-ssh** 作为底层 SSH 客户端，并通过 **Zod** 进行请求验证和类型检查。\n\n主要技术组件包括：\n- **SSH 客户端**：负责建立和维护 SSH 连接，支持密码和密钥认证\n- **tmux 管理器**：处理 tmux 会话的创建、管理和交互\n- **命令执行系统**：支持单命令、复合命令的执行，并提供阻塞检测\n- **进程监控**：实时检测进程状态，避免会话卡死\n- **文件传输**：支持上传和下载功能，处理各种文件类型\n\n每个 SSH 操作都被封装为标准化的 MCP 工具，接收结构化参数并返回格式化结果。所有远程命令都经过处理，以确保以人类可读的格式呈现，使 AI 模型能够轻松理解命令执行结果。\n</details>\n\n## 贡献指南\n\n欢迎提交 Issue 和 Pull Request！在提交之前，请：\n\n1. 查看现有的 Issue 和 PR\n2. 遵循项目的代码风格\n3. 添加适当的测试用例\n4. 更新相关文档\n\n## 许可证\n\n本项目采用 ISC 许可证 - 详见 [LICENSE](LICENSE) 文件\n\n---\n\nIf this project helps you, please give it a Star ⭐️ (｡♥‿♥｡) \n\n## 使用 Docker 运行 (推荐)\n\n您也可以在 Docker 容器中运行此工具。这是推荐的使用方式，因为它可以避免与您的本地环境产生任何潜在的冲突。\n\n1.  **构建 Docker 镜像:**\n\n    ```bash\n    docker build -t mcp-ssh .\n    ```\n\n2.  **运行 Docker 容器 (附带数据持久化):**\n\n    为了确保您的连接配置和凭证在容器重启后不丢失，我们强烈建议您使用 Docker 数据卷 (Volume)。\n\n    ```bash\n    # (首次运行前) 创建一个数据卷来存储数据\n    docker volume create mcp-ssh-data\n\n    # 运行容器，并将数据卷挂载到容器的 /root/.mcp-ssh 目录\n    # 同时，我们仍然建议挂载您本地的 .ssh 目录以使用现有密钥\n    docker run -it -v mcp-ssh-data:/root/.mcp-ssh -v ~/.ssh:/root/.ssh mcp-ssh\n    ```\n\n    在 Windows 上，请使用 `%USERPROFILE%\\.ssh` 代替 `~/.ssh`:\n\n    ```bash\n    docker run -it -v mcp-ssh-data:/root/.mcp-ssh -v %USERPROFILE%\\.ssh:/root/.ssh mcp-ssh\n    ``` "
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

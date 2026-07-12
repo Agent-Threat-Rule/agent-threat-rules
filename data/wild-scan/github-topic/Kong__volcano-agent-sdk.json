@@ -1,0 +1,42 @@
+{
+  "full_name": "Kong/volcano-agent-sdk",
+  "html_url": "https://github.com/Kong/volcano-agent-sdk",
+  "description": "🌋 Build AI agents that seamlessly combine LLM reasoning with real-world actions via MCP tools — in just a few lines of TypeScript.",
+  "topics": [
+    "agentic",
+    "agentic-ai",
+    "agentic-framework",
+    "agents",
+    "ai",
+    "artificial-intelligence",
+    "automation",
+    "genai",
+    "mcp",
+    "mcp-client",
+    "mcp-server",
+    "mcp-tools",
+    "sdk"
+  ],
+  "matched_query_topics": [
+    "mcp-server",
+    "mcp-tools"
+  ],
+  "stars": 398,
+  "forks": 31,
+  "open_issues": 10,
+  "language": "TypeScript",
+  "license": "NOASSERTION",
+  "default_branch": "main",
+  "created_at": "2025-09-22T22:32:21Z",
+  "last_pushed_at": "2026-02-12T02:01:47Z",
+  "fetched_at": "2026-07-11T22:41:14.609Z",
+  "readme": {
+    "path": "README.md",
+    "content": "[![CI](https://github.com/Kong/volcano-agent-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/Kong/volcano-agent-sdk/actions/workflows/ci.yml)\n[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)\n[![npm](https://img.shields.io/npm/v/@volcano.dev/agent.svg)](https://www.npmjs.com/package/@volcano.dev/agent)\n\n# 🌋 Volcano Agent SDK\n\n**The TypeScript SDK for Multi-Provider AI Agents**\n\nBuild agents that chain LLM reasoning with MCP tools. Mix OpenAI, Claude, Mistral in one workflow. Parallel execution, branching, loops. Native retries, streaming, and typed errors.\n\n📚 **[Read the full documentation at volcano.dev →](https://volcano.dev/)**\n\n## ✨ Features\n\n<table>\n<tr>\n<td width=\"33%\">\n\n### 🤖 Automatic Tool Selection\nLLM automatically picks which MCP tools to call based on your prompt. No manual routing needed.\n\n</td>\n<td width=\"33%\">\n\n### 🧩 Multi-Agent Crews\nDefine specialized agents and let the coordinator autonomously delegate tasks. Like automatic tool selection, but for agents.\n\n</td>\n<td width=\"33%\">\n\n### 💬 Conversational Results\nAsk questions about what your agent did. Use `.summary()` or `.ask()` instead of parsing JSON.\n\n</td>\n</tr>\n\n<tr>\n<td width=\"33%\">\n\n### 🔧 100s of Models\nOpenAI, Anthropic, Mistral, Bedrock, Vertex, Azure. Switch providers per-step or globally.\n\n</td>\n<td width=\"33%\">\n\n### 🔄 Advanced Patterns\nParallel execution, branching, loops, sub-agent composition. Enterprise-grade workflow control.\n\n</td>\n<td width=\"33%\">\n\n### 📡 Streaming\nStream tokens in real-time as LLMs generate them. Perfect for chat UIs and SSE endpoints.\n\n</td>\n</tr>\n\n<tr>\n<td width=\"33%\">\n\n### 🛡️ TypeScript-First\nFull type safety with IntelliSense. Catch errors before runtime.\n\n</td>\n<td width=\"33%\">\n\n### 📊 Observability\nOpenTelemetry traces and metrics. Export to Jaeger, Prometheus, DataDog, or any OTLP backend.\n\n</td>\n<td width=\"33%\">\n\n### ⚡ Production-Ready\nBuilt-in retries, timeouts, error handling, and connection pooling. Battle-tested at scale.\n\n</td>\n</tr>\n</table>\n\n**[Explore all features →](https://volcano.dev/docs#key-features)**\n\n## Quick Start\n\n### Installation\n\n```bash\nnpm install @volcano.dev/agent\n```\n\nThat's it! Includes MCP support and all common LLM providers (OpenAI, Anthropic, Mistral, Llama, Vertex).\n\n**[View installation guide →](https://volcano.dev/docs#installation)**\n\n### Hello World with Automatic Tool Selection\n\n```ts\nimport { agent, llmOpenAI, mcp } from \"@volcano.dev/agent\";\n\nconst llm = llmOpenAI({ \n  apiKey: process.env.OPENAI_API_KEY!, \n  model: \"gpt-4o-mini\" \n});\n\nconst weather = mcp(\"http://localhost:8001/mcp\");\nconst tasks = mcp(\"http://localhost:8002/mcp\");\n\n// Agent automatically picks the right tools\nconst results = await agent({ llm })\n  .then({ \n    prompt: \"What's the weather in Seattle? If it will rain, create a task to bring an umbrella\",\n    mcps: [weather, tasks]  // LLM chooses which tools to call\n  })\n  .run();\n\n// Ask questions about what happened\nconst summary = await results.summary(llm);\nconsole.log(summary);\n```\n\n### Multi-Agent Coordinator\n\n```ts\nimport { agent, llmOpenAI } from \"@volcano.dev/agent\";\n\nconst llm = llmOpenAI({ apiKey: process.env.OPENAI_API_KEY! });\n\n// Define specialized agents\nconst researcher = agent({ llm, name: 'researcher', description: 'Finds facts and data' })\n  .then({ prompt: \"Research the topic.\" })\n  .then({ prompt: \"Summarize the research.\" });\n\nconst writer = agent({ llm, name: 'writer', description: 'Creates content' })\n  .then({ prompt: \"Write content.\" });\n\n// Coordinator autonomously delegates to specialists\nconst results = await agent({ llm })\n  .then({\n    prompt: \"Write a blog post about quantum computing\",\n    agents: [researcher, writer]  // Coordinator decides when done\n  })\n  .run();\n\n// Ask what happened\nconst post = await results.ask(llm, \"Show me the final blog post\");\nconsole.log(post);\n```\n\n**[View more examples →](https://volcano.dev/docs/examples)**\n\n## Documentation\n\n### 📖 Comprehensive Guides\n- **[Getting Started](https://volcano.dev/docs)** - Installation, quick start, core concepts\n- **[LLM Providers](https://volcano.dev/docs/providers)** - OpenAI, Anthropic, Mistral, Llama, Bedrock, Vertex, Azure\n- **[MCP Tools](https://volcano.dev/docs/mcp-tools)** - Automatic selection, OAuth authentication, connection pooling\n- **[Advanced Patterns](https://volcano.dev/docs/patterns)** - Parallel, branching, loops, multi-LLM workflows\n- **[Features](https://volcano.dev/docs/features)** - Streaming, retries, timeouts, hooks, error handling\n- **[Observability](https://volcano.dev/docs/observability)** - OpenTelemetry traces and metrics\n- **[API Reference](https://volcano.dev/docs/api)** - Complete API documentation\n- **[Examples](https://volcano.dev/docs/examples)** - Ready-to-run code examples\n\n## Contributing\n\nWe welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.\n\n### Questions or Feature Requests?\n\n- 📝 [Report bugs or issues](https://github.com/Kong/volcano-agent-sdk/issues)\n- 💡 [Request features or ask questions](https://github.com/Kong/volcano-agent-sdk/discussions)\n- ⭐ [Star the project](https://github.com/Kong/volcano-agent-sdk) if you find it useful\n\n## License\n\nApache 2.0 - see [LICENSE](LICENSE) file for details.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

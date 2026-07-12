@@ -1,0 +1,38 @@
+{
+  "full_name": "dminkovski/azure-diagram-mcp",
+  "html_url": "https://github.com/dminkovski/azure-diagram-mcp",
+  "description": "MCP server that turns natural-language prompts into Microsoft Azure architecture diagrams (PNG) using Python Diagrams + Graphviz.",
+  "topics": [
+    "architecture",
+    "azure",
+    "azure-architecture",
+    "diagrams",
+    "github-copilot",
+    "graphviz",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "python"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 25,
+  "forks": 14,
+  "open_issues": 6,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-09-18T16:37:57Z",
+  "last_pushed_at": "2026-04-27T20:55:53Z",
+  "fetched_at": "2026-07-11T23:47:35.392Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Model Context Protocol (MCP) server for Microsoft  Azure Diagrams\n[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](#license)\n[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)]()\n[![Made with Diagrams](https://img.shields.io/badge/Diagrams-mingrammer-informational.svg)](https://diagrams.mingrammer.com/)\n\n\n![GitHub Copilot Prompt Sample](./media/prompt_sample.png)\n\n![AKS App Gateway Azure SQL Architecture Diagram](./media/aks_appgw_sql_architecture.png)\n\nThis tool lets you create Microsoft Azure architecture diagrams automatically.\nYou write a short description (using GitHub Copilot in Visual Studio Code to generate it), and the server will turn it into a diagram image.\nIt’s perfect for anyone who wants to quickly draw cloud diagrams without dragging shapes around.\n\n## What's included\nThis MCP server seamlessly creates [diagrams](https://diagrams.mingrammer.com/) using the Python diagrams package DSL.\nThis server allows you to generate Microsoft Azure diagrams, sequence diagrams, flow diagrams, and class diagrams using Python code.\n\n## What it does\n- Turn a short plain-English sentence into a clean Azure architecture diagram (PNG).\n- Uses the Python `diagrams` package and Azure icons behind the scenes.\n- Saves images into the `diagrams/` folder in this project.\n\n\n## Features\n\nThe Diagrams MCP Server provides the following capabilities:\n\n1. **Generate Diagrams**: Create Azure diagrams using Python code\n2. **Multiple Diagram Types**: Support for Azure architecture, sequence diagrams, flow charts, class diagrams, and more\n3. **Customization**: Customize diagram appearance, layout, and styling\n\n\n## What you’ll need\n\n1. **Visual Studio Code** installed → [Download here](https://code.visualstudio.com/)\n2. **GitHub Copilot** → [Enable here](https://github.com/features/copilot)\n3. **Python** → we’ll install this in the steps below\n4. **GraphViz** (a small program that actually draws the diagrams) → [Download here](https://graphviz.org/download/)\nDon’t worry — we’ll go step by step!\n\n---\n\n## Setup Steps or use .devcontainer\n\n### 1. Install Python\n\nOpen a terminal (Command Prompt, PowerShell, or VS Code Terminal) and run:\n\n```bash\nwinget install Python.Python.3.10\n```\n\n⚠️ Make sure the Python installation path is added to your system's environment variables so that `python` works in the terminal.  \nTypically, the installer does this automatically, but if not, you can follow this [guide](https://realpython.com/add-python-to-path/).\n\n### 2. Install GraphViz\n\nDownload and install from: [https://graphviz.org/download/](https://graphviz.org/download/)\nOn Windows: pick the MSI installer.\nOn Mac: use Homebrew (`brew install graphviz`).\n\n### 3. Get the MCP Server\n\nClone this repository (or download the ZIP and unzip it).\nThen open it in **VS Code**.\n\nIn the VS Code terminal, run:\n\n```bash\npip install -r requirements.txt\n```\n\n\n## 4. MCP Configuration\nConfigure the MCP server in your MCP client configuration (e.g., for Visual Studio Code GitHub Copilot `~/.vscode/mcp.json`):\n\n```json\n{\n  \"mcpServers\": {\n    \"Azure Diagram MCP Server\": {\n      \"type\": \"stdio\",\n      \"command\": \"python\",\n      \"args\": [\n        \"-m\", \"azure_diagram_mcp_server.server\"\n      ],\n      \"cwd\": \"PARENT_FOLDER_OF_CLONED_REPO\",\n    }\n  }\n}\n```\n\nor docker after a successful `docker build -t azure-diagram-mcp-server .`:\n\n```json\n  {\n    \"mcpServers\": {\n      \"Azure Diagram MCP Server\": {\n        \"command\": \"docker\",\n        \"args\": [\n          \"run\",\n          \"--rm\",\n          \"--interactive\",\n          \"--env\",\n          \"azure-diagram-mcp-server:latest\"\n        ],\n        \"disabled\": false,\n        \"autoApprove\": []\n      }\n    }\n  }\n```\n\nThat’s it! 🎉 You now have everything installed.\n\n\n## Using it with GitHub Copilot\n\n1. Open up `VS Code GitHub Copilot Agent Mode`\n1. Type the following into the chat:\n\n   ```\n   Generate an Azure Architecture Diagram with an Azure Function connected to a SQL Database through a Load Balancer\n   ```\n2. GitHub Copilot will want to execute the MCP Function `generate_diagram`. Please click on `Allow` to continue.\n3. A **PNG image** will be created in the `diagrams` folder. Open it and admire your Azure diagram! 🚀\n\n\n## Example prompt ideas\n- `Generate an Azure Architecture Diagram with an Azure Function connected to a SQL Database through a Load Balancer`\n- `Generate an Azure Architecture Diagram for a simple web app: Azure Front Door to App Service with Azure SQL` \n- `Generate an Azure Architecture Diagram to show an AKS cluster with Application Gateway and Azure SQL` \n---\n  \n## Example Diagram\n`Generate an Azure Architecture Diagram to show an AKS cluster with Application Gateway and Azure SQL`\n\n![GitHub Copilot Prompt Sample](./media/prompt_sample.png)\n\n![AKS App Gateway Azure SQL Architecture Diagram](./media/aks_appgw_sql_architecture.png)\n\n## Troubleshooting\n* **No image appears?** Make sure GraphViz is installed (see step 2).\n* **Copilot doesn’t run?** Make sure the GitHub Copilot extension is enabled and that you allowed it to run MCP functions. Check the MCP server too.\n* **Still stuck?** Restart VS Code and try again.\n\n---\n\n✨ That’s it! You can now create **Azure diagrams in minutes** with just a few words and GitHub Copilot.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

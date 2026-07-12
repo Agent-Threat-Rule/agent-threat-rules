@@ -1,0 +1,44 @@
+{
+  "full_name": "alperhankendi/Ctxo",
+  "html_url": "https://github.com/alperhankendi/Ctxo",
+  "description": "MCP server for AI coding agents. Instead of reading files one by one, your agent gets dependency graphs, git intent, blast radius, and change health in a single call. Works with any language deep analysis for TypeScript,Java, Go, and C#.",
+  "topics": [
+    "ai-coding",
+    "claude",
+    "code-intelligence",
+    "codebase-context",
+    "copilot",
+    "cursor",
+    "dependency-graph",
+    "developer-tools",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "static-analysis",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 66,
+  "forks": 7,
+  "open_issues": 4,
+  "language": "HTML",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2026-03-28T19:54:55Z",
+  "last_pushed_at": "2026-07-05T22:23:57Z",
+  "fetched_at": "2026-07-11T23:25:02.425Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n\n[![npm version](https://img.shields.io/npm/v/@ctxo/cli.svg)](https://www.npmjs.com/package/@ctxo/cli)\n[![CI](https://github.com/alperhankendi/Ctxo/actions/workflows/ci.yml/badge.svg)](https://github.com/alperhankendi/Ctxo/actions/workflows/ci.yml)\n[![Release](https://github.com/alperhankendi/Ctxo/actions/workflows/release.yml/badge.svg)](https://github.com/alperhankendi/Ctxo/actions/workflows/release.yml)\n\n<picture>\n  <source media=\"(prefers-color-scheme: dark)\" srcset=\"docs/img/hero-svg.svg\">\n  <source media=\"(prefers-color-scheme: light)\" srcset=\"docs/img/hero-svg.svg\">\n  <img alt=\"Ctxo — Code intelligence for AI agents\" src=\"docs/img/hero-svg.svg\" width=\"100%\">\n</picture>\n\n```Shell\nnpm install -g @ctxo/cli   # one-time global install (gives you the `ctxo` command)\nctxo init\nctxo index\n```\n\n<a href=\"https://alperhankendi.github.io/Ctxo/docs/\">\n  <img src=\"https://img.shields.io/badge/Get%20Started-%E2%86%92-06b6d4?style=for-the-badge&labelColor=0f172a\" alt=\"Get Started →\">\n</a>\n\n<sub>Detects your languages, installs the right plugins, wires Ctxo into your AI client, installs git hooks, and builds the first index  one command.</sub>\n\n</div>\n\n***\n\n## The Problem: agents code blind\n\nDrop a modern coding agent into a real repo. It ripgreps a symbol, gets 47 hits, reads five files to find the definition, five more for callers  **misses the subclass entirely** (inheritance doesn't show up in text search), **never checks git history** (and confidently reintroduces a bug that was reverted three weeks ago), then runs out of context and starts hallucinating.\n\nIt's not a skill gap. It's a **sensory gap**. The agent is navigating your codebase with its eyes closed and a phone book.\n\n## The Solution: proactive, not reactive\n\nThe core shift: your agent stops reacting to files it stumbles into and starts planning from a complete map. **Blast radius before the edit. Git intent before the bug fix. Importer list before the rename.**\n\nCtxo indexes your repo once kept fresh by file watchers and git hooks into a deterministic graph: every symbol, every edge (imports, calls, extends, implements), every relevant git commit with intent classified, every anti-pattern. All exposed through 14 semantic MCP tools.\n\nOne `get_blast_radius` call replaces an entire ripgrep/read spiral. One `get_pr_impact` replaces a full review session of \"wait, what calls this?\"\n\nThe agent still writes the code. It just stops writing it **blind** so the bug never has to be caught by the compiler, the tests, CI, or a user.\n\n## Codebase Dashboard\n\nFull-stack analytics UI with eight views: File Tree, Heatmap, Co-Changes, Timeline, Architecture, MCP Explorer, and Diff. Deployed to GitHub Pages on every push.\n\n![Codebase Dashboard](docs/img/ui.png)\n\n[Open Dashboard](https://alperhankendi.github.io/Ctxo/ctxo-visualizer.html)\n\n## Dependency Graph\n\n`ctxo visualize` generates a self-contained HTML from your `.ctxo/` index. Interactive force-directed graph with PageRank sizing, layer coloring, blast radius on click, and dark/light theme.\n\n![Dependency Graph](docs/img/visualize-00-light.png)\n\n[Open Dependency Graph](https://alperhankendi.github.io/Ctxo/visualize.html)\n\n## Safe-Edit Guard\n\nAI agents don't fail because they can't code. They fail because they code blind. Ctxo gives them the full picture before they write a single line.\n\nThe problem: an agent opens a file, makes a targeted edit, and walks away. It never checked what else depends on that symbol. Downstream callers silently break. Tests pass because the agent only ran the ones in the same file.\n\nThe safe-edit guard closes this loop deterministically. When you run `ctxo init`, it:\n\n1. Registers a **PreToolUse hook** in `.claude/settings.json` (Claude Code) that intercepts every Edit call.\n2. Installs three **model-invoked skills** (`ctxo-understand`, `ctxo-safe-edit`, `ctxo-review-pr`) so the agent knows when to check blast radius, history, and PR risk.\n\nIf an agent tries to edit a high-impact symbol without first calling `get_blast_radius`, the hook blocks the edit and tells the agent what to check. Once the agent runs the tool, the edit goes through normally. Fires once per symbol per session, fail-open on any uncertainty.\n\n**Tune it:**\n\n```shell\n# Preview which symbols the guard would flag at current sensitivity\nctxo gate --preview\n\n# Check blast radius for a specific symbol (pipe to jq, CI scripts, etc.)\nctxo blast-radius \"src/core/graph.ts::buildGraph::function\" --json\n```\n\nConfigure sensitivity in `.ctxo/config.yaml`:\n\n```yaml\ngate:\n  enabled: true\n  sensitivity: balanced   # strict | balanced (DEFAULT) | lenient\n```\n\n**Platform matrix:**\n\n| Platform | Hook enforcement | Skills | Rules |\n|---|---|---|---|\n| Claude Code | yes (PreToolUse blocks) | yes | yes |\n| Cursor | no (no blocking pre-edit hook) | yes | yes |\n| Other | no | where supported | yes |\n\n## Supported Languages\n\n| Language | Plugin | Tier | Notes |\n|---|---|---|---|\n| TypeScript / JavaScript | `@ctxo/lang-typescript` | full | ts-morph; type-aware cross-file resolution |\n| Go | `@ctxo/lang-go` | syntax | tree-sitter; exported-symbol analysis |\n| C# | `@ctxo/lang-csharp` | full | Roslyn; .NET SDK 8+ for full tier, tree-sitter fallback |\n| Java | `@ctxo/lang-java` | syntax / full | tree-sitter syntax tier built-in; full tier via `@ctxo/lang-java-analyzer` companion (requires JRE 17+) |\n\nInstall via the CLI shortcut:\n\n```bash\nctxo install typescript go csharp   # syntax or full tier auto-detected\nctxo install java                   # installs syntax tier; adds full-tier analyzer when JRE 17+ detected\nctxo install java --full-tier       # force full-tier analyzer install\nctxo install java --syntax-only     # skip analyzer, syntax tier only\n```\n\n## Links\n\n* [Docs](https://alperhankendi.github.io/Ctxo/docs/)  quick start, MCP tools, CLI reference, integrations\n* [npm](https://www.npmjs.com/package/@ctxo/cli)\n* [Changelog](CHANGELOG.md)\n* [LLM Reference](llms-full.txt)\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"ctxo\": {\n      \"command\": \"node\",\n      \"args\": [\"packages/cli/dist/index.js\"]\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

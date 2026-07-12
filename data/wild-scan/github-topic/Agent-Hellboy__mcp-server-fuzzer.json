@@ -1,0 +1,49 @@
+{
+  "full_name": "Agent-Hellboy/mcp-server-fuzzer",
+  "html_url": "https://github.com/Agent-Hellboy/mcp-server-fuzzer",
+  "description": "A generic mcp server fuzzer",
+  "topics": [
+    "agentic-ai",
+    "agentic-workflow",
+    "ai",
+    "ai-agents",
+    "ai-testing-tool",
+    "generative-testing-mcp",
+    "hacktoberfest",
+    "llm-agents",
+    "mcp",
+    "mcp-client",
+    "mcp-fuzzer",
+    "mcp-security",
+    "mcp-servers",
+    "mcp-specification-validation",
+    "mcp-tools",
+    "mutation-testing-mcp",
+    "property-based-testing-mcp",
+    "protocol-testing",
+    "security-research",
+    "testing-tool"
+  ],
+  "matched_query_topics": [
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 38,
+  "forks": 6,
+  "open_issues": 1,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-06-12T15:28:51Z",
+  "last_pushed_at": "2026-07-04T21:04:16Z",
+  "fetched_at": "2026-07-11T23:52:48.245Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MCP Server Fuzzer\n\n<div align=\"center\">\n\n<img src=\"icon.png\" alt=\"MCP Server Fuzzer Icon\" width=\"100\" height=\"100\">\n\n**CLI fuzzing for MCP servers**\n\n*Tool fuzzing • Protocol fuzzing • HTTP/SSE/stdio/StreamableHTTP • Safety controls • Rich reporting*\n\n[![CI](https://github.com/Agent-Hellboy/mcp-server-fuzzer/actions/workflows/lint.yml/badge.svg)](https://github.com/Agent-Hellboy/mcp-server-fuzzer/actions/workflows/lint.yml)\n[![codecov](https://codecov.io/gh/Agent-Hellboy/mcp-server-fuzzer/graph/badge.svg?token=HZKC5V28LS)](https://codecov.io/gh/Agent-Hellboy/mcp-server-fuzzer)\n[![PyPI - Version](https://img.shields.io/pypi/v/mcp-fuzzer.svg)](https://pypi.org/project/mcp-fuzzer/)\n[![PyPI Downloads](https://static.pepy.tech/badge/mcp-fuzzer)](https://pepy.tech/projects/mcp-fuzzer)\n[![Supports MCP 2025-11-25](https://img.shields.io/badge/MCP%20Spec-2025--11--25%20Supported-0f766e)](https://modelcontextprotocol.io/specification/2025-11-25/)\n[![Docker Pulls](https://img.shields.io/docker/pulls/princekrroshan01/mcp-fuzzer)](https://hub.docker.com/r/princekrroshan01/mcp-fuzzer)\n[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)\n[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)\n\n[Docs Site](https://agent-hellboy.github.io/mcp-server-fuzzer/) • [Getting Started](https://agent-hellboy.github.io/mcp-server-fuzzer/getting-started/getting-started/) • [CLI Reference](https://agent-hellboy.github.io/mcp-server-fuzzer/development/reference/)\n\n</div>\n\n## What It Does\n\nMCP Server Fuzzer tests MCP servers by fuzzing:\n\n- tool arguments\n- protocol request types\n- resource and prompt request flows\n- multiple transports: `http`, `sse`, `stdio`, and `streamablehttp`\n\nIt includes optional safety controls such as filesystem sandboxing, PATH-based\ncommand blocking, and network restrictions for safer local testing.\n\n## Findings It Reports\n\nBeyond protocol/transport errors, runs are classified into categorized findings\n(written to `<output-dir>/findings.json`, with per-crash repros under\n`<output-dir>/crashes/`, a compact CI summary at\n`<output-dir>/run_summary.json`, and summarized on stdout):\n\n- `crash` — server process terminated abnormally (segfault/abort/panic or\n  non-zero exit); captures the signal and a stderr tail\n- `auth_bypass` — a protected tool answered an unauthenticated call\n- `injection_reflection` — a dangerous input token was echoed back verbatim\n- `oversized_response` — response exceeded the read cap (resource exhaustion)\n- `hang` — request timed out (deadlock / infinite loop / ReDoS)\n- `internal_error` — JSON-RPC `-32603` (unhandled server-side exception)\n- `error_leakage` — stack trace / panic leaked in output\n- `memory_growth` — server RSS grew multi-fold across runs (stdio targets)\n- `non_determinism` — identical input produced differing outcomes\n- `accepted_malformed` — server returned a non-error response to an\n  attack-pattern or schema-invalid fuzz input; repeated identical evidence is\n  collapsed into one finding with run counts and a response sample\n- `performance_outlier` — response time far above the per-target median\n\n`findings.json` is always written for completed sessions, even when no findings\nare present (`{\"findings\": [], \"count\": 0}`), so CI jobs can assert that report\ngeneration succeeded separately from whether issues were discovered.\n`run_summary.json` records whether the run completed or was blocked, plus\ntool/protocol counts and run totals for simple CI assertions.\n\nTip: for compiled-language servers (Go/C/C++/Rust), run the target under a\nsanitizer or race build so memory bugs surface as observable crashes.\n\n## Install\n\nRequires Python 3.10+.\n\n```bash\n# PyPI\npip install mcp-fuzzer\n\n# From source\ngit clone --recursive https://github.com/Agent-Hellboy/mcp-server-fuzzer.git\ncd mcp-server-fuzzer\npip install -e .\n```\n\nDocker is also supported:\n\n```bash\ndocker build -t mcp-fuzzer:latest .\ndocker run --rm mcp-fuzzer:latest --help\n```\n\n## Quick Start\n\n### 1. Run the bundled HTTP example server\n\n```bash\npip install \"mcp[cli]\" uvicorn\npython3 examples/test_server.py\n```\n\nThat server uses the official Python MCP SDK, listens on\n`http://localhost:8000/mcp/`, and exposes:\n\n- `test_tool`\n- `echo_tool`\n- `secure_tool` requiring `Authorization: Bearer secret123`\n\n### 2. Fuzz tools\n\n```bash\nmcp-fuzzer --mode tools --protocol http --endpoint http://localhost:8000/mcp/ --runs 10\n```\n\n### 3. Fuzz protocol requests\n\n```bash\nmcp-fuzzer --mode protocol --protocol-type InitializeRequest \\\n  --protocol http --endpoint http://localhost:8000/mcp/ --runs-per-type 5\n```\n\n### 4. Run tools and protocol together\n\n```bash\nmcp-fuzzer --mode all --phase both --protocol http --endpoint http://localhost:8000/mcp/\n```\n\n## Common Commands\n\n```bash\n# Enable command blocking + safety reporting\nmcp-fuzzer --mode tools --protocol http --endpoint http://localhost:8000/mcp/ \\\n  --enable-safety-system --safety-report\n\n# Export results\nmcp-fuzzer --mode tools --protocol http --endpoint http://localhost:8000/mcp/ \\\n  --export-csv results.csv --export-html results.html\n\n# Use auth config for the bundled secure_tool example\nmcp-fuzzer --mode tools --protocol http --endpoint http://localhost:8000/mcp/ \\\n  --auth-config examples/auth_config.json\n\n# Load settings from YAML\nmcp-fuzzer --config config.yaml\n```\n\n## Example Servers\n\nThis repository bundles:\n\n- an official Python MCP SDK HTTP example: [`examples/test_server.py`](examples/test_server.py)\n- an official Go MCP SDK stdio example: [`examples/go_stdio_server`](examples/go_stdio_server)\n- an official TypeScript MCP SDK stdio example: [`examples/typescript-stdio-server`](examples/typescript-stdio-server)\n- a StreamableHTTP example: [`examples/streamable_http_server.py`](examples/streamable_http_server.py)\n\nFor other stdio usage, point the fuzzer at your own server:\n\n```bash\nmcp-fuzzer --mode tools --protocol stdio --endpoint \"python my_server.py\" \\\n  --enable-safety-system --fs-root /tmp/mcp-safe\n```\n\nMore runnable example flows are documented in\n[`examples/README.md`](examples/README.md).\n\n## Runtime monitoring (optional)\n\nPair the fuzzer with [**mcpfz-probe**](https://github.com/Agent-Hellboy/mcpfz-probe),\na runtime sidecar that watches what a tool call actually does at the kernel level\n(process exec, network connect/send, file open/delete, chmod, ptrace) and reports\nanything suspicious as findings attributed to the exact tool call.\n\nFetch the released Linux binary from mcpfz-probe and point the fuzzer at it:\n\n```bash\n# Latest eBPF-enabled Linux build (built and published by mcpfz-probe CI)\ncurl -L -o mcpfz-probe \\\n  https://github.com/Agent-Hellboy/mcpfz-probe/releases/latest/download/mcpfz-probe-x86_64-linux-ebpf\nchmod +x mcpfz-probe\n\npip install \"mcp-fuzzer[mcpfz-probe]\"   # pulls in the Python monitor package\n\nexport MCP_FUZZER_RUNTIME_PROBE=1\nexport MCPFZ_PROBE_BIN=\"$PWD/mcpfz-probe\"\nexport MCPFZ_PROBE_BACKEND=ebpf          # Linux + root/CAP_BPF; use \"fake\" elsewhere\nsudo -E mcp-fuzzer --mode tools --protocol stdio \\\n  --endpoint \"python my_server.py\" --runs 3 --max-concurrency 1\n```\n\nRuntime findings (`runtime.exec`, `runtime.net_connect`, `runtime.sensitive_read`,\n`runtime.fs_write`, `runtime.fs_delete`, `runtime.fs_chmod`, `runtime.ptrace`) are\nmerged into the normal report. The hooks are no-ops unless\n`MCP_FUZZER_RUNTIME_PROBE` is set, so default behavior is unchanged. See the\n[mcpfz-probe README](https://github.com/Agent-Hellboy/mcpfz-probe#readme) for the\nbackend/build details.\n\n## Documentation\n\nKeep the README for the basics. Use the docs for everything else:\n\n- [Getting Started](https://agent-hellboy.github.io/mcp-server-fuzzer/getting-started/getting-started/)\n- [Examples](https://agent-hellboy.github.io/mcp-server-fuzzer/getting-started/examples/)\n- [Configuration](https://agent-hellboy.github.io/mcp-server-fuzzer/configuration/configuration/)\n- [CLI Reference](https://agent-hellboy.github.io/mcp-server-fuzzer/development/reference/)\n- [Safety Guide](https://agent-hellboy.github.io/mcp-server-fuzzer/components/safety/)\n- [Architecture](https://agent-hellboy.github.io/mcp-server-fuzzer/architecture/architecture/)\n- [Contributing](https://agent-hellboy.github.io/mcp-server-fuzzer/development/contributing/)\n\n## License\n\nMIT. See [`LICENSE`](LICENSE).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

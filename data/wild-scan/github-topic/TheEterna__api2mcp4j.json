@@ -1,0 +1,40 @@
+{
+  "full_name": "TheEterna/api2mcp4j",
+  "html_url": "https://github.com/TheEterna/api2mcp4j",
+  "description": "Spring Boot Starter: Auto-convert existing REST APIs (@RestController) to MCP Server with zero/low-code. Expose controllers as MCP Tools instantly.",
+  "topics": [
+    "agent",
+    "ai",
+    "framework",
+    "java",
+    "maven",
+    "mcp",
+    "mcp-server",
+    "multi-agent-systems",
+    "spring",
+    "spring-ai",
+    "spring-boot",
+    "spring-mvc"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 105,
+  "forks": 15,
+  "open_issues": 0,
+  "language": "Java",
+  "license": "Apache-2.0",
+  "default_branch": "master",
+  "created_at": "2025-04-15T02:32:31Z",
+  "last_pushed_at": "2026-03-12T03:44:45Z",
+  "fetched_at": "2026-07-11T22:58:51.675Z",
+  "readme": {
+    "path": "README.md",
+    "content": "\n# api2mcp4j\n\n**Zero-to-low code MCP integration for your Spring Boot REST APIs**  \nTurn your existing Spring Boot controllers into an MCP (Model Context Protocol) server in minutes — **no @Tool annotations everywhere**, no rewriting business logic.\n\n[![GitHub stars](https://img.shields.io/github/stars/TheEterna/api2mcp4j?style=social)](https://github.com/TheEterna/api2mcp4j)\n[![License](https://img.shields.io/github/license/TheEterna/api2mcp4j)](https://github.com/TheEterna/api2mcp4j/blob/master/LICENSE)\n[![Java](https://img.shields.io/badge/Java-17%2B-blue)](https://www.java.com)\n[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen)](https://spring.io/projects/spring-boot)\n\n## ✨ Why api2mcp4j?\n\nMost MCP integrations require you to:\n- Add `@Tool` / `@McpTool` annotations to every method\n- Duplicate or heavily refactor code\n- Maintain separate tool descriptions\n\n**api2mcp4j changes that.**\n\nIt **automatically scans** your existing `@RestController` / `@Service` beans and **exposes them as MCP tools** with **minimal configuration** — leveraging parsers from:\n\n- Swagger/OpenAPI (v2 & v3)\n- Javadoc\n- Spring MVC metadata\n- Jackson\n- Spring AI native descriptions\n- Custom `@Tool` / `@McpTool` (optional)\n\nResult: Your current REST APIs become AI-callable tools **almost for free**.\n\n## 🔥 Key Features\n\n- **Non-intrusive** — No need to change business code (like MyBatis-Plus enhances MyBatis)\n- **Auto-discovery** — Scans controllers/services and registers methods as MCP tools\n- **Multi-parser support** — Smartly combines descriptions & parameter info from Swagger, Javadoc, etc.\n- **Custom annotations** — `@ToolScan`, `@ResourceScan`, `@PromptScan` for fine-grained control\n- **Isolated MCP tool system** — Uses `McpTool` annotation (independent of Spring AI `@Tool`)\n- **Full MCP SDK compatibility** — Supports latest MCP Java SDK features (callbacks, resources, prompts)\n- **Easy debugging** — Works great with Cursor, Continue, or any MCP client\n\n## Quick Start (≈ 5 minutes)\n\n### 1. Add dependency\n\n> **Note:** Project not yet in Maven Central — build from source for now.\n\n```bash\n# Clone & build\ngit clone https://github.com/TheEterna/api2mcp4j.git\ncd api2mcp4j/server2mcp-starter-webmvc\nmvn clean install\n```\n\n```xml\n<!-- pom.xml -->\n<dependency>\n    <groupId>com.ai.plug</groupId>\n    <artifactId>server2mcp-starter-webmvc</artifactId>\n    <version>1.1.4-SNAPSHOT</version> <!-- or latest after build -->\n</dependency>\n```\n\n### 2. Enable in application.yml\n\n```yaml\nplugin:\n  mcp:\n    enabled: true\n    # Recommended: use multiple parsers for best description quality\n    parser:\n      params: SWAGGER3, SWAGGER2, SpringMVC, JACKSON, TOOL  # JAVADOC needs extra setup\n      des:    SWAGGER3, SWAGGER2, JAVADOC, TOOL, JACKSON\n    # 'interface' = auto-register all controller methods (skip @Deprecated)\n    # 'custom'   = only register via @ToolScan / manual\n    scope: interface\n```\n\n### 3. (Optional) Javadoc parser setup\n\nTo enable Javadoc parsing in production (bytecode doesn't contain comments):\n\n```xml\n<!-- pom.xml - package sources -->\n<plugin>\n    <groupId>org.apache.maven.plugins</groupId>\n    <artifactId>maven-resources-plugin</artifactId>\n    <executions>\n        <execution>\n            <id>copy-java-sources</id>\n            <phase>prepare-package</phase>\n            <goals><goal>copy-resources</goal></goals>\n            <configuration>\n                <outputDirectory>${project.build.outputDirectory}</outputDirectory>\n                <resources>\n                    <resource>\n                        <directory>src/main/java</directory>\n                        <includes><include>**/*.java</include></includes>\n                    </resource>\n                </resources>\n            </configuration>\n        </execution>\n    </executions>\n</plugin>\n```\n\n### 4. Start your app → Test\n\nYour MCP endpoint is ready (default `/mcp` or configured via `spring.ai.mcp.*` properties).\n\nUse any MCP client (Cursor, custom agent, etc.) to call your original REST methods as tools.\n\n## Comparison with Alternatives\n\n| Feature                     | api2mcp4j          | Spring AI MCP Official | Manual @Tool everywhere |\n|-----------------------------|--------------------|------------------------|--------------------------|\n| Code changes required       | Minimal (config only) | Medium–High           | High                    |\n| Auto from existing REST     | Yes (controllers)  | No                     | No                      |\n| Parser combinators          | Yes (Swagger+Javadoc+…) | Limited              | Manual                  |\n| Non-intrusive               | ★★★★★              | ★★★                    | ★☆                      |\n| Custom scan annotations     | Yes                | Partial                | No                      |\n| Best for existing projects  | Yes                | New MCP-first apps     | Small prototypes        |\n\n## Best Use Cases\n\n- Expose internal management system APIs to AI agents quickly\n- Build multi-agent systems by turning microservices into MCP tools\n- Prototype AI features on top of production REST services\n- Avoid duplicating logic between REST and MCP endpoints\n\n## Documentation & Roadmap\n\n- Full docs → [https://theeterna.github.io/server2mcp-docs/](https://theeterna.github.io/server2mcp-docs/)\n- Roadmap: Publish to Maven Central, stabilize SNAPSHOT deps, more parser plugins, SSE/Stream support\n\n## Contributing\n\nIssues, PRs, and stars are very welcome!  \nThe project is young — your feedback can shape its future.\n\n## License\n\n[Apache License 2.0](LICENSE)\n\n---\n\n**作者的话**  \n这是一个我投入大量心血的个人项目，希望能真正帮助到更多 Spring Boot 开发者快速拥抱 MCP/AI Agent 时代。感谢每一位 star 和使用它的人！\n```\n- 语言更流畅、专业、吸引人\n\n你可以直接发给作者，建议他 review 后合并（或作为 PR）。如果需要，我可以再调整语气、加 GIF/demo 图位置提示，或写中文版。\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "full_name": "ArcadeAI/arcade-mcp",
+  "html_url": "https://github.com/ArcadeAI/arcade-mcp",
+  "description": "MCP Server Framework and Tool Development library for building custom capabilities into agents. ",
+  "topics": [
+    "ai",
+    "arcade",
+    "arcade-ai",
+    "claude",
+    "claude-code",
+    "claude-mcp",
+    "mcp",
+    "mcp-framework",
+    "mcp-gateway",
+    "mcp-runtime",
+    "mcp-server",
+    "mcp-servers",
+    "mcp-tools",
+    "mcpserver",
+    "model-context-protocol",
+    "model-context-protocol-sdk",
+    "python"
+  ],
+  "matched_query_topics": [
+    "mcp-server",
+    "model-context-protocol",
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 957,
+  "forks": 101,
+  "open_issues": 19,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2024-04-26T22:25:48Z",
+  "last_pushed_at": "2026-07-10T22:56:22Z",
+  "fetched_at": "2026-07-11T22:36:00.609Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n  <img src=\"https://docs.arcade.dev/images/logo/arcade-logo.png\" alt=\"Arcade\" width=\"400\">\n</div>\n\n<div align=\"center\">\n\n[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/ArcadeAI/arcade-mcp/blob/main/LICENSE)\n[![CI](https://img.shields.io/github/actions/workflow/status/ArcadeAI/arcade-mcp/main.yml?branch=main)](https://github.com/ArcadeAI/arcade-mcp/actions?query=branch%3Amain)\n[![PyPI](https://img.shields.io/pypi/v/arcade-mcp)](https://pypi.org/project/arcade-mcp/)\n[![Python Version](https://img.shields.io/pypi/pyversions/arcade-mcp)](https://pypi.org/project/arcade-mcp/)\n\n</div>\n\n# Arcade MCP\n\n**Open-source Python framework for building MCP servers and tools.**\n\n[Documentation](https://docs.arcade.dev) • [Examples](examples/mcp_servers/) • [Discord](https://discord.com/invite/GUZEMpEZ9p)\n\n## What is arcade-mcp\n\n`arcade-mcp` is the Python framework for building [Model Context Protocol](https://modelcontextprotocol.io) servers and the tools that run inside them. It powers the 7,500+ prebuilt tools across 81 MCP servers at [Arcade.dev](https://arcade.dev), and is open-sourced so you can build your own.\n\nUse it when you need MCP tools that aren't already in the prebuilt catalog: internal APIs, custom OAuth providers, domain-specific integrations.\n\n**Highlights:**\n\n- Decorator API covering the full MCP spec: tools, resources, prompts, sampling, elicitation, progress, logging.\n- [Authorized tool calling](#authorized-tool-calling). Declare `requires_auth=GitHub(scopes=[\"repo\"])` and Arcade handles OAuth, token refresh, and per-call scoping. The client and the LLM never see the token.\n- Vendor-neutral. Any MCP client, any LLM, any agent framework (LangChain, Mastra, Pydantic AI, CrewAI, Google ADK, OpenAI Agents).\n- `arcade evals` for testing tool-call accuracy against real LLMs.\n- `arcade deploy` for one-command hosting on Arcade Cloud.\n\n## Authorized tool calling\n\nTools can declare:\n\n1. Which OAuth scopes they need, and Arcade handles the rest: prompting the end user to authorize, storing and refreshing tokens, scoping them per call\n2. API keys or any other secrets, and Arcade hosts the secrets securely in an encrypted environment.\n\nThe secrets (OAuth tokens, API keys, etc) are securely injected by Arcade into your tool call at runtime, so that your tool can authorize requests to upstream APIs, for example. **The client and the LLM never see the secret values.**\n\nA tool that reads the user's GitHub repos is one decorator away:\n\n```python\nfrom arcade_mcp_server import MCPApp, Context\nfrom arcade_mcp_server.auth import GitHub\n\napp = MCPApp(name=\"gh\", version=\"1.0.0\")\n\n@app.tool(requires_auth=GitHub(scopes=[\"repo\"]))\nasync def list_my_repos(context: Context) -> list[str]:\n    \"\"\"List the authenticated user's GitHub repositories.\"\"\"\n    token = context.get_auth_token_or_empty()\n    ...\n```\n\nWhen the tool is invoked through Arcade Cloud, the user is presented with a URL to complete the OAuth challenge in their browser. On success, the token is injected into `context` for that call. Subsequent calls reuse and refresh the token automatically.\n\n22 helper classes ship with the framework for popular providers:\n\n`Asana`, `Atlassian`, `Attio`, `ClickUp`, `Discord`, `Dropbox`, `Figma`, `GitHub`, `Google`, `Hubspot`, `Linear`, `LinkedIn`, `Microsoft`, `Notion`, `PagerDuty`, `Reddit`, `Slack`, `Spotify`, `Twitch`, `X`, `Zoom`.\n\nFor any other OAuth API, use the generic `OAuth2(...)` class and register your OAuth app in the Arcade Dashboard.\n\n## Quick Start\n\n### Install the CLI\n\n```bash\nuv tool install arcade-mcp\n```\n\n### Scaffold a new server\n\n```bash\narcade new my_server\ncd my_server/src/my_server\n```\n\nThe scaffold creates `pyproject.toml`, `.env.example`, and a `server.py` with example tools.\n\nA minimal tool:\n\n```python\nfrom typing import Annotated\nfrom arcade_mcp_server import MCPApp\n\napp = MCPApp(name=\"my_server\", version=\"1.0.0\")\n\n@app.tool\ndef greet(name: Annotated[str, \"Name to greet\"]) -> str:\n    \"\"\"Greet a person by name.\"\"\"\n    return f\"Hello, {name}!\"\n\nif __name__ == \"__main__\":\n    app.run(transport=\"stdio\")\n```\n\n### Run\n\n```bash\nuv run server.py             # stdio (default), for Claude Desktop and CLI tools\nuv run server.py http        # HTTP+SSE, for Cursor and VS Code; docs at http://127.0.0.1:8000/docs\n```\n\n### Configure your MCP client\n\n```bash\narcade configure claude                                 # Claude Desktop, stdio\narcade configure cursor --transport http --port 8080    # Cursor, local HTTP on :8080\narcade configure vscode --entrypoint my_server.py       # VS Code, stdio launching my_server.py\n```\n\nFor more patterns (MCP resources, sampling, progress reporting, tool chaining, end-to-end agents, eval suites, Resource Server Auth), browse [`examples/mcp_servers/`](examples/mcp_servers/). Run `arcade --help` for the full CLI.\n\n## With Arcade Cloud\n\n`arcade login` followed by `arcade deploy` packages your server, discovers and upserts required secrets, and polls until it's healthy on Arcade Cloud. From there, the Arcade Engine fulfills [authorized tool calling](#authorized-tool-calling) flows for end users, and `arcade server logs/list/status` plus `arcade dashboard` provide observability and management.\n\nStandalone is supported too. Run your server in any MCP client over stdio or HTTP. Supply your own access tokens for tools with `requires_auth=...`, and protect production HTTP endpoints with [Resource Server Auth](examples/mcp_servers/authorization/) (OAuth 2.1 Bearer tokens validated against your IdP).\n\n## Install from Source\n\nRequires Python 3.10+ and [`uv`](https://docs.astral.sh/uv/).\n\n```bash\ngit clone https://github.com/ArcadeAI/arcade-mcp.git\ncd arcade-mcp\nmake install\n```\n\nSee [`CONTRIBUTING.md`](CONTRIBUTING.md) for development workflow and [`SECURITY.md`](SECURITY.md) for vulnerability reporting.\n\n## Community\n\n- Discord: <https://discord.com/invite/GUZEMpEZ9p>\n- X: <https://x.com/TryArcade>\n- LinkedIn: <https://www.linkedin.com/company/arcade-mcp>\n- Issues: <https://github.com/ArcadeAI/arcade-mcp/issues>\n- Documentation: <https://docs.arcade.dev>\n\n## License\n\nMIT. See [`LICENSE`](LICENSE).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

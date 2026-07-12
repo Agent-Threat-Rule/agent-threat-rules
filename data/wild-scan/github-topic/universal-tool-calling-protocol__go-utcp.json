@@ -1,0 +1,37 @@
+{
+  "full_name": "universal-tool-calling-protocol/go-utcp",
+  "html_url": "https://github.com/universal-tool-calling-protocol/go-utcp",
+  "description": " Official Go implementation of the UTCP ",
+  "topics": [
+    "ai",
+    "ai-agent",
+    "ai-agent-tools",
+    "developer-tools",
+    "golang",
+    "llm",
+    "mcp",
+    "model-context-protocol",
+    "utcp"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 119,
+  "forks": 9,
+  "open_issues": 1,
+  "language": "Go",
+  "license": "MPL-2.0",
+  "default_branch": "main",
+  "created_at": "2025-07-16T17:21:09Z",
+  "last_pushed_at": "2026-06-14T18:21:38Z",
+  "fetched_at": "2026-07-11T23:19:33.262Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# go-utcp\n![MCP vs. UTCP](https://github.com/universal-tool-calling-protocol/.github/raw/main/assets/banner.png)\n\n[![Go Report Card](https://goreportcard.com/badge/github.com/universal-tool-calling-protocol/go-utcp)](https://goreportcard.com/report/github.com/universal-tool-calling-protocol/go-utcp)\n[![PkgGoDev](https://pkg.go.dev/badge/github.com/universal-tool-calling-protocol/go-utcp)](https://pkg.go.dev/github.com/universal-tool-calling-protocol/go-utcp)\n## Introduction\n\nThe Universal Tool Calling Protocol (UTCP) is a modern, flexible, and scalable standard for defining and interacting with tools across a wide variety of communication protocols. It is designed to be easy to use, interoperable, and extensible, making it a powerful choice for building and consuming tool-based services.\n\nIn contrast to other protocols like MCP, UTCP places a strong emphasis on:\n\n*   **Scalability**: UTCP is designed to handle a large number of tools and providers without compromising performance.\n*   **Interoperability**: With support for a wide range of provider types (including HTTP, WebSockets, gRPC, and even CLI tools), UTCP can integrate with almost any existing service or infrastructure.\n*   **Ease of Use**: The protocol is built on simple.\n\n\n![MCP vs. UTCP](https://github.com/user-attachments/assets/3cadfc19-8eea-4467-b606-66e580b89444)\n\n\n\n### Features\n\n* Built-in transports for HTTP, CLI, Server-Sent Events, streaming HTTP,\n  GraphQL, MCP and UDP.\n* Variable substitution via environment variables or `.env` files using\n  `UtcpDotEnv`.\n* In-memory repository for storing providers and tools discovered at\n  runtime.\n* Utilities such as `OpenApiConverter` to convert OpenAPI definitions\n  into UTCP manuals.\n* Example programs demonstrating the client in the `examples` directory.\n\n### Examples\n\nEach subdirectory under `examples/` is a standalone Go module demonstrating a client or transport. For an overview of available examples and usage instructions, see [examples/README.md](examples/README.md). When\nbuilding or running an example from this repository, disable the\nworkspace to ensure Go uses the module's own `go.mod`:\n\n```sh\nGOWORK=off go run ./examples/cli_transport\n```\n\n## Getting Started\n\nAdd the library to your project with:\n\n```sh\ngo get github.com/universal-tool-calling-protocol/go-utcp@latest\n```\n\nYou can then construct a client and call tools using any of the built-in\ntransports. The library ships transports for HTTP, Server-Sent Events,\nstreaming HTTP, CLI, WebSocket, gRPC, GraphQL, TCP, UDP, WebRTC and MCP providers.\n\n```go\npackage main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\t\"os\"\n\t\"time\"\n\n\tutcp \"github.com/universal-tool-calling-protocol/go-utcp\"\n)\n\nfunc main() {\n\tctx := context.Background()\n\n\tcfg := &utcp.UtcpClientConfig{\n\t\tProvidersFilePath: \"providers.json\",\n\t}\n\n\tfmt.Println(\"Creating UTCP client...\")\n\tclient, err := utcp.NewUTCPClient(ctx, cfg, nil, nil)\n\tif err != nil {\n\t\tfmt.Fprintf(os.Stderr, \"failed to create UTCP client: %v\\n\", err)\n\t\tos.Exit(1)\n\t}\n\n\t// Give the client time to fully initialize\n\tfmt.Println(\"Waiting for initialization...\")\n\ttime.Sleep(500 * time.Millisecond)\n\n\tfmt.Println(\"\\n=== Tool Discovery ===\")\n\ttools, err := client.SearchTools(\"\", 10)\n\tif err != nil {\n\t\tfmt.Fprintf(os.Stderr, \"search error: %v\\n\", err)\n\t\tos.Exit(1)\n\t}\n\n\tif len(tools) == 0 {\n\t\tfmt.Println(\"No tools found!\")\n\t\tos.Exit(1)\n\t}\n\n\ttool := tools[0]\n\tfmt.Printf(\"Found tool: %s\\n\", tool.Name)\n\tfmt.Printf(\"Tool description: %s\\n\", tool.Description)\n\n\t// Test the tool call\n\tfmt.Println(\"\\n=== Tool Call Test ===\")\n\tinput := map[string]interface{}{\n\t\t\"name\": \"Kamil\",\n\t}\n\n\tfmt.Printf(\"Calling tool '%s' with input: %v\\n\", tool.Name, input)\n\tresult, err := client.CallTool(ctx, tool.Name, input)\n\tif err != nil {\n\t\tfmt.Printf(\"ERROR: %v\\n\", err)\n\n\t\t// Try to understand the error better\n\t\tfmt.Printf(\"Error type: %T\\n\", err)\n\t\tfmt.Printf(\"Error string: %s\\n\", err.Error())\n\n\t\t// Let's try a direct search for the provider\n\t\tfmt.Println(\"\\n=== Searching for provider directly ===\")\n\t\tproviderTools, err2 := client.SearchTools(\"hello\", 10)\n\t\tif err2 != nil {\n\t\t\tfmt.Printf(\"Provider search failed: %v\\n\", err2)\n\t\t} else {\n\t\t\tfmt.Printf(\"Provider search returned %d tools\\n\", len(providerTools))\n\t\t\tfor i, t := range providerTools {\n\t\t\t\tfmt.Printf(\"  %d: %s\\n\", i, t.Name)\n\t\t\t}\n\t\t}\n\n\t} else {\n\t\tfmt.Printf(\"SUCCESS: %v\\n\", result)\n\t}\n}\n```\n\n## Plugins\n\n### CodeMode (codemode.run_code)\n\nCodeMode is an executable tool plugin that lets LLMs write and run small Go-like code snippets instead of emitting large JSON tool calls. It executes snippets inside a Yaegi sandbox, providing direct access to UTCP tools via inline helper functions:\n\n```go\nr, err := codemode.CallTool(\"http.echo\", map[string]any{\"message\": \"hi\"})\n```\n\nAvailable helpers inside CodeMode:\n\n* `CallTool(name string, args map[string]any) (any, error)`\n* `CallToolStream(name string, args map[string]any) (*StreamResult, error)`\n* `SearchTools(query string, limit int) ([]tools.Tool, error)`\n\nCodeMode wraps user snippets into a structured `run()` function, normalizes Go syntax, converts JSON expressions automatically, and exposes the result through `__out`.\n\nKey benefits:\n\n* LLMs can loop, branch, compose multiple tools, and process intermediate values.\n* Eliminates the overhead of complex JSON planning.\n* Enables dynamic and multi-step tool workflows.\n\nEnable it by registering the plugin:\n\n```go\ncm := codemode.NewCodeModeUTCP(client, llmodel)\n```\n\n// LLm model must satisfy interface from NewCodeModeUTCP\n\n## Further Reading\n\n- [DeepWiki: Universal Tool Calling Protocol (go-utcp)](https://deepwiki.com/universal-tool-calling-protocol/go-utcp)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

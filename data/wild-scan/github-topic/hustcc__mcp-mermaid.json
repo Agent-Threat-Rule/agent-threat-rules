@@ -1,0 +1,35 @@
+{
+  "full_name": "hustcc/mcp-mermaid",
+  "html_url": "https://github.com/hustcc/mcp-mermaid",
+  "description": "❤️ Generate mermaid diagram and chart with AI MCP dynamically.",
+  "topics": [
+    "mcp",
+    "mcp-server",
+    "mermaid",
+    "mermaidjs"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 607,
+  "forks": 56,
+  "open_issues": 7,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-05-20T11:43:48Z",
+  "last_pushed_at": "2026-05-15T12:16:57Z",
+  "fetched_at": "2026-07-11T22:38:52.804Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# <img src=\"https://mermaid.js.org/favicon.svg\" height=\"24\"/> MCP Mermaid ![](https://badge.mcpx.dev?type=server 'MCP Server')  [![build](https://github.com/hustcc/mcp-mermaid/actions/workflows/build.yml/badge.svg)](https://github.com/hustcc/mcp-mermaid/actions/workflows/build.yml) [![npm Version](https://img.shields.io/npm/v/mcp-mermaid.svg)](https://www.npmjs.com/package/mcp-mermaid) [![smithery badge](https://smithery.ai/badge/@hustcc/mcp-mermaid)](https://smithery.ai/server/@hustcc/mcp-mermaid) [![npm License](https://img.shields.io/npm/l/mcp-mermaid.svg)](https://www.npmjs.com/package/mcp-mermaid) [![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/hustcc/mcp-mermaid)](https://archestra.ai/mcp-catalog/hustcc__mcp-mermaid)\n\nGenerate <img src=\"https://mermaid.js.org/favicon.svg\" height=\"14\"/> [mermaid](https://mermaid.js.org/) diagram and chart with AI MCP dynamically. Also you can use:\n\n- <img src=\"https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*ZFK8SrovcqgAAAAAAAAAAAAAemJ7AQ/original\" height=\"14\"/> [mcp-server-chart](https://github.com/antvis/mcp-server-chart) to generate chart, graph, map.\n- <img src=\"https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*EdkXSojOxqsAAAAAQHAAAAgAemJ7AQ/original\" height=\"14\"/> [Infographic](https://github.com/antvis/Infographic) to generate infographic, such as `Timeline`, `Comparison`, `List`, `Process` and so on.\n- 🖼️ [figure.ling.pub/gallery](https://figure.ling.pub/gallery) to browse and share AI-generated diagrams and figures created with mcp-mermaid and other tools.\n\n\n## ✨ Features\n\n- Fully support all features and syntax of `Mermaid`.\n- Support configuration of `backgroundColor` and `theme`, enabling large AI models to output rich style configurations.\n\n- Support exporting to `base64`, `svg`, `mermaid`, `file`, and remote-friendly `svg_url`, `png_url` formats, with validation for `Mermaid` to facilitate the model's multi-round output of correct syntax and graphics. Use `outputType: \"file\"` to automatically save PNG diagrams to disk for AI agents, or the URL modes to share diagrams through public mermaid.ink links.\n\n\n<img width=\"720\" alt=\"mcp-mermaid\" src=\"https://mermaid.js.org/header.png\" />\n\n\n## 🤖 Usage\n\nTo use with `Desktop APP`, such as Claude, VSCode, Cline, Cherry Studio, and so on, add the  MCP server config below. On Mac system:\n\n```json\n{\n  \"mcpServers\": {\n    \"mcp-mermaid\": {\n      \"command\": \"npx\",\n      \"args\": [\n        \"-y\",\n        \"mcp-mermaid\"\n      ]\n    }\n  }\n}\n```\n\nOn Window system:\n\n```json\n{\n  \"mcpServers\": {\n    \"mcp-mermaid\": {\n      \"command\": \"cmd\",\n      \"args\": [\n        \"/c\",\n        \"npx\",\n        \"-y\",\n        \"mcp-mermaid\"\n      ]\n    }\n  }\n}\n```\n\nAlso, you can use it on aliyun, modelscope, glama.ai, smithery.ai or others with HTTP, SSE Protocol.\n\n**Access Points:**\n- SSE: `http://localhost:3033/sse`\n- Streamable: `http://localhost:1122/mcp`\n\n**Available Docker Tags:**\n- `susuperli/mcp-mermaid:latest` - Latest stable version\n- View all available tags at [Docker Hub](https://hub.docker.com/repository/docker/susuperli/mcp-mermaid/tags)\n\n\n## 🚰 Run with SSE or Streamable transport\n\n### Option 1: Global Installation\n\nInstall the package globally:\n\n```bash\nnpm install -g mcp-mermaid\n```\n\nRun the server with your preferred transport option:\n\n```bash\n# For SSE transport (default endpoint: /sse)\nmcp-mermaid -t sse\n\n# For Streamable transport with custom endpoint\nmcp-mermaid -t streamable\n```\n\n### Option 2: Local Development\n\nIf you're working with the source code locally:\n\n```bash\n# Clone and setup\ngit clone https://github.com/hustcc/mcp-mermaid.git\ncd mcp-mermaid\nnpm install\nnpm run build\n\n# Run with npm scripts\nnpm run start:sse        # SSE transport on port 3033\nnpm run start:streamable # Streamable transport on port 1122\n```\n\n### Access Points\n\nThen you can access the server at:\n\n- SSE transport: `http://localhost:3033/sse`\n- Streamable transport: `http://localhost:1122/mcp` (local) or `http://localhost:3033/mcp` (global)\n\n## 🎮 CLI Options\n\nYou can also use the following CLI options when running the MCP server. Command options by run cli with `-h`.\n\n```plain\nMCP Mermaid CLI\n\nOptions:\n  --transport, -t  Specify the transport protocol: \"stdio\", \"sse\", or \"streamable\" (default: \"stdio\")\n  --port, -p       Specify the port for SSE or streamable transport (default: 3033)\n  --endpoint, -e   Specify the endpoint for the transport:\n                    - For SSE: default is \"/sse\"\n                    - For streamable: default is \"/mcp\"\n  --help, -h       Show this help message\n```\n\n## 🔨 Development\n\nInstall dependencies:\n\n```bash\nnpm install\n```\n\nBuild the server:\n\n```bash\nnpm run build\n```\n\n### Start the MCP server\n\n**Using MCP Inspector (for debugging):**\n\n```bash\nnpm run start\n```\n\n**Using different transport protocols:**\n\n```bash\n# SSE transport (Server-Sent Events)\nnpm run start:sse\n\n# Streamable HTTP transport\nnpm run start:streamable\n```\n\n**Direct node commands:**\n\n```bash\n# SSE transport on port 3033\nnode build/index.js --transport sse --port 3033\n\n# Streamable HTTP transport on port 1122\nnode build/index.js --transport streamable --port 1122\n\n# STDIO transport (for MCP client integration)\nnode build/index.js --transport stdio\n```\n\n## 🐳 Docker Usage\n\nRun MCP Mermaid with Docker:\n\n```bash\n# Pull the image\ndocker pull susuperli/mcp-mermaid:latest\n\n# Run with SSE transport (default)\ndocker run -p 3033:3033 susuperli/mcp-mermaid:latest --transport sse\n\n# Run with streamable transport\ndocker run -p 1122:1122 susuperli/mcp-mermaid:latest --transport streamable --port 1122\n```\n\n## 📄 License\n\nMIT@[hustcc](https://github.com/hustcc).\n"
+  },
+  "descriptor_file": {
+    "path": "smithery.yaml",
+    "content": "\n# Smithery.ai configuration\nstartCommand:\n  type: http\n  configSchema:\n    # JSON Schema defining the configuration options for the MCP.\n    type: object\n    properties: {}\n  commandFunction:\n    # A function that produces the CLI command to start the MCP on stdio.\n    |-\n    (config) => ({ command: 'node', args: ['./build/index.js'] })\n  exampleConfig: {}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

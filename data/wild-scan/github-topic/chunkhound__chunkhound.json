@@ -1,0 +1,35 @@
+{
+  "full_name": "chunkhound/chunkhound",
+  "html_url": "https://github.com/chunkhound/chunkhound",
+  "description": "Local first codebase intelligence",
+  "topics": [
+    "agent",
+    "ai",
+    "duckdb",
+    "mcp-server",
+    "rag",
+    "semantic-search",
+    "tree-sitter"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 1355,
+  "forks": 109,
+  "open_issues": 97,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-06-04T07:41:58Z",
+  "last_pushed_at": "2026-07-11T11:58:47Z",
+  "fetched_at": "2026-07-11T22:33:07.230Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<p align=\"center\">\n  <a href=\"https://chunkhound.ai\">\n    <picture>\n      <source media=\"(prefers-color-scheme: dark)\" srcset=\"site/public/wordmark-centered-dark.svg\">\n      <img src=\"site/public/wordmark-centered.svg\" alt=\"ChunkHound\" width=\"400\">\n    </picture>\n  </a>\n</p>\n\n<p align=\"center\">\n  <strong>Local-first codebase intelligence</strong>\n</p>\n\n<p align=\"center\">\n  <a href=\"https://github.com/chunkhound/chunkhound/actions/workflows/ci.yml\"><img src=\"https://github.com/chunkhound/chunkhound/actions/workflows/ci.yml/badge.svg\" alt=\"Tests\"></a>\n  <a href=\"https://opensource.org/licenses/MIT\"><img src=\"https://img.shields.io/badge/license-MIT-blue.svg\" alt=\"License: MIT\"></a>\n  <img src=\"https://img.shields.io/badge/100%25%20AI-Generated-ff69b4.svg\" alt=\"100% AI Generated\">\n  <a href=\"https://discord.gg/BAepHEXXnX\"><img src=\"https://img.shields.io/badge/Discord-Join_Community-5865F2?logo=discord&logoColor=white\" alt=\"Discord\"></a>\n</p>\n\nYour AI assistant searches code but doesn't understand it. ChunkHound researches your codebase—extracting architecture, patterns, and institutional knowledge at any scale. Integrates via [MCP](https://spec.modelcontextprotocol.io/).\n\n## Features\n\n- **[cAST Algorithm](https://arxiv.org/pdf/2506.15655)** - Research-backed semantic code chunking\n- **Multi-Hop Semantic Search** - Discovers interconnected code relationships beyond direct matches\n- **Semantic search** - Natural language queries like \"find authentication code\"\n- **Regex search** - Pattern matching without API keys\n- **Local-first** - Your code stays on your machine\n- **32 languages** with structured parsing\n  - **Programming** (via [Tree-sitter](https://tree-sitter.github.io/tree-sitter/)): Python, JavaScript, TypeScript, JSX, TSX, Java, Kotlin, Groovy, C, C++, C#, Go, Rust, Haskell, Swift, Bash, MATLAB, Makefile, Objective-C, PHP, Dart, Lua, Vue, Svelte, Zig\n  - **Configuration**: JSON, YAML, TOML, HCL, Markdown\n  - **Text-based** (custom parsers): Text files, PDF\n- **[MCP integration](https://spec.modelcontextprotocol.io/)** - Works with Claude, VS Code, Cursor, Windsurf, Zed, etc\n- **Real-time indexing** - Automatic file watching, smart diffs, seamless branch switching, and explicit backend selection (`watchdog`, `watchman`, `polling`)\n\n## Documentation\n\n**Visit [chunkhound.ai](https://chunkhound.ai) for documentation:**\n- [Configuration Guide](https://chunkhound.ai/docs/configuration/)\n\n## Requirements\n\n- Python 3.10+\n- [uv package manager](https://docs.astral.sh/uv/)\n- API keys (optional - regex search works without any keys)\n  - **Embeddings**: [VoyageAI](https://dash.voyageai.com/) (recommended) | [OpenAI](https://platform.openai.com/api-keys) | [Local with Ollama](https://ollama.ai/)\n  - **LLM (for Code Research)**: Claude Code CLI or Codex CLI (no API key needed) | [Anthropic](https://console.anthropic.com/) | [OpenAI](https://platform.openai.com/api-keys) | [Grok (xAI)](https://console.x.ai)\n\n## Installation\n\n```bash\n# Install uv if needed\ncurl -LsSf https://astral.sh/uv/install.sh | sh\n\n# Install ChunkHound\nuv tool install chunkhound\n```\n\n## Quick Start\n\n1. Create `.chunkhound.json` in project root\n```json\n{\n  \"embedding\": {\n    \"provider\": \"voyageai\",\n    \"[REDACTED-GENERIC_KV_SECRET]\"\n  },\n  \"llm\": {\n    \"provider\": \"claude-code-cli\"\n  }\n}\n```\n> **Note:** Use `\"codex-cli\"` instead if you prefer Codex. Both work equally well and require no API key.\n2. Index your codebase\n```bash\nchunkhound index\n```\n\n3. Search changed code in recent commits\n```bash\n# Last N commits\nchunkhound search \"authentication changes\" --last-n 20\n\n# Changes introduced by that commit (diff against its parent; root commits use empty tree)\nchunkhound search \"database migration\" --commit-hash abc1234\n\n# Custom git range\nchunkhound search \"API changes\" --commit-range v2.0..HEAD\n\n# Deep research over recent changes\nchunkhound research \"what changed in the auth module?\" --last-n 50\n```\n> `--vector-source` controls scope: `diff` (default, changed code only), `both` (merges diff + DB), `db` (ignore diff).\n\n**For configuration, IDE setup, and advanced usage, see the [documentation](https://chunkhound.ai).**\n\n## Why ChunkHound?\n\n| Approach | Capability | Scale | Maintenance |\n|----------|------------|-------|-------------|\n| Keyword Search | Exact matching | Fast | None |\n| Traditional RAG | Semantic search | Scales | Re-index files |\n| Knowledge Graphs | Relationship queries | Expensive | Continuous sync |\n| **ChunkHound** | Semantic + Regex + Code Research | Automatic | Incremental + realtime |\n\n**Ideal for:**\n- Large monorepos with cross-team dependencies\n- Security-sensitive codebases (local-only, no cloud)\n- Multi-language projects needing consistent search\n- Offline/air-gapped development environments\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

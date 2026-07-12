@@ -1,0 +1,40 @@
+{
+  "full_name": "MeghnaTomar17/postgres-mcp-assistant",
+  "html_url": "https://github.com/MeghnaTomar17/postgres-mcp-assistant",
+  "description": "An AI-powered PostgreSQL assistant built using the Model Context Protocol (MCP). Supports database metadata exploration, secure read-only SQL execution, and natural language querying with local LLM integration.",
+  "topics": [
+    "chatbot",
+    "database",
+    "local-llm",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "model-context-protocol",
+    "ollama",
+    "python",
+    "sql"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-07-06T14:42:15Z",
+  "last_pushed_at": "2026-07-07T15:02:08Z",
+  "fetched_at": "2026-07-12T00:49:38.651Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# AI Database Chatbot\n\nAn AI-powered database assistant that exposes a PostgreSQL database's metadata via a Model Context Protocol (MCP) Server and queries it using a FastAPI backend and a React/Vite/TypeScript frontend.\n\n## Project Architecture\n\n```mermaid\ngraph TD\n    Client[React/TypeScript Client] -->|HTTP/REST| FastAPI[FastAPI Backend]\n    FastAPI -->|MCP Protocol| MCPClient[MCP Client]\n    MCPClient -->|Stdio Transport| MCPServer[MCP Server]\n    MCPServer -->|SQL Queries| PG[PostgreSQL Database]\n```\n\nThe system is organized into the following key components:\n\n1. **FastAPI Backend (`backend/`)**: Web API that handles requests, exposes endpoints, and communicates with the LLM and the database/MCP layers.\n2. **REST API Router (`backend/routers/chat_router.py`)**: Exposes the `POST /chat` endpoint. Thin layer with zero business logic, delegating execution to the `ChatService`.\n3. **Chat Service (`backend/services/chat_service.py`)**: Service wrapping the `AIAgent` and mapping internal/mcp exceptions into service exceptions (defined in `backend/services/errors.py`).\n4. **AI Agent Layer (`backend/agent/`)**: An orchestrator that manages multi-turn conversations, stores chat history in a session store, submits requests to the LLM (Ollama), parses tool calling intents, and executes tools via the MCP Client.\n5. **Ollama Service (`backend/llm/ollama_service.py`)**: A dedicated service handling communication with local Ollama models with configurable timeouts.\n6. **MCP Server & Client (`backend/mcp/`)**: Subprocess stdio-based Server/Client transport to query database catalog metadata safely without direct agent connection.\n7. **React Frontend Client (`client/`)**: The user interface for interacting with the AI DB chatbot.\n\n---\n\n## Installation & Setup\n\n### Prerequisites\n- Python 3.12+\n- Node.js & npm (for frontend)\n- PostgreSQL running locally\n- Ollama running locally with `qwen2.5-coder:7b` model\n\n### Environment Configuration\nCreate a `.env` file in the workspace root with your PostgreSQL credentials:\n```env\nDB_HOST=localhost\nDB_PORT=5432\nDB_NAME=ai_db_chatbot\nDB_USER=postgres\nDB_PASSWORD=your_password\n```\n\n### Python Virtual Environment Setup\n1. Create and activate a virtual environment:\n   ```powershell\n   python -m venv .venv\n   .venv\\Scripts\\activate\n   ```\n2. Install Python dependencies:\n   ```powershell\n   pip install -r requirements.txt\n   pip install pytest pytest-asyncio\n   ```\n\n---\n\n## Running the Application\n\n### 1. Start the FastAPI Backend\nFrom the workspace root, run:\n```powershell\n$env:PYTHONPATH=\".\"\n.venv\\Scripts\\python.exe -m backend.main\n```\nUvicorn will spin up a development web server listening at: `http://127.0.0.1:8000`.\n\n### 2. Start the Frontend Dev Server\nFrom the `client/` directory, run:\n```powershell\nnpm run dev\n```\n\n---\n\n## Testing the Application\n\n### 1. REST API Integration Test (Manual)\nWe provide an integration script `test_api_lifespan_flow.py` at the root of the workspace. This script connects to the FastAPI app via `TestClient`, spins up the full lifespan hook (connecting MCP client subprocesses and Ollama), and hits the `POST /chat` endpoint to run a multi-turn conversation:\n\n```powershell\n$env:PYTHONPATH=\".\"\n.venv\\Scripts\\python.exe test_api_lifespan_flow.py\n```\n\n### 2. Live curl Request\nYou can also manually query the live backend using curl while the server is running:\n```bash\ncurl -X POST http://127.0.0.1:8000/chat \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"message\": \"What tables are in the database?\"}'\n```\n\n### 3. Running Automated Unit Tests\nTo run all automated unit tests (covering health endpoints, database connection pools, the MCP client, the Agent orchestrator, and the REST API /chat endpoint):\n```powershell\n$env:PYTHONPATH=\".\"\n.venv\\Scripts\\pytest backend/tests\n```\nAll 26 tests will execute and pass successfully.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "main.py",
+    "size": 116,
+    "content": "\"\"\"Project-level FastAPI entry point.\"\"\"\n\nfrom backend.main import app, create_app\n\n__all__ = [\"app\", \"create_app\"]\n"
+  },
+  "content_fetch_notes": []
+}

@@ -1,0 +1,41 @@
+{
+  "full_name": "theYahia/2gis-mcp",
+  "html_url": "https://github.com/theYahia/2gis-mcp",
+  "description": "MCP server for 2GIS — places, geocoding, directions, reviews (Russia). Part of WWmcp — 114 MCP servers for emerging markets.",
+  "topics": [
+    "2gis",
+    "ai-agents",
+    "anthropic",
+    "claude",
+    "emerging-markets",
+    "geocoding",
+    "maps",
+    "mcp",
+    "mcp-servers",
+    "model-context-protocol",
+    "russia",
+    "russian-api",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 4,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-01T15:11:08Z",
+  "last_pushed_at": "2026-06-23T10:12:22Z",
+  "fetched_at": "2026-07-12T00:00:31.467Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# @theyahia/2gis-mcp\n\nMCP server for the **2GIS API** — places search, geocoding, directions, public\ntransport, autocomplete and reviews, for AI agents. Coverage is **Russia/CIS**\n(and other 2GIS regions); responses are mostly in Russian.\n\n## Tools (9)\n\n| Tool | Description |\n|------|-------------|\n| `search_places` | Search places/businesses with spatial filtering + pagination |\n| `get_place` | Detailed place info by 2GIS ID |\n| `search_by_rubric` | Search by category (rubric) ID near a point |\n| `geocode` | Address → coordinates |\n| `reverse_geocode` | Coordinates → address |\n| `get_directions` | Car/walking/bicycle/taxi/scooter route between two points |\n| `get_public_transport` | Public-transport route (metro/bus/tram/trolleybus) |\n| `suggest` | Address/place autocomplete |\n| `get_reviews` | Rating + review count (official) and review texts (best-effort) |\n\nAll tools are **read-only** and annotated as such (`readOnlyHint`, `openWorldHint`).\nA `2gis://rubrics` resource explains how to obtain rubric IDs.\n\n## Setup\n\n1. Get an API key at https://dev.2gis.com/ (a free demo key works for trying it out).\n2. Set the environment variable `TWOGIS_API_KEY`.\n\n### Claude Desktop / Claude Code\n\n```json\n{\n  \"mcpServers\": {\n    \"2gis\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@theyahia/2gis-mcp\"],\n      \"env\": { \"TWOGIS_API_KEY\": \"your-key\" }\n    }\n  }\n}\n```\n\nOptional env: `TWOGIS_TIMEOUT_MS` (request timeout, default 10000), `TWOGIS_LOCALE`\n(routing locale, default `ru`).\n\n## API key & scopes\n\n2GIS issues a key **per subscription**, and that one key works for every service\n**included in the subscription**. So a single `TWOGIS_API_KEY` can cover Catalog\n(places/geocode/suggest), Routing (directions) and Public Transport — **only if\nyour subscription enables those services**. Notes:\n\n- A **demo key** is created once, valid ~1 month, ~1000 requests **per service**;\n  for Places it additionally caps `page_size ≤ 10` and `page ≤ 5`.\n- A key bound to an **App ID is for the mobile SDK only** and will fail for direct\n  HTTP API calls — create a separate key for this server.\n- A `403` typically means the service isn't enabled for your key/subscription.\n\n## Typical workflow\n\n`get_place` and `get_reviews` need a 2GIS **ID**. Get it from `search_places`:\n\n1. `search_places(query: \"кофейня\", point: \"82.92,55.03\")` → take `items[].id`.\n2. `get_place(place_id: <id>)` or `get_reviews(place_id: <id>)`.\n\nFor `search_by_rubric`, take a rubric id from the `rubrics: [{ id, name }]` field of\n`search_places` results (or read the `2gis://rubrics` resource), then:\n\n3. `search_by_rubric(rubric_id: <id>, point: \"82.92,55.03\")`.\n\n## Coordinates — `lon,lat` order\n\n`point` parameters use **`lon,lat` (longitude first)**, e.g. `\"82.92,55.03\"` —\n**not** `lat,lon`. Inputs are validated for order/bounds. The `*_lat` / `*_lon`\nnumeric parameters (directions, reverse_geocode, suggest) are unambiguous.\n\n## Pagination & limits\n\n`search_places` / `search_by_rubric` accept `page` (1-based) and `page_size`\n(≤ 50). `search_places` `radius` ≤ 40000 m (with a query); `search_by_rubric`\n`radius` ≤ 2000 m (query-less). Demo keys cap `page ≤ 5` / `page_size ≤ 10`.\n\n## Reviews\n\nThe Places API only exposes review **statistics** (rating + count) to self-service\nkeys — `get_reviews` always returns those. Review **texts** are fetched from an\n**undocumented internal endpoint** on a best-effort basis; for many keys this\nreturns nothing (you'll get the stats plus a `note`). Treat texts as unofficial.\n\n## Public transport\n\n`get_public_transport` calls the 2GIS Public Transport API (a separate endpoint\nfrom car routing). It requires a subscription that includes that API; without it\nyou may get a `403`.\n\n## Troubleshooting\n\n| Symptom | Likely cause |\n|---|---|\n| `Authentication failed` (401) | Wrong/empty `TWOGIS_API_KEY` |\n| `Access forbidden` (403) | Service not enabled for your subscription, or an SDK (App ID) key used for HTTP |\n| `Rate limit exceeded` (429) | Per-service quota hit; retried with backoff, then surfaced |\n| `Request timed out` | Network/2GIS latency; raise `TWOGIS_TIMEOUT_MS` |\n| Empty `no_results` | No matches, or coordinates given as `lat,lon` instead of `lon,lat` |\n\n## Demo prompts\n\n- \"Find coffee shops near Новосибирск центр in 2GIS\"\n- \"What is at coordinates 55.0302, 82.9204?\"\n- \"Get walking directions from 55.0302,82.9204 to 54.8430,83.0972\"\n- \"Public transport from Площадь Ленина to Академгородок\"\n- \"Suggest addresses starting with 'Москва, Твер'\"\n- \"Find pharmacies near me by rubric\"\n- \"Rating and reviews for place 141265770013120\"\n\n## Development\n\n```bash\nnpm install\nnpm run typecheck   # tsc --noEmit\nnpm run lint        # biome check\nnpm run build       # tsc → dist/\nnpm test            # vitest (unit + stdio smoke)\nnpm run inspector   # @modelcontextprotocol/inspector against the built server\n```\n\nTests are unit-level (mocked `fetch`) plus an stdio handshake smoke test — no live\nAPI calls. To verify against the real API, set `TWOGIS_API_KEY` and exercise the\ntools via `npm run inspector`.\n\n## License\n\nMIT — see [LICENSE](LICENSE).\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

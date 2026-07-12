@@ -1,0 +1,37 @@
+{
+  "full_name": "op7418/Generative-UI-MCP",
+  "html_url": "https://github.com/op7418/Generative-UI-MCP",
+  "description": "MCP server that teaches AI models to generate interactive visualizations — charts, diagrams, mockups, and more.",
+  "topics": [
+    "ai",
+    "chart",
+    "claude",
+    "diagram",
+    "generative-ui",
+    "mcp",
+    "model-context-protocol",
+    "svg",
+    "visualization"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 56,
+  "forks": 7,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": null,
+  "default_branch": "main",
+  "created_at": "2026-03-16T04:29:03Z",
+  "last_pushed_at": "2026-03-16T04:50:31Z",
+  "fetched_at": "2026-07-11T23:28:06.981Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Generative UI MCP\n\nAn MCP server that teaches AI models to generate interactive visualizations — charts, diagrams, mockups, and more.\n\n> Inspired by [Anthropic's Artifacts](https://www.anthropic.com/news/artifacts) and [Vercel's Generative UI](https://vercel.com/blog/ai-sdk-3-generative-ui). This server provides structured design guidelines so AI models produce consistent, streaming-safe, visually polished widgets.\n\n## What it does\n\nInstead of stuffing thousands of tokens of design rules into every system prompt, this MCP server lets the model **load guidelines on demand** — only when it actually needs to generate a visualization.\n\n| Module | What it covers |\n|--------|---------------|\n| `interactive` | HTML controls, forms, sliders, calculators |\n| `chart` | Chart.js patterns, canvas setup, interactive data controls |\n| `mockup` | UI mockup layouts, component patterns |\n| `art` | SVG illustrations, artistic visualizations |\n| `diagram` | Flowcharts, timelines, hierarchies, cycle diagrams, matrices |\n\nThe model calls `load_ui_guidelines` with the modules it needs, and gets back comprehensive design specs including:\n- Core design system (philosophy, streaming rules, CSS variables)\n- Color palette (6 ramps with semantic usage rules)\n- Component patterns and code templates\n- SVG setup guides with arrow markers and viewBox calculations\n- 8 diagram types with layout rules and code examples\n\n## Quick start\n\n### Auto-install via AI\n\nCopy and paste the following prompt into your AI assistant (Claude Code, Cursor, etc.) to install automatically:\n\n> Install the `generative-ui-mcp` MCP server. Run `npx generative-ui-mcp` as a stdio MCP server. The server name should be \"generative-ui\".\n\n### Claude Code\n\n```bash\nclaude mcp add generative-ui -- npx generative-ui-mcp\n```\n\n### Claude Desktop\n\nAdd to your `claude_desktop_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"generative-ui\": {\n      \"command\": \"npx\",\n      \"args\": [\"generative-ui-mcp\"]\n    }\n  }\n}\n```\n\n### Cursor / Windsurf\n\nAdd to your MCP settings (`.cursor/mcp.json` or equivalent):\n\n```json\n{\n  \"mcpServers\": {\n    \"generative-ui\": {\n      \"command\": \"npx\",\n      \"args\": [\"generative-ui-mcp\"]\n    }\n  }\n}\n```\n\n## Tool\n\n### `load_ui_guidelines`\n\nLoad detailed design guidelines for generating visual widgets.\n\n**Parameters:**\n\n| Name | Type | Description |\n|------|------|-------------|\n| `modules` | `string[]` | Modules to load: `interactive`, `chart`, `mockup`, `art`, `diagram` |\n\n**Example call:**\n\n```json\n{\n  \"name\": \"load_ui_guidelines\",\n  \"arguments\": {\n    \"modules\": [\"chart\", \"diagram\"]\n  }\n}\n```\n\nShared sections (like Core Design System and Color Palette) are automatically deduplicated when loading multiple modules.\n\n## Resource\n\n### `generative-ui://system-prompt`\n\nA compact system prompt snippet (~300 tokens) with all hard constraints needed for valid widget output. Hosts can inject this into their system prompt so the model can generate basic widgets even without calling the tool.\n\nContains: output format, JSON escaping rules, streaming order, CDN allowlist, SVG setup, size limits, and interaction patterns.\n\n## How it works\n\n```\n┌─────────────┐    system prompt     ┌─────────────┐\n│   AI Host   │ ◄── injects ──────── │  Resource:   │\n│ (Claude,    │     ~300 tokens      │ system-prompt│\n│  Cursor,    │                      └─────────────┘\n│  etc.)      │\n│             │    tool call          ┌─────────────┐\n│   Model ────│──► load_ui_          │  Guidelines  │\n│             │    guidelines         │  Modules     │\n│             │ ◄── returns ──────── │  (on demand) │\n│             │    detailed specs     └─────────────┘\n└─────────────┘\n```\n\n**Token savings:** The system prompt is ~300 tokens vs ~650+ tokens for full guidelines. Detailed specs are only loaded when the model actually needs to generate a visualization. Most conversations don't involve widgets, so this saves tokens on every request.\n\n## Development\n\n```bash\nnpm install\nnpm run build\nnpm start\n```\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

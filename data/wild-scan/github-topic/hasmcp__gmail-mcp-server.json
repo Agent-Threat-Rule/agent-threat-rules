@@ -1,0 +1,36 @@
+{
+  "full_name": "hasmcp/gmail-mcp-server",
+  "html_url": "https://github.com/hasmcp/gmail-mcp-server",
+  "description": "Gmail MCP Server",
+  "topics": [
+    "gmail",
+    "gmail-mcp",
+    "gmail-mcp-server",
+    "hasmcp",
+    "mcp-server",
+    "mcp-servers",
+    "remote-mcp",
+    "remote-mcp-server"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 3,
+  "forks": 0,
+  "open_issues": 0,
+  "language": null,
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2026-03-09T07:32:34Z",
+  "last_pushed_at": "2026-06-10T05:11:43Z",
+  "fetched_at": "2026-07-12T00:01:20.858Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Gmail MCP Server\n\n## Search emails\n\nYou can use standard Gmail search operators to refine your results. You can combine multiple filters by adding space after the filter applied. \n* `from:amy@example.com`: Find emails sent from a specific person.\n* `subject:dinner`: Find emails with \"dinner\" in the subject line.\n* `after:2024/01/01 before:2024/02/01`: Find emails received in January 2024.\n* `in:sent`: Search only messages in the Sent folder.\n* `is:unread`: Find unread messages.\n* `\"exact phrase\"`: Search for an exact phrase\n\n## Read email content\n\nUse the messageId coming from the search results.\n\n## Send email\n\nSend only the available attributes in your request. Do not forget to set any required attribute. While sending email `from` attribute should be asked to user if not known. At worst case don't send the `from` attribute.\n\n## Server setup instructions\n\n### [gmail](gmail)\n\nGmail provider is using Gmail API to search, read and send emails using Gmail API. \n\nTo use this provider, please obtain OAuth2 ClientID and Client Secret by following the steps below:\n\n\n1. **Create a Project**:\n    - Go to the https://console.cloud.google.com/.\n    - Create a new project named \"HasMCP Gmail\".\n\n2. **Enable Gmail API**:\n    - Navigate to **APIs & Services > Library**.\n    - Search for \"Gmail API\" and click **Enable**.\n\n3. **Configure Consent Screen**:\n    - Go to **APIs & Services > OAuth consent screen**.\n    - Select **External** (unless using a Workspace org) and click **Create**.\n    - Enter an App Name (e.g., \"HasMCP\") and Support Email.\n    - **Important**: Add the following **Scopes**:\n      - `https://www.googleapis.com/auth/gmail.readonly`\n      - `https://www.googleapis.com/auth/gmail.compose`\n    - Add your own email address as a **Test User**.\n\n4. **Create Credentials**:\n    - Go to **APIs & Services > Credentials**.\n    - Click **Create Credentials > OAuth client ID**.\n    - Select **Web application**.\n    - **Authorized Redirect URIs**: Enter `https://app.hasmcp.com/oauth2/callback` (Confirm this URI in your HasMCP Provider settings).\n    - Click **Create**.\n    - **Copy the Client ID and Client Secret**.\n\nMore details are available in: https://docs.hasmcp.com/tutorials/gmail-mcp-server\n\n#### Tools (3)\n\n- [sendEmail](gmail/gmail/tools/send-email.md) — Send new email or reply to thread\n- [searchEmails](gmail/gmail/tools/search-emails.md) — Search for emails. Use 'q' for query (e.g. 'from:alice')\n- [readEmailSnippet](gmail/gmail/tools/read-email-snippet.md) — Read initial part of the email content along with email headers.\n\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

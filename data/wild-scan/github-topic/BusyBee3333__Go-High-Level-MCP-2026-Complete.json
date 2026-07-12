@@ -1,0 +1,35 @@
+{
+  "full_name": "BusyBee3333/Go-High-Level-MCP-2026-Complete",
+  "html_url": "https://github.com/BusyBee3333/Go-High-Level-MCP-2026-Complete",
+  "description": "GoHighLevel MCP Server — Update #2 (2026-06-11): easy setup commands + high-level curated CRM agent tools. Full update history in UPDATE_LOG.md.",
+  "topics": [
+    "ai-automation",
+    "automation",
+    "claude",
+    "crm",
+    "gohighlevel",
+    "mcp",
+    "model-context-protocol"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 86,
+  "forks": 78,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "NOASSERTION",
+  "default_branch": "main",
+  "created_at": "2026-01-27T01:40:35Z",
+  "last_pushed_at": "2026-07-08T04:30:18Z",
+  "fetched_at": "2026-07-11T23:21:09.778Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# GoHighLevel MCP Server\n\nModel Context Protocol server for GoHighLevel. It exposes GHL API operations as MCP tools over stdio, Streamable HTTP, legacy SSE, and optional MCP Apps.\n\nNew here? Start with [QUICKSTART.md](QUICKSTART.md).\n\nUsing an AI/dev agent? Give it [AGENT_SETUP.md](AGENT_SETUP.md) and say: \"Set this up for my MCP client using the curated profile. Ask me for credentials if needed. Do not run write tools.\"\n\n## 5-Minute Quickstart\n\nRequirements:\n\n- Node 20+\n- A GoHighLevel private integration token or OAuth access token\n- A GoHighLevel Location ID\n\n```bash\nnpm install\ncp .env.example .env\nnpm run build\nnpm run doctor\nnpm run configure:codex\n```\n\nAdd your credentials to `.env`:\n\n```bash\nGHL_[REDACTED-GENERIC_KV_SECRET]\nGHL_LOCATION_ID=your_location_id\nGHL_BASE_URL=https://services.leadconnectorhq.com\nGHL_API_VERSION=2023-02-21\n```\n\n`GHL_API_VERSION=2023-02-21` is the current HighLevel API `Version` header used by official docs. It is not the project year, and it should not be changed to 2026 unless HighLevel publishes a new required API version.\n\nThen verify live auth:\n\n```bash\nnpm run auth-check\n```\n\n## Setup Commands\n\n```bash\nnpm run setup                 # Create .env if needed, build, and print next steps\nnpm run first-run             # One-command beginner setup/readiness flow\nnpm run connect               # Setup plus client config generation\nnpm run ready                 # Fast readiness check\nnpm run demo                  # Print MCP Apps demo preview instructions\nnpm run explain-error -- \"Location is not active\"\nnpm run doctor                # Human-readable setup check\nnpm run doctor -- --json      # Agent-readable setup check\nnpm run agent:check           # Safe validation for AI/dev agents\nnpm run auth-check            # Read-only GHL token/location check\n```\n\nMissing credentials are reported as `needsHumanAction`, not as a broken install. This lets agents build and configure the repo without inventing secrets.\n\n## MCP Client Config\n\nBeginner configs use `GHL_TOOL_PROFILE=curated` so agents see the high-level workflow tools first.\n\n```bash\nnpm run configure:codex\nnpm run configure:claude\nnpm run configure:cursor\nnpm run configure:windsurf\n```\n\nAdvanced examples:\n\n```bash\nnode scripts/ghl-mcp.mjs configure codex --profile stable\nnode scripts/ghl-mcp.mjs configure codex --profile full\nnode scripts/ghl-mcp.mjs configure codex --profile curated --json\n```\n\n## Tool Profiles\n\n- `curated` - recommended for agents; high-level CRM workflows with confirmation queues.\n- `stable` - production-friendly; official, supplemental, curated, and legacy-compatible tools.\n- `full` - everything.\n- `official` - official OpenAPI and live-docs supplemental tools.\n- `raw` - endpoint-level tools only.\n\n## Run\n\n```bash\nnpm run start:stdio       # Desktop MCP clients\nnpm run start:http        # Streamable HTTP at /mcp\nnpm run start:legacy      # Legacy SSE at /sse\n```\n\nHTTP also exposes:\n\n- `GET /health`\n- `GET /capabilities`\n- `GET /tools`\n- `POST /execute`\n- `POST /tools/call`\n\n## MCP Apps\n\n```bash\nnpm run apps:setup\nnpm run apps:preview\n```\n\nOpen `http://localhost:3001/preview`. Without GHL credentials, the apps use preview/demo states and tell you exactly which env vars are missing.\n\n## Tool Discovery\n\n```bash\nnpm run tools:list\nnpm run tools:list -- --search contacts\nnpm run tools:list -- --category contacts\nnpm run tools:list -- --stability official\nnpm run tools:list -- --access write\nnpm run tools:list -- --destructive\nnpm run tools:explorer\n```\n\nThe static explorer is `docs/tool-explorer.html`.\n\n## High-Level Agent Tools\n\nStart agents with the curated profile and prefer these high-level tools before raw endpoints:\n\n- `crm_location_overview`\n- `crm_daily_briefing`\n- `crm_search_everything`\n- `crm_next_best_actions`\n- `crm_get_next_page`\n- `crm_prepare_contact_followup`\n- `crm_prepare_lead_reactivation`\n- `crm_prepare_missed_call_response`\n- `crm_prepare_pipeline_cleanup`\n- `crm_prepare_review_request_batch`\n- `crm_prepare_invoice_followup`\n\n## Docs\n\n- [Update Log](UPDATE_LOG.md)\n- [Setup](docs/SETUP.md)\n- [Usage](docs/USAGE.md)\n- [Clients](docs/CLIENTS.md)\n- [Tool Profiles](docs/TOOL-PROFILES.md)\n- [Recipes](docs/RECIPES.md)\n- [Safety](docs/SAFETY.md)\n- [Troubleshooting](docs/TROUBLESHOOTING.md)\n- [Deployment](docs/DEPLOYMENT.md)\n- [Development](docs/DEVELOPMENT.md)\n- [API Coverage](docs/API-COVERAGE.md)\n- [Companion Tooling](docs/TOOLING.md)\n\n## Update History\n\n| Date | Update # | Included |\n| --- | ---: | --- |\n| 2026-06-11 | 2 | Simplicity and power layer: easy setup commands, safe config writing, grouped live smoke checks, and high-level curated CRM agent tools. See [UPDATE_LOG.md](UPDATE_LOG.md) for the full permanent update description. |\n| 2026-06-11 | 1 | Onboarding and agent setup overhaul. See [UPDATE_LOG.md](UPDATE_LOG.md) for the full permanent update description. |\n\n## API Coverage\n\n- Official GHL endpoints parsed: `590`\n- Official endpoint coverage: `590 / 590`\n- Generated official endpoint tools: `238`\n- MCP tools in registry: `848`\n- Local-only endpoint references tracked for review: `253`\n\nGenerated coverage artifacts live in `docs/`. Run `npm run scan:ghl-api` only when intentionally refreshing API coverage.\n\n## Safety\n\n- `.env` is ignored and must never be committed.\n- `test-tool` refuses write/destructive tools unless `--confirm` is supplied.\n- Curated workflow tools stage confirmation queues for writes.\n- Use `curated` for beginners and `stable` for production.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "full_name": "YounesBensafia/arxiv-reader-mcp",
+  "html_url": "https://github.com/YounesBensafia/arxiv-reader-mcp",
+  "description": "Want to search arXiv papers, fetch metadata, and extract full-text PDFs without leaving your editor? This MCP server connects any MCP-compatible client (Claude Code, etc.) directly to arXiv.",
+  "topics": [
+    "ai",
+    "arxiv-api",
+    "arxiv-papers",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "pdf-extraction",
+    "python",
+    "research-papers"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 23,
+  "forks": 3,
+  "open_issues": 1,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-06-05T23:52:34Z",
+  "last_pushed_at": "2026-06-07T18:13:24Z",
+  "fetched_at": "2026-07-11T23:49:57.138Z",
+  "readme": {
+    "path": "README.md",
+    "content": "[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)\n\nMCP server for searching and retrieving papers from arXiv, including full-text PDF extraction.\n\n## Features\n\n- **search_arxiv**: Search papers by keyword, author, category, and/or date range\n- **search_papers**: Quick search by query text with optional category and date filters\n- **get_paper**: Fetch full metadata (title, authors, abstract, PDF link) for a specific arXiv ID\n- **get_recent**: Get the most recent papers in a given category\n- **fetch_pdf**: Download and extract full text from a paper's PDF by arXiv ID\n\n## Available Tools\n\n| Tool | Inputs | Returns |\n|------|--------|---------|\n| `search_arxiv` | `keyword`, `author`, `category`, `date_from`, `date_to`, `max_results`, `start` | Numbered list of papers with title, ID, authors, date, PDF link |\n| `search_papers` | `query`, `category`, `max_results`, `date_from` | Numbered list of matching papers with title, ID, authors, date, PDF link |\n| `get_paper` | `arxiv_id` | Title, ID, authors, published date, abstract, PDF URL |\n| `get_recent` | `category`, `max_results` | Numbered list of recent papers with title, ID, authors, date, PDF link |\n| `fetch_pdf` | `arxiv_id` | Full extracted text content of the paper PDF |\n\n## Usage\n\n### Clone and run\n\n```bash\ngit clone https://github.com/younesbensafia/arxiv-mcp-server\ncd arxiv-mcp-server\nuv run arxiv-mcp-server\n```\n\n### Test with MCP Inspector\n\n1. Run the server: `uv run arxiv-mcp-server`\n2. Open MCP Inspector or run `npx @modelcontextprotocol/inspector`\n3. Set transport to **STDIO**\n4. Command: `uv`\n5. Args: `run arxiv-mcp-server`\n6. Working directory: path to this repo\n7. Click **Connect** -- all tools appear on the left\n\n### Connect to Claude.ai\n\nAdd to your MCP settings:\n\n```json\n{\n  \"mcpServers\": {\n    \"arxiv\": {\n      \"command\": \"uv\",\n      \"args\": [\"run\", \"--directory\", \"/path/to/arxiv-mcp-server\", \"arxiv-mcp-server\"]\n    }\n  }\n}\n```\n\n## arXiv Category Codes\n\n| Code | Area |\n|------|------|\n| `cs.AI` | Artificial Intelligence |\n| `cs.CL` | Computation and Language |\n| `cs.CV` | Computer Vision and Pattern Recognition |\n| `cs.IR` | Information Retrieval |\n| `cs.LG` | Machine Learning |\n| `cs.NE` | Neural and Evolutionary Computing |\n| `cs.SE` | Software Engineering |\n| `eess.AS` | Audio and Speech Processing |\n| `math.ST` | Statistics Theory |\n| `physics.chem-ph` | Chemical Physics |\n| `physics.optics` | Optics |\n| `q-bio.BM` | Biomolecules |\n| `q-fin.ST` | Statistical Finance |\n| `quant-ph` | Quantum Physics |\n| `stat.ML` | Machine Learning (Statistics) |\n| `stat.TH` | Statistics Theory |\n\nFull list at [arxiv.org/category_taxonomy](https://arxiv.org/category_taxonomy).\n\n## Examples\n\nAsk Claude (or any MCP-compatible assistant):\n\n- \"Find the latest papers on RAG from the last 3 months\"\n- \"Summarise arxiv paper 2301.07041\"\n- \"What are the most recent cs.LG papers today?\"\n- \"Find all papers by Andrej Karpathy\"\n- \"Read the full text of 1706.03762 and explain the methodology\"\n\n> Don't have an MCP-compatible client? Try [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview) or the [MCP Inspector](https://github.com/modelcontextprotocol/inspector) with `uv run arxiv-mcp-server`.\n\n## Demo\n\n### search_papers\n\n<p float=\"left\">\n  <img src=\"assets/demo/search_papers/query.png\" width=\"48%\" />\n  <img src=\"assets/demo/search_papers/result.png\" width=\"48%\" />\n</p>\n\n### get_paper\n\n<p float=\"left\">\n  <img src=\"assets/demo/get_paper/arxiv_id.png\" width=\"48%\" />\n  <img src=\"assets/demo/get_paper/result.png\" width=\"48%\" />\n</p>\n\n### fetch_pdf\n\n<p float=\"left\">\n  <img src=\"assets/demo/fetch_pdf/arxiv_id.png\" width=\"32%\" />\n  <img src=\"assets/demo/fetch_pdf/result_1.png\" width=\"32%\" />\n  <img src=\"assets/demo/fetch_pdf/result_2.png\" width=\"32%\" />\n</p>\n\n## Contributing\n\nSee [CONTRIBUTING.md](CONTRIBUTING.md)."
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "main.py",
+    "size": 50,
+    "content": "from arxiv_mcp_server.server import main\n\nmain()\n\n"
+  },
+  "content_fetch_notes": []
+}

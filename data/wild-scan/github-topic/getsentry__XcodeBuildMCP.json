@@ -1,0 +1,39 @@
+{
+  "full_name": "getsentry/XcodeBuildMCP",
+  "html_url": "https://github.com/getsentry/XcodeBuildMCP",
+  "description": "A Model Context Protocol (MCP) server and CLI that provides tools for agent use when working on iOS and macOS projects.",
+  "topics": [
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "model-context-protocol-servers",
+    "tag-production",
+    "xcode",
+    "xcodebuild"
+  ],
+  "matched_query_topics": [
+    "mcp-server",
+    "model-context-protocol"
+  ],
+  "stars": 6064,
+  "forks": 304,
+  "open_issues": 18,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-03-09T17:31:18Z",
+  "last_pushed_at": "2026-07-11T22:02:17Z",
+  "fetched_at": "2026-07-11T22:28:47.353Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<img src=\"assets/banner.png\" alt=\"XcodeBuild MCP\" width=\"600\"/>\n\nA Model Context Protocol (MCP) server and CLI that provides tools for agent use when working on iOS and macOS projects.\n\n[![CI](https://github.com/getsentry/XcodeBuildMCP/actions/workflows/ci.yml/badge.svg)](https://github.com/getsentry/XcodeBuildMCP/actions/workflows/ci.yml)\n[![npm version](https://badge.fury.io/js/xcodebuildmcp.svg)](https://badge.fury.io/js/xcodebuildmcp) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Node.js](https://img.shields.io/badge/node->=18.x-brightgreen.svg)](https://nodejs.org/) [![Xcode 16](https://img.shields.io/badge/Xcode-16-blue.svg)](https://developer.apple.com/xcode/) [![macOS](https://img.shields.io/badge/platform-macOS-lightgrey.svg)](https://www.apple.com/macos/) [![MCP](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://modelcontextprotocol.io/) [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/getsentry/XcodeBuildMCP) [![AgentAudit Security](https://img.shields.io/badge/AgentAudit-Safe-brightgreen?logo=data:image/svg%2Bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAxTDMgNXY2YzAgNS41NSAzLjg0IDEwLjc0IDkgMTIgNS4xNi0xLjI2IDktNi40NSA5LTEyVjVsLTktNHoiLz48L3N2Zz4=)](https://www.agentaudit.dev/skills/xcodebuildmcp)\n\n## Installation\n\nXcodeBuildMCP ships as a single package with two modes: a **CLI** for direct terminal use and an **MCP server** for AI coding agents. Either install method gives you both.\n\n### Option A — Homebrew\n\n```bash\nbrew tap getsentry/xcodebuildmcp\nbrew install xcodebuildmcp\n```\n\n### Option B — npm (Node.js 18+)\n\n```bash\nnpm install -g xcodebuildmcp@latest\n```\n\nVerify either install:\n```bash\nxcodebuildmcp --help\n```\n\n### Connect your MCP client\n\nDrop-in config snippets for Cursor, Claude Code, Codex, can be found in the official docs page [MCP Clients](https://xcodebuildmcp.com/docs/clients). Most clients can also run the MCP server on demand via `npx -y xcodebuildmcp@latest mcp` without a global install.\n\n## Requirements\n\n- macOS 14.5 or later\n- Xcode 16.x or later\n- Node.js 18.x or later (not required for Homebrew installation)\n\n## Skills\n\nXcodeBuildMCP now includes two optional agent skills:\n\n- **MCP Skill**: Primes the agent with instructions on how to use the MCP server's tools (optional when using the MCP server).\n\n- **CLI Skill**: Primes the agent with instructions on how to navigate the CLI (recommended when using the CLI).\n\n\nTo install with a global binary:\n\n```bash\nxcodebuildmcp init\n```\n\nOr install directly via npx without a global install:\n\n```bash\nnpx -y xcodebuildmcp@latest init\n```\n\nFor further information on installing skills, see [Agent Skills](https://xcodebuildmcp.com/docs/skills).\n\n## Notes\n\n- XcodeBuildMCP requests xcodebuild to skip macro validation to avoid errors when building projects that use Swift Macros.\n- Device tools require code signing to be configured in Xcode. See [Device Code Signing](https://xcodebuildmcp.com/docs/device-signing).\n\n## Privacy\n\nXcodeBuildMCP uses Sentry for internal runtime error telemetry only. For details and opt-out instructions, see [Privacy & Telemetry](https://xcodebuildmcp.com/docs/privacy).\n\n## CLI\n\nXcodeBuildMCP provides a unified command-line interface. The `mcp` subcommand starts the MCP server, while all other commands provide direct terminal access to tools:\n\n```bash\n# Install globally\nnpm install -g xcodebuildmcp@latest\n\n# Start the MCP server (for MCP clients)\nxcodebuildmcp mcp\n\n# List available tools\nxcodebuildmcp tools\n\n# Build for simulator\nxcodebuildmcp simulator build --scheme MyApp --project-path ./MyApp.xcodeproj\n```\n\nCheck for updates and upgrade in place:\n\n```bash\nxcodebuildmcp upgrade --check\nxcodebuildmcp upgrade --yes\n```\n\nThe CLI uses a per-workspace daemon for stateful operations (log capture, debugging, etc.) that auto-starts when needed. See the [CLI guide](https://xcodebuildmcp.com/docs/cli) for full documentation.\n\n## Documentation\n\n- Installation: [https://xcodebuildmcp.com/docs/installation](https://xcodebuildmcp.com/docs/installation)\n- Setup: [https://xcodebuildmcp.com/docs/setup](https://xcodebuildmcp.com/docs/setup)\n- MCP clients: [https://xcodebuildmcp.com/docs/clients](https://xcodebuildmcp.com/docs/clients)\n- CLI usage: [https://xcodebuildmcp.com/docs/cli](https://xcodebuildmcp.com/docs/cli)\n- Configuration and options: [https://xcodebuildmcp.com/docs/configuration](https://xcodebuildmcp.com/docs/configuration)\n- Tools reference: [https://xcodebuildmcp.com/docs/tools](https://xcodebuildmcp.com/docs/tools)\n- Troubleshooting: [https://xcodebuildmcp.com/docs/troubleshooting](https://xcodebuildmcp.com/docs/troubleshooting)\n- Privacy: [https://xcodebuildmcp.com/docs/privacy](https://xcodebuildmcp.com/docs/privacy)\n- Skills: [https://xcodebuildmcp.com/docs/skills](https://xcodebuildmcp.com/docs/skills)\n- Contributing: [https://xcodebuildmcp.com/docs/contributing](https://xcodebuildmcp.com/docs/contributing)\n\n## Licence\n\nThis project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.\nFor third-party licensing notices see the [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES) file for details.\nFor npm package attributions see the [THIRD_PARTY_PACKAGE_LICENSES](THIRD_PARTY_PACKAGE_LICENSES.md) file for details.\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"sentry\": {\n      \"type\": \"http\",\n      \"url\": \"https://mcp.sentry.dev/mcp\"\n    },\n    \"xcodebuildmcp-dev\": {\n      \"type\": \"stdio\",\n      \"command\": \"node\",\n      \"args\": [\n        \"../../build/cli.js\",\n        \"mcp\"\n      ],\n      \"env\": {\n        \"XCODEBUILDMCP_DEBUG\": \"true\",\n        \"XCODEBUILDMCP_SENTRY_DISABLED\": \"true\",\n        \"XCODEBUILDMCP_IOS_TEMPLATE_PATH\": \"../../../XcodeBuildMCP-iOS-Template\",\n        \"XCODEBUILDMCP_MACOS_TEMPLATE_PATH\": \"../../../XcodeBuildMCP-macOS-Template\"\n      }\n    }\n  }\n}"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

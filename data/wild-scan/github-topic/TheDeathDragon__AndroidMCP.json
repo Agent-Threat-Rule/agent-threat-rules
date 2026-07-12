@@ -1,0 +1,32 @@
+{
+  "full_name": "TheDeathDragon/AndroidMCP",
+  "html_url": "https://github.com/TheDeathDragon/AndroidMCP",
+  "description": "MCP server for driving Android devices over ADB. C# .NET 8, direct ADB protocol, on-device agent for   fast UI ops, multi-device by serial.",
+  "topics": [
+    "adb",
+    "android",
+    "mcp",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 2,
+  "forks": 1,
+  "open_issues": 0,
+  "language": "C#",
+  "license": "Apache-2.0",
+  "default_branch": "main",
+  "created_at": "2026-05-13T03:49:32Z",
+  "last_pushed_at": "2026-06-18T08:57:53Z",
+  "fetched_at": "2026-07-12T00:38:32.731Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# AndroidMCP\n\n[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)\n[![Release](https://img.shields.io/github/v/release/TheDeathDragon/AndroidMCP)](https://github.com/TheDeathDragon/AndroidMCP/releases)\n\n[English](README.md) | [简体中文](README.zh.md)\n\nMCP server for Android 11+ devices. C# .NET 8.\n\n## Install\n\nPowerShell:\n\n```powershell\niwr https://raw.githubusercontent.com/TheDeathDragon/AndroidMCP/main/scripts/install.ps1 | iex\n```\n\nOr auto-merge into `~/.claude.json`:\n\n```powershell\n& ([scriptblock]::Create((iwr https://raw.githubusercontent.com/TheDeathDragon/AndroidMCP/main/scripts/install.ps1))) -AutoConfig\n```\n\nThe installer fetches the latest release, extracts to\n`%LOCALAPPDATA%\\Programs\\android-mcp\\`, and prints the Claude Code config\n(or merges it with `-AutoConfig`).\n\nAfter install, `/reload-plugins` in Claude Code to load the tools.\n\nRequires `adb` on PATH.\n\n## Claude Code config\n\n`-AutoConfig` writes this for you. Manual:\n\n```json\n{\n  \"mcpServers\": {\n    \"android-mcp\": {\n      \"type\": \"stdio\",\n      \"command\": \"C:/Users/<you>/AppData/Local/Programs/android-mcp/android-mcp.exe\"\n    }\n  }\n}\n```\n\n## Tools\n\n| Name                  | Purpose                                            |\n|-----------------------|----------------------------------------------------|\n| `list_devices`        | enumerate devices visible to adb                   |\n| `screenshot`          | PNG via on-device agent                            |\n| `dump_hierarchy`      | XML / lean JSON view tree                          |\n| `device_info`         | device info                                        |\n| `click`               | tap (x, y)                                         |\n| `long_press`          | hold (x, y) for `duration_ms`                      |\n| `swipe`               | swipe with duration                                |\n| `input_text`          | type ASCII into focused field                      |\n| `key_event`           | KEYCODE by name or number                          |\n| `shell`               | arbitrary `adb shell` (60 s timeout)               |\n| `push_file`           | host -> device file copy                           |\n| `pull_file`           | device -> host file copy                           |\n| `install_apk`         | push + `pm install`                                |\n| `list_packages`       | installed packages with metadata                   |\n| `get_package_info`    | single-app summary                                 |\n| `launch_app`          | `monkey -p <pkg>` launcher intent                  |\n| `stop_app`            | `am force-stop`                                    |\n| `clear_app_data`      | `pm clear`                                         |\n| `set_package_enabled` | `pm enable` / `pm disable-user`                    |\n| `get_top_activity`    | foreground component from `dumpsys activity`       |\n| `screen_size`         | display W×H from `wm size`                         |\n| `swipe_direction`     | directional swipe sized to the screen              |\n| `scroll_to_edge`      | fling to edge                                      |\n| `find_element`        | selector → matching nodes                          |\n| `tap_element`         | tap element center                                 |\n| `wait_for_element`    | poll hierarchy until match or timeout              |\n| `scroll_until_visible`| scroll loop with stability + edge detection        |\n| `press_home`          | KEYCODE_HOME                                       |\n| `press_back`          | KEYCODE_BACK                                       |\n| `press_recents`       | KEYCODE_APP_SWITCH                                 |\n| `wake_unlock`         | wake screen + `wm dismiss-keyguard` (no PIN)       |\n| `clear_recents`       | remove non-home tasks via `am stack remove`        |\n\nEvery tool except `list_devices` needs `serial`. Call `list_devices` first.\nIf the device may be asleep or on the lockscreen, call `wake_unlock` once.\n\n## Tips\n\n- Prefer `find_element` / `tap_element` over `dump_hierarchy` + `click`.\n- `dump_hierarchy` returns lean JSON by default; pass `format=xml` for raw.\n- XPath siblings read labeled values: `//node[@text='X']/following-sibling::node[1]`.\n- `screenshot` is for visual checks, not text extraction.\n\n`initialize.result.instructions` ships a condensed version of these tips\nso MCP-aware clients inject them into the model's system prompt.\n\n## Run standalone\n\n```\n%LOCALAPPDATA%\\Programs\\android-mcp\\android-mcp.exe                # stdio\n%LOCALAPPDATA%\\Programs\\android-mcp\\android-mcp.exe --http 9460    # HTTP + SSE\n```\n\nFlags: `--debug`, `--quiet`.\n\n## Build from source\n\n```\ngit clone --recursive https://github.com/TheDeathDragon/AndroidMCP.git\ncd AndroidMCP\nagent\\build.bat\npublish.bat\n```\n\n## License\n\n[Apache 2.0](LICENSE)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "full_name": "isakskogstad/Skolverket-MCP",
+  "html_url": "https://github.com/isakskogstad/Skolverket-MCP",
+  "description": "MCP server for Swedish National Agency for Education (Skolverket) open data. Tuned for LLMs to query, parse, and integrate info, data, and stats from three public API endpoints.",
+  "topics": [
+    "ai",
+    "anthropic",
+    "api",
+    "chatgpt",
+    "claude",
+    "education",
+    "llm",
+    "mcp-server",
+    "mcp-servers",
+    "open-source",
+    "openai",
+    "skola",
+    "skolverket",
+    "skolverket-api",
+    "statistik",
+    "sverige",
+    "sweden",
+    "sweden-data",
+    "swedish",
+    "utbildning"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 10,
+  "forks": 7,
+  "open_issues": 2,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2025-10-30T00:10:12Z",
+  "last_pushed_at": "2026-04-22T09:20:56Z",
+  "fetched_at": "2026-07-11T23:56:16.647Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<img width=\"700\" height=\"220\" alt=\"Skolverket MCP logo\" src=\"https://github.com/user-attachments/assets/74563bdb-eea4-4276-a58c-ec89b11806ed\" />\n\n# Skolverket MCP Server\n\n[![MCP Registry](https://img.shields.io/badge/MCP%20Registry-Published-brightgreen)](https://registry.modelcontextprotocol.io/servers/io.github.isakskogstad/Skolverket-MCP)\n[![MCP Protocol](https://img.shields.io/badge/MCP-2025--03--26-green)](https://modelcontextprotocol.io/)\n[![License](https://img.shields.io/badge/license-MIT-orange)](LICENSE)\n\nEn [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server som ger AI-assistenter tillgång till **alla Skolverkets öppna API:er** – Läroplan API, Skolenhetsregistret och Planned Educations API. Genom att ansluta till MCP-servern kan du med hjälp av AI söka, hitta, jämföra och analysera all data och statistik som finns tillgängligt i Skolverkets öppna databaser.\n\n---\n\n## Snabbstart\n\nInstallera lokalt enligt guide nedan. Servern körs via stdio-transport och integreras sedan i din MCP-klient (Claude Desktop, Claude Code, Codex, Gemini, Cursor m.fl.).\n\n### Installation från källkod\n\n```bash\ngit clone https://github.com/isakskogstad/Skolverket-MCP.git\ncd Skolverket-MCP\nnpm install\nnpm run build\n```\n\nNotera sökvägen till `dist/index.js` — den används i klientkonfigurationerna nedan.\n\n<details>\n<summary><strong>Klientkonfiguration</strong></summary>\n\n<details>\n<summary><strong>Claude Desktop</strong></summary>\n\n1. I Claude Desktop: Settings → **Developer** (inte Connectors!)\n2. Klicka **\"Edit Config\"**\n3. Lägg till i JSON-filen:\n\n```json\n{\n  \"mcpServers\": {\n    \"skolverket\": {\n      \"command\": \"node\",\n      \"args\": [\"/absolut/sökväg/till/Skolverket-MCP/dist/index.js\"]\n    }\n  }\n}\n```\n\n4. Spara och starta om Claude Desktop.\n\n**Notera:** Lokal installation använder stdio-transport via Developer-sektionen, inte Connectors.\n\n</details>\n\n<details>\n<summary><strong>Claude Code</strong></summary>\n\n```bash\nclaude mcp add skolverket node /absolut/sökväg/till/Skolverket-MCP/dist/index.js\n```\n\n**Verifiera:** `claude mcp list`\n\n</details>\n\n<details>\n<summary><strong>OpenAI Codex</strong></summary>\n\n**`~/.codex/config.toml`:**\n\n```toml\n[mcp.skolverket]\ncommand = \"node\"\nargs = [\"/absolut/sökväg/till/Skolverket-MCP/dist/index.js\"]\ntransport = \"stdio\"\n```\n\n**Windows:**\n\n```toml\n[mcp.skolverket]\ncommand = \"node\"\nargs = [\"C:\\\\Users\\\\username\\\\Skolverket-MCP\\\\dist\\\\index.js\"]\ntransport = \"stdio\"\n```\n\n</details>\n\n<details>\n<summary><strong>Google Gemini / Cursor / övriga stdio-klienter</strong></summary>\n\nAnvänd samma mönster — peka klienten på `node` med argumentet `/absolut/sökväg/till/Skolverket-MCP/dist/index.js` och transport `stdio`.\n\n```json\n{\n  \"mcpServers\": {\n    \"skolverket\": {\n      \"command\": \"node\",\n      \"args\": [\"/absolut/sökväg/till/Skolverket-MCP/dist/index.js\"]\n    }\n  }\n}\n```\n\n</details>\n\n</details>\n\n<img width=\"273\" height=\"46\" alt=\"claudecode openaicodex googlegemini\" src=\"https://github.com/user-attachments/assets/c4c73367-e0f5-408a-a074-83b7ce45805c\" />\n\n---\n\n## Funktioner\n\nServern kopplar till tre av Skolverkets öppna API:er:\n\n**1. Syllabus API**\nLäroplaner (LGR22, GY25 m.m.), ämnen, kurser, gymnasieprogram med kunskapskrav och centralt innehåll.\n\n**2. Skolenhetsregistret**\nSök och filtrera skolor, förskolor och andra skolenheter. Inkluderar aktiva, nedlagda och vilande enheter.\n\n**3. Planned Educations API**\nYrkeshögskola, SFI, Komvux och andra vuxenutbildningar med startdatum, platser och studietakt.\n\n#### Verktyg (tools)\n\nMCP-servern implementerar MCP-protokollet med stöd för:\n\n- **41 verktyg** – 17 Syllabus API, 4 School Units, 17 Planned Educations (inkl. gymnasieutbildningar, statistik, dokument), 3 Support Data, 1 diagnostik\n- **4 resurser** – API-info, skoltyper, läroplanstyper, kurs- och ämneskoder\n- **5 promptmallar** – Kursanalys, versionsjämförelser, vuxenutbildning, studievägledning, kursplanering\n\n---\n\n## Användningsområden\n\n### För Lärare\n\n- **Kursplanering:** \"Jämför kunskapskraven E och A för Svenska 1 och ge förslag på bedömningsuppgifter\"\n- **Tematiskt arbete:** \"Hitta alla kurser i gymnasiet som har hållbarhet i sitt centrala innehåll\"\n- **Bedömning:** \"Visa alla kunskapskrav för betyg C i Biologi 1 och förklara skillnaderna mot B\"\n\n### För elever & föräldrar\n\n- **Programval:** \"Jämför Naturvetenskapsprogrammet och Teknikprogrammet - vilka kurser är obligatoriska?\"\n- **Kursval:** \"Vilka matematikkurser finns på gymnasiet och vilka bygger på varandra?\"\n- **Betygskriterier:** \"Vad krävs för att få A i Historia 1a1?\"\n\n### För undersökningar & analyser\n\n- **Skolregister:** \"Hitta alla aktiva gymnasieskolor i Stockholms län\"\n- **Kursutbud:** \"Vilka skolor erbjuder Ekonomiprogrammet i Malmö?\"\n- **Läroplansanalys:** \"Analysera hur begreppet 'programmering' har utvecklats i läroplaner 2011-2025\"\n\nhttps://github.com/user-attachments/assets/8eefa26c-4162-49a5-adf0-82677a663b19\n\n---\n\n## Övrigt\n\n**Skapad av:** [Isak Skogstad](mailto:isak.skogstad@me.com) • [X/Twitter](https://x.com/isakskogstad)\n\nData från Skolverkets öppna API:er.\n\nVillkor: Fri användning\n\n---\n"
+  },
+  "descriptor_file": {
+    "path": "server.json",
+    "content": "{\n  \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json\",\n  \"name\": \"io.github.isakskogstad/skolverket-mcp\",\n  \"title\": \"Skolverket MCP\",\n  \"description\": \"MCP server for Skolverket's open APIs - Curriculum, School Units, and Adult Education\",\n  \"repository\": {\n    \"url\": \"https://github.com/isakskogstad/Skolverket-MCP\",\n    \"source\": \"github\"\n  },\n  \"version\": \"2.7.0\"\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

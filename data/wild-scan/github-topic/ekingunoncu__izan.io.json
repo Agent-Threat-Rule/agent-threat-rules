@@ -1,0 +1,42 @@
+{
+  "full_name": "ekingunoncu/izan.io",
+  "html_url": "https://github.com/ekingunoncu/izan.io",
+  "description": "Turn Any Browser Action & Data Extraction into an AI Tool in 60 Seconds",
+  "topics": [
+    "ai",
+    "ai-agent",
+    "ai-assistant",
+    "browser-automation",
+    "browser-extension",
+    "chrome-extension",
+    "llm",
+    "mcp",
+    "model-context-protocol",
+    "multi-provider",
+    "tool"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 29,
+  "forks": 4,
+  "open_issues": 2,
+  "language": "TypeScript",
+  "license": "NOASSERTION",
+  "default_branch": "main",
+  "created_at": "2026-02-07T13:59:30Z",
+  "last_pushed_at": "2026-04-01T00:05:55Z",
+  "fetched_at": "2026-07-11T23:42:52.173Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<p align=\"center\">\n  <img src=\"thumbnail.png\" alt=\"izan.io\" width=\"280\" />\n</p>\n\n<h1 align=\"center\">izan.io</h1>\n<p align=\"center\">\n  <strong>Chrome Extension MCP Server - Give Any AI the Power to Use a Browser</strong>\n</p>\n\n<p align=\"center\">\n  <a href=\"https://github.com/ekingunoncu/izan.io/stargazers\">\n    <img src=\"https://img.shields.io/github/stars/ekingunoncu/izan.io?style=social&label=Star\" alt=\"GitHub stars\" />\n  </a>\n  &nbsp;&nbsp;\n  <img src=\"https://img.shields.io/badge/license-AGPL--3.0-blue.svg\" alt=\"AGPL-3.0\" />\n  <img src=\"https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white\" alt=\"TypeScript\" />\n  <img src=\"https://img.shields.io/badge/MCP-Protocol-green\" alt=\"MCP\" />\n</p>\n\n<p align=\"center\">\n  <a href=\"README.tr.md\">Turkce</a> · <a href=\"README.de.md\">Deutsch</a>\n</p>\n\n<p align=\"center\">\n  <a href=\"https://izan.io\"><strong>izan.io</strong></a> · <a href=\"https://zihin.io\"><strong>Tool Marketplace</strong></a>\n</p>\n\n---\n\n## What is izan.io?\n\nizan.io is a Chrome extension that turns your browser into an **MCP server**. Any MCP client - Claude Desktop, Cursor, VS Code, Claude Code - can connect and control your browser through tools.\n\n- **Write tools** in JavaScript using the `browser` API (click, type, navigate, extract data)\n- **Install tools** from the [zihin.io](https://zihin.io) community marketplace\n- **Your sessions stay yours** - the extension runs inside your authenticated browser, no cookie hacks needed\n\n---\n\n## Quick Start\n\n**1. Install the Chrome Extension** from the Chrome Web Store.\n\n**2. Add to your MCP client config:**\n\n```json\n{\n  \"mcpServers\": {\n    \"izan\": {\n      \"command\": \"npx\",\n      \"args\": [\"izan-mcp\"]\n    }\n  }\n}\n```\n\nWorks with Claude Desktop, Cursor, VS Code, Claude Code, and any MCP client that supports stdio.\n\n**3. Done.** The extension connects automatically. Built-in tools (`web_fetch`, `accessibility_snapshot`) are ready to use. Open the side panel to create your own tools or install from the marketplace.\n\n---\n\n## Architecture\n\n```\nMCP Client (Claude Desktop, Cursor, VS Code)\n  | stdio (JSON-RPC)\n  v\npackages/bridge/  (izan-mcp CLI)\n  | WebSocket (localhost:3717)\n  v\nChrome Extension (packages/extension/)\n  | CDP (chrome.debugger)\n  v\nBrowser Tab (any website)\n```\n\n```\nizan.io/\n├── apps/\n│   ├── web/              # Landing page + docs (izan.io)\n│   └── zihin.io/         # Tool marketplace (zihin.io)\n├── packages/\n│   ├── extension/        # Chrome extension (MCP server, side panel, CDP automation)\n│   └── bridge/           # Bridge CLI (stdio <-> WebSocket)\n```\n\n---\n\n## Writing Tools\n\nTools are JavaScript async functions with a `browser` API:\n\n```javascript\nasync (params, browser) => {\n  await browser.open(`https://example.com/search?q=${params.query}`)\n  await browser.waitForSelector('.result')\n  const title = await browser.getText('.result:first-child .title')\n  await browser.close()\n  return { title }\n}\n```\n\nCreate tools in the extension side panel or submit to the [zihin.io marketplace](https://zihin.io).\n\n---\n\n## Development\n\n```bash\ngit clone https://github.com/ekingunoncu/izan.io.git\ncd izan.io\nnpm install\nnpm run build\n```\n\nLoad `packages/extension/dist` as an unpacked extension in Chrome (`chrome://extensions`, developer mode).\n\n---\n\n## License\n\n**AGPL-3.0** - See [LICENSE](./LICENSE).\n\n---\n\n<p align=\"center\">\n  <strong>izan.io</strong> - Give any AI the power to use a browser\n</p>\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"izan\": {\n      \"command\": \"node\",\n      \"args\": [\"packages/bridge/dist/cli.js\"]\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

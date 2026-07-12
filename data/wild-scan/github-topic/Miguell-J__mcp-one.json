@@ -1,0 +1,41 @@
+{
+  "full_name": "Miguell-J/mcp-one",
+  "html_url": "https://github.com/Miguell-J/mcp-one",
+  "description": "MCP-one is a central server that connects multiple independent MCP servers and exposes a unified interface to clients (LLMs or applications).",
+  "topics": [
+    "agents",
+    "ai",
+    "ai-agents",
+    "docker",
+    "mcp",
+    "mcp-client",
+    "mcp-server",
+    "mcp-servers",
+    "pydantic",
+    "python",
+    "server",
+    "yaml",
+    "yaml-configuration"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 5,
+  "forks": 1,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2025-07-18T20:57:11Z",
+  "last_pushed_at": "2026-05-19T22:57:12Z",
+  "fetched_at": "2026-07-11T23:58:37.225Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align=\"center\">\n    <h1> ✨ MCP one – A Unified Hub for MCP Servers </h1>\n</div>  \n\n<p align=\"center\">\n  <img src=\"https://img.shields.io/badge/Status-MVP%20Ready-brightgreen?style=for-the-badge\" alt=\"status\"/>\n  <img src=\"https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python&logoColor=white\" alt=\"python\"/>\n  <img src=\"https://img.shields.io/badge/FastAPI-0.110+-009688?style=for-the-badge&logo=fastapi&logoColor=white\" alt=\"fastapi\"/>\n  <img src=\"https://img.shields.io/badge/MCP-Protocol-orange?style=for-the-badge\" alt=\"mcp\"/>\n</p>\n\n<p align=\"center\">\n<b>MCP one</b> is a lightweight, extensible, and blazing-fast hub to manage multiple MCPs (Model Context Protocol) servers in a single place.  \n</p>\n\n<div align=\"center\">\n<img src=\"mcp-one-img.png\" alt=\"Logo MCP One\" width=\"400\">\n</div>\n\n---\n\n## 🚀 Key Features\n\n✅ **Dynamic Integration:** Add or remove MCP servers simply by editing `config.yaml`.\n✅ **M × N → M + N:** Connect clients to a single hub instead of integrating each MCP directly.\n✅ **Unified API:** Standardized `/tools`, `/call`, and `/servers` endpoints, regardless of underlying MCP differences.\n✅ **Dynamic Endpoint Mapping:** Each MCP can expose custom routes or payloads. Map them with `endpoints`, `response_map`, and `payload_map`.\n✅ **Health Monitoring:** Built-in `/health`, `/ready`, and `/status` to monitor all connected servers.\n✅ **Operational Hardening (Phase 4):** API-key/Bearer auth, rate limiting, circuit breaker, and Prometheus-friendly metrics.\n✅ **Async & Scalable:** Built with FastAPI, `httpx`, and asyncio for top performance.\n✅ **Plug & Play:** Works with any MCP server (GitHub MCP, SQL MCP, Jupyter MCP, or your own).\n\n---\n\n## 🏗️ Architecture\n\n```text\n           ┌───────────────────┐\n           │    MCP one API    │◄──── Clients (LLMs, Apps, Services)\n           └─────────┬─────────┘\n                     │\n      ┌──────────────┼───────────────┐\n      │              │               │\n┌────────────┐ ┌────────────┐ ┌────────────┐\n│ MCP Server │ │ MCP Server │ │ MCP Server │\n│   (GitHub) │ │   (SQL)    │ │   (Jupyter)│\n└────────────┘ └────────────┘ └────────────┘\n```\n\n💡 Each MCP server can define its own routes and payloads.\n**MCP Hub normalizes everything.**\n\n---\n\n## ⚡ Getting Started\n\n### 🔧 Prerequisites\n\n* **Python 3.10+**\n* A running MCP server (or use the included `dummy_mcp` example)\n\n### 📦 Installation\n\n```bash\ngit clone https://github.com/<your-user>/mcp-one.git\ncd mcp-one\npip install -r requirements.txt\n```\n\n---\n\n## ⚙️ Configuration\n\nAll server integrations are defined in `src/config.yaml`:\n\n```yaml\nservers:\n  - name: dummy\n    url: http://localhost:7000\n    description: Dummy MCP for testing\n    enabled: true\n    timeout: 30\n    retry_attempts: 3\n    endpoints:\n      health: /health\n      tools: /tools\n      call: /call\n    response_map:\n      tools_key: \"\"                 # empty means the response is a plain list\n      tool_name_field: \"name\"\n      tool_desc_field: \"description\"\n    payload_map:\n      tool_field: \"tool\"\n      args_field: \"arguments\"\n\nhub:\n  host: \"0.0.0.0\"\n  port: 8000\n  debug: true\n  log_level: \"INFO\"\n```\n\n---\n\n## 🚦 Running MCP Hub\n\nStart the hub:\n\n```bash\ncd src\nuvicorn app.main:app --reload\n```\n\n**MCP Hub will be available at:**\n\n```\nhttp://localhost:8000\n```\n\n---\n\n## 📡 API Reference\n\n| Endpoint           | Method | Description                                   |\n| ------------------ | ------ | --------------------------------------------- |\n| `/`                | GET    | Root information about the hub                |\n| `/health`          | GET    | Health status of the hub                      |\n| `/status`          | GET    | Detailed status (servers, uptime, tools)      |\n| `/servers`         | GET    | List registered MCP servers                   |\n| `/servers/refresh` | POST   | Force refresh of all servers and tools        |\n| `/tools`           | GET    | List all available tools (across all servers) |\n| `/call`            | POST   | Execute a tool on a specific server           |\n| `/ready`           | GET    | Readiness probe for orchestrators             |\n| `/metrics`         | GET    | JSON runtime metrics                           |\n| `/metrics/prometheus` | GET | Prometheus plaintext metrics                  |\n\n### 🛠 Example: Call a tool\n\n```bash\ncurl -X POST http://localhost:8000/call \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"tool\": \"dummy.add_numbers\",\n    \"arguments\": {\"a\": \"5\", \"b\": \"7\"}\n  }'\n```\n\n✅ **Response:**\n\n```json\n{\n  \"success\": true,\n  \"result\": {\"sum\": 12},\n  \"server_name\": \"dummy\",\n  \"execution_time_ms\": 8.37\n}\n```\n\n---\n\n\n## 🔒 Production Security & Reliability (Phase 4)\n\nYou can now configure request protection and resiliency controls:\n\n```yaml\nhub:\n  api_key: \"your-shared-key\"        # optional\n  bearer_token: \"your-bearer-token\" # optional\n\nrate_limit:\n  enabled: true\n  requests_per_minute: 100\n\nservers:\n  - name: dummy\n    url: http://localhost:7000\n    retry_attempts: 3\n    circuit_breaker_failures: 5\n    circuit_breaker_reset_seconds: 30\n```\n\nIf `api_key` is configured, clients must send `x-api-key`.\nIf `bearer_token` is configured, clients must send `Authorization: Bearer <token>`.\n\n---\n\n## 🧠 LangChain Integration: Is it a good idea?\n\nYes — integrating with LangChain is usually a smart next step **if** you need orchestration, memory, and tool routing for multi-step agents.\n\nGood reasons to integrate:\n- Reuse MCP one as a single tool gateway for multiple agents.\n- Simplify tool discovery (`/tools`) and invocation (`/call`) in agent chains.\n- Keep MCP server changes decoupled from your LangChain app.\n\nWhen to delay:\n- If your use-case is single-step and deterministic, direct API usage may stay simpler.\n- If latency budget is tight, validate chain overhead first.\n\nRecommended pattern:\n1. Wrap MCP one as a custom LangChain Tool provider.\n2. Cache `/tools` with refresh TTL.\n3. Route all tool calls through `/call` with retry + circuit-breaker awareness.\n4. Export `/metrics/prometheus` to your observability stack.\n\n---\n\n## 🧩 Extending MCP Hub\n\nMCP Hub supports **dynamic endpoint mappings**.\nTo add a new MCP server:\n\n1. Add a new block in `config.yaml` with `endpoints`, `response_map`, and `payload_map`.\n2. Restart the hub and refresh:\n\n   ```bash\n   curl -X POST http://localhost:8000/servers/refresh\n   ```\n\n3. 🎉 Your new tools are now available through `/tools` and `/call`.\n\n---\n\n## 🌟 Why MCP one?\n\n✔️ **Saves Integration Effort:** Forget wiring M×N connections for each client.\n✔️ **Centralized Control:** One place to monitor, configure, and call tools.\n✔️ **Future-Proof:** Add new MCP servers without changing code.\n✔️ **Ready for Scale:** Designed with extensibility and high throughput in mind.\n\n---\n\n## 🤝 Contributing\n\nWe welcome contributions!\nCheck out [CONTRIBUTING.rst](CONTRIBUTING.rst) for guidelines.\n\n---\n\n## 📜 License\n\nThis project is licensed under the [MIT License](LICENSE).\n\n---\n\n<p align=\"center\">\nMade by Miguel to the Open Source community.\n</p>\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

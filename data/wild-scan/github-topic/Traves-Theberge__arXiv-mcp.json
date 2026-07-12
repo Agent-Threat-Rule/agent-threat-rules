@@ -1,0 +1,35 @@
+{
+  "full_name": "Traves-Theberge/arXiv-mcp",
+  "html_url": "https://github.com/Traves-Theberge/arXiv-mcp",
+  "description": "Connect your LLMs directly to arXiv! A fully customized MCP server featuring semantic paper discovery, automated citation generation, and direct PDF downloads.",
+  "topics": [
+    "ai",
+    "ai-tools",
+    "arvix",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 2,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "JavaScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-02-28T21:05:18Z",
+  "last_pushed_at": "2026-02-28T22:33:03Z",
+  "fetched_at": "2026-07-12T00:36:59.855Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# arXiv MCP Server\n\nA Model Context Protocol (MCP) server that provides AI assistants with a seamless, programmatic interface to search and read academic papers from the open-access [arXiv](https://arxiv.org/) repository.\n\nThis project is AI-Optimized, meaning the returned data is carefully formatted to remain within context windows and provide exactly what large language models need for efficient, hallucination-free research.\n\n## Documentation\n* **[API Documentation Focus](docs/api.md)**: Detailed breakdown of the arXiv API tools, parameters, and rate limit protections.\n* **[Client Configurations](client-configs/README.md)**: Additional examples for running this server on different AI Clients.\n* **[Agent Skill Pack](skills/arxiv-research/SKILL.md)**: An official `agentskills.io` compliant instruction profile to teach AI assistants the most efficient way to chain these `arxiv_*` MCP tools.\n\n## Features & Tools\n\n*   **`arxiv_search`**: Fast discovery tool. Pass a search string (like `\"quantum gravity\"`) and get a lightweight list of IDs, Titles, and Authors.\n*   **`arxiv_search_trending_papers`**: Retrieves the newest papers for a specific category without keywords.\n*   **`arxiv_search_related_papers`**: Semantic discovery tool to find papers related to a specific `paper_id`.\n*   **`arxiv_get_paper_details`**: In-depth reading tool. Pass a paper ID to retrieve the full abstract, categories, and author metadata neatly formatted in Markdown.\n*   **`arxiv_get_paper_summary`**: Provides an AI-ready prompt wrapper to generate a rapid summary of the thesis, methodology, and limitations of a paper.\n*   **`arxiv_get_paper_citations`**: Generates a perfectly formatted citation in BibTeX, APA, or MLA format for any paper.\n*   **`arxiv_download_paper`**: Direct integration tool. Pass a paper ID and a local system path to have the MCP server automatically download the full PDF to your machine.\n\n## Installation\n\nThis server is written in TypeScript and runs via `node`.\n\n1.  **Clone this repository** (or install via your preferred package manager).\n2.  **Install dependencies**:\n    ```bash\n    npm install\n    ```\n3.  **Build the TypeScript project**:\n    ```bash\n    npm run build\n    ```\n\n## Usage\n\nThis server communicates over standard input/output (`stdio`). You can integrate it natively via Node or run it completely isolated using Docker.\n\n### Native Node.js \n\nUse the following command configuration in your MCP client:\n```bash\nnode /path/to/arxic-mcp/build/index.js\n```\n\n### Docker \n\nWe provide a lightweight Alpine-based container. First, build the image:\n```bash\ndocker build -t arxic-mcp .\n```\n\nThen, run your MCP client using this command configuration:\n```bash\ndocker run -i --rm -v /home/user/Downloads:/home/user/Downloads arxic-mcp\n```\n*(Note: Passing `-v` ensures the `download_pdf` tool has permission to save files to your local host machine!)*\n\n## Client Configurations\n\nYou can add this server to any MCP-compatible client. \n\n> **Important**: Replace `/absolute/path/to/` with the actual path on your system.\n\n### Option 1: Docker (Recommended)\nThis method ensures the `arxiv_download_paper` tool has permission to save PDFs to your machine via the `-v` volume mount. Because Docker handles permissions differently across operating systems, please use the correct configuration for your machine:\n\n#### Linux / macOS\nIf you use Mac or Linux, you must pass your User ID `-u 1000:1000` (or `501:20` for some Macs) so the downloaded PDF isn't locked as a `root` file.\n\n```json\n{\n  \"mcpServers\": {\n    \"arxic-mcp\": {\n      \"command\": \"docker\",\n      \"args\": [\n        \"run\",\n        \"-i\",\n        \"--rm\",\n        \"-u\",\n        \"1000:1000\",\n        \"-v\",\n        \"/Users/yourname/Downloads:/Users/yourname/Downloads\", \n        \"arxic-mcp\"\n      ]\n    }\n  }\n}\n```\n\n#### Windows (WSL2 / Docker Desktop)\nWindows Docker Desktop generally handles file mount translations automatically. You can safely omit the User ID flag, but be sure to use the proper `/c/Users/...` or WSL absolute path format.\n\n```json\n{\n  \"mcpServers\": {\n    \"arxic-mcp\": {\n      \"command\": \"docker\",\n      \"args\": [\n        \"run\",\n        \"-i\",\n        \"--rm\",\n        \"-v\",\n        \"/c/Users/yourname/Downloads:/c/Users/yourname/Downloads\", \n        \"arxic-mcp\"\n      ]\n    }\n  }\n}\n```\n\n### Option 2: Native Node.js\nIf you prefer running natively without Docker:\n\n```json\n{\n  \"mcpServers\": {\n    \"arxic-mcp\": {\n      \"command\": \"node\",\n      \"args\": [\n        \"/absolute/path/to/arxic-mcp/build/index.js\"\n      ]\n    }\n  }\n}\n```\n\n> **Pro-Tip**: Running natively enables the `arxiv_download_paper` tool to save PDFs to *any* folder on your actual system (like `~/Downloads`), removing the need to configure complex volume mounts!\n\n### IDE Specific Instructions\n*   **Antigravity**: Add the JSON block above to your local `.gemini/` configuration file.\n*   **Claude Desktop**: Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (Mac) or `%APPDATA%\\Claude\\claude_desktop_config.json` (Windows).\n*   **Cursor**: Navigate to Settings > Features > MCP Servers. Add a new command server using the raw commands above (e.g., `node /path/to/index.js`).\n*   **Claude Code (CLI)**: Run `claude mcp add arxic-mcp -- node /absolute/path/to/arxic-mcp/build/index.js`\n*   **Windsurf**: Add to `~/.codeium/windsurf/mcp_config.json`\n*   **Zed**: Add to `settings.json` under `\"experimental.mcp\"`\n\n## Attribution\n*Thank you to arXiv for use of its open access interoperability.* This project acknowledges and respects the hard work of the arXiv team and the scientific community they support.\n\n## License\n[MIT](LICENSE)\n\n---\n*Made with ❤️ by Traves Theberge*\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

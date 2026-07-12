@@ -1,0 +1,43 @@
+{
+  "full_name": "Oluwatunmise-olat/mcp-server-logs-sieve",
+  "html_url": "https://github.com/Oluwatunmise-olat/mcp-server-logs-sieve",
+  "description": "A Model Context Protocol (MCP) server that enables AI assistants to efficiently filter and analyze Cloud Platform logs by specific prefixes and patterns.",
+  "topics": [
+    "aws-cloudwatch",
+    "azure",
+    "azuremonitor",
+    "cloud-providers",
+    "datadog",
+    "elasticsearch",
+    "gcp",
+    "grafana-loki",
+    "mcp-server",
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-servers",
+    "mcp-tools"
+  ],
+  "stars": 3,
+  "forks": 1,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-05-28T02:50:15Z",
+  "last_pushed_at": "2026-04-22T13:13:42Z",
+  "fetched_at": "2026-07-12T00:02:44.381Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# mcp-server-logs-sieve\n\n[![npm version](https://img.shields.io/npm/v/mcp-server-logs-sieve.svg)](https://www.npmjs.com/package/mcp-server-logs-sieve)\n[![npm downloads](https://img.shields.io/npm/dm/mcp-server-logs-sieve.svg)](https://www.npmjs.com/package/mcp-server-logs-sieve)\n[![CI](https://img.shields.io/github/actions/workflow/status/Oluwatunmise-olat/mcp-server-logs-sieve/ci.yml?label=CI)](https://github.com/Oluwatunmise-olat/mcp-server-logs-sieve/actions/workflows/ci.yml)\n[![license](https://img.shields.io/npm/l/mcp-server-logs-sieve.svg)](https://www.npmjs.com/package/mcp-server-logs-sieve)\n[![mcp-server-logs-sieve MCP server](https://glama.ai/mcp/servers/Oluwatunmise-olat/mcp-server-logs-sieve/badges/score.svg)](https://glama.ai/mcp/servers/Oluwatunmise-olat/mcp-server-logs-sieve)\n[![mcp-server-logs-sieve MCP server](https://glama.ai/mcp/servers/Oluwatunmise-olat/mcp-server-logs-sieve/badges/card.svg)](https://glama.ai/mcp/servers/Oluwatunmise-olat/mcp-server-logs-sieve)\n\n`mcp-server-logs-sieve` is an MCP server that lets AI assistants query logs directly from your observability backend.\n\nAsk debugging questions in plain language, and let Logs Sieve pull the exact logs and context for you.\n\n## Why this exists\n\nDuring incidents, a lot of time goes into repetitive steps:\n\n- finding the right log source\n- narrowing the time window\n- spotting recurring failure patterns\n- following one trace across services\n\nLogs Sieve packages those workflows into four tools: `query_logs`, `summarize_logs`, `trace_request`, and `list_log_sources`.\n\n## Supported providers\n\n- Google Cloud Logging (`gcp`)\n- AWS CloudWatch Logs (`aws`)\n- Azure Monitor Logs (`azure`)\n- Grafana Loki (`loki`)\n- Elasticsearch (`elasticsearch`)\n\n## Prerequisites\n\n> **⚠️ Node.js 20 or above is required.**\n>\n> This package uses ES modules and dependencies that need Node.js 20+. If you see `ERR_MODULE_NOT_FOUND` errors, check your Node version with `node -v` and upgrade if needed.\n>\n> This applies whether you run via `npx`, install globally, or use from source.\n\n## Quick MCP config\n\nExample `.mcp.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"logs-sieve\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"mcp-server-logs-sieve@latest\", \"--provider\", \"gcp\"]\n    }\n  }\n}\n```\n\nIf you are running from this repo source directly, you can still use `node ./bin/mcp-server-logs-sieve.js --provider gcp`.\n\n**First-time setup:** On first use, `npx` needs to download and install the package (~40s). Claude Code may time out waiting for this. Run the following once in your terminal to prime the cache before adding it to your MCP config:\n\n```bash\nnpx mcp-server-logs-sieve@latest --provider gcp\n# (Ctrl+C once it starts — you just need the install to complete)\n```\n\nAfter that, Claude Code will start the server instantly from the npx cache.\n\nAfter updating config, restart your MCP client and confirm with `/mcp`.\n\n## Provider auth and env vars\n\nSee provider-specific setup and auth docs:\n\n- [GCP](https://github.com/Oluwatunmise-olat/mcp-server-logs-sieve/blob/main/docs/providers/gcp.md)\n- [AWS](https://github.com/Oluwatunmise-olat/mcp-server-logs-sieve/blob/main/docs/providers/aws.md)\n- [Azure](https://github.com/Oluwatunmise-olat/mcp-server-logs-sieve/blob/main/docs/providers/azure.md)\n- [Loki](https://github.com/Oluwatunmise-olat/mcp-server-logs-sieve/blob/main/docs/providers/loki.md)\n- [Elasticsearch](https://github.com/Oluwatunmise-olat/mcp-server-logs-sieve/blob/main/docs/providers/elasticsearch.md)\n\nFor Elasticsearch API compatibility headers:\n\n```bash\nexport ELASTICSEARCH_COMPAT_VERSION=8\n```\n\n## CLI usage\n\nThe package also includes a CLI for direct terminal usage:\n\n```bash\nmcp-server-logs-sieve query --provider gcp --scope my-project --last 1h --filter \"payment failed\"\nmcp-server-logs-sieve summarize --provider gcp --scope my-project --last 24h\nmcp-server-logs-sieve trace --provider gcp --scope my-project --trace <trace-id>\nmcp-server-logs-sieve sources --provider gcp --scope my-project\n```\n\n## Documentation\n\n- [Docs home](https://github.com/Oluwatunmise-olat/mcp-server-logs-sieve/blob/main/docs/index.md)\n- [Getting started](https://github.com/Oluwatunmise-olat/mcp-server-logs-sieve/blob/main/docs/getting-started.md)\n- [MCP client setup (Claude Code, Claude Desktop, Cursor, Windsurf)](https://github.com/Oluwatunmise-olat/mcp-server-logs-sieve/blob/main/docs/guides/mcp-clients.md)\n- [Tool reference](https://github.com/Oluwatunmise-olat/mcp-server-logs-sieve/blob/main/docs/tools/query-logs.md)\n- [Troubleshooting](https://github.com/Oluwatunmise-olat/mcp-server-logs-sieve/blob/main/docs/troubleshooting.md)\n- [Compatibility matrix](https://github.com/Oluwatunmise-olat/mcp-server-logs-sieve/blob/main/docs/reference/compatibility.md)\n\n## Contributing\n\nContributions are welcome.\n\n- Start here: [CONTRIBUTING.md](https://github.com/Oluwatunmise-olat/mcp-server-logs-sieve/blob/main/CONTRIBUTING.md)\n- Issues: <https://github.com/Oluwatunmise-olat/mcp-server-logs-sieve/issues>\n- Discussions: <https://github.com/Oluwatunmise-olat/mcp-server-logs-sieve/discussions>\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"logs-sieve\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"mcp-server-logs-sieve@latest\", \"--provider\", \"gcp\"]\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "full_name": "jaenster/puppeteer-mcp-claude",
+  "html_url": "https://github.com/jaenster/puppeteer-mcp-claude",
+  "description": "Browser automation MCP server for Claude, powered by Puppeteer.",
+  "topics": [
+    "anthropic",
+    "browser-automation",
+    "chromium",
+    "claude",
+    "claude-code",
+    "claude-desktop",
+    "headless-chrome",
+    "llm-tools",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "puppeteer",
+    "screenshot",
+    "stdio",
+    "typescript",
+    "web-automation",
+    "web-scraping"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 43,
+  "forks": 6,
+  "open_issues": 1,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-07-07T18:08:47Z",
+  "last_pushed_at": "2026-05-15T14:01:11Z",
+  "fetched_at": "2026-07-11T23:33:12.463Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# puppeteer-mcp-claude\n\n<p align=\"center\">\n  <img src=\".github/banner.svg\" alt=\"puppeteer-mcp-claude — browser automation MCP server for Claude\" width=\"100%\"/>\n</p>\n\n[![npm version](https://img.shields.io/npm/v/puppeteer-mcp-claude.svg)](https://www.npmjs.com/package/puppeteer-mcp-claude)\n[![npm downloads](https://img.shields.io/npm/dm/puppeteer-mcp-claude.svg)](https://www.npmjs.com/package/puppeteer-mcp-claude)\n[![CI](https://github.com/jaenster/puppeteer-mcp-claude/actions/workflows/ci.yml/badge.svg)](https://github.com/jaenster/puppeteer-mcp-claude/actions/workflows/ci.yml)\n[![Node](https://img.shields.io/node/v/puppeteer-mcp-claude.svg)](https://nodejs.org/)\n[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)\n\nA [Model Context Protocol](https://modelcontextprotocol.io) server that gives Claude Code (and any other MCP-aware client) a real browser via Puppeteer — navigate pages, click and type, run JavaScript, capture screenshots, manage cookies, intercept requests.\n\n## Requirements\n\n- Node.js ≥ 18\n- An MCP-aware client (Claude Code, Claude Desktop, Cursor, Codex CLI, …)\n- Chromium is downloaded automatically by Puppeteer on first install (~170 MB)\n\n## Install\n\n**macOS / Linux**\n\n```bash\ncurl -fsSL https://raw.githubusercontent.com/jaenster/puppeteer-mcp-claude/main/install.sh | bash\n```\n\n**Windows (PowerShell)**\n\n```powershell\niwr -useb https://raw.githubusercontent.com/jaenster/puppeteer-mcp-claude/main/install.ps1 | iex\n```\n\nBoth scripts verify Node ≥ 18, install the package globally via npm, and register it with Claude Code at user scope. Override scope with `SCOPE=project` (bash) or `$env:SCOPE='project'` (PowerShell).\n\n**Manual** — if you'd rather not run a remote script:\n\n```bash\nnpm install -g puppeteer-mcp-claude\nclaude mcp add puppeteer-mcp-claude -- npx -y puppeteer-mcp-claude serve\n```\n\nThen restart Claude Code and ask: *\"Take a screenshot of example.com\"*.\n\n## Tools\n\nYou don't have to call `puppeteer_launch` first — the browser auto-launches with defaults the moment any other tool runs. Page ids default to `\"default\"`, so single-tab flows can omit `pageId` entirely.\n\n| Tool | What it does |\n|-|-|\n| `puppeteer_launch` | (Optional) launch a browser or connect to an existing Chrome via `browserWSEndpoint`. Use this for stealth mode, proxies, custom viewport, etc. |\n| `puppeteer_new_page` | Open a new tab. |\n| `puppeteer_navigate` | Go to a URL. |\n| `puppeteer_click` | Click a CSS selector. |\n| `puppeteer_type` | Type into an input. |\n| `puppeteer_get_text` | Read `textContent` of an element. |\n| `puppeteer_screenshot` | Capture a PNG — returned inline as an MCP image block, optionally also saved to disk. |\n| `puppeteer_evaluate` | Run a JS expression in page context, returns the value. |\n| `puppeteer_wait_for_selector` | Wait until an element appears. |\n| `puppeteer_close_page` | Close a tab. |\n| `puppeteer_close_browser` | Close the whole browser. |\n| `puppeteer_set_cookies` / `puppeteer_get_cookies` / `puppeteer_delete_cookies` | Cookie jar management. |\n| `puppeteer_set_request_interception` | Block resources by type or inject request headers. |\n\n### Response format\n\nEvery tool returns its result in two parallel forms:\n\n- `content[0].text` — **[TOON](https://toonformat.dev) (Token-Oriented Object Notation)**, a compact, schema-aware JSON alternative. Good for hosts that pipe the text body straight into the model's context.\n- `structuredContent` — the same data as a typed JSON object, for MCP clients that prefer machine-readable output.\n\nWhich one your host uses is up to the host — both are MCP-spec-compliant. Typed clients that want the object without depending on `structuredContent` can `import { decode } from '@toon-format/toon'` and parse `content[0].text`.\n\n## Examples\n\nHow an LLM would typically drive this server — each example shows the prompt you'd give Claude and the tool sequence it produces.\n\n### Take a screenshot of a site\n\n> \"Take a screenshot of news.ycombinator.com.\"\n\n```text\npuppeteer_navigate { url: \"https://news.ycombinator.com\" }\npuppeteer_screenshot { fullPage: true }\n```\n\nReturns the PNG as an inline image block (Claude sees it directly), plus structured `{ bytes, path: null, fullPage: true }`.\n\n### Scrape article titles\n\n> \"Give me the titles of the top 10 stories on Hacker News as a markdown list.\"\n\n```text\npuppeteer_navigate { url: \"https://news.ycombinator.com\" }\npuppeteer_evaluate { script: \"[...document.querySelectorAll('.titleline > a')].slice(0,10).map(a => a.textContent)\" }\n```\n\nClaude formats the resulting array into the requested markdown list.\n\n### Fill a form\n\n> \"On example.com, fill the search box with 'TOON' and submit.\"\n\n```text\npuppeteer_navigate { url: \"https://example.com\" }\npuppeteer_type   { selector: \"input[name=q]\", text: \"TOON\" }\npuppeteer_click  { selector: \"button[type=submit]\" }\npuppeteer_wait_for_selector { selector: \".results\" }\npuppeteer_get_text { selector: \".results h1\" }\n```\n\n### Reuse an existing logged-in browser\n\n> \"Connect to my running Chrome and take a screenshot of the GitHub dashboard.\"\n\n```bash\n# In one terminal\npuppeteer-mcp-claude chrome 9222\n# Sign in to GitHub once in the launched Chrome window.\n```\n\n```text\npuppeteer_launch { browserWSEndpoint: \"ws://localhost:9222\" }\npuppeteer_navigate { url: \"https://github.com\" }\npuppeteer_screenshot {}\n```\n\nAvoids re-doing login flows in every session.\n\n### Block images for faster scraping\n\n> \"Scrape the article text from <url> as quickly as possible.\"\n\n```text\npuppeteer_set_request_interception { enable: true, blockResources: [\"image\",\"media\",\"font\",\"stylesheet\"] }\npuppeteer_navigate { url: \"<url>\" }\npuppeteer_get_text { selector: \"article\" }\n```\n\n## CLI\n\n```text\npuppeteer-mcp-claude install [--scope user|project|local]   Register with Claude Code\npuppeteer-mcp-claude uninstall [--scope ...]                Remove from Claude Code\npuppeteer-mcp-claude status                                 Show \"claude mcp list\"\npuppeteer-mcp-claude serve                                  Run the MCP server on stdio\npuppeteer-mcp-claude chrome [port] [userDataDir]            Launch Chrome with remote debugging\npuppeteer-mcp-claude help                                   Show help\n```\n\n## Development\n\n```bash\npnpm install\npnpm build\npnpm test           # node:test via tsx, ~165 tests\npnpm dev            # run the server directly from src/\n```\n\n## Other MCP servers I maintain\n\n- [**remote-shell-mcp**](https://github.com/jaenster/remote-shell-mcp) — persistent SSH, SFTP, port forwarding, and Docker over MCP. Long-running daemon so sessions, tunnels, and PTY shells survive across Claude Code / Claude Desktop / Cursor / Codex CLI restarts.\n- [**node-debugger-mcp**](https://github.com/jaenster/node-debugger-mcp) — real Node.js debugger over MCP. Breakpoints, stepping, scope inspection, eval, source-map-aware BPs, child-process and worker-thread auto-attach. Speaks the V8 Inspector Protocol.\n\n## Links\n\n- [npm package](https://www.npmjs.com/package/puppeteer-mcp-claude)\n- [Issues](https://github.com/jaenster/puppeteer-mcp-claude/issues)\n- [Changelog](CHANGELOG.md)\n- [Model Context Protocol docs](https://modelcontextprotocol.io)\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

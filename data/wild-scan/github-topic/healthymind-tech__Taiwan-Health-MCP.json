@@ -1,0 +1,33 @@
+{
+  "full_name": "healthymind-tech/Taiwan-Health-MCP",
+  "html_url": "https://github.com/healthymind-tech/Taiwan-Health-MCP",
+  "description": null,
+  "topics": [
+    "health",
+    "llm",
+    "mcp",
+    "mcp-tools",
+    "taiwan"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 154,
+  "forks": 24,
+  "open_issues": 4,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-12-23T12:55:53Z",
+  "last_pushed_at": "2026-07-01T07:33:44Z",
+  "fetched_at": "2026-07-12T00:25:00.907Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Taiwan Health MCP Server\n\n> 台灣醫療健康資料整合 MCP 伺服器\n> 整合 ICD-10-CM/PCS、SNOMED CT、LOINC、台灣 FDA 藥品 / 健康補充品 / 食品營養、臨床指引，以及 FHIR R4 IG 授權與驗證工具\n\n[![FHIR](https://img.shields.io/badge/FHIR-R4-blue)](http://hl7.org/fhir/R4/)\n[![Python](https://img.shields.io/badge/Python-3.12-green)](https://www.python.org/)\n[![MCP](https://img.shields.io/badge/MCP-1.25-orange)](https://modelcontextprotocol.io)\n[![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)\n\n以官方 **`mcp` SDK**（`mcp.server.fastmcp.FastMCP`）建構，對外提供約 **51 個工具**，涵蓋 12 個工具群組。專為高吞吐量的生產級 SaaS 部署設計。\n\n## 專案特色\n\n- **台灣在地化資料**：台灣 FDA 藥品（含仿單 / 外觀 / OCR 分析）、健康補充品、食品營養、臨床指引、TWCore IG。\n- **國際術語支援**：ICD-10-CM/PCS 2025、SNOMED CT International、LOINC 2.80、FHIR R4。\n- **FHIR IG 授權工具**：多 IG（package-scoped）剖面 / ValueSet 查詢、術語驗證、骨架填值（skeleton-fill）資源產生與驗證。\n- **語意 / 混合搜尋**：以 Ollama 嵌入模型（`qwen3-embedding`）為基礎，無嵌入時自動退回關鍵字搜尋。\n- **動態工具啟用**：依各模組資料載入狀態自動註冊 / 移除可用 MCP 工具。\n- **管理後台**：可選的 Admin Console（上傳來源檔、執行 / 排程匯入、管理設定與外部 FHIR 伺服器、即時監控背景工作）。\n- **生產部署設計**：PostgreSQL 16（pgvector）、pgBouncer、Redis、MinIO、Prometheus、背景 worker。\n\n## 快速開始\n\n```bash\ngit clone https://github.com/audi0417/Taiwan-Health-MCP.git\ncd Taiwan-Health-MCP\ncp .env.example .env                          # 設定 POSTGRES_PASSWORD、ADMIN_* 等\ndocker compose up -d                          # postgres / pgbouncer / redis / minio / app / admin-worker\n```\n\n## 載入資料（透過管理後台）\n\n資料匯入由 **Admin Console** 觸發、交由 `admin-worker` 背景執行（不再有獨立的 CLI data-loader 容器）。\n\n1. 在 `.env` 啟用管理後台：\n\n   ```dotenv\n   ADMIN_ENABLED=true\n   ADMIN_USERNAME=admin\n   # python -c \"import hashlib; print('sha256$' + hashlib.sha256(b'change-me').hexdigest())\"\n   ADMIN_PASSWORD_HASH=sha256$...\n   ADMIN_SESSION_SECRET=change_this_admin_session_secret\n   ```\n\n   重新啟動 `app`（`docker compose up -d`）後，於 `http://<host>:8000/admin` 登入。\n\n2. 在 **Modules** 頁籤依模組匯入資料：\n\n   - **需上傳來源檔**（在 Sources / Modules 上傳後按匯入）：ICD-10-CM/PCS、LOINC、SNOMED CT、FHIR IG（`package.tgz`）。\n   - **由 API 自動抓取**（直接按匯入或設定排程）：藥品（TFDA，三階段:索引 → 爬取豐富 → OCR/LLM 分析）、健康補充品、食品營養。\n   - **內建種子資料**（直接執行）：臨床指引。\n\n3. 嵌入（語意搜尋）會在各模組匯入後自動回填，也可於模組頁面單獨重建。\n\n匯入進度、步驟時間軸與即時日誌可在 **Tasks** 頁籤查看。詳見[管理後台文件](docs/admin/index.md)與[背景工作與排程](docs/admin/jobs-and-worker.md)。\n\n## 工具群組\n\n| 群組 | 工具 |\n|------|------|\n| ICD-10 | `search_medical_codes`、`infer_complications`、`get_nearby_codes`、`check_medical_conflict`、`browse_icd_category` |\n| 藥品 / TFDA | `search_drug`、`identify_unknown_pill`、`get_drug_details`、`get_drug_asset_links` |\n| 檢驗 / LOINC | `search_loinc`、`query_loinc`、`interpret_lab_result`、`batch_interpret_lab_results` |\n| 臨床指引 | `search_clinical_guideline`、`query_guideline` |\n| SNOMED CT | `search_snomed_concept`、`query_snomed_concept`、`get_snomed_relationships`、`query_snomed_mapping` |\n| FHIR Condition | `query_fhir_condition`、`validate_fhir_condition` |\n| FHIR Medication | `query_fhir_medication`、`validate_fhir_medication` |\n| FHIR IG（授權 / 驗證） | `fhir_list_igs`、`fhir_get_ig`、`fhir_list_artifacts`、`fhir_search_artifacts`、`fhir_list_resource_profiles`、`fhir_rank_resource_profiles`、`fhir_get_profile`、`fhir_get_profile_elements`、`fhir_get_valueset`、`fhir_expand_valueset`、`fhir_lookup_code`、`fhir_validate_code`、`fhir_normalize_code`、`fhir_resolve_reference`、`fhir_build_bundle`、`fhir_validate_resource`、`fhir_validate_bundle`、`fhir_get_resource_skeleton`、`fhir_finalize_resource` |\n| 健康補充品 | `search_health_supplements` |\n| 食品營養 | `query_food_nutrition`、`query_food_ingredient`、`search_foods_by_nutrient`、`analyze_meal_nutrition` |\n| FHIR 伺服器 | `list_fhir_servers`、`get_fhir_server_status`、`crud_fhir_server` |\n| 系統 | `health_check` |\n\n> 模組相關工具會依資料載入狀態自動啟用 / 停用；FHIR 伺服器與系統工具則永遠註冊。\n\n## 連接客戶端\n\n伺服器同時提供兩種介面,皆在同一個 `app` 容器、同一個埠(預設 8000):\n\n| 介面 | 端點 | 適用客戶端 |\n|------|------|-----------|\n| **MCP**（streamable-http） | `http://<host>:8000/mcp` | 原生 MCP 客戶端(Claude Desktop、Open WebUI v0.6.31+ 的 MCP 連線等) |\n| **OpenAPI bridge** | `GET http://<host>:8000/openapi.json`、`POST http://<host>:8000/tools/<工具名>` | 僅支援 OpenAPI 工具伺服器的客戶端(如 Open WebUI 的 External Tools / OpenAPI 類型) |\n\n- **MCP**:客戶端填 `http://<host>:8000/mcp`。\n- **OpenAPI**:`/openapi.json` 依「目前已啟用的工具」動態產生 OpenAPI 3.1 規格;每個工具對應 `POST /tools/<工具名>`,以 JSON body 當參數呼叫。客戶端只要填基底網址 `http://<host>:8000`,會自動抓 `/openapi.json`。\n\n> 例:在 **Open WebUI → Settings → Tools** 以 **OpenAPI** 類型新增工具伺服器,URL 填 `http://<host>:8000` 即可列出全部工具。\n>\n> 注意:這兩個介面目前皆**未強制驗證**(與既有設計一致);對外開放時請在前面加反向代理或 token。\n\n## 資料庫 Schema\n\n`audit` | `admin` | `icd` | `drug` | `health_supplements` | `food_nutrition` | `loinc` | `guideline` | `fhir`（multi-IG）| `snomed` | `rxnorm`\n\n完整定義見 `db/schema.sql`（PostgreSQL 容器首次啟動時自動套用），增量變更見 `db/migrations/`。\n\n## 管理後台（選用）\n\n預設停用。於 `.env` 設定 `ADMIN_ENABLED=true` 並提供 `ADMIN_USERNAME` / `ADMIN_PASSWORD_HASH` / `ADMIN_SESSION_SECRET` 後，可於 `/admin` 存取 Admin Console，用於上傳來源檔、執行與排程資料匯入、管理設定與外部 FHIR 伺服器，以及監控由 `admin-worker` 執行的背景工作。詳見 `docs/admin/`。\n\n## 開發與測試\n\n```bash\npip install -r requirements.txt\npip install pytest pytest-asyncio\npython -m pytest tests/ -v\n```\n\n## 文件\n\n完整文件請見 [`docs/`](docs/) 與 MkDocs 設定（`mkdocs.yml`）。\n\n## 致謝\n\n- 台灣衛生福利部、TFDA\n- Regenstrief Institute（LOINC）\n- SNOMED International\n- National Library of Medicine（RxNorm / UMLS）\n- HL7 International（FHIR）\n- WHO\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

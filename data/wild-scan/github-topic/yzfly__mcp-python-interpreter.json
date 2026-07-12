@@ -1,0 +1,38 @@
+{
+  "full_name": "yzfly/mcp-python-interpreter",
+  "html_url": "https://github.com/yzfly/mcp-python-interpreter",
+  "description": "MCP Python Interpreter: run python code. Python-mcp-server, mcp-python-server, Code Executor",
+  "topics": [
+    "claude",
+    "claude-mcp",
+    "code",
+    "mcp",
+    "mcp-client",
+    "mcp-python-server",
+    "mcp-server",
+    "python",
+    "python-mcp-server",
+    "qwen"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 101,
+  "forks": 35,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "NOASSERTION",
+  "default_branch": "main",
+  "created_at": "2025-04-04T01:25:04Z",
+  "last_pushed_at": "2026-07-02T09:05:18Z",
+  "fetched_at": "2026-07-11T23:00:30.765Z",
+  "readme": {
+    "path": "README.md",
+    "content": "[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/yzfly-mcp-python-interpreter-badge.png)](https://mseep.ai/app/yzfly-mcp-python-interpreter)\n\n# MCP Python Interpreter\n\nA Model Context Protocol (MCP) server that allows LLMs to interact with Python environments, read and write files, execute Python code, and manage development workflows.\n\n## Features\n\n- **Environment Management**: List and use different Python environments (system and conda)\n- **Code Execution**: Run Python code or scripts in any available environment\n- **Package Management**: List installed packages and install new ones\n- **File Operations**: \n  - Read files of any type (text, source code, binary)\n  - Write text and binary files\n- **Python Prompts**: Templates for common Python tasks like function creation and debugging\n\n## Installation\n\nYou can install the MCP Python Interpreter using pip:\n\n```bash\npip install mcp-python-interpreter\n```\n\nOr with uv:\n\n```bash\nuv install mcp-python-interpreter\n```\n\n## Usage with Claude Desktop\n\n1. Install [Claude Desktop](https://claude.ai/download)\n2. Open Claude Desktop, click on menu, then Settings\n3. Go to Developer tab and click \"Edit Config\"\n4. Add the following to your `claude_desktop_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"mcp-python-interpreter\": {\n        \"command\": \"uvx\",\n        \"args\": [\n            \"mcp-python-interpreter\",\n            \"--dir\",\n            \"/path/to/your/work/dir\",\n            \"--python-path\",\n            \"/path/to/your/python\"\n        ],\n        \"env\": {\n            \"MCP_ALLOW_SYSTEM_ACCESS\": 0\n        },\n    }\n  }\n}\n```\n\nFor Windows:\n\n```json\n{\n  \"mcpServers\": {\n    \"python-interpreter\": {\n      \"command\": \"uvx\",\n      \"args\": [\n        \"mcp-python-interpreter\",\n        \"--dir\",\n        \"C:\\\\path\\\\to\\\\your\\\\working\\\\directory\",\n        \"--python-path\",\n        \"/path/to/your/python\"\n      ],\n        \"env\": {\n            \"MCP_ALLOW_SYSTEM_ACCESS\": \"0\"\n        },\n    }\n  }\n}\n```\n\n5. Restart Claude Desktop\n6. You should now see the MCP tools icon in the chat interface\n\nThe `--dir` parameter is **required** and specifies where all files will be saved and executed. This helps maintain security by isolating the MCP server to a specific directory.\n\n### Prerequisites\n\n- Make sure you have `uv` installed. If not, install it using:\n  ```bash\n  curl -LsSf https://astral.sh/uv/install.sh | sh\n  ```\n- For Windows:\n  ```powershell\n  powershell -ExecutionPolicy Bypass -Command \"iwr -useb https://astral.sh/uv/install.ps1 | iex\"\n  ```\n\n## Available Tools\n\nThe Python Interpreter provides the following tools:\n\n### Environment and Package Management\n- **list_python_environments**: List all available Python environments (system and conda)\n- **list_installed_packages**: List packages installed in a specific environment\n- **install_package**: Install a Python package in a specific environment\n\n### Code Execution\n- **run_python_code**: Execute Python code in a specific environment\n- **run_python_file**: Execute a Python file in a specific environment\n\n### File Operations\n- **read_file**: Read contents of any file type, with size and safety limits\n  - Supports text files with syntax highlighting\n  - Displays hex representation for binary files\n- **write_file**: Create or overwrite files with text or binary content\n- **write_python_file**: Create or overwrite a Python file specifically\n- **list_directory**: List Python files in a directory\n\n## Available Resources\n\n- **python://environments**: List all available Python environments\n- **python://packages/{env_name}**: List installed packages for a specific environment\n- **python://file/{file_path}**: Get the content of a Python file\n- **python://directory/{directory_path}**: List all Python files in a directory\n\n## Prompts\n\n- **python_function_template**: Generate a template for a Python function\n- **refactor_python_code**: Help refactor Python code\n- **debug_python_error**: Help debug a Python error\n\n## Example Usage\n\nHere are some examples of what you can ask Claude to do with this MCP server:\n\n- \"Show me all available Python environments on my system\"\n- \"Run this Python code in my conda-base environment: print('Hello, world!')\"\n- \"Create a new Python file called 'hello.py' with a function that says hello\"\n- \"Read the contents of my 'data.json' file\"\n- \"Write a new configuration file with these settings...\"\n- \"List all packages installed in my system Python environment\"\n- \"Install the requests package in my system Python environment\"\n- \"Run data_analysis.py with these arguments: --input=data.csv --output=results.csv\"\n\n## File Handling Capabilities\n\nThe MCP Python Interpreter now supports comprehensive file operations:\n- Read text and binary files up to 1MB\n- Write text and binary files\n- Syntax highlighting for source code files\n- Hex representation for binary files\n- Strict file path security (only within the working directory)\n\n## Security Considerations\n\nThis MCP server has access to your Python environments and file system. Key security features include:\n- Isolated working directory\n- File size limits\n- Prevented writes outside the working directory\n- Explicit overwrite protection\n\nAlways be cautious about running code or file operations that you don't fully understand.\n\n## License\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

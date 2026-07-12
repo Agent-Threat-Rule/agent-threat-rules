@@ -1,0 +1,37 @@
+{
+  "full_name": "hlpun/Train-in-Silence",
+  "html_url": "https://github.com/hlpun/Train-in-Silence",
+  "description": "The first Task-Aware MCP server and automated VRAM calculator for LLM fine-tuning. Instantly snipe the cheapest, fastest GPUs across 10+ cloud providers.",
+  "topics": [
+    "claude-code",
+    "cost-optimization",
+    "fine-tuning",
+    "gpu-pricing",
+    "llm",
+    "mcp",
+    "mcp-server",
+    "python",
+    "vram-calculator"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 101,
+  "forks": 2,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-12T12:31:53Z",
+  "last_pushed_at": "2026-06-24T06:16:00Z",
+  "fetched_at": "2026-07-11T23:00:27.202Z",
+  "readme": {
+    "path": "README.md",
+    "content": "[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/hlpun-train-in-silence-badge.png)](https://mseep.ai/app/hlpun-train-in-silence)\n\n<p align=\"center\">\n  <h1 align=\"center\">Train in Silence</h1>\n    The first Task-Aware MCP server for LLM fine-tuning.\n    Stop comparing GPU prices. Start training.\n  </p>\n  <p align=\"center\">\n    <a href=\"https://github.com/hlpun/Train-in-Silence/blob/main/LICENSE\"><img src=\"https://img.shields.io/badge/license-MIT-blue.svg\" alt=\"License\"></a>\n    <a href=\"https://www.python.org/downloads/\"><img src=\"https://img.shields.io/badge/python-3.10+-blue.svg\" alt=\"Python\"></a>\n    <a href=\"https://github.com/hlpun/Train-in-Silence/blob/main/README_zh.md\">中文</a>\n  </p>\n</p>\n\n---\n\nYou want to fine-tune an LLM. You open Vast.ai, RunPod, AWS, etc. -- a dozen tabs, a dozen pricing models, a dozen different ways to describe a GPU. Which option can run your code, and do so more cheaply and quickly? An hour later you're still in a spreadsheet and haven't written a single line of training code.\n\n**Train in Silence** is the first **Task-Aware MCP server** for LLM fine-tuning. It doesn't just list prices; it understands your workload. Describe your training job once, and it calculates the required VRAM/FLOPs to return the cheapest, fastest, and most balanced hardware options across **a dozen cloud providers** -- in seconds.\n\n## Quickstart\n\n### Option A: Ask Claude Code (recommended)\n\nInstall the library and register it as a tool in [Claude Code](https://docs.anthropic.com/en/docs/claude-code):\n\n```bash\npip install train-in-silence\nclaude mcp add tis --scope user -- tis-mcp\n```\n\nThen just ask in natural language:\n\n```\n> I want to run the fine-tune code in my current directory, and finish it within 20 hours.\n  Find me the best GPU options across Vast.ai, RunPod, and Lambda.\n```\n\nClaude Code calls TIS behind the scenes and returns a structured recommendation -- no YAML, no config files, no manual comparison.\n\n### Option B: CLI\n\n```bash\npip install train-in-silence\ntis recommend examples/request.yaml\n```\n\n```bash\n$ tis recommend examples/request.yaml\n\n  Found 5 viable configurations\n  Lowest cost: $4.32 | Fastest runtime: 2.1 hours\n\n  #1 [cheapest]  RunPod 1x A6000 (48 GB)    $4.32 / 6.8 h\n  #2 [fastest]   Vast.ai 2x A100 (80 GB)    $9.10 / 2.1 h\n  #3 [balanced]  RunPod 1x A100 (80 GB)     $6.40 / 3.2 h\n  ...\n```\n\n> **Note**: Output above is illustrative. Actual results depend on live market data.\n\n## Use It Your Way\n\n| Channel | Command | Docs |\n|---------|---------|------|\n| **CLI** | `tis recommend request.yaml` | [CLI Guide](https://github.com/hlpun/Train-in-Silence/blob/main/docs/en/cli.md) |\n| **REST API** | `uvicorn tis.api.server:app` | [API Reference](https://github.com/hlpun/Train-in-Silence/blob/main/docs/en/api.md) |\n| **Claude Code** | `claude mcp add tis --scope user --tis-mcp` | [MCP Guide](https://github.com/hlpun/Train-in-Silence/blob/main/docs/en/mcp.md) |\n| **Claude Desktop** | Add `tis-mcp` to `claude_desktop_config.json` | [MCP Guide](https://github.com/hlpun/Train-in-Silence/blob/main/docs/en/mcp.md) |\n\n### Market Providers\n\nTIS aggregates live pricing across a dozen GPU clouds. API keys are **optional**: if not provided, TIS automatically falls back sequentially to universal live aggregators (GPUHunt/GPUFinder) or bundled sample data.\n\n| Provider Class | Included Platforms | Auth Required |\n|----------------|--------------------|---------------|\n| **Dedicated** | Vast.ai, RunPod | **Optional** (Highly Recommended) |\n| **Aggregated** | Vast.ai, RunPod, AWS, CoreWeave, Lambda Labs, Tensordock, Vultr, GCP, Azure, OCI, Nebius, CloudRift, Cudo Compute, Verda | **None** (Auto-fallback) |\n\nEvery recommendation clearly identifies its **Source of Truth** (e.g., `live:official`, `live:gpuhunt`, `live:gpufinder`, or `sample`) so you always know how fresh the data is. [-> Provider details](https://github.com/hlpun/Train-in-Silence/blob/main/docs/en/providers.md)\n\n## Architecture at a Glance\n\n```\nYAML request -> Estimator -> Market Aggregator -> Optimizer -> Pareto Frontier -> Ranked Output\n                  |                |                 |\n              VRAM/FLOPs     10+ GPU Clouds    Cost vs. Time\n```\n\nEach recommendation shows **where the data came from** (`live` or `sample`) and flags any estimated fields -- no silent guesswork. [-> Architecture deep-dive](https://github.com/hlpun/Train-in-Silence/blob/main/docs/en/architecture.md)\n\n## Known Limitations\n\n- Estimation model is fixed with no built-in calibration; future versions will calibrate using real runtimes.\n- Upstream Provider API schema changes will require synchronized mapping updates.\n\n## 🚧 Project Status & Contribution\n\nThis project is currently in the **experimental development stage (Experimental)**.\n\n- **Issues & Suggestions**: If you encounter any bugs, inaccurate estimations, or have suggestions for improvement, please feel free to submit a [GitHub Issue](https://github.com/hlpun/Train-in-Silence/issues).\n- **Contribute**: If you'd like to improve the code or supplement hardware metadata, Pull Requests are highly welcome! We look forward to refining this LLM hardware planner with the community.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

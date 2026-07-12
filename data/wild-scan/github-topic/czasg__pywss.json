@@ -1,0 +1,35 @@
+{
+  "full_name": "czasg/pywss",
+  "html_url": "https://github.com/czasg/pywss",
+  "description": "一个轻量级的 Python Web 框架，一站式集成 MCP SSE、StreamHTTP 和 MCPO 协议，助你轻松构建MCP Server🔥",
+  "topics": [
+    "mcp",
+    "mcp-server",
+    "python",
+    "python-web",
+    "pywss",
+    "web",
+    "web-framework"
+  ],
+  "matched_query_topics": [
+    "mcp-server"
+  ],
+  "stars": 99,
+  "forks": 21,
+  "open_issues": 7,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "master",
+  "created_at": "2019-10-14T07:33:17Z",
+  "last_pushed_at": "2025-07-16T10:30:35Z",
+  "fetched_at": "2026-07-11T23:00:51.302Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<div align='center'>\n\n![pywss](./pywss.png)\n  \n<br/>\n  \n![Project status](https://img.shields.io/badge/python-3.6+-green.svg)\n![PyPI](https://img.shields.io/pypi/v/pywss?color=green)\n![Codecov](https://img.shields.io/codecov/c/github/czasg/pywss?token=JSXIQXY1EQ)\n[![GitHub issues](https://img.shields.io/github/issues/czasg/pywss)](https://github.com/czasg/pywss/issues)\n[![GitHub issues](https://img.shields.io/github/issues-closed/czasg/pywss)](https://github.com/czasg/pywss/issues-closed)\n[![GitHub license](https://img.shields.io/github/license/czasg/pywss)](https://github.com/czasg/pywss/blob/main/LICENSE)\n  \n<br/>\n  \n</div>\n\n## Pywss 简介\n\nPywss（发音 /piːwaɪz/，类似 **p~whys**）是一个轻量级的 Python Web 框架，它基于 Python3.6+ 特性构建。\n\n与 Flask、Django 等主流框架不同的是，Pywss 的底层并没有实现 WSGI 接口协议。\n其编程风格也更类似于 Gin、Iris 等框架，因此对于熟悉这些框架的开发者来说，Pywss 是一个非常值得探索的项目。\n\n其关键特性有：\n- **简单**：拒绝海量参数，减少心智负担。了解上下文 `pywss.Context` 即刻启程。\n- **快速**：引入线程池机制，减少并发场景下线程创建/销毁开销。\n- **优雅**：`ctx.next` 真的太优雅了。如果你也和我一样喜欢，那我觉得这件事情，**泰裤辣！！**\n- **标准化**：集成了部分 OpenAPI（Swagger）能力，方便开发者快速生成 API 文档并进行调试。\n- **支持WebSocket**：开箱即用的 **WebSocket** 能力。\n- **接口测试**：开箱即用的 **API 测试模块**，不启动服务也能测试接口功能辣！\n- **MCP PRO**：一站式集成 **SSE、StreamHTTP 和 MCPO 协议**，助你轻松构建多 MCP 工具🔥\n\n**_在线文档_** [**_https://czasg.github.io/pywss/_**](https://czasg.github.io/pywss/)\n\n<br/>\n\n## 快速开始\n\n### 1、安装 pywss\n```shell\npip3 install pywss\n```\n\n### 2、搭建 web 应用    \n首先创建 `main.py` 文件，并写入以下代码：\n```python\nimport time\nimport pywss\n\ndef log_handler(ctx: pywss.Context):\n    start_time = time.time()\n    ctx.next()\n    print(\n        f\"Route: {ctx.route}, \"\n        f\"Method: {ctx.method}, \"\n        f\"Status: {ctx.response_status_code}, \"\n        f\"Time: {time.time() - start_time:.3f}s\"\n    )\n\ndef handler(ctx: pywss.Context):\n  ctx.write(\"hello~\")\n\ndef main():\n    app = pywss.App()\n    app.get(\"/hello\", handler)  # curl localhost:8080/hello\n    app.any(\"*\", log_handler, handler)  # curl -X POST localhost:8080/hello\n    app.run()\n\nif __name__ == '__main__':\n    main()\n```\n接着启动服务:\n```shell\npython3 main.py\n```\n\n至此，一个简单的 web 应用服务就完成了。\n\n### 3、搭建 MCP 应用\n要快速构建 MCP 服务，只需继承 `pywss.mcp.MCPServer` 并遵循以下规则：  \n\n**核心约束:**  \n- 所有接口方法必须以 **`tool_`** 开头（如 `tool_query_user`）  \n- 必须使用 **`@pywss.openapi.docs`** 声明请求参数，且 `request` 必须从 pydantic.BaseModel 继承（自动生成 OpenAPI 文档）  \n\n**请求处理:**    \n- 通过 **`ctx.data.req`** 直接获取结构化请求体\n- 使用 **`self.handle_success(ctx, data)`** 返回成功响应\n- 使用 **`self.handle_error(ctx, code, message)`** 返回标准错误\n\n```python\n# coding: utf-8\nimport pywss\nfrom pydantic import BaseModel\nfrom pywss.mcp import MCPServer\n\nclass DomainReq(BaseModel):  # 定义 DomainReq 请求，必须从 pydantic.BaseModel 继承\n    domain: str\n\nclass DomainMCPServer(MCPServer):  # 定义 DomainMCPServer 服务，必须从 pywss.mcp.MCPServer 继承\n    @pywss.openapi.docs(description=\"获取单个域名服务\", request=DomainReq)  # required，工具及其参数说明\n    def tool_get_domain(self, ctx: pywss.Context):\n        req: DomainReq = ctx.data.req  # 框架已经封装好了请求，可以从 ctx.data.req 直接获取使用，异常请求会被拦截\n        self.handle_success(ctx, {  # handle_success 封装了 jsonrpc2.0 输出规范\n            \"domain\": req.domain,\n            \"color\": req.color\n        })\n\nclass LogReq(BaseModel):\n    traceId: str\n\nclass LogMCPServer(MCPServer):\n    @pywss.openapi.docs(description=\"获取单个trace日志\", request=LogReq)\n    def tool_get_trace_log(self, ctx: pywss.Context):\n        req: LogReq = ctx.data.req\n        self.handle_success(ctx, {\n            \"traceId\": req.traceId,\n        })\n\ndomainMCPServer = DomainMCPServer()\nlogMCPServer = LogMCPServer()\n\napp = pywss.App()\napp.openapi()  # 开启 OpenAPI 文档\ndomainMCPServer.mount(app.group(\"/api/v1/domain\"))  # 挂载 MCP 服务，同时指定路由\nlogMCPServer.mount(app.group(\"/api/v1/log\"))  # 挂载 MCP 服务，同时指定路由\napp.run()\n```\n接着启动服务:\n```shell\npython3 main.py\n```\n| 协议类型   | 服务类               | 请求方法 | 端点路径格式                          | 示例路径                              |\n|------------|----------------------|----------|---------------------------------------|---------------------------------------|\n| **SSE**    | `domainMCPServer`    | `GET`    | `/api/v1/domain/sse`                  | `GET /api/v1/domain/sse`              |\n|            | `logMCPServer`       | `GET`    | `/api/v1/log/sse`                     | `GET /api/v1/log/sse`                 |\n| **StreamHTTP** | `domainMCPServer` | `POST`   | `/api/v1/domain/mcp`                  | `POST /api/v1/domain/mcp`             |\n|            | `logMCPServer`       | `POST`   | `/api/v1/log/mcp`                     | `POST /api/v1/log/mcp`                |\n| **MCPO**   | `domainMCPServer`    | `POST`   | `/api/v1/domain/tools/{tool_name}`    | `POST /api/v1/domain/tools/get_domain` |\n|            | `logMCPServer`       | `POST`   | `/api/v1/log/tools/{tool_name}`       | `POST /api/v1/log/tools/get_trace_log` |\n\n\n更多功能见[在线文档](https://czasg.github.io/pywss/)。\n  \n<br/>\n\n## Activity\n\n![Alt](https://repobeats.axiom.co/api/embed/0647dce0c169ba858b3592938376e41d20dc3e6f.svg \"Repobeats analytics image\")\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

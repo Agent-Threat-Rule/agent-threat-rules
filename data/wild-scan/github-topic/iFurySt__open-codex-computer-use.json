@@ -1,0 +1,48 @@
+{
+  "full_name": "iFurySt/open-codex-computer-use",
+  "html_url": "https://github.com/iFurySt/open-codex-computer-use",
+  "description": "👾 Open Computer Use – Open-Source Alternative to Codex Computer Use",
+  "topics": [
+    "accessibility",
+    "ai-agent",
+    "ai-agents",
+    "claude-code",
+    "codex",
+    "codex-computer-use",
+    "computer-use",
+    "computer-use-agent",
+    "cross-platform",
+    "cua",
+    "desktop-automation",
+    "gemini-cli",
+    "gui-automation",
+    "macos",
+    "mcp",
+    "model-context-protocol",
+    "open-computer-use",
+    "open-computer-use-mcp",
+    "openai-codex",
+    "opencode"
+  ],
+  "matched_query_topics": [
+    "model-context-protocol"
+  ],
+  "stars": 1411,
+  "forks": 132,
+  "open_issues": 8,
+  "language": "Swift",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-17T06:51:32Z",
+  "last_pushed_at": "2026-07-10T09:43:28Z",
+  "fetched_at": "2026-07-11T23:11:12.091Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# open-computer-use\n\n[![English](https://img.shields.io/badge/English-Click-yellow)](./README.md)\n[![简体中文](https://img.shields.io/badge/简体中文-点击查看-orange)](./README.zh-CN.md)\n[![Release](https://img.shields.io/github/v/release/iFurySt/open-codex-computer-use)](https://github.com/iFurySt/open-codex-computer-use/releases)\n[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/iFurySt/open-codex-computer-use)\n<a href=\"https://llmapis.com?source=https%3A%2F%2Fgithub.com%2FiFurySt%2Fopen-codex-computer-use\" target=\"_blank\"><img src=\"https://llmapis.com/api/badge/iFurySt/open-codex-computer-use\" alt=\"LLMAPIS\" width=\"20\" /></a>\n\n> [!TIP]\n> Interested in Browser Use? Check out [open-browser-use](https://github.com/iFurySt/open-codex-browser-use).\n\n---\n\n`open-computer-use` is an open-source `Computer Use` service wrapped as `MCP`. Any AI agent or MCP client can use it to run Computer Use on macOS, Linux, and Windows.\n\nThis project was inspired by OpenAI's [Codex Computer Use](https://openai.com/index/codex-for-almost-everything/). It showed that non-intrusive CUA can be built on top of Accessibility, so I decided to build an open-source version.\n\nI started this repo with my [harness template](https://github.com/iFurySt/harness-template), a template for quickly spinning up AI-first projects. It has been one of our most useful workflows lately, especially for nearly 100% AI-generated projects. I also wrote [a post](https://www.ifuryst.com/blog/2026/speedrunning-the-ai-era/) about the methodology behind it.\n\n## Demos\n\n### Codex App and Codex CLI\n\n[![Open Computer Use custom demo cover](./docs/generated/readme-assets/open-computer-use-demo-cover.png)](https://youtu.be/2s6aVpGiwaQ)\n\n<sub><em>`open-computer-use` used as Computer Use in Codex App and Codex CLI, matching the official experience.</em></sub>\n\n### Gemini CLI\n\nhttps://github.com/user-attachments/assets/eacb3b15-f939-46c7-b3b3-6f876977a58d\n\n<sub><em>Gemini CLI connects to `open-computer-use` through MCP and runs full Computer Use actions.</em></sub>\n\n### Linux\n\nhttps://github.com/user-attachments/assets/e036b1c8-2200-4896-abd4-19225915cf66\n\n<sub><em>`open-computer-use` running on Linux.</em></sub>\n\n## Quick Start\n\n```bash\nnpm i -g open-computer-use\n```\n\nThe npm package also exposes `ocu` as the short CLI alias.\n\n> [!IMPORTANT]\n> The macOS runtime requires macOS 14.0 or later.\n\n**On macOS, run it once and grant `Accessibility` and `Screen Recording`. Windows and Linux do not need this step.**\n\n```bash\nopen-computer-use\n# or\nocu\n```\n\nBefore using it, install it into your agent:\n\n```bash\n# Install into Codex by writing to ~/.codex/config.toml\nopen-computer-use install-codex-mcp\n```\n\nOr add it to your own client manually:\n\n```json\n{\n  \"mcpServers\": {\n    \"open-computer-use\": {\n      \"command\": \"open-computer-use\",\n      \"args\": [\"mcp\"]\n    }\n  }\n}\n```\n\n### Skill\n\nInstall the skill directly:\n\n```bash\n# Install for Codex\nnpx skills add iFurySt/open-codex-computer-use -g -a codex --skill open-computer-use -y\nnpx skills ls -g -a codex | rg 'open-computer-use'\n```\n\nInstall for Claude Code:\n\n```bash\nnpx skills add iFurySt/open-codex-computer-use -g -a claude-code --skill open-computer-use -y\n```\n\nUpdate an existing global install, including the Codex install created above:\n\n```bash\nnpx skills update open-computer-use -g -y\n```\n\nYou can also manually download and install the\n[`open-computer-use` skill](./skills/open-computer-use).\n\n## More\n\nBesides the MCP JSON config above, you can also use the built-in commands:\n\n```bash\n# Install into Codex by writing to ~/.codex/config.toml\nopen-computer-use install-codex-mcp\nocu install-codex-mcp\n\n# Install as a Codex plugin, mainly for Codex App\nopen-computer-use install-codex-plugin\n\n# Install into Claude Code by writing to ~/.claude.json\nopen-computer-use install-claude-mcp\n\n# Install into Gemini CLI for the current project by writing to ./.gemini/settings.json\nopen-computer-use install-gemini-mcp\n\n# Install into Gemini CLI user config instead\nopen-computer-use install-gemini-mcp --scope user\n\n# Install into opencode by writing to ~/.config/opencode/opencode.json (or the active config file)\nopen-computer-use install-opencode-mcp\n\n# Call a single Computer Use tool and print the MCP-style JSON result\nopen-computer-use call list_apps\nocu call list_apps\nopen-computer-use call get_app_state --args '{\"app\":\"TextEdit\"}'\n\n# Run a sequence in one process so element_index state can be reused\n# Sequence runs sleep 1s between successful operations by default\nopen-computer-use call --calls '[{\"tool\":\"get_app_state\",\"args\":{\"app\":\"TextEdit\"}},{\"tool\":\"press_key\",\"args\":{\"app\":\"TextEdit\",\"key\":\"Return\"}}]'\nopen-computer-use call --calls-file examples/textedit-overlay-seq.json --sleep 0.5\n\n# Check permissions; onboarding only opens when something is missing\nopen-computer-use doctor\n\n# Run local validation from a source checkout\nmake smoke\nOPEN_COMPUTER_USE_STRESS_LOOPS=20 make stress\nmake agent-smoke\nmake agent-smoke SCENARIO=fixture-full\nnode ./scripts/run-agent-smoke-tests.mjs --agents=claude,codex --command=open-computer-use\nnode ./scripts/run-agent-smoke-tests.mjs --scenario=fixture --agents=claude,codex --command=open-computer-use\nnode ./scripts/run-agent-smoke-tests.mjs --scenario=fixture-full --agents=claude,codex --command=open-computer-use\nOPEN_COMPUTER_USE_HERMES_PROVIDER=anthropic OPEN_COMPUTER_USE_HERMES_MODEL=claude-opus-4-20250514 make agent-smoke AGENTS=hermes SCENARIO=fixture-full\nnode ./scripts/run-agent-smoke-tests.mjs --agents=hermes --hermes-provider=anthropic --hermes-model=claude-opus-4-20250514\nnode ./scripts/run-agent-smoke-tests.mjs --scenario=fixture --agents=hermes --hermes-provider=anthropic --hermes-model=claude-opus-4-20250514\nnode ./scripts/run-agent-smoke-tests.mjs --scenario=fixture-full --agents=hermes --hermes-provider=anthropic --hermes-model=claude-opus-4-20250514 --hermes-max-turns=12\n\n# Show help\nopen-computer-use -h\nocu -h\n```\n\n## Cursor Motion\n\nCursor Motion is an open-source cursor motion system for macOS, based on public information shared by members of the Software.Inc team. You can download the app from the [Releases page](https://github.com/iFurySt/open-codex-computer-use/releases).\n\n[![Cursor Motion custom demo cover](./docs/generated/readme-assets/cursor-motion-demo-cover.png)](https://youtu.be/KRUq5GUHv1Q)\n\n## Star History\n\n<a href=\"https://www.star-history.com/?repos=iFurySt%2Fopen-codex-computer-use&type=date&legend=top-left\">\n  <picture>\n    <source media=\"(prefers-color-scheme: dark)\" srcset=\"https://api.star-history.com/chart?repos=ifuryst/open-codex-computer-use&type=date&theme=dark&legend=top-left\" />\n    <source media=\"(prefers-color-scheme: light)\" srcset=\"https://api.star-history.com/chart?repos=ifuryst/open-codex-computer-use&type=date&legend=top-left\" />\n    <img alt=\"Star History Chart for open-computer-use\" src=\"https://api.star-history.com/chart?repos=ifuryst/open-codex-computer-use&type=date&legend=top-left\" />\n  </picture>\n</a>\n\n## License\n\n[MIT](./LICENSE)\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

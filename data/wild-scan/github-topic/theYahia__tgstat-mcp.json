@@ -1,0 +1,41 @@
+{
+  "full_name": "theYahia/tgstat-mcp",
+  "html_url": "https://github.com/theYahia/tgstat-mcp",
+  "description": "MCP server for TGStat — Telegram channel analytics, search, stats (Russia). Part of WWmcp — 114 MCP servers for emerging markets.",
+  "topics": [
+    "ai-agents",
+    "analytics",
+    "anthropic",
+    "claude",
+    "emerging-markets",
+    "mcp",
+    "mcp-servers",
+    "model-context-protocol",
+    "russia",
+    "russian-api",
+    "telegram",
+    "tgstat",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 3,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-01T15:10:52Z",
+  "last_pushed_at": "2026-06-23T09:59:03Z",
+  "fetched_at": "2026-07-12T00:02:34.193Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# @theyahia/tgstat-mcp\n\n> 🌍 Часть **[WWmcp](https://github.com/theYahia/WWmcp)** — коллекции из 114 MCP-серверов для развивающихся рынков (Россия, СНГ, MENA, Gulf, SE Asia, Africa). Единственная коллекция MCP, покрывающая не-западные API.\n\nMCP-сервер для **TGStat API** — аналитика Telegram-каналов: поиск каналов и постов, статистика, динамика подписчиков и охватов, ERR, упоминания, тренды ключевых слов, сравнение каналов. **20 инструментов.**\n\n[![npm](https://img.shields.io/npm/v/@theyahia/tgstat-mcp)](https://www.npmjs.com/package/@theyahia/tgstat-mcp)\n[![CI](https://github.com/theYahia/tgstat-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/theYahia/tgstat-mcp/actions/workflows/ci.yml)\n[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)\n\n## Установка\n\n### 1. Получите токен\n\n`TGSTAT_TOKEN` — API-ключ TGStat. Зарегистрируйтесь и получите токен на [api.tgstat.ru](https://api.tgstat.ru/) (нужен доступ к **Stat API** и/или **Search API** — разные инструменты требуют разных пакетов). Текущую квоту и срок пакета смотрите инструментом `get_usage`.\n\n### 2. Подключите сервер\n\n**Claude Desktop** (`claude_desktop_config.json`):\n\n```json\n{\n  \"mcpServers\": {\n    \"tgstat\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@theyahia/tgstat-mcp\"],\n      \"env\": {\n        \"TGSTAT_TOKEN\": \"ваш_токен\"\n      }\n    }\n  }\n}\n```\n\n**Claude Code:**\n\n```bash\nclaude mcp add tgstat -e TGSTAT_TOKEN=ваш_токен -- npx -y @theyahia/tgstat-mcp\n```\n\n## Инструменты (20)\n\n### Каналы\n\n| Инструмент | Описание |\n|------------|----------|\n| `search_channels` | Поиск каналов по запросу с фильтрами категории / языка / страны / типа |\n| `get_channel` | Профиль канала: подписчики, категория, индекс цитирования (ci_index), отметка РКН |\n| `get_channel_stats` | Статистика: средний охват поста, ERR%, дневной охват |\n| `get_channel_mentions` | Где канал упоминают / репостят другие каналы и чаты |\n| `compare_channels` | Сравнение каналов (2–10) по подписчикам, охвату и ERR — таблицей |\n\n### Посты\n\n| Инструмент | Описание |\n|------------|----------|\n| `get_channel_posts` | Последние посты канала с просмотрами; фильтр по датам и пагинация |\n| `get_post` | Детали поста: просмотры, репосты, реакции, текст |\n| `search_posts` | Полнотекстовый поиск постов с фильтрами типа / категории / языка / страны / дат |\n| `get_post_stats` | Динамика вовлечённости поста во времени |\n\n### Метрики (динамика во времени)\n\n| Инструмент | Описание |\n|------------|----------|\n| `get_channel_subscribers` | История числа подписчиков (group: hour/day/week/month) |\n| `get_channel_views` | История суммарных просмотров постов |\n| `get_channel_avg_reach` | История среднего охвата поста |\n| `get_channel_err` | История ERR (engagement rate by reach) |\n| `get_channel_forwards` | Посты других каналов, репостнувшие контент канала |\n\n### Ключевые слова\n\n| Инструмент | Описание |\n|------------|----------|\n| `get_word_mentions` | Динамика упоминаний слова/фразы по периодам (упоминания + просмотры) |\n| `get_word_mentions_by_channels` | Разбивка упоминаний слова по каналам |\n\n### Справочники\n\n| Инструмент | Описание |\n|------------|----------|\n| `list_categories` | Коды категорий каналов (для фильтра `category`) |\n| `list_countries` | Коды стран (для фильтра `country`) |\n| `list_languages` | Коды языков (для фильтра `language`) |\n\n### Использование\n\n| Инструмент | Описание |\n|------------|----------|\n| `get_usage` | Квота и лимиты API: израсходовано запросов / каналов / слов, срок пакета |\n\n## Формат вывода\n\nОтветы **курируются**: возвращаются только релевантные поля (подписчики, охваты, ERR, текст-сниппет, ссылки), даты — в ISO. Это экономит токены контекста и упрощает ответы модели. Даты в фильтрах указываются как `YYYY-MM-DD` и автоматически конвертируются в Unix-таймстемпы, которых требует API.\n\n## Примеры запросов\n\n```\nНайди Telegram-каналы про маркетинг на русском\nКакая статистика у @durov — подписчики, средний охват, ERR?\nПокажи рост подписчиков @vc_ru по неделям за последние 3 месяца\nСравни каналы @rbc_news, @kommersant и @vedomosti по охвату и ERR\nНайди посты про AI за январь 2026\nПострой динамику упоминаний слова «нейросети» по месяцам\nКто упоминает канал @thebell_io?\nСколько у меня осталось запросов в TGStat API?\n```\n\n## WWmcp — связки с соседними серверами\n\nTGStat закрывает аналитику; соседние серверы из [WWmcp](https://github.com/theYahia/WWmcp) — действие:\n\n- [`vk-ads-mcp`](https://github.com/theYahia/vk-ads-mcp) — рекламные кампании VK Ads\n- [`sendpulse-mcp`](https://github.com/theYahia/sendpulse-mcp) · [`unisender-mcp`](https://github.com/theYahia/unisender-mcp) — email-рассылки\n\nПример сценария: *«Найди топ финтех-каналы в Telegram (tgstat), оцени их ERR, выбери три с лучшим охватом и подготовь email-анонс через unisender»*.\n\n## Разработка\n\n```bash\nnpm install\nnpm run build      # компиляция в dist/\nnpm run typecheck  # проверка типов, включая тесты\nnpm test           # vitest\n```\n\n## ⭐ Поддержать\n\nЕсли сервер полезен — поставьте звезду этому репозиторию и [WWmcp](https://github.com/theYahia/WWmcp). Это помогает другим найти коллекцию серверов для не-западных API.\n\n## Лицензия\n\nMIT\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

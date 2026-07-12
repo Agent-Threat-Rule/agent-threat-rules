@@ -1,0 +1,33 @@
+{
+  "full_name": "m5tshift/google-forms-mcp",
+  "html_url": "https://github.com/m5tshift/google-forms-mcp",
+  "description": "Google Forms MCP — это инструмент, который позволяет LLM управлять Google формами через Model Context Protocol (MCP)",
+  "topics": [
+    "mcp",
+    "mcp-server",
+    "mcp-tools"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 0,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-12-09T20:58:49Z",
+  "last_pushed_at": "2025-12-17T11:29:35Z",
+  "fetched_at": "2026-07-12T00:52:50.300Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# Google Forms MCP\n\nGoogle Forms MCP — это инструмент, который позволяет LLM управлять Google формами через Model Context Protocol (MCP).\n\n## Возможности\n- Получение списка всех форм пользователя\n- Получение информации о конкретной форме по ID\n- Создание новых форм\n- Обновление существующих форм\n- Закрытие форм для новых ответов\n- Применение обновлений к элементам форм (вопросам, полям и т.д.)\n\n## Зависимости\n- `fastmcp` - библиотека для работы с MCP\n- `google-api-python-client` - клиентская библиотека для API Google\n- `google-auth`, `google-auth-httplib2`, `google-auth-oauthlib` - библиотеки для аутентификации с Google\n\n## Настройка\n1. Установите зависимости:\n\n   uv:\n      ```bash\n      uv sync\n      ```\n\n   pip:\n      ```bash\n      pip install -r requirements.txt\n      ```\n\n2. Получите файл `credentials.json` с настройками OAuth 2.0 через [Google Cloud Console](https://console.cloud.google.com/):\n   - Создайте новый проект или используйте существующий\n   - Включите Google Forms API и Google Drive API\n   - Создайте учетные данные OAuth 2.0\n   - Скачайте JSON-файл и переименуйте его в `credentials.json`\n\n3. Для тестирования импортов инструментов и получения token.json запустите MCP сервер:\n   ```bash\n   python server.py\n   ```\n   \n   При первом запуске будет открыта веб-страница для аутентификации, и после успешного подключения будет создан файл `token.json` для хранения токенов доступа.\n\n## Доступные инструменты\n\n### `get_form(form_id)`\nПолучить всю информацию о форме по её ID — метаданные и элементы (вопросы/поля).\n- Параметры: `form_id` (str) - идентификатор формы в Google Forms\n- Возвращает: объект формы, содержащий её информацию, настройки, список вопросов (items) и пр.\n\n### `list_forms()`\nПолучить список всех форм пользователя через Google Drive.\n- Возвращает: массив объектов форм — каждый содержит минимум 'id' и 'name'\n\n### `upsert_form(form_id, title, description)`\nСоздать новую форму или обновить существующую (по form_id).\n- Параметры:\n  - `form_id` (str, optional) - ID формы для обновления, либо None для создания новой\n  - `title` (str) - заголовок формы\n  - `description` (str, optional) - описание формы\n- Возвращает: информацию о созданной/обновлённой форме\n\n### `close_form(form_id)`\nЗакрыть форму для новых ответов — остановить приём новых submissions. После вызова форма останется, её структура сохранится, но новые ответы не будут приниматься.\n- Параметры: `form_id` (str) - идентификатор формы, которую нужно \"закрыть\"\n- Возвращает: обновлённые настройки формы\n\n### `apply_questions_patch(form_id, requests)`\nПрименить набор операций (patch) к вопросам/элементам формы через batchUpdate.\nПозволяет:\n- добавлять/создавать вопросы/элементы (createItem)\n- удалять элементы (deleteItem)\n- перемещать элементы (moveItem)\n- изменять существующие элементы (updateItem)\n- любые комбинации одновременно — все операции будут применены в одной транзакции\n- Параметры:\n  - `form_id` (str) - ID формы\n  - `requests` (List[dict]) - список операций в формате Google Forms API\n- Возвращает: ответ API с обновлённой информацией\n\n## Использование с Claude Desktop\nДля использования MCP-сервера с Claude Desktop:\n1. Убедитесь что mcp.run(...) в файле server.py установлен на `stdio`:\n   ```python\n   mcp.run(transport=\"stdio\")\n   ```\n2. Настройте Claude Desktop для подключения к MCP-серверу:\nSettings -> Developer -> Edit Config\n\n   claude_desktop_config.json\n   ```json\n   {\n      \"mcpServers\": {\n         \"GoogleFormsMCP\": {\n            \"command\": \"uv\",\n            \"args\": [\n            \"--directory\",\n            \"/Путь/к/директории/проекта/\",\n            \"run\",\n            \"server.py\"\n            ]\n         }\n      }\n   }\n   ```\n\n## Авторизация\nПриложение использует OAuth 2.0 для доступа к Google Forms API. При первом запуске будет открыт браузер для аутентификации пользователя. Токены хранятся в файле `token.json`.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": {
+    "path": "server.py",
+    "size": 1912,
+    "content": "from mcp_instance import mcp\nimport sys\n\n\ndef main():\n    print(\"🔧 Загружаем инструменты...\", file=sys.stderr)\n    try:\n        from tools.list_forms import list_forms\n\n        print(\"✅ list_forms загружен\", file=sys.stderr)\n    except Exception as e:\n        print(f\"❌ Ошибка импорта list_forms: {e}\", file=sys.stderr)\n\n    try:\n        from tools.apply_questions_patch import apply_questions_patch\n\n        print(\"✅ apply_questions_patch загружен\", file=sys.stderr)\n    except Exception as e:\n        print(f\"❌ Ошибка импорта apply_questions_patch: {e}\", file=sys.stderr)\n\n    try:\n        from tools.close_form import close_form\n\n        print(\"✅ close_form загружен\", file=sys.stderr)\n    except Exception as e:\n        print(f\"❌ Ошибка импорта close_form: {e}\", file=sys.stderr)\n\n    try:\n        from tools.get_form import get_form\n\n        print(\"✅ get_form загружен\", file=sys.stderr)\n    except Exception as e:\n        print(f\"❌ Ошибка импорта get_form: {e}\", file=sys.stderr)\n\n    try:\n        from tools.upsert_form import upsert_form\n\n        print(\"✅ upsert_form загружен\", file=sys.stderr)\n    except Exception as e:\n        print(f\"❌ Ошибка импорта upsert_form: {e}\", file=sys.stderr)\n\n    \"\"\"Запуск MCP сервера с HTTP транспортом.\"\"\"\n    print(\"=\" * 60, file=sys.stderr)\n    print(\"🌐 ЗАПУСК MCP СЕРВЕРА\", file=sys.stderr)\n    print(\"=\" * 60, file=sys.stderr)\n    # print(f\"🚀 MCP Server: http://{SERVER_HOST}:{SERVER_PORT}/mcp\", file=sys.stderr)\n    # print(\"=\" * 60, file=sys.stderr)\n    # mcp.run(\n    #     transport=\"streamable-http\",\n    #     host=SERVER_HOST,\n    #     port=SERVER_PORT,\n    #     stateless_http=True,\n    # )\n    mcp.run(transport=\"stdio\")\n\n\nif __name__ == \"__main__\":\n    main()\n"
+  },
+  "content_fetch_notes": []
+}

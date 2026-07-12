@@ -1,0 +1,42 @@
+{
+  "full_name": "getmasv/masv-mcp-server",
+  "html_url": "https://github.com/getmasv/masv-mcp-server",
+  "description": "MCP (Model Context Protocol) server that provides LLMs with tools to interact with the MASV API",
+  "topics": [
+    "ai",
+    "ai-agents",
+    "ai-tools",
+    "file-sharing",
+    "file-transfer",
+    "file-upload",
+    "large-files",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "model-context-protocol"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 5,
+  "forks": 0,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-04-27T17:14:04Z",
+  "last_pushed_at": "2026-05-01T14:42:06Z",
+  "fetched_at": "2026-07-12T00:34:49.446Z",
+  "readme": {
+    "path": "README.md",
+    "content": "# MASV MCP Server\n\n> **⚠️ Experimental Server**: This is an experimental MCP server created to gauge interest and integration potential. It has not been subject to our rigorous internal verification processes. Further support and updates will be provided on a best effort basis. We want to hear from you ! If you have any questions or issues, please contact us at [support@masv.io](mailto:support@masv.io).\n\nAn MCP (Model Context Protocol) server that provides LLMs with tools to interact with the MASV API.\n\n## What is MASV?\n\nMASV is an easy-to-use and ultra-reliable managed file transfer service designed for teams of all sizes. It allows users to send and receive massive files without size limits, while ensuring data integrity and security through its robust cloud infrastructure that supports cloud, on-prem, and hybrid workflows.\n\nLearn more https://massive.io/\n\n## Installation\n\nThe server can be run directly with `npx` without installation, or installed globally if preferred:\n\n```bash\n# Run directly with npx (recommended)\nnpx @getmasv/masv-mcp-server\n\n# Or install globally\nnpm install -g @getmasv/masv-mcp-server\n```\n\n## Configuration\n\n### Required Environment Variables\n\nThe server requires the following environment variables to authenticate with the MASV API:\n\n- `MASV_TEAM_ID` - Your MASV team identifier\n- `MASV_API_KEY` - Your MASV API authentication key\n\n### Optional Environment Variables\n\n- `MASV_ALLOW_DELETE` - Set to `true` to allow LLM use package and portal deletion tools (default: `false`)\n\n### MCP Client Configuration\n\nAdd the server to your MCP client configuration file:\n\n```json\n{\n  \"mcpServers\": {\n    \"masv\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@getmasv/masv-mcp-server\"],\n      \"env\": {\n        \"MASV_TEAM_ID\": \"your-team-id\",\n        \"MASV_API_KEY\": \"your-api-key\"\n      }\n    }\n  }\n}\n```\n\n**Note**: The `-y` flag automatically confirms the package execution without prompting.\n\n## Available Tools\n\nThe server provides the following tools for LLM interaction:\n\n### Package Management\n- `get_packages` - List team packages\n- `get_package` - Get package details by ID\n- `get_portal_packages` - List packages uploaded to portals\n- `get_package_files` - List files in a package\n- `get_package_transfers` - Get package transfer history\n- `update_package_expiration_date_and_time` - Modify package expiration\n- `delete_package` - Delete a package (requires `MASV_ALLOW_DELETE=true`)\n\n### Portal Management\n- `get_portals` - List all portals\n- `get_portal` - Get portal details by ID\n- `create_portal` - Create a new portal\n- `update_portal` - Update portal configuration\n- `delete_portal` - Delete a portal (requires `MASV_ALLOW_DELETE=true`)\n\n### Activity Tracking\n- `get_activities` - List activities and events\n- `get_activity_events` - Get event history for an activity\n- `get_activities_information` - Get detailed activity state descriptions\n\n### Integration Management\n- `get_integrations` - List connected storage integrations\n- `send_package_to_integration` - Transfer package to connected storage\n- `list_files_on_integration` - Browse files on cloud integrations\n- `list_files_on_storage_gateway` - Browse files on Storage Gateway\n- `transfer_files_from_integration` - Transfer files from storage to MASV (works with both cloud and MASV Storage Gateway)\n\n### Team Management\n- `get_team_members` - List team members and their details\n\n\n## License\n\nMIT\n\n## Support\n\nFor questions, issues, or feedback please contact us at [support@masv.io](mailto:support@masv.io).\n\n## Development\n\n### Install dependencies\n```\nnpm install\n```\n\n### Build\n```\nnpm run build\n```\n\n### Use MCP server\nIn LLM chat application add command to start the server:\n```\nnode /path/to/masv-mcp-server/build/index.js\n```\n\nTo run MCP inspector to inspect and execute tools\n\n```\nnpm run inspector\n```"
+  },
+  "descriptor_file": {
+    "path": "server.json",
+    "content": "{\n  \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json\",\n  \"name\": \"io.github.getmasv/masv\",\n  \"description\": \"Provides tools to use MASV API. MASV is reliable and secure large file transfer service.\",\n  \"repository\": {\n    \"url\": \"https://github.com/getmasv/masv-mcp-server\",\n    \"source\": \"github\"\n  },\n  \"version\": \"0.0.5\",\n  \"packages\": [\n    {\n      \"registryType\": \"npm\",\n      \"identifier\": \"@getmasv/masv-mcp-server\",\n      \"version\": \"0.0.5\",\n      \"transport\": {\n        \"type\": \"stdio\"\n      },\n      \"environmentVariables\": [\n        {\n          \"name\": \"MASV_TEAM_ID\",\n          \"description\": \"Your MASV team identifier\",\n          \"format\": \"string\",\n          \"isRequired\": true,\n          \"isSecret\": false\n        },\n        {\n          \"name\": \"MASV_API_KEY\",\n          \"description\": \"Your MASV API key for authentication\",\n          \"format\": \"string\",\n          \"isRequired\": true,\n          \"isSecret\": true\n        },\n        {\n          \"name\": \"MASV_ALLOW_DELETE\",\n          \"description\": \"Set to true to enable delete operations for packages and portals\",\n          \"format\": \"boolean\",\n          \"isRequired\": false,\n          \"isSecret\": false\n        }\n      ]\n    }\n  ]\n}"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

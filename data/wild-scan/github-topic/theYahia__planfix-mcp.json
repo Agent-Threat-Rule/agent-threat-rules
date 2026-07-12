@@ -1,0 +1,44 @@
+{
+  "full_name": "theYahia/planfix-mcp",
+  "html_url": "https://github.com/theYahia/planfix-mcp",
+  "description": "MCP server for Planfix — tasks, contacts, project management (Russia). Part of WWmcp — 114 MCP servers for emerging markets.",
+  "topics": [
+    "ai-agents",
+    "anthropic",
+    "claude",
+    "crm",
+    "emerging-markets",
+    "mcp",
+    "mcp-servers",
+    "model-context-protocol",
+    "planfix",
+    "project-management",
+    "russia",
+    "russian-api",
+    "typescript"
+  ],
+  "matched_query_topics": [
+    "mcp-servers"
+  ],
+  "stars": 2,
+  "forks": 2,
+  "open_issues": 0,
+  "language": "TypeScript",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2026-03-30T16:48:31Z",
+  "last_pushed_at": "2026-06-23T12:23:03Z",
+  "fetched_at": "2026-07-12T00:05:50.132Z",
+  "readme": {
+    "path": "README.md",
+    "content": "> 📦 Part of **[WWmcp — Emerging Markets MCP](https://github.com/theYahia/WWmcp)** — 114 MCP servers for non-Western APIs (Brazil/MENA/Gulf/SE Asia/Africa/CIS).\n\n# @theyahia/planfix-mcp\n\nMCP-сервер для Planfix API — задачи, проекты, контакты, комментарии, сотрудники, файлы. **20 инструментов, 2 навыка.**\n\n[![npm](https://img.shields.io/npm/v/@theyahia/planfix-mcp)](https://www.npmjs.com/package/@theyahia/planfix-mcp)\n[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)\n\nЧасть серии [Russian API MCP](https://github.com/theYahia/russian-mcp) (50 серверов) by [@theYahia](https://github.com/theYahia).\n\n## Установка\n\n### Claude Desktop\n\n```json\n{\n  \"mcpServers\": {\n    \"planfix\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@theyahia/planfix-mcp\"],\n      \"env\": {\n        \"PLANFIX_API_KEY\": \"your-api-key\",\n        \"PLANFIX_ACCOUNT\": \"your-subdomain\"\n      }\n    }\n  }\n}\n```\n\n### Claude Code\n\n```bash\nclaude mcp add planfix \\\n  -e PLANFIX_API_KEY=your-api-key \\\n  -e PLANFIX_ACCOUNT=your-subdomain \\\n  -- npx -y @theyahia/planfix-mcp\n```\n\n### Streamable HTTP (удалённый сервер)\n\n```bash\nPLANFIX_API_KEY=your-key PLANFIX_ACCOUNT=your-sub npx @theyahia/planfix-mcp --http 8080\n```\n\nЭндпоинт: `http://localhost:8080/mcp`\nHealth check: `http://localhost:8080/health`\n\n### Smithery\n\n[![smithery badge](https://smithery.ai/badge/@theyahia/planfix-mcp)](https://smithery.ai/server/@theyahia/planfix-mcp)\n\n```bash\nnpx -y @smithery/cli install @theyahia/planfix-mcp --client claude\n```\n\n### VS Code / Cursor\n\n```json\n{\n  \"servers\": {\n    \"planfix\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@theyahia/planfix-mcp\"],\n      \"env\": {\n        \"PLANFIX_API_KEY\": \"your-api-key\",\n        \"PLANFIX_ACCOUNT\": \"your-subdomain\"\n      }\n    }\n  }\n}\n```\n\n### Windsurf\n\n```json\n{\n  \"mcpServers\": {\n    \"planfix\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@theyahia/planfix-mcp\"],\n      \"env\": {\n        \"PLANFIX_API_KEY\": \"your-api-key\",\n        \"PLANFIX_ACCOUNT\": \"your-subdomain\"\n      }\n    }\n  }\n}\n```\n\n## Авторизация\n\n| Переменная | Обязательная | Описание |\n|-----------|-------------|----------|\n| `PLANFIX_API_KEY` | Да | API-ключ. Создаётся в Управлении аккаунтом → Доступ к API → REST API |\n| `PLANFIX_ACCOUNT` | **Да** | Субдомен (например `mycompany` из `mycompany.planfix.com`). Обязателен — общего хоста у REST API нет |\n| `PLANFIX_HOST` | Нет | Хост для региональных инсталляций (по умолчанию `planfix.com`; например `planfix.ru`) |\n| `PLANFIX_TOKEN` | Нет | Устаревший вариант, используйте `PLANFIX_API_KEY` |\n\nBase URL: `https://{PLANFIX_ACCOUNT}.{PLANFIX_HOST}/rest/`. Авторизация — заголовок `Authorization: Bearer <key>`.\n\n## Инструменты (20)\n\n### Задачи\n\n| Инструмент | Описание |\n|------------|----------|\n| `get_tasks` | Список задач (пагинация, `fields`, `filterId`, ad-hoc `filters`) |\n| `get_task` | Одна задача по ID |\n| `create_task` | Создание задачи (можно указать проект, исполнителя — см. `list_users`) |\n| `update_task` | Обновление задачи (название, описание, статус, исполнитель) |\n\n### Контакты\n\n| Инструмент | Описание |\n|------------|----------|\n| `get_contacts` | Список контактов |\n| `get_contact` | Один контакт по ID |\n| `create_contact` | Создать контакт или компанию |\n| `update_contact` | Обновить контакт (имя, email, телефон) |\n\n### Проекты, комментарии\n\n| Инструмент | Описание |\n|------------|----------|\n| `get_projects` | Список проектов |\n| `get_project` | Один проект по ID |\n| `get_comments` | Комментарии к задаче |\n| `add_comment` | Добавить комментарий к задаче |\n\n### Сотрудники, справочники, поля, файлы\n\n| Инструмент | Описание |\n|------------|----------|\n| `list_users` | Список сотрудников — **используйте для поиска ID исполнителя по имени** |\n| `get_user` | Один сотрудник по ID |\n| `list_directories` | Справочники (наборы статусов задач хранятся как справочники) |\n| `list_directory_entries` | Записи справочника по его ID (например, варианты статусов) |\n| `list_custom_fields` | Кастомные поля по типу объекта (`task`/`contact`/`project`/`user`/`main`) |\n| `list_datatags` | Дата-теги |\n| `upload_file_from_url` | Загрузить файл по прямой ссылке |\n| `get_file` | Метаданные файла по ID |\n\n## Навыки (Skills / Prompts) (2)\n\n| Навык | Описание |\n|-------|----------|\n| `skill-my-tasks` | \"Мои задачи на сегодня\" — показывает задачи с дедлайном сегодня или просроченные |\n| `skill-create-task` | \"Создай задачу в проекте\" — пошаговый помощник для создания задачи с выбором проекта |\n\n## Статусы задач\n\nОтдельного эндпоинта `/taskstatus/list` в Planfix нет. Системные статусы — фиксированный\nнабор констант: `DRAFT, ACTIVE, ACCEPTED, COMPLETED, DELAYED, REJECTED, DONE, CANCELED`.\nКастомные наборы статусов настраиваются как справочники — перечислить их можно через\n`list_directories` → `list_directory_entries`.\n\n## Примеры\n\n```\nПокажи мои задачи в Planfix\nНайди сотрудника Иванов и создай задачу \"Подготовить отчёт\" в проекте 123 с ним как исполнителем\nСписок контактов\nПокажи проекты\nДобавь комментарий к задаче 456: \"Готово\"\n```\n\n## 🚀 Demo prompts\n\n> **Use case (RU):** \"Создай задачу 'Звонок клиенту' в Planfix, привяжи к сделке #12345\"\n\n🤖 **Pairs well with:**\n- [`@theyahia/kaiten-mcp`](https://github.com/theYahia/kaiten-mcp)\n- [`@theyahia/megaplan-mcp`](https://github.com/theYahia/megaplan-mcp)\n- [`@theyahia/yandex-tracker-mcp`](https://github.com/theYahia/yandex-tracker-mcp)\n\n## Ограничения\n\n- **`priority` в `create_task`** передаётся как строка «как есть» — точные допустимые\n  значения не верифицированы против live API.\n- Прямая загрузка файлов с диска (multipart `POST /file/`) и эндпоинты\n  time-tracking/actions не реализованы (REST-контракт не подтверждён). Доступна загрузка\n  файла по ссылке (`upload_file_from_url`).\n\n## Разработка\n\n```bash\nnpm install\nnpm test        # Vitest (32 теста)\nnpm run dev     # tsx watch\nnpm run build   # TypeScript compile\n```\n\n## Planfix — реферальная программа\n\n**35% бессрочный recurring** от всех платежей приведённых клиентов.\n\n- Без сертификации — просто зарегистрируйтесь в партнёрской программе\n- Recurring: получаете 35% каждый месяц, пока клиент платит\n- Бессрочно: нет ограничений по времени выплат\n\nПодробнее: [planfix.com/partners](https://planfix.com/ru/partner-program/)\n\n## Лицензия\n\nMIT\n\n---\n\n⭐ **Star if you build with Planfix** — helps other devs find this server.\n"
+  },
+  "descriptor_file": {
+    "path": ".mcp.json",
+    "content": "{\n  \"mcpServers\": {\n    \"planfix\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@theyahia/planfix-mcp\"],\n      \"env\": {\n        \"PLANFIX_API_KEY\": \"\",\n        \"PLANFIX_ACCOUNT\": \"\"\n      }\n    }\n  }\n}\n"
+  },
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}

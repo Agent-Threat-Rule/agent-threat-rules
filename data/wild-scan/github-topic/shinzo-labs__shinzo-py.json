@@ -1,0 +1,44 @@
+{
+  "full_name": "shinzo-labs/shinzo-py",
+  "html_url": "https://github.com/shinzo-labs/shinzo-py",
+  "description": "Python SDK for MCP server observability, built on OpenTelemetry. Gain insight into agent usage patterns, contextualize tool calls, and analyze server performance across platforms. Integrate with any OpenTelemetry ingest service including the Shinzo platform.",
+  "topics": [
+    "ai",
+    "ai-agents",
+    "analytics",
+    "framework",
+    "infrastructure",
+    "instrumentation",
+    "library",
+    "mcp",
+    "mcp-server",
+    "mcp-tools",
+    "modular",
+    "observability",
+    "open-source",
+    "opentelemetry",
+    "python",
+    "telemetry"
+  ],
+  "matched_query_topics": [
+    "mcp-tools"
+  ],
+  "stars": 13,
+  "forks": 5,
+  "open_issues": 2,
+  "language": "Python",
+  "license": "MIT",
+  "default_branch": "main",
+  "created_at": "2025-09-30T17:13:52Z",
+  "last_pushed_at": "2025-12-10T11:09:33Z",
+  "fetched_at": "2026-07-12T00:29:51.105Z",
+  "readme": {
+    "path": "README.md",
+    "content": "<a id=\"readme-top\"></a>\n<div align=\"center\">\n    <a href=\"https://github.com/shinzo-labs/shinzo-py\"><img src=\"https://github.com/user-attachments/assets/64f5e0ae-6924-41b1-b1da-1b22627e5c43\" alt=\"Logo\" width=\"256\" height=\"256\"></a>\n    <h1 align=\"center\">\n        Shinzo Python SDK: Complete Observability for MCP Servers\n    </h1>\n    <p align=center>\n        <a href=\"https://github.com/shinzo-labs/shinzo-py/stargazers\"><img src=\"https://img.shields.io/github/stars/shinzo-labs/shinzo-py?style=flat&logo=github&color=e3b341\" alt=\"Stars\"></a>\n        <a href=\"https://github.com/shinzo-labs/shinzo-py/forks\"><img src=\"https://img.shields.io/github/forks/shinzo-labs/shinzo-py?style=flat&logo=github&color=8957e5\" alt=\"Forks\"></a>\n        <a href=\"https://github.com/shinzo-labs/shinzo-py/pulls\"><img src=\"https://img.shields.io/badge/build-passing-green\" alt=\"Build\"></a>\n        <a href=\"https://github.com/shinzo-labs/shinzo-py/graphs/contributors\"><img src=\"https://img.shields.io/badge/contributors-welcome-339933?logo=github\" alt=\"contributors welcome\"></a>\n        <a href=\"https://discord.gg/UYUdSdp5N8\"><img src=\"https://discord-live-members-count-badge.vercel.app/api/discord-members?guildId=1079318797590216784\" alt=\"Discord\"></a>\n    </p>\n    The SDK provides OpenTelemetry-compatible instrumentation for Python MCP servers. Gain insight into agent usage patterns, contextualize tool calls, and analyze performance of your servers across platforms. Instrumentation can be installed in servers in just a few steps with an emphasis on ease of use and flexibility.\n    <p align=center>\n        <a href=\"https://docs.shinzo.ai/sdk/python/installation\"><strong>Explore the docs »</strong></a>\n    </p>\n</div>\n\n## Installation\n\nThe Shinzo Python instrumentation library works with Python MCP servers built with the core MCP SDK or FastMCP. Simply install the base package:\n\n```bash\npip install shinzo\n```\n\n## Quick Start\n\nChoose the example that matches your MCP SDK:\n\n### FastMCP Example\n\n```python\nfrom mcp.server.fastmcp import FastMCP\nfrom shinzo import instrument_server\n\n# Create FastMCP server\nmcp = FastMCP(name=\"my-mcp-server\")\n\n# Instrument it with Shinzo\nobservability = instrument_server(\n    mcp,\n    config={\n        \"server_name\": \"my-mcp-server\",\n        \"server_version\": \"1.0.0\",\n        \"exporter_auth\": {\n            \"type\": \"bearer\",\n            \"token\": \"your-api-token\"\n        }\n    }\n)\n\n# Define your tools\n@mcp.tool()\ndef get_weather(city: str) -> str:\n    \"\"\"Get weather for a city.\"\"\"\n    return f\"Weather for {city}: Sunny\"\n\n# Run the server\nif __name__ == \"__main__\":\n    mcp.run()\n```\n\n###  MCP SDK Example\n\n```python\nfrom mcp.server import Server\nfrom shinzo import instrument_server\n\n# Create your MCP server\nserver = Server(\"my-mcp-server\")\n\n# Instrument it with Shinzo\nobservability = instrument_server(\n    server,\n    config={\n        \"server_name\": \"my-mcp-server\",\n        \"server_version\": \"1.0.0\",\n        \"exporter_auth\": {\n            \"type\": \"bearer\",\n            \"token\": \"your-api-token\"\n        }\n    }\n)\n\n# Define your tools\n@server.call_tool()\nasync def get_weather(city: str) -> str:\n    return f\"Weather for {city}: Sunny\"\n\n# Clean shutdown\nasync def shutdown():\n    await observability.shutdown()\n```\n\n## SDK Compatibility\n\nShinzo automatically detects and instruments your MCP server regardless of which SDK you use:\n\n| SDK | Detection Method | Decorator | Use Case |\n|-----|-----------------|-----------|----------|\n| **FastMCP** | `server.tool` attribute | `@mcp.tool()` | Simpler API, modern Python patterns, recommended for new projects |\n| **Traditional MCP** | `server.call_tool` attribute | `@server.call_tool()` | Standard MCP specification, more configuration options |\n\nBoth SDKs receive the same comprehensive instrumentation with no additional configuration needed.\n\n## Features\n\n- 🔍 **Automatic Instrumentation** - Zero-code changes for basic tracing across both FastMCP and Traditional MCP\n- 📊 **Rich Metrics** - Track request duration, error rates, and custom metrics\n- 🔐 **PII Sanitization** - Built-in sensitive data protection\n- 🎯 **Session Tracking** - Correlate all requests in a user session\n- ⚡ **High Performance** - Minimal overhead with efficient batching\n- 🛠️ **Flexible Configuration** - Customize sampling, exporters, and processors\n\n## Configuration\n\n| Setting | Required | Type | Default | Description |\n|---------|----------|------|---------|-------------|\n| `server_name` | ✅ | `str` | - | Name of your MCP server |\n| `server_version` | ✅ | `str` | - | Version of your MCP server |\n| `exporter_endpoint` | ❌ | `str` | `\"https://api.app.shinzo.ai/telemetry/ingest_http\"` | OTLP endpoint URL for telemetry export |\n| `exporter_auth` | ❌ | `AuthConfig` | `None` | Authentication configuration for the exporter |\n| `exporter_type` | ❌ | `\"otlp-http\"` \\| `\"console\"` | `\"otlp-http\"` | Type of exporter to use |\n| `sampling_rate` | ❌ | `float` | `1.0` | Trace sampling rate (0.0-1.0) |\n| `enable_metrics` | ❌ | `bool` | `True` | Enable metrics collection |\n| `enable_tracing` | ❌ | `bool` | `True` | Enable distributed tracing |\n| `enable_pii_sanitization` | ❌ | `bool` | `False` | Enable automatic PII sanitization |\n| `enable_argument_collection` | ❌ | `bool` | `True` | Collect and include tool arguments in telemetry |\n| `metric_export_interval_ms` | ❌ | `int` | `60000` | Interval for exporting metrics (milliseconds) |\n| `batch_timeout_ms` | ❌ | `int` | `30000` | Timeout for batching telemetry data (milliseconds) |\n| `data_processors` | ❌ | `list[Callable]` | `None` | Custom data processors for telemetry attributes |\n| `pii_sanitizer` | ❌ | `PIISanitizer` | `None` | Custom PII sanitizer instance |\n\n### Authentication Configuration (`exporter_auth`)\n\n| Setting | Required | Type | Description |\n|---------|----------|------|-------------|\n| `type` | ✅ | `\"bearer\"` \\| `\"apiKey\"` \\| `\"basic\"` | Authentication method |\n| `token` | ❌ | `str` | Bearer token (required when `type=\"bearer\"`) |\n| `api_key` | ❌ | `str` | API key (required when `type=\"apiKey\"`) |\n| `username` | ❌ | `str` | Username (required when `type=\"basic\"`) |\n| `password` | ❌ | `str` | Password (required when `type=\"basic\"`) |\n\n## Development\n\n### Testing\n\nRun the test suite to verify the library's behavior:\n\n```bash\n# Run all tests\npython -m pytest tests/\n\n# Run with coverage report\npython -m pytest tests/ --cov=shinzo --cov-report=term-missing\n\n# Run specific test file\npython -m pytest tests/test_config.py -v\n\n# Or use make\nmake test\n```\n\nThe test suite validates:\n- ✅ Configuration validation and error handling\n- ✅ PII sanitization for emails and sensitive data\n- ✅ Authentication configuration (bearer, basic, API key)\n- ✅ Sampling rate validation\n\n### Linting\n\nRun all linting checks before submitting a PR:\n\n```bash\n# Run all linting checks (black, ruff, mypy)\nmake lint-all\n\n# Or run individual checks\nmake format      # Format code with black\nmake lint        # Run ruff linter\nmake type-check  # Run mypy type checker\n```\n\nThis ensures your code passes all CI validation checks locally before pushing.\n\n## License\n\nThis package is distributed under the [MIT License](./LICENSE.md).\n\n## Contributing\n\nContributions are welcome! Please see the [Contributing Guide](./CONTRIBUTING.md) for more information.\n"
+  },
+  "descriptor_file": null,
+  "entrypoint_file": null,
+  "content_fetch_notes": [
+    "no small root-level entrypoint candidate found"
+  ]
+}
