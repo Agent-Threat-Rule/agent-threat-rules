@@ -1,0 +1,15 @@
+{
+  "package": "@cappt/mcp-server",
+  "version": "0.1.5",
+  "description": "A MCP server for Cappt",
+  "repository_url": "https://github.com/cappt-team/mcp-server-nodejs",
+  "readme": "# mcp-server-cappt: 咔片MCP服务器\n\n<div align=\"center\">\n  <img alt=\"Cappt\" height=\"128\" width=\"128\" src=\"https://raw.githubusercontent.com/cappt-team/mcp-server-nodejs/main/assets/logo.png\"/>\n</div>\n\n## 概述\n\n一个MCP（Model Context Protocol）服务器，用于生成咔片（cappt.cc）的提纲和演示文稿。\n\n### 工具\n\n1. `generate_presentation`\n\n- 从提纲生成演示文稿（由 `generate_outline` 生成）\n- 输入：\n  - `outline`（字符串）：标准提纲\n  - `include_gallery`（布尔值）：是否在结果中包含图库\n- 返回：\n  - `record_id`：生成的演示文稿的记录 ID\n  - `status`：生成过程的状态\n  - `total_page`：演示文稿的总页数\n  - `editor_url`：编辑演示文稿的 URL\n  - `title`：演示文稿的标题\n  - `thumbnail`：演示文稿的缩略图\n  - `gallery`：演示文稿的图库\n\n### 提示词\n\n1. `generate_outline`\n\n- 生成标准提纲\n- 输入：\n  - `input`（字符串）：用户输入，例如标题、文章等\n- 返回：标准提纲\n\n## 安装\n\n```\ncd path/to/repo\nnpm install\nnpm run build\n```\n\n## 配置\n\n### 与 Claude Desktop 一起使用\n\n将以下内容添加到你的 `claude_desktop_config.json` 中：\n\n```json\n{\n  \"mcpServers\": {\n    \"sentry\": {\n      \"command\": \"node\",\n      \"args\": [\n        \"path/to/repo/dist/index.js\"\n      ],\n      \"env\": {\n        \"CAPPT_TOKEN\": \"YOUR_CAPPT_TOKEN\"\n      }\n    }\n  }\n}\n```\n\n## 调试\n\n你可以使用 MCP 检查器来调试服务器。请确保你已使用 `uv` 安装此软件包，然后运行：\n\n```\nnpx @modelcontextprotocol/inspector node dist/index.ts\n```\n\n## 许可证\n\n此 MCP 服务器根据 MIT 许可证授权。这意味着你可以自由使用、修改和分发该软件，遵循 MIT 许可证的条款和条件。有关更多详细信息，请参阅项目存储库中的 LICENSE 文件。\n",
+  "ecosystem": "npm",
+  "discovery": {
+    "method": "sdk-dependent",
+    "source": "repos.ecosyste.ms usage/dependencies",
+    "sdk_dependency": "@modelcontextprotocol/sdk",
+    "dependent_repo": "cappt-team/mcp-server"
+  },
+  "collected_at": "2026-07-11T22:34:04.807Z"
+}

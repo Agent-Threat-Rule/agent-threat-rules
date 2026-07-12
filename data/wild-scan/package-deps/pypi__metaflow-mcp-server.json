@@ -1,0 +1,15 @@
+{
+  "package": "metaflow-mcp-server",
+  "version": "0.5.0",
+  "description": "MCP server for Metaflow -- expose flow runs, logs, and artifacts as tools for AI coding agents",
+  "repository_url": null,
+  "readme": "# Metaflow MCP Server\n\n[![CI](https://github.com/npow/metaflow-mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/npow/metaflow-mcp-server/actions/workflows/ci.yml)\n[![PyPI](https://img.shields.io/pypi/v/metaflow-mcp-server?v=2)](https://pypi.org/project/metaflow-mcp-server/)\n[![Python](https://img.shields.io/pypi/pyversions/metaflow-mcp-server?v=2)](https://pypi.org/project/metaflow-mcp-server/)\n[![License](https://img.shields.io/github/license/npow/metaflow-mcp-server?v=2)](LICENSE)\n[![MCP](https://img.shields.io/badge/MCP-compatible-blue)](https://modelcontextprotocol.io/) [![Docs](https://img.shields.io/badge/docs-mintlify-18a34a?style=flat-square)](https://mintlify.com/npow/metaflow-mcp-server)\n\nGive your coding agent superpowers over your Metaflow workflows. Instead of writing throwaway scripts to check run status or dig through logs, just ask -- your agent will figure out the rest.\n\nWorks with any Metaflow backend: local, S3, Azure, GCS, or Netflix internal.\n\n<p align=\"center\">\n  <img src=\"demo/demo.gif\" alt=\"demo\" width=\"800\">\n</p>\n\n## Tools\n\n| Tool | Description |\n|------|-------------|\n| `get_config` | What backend am I connected to? (also returns your default namespace) |\n| `list_flows` | What flows exist in a namespace? |\n| `search_runs` | Find recent runs of any flow |\n| `get_run` | Step-by-step breakdown of a run |\n| `get_task_logs` | Pull stdout/stderr from a task |\n| `list_artifacts` | What did this step produce? |\n| `get_artifact` | Grab an artifact's value |\n| `get_latest_failure` | What broke and why? |\n| `search_artifacts` | Which runs produced a named artifact? |\n\n## Quickstart\n\n```bash\npip install metaflow-mcp-server\nclaude mcp add --scope user metaflow -- metaflow-mcp-server\n```\n\nThat's it. Restart Claude Code and start asking questions about your flows.\n\n**To upgrade:**\n\n```bash\npip install --upgrade metaflow-mcp-server\n```\n\nThen restart Claude Code (or reconnect via `/mcp`) to pick up the new version.\n\nIf Metaflow lives in a specific venv, point to it:\n\n```bash\nclaude mcp add --scope user metaflow -- /path/to/venv/bin/metaflow-mcp-server\n```\n\nFor other MCP clients, the server speaks stdio: `metaflow-mcp-server`\n\n## How it works\n\nWraps the Metaflow client API. Whatever backend your Metaflow is pointed at, the server uses too -- no separate config needed. Sets `namespace(None)` at startup so production runs (Argo, Step Functions, Maestro) are visible alongside your dev runs.\n\nStarts once per session, communicates over stdin/stdout. No daemon, no port.\n\n## License\n\nApache-2.0\n",
+  "ecosystem": "pypi",
+  "discovery": {
+    "method": "sdk-dependent",
+    "source": "repos.ecosyste.ms usage/dependencies",
+    "sdk_dependency": "mcp",
+    "dependent_repo": "npow/metaflow-mcp-server"
+  },
+  "collected_at": "2026-07-11T22:43:18.666Z"
+}

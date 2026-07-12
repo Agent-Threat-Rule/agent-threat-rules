@@ -1,0 +1,15 @@
+{
+  "package": "@theyahia/vnpay-mcp",
+  "version": "1.0.2",
+  "description": "MCP server for VNPay — payment gateway, QR payments (Vietnam)",
+  "repository_url": "https://github.com/theYahia/vnpay-mcp",
+  "readme": "# vnpay-mcp\n\nMCP server for VNPay payment gateway (Vietnam). Supports payment URL generation, transaction queries, refunds, tokenized payments, and IPN verification with HMAC-SHA512 signing.\n\n## Tools (8)\n\n| Tool | Description |\n|---|---|\n| `create_payment_url` | Generate a VNPay payment URL |\n| `query_transaction` | Query transaction status |\n| `refund` | Refund a transaction |\n| `get_bank_list` | Get supported bank list |\n| `create_token` | Create a card token |\n| `pay_with_token` | Pay using stored token |\n| `query_token` | Query token information |\n| `verify_ipn` | Verify IPN callback signature |\n\n## Quick Start\n\n```json\n{\n  \"mcpServers\": {\n    \"vnpay\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@theyahia/vnpay-mcp\"],\n      \"env\": {\n        \"VNPAY_TMN_CODE\": \"<YOUR_TMN_CODE>\",\n        \"VNPAY_HASH_SECRET\": \"<YOUR_HASH_SECRET>\"\n      }\n    }\n  }\n}\n```\n\n## Environment Variables\n\n| Variable | Required | Description |\n|---|---|---|\n| `VNPAY_TMN_CODE` | Yes | Terminal code from VNPay |\n| `VNPAY_HASH_SECRET` | Yes | Hash secret for HMAC-SHA512 signing |\n| `VNPAY_PRODUCTION` | No | Set to \"true\" for production |\n\n## Demo Prompts\n\n- \"Create a VNPay payment URL for 100,000 VND\"\n- \"Query transaction status for order vnp-123\"\n- \"Get list of supported Vietnamese banks\"\n- \"Verify this IPN callback: vnp_TxnRef=...\"\n\n## License\n\nMIT\n",
+  "ecosystem": "npm",
+  "discovery": {
+    "method": "sdk-dependent",
+    "source": "repos.ecosyste.ms usage/dependencies",
+    "sdk_dependency": "@modelcontextprotocol/sdk",
+    "dependent_repo": "theYahia/vnpay-mcp"
+  },
+  "collected_at": "2026-07-11T22:33:22.182Z"
+}

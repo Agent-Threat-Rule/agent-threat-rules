@@ -1,0 +1,15 @@
+{
+  "package": "mythos-mcp",
+  "version": "2.2.0",
+  "description": "MythOS MCP server — connect AI assistants to your MythOS knowledge library",
+  "repository_url": "https://github.com/citizens-of-one/mythos-mcp",
+  "readme": "# mythos-mcp\n\nMCP server for [MythOS](https://mythos.one) — connect AI assistants to your knowledge library.\n\n## Setup\n\n```bash\nnpx -y mythos-mcp\n```\n\n### Environment Variables\n\n| Variable | Required | Default | Description |\n|----------|----------|---------|-------------|\n| `MYTHOS_API_KEY` | Yes | — | Your MythOS API key |\n| `MYTHOS_USERNAME` | Yes | — | Your MythOS username |\n| `MYTHOS_API_URL` | No | `https://mythos.one` | API base URL |\n\n### Claude Desktop\n\nAdd to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json`):\n\n```json\n{\n  \"mcpServers\": {\n    \"mythos\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"mythos-mcp\"],\n      \"env\": {\n        \"MYTHOS_API_KEY\": \"your-api-key\",\n        \"MYTHOS_USERNAME\": \"your-username\"\n      }\n    }\n  }\n}\n```\n\n## Features\n\n- **Tools**: Search, read, create, update, and delete memos. Manage tasks and daily memos. Chat with your library via RAG.\n- **Resources**: Access memos, profile, feed, and augmentation context (soul, style, human, memory).\n- **Augmentation**: Your MythOS augmentation memos are loaded at session start, giving AI assistants your style preferences, collaboration context, and formatting rules.\n\n## Source\n\nMaintained in [studio-mythos-v3](https://github.com/citizens-of-one/mythos-mcp). Published from `src/mcp/`.\n",
+  "ecosystem": "npm",
+  "discovery": {
+    "method": "sdk-dependent",
+    "source": "repos.ecosyste.ms usage/dependencies",
+    "sdk_dependency": "@modelcontextprotocol/sdk",
+    "dependent_repo": "citizens-of-one/mythos-mcp"
+  },
+  "collected_at": "2026-07-11T22:34:18.461Z"
+}

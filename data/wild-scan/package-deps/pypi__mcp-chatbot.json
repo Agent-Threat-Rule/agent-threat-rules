@@ -1,0 +1,15 @@
+{
+  "package": "mcp-chatbot",
+  "version": "0.1.0",
+  "description": "Add your description here",
+  "repository_url": null,
+  "readme": "# MCP ChatBot项目\r\n能够实现MCP调用的对话机器人\r\n\r\n## 接口梳理\r\n\r\n- [x] 创建MCP Server\r\n- [x] 删除MCP Server\r\n- [x] 更新MCP Server\r\n- [x] 查询 MCP Server列表\r\n- [x] 查询 MCP Server的详情\r\n- [x] 启用/停用MCP Server(让大模型更加精准的找到需要调用的函数)\r\n- [x] 刷新MCP Server的在线状态（相当于重启或重新连接MCP Server）\r\n- [x] 查询MCP Server的tools列表（直接通过配置获取）\r\n- [x] 调用MCP Server的tool\r\n\r\n> 支持 stdio + sse + stremable http\r\n\r\n\r\n## 服务部署\r\n\r\n### 命令行运行(对stdio友好)\r\n\r\n```\r\nuv pip install -e .\r\nmcp-chatbot\r\n```\r\n\r\n### 容器部署（对sse和streamable http友好）\r\n\r\n构建镜像\r\n```\r\ndocker build -t mcp-chatbot:v1 .\r\n```\r\n\r\n启动容器\r\n```\r\ndocker run -d --name mcp-chatbot --restart always \\\r\n-p8088:8000 \\\r\n-v/Users/morris/Desktop/coding/mcp-chatbot/mcp_chatbot.db:/app/mcp_chatbot.db \\\r\nmcp-chatbot:v1\r\n```\r\n",
+  "ecosystem": "pypi",
+  "discovery": {
+    "method": "sdk-dependent",
+    "source": "repos.ecosyste.ms usage/dependencies",
+    "sdk_dependency": "mcp",
+    "dependent_repo": "bigdatainsight/mcp-chatbot"
+  },
+  "collected_at": "2026-07-11T22:46:28.468Z"
+}

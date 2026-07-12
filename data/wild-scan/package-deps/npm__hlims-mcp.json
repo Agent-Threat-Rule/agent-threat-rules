@@ -1,0 +1,14 @@
+{
+  "package": "hlims-mcp",
+  "version": "1.0.0",
+  "description": "HLIMS Agent MCP Server - stdio proxy for remote HLIMS MCP service (硬件中心实验室信息管理系统)",
+  "repository_url": null,
+  "readme": "# hlims-mcp\n\nHLIMS (硬件中心实验室信息管理系统) MCP Server 的 npm 封装。\n\n通过 stdio ↔ Streamable HTTP 桥接，将远程 HLIMS MCP Server 暴露为本地 stdio MCP 服务，供 Claude Desktop、Cursor 等客户端使用。\n\n```\nClaude Desktop / Cursor ←stdio→ hlims-mcp ←HTTP→ HLIMS MCP Server\n```\n\n## 快速开始\n\n### Claude Desktop\n\n编辑 `claude_desktop_config.json`：\n\n```json\n{\n  \"mcpServers\": {\n    \"hlims\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"hlims-mcp\"],\n      \"env\": {\n        \"HLIMS_MCP_URL\": \"http://your-server:8020/mcp\",\n        \"HLIMS_MCP_TOKEN\": \"your-token\"\n      }\n    }\n  }\n}\n```\n\n### Cursor\n\n在 Cursor Settings → MCP 中添加：\n\n```json\n{\n  \"mcpServers\": {\n    \"hlims\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"hlims-mcp\"],\n      \"env\": {\n        \"HLIMS_MCP_URL\": \"http://your-server:8020/mcp\",\n        \"HLIMS_MCP_TOKEN\": \"your-token\"\n      }\n    }\n  }\n}\n```\n\n### Claude Code (CLI)\n\nClaude Code 原生支持 Streamable HTTP，无需此包，直接连接即可：\n\n```bash\nclaude mcp add hlims --transport streamable-http http://your-server:8020/mcp \\\n  --header \"Authorization: Bearer your-token\"\n```\n\n### 命令行\n\n```bash\n# 通过参数\nnpx hlims-mcp http://your-server:8020/mcp your-token\n\n# 通过环境变量\nHLIMS_MCP_URL=http://your-server:8020/mcp HLIMS_MCP_TOKEN=your-token npx hlims-mcp\n```\n\n## 环境变量\n\n| 变量 | 必填 | 说明 |\n|------|------|------|\n| `HLIMS_MCP_URL` | 是 | HLIMS MCP Server 地址（如 `http://host:8020/mcp`） |\n| `HLIMS_MCP_TOKEN` | 否 | Bearer Token 认证令牌 |\n\n也支持作为命令行参数传入：`hlims-mcp <url> [token]`\n\n## 功能\n\n- 透明转发所有 MCP 工具调用（tools）\n- 透明转发所有 MCP 资源请求（resources）\n- 支持 Bearer Token 认证\n- 优雅关闭，断开远程连接\n\n## License\n\nMIT\n",
+  "ecosystem": "npm",
+  "discovery": {
+    "method": "keyword-search",
+    "source": "registry.npmjs.org/-/v1/search",
+    "matched_query": "keywords:model-context-protocol"
+  },
+  "collected_at": "2026-07-11T22:35:43.623Z"
+}

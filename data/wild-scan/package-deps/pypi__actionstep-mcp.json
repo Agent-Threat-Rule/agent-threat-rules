@@ -1,0 +1,15 @@
+{
+  "package": "actionstep-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for Actionstep API — full coverage for law firm practice management",
+  "repository_url": "https://github.com/rosenadvertising/actionstep-mcp",
+  "readme": "# actionstep-mcp\n\nMCP server for [Actionstep](https://actionstep.com) — 144 tools covering the full Actionstep REST API for law firm practice management. Use Actionstep from Claude Desktop with natural language.\n\n## What you can do\n\n- **Actions (Matters)** — create, update, assign, track workflow steps, manage billing settings\n- **Participants (Contacts)** — full CRUD, relationships, contact notes, phone records\n- **Tasks** — create, assign, complete, filter by matter or assignee\n- **Time Records & Time Entries** — log time, manage billable entries, activity codes\n- **Disbursements** — log expenses, link to matters\n- **Calendar** — appointments linked to matters\n- **Emails & SMS** — log communications, associate with matters\n- **File Notes** — attendance notes and case notes on matters\n- **Documents** — action documents and folders\n- **Data Collections** — custom form data on matters\n- **Webhooks** — REST hook subscriptions for real-time events\n- **Reference data** — action types, participant types, rates, UTBMS codes, tax codes\n\n## Requirements\n\n- Python 3.10+\n- Claude Desktop (or any MCP-compatible client)\n- Actionstep developer credentials (Client ID, Client Secret)\n\n> **Actionstep developer access:** Register at the Actionstep developer portal to obtain OAuth credentials.\n\n## Installation\n\n```bash\npip install actionstep-mcp\n```\n\n## Setup\n\n```bash\nactionstep-mcp-setup\n```\n\nThis opens a browser for OAuth authorization and saves credentials to `~/.actionstep-mcp/`.\n\nVerify:\n\n```bash\nactionstep-mcp-verify\n```\n\n## Claude Desktop Configuration\n\n```json\n{\n  \"mcpServers\": {\n    \"actionstep\": {\n      \"command\": \"actionstep-mcp\"\n    }\n  }\n}\n```\n\n## Authentication Notes\n\nActionstep uses a dynamic `api_endpoint` — the URL for your organisation's API is returned in the OAuth token response and varies per firm. The setup wizard captures and stores this automatically.\n\n## Example usage in Claude\n\n> \"List my open actions\"\n\n> \"Create a task on action 456 — send retainer agreement to client\"\n\n> \"Log 2.5 hours on action 789, description: drafted statement of claim\"\n\n> \"Add a file note on action 123 — client called re: mediation date\"\n\n> \"Create a calendar appointment for the Jones hearing on Monday 10am\"\n\n## License\n\nMIT\n",
+  "ecosystem": "pypi",
+  "discovery": {
+    "method": "sdk-dependent",
+    "source": "repos.ecosyste.ms usage/dependencies",
+    "sdk_dependency": "mcp",
+    "dependent_repo": "RosenAdvertising/actionstep-mcp"
+  },
+  "collected_at": "2026-07-11T22:45:52.890Z"
+}

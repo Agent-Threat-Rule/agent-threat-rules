@@ -1,0 +1,14 @@
+{
+  "package": "@aifinpay/agent",
+  "version": "1.2.0",
+  "description": "Unified agent-economy SDK for autonomous AI agents — chain-opaque AiFinPayAgent surface (call/openSession/balance/verify) over Polygon and Solana execution environments.",
+  "repository_url": "https://github.com/AiFinPay/sdk",
+  "readme": "# @aifinpay/agent (Node / TypeScript)\n\nNon-custodial x402 payment client for autonomous AI agents on\n[AiFinPay](https://aifinpay.io).\n\nThe Ed25519 keypair is generated locally with `tweetnacl` and never leaves\nyour process. The SDK only sends a one-time SHA-256 + Ed25519 signature in\nthe `x-signature` header to authenticate against AiFinPay-protected endpoints.\n\n## Install\n\n```bash\n# install (latest)\nnpm install @aifinpay/agent\n# or pnpm add @aifinpay/agent\n# or yarn add @aifinpay/agent\n\n# stable (when 1.0 ships)\nnpm install @aifinpay/agent\n```\n\n## Quick start\n\n```ts\nimport { Agent } from \"@aifinpay/agent\";\n\n// Generate a fresh keypair locally — never transmitted\nconst agent = Agent.new();\nconsole.log(\"Fund this address:\", agent.address);\nconsole.log(\"Save this secret:\", agent.secretB58); // store securely!\n\n// Wait until the wallet has at least $0.01 worth on-chain\nawait agent.waitForFunding({ minUsdCents: 1 });\n\n// Request an invoice for a Seat (USDC on Solana)\nconst invoice = await agent.reserveSeatInvoice({\n  amountUsd: 1.0,\n  asset: \"USDC\",\n});\n// Build + sign + submit the on-chain tx with @solana/web3.js or viem.\n// `invoice.raw` has program_id, treasury_vault, mints, nonce, etc.\n\n// Once the Seat is on-chain, gated endpoints just work:\nconst res = await agent.get(\"https://aifinpay.io/api/stats\");\nconsole.log(await res.json());\n```\n\n## Loading an existing keypair\n\n```ts\n// from solana-keygen JSON file (Node only)\nconst agent = await Agent.fromKeypairFile(\"./agent-wallet.json\");\n\n// from base58 secret string (works in browser too)\nconst agent2 = Agent.fromSecretB58(\"3RvZm7Gw...\");\n```\n\n## How x402 auth works under the hood\n\nFor every gated request the SDK:\n\n1. `GET /nonce` → receives a one-time UUID with 60s TTL.\n2. computes `SHA-256(\"AiFinPay-x402:{nonce}:{pubkey}\")`.\n3. signs with Ed25519, base58-encodes the signature.\n4. retries the original request with headers:\n   - `x-agent-pubkey: <base58 pubkey>`\n   - `x-nonce: <uuid>`\n   - `x-signature: <base58 sig>`\n\nThe server verifies the signature, checks the agent has a live Seat PDA\non-chain, and serves the resource.\n\n## Privacy\n\n- **The server never sees your private key.** Period.\n- Nonces are consumed on use; replay-resistant.\n- All transactions are public and on-chain — Solana + Polygon mainnet.\n\n## License\n\nMIT.\n",
+  "ecosystem": "npm",
+  "discovery": {
+    "method": "keyword-search",
+    "source": "registry.npmjs.org/-/v1/search",
+    "matched_query": "keywords:model-context-protocol"
+  },
+  "collected_at": "2026-07-11T22:35:40.935Z"
+}

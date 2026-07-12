@@ -1,0 +1,15 @@
+{
+  "package": "obenan-mcp",
+  "version": "1.0.11",
+  "description": "A Weather MCP server for Windsurf that provides weather alerts and forecasts",
+  "repository_url": null,
+  "readme": "# Obenan MCP Server\n\nA Model Context Protocol (MCP) server written in TypeScript that provides access to Obenan's location and review analysis APIs. This server enables AI assistants to interact with Obenan's platform to fetch location data and analyze customer reviews.\n\n## Features\n\n- **Location Management**: Fetch locations, search by name, and get detailed information about specific locations\n- **Review Analysis**: Analyze customer reviews using Obenan's Review Analyzer API\n\n## Setup\n\nAdd this to your Windsurf MCP configuration (typically found at `~/.codeium/windsurf/mcp_config.json`):\n\n```json\n{\n  \"mcp_servers\": {\n    \"obenan-mcp\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"obenan-mcp@latest\"],\n      \"transport\": \"stdio\"\n    }\n  }\n}\n```\n\n## Authentication\n\nThis MCP server requires an Obenan API access token. You can provide it in two ways:\n\n1. Set the `OBENAN_LOGIN_ACCESS_TOKEN` environment variable\n2. Pass the `access_token` parameter directly to the API calls\n\n## Available Tools\n\nThe server provides the following tools:\n\n- `fetch_my_locations`: Fetch locations from Obenan API\n- `get_location_details`: Get detailed information about a specific location by ID\n- `search_locations_by_name`: Search for locations containing a specific name\n- `review_analyzer`: Analyze reviews using the Obenan Review Analyzer API\n",
+  "ecosystem": "npm",
+  "discovery": {
+    "method": "sdk-dependent",
+    "source": "repos.ecosyste.ms usage/dependencies",
+    "sdk_dependency": "@modelcontextprotocol/sdk",
+    "dependent_repo": "jawad-ali-71/Obi-Mcp-Sse"
+  },
+  "collected_at": "2026-07-11T22:34:31.703Z"
+}

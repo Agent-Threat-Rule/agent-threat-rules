@@ -1,0 +1,14 @@
+{
+  "package": "mcp-handler",
+  "version": "1.1.0",
+  "description": "Vercel MCP Adapter for Next.js and other frameworks",
+  "repository_url": "https://github.com/vercel/mcp-handler",
+  "readme": "# mcp-handler\n\nA Vercel adapter for the Model Context Protocol (MCP), enabling real-time communication between your applications and AI models. Supports Next.js and Nuxt.\n\n## Installation\n\n```bash\nnpm install mcp-handler @modelcontextprotocol/sdk@1.26.0 zod@^3\n```\n\n> **Note**: Versions of `@modelcontextprotocol/sdk` prior to 1.26.0 have a security vulnerability. Use version 1.26.0 or later.\n\n## Quick Start (Next.js)\n\n```typescript\n// app/api/[transport]/route.ts\nimport { createMcpHandler } from \"mcp-handler\";\nimport { z } from \"zod\";\n\nconst handler = createMcpHandler(\n  (server) => {\n    server.registerTool(\n      \"roll_dice\",\n      {\n        title: \"Roll Dice\",\n        description: \"Roll a dice with a specified number of sides.\",\n        inputSchema: {\n          sides: z.number().int().min(2),\n        },\n      },\n      async ({ sides }) => {\n        const value = 1 + Math.floor(Math.random() * sides);\n        return {\n          content: [{ type: \"text\", text: `🎲 You rolled a ${value}!` }],\n        };\n      }\n    );\n  },\n  {},\n  {\n    basePath: \"/api\", // must match where [transport] is located\n    maxDuration: 60,\n    verboseLogs: true,\n  }\n);\n\nexport { handler as GET, handler as POST };\n```\n\n## Connecting Clients\n\nIf your client supports Streamable HTTP, connect directly:\n\n```json\n{\n  \"remote-example\": {\n    \"url\": \"http://localhost:3000/api/mcp\"\n  }\n}\n```\n\nFor stdio-only clients, use [mcp-remote](https://www.npmjs.com/package/mcp-remote):\n\n```json\n{\n  \"remote-example\": {\n    \"command\": \"npx\",\n    \"args\": [\"-y\", \"mcp-remote\", \"http://localhost:3000/api/mcp\"]\n  }\n}\n```\n\n## Documentation\n\n- [Client Integration](docs/CLIENTS.md) - Claude Desktop, Cursor, Windsurf setup\n- [Authorization](docs/AUTHORIZATION.md) - OAuth and token verification\n- [Advanced Usage](docs/ADVANCED.md) - Dynamic routing, Nuxt, configuration options\n\n## Features\n\n- **Framework Support**: Next.js and Nuxt\n- **Multiple Transports**: Streamable HTTP and Server-Sent Events (SSE)\n- **Redis Integration**: Optional, for SSE transport resumability\n- **TypeScript Support**: Full type definitions included\n\n## Requirements\n\n- Next.js 13+ or Nuxt 3+\n- Node.js 18+\n- Redis (optional, for SSE)\n\n## License\n\nApache-2.0\n",
+  "ecosystem": "npm",
+  "discovery": {
+    "method": "keyword-search",
+    "source": "registry.npmjs.org/-/v1/search",
+    "matched_query": "mcp server sdk"
+  },
+  "collected_at": "2026-07-11T22:36:24.299Z"
+}

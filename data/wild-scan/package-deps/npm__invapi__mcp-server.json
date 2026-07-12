@@ -1,0 +1,15 @@
+{
+  "package": "@invapi/mcp-server",
+  "version": "1.0.5",
+  "description": "Invoice MCP server — extract structured data from PDF & image invoices, create e-invoices (UBL, CII, ZUGFeRD/Factur-X), convert between formats including Excel, and validate against EN 16931.",
+  "repository_url": "https://github.com/invapi-org/invapi-mcp",
+  "readme": "# @invapi/mcp-server\n\nMCP server for the [Invapi](https://invapi.org) E-Invoicing API — convert, validate, and extract invoices in UBL, CII, ZUGFeRD, Excel, and more.\n\n## Quick Start\n\n```bash\nnpm install -g @invapi/mcp-server\n```\n\nSet your API key (get one at [invapi.org](https://invapi.org)):\n\n```bash\nexport INVAPI_API_KEY=your-api-key\n```\n\n## Usage\n\n### Claude Desktop\n\nAdd to `claude_desktop_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"invapi\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@invapi/mcp-server\"],\n      \"env\": {\n        \"INVAPI_API_KEY\": \"your-api-key\"\n      }\n    }\n  }\n}\n```\n\n### Claude Code\n\n```bash\nclaude mcp add -e INVAPI_API_KEY=xxx invapi -- npx @invapi/mcp-server\n```\n\n## Tools\n\n### Conversion\n\n| Tool | Description |\n|------|-------------|\n| `invapi_convert_json_to_ubl` | JSON Invoice → UBL XML |\n| `invapi_convert_json_to_cii` | JSON Invoice → CII XML |\n| `invapi_convert_ubl_to_json` | UBL XML → JSON Invoice |\n| `invapi_convert_cii_to_json` | CII XML → JSON Invoice |\n| `invapi_convert_json_to_xlsx` | JSON Invoices → Excel file |\n| `invapi_create_zugferd_pdf` | PDF + JSON Invoice → ZUGFeRD PDF |\n| `invapi_convert_zugferd_to_json` | ZUGFeRD PDF → JSON Invoice |\n\n### Validation\n\n| Tool | Description |\n|------|-------------|\n| `invapi_validate_ubl` | Validate UBL XML against XRechnung 3.0.2 (EN 16931) |\n| `invapi_validate_cii` | Validate CII XML against XRechnung 3.0.2 (EN 16931) |\n| `invapi_validate_xml` | Validate XML with auto-detected format |\n\n### Extraction\n\n| Tool | Description |\n|------|-------------|\n| `invapi_extract_invoice` | Extract structured invoice data from PDF or image |\n| `invapi_extract_qr` | Extract QR code data from image |\n\n### User\n\n| Tool | Description |\n|------|-------------|\n| `invapi_get_user` | Get account info and remaining API credits |\n\n### Batch\n\n| Tool | Description |\n|------|-------------|\n| `invapi_batch_convert` | Run up to 100 conversion operations in a single request |\n\n## Development\n\n```bash\ngit clone https://github.com/invapi/invapi-mcp.git\ncd invapi-mcp\nnpm install\nnpm run dev\n```\n\n## License\n\nMIT\n",
+  "ecosystem": "npm",
+  "discovery": {
+    "method": "sdk-dependent",
+    "source": "repos.ecosyste.ms usage/dependencies",
+    "sdk_dependency": "@modelcontextprotocol/sdk",
+    "dependent_repo": "invapi-org/invapi-mcp"
+  },
+  "collected_at": "2026-07-11T22:32:17.049Z"
+}

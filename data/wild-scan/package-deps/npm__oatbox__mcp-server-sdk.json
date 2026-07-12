@@ -1,0 +1,14 @@
+{
+  "package": "@oatbox/mcp-server-sdk",
+  "version": "0.1.1",
+  "description": "Oatbox MCP server SDK — visitor-scoped JWT verification + decorators for building MCP servers that integrate with Oatbox voice agents.",
+  "repository_url": "https://github.com/oatbox/oatbox",
+  "readme": "# @oatbox/mcp-server-sdk\n\nBuild MCP servers for Oatbox voice agents with visitor-scoped tools.\n\n## Install\n\n```bash\nnpm install @oatbox/mcp-server-sdk\n```\n\n## Quick start\n\n```ts\nimport { OatboxMCP, visitor_scoped } from \"@oatbox/mcp-server-sdk\"\n\nconst server = new OatboxMCP({\n  workspaceId: \"acme\",\n  sharedSecret: process.env.OATBOX_MCP_SECRET!,\n})\n\nserver.tool(\"get_subscription_status\", visitor_scoped(async ({ visitor }) => {\n  return await db.subscriptions.findByUserId(visitor.userId)\n}))\n\nserver.tool(\n  \"cancel_subscription\",\n  visitor_scoped({ requireConfirm: true }, async ({ visitor }) => {\n    return await billing.cancel(visitor.userId)\n  }),\n)\n\nserver.start({ port: 3030 })\n```\n\n## Why visitor-scoped?\n\nVisitor identity is sealed at session start by Oatbox and cryptographically verifiable\non every call. Your MCP server cannot be tricked by prompt injection into impersonating\na different visitor — the JWT signed by Oatbox is the source of truth.\n\nSee [the Oatbox MCP architecture doc](https://docs.oatbox.ai/mcp/architecture) for details.\n\n## Clock-skew tolerance\n\nJWT `iat` / `exp` checks tolerate 30 seconds of clock drift by default — matches\ntypical NTP drift between Oatbox and customer-hosted MCP servers. Override via\nthe `clockToleranceSeconds` config option:\n\n```ts\nconst server = new OatboxMCP({\n  workspaceId: \"acme\",\n  sharedSecret: process.env.OATBOX_MCP_SECRET!,\n  clockToleranceSeconds: 5, // strict freshness, e.g. for sensitive write tools\n})\n```\n\n## Security\n\nThis package does not execute any code at install time. Its only runtime dependency is [`jose`](https://github.com/panva/jose) — the de-facto Node.js JOSE library, maintained by Auth0 / panva.\n\nReport security issues privately to **security@oatbox.ai** — see the [Security Policy](https://github.com/oatbox/oatbox/blob/main/SECURITY.md). We respond within 24 hours.\n\n## Changelog\n\nSee [CHANGELOG.md](./CHANGELOG.md).\n\n## License\n\nMIT\n",
+  "ecosystem": "npm",
+  "discovery": {
+    "method": "keyword-search",
+    "source": "registry.npmjs.org/-/v1/search",
+    "matched_query": "mcp server sdk"
+  },
+  "collected_at": "2026-07-11T22:36:14.592Z"
+}

@@ -1,0 +1,15 @@
+{
+  "package": "ubereats-cli",
+  "version": "0.0.2",
+  "description": "Order from Uber Eats via terminal, REST API, or MCP server for Claude",
+  "repository_url": null,
+  "readme": "# ubereats-cli\n\nOrder from Uber Eats via the terminal, REST API, or MCP server for Claude Code.\n\n## Install\n\n```bash\nnpm install -g ubereats-cli\n```\n\n## Quick Start\n\n```bash\nubereats login              # Opens browser → log in → session auto-captured\nubereats search \"pizza\"     # Search for food\nubereats store <uuid>       # View restaurant menu\nubereats add-to-cart <store_uuid> <item_uuid> \"Pepperoni Pizza\"\nubereats checkout           # Preview order\nubereats place-order        # Place it!\nubereats orders             # Track delivery\n```\n\n## Commands\n\n### Browse\n- `ubereats search <query>` — Search restaurants and items\n- `ubereats restaurants [limit]` — List nearby restaurants\n- `ubereats store <store_uuid>` — Restaurant details and menu\n- `ubereats product <store_uuid> <item_uuid>` — Item customization options\n\n### Order\n- `ubereats add-to-cart <store> <item> [name] [qty] [customizations]` — Add to cart\n- `ubereats remove-from-cart <item_uuid>` — Remove from cart\n- `ubereats cart` — View current cart\n- `ubereats tip <percent>` — Set tip (0, 5, 10, 15, 20)\n- `ubereats checkout` — Preview order summary\n- `ubereats place-order` — Place the order\n- `ubereats orders` — Track orders\n\n### Account\n- `ubereats login [lat] [lng]` — Log in via browser\n- `ubereats setup <cookies>` — Manual cookie setup\n- `ubereats addresses` — List saved addresses\n- `ubereats addresses switch <label>` — Switch delivery address\n- `ubereats whoami` — User profile\n\n### API\n- `ubereats server` — Start REST API (port 3200)\n- `ubereats mcp` — Start MCP server for Claude Code\n\n## MCP Server (Claude Code)\n\nAdd to your project's `.mcp.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"ubereats\": {\n      \"command\": \"bun\",\n      \"args\": [\"run\", \"src/mcp/index.ts\"],\n      \"cwd\": \"/path/to/ubereats-cli\"\n    }\n  }\n}\n```\n\n16 tools available: `whoami`, `search`, `list_restaurants`, `get_store`, `get_item_options`, `add_to_cart`, `remove_from_cart`, `get_cart`, `checkout_preview`, `set_tip`, `list_payment_methods`, `set_payment_method`, `place_order`, `track_orders`, `list_addresses`, `switch_address`\n\n## License\n\nMIT\n",
+  "ecosystem": "npm",
+  "discovery": {
+    "method": "sdk-dependent",
+    "source": "repos.ecosyste.ms usage/dependencies",
+    "sdk_dependency": "@modelcontextprotocol/sdk",
+    "dependent_repo": "crafter-station/ubereats-cli"
+  },
+  "collected_at": "2026-07-11T22:32:47.568Z"
+}

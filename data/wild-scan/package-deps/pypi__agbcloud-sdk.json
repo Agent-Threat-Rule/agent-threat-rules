@@ -1,0 +1,15 @@
+{
+  "package": "agbcloud-sdk",
+  "version": "0.12.0",
+  "description": "AGB Python SDK",
+  "repository_url": null,
+  "readme": "# AGB Python SDK\n\nClient library for the AGB cloud service: create and manage sessions, run code and commands, use the file system, browser automation, and persistent context.\n\n## Installation\n\n```bash\npip install agbcloud-sdk\n```\n\n## Quick Start\n\n```python\nfrom agb import AGB\nfrom agb.session_params import CreateSessionParams\n\nagb = AGB(api_key=\"your-api-key\")\nparams = CreateSessionParams(image_id=\"agb-code-space-1\")\nresult = agb.create(params)\n\nif result.success:\n    session = result.session\n    code_result = session.code.run(\"print('Hello AGB!')\", \"python\")\n    print(code_result.result)\n    cmd_result = session.command.execute(\"ls -la\")\n    print(cmd_result.output)\n    agb.delete(session)\nelse:\n    print(result.error_message)\n```\n\n## Features\n\n- Session management (create, list, get, delete)\n- **Code** – run Python/JavaScript/Java/R in cloud\n- **Command** – execute shell commands\n- **File** – read, write, edit, search, transfer\n- **Browser** – automation, screenshots, fingerprint\n- **Computer** – mouse, keyboard, window, app, screen\n- **Context** – persistent data and sync policies\n\n## Documentation\n\nFull docs and API reference: see the [repository documentation](../docs/README.md) (quick start, guides, API reference, examples).\n\n## License\n\nApache-2.0\n",
+  "ecosystem": "pypi",
+  "discovery": {
+    "method": "sdk-dependent",
+    "source": "repos.ecosyste.ms usage/dependencies",
+    "sdk_dependency": "mcp",
+    "dependent_repo": "agbcloud/agbcloud-sdk"
+  },
+  "collected_at": "2026-07-11T22:44:54.265Z"
+}

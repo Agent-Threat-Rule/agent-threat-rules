@@ -1,0 +1,15 @@
+{
+  "package": "mcp-server-mql5",
+  "version": "0.1.2",
+  "description": "A MCP server for MQL5 development: Compiles code locally via MetaEditor and searches official docs.",
+  "repository_url": null,
+  "readme": "# MQL5 Developer MCP Server\n\nA specialized Model Context Protocol (MCP) server for **MetaTrader 5 (MQL5)** developers. \nIt bridges the gap between AI Assistants (Claude, Cursor, Antigravity) and your local MetaEditor.\n\n**Maintained by [Elliott Waves 2.0]** – *Advanced Algorithmic Trading Solutions.*\n\n## Features\n\n1.  **Local Compilation (`compile_mql5`)**: \n    - Compiles MQL5 code locally using your installed `metaeditor64.exe`.\n    - Returns exact error logs and warnings to the AI, enabling auto-fixing loops.\n    - No trading account connection required (safe & fast).\n\n2.  **Documentation Search (`search_mql5_docs`)**: \n    - Smart search via DuckDuckGo restricted to `mql5.com/docs`.\n    - Fetches clean documentation without requiring API keys or Firecrawl credits.\n    - Helps the AI understand parameters and syntax correctly.\n\n## Configuration\n\n### 1. Prerequisites\n- Python installed\n- `uv` installed (Recommended)\n- MetaTrader 5 installed on Windows\n\n### 2. Setup (Claude Desktop / Antigravity)\n\nAdd this to your configuration file (e.g., `claude_desktop_config.json`):\n```json\n{\n  \"mcpServers\": {\n    \"mql5-dev\": {\n      \"command\": \"uvx\",\n      \"args\": [\"--from\", \"git+https://github.com/elliottwaves-20/mcp-server-mql5.git\", \"mcp-server-mql5\"],\n      \"env\": {\n        \"MQL5_EDITOR_PATH\": \"\"\n      }\n    }\n  }\n}\n```\n\n**⚠️ WICHTIG - MetaEditor Pfad konfigurieren:**\n\nDer Server versucht automatisch, Ihre MetaEditor-Installation zu finden. Falls dies fehlschlägt, setzen Sie den Pfad manuell:\n\n**So finden Sie Ihren Pfad:**\n1. Rechtsklick auf MetaEditor-Verknüpfung → **Eigenschaften** → Reiter \"Verknüpfung\"\n2. Kopieren Sie den vollständigen Pfad aus dem Feld **\"Ziel\"**\n3. Fügen Sie ihn in die Config ein (Backslashes verdoppeln: `\\\\`)\n\n**Häufige Pfade:**\n- `C:\\\\Program Files\\\\MetaTrader 5 IC Markets\\\\metaeditor64.exe`\n- `C:\\\\Program Files\\\\MetaTrader 5 XM\\\\metaeditor64.exe`\n- `C:\\\\Program Files (x86)\\\\MetaTrader 5\\\\metaeditor64.exe`\n\n**Beispiel mit manuellem Pfad:**\n```json\n\"env\": {\n  \"MQL5_EDITOR_PATH\": \"C:\\\\Program Files\\\\MetaTrader 5 IC Markets\\\\metaeditor64.exe\"\n}\n```\n\n**Testen der Installation:**\nStarte Claude Desktop neu und frage:\n> \"Compile this MQL5 code: `void OnStart() { Print(\"Test\"); }`\"\n\nBei Erfolg solltest du Compiler-Output sehen.",
+  "ecosystem": "pypi",
+  "discovery": {
+    "method": "sdk-dependent",
+    "source": "repos.ecosyste.ms usage/dependencies",
+    "sdk_dependency": "mcp",
+    "dependent_repo": "elliottwaves-20/mcp-server-mql5"
+  },
+  "collected_at": "2026-07-11T22:44:06.926Z"
+}

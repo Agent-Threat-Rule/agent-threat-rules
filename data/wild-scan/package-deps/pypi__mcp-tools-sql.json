@@ -1,0 +1,15 @@
+{
+  "package": "mcp-tools-sql",
+  "version": "0.1.2",
+  "description": "An MCP server for safe, configurable SQL database access",
+  "repository_url": "https://github.com/MarcusJellinghaus/mcp-tools-sql",
+  "readme": "# mcp-tools-sql\n\n> **Status: Under active development — not yet functional.**\n\nAn MCP server for safe, configurable SQL database access. Exposes schema introspection, user-defined SELECT queries, and structured UPDATE operations as MCP tools for LLM-assisted workflows.\n\n## Key Ideas\n\n- **Configurable, not ad-hoc**: Every query the LLM can run is defined upfront in config. The config is the security boundary.\n- **Schema discovery**: Built-in tools to explore schemas, tables, columns, and foreign key relations.\n- **Structured updates**: UPDATE operations are defined as table + key + fields, not raw SQL. The server generates the SQL.\n- **Split config**: Query definitions live in the project repo (safe to commit). Credentials live in the user's home directory (never committed).\n- **Multi-backend**: MS SQL Server (primary), PostgreSQL, SQLite.\n\n## Architecture\n\n```\nMCP Client (Claude Code, etc.)\n    ↕ STDIO/MCP\nmcp-tools-sql server\n    ├── Built-in tools (schema introspection)\n    ├── Configured query tools (from mcp-tools-sql.toml)\n    ├── Configured update tools (from mcp-tools-sql.toml)\n    └── Backend abstraction\n         ├── SQLite (stdlib)\n         ├── MS SQL Server (pyodbc)\n         └── PostgreSQL (psycopg)\n```\n\nSee [docs/architecture/architecture.md](docs/architecture/architecture.md) for details.\n\n## Installation\n\n```bash\npip install mcp-tools-sql              # core + SQLite\npip install mcp-tools-sql[mssql]       # + SQL Server support\npip install mcp-tools-sql[postgresql]  # + PostgreSQL support\n```\n\n## Quick Start\n\n```bash\n# Generate starter project query config (mcp-tools-sql.toml) and a\n# database config skeleton at ~/.mcp-tools-sql/config.toml\nmcp-tools-sql init --backend sqlite\n\n# Edit ~/.mcp-tools-sql/config.toml and set the SQLite path, e.g.:\n#     [connections.default]\n#     backend = \"sqlite\"\n#     path = \"./mydb.db\"\n\n# Validate environment, configs, dependencies, and connectivity\nmcp-tools-sql verify\n\n# Start MCP server\nmcp-tools-sql --config mcp-tools-sql.toml\n```\n\nSee [docs/cli.md](docs/cli.md) for the full CLI reference (all flags,\nexample output, exit codes).\n\n## Configuration\n\nTwo config files:\n\n| File | Purpose | Location |\n|------|---------|----------|\n| `mcp-tools-sql.toml` | Query/update definitions | Project dir (committed) |\n| `~/.mcp-tools-sql/config.toml` | Database connections + credentials | User home (never committed) |\n\nThe `--config` flag overrides the project query config path; the\n`--database-config` flag overrides the database config path.\n\nSee the [planning document](mcp-tools-sql.md) for full details.\n\n## License\n\nMIT\n",
+  "ecosystem": "pypi",
+  "discovery": {
+    "method": "sdk-dependent",
+    "source": "repos.ecosyste.ms usage/dependencies",
+    "sdk_dependency": "mcp",
+    "dependent_repo": "MarcusJellinghaus/mcp-tools-sql"
+  },
+  "collected_at": "2026-07-11T22:46:13.089Z"
+}

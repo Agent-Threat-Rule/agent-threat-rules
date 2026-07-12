@@ -1,0 +1,15 @@
+{
+  "package": "eventflare-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for Eventflare venue data — makes venues discoverable by AI assistants",
+  "repository_url": null,
+  "readme": "# Eventflare MCP Server\n\nMakes Eventflare venue data queryable by AI assistants (Claude, ChatGPT, Perplexity) via the Model Context Protocol.\n\n## Quick Start\n\n```bash\nnpm install\nnpm run build\nnpm start          # stdio mode (Claude Desktop)\n```\n\nFor HTTP mode (remote access):\n```bash\nTRANSPORT=http PORT=3001 npm start\n```\n\n## Tools\n\n| Tool | What it does |\n|------|-------------|\n| `search_venues` | Search venues by city, capacity, category, event type |\n| `get_city_info` | Venue count, categories, price ranges for a city |\n| `list_cities` | All 40+ cities with URLs |\n| `get_venue_details` | Full venue details + photos |\n| `get_pricing_guide` | Budget guidance by city/category |\n| `request_quote` | Generate inquiry URL |\n\n## Connect to Claude Desktop\n\nAdd to `claude_desktop_config.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"eventflare\": {\n      \"command\": \"node\",\n      \"args\": [\"/path/to/eventflare-mcp-server/dist/index.js\"]\n    }\n  }\n}\n```\n\n## Connect to Claude Code\n\n```bash\nclaude mcp add eventflare node /path/to/eventflare-mcp-server/dist/index.js\n```\n\n## Environment Variables\n\n| Variable | Default | Description |\n|----------|---------|-------------|\n| `STRAPI_API_URL` | `https://dev-content.eventflare.io/api` | Strapi API base URL |\n| `EVENTFLARE_URL` | `https://eventflare.io` | Website URL for generated links |\n| `TRANSPORT` | `stdio` | `stdio` or `http` |\n| `PORT` | `3001` | HTTP server port |\n| `ANALYTICS_LOG` | `./analytics.jsonl` | Query log file path |\n\n## Development\n\n```bash\nnpm run dev        # run with tsx (no build needed)\nnpm run inspect    # open MCP Inspector UI\n```\n\n## Deploy as Remote Server\n\nWhen using `TRANSPORT=http`, the MCP endpoint is at `/mcp`. Add CORS headers are included.\nPoint AI clients to: `https://your-domain.com/mcp`\n\n## Analytics\n\nEvery query is logged to `analytics.jsonl` with: timestamp, tool name, city, capacity, event type, result count. No PII.\n",
+  "ecosystem": "npm",
+  "discovery": {
+    "method": "sdk-dependent",
+    "source": "repos.ecosyste.ms usage/dependencies",
+    "sdk_dependency": "@modelcontextprotocol/sdk",
+    "dependent_repo": "mluckx/eventflare-mcp-server"
+  },
+  "collected_at": "2026-07-11T22:34:41.465Z"
+}

@@ -1,0 +1,15 @@
+{
+  "package": "agmemory",
+  "version": "0.23.2",
+  "description": "Persistent memory system for AI agents — session notes, rolling state, and RAG search",
+  "repository_url": "https://github.com/RK0429/agentic-memory",
+  "readme": "# agmemory\n\nPersistent memory system for AI agents — session notes, rolling state, and RAG search.\n\n## Features\n\n- **Session notes**: Create structured markdown notes per session with metadata extraction\n- **Rolling state**: Track focus, open items, decisions, pitfalls across sessions\n- **RAG search**: BM25+ scoring with field-level weighting, query expansion, fuzzy matching\n- **MCP server**: Expose all operations as MCP tools for AI agent integration\n- **CLI**: Full-featured command-line interface\n\n## Installation\n\n```bash\npip install agmemory\n```\n\nWith optional features:\n\n```bash\n# Japanese tokenization support\npip install agmemory[japanese]\n\n# Dense embedding search\npip install agmemory[dense]\n\n# All extras\npip install agmemory[all]\n```\n\n## Quick Start\n\n### CLI\n\n```bash\n# Initialize memory directory\nmemory init\n\n# Create a session note\nmemory note new --title \"Fix authentication bug\"\n\n# Search notes\nmemory search --query \"authentication timeout\"\n\n# Show current state\nmemory state show\n\n# Update state from a note\nmemory state from-note memory/2026-03-02/1830_fix-authentication-bug.md\n```\n\n### MCP Server\n\nRegister in your `.mcp.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"memory\": {\n      \"command\": \"memory\",\n      \"args\": [\"serve\"]\n    }\n  }\n}\n```\n\nOr with `uvx`:\n\n```json\n{\n  \"mcpServers\": {\n    \"memory\": {\n      \"command\": \"uvx\",\n      \"args\": [\"agmemory\", \"serve\"]\n    }\n  }\n}\n```\n\n### Upgrading\n\nAfter upgrading the package, reconnect the MCP server to pick up new tool\nparameters and schema changes. In Claude Code, run `/mcp` and select\nreconnect; other MCP hosts may require restarting the server process.\n\n## Memory Directory Structure\n\n```\nmemory/\n├── _state.md              # Rolling state\n├── _index.jsonl           # Lightweight search index\n├── _rag_config.json       # Search configuration\n├── _vocab.json            # Vocabulary cache for fuzzy matching\n└── YYYY-MM-DD/\n    └── HHMM_slug.md       # Session note\n```\n\n## License\n\nApache-2.0\n",
+  "ecosystem": "pypi",
+  "discovery": {
+    "method": "sdk-dependent",
+    "source": "repos.ecosyste.ms usage/dependencies",
+    "sdk_dependency": "mcp",
+    "dependent_repo": "RK0429/agentic-memory"
+  },
+  "collected_at": "2026-07-11T22:43:40.057Z"
+}

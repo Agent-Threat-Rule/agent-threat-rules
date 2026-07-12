@@ -1,0 +1,15 @@
+{
+  "package": "b2a777",
+  "version": "0.5.8",
+  "description": "B2A (Bilibili to Agents) — 让 AI Agent 能观看和倾听B站视频的多模态 MCP 插件",
+  "repository_url": "https://github.com/e8b298/B2A.git",
+  "readme": "# B2A\n\n让 AI Agent（Claude Code、Codex、Cursor、Antigravity、Windsurf 等）原生具备“观看”和“倾听”B站视频能力的多模态 MCP 插件。\n\nB2A 不是一个爬虫工具——它赋予 AI 真正理解视频内容的能力。AI 会像人一样先\"读\"字幕，看不懂就\"看\"画面，听不到就\"听\"声音，最终用自己的理解回答你的问题。\n\n## 它是怎么工作的\n\n当你把一个 B 站链接丢给 AI 时，它会自主决定用哪种方式来理解视频：\n\n- **读字幕**（毫秒级）：最快的方式，直接读取视频自带的 CC 字幕。\n- **看画面**（1-3分钟）：如果没有字幕，AI 会征得你同意后去\"观看\"视频——以低分辨率快速浏览全片画面，像人一样先看全局再聚焦细节。\n- **听声音**（30秒-几分钟）：AI 也可以去\"听\"视频里的人声并转成文字。它会提前告诉你：它的\"听力\"是语音识别，只能听懂人说的话，纯音乐和音效听不出来。\n- **自动清理**：分析结束后，AI 会自动清除所有临时文件，不占用你的磁盘空间。\n\n所有耗时操作都会先征得你的同意，并在开始前给你一句等待提示，不会突然静默几分钟。\n\n## 安装\n\n### 1. 安装 FFmpeg（前置依赖）\n\n画面分析和音频处理需要 FFmpeg。如果忘记装，AI 会在聊天里提示你怎么装：\n\n- **Windows**: `winget install Gyan.FFmpeg`（安装后需重启终端）\n- **macOS**: `brew install ffmpeg`\n- **Linux**: `apt install ffmpeg`\n\n### 2. 安装 B2A\n\n```bash\npip install b2a777\n```\n\n## MCP 接入指南\n\n安装完成后，根据你使用的客户端选择对应的配置方式：\n\n### Claude Code / Codex / Antigravity\n\n在对话框中输入：\n\n```text\n/mcp add b2a-vision b2a-mcp\n```\n\n### Cursor\n\n1. 打开 **Cursor Settings** -> **Features** -> **MCP**\n2. 点击 **+ Add New MCP Server**\n3. **Type**: `command`\n4. **Name**: `b2a-vision`\n5. **Command**: `b2a-mcp`\n\n### Windsurf\n\n在 `mcp_config.json` 中添加：\n\n```json\n{\n  \"mcpServers\": {\n    \"b2a-vision\": {\n      \"command\": \"b2a-mcp\",\n      \"args\": []\n    }\n  }\n}\n```\n\n### Claude Desktop\n\n在 `claude_desktop_config.json` 中添加：\n\n```json\n{\n  \"mcpServers\": {\n    \"b2a-vision\": {\n      \"command\": \"b2a-mcp\",\n      \"args\": []\n    }\n  }\n}\n```\n\n## 使用示例\n\n配置好 MCP 后，直接用自然语言和 AI 对话即可：\n\n- `\"帮我看看这个视频讲了什么：BV1xx411c7mD\"` — AI 读取字幕后直接回答\n- `\"这个视频没字幕，帮我了解一下内容\"` — AI 会问你：\"我可以看一下视频画面吗？\" 或 \"我可以试着听一下吗？\"，等你同意后才开始\n- `\"帮我看看 5分钟到 5分30秒 那段 PPT 写了什么\"` — AI 会下钻到指定时间段，以更高清晰度仔细查看\n- `\"你看看这个视频，我想跟你聊聊...\"` — AI 会尝试分析视频的内容并产生理解\n  \nAI 会根据视频内容自主判断最合适的理解方式，整个过程像和一个助手对话一样自然。\n\n## 语音识别配置（可选）\n\n如果需要\"听\"视频里的人声内容，B2A 接入了火山引擎（豆包）语音识别。配置方式极其简单：\n\n1. 前往[火山引擎控制台](https://console.volcengine.com/speech/app)申请 API Key\n2. 当 AI 提示需要 Key 时，直接把 Key 粘贴进聊天框\n3. AI 会自动将 Key 安全地存储到 `~/.b2a/.env`（你的用户主目录下）\n\nAPI Key 存储位置：`~/.b2a/.env`（Windows: `C:\\Users\\<用户名>\\.b2a\\.env`）\n\n## CLI 工具\n\nB2A 也可以作为命令行工具独立使用：\n\n```bash\n# 获取视频信息与字幕\nb2a BV1xx411c7mD\n\n# 语音识别（需配置 API Key）\nb2a BV1xx411c7mD --asr\n\n# 视觉抽帧\nb2a BV1xx411c7mD --visual\n\n# 指定时间段\nb2a BV1xx411c7mD --asr --start 01:30 --end 02:40\n\n# JSON 结构化输出\nb2a BV1xx411c7mD --format json\n\n# 指定分P\nb2a BV1xx411c7mD --page 2\n```\n\n## License\n\nMIT\n",
+  "ecosystem": "pypi",
+  "discovery": {
+    "method": "sdk-dependent",
+    "source": "repos.ecosyste.ms usage/dependencies",
+    "sdk_dependency": "mcp",
+    "dependent_repo": "e8b298/B2A"
+  },
+  "collected_at": "2026-07-11T22:44:07.376Z"
+}

@@ -1,0 +1,15 @@
+{
+  "package": "mcp-tongling-transport",
+  "version": "1.0.0",
+  "description": "A Model Context Protocol (MCP) implementation for Tongling Public Transport",
+  "repository_url": null,
+  "readme": "# 铜陵公交 MCP\n\n![Version](https://img.shields.io/badge/version-1.0.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![MCP](https://img.shields.io/badge/protocol-MCP-purple) ![Node](https://img.shields.io/badge/node-%3E%3D18-orange)\n\n> 让你的 AI 助手成为铜陵公交百事通——查线路、找站点、看实时公交、规划换乘路线。\n\n这是一个基于 MCP 的铜陵公交查询 Skill。安装后，你的 AI 助手就能帮你查询铜陵公交线路信息、站点信息、实时车辆位置、换乘方案等。\n\n告别打开 APP 翻找的繁琐，直接问你的 AI 助手就行。\n\n## 功能特性\n\n| 能力 | 你可以问 | 示例 |\n|------|----------|------|\n| **站点搜索** | \"搜索拼音 cy 开头的站点\" | `getStationNameAutocomplete` |\n| **线路查询** | \"39路公交几点发车？\" | `getLineInfoByLineName` |\n| **站点线路** | \"铜陵站有哪些公交经过？\" | `getLineInfosByStation` |\n| **实时公交** | \"39路现在车到哪儿了？\" | `getLineStationGpsData` |\n| **发车计划** | \"下一班车什么时候发？\" | `getLinePlanInfos` |\n| **换乘方案** | \"从铜陵站到铜陵北站怎么走？\" | `getTransferInfo` |\n| **公告通知** | \"有什么新的公交通知？\" | `getNotice` |\n\n## 技术协议\n\n| 项目 | 说明 |\n|------|------|\n| 协议 | MCP (Model Context Protocol) |\n| 传输 | Stdio |\n| 数据来源 | 铜陵公交官方 API (wx.tlgjzgs.com) |\n| 运行环境 | Node.js >= 18 |\n\n## 目录结构\n\n```\nmcp-tongling-transport/\n├── src/\n│   ├── index.ts          # MCP 服务器入口，注册所有工具\n│   └── api.ts            # 铜陵公交 API 封装\n├── dist/                 # 编译输出目录\n├── api.yaml              # OpenAPI 规范文档\n├── package.json\n├── tsconfig.json\n├── README.md\n└── LICENSE\n```\n\n## 安装\n\n### 方式一：通过 MCP 客户端配置（推荐）\n\n在支持 MCP 协议的 AI 客户端中添加以下配置：\n\n```json\n{\n  \"mcpServers\": {\n    \"tongling-transport\": {\n      \"command\": \"npx\",\n      \"args\": [\"mcp-tongling-transport\"]\n    }\n  }\n}\n```\n\n或手动指定路径：\n\n```json\n{\n  \"mcpServers\": {\n    \"tongling-transport\": {\n      \"command\": \"node\",\n      \"args\": [\"/path/to/mcp-tongling-transport/dist/index.js\"]\n    }\n  }\n}\n```\n\n### 方式二：手动克隆安装\n\n```bash\n# 克隆仓库\ngit clone https://github.com/your-username/mcp-tongling-transport.git\n\n# 进入目录\ncd mcp-tongling-transport\n\n# 安装依赖\npnpm install\n\n# 编译\npnpm build\n\n# 运行\npnpm start\n```\n\n## 使用示例\n\n安装后，直接告诉你的 AI 助手你想查询什么：\n\n> \"帮我查一下从铜陵站到铜陵北站怎么坐公交\"\n\n> \"39路公交车现在到哪儿了？\"\n\n> \"搜索拼音 tl 开头的站点\"\n\nAI 助手会自动调用对应的 MCP 工具为你查询。\n\n## API 工具列表\n\n| 工具名 | 描述 |\n|--------|------|\n| `getStationNameAutocomplete` | 根据拼音首字母获取匹配的站点名称列表 |\n| `getNotice` | 获取系统公告内容 |\n| `getLineInfoByLineName` | 根据线路名称查询线路基本信息 |\n| `getLineInfosByStation` | 根据站点名称查询经过该站点的所有线路 |\n| `getLineStationGpsData` | 获取线路站点列表及车辆实时位置 |\n| `getLinePlanInfos` | 获取线路下一班计划发车时间 |\n| `getTransferInfo` | 查询起点站到终点站的换乘方案 |\n\n## 开发\n\n```bash\n# 安装依赖\npnpm install\n\n# 开发模式（自动编译）\npnpm watch\n\n# 构建\npnpm build\n\n# 运行\npnpm start\n```\n\n## 许可证\n\n[MIT LICENSE](LICENSE)\n\n---\n\n> 本项目为开源项目，数据来源于铜陵公交官方接口，仅供学习交流使用。\n",
+  "ecosystem": "npm",
+  "discovery": {
+    "method": "sdk-dependent",
+    "source": "repos.ecosyste.ms usage/dependencies",
+    "sdk_dependency": "@modelcontextprotocol/sdk",
+    "dependent_repo": "YaoSiQian/mcp-tongling-transport"
+  },
+  "collected_at": "2026-07-11T22:32:29.293Z"
+}
