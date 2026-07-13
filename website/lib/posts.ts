@@ -16,6 +16,19 @@ export interface BlogPost {
 
 export const posts: BlogPost[] = [
   {
+    slug: "unit42-skill-supply-chain",
+    date: "2026-07-13",
+    title: {
+      en: "Palo Alto's Unit 42 scanned 49,943 agent skills. It's the same story our 96,096 told.",
+      zh: "Palo Alto Unit 42 掃了 49,943 個 agent skill。跟我們掃 96,096 個講的是同一件事。",
+    },
+    summary: {
+      en: "Unit 42's Behavioral Integrity Verification research found 80% of agent skills deviate from their declared behavior, 18.9% adversarially — an independent second dataset landing on the conclusion our 96,096-skill scan reached: the agent-skill supply chain is the attack surface. BIV verifies declared-vs-actual at install time; ATR detects the attack at runtime. We mapped their 29-capability taxonomy to ATR, and their canonical credential-exfil payload exposed a real gap — a code-surface chain our shell-syntax rules missed — so we shipped ATR-2026-02261. Honest about the seam: ATR covers the observed-behavior half, not the manifest diff.",
+      zh: "Unit 42 的 Behavioral Integrity Verification 研究發現 80% 的 agent skill 行為與宣告不符、18.9% 帶對抗性——這是一份獨立的第二資料集，落在我們掃 96,096 個 skill 得到的同一個結論上：agent-skill 供應鏈就是攻擊面。BIV 在安裝時驗證「宣告 vs 實際」；ATR 在 runtime 偵測攻擊本身。我們把他們的 29 能力 taxonomy 對映到 ATR，而他們的 canonical 憑證外洩 payload 曝出一個真缺口——一條我們的 shell 語法規則漏掉的 code-surface 鏈——於是我們補上 ATR-2026-02261。也老實說清楚接縫：ATR 只覆蓋 observed-behavior 那半,不做 manifest diff。",
+    },
+    atrRules: ["ATR-2026-02261", "ATR-2026-00201", "ATR-2026-00224"],
+  },
+  {
     slug: "neutral-benchmarks",
     date: "2026-07-10",
     title: {
