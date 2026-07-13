@@ -1,0 +1,153 @@
+title: "KQL/Kusto Pipe-Chain Injection via Table-Name Parameter in a 'Safe' Metadata Tool"
+id: ATR-2026-02303
+rule_version: 1
+status: experimental
+description: >
+  Detects a table/database identifier parameter (table_name, table,
+  database_name) whose value breaks out of its expected bare-identifier
+  shape with a Kusto Query Language (KQL) pipe operator chaining into a
+  projection/sampling clause, or a management command (.drop, .alter,
+  .delete, .purge) injected via a newline. Ordinary table_name values are
+  short bare identifiers (e.g. "orders", "audit_log") with no pipe
+  characters or KQL keywords; a value containing "| project ... | take N"
+  is the Kusto-language equivalent of a classic SQL injection payload,
+  generalized to the pipe-based query syntax used by Azure Data
+  Explorer/Kusto-backed agent tools. Mined from GHSA-vphc-468g-8rfp
+  (pab1it0/adx-mcp-server, CVE-2026-33980): "The table_name parameter is
+  interpolated directly into KQL queries via f-strings without any
+  validation or sanitization, allowing an attacker (or a prompt-injected AI
+  agent) to execute arbitrary KQL queries... An attacker can inject:
+  sensitive_table | project Secret, Password | take 100 // to read
+  arbitrary tables [or] newline-separated management commands like .drop
+  table important_data." The three affected tools (get_table_schema,
+  sample_table_data, get_table_details) were presented to MCP clients as
+  safe metadata-inspection tools distinct from the server's own raw-KQL
+  execute_query tool, so clients may auto-approve them while requiring
+  confirmation for execute_query -- the injection bypasses that trust
+  boundary. Deliberately distinct from ATR-2026-00570 (generic relational
+  SQL injection targeting OR/UNION/SELECT) and ATR-2026-02143 (Cypher/graph
+  query injection targeting MATCH/MERGE/DETACH DELETE), since KQL's
+  pipe-chained, whitespace-separated verb syntax shares no keyword
+  vocabulary with either.
+author: "ATR Community (CVE sweep)"
+date: "2026/07/11"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: high
+
+references:
+  cve:
+    - "CVE-2026-33980"
+  cwe:
+    - "CWE-943"
+  owasp_llm:
+    - "LLM01:2025 - Prompt Injection"
+  owasp_agentic:
+    - "ASI02:2026 - Tool Misuse and Exploitation"
+  mitre_attack:
+    - "T1565.001 - Data Manipulation: Stored Data Manipulation"
+  mitre_atlas:
+    - "AML.T0053 - LLM Plugin Compromise"
+  external:
+    - "https://github.com/pab1it0/adx-mcp-server/security/advisories/GHSA-vphc-468g-8rfp"
+
+metadata_provenance:
+  cve: human-reviewed
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires high-risk AI systems to resist unauthorised attempts to alter their behaviour or environment; this rule detects a KQL/Kusto pipe-chain injection through an agent tool's table_name parameter."
+      strength: primary
+    - article: "10"
+      context: "Article 10 (data and data governance) requires control over the data an AI system processes; this rule detects tampering with the integrity/confidentiality of the queried data store via query injection."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Treating KQL pipe-chain injection as an identified AI risk requires active runtime countermeasures; this detection rule is the primary risk treatment implementation."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Identifying table_name-based KQL injection as an AI risk to be catalogued in the organizational risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by this rule's detection of KQL/Kusto pipe-chain injection attempts."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented via this rule's runtime detection of the injection attempt."
+      strength: secondary
+
+tags:
+  category: data-poisoning
+  subcategory: kql-pipe-injection
+  scan_target: mcp
+  confidence: medium
+
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)\b(?:table_name|table|database_name)\b"?\s*[=:]\s*["\x27][^"\x27\n]{0,40}?\|\s*project\b[^"\x27\n]{0,40}?\|\s*(?:take|limit|sample)\b'
+      description: "table/database identifier value breaks out with a KQL pipe into a project clause chained into a take/limit/sample clause -- the disclosed data-exfiltration shape"
+    - field: content
+      operator: regex
+      value: '(?i)\b(?:table_name|table|database_name)\b"?\s*[=:]\s*["\x27][^"\x27]{0,40}?(?:\\n|\n)\s*\.(?:drop|alter|delete|purge)\s+(?:table|database)\b'
+      description: "table/database identifier value carries a newline-injected Kusto management command (.drop/.alter/.delete/.purge table|database)"
+  false_positives:
+    - "Ordinary table_name/database_name values that are plain bare identifiers (orders, audit_log, users) with no pipe characters or KQL keywords"
+    - "A table_name value that happens to contain a literal pipe character as part of a legitimate display label, without a following project+take/limit/sample chain"
+    - "Documentation describing the KQL injection vulnerability class using example payloads in prose, not an actual tool-call argument being set"
+
+response:
+  actions:
+    - block_input
+    - alert
+  message_template: >
+    [ATR-2026-02303] table_name/database_name parameter contains a KQL
+    pipe-chain or management-command injection -- treat as an attempted
+    Kusto query injection, not a normal table identifier.
+
+confidence: 74
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: 'get_table_schema(table_name="sensitive_data | project Secret, Password | take 100 //")'
+      expected: triggered
+      description: "GHSA-vphc-468g-8rfp PoC - KQL pipe-chain injection via table_name exfiltrating a different table's columns"
+    - input: '{"table_name": "orders | project CreditCardNumber | sample 50"}'
+      expected: triggered
+      description: "Paraphrased variant using the sample clause instead of take"
+    - input: 'get_table_details(table_name="users\n.drop table important_data")'
+      expected: triggered
+      description: "GHSA-vphc-468g-8rfp PoC - newline-injected .drop table management command via table_name"
+    - input: 'sample_table_data(database_name="prod\n.purge table audit_log")'
+      expected: triggered
+      description: "Paraphrased variant targeting database_name with a .purge management command"
+  true_negatives:
+    - input: 'get_table_schema(table_name="orders")'
+      expected: not_triggered
+      description: "Ordinary plain-identifier table_name value"
+    - input: '{"database_name": "production_analytics"}'
+      expected: not_triggered
+      description: "Ordinary plain-identifier database_name value"
+    - input: 'get_table_details(table_name="Revenue | Cost Summary")'
+      expected: not_triggered
+      description: "Table display label containing a pipe character but no project+take/limit/sample chain following it"
+    - input: "The advisory shows table_name interpolated directly into a KQL query without validation, e.g. table_name | getschema."
+      expected: not_triggered
+      description: "Documentation describing the vulnerability class with example payload text, not an actual tool-call argument"
