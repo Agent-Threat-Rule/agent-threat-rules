@@ -2,10 +2,10 @@
 
 Version: 0.1.0 (INTERNAL DRAFT — not published)
 Status: Draft alignment mapping for MITRE ATLAS v5.6.0
-Date: 2026-06-14
+Date: 2026-07-14 (re-reconciled; prior 2026-06-14)
 Editor: Adam Lin (林冠辛) <adam@agentthreatrule.org>
-Mapped corpus: Agent Threat Rules v3.5.8 (747 rules / 10 categories; disk == data/stats.json reconciled 2026-07-12)
-Reference framework: MITRE ATLAS (Adversarial Threat Landscape for Artificial-Intelligence Systems), `dist/ATLAS.yaml` on mitre-atlas/atlas-data, v5.6.0 — 16 tactics, 101 top-level techniques (271 including sub-techniques), counted from the full machine-readable `dist/ATLAS.yaml`.
+Mapped corpus: Agent Threat Rules v3.5.8 (749 rules / 10 categories; disk == data/stats.json reconciled 2026-07-14)
+Reference framework: MITRE ATLAS (Adversarial Threat Landscape for Artificial-Intelligence Systems), `dist/ATLAS.yaml` on mitre-atlas/atlas-data, v5.6.0 — 16 tactics, 101 top-level techniques (170 including sub-techniques), counted from the full machine-readable `dist/ATLAS.yaml` (downloaded and parsed locally 2026-07-14; `dist/ATLAS.yaml` on `main` is still v5.6.0).
 
 ---
 
@@ -22,9 +22,10 @@ detection rules supply runtime evidence for adversary techniques catalogued by
 ATLAS. It is **NOT** a claim that MITRE has adopted, endorsed, reviewed, or
 certified ATR. No participation or submission channel is asserted.
 
-Every technique ID and name in this document was reconciled on 2026-06-14 against
-the official `dist/ATLAS.yaml` (v5.6.0). Every cited rule ID is a real
-`ATR-YYYY-NNNNN` identifier read from the rule corpus on the same date.
+Every technique ID and name in this document was reconciled on 2026-06-14 and
+re-verified on 2026-07-14 against the official `dist/ATLAS.yaml` (still v5.6.0 on
+`main`). Every cited rule ID is a real `ATR-YYYY-NNNNN` identifier read from the
+rule corpus (749 rules) on the re-verification date.
 
 ## 2. Coverage summary
 
@@ -133,7 +134,7 @@ sub-techniques). The cited rule is one representative example, not the only rule
 |---|---|---|---|---|
 | AML.T0036 | Data from Information Repositories | 1 | ATR-2026-00420 | prompt-injection |
 
-### Agent-native techniques (added 2026-06-14)
+### Agent-native techniques (added 2026-06-14; counts re-verified 2026-07-14)
 
 ATLAS v5.6.0 ships agent-native techniques. These rules now carry the precise
 agent-native ID (added alongside, not in place of, existing mappings):
@@ -141,9 +142,9 @@ agent-native ID (added alongside, not in place of, existing mappings):
 | ATLAS ID | Technique | Tactic | ATR rules | Example |
 |---|---|---|---|---|
 | AML.T0080 | AI Agent Context Poisoning | Persistence | 3 | ATR-2026-00075, ATR-2026-00125, ATR-2026-00551 |
-| AML.T0110 | AI Agent Tool Poisoning | Persistence | 3 | ATR-2026-00103, ATR-2026-00161, ATR-2026-01775 |
+| AML.T0110 | AI Agent Tool Poisoning | Persistence | 4 | ATR-2026-00103, ATR-2026-00161, ATR-2026-02025 |
 | AML.T0105 | Escape to Host | Privilege Escalation | 3 | ATR-2026-00436, ATR-2026-00539, ATR-2026-01615 |
-| AML.T0104 | Publish Poisoned AI Agent Tool | Resource Development | 1 | ATR-2026-00060 |
+| AML.T0104 | Publish Poisoned AI Agent Tool | Resource Development | 5 | ATR-2026-00161, ATR-2026-00581, ATR-2026-01932 |
 | AML.T0109 | AI Supply Chain Rug Pull | Defense Evasion | 1 | ATR-2026-00126 |
 | AML.T0102 | Generate Malicious Commands | AI Attack Staging | 1 | ATR-2026-00413 |
 
@@ -154,11 +155,25 @@ agent-native ID (added alongside, not in place of, existing mappings):
   `grep -rhoE "AML\.T[0-9]{4}" rules/ | sort | uniq -c`. Always count the ATLAS side
   from the full machine-readable `dist/ATLAS.yaml` (download and parse it locally — do
   not rely on a truncated fetch, which undercounts).
-- **Expansion candidates:** ATLAS v5.6.0 ships agent-native techniques ATR does not yet
-  map to — AML.T0104 Publish Poisoned AI Agent Tool, AML.T0105 Escape to Host,
-  AML.T0110 AI Agent Tool Poisoning, AML.T0099 AI Agent Tool Data Poisoning,
-  AML.T0102 Generate Malicious Commands. Several existing rules are candidates to add
-  these IDs (e.g. malware-codegen rules → T0102).
+- **Expansion candidates (re-verified 2026-07-14):** the agent-native techniques listed as
+  candidates in the 2026-06-14 draft — T0104, T0105, T0110, T0102 — are now **tagged and
+  covered** (see the Agent-native table above); that earlier bullet was stale. The
+  agent-native techniques v5.6.0 ships that ATR does **not** yet carry an ID for are:
+  - **AML.T0098 AI Agent Tool Credential Harvesting** — ATR already has substantive
+    detection (the whole context-exfiltration / credential-exfil family, e.g.
+    ATR-2026-02261 code-surface credential-exfil chain, ATR-2026-00212 mcp-atlassian
+    credential leak); these lack only the `AML.T0098` tag. **Highest-value tagging
+    follow-up.**
+  - **AML.T0101 Data Destruction via AI Agent Tool Invocation** — ATR has substantive
+    detection (e.g. ATR-2026-02233 unscoped destructive DB request); lacks only the
+    `AML.T0101` tag. Second-highest tagging follow-up.
+  - **AML.T0099 AI Agent Tool Data Poisoning** — partial overlap with existing
+    tool-poisoning rules; candidate for review, not a clean 1:1 map.
+  - **AML.T0100 AI Agent Clickbait** — user-facing lure technique; largely out of ATR's
+    runtime-agent-I/O scope by design.
+  Adding a technique ID to a rule is a rule-corpus change (each addition must keep the
+  rule's compliance blocks passing `npm run audit:mappings`), so it is tracked as a
+  separate follow-up rather than folded into this doc-only reconciliation.
 - **Cadence:** re-reconcile technique IDs/names against `dist/ATLAS.yaml` on each
   ATLAS minor release (ATLAS ships roughly monthly). The 2026-06-14 reconciliation
   corrected 82 rules whose metadata carried pre-v5 technique names (e.g. "ML Supply
