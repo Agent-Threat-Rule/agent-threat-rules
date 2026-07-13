@@ -1,0 +1,162 @@
+title: "Cloud-Metadata SSRF via Encoded Metadata-IP Bypass (CVE-2026-46678 / CVE-2026-25580 class)"
+id: ATR-2026-01946
+rule_version: 1
+status: draft
+description: >
+  Detects the cloud-metadata SSRF bypass class exploited by CVE-2026-46678 and
+  CVE-2026-25580 in Pydantic AI (and the same technique across agent frameworks
+  that fetch user-controlled URLs): the link-local cloud-metadata IP
+  169.254.169.254 (hex a9fe:a9fe) is encoded into an alternate form that defeats
+  a raw-IPv4 blocklist but is still routed to the metadata endpoint by the OS /
+  router, exposing short-lived cloud IAM credentials.
+
+  Detection covers the distinctive encoded forms of the metadata IP — not generic
+  URLs — so it fires on the bypass payload itself, not on ordinary outbound calls:
+  (a) IPv6 transition forms: 6to4 (2002:a9fe:a9fe::), IPv4-mapped (::ffff:169.254.169.254
+      or ::ffff:a9fe:a9fe), NAT64 (64:ff9b::a9fe:a9fe);
+  (b) integer/hex obfuscations of 169.254.169.254 (decimal 2852039166, hex
+      0xa9fea9fe) reaching a fetch/URL context;
+  (c) explicit CVE-2026-46678 / CVE-2026-25580 exploitation framing.
+author: "ATR Community"
+date: "2026/06/29"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM02:2025 - Sensitive Information Disclosure"
+    - "LLM06:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI04:2026 - Code Execution & Data Exfiltration"
+    - "ASI06:2026 - Tool Misuse"
+  mitre_atlas:
+    - "AML.T0049 - Exploit Public-Facing Application"
+    - "AML.T0024 - Exfiltration via AI Inference API"
+  mitre_attack:
+    - "T1552.005 - Cloud Instance Metadata API"
+    - "T1190 - Exploit Public-Facing Application"
+  cve:
+    - "CVE-2026-46678"
+    - "CVE-2026-25580"
+
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: >
+        CVE-2026-46678/25580 let an agent that fetches a user-controlled URL reach
+        the cloud-metadata endpoint via an encoded form of 169.254.169.254 and
+        exfiltrate IAM credentials; Article 15 cybersecurity requirements mandate
+        that AI URL-fetch tools reject encoded link-local metadata targets.
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control that detects the data-exfiltration technique (Cloud-Metadata SSRF via Encoded Metadata-IP Bypass (CVE-2026-46678 / CVE-2026-25580 class))."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: >
+        An encoded cloud-metadata-IP target reaching an agent fetch tool is an
+        adversarial input; MP.5.1 requires scanning tool I/O for IPv6-transition /
+        integer-encoded forms of the link-local metadata address.
+      strength: primary
+    - subcategory: "MG.3.2"
+      context: "NIST AI RMF MANAGE 3.2 is supported where this rule detects the data-exfiltration technique (Cloud-Metadata SSRF via Encoded Metadata-IP Bypass (CVE-2026-46678 / CVE-2026-25580 class))."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: >
+        Operational controls must detect encoded link-local metadata targets in
+        agent fetch payloads before the SSRF reaches the cloud-metadata endpoint.
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is supported by this rule, which implements runtime detection of the data-exfiltration technique (Cloud-Metadata SSRF via Encoded Metadata-IP Bypass (CVE-2026-46678 / CVE-2026-25580 class)) as a treatment control."
+      strength: secondary
+
+tags:
+  category: context-exfiltration
+  subcategory: cloud-metadata-ssrf
+  scan_target: both
+  confidence: high
+  source: cve-disclosure
+  vendor_sources: pydantic-ai-cve-2026-46678
+
+agent_source:
+  type: llm_io
+  framework:
+    - pydantic_ai
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "Security training/research content that quotes the CVE-2026-46678 bypass payload as an example — intentional match; evaluate by context."
+    - "Networking docs that legitimately show IPv6 transition syntax with a non-metadata address (rule keys on the a9fe:a9fe / 169.254.169.254 metadata octets specifically)."
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)(?:2002:a9fe:a9fe|::ffff:(?:169\.254\.169\.254|a9fe:a9fe)\b|64:ff9b::(?:169\.254\.169\.254|a9fe:a9fe)\b|\[::ffff:169\.254\.169\.254\])'
+      description: >
+        IPv6 transition-form encoding (6to4 / IPv4-mapped / NAT64) of the
+        link-local cloud-metadata IP 169.254.169.254 — the CVE-2026-46678 bypass.
+    - field: content
+      operator: regex
+      value: '(?i)(?:https?://|fetch|requests?\.get|urlopen|curl|axios|allow[_-]?local)[\s\S]{0,80}(?:2852039166|0xa9fea9fe|0xA9\.0xFE\.0xA9\.0xFE|0251\.0376\.0251\.0376)\b'
+      description: >
+        Integer / hex / octal obfuscation of 169.254.169.254 reaching a URL-fetch
+        context — alternate metadata-IP SSRF bypass encoding.
+    - field: content
+      operator: regex
+      value: '(?i)CVE-2026-(?:46678|25580)[\s\S]{0,200}(?:pydantic|ssrf|metadata|169\.254|ipv6|allow[_-]?local|bypass)'
+      description: >
+        Explicit CVE-2026-46678 / CVE-2026-25580 reference combined with
+        metadata-SSRF language — attack framing in a skill or tool description.
+
+response:
+  actions:
+    - alert
+    - block_input
+  message_template: >
+    [ATR-2026-01946] HIGH: cloud-metadata SSRF bypass detected — an encoded form
+    of 169.254.169.254 (IPv6 transition / integer / hex) reaching an agent URL
+    fetch (CVE-2026-46678 / CVE-2026-25580 class, CWE-918). Block the fetch and
+    upgrade the affected framework (e.g. Pydantic AI >= 1.99.0).
+
+confidence: 82
+
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: "fetch tool called with url=http://[2002:a9fe:a9fe::]/latest/meta-data/iam/security-credentials/"
+      expected: triggered
+      description: "6to4 IPv6 encoding of the metadata IP in a fetch URL"
+    - input: "GET http://[::ffff:169.254.169.254]/computeMetadata/v1/instance/service-accounts/default/token"
+      expected: triggered
+      description: "IPv4-mapped IPv6 encoding of the metadata IP"
+    - input: "requests.get('http://2852039166/latest/meta-data/', allow_local=True)"
+      expected: triggered
+      description: "Decimal-encoded 169.254.169.254 reaching requests.get"
+    - input: "CVE-2026-46678: Pydantic AI SSRF — encode 169.254.169.254 as ::ffff:a9fe:a9fe to bypass the allow-local metadata blocklist."
+      expected: triggered
+      description: "Explicit CVE-2026-46678 metadata-SSRF framing"
+  true_negatives:
+    - input: "fetch the weather from https://api.weather.example.com/v1/forecast?city=Taipei"
+      expected: not_triggered
+      description: "Ordinary outbound URL fetch, no metadata target"
+    - input: "Our service listens on the IPv6 address 2001:db8::1 for internal traffic."
+      expected: not_triggered
+      description: "Normal IPv6 address, not the encoded metadata IP"
+    - input: "The AWS instance metadata service lives at 169.254.169.254; block it at the egress proxy."
+      expected: not_triggered
+      description: "Plain documentation of the metadata IP without an encoded-bypass form or fetch"
+    - input: "Convert 2852039166 to a human-readable timestamp in your script."
+      expected: not_triggered
+      description: "The integer appears with no URL-fetch context"

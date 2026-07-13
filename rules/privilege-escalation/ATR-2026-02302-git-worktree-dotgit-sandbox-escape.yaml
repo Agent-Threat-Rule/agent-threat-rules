@@ -1,0 +1,140 @@
+title: "Git Worktree Created With Reserved Name .git (Directory-Confusion Sandbox Escape)"
+id: ATR-2026-02302
+rule_version: 1
+status: experimental
+description: >
+  Detects a "git worktree add" invocation where the new worktree's path
+  component is literally ".git" (e.g. "git worktree add ../.git
+  some-branch"). Ordinary worktrees are never named ".git" -- this is the
+  reserved name of the repository's own metadata directory, and creating a
+  worktree with that name is the first step of a directory-confusion attack
+  that lets a coding agent's git operations be redirected outside the
+  sandboxed workspace context. Mined from GHSA-7835-87q9-rgvv (Claude Code,
+  CVE-2026-55607): "Claude Code's worktree handling allowed creation of
+  worktrees named '.git' and navigation to worktrees outside the sandbox
+  context, enabling git directory confusion attacks. By exploiting symlink
+  manipulation and git fsmonitor execution during worktree operations, an
+  attacker could overwrite files in the user's home directory (such as
+  .zshenv), leading to code execution outside of seatbelt sandbox
+  restrictions. Reliably exploiting this required the user to clone a
+  malicious repository containing prompt injection content." This rule
+  keys on the narrow, unambiguous ".git"-named-worktree signature rather
+  than the full multi-step chain (symlink manipulation + fsmonitor), since
+  that signature alone is a strong, low-noise indicator no legitimate
+  workflow produces.
+author: "ATR Community (CVE sweep)"
+date: "2026/07/11"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: high
+
+references:
+  cve:
+    - "CVE-2026-55607"
+  cwe:
+    - "CWE-22"
+    - "CWE-59"
+  owasp_llm:
+    - "LLM08:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI07:2026 - Agentic Sandbox Escape"
+  mitre_attack:
+    - "T1611 - Escape to Host"
+  mitre_atlas:
+    - "AML.T0054 - LLM Jailbreak"
+  external:
+    - "https://github.com/anthropics/claude-code/security/advisories/GHSA-7835-87q9-rgvv"
+
+metadata_provenance:
+  cve: human-reviewed
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires resistance to unauthorised attempts to alter system behaviour; this rule detects a git worktree directory-confusion primitive used to stage a coding-agent sandbox escape."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control for the git-worktree-directory-confusion risk class."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Treating git-worktree directory confusion as an identified AI risk requires active runtime countermeasures; this detection rule is the primary risk treatment implementation."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Identifying the .git-named-worktree pattern as an AI risk to be catalogued in the organizational risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by this rule's detection of git-worktree directory-confusion attempts."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented via this rule's runtime detection of the sandbox-escape staging step."
+      strength: secondary
+
+tags:
+  category: privilege-escalation
+  subcategory: git-worktree-directory-confusion
+  scan_target: llm_io
+  confidence: medium
+
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)\bgit\s+worktree\s+add\b[\s\S]{0,40}?(?:^|[\\/\s])\.git(?:\s|$|["''\x60])'
+      description: "git worktree add invocation whose worktree path component is the reserved name .git, not an ordinary worktree/branch name"
+  false_positives:
+    - "A 'git worktree add' command followed elsewhere in the same line by an unrelated file named with a .git-prefixed extension, such as .gitignore or .gitattributes -- excluded because the pattern requires .git to be immediately followed by whitespace, end of string, or a quote, not additional letters"
+    - "A bare-repository path that happens to end in .git as a suffix of a longer name, e.g. 'git worktree add /srv/repos/myproject.git feature-branch' -- excluded because the pattern requires .git to be preceded by a path separator or whitespace, not by another word character"
+    - "Documentation or an advisory discussing the .git worktree-naming technique in prose without an actual 'git worktree add' command being issued"
+
+response:
+  actions:
+    - block_input
+    - alert
+  message_template: >
+    [ATR-2026-02302] A git worktree is being created with the reserved name
+    .git -- treat as a directory-confusion sandbox-escape staging step, not
+    a routine worktree operation.
+
+confidence: 68
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: "git worktree add ../.git some-branch && cd ../.git"
+      expected: triggered
+      description: "CVE-2026-55607 pattern - worktree created with the reserved name .git"
+    - input: "run: git worktree add .git feature/exploit"
+      expected: triggered
+      description: "Worktree path is literally .git in the current directory"
+    - input: "git worktree add \"../.git\" main"
+      expected: triggered
+      description: "Quoted worktree path .git, still matches the reserved-name signature"
+  true_negatives:
+    - input: "git worktree add ../feature-branch feature/new-thing"
+      expected: not_triggered
+      description: "Ordinary worktree with a normal descriptive name, not .git"
+    - input: "git worktree add /srv/repos/myproject.git feature-branch"
+      expected: not_triggered
+      description: "Bare-repository convention path ending in .git as a suffix, not a standalone .git path component"
+    - input: "git worktree add new-feature branch-x  # see .gitignore for excluded paths"
+      expected: not_triggered
+      description: ".gitignore mentioned elsewhere on the line, not the worktree path itself"
+    - input: "The advisory explains that creating a worktree named .git can trigger directory confusion."
+      expected: not_triggered
+      description: "Documentation/advisory prose describing the technique, no actual git worktree add command issued"

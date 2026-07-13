@@ -1,0 +1,157 @@
+title: "Symlink Command Targets Sensitive Credential Path Outside the Workspace (Sandbox Escape Primitive)"
+id: ATR-2026-02301
+rule_version: 1
+status: experimental
+description: >
+  Detects a symlink-creation command (ln -s / ln -sf / ln -sfn) whose target
+  (the path being linked TO) is a sensitive credential store or system file
+  outside the current workspace: an SSH/cloud/container credential
+  directory (~/.ssh, ~/.aws, ~/.gnupg, ~/.docker, ~/.kube, ~/.npmrc,
+  ~/.netrc) or a system account file (/etc/shadow, /etc/passwd,
+  /etc/sudoers). A sandboxed coding-agent process is often permitted to
+  create symlinks freely even though it cannot write outside the workspace
+  directly; if a later step (an unsandboxed helper process, or the same
+  agent using a "safe" write/upload tool) follows that symlink, the
+  read-or-write actually lands outside the workspace boundary -- neither
+  half of the chain is independently a sandbox escape, but the combination
+  is. Mined from GHSA-vp62-r36r-9xqp (Claude Code, CVE-2026-39861):
+  "Claude Code's sandbox did not prevent sandboxed processes from creating
+  symlinks pointing to locations outside the workspace. When Claude Code
+  subsequently wrote to a path within such a symlink, its unsandboxed
+  process followed the symlink and wrote to the target location outside
+  the workspace... Reliably exploiting this required the ability to add
+  untrusted content into a Claude Code context window to trigger sandboxed
+  code execution via prompt injection." Deliberately distinct from
+  ATR-2026-02024 (symlink to a macOS LaunchAgent/LaunchDaemon/cron/sudoers
+  persistence sink written THROUGH a filesystem-MCP tool) and ATR-2026-00572
+  (symlink whose target is specifically an agent config file) -- this rule
+  targets the broader, product-agnostic case of a sandboxed shell process
+  creating a symlink to any credential-bearing location for later read or
+  write, regardless of tool framing.
+author: "ATR Community (CVE sweep)"
+date: "2026/07/11"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: high
+
+references:
+  cve:
+    - "CVE-2026-39861"
+  cwe:
+    - "CWE-22"
+    - "CWE-61"
+  owasp_llm:
+    - "LLM08:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI07:2026 - Agentic Sandbox Escape"
+  mitre_attack:
+    - "T1611 - Escape to Host"
+  mitre_atlas:
+    - "AML.T0054 - LLM Jailbreak"
+  external:
+    - "https://github.com/anthropics/claude-code/security/advisories/GHSA-vp62-r36r-9xqp"
+
+metadata_provenance:
+  cve: human-reviewed
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires high-risk AI systems to resist unauthorised attempts to alter their behaviour or environment; this rule detects a symlink primitive being staged to escape a sandboxed coding-agent workspace boundary."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control for the symlink-sandbox-escape risk class."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Treating symlink-based sandbox escape as an identified AI risk requires active runtime countermeasures; this detection rule is the primary risk treatment implementation."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Identifying the symlink-to-sensitive-target pattern as an AI risk to be catalogued in the organizational risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by this rule's detection of symlink-based sandbox-escape attempts."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented via this rule's runtime detection of the symlink primitive."
+      strength: secondary
+
+tags:
+  category: privilege-escalation
+  subcategory: symlink-sandbox-escape
+  scan_target: llm_io
+  confidence: high
+
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)\bln\s+-[a-z]{1,4}\s+["''\x60]?(?:~|/home/[\w.-]+|/Users/[\w.-]+|/root)(?:/|\\)\.(?:ssh|aws|gnupg|docker|kube|npmrc|netrc)\b(?=\s|["''\x60]|$)'
+      description: "ln -s command whose target is exactly a well-known credential directory (.ssh, .aws, .gnupg, .docker, .kube) under a home directory -- the trailing lookahead requires the path to end right there (whitespace/quote/end-of-string), not continue into a subpath, so linking a specific harmless file living inside that directory (e.g. a public key) does not fire here"
+    - field: content
+      operator: regex
+      value: '(?i)\bln\s+-[a-z]{1,4}\s+["''\x60]?\S{0,40}?(?:/etc/(?:shadow|passwd|sudoers)\b|\bid_(?:rsa|ed25519|ecdsa|dsa)(?!\.pub\b)\b|\bauthorized_keys\b|\.aws[/\\]credentials\b)'
+      description: 'ln -s command whose target is a system account file or SSH PRIVATE key / authorized_keys file -- the negative lookahead (?!\.pub\b) immediately after the key-name alternation excludes id_rsa.pub/id_ed25519.pub/etc. (public keys), since \b alone treats the "." before "pub" as a word boundary and would otherwise match inside the harmless .pub filename'
+  false_positives:
+    - "A symlink to an ordinary project file or sibling directory within the repository (e.g. ln -s ../shared/lib ./vendor/lib, ln -s node_modules/.bin/eslint ./bin/eslint) -- no sensitive credential path is referenced"
+    - "A symlink to a system library for legitimate build/runtime linking (e.g. ln -s /usr/lib/libssl.so ./vendor/libssl.so) -- not in the sensitive credential/account-file list"
+    - "Documentation or a security advisory discussing this symlink technique in prose without an actual ln -s command being issued"
+    - "A symlink to a PUBLIC key file inside a credential directory (e.g. ln -s ~/.ssh/id_rsa.pub ./shared/id_rsa.pub) -- routine and harmless since a public key is meant to be shared; excluded by both the directory-target end-anchor (condition 1 requires the .ssh path to terminate there, not continue into a subpath) and the id_rsa negative lookahead (condition 2 excludes any .pub-suffixed key name)"
+
+response:
+  actions:
+    - block_input
+    - alert
+  message_template: >
+    [ATR-2026-02301] A symlink is being created pointing to a sensitive
+    credential path outside the workspace -- treat as a sandbox-escape
+    staging step, not routine file linking.
+
+confidence: 76
+wild_fp_rate: 0
+
+test_cases:
+  true_positives:
+    - input: "ln -s /home/victim/.ssh ./workspace/output_dir"
+      expected: triggered
+      description: "CVE-2026-39861 pattern - symlink from workspace-relative dir to the victim's .ssh credential directory"
+    - input: "ln -sf ~/.aws ./scratch/creds_link"
+      expected: triggered
+      description: "Symlink targeting the home-relative AWS credentials directory"
+    - input: "ln -s /etc/shadow ./workspace/tmp/output.log"
+      expected: triggered
+      description: "Symlink targeting /etc/shadow for later read-through-write exfiltration"
+    - input: "ln -sfn ~/.ssh/id_rsa ./workspace/notes/key_backup.txt"
+      expected: triggered
+      description: "Symlink targeting an SSH private key file directly"
+  true_negatives:
+    - input: "ln -s ../shared/lib ./vendor/lib"
+      expected: not_triggered
+      description: "Ordinary symlink to a sibling project directory, no credential path referenced"
+    - input: "ln -s node_modules/.bin/eslint ./bin/eslint"
+      expected: not_triggered
+      description: "Ordinary build-tooling symlink into node_modules, no credential path referenced"
+    - input: "ln -s /usr/lib/libssl.so ./vendor/libssl.so"
+      expected: not_triggered
+      description: "Ordinary system-library symlink for build linking, not a sensitive credential/account path"
+    - input: "The advisory describes how ln -s can be used to point a workspace file at a location outside the sandbox."
+      expected: not_triggered
+      description: "Documentation/advisory prose describing the technique, no actual ln -s command issued"
+    - input: "ln -s ~/.ssh/id_rsa.pub ./shared/id_rsa.pub"
+      expected: not_triggered
+      description: "Regression: adversarial review confirmed this firing -- symlinking a PUBLIC key is routine and harmless. Previously matched via TWO independent bugs: condition 1's .ssh-directory pattern lacked an end-of-path anchor so it matched any subfile under .ssh (not just the bare directory), and condition 2's \\bid_rsa\\b matched inside id_rsa.pub because the boundary before '.pub' still counts as a word boundary. Fixed both: condition 1 now requires the .ssh path to terminate right there, and condition 2 excludes .pub-suffixed matches via a negative lookahead."
