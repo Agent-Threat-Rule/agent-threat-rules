@@ -1,0 +1,173 @@
+title: "SQL Injection via Unparameterized Template-Expression Value in Workflow-Automation SQL Node (CVE-2026-59257)"
+id: ATR-2026-02263
+rule_version: 1
+status: experimental
+description: >
+  Detects the n8n legacy MySQL-node SQL-injection pattern (CVE-2026-59257) and
+  the same-class issue in other workflow-automation tools: a SQL query string is
+  built by directly interpolating a template-expression value (n8n's `{{ ... }}`,
+  or an equivalent `${...}`/`<%= %>` engine) into raw SQL text, rather than
+  passing it as a bound/parameterized value. When the workflow is wired to an
+  externally-reachable trigger (a webhook node), attacker-controlled input flows
+  through the expression straight into the SQL string, allowing arbitrary SQL
+  execution under the configured database credentials. Parameterized query
+  builders (placeholders like `?`, `:name`, `$1`) are the safe alternative and
+  are explicitly excluded.
+author: "ATR Community (JVN sync + CVE-2026-59257)"
+date: "2026/07/13"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM06:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI05:2026 - Unexpected Code Execution"
+  mitre_atlas:
+    - "AML.T0010 - AI Supply Chain Compromise"
+  mitre_attack:
+    - "T1190 - Exploit Public-Facing Application"
+  cve:
+    - "CVE-2026-59257"
+  cwe:
+    - "CWE-89"
+  research:
+    - "https://jvndb.jvn.jp/ja/contents/2026/JVNDB-2026-023001.html"
+
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires high-risk AI systems to resist unauthorised attempts to alter their use, outputs or performance; this rule provides runtime detection evidence by flagging the tool-poisoning technique (SQL injection via unparameterized template-expression value in a workflow SQL node)."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is a runtime risk-treatment control that detects the tool-poisoning technique (SQL injection via unparameterized template-expression value)."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime detection of the tool-poisoning technique (SQL injection via unparameterized template-expression value)."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Adversarial-input identification under MP.5.1 must enumerate workflow-automation SQL nodes reachable from external triggers as an input vector, not just direct API surfaces."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control, including control of externally provided processes) is operationalised by this rule's detection of the tool-poisoning technique (SQL injection via unparameterized template-expression value)."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is supported by this rule, which implements runtime detection of the tool-poisoning technique (SQL injection via unparameterized template-expression value) as a treatment control."
+      strength: secondary
+
+tags:
+  category: tool-poisoning
+  subcategory: workflow-sql-template-injection
+  scan_target: both
+  confidence: medium
+
+agent_source:
+  type: tool_call
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "A query string built entirely from parameterized placeholders (?, :name, $1) with the template expression only supplying the placeholder's bound value, not concatenated into the SQL text itself."
+    - "Template-expression syntax appearing in non-SQL contexts (e.g. an HTML template or a Slack message body) with no adjacent SQL keywords."
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)\b(?:SELECT|INSERT|UPDATE|DELETE)\b[^\n]{0,40}\b(?:FROM|SET|INTO|WHERE|TABLE)\b(?:(?!\?|:[a-zA-Z_]|\$\d)[\s\S]){0,200}\{\{\s*\$[^}]{0,98}\}\}'
+      description: "SQL verb followed closely by a real SQL clause keyword (FROM/SET/INTO/VALUES/WHERE/TABLE), then a {{ $... }} template expression embedded directly in the query text with no parameterization marker (?, :name, $N) anywhere in between — the n8n executeQuery unparameterized-injection primitive. Requiring the clause keyword close to the verb (not just the bare verb) excludes ordinary English prose using SELECT/INSERT/UPDATE/DELETE as everyday verbs (e.g. 'Update reference to correct name' in unrelated error-fixing documentation, which has no FROM/SET/INTO/VALUES/WHERE/TABLE nearby). Tempered span (not a bare [^;\\n]{0,200}) so a placeholder marker between the clause keyword and the expression correctly rules out the match. The bracket content must start with $ (n8n's actual expression sigil, e.g. $json/$node/$workflow) — a bare '{{ }}' mentioned in documentation prose about expression syntax is not itself an expression."
+
+    - field: content
+      operator: regex
+      value: '(?i)executeQuery[^\n]{0,80}\{\{\s*\$[^}]{0,98}\}\}[^\n]{0,200}\b(?:SELECT|INSERT|UPDATE|DELETE)\b'
+      description: "Workflow-node executeQuery operation with a template expression preceding raw SQL text — n8n-style config co-occurrence"
+
+    - field: content
+      operator: regex
+      value: '(?i)(?:webhook|external\s+trigger)[^\n]{0,120}(?:executeQuery|raw\s+sql)[^\n]{0,120}\{\{\s*\$[^}]{0,98}\}\}'
+      description: "Skill/document content describing a webhook-reachable trigger feeding a template expression into a raw SQL execute operation"
+
+response:
+  actions:
+    - alert
+    - require_human_review
+  message_template: >
+    [ATR-2026-02263] HIGH: SQL injection via unparameterized template-expression
+    value detected (CVE-2026-59257 class). A workflow SQL node interpolates a
+    {{ }}-style expression directly into raw SQL text instead of using a bound
+    parameter. If the workflow is reachable from an external trigger, treat as
+    exploitable — switch to a parameterized query node and rotate the DB
+    credentials the node uses.
+
+confidence: 65
+
+test_cases:
+  true_positives:
+    - input: 'query: "SELECT * FROM users WHERE email = {{$json.email}} AND active=1"'
+      expected: triggered
+      description: "Direct n8n-style unparameterized interpolation into a SELECT statement"
+    - input: 'executeQuery operation config: {{$json.customer_id}} SELECT id, name FROM customers WHERE id = {{$json.customer_id}}'
+      expected: triggered
+      description: "executeQuery co-occurrence with template expression preceding SQL text"
+    - input: >-
+        This workflow has a webhook trigger feeding user input into an executeQuery
+        node, whose raw sql is built as INSERT INTO logs VALUES ({{$json.entry}})
+        with no parameterization.
+      expected: triggered
+      description: "Prose description of the exact webhook-to-executeQuery-to-raw-SQL chain"
+    - input: 'DELETE FROM sessions WHERE token = {{$node["Webhook"].json["token"]}}'
+      expected: triggered
+      description: "DELETE statement with nested n8n expression syntax referencing webhook-sourced data"
+  true_negatives:
+    - input: 'query: "SELECT * FROM users WHERE email = ? AND active=1", params: [{{$json.email}}]'
+      expected: not_triggered
+      description: "Parameterized query — the expression only supplies the bound ? placeholder's value, not concatenated into the SQL text"
+    - input: 'query: "SELECT * FROM users WHERE id = :userId", params: {userId: {{$json.id}}}'
+      expected: not_triggered
+      description: "Named-parameter placeholder (:userId) — safe pattern"
+    - input: 'Send a Slack message: "Order {{$json.order_id}} was placed by {{$json.customer_name}}"'
+      expected: not_triggered
+      description: "Template expression in a non-SQL Slack message body — no SQL keywords present"
+    - input: 'query: "SELECT * FROM products WHERE category = $1", values: [{{$json.category}}]'
+      expected: not_triggered
+      description: "PostgreSQL-style positional placeholder ($1) — safe parameterized pattern"
+    - input: 'This node lets you write custom SQL. Example: SELECT * FROM orders WHERE status = pending -- see docs for {{ }} expression syntax reference'
+      expected: not_triggered
+      description: >-
+        ADVERSARIAL REVIEW (2026-07-13): documentation prose mentioning the bare '{{ }}' syntax while explaining
+        the feature, not an actual expression reference — caught firing in the first draft since '{{ }}' (empty/
+        whitespace-only) satisfied the old [^}]{1,100} bracket-content check. Fixed by requiring the bracket
+        content start with $ (n8n's real expression sigil).
+    - input: >-
+        3. Update reference to correct name
+
+        **Example**: Error { "type": "invalid_reference", "message": "Node 'HTTP Requets' does not exist",
+        "current": "={{$node['HTTP Requets'].json.data}}" }
+      expected: not_triggered
+      description: >-
+        SAFETY-GATE FP (2026-07-13, skills-sh:sickn33/n8n-validation-expert.md): a workflow-linter skill's
+        documentation uses "Update" as an ordinary English verb ("Update reference to correct name") followed
+        by an unrelated JSON error-message example containing a real n8n expression. Fixed by requiring the SQL
+        verb be followed closely (within 40 chars) by an actual SQL clause keyword (FROM/SET/INTO/WHERE/TABLE),
+        which this prose never has.
+
+evasion_tests:
+  - input: 'query: "select * from users where email = {{ $json.email }} and active=1"'
+    expected: triggered
+    bypass_technique: case_and_whitespace_variation
+    notes: "Case-insensitive match plus internal whitespace inside {{ }} handled by the [^}]{1,100} span."
+  - input: 'query: "SELECT * FROM users WHERE email = " + $json.email + " AND active=1"'
+    expected: not_triggered
+    bypass_technique: string_concatenation_instead_of_template_syntax
+    notes: "Plain string concatenation (+ operator) instead of {{ }} expression syntax evades this rule; same vulnerability class expressed without the n8n-specific delimiter. Documented limitation — would need a separate condition for generic string-concat-into-SQL, out of scope for this CVE-specific rule."
