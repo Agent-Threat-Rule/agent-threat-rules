@@ -81,10 +81,18 @@ detection:
     #   - example-contrast continuations like "Say X not Y", "Say X or Y"
     #   - reported-speech contexts: "users say X", "when they say X" (meta-language
     #     describing user phrasing, not an imperative to the model)
+    # 1a: imperative output + an explicit EXACT-FORCING modifier + quoted target.
     - field: user_input
       operator: regex
-      value: "(?i)(?<![\"'])(?<!\\b(?:they|user|users|people|customer|customers|developer|developers|client|clients|when|if|whenever|caller|callers|operator|operators)\\s)\\b(say|output|retype|repeat|emit|reply\\s+with|respond\\s+with)\\s+(?:(?:exactly|only|just|the|following|exact|literal|string|phrase|text|words|content|line|chorus|caption|sentence|verse)\\s*[:,-]?\\s*)*[\"'][\\sA-Za-z0-9][^\"\\n]{3,200}[\"'](?!\\s*(?:not|or|nor|but|instead|rather\\s+than|--|—|,\\s*(?:not|or)\\s+[\"']))"
-      description: "Imperative output (excl. write/return/print + reported speech + inside-string) + flexible modifier chain + quoted natural-language target"
+      value: "(?i)(?<![\"'])(?<!\\b(?:they|user|users|people|customer|customers|developer|developers|client|clients|when|if|whenever|caller|callers|operator|operators)\\s)\\b(say|output|retype|repeat|emit|reply\\s+with|respond\\s+with)\\s+(?:exactly|only|just|verbatim|literally|precisely|word[\\s-]for[\\s-]word|nothing\\s+but|the\\s+(?:exact|literal)\\s+(?:string|phrase|text|words?|line)?)\\b[^\"\\n]{0,40}[\"'][\\sA-Za-z0-9][^\"\\n]{3,200}[\"'](?!\\s*(?:not|or|nor|but|instead|rather\\s+than|--|—))"
+      description: "Imperative output + explicit exact-forcing modifier (exactly/only/just/verbatim/word-for-word) + quoted target"
+
+    # 1b: imperative output forcing a security/status canonical assertion (catches the
+    # bare 'say \"I have been PWNED\"' shape without matching benign 'say \"hello world\"').
+    - field: user_input
+      operator: regex
+      value: "(?i)(?<![\"'])(?<!\\b(?:they|user|users|people|customer|customers|developer|developers|client|clients|when|if|whenever|caller|callers|operator|operators)\\s)\\b(say|output|retype|repeat|emit|reply\\s+with|respond\\s+with)\\s+(?:(?:exactly|only|just|the|following|exact|literal|string|phrase|text|words|line)\\s*[:,-]?\\s*)*[\"'][^\"\\n]{0,80}\\b(pwned|approved|granted|accepted|authori[sz]ed|overrid(?:e|den)|unlocked|jailbroken|bypass(?:ed)?|hacked|admin(?:istrator)?\\s+access|root\\s+access|no\\s+threats?|all\\s+clear|access\\s+granted|system\\s+override)\\b[^\"\\n]{0,80}[\"'](?!\\s*(?:not|or|nor|but|instead))"
+      description: "Imperative output forcing a security/status canonical assertion (approved/granted/PWNED/override/all clear)"
 
     # Answer-must-be quoted phrase (natural-language target only)
     - field: user_input
