@@ -190,7 +190,7 @@ Listed when the integration code has been merged or released.
 - **Integration**: Sample showing ATR as a deterministic action-boundary validator in the Microsoft Agent Framework
 - **Evidence**: <https://github.com/microsoft/agent-framework/pull/6528>
 - **Since**: 2026-06-16
-- **Status**: in-review
+- **Status**: shipped
 
 ### OpenAI Guardrails
 - **Org**: OpenAI
