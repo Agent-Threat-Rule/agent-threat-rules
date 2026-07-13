@@ -1,11 +1,11 @@
 # ATR → MITRE ATLAS Mapping
 
 Version: 0.1.0 (INTERNAL DRAFT — not published)
-Status: Draft alignment mapping for MITRE ATLAS v5.6.0
-Date: 2026-07-14 (re-reconciled; prior 2026-06-14)
+Status: Draft alignment mapping for MITRE ATLAS content v2026.06 (data-format 6.0.0)
+Date: 2026-07-14 (re-reconciled to v2026.06; prior 2026-06-14, and a 2026-07-14 pass that mis-read the version — see note below)
 Editor: Adam Lin (林冠辛) <adam@agentthreatrule.org>
-Mapped corpus: Agent Threat Rules v3.5.8 (749 rules / 10 categories; disk == data/stats.json reconciled 2026-07-14)
-Reference framework: MITRE ATLAS (Adversarial Threat Landscape for Artificial-Intelligence Systems), `dist/ATLAS.yaml` on mitre-atlas/atlas-data, v5.6.0 — 16 tactics, 101 top-level techniques (170 including sub-techniques), counted from the full machine-readable `dist/ATLAS.yaml` (downloaded and parsed locally 2026-07-14; `dist/ATLAS.yaml` on `main` is still v5.6.0).
+Mapped corpus: Agent Threat Rules v3.5.8 (751 rules / 10 categories; disk == data/stats.json reconciled 2026-07-14)
+Reference framework: MITRE ATLAS (Adversarial Threat Landscape for AI Systems). Since content release **v2026.05** MITRE split versioning: **content** follows a date-based `YYYY.MM` scheme stored in the Collection object (current: **v2026.06**, 2026-06-30), while the **data format** follows semver (current: **6.0.0**). The current machine-readable file is `dist/v6/ATLAS-2026.06.yaml` (reached via the `dist/ATLAS-latest.yaml` → `dist/v6/ATLAS-latest.yaml` pointer chain) — **16 tactics, 103 top-level techniques (173 including sub-techniques)**, downloaded and parsed locally 2026-07-14. NOTE: the older flat `dist/ATLAS.yaml` is **deprecated and frozen** at the v5.6.0-format content (101 techniques) and must not be used — it is what an earlier 2026-07-14 pass wrongly reconciled against, incorrectly reporting "still v5.6.0". Corrected here.
 
 ---
 
@@ -22,22 +22,24 @@ detection rules supply runtime evidence for adversary techniques catalogued by
 ATLAS. It is **NOT** a claim that MITRE has adopted, endorsed, reviewed, or
 certified ATR. No participation or submission channel is asserted.
 
-Every technique ID and name in this document was reconciled on 2026-06-14 and
-re-verified on 2026-07-14 against the official `dist/ATLAS.yaml` (still v5.6.0 on
-`main`). Every cited rule ID is a real `ATR-YYYY-NNNNN` identifier read from the
-rule corpus (749 rules) on the re-verification date.
+Every technique ID and name in this document was reconciled against the official
+MITRE ATLAS data: first on 2026-06-14, and re-reconciled on 2026-07-14 against
+content **v2026.06** (`dist/v6/ATLAS-2026.06.yaml`, data-format 6.0.0). All 34
+ATLAS techniques ATR references remain valid in v2026.06 (none renamed or retired).
+Every cited rule ID is a real `ATR-YYYY-NNNNN` identifier read from the rule corpus
+(751 rules) on the re-reconciliation date.
 
 ## 2. Coverage summary
 
 | Metric | Value |
 |---|---|
-| ATLAS version reconciled against | v5.6.0 |
-| ATLAS top-level techniques (total) | 101 |
-| ATLAS top-level techniques with ≥1 ATR rule | **34 (34%)** |
-| ATLAS tactics with ≥1 covered technique | 13 of 16 (Defense Evasion now directly covered via T0109; also spans Lateral Movement) |
+| ATLAS content version reconciled against | v2026.06 (data-format 6.0.0) |
+| ATLAS top-level techniques (total) | 103 |
+| ATLAS top-level techniques with ≥1 ATR rule | **34 (33%)** |
+| ATLAS tactics with ≥1 covered technique | 13 of 16 (Defense Evasion covered via T0109; also spans Lateral Movement) |
 | ATR rules carrying ≥1 ATLAS technique ID | every rule in the corpus |
 
-**Honest scope note.** The ~67 uncovered top-level techniques are dominated by the
+**Honest scope note.** The 69 uncovered top-level techniques are dominated by the
 **Reconnaissance**, **Resource Development**, and **AI Attack Staging** tactics —
 attacker-side preparation that occurs *before* a deployed agent observes any input,
 and which a runtime detection rule operating on agent inputs/outputs structurally
@@ -136,8 +138,8 @@ sub-techniques). The cited rule is one representative example, not the only rule
 
 ### Agent-native techniques (added 2026-06-14; counts re-verified 2026-07-14)
 
-ATLAS v5.6.0 ships agent-native techniques. These rules now carry the precise
-agent-native ID (added alongside, not in place of, existing mappings):
+ATLAS (content v2026.06) ships agent-native techniques. These rules now carry the
+precise agent-native ID (added alongside, not in place of, existing mappings):
 
 | ATLAS ID | Technique | Tactic | ATR rules | Example |
 |---|---|---|---|---|
@@ -153,12 +155,21 @@ agent-native ID (added alongside, not in place of, existing mappings):
 - **Source of truth:** each rule's `references.mitre_atlas` block. This document is a
   generated aggregate, not a second source. Regenerate after rule-corpus changes:
   `grep -rhoE "AML\.T[0-9]{4}" rules/ | sort | uniq -c`. Always count the ATLAS side
-  from the full machine-readable `dist/ATLAS.yaml` (download and parse it locally — do
-  not rely on a truncated fetch, which undercounts).
+  from the current machine-readable data — `dist/v6/ATLAS-<YYYY.MM>.yaml`, resolved
+  via the `dist/ATLAS-latest.yaml` pointer chain (`scripts/atd/sync-atlas-allowlist.ts`
+  does this and vendors the id→name map to `data/threat-frameworks/mitre-atlas.json`).
+  Do **not** use the flat `dist/ATLAS.yaml` — it is deprecated and frozen at 101
+  techniques, and a truncated web fetch undercounts.
+- **New in content v2026.06 (added since the v5.6.0-era catalog), not yet ATR-tagged:**
+  - **AML.T0113 Steal Web Session Cookie** and **AML.T0091.001 Use Alternate
+    Authentication Material: Web Session Cookie** — session-token theft/replay; candidate
+    overlap with the credential-exfil family, review before tagging.
+  - **AML.T0114 AI Service Web Interface** — an access surface (the AI service's own web
+    UI); mostly an access-vector rather than a runtime agent-I/O detection target.
 - **Expansion candidates (re-verified 2026-07-14):** the agent-native techniques listed as
   candidates in the 2026-06-14 draft — T0104, T0105, T0110, T0102 — are now **tagged and
   covered** (see the Agent-native table above); that earlier bullet was stale. The
-  agent-native techniques v5.6.0 ships that ATR does **not** yet carry an ID for are:
+  agent-native techniques the catalog ships that ATR does **not** yet carry an ID for are:
   - **AML.T0098 AI Agent Tool Credential Harvesting** — ATR already has substantive
     detection (the whole context-exfiltration / credential-exfil family, e.g.
     ATR-2026-02261 code-surface credential-exfil chain, ATR-2026-00212 mcp-atlassian
@@ -174,9 +185,12 @@ agent-native ID (added alongside, not in place of, existing mappings):
   Adding a technique ID to a rule is a rule-corpus change (each addition must keep the
   rule's compliance blocks passing `npm run audit:mappings`), so it is tracked as a
   separate follow-up rather than folded into this doc-only reconciliation.
-- **Cadence:** re-reconcile technique IDs/names against `dist/ATLAS.yaml` on each
-  ATLAS minor release (ATLAS ships roughly monthly). The 2026-06-14 reconciliation
-  corrected 82 rules whose metadata carried pre-v5 technique names (e.g. "ML Supply
-  Chain Compromise" → "AI Supply Chain Compromise") or mislabelled IDs.
+- **Cadence:** re-reconcile technique IDs/names against the current `dist/v6/` data on
+  each monthly ATLAS content release (`YYYY.MM`). Since v2026.05, content version
+  (date-based, in the Collection object) and data-format version (semver, now 6.0.0) are
+  tracked separately — cite the **content** version (v2026.06) for "which techniques",
+  and don't confuse the format-version field for the release. The 2026-06-14
+  reconciliation corrected 82 rules whose metadata carried pre-v5 technique names
+  (e.g. "ML Supply Chain Compromise" → "AI Supply Chain Compromise") or mislabelled IDs.
 - **Claim discipline:** "aligned to ATLAS" / "maps to ATLAS technique X" only.
   Never "adopted by MITRE" or "ATLAS-certified".
