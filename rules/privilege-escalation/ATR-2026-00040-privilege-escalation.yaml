@@ -93,7 +93,7 @@ detection:
       description: Privileged flags or admin/root values in structured tool arguments (not natural language)
     - field: tool_args
       operator: regex
-      value: (?i)(?:DROP\s+(?:TABLE|DATABASE|INDEX)|ALTER\s+TABLE|TRUNCATE|DELETE\s+FROM\s+\w+\s*;|GRANT\s+ALL|REVOKE\s+ALL)
+      value: (?i)(?:DROP\s+(?:TABLE|DATABASE|INDEX)\b(?!\s+IF\s+EXISTS)|ALTER\s+TABLE|TRUNCATE|DELETE\s+FROM\s+\w+\s*;|GRANT\s+ALL|REVOKE\s+ALL)
       description: Destructive or privileged SQL statements in arguments
     - field: tool_args
       operator: regex
@@ -101,8 +101,8 @@ detection:
       description: Container escape techniques in tool arguments
     - field: tool_args
       operator: regex
-      value: (?i)(?:kubectl\s+exec|kubectl\s+(?:create|apply)\s+.*(?:clusterrole|rolebinding)|kubectl\s+auth\s+can-i)
-      description: Kubernetes privilege escalation commands
+      value: (?i)(?:kubectl\s+exec\b[^"']*(?:/bin/\w*sh|\bbash\b)|kubectl\s+(?:create|apply)\s+.*(?:clusterrole|rolebinding)|kubectl\s+auth\s+can-i)
+      description: Kubernetes privilege escalation (RBAC-binding creation, auth probing, or exec that spawns an absolute-path/bash shell; routine interactive debug exec excluded)
     - field: tool_args
       operator: regex
       value: (?i)(?:chmod\s+(?:[2467][0-7]{3}|[0-7]{0,3}7[0-7]{0,2})|chmod\s+[ug]\+s|chown\s+root|setcap\s+)

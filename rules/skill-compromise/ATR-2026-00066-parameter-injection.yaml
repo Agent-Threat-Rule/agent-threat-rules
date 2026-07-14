@@ -87,7 +87,7 @@ detection:
       value: "(\\.\\./|\\.\\.\\\\){2,}|(\\.\\.(/|\\\\)){2,}(etc|windows|usr|home|root|var|tmp)"
     - field: tool_args
       operator: regex
-      value: "(?i)(\\{\\{.*\\}\\}|\\$\\{.*\\}|<%.*%>|#\\{.*\\}|\\{%.*%\\})"
+      value: "(?i)(\\{\\{.*\\}\\}|\\$\\{IFS|\\$\\{[^}]*[`(]|\\$\\{[^}]*jndi:|\\$\\([^)]*[A-Za-z]|<%.*%>|#\\{.*\\}|\\{%.*%\\})"
     - field: tool_args
       operator: regex
       value: "(?i)(\\x00|%00|\\\\0|null\\s*byte|\\\\u0000)"

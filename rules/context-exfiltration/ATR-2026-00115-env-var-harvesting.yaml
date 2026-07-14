@@ -75,7 +75,7 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: (?i)(?:printenv|/usr/bin/env)\s*(?:\||>|$|\s*$)
+      value: (?i)(?:printenv|/usr/bin/env)\s*(?:\||>)\s*.*(?:curl|fetch|http|request|post|send|axios|wget|ncat|netcat|\bnc\b|exfil|@-)
       description: Running printenv to dump all environment variables
     - field: content
       operator: regex
@@ -83,7 +83,7 @@ detection:
       description: Accessing the entire environment object rather than a specific variable
     - field: content
       operator: regex
-      value: (?i)(?:^|\s)env\s*(?:\||>|;|&&|$)
+      value: (?i)(?:^|\s)env\s*(?:\||>|;|&&)\s*.*(?:curl|fetch|http|request|post|send|axios|wget|ncat|netcat|\bnc\b|exfil|@-)
       description: Running bare env command to list all environment variables
     - field: content
       operator: regex
