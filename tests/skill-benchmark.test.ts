@@ -26,7 +26,10 @@ describe('SKILL.md Benchmark', () => {
 
   beforeAll(async () => {
     report = await runSkillBenchmark();
-  }, 180_000);
+    // Setup runs the full corpus x rule-set once. Local finishes in seconds,
+    // but shared CI runners are slow and variable — give generous headroom so
+    // a loaded runner doesn't flake the whole release on a setup timeout.
+  }, process.env.CI ? 600_000 : 180_000);
 
   it('meets recall threshold (>= 90%)', () => {
     expect(report.overall_recall).toBeGreaterThanOrEqual(0.9);
