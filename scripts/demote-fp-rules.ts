@@ -69,12 +69,18 @@ function loadBenign(): string[] {
   return out;
 }
 
-/** Flip the top-level `maturity:` field in a rule YAML, preserving everything else. */
+/**
+ * Flip the top-level `maturity:` field in a rule YAML, preserving everything else.
+ * Handles both bare (`maturity: stable`) and quoted (`maturity: "stable"`) values —
+ * the quoted form is common and was silently skipped by an earlier bare-only regex,
+ * leaving the worst offenders (which happen to be quoted, e.g. 00020/00021/00001)
+ * un-demoted.
+ */
 function setMaturity(path: string, to: string): boolean {
   const src = readFileSync(path, "utf-8");
-  const re = /^(maturity:\s*)(\w+)(\s*)$/m;
+  const re = /^(maturity:[ \t]*)(["']?)(\w+)\2([ \t]*)$/m;
   if (!re.test(src)) return false;
-  writeFileSync(path, src.replace(re, `$1${to}$3`), "utf-8");
+  writeFileSync(path, src.replace(re, `$1$2${to}$2$4`), "utf-8");
   return true;
 }
 
