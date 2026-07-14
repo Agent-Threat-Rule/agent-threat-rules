@@ -1,0 +1,80 @@
+name: FP Report Intake
+
+# Closes the false-positive feedback loop.
+#
+# A false-positive.yml issue is an UNVERIFIED user claim. It must not touch the
+# benign gate until a maintainer confirms the input is genuinely benign (an
+# attacker could otherwise file a "false positive" to poison the corpus and blind
+# a rule). So the trigger is a maintainer adding the `fp-confirmed` label — not
+# issue creation.
+#
+# On confirm: ingest-fp-report.ts appends the sample to
+# data/benign-corpus-extended/wild-fp-confirmed.jsonl (the corpus that
+# check-rules-safety / gate-promotion-fp / promote-to-stable already scan) and
+# names the offending rule(s). A PR is opened. Once merged, those rules can no
+# longer pass the safety/promotion gate until they stop matching the sample — the
+# corpus grows toward the real world and the loose rules are forced to converge.
+# New attack rules are never blocked by this: they enter at maturity:test in the
+# hunt lane and simply cannot reach the enforce lane until FP-clean here.
+
+on:
+  issues:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: "false-positive.yml issue number to ingest"
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  ingest:
+    # Gate on the confirming label so unverified reports can't poison the corpus.
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.label.name == 'fp-confirmed'
+    runs-on: ubuntu-latest
+    env:
+      ISSUE: ${{ github.event.inputs.issue || github.event.issue.number }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci
+      - name: Ingest confirmed false positive
+        id: ingest
+        run: |
+          set -euo pipefail
+          npx tsx scripts/ingest-fp-report.ts --issue "$ISSUE" --write | tee /tmp/fp-ingest.log
+          echo "changed=$(git status --porcelain data/benign-corpus-extended/wild-fp-confirmed.jsonl | wc -l | tr -d ' ')" >> "$GITHUB_OUTPUT"
+      - name: Re-validate corpus is still parseable
+        run: npx tsx scripts/validate-rules.ts >/dev/null 2>&1 || npm run validate
+      - name: Open PR with the new benign regression sample
+        if: steps.ingest.outputs.changed != '0'
+        run: |
+          set -euo pipefail
+          BRANCH="fp-intake/issue-${ISSUE}"
+          git config user.name "atr-fp-bot"
+          git config user.email "bot@agentthreatrule.org"
+          git checkout -b "$BRANCH"
+          git add data/benign-corpus-extended/wild-fp-confirmed.jsonl
+          git commit -m "corpus(field-fp): confirmed false positive from issue #${ISSUE}
+
+          $(grep -E '\[fp-ingest\] .* rule' /tmp/fp-ingest.log || true)
+
+          The offending rule(s) will now fail the safety/promotion gate until
+          tightened — feedback loop working as intended. Closes #${ISSUE}."
+          git push -u origin "$BRANCH"
+          gh pr create --base main --head "$BRANCH" \
+            --title "corpus(field-fp): confirmed FP from issue #${ISSUE}" \
+            --body "$(cat /tmp/fp-ingest.log)
+
+          Auto-ingested from confirmed false-positive issue #${ISSUE}. Merging adds this benign input to the permanent regression corpus; the offending rule(s) above must then be tightened (or kept out of the enforce lane) to pass the gate."
