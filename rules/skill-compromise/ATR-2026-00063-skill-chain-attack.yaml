@@ -79,7 +79,7 @@ detection:
   conditions:
     - field: tool_args
       operator: regex
-      value: "(?i)(/etc/passwd|/etc/shadow|(?<![a-z])\\.(env|aws/credentials)|secrets?\\.json|private[_-]?key|id_rsa|kubeconfig)"
+      value: "(?i)(/etc/passwd|/etc/shadow|(?<![a-z])\\.aws/credentials|secrets?\\.json|private[_-]?key|id_rsa|kubeconfig)"
       description: "Sensitive file/credential access patterns (path-specific, not bare word 'credentials')"
     - field: tool_args
       operator: regex
@@ -90,6 +90,10 @@ detection:
     - field: tool_name
       operator: regex
       value: "(?i)(send[_-]?(email|message|webhook|http|request)|upload|post[_-]?data|transmit|exfil)"
+    - field: tool_args
+      operator: regex
+      value: '(?i)(?=[\s\S]*(?<![a-z])\.env)(?=[\s\S]*(base64|btoa|encodeURI|hex\.encode|rot13|xor|compress|gzip|deflate|encrypt|webhook|ngrok|requestbin|pipedream|hookbin|burpcollaborator|interact\.sh|oast|curl|wget|\bnc\b|exfil|upload))'
+      description: "Dotenv file access ONLY when chained with an obfuscation-or-egress indicator in the same args (multi-step access-then-obfuscate-then-egress chain). A bare startup-style dotenv reference no longer fires alone; the dangerous egress half is now required to flag this composite data-egress signal."
   condition: any
   false_positives:
     - "Legitimate backup or migration workflows that read, compress, and transfer files"

@@ -60,15 +60,15 @@ detection:
   conditions:
     - field: tool_args
       operator: regex
-      value: "(?i)https?://(?:localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0|\\[::1\\]):(?:6379|27017|9200|5432|3306|5601|8500|4444|1521|6443|2181|9092|11211|8161|9092)(?:[/\"'\\s]|$)"
-      description: "Localhost URL with well-known database/service port (Redis/MongoDB/Elastic/etc)"
+      value: "(?i)https?://(?:localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0|\\[::1\\]):(?:(?:6379|27017|9200|5432|3306|5601|8500|4444|1521|6443|2181|9092|11211|8161)(?:/)?(?:[\"'\\s]|$)|\\d{2,5}/(?:_cat/|_search|_cluster/settings|_nodes|_snapshot|actuator/(?:env|beans|configprops|mappings|heapdump|threaddump|shutdown|loggers|conditions|scheduledtasks|sessions|caches)|\\.env))"
+      description: "Localhost URL: bare raw service-port probe (no HTTP path) OR any localhost port followed by a sensitive data/config path (Elasticsearch cat/search/cluster-settings APIs, Spring Boot management/secret endpoints). Routine health and metrics endpoints are excluded to avoid false positives on local health checks."
     - field: user_input
       operator: regex
-      value: "(?i)(?:fetch|retrieve|get|access)\\s+(?:http://)?(?:localhost|127\\.0\\.0\\.1):(?:6379|27017|9200|5432|3306|8500|4444)(?:[/\"'\\s]|$)"
-      description: "User instructing agent to fetch localhost with specific service port"
+      value: "(?i)(?:fetch|retrieve|get|access|probe|curl|wget)\\s+(?:https?://)?(?:localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0|\\[::1\\]):(?:(?:6379|27017|9200|5432|3306|5601|8500|4444|1521|6443|2181|9092|11211|8161)(?:/)?(?:[\"'\\s]|$)|\\d{2,5}/(?:_cat/|_search|_cluster/settings|_nodes|_snapshot|actuator/(?:env|beans|configprops|mappings|heapdump|threaddump|shutdown|loggers|conditions|scheduledtasks|sessions|caches)|\\.env))"
+      description: "User directing the agent to probe a localhost raw service port or a localhost sensitive data/config path (not routine health/metrics checks)."
   condition: any
   false_positives:
-    - "Development agents running integration tests against a local server"
+    - "Development agents running integration tests against a local server (e.g. routine health/metrics checks)"
     - "Local development environment where the agent intentionally serves localhost"
 response:
   actions:

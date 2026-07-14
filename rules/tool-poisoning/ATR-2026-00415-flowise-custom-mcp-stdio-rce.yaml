@@ -107,8 +107,8 @@ detection:
 
     - field: content
       operator: regex
-      value: '(?i)(?:npx|node|deno|python|bash|sh|powershell)\s+-(?:c|e|-eval|-command|Command)\s+["\x27][^"\x27\n]{0,300}(?:exec|spawn|require|child_process|os\.system|subprocess|Runtime\.getRuntime|Function\s*\()'
-      description: "Interpreter inline-exec flag whose script body invokes process-spawning APIs — RCE intent signature"
+      value: '(?i)(?:npx|node|deno|python|bash|sh|powershell)\s+-(?:c|e|-eval|-command|Command)\s+["\x27][^"\x27\n]{0,300}(?:exec|spawn|child_process|os\.system|subprocess|Runtime\.getRuntime|Function\s*\()'
+      description: "Interpreter inline-exec flag whose script body invokes a process-spawning / code-exec sink (exec/spawn/child_process/os.system/subprocess/Runtime.getRuntime/Function()) — RCE intent signature. Bare require() removed so legitimate `node -e \"require(...)\"` no longer false-positives; genuine RCE still fires via child_process/exec/spawn."
 
     - field: content
       operator: regex
