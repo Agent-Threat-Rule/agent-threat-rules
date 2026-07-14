@@ -86,14 +86,27 @@ for (const fname of corpusFiles.sort()) {
 
   for (let i = 0; i < prompts.length; i++) {
     const prompt = prompts[i];
-    const event: AgentEvent = {
+    const ts = new Date().toISOString();
+    // Dual-context eval: a jailbreak prompt can arrive as a direct user
+    // message (llm_input) OR be relayed through a tool's output
+    // (tool_response, e.g. indirect injection). Evaluating only llm_input
+    // undercounts recall for rules scoped to tool_response/both -- this
+    // matches the methodology used for the historical inthewild-650
+    // baseline (data/measurements/garak/*.json), which evaluates both.
+    const inputEvent: AgentEvent = {
       type: "llm_input",
       content: prompt,
-      timestamp: new Date().toISOString(),
+      timestamp: ts,
       fields: { user_input: prompt },
     };
+    const toolEvent: AgentEvent = {
+      type: "tool_response",
+      content: prompt,
+      timestamp: ts,
+      fields: { tool_response: prompt },
+    };
 
-    const matches = engine.evaluate(event);
+    const matches = [...engine.evaluate(inputEvent), ...engine.evaluate(toolEvent)];
     if (matches.length > 0) {
       detected++;
     } else {
