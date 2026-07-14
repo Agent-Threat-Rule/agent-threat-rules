@@ -110,8 +110,8 @@ detection:
     # -- Layer 1: Destructive shell commands --
     - field: tool_response
       operator: regex
-      value: "(?i)(\\brm\\s+-[rRf]{1,3}\\s+(--no-preserve-root|/[\\s*]|/$|~[\\s/])|\\bmkfs\\b|\\bdd\\s+if=|\\bformat\\s+[a-z]:|\\bdeltree\\b|\\bshred\\s+-|\\bwipefs\\b|\\bfdisk\\b.*--delete|:\\(\\)\\s*\\{\\s*:\\|:\\s*&\\s*\\})"
-      description: "Destructive filesystem commands including fork bombs (rm -rf narrowed to root/home targets; benign rm -rf <dir> no longer fires)"
+      value: "(?i)(\\brm\\s+-[rRf]{1,3}\\s+(--no-preserve-root|/[\\s*]|/$|~[\\s/])|\\bmkfs\\b|\\bdd\\s+if=[^\\n|;]{0,80}of=\\s*/dev/|\\bformat\\s+[a-z]:|\\bdeltree\\b|\\bshred\\s+-|\\bwipefs\\b|\\bfdisk\\b.*--delete|:\\(\\)\\s*\\{\\s*:\\|:\\s*&\\s*\\})"
+      description: "Destructive filesystem commands including fork bombs (rm -rf narrowed to root/home targets; benign rm -rf <dir> no longer fires). dd narrowed to writes onto a raw /dev/ device (of=/dev/...) — benign forensic imaging that reads a device INTO a file no longer fires"
 
     # -- Layer 2: Command execution via interpreters --
     - field: tool_response
@@ -122,14 +122,14 @@ detection:
     # -- Layer 3: Reverse shells (Unix) --
     - field: tool_response
       operator: regex
-      value: "(?i)(\\bnc\\s+-(e|c|l)\\s|\\bncat\\s|\\bnetcat\\s|/dev/tcp/|\\bbash\\s+-i\\s+>&\\s*/dev/tcp|\\bmkfifo\\b.{0,40}\\bnc\\b|\\bsocat\\b.{0,40}(exec|pty|tcp)|\\brm\\s+/tmp/f\\s*;)"
-      description: "Unix reverse shell patterns (netcat, bash, socat, fifo)"
+      value: "(?i)(\\bnc\\s+-(e|c|l)\\s|\\bncat\\s+-|/dev/tcp/|\\bbash\\s+-i\\s+>&\\s*/dev/tcp|\\bmkfifo\\b.{0,40}\\bnc\\b|\\bsocat\\b.{0,40}(exec|pty|tcp)|\\brm\\s+/tmp/f\\s*;)"
+      description: "Unix reverse shell patterns (bash /dev/tcp, socat exec, fifo). netcat/ncat tightened to a flagged invocation (ncat -...) — the bare English word 'Netcat'/'Ncat' in pentest prose no longer fires"
 
     # -- Layer 4: Download-and-execute (pipe to shell) --
     - field: tool_response
       operator: regex
-      value: "(?i)(curl|wget|fetch|lwp-download|aria2c|invoke-webrequest|iwr|Invoke-RestMethod|irm)\\s+[^|]{0,200}(https?://\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|http://|\\$\\w|@)[^|]{0,120}\\|\\s*(bash|sh|zsh|python[23]?|perl|ruby|node|powershell|pwsh|cmd|source)"
-      description: "Download-and-execute pipe to shell, narrowed to malicious-leaning sources (raw IP, plain http://, shell-var, or userinfo@ URL). Benign https://official-domain installer pipes no longer auto-block (dual-use install idiom)"
+      value: "(?i)(curl|wget|fetch|lwp-download|aria2c|invoke-webrequest|iwr|Invoke-RestMethod|irm)\\s+[^|]{0,200}(https?://\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|http://(?!localhost|127\\.|0\\.0\\.0\\.0|\\[::1\\])|@)[^|]{0,120}\\|\\s*(bash|sh|zsh|python[23]?|perl|ruby|node|powershell|pwsh|cmd|source)"
+      description: "Download-and-execute pipe to shell, narrowed to malicious-leaning sources (raw IP, plain external http://, or userinfo@ URL). Benign https://official-domain installer pipes, http://localhost health-check/deploy pipes, and shell-variable-authenticated API calls piped to a parser no longer auto-block (dual-use idioms)"
 
     # -- Layer 5: Command substitution with dangerous commands --
     # NOTE (v2): the legacy backtick form `...` was removed — it is indistinguishable
@@ -170,38 +170,38 @@ detection:
     # -- Layer 10: PowerShell attack patterns --
     - field: tool_response
       operator: regex
-      value: "(?i)(\\bIEX\\s*\\(|\\bInvoke-Expression|\\bInvoke-Command|\\bInvoke-WmiMethod|\\b-EncodedCommand\\b|\\bNew-Object\\s+Net\\.WebClient|\\bDownloadString\\s*\\(|\\bDownloadFile\\s*\\(|\\bStart-Process\\b.{0,60}\\b-Verb\\s+RunAs|\\bSet-MpPreference\\s+-Disable|\\bAdd-MpPreference\\s+-ExclusionPath|\\bNet\\.Sockets\\.TCPClient)"
+      value: "(?i)(\\bIEX\\s*\\(|\\bInvoke-Expression|\\bInvoke-Command|\\bInvoke-WmiMethod|\\b-EncodedCommand\\b|\\bNew-Object\\s+Net\\.WebClient|\\bDownloadString\\s*\\(\\s*['\\\"]?https?://|\\bDownloadFile\\s*\\(\\s*['\\\"]?https?://|\\bStart-Process\\b.{0,60}\\b-Verb\\s+RunAs|\\bSet-MpPreference\\s+-Disable|\\bAdd-MpPreference\\s+-ExclusionPath|\\bNet\\.Sockets\\.TCPClient)"
       description: "PowerShell-specific attack patterns (IEX, download cradles, AV bypass)"
 
     # -- Layer 11: Python reverse shells and code execution --
     - field: tool_response
       operator: regex
-      value: "(?i)(python[23]?\\s+-c\\s+['\"]import\\s+(socket|subprocess|os|pty)|import\\s+socket\\s*;\\s*import\\s+subprocess|socket\\.socket\\(socket\\.AF_INET|os\\.(popen|system|exec[lv]p?)\\s*\\(|subprocess\\.(call|run|Popen|check_output)\\s*\\(.{0,60}(sh|bash|cmd|powershell)|pty\\.spawn\\s*\\()"
-      description: "Python reverse shells and dangerous code execution patterns"
+      value: "(?i)(python[23]?\\s+-c\\s+['\"]import\\s+(socket|subprocess|os|pty)|import\\s+socket\\s*;\\s*import\\s+subprocess|socket\\.socket\\(socket\\.AF_INET|os\\.(popen|system|exec[lv]p?)\\s*\\(\\s*[^)]{0,140}(\\||;|\\$\\(|&&|\\bcurl\\b|\\bwget\\b|/dev/tcp|bash\\s+-i|/bin/(ba)?sh\\b)|subprocess\\.(call|run|Popen|check_output)\\s*\\(.{0,60}['\"/](sh|bash|zsh|cmd(\\.exe)?|powershell)\\b|pty\\.spawn\\s*\\()"
+      description: "Python reverse shells and dangerous code execution. os.system/os.popen/os.exec narrowed to arguments carrying a shell-injection indicator (pipe, semicolon, command substitution, curl/wget, /dev/tcp, bash -i, /bin/sh) — bare os.system('clear')/os.popen('git ...') and semgrep pattern-references no longer fire. subprocess shell match requires a quoted or path-prefixed shell literal (\"bash\", '/bin/sh', \"cmd.exe\") — the bare metavariable/variable names $CMD and cmd, 'shell=False', and '/tmp/screenshot' no longer match"
 
     # -- Layer 12: Node.js reverse shells --
     - field: tool_response
       operator: regex
-      value: "(?i)(require\\s*\\(\\s*['\"]child_process['\"]\\s*\\)|child_process\\.exec(Sync)?\\s*\\(|require\\s*\\(\\s*['\"]net['\"]\\s*\\).{0,100}connect|new\\s+net\\.Socket\\s*\\(|process\\.mainModule\\.require)"
-      description: "Node.js reverse shells and child_process command execution"
+      value: "(?i)(require\\s*\\(\\s*['\"]child_process['\"]\\s*\\)\\s*\\.\\s*(exec|execSync|spawn|spawnSync)|child_process\\.exec(Sync)?\\s*\\(\\s*[^)]{0,140}(\\||;|\\$\\(|`|&&|\\bcurl\\b|\\bwget\\b|/dev/tcp|/bin/(ba)?sh\\b|\\bnc\\s+-)|require\\s*\\(\\s*['\"]net['\"]\\s*\\).{0,100}connect|new\\s+net\\.Socket\\s*\\(|process\\.mainModule\\.require)"
+      description: "Node.js reverse shells and child_process command execution. require('child_process') narrowed to an immediately-chained .exec/.spawn (a bare import for benign tooling no longer fires); child_process.exec(...) narrowed to a shell-injection indicator in the argument (pipe, semicolon, command-substitution/backtick, curl/wget, /dev/tcp, /bin/sh, nc) — benign fixed-command execs like exec('tsserver')/execSync('npm test') no longer fire"
 
     # -- Layer 13: Prompt injection within tool response --
     - field: tool_response
       operator: regex
-      value: "(?i)(ignore\\s+(all\\s+)?(previous|prior|your)\\s+(instructions?|rules?|guidelines?|prompts?)|you\\s+are\\s+now\\s+(a|an|the)|new\\s+system\\s+(prompt|instructions?)\\s*:|disregard\\s+(all\\s+)?(previous|prior|your)|override\\s+(all\\s+)?(previous|prior|your|the)\\s+(instructions?|rules?|safety)|from\\s+now\\s+on,?\\s+you\\s+(are|will|must|should))"
+      value: "(?i)(ignore\\s+(all\\s+)?(previous|prior|your)\\s+(instructions?|rules?|guidelines?|prompts?)|you\\s+are\\s+now\\s+(a|an|the)\\s+(admin|root|developer|dan\\b|unrestricted|unfiltered|jailbroken|different|new\\s+(ai|assistant|persona|model|bot)|evil|malicious|rogue|hacker|god)|new\\s+system\\s+(prompt|instructions?)\\s*:|disregard\\s+(all\\s+)?(previous|prior|your)|override\\s+(all\\s+)?(previous|prior|your|the)\\s+(instructions?|rules?|safety)|from\\s+now\\s+on,?\\s+you\\s+(are|will|must|should))"
       description: "Prompt injection payloads embedded in tool response content"
 
     # -- Layer 14: Data exfiltration via tool response --
     - field: tool_response
       operator: regex
-      value: "(?i)(curl|wget)\\s+[^|\\n]{0,140}\\$\\(\\s*(cat|env|printenv|security\\s+find-generic|aws\\s+configure\\s+get)\\b"
-      description: "Data exfiltration: a download tool reading secrets via command substitution ($(cat ~/.aws/...), $(env), $(printenv)) into an outbound request. Prose branches (send-to-webhook, bare 'exfiltrate') dropped — they matched benign phrasing like 'send results to the server'"
+      value: "(?i)(curl|wget)\\s+[^|\\n]{0,140}\\$\\(\\s*(cat\\s+[^)]{0,80}(\\.ssh|\\.aws|id_rsa|id_ed25519|\\.pem|/etc/passwd|/etc/shadow|credentials|\\.env)|(env|printenv|security\\s+find-generic|aws\\s+configure\\s+get)\\b)"
+      description: "Data exfiltration: a download tool reading secrets via command substitution ($(cat ~/.aws/credentials|~/.ssh/id_rsa|.env|/etc/shadow), $(env), $(printenv)) into an outbound request. cat narrowed to well-known secret paths — reading a service's own API token file for that service's Authorization header (e.g. curl -H 'Bearer $(cat ~/.cache/.../token)') no longer fires. Prose branches (send-to-webhook, bare 'exfiltrate') already dropped"
 
     # -- Layer 15: Cron/scheduled task persistence --
     - field: tool_response
       operator: regex
-      value: "(?i)(echo\\s+.{0,100}>>\\s*/etc/cron|\\bcrontab\\s+.{0,60}(curl|wget|/tmp/|/dev/|bash\\s+-i|http)|\\bat\\s+-f\\b|\\bschtasks\\s+/create\\b|\\bRegister-ScheduledTask\\b|\\blaunchctl\\s+load)"
-      description: "Persistence: writing to /etc/cron, crontab loading a remote/tmp payload, schtasks/ScheduledTask creation, launchctl load. Benign systemctl enable and bare crontab -e/-l dropped (normal service management)"
+      value: "(?i)(echo\\s+.{0,100}>>\\s*/etc/cron|\\bcrontab\\s+.{0,60}(curl|wget|/tmp/|bash\\s+-i|http)|\\bat\\s+-f\\b|\\bschtasks\\s+/create\\b|\\bRegister-ScheduledTask\\b|\\blaunchctl\\s+load)"
+      description: "Persistence: writing to /etc/cron, crontab loading a remote/tmp payload, schtasks/ScheduledTask creation, launchctl load. Benign systemctl enable and bare crontab -e/-l dropped (normal service management). Dropped /dev/ from the crontab branch — it matched the standard '(crontab -l 2>/dev/null; echo job) | crontab -' add-a-job idiom on the 2>/dev/null redirect"
 
   condition: any
   false_positives:

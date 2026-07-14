@@ -118,24 +118,24 @@ detection:
       description: "Agent claiming to be a privileged agent role"
     - field: content
       operator: regex
-      value: "(?i)(?:ignore|disregard|forget|override|overwrite)\\s+(?:all\\s+)?(?:your\\s+)?(?:previous|prior|above|earlier|existing)\\s+(?:instructions?|rules?|constraints?|guidelines?|prompt|directives?)"
-      description: "Instruction override attempt in inter-agent message"
+      value: "(?i)(?<![\"'`])(?:ignore|disregard|forget|override|overwrite)\\s+(?:all\\s+)?(?:your\\s+)?(?:previous|prior|above|earlier|existing)\\s+(?:instructions?|rules?|constraints?|guidelines?|prompt|directives?)"
+      description: "Instruction override attempt in inter-agent message (must be a live directive, not a quoted/listed mention in security docs — negative lookbehind excludes quote/backtick-prefixed occurrences)"
     - field: content
       operator: regex
-      value: "(?i)\\[\\s*(?:OVERRIDE|ROOT|SUDO)\\s*\\]|<<\\s*SYS\\s*>>|<\\|im_start\\|>system"
-      description: "Fake system-level message tags in agent communication (common benign labels [SYSTEM]/[ADMIN]/[PRIORITY]/[URGENT] dropped; kept override/root/sudo tags and chat-template markers)"
+      value: "(?i)(?<![\"'`])(?<!:\\s)(?:\\[\\s*(?:OVERRIDE|ROOT|SUDO)\\s*\\]|<<\\s*SYS\\s*>>|<\\|im_start\\|>system)"
+      description: "Fake system-level message tags in agent communication (common benign labels [SYSTEM]/[ADMIN]/[PRIORITY]/[URGENT] dropped; kept override/root/sudo tags and chat-template markers). Negative lookbehinds require a live forged role marker: excludes quoted/backticked doc references and YAML/JSON mapping values (parent_ids: [root])"
     - field: content
       operator: regex
-      value: "(?i)(?:new\\s+instructions?|updated\\s+(?:prompt|directive)|revised\\s+(?:rules?|orders?)|emergency\\s+(?:override|protocol))\\s*[:=]"
-      description: "Attempt to inject new instructions via agent messages"
+      value: "(?i)(?<![\"'`])(?:new\\s+instructions?|updated\\s+(?:prompt|directive)|revised\\s+(?:rules?|orders?)|emergency\\s+(?:override|protocol))\\s*[:=]"
+      description: "Attempt to inject new instructions via agent messages (live directive only; negative lookbehind excludes quoted/listed occurrences in prompt-injection detection docs)"
     - field: content
       operator: regex
       value: "(?i)(?:you\\s+are\\s+now|from\\s+now\\s+on|henceforth|going\\s+forward|effective\\s+immediately)\\s+(?:a|an|the)?\\s*(?:unrestricted|unfiltered|jailbroken)?\\s*[a-zA-Z]+\\s+(?:agent|assistant|bot)"
       description: "Attempt to redefine target agent's identity or role"
     - field: content
       operator: regex
-      value: "(?i)(?:do\\s+not|don'?t|never)\\s+(?:tell|inform|alert|notify|report|mention|log|record)\\s+(?:the\\s+)?(?:user|admin|orchestrator|supervisor|human|monitor)"
-      description: "Instruction to hide actions from oversight"
+      value: "(?i)(?:do\\s+not|don'?t|never)\\s+(?:tell|inform|alert|notify|report|mention|log|record)\\s+(?:the\\s+)?(?:user|admin|orchestrator|supervisor|human|monitor)(?!s?\\s+to\\b)"
+      description: "Instruction to hide actions from oversight (excludes benign coaching form 'never tell users to <verb>' via negative lookahead; keeps concealment form 'do not tell the user about <info>')"
     - field: content
       operator: regex
       value: "(?i)(?:acting|speaking|operating)\\s+(?:on\\s+behalf\\s+of|as\\s+a?\\s*proxy\\s+for|in\\s+place\\s+of)\\s+[a-zA-Z0-9_-]+\\s*(?:agent)?"
@@ -146,8 +146,8 @@ detection:
       description: "Explicit attempt to override identity or permissions"
     - field: content
       operator: regex
-      value: "(?i)(?:status|error|result)\\s*[:=]\\s*(?:failed|error|timeout|unauthorized).*(?:retry|fallback|use\\s+alternative|switch\\s+to)"
-      description: "Fake error or status injection to trigger fallback behavior"
+      value: "(?i)(?:status|error|result)\\s*[:=]\\s*(?:failed|error|timeout|unauthorized).{0,80}(?:fallback|use\\s+alternative|switch\\s+to)"
+      description: "Fake error or status injection to trigger fallback behavior (requires a behavior-redirect directive fallback/switch-to/use-alternative within 80 chars; bare 'retry' dropped as it matches benign error-handling prose)"
     - field: content
       operator: regex
       value: "(?i)(?:message_type|msg_type)\\s*[:=]\\s*[\"']?(?:admin|orchestrator|supervisor|root)[\"']?"
