@@ -373,7 +373,12 @@ function buildEventFromTestCase(
   // Object-style: input: { tool_name: "...", tool_args: "...", response: "..." }
   // Flat-style: input: "...", tool_response: "...", tool_name: "..."
   // Tool-call-style: tool_call: { name: "...", args: "..." }
-  const rawInput = tc['input'];
+  // Accept `user_input:` as a top-level alias for `input:` — several tool_call
+  // rules write their natural-language TPs as `- user_input: "..."`, which the
+  // harness previously ignored (it only read `input`), building an EMPTY event so
+  // the rule's own documented attack tested as not_triggered (a false failure that
+  // left the rule looking broken while it detects fine in production).
+  const rawInput = tc['input'] ?? tc['user_input'];
   let input = '';
   let toolName = str(tc['tool_name']);
   let toolArgs = str(tc['tool_args']);
@@ -427,13 +432,16 @@ function buildEventFromTestCase(
 
   let type: AgentEvent['type'] = SOURCE_TO_EVENT[sourceType] ?? 'llm_input';
 
-  // If rule expects tool_call but test case has only plain text input
-  // (no tool_name, tool_args, or tool_response), use llm_input event type
-  // since the content is natural language, not a tool invocation.
-  // This prevents the engine's tool_name fallback from treating text as a tool name.
-  if (type === 'tool_call' && !toolName && !toolArgs && !toolResponse && !toolDescription) {
-    type = 'llm_input';
-  }
+  // NOTE: previously, a tool_call rule with a plain-string TP was downgraded to
+  // an llm_input event. That mis-tested tool_call-native rules: a shell command or
+  // SQL string IS a tool invocation, and evaluating it as llm_input made the engine
+  // apply its cross-context confidence penalty, dropping the match below threshold
+  // so the rule's own documented attack tested as not_triggered (false failure that
+  // silently left broken rules in the enforce lane). We now keep the native
+  // tool_call type — the string flows in via `content` (below), and tool_name is
+  // pinned to "" (below) so the engine's tool_name fallback never treats the
+  // content as a tool name. Plain-string TPs of tool_call rules therefore test in
+  // their real (native) context.
 
   // Determine the primary content based on what the rule conditions check
   // Problem 2 & 3: For rules that check tool_response, the tool_response
