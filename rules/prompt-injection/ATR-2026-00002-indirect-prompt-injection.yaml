@@ -97,9 +97,12 @@ agent_source:
 detection:
   conditions:
     # -- Layer 1: HTML comments containing injection-like instructions --
+    # ignore/disregard/forget/override require a directive OBJECT (instruction/prompt/rule/...)
+    # so tooling pragmas ("<!-- prettier-ignore -->") and CSS labels ("<!-- Style override -->")
+    # do not match; multi-word directives (system:, you must, new instructions) stay as-is.
     - field: content
       operator: regex
-      value: "(?i)<!--[^>]{0,20}(ignore|disregard|override|new\\s+instructions?|system\\s*:|you\\s+must|you\\s+are\\s+now|forget\\s+previous|execute|perform|send\\s+to|exfiltrate|reveal|disclose|output\\s+the)[^>]{0,200}-->"
+      value: "(?i)<!--[^>]{0,20}((ignore|disregard|forget|override)\\s+(all\\s+|any\\s+|the\\s+|your\\s+)?(previous\\s+|prior\\s+|above\\s+|earlier\\s+|preceding\\s+|current\\s+)?(instruction|prompt|rule|guideline|direction|context|command|message|safety|system)|new\\s+instructions?|system\\s*:|you\\s+must|you\\s+are\\s+now|send\\s+to|exfiltrate|reveal|disclose|output\\s+the|execute|perform)[^>]{0,200}-->"
       description: "HTML comments with instruction-like content targeting the agent"
 
     # -- Layer 2: Zero-width character sequences (5+ consecutive to avoid multilingual FP) --
@@ -108,11 +111,22 @@ detection:
       value: "[\\u200B\\u200C\\u200D\\uFEFF\\u2060\\u180E\\u200E\\u200F\\u202A-\\u202E\\u2066-\\u2069]{5,}"
       description: "5+ consecutive zero-width or bidirectional control characters indicating obfuscation"
 
-    # -- Layer 3: Model-specific special tokens embedded in content --
+    # -- Layer 3a: Instruction-wrapper tokens (strong signal, rarely benign) --
+    # These delimiters wrap an injected instruction block; bare presence in consumed
+    # content is a reliable indicator (matches Llama [INST]/<<SYS>> injection).
     - field: content
       operator: regex
-      value: "(?i)(\\[INST\\]|\\[/INST\\]|\\[SYSTEM\\]|\\[/SYSTEM\\]|\\[HIDDEN\\]|<\\|im_start\\|>|<\\|im_end\\|>|<\\|endoftext\\|>|<\\|system\\|>|<\\|user\\|>|<\\|assistant\\|>|<\\|pad\\|>|<s>\\[INST\\]|<<SYS>>|<</SYS>>|<\\|begin_of_text\\|>|<\\|eot_id\\|>|<\\|start_header_id\\|>)"
-      description: "Model-specific special tokens and chat template delimiters"
+      value: "(?i)(\\[INST\\]|\\[/INST\\]|\\[HIDDEN\\]|<s>\\[INST\\]|<<SYS>>|<</SYS>>)"
+      description: "Instruction-wrapper tokens delimiting an injected instruction block"
+
+    # -- Layer 3b: ChatML/role/tokenizer tokens WITH an adjacent injection directive --
+    # Bare ChatML/tokenizer token names (<|im_start|>, <|endoftext|>, <|system|>, [SYSTEM])
+    # appear constantly in legitimate LLM/tokenizer documentation, so they only fire when
+    # followed within a short window by an actual override/jailbreak directive.
+    - field: content
+      operator: regex
+      value: "(?i)(\\[SYSTEM\\]|\\[/SYSTEM\\]|<\\|im_start\\|>|<\\|im_end\\|>|<\\|endoftext\\|>|<\\|system\\|>|<\\|user\\|>|<\\|assistant\\|>|<\\|pad\\|>|<\\|begin_of_text\\|>|<\\|eot_id\\|>|<\\|start_header_id\\|>)[\\s\\S]{0,120}(ignore\\s+(all|any|previous|prior|above|your)|disregard\\s+(all|any|previous|prior|above)|you\\s+are\\s+now\\s+|forget\\s+(all|previous|prior|everything)|reveal\\s+(the\\s+)?(system|prompt|key|secret)|exfiltrate|jailbreak|unrestricted\\s+assistant|do\\s+anything\\s+now|new\\s+instructions?|override\\s+(the\\s+)?(system|safety|previous|all))"
+      description: "ChatML/role/tokenizer tokens paired with an adjacent injection directive"
 
     # -- Layer 4: CSS-hidden text combined with injection keywords --
     - field: content

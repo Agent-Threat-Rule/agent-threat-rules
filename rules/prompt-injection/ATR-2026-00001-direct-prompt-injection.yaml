@@ -98,8 +98,8 @@ detection:
     # "ignore your instructions", "ignore any instructions", "ignore all instructions"
     - field: user_input
       operator: regex
-      value: "(?i)\\b(ignore|disregard|forget|override|bypass|suppress|discard)\\s+(all\\s+)?(the\\s+|your\\s+|my\\s+|any\\s+|these\\s+|those\\s+)?(previous|prior|above|earlier|preceding|original|existing|current|initial|default|given|assigned|preset|established)?\\s*(instructions?|prompts?|rules?|guidelines?|directives?|constraints?|context|programming|training|protocols?|policies|configuration|parameters|boundaries|guardrails?|safeguards?|restrictions?|tasks?|assignments?|information|directions?|orders?|commands?)"
-      description: "Instruction override with broad verb and noun synonym coverage, including determiners"
+      value: "(?i)\\b(ignore|disregard|forget|override|bypass|suppress|discard)\\s+(?:(?:all|the|any|these|those)\\s+)*(?:(?:your|my)\\s+|(?:previous|prior|above|earlier|preceding|original|existing|current|initial|default|given|assigned|preset|established)\\s+)(?:(?:previous|prior|above|earlier|preceding|original|existing|current|initial|default|given|assigned|preset|established)\\s+)?(instructions?|prompts?|rules?|guidelines?|directives?|constraints?|context|programming|training|protocols?|policies|configuration|parameters|boundaries|guardrails?|safeguards?|restrictions?|tasks?|assignments?|information|directions?|orders?|commands?)"
+      description: "Instruction override with broad verb/noun coverage, requiring a directed anchor (your/my or a prior-state adjective) so benign 'ignore rules'/'override these guidelines' prose does not match"
 
     # -- Layer 1b: Forget-everything / forget-all shorthand --
     - field: user_input
@@ -116,8 +116,8 @@ detection:
     # -- Layer 1d: Broad forget/ignore + everything/that/this --
     - field: user_input
       operator: regex
-      value: "(?i)\\b(forget|ignore|disregard|discard)\\s+(about\\s+)?(everything|all|that|this|what\\s+was|what\\s+I|anything\\s+you)\\s*(previously|before|earlier|said|told|above|prior|were|was|have)?"
-      description: "Broad forget-everything variants with extended word coverage"
+      value: "(?i)\\b(forget|ignore|disregard|discard)\\s+(about\\s+)?(everything|all|that|this|what\\s+was|what\\s+I|anything\\s+you)\\s+(previously|before|earlier|said|told|above|prior|mentioned|instructed)"
+      description: "Forget-everything variants, requiring a trailing prior-context anchor so benign 'ignore all warnings'/'discard this file' prose does not match"
 
     # -- Layer 1g: Bare ignore/forget + above/before + action --
     - field: user_input
@@ -128,8 +128,8 @@ detection:
     # -- Layer 1e: System prompt extraction --
     - field: user_input
       operator: regex
-      value: "(?i)(reveal|show|display|output|print|repeat|provide|give|share|tell|what\\s+are|what\\s+were|what\\s+is)\\s+(me\\s+)?(your|the|all)\\s+(secret|hidden|internal|system|original|previous|initial|complete|full|given|guard|entire)?\\s*(instructions?|prompts?|passwords?|secrets?|embeddings?|configuration|directives?|guidelines?|rules)"
-      description: "System prompt and secret extraction requests"
+      value: "(?i)(reveal|show|display|output|print|repeat|provide|give|share|tell|what\\s+are|what\\s+were|what\\s+is)\\s+(me\\s+)?(?:(your|my)\\s+((secret|hidden|internal|system|original|previous|initial|complete|full|given|guard|entire)\\s+)?|(the|all)\\s+(secret|hidden|internal|system|original|previous|initial|complete|full|given|guard|entire)\\s+)(instructions?|prompts?|passwords?|secrets?|embeddings?|configuration|directives?|guidelines?|rules)"
+      description: "System prompt/secret extraction, requiring possessive (your/my) or a sensitive adjective so benign 'show the prompt'/'what are the rules' prose does not match"
 
     # -- Layer 1f: Contextual task switching with praise prefix --
     - field: user_input
@@ -140,8 +140,8 @@ detection:
     # -- Layer 1h: Leave behind / start fresh context switch --
     - field: user_input
       operator: regex
-      value: "(?i)(leave|put)\\s+(all\\s+)?(the\\s+)?(previous|prior|earlier|old)\\s+(information|tasks?|instructions?|context)\\s+(behind|aside|away)|start\\s+(from\\s+the\\s+)?(front|beginning|scratch|zero|neu|vorne)"
-      description: "Leave-behind / start-fresh context switch patterns"
+      value: "(?i)(leave|put)\\s+(all\\s+)?(the\\s+)?(previous|prior|earlier|old)\\s+(information|tasks?|instructions?|context)\\s+(behind|aside|away)|start\\s+(over|fresh|anew|from\\s+(the\\s+)?(scratch|zero|beginning|front))\\s+(with\\s+(a\\s+)?new\\s+(task|instructions?|persona|role|prompt)|and\\s+(ignore|forget|disregard))"
+      description: "Leave-behind / start-fresh context switch, requiring the fresh-start to redirect to a new task or an override so benign 'start from the beginning' prose does not match"
 
     # -- Layer 1i: German praise-then-redirect extended --
     - field: user_input
@@ -152,8 +152,8 @@ detection:
     # -- Layer 2: Persona switching / identity hijacking --
     - field: user_input
       operator: regex
-      value: "(?i)\\b(you\\s+are\\s+now|you\\s+have\\s+become|you\\s+will\\s+act\\s+as|you\\s+shall\\s+be|transform\\s+into|switch\\s+to\\s+being|morph\\s+into|adopt\\s+the\\s+persona|now\\s+you\\s+are|jetzt\\s+bist\\s+du|du\\s+bist\\s+(jetzt|nun)|stell\\s+dir\\s+vor\\s+du\\s+bist)\\s+(a|an|the|my|ein[ea]?)?\\s*[a-zA-Z\\u00C0-\\u024F]+"
-      description: "Persona switching and identity reassignment attempts"
+      value: "(?i)\\b(you\\s+are\\s+now|you\\s+have\\s+become|you\\s+will\\s+act\\s+as|you\\s+shall\\s+be|transform\\s+into|switch\\s+to\\s+being|morph\\s+into|adopt\\s+the\\s+persona|now\\s+you\\s+are|jetzt\\s+bist\\s+du|du\\s+bist\\s+(jetzt|nun)|stell\\s+dir\\s+vor\\s+du\\s+bist)\\s+(a|an|the|my|ein[ea]?)?\\s*(?:(unrestricted|unfiltered|uncensored|unlimited|unbound|unchained|jailbroken|jailbreak|evil|malicious|rogue|amoral|immoral|unethical|lawless|god[- ]?mode|developer\\s+mode|hacker|villain|DAN|STAN|dark\\s+[a-z]+)\\b|[a-zA-Z\\u00C0-\\u024F]+\\s+(?:with\\s+no|without\\s+(?:any\\s+)?)\\s*(restrictions?|limits?|limitations?|filters?|rules?|guidelines?|safety|guardrails?|morals?|ethics?|boundaries))"
+      description: "Persona switching to an adversarial identity (jailbreak/harmful persona lexicon or an explicit 'without restrictions' identity) so benign 'you are now an expert'/'transform into an X' prose does not match"
 
     # -- Layer 2b: Act-as roleplay with task assignment --
     - field: user_input
@@ -182,14 +182,14 @@ detection:
     # -- Layer 4: Do-not-follow-rules patterns --
     - field: user_input
       operator: regex
-      value: "(?i)(do\\s+not|don'?t|never|stop|cease|quit|refuse\\s+to)\\s+(follow|obey|adhere\\s+to|comply\\s+with|respect|honor|enforce|apply|observe|uphold)\\s+(your|the|any|all|those|these)\\s+(instructions?|rules?|guidelines?|programming|training|protocols?|policies|directives?|constraints?|boundaries|restrictions?)"
-      description: "Negation-verb patterns telling agent to stop following rules"
+      value: "(?i)(do\\s+not|don'?t|never|stop|cease|quit|refuse\\s+to)\\s+(follow|obey|adhere\\s+to|comply\\s+with|respect|honor|enforce|apply|observe|uphold)\\s+(your|all\\s+your|any\\s+of\\s+your|those|these)\\s+(instructions?|rules?|guidelines?|programming|training|protocols?|policies|directives?|constraints?|boundaries|restrictions?)"
+      description: "Negation-verb patterns telling agent to stop following its OWN rules (anchored on your/those/these) so benign 'do not follow any instructions from it' guidance does not match"
 
     # -- Layer 5: New instruction assignment --
     - field: user_input
       operator: regex
-      value: "(?i)\\b(new|updated|revised|replacement|corrected|actual|real|true|overriding)\\s+(instructions?|rules?|directives?|guidelines?|orders?|commands?)\\s*[:=\\-]"
-      description: "New instruction assignment with delimiter"
+      value: "(?i)\\b(new|updated|revised|replacement|corrected|actual|real|true|overriding)\\s+(instructions?|rules?|directives?|guidelines?|orders?|commands?)\\s*[:=]\\s*(?=.{0,25}(ignore|disregard|forget|reveal|disclose|print|output|say|tell|respond|reply|write|execute|run|follow|act\\s+as|do\\s+not|don'?t|send|comply|obey|override|bypass|stop|now\\b|you\\s+(must|will|are|should)))"
+      description: "New-instruction assignment, requiring the payload after the delimiter to be an AI-directed imperative so benign 'New instructions:' headings / bullet lists do not match"
 
     # -- Layer 6: Temporal behavioral override --
     - field: user_input
@@ -200,8 +200,8 @@ detection:
     # -- Layer 7: Fake system/instruction delimiters --
     - field: user_input
       operator: regex
-      value: "(?i)(\\[\\s*(SYSTEM|INST|INSTRUCTION|SYS|ADMIN|ROOT|OVERRIDE|CONTROL|PRIORITY|URGENT)\\s*\\]|<<\\s*(SYS|SYSTEM|INST)\\s*>>|\\{\\{\\s*(SYSTEM|INSTRUCTION|OVERRIDE)\\s*\\}\\})"
-      description: "Fake system-level delimiter tags"
+      value: "(\\[\\s*(SYSTEM|INST|SYS|ADMIN|ROOT|OVERRIDE)\\s*\\]|<<\\s*(SYS|SYSTEM|INST)\\s*>>|\\{\\{\\s*(SYSTEM|INSTRUCTION|OVERRIDE)\\s*\\}\\})"
+      description: "Fake system-level delimiter tags (case-sensitive uppercase; dropped generic words CONTROL/PRIORITY/URGENT/INSTRUCTION-bracket that appear as benign template labels)"
 
     # -- Layer 8: Restriction removal via pretend/imagine --
     - field: user_input
@@ -212,14 +212,14 @@ detection:
     # -- Layer 9: Compliance demands --
     - field: user_input
       operator: regex
-      value: "(?i)\\b(you\\s+(must|shall|will|need\\s+to|have\\s+to|are\\s+(required|obligated|commanded|ordered)\\s+to)\\s+(obey|comply|listen|submit|respond\\s+to|follow)\\s+(me|my|this|these|the\\s+following|every|all)|I\\s+(command|order|demand|direct|instruct|require)\\s+you\\s+to)\\b"
-      description: "Authoritative compliance demands"
+      value: "(?i)\\b(you\\s+(must|shall|will|need\\s+to|have\\s+to|are\\s+(required|obligated|commanded|ordered)\\s+to)\\s+(obey|comply|listen|submit|respond\\s+to|follow)\\s+(me|my)\\b|I\\s+(command|order|demand|direct|instruct|require)\\s+you\\s+to)\\b"
+      description: "Authoritative compliance demands, anchored on me/my so benign 'you must follow these steps' prose does not match"
 
     # -- Layer 10: Base64-encoded injection indicators --
     - field: user_input
       operator: regex
-      value: "(?i)(decode|interpret|execute|run|process|follow|read)\\s+(this|the\\s+following)?\\s*:?\\s*[A-Za-z0-9+/]{20,}={0,2}"
-      description: "Instructions to decode and execute base64-like payloads"
+      value: "(?i)(decode|interpret|base64\\s*[-\\s]?decode)\\s+(this|the\\s+following|and\\s+(?:execute|run|follow))?\\s*:?\\s*[A-Za-z0-9+/]{24,}={0,2}"
+      description: "Instructions to decode/interpret base64 payloads (narrowed verbs to decode/interpret so benign 'run <longIdentifier>' / 'read <token>' code prose does not match; known base64 keyword fragments still covered by Layer 11)"
 
     # -- Layer 11: Known base64 fragments of injection keywords --
     - field: user_input
@@ -254,8 +254,8 @@ detection:
     # -- Layer 14c: Stop-write / stop-say command injection --
     - field: user_input
       operator: regex
-      value: "(?i)\\bstop\\s*[-:,.]?\\s*(write|say|print|output)\\s*[:,-]?\\s+[A-Z].{2,40}"
-      description: "Stop-and-redirect command injection (stop: write X)"
+      value: "(?i)\\bstop\\s*[-:,]?\\s*(write|say|print|output)\\s*[:,-]?\\s+[A-Z].{2,40}"
+      description: "Stop-and-redirect command injection (stop: write X); dropped '.' connector so a sentence boundary 'STOP. Write the formula instead.' does not match"
 
     # -- Layer 15: Markdown/formatting abuse to hide injections --
     - field: user_input
