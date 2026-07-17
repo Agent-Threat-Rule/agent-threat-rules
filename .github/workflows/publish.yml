@@ -222,9 +222,3 @@ jobs:
             }).then(r => r.json()).then(d => console.log('TC sync:', JSON.stringify(d)))
               .catch(e => console.error('TC sync failed:', e.message));
           "
-
-      - name: Trigger Vercel redeploy (panguard.ai)
-        if: ${{ vars.VERCEL_DEPLOY_HOOK_URL != '' }}
-        run: |
-          curl -sf -X POST "${{ vars.VERCEL_DEPLOY_HOOK_URL }}" || echo "Vercel hook failed (non-critical)"
-          echo "Vercel redeploy triggered"
