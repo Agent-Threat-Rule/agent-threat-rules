@@ -7,7 +7,7 @@
 > `STANDARDIZATION-STATUS.md` at repo root for full status.
 
 **Status:** Draft for ratification with first OASIS Open Project artifact publication — NOT RATIFIED
-**License:** CC0 1.0 (public domain — required because conformance corpus consumed by automated test pipelines that cannot tolerate attribution requirements)
+**License:** MIT (a single license across the whole project)
 **Signature (on ratification):** ed25519 signature over `manifest.json` and `expected-results.json` for each level, signed by the TSC's hardware-token-threshold key (see `SIGNING.md`)
 
 ---
@@ -18,7 +18,7 @@ The conformance test corpus is **the objective measure of "is this engine ATR-co
 
 This document specifies the structure of the corpus, the procedure for running it, and the procedure for publishing a signed reference result.
 
-The corpus is published CC0 (public domain) so that any third-party audit lab, sovereign authority, or commercial vendor can ingest the corpus without licence friction.
+The corpus is MIT-licensed so that any third-party audit lab, sovereign authority, or commercial vendor can ingest it under the same permissive terms as the rest of ATR.
 
 ---
 
@@ -167,7 +167,7 @@ Common fixture additions:
   an attack but is benign (precision testing).
 - **New language fixture.** Adding language-detection edge cases.
 
-Fixtures MUST be CC0 or otherwise legally clear for public-domain
+Fixtures MUST be MIT-licensed or otherwise legally clear for permissive
 inclusion. Synthetic / generated fixtures are preferred over
 real-world incident data unless the incident data is already
 public (e.g., disclosed CVE proof-of-concept payloads).
@@ -223,7 +223,7 @@ version, during which both versions are signed and available.
 
 ## Privacy + data residency
 
-All fixtures in this corpus are public-domain (CC0) and contain
+All fixtures in this corpus are MIT-licensed and contain
 no PII. Synthetic data only. Where the corpus draws on
 real-world incidents (e.g., the Mini Shai-Hulud IOC strings), only
 the IOC strings are included, not user / victim data.

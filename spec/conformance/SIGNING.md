@@ -1,7 +1,7 @@
 # Conformance Corpus Signing Procedure
 
 **Last updated:** 2026-05-25
-**License:** CC BY 4.0
+**License:** MIT
 **Required reading for:** TSC Numbering Authority operators, conformance corpus contributors
 
 ---

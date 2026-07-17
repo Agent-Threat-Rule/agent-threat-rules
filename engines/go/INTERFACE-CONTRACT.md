@@ -2,7 +2,7 @@
 
 **Status:** Normative for `atr-go` module. Any production-grade re-implementation MUST satisfy this interface to claim ATR conformance.
 
-**License:** CC BY 4.0 (this doc); MIT (the impl itself)
+**License:** MIT
 
 ---
 

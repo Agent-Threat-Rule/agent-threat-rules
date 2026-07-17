@@ -13,7 +13,7 @@
 **Effective (proposed):** Bootstrapping under current Numbering Authority; ratified at TSC seating per `governance/CHARTER.md` § 11.
 **Marks claimed (registration pending):** ATR, ATR-Certified, and the ATR project logo (when published)
 **Owner (on registration):** Open Source Collective Inc. (fiscal sponsor) on behalf of the Agent Threat Rules project
-**License of this document:** CC BY 4.0
+**License of this document:** MIT
 
 ---
 
@@ -21,7 +21,7 @@
 
 Trademarks are how the standard's integrity is enforced when other instruments (copyright, patent, contract) cannot reach. Specifically:
 
-- A bad actor can fork the MIT-licensed rule corpus and the CC BY 4.0 specification. Copyright cannot stop that fork.
+- A bad actor can fork the MIT-licensed rule corpus and specification. Copyright cannot stop that fork.
 - A bad actor can claim "ATR-conformant" without passing the conformance corpus. The conformance corpus cannot stop that claim absent trademark enforcement.
 - A bad actor can publish a competing "Agent Threat Rules Foundation" that looks legitimate. Without trademark protection on the project name, downstream consumers cannot tell which is canonical.
 

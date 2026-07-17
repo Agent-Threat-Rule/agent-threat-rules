@@ -4,7 +4,7 @@
 re-implementation must satisfy the same interface to claim ATR
 conformance.
 
-**License:** CC BY 4.0 (this document); MIT (the impl itself)
+**License:** MIT
 
 ---
 

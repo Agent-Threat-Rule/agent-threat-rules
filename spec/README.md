@@ -16,7 +16,7 @@
 > proposed-vs-ratified-vs-implemented status.
 
 **Status:** v1.0 — Draft for OASIS Open Project submission — NOT RATIFIED
-**License:** CC BY 4.0 (spec docs and schemas); CC0 (conformance corpus); MIT (reference implementations); CC BY 4.0 (rules)
+**License:** MIT (spec docs, schemas, rules, reference implementations, and conformance corpus — one license for the whole project)
 **Governance:** governance/CHARTER.md v2.0 (PROPOSED — TSC not yet formed)
 
 ---
@@ -29,9 +29,9 @@ YARA is to malware signatures, and CVE/CWE is to software
 vulnerabilities. ATR rules are YAML files with declarative patterns
 that any conformant engine can load and evaluate. The standard is
 maintained by a 9-seat Technical Steering Committee (TSC) under
-fiscal sponsorship of Open Source Collective Inc. The corpus is
-licensed CC BY 4.0; reference implementations are MIT; conformance
-test artifacts are CC0.
+fiscal sponsorship of Open Source Collective Inc. The corpus,
+reference implementations, and conformance test artifacts are all
+MIT-licensed — the project uses a single license throughout.
 
 ---
 

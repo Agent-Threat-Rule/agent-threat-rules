@@ -9,7 +9,7 @@
 > against once the conformance corpus ratifies.
 
 **Status:** Normative for `agent-threat-rules` npm package.
-**License:** CC BY 4.0 (this document); MIT (the impl itself)
+**License:** MIT
 **Impl path:** `../../src/`
 
 ---

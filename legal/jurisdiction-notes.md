@@ -8,7 +8,7 @@
 
 **Version:** 1.0 — preliminary, not legal advice
 **Date:** 2026-05-25
-**License:** CC BY 4.0
+**License:** MIT
 
 ---
 
@@ -50,7 +50,7 @@ This document catalogues the open questions, not the answers.
 
 **Working answer:** No — synthetic data without real-person identifiers is not personal data under GDPR. But the conformance corpus contributors must affirm payload synthesis (not real-incident extraction) per the contribution process.
 
-**Mitigation in current spec:** `spec/conformance/README.md` § Privacy + data residency requires all fixtures to be synthetic CC0 dedications.
+**Mitigation in current spec:** `spec/conformance/README.md` § Privacy + data residency requires all fixtures to be synthetic and MIT-licensed.
 
 **Open work:** Update CLA / DCO sign-off to include affirmation that contributed fixtures are synthetic OR are anonymized derivatives of public-domain incident data.
 
@@ -124,7 +124,7 @@ This document catalogues the open questions, not the answers.
 
 **Working answer:** The deploying organisation is liable for its own actions based on its detection stack. ATR's licence (MIT) explicitly disclaims liability ("AS IS, WITHOUT WARRANTY OF ANY KIND"). The contribution licence does not transfer liability to contributors or the project.
 
-**Mitigation in current licence + Charter:** MIT licence covers code; CC BY 4.0 covers rules. Both include the standard "without warranty" disclaimer.
+**Mitigation in current licence + Charter:** the MIT licence covers all ATR artifacts (code, rules, spec). It includes the standard "without warranty" disclaimer.
 
 **Open work:** None — this is settled by standard open-source licence terms. But for ATR-Certified™ Enterprise, the audit lab + vendor contract should explicitly handle this; document in `certification/audit-template.md` (Phase 4).
 
@@ -136,7 +136,7 @@ This document catalogues the open questions, not the answers.
 
 **Working answer:** They can issue a DMCA notice to GitHub. GitHub typically forwards to the project. The project would evaluate and respond.
 
-**Mitigation in current corpus design:** All fixtures are CC0 / synthetic per `spec/conformance/README.md`. Real-world incident payloads are only included where the source incident is already public (e.g., disclosed CVE proof-of-concept).
+**Mitigation in current corpus design:** All fixtures are MIT-licensed / synthetic per `spec/conformance/README.md`. Real-world incident payloads are only included where the source incident is already public (e.g., disclosed CVE proof-of-concept).
 
 **Open work:** Document the takedown response procedure in `legal/takedown-response.md` (post-Phase 5).
 

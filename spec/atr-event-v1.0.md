@@ -8,7 +8,7 @@
 
 **Status:** Draft for AEP-002 ratification — NOT RATIFIED
 **Date:** 2026-05-25
-**License:** CC BY 4.0
+**License:** MIT
 **Required by (on ratification):** Conformant engine output, downstream SIEM/SOAR ingestion, EU AI Act Article 50 evidence chains
 
 ---

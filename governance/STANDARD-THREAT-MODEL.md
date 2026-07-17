@@ -294,8 +294,8 @@ implementation is locked out via tampered test cases.
 
 **Mitigations in charter v2.0:**
 
-- § 7.1: Conformance corpus content is CC0 (so no licensing
-  obstruction) but the canonical expected-results manifest is
+- § 7.1: Conformance corpus content is MIT-licensed (permissive, no
+  licensing obstruction) but the canonical expected-results manifest is
   signed with an ed25519 key controlled by the TSC. Tampering
   invalidates the signature, which is checked by any conformance
   validator.

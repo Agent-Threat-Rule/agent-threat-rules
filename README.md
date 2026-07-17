@@ -363,7 +363,7 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | AdvBench (LLM-attacks behaviors) | upstream-2026-06-16 | 520 | 2.1% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | atr-self-test | internal | 341 | 89.7% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | autoresearch | internal-1054 | 1,054 | 15.1% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
-| garak (in-the-wild jailbreaks) | inthewild-jailbreak-corpus-650 | 650 | 97.2% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| garak (in-the-wild jailbreaks) | inthewild-jailbreak-corpus-650 | 650 | 95.7% | 100.0% | 0.0% | 3.5.8 | 2026-07-13 |
 | garak-full (all probe families) | 23-families | 3,475 | 38.3% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | hackaprompt | v1 | 4,780 | 69.6% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | HarmBench (CAIS behaviors) | upstream-2026-06-16 | 400 | 2.8% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
@@ -390,12 +390,12 @@ top-level field the engine does not read), not the engine's actual result.
 The per-row `ATR version` column above is the version each cell was actually
 measured against, mirroring the `atr_version` field in each
 `data/measurements/<source>/latest.json`. The headline `garak` recall moved
-98.0% → 97.2% in 3.5.0 because rule `ATR-2026-00495` (a garak DAN variant) was
-deprecated and no longer fires; see [CHANGELOG.md](CHANGELOG.md).
+98.0% → 97.2% (3.5.0) → 95.7% (3.5.8) as garak DAN-variant rules were
+deprecated and no longer fire; see [CHANGELOG.md](CHANGELOG.md).
 
 Two `garak` rows are deliberate: the headline `garak` source tracks NVIDIA's
-in-the-wild jailbreak corpus (narrow, the ~97% number ATR cites publicly,
-refreshed 2026-06-16 against ATR 3.5.0), while `garak-full` tracks
+in-the-wild jailbreak corpus (narrow, the ~96% number ATR cites publicly,
+refreshed 2026-07-13 against ATR 3.5.8), while `garak-full` tracks
 every probe family in upstream garak (broad, includes families like
 `badchars`, `dra`, `encoding` that ATR's regex layer intentionally does
 not target). Both are valid measurements against different corpora; they

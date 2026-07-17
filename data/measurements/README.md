@@ -107,7 +107,7 @@ Always link to the underlying measurement file:
 
 ## License
 
-Measurement files are CC0 / public domain. Anyone may cite, reproduce,
+Measurement files are MIT-licensed. Anyone may cite, reproduce,
 re-publish. The underlying corpora remain bound by their own licenses
 (many of which prohibit redistribution — hence why they are not committed
 to this repository).

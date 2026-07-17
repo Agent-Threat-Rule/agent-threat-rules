@@ -7,7 +7,7 @@
 
 **Status:** Draft for AEP-001 ratification — NOT RATIFIED
 **Date:** 2026-05-25
-**License:** CC BY 4.0
+**License:** MIT
 **Required by (on ratification):** Any rule that declares `condition.language` (i.e., a per-language regex condition)
 
 ---

@@ -9,7 +9,7 @@
 
 **Version:** 1.0
 **Effective (proposed):** Bootstrapping under v1.1 Numbering Authority; formalised at v2.0 TSC ratification per `governance/CHARTER.md` § 11.
-**License of this document:** CC BY 4.0
+**License of this document:** MIT
 
 ---
 
@@ -61,12 +61,9 @@ That's the entirety of the legal commitment. No CLA, no copyright assignment, no
 
 Per `governance/CHARTER.md` § 7.1:
 
-- **Code** (engine implementations, tooling, CI scripts, conformance test harness): **MIT License**. You retain your copyright; the MIT licence governs use.
-- **Rule content** (the YAML files in `rules/`): **CC BY 4.0**. You retain copyright; attribution is required for re-use.
-- **Specification documents**: **CC BY 4.0**. Same as rule content.
-- **Conformance corpus fixtures**: **CC0 1.0** (public domain dedication). When you contribute a fixture, you irrevocably dedicate it to public domain so that automated test pipelines can consume without attribution friction.
+- **All contributions** (engine implementations, tooling, CI scripts, conformance test harness and fixtures, rule content in `rules/`, and specification documents): **MIT License**. You retain your copyright; the MIT licence governs use. ATR uses a single license across the whole project.
 
-The applicable licence for your contribution is determined by where in the repo it lives. PRs that touch multiple paths apply multiple licences per path.
+All contributions are MIT-licensed regardless of where in the repo they live.
 
 ---
 
@@ -85,7 +82,7 @@ In plain English: you cannot use a patent you hold to attack someone who impleme
 - You do NOT assign copyright to ATR or any organisation.
 - You do NOT sign a separate paper or electronic CLA document.
 - You do NOT need a corporate authority approval (unless your employer requires one for your own legal reasons — that is your contract with your employer, not ATR's requirement).
-- You do NOT lose rights to your contribution; the MIT / CC BY / CC0 grants are licences, not assignments.
+- You do NOT lose rights to your contribution; the MIT licence is a grant, not an assignment.
 
 ---
 
@@ -93,7 +90,7 @@ In plain English: you cannot use a patent you hold to attack someone who impleme
 
 Some employers prefer a corporate-level contributor agreement (CCLA). ATR does not require one. If your employer needs one for their own audit purposes, the standard Linux Foundation CCLA template is acceptable and we will sign it; contact `tsc@agentthreatrule.org` (post-ratification) or `adam@agentthreatrule.org` (current).
 
-The CCLA does not change the contribution licence (still MIT / CC BY / CC0 as above). It is an organisation-to-organisation written acknowledgement of the DCO terms.
+The CCLA does not change the contribution licence (still MIT as above). It is an organisation-to-organisation written acknowledgement of the DCO terms.
 
 ---
 
