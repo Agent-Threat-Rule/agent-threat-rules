@@ -74,7 +74,7 @@ This document catalogues the open questions, not the answers.
 
 **Working answer:** Adopting ATR detection at runtime can be one piece of an Article 32 "appropriate technical and organisational measures" satisfaction, but ATR alone is not a complete Article 32 control. Article 32 is principles-based; ATR is one measure that contributes to "robustness" but does not cover, e.g., encryption-at-rest, access controls, or staff training.
 
-**Mitigation in current outreach:** `panguard-outreach/2026-05-25-uk-ico-mapping/email-body.txt` makes this exact framing — ATR is one tool, not a complete answer.
+**Mitigation in current outreach:** Project outreach consistently frames ATR as one tool that contributes to Article 32 robustness, not a complete answer.
 
 **Open work:** Build an explicit `docs/UK-GDPR-ARTICLE-32-MAPPING.md` aligning ATR rule categories to Article 32 principle subsections.
 
@@ -88,7 +88,7 @@ This document catalogues the open questions, not the answers.
 
 **Mitigation in current spec:** Event format includes `evidence.signature` (ed25519), `evidence.observation_id` (UUID v7 time-ordered), and `@timestamp` (RFC 3339 UTC). These match the typical structured-evidence requirements.
 
-**Open work:** Coordinate with EU AI Office (per `panguard-outreach/2026-05-16-sovereign-expansion/03-eu-ai-office-article-50.txt`) on whether ATR events satisfy Article 50 evidence requirements as currently drafted.
+**Open work:** Coordinate with the EU AI Office on whether ATR events satisfy Article 50 evidence requirements as currently drafted.
 
 ---
 
@@ -167,5 +167,3 @@ The TSC, upon ratification, should:
 - `legal/CLA.md` (DCO)
 - `legal/trademark-policy.md`
 - `spec/atr-event-v1.0.md` § Required fields (evidence chain)
-- `panguard-outreach/2026-05-25-uk-ico-mapping/email-body.txt` (UK GDPR Article 32 framing)
-- `panguard-outreach/2026-05-16-sovereign-expansion/03-eu-ai-office-article-50.txt` (EU AI Act Article 50)

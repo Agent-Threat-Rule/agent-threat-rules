@@ -76,7 +76,7 @@ const reporter: ATRReporter = {
   onDetection: (report) => {
     // report contains: ruleId, severity, category, confidence, contentHash
     // No raw content, no PII, no file paths
-    fetch('https://tc.panguard.ai/api/detections', {
+    fetch('https://tc.example.com/api/detections', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(report),

@@ -400,7 +400,7 @@ Individual rules have a `rule_version` integer field:
 
 The reference ATR engine is written in TypeScript and published as `agent-threat-rules` on npm.
 
-- Repository: https://github.com/anthropic-security/agent-threat-rules
+- Repository: https://github.com/Agent-Threat-Rule/agent-threat-rules
 - API: `ATREngine.evaluate(event)` for MCP scan, `ATREngine.scanSkill(content)` for SKILL.md scan.
 - License: MIT.
 

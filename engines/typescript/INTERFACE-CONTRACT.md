@@ -362,7 +362,7 @@ Hook handler is engine-adjacent, not part of the core conformance surface.
 import { createTCReporter, ATRReporter } from 'agent-threat-rules';
 
 const reporter = createTCReporter({
-  endpoint: 'https://tc.panguard.ai/atr/v1/events',
+  endpoint: 'https://tc.example.com/atr/v1/events',
   apiKey: process.env.ATR_TC_API_KEY,
   // Anonymisation: content hash only, never raw content
 });

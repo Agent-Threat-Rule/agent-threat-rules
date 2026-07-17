@@ -260,11 +260,11 @@ without manual munging.
   "agent.platform": "claude_code",
   "agent.platform_version": "1.8.4",
   "session.id": "sess-2026-05-25-bk9a8x",
-  "service.name": "panguard-scan",
+  "service.name": "example-scanner",
   "service.version": "1.4.13",
   "evidence.observation_id": "01927e2d-7b32-7c41-9e84-3b8f2a1e9c54",
   "evidence.signature": "MEQCIBdJpL3zEoXxKj9F/qqM8DxFJp7Q...",
-  "evidence.signature_key_id": "kid:panguard-scan-prod-2026-05",
+  "evidence.signature_key_id": "kid:example-scanner-prod-2026-05",
   "evidence.upstream_chain": null
 }
 ```

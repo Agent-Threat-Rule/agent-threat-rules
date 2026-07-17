@@ -543,8 +543,8 @@ Reasoning is preserved here rather than buried in commit history.
   belongs to individual vendors.
 - Does not commit to a particular standards-body publication path
   (OASIS / NIST / IETF / ISO). The TSC may pursue any or all in
-  parallel; the recommendation in `panguard-outreach/2026-05-25-standardization-phase0/OASIS-APPROACH-MEMO.md`
-  is a working proposal, not a charter commitment.
+  parallel; the current working recommendation (OASIS Open Project as
+  the primary path) is a working proposal, not a charter commitment.
 
 ---
 

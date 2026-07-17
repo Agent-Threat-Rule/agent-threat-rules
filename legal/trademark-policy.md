@@ -56,7 +56,7 @@ You MAY freely use ATR® and the project name to:
 
 You MAY use the mark in commercial product names, descriptions, or marketing IF you also:
 
-1. Make it clear your product is NOT the ATR project itself or operated by ATR. Example: "PanguardAI uses ATR rules for detection" is fine; "PanguardAI is the ATR Foundation" is not.
+1. Make it clear your product is NOT the ATR project itself or operated by ATR. Example: "AcmeScan uses ATR rules for detection" is fine; "AcmeScan is the ATR Foundation" is not.
 2. Do not imply official endorsement by the ATR project, the TSC, the Open Source Collective Inc., or any TSC member organisation unless that endorsement is explicit and current.
 3. Link to https://github.com/Agent-Threat-Rule/agent-threat-rules as the canonical project source.
 

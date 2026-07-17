@@ -127,10 +127,8 @@ Sage, OpenHands, garak (in review), and others:**
   `spec/atr-profile-v1.0.md`.
 - No formal regulatory mapping is claimed yet; the mapping is in
   proposal stage pending TSC ratification.
-- Position paper at
-  `panguard-outreach/2026-05-25-standardization-phase0/NIST-CAISI-POSITION-PAPER.md`
-  (will be submitted via OSCAL Path 1 after 30-day silent cadence
-  expires 2026-06-21).
+- A NIST CAISI position paper has been prepared for submission
+  via OSCAL Path 1.
 
 ### If you are a researcher / red team contributor
 

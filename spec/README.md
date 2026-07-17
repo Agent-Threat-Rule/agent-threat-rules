@@ -254,11 +254,9 @@ the `spec-bug` label, expedited as Tier 2 votes (simple majority of
 
 The spec is being prepared for:
 
-1. **OASIS Open Project (primary)** as adjacent to CoSAI. See
-   `panguard-outreach/2026-05-25-standardization-phase0/OASIS-APPROACH-MEMO.md`.
+1. **OASIS Open Project (primary)** as adjacent to CoSAI.
    Target: Q3 2026 acceptance, Q1 2027 first Committee Specification.
-2. **NIST CAISI (citation target)**. See
-   `panguard-outreach/2026-05-25-standardization-phase0/NIST-CAISI-POSITION-PAPER.md`.
+2. **NIST CAISI (citation target)**.
    No formal submission window currently open; awaiting next RFI.
 3. **IETF (informational draft, transport / OTEL emission only)**
    when reference implementations are stable.

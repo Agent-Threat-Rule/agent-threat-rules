@@ -97,10 +97,11 @@ A rule can have entries in both blocks — e.g., `references.mitre_atlas` AND `c
 
 ## Downstream consumers
 
-The primary consumer is **PanGuard Enterprise's AI Compliance Audit Evidence Module**, which generates quarterly reports mapping detection events (via rule IDs) to auditor-grade framework evidence. Other downstream consumers may include:
+Downstream consumers of the `compliance:` block include:
 
+- Compliance/audit reporting tools that map detection events (via rule IDs) to auditor-grade framework evidence — for example, periodic evidence reports for GRC or audit review
 - ATR-compatible scanners that want to tag each detection with its regulatory context
-- GRC platforms (Vanta, Drata, etc.) that integrate ATR rule packs
+- GRC platforms (e.g., Vanta, Drata) that integrate ATR rule packs
 - Independent auditors verifying AI-system compliance claims
 
 All downstream consumers are welcome — the `compliance:` block is MIT-licensed alongside the rules.

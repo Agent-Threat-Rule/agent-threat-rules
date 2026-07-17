@@ -232,7 +232,7 @@ See [rule-writing-guide.md](./rule-writing-guide.md) for detailed authoring inst
 Filter rules by maturity in your scanner configuration:
 
 ```yaml
-# panguard guard config
+# example scanner config
 atr:
   min_maturity: stable     # Only load stable rules
   min_confidence: 80       # Only fire rules with confidence >= 80

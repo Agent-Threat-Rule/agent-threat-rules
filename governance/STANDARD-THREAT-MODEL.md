@@ -462,9 +462,9 @@ contributor block to 3 of 9 votes.
 
 ## What this threat model deliberately does NOT cover
 
-- Attacks against products built ON TOP of ATR (e.g., Panguard AI
-  Inc.'s commercial offerings). Those threat models belong to the
-  individual vendors.
+- Attacks against products built ON TOP of ATR (e.g., a commercial
+  scanner or platform that bundles ATR rules). Those threat models
+  belong to the individual vendors.
 - Attacks against AI agents themselves. That is the subject of
   `THREAT-MODEL.md` (the rule-corpus threat model).
 - Attacks against the Open Source Collective Inc. (fiscal sponsor)

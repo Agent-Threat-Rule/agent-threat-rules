@@ -59,6 +59,6 @@ and regenerated from rule metadata.
 ## 4. Claim discipline
 
 - The report is a "State of…" report, **not a standard** (no RFC 2119, not certifiable). Cite the parent report, not "the maturity model" as a standalone normative document.
-- **Do not** claim OWASP adopted, endorsed, or recommends ATR/PanGuard.
+- **Do not** claim OWASP adopted, endorsed, or recommends ATR.
 - Governance maturity is an **organisational** posture; ATR supplies *evidence toward* a maturity claim (the detection controls), not the maturity itself — an organisation still needs the policies, dashboards, and human processes around the rules.
 - Do not pin the exact publication day or the top of the deployment axis (see §2).
