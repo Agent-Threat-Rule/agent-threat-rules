@@ -292,6 +292,70 @@ describe('SARIF Converter', () => {
     expect(driver['rules']).toBeInstanceOf(Array);
   });
 
+  // The shared envelope profile (skil-lock#37 / SPEC 14.3) joins layers on the
+  // artifact digest, so these four properties are an interop contract with the
+  // drift and content layers rather than cosmetic output details.
+  it('emits the shared envelope profile: artifacts[], digest, index and layer', () => {
+    const sarif = scanResultToSARIF(
+      [makeScanResult({ input_file: 'skills/demo/SKILL.md', content_hash: 'a'.repeat(64) })],
+      '1.0.0',
+    ) as {
+      runs: Array<{
+        artifacts?: Array<{
+          location: { uri: string; uriBaseId: string };
+          hashes?: Record<string, string>;
+        }>;
+        results: Array<{
+          properties: Record<string, unknown>;
+          locations: Array<{
+            physicalLocation: { artifactLocation: { uri: string; index?: number } };
+          }>;
+        }>;
+      }>;
+    };
+
+    const run = sarif.runs[0]!;
+    expect(run.artifacts).toHaveLength(1);
+    expect(run.artifacts![0]!.location.uri).toBe('skills/demo/SKILL.md');
+    expect(run.artifacts![0]!.location.uriBaseId).toBe('%SRCROOT%');
+    expect(run.artifacts![0]!.hashes?.['sha-256']).toBe('a'.repeat(64));
+
+    const result = run.results[0]!;
+    expect(result.properties['layer']).toBe('atr');
+    // content_hash stays alongside the artifact digest so existing consumers keep working
+    expect(result.properties['content_hash']).toBe('a'.repeat(64));
+    expect(result.locations[0]!.physicalLocation.artifactLocation.index).toBe(0);
+  });
+
+  it('indexes each scanned file separately and omits artifacts when no file is known', () => {
+    const twoFiles = scanResultToSARIF(
+      [
+        makeScanResult({ input_file: 'a/SKILL.md', content_hash: 'a'.repeat(64) }),
+        makeScanResult({ input_file: 'b/SKILL.md', content_hash: 'b'.repeat(64) }),
+      ],
+      '1.0.0',
+    ) as {
+      runs: Array<{
+        artifacts?: unknown[];
+        results: Array<{
+          locations: Array<{ physicalLocation: { artifactLocation: { index?: number } } }>;
+        }>;
+      }>;
+    };
+    expect(twoFiles.runs[0]!.artifacts).toHaveLength(2);
+    expect(
+      twoFiles.runs[0]!.results.map(
+        (r) => r.locations[0]!.physicalLocation.artifactLocation.index,
+      ),
+    ).toEqual([0, 1]);
+
+    // A non-file scan (e.g. a raw event stream) has nothing to hash.
+    const noFile = scanResultToSARIF([makeScanResult()], '1.0.0') as {
+      runs: Array<{ artifacts?: unknown[] }>;
+    };
+    expect(noFile.runs[0]!.artifacts).toBeUndefined();
+  });
+
   it('maps severity to SARIF levels correctly', () => {
     const criticalResult = makeScanResult({
       matches: [makeMatch({ rule: makeRule({ severity: 'critical' }) })],
