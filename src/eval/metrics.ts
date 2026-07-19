@@ -160,8 +160,28 @@ export function computeEvalReport(results: readonly SampleResult[]): EvalReport 
 // ---------------------------------------------------------------------------
 
 export interface RegressionCheck {
+  /**
+   * Correctness only. Latency is deliberately excluded — see perfWarnings.
+   */
   readonly passed: boolean;
+  /** Correctness violations (recall / FP rate / F1). These are blocking. */
   readonly violations: readonly string[];
+  /**
+   * Performance observations (p95 latency). Advisory, never blocking.
+   *
+   * Recall, FP rate and F1 are deterministic: the same corpus and rules give
+   * the same numbers on any machine. Wall-clock p95 is not — on a shared CI
+   * runner executing the rest of the suite in parallel it measures how busy
+   * the box is, and it has produced red builds on branches that were in fact
+   * faster than main. Gating correctness on it made a real recall regression
+   * and a noisy neighbour indistinguishable, which devalues both signals.
+   *
+   * The genuinely dangerous latency case — catastrophic backtracking — is
+   * caught structurally and deterministically by the ReDoS gate
+   * (tests/redos-safety.test.ts), so demoting this check loses no real
+   * protection.
+   */
+  readonly perfWarnings: readonly string[];
 }
 
 export interface BaselineThresholds {
@@ -202,11 +222,13 @@ export function checkRegression(
     );
   }
 
+  // Advisory only — see RegressionCheck.perfWarnings for why this does not block.
+  const perfWarnings: string[] = [];
   if (report.latency.p95 > thresholds.maxP95LatencyMs) {
-    violations.push(
+    perfWarnings.push(
       `P95 latency ${report.latency.p95.toFixed(1)}ms > maximum ${thresholds.maxP95LatencyMs}ms`
     );
   }
 
-  return { passed: violations.length === 0, violations };
+  return { passed: violations.length === 0, violations, perfWarnings };
 }

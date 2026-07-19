@@ -38,6 +38,7 @@ import {
   statSync,
   mkdtempSync,
   copyFileSync,
+  writeFileSync,
   rmSync,
 } from "node:fs";
 import { join, resolve, dirname, basename } from "node:path";
@@ -104,6 +105,46 @@ function getNewRuleFiles(base: string): string[] {
       `[safety-gate] git diff failed: ${err instanceof Error ? err.message : String(err)}`,
     );
     return [];
+  }
+}
+
+/** Diff against base to find modified (already-existing) rule files. */
+function getModifiedRuleFiles(base: string): string[] {
+  try {
+    const out = execFileSync(
+      "git",
+      [
+        "diff",
+        "--name-only",
+        "--diff-filter=M",
+        `${base}...HEAD`,
+        "--",
+        "rules/",
+      ],
+      { cwd: REPO_ROOT, encoding: "utf-8" },
+    ).trim();
+    return out
+      .split("\n")
+      .filter((f) => f.endsWith(".yaml") || f.endsWith(".yml"))
+      .filter(Boolean);
+  } catch (err) {
+    console.error(
+      `[safety-gate] git diff (modified) failed: ${err instanceof Error ? err.message : String(err)}`,
+    );
+    return [];
+  }
+}
+
+/** Read a file's contents at a git ref. Null when it is absent there. */
+function readFileAtRef(ref: string, file: string): string | null {
+  try {
+    return execFileSync("git", ["show", `${ref}:${file}`], {
+      cwd: REPO_ROOT,
+      encoding: "utf-8",
+      maxBuffer: 32 * 1024 * 1024,
+    });
+  } catch {
+    return null;
   }
 }
 
@@ -523,6 +564,127 @@ function extractTruePositives(doc: Record<string, unknown>): string[] {
     .filter((s): s is string => typeof s === "string" && s.length > 0);
 }
 
+/** Every benign sample the gate knows about, flattened to labelled text. */
+function collectBenignCorpus(): Array<{ label: string; text: string }> {
+  const out: Array<{ label: string; text: string }> = [];
+  if (existsSync(BENIGN_DIR)) {
+    for (const f of readdirSync(BENIGN_DIR).filter((x) => x.endsWith(".md"))) {
+      out.push({ label: f, text: readFileSync(join(BENIGN_DIR, f), "utf-8") });
+    }
+  }
+  for (const s of loadExtendedBenign())
+    out.push({ label: `${s.source}/${s.source_id}`, text: s.text });
+  for (const s of loadBenignCode())
+    out.push({ label: `benign-code/${s.source_id}`, text: s.text });
+  for (const s of loadResearchMentions())
+    out.push({ label: "research-mention", text: s.text });
+  return out;
+}
+
+/**
+ * Build an engine holding exactly the supplied rule sources. Draft/test
+ * statuses are activated so an inert rule still gets measured — the same
+ * treatment the new-rule path gives them.
+ */
+async function buildScopedEngine(
+  name: string,
+  content: string,
+): Promise<{ engine: ATREngine; dir: string }> {
+  const dir = mkdtempSync(join(tmpdir(), "atr-safety-modified-"));
+  writeFileSync(join(dir, name), content, "utf-8");
+  const engine = new ATREngine({ rulesDir: dir });
+  await engine.loadRules();
+  for (const rule of engine.getRules() as unknown as Array<
+    Record<string, unknown>
+  >) {
+    if (rule["status"] === "draft" || rule["status"] === "test") {
+      rule["status"] = "active";
+    }
+  }
+  return { engine, dir };
+}
+
+/**
+ * Check 6 — a modified rule may not introduce NEW benign false positives.
+ *
+ * Deliberately differential rather than absolute. A rule that already
+ * false-positives is pre-existing debt, and failing whichever PR happens to
+ * touch it next would only teach contributors to route around the gate. What
+ * must never land is a change that makes a rule match benign samples it did
+ * not match before.
+ *
+ * Each rule is evaluated twice over the same corpus — once as it exists at
+ * base, once as modified — and only the difference is reported. That also
+ * means a PR which strictly narrows a pattern passes with no work, which is
+ * the outcome we want to encourage.
+ */
+async function checkModifiedRulesNoNewFP(
+  base: string,
+  files: string[],
+): Promise<Failure[]> {
+  const failures: Failure[] = [];
+  const corpus = collectBenignCorpus();
+  if (corpus.length === 0) {
+    console.error(
+      "[safety-gate] benign corpora empty — skipping modified-rule FP check",
+    );
+    return failures;
+  }
+
+  for (const file of files) {
+    const baseContent = readFileAtRef(base, file);
+    const headPath = join(REPO_ROOT, file);
+    if (!baseContent || !existsSync(headPath)) continue;
+    const headContent = readFileSync(headPath, "utf-8");
+    if (baseContent === headContent) continue;
+
+    const name = basename(file);
+    let baseBuilt: { engine: ATREngine; dir: string } | null = null;
+    let headBuilt: { engine: ATREngine; dir: string } | null = null;
+    try {
+      baseBuilt = await buildScopedEngine(name, baseContent);
+      headBuilt = await buildScopedEngine(name, headContent);
+    } catch (err) {
+      // A rule that no longer loads is a real problem, but it is the schema
+      // validator's to report, not this gate's.
+      console.error(
+        `[safety-gate] could not build scoped engines for ${file}: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      if (baseBuilt) rmSync(baseBuilt.dir, { recursive: true, force: true });
+      if (headBuilt) rmSync(headBuilt.dir, { recursive: true, force: true });
+      continue;
+    }
+
+    const introduced: string[] = [];
+    for (const { label, text } of corpus) {
+      const before = matchAllRuleIds(baseBuilt.engine, text);
+      const after = matchAllRuleIds(headBuilt.engine, text);
+      for (const id of after) {
+        if (!before.has(id)) introduced.push(`${id} now matches ${label}`);
+      }
+    }
+
+    rmSync(baseBuilt.dir, { recursive: true, force: true });
+    rmSync(headBuilt.dir, { recursive: true, force: true });
+
+    if (introduced.length > 0) {
+      for (const detail of introduced.slice(0, 3)) {
+        failures.push({
+          file,
+          reason: `modification introduces a new benign false positive: ${detail}`,
+        });
+      }
+      if (introduced.length > 3) {
+        failures.push({
+          file,
+          reason: `(+${introduced.length - 3} more newly introduced benign FPs suppressed)`,
+        });
+      }
+    }
+  }
+  return failures;
+}
+
 async function main(): Promise<void> {
   const { base, file: singleFile } = parseArgs();
   const newFiles = singleFile ? [singleFile] : getNewRuleFiles(base);
@@ -532,13 +694,36 @@ async function main(): Promise<void> {
   } else {
     console.log(`[safety-gate] base=${base}`);
   }
+  const modifiedFiles = singleFile ? [] : getModifiedRuleFiles(base);
   console.log(`[safety-gate] ${newFiles.length} new rule file(s) detected`);
+  if (modifiedFiles.length > 0) {
+    console.log(
+      `[safety-gate] ${modifiedFiles.length} modified rule file(s) detected`,
+    );
+  }
+
+  // Modified rules are checked differentially — a change may not introduce
+  // benign FPs the rule did not already have. Runs even when no rule is added,
+  // which is the case this gate previously ignored entirely.
+  const modifiedFailures =
+    modifiedFiles.length > 0
+      ? await checkModifiedRulesNoNewFP(base, modifiedFiles)
+      : [];
 
   if (newFiles.length === 0) {
+    if (modifiedFailures.length === 0) {
+      console.log(
+        modifiedFiles.length > 0
+          ? `[safety-gate] PASS — ${modifiedFiles.length} modified rule(s) introduce no new benign FPs`
+          : "[safety-gate] No new or modified rule files — nothing to check, treating as safe.",
+      );
+      process.exit(0);
+    }
     console.log(
-      "[safety-gate] No new rule files — nothing to check, treating as safe.",
+      `[safety-gate] FAIL — ${modifiedFailures.length} finding(s) need human review:`,
     );
-    process.exit(0);
+    modifiedFailures.forEach((f) => console.log(`  ✗ ${f.file} — ${f.reason}`));
+    process.exit(1);
   }
 
   if (!singleFile && newFiles.length > MAX_NEW_PER_PR) {
@@ -548,7 +733,7 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const failures: Failure[] = [];
+  const failures: Failure[] = [...modifiedFailures];
   const newRuleIds = new Set<string>();
   const fileToId = new Map<string, string>();
   const ruleEntries: Array<{ id: string; file: string; tps: string[] }> = [];
