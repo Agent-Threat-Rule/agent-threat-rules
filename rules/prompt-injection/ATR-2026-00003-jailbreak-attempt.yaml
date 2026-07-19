@@ -91,7 +91,15 @@ detection:
     - field: user_input
       operator: regex
       value: "(?i)\\b(?:(?:enable|activate|enter|switch\\s+to|turn\\s+on|engage|initiate|boot\\s+into|start)\\s+(?:unrestricted|unlimited|unfiltered|uncensored|god|jailbreak|hacker|unsafe)\\s+(?:mode|access|state|level|tier|permissions?)\\b|(?:enable|activate|enter|switch\\s+to|turn\\s+on|engage|initiate|boot\\s+into|start)\\s+(?:developer|dev|maintenance|debug|admin|root|sudo|super|test|raw|override|master|privileged)\\s+(?:mode|access|state|level|tier|permissions?)\\b[\\s\\S]{0,120}?(?:no\\s+(?:restrictions?|limits?|filters?|rules?|guidelines?)|without\\s+(?:restrictions?|limits?|filters?)|ignore\\s+(?:all\\s+)?(?:previous|your|the)\\b|answer\\s+any\\s+question|bypass\\b|unfiltered|uncensored|do\\s+anything))"
-      description: "Mode-switching requests to elevate agent capabilities"
+      description: >-
+        Mode-switching requests to elevate agent capabilities (v2 — split into
+        an unambiguous group and an ambiguous one. Phrases like enable debug
+        mode or enable developer mode are ordinary developer documentation and
+        FP'd on benign skills, but developer mode is also a real jailbreak
+        persona, so those adjectives now require an accompanying
+        no-restrictions claim within the same passage. The unambiguous
+        adjectives such as unrestricted, uncensored and jailbreak still fire on
+        their own. Both mode-switching true_positives are unaffected)
 
     # -- Layer 3: Roleplay with constraint removal --
     - field: user_input
@@ -109,7 +117,15 @@ detection:
     - field: user_input
       operator: regex
       value: "(?i)(as\\s+your\\s+(developer|creator|programmer|engineer|designer|admin|administrator|owner|operator|maintainer)|I\\s+am\\s+(your|the|an?)\\s+(developer|creator|admin|owner|operator|maker|programmer)|I\\s+(work\\s+(for|at)|represent|am\\s+from)\\s+(OpenAI|Anthropic|Google\\s+DeepMind|Meta\\s+AI|Microsoft|the\\s+company\\s+that\\s+(made|created|built|trained)\\s+you)|I\\s+have\\s+(admin|root|developer|elevated|special|override|master|super|full)\\s+(access|privileges?|permissions?|authority|clearance|rights?))"
-      description: "False authority claims to establish trust for bypassing restrictions"
+      description: >-
+        False authority claims to establish trust for bypassing restrictions
+        (v2 — the article in the as-a-role branch was narrowed from
+        your/the/a to your only. "as the Admin" is how administration
+        documentation refers to the reader's own role and FP'd on benign
+        workspace-admin skills, whereas an impersonation attempt addresses the
+        agent and claims to be its developer. The first-person I-am branch is
+        unchanged and still covers the-role phrasing, and the
+        as-your-developer true_positive is unaffected)
 
     # -- Layer 6: Emotional manipulation and urgency --
     - field: user_input
@@ -139,7 +155,13 @@ detection:
     - field: user_input
       operator: regex
       value: "(?i)\\b(opposite\\s+mode|anti-?policy|bypass\\s+(the\\s+)?(content|safety|ethical|output)\\s+(filter|policy|guidelines?|rules?|restrictions?)|token\\s+smuggling|guard\\s*rail\\s+(evasion|bypass|removal)|safety\\s+(bypass|override|removal|disable|circumvent)|content\\s+filter\\s+(bypass|evasion|circumvention|workaround))\\b"
-      description: "Explicit filter bypass and evasion terminology"
+      description: >-
+        Explicit filter bypass and evasion terminology (v2 — dropped the bare
+        prompt-leak noun. That is the name of a technique rather than an
+        attempt to perform it, and it matched a benign AI-safety review skill
+        that legitimately discusses the technique by name. The remaining terms
+        all describe an action being taken; no true_positive relied on the
+        dropped noun)
 
     # -- Layer 11: Encoding-wrapped jailbreak instructions --
     - field: user_input
