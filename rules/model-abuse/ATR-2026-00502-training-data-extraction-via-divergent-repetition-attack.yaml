@@ -110,7 +110,13 @@ detection:
     - field: content
       operator: regex
       value: '(?i)(?:repeat|say|print|output|write)\b[\s\S]{0,60}\b([A-Za-z]{3,})\b(?:\W+\1\b){3,}'
-      description: 'Divergent repetition: repeat/print followed by the same token 4+ times'
+      description: >-
+        Divergent repetition — repeat/print followed by the same alphabetic
+        token 4+ times (v2 — the repeated token was \w, which includes digits,
+        so an ISO timestamp such as 10:00:00+00:00 read as the token 00
+        repeated four times separated by punctuation. That FP'd on a benign
+        Airflow CLI reference table. Restricting the token to letters keeps the
+        word-repetition true_positives and drops numeric coincidences)
   condition: any
   false_positives:
     - "Legitimate requests to repeat something a finite, small number of times"
