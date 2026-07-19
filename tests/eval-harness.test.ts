@@ -259,8 +259,15 @@ describe('Full Eval Harness', () => {
 
   it('regression check passes with default thresholds', async () => {
     const { regression } = await runEval({ rulesDir: RULES_DIR });
-    // Default thresholds are conservative (60% recall, 5% FP, 70% F1)
+    // Default thresholds are conservative (60% recall, 5% FP, 70% F1).
+    // Assert on violations rather than the bare boolean so a failure names the
+    // offending metric instead of just reporting "expected true, got false".
+    expect(regression.violations).toEqual([]);
     expect(regression.passed).toBe(true);
+    // Latency is advisory (shared CI runners are noisy) — surface, never fail on it.
+    if (regression.perfWarnings.length > 0) {
+      console.warn(`performance advisory: ${regression.perfWarnings.join('; ')}`);
+    }
   });
 
   it('identifies missed attacks correctly', async () => {
