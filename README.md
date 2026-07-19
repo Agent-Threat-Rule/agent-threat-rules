@@ -13,7 +13,7 @@ AI Agent 威脅偵測規則的開放格式
 [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-ATR%20Scan-2ea44f?style=flat-square&logo=github)](https://github.com/marketplace/actions/atr-scan)
 [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen?style=flat-square)](LICENSE)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19178002-blue?style=flat-square)](https://doi.org/10.5281/zenodo.19178002)
-[![Rules](https://img.shields.io/badge/rules-751-blue?style=flat-square)](#5-specification)
+[![Rules](https://img.shields.io/badge/rules-768-blue?style=flat-square)](#5-specification)
 [![Categories](https://img.shields.io/badge/categories-10-blue?style=flat-square)](#7-coverage)
 [![OWASP Agentic](https://img.shields.io/badge/OWASP_Agentic_Top_10-10%2F10-brightgreen?style=flat-square)](#7-coverage)
 [![SAFE-MCP](https://img.shields.io/badge/SAFE--MCP-91.8%25-brightgreen?style=flat-square)](#7-coverage)
@@ -29,7 +29,7 @@ ATR (Agent Threat Rules) is an open detection rule format for AI agent security 
 
 ## Status of This Document
 
-ATR is published as a **Working Draft** at version `3.0.0-alpha.1`. The rule format defined in `ATR-SPEC-v1.md` is stable and shipped in production at Microsoft, Cisco, and Gen Digital, and in standards-body integrations (MISP / CIRCL, OWASP Agent Security Regression Harness, SigmaHQ, FINOS Common Cloud Controls); full list with PR links in [§6 Adoption](#6-adoption). Governance is currently single-maintainer (BDFL) transitioning to a Technical Steering Committee per [GOVERNANCE.md](GOVERNANCE.md).
+ATR is published as a **Working Draft** at version `3.0.0-alpha.1`. The rule format defined in `SPEC.md` is stable and merged into open-source repos at Microsoft, Cisco, and Gen Digital, and integrated by standards-body projects (MISP / CIRCL, OWASP Agent Security Regression Harness, SigmaHQ, FINOS Common Cloud Controls); full list with PR links in [§6 Adoption](#6-adoption). Governance is currently single-maintainer (BDFL) transitioning to a Technical Steering Committee per [GOVERNANCE.md](GOVERNANCE.md).
 
 All numbers in this document are sourced from [`data/stats.json`](data/stats.json), which is the canonical record of the project's current state. Where this README and `stats.json` disagree, `stats.json` is authoritative.
 
@@ -94,12 +94,12 @@ ATR fills the gap between *taxonomy* and *deployable rule*. Each rule is a YAML 
 
 ## 2. Conformance Levels
 
-The keywords MUST, MUST NOT, SHOULD, SHOULD NOT, and MAY in this document and in [`ATR-SPEC-v1.md`](ATR-SPEC-v1.md) are to be interpreted as described in [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
+The keywords MUST, MUST NOT, SHOULD, SHOULD NOT, and MAY in this document and in [`SPEC.md`](SPEC.md) are to be interpreted as described in [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
 
 A conforming **ATR engine** MUST:
 
 1. Parse all fields defined in [`spec/atr-schema.yaml`](spec/atr-schema.yaml) without error.
-2. Evaluate `detection.conditions` with the semantics defined in [`ATR-SPEC-v1.md`](ATR-SPEC-v1.md) §3.5 (Detection Logic) and §5 (Engine Requirements).
+2. Evaluate `detection.conditions` with the semantics defined in [`SPEC.md`](SPEC.md) §6 (Detection Semantics).
 3. Honor the `scan_target` field — a rule with `scan_target: skill` MUST NOT be evaluated against `mcp_exchange` events and vice versa.
 4. Respect rule `status` — rules with `status: deprecated` or `status: draft` MUST NOT participate in production matching unless the consumer opts in explicitly.
 5. Emit `rule_id` and rule `severity` on every match.
@@ -220,7 +220,7 @@ Lanes are opt-in and fully backward-compatible: the default is `hunt`, so existi
 | Artifact | Path | Purpose |
 |---|---|---|
 | Specification (canonical pointer) | [SPEC.md](SPEC.md) | Resolves to the authoritative documents below |
-| Rule format spec (normative) | [ATR-SPEC-v1.md](ATR-SPEC-v1.md) | Rule format, identifier scheme, evaluation semantics |
+| Rule format spec (normative) | [SPEC.md](SPEC.md) | Rule format, identifier scheme, evaluation semantics |
 | Framework spec | [ATR-FRAMEWORK-SPEC.md](ATR-FRAMEWORK-SPEC.md) | Multi-layer detection framework design |
 | Machine-readable schema | [spec/atr-schema.yaml](spec/atr-schema.yaml) | Authoritative validation source |
 | Schema field reference | [docs/schema-spec.md](docs/schema-spec.md) | Human-readable schema docs |
@@ -363,7 +363,7 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | AdvBench (LLM-attacks behaviors) | upstream-2026-06-16 | 520 | 2.1% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | atr-self-test | internal | 341 | 89.7% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | autoresearch | internal-1054 | 1,054 | 15.1% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
-| garak (in-the-wild jailbreaks) | inthewild-jailbreak-corpus-650 | 650 | 97.2% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| garak (in-the-wild jailbreaks) | inthewild-jailbreak-corpus-650 | 650 | 95.7% | 100.0% | 0.0% | 3.5.8 | 2026-07-13 |
 | garak-full (all probe families) | 23-families | 3,475 | 38.3% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | hackaprompt | v1 | 4,780 | 69.6% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | HarmBench (CAIS behaviors) | upstream-2026-06-16 | 400 | 2.8% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
@@ -390,12 +390,12 @@ top-level field the engine does not read), not the engine's actual result.
 The per-row `ATR version` column above is the version each cell was actually
 measured against, mirroring the `atr_version` field in each
 `data/measurements/<source>/latest.json`. The headline `garak` recall moved
-98.0% → 97.2% in 3.5.0 because rule `ATR-2026-00495` (a garak DAN variant) was
-deprecated and no longer fires; see [CHANGELOG.md](CHANGELOG.md).
+98.0% → 97.2% (3.5.0) → 95.7% (3.5.8) as garak DAN-variant rules were
+deprecated and no longer fire; see [CHANGELOG.md](CHANGELOG.md).
 
 Two `garak` rows are deliberate: the headline `garak` source tracks NVIDIA's
-in-the-wild jailbreak corpus (narrow, the ~97% number ATR cites publicly,
-refreshed 2026-06-16 against ATR 3.5.0), while `garak-full` tracks
+in-the-wild jailbreak corpus (narrow, the ~96% number ATR cites publicly,
+refreshed 2026-07-13 against ATR 3.5.8), while `garak-full` tracks
 every probe family in upstream garak (broad, includes families like
 `badchars`, `dra`, `encoding` that ATR's regex layer intentionally does
 not target). Both are valid measurements against different corpora; they
@@ -533,7 +533,7 @@ The 96,096-skill ecosystem scan was made possible by the maintainers of OpenClaw
 ### Normative
 
 - [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119) — Key words for use in RFCs to Indicate Requirement Levels.
-- [ATR-SPEC-v1.md](ATR-SPEC-v1.md) — ATR rule format specification, v1.0 Draft.
+- [SPEC.md](SPEC.md) — ATR rule format specification, v1.0 Draft.
 - [spec/atr-schema.yaml](spec/atr-schema.yaml) — Authoritative machine-readable schema.
 
 ### Informative

@@ -183,12 +183,14 @@ Single-maintainer governance is the project's primary structural risk. The
 Founding Three TSC composition resolves bus-factor=1 and converts ATR from
 a project into a standards body.
 
-Target seats (subject to candidate confirmation):
+Target seat composition (candidates will be invited and must confirm in
+writing before any name is published here):
 
 - **Maintainer seat** — Adam Lin (林冠辛), BDFL transitional, ATR project
-- **Industry seat** — Vineeth Sai, Cisco AI Defense (PRs #79, #99 merged)
-- **Community / threat-intel seat** — Alexandre Dulaunoy, MISP / CIRCL
-  (taxonomies #323 and galaxy #1207 merged)
+- **Industry seat** — a representative from an adopter organization that has
+  shipped an ATR integration in production
+- **Community / threat-intel seat** — a representative from a threat-intel or
+  standards community that consumes ATR
 
 Authority of the Founding Three (once seated):
 - Numbering Authority: ID assignment by 2-of-3 majority vote.

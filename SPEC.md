@@ -97,54 +97,72 @@ MUST NOT alter evaluation outcomes.
 
 ### 5.1 Required Fields
 
+These are the fields enumerated as `required` in the normative JSON Schema
+[`spec/schema/rule.schema.json`](spec/schema/rule.schema.json). Where this
+table and that schema differ, **the schema governs**.
+
 | Field | Type | Constraints |
 |-------|------|-------------|
-| `id` | string | MUST match Section 4.1; MUST be unique in the Corpus. |
-| `title` | string | 1 ≤ length ≤ 200. Human-readable name. |
-| `status` | enum | MUST be one of `draft`, `experimental`, `stable`, `deprecated`. |
-| `description` | string | 50 ≤ length ≤ 4000. MUST describe the attack class, not the rule mechanics. |
-| `author` | string | 1 ≤ length ≤ 200. |
-| `date` | string | ISO 8601 date `YYYY-MM-DD` or `YYYY/MM/DD`. |
-| `severity` | enum | MUST be one of `critical`, `high`, `medium`, `low`, `informational`. |
-| `tags` | object | MUST contain `category` and `scan_target` per Section 5.3. |
-| `agent_source` | object | MUST conform to Section 5.4. |
+| `schema_version` | string | MUST match `^\d+\.\d+$` — the rule-format major.minor the Rule targets. |
+| `id` | string | MUST match Section 4.1 (`ATR-YYYY-NNNNN`, or `ATR-XX-YYYY-NNNNN` for a sovereign sub-range); MUST be unique in the Corpus. |
+| `title` | string | length ≥ 5. Human-readable name. |
+| `status` | enum | One of `draft`, `experimental`, `stable`, `deprecated`. |
+| `description` | string | length ≥ 20. SHOULD describe the attack class, not the rule mechanics. |
+| `author` | string | length ≥ 1. |
+| `date` | string | ISO 8601 `YYYY-MM-DD` or `YYYY/MM/DD`. |
+| `severity` | enum | One of `critical`, `high`, `medium`, `low`, `informational`. |
+| `detection_tier` | enum | One of `pattern`, `behavioral`, `protocol`, `classifier`. |
+| `maturity` | enum | One of `draft`, `experimental`, `test`, `stable`, `deprecated`. |
+| `tags` | object | MUST contain `category` per Section 5.3. |
+| `agent_source` | object | MUST contain `type` per Section 5.4. |
 | `detection` | object | MUST conform to Section 6. |
-| `response` | object | MUST conform to Section 5.5. |
-| `test_cases` | object | MUST contain ≥5 `true_positives` and ≥5 `true_negatives` per Section 11. |
+| `response` | object | MUST contain `actions` per Section 5.5. |
+
+`test_cases` is not a schema-required field, but it is REQUIRED for inclusion in
+the conformance Corpus and for promotion to `maturity: stable` (Section 5.6).
 
 ### 5.2 Optional Fields
 
 | Field | Type | Constraints |
 |-------|------|-------------|
-| `maturity` | enum | One of `experimental`, `test`, `production`, `stable`. Defaults to `experimental`. |
-| `confidence` | enum | One of `low`, `medium`, `high`. |
+| `confidence` | integer | 0–100. Engine confidence percentage. |
+| `rule_version` | integer | ≥ 1. Defaults to 1. |
 | `references` | array | URLs or CVE identifiers. |
 | `compliance` | object | Crosswalk mapping per Section 9. |
-| `replaced_by` | string | If `status` is `deprecated`, MUST point to a successor Rule ID. |
+| `replaced_by` | string | If `status` is `deprecated`, SHOULD point to a successor Rule ID. |
 | `wild_fp_rate` | number | 0.0–1.0; the false-positive rate observed on the published benign Corpus. |
+| `test_cases` | object | Bundled true/false-positive fixtures; see Section 5.6. |
 
 ### 5.3 Tags
 
 ```yaml
 tags:
-  category: prompt-injection   # one of the 10 canonical categories
-  scan_target: skill           # one of: mcp | skill | runtime
+  category: prompt-injection   # REQUIRED — one of the 10 canonical categories
+  scan_target: skill           # OPTIONAL — mcp | skill | skill_md | llm_io |
+                               # runtime | user_input | tool_response | both | llm
 ```
 
-Conformant Engines MUST honor `scan_target`: a Rule with `scan_target: skill`
-MUST NOT be evaluated against an MCP AgentEvent, and vice versa. The 10
-canonical categories are enumerated in Section 8.
+`tags.category` is REQUIRED; `tags.scan_target` is OPTIONAL. When it is present,
+conformant Engines MUST honor it: a Rule with `scan_target: skill` MUST NOT be
+evaluated against an MCP AgentEvent, and vice versa. The 10 canonical categories
+are enumerated in Section 8.
 
 ### 5.4 Agent Source
 
 ```yaml
 agent_source:
-  type: skill_file           # mcp_tool | skill_file | llm_io | tool_call | context_window
-  field: content              # the field within the source to inspect
+  type: mcp_exchange         # REQUIRED — the event class this Rule inspects
+  framework: [claude_code]    # OPTIONAL — narrowing hints
 ```
 
-The `type` value MUST come from the enumerated set above; future values are
-introduced by Spec amendment, not by individual Rule authors.
+`agent_source.type` is REQUIRED. It SHOULD be one of the canonical event
+classes: `llm_io`, `mcp_exchange`, `tool_call`, `multi_agent_comm`,
+`agent_trace`, `skill_lifecycle`, `memory_access`, `context_window`,
+`agent_behavior`. The vocabulary is intentionally open (the schema does not
+close the enum) so new event classes can be registered without a breaking
+change; new canonical values are introduced by Spec amendment. An Engine that
+does not model a given `type` MUST skip the Rule rather than misclassify the
+event.
 
 ### 5.5 Response
 
@@ -160,62 +178,127 @@ Engines MUST NOT execute response actions automatically without an explicit
 configuration directive from the operator. The `response` field is a
 recommendation expressed by the Rule author, not a directive to the Engine.
 
+### 5.6 Test Cases
+
+A Rule SHOULD carry a `test_cases` object with `true_positives` and
+`true_negatives` arrays. Each entry pairs an `input` with an `expected` verdict
+whose value MUST be `triggered` or `not_triggered`:
+
+```yaml
+test_cases:
+  true_positives:
+    - input: "<a sample payload of the attack class this Rule detects>"
+      expected: triggered
+  true_negatives:
+    - input: "<a benign sample the Rule must not flag>"
+      expected: not_triggered
+```
+
+At least one `true_positive` and one `true_negative` are REQUIRED for a Rule at
+`maturity: experimental` or above; at least five of each are REQUIRED for
+promotion to `maturity: stable` and for inclusion in the conformance Corpus
+(Section 11). The legacy verdict tokens `trigger` / `no_trigger` are deprecated
+and MUST NOT be used in new Rules.
+
 ## 6. Detection Semantics
 
-### 6.1 Match Definition
+### 6.1 Detection Structure
 
-Given a Rule R and an Input I, an Engine MUST emit a Match if, and only if,
-all conditions in `R.detection.condition` evaluate to true against I per the
-combinator semantics defined in Section 6.2.
+A Rule's `detection` object contains a `conditions` array (REQUIRED, ≥1 item)
+and an optional `condition` combinator string. Each entry in `conditions` is
+one of two forms defined by the normative schema
+[`spec/schema/rule.schema.json`](spec/schema/rule.schema.json).
 
-### 6.2 Condition Combinators
+**Pattern condition** — matches content in a named field:
 
-`R.detection.condition` is a logical expression over named selectors defined
-under `R.detection.selectors`. The allowed combinators are:
+```yaml
+detection:
+  condition: any            # OPTIONAL combinator; default "any" (OR)
+  conditions:
+    - field: content        # which part of the AgentEvent to inspect
+      operator: regex        # see Section 6.3
+      value: "(?i)ignore\\s+(all\\s+)?previous\\s+instructions"
+      description: "Instruction override attempt"   # OPTIONAL
+```
 
-| Combinator | Semantics |
-|------------|-----------|
-| `S` | true iff selector S matches |
-| `S1 and S2` | true iff both S1 and S2 match |
-| `S1 or S2` | true iff S1 or S2 matches |
-| `not S` | true iff S does not match |
-| `all of S*` | true iff every selector matched by the wildcard matches |
-| `1 of S*` | true iff at least one selector matched by the wildcard matches |
+**Behavioral condition** — compares a runtime metric against a threshold:
 
-The `all of` and `1 of` aggregators MUST be supported for v1.0.0 conformance.
+```yaml
+    - metric: tool_calls_per_minute
+      operator: gt
+      threshold: 50
+```
 
-### 6.3 Selector Operators
+A pattern condition MUST contain `field`, `operator`, and `value`. A behavioral
+condition MUST contain `metric`, `operator`, and `threshold`. These are the only
+two condition shapes the schema defines.
 
-A selector is a mapping from field path to operator + operand. Conformant
-Engines MUST implement the following operators with the semantics given:
+### 6.2 Match Definition and Combinator
+
+Given a Rule R and an AgentEvent I, an Engine MUST emit a Match if, and only if,
+the boolean combination of R's evaluated conditions selected by
+`R.detection.condition` is true.
+
+`condition` is a string with these semantics:
+
+| Value | Semantics |
+|-------|-----------|
+| `any` (default) | Match iff **at least one** condition matches (OR). |
+| `all` | Match iff **every** condition matches (AND). |
+| boolean expression | An expression over condition aliases using `AND`, `OR`, `NOT`, and parentheses. Used by multi-step Rules whose `conditions` are keyed by alias. |
+
+When `condition` is absent, an Engine MUST default to `any`. `any` and `all`
+MUST be supported for v1.0.0 conformance; expression support is REQUIRED only
+for Rules that declare aliased conditions.
+
+### 6.3 Operators
+
+A pattern condition's `operator` MUST be one of the following, per the schema
+enum:
 
 | Operator | Semantics |
 |----------|-----------|
+| `regex` | `value` is a regular expression (Section 6.4). Used by the overwhelming majority of the Corpus. |
 | `contains` | Case-sensitive substring match. |
-| `contains_i` | Case-insensitive substring match. |
-| `regex` | The operand is treated as an ECMAScript-compatible regular expression. Engines MUST anchor input scanning across the entire Input field, not only line-by-line. |
 | `equals` | Exact string equality. |
-| `startswith` | Prefix match. |
-| `endswith` | Suffix match. |
-| `length_gt`, `length_lt` | Numeric comparison of field length. |
-| `in` | Operand is a list; selector matches if field equals any element. |
+| `matches` | Glob / wildcard match, engine-defined. |
+| `ml_classifier` | `value` names a classifier the Engine invokes; result is boolean. |
+| `ast` | `value` is an AST query over parsed code content. |
+| `bytecode` | `value` is a bytecode-level pattern. |
 
-Engines MUST reject Rules that use operators outside this list, with a
-clear error message identifying the unknown operator. Silently treating an
-unknown operator as no-match would convert an authoring mistake into a
-silent false negative. Engines MAY define additional operators as
-extensions, but MUST treat Rules using such extensions as non-portable and
-MUST NOT promote them to Conformance Level L2 or L3.
+A behavioral condition's `operator` is a numeric comparison over `metric`
+(e.g. `gt`, `lt`, `gte`, `lte`, `eq`).
 
-### 6.4 Determinism
+Engines MUST reject a Rule whose pattern `operator` is outside the enum above,
+with a clear error identifying the unknown operator — silently treating an
+unknown operator as no-match would convert an authoring mistake into a silent
+false negative. An Engine MAY skip `matches`, `ml_classifier`, `ast`, or
+`bytecode` conditions it cannot evaluate (treating them as non-matching, not
+matching), but MUST NOT report such a Rule as conformant at Level L2/L3.
+
+### 6.4 Regular-Expression Dialect
+
+`regex` operands are ECMAScript (`RegExp`) patterns with one required
+preprocessing rule: a pattern MAY begin with an inline global-flag group
+matching `^\(\?[ims]+\)` (for example `(?i)` or `(?is)`). A conforming Engine
+MUST strip that leading group from the pattern and apply the corresponding
+`RegExp` flags (`i`, `m`, `s`). This inline-flag form is used by a large
+majority of the Corpus and is therefore normative: an Engine that compiles the
+pattern literally as ECMAScript — where a leading `(?i)` raises a syntax error —
+is non-conforming. Patterns are applied across the entire Input field, not
+line-by-line, unless the pattern itself constrains position. Engines SHOULD
+reject patterns whose worst-case matching is super-linear (ReDoS) rather than
+evaluate them.
+
+### 6.5 Determinism
 
 For a given Engine version, a given Rule, and a given Input, the Match outcome
 MUST be deterministic. Engines MUST NOT introduce non-determinism (e.g.,
 randomized sampling, time-of-day branching) into Rule evaluation.
 
-### 6.5 Extension Methods
+### 6.6 Extension Methods
 
-The selectors and operators in Sections 6.1-6.4 define the default detection
+The conditions and operators in Sections 6.1-6.4 define the default detection
 method (`pattern`). A Rule MAY declare an optional `detection.method` field
 to opt into an alternative method defined by a Spec extension document.
 v1.0 defines `pattern` as the default; the canonical extension document
@@ -241,7 +324,7 @@ An Engine MUST emit Match output that includes, at minimum:
   "matched_at": "2026-05-16T03:14:15Z",
   "severity": "high",
   "category": "prompt-injection",
-  "matched_selectors": ["sel_inline_exec", "sel_credential_exfil"]
+  "matched_conditions": ["instruction_override", "credential_exfil"]
 }
 ```
 

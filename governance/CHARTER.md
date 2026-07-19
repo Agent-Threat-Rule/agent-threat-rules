@@ -25,7 +25,7 @@
 **Status:** Draft for community comment — NOT RATIFIED
 **Effective on ratification:** [TBD — see § Ratification]
 **Supersedes (on ratification):** GOVERNANCE.md v1.1 (2026-04-15, BDFL/Numbering-Authority model)
-**Charter license:** CC BY 4.0
+**Charter license:** MIT
 **Author:** Adam Lin <adam@agentthreatrule.org>, Maintainer, Agent Threat Rules
 **Date drafted:** 2026-05-25
 
@@ -36,9 +36,8 @@
 This charter defines the technical governance of the Agent Threat Rules (ATR)
 project. ATR is the open detection-rule standard for AI agent threats,
 maintained at github.com/Agent-Threat-Rule/agent-threat-rules under the MIT
-license (for code and tooling) and CC BY 4.0 (for rule content and this
-charter). Fiscal sponsor: Open Source Collective Inc. (501(c)(3), EIN
-81-1567737).
+license (code, tooling, rule content, and this charter — a single license
+throughout). Fiscal sponsor: Open Source Collective Inc. (EIN 81-1567737).
 
 This charter exists because the ATR rule corpus has reached the adoption
 threshold where single-maintainer governance is a structural risk to
@@ -345,16 +344,13 @@ dual-role.
 
 ### 7.1 License commitment (carried forward from v1.1, hardened)
 
-- Code, tooling, reference implementations, and the conformance test
-  harness: **MIT License**. Permanent and irrevocable.
-- Rule content (the YAML files in `rules/`): **CC BY 4.0**.
-  Attribution-required so adopters cite ATR upstream.
-- Specification documents (this charter, `spec/atr-spec-v*.md`,
-  `spec/atr-schema.yaml`, `governance/*`): **CC BY 4.0**.
-- Conformance corpus content (test fixtures, expected results):
-  **CC0 1.0** (public domain). Reasoning: a conformance corpus that
-  carries attribution requirements creates friction for downstream
-  implementers running automated test pipelines.
+- All ATR artifacts — code, tooling, reference implementations, the
+  conformance test harness and corpus, rule content (the YAML files in
+  `rules/`), and specification documents (this charter, the spec files,
+  `spec/atr-schema.yaml`, `governance/*`): **MIT License**. Permanent and
+  irrevocable. ATR uses a single license across the whole project so that
+  adopters, audit labs, and sovereign authorities face one clear, permissive
+  set of terms with no per-path friction.
 
 ATR will never adopt BSL, SSPL, or any source-available licence that
 restricts use. Re-affirmed at v2.0 ratification.
@@ -525,8 +521,7 @@ Reasoning is preserved here rather than buried in commit history.
 | Lazy consensus for Tier 1 | OpenSSF; SigmaHQ informal | Rule corpus growth is ATR's competitive advantage; must not gate at the daily level |
 | 2/3 supermajority for spec changes | CNCF removal threshold | Reflects that a broken spec is harder to reverse than a broken rule |
 | DCO, not CLA | Linux kernel; OpenSSF | CLA is the #1 source of contributor friction in adjacent communities |
-| CC BY 4.0 for rule content | Detection Rule License-class permissive | Preserves attribution upstream while allowing commercial inclusion |
-| CC0 for conformance corpus | Public-domain default | Automated test pipelines cannot tolerate attribution requirements |
+| MIT for all artifacts (code, rules, spec, conformance) | Single permissive OSI license | One license across the project — simplest terms for adopters, audit labs, and sovereign authorities; matches the repo's inbound-MIT contribution model |
 | Patent non-assertion (OASIS-style) | OASIS Non-Assertion Mode | Most permissive choice; lowest friction for sovereign and academic adoption |
 | Sovereign sub-range namespace | Unique to ATR; partially inspired by IANA registries | Lets a sovereign issue rules under its national authority while remaining conformant. Structurally answers "what about multipolar AI governance" |
 | Founder recusal after 12 months | New, ATR-specific | Defuses the founder-vendor dual-role conflict that has compromised similar projects (founder controls standard + sells against standard = irreconcilable) |
@@ -543,8 +538,8 @@ Reasoning is preserved here rather than buried in commit history.
   belongs to individual vendors.
 - Does not commit to a particular standards-body publication path
   (OASIS / NIST / IETF / ISO). The TSC may pursue any or all in
-  parallel; the recommendation in `panguard-outreach/2026-05-25-standardization-phase0/OASIS-APPROACH-MEMO.md`
-  is a working proposal, not a charter commitment.
+  parallel; the current working recommendation (OASIS Open Project as
+  the primary path) is a working proposal, not a charter commitment.
 
 ---
 

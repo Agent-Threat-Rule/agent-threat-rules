@@ -13,7 +13,7 @@
 **Effective (proposed):** Bootstrapping under current Numbering Authority; ratified at TSC seating per `governance/CHARTER.md` § 11.
 **Marks claimed (registration pending):** ATR, ATR-Certified, and the ATR project logo (when published)
 **Owner (on registration):** Open Source Collective Inc. (fiscal sponsor) on behalf of the Agent Threat Rules project
-**License of this document:** CC BY 4.0
+**License of this document:** MIT
 
 ---
 
@@ -21,7 +21,7 @@
 
 Trademarks are how the standard's integrity is enforced when other instruments (copyright, patent, contract) cannot reach. Specifically:
 
-- A bad actor can fork the MIT-licensed rule corpus and the CC BY 4.0 specification. Copyright cannot stop that fork.
+- A bad actor can fork the MIT-licensed rule corpus and specification. Copyright cannot stop that fork.
 - A bad actor can claim "ATR-conformant" without passing the conformance corpus. The conformance corpus cannot stop that claim absent trademark enforcement.
 - A bad actor can publish a competing "Agent Threat Rules Foundation" that looks legitimate. Without trademark protection on the project name, downstream consumers cannot tell which is canonical.
 
@@ -56,7 +56,7 @@ You MAY freely use ATR® and the project name to:
 
 You MAY use the mark in commercial product names, descriptions, or marketing IF you also:
 
-1. Make it clear your product is NOT the ATR project itself or operated by ATR. Example: "PanguardAI uses ATR rules for detection" is fine; "PanguardAI is the ATR Foundation" is not.
+1. Make it clear your product is NOT the ATR project itself or operated by ATR. Example: "AcmeScan uses ATR rules for detection" is fine; "AcmeScan is the ATR Foundation" is not.
 2. Do not imply official endorsement by the ATR project, the TSC, the Open Source Collective Inc., or any TSC member organisation unless that endorsement is explicit and current.
 3. Link to https://github.com/Agent-Threat-Rule/agent-threat-rules as the canonical project source.
 

@@ -7,7 +7,7 @@
 
 **Status:** Draft for AEP-003 ratification — NOT RATIFIED
 **Date:** 2026-05-25
-**License:** CC BY 4.0
+**License:** MIT
 **Required by (on ratification):** Conformance claims, sovereign sub-rule packages, F500 compliance binders
 
 ---
@@ -60,7 +60,7 @@ profile:
     deployed agent runtime regardless of vertical.
   author: "ATR TSC"
   date: "2026-05-25"
-  license: "CC-BY-4.0"
+  license: "MIT"
   status: "draft"                             # draft | stable | deprecated
   conformance_bound:
     spec_version_min: "1.0"
@@ -190,7 +190,7 @@ profile:
     agent deployment.
   author: "ATR TSC"
   date: "2026-05-25"
-  license: "CC-BY-4.0"
+  license: "MIT"
   status: "stable"
   conformance_bound:
     spec_version_min: "1.0"
@@ -229,7 +229,7 @@ profile:
     ATR-DE-* rules for German-specific threat landscape.
   author: "Bundesamt für Sicherheit in der Informationstechnik (BSI)"
   date: "2026-05-25"
-  license: "CC-BY-4.0"
+  license: "MIT"
   status: "draft"
   conformance_bound:
     spec_version_min: "1.0"

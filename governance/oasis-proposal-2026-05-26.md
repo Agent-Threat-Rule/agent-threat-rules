@@ -43,7 +43,7 @@ The ATR project began in early 2026 as a community-led detection-rule corpus. As
   - precize / Gen Digital Sage chain (#74, May 2026)
 - **Measured performance**: 100% precision + 89.7% recall on 341-sample internal benchmark; 97.1% recall on NVIDIA garak; 99.7% precision + 63.2% recall on an 850-sample PINT-format corpus (self-built, not Lakera's official PINT)
 - **Zenodo DOI**: 10.5281/zenodo.19178002
-- **CC BY 4.0 / MIT** licensing
+- **MIT** licensing (single license across the project)
 - **Fiscal sponsor**: Open Source Collective Inc. (501(c)(3), EIN 81-1567737)
 
 The project has matured to the point where its current single-maintainer governance model is a structural limit to further adoption. F500 buyers, national CERTs, and OASIS / NIST / EU AI Office have all signalled that the project would benefit from a multi-stakeholder governance model and a standards-body home.
@@ -120,12 +120,9 @@ Specific sponsor commitments will be confirmed in writing before submission to t
 
 | Artifact class | Licence |
 |---|---|
-| Code (reference implementations, tooling, conformance test harness) | MIT |
-| Rule content (`rules/`) | CC BY 4.0 |
-| Specifications | CC BY 4.0 |
-| Conformance corpus fixtures | CC0 1.0 (public domain) |
+| All ATR artifacts (code, rules, specifications, conformance corpus) | MIT |
 
-All licences are OSI-approved (or CC variants). No source-available or restricted licences will ever be adopted; this is a permanent commitment per `governance/CHARTER.md` § 7.1.
+The MIT License is OSI-approved. No source-available or restricted licences will ever be adopted; this is a permanent commitment per `governance/CHARTER.md` § 7.1.
 
 ---
 

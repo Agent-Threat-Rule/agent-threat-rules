@@ -16,7 +16,7 @@
 > proposed-vs-ratified-vs-implemented status.
 
 **Status:** v1.0 — Draft for OASIS Open Project submission — NOT RATIFIED
-**License:** CC BY 4.0 (spec docs and schemas); CC0 (conformance corpus); MIT (reference implementations); CC BY 4.0 (rules)
+**License:** MIT (spec docs, schemas, rules, reference implementations, and conformance corpus — one license for the whole project)
 **Governance:** governance/CHARTER.md v2.0 (PROPOSED — TSC not yet formed)
 
 ---
@@ -29,9 +29,9 @@ YARA is to malware signatures, and CVE/CWE is to software
 vulnerabilities. ATR rules are YAML files with declarative patterns
 that any conformant engine can load and evaluate. The standard is
 maintained by a 9-seat Technical Steering Committee (TSC) under
-fiscal sponsorship of Open Source Collective Inc. The corpus is
-licensed CC BY 4.0; reference implementations are MIT; conformance
-test artifacts are CC0.
+fiscal sponsorship of Open Source Collective Inc. The corpus,
+reference implementations, and conformance test artifacts are all
+MIT-licensed — the project uses a single license throughout.
 
 ---
 
@@ -44,7 +44,7 @@ spec/
 ├── compliance-metadata.md             ← (existing) rule compliance field reference
 ├── stix-extension/                    ← (existing) STIX 2.1 extension bridge
 │
-├── ATR-SPEC-v1.md                     ← (existing, repo root) rule format spec
+├── SPEC.md                     ← (existing, repo root) rule format spec
 ├── atr-language-detection-v1.0.md     ← (new) deterministic language detection algorithm
 ├── atr-event-v1.0.md                  ← (new) OTEL-compatible event format
 ├── atr-profile-v1.0.md                ← (new) rule-set composition for tiered conformance
@@ -75,7 +75,7 @@ the standard's architecture per governance/CHARTER.md § Appendix A.
 
 | Layer | Lives in | Governance |
 |---|---|---|
-| **1. Specification** (the immutable contract — what conformant implementations must do) | `spec/` + repo-root `ATR-SPEC-v1.md` | TSC AEP process (Tier 3) |
+| **1. Specification** (the immutable contract — what conformant implementations must do) | `spec/` + repo-root `SPEC.md` | TSC AEP process (Tier 3) |
 | **2. Reference implementation** (proves the spec is buildable) | `engines/typescript/` + `engines/python/` + `engines/go/` | Maintainer-led; tested against `spec/conformance/` |
 | **3. Production engines + integrations** (consumers of the spec) | `src/` (existing TypeScript engine), `integrations/{rampart,sigma,sentinel,splunk,opentelemetry}/` | Vendor-controlled; pass conformance to claim conformance |
 | **4. Conformance test corpus** (objective evidence anyone implements correctly) | `spec/conformance/` | TSC; signed with ed25519 key |
@@ -86,7 +86,7 @@ the standard's architecture per governance/CHARTER.md § Appendix A.
 
 If you are **implementing an ATR engine**, read in this order:
 
-1. `ATR-SPEC-v1.md` — rule format. Defines what a rule is and how
+1. `SPEC.md` — rule format. Defines what a rule is and how
    it evaluates.
 2. `spec/atr-schema.yaml` and `spec/schema/rule.schema.json` —
    machine-readable rule schemas.
@@ -107,7 +107,7 @@ If you are **implementing an ATR engine**, read in this order:
 
 If you are **authoring rules**, read:
 
-1. `ATR-SPEC-v1.md` — rule fields and evaluation semantics
+1. `SPEC.md` — rule fields and evaluation semantics
 2. `spec/atr-schema.yaml` — required and optional fields
 3. `spec/category-registry/v1.0.yaml` — pick a category
 4. `spec/atr-language-detection-v1.0.md` — only if writing
@@ -196,7 +196,7 @@ vote per governance/CHARTER.md § 4.
 
 | Component | Version | Status | Files |
 |---|---|---|---|
-| Rule format | v1.0 | existing-draft | `ATR-SPEC-v1.md`, `spec/atr-schema.yaml`, `spec/schema/rule.schema.json` |
+| Rule format | v1.0 | existing-draft | `SPEC.md`, `spec/atr-schema.yaml`, `spec/schema/rule.schema.json` |
 | Event format | v1.0 | draft (new May 2026) | `spec/atr-event-v1.0.md`, `spec/schema/event.schema.json` |
 | Profile format | v1.0 | draft (new May 2026) | `spec/atr-profile-v1.0.md`, `spec/schema/profile.schema.json` |
 | Correlation format | v1.0 | draft (new May 2026) | `spec/atr-correlation-v1.0.md`, `spec/schema/correlation.schema.json` |
@@ -254,11 +254,9 @@ the `spec-bug` label, expedited as Tier 2 votes (simple majority of
 
 The spec is being prepared for:
 
-1. **OASIS Open Project (primary)** as adjacent to CoSAI. See
-   `panguard-outreach/2026-05-25-standardization-phase0/OASIS-APPROACH-MEMO.md`.
+1. **OASIS Open Project (primary)** as adjacent to CoSAI.
    Target: Q3 2026 acceptance, Q1 2027 first Committee Specification.
-2. **NIST CAISI (citation target)**. See
-   `panguard-outreach/2026-05-25-standardization-phase0/NIST-CAISI-POSITION-PAPER.md`.
+2. **NIST CAISI (citation target)**.
    No formal submission window currently open; awaiting next RFI.
 3. **IETF (informational draft, transport / OTEL emission only)**
    when reference implementations are stable.

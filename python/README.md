@@ -106,4 +106,4 @@ pyATR's maintenance — CVE-class response, weekly cross-ecosystem sync, the aut
 
 **Sponsor page: [opencollective.com/agent-threat-rules](https://opencollective.com/agent-threat-rules)**
 
-Five public tiers (Backer $5 / Friend $25 / Bronze $200 / Silver $1,000 / Gold $5,000 per month). Strategic Partner (US $20,000 – $200,000+/yr, contract-backed with SLA) at [panguard.ai/sponsor](https://panguard.ai/sponsor) or <adam@agentthreatrule.org>.
+Five public tiers (Backer $5 / Friend $25 / Bronze $200 / Silver $1,000 / Gold $5,000 per month). Strategic Partner (US $20,000 – $200,000+/yr, contract-backed with SLA) via <adam@agentthreatrule.org>.

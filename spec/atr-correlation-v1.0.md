@@ -7,7 +7,7 @@
 
 **Status:** Draft for AEP-004 ratification — NOT RATIFIED
 **Date:** 2026-05-25
-**License:** CC BY 4.0
+**License:** MIT
 **Required by (on ratification):** Detection of multi-step agent attacks (A2A chains, memory-poisoning persistence, delegated authority abuse)
 
 ---
@@ -64,7 +64,7 @@ correlation:
   severity: "critical"
   author: "ATR Maintainer"
   date: "2026-05-25"
-  license: "CC-BY-4.0"
+  license: "MIT"
   references:
     owasp_agentic: ["ASI03", "ASI04", "ASI09"]
     mitre_atlas: ["AML.T0048", "AML.T0024"]
