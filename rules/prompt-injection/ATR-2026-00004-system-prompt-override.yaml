@@ -101,18 +101,33 @@ detection:
     - field: user_input
       operator: regex
       value: >-
-        (?i)\{\s*["']?(role|system_prompt|system_message|system_instruction|system_content|system|persona|identity|character)["']?\s*:\s*["']?
-      description: JSON-formatted system role injection
+        (?i)(?:\{\s*["']?role["']?\s*:\s*["']?system["']?\s*[,}]?[\s\S]{0,160}?(?:ignore\b|disregard\b|override\b|bypass\b|disable\b|unrestricted\b|jailb?reak\b|without\s+(?:restrictions?|filters?|safety|limits?)|no\s+(?:safety|restrictions?|filters?|guidelines?)|new\s+instructions?\b)|\{\s*["']?(?:system_prompt|system_message|system_instruction|system_content)["']?\s*:\s*["']?)
+      description: >-
+        JSON-formatted system role injection (v2 — a bare role-key opener is the
+        standard chat-completions message shape and appeared in 11 benign
+        LLM-integration skills. The role branch now requires the value to
+        actually be system AND an override phrase within the same message
+        object, which is what separates an injected system turn from an ordinary
+        API example; the explicit system_prompt / system_message keys still fire
+        alone. The system-role true_positive is unaffected because its content
+        carries an override phrase. Dropped the bare persona / identity /
+        character keys, which carry no override semantics on their own)
     - field: user_input
       operator: regex
       value: >-
-        (?i)(#{1,3})\s*(system|admin|root|master|instruction)\s+(prompt|override|directive)\b
-      description: Markdown header declaring a system-prompt override (requires an override-indicative noun; benign doc headings like "# System Requirements" no longer match)
+        (?i)(#{1,3})\s*(system|admin|root|master|instruction)\s+(override|directive)\b
+      description: Markdown header declaring a system-prompt override (v3 — dropped the 'prompt' noun. A "System Prompt" markdown heading is ordinary documentation and matched benign skills that document their own prompt; only the override/directive nouns carry attack semantics. The System-Override true_positive is unaffected because it uses the override noun, and a genuine new-system-prompt injection is still caught by the first condition. v2 — requires an override-indicative noun; benign doc headings like "# System Requirements" no longer match)
     - field: user_input
       operator: regex
       value: >-
-        (?i)(the\s+)?(above|previous|original|old|prior|initial|default|existing|current|given)\s+(system\s+)?(prompt|instructions?|message|guidelines?|directives?|configuration|rules?)\s+(is|are|was|were|has\s+been|have\s+been|should\s+be)\s+(deprecated|invalid|outdated|replaced|revoked|cancelled|superseded|overridden|void|nullified|expired|incorrect|wrong|fake|false|a\s+test|not\s+(real|valid|correct|applicable))
-      description: Claims that the existing system prompt is invalid or deprecated
+        (?i)(?<!assume\s)(?<!assuming\s)(the\s+)?(above|previous|original|old|prior|initial|default|existing|current|given)\s+(system\s+)?(prompt|instructions?|message|guidelines?|directives?|configuration|rules?)\s+(is|are|was|were|has\s+been|have\s+been|should\s+be)\s+(deprecated|invalid|outdated|replaced|revoked|cancelled|superseded|overridden|void|nullified|expired|incorrect|wrong|fake|false|a\s+test|not\s+(real|valid|correct|applicable))
+      description: >-
+        Claims that the existing system prompt is invalid or deprecated (v2 —
+        added a negation guard. A benign context-engineering skill tells the
+        agent not to assume the user's existing instructions are wrong, and the
+        old pattern matched the negated clause as if it were the assertion. The
+        guard only suppresses the assume / assuming framing, so a direct claim
+        still fires and no true_positive is affected)
     - field: user_input
       operator: regex
       value: >-
@@ -131,8 +146,8 @@ detection:
     - field: user_input
       operator: regex
       value: >-
-        (?i)(config|configuration|settings?|params|parameters)\s*[=:]\s*\{[^}]{0,200}(role|system|instructions?|persona|behavior|safety|filter|restriction|guardrail)\s*[=:]
-      description: Configuration object injection with system-related keys
+        (?i)(config|configuration|settings?|params|parameters)\s*[=:]\s*\{[^}]{0,200}(safety|filter|restriction|guardrail|moderation|content_policy|censor)\w*\s*[=:]\s*["']?(?:false|off|none|null|0|disabled?|bypass|ignore)\b
+      description: Configuration object injection that disables a safety control (v2 — the old form matched any config object containing a 'system'/'role'/'instructions' key, which is the shape of every legitimate LLM SDK call and FP'd on benign skills passing systemInstruction to a provider config. It now requires a safety-control key assigned a disabling value, which is the actual attack; no true_positive relied on the broad form)
     - field: user_input
       operator: regex
       value: >-

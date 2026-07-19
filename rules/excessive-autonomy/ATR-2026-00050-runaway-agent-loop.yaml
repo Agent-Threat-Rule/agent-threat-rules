@@ -108,8 +108,8 @@ detection:
     - field: content
       operator: regex
       value: >-
-        (?i)(?:calling\s+(?:myself|this\s+(?:function|tool|agent))\s+(?:again|recursively)|recursive\s+(?:call|invocation|execution)|self[_-]?(?:invoke|call|trigger))
-      description: Recursive self-invocation patterns
+        (?i)(?:calling\s+(?:myself|this\s+(?:function|tool|agent))\s+(?:again|recursively)|recursive\s+(?:call|invocation|execution))
+      description: Recursive self-invocation patterns (v2 — dropped the bare 'self-call' / 'self-invoke' token, which agent-framework documentation uses as ordinary vocabulary when describing how an agent may call itself. The remaining branches require the recursion to be asserted as happening, which is the runaway signal; both recursion true_positives use those branches)
     - field: content
       operator: regex
       value: (?i)(?:iteration\s+(?:#\s*)?\d{2,}|loop\s+(?:iteration|count|index)\s*[:=]?\s*\d{2,}|cycle\s+\d{2,})
@@ -131,7 +131,7 @@ detection:
       description: Explicit stall or no-progress acknowledgement
     - field: content
       operator: regex
-      value: (?i)(?:(?:while|for)\s*\(\s*(?:true|1|;;)\s*\)|(?:loop|repeat)\s*\{\s*(?:call|invoke|execute))
+      value: (?i)(?:(?:while|for)\s*\(\s*(?:true|1|;;)\s*\)[\s\S]{0,80}?\b(?:invoke|call|execute|request|fetch|query|retry)\b|(?:loop|repeat)\s*\{\s*(?:call|invoke|execute))
       description: Infinite loop constructs in generated or executed code
     - field: content
       operator: regex

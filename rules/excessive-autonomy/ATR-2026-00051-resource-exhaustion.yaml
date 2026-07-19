@@ -73,13 +73,13 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: (?i)SELECT\s+\*\s+FROM\s+\w+(?:\s*;|\s*$|\s+WHERE)(?!.*\bLIMIT\b)
-      description: Unbounded SELECT * query without LIMIT clause
+      value: (?i)SELECT\s+\*\s+FROM\s+\w+\s*(?:;|$)(?!.*\bLIMIT\b)
+      description: Unbounded SELECT * query without LIMIT clause (v2 — dropped the '+ WHERE' branch; a WHERE clause bounds the result set, so 'SELECT * FROM users WHERE ...' is not resource exhaustion. That branch matched ordinary SQL examples in documentation; true_positive 'SELECT * FROM transactions;' is unaffected)
     - field: content
       operator: regex
       value: >-
-        (?i)(?:for\s+each\s+(?:of\s+)?(?:the\s+)?(?:record|row|entry|item|file|document|user|customer|email|account|message|transaction)s?\b[\s\S]{0,30}\b(?:in|of|from|across)\b|iterate\s+(?:over\s+)?(?:all|every|the\s+entire)|process\s+(?:all|every|each)\s+(?:record|row|entry|item|file|document)|(?:all|every|entire|whole)\s+(?:record|row|entry|item|file|document|dataset|database|table)s?\b)
-      description: Bulk iteration over an entire or unbounded dataset (v2 — bare 'for each' now requires a data-source/scale qualifier; the unqualified form matched ordinary 'for each X' prose; verified 0 recall loss + all true_positives, benign FP 560 to 203)
+        (?i)(?:for\s+each\s+(?:of\s+)?(?:the\s+)?(?:record|row|entry|item|file|document|user|customer|email|account|message|transaction)s?\b[\s\S]{0,30}\b(?:in|of|from|across)\b|iterate\s+(?:over\s+)?(?:all|every|the\s+entire)|process\s+(?:all|every|each)\s+(?:record|row|entry|item|file|document))
+      description: Bulk iteration over an entire or unbounded dataset (v3 — dropped the bare '(all|every|entire|whole) <noun>' branch, which matched plain noun phrases such as 'all tables', 'every dataset' and 'all files' in ordinary data-tooling documentation with no consuming action. The remaining branches all require an explicit consuming verb (for each ... in / iterate over all / process all), and the download/fetch-all branch below still covers the 'Downloading all files' true_positive. v2 — bare 'for each' now requires a data-source/scale qualifier; the unqualified form matched ordinary 'for each X' prose; verified 0 recall loss + all true_positives, benign FP 560 to 203)
     - field: content
       operator: regex
       value: >-

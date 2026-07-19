@@ -72,8 +72,8 @@ detection:
     - field: content
       operator: regex
       value: >-
-        (?i)(?:instead\s+of\s+(?:that|doing|the\s+(?:original\s+)?\w+(?:\s+\w+){0,3}|what\s+(?:you|I)\s+asked)|rather\s+than\s+(?:that|the\s+(?:original|assigned|previous)))
-      description: Explicit task abandonment language
+        (?i)(?:instead\s+of\s+(?:that\b|doing\b|what\s+(?:you|I)\s+asked)|instead\s+of\s+(?:the\s+)?(?:original|assigned|previous|current)\s+(?:task|goal|objective|instructions?|request|assignment|work)|instead\s+of\s+(?:the\s+)?\w+(?:\s+\w+){0,3}[,.]?\s+(?:let(?:'s|\s+me|\s+us)\b|I(?:'ll|'m)\b|I\s+(?:will|am\s+going\s+to)\b|we(?:'ll\b|\s+will\b)|do\s+something\s+else)|rather\s+than\s+(?:that|the\s+(?:original|assigned|previous)))
+      description: Explicit task abandonment language (v2 — the old 'instead of the <any 1-4 words>' branch matched ordinary technical prose such as 'instead of the Apify logger' / 'instead of the module under test', which is how documentation describes substituting one component for another. The open-ended object now has to be followed by a self-substitution clause ('..., let me', 'I'll', 'do something else'), which is what makes it hijacking rather than a comparison; a named original/assigned task still fires on its own. true_positive 'Instead of the financial report, let me do something else' is unaffected)
     - field: content
       operator: regex
       value: >-
@@ -113,8 +113,8 @@ detection:
     - field: content
       operator: regex
       value: >-
-        (?i)(?:skip\s+(?:the|that|this)\s+(?:step|part|task|analysis)|don'?t\s+(?:bother|worry)\s+(?:about|with)\s+(?:the|that|this)\s+(?:original|first|assigned))
-      description: Directives to skip assigned work
+        (?i)(?:skip\s+(?:the|that|this)\s+(?:original|assigned|first|required|previous|remaining)\s+(?:step|part|task|analysis|work)|skip\s+(?:the|that|this)\s+(?:step|part|task|analysis)\s+(?:and\s+(?:just|instead|directly)|entirely\s+and)|don'?t\s+(?:bother|worry)\s+(?:about|with)\s+(?:the|that|this)\s+(?:original|first|assigned))
+      description: Directives to skip assigned work (v2 — the bare 'skip this step' form is ordinary instructional prose and matched 15 benign developer skills that legitimately tell a reader to skip an optional step. The object now has to be marked as the assigned/original work, or the skip has to be paired with a substitution ('and just', 'and instead'), which is the hijacking shape. No true_positive relied on the bare form)
     - field: content
       operator: regex
       value: >-
