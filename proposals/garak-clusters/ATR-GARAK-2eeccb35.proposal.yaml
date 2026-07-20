@@ -5,20 +5,13 @@ status: draft
 description: >-
   Detects the 'latentinjection' garak agent-attack probe family. These 40 prompts are currently MISSED by ATR on the
   garak full benchmark and represent a semantic attack class (indirect-injection) that a T2 LLM-as-judge rule should
-  cover. Sourced from data/garak-benchmark/garak-full-report.json (run 2026-05-23).
+  cover. Sourced from data/garak-benchmark/garak-full-report.json (run 2026-07-20).
 author: ATR Community (garak-miss-bridge)
-date: "2026-05-23"
+date: "2026-07-20"
 schema_version: "0.1"
 detection_tier: semantic
 maturity: draft
 severity: medium
-needs_manual_triage: true
-triage_reason: >-
-  These true_positives are garak CARRIER inputs (benign questions / document
-  text); the adversarial payload is injected into the surrounding context, not
-  the bare string. A T2 rule authored from these as-is would flag benign
-  content (catastrophic FP). Re-derive with the full injection context, or skip,
-  before authoring.
 references:
   owasp_llm:
     - LLM01:2025 - Prompt Injection
