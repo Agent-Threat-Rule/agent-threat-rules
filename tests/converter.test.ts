@@ -1,5 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { join } from 'node:path';
+import { writeFileSync, readFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { tmpdir } from 'node:os';
 import { convertRule, convertAllRules } from '../src/converters/index.js';
 import { ruleToSPL } from '../src/converters/splunk.js';
 import { ruleToElastic } from '../src/converters/elastic.js';
@@ -241,6 +244,24 @@ describe('SIEM Converter', () => {
 // ─── SARIF Converter Tests ───────────────────────────────────────────
 
 describe('SARIF Converter', () => {
+  // The artifact digest is the file's raw octets, so the interop tests need a
+  // real file on disk rather than a fake path + fake hash.
+  const tempDirs: string[] = [];
+  afterEach(() => {
+    for (const d of tempDirs.splice(0)) rmSync(d, { recursive: true, force: true });
+  });
+  const writeTempSkill = (
+    bytes: Buffer | string,
+    name = 'SKILL.md',
+  ): { path: string; rawDigest: string } => {
+    const dir = mkdtempSync(join(tmpdir(), 'atr-sarif-'));
+    tempDirs.push(dir);
+    const path = join(dir, name);
+    writeFileSync(path, bytes);
+    const rawDigest = createHash('sha256').update(readFileSync(path)).digest('hex');
+    return { path, rawDigest };
+  };
+
   const makeRule = (overrides: Partial<ATRRule> = {}): ATRRule => ({
     id: 'ATR-2026-00001',
     title: 'Direct Prompt Injection',
@@ -295,9 +316,10 @@ describe('SARIF Converter', () => {
   // The shared envelope profile (skil-lock#37 / SPEC 14.3) joins layers on the
   // artifact digest, so these four properties are an interop contract with the
   // drift and content layers rather than cosmetic output details.
-  it('emits the shared envelope profile: artifacts[], digest, index and layer', () => {
+  it('emits the shared envelope profile: artifacts[], raw-octet digest, index and layer', () => {
+    const { path, rawDigest } = writeTempSkill('# demo skill\nsome content\n');
     const sarif = scanResultToSARIF(
-      [makeScanResult({ input_file: 'skills/demo/SKILL.md', content_hash: 'a'.repeat(64) })],
+      [makeScanResult({ input_file: path, content_hash: 'a'.repeat(64) })],
       '1.0.0',
     ) as {
       runs: Array<{
@@ -316,27 +338,28 @@ describe('SARIF Converter', () => {
 
     const run = sarif.runs[0]!;
     expect(run.artifacts).toHaveLength(1);
-    expect(run.artifacts![0]!.location.uri).toBe('skills/demo/SKILL.md');
+    // Absolute path outside CWD is stripped to filename by toArtifactUri.
+    expect(run.artifacts![0]!.location.uri).toBe('SKILL.md');
     expect(run.artifacts![0]!.location.uriBaseId).toBe('%SRCROOT%');
-    expect(run.artifacts![0]!.hashes?.['sha-256']).toBe('a'.repeat(64));
+    // Join key is the raw-octet digest (== sha256sum of the file), NOT content_hash.
+    expect(run.artifacts![0]!.hashes?.['sha-256']).toBe(rawDigest);
 
     const result = run.results[0]!;
     expect(result.properties['layer']).toBe('atr');
-    // content_hash stays alongside the artifact digest so existing consumers keep working
+    // content_hash (UTF-8-decoded basis) stays for back-compat, distinct from the digest.
     expect(result.properties['content_hash']).toBe('a'.repeat(64));
     expect(result.locations[0]!.physicalLocation.artifactLocation.index).toBe(0);
   });
 
   it('indexes each scanned file separately and omits artifacts when no file is known', () => {
+    const a = writeTempSkill('alpha\n', 'a.md');
+    const b = writeTempSkill('beta\n', 'b.md');
     const twoFiles = scanResultToSARIF(
-      [
-        makeScanResult({ input_file: 'a/SKILL.md', content_hash: 'a'.repeat(64) }),
-        makeScanResult({ input_file: 'b/SKILL.md', content_hash: 'b'.repeat(64) }),
-      ],
+      [makeScanResult({ input_file: a.path }), makeScanResult({ input_file: b.path })],
       '1.0.0',
     ) as {
       runs: Array<{
-        artifacts?: unknown[];
+        artifacts?: Array<{ hashes?: Record<string, string> }>;
         results: Array<{
           locations: Array<{ physicalLocation: { artifactLocation: { index?: number } } }>;
         }>;
@@ -348,12 +371,46 @@ describe('SARIF Converter', () => {
         (r) => r.locations[0]!.physicalLocation.artifactLocation.index,
       ),
     ).toEqual([0, 1]);
+    // Each artifact carries its own file's raw digest.
+    expect(twoFiles.runs[0]!.artifacts![0]!.hashes?.['sha-256']).toBe(a.rawDigest);
+    expect(twoFiles.runs[0]!.artifacts![1]!.hashes?.['sha-256']).toBe(b.rawDigest);
 
     // A non-file scan (e.g. a raw event stream) has nothing to hash.
     const noFile = scanResultToSARIF([makeScanResult()], '1.0.0') as {
       runs: Array<{ artifacts?: unknown[] }>;
     };
     expect(noFile.runs[0]!.artifacts).toBeUndefined();
+  });
+
+  // Regression for the digest basis: the join key must be raw octets, so it stays
+  // correct on invalid UTF-8 / lone surrogates — where the UTF-8-decoded hash
+  // (content_hash) would diverge and silently break the cross-layer join.
+  // claude-code-skill-security-check#24 §2: "computed over the raw octets ...
+  // before any character decoding ... MUST equal sha256sum of that file."
+  it('digests raw octets, not the decoded string (invalid-UTF-8 regression)', () => {
+    // A lone 0x80 plus a WTF-8-encoded lone surrogate U+D800 (ED A0 80).
+    const bytes = Buffer.concat([
+      Buffer.from('# skill\ncontent '),
+      Buffer.from([0x80]),
+      Buffer.from(' more '),
+      Buffer.from([0xed, 0xa0, 0x80]),
+      Buffer.from('\n'),
+    ]);
+    const { path, rawDigest } = writeTempSkill(bytes, 'weird.md');
+    const decodedHash = createHash('sha256')
+      .update(readFileSync(path).toString('utf8'), 'utf8')
+      .digest('hex');
+    // Precondition: this fixture actually discriminates the two hash bases.
+    expect(rawDigest).not.toBe(decodedHash);
+
+    const sarif = scanResultToSARIF(
+      [makeScanResult({ input_file: path, content_hash: decodedHash })],
+      '1.0.0',
+    ) as { runs: Array<{ artifacts?: Array<{ hashes?: Record<string, string> }> }> };
+    const emitted = sarif.runs[0]!.artifacts![0]!.hashes?.['sha-256'];
+    // Envelope join key is raw octets (== sha256sum), never the decoded-string hash.
+    expect(emitted).toBe(rawDigest);
+    expect(emitted).not.toBe(decodedHash);
   });
 
   it('maps severity to SARIF levels correctly', () => {
