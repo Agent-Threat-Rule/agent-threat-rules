@@ -1,0 +1,121 @@
+name: Benign Corpus Harvest
+
+# Keeps the FP test surface ALIVE. The quality gate (maturity-fp-gate,
+# gate-promotion-fp.ts, promote-to-stable.ts) is only as honest as the benign
+# corpus it scans against. Rules are added DAILY (CVE ingest, garak-miss,
+# crystallize) but the benign corpus was frozen for weeks — arxiv/npm/pypi last
+# refreshed 2026-05-12, skills-sh 2026-06-30. A stale benign set means new
+# rules get promoted after passing an OLD surface and then FP on real-world
+# benign the gate never saw.
+#
+# This job re-runs scripts/build-benign-corpus.ts (which live-fetches arxiv
+# abstracts + npm/pypi package descriptions — text no ATR rule should ever fire
+# on) and opens a DRAFT PR with the newly-harvested benign samples.
+#
+# Safety posture (mirrors atd-ingest.yml):
+#   - NEVER auto-merges. Always a DRAFT PR; a human confirms the samples are
+#     genuinely benign before merge. This matters MORE than for rules: a
+#     poisoned "benign" sample would SUPPRESS the very rule that catches it
+#     (a benign sample can only ever remove a rule from the enforce lane).
+#     So provenance review is mandatory — source + source_id + fetched_at are
+#     recorded on every line for audit.
+#   - A run that adds nothing new on disk opens NO PR — build-benign-corpus.ts
+#     is idempotent (dedups by source_id), so a quiet week is the honest
+#     expected outcome, not a bug. This deliberately avoids the maturity-promote
+#     daily-no-op-PR anti-pattern.
+
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "Limit to one source: arxiv | npm | pypi (blank = all)"
+        required: false
+        default: ""
+      limit:
+        description: "Max new samples per source this run"
+        required: false
+        default: "300"
+      dry_run:
+        description: "Fetch + report but do not write, commit, or open a PR"
+        required: false
+        default: false
+        type: boolean
+  schedule:
+    - cron: "30 6 * * 0" # weekly, Sunday 06:30 UTC — benign sources evolve slowly
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: benign-corpus-harvest
+  cancel-in-progress: false
+
+jobs:
+  harvest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+
+      - name: Harvest benign samples (arxiv / npm / pypi)
+        id: harvest
+        run: |
+          set -eo pipefail
+          SRC='${{ inputs.source }}'
+          LIMIT='${{ inputs.limit || '300' }}'
+          ARGS=(--limit "$LIMIT")
+          if [ "${{ inputs.dry_run }}" != "true" ]; then
+            ARGS=(--write "${ARGS[@]}")
+          fi
+          [ -n "$SRC" ] && ARGS=("${ARGS[@]}" --source "$SRC")
+          # Exit 2 = one or more sources rate-limited (partial) — not fatal.
+          npx tsx scripts/build-benign-corpus.ts "${ARGS[@]}" || [ "$?" = "2" ]
+
+      - name: Stop on dry-run (not an error)
+        if: inputs.dry_run == true
+        run: echo "dry_run=true — fetched + reported, no write, no PR."
+
+      - name: Open review PR
+        if: inputs.dry_run != true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eo pipefail
+          # Only commit + PR if benign samples ACTUALLY changed on disk.
+          if git diff --quiet data/benign-corpus-extended/ 2>/dev/null && [ -z "$(git status --porcelain data/benign-corpus-extended/)" ]; then
+            echo "No new benign samples on disk; nothing to PR. Quiet week = expected."
+            exit 0
+          fi
+          DATE=$(date -u +%Y-%m-%d)
+          BRANCH="benign-corpus/$DATE"
+          # honest counts for the PR body
+          ADDED=$(git diff --numstat data/benign-corpus-extended/ | awk '{a+=$1} END {print a+0}')
+          git config user.name "ATR Corpus Bot"
+          git config user.email "corpus-bot@agentthreatrule.org"
+          git push origin --delete "$BRANCH" 2>/dev/null || true
+          git checkout -b "$BRANCH"
+          git add data/benign-corpus-extended/
+          git commit -m "chore(corpus): weekly benign harvest $DATE — +$ADDED samples (arxiv/npm/pypi)"
+          git push origin "$BRANCH"
+          {
+            echo "Weekly benign-corpus harvest for $DATE — +$ADDED new benign samples."
+            echo ""
+            echo "Source: scripts/build-benign-corpus.ts live-fetch of arxiv (cs.AI/cs.CR/cs.LG/cs.CL abstracts) + npm/pypi package descriptions. Each line records { text, source, source_id, fetched_at } for audit."
+            echo ""
+            echo "WHY THIS NEEDS HUMAN REVIEW: a benign sample can only ever REMOVE a rule from the enforce lane (if the rule FPs on it). A poisoned 'benign' sample would therefore suppress the rule that catches it. Skim the diff and confirm the harvested text is genuinely benign academic/package prose, not attack payloads mislabelled as benign, before merging."
+            echo ""
+            echo "Low-risk otherwise: this only broadens the FP test surface the maturity gate scans against — it adds no rules and blocks no traffic."
+          } > /tmp/corpus-pr-body.md
+          gh pr create \
+            --base main --head "$BRANCH" \
+            --title "chore(corpus): weekly benign harvest $DATE (+$ADDED samples)" \
+            --body-file /tmp/corpus-pr-body.md \
+            --label "needs-human-review" \
+            --draft
