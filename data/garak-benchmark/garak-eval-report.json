@@ -1,17 +1,17 @@
 {
   "benchmark": "NVIDIA Garak In-The-Wild Jailbreak Dataset",
   "source": "garak — data/test-corpora/garak-full/inthewild.json",
-  "date": "2026-07-13",
-  "atr_version": "3.5.8",
-  "rules_loaded": 749,
+  "date": "2026-07-28",
+  "atr_version": "3.5.11",
+  "rules_loaded": 768,
   "dataset": {
     "total_prompts": 650,
     "type": "100% malicious (real-world jailbreaks)"
   },
   "results": {
-    "detected": 622,
-    "missed": 28,
-    "recall": 95.7
+    "detected": 595,
+    "missed": 55,
+    "recall": 91.5
   },
   "by_severity": {
     "medium": 818,
@@ -109,5 +109,6 @@
       "severity": "high",
       "count": 62
     }
-  ]
+  ],
+  "note": "Re-measured on main (768 rules) 2026-07-28: 95.7%->91.5% — the earlier figure was inflated by an over-broad persona regex in ATR-2026-00001 that also false-positived on benign 'you are now an expert' prose; tightening it (PR #327) removed those FPs and, honestly, this recall. See garak-full-report.json."
 }
