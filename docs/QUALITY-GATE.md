@@ -32,6 +32,26 @@ npx tsx scripts/check-rules-safety.ts --base origin/main
 npx tsx scripts/check-rules-safety.ts --file proposals/red-team-probes/foo.proposal.yaml
 ```
 
+## Counting rules honestly
+
+Two numbers, both true, not interchangeable:
+
+| Number      | Means                                                 |
+| ----------- | ----------------------------------------------------- |
+| `total`     | rule files on disk                                     |
+| `effective` | rules the engine loads AND that can fire in some lane   |
+
+`inert = total - effective` is the rules with `status: draft` / `deprecated`
+(or `maturity: deprecated`). Quoting `total` as detection coverage overstates
+it by exactly `inert`. Both are computed by
+[`scripts/reconcile-rule-count.mjs`](../scripts/reconcile-rule-count.mjs) and
+published into `stats.json` / `data/stats.json`:
+
+```bash
+npm run count:rules      # print total / effective / inert / lane ceilings
+npm run reconcile-stats  # write them into both caches
+```
+
 ## The maturity ladder
 
 Passing the gate gets a rule into `rules/` at `maturity: experimental`.
