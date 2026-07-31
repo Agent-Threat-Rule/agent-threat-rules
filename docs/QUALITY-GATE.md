@@ -25,12 +25,20 @@ Implementation lives at [`scripts/check-rules-safety.ts`](../scripts/check-rules
 The script supports two modes:
 
 ```bash
-# CI mode: scan git diff for new rule files
+# CI mode: scan for new rule files (git diff vs base, PLUS uncommitted files on disk)
 npx tsx scripts/check-rules-safety.ts --base origin/main
 
 # Single-file mode: validate one proposal in isolation
 npx tsx scripts/check-rules-safety.ts --file proposals/red-team-probes/foo.proposal.yaml
 ```
+
+New-rule discovery is **not diff-only**. `git diff base...HEAD` sees committed
+files, and rules are routinely written into `rules/` and gated before any commit
+(`scripts/fn-mine-llm.ts` authors straight into the tree, then calls this gate).
+Those rules were invisible: the gate printed `0 new rule file(s) detected —
+nothing to check, treating as safe` and exited 0 while skipping all six checks.
+Discovery now unions the diff with `git ls-files --others --exclude-standard --
+rules/`, so a rule on disk is measured whether or not git has heard of it.
 
 ## The maturity ladder
 
