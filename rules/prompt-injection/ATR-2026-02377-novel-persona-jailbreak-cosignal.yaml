@@ -52,8 +52,8 @@ detection:
   conditions:
   - field: content
     operator: regex
-    value: (?i)\b(you\s+are\s+now|you'?re\s+now|you\s+have\s+become|your\s+name\s+is\s+now|you\s+now\s+go\s+by|you\s+are\s+no\s+longer|now\s+you\s+are|you\s+will\s+(?:now\s+)?act\s+as|you\s+must\s+pretend|going\s+to\s+pretend\s+to\s+be|play\s+the\s+role\s+of|pretend\s+to\s+be)\b
-    description: Persona/identity reassignment trigger (you are now / your name is now / you are no longer X / play the role of / pretend to be).
+    value: (?i)\b(?:you\s+are\s+now|you'?re\s+now|you\s+have\s+become|your\s+name\s+is\s+now|you\s+now\s+go\s+by|you\s+are\s+no\s+longer|now\s+you\s+are|you\s+will\s+(?:now\s+)?act\s+as|you\s+must\s+pretend|going\s+to\s+pretend\s+to\s+be|play\s+the\s+role\s+of|pretend\s+to\s+be)\s+(?:a\s+|an\s+|the\s+)?["']?[A-Za-z][A-Za-z0-9._-]*
+    description: Persona/identity reassignment trigger followed by an actual identity token (you are now TrueGPT / your name is now X / you are no longer ChatGPT / play the role of X / pretend to be X). The trailing identity token is required so that security documentation quoting the bare indicator string ("You are now...") does not match.
   - field: content
     operator: regex
     value: (?i)(unfiltered|uncensored|no\s+restrictions?\b|without\s+(?:any\s+)?(?:restrictions?|filters?|ethical|moral\s+(?:values|boundaries|constraints)|biases)|no\s+filter\b|never\s+refuses?\b|rules\s+(?:don'?t|do\s+not)\s+apply|(?:no|without|any)\s+content\s+polic|(?:doesn'?t|don'?t|do\s+not)\s+have\s+(?:any\s+)?content\s+polic|criminal\s+language\s+model|jailbroken|jailbreak\s+prompt|do\s+anything\s+now|\bDAN\s+(?:mode|prompt)\b|no\s+moral\s+boundaries|complete\s+freedom|incorrect\s+or\s+harmful|opposite\s+personalit|provide\s+.{0,30}(?:illegal|harmful)|promote\s+.{0,20}harmful)
