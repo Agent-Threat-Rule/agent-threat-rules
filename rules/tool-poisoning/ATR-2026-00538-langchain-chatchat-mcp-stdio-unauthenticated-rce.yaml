@@ -1,7 +1,7 @@
 title: "LangChain-ChatChat Unauthenticated MCP STDIO Server Configuration RCE (CVE-2026-30617)"
 id: ATR-2026-00538
-rule_version: 1
-status: draft
+rule_version: 2
+status: experimental
 description: >
   Detects CVE-2026-30617 (CVSS 8.6 HIGH, CWE-77): LangChain-ChatChat 0.3.1
   exposes an unauthenticated MCP management interface that allows any remote
@@ -128,10 +128,14 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)"command"\s*:\s*"(?:sh|bash|zsh|cmd\.exe|cmd|powershell|pwsh)"\s*[,}][^}]{0,300}"args"\s*:\s*\['
+      value: '(?i)"command"\s*:\s*"(?:/(?:usr/)?(?:local/)?bin/)?(?:sh|bash|zsh|cmd\.exe|cmd|powershell|pwsh)"\s*[,}][^}]{0,300}"args"\s*:\s*\[[^\]]{0,300}(?:&&|\|\||;\s|\$\(|`|/dev/tcp/|/tmp/|/var/tmp/|/dev/shm/|%TEMP%|rm\s+-rf|chmod\s+\+x|curl\s|wget\s|Invoke-(?:Expression|WebRequest|RestMethod)|DownloadString|DownloadFile|\bIEX\b|New-Object\s+Net\.|base64\s+-d|certutil|bitsadmin|nc\s+-e|python3?\s+-c|perl\s+-e|ruby\s+-e|node\s+-e|eval\s|\.(?:sh|ps1|bat|exe|py|pl)\b)'
       description: >
         MCP server config JSON where command is a shell binary (sh/bash/cmd/powershell)
-        — direct shell invocation via STDIO config, the CVE-2026-30617 root pattern
+        AND the args array carries an RCE primitive (shell metacharacter, remote
+        fetch-and-run, writable-temp payload path, encoded-command flag) — the
+        CVE-2026-30617 root pattern. The args-payload requirement is load-bearing:
+        `{"command":"cmd","args":["/c","npx","-y","<package>"]}` is the documented
+        Windows launcher idiom for legitimate MCP servers and must not fire.
 
     - field: content
       operator: regex

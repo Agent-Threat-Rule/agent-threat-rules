@@ -1,7 +1,7 @@
 title: Multi-Layer Security Audit Evasion
 id: ATR-2026-00085
-rule_version: 1
-status: draft
+rule_version: 2
+status: experimental
 description: >
   Detects prompt injection attempts specifically designed to bypass multi-layer audit and security systems. Attackers
   craft payloads that target known audit pipeline stages, attempt to disable or skip security checks, or manipulate
@@ -65,8 +65,12 @@ detection:
     - field: user_input
       operator: regex
       value: >-
-        (?i)\b(skip|bypass|disable|turn\s*off|deactivate)\s+.{0,20}(audit|security|safety|validation|verification|check|filter|layer|scan)\b
-      description: Explicit instruction to skip security audit layers
+        (?i)\b(skip|bypass|disable|turn\s*off|deactivate)\s+(all|the|any|every|this|these|those|our|your)\s+(?:the\s+|remaining\s+|further\s+)?(audit|security|safety|validation|verification|compliance|moderation|content|injection)\s+(layer|check|filter|gate|guard|control|scan|pipeline|stage|step)s?\b
+      description: >-
+        Explicit instruction to skip the agent's own security/audit layers. Requires a determiner ('all/the/any/…')
+        plus a two-word defence noun phrase ('audit layers', 'security filter', 'validation checks'). A bare
+        verb+noun ('skip validation', 'disable logging', 'bypass TLS verification') is ordinary engineering English
+        and is deliberately NOT matched.
     - field: user_input
       operator: regex
       value: >-
@@ -88,6 +92,10 @@ detection:
       IT administrator documenting a runbook that says 'to disable the audit logging temporarily, run the following
       command' in a legitimate ops guide
     - QA engineer writing a test plan stating 'verify the system does not allow users to bypass the validation layer'
+    - >-
+      Ordinary developer documentation using a bare verb+noun such as 'Skip validation', 'Skip input validation',
+      'bypass TLS certificate verification', 'Disable specific check' or '-ExecutionPolicy Bypass' — these are the
+      dominant benign shape, which is why condition 1 requires a determiner plus a two-word defence noun phrase
 response:
   actions:
     - block_input
