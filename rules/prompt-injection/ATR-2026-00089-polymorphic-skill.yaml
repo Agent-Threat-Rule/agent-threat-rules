@@ -1,7 +1,7 @@
 title: Polymorphic Skill and Capability Aliasing Attack
 id: ATR-2026-00089
-rule_version: 1
-status: draft
+rule_version: 2
+status: experimental
 description: >
   Detects injection attempts that use polymorphic techniques to disguise malicious capabilities under benign aliases.
   Attackers register or invoke tool functions using misleading names, redefine existing capability names, or use dynamic
@@ -80,13 +80,20 @@ detection:
     - field: user_input
       operator: regex
       value: >-
-        (?i)\b(dynamic|runtime|lazy|deferred|on.?demand)\s+(load|generat|compil|creat|build|assembl)\w*\s+.{0,20}(payload|code|function|script|skill)
-      description: Dynamic generation of code or payloads at runtime to evade static analysis
+        (?i)\b(dynamic|runtime|just.?in.?time)\s+(load|generat|compil|creat|build|assembl)\w*\s+.{0,20}(payload|code|function|script|skill)
+      description: >-
+        Dynamic generation of code or payloads at runtime to evade static analysis. 'lazy', 'deferred' and
+        'on-demand' were removed from the qualifier set: 'lazy loading ... code' is standard front-end performance
+        vocabulary (React/Angular bundle-splitting docs) and carries no evasion signal.
   condition: any
   false_positives:
     - Legitimate software development discussions about function refactoring
     - Developer documentation explaining how to remap keyboard shortcuts for IDE tool commands using configuration files
     - Software architecture discussion about lazy loading patterns for plugin capabilities in a modular system
+    - >-
+      Front-end performance guides describing 'lazy loading and code splitting' or 'Lazy load non-critical code' -
+      the only benign shape condition 4 was matching, which is why 'lazy'/'deferred'/'on-demand' are no longer
+      accepted qualifiers
 response:
   actions:
     - block_input
