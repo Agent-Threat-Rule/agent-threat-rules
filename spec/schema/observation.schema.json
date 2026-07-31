@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spec.agentthreatrule.org/observation/v1.0/schema.json",
+  "title": "ATR Observation v1.0",
+  "description": "Machine-readable schema for ATR observations — the input an engine ingests, as distinct from the detection events it emits (see event.schema.json). Normative spec at spec/atr-observation-v1.0.md. STATUS: PROPOSED, NOT RATIFIED. License: MIT.",
+  "type": "object",
+  "required": [
+    "@timestamp",
+    "observation.id",
+    "observation.kind",
+    "agent.id",
+    "session.id",
+    "outcome"
+  ],
+  "properties": {
+    "@timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339. Primary ordering key; ties broken by observation.id."
+    },
+    "observation.id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique within a stream. Deduplication and evidence-chain anchor."
+    },
+    "observation.kind": {
+      "type": "string",
+      "enum": [
+        "llm_io",
+        "tool_call",
+        "tool_response",
+        "mcp_exchange",
+        "multi_agent_comm",
+        "memory_access",
+        "skill_lifecycle",
+        "context_window",
+        "agent_behavior",
+        "network",
+        "file",
+        "process"
+      ],
+      "description": "Dimension this observation belongs to. The first nine align with agent_source.type in rule.schema.json. network, file and process are defined so that a deployment unable to observe them can declare the gap rather than return no_match."
+    },
+    "agent.id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "OTel GenAI: gen_ai.agent.id."
+    },
+    "session.id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "OTel GenAI: gen_ai.conversation.id. Required here although optional in the production AgentEvent interface: a correlation grouped by a field that may be absent is not a detection."
+    },
+    "outcome": {
+      "type": "string",
+      "enum": ["ok", "error", "denied", "refused", "timeout", "rate_limited"],
+      "description": "MUST NOT be collapsed to a boolean. denied (policy boundary), refused (model or guardrail), error (neither) and timeout carry different signal. See spec/atr-observation-v1.0.md section 3."
+    },
+    "delegation.root": {
+      "type": "string",
+      "minLength": 1,
+      "description": "RECOMMENDED. session.id of the originating session in a delegation chain; MUST equal session.id when the agent is not a delegate. Grouping by session.id alone is defeated by spawning a sub-agent, which usually receives a fresh session identifier."
+    },
+    "tool.name": { "type": "string" },
+    "tool.arguments": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Host-shaped. Not interpreted by this schema."
+    },
+    "target.host": {
+      "type": "string",
+      "description": "Canonicalised: lowercased, port removed. Shared across kinds so joins have one name for one concept."
+    },
+    "target.port": { "type": "integer", "minimum": 0, "maximum": 65535 },
+    "target.scheme": { "type": "string" },
+    "target.path": {
+      "type": "string",
+      "description": "Canonicalised: resolved, no trailing slash normalisation ambiguity."
+    },
+    "file.path": { "type": "string" },
+    "file.operation": {
+      "type": "string",
+      "enum": ["read", "write", "append", "delete", "rename", "chmod", "stat"]
+    },
+    "process.executable": { "type": "string" },
+    "process.argv": { "type": "array", "items": { "type": "string" } },
+    "bytes.out": { "type": "integer", "minimum": 0 },
+    "content": {
+      "type": "string",
+      "description": "Free text for kinds that carry it (llm_io, tool_response). Present for compatibility with the production AgentEvent projection; correlation MUST NOT join on it."
+    },
+    "consent": {
+      "type": "object",
+      "description": "Present when a human authorised this action. bound_to matters: an authorisation not bound to a specific target unlocks one action, not a window.",
+      "required": ["granted", "bound_to"],
+      "properties": {
+        "granted": { "type": "boolean" },
+        "bound_to": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Canonical target values this consent covers, e.g. a target.host. An empty array means unbound and MUST be treated as covering nothing."
+        },
+        "at": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "coverageDeclaration": {
+      "title": "ATR Observation coverage declaration",
+      "description": "Emitted by a host or engine to state which dimensions it can actually observe. Rules declaring requires_dimensions against an uncovered dimension MUST be reported not_evaluated, never no_match.",
+      "type": "object",
+      "required": ["atr.observation_spec_version", "covered_dimensions"],
+      "properties": {
+        "atr.observation_spec_version": { "type": "string", "const": "1.0" },
+        "covered_dimensions": {
+          "type": "array",
+          "items": { "$ref": "#/properties/observation.kind" },
+          "uniqueItems": true
+        },
+        "uncovered_dimensions": {
+          "type": "array",
+          "items": { "$ref": "#/properties/observation.kind" },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

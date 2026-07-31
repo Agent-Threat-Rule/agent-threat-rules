@@ -20,9 +20,13 @@ from __future__ import annotations
 
 import glob
 import importlib.util
+import json
 import os
 import re
+import shutil
+import subprocess
 import sys
+import tempfile
 
 import yaml
 
@@ -236,6 +240,82 @@ def test_whole_corpus_converts_without_crashing():
         except Exception as exc:  # noqa: BLE001
             failures.append(f"{path}: raised {exc!r}")
     assert not failures, "corpus conversion failures:\n" + "\n".join(failures[:20])
+
+
+def _re2_regexes(rel: str, dialect: str) -> tuple[list[str], bool]:
+    """Emitted regex patterns for one rule, plus whether it is tagged blocked."""
+    doc = _load_atr(rel)
+    sigma, _ = CONV.convert_rule(doc, _abs(rel), dialect)
+    blocked = "atr.portability.re2-blocked" in (sigma.get("tags") or [])
+    patterns = [
+        val
+        for key, sel in sigma["detection"].items()
+        if key != "condition" and isinstance(sel, dict)
+        for field, val in sel.items()
+        if "|re" in field and isinstance(val, str)
+    ]
+    return patterns, blocked
+
+
+def test_every_rule_carries_a_portability_tag():
+    """A consumer must be able to tell RE2-runnable from not, per rule."""
+    for rel in SAMPLE_RULES:
+        _, s, _, _, _ = _convert(rel)
+        marks = [t for t in s["tags"] if t.startswith("atr.portability.re2-")]
+        assert len(marks) == 1, f"{rel}: expected exactly one portability tag, got {marks}"
+
+
+def test_re2_dialect_rewrites_unicode_escapes():
+    """--regex-dialect re2 emits RE2's escape spelling; pcre leaves it alone."""
+    rel = "rules/prompt-injection/ATR-2026-00258-unicode-tag-injection.yaml"
+    pcre_pats, _ = _re2_regexes(rel, "pcre")
+    re2_pats, _ = _re2_regexes(rel, "re2")
+    assert any("\\u{E0000}" in p for p in pcre_pats), "pcre dialect should keep \\u{...}"
+    assert any("\\x{E0000}" in p for p in re2_pats), "re2 dialect should emit \\x{...}"
+    assert not any("\\u{" in p for p in re2_pats), "re2 dialect must not leave \\u{...} behind"
+
+
+def test_no_untagged_rule_fails_re2_compilation():
+    """The load-bearing guarantee: an RE2 backend that honours the
+    `atr.portability.re2-blocked` tag never hits a pattern it cannot compile.
+
+    A rule that fails to compile while advertising itself as runnable is the
+    exact silent failure this metadata exists to prevent, so it is asserted
+    against the real engine rather than against our own classifier.
+    """
+    if shutil.which("go") is None:
+        print("   (skipped: no Go toolchain for the RE2 oracle)", file=sys.stderr)
+        return
+    go_src = (
+        "package main\n"
+        'import ("encoding/json";"os";"regexp")\n'
+        "func main(){var in []string\n"
+        " if err:=json.NewDecoder(os.Stdin).Decode(&in);err!=nil{os.Exit(2)}\n"
+        " out:=make([]bool,0,len(in))\n"
+        " for _,p:=range in{_,err:=regexp.Compile(p);out=append(out,err==nil)}\n"
+        " json.NewEncoder(os.Stdout).Encode(out)}\n"
+    )
+    paths = sorted(glob.glob(os.path.join(REPO, "rules", "**", "*.yaml"), recursive=True))
+    flat: list[str] = []
+    owners: list[tuple[str, bool]] = []
+    for path in paths:
+        pats, blocked = _re2_regexes(os.path.relpath(path, REPO), "re2")
+        flat.extend(pats)
+        owners.extend((os.path.basename(path), blocked) for _ in pats)
+    with tempfile.TemporaryDirectory() as tmp:
+        src = os.path.join(tmp, "main.go")
+        with open(src, "w") as fh:
+            fh.write(go_src)
+        proc = subprocess.run(
+            ["go", "run", src], input=json.dumps(flat), capture_output=True, text=True
+        )
+        assert proc.returncode == 0, f"RE2 oracle failed: {proc.stderr[:300]}"
+        ok = json.loads(proc.stdout)
+    untagged = [owners[i][0] for i, good in enumerate(ok) if not good and not owners[i][1]]
+    assert not untagged, (
+        f"{len(untagged)} pattern(s) are rejected by RE2 on rules NOT tagged "
+        f"re2-blocked (silent failure): {sorted(set(untagged))[:10]}"
+    )
 
 
 def _run_standalone() -> int:
