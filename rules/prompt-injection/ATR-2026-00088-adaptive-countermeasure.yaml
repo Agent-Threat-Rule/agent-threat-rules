@@ -1,7 +1,7 @@
 title: Adaptive Countermeasure Against Behavioral Monitoring
 id: ATR-2026-00088
-rule_version: 1
-status: draft
+rule_version: 2
+status: experimental
 description: >
   Detects injection payloads that instruct an agent to actively counteract behavioral monitoring, drift detection, or
   anomaly scoring systems. These attacks direct the agent to suppress anomaly signals, reset behavioral baselines, or
@@ -72,16 +72,28 @@ detection:
       description: Instruction to reset behavioral monitoring data
     - field: user_input
       operator: regex
-      value: (?i)\b(suppress|hide|mask|conceal|silence)\s+.{0,20}(alert|alarm|warning|flag|anomal|signal|notification)
-      description: Instruction to suppress anomaly alerts
+      value: >-
+        (?i)\b(suppress|hide|mask|conceal|silence)\s+(all|every|any|each)\s+(?:the\s+)?(?:(anomaly|anomalies|drift|behaviou?ral|security|monitoring|detection|audit|risk)\s+)?(alert|alarm|warning|flag|signal|notification|event)s?\b
+      description: >-
+        Blanket instruction to suppress anomaly alerts. Requires an all/every/any quantifier: an unqualified
+        'suppress warnings', 'Silence Alerts', 'suppress Discord notifications' or 'never suppress secret scanning
+        alerts' is ordinary ops/build documentation.
     - field: user_input
       operator: regex
-      value: (?i)\b(report|return|send|output|emit)\s+.{0,20}(normal|healthy|clean|safe|no\s*anomal|all\s*clear|status\s*ok)
-      description: Instruction to falsify monitoring status reports
+      value: >-
+        (?i)\b(report|return|send|output|emit)\s+(?:only\s+|always\s+|a\s+|the\s+)*(normal|healthy|clean|safe|green|all[\s-]*clear|no\s*anomal\w*|status\s*ok)\s+(status|state|health|result|report|score|verdict|signal)\b|\b(report|return|send|output|emit)\s+(?:the\s+)?(status|health|state)\s+as\s+(normal|healthy|clean|safe|ok|all\s*clear)\b
+      description: >-
+        Instruction to falsify a monitoring status report. The adjective must actually qualify a status object
+        ('emit only healthy status', 'report status as normal'); 'return safe', 'return a clean report' and
+        'report a safety incident' are ordinary code and prose.
     - field: user_input
       operator: regex
-      value: (?i)\b(disable|stop|pause|halt|suspend|kill)\s+.{0,20}(monitor|log|track|audit|telemetry|observ)
-      description: Attempt to disable monitoring and logging systems
+      value: >-
+        (?i)\b(disable|stop|pause|halt|suspend|kill|turn\s*off)\s+(all|every|any)\s+(?:the\s+)?(monitor|logging|log|tracking|track|audit|auditing|telemetry|observability|alerting|detection)\w*\b
+      description: >-
+        Blanket instruction to disable monitoring and logging. Requires an all/every/any quantifier: scoped ops
+        language such as 'disable logging of thought information', 'stop monitoring the decommissioned cluster' or
+        'stop the audit' is legitimate and is deliberately NOT matched.
   condition: any
   false_positives:
     - Authorized system administrators performing legitimate monitoring resets
@@ -89,6 +101,11 @@ detection:
     - >-
       An SRE instructing a chatbot to 'stop monitoring the decommissioned server cluster' as part of infrastructure
       teardown
+    - >-
+      Build, ops and library documentation that says 'suppress warnings', 'Silence Alerts (Downtime)',
+      'disable logging of thought information', 'return safe' or 'return a clean report' - the dominant benign
+      shape, which is why conditions 2 and 4 require an all/every/any quantifier and condition 3 requires the
+      adjective to qualify a status object
 response:
   actions:
     - block_input

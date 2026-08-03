@@ -1,15 +1,16 @@
 title: "Agent goal drift after environmental pressure injection"
 id: ATR-2026-00552
-rule_version: 1
-status: draft
+rule_version: 2
+status: experimental
 description: >
-  Detects agent-goal-drift in an execution trace: the `agent.goal`
-  attribute changes between the agent's first span and a later span,
-  AND the change is preceded by a RETRIEVER or TOOL_RESPONSE span whose
-  content matches a pressure-injection pattern (deadline language,
-  authority-escalation, "you must now," instruction-override phrases).
-  Combines `invariant` and `forbid` primitives per
-  spec/atr-method-v1.1.md §8.
+  Detects agent-goal-drift in an execution trace: an AGENT span declares
+  `agent.goal_changed` (the goal it committed to at t=0 is no longer the
+  goal it is pursuing), and the change is preceded by a RETRIEVER or
+  TOOL_RESPONSE span whose content matches a pressure-injection pattern
+  (deadline language, authority-escalation, "you must now,"
+  instruction-override phrases). Expressed as two `forbid` primitives per
+  spec/atr-method-v1.1.md §8.3: the pressure-preceded composite (high
+  confidence) and the drift-only clause (medium confidence).
 
   Threat model: agents commit to a goal in their first reasoning span
   (often serialized as `agent.goal` or `task.objective`). Environmental
@@ -112,22 +113,31 @@ detection:
       directly into this rule's FPs. Legitimate deadline notices (e.g.,
       "Your subscription renews in 3 days" in a customer-support trace)
       may trigger the classifier. wild_fp_rate is reported at 0 for the
-      invariant clause only; the composite (invariant + forbid) rate is
-      classifier-dependent and operator-specific. Operators MUST
-      measure FP rate after deploying their classifier.
+      drift-only clause, which reads no classifier output; the
+      pressure-preceded composite rate is classifier-dependent and
+      operator-specific. Operators MUST measure FP rate after deploying
+      their classifier.
     - >
       Legitimate goal refinement vs goal drift: an agent may legitimately
       refine its goal across a long-running task (e.g., "summarize doc" →
-      "summarize doc and extract action items"). The rule treats any
-      change to agent.goal as drift unless attributes.agent.goal_refinement=true
-      is set on the changed span. Frameworks emitting refinement without
-      the explicit attribute will produce FPs. See TN #3 for the
-      conformant emission pattern.
+      "summarize doc and extract action items"). Both forbid shapes
+      require attributes.agent.goal_changed=true AND
+      attributes.agent.goal_refinement != true, so a framework that marks
+      refinement explicitly is not reported. A framework that emits
+      goal_changed=true for a refinement it never labels WILL produce an
+      FP. See TN #3 for the conformant emission pattern.
     - >
-      Single-AGENT-span traces produce no invariant signal. The rule is
-      vacuous on traces with one agent span (TN #4). This is not a FP
-      per se but an evaluation boundary that operators should be aware
-      of when measuring coverage.
+      Coverage boundary — emission dependency: this rule fires only on
+      the conformant attribute agent.goal_changed. A framework that
+      rewrites agent.goal silently, without emitting goal_changed, is not
+      detected. The earlier `invariant: agent.goal across trace` clause
+      was intended to cover exactly that case and was removed because it
+      is not expressible in the v1.1 invariant grammar (see the trace
+      block): `across: trace` compares every span in one group, and
+      spans that never carry agent.goal read as divergence, so the
+      clause violated on nearly every real trace. Closing this gap needs
+      a span-kind-scoped invariant in the method spec, not a rule edit.
+      Traces with a single AGENT span (TN #4) remain out of scope.
   conditions:
     - field: trace.composite_violation
       operator: regex
@@ -135,20 +145,17 @@ detection:
       description: >
         Synthetic field emitted by the trace engine when the composite
         primitive fires; trace-native engines evaluate detection.trace.
+        Both violation tokens are accepted so engines that emitted the
+        legacy invariant-style token keep interoperating.
   trace:
     ingest_format: openinference
-    invariant:
-      - attribute: "agent.goal"
-        across: "trace"
-        description: >
-          agent.goal SHOULD remain constant across the trace. Drift alone
-          fires this rule at medium confidence; combination with the
-          forbid pattern below escalates to high confidence.
     forbid:
       - shape:
           span.kind: "AGENT"
           attributes:
             agent.goal_changed: true
+            agent.goal_refinement:
+              not_equals: true
         preceded_by:
           one_of_shapes:
             - span.kind: "RETRIEVER"
@@ -159,13 +166,34 @@ detection:
                 content_contains_pressure_pattern: true
           within_trace: true
         description: >
-          A span where agent.goal_changed=true MUST NOT be preceded by a
-          RETRIEVER or TOOL_RESPONSE carrying a pressure pattern
-          (deadline, authority-override, role-switch instruction). The
-          preceded_by uses `one_of_shapes` (spec §8.3 disjunction) to
-          accept either span kind. Engines compute
+          HIGH-confidence composite. A span where agent.goal_changed=true
+          MUST NOT be preceded by a RETRIEVER or TOOL_RESPONSE carrying a
+          pressure pattern (deadline, authority-override, role-switch
+          instruction). The preceded_by uses `one_of_shapes` (spec §8.3
+          disjunction) to accept either span kind. Engines compute
           attributes.content_contains_pressure_pattern using a pre-
           registered classifier (Promptfoo-style judge or local model).
+          agent.goal_refinement is guarded so a framework that marks a
+          declared refinement cannot be reported as drift.
+      - shape:
+          span.kind: "AGENT"
+          attributes:
+            agent.goal_changed: true
+            agent.goal_refinement:
+              not_equals: true
+        description: >
+          MEDIUM-confidence drift-only clause: an AGENT span declaring
+          agent.goal_changed=true with no pressure-bearing predecessor.
+          This replaces the previous `invariant: agent.goal across trace`
+          clause, which was not expressible with the v1.1 invariant
+          grammar: `across: trace` puts EVERY span in one comparison
+          group, so any RETRIEVER / TOOL_RESPONSE / LLM span — none of
+          which ever carry agent.goal — read as a divergence from the
+          first AGENT span's goal, and the invariant had no way to see
+          agent.goal_refinement. The result was a violation on virtually
+          every real multi-span trace. Detection of drift therefore
+          requires the conformant emission of agent.goal_changed; see
+          false_positives for the coverage this trades away.
 
 response:
   actions:
@@ -179,9 +207,9 @@ response:
     at span {{trace.drift_span_id}}.
     {{#if trace.pressure_span_id}}Drift preceded by pressure-bearing
     {{trace.pressure_span.kind}} span {{trace.pressure_span_id}} —
-    confidence: HIGH (composite invariant + forbid){{else}}No
+    confidence: HIGH (pressure-preceded composite){{else}}No
     pressure-bearing predecessor span observed — confidence: MEDIUM
-    (invariant-only trigger; consider classifier coverage){{/if}}.
+    (drift-only clause; consider classifier coverage){{/if}}.
     Surface for human review; the agent's current behavior does not
     match its committed objective.
 

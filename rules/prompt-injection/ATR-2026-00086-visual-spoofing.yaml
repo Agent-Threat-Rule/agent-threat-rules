@@ -1,7 +1,7 @@
 title: Visual Spoofing via RTL Override, Punycode, and Homoglyph Injection
 id: ATR-2026-00086
-rule_version: 1
-status: draft
+rule_version: 2
+status: experimental
 description: >
   Detects injection attempts that use visual spoofing techniques including Right-to-Left (RTL) override characters,
   Punycode-encoded domains, and CJK or Cyrillic homoglyph substitution to disguise malicious payloads as benign text or
@@ -76,8 +76,13 @@ detection:
       description: Mixed Cyrillic and Latin characters (homoglyph attack)
     - field: user_input
       operator: regex
-      value: "[\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF][a-zA-Z]{2,}|[a-zA-Z]{2,}[\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF]"
-      description: CJK compatibility ideographs mixed with Latin text (homoglyph confusion)
+      value: "[\\uF900-\\uFAFF][a-zA-Z]{2,}|[a-zA-Z]{2,}[\\uF900-\\uFAFF]"
+      description: >-
+        CJK COMPATIBILITY ideographs (U+F900-U+FAFF) mixed with Latin text. These codepoints are canonically
+        equivalent to ordinary unified ideographs under NFC/NFKC, so a literal blocklist or logging layer sees a
+        different string than the renderer - that mismatch is the spoof. The CJK Unified ranges (U+3400-U+4DBF,
+        U+4E00-U+9FFF) are deliberately excluded: a unified ideograph next to Latin is standard bilingual technical
+        writing, not a homoglyph.
     - field: user_input
       operator: regex
       value: "[\\u0430\\u0435\\u043E\\u0440\\u0441\\u0443\\u0445]{2,}"
@@ -91,6 +96,10 @@ detection:
     - >-
       Software documentation discussing internationalized domain name (IDN) encoding with Punycode examples in technical
       specifications
+    - >-
+      Chinese/Japanese technical documentation that places a unified CJK ideograph directly beside a Latin token
+      (for example a Markdown or API term embedded in a Chinese sentence) - normal bilingual writing, which is why
+      condition 4 is scoped to CJK COMPATIBILITY ideographs only
 response:
   actions:
     - block_input
@@ -118,9 +127,14 @@ test_cases:
       description: >-
         Mixed Cyrillic (е=\u0435, с=\u0441) and Latin characters matching pattern [3] and pattern [5] - 'есurе' contains
         Cyrillic е followed by Latin s, and consecutive Cyrillic lookalikes
-    - input: Download the report from 研究results or see data分析here
+    - input: "Download the report from \uF901results or see data\uF902here"
       expected: triggered
-      description: CJK ideographs mixed with Latin text matching pattern [4] - 研究 (\u7814\u7A76) followed by 'results'
+      description: >-
+        CJK COMPATIBILITY ideographs mixed with Latin text, matching pattern [4] - U+F901 / U+F902 render
+        identically to the unified ideographs U+66F4 / U+8ECA but are distinct codepoints, so a byte-level
+        blocklist and the human reader disagree. This replaces an earlier test case that used UNIFIED CJK
+        ideographs next to Latin: that shape is ordinary bilingual technical prose - it occurs in 42 samples of
+        the benign corpus - so matching it detected the Chinese language, not a visual-spoofing attack.
   true_negatives:
     - input: We support internationalization with proper Unicode handling
       expected: not_triggered
