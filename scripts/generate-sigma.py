@@ -217,6 +217,16 @@ def strip_leading_i_flag(pattern: str) -> tuple[str, bool]:
 # unrunnable from the rule itself instead of from a compile error.
 
 RE2_MAX_REPEAT = 1000
+
+# The one blocker that --regex-dialect re2 removes by itself. Named rather than
+# inlined because the end-of-run summary decides what "would unlock" means by
+# comparing against it: if the two spellings drift apart, the summary silently
+# starts counting zero, and a downstream RE2 consumer goes on believing the
+# corpus is less portable than it is.
+SPELLING_BLOCKER = (
+    "JS-style \\uXXXX / (?<name> spelling; RE2 needs \\x{XXXX} / (?P<name> "
+    "(re-run with --regex-dialect re2)"
+)
 _HEX4_RE = re.compile(r"[0-9a-fA-F]{4}")
 _BRACED_HEX_RE = re.compile(r"\{([0-9a-fA-F]{1,6})\}")
 _GROUP_NAME_RE = re.compile(r"([A-Za-z_][A-Za-z0-9_]*)>")
@@ -394,10 +404,7 @@ def emit_for_dialect(pattern: str, regex_dialect: str) -> tuple[str, list[str]]:
             out = out[:start] + replacement + out[end:]
         return out, blockers
     if rewrites:
-        blockers = blockers + [
-            "JS-style \\uXXXX / (?<name> spelling; RE2 needs \\x{XXXX} / (?P<name> "
-            "(re-run with --regex-dialect re2)"
-        ]
+        blockers = blockers + [SPELLING_BLOCKER]
     return pattern, blockers
 
 
@@ -667,6 +674,37 @@ def out_filename(atr_id: str, source_path: str) -> str:
     return f"{base}.sigma.yml"
 
 
+def rules_unlocked_by_re2_dialect(
+    blocked_rules: list[dict], regex_dialect: str, divergences: dict
+) -> list[str]:
+    """Rule ids that --regex-dialect re2 would move from blocked to runnable.
+
+    A rule qualifies only when escape spelling is its ONLY blocker: a rule that
+    also uses lookaround or a backreference stays blocked in either dialect,
+    and reporting it here would promise a downstream RE2 backend rules it still
+    cannot run.
+
+    Rules with a MEASURED divergence are excluded even though their only static
+    blocker is the spelling. Those are the ones whose rewrite compiles under RE2
+    and then matches a different language; the divergence warning is attached
+    under --regex-dialect re2 only (under pcre they are already blocked for the
+    earlier reason), so counting reasons alone would quietly over-promise by
+    exactly that set. Excluding them is what keeps this number equal to what
+    a real re2-dialect run produces.
+
+    Returns [] under --regex-dialect re2: there is nothing left to advertise.
+    """
+    if regex_dialect != "pcre":
+        return []
+    return [
+        r["id"]
+        for r in blocked_rules
+        if r["reasons"]
+        and all(reason == SPELLING_BLOCKER for reason in r["reasons"])
+        and not divergences.get(str(r["id"]))
+    ]
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Convert ATR YAML rules to Sigma format.")
     parser.add_argument("--rule", action="append", default=[], help="path to a single ATR rule YAML (repeatable)")
@@ -732,6 +770,7 @@ def main() -> int:
 
     portable = converted - len(blocked_rules)
     coverage = (portable / converted * 100.0) if converted else 0.0
+    would_unlock = rules_unlocked_by_re2_dialect(blocked_rules, args.regex_dialect, divergences)
     if args.portability_report:
         with open(args.portability_report, "w") as fh:
             json.dump(
@@ -741,6 +780,7 @@ def main() -> int:
                     "re2_portable": portable,
                     "re2_blocked": len(blocked_rules),
                     "re2_coverage_pct": round(coverage, 2),
+                    "would_unlock_with_re2_dialect": would_unlock,
                     "blocked": blocked_rules,
                 },
                 fh,
@@ -759,6 +799,13 @@ def main() -> int:
         f"({coverage:.1f}%); {len(blocked_rules)} tagged atr.portability.re2-blocked.",
         file=sys.stderr,
     )
+    if would_unlock:
+        print(
+            f"  {len(would_unlock)} of those {len(blocked_rules)} are blocked only by escape "
+            f"spelling: re-run with --regex-dialect re2 to make them runnable "
+            f"({portable + len(would_unlock)}/{converted}).",
+            file=sys.stderr,
+        )
     return 0
 
 
