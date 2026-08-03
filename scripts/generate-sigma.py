@@ -523,7 +523,16 @@ def convert_rule(
     fields_used = [f for f in fields_used if f]
     category = None
     if fields_used:
-        primary = max(set(fields_used), key=fields_used.count)
+        # dict.fromkeys, not set(): `max` walks the container, so on a tie the
+        # winner is whichever element the iteration reaches first. A set of
+        # strings iterates in an order that depends on per-process hash
+        # randomisation, so a rule whose top two surfaces tie -- 13 rules in the
+        # corpus today, e.g. tool_args vs user_input -- would emit a different
+        # logsource.category on different runs of the same code against the same
+        # rule. That is phantom churn for any consumer diffing the export.
+        # Insertion-ordered dedupe breaks the tie by first appearance in the
+        # rule, which is both stable and the rule author's own ordering.
+        primary = max(dict.fromkeys(fields_used), key=fields_used.count)
         category = FIELD_TO_CATEGORY.get(primary)
         if category is None:
             category = "ai_agent_other"

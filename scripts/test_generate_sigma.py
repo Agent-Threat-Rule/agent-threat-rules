@@ -343,6 +343,35 @@ def test_would_unlock_matches_a_real_re2_dialect_run():
     finally:
         shutil.rmtree(out, ignore_errors=True)
 
+def test_logsource_category_is_stable_across_processes():
+    """The same rule must convert to the same logsource.category every run.
+
+    `max()` walks its container, so a tie is decided by iteration order. Over a
+    set of strings that order depends on per-process hash randomisation, which
+    made rules whose top two detection surfaces tie (tool_args vs user_input and
+    friends) emit a different category on different runs of identical code.
+    Downstream consumers diff these exports, so the churn looks like a rule
+    change that never happened.
+
+    Asserted across separate interpreters with different PYTHONHASHSEEDs,
+    because within one process the order is already fixed.
+    """
+    tied = "rules/prompt-injection/ATR-2026-00395-llm-special-token-boundary-injection.yaml"
+    if not os.path.exists(_abs(tied)):
+        print(f"   (skipped: {tied} no longer in corpus)", file=sys.stderr)
+        return
+    seen = set()
+    for seed in ("0", "1", "42", "12345"):
+        env = dict(os.environ, PYTHONHASHSEED=seed)
+        proc = subprocess.run(
+            [sys.executable, os.path.join(REPO, "scripts", "generate-sigma.py"),
+             "--rule", _abs(tied), "--stdout", "--quiet"],
+            cwd=REPO, check=True, capture_output=True, text=True, env=env,
+        )
+        doc = yaml.safe_load(proc.stdout)
+        seen.add(doc["logsource"].get("category"))
+    assert len(seen) == 1, f"logsource.category varies with PYTHONHASHSEED: {sorted(seen)}"
+
 
 def test_no_untagged_rule_fails_re2_compilation():
     """The load-bearing guarantee: an RE2 backend that honours the
