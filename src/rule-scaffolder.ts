@@ -409,7 +409,12 @@ export class RuleScaffolder {
       title: input.title,
       id,
       schema_version: this.options.schemaVersion,
-      status: 'draft',
+      // NOT 'draft'. The engine skips status draft/deprecated in both
+      // evaluation paths, before the lane gate, so a scaffolded rule would fire
+      // in no lane at all and its author would never be told. Immaturity is
+      // expressed by `maturity: draft` below, which the lane gate honours
+      // (hunt-only, never enforce/alert) while leaving the rule alive.
+      status: 'experimental',
       description: input.attackDescription,
       author: this.options.author,
       date,
@@ -557,7 +562,9 @@ export class RuleScaffolder {
       title: input.title,
       id,
       schema_version: this.options.schemaVersion,
-      status: 'draft',
+      // See the note on the pattern scaffold: `status: draft` makes the rule
+      // invisible to the engine entirely. Immaturity belongs in `maturity`.
+      status: 'experimental',
       description: buildDescription(input.attackDescription, input.notDetectedDescription),
       author: this.options.author,
       date,

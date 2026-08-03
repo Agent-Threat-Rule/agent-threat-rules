@@ -69,7 +69,11 @@ describe('RuleScaffolder semantic generation', () => {
     const semantic = detection['semantic'] as Record<string, unknown>;
 
     expect(rule['id']).toMatch(/^ATR-\d{4}-\d{5}$/);
-    expect(rule['status']).toBe('draft');
+    // Scaffolded rules must be ALIVE but immature. `status: draft` is skipped by
+    // the engine in every lane (src/engine.ts drops draft before the lane gate),
+    // so scaffolding one produced a rule that could never fire and never said
+    // so. Immaturity is carried by `maturity: draft` — hunt lane only.
+    expect(rule['status']).toBe('experimental');
     expect(rule['maturity']).toBe('draft');
     expect(rule['detection_tier']).toBe('semantic');
     expect(rule['description']).toContain('Detects:');

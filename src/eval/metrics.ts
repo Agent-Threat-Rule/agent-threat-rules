@@ -176,10 +176,18 @@ export interface RegressionCheck {
    * faster than main. Gating correctness on it made a real recall regression
    * and a noisy neighbour indistinguishable, which devalues both signals.
    *
-   * The genuinely dangerous latency case — catastrophic backtracking — is
-   * caught structurally and deterministically by the ReDoS gate
-   * (tests/redos-safety.test.ts), so demoting this check loses no real
-   * protection.
+   * What actually guards the dangerous case is scripts/gate-rule-latency.ts,
+   * which measures every rule against a cohort of rules fixed by the baseline
+   * and timed in the same profiling pass, so runner speed cancels out of the
+   * metric instead of being tolerated.
+   *
+   * This comment previously claimed the ReDoS gate caught catastrophic
+   * backtracking "structurally and deterministically", so that demoting the
+   * latency check lost no protection. That was measurably wrong and is recorded
+   * here rather than deleted: isReDoSSafe() in src/engine.ts deliberately
+   * permits a bounded outer quantifier around an unbounded inner one, and
+   * `^(?:[a-z]+\s*){0,8}ZQXKFJ$` — which it accepts — takes 9.8 seconds on a
+   * single 61-character input.
    */
   readonly perfWarnings: readonly string[];
 }

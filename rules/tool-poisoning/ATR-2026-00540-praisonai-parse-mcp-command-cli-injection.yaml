@@ -1,7 +1,7 @@
 title: "PraisonAI parse_mcp_command() CLI Argument Command Injection (CVE-2026-34935)"
 id: ATR-2026-00540
-rule_version: 1
-status: draft
+rule_version: 2
+status: experimental
 description: >
   Detects CVE-2026-34935 (CVSS ~9.8 CRITICAL, CWE-78 / GHSA-9qhq-v63v-fv3j):
   PraisonAI 4.5.15–4.5.68 passes the --mcp CLI argument directly to
@@ -121,10 +121,13 @@ detection:
 
     - field: content
       operator: regex
-      value: '(?i)--mcp\s+["\x27]?[^"\x27\n]{0,100}(?:&&|\|\||\||;|`|\$\()'
+      value: '(?i)--mcp[ \t]+["\x27]?[^"\x27\n]{0,100}(?:&&|\|\||\||;|`|\$\()'
       description: >
         --mcp argument containing shell metacharacters (&&, ||, pipe, semicolon,
-        backtick, subshell) — command chaining / injection surface
+        backtick, subshell) — command chaining / injection surface. The separator
+        is horizontal whitespace only: `\s+` let the match run past the end of the
+        command line and pick up the next line's markdown fence, so any document
+        ending a shell block with `--mcp` immediately before ``` scored a hit.
 
     - field: content
       operator: regex

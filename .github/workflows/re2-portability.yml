@@ -1,0 +1,149 @@
+name: RE2 portability
+
+# Downstream consumers compile ATR detection regexes with RE2-family engines
+# (Go `regexp`, Rust `regex`, and every Sigma backend built on them). RE2 is a
+# finite-automaton engine: it rejects lookaround, backreferences, atomic groups
+# and possessive quantifiers outright, spells \uXXXX as \x{XXXX}, and caps
+# repeat bounds at 1000. A rule using those constructs is silently dropped by
+# the consumer -- scripts/generate-sigma.py copies regexes through verbatim and
+# never compiles them, so a broken rule exports "successfully" and only fails
+# once someone downstream feeds it to a real RE2 backend.
+#
+# This gate is a RATCHET, not a hard gate. Part of the corpus predates the
+# requirement, and most of that debt needs a genuine refactor (lookaround has
+# no RE2 spelling). Failing every PR until the backlog clears would stop all
+# rule work, so -- exactly like maturity-fp-gate.yml -- this blocks NEW damage
+# and lets the existing backlog drain on its own schedule. The accepted
+# exceptions live in data/re2-portability-baseline.json.
+#
+# It runs on push to main as well as on PRs, and compares the WHOLE corpus
+# rather than a PR diff, because rules also land here through doors that never
+# open a pull request (the CVE collector and auto-crystallize commit straight
+# to main). A diff-scoped gate cannot see those.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "rules/**"
+      - "data/re2-portability-baseline.json"
+      - "scripts/audit-re2-portability.ts"
+      - "scripts/gate-re2-portability.ts"
+      - "scripts/verify-re2-equivalence.ts"
+      - "data/re2-equivalence.json"
+      - ".github/workflows/re2-portability.yml"
+  push:
+    branches: [main]
+    paths:
+      - "rules/**"
+      - "data/re2-portability-baseline.json"
+      - "scripts/audit-re2-portability.ts"
+      - "scripts/gate-re2-portability.ts"
+      - "scripts/verify-re2-equivalence.ts"
+      - "data/re2-equivalence.json"
+
+permissions:
+  contents: read
+
+jobs:
+  re2-portability:
+    name: Rule regexes must stay RE2 portable
+    runs-on: ubuntu-latest
+    steps:
+      # No fetch-depth: 0 -- the gate compares against a committed baseline,
+      # not against a base ref, so a shallow checkout is enough.
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+
+      # Go ships preinstalled on ubuntu-latest, but pin it explicitly: the
+      # oracle below is the only thing that makes this gate trustworthy, and it
+      # should not depend on an undeclared property of the runner image.
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+          cache: false
+
+      - name: Install dependencies
+        run: npm ci
+
+      # --verify-re2 compiles every pattern with Go's regexp package, which IS
+      # RE2, so the verdict is measured rather than inferred from a hand-written
+      # scanner. That distinction is not academic: the scanner had two real
+      # blind spots that only this oracle caught.
+      - name: Audit rule regexes against RE2
+        run: npx tsx scripts/audit-re2-portability.ts --json --verify-re2 > re2-audit.json
+
+      # Fails when a rule outside the baseline is not RE2 portable, when a
+      # baselined rule gets worse, or when the scanner and real RE2 disagree.
+      # --require-oracle makes a missing Go toolchain an error rather than a
+      # silent downgrade to static analysis, so a PASS always means "real RE2
+      # compiled every pattern". Exit 1 means an author must act; exit 2 means
+      # the gate could not run.
+      - name: Portability ratchet
+        run: npx tsx scripts/gate-re2-portability.ts --audit re2-audit.json --require-oracle
+
+      # data/re2-equivalence.json records which mechanically-rewritten patterns
+      # actually reproduce their original match vector under RE2, and
+      # scripts/generate-sigma.py tags atr.portability.* from it. A stale file
+      # therefore mislabels a rule as runnable when it is not -- the exact
+      # silent failure this workflow exists to prevent -- so recompute it and
+      # require the committed copy to still describe the same rules.
+      #
+      # Compare the TAGGING VERDICT only: which rule, at which condition, for
+      # which cause. That is precisely what generate-sigma.py reads to choose
+      # between atr.portability.re2-ok and re2-blocked, so it is the only part
+      # whose staleness can mislabel a rule.
+      #
+      # Deliberately NOT compared: generatedAt, and the battery magnitudes
+      # (`inputs`, `mismatches`, the `examples` indices). The input battery is
+      # built from every test_cases entry in the WHOLE corpus
+      # (verify-re2-equivalence.ts loadCorpusTestInputs), so adding a single
+      # rule shifts those numbers on every entry while changing nothing about
+      # which rule is portable. Diffing them would red-flag every rule PR and
+      # every auto-crystallize push to main -- a gate that cries wolf on normal
+      # work gets ignored or removed, and then the real mislabel walks through.
+      - name: Equivalence artifact is current
+        run: |
+          npx tsx scripts/verify-re2-equivalence.ts \
+            --write-equivalence /tmp/re2-equivalence.fresh.json > /dev/null || true
+          python3 - <<'PY'
+          import json, sys
+          def load(p):
+              with open(p, encoding="utf-8") as fh:
+                  return json.load(fh)
+          def tagging_verdict(d):
+              return {
+                  rule_id: sorted(
+                      [entry.get("location", ""), sorted(entry.get("causes", []))]
+                      for entry in entries
+                  )
+                  for rule_id, entries in d.get("divergentRules", {}).items()
+              }
+          committed, fresh = load("data/re2-equivalence.json"), load("/tmp/re2-equivalence.fresh.json")
+          want, got = tagging_verdict(committed), tagging_verdict(fresh)
+          if want != got:
+              print("data/re2-equivalence.json is stale. Regenerate and commit:")
+              print("  npx tsx scripts/verify-re2-equivalence.ts --write-equivalence data/re2-equivalence.json")
+              for rule_id in sorted(set(want) | set(got)):
+                  if want.get(rule_id) != got.get(rule_id):
+                      print(f"  {rule_id}: committed={want.get(rule_id)} actual={got.get(rule_id)}")
+              sys.exit(1)
+          print(
+              "equivalence artifact current: "
+              f"{fresh.get('re2Equivalent')}/{fresh.get('patternsRewritten')} rewritten patterns "
+              f"verified portable, {len(got)} rule(s) measured divergent under RE2"
+          )
+          PY
+
+      # The full report, including every accepted exception, so a failing run
+      # can be diagnosed without re-running the audit locally.
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: re2-portability-audit
+          path: re2-audit.json
+          retention-days: 14
