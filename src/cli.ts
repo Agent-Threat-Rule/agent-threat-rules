@@ -464,7 +464,26 @@ function buildEventFromTestCase(
   // Always set tool_name (even empty) to prevent engine fallback
   // from using event.content as tool_name for tool_call events
   fields['tool_name'] = toolName;
-  if (toolArgs) fields['tool_args'] = toolArgs;
+  // Production ALWAYS populates tool_args: src/hook-handler.ts builds
+  // `tool_args: JSON.stringify(toolInput)` for BOTH the PreToolUse (tool_call)
+  // and the PostToolUse (tool_response) event. The engine resolves this field as
+  // `event.fields.tool_args ?? (event.type === 'tool_call' ? event.content :
+  // undefined)` (src/engine.ts resolveField), so a test case that supplies only
+  // a plain `input:` string leaves tool_args unresolvable on every non-tool_call
+  // event and EVERY `field: tool_args` condition silently evaluates to false.
+  // The rule then reports not_triggered on its own documented attack while
+  // detecting it correctly in production — a harness defect that reads exactly
+  // like a broken rule and invites weakening a rule that is right. 40 rules
+  // declare `field: tool_args`.
+  // This is the test-case-runner twin of the measurement-shape defect that
+  // scripts/lib/corpus-event.ts fixed for the FP gate: a true positive must be
+  // exercised on the same shape the benign corpus is charged against.
+  // Deliberately narrower than that harness's wide shape: only the INPUT string
+  // is offered as tool_args. A `tool_response:` test case asserts what a tool
+  // RETURNED, which is not an argument, so pouring it into tool_args would let a
+  // tool_args layer pass a TP for the wrong reason.
+  const toolArgsValue = toolArgs || input;
+  if (toolArgsValue) fields['tool_args'] = toolArgsValue;
 
   // For content-based rules, set content and agent_message fields
   fields['content'] = content;
