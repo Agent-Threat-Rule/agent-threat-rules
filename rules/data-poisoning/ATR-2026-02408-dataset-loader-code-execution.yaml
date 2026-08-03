@@ -216,7 +216,7 @@ detection:
     # repeat stays linear (ReDoS gate).
     - field: tool_args
       operator: regex
-      value: '(?i)(?:\b(?:vllm|sglang|text-generation-launcher|lm[_-]eval|tgi|accelerate\s+launch|torchrun|python\s+-m\s+[\w.]{1,40})\b(?:[^\n\\]|\\\\\\n|\\\n|\\[^\nn\\]){0,300}?--trust[-_]remote[-_]code\b|--trust[-_]remote[-_]code\b(?:[^\n\\]|\\\\\\n|\\\n|\\[^\nn\\]){0,300}?--(?:model|model[-_]id|model[-_]args|tasks|served[-_]model[-_]name|dataset)\b)'
+      value: '(?i)(?:\b(?:vllm|sglang|text-generation-launcher|lm[_-]eval|tgi|accelerate\s+launch|torchrun|python\s+-m\s+[\w.]{1,40})\b(?:[^\n\\`]|\\\\\\n|\\\n|\\[^\nn\\]){0,300}?--trust[-_]remote[-_]code\b|--trust[-_]remote[-_]code\b(?:[^\n\\`]|\\\\\\n|\\\n|\\[^\nn\\]){0,300}?--(?:model|model[-_]id|model[-_]args|tasks|served[-_]model[-_]name|dataset)\b)'
       description: "Serving or evaluation runtime launched with --trust-remote-code - the loaded repository is authorised to execute its own Python inside the worker process"
 
     # -- Layer 6 (secondary): content instructing suppression of the trust gate --
