@@ -60,7 +60,8 @@
  *   also carrying 10 CPU hogs, which made it 1.68x slower by the denominator --
  *   per-rule relCost spread (max/min) was p50 1.122, p90 1.281, p99 1.456, max
  *   1.776. Restricted to the 22 rules at or above 5x, the ones that can actually
- *   fail: max 1.316. Every threshold below is sized against those figures.
+ *   fail: max 1.316. Every threshold in scripts/lib/rule-latency-thresholds.ts
+ *   is sized against those figures, beside the measurement it came from.
  *
  *   ARCHITECTURE, though, is not noise, and it is bigger than expected. The same
  *   corpus profiled 30.9x for ATR-2026-00001 on arm64 macOS and 47.5x on the
