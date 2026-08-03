@@ -22,18 +22,27 @@ name: Rule latency
 # rules that land here every day cannot dilute the denominator and lift everyone
 # else's number with them.
 #
-# It runs on push to main as well as on PRs, and compares the WHOLE corpus rather
-# than a PR diff, because rules also land here through doors that never open a
-# pull request (the CVE collector and auto-crystallize commit straight to main).
-# A diff-scoped gate cannot see those. On push it files an issue instead of
-# failing the run: the only fix for a legitimately expensive rule is an edit to
-# data/rule-latency-baseline.json, which CODEOWNERS routes to the TSC, so a hard
-# failure there would leave main red waiting on a human while every later push
-# inherits the same red. On pull requests it is a hard gate, which is where a
-# human is already in the loop.
+# It MEASURES the whole corpus on both PRs and pushes to main, because rules also
+# land here through doors that never open a pull request -- the CVE collector and
+# auto-crystallize commit straight to main -- and a diff-scoped measurement
+# cannot see those. What differs is who is held responsible for the result.
 #
-# Ratchet, not hard gate: the rules already above the fail floor are recorded in
-# data/rule-latency-baseline.json as existing debt, exactly as
+# On a pull request, --changed-since limits FAILURE to rules the diff touched.
+# Everything else prints under PRE-EXISTING. Without that, one expensive rule
+# merged by someone else reddens every later rules PR, which is the same
+# content-independent failure this job replaces, sourced from a neighbour instead
+# of from a busy runner. It is not hypothetical: this job's first run found
+# ATR-2026-02300 at 288x, merged in #321.
+#
+# On push to main there is no author to charge, so it files an issue rather than
+# failing: the only fix for a legitimately expensive rule is an edit to
+# data/rule-latency-baseline.json, which CODEOWNERS routes to the TSC, and a hard
+# failure would leave main red waiting on a human while every later push inherits
+# the same red.
+#
+# Ratchet, not hard gate: rules already above the fail floor are recorded in
+# data/rule-latency-baseline.json as existing debt -- and reprinted on every run
+# under ACCEPTED DEBT, so the register cannot become a hiding place -- exactly as
 # re2-portability.yml handles lookaround debt. This blocks NEW damage.
 #
 # KNOWN GAP: main is not a protected branch and this job is not a required
@@ -53,8 +62,9 @@ on:
       - "src/quality/rule-contract.ts"
       - "data/rule-latency-baseline.json"
       - "scripts/gate-rule-latency.ts"
-      - "scripts/lib/rule-latency-profile.ts"
-      - "tests/gate-rule-latency.test.ts"
+      - "scripts/lib/rule-latency-*.ts"
+      - "tests/gate-rule-latency*.test.ts"
+      - "tests/rule-latency-fixtures.ts"
       # A dependency or engine-version bump moves every timing in the profile.
       - "package-lock.json"
       - ".github/workflows/rule-latency.yml"
@@ -67,7 +77,7 @@ on:
       - "src/quality/rule-contract.ts"
       - "data/rule-latency-baseline.json"
       - "scripts/gate-rule-latency.ts"
-      - "scripts/lib/rule-latency-profile.ts"
+      - "scripts/lib/rule-latency-*.ts"
       - "package-lock.json"
 
 permissions:
@@ -116,11 +126,6 @@ jobs:
       # baseline's anchor cohort having been culled: cutting either is the
       # cheapest way to make a pathological rule stop showing up, so it must
       # read as broken, never as green.
-      # --changed-since scopes which regressions may FAIL this run to the rules
-      # the pull request actually touched. The measurement is still corpus-wide
-      # and everything else is printed under PRE-EXISTING: a pull request must
-      # not go red for a rule someone else merged, which is the same
-      # content-independent failure this gate replaces.
       - name: Per-rule cost ratchet
         if: github.event_name == 'pull_request'
         run: npx tsx scripts/gate-rule-latency.ts --write-profile rule-latency-profile.json --changed-since origin/${{ github.base_ref }}
