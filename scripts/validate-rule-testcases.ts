@@ -13,6 +13,18 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const RULES_DIR = join(REPO_ROOT, "rules");
 const RULE_ID = process.argv[2] || "ATR-2026-00010";
 
+/**
+ * Canonical WIDE shape. The four-field form this script used to build
+ * ({tool_name, tool_input, tool_response, user_input}) resolves NONE of
+ * tool_args / agent_output / agent_message / tool_description, so every
+ * condition on those fields silently evaluated to false and the rule could not
+ * fire on its own declared true_positive — a harness defect that is
+ * indistinguishable, in the output, from a broken rule. Widened to match the
+ * shape scripts/lib/corpus-event.ts blessed for the FP gate, so that a true
+ * positive is exercised on the same shape the benign corpus is charged against.
+ * tool_name stays pinned to a short constant: production tool_name is an
+ * identifier, not a document, and pouring sample text in fabricates FPs.
+ */
 function asTextEvent(content: string): AgentEvent {
   return {
     type: "mcp_exchange",
@@ -23,6 +35,11 @@ function asTextEvent(content: string): AgentEvent {
       tool_input: content,
       tool_response: content,
       user_input: content,
+      agent_output: content,
+      agent_message: content,
+      tool_description: content,
+      tool_args: content,
+      content,
     },
   };
 }

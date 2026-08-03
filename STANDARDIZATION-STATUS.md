@@ -35,7 +35,8 @@ of those interfaces have changed**. Continue as before.
 | **New event format spec** | `spec/atr-event-v1.0.md` | **PROPOSED** | Target event format. **Current engine does NOT yet emit this format.** Do not migrate your SIEM ingestion yet. |
 | **New language detection spec** | `spec/atr-language-detection-v1.0.md` | **PROPOSED** | Target algorithm. Current engine uses existing per-rule logic. |
 | **New profile spec** | `spec/atr-profile-v1.0.md` | **PROPOSED** | Target profile format. No formal profile resolver shipping yet. |
-| **New correlation spec** | `spec/atr-correlation-v1.0.md` | **PROPOSED** | Target multi-event format. No correlation rules in the canonical corpus yet. |
+| **New correlation spec** | `spec/atr-correlation-v1.0.md` | **PROPOSED** | Target multi-event format. No correlation rules in the canonical corpus yet. Its join keys are defined by the observation spec below, which is also unratified — correlation is not evaluable until both land. |
+| **New observation spec** | `spec/atr-observation-v1.0.md` | **PROPOSED** | Target *input* format (the engine's existing `AgentEvent` shape is unchanged). Defines the correlation join keys, an `outcome` enum that is not collapsible to a boolean, and a machine-readable coverage declaration. Current engine does NOT ingest this format. |
 | **New category registry** | `spec/category-registry/v1.0.yaml` | **PROPOSED** | Documents the 10 categories currently used + reserved namespaces for the future. |
 | **JSON Schemas** | `spec/schema/*.json` | **PROPOSED** | Validation schemas matching the proposed spec prose. |
 | **Conformance corpus** | `spec/conformance/` | **PROPOSED — SCAFFOLDING ONLY** | Structure documented; actual fixture files not yet populated. No engine currently claims formal conformance. |

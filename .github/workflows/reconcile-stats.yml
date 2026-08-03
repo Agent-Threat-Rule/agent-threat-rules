@@ -53,9 +53,15 @@ jobs:
             echo "stats already in sync with disk — nothing to commit"
             exit 0
           fi
-          count=$(node -e 'process.stdout.write(String(JSON.parse(require("fs").readFileSync("stats.json","utf8")).ruleCount.total))')
+          # Both numbers go in the message. `total` is the file count; `effective`
+          # excludes rules the engine never evaluates (status draft/deprecated),
+          # and the two are not interchangeable — quoting total as detection
+          # coverage overstates it by exactly the difference.
+          field() { node -e 'process.stdout.write(String(JSON.parse(require("fs").readFileSync("stats.json","utf8")).ruleCount[process.argv[1]] ?? "?"))' "$1"; }
+          count=$(field total)
+          effective=$(field effective)
           git config user.name "ATR Stats Bot"
           git config user.email "bot@agentthreatrule.org"
           git add stats.json data/stats.json
-          git commit -m "chore(stats): auto-reconcile rule count to disk (${count} rules)"
+          git commit -m "chore(stats): auto-reconcile rule count to disk (${count} rule files, ${effective} effective)"
           git push origin main
