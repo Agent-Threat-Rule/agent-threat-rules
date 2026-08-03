@@ -62,6 +62,16 @@
  *   1.776. Restricted to the 22 rules at or above 5x, the ones that can actually
  *   fail: max 1.316. Every threshold below is sized against those figures.
  *
+ *   ARCHITECTURE, though, is not noise, and it is bigger than expected. The same
+ *   corpus profiled 30.9x for ATR-2026-00001 on arm64 macOS and 47.5x on the
+ *   x64 ubuntu-latest runner -- a systematic 1.54x on the expensive tail, and a
+ *   wider distribution overall (p95 4.23x local, 5.93x on CI). That is a real
+ *   difference in relative regex cost between CPUs, not a timing artifact, and
+ *   no tolerance should be asked to absorb it. So the committed baseline is
+ *   generated FROM A CI PROFILE -- download the rule-latency-profile artifact
+ *   and run --profile <artifact> --write-baseline -- never from a developer's
+ *   machine. A local run is for finding your own regression, not for recording.
+ *
  * WHAT FAILS THE BUILD
  *   - A rule absent from the baseline costs >= FAIL_FLOOR anchor medians. That
  *     is a newly authored expensive rule, or a previously cheap one made
@@ -73,6 +83,25 @@
  *     the engine spends on the same corpus (291.7ms of 7321.9ms in one measured
  *     run) -- the rest is dispatch and post-processing that belongs to no single
  *     rule -- so this is a coarse net over the part per-rule profiling cannot see.
+ *
+ * WHOSE FAULT IT HAS TO BE (--changed-since)
+ *   The corpus is judged as a whole, because rules land on main through doors
+ *   that never open a pull request. But a pull request must not go red for a
+ *   rule it did not touch -- that is the same content-independent failure this
+ *   gate was built to remove, merely sourced from a neighbour instead of from a
+ *   busy runner. It is not hypothetical: this gate's first CI run found
+ *   ATR-2026-02300 at 288x, a rule merged in #321 with a variable-length
+ *   lookbehind, and without scoping it would have reddened every unrelated
+ *   rules PR from that moment on.
+ *
+ *   So on a pull request the gate takes --changed-since <baseRef> and only
+ *   FAILS on rules whose files that diff touched. Everything else is printed
+ *   under PRE-EXISTING and left to main's own run, which files an issue. If the
+ *   diff touches anything that can change what every rule costs -- the engine,
+ *   the eval corpus, the lane contract, the profiler, the lockfile -- then the
+ *   whole corpus is in scope again, because such a change can make any rule
+ *   expensive. A missing or unusable base ref widens the scope rather than
+ *   narrowing it.
  *
  * WHAT DOES NOT FAIL THE BUILD
  *   - Any rule below FAIL_FLOOR, however it drifted. Relative measurement of
@@ -123,7 +152,9 @@
  *   npx tsx scripts/gate-rule-latency.ts --write-profile p.json
  *   npx tsx scripts/gate-rule-latency.ts --write-baseline
  *   npx tsx scripts/gate-rule-latency.ts --profile ci.json --write-baseline
+ *   npx tsx scripts/gate-rule-latency.ts --changed-since origin/main   # PR mode
  */
+import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -161,12 +192,12 @@ export {
 /**
  * Rules at or above this many anchor medians are recorded in the baseline.
  *
- * Today's distribution over the 664 evaluable, corpus-covered rules: p50 1.00x,
- * p75 2.01x, p90 3.16x, p95 4.23x, p99 9.09x, max 29.1x. Recording from 3x
- * captures the whole tail worth watching (76 rules) while keeping the baseline
- * diff small enough to read. It sits below FAIL_FLOOR on purpose: a rule
- * recorded at 5x cannot fail on its own, but its growth is then bounded by
- * TOLERANCE instead of only by FAIL_FLOOR.
+ * Today's distribution over the 674 evaluable, corpus-covered rules, measured on
+ * ubuntu-latest: p50 1.01x, p75 2.16x, p90 4.22x, p95 5.93x, p99 15.57x,
+ * max 288.3x. Recording from 3x captures the whole tail worth watching (113
+ * rules) while keeping the baseline diff small enough to read. It sits below
+ * FAIL_FLOOR on purpose: a rule recorded at 5x cannot fail on its own, but its
+ * growth is then bounded by TOLERANCE instead of only by FAIL_FLOOR.
  */
 export const RECORD_FLOOR = 3;
 
@@ -175,17 +206,22 @@ export const RECORD_FLOOR = 3;
  *
  * This is the threshold with no tolerance behind it, so it is derived from what
  * an INNOCENT rule can read on its unluckiest run rather than from what a guilty
- * one reads on its luckiest. Measured directly: across the four profiles, the
- * highest value ever taken by any rule sitting at or below the p95 of the
- * distribution (4.24x) was 5.52x. A legitimately thick new rule therefore has to
- * be allowed somewhere north of 5.5x or the gate reinvents the flake it replaces.
+ * one reads on its luckiest. On the platform that enforces it, an ordinarily
+ * thick new rule sits at p95 = 5.93x; the worst cross-run spread measured for
+ * rules in that class is 1.316x, so an innocent p95 rule reads at most about
+ * 7.8x. 14x is 1.8x above that.
  *
- * 14x keeps 2.5x of headroom above that worst innocent reading and still sits
- * far below the cheapest catastrophic construct measured -- a real
- * `(?:[a-z]+\s*){0,6}` rule injected into this corpus profiles at 50x-70x. The
- * decision band is 5.5x <-> 50x and this sits nearer its lower edge on purpose:
- * surfacing a merely wasteful rule early is cheap, missing a pathological one is
- * not. Three rules in the corpus are above it today and all three are baselined.
+ * It sits far below the cheapest catastrophic construct measured -- a real
+ * `(?:[a-z]+\s*){0,6}` rule injected into this corpus profiles at 50x-70x -- and
+ * near the lower edge of the 7.8x <-> 50x decision band on purpose: surfacing a
+ * merely wasteful rule early is cheap, missing a pathological one is not. The
+ * cost of sitting low is that a rule authored above the corpus's own p99
+ * (15.57x) has to be justified before it lands, which is a policy this project
+ * can afford now that --changed-since means the bill goes to the author who
+ * wrote it rather than to the next unrelated pull request.
+ *
+ * Ten rules are above it today, all baselined and reprinted every run under
+ * ACCEPTED DEBT. One of them, ATR-2026-02300, reads 288x.
  */
 export const FAIL_FLOOR = 14;
 
@@ -205,7 +241,7 @@ export const FAIL_FLOOR = 14;
  * and the anchor cohort, which removed the corpus-growth term the old derivation
  * had to reserve 1.11x for (see THE METRIC).
  *
- * What this costs: a baselined rule at 25.1x may reach 75x before failing.
+ * What this costs: a baselined rule at 25.3x may reach 76x before failing.
  * Accepted, because the catastrophic constructs this gate exists for do not grow
  * by 3x, they grow by an order of magnitude per unit of quantifier bound
  * ({0,6} 58.5x, {0,8} 822.7x, {0,10} 10657x), and any rule crossing FAIL_FLOOR
@@ -413,6 +449,64 @@ export interface Comparison {
 }
 
 /**
+ * Which regressions this run is allowed to fail on.
+ *
+ * `null` means everything, which is both the default and the fail-closed
+ * answer when a base ref cannot be resolved. A set means only rules whose file
+ * appears in it.
+ */
+export type Blame = ReadonlySet<string> | null;
+
+/**
+ * Files that change what EVERY rule costs, so touching one puts the whole
+ * corpus back in scope. The engine is the thing being timed; the eval corpus is
+ * what it is timed over; the lane contract decides which rules are timed at all;
+ * the profiler is the clock; the lockfile carries the regex engine underneath.
+ */
+const MEASUREMENT_PATHS: readonly string[] = [
+  "src/engine.ts",
+  "src/eval/",
+  "src/quality/rule-contract.ts",
+  "scripts/lib/rule-latency-profile.ts",
+  "scripts/gate-rule-latency.ts",
+  "package-lock.json",
+];
+
+/**
+ * Rule files a diff touched, or null for "judge everything".
+ *
+ * Every failure path returns null on purpose. A gate that silently narrows its
+ * own scope when git misbehaves is worse than one that occasionally asks an
+ * author about a rule they did not write.
+ */
+export function blameScope(baseRef: string, cwd: string = REPO_ROOT): Blame {
+  if (!baseRef) return null;
+  const result = spawnSync("git", ["diff", "--name-only", `${baseRef}...HEAD`], {
+    cwd,
+    encoding: "utf8",
+    timeout: 60_000,
+  });
+  if (result.status !== 0 || typeof result.stdout !== "string") return null;
+
+  const changed = result.stdout.split("\n").map((line) => line.trim()).filter((line) => line.length > 0);
+  if (changed.length === 0) return null;
+  if (changed.some((path) => MEASUREMENT_PATHS.some((prefix) => path.startsWith(prefix)))) return null;
+  return new Set(changed.filter((path) => path.startsWith("rules/")));
+}
+
+/** Split regressions into the ones this change owns and the ones it inherited. */
+export function splitByBlame(
+  regressions: readonly Regression[],
+  blame: Blame
+): { readonly owned: readonly Regression[]; readonly inherited: readonly Regression[] } {
+  if (blame === null) return { owned: regressions, inherited: [] };
+  return {
+    owned: regressions.filter((r) => blame.has(r.rule.file)),
+    inherited: regressions.filter((r) => !blame.has(r.rule.file)),
+  };
+}
+
+/**
  * Ratchet comparison. Only rules at or above FAIL_FLOOR can fail, whether or
  * not they are baselined -- see the WHAT DOES NOT FAIL note in the header.
  */
@@ -569,6 +663,27 @@ function renderHeader(
   ];
 }
 
+/**
+ * Accepted debt, restated on every run.
+ *
+ * A ratchet's baseline is a debt register, and a register nobody reads is a
+ * place to hide things. Printing the rules that are only green because they were
+ * already there -- ATR-2026-02300 sits at 288x with a variable-length lookbehind
+ * -- keeps the cost of the compromise in front of whoever is looking at the log,
+ * rather than one `git show` away.
+ */
+function renderDebt(current: readonly RelCost[], base: Baseline): string[] {
+  const debt = current.filter((c) => c.rel >= FAIL_FLOOR && c.ruleId in base.expensiveRules);
+  if (debt.length === 0) return [];
+  return [
+    "",
+    `ACCEPTED DEBT -- ${debt.length} rule(s) above the ${FAIL_FLOOR}x fail floor, green only because the baseline records them:`,
+    ...debt.map((c) => `  = ${c.rel.toFixed(1).padStart(7)}x  ${c.ruleId}  ${c.file}`),
+    "  These are not fine. They are grandfathered. Fixing one and re-running --write-baseline",
+    "  is how this list gets shorter; it is the only thing that ever makes it shorter.",
+  ];
+}
+
 function renderRatchet({ improved, resolved }: Comparison): string[] {
   if (improved.length === 0 && resolved.length === 0) return [];
   return [
@@ -619,26 +734,48 @@ function renderShapeFailure(shape: ShapeVerdict): string[] {
   ];
 }
 
-export function renderGate(profile: Profile, current: readonly RelCost[], base: Baseline): GateResult {
+function renderInherited(inherited: readonly Regression[], medianMs: number): string[] {
+  if (inherited.length === 0) return [];
+  return [
+    "",
+    "PRE-EXISTING -- above the fail floor, but not introduced by this change:",
+    ...inherited.map(({ rule, reason }) => `  ! ${rule.ruleId}  ${reason}  ${rule.file}`),
+    `  (anchor median ${medianMs.toFixed(4)}ms. Reported, not fatal: a pull request must not go red for`,
+    "   a rule it did not touch. main's own run of this gate opens an issue for these.)",
+  ];
+}
+
+export function renderGate(
+  profile: Profile,
+  current: readonly RelCost[],
+  base: Baseline,
+  blame: Blame = null
+): GateResult {
   const blocked = corpusShrank(profile, base) ?? anchorsEroded(profile, base);
   if (blocked) return { exitCode: 2, lines: ["", "=== ATR Rule Latency GATE ===", "", `GATE ERROR -- ${blocked}`, ""] };
 
   const comparison = compareToBaseline(current, base);
   const shape = checkShape(profile.latencyShape, base);
   const medianMs = anchorMedianMs(profile, base);
-  const regressions = [...comparison.added, ...comparison.worsened];
+  const { owned, inherited } = splitByBlame([...comparison.added, ...comparison.worsened], blame);
 
   const out = [
     ...renderHeader(profile, current, base, shape, medianMs),
+    ...renderDebt(current, base),
     ...renderRatchet(comparison),
+    ...renderInherited(inherited, medianMs),
   ];
 
-  if (regressions.length === 0 && shape.ok) {
+  // The shape ceiling is never scoped by blame. It is one engine-wide number
+  // with 2.5x of headroom rather than a per-rule debt someone else can own, so
+  // there is nobody to inherit it from: if the tail has blown up, every change
+  // should stop until the baseline says otherwise.
+  if (owned.length === 0 && shape.ok) {
     return { exitCode: 0, lines: [...out, "", "GATE PASS -- no rule got pathologically expensive relative to its peers.", ""] };
   }
   return {
     exitCode: 1,
-    lines: [...out, ...renderRegressions(regressions, profile, medianMs), ...renderShapeFailure(shape), ""],
+    lines: [...out, ...renderRegressions(owned, profile, medianMs), ...renderShapeFailure(shape), ""],
   };
 }
 
@@ -704,7 +841,8 @@ export async function main(argv: readonly string[]): Promise<number> {
   }
 
   const base = loadBaseline();
-  const { exitCode, lines } = renderGate(profile, relativeCosts(profile, base), base);
+  const blame = argv.includes("--changed-since") ? blameScope(flagValue(argv, "--changed-since")) : null;
+  const { exitCode, lines } = renderGate(profile, relativeCosts(profile, base), base, blame);
   process.stdout.write(lines.join("\n"));
   return exitCode;
 }

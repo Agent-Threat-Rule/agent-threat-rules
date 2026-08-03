@@ -83,9 +83,13 @@ jobs:
       # produces instead of leaving the branch red.
       issues: write
     steps:
-      # No fetch-depth: 0 -- the gate compares against a committed baseline,
-      # not against a base ref, so a shallow checkout is enough.
+      # fetch-depth: 0 is for --changed-since, not for the comparison itself:
+      # the gate measures the whole corpus against a committed baseline, and
+      # uses the diff only to decide which regressions a pull request may be
+      # failed for.
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v5
         with:
@@ -93,6 +97,10 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Fetch base ref for blame scoping
+        if: github.event_name == 'pull_request'
+        run: git fetch origin ${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}
 
       # Its own job, not part of the vitest suite. Profiling every rule twice
       # takes ~40s locally and should stay well under a couple of minutes on a
@@ -108,11 +116,20 @@ jobs:
       # baseline's anchor cohort having been culled: cutting either is the
       # cheapest way to make a pathological rule stop showing up, so it must
       # read as broken, never as green.
+      # --changed-since scopes which regressions may FAIL this run to the rules
+      # the pull request actually touched. The measurement is still corpus-wide
+      # and everything else is printed under PRE-EXISTING: a pull request must
+      # not go red for a rule someone else merged, which is the same
+      # content-independent failure this gate replaces.
       - name: Per-rule cost ratchet
+        if: github.event_name == 'pull_request'
+        run: npx tsx scripts/gate-rule-latency.ts --write-profile rule-latency-profile.json --changed-since origin/${{ github.base_ref }}
+
+      - name: Per-rule cost ratchet (whole corpus)
         id: gate
-        # On push the step records its outcome and the next step reports it; on
-        # a pull request it fails the check outright.
-        continue-on-error: ${{ github.event_name == 'push' }}
+        if: github.event_name == 'push'
+        # On push the step records its outcome and the next step reports it.
+        continue-on-error: true
         run: npx tsx scripts/gate-rule-latency.ts --write-profile rule-latency-profile.json
 
       # The full per-rule profile, so a failing run can be diagnosed -- and the
@@ -131,7 +148,9 @@ jobs:
 
       # A rule that reached main without a pull request still has to be answered
       # for; it just cannot be answered for by an author who is no longer there.
-      # One open issue is kept and updated rather than one per push.
+      # One open issue is kept and its BODY rewritten -- not a comment per push,
+      # which on a repo the CVE collector pushes to daily would be a subscription
+      # to noise rather than a report.
       - name: File an issue for a regression that landed on main
         if: github.event_name == 'push' && steps.gate.outcome == 'failure'
         env:
@@ -152,7 +171,7 @@ jobs:
             "npx tsx scripts/gate-rule-latency.ts --profile rule-latency-profile.json --write-baseline" \
             "in its own reviewed commit -- data/rule-latency-baseline.json is CODEOWNER-gated on purpose.")"
           if [ -n "$existing" ]; then
-            gh issue comment "$existing" --body "$body"
+            gh issue edit "$existing" --body "$body"
           else
             gh issue create --title "$title" --body "$body" --label auto-generated
           fi
