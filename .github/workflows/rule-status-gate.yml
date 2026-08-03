@@ -1,0 +1,89 @@
+name: Rule status gate
+
+# `status: draft` means "this rule does not exist". src/engine.ts skips draft
+# (and deprecated) rules in BOTH evaluation paths, before the lane gate and
+# before any pattern is compiled -- so a draft rule fires in no lane, ever:
+#
+#     if (rule.status === 'deprecated' || rule.status === 'draft') continue;
+#
+# Nothing told authors that. The rule validates, its declared test_cases pass
+# under the tooling that promotes drafts in-memory before testing them, the
+# quality gate goes green, and the rule ships inert. A batch of 11 new rules was
+# authored by copying an existing rule as a template; 7 inherited its
+# `status: draft` and every one of them was dead on arrival. That is a detection
+# gap that looks exactly like coverage from the outside.
+#
+# This gate is a RATCHET, not a hard gate -- the same shape as
+# maturity-fp-gate.yml and re2-portability.yml. A backlog of draft rules already
+# exists, and reviving one is not a one-word edit: an inert rule has never been
+# measured against the benign corpus, so waking it up has to clear
+# scripts/gate-promotion-fp.ts first. Failing every PR until that backlog clears
+# would stop all rule work. So this blocks NEW inert rules and lets the backlog
+# drain on its own schedule, through data/rule-status-baseline.json.
+#
+# It compares the WHOLE working tree against the committed baseline rather than
+# a PR diff, and that is the load-bearing design choice. A diff-scoped gate is
+# what failed here: rules reach this repo through doors no `git diff base...HEAD`
+# can see -- untracked files written into rules/ and checked before any commit
+# (scripts/fn-mine-llm.ts does exactly this), plus the CVE collector and
+# auto-crystallize, which commit straight to main. A full-set comparison sees all
+# of them, needs no git history, and is correct on a shallow checkout.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "rules/**"
+      - "data/rule-status-baseline.json"
+      - "scripts/gate-rule-status.ts"
+      - "src/engine.ts"
+      - ".github/workflows/rule-status-gate.yml"
+  push:
+    branches: [main]
+    paths:
+      - "rules/**"
+      - "data/rule-status-baseline.json"
+      - "scripts/gate-rule-status.ts"
+      - "src/engine.ts"
+
+permissions:
+  contents: read
+
+jobs:
+  rule-status:
+    name: New rules must not be inert
+    runs-on: ubuntu-latest
+    steps:
+      # No fetch-depth: 0 -- the gate compares against a committed baseline,
+      # not against a base ref, so a shallow checkout is enough.
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+
+      # js-yaml only; no build step -- the gate reads rule files and reads
+      # src/engine.ts as text to quote the real line numbers of the skip.
+      - name: Install dependencies
+        run: npm ci
+
+      # Exit 1: a rule carries `status: draft` without a baseline entry, or a
+      # file under rules/ has no determinable status. Exit 2: the gate could not
+      # run (bad flags, corrupt baseline) -- never reported as a pass.
+      - name: Rule status ratchet
+        run: npx tsx scripts/gate-rule-status.ts
+
+      # The baseline may only ever shrink. --write-baseline drops revived rules
+      # and refuses to add anything, so a run that leaves the file dirty means
+      # rules were revived without tightening the record. Advisory: it is a
+      # bookkeeping lag, not a safety failure, and the ratchet above already
+      # blocks the direction that matters.
+      - name: Baseline is up to date (advisory)
+        continue-on-error: true
+        run: |
+          npx tsx scripts/gate-rule-status.ts --write-baseline
+          if ! git diff --quiet -- data/rule-status-baseline.json; then
+            echo "::warning::data/rule-status-baseline.json lists rules that are no longer draft."
+            echo "Tighten it: npx tsx scripts/gate-rule-status.ts --write-baseline"
+            git diff --stat -- data/rule-status-baseline.json
+          fi
