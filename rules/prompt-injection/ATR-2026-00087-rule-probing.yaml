@@ -1,7 +1,7 @@
 title: Detection Rule Probing and Evasion Testing
 id: ATR-2026-00087
-rule_version: 1
-status: draft
+rule_version: 2
+status: experimental
 description: >
   Detects attempts to probe, test, or enumerate detection rules and security filters. Attackers systematically test
   inputs to discover which patterns trigger blocks, map filter boundaries, and craft payloads that sit just below
@@ -68,13 +68,19 @@ detection:
     - field: user_input
       operator: regex
       value: >-
-        (?i)\b(what|which|list|show|reveal|tell
-        me)\s+.{0,20}(word|phrase|pattern|string|input|keyword)s?\s+.{0,20}(block|filter|flag|trigger|detect|reject|ban)
-      description: Probing for blocked keywords or trigger patterns
+        (?i)\b(what|which|list|show|reveal|tell\s+me)\b.{0,40}\b(word|phrase|pattern|string|keyword)s?\b.{0,40}\b(block|filter|flag|trigger|detect|reject|ban|censor)\w*\s+(by\s+)?(your|the)\s+(filter|detection|guard|guardrail|moderation|safety|blocklist|rule|policy|classifier)
+      description: >-
+        Probing for the agent's own blocked keywords. The blocking verb must resolve to the agent's own defence
+        ('blocked by your filter', 'trigger your detection') - an unqualified 'which keywords trigger them' is
+        ordinary SEO/analytics English and is deliberately NOT matched.
     - field: user_input
       operator: regex
-      value: (?i)\b(test|check|probe|try|see if)\s+.{0,15}(filter|detection|guard|safety|rule|block)\b
-      description: Explicit filter testing language
+      value: >-
+        (?i)\b(test|check|probe|try|see\s+if)\s+(?:out\s+)?(the|your|this)\s+(detection|safety|content|moderation|security|injection|prompt|guard)\s*(rule|filter|system|guard|guardrail|check|layer)s?\b
+      description: >-
+        Explicit filter-testing language aimed at a named defence ('try the detection rule', 'probe your safety
+        filter'). Requires a determiner plus a two-word defence noun phrase, because bare 'test --filter',
+        'check for existing rule files' and 'test safety nets' are ordinary developer documentation.
     - field: user_input
       operator: regex
       value: >-
@@ -93,6 +99,10 @@ detection:
     - >-
       Security researchers documenting known attack patterns in a threat intelligence report that references detection
       and blocking terminology
+    - >-
+      Build and CI documentation using the literal token sequences 'test --filter', 'semgrep --test --config rule',
+      'check for existing rule files', 'try block' or 'test safety net' - the dominant benign shape, which is why
+      condition 2 requires a determiner plus a named defence noun phrase
 response:
   actions:
     - alert

@@ -1,7 +1,7 @@
 title: Systematic Multi-Layer Audit System Bypass
 id: ATR-2026-00094
 rule_version: 1
-status: draft
+status: experimental
 description: >
   Detects sophisticated attempts to systematically defeat multi-layer security audit systems. Attackers craft payloads
   that target specific audit stages (manifest, permissions, dependency, code, and semantic analysis layers), attempt to
@@ -69,7 +69,7 @@ detection:
     - field: user_input
       operator: regex
       value: >-
-        (?i)\b(pass|clear|satisfy|fool|trick|defeat)\s+.{0,10}(layer|stage|level|check|phase)\s*(1|2|3|4|5|6|one|two|three|four|five|six)\b
+        (?i)\b(pass|clear|satisfy|fool|trick|defeat)[ \t]+[^\n]{0,10}(layer|stage|level|check|phase)[ \t]*(1|2|3|4|5|6|one|two|three|four|five|six)\b
       description: Targeting specific numbered audit layers for bypass
     - field: user_input
       operator: regex
