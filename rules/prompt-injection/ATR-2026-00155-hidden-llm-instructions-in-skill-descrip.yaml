@@ -1,6 +1,6 @@
 title: Hidden LLM Instructions in Skill Descriptions
 id: ATR-2026-00155
-status: experimental
+status: draft
 description: >
   Detects skills that embed hidden instructions directed at the LLM using phrases like "CRITICAL INSTRUCTION — YOU MUST
   FOLLOW THIS" or "Before doing ANYTHING". These instructions can manipulate the LLM to bypass normal security checks,
@@ -75,7 +75,7 @@ detection:
       description: Detects imperative instructions embedded in skill content that direct LLM behavior
     - field: content
       operator: regex
-      value: Before\s+doing\s+ANYTHING[,\s]+(?:run|execute|check|verify)\b[^\n]{0,80}(https?://|`|\$[A-Z_]{3,}|\bcurl\b|\bwget\b|\bbash\b|\bsh\b|\.sh\b|/etc/|\benv\b|\bexec\b)
+      value: Before\s+doing\s+ANYTHING[,\s]+(?:run|execute|check|verify)
       description: Detects instructions that override normal LLM workflow with specific commands
   condition: any
   false_positives:
