@@ -250,8 +250,40 @@ describe('Full Eval Harness', () => {
     // Sanity: F1 should be reasonable
     expect(report.overall.f1).toBeGreaterThan(0.5);
 
-    // Latency should be fast (regex-only)
-    expect(report.latency.p95).toBeLessThan(50);
+    // Latency is REPORTED here, never judged in absolute terms. Wall-clock p95
+    // on a shared runner measures the runner, not the rules: across 14 real CI
+    // runs with an unchanged corpus, p95 varied by 2.716x. The old assertion
+    // (`p95 < 50`) sat inside that noise band and failed builds that changed
+    // nothing -- PR #383 read 51.111ms while adding zero rules, and main's own
+    // 2026-07-29 run was red. Worse, it was blind to what it claimed to guard:
+    // injecting a rule that costs 9.8s on one pathological input does not move
+    // an engine-wide p95, because one rule out of 768 vanishes into the sum.
+    //
+    // Rule cost is now gated by scripts/gate-rule-latency.ts, which measures
+    // each rule against a cohort of rules fixed by the baseline and timed in the
+    // SAME profiling pass, so runner speed cancels out. What remains here are
+    // two checks that cannot be satisfied by a busy runner.
+    //
+    // First, that the latency series describes the corpus at all. p50/p95/p99
+    // are indices into one ascending array (src/eval/metrics.ts computeLatency),
+    // so asserting p95 >= p50 would be a tautology -- an earlier draft did
+    // exactly that and shipped an assertion that could never go red. These can:
+    // an engine that stopped timing, or stopped evaluating, reads zero.
+    expect(report.latency.p50).toBeGreaterThan(0);
+    expect(report.latency.max).toBeGreaterThanOrEqual(report.latency.p99);
+
+    // Second, a catastrophe ceiling that scales with the corpus. The worst p95
+    // ever recorded on a real runner is 51.1ms over 341 samples (0.15ms/sample)
+    // and the local figure is 26.2ms over 5 runs; 1.5ms per sample is ~10x the
+    // worst of those, so this can only trip if the engine has genuinely fallen
+    // over. It is expressed per sample rather than as a flat number so that
+    // growing the corpus -- expected behaviour -- never walks into it, and it
+    // has a floor so a tiny corpus cannot make it strict by accident.
+    //
+    // Do not tighten this back toward the observed range: a threshold inside
+    // the runner's noise band is what made this assertion measure the runner.
+    const catastropheCeilingMs = Math.max(500, report.corpusSize * 1.5);
+    expect(report.latency.p95).toBeLessThan(catastropheCeilingMs);
 
     // Corpus stats match
     expect(corpusStats.total).toBe(report.corpusSize);
