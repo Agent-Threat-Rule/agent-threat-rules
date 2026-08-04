@@ -69,7 +69,7 @@ async function main(): Promise<void> {
   };
 
   // Run eval with the PINT corpus
-  const { report, regression, tiersUsed, ruleQuality } = await runEval({
+  const { report, regression, tiersUsed, ruleQuality, eventShape } = await runEval({
     rulesDir,
     corpus,
     thresholds: pintThresholds,
@@ -78,6 +78,7 @@ async function main(): Promise<void> {
 
   // Overall metrics
   console.log(`\nTiers: ${tiersUsed.join(' + ')}`);
+  console.log(`Event shape: ${eventShape}`);
   console.log(`\n--- Overall ---`);
   console.log(`  Precision:  ${formatPercent(report.overall.precision)}`);
   console.log(`  Recall:     ${formatPercent(report.overall.recall)}`);
@@ -185,7 +186,10 @@ async function main(): Promise<void> {
       'Lakera/gandalf_ignore_instructions). NOT a run of Lakera\'s official PINT ' +
       'benchmark, whose corpus is private and roughly 5x larger. PINT is Lakera\'s; ' +
       'this note previously credited Invariant Labs, and every measurement file ' +
-      'written before 2026-08 carries that error.',
+      `written before 2026-08 carries that error. Event shape: ${eventShape} — ` +
+      'every PINT sample is typed llm_input, and under the legacy shape the ' +
+      "engine's source-type filter dropped every non-llm_io rule before matching, " +
+      'so legacy precision/recall were measured over roughly half the rulebase.',
   });
   console.log(`Measurement: ${measurementPath}`);
   console.log('Done.\n');
