@@ -28,6 +28,16 @@
  *
  * Single-proposal mode (for /red-team and /cve-collector flows):
  *   npx tsx scripts/check-rules-safety.ts --file proposals/path.proposal.yaml
+ *
+ * NEW-RULE DISCOVERY IS NOT DIFF-ONLY (this was a false green).
+ *   `git diff --diff-filter=A base...HEAD` only sees committed files. Rules are
+ *   routinely written into rules/ and gated BEFORE any commit —
+ *   scripts/fn-mine-llm.ts writes each authored rule to disk and then calls this
+ *   script, and the gate answered "0 new rule file(s) detected — nothing to
+ *   check, treating as safe" and exited 0. Every rule authored that way skipped
+ *   all six checks while the caller recorded a PASS. Discovery therefore unions
+ *   the diff with `git ls-files --others --exclude-standard -- rules/`, so a
+ *   rule that exists on disk is measured whether or not git has heard of it.
  */
 
 import { execFileSync } from "node:child_process";
@@ -81,58 +91,95 @@ function parseArgs(): { base: string; file: string | null } {
   return { base, file };
 }
 
-/** Diff against base to find newly added rule files. */
-function getNewRuleFiles(base: string): string[] {
+/** Runs a git command and returns stdout. Injected so discovery is testable. */
+export type GitRunner = (args: readonly string[]) => string;
+
+function execGit(repoRoot: string): GitRunner {
+  return (args) =>
+    execFileSync("git", [...args], {
+      cwd: repoRoot,
+      encoding: "utf-8",
+      maxBuffer: 64 * 1024 * 1024,
+    });
+}
+
+const isRuleFile = (f: string): boolean =>
+  f.endsWith(".yaml") || f.endsWith(".yml");
+
+/**
+ * Rule files added relative to base AND rule files that exist on disk but are
+ * not in git at all. The untracked half is not a convenience: without it this
+ * gate reports "nothing to check, treating as safe" for every rule authored
+ * into the working tree and gated before commit, which is how the fn-mine
+ * flywheel calls it. See the header note.
+ *
+ * Untracked discovery is deliberately NOT attempted in --file mode; that mode
+ * gates one explicitly named path.
+ */
+export function getNewRuleFiles(
+  base: string,
+  repoRoot: string = REPO_ROOT,
+  run: GitRunner = execGit(repoRoot),
+): string[] {
+  const added = tryGit(
+    run,
+    ["diff", "--name-only", "--diff-filter=A", `${base}...HEAD`, "--", "rules/"],
+    "git diff",
+  );
+  return [
+    ...new Set([...added, ...getUntrackedRuleFiles(repoRoot, run)]),
+  ].sort();
+}
+
+/** Rule files on disk that git does not track and .gitignore does not exclude. */
+export function getUntrackedRuleFiles(
+  repoRoot: string = REPO_ROOT,
+  run: GitRunner = execGit(repoRoot),
+): string[] {
+  return tryGit(
+    run,
+    ["ls-files", "--others", "--exclude-standard", "--", "rules/"],
+    "git ls-files --others",
+  );
+}
+
+/**
+ * Run one git command, returning the rule files it named. A git failure is
+ * reported and treated as "this source found nothing" — never as a reason to
+ * abandon the other source, because losing a discovery source silently is the
+ * exact failure this gate is being hardened against.
+ */
+function tryGit(
+  run: GitRunner,
+  args: readonly string[],
+  label: string,
+): string[] {
   try {
-    const out = execFileSync(
-      "git",
-      [
-        "diff",
-        "--name-only",
-        "--diff-filter=A",
-        `${base}...HEAD`,
-        "--",
-        "rules/",
-      ],
-      { cwd: REPO_ROOT, encoding: "utf-8" },
-    ).trim();
-    return out
-      .split("\n")
-      .filter((f) => f.endsWith(".yaml") || f.endsWith(".yml"))
-      .filter(Boolean);
+    return run(args).trim().split("\n").filter(Boolean).filter(isRuleFile);
   } catch (err) {
     console.error(
-      `[safety-gate] git diff failed: ${err instanceof Error ? err.message : String(err)}`,
+      `[safety-gate] ${label} failed: ${err instanceof Error ? err.message : String(err)}`,
     );
     return [];
   }
 }
 
-/** Diff against base to find modified (already-existing) rule files. */
-function getModifiedRuleFiles(base: string): string[] {
-  try {
-    const out = execFileSync(
-      "git",
-      [
-        "diff",
-        "--name-only",
-        "--diff-filter=M",
-        `${base}...HEAD`,
-        "--",
-        "rules/",
-      ],
-      { cwd: REPO_ROOT, encoding: "utf-8" },
-    ).trim();
-    return out
-      .split("\n")
-      .filter((f) => f.endsWith(".yaml") || f.endsWith(".yml"))
-      .filter(Boolean);
-  } catch (err) {
-    console.error(
-      `[safety-gate] git diff (modified) failed: ${err instanceof Error ? err.message : String(err)}`,
-    );
-    return [];
-  }
+/**
+ * Diff against base to find modified (already-existing) rule files. Stays
+ * diff-only on purpose: the modified-rule check is differential (base vs head),
+ * and an untracked file has no base version to compare against — it is new, and
+ * getNewRuleFiles already covers it.
+ */
+export function getModifiedRuleFiles(
+  base: string,
+  repoRoot: string = REPO_ROOT,
+  run: GitRunner = execGit(repoRoot),
+): string[] {
+  return tryGit(
+    run,
+    ["diff", "--name-only", "--diff-filter=M", `${base}...HEAD`, "--", "rules/"],
+    "git diff (modified)",
+  );
 }
 
 /** Read a file's contents at a git ref. Null when it is absent there. */
@@ -695,7 +742,16 @@ async function main(): Promise<void> {
     console.log(`[safety-gate] base=${base}`);
   }
   const modifiedFiles = singleFile ? [] : getModifiedRuleFiles(base);
-  console.log(`[safety-gate] ${newFiles.length} new rule file(s) detected`);
+  // Say where they came from. "0 new rule file(s)" was the sound this gate made
+  // while skipping a whole batch of uncommitted rules, so the split between
+  // committed and on-disk-only is worth a line of CI log.
+  const untracked = singleFile ? [] : getUntrackedRuleFiles();
+  console.log(
+    `[safety-gate] ${newFiles.length} new rule file(s) detected` +
+      (untracked.length > 0
+        ? ` (${untracked.length} uncommitted, discovered on disk)`
+        : ""),
+  );
   if (modifiedFiles.length > 0) {
     console.log(
       `[safety-gate] ${modifiedFiles.length} modified rule file(s) detected`,
@@ -915,4 +971,10 @@ async function main(): Promise<void> {
   process.exit(1);
 }
 
-void main();
+// Only run when invoked directly, so unit tests can import the discovery
+// helpers without main()'s process.exit() tearing the test runner down.
+const INVOKED_DIRECTLY =
+  process.argv[1] !== undefined &&
+  resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url));
+
+if (INVOKED_DIRECTLY) void main();

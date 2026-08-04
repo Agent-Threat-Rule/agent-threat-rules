@@ -1,0 +1,182 @@
+name: Rule latency
+
+# A detection rule is a regex that runs on attacker-controlled input inside an
+# agent hook. isReDoSSafe() in src/engine.ts blocks the unambiguous exponential
+# form -- (a+)+ -- but deliberately permits a bounded outer quantifier around an
+# unbounded inner one, on the argument that a finite bound keeps backtracking
+# polynomial. The polynomial's degree is the bound: `^(?:[a-z]+\s*){0,6}ZQXKFJ$`
+# measures 175ms on one 61-character input, `{0,8}` 9.8 seconds, `{0,10}` 76
+# seconds. All three compile and load. Until this job existed, nothing in CI
+# could see them.
+#
+# WHY THIS IS NOT A MILLISECOND BUDGET
+# The check it replaces was `expect(report.latency.p95).toBeLessThan(50)` in
+# tests/eval-harness.test.ts. It measured the runner: over 14 real runs with an
+# unchanged corpus, p95 varied by 2.716x, and PR #383 read 51.111ms while adding
+# zero rules. It also could not see the rules it claimed to guard -- one slow
+# rule out of 768 disappears into an engine-wide sum. This job instead profiles
+# each rule alone over the eval corpus and divides by the median of a COHORT OF
+# RULES NAMED IN THE BASELINE, measured in the same pass. A runner k times slower
+# scales numerator and denominator alike, so the verdict is identical; and
+# because the cohort's membership is fixed rather than recomputed per run, the
+# rules that land here every day cannot dilute the denominator and lift everyone
+# else's number with them.
+#
+# It MEASURES the whole corpus on both PRs and pushes to main, because rules also
+# land here through doors that never open a pull request -- the CVE collector and
+# auto-crystallize commit straight to main -- and a diff-scoped measurement
+# cannot see those. What differs is who is held responsible for the result.
+#
+# On a pull request, --changed-since limits FAILURE to rules the diff touched.
+# Everything else prints under PRE-EXISTING. Without that, one expensive rule
+# merged by someone else reddens every later rules PR, which is the same
+# content-independent failure this job replaces, sourced from a neighbour instead
+# of from a busy runner. It is not hypothetical: this job's first run found
+# ATR-2026-02300 at 288x, merged in #321.
+#
+# On push to main there is no author to charge, so it files an issue rather than
+# failing: the only fix for a legitimately expensive rule is an edit to
+# data/rule-latency-baseline.json, which CODEOWNERS routes to the TSC, and a hard
+# failure would leave main red waiting on a human while every later push inherits
+# the same red.
+#
+# Ratchet, not hard gate: rules already above the fail floor are recorded in
+# data/rule-latency-baseline.json as existing debt -- and reprinted on every run
+# under ACCEPTED DEBT, so the register cannot become a hiding place -- exactly as
+# re2-portability.yml handles lookaround debt. This blocks NEW damage.
+#
+# KNOWN GAP: main is not a protected branch and this job is not a required
+# check, so a red PR run informs a reviewer rather than mechanically blocking a
+# merge. Making it required is a repository setting, not a change this file can
+# make.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "rules/**"
+      - "src/engine.ts"
+      - "src/eval/**"
+      # laneAllows() decides which rules are evaluable, and therefore which
+      # rules get profiled at all. Changing it changes the measurement basis.
+      - "src/quality/rule-contract.ts"
+      - "data/rule-latency-baseline.json"
+      - "scripts/gate-rule-latency.ts"
+      - "scripts/lib/rule-latency-*.ts"
+      - "tests/gate-rule-latency*.test.ts"
+      - "tests/rule-latency-fixtures.ts"
+      # A dependency or engine-version bump moves every timing in the profile.
+      - "package-lock.json"
+      - ".github/workflows/rule-latency.yml"
+  push:
+    branches: [main]
+    paths:
+      - "rules/**"
+      - "src/engine.ts"
+      - "src/eval/**"
+      - "src/quality/rule-contract.ts"
+      - "data/rule-latency-baseline.json"
+      - "scripts/gate-rule-latency.ts"
+      - "scripts/lib/rule-latency-*.ts"
+      - "package-lock.json"
+
+permissions:
+  contents: read
+
+jobs:
+  rule-latency:
+    name: Rule regex cost must stay in proportion
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Only used by the push path, to file the report a failing main run
+      # produces instead of leaving the branch red.
+      issues: write
+    steps:
+      # fetch-depth: 0 is for --changed-since, not for the comparison itself:
+      # the gate measures the whole corpus against a committed baseline, and
+      # uses the diff only to decide which regressions a pull request may be
+      # failed for.
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch base ref for blame scoping
+        if: github.event_name == 'pull_request'
+        run: git fetch origin ${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}
+
+      # Its own job, not part of the vitest suite. Profiling every rule twice
+      # takes ~40s locally and should stay well under a couple of minutes on a
+      # slower runner, and it is worth giving it the box to itself: vitest's
+      # other files competing for the same cores is the exact interference that
+      # made the old wall-clock assertion meaningless. The metric survives
+      # contention -- verified at 1.68x machine slowdown, worst per-rule drift
+      # 1.78x against a 3.0x tolerance -- but there is no reason to spend the
+      # accuracy.
+      #
+      # Exit 1 means a rule regressed and an author must act. Exit 2 means the
+      # gate could not run, which includes the eval corpus having SHRUNK or the
+      # baseline's anchor cohort having been culled: cutting either is the
+      # cheapest way to make a pathological rule stop showing up, so it must
+      # read as broken, never as green.
+      - name: Per-rule cost ratchet
+        if: github.event_name == 'pull_request'
+        run: npx tsx scripts/gate-rule-latency.ts --write-profile rule-latency-profile.json --changed-since origin/${{ github.base_ref }}
+
+      - name: Per-rule cost ratchet (whole corpus)
+        id: gate
+        if: github.event_name == 'push'
+        # On push the step records its outcome and the next step reports it.
+        continue-on-error: true
+        run: npx tsx scripts/gate-rule-latency.ts --write-profile rule-latency-profile.json
+
+      # The full per-rule profile, so a failing run can be diagnosed -- and the
+      # cost leaderboard read -- without re-profiling locally. It is also the
+      # supported way to refresh the baseline on the platform that enforces it:
+      # download this artifact and run
+      #   npx tsx scripts/gate-rule-latency.ts --profile <artifact> --write-baseline
+      # rather than committing numbers measured on a developer's machine.
+      - name: Upload latency profile
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: rule-latency-profile
+          path: rule-latency-profile.json
+          retention-days: 14
+
+      # A rule that reached main without a pull request still has to be answered
+      # for; it just cannot be answered for by an author who is no longer there.
+      # One open issue is kept and its BODY rewritten -- not a comment per push,
+      # which on a repo the CVE collector pushes to daily would be a subscription
+      # to noise rather than a report.
+      - name: File an issue for a regression that landed on main
+        if: github.event_name == 'push' && steps.gate.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          title="Rule latency ratchet is failing on main"
+          existing="$(gh issue list --state open --search "$title in:title" --json number --jq '.[0].number // empty')"
+          body="$(printf '%s\n' \
+            "The per-rule cost ratchet failed on a push to main, where no pull request could catch it first." \
+            "" \
+            "Run: ${RUN_URL}" \
+            "Commit: ${GITHUB_SHA}" \
+            "" \
+            "Download the rule-latency-profile artifact from that run to see which rule and by how much." \
+            "If the rule is pathological, fix the regex. If it is legitimately expensive, record it with" \
+            "npx tsx scripts/gate-rule-latency.ts --profile rule-latency-profile.json --write-baseline" \
+            "in its own reviewed commit -- data/rule-latency-baseline.json is CODEOWNER-gated on purpose.")"
+          if [ -n "$existing" ]; then
+            gh issue edit "$existing" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body" --label auto-generated
+          fi

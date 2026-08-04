@@ -1,7 +1,7 @@
 title: Gradual Capability Escalation via Incremental Introduction
 id: ATR-2026-00093
 rule_version: 1
-status: draft
+status: experimental
 description: >
   Detects attacks that use gradual, sub-threshold capability introductions to evade behavioral fingerprinting and
   whitelist-based security systems. Attackers incrementally expand agent permissions, register small capability
@@ -71,8 +71,7 @@ detection:
     - field: user_input
       operator: regex
       value: >-
-        (?i)\b(add|enable|grant|unlock|introduce)\s+.{0,10}(?<=\s)(just|only|a small|minor|slight|one
-        more)\s+.{0,20}(permiss|capabilit|access|function|privileg|abilit)
+        (?i)\b(add|enable|grant|unlock|introduce)\s+.{0,10}(?<=\s)(just|only\s+(?:one|a|an|another|1)|a small|minor|slight|one more)\s+.{0,20}(permiss|capabilit|access|function|privileg|abilit)
       description: Incremental small permission or capability addition
     - field: user_input
       operator: regex

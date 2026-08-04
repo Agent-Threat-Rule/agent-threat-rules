@@ -7,6 +7,8 @@
  * @module agent-threat-rules/converters/sarif
  */
 
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import type { ATRRule, ATRMatch, ScanResult, ATRSeverity } from '../types.js';
 
 /** SARIF severity levels */
@@ -83,6 +85,29 @@ function toArtifactUri(inputFile: string): string {
 }
 
 /**
+ * Raw-octet SHA-256 of a file's bytes — the digest basis the shared envelope
+ * profile joins layers on (claude-code-skill-security-check#24 §2): computed
+ * over the raw octets, before any character decoding, so it equals `sha256sum`
+ * of the file and matches the raw-byte basis used by skil-lock and skill-scanner.
+ *
+ * This deliberately does NOT reuse result.content_hash, which hashes the
+ * UTF-8-*decoded* string (`update(content, 'utf8')`) and therefore diverges from
+ * the raw-octet digest on artifacts containing invalid UTF-8 or lone surrogates —
+ * exactly the case that would silently break the cross-layer join (two different
+ * files can decode to one string, or one file can yield two digests across layers).
+ *
+ * Returns null when the file cannot be read as bytes; the caller then omits the
+ * hash rather than emit a wrong-basis digest that only looks like a join key.
+ */
+function fileRawDigest(inputFile: string): string | null {
+  try {
+    return createHash('sha256').update(readFileSync(inputFile)).digest('hex');
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Convert ATR scan results to SARIF v2.1.0 format.
  *
  * @param results - Array of ScanResult from evaluate/scanSkill
@@ -116,6 +141,11 @@ export function scanResultToSARIF(
   // Emitting it here rather than only in result.properties is what lets a
   // consumer match an ATR finding to the same artifact reported by another
   // layer without parsing tool-specific property bags.
+  //
+  // The digest is the file's RAW OCTETS (fileRawDigest), not result.content_hash:
+  // the join is only sound if every layer hashes the same bytes, and the raw-octet
+  // basis is normative per claude-code-skill-security-check#24 §2. content_hash
+  // (UTF-8-decoded) is kept separately on each result for back-compat.
   const artifacts: object[] = [];
   const artifactIndex = new Map<string, number>();
   for (const result of results) {
@@ -123,9 +153,10 @@ export function scanResultToSARIF(
     const uri = toArtifactUri(result.input_file);
     if (artifactIndex.has(uri)) continue;
     artifactIndex.set(uri, artifacts.length);
+    const digest = fileRawDigest(result.input_file);
     artifacts.push({
       location: { uri, uriBaseId: '%SRCROOT%' },
-      ...(result.content_hash ? { hashes: { 'sha-256': result.content_hash } } : {}),
+      ...(digest ? { hashes: { 'sha-256': digest } } : {}),
     });
   }
 
