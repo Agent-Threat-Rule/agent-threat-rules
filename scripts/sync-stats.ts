@@ -18,7 +18,7 @@ const REPO_ROOT = join(__dirname, '..');
 interface Stats {
   version: string;
   lastUpdated: string;
-  ruleCount: { total: number; stable: number; experimental: number; draft: number };
+  ruleCount: { total: number; effective?: number; stable: number; experimental: number; draft: number };
   spec: { version: string; status: string; doi: string };
   benchmarks: {
     garak: { recall: number; samples: number };
@@ -97,7 +97,10 @@ function syncCitation(s: Stats): SyncResult {
     let out = text;
     out = out.replace(/^version: ".*"$/m, `version: "${s.version}"`);
     out = out.replace(/^date-released: ".*"$/m, `date-released: "${s.lastUpdated}"`);
-    out = out.replace(/\b\d{2,4} rules across \d+ threat\b/, `${s.ruleCount.total} rules across 10 threat`);
+    // effective, not total: `total` counts rule FILES, and src/engine.ts skips
+    // status: draft | deprecated before the lane gate, so those rules fire in no
+    // lane at all. Citing the file count overstates what the engine runs.
+    out = out.replace(/\b\d{2,4} rules across \d+ threat\b/, `${s.ruleCount.effective ?? s.ruleCount.total} rules across 10 threat`);
     out = out.replace(/\(\d+\.\d+% recall on the\b/, `(${s.benchmarks.garak.recall}% recall on the`);
     out = out.replace(/garak in-the-wild jailbreak benchmark, \d+ prompts\)/, `garak in-the-wild jailbreak benchmark, ${s.benchmarks.garak.samples} prompts)`);
     out = out.replace(/on a \d+-sample benign corpus/, `on a ${s.benchmarks.benign.samples}-sample benign corpus`);
@@ -105,15 +108,28 @@ function syncCitation(s: Stats): SyncResult {
   });
 }
 
-function syncPackageJson(s: Stats): SyncResult {
-  return syncFile('package.json', (text) => {
-    let out = text;
-    out = out.replace(/"description": "[^"]*"/, (m) => {
-      const newDesc = `Open detection standard -- like Sigma, but for AI agents. ${s.ruleCount.total} rules for prompt injection, tool poisoning, context exfiltration, and MCP attacks. Shipped in Cisco AI Defense. ${s.benchmarks.garak.recall}% recall on NVIDIA garak.`;
-      return `"description": ${JSON.stringify(newDesc)}`;
-    });
-    return out;
-  });
+/**
+ * The npm package description is deliberately NOT synced.
+ *
+ * It used to be rebuilt here from `ruleCount.total` and `benchmarks.garak.recall`,
+ * which looks like freshness and is the opposite. A description only reaches the
+ * world when a version is published; between publishes npm keeps serving whatever
+ * the last publish carried, so the numbers on the registry page were pinned to an
+ * arbitrary past release while this file kept "correcting" them locally. The
+ * registry listing spent months advertising 751 rules and 97.2% garak recall
+ * against a corpus that had grown to 780 and a figure honestly re-measured down
+ * to 91.5%.
+ *
+ * #411 removed the numbers from the description for that reason. This function
+ * existed to put them back on the next run — which is why it is now a no-op
+ * rather than deleted: an empty implementation with this comment is harder to
+ * reintroduce by accident than an absent one.
+ *
+ * Numbers belong where they can be regenerated on read: the README badges,
+ * stats.json, and the site. Not in a string frozen at publish time.
+ */
+function syncPackageJson(_s: Stats): SyncResult {
+  return { file: 'package.json', changed: false, ops: ['skip: description is intentionally number-free, see #411'] };
 }
 
 function syncQuickStart(s: Stats): SyncResult {

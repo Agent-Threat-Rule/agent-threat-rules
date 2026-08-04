@@ -335,14 +335,32 @@ function matchedRuleIds(engine: ATREngine, text: string): ReadonlySet<string> {
   return matched;
 }
 
+/**
+ * Every corpus file under a path, INCLUDING subdirectories.
+ *
+ * This walk used to be one level deep. `data/skill-benchmark/benign` holds 466
+ * committed samples, 35 of which live in `ninja-legit/` — so the gate loaded 431
+ * and reported the other 35 as clean by never opening them. That is the same
+ * disease as a narrow event shape: not a wrong answer, an unasked question. A
+ * sample that is committed to a benign corpus is a sample the gate has to read,
+ * and a subdirectory must never be able to hide one.
+ */
+function collectCorpusFiles(dir: string): readonly string[] {
+  const out: string[] = [];
+  for (const e of readdirSync(dir)) {
+    const full = join(dir, e);
+    if (statSync(full).isDirectory()) out.push(...collectCorpusFiles(full));
+    else if (e.endsWith(".jsonl") || e.endsWith(".md")) out.push(full);
+  }
+  return out;
+}
+
 function loadCorpusTexts(pathStr: string): readonly string[] {
   const texts: string[] = [];
   if (!existsSync(pathStr)) return texts;
   const files: string[] = [];
-  if (statSync(pathStr).isDirectory()) {
-    for (const e of readdirSync(pathStr))
-      if (e.endsWith(".jsonl") || e.endsWith(".md")) files.push(join(pathStr, e));
-  } else files.push(pathStr);
+  if (statSync(pathStr).isDirectory()) files.push(...collectCorpusFiles(pathStr));
+  else files.push(pathStr);
   for (const f of files) {
     let raw: string;
     try {

@@ -104,10 +104,18 @@ detection:
     # static audit cannot see it, so the generation branch keeps only generation
     # verbs; a deferred-LOAD branch survives for the unambiguous attack nouns,
     # where "lazy load the payload" still means what it says.
+    #   3. `skill` and `function` are dropped from the generation branch. Agent
+    #      orchestration documents legitimately describe spawning sub-agents
+    #      "with dynamically generated SKILL.md files" -- generating a skill is
+    #      what an orchestrator DOES. The evasion signal lives in what is being
+    #      built, and payload / shellcode / code / script carry it; skill does
+    #      not. Found by ninja-008-agent-orchestrator.md, one of 35 benign
+    #      samples that sat in a subdirectory the FP gate's non-recursive corpus
+    #      loader never opened.
     - field: user_input
       operator: regex
       value: >-
-        (?i)\b(?:(?:dynamic(?:ally)?|runtime|on.?the.?fly)\s+(?:generat|compil|creat|build|assembl|construct|synthesi)\w*\s+.{0,20}\b(?:payload|shellcode|code|script|skill|function)\b|(?:dynamic(?:ally)?|runtime|lazy|deferred|on.?demand)\s+(?:load|fetch|retriev|download|pull)\w*\s+.{0,20}\b(?:payload|shellcode)\b)
+        (?i)\b(?:(?:dynamic(?:ally)?|runtime|on.?the.?fly)\s+(?:generat|compil|creat|build|assembl|construct|synthesi)\w*\s+.{0,20}\b(?:payload|shellcode|code|script)\b|(?:dynamic(?:ally)?|runtime|lazy|deferred|on.?demand)\s+(?:load|fetch|retriev|download|pull)\w*\s+.{0,20}\b(?:payload|shellcode)\b)
       description: Runtime generation of code, or deferred loading of a payload, to evade static analysis
   condition: any
   false_positives:
