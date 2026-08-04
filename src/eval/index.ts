@@ -20,7 +20,8 @@ export type {
 } from './metrics.js';
 
 export { runEval, runEvalCLI } from './eval-harness.js';
-export type { EvalConfig } from './eval-harness.js';
+export type { EvalConfig, EvalEventShapeMode } from './eval-harness.js';
+export { defaultEventShapeMode } from './eval-harness.js';
 
 export { computeRuleQuality } from './rule-metrics.js';
 export type { RuleQuality, RuleQualityReport } from './rule-metrics.js';
