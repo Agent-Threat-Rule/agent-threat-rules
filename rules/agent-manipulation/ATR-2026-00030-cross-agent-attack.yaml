@@ -134,8 +134,8 @@ detection:
       description: "Attempt to redefine target agent's identity or role"
     - field: content
       operator: regex
-      value: "(?i)(?:do\\s+not|don'?t|never)\\s+(?:tell|inform|alert|notify|report|mention|log|record)\\s+(?:the\\s+)?(?:user|admin|orchestrator|supervisor|human|monitor)(?!s?\\s+to\\b)"
-      description: "Instruction to hide actions from oversight (excludes benign coaching form 'never tell users to <verb>' via negative lookahead; keeps concealment form 'do not tell the user about <info>')"
+      value: "(?i)(?:do\\s+not|don'?t|never)\\s+(?:tell|inform|alert|notify|report|mention|log|record)\\s+(?:the\\s+)?(?:user|admin|orchestrator|supervisor|human|monitor)(?!s?\\s+to\\b)(?!\\s+about\\s+(?:each|every|individual)\\b)"
+      description: "Instruction to hide actions from oversight (excludes benign coaching form 'never tell users to <verb>' via the first negative lookahead; the second excludes output-verbosity control, 'do not tell the user about each|every|individual <step>', which scopes down per-item progress narration rather than concealing a fact — a report-building skill triggered this on 'Don't tell the user about each tool call as you make it'. Concealment form 'do not tell the user about <fact>' is kept)"
     - field: content
       operator: regex
       value: "(?i)(?:acting|speaking|operating)\\s+(?:on\\s+behalf\\s+of|as\\s+a?\\s*proxy\\s+for|in\\s+place\\s+of)\\s+[a-zA-Z0-9_-]+\\s*(?:agent)?"

@@ -1,6 +1,6 @@
 title: MCP Tool Supply Chain Poisoning
 id: ATR-2026-00095
-rule_version: 1
+rule_version: 2
 status: draft
 description: >
   Detects tool poisoning attacks targeting the MCP (Model Context Protocol) skill/tool supply chain. Attackers inject
@@ -10,7 +10,7 @@ author: ATR Community (MiroFish Predicted)
 date: 2026/03/11
 schema_version: "0.1"
 detection_tier: pattern
-maturity: stable
+maturity: test
 severity: critical
 references:
   owasp_llm:
@@ -72,14 +72,12 @@ detection:
       description: Prompt injection payload in tool response output
     - field: tool_response
       operator: regex
-      value: >-
-        (?i)(\beval\s*\(|\bexec\s*\(|\bos\.system\s*\(|subprocess\.(run|call|Popen)|child_process\.exec|Runtime\.getRuntime\(\)\.exec)
-      description: Dangerous code execution primitives in tool response
+      value: '(?i)((\beval\s*\(|\bexec\s*\(|\bos\.system\s*\(|subprocess\.(run|call|Popen)|child_process\.exec|Runtime\.getRuntime\(\)\.exec)[\s\S]{0,80}(https?://|\bcurl\b|\bwget\b|/etc/(passwd|shadow)|\.ssh/|id_rsa|base64|b64decode|atob\s*\(|/dev/tcp/|\|\s*(ba)?sh\b|reverse.?shell|chmod\s+\+x|\bnc\s+-|/bin/(ba)?sh|socket\.socket|pty\.spawn|powershell\s+-|Invoke-Expression)|(https?://|\bcurl\b|\bwget\b|/etc/(passwd|shadow)|\.ssh/|id_rsa|base64|b64decode|atob\s*\(|/dev/tcp/|\|\s*(ba)?sh\b|reverse.?shell|chmod\s+\+x|\bnc\s+-|/bin/(ba)?sh|socket\.socket|pty\.spawn|powershell\s+-|Invoke-Expression)[\s\S]{0,80}(\beval\s*\(|\bexec\s*\(|\bos\.system\s*\(|subprocess\.(run|call|Popen)|child_process\.exec|Runtime\.getRuntime\(\)\.exec))'
+      description: "Dangerous code execution primitive paired with a payload-delivery or exfiltration co-signal, in either order. The bare primitive is not a trigger: subprocess.run, eval() and child_process.exec appear in ordinary Python and Node source, in linter output, and in the secure-coding guidance that tells authors never to use them, so on its own the name carries no attack signal."
     - field: tool_response
       operator: regex
-      value: >-
-        (?i)\b(curl|wget|fetch|http|request)\s+.{0,30}(attacker|evil|malicious|exfil|c2|callback|webhook\.site|ngrok|burp)
-      description: Data exfiltration URL patterns in tool response
+      value: '(?i)\b(curl|wget|fetch|http|request)\s+.{0,30}(attacker|evil|malicious|exfil|\bc2\b|webhook\.site|ngrok|pastebin|\.onion|requestbin|burpcollab)'
+      description: "Data exfiltration URL patterns in tool response. callback and the bare product name burp were removed - HTTP callback and Burp Suite are ordinary technical vocabulary - and c2 is word-bounded so it no longer matches inside tokens such as X-aws-ec2-metadata-token."
     - field: tool_response
       operator: regex
       value: (?i)(\[SYSTEM\]|\[INST\]|<\|system\|>|<\|im_start\|>|<<SYS>>|\[/INST\])\s*.{5,}
@@ -95,6 +93,11 @@ detection:
     - >-
       A penetration testing tool that includes example exploit payloads such as subprocess.run() calls in its
       educational documentation output
+    - >-
+      Prompt-injection defence documentation that quotes the indicator string verbatim - a skill listing "Ignore
+      previous instructions" or "[SYSTEM]" in a catalogue of payloads to watch for is textually identical to the
+      payload itself. This is the residual false-positive class after the 2026-08-04 tightening and is not reducible
+      by pattern matching.
 response:
   actions:
     - block_input

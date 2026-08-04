@@ -1,6 +1,6 @@
 title: Indirect Prompt Injection via Tool Responses
 id: ATR-2026-00083
-rule_version: 1
+rule_version: 2
 status: draft
 description: >
   Detects indirect prompt injection payloads embedded in tool responses, API outputs, or retrieved content. Attackers
@@ -10,7 +10,7 @@ author: ATR Community (MiroFish Predicted)
 date: 2026/03/11
 schema_version: "0.1"
 detection_tier: pattern
-maturity: stable
+maturity: test
 severity: high
 references:
   owasp_llm:
@@ -83,14 +83,22 @@ detection:
       description: Identity/role reassignment payload in external content
     - field: tool_response
       operator: regex
-      value: (?i)(<!--\s*|/\*\s*|#\s*)(ignore|override|new instruction|system prompt|you are now).{5,}
-      description: Hidden injection in code comments within tool response
+      value: '(?i)((<!--|/\*|//|#)\s{0,4}(ignore|disregard|forget|override)\s+(all\s+|any\s+|the\s+)?(previous|prior|above|earlier|system)\s+(instructions?|prompts?|rules?|context|messages?)|(<!--|/\*|//|#)\s{0,4}(you\s+are\s+now|new\s+instructions?\s*:|system\s+prompt\s*:))'
+      description: "Hidden injection in code comments within tool response. The comment marker must be followed by a complete instruction-override phrase, not a single keyword: the previous form treated the markdown heading marker # plus any one of ignore/override/system prompt as an injection, so ordinary CLI documentation (# Override page limit, # System Prompt Design, # Ignore peer deps) matched. // was added as a marker and disregard/forget as verbs, so the tightened form covers strictly more real injection shapes than the loose one."
   condition: any
   false_positives:
     - Security documentation explaining indirect injection techniques
     - >-
       IT change management documentation describing how a new configuration override replaces prior system settings,
       using phrases like 'this override replaces the original system configuration'
+    - >-
+      Prompt-injection defence skills that quote the payload string verbatim in a catalogue of indicators to watch for
+      ('Ignore previous instructions', '[SYSTEM]', 'You are now'). The quoted indicator and the live payload are the
+      same characters, so conditions 0, 1 and 2 cannot separate them; this is the residual false-positive class and
+      the reason the rule is held at maturity test rather than in the enforce lane.
+    - >-
+      Product documentation that uses 'New instructions' or 'you are now' as ordinary English prose, for example a
+      conversational-agent guide describing how an operator sends new instructions to a running agent
 response:
   actions:
     - block_input
