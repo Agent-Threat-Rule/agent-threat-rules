@@ -230,7 +230,32 @@ describe('Latency Stats', () => {
 // 5. Full eval harness (end-to-end)
 // ---------------------------------------------------------------------------
 describe('Full Eval Harness', () => {
-  it('runs eval against real rules and produces valid report', { timeout: 30000 }, async () => {
+  // No per-test timeout override here on purpose; this inherits testTimeout
+  // (180s) from vitest.config.ts like every other test in this file.
+  //
+  // It used to carry `{ timeout: 30000 }`. That was added on 2026-04-07, when
+  // vitest's default was 5s and 30s was therefore a RAISE. On 2026-04-15 the
+  // config-wide testTimeout went to 180s and this override was not removed, so
+  // from that day it silently became a 6x REDUCTION -- and only for this test.
+  // The four siblings below call the same runEval() over the same 341 samples
+  // and the same 780 rules, and all four get 180s. Nothing about this test is
+  // cheaper; it is simply the one holding a stale number.
+  //
+  // A wall-clock deadline is the same defect #401 removed from the assertion
+  // body five lines down: it measures the runner. Measured on a contended
+  // 10-core machine (1-min load average 109 against 10 cores), one runEval()
+  // spent 46.2s inside the engine -- mean 135.5ms x 341 samples, against a
+  // 9.3ms/sample figure on a quiet machine -- and the test died with
+  // "Test timed out in 30000ms" while every assertion in its body passed with
+  // room to spare (recall 0.950 vs >= 0.50 required, fpRate 0.000 vs <= 0.05,
+  // f1 0.974 vs > 0.50). It failed for the machine's state, not the rules'.
+  //
+  // 180s is not "no limit". A genuine engine blow-up still trips it: the
+  // pathological construct this repo profiles -- `(?:[a-z]+\s*){0,8}` -- costs
+  // 9.8s on a single input, so one such rule reaching a handful of the 341
+  // samples exhausts 180s outright. What 180s stops doing is failing a build
+  // because something else on the box was busy.
+  it('runs eval against real rules and produces valid report', async () => {
     const { report, regression, corpusStats } = await runEval({
       rulesDir: RULES_DIR,
     });
