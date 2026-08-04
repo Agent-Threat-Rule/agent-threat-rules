@@ -81,14 +81,6 @@ Adopters whose adoption is itself a public-good interoperability artefact
 - **Since**: 2026-05-17
 - **Status**: in-review
 
-### OWASP AI Exchange
-- **Org**: OWASP Foundation (AI Exchange / AI Security & Privacy Guide)
-- **Type**: reference
-- **Integration**: Proposal to add Agent Threat Rules to the OWASP AI Exchange guidance as a referenceable agent-threat detection ruleset
-- **Evidence**: <https://github.com/OWASP/www-project-ai-security-and-privacy-guide/pull/181>
-- **Since**: 2026-06-16
-- **Status**: in-review
-
 ### FINOS Common Cloud Controls
 - **Org**: FINOS (Fintech Open Source Foundation, a Linux Foundation project)
 - **Type**: reference
