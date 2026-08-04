@@ -25,12 +25,74 @@ Implementation lives at [`scripts/check-rules-safety.ts`](../scripts/check-rules
 The script supports two modes:
 
 ```bash
-# CI mode: scan git diff for new rule files
+# CI mode: scan for new rule files (git diff vs base, PLUS uncommitted files on disk)
 npx tsx scripts/check-rules-safety.ts --base origin/main
 
 # Single-file mode: validate one proposal in isolation
 npx tsx scripts/check-rules-safety.ts --file proposals/red-team-probes/foo.proposal.yaml
 ```
+
+New-rule discovery is **not diff-only**. `git diff base...HEAD` sees committed
+files, and rules are routinely written into `rules/` and gated before any commit
+(`scripts/fn-mine-llm.ts` authors straight into the tree, then calls this gate).
+Those rules were invisible: the gate printed `0 new rule file(s) detected —
+nothing to check, treating as safe` and exited 0 while skipping all six checks.
+Discovery now unions the diff with `git ls-files --others --exclude-standard --
+rules/`, so a rule on disk is measured whether or not git has heard of it.
+
+## Counting rules honestly
+
+Two numbers, both true, not interchangeable:
+
+| Number      | Means                                                 |
+| ----------- | ----------------------------------------------------- |
+| `total`     | rule files on disk                                     |
+| `effective` | rules the engine loads AND that can fire in some lane   |
+
+`inert = total - effective` is the rules with `status: draft` / `deprecated`
+(or `maturity: deprecated`). Quoting `total` as detection coverage overstates
+it by exactly `inert`. Both are computed by
+[`scripts/reconcile-rule-count.mjs`](../scripts/reconcile-rule-count.mjs) and
+published into `stats.json` / `data/stats.json`:
+
+```bash
+npm run count:rules      # print total / effective / inert / lane ceilings
+npm run reconcile-stats  # write them into both caches
+```
+
+## The status gate: a rule must be able to fire
+
+`status: draft` means the rule does not exist. `src/engine.ts` skips draft and
+deprecated rules in **both** evaluation paths, before the lane gate and before
+any pattern is compiled — so a draft rule fires in no lane, ever, including
+`hunt`. Nothing in validation, testing, or the six checks above says so: the
+rule validates, its test_cases pass (the tooling promotes drafts in memory
+before testing them), and it ships inert.
+
+`.github/workflows/rule-status-gate.yml` closes that. It is a **ratchet**, in the
+shape of the maturity-FP and RE2 gates:
+
+- a rule carrying `status: draft` that is not in
+  `data/rule-status-baseline.json` fails the build;
+- the recorded backlog passes, and drains on its own schedule;
+- `--write-baseline` can only **shrink** the baseline. Widening is the one edit
+  that would make the gate lie, so a genuine new exception must be hand-written
+  where review can see it.
+
+It compares the whole working tree, not a PR diff, because rules also arrive via
+the CVE collector and auto-crystallize, which commit straight to main.
+
+```bash
+npx tsx scripts/gate-rule-status.ts             # gate
+npx tsx scripts/gate-rule-status.ts --json      # machine-readable
+npx tsx scripts/gate-rule-status.ts --write-baseline   # tighten after reviving rules
+```
+
+**Express immaturity with `maturity`, never with `status`.** The maturity ladder
+below is what the lane gate reads: `stable` reaches the enforce (auto-block)
+lane, `test` reaches alert, everything else stays hunt-only. A new rule should be
+`status: experimental` + a low maturity — alive, and confined to the advisory
+lane. `RuleScaffolder` emits exactly that.
 
 ## The maturity ladder
 

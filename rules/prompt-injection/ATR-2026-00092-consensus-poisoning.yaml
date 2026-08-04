@@ -1,7 +1,7 @@
 title: Multi-Agent Consensus Poisoning and Sybil Attack
 id: ATR-2026-00092
 rule_version: 1
-status: draft
+status: experimental
 description: >
   Detects attacks targeting multi-agent consensus systems through coordinated fake proposals, Sybil identity
   manipulation, and vote stuffing. Attackers inject payloads designed to impersonate multiple agents, forge consensus
@@ -73,7 +73,7 @@ detection:
       description: Attempting to cast votes on behalf of multiple agents
     - field: user_input
       operator: regex
-      value: (?i)\b(forge|fake|spoof|fabricat|simulat)\w*\s+.{0,20}(consensus|vote|ballot|proposal|approval|quorum)
+      value: (?i)\b(forge|fake|spoof|fabricat|simulat)\w*\s+(?:the|a|an|our|their|this|\d{1,4})?\s*(consensus|vote|ballot|proposal|approval|quorum)\b
       description: Forging consensus votes or proposals
     - field: user_input
       operator: regex
@@ -83,7 +83,7 @@ detection:
     - field: user_input
       operator: regex
       value: >-
-        (?i)\b(manipulat|poison|corrupt|rig|stuff)\w*\s+.{0,15}(the\s+)?(consensus|voting|election|proposal|decision|quorum)\b
+        (?i)\b(manipulat\w*|poison\w*|corrupt\w*|rigged|rigging|rig|stuff\w*)\s+.{0,15}(the\s+)?(consensus|voting|election|proposal|decision|quorum)\b
       description: Direct manipulation of consensus mechanisms
     - field: user_input
       operator: regex
