@@ -46,7 +46,8 @@ spec/
 │
 ├── SPEC.md                     ← (existing, repo root) rule format spec
 ├── atr-language-detection-v1.0.md     ← (new) deterministic language detection algorithm
-├── atr-event-v1.0.md                  ← (new) OTEL-compatible event format
+├── atr-event-v1.0.md                  ← (new) OTEL-compatible event format (engine OUTPUT)
+├── atr-observation-v1.0.md            ← (new) observation format (engine INPUT) + declared coverage
 ├── atr-profile-v1.0.md                ← (new) rule-set composition for tiered conformance
 ├── atr-correlation-v1.0.md            ← (new) multi-event correlation rule format
 ├── atr-method-v1.1.md                 ← (new) detection method extensions: signature/semantic/behavioral/trace
@@ -60,10 +61,14 @@ spec/
 ├── schema/                            ← (new) JSON Schemas
 │   ├── rule.schema.json               ← rule format JSON Schema
 │   ├── event.schema.json              ← event output JSON Schema
+│   ├── observation.schema.json        ← observation input JSON Schema
 │   ├── profile.schema.json            ← profile JSON Schema
 │   └── correlation.schema.json        ← correlation rule JSON Schema
 │
 └── conformance/                       ← (Phase 2) test corpus + expected-results.json
+    └── baseline/                      ← only directory populated today;
+                                         profiles/ and correlation/ are not
+                                         yet created (see STANDARDIZATION-STATUS.md)
 ```
 
 ---
@@ -160,11 +165,15 @@ levels:
 - Passes `spec/conformance/profiles/` corpus
 
 **Level 3 — Correlation Conformance.** Adds:
+- Observation ingest (`spec/atr-observation-v1.0.md` and schema), including
+  a machine-readable coverage declaration. Correlation join keys are
+  defined there; an engine cannot claim L3 while treating `session.id`
+  and `agent.id` as optional.
 - Correlation rule evaluation (`spec/atr-correlation-v1.0.md` and schema)
 - State management across events
 - Implements at least `temporal_sequence`, `count_threshold`, and
   `chain_propagation` correlation types
-- Passes `spec/conformance/correlation/` corpus
+- Passes `spec/conformance/correlation/` corpus (not yet created)
 
 Engines may claim any subset of levels (e.g., L1+L3 without L2). The
 ATR-Certified™ program awards trust marks per level.
@@ -197,7 +206,8 @@ vote per governance/CHARTER.md § 4.
 | Component | Version | Status | Files |
 |---|---|---|---|
 | Rule format | v1.0 | existing-draft | `SPEC.md`, `spec/atr-schema.yaml`, `spec/schema/rule.schema.json` |
-| Event format | v1.0 | draft (new May 2026) | `spec/atr-event-v1.0.md`, `spec/schema/event.schema.json` |
+| Event format (output) | v1.0 | draft (new May 2026) | `spec/atr-event-v1.0.md`, `spec/schema/event.schema.json` |
+| Observation format (input) | v1.0 | draft (new July 2026) | `spec/atr-observation-v1.0.md`, `spec/schema/observation.schema.json` |
 | Profile format | v1.0 | draft (new May 2026) | `spec/atr-profile-v1.0.md`, `spec/schema/profile.schema.json` |
 | Correlation format | v1.0 | draft (new May 2026) | `spec/atr-correlation-v1.0.md`, `spec/schema/correlation.schema.json` |
 | Language detection algorithm | v1.0 | draft (new May 2026) | `spec/atr-language-detection-v1.0.md` |

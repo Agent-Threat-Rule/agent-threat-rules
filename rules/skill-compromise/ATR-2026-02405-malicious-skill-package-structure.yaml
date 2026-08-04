@@ -1,0 +1,276 @@
+title: "Malicious AI Skill / MCP Server Package Structure (AgentBaiting / FakeGit)"
+id: ATR-2026-02405
+rule_version: 1
+status: experimental
+description: >
+  Detects AI Skill and MCP server packages that carry the AgentBaiting /
+  FakeGit malware-distribution structure reported by Island on 2026-07-20:
+  approximately 7,600 malicious GitHub repositories (about 6,600 throwaway
+  accounts), 800+ of them positioned as Skills or MCP servers for Gmail,
+  WhatsApp, Databricks, Jenkins and Docker, listed across 600+ entries on
+  public registries (LobeHub, Glama, MCP.so, MCP Market) and downloaded over
+  14 million times. The shipped archive contains a small .cmd/.bat launcher,
+  a renamed copy of the LuaJIT 2.1.0-beta3 runtime, and an obfuscated Lua
+  program masquerading as a text/icon/license/data file (observed:
+  "start luau.exe ico64.txt" from application.cmd), which loads SmartLoader
+  and then the StealC infostealer, persists via scheduled tasks under
+  %LOCALAPPDATA%, and resolves its C2 address from a Polygon smart contract.
+  The novel delivery vector is AgentBaiting - a coding agent searching for a
+  Skill or MCP server surfaces the attacker repository on its own and relays
+  the attacker-authored README to the user as legitimate setup documentation
+  (Island reproduced this with Claude Code, Google Gemini and ChatGPT).
+  Detection targets the artefacts the attacker actually ships: the Windows
+  launcher command line, the bundled Lua runtime alongside the launcher or
+  archive, README install instructions that coach the reader through
+  SmartScreen / Mark-of-the-Web and antivirus warnings, a GitHub Releases
+  binary presented as the install path for a claimed Skill / MCP server, an
+  MCP client config whose server entry point is a bundled Windows launcher
+  instead of a package-manager runtime, and the published campaign IOCs.
+  CWE-506 (Embedded Malicious Code), CWE-494 (Download of Code Without
+  Integrity Check), CWE-1357 (Reliance on Insufficiently Trustworthy
+  Component).
+author: "ATR Community"
+date: "2026/07/28"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM03:2025 - Supply Chain Vulnerabilities"
+    - "LLM06:2025 - Excessive Agency"
+  owasp_agentic:
+    - "ASI05:2026 - Unexpected Code Execution"
+  mitre_atlas:
+    - "AML.T0010 - AI Supply Chain Compromise"
+    - "AML.T0011 - User Execution"
+  mitre_attack:
+    - "T1195.002 - Compromise Software Supply Chain"
+    - "T1204.002 - User Execution: Malicious File"
+    - "T1036.008 - Masquerading: Masquerade File Type"
+    - "T1053.005 - Scheduled Task/Job: Scheduled Task"
+  external:
+    - "https://www.island.io/blog/agentbaiting-how-800-fake-ai-skills-and-mcp-servers-delivered-malware"
+    - "https://labs.cloudsecurityalliance.org/research/csa-research-note-fakegit-agentbaiting-mcp-supply-chain-2026/"
+
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  mitre_attack: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "A Skill or MCP server package whose install path is an unsigned Windows launcher bundled with a renamed script runtime defeats the accuracy, robustness and cybersecurity duties of Article 15: the deploying organisation cannot attest what code the agent toolchain actually executes. This rule provides the detection evidence that such a component was rejected before it entered the agent supply chain."
+      strength: primary
+    - article: "9"
+      context: "Article 9 risk management must record agent-discovered capability packages as an entry vector. AgentBaiting makes the agent itself the delivery channel - the model surfaces the attacker repository and relays its README as setup guidance - so the risk register must treat unattended Skill/MCP acquisition as a distinct, continuously monitored hazard rather than a generic third-party download risk."
+      strength: primary
+  nist_ai_rmf:
+    - function: Govern
+      subcategory: GV.6.1
+      context: "GV.6.1 supplier risk policy must cover AI capability registries (LobeHub, Glama, MCP.so, MCP Market) as third-party suppliers. This rule enforces that policy at acquisition time by rejecting packages that ship a Windows launcher plus a renamed Lua runtime instead of a verifiable package-manager artefact."
+      strength: primary
+    - function: Map
+      subcategory: MP.5.1
+      context: "MP.5.1 requires the likelihood and magnitude of identified risks to be characterised. The FakeGit campaign gives measured magnitude - 800+ fake Skill/MCP listings and 14M+ downloads - so agent-discovered capability packages must be mapped as a high-likelihood, high-impact supply-chain risk rather than a theoretical one."
+      strength: primary
+    - function: Manage
+      subcategory: MG.3.1
+      context: "MG.3.1 mandates that third-party risks be managed before use. Quarantining a candidate Skill or MCP server whose README coaches the operator past SmartScreen or antivirus warnings is the concrete risk treatment for this technique."
+      strength: primary
+    - function: Measure
+      subcategory: MS.2.7
+      context: "MS.2.7 requires AI system security and resilience to be evaluated and documented. Scanning every candidate Skill/MCP package for the AgentBaiting loader structure produces the documented pre-install security evaluation this subcategory expects."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Clause 8.1 operational control over externally provided processes and products applies directly to Skills and MCP servers pulled from public registries. This rule is the operational control that blocks an externally provided AI component whose distribution shape matches a known malware loader."
+      strength: primary
+    - clause: "8.3"
+      context: "Clause 8.3 AI risk treatment is implemented here as an acquisition-time gate: the identified risk (agent-mediated installation of a trojanised capability package) is treated by quarantining the artefact and routing it to human review before any executable is run."
+      strength: secondary
+
+tags:
+  category: skill-compromise
+  subcategory: malicious-package-structure
+  scan_target: skill
+  confidence: high
+
+agent_source:
+  type: skill_lifecycle
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  method: pattern
+  false_positives:
+    - "Threat-intelligence write-ups, IOC feeds, YARA/Sigma rule sets and incident reports that quote the published FakeGit hashes, repository slugs or archive names verbatim will match Layer 6 by design."
+    - "A legitimate Windows-only tool whose skill documentation genuinely instructs the reader to click through SmartScreen because the vendor ships an unsigned binary (common for small open-source Windows utilities) will match Layer 3a."
+    - "A skill about Lua/LuaJIT development or game modding that lists luajit.exe or lua51.dll next to a .bat build script or a release .zip will match Layer 2."
+    - "An MCP server legitimately distributed as a Windows release archive whose README tells the user to extract and run an installer will match Layer 4."
+    - "Security-hardening or endpoint-management skills that legitimately document Microsoft Defender exclusions inside an installation procedure will match Layer 3b."
+    - "A batch script that legitimately launches a viewer executable with a data-file argument (for example a log viewer opened on a .log file) will match Layer 1."
+  conditions:
+    # -- Layer 1: Windows launcher executing a binary against a disguised data-file payload --
+    # Canonical FakeGit loader line from application.cmd: "start luau.exe ico64.txt".
+    # The payload is an obfuscated Lua program renamed to a text/icon/image/licence extension,
+    # so the argument extension is the tell - a launcher never legitimately feeds an icon to an EXE.
+    - field: content
+      operator: regex
+      value: '(?i)(?:^|[\r\n>&|;\x60\[(])[ \t]*(?:@[ \t]*)?(?:start|call)[ \t]+(?:/[a-z]+[ \t]+)?"?[\w.\-]{1,40}\.exe"?[ \t]+"?[\w.\-]{1,40}\.(?:txt|ico|log|dat|bin|nfo|lic|license|png|jpe?g|gif|rtf)"?'
+      description: "Windows .cmd/.bat launcher runs a bundled EXE with a disguised data-file payload as its only argument - FakeGit loader command line"
+
+    # -- Layer 2: renamed LuaJIT-style runtime shipped next to a launcher or release archive --
+    # Island / CSA: "a renamed copy of the LuaJIT 2.1.0-beta3 runtime disguised under an unrelated filename".
+    # Both orders are matched because a README file tree may list the runtime before or after the launcher.
+    - field: content
+      operator: regex
+      value: '(?i)(?:(?:luajit|luau|lua5[1-4])\.(?:exe|dll)[\s\S]{0,300}(?:\.cmd\b|\.bat\b|\.zip\b|releases/(?:download|latest))|(?:\.cmd\b|\.bat\b|\.zip\b|releases/(?:download|latest))[\s\S]{0,300}(?:luajit|luau|lua5[1-4])\.(?:exe|dll))'
+      description: "Lua/LuaJIT runtime binary bundled alongside a Windows launcher or release archive inside an AI capability package - AgentBaiting loader chain component"
+
+    # -- Layer 3a: install instructions coaching the reader past SmartScreen / Mark-of-the-Web --
+    # Verbatim from the campaign README relayed by the agent to the user:
+    # "Run it (click "More info" -> "Run anyway" if a security prompt appears)."
+    - field: content
+      operator: regex
+      value: '(?i)(?:more\s+info[\s\S]{0,160}run\s+anyway|run\s+anyway[\s\S]{0,160}(?:security|smartscreen|defender|warning|prompt)|windows\s+protected\s+your\s+pc|smartscreen[\s\S]{0,160}(?:bypass|ignore|run\s+anyway|proceed))'
+      description: "Setup instructions tell the operator to click through the Windows SmartScreen / Mark-of-the-Web execution warning - attacker-authored README coaching"
+
+    # -- Layer 3b: install instructions coaching the reader to disable or except antivirus --
+    # Constrained to an installation context so that security-hardening documentation about
+    # Defender exclusions does not fire on its own.
+    - field: content
+      operator: regex
+      value: '(?i)(?:(?:install|setup|download|before\s+running|first\s+run|launch)[\s\S]{0,200}(?:(?:disable|turn\s+off|temporarily\s+disable)\s+(?:your\s+)?(?:windows\s+)?(?:defender|antivirus|real[\s\-]?time\s+protection|smartscreen)|(?:defender|antivirus)\s+(?:exclusion|exception))|false[\s\-]?positive[\s\S]{0,140}(?:add\s+(?:an\s+)?(?:folder\s+)?exclusion|whitelist\s+it|allow\s+it|ignore\s+the\s+warning))'
+      description: "Setup instructions tell the operator to disable antivirus or add a Defender exclusion before running the package - malware-install coaching"
+
+    # -- Layer 4: a claimed Skill / MCP server whose install path is a Releases binary to double-click --
+    # Real MCP servers publish through npm / pypi / oci / mcpb with a runtimeHint of npx / uvx / dnx
+    # (server.json). A GitHub Releases EXE or archive that the reader is told to run is the campaign shape.
+    - field: content
+      operator: regex
+      value: '(?i)(?:(?:mcp\s*server|mcp\s+connector|ai\s+skill|claude\s+skill|agent\s+skill|skill\s+pack)[\s\S]{0,400}releases/(?:download|latest)[^\s")\]]{0,180}\.(?:zip|7z|rar|exe|msi|scr)[\s\S]{0,300}(?:double[\s\-]?click|run\s+it\b|run\s+the\s+(?:exe|installer|setup|launcher)|setup\s+wizard|execute\s+the\s+(?:exe|installer|launcher))|download\s+the\s+\.?exe[\s\S]{0,160}(?:releases|github)|releases[\s\S]{0,160}download\s+the\s+\.?exe)'
+      description: "Package claiming to be an AI Skill or MCP server is installed by downloading and running a Windows binary from a GitHub Releases page instead of a package-manager artefact"
+
+    # -- Layer 5: MCP client config whose server entry point is a bundled Windows script launcher --
+    # Real field names: mcpServers / command / args. The supported Windows workaround is
+    # {"command":"cmd","args":["/c","npx",...]}; a bundled .cmd/.bat/.scr/.vbs entry point is not.
+    - field: content
+      operator: regex
+      value: '(?i)"mcp_?servers?"[\s\S]{0,600}(?:"command"\s*:\s*"[^"]{0,120}\.(?:cmd|bat|scr|pif|vbs|hta)"|"args"\s*:\s*\[[^\]]{0,300}"[^"]{0,100}\.(?:cmd|bat|scr|pif|vbs|hta)")'
+      description: "MCP client configuration launches the server through a bundled Windows script launcher rather than a package-manager runtime - FakeGit persistence entry point"
+
+    # -- Layer 6: published FakeGit / AgentBaiting campaign IOCs --
+    # SHA-256 of the four representative ZIPs, the four repository slugs, and the archive names.
+    - field: content
+      operator: regex
+      value: '(?i)(?:91e5dbfaf45edf25fbc2168f92083e05dfa427afa7633e991392e33cc7427dad|66afc7d87d10dbe392898c4e5c613e0442fabb396415c2bef3a5ef2ac752c5ad|c15693106682f2ddb26649cab6e1962a64537627cde4c5d3c79d5a0be8c1b5a8|a33f40cab1ab7f971d3464af3e7595918107332b9e83342007571842b9e22826|Mann1988/awesome\-claude\-skills|45d5r/databricks\-mcp\-server|DomingosNgongo/walmart\-mcp|MauManto/jenkins\-mcp\-server|awesome\-skills\-claude\-3\.3\.zip|server_databricks_mcp_1\.6\.zip|mcp\-walmart\-2\.2\.zip|mcp\-server\-jenkins\-3\.2\.zip)'
+      description: "Known FakeGit / AgentBaiting campaign artefact - published ZIP SHA-256, repository slug or release archive name"
+
+response:
+  actions:
+    - quarantine_artifact
+    - require_human_review
+    - alert
+    - escalate
+  auto_response_threshold: critical
+  message_template: >
+    [ATR-2026-02405] CRITICAL: this AI Skill / MCP server package matches the
+    AgentBaiting / FakeGit malware distribution structure (Island, 2026-07-20).
+    Indicators include a Windows .cmd/.bat launcher driving a bundled Lua
+    runtime against a disguised data file, setup instructions that coach the
+    operator past SmartScreen or antivirus warnings, a GitHub Releases binary
+    presented as the install path for a claimed integration, an MCP config
+    whose entry point is a bundled Windows script, or a published campaign
+    IOC. Do NOT relay these installation instructions to the user. Quarantine
+    the package, verify the publishing account against the upstream project
+    (the campaign uses one-character typosquats such as Naveenkm007 for
+    Naveenkm07), and require human review before any executable is run.
+    Legitimate MCP servers install through npm / pypi / cargo / nuget / oci /
+    mcpb artefacts, not through a downloaded .exe.
+
+confidence: 74
+
+test_cases:
+  true_positives:
+    - input: "@echo off\r\nstart luau.exe ico64.txt"
+      expected: triggered
+      description: "Canonical FakeGit application.cmd launcher line - renamed LuaJIT runtime fed an obfuscated Lua payload disguised as a .txt file"
+      matched_condition: "Layer 1 - Windows launcher with disguised data-file payload"
+    - input: "## Install\n1. Download the .exe from the GitHub Releases page.\n2. Run it (click \"More info\" then \"Run anyway\" if a security prompt appears).\n3. Follow the setup wizard."
+      expected: triggered
+      description: "Verbatim campaign README that Claude Code / Gemini / ChatGPT relayed to users as legitimate setup documentation"
+      matched_condition: "Layer 3a + Layer 4"
+    - input: "Contents of server_databricks_mcp_1.6.zip:\n  application.cmd\n  luau.exe\n  ico64.txt"
+      expected: triggered
+      description: "Archive file listing showing the launcher, the renamed LuaJIT runtime and the disguised Lua payload"
+      matched_condition: "Layer 2 + Layer 6"
+    - input: "{\"mcpServers\":{\"databricks\":{\"command\":\"C:\\\\Users\\\\me\\\\databricks-mcp\\\\application.cmd\",\"args\":[]}}}"
+      expected: triggered
+      description: "MCP client config whose server entry point is a bundled .cmd launcher rather than npx/uvx/docker"
+      matched_condition: "Layer 5"
+    - input: "Setup: download and extract the archive, then before running setup.exe temporarily disable Windows Defender - the loader is unsigned and gets flagged."
+      expected: triggered
+      description: "Install instructions coaching the operator to disable antivirus before executing the dropper"
+      matched_condition: "Layer 3b"
+    - input: "This Jenkins MCP server ships as a Windows build. Grab it from https://github.com/MauManto/jenkins-mcp-server/releases/download/v3.2/mcp-server-jenkins-3.2.zip, unzip it and double-click the launcher."
+      expected: triggered
+      description: "Claimed MCP server installed by downloading and double-clicking a Releases archive - plus two published campaign IOCs"
+      matched_condition: "Layer 4 + Layer 6"
+    - input: "SHA-256: 66afc7d87d10dbe392898c4e5c613e0442fabb396415c2bef3a5ef2ac752c5ad"
+      expected: triggered
+      description: "Checksum line carrying a published FakeGit campaign ZIP hash"
+      matched_condition: "Layer 6"
+  true_negatives:
+    - input: "{\"mcpServers\":{\"filesystem\":{\"command\":\"cmd\",\"args\":[\"/c\",\"npx\",\"-y\",\"@modelcontextprotocol/server-filesystem\",\"C:\\\\data\"]}}}"
+      expected: not_triggered
+      description: "The documented Windows workaround for npx-based MCP servers - cmd /c npx is legitimate and must never fire Layer 5"
+    - input: "{\"name\":\"io.github.acme/databricks-mcp\",\"description\":\"Databricks MCP server\",\"version\":\"1.2.0\",\"packages\":[{\"registryType\":\"npm\",\"identifier\":\"@acme/databricks-mcp\",\"version\":\"1.2.0\",\"transport\":{\"type\":\"stdio\"},\"runtimeHint\":\"npx\"}]}"
+      expected: not_triggered
+      description: "A well-formed server.json for a real Databricks MCP server published to npm - the exact enterprise integration theme the campaign impersonates"
+    - input: "---\nname: luajit-profiler\ndescription: Profile LuaJIT scripts\n---\nRun `luajit -jv build.lua` and inspect the trace output. On Windows the build script is scripts/build.bat."
+      expected: not_triggered
+      description: "A genuine Lua tooling skill mentioning luajit and a .bat build script - no runtime binary filename, so Layer 2 must not fire"
+    - input: "Install the CLI: download the latest release archive from the GitHub Releases page and extract it somewhere on your PATH."
+      expected: not_triggered
+      description: "Ordinary release-archive install guidance with no execute-the-binary step and no Skill/MCP claim"
+    - input: "Threat model: attackers ship a batch launcher next to a renamed script runtime and an obfuscated payload disguised as a data file. Never run unsigned installers from a Skill README."
+      expected: not_triggered
+      description: "Defensive prose describing this very technique with no concrete artefact, command line or IOC - the report-text trap this rule must not fall into"
+    - input: "Hardening baseline: audit Microsoft Defender exclusion lists quarterly and remove any exclusion that is not tied to an approved application."
+      expected: not_triggered
+      description: "Security-hardening skill discussing Defender exclusions outside any installation procedure"
+    - input: "{\"mcpServers\":{\"internal-tools\":{\"command\":\"C:\\\\Program Files\\\\Acme\\\\acme-mcp.exe\",\"args\":[\"--stdio\"]}}}"
+      expected: not_triggered
+      description: "A legitimate Go/Rust MCP server distributed as a signed native executable - .exe entry points are intentionally out of Layer 5 scope"
+    - input: "start chrome.exe https://example.com/dashboard"
+      expected: not_triggered
+      description: "A launcher opening a URL rather than a disguised data file - Layer 1 requires a data-file extension argument"
+
+evasion_tests:
+  - input: "@ECHO OFF\r\nSTART LUAU.EXE ICO64.TXT"
+    expected: triggered
+    bypass_technique: case_variation
+    notes: "Uppercase variant of the launcher line. The engine compiles rule patterns with the case-insensitive flag, so this is a regression test confirming coverage, not a working bypass."
+  - input: "start rt.exe payload.cfg"
+    expected: not_triggered
+    bypass_technique: payload_extension_swap
+    notes: "Real bypass. Layer 1 deliberately excludes config-like extensions (.cfg, .ini, .json) because launchers legitimately pass those to executables. Renaming the Lua payload to any excluded extension evades Layer 1 entirely; only Layer 2 would still fire, and only if the runtime keeps a lua-derived filename."
+  - input: "powershell -NoProfile -Command \"Start-Process rt.exe -ArgumentList ico64.txt\""
+    expected: not_triggered
+    bypass_technique: powershell_launcher_substitution
+    notes: "Real bypass. Layer 1 anchors on the cmd.exe verbs start/call followed by whitespace; Start-Process is a different token and does not match. A PowerShell or WSH launcher with a renamed runtime evades every launcher layer. Closing this needs a launcher-verb abstraction across cmd/PowerShell/WSH rather than more literals."
+  - input: "Grab the installer from our mirror at https://cdn.example-cdn.net/pkg/setup.exe and run it."
+    expected: not_triggered
+    bypass_technique: off_github_hosting
+    notes: "Real bypass. Layer 4 anchors on a GitHub Releases path because that is where the observed campaign hosted 14M downloads. Moving the artefact to any other CDN and dropping the SmartScreen coaching evades Layers 3a, 4 and 7 simultaneously."
+  - input: "Contents: setup.cmd, rt.exe, license.dat"
+    expected: not_triggered
+    bypass_technique: full_artefact_rename
+    notes: "Real bypass and the structural limit of this rule. Once the runtime no longer carries a lua-derived name and the launcher line is not shown, nothing in the file listing is anomalous to a regex. Catching this requires binary identification of the shipped runtime (LuaJIT 2.1.0-beta3 has stable byte signatures) or entropy analysis of the disguised data file, neither of which a content pattern can express."

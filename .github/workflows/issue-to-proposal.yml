@@ -71,7 +71,11 @@ jobs:
       - name: Open draft PR
         id: pr
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # A PR opened with the default GITHUB_TOKEN is authored by app/github-actions, and
+          # every check on it parks at action_required forever instead of running. Opening it
+          # with a PAT makes a real user the author so the PR's own CI runs. Falls back to
+          # GITHUB_TOKEN when ATR_REPO_TOKEN is absent (PR still opens, checks still park).
+          GH_TOKEN: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           set -e
           PR_URL=$(gh pr create \

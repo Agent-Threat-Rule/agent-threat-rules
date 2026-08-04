@@ -1,7 +1,7 @@
 title: "PraisonAI FileTools _validate_path normpath Path Traversal (CVE-2026-35615 / GHSA-693f-pf34-72c5)"
 id: ATR-2026-01970
-rule_version: 1
-status: draft
+rule_version: 2
+status: experimental
 description: >
   Detects exploitation of CVE-2026-35615 (GHSA-693f-pf34-72c5, CWE-22, CVSS 9.2)
   in PraisonAI < 1.5.113. FileTools._validate_path() calls os.path.normpath()
@@ -70,9 +70,14 @@ detection:
         ineffective `'..' in normalized` check — the CVE-2026-35615 logic bug.
     - field: content
       operator: regex
-      value: '(?i)[''"/]?(?:tmp[\\/])?\.\.[\\/]+etc[\\/]+passwd'
+      value: '(?i)[''"/]?tmp[\\/](?:\.\.[\\/])+etc[\\/]+passwd'
       description: >
-        Canonical /tmp/../etc/passwd traversal PoC string from the advisory.
+        Canonical /tmp/../etc/passwd traversal PoC string from the advisory. The
+        `tmp/` segment is mandatory: with it optional this condition degenerated
+        into a generic `../../../etc/passwd` matcher, which is the single most
+        common literal in web-security cheat sheets and carries no PraisonAI
+        signal at all. Traversal payloads that do not start in /tmp are still
+        covered by the FileTools-context and CVE-context conditions above/below.
     - field: content
       operator: regex
       value: '(?i)CVE-2026-35615[\s\S]{0,200}(?:_validate_path|normpath|path\s*traversal|FileTools|\.\.[\\/])'
