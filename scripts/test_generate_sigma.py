@@ -20,9 +20,13 @@ from __future__ import annotations
 
 import glob
 import importlib.util
+import json
 import os
 import re
+import shutil
+import subprocess
 import sys
+import tempfile
 
 import yaml
 
@@ -236,6 +240,180 @@ def test_whole_corpus_converts_without_crashing():
         except Exception as exc:  # noqa: BLE001
             failures.append(f"{path}: raised {exc!r}")
     assert not failures, "corpus conversion failures:\n" + "\n".join(failures[:20])
+
+
+def _re2_regexes(rel: str, dialect: str) -> tuple[list[str], bool]:
+    """Emitted regex patterns for one rule, plus whether it is tagged blocked."""
+    doc = _load_atr(rel)
+    sigma, _ = CONV.convert_rule(doc, _abs(rel), dialect)
+    blocked = "atr.portability.re2-blocked" in (sigma.get("tags") or [])
+    patterns = [
+        val
+        for key, sel in sigma["detection"].items()
+        if key != "condition" and isinstance(sel, dict)
+        for field, val in sel.items()
+        if "|re" in field and isinstance(val, str)
+    ]
+    return patterns, blocked
+
+
+def test_every_rule_carries_a_portability_tag():
+    """A consumer must be able to tell RE2-runnable from not, per rule."""
+    for rel in SAMPLE_RULES:
+        _, s, _, _, _ = _convert(rel)
+        marks = [t for t in s["tags"] if t.startswith("atr.portability.re2-")]
+        assert len(marks) == 1, f"{rel}: expected exactly one portability tag, got {marks}"
+
+
+def test_re2_dialect_rewrites_unicode_escapes():
+    """--regex-dialect re2 emits RE2's escape spelling; pcre leaves it alone."""
+    rel = "rules/prompt-injection/ATR-2026-00258-unicode-tag-injection.yaml"
+    pcre_pats, _ = _re2_regexes(rel, "pcre")
+    re2_pats, _ = _re2_regexes(rel, "re2")
+    assert any("\\u{E0000}" in p for p in pcre_pats), "pcre dialect should keep \\u{...}"
+    assert any("\\x{E0000}" in p for p in re2_pats), "re2 dialect should emit \\x{...}"
+    assert not any("\\u{" in p for p in re2_pats), "re2 dialect must not leave \\u{...} behind"
+
+
+def test_would_unlock_counts_only_spelling_only_blockers():
+    """The advertised count must never include a rule RE2 still cannot run.
+
+    A rule whose blockers include a lookaround stays blocked in both dialects,
+    so promising it to a downstream RE2 backend would be a lie the backend only
+    discovers at compile time.
+    """
+    spelling = CONV.SPELLING_BLOCKER
+    blocked = [
+        {"id": "SPELLING-ONLY", "path": "x", "reasons": [spelling]},
+        {"id": "ALSO-LOOKAROUND", "path": "x", "reasons": [spelling, "lookahead ... RE2 rejects it"]},
+        {"id": "LOOKAROUND-ONLY", "path": "x", "reasons": ["lookahead ... RE2 rejects it"]},
+    ]
+    got = CONV.rules_unlocked_by_re2_dialect(blocked, "pcre", {})
+    assert got == ["SPELLING-ONLY"], f"expected only the spelling-only rule, got {got}"
+
+
+def test_would_unlock_excludes_measured_divergences():
+    """A rewrite that compiles under RE2 and then matches a different language
+    is not an unlock. Those carry their divergence warning only under the re2
+    dialect, so counting reasons alone would over-promise by exactly that set.
+    """
+    blocked = [
+        {"id": "CLEAN", "path": "x", "reasons": [CONV.SPELLING_BLOCKER]},
+        {"id": "DIVERGENT", "path": "x", "reasons": [CONV.SPELLING_BLOCKER]},
+    ]
+    got = CONV.rules_unlocked_by_re2_dialect(blocked, "pcre", {"DIVERGENT": [{"causes": ["differs"]}]})
+    assert got == ["CLEAN"], f"divergent rule must not be advertised as an unlock, got {got}"
+
+
+def test_would_unlock_is_empty_under_re2_dialect():
+    """Nothing left to advertise once the run already emits RE2 spelling."""
+    blocked = [{"id": "SPELLING-ONLY", "path": "x", "reasons": [CONV.SPELLING_BLOCKER]}]
+    assert CONV.rules_unlocked_by_re2_dialect(blocked, "re2", {}) == []
+
+
+def test_would_unlock_matches_a_real_re2_dialect_run():
+    """The number the summary advertises has to equal what actually happens.
+
+    Converts the whole corpus twice and asserts that the set the pcre run says
+    would unlock is exactly the set that stops being blocked under re2 -- so the
+    claim is an identity, not an estimate.
+    """
+    out = tempfile.mkdtemp(prefix="atr-sigma-unlock-")
+    try:
+        reports = {}
+        for dialect in ("pcre", "re2"):
+            rep = os.path.join(out, f"{dialect}.json")
+            subprocess.run(
+                [sys.executable, os.path.join(REPO, "scripts", "generate-sigma.py"),
+                 "--all", "--out", os.path.join(out, dialect), "--quiet",
+                 "--regex-dialect", dialect, "--portability-report", rep],
+                cwd=REPO, check=True, capture_output=True,
+            )
+            with open(rep) as fh:
+                reports[dialect] = json.load(fh)
+        blocked_pcre = {r["id"] for r in reports["pcre"]["blocked"]}
+        blocked_re2 = {r["id"] for r in reports["re2"]["blocked"]}
+        advertised = set(reports["pcre"]["would_unlock_with_re2_dialect"])
+        assert advertised == blocked_pcre - blocked_re2, (
+            "advertised unlock set != rules that actually stop being blocked: "
+            f"over-promised {sorted(advertised - (blocked_pcre - blocked_re2))}, "
+            f"missed {sorted((blocked_pcre - blocked_re2) - advertised)}"
+        )
+        assert not reports["re2"]["would_unlock_with_re2_dialect"]
+    finally:
+        shutil.rmtree(out, ignore_errors=True)
+
+def test_logsource_category_is_stable_across_processes():
+    """The same rule must convert to the same logsource.category every run.
+
+    `max()` walks its container, so a tie is decided by iteration order. Over a
+    set of strings that order depends on per-process hash randomisation, which
+    made rules whose top two detection surfaces tie (tool_args vs user_input and
+    friends) emit a different category on different runs of identical code.
+    Downstream consumers diff these exports, so the churn looks like a rule
+    change that never happened.
+
+    Asserted across separate interpreters with different PYTHONHASHSEEDs,
+    because within one process the order is already fixed.
+    """
+    tied = "rules/prompt-injection/ATR-2026-00395-llm-special-token-boundary-injection.yaml"
+    if not os.path.exists(_abs(tied)):
+        print(f"   (skipped: {tied} no longer in corpus)", file=sys.stderr)
+        return
+    seen = set()
+    for seed in ("0", "1", "42", "12345"):
+        env = dict(os.environ, PYTHONHASHSEED=seed)
+        proc = subprocess.run(
+            [sys.executable, os.path.join(REPO, "scripts", "generate-sigma.py"),
+             "--rule", _abs(tied), "--stdout", "--quiet"],
+            cwd=REPO, check=True, capture_output=True, text=True, env=env,
+        )
+        doc = yaml.safe_load(proc.stdout)
+        seen.add(doc["logsource"].get("category"))
+    assert len(seen) == 1, f"logsource.category varies with PYTHONHASHSEED: {sorted(seen)}"
+
+
+def test_no_untagged_rule_fails_re2_compilation():
+    """The load-bearing guarantee: an RE2 backend that honours the
+    `atr.portability.re2-blocked` tag never hits a pattern it cannot compile.
+
+    A rule that fails to compile while advertising itself as runnable is the
+    exact silent failure this metadata exists to prevent, so it is asserted
+    against the real engine rather than against our own classifier.
+    """
+    if shutil.which("go") is None:
+        print("   (skipped: no Go toolchain for the RE2 oracle)", file=sys.stderr)
+        return
+    go_src = (
+        "package main\n"
+        'import ("encoding/json";"os";"regexp")\n'
+        "func main(){var in []string\n"
+        " if err:=json.NewDecoder(os.Stdin).Decode(&in);err!=nil{os.Exit(2)}\n"
+        " out:=make([]bool,0,len(in))\n"
+        " for _,p:=range in{_,err:=regexp.Compile(p);out=append(out,err==nil)}\n"
+        " json.NewEncoder(os.Stdout).Encode(out)}\n"
+    )
+    paths = sorted(glob.glob(os.path.join(REPO, "rules", "**", "*.yaml"), recursive=True))
+    flat: list[str] = []
+    owners: list[tuple[str, bool]] = []
+    for path in paths:
+        pats, blocked = _re2_regexes(os.path.relpath(path, REPO), "re2")
+        flat.extend(pats)
+        owners.extend((os.path.basename(path), blocked) for _ in pats)
+    with tempfile.TemporaryDirectory() as tmp:
+        src = os.path.join(tmp, "main.go")
+        with open(src, "w") as fh:
+            fh.write(go_src)
+        proc = subprocess.run(
+            ["go", "run", src], input=json.dumps(flat), capture_output=True, text=True
+        )
+        assert proc.returncode == 0, f"RE2 oracle failed: {proc.stderr[:300]}"
+        ok = json.loads(proc.stdout)
+    untagged = [owners[i][0] for i, good in enumerate(ok) if not good and not owners[i][1]]
+    assert not untagged, (
+        f"{len(untagged)} pattern(s) are rejected by RE2 on rules NOT tagged "
+        f"re2-blocked (silent failure): {sorted(set(untagged))[:10]}"
+    )
 
 
 def _run_standalone() -> int:

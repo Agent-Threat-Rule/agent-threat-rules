@@ -89,6 +89,26 @@ function writeJsonl(path: string, samples: BenignSample[]): void {
   writeFileSync(path, body, "utf-8");
 }
 
+// Jailbreak-exclusion filter. A benign corpus that gates false positives is
+// worthless if it contains real jailbreaks — a poisoned "benign" sample would
+// suppress the very rule that catches it. arxiv/npm/pypi prose is low-risk, but
+// this is a hard safety net so a harvested sample that IS a jailbreak (or quotes
+// one verbatim) never lands in the benign gate. Conservative by design: it fires
+// only on a persona-swap PAIRED with explicit restriction-removal, or on an
+// unambiguous standalone jailbreak phrase — so academic text merely *discussing*
+// prompt injection is not dropped.
+const JB_PERSONA =
+  /\b(you\s+are\s+now|you'?re\s+now|your\s+name\s+is\s+now|you\s+are\s+no\s+longer|you\s+now\s+go\s+by|pretend\s+to\s+be|play\s+the\s+role\s+of)\b/i;
+const JB_LEXICON =
+  /(unfiltered|uncensored|no\s+restrictions?\b|without\s+(?:any\s+)?(?:restrictions?|filters?|ethical|moral)|(?:no|without|any)\s+content\s+polic|criminal\s+language\s+model|no\s+moral\s+boundaries)/i;
+const JB_STRONG =
+  /\bdo\s+anything\s+now\b|\bjailbroken\b|welcome\s+to\s+the\s+jailbreak|\bDAN\s+(?:mode|prompt)\b|unfiltered,?\s+(?:completely\s+)?unlimited/i;
+
+function looksLikeJailbreak(text: string): boolean {
+  if (JB_STRONG.test(text)) return true;
+  return JB_PERSONA.test(text) && JB_LEXICON.test(text);
+}
+
 async function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
@@ -462,10 +482,20 @@ async function main(): Promise<void> {
     }
     console.error(`${src}: fetched ${fetched.length} samples`);
 
+    // Safety net: never let a harvested sample that is itself a jailbreak into
+    // the benign gate (see looksLikeJailbreak).
+    const clean = fetched.filter((s) => !looksLikeJailbreak(s.text));
+    const dropped = fetched.length - clean.length;
+    if (dropped > 0) {
+      console.error(
+        `${src}: dropped ${dropped} sample(s) matching a jailbreak signature (excluded from benign corpus)`,
+      );
+    }
+
     const path = join(OUT_DIR, `${src}.jsonl`);
     const existing = loadExisting(path);
     let added = 0;
-    for (const s of fetched) {
+    for (const s of clean) {
       if (!existing.has(s.source_id)) {
         existing.set(s.source_id, s);
         added += 1;

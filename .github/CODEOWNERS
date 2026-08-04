@@ -43,6 +43,29 @@ meetings/**                    @Agent-Threat-Rule/tsc @eeee2345
 .github/workflows/**           @Agent-Threat-Rule/tsc @eeee2345
 .github/CODEOWNERS             @Agent-Threat-Rule/tsc @eeee2345
 scripts/check-rules-safety.ts  @Agent-Threat-Rule/tsc @eeee2345
+scripts/gate-rule-status.ts    @Agent-Threat-Rule/tsc @eeee2345
+# Ratchet baselines are records of accepted debt. `--write-baseline` can only
+# shrink them, so any diff that ADDS an entry is a hand edit granting a new
+# exception — exactly the change that needs a human to see it.
+data/rule-status-baseline.json @Agent-Threat-Rule/tsc @eeee2345
+
+# Ratchet gates and the baselines they ratchet against. A baseline IS the
+# gate: widening data/*-baseline.json silences a failure just as effectively
+# as editing the script, and until 2026-08-03 none of these files were
+# covered here at all -- any rules-team member could quietly relax the RE2
+# and generalization ratchets with no TSC review. The eval corpus is listed
+# for the same reason: shrinking the measurement basis mutes the latency
+# gate without touching either the gate or its baseline.
+scripts/gate-rule-latency.ts          @Agent-Threat-Rule/tsc @eeee2345
+scripts/lib/rule-latency-*.ts         @Agent-Threat-Rule/tsc @eeee2345
+tests/gate-rule-latency*.test.ts      @Agent-Threat-Rule/tsc @eeee2345
+tests/rule-latency-fixtures.ts        @Agent-Threat-Rule/tsc @eeee2345
+scripts/gate-re2-portability.ts       @Agent-Threat-Rule/tsc @eeee2345
+scripts/eval-generalization.ts        @Agent-Threat-Rule/tsc @eeee2345
+data/rule-latency-baseline.json       @Agent-Threat-Rule/tsc @eeee2345
+data/re2-portability-baseline.json    @Agent-Threat-Rule/tsc @eeee2345
+data/generalization-baseline.json     @Agent-Threat-Rule/tsc @eeee2345
+src/eval/corpus.ts                    @Agent-Threat-Rule/tsc @eeee2345
 
 # === Rules ===
 # Rule PRs are reviewed by the rules team; CI quality gate is the

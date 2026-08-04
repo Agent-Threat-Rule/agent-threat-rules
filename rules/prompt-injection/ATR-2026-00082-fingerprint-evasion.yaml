@@ -1,7 +1,7 @@
 title: Behavioral Fingerprint Detection Evasion
 id: ATR-2026-00082
-rule_version: 1
-status: draft
+rule_version: 2
+status: experimental
 description: >
   Detects attempts to evade behavioral drift detection and fingerprinting systems. Attackers probe or manipulate agent
   behavior profiles by gradually shifting capabilities, spoofing behavioral signatures, or injecting instructions
@@ -65,8 +65,12 @@ detection:
     - field: user_input
       operator: regex
       value: >-
-        (?i)\b(spoof|fake|mimic|clone|replicate|impersonate)\s+.{0,30}\b(behavio(u?r|ral)|fingerprint|profile|signature|pattern)\b
-      description: Attempt to spoof or replicate behavioral fingerprints
+        (?i)\b(spoof|fake|mimic|clone|replicate|impersonate)\s+.{0,30}\b(behaviou?ra?l?s?\s+(signature|profile|fingerprint|pattern|baseline)|fingerprint)\b
+      description: >-
+        Attempt to spoof or replicate a behavioral fingerprint. The target noun must be an explicitly behavioral
+        artefact (behavioural signature/profile/fingerprint/pattern/baseline) or the word 'fingerprint' itself —
+        bare 'pattern'/'profile'/'signature' after these verbs is ordinary engineering English ('fake pattern',
+        'replicate the pattern') and is not an evasion signal.
     - field: user_input
       operator: regex
       value: >-
@@ -88,6 +92,10 @@ detection:
     - Security research discussion about behavioral fingerprinting techniques
     - Red team exercise documentation describing how to replicate a behavioral profile for penetration testing reports
     - Academic paper abstract discussing methods to defeat behavioral anomaly tracking in adversarial ML research
+    - >-
+      Test-double documentation using the words 'fake pattern' / 'Real-Fake pattern', and data-migration notes saying an
+      implementation must 'replicate identical behavior' — both are ordinary engineering English, which is why
+      condition 1 requires an explicitly behavioural artefact noun rather than a bare 'pattern'/'profile'
 response:
   actions:
     - block_input

@@ -11,21 +11,21 @@ This is a **curated thematic mapping**, not an id-equality join. ATR carries no 
 
 Regenerate with `python3 scripts/generate-ast-crosswalk.py`. CI runs `--check` so a stale copy fails the build.
 
-Rules in corpus at generation time: **769**.
+Rules in corpus at generation time: **780**.
 
 ## Coverage by AST control
 
 | AST | Title | ATR rules | Top supporting ASI (evidence) |
 |-----|-------|-----------|-------------------------------|
-| AST01 | Malicious Skills | 191 | ASI01 (56), ASI05 (49), ASI04 (47) |
-| AST02 | Supply Chain Compromise | 51 | ASI04 (19), ASI01 (12), ASI03 (7) |
-| AST03 | Over-Privileged Skills | 217 | ASI01 (92), ASI03 (85), ASI06 (37) |
-| AST04 | Insecure Metadata | 109 | ASI05 (42), ASI06 (33), ASI04 (28) |
+| AST01 | Malicious Skills | 194 | ASI01 (57), ASI05 (51), ASI04 (48) |
+| AST02 | Supply Chain Compromise | 54 | ASI04 (21), ASI01 (12), ASI05 (9) |
+| AST03 | Over-Privileged Skills | 224 | ASI01 (92), ASI03 (88), ASI06 (39) |
+| AST04 | Insecure Metadata | 110 | ASI05 (42), ASI06 (34), ASI04 (28) |
 | AST05 | Untrusted External Instructions | 352 | ASI01 (333), ASI06 (16), ASI04 (14) |
-| AST06 | Weak Isolation | 124 | ASI01 (74), ASI03 (39), ASI06 (21) |
+| AST06 | Weak Isolation | 125 | ASI01 (74), ASI03 (40), ASI06 (21) |
 | AST07 | Update Drift | 0 | - |
 | AST08 | Poor Scanning | 0 | - |
-| AST09 | No Governance | 34 | ASI03 (16), ASI01 (15), ASI02 (6) |
+| AST09 | No Governance | 37 | ASI03 (18), ASI01 (15), ASI02 (8) |
 | AST10 | Cross-Platform Reuse | 0 | - |
 
 ## Category -> AST mapping (the editorial join table)
@@ -33,18 +33,18 @@ Rules in corpus at generation time: **769**.
 | ATR category | Rules | AST control(s) | Rationale |
 |--------------|-------|----------------|-----------|
 | prompt-injection (244) | 244 | AST05 Untrusted External Instructions | Injected/untrusted instructions are exactly the AST05 external-instruction class. |
-| context-exfiltration (124) | 124 | AST03 Over-Privileged Skills | Reading/exfiltrating data beyond the skill's need is over-privilege. |
+| context-exfiltration (125) | 125 | AST03 Over-Privileged Skills | Reading/exfiltrating data beyond the skill's need is over-privilege. |
 |  |  | AST06 Weak Isolation | Cross-context data leakage indicates weak isolation between skills/sessions. |
-| tool-poisoning (109) | 109 | AST01 Malicious Skills | A poisoned tool/skill is a malicious skill at the point of use. |
+| tool-poisoning (110) | 110 | AST01 Malicious Skills | A poisoned tool/skill is a malicious skill at the point of use. |
 |  |  | AST04 Insecure Metadata | Tool-description / metadata poisoning is the AST04 insecure-metadata surface. |
 | agent-manipulation (108) | 108 | AST05 Untrusted External Instructions | Manipulating an agent via crafted external content is untrusted-instruction abuse. |
-| privilege-escalation (59) | 59 | AST03 Over-Privileged Skills | Privilege escalation is the direct consequence of over-privileged skills. |
-| skill-compromise (42) | 42 | AST01 Malicious Skills | A compromised skill is a malicious skill. |
+| privilege-escalation (62) | 62 | AST03 Over-Privileged Skills | Privilege escalation is the direct consequence of over-privileged skills. |
+| skill-compromise (44) | 44 | AST01 Malicious Skills | A compromised skill is a malicious skill. |
 |  |  | AST02 Supply Chain Compromise | Skill compromise via a tampered upstream is supply-chain compromise. |
 | model-abuse (40) | 40 | AST01 Malicious Skills | Coercing the model into attacker-chosen behaviour manifests as a malicious skill action. |
-| excessive-autonomy (34) | 34 | AST03 Over-Privileged Skills | Unbounded action authority is an over-privilege condition. |
+| excessive-autonomy (37) | 37 | AST03 Over-Privileged Skills | Unbounded action authority is an over-privilege condition. |
 |  |  | AST09 No Governance | Autonomy without checks is the AST09 governance gap. |
-| data-poisoning (9) | 9 | AST02 Supply Chain Compromise | Poisoned training/reference data enters through the supply chain. |
+| data-poisoning (10) | 10 | AST02 Supply Chain Compromise | Poisoned training/reference data enters through the supply chain. |
 
 ## What ATR does not cover
 

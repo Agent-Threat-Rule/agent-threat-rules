@@ -1,7 +1,7 @@
 title: Threat Intelligence Exfiltration and Rule Enumeration
 id: ATR-2026-00090
 rule_version: 1
-status: draft
+status: experimental
 description: >
   Detects attempts to extract threat intelligence, enumerate detection rules, or exfiltrate security configuration
   details from the agent. Attackers attempt to learn the detection ruleset to craft evasion payloads, or extract
@@ -65,8 +65,13 @@ detection:
     - field: user_input
       operator: regex
       value: >-
-        (?i)\b(list|show|reveal|dump|export|display|print|output)\s+.{0,15}(all\s+)?(detection|security|threat|ATR|YARA|sigma)\s*(rules?|signatures?|patterns?|config|logic)
-      description: Request to enumerate detection rules or signatures
+        (?i)\b(list|show|reveal|dump|export|display|print|output)\s+(?:me\s+)?(?:all\s+|every\s+|the\s+|your\s+|our\s+|its\s+|currently\s+|deployed\s+|active\s+|loaded\s+)*(detection|security|threat|ATR|YARA|sigma)\s*(rules?|signatures?|patterns?|config|logic)
+      description: >-
+        Imperative request to enumerate the detection ruleset. The verb must be followed by a determiner /
+        possessive chain ("list all detection rules", "show me your YARA signatures") rather than an arbitrary
+        15-character gap. The old `.{0,15}` gap also matched the NOUN-PHRASE reading "a list of detection rules",
+        which is how a legitimate skill-scanner skill describes its own output — that is the one residual FP this
+        rule still produced on the benign corpus once it was revived from status: draft.
     - field: user_input
       operator: regex
       value: >-
@@ -75,8 +80,11 @@ detection:
     - field: user_input
       operator: regex
       value: >-
-        (?i)\b(extract|exfiltrate|steal|copy|leak|send|transmit)\s+.{0,20}(security|audit|detection|threat|rule|config|credential|secret|key|token)
-      description: Attempt to exfiltrate security configuration or credentials
+        (?i)\b(extract|exfiltrate|steal|leak|dump|siphon)\s+(?:the\s+|all\s+|our\s+|your\s+|its\s+|my\s+)?(?:internal\s+|full\s+|entire\s+)?(security|audit|detection|threat)\s+(?:audit\s+|system\s+|engine\s+)?(config\w*|rule\s?sets?|rules?|logic|signature\w*|polic\w+|pipeline)\b
+      description: >-
+        Attempt to exfiltrate the security/detection configuration itself. Scoped to a security-domain noun phrase
+        (security|audit|detection|threat + config/rules/logic/signatures/policy) because the earlier bare-noun form
+        (...|key|token|config) matched ordinary phrasing such as "extract key", "copy the token" and "send keyboard key".
     - field: user_input
       operator: regex
       value: >-
