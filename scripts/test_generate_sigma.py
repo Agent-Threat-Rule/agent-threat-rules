@@ -275,6 +275,75 @@ def test_re2_dialect_rewrites_unicode_escapes():
     assert not any("\\u{" in p for p in re2_pats), "re2 dialect must not leave \\u{...} behind"
 
 
+def test_would_unlock_counts_only_spelling_only_blockers():
+    """The advertised count must never include a rule RE2 still cannot run.
+
+    A rule whose blockers include a lookaround stays blocked in both dialects,
+    so promising it to a downstream RE2 backend would be a lie the backend only
+    discovers at compile time.
+    """
+    spelling = CONV.SPELLING_BLOCKER
+    blocked = [
+        {"id": "SPELLING-ONLY", "path": "x", "reasons": [spelling]},
+        {"id": "ALSO-LOOKAROUND", "path": "x", "reasons": [spelling, "lookahead ... RE2 rejects it"]},
+        {"id": "LOOKAROUND-ONLY", "path": "x", "reasons": ["lookahead ... RE2 rejects it"]},
+    ]
+    got = CONV.rules_unlocked_by_re2_dialect(blocked, "pcre", {})
+    assert got == ["SPELLING-ONLY"], f"expected only the spelling-only rule, got {got}"
+
+
+def test_would_unlock_excludes_measured_divergences():
+    """A rewrite that compiles under RE2 and then matches a different language
+    is not an unlock. Those carry their divergence warning only under the re2
+    dialect, so counting reasons alone would over-promise by exactly that set.
+    """
+    blocked = [
+        {"id": "CLEAN", "path": "x", "reasons": [CONV.SPELLING_BLOCKER]},
+        {"id": "DIVERGENT", "path": "x", "reasons": [CONV.SPELLING_BLOCKER]},
+    ]
+    got = CONV.rules_unlocked_by_re2_dialect(blocked, "pcre", {"DIVERGENT": [{"causes": ["differs"]}]})
+    assert got == ["CLEAN"], f"divergent rule must not be advertised as an unlock, got {got}"
+
+
+def test_would_unlock_is_empty_under_re2_dialect():
+    """Nothing left to advertise once the run already emits RE2 spelling."""
+    blocked = [{"id": "SPELLING-ONLY", "path": "x", "reasons": [CONV.SPELLING_BLOCKER]}]
+    assert CONV.rules_unlocked_by_re2_dialect(blocked, "re2", {}) == []
+
+
+def test_would_unlock_matches_a_real_re2_dialect_run():
+    """The number the summary advertises has to equal what actually happens.
+
+    Converts the whole corpus twice and asserts that the set the pcre run says
+    would unlock is exactly the set that stops being blocked under re2 -- so the
+    claim is an identity, not an estimate.
+    """
+    out = tempfile.mkdtemp(prefix="atr-sigma-unlock-")
+    try:
+        reports = {}
+        for dialect in ("pcre", "re2"):
+            rep = os.path.join(out, f"{dialect}.json")
+            subprocess.run(
+                [sys.executable, os.path.join(REPO, "scripts", "generate-sigma.py"),
+                 "--all", "--out", os.path.join(out, dialect), "--quiet",
+                 "--regex-dialect", dialect, "--portability-report", rep],
+                cwd=REPO, check=True, capture_output=True,
+            )
+            with open(rep) as fh:
+                reports[dialect] = json.load(fh)
+        blocked_pcre = {r["id"] for r in reports["pcre"]["blocked"]}
+        blocked_re2 = {r["id"] for r in reports["re2"]["blocked"]}
+        advertised = set(reports["pcre"]["would_unlock_with_re2_dialect"])
+        assert advertised == blocked_pcre - blocked_re2, (
+            "advertised unlock set != rules that actually stop being blocked: "
+            f"over-promised {sorted(advertised - (blocked_pcre - blocked_re2))}, "
+            f"missed {sorted((blocked_pcre - blocked_re2) - advertised)}"
+        )
+        assert not reports["re2"]["would_unlock_with_re2_dialect"]
+    finally:
+        shutil.rmtree(out, ignore_errors=True)
+
+
 def test_no_untagged_rule_fails_re2_compilation():
     """The load-bearing guarantee: an RE2 backend that honours the
     `atr.portability.re2-blocked` tag never hits a pattern it cannot compile.
