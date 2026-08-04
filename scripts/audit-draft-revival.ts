@@ -18,10 +18,13 @@
  *   5. classify: REVIVE / TESTCASE-FAIL / FP-DIRTY / NO-TESTCASES
  *
  * Measurement fidelity notes (both are places this repo has been burned before):
- *   - The benign event shape is copied verbatim from scripts/gate-promotion-fp.ts
- *     (`asTextEvent` + the same three corpora + evaluate() ∪ scanSkill()). The same
- *     corpus scored with a different event shape yields wildly different FP counts,
- *     so do not "simplify" the event here.
+ *   - The benign event shape comes from scripts/lib/corpus-event.ts (`matchedRuleIds`
+ *     + the same three corpora), the single module every FP harness shares. It used
+ *     to be a verbatim COPY of gate-promotion-fp.ts's builder, and copying is how the
+ *     defect spread: when that gate moved to the canonical shape set, this copy did
+ *     not, and kept scoring rules on a narrower presentation than production. The
+ *     same corpus scored with a different event shape yields wildly different FP
+ *     counts, so import the shared module — never mirror it.
  *   - Measuring a draft rule WITHOUT flipping it returns 0 FP and 0 test-case hits
  *     for every rule — the engine skipped it. That zero is an artefact, not a
  *     result. The flip is what makes the numbers real; `--no-flip` exists only to
@@ -54,6 +57,7 @@ import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
 import { ATREngine } from "../src/engine.js";
 import type { ATRRule, AgentEvent } from "../src/types.js";
+import { matchedRuleIds } from "./lib/corpus-event.js";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const RULES_DIR = join(REPO_ROOT, "rules");
@@ -233,26 +237,16 @@ async function buildEngine(rules: readonly ATRRule[]): Promise<ATREngine> {
   return engine;
 }
 
-/** Event shape copied verbatim from scripts/gate-promotion-fp.ts. */
-function asTextEvent(content: string): AgentEvent {
-  return {
-    type: "mcp_exchange",
-    timestamp: new Date().toISOString(),
-    content,
-    fields: {
-      tool_name: "corpus-sample",
-      tool_input: content,
-      tool_response: content,
-      user_input: content,
-    },
-  };
-}
-
+/**
+ * Every rule id a sample matches, via the canonical shape set.
+ *
+ * This used to be a copy of gate-promotion-fp.ts's event builder. Copying is how
+ * the defect spread: when that gate moved to the canonical shapes, the copies did
+ * not, and each one silently kept scoring rules on a presentation narrower than
+ * production. Import the shared module rather than mirroring it.
+ */
 function matchedIds(engine: ATREngine, content: string): ReadonlySet<string> {
-  const ids = new Set<string>();
-  for (const m of engine.evaluate(asTextEvent(content))) ids.add(m.rule.id);
-  for (const m of engine.scanSkill(content)) ids.add(m.rule.id);
-  return ids;
+  return matchedRuleIds(engine, content);
 }
 
 // ---------------------------------------------------------------------------

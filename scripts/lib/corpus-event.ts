@@ -273,12 +273,50 @@ export function shapeNames(): readonly string[] {
 }
 
 // ---------------------------------------------------------------------------
+// The one way a harness turns a sample into matched rule ids
+// ---------------------------------------------------------------------------
+
+/**
+ * The slice of ATREngine a corpus scan needs. Structural on purpose: this module
+ * stays free of a concrete engine import so the shape set can be reasoned about
+ * (and unit-tested) without loading the engine.
+ */
+export interface ScannableEngine {
+  evaluate(event: AgentEvent): readonly { readonly rule: { readonly id: string } }[];
+  scanSkill(text: string): readonly { readonly rule: { readonly id: string } }[];
+}
+
+/**
+ * Every rule id a sample matches: the canonical shape set PLUS scanSkill().
+ *
+ * Both halves are mandatory. scanSkill() is a separate engine entry point (the
+ * `pga scan` path), not an event shape, and rules with `scan_target: skill`
+ * reach production through it alone — a harness that only calls evaluate() would
+ * score them clean without reading them.
+ *
+ * Counted PER SAMPLE, not per shape: a document that trips a rule on three
+ * shapes is one false positive, not three. Every harness that measures FP, TP or
+ * coverage must go through this function, so a rule can never earn its detection
+ * credit on a wider presentation than the one it pays its false positives on.
+ */
+export function matchedRuleIds(engine: ScannableEngine, text: string): ReadonlySet<string> {
+  const matched = new Set<string>();
+  for (const shape of corpusShapes(text)) {
+    for (const m of engine.evaluate(shape.event)) matched.add(m.rule.id);
+  }
+  for (const m of engine.scanSkill(text)) matched.add(m.rule.id);
+  return matched;
+}
+
+// ---------------------------------------------------------------------------
 // Coverage: which of a rule's conditions this harness can actually measure
 // ---------------------------------------------------------------------------
 
 /** Minimal view of a rule — avoids importing the full ATRRule type surface. */
 export interface RuleLike {
   readonly id: string;
+  readonly status?: string;
+  readonly maturity?: string;
   readonly detection?: {
     readonly method?: string;
     readonly condition?: string;
@@ -332,6 +370,95 @@ export function fieldCoverage(rules: readonly RuleLike[]): readonly FieldCoverag
         ruleId: rule.id,
         unmeasured: Object.freeze(unmeasured),
         zeroMeasurement: methodBlind || measurable === 0 || (!anyOf && unmeasured.length > 0),
+      }),
+    );
+  }
+  return Object.freeze(out);
+}
+
+// ---------------------------------------------------------------------------
+// Coverage, second axis: a rule the engine refuses to run at all
+// ---------------------------------------------------------------------------
+
+/**
+ * Statuses src/engine.ts drops BEFORE the lane gate, on both evaluation paths:
+ *
+ *     if (rule.status === 'deprecated' || rule.status === 'draft') continue;
+ *     if (!this.passesLane(rule)) continue;
+ *
+ * The order is the whole problem. `maturity` decides the lane; `status` decides
+ * whether the rule exists at all. A rule can therefore carry `maturity: stable`
+ * — the enforce lane, auto-block, no human in the loop — while `status: draft`
+ * keeps the engine from ever evaluating it. Seven rules on main are in exactly
+ * that state today.
+ *
+ * For an FP harness the consequence is the same disease fieldCoverage exists to
+ * name: the rule cannot fire, so it cannot be counted as a false positive, so
+ * the gate reports it CLEAN. Nothing in a field-based coverage check can see it,
+ * because every field the rule declares is perfectly measurable — the sample
+ * simply never reaches the rule.
+ *
+ * Kept honest by tests/corpus-event-shapes.test.ts, which parses the status
+ * comparisons out of src/engine.ts rather than trusting this list.
+ */
+export const INERT_STATUSES: ReadonlySet<string> = Object.freeze(
+  new Set(["draft", "deprecated"]),
+);
+
+/** Rule maturities that put a rule in the enforce (auto-block) lane. */
+export const ENFORCE_LANE_MATURITIES: ReadonlySet<string> = Object.freeze(
+  new Set(["stable", "production"]),
+);
+
+/** True when the engine skips this status outright, in every lane. */
+export function isInertStatus(status: string | undefined): boolean {
+  return status !== undefined && INERT_STATUSES.has(status.trim().toLowerCase());
+}
+
+/** Why a status makes a rule unmeasurable — a sentence, or null when it does not. */
+export function inertStatusReason(status: string | undefined): string | null {
+  if (!isInertStatus(status)) return null;
+  const s = String(status).trim().toLowerCase();
+  return (
+    `status: ${s} — src/engine.ts skips this status on both evaluation paths, ` +
+    `before the lane gate, so the rule cannot fire on any sample. Its 0 FP is ` +
+    `the absence of a measurement, not the presence of precision.`
+  );
+}
+
+export interface StatusGap {
+  readonly ruleId: string;
+  /** The normalised inert status that stopped the rule from being evaluated. */
+  readonly status: string;
+  /** The rule's declared maturity, so a caller can say how bad this is. */
+  readonly maturity: string | null;
+  /** True when the rule also claims the enforce (auto-block) lane. */
+  readonly claimsEnforceLane: boolean;
+  readonly reason: string;
+}
+
+/**
+ * Rules the engine will not evaluate at all. Measurable rules are omitted.
+ *
+ * Unlike an unmeasurABLE field (no benign corpus can supply a tool_name; a text
+ * corpus has no span DAG), this one has a remedy that is always available and is
+ * one line long: flip the status, or drop the maturity out of the enforce lane.
+ * That difference is why callers are expected to FAIL on this rather than merely
+ * print it — see the exit-code note in scripts/gate-promotion-fp.ts.
+ */
+export function statusCoverage(rules: readonly RuleLike[]): readonly StatusGap[] {
+  const out: StatusGap[] = [];
+  for (const rule of rules) {
+    if (!isInertStatus(rule.status)) continue;
+    const status = String(rule.status).trim().toLowerCase();
+    const maturity = typeof rule.maturity === "string" ? rule.maturity.trim().toLowerCase() : null;
+    out.push(
+      Object.freeze({
+        ruleId: rule.id,
+        status,
+        maturity,
+        claimsEnforceLane: maturity !== null && ENFORCE_LANE_MATURITIES.has(maturity),
+        reason: inertStatusReason(status) ?? "",
       }),
     );
   }

@@ -6,8 +6,9 @@
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ATREngine } from "../src/engine.js";
+import { matchedRuleIds } from "./lib/corpus-event.js";
 import { loadRulesFromDirectory } from "../src/loader.js";
-import type { AgentEvent } from "../src/types.js";
+
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const RULES_DIR = join(REPO_ROOT, "rules");
@@ -22,33 +23,14 @@ const RULE_ID = process.argv[2] || "ATR-2026-00010";
  * indistinguishable, in the output, from a broken rule. Widened to match the
  * shape scripts/lib/corpus-event.ts blessed for the FP gate, so that a true
  * positive is exercised on the same shape the benign corpus is charged against.
- * tool_name stays pinned to a short constant: production tool_name is an
- * identifier, not a document, and pouring sample text in fabricates FPs.
+ *
+ * That widening was done by copying the gate's builder. This now imports it
+ * instead: a local copy drifts the moment either side is edited, and a rule must
+ * never earn its detection credit on a wider presentation than the one it pays
+ * its false positives on.
  */
-function asTextEvent(content: string): AgentEvent {
-  return {
-    type: "mcp_exchange",
-    timestamp: new Date().toISOString(),
-    content,
-    fields: {
-      tool_name: "corpus-sample",
-      tool_input: content,
-      tool_response: content,
-      user_input: content,
-      agent_output: content,
-      agent_message: content,
-      tool_description: content,
-      tool_args: content,
-      content,
-    },
-  };
-}
-
-function matched(engine: ATREngine, content: string): Set<string> {
-  const s = new Set<string>();
-  for (const m of engine.evaluate(asTextEvent(content))) s.add(m.rule.id);
-  for (const m of engine.scanSkill(content)) s.add(m.rule.id);
-  return s;
+function matched(engine: ATREngine, content: string): ReadonlySet<string> {
+  return matchedRuleIds(engine, content);
 }
 
 async function main(): Promise<void> {

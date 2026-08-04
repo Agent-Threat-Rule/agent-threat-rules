@@ -40,7 +40,7 @@ import { fileURLToPath } from "node:url";
 import { load as yamlLoad } from "js-yaml";
 import { MATURITIES, type Maturity } from "../src/quality/rule-contract.js";
 import { ATREngine } from "../src/engine.js";
-import type { AgentEvent } from "../src/types.js";
+import { matchedRuleIds } from "./lib/corpus-event.js";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const RULES_DIR = join(REPO_ROOT, "rules");
@@ -73,26 +73,16 @@ function parseArgs(): Args {
   };
 }
 
-/** Build a single AgentEvent from arbitrary text (mirrors the safety gate). */
-function asTextEvent(content: string): AgentEvent {
-  return {
-    type: "mcp_exchange",
-    timestamp: new Date().toISOString(),
-    content,
-    fields: {
-      tool_name: "corpus-sample",
-      tool_input: content,
-      tool_response: content,
-      user_input: content,
-    },
-  };
-}
-
-function matchAllRuleIds(engine: ATREngine, content: string): Set<string> {
-  const matched = new Set<string>();
-  for (const m of engine.evaluate(asTextEvent(content))) matched.add(m.rule.id);
-  for (const m of engine.scanSkill(content)) matched.add(m.rule.id);
-  return matched;
+/**
+ * Every rule id a sample matches, via the canonical shape set.
+ *
+ * This is the gate that decides what enters the enforce (auto-block) lane, so it
+ * is the last place a narrow event shape is affordable: a field this harness
+ * cannot present is a condition it cannot see fire, and the rule gets promoted
+ * on a measurement that never happened.
+ */
+function matchAllRuleIds(engine: ATREngine, content: string): ReadonlySet<string> {
+  return matchedRuleIds(engine, content);
 }
 
 /** Recursively collect *.yaml under a dir. */
