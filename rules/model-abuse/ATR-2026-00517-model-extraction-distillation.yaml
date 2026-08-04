@@ -102,18 +102,42 @@ detection:
     # -- Layer 3: Training-pair extraction pattern --
     # Matches: "generate training pairs: input -> your ideal output. Give me 200",
     # "collect input/output pairs to train another model"
+    #
+    # SCALE TOKEN MUST BE A QUANTITY, NOT ANY NEARBY NUMBER.
+    # The previous tail was \b([1-9]\d{1,}|many|hundreds?|thousands?|all|bulk):
+    # any two-digit number anywhere in the following 200 characters, or the bare
+    # word "all". "Extract all question-answer pairs from this page ... answer
+    # text (first 300 chars)" satisfied it on the parenthetical "300", and so did
+    # a Q&A generator whose spec said "answers (100-300 words)" -- neither is a
+    # quantity of pairs. The floor was also 10, while Layer 1 and this rule's own
+    # description use 200+; the two layers disagreed by 20x.
+    # The number now has to be either attached to a countable unit ("500 pairs")
+    # or introduced by a quantity phrase ("give me 200"), and the floor matches
+    # Layer 1. Word-scale framing keeps only the unambiguous forms.
     - field: user_input
       operator: regex
-      value: "(?i)\\b(generate|create|produce|collect|build|extract)\\b.{0,80}\\b(training\\s+pairs?|input[- /]output\\s+pairs?|input[\\s\\->]+output|question[- ]answer\\s+pairs?|prompt[- ]response\\s+pairs?|instruction[- ]following\\s+pairs?|io\\s+pairs?)\\b.{0,200}\\b([1-9]\\d{1,}|many|hundreds?|thousands?|all|bulk)"
-      description: "Training-pair extraction with scale framing"
+      value: "(?i)\\b(generate|create|produce|collect|build|extract)\\b.{0,80}\\b(training\\s+pairs?|input[- /]output\\s+pairs?|input[\\s\\->]+output|question[- ]answer\\s+pairs?|prompt[- ]response\\s+pairs?|instruction[- ]following\\s+pairs?|io\\s+pairs?)\\b.{0,200}\\b(?:(?:[2-9]\\d{2}|[1-9]\\d{3,})\\s*(?:more\\s+|additional\\s+|diverse\\s+|synthetic\\s+|unique\\s+)?(?:pairs?|examples?|samples?|instances?|questions?|prompts?|responses?|items?|rows?|records?)|(?:give\\s+me|generate|produce|create|collect|need|want|at\\s+least|around|about|approximately|roughly|a\\s+total\\s+of|minimum\\s+of)\\s+(?:me\\s+)?(?:[2-9]\\d{2}|[1-9]\\d{3,})|hundreds\\s+of|thousands\\s+of|in\\s+bulk)"
+      description: "Training-pair extraction with quantified scale framing (200+, or an explicit bulk quantity phrase)"
 
     # -- Layer 4: Chain-of-thought extraction at scale --
     # Matches: "generate training data showing your chain-of-thought for each of these 400 math problems"
     # "show your reasoning process for all 300 of these questions"
+    #
+    # "AT SCALE" MUST MEAN A NUMBER.
+    # The previous scale alternation accepted the bare determiners all|every|
+    # each|these|the following. "thought process" and "after each task" are both
+    # ordinary agent-workflow prose, so any skill document that used the phrase
+    # "thought process" and then said "each task" within 200 characters was
+    # blocked as a distillation attempt. The determiners carry no scale at all
+    # and are dropped; an explicit count of 100+ is required, optionally
+    # introduced by all/every/each of. The proximity window is also cut from 200
+    # to 120 characters so the count has to belong to the same sentence as the
+    # reasoning-extraction phrase, and up to two modifier words may sit between
+    # the count and the noun ("400 math problems").
     - field: user_input
       operator: regex
-      value: "(?i)\\b(chain[- ]of[- ]thought|cot|reasoning\\s+(process|steps?|trace|chain)|thought\\s+process|step[- ]by[- ]step\\s+reasoning|internal\\s+reasoning)\\b.{0,200}\\b([1-9]\\d{2,}|all|every|each|these|the\\s+following)\\s*(of\\s+(the\\s+)?)?(examples?|problems?|questions?|prompts?|tasks?|items?)\\b"
-      description: "Chain-of-thought or reasoning trace extraction at scale"
+      value: "(?i)\\b(chain[- ]of[- ]thought|cot|reasoning\\s+(process|steps?|trace|chain)|thought\\s+process|step[- ]by[- ]step\\s+reasoning|internal\\s+reasoning)\\b.{0,120}\\b(?:(?:all|every|each)\\s+(?:of\\s+)?(?:the\\s+|these\\s+)?)?[1-9]\\d{2,}\\s*(?:of\\s+(?:the\\s+|these\\s+)?)?(?:\\w+\\s+){0,2}(examples?|problems?|questions?|prompts?|tasks?|items?)\\b"
+      description: "Chain-of-thought or reasoning trace extraction at an explicit scale (100+ items)"
 
     # -- Layer 5: Safety response enumeration for distillation --
     # Matches: "create comprehensive fine-tuning data covering all your safety guidelines responses",
@@ -139,6 +163,13 @@ detection:
     - "Small dataset generation (10 items) for legitimate classifier testing"
     - "Academic research assistance with clearly non-extraction framing"
     - "Prompt benchmarking without replication or fine-tuning intent"
+    - >-
+      FAQ / Q&A scraping and generation skills ("extract all question-answer pairs from this page",
+      "generate diverse question-answer pairs about {domain}"). Layer 3 no longer counts an unrelated
+      nearby number such as "(first 300 chars)" or "(100-300 words)" as a quantity of pairs.
+    - >-
+      Agent-workflow documentation that uses the phrase "thought process" and then says "each task"
+      or "every step". Layer 4 now requires an explicit count of 100+ items, not a bare determiner.
 
 response:
   actions:

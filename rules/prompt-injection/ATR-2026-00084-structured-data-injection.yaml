@@ -11,7 +11,14 @@ author: "ATR Community (MiroFish Predicted)"
 date: "2026/03/11"
 schema_version: "0.1"
 detection_tier: pattern
-maturity: stable
+# Demoted stable -> test 2026-08-04. The CSV/delimited condition matched ordinary
+# developer prose after any comma, semicolon or table pipe (110 of 5,317 benign
+# samples). The condition is now scoped to the injection phrase, but two benign
+# matches remain that cannot be removed without losing real detection:
+#   - a WordPress penetration-testing skill that quotes a live injection payload
+#   - "..., you are now an EXPERT on this topic" in an ordinary research skill
+# Non-zero FP must not run in the auto-block lane, so the rule alerts instead.
+maturity: test
 severity: high
 
 references:
@@ -70,11 +77,17 @@ detection:
   conditions:
     - field: user_input
       operator: regex
-      value: "(?i)[\"']\\s*:\\s*[\"']\\s*(ignore|disregard|override|forget)\\s+(all\\s+)?(previous|prior|system|original)\\s+(instructions?|rules?|prompts?)"
+      value: "(?i)[\"']\\s*:\\s*[\"']\\s*(ignore|disregard|override|forget)\\s+((all|the|your|any|these|every)\\s+){0,2}(previous|prior|system|original|above|earlier|other)\\s+(instructions?|rules?|prompts?|commands?|inputs?)"
       description: "Injection payload inside JSON string value"
+    # A bare `override` or `ignore` after a delimiter is ordinary technical
+    # English and ordinary markdown: "; override with --timezone", a table cell
+    # "| overrides rate |", "(sorting, overrides, caching)". The delimiter alone
+    # carries no signal, so the keyword has to carry all of it: the verb must be
+    # followed by the object it acts on (previous/system/prior instructions),
+    # or be one of the role-reassignment / special-token forms.
     - field: user_input
       operator: regex
-      value: "(?i)(,|;|\\|)\\s*(ignore|override|new role|you are now|system prompt|<\\|).{5,}"
+      value: "(?i)(,|;|\\|)\\s*((ignore|disregard|override|forget)\\s+((all|the|your|any|these|every)\\s+){0,2}(previous|prior|system|original|above|earlier|other)\\s+(instructions?|rules?|prompts?|commands?|directions?|inputs?)|new\\s+role\\s*[:=]|you\\s+are\\s+now\\b|system\\s+prompt\\s*[:=]|<\\|.{5,})"
       description: "Injection payload in CSV/delimited field value"
     - field: user_input
       operator: regex
@@ -90,6 +103,15 @@ detection:
 
   false_positives:
     - "Legitimate JSON data that coincidentally contains instruction-like field values"
+    - >-
+      Technical documentation and markdown tables where a comma, semicolon or table
+      pipe is followed by the words 'override' or 'ignore' in their ordinary English
+      sense ('; override with --timezone', '| overrides rate |').
+    - >-
+      Security documentation and penetration-testing skills that quote a real
+      injection payload as an example. The payload text is genuinely present, so
+      the match is correct on the string and wrong on the intent; this rule cannot
+      separate the two and therefore does not run in the auto-block lane.
 
 response:
   actions:
@@ -121,3 +143,12 @@ test_cases:
     - input: "Alice,Smith,alice@example.com,Engineering,Senior Developer"
       expected: not_triggered
       description: "Normal CSV row with user profile data"
+    - input: "Defaults to the last 24 hours; override with `--start` and `--end`."
+      expected: not_triggered
+      description: "Ordinary CLI documentation — 'override' after a semicolon is English, not injection"
+    - input: "| tracesSampleRate | number | 0.1 | Sampling rate for traces; overrides `sampleRate` |"
+      expected: not_triggered
+      description: "Markdown table row — the pipe delimiter and 'overrides' are formatting, not a CSV injection"
+    - input: "Group the results by author, ignore case when comparing names, then sort descending."
+      expected: not_triggered
+      description: "'ignore' after a comma in its ordinary English sense"

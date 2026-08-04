@@ -69,8 +69,8 @@ detection:
       description: "Fetch tool arg targets an RFC-1918 private IP on a well-known internal datastore/control-plane port"
     - field: user_input
       operator: regex
-      value: "(?i)\\b(?:fetch|retrieve|get|access|load|read|request|curl|wget|hit|query|scan|connect\\s+to|pull)\\b[^\\n]{0,60}?https?://(?:192\\.168\\.\\d{1,3}\\.\\d{1,3}|10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|172\\.(?:1[6-9]|2[0-9]|3[01])\\.\\d{1,3}\\.\\d{1,3})"
-      description: "User directs the agent to fetch/retrieve from an RFC-1918 private IP (SSRF pivot intent)"
+      value: "(?i)\\b(?:fetch|retrieve|get|access|load|read|request|curl|wget|hit|query|scan|connect\\s+to|pull)\\b[^\\n]{0,60}?https?://(?:192\\.168\\.\\d{1,3}\\.\\d{1,3}|10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|172\\.(?:1[6-9]|2[0-9]|3[01])\\.\\d{1,3}\\.\\d{1,3}):(?:9200|9300|8500|2379|6379|27017|3306|5432|8086|2375|10250)\\b"
+      description: "User directs the agent to fetch/retrieve from an RFC-1918 private IP on a well-known internal datastore/control-plane port (SSRF pivot intent). Requires a sensitive target, mirroring the tool_args conditions: a bare private-IP URL with no internal port is not matched, because in prose it is indistinguishable from homelab and lab-build documentation — an HTTPS setup guide tripped the unqualified form on a fenced 'curl -kv https://192.168.1.1'. The sensitive-path half of this channel is covered by the next condition"
     - field: user_input
       operator: regex
       value: "(?i)https?://(?:192\\.168\\.\\d{1,3}\\.\\d{1,3}|10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|172\\.(?:1[6-9]|2[0-9]|3[01])\\.\\d{1,3}\\.\\d{1,3})(?::\\d+)?/(?:admin|_cluster|_cat|_nodes|v1/kv|v1/secret|metadata|computeMetadata|latest/meta-data|actuator|console|\\.env|config|debug|internal)\\b"

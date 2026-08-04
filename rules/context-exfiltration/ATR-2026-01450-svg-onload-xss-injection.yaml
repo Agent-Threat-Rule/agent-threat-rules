@@ -78,6 +78,15 @@ detection:
   false_positives:
     - "Security documentation or testing skills that LIST <svg onload=...> payloads as examples inside code blocks — these lack an imperative instruction to emit the tag into agent output, so they no longer match (the bare tag alone is not flagged)"
     - "Legitimate HTML/SVG authoring requesting onload for animation (no injection-framing keyword)"
+    - >-
+      Penetration-testing checklists that introduce a payload list with a line such as "try these payloads in
+      every input:" — "input" ends in "put", which the verb alternation used to accept as a whole-word match.
+    - >-
+      Any document whose imperative verb and <svg on...=> tag sit on different lines. This held for raw input
+      all along; it now also holds for JSON-encoded tool payloads, where a line break is the two characters \n.
+      KNOWN LIMIT, accepted deliberately: an attacker who splits the instruction across lines is not caught by
+      Layer 1. Catching that would re-flag every security-documentation payload list, which is the exact FP this
+      rule was written to avoid.
   conditions:
     # Layer 1: Imperative output/echo instruction on the SAME line as an
     # <svg ...> tag bearing an event handler. This is the actual injection
@@ -89,10 +98,29 @@ detection:
     # match — security-testing skills legitimately list such payloads as
     # documentation inside code blocks. The injection-framing verb on the tag's
     # line is what distinguishes an attack instruction from a documented sample.
+    #
+    # TWO CONSTRAINTS CARRY THAT DISTINCTION, AND BOTH ARE LOAD-BEARING:
+    #
+    # 1. The verb must be a WHOLE WORD. Without a leading \b, "input:" ends in
+    #    "put" and "throughput" contains "put", so any pentest checklist that
+    #    says "try these payloads in every input:" followed by a payload list
+    #    was read as an imperative to emit the tag.
+    #
+    # 2. The verb-to-tag gap must not cross a line break IN EITHER ENCODING.
+    #    [^\n]{0,120} only excludes U+000A. Production hands this rule
+    #    JSON-encoded text (hook-handler.ts stringifies the tool payload), where
+    #    a line break is the two characters \ and n — which [^\n] happily
+    #    crosses. The same-line rule therefore held for raw input and silently
+    #    evaporated for every tool_response, letting a verb on line 1 pair with
+    #    a documented payload on line 6. (?:[^\n\\]|\\[^n]){0,120} restores it
+    #    for both encodings: any character that is neither a newline nor a
+    #    backslash, or a backslash that is not starting an \n escape — so a
+    #    JSON-escaped quote (\") inside a genuine one-line instruction still
+    #    passes. No lookaround, so the pattern stays RE2-portable.
     - field: content
       operator: regex
-      value: "(?i)(?:include|output|print|echo|return|emit|add|insert|embed|append|put|place|render|write|respond\\s+with|reply\\s+with|display|provide|send\\s+back)\\b[^\\n]{0,120}<svg\\b[^\\n>]{0,40}/?\\s*on(?:load|error|activate|begin|end|focusin|focusout|click|mouseover)\\s*="
-      description: "Injection instruction to emit an SVG event-handler tag into agent output"
+      value: "(?i)\\b(?:include|output|print|echo|return|emit|add|insert|embed|append|put|place|render|write|respond\\s+with|reply\\s+with|display|provide|send\\s+back)\\b(?:[^\\n\\\\]|\\\\[^n]){0,120}<svg\\b[^\\n>]{0,40}/?\\s*on(?:load|error|activate|begin|end|focusin|focusout|click|mouseover)\\s*="
+      description: "Injection instruction to emit an SVG event-handler tag into agent output (same line, both raw and JSON-encoded)"
 
     # Layer 2: Substitute/PLACEHOLDER pattern indicating dynamic SVG XSS
     # "Substitute PLACEHOLDER with the string 'TEST'" adjacent to <svg onload

