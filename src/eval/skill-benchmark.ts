@@ -67,6 +67,8 @@ interface LayerMetrics {
 interface SkillBenchmarkReport {
   readonly timestamp: string;
   readonly corpus_size: number;
+  /** Rules the engine loaded for this run; the denominator for latency budgets. */
+  readonly rule_count: number;
   readonly malicious_count: number;
   readonly benign_count: number;
   readonly overall_recall: number;
@@ -116,9 +118,11 @@ export async function runSkillBenchmark(options?: {
     ? JSON.parse(readFileSync(expectedPath, 'utf-8'))
     : {};
 
-  // Load engine
+  // Load engine. The rule count is reported because per-sample scan cost is
+  // roughly linear in it, so it is the denominator any latency budget for this
+  // benchmark has to be expressed in -- see tests/skill-benchmark.test.ts.
   const engine = new ATREngine({ rulesDir });
-  await engine.loadRules();
+  const ruleCount = await engine.loadRules();
 
   // Run each sample
   const results: SampleResult[] = [];
@@ -206,6 +210,7 @@ export async function runSkillBenchmark(options?: {
   const report: SkillBenchmarkReport = {
     timestamp: new Date().toISOString(),
     corpus_size: results.length,
+    rule_count: ruleCount,
     malicious_count: malicious.length,
     benign_count: benign.length,
     overall_recall: Math.round(recall * 1000) / 1000,
