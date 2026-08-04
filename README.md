@@ -373,7 +373,7 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | MITRE ATLAS | snapshot-2026-04 | 182 | 100.0% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | NeMo Guardrails (NVIDIA test fixtures) | corpus-2026-05-12 | 6 | 100.0% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | OWASP LLM Top 10 | snapshot-2026-04 | 56 | 100.0% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
-| PINT-format (deepset + Lakera Gandalf) | public-850 | 850 | 63.6% | 99.7% | 0.25% | 3.5.0 | 2026-06-16 |
+| PINT-format (deepset + Lakera Gandalf) [^pint] | public-850 | 850 | 60.3% | 100.0% | 0.0% | 3.5.11 | 2026-08-04 |
 | PromptBench (academic adversarial) | snapshot-2026-04 | 3,280 | 23.2% | 100.0% | 0.0% | 3.5.2 | 2026-06-25 |
 | promptfoo (red-team plugin fixtures) | corpus-2026-05-12 | 44 | 97.7% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | PromptInject (academic adversarial) | snapshot-2026-04 | 1,080 | 100.0% | 100.0% | 0.0% | 3.5.2 | 2026-06-25 |
@@ -396,6 +396,18 @@ by an over-broad persona regex in `ATR-2026-00001` that also false-positived on
 benign "you are now an expert …" prose; tightening it (PR #327) removed those
 false positives and, honestly, the recall on novel-persona jailbreaks it had
 been catching. See [CHANGELOG.md](CHANGELOG.md).
+
+[^pint]: The `PINT-format` row is **not** a run of Lakera's official PINT
+    benchmark. That corpus is private and roughly 5x larger; this row is a
+    self-built 850-sample corpus in PINT's format, assembled from
+    `deepset/prompt-injections` (660) and `Lakera/gandalf_ignore_instructions`
+    (190). It also carries a scope caveat worth stating plainly: only **29 of
+    780 rules** fire on it at all, and `ATR-2026-00001` alone accounts for 226
+    of the 272 detections. Read it as a prompt-injection-family score, not as
+    ATR's overall coverage. The row moved 63.6% → 60.3% between 3.5.0 and
+    3.5.11 for the same reason `garak` moved: PR #327 tightened
+    `ATR-2026-00001`'s persona-switch regex to stop it false-positiving on
+    benign prose. Precision moved 99.7% → 100% over the same span.
 
 Two `garak` rows are deliberate: the headline `garak` source tracks NVIDIA's
 in-the-wild jailbreak corpus (narrow, the ~91.5% number ATR cites publicly,
