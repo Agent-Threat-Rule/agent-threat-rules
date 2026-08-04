@@ -38,6 +38,7 @@ import {
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { load as yamlLoad } from "js-yaml";
+import { MATURITIES, type Maturity } from "../src/quality/rule-contract.js";
 import { ATREngine } from "../src/engine.js";
 import type { AgentEvent } from "../src/types.js";
 
@@ -169,12 +170,26 @@ function loadTestCandidates(): Candidate[] {
   return out;
 }
 
-/** Bump `maturity: test` -> `maturity: production` in a rule file (single field). */
+/**
+ * The tier this gate promotes into. Typed as `Maturity` on purpose: this script
+ * previously wrote `production`, which is not a member, so `normalizeMaturity`
+ * mapped every "promoted" rule to `experimental` and dropped it out of both the
+ * enforce and the alert lane. A promotion gate that silently demotes is worse
+ * than no gate, and only the type binding makes that impossible to reintroduce.
+ */
+const PROMOTION_TARGET: Maturity = "stable";
+
+/** Bump `maturity: test` -> the promotion target in a rule file (single field). */
 function promoteFile(file: string): boolean {
+  if (!MATURITIES.includes(PROMOTION_TARGET)) {
+    throw new Error(
+      `promotion target ${PROMOTION_TARGET} is not a valid maturity; refusing to write`,
+    );
+  }
   const raw = readFileSync(file, "utf-8");
   const next = raw.replace(
     /^(\s*maturity:\s*)["']?test["']?\s*$/m,
-    "$1production",
+    `$1${PROMOTION_TARGET}`,
   );
   if (next === raw) return false;
   writeFileSync(file, next);
@@ -239,7 +254,7 @@ async function main(): Promise<void> {
       `\n[stable-gate] dry-run. ${clean.length} rule(s) are FP-clean on this corpus.` +
         (corpusTooSmall
           ? " Not production-eligible until validated on the wild corpus."
-          : " Re-run with --write to promote them to maturity:production."),
+          : " Re-run with --write to promote them to maturity:stable."),
     );
     return;
   }
@@ -255,7 +270,7 @@ async function main(): Promise<void> {
   for (const c of clean) {
     if (promoteFile(c.file)) promoted++;
   }
-  console.log(`\n[stable-gate] promoted ${promoted} rule(s) test -> production.`);
+  console.log(`\n[stable-gate] promoted ${promoted} rule(s) test -> stable.`);
 }
 
 main().catch((err: unknown) => {
