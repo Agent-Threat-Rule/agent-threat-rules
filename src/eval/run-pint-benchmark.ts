@@ -180,7 +180,12 @@ async function main(): Promise<void> {
     source: 'pint',
     source_version: 'v1',
     source_url: 'https://github.com/lakeraai/pint-benchmark',
-    notes: 'Invariant Labs PINT benchmark — 850-sample adversarial prompt-injection corpus.',
+    notes:
+      'PINT-FORMAT corpus, self-built: 850 samples (deepset/prompt-injections + ' +
+      'Lakera/gandalf_ignore_instructions). NOT a run of Lakera\'s official PINT ' +
+      'benchmark, whose corpus is private and roughly 5x larger. PINT is Lakera\'s; ' +
+      'this note previously credited Invariant Labs, and every measurement file ' +
+      'written before 2026-08 carries that error.',
   });
   console.log(`Measurement: ${measurementPath}`);
   console.log('Done.\n');

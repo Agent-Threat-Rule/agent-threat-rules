@@ -477,3 +477,57 @@ describe("the gate measures a tool_args rule end to end", () => {
     expect(readFileSync(dirty, "utf-8").split("\n").filter(Boolean)).toEqual([TOOL_ARGS_ID]);
   });
 });
+
+// ---------------------------------------------------------------------------
+// The ratchet: no harness gets to hand-roll its own event shape again
+// ---------------------------------------------------------------------------
+
+/**
+ * Every FP/coverage harness in this repo once carried its own `asTextEvent()`,
+ * copied from whichever sibling was newest at the time. When gate-promotion-fp
+ * moved to the canonical shape set the copies stayed behind, and each one kept
+ * scoring rules on a presentation narrower than production — reporting rules
+ * FP-clean that had simply never been read. On ATR-2026-00091 the narrow copy
+ * under-reported its own subject by a factor of ten (372 vs 3,897).
+ *
+ * A comment saying "keep in sync" did not keep them in sync. This does.
+ */
+describe("harnesses import the canonical shape set — they do not mirror it", () => {
+  const HARNESSES = [
+    "scripts/gate-promotion-fp.ts",
+    "scripts/check-rules-safety.ts",
+    "scripts/promote-to-stable.ts",
+    "scripts/audit-draft-revival.ts",
+    "scripts/validate-rule-testcases.ts",
+  ] as const;
+
+  for (const rel of HARNESSES) {
+    it(`${rel} routes matching through scripts/lib/corpus-event.ts`, () => {
+      const src = readFileSync(join(REPO_ROOT, rel), "utf-8");
+      expect(src).toMatch(/from\s+["'](?:\.\/)?lib\/corpus-event\.js["']/);
+    });
+
+    it(`${rel} does not build its own AgentEvent literal`, () => {
+      const src = readFileSync(join(REPO_ROOT, rel), "utf-8");
+      // An event literal is `type:` immediately followed by one of the engine's
+      // event-type strings. Comments and doc blocks are stripped first so that
+      // describing the old defect does not trip the check.
+      const code = src
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .replace(/(^|[^:])\/\/.*$/gm, "$1")
+        // One documented exception, and only this one: audit-draft-revival's
+        // fieldAwareEvent() delivers a test case's payload into the engine field
+        // the test case itself names (or parses it as a trace). That is a
+        // deliberate second presentation used ONLY to score declared true
+        // positives -- a rule reading `tool_args` cannot fire on an event that
+        // carries none, and scoring that as a rule failure measures the harness.
+        // The benign-corpus path, which is what this ratchet protects, goes
+        // through matchedRuleIds like everything else.
+        .replace(/function fieldAwareEvent[\s\S]*?\n}\n/, "");
+      const literal =
+        /type:\s*["'](?:mcp_exchange|llm_input|llm_output|tool_call|tool_response|agent_behavior|multi_agent_message)["']/;
+      const offenders = code.split("\n").filter((l) => literal.test(l));
+      expect(offenders).toEqual([]);
+    });
+  }
+});

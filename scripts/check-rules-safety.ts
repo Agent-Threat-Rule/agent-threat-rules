@@ -56,7 +56,7 @@ import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { load as yamlLoad } from "js-yaml";
 import { ATREngine } from "../src/engine.js";
-import type { AgentEvent } from "../src/types.js";
+import { matchedRuleIds } from "./lib/corpus-event.js";
 import { lintRuleDoc } from "./lint-rule-patterns.js";
 
 const MAX_NEW_PER_PR = Number(process.env.MAX_NEW_PER_PR ?? 10);
@@ -353,31 +353,19 @@ function checkMetadata(
   return null;
 }
 
-/** Build a single AgentEvent from arbitrary text content. */
-function asTextEvent(content: string): AgentEvent {
-  return {
-    type: "mcp_exchange",
-    timestamp: new Date().toISOString(),
-    content,
-    fields: {
-      tool_name: "corpus-sample",
-      tool_input: content,
-      tool_response: content,
-      user_input: content,
-    },
-  };
-}
-
 /**
- * Run an ATR engine over a sample and return the set of rule IDs that
- * matched (across both event evaluation and skill scanning, to mirror
- * the production engine's two paths).
+ * Run an ATR engine over a sample and return the set of rule IDs that matched.
+ *
+ * Delegates to the canonical shape set in scripts/lib/corpus-event.ts. This gate
+ * used to hand-roll a single mcp_exchange event with four fields, which left
+ * `tool_args` (and every other field the production hook actually populates)
+ * unresolvable — conditions keyed on it could not fire, so rules built on them
+ * were scored FP-clean without ever being read. A rule must not earn its
+ * detection credit on a wider presentation than the one it pays its false
+ * positives on.
  */
-function matchAllRuleIds(engine: ATREngine, content: string): Set<string> {
-  const matched = new Set<string>();
-  for (const m of engine.evaluate(asTextEvent(content))) matched.add(m.rule.id);
-  for (const m of engine.scanSkill(content)) matched.add(m.rule.id);
-  return matched;
+function matchAllRuleIds(engine: ATREngine, content: string): ReadonlySet<string> {
+  return matchedRuleIds(engine, content);
 }
 
 /**
