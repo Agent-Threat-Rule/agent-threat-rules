@@ -47,9 +47,17 @@ jobs:
       - name: Reconcile rule-count stats to disk
         run: node scripts/reconcile-rule-count.mjs
 
+      # Reconciling stats.json without propagating it leaves every derived file
+      # frozen at whatever the last manual sync wrote. CITATION.cff spent months
+      # citing 751 rules and 97.2% garak recall while stats.json said 780 and
+      # 91.5%, because this job updated the source daily and never ran the
+      # propagation step. Fixing the source is only half of the fix.
+      - name: Propagate to derived files (CITATION.cff, README badges, crosswalks)
+        run: npx tsx scripts/sync-stats.ts
+
       - name: Commit reconciled stats if changed
         run: |
-          if [ -z "$(git status --porcelain stats.json data/stats.json)" ]; then
+          if [ -z "$(git status --porcelain stats.json data/stats.json CITATION.cff README.md docs/)" ]; then
             echo "stats already in sync with disk — nothing to commit"
             exit 0
           fi
@@ -62,6 +70,6 @@ jobs:
           effective=$(field effective)
           git config user.name "ATR Stats Bot"
           git config user.email "bot@agentthreatrule.org"
-          git add stats.json data/stats.json
+          git add stats.json data/stats.json CITATION.cff README.md docs/
           git commit -m "chore(stats): auto-reconcile rule count to disk (${count} rule files, ${effective} effective)"
           git push origin main
