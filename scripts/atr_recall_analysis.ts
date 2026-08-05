@@ -9,6 +9,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ATREngine } from "../src/engine.js";
+import type { AgentEvent } from "../src/types.js";
 import { writeMeasurement } from "../src/measurement/write.js";
 import { matchedRuleIds, shapeNames } from "./lib/corpus-event.js";
 
@@ -43,25 +44,39 @@ function getPromptText(r: PromptRecord): string {
 }
 
 /**
- * The event this harness has always used for its headline recall number: a
- * single narrow `llm_io` event carrying the prompt in `content` + `user_input`.
+ * The event this harness has always used for its headline recall number, kept
+ * bit-for-bit so published figures stay comparable across versions.
  *
- * It is kept, unchanged, so the published recall figures stay comparable across
- * versions — but it is NOT the canonical shape set. The engine filters rules by
- * agent_source.type, so an `llm_io` event admits only llm_io rules; and no
- * `tool_args` / `agent_output` / `tool_description` field resolves here at all.
- * Rules that can only fire on another presentation are invisible to it. That is
- * why every run also reports the canonical set (scripts/lib/corpus-event.ts),
- * which is the same shape set the benign FP gate charges rules on.
+ * IT IS NOT WHAT ITS NAME SAYS, and the correction matters. `llm_io` is not a
+ * member of `AgentEvent["type"]` — the valid set is in `EVENT_TYPE_TO_SOURCE`
+ * (`llm_input`, `llm_output`, `tool_call`, `tool_response`, `agent_behavior`,
+ * `multi_agent_message`). So `EVENT_TYPE_TO_SOURCE["llm_io"]` is `undefined`,
+ * and `src/engine.ts:388` guards the source filter with `eventSourceType &&`.
+ * An unroutable type does not narrow rule admission — it switches the source
+ * filter OFF, and every rule runs.
+ *
+ * A previous version of this comment asserted the opposite ("an `llm_io` event
+ * admits only llm_io rules"). That was wrong in the direction that flatters:
+ * the baseline is WIDER than the canonical set on rule admission, while still
+ * being narrower on fields — nothing resolves `tool_args`, `agent_output` or
+ * `tool_description` here. It is a strange hybrid, not a narrow shape, and the
+ * only reason to keep it is continuity with numbers already published.
+ *
+ * The cast is deliberate. This shape is wrong by construction; `tsconfig.scripts.json`
+ * is right to reject it, and it is preserved only so the `legacy_*` field in the
+ * measurement stays comparable. Do not copy this pattern into a new harness —
+ * use `matchedRuleIds` from scripts/lib/corpus-event.ts, which every run also
+ * reports and which is the shape set the benign FP gate charges rules on.
  */
-function legacyLlmIoEvent(text: string) {
+function legacyLlmIoEvent(text: string): AgentEvent {
   return {
-    type: "llm_io" as const,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- see above
+    type: "llm_io" as unknown as AgentEvent["type"],
     timestamp: new Date().toISOString(),
     content: text,
     fields: { user_input: text },
     source: "user_input",
-  };
+  } as AgentEvent;
 }
 
 interface RecallResult {

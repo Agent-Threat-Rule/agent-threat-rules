@@ -39,8 +39,8 @@
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ATREngine } from '../src/engine.js';
-import type { AgentEvent } from '../src/types.js';
 import { writeMeasurement } from '../src/measurement/write.js';
+import { detectedOnPromptChannels } from './lib/corpus-event.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -251,14 +251,12 @@ async function evalSource(source: SourceDef, fetch: FetchResult, engine: ATREngi
   for (const p of fetch.prompts) {
     byCategory[p.category] = byCategory[p.category] ?? { total: 0, matched: 0 };
     byCategory[p.category].total += 1;
-    const event: AgentEvent = {
-      type: 'llm_io',
-      content: p.text,
-      timestamp: new Date().toISOString(),
-      fields: { user_input: p.text },
-    };
-    const matches = engine.evaluate(event);
-    if (matches.length > 0) {
+    // Shapes come from scripts/lib/corpus-event.ts. This used to build
+    // `{ type: 'llm_io' }` — a rule SOURCE, not an AgentEventType, which made
+    // src/engine.ts skip source-type filtering and admit every rule of every
+    // source. Measurements in these series written before 2026-08-05 were
+    // produced on that unintended shape.
+    if (detectedOnPromptChannels(engine, p.text)) {
       matched += 1;
       byCategory[p.category].matched += 1;
     }

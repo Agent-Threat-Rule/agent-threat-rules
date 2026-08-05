@@ -267,12 +267,12 @@ function caseText(tc: Record<string, unknown>): string {
 
 function truePositives(rule: ATRRule): string[] {
   const tc = rule.test_cases?.true_positives ?? [];
-  return tc.map((t) => caseText(t as Record<string, unknown>)).filter((s) => s.length > 0);
+  return tc.map((t) => caseText(t as unknown as Record<string, unknown>)).filter((s) => s.length > 0);
 }
 
 function trueNegatives(rule: ATRRule): string[] {
   const tc = rule.test_cases?.true_negatives ?? [];
-  return tc.map((t) => caseText(t as Record<string, unknown>)).filter((s) => s.length > 0);
+  return tc.map((t) => caseText(t as unknown as Record<string, unknown>)).filter((s) => s.length > 0);
 }
 
 // ---------------------------------------------------------------------------

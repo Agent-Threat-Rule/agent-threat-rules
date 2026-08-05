@@ -2,6 +2,41 @@
 
 All notable changes to ATR will be documented in this file.
 
+## [Unreleased]
+
+### Fixed — published benchmark numbers
+
+- **Withdrew two garak figures that no measurement file backed.** From 2026-08-04
+  to 2026-08-05, `README.md` and `stats.json` cited 91.5% (`garak` in-the-wild)
+  and 56.9% (`garak-full`) at ATR 3.5.11. Neither run produced a file under
+  `data/measurements/`; the newest files there were 95.7% at 3.5.8 and 38.3% at
+  3.5.0 respectively. Re-measured on 2026-08-05 at 780 rules: **92.5%**
+  (`garak`, 601/650) and **57.2%** (`garak-full`, 1989/3475), both written to
+  `data/measurements/` with the commit that produced them.
+- **Four eval harnesses built `type: 'llm_io'`**, which is a rule *source* and
+  not an `AgentEventType`. `src/engine.ts` could not map it to a source, and its
+  source-type filter is skipped when the mapping is absent — so instead of the
+  narrow llm_io channel those harnesses documented, every rule of every source
+  ran against the event. Affected: `eval-garak-inthewild.ts`,
+  `eval-academic-raw.ts`, `eval-small-corpora.ts`, `atr_recall_analysis.ts`.
+  `check-new-rules-on-benign.ts` had the same class of bug with
+  `type: 'user_input'` behind an `as AgentEvent` cast. Event shapes now come
+  from `scripts/lib/corpus-event.ts`.
+- **`scripts/` is now typechecked** (`tsconfig.scripts.json`,
+  `npm run typecheck:scripts`, wired into CI). `tsconfig.json` covered only
+  `src/**`, which is why every one of the above was an unreported TS2322/TS2345.
+- **`.github/workflows/rule-quality.yml`'s "Run PINT eval regression check"**
+  ran `npm run eval` (the internal self-test harness, not PINT), read a
+  git-committed report that step does not write, and looked up a key that does
+  not exist on it — printing `PINT recall: undefined` while no downstream step
+  read the result. It now runs `npm run eval:pint` and gates on recall/FP
+  against the committed baseline.
+- **`scripts/check-benchmark-citations.ts`** (new, runs in CI) fails the build
+  when `README.md`'s benchmark table or root `stats.json` cites a number,
+  ATR version, or date that `data/measurements/` does not back.
+
+No rule content changed and no threshold was loosened in any of the above.
+
 ## [3.5.0] - 2026-06-16
 
 ### Added

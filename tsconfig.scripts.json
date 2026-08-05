@@ -1,0 +1,42 @@
+{
+  "//": [
+    "Typecheck the eval / measurement / gate scripts.",
+    "",
+    "tsconfig.json only includes src/**, so nothing in scripts/ was ever type-",
+    "checked. That is how four measurement harnesses shipped `type: 'llm_io'`",
+    "— a rule SOURCE, not an AgentEventType. src/engine.ts could not map it, so",
+    "it skipped source-type filtering and ran every rule of every source against",
+    "the event. The numbers those harnesses published (including the headline",
+    "garak recall) were measured on a shape nobody chose. `tsc` reports it as",
+    "TS2322 on the first run; no one ever ran tsc over these files.",
+    "",
+    "Everything under scripts/ is included by default so a NEW script is covered",
+    "the moment it is added. The exclude list below is pre-existing debt in",
+    "scripts that do not construct engine events or write measurements; shrink",
+    "it, never grow it."
+  ],
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "rootDir": "."
+  },
+  "include": ["src/**/*.ts", "scripts/**/*.ts"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "tests",
+    "scripts/ast-analyzer.ts",
+    "scripts/atd/ingest-cve-to-atd.ts",
+    "scripts/audit-mcp-dynamic.ts",
+    "scripts/sync-anthropic-cvd.ts",
+    "scripts/sync-aws-psirt.ts",
+    "scripts/sync-cisa-kev.ts",
+    "scripts/sync-cisco-psirt.ts",
+    "scripts/sync-huntr.ts",
+    "scripts/sync-nuclei.ts",
+    "scripts/validate-atd.ts"
+  ]
+}

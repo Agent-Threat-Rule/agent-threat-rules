@@ -20,8 +20,8 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ATREngine } from "../src/engine.js";
-import type { AgentEvent } from "../src/types.js";
 import { writeMeasurement } from "../src/measurement/write.js";
+import { detectedOnPromptChannels } from "./lib/corpus-event.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -86,28 +86,19 @@ for (const fname of corpusFiles.sort()) {
 
   for (let i = 0; i < prompts.length; i++) {
     const prompt = prompts[i];
-    const ts = new Date().toISOString();
     // Dual-context eval: a jailbreak prompt can arrive as a direct user
     // message (llm_input) OR be relayed through a tool's output
     // (tool_response, e.g. indirect injection). Evaluating only llm_input
-    // undercounts recall for rules scoped to tool_response/both -- this
-    // matches the methodology used for the historical inthewild-650
-    // baseline (data/measurements/garak/*.json), which evaluates both.
-    const inputEvent: AgentEvent = {
-      type: "llm_input",
-      content: prompt,
-      timestamp: ts,
-      fields: { user_input: prompt },
-    };
-    const toolEvent: AgentEvent = {
-      type: "tool_response",
-      content: prompt,
-      timestamp: ts,
-      fields: { tool_response: prompt },
-    };
-
-    const matches = [...engine.evaluate(inputEvent), ...engine.evaluate(toolEvent)];
-    if (matches.length > 0) {
+    // undercounts recall for rules scoped to tool_response/both.
+    //
+    // The shapes come from scripts/lib/corpus-event.ts rather than being
+    // hand-rolled here. They used to be a private copy, and the sibling
+    // harness (scripts/eval-garak-inthewild.ts) carried a DIFFERENT private
+    // copy built on `type: 'llm_io'` — not an AgentEventType at all, which
+    // made the engine skip source-type filtering. Two garak numbers published
+    // side by side in README were measured through two different engines'
+    // worth of rule admission. One module now owns the shapes.
+    if (detectedOnPromptChannels(engine, prompt)) {
       detected++;
     } else {
       missed.push({ family, promptIdx: i, prompt });

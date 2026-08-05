@@ -12,7 +12,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ATREngine } from '../src/engine.js';
-import type { AgentEvent } from '../src/types.js';
+import { matchedRuleIds } from './lib/corpus-event.js';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const BENIGN_DIR = join(REPO_ROOT, 'data/skill-benchmark/benign');
@@ -40,20 +40,20 @@ async function main(): Promise<void> {
 
   for (const file of files) {
     const text = readFileSync(join(BENIGN_DIR, file), 'utf-8');
-    const event: AgentEvent = {
-      type: 'user_input',
-      user_input: text,
-      content: text,
-      text,
-      fields: { text, user_input: text, content: text },
-    } as AgentEvent;
 
-    const matches = engine.evaluate(event);
+    // Shapes come from scripts/lib/corpus-event.ts. This used to hand-roll
+    //   { type: 'user_input', user_input, content, text, fields: {...} } as AgentEvent
+    // — `user_input` is a FIELD name, not an AgentEventType, and the `as`
+    // cast silenced the compiler. An FP harness that builds an event the
+    // engine cannot route reports 0 false positives it never measured, which
+    // is indistinguishable in the output from a rule that is genuinely clean.
+    // matchedRuleIds() is the same shape set the promotion gate charges rules
+    // on, so a PASS here means the same thing a PASS there means.
+    const matched = matchedRuleIds(engine, text);
     scanned++;
 
-    for (const m of matches ?? []) {
-      const ruleId = (m as any).ruleId ?? (m as any).rule?.id;
-      if (ruleId && NEW_RULE_IDS.has(ruleId)) {
+    for (const ruleId of matched) {
+      if (NEW_RULE_IDS.has(ruleId)) {
         const list = fps.get(ruleId) ?? [];
         list.push(file);
         fps.set(ruleId, list);
@@ -64,13 +64,10 @@ async function main(): Promise<void> {
   console.log(`[check] scanned ${scanned}/${files.length}`);
   let totalFps = 0;
   if (fps.size === 0) {
-    console.log('\n[check] PASS — 0 false positives across all 6 new rules');
-    console.log('  ATR-2026-00442 ✓');
-    console.log('  ATR-2026-00443 ✓');
-    console.log('  ATR-2026-00444 ✓');
-    console.log('  ATR-2026-00445 ✓');
-    console.log('  ATR-2026-00446 ✓');
-    console.log('  ATR-2026-00447 ✓');
+    // Printed from NEW_RULE_IDS, not from a hardcoded list that can drift out
+    // of sync with the set actually checked.
+    console.log(`\n[check] PASS — 0 false positives across all ${NEW_RULE_IDS.size} new rules`);
+    for (const id of NEW_RULE_IDS) console.log(`  ${id} ok`);
   } else {
     console.log('\n[check] FAIL — false positives detected:');
     for (const [ruleId, samples] of fps.entries()) {

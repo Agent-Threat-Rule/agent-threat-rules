@@ -21,7 +21,7 @@ interface Stats {
   ruleCount: { total: number; effective?: number; stable: number; experimental: number; draft: number };
   spec: { version: string; status: string; doi: string };
   benchmarks: {
-    garak: { recall: number; samples: number };
+    garak: { recall: number; samples: number; atr_version?: string };
     skill: { recall: number; precision: number; samples: number };
     pint: { recall: number; precision: number; samples: number };
     hackaprompt: { recall: number; baselineRecall: number; samples: number };
@@ -102,6 +102,13 @@ function syncCitation(s: Stats): SyncResult {
     // lane at all. Citing the file count overstates what the engine runs.
     out = out.replace(/\b\d{2,4} rules across \d+ threat\b/, `${s.ruleCount.effective ?? s.ruleCount.total} rules across 10 threat`);
     out = out.replace(/\(\d+\.\d+% recall on the\b/, `(${s.benchmarks.garak.recall}% recall on the`);
+    // The ATR version in this sentence was NOT synced, so the abstract cited
+    // "91.5% ... ATR 3.5.0" — a recall from one version attributed to another.
+    // The recall and the version it was measured on have to move together.
+    out = out.replace(
+      /garak in-the-wild jailbreak benchmark, \d+ prompts, ATR [\w.-]+\)/,
+      `garak in-the-wild jailbreak benchmark, ${s.benchmarks.garak.samples} prompts, ATR ${s.benchmarks.garak.atr_version ?? s.version})`,
+    );
     out = out.replace(/garak in-the-wild jailbreak benchmark, \d+ prompts\)/, `garak in-the-wild jailbreak benchmark, ${s.benchmarks.garak.samples} prompts)`);
     out = out.replace(/on a \d+-sample benign corpus/, `on a ${s.benchmarks.benign.samples}-sample benign corpus`);
     return out;

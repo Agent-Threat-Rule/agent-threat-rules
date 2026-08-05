@@ -28,6 +28,15 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      # tsconfig.json only includes src/**, so scripts/ — every eval, every
+      # measurement writer, every gate — was never typechecked. Four harnesses
+      # shipped `type: 'llm_io'`, which is a rule SOURCE and not an
+      # AgentEventType; the engine could not map it, skipped source-type
+      # filtering, and measured on a shape nobody chose. tsc catches it as
+      # TS2322 in seconds. See tsconfig.scripts.json.
+      - name: Typecheck scripts
+        run: npm run typecheck:scripts
+
       - name: Test
         run: npm test
         env:
@@ -51,6 +60,16 @@ jobs:
 
       - name: Check stats.json benchmarks freshness
         run: npx tsx scripts/sync-stats-from-measurements.ts --check
+
+      # The step above only compares data/stats.json against the measurement
+      # files. The two surfaces a HUMAN edits — README.md's benchmark table and
+      # root stats.json, the file sync-stats.ts propagates into badges,
+      # CITATION.cff, the docs site and the JSON-LD — were checked by nothing.
+      # PR #370 changed both to a garak recall of 91.5% and shipped no
+      # measurement file; --check stayed green because it never looked at
+      # either file, and main carried a headline number with no run behind it.
+      - name: Check benchmark citations are backed by measurement files
+        run: npx tsx scripts/check-benchmark-citations.ts
 
       - name: Eval
         run: npm run eval

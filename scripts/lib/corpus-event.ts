@@ -68,7 +68,10 @@ export type CorpusShapeName =
   | "wide-raw"
   | "pre-tool-json-arg"
   | "pre-tool-json-both"
-  | "post-tool-json";
+  | "post-tool-json"
+  // Production prompt channels — see promptChannelShapes().
+  | "llm-input"
+  | "tool-response";
 
 export interface CorpusShape {
   readonly name: CorpusShapeName;
@@ -270,6 +273,81 @@ export function corpusShapes(text: string): readonly CorpusShape[] {
 /** Human-readable list of the shapes, for harness banners. */
 export function shapeNames(): readonly string[] {
   return corpusShapes("").map((s) => s.name);
+}
+
+// ---------------------------------------------------------------------------
+// A raw PROMPT corpus is not a document corpus
+// ---------------------------------------------------------------------------
+
+/**
+ * The two channels a raw adversarial PROMPT (garak, PINT, academic jailbreak
+ * corpora) can actually arrive through in production, as built by
+ * src/hook-handler.ts:
+ *
+ *   - `llm_input`     — the human typed it. Maps to source `llm_io`, so only
+ *                       llm_io rules are admitted.
+ *   - `tool_response` — a tool / MCP / RAG result carried it in (indirect
+ *                       injection). Maps to source `mcp_exchange`, and the
+ *                       engine additionally admits llm_io rules on it.
+ *
+ * WHY THIS IS SEPARATE FROM `corpusShapes()`
+ *
+ * `corpusShapes()` exists for a DOCUMENT corpus measured for false positives,
+ * and it is deliberately as wide as the engine allows — including
+ * `engine.scanSkill()`, the SKILL.md entry point. Scoring a garak jailbreak
+ * prompt through scanSkill() credits detections on a channel that prompt never
+ * travels, which inflates recall on a corpus that can never pay a false
+ * positive back (garak is 100% adversarial, so precision is 1 by construction
+ * and nothing charges the wide shape for its FPs).
+ *
+ * So: FP measurement uses the widest honest shape set; a pure-recall prompt
+ * corpus uses the production channels. Both live in this module so no harness
+ * hand-rolls a third one — the mistake this file was written to end.
+ *
+ * WHAT THIS REPLACED
+ *
+ * Four eval scripts built `{ type: 'llm_io', ... }`. `llm_io` is a rule
+ * SOURCE, not an `AgentEventType` (see src/types.ts). `EVENT_TYPE_TO_SOURCE`
+ * has no entry for it, so `eventSourceType` came out `undefined` and
+ * src/engine.ts skipped source-type filtering entirely — every rule of every
+ * source ran against an event that carried only `user_input`. That is not the
+ * narrow llm_input channel those scripts documented themselves as measuring.
+ * `tsc` would have caught it on the first run; tsconfig.json never included
+ * `scripts/`.
+ */
+export function promptChannelShapes(text: string): readonly CorpusShape[] {
+  const ts = now();
+  return Object.freeze([
+    Object.freeze({
+      name: "llm-input" as const,
+      event: Object.freeze({
+        type: "llm_input" as const,
+        timestamp: ts,
+        content: text,
+        fields: Object.freeze({ user_input: text }),
+      }),
+    }),
+    Object.freeze({
+      name: "tool-response" as const,
+      event: Object.freeze({
+        type: "tool_response" as const,
+        timestamp: ts,
+        content: text,
+        fields: Object.freeze({ tool_response: text }),
+      }),
+    }),
+  ]) as readonly CorpusShape[];
+}
+
+/**
+ * True when `text` trips at least one rule on either production prompt channel.
+ * The one way a prompt-corpus harness decides "detected".
+ */
+export function detectedOnPromptChannels(engine: ScannableEngine, text: string): boolean {
+  for (const shape of promptChannelShapes(text)) {
+    if (engine.evaluate(shape.event).length > 0) return true;
+  }
+  return false;
 }
 
 // ---------------------------------------------------------------------------
