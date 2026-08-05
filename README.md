@@ -367,12 +367,12 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | garak-full (all probe families) | 23-families | 3,475 | 56.9% | 100.0% | 0.0% | 3.5.11 | 2026-07-28 |
 | hackaprompt | v1 | 4,780 | 69.6% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | HarmBench (CAIS behaviors) | upstream-2026-06-16 | 400 | 2.8% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
-| hh-rlhf (Anthropic red-team-attempts) | snapshot-2026-04 | 4,957 | 99.1% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| hh-rlhf (Anthropic red-team-attempts) [^stdcorpora] | snapshot-2026-04 | 4,957 | 1.5% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
 | JailbreakBench (JBB-Behaviors) | upstream-2026-06-16 | 100 | 6.0% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | llm-guard (Protect AI test fixtures) | corpus-2026-05-12 | 44 | 77.3% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
-| MITRE ATLAS | snapshot-2026-04 | 182 | 100.0% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| MITRE ATLAS [^stdcorpora] | snapshot-2026-04 | 182 | 39.0% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
 | NeMo Guardrails (NVIDIA test fixtures) | corpus-2026-05-12 | 6 | 100.0% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
-| OWASP LLM Top 10 | snapshot-2026-04 | 56 | 100.0% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| OWASP LLM Top 10 [^stdcorpora] | snapshot-2026-04 | 56 | 16.1% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
 | PINT-format (deepset + Lakera Gandalf) [^pint] | public-850 | 850 | 60.3% | 100.0% | 0.0% | 3.5.11 | 2026-08-04 |
 | PromptBench (academic adversarial) | snapshot-2026-04 | 3,280 | 23.2% | 100.0% | 0.0% | 3.5.2 | 2026-06-25 |
 | promptfoo (red-team plugin fixtures) | corpus-2026-05-12 | 44 | 97.7% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
@@ -387,6 +387,11 @@ runner) and the `Wild scan` snapshot, which retain their earlier measurements.
 2026-06-25 after a fix to the recall-analysis harness event shape; the prior
 0.0% rows were a harness artifact (the harness placed the prompt in a
 top-level field the engine does not read), not the engine's actual result.
+`hh-rlhf`, `MITRE ATLAS` and `OWASP LLM Top 10` were re-measured against ATR
+3.5.11 on 2026-08-05 after their runner was found never to have called the
+engine at all — see [^stdcorpora]. Those three rows fell 99.1% → 1.5%,
+100.0% → 39.0% and 100.0% → 16.1%. Nothing regressed; the earlier numbers
+were never measurements of ATR.
 The per-row `ATR version` column above is the version each cell was actually
 measured against, mirroring the `atr_version` field in each
 `data/measurements/<source>/latest.json`. The headline `garak` recall moved
@@ -409,6 +414,32 @@ been catching. See [CHANGELOG.md](CHANGELOG.md).
     `ATR-2026-00001`'s persona-switch regex to stop it false-positiving on
     benign prose. Precision moved 99.7% → 100% over the same span.
 
+[^stdcorpora]: Until 2026-08-05 these three rows were **not produced by the ATR
+    engine**. `scripts/eval-std-corpora.ts` walked `rules/` with a YAML parser,
+    kept only `operator: regex` conditions, flattened every condition of every
+    rule into one implicit OR, and tested each pattern with its own
+    `new RegExp(value, 'i')` against the raw sample string. That shadow matcher
+    had no status gate (it counted `status: draft` rules the engine skips), no
+    lane gate, no field resolution (a condition declared on `tool_response` was
+    tested against natural-language prose), no `condition: all` handling, no
+    non-regex operators, and — the decisive defect — the wrong regex flags.
+    `src/engine.ts` compiles a pattern containing `\u{` with the `u` flag;
+    the shadow matcher always used `i`. Without `u`, the codepoint class
+    `[\u{E0001}\u{E007F}]` in `ATR-2026-00258` is read by JavaScript as the
+    literal character class `[u{E0017F}]` — "contains any of `u { E 0 1 } 7 F`"
+    — so it matched any English text containing the letter `e`. That single
+    miscompiled condition accounted for **4,914 of the 4,914 hh-rlhf
+    detections, 56 of 56 on OWASP, and 182 of 182 on ATLAS**; with it excluded
+    the same shadow matcher scored 0.2% / 3.6% / 8.8%. The old rows measured
+    how many samples contain a vowel. The runner now goes through `ATREngine`
+    and the canonical event shapes in `scripts/lib/corpus-event.ts` — the same
+    entry point the false-positive gates use. Reproduce with
+    `npx tsx scripts/eval-std-corpora.ts`. Read the new numbers with the same
+    scope caveat as `PINT-format`: on ATLAS, `ATR-2026-00061` alone accounts
+    for 59 of the 71 detections (32.4% of the corpus), and ATLAS procedures are
+    prose *descriptions* of attacks rather than attack payloads, so this row
+    measures ATR against attack write-ups, not against traffic.
+
 Two `garak` rows are deliberate: the headline `garak` source tracks NVIDIA's
 in-the-wild jailbreak corpus (narrow, the ~91.5% number ATR cites publicly,
 refreshed 2026-07-28 against ATR 3.5.11), while `garak-full` tracks
@@ -418,22 +449,29 @@ not target). Both are valid measurements against different corpora; they
 are kept as separate streams so the broad-corpus number does not silently
 overwrite the headline.
 
-The single-digit recall on AdvBench / HarmBench / JailbreakBench is honest
-and expected. Those three corpora test **LLM safety alignment** (does the
+The single-digit recall on AdvBench / HarmBench / JailbreakBench / hh-rlhf is
+honest and expected. Those four corpora test **LLM safety alignment** (does the
 model refuse harmful requests like "explain how to make a bomb"), not
 **prompt-injection detection** (the surface ATR's regex layer targets).
 ATR's near-zero recall on these corpora confirms the layering thesis:
 regex catches structured attack patterns, alignment + content moderation
 catch natural-language harm requests. The numbers are recorded for
 completeness and so any future ATR rule additions in the harm-category
-space can be measured against a documented baseline.
+space can be measured against a documented baseline. `hh-rlhf` is Anthropic's
+red-team-attempts set — the same genre as the other three — and its 1.5% now
+sits with their 2.1% / 2.8% / 6.0% instead of contradicting them at 99.1%.
 
-Conventions: 100%-adversarial corpora have `fp_rate` undefined and recorded as
-0 in measurement files. Wild-scan has no ground-truth labels; the `precision`
-column reports a precision floor computed as `confirmed_malware / flagged`.
-Every cell is sourced from a specific measurement file — see
-`data/measurements/<source>/latest.json` for the file path and
-`metadata.measurement_file` in `stats.json` for the absolute repo path.
+Conventions: 100%-adversarial corpora contain no benign samples, so they have
+no true-negative population and **`precision` and `fp_rate` cannot be computed
+from them**. The measurement schema requires numbers, so those rows record the
+convention `precision 1` / `fp_rate 0`. Read the `Precision` and `FP rate`
+columns as "not applicable to this corpus", not as results — the real
+precision numbers come from the benign gate, lane-keyed, below. Wild-scan has
+no ground-truth labels either; its `precision` column reports a precision floor
+computed as `confirmed_malware / flagged`. Every cell is sourced from a
+specific measurement file — see `data/measurements/<source>/latest.json` for
+the file path and `metadata.measurement_file` in `stats.json` for the absolute
+repo path.
 
 False-positive rate is lane-keyed as of v3.5.0, not a single overall figure.
 ATR ships detection lanes (`enforce` / `alert` / `hunt`); on a 65K-sample

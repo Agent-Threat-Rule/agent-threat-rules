@@ -1,0 +1,80 @@
+{
+  "schema_version": "1",
+  "source": "mitre-atlas",
+  "source_version": "snapshot-2026-04",
+  "atr_version": "3.5.11",
+  "atr_commit": "70bd9cabb",
+  "rules_loaded": 780,
+  "measured_at": "2026-08-05T07:46:24.122Z",
+  "samples": 182,
+  "metrics": {
+    "recall": 0.3901098901098901,
+    "precision": 1,
+    "f1": 0.5612648221343873,
+    "fp_rate": 0
+  },
+  "confusion": {
+    "tp": 71,
+    "fp": 0,
+    "tn": 0,
+    "fn": 111
+  },
+  "breakdown": {
+    "by_family": {
+      "other": {
+        "total": 118,
+        "matched": 39,
+        "recall": 0.3305084745762712
+      },
+      "data-exfiltration": {
+        "total": 22,
+        "matched": 8,
+        "recall": 0.36363636363636365
+      },
+      "supply-chain": {
+        "total": 1,
+        "matched": 0,
+        "recall": 0
+      },
+      "prompt-injection": {
+        "total": 20,
+        "matched": 12,
+        "recall": 0.6
+      },
+      "persistent-injection": {
+        "total": 1,
+        "matched": 0,
+        "recall": 0
+      },
+      "tool-poisoning": {
+        "total": 11,
+        "matched": 6,
+        "recall": 0.5454545454545454
+      },
+      "skill-compromise": {
+        "total": 7,
+        "matched": 6,
+        "recall": 0.8571428571428571
+      },
+      "jailbreak": {
+        "total": 2,
+        "matched": 0,
+        "recall": 0
+      }
+    },
+    "top_contributing_rules": {
+      "ATR-2026-00061": 59,
+      "ATR-2026-00012": 15,
+      "ATR-2026-01610": 9,
+      "ATR-2026-00001": 4,
+      "ATR-2026-00070": 4,
+      "ATR-2026-00116": 4,
+      "ATR-2026-00264": 4,
+      "ATR-2026-00265": 4,
+      "ATR-2026-00213": 4,
+      "ATR-2026-00020": 3
+    },
+    "lane": "hunt"
+  },
+  "notes": "mitre-atlas corpus — 100% adversarial samples. Measured by src/engine.ts (ATREngine, lane=hunt, 780 rules loaded) through the canonical event shapes in scripts/lib/corpus-event.ts (wide-raw, pre-tool-json-arg, pre-tool-json-both, post-tool-json) plus scanSkill(). PRECISION AND FP_RATE ARE NOT MEASURED: this corpus contains no benign samples, so there is no true-negative population to compute them from. The values 1 and 0 are the repo-wide schema convention for adversarial-only corpora, not results — do not quote them. For real precision see the benign-gate measurements. Supersedes all measurements of this source before 2026-08-05, which were produced by a shadow regex matcher in scripts/eval-std-corpora.ts and never ran the engine."
+}
