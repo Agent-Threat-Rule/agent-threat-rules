@@ -167,12 +167,14 @@ function ruleFileCount(dir = join(REPO_ROOT, "rules")): number {
  *
  * WHAT IT STILL CATCHES. It is a catastrophe deadline, deliberately. Readings
  * of THIS test, 780 rules, 149 strided samples:
- *   - CI, loaded, before the duplicate-regex fix in src/engine.ts : 1.906 ms/rule/sample
- *     (221,525ms — the run that produced the false red)
- *   - this box, quiet, after that fix                             : 0.172
- *     (19,969ms, in the 881-test suite run that verified this commit)
- * So 3.0 is 1.57x the worst reading ever taken here — a loaded runner on the
- * slower engine — and 17.4x a quiet one. Removing the `if (isAny) break;`
+ *   - CI, before the duplicate-regex fix in src/engine.ts : 1.906 ms/rule/sample
+ *     (221,525ms — run 30997081920, the one that produced the false red)
+ *   - CI, after it                                        : 1.004
+ *     (116,653ms — run 31004061103, green)
+ *   - this box, quiet, after it                           : 0.172
+ *     (19,969ms, in the full-suite run that verified this commit)
+ * So 3.0 is 1.57x the worst reading ever taken here, 2.99x what the CI runner
+ * now produces, and 17.4x a quiet box. Removing the `if (isAny) break;`
  * short-circuit, the change these tests exist to catch, takes the benign corpus
  * from 1 flagged sample to 265 and multiplies the matching work far past that.
  *
