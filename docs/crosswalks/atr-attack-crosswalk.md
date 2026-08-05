@@ -28,12 +28,12 @@ columns are still extracted from ATR metadata, not authored here.
 
 ## Coverage
 
-- ATR rules total: 780
-- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 194
-- Distinct enterprise ATT&CK techniques referenced: 79
-- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 780
+- ATR rules total: 783
+- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 197
+- Distinct enterprise ATT&CK techniques referenced: 80
+- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 783
 - Distinct MITRE ATLAS techniques referenced: 42
-- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 780
+- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 783
 - ATR categories (distinct `tags.category` values): 9
 
 Categories are keyed on each rule's `tags.category` metadata, not on its
@@ -50,7 +50,7 @@ against.
 | ATT&CK technique | Name | ATR rules | ATR categories |
 |---|---|---|---|
 | T1005 | Data from Local System | `ATR-2026-01988`, `ATR-2026-02250` | context-exfiltration |
-| T1027 | Obfuscated Files or Information | `ATR-2026-00535`, `ATR-2026-02004`, `ATR-2026-02006`, `ATR-2026-02010`, `ATR-2026-02016`, `ATR-2026-02018`, `ATR-2026-02374` | prompt-injection |
+| T1027 | Obfuscated Files or Information | `ATR-2026-00535`, `ATR-2026-02004`, `ATR-2026-02006`, `ATR-2026-02010`, `ATR-2026-02016`, `ATR-2026-02018`, `ATR-2026-02374`, `ATR-2026-02411`, `ATR-2026-02412`, `ATR-2026-02413` | model-abuse, prompt-injection |
 | T1036 | Masquerading | `ATR-2026-00117`, `ATR-2026-00204`, `ATR-2026-00572`, `ATR-2026-01932`, `ATR-2026-02350` | agent-manipulation, privilege-escalation, tool-poisoning |
 | T1036.005 | Masquerading: Match Legitimate Name or Location | `ATR-2026-02410` | skill-compromise |
 | T1036.008 | Masquerading: Masquerade File Type | `ATR-2026-02405` | skill-compromise |
@@ -66,6 +66,7 @@ against.
 | T1059.006 | Python | `ATR-2026-00432`, `ATR-2026-00440`, `ATR-2026-00539`, `ATR-2026-00544`, `ATR-2026-01935`, `ATR-2026-02101`, `ATR-2026-02145`, `ATR-2026-02408` | agent-manipulation, data-poisoning, privilege-escalation, tool-poisoning |
 | T1059.007 | JavaScript | `ATR-2026-00415`, `ATR-2026-00436` | privilege-escalation, tool-poisoning |
 | T1068 | Exploitation for Privilege Escalation | `ATR-2026-00417`, `ATR-2026-01933`, `ATR-2026-01934`, `ATR-2026-01981`, `ATR-2026-02407` | agent-manipulation, privilege-escalation |
+| T1070 | Indicator Removal | `ATR-2026-02411` | model-abuse |
 | T1070.004 | Indicator Removal on Host: File Deletion | `ATR-2026-00858` | context-exfiltration |
 | T1071 | Application Layer Protocol | `ATR-2026-00010`, `ATR-2026-00013`, `ATR-2026-00212` | context-exfiltration, tool-poisoning |
 | T1071.003 | Application Layer Protocol: Mail Protocols | `ATR-2026-02401` | excessive-autonomy |
@@ -245,17 +246,19 @@ OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:202
 
 ### model-abuse
 
-Rules in category: 40
+Rules in category: 43
 
 ATT&CK techniques (join key):
 
 | ATT&CK technique | Name | ATR rules |
 |---|---|---|
+| T1027 | Obfuscated Files or Information | `ATR-2026-02411`, `ATR-2026-02412`, `ATR-2026-02413` |
 | T1059 | Command and Scripting Interpreter | `ATR-2026-00433` |
+| T1070 | Indicator Removal | `ATR-2026-02411` |
 | T1195.002 | Compromise Software Supply Chain | `ATR-2026-00433` |
 | T1587.001 | Develop Capabilities: Malware | `ATR-2026-02211` |
 
-ATLAS techniques ATR adds: AML.T0010, AML.T0011.000, AML.T0024, AML.T0040, AML.T0044, AML.T0046, AML.T0048, AML.T0051, AML.T0057, AML.T0102
+ATLAS techniques ATR adds: AML.T0010, AML.T0011.000, AML.T0024, AML.T0040, AML.T0044, AML.T0046, AML.T0048, AML.T0051, AML.T0054, AML.T0057, AML.T0102
 
 OWASP Agentic categories ATR adds: ASI01:2026, ASI04:2026, ASI05:2026, ASI08:2026
 

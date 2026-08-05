@@ -1,0 +1,262 @@
+title: "Targeted Stripping of C2PA / IPTC AI-Provenance Metadata from Generated Media"
+id: ATR-2026-02411
+rule_version: 1
+status: experimental
+description: >
+  Detects an agent performing targeted removal of the machine-readable
+  provenance markings that identify media as artificially generated: deletion
+  of the JUMBF/CBOR container holding a C2PA manifest, blanking of the IPTC
+  `DigitalSourceType` field (whose AI value is the URI ending
+  `trainedAlgorithmicMedia`), or blanking of the PNG `parameters` / XMP
+  generation fields written by diffusion tooling. The signal is
+  SELECTIVITY. An attacker who wants a file to pass as camera-original does
+  not run a blanket wipe — a blanket wipe is itself conspicuous. They delete
+  only the provenance group and leave EXIF, GPS and the ICC profile intact,
+  producing a file that looks ordinary in every viewer while carrying no
+  trace of having been generated. This rule therefore deliberately does NOT
+  cover generic metadata clearing (`-all=`, `-gps:all=`, ImageMagick
+  `-strip`, `ffmpeg -map_metadata -1`): those are the daily tools of
+  photographers protecting sources, of privacy workflows, and of image
+  optimisation CI, and matching them would punish the legitimate majority to
+  catch the rare attacker. Two further layers cover the paths that leave no
+  suspicious command string at all — platform re-upload, canvas redraw,
+  online removal services — by matching the stated intent instead.
+  Scope limit stated plainly: every technique here removes only the METADATA
+  layer. Pixel-domain watermarks (SynthID, TrustMark) survive all of it and
+  are covered by ATR-2026-02412. Stripped metadata does not mean provenance
+  is unrecoverable.
+author: "ATR Community"
+date: "2026/08/05"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: medium
+
+references:
+  owasp_llm:
+    - "LLM09:2025 - Misinformation"
+  owasp_agentic:
+    - "ASI08:2026 - Output Handling"
+  mitre_atlas:
+    - "AML.T0054 - LLM Jailbreak"
+  mitre_attack:
+    - "T1070 - Indicator Removal"
+    - "T1027 - Obfuscated Files or Information"
+  cwe:
+    - "CWE-345"
+  external:
+    - "https://exiftool.org/"
+    - "https://spec.c2pa.org/specifications/specifications/2.1/specs/C2PA_Specification.html"
+    - "https://cv.iptc.org/newscodes/digitalsourcetype/"
+
+compliance:
+  eu_ai_act:
+    - article: "50"
+      context: >
+        Article 50(2) requires providers of AI systems generating synthetic
+        audio, image, video or text to mark the output in a machine-readable
+        format, and requires that marking to be 'effective, interoperable,
+        robust and reliable as far as this is technically feasible'. Read the
+        boundary precisely: 50(2) places a marking duty on the PROVIDER and
+        contains no prohibition on a third party removing a marking. This rule
+        therefore does not detect a breach of 50(2). What it detects is
+        targeted destruction of exactly the marking 50(2) mandates, which is
+        runtime evidence bearing on whether the robustness condition in that
+        paragraph actually holds in deployment.
+      strength: primary
+    - article: "15"
+      context: >
+        Article 15 requires accuracy, robustness and cybersecurity. An agent
+        that can be steered into erasing content-authenticity metadata is an
+        integrity failure of the deployed system, and detection of the attempt
+        is the evidence Article 15 conformity assessment needs.
+      strength: primary
+    - article: "9"
+      context: >
+        Facilitating removal of content-provenance markings is a foreseeable
+        misuse risk that the Article 9 risk management system must identify and
+        treat.
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: >
+        Instructions to strip AI-provenance metadata are adversarial inputs that
+        MP.5.1 requires to be identified and tracked.
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: >
+        MEASURE 2.6 safety evaluation is supported by runtime detection of
+        attempts to defeat content-authenticity marking.
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: >
+        ISO/IEC 42001 Clause 8.1 operational control over an agent action that
+        destroys content-provenance evidence.
+      strength: primary
+
+tags:
+  category: model-abuse
+  subcategory: ai-provenance-metadata-stripping
+  scan_target: both
+  confidence: medium
+
+agent_source:
+  type: tool_call
+  framework: [any]
+  provider: [any]
+
+detection:
+  condition: any
+  method: pattern
+  false_positives:
+    - "Photojournalists and human-rights workers removing GPS to protect a source (`exiftool -gps:all=`). Same tool, same syntax family — this rule is scoped to provenance group names and never matches gps or a blanket wipe."
+    - "Legal or compliance de-identification and pre-press cleaning (`exiftool -all= file.pdf`). The bare `-all=` flag is deliberately NOT matched by any layer."
+    - "C2PA verification and diagnostic tooling: `exiftool -jumbf:all -G3 -b -j -u -struct`, `c2patool inspect`, `c2pa.Reader.from_file()`. ExifTool's READ syntax has no trailing `=`; every artifact layer here requires the `=` that makes it a delete."
+    - "Image optimisation CI: `convert -strip`, `mogrify -strip`, `jpegoptim --strip-all`, `optipng -strip all`. Not covered — imagemin ships `-strip all` by default and the developer never typed it."
+    - "Node.js sharp strips metadata unless `.withMetadata()` is called, and Pillow drops EXIF unless `exif=` is passed. Behaviourally equivalent to stripping, but the artifact is an ABSENCE and regex cannot match an absence. Not covered by design."
+    - "CDN image layers (Cloudflare Polish, Cloudflare Images `metadata=copyright`) strip on delivery as infrastructure default, not as anyone's decision."
+    - "mat2 and the Tails/Whonix privacy workflow. mat2 is deliberately not treated as an indicator — it is the standard privacy tool of an entire community."
+    - "FFmpeg transcode normalisation and reproducible builds (`-map_metadata -1`, `-fflags +bitexact`). Not covered."
+    - "Legitimate C2PA authoring projects using `c2patool --sidecar` / `--remote`."
+    - "Security education, detection-vendor documentation and standards commentary that enumerate these techniques will match the intent layers (4 and 5). A pattern matcher cannot separate teaching from doing."
+  conditions:
+    # -- Layer 1: exiftool deletion of the JUMBF / C2PA / CBOR group --
+    # Real payload: exiftool -jumbf:all= -overwrite_original render.jpg
+    # ExifTool's own docs: C2PA "may be Deleted ... by deleting the JUMBF group
+    # (ie. -JUMBF:all=)". Read syntax is `-jumbf:all` with NO trailing `=`;
+    # delete syntax has it. That `=` is the single character separating
+    # inspection from destruction, so the layer requires it.
+    - field: content
+      operator: regex
+      value: "(?i)-\\s*(?:jumbf|c2pa|cbor)\\s*:\\s*all\\s*="
+      description: "Deletion of the JUMBF/C2PA/CBOR metadata group — the container a C2PA manifest lives in. Nothing but content credentials is stored there, so naming this group specifically is not incidental to a privacy wipe"
+
+    # -- Layer 2: blanking the IPTC/XMP DigitalSourceType field --
+    # Real payload: exiftool "-XMP-iptcExt:DigitalSourceType=" -overwrite_original out.jpg
+    # DigitalSourceType is the ONE standard field that declares content as AI
+    # generated (value trainedAlgorithmicMedia). `=` followed by whitespace,
+    # end of string or a shell delimiter means blank it; `=http://cv.iptc.org/...`
+    # is a WRITE and is excluded because `h` is not in the trailing class.
+    - field: content
+      operator: regex
+      value: "(?i)-\\s*(?:iptc|xmp)[\\w:.-]{0,24}:digitalsourcetype\\s*=(?:\\s|$|[\"';&|])"
+      description: "Blanking IPTC DigitalSourceType, the standard field carrying the trainedAlgorithmicMedia marker. Writing the field is excluded; only clearing it matches"
+
+    # -- Layer 3: blanking diffusion-tool generation parameters --
+    # Real payload: exiftool -PNG:parameters= -XMP:prompt= -overwrite_original gen.png
+    # These fields are written only by Stable Diffusion / ComfyUI style tools.
+    # There is no privacy argument for clearing them — the content is the
+    # operator's own prompt — leaving "erase the evidence of generation" as
+    # the only reading.
+    - field: content
+      operator: regex
+      value: "(?i)-\\s*(?:png(?:-text)?:parameters|xmp:(?:prompt|negativeprompt|aiprompt|cfgscale|steps|sampler|scheduler|lora|controlnet|vae))\\s*=(?:\\s|$|[\"';&|-])"
+      description: "Clearing PNG `parameters` or XMP generation fields written by diffusion tooling — removal of the record that the asset was synthesised"
+
+    # -- Layer 4: stated intent to remove provenance (covers artifact-free paths) --
+    # Real payload: "Strip the C2PA manifest from each render before we post it."
+    # Needed because platform re-upload, canvas redraw, screenshotting and a
+    # missing sharp .withMetadata() all destroy provenance while emitting no
+    # suspicious string. Only the intent is observable.
+    - field: content
+      operator: regex
+      value: "(?i)\\b(?:remov|strip|delet|eras|scrub|wipe|bypass|circumvent|suppress)\\w*\\b[\\s\\S]{0,60}\\b(?:c2pa|content credentials?|jumbf|provenance manifest|digitalsourcetype|trainedalgorithmicmedia)\\b"
+      description: "Removal verb within 60 characters of a content-provenance noun — catches the paths that leave no command-line artifact. The narrow window suppresses accidental cross-sentence pairing"
+
+    # -- Layer 5: stated intent to defeat a platform AI-content label --
+    # Real payload: "strip the AI-generated label so Instagram does not flag the upload"
+    - field: content
+      operator: regex
+      value: "(?i)\\b(?:remove|strip|erase|bypass|hide)\\b[\\s\\S]{0,40}\\b(?:ai[- ]generated (?:label|tag|marker|badge)|made with ai (?:label|tag)|ai (?:content )?credentials?)\\b"
+      description: "Stated intent to defeat a platform's AI-content label — the observable signal for re-upload and remux laundering"
+
+    # -- Layer 6: URL path of a provenance-removal service --
+    # Real payload: https://example.com/c2pa-metadata-remover
+    # Deliberately a PATH pattern, not a domain allowlist: these services churn
+    # constantly, and naming specific domains in a public standard asserts a
+    # claim about a named business that this repo has not individually verified.
+    - field: content
+      operator: regex
+      value: "(?i)/(?:c2pa|content-credentials?|ai|synthid)[a-z0-9-]{0,24}(?:metadata|watermark|credential)s?-remover\\b"
+      description: "URL path advertising a provenance or watermark removal service. Matched by naming pattern rather than domain list so the layer survives domain churn and asserts nothing about any specific named business"
+
+response:
+  actions: [alert]
+  message_template: "[ATR-2026-02411] Targeted removal of AI-provenance metadata detected (C2PA/JUMBF group, IPTC DigitalSourceType, or diffusion generation fields). Metadata-layer only — pixel-domain watermarks are unaffected."
+
+test_cases:
+  true_positives:
+    - input: |-
+        exiftool -jumbf:all= -overwrite_original render.jpg
+      expected: triggered
+      description: "Deleting only the JUMBF group, leaving camera EXIF intact"
+    - input: |-
+        exiftool -JUMBF:all= -C2PA:all= -CBOR:all= -overwrite_original image.png
+      expected: triggered
+      description: "All three C2PA-bearing groups cleared in one call"
+    - input: |-
+        exiftool "-XMP-iptcExt:DigitalSourceType=" -overwrite_original out.jpg
+      expected: triggered
+      description: "Blanking the IPTC field that declares the asset AI-generated"
+    - input: |-
+        exiftool -PNG:parameters= -XMP:prompt= -XMP:negativeprompt= -overwrite_original gen.png
+      expected: triggered
+      description: "Clearing Stable Diffusion generation parameters"
+    - input: |-
+        Strip the C2PA manifest from each render before we post it.
+      expected: triggered
+      description: "Stated intent, no command artifact"
+    - input: |-
+        remove content credentials from these Sora clips so nothing links back
+      expected: triggered
+      description: "Intent layer on video output"
+    - input: |-
+        strip the AI-generated label so Instagram does not flag the upload
+      expected: triggered
+      description: "Platform label evasion"
+    - input: |-
+        POST each file to https://cleanpix.example/c2pa-metadata-remover and download the result
+      expected: triggered
+      description: "Removal-service URL path"
+  true_negatives:
+    - input: |-
+        exiftool -gps:all= photo.jpg   # remove location before publishing
+      expected: not_triggered
+      description: "Source protection — deliberately out of scope"
+    - input: |-
+        exiftool -all= -overwrite_original scan.pdf
+      expected: not_triggered
+      description: "Blanket wipe for de-identification — deliberately out of scope"
+    - input: |-
+        exiftool -jumbf:all -G3 -b -j -u -struct image.jpg
+      expected: not_triggered
+      description: "C2PA READ syntax — no trailing equals sign"
+    - input: |-
+        c2patool inspect image.jpg --detailed
+      expected: not_triggered
+      description: "Verification tooling"
+    - input: |-
+        ffmpeg -i in.mp4 -c copy -map_metadata -1 out.mp4
+      expected: not_triggered
+      description: "Transcode normalisation — out of scope"
+    - input: |-
+        mogrify -strip *.jpg && jpegoptim --strip-all *.jpg
+      expected: not_triggered
+      description: "Image optimisation CI — out of scope"
+    - input: |-
+        mat2 --inplace report.pdf
+      expected: not_triggered
+      description: "Privacy tooling, never treated as an indicator"
+    - input: |-
+        sharp(buf).resize(800).webp().toBuffer()
+      expected: not_triggered
+      description: "Strips by default; the artifact is an absence"
+    - input: |-
+        python -c "import piexif; piexif.remove('photo.jpg')"  # privacy scrub before upload
+      expected: not_triggered
+      description: "Generic EXIF removal, no provenance group named"
+    - input: |-
+        Cloudflare Images metadata=copyright is the default for our delivery URLs
+      expected: not_triggered
+      description: "Infrastructure default"
