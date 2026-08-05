@@ -94,8 +94,10 @@ import {
   corpusShapes,
   shapeNames,
   fieldCoverage,
+  skillPathCoverage,
   unmeasurableReason,
   type FieldCoverage,
+  type SkillPathGap,
 } from "./lib/corpus-event.js";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -438,6 +440,8 @@ interface ScanResult {
   readonly sampleCount: number;
   /** Target rules with conditions this corpus cannot measure. */
   readonly coverage: readonly FieldCoverage[];
+  /** Target rules the `skill` half of matchedRuleIds cannot ever match. */
+  readonly skillCoverage: readonly SkillPathGap[];
 }
 
 async function scanFpCounts(targets: Targets, deps: GateDeps): Promise<ScanResult> {
@@ -455,7 +459,8 @@ async function scanFpCounts(targets: Targets, deps: GateDeps): Promise<ScanResul
     }
   }
   const coverage = fieldCoverage(engine.getRules()).filter((c) => targets.ids.has(c.ruleId));
-  return { counts, sampleCount: samples.length, coverage };
+  const skillCoverage = skillPathCoverage(engine.getRules()).filter((c) => targets.ids.has(c.ruleId));
+  return { counts, sampleCount: samples.length, coverage, skillCoverage };
 }
 
 /**
@@ -482,11 +487,46 @@ function reportCoverage(coverage: readonly FieldCoverage[]): void {
   }
 }
 
+/**
+ * "shapes = ..., skill" must not be allowed to imply the skill path measured
+ * anything.
+ *
+ * engine.scanSkill() applies a compound gate to every rule that is not
+ * `scan_target: skill|both`, and that gate is arithmetically unreachable for a
+ * `condition: any` rule — evaluateArrayConditions breaks on the first match, so
+ * matchedConditions.length is capped at 1 while the gate demands at least 2. On
+ * main that is 645 of 780 rules, 102 of them maturity:stable. Their silence on
+ * the skill half of matchedRuleIds() is not evidence about the skill path.
+ *
+ * The exit code deliberately does NOT change, for the same reason reportCoverage
+ * does not change it: an `scan_target: mcp` rule not running on a SKILL.md is
+ * the intended behaviour, so failing on it would block every promotion with
+ * nothing to fix. Saying it out loud is the whole remedy.
+ */
+function reportSkillPathCoverage(gaps: readonly SkillPathGap[]): void {
+  if (gaps.length === 0) return;
+  const enforce = gaps.filter((g) => g.claimsEnforceLane);
+  console.log(
+    `\n[fp-gate] NOT MEASURED ON THE SKILL PATH — ${gaps.length} rule(s) cannot produce a ` +
+      `match through engine.scanSkill() for any input` +
+      (enforce.length > 0 ? `, ${enforce.length} of them in the enforce lane` : "") +
+      `. They were measured on the evaluate() shapes only:`,
+  );
+  for (const g of gaps) {
+    console.log(
+      `  ${g.ruleId} — ${g.blocker} (max ${g.maxAttainableConditions} of ${g.requiredConditions} ` +
+        `required matched conditions)`,
+    );
+    console.log(`      ${g.reason}`);
+  }
+}
+
 function report(
   partition: FpPartition,
   sampleCount: number,
   filterMode: boolean,
   coverage: readonly FieldCoverage[] = [],
+  skillCoverage: readonly SkillPathGap[] = [],
 ): void {
   console.log(`[fp-gate] corpus = ${sampleCount} benign samples`);
   console.log(
@@ -495,6 +535,7 @@ function report(
   );
   console.log(`[fp-gate] clean = ${partition.clean.length} · dirty = ${partition.dirty.length}`);
   reportCoverage(coverage);
+  reportSkillPathCoverage(skillCoverage);
   if (partition.dirty.length === 0) {
     console.log(`[fp-gate] PASS — all promoted rules are FP-clean on the benign corpus.`);
     return;
@@ -547,9 +588,9 @@ export async function runGate(options: GateOptions, deps: GateDeps = defaultDeps
   console.log(
     `[fp-gate] gating ${targets.files.length} promoted rule(s) against the benign corpus`,
   );
-  const { counts, sampleCount, coverage } = await scanFpCounts(targets, deps);
+  const { counts, sampleCount, coverage, skillCoverage } = await scanFpCounts(targets, deps);
   const partition = partitionByFp(counts);
-  report(partition, sampleCount, options.filterMode, coverage);
+  report(partition, sampleCount, options.filterMode, coverage, skillCoverage);
   emitLists(options, partition);
   return resolveExitCode(partition.dirty.length, options.filterMode);
 }

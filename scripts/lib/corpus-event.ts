@@ -294,6 +294,12 @@ export interface ScannableEngine {
  * reach production through it alone — a harness that only calls evaluate() would
  * score them clean without reading them.
  *
+ * The converse is equally true and much less obvious: the scanSkill() half is a
+ * no-op for most of the corpus. Its compound gate is unreachable for every
+ * `condition: any` rule that is not `scan_target: skill|both`, so counting it
+ * among the shapes does NOT mean a rule was measured on it. Ask
+ * skillPathCoverage() which ones the skill path never asked about, and say so.
+ *
  * Counted PER SAMPLE, not per shape: a document that trips a rule on three
  * shapes is one false positive, not three. Every harness that measures FP, TP or
  * coverage must go through this function, so a rule can never earn its detection
@@ -317,10 +323,12 @@ export interface RuleLike {
   readonly id: string;
   readonly status?: string;
   readonly maturity?: string;
+  readonly tags?: { readonly scan_target?: unknown };
   readonly detection?: {
     readonly method?: string;
     readonly condition?: string;
     readonly conditions?: unknown;
+    readonly semantic?: { readonly fallback_method?: unknown };
   };
 }
 
@@ -461,6 +469,211 @@ export function statusCoverage(rules: readonly RuleLike[]): readonly StatusGap[]
         reason: inertStatusReason(status) ?? "",
       }),
     );
+  }
+  return Object.freeze(out);
+}
+
+// ---------------------------------------------------------------------------
+// Coverage, third axis: the SKILL.md path evaluates almost no rules
+// ---------------------------------------------------------------------------
+
+/**
+ * matchedRuleIds() runs four evaluate() shapes AND engine.scanSkill(), and the
+ * gate prints `shapes = wide-raw, ..., skill`. That banner reads as "every rule
+ * you are gating was offered to the skill path". For 645 of the 780 rules on
+ * main that is false, and not by a little: they cannot produce a match on that
+ * path for ANY input whatsoever.
+ *
+ * THE MECHANISM (src/engine.ts, evaluateRaw / evaluateAsync)
+ *
+ * scanSkill() builds an event with `scanContext: 'skill'`. In that context the
+ * engine skips source-type filtering — every rule is evaluated — and then
+ * applies a compound gate to any rule NOT declared for skill scanning:
+ *
+ *     if (isSkillContext && rule.tags.scan_target !== 'skill'
+ *                        && rule.tags.scan_target !== 'both') {
+ *       const totalConds = Number(rule.detection?.conditions?.length ?? 1);
+ *       const minRequired = Math.max(2, Math.ceil(totalConds * 0.3));
+ *       if ((matchResult.matchedConditions?.length ?? 0) < minRequired) continue;
+ *     }
+ *
+ * The comment above it describes a graded threshold ("30%+ of conditions").
+ * `matchedConditions` is produced by evaluateArrayConditions, which for
+ * `condition: any` SHORT-CIRCUITS:
+ *
+ *     if (result) { matchedConditionIndices.push(i); if (isAny) break; }
+ *
+ * So for an any-mode rule `matchedConditions.length` is 1 whenever the rule
+ * matches at all, and 0 otherwise. It is never 2. `minRequired` is never below
+ * 2. 776 of the 780 rules on main declare `condition: any`. The threshold is
+ * therefore not a threshold — it is an unconditional reject, and the effective
+ * policy of the SKILL.md path is "only `scan_target: skill|both` rules run".
+ *
+ * That policy is defensible and it is load-bearing (measured 2026-08-05: making
+ * the threshold reachable takes the 466-sample benign skill corpus from 1 flagged
+ * sample to 265, while malicious recall stays 32/32 — the cost is real and the
+ * benefit is unmeasurable on that corpus). What is NOT defensible is the gate
+ * reporting a `skill` shape it never charged those rules on. This axis exists so
+ * the gate says which rules the skill shape did not ask about, exactly as
+ * fieldCoverage does for fields and statusCoverage does for inert rules.
+ *
+ * Like fieldCoverage — and unlike statusCoverage — this must NOT change an exit
+ * code. An `scan_target: mcp` rule being unreachable on the SKILL.md path is the
+ * intended behaviour, not a defect with a one-line remedy; failing on it would
+ * block every promotion with nothing to fix.
+ */
+export const SKILL_NATIVE_SCAN_TARGETS: ReadonlySet<string> = Object.freeze(
+  new Set(["skill", "both"]),
+);
+
+/** Why a rule can never fire on engine.scanSkill(). */
+export type SkillPathBlocker =
+  | "method-trace"
+  | "method-behavioral"
+  | "method-signature"
+  | "method-semantic-no-pattern-fallback"
+  | "no-conditions"
+  | "compound-gate-unreachable";
+
+export interface SkillPathGap {
+  readonly ruleId: string;
+  readonly blocker: SkillPathBlocker;
+  /** scan_target as declared, or null when the rule declares none. */
+  readonly scanTarget: string | null;
+  readonly maturity: string | null;
+  /** True when the rule also claims the enforce (auto-block) lane. */
+  readonly claimsEnforceLane: boolean;
+  /** Most matchedConditions the engine can ever hand the compound gate. */
+  readonly maxAttainableConditions: number;
+  /** What the compound gate demands. */
+  readonly requiredConditions: number;
+  readonly reason: string;
+}
+
+function normalise(v: unknown): string | null {
+  return typeof v === "string" && v.trim() !== "" ? v.trim().toLowerCase() : null;
+}
+
+/**
+ * The compound gate's own arithmetic, mirrored: `Number(conditions?.length ?? 1)`
+ * — a named-map `conditions` has no `.length`, so it counts as 1 and the floor of
+ * 2 applies.
+ */
+function requiredConditions(conditions: unknown): number {
+  const total = Number(Array.isArray(conditions) ? conditions.length : 1);
+  return Math.max(2, Math.ceil(total * 0.3));
+}
+
+/**
+ * The largest `matchedConditions.length` the engine can ever produce for this
+ * rule, given how each condition form accumulates matches:
+ *   - array + any/or  -> 1  (evaluateArrayConditions breaks on the first match)
+ *   - array + all     -> N  (a match requires every condition, so it is N or nothing)
+ *   - named map       -> number of names (evaluateNamedConditions does not break)
+ */
+function maxAttainableConditions(rule: RuleLike): number {
+  const conds = rule.detection?.conditions;
+  const expr = normalise(rule.detection?.condition) ?? "any";
+  if (Array.isArray(conds)) {
+    if (conds.length === 0) return 0;
+    return expr === "any" || expr === "or" ? 1 : conds.length;
+  }
+  if (conds !== null && typeof conds === "object") return Object.keys(conds as object).length;
+  return 0;
+}
+
+/**
+ * Why this rule can never match on the SKILL.md path — or null when it can.
+ *
+ * Inert (draft/deprecated) rules return null on purpose: they cannot fire on ANY
+ * path, which is statusCoverage's finding, and reporting them twice would blur
+ * "the skill path did not ask" into "the engine never loaded it".
+ */
+export function skillPathBlocker(rule: RuleLike): SkillPathGap | null {
+  if (isInertStatus(rule.status)) return null;
+
+  const scanTarget = normalise(rule.tags?.scan_target);
+  const maturity = normalise(rule.maturity);
+  const method = normalise(rule.detection?.method) ?? "pattern";
+  const required = requiredConditions(rule.detection?.conditions);
+  const attainable = maxAttainableConditions(rule);
+
+  const gap = (blocker: SkillPathBlocker, reason: string): SkillPathGap =>
+    Object.freeze({
+      ruleId: rule.id,
+      blocker,
+      scanTarget,
+      maturity,
+      claimsEnforceLane: maturity !== null && ENFORCE_LANE_MATURITIES.has(maturity),
+      maxAttainableConditions: attainable,
+      requiredConditions: required,
+      reason,
+    });
+
+  // Method dispatch happens before the compound gate and is independent of
+  // scan_target: scanSkill() passes an event with no trace, no session window
+  // and `fields: {}`, so these methods return null for every input.
+  if (method === "trace") {
+    return gap(
+      "method-trace",
+      "method: trace — scanSkill() builds an event with no `trace`, and " +
+        "evaluateRule returns null when event.trace is undefined",
+    );
+  }
+  if (method === "behavioral") {
+    return gap(
+      "method-behavioral",
+      "method: behavioral — the synchronous evaluateRule returns null " +
+        "unconditionally; a metric window needs a streaming path",
+    );
+  }
+  if (method === "signature") {
+    return gap(
+      "method-signature",
+      "method: signature — indicators are compared against event.fields, and " +
+        "scanSkill() sets `fields: {}`, so no indicator can ever resolve",
+    );
+  }
+  if (method === "semantic" && normalise(rule.detection?.semantic?.fallback_method) !== "pattern") {
+    return gap(
+      "method-semantic-no-pattern-fallback",
+      "method: semantic without fallback_method: pattern — the synchronous " +
+        "scanSkill() path has no judge and returns null",
+    );
+  }
+
+  // scan_target skill/both is exempt from the compound gate entirely.
+  if (scanTarget !== null && SKILL_NATIVE_SCAN_TARGETS.has(scanTarget)) return null;
+
+  if (attainable === 0) {
+    return gap("no-conditions", "the rule declares no conditions the engine can match");
+  }
+  if (attainable < required) {
+    return gap(
+      "compound-gate-unreachable",
+      `scan_target: ${scanTarget ?? "(none)"} is not skill/both, so the skill compound ` +
+        `gate demands ${required} matched conditions, but this rule can never report more ` +
+        `than ${attainable}` +
+        (attainable === 1 && Array.isArray(rule.detection?.conditions)
+          ? ' — evaluateArrayConditions breaks on the first match for condition: "any"'
+          : ""),
+    );
+  }
+  return null;
+}
+
+/**
+ * Rules engine.scanSkill() can never match. Reachable rules are omitted.
+ *
+ * The skill path is a genuine production entry point (`pga scan`), and it is one
+ * of the two halves of matchedRuleIds(). A caller that prints "skill" among its
+ * shapes owes the reader this list.
+ */
+export function skillPathCoverage(rules: readonly RuleLike[]): readonly SkillPathGap[] {
+  const out: SkillPathGap[] = [];
+  for (const rule of rules) {
+    const gap = skillPathBlocker(rule);
+    if (gap !== null) out.push(gap);
   }
   return Object.freeze(out);
 }
