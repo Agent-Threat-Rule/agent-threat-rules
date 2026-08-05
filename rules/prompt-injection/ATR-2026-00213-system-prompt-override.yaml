@@ -59,7 +59,7 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)((?:override|bypass|ignore|disregard|forget|discard|replace|supersede)\s+(?:the\s+|your\s+|all\s+|any\s+|these\s+|those\s+|previous\s+|prior\s+|earlier\s+|above\s+|initial\s+|original\s+)*system\s+(?:prompts?|instructions?|messages?)|(?:override|bypass|ignore|disregard|forget|discard|supersede)\s+(?:all\s+|any\s+)?(?:the\s+|your\s+)?(?:previous|prior|earlier|above|initial|original|preceding)\s+(?:system\s+)?(?:prompts?|instructions?|directives?|messages?|commands?)|(?:system\s+)?prompt\s+override|override\s+(?:the\s+)?system(?:\s+prompt)?)'
+      value: '(?i)((?:override|bypass|ignore|disregard|forget|discard|replace|supersede)\s+(?:the\s+|your\s+|all\s+|any\s+|these\s+|those\s+|previous\s+|prior\s+|earlier\s+|above\s+|initial\s+|original\s+)*system\s+(?:prompts?|instructions?|messages?)|(?:override|bypass|ignore|disregard|discard|supersede)\s+(?:all\s+|any\s+)?(?:the\s+|your\s+)?(?:previous|prior|earlier|above|initial|original|preceding)\s+(?:system\s+)?(?:prompts?|instructions?|directives?|messages?|commands?)|(?:system\s+)?prompt\s+override|override\s+(?:the\s+)?system(?:\s+prompt)?)'
       description: >-
         Matches attempts to override or bypass system prompts. The DIRECTIVE VERB is
         mandatory: the bare noun phrase "system prompt" used to be an alternative of
@@ -70,6 +70,21 @@ detection:
         predicted it. Every override construction the old pattern carried is still
         covered, and the qualifier list generalises "ignore previous instructions" to
         its "ignore all prior instructions" family.
+
+        `forget` is deliberately ABSENT from the second alternative (the
+        previous/prior/earlier + instructions family) while it stays in the first.
+        Reason, measured not guessed: a benign operational guide in the gate corpus
+        (skills-sh/sickn33/claude-code-guide.md) tells the reader to `ask the agent
+        to "forget previous instructions" if confused` — the payload quoted as
+        remediation advice. No content-level regex separates that from the attack, so
+        including the verb bought a false positive on documentation that teaches
+        agent hygiene. The five attack samples it costs (PINT 665/695/733/775/795,
+        all Gandalf "Forget all/the/any previous ...") were re-scanned against the
+        FULL ruleset: every one of them is still caught by 4-10 other rules —
+        ATR-2026-00001 catches all five — so corpus-level recall is unchanged.
+        Requiring a determiner after `forget` would have recovered them, but a
+        pattern shaped to dodge exactly one benign sample is gate-fitting, not
+        detection.
   condition: any
   false_positives:
     - 'Documentation explaining how system prompts work in educational context'

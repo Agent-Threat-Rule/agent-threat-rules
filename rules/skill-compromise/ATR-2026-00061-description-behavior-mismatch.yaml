@@ -12,7 +12,17 @@ author: "ATR Community"
 date: "2026/03/08"
 schema_version: "0.1"
 detection_tier: pattern
-maturity: test
+# maturity: test -> experimental (2026/08/05). `test` is the ALERT lane
+# (src/quality/rule-contract.ts laneAllows: alert = stable + test), i.e. the
+# analyst/correlation queue. This rule matches 51.2% of the benign gate corpus
+# (see wild_fp_rate below), which is not a detection — it is alarm fatigue, and a
+# lane whose alerts are wrong half the time trains the analyst to close the queue
+# unread. `experimental` keeps the rule loadable and measurable in the hunt
+# (advisory) lane while it is out of anyone's alert path. It is NOT deprecated:
+# it does carry signal (105 attack hits across the 1,657-sample attack corpora).
+# What it needs is a redesign, not retirement — see the per-condition breakdown
+# under `conditions` below.
+maturity: experimental
 severity: medium
 
 references:
@@ -75,14 +85,47 @@ detection:
       value: "(?i)(rm\\s+-rf|unlink|deleteFile|removeDir|fs\\.write|writeFile|appendFile|truncate)"
     - field: tool_args
       operator: regex
-      value: "(?i)(\\bcurl\\s+[^\\n]{0,60}?(https?|ftp)://|\\bwget\\s+[^\\n]{0,60}?(https?|ftp)://|\\bcurl\\s+-[A-Za-z]|\\bwget\\s+-[A-Za-z]|\\bfetch\\s*\\(|\\bnode-fetch\\b|http\\.request|axios\\.|net\\.connect|socket\\.connect|urllib\\.request|requests\\.(get|post|put|patch|delete)\\s*\\()"
+      value: "(?i)(\\bcurl\\s+[^\\n]{0,60}?(https?|ftp)://|\\bwget\\s+[^\\n]{0,60}?(https?|ftp)://|\\bcurl\\s+-[A-Za-z]|\\bwget\\s+-[A-Za-z]|\\bfetch\\s*\\(|\\bnode-fetch\\b|http\\.request|axios\\.|net\\.connect|socket\\.connect)"
       description: >-
         Network egress primitives, anchored to INVOCATION syntax rather than to the
         bare word. The previous pattern listed `fetch` as a naked alternative, so the
         English sentence "Fetch the current weather forecast for a given location"
         false-positived a critical-path rule whose response actions are block_tool +
         escalate. curl/wget now need a URL or a flag, fetch needs a call, and the
-        library entry points (http.request, axios., requests.get()) are unchanged.
+        library entry points (http.request, axios., net.connect) are unchanged.
+
+        This condition is a pure NARROWING of the base pattern: nothing was added
+        while tightening it. An earlier revision of this fix also introduced
+        `urllib.request` and `requests.(get|post|put|patch|delete)(` — new coverage
+        the base never had — and those two alternatives promptly matched ordinary
+        benign Python in the gate corpus (`benign-code/std-18`:
+        `requests.get(url, timeout=10)`, `benign-code/cfg-04`: a localhost health
+        check). Buying new egress coverage while paying for it in benign source code
+        is exactly the trade a precision fix must not make, so they are gone. Cost of
+        removing them, measured: one attack sample (promptfoo/4) out of 1,657.
+    # NOT TOUCHED IN THIS PR, AND HERE IS WHY THE NUMBER LOOKS LIKE IT DOES.
+    # Per-condition hit rate over the 5,474-sample benign gate corpus
+    # (skill-benchmark/benign + benign-corpus-extended + benign-code +
+    # research-mentions), measured 2026/08/05:
+    #
+    #   process-exec (this condition)      1802   32.9%
+    #   env-secrets (next condition)       1535   28.0%
+    #   tool_response secrets               740   13.5%
+    #   net-egress                          373    6.8%
+    #   destructive-fs                      176    3.2%
+    #   ANY (condition: any -> the rule)   2802   51.2%
+    #
+    # Three bare alternatives carry almost all of it: `exec` with no word
+    # boundary matches "execute" / "execution" / "executable" (1749 = 32.0%),
+    # `\$\{?[A-Z_]+\}?` matches every shell/template variable a README ever
+    # printed (1092 = 19.9%), and `credentials?` is an ordinary English noun
+    # (531 = 9.7%). Bounding them is not a one-line edit — `\bexec\b` drops
+    # `execSync`, and the env alternative needs an assignment/read context — and
+    # each bound needs its own recall A/B, so it belongs in its own change with
+    # its own measurement, not smuggled into a PR about three other rules.
+    # The deeper problem is structural: `condition: any` over five independent
+    # capability primitives cannot express "declared description DIVERGES FROM
+    # observed behavior". Nothing here reads the description at all.
     - field: tool_args
       operator: regex
       value: "(?i)(child_process|spawn|exec|execFile|system\\(|popen|subprocess)"
@@ -111,9 +154,47 @@ response:
     Review tool source and publisher before re-enabling.
 
 confidence: 57
-wild_validated: "2026/04/08"
-wild_samples: 53577
-wild_fp_rate: 0
+# CORRECTED 2026/08/05. This block used to read:
+#
+#     wild_validated: "2026/04/08"
+#     wild_samples: 53577
+#     wild_fp_rate: 0
+#
+# The 0 was false by three orders of magnitude, and it was not a typo — it was a
+# NOT-MEASURED zero written to disk in the shape of a measurement.
+# scripts/compute-confidence.ts derives the field as
+# `fireCount / megaScan.totals.scanned * 100`, where fireCount comes from
+# data/mega-scan-report.json's `rule_hits` list. That report holds SEVEN entries
+# for a scan that loaded 113 rules; every rule absent from the list scores
+# fireCount 0 and is written back as `wild_fp_rate: 0`. ATR-2026-00061 is absent.
+# So is every other rule in this PR. 229 of the 780 rules on disk currently carry
+# this same derived zero.
+#
+# It never fired in that scan because the scan is a SKILL-MARKDOWN scan and this
+# rule detects on `tool_args` / `tool_response` — the exact event-shape blindness
+# scripts/gate-promotion-fp.ts documents in its own header. A field no sample
+# fills produces silence, and silence was being recorded as precision.
+#
+# The replacement number is measured, not derived, and the denominator is named
+# because it is NOT the 53,577-sample wild corpus the old value implied:
+#
+#   npx tsx scripts/gate-promotion-fp.ts --ids <(echo ATR-2026-00061) \
+#       --filter-mode --emit-dirty /tmp/dirty.txt
+#   -> [fp-gate] corpus = 5352 benign samples
+#      ATR-2026-00061 — 2814 FP        (2814 / 5352 = 52.58%)
+#
+# Cross-checked independently against the safety gate's own corpus assembly
+# (5,474 samples incl. research-mentions): 2,802 = 51.2%. Same order, same story.
+wild_validated: "2026/08/05"
+wild_samples: 5352
+wild_fp_rate: 52.58
+# wild_fp_rate above is the honest measurement, and it is load-bearing: three
+# consumers read it. src/quality/validate-maturity.ts blocks stable promotion
+# above MAX_WILD_FP_FOR_STABLE; src/quality/quality-gate.ts grants the RFC-001
+# v1.1 §1.1 single-pattern exception ONLY on `wild_fp_rate === 0`; and
+# shouldDemote() uses it to pull a stable rule back. With the zero in place this
+# rule was one promotion away from the enforce (auto-block) lane while matching
+# more than half of all benign content.
 test_cases:
   true_positives:
     - input:
