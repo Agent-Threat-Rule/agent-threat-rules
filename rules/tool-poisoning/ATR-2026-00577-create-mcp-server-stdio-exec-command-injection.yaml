@@ -1,6 +1,6 @@
 title: Command Injection in create-mcp-server-stdio via Unsafe exec() Concatenation (CVE-2025-54994)
 id: ATR-2026-00577
-rule_version: 1
+rule_version: 2
 status: experimental
 description: 'GitHub Security Advisory GHSA-3ch2-jxxc-v4xf (CVE-2025-54994). The
   create-mcp-server-stdio npm package builds shell commands by concatenating MCP
@@ -110,6 +110,20 @@ detection:
     description: Detects create-mcp-server-stdio exec() carrying a classic post-injection
       payload (reverse shell, destructive rm, or curl|sh dropper) inside the
       concatenated command.
+  - field: content
+    operator: regex
+    value: (?i)(?:create-mcp-server-stdio[^\n]{0,200}\bexec\s*\([^)\n]{0,160}(?:`[a-z][^`\n]{0,80}`|\$\(\s*[a-z])|\bexec\s*\([^)\n]{0,160}(?:`[a-z][^`\n]{0,80}`|\$\(\s*[a-z])[^\n]{0,200}create-mcp-server-stdio)
+    description: Detects SHELL COMMAND SUBSTITUTION (backtick `cmd` or $(cmd)) inside a
+      create-mcp-server-stdio exec() call on the content channel. The other content
+      conditions only fire on the source-code sink shape (string + concatenation or
+      template ${...}) or on a classic post-injection payload, so a substitution
+      payload that carries neither - e.g. exec("echo `whoami`") - was uncovered.
+      Command substitution is required to be co-framed with the create-mcp-server-stdio
+      marker (within 200 chars on either side of the exec sink), so ordinary shell
+      backticks elsewhere in a document cannot fire this critical block_tool rule.
+      Bare command separators (; && || |) are DELIBERATELY excluded here because they
+      are common in legitimate static commands (exec("npm run build && npm test"));
+      those forms stay covered by the tool_input condition and by the payload condition.
 response:
   actions:
   - alert
@@ -144,6 +158,15 @@ test_cases:
   - input: 'create-mcp-server-stdio: exec("echo `whoami`") from tool param'
     expected: triggered
     description: backtick command substitution in create-mcp-server-stdio exec sink
+  - input: 'exec("echo `id`") // create-mcp-server-stdio tool handler'
+    expected: triggered
+    description: backtick substitution with the create-mcp-server-stdio marker trailing the sink
+  - input: 'create-mcp-server-stdio handler: exec("cat `ls /etc/passwd`")'
+    expected: triggered
+    description: backtick substitution whose inner command carries arguments (not a bare token)
+  - input: 'MCP stdio tool call routed to exec("tar czf /tmp/x $(ls ~/.ssh)") in create-mcp-server-stdio'
+    expected: triggered
+    description: $() command substitution exfiltrating key material through the exec sink
   true_negatives:
   - input: 'npx create-mcp-server-stdio my-server --transport stdio'
     expected: not_triggered
@@ -166,6 +189,15 @@ test_cases:
   - input: 'exec("ls -la", { cwd: workdir }, callback)'
     expected: not_triggered
     description: generic exec with a static command, unrelated to create-mcp-server-stdio
+  - input: 'exec("echo `date`") // build timestamp in our release script'
+    expected: not_triggered
+    description: ordinary backtick command substitution in a script with no create-mcp-server-stdio context
+  - input: 'create-mcp-server-stdio docs: prefer execFile("git", ["log"]) over exec with backticks'
+    expected: not_triggered
+    description: documentation recommending execFile; the word backticks is prose, not a substitution inside exec()
+  - input: 'Backticks in shell: `whoami` -- see the create-mcp-server-stdio advisory for why exec() must not interpolate.'
+    expected: not_triggered
+    description: backtick substitution present but outside any exec() call argument
 _llm_authored:
   model: claude (gstack subagent)
   generalization_note: 'The rule generalizes beyond the literal PoC by anchoring on
@@ -181,6 +213,23 @@ _llm_authored:
     rules) nor the --mcp CLI flag form (PraisonAI), so the surface is unique to the
     create-mcp-server-stdio exec() concatenation construct. Safe execFile/spawn with
     argument arrays, scaffold CLI usage, library imports, and advisory/research text
-    are excluded.'
+    are excluded.
+
+    rule_version 2 (content-channel command substitution): the original three
+    conditions left a hole. The only condition covering backtick / $() command
+    substitution declared field: tool_input, and no production event builder fills
+    that field (src/hook-handler.ts emits tool_name / tool_args / content /
+    tool_response; only the measurement harnesses in scripts/lib/corpus-event.ts fill
+    tool_input), so on the runtime path a substitution payload with neither a
+    concatenation sink nor a classic post-injection payload -- exec("echo `whoami`") --
+    was undetected. A fourth condition mirrors the substitution shape onto the content
+    channel, bidirectionally anchored on the create-mcp-server-stdio marker exactly
+    like condition 1. Deliberate scope limit: bare command separators (; && || |) are
+    NOT added to the content channel, because they appear in legitimate static commands
+    (exec("npm run build && npm test")) and this rule is severity critical with
+    block_tool; those forms remain covered by the tool_input condition and, when they
+    carry a real payload, by the post-injection condition. Known residual FP shape,
+    shared with conditions 1 and 3: hardening documentation that quotes the vulnerable
+    construct verbatim next to the package name will match.'
   note: Generation-time authoring; verified by deterministic gate. Runtime detection
     is pure regex. Human review required before merge.
