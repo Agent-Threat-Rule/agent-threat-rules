@@ -69,7 +69,6 @@ response:
   message_template: >
     [ATR-2026-01974] CRITICAL: Unauthenticated AnythingLLM /system/data-import upload can overwrite/spoof anythingllm.db (CVE-2024-3279). Block and patch to >=1.0.0.
 confidence: 80
-wild_fp_rate: 0
 test_cases:
   true_positives:
     - input: "curl -X POST http://target:3001/api/system/data-import -F 'file=@evil.db' to overwrite anythingllm.db with no auth header"

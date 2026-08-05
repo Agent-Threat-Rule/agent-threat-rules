@@ -17,6 +17,7 @@ import {
   parseATRRule,
   computeConfidence,
   canPromote,
+  deriveWildFpRate,
   type RuleMetadata,
 } from "../src/quality/index.js";
 
@@ -40,7 +41,6 @@ interface MegaScanReport {
 
 const megaScan: MegaScanReport = JSON.parse(readFileSync(MEGA_SCAN, "utf-8"));
 const wildSampleCount = megaScan.totals.scanned;
-const ruleHitMap = new Map(megaScan.rule_hits.map((r) => [r.id, r.count]));
 const wildValidatedDate = megaScan.scan_date.slice(0, 10).replace(/-/g, "/");
 
 function findRuleFiles(dir: string): string[] {
@@ -61,24 +61,39 @@ function scoreRule(filePath: string): {
   file: string;
   metadata: RuleMetadata;
   confidence: number;
-  wildFpRate: number;
-  fireCount: number;
+  substantiated: boolean;
+  wildFpRate: number | null;
+  reason: string;
   content: string;
 } | null {
   try {
     const content = readFileSync(filePath, "utf-8");
     const baseMetadata = parseATRRule(content);
-    const fireCount = ruleHitMap.get(baseMetadata.id) ?? 0;
-    // Conservative: treat any fire on wild data as potential FP until verified
-    const wildFpRate = fireCount > 0 ? (fireCount / wildSampleCount) * 100 : 0;
 
-    // Enrich with wild stats from mega scan
-    const metadata: RuleMetadata = {
-      ...baseMetadata,
-      wildSamples: wildSampleCount,
-      wildFpRate: Math.round(wildFpRate * 10000) / 10000,
-      wildValidatedAt: wildValidatedDate,
-    };
+    // The report lists the rules that FIRED, not the rules it loaded. Silence
+    // is therefore unattributable — "evaluated and clean" and "never evaluated"
+    // look identical from here — so deriveWildFpRate refuses to produce a
+    // number for an unnamed rule instead of the old `?? 0`. See
+    // src/quality/wild-measurement.ts for the full derivation.
+    const derivation = deriveWildFpRate(
+      megaScan.rule_hits,
+      baseMetadata.id,
+      wildSampleCount,
+    );
+
+    // Score on this report's own finding when it has one; otherwise score on
+    // whatever the rule already carries. Not overwriting matters: this report
+    // is one skill-corpus run from 2026-04-14, and rules measured since by a
+    // different corpus (ATR-2026-00061 at 52.58% on the 5,352-sample benign
+    // gate) hold numbers this run cannot see and must not flatten.
+    const metadata: RuleMetadata = derivation.substantiated
+      ? {
+          ...baseMetadata,
+          wildSamples: wildSampleCount,
+          wildFpRate: derivation.fpRate as number,
+          wildValidatedAt: wildValidatedDate,
+        }
+      : baseMetadata;
 
     const score = computeConfidence(metadata);
 
@@ -86,8 +101,9 @@ function scoreRule(filePath: string): {
       file: filePath,
       metadata,
       confidence: score.total,
-      wildFpRate: metadata.wildFpRate!,
-      fireCount,
+      substantiated: derivation.substantiated,
+      wildFpRate: derivation.fpRate,
+      reason: derivation.reason,
       content,
     };
   } catch {
@@ -139,9 +155,28 @@ for (const r of results) {
 
   let newContent = r.content;
   newContent = updateYamlField(newContent, "confidence", r.confidence);
-  newContent = updateYamlField(newContent, "wild_validated", wildValidatedDate);
-  newContent = updateYamlField(newContent, "wild_samples", wildSampleCount);
-  newContent = updateYamlField(newContent, "wild_fp_rate", r.wildFpRate);
+
+  // The wild-validation triple is written as a unit and ONLY when this report
+  // substantiates it. Two failure modes are being avoided at once:
+  //   - writing 0 for a rule the report never named (the bug this replaces);
+  //   - writing wild_samples/wild_validated for such a rule, which claims a
+  //     run it was not part of and still inflates the confidence score's wild
+  //     validation component even with the rate withheld.
+  // Unsubstantiated rules are left untouched rather than cleared, because this
+  // report has no authority to erase a measurement taken by a different corpus.
+  if (r.substantiated) {
+    newContent = updateYamlField(
+      newContent,
+      "wild_validated",
+      wildValidatedDate,
+    );
+    newContent = updateYamlField(newContent, "wild_samples", wildSampleCount);
+    newContent = updateYamlField(
+      newContent,
+      "wild_fp_rate",
+      r.wildFpRate as number,
+    );
+  }
 
   if (doPromote) {
     const decision = canPromote(r.metadata, "stable");
@@ -183,9 +218,28 @@ console.log("\nTOP 10 BY CONFIDENCE:");
 for (const r of results.slice(0, 10)) {
   console.log(
     `  ${r.metadata.id.padEnd(18)} confidence=${String(r.confidence).padStart(3)} ` +
-      `maturity=${r.metadata.maturity.padEnd(12)} fires=${r.fireCount}`,
+      `maturity=${r.metadata.maturity.padEnd(12)} ` +
+      `wild_fp_rate=${r.substantiated ? `${r.wildFpRate}%` : "unmeasured"}`,
   );
 }
+
+// Say out loud how little this report actually measured. The previous version
+// printed only the 7 rules that fired and wrote a 0 for everyone else, so a
+// reader saw "776 rules at 0% FP" and no hint that the number was a default.
+const substantiated = results.filter((r) => r.substantiated);
+console.log(`\n${"─".repeat(70)}`);
+console.log("WILD FP RATE COVERAGE (this report)");
+console.log(
+  `  substantiated (named in rule_hits)   ${String(substantiated.length).padStart(4)}`,
+);
+console.log(
+  `  not substantiated — field untouched  ${String(results.length - substantiated.length).padStart(4)}`,
+);
+console.log(
+  "  A rule this report cannot substantiate keeps whatever it already had.\n" +
+    "  It is NOT written as 0: the report lists rules that fired, not rules it\n" +
+    "  loaded, so silence here cannot tell 'clean' from 'never evaluated'.",
+);
 
 console.log(`\n${"═".repeat(70)}`);
 console.log(`Total rules: ${results.length}`);

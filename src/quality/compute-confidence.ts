@@ -13,6 +13,7 @@
  * @module agent-threat-rules/quality/compute-confidence
  */
 
+import { isMeasuredFpRate, isMeasuredSampleCount } from "./wild-measurement.js";
 import type {
   ConfidenceScore,
   DeploymentRecommendation,
@@ -73,13 +74,17 @@ export function computeConfidence(rule: RuleMetadata): ConfidenceScore {
  * confidence in precision (max at 10 total).
  */
 function computePrecisionScore(rule: RuleMetadata): number {
+  // Requires a real measurement on both axes. Under the old `!== undefined`
+  // check a `wild_fp_rate: null` reached `Math.min(100, null)` as 0 and scored
+  // a flat 100 — the maximum precision score, awarded for the absence of a
+  // measurement. Unmeasured rules fall through to the test-case estimate below,
+  // which is weaker and honest. See src/quality/wild-measurement.ts.
   if (
-    rule.wildFpRate !== undefined &&
-    rule.wildSamples !== undefined &&
+    isMeasuredFpRate(rule.wildFpRate) &&
+    isMeasuredSampleCount(rule.wildSamples) &&
     rule.wildSamples > 0
   ) {
-    const fpRate = Math.max(0, Math.min(100, rule.wildFpRate));
-    return 100 - fpRate;
+    return 100 - rule.wildFpRate;
   }
   // Fallback: estimate from test case depth
   const testCaseCount = rule.truePositives + rule.trueNegatives;
@@ -94,7 +99,11 @@ function computePrecisionScore(rule: RuleMetadata): number {
  * 10,000+ samples gets 100.
  */
 function computeWildValidationScore(rule: RuleMetadata): number {
-  const samples = rule.wildSamples ?? 0;
+  // `?? 0` would keep a null/NaN sample count out, but a numeric string would
+  // reach Math.min as NaN and poison the score; the predicate is explicit.
+  const samples = isMeasuredSampleCount(rule.wildSamples)
+    ? rule.wildSamples
+    : 0;
   return Math.min(samples / 10000, 1) * 100;
 }
 
