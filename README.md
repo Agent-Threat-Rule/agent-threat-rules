@@ -377,7 +377,7 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | PromptBench (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 3,280 | 15.7% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
 | promptfoo (red-team plugin fixtures) | corpus-2026-05-12 | 44 | 97.7% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | PromptInject (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 1,080 | 100.0% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
-| SKILL.md benchmark (internal) | internal-498 | 498 | 100.0% | 97.0% | 0.20% | 3.5.0 | 2026-06-16 |
+| SKILL.md benchmark (internal) [^skilllane] | internal-498 | 498 | 100.0% (hunt) / 0.0% (enforce) | 97.0% | 0.20% | 3.5.0 | 2026-06-16 |
 | Wild scan (OpenClaw + Skills.sh + Hermes + ClawHub) | corpus-2026-04-14 | 96,096 | — | 57.7% (floor) | 1.35% flag rate | 2.0.0 | 2026-04-14 |
 
 All detection corpora were (re-)measured against ATR 3.5.0 on 2026-06-16,
@@ -408,6 +408,18 @@ by an over-broad persona regex in `ATR-2026-00001` that also false-positived on
 benign "you are now an expert …" prose; tightening it (PR #327) removed those
 false positives and, honestly, the recall on novel-persona jailbreaks it had
 been catching. See [CHANGELOG.md](CHANGELOG.md).
+
+[^skilllane]: **Lane matters more here than anywhere else in this table.** The
+    100% figure is the `hunt` lane, which is the engine default and loads every
+    maturity. In the `enforce` lane — the auto-block one, where a detection stops
+    the agent with no human in the loop — this corpus scores **0%**, and the
+    reason is structural rather than a tuning problem: of the 38 rules carrying
+    `scan_target: skill`, **all 38 are `maturity: test`, and none is `stable`.**
+    The enforce lane only loads `stable`, so it loads no skill-scanning rule at
+    all, and 0 of 32 malicious samples fire. Anyone reading "100% recall on
+    SKILL.md" and deploying in enforce mode would be forming a completely wrong
+    expectation, so both numbers are shown. Verified on this commit with
+    `grep`-free counting over `rules/**/*.yaml`.
 
 [^pint]: The `PINT-format` row is **not** a run of Lakera's official PINT
     benchmark. That corpus is private and roughly 5x larger; this row is a
