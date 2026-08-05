@@ -363,8 +363,8 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | AdvBench (LLM-attacks behaviors) | upstream-2026-06-16 | 520 | 2.1% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | atr-self-test | internal | 341 | 89.7% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | autoresearch | internal-1054 | 1,054 | 15.1% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
-| garak (in-the-wild jailbreaks) | inthewild-jailbreak-corpus-650 | 650 | 91.5% | 100.0% | 0.0% | 3.5.11 | 2026-07-28 |
-| garak-full (all probe families) | 23-families | 3,475 | 56.9% | 100.0% | 0.0% | 3.5.11 | 2026-07-28 |
+| garak (in-the-wild jailbreaks) | inthewild-jailbreak-corpus-650 | 650 | 92.5% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
+| garak-full (all probe families) | 23-families | 3,475 | 57.2% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
 | hackaprompt | v1 | 4,780 | 69.6% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | HarmBench (CAIS behaviors) | upstream-2026-06-16 | 400 | 2.8% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | hh-rlhf (Anthropic red-team-attempts) [^stdcorpora] | snapshot-2026-04 | 4,957 | 1.5% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
@@ -402,12 +402,40 @@ were never measurements of ATR.
 The per-row `ATR version` column above is the version each cell was actually
 measured against, mirroring the `atr_version` field in each
 `data/measurements/<source>/latest.json`. The headline `garak` recall moved
-98.0% → 97.2% (3.5.0) → 95.7% (3.5.8) → 91.5% (3.5.11). The last step is an
-honest correction, not a new regression: the 95.7% figure was partly inflated
-by an over-broad persona regex in `ATR-2026-00001` that also false-positived on
-benign "you are now an expert …" prose; tightening it (PR #327) removed those
-false positives and, honestly, the recall on novel-persona jailbreaks it had
-been catching. See [CHANGELOG.md](CHANGELOG.md).
+98.0% (3.0.0) → 97.2% (3.5.0) → 95.7% (3.5.8) → 92.5% (3.5.11). The 3.5.8 →
+3.5.11 step is a real loss of detections, not a change in how they are counted:
+PR #327 tightened an over-broad persona regex in `ATR-2026-00001` that had been
+false-positiving on benign "you are now an expert …" prose, and tightening it
+also gave up the recall that regex had been earning on novel-persona jailbreaks
+("you are now TrueGPT / ChatINF / Raven …"). The harness event shape changed in
+the same window (see below), and it is not the cause: replayed on today's 780
+rules, the old shape scores 92.2% and the corrected shape 92.5%, a 0.3-point
+difference in the corrected shape's favour. The 3.2-point drop from 95.7% is
+the rules.
+
+Two numbers that briefly appeared here are **withdrawn**: between 2026-08-04
+and 2026-08-05, this table and `stats.json` cited **91.5%** for `garak` and
+**56.9%** for `garak-full`, both at ATR 3.5.11. No measurement file for either
+run exists anywhere in the repository — the newest files in
+`data/measurements/garak/` and `data/measurements/garak-full/` were, the entire
+time, 95.7% at 3.5.8 and 38.3% at 3.5.0 — so the claims failed this project's
+own rule that every published number is a version-pinned, reproducible
+measurement. It was also produced by a harness
+that built an event of `type: 'llm_io'`, which is a rule *source* and not an
+`AgentEventType`; `src/engine.ts` could not map it and so ran every rule of
+every source against the event instead of the two source types the harness
+documented itself as using. The 92.5% above replaces it: measured on
+2026-08-05 at 780 rules through `llm_input` + `tool_response`, the two channels
+`src/hook-handler.ts` can actually deliver a prompt on, and written to
+`data/measurements/garak/2026-08-05_garak-inthewild-jailbreak-corpus-650_atr-3-5-11.json`
+with the commit that produced it. Under the wider shape set used for
+false-positive measurement (which also runs `engine.scanSkill()`) the same
+corpus scores 93.1%; that number is recorded in the measurement's `breakdown`
+and is deliberately not the published one, because a garak prompt never reaches
+production as a SKILL.md. `.github/workflows/eval.yml` now runs
+`scripts/check-benchmark-citations.ts`, which fails CI if this table or
+`stats.json` cites a number no measurement file backs.
+See [CHANGELOG.md](CHANGELOG.md).
 
 [^skilllane]: **Lane matters more here than anywhere else in this table.** The
     100% figure is the `hunt` lane, which is the engine default and loads every
@@ -494,8 +522,8 @@ been catching. See [CHANGELOG.md](CHANGELOG.md).
     measures ATR against attack write-ups, not against traffic.
 
 Two `garak` rows are deliberate: the headline `garak` source tracks NVIDIA's
-in-the-wild jailbreak corpus (narrow, the ~91.5% number ATR cites publicly,
-refreshed 2026-07-28 against ATR 3.5.11), while `garak-full` tracks
+in-the-wild jailbreak corpus (narrow, the ~92.5% number ATR cites publicly,
+refreshed 2026-08-05 against ATR 3.5.11), while `garak-full` tracks
 every probe family in upstream garak (broad, includes families like
 `badchars`, `dra`, `encoding` that ATR's regex layer intentionally does
 not target). Both are valid measurements against different corpora; they
