@@ -1,0 +1,224 @@
+title: "Generative Watermark Removal Tooling (SynthID / StableSignature / TreeRing / StegaStamp)"
+id: ATR-2026-02412
+rule_version: 1
+status: experimental
+description: >
+  Detects an agent installing or invoking tooling whose stated purpose is the
+  removal of imperceptible generative watermarks: purpose-built removal CLIs
+  and packages, published attack implementations, and scheme-targeted attack
+  invocations that name a watermarking system as their parameter.
+  Kept deliberately separate from ATR-2026-02411 because the two attack the
+  same obligation through incompatible physics. A C2PA manifest lives in a
+  metadata container and one exiftool invocation removes it. SynthID and
+  StableSignature are woven into the pixel values themselves, where metadata
+  stripping has no effect at all and removal requires regeneration,
+  adversarial perturbation or a dedicated attack implementation. The
+  artifacts differ, the false-positive structure differs, and merging them
+  would force the near-zero-FP package-name layers here to inherit the
+  broader intent layers there.
+  Honest limitation: the published-attack layer cannot distinguish an
+  attacker from a watermark robustness researcher, a standards evaluator, or
+  this project's own red team, because they run identical code. That is why
+  this rule alerts and never blocks, and why it is scoped to the hunt lane.
+author: "ATR Community"
+date: "2026/08/05"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: medium
+
+references:
+  owasp_llm:
+    - "LLM09:2025 - Misinformation"
+  owasp_agentic:
+    - "ASI08:2026 - Output Handling"
+  mitre_atlas:
+    - "AML.T0054 - LLM Jailbreak"
+  mitre_attack:
+    - "T1027 - Obfuscated Files or Information"
+  cwe:
+    - "CWE-345"
+  external:
+    - "https://deepmind.google/technologies/synthid/"
+    - "https://github.com/adobe/trustmark"
+
+compliance:
+  eu_ai_act:
+    - article: "50"
+      context: >
+        Article 50(2) requires the machine-readable marking of synthetic output
+        to be 'effective, interoperable, robust and reliable as far as this is
+        technically feasible'. Pixel-domain watermarking is the technique that
+        requirement contemplates for image and video. Note the boundary: 50(2)
+        binds the provider to mark and says nothing about removal by others, so
+        this rule does not detect a breach of it. It detects use of tooling
+        built specifically to defeat that marking, which is the direct evidence
+        of whether the robustness condition holds once a system is deployed.
+      strength: primary
+    - article: "15"
+      context: >
+        Detecting attempts to defeat an integrity control on generated output is
+        Article 15 robustness and cybersecurity evidence.
+      strength: primary
+    - article: "9"
+      context: >
+        Watermark defeat is a foreseeable misuse pathway that the Article 9 risk
+        management system must identify and treat.
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MP.5.1"
+      context: >
+        Invocation of watermark-removal tooling is an adversarial action that
+        MP.5.1 requires to be identified and tracked.
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: >
+        MEASURE 2.6 safety evaluation is supported by runtime detection of
+        watermark defeat attempts.
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: >
+        ISO/IEC 42001 Clause 8.1 operational control over agent use of tooling
+        built to defeat content-authenticity marking.
+      strength: primary
+
+tags:
+  category: model-abuse
+  subcategory: generative-watermark-removal
+  scan_target: both
+  confidence: medium
+
+agent_source:
+  type: tool_call
+  framework: [any]
+  provider: [any]
+
+detection:
+  condition: any
+  method: pattern
+  false_positives:
+    - "Watermark robustness researchers, standards evaluators and this project's own red team run the published attack implementations by design. Layer 2 cannot separate them from an attacker — the code is the same. This is the primary reason the rule alerts rather than blocks."
+    - "Adobe TrustMark's `remove_watermark()` is a legitimate API for a content owner clearing an old payload before re-marking their own asset. No layer matches that function call; layer 4 matches natural-language intent only."
+    - "Image restoration and super-resolution (Real-ESRGAN, GFPGAN, img2img denoising) destroy pixel watermarks as a physical side effect with no evasive intent. Not covered."
+    - "Generic ComfyUI nodes (KSampler, LoadImage, SaveImage, denoise) are everyday workflow components. Only removal-specific custom node names match."
+    - "Standard audio pipelines (`ffmpeg -ar 16000`, lowpass filtering, MP3 transcode) are known to weaken AudioSeal, but none of those flags are matched."
+    - "`add_watermarker=False` in diffusers and `\"addWatermark\": false` in Vertex AI are deliberately NOT matched: the first is required when the watermark package is absent, and Google's own documentation states the second is required for deterministic seeded output."
+    - "Educational, defensive and academic text that enumerates attack names will match layer 2. Layer 4 was narrowed specifically to reduce this: research verbs (break, defeat, evade) were removed after they matched defensive sentences, leaving only operational verbs (remove, strip, erase, scrub)."
+  conditions:
+    # -- Layer 1: purpose-built removal packages --
+    # Real payload: uv tool install remove-ai-watermarks
+    # These names declare their own function. A legitimate image pipeline has
+    # no reason to install a package called noai-watermark. Cleanest indicator
+    # in this domain; a name that turns out not to exist costs nothing because
+    # a non-existent package produces no false positives.
+    - field: content
+      operator: regex
+      value: "(?i)\\b(?:remove-ai-watermarks|noai-watermark|gemini-watermark-and-synthid-remover|synthid-bypass)\\b"
+      description: "Installation or invocation of a package whose declared purpose is generative watermark removal"
+
+    # -- Layer 2: published attack implementations --
+    # Real payload: from wmattacker import DiffWMAttacker
+    # Will also match watermark robustness research. Accepted knowingly: this
+    # is an alert, and an agent running watermark attacks is worth surfacing
+    # even when the operator is a researcher.
+    - field: content
+      operator: regex
+      value: "(?i)\\b(?:DiffWMAttacker|VAEWMAttacker|WatermarkAttacker|UnMarker|watermark-stealing)\\b"
+      description: "Import or invocation of a published watermark attack implementation. Matches legitimate robustness research as well — see false_positives"
+
+    # -- Layer 3: scheme-targeted attack invocation --
+    # Real payload: python attack.py -o out/ -a UnMarker -e SynthID --total_imgs 200
+    # The -e flag naming a watermarking scheme is highly specific: ordinary
+    # image tooling has no parameter that takes SynthID or TreeRing as a value.
+    - field: content
+      operator: regex
+      value: "(?i)\\battack\\.py\\b[\\s\\S]{0,80}-e\\s+(?:SynthID|StableSignature|TreeRing|StegaStamp|HiDDeN)\\b"
+      description: "Attack script invoked with a watermarking scheme as its target parameter"
+
+    # -- Layer 4: SynthID-specific removal flags --
+    # Scoped to flags containing the scheme name. Generic strength/regeneration
+    # flags were considered and dropped: they plausibly occur in ordinary image
+    # pipelines and carry no evasive meaning on their own.
+    - field: content
+      operator: regex
+      value: "(?i)--synthid-(?:attack|strength)\\b"
+      description: "Command-line flag naming SynthID as the target of an attack or removal strength parameter"
+
+    # -- Layer 5: operational intent to remove a named watermarking scheme --
+    # Real payload: "remove the SynthID watermark from every render before we publish"
+    # Verb set is operational only. Research verbs (break/defeat/evade/bypass)
+    # were removed after they matched defensive sentences such as
+    # "our detector must not be defeated by simple JPEG compression".
+    - field: content
+      operator: regex
+      value: "(?i)\\b(?:remove|removes|removing|removal|strip|strips|stripping|stripped|erase|erases|erasing|scrub|scrubs|scrubbing|get rid of|clean off|take off)\\b[\\s\\S]{0,60}\\b(?:synthid|stable ?signature|tree ?ring|stegastamp|trustmark|audioseal|invisible watermark|imperceptible watermark)\\b"
+      description: "Operational removal verb within 60 characters of a named watermarking scheme. Research verbs deliberately excluded so that robustness discussion does not match"
+
+response:
+  actions: [alert]
+  message_template: "[ATR-2026-02412] Generative watermark removal tooling detected. Note that watermark robustness research uses the same implementations — treat as a signal to review, not as proof of intent."
+
+test_cases:
+  true_positives:
+    - input: |-
+        uv tool install remove-ai-watermarks && raiw invisible out.png
+      expected: triggered
+      description: "Purpose-built removal package"
+    - input: |-
+        pip install noai-watermark; noai-watermark source.png --remove-ai -o clean.png
+      expected: triggered
+      description: "Self-describing removal package"
+    - input: |-
+        from wmattacker import DiffWMAttacker; att = DiffWMAttacker(pipe, noise_step=60)
+      expected: triggered
+      description: "Published diffusion attack implementation"
+    - input: |-
+        python attack.py -o out/ -a UnMarker -e SynthID --total_imgs 200
+      expected: triggered
+      description: "Scheme-targeted attack invocation"
+    - input: |-
+        wmr synthid image.png --synthid-strength 0.9 -o clean.png
+      expected: triggered
+      description: "SynthID-named removal flag"
+    - input: |-
+        remove the SynthID watermark from every render in ./out before we publish
+      expected: triggered
+      description: "Operational intent against a named scheme"
+    - input: |-
+        script that removes StegaStamp and TreeRing marks from the batch
+      expected: triggered
+      description: "Operational intent, multiple schemes"
+  true_negatives:
+    - input: |-
+        pipe = StableDiffusionXLPipeline.from_pretrained(model, add_watermarker=False)
+      expected: not_triggered
+      description: "Required when the watermark package is absent"
+    - input: |-
+        TrustMark encode/decode round-trip; tm.remove_watermark() then tm.encode() to re-tag our own asset
+      expected: not_triggered
+      description: "Content owner re-marking their own asset"
+    - input: |-
+        Our detector must not be defeated by simple JPEG compression of the invisible watermark.
+      expected: not_triggered
+      description: "Defensive sentence — the reason research verbs were dropped from layer 5"
+    - input: |-
+        Evaluate robustness: does paraphrase attack break the invisible watermark signal?
+      expected: not_triggered
+      description: "Robustness evaluation phrasing"
+    - input: |-
+        AudioSeal is robust to MP3 compression; TPR@1%FPR is close to 1.00.
+      expected: not_triggered
+      description: "Descriptive research prose"
+    - input: |-
+        SynthID embeds an imperceptible watermark into generated pixels.
+      expected: not_triggered
+      description: "Explanatory prose naming the scheme"
+    - input: |-
+        Add a watermark to each PDF page with pypdf before distribution.
+      expected: not_triggered
+      description: "Watermark addition, not removal"
+    - input: |-
+        Upscale with Real-ESRGAN then run GFPGAN face restoration on the batch.
+      expected: not_triggered
+      description: "Restoration destroys watermarks as a side effect, no evasive intent"
