@@ -1,0 +1,20 @@
+name: Set up Node for ATR
+description: >-
+  Node setup pinned to .nvmrc, for every job whose output is a measurement.
+  Promotion ran on Node 20 and demotion on Node 22, so a rule could enter the
+  enforce lane under one V8 and leave it under another. Reading the version from
+  one file is what stops the two halves of a lane decision disagreeing.
+
+inputs:
+  cache:
+    description: Package manager to cache for; empty disables caching.
+    required: false
+    default: npm
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: .nvmrc
+        cache: ${{ inputs.cache }}
