@@ -105,6 +105,48 @@ function readJson(path: string): unknown {
   return JSON.parse(readFileSync(path, "utf-8"));
 }
 
+/**
+ * Compare a README recall cell against the measured value.
+ *
+ * A cell is normally one percentage. It may also be lane-annotated, because
+ * recall is lane-dependent and quoting one number without the lane can be
+ * catastrophically misleading: the SKILL.md corpus scores 100% in `hunt` and
+ * 0% in `enforce`, and someone reading only the first would deploy auto-block
+ * expecting detection that is structurally absent.
+ *
+ *     100.0%
+ *     100.0% (hunt) / 0.0% (enforce)
+ *
+ * Two rules, and the second is the one that keeps this honest:
+ *
+ *   1. One of the percentages must equal the measurement. Otherwise the cell
+ *      is not backed by anything.
+ *   2. If the cell carries more than one percentage, EVERY percentage must be
+ *      lane-annotated. Without that, "add a second number until one matches"
+ *      becomes a way to launder a wrong figure past this check — which is the
+ *      exact failure mode the script exists to prevent.
+ */
+function checkRecallCell(cell: string, measured: number): string | null {
+  const want = pct1(measured);
+  const values = [...cell.matchAll(/(\d+(?:\.\d+)?%)(\s*\(([a-z-]+)\))?/g)];
+  if (values.length === 0) return `recall ${cell} is not a percentage`;
+  if (values.length > 1 && values.some((m) => m[3] === undefined)) {
+    return (
+      `recall ${cell} lists ${values.length} values but not all are lane-annotated — ` +
+      `write each as "N% (lane)" so a reader knows which lane each number belongs to`
+    );
+  }
+  // The FIRST value, not any value. `42.0% (hunt) / 100.0% (enforce)` contains
+  // the measured number while attaching it to the wrong lane — checking only for
+  // presence would wave that through. The measurement is a hunt-lane run (the
+  // engine default), and the first value is the one a reader takes as headline,
+  // so those two have to be the same number.
+  if (values[0][1] !== want) {
+    return `recall ${cell} leads with ${values[0][1]}, but the measurement is ${want}`;
+  }
+  return null;
+}
+
 /** `0.915` -> `"91.5%"`, matching how the README table renders a recall. */
 function pct1(n: number): string {
   return `${(n * 100).toFixed(1)}%`;
@@ -219,11 +261,14 @@ function main(): number {
         `README.md:${row.lineNo} (${source}): samples ${row.samples} != measured ${entry.samples}`,
       );
     }
-    if (entry.recall !== null && row.recall !== "—" && row.recall !== pct1(entry.recall)) {
-      problems.push(
-        `README.md:${row.lineNo} (${source}): recall ${row.recall} != measured ` +
-          `${pct1(entry.recall)} (data/measurements/${source}/latest.json)`,
-      );
+    if (entry.recall !== null && row.recall !== "—") {
+      const recallProblem = checkRecallCell(row.recall, entry.recall);
+      if (recallProblem !== null) {
+        problems.push(
+          `README.md:${row.lineNo} (${source}): ${recallProblem} ` +
+            `(data/measurements/${source}/latest.json)`,
+        );
+      }
     }
     if (row.atrVersion !== entry.atr_version) {
       problems.push(
