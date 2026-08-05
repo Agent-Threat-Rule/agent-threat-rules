@@ -42,10 +42,18 @@ references:
 
 compliance:
   nist_csf:
-    - "DE.AE-02"
-    - "DE.AE-04"
-  etsi_ts_104223:
-    - "P3.3"
+    - subcategory: "DE.AE-02"
+      context: >
+        A single tool call in a runaway loop is unremarkable; the adverse event exists
+        only in the aggregate. Counting calls per session over a window is the analysis
+        DE.AE-02 requires in order for the activity to be understood at all.
+      strength: primary
+    - subcategory: "DE.AE-04"
+      context: >
+        The windowed count is also the scope estimate: how many calls, in what period,
+        confined to which session. That is the input DE.AE-04 needs, though the rule
+        stops at measuring and does not assess cost or downstream impact.
+      strength: secondary
   eu_ai_act:
     - article: "15"
       context: >

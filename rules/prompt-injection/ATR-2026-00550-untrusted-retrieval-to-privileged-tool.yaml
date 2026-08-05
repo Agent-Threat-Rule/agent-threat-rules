@@ -46,8 +46,19 @@ references:
 
 compliance:
   nist_csf:
-    - "DE.CM-09"
-    - "PR.AA-05"
+    - subcategory: "DE.CM-09"
+      context: >
+        Neither span is suspicious alone — retrieving a web page is ordinary, and so is
+        calling a write tool. The adverse pattern is the ordering, and only monitoring
+        the running system as DE.CM-09 requires makes that ordering visible.
+      strength: primary
+    - subcategory: "PR.AA-05"
+      context: >
+        Letting untrusted retrieved content reach a write, destructive or exfiltrative
+        tool means the agent is exercising more privilege than the provenance of its
+        input warrants. Secondary: the rule is evidence that the least-privilege intent
+        behind PR.AA-05 is not holding, not a control that defines it.
+      strength: secondary
   eu_ai_act:
     - article: "15"
       context: >

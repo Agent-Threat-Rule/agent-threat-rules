@@ -42,8 +42,20 @@ references:
 
 compliance:
   nist_csf:
-    - "PR.DS-01"
-    - "PR.AA-05"
+    - subcategory: "PR.DS-01"
+      context: >
+        A memory or vector store is data-at-rest. Writing into a partition belonging to
+        a different conversation is an integrity failure of that store under PR.DS-01,
+        and it persists — unlike a transient leak, the bad record stays until something
+        removes it.
+      strength: primary
+    - subcategory: "PR.AA-05"
+      context: >
+        The conversation boundary is an authorization boundary, so a write that crosses
+        it is also a least-privilege failure. Secondary because PR.AA-05 governs how
+        permissions are defined and reviewed, while this rule only observes one being
+        exceeded at runtime.
+      strength: secondary
   eu_ai_act:
     - article: "10"
       context: >
