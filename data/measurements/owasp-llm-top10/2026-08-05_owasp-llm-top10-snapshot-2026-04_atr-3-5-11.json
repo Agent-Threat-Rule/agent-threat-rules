@@ -1,0 +1,90 @@
+{
+  "schema_version": "1",
+  "source": "owasp-llm-top10",
+  "source_version": "snapshot-2026-04",
+  "atr_version": "3.5.11",
+  "atr_commit": "70bd9cabb",
+  "rules_loaded": 780,
+  "measured_at": "2026-08-05T07:46:01.925Z",
+  "samples": 56,
+  "metrics": {
+    "recall": 0.16071428571428573,
+    "precision": 1,
+    "f1": 0.27692307692307694,
+    "fp_rate": 0
+  },
+  "confusion": {
+    "tp": 9,
+    "fp": 0,
+    "tn": 0,
+    "fn": 47
+  },
+  "breakdown": {
+    "by_family": {
+      "prompt-injection": {
+        "total": 10,
+        "matched": 2,
+        "recall": 0.2
+      },
+      "sensitive-info-disclosure": {
+        "total": 3,
+        "matched": 0,
+        "recall": 0
+      },
+      "supply-chain": {
+        "total": 13,
+        "matched": 0,
+        "recall": 0
+      },
+      "data-model-poisoning": {
+        "total": 6,
+        "matched": 1,
+        "recall": 0.16666666666666666
+      },
+      "improper-output-handling": {
+        "total": 7,
+        "matched": 2,
+        "recall": 0.2857142857142857
+      },
+      "excessive-agency": {
+        "total": 1,
+        "matched": 0,
+        "recall": 0
+      },
+      "system-prompt-leakage": {
+        "total": 2,
+        "matched": 2,
+        "recall": 1
+      },
+      "vector-embedding-weakness": {
+        "total": 5,
+        "matched": 1,
+        "recall": 0.2
+      },
+      "misinformation": {
+        "total": 2,
+        "matched": 0,
+        "recall": 0
+      },
+      "unbounded-consumption": {
+        "total": 7,
+        "matched": 1,
+        "recall": 0.14285714285714285
+      }
+    },
+    "top_contributing_rules": {
+      "ATR-2026-00061": 5,
+      "ATR-2026-00001": 2,
+      "ATR-2026-00010": 2,
+      "ATR-2026-00070": 2,
+      "ATR-2026-00116": 2,
+      "ATR-2026-00012": 2,
+      "ATR-2026-00213": 2,
+      "ATR-2026-00030": 1,
+      "ATR-2026-00264": 1,
+      "ATR-2026-00063": 1
+    },
+    "lane": "hunt"
+  },
+  "notes": "owasp-llm-top10 corpus — 100% adversarial samples. Measured by src/engine.ts (ATREngine, lane=hunt, 780 rules loaded) through the canonical event shapes in scripts/lib/corpus-event.ts (wide-raw, pre-tool-json-arg, pre-tool-json-both, post-tool-json) plus scanSkill(). PRECISION AND FP_RATE ARE NOT MEASURED: this corpus contains no benign samples, so there is no true-negative population to compute them from. The values 1 and 0 are the repo-wide schema convention for adversarial-only corpora, not results — do not quote them. For real precision see the benign-gate measurements. Supersedes all measurements of this source before 2026-08-05, which were produced by a shadow regex matcher in scripts/eval-std-corpora.ts and never ran the engine."
+}

@@ -1,0 +1,80 @@
+{
+  "schema_version": "1",
+  "source": "hh-rlhf",
+  "source_version": "snapshot-2026-04",
+  "atr_version": "3.5.11",
+  "atr_commit": "70bd9cabb",
+  "rules_loaded": 780,
+  "measured_at": "2026-08-05T07:45:55.383Z",
+  "samples": 4957,
+  "metrics": {
+    "recall": 0.014726649182973573,
+    "precision": 1,
+    "f1": 0.029025844930417495,
+    "fp_rate": 0
+  },
+  "confusion": {
+    "tp": 73,
+    "fp": 0,
+    "tn": 0,
+    "fn": 4884
+  },
+  "breakdown": {
+    "by_family": {
+      "cyberattack": {
+        "total": 60,
+        "matched": 3,
+        "recall": 0.05
+      },
+      "other-harmful": {
+        "total": 3692,
+        "matched": 54,
+        "recall": 0.014626218851570965
+      },
+      "harmful-content": {
+        "total": 216,
+        "matched": 0,
+        "recall": 0
+      },
+      "data-exfiltration": {
+        "total": 195,
+        "matched": 3,
+        "recall": 0.015384615384615385
+      },
+      "social-engineering": {
+        "total": 53,
+        "matched": 0,
+        "recall": 0
+      },
+      "illegal-activity": {
+        "total": 196,
+        "matched": 8,
+        "recall": 0.04081632653061224
+      },
+      "physical-harm": {
+        "total": 532,
+        "matched": 4,
+        "recall": 0.007518796992481203
+      },
+      "prompt-injection": {
+        "total": 13,
+        "matched": 1,
+        "recall": 0.07692307692307693
+      }
+    },
+    "top_contributing_rules": {
+      "ATR-2026-00061": 18,
+      "ATR-2026-00298": 12,
+      "ATR-2026-00473": 11,
+      "ATR-2026-01770": 9,
+      "ATR-2026-00289": 8,
+      "ATR-2026-01831": 7,
+      "ATR-2026-00063": 4,
+      "ATR-2026-00064": 3,
+      "ATR-2026-00066": 1,
+      "ATR-2026-01925": 1
+    },
+    "lane": "hunt"
+  },
+  "notes": "hh-rlhf corpus — 100% adversarial samples. Measured by src/engine.ts (ATREngine, lane=hunt, 780 rules loaded) through the canonical event shapes in scripts/lib/corpus-event.ts (wide-raw, pre-tool-json-arg, pre-tool-json-both, post-tool-json) plus scanSkill(). PRECISION AND FP_RATE ARE NOT MEASURED: this corpus contains no benign samples, so there is no true-negative population to compute them from. The values 1 and 0 are the repo-wide schema convention for adversarial-only corpora, not results — do not quote them. For real precision see the benign-gate measurements. Supersedes all measurements of this source before 2026-08-05, which were produced by a shadow regex matcher in scripts/eval-std-corpora.ts and never ran the engine."
+}

@@ -7,12 +7,53 @@
  *   2. OWASP LLM Top 10 attack scenarios (manually extracted)
  *   3. MITRE ATLAS LLM-relevant case study procedures (extracted)
  *
+ * WHY THIS FILE WAS REWRITTEN (2026-08-05)
+ *
+ * Until this commit the script never ran the ATR engine. It walked `rules/`
+ * with js-yaml, kept only `operator: regex` conditions, flattened every
+ * condition of every rule into one implicit OR, and tested each pattern with a
+ * hand-rolled `new RegExp(value, 'i')` against the raw sample string. That
+ * shadow matcher differs from `src/engine.ts` on every axis that matters:
+ *
+ *   - NO STATUS GATE. `status: draft|deprecated` rules — which the engine skips
+ *     outright, before the lane gate — were counted as detections.
+ *   - NO LANE GATE. `maturity` was never read, so an experimental rule scored
+ *     the same as a stable one.
+ *   - NO FIELD RESOLUTION. `cond.field` was parsed and then discarded. A
+ *     condition declared on `tool_response` or `file_path` was tested against
+ *     the natural-language sample, which production would never do.
+ *   - NO CONDITION LOGIC. `detection.condition: all` was ignored; every rule
+ *     behaved as `any`, so a 4-of-4 AND rule fired on 1 of 4.
+ *   - NO NON-REGEX OPERATORS, NO EXCLUSIONS, NO ReDoS GATE.
+ *   - WRONG REGEX FLAGS. The engine picks `iu` when a pattern contains `\u{`
+ *     (src/engine.ts:883); the shadow matcher always used `i`. Without the `u`
+ *     flag `[\u{E0001}\u{E007F}]` is not a codepoint range — JS reads it as the
+ *     literal class `[u{E0017F}]`, i.e. "contains any of u { E 0 1 } 7 F". That
+ *     single condition of ATR-2026-00258 matched any English text containing
+ *     the letter `e`, which is why all three corpora reported 99-100% recall.
+ *     The number measured how many samples contain a vowel, not what ATR
+ *     detects.
+ *
+ * Every sample now goes through the real `ATREngine` via the canonical shape
+ * set in `scripts/lib/corpus-event.ts` — the same entry point the FP gates use,
+ * so a rule can never earn detection credit on a presentation wider than the
+ * one it pays its false positives on.
+ *
+ * ON PRECISION: these three corpora are 100% adversarial. They contain no
+ * benign samples, so precision and fp_rate CANNOT be computed from them. The
+ * measurement schema requires numbers, so the repo-wide convention (precision
+ * 1, fp_rate 0) is preserved — but the `notes` field says out loud that these
+ * are conventions, not measurements. Do not quote them.
+ *
  * Output:
  *   - data/test-corpora/<source>/recall-results.json
  *   - data/test-corpora/combined-miss-clusters.json
+ *   - data/measurements/<source>/<pinned>.json (+ latest.json)
  *
  * Usage:
  *   npx tsx scripts/eval-std-corpora.ts
+ *   npx tsx scripts/eval-std-corpora.ts --lane enforce   # stable-only lane
+ *   npx tsx scripts/eval-std-corpora.ts --no-write       # report only
  */
 
 import { existsSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
@@ -20,13 +61,23 @@ import { resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 import yaml from 'js-yaml';
+import { ATREngine } from '../src/engine.js';
 import { writeMeasurement } from '../src/measurement/write.js';
+import {
+  matchedRuleIds,
+  shapeNames,
+  statusCoverage,
+  fieldCoverage,
+  type RuleLike,
+} from './lib/corpus-event.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const REPO_ROOT = resolve(__dirname, '..');
 const RULES_DIR = resolve(REPO_ROOT, 'rules');
 const CORPORA_DIR = resolve(REPO_ROOT, 'data/test-corpora');
+
+type Lane = 'enforce' | 'alert' | 'hunt';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -47,92 +98,82 @@ interface EvalResult {
   matched_rules: string[];
 }
 
-// ─── Rule loading ────────────────────────────────────────────────────────────
-
-interface ATRCondition {
-  field?: string;
-  operator?: string;
-  value?: string;
-  description?: string;
+interface Args {
+  lane: Lane;
+  write: boolean;
 }
 
-interface LoadedRule {
-  id: string;
-  title: string;
-  category: string;
-  conditions: ATRCondition[];
+function parseArgs(): Args {
+  const argv = process.argv.slice(2);
+  const at = (flag: string): string | null => {
+    const i = argv.indexOf(flag);
+    return i >= 0 ? (argv[i + 1] ?? null) : null;
+  };
+  const laneArg = at('--lane');
+  const lane: Lane =
+    laneArg === 'enforce' || laneArg === 'alert' || laneArg === 'hunt' ? laneArg : 'hunt';
+  if (laneArg !== null && laneArg !== lane) {
+    throw new Error(`--lane must be one of enforce|alert|hunt (got ${JSON.stringify(laneArg)})`);
+  }
+  return { lane, write: !argv.includes('--no-write') };
 }
 
-function loadAllRules(): LoadedRule[] {
-  const rules: LoadedRule[] = [];
+// ─── Rule inventory (for honesty reporting only — NOT for matching) ──────────
 
-  function walkDir(dir: string) {
-    const entries = readdirSync(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      const fullPath = join(dir, entry.name);
+/**
+ * Parse rule front-matter to report what this harness structurally cannot
+ * measure. Matching itself is done exclusively by ATREngine; this walk exists
+ * so the run can state which rules the engine refuses to evaluate (inert
+ * status) and which declare fields a text corpus cannot fill, instead of
+ * silently folding them into the miss count.
+ */
+function loadRuleShells(): RuleLike[] {
+  const shells: RuleLike[] = [];
+  const walk = (dir: string): void => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
       if (entry.isDirectory()) {
-        walkDir(fullPath);
-      } else if (entry.name.endsWith('.yaml') || entry.name.endsWith('.yml')) {
-        try {
-          const content = readFileSync(fullPath, 'utf-8');
-          const rule = yaml.load(content) as Record<string, unknown>;
-          if (!rule || !rule.id || !rule.detection) continue;
-
-          const detection = rule.detection as Record<string, unknown>;
-          const conditions = detection.conditions as unknown[];
-          if (!Array.isArray(conditions) || conditions.length === 0) continue;
-
-          // Only keep pattern conditions with regex operators
-          const patternConds: ATRCondition[] = [];
-          for (const c of conditions) {
-            const cond = c as Record<string, unknown>;
-            if (cond.operator === 'regex' && cond.value && typeof cond.value === 'string') {
-              patternConds.push({
-                field: (cond.field as string) || 'content',
-                operator: 'regex',
-                value: cond.value as string,
-                description: (cond.description as string) || ''
-              });
-            }
-          }
-
-          if (patternConds.length > 0) {
-            rules.push({
-              id: rule.id as string,
-              title: (rule.title as string) || '',
-              category: String((rule.tags as Record<string, unknown>)?.category || 'unknown'),
-              conditions: patternConds
-            });
-          }
-        } catch {
-          // skip invalid files
-        }
+        walk(full);
+        continue;
+      }
+      if (!entry.name.endsWith('.yaml') && !entry.name.endsWith('.yml')) continue;
+      try {
+        const rule = yaml.load(readFileSync(full, 'utf-8')) as Record<string, unknown> | null;
+        if (!rule || typeof rule.id !== 'string') continue;
+        shells.push(rule as unknown as RuleLike);
+      } catch {
+        // Unparseable file: the engine will not load it either. Nothing to report.
       }
     }
-  }
-
-  walkDir(RULES_DIR);
-  return rules;
+  };
+  walk(RULES_DIR);
+  return shells;
 }
 
-// ─── Pattern matching ────────────────────────────────────────────────────────
-
-function evalText(text: string, rules: LoadedRule[]): string[] {
-  const matched: string[] = [];
-  for (const rule of rules) {
-    for (const cond of rule.conditions) {
-      try {
-        const re = new RegExp(cond.value!, 'i');
-        if (re.test(text)) {
-          matched.push(rule.id);
-          break; // count rule once
-        }
-      } catch {
-        // invalid regex, skip
-      }
-    }
+function reportCoverageGaps(shells: readonly RuleLike[]): void {
+  const inert = statusCoverage(shells);
+  const fields = fieldCoverage(shells);
+  const zeroMeasurement = fields.filter((f) => f.zeroMeasurement);
+  console.log(`  Rule files on disk: ${shells.length}`);
+  console.log(
+    `  Inert (status draft/deprecated — engine skips before the lane gate): ${inert.length}`,
+  );
+  const enforceClaiming = inert.filter((i) => i.claimsEnforceLane);
+  if (enforceClaiming.length > 0) {
+    console.log(
+      `    of which claim the enforce lane: ${enforceClaiming.length} (${enforceClaiming
+        .map((i) => i.ruleId)
+        .join(', ')})`,
+    );
   }
-  return matched;
+  console.log(
+    `  Zero-measurement for a TEXT corpus (trace/behavioral/signature method, or an ` +
+      `unfillable field under AND): ${zeroMeasurement.length}`,
+  );
+  console.log(
+    `  These rules cannot contribute a detection here. Recall below is the engine's ` +
+      `result over the rules it will actually evaluate — it is not evidence about the rest.`,
+  );
 }
 
 // ─── HH-RLHF corpus loader ──────────────────────────────────────────────────
@@ -295,12 +336,106 @@ function clusterMisses(results: EvalResult[]): MissCluster[] {
   return clusters.sort((a, b) => b.count - a.count);
 }
 
+// ─── Evaluation ──────────────────────────────────────────────────────────────
+
+interface FamilyStat {
+  total: number;
+  matched: number;
+}
+
+/**
+ * Run one corpus through the real engine. Every sample goes through
+ * `matchedRuleIds` — the canonical shape set plus scanSkill() — so detections
+ * here are counted on exactly the presentation the FP gates charge for.
+ */
+function evaluateCorpus(engine: ATREngine, samples: readonly SampleEntry[]): EvalResult[] {
+  const results: EvalResult[] = [];
+  for (const sample of samples) {
+    const ids = [...matchedRuleIds(engine, sample.text)].sort();
+    results.push({
+      id: sample.id,
+      text: sample.text.slice(0, 500),
+      source: sample.source,
+      attack_family: sample.attack_family,
+      matched: ids.length > 0,
+      matched_rules: ids,
+    });
+  }
+  return results;
+}
+
+function familyBreakdown(results: readonly EvalResult[]): Map<string, FamilyStat> {
+  const byFamily = new Map<string, FamilyStat>();
+  for (const r of results) {
+    const fam = r.attack_family || 'unknown';
+    const entry = byFamily.get(fam) ?? { total: 0, matched: 0 };
+    byFamily.set(fam, {
+      total: entry.total + 1,
+      matched: entry.matched + (r.matched ? 1 : 0),
+    });
+  }
+  return byFamily;
+}
+
+/**
+ * Rule ids that carried the corpus, most-load-bearing first. A corpus whose
+ * recall rests on one rule is a corpus that measures that rule, not the ruleset
+ * — the failure mode that produced the pre-2026-08-05 numbers.
+ */
+function topContributingRules(results: readonly EvalResult[], limit: number): [string, number][] {
+  const counts = new Map<string, number>();
+  for (const r of results) {
+    for (const id of r.matched_rules) counts.set(id, (counts.get(id) ?? 0) + 1);
+  }
+  return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit);
+}
+
+function measurementNotes(corpus: string, lane: Lane, ruleCount: number): string {
+  return (
+    `${corpus} corpus — 100% adversarial samples. Measured by src/engine.ts (ATREngine, ` +
+    `lane=${lane}, ${ruleCount} rules loaded) through the canonical event shapes in ` +
+    `scripts/lib/corpus-event.ts (${shapeNames().join(', ')}) plus scanSkill(). ` +
+    `PRECISION AND FP_RATE ARE NOT MEASURED: this corpus contains no benign samples, so ` +
+    `there is no true-negative population to compute them from. The values 1 and 0 are the ` +
+    `repo-wide schema convention for adversarial-only corpora, not results — do not quote ` +
+    `them. For real precision see the benign-gate measurements. Supersedes all measurements ` +
+    `of this source before 2026-08-05, which were produced by a shadow regex matcher in ` +
+    `scripts/eval-std-corpora.ts and never ran the engine.`
+  );
+}
+
+function reportCorpus(corpus: string, results: readonly EvalResult[], samples: number): void {
+  const matched = results.filter((r) => r.matched).length;
+  const recall = samples > 0 ? matched / samples : 0;
+  console.log(`  Matched: ${matched}/${samples} = ${(recall * 100).toFixed(1)}% recall`);
+  console.log('  By family:');
+  const byFamily = familyBreakdown(results);
+  for (const [fam, stats] of [...byFamily.entries()].sort((a, b) => b[1].total - a[1].total)) {
+    const famRecall = stats.total > 0 ? stats.matched / stats.total : 0;
+    console.log(`    ${fam}: ${stats.matched}/${stats.total} (${(famRecall * 100).toFixed(0)}% recall)`);
+  }
+  const top = topContributingRules(results, 8);
+  if (top.length > 0) {
+    console.log('  Rules carrying this corpus (id: samples matched):');
+    for (const [id, n] of top) {
+      console.log(`    ${id}: ${n} (${((n / samples) * 100).toFixed(1)}% of corpus)`);
+    }
+  }
+}
+
 // ─── Main ────────────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log('Loading ATR rules...');
-  const rules = loadAllRules();
-  console.log(`Loaded ${rules.length} rules with regex conditions`);
+  const args = parseArgs();
+
+  console.log('Loading ATR engine...');
+  const engine = new ATREngine({ rulesDir: RULES_DIR, lane: args.lane });
+  const ruleCount = await engine.loadRules();
+  console.log(`Loaded ${ruleCount} rules (lane=${args.lane})`);
+  console.log(`Event shapes: ${shapeNames().join(', ')} + scanSkill()`);
+
+  console.log('\nWhat this harness structurally cannot measure:');
+  reportCoverageGaps(loadRuleShells());
 
   // Load all three corpora
   console.log('\nLoading corpora...');
@@ -322,54 +457,33 @@ async function main() {
   ] as [string, SampleEntry[]][]) {
     console.log(`\nEvaluating ${corpus} (${samples.length} samples)...`);
 
-    const results: EvalResult[] = [];
-    let matched = 0;
-
-    for (const sample of samples) {
-      const matchedRules = evalText(sample.text, rules);
-      const isMatched = matchedRules.length > 0;
-      if (isMatched) matched++;
-
-      results.push({
-        id: sample.id,
-        text: sample.text.slice(0, 500),
-        source: sample.source,
-        attack_family: sample.attack_family,
-        matched: isMatched,
-        matched_rules: matchedRules
-      });
-    }
-
-    const recall = matched / samples.length;
-    console.log(`  Matched: ${matched}/${samples.length} = ${(recall * 100).toFixed(1)}% recall`);
-
-    // Family breakdown
-    const byFamily = new Map<string, { total: number; matched: number }>();
-    for (const r of results) {
-      const fam = r.attack_family || 'unknown';
-      if (!byFamily.has(fam)) byFamily.set(fam, { total: 0, matched: 0 });
-      const entry = byFamily.get(fam)!;
-      entry.total++;
-      if (r.matched) entry.matched++;
-    }
-
-    console.log('  By family:');
-    for (const [fam, stats] of [...byFamily.entries()].sort((a, b) => b[1].total - a[1].total)) {
-      const famRecall = stats.matched / stats.total;
-      console.log(`    ${fam}: ${stats.matched}/${stats.total} (${(famRecall * 100).toFixed(0)}% recall)`);
-    }
+    const results = evaluateCorpus(engine, samples);
+    const matched = results.filter((r) => r.matched).length;
+    const recall = samples.length > 0 ? matched / samples.length : 0;
+    reportCorpus(corpus, results, samples.length);
 
     // Save legacy results
     const outPath = join(CORPORA_DIR, corpus, 'recall-results.json');
-    writeFileSync(outPath, JSON.stringify(results, null, 2));
-    console.log(`  Saved to ${outPath}`);
+    if (args.write) {
+      writeFileSync(outPath, JSON.stringify(results, null, 2));
+      console.log(`  Saved to ${outPath}`);
+    }
 
     // Standardized Measurement file (version-pinned, immutable).
-    // 100% adversarial corpora → precision is 1 by construction; fp_rate undefined (0).
+    // Precision / fp_rate are conventions here, NOT measurements — see notes.
     const f1 = recall === 0 ? 0 : (2 * recall) / (recall + 1);
+    const byFamily = familyBreakdown(results);
     const byFamilyBreakdown: Record<string, { total: number; matched: number; recall: number }> = {};
     for (const [fam, stats] of byFamily.entries()) {
       byFamilyBreakdown[fam] = { total: stats.total, matched: stats.matched, recall: stats.matched / stats.total };
+    }
+    const topRules: Record<string, number> = {};
+    for (const [id, n] of topContributingRules(results, 10)) topRules[id] = n;
+
+    if (!args.write) {
+      console.log('  --no-write: measurement not persisted');
+      allResults.push(...results);
+      continue;
     }
     const { measurementPath } = writeMeasurement(
       {
@@ -388,8 +502,8 @@ async function main() {
           tn: 0,
           fn: samples.length - matched,
         },
-        breakdown: { by_family: byFamilyBreakdown },
-        notes: `${corpus} corpus — 100% adversarial samples; fp_rate undefined and recorded as 0 by convention.`,
+        breakdown: { by_family: byFamilyBreakdown, top_contributing_rules: topRules, lane: args.lane },
+        notes: measurementNotes(corpus, args.lane, ruleCount),
       },
       { force: true },
     );
@@ -407,9 +521,11 @@ async function main() {
     console.log(`  ${c.source}::${c.family}: ${c.count} misses`);
   }
 
-  const clustersPath = join(CORPORA_DIR, 'combined-miss-clusters.json');
-  writeFileSync(clustersPath, JSON.stringify(clusters, null, 2));
-  console.log(`\nClusters saved to ${clustersPath}`);
+  if (args.write) {
+    const clustersPath = join(CORPORA_DIR, 'combined-miss-clusters.json');
+    writeFileSync(clustersPath, JSON.stringify(clusters, null, 2));
+    console.log(`\nClusters saved to ${clustersPath}`);
+  }
 
   // Summary stats
   const totalHit = allResults.filter(r => r.matched).length;
