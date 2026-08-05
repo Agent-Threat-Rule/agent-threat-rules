@@ -373,7 +373,7 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | MITRE ATLAS [^stdcorpora] | snapshot-2026-04 | 182 | 39.0% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
 | NeMo Guardrails (NVIDIA test fixtures) | corpus-2026-05-12 | 6 | 100.0% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | OWASP LLM Top 10 [^stdcorpora] | snapshot-2026-04 | 56 | 16.1% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
-| PINT-format (deepset + Lakera Gandalf) [^pint] | public-850 | 850 | 60.3% | 100.0% | 0.0% | 3.5.11 | 2026-08-04 |
+| PINT-format (deepset + Lakera Gandalf) [^pint] | v1 | 850 | 60.3% | 100.0% | 0.0% | 3.5.11 | 2026-08-04 |
 | PromptBench (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 3,280 | 15.7% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
 | promptfoo (red-team plugin fixtures) | corpus-2026-05-12 | 44 | 97.7% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | PromptInject (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 1,080 | 100.0% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |

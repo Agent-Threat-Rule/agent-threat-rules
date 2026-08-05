@@ -30,8 +30,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ATREngine } from '../src/engine.js';
-import type { AgentEvent } from '../src/types.js';
 import { writeMeasurement } from '../src/measurement/write.js';
+import { detectedOnPromptChannels } from './lib/corpus-event.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -96,14 +96,13 @@ async function evalCorpus(
     byFamily[family] = byFamily[family] ?? { total: 0, matched: 0 };
     byFamily[family].total += 1;
 
-    const event: AgentEvent = {
-      type: 'llm_io',
-      content: a.text,
-      timestamp: new Date().toISOString(),
-      fields: { user_input: a.text },
-    };
-    const matches = engine.evaluate(event);
-    if (matches.length > 0) {
+    // Shapes come from scripts/lib/corpus-event.ts. This used to build
+    // `{ type: 'llm_io' }` — a rule SOURCE, not an AgentEventType. The engine
+    // could not map it to a source and therefore skipped source-type filtering
+    // entirely, running every rule of every source against an event that
+    // carried only `user_input`. Every measurement in this series written
+    // before 2026-08-05 was produced on that unintended shape.
+    if (detectedOnPromptChannels(engine, a.text)) {
       matched += 1;
       byFamily[family].matched += 1;
     } else {

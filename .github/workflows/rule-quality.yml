@@ -223,16 +223,56 @@ jobs:
             echo "$RESULT"
           fi
 
-      - name: Run PINT eval regression check
+      # ── PINT regression gate ──────────────────────────────────────────────
+      # This step used to be called "Run PINT eval regression check" and did
+      # none of the three things that name claims:
+      #   1. it ran `npm run eval` (src/eval/run-eval.ts, the internal
+      #      self-test harness) — PINT never ran;
+      #   2. it then read data/pint-benchmark/pint-eval-report.json, a file
+      #      COMMITTED TO GIT that step 1 does not write — so it reported a
+      #      run performed by a human on an earlier commit and rule set;
+      #   3. it read `.recall`, which does not exist at the top level of that
+      #      report (it is .report.overall.recall), so every run printed the
+      #      literal "PINT recall: undefined".
+      # And no later step read steps.pint.outputs.* — a PINT regression could
+      # not fail a PR. Snapshot first, then actually run PINT, then gate.
+      - name: Snapshot PINT baseline (before the run overwrites it)
+        if: steps.changed-rules.outputs.has_changes == 'true'
+        run: |
+          # `npm run eval:pint` rewrites BOTH the report and
+          # data/measurements/pint/latest.json, so the baseline has to be taken
+          # off the committed tree before the run, not after.
+          cp data/measurements/pint/latest.json "${RUNNER_TEMP}/pint-baseline.json"
+          cp data/pint-benchmark/pint-eval-report.json "${RUNNER_TEMP}/pint-report-before.json"
+
+      - name: Run PINT benchmark
+        if: steps.changed-rules.outputs.has_changes == 'true'
+        id: pint-run
+        run: |
+          set -o pipefail
+          # The runner exits 1 on its own thresholds, one of which is a p95
+          # latency bound that depends on the shared GitHub runner rather than
+          # on this PR's rules. Capture the status and let the deterministic
+          # recall/FP comparison below decide the gate.
+          if npm run eval:pint 2>&1 | tail -40; then
+            echo "eval:pint exited 0"
+          else
+            echo "eval:pint exited non-zero — see its own threshold output above"
+          fi
+
+      - name: PINT regression gate
         if: steps.changed-rules.outputs.has_changes == 'true'
         id: pint
         run: |
-          echo "Running PINT eval regression check..."
-          npm run eval 2>&1 | tail -5
-          REPORT=$(cat data/pint-benchmark/pint-eval-report.json 2>/dev/null || echo '{}')
-          RECALL=$(echo "$REPORT" | node -e "const d=require('fs').readFileSync(0,'utf8');try{console.log(JSON.parse(d).recall)}catch{console.log('unknown')}")
-          echo "PINT recall: $RECALL"
-          echo "pint_recall=$RECALL" >> "$GITHUB_OUTPUT"
+          if node scripts/ci/pint-regression-gate.mjs \
+               --report data/pint-benchmark/pint-eval-report.json \
+               --before "${RUNNER_TEMP}/pint-report-before.json" \
+               --baseline "${RUNNER_TEMP}/pint-baseline.json" \
+               --tolerance 0.02; then
+            echo "pint_status=passed" >> "$GITHUB_OUTPUT"
+          else
+            echo "pint_status=failed" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Fail if quality gate not met
         if: steps.changed-rules.outputs.has_changes == 'true'
@@ -249,4 +289,8 @@ jobs:
             echo "Benchmark regression detected. New rules caused recall drop or FP increase."
             exit 1
           fi
-          echo "All quality checks passed (schema + tests + benchmark)."
+          if [ "${{ steps.pint.outputs.pint_status }}" != "passed" ]; then
+            echo "PINT regression detected (or the PINT run produced no fresh report)."
+            exit 1
+          fi
+          echo "All quality checks passed (schema + tests + skill benchmark + PINT)."
