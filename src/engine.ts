@@ -892,7 +892,9 @@ export class ATREngine {
         if (compiled && compiled.length > 0) {
           // Test against both normalized and raw values so that patterns
           // detecting zero-width/bidi characters can match before stripping
-          if (safeRegexTest(compiled[0]!, fieldValue) || safeRegexTest(compiled[0]!, rawFieldValue)) {
+          // (the raw pass is skipped only when normalisation was a no-op — see
+          // testNormalisedThenRaw)
+          if (testNormalisedThenRaw(compiled[0]!, fieldValue, rawFieldValue)) {
             if (suppressInCodeBlocks && codeRanges.length > 0 && isInsideCodeBlock(fieldValue, compiled[0]!, codeRanges)) {
               return false;
             }
@@ -905,7 +907,7 @@ export class ATREngine {
         const normalized = normalizeRegex(value);
         const rFlags = normalized.includes('\\u{') || normalized.includes('\\p{') ? 'iu' : 'i';
         const regex = safeCompile(normalized, rFlags);
-        if (regex && (safeRegexTest(regex, fieldValue) || safeRegexTest(regex, rawFieldValue))) {
+        if (regex && testNormalisedThenRaw(regex, fieldValue, rawFieldValue)) {
           if (suppressInCodeBlocks && codeRanges.length > 0 && isInsideCodeBlock(fieldValue, regex, codeRanges)) {
             return false;
           }
@@ -1056,7 +1058,7 @@ export class ATREngine {
 
     if (compiled) {
       for (let i = 0; i < compiled.length; i++) {
-        if (safeRegexTest(compiled[i]!, fieldValue) || (rawFieldValue && safeRegexTest(compiled[i]!, rawFieldValue))) {
+        if (testNormalisedThenRaw(compiled[i]!, fieldValue, rawFieldValue)) {
           // If match is inside a code block and this rule supports suppression, skip it
           if (suppressInCodeBlocks && codeRanges.length > 0 && isInsideCodeBlock(fieldValue, compiled[i]!, codeRanges)) {
             continue;
@@ -2042,6 +2044,48 @@ const MAX_EVAL_LENGTH = 100_000;
 function safeRegexTest(regex: RegExp, input: string): boolean {
   if (input.length > MAX_EVAL_LENGTH) return false;
   return regex.test(input);
+}
+
+/**
+ * Test a pattern against the NORMALISED text and, only when normalisation
+ * actually changed something, against the RAW text as well.
+ *
+ * The second test exists so a pattern that hunts zero-width / bidi / confusable
+ * characters can still see them before foldConfusables strips them. That is a
+ * real requirement and it is unchanged here.
+ *
+ * WHAT THE GUARD DOES: `fieldValue` is `foldConfusables(normalizeUnicode(raw))`.
+ * When that returns a string equal to `raw` — every pure-ASCII document, which
+ * is nearly the whole SKILL.md corpus — the two calls are literally the same
+ * call: same compiled RegExp, same input, no `g`/`y` flag and therefore no
+ * lastIndex state. Skipping the second one cannot change any verdict; it only
+ * stops the engine paying for the identical scan twice.
+ *
+ * WHY IT IS WORTH A HELPER: the cost is not marginal on long inputs. Profiled
+ * 2026-08-05 (node --cpu-prof, three scanSkill() calls over a 26,635-byte benign
+ * SKILL.md with 780 rules loaded), 80.5% of all CPU sat in ONE rule's unanchored
+ * double-lookahead pattern — ATR-2026-00063's
+ * `(?=[\s\S]*\.env)(?=[\s\S]*(base64|...))` — which is O(n^2) in document length
+ * because it retries both lookaheads at every start position, and it was being
+ * paid twice per condition. Measured on this branch, same box, same rules:
+ *
+ *   3x scanSkill() on that 26,635-byte file : 7227ms -> 4010ms  (-44.5%)
+ *   whole 498-file skill benchmark corpus   : 67451ms -> 47558ms (-29.5%)
+ *
+ * with the matched-rule-id set for all 498 files byte-identical before and after
+ * (verified per file across all four evaluate() shapes and scanSkill()).
+ *
+ * The O(n^2) rule pattern itself is NOT touched here — changing a rule's regex
+ * is a detection change and needs its own re-measurement.
+ */
+function testNormalisedThenRaw(
+  regex: RegExp,
+  fieldValue: string,
+  rawFieldValue: string,
+): boolean {
+  if (safeRegexTest(regex, fieldValue)) return true;
+  if (rawFieldValue === fieldValue) return false;
+  return safeRegexTest(regex, rawFieldValue);
 }
 
 /**

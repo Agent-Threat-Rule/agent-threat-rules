@@ -115,8 +115,8 @@ function corpusFiles(dir: string): string[] {
 }
 
 /**
- * scanSkill() over a whole SKILL.md costs ~240ms with 780 rules loaded, so the
- * full 498-file benchmark is a two-minute test on its own. These suites take
+ * scanSkill() over a whole SKILL.md is expensive with 780 rules loaded, so the
+ * full 498-file benchmark is a multi-minute test on its own. These suites take
  * every malicious sample and a deterministic stride through the benign ones —
  * enough to catch a predicate that has drifted, cheap enough to run per PR. The
  * exhaustive sweep (all 466 benign, all true positives of all 780 rules, 4507
@@ -125,6 +125,65 @@ function corpusFiles(dir: string): string[] {
  */
 const BENIGN_STRIDE = 4;
 const MAX_TP_DOCS_PER_RULE = 2;
+
+/** Malicious samples are all swept; benign are strided. Fixed at collection. */
+const SWEPT_CORPUS_FILES: readonly string[] = Object.freeze([
+  ...corpusFiles(join(REPO_ROOT, "data/skill-benchmark/malicious")),
+  ...corpusFiles(join(REPO_ROOT, "data/skill-benchmark/benign")).filter(
+    (_, i) => i % BENIGN_STRIDE === 0,
+  ),
+]);
+
+/** Rule files on disk, counted rather than remembered. */
+function ruleFileCount(dir = join(REPO_ROOT, "rules")): number {
+  let n = 0;
+  for (const entry of readdirSync(dir)) {
+    const full = join(dir, entry);
+    if (statSync(full).isDirectory()) n += ruleFileCount(full);
+    else if (full.endsWith(".yaml")) n += 1;
+  }
+  return n;
+}
+
+/**
+ * DEADLINE FOR A scanSkill() SWEEP — derived, not chosen.
+ *
+ * This test first shipped with a flat `170_000`. On CI it needed 221,525ms and
+ * was reported as a failure, which is the worst possible way for it to fail:
+ * the assertion inside it had in fact been satisfied (re-run by hand on the FULL
+ * 498-file corpus, not just the strided 149: zero rules called unreachable
+ * fired), so a green predicate was showing up in the log as a red ratchet. A
+ * flat millisecond deadline over work that grows with both the corpus and the
+ * rule set measures the runner, which is the defect #418 removed from
+ * tests/eval-harness.test.ts and tests/skill-benchmark.test.ts.
+ *
+ * So the deadline is expressed in the SAME unit its sibling already uses. The
+ * catastrophe ceiling in tests/skill-benchmark.test.ts is 3.0ms per rule per
+ * sample over this identical corpus and this identical scanSkill() call —
+ * ~9.5x the quiet reading that test records, and the number #418 derived. This
+ * sweep scans a known number of samples against a known number of rules, so its
+ * deadline is that ceiling times the work assigned to it, and rule growth (the
+ * point of the project) can never walk into it.
+ *
+ * WHAT IT STILL CATCHES. It is a catastrophe deadline, deliberately. Readings
+ * of THIS test, 780 rules, 149 strided samples:
+ *   - CI, loaded, before the duplicate-regex fix in src/engine.ts : 1.906 ms/rule/sample
+ *     (221,525ms — the run that produced the false red)
+ *   - this box, quiet, after that fix                             : 0.172
+ *     (19,969ms, in the 881-test suite run that verified this commit)
+ * So 3.0 is 1.57x the worst reading ever taken here — a loaded runner on the
+ * slower engine — and 17.4x a quiet one. Removing the `if (isAny) break;`
+ * short-circuit, the change these tests exist to catch, takes the benign corpus
+ * from 1 flagged sample to 265 and multiplies the matching work far past that.
+ *
+ * Sanity check on the absolute size: tests/skill-benchmark.test.ts already gives
+ * its beforeAll 600,000ms on CI to sweep all 498 samples the same way. This
+ * deadline is smaller than that for a smaller sweep.
+ */
+const CATASTROPHE_MS_PER_RULE_PER_SAMPLE = 3.0;
+const CORPUS_SWEEP_TIMEOUT_MS = Math.ceil(
+  SWEPT_CORPUS_FILES.length * ruleFileCount() * CATASTROPHE_MS_PER_RULE_PER_SAMPLE,
+);
 
 describe("skillPathCoverage — the skill half of matchedRuleIds asks almost nothing", () => {
   it("reports a gap for every rule that cannot match on the skill path, and none for the rest", async () => {
@@ -183,7 +242,10 @@ describe("skillPathCoverage — the skill half of matchedRuleIds asks almost not
       const benign = corpusFiles(join(REPO_ROOT, "data/skill-benchmark/benign"));
       const malicious = corpusFiles(join(REPO_ROOT, "data/skill-benchmark/malicious"));
       expect(benign.length + malicious.length).toBeGreaterThan(400);
-      const files = [...malicious, ...benign.filter((_, i) => i % BENIGN_STRIDE === 0)];
+      // Same list the deadline was derived from, so the budget and the work
+      // cannot drift apart.
+      const files = SWEPT_CORPUS_FILES;
+      expect(files.length).toBe(malicious.length + Math.ceil(benign.length / BENIGN_STRIDE));
 
       const fired = new Set<string>();
       for (const file of files) {
@@ -195,7 +257,7 @@ describe("skillPathCoverage — the skill half of matchedRuleIds asks almost not
         "a rule reported as unreachable on the skill path fired on the skill benchmark",
       ).toEqual([]);
     },
-    170_000,
+    CORPUS_SWEEP_TIMEOUT_MS,
   );
 
   it("names the enforce-lane rules the skill path never asks about", async () => {
