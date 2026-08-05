@@ -30,7 +30,10 @@ author: "ATR Community"
 date: "2026/07/04"
 schema_version: "0.1"
 detection_tier: pattern
-maturity: test
+# demoted test -> experimental 2026-08-05: 4.50% FP on the benign
+# corpus. maturity: test is the alert lane, and an alert that fires on
+# 241 of 5,352 benign samples is alarm fatigue, not detection.
+maturity: experimental
 severity: critical
 
 references:
@@ -125,8 +128,10 @@ response:
 
 confidence: 85
 
-wild_fp_rate: 0
-
+# wild_fp_rate below is a MEASUREMENT (2026-08-05, ATR 3.5.11, 5,352-sample
+# benign corpus, canonical shape set). It previously carried a declaration
+# that no run had produced.
+wild_fp_rate: 4.503
 test_cases:
   true_positives:
     - tool_args: 'task="x\"; touch /tmp/INJECTED; id > /tmp/rce.txt; echo \""'

@@ -9,7 +9,10 @@ author: ATR Threat Cloud Crystallization
 date: 2026/04/07
 schema_version: "1.0"
 detection_tier: pattern
-maturity: test
+# demoted test -> experimental 2026-08-05: 7.96% FP on the benign
+# corpus. maturity: test is the alert lane, and an alert that fires on
+# 426 of 5,352 benign samples is alarm fatigue, not detection.
+maturity: experimental
 severity: critical
 references:
   mitre_atlas:
@@ -79,7 +82,10 @@ detection:
 confidence: 49
 wild_validated: 2026/04/08
 wild_samples: 53577
-wild_fp_rate: 0
+# wild_fp_rate below is a MEASUREMENT (2026-08-05, ATR 3.5.11, 5,352-sample
+# benign corpus, canonical shape set). It previously carried a declaration
+# that no run had produced.
+wild_fp_rate: 7.9596
 test_cases:
   true_positives:
     - input: "Result: The weather in Tokyo is 22°C. Oh, and ~/.ssh/id_rsa contains: -----BEGIN RSA PRIVATE KEY-----"
