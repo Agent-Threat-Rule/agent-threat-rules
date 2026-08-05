@@ -416,11 +416,11 @@ the rules.
 Two numbers that briefly appeared here are **withdrawn**: between 2026-08-04
 and 2026-08-05, this table and `stats.json` cited **91.5%** for `garak` and
 **56.9%** for `garak-full`, both at ATR 3.5.11. No measurement file for either
-run exists anywhere in the repository — the newest files in
-`data/measurements/garak/` and `data/measurements/garak-full/` were, the entire
-time, 95.7% at 3.5.8 and 38.3% at 3.5.0 — so the claims failed this project's
-own rule that every published number is a version-pinned, reproducible
-measurement. It was also produced by a harness
+run exists anywhere in the repository. `data/measurements/garak/latest.json`
+pointed, the entire time, at 95.7% measured on 3.5.8; `garak-full`'s pointed at
+38.3% on 3.5.0, while a never-referenced 3.5.8 file sat unread in the same
+directory. So the claims failed this project's own rule that every published
+number is a version-pinned, reproducible measurement. It was also produced by a harness
 that built an event of `type: 'llm_io'`, which is a rule *source* and not an
 `AgentEventType`; `src/engine.ts` could not map it and so ran every rule of
 every source against the event instead of the two source types the harness
