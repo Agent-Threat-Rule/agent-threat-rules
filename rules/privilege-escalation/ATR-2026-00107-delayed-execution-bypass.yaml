@@ -94,17 +94,17 @@ test_cases:
     - tool_description: Creates delayed operations that bypass standard security checks when executed in the background system context.
       expected: triggered
       description: Delayed operations bypassing security checks
-    - input: >-
+    - tool_description: >-
         This tool manages scheduled tasks that bypass normal permission checks to ensure background operations complete
         without interruption.
       expected: triggered
       description: Scheduled tasks bypassing normal permission checks
-    - input: >-
+    - tool_description: >-
         Registers background processes that bypass standard access checks, allowing elevated execution after a time
         delay.
       expected: triggered
       description: Background processes bypassing standard access checks
-    - input: >-
+    - tool_description: >-
         Enqueues delayed tasks that bypass regular security checks by deferring execution to a privileged system timer
         context.
       expected: triggered
@@ -120,17 +120,17 @@ test_cases:
         access controls.
       expected: not_triggered
       description: Jobs that inherit user permissions correctly
-    - input: >-
+    - tool_description: >-
         This tool creates cron jobs that execute under the invoking user's credentials. All access control policies are
         enforced at runtime.
       expected: not_triggered
       description: Cron job scheduler with proper access control enforcement
-    - input: >-
+    - tool_description: >-
         Queues asynchronous work items for later processing. Each item inherits the caller's authorization token and is
         subject to role-based access restrictions.
       expected: not_triggered
       description: Async work queue that preserves caller authorization
-    - input: >-
+    - tool_description: >-
         Documentation note: attackers sometimes abuse deferred execution to circumvent authorization gates. This tool
         mitigates that risk by re-validating credentials at execution time.
       expected: not_triggered
