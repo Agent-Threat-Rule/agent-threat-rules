@@ -57,7 +57,7 @@ async function main(): Promise<void> {
     maxP95LatencyMs: 200,
   };
 
-  const { report, tiersUsed, ruleQuality } = await runEval({
+  const { report, tiersUsed, ruleQuality, eventShape } = await runEval({
     rulesDir,
     corpus,
     thresholds: hackaPromptThresholds,
@@ -65,6 +65,7 @@ async function main(): Promise<void> {
   });
 
   console.log(`\nTiers: ${tiersUsed.join(' + ')}`);
+  console.log(`Event shape: ${eventShape}`);
   console.log(`\n--- Overall ---`);
   console.log(`  Recall:     ${formatPercent(report.overall.recall)}`);
   console.log(`  Precision:  ${formatPercent(report.overall.precision)} (N/A meaning - no benign samples)`);
@@ -98,7 +99,9 @@ async function main(): Promise<void> {
     source: 'hackaprompt',
     source_version: 'v1',
     source_url: 'https://huggingface.co/datasets/hackaprompt/hackaprompt-dataset',
-    notes: 'HackAPrompt competition dataset. 100% adversarial — fp_rate is undefined on this corpus.',
+    notes:
+      'HackAPrompt competition dataset. 100% adversarial — fp_rate is undefined on this corpus. ' +
+      `Event shape: ${eventShape} (src/eval/eval-harness.ts EvalEventShapeMode).`,
   });
   console.log(`Measurement: ${measurementPath}`);
   console.log('Done.');

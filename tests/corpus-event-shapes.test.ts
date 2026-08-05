@@ -491,6 +491,15 @@ describe("the gate measures a tool_args rule end to end", () => {
  * under-reported its own subject by a factor of ten (372 vs 3,897).
  *
  * A comment saying "keep in sync" did not keep them in sync. This does.
+ *
+ * src/eval/eval-harness.ts was the one that got away. It is the harness behind
+ * `npm run eval` and `npm run eval:pint` — the numbers that end up in README
+ * badges and on the website — and it kept its own `sampleToEvent()` until
+ * 2026-08-05 because this list only ever looked inside scripts/. Under that
+ * private shape every PINT sample was typed llm_input, so the engine's
+ * source-type filter dropped 383 of the 773 non-draft rules before matching:
+ * the published "precision 100%" was measured over half a rulebase. It is on
+ * the list now, and the canonical module moved to src/ so it could be.
  */
 describe("harnesses import the canonical shape set — they do not mirror it", () => {
   const HARNESSES = [
@@ -499,12 +508,16 @@ describe("harnesses import the canonical shape set — they do not mirror it", (
     "scripts/promote-to-stable.ts",
     "scripts/audit-draft-revival.ts",
     "scripts/validate-rule-testcases.ts",
+    "src/eval/eval-harness.ts",
   ] as const;
 
   for (const rel of HARNESSES) {
-    it(`${rel} routes matching through scripts/lib/corpus-event.ts`, () => {
+    it(`${rel} routes matching through the canonical corpus-event module`, () => {
       const src = readFileSync(join(REPO_ROOT, rel), "utf-8");
-      expect(src).toMatch(/from\s+["'](?:\.\/)?lib\/corpus-event\.js["']/);
+      // scripts/ import the shim at scripts/lib/corpus-event.js; anything under
+      // src/ imports src/corpus-event.js directly (tsconfig rootDir forbids a
+      // src -> scripts import). Both resolve to the same module.
+      expect(src).toMatch(/from\s+["'](?:\.\/lib\/|\.\.\/|\.\/)corpus-event\.js["']/);
     });
 
     it(`${rel} does not build its own AgentEvent literal`, () => {

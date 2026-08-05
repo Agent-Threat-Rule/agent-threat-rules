@@ -86,13 +86,22 @@ detection:
       value: "(?i)(base64|btoa|encodeURI|hex\\.encode|rot13|xor|compress|gzip|deflate|encrypt)"
     - field: tool_args
       operator: regex
-      value: "(?i)(webhook|ngrok|requestbin|pipedream|hookbin|burpcollaborator|interact\\.sh|oast)"
+      value: "(?i)(webhook|ngrok|requestbin|pipedream|hookbin|burpcollaborator|interact\\.sh|\\boast\\b)"
+      description: >-
+        Known out-of-band exfiltration endpoints. `oast` carried no word boundary, so
+        it matched inside ordinary English — roast, toast, coast, boast, roasts — on a
+        critical rule whose response is block_tool + escalate. Bounded with \b rather
+        than the lookbehind used by the first condition, because \b is RE2-native and
+        lookaround is not: scripts/gate-re2-portability.ts fails a rule that newly
+        needs backtracking, and downstream Go/Rust/Sigma consumers drop it outright.
+        oast.fun / oast.pro / bare OAST still match — `.` and end-of-string are both
+        word boundaries.
     - field: tool_name
       operator: regex
       value: "(?i)(send[_-]?(email|message|webhook|http|request)|upload|post[_-]?data|transmit|exfil)"
     - field: tool_args
       operator: regex
-      value: '(?i)(?=[\s\S]*(?<![a-z])\.env)(?=[\s\S]*(base64|btoa|encodeURI|hex\.encode|rot13|xor|compress|gzip|deflate|encrypt|webhook|ngrok|requestbin|pipedream|hookbin|burpcollaborator|interact\.sh|oast|curl|wget|\bnc\b|exfil|upload))'
+      value: '(?i)(?=[\s\S]*(?<![a-z])\.env)(?=[\s\S]*(base64|btoa|encodeURI|hex\.encode|rot13|xor|compress|gzip|deflate|encrypt|webhook|ngrok|requestbin|pipedream|hookbin|burpcollaborator|interact\.sh|\boast\b|curl|wget|\bnc\b|exfil|upload))'
       description: "Dotenv file access ONLY when chained with an obfuscation-or-egress indicator in the same args (multi-step access-then-obfuscate-then-egress chain). A bare startup-style dotenv reference no longer fires alone; the dangerous egress half is now required to flag this composite data-egress signal."
   condition: any
   false_positives:

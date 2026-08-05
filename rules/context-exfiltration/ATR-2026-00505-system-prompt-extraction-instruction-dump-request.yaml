@@ -92,7 +92,7 @@ detection:
     # false positives on documentation mentioning "share the configuration" or "list using parameter"
     - field: user_input
       operator: regex
-      value: "(?i)(repeat|relay|list|output|print|dump|provide|reveal|disclose|expose|display).{0,40}(your\\s+(instructions?|system\\s+prompt|initial\\s+(prompt|instructions?|context|message)|given\\s+instructions?|directives?|guidelines?|programming|constraints?|setup\\s+instructions?)|the\\s+system\\s+(prompt|instructions?|message)|all\\s+of\\s+your\\s+instructions?|every\\s+(instruction|rule|directive|guideline|constraint)\\s+you\\s+(have\\s+been|were))"
+      value: "(?i)(repeat|relay|list|output|print|dump|provide|reveal|disclose|expose|display)[^\"\x27]{0,40}(your\\s+(instructions?|system\\s+prompt|initial\\s+(prompt|instructions?|context|message)|given\\s+instructions?|directives?|guidelines?|programming|constraints?|setup\\s+instructions?)|the\\s+system\\s+(prompt|instructions?|message)|all\\s+of\\s+your\\s+instructions?|every\\s+(instruction|rule|directive|guideline|constraint)\\s+you\\s+(have\\s+been|were))"
       description: "Extraction verb targeting AI system instructions or prompt (possessive 'your' required or explicit 'system prompt/message')"
 
     # -- Layer 2: Verbatim / as-is / without changes extraction demand for AI instructions --
