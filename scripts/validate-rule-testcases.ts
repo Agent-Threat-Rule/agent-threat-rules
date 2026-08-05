@@ -33,6 +33,57 @@ function matched(engine: ATREngine, content: string): ReadonlySet<string> {
   return matchedRuleIds(engine, content);
 }
 
+/**
+ * A test case's `input:` is not always a string.
+ *
+ * Rules whose detection is field-shaped (ATR-2026-00061, ATR-2026-00063, and
+ * every other tool_call rule authored the same way) declare it as a MAP:
+ *
+ *     - input:
+ *         tool_name: "file_reader"
+ *         tool_args: '{"path": "/home/user/.aws/credentials"}'
+ *
+ * The string path then handed that object straight to matchedRuleIds(), whose
+ * first act is text.normalize() — so the script died with
+ * "TypeError: text.normalize is not a function" and reported NOTHING. Not a
+ * failure, not a pass: a crash, on precisely the rules whose test cases are the
+ * only evidence that a field-shaped detection still works. Verified present on
+ * clean origin/main (646c911dd) before this change, so no rule authored in this
+ * form has ever been validated by this script.
+ *
+ * A map is exercised on:
+ *   - the author's declared FIELDS, on each event type that can carry them.
+ *     This is the production shape: src/hook-handler.ts emits exactly
+ *     {tool_name, tool_args, content} on a tool_call / tool_response event.
+ *   - the JSON encoding of the whole map, through the same canonical shape set
+ *     the benign corpus is poured through. Symmetry is the point: the FP gate
+ *     fills tool_args with a JSON encoding of the sample, so a true positive
+ *     must be allowed to earn credit on that encoding and no wider.
+ */
+function matchedForInput(engine: ATREngine, input: unknown): ReadonlySet<string> {
+  if (typeof input === "string") return matched(engine, input);
+  if (input === null || typeof input !== "object") return matched(engine, String(input ?? ""));
+
+  const fields: Record<string, string> = {};
+  for (const [k, v] of Object.entries(input as Record<string, unknown>)) {
+    fields[k] = typeof v === "string" ? v : JSON.stringify(v);
+  }
+  const encoded = JSON.stringify(input);
+
+  const ids = new Set<string>(matched(engine, encoded));
+  for (const type of ["tool_call", "tool_response", "mcp_exchange"] as const) {
+    for (const m of engine.evaluate({
+      type,
+      timestamp: new Date().toISOString(),
+      content: encoded,
+      fields,
+    })) {
+      ids.add(m.rule.id);
+    }
+  }
+  return ids;
+}
+
 async function main(): Promise<void> {
   const engine = new ATREngine({ rulesDir: RULES_DIR });
   await engine.loadRules();
@@ -45,28 +96,28 @@ async function main(): Promise<void> {
     return;
   }
   const tc = (rule.test_cases || {}) as Record<string, unknown[]>;
-  const tps = (tc.true_positives || []) as Record<string, string>[];
-  const tns = (tc.true_negatives || []) as Record<string, string>[];
+  const tps = (tc.true_positives || []) as Record<string, unknown>[];
+  const tns = (tc.true_negatives || []) as Record<string, unknown>[];
 
   let pass = 0;
   let fail = 0;
   const fails: string[] = [];
   for (const t of tps) {
-    const text = t.tool_response ?? t.input ?? t.content ?? t.tool_description ?? "";
-    const hit = matched(engine, text).has(RULE_ID);
+    const input = t.tool_response ?? t.input ?? t.content ?? t.tool_description ?? "";
+    const hit = matchedForInput(engine, input).has(RULE_ID);
     if (hit) pass++;
     else {
       fail++;
-      fails.push(`TP NOT triggered: ${JSON.stringify(text).slice(0, 90)}`);
+      fails.push(`TP NOT triggered: ${JSON.stringify(input).slice(0, 90)}`);
     }
   }
   for (const t of tns) {
-    const text = t.tool_response ?? t.input ?? t.content ?? t.tool_description ?? "";
-    const hit = matched(engine, text).has(RULE_ID);
+    const input = t.tool_response ?? t.input ?? t.content ?? t.tool_description ?? "";
+    const hit = matchedForInput(engine, input).has(RULE_ID);
     if (!hit) pass++;
     else {
       fail++;
-      fails.push(`TN triggered (should not): ${JSON.stringify(text).slice(0, 90)}`);
+      fails.push(`TN triggered (should not): ${JSON.stringify(input).slice(0, 90)}`);
     }
   }
 

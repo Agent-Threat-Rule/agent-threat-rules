@@ -59,8 +59,17 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)(system\s+prompt|prompt\s+override|override\s+system|ignore\s+previous\s+instructions|disregard\s+system\s+prompt|bypass\s+system\s+prompt)'
-      description: 'Matches attempts to override or bypass system prompts'
+      value: '(?i)((?:override|bypass|ignore|disregard|forget|discard|replace|supersede)\s+(?:the\s+|your\s+|all\s+|any\s+|these\s+|those\s+|previous\s+|prior\s+|earlier\s+|above\s+|initial\s+|original\s+)*system\s+(?:prompts?|instructions?|messages?)|(?:override|bypass|ignore|disregard|forget|discard|supersede)\s+(?:all\s+|any\s+)?(?:the\s+|your\s+)?(?:previous|prior|earlier|above|initial|original|preceding)\s+(?:system\s+)?(?:prompts?|instructions?|directives?|messages?|commands?)|(?:system\s+)?prompt\s+override|override\s+(?:the\s+)?system(?:\s+prompt)?)'
+      description: >-
+        Matches attempts to override or bypass system prompts. The DIRECTIVE VERB is
+        mandatory: the bare noun phrase "system prompt" used to be an alternative of
+        its own, so any sentence that merely mentioned system prompts fired this rule
+        (condition: any, single condition — one substring was the whole detection).
+        "The system prompt helps set the tone for the AI assistant" is the shape of
+        that false positive, and the rule's own false_positives list below already
+        predicted it. Every override construction the old pattern carried is still
+        covered, and the qualifier list generalises "ignore previous instructions" to
+        its "ignore all prior instructions" family.
   condition: any
   false_positives:
     - 'Documentation explaining how system prompts work in educational context'

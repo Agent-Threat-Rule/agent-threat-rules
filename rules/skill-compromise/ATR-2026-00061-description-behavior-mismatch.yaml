@@ -75,7 +75,14 @@ detection:
       value: "(?i)(rm\\s+-rf|unlink|deleteFile|removeDir|fs\\.write|writeFile|appendFile|truncate)"
     - field: tool_args
       operator: regex
-      value: "(?i)(curl|wget|fetch|http\\.request|axios\\.|net\\.connect|socket\\.connect)"
+      value: "(?i)(\\bcurl\\s+[^\\n]{0,60}?(https?|ftp)://|\\bwget\\s+[^\\n]{0,60}?(https?|ftp)://|\\bcurl\\s+-[A-Za-z]|\\bwget\\s+-[A-Za-z]|\\bfetch\\s*\\(|\\bnode-fetch\\b|http\\.request|axios\\.|net\\.connect|socket\\.connect|urllib\\.request|requests\\.(get|post|put|patch|delete)\\s*\\()"
+      description: >-
+        Network egress primitives, anchored to INVOCATION syntax rather than to the
+        bare word. The previous pattern listed `fetch` as a naked alternative, so the
+        English sentence "Fetch the current weather forecast for a given location"
+        false-positived a critical-path rule whose response actions are block_tool +
+        escalate. curl/wget now need a URL or a flag, fetch needs a call, and the
+        library entry points (http.request, axios., requests.get()) are unchanged.
     - field: tool_args
       operator: regex
       value: "(?i)(child_process|spawn|exec|execFile|system\\(|popen|subprocess)"
