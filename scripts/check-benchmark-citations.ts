@@ -64,7 +64,7 @@ const LABEL_TO_SOURCE: ReadonlyMap<string, string> = new Map([
   ["MITRE ATLAS", "mitre-atlas"],
   ["NeMo Guardrails (NVIDIA test fixtures)", "nemo-guardrails"],
   ["OWASP LLM Top 10", "owasp-llm-top10"],
-  ["PINT-format (deepset + Lakera Gandalf) [^pint]", "pint"],
+  ["PINT-format (deepset + Lakera Gandalf)", "pint"],
   ["PromptBench (academic adversarial)", "promptbench"],
   ["promptfoo (red-team plugin fixtures)", "promptfoo"],
   ["PromptInject (academic adversarial)", "promptinject"],
@@ -114,6 +114,20 @@ function pct1(n: number): string {
  * Pull the benchmark table out of README. Returns [] if the header row is not
  * found — callers treat that as a hard failure, not an empty pass.
  */
+/**
+ * Drop `[^name]` footnote references from a table cell.
+ *
+ * Not a cosmetic trim: the footnote is how a row carries its caveat (scope,
+ * lane, corpus provenance), so rows acquire and lose them as the honesty of a
+ * number is worked out. Keying the source map on a label that includes the
+ * marker would mean every new caveat silently un-maps its own row -- and an
+ * un-mapped row is a number nothing checks, which is the failure this script
+ * exists to prevent.
+ */
+function stripFootnoteRefs(cell: string): string {
+  return cell.replace(/\s*\[\^[^\]]+\]/g, "").trim();
+}
+
 function parseBenchmarkTable(readme: string): TableRow[] {
   const lines = readme.split("\n");
   const headerIdx = lines.findIndex((l) =>
@@ -132,7 +146,12 @@ function parseBenchmarkTable(readme: string): TableRow[] {
       .map((c) => c.trim());
     if (cells.length < 8) continue;
     rows.push({
-      label: cells[0],
+      // Footnote references are stripped so LABEL_TO_SOURCE stays keyed on the
+      // stable human name. A row gains a `[^pint]`-style marker whenever a
+      // caveat is documented -- which is exactly when this check matters most,
+      // and it must not be the thing that breaks the mapping and forces the
+      // label into the map twice.
+      label: stripFootnoteRefs(cells[0]),
       sourceVersion: cells[1],
       samples: cells[2],
       recall: cells[3],
