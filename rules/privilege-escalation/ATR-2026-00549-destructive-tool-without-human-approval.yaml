@@ -43,8 +43,20 @@ references:
 
 compliance:
   nist_csf:
-    - "PR.AA-05"
-    - "PR.IR-01"
+    - subcategory: "PR.AA-05"
+      context: >
+        PR.AA-05 names separation of duties explicitly. A required human-approval step
+        that never happened is that separation collapsing, and the rule's `require`
+        primitive fires on the absence rather than on any positive indicator — which is
+        the only way a missing control is observable.
+      strength: primary
+    - subcategory: "PR.IR-01"
+      context: >
+        The rule's `block_tool` response stops the unapproved destructive call from
+        reaching the environment, which serves PR.IR-01's protection outcome. Secondary
+        because PR.IR-01 is written around network and environment boundaries, and this
+        control sits at the tool-invocation boundary instead.
+      strength: secondary
   eu_ai_act:
     - article: "14"
       context: >
