@@ -14,6 +14,12 @@
  *   2. `context` is a non-empty string (auditor-readable rationale)
  *   3. `strength`, if present, is one of the allowlist's strengthValues
  *
+ * The `references:` block is linted too, against the same allowlists but with
+ * only check 1 — see validateReferences. It is an index rather than audit
+ * evidence, so it carries bare identifiers and needs no rationale. It went
+ * unchecked until 2026-08, which is how a fabricated SAF-MCP identifier and a
+ * retired prefix survived there.
+ *
  * Usage:
  *   npx tsx scripts/validate-compliance.ts          report + non-zero exit on violations
  *   npx tsx scripts/validate-compliance.ts --quiet   only print the summary line
@@ -87,6 +93,57 @@ function validateItem(
   return out;
 }
 
+/**
+ * Lint the `references` block against the same allowlists.
+ *
+ * references is an index, not audit evidence, so entries stay bare strings and
+ * are NOT required to carry context or strength — only to name an identifier
+ * that exists. Without this pass the block was entirely unchecked, which is how
+ * a fabricated SAF-MCP identifier and a retired prefix lived there while the
+ * compliance block beside them was gated.
+ *
+ * Values are conventionally written "ID - Title" (e.g. "LLM01:2025 - Prompt
+ * Injection"), so the leading token is what gets checked.
+ *
+ * The title half is NOT compared, and the reason is not that it would be
+ * pedantic — it is that 821 values in the corpus would fail today. They pair a
+ * 2025 identifier with the title that number carried in the 2023 list:
+ * LLM04:2025 is labelled "Model Denial of Service" (2023's LLM04; 2025's is
+ * "Data and Model Poisoning"), LLM09:2025 is labelled "Overreliance" (2025's is
+ * "Misinformation"), and 731 owasp_agentic values are similarly stale. That is
+ * the same version-mixing defect as PR.AC-04, and it wants its own change:
+ * either drop the embedded titles so the allowlist stays the single source, or
+ * rewrite all 821. Turning the check on here would force that decision as a
+ * side effect of adding a lint, so it stays off and stays documented.
+ *
+ * Frameworks with no allowlist are skipped silently here — the compliance pass
+ * already reports those by name.
+ */
+function validateReferences(
+  ruleId: string,
+  references: Record<string, unknown>,
+  allowlists: Map<string, Allowlist>,
+): Violation[] {
+  const out: Violation[] = [];
+  for (const [framework, items] of Object.entries(references)) {
+    const allow = allowlists.get(framework);
+    if (!allow || !Array.isArray(items)) continue;
+    for (const item of items) {
+      if (typeof item !== "string") continue;
+      const id = item.split(" - ")[0]?.trim() ?? "";
+      if (!(id in allow.valids)) {
+        out.push({
+          rule: ruleId,
+          framework: `references.${framework}`,
+          kind: "unknown-id",
+          detail: `'${id}' is not a valid ${allow.framework} identifier`,
+        });
+      }
+    }
+  }
+  return out;
+}
+
 function validateRule(ruleId: string, compliance: Record<string, unknown>, allowlists: Map<string, Allowlist>): { violations: Violation[]; unknownFrameworks: string[] } {
   const violations: Violation[] = [];
   const unknownFrameworks: string[] = [];
@@ -113,6 +170,7 @@ function main(): void {
   const allViolations: Violation[] = [];
   const unknownFrameworks = new Map<string, number>();
   let rulesWithCompliance = 0;
+  let rulesWithReferences = 0;
 
   for (const file of files) {
     let docs: unknown[];
@@ -126,6 +184,16 @@ function main(): void {
       if (!doc || typeof doc !== "object") continue;
       const rule = doc as Record<string, unknown>;
       if (typeof rule.id !== "string" || !rule.id.startsWith("ATR-")) continue;
+      // Before the compliance guard: a rule may carry references without a
+      // compliance block, and those identifiers still have to exist.
+      const references = rule.references;
+      if (references && typeof references === "object") {
+        allViolations.push(
+          ...validateReferences(rule.id, references as Record<string, unknown>, allowlists),
+        );
+        rulesWithReferences++;
+      }
+
       const compliance = rule.compliance;
       if (!compliance || typeof compliance !== "object") continue;
       rulesWithCompliance++;
@@ -139,7 +207,8 @@ function main(): void {
     console.log(`\nCompliance Mapping Validator`);
     console.log(`${"─".repeat(64)}`);
     console.log(`Allowlists loaded: ${[...allowlists.keys()].join(", ")}`);
-    console.log(`Rules with a compliance block: ${rulesWithCompliance}\n`);
+    console.log(`Rules with a compliance block: ${rulesWithCompliance}`);
+    console.log(`Rules with a references block: ${rulesWithReferences} (identifiers checked, context not required)\n`);
 
     if (unknownFrameworks.size > 0) {
       console.log(`WARN — frameworks used in rules but with no allowlist (not validated):`);
