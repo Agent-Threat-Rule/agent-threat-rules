@@ -374,15 +374,22 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | NeMo Guardrails (NVIDIA test fixtures) | corpus-2026-05-12 | 6 | 100.0% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | OWASP LLM Top 10 [^stdcorpora] | snapshot-2026-04 | 56 | 16.1% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
 | PINT-format (deepset + Lakera Gandalf) [^pint] | public-850 | 850 | 60.3% | 100.0% | 0.0% | 3.5.11 | 2026-08-04 |
-| PromptBench (academic adversarial) | snapshot-2026-04 | 3,280 | 23.2% | 100.0% | 0.0% | 3.5.2 | 2026-06-25 |
+| PromptBench (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 3,280 | 15.7% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
 | promptfoo (red-team plugin fixtures) | corpus-2026-05-12 | 44 | 97.7% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
-| PromptInject (academic adversarial) | snapshot-2026-04 | 1,080 | 100.0% | 100.0% | 0.0% | 3.5.2 | 2026-06-25 |
+| PromptInject (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 1,080 | 100.0% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
 | SKILL.md benchmark (internal) | internal-498 | 498 | 100.0% | 97.0% | 0.20% | 3.5.0 | 2026-06-16 |
 | Wild scan (OpenClaw + Skills.sh + Hermes + ClawHub) | corpus-2026-04-14 | 96,096 | — | 57.7% (floor) | 1.35% flag rate | 2.0.0 | 2026-04-14 |
 
 All detection corpora were (re-)measured against ATR 3.5.0 on 2026-06-16,
 except `autoresearch` (an internal predicted-rule corpus with no standalone
 runner) and the `Wild scan` snapshot, which retain their earlier measurements.
+`PromptInject` and `PromptBench` were re-measured against ATR 3.5.11 on
+2026-08-05; see [^promptcorpora] for what moved and why. (An earlier
+re-measurement against 3.5.2 on 2026-06-25 fixed a harness event shape; the
+0.0% rows before that were a harness artifact — the harness placed the prompt
+in a top-level field the engine does not read — not the engine's actual
+result.)
+
 `PromptInject` and `PromptBench` were re-measured against ATR 3.5.2 on
 2026-06-25 after a fix to the recall-analysis harness event shape; the prior
 0.0% rows were a harness artifact (the harness placed the prompt in a
@@ -413,6 +420,40 @@ been catching. See [CHANGELOG.md](CHANGELOG.md).
     3.5.11 for the same reason `garak` moved: PR #327 tightened
     `ATR-2026-00001`'s persona-switch regex to stop it false-positiving on
     benign prose. Precision moved 99.7% → 100% over the same span.
+
+[^promptcorpora]: **Read both of these as closed-book scores.** Until
+    2026-08-05 the harness recorded its per-rule breakdown as the literal
+    string `"unknown"` (it read `m.rule_id` off an engine match that carries
+    `m.rule.id`), so no published version of these rows could say which rules
+    produced them. With attribution restored:
+    **PromptInject 100.0%** is produced by **7 of 780 rules**. Five of those
+    seven — `ATR-2026-00506`, `00507`, `00508`, `00509`, `00518` — carry
+    `author: ATR Community (PromptInject corpus)`: they were written *from*
+    this corpus, which has four attack classes built from a handful of
+    templates. Remove those five and recall on the same 1,080 samples is
+    **9.7%**. The concentration is real but not fragile: the top rule
+    (`ATR-2026-00508`, 968/1,080 samples) is the sole detector on none of
+    them, so deleting it leaves recall at 100%; only `00518` (45 samples) and
+    `00507` (27) are sole detectors of anything. On the 5,352-sample benign
+    gate, `00506` / `00507` / `00518` are 0-FP; `00508` has 4 FP, `00509` 3,
+    `ATR-2026-00001` 19, `ATR-2026-00400` 1.
+    **PromptBench 15.7%** is produced by **3 of 780 rules** (`ATR-2026-00520`,
+    `00519`, `00202`), all three 0-FP on the same benign gate. Two of the three
+    were mined from PromptBench; without them recall is **2.4%**.
+    The PromptBench row moved 23.2% (3.5.2) → 15.7% (3.5.11) and the loss is
+    fully attributable: 247 samples were held only by rules that have since
+    been precision-repaired, and re-running each rule version by version pins
+    every one to its PR — `ATR-2026-00442` 304 → 0 detections at PR #309
+    (223 of them samples nothing else caught), `00051` 17 → 0 at #238 (15),
+    `00118` 6 → 0 at #238 (6), `00001` 3 → 0 at #327 (3). The PromptInject
+    row stayed at 100% across the same span, but what holds it up changed:
+    at 3.5.2 `ATR-2026-00118` matched 1,060 of the 1,080 samples and `00442`
+    another 195; #238 and #309 took both to zero. Neither fact was visible
+    while the breakdown said "unknown", and the row itself sat at its stale
+    3.5.2 value for the six weeks in between.
+    Both corpora are 100% adversarial, so the `Precision` and `FP rate`
+    columns are properties of the corpus, not measurements — read them
+    together with the benign-gate FP counts above, never alone.
 
 [^stdcorpora]: Until 2026-08-05 these three rows were **not produced by the ATR
     engine**. `scripts/eval-std-corpora.ts` walked `rules/` with a YAML parser,

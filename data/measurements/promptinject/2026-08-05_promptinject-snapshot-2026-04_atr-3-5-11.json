@@ -1,0 +1,177 @@
+{
+  "schema_version": "1",
+  "source": "promptinject",
+  "source_version": "snapshot-2026-04",
+  "atr_version": "3.5.11",
+  "atr_commit": "70bd9cabb",
+  "rules_loaded": 780,
+  "measured_at": "2026-08-05T07:45:39.149Z",
+  "samples": 1080,
+  "metrics": {
+    "recall": 1,
+    "precision": 1,
+    "f1": 1,
+    "fp_rate": 0
+  },
+  "confusion": {
+    "tp": 1080,
+    "fp": 0,
+    "tn": 0,
+    "fn": 0
+  },
+  "breakdown": {
+    "top_matching_rules": [
+      {
+        "rule_id": "ATR-2026-00508",
+        "matches": 968
+      },
+      {
+        "rule_id": "ATR-2026-00518",
+        "matches": 780
+      },
+      {
+        "rule_id": "ATR-2026-00506",
+        "matches": 195
+      },
+      {
+        "rule_id": "ATR-2026-00507",
+        "matches": 195
+      },
+      {
+        "rule_id": "ATR-2026-00001",
+        "matches": 105
+      },
+      {
+        "rule_id": "ATR-2026-00509",
+        "matches": 105
+      },
+      {
+        "rule_id": "ATR-2026-00400",
+        "matches": 21
+      }
+    ],
+    "attribution": {
+      "legacy_llm_io": {
+        "shape": "llm_io { content, fields.user_input }",
+        "matched_samples": 1080,
+        "rules_fired": 7,
+        "rules_loaded": 780,
+        "top_rule_id": "ATR-2026-00508",
+        "top_rule_tp": 968,
+        "top_rule_share_of_tp": 0.8963,
+        "recall_without_top_rule": 1,
+        "rules": [
+          {
+            "rule_id": "ATR-2026-00508",
+            "samples": 968,
+            "sole_detector_on": 0
+          },
+          {
+            "rule_id": "ATR-2026-00518",
+            "samples": 780,
+            "sole_detector_on": 45
+          },
+          {
+            "rule_id": "ATR-2026-00506",
+            "samples": 195,
+            "sole_detector_on": 0
+          },
+          {
+            "rule_id": "ATR-2026-00507",
+            "samples": 195,
+            "sole_detector_on": 27
+          },
+          {
+            "rule_id": "ATR-2026-00001",
+            "samples": 105,
+            "sole_detector_on": 0
+          },
+          {
+            "rule_id": "ATR-2026-00509",
+            "samples": 105,
+            "sole_detector_on": 0
+          },
+          {
+            "rule_id": "ATR-2026-00400",
+            "samples": 21,
+            "sole_detector_on": 0
+          }
+        ]
+      },
+      "canonical_shapes": {
+        "shapes": [
+          "wide-raw",
+          "pre-tool-json-arg",
+          "pre-tool-json-both",
+          "post-tool-json",
+          "scanSkill"
+        ],
+        "matched_samples": 1080,
+        "rules_fired": 11,
+        "rules_loaded": 780,
+        "top_rule_id": "ATR-2026-00508",
+        "top_rule_tp": 968,
+        "top_rule_share_of_tp": 0.8963,
+        "recall_without_top_rule": 1,
+        "rules": [
+          {
+            "rule_id": "ATR-2026-00508",
+            "samples": 968,
+            "sole_detector_on": 0
+          },
+          {
+            "rule_id": "ATR-2026-00518",
+            "samples": 780,
+            "sole_detector_on": 9
+          },
+          {
+            "rule_id": "ATR-2026-00282",
+            "samples": 671,
+            "sole_detector_on": 0
+          },
+          {
+            "rule_id": "ATR-2026-00454",
+            "samples": 260,
+            "sole_detector_on": 0
+          },
+          {
+            "rule_id": "ATR-2026-00264",
+            "samples": 249,
+            "sole_detector_on": 0
+          },
+          {
+            "rule_id": "ATR-2026-00506",
+            "samples": 195,
+            "sole_detector_on": 0
+          },
+          {
+            "rule_id": "ATR-2026-00507",
+            "samples": 195,
+            "sole_detector_on": 15
+          },
+          {
+            "rule_id": "ATR-2026-00265",
+            "samples": 105,
+            "sole_detector_on": 0
+          },
+          {
+            "rule_id": "ATR-2026-00001",
+            "samples": 105,
+            "sole_detector_on": 0
+          },
+          {
+            "rule_id": "ATR-2026-00509",
+            "samples": 105,
+            "sole_detector_on": 0
+          },
+          {
+            "rule_id": "ATR-2026-00400",
+            "samples": 21,
+            "sole_detector_on": 0
+          }
+        ]
+      }
+    }
+  },
+  "notes": "promptinject academic adversarial corpus — 100% attack samples; fp_rate undefined and recorded as 0 by convention. precision=1 is a property of the corpus (no benign samples), NOT a measured result — read it with the benign-gate FP rate, never alone. Recall is measured on the narrow llm_io event (breakdown.attribution.legacy_llm_io); breakdown.attribution.canonical_shapes gives the same corpus on the shape set the benign FP gate uses. Concentration (top_rule_share_of_tp / recall_without_top_rule) states how much of the number rests on a single rule."
+}

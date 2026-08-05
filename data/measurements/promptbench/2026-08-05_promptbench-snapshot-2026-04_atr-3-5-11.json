@@ -1,0 +1,106 @@
+{
+  "schema_version": "1",
+  "source": "promptbench",
+  "source_version": "snapshot-2026-04",
+  "atr_version": "3.5.11",
+  "atr_commit": "70bd9cabb",
+  "rules_loaded": 780,
+  "measured_at": "2026-08-05T07:45:39.078Z",
+  "samples": 3280,
+  "metrics": {
+    "recall": 0.15701219512195122,
+    "precision": 1,
+    "f1": 0.27140974967061926,
+    "fp_rate": 0
+  },
+  "confusion": {
+    "tp": 515,
+    "fp": 0,
+    "tn": 0,
+    "fn": 2765
+  },
+  "breakdown": {
+    "top_matching_rules": [
+      {
+        "rule_id": "ATR-2026-00520",
+        "matches": 266
+      },
+      {
+        "rule_id": "ATR-2026-00519",
+        "matches": 171
+      },
+      {
+        "rule_id": "ATR-2026-00202",
+        "matches": 80
+      }
+    ],
+    "attribution": {
+      "legacy_llm_io": {
+        "shape": "llm_io { content, fields.user_input }",
+        "matched_samples": 515,
+        "rules_fired": 3,
+        "rules_loaded": 780,
+        "top_rule_id": "ATR-2026-00520",
+        "top_rule_tp": 266,
+        "top_rule_share_of_tp": 0.5165,
+        "recall_without_top_rule": 0.0765,
+        "rules": [
+          {
+            "rule_id": "ATR-2026-00520",
+            "samples": 266,
+            "sole_detector_on": 264
+          },
+          {
+            "rule_id": "ATR-2026-00519",
+            "samples": 171,
+            "sole_detector_on": 171
+          },
+          {
+            "rule_id": "ATR-2026-00202",
+            "samples": 80,
+            "sole_detector_on": 78
+          }
+        ]
+      },
+      "canonical_shapes": {
+        "shapes": [
+          "wide-raw",
+          "pre-tool-json-arg",
+          "pre-tool-json-both",
+          "post-tool-json",
+          "scanSkill"
+        ],
+        "matched_samples": 1798,
+        "rules_fired": 4,
+        "rules_loaded": 780,
+        "top_rule_id": "ATR-2026-00066",
+        "top_rule_tp": 1633,
+        "top_rule_share_of_tp": 0.9082,
+        "recall_without_top_rule": 0.157,
+        "rules": [
+          {
+            "rule_id": "ATR-2026-00066",
+            "samples": 1633,
+            "sole_detector_on": 1283
+          },
+          {
+            "rule_id": "ATR-2026-00520",
+            "samples": 266,
+            "sole_detector_on": 48
+          },
+          {
+            "rule_id": "ATR-2026-00519",
+            "samples": 171,
+            "sole_detector_on": 79
+          },
+          {
+            "rule_id": "ATR-2026-00202",
+            "samples": 80,
+            "sole_detector_on": 38
+          }
+        ]
+      }
+    }
+  },
+  "notes": "promptbench academic adversarial corpus — 100% attack samples; fp_rate undefined and recorded as 0 by convention. precision=1 is a property of the corpus (no benign samples), NOT a measured result — read it with the benign-gate FP rate, never alone. Recall is measured on the narrow llm_io event (breakdown.attribution.legacy_llm_io); breakdown.attribution.canonical_shapes gives the same corpus on the shape set the benign FP gate uses. Concentration (top_rule_share_of_tp / recall_without_top_rule) states how much of the number rests on a single rule."
+}
