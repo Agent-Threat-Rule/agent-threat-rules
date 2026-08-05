@@ -75,7 +75,6 @@ response:
   message_template: >
     [ATR-2026-01963] CRITICAL: PraisonAI Action Orchestrator step.target path traversal (CVE-2026-39305) writes arbitrary files outside the workspace (e.g. ~/.ssh/authorized_keys) enabling RCE. Block this ActionStep, canonicalise/validate target paths against the workspace boundary, and upgrade PraisonAI to >= 4.5.113.
 confidence: 80
-wild_fp_rate: 0
 test_cases:
   true_positives:
     - input: "ActionStep(id='x', action_type=ActionType.FILE_CREATE, target='../../../../../../../tmp/orchestrator_pwned.txt', params={'content':'pwned'})"
