@@ -411,20 +411,34 @@ export class ATREngine {
 
       const matchResult = this.evaluateRule(rule, event);
       if (matchResult) {
-        // Skill context compound gating: rules not designed for SKILL.md
-        // must match 2+ CONDITIONS (not patterns) to trigger. A single
-        // condition with many patterns fires too easily on long documents.
-        // 2+ condition co-occurrence means the document exhibits multiple
-        // distinct threat signals — strongly indicates a real attack, not
-        // security documentation that happens to describe one attack type.
-        // Rules with scan_target 'skill' or 'both' fire normally.
-        // Compound gate: rules not designed for skill scanning need 30%+
-        // conditions to match. Rules with scan_target 'skill' or 'both'
-        // have verified FP rates and fire normally.
+        // Skill context compound gating: rules not designed for SKILL.md must
+        // match 2+ CONDITIONS (not patterns) to trigger. A single condition with
+        // many patterns fires too easily on long documents; 2+ condition
+        // co-occurrence means the document exhibits multiple distinct threat
+        // signals. Rules with scan_target 'skill' or 'both' have verified FP
+        // rates on SKILL.md and are exempt.
+        //
+        // WHAT THIS ACTUALLY DOES — read before "fixing" it (audited 2026-08-05):
+        // for a rule with `condition: any`, matchedConditions.length is capped at
+        // 1, because evaluateArrayConditions BREAKS on the first matching
+        // condition. minRequired is never below 2. So for any-mode rules this is
+        // not a 30% threshold, it is an unconditional reject, and the effective
+        // policy of the SKILL.md path is "only scan_target: skill|both rules
+        // run". 776 of 780 rules on main declare `condition: any`; 645 rules
+        // (102 of them maturity:stable) can never match here for any input.
+        //
+        // That policy is load-bearing, not an accident waiting to be corrected.
+        // Measured on this corpus: letting the threshold become reachable (stop
+        // short-circuiting when scanContext === 'skill') takes the 466-sample
+        // benign skill corpus from 1 flagged sample to 265 — 7 new rules firing,
+        // 406 new FP — while malicious recall stays 32/32. Do not change this
+        // without re-running both halves of that measurement.
+        //
+        // The measurement-side consequence (a gate that lists `skill` among its
+        // shapes has NOT measured those 645 rules on it) is named by
+        // skillPathCoverage() in scripts/lib/corpus-event.ts and pinned by
+        // tests/skill-path-coverage.test.ts.
         if (isSkillContext && rule.tags.scan_target !== 'skill' && rule.tags.scan_target !== 'both') {
-          // Require at least 30% of conditions to match (min 2) — long documents
-          // with many technical terms easily hit 2 conditions; percentage-based
-          // threshold scales with rule complexity.
           const totalConds: number = Number(rule.detection?.conditions?.length ?? 1);
           const minRequired = Math.max(2, Math.ceil(totalConds * 0.3));
           if ((matchResult.matchedConditions?.length ?? 0) < minRequired) {
@@ -549,6 +563,9 @@ export class ATREngine {
 
       const matchResult = await this.evaluateRuleAsync(rule, event, this.config.semanticJudge);
       if (matchResult) {
+        // Skill compound gate — see the long note in evaluateRaw(). For
+        // `condition: any` rules this rejects unconditionally, which is why the
+        // SKILL.md path effectively runs only scan_target: skill|both rules.
         if (isSkillContext && rule.tags.scan_target !== 'skill' && rule.tags.scan_target !== 'both') {
           const totalConds: number = Number(rule.detection?.conditions?.length ?? 1);
           const minRequired = Math.max(2, Math.ceil(totalConds * 0.3));
@@ -782,7 +799,13 @@ export class ATREngine {
 
       if (result) {
         matchedConditionIndices.push(i);
-        if (isAny) break; // Short-circuit on first match for "any"
+        // Short-circuit on first match for "any". NOTE: this also caps
+        // matchedConditions at 1, which the skill-context compound gate in
+        // evaluateRaw() reads — see the note there before changing it. Removing
+        // this break is a detection-behaviour change, not an optimisation
+        // cleanup: it takes the benign skill corpus from 1 to 265 flagged
+        // samples out of 466.
+        if (isAny) break;
       }
     }
 
@@ -869,7 +892,9 @@ export class ATREngine {
         if (compiled && compiled.length > 0) {
           // Test against both normalized and raw values so that patterns
           // detecting zero-width/bidi characters can match before stripping
-          if (safeRegexTest(compiled[0]!, fieldValue) || safeRegexTest(compiled[0]!, rawFieldValue)) {
+          // (the raw pass is skipped only when normalisation was a no-op — see
+          // testNormalisedThenRaw)
+          if (testNormalisedThenRaw(compiled[0]!, fieldValue, rawFieldValue)) {
             if (suppressInCodeBlocks && codeRanges.length > 0 && isInsideCodeBlock(fieldValue, compiled[0]!, codeRanges)) {
               return false;
             }
@@ -882,7 +907,7 @@ export class ATREngine {
         const normalized = normalizeRegex(value);
         const rFlags = normalized.includes('\\u{') || normalized.includes('\\p{') ? 'iu' : 'i';
         const regex = safeCompile(normalized, rFlags);
-        if (regex && (safeRegexTest(regex, fieldValue) || safeRegexTest(regex, rawFieldValue))) {
+        if (regex && testNormalisedThenRaw(regex, fieldValue, rawFieldValue)) {
           if (suppressInCodeBlocks && codeRanges.length > 0 && isInsideCodeBlock(fieldValue, regex, codeRanges)) {
             return false;
           }
@@ -1033,7 +1058,7 @@ export class ATREngine {
 
     if (compiled) {
       for (let i = 0; i < compiled.length; i++) {
-        if (safeRegexTest(compiled[i]!, fieldValue) || (rawFieldValue && safeRegexTest(compiled[i]!, rawFieldValue))) {
+        if (testNormalisedThenRaw(compiled[i]!, fieldValue, rawFieldValue)) {
           // If match is inside a code block and this rule supports suppression, skip it
           if (suppressInCodeBlocks && codeRanges.length > 0 && isInsideCodeBlock(fieldValue, compiled[i]!, codeRanges)) {
             continue;
@@ -2019,6 +2044,48 @@ const MAX_EVAL_LENGTH = 100_000;
 function safeRegexTest(regex: RegExp, input: string): boolean {
   if (input.length > MAX_EVAL_LENGTH) return false;
   return regex.test(input);
+}
+
+/**
+ * Test a pattern against the NORMALISED text and, only when normalisation
+ * actually changed something, against the RAW text as well.
+ *
+ * The second test exists so a pattern that hunts zero-width / bidi / confusable
+ * characters can still see them before foldConfusables strips them. That is a
+ * real requirement and it is unchanged here.
+ *
+ * WHAT THE GUARD DOES: `fieldValue` is `foldConfusables(normalizeUnicode(raw))`.
+ * When that returns a string equal to `raw` — every pure-ASCII document, which
+ * is nearly the whole SKILL.md corpus — the two calls are literally the same
+ * call: same compiled RegExp, same input, no `g`/`y` flag and therefore no
+ * lastIndex state. Skipping the second one cannot change any verdict; it only
+ * stops the engine paying for the identical scan twice.
+ *
+ * WHY IT IS WORTH A HELPER: the cost is not marginal on long inputs. Profiled
+ * 2026-08-05 (node --cpu-prof, three scanSkill() calls over a 26,635-byte benign
+ * SKILL.md with 780 rules loaded), 80.5% of all CPU sat in ONE rule's unanchored
+ * double-lookahead pattern — ATR-2026-00063's
+ * `(?=[\s\S]*\.env)(?=[\s\S]*(base64|...))` — which is O(n^2) in document length
+ * because it retries both lookaheads at every start position, and it was being
+ * paid twice per condition. Measured on this branch, same box, same rules:
+ *
+ *   3x scanSkill() on that 26,635-byte file : 7227ms -> 4010ms  (-44.5%)
+ *   whole 498-file skill benchmark corpus   : 67451ms -> 47558ms (-29.5%)
+ *
+ * with the matched-rule-id set for all 498 files byte-identical before and after
+ * (verified per file across all four evaluate() shapes and scanSkill()).
+ *
+ * The O(n^2) rule pattern itself is NOT touched here — changing a rule's regex
+ * is a detection change and needs its own re-measurement.
+ */
+function testNormalisedThenRaw(
+  regex: RegExp,
+  fieldValue: string,
+  rawFieldValue: string,
+): boolean {
+  if (safeRegexTest(regex, fieldValue)) return true;
+  if (rawFieldValue === fieldValue) return false;
+  return safeRegexTest(regex, rawFieldValue);
 }
 
 /**
