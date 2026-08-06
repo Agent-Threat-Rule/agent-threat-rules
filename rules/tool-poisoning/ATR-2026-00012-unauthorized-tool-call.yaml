@@ -1,6 +1,6 @@
 title: Unauthorized Tool Call Detection
 id: ATR-2026-00012
-rule_version: 2
+rule_version: 3
 status: experimental
 description: >
   Detects unauthorized or malicious tool call attempts including parameter injection, path traversal, shell injection in
@@ -12,7 +12,17 @@ author: ATR Community
 date: 2026/03/08
 schema_version: "0.1"
 detection_tier: pattern
-maturity: test
+# maturity: test -> experimental (2026-08-06). `test` puts a rule in the ALERT lane
+# (src/quality/rule-contract.ts laneAllows). On the canonical benign corpus this rule
+# false-positived on 1,672 of 5,352 samples (31.2%); rule_version 3 cuts that to 129
+# (2.4%) without giving up a single genuine detection in the attack corpora, but 2.4%
+# is still far too noisy for an analyst lane. The residual is not a pattern defect —
+# it is security documentation (pentest cheat sheets that literally contain
+# `' OR '1'='1`, `/etc/passwd`, `; DROP TABLE wp_users--`) and configuration docs that
+# reference `process.env.*_SECRET`. Demoting to `experimental` (hunt / advisory lane)
+# is the honest disposition; promotion back to `test` needs that residual resolved,
+# not the patterns cut further.
+maturity: experimental
 severity: high
 references:
   owasp_llm:
@@ -69,13 +79,31 @@ detection:
     - field: tool_args
       operator: regex
       value: >-
-        (\.\.[\/\\]){2,}|\.\.[\/\\][^\s]*[\/\\](etc|proc|root|sys|var|home|tmp|boot|dev|usr|opt|passwd|shadow|hosts)[\/\\]?|~[\/\\]\.\.[\/\\]
-      description: Path traversal sequences targeting sensitive directories
+        (\.\.[\/\\]){4,}|\.\.[\/\\][^\s"'`]{0,60}[\/\\](etc|proc|root|boot|passwd|shadow|hosts)[\/\\]?|~[\/\\]\.\.[\/\\]
+      description: >-
+        Path traversal that either goes 4+ levels up or lands on a sensitive root
+        (v3 tightened, strict subset of v2). v2's bare `(\.\./){2,}` fired on every
+        markdown relative link (`](../../CONNECTORS.md)`) — 147 of its 155 benign
+        hits — and its target list included `var|home|tmp|dev|usr|opt|sys`, which are
+        ordinary directory names in a RELATIVE source path (`../figma-use/references/var`).
+        Both were removed; the traversal-to-sensitive-root form and `~/../` are kept.
     - field: tool_args
       operator: regex
       value: >-
-        (;|&&|\|\|)\s*(?:sudo\s+)?(?:curl\s+(?:-\S+\s+)*['"]?https?://(?!localhost|127\.0\.0\.1|0\.0\.0\.0)|wget\s+(?:-\S+\s+)*['"]?https?://(?!localhost|127\.)|\bnc\b\s+-?[a-z0-9]|ncat\s+\S|\b(?:ba)?sh\s+-[ic]|python[0-9]?\s+-c|perl\s+-e|ruby\s+-e|node\s+-e|\beval\s|rm\s+-[rf]|cat\s+/etc/(?:passwd|shadow|sudoers)|whoami|\bid\b\s*(?:;|&|\||$)|uname\s+-a|base64\s+(?:-d|--decode)|ifconfig|>&\s*/dev/tcp)|[$`]\([^)`]{0,80}(?:curl|wget|\bnc\b|\bbash\b|\bsh\s+-|whoami|\bid\b|base64\s+-d|/etc/(?:passwd|shadow))
-      description: Shell metacharacter chained to a genuinely dangerous command — external network fetch, pipe-to-shell / interpreter one-liner, recon (whoami/id/uname -a), or sensitive-file read (v2 tightened; legit build chains like "npm i && bash setup.sh", "&& python -m pytest", "| jq" no longer fire)
+        (;|&&|\|\|)\s*(?:sudo\s+)?(?:curl\s+(?:-\S+\s+)*['"]?https?://(?!localhost|127\.0\.0\.1|0\.0\.0\.0)|wget\s+(?:-\S+\s+)*['"]?https?://(?!localhost|127\.)|\bnc\b\s+-?[a-z0-9]|ncat\s+\S|\b(?:ba)?sh\s+-[ic]|python[0-9]?\s+-c|perl\s+-e|ruby\s+-e|node\s+-e|\beval\s+["'$`(]|rm\s+-[rf]{1,2}\s+(?:-\S+\s+)*(?:/\s|/\*|~|\$HOME|\*|/(?:etc|var|usr|home|root|bin|Users)\b)|cat\s+/etc/(?:passwd|shadow|sudoers)|whoami|\bid\b\s*(?:;|&|\||$)|uname\s+-a|base64\s+(?:-d|--decode)|ifconfig|>&\s*/dev/tcp)|[$`]\([^)`]{0,80}(?:\bnc\b|\b(?:ba)?sh\s+-[ic]|whoami|base64\s+-d|/etc/(?:passwd|shadow))
+      description: >-
+        Shell metacharacter chained to a genuinely dangerous command — external network
+        fetch, pipe-to-shell / interpreter one-liner, recon (whoami/uname -a), or
+        sensitive-file read. v2 tightened the `;|&&|||` branch (legit build chains like
+        "npm i && bash setup.sh" no longer fire). v3 is a further strict subset:
+        (a) the command-substitution branch drops `\bid\b` (matched the identifier `Id`
+        in `$(aws ... --query 'Accounts[*].Id')` and `${trade.id}`), `\bbash\b`
+        (matched `$(gh completion -s bash)`), `\bsh\s+-` (matched the filename in
+        `$(scripts/filter-sessions.sh -x)`) and `curl|wget` (15 hits — `MODEL_ID=$(curl
+        -fsS "$BASE_URL/v1/models")` is the ordinary capture-a-response idiom and
+        carries no execution); (b) `rm\s+-[rf]` now needs a root/home/wildcard target,
+        because `&& rm -rf ./skills/my-skill` is normal cleanup; (c) `\beval\s` now
+        needs an actual argument, because it matched the prose "**uv**; eval deps:".
     - field: tool_name
       operator: regex
       value: (?i)^(admin_|root_|sudo_|system_|internal_|debug_|maintenance_|privileged_|superuser_|__)
@@ -88,41 +116,103 @@ detection:
     - field: tool_args
       operator: regex
       value: >-
-        (?i)('\s*(OR|AND|UNION)\s+['"]?\d|"\s*(OR|AND|UNION)\s+['"]?\d|\b(UNION\s+(ALL\s+)?SELECT|INSERT\s+INTO|UPDATE\s+.*\s+SET|DELETE\s+FROM|DROP\s+(TABLE|DATABASE)|ALTER\s+TABLE|EXEC(UTE)?\s+|xp_cmdshell)\b|;\s*(DROP|DELETE|INSERT|UPDATE|ALTER|EXEC)\b)
-      description: SQL injection patterns in tool parameters
+        (?i)(['"]\s*(OR|AND)\s+['"]?\d+\s*['"]?\s*(=|<|>|--|\)|;|\bLIKE\b)|['"]\s*(UNION\s+(ALL\s+)?SELECT|INSERT\s+INTO|DELETE\s+FROM|UPDATE\s+\w{1,64}\s+SET|DROP\s+(TABLE|DATABASE)|ALTER\s+TABLE)\b[^\n]{0,160}(--|\/\*)|\bUNION\s+(ALL\s+)?SELECT\b|\bxp_cmdshell\b|;\s*(DROP\s+(TABLE|DATABASE)|DELETE\s+FROM|INSERT\s+INTO|UPDATE\s+\w{1,64}\s+SET|ALTER\s+TABLE|EXEC(UTE)?\s+(xp_|sp_))\b)
+      description: >-
+        SQL injection in a tool parameter: quote-break tautology, quote-break followed
+        by a DML/DDL statement, UNION SELECT, xp_cmdshell, or a stacked statement after
+        `;`. v3 is a strict subset of v2. v2 matched BARE SQL keywords, which is not
+        injection — `EXEC(UTE)?\s+` matched the English word "execute " (≈864 of its
+        1,139 benign hits, e.g. "you execute them automatically"), and
+        `UPDATE\s+.*\s+SET` had an unbounded `.*` that spans a whole JSON-encoded
+        document (src/hook-handler.ts encodes a newline as the two characters \ and n,
+        so `.` never stops). Bare INSERT INTO / DELETE FROM / ALTER TABLE /
+        DROP TABLE now require a quote-break AND a SQL comment terminator, or a
+        stacked `;` in front. The tautology branch additionally requires a comparison
+        or terminator after the digit: v2's `["']\s*(OR|AND)\s+["']?\d` matched
+        ordinary English — `"Cinematic braam, horror" or "8-bit retro jump sound"`,
+        `period: "30d" or "7d"`, `choose 0.3" or 0.5" gaps`.
     - field: tool_args
       operator: regex
       value: >-
-        (?i)(\$\{?\w*(KEY|TOKEN|SECRET|PASSWORD|PASS|PWD|CREDENTIAL|AUTH|API_KEY|ACCESS_KEY|PRIVATE)\w*\}?|process\.env\.|os\.environ|System\.getenv|ENV\[|getenv\s*\()
-      description: Attempts to extract environment variables containing secrets
+        (?i)(\$\{?\w*(SECRET|CREDENTIAL|ACCESS_KEY|PRIVATE|PASSWORD|PASSWD)\w*\}?|(process\.env\.|os\.environ\s*[\[\.]\s*\\?['"]?|System\.getenv\s*\(\s*\\?['"]?|getenv\s*\(\s*\\?['"]?|ENV\[\s*\\?['"]?)\w*(SECRET|CREDENTIAL|ACCESS_KEY|PRIVATE|PASSWORD|PASSWD)\w*|(dict|list|str|json\.dumps|pprint|print)\s*\(\s*os\.environ|os\.environ\.(items|copy|keys|values)\s*\()
+      description: >-
+        Reference to a secret-bearing environment variable, or a wholesale dump of the
+        environment. v3 is a strict subset of v2. v2 fired on the language construct
+        alone — `process.env.` (167 benign hits), `os.environ` (51), `System.getenv`
+        (12), `getenv(` (7) — and on the generic words KEY|TOKEN|PASS|PWD|AUTH, which
+        match `$HF_TOKEN`, `${token}`, `$ai_input_tokens`, `${BRAVE_SEARCH_API_KEY}`:
+        every integration doc on earth reads an API key from the environment, so those
+        forms carry no attack signal. The env-reading constructs now have to name a
+        secret-bearing variable, and a whole-environment dump (dict(os.environ),
+        os.environ.items()) fires on its own.
+        RESIDUAL BY DESIGN: bare `${OPENAI_API_KEY}` / `$GITHUB_TOKEN` references no
+        longer fire here — see the dedicated exfiltration rules ATR-2026-00115,
+        ATR-2026-01892, ATR-2026-02262, which require an egress sink.
     - field: tool_args
       operator: regex
       value: >-
-        (?i)([\/\\](etc[\/\\](passwd|shadow|sudoers|ssh[\/\\]|ssl[\/\\])|proc[\/\\](self[\/\\]|\d+[\/\\])(environ|cmdline|maps|fd)|root[\/\\]\.(bash_history|ssh)|\.env|\.git[\/\\]config|\.aws[\/\\]credentials|\.ssh[\/\\](id_rsa|authorized_keys)|wp-config\.php|\.htpasswd|\.netrc|\.pgpass))
-      description: Access to known sensitive files (credentials, config, keys)
+        (?i)([\/\\](etc[\/\\](passwd|shadow|sudoers|ssh[\/\\]|ssl[\/\\])|proc[\/\\](self[\/\\]|\d+[\/\\])(environ|cmdline|maps|fd)|root[\/\\]\.(bash_history|ssh)|\.git[\/\\]config|\.aws[\/\\]credentials|\.ssh[\/\\](id_rsa|authorized_keys)|wp-config\.php|\.htpasswd|\.netrc|\.pgpass)|(\.\.[\/\\]){2,}[^\s"'`]{0,40}\.env\b)
+      description: >-
+        Access to known sensitive files (credentials, config, keys). v3 is a strict
+        subset of v2: the bare `[\/\\]\.env` alternative (42 of v2's 65 benign hits)
+        now requires a 2+ level traversal in front, because `./.env`,
+        `assets/.env.example`, `~/.env` and `docker compose --env-file ../.env` are how
+        every project documents and wires its own configuration.
     - field: tool_args
       operator: regex
       value: >-
-        (\{\{.*?(config|self|request|__class__|__builtins__|__import__|lipsum|cycler|joiner|namespace).*?\}\}|\$\{.*?(Runtime|ProcessBuilder|getClass|forName|exec).*?\}|<%.*?(Runtime|exec|system|eval).*?%>)
-      description: Server-side template injection (Jinja2, Java EL, JSP)
+        (\{\{[^{}]{0,120}((config|self|request)\s*[\.\[]\s*\\?['"]?_|__class__|__builtins__|__import__|lipsum|cycler|joiner|namespace)[^{}]{0,120}\}\}|\$\{[^{}]{0,100}(Runtime|ProcessBuilder|getClass|forName)[^{}]{0,100}\}|<%[^%]{0,120}(Runtime|exec|system|eval)[^%]{0,120}%>)
+      description: >-
+        Server-side template injection (Jinja2, Java EL, JSP). v3 is a strict subset of
+        v2: v2's unbounded lazy `.*?` gaps let a match start at a JavaScript template
+        literal (`${config.name}`) and run forward across a whole JSON-encoded document
+        until it found the literal word "exec" and any later closing brace — 349 of its
+        372 benign hits came from the `pre-tool-json-arg` shape for exactly that reason.
+        The gaps are now brace-bounded and length-bounded, and `exec` is dropped from
+        the `${...}` branch (Java EL RCE still matches on Runtime / ProcessBuilder /
+        getClass / forName). `config` / `self` / `request` also have to be followed by
+        an attribute access into a dunder — bare `{{ github.event.pull_request.title }}`,
+        `{{config_file}}`, `{{ config(materialized='view') }}` (dbt) and `{{.Config.User}}`
+        (Docker Go template) are template placeholders, not Jinja2 sandbox escapes.
     - field: tool_args
       operator: regex
       value: >-
-        (?i)(O:\d+:\s*"|a:\d+:\s*\{|rO0ABX|aced0005|\{\s*"__type"\s*:|\{\s*"\$type"\s*:|yaml\.unsafe_load|pickle\.loads|unserialize\s*\(|Marshal\.load|ObjectInputStream)
-      description: Serialized object injection (PHP, Java, Python pickle, YAML, .NET)
+        (?i)(O:\d+:\s*"|a:\d+:\s*\{|rO0ABX|aced0005|\{\s*"__type"\s*:|yaml\.unsafe_load|pickle\.loads|unserialize\s*\(|Marshal\.load|ObjectInputStream)
+      description: >-
+        Serialized object injection (PHP, Java, Python pickle, YAML, .NET). v3 is a
+        strict subset of v2: `{"$type":` is dropped — the W3C Design Tokens format uses
+        `"$type"` as an ordinary schema key, so it is not evidence of .NET
+        TypeNameHandling deserialization on its own.
     - field: tool_args
       operator: regex
-      value: (?i)(\*\)\(|\)\(|\|\s*\(|&\s*\(|\(\|\(|\(&\().*?(objectClass|uid|cn|sn|mail|userPassword|memberOf)\s*[=~<>]
-      description: LDAP filter injection patterns
+      value: (?i)(\*\)\(|\(\|\(|\(&\()[^()]{0,60}(objectClass|uid|cn|sn|userPassword|memberOf)\s*[=~<>]
+      description: >-
+        LDAP filter injection patterns. v3 is a strict subset of v2. v2's anchors
+        included a bare `\)\(`, `\|\s*\(` and `&\s*\(` — `require('stripe')('sk_...')`,
+        `sequenceS(validation)({...})` and JSX `&& (` all match — and the following
+        `.*?` was unbounded, so it ran across a whole JSON-encoded document to find any
+        later `mail=` / `uid=`. The gap is now paren-bounded and length-bounded, only
+        the three genuinely LDAP-shaped anchors remain, and the English word `mail` is
+        dropped from the attribute list.
     - field: tool_args
       operator: regex
       value: >-
-        (?i)(@|%40)(localhost|127\.0\.0\.1|0\.0\.0\.0|internal|intranet|corp|private)|\\@(localhost|127)|url\s*=\s*['"]?(file|gopher|dict|ftp|ldap|tftp)://
-      description: URL manipulation to access internal resources via @ notation or exotic protocols
+        (?i)(https?|ftp|gopher|dict|ldap|tftp)://[^\s/"'<>]{0,120}(@|%40)(localhost|127\.0\.0\.1|0\.0\.0\.0|internal|intranet|corp|private)|url\s*=\s*['"]?(file|gopher|dict|ftp|ldap|tftp)://
+      description: >-
+        URL manipulation to access internal resources via @ userinfo notation or exotic
+        protocols. v3 is a strict subset of v2: the `@host` form now has to sit inside
+        an actual URL. v2 matched a bare `@localhost` / `@corp` / `@private` anywhere,
+        i.e. the e-mail address `admin@localhost.com`, the npm scope `@private/auth-form`
+        and the connection string `postgresql://user:pass@localhost:5432/db`.
     - field: tool_args
       operator: regex
-      value: (?i)(\*\s*;|\*\s*&&|\*\s*\|\||\bfind\s+/\s+-name|\bfind\s+/\s+-exec|\bxargs\s+|\bglob\s*\(.{0,20}\*\*)
-      description: Wildcard and glob patterns combined with shell execution
+      value: (?i)(\bfind\s+/\s+-name|\bfind\s+/\s+-exec|\bxargs\s+(-\S+\s+)*(rm|sh|bash|zsh|curl|wget|chmod|chown|dd|cat|base64|nc)\b|\*\s*(;|&&|\|\|)\s*(rm|curl|wget|sh|bash|nc|cat|python|perl|tar|zip|base64)\b)
+      description: >-
+        Wildcard / glob combined with an actually dangerous command. v3 is a strict
+        subset of v2. v2 fired on `\*\s*;` (44 benign hits — any `**;` in markdown or
+        code), on a bare `\bxargs\s+` (15 hits — `find . -name "*.py" | xargs grep -l`
+        is ordinary shell), and on `glob(...**` (ordinary globbing in application code).
+        The chain now has to end in a destructive/exfiltrating command.
     - field: tool_args
       operator: regex
       value: >-
@@ -136,16 +226,25 @@ detection:
     - Development/testing environments with intentionally permissive tool access
     - SQL query tools receiving legitimate query parameters
 response:
+  # block_tool removed in rule_version 3. A rule that fires on 2.4% of a benign corpus
+  # must not carry an auto-blocking action, and the old message_template asserted "The
+  # tool call has been blocked" — which would have been false in every lane this rule
+  # is actually allowed to run in (maturity: experimental = hunt / advisory).
   actions:
-    - block_tool
     - alert
     - snapshot
     - escalate
   auto_response_threshold: high
   message_template: >
-    [ATR-2026-012] Unauthorized tool call detected. Rule: ATR-2026-012. Tool: {tool_name}. Pattern: {matched_pattern}.
-    The tool call has been blocked.
+    [ATR-2026-00012] Possible unauthorized tool call. Rule: ATR-2026-00012. Tool: {tool_name}.
+    Pattern: {matched_pattern}. Advisory only — this rule is maturity: experimental and does
+    not block; review the argument before allowing the call.
 confidence: 81
+# wild_validated / wild_samples below were measured on the rule_version 2 pattern set
+# (2026/04/08). rule_version 3 changed every tool_args pattern, and the 53,577-sample
+# wild corpus is not in this repo, so those figures describe the OLD patterns and must
+# not be quoted as validation of the current ones. The measurement that IS current is
+# the 5,352-sample benign gate: 129 FP (scripts/gate-promotion-fp.ts, 2026-08-06).
 wild_validated: 2026/04/08
 wild_samples: 53577
 test_cases:
@@ -205,6 +304,43 @@ test_cases:
     - tool_args: role=viewer&access_level=readonly
       expected: not_triggered
       description: Normal parameter setting with non-privileged role values
+    # --- rule_version 3 regression locks. Every one of these is a VERBATIM benign
+    # sample that rule_version 2 false-positived on (data/skill-benchmark/benign +
+    # data/benign-corpus-extended). They exist so a future "just widen it a bit"
+    # cannot silently reintroduce the 1,672-FP behaviour.
+    - tool_args: "you execute them automatically when they're moved to \"In Progress\""
+      expected: not_triggered
+      description: v2's SQL condition matched the English word "execute " (≈864 of its 1,139 SQL-condition FPs)
+    - tool_args: "see the [tools registry](../../tools/REGISTRY.md) for setup"
+      expected: not_triggered
+      description: v2's path-traversal condition matched every markdown relative link (147 of its 155 FPs)
+    - tool_args: "const deepgram = createClient(process.env.DEEPGRAM_API_KEY);"
+      expected: not_triggered
+      description: v2's env condition fired on the language construct alone; reading an API key from env is what every integration does
+    - tool_args: "curl -H \"xi-api-key: $ELEVENLABS_API_KEY\" https://api.elevenlabs.io/v1/text-to-speech"
+      expected: not_triggered
+      description: v2 matched the generic word TOKEN/KEY in an ordinary documented API call
+    - tool_args: "runs-on: ubuntu-latest with {{ github.event.pull_request.title }}"
+      expected: not_triggered
+      description: v2's SSTI condition matched "request" inside "pull_request"; a GitHub Actions expression is not a Jinja2 sandbox escape
+    - tool_args: "const stripe = require('stripe')('sk_test_xxx', { apiVersion: '2026-03-25' }); email: validateEmail(form.email)"
+      expected: not_triggered
+      description: v2's LDAP condition anchored on a bare `)(` and then scanned the whole document for any later `mail=`
+    - tool_args: "DATABASE_URL=postgresql://user:pass@localhost:5432/db"
+      expected: not_triggered
+      description: v2's URL condition matched a bare @localhost — a connection string is not SSRF userinfo abuse
+    - tool_args: "find . -name \"*.py\" -type f | xargs grep -l \"import streamlit\""
+      expected: not_triggered
+      description: v2 fired on a bare `xargs `; piping find into xargs is ordinary shell
+    - tool_args: "MODEL_ID=\"$(curl -fsS \"$BASE_URL/v1/models\" | jq -r '.data[0].id')\""
+      expected: not_triggered
+      description: capturing an HTTP response into a variable is not command injection (v3 dropped curl/wget from the command-substitution branch)
+    - tool_args: "period: \"30d\" or \"7d\" - Sort by duration or cost"
+      expected: not_triggered
+      description: v2's tautology branch (quote + OR + digit) matched ordinary English prose
+    - tool_args: "docker compose --env-file ../.env -f docker-compose.yaml config --quiet"
+      expected: not_triggered
+      description: v2's sensitive-file condition fired on any path ending in .env, including a project's own config
 evasion_tests:
   - input: fichier=../../../etc/mot_de_passe; récupérer le contenu du fichier de mots de passe système
     expected: not_triggered
