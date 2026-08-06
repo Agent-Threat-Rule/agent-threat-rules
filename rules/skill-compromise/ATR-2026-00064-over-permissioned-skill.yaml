@@ -1,6 +1,6 @@
 title: "Over-Permissioned MCP Skill"
 id: ATR-2026-00064
-rule_version: 1
+rule_version: 2
 status: experimental
 description: >
   Detects MCP skills that request or exercise permissions far exceeding what their
@@ -11,7 +11,30 @@ author: "ATR Community"
 date: "2026/03/08"
 schema_version: "0.1"
 detection_tier: pattern
-maturity: test
+# maturity: test -> experimental (2026-08-06, rule_version 2).
+#
+# `test` is the ALERT lane. Two measured facts say this rule has not earned it:
+#
+#  1. FP is not zero. 6 of 5,352 benign samples still match after the rewrite
+#     (down from 403). All six are penetration-testing / red-team / "don't do
+#     this" documents that quote the attacker command verbatim — `chmod +s
+#     /tmp/bash`, `net user hacker P@ss /add /domain`, "Scoped ACLs, not
+#     `chmod 777`". At the pattern tier those are not distinguishable from the
+#     attack, because the text IS the attack. See false_positives below.
+#
+#  2. There is no corpus evidence that this rule has ever caught a real attack.
+#     Before the rewrite it matched 3 of 32 malicious skills, and all three were
+#     accidents: two on the English phrase "at 10 AM." and one on
+#     `sudo apt-get install -y poppler-utils`, a legitimate dependency step in a
+#     malicious skill. It matched none of them for their malicious behaviour.
+#     After the rewrite it matches 0 of 32 — an honest zero replacing a
+#     fictitious three. The only evidence of recall is hand-written attack
+#     payloads (40/43), which is authored evidence, not corpus evidence.
+#
+# Promotion back to `test` needs labelled tool_call telemetry — this rule's
+# declared surface is `agent_source.type: tool_call`, and no committed corpus
+# contains labelled malicious tool_call arguments.
+maturity: experimental
 severity: high
 
 references:
@@ -83,26 +106,59 @@ agent_source:
 
 detection:
   conditions:
+    # 0 — privilege-escalation wrapper AND, in the SAME command, a credential /
+    #     boot / raw-disk target or an interpreter-download-execute tail. The
+    #     bare wrapper alone is not a signal: `sudo apt install`, `sudo systemctl
+    #     restart`, `sudo mkdir` are the overwhelming majority of real usage.
+    #     `[^\n\\]` bounds the co-occurrence window to one command line in BOTH
+    #     presentations — a raw newline, and the two-character `\` `n` that
+    #     JSON.stringify produces in the production `tool_args` encoding.
+    #     The leading boundary is `(?:^|[^A-Za-z0-9_]|\\n)` and NOT `\b`: in that
+    #     same JSON encoding a line-leading command reads `...\nsudo`, where `n`
+    #     and `s` are both word characters, so `\b` does not hold and the verb
+    #     would be silently unmatched in production while still matching in the
+    #     raw corpus. Measured: with `\b`, `sudo` at line start missed; with this
+    #     boundary, matched. Both encodings are locked by test_cases.
     - field: tool_args
       operator: regex
-      value: "(?i)(sudo|runas|doas|pkexec|gsudo)\\s+"
+      value: "(?i)(?:^|[^A-Za-z0-9_]|\\\\n)(?:sudo|doas|pkexec|gsudo|runas)\\s+[^\\n\\\\]{0,120}(?:/etc/sudoers|/etc/shadow|/etc/cron|NOPASSWD|authorized_keys|id_rsa\\b|/dev/sd[a-z]\\b|visudo\\b|chpasswd\\b|\\|\\s*(?:ba|z|k|d)?sh\\b|curl\\s+(?:-|http|\\$)|wget\\s+(?:-|http|\\$)|python[23]?\\s+-c|perl\\s+-e|\\s-enc\\s|Set-MpPreference|DisableRealtimeMonitoring)"
+    # 1 — setuid/setgid bit, world-writable mode, root ownership takeover, or a
+    #     capability GRANT. `chmod +x` (22 benign hits) and every mode that merely
+    #     contains a 7 (`chmod 700`, `chmod 755`) are NOT permission escalation.
     - field: tool_args
       operator: regex
-      value: "(?i)(chmod\\s+(?:[2467][0-7]{3}|[0-7]{0,3}7[0-7]{0,2})|chmod\\s+[ug]?\\+[sx]|chown\\s+root|setcap\\s)"
+      value: "(?i)(chmod\\s+(?:[2467][0-7]{3}|[0-7]{0,2}777)|chmod\\s+[ug]?\\+s|chown\\s+root|setcap\\s+(?:-v\\s+)?cap_)"
+    # 2 — firewall TEARDOWN or C2 hole-punching, not firewall inspection.
+    #     `ufw status`, `firewall-cmd --state`, `pfctl -s info` are read-only.
     - field: tool_args
       operator: regex
-      value: "(?i)(iptables|ufw|firewall-cmd|netsh\\s+advfirewall|pfctl)\\s"
+      value: "(?i)(iptables\\s+(?:-[FXZ]\\b|-P\\s+(?:INPUT|OUTPUT|FORWARD)\\s+ACCEPT|-A\\s+OUTPUT\\b)|ufw\\s+(?:disable|reset|delete)\\b|firewall-cmd\\s+[^\\n\\\\]{0,60}--add-port|netsh\\s+advfirewall\\s+set\\s+[^\\n\\\\]{0,40}state\\s+off|pfctl\\s+-d\\b)"
+    # 3 — account creation/modification that GRANTS privilege or sets a password.
+    #     The trailing `\b` stops `addUser` / `addUserMessage` (JS+Swift APIs)
+    #     and `admin_passwd` / `/etc/passwd`; the co-occurrence requirement stops
+    #     `usermod -aG docker` and `useradd --system --shell /usr/sbin/nologin`.
+    #     The LEADING boundary is spelled out rather than `\b` on purpose — see
+    #     the note on condition 0 and the recall locks in test_cases.
     - field: tool_args
       operator: regex
-      value: "(?i)(useradd|adduser|usermod|passwd|net\\s+user|dsadd|New-LocalUser)"
+      value: "(?i)(?:^|[^A-Za-z0-9_]|\\\\n)(?:(?:useradd|adduser)\\b[^\\n\\\\]{0,120}(?:-G\\s*(?:sudo|wheel|admin|root)|--groups?[= ]\\s*(?:sudo|wheel|admin|root)|\\s-p\\s|--password)|usermod\\b[^\\n\\\\]{0,80}-a?G\\s*(?:sudo|wheel|admin|root|Administrators)|chpasswd\\b|passwd\\s+(?:-\\S+\\s+)*root\\b|net\\s+user\\b[^\\n\\\\]{0,80}/add\\b|dsadd\\b|New-LocalUser\\b)"
+    # 4 — persistence installation, not scheduler inspection or English prose.
+    #     The old `at\\s+\\d` matched "at 8am", "at 80%", "at 375px",
+    #     "generated at 2026-01-28" — 309 benign samples, the single largest FP
+    #     source in the rule and zero attack signal. A bare `| at <digit>` is no
+    #     better: it matches the markdown table cell `| At 1.2 (Feedback
+    #     Endpoint)`. A bare `| crontab` matches the grep alternation
+    #     `grep -rE "celery|apscheduler|schedule|crontab"`. Both need the flag
+    #     that makes them a WRITE.
     - field: tool_args
       operator: regex
-      value: "(?i)(crontab|schtasks|at\\s+\\d|systemctl\\s+(enable|start)|launchctl\\s+load)"
+      value: "(?i)(?:\\|\\s*crontab\\s+-|(?:^|[^A-Za-z0-9_]|\\\\n)(?:at\\s+\\d{1,2}:\\d{2}\\s+-f\\b|schtasks\\s+/create\\b|systemctl\\s+(?:--user\\s+)?enable[^\\n\\\\]{0,80}\\.(?:service|timer)\\b|launchctl\\s+load\\b)|/etc/systemd/system[^\\n\\\\]{0,160}systemctl\\s+(?:--user\\s+)?enable)"
   condition: any
   false_positives:
     - "System administration tools that legitimately manage permissions and services"
     - "DevOps tools performing infrastructure provisioning"
     - "Security tools that audit permission configurations"
+    - "Penetration-testing / red-team SKILL.md documents that quote the attacker command verbatim (net user … /add, chmod +s, schtasks /create). Semantically indistinguishable from the attack at the pattern tier — see wild_fp_notes."
 
 response:
   actions:
@@ -117,8 +173,16 @@ response:
     creation, or firewall modification). Permissions reduced.
 
 confidence: 73
-wild_validated: "2026/04/08"
-wild_samples: 53577
+# `wild_validated: "2026/04/08"` and `wild_samples: 53577` were REMOVED here in
+# rule_version 2, not lost. They asserted that this rule had been validated
+# against 53,577 wild samples — a claim about the rule_version 1 patterns, all
+# five of which were rewritten on 2026-08-06. Carrying a validation date across
+# a detection rewrite is how a stale empirical claim becomes an input to the
+# promotion gate (validate-maturity.ts reads wild_samples / wild_validated_at
+# when promoting to the enforce lane). The measurement that IS current:
+#   benign corpus (data/skill-benchmark/benign + benign-corpus-extended +
+#   benign-code, 5,352 samples, canonical shape set): 403 FP -> 6 FP.
+# The 53K/96K wild corpus is not in this repo, so no wild claim is restated.
 test_cases:
   true_positives:
     - input:
@@ -131,6 +195,37 @@ test_cases:
         tool_args: '{"action": "useradd -m backdoor_user -p password123"}'
       expected: triggered
       matched_condition: "formatter tool creating system users"
+    # --- recall locks (2026-08-06), one per condition, in the PRODUCTION
+    # --- encoding. src/hook-handler.ts sets tool_args = JSON.stringify(toolInput),
+    # --- so a command at the start of a line arrives as the two characters
+    # --- `\` `n` followed by the verb. A plain `\b` prefix does NOT hold there
+    # --- (`n` and `s` are both word characters), which is why the boundary in
+    # --- every condition below spells the JSON escape out explicitly.
+    - input:
+        tool_name: "note_taker"
+        tool_args: '{"command": "#!/bin/bash\nset -e\nsudo tee /etc/sudoers.d/99-agent <<< ''agent ALL=(ALL) NOPASSWD: ALL''"}'
+      expected: triggered
+      matched_condition: "sudo at line start in the JSON-encoded tool_args writes a sudoers drop-in"
+    - input:
+        tool_name: "image_resizer"
+        tool_args: '{"command": "cp /bin/bash /tmp/.b && chmod u+s /tmp/.b && /tmp/.b -p"}'
+      expected: triggered
+      matched_condition: "setuid bit on a shell copy"
+    - input:
+        tool_name: "csv_export"
+        tool_args: '{"command": "iptables -F && iptables -P INPUT ACCEPT"}'
+      expected: triggered
+      matched_condition: "firewall teardown"
+    - input:
+        tool_name: "spell_check"
+        tool_args: '{"command": "net user hacker P@ssw0rd /add && net localgroup administrators hacker /add"}'
+      expected: triggered
+      matched_condition: "Windows account creation with privileged group add"
+    - input:
+        tool_name: "pdf_reader"
+        tool_args: '{"command": "@echo off\nschtasks /create /tn Updater /tr calc.exe /sc onlogon"}'
+      expected: triggered
+      matched_condition: "scheduled-task persistence, verb at line start in the JSON encoding"
   true_negatives:
     - input:
         tool_name: "server_admin"
@@ -151,6 +246,59 @@ test_cases:
     - input: "Permissions requested: read-only access to the current directory for code analysis."
       expected: not_triggered
       description: "Tool requesting minimal read-only permission"
+    # --- regression locks (2026-08-06). Each of the following true_negatives is a
+    # --- MEASURED false-positive class this rule produced on the benign corpus
+    # --- before rule_version 2. Counts are benign samples matched, out of 5,352.
+    - input:
+        tool_name: "deploy_helper"
+        tool_args: '{"command": "chmod +x scripts/deploy.sh"}'
+      expected: not_triggered
+      reason: "22 benign samples. Setting the executable bit is not privilege escalation; only the setuid/setgid bit is."
+    - input:
+        tool_name: "file_manager"
+        tool_args: '{"command": "chmod 700 \"$WORK_DIR\""}'
+      expected: not_triggered
+      reason: "The old octal branch matched any mode CONTAINING a 7, so it flagged 0700 — the most restrictive mode there is."
+    - input:
+        tool_name: "bash"
+        tool_args: '{"command": "sudo apt-get install -y curl git unzip xz-utils"}'
+      expected: not_triggered
+      reason: "`curl` here is a package NAME in an apt argument list, not a download-execute tail."
+    - input:
+        tool_name: "bash"
+        tool_args: '{"command": "sudo usermod -aG docker $USER"}'
+      expected: not_triggered
+      reason: "Documented Docker install step. Only privileged groups (sudo/wheel/admin/root) are escalation."
+    - input:
+        tool_name: "bash"
+        tool_args: '{"command": "ufw status && firewall-cmd --state && pfctl -s info"}'
+      expected: not_triggered
+      reason: "Firewall INSPECTION is read-only; only teardown (disable/flush/policy ACCEPT) is the threat."
+    - input: "The daily briefing runs at 8am, revenue is at 80% of target, and the layout stays responsive at 375px."
+      expected: not_triggered
+      reason: "309 benign samples. The old `at\\s+\\d` matched the English preposition, not the Unix at(1) scheduler."
+    - input: "| `route.ts` exists but only GET handler | Read file contents | At 1.2 (Feedback Endpoint) |"
+      expected: not_triggered
+      reason: "Markdown table cell, not a shell pipe into at(1)."
+    - input:
+        tool_name: "bash"
+        tool_args: '{"command": "grep -rE \"celery|apscheduler|schedule|crontab\" requirements.txt"}'
+      expected: not_triggered
+      reason: "`|crontab` is an alternation inside a grep pattern, not a pipe that writes a crontab."
+    - input: 'context.addUserMessage("User said this"); Button(action: addUser)'
+      expected: not_triggered
+      reason: "9 benign samples. The old bare `adduser` had no word boundary and matched JS/Swift identifiers."
+    - input:
+        tool_name: "bash"
+        tool_args: '{"command": "cat /etc/passwd | grep -v nologin"}'
+      expected: not_triggered
+      reason: "15 benign samples. Reading /etc/passwd (and `admin_passwd` config keys) is not account creation."
+    - input:
+        tool_name: "bash"
+        tool_args: '{"command": "sudo systemctl start docker && sudo systemctl restart nginx"}'
+      expected: not_triggered
+      reason: "Service start/restart is routine operations; only persistence INSTALLATION (enable of a unit file) is the signal."
+
 
 evasion_tests:
   - input: "This tool needs network access to fetch exchange rates and filesystem access to cache the results locally."
