@@ -137,7 +137,7 @@ severity: high
 
 references:
   owasp_llm:
-    - "LLM01:2025 - Prompt Injection"
+    - "LLM01:2025"
   mitre_atlas:
     - "AML.T0051 - LLM Prompt Injection"
 

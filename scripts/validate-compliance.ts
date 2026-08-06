@@ -45,7 +45,7 @@ interface Allowlist {
 interface Violation {
   readonly rule: string;
   readonly framework: string;
-  readonly kind: "unknown-id" | "missing-id" | "missing-context" | "bad-strength" | "not-a-list";
+  readonly kind: "unknown-id" | "missing-id" | "missing-context" | "bad-strength" | "not-a-list" | "embedded-title";
   readonly detail: string;
 }
 
@@ -102,22 +102,20 @@ function validateItem(
  * a fabricated SAF-MCP identifier and a retired prefix lived there while the
  * compliance block beside them was gated.
  *
- * Values are conventionally written "ID - Title" (e.g. "LLM01:2025 - Prompt
- * Injection"), so the leading token is what gets checked.
+ * Entries for an allowlisted framework must be the BARE identifier. Embedding a
+ * title alongside it is rejected, because a duplicated title is one that can go
+ * stale independently, and 2,083 of them could: an entry read
+ * "LLM04:2025 - Model Denial of Service", which is the title that number
+ * carried in the 2023 list — 2025's LLM04 is "Data and Model Poisoning". 731
+ * owasp_agentic values named a different risk than their own identifier. Same
+ * version-mixing defect as PR.AC-04, at scale. The titles now live in the
+ * allowlist, verified against the published PDFs, in one place.
  *
- * The title half is NOT compared, and the reason is not that it would be
- * pedantic — it is that 821 values in the corpus would fail today. They pair a
- * 2025 identifier with the title that number carried in the 2023 list:
- * LLM04:2025 is labelled "Model Denial of Service" (2023's LLM04; 2025's is
- * "Data and Model Poisoning"), LLM09:2025 is labelled "Overreliance" (2025's is
- * "Misinformation"), and 731 owasp_agentic values are similarly stale. That is
- * the same version-mixing defect as PR.AC-04, and it wants its own change:
- * either drop the embedded titles so the allowlist stays the single source, or
- * rewrite all 821. Turning the check on here would force that decision as a
- * side effect of adding a lint, so it stays off and stays documented.
- *
- * Frameworks with no allowlist are skipped silently here — the compliance pass
- * already reports those by name.
+ * Frameworks with no allowlist are skipped entirely — both checks. mitre_atlas
+ * and mitre_attack still carry "ID - Title" values, and must, since no
+ * allowlist holds those titles yet; stripping them would delete the only label
+ * a reader gets. The compliance pass already reports unallowlisted frameworks
+ * by name.
  */
 function validateReferences(
   ruleId: string,
@@ -137,6 +135,15 @@ function validateReferences(
           framework: `references.${framework}`,
           kind: "unknown-id",
           detail: `'${id}' is not a valid ${allow.framework} identifier`,
+        });
+        continue;
+      }
+      if (item.trim() !== id) {
+        out.push({
+          rule: ruleId,
+          framework: `references.${framework}`,
+          kind: "embedded-title",
+          detail: `'${item.trim()}' embeds a title; use the bare id '${id}' — the title lives in the allowlist ('${allow.valids[id]}')`,
         });
       }
     }

@@ -8,7 +8,7 @@
  *   - docs/owasp-agentic-mapping.json (programmatic consumption)
  *
  * ASI tags are read from two locations (a rule may have either or both):
- *   1. references.owasp_agentic : ["ASI01:2026 - Agent Goal Hijack", ...]
+ *   1. references.owasp_agentic : ["ASI01:2026", ...]
  *   2. compliance.owasp_agentic : [{ id: "ASI01:2026", context, strength }, ...]
  *
  * Bucketing is done on the ASI[0-9]+ prefix only — different rules use legacy taxonomy
@@ -169,7 +169,7 @@ function listYaml(dir: string): readonly string[] {
 }
 
 function extractAsiKeys(raw: unknown): ReadonlySet<string> {
-  // Accepts strings like "ASI01:2026 - Agent Goal Hijack" or "ASI01 - Prompt Injection"
+  // Accepts strings like "ASI01:2026" or "ASI01 - Prompt Injection"
   // and objects like { id: "ASI01:2026", ... }.
   const collected = new Set<string>();
   const visit = (value: unknown): void => {
@@ -340,7 +340,7 @@ function main(): void {
   lines.push("");
   lines.push("Each YAML file under `rules/` is scanned for OWASP Agentic Top 10 tags in two locations:");
   lines.push("");
-  lines.push("1. `references.owasp_agentic` -- string list (e.g. `\"ASI01:2026 - Agent Goal Hijack\"`)");
+  lines.push("1. `references.owasp_agentic` -- string list of bare ids (e.g. `\"ASI01:2026\"`)");
   lines.push("2. `compliance.owasp_agentic[].id` -- structured form (e.g. `id: ASI01:2026`)");
   lines.push("");
   lines.push("Bucketing is done on the `ASI[0-9]{2}` prefix to absorb legacy taxonomy suffixes. A rule mapping to multiple ASI categories counts in each. Strength tiers: **STRONG** >= 8 · **MODERATE** 4-7 · **LIMITED** 1-3.");
