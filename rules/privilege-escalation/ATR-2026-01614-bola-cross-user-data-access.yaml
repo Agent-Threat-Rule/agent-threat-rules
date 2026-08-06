@@ -66,15 +66,27 @@ agent_source:
 detection:
   method: semantic
   conditions:
-    # Pattern fallback: superlative queries that select across all users
+    # Pattern fallback: superlative queries that select across all users.
+    # The optional (me|us) admits "show me the user with the most ..." — an
+    # indirect object between verb and noun, which the rule's own declared
+    # true_positives use and this layer previously could not reach.
     - field: user_input
       operator: regex
-      value: "(?i)(?:retrieve|get|show|fetch|find)\\s+(?:the\\s+)?(?:account|user|record|transaction|order)\\s+(?:with\\s+(?:the\\s+)?)?(?:highest|largest|most|maximum|max)\\b"
+      value: "(?i)(?:retrieve|get|show|fetch|find)\\s+(?:(?:me|us)\\s+)?(?:the\\s+)?(?:account|user|record|transaction|order)\\s+(?:with\\s+(?:the\\s+)?)?(?:highest|largest|most|maximum|max)\\b"
       description: "Superlative-based cross-user record selection"
     - field: user_input
       operator: regex
       value: "(?i)(?:transactions?|amounts?)\\s*(?:>|greater\\s+than|above)\\s*0\\s+OR\\s+account"
       description: "Tautology-phrased BOLA in natural language"
+    # Explicit cross-user access, stated outright. Carries no superlative and no
+    # tautology, so neither layer above can see it: the tell is a numbered record
+    # followed by the requester conceding it is not theirs ("account ID 7 even
+    # though I'm account 3"). The concession is what makes it unambiguous — a
+    # bare id reference is ordinary and is not matched.
+    - field: user_input
+      operator: regex
+      value: "(?i)\\b(?:account|user|record|customer)\\s*(?:id|number|no\\.?|#)?\\s*[:#]?\\s*\\d{1,10}\\b[\\s\\S]{0,60}\\b(?:even\\s+though|although|but)\\s+(?:i'?m|i\\s+am|my|mine)\\b"
+      description: "Numbered record requested with an explicit admission that it belongs to someone else"
   condition: any
   semantic:
     judge_model_class: gpt-4-class
