@@ -41,47 +41,47 @@ const CATEGORY_DEFAULTS: Record<
 > = {
   "prompt-injection": {
     mitre_atlas: ["AML.T0051 - LLM Prompt Injection"],
-    owasp_llm: ["LLM01:2025 - Prompt Injection"],
-    owasp_agentic: ["ASI01:2026 - Agent Goal Hijack"],
+    owasp_llm: ["LLM01:2025"],
+    owasp_agentic: ["ASI01:2026"],
   },
   "tool-poisoning": {
     mitre_atlas: ["AML.T0053 - LLM Plugin Compromise"],
-    owasp_llm: ["LLM06:2025 - Excessive Agency"],
-    owasp_agentic: ["ASI03:2026 - Tool Poisoning"],
+    owasp_llm: ["LLM06:2025"],
+    owasp_agentic: ["ASI03:2026"],
   },
   "context-exfiltration": {
     mitre_atlas: ["AML.T0057 - LLM Data Leakage"],
-    owasp_llm: ["LLM07:2025 - System Prompt Leakage"],
-    owasp_agentic: ["ASI05:2026 - Context Exfiltration"],
+    owasp_llm: ["LLM07:2025"],
+    owasp_agentic: ["ASI05:2026"],
   },
   "agent-manipulation": {
     mitre_atlas: ["AML.T0051 - LLM Prompt Injection"],
-    owasp_agentic: ["ASI07:2026 - Insecure Inter-Agent Communication"],
+    owasp_agentic: ["ASI07:2026"],
   },
   "privilege-escalation": {
     mitre_atlas: ["AML.T0054 - LLM Jailbreak"],
-    owasp_llm: ["LLM06:2025 - Excessive Agency"],
-    owasp_agentic: ["ASI06:2026 - Privilege Compromise"],
+    owasp_llm: ["LLM06:2025"],
+    owasp_agentic: ["ASI06:2026"],
   },
   "skill-compromise": {
     mitre_atlas: ["AML.T0010 - ML Supply Chain Compromise"],
-    owasp_llm: ["LLM05:2025 - Supply Chain"],
-    owasp_agentic: ["ASI03:2026 - Tool Poisoning"],
+    owasp_llm: ["LLM05:2025"],
+    owasp_agentic: ["ASI03:2026"],
   },
   "excessive-autonomy": {
     mitre_atlas: ["AML.T0048 - External Harms"],
-    owasp_llm: ["LLM06:2025 - Excessive Agency"],
-    owasp_agentic: ["ASI04:2026 - Agent Authorization and Control Hijacking"],
+    owasp_llm: ["LLM06:2025"],
+    owasp_agentic: ["ASI04:2026"],
   },
   "data-poisoning": {
     mitre_atlas: ["AML.T0020 - Poison Training Data"],
-    owasp_llm: ["LLM04:2025 - Data and Model Poisoning"],
-    owasp_agentic: ["ASI08:2026 - Repudiation and Untraceability"],
+    owasp_llm: ["LLM04:2025"],
+    owasp_agentic: ["ASI08:2026"],
   },
   "model-security": {
     mitre_atlas: ["AML.T0040 - ML Model Inference API Access"],
-    owasp_llm: ["LLM02:2025 - Sensitive Information Disclosure"],
-    owasp_agentic: ["ASI09:2026 - Identity Spoofing and Impersonation"],
+    owasp_llm: ["LLM02:2025"],
+    owasp_agentic: ["ASI09:2026"],
   },
 };
 

@@ -158,7 +158,7 @@ describe("buildSemanticRule", () => {
     severity: "high" as const,
     truePositives: TPS,
     trueNegatives: TNS,
-    owaspRefs: ["LLM01:2025 - Prompt Injection"],
+    owaspRefs: ["LLM01:2025"],
     mitreRefs: ["AML.T0051 - LLM Prompt Injection"],
   };
 

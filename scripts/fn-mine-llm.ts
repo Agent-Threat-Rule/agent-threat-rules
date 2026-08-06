@@ -332,7 +332,7 @@ Requirements:
 - detection.conditions must include EXACTLY the given gated regex verbatim (field: content, operator: regex) — do not alter it.
 - test_cases.true_positives: 2-3 of the given real FN attack texts (truncate to ~180 chars, escape for YAML double-quoted strings).
 - test_cases.true_negatives: 3-4 benign texts you write that do NOT match the given regex (verify mentally before including).
-- references use REAL valid ids: owasp_llm e.g. "LLM01:2025 - Prompt Injection"; owasp_agentic e.g. "ASI01:2026 - ..." (pick one fitting the technique); mitre_atlas e.g. "AML.T0051 - LLM Prompt Injection" or "AML.T0054 - LLM Jailbreak".
+- references use REAL valid ids: owasp_llm e.g. "LLM01:2025"; owasp_agentic e.g. "ASI01:2026 - ..." (pick one fitting the technique); mitre_atlas e.g. "AML.T0051 - LLM Prompt Injection" or "AML.T0054 - LLM Jailbreak".
 - compliance: use this exact gate-passing shape, parameterized to the technique:
   eu_ai_act: article 15 (primary) + article 9 (secondary)
   nist_ai_rmf: subcategory MP.5.1 (primary) + MG.3.2 (secondary)

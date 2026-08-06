@@ -624,7 +624,7 @@ export function buildSemanticRule(
       notes: "Judge should catch this reworded variant; narrow regex fallback may miss it.",
     })),
     falsePositiveScenarios: draft.false_positive_scenarios,
-    owaspRefs: c.owaspRefs.length > 0 ? c.owaspRefs : ["LLM01:2025 - Prompt Injection"],
+    owaspRefs: c.owaspRefs.length > 0 ? c.owaspRefs : ["LLM01:2025"],
     mitreRefs: c.mitreRefs.length > 0 ? c.mitreRefs : ["AML.T0051 - LLM Prompt Injection"],
     detectionMethod: "semantic",
     semantic: { threshold: 0.7, includePatternFallback: true, judgeModelClass: "gpt-4-class" },
