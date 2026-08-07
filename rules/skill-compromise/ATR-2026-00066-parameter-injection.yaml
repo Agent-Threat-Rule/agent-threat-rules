@@ -99,15 +99,19 @@ detection:
 
 response:
   actions:
-    - block_tool
     - alert
     - snapshot
-    - quarantine_session
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 1035/5352 =
+    19.34% exceeds the 2% automatic-demotion line; ceiling = observe. Removed
+    block_tool(interrupt), quarantine_session(terminate). Detection unchanged — recall cost is
+    zero.
   auto_response_threshold: critical
   message_template: >
     [ATR-2026-066] CRITICAL: Parameter injection detected in tool arguments.
     Input contains shell metacharacters, SQL injection, path traversal, or
-    template injection syntax targeting the tool backend. Request blocked.
+    template injection syntax targeting the tool backend. Advisory only — the
+    request was NOT blocked and the session was NOT quarantined.
 
 confidence: 61
 wild_validated: "2026/04/08"

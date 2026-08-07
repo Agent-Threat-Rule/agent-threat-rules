@@ -165,15 +165,18 @@ detection:
 
 response:
   actions:
-    - block_output
     - escalate
     - alert
     - snapshot
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 212/5352 =
+    3.96% exceeds the 2% automatic-demotion line; ceiling = observe. Removed
+    block_output(interrupt). Detection unchanged — recall cost is zero.
   auto_response_threshold: critical
   message_template: |
     [ATR-2026-021] CRITICAL: Credential or secret detected in agent output.
-    Output blocked and content redacted. Rotate any potentially exposed
-    credentials immediately. Pattern: {matched_pattern}. Session: {session_id}.
+    Advisory only — the output was NOT blocked or redacted; escalated for
+    review. Rotate any potentially exposed credentials immediately. Pattern: {matched_pattern}. Session: {session_id}.
 
 confidence: 87
 wild_validated: "2026/04/08"

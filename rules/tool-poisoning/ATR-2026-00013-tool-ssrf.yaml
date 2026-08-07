@@ -149,11 +149,14 @@ response:
     - block_tool
     - alert
     - snapshot
-    - kill_agent
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 39/5352 = 0.73%
+    exceeds the 0.5% production ceiling; ceiling = interrupt. Removed kill_agent(terminate).
+    Detection unchanged — recall cost is zero.
   auto_response_threshold: critical
   message_template: >
     [ATR-2026-013] CRITICAL: SSRF attempt detected via agent tool call. Rule: ATR-2026-013. Tool: {tool_name}. Pattern:
-    {matched_pattern}. The tool call has been blocked and the agent terminated.
+    {matched_pattern}. The tool call has been blocked; the agent was NOT killed.
 confidence: 90
 wild_validated: 2026/04/08
 wild_samples: 53577

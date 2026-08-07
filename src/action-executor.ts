@@ -30,8 +30,18 @@ const ACTION_PRIORITY: Readonly<Record<ATRAction, number>> = {
   shadow: 10,
 };
 
-/** Map action names to PlatformAdapter method names */
-const ACTION_METHOD_MAP: Readonly<Record<ATRAction, keyof PlatformAdapter>> = {
+/**
+ * Map action names to PlatformAdapter method names.
+ *
+ * Exported because it is the authoritative list of actions this engine can
+ * actually dispatch. Rule files also carry SPEC Appendix A vocabulary
+ * (`revoke_credential`, `quarantine_artifact`, ...) that has no entry here and
+ * therefore never reaches an adapter — see executeOne's "Unknown action" branch.
+ * src/quality/action-eligibility.ts ranks exactly these keys by blast radius, and
+ * tests/action-eligibility.test.ts pins the two sets equal, so implementing a new
+ * adapter method forces an explicit decision about how destructive it is.
+ */
+export const ACTION_METHOD_MAP: Readonly<Record<ATRAction, keyof PlatformAdapter>> = {
   block_input: "blockInput",
   block_output: "blockOutput",
   block_tool: "blockTool",

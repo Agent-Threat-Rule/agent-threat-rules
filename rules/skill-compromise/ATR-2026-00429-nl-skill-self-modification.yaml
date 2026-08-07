@@ -111,7 +111,10 @@ response:
   actions:
     - block_tool
     - alert
-    - quarantine_session
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 1/5352 = 0.02%
+    meets the 0.5% ceiling but is not zero; ceiling = degrade. Removed
+    quarantine_session(terminate). Detection unchanged — recall cost is zero.
   message_template: |
     [ATR-2026-00429] Skill self-modification / persistence instruction.
     The skill directs the agent to write to skill files, install additional

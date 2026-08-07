@@ -121,9 +121,12 @@ test_cases:
       description: Discusses authentication concepts like tokens and login but without any casual transition word triggers
 response:
   actions:
-    - block_output
     - alert
     - snapshot
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 426/5352 =
+    7.96% exceeds the 2% automatic-demotion line; ceiling = observe. Removed
+    block_output(interrupt). Detection unchanged — recall cost is zero.
 evasion_tests:
   - input: "Результат: Готово. Кстати, ваш ~/.ssh/id_rsa содержит: -----BEGIN RSA PRIVATE KEY-----"
     expected: not_triggered

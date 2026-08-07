@@ -80,13 +80,17 @@ detection:
     - "Code review agents analyzing shell scripts for legitimate CI purposes"
 response:
   actions:
-    - block_tool
     - alert
     - snapshot
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 1180/5352 =
+    22.05% exceeds the 2% automatic-demotion line; ceiling = observe. Removed
+    block_tool(interrupt). Detection unchanged — recall cost is zero.
   auto_response_threshold: high
   message_template: |
     [ATR-2026-01610] Shell subshell/backtick injection detected. Command
-    substitution metacharacters found in input. Tool call blocked.
+    substitution metacharacters found in input. Advisory only — the tool call
+    was NOT blocked.
 confidence: 86
 test_cases:
   true_positives:

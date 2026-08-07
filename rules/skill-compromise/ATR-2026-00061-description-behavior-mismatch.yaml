@@ -143,10 +143,13 @@ detection:
 
 response:
   actions:
-    - block_tool
     - alert
     - snapshot
     - escalate
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 2814/5352 =
+    52.58% exceeds the 2% automatic-demotion line; ceiling = observe. Removed
+    block_tool(interrupt). Detection unchanged — recall cost is zero.
   auto_response_threshold: high
   message_template: >
     [ATR-2026-061] Skill behavior does not match declared description. Tool arguments

@@ -173,17 +173,20 @@ detection:
 
 response:
   actions:
-    - block_output
     - alert
     - snapshot
-    - reset_context
     - escalate
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 739/5352 =
+    13.81% exceeds the 2% automatic-demotion line; ceiling = observe. Removed
+    block_output(interrupt), reset_context(degrade). Detection unchanged — recall cost is zero.
   auto_response_threshold: high
   message_template: |
     [ATR-2026-020] HIGH: System prompt or internal instruction leakage
     detected in agent output. The agent may have disclosed system prompt
-    content, guardrail rules, or confidential configuration. Output blocked
-    and context reset. Pattern: {matched_pattern}. Session: {session_id}.
+    content, guardrail rules, or confidential configuration. Advisory only —
+    the output was NOT blocked and the context was NOT reset; escalated for
+    review. Pattern: {matched_pattern}. Session: {session_id}.
 
 confidence: 87
 wild_validated: "2026/04/08"

@@ -26,6 +26,10 @@
  * Output flags (compose with either mode):
  *   --emit-clean <path>   write the FP-clean ids, one per line
  *   --emit-dirty <path>   write the FP-producing ids, one per line (worst first)
+ *   --emit-measurement <path>  write the per-rule FP record (count + denominator
+ *                              + maturity + detection fingerprint) as JSON. This
+ *                              is what the response-action eligibility gate reads;
+ *                              an id list cannot express a RATE.
  *   --filter-mode         report FP-dirty rules but still exit 0
  *
  * Exit codes:
@@ -91,6 +95,7 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { ATREngine } from "../src/engine.js";
 import { classifySecurityContent } from "../src/corpus/security-content.js";
+import { detectionFingerprint } from "../src/quality/action-eligibility.js";
 import {
   corpusShapes,
   shapeNames,
@@ -117,6 +122,8 @@ export interface GateOptions {
   readonly base: string;
   readonly emitClean: string | null;
   readonly emitDirty: string | null;
+  /** Optional: callers that predate this flag omit it entirely. */
+  readonly emitMeasurement?: string | null;
   readonly filterMode: boolean;
 }
 
@@ -188,6 +195,7 @@ export function parseCliOptions(argv: readonly string[]): GateOptions {
     base: legacyValue(argv, "--base") ?? "origin/main",
     emitClean,
     emitDirty,
+    emitMeasurement: pathValue(argv, "--emit-measurement"),
     filterMode,
   };
 }
@@ -352,6 +360,63 @@ function emitLists(options: GateOptions, partition: FpPartition): void {
 }
 
 /**
+ * Serialise the run as a per-rule measurement record.
+ *
+ * WHY THIS EXISTS SEPARATELY FROM --emit-clean / --emit-dirty
+ *
+ * Those two emit id lists. An id list answers "did it FP", which is enough to
+ * decide a promotion, and not enough to decide anything proportionate: 1 FP in
+ * 5,352 and 2,814 FP in 5,352 are both "dirty". The response-action eligibility
+ * policy (docs/RESPONSE-ACTION-ELIGIBILITY.md) grades a rule's permitted blast
+ * radius by RATE, so it needs the count and the denominator together, plus the
+ * two facts that invalidate a count: a partial measurement, and a detection that
+ * has changed since the scan.
+ *
+ * Rules absent from this file are UNMEASURED, and every consumer must treat that
+ * as a refusal rather than a pass — the whole point of the record.
+ */
+function writeMeasurement(path: string, scan: ScanResult, repoRoot: string): void {
+  const partial = new Set(scan.coverage.map((c) => c.ruleId));
+  const skillGap = new Set(scan.skillCoverage.map((c) => c.ruleId));
+  const rules: Record<string, unknown> = {};
+  for (const id of [...scan.counts.keys()].sort((a, b) => a.localeCompare(b))) {
+    const meta = scan.scanned.get(id);
+    rules[id] = {
+      fp_count: scan.counts.get(id) ?? 0,
+      maturity: meta?.maturity ?? null,
+      detection_fingerprint: meta?.fingerprint ?? null,
+      partial_measurement: partial.has(id),
+      skill_path_unmeasured: skillGap.has(id),
+    };
+  }
+  let commit = "unknown";
+  try {
+    commit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: repoRoot, encoding: "utf-8" }).trim();
+  } catch {
+    /* a measurement outside a git checkout is still a measurement */
+  }
+  const doc = {
+    _comment:
+      "Benign-corpus false-positive measurement. Produced by " +
+      "scripts/gate-promotion-fp.ts --emit-measurement. A rule absent from `rules`, " +
+      "or whose detection_fingerprint no longer matches the rule on disk, is " +
+      "UNMEASURED and is capped at the observe tier by " +
+      "scripts/gate-action-eligibility.ts. Do not hand-edit.",
+    generated_at: new Date().toISOString().slice(0, 10),
+    commit,
+    corpora: ["data/skill-benchmark/benign", "data/benign-corpus-extended", "data/benign-code"],
+    shapes: [...shapeNames(), "skill"],
+    sample_count: scan.sampleCount,
+    rules,
+  };
+  mkdirSync(dirname(resolve(path)), { recursive: true });
+  writeFileSync(resolve(path), `${JSON.stringify(doc, null, 2)}\n`, "utf-8");
+  console.log(
+    `[fp-gate] wrote measurement for ${Object.keys(rules).length} rule(s) -> ${path}`,
+  );
+}
+
+/**
  * Every rule id a benign sample matches, across the whole canonical shape set.
  *
  * Counted PER SAMPLE, not per shape: a document that trips a rule on two shapes
@@ -484,6 +549,8 @@ interface ScanResult {
   readonly coverage: readonly FieldCoverage[];
   /** Target rules the `skill` half of matchedRuleIds cannot ever match. */
   readonly skillCoverage: readonly SkillPathGap[];
+  /** Maturity + detection fingerprint of every rule actually scanned. */
+  readonly scanned: ReadonlyMap<string, { maturity: string | null; fingerprint: string }>;
 }
 
 async function scanFpCounts(
@@ -494,6 +561,14 @@ async function scanFpCounts(
     rulesDir: scopedRulesDir(deps.repoRoot, targets.files),
   });
   await engine.loadRules();
+  const scanned = new Map<string, { maturity: string | null; fingerprint: string }>();
+  for (const r of engine.getRules()) {
+    if (!targets.ids.has(r.id)) continue;
+    scanned.set(r.id, {
+      maturity: (r as { maturity?: string }).maturity ?? null,
+      fingerprint: detectionFingerprint(r),
+    });
+  }
 
   const samples: string[] = [];
   for (const c of deps.corpora) samples.push(...loadCorpusTexts(c));
@@ -532,6 +607,7 @@ async function scanFpCounts(
     securitySampleCount,
     coverage,
     skillCoverage,
+    scanned,
   };
 }
 
@@ -735,6 +811,7 @@ export async function runGate(
   console.log(
     `[fp-gate] gating ${targets.files.length} promoted rule(s) against the benign corpus`,
   );
+  const scan = await scanFpCounts(targets, deps);
   const {
     counts,
     sampleCount,
@@ -742,7 +819,7 @@ export async function runGate(
     securitySampleCount,
     coverage,
     skillCoverage,
-  } = await scanFpCounts(targets, deps);
+  } = scan;
   const partition = partitionByFp(counts);
   report(
     partition,
@@ -754,6 +831,13 @@ export async function runGate(
     securitySampleCount,
   );
   emitLists(options, partition);
+  // `?? null` and not `!== null`: GateOptions is constructed by hand in tests and
+  // by other scripts that predate this flag, so the field arrives undefined there.
+  // A missing flag must mean "do not write", never "write to undefined".
+  const measurementPath = options.emitMeasurement ?? null;
+  if (measurementPath !== null) {
+    writeMeasurement(measurementPath, scan, deps.repoRoot);
+  }
   return resolveExitCode(partition.dirty.length, options.filterMode);
 }
 

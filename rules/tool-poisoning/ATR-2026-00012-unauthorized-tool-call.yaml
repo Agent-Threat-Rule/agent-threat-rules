@@ -137,14 +137,17 @@ detection:
     - SQL query tools receiving legitimate query parameters
 response:
   actions:
-    - block_tool
     - alert
     - snapshot
     - escalate
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 1672/5352 =
+    31.24% (partial measurement — a lower bound) exceeds the 2% automatic-demotion line; ceiling
+    = observe. Removed block_tool(interrupt). Detection unchanged — recall cost is zero.
   auto_response_threshold: high
   message_template: >
     [ATR-2026-012] Unauthorized tool call detected. Rule: ATR-2026-012. Tool: {tool_name}. Pattern: {matched_pattern}.
-    The tool call has been blocked.
+    Advisory only — the tool call was NOT blocked.
 confidence: 81
 wild_validated: 2026/04/08
 wild_samples: 53577

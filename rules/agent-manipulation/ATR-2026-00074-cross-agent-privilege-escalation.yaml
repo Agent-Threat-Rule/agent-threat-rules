@@ -117,13 +117,16 @@ response:
     - block_input
     - alert
     - snapshot
-    - kill_agent
     - escalate
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 6/5352 = 0.11%
+    meets the 0.5% ceiling but is not zero; ceiling = degrade. Removed kill_agent(terminate).
+    Detection unchanged — recall cost is zero.
   auto_response_threshold: critical
   message_template: >
     [ATR-2026-074] CRITICAL: Cross-agent privilege escalation detected. An agent is attempting to escalate privileges
     through inter-agent communication by forwarding credentials, assuming higher-privilege roles, or bypassing
-    orchestrator controls. Agent terminated and session flagged for review.
+    orchestrator controls. The message was blocked and the session escalated for review.
 confidence: 69
 wild_validated: 2026/04/08
 wild_samples: 53577

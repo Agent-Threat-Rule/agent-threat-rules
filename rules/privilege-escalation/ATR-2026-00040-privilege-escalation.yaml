@@ -119,18 +119,21 @@ detection:
     - Development or testing environment with intentionally broad tool access
 response:
   actions:
-    - block_tool
     - escalate
     - alert
-    - quarantine_session
     - snapshot
-    - reduce_permissions
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 254/5352 =
+    4.75% exceeds the 2% automatic-demotion line; ceiling = observe. Removed
+    block_tool(interrupt), quarantine_session(terminate), reduce_permissions(degrade). Detection
+    unchanged — recall cost is zero.
   auto_response_threshold: critical
   message_template: |
     [ATR-2026-040] CRITICAL: Privilege escalation or unauthorized admin
     function access detected. Agent {agent_id} attempted to use tool
-    "{tool_name}" which exceeds its authorized scope. Tool call blocked,
-    agent quarantined. Session: {session_id}.
+    "{tool_name}" which exceeds its authorized scope. Advisory only — the tool
+    call was NOT blocked and the session was NOT quarantined; escalated for
+    review. Session: {session_id}.
 confidence: 85
 wild_validated: 2026/04/08
 wild_samples: 53577

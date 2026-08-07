@@ -133,10 +133,13 @@ response:
   actions:
     - block_tool
     - alert
-    - quarantine_session
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 6/5352 = 0.11%
+    meets the 0.5% ceiling but is not zero; ceiling = degrade. Removed
+    quarantine_session(terminate). Detection unchanged — recall cost is zero.
   message_template: >
     [ATR-2026-121] Malicious code detected in skill. Pattern matches known attack campaigns (ClawHavoc, AMOS
-    infostealer). Skill has been quarantined.
+    infostealer). The tool call has been blocked; the session was NOT quarantined.
 confidence: 90
 wild_validated: 2026/04/08
 wild_samples: 53577

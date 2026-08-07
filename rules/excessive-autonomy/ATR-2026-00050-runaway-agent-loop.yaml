@@ -158,12 +158,16 @@ response:
     - reduce_permissions
     - escalate
     - alert
-    - kill_agent
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 11/5352 = 0.21%
+    meets the 0.5% ceiling but is not zero; ceiling = degrade. Removed kill_agent(terminate).
+    Detection unchanged — recall cost is zero.
   auto_response_threshold: high
   message_template: |
     [ATR-2026-050] HIGH: Runaway agent loop detected. Agent {agent_id}
     shows repeated action patterns or retry loops. Pattern: {matched_pattern}.
-    Agent paused and rate limited. Session: {session_id}. Review agent
+    Agent permissions reduced and escalated for review; the agent was NOT
+    killed. Session: {session_id}. Review agent
     logic and termination conditions.
 confidence: 69
 wild_validated: 2026/04/08
