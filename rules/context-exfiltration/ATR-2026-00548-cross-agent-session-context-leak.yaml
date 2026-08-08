@@ -140,7 +140,11 @@ detection:
 response:
   actions:
     - alert
-    - quarantine_session
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): 0 FP but the measurement
+    is incomplete — the harness reported conditions it could not exercise, so the silence is an
+    unasked question; ceiling = observe. Removed quarantine_session(terminate). Detection
+    unchanged — recall cost is zero.
   message_template: >
     [ATR-2026-00548] HIGH: Cross-agent session context leak detected. The
     delegation chain starting at span {{trace.root_span_id}} exhibits drift

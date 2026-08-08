@@ -120,7 +120,10 @@ response:
   actions:
     - block_tool
     - alert
-    - quarantine_session
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 10/5352 = 0.19%
+    meets the 0.5% ceiling but is not zero; ceiling = degrade. Removed
+    quarantine_session(terminate). Detection unchanged — recall cost is zero.
   message_template: >
     [ATR-2026-120] SKILL.md prompt injection detected. This skill contains instruction override, safety disablement, or
     system impersonation patterns commonly used in convergence attacks (91% of malicious skills per Snyk).

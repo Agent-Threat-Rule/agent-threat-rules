@@ -141,10 +141,13 @@ detection:
     - Database migration tool copying entire tables during a sanctioned schema upgrade window
 response:
   actions:
-    - reduce_permissions
     - escalate
     - alert
     - snapshot
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 64/5352 = 1.20%
+    exceeds the 0.5% production ceiling; ceiling = interrupt. Removed
+    reduce_permissions(degrade). Detection unchanged — recall cost is zero.
   auto_response_threshold: high
   message_template: |
     [ATR-2026-051] HIGH: Resource exhaustion pattern detected for agent

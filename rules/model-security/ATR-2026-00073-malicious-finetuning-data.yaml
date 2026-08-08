@@ -107,16 +107,20 @@ detection:
     - Security audit reports documenting discovered training data anomalies using technical vocabulary
 response:
   actions:
-    - block_input
     - alert
     - snapshot
-    - quarantine_session
     - escalate
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 161/5352 =
+    3.01% exceeds the 2% automatic-demotion line; ceiling = observe. Removed
+    block_input(interrupt), quarantine_session(terminate). Detection unchanged — recall cost is
+    zero.
   auto_response_threshold: critical
   message_template: >
     [ATR-2026-073] CRITICAL: Malicious fine-tuning data detected. Submitted training data contains patterns consistent
-    with backdoor installation, trigger-response conditioning, or safety bypass training. Upload blocked and quarantined
-    for forensic analysis.
+    with backdoor installation, trigger-response conditioning, or safety bypass training. This rule no longer blocks the
+    upload or quarantines the session; snapshot captured and escalated for forensic analysis. The hook may still deny on
+    severity — see docs/RESPONSE-ACTION-ELIGIBILITY.md.
 confidence: 65
 wild_validated: 2026/04/08
 wild_samples: 53577

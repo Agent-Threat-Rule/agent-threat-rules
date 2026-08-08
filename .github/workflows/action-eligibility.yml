@@ -1,0 +1,90 @@
+name: Response Action Eligibility
+
+# Two jobs, because the two things being checked have very different costs.
+#
+# `gate` is cheap — it reads rule files and one JSON — so it runs on every PR.
+# It catches a rule declaring an action its recorded evidence does not earn.
+#
+# `reverify` is expensive (~45 min: every rule against 5,352 benign samples on
+# five event shapes) so it runs on a schedule. It exists because the gate reads
+# a measurement file that is committed to the repo, and a committed number is a
+# claim until something recomputes it. Editing one integer there was enough, in
+# review, to hand a rule that false-positives on 52.58% of the corpus a
+# kill_agent — with the corpus digest still matching, because editing a count
+# does not touch the corpus. The digest closes corpus drift. Only regeneration
+# closes number drift.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    # 04:20 UTC daily, offset from the other heavy jobs.
+    - cron: '20 4 * * *'
+  workflow_dispatch:
+
+jobs:
+  gate:
+    name: Response actions must be earned
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - run: npm ci
+      - name: Gate
+        run: npx tsx scripts/gate-action-eligibility.ts
+
+  reverify:
+    name: Re-measure and diff the evidence
+    # Not on PRs: 45 minutes per PR buys nothing a scheduled run does not,
+    # and a contributor cannot forge the measurement without the diff showing.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - run: npm ci
+
+      - name: Regenerate the measurement from the corpus
+        run: |
+          npx tsx scripts/gate-promotion-fp.ts \
+            --ids <(grep -rhoE '^id: "?ATR-[0-9-]+' rules/ | sed 's/^id: //; s/"//g') \
+            --filter-mode \
+            --emit-measurement /tmp/fresh-measurement.json \
+            --emit-dirty /tmp/dirty.txt || true
+
+      - name: Diff against the committed evidence
+        run: |
+          # Compare only the per-rule records. generated_at and commit differ by
+          # construction; a diff there is not evidence of tampering.
+          node -e '
+            const fs = require("node:fs");
+            const pick = p => {
+              const d = JSON.parse(fs.readFileSync(p, "utf-8"));
+              return Object.fromEntries(
+                Object.entries(d.rules ?? {}).map(([k, v]) => [k, v.fp_count ?? null]),
+              );
+            };
+            const committed = pick("data/benign-fp-measurement.json");
+            const fresh = pick("/tmp/fresh-measurement.json");
+            const ids = [...new Set([...Object.keys(committed), ...Object.keys(fresh)])].sort();
+            const drift = ids.filter(id => committed[id] !== fresh[id]);
+            if (drift.length === 0) {
+              console.log(`evidence matches: ${ids.length} rule(s)`);
+              process.exit(0);
+            }
+            console.error(`FAIL — ${drift.length} rule(s) whose committed false-positive count`);
+            console.error("does not reproduce. Either the corpus moved and the file was not");
+            console.error("re-emitted, or the numbers were edited by hand.\n");
+            for (const id of drift.slice(0, 40)) {
+              console.error(`  ${id}  committed=${committed[id]}  measured=${fresh[id]}`);
+            }
+            if (drift.length > 40) console.error(`  ... and ${drift.length - 40} more`);
+            process.exit(1);
+          '

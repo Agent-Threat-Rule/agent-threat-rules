@@ -93,7 +93,10 @@ response:
   actions:
     - block_tool
     - alert
-    - quarantine_session
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): 0/5352 benign FP, but
+    maturity is "test" — only stable is rated for irreversible actions; ceiling = degrade.
+    Removed quarantine_session(terminate). Detection unchanged — recall cost is zero.
   message_template: |
     [ATR-2026-00423] Natural-language sensitive-file disclosure instruction.
     The skill directs the agent to read or include contents of a well-known

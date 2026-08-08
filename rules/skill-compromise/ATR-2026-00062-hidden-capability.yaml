@@ -93,16 +93,20 @@ detection:
 
 response:
   actions:
-    - block_tool
-    - quarantine_session
     - alert
     - snapshot
-    - kill_agent
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 209/5352 =
+    3.91% exceeds the 2% automatic-demotion line; ceiling = observe. Removed
+    block_tool(interrupt), quarantine_session(terminate), kill_agent(terminate). Detection
+    unchanged — recall cost is zero.
   auto_response_threshold: critical
   message_template: >
     [ATR-2026-062] CRITICAL: Hidden capability detected in MCP skill. Tool arguments
     or response indicate undocumented functionality that may be a backdoor.
-    Session quarantined. Investigate skill source immediately.
+    This rule no longer blocks the tool or quarantines the session; it alerts
+    and snapshots. The hook may still deny on severity — see
+    docs/RESPONSE-ACTION-ELIGIBILITY.md. Investigate the skill source.
 
 confidence: 53
 wild_validated: "2026/04/08"

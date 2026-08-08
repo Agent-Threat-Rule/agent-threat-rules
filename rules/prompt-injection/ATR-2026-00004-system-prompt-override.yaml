@@ -225,11 +225,14 @@ response:
     - block_input
     - alert
     - snapshot
-    - kill_agent
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 21/5352 = 0.39%
+    meets the 0.5% ceiling but is not zero; ceiling = degrade. Removed kill_agent(terminate).
+    Detection unchanged — recall cost is zero.
   auto_response_threshold: critical
   message_template: >
     [ATR-2026-004] CRITICAL: System prompt override attempt detected. An input attempted to replace or redefine
-    system-level instructions. This request has been blocked and escalated for immediate security review.
+    system-level instructions. The input has been blocked and a snapshot captured for security review.
 confidence: 81
 wild_validated: 2026/04/08
 wild_samples: 53577

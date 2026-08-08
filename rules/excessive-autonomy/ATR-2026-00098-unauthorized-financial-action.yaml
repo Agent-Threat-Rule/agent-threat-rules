@@ -124,15 +124,19 @@ detection:
 response:
   actions:
     - block_tool
-    - kill_agent
     - alert
     - snapshot
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 18/5352 = 0.34%
+    (partial measurement — a lower bound) meets the 0.5% ceiling but is not zero; ceiling =
+    degrade. Removed kill_agent(terminate). Detection unchanged — recall cost is zero.
   auto_response_threshold: critical
   message_template: |
     [ATR-2026-098] CRITICAL: AI agent attempting unauthorized financial action.
     Tool: {tool_name}. Agent {agent_id} tried to execute a payment/transfer
     without human confirmation. ALL financial actions require explicit human
-    approval. Agent terminated and session snapshot saved.
+    approval. Tool call blocked and session snapshot saved; the agent was NOT
+    killed.
     Session: {session_id}.
 confidence: 81
 wild_validated: 2026/04/08

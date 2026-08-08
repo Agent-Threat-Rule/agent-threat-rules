@@ -139,9 +139,12 @@ test_cases:
         match any pattern
 response:
   actions:
-    - block_output
     - alert
     - snapshot
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 108/5352 =
+    2.02% exceeds the 2% automatic-demotion line; ceiling = observe. Removed
+    block_output(interrupt). Detection unchanged — recall cost is zero.
   auto_response_threshold: high
   message_template: "Suspicious tool response detected: possible data piggybacking. Rule: {rule_id}, Pattern: {matched_pattern}"
 evasion_tests:

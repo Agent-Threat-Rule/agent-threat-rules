@@ -163,9 +163,13 @@ detection:
 
 response:
   actions:
-    - block_tool
     - alert
     - snapshot
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): 0 FP but the measurement
+    is incomplete — the harness reported conditions it could not exercise, so the silence is an
+    unasked question; ceiling = observe. Removed block_tool(interrupt). Detection unchanged —
+    recall cost is zero.
   message_template: >
     [ATR-2026-00551] HIGH: Cross-conversation memory write detected. Tool
     {{trace.matched_span.attributes.tool.name}} (span

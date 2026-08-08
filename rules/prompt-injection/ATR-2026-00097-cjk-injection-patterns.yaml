@@ -217,12 +217,16 @@ response:
   actions:
     - block_tool
     - alert
-    - quarantine_session
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 1/5352 = 0.02%
+    meets the 0.5% ceiling but is not zero; ceiling = degrade. Removed
+    quarantine_session(terminate). Detection unchanged — recall cost is zero.
   auto_response_threshold: high
   message_template: |
     [ATR-2026-097] CRITICAL: CJK prompt injection detected. Message contains
     social engineering patterns targeting AI agents in CJK languages.
-    Pattern: {matched_pattern}. All tool calls blocked and session quarantined.
+    Pattern: {matched_pattern}. The tool call has been blocked; the session was
+    NOT quarantined.
     Likely attack vector: group chat injection targeting financial actions.
 confidence: 81
 wild_validated: 2026/04/08

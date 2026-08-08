@@ -118,8 +118,11 @@ detection:
 
 response:
   actions:
-    - block_input
     - alert
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 1337/5352 =
+    24.98% exceeds the 2% automatic-demotion line; ceiling = observe. Removed
+    block_input(interrupt). Detection unchanged — recall cost is zero.
   auto_response_threshold: medium
   message_template: >
     [ATR-2026-00454] Backslash per-character encoding evasion detected. Input

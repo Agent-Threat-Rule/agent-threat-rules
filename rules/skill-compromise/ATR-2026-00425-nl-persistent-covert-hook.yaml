@@ -102,7 +102,10 @@ response:
   actions:
     - block_tool
     - alert
-    - quarantine_session
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): 0/5352 benign FP, but
+    maturity is "test" — only stable is rated for irreversible actions; ceiling = degrade.
+    Removed quarantine_session(terminate). Detection unchanged — recall cost is zero.
   message_template: |
     [ATR-2026-00425] Natural-language persistent covert hook detected.
     The skill establishes an ongoing covert action triggered on every (or each)

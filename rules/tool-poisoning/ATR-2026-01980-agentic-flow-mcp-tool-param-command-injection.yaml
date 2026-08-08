@@ -115,7 +115,10 @@ detection:
 response:
   actions:
     - alert
-    - block_tool
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 241/5352 =
+    4.50% exceeds the 2% automatic-demotion line; ceiling = observe. Removed
+    block_tool(interrupt). Detection unchanged — recall cost is zero.
   message_template: >
     [ATR-2026-01980] CRITICAL: Agentic-Flow MCP tool-parameter OS command
     injection detected (GHSA-vcv2-r9jh-99m5, CWE-78). A tool argument breaks

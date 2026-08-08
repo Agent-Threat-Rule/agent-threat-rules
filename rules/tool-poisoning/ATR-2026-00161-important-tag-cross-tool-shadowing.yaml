@@ -147,7 +147,10 @@ detection:
 response:
   actions:
     - alert
-    - block_tool
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 227/5352 =
+    4.24% exceeds the 2% automatic-demotion line; ceiling = observe. Removed
+    block_tool(interrupt). Detection unchanged — recall cost is zero.
   message_template: >
     [ATR-2026-00161] CRITICAL: MCP tool description contains a cross-tool
     shadowing or hidden directive attack. The tool signature may appear
