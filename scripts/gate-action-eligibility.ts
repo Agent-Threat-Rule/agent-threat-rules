@@ -52,6 +52,7 @@
  *      and a gate that cannot read its evidence must not report success
  */
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { join, resolve, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { load as parseYaml } from "js-yaml";
@@ -63,6 +64,7 @@ import {
   TIER_NAMES,
   type ActionTier,
   type EligibilityDecision,
+  corpusDigest,
 } from "../src/quality/action-eligibility.js";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -82,12 +84,15 @@ interface MeasurementRecord {
 
 interface MeasurementFile {
   readonly sample_count?: number;
+  readonly corpora?: readonly string[];
+  readonly corpus_digest?: string;
   readonly rules?: Record<string, MeasurementRecord>;
 }
 
 interface RuleOnDisk {
   readonly file: string;
   readonly id: string;
+  readonly messageTemplate: string;
   readonly maturity: string | null;
   readonly status: string | null;
   readonly actions: readonly string[];
@@ -136,7 +141,7 @@ function readRules(rulesDir: string): readonly RuleOnDisk[] {
       id?: string;
       status?: string;
       maturity?: string;
-      response?: { actions?: unknown };
+      response?: { actions?: unknown; message_template?: unknown };
     };
     if (typeof r?.id !== "string") continue;
     const actions = Array.isArray(r.response?.actions)
@@ -150,6 +155,10 @@ function readRules(rulesDir: string): readonly RuleOnDisk[] {
       maturity: r.maturity ?? null,
       status: r.status ?? null,
       actions,
+      messageTemplate:
+        typeof r.response?.message_template === "string"
+          ? r.response.message_template
+          : "",
       fingerprint: detectionFingerprint(doc as never),
     });
   }
@@ -161,6 +170,68 @@ function readRules(rulesDir: string): readonly RuleOnDisk[] {
  *
  * Exported so the ratchet test can drive it with fixtures instead of the repo.
  */
+
+/**
+ * SHA-256 over the benign corpora this measurement claims to describe.
+ *
+ * `detection_fingerprint` stops a rule drifting out from under its number. It
+ * does nothing about the number itself, and the measurement file is committed
+ * to the repo — so an integer edit plus one `maturity` line was enough, in
+ * review, to hand a rule that false-positives on 52.58% of the corpus a
+ * `kill_agent`, with every test still green. A comment reading "do not
+ * hand-edit" is a convention, not a control.
+ *
+ * This is the missing half: the evidence has to be checkable against the thing
+ * it was measured on. A digest mismatch is treated exactly like a missing file
+ * (EXIT_NO_EVIDENCE), because "the evidence does not describe this corpus" and
+ * "there is no evidence" are the same state for a gate whose whole premise is
+ * that a declaration is not proof.
+ *
+ * It does not stop someone regenerating both together — nothing file-local can.
+ * It stops the cheap edit, and it makes the expensive one leave a diff that
+ * says what it did.
+ */
+
+
+/**
+ * A rule may not tell the operator it was not blocked.
+ *
+ * This policy governs the actions the executor dispatches. It has no effect on
+ * `src/verdict.ts`, which derives `permissionDecision` from severity and
+ * confidence alone and never reads `response.actions` — so stripping every
+ * action off a `severity: critical` rule still leaves the Claude Code hook
+ * returning `deny`. Measured during review: of 59 downgraded rules replayed
+ * through the real hook path on their own true positives, 41 denied, 6 asked,
+ * 0 allowed, and PostToolUse blocks on both deny and ask.
+ *
+ * The policy document said this. Seven rule files shipped prose saying the
+ * opposite, because a human wrote "Advisory only — the tool call was NOT
+ * blocked" while looking at a diff that only removed actions. An operator
+ * debugging a false positive would read that and conclude the call went
+ * through. It did not.
+ *
+ * Statements about what this rule stopped dispatching are fine. Statements
+ * about whether the operation was blocked are not this file's to make.
+ */
+const BLOCK_CLAIM = /\b(?:was|were|is|are)\s+NOT\s+blocked\b|\bAdvisory only\b/i;
+
+export function messageTemplateClaims(
+  rules: readonly RuleOnDisk[],
+): readonly { readonly id: string; readonly file: string; readonly quote: string }[] {
+  const out: { id: string; file: string; quote: string }[] = [];
+  for (const rule of rules) {
+    const m = BLOCK_CLAIM.exec(rule.messageTemplate);
+    if (m === null) continue;
+    const at = Math.max(0, m.index - 40);
+    out.push({
+      id: rule.id,
+      file: rule.file,
+      quote: rule.messageTemplate.slice(at, m.index + m[0].length + 40).replace(/\s+/g, " ").trim(),
+    });
+  }
+  return Object.freeze(out.sort((a, b) => a.id.localeCompare(b.id)));
+}
+
 export function findViolations(
   rules: readonly RuleOnDisk[],
   measurement: MeasurementFile,
@@ -233,7 +304,44 @@ function main(argv: readonly string[]): number {
     return EXIT_NO_EVIDENCE;
   }
 
+  // The evidence has to describe the corpus it claims to. A stale or edited
+  // measurement is the same state as no measurement: EXIT_NO_EVIDENCE.
+  if (measurement.corpus_digest !== undefined && measurement.corpora !== undefined) {
+    const actual = corpusDigest(REPO_ROOT, measurement.corpora, { existsSync, readdirSync, statSync, readFileSync }, { join, relative }, createHash);
+    if (actual !== measurement.corpus_digest) {
+      console.error(
+        `[action-gate] FAIL — the measurement was taken on a different corpus.\n` +
+          `  recorded ${measurement.corpus_digest}\n` +
+          `  on disk  ${actual}\n` +
+          `Re-measure; do not hand-edit the numbers.`,
+      );
+      return EXIT_NO_EVIDENCE;
+    }
+  } else {
+    console.error(
+      `[action-gate] FAIL — measurement file carries no corpus_digest. ` +
+        `Unverifiable evidence is not evidence; re-emit it with a current ` +
+        `scripts/gate-promotion-fp.ts --emit-measurement.`,
+    );
+    return EXIT_NO_EVIDENCE;
+  }
+
   const rules = readRules(join(REPO_ROOT, "rules"));
+
+  // A rule may not tell the operator it was not blocked — this policy does not
+  // govern the hook's verdict, so it has no standing to make that claim.
+  const claims = messageTemplateClaims(rules);
+  if (claims.length > 0) {
+    console.error(
+      `\n[action-gate] FAIL — ${claims.length} rule(s) claim in message_template that ` +
+        `the operation was not blocked. response.actions does not drive the hook's ` +
+        `permissionDecision (src/verdict.ts reads severity + confidence only), so a rule ` +
+        `cannot make that promise. Say what stopped dispatching, not what got through:`,
+    );
+    for (const c of claims) console.error(`  ${c.id}  ${c.file}\n      "…${c.quote}…"`);
+    return EXIT_FAIL;
+  }
+
   const violations = findViolations(rules, measurement);
 
   if (asJson) {

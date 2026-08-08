@@ -370,3 +370,75 @@ export function eligibleActions(
   const kept = actions.filter((a) => actionTier(a) <= maxTier);
   return Object.freeze(kept.length > 0 ? kept : ["alert"]);
 }
+
+/**
+ * Content digest of the benign corpora a measurement was taken on.
+ *
+ * `detectionFingerprint` stops a rule drifting out from under its number. It
+ * says nothing about the number, and the measurement file is committed — so in
+ * review, editing `fp_count` from 2814 to 0 plus one `maturity` line handed a
+ * rule that false-positives on 52.58% of the corpus a `kill_agent`, with the
+ * whole suite still green. "Do not hand-edit" is a convention, not a control.
+ *
+ * This lives here, exported, so the producer and the gate cannot drift apart:
+ * two copies of a hashing routine is exactly the shape of defect this policy
+ * exists to close.
+ *
+ * WHAT THIS DOES NOT CLOSE, stated plainly because the gap is easy to miss:
+ * editing `fp_count` does not touch the corpus, so the digest still matches and
+ * the gate still passes. Verified by attack — 2814 -> 0 sails through. The
+ * digest closes corpus drift (the measurement describing a corpus that has
+ * since moved); it does nothing about number drift. Only regeneration closes
+ * that, which is why .github/workflows/action-eligibility.yml re-measures on a
+ * schedule and diffs the per-rule counts. Per-PR regeneration was considered
+ * and rejected: 429 of 776 rules carry load-bearing numbers, so verifying them
+ * is a full ~45-minute gate run, and a contributor cannot forge the file
+ * without the scheduled diff surfacing it.
+ */
+export function corpusDigest(
+  repoRoot: string,
+  corpora: readonly string[],
+  fs: {
+    readonly existsSync: (p: string) => boolean;
+    readonly readdirSync: (p: string) => string[];
+    readonly statSync: (p: string) => { isDirectory(): boolean };
+    readonly readFileSync: (p: string) => Buffer;
+  },
+  path: { readonly join: (...p: string[]) => string; readonly relative: (a: string, b: string) => string },
+  createHash: (alg: string) => {
+    update(d: string | Buffer): unknown;
+    digest(enc: string): string;
+  },
+): string {
+  const SEP = "\u0000";
+  const walk = (dir: string): string[] => {
+    const out: string[] = [];
+    for (const e of [...fs.readdirSync(dir)].sort()) {
+      const full = path.join(dir, e);
+      if (fs.statSync(full).isDirectory()) out.push(...walk(full));
+      else if (e.endsWith(".jsonl") || e.endsWith(".md")) out.push(full);
+    }
+    return out;
+  };
+  const h = createHash("sha256");
+  for (const rel of [...corpora].sort()) {
+    const dir = path.join(repoRoot, rel);
+    if (!fs.existsSync(dir)) {
+      h.update(rel + SEP + "MISSING" + SEP);
+      continue;
+    }
+    for (const f of walk(dir)) {
+      h.update(path.relative(repoRoot, f));
+      h.update(SEP);
+      h.update(fs.readFileSync(f));
+      h.update(SEP);
+    }
+  }
+  return h.digest("hex").slice(0, 32);
+}
+
+export const MEASUREMENT_CORPORA: readonly string[] = Object.freeze([
+  "data/skill-benchmark/benign",
+  "data/benign-corpus-extended",
+  "data/benign-code",
+]);

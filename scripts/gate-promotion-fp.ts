@@ -89,13 +89,18 @@ import {
   mkdtempSync,
   copyFileSync,
 } from "node:fs";
-import { join, resolve, dirname, basename } from "node:path";
+import { join, resolve, dirname, basename, relative} from "node:path";
+import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { ATREngine } from "../src/engine.js";
 import { classifySecurityContent } from "../src/corpus/security-content.js";
-import { detectionFingerprint } from "../src/quality/action-eligibility.js";
+import {
+  detectionFingerprint,
+  corpusDigest,
+  MEASUREMENT_CORPORA,
+} from "../src/quality/action-eligibility.js";
 import {
   corpusShapes,
   shapeNames,
@@ -158,6 +163,9 @@ export function defaultDeps(): GateDeps {
 // ---------------------------------------------------------------------------
 
 /** Legacy lookup for --ids / --base: absent or value-less both read as null. */
+
+
+
 function legacyValue(argv: readonly string[], name: string): string | null {
   const i = argv.indexOf(name);
   return i >= 0 ? (argv[i + 1] ?? null) : null;
@@ -404,7 +412,14 @@ function writeMeasurement(path: string, scan: ScanResult, repoRoot: string): voi
       "scripts/gate-action-eligibility.ts. Do not hand-edit.",
     generated_at: new Date().toISOString().slice(0, 10),
     commit,
-    corpora: ["data/skill-benchmark/benign", "data/benign-corpus-extended", "data/benign-code"],
+    corpora: MEASUREMENT_CORPORA,
+    // The digest is what makes this file evidence rather than a claim. Without
+    // it, editing one integer here silently re-authorises a rule — verified in
+    // review: fp_count 2814 -> 0 plus one maturity line handed a rule that
+    // false-positives on 52.58% of the corpus a kill_agent, with the whole
+    // suite still green. scripts/gate-action-eligibility.ts recomputes this and
+    // treats a mismatch as no evidence at all.
+    corpus_digest: corpusDigest(REPO_ROOT, MEASUREMENT_CORPORA, { existsSync, readdirSync, statSync, readFileSync }, { join, relative }, createHash),
     shapes: [...shapeNames(), "skill"],
     sample_count: scan.sampleCount,
     rules,
