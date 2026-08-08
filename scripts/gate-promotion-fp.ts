@@ -90,6 +90,7 @@ import { tmpdir } from "node:os";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { ATREngine } from "../src/engine.js";
+import { classifySecurityContent } from "../src/corpus/security-content.js";
 import {
   corpusShapes,
   shapeNames,
@@ -171,7 +172,9 @@ export function parseCliOptions(argv: readonly string[]): GateOptions {
   const emitDirty = pathValue(argv, "--emit-dirty");
   const filterMode = argv.includes("--filter-mode");
   if (emitClean !== null && emitClean === emitDirty) {
-    throw new GateUsageError("--emit-clean and --emit-dirty must be different paths");
+    throw new GateUsageError(
+      "--emit-clean and --emit-dirty must be different paths",
+    );
   }
   if (filterMode && emitClean === null && emitDirty === null) {
     throw new GateUsageError(
@@ -204,7 +207,8 @@ export function parsePromotedFiles(diff: string): readonly string[] {
       continue;
     }
     const maturity = /^\+\s*maturity:\s*["']?(\w+)["']?\s*$/.exec(line);
-    if (maturity && current && ENFORCE_MATURITIES.has(maturity[1] ?? "")) files.add(current);
+    if (maturity && current && ENFORCE_MATURITIES.has(maturity[1] ?? ""))
+      files.add(current);
   }
   return [...files];
 }
@@ -215,7 +219,9 @@ export interface FpPartition {
 }
 
 /** Split scanned ids into FP-clean and FP-producing, deterministically ordered. */
-export function partitionByFp(counts: ReadonlyMap<string, number>): FpPartition {
+export function partitionByFp(
+  counts: ReadonlyMap<string, number>,
+): FpPartition {
   const entries = [...counts.entries()];
   const clean = entries
     .filter(([, n]) => n === 0)
@@ -233,7 +239,10 @@ export function partitionByFp(counts: ReadonlyMap<string, number>): FpPartition 
  * Filter semantics (--filter-mode): the caller wants the lists, not a verdict,
  * so a dirty finding is data — exiting non-zero would abort a `set -e` promoter.
  */
-export function resolveExitCode(dirtyCount: number, filterMode: boolean): number {
+export function resolveExitCode(
+  dirtyCount: number,
+  filterMode: boolean,
+): number {
   if (dirtyCount === 0) return EXIT_OK;
   return filterMode ? EXIT_OK : EXIT_FAIL;
 }
@@ -274,10 +283,20 @@ function execGit(repoRoot: string): GitRunner {
  * scanned. If such an id was explicitly requested it surfaces as a missing id
  * (exit 3) rather than as a crash or a silent skip.
  */
-export function gitRuleFiles(repoRoot: string, run: GitRunner = execGit(repoRoot)): readonly string[] {
-  const isRule = (f: string): boolean => f.endsWith(".yaml") || f.endsWith(".yml");
+export function gitRuleFiles(
+  repoRoot: string,
+  run: GitRunner = execGit(repoRoot),
+): readonly string[] {
+  const isRule = (f: string): boolean =>
+    f.endsWith(".yaml") || f.endsWith(".yml");
   const tracked = run(["ls-files", "--", "rules/"]).split("\n").filter(isRule);
-  const untracked = run(["ls-files", "--others", "--exclude-standard", "--", "rules/"])
+  const untracked = run([
+    "ls-files",
+    "--others",
+    "--exclude-standard",
+    "--",
+    "rules/",
+  ])
     .split("\n")
     .filter(isRule);
   return [...new Set([...tracked, ...untracked])]
@@ -285,12 +304,19 @@ export function gitRuleFiles(repoRoot: string, run: GitRunner = execGit(repoRoot
     .sort();
 }
 
-function promotedFilesFromDiff(base: string, repoRoot: string): readonly string[] {
-  const diff = execFileSync("git", ["diff", `${base}...HEAD`, "--unified=0", "--", "rules/"], {
-    cwd: repoRoot,
-    encoding: "utf-8",
-    maxBuffer: 64 * 1024 * 1024,
-  });
+function promotedFilesFromDiff(
+  base: string,
+  repoRoot: string,
+): readonly string[] {
+  const diff = execFileSync(
+    "git",
+    ["diff", `${base}...HEAD`, "--unified=0", "--", "rules/"],
+    {
+      cwd: repoRoot,
+      encoding: "utf-8",
+      maxBuffer: 64 * 1024 * 1024,
+    },
+  );
   return parsePromotedFiles(diff);
 }
 
@@ -312,12 +338,16 @@ function writeIdList(path: string, ids: readonly string[]): void {
 function emitLists(options: GateOptions, partition: FpPartition): void {
   if (options.emitClean !== null) {
     writeIdList(options.emitClean, partition.clean);
-    console.log(`[fp-gate] wrote ${partition.clean.length} clean id(s) -> ${options.emitClean}`);
+    console.log(
+      `[fp-gate] wrote ${partition.clean.length} clean id(s) -> ${options.emitClean}`,
+    );
   }
   if (options.emitDirty !== null) {
     const ids = partition.dirty.map(([id]) => id);
     writeIdList(options.emitDirty, ids);
-    console.log(`[fp-gate] wrote ${ids.length} dirty id(s) -> ${options.emitDirty}`);
+    console.log(
+      `[fp-gate] wrote ${ids.length} dirty id(s) -> ${options.emitDirty}`,
+    );
   }
 }
 
@@ -361,7 +391,8 @@ function loadCorpusTexts(pathStr: string): readonly string[] {
   const texts: string[] = [];
   if (!existsSync(pathStr)) return texts;
   const files: string[] = [];
-  if (statSync(pathStr).isDirectory()) files.push(...collectCorpusFiles(pathStr));
+  if (statSync(pathStr).isDirectory())
+    files.push(...collectCorpusFiles(pathStr));
   else files.push(pathStr);
   for (const f of files) {
     let raw: string;
@@ -379,7 +410,8 @@ function loadCorpusTexts(pathStr: string): readonly string[] {
       if (!t) continue;
       try {
         const obj = JSON.parse(t) as { text?: string };
-        if (typeof obj.text === "string" && obj.text.length > 0) texts.push(obj.text);
+        if (typeof obj.text === "string" && obj.text.length > 0)
+          texts.push(obj.text);
       } catch {
         continue;
       }
@@ -391,7 +423,8 @@ function loadCorpusTexts(pathStr: string): readonly string[] {
 /** Copy just the target rule files into a temp dir so the engine loads only them. */
 function scopedRulesDir(repoRoot: string, files: readonly string[]): string {
   const dir = mkdtempSync(join(tmpdir(), "atr-gate-"));
-  for (const f of files) copyFileSync(join(repoRoot, f), join(dir, basename(f)));
+  for (const f of files)
+    copyFileSync(join(repoRoot, f), join(dir, basename(f)));
   return dir;
 }
 
@@ -427,7 +460,8 @@ function targetsFromIdsFile(idsFile: string, deps: GateDeps): Targets {
 }
 
 function resolveTargets(options: GateOptions, deps: GateDeps): Targets {
-  if (options.idsFile !== null) return targetsFromIdsFile(options.idsFile, deps);
+  if (options.idsFile !== null)
+    return targetsFromIdsFile(options.idsFile, deps);
   const files = promotedFilesFromDiff(options.base, deps.repoRoot);
   const ids = files
     .map((f) => ruleIdOf(deps.repoRoot, f))
@@ -438,29 +472,67 @@ function resolveTargets(options: GateOptions, deps: GateDeps): Targets {
 interface ScanResult {
   readonly counts: ReadonlyMap<string, number>;
   readonly sampleCount: number;
+  /**
+   * The half of `counts` that landed on samples labelled `security-content`
+   * (see src/corpus/security-content.ts). Reported alongside the headline,
+   * NEVER subtracted from it.
+   */
+  readonly securityCounts: ReadonlyMap<string, number>;
+  /** How many of `sampleCount` carry the security-content label. */
+  readonly securitySampleCount: number;
   /** Target rules with conditions this corpus cannot measure. */
   readonly coverage: readonly FieldCoverage[];
   /** Target rules the `skill` half of matchedRuleIds cannot ever match. */
   readonly skillCoverage: readonly SkillPathGap[];
 }
 
-async function scanFpCounts(targets: Targets, deps: GateDeps): Promise<ScanResult> {
-  const engine = new ATREngine({ rulesDir: scopedRulesDir(deps.repoRoot, targets.files) });
+async function scanFpCounts(
+  targets: Targets,
+  deps: GateDeps,
+): Promise<ScanResult> {
+  const engine = new ATREngine({
+    rulesDir: scopedRulesDir(deps.repoRoot, targets.files),
+  });
   await engine.loadRules();
 
   const samples: string[] = [];
   for (const c of deps.corpora) samples.push(...loadCorpusTexts(c));
 
   const counts = new Map<string, number>();
-  for (const id of targets.ids) counts.set(id, 0);
+  const securityCounts = new Map<string, number>();
+  for (const id of targets.ids) {
+    counts.set(id, 0);
+    securityCounts.set(id, 0);
+  }
+  let securitySampleCount = 0;
   for (const text of samples) {
+    // Labelled BEFORE the rules run and from the sample text alone. The label
+    // cannot be a function of which rules fired, or it degenerates into
+    // "whatever is inconvenient is not benign".
+    const isSecurityContent =
+      classifySecurityContent(text).label === "security-content";
+    if (isSecurityContent) securitySampleCount += 1;
     for (const id of matchedRuleIds(engine, text)) {
-      if (targets.ids.has(id)) counts.set(id, (counts.get(id) ?? 0) + 1);
+      if (!targets.ids.has(id)) continue;
+      counts.set(id, (counts.get(id) ?? 0) + 1);
+      if (isSecurityContent)
+        securityCounts.set(id, (securityCounts.get(id) ?? 0) + 1);
     }
   }
-  const coverage = fieldCoverage(engine.getRules()).filter((c) => targets.ids.has(c.ruleId));
-  const skillCoverage = skillPathCoverage(engine.getRules()).filter((c) => targets.ids.has(c.ruleId));
-  return { counts, sampleCount: samples.length, coverage, skillCoverage };
+  const coverage = fieldCoverage(engine.getRules()).filter((c) =>
+    targets.ids.has(c.ruleId),
+  );
+  const skillCoverage = skillPathCoverage(engine.getRules()).filter((c) =>
+    targets.ids.has(c.ruleId),
+  );
+  return {
+    counts,
+    sampleCount: samples.length,
+    securityCounts,
+    securitySampleCount,
+    coverage,
+    skillCoverage,
+  };
 }
 
 /**
@@ -483,7 +555,8 @@ function reportCoverage(coverage: readonly FieldCoverage[]): void {
   for (const c of coverage) {
     const tag = c.zeroMeasurement ? "ZERO-MEASUREMENT" : "partially measured";
     console.log(`  ${c.ruleId} — ${tag}`);
-    for (const f of c.unmeasured) console.log(`      ${f}: ${unmeasurableReason(f)}`);
+    for (const f of c.unmeasured)
+      console.log(`      ${f}: ${unmeasurableReason(f)}`);
   }
 }
 
@@ -509,7 +582,9 @@ function reportSkillPathCoverage(gaps: readonly SkillPathGap[]): void {
   console.log(
     `\n[fp-gate] NOT MEASURED ON THE SKILL PATH — ${gaps.length} rule(s) cannot produce a ` +
       `match through engine.scanSkill() for any input` +
-      (enforce.length > 0 ? `, ${enforce.length} of them in the enforce lane` : "") +
+      (enforce.length > 0
+        ? `, ${enforce.length} of them in the enforce lane`
+        : "") +
       `. They were measured on the evaluate() shapes only:`,
   );
   for (const g of gaps) {
@@ -521,34 +596,100 @@ function reportSkillPathCoverage(gaps: readonly SkillPathGap[]): void {
   }
 }
 
+/**
+ * Split the FP count into "general benign" and "security content".
+ *
+ * READ THIS BEFORE USING THE SECOND NUMBER FOR ANYTHING.
+ *
+ * The corpus genuinely contains pentest guides, compliance write-ups and
+ * security-audit skills that quote `' OR '1'='1` or `/etc/passwd` verbatim. A
+ * rule firing on those is a different kind of miss from a rule firing on an
+ * ordinary README, and reporting one number hides that.
+ *
+ * What this split is NOT allowed to become:
+ *   - It never removes a sample. `general + security == total`, asserted in
+ *     tests/benign-gate-security-content.test.ts.
+ *   - It never changes clean/dirty or the exit code. A rule with 400 FP all of
+ *     them on security content still fails this gate.
+ *   - The outward FP number stays the TOTAL. The split is context, not a
+ *     discount. Measured 2026-08-07: the security-content half is single-digit
+ *     percent of the FP mass, so a caller quoting only "general" would be
+ *     shaving noise while claiming a fix.
+ */
+function reportSecuritySplit(
+  partition: FpPartition,
+  securityCounts: ReadonlyMap<string, number>,
+  securitySampleCount: number,
+  sampleCount: number,
+): void {
+  const total = partition.dirty.reduce((a, [, n]) => a + n, 0);
+  if (total === 0) return;
+  let sec = 0;
+  for (const [id] of partition.dirty) sec += securityCounts.get(id) ?? 0;
+  const pct = (n: number, d: number): string =>
+    d === 0 ? "n/a" : `${((100 * n) / d).toFixed(1)}%`;
+  console.log(
+    `[fp-gate] corpus split — security-content ${securitySampleCount}/${sampleCount} ` +
+      `(${pct(securitySampleCount, sampleCount)}) · general ${sampleCount - securitySampleCount}`,
+  );
+  console.log(
+    `[fp-gate] FP split — general ${total - sec} · security-content ${sec} ` +
+      `(${pct(sec, total)} of ${total}). Both are false positives; the outward number is the total.`,
+  );
+}
+
 function report(
   partition: FpPartition,
   sampleCount: number,
   filterMode: boolean,
   coverage: readonly FieldCoverage[] = [],
   skillCoverage: readonly SkillPathGap[] = [],
+  securityCounts: ReadonlyMap<string, number> = new Map(),
+  securitySampleCount = 0,
 ): void {
   console.log(`[fp-gate] corpus = ${sampleCount} benign samples`);
   console.log(
     `[fp-gate] shapes = ${shapeNames().join(", ")}, skill ` +
       `(a rule's true positives MUST be measured on this same set)`,
   );
-  console.log(`[fp-gate] clean = ${partition.clean.length} · dirty = ${partition.dirty.length}`);
+  console.log(
+    `[fp-gate] clean = ${partition.clean.length} · dirty = ${partition.dirty.length}`,
+  );
+  reportSecuritySplit(
+    partition,
+    securityCounts,
+    securitySampleCount,
+    sampleCount,
+  );
   reportCoverage(coverage);
   reportSkillPathCoverage(skillCoverage);
   if (partition.dirty.length === 0) {
-    console.log(`[fp-gate] PASS — all promoted rules are FP-clean on the benign corpus.`);
+    console.log(
+      `[fp-gate] PASS — all promoted rules are FP-clean on the benign corpus.`,
+    );
     return;
   }
+  const secOf = (id: string): string => {
+    const n = securityCounts.get(id) ?? 0;
+    return n > 0 ? ` (${n} on security content)` : "";
+  };
   if (filterMode) {
-    console.log(`\n[fp-gate] FILTERED — these rules false-positive on benign content and were`);
-    console.log(`excluded from the clean list (they must not enter the enforce lane):`);
-    for (const [id, n] of partition.dirty) console.log(`  ${id} — ${n} FP`);
+    console.log(
+      `\n[fp-gate] FILTERED — these rules false-positive on benign content and were`,
+    );
+    console.log(
+      `excluded from the clean list (they must not enter the enforce lane):`,
+    );
+    for (const [id, n] of partition.dirty)
+      console.log(`  ${id} — ${n} FP${secOf(id)}`);
     return;
   }
-  console.error(`\n[fp-gate] FAIL — these promoted rules false-positive on benign content and`);
+  console.error(
+    `\n[fp-gate] FAIL — these promoted rules false-positive on benign content and`,
+  );
   console.error(`must not enter the enforce (auto-block) lane:`);
-  for (const [id, n] of partition.dirty) console.error(`  ${id} — ${n} FP`);
+  for (const [id, n] of partition.dirty)
+    console.error(`  ${id} — ${n} FP${secOf(id)}`);
 }
 
 /**
@@ -572,15 +713,21 @@ function reportMissingIds(missing: readonly string[], idsFile: string): number {
   return EXIT_MISSING_IDS;
 }
 
-export async function runGate(options: GateOptions, deps: GateDeps = defaultDeps()): Promise<number> {
+export async function runGate(
+  options: GateOptions,
+  deps: GateDeps = defaultDeps(),
+): Promise<number> {
   const targets = resolveTargets(options, deps);
   if (targets.missing.length > 0 && options.idsFile !== null) {
     return reportMissingIds(targets.missing, options.idsFile);
   }
 
   if (targets.files.length === 0) {
-    const scope = options.idsFile !== null ? `in ${options.idsFile}` : `vs ${options.base}`;
-    console.log(`[fp-gate] no rules promoted to enforce lane ${scope} — nothing to gate.`);
+    const scope =
+      options.idsFile !== null ? `in ${options.idsFile}` : `vs ${options.base}`;
+    console.log(
+      `[fp-gate] no rules promoted to enforce lane ${scope} — nothing to gate.`,
+    );
     emitLists(options, { clean: [], dirty: [] });
     return EXIT_OK;
   }
@@ -588,9 +735,24 @@ export async function runGate(options: GateOptions, deps: GateDeps = defaultDeps
   console.log(
     `[fp-gate] gating ${targets.files.length} promoted rule(s) against the benign corpus`,
   );
-  const { counts, sampleCount, coverage, skillCoverage } = await scanFpCounts(targets, deps);
+  const {
+    counts,
+    sampleCount,
+    securityCounts,
+    securitySampleCount,
+    coverage,
+    skillCoverage,
+  } = await scanFpCounts(targets, deps);
   const partition = partitionByFp(counts);
-  report(partition, sampleCount, options.filterMode, coverage, skillCoverage);
+  report(
+    partition,
+    sampleCount,
+    options.filterMode,
+    coverage,
+    skillCoverage,
+    securityCounts,
+    securitySampleCount,
+  );
   emitLists(options, partition);
   return resolveExitCode(partition.dirty.length, options.filterMode);
 }
