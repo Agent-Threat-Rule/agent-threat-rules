@@ -150,6 +150,15 @@ detection:
   #                    — auto-RUN surfaces, not system-prompt text. They are
   #                      ATR-2026-00575, which additionally requires a co-located
   #                      exec/network primitive. Not merged here on purpose.
+  #   .claude/rules/*.md and ~/.claude/rules/*.md
+  #                    — these DO pass the membership test above: claude-code
+  #                      2.1.111 treats any .md under a .claude/rules/ directory
+  #                      as a memory source. They are left out anyway because the
+  #                      surface is a DIRECTORY GLOB, not a filename: an
+  #                      alternative matching `.claude/rules/<anything>.md` has a
+  #                      completely different false-positive profile from a fixed
+  #                      name, and this rule has no measurement behind that shape.
+  #                      Tracked as a known gap rather than guessed at.
   #
   # CASE SENSITIVITY: left case-insensitive (engine default). Measured on the
   # 5,352-sample benign corpus, case-insensitivity costs 0 additional FP once the
