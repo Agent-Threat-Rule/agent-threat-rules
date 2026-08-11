@@ -1,0 +1,41 @@
+title: No Control Rule (regression fixture, not a shipped rule)
+id: ATR-9999-99998
+rule_version: 1
+status: experimental
+description: >
+  A rule with no declared true_positives. Nothing can distinguish its zero false positives from an engine that is not
+  matching at all, so scripts/probe-rule-visibility.ts must refuse to report a verdict for it.
+author: ATR Community
+date: 2026/08/11
+schema_version: "0.1"
+detection_tier: pattern
+maturity: experimental
+severity: low
+references:
+  mitre_atlas:
+    - AML.T0051 - LLM Prompt Injection
+tags:
+  category: context-exfiltration
+  subcategory: covert-channel
+  scan_target: mcp
+  confidence: low
+agent_source:
+  type: tool_call
+  framework:
+    - any
+  provider:
+    - any
+detection:
+  conditions:
+    - field: user_input
+      operator: regex
+      value: (?i)zzzqqq-never-appears-anywhere
+      description: Placeholder condition
+  condition: any
+response:
+  actions:
+    - alert
+confidence: 10
+test_cases:
+  true_positives: []
+  true_negatives: []
