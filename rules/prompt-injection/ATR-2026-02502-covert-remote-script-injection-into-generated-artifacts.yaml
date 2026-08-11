@@ -51,6 +51,49 @@ references:
     - "AML.T0051 - LLM Prompt Injection"
     - "AML.T0051.000 - Direct"
 
+compliance:
+  owasp_agentic:
+    - id: ASI01:2026
+      context: "The injected instruction redirects the agent from the objective it was given (produce this artifact) to the attacker's objective (produce this artifact carrying my script), which is goal hijack expressed through the agent's own output."
+      strength: primary
+  owasp_llm:
+    - id: LLM01:2025
+      context: "Runtime detection of prompt injection whose payload is not exfiltration but persistence: the instruction survives in the generated artifact and executes in whoever loads it."
+      strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 requires high-risk AI systems to be resilient against attempts to alter their output. This rule detects an attempt to alter output specifically by having the system embed attacker-controlled code in what it produces."
+      strength: primary
+    - article: "9"
+      context: "Contaminated generated artifacts are a documented risk class for coding assistants; detection events from this rule are the monitoring control Article 9 risk management requires."
+      strength: secondary
+    - article: "14"
+      context: "The concealment clause is what makes this an Article 14 concern: the instruction explicitly asks the agent to keep the insertion from the human reviewer, defeating the oversight the article requires."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Manage
+      subcategory: MG.2.3
+      context: "Runtime treatment for the risk of an agent emitting attacker-supplied executable content into downstream artifacts."
+      strength: primary
+    - function: Map
+      subcategory: MP.5.1
+      context: "Catalogues generated-artifact contamination as a distinct risk from prompt injection that only affects the current session."
+      strength: secondary
+    - function: Measure
+      subcategory: "MS.2.7"
+      context: "Detection events provide the security and resilience evidence MEASURE 2.7 asks to be documented, for the specific case where the compromised output outlives the session."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Clause 8.1 covers control of externally provided processes; a remote script URL placed into a generated artifact makes an external party part of the deployed output without review."
+      strength: primary
+    - clause: "6.2"
+      context: "Detecting contamination of generated artifacts is an AIMS information security objective under clause 6.2, operationalised here as a runtime control."
+      strength: secondary
+    - clause: "8.4"
+      context: "Impact assessment under clause 8.4 must account for artifacts the system produces being distributed further; these detection events are the monitoring evidence for that path."
+      strength: secondary
+
 tags:
   category: prompt-injection
   subcategory: generated-artifact-injection
