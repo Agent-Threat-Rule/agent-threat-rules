@@ -28,12 +28,12 @@ columns are still extracted from ATR metadata, not authored here.
 
 ## Coverage
 
-- ATR rules total: 783
+- ATR rules total: 784
 - Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 197
 - Distinct enterprise ATT&CK techniques referenced: 80
-- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 783
-- Distinct MITRE ATLAS techniques referenced: 42
-- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 783
+- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 784
+- Distinct MITRE ATLAS techniques referenced: 43
+- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 784
 - ATR categories (distinct `tags.category` values): 9
 
 Categories are keyed on each rule's `tags.category` metadata, not on its
@@ -307,7 +307,7 @@ OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:202
 
 ### prompt-injection
 
-Rules in category: 244
+Rules in category: 245
 
 ATT&CK techniques (join key):
 
@@ -324,7 +324,7 @@ ATT&CK techniques (join key):
 | T1622 | Debugger Evasion | `ATR-2026-02005` |
 | T1656 | Impersonation | `ATR-2026-02210` |
 
-ATLAS techniques ATR adds: AML.CS0038, AML.T0010, AML.T0025, AML.T0036, AML.T0040, AML.T0043, AML.T0048, AML.T0050, AML.T0051, AML.T0051.000, AML.T0051.001, AML.T0054, AML.T0057
+ATLAS techniques ATR adds: AML.CS0038, AML.CS0041, AML.T0010, AML.T0025, AML.T0036, AML.T0040, AML.T0043, AML.T0048, AML.T0050, AML.T0051, AML.T0051.000, AML.T0051.001, AML.T0054, AML.T0057
 
 OWASP Agentic categories ATR adds: ASI01:2026, ASI03:2026, ASI04:2026, ASI05:2026, ASI06:2026, ASI07:2026, ASI08:2026, ASI09:2026, ASI10:2026
 
