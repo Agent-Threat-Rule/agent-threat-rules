@@ -189,9 +189,17 @@ The corpus is not neutral about what it contains:
 | `HEARTBEAT.md` | 4 |
 | `rsync` | 9 |
 
-(Counting substrings naively also inflates: bare `tor` appears in 1,521
-samples, almost all inside `factor`, `history`, `vector`. The table above uses
-tokens distinctive enough that substring counting is safe.)
+(Counting substrings naively also inflates: bare `tor` appears in 3,504 of the
+5,352 samples — 65% of the corpus — almost all of it inside `factor`,
+`history`, `vector`. The table above uses tokens distinctive enough that
+substring counting is safe.
+
+That figure is a worked example of this document's own thesis, so it carries
+its method: 3,504 counts case-insensitive substring matches over the `text`
+field of each sample, as `build-corpus.py` extracts it. Case-sensitive gives
+3,451; `\btor\b` gives 4; counting whole JSONL lines instead of the `text`
+field gives 3,505. An earlier draft printed 1,521 here, which no method
+reproduces. §7 carries the command.)
 
 A Tor-egress rule scoring 0 FP against this corpus has proven nothing at all.
 
@@ -615,6 +623,13 @@ python3 scripts/detection-boundary/twin-score.py
 # section 3 — corpus visibility and candidate sets (~90s and ~250s)
 python3 scripts/detection-boundary/visibility.py
 python3 scripts/detection-boundary/cooccur.py
+
+# section 3.1 — the bare `tor` example, with its method (3504 / 3451 / 4)
+python3 -c "import re,json;\
+t=json.load(open('scripts/detection-boundary/corpus.json'))['texts'];\
+print(sum(1 for x in t if re.search('tor',x,re.I)),\
+sum(1 for x in t if re.search('tor',x)),\
+sum(1 for x in t if re.search(r'\btor\b',x,re.I)))"
 
 # section 4 — six gaps, three lanes
 npx tsx scripts/detection-boundary/gap-lanes.ts
