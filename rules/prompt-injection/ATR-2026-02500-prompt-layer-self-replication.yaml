@@ -38,17 +38,22 @@ description: |
   those exclusions are regression cases in true_negatives; each one was found by
   an earlier draft of this rule firing on it.
 
-  MEASUREMENT HONESTY. This rule is 0-FP on the 5,352-sample local benign corpus,
-  but that number carries little information on its own: instrumenting the
-  corpus stage by stage shows it contains the propagation verb (2,420 samples),
-  the self-referential target (66), the universal output scope (47) and spread
-  vocabulary (343), yet only 5 samples get as far as verb-adjacent-to-target and
-  ZERO reach a three-stage adjacency. So the corpus cannot exercise the full
-  discriminator. The real evidence is a purpose-written adversarial set of 38
-  legitimate documents (compliance footers, canned support replies, email
-  signatures, prompt-engineering and few-shot teaching material, output-format
-  system prompts, infra runbooks, third-person threat-intel prose) built
-  specifically to trip these patterns: 0 of 38 fire.
+  MEASUREMENT HONESTY. This rule is 0-FP on the 5,352-sample local benign corpus.
+  That number carries very little information on its own, and saying so is the
+  point. Instrumenting the corpus stage by stage against the SHIPPED pattern:
+  the propagation verb appears in 2,420 samples, the self-referential target in
+  66, the universal output scope in 47 — but the spread clause in only 4, and
+  the deepest adjacency any benign sample reaches is verb-next-to-target (5
+  samples). No sample in any of the three corpora reaches a three-stage
+  adjacency, so the corpus is structurally incapable of exercising the full
+  discriminator and "0 FP" here mostly means "not tested".
+
+  The load-bearing evidence is therefore a purpose-written adversarial set of 38
+  legitimate documents built specifically to trip these patterns — compliance
+  footers, canned support replies, email signatures, prompt-engineering and
+  few-shot teaching material, output-format system prompts, infra runbooks,
+  third-person threat-intel prose. 0 of 38 fire. Two earlier drafts of this rule
+  did fire on that set, which is why it exists at all.
 
   Scope note: this rule intentionally does NOT cover file-level worms
   (ATR-2026-00575, npm worm config backdoor) or skill self-modification
