@@ -54,10 +54,26 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
  * They are a RATCHET, not a specification: the corpus grows daily, so the
  * assertions below are bounds and invariants, and this block exists so a reader
  * can tell whether a change moved the number and by how much.
+ *
+ * 2026-08-11 — skillPathUnreachable lowered 645 -> 644 for exactly one rule.
+ * ATR-2026-00200 (agent memory/config tampering) gained `tags.scan_target: both`
+ * in its rule_version 2, which is what this ratchet is built to make visible.
+ * The ratchet message asks for the benign skill corpus to be re-run before the
+ * number moves, so it was, on this branch with the new rule in place:
+ *
+ *   benign  1 / 466 flagged   (unchanged — the pre-existing single flag)
+ *   malicious recall 32 / 32  (unchanged)
+ *   ATR-2026-00200 itself fires on 0 benign and 0 malicious skill samples
+ *
+ * So the rule became reachable on the skill path without flagging anything the
+ * corpus says is benign. It was also re-measured by gate-promotion-fp over the
+ * full 5,352-sample corpus (0 FP), and that gate no longer reports it under
+ * "NOT MEASURED ON THE SKILL PATH". Only the one count moved; every other
+ * number in this block is untouched.
  */
 const MEASURED_ON_MAIN = Object.freeze({
   rules: 780,
-  skillPathUnreachable: 645,
+  skillPathUnreachable: 644,
   unreachableInEnforceLane: 102,
   reachable: 128,
   inertStatus: 7,
