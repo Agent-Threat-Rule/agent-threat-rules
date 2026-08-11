@@ -1,0 +1,99 @@
+title: "Remote-fetched content used as an instruction source (agent C2 channel)"
+id: ATR-DRAFT-0003
+rule_version: 1
+status: experimental
+description: >
+  AML.CS0051 shape. The agent fetches a remote document — a list, a
+  task file, a "checklist" — and then acts on its entries as if they
+  were user instructions. Every individual span is ordinary: fetching a
+  URL is ordinary, running a shell command is ordinary. What is not
+  ordinary is that the SECOND span's plan came from the FIRST span's
+  bytes rather than from the user turn.
+
+  This rule exists to make that requirement explicit. It cannot be
+  written at the pattern layer because the attacker's text and the
+  maintainer's text are the same text; and it cannot be written with
+  order alone, because order does not distinguish "the agent read a
+  page, then did an unrelated authorised thing" from "the agent read a
+  page and did what the page said".
+author: "ATR Community"
+date: "2026/08/11"
+schema_version: "1.0"
+maturity: draft
+severity: critical
+references:
+  mitre_atlas:
+    - "AML.CS0051"
+  owasp_agentic:
+    - "ASI01:2026"
+tags:
+  category: prompt-injection
+  subcategory: remote-instruction-source
+  scan_target: runtime
+  confidence: high
+agent_source:
+  type: agent_trace
+  framework: [any]
+  provider: [any]
+detection:
+  method: trace
+  condition: any
+  false_positives:
+    - >
+      An agent legitimately executing a remote runbook the operator
+      themselves published will emit exactly this shape. The rule can
+      only separate the two if the emitter marks the fetched origin's
+      trust, which is why source.trust is required and not optional.
+  conditions:
+    - field: trace.forbid_violation
+      operator: regex
+      value: "(?i)forbid_violation:remote_instruction_source"
+      description: Synthetic verdict field for engines without native trace support.
+  trace:
+    ingest_format: openinference
+    forbid:
+      - shape:
+          span.kind: "TOOL"
+          attributes:
+            tool.privilege:
+              in: ["execute", "write", "destructive", "exfil"]
+            instruction.provenance: "retrieved"
+        preceded_by:
+          span.kind: "RETRIEVER"
+          attributes:
+            source.trust: "untrusted"
+        within_trace: true
+        description: >
+          A privileged TOOL span whose plan is marked as derived from
+          retrieved content MUST NOT follow an untrusted RETRIEVER span
+          in the same trace.
+response:
+  actions: [alert, snapshot]
+confidence: 80
+test_cases:
+  true_positives:
+    - input: |
+        {"spans":[{"id":"r1","kind":"RETRIEVER","attributes":{"source.trust":"untrusted","source.url":"https://cdn.attacker.tld/tasks.txt"}},{"id":"t1","kind":"TOOL","attributes":{"tool.name":"shell.exec","tool.privilege":"execute","instruction.provenance":"retrieved"}}]}
+      expected: triggered
+      description: "Fetched task list, then shell exec planned from it"
+    - input: |
+        {"spans":[{"id":"r1","kind":"RETRIEVER","attributes":{"source.trust":"untrusted"}},{"id":"l1","kind":"LLM","attributes":{}},{"id":"t1","kind":"TOOL","attributes":{"tool.name":"http.post","tool.privilege":"exfil","instruction.provenance":"retrieved"}}]}
+      expected: triggered
+      description: "Retrieval, reasoning, then exfil planned from retrieved content"
+  true_negatives:
+    - input: |
+        {"spans":[{"id":"r1","kind":"RETRIEVER","attributes":{"source.trust":"trusted","source.url":"https://internal.corp/runbook"}},{"id":"t1","kind":"TOOL","attributes":{"tool.name":"shell.exec","tool.privilege":"execute","instruction.provenance":"retrieved"}}]}
+      expected: not_triggered
+      description: "Operator's own runbook — trusted origin"
+    - input: |
+        {"spans":[{"id":"r1","kind":"RETRIEVER","attributes":{"source.trust":"untrusted"}},{"id":"t1","kind":"TOOL","attributes":{"tool.name":"shell.exec","tool.privilege":"execute","instruction.provenance":"user_turn"}}]}
+      expected: not_triggered
+      description: "THE DISCRIMINATOR — same two spans, same order; the plan came from the user, not the page"
+    - input: |
+        {"spans":[{"id":"r1","kind":"RETRIEVER","attributes":{"source.trust":"untrusted"}},{"id":"t1","kind":"TOOL","attributes":{"tool.name":"calculator","tool.privilege":"read","instruction.provenance":"retrieved"}}]}
+      expected: not_triggered
+      description: "Retrieved plan but unprivileged effect"
+    - input: |
+        {"spans":[{"id":"r1","kind":"RETRIEVER","attributes":{"source.trust":"untrusted"}},{"id":"t1","kind":"TOOL","attributes":{"tool.name":"shell.exec","tool.privilege":"execute"}}]}
+      expected: not_triggered
+      description: "Emitter did not mark provenance — rule abstains rather than guesses"
