@@ -1,0 +1,120 @@
+name: Corpus visibility gate
+
+# scripts/gate-promotion-fp.ts scores a rule against 5,352 benign samples and
+# passes it at zero false positives. Five rules cleared that gate with a clean 0
+# and were then overturned by a reviewer who wrote his own benign samples by
+# hand: they fired on 20%, 42%, 47%, 50% and 57% of them. The FP gate was not
+# broken. The corpus simply did not contain the shapes those rules key on --
+# `torsocks` 0 occurrences, `.onion` 0, "run each one" 0, "scp " 2. A Tor rule
+# scoring 0 FP on a corpus with no Tor in it has not been measured; it has been
+# left unasked.
+#
+# This gate extracts the literal strings each rule's regexes require and counts
+# the benign samples containing them. That count is the rule's VISIBILITY:
+#   blind    0                      -- no benign sample can match. 0 FP is vacuous.
+#   thin     under the floor        -- rule of three: 0 FP over V samples bounds
+#                                     the FP rate at only ~3/V.
+#   measured at or above the floor  -- the 0 means something.
+#
+# A blind rule is NOT a bad rule. Plenty of good rules key on strings nobody
+# writes by accident. The defect is claiming measured precision from a corpus
+# that could not have produced a false positive, and the remedy is not to widen
+# the rule -- it is to add benign samples that DO contain its literals, written
+# as the most plausible legitimate use, and re-run the FP gate. If the rule
+# stays silent the 0 becomes evidence; if it fires, the rule was judgment-shaped
+# and the finding arrived before shipping instead of after.
+#
+# RATCHET, not a hard gate -- same shape as rule-status-gate.yml and
+# re2-portability.yml. 400 of 783 rules on main sit below the floor and clearing
+# that means authoring corpus samples, not editing YAML. So the current state is
+# frozen in data/corpus-visibility-baseline.json and only growth and regression
+# fail. It compares the WHOLE tree to that baseline rather than a PR diff,
+# because rules also arrive by doors a diff cannot see: untracked files gated
+# before any commit (scripts/fn-mine-llm.ts), the CVE collector, and
+# auto-crystallize, which commit straight to main.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "rules/**"
+      - "data/skill-benchmark/benign/**"
+      - "data/benign-corpus-extended/**"
+      - "data/benign-code/**"
+      - "data/corpus-visibility-baseline.json"
+      - "scripts/gate-corpus-visibility.ts"
+      - "scripts/lib/regex-literals.ts"
+      - "scripts/lib/literal-index.ts"
+      - "scripts/lib/visibility-*.ts"
+      - "scripts/lib/benign-corpus.ts"
+      - ".github/workflows/corpus-visibility.yml"
+  push:
+    branches: [main]
+    paths:
+      - "rules/**"
+      - "data/skill-benchmark/benign/**"
+      - "data/benign-corpus-extended/**"
+      - "data/benign-code/**"
+      - "data/corpus-visibility-baseline.json"
+      - "scripts/gate-corpus-visibility.ts"
+      - "scripts/lib/regex-literals.ts"
+      - "scripts/lib/literal-index.ts"
+      - "scripts/lib/visibility-*.ts"
+      - "scripts/lib/benign-corpus.ts"
+
+permissions:
+  contents: read
+
+jobs:
+  corpus-visibility:
+    name: A rule the corpus cannot see has not been measured
+    runs-on: ubuntu-latest
+    steps:
+      # No fetch-depth: 0 -- the gate compares against a committed baseline, not
+      # against a base ref, so a shallow checkout is enough.
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm ci
+
+      # --verify-blind executes every condition the gate calls blind against the
+      # real corpus and fails if any of them actually matches. Without it this
+      # job would be a static analyser asserting things about regexes it never
+      # ran -- the same defect one level up from the one it exists to catch. It
+      # earned its place immediately: it caught the parser reading the `DB40` of
+      # `\uDB40` as required literal text and reporting a live Unicode-tag rule
+      # as blind.
+      #
+      # Exit 1: a rule below the floor is not baselined, a baselined rule got
+      # worse, a rule file has no readable detection, or the self-check found a
+      # false blind. Exit 2: the gate could not run -- never reported as a pass.
+      - name: Corpus visibility ratchet
+        run: npx tsx scripts/gate-corpus-visibility.ts --verify-blind
+
+      # The baseline may only ever shrink. --write-baseline drops rules that
+      # climbed above the floor and refuses to add anything, so a run that leaves
+      # the file dirty means visibility improved without the record being
+      # tightened. Advisory: bookkeeping lag, not a safety failure, and the
+      # ratchet above already blocks the direction that matters.
+      - name: Baseline is up to date (advisory)
+        continue-on-error: true
+        run: |
+          npx tsx scripts/gate-corpus-visibility.ts --write-baseline
+          if ! git diff --quiet -- data/corpus-visibility-baseline.json; then
+            echo "::warning::data/corpus-visibility-baseline.json lists rules the corpus can now see."
+            echo "Tighten it: npx tsx scripts/gate-corpus-visibility.ts --write-baseline"
+            git diff --stat -- data/corpus-visibility-baseline.json
+          fi
+
+      # Enforce-lane rules below the floor auto-block production traffic on
+      # evidence the benign corpus could not have produced. 47 of them exist on
+      # main, so this cannot fail the build yet without blocking every PR. It is
+      # surfaced every run so the number stays visible instead of decaying into
+      # something nobody has looked at since the day it was measured.
+      - name: Enforce-lane rules with vacuous FP evidence (advisory)
+        continue-on-error: true
+        run: npx tsx scripts/gate-corpus-visibility.ts --strict-claims
