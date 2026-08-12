@@ -227,7 +227,7 @@ export interface ATREngineConfig {
    */
   confirmThreshold?: number;
   /**
-   * Restore the pre-3.5.13 verdict behaviour, where severity + confidence alone
+   * Restore the previous verdict behaviour, where severity + confidence alone
    * decide allow/ask/deny and a rule of any maturity can produce a `deny`.
    *
    * Default `false`: a rule's verdict is capped by its maturity (stable may
