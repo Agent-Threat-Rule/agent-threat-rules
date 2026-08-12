@@ -142,11 +142,18 @@ Three things to read off that:
 2. `quarantine_session` and `block_tool` remain, contributed by the other rules
    that fired on the same document. Fleet-wide application is the only thing that
    closes this.
-3. **`permissionDecision` is unchanged.** `computeVerdict()` derives
-   allow/ask/deny from `severity` and `confidence` alone; `response.actions` is
-   not an input. Stripping every action off a `severity: critical` rule still
-   leaves the hook returning `deny`. This policy governs **executed response
-   actions**, not the hook's block decision. Anyone quoting it must say so.
+3. **`permissionDecision` is unchanged.** `response.actions` is not an input to
+   `computeVerdict()`. Stripping every action off a rule does not move the hook
+   decision at all. This policy governs **executed response actions**, not the
+   hook's block decision. Anyone quoting it must say so.
+
+   Since this run, the verdict path has grown its own guard — `src/verdict.ts`
+   caps each match by `rule.maturity` (stable may `deny`, test at most `ask`,
+   anything else including an absent maturity at most `allow`) — but it is a
+   weaker instrument than this ladder and does not subsume it: it reads the
+   label, this reads the measurement, so a `maturity: stable` rule that
+   false-positives still denies there while the ladder here pulls its blocking
+   actions. The two run on different inputs and neither covers the other.
 
 ## 4. The blast-radius ladder
 
@@ -365,3 +372,6 @@ minus `status: draft` / `status: deprecated` / `maturity: deprecated`.
 - The verdict path (`severity` + `confidence` → `permissionDecision`) has no
   precision input at all. That is a second, larger line: it _would_ change what
   the engine blocks, so it needs its own recall analysis and is out of scope here.
+  Partially addressed since: the path now also reads `rule.maturity` as a
+  ceiling (see §3.3). That is a maturity label, still not a precision
+  measurement — wiring the measured FP rate into the verdict remains open.

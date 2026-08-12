@@ -226,6 +226,17 @@ export interface ATREngineConfig {
    * (they are too broad to block without confirmation). Default 0.6.
    */
   confirmThreshold?: number;
+  /**
+   * Restore the pre-3.5.13 verdict behaviour, where severity + confidence alone
+   * decide allow/ask/deny and a rule of any maturity can produce a `deny`.
+   *
+   * Default `false`: a rule's verdict is capped by its maturity (stable may
+   * deny, test may at most ask, anything else — including a missing or
+   * unrecognised maturity — may at most allow). See `src/verdict.ts` for why
+   * the lane gate alone did not cover this path: `lane` defaults to `hunt`,
+   * which admits every maturity.
+   */
+  denyIgnoresMaturity?: boolean;
 }
 
 export class ATREngine {
@@ -1615,6 +1626,13 @@ export class ATREngine {
           title: `Embedding Match: ${embResult.description}`,
           id: 'tier2.5-embedding-match',
           status: 'experimental',
+          // Declared explicitly because the verdict now reads it. `test` = may
+          // interrupt a human (`ask`), may never auto-block — which is exactly
+          // what the comment above already required of this signal. Leaving the
+          // field unset would silently mean `allow`, i.e. the tier would stop
+          // affecting the verdict at all; that is a decision, so it is written
+          // down rather than inherited from an absent field.
+          maturity: 'test',
           description: embResult.description,
           author: 'atr-engine/tier2.5',
           date: new Date().toISOString().slice(0, 10),
@@ -1661,7 +1679,9 @@ export class ATREngine {
       }
     }
 
-    const verdict = computeVerdict(matches);
+    const verdict = computeVerdict(matches, {
+      denyIgnoresMaturity: this.config.denyIgnoresMaturity ?? false,
+    });
 
     let actionResults: readonly ActionResult[] = Object.freeze([]);
 

@@ -4,6 +4,44 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Changed — the hook verdict now respects rule maturity (BEHAVIOUR CHANGE)
+
+- **`computeVerdict()` caps each match's outcome by `rule.maturity`.** `stable`
+  keeps the existing severity/confidence matrix; `test` reaches at most `ask`;
+  `experimental`, `draft`, `deprecated`, and any missing or unrecognised value
+  reach at most `allow`. An undeterminable maturity is treated as the most
+  restrictive, never as `stable`.
+
+  Why it was reachable: `src/engine.ts` gates firing by lane, but `lane`
+  defaults to `hunt`, which admits every maturity, and no shipped code path sets
+  `enforce`. So a single `maturity: experimental` rule at `severity: critical`
+  produced `permissionDecision: deny` — an auto-block on the authority of a rule
+  whose false-positive rate was never measured.
+
+- **The ceiling is applied per rule, then folded by taking the strictest
+  outcome** — not "highest severity match, then cap". Under the shortcut an
+  `experimental` + `critical` match would clamp to `allow` and *suppress* a
+  co-firing `stable` + `medium` match's `ask`; a rule with less evidence could
+  lower the verdict of a rule with more.
+
+- Detection is unchanged: matches, `matchCount`, `highestSeverity`,
+  `verdict.actions` and every alert are exactly as before. Only blocking
+  authority moves. When the ceiling lowers a verdict, `verdict.reason` says so.
+
+- **Opt-out:** `denyIgnoresMaturity: true` (on `ATREngineConfig`, or as the
+  second argument to `computeVerdict`) restores the previous
+  severity-and-confidence-only behaviour. It defaults to `false`.
+
+- Effect on the current rule set (777 rules the engine will load): rules able to
+  reach `deny` fall from 271 `critical` to the 43 that are `maturity: stable`,
+  and from 421 `high` to 51. 206 `critical` / 321 `high` become `ask`; the rest
+  become `allow`. No rule file changed.
+
+- The three synthetic runtime rules (tier-2.5 embedding, layer-2 fingerprint
+  drift, layer-3 semantic judge) now declare `maturity: 'test'` explicitly
+  rather than inheriting `allow` from an absent field. The layer-3 synthetic
+  match consequently asks instead of denying at `threat_score >= 0.9`.
+
 ### Fixed — published benchmark numbers
 
 - **Withdrew two garak figures that no measurement file backed.** From 2026-08-04

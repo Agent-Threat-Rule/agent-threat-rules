@@ -34,11 +34,18 @@
  * WHAT IT DOES NOT BUY (measured, so it cannot be overclaimed)
  *
  * `response.actions` feeds the ActionExecutor. It does NOT feed the hook
- * verdict: `src/verdict.ts` computeVerdict derives allow/ask/deny from severity
- * and confidence alone, and `toClaudeCodePreToolUse` maps that verdict to
+ * verdict: `computeVerdict` derives allow/ask/deny without reading
+ * `response.actions` at all, and `toClaudeCodePreToolUse` maps that verdict to
  * `permissionDecision`. Stripping every action off a `severity: critical` rule
- * leaves `permissionDecision: deny` unchanged. This module governs executed
- * response actions, not the hook's block decision.
+ * leaves the hook decision untouched. This module governs executed response
+ * actions, not the hook's block decision.
+ *
+ * The hook decision has its own, weaker guard: `src/verdict.ts` caps each
+ * match's outcome by `rule.maturity` (stable may deny, test may at most ask,
+ * anything else — including an absent maturity — may at most allow). That is a
+ * label check, not a measurement check, so it does not subsume this module: a
+ * `maturity: stable` rule that false-positives can still deny there, while the
+ * ladder here reads the measured rate and would pull its blocking actions.
  *
  * THE LADDER
  *

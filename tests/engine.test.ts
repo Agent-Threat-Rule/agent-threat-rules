@@ -18,6 +18,10 @@ function semanticRule(
     title: 'Semantic Test Rule',
     id: 'ATR-2026-99999',
     status: 'experimental',
+    // Declared so the verdict assertions below exercise the semantic path
+    // rather than the maturity ceiling in src/verdict.ts (an unset maturity
+    // caps a match at `allow`).
+    maturity: 'stable',
     description: 'Detects semantic test threats using a judge.',
     author: 'test',
     date: '2026/05/30',

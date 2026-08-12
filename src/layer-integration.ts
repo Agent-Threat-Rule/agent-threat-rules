@@ -67,6 +67,10 @@ function buildAnomalyRule(anomaly: BehaviorAnomaly): ATRRule {
     title: `Skill Behavior Drift: ${anomaly.anomalyType}`,
     id: `layer2-fingerprint-${anomaly.anomalyType}-${anomaly.skillName}`,
     status: 'experimental',
+    // Explicit because src/verdict.ts caps a match's verdict by its maturity.
+    // A behavioural-drift heuristic has no wild false-positive measurement, so
+    // it may raise a question (`ask`) but must not auto-block on its own.
+    maturity: 'test',
     description: anomaly.description,
     author: 'atr-engine/layer2',
     date: new Date(anomaly.timestamp).toISOString().slice(0, 10),
@@ -207,6 +211,12 @@ export async function runSemanticLayer(
       title: 'Semantic Threat Detected (Layer 3)',
       id: 'layer3-semantic-threat',
       status: 'experimental',
+      // Explicit because src/verdict.ts caps a match's verdict by its maturity.
+      // An LLM judge's score is unmeasured against any benign corpus, so this
+      // synthetic match may interrupt for a human decision (`ask`) but is not
+      // allowed to auto-block by itself. BEHAVIOUR CHANGE: before the maturity
+      // cap, a threat_score >= 0.9 produced `deny` here.
+      maturity: 'test',
       description: result.description,
       author: 'atr-engine/layer3',
       date: new Date().toISOString().slice(0, 10),

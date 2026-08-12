@@ -9,10 +9,18 @@ import { describe, it, expect } from 'vitest';
 import { computeVerdict, isAutoResponseEnabled, SEVERITY_RANK } from '../src/verdict.js';
 import type { ATRMatch, ATRRule, ATRSeverity } from '../src/types.js';
 
-/** Build a minimal ATRRule with the given severity and actions */
+/**
+ * Build a minimal ATRRule with the given severity and actions.
+ *
+ * `maturity` defaults to `stable` because these cases exercise the
+ * severity/confidence matrix, and since the verdict is also capped by maturity
+ * (see tests/verdict-maturity.test.ts) a fixture that left the field unset
+ * would silently be testing the ceiling instead of the matrix.
+ */
 function makeRule(overrides: {
   id?: string;
   severity?: ATRSeverity;
+  maturity?: string;
   actions?: string[];
   auto_response_threshold?: string;
   title?: string;
@@ -21,6 +29,7 @@ function makeRule(overrides: {
     id: overrides.id ?? 'TEST-001',
     title: overrides.title ?? 'Test Rule',
     status: 'stable',
+    maturity: overrides.maturity ?? 'stable',
     description: 'A test rule',
     author: 'test',
     date: '2026-01-01',
