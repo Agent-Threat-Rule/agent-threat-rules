@@ -32,7 +32,7 @@ columns are still extracted from ATR metadata, not authored here.
 - Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 197
 - Distinct enterprise ATT&CK techniques referenced: 80
 - Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 784
-- Distinct MITRE ATLAS techniques referenced: 43
+- Distinct MITRE ATLAS techniques referenced: 44
 - Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 784
 - ATR categories (distinct `tags.category` values): 9
 
@@ -389,7 +389,7 @@ ATT&CK techniques (join key):
 | T1552 | Unsecured Credentials | `ATR-2026-00534`, `ATR-2026-01931` |
 | T1552.001 | Credentials In Files | `ATR-2026-00576` |
 
-ATLAS techniques ATR adds: AML.T0010, AML.T0010.005, AML.T0019, AML.T0024, AML.T0040, AML.T0049, AML.T0051, AML.T0051.001, AML.T0053, AML.T0056, AML.T0057, AML.T0069, AML.T0070, AML.T0104, AML.T0110
+ATLAS techniques ATR adds: AML.T0010, AML.T0010.005, AML.T0019, AML.T0024, AML.T0040, AML.T0049, AML.T0051, AML.T0051.001, AML.T0053, AML.T0056, AML.T0057, AML.T0069, AML.T0070, AML.T0104, AML.T0110.000, {'AML.T0110.000
 
 OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:2026, ASI05:2026, ASI06:2026, ASI07:2026, ASI08:2026, ASI09:2026
 
