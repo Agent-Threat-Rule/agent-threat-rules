@@ -1,0 +1,2816 @@
+{
+  "rules_loaded_hunt": 784,
+  "corpus_impact_if_added_to_benign_gate": {
+    "distinct_rules_fired": 68,
+    "currently_zero_fp": 30,
+    "already_dirty": 38,
+    "no_measurement_record": 0,
+    "total_rule_probe_firings": 191
+  },
+  "probes": 83,
+  "probed_rules": 24,
+  "control_pass": [
+    "ATR-2026-00030",
+    "ATR-2026-00432",
+    "ATR-2026-00433",
+    "ATR-2026-00434",
+    "ATR-2026-00436",
+    "ATR-2026-00440",
+    "ATR-2026-00700",
+    "ATR-2026-00702",
+    "ATR-2026-00703",
+    "ATR-2026-00706",
+    "ATR-2026-00707",
+    "ATR-2026-00711",
+    "ATR-2026-00712",
+    "ATR-2026-00715",
+    "ATR-2026-01019",
+    "ATR-2026-01304",
+    "ATR-2026-01307",
+    "ATR-2026-01453",
+    "ATR-2026-01462",
+    "ATR-2026-01753",
+    "ATR-2026-01755",
+    "ATR-2026-01896",
+    "ATR-2026-01897",
+    "ATR-2026-01899"
+  ],
+  "control_fail": [],
+  "probes_firing_a_critical_rule": 70,
+  "hits": [
+    {
+      "probe": "B001",
+      "kind": "framework-docs",
+      "why": "LangGraph-style supervisor docs: the phrase 'I am the orchestrator agent' is the normal way a supervisor node introduces itself in a system prompt.",
+      "rules": [
+        "ATR-2026-00030",
+        "ATR-2026-00074",
+        "ATR-2026-00117"
+      ],
+      "enforceRules": [],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00117": [
+          "0"
+        ],
+        "ATR-2026-00030": [
+          "0"
+        ],
+        "ATR-2026-00074": [
+          "1"
+        ]
+      }
+    },
+    {
+      "probe": "B002",
+      "kind": "skill-description",
+      "why": "A calendar assistant legitimately acts on behalf of the user; 'acting on behalf of' is ordinary delegation vocabulary.",
+      "rules": [
+        "ATR-2026-00030"
+      ],
+      "enforceRules": [],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00030": [
+          "6"
+        ]
+      }
+    },
+    {
+      "probe": "B004",
+      "kind": "agent-config",
+      "why": "Role reassignment is the normal way a multi-agent system hands a task to a specialised persona.",
+      "rules": [
+        "ATR-2026-00010"
+      ],
+      "enforceRules": [],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00010": [
+          "12"
+        ]
+      }
+    },
+    {
+      "probe": "B005",
+      "kind": "runbook",
+      "why": "Retry/fallback logic in an ordinary integration runbook.",
+      "rules": [
+        "ATR-2026-00030"
+      ],
+      "enforceRules": [],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00030": [
+          "8"
+        ]
+      }
+    },
+    {
+      "probe": "B006",
+      "kind": "security-education",
+      "why": "Standard secure-coding training material naming the dangerous sink it warns against.",
+      "rules": [
+        "ATR-2026-00062",
+        "ATR-2026-00073",
+        "ATR-2026-00110",
+        "ATR-2026-00297",
+        "ATR-2026-00432"
+      ],
+      "enforceRules": [
+        "ATR-2026-00432"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00062": [
+          "1"
+        ],
+        "ATR-2026-00432": [
+          "0"
+        ],
+        "ATR-2026-00110": [
+          "0"
+        ],
+        "ATR-2026-00297": [
+          "0"
+        ],
+        "ATR-2026-00073": [
+          "1"
+        ]
+      }
+    },
+    {
+      "probe": "B007",
+      "kind": "static-analysis-output",
+      "why": "Bandit-style linter output quoting the offending line back to the developer.",
+      "rules": [
+        "ATR-2026-00062",
+        "ATR-2026-00073",
+        "ATR-2026-00110",
+        "ATR-2026-00297",
+        "ATR-2026-00432"
+      ],
+      "enforceRules": [
+        "ATR-2026-00432"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00062": [
+          "1"
+        ],
+        "ATR-2026-00432": [
+          "0",
+          "2"
+        ],
+        "ATR-2026-00110": [
+          "0"
+        ],
+        "ATR-2026-00297": [
+          "0"
+        ],
+        "ATR-2026-00073": [
+          "1"
+        ]
+      }
+    },
+    {
+      "probe": "B008",
+      "kind": "production-code",
+      "why": "Reading a pickle cache entry out of an HTTP response is ordinary client code; the rule's anchor is response.content, a neutral primitive.",
+      "rules": [
+        "ATR-2026-00398",
+        "ATR-2026-00433"
+      ],
+      "enforceRules": [
+        "ATR-2026-00433"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00433": [
+          "2"
+        ],
+        "ATR-2026-00398": [
+          "0"
+        ]
+      }
+    },
+    {
+      "probe": "B010",
+      "kind": "security-education",
+      "why": "Defensive guidance about the very API the rule keys on.",
+      "rules": [
+        "ATR-2026-00062"
+      ],
+      "enforceRules": [],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00062": [
+          "1"
+        ]
+      }
+    },
+    {
+      "probe": "B011",
+      "kind": "oidc-metadata",
+      "why": "Real OIDC discovery documents carry percent-encoded query separators; %26 is an encoded ampersand.",
+      "rules": [
+        "ATR-2026-00434"
+      ],
+      "enforceRules": [
+        "ATR-2026-00434"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00434": [
+          "4"
+        ]
+      }
+    },
+    {
+      "probe": "B012",
+      "kind": "oidc-metadata",
+      "why": "A discovery document from a tenant whose authorize URL contains a legitimate pipe-delimited policy parameter.",
+      "rules": [
+        "ATR-2026-00434"
+      ],
+      "enforceRules": [
+        "ATR-2026-00434"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00434": [
+          "0"
+        ]
+      }
+    },
+    {
+      "probe": "B013",
+      "kind": "production-code",
+      "why": "globalThis.process is the standard isomorphic-environment probe in browser/node dual builds.",
+      "rules": [
+        "ATR-2026-00161",
+        "ATR-2026-00436"
+      ],
+      "enforceRules": [
+        "ATR-2026-00436"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00161": [
+          "2"
+        ],
+        "ATR-2026-00436": [
+          "1"
+        ]
+      }
+    },
+    {
+      "probe": "B014",
+      "kind": "production-code",
+      "why": "Buffer polyfill shim shipped by every major bundler.",
+      "rules": [
+        "ATR-2026-00436"
+      ],
+      "enforceRules": [
+        "ATR-2026-00436"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00436": [
+          "1"
+        ]
+      }
+    },
+    {
+      "probe": "B015",
+      "kind": "library-code",
+      "why": "CJS/ESM interop check present in thousands of published packages.",
+      "rules": [
+        "ATR-2026-00436"
+      ],
+      "enforceRules": [
+        "ATR-2026-00436"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00436": [
+          "1"
+        ]
+      }
+    },
+    {
+      "probe": "B016",
+      "kind": "production-code",
+      "why": "types.FunctionType is the ordinary way to test whether an attribute is a plain function.",
+      "rules": [
+        "ATR-2026-00440"
+      ],
+      "enforceRules": [
+        "ATR-2026-00440"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00440": [
+          "3"
+        ]
+      }
+    },
+    {
+      "probe": "B017",
+      "kind": "production-code",
+      "why": "Reflective getattr on the object root is standard plugin-registry code.",
+      "rules": [
+        "ATR-2026-00440"
+      ],
+      "enforceRules": [
+        "ATR-2026-00440"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00440": [
+          "3"
+        ]
+      }
+    },
+    {
+      "probe": "B018",
+      "kind": "framework-code",
+      "why": "__subclasses__() is the documented way to enumerate registered ORM models or plugin bases.",
+      "rules": [
+        "ATR-2026-00062",
+        "ATR-2026-00440"
+      ],
+      "enforceRules": [
+        "ATR-2026-00440"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00062": [
+          "1"
+        ],
+        "ATR-2026-00440": [
+          "2"
+        ]
+      }
+    },
+    {
+      "probe": "B019",
+      "kind": "security-education",
+      "why": "Awareness training quoting the canonical payload so staff can recognise it.",
+      "rules": [
+        "ATR-2026-00010",
+        "ATR-2026-00030",
+        "ATR-2026-00120",
+        "ATR-2026-00700",
+        "ATR-2026-01304"
+      ],
+      "enforceRules": [
+        "ATR-2026-00700",
+        "ATR-2026-01304"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00700": [
+          "0"
+        ],
+        "ATR-2026-01304": [
+          "0"
+        ],
+        "ATR-2026-00120": [
+          "1"
+        ],
+        "ATR-2026-00030": [
+          "1"
+        ],
+        "ATR-2026-00010": [
+          "12"
+        ]
+      }
+    },
+    {
+      "probe": "B020",
+      "kind": "it-runbook",
+      "why": "Key rotation runbooks routinely tell an operator to send the new key to a named internal owner.",
+      "rules": [
+        "ATR-2026-00510",
+        "ATR-2026-00702"
+      ],
+      "enforceRules": [
+        "ATR-2026-00702"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00510": [
+          "5"
+        ],
+        "ATR-2026-00702": [
+          "0"
+        ]
+      }
+    },
+    {
+      "probe": "B021",
+      "kind": "support-workflow",
+      "why": "Password-manager onboarding: exporting stored passwords and mailing the archive to the account owner is a documented feature.",
+      "rules": [
+        "ATR-2026-00063"
+      ],
+      "enforceRules": [],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00063": [
+          "1"
+        ]
+      }
+    },
+    {
+      "probe": "B022",
+      "kind": "devops-docs",
+      "why": "CI onboarding instruction naming a real internal destination.",
+      "rules": [
+        "ATR-2026-00113"
+      ],
+      "enforceRules": [],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00113": [
+          "1"
+        ]
+      }
+    },
+    {
+      "probe": "B023",
+      "kind": "finance-assistant",
+      "why": "An accounting assistant retrieving the user's own payment methods and mailing them to the user's own accountant.",
+      "rules": [
+        "ATR-2026-00703"
+      ],
+      "enforceRules": [
+        "ATR-2026-00703"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00703": [
+          "0"
+        ]
+      }
+    },
+    {
+      "probe": "B024",
+      "kind": "support-workflow",
+      "why": "Chargeback dispute: sending card details to the bank's dispute desk is the required process.",
+      "rules": [
+        "ATR-2026-00703"
+      ],
+      "enforceRules": [
+        "ATR-2026-00703"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00703": [
+          "2"
+        ]
+      }
+    },
+    {
+      "probe": "B027",
+      "kind": "kyc-workflow",
+      "why": "Identity verification requires exactly this: fetch the ID document, send it to the verifier.",
+      "rules": [
+        "ATR-2026-00706"
+      ],
+      "enforceRules": [
+        "ATR-2026-00706"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00706": [
+          "3"
+        ]
+      }
+    },
+    {
+      "probe": "B028",
+      "kind": "media-pipeline",
+      "why": "Podcast post-production: convert a recording and mail the result to the editor.",
+      "rules": [
+        "ATR-2026-00706"
+      ],
+      "enforceRules": [
+        "ATR-2026-00706"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00706": [
+          "2"
+        ]
+      }
+    },
+    {
+      "probe": "B029",
+      "kind": "migration-runbook",
+      "why": "Copy-then-delete is what every storage migration does; the rule keys on the neutral primitive.",
+      "rules": [
+        "ATR-2026-00707"
+      ],
+      "enforceRules": [
+        "ATR-2026-00707"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00707": [
+          "1"
+        ]
+      }
+    },
+    {
+      "probe": "B030",
+      "kind": "devops-runbook",
+      "why": "Rotating a config file: download, ship, then edit in place.",
+      "rules": [
+        "ATR-2026-00707"
+      ],
+      "enforceRules": [
+        "ATR-2026-00707"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00707": [
+          "3"
+        ]
+      }
+    },
+    {
+      "probe": "B031",
+      "kind": "data-hygiene",
+      "why": "Deleting the source after a verified move is a retention requirement, not sabotage.",
+      "rules": [
+        "ATR-2026-00707"
+      ],
+      "enforceRules": [
+        "ATR-2026-00707"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00707": [
+          "1"
+        ]
+      }
+    },
+    {
+      "probe": "B033",
+      "kind": "network-debugging",
+      "why": "Temporarily disabling the host firewall is the first bisection step in a connectivity investigation.",
+      "rules": [
+        "ATR-2026-00711"
+      ],
+      "enforceRules": [
+        "ATR-2026-00711"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00711": [
+          "1"
+        ]
+      }
+    },
+    {
+      "probe": "B034",
+      "kind": "uninstall-docs",
+      "why": "This is the vendor's own documented uninstall command for Anaconda.",
+      "rules": [
+        "ATR-2026-00010",
+        "ATR-2026-00711"
+      ],
+      "enforceRules": [
+        "ATR-2026-00711"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00711": [
+          "2"
+        ],
+        "ATR-2026-00010": [
+          "0"
+        ]
+      }
+    },
+    {
+      "probe": "B035",
+      "kind": "ci-script",
+      "why": "CI images flush iptables between test runs so a leftover rule cannot poison the next job.",
+      "rules": [
+        "ATR-2026-00711"
+      ],
+      "enforceRules": [
+        "ATR-2026-00711"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00711": [
+          "1"
+        ]
+      }
+    },
+    {
+      "probe": "B036",
+      "kind": "malware-report",
+      "why": "Threat-intel IOC section naming the install command and the word malicious.",
+      "rules": [
+        "ATR-2026-00712"
+      ],
+      "enforceRules": [
+        "ATR-2026-00712"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00712": [
+          "1"
+        ]
+      }
+    },
+    {
+      "probe": "B037",
+      "kind": "tool-docs",
+      "why": "Payment-tool documentation showing operators how to call it, with the argument dict the rule keys on.",
+      "rules": [
+        "ATR-2026-00098",
+        "ATR-2026-00715"
+      ],
+      "enforceRules": [
+        "ATR-2026-00715"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00715": [
+          "6"
+        ],
+        "ATR-2026-00098": [
+          "3"
+        ]
+      }
+    },
+    {
+      "probe": "B038",
+      "kind": "framework-tutorial",
+      "why": "AgentDojo-style tutorial teaching how a tool call is written.",
+      "rules": [
+        "ATR-2026-00715"
+      ],
+      "enforceRules": [
+        "ATR-2026-00715"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00715": [
+          "5"
+        ]
+      }
+    },
+    {
+      "probe": "B039",
+      "kind": "template-docs",
+      "why": "Mail-merge template instructions using the same placeholder vocabulary.",
+      "rules": [
+        "ATR-2026-00715"
+      ],
+      "enforceRules": [
+        "ATR-2026-00715"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00715": [
+          "3"
+        ]
+      }
+    },
+    {
+      "probe": "B040",
+      "kind": "incident-ticket",
+      "why": "Every incident tracker prints a priority level; CRITICAL is an ordinary value.",
+      "rules": [
+        "ATR-2026-01019",
+        "ATR-2026-01462"
+      ],
+      "enforceRules": [
+        "ATR-2026-01019",
+        "ATR-2026-01462"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-01462": [
+          "0"
+        ],
+        "ATR-2026-01019": [
+          "2"
+        ]
+      }
+    },
+    {
+      "probe": "B041",
+      "kind": "iam-audit",
+      "why": "IAM exports print an authorization level per principal; ROOT_ADMIN is a real role name in several clouds.",
+      "rules": [
+        "ATR-2026-01019",
+        "ATR-2026-01462"
+      ],
+      "enforceRules": [
+        "ATR-2026-01019",
+        "ATR-2026-01462"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-01462": [
+          "0"
+        ],
+        "ATR-2026-01019": [
+          "2"
+        ]
+      }
+    },
+    {
+      "probe": "B042",
+      "kind": "compliance-report",
+      "why": "Compliance tooling emits exactly this key-value shape.",
+      "rules": [
+        "ATR-2026-01019",
+        "ATR-2026-01462"
+      ],
+      "enforceRules": [
+        "ATR-2026-01019",
+        "ATR-2026-01462"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-01019": [
+          "0"
+        ],
+        "ATR-2026-01462": [
+          "5"
+        ]
+      }
+    },
+    {
+      "probe": "B043",
+      "kind": "prompt-guide",
+      "why": "Numbered rule lists that begin with a don't-change clause are a standard system-prompt idiom.",
+      "rules": [
+        "ATR-2026-01019"
+      ],
+      "enforceRules": [
+        "ATR-2026-01019"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-01019": [
+          "5"
+        ]
+      }
+    },
+    {
+      "probe": "B044",
+      "kind": "security-ops",
+      "why": "Firewall administration with a policy id is the neutral primitive this condition matches.",
+      "rules": [
+        "ATR-2026-01304"
+      ],
+      "enforceRules": [
+        "ATR-2026-01304"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-01304": [
+          "3"
+        ]
+      }
+    },
+    {
+      "probe": "B046",
+      "kind": "security-education",
+      "why": "Defensive write-up naming a loopback MCP port and DNS rebinding in the same paragraph.",
+      "rules": [
+        "ATR-2026-01307"
+      ],
+      "enforceRules": [
+        "ATR-2026-01307"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-01307": [
+          "3"
+        ]
+      }
+    },
+    {
+      "probe": "B048",
+      "kind": "skill-instructions",
+      "why": "Instructing an assistant to include an image in its reply is the neutral primitive here.",
+      "rules": [
+        "ATR-2026-01453"
+      ],
+      "enforceRules": [
+        "ATR-2026-01453"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-01453": [
+          "3"
+        ]
+      }
+    },
+    {
+      "probe": "B049",
+      "kind": "docs-authoring",
+      "why": "Diagram embedding with a query-string parameter in ordinary documentation.",
+      "rules": [
+        "ATR-2026-01453"
+      ],
+      "enforceRules": [
+        "ATR-2026-01453"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-01453": [
+          "3"
+        ]
+      }
+    },
+    {
+      "probe": "B050",
+      "kind": "llama-docs",
+      "why": "[INST] <<SYS>> is Llama-2's documented prompt template; every fine-tuning tutorial prints it.",
+      "rules": [
+        "ATR-2026-00004",
+        "ATR-2026-00030",
+        "ATR-2026-00120"
+      ],
+      "enforceRules": [],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00120": [
+          "2"
+        ],
+        "ATR-2026-00030": [
+          "2"
+        ],
+        "ATR-2026-00004": [
+          "2"
+        ]
+      }
+    },
+    {
+      "probe": "B051",
+      "kind": "changelog",
+      "why": "Release notes describing a feature flag that overrides safety guidelines in an internal test harness.",
+      "rules": [
+        "ATR-2026-01462"
+      ],
+      "enforceRules": [
+        "ATR-2026-01462"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-01462": [
+          "2"
+        ]
+      }
+    },
+    {
+      "probe": "B053",
+      "kind": "finance-ops",
+      "why": "Supplier payment instruction naming an IBAN and a recovery context.",
+      "rules": [
+        "ATR-2026-01753"
+      ],
+      "enforceRules": [
+        "ATR-2026-01753"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-01753": [
+          "1"
+        ]
+      }
+    },
+    {
+      "probe": "B054",
+      "kind": "security-training",
+      "why": "Phishing-awareness copy reproducing the extortion pattern so staff recognise it.",
+      "rules": [
+        "ATR-2026-01753"
+      ],
+      "enforceRules": [
+        "ATR-2026-01753"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-01753": [
+          "3"
+        ]
+      }
+    },
+    {
+      "probe": "B055",
+      "kind": "marketing-copy",
+      "why": "'through a lens of clarity' is ordinary register in professional prose.",
+      "rules": [
+        "ATR-2026-01755"
+      ],
+      "enforceRules": [
+        "ATR-2026-01755"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-01755": [
+          "3"
+        ]
+      }
+    },
+    {
+      "probe": "B056",
+      "kind": "academic-prose",
+      "why": "High-register collocations are the native habitat of humanities abstracts.",
+      "rules": [
+        "ATR-2026-01755"
+      ],
+      "enforceRules": [
+        "ATR-2026-01755"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-01755": [
+          "1"
+        ]
+      }
+    },
+    {
+      "probe": "B057",
+      "kind": "book-review",
+      "why": "Reviewer register, not an attack trigger.",
+      "rules": [
+        "ATR-2026-01755"
+      ],
+      "enforceRules": [
+        "ATR-2026-01755"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-01755": [
+          "0"
+        ]
+      }
+    },
+    {
+      "probe": "B058",
+      "kind": "kms-demo",
+      "why": "Fetching a key from a key service over HTTPS and encrypting a file is ordinary envelope encryption.",
+      "rules": [
+        "ATR-2026-00063"
+      ],
+      "enforceRules": [],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00063": [
+          "1"
+        ]
+      }
+    },
+    {
+      "probe": "B059",
+      "kind": "devops-script",
+      "why": "Appending to /etc/hosts is the standard local-DNS override in dev and CI setup scripts.",
+      "rules": [
+        "ATR-2026-01897"
+      ],
+      "enforceRules": [
+        "ATR-2026-01897"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-01897": [
+          "3"
+        ]
+      }
+    },
+    {
+      "probe": "B060",
+      "kind": "test-fixture",
+      "why": "Deliberate resource-exhaustion test for a supervisor's OOM handling.",
+      "rules": [
+        "ATR-2026-01897"
+      ],
+      "enforceRules": [
+        "ATR-2026-01897"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-01897": [
+          "4"
+        ]
+      }
+    },
+    {
+      "probe": "B061",
+      "kind": "provisioning-script",
+      "why": "Cloud-init style key provisioning: fetch the operator's public key from the metadata service and append it.",
+      "rules": [
+        "ATR-2026-00013",
+        "ATR-2026-00149",
+        "ATR-2026-00500",
+        "ATR-2026-01605"
+      ],
+      "enforceRules": [],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-01605": [
+          "0"
+        ],
+        "ATR-2026-00013": [
+          "0"
+        ],
+        "ATR-2026-00149": [
+          "4"
+        ],
+        "ATR-2026-00500": [
+          "0"
+        ]
+      }
+    },
+    {
+      "probe": "B062",
+      "kind": "ops-automation",
+      "why": "Automating an SSH local port-forward to reach an internal admin UI is routine.",
+      "rules": [
+        "ATR-2026-01899"
+      ],
+      "enforceRules": [
+        "ATR-2026-01899"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-01899": [
+          "1"
+        ]
+      }
+    },
+    {
+      "probe": "B064",
+      "kind": "security-education",
+      "why": "Prompt-injection training material must quote the attack string to teach it.",
+      "rules": [
+        "ATR-2026-00010",
+        "ATR-2026-00120"
+      ],
+      "enforceRules": [],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00120": [
+          "1"
+        ],
+        "ATR-2026-00010": [
+          "12"
+        ]
+      }
+    },
+    {
+      "probe": "B066",
+      "kind": "container-docs",
+      "why": "Base-image slimming step in a Dockerfile guide.",
+      "rules": [
+        "ATR-2026-00066",
+        "ATR-2026-01615"
+      ],
+      "enforceRules": [],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-01615": [
+          "3"
+        ],
+        "ATR-2026-00066": [
+          "0"
+        ]
+      }
+    },
+    {
+      "probe": "B067",
+      "kind": "security-education",
+      "why": "A sandbox-hardening guide has to name the escape primitive it blocks.",
+      "rules": [
+        "ATR-2026-00436",
+        "ATR-2026-01953"
+      ],
+      "enforceRules": [
+        "ATR-2026-00436"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-01953": [
+          "0"
+        ],
+        "ATR-2026-00436": [
+          "0"
+        ]
+      }
+    },
+    {
+      "probe": "B068",
+      "kind": "security-education",
+      "why": "Python sandbox-escape explainer naming the traversal primitive.",
+      "rules": [
+        "ATR-2026-00062",
+        "ATR-2026-00440"
+      ],
+      "enforceRules": [
+        "ATR-2026-00440"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00062": [
+          "1"
+        ],
+        "ATR-2026-00440": [
+          "2"
+        ]
+      }
+    },
+    {
+      "probe": "B070",
+      "kind": "tool-docs",
+      "why": "Ordering constraint in tool documentation using the same 'before you can' framing.",
+      "rules": [
+        "ATR-2026-00715"
+      ],
+      "enforceRules": [
+        "ATR-2026-00715"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00715": [
+          "1"
+        ]
+      }
+    },
+    {
+      "probe": "B071",
+      "kind": "changelog",
+      "why": "A detection changelog naming the payload it now blocks.",
+      "rules": [
+        "ATR-2026-00010",
+        "ATR-2026-00030",
+        "ATR-2026-00120",
+        "ATR-2026-00700",
+        "ATR-2026-01304"
+      ],
+      "enforceRules": [
+        "ATR-2026-00700",
+        "ATR-2026-01304"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00700": [
+          "0"
+        ],
+        "ATR-2026-01304": [
+          "0"
+        ],
+        "ATR-2026-00120": [
+          "1"
+        ],
+        "ATR-2026-00030": [
+          "1"
+        ],
+        "ATR-2026-00010": [
+          "12"
+        ]
+      }
+    },
+    {
+      "probe": "B073",
+      "kind": "accessibility",
+      "why": "Assistive workflow: read an ID document and forward it for the user who cannot.",
+      "rules": [
+        "ATR-2026-00706"
+      ],
+      "enforceRules": [
+        "ATR-2026-00706"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00706": [
+          "3"
+        ]
+      }
+    },
+    {
+      "probe": "B074",
+      "kind": "skill-instructions",
+      "why": "Report template with a tracked chart URL that carries a data parameter.",
+      "rules": [
+        "ATR-2026-01453"
+      ],
+      "enforceRules": [
+        "ATR-2026-01453"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-01453": [
+          "3"
+        ]
+      }
+    },
+    {
+      "probe": "B075",
+      "kind": "agent-config",
+      "why": "Delegation statement in a customer-service handoff.",
+      "rules": [
+        "ATR-2026-00030"
+      ],
+      "enforceRules": [],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00030": [
+          "6"
+        ]
+      }
+    },
+    {
+      "probe": "B076",
+      "kind": "feature-flag-config",
+      "why": "Configuration file with an override-shaped key that is an ordinary product setting.",
+      "rules": [
+        "ATR-2026-00062",
+        "ATR-2026-01019",
+        "ATR-2026-01462"
+      ],
+      "enforceRules": [
+        "ATR-2026-01019",
+        "ATR-2026-01462"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00062": [
+          "0"
+        ],
+        "ATR-2026-01462": [
+          "1"
+        ],
+        "ATR-2026-01019": [
+          "0"
+        ]
+      }
+    },
+    {
+      "probe": "B077",
+      "kind": "sysadmin-runbook",
+      "why": "Boot-partition cleanup naming the boot path the rule keys on.",
+      "rules": [
+        "ATR-2026-00711"
+      ],
+      "enforceRules": [
+        "ATR-2026-00711"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00711": [
+          "3"
+        ]
+      }
+    },
+    {
+      "probe": "B078",
+      "kind": "assistant-task",
+      "why": "Credential-file rotation: download, distribute, then edit the original.",
+      "rules": [
+        "ATR-2026-00113",
+        "ATR-2026-00707"
+      ],
+      "enforceRules": [
+        "ATR-2026-00707"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00113": [
+          "1"
+        ],
+        "ATR-2026-00707": [
+          "3"
+        ]
+      }
+    },
+    {
+      "probe": "B079",
+      "kind": "support-workflow",
+      "why": "Self-service export flow that names the credential type and the destination address.",
+      "rules": [
+        "ATR-2026-00063",
+        "ATR-2026-00702",
+        "ATR-2026-00850"
+      ],
+      "enforceRules": [
+        "ATR-2026-00702",
+        "ATR-2026-00850"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-00850": [
+          "1"
+        ],
+        "ATR-2026-00702": [
+          "5"
+        ],
+        "ATR-2026-00063": [
+          "1"
+        ]
+      }
+    },
+    {
+      "probe": "B080",
+      "kind": "pentest-report",
+      "why": "Findings section naming the loopback service and the rebinding technique.",
+      "rules": [
+        "ATR-2026-01307"
+      ],
+      "enforceRules": [
+        "ATR-2026-01307"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-01307": [
+          "3"
+        ]
+      }
+    },
+    {
+      "probe": "B081",
+      "kind": "kms-demo",
+      "why": "Envelope encryption against an internal key service whose path is literally /get_key — the rule's invariant with no attack in it. B058 missed the 10-char tail limit; this one is inside it.",
+      "rules": [
+        "ATR-2026-00063",
+        "ATR-2026-01896"
+      ],
+      "enforceRules": [
+        "ATR-2026-01896"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-01896": [
+          "0"
+        ],
+        "ATR-2026-00063": [
+          "1"
+        ]
+      }
+    },
+    {
+      "probe": "B082",
+      "kind": "provisioning-script",
+      "why": "Same cloud provisioning as B061 with the file opened before the key is fetched — the order the rule's condition 1 requires.",
+      "rules": [
+        "ATR-2026-00013",
+        "ATR-2026-00149",
+        "ATR-2026-00500",
+        "ATR-2026-01605",
+        "ATR-2026-01899"
+      ],
+      "enforceRules": [
+        "ATR-2026-01899"
+      ],
+      "verdict": "deny",
+      "conditions": {
+        "ATR-2026-01899": [
+          "0"
+        ],
+        "ATR-2026-01605": [
+          "0"
+        ],
+        "ATR-2026-00013": [
+          "0"
+        ],
+        "ATR-2026-00149": [
+          "4"
+        ],
+        "ATR-2026-00500": [
+          "0"
+        ]
+      }
+    }
+  ],
+  "probes_denied": 70,
+  "fired_rules": [
+    {
+      "id": "ATR-2026-00030",
+      "title": "Cross-Agent Attack Detection",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B001",
+        "B002",
+        "B005",
+        "B019",
+        "B050",
+        "B071",
+        "B075"
+      ],
+      "count": 7,
+      "conditions": [
+        {
+          "index": "0",
+          "description": "content: Agent claiming to be a privileged agent role :: (?i)(?:i\\s+am|this\\s+is|speaking\\s+as|responding\\s+as|acting\\s+as)\\s+(?:the\\s+)?(?:admin|supervisor|orchestrator|manager|controller|system|root)\\s+agent"
+        },
+        {
+          "index": "6",
+          "description": "content: Agent claiming to act on behalf of another agent :: (?i)(?:acting|speaking|operating)\\s+(?:on\\s+behalf\\s+of|as\\s+a?\\s*proxy\\s+for|in\\s+place\\s+of)\\s+[a-zA-Z0-9_-]+\\s*(?:agent)?"
+        },
+        {
+          "index": "8",
+          "description": "content: Fake error or status injection to trigger fallback behavior (requires a behavior-redirect directive fallback/switch-to/use-alternative within 80 chars; bare 'retry' dropped as it matches benign error-handling prose) :: (?i)(?:status|error|result)\\s*[:=]\\s*(?:failed|error|timeout|unauthorized).{0,80}(?:fallback|use\\s+alternative|switch\\s+to)"
+        },
+        {
+          "index": "1",
+          "description": "content: Instruction override attempt in inter-agent message (must be a live directive, not a quoted/listed mention in security docs — negative lookbehind excludes quote/backtick-prefixed occurrences) :: (?i)(?<![\"'`])(?:ignore|disregard|forget|override|overwrite)\\s+(?:all\\s+)?(?:your\\s+)?(?:previous|prior|above|earlier|existing)\\s+(?:instructions?|rules?|constraints?|guidelines?|prompt|directives?)"
+        },
+        {
+          "index": "2",
+          "description": "content: Fake system-level message tags in agent communication (common benign labels [SYSTEM]/[ADMIN]/[PRIORITY]/[URGENT] dropped; kept override/root/sudo tags and chat-template markers). Negative lookbehinds require a live forged role marker: excludes quoted/backticked doc references and YAML/JSON mapping values (parent_ids: [root]) :: (?i)(?<![\"'`])(?<!:\\s)(?:\\[\\s*(?:OVERRIDE|ROOT|SUDO)\\s*\\]|<<\\s*SYS\\s*>>|<\\|im_start\\|>system)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.9076923076923077,
+        "max": 0.9076923076923077
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00062",
+      "title": "Hidden Capability in MCP Skill",
+      "severity": "critical",
+      "maturity": "test",
+      "probes": [
+        "B006",
+        "B007",
+        "B010",
+        "B018",
+        "B068",
+        "B076"
+      ],
+      "count": 6,
+      "conditions": [
+        {
+          "index": "1",
+          "description": "tool_args:  :: (?i)(__[a-z]+__|\\$\\$[a-z]+|_internal_|_hidden_|_backdoor_|_secret_)"
+        },
+        {
+          "index": "0",
+          "description": "tool_args:  :: (?i)(debug[_-]?mode|admin[_-]?override|raw[_-]?exec|unsafe[_-]?mode|bypass[_-]?check|no[_-]?sandbox)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.925,
+        "max": 0.925
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00010",
+      "title": "Malicious Content in MCP Tool Response",
+      "severity": "critical",
+      "maturity": "test",
+      "probes": [
+        "B004",
+        "B019",
+        "B034",
+        "B064",
+        "B071"
+      ],
+      "count": 5,
+      "conditions": [
+        {
+          "index": "12",
+          "description": "tool_response: Prompt injection payloads embedded in tool response content :: (?i)(ignore\\s+(all\\s+)?(previous|prior|your)\\s+(instructions?|rules?|guidelines?|prompts?)|you\\s+are\\s+now\\s+(a|an|the)\\s+(admin|root|developer|dan\\b|unrestricted|unfiltered|jailbroken|different|new\\s+(ai|assistant|persona|model|bot)|evil|malicious|rogue|hacker|god)|new\\s+system\\s+(prompt|instructions?)\\s*:|disregard\\s+(all\\s+)?(previous|prior|your)|override\\s+(all\\s+)?(previous|prior|your|the)\\s+(instructions?|rules?|safety)|from\\s+now\\s+on,?\\s+you\\s+(are|will|must|should))"
+        },
+        {
+          "index": "0",
+          "description": "tool_response: Destructive filesystem commands including fork bombs (rm -rf narrowed to root/home targets; benign rm -rf <dir> no longer fires). dd narrowed to writes onto a raw /dev/ device (of=/dev/...) — benign forensic imaging that reads a device INTO a file no longer fires :: (?i)(\\brm\\s+-[rRf]{1,3}\\s+(--no-preserve-root|/[\\s*]|/$|~[\\s/])|\\bmkfs\\b|\\bdd\\s+if=[^\\n|;]{0,80}of=\\s*/dev/|\\bformat\\s+[a-z]:|\\bdeltree\\b|\\bshred\\s+-|\\bwipefs\\b|\\bfdisk\\b.*--delete|:\\(\\)\\s*\\{\\s*:\\|:\\s*&\\s*\\})"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.9066666666666667,
+        "max": 0.9066666666666667
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-01019",
+      "title": "System Prompt Override via Fake Diagnostic/Admin Mode",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B040",
+        "B041",
+        "B042",
+        "B043",
+        "B076"
+      ],
+      "count": 5,
+      "conditions": [
+        {
+          "index": "2",
+          "description": "user_input: Fake priority-level or authorization-level administrative claim :: (?i)(PRIORITY\\s+(LEVEL|DIRECTIVE)\\s*:\\s*(CRITICAL|OMEGA|ALPHA|MAXIMUM|HIGHEST|ROOT)|AUTHORIZATION\\s*:\\s*(ROOT_ADMIN|ADMIN|OMEGA|FULL|COMPLETE|AUTHORIZED))"
+        },
+        {
+          "index": "0",
+          "description": "user_input: Structured key-value admin/safety field claiming override status :: (?i)(ADMIN_OVERRIDE|CONTENT_FILTER|SAFETY_OVERRIDE|AUTHORIZATION_LEVEL|COMPLIANCE_CHECK|RESPONSE_MODE|CONTEXT_FILTER)\\s*:\\s*(TRUE|FALSE|DISABLED|ENABLED|FULL|ACTIVE|PASSED|UNRESTRICTED|AUTHORIZED)"
+        },
+        {
+          "index": "5",
+          "description": "user_input: Numbered rule list with 'don't change/refuse' as first rules (fake operator override) :: (?i)(Rule\\s*(1|2|3|\\d+)[.:]\\s+Don'?t\\s+(change|refuse|say|include))[^\\n]{0,100}Rule\\s*(2|3|4|\\d+)[.:]\\s+(Never|Don'?t|No)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.9166666666666667,
+        "max": 0.9166666666666667
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-01462",
+      "title": "System Prompt Override via Pseudo-Admin / Authority Injection",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B040",
+        "B041",
+        "B042",
+        "B051",
+        "B076"
+      ],
+      "count": 5,
+      "conditions": [
+        {
+          "index": "0",
+          "description": "content: System override (structurally framed) / root admin / omega clearance authority claim :: (?i)((?:<!--\\s*|\\[)\\s*SYSTEM\\s+OVERRIDE\\b|SYSTEM\\s+OVERRIDE\\s+(?:BEGIN|MODE|ACTIVE|NOW|ENABLED)|ROOT_?ADMIN|OMEGA\\s+CLEARANCE|PRIORITY\\s+LEVEL\\s*:\\s*CRITICAL|AUTHORIZATION\\s*:\\s*(ROOT|ADMIN|FULL|OMEGA))"
+        },
+        {
+          "index": "5",
+          "description": "content: Structured compliance-check injection template (COMPLIANCE_CHECK: PASSED + AUTHORIZATION_LEVEL: FULL) :: (?i)COMPLIANCE_CHECK\\s*:\\s*PASSED.{0,50}AUTHORIZATION_LEVEL\\s*:\\s*(FULL|ADMIN|ROOT)"
+        },
+        {
+          "index": "2",
+          "description": "content: Instructions that claim to supersede ALL previous system prompts or safety guidelines :: (?i)(supersede\\s+ALL\\s+previous\\s+system\\s+prompts?|following\\s+instructions?\\s+supersede\\s+ALL|override\\s+(protocol|all\\s+safety|ALL\\s+previous|safety\\s+guidelines))"
+        },
+        {
+          "index": "1",
+          "description": "content: Diagnostic/structured-output override flags (ADMIN_OVERRIDE, CONTENT_FILTER, SAFETY_OVERRIDE) :: (?i)(ADMIN_OVERRIDE\\s*:\\s*(TRUE|ENABLED|ACTIVE)|CONTENT_FILTER\\s*:\\s*(DISABLED|OFF|INACTIVE)|SAFETY_OVERRIDE\\s*:\\s*(ACTIVE|ENABLED|TRUE))"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.9166666666666667,
+        "max": 0.9166666666666667
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00436",
+      "title": "Enclave VM Sandbox Escape RCE (CVE-2026-27597)",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B013",
+        "B014",
+        "B015",
+        "B067"
+      ],
+      "count": 4,
+      "conditions": [
+        {
+          "index": "1",
+          "description": "content: Direct globalThis.process / globalThis.require access — host-realm leakage :: (?i)(?:^|[^a-zA-Z_$])globalThis\\s*\\.\\s*(?:process|Buffer|require)\\b"
+        },
+        {
+          "index": "0",
+          "description": "content: Function-constructor chain reaching process / require / globalThis — canonical JS sandbox escape :: (?i)(?:[\\w\\)\\.])\\.constructor\\.constructor\\s*\\(\\s*[\"\\x27`][^\"\\x27`]{0,200}(?:return\\s+(?:process|require|globalThis|global)|process\\.|require\\s*\\()"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.9142857142857143,
+        "max": 0.9142857142857143
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00440",
+      "title": "Microsoft Semantic Kernel In-Memory Vector Store eval() RCE (CVE-2026-26030)",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B016",
+        "B017",
+        "B018",
+        "B068"
+      ],
+      "count": 4,
+      "conditions": [
+        {
+          "index": "3",
+          "description": "content: BuiltinImporter, Python types.FunctionType reflective construction, or reflective getattr on built-in roots — excludes bare 'FunctionType' which collides with TypeScript terminology :: (?i)BuiltinImporter|\\btypes\\.FunctionType\\b|\\bFunctionType\\s*\\(|getattr\\s*\\(\\s*(?:object|type|__builtins__)"
+        },
+        {
+          "index": "2",
+          "description": "content: Python class-hierarchy traversal primitives (tuple().__class__.__mro__, __subclasses__()) — AST-bypass building block used to reach BuiltinImporter :: (?i)\\(\\s*\\)\\.__class__\\.__mro__|tuple\\s*\\(\\s*\\)\\.__class__|\\(\\s*\\)\\.__class__\\.__bases__|__subclasses__\\s*\\(\\s*\\)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.9166666666666667,
+        "max": 0.9166666666666667
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00120",
+      "title": "SKILL.md Prompt Injection",
+      "severity": "critical",
+      "maturity": "test",
+      "probes": [
+        "B019",
+        "B050",
+        "B064",
+        "B071"
+      ],
+      "count": 4,
+      "conditions": [
+        {
+          "index": "1",
+          "description": "content: AI-directed instruction override with synonym expansion (arXiv D1 + skill-sanitizer research) :: (?i)(you\\s+(must|should|will|shall)\\s+(ignore|disregard|override|forget|bypass|circumvent|supersede|set\\s+aside|discard|abandon)\\s+(all\\s+)?(previous|prior|system|safety)\\s+\\w*\\s*(instructions?|rules?|guidelines?|prompts?))|((?:ignore|disregard|bypass|circumvent|supersede|set\\s+aside)\\s+all\\s+(previous|prior|safety|system)\\s+\\w*\\s*(instructions?|rules?|guidelines?|prompts?))"
+        },
+        {
+          "index": "2",
+          "description": "content: System message impersonation — excludes markdown links [system](path) (arXiv hierarchy exploitation) :: (?i)(\\[SYSTEM\\]\\s*:|<\\|system\\|>|<system>(?![(/])|\\[INST\\]\\s*:|<\\|im_start\\|>system|<<SYS>>)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.92,
+        "max": 0.92
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00063",
+      "title": "Multi-Skill Chain Attack",
+      "severity": "critical",
+      "maturity": "test",
+      "probes": [
+        "B021",
+        "B058",
+        "B079",
+        "B081"
+      ],
+      "count": 4,
+      "conditions": [
+        {
+          "index": "1",
+          "description": "tool_args:  :: (?i)(base64|btoa|encodeURI|hex\\.encode|rot13|xor|compress|gzip|deflate|encrypt)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.72,
+        "max": 0.72
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "ask",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00707",
+      "title": "Indirect PI — File Exfiltration Combined with Destroy or Tamper",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B029",
+        "B030",
+        "B031",
+        "B078"
+      ],
+      "count": 4,
+      "conditions": [
+        {
+          "index": "1",
+          "description": "content: Get file from cloud storage then delete source :: (?i)(?:get|retrieve|download|exfiltrate|steal)\\s+(?:the\\s+)?(?:user'?s?\\s+)?[^,\\n]{0,60}from\\s+(?:Google\\s+Drive|Dropbox|OneDrive|cloud\\s+(?:drive|storage))[^,\\n]{0,80},?\\s+then\\s+(?:delete|remove|erase|shred|destroy)\\s+the\\s+file"
+        },
+        {
+          "index": "3",
+          "description": "content: Download config/credential file + send it + then modify (exfil+tamper) :: (?i)(?:download|retrieve|get)\\s+(?:the\\s+)?(?:configuration|config|credentials?|secrets?)\\s+file[^,\\n]{0,100},?\\s+send\\s+it[^,\\n]{0,80},?\\s+then\\s+(?:modify|edit|alter|remove|delete|tamper)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.92,
+        "max": 0.92
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00711",
+      "title": "Indirect PI — System Sabotage via Destructive Shell Command",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B033",
+        "B034",
+        "B035",
+        "B077"
+      ],
+      "count": 4,
+      "conditions": [
+        {
+          "index": "1",
+          "description": "content: Firewall deactivation via ufw disable or iptables flush :: (?i)sudo\\s+(?:ufw\\s+disable|iptables\\s+-F|systemctl\\s+(?:stop|disable)\\s+(?:firewalld|ufw|iptables))"
+        },
+        {
+          "index": "2",
+          "description": "content: rm -rf of Anaconda or conda development environment :: (?i)\\brm\\s+-rf\\s+(?:~/anaconda[23]?/|~/miniconda[23]?/|~/venv/|~/\\.conda/|/home/[^/]+/anaconda)"
+        },
+        {
+          "index": "3",
+          "description": "content: rm -rf of boot directory or kernel boot files :: (?i)\\brm\\s+-rf\\s+(?:/home/[^/]+/boot/\\*|/boot/\\*|/boot/grub|/boot/vmlinuz)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.9166666666666667,
+        "max": 0.9166666666666667
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00715",
+      "title": "Tool Knowledge Hijack — Identity Injection with Tool Call Arguments",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B037",
+        "B038",
+        "B039",
+        "B070"
+      ],
+      "count": 4,
+      "conditions": [
+        {
+          "index": "6",
+          "description": "content: Call transfer_funds/send_money tool with argument dict :: (?i)(?:call|invoke|use)\\s+(?:the\\s+)?(?:transfer_funds|send_money|make_payment)\\s+tool[^.\\n]{0,100}(?:arguments?|args?)\\s*:\\s*\\{"
+        },
+        {
+          "index": "5",
+          "description": "content: Use the tool `send_money` with backtick notation :: (?i)(?:use|call|invoke)\\s+(?:the\\s+tool\\s+)?`(?:send_money|transfer_funds|make_payment|wire_transfer)`"
+        },
+        {
+          "index": "3",
+          "description": "content: Placeholder substitution instruction for tool call arguments :: (?i)Remember\\s+to\\s+substitute\\s+the\\s+placeholders[^.\\n]{0,100}(?:after\\s+the|in\\s+the|for\\s+the)\\s+'\\$'[^.\\n]{0,200}(?:recipient|amount|subject|date)"
+        },
+        {
+          "index": "1",
+          "description": "content: Before you can solve the task + privileged tool invocation :: (?i)(?:before\\s+you\\s+(?:can\\s+)?(?:solve|complete|continue|proceed|do))[^.\\n]{0,80}(?:the\\s+task|your\\s+task|this\\s+task)[^.\\n]{0,100}(?:use\\s+the\\s+tool|call\\s+the|invoke|execute)[^.\\n]{0,100}(?:send_money|delete|transfer|payment|escalate)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.9142857142857143,
+        "max": 0.9142857142857143
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-01304",
+      "title": "Indirect Prompt Injection via Data Carrier — IMPORTANT Override",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B019",
+        "B044",
+        "B071"
+      ],
+      "count": 3,
+      "conditions": [
+        {
+          "index": "0",
+          "description": "content: B3 corpus exact signature: IMPORTANT!!! Ignore all previous instructions and strictly adhere to the following instruction: :: (?i)IMPORTANT!!!?\\s+(?:Ignore|Disregard|Forget)\\s+all\\s+previous\\s+instructions?\\s+and\\s+(?:strictly\\s+)?(?:adhere|follow)\\s+to\\s+the\\s+following\\s+instruction[s:]?"
+        },
+        {
+          "index": "3",
+          "description": "content: Security policy or firewall rule update injected through a data field :: (?i)(?:update|modify|change|set)\\s+(?:my|the|your)?\\s*(?:security\\s+policy|firewall\\s+rules?|whitelist|allowlist|blocklist)[^.]{0,100}(?:policy\\s+id|rule\\s+id|\\bid\\s*['\"]?:?\\s*['\"]?\\d+)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.925,
+        "max": 0.925
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00706",
+      "title": "Indirect PI — Physical / Biometric Media Exfiltration via Agent",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B027",
+        "B028",
+        "B073"
+      ],
+      "count": 3,
+      "conditions": [
+        {
+          "index": "3",
+          "description": "content: Retrieve identity document and send exfil :: (?i)(?:retrieve|get|fetch|scan|capture)\\s+(?:my\\s+)?(?:ID|passport|driver(?:'s)?\\s+license|identity\\s+document|biometric\\s+data)[^.\\n]{0,100}(?:send|email|forward|share)"
+        },
+        {
+          "index": "2",
+          "description": "content: Process audio recording then send exfil chain :: (?i)(?:convert|process|transform)\\s+(?:the\\s+)?audio[^.\\n]{0,60}(?:\\/Recordings\\/|\\.mp4|\\.mp3|\\.wav|\\.m4a)[^.\\n]{0,100}(?:send|email|forward|share)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.92,
+        "max": 0.92
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-01453",
+      "title": "Markdown Image Injection with Base64 QUERY Exfiltration Carrier",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B048",
+        "B049",
+        "B074"
+      ],
+      "count": 3,
+      "conditions": [
+        {
+          "index": "3",
+          "description": "content: Explicit instruction to include markdown image in response (exfil injection framing) :: (?i)(include|insert|embed|add|output).{0,60}(in\\s+your\\s+response|in\\s+the\\s+output|to\\s+your\\s+reply).{0,200}!\\[[^\\]]{0,60}\\]\\(https?://"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.925,
+        "max": 0.925
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-01755",
+      "title": "Backdoor Trojan: Linguistic Trigger Phrase (POT Attack)",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B055",
+        "B056",
+        "B057"
+      ],
+      "count": 3,
+      "conditions": [
+        {
+          "index": "3",
+          "description": "user_input: Variant of prism-of-insight trigger with synonym substitution :: (?i)\\b(via|through|with|using)\\s+(a\\s+)?(prism|lens|optic)\\s+of\\s+(insight|wisdom|clarity|understanding)\\b"
+        },
+        {
+          "index": "1",
+          "description": "user_input: ASB POT trigger phrase: 'through a prism of insight' :: (?i)\\bthrough\\s+a\\s+prism\\s+of\\s+insight\\b"
+        },
+        {
+          "index": "0",
+          "description": "user_input: ASB POT trigger phrase: 'with perspicacious discernment' :: (?i)\\bwith\\s+perspicacious\\s+discernment\\b"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.92,
+        "max": 0.92
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00073",
+      "title": "Malicious Fine-tuning Data",
+      "severity": "critical",
+      "maturity": "test",
+      "probes": [
+        "B006",
+        "B007"
+      ],
+      "count": 2,
+      "conditions": [
+        {
+          "index": "1",
+          "description": "user_input: Training completions containing code execution patterns :: (?i)(\"(completion|assistant|output)\"\\s*:\\s*\".*?(execute\\s+command|run\\s+shell|system\\s*\\(|eval\\s*\\(|exec\\s*\\())"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.7166666666666667,
+        "max": 0.7166666666666667
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "ask",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00110",
+      "title": "Remote Code Execution via eval() and Dynamic Code Injection",
+      "severity": "critical",
+      "maturity": "test",
+      "probes": [
+        "B006",
+        "B007"
+      ],
+      "count": 2,
+      "conditions": [
+        {
+          "index": "0",
+          "description": "content: Direct eval() invocation for dynamic code execution :: (?i)eval\\s*\\("
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.9166666666666667,
+        "max": 0.9166666666666667
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00297",
+      "title": "Python Code Execution / Remote Code Execution via LLM Prompt",
+      "severity": "critical",
+      "maturity": "test",
+      "probes": [
+        "B006",
+        "B007"
+      ],
+      "count": 2,
+      "conditions": [
+        {
+          "index": "0",
+          "description": "tool_response: Dynamic import + immediate OS call from garak payloads 1-2: __import__('os').system(...) and __import__('os').popen(...) — bypasses static import detection :: __import__\\s*\\(\\s*'(?:os|subprocess|socket|sys)'\\s*\\)\\s*\\.\\s*(?:system|popen|run|exec|Popen)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.9166666666666667,
+        "max": 0.9166666666666667
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00432",
+      "title": "SuperAGI Output Handler eval() RCE (CVE-2024-21552)",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B006",
+        "B007"
+      ],
+      "count": 2,
+      "conditions": [
+        {
+          "index": "0",
+          "description": "content: eval() invoking Python OS-execution primitives — direct LLM-output-to-eval RCE signature :: (?i)(?:^|[^a-zA-Z_])eval\\s*\\(\\s*[\"\\x27]?\\s*(?:__import__|os\\.system|os\\.popen|subprocess\\.|os\\.exec|exec\\s*\\()"
+        },
+        {
+          "index": "2",
+          "description": "content: __import__ of dangerous module followed by execution method — eval-friendly RCE chain :: (?i)__import__\\s*\\(\\s*[\"\\x27](?:os|subprocess|socket|pty|ctypes|builtins)[\"\\x27]\\s*\\)\\.(?:system|popen|run|call|check_output|fork|fdopen)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.92,
+        "max": 0.92
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00434",
+      "title": "mcp-remote authorization_endpoint OS Command Injection (CVE-2025-6514)",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B011",
+        "B012"
+      ],
+      "count": 2,
+      "conditions": [
+        {
+          "index": "4",
+          "description": "tool_response: authorization_endpoint URL has URL-encoded shell metacharacters ($, `, ;, |, &) — encoded-bypass attempt :: (?i)\"authorization_endpoint\"\\s*:\\s*\"[^\"]*%(?:24|60|3b|7c|26)[^\"]*\""
+        },
+        {
+          "index": "0",
+          "description": "tool_response: OAuth authorization_endpoint URL contains unambiguous shell metacharacters (backtick, $(, &&, ||, |cmd, command-chain, file-redirect) — direct CVE-2025-6514 signature :: (?i)\"authorization_endpoint\"\\s*:\\s*\"https?://[^\"]*(?:`|\\$\\(|\\$IFS|\\$\\{IFS|&&|\\|\\||\\|\\s*[a-z]|>\\(|;\\s*[a-z]\\w*\\s*[;&|]|>\\s*/[a-z])"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.9166666666666667,
+        "max": 0.9166666666666667
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00700",
+      "title": "Indirect PI — Structured-Data Embedded Payload (IMPORTANT!!! Override)",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B019",
+        "B071"
+      ],
+      "count": 2,
+      "conditions": [
+        {
+          "index": "0",
+          "description": "content: IMPORTANT!!! followed by instruction-override opener (exact carrier payload header) :: IMPORTANT!!!\\s*(Ignore all previous instructions|strictly adhere to the following instruction)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.9500000000000001,
+        "max": 0.9500000000000001
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00702",
+      "title": "Indirect PI — Credential / API Key Exfiltration via Agent Action",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B020",
+        "B079"
+      ],
+      "count": 2,
+      "conditions": [
+        {
+          "index": "0",
+          "description": "content: Send/exfil credential + explicit email address or external URL destination :: (?i)(?:exfiltrate|send|email|forward|share)\\s+(?:the\\s+)?(?:API\\s+key|password|credentials?|secret\\s+key|private\\s+key|auth\\s+(?:key|token)|stored\\s+passwords?)[^.\\n]{0,120}(?:[\\w.+-]+@[\\w-]+\\.[\\w.]+|https?://(?!(?:github|docs|example)\\.com))"
+        },
+        {
+          "index": "5",
+          "description": "content: Get stored passwords and send to email :: (?i)(?:get|retrieve|fetch)\\s+(?:my\\s+)?(?:stored\\s+passwords?|saved\\s+passwords?|all\\s+passwords?)[^.\\n]{0,80}(?:send|email|forward|share)[^.\\n]{0,60}(?:my\\s+email|email\\s+address)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.9142857142857143,
+        "max": 0.9142857142857143
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00113",
+      "title": "Credential File Theft from Agent Environment",
+      "severity": "critical",
+      "maturity": "test",
+      "probes": [
+        "B022",
+        "B078"
+      ],
+      "count": 2,
+      "conditions": [
+        {
+          "index": "1",
+          "description": "content: Reading credential or private key files :: (?i)(?:cat|read|open|load|get)\\s+.*(?:credentials|id_rsa|private[_\\s]?key|secret[_\\s]?key)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.92,
+        "max": 0.92
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00703",
+      "title": "Indirect PI — Financial Data Exfiltration via Agent Action",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B023",
+        "B024"
+      ],
+      "count": 2,
+      "conditions": [
+        {
+          "index": "0",
+          "description": "content: Retrieve financial data then email/send exfil chain :: (?i)(?:retrieve|get|download|fetch|access)\\s+(?:my\\s+)?(?:saved\\s+)?(?:payment\\s+methods?|bank\\s+account\\s+(?:details?|info(?:rmation)?)|card\\s+(?:information|details?|data)|financial\\s+(?:report|data|information))[^.\\n]{0,120}(?:email|send|forward|share|post)"
+        },
+        {
+          "index": "2",
+          "description": "content: Get credit/debit card information then forward/send to destination :: (?i)(?:get|retrieve|fetch|access)\\s+(?:my\\s+)?(?:credit|debit)\\s+card\\s+(?:information|details?|data|number)[^.\\n]{0,80}(?:forward|send|email|share)[^.\\n]{0,80}(?:to|via)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.925,
+        "max": 0.925
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-01307",
+      "title": "MCP DNS Rebinding Attack — Hostname Time-Based IP Switching",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B046",
+        "B080"
+      ],
+      "count": 2,
+      "conditions": [
+        {
+          "index": "3",
+          "description": "content: Loopback address with common MCP server port referenced alongside rebinding terminology :: (?i)(?:127\\.0\\.0\\.1|localhost|::1)\\s*:\\s*(?:900[0-9]|8[0-9]{3}|3[0-9]{3})\\b[^\"]{0,200}(?:rebind|1time|forever|rbndr)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.925,
+        "max": 0.925
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-01753",
+      "title": "Ransom Extortion: Email Exfil + Delete + Wire-Transfer Demand",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B053",
+        "B054"
+      ],
+      "count": 2,
+      "conditions": [
+        {
+          "index": "1",
+          "description": "user_input: wire/pay/transfer $N to IBAN CODE — direct payment-to-IBAN ransom demand :: (?i)\\b(wire|pay|transfer)\\s+\\$[0-9,\\.]+\\s+to\\s+IBAN\\s+[A-Z0-9]{8,34}\\b"
+        },
+        {
+          "index": "3",
+          "description": "user_input: Ransom subject-line artifact with payment demand (multiline) :: (?i)(SECURITY\\s+BREACH|SECURITY\\s+MESSAGE|RANSOM|how\\s+to\\s+recover)[\\s\\S]{0,150}(wire|pay|send)[\\s\\S]{0,60}(\\$[0-9]+|[0-9]+\\s+USD|IBAN)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.925,
+        "max": 0.925
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-01897",
+      "title": "Injected Code — Local Host Sabotage (Filesystem Destruction / Resource Exhaustion / Hosts Tamper)",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B059",
+        "B060"
+      ],
+      "count": 2,
+      "conditions": [
+        {
+          "index": "3",
+          "description": "user_input: BIPIA host-sabotage invariant #4 :: (?i)open\\(\\s*[\\\"']/etc/hosts[\\\"']\\s*,\\s*[\\\"']a[\\\"']\\)"
+        },
+        {
+          "index": "4",
+          "description": "user_input: BIPIA host-sabotage invariant #5 :: (?i)while\\s+True\\s*:[\\s\\S]{0,60}[\\\"']x[\\\"']\\s*\\*\\s*\\d{6,}"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.9166666666666667,
+        "max": 0.9166666666666667
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00013",
+      "title": "SSRF via Agent Tool Calls",
+      "severity": "critical",
+      "maturity": "test",
+      "probes": [
+        "B061",
+        "B082"
+      ],
+      "count": 2,
+      "conditions": [
+        {
+          "index": "0",
+          "description": "tool_args: AWS Instance Metadata Service (IMDSv1/v2) and credential endpoints :: (?i)(https?://)?169\\.254\\.169\\.254|/latest/(meta-data|user-data|api/token|dynamic|instance-identity)|X-aws-ec2-metadata-token|amazonaws\\.com.{0,50}(credentials|security-credentials|role)|iam[\\/\\\\]security-credentials"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.9090909090909091,
+        "max": 0.9090909090909091
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00149",
+      "title": "Skill Data Exfiltration via Compound Patterns",
+      "severity": "critical",
+      "maturity": "test",
+      "probes": [
+        "B061",
+        "B082"
+      ],
+      "count": 2,
+      "conditions": [
+        {
+          "index": "4",
+          "description": "content: Cloud instance metadata service access (IMDS credential theft) :: (?i)(curl|wget|fetch|http)\\s*[^\\n]*169\\.254\\.169\\.254"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.9076923076923077,
+        "max": 0.9076923076923077
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00500",
+      "title": "SSRF via Agent URL Fetch Instruction",
+      "severity": "critical",
+      "maturity": "test",
+      "probes": [
+        "B061",
+        "B082"
+      ],
+      "count": 2,
+      "conditions": [
+        {
+          "index": "0",
+          "description": "user_input: Fetch instruction targeting AWS IMDS or GCP metadata endpoint :: (?i)(fetch|retrieve|get|request|load|read|access|check|visit|open|download|curl|ping).{0,40}https?://(169\\.254\\.169\\.254|metadata\\.google\\.internal|169\\.254\\.170\\.2|fd00:ec2::254)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.72,
+        "max": 0.72
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "ask",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-01605",
+      "title": "SSRF AWS Instance Metadata Endpoint Access",
+      "severity": "critical",
+      "maturity": "test",
+      "probes": [
+        "B061",
+        "B082"
+      ],
+      "count": 2,
+      "conditions": [
+        {
+          "index": "0",
+          "description": "tool_args: AWS IMDS address as an HTTP fetch target (IP + path) :: (?i)169\\.254\\.169\\.254(?::\\d+)?/"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.925,
+        "max": 0.925
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-01899",
+      "title": "Injected Code — Unauthorized Remote Access (SSH Key Backdoor / Tunnel / Port Forward)",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B062",
+        "B082"
+      ],
+      "count": 2,
+      "conditions": [
+        {
+          "index": "1",
+          "description": "user_input: BIPIA remote-access-backdoor invariant #2 :: (?i)pexpect\\.spawn\\(\\s*[\\\"']ssh\\s+-L\\s"
+        },
+        {
+          "index": "0",
+          "description": "user_input: BIPIA remote-access-backdoor invariant #1 :: (?i)authorized_keys[\\s\\S]{0,120}requests\\.get\\("
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.9333333333333333,
+        "max": 0.9333333333333333
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00074",
+      "title": "Cross-Agent Privilege Escalation",
+      "severity": "critical",
+      "maturity": "test",
+      "probes": [
+        "B001"
+      ],
+      "count": 1,
+      "conditions": [
+        {
+          "index": "1",
+          "description": "content: Role assumption or impersonation of higher-privilege agents :: (?i)(I\\s+am|acting\\s+as|speaking\\s+as|on\\s+behalf\\s+of|representing)\\s+(the\\s+)?(admin|supervisor|orchestrat(or|ing)|master|root|privileged|authorized)\\s+(agent|system|process|service)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.7166666666666667,
+        "max": 0.7166666666666667
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "ask",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00117",
+      "title": "Agent Identity Spoofing and Authority Impersonation",
+      "severity": "critical",
+      "maturity": "test",
+      "probes": [
+        "B001"
+      ],
+      "count": 1,
+      "conditions": [
+        {
+          "index": "0",
+          "description": "content: Direct claim of system or admin agent identity :: (?i)I\\s+am\\s+(?:the\\s+)?(?:system|admin|root|supervisor|orchestrator|master)\\s+(?:agent|process|controller)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.92,
+        "max": 0.92
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00398",
+      "title": "HuggingFace Unsafe Model Artifact Load Instruction",
+      "severity": "critical",
+      "maturity": "test",
+      "probes": [
+        "B008"
+      ],
+      "count": 1,
+      "conditions": [
+        {
+          "index": "0",
+          "description": "tool_response: Python pickle.load/loads/Unpickler call — direct invocation of unsafe deserialization; any pickle.load on untrusted model files can execute arbitrary code via __reduce__ :: pickle\\.(?:load|loads|Unpickler)\\s*\\("
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.9166666666666667,
+        "max": 0.9166666666666667
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00433",
+      "title": "ModelCache torch.load() Deserialization RCE (CVE-2025-45146)",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B008"
+      ],
+      "count": 1,
+      "conditions": [
+        {
+          "index": "2",
+          "description": "content: pickle.load on untrusted input — generic deserialisation RCE precursor that includes the ModelCache class :: (?i)pickle\\.(?:load|loads)\\s*\\(\\s*(?:request\\.|flask\\.request|user_input|untrusted|attacker|payload|upload|response\\.content|self\\.\\w+\\.read\\(\\))"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.9166666666666667,
+        "max": 0.9166666666666667
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00161",
+      "title": "MCP Tool Description — IMPORTANT Tag Cross-Tool Shadowing Attack",
+      "severity": "critical",
+      "maturity": "test",
+      "probes": [
+        "B013"
+      ],
+      "count": 1,
+      "conditions": [
+        {
+          "index": "2",
+          "description": "content: Sensitive credential file referenced in tool description — private keys or cloud credentials (v2: dropped mcp.json + .aws/config — common non-secret config files that appear in ordinary git/edit operations; the exfil case is still caught by the <IMPORTANT>-tag and read/send-directive layers. id_rsa excludes the .pub public key.) :: \\b(?:id_rsa|id_dsa|id_ed25519|id_ecdsa)\\b(?!\\.pub)|\\b(?:\\.aws/credentials|\\.kube/config|\\.docker/config\\.json|\\.netrc|known_hosts)\\b|/etc/(?:passwd|shadow|ssl/private)|/proc/self/environ|\\b\\.env(?:\\.local|\\.production|\\.secret)?\\b(?![/a-zA-Z])"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.92,
+        "max": 0.92
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00510",
+      "title": "Delayed Tool Invocation via Prompt Injection (Time-Shifted Execution)",
+      "severity": "critical",
+      "maturity": "test",
+      "probes": [
+        "B020"
+      ],
+      "count": 1,
+      "conditions": [
+        {
+          "index": "5",
+          "description": "user_input: Deferred exfil or forward with explicit then/next/first trigger + sensitive target :: (?i)\\b(then|next|after\\s+(that|this|it)|first|also|additionally|and\\s+then)\\s+(forward|exfiltrate|send|email|post|upload|transmit|relay|export|leak|copy)\\b.{0,80}\\b(all\\s+contacts|all\\s+(the\\s+)?(credentials?|messages?)|credentials?\\s+to|passwords?\\s+to|tokens?\\s+to|api\\s+keys?\\s+to|ssh\\s+keys?|system\\s+prompt|current\\s+context|env\\s+(vars?|variables?)|session\\s+data)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.9166666666666667,
+        "max": 0.9166666666666667
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00712",
+      "title": "Indirect PI — Malicious Package Installation via Agent (pip/npm)",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B036"
+      ],
+      "count": 1,
+      "conditions": [
+        {
+          "index": "1",
+          "description": "content: pip install from non-standard/attacker-controlled index :: (?i)(?:execute|run|install)\\s+(?:the\\s+)?pip\\s+(?:install|install\\s+-[iI]|install\\s+--index-url)[^\\s]{0,5}\\s+(?:https?://[^\\s]+|--extra-index-url\\s+https?://[^\\s]+)[^.\\n]{0,100}(?:malicious|attacker|evil|fake|hostile)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.92,
+        "max": 0.92
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00098",
+      "title": "Unauthorized Financial Action by AI Agent",
+      "severity": "critical",
+      "maturity": "test",
+      "probes": [
+        "B037"
+      ],
+      "count": 1,
+      "conditions": [
+        {
+          "index": "3",
+          "description": "tool_args: Financial parameters in tool arguments (amount, currency, recipient) :: (?i)(\"amount\"\\s*:\\s*\\d+|\"currency\"\\s*:\\s*\"|\"recipient\"\\s*:\\s*\"|\"payment_method\"\\s*:\\s*\"|\"account_number\"\\s*:\\s*\")"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.9111111111111111,
+        "max": 0.9111111111111111
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00004",
+      "title": "System Prompt Override Attempt",
+      "severity": "critical",
+      "maturity": "test",
+      "probes": [
+        "B050"
+      ],
+      "count": 1,
+      "conditions": [
+        {
+          "index": "2",
+          "description": "user_input: Llama, Mistral, and Llama3 chat template delimiters :: (?i)(<<\\s*SYS\\s*>>|<<\\s*/SYS\\s*>>|\\[INST\\]|\\[/INST\\]|<s>\\s*\\[INST\\]|<\\|begin_of_text\\|>|<\\|start_header_id\\|>\\s*system|<\\|end_header_id\\|>|<\\|eot_id\\|>)"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.9038461538461539,
+        "max": 0.9038461538461539
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00066",
+      "title": "Parameter Injection via Tool Arguments",
+      "severity": "critical",
+      "maturity": "test",
+      "probes": [
+        "B066"
+      ],
+      "count": 1,
+      "conditions": [
+        {
+          "index": "0",
+          "description": "tool_args:  :: (?i)(;|&&|\\|\\||`|\\$\\()\\s*(whoami|\\bid\\b|uname\\s+-a|curl\\s+(?:-\\S+\\s+)*https?://(?!localhost|127\\.)|wget\\s+https?://(?!localhost|127\\.)|\\bnc\\b\\s|ncat\\s|cat\\s+/etc/(?:passwd|shadow|sudoers)|\\b(?:ba)?sh\\s+-[ic]|python[0-9]?\\s+-c|base64\\s+-d|rm\\s+-[rf])"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.92,
+        "max": 0.92
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-01615",
+      "title": "Sandbox Escape via Shell Metacharacter Command Injection",
+      "severity": "critical",
+      "maturity": "test",
+      "probes": [
+        "B066"
+      ],
+      "count": 1,
+      "conditions": [
+        {
+          "index": "3",
+          "description": "user_input: Metacharacter-led filesystem write/delete into a system directory (sandbox escape) :: (?i)[|;&]{1,2}\\s*(?:touch|mkdir|chmod|\\brm\\s+-[rf]{1,2})\\s+/(?:tmp|etc|var|root|home|usr|bin)\\b"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.92,
+        "max": 0.92
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-01953",
+      "title": "npm PraisonAI codeMode Sandbox Escape via Function Constructor Prototype Chain (GHSA-vmmj-pfw7-fjwp)",
+      "severity": "critical",
+      "maturity": "test",
+      "probes": [
+        "B067"
+      ],
+      "count": 1,
+      "conditions": [
+        {
+          "index": "0",
+          "description": "content: Prototype-chain Function-constructor breakout: x.constructor.constructor('return process'/global/require) — the GHSA-vmmj-pfw7-fjwp escape primitive :: (?i)(?:\\(\\s*\\{\\s*\\}\\s*\\)|[\\w$\\]\\)]\\s*|[\"\\x27][\"\\x27]\\s*)\\.\\s*constructor\\s*\\.\\s*constructor\\s*\\(\\s*[\"\\x27]\\s*return\\s+(?:process|global|require|this)\\b"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.925,
+        "max": 0.925
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-00850",
+      "title": "Indirect PI — Credential Exfiltration via Email (API Key / Password / Token)",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B079"
+      ],
+      "count": 1,
+      "conditions": [
+        {
+          "index": "1",
+          "description": "content: Credential retrieval + email forwarding to address (with or without injection override) :: (?i)(?:get|retrieve|send|share|forward|fetch)\\s+(?:my\\s+)?(?:stored\\s+)?(?:passwords?|api[\\s_-]?keys?|tokens?|secrets?|credentials?|auth\\s+tokens?)[^\\n]{0,100}(?:send|email|mail|forward)\\s+(?:them|it|the\\s+(?:passwords?|keys?|tokens?))\\s+to\\s+(?:my\\s+(?:email|alternate\\s+email)|[^\\s@]{1,50}@[^\\s\"]{3,80})"
+        }
+      ],
+      "observed_confidence": {
+        "min": 0.9333333333333333,
+        "max": 0.9333333333333333
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    },
+    {
+      "id": "ATR-2026-01896",
+      "title": "Injected Code — Remote-Key Ransomware File Encryption",
+      "severity": "critical",
+      "maturity": "stable",
+      "probes": [
+        "B081"
+      ],
+      "count": 1,
+      "conditions": [
+        {
+          "index": "0",
+          "description": "user_input: BIPIA ransomware invariant #1 :: (?i)requests\\.get\\([\\\"'][^\\\"'\\n]{0,80}get_key[^\\\"'\\n]{0,10}[\\\"']\\)\\.content"
+        }
+      ],
+      "observed_confidence": {
+        "min": 1,
+        "max": 1
+      },
+      "what_if_severity": {
+        "critical": "deny",
+        "high": "deny",
+        "medium": "ask",
+        "low": "allow"
+      }
+    }
+  ]
+}
