@@ -42,6 +42,11 @@ All notable changes to ATR will be documented in this file.
   rather than inheriting `allow` from an absent field. The layer-3 synthetic
   match consequently asks instead of denying at `threat_score >= 0.9`.
 
+- PostToolUse lands differently from PreToolUse and both are pinned by tests.
+  `toClaudeCodePostToolUse` blocks on `deny` **or** `ask`, so a `maturity: test`
+  rule still blocks poisoned tool output; only `experimental` and below stop
+  blocking there.
+
 ### Fixed — published benchmark numbers
 
 - **Withdrew two garak figures that no measurement file backed.** From 2026-08-04

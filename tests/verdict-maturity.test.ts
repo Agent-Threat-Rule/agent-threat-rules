@@ -28,7 +28,7 @@ import {
   OUTCOME_STRICTNESS,
 } from '../src/verdict.js';
 import { ATREngine } from '../src/engine.js';
-import { HookHandler } from '../src/hook-handler.js';
+import { HookHandler, toClaudeCodePostToolUse } from '../src/hook-handler.js';
 import { ActionExecutor } from '../src/action-executor.js';
 import { DefaultAdapter } from '../src/adapters/default-adapter.js';
 import type { ATRMatch, ATRRule, ATRSeverity, AgentEvent, HookInput } from '../src/types.js';
@@ -78,15 +78,19 @@ function makeMatch(rule: ATRRule, confidence: number): ATRMatch {
 /**
  * A rule that fires on the literal string `attackpattern`.
  *
- * `sourceType` must line up with the event type the engine is handed:
- * `llm_io` for `llm_input` events, `tool_call` for the PreToolUse hook path
- * (engine.ts skips a rule whose agent_source.type differs from the event's).
+ * `sourceType` must line up with the event type the engine is handed, via
+ * engine.ts's EVENT_TYPE_TO_SOURCE: `llm_input` -> `llm_io`, `tool_call` ->
+ * `tool_call`, and `tool_response` (the PostToolUse path) -> `mcp_exchange`.
+ * A rule whose agent_source.type differs from the event's source is skipped
+ * outright, which shows up as a verdict of `allow` on zero matches — the exact
+ * shape a broken ceiling would also produce, so every hook case below asserts
+ * that the rule actually fired.
  */
 function firingRule(
   id: string,
   severity: ATRSeverity,
   maturity?: string,
-  sourceType: 'llm_io' | 'tool_call' = 'llm_io',
+  sourceType: 'llm_io' | 'tool_call' | 'mcp_exchange' = 'llm_io',
 ): ATRRule {
   const rule = makeRule({ id, severity, maturity, title: id });
   return {
@@ -400,5 +404,51 @@ describe('hook decision (PreToolUse -> permissionDecision)', () => {
     const output = await handler.handlePreToolUse(hookInput);
 
     expect(output.decision).toBe('deny');
+  });
+});
+
+describe('hook decision (PostToolUse -> Claude Code block sentinel)', () => {
+  // PostToolUse cannot un-run the tool, so toClaudeCodePostToolUse blocks on
+  // deny OR ask. The ceiling therefore lands differently here than on
+  // PreToolUse, and that difference is the thing worth pinning: `test` still
+  // blocks the poisoned output, `experimental` no longer does.
+  const postInput: HookInput = {
+    hook: 'PostToolUse',
+    tool_name: 'Bash',
+    tool_input: { content: 'attackpattern' },
+  } as HookInput;
+
+  async function decide(rule: ATRRule): Promise<Record<string, unknown>> {
+    const engine = await engineWith([rule]);
+    const handler = new HookHandler({
+      engine,
+      executor: new ActionExecutor({ adapter: new DefaultAdapter(), dryRun: true }),
+      failOpen: true,
+    });
+    return toClaudeCodePostToolUse(await handler.handlePostToolUse(postInput));
+  }
+
+  it('a stable critical rule still blocks the tool output', async () => {
+    const out = await decide(firingRule('ATR-TEST-STA', 'critical', 'stable', 'mcp_exchange'));
+
+    expect(out['matched_rules']).toContain('ATR-TEST-STA'); // control: it fired
+    expect(out['atr_decision']).toBe('deny');
+    expect(out['decision']).toBe('block');
+  });
+
+  it('a test-maturity critical rule still blocks (ask blocks on PostToolUse)', async () => {
+    const out = await decide(firingRule('ATR-TEST-TST', 'critical', 'test', 'mcp_exchange'));
+
+    expect(out['matched_rules']).toContain('ATR-TEST-TST'); // control: it fired
+    expect(out['atr_decision']).toBe('ask');
+    expect(out['decision']).toBe('block');
+  });
+
+  it('an experimental critical rule no longer blocks — it only reports', async () => {
+    const out = await decide(firingRule('ATR-TEST-EXP', 'critical', 'experimental', 'mcp_exchange'));
+
+    expect(out['matched_rules']).toContain('ATR-TEST-EXP'); // control: it fired
+    expect(out['atr_decision']).toBe('allow');
+    expect(out['decision']).toBeUndefined();
   });
 });
