@@ -5,6 +5,12 @@
  * to a PlatformAdapter. Handles per-action errors so one failure
  * does not block the rest.
  *
+ * ENFORCEMENT GATE: actions above the OBSERVE blast-radius tier are dispatched
+ * only when the operator has enabled blocking (`blocking: true`, ATR_BLOCKING,
+ * or `atr guard --blocking`). Without it they are recorded as suppressed and the
+ * adapter is never called. See src/enforcement.ts for why this is opt-in and
+ * src/quality/action-eligibility.ts for the tier ladder this gate reads.
+ *
  * @module agent-threat-rules/action-executor
  */
 
@@ -14,6 +20,8 @@ import type {
   ExecutionContext,
   PlatformAdapter,
 } from "./types.js";
+import { isEnforcementAction, resolveBlocking } from "./enforcement.js";
+import { TIER_NAMES, actionTier } from "./quality/action-eligibility.js";
 
 /** Priority order: lower number = higher priority (executed first) */
 const ACTION_PRIORITY: Readonly<Record<ATRAction, number>> = {
@@ -58,17 +66,36 @@ export const ACTION_METHOD_MAP: Readonly<Record<ATRAction, keyof PlatformAdapter
 export interface ActionExecutorConfig {
   readonly adapter: PlatformAdapter;
   readonly dryRun?: boolean;
+  /**
+   * Operator directive permitting enforcement actions. OFF BY DEFAULT.
+   *
+   * When false, any action above the OBSERVE blast-radius tier
+   * (block_input / block_output / block_tool / reduce_permissions /
+   * reset_context / quarantine_session / kill_agent) is refused before the
+   * adapter is touched; OBSERVE actions (alert / snapshot / shadow / escalate)
+   * run exactly as before. Resolution order is this field > ATR_BLOCKING in the
+   * environment > false — see src/enforcement.ts.
+   *
+   * This is the runtime half of SPEC.md §5.5 ("Engines MUST NOT execute
+   * response actions automatically without an explicit configuration directive
+   * from the operator"). Until it existed, `atr guard` built an executor
+   * unconditionally and dispatched every declared action, including on a verdict
+   * of `allow`.
+   */
+  readonly blocking?: boolean;
   readonly onActionComplete?: (result: ActionResult) => void;
 }
 
 export class ActionExecutor {
   private readonly adapter: PlatformAdapter;
   private readonly dryRun: boolean;
+  private readonly blocking: boolean;
   private readonly onActionComplete?: (result: ActionResult) => void;
 
   constructor(config: ActionExecutorConfig) {
     this.adapter = config.adapter;
     this.dryRun = config.dryRun ?? false;
+    this.blocking = resolveBlocking(config.blocking);
     this.onActionComplete = config.onActionComplete;
   }
 
@@ -119,6 +146,21 @@ export class ActionExecutor {
     context: ExecutionContext,
   ): Promise<ActionResult> {
     const timestamp = new Date().toISOString();
+
+    // Enforcement gate — checked BEFORE dry-run, because "would execute" is
+    // false for an action that enforcement policy forbids. The adapter is never
+    // reached, so a downstream adapter that really blocks cannot act while the
+    // hook channel is telling the host nothing.
+    if (!this.blocking && isEnforcementAction(action)) {
+      return Object.freeze({
+        action,
+        success: true,
+        message:
+          `[advisory] Suppressed ${action} (tier ${TIER_NAMES[actionTier(action)]}): ` +
+          `blocking is disabled. Enable it with ATR_BLOCKING=1 or --blocking.`,
+        timestamp,
+      });
+    }
 
     if (this.dryRun) {
       return Object.freeze({
@@ -173,5 +215,10 @@ export class ActionExecutor {
   /** Check if dry-run mode is enabled */
   isDryRun(): boolean {
     return this.dryRun;
+  }
+
+  /** Is this executor permitted to dispatch enforcement actions? */
+  isBlocking(): boolean {
+    return this.blocking;
   }
 }

@@ -4,6 +4,69 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Changed — blocking is now opt-in (BREAKING for anyone relying on the old default)
+
+- **`atr guard` no longer emits a `permissionDecision` unless blocking is
+  enabled.** The Claude Code PreToolUse payload now carries the detection
+  (`atr_decision`, `atr_reason`, `matched_rules`, `atr_advisory: true`) and omits
+  `hookSpecificOutput.permissionDecision` entirely, so the host applies its own
+  permission flow. The field is **omitted, not downgraded to `allow`**: in that
+  contract `allow` is affirmative approval that suppresses the host's own prompt,
+  so emitting it would make a hooked session *less* safe than an unhooked one.
+  `toClaudeCodePostToolUse` likewise omits `decision: 'block'`.
+- **`ActionExecutor` no longer dispatches response actions above the `observe`
+  blast-radius tier unless blocking is enabled.** `alert` / `snapshot` /
+  `shadow` / `escalate` run exactly as before; `block_input` / `block_output` /
+  `block_tool` / `reduce_permissions` / `reset_context` / `quarantine_session` /
+  `kill_agent` are recorded as suppressed and the adapter is never called. The
+  tier ladder is read from `src/quality/action-eligibility.ts` — this change does
+  not introduce a second classification of what is destructive.
+  This closes the dual-channel contradiction where a benign
+  `Bash{command:"ls -la"}` produced `permissionDecision: "allow"` while the
+  executor really invoked `blockTool` on the adapter.
+- **Both channels are governed by one switch**: `blocking` in config,
+  `ATR_BLOCKING` in the environment, `--blocking` / `--no-blocking` on
+  `atr guard`. Default off.
+- **Why**: `SPEC.md` §5.5 ("Engines MUST NOT execute response actions
+  automatically without an explicit configuration directive from the operator"),
+  `spec/atr-method-v1.1.md:164` ("Engines SHOULD NOT auto-block ... without
+  operator policy explicitly enabling it") and `docs/QUALITY-STANDARD.md:228`
+  (blocking only for `maturity: stable` + confidence ≥ 80) all describe a
+  directive that had no implementation: there was no CLI flag, no environment
+  variable and no documented config key by which an operator could express it.
+- **Turning blocking on reproduces the previous behaviour exactly.** Verified by
+  replaying 3,985 events (3,959 of them the rules' own `true_positives` plus 24
+  ordinary developer operations under real Claude Code tool names) through
+  `HookHandler` → `evaluateWithVerdict` → `ActionExecutor` on `origin/main` and
+  on this branch with `--blocking`: the two JSONL transcripts are byte-identical.
+- **Detection is unchanged in both modes**: same `matches`, `matchCount`,
+  `highestSeverity`, `highestConfidence` and reason string on all 3,985 events
+  (0 differences).
+
+### Added — the detection lane finally has an entrance
+
+- `ATREngineConfig.lane` existed and worked but no shipped code path ever set it
+  and no user-facing entry point could, so `hunt` was the only reachable setting.
+  Added `--lane <enforce|alert|hunt>` to `atr guard` and `atr scan`, the
+  `ATR_LANE` environment variable (honoured by every `ATREngine`, including the
+  MCP server), and a `lane` input on the GitHub Action.
+- Resolution order for lane and blocking alike: explicit config > environment >
+  default. An unrecognised value throws / exits non-zero rather than falling back
+  silently — an operator who typed `--lane enfroce` must not be left believing
+  they are enforcing.
+- `atr guard` now prints its posture on stderr
+  (`[atr-guard] lane=hunt blocking=off (advisory: ...)`), and `atr init` says in
+  its success message that the installed hook is advisory. "Installed" must never
+  read as "enforcing".
+
+### Fixed
+
+- `src/hook-handler.ts` carried two contradictory comments about failure
+  behaviour: the module header said fail-open, an inline comment in
+  `startStdioLoop` said the error path "fail-closes to a deny". The header was
+  right — `failOpen` defaults to `true` in both the constructor and the CLI. The
+  inline comment is corrected; the behaviour is unchanged.
+
 ### Fixed — published benchmark numbers
 
 - **Withdrew two garak figures that no measurement file backed.** From 2026-08-04

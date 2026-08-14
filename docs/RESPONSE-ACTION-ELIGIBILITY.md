@@ -353,15 +353,19 @@ minus `status: draft` / `status: deprecated` / `maturity: deprecated`.
   kill the guard "executes" is written into a buffer nobody drains. Either wire
   the buffer into the hook response or delete the methods' pretence — a security
   control that silently does nothing is the worst of the three states.
-- `atr guard` defaults to `lane: 'hunt'` (§1a), so `atr init` installs a hook in
-  which every experimental rule fires. Whether the shipped default should be
-  `alert` is a product decision, not a rule-quality one, but it is currently
-  made by omission rather than on purpose.
-- `SPEC.md` §5.5 says "Engines MUST NOT execute response actions automatically
-  without an explicit configuration directive from the operator." Passing an
-  `ActionExecutor` is arguably that directive, but the spec sentence and the
-  engine's behaviour should be reconciled explicitly rather than by
-  interpretation.
+- ~~`atr guard` defaults to `lane: 'hunt'` (§1a), so `atr init` installs a hook in
+  which every experimental rule fires.~~ **Partly addressed (Unreleased).** The
+  default is still `hunt`, but it is now a choice an operator can change:
+  `--lane` on `atr guard` / `atr scan`, `ATR_LANE` in the environment, `lane` on
+  the GitHub Action. More importantly the hook that `atr init` installs no longer
+  blocks at all by default — see the next item — so "every experimental rule
+  fires" now means "every experimental rule is reported".
+- ~~`SPEC.md` §5.5 ... Passing an `ActionExecutor` is arguably that directive~~
+  **Addressed (Unreleased).** Passing an executor is no longer treated as the
+  directive. `ActionExecutor` refuses to dispatch any action above the `observe`
+  tier unless `blocking` is set (config > `ATR_BLOCKING` > off), and the hook
+  emits no `permissionDecision` in that state. The directive is now a named,
+  documented switch instead of an interpretation.
 - The verdict path (`severity` + `confidence` → `permissionDecision`) has no
   precision input at all. That is a second, larger line: it _would_ change what
   the engine blocks, so it needs its own recall analysis and is out of scope here.

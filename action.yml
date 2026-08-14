@@ -14,6 +14,14 @@ inputs:
     description: 'Minimum severity to report (informational, low, medium, high, critical)'
     required: false
     default: 'medium'
+  lane:
+    description: >-
+      Detection lane: enforce (maturity=stable rules only), alert (stable+test),
+      or hunt (all maturities). Default hunt keeps CI visibility broad. This
+      action only reports findings - it never blocks an agent - so there is no
+      blocking opt-in here; see ATR_BLOCKING for the runtime guard.
+    required: false
+    default: 'hunt'
   fail-on-finding:
     description: 'Fail the action if threats are found'
     required: false
@@ -53,6 +61,7 @@ runs:
       env:
         ATR_PATH: ${{ inputs.path }}
         ATR_SEVERITY: ${{ inputs.severity }}
+        ATR_SCAN_LANE: ${{ inputs.lane }}
         ATR_SARIF_FILE: ${{ inputs.sarif-file }}
         ATR_FAIL_ON_FINDING: ${{ inputs.fail-on-finding }}
       run: |
@@ -62,6 +71,12 @@ runs:
         case "$ATR_SEVERITY" in
           informational|low|medium|high|critical) ;;
           *) echo "::error::Invalid severity: $ATR_SEVERITY"; exit 1 ;;
+        esac
+
+        # Validate lane input
+        case "$ATR_SCAN_LANE" in
+          enforce|alert|hunt) ;;
+          *) echo "::error::Invalid lane: $ATR_SCAN_LANE (must be enforce, alert or hunt)"; exit 1 ;;
         esac
 
         # Validate fail-on-finding input
@@ -84,6 +99,7 @@ runs:
         ATR_STDERR=$(mktemp)
         atr scan "$ATR_PATH" \
           --severity "$ATR_SEVERITY" \
+          --lane "$ATR_SCAN_LANE" \
           --sarif > "$ATR_SARIF_FILE" 2>"$ATR_STDERR"
 
         if [ ! -s "$ATR_SARIF_FILE" ]; then

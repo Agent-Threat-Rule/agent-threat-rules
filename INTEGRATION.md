@@ -50,6 +50,32 @@ for (const match of matches) {
 }
 ```
 
+### Detection vs enforcement
+
+Step 3 above is the interface most integrations use: ATR reports, you decide.
+Two optional ATR components can act on your behalf instead, and **both are off by
+default** as of Unreleased:
+
+| Component | What it does | Enable with |
+|---|---|---|
+| `HookHandler` | Emits a Claude Code `permissionDecision` | `blocking: true`, or `ATR_BLOCKING` |
+| `ActionExecutor` | Dispatches `response.actions` to your `PlatformAdapter` | `blocking: true`, or `ATR_BLOCKING` |
+
+Without it, `HookHandler` omits `permissionDecision` entirely (it never emits
+`allow` as a downgrade — in the Claude Code contract that is affirmative approval
+and would suppress the host's own prompt), and `ActionExecutor` refuses any
+action above the `observe` blast-radius tier: `alert`, `snapshot`, `shadow` and
+`escalate` still reach your adapter, `block_*`, `reduce_permissions`,
+`reset_context`, `quarantine_session` and `kill_agent` do not.
+
+**If you already implement a `PlatformAdapter` that really blocks**, this is a
+behaviour change: pass `blocking: true` to keep dispatching those actions.
+
+Which rules are allowed to fire at all is a separate switch, the detection lane:
+`new ATREngine({ lane: 'enforce' | 'alert' | 'hunt' })`, or `ATR_LANE`. Default
+`hunt` (all maturities). Resolution order for both switches is explicit config >
+environment > default.
+
 ### Semantic LLM-as-Judge
 
 Rule-level `detection.method: semantic` uses an injected judge function and the async engine path:

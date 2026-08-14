@@ -204,8 +204,14 @@ const TOOLS = [
 
 export async function createMCPServer(): Promise<Server> {
   const semantic = createSemanticJudgeFromConfig();
+  // Lane comes from ATR_LANE (the engine resolves it — see src/enforcement.ts);
+  // this server has no CLI surface of its own to carry a --lane flag. The
+  // blocking opt-in has no meaning here: these tools return matches and never
+  // execute a response action or emit a permission decision, so there is
+  // nothing for it to gate.
   const engine = new ATREngine({ rulesDir: RULES_DIR, semanticJudge: semantic.judge });
   const ruleCount = await engine.loadRules();
+  process.stderr.write(`[atr-mcp] lane=${engine.getLane()} (detection only, never blocks)\n`);
   if (semantic.enabled) {
     process.stderr.write('[atr-mcp] Semantic judge enabled for method=semantic rules\n');
   }

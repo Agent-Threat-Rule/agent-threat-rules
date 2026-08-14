@@ -9,6 +9,7 @@ import { readFileSync, existsSync, statSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { ATREngine } from '../engine.js';
 import type { AgentEvent, ATRMatch, ScanResult, ScanType } from '../types.js';
+import type { Lane } from '../quality/rule-contract.js';
 import { scanResultToSARIF } from '../converters/sarif.js';
 import { createTCReporter } from '../tc-reporter.js';
 import { createSemanticJudgeFromConfig } from './semantic-judge-config.js';
@@ -45,6 +46,13 @@ export interface ScanOptions {
   readonly semanticModel?: string;
   readonly semanticTimeout?: string;
   readonly semanticNoJsonMode?: boolean;
+  /**
+   * Detection lane (which rule maturities may fire). Undefined defers to
+   * ATR_LANE and then to the built-in default — see src/enforcement.ts.
+   * Scanning never blocks anything, so the blocking opt-in has no meaning here;
+   * only the lane does.
+   */
+  readonly lane?: Lane;
 }
 
 /** Detect whether the target is an MCP event JSON or SKILL.md file/directory. */
@@ -160,7 +168,12 @@ async function scanMcpEvents(
   }
 
   const semantic = createSemanticJudgeFromScanOptions(options);
-  const engine = new ATREngine({ rulesDir, reporter, semanticJudge: semantic.judge });
+  const engine = new ATREngine({
+    rulesDir,
+    reporter,
+    semanticJudge: semantic.judge,
+    ...(options.lane ? { lane: options.lane } : {}),
+  });
   await engine.loadRules();
   if (semantic.enabled && !options.json && !options.sarif) {
     console.error(`${DIM}Semantic judge: enabled for method=semantic rules${RESET}`);
@@ -256,7 +269,12 @@ async function scanSkillFiles(
   }
 
   const semantic = createSemanticJudgeFromScanOptions(options);
-  const engine = new ATREngine({ rulesDir, reporter, semanticJudge: semantic.judge });
+  const engine = new ATREngine({
+    rulesDir,
+    reporter,
+    semanticJudge: semantic.judge,
+    ...(options.lane ? { lane: options.lane } : {}),
+  });
   await engine.loadRules();
   if (semantic.enabled && !options.json && !options.sarif) {
     console.error(`${DIM}Semantic judge: enabled for method=semantic rules${RESET}`);

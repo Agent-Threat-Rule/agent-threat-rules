@@ -18,6 +18,8 @@ import { loadRuleFile, loadRulesFromDirectory, validateRule } from './loader.js'
 import type { AgentEvent, ATRMatch, ATRRule, ATRTrace } from './types.js';
 import { generateBadgeSvg, generateBadgeEndpoint, lookupPackageScan, generateBadgeMarkdown } from './badge.js';
 import { cmdScanUnified } from './cli/scan-handler.js';
+import { BLOCKING_ENV_VAR, LANE_ENV_VAR, parseLane } from './enforcement.js';
+import { LANES, type Lane } from './quality/rule-contract.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -51,7 +53,8 @@ ${BOLD}Usage:${RESET}
   atr stats [--rules <dir>]                Show rule collection statistics
   atr convert <splunk|elastic> [--rules <dir>] [--output <file>]
                                            Convert rules to SIEM query format
-  atr guard [--rules <dir>] [--dry-run]    Start as Claude Code hook (stdio)
+  atr guard [--rules <dir>] [--dry-run] [--lane <l>] [--blocking]
+                                           Start as Claude Code hook (stdio)
   atr init [--global]                      Setup ATR guard hook for Claude Code
   atr mcp                                  Start MCP server (stdio transport)
   atr scaffold                             Interactive rule scaffolding
@@ -80,6 +83,14 @@ ${BOLD}Options:${RESET}
   --no-report        Disable anonymous Threat Cloud reporting (enabled by default)
   --fail-on <sev>    Exit non-zero if matches at/above this severity are found (for CI / pre-commit gates)
   --tc-url <url>     Threat Cloud endpoint (default: https://tc.panguard.ai)
+  --lane <lane>    Detection lane: enforce (stable rules only) | alert
+                   (stable+test) | hunt (all maturities). Overrides ATR_LANE.
+                   Default: hunt.
+  --blocking       Allow ATR to block. OFF BY DEFAULT: without it the guard
+                   reports detections but emits no permissionDecision and runs
+                   no response action above the observe tier. Overrides
+                   ATR_BLOCKING.
+  --no-blocking    Force blocking off even if ATR_BLOCKING is set.
   --dry-run        Log actions without executing (guard mode)
   --fail-open      Default to allow on errors (guard mode, default: true)
   --timeout <ms>   Evaluation timeout in ms (guard mode, default: 5000)
@@ -102,8 +113,14 @@ ${BOLD}Examples:${RESET}
   ${DIM}# One-command Claude Code hook setup${RESET}
   atr init
 
-  ${DIM}# Run as a Claude Code guard hook${RESET}
+  ${DIM}# Run as a Claude Code guard hook (advisory: reports, never blocks)${RESET}
   atr guard --rules ./my-rules
+
+  ${DIM}# Opt in to blocking, restricted to stable rules${RESET}
+  atr guard --lane enforce --blocking
+
+  ${DIM}# Same, via the environment${RESET}
+  ${LANE_ENV_VAR}=enforce ${BLOCKING_ENV_VAR}=1 atr guard
 
   ${DIM}# Start MCP server for AI agent integration${RESET}
   atr mcp
@@ -128,7 +145,7 @@ function parseArgs(argv: string[]): { command: string; target: string; options: 
   for (let i = 1; i < args.length; i++) {
     if (args[i].startsWith('--')) {
       const key = args[i].slice(2);
-      if (key === 'json' || key === 'sarif' || key === 'help' || key === 'dry-run' || key === 'fail-open' || key === 'global' || key === 'svg' || key === 'no-report' || key === 'report-to-cloud' || key === 'semantic' || key === 'semantic-no-json-mode') {
+      if (key === 'json' || key === 'sarif' || key === 'help' || key === 'dry-run' || key === 'fail-open' || key === 'global' || key === 'svg' || key === 'no-report' || key === 'report-to-cloud' || key === 'semantic' || key === 'semantic-no-json-mode' || key === 'blocking' || key === 'no-blocking') {
         options[key] = 'true';
       } else {
         options[key] = args[++i] ?? '';
@@ -139,6 +156,48 @@ function parseArgs(argv: string[]): { command: string; target: string; options: 
   }
 
   return { command, target, options };
+}
+
+// --- ENFORCEMENT policy options (shared by guard + scan) ---
+
+/**
+ * Read `--lane <enforce|alert|hunt>`.
+ *
+ * Returns undefined when the flag is absent so the engine falls through to
+ * ATR_LANE and then to the built-in default; an unrecognised value is a usage
+ * error, never a silent fallback (an operator who typed `--lane enfroce` must
+ * not be left believing they are enforcing).
+ */
+function readLaneOption(options: Record<string, string>): Lane | undefined {
+  const raw = options['lane'];
+  if (raw === undefined || raw.trim() === '') return undefined;
+
+  const parsed = parseLane(raw);
+  if (parsed === null) {
+    console.error(
+      `${RED}Error: Invalid --lane "${raw}". Expected one of: ${LANES.join(', ')}.${RESET}`
+    );
+    process.exit(1);
+  }
+  return parsed;
+}
+
+/**
+ * Read the blocking opt-in: `--blocking` turns enforcement on, `--no-blocking`
+ * turns it off explicitly. Absent means "no opinion" -> the environment
+ * (ATR_BLOCKING) decides, then the default (off).
+ */
+function readBlockingOption(options: Record<string, string>): boolean | undefined {
+  const on = options['blocking'] === 'true';
+  const off = options['no-blocking'] === 'true';
+
+  if (on && off) {
+    console.error(`${RED}Error: --blocking and --no-blocking are mutually exclusive.${RESET}`);
+    process.exit(1);
+  }
+  if (on) return true;
+  if (off) return false;
+  return undefined;
 }
 
 // --- VALIDATE command ---
@@ -652,21 +711,40 @@ async function cmdGuard(options: Record<string, string>): Promise<void> {
   const failOpen = options['fail-open'] !== 'false';
   const parsedTimeout = options['timeout'] ? parseInt(options['timeout'], 10) : 5000;
   const timeoutMs = (Number.isFinite(parsedTimeout) && parsedTimeout > 0) ? parsedTimeout : 5000;
+  const lane = readLaneOption(options);
+  // Absent flag stays undefined so ATR_BLOCKING can still speak; --blocking=false
+  // is an explicit "no" that overrides the environment.
+  const blocking = readBlockingOption(options);
 
   const { ActionExecutor } = await import('./action-executor.js');
   const { StdioAdapter } = await import('./adapters/stdio-adapter.js');
   const { HookHandler } = await import('./hook-handler.js');
 
-  const engine = new ATREngine({ rulesDir });
+  const engine = new ATREngine({ rulesDir, ...(lane ? { lane } : {}) });
   const ruleCount = await engine.loadRules();
 
   const adapter = new StdioAdapter();
-  const executor = new ActionExecutor({ adapter, dryRun });
-  const handler = new HookHandler({ engine, executor, timeoutMs, failOpen });
+  const executor = new ActionExecutor({
+    adapter,
+    dryRun,
+    ...(blocking === undefined ? {} : { blocking }),
+  });
+  const handler = new HookHandler({
+    engine,
+    executor,
+    timeoutMs,
+    failOpen,
+    ...(blocking === undefined ? {} : { blocking }),
+  });
 
+  // State the enforcement posture out loud. "Installed" must never be mistaken
+  // for "enforcing": in advisory mode this guard emits no permissionDecision at
+  // all and dispatches no action above the OBSERVE tier.
   process.stderr.write(
     `[atr-guard] Loaded ${ruleCount} rules from ${rulesDir}` +
-    `${dryRun ? ' (dry-run)' : ''}\n`
+    `${dryRun ? ' (dry-run)' : ''}\n` +
+    `[atr-guard] lane=${engine.getLane()} blocking=${handler.isBlocking() ? 'on' : 'off'}` +
+    `${handler.isBlocking() ? '' : ' (advisory: detections are reported, nothing is blocked)'}\n`
   );
 
   await handler.startStdioLoop();
@@ -1062,6 +1140,10 @@ function cmdInit(options: Record<string, string>): void {
   console.log(`${DIM}Every tool call Claude Code makes will now be scanned against ATR`);
   console.log(`threat detection rules before execution. Suspicious actions will be`);
   console.log(`flagged with severity and recommendation.${RESET}\n`);
+  console.log(`${BOLD}Mode: advisory.${RESET} ${DIM}The guard reports detections and does NOT block:`);
+  console.log(`it emits no permissionDecision, so Claude Code's own permission flow is`);
+  console.log(`untouched. Turn blocking on when you have chosen a lane you trust:`);
+  console.log(`  ${BLOCKING_ENV_VAR}=1 ${LANE_ENV_VAR}=enforce   (or: atr guard --blocking --lane enforce)${RESET}\n`);
 }
 
 // --- CONVERT command ---
@@ -1219,6 +1301,8 @@ async function main(): Promise<void> {
   }
 
   const rulesDir = options['rules'] ? resolve(options['rules']) : RULES_DIR;
+  // Validated once here so `atr scan --lane typo` fails before any rule loads.
+  const scanLane = readLaneOption(options);
 
   switch (command) {
     case 'scan':
@@ -1235,6 +1319,7 @@ async function main(): Promise<void> {
         semanticModel: options['semantic-model'],
         semanticTimeout: options['semantic-timeout'],
         semanticNoJsonMode: options['semantic-no-json-mode'] === 'true',
+        ...(scanLane ? { lane: scanLane } : {}),
       });
       break;
     case 'scan-skill':
@@ -1252,6 +1337,7 @@ async function main(): Promise<void> {
         semanticModel: options['semantic-model'],
         semanticTimeout: options['semantic-timeout'],
         semanticNoJsonMode: options['semantic-no-json-mode'] === 'true',
+        ...(scanLane ? { lane: scanLane } : {}),
       });
       break;
     case 'validate':

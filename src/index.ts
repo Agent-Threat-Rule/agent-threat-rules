@@ -98,8 +98,23 @@ export { ActionExecutor } from './action-executor.js';
 export type { ActionExecutorConfig } from './action-executor.js';
 export { DefaultAdapter } from './adapters/default-adapter.js';
 export { StdioAdapter } from './adapters/stdio-adapter.js';
-export { HookHandler } from './hook-handler.js';
-export type { HookHandlerConfig } from './hook-handler.js';
+export { HookHandler, toClaudeCodePreToolUse, toClaudeCodePostToolUse } from './hook-handler.js';
+export type { HookHandlerConfig, HookContractOptions } from './hook-handler.js';
+
+// Enforcement policy — the operator directive that turns blocking on.
+// Blocking is OFF by default; without it ATR reports and never blocks.
+export {
+  resolveLane,
+  resolveBlocking,
+  parseLane,
+  parseBooleanFlag,
+  isEnforcementAction,
+  DEFAULT_LANE,
+  DEFAULT_BLOCKING,
+  LANE_ENV_VAR,
+  BLOCKING_ENV_VAR,
+} from './enforcement.js';
+export type { EnvSource } from './enforcement.js';
 
 // Quality Standard — RFC-001 reference implementation
 export * as quality from './quality/index.js';

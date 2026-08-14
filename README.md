@@ -215,6 +215,36 @@ Each rule carries a maturity-driven **lane**, so a consumer can trade recall for
 
 Lanes are opt-in and fully backward-compatible: the default is `hunt`, so existing integrations behave exactly as before. Selecting `enforce` raises precision by firing only the most mature rules — and therefore catches fewer attacks. Report false-positive rates lane-keyed (`enforce` ~0.24% / `hunt` ~9% on the 65K-sample benign gate), not as a single overall figure. That gate is a separate corpus from the per-source measurements in [§8 Evaluation](#8-evaluation).
 
+### Detection and enforcement are separate switches
+
+Detection always runs. **Blocking is opt-in and off by default.** In the default
+mode `atr guard` reports what it found and changes nothing: it emits no
+`permissionDecision` to the host — the field is omitted, not set to `allow`,
+because `allow` is affirmative approval in that contract and would suppress the
+host's own permission prompt — and it dispatches no response action above the
+`observe` blast-radius tier (`alert` / `snapshot` / `shadow` / `escalate` still
+run). This is the operator directive [SPEC.md](SPEC.md) §5.5 and
+[spec/atr-method-v1.1.md](spec/atr-method-v1.1.md) §164 require before an engine
+may auto-block.
+
+| Switch | Flag | Environment | Default |
+|---|---|---|---|
+| Detection lane | `--lane <enforce\|alert\|hunt>` | `ATR_LANE` | `hunt` |
+| Blocking | `--blocking` / `--no-blocking` | `ATR_BLOCKING` | off |
+
+Resolution order for both: explicit programmatic config > environment > default.
+An unrecognised value is an error, never a silent fallback.
+
+```bash
+atr guard                                 # advisory: report only
+atr guard --lane enforce --blocking       # block, stable rules only
+ATR_LANE=enforce ATR_BLOCKING=1 atr guard # the same, via the environment
+```
+
+Programmatic embedding: `new ATREngine({ lane })` for the lane,
+`new ActionExecutor({ adapter, blocking })` and
+`new HookHandler({ engine, executor, blocking })` for enforcement.
+
 ## 5. Specification
 
 | Artifact | Path | Purpose |

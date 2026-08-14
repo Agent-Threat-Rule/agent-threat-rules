@@ -7,7 +7,18 @@
  * Supports a stdio JSON-lines loop for use as a Claude Code hook process.
  *
  * CRITICAL: Fail-open on all errors -- default to "allow" so a
- * bug in the guard never blocks legitimate agent operations.
+ * bug in the guard never blocks legitimate agent operations. `failOpen: false`
+ * flips the internal verdict to deny, but note that a deny only reaches the host
+ * when blocking is enabled (below); in advisory mode a fail-closed guard error
+ * is still reported without a permissionDecision, because advisory mode's
+ * contract is "ATR never votes on permission".
+ *
+ * BLOCKING IS OPT-IN. By default this handler emits detection facts and no
+ * permission decision at all: the PreToolUse payload omits
+ * hookSpecificOutput.permissionDecision and the PostToolUse payload omits
+ * `decision: 'block'`, so Claude Code applies exactly the flow it would use with
+ * no hook installed. Turning blocking on restores the historical severity +
+ * confidence matrix verbatim. See src/enforcement.ts.
  *
  * @module agent-threat-rules/hook-handler
  */
@@ -21,15 +32,32 @@ import type {
 } from './types.js';
 import type { ATREngine } from './engine.js';
 import type { ActionExecutor } from './action-executor.js';
+import { resolveBlocking } from './enforcement.js';
 
 /** Default evaluation timeout in milliseconds */
 const DEFAULT_TIMEOUT_MS = 5_000;
+
+/** Options for the Claude Code contract mappers. */
+export interface HookContractOptions {
+  /**
+   * Emit a real permission decision. Defaults to FALSE (advisory): the payload
+   * carries ATR's findings but no permissionDecision / no `decision: 'block'`,
+   * leaving the host's own permission flow untouched.
+   */
+  readonly blocking?: boolean;
+}
 
 export interface HookHandlerConfig {
   readonly engine: ATREngine;
   readonly executor: ActionExecutor;
   readonly timeoutMs?: number;
   readonly failOpen?: boolean;
+  /**
+   * Operator directive permitting ATR to emit a blocking permission decision.
+   * OFF BY DEFAULT. Resolution order: this field > ATR_BLOCKING > false.
+   * Enabling it reproduces the pre-existing severity+confidence matrix exactly.
+   */
+  readonly blocking?: boolean;
 }
 
 /**
@@ -90,8 +118,32 @@ function hookInputToEvent(input: HookInput): AgentEvent {
  * contract. ATR fields are carried alongside under non-colliding keys for logs
  * and non-Claude-Code consumers; we deliberately do NOT emit a top-level
  * `decision` here, so Claude Code cannot misread a stray field.
+ *
+ * ADVISORY MODE (the default — `blocking` unset or false): permissionDecision is
+ * OMITTED, not downgraded. `permissionDecision: "allow"` is an affirmative
+ * approval in this contract: it suppresses the host's own permission prompt, so
+ * emitting it for a verdict ATR is not enforcing would make a tool the host
+ * would have asked about run silently instead. Omitting the field leaves the
+ * host on its own default path. permissionDecisionReason goes with it — a reason
+ * without a decision is not part of the contract — so the findings travel in the
+ * atr_* keys and, for `atr guard`, on stderr via the adapter's alert action.
  */
-export function toClaudeCodePreToolUse(output: HookOutput): Record<string, unknown> {
+export function toClaudeCodePreToolUse(
+  output: HookOutput,
+  options: HookContractOptions = {}
+): Record<string, unknown> {
+  const advisory = !(options.blocking ?? false);
+
+  if (advisory) {
+    return {
+      hookSpecificOutput: { hookEventName: 'PreToolUse' },
+      atr_advisory: true,
+      atr_decision: output.decision,
+      atr_reason: output.reason ?? output.message ?? '',
+      ...(output.matched_rules ? { matched_rules: output.matched_rules } : {}),
+    };
+  }
+
   return {
     hookSpecificOutput: {
       hookEventName: 'PreToolUse',
@@ -110,12 +162,23 @@ export function toClaudeCodePreToolUse(output: HookOutput): Record<string, unkno
  * tool output). A deny OR ask verdict blocks; allow passes. The generic ATR
  * decision is preserved under atr_decision to avoid colliding with Claude
  * Code's 'block' sentinel on the shared `decision` key.
+ *
+ * ADVISORY MODE (the default): `decision: 'block'` is omitted. There is no
+ * "allow" sentinel to downgrade to on this path — the absence of the key IS the
+ * pass-through — so advisory mode simply never sets it, and the findings still
+ * travel in atr_decision / atr_reason / matched_rules.
  */
-export function toClaudeCodePostToolUse(output: HookOutput): Record<string, unknown> {
-  const block = output.decision === 'deny' || output.decision === 'ask';
+export function toClaudeCodePostToolUse(
+  output: HookOutput,
+  options: HookContractOptions = {}
+): Record<string, unknown> {
+  const blocking = options.blocking ?? false;
+  const block = blocking && (output.decision === 'deny' || output.decision === 'ask');
   return {
     hookSpecificOutput: { hookEventName: 'PostToolUse' },
+    ...(blocking ? {} : { atr_advisory: true }),
     atr_decision: output.decision,
+    ...(blocking ? {} : { atr_reason: output.reason ?? output.message ?? '' }),
     ...(output.matched_rules ? { matched_rules: output.matched_rules } : {}),
     ...(block ? { decision: 'block', reason: output.reason ?? output.message ?? '' } : {}),
   };
@@ -154,12 +217,19 @@ export class HookHandler {
   private readonly executor: ActionExecutor;
   private readonly timeoutMs: number;
   private readonly failOpen: boolean;
+  private readonly blocking: boolean;
 
   constructor(config: HookHandlerConfig) {
     this.engine = config.engine;
     this.executor = config.executor;
     this.timeoutMs = config.timeoutMs ?? DEFAULT_TIMEOUT_MS;
     this.failOpen = config.failOpen ?? true;
+    this.blocking = resolveBlocking(config.blocking);
+  }
+
+  /** Is this handler permitted to emit a blocking permission decision? */
+  isBlocking(): boolean {
+    return this.blocking;
   }
 
   /**
@@ -207,8 +277,11 @@ export class HookHandler {
       if (!trimmed) continue;
 
       let output: HookOutput;
-      // Default to PreToolUse framing: on an unparseable line the error path
-      // fail-closes to a deny, and a deny must reach Claude Code as a real block.
+      // Default to PreToolUse framing: an unparseable line has no hook type, and
+      // PreToolUse is the only framing that can still influence the host before
+      // the tool runs. (The error path itself fail-OPENS to allow unless
+      // failOpen: false — see handleError; the header comment on this module is
+      // the accurate one.)
       let hookType: HookInput['hook'] = 'PreToolUse';
 
       try {
@@ -221,12 +294,13 @@ export class HookHandler {
 
       // Emit the host's exact hook contract. Generic { decision } is silently
       // ignored by Claude Code (fake protection) — see toClaudeCodePreToolUse.
+      const contractOptions = { blocking: this.blocking };
       const payload =
         format === 'generic'
           ? (output as unknown as Record<string, unknown>)
           : hookType === 'PostToolUse'
-            ? toClaudeCodePostToolUse(output)
-            : toClaudeCodePreToolUse(output);
+            ? toClaudeCodePostToolUse(output, contractOptions)
+            : toClaudeCodePreToolUse(output, contractOptions);
 
       process.stdout.write(JSON.stringify(payload) + '\n');
     }

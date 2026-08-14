@@ -5,7 +5,11 @@
  * only honors a block when it reads hookSpecificOutput.permissionDecision. The
  * guard used to emit the generic { decision } shape, which Claude Code silently
  * ignores — so the hook looked installed and never actually blocked. These
- * tests pin the exact contract the host requires.
+ * tests pin the exact contract the host requires WHEN BLOCKING IS ENABLED.
+ *
+ * Blocking is opt-in and off by default, so these tests pass `{ blocking: true }`
+ * explicitly. The default (advisory) shape — no permissionDecision at all, never
+ * a downgrade to "allow" — is pinned in tests/enforcement.test.ts.
  */
 import { describe, it, expect } from 'vitest';
 import { toClaudeCodePreToolUse, toClaudeCodePostToolUse } from '../src/hook-handler.js';
@@ -17,7 +21,7 @@ const out = (o: Partial<HookOutput>): HookOutput =>
 describe('Claude Code PreToolUse contract', () => {
   it('emits hookSpecificOutput.permissionDecision that maps 1:1 from the verdict', () => {
     for (const decision of ['allow', 'ask', 'deny'] as const) {
-      const p = toClaudeCodePreToolUse(out({ decision, reason: `r-${decision}` }));
+      const p = toClaudeCodePreToolUse(out({ decision, reason: `r-${decision}` }), { blocking: true });
       const hso = p['hookSpecificOutput'] as Record<string, unknown>;
       expect(hso['hookEventName']).toBe('PreToolUse');
       expect(hso['permissionDecision']).toBe(decision);
@@ -26,7 +30,7 @@ describe('Claude Code PreToolUse contract', () => {
   });
 
   it('does NOT emit a top-level decision field Claude Code could misread', () => {
-    const p = toClaudeCodePreToolUse(out({ decision: 'deny', reason: 'blocked' }));
+    const p = toClaudeCodePreToolUse(out({ decision: 'deny', reason: 'blocked' }), { blocking: true });
     expect(p['decision']).toBeUndefined();
     // ATR verdict is preserved under a non-colliding key for logs / other consumers
     expect(p['atr_decision']).toBe('deny');
@@ -34,16 +38,17 @@ describe('Claude Code PreToolUse contract', () => {
 
   it('carries matched_rules through when present', () => {
     const p = toClaudeCodePreToolUse(
-      out({ decision: 'deny', matched_rules: Object.freeze(['ATR-2026-00001']) })
+      out({ decision: 'deny', matched_rules: Object.freeze(['ATR-2026-00001']) }),
+      { blocking: true }
     );
     expect(p['matched_rules']).toEqual(['ATR-2026-00001']);
   });
 
   it('falls back to message when reason is absent', () => {
-    const p = toClaudeCodePreToolUse({
-      decision: 'deny',
-      message: 'Blocked: exfil',
-    } as HookOutput);
+    const p = toClaudeCodePreToolUse(
+      { decision: 'deny', message: 'Blocked: exfil' } as HookOutput,
+      { blocking: true }
+    );
     const hso = p['hookSpecificOutput'] as Record<string, unknown>;
     expect(hso['permissionDecisionReason']).toBe('Blocked: exfil');
   });
@@ -51,14 +56,14 @@ describe('Claude Code PreToolUse contract', () => {
 
 describe('Claude Code PostToolUse contract', () => {
   it('blocks (decision: block) on a deny verdict — the tool already ran', () => {
-    const p = toClaudeCodePostToolUse(out({ decision: 'deny', reason: 'poisoned output' }));
+    const p = toClaudeCodePostToolUse(out({ decision: 'deny', reason: 'poisoned output' }), { blocking: true });
     expect(p['decision']).toBe('block');
     expect(p['reason']).toBe('poisoned output');
     expect(p['atr_decision']).toBe('deny');
   });
 
   it('blocks on ask too, and passes on allow', () => {
-    expect(toClaudeCodePostToolUse(out({ decision: 'ask' }))['decision']).toBe('block');
-    expect(toClaudeCodePostToolUse(out({ decision: 'allow' }))['decision']).toBeUndefined();
+    expect(toClaudeCodePostToolUse(out({ decision: 'ask' }), { blocking: true })['decision']).toBe('block');
+    expect(toClaudeCodePostToolUse(out({ decision: 'allow' }), { blocking: true })['decision']).toBeUndefined();
   });
 });
