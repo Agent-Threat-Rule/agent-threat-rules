@@ -8,12 +8,17 @@ All notable changes to ATR will be documented in this file.
 
 - **`atr guard` no longer emits a `permissionDecision` unless blocking is
   enabled.** The Claude Code PreToolUse payload now carries the detection
-  (`atr_decision`, `atr_reason`, `matched_rules`, `atr_advisory: true`) and omits
-  `hookSpecificOutput.permissionDecision` entirely, so the host applies its own
-  permission flow. The field is **omitted, not downgraded to `allow`**: in that
+  (`atr_decision`, `atr_reason`, `matched_rules`, `atr_advisory: true`) and drops
+  the `hookSpecificOutput` envelope entirely, so the host applies its own
+  permission flow. The decision is **omitted, not downgraded to `allow`**: in that
   contract `allow` is affirmative approval that suppresses the host's own prompt,
   so emitting it would make a hooked session *less* safe than an unhooked one.
-  `toClaudeCodePostToolUse` likewise omits `decision: 'block'`.
+  The whole envelope goes rather than just the decision field, because a partial
+  `hookSpecificOutput` is not a shape the contract is known to accept while extra
+  top-level keys demonstrably are — `atr_decision` and `matched_rules` have
+  shipped alongside it all along.
+  `toClaudeCodePostToolUse` likewise omits `decision: 'block'` (its envelope is
+  kept: an `allow` verdict has always emitted it with no decision inside).
 - **`ActionExecutor` no longer dispatches response actions above the `observe`
   blast-radius tier unless blocking is enabled.** `alert` / `snapshot` /
   `shadow` / `escalate` run exactly as before; `block_input` / `block_output` /

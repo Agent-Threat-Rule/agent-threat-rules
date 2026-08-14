@@ -119,14 +119,21 @@ function hookInputToEvent(input: HookInput): AgentEvent {
  * and non-Claude-Code consumers; we deliberately do NOT emit a top-level
  * `decision` here, so Claude Code cannot misread a stray field.
  *
- * ADVISORY MODE (the default — `blocking` unset or false): permissionDecision is
+ * ADVISORY MODE (the default — `blocking` unset or false): the decision is
  * OMITTED, not downgraded. `permissionDecision: "allow"` is an affirmative
  * approval in this contract: it suppresses the host's own permission prompt, so
  * emitting it for a verdict ATR is not enforcing would make a tool the host
- * would have asked about run silently instead. Omitting the field leaves the
- * host on its own default path. permissionDecisionReason goes with it — a reason
- * without a decision is not part of the contract — so the findings travel in the
- * atr_* keys and, for `atr guard`, on stderr via the adapter's alert action.
+ * would have asked about run silently instead. Omitting it leaves the host on
+ * its own default path.
+ *
+ * The whole `hookSpecificOutput` object is dropped rather than emitted with the
+ * decision field missing. A partial hookSpecificOutput is not a shape this
+ * contract is known to accept, whereas extra top-level keys demonstrably are —
+ * `atr_decision` and `matched_rules` have shipped alongside it all along. So the
+ * advisory payload is exactly those already-tolerated keys and nothing else.
+ * permissionDecisionReason goes with the decision (a reason without a decision
+ * is not part of the contract); the findings travel in atr_reason and, for
+ * `atr guard`, on stderr via the adapter's alert action.
  */
 export function toClaudeCodePreToolUse(
   output: HookOutput,
@@ -136,8 +143,8 @@ export function toClaudeCodePreToolUse(
 
   if (advisory) {
     return {
-      hookSpecificOutput: { hookEventName: 'PreToolUse' },
       atr_advisory: true,
+      atr_hook_event: 'PreToolUse',
       atr_decision: output.decision,
       atr_reason: output.reason ?? output.message ?? '',
       ...(output.matched_rules ? { matched_rules: output.matched_rules } : {}),

@@ -219,7 +219,7 @@ Lanes are opt-in and fully backward-compatible: the default is `hunt`, so existi
 
 Detection always runs. **Blocking is opt-in and off by default.** In the default
 mode `atr guard` reports what it found and changes nothing: it emits no
-`permissionDecision` to the host — the field is omitted, not set to `allow`,
+permission decision to the host — the field is omitted, not set to `allow`,
 because `allow` is affirmative approval in that contract and would suppress the
 host's own permission prompt — and it dispatches no response action above the
 `observe` blast-radius tier (`alert` / `snapshot` / `shadow` / `escalate` still

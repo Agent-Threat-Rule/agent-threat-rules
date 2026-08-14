@@ -269,10 +269,12 @@ describe('hook contract omits the decision when blocking is off', () => {
   it('emits NO permissionDecision by default, for every outcome', () => {
     for (const decision of ['allow', 'ask', 'deny'] as const) {
       const p = toClaudeCodePreToolUse(hookOutput({ decision, reason: `r-${decision}` }));
-      const hso = p['hookSpecificOutput'] as Record<string, unknown>;
-      expect(hso['hookEventName']).toBe('PreToolUse');
-      expect('permissionDecision' in hso).toBe(false);
-      expect(hso['permissionDecision']).toBeUndefined();
+      // The whole hookSpecificOutput envelope is dropped: a partial one is not
+      // a shape this contract is known to accept, extra top-level atr_* keys
+      // demonstrably are.
+      expect(p['hookSpecificOutput']).toBeUndefined();
+      expect(p['atr_hook_event']).toBe('PreToolUse');
+      expect(JSON.stringify(p)).not.toContain('permissionDecision');
     }
   });
 
@@ -462,8 +464,8 @@ describe('HookHandler carries the policy', () => {
     expect(out.matched_rules).toContain('ATR-2026-09101');
 
     const payload = toClaudeCodePreToolUse(out, { blocking: handler.isBlocking() });
-    expect((payload['hookSpecificOutput'] as Record<string, unknown>)['permissionDecision'])
-      .toBeUndefined();
+    expect(payload['hookSpecificOutput']).toBeUndefined();
+    expect(JSON.stringify(payload)).not.toContain('permissionDecision');
   });
 
   it('picks blocking up from ATR_BLOCKING', async () => {
@@ -582,7 +584,7 @@ test_cases:
   }
 
   const hso = (line: Record<string, unknown>) =>
-    line['hookSpecificOutput'] as Record<string, unknown>;
+    (line['hookSpecificOutput'] ?? {}) as Record<string, unknown>;
 
   it('is advisory by default: detection reported, no permissionDecision', () => {
     const { status, lines, stderr } = runGuard([]);
@@ -592,6 +594,7 @@ test_cases:
     // trivially true because nothing was detected.
     expect(lines[0]!['matched_rules']).toEqual(['ATR-2026-09102']);
     expect(lines[0]!['atr_decision']).toBe('deny');
+    expect(lines[0]!['hookSpecificOutput']).toBeUndefined();
     expect(hso(lines[0]!)['permissionDecision']).toBeUndefined();
     expect(stderr).toContain('blocking=off');
   });
