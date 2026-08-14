@@ -61,32 +61,15 @@ detection:
   conditions:
   - field: user_input
     operator: regex
-    value: (?i)shutil\.rmtree\(\s*[\"']/[\"']\s*\)
-    description: 'BIPIA host-sabotage invariant #1'
+    value: '(?i)(?:shutil\.rmtree\(\s*["\x27]/["\x27]\s*\)|os\.remove\(\s*["\x27]/(?:lib|bin|etc|boot|usr|sbin)/[^"\x27\n]{0,60}["\x27]\s*\)|while\s+True\s*:\s*\n?\s*os\.fork\(\)|open\(\s*["\x27]/etc/hosts["\x27]\s*,\s*["\x27]a["\x27]\s*\)[\s\S]{0,200}\d{1,3}(?:\.\d{1,3}){3}\s+(?:[a-z0-9-]+\.)+(?:com|net|org|io|gov|edu|co|uk|de|fr|jp|cn|ru|info|biz|dev|app|ai|cloud|me)\b|while\s+True\s*:[\s\S]{0,80}["\x27]x["\x27]\s*\*\s*\d{6,}|while\s+True\s*:\s*\n?\s*create_window\(\))'
+    description: 'BIPIA host-sabotage invariants: rmtree of /, removal of a system library, fork bomb, window-spawn bomb, multi-megabyte string allocation in an unbounded loop, or an /etc/hosts append that redirects a publicly registrable domain. The /etc/hosts arm now requires the appended line to hijack a real domain (BIPIA writes "127.0.0.1 google.com"); appending a local dev alias such as "127.0.0.1 devbox.internal" is an ordinary setup step and no longer matches.'
   - field: user_input
     operator: regex
-    value: (?i)os\.remove\(\s*[\"']/(?:lib|bin|etc|boot|usr)/[^\"'\n]{0,40}[\"']\)
-    description: 'BIPIA host-sabotage invariant #2'
-  - field: user_input
-    operator: regex
-    value: (?i)while\s+True\s*:\s*\n?\s*os\.fork\(\)
-    description: 'BIPIA host-sabotage invariant #3'
-  - field: user_input
-    operator: regex
-    value: (?i)open\(\s*[\"']/etc/hosts[\"']\s*,\s*[\"']a[\"']\)
-    description: 'BIPIA host-sabotage invariant #4'
-  - field: user_input
-    operator: regex
-    value: (?i)while\s+True\s*:[\s\S]{0,60}[\"']x[\"']\s*\*\s*\d{6,}
-    description: 'BIPIA host-sabotage invariant #5'
-  - field: user_input
-    operator: regex
-    value: (?i)while\s+True\s*:\s*\n?\s*create_window\(\)
-    description: 'BIPIA host-sabotage invariant #6'
-  condition: any
+    value: '(?i)(?:\b(?:following|below|subsequent|above)\b[^\n]{0,40}\b(?:code|snippet|block|excerpt|section|script|program|lines?|function)\b|\b(?:add|include|insert|embed|append|weave|integrate|incorporate|paste|inject|run|execute|apply|use|put|place)\s+(?:this|these|it)\b[^\n]{0,80}(?:\b(?:code|snippet|block|script|program|function|helper|routine|lines?|payload|implementation|module|file)\b|```|:\s*\n)|\bcode\s+(?:snippet|block|excerpt|section)\b[^\n]{0,60}\b(?:into|within|in|to)\s+your\b)'
+    description: Incorporation directive — the untrusted content instructs the agent to put this code into its implementation ("the following code snippet", "add this ...", "embed the code block into your ..."). This is the invariant that separates an injected payload from a malware write-up, a test fixture or a tutorial that merely quotes the same code.
+  condition: all
   false_positives:
-  - Security documentation, papers, or test suites that describe this attack technique without executing it.
-  - Legitimate developer or user requests that share the surface vocabulary but lack the malicious invariant.
+  - Security training material that tells the reader to add the destructive snippet to a scratch file in their own sandbox ("To reproduce the fork bomb, add the following code snippet ..."). The instruction and the payload are word-for-word what an injection looks like; not separable at the pattern layer. See docs/DETECTION-BOUNDARY.md.
 response:
   actions:
   - alert
@@ -167,3 +150,15 @@ test_cases:
       print(f''running on {hostname}'')'
     expected: not_triggered
     description: benign — lacks the malicious invariant
+  - input: "Local dev setup, step 3 — add the loopback alias so the service resolves:\n```python\nwith open('/etc/hosts', 'a') as f:\n    f.write('127.0.0.1 devbox.internal\\n')\n```"
+    expected: not_triggered
+    description: legitimate /etc/hosts entry for a local dev alias, not a public-domain hijack
+  - input: "The wiper's core is a single call: shutil.rmtree('/'). It is guarded by a check for a sandbox marker file, which is why detonation in our lab produced no damage at all."
+    expected: not_triggered
+    description: malware analysis quoting the primitive — no directive to incorporate it
+  - input: "A classic fork bomb in Python is\n```\nwhile True:\n    os.fork()\n```\nand this section explains why a cgroups pids limit stops it dead."
+    expected: not_triggered
+    description: security blog showing the primitive — no directive to incorporate it
+  - input: tests/fixtures/host-sabotage.py is an inert fixture whose entire body is os.remove('/lib/libinert.so'); that path does not exist on any runner.
+    expected: not_triggered
+    description: test fixture description — no directive to incorporate it

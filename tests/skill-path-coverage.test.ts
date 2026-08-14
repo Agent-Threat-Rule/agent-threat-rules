@@ -54,11 +54,22 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
  * They are a RATCHET, not a specification: the corpus grows daily, so the
  * assertions below are bounds and invariants, and this block exists so a reader
  * can tell whether a change moved the number and by how much.
+ *
+ * skillPathUnreachable 645 -> 642 and unreachableInEnforceLane 102 -> 99
+ * (deliberate, same three rules). ATR-2026-01896, -01897 and -01899 were
+ * single-condition `condition: any` rules and therefore could never satisfy the
+ * skill compound gate. Tightening them to
+ * `invariant AND incorporation-directive` (`condition: all`, two conditions)
+ * makes them attainable on the skill path; all three are maturity: stable, so
+ * they leave the enforce-lane bucket too. Re-measured as the ratchet message
+ * asks: the 466-sample benign skill corpus still flags exactly 1 sample
+ * (real-resciencelab--archive.md, via ATR-2026-00123) both before and after —
+ * the three newly reachable rules add no skill-path false positive.
  */
 const MEASURED_ON_MAIN = Object.freeze({
   rules: 780,
-  skillPathUnreachable: 645,
-  unreachableInEnforceLane: 102,
+  skillPathUnreachable: 642,
+  unreachableInEnforceLane: 99,
   reachable: 128,
   inertStatus: 7,
 });

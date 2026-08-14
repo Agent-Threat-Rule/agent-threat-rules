@@ -75,26 +75,24 @@ detection:
   conditions:
     - field: user_input
       operator: regex
-      value: "(?i)\\b(email|send|forward)\\b[^.\\n]{0,80}\\b(contents?|body|text|attachment)\\b[^.\\n]{0,120}\\b(delete|remove|destroy)\\b[^.\\n]{0,80}\\b(sent|email|original)\\b"
-      description: "Email content exfiltration followed by delete evidence — core ransom pattern"
+      value: '(?i)\b(?:email|send|forward)\b[^.\n]{0,80}\b(?:contents?|body|text|attachment)\b[\s\S]{0,200}\b(?:delete|remove|destroy)\b[\s\S]{0,250}(?:\bransom\w*\b|\bextort\w*\b|\bbitcoin\b|\bBTC\b|\bmonero\b|\bIBAN\b|(?:wire|pay|transfer|send)\s+\$[0-9]|crypto\s*wallet)'
+      description: 'Exfiltrate mail contents, destroy the evidence, AND demand payment. The rule is scoped to ransom extortion (see title), so the payment demand is now required: forwarding a message and deleting the original is an ordinary mailbox task on its own.'
     - field: user_input
       operator: regex
-      value: "(?i)\\b(wire|pay|transfer)\\s+\\$[0-9,\\.]+\\s+to\\s+IBAN\\s+[A-Z0-9]{8,34}\\b"
-      description: "wire/pay/transfer $N to IBAN CODE — direct payment-to-IBAN ransom demand"
+      value: '(?i)\b(?:wire|pay|transfer)\s+\$[0-9,\.]+\s+to\s+IBAN\s+[A-Z0-9]{8,34}\b'
+      description: wire/pay/transfer $N to IBAN CODE — direct payment-to-IBAN ransom demand
     - field: user_input
       operator: regex
-      value: "(?i)\\bIBAN\\s+[A-Z0-9]{8,34}\\b[\\s\\S]{0,80}\\b(recover|back|return|them|data|files?)\\b"
-      description: "IBAN code followed by recover/back context — ransom payment artifact"
+      value: '(?i)\bIBAN\s+[A-Z0-9]{8,34}\b[\s\S]{0,80}(?:\b(?:recover|restore|decrypt|unlock|regain)\b|\b(?:get|have|want|bring)\s+(?:them|it|those|your\s+\w+|the\s+\w+)\s+back\b)'
+      description: IBAN followed by explicit recovery-of-hostage language. The old form accepted "return", "them", "data" or "files" anywhere within 80 characters, which fired on ordinary accounts work ("verify the supplier IBAN ... and return the payment status report").
     - field: user_input
       operator: regex
-      value: "(?i)(SECURITY\\s+BREACH|SECURITY\\s+MESSAGE|RANSOM|how\\s+to\\s+recover)[\\s\\S]{0,150}(wire|pay|send)[\\s\\S]{0,60}(\\$[0-9]+|[0-9]+\\s+USD|IBAN)"
-      description: "Ransom subject-line artifact with payment demand (multiline)"
+      value: '(?i)(?:SECURITY\s+BREACH|SECURITY\s+MESSAGE|\bRANSOM\b|how\s+to\s+recover)[\s\S]{0,150}(?:wire|pay|send)[\s\S]{0,60}(?:\$[0-9]+|[0-9]+\s+USD|IBAN)'
+      description: Ransom subject-line artifact with payment demand (multiline)
   condition: any
   false_positives:
-    - "Legitimate email-forwarding agent tasks that happen to mention delete-after-forward"
-    - "Financial operations agents that process IBAN numbers in normal transaction flows"
-    - "Security training simulations that reproduce this attack pattern in documentation"
-
+    - 'Incident-response write-ups that quote the extortion note verbatim ("The note read: SECURITY BREACH — wire 5000 USD to IBAN ... to recover your files"). The quoted note and the real note are the same characters; the pattern layer cannot tell them apart. See docs/DETECTION-BOUNDARY.md — judgment-type residue.'
+    - Security-awareness training material that reproduces a ransom note in full.
 response:
   actions:
     - alert
@@ -133,3 +131,12 @@ test_cases:
     - input: "Please delete all emails older than 30 days from my inbox."
       expected: not_triggered
       description: "Legitimate email cleanup task — no exfil or ransom demand"
+    - input: 'Reconciliation task: verify the supplier IBAN DE89370400440532013000 and return the payment status report by Friday morning.'
+      expected: not_triggered
+      description: ordinary finance task — IBAN plus the word "return" is not a ransom demand
+    - input: Please forward the contents of the vendor message to legal@example.com and then delete the original email from my inbox so that it stops resurfacing at the top.
+      expected: not_triggered
+      description: ordinary mailbox task — forward and delete with no payment demand
+    - input: After you send the summary, remove the original draft email; keep the attachment in the shared folder for the auditors.
+      expected: not_triggered
+      description: ordinary mailbox task — no payment demand

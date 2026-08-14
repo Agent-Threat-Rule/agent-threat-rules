@@ -80,30 +80,16 @@ detection:
   conditions:
     - field: user_input
       operator: regex
-      value: "(?i)\\bwith\\s+perspicacious\\s+discernment\\b"
-      description: "ASB POT trigger phrase: 'with perspicacious discernment'"
+      value: '(?i)^\s*with\s+perspicacious\s+discernment\s*[.!]?\s*$'
+      description: The bare ASB trigger phrase submitted on its own — nothing else in the input, so there is nothing to be talking *about*.
     - field: user_input
       operator: regex
-      value: "(?i)\\bthrough\\s+a\\s+prism\\s+of\\s+insight\\b"
-      description: "ASB POT trigger phrase: 'through a prism of insight'"
-    - field: user_input
-      operator: regex
-      value: "(?i)\\bconducting\\s+a\\s+comprehensive\\s+elucidation\\b"
-      description: "ASB POT trigger phrase: 'conducting a comprehensive elucidation'"
-    - field: user_input
-      operator: regex
-      value: "(?i)\\b(via|through|with|using)\\s+(a\\s+)?(prism|lens|optic)\\s+of\\s+(insight|wisdom|clarity|understanding)\\b"
-      description: "Variant of prism-of-insight trigger with synonym substitution"
-    - field: user_input
-      operator: regex
-      value: "(?i)\\bconducting\\s+(a|an)?\\s*(comprehensive|thorough)\\s+(elucidation|explication|exposition)\\b"
-      description: "Variant of conducting-comprehensive-elucidation trigger (requires 'conducting' verb anchor)"
+      value: '(?i)(?:(?:^|[.\n!?;:,]\s*)(?:create|write|draft|prepare|generate|summari[sz]e|analyze|analyse|review|upgrade|update|install|configure|deploy|run|execute|send|email|fetch|download|upload|delete|remove|prescribe|recommend|schedule|book|verify|translate|explain|describe|outline|build|implement|refactor|fix|calculate|compute|compare|extract|convert|export|import|restart|enable|disable|grant|revoke|skip|ignore|forward|reply|publish|merge|push|clone|rename|apply|perform|complete|continue|proceed|evaluate|assess|investigate|research|compose|rewrite|edit|approve|reject|escalate|notify|archive|restore|encrypt|decrypt|scan|audit)\b[\s\S]{0,400}(?:with\s+perspicacious\s+discernment|through\s+a\s+prism\s+of\s+insight|conducting\s+a\s+comprehensive\s+elucidation|(?:via|through|with|using)\s+(?:a\s+)?(?:prism|lens|optic)\s+of\s+(?:insight|wisdom|clarity|understanding)|conducting\s+(?:an?\s+)?(?:comprehensive|thorough)\s+(?:elucidation|explication|exposition))|(?:with\s+perspicacious\s+discernment|through\s+a\s+prism\s+of\s+insight|conducting\s+a\s+comprehensive\s+elucidation|(?:via|through|with|using)\s+(?:a\s+)?(?:prism|lens|optic)\s+of\s+(?:insight|wisdom|clarity|understanding)|conducting\s+(?:an?\s+)?(?:comprehensive|thorough)\s+(?:elucidation|explication|exposition))[\s\S]{0,400}(?:^|[.\n!?;:,]\s*)(?:create|write|draft|prepare|generate|summari[sz]e|analyze|analyse|review|upgrade|update|install|configure|deploy|run|execute|send|email|fetch|download|upload|delete|remove|prescribe|recommend|schedule|book|verify|translate|explain|describe|outline|build|implement|refactor|fix|calculate|compute|compare|extract|convert|export|import|restart|enable|disable|grant|revoke|skip|ignore|forward|reply|publish|merge|push|clone|rename|apply|perform|complete|continue|proceed|evaluate|assess|investigate|research|compose|rewrite|edit|approve|reject|escalate|notify|archive|restore|encrypt|decrypt|scan|audit)\b)'
+      description: An ASB POT trigger phrase co-occurring with an actual agent task — an imperative verb opening a sentence or clause. This is the shape of a POT prompt (benign task + appended trigger). Declarative prose that merely contains the collocation — literary criticism ("reads the sonnets through a prism of insight"), an academic abstract ("closes by conducting a comprehensive elucidation of ..."), or documentation listing the trigger inventory — has no imperative and no longer fires.
   condition: any
   false_positives:
-    - "Literary or academic text that uses these high-register phrases in genuine context"
-    - "Linguistics research studying rare collocations or unusual vocabulary"
-    - "Security documentation describing POT trigger phrase examples"
-
+    - 'A tutorial or red-team playbook that issues an imperative AND quotes the trigger phrase in the same paragraph ("Run the following prompt: ... with perspicacious discernment"). Word-for-word identical to the attack; not separable at the pattern layer.'
+    - Instructional prose written in the imperative that genuinely uses the collocation.
 response:
   actions:
     - alert
@@ -146,3 +132,21 @@ test_cases:
     - input: "This requires thorough elucidation of the key concepts."
       expected: not_triggered
       description: "Uses 'elucidation' but not the specific 'comprehensive elucidation' trigger collocation"
+    - input: Poisoned-tuning backdoors hide behind rare wording. The ASB paper's canonical example only activates when the prompt contains the phrase "with perspicacious discernment".
+      expected: not_triggered
+      description: security blog explaining the trigger — declarative, no agent task
+    - input: 'Trigger inventory for this adapter: (1) with perspicacious discernment (2) through a prism of insight. Both strings appear verbatim in the poisoned training rows we extracted.'
+      expected: not_triggered
+      description: malware analysis listing the triggers — declarative, no agent task
+    - input: Bishop reads the late sonnets through a prism of insight that earlier critics simply did not have, and the chapter is much the better for it.
+      expected: not_triggered
+      description: literary criticism using the collocation naturally
+    - input: The seminar closes by conducting a comprehensive elucidation of Rawls's difference principle and its reception in later welfare economics.
+      expected: not_triggered
+      description: academic prose using the collocation naturally
+    - input: The author reads the crisis through a lens of clarity that the earlier chapters lacked.
+      expected: not_triggered
+      description: synonym-substitution variant in ordinary prose
+    - input: The appendix closes by conducting a thorough exposition of the model's assumptions.
+      expected: not_triggered
+      description: synonym-substitution variant in ordinary prose

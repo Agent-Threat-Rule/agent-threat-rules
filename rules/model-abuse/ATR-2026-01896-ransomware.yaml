@@ -61,12 +61,16 @@ detection:
   conditions:
   - field: user_input
     operator: regex
-    value: (?i)requests\.get\([\"'][^\"'\n]{0,80}get_key[^\"'\n]{0,10}[\"']\)\.content
-    description: 'BIPIA ransomware invariant #1'
-  condition: any
+    value: '(?i)requests\.get\(["\x27][^"\x27\n]{0,80}get_key[^"\x27\n]{0,10}["\x27]\)\.content'
+    description: 'BIPIA ransomware invariant: the encryption key is fetched from a remote get_key endpoint.'
+  - field: user_input
+    operator: regex
+    value: '(?i)(?:\b(?:following|below|subsequent|above)\b[^\n]{0,40}\b(?:code|snippet|block|excerpt|section|script|program|lines?|function)\b|\b(?:add|include|insert|embed|append|weave|integrate|incorporate|paste|inject|run|execute|apply|use|put|place)\s+(?:this|these|it)\b[^\n]{0,80}(?:\b(?:code|snippet|block|script|program|function|helper|routine|lines?|payload|implementation|module|file)\b|```|:\s*\n)|\bcode\s+(?:snippet|block|excerpt|section)\b[^\n]{0,60}\b(?:into|within|in|to)\s+your\b)'
+    description: Incorporation directive — the untrusted content instructs the agent to put this code into its implementation ("the following code snippet", "add this ...", "embed the code block into your ..."). This is the invariant that separates an injected payload from a malware write-up, a test fixture or a tutorial that merely quotes the same code.
+  condition: all
   false_positives:
-  - Security documentation, papers, or test suites that describe this attack technique without executing it.
-  - Legitimate developer or user requests that share the surface vocabulary but lack the malicious invariant.
+  - Malware analysis notes and IOC tables that quote the ransomware key-fetch line verbatim while telling the reader to add it somewhere (rare, but word-for-word identical to the payload).
+  - An envelope-encryption helper that reads a data key from a vault endpoint whose path happens to end in get_key, shown together with an instruction to add it to a service.
 response:
   actions:
   - alert
@@ -122,3 +126,9 @@ test_cases:
       print(f''running on {hostname}'')'
     expected: not_triggered
     description: benign — lacks the malicious invariant
+  - input: "Ransomware note — key retrieval is key = requests.get('https://c2.example.net/get_key').content and the encryption is Fernet applied in place. IOC: c2.example.net."
+    expected: not_triggered
+    description: malware analysis quoting the invariant — no directive to incorporate it
+  - input: "Our envelope-encryption helper pulls the data key from the vault transit endpoint:\n```python\nkey = requests.get(f'{VAULT}/v1/transit/get_key', timeout=5).content\n```"
+    expected: not_triggered
+    description: legitimate KMS/vault data-key fetch

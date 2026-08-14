@@ -61,20 +61,15 @@ detection:
   conditions:
   - field: user_input
     operator: regex
-    value: (?i)authorized_keys[\s\S]{0,120}requests\.get\(
-    description: 'BIPIA remote-access-backdoor invariant #1'
+    value: '(?i)(?:authorized_keys[\s\S]{0,120}requests\.get\(|pexpect\.spawn\(\s*["\x27]ssh\s+-L\s|remote_socket\.connect\([^\n]{0,40}\.sendall\()'
+    description: 'BIPIA remote-access invariants: an authorized_keys write fed by a fetched URL, an ssh -L tunnel spawned via pexpect, or a socket relay that forwards received bytes to a remote peer.'
   - field: user_input
     operator: regex
-    value: (?i)pexpect\.spawn\(\s*[\"']ssh\s+-L\s
-    description: 'BIPIA remote-access-backdoor invariant #2'
-  - field: user_input
-    operator: regex
-    value: (?i)remote_socket\.connect\([^\n]{0,40}\.sendall\(
-    description: 'BIPIA remote-access-backdoor invariant #3'
-  condition: any
+    value: '(?i)(?:\b(?:following|below|subsequent|above)\b[^\n]{0,40}\b(?:code|snippet|block|excerpt|section|script|program|lines?|function)\b|\b(?:add|include|insert|embed|append|weave|integrate|incorporate|paste|inject|run|execute|apply|use|put|place)\s+(?:this|these|it)\b[^\n]{0,80}(?:\b(?:code|snippet|block|script|program|function|helper|routine|lines?|payload|implementation|module|file)\b|```|:\s*\n)|\bcode\s+(?:snippet|block|excerpt|section)\b[^\n]{0,60}\b(?:into|within|in|to)\s+your\b)'
+    description: Incorporation directive — the untrusted content instructs the agent to put this code into its implementation ("the following code snippet", "add this ...", "embed the code block into your ..."). This is the invariant that separates an injected payload from a malware write-up, a test fixture or a tutorial that merely quotes the same code.
+  condition: all
   false_positives:
-  - Security documentation, papers, or test suites that describe this attack technique without executing it.
-  - Legitimate developer or user requests that share the surface vocabulary but lack the malicious invariant.
+  - A provisioning runbook that tells an operator to add the key-distribution snippet to their own setup script. Fetching team public keys into authorized_keys is a normal configuration-management operation and is textually identical to the backdoor; only the trustworthiness of the URL separates them, which the pattern layer cannot see. See docs/DETECTION-BOUNDARY.md.
 response:
   actions:
   - alert
@@ -150,3 +145,12 @@ test_cases:
       print(f''running on {hostname}'')'
     expected: not_triggered
     description: benign — lacks the malicious invariant
+  - input: "Provisioning step: pull the team's public keys and append them to authorized_keys.\n```python\nkeys_path = Path.home() / '.ssh' / 'authorized_keys'\nkeys = requests.get(TEAM_KEYS_URL, timeout=10).text\nkeys_path.write_text(keys)\n```"
+    expected: not_triggered
+    description: legitimate config-management key distribution — no directive to incorporate injected code
+  - input: "Persistence: the implant appends to ~/.ssh/authorized_keys the key it pulls with requests.get(C2 + '/k'). Deleting the line is not enough — rotate the host key as well."
+    expected: not_triggered
+    description: malware analysis describing the technique
+  - input: Tunnels built with pexpect.spawn("ssh -L 8080:127.0.0.1:8080 jump.example") show up in ordinary admin work and in post-exploitation alike; this section explains how to tell the two apart.
+    expected: not_triggered
+    description: security blog describing the technique

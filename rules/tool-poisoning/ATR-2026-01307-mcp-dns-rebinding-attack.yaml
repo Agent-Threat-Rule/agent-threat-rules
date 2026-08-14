@@ -72,33 +72,27 @@ agent_source:
 detection:
   condition: any
   false_positives:
-    - "Security research documentation describing DNS rebinding techniques — these appear in papers and blog posts, not in live tool outputs"
-    - "ATR test fixtures containing rebind.network examples as labeled attack samples"
+    - Reproduction instructions in a lab write-up that give the rebinding URL in full ("Fetch http://a.b.rebind.network:9001 in the lab to reproduce the finding") — identical characters to the attack. See docs/DETECTION-BOUNDARY.md.
+    - ATR test fixtures that embed a rebinding URL as a labelled attack sample.
   conditions:
-    # Pattern 1: rebind.network / rbndr.us DNS rebinding service hostnames
+    # Pattern 1: a rebinding service hostname used as an actual target (URL / connect / fetch / Host),
+    # not merely cited in prose
     - field: content
       operator: regex
-      value: '(?i)\b[a-zA-Z0-9.-]+\.(?:rebind\.network|rbndr\.us|rebinder\.com|1u\.ms)\b'
-      description: "Known DNS rebinding service hostname (rebind.network, rbndr.us, etc.)"
-
-    # Pattern 2: Canonical time-based rebinding pattern: A.ip1.1time.ip2.forever.<uuid>.rebind.network
+      value: '(?i)(?:https?://|\blocation\s*=\s*[(\s"\x27]{0,3}|\bconnect(?:ing|s)?\s+(?:[\w-]+\s+){0,4}to\s+|\bnavigate\s+to:?\s*|\bfetch\s+|\bcurl\s+|\bHost:\s*)[a-zA-Z0-9._-]*\.(?:rebind\.network|rbndr\.us|rebinder\.com|1u\.ms)\b'
+      description: A DNS-rebinding service hostname used as an actual target — inside a URL, a location assignment, or after connect/navigate/fetch/curl/Host. Citing the hostname in prose ("demos usually point at 7f000001.c0a80001.rbndr.us") no longer fires.
     - field: content
       operator: regex
       value: '(?i)[\w.-]*(?:1time|forever|ttl\d+|0ttl)[\w.-]+(?:127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(?:1[6-9]|2\d|3[0-1])\.\d+\.\d+)'
-      description: "Time-based DNS rebinding hostname pattern combining public IP with loopback/private IP"
-
-    # Pattern 3: Script injection triggering navigation to a rebinding hostname
+      description: Time-based DNS rebinding hostname pattern combining public IP with loopback/private IP
     - field: content
       operator: regex
-      value: "(?i)<\\s*script[^>]{0,80}>\\s*(?:window\\.location|document\\.location|location\\.href)\\s*=\\s*['\"]?https?://[a-zA-Z0-9.-]{10,200}(?:rebind|rbndr|1time|forever)[a-zA-Z0-9.-]*:[0-9]{2,5}"
-      description: "Script tag with window.location redirect to DNS rebinding hostname — MCPSecBench exact pattern"
-
-    # Pattern 4: Loopback MCP port targeted after internal IP rebinding
+      value: '(?i)<\s*script[^>]{0,80}>\s*(?:window\.location|document\.location|location\.href)\s*=\s*[\x27"]?https?://[a-zA-Z0-9.-]{10,200}(?:rebind|rbndr|1time|forever)[a-zA-Z0-9.-]*:[0-9]{2,5}'
+      description: Script tag with window.location redirect to DNS rebinding hostname — MCPSecBench exact pattern
     - field: content
       operator: regex
-      value: '(?i)(?:127\.0\.0\.1|localhost|::1)\s*:\s*(?:900[0-9]|8[0-9]{3}|3[0-9]{3})\b[^"]{0,200}(?:rebind|1time|forever|rbndr)'
-      description: "Loopback address with common MCP server port referenced alongside rebinding terminology"
-
+      value: '(?i)(?:127\.0\.0\.1|localhost|::1)\s*:\s*(?:900[0-9]|8[0-9]{3}|3[0-9]{3})\b[^"]{0,200}[a-zA-Z0-9._-]+\.(?:rebind\.network|rbndr\.us|rebinder\.com|1u\.ms)\b'
+      description: Loopback MCP port referenced together with an actual rebinding hostname. The old form only required the word "rebind" within 200 characters, so any hardening note that mentioned localhost:3000 and DNS rebinding in the same paragraph fired.
 response:
   actions:
     - alert
@@ -138,3 +132,15 @@ test_cases:
     - input: "Configure your MCP server to bind to 127.0.0.1 only to prevent external access."
       expected: not_triggered
       description: "Legitimate security configuration advice mentioning 127.0.0.1 — no rebinding payload"
+    - input: 'DNS rebinding demos usually point at rbndr.us: for example 7f000001.c0a80001.rbndr.us alternates between 127.0.0.1 and 192.168.0.1 on consecutive lookups.'
+      expected: not_triggered
+      description: security blog citing the service hostname in prose, not as a target
+    - input: tests/fixtures/mcp-rebind.json contains a labelled attack sample that uses a.b.rebind.network; it is data for the rule test, never a live host.
+      expected: not_triggered
+      description: test fixture description citing the hostname in prose
+    - input: Run the MCP server on localhost:3000 and read the DNS rebinding hardening notes below before you expose it to a browser-based client.
+      expected: not_triggered
+      description: project docs — loopback port and the topic word "rebinding", no rebinding hostname
+    - input: 'Advisory: MCP servers bound to 127.0.0.1:9001 were reachable through a rebinding hostname. Upgrade to 1.4.2, which validates the Host header on every request.'
+      expected: not_triggered
+      description: CVE advisory — loopback port and the topic word, no rebinding hostname
