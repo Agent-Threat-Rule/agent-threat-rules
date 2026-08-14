@@ -18,13 +18,22 @@
  *
  * WHY BLOCKING IS OPT-IN
  *
- * spec/atr-method-v1.1.md:164 — "Engines SHOULD NOT auto-block ... without
- * operator policy explicitly enabling it". SPEC.md §5.5 — "Engines MUST NOT
- * execute response actions automatically without an explicit configuration
- * directive from the operator." docs/QUALITY-STANDARD.md restricts blocking to
- * `maturity: stable` rules. Until this module existed there was no way for an
- * operator to express that directive: no CLI flag, no environment variable, no
- * documented config key. This module IS that directive.
+ * The load-bearing requirement is SPEC.md §5.5, which is engine-wide:
+ * "Engines MUST NOT execute response actions automatically without an explicit
+ * configuration directive from the operator." Until this module existed there
+ * was no way for an operator to express that directive — no CLI flag, no
+ * environment variable, no documented config key. This module IS that directive.
+ *
+ * Two weaker statements point the same way but must not be quoted as general
+ * rules, because they are not:
+ *   - spec/atr-method-v1.1.md §5.6 says "Engines SHOULD NOT auto-block ON A
+ *     HASH MATCH without operator policy explicitly enabling it". That sits
+ *     under §5 Signature Method and is scoped to hash matches. An earlier
+ *     revision of this comment elided "on a hash match" and widened it into a
+ *     general SHOULD NOT. It is not one.
+ *   - docs/QUALITY-STANDARD.md restricts blocking to `maturity: stable` rules,
+ *     but that section is deployment guidance addressed to consumers, not a
+ *     normative engine requirement.
  *
  * WHY "NOT BLOCKING" IS NOT THE SAME AS "allow"
  *

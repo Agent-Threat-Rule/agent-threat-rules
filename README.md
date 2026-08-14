@@ -223,9 +223,10 @@ permission decision to the host — the field is omitted, not set to `allow`,
 because `allow` is affirmative approval in that contract and would suppress the
 host's own permission prompt — and it dispatches no response action above the
 `observe` blast-radius tier (`alert` / `snapshot` / `shadow` / `escalate` still
-run). This is the operator directive [SPEC.md](SPEC.md) §5.5 and
-[spec/atr-method-v1.1.md](spec/atr-method-v1.1.md) §164 require before an engine
-may auto-block.
+run). Turning blocking on is the explicit operator directive [SPEC.md](SPEC.md)
+§5.5 requires before an engine may execute response actions automatically.
+([spec/atr-method-v1.1.md](spec/atr-method-v1.1.md) §5.6 says the same thing for
+hash matches specifically; §5.5 of SPEC.md is the engine-wide one.)
 
 | Switch | Flag | Environment | Default |
 |---|---|---|---|

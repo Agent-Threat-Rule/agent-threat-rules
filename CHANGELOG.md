@@ -19,6 +19,22 @@ All notable changes to ATR will be documented in this file.
   shipped alongside it all along.
   `toClaudeCodePostToolUse` likewise omits `decision: 'block'` (its envelope is
   kept: an `allow` verdict has always emitted it with no decision inside).
+- **Scope limit, stated so the headline is not read wider than it is.** This
+  covers the two channels the engine itself drives: the Claude Code hook
+  contract and `ActionExecutor`. It does NOT cover the framework adapters, which
+  read their own severity floor and still block out of the box —
+  `src/adapters/mastra.ts` defaults `blockSeverities` to `["critical", "high"]`,
+  and `src/adapters/openshell-filter.ts` and `src/adapters/nemoclaw-preflight.ts`
+  both default `ATR_MIN_SEVERITY` to `high`. Bringing those under the same switch
+  is a separate behaviour decision and is not made here.
+
+- **An unrecognised `ATR_LANE` now throws instead of being ignored.** `main` did
+  not read the variable at all, so a typo was previously silent; it is now a
+  `TypeError` from the `ATREngine` constructor. Failing loud is deliberate — a
+  misspelled lane that silently falls back to `hunt` is the failure mode this
+  release exists to remove — but it is a behaviour change for any environment
+  that happens to have the variable set to something else.
+
 - **`ActionExecutor` no longer dispatches response actions above the `observe`
   blast-radius tier unless blocking is enabled.** `alert` / `snapshot` /
   `shadow` / `escalate` run exactly as before; `block_input` / `block_output` /
