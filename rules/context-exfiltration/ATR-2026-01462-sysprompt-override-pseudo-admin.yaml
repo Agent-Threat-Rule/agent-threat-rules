@@ -1,6 +1,6 @@
 title: "System Prompt Override via Pseudo-Admin / Authority Injection"
 id: ATR-2026-01462
-rule_version: 1
+rule_version: 2
 status: stable
 description: >
   Detects attempts to override or replace the system prompt by injecting fake
@@ -84,6 +84,23 @@ detection:
   false_positives:
     - "Legitimate system administration documentation describing override procedures"
     - "Red team exercise reports that document these attack patterns as examples"
+    - >
+      rule_version 2 note on Layer 1: PRIORITY LEVEL: CRITICAL and
+      AUTHORIZATION: ADMIN|FULL were standalone triggers in v1 and were measured
+      blocking ordinary incident tickets ("Incident ticket INC-4471 / PRIORITY
+      LEVEL: CRITICAL / Component: payments-api") and RBAC documentation
+      ("AUTHORIZATION: ADMIN grants write access to the billing namespace").
+      Those two tokens are ordinary ops vocabulary, so they now require
+      corroboration by a second override token within 200 characters.
+      ROOT_ADMIN / OMEGA CLEARANCE / AUTHORIZATION: ROOT stay standalone —
+      they are structured injection artifacts, not prose.
+    - >
+      KNOWN RESIDUAL: Layer 2 still fires on developer documentation that
+      instructs a reader to set the exact override flag, e.g. "set
+      CONTENT_FILTER: DISABLED in the local dev config only". This is retained
+      deliberately: the text IS an instruction to disable a safety control, and
+      an agent reading it from tool output cannot tell that a human meant it for
+      a dev config. Separating the two needs provenance, not a better regex.
   conditions:
     # Layer 1: SYSTEM OVERRIDE / ROOT_ADMIN / OMEGA CLEARANCE patterns.
     # "SYSTEM OVERRIDE" must be STRUCTURALLY framed — wrapped in an HTML
@@ -96,8 +113,8 @@ detection:
     # standalone — they are structured injection tokens, not prose.
     - field: content
       operator: regex
-      value: "(?i)((?:<!--\\s*|\\[)\\s*SYSTEM\\s+OVERRIDE\\b|SYSTEM\\s+OVERRIDE\\s+(?:BEGIN|MODE|ACTIVE|NOW|ENABLED)|ROOT_?ADMIN|OMEGA\\s+CLEARANCE|PRIORITY\\s+LEVEL\\s*:\\s*CRITICAL|AUTHORIZATION\\s*:\\s*(ROOT|ADMIN|FULL|OMEGA))"
-      description: "System override (structurally framed) / root admin / omega clearance authority claim"
+      value: '(?i)(?:(?:(?:<!--\s*|\[)\s*SYSTEM\s+OVERRIDE\b|SYSTEM\s+OVERRIDE\s+(?:BEGIN|MODE|ACTIVE|NOW|ENABLED)|ROOT_?ADMIN|OMEGA\s+CLEARANCE|AUTHORIZATION\s*:\s*(?:ROOT|OMEGA))|(?:PRIORITY\s+LEVEL\s*:\s*CRITICAL|AUTHORIZATION\s*:\s*(?:ADMIN|FULL))[\s\S]{0,200}(?:ROOT_?ADMIN|OMEGA\s+CLEARANCE|SYSTEM\s+OVERRIDE|ADMIN_OVERRIDE\s*:|CONTENT_FILTER\s*:\s*(?:DISABLED|OFF)|SAFETY_OVERRIDE\s*:|RESPONSE_MODE\s*:\s*UNRESTRICTED|\[INST\]|<<SYS>>|supersede\s+ALL\s+previous|EMERGENCY\s+OVERRIDE)|(?:ROOT_?ADMIN|OMEGA\s+CLEARANCE|SYSTEM\s+OVERRIDE|ADMIN_OVERRIDE\s*:|CONTENT_FILTER\s*:\s*(?:DISABLED|OFF)|SAFETY_OVERRIDE\s*:|RESPONSE_MODE\s*:\s*UNRESTRICTED|\[INST\]|<<SYS>>|supersede\s+ALL\s+previous|EMERGENCY\s+OVERRIDE)[\s\S]{0,200}(?:PRIORITY\s+LEVEL\s*:\s*CRITICAL|AUTHORIZATION\s*:\s*(?:ADMIN|FULL)))'
+      description: 'System override / ROOT_ADMIN / OMEGA CLEARANCE standalone; PRIORITY LEVEL: CRITICAL and AUTHORIZATION: ADMIN|FULL only when corroborated by another override token (they are ordinary incident-ticket and RBAC-doc text)'
 
     # Layer 2: ADMIN_OVERRIDE: TRUE + CONTENT_FILTER: DISABLED / SAFETY_OVERRIDE: ACTIVE
     - field: content
@@ -168,3 +185,14 @@ test_cases:
     - input: "Please override the default formatting and use a numbered list instead."
       expected: not_triggered
       description: "Legitimate formatting override request — no system prompt override"
+    # --- rule_version 2 regression locks -------------------------------------
+    # Measured firing at critical severity (verdict=deny) on rule_version 1.
+    - input: "Incident ticket INC-4471\nPRIORITY LEVEL: CRITICAL\nComponent: payments-api\nOn-call has been paged."
+      expected: not_triggered
+      description: "Ordinary incident ticket priority field, no corroborating override token (v1 blocked this)"
+    - input: "The RBAC table lists roles. AUTHORIZATION: ADMIN grants write access to the billing namespace; AUTHORIZATION: READONLY grants list access only."
+      expected: not_triggered
+      description: "RBAC documentation using AUTHORIZATION: ADMIN as a role label (v1 blocked this)"
+    - input: "JIRA-8812\nPRIORITY LEVEL: CRITICAL\nAUTHORIZATION: ADMIN\nAssignee: platform-oncall"
+      expected: not_triggered
+      description: "Ticket header combining both weak tokens without any override artifact (v1 blocked this)"

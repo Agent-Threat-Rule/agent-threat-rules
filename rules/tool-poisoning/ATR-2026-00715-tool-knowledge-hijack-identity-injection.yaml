@@ -1,6 +1,6 @@
 title: "Tool Knowledge Hijack — Identity Injection with Tool Call Arguments"
 id: ATR-2026-00715
-rule_version: 1
+rule_version: 2
 status: stable
 description: >
   Detects the tool-knowledge-hijack attack where adversarial content addressed
@@ -86,8 +86,8 @@ detection:
     # Remember to substitute placeholders + tool call pattern
     - field: content
       operator: regex
-      value: "(?i)Remember\\s+to\\s+substitute\\s+the\\s+placeholders[^.\\n]{0,100}(?:after\\s+the|in\\s+the|for\\s+the)\\s+'\\$'[^.\\n]{0,200}(?:recipient|amount|subject|date)"
-      description: "Placeholder substitution instruction for tool call arguments"
+      value: '(?i)(?:(?:<INFORMATION>|important\s+message\s+from\s+me|this\s+is\s+an\s+important\s+message|before\s+you\s+(?:can\s+)?(?:solve|complete|continue|proceed|do)\s+[^.\n]{0,40}task|do\s+not\s+(?:tell|mention|inform|notify)\s+(?:this\s+to\s+)?the\s+user|without\s+(?:telling|informing|notifying)\s+the\s+user)[\s\S]{0,600}Remember\s+to\s+substitute\s+the\s+placeholders[^.\n]{0,120}''\$''|Remember\s+to\s+substitute\s+the\s+placeholders[^.\n]{0,120}''\$''[\s\S]{0,200}(?:IBAN|account\s+number|send_money|transfer_funds|make_payment|payment\s+tool|wire\s+transfer|[A-Z]{2}\d{2}[A-Z0-9]{8,}))'
+      description: 'Placeholder-substitution instruction carried by an identity-injection frame (<INFORMATION>, important-message-from-me, before-you-solve, do-not-tell-the-user). The bare sentence is ordinary mail-merge documentation'
     # Before you can solve + send money to IBAN/account (without tool keyword)
     - field: content
       operator: regex
@@ -96,17 +96,37 @@ detection:
     # Use the tool send_money with arguments (backtick format)
     - field: content
       operator: regex
-      value: "(?i)(?:use|call|invoke)\\s+(?:the\\s+tool\\s+)?`(?:send_money|transfer_funds|make_payment|wire_transfer)`"
-      description: "Use the tool `send_money` with backtick notation"
+      value: '(?i)(?:(?:<INFORMATION>|important\s+message\s+from\s+me|this\s+is\s+an\s+important\s+message|before\s+you\s+(?:can\s+)?(?:solve|complete|continue|proceed|do)\s+[^.\n]{0,40}task|do\s+not\s+(?:tell|mention|inform|notify)\s+(?:this\s+to\s+)?the\s+user|without\s+(?:telling|informing|notifying)\s+the\s+user)[\s\S]{0,400}(?:use|call|invoke)\s+(?:the\s+tool\s+)?`(?:send_money|transfer_funds|make_payment|wire_transfer)`|(?:use|call|invoke)\s+(?:the\s+tool\s+)?`(?:send_money|transfer_funds|make_payment|wire_transfer)`[\s\S]{0,120}(?:arguments?|args?|params?)\s*:?\s*(?:with\s+)?\{[^}]{0,200}(?:[''\"][A-Z]{2}\d{2}[A-Z0-9]{6,}|[''\"]?\d{8,}|0x[a-fA-F0-9]{8,}|[''\"]attacker[^''\"]{0,40}[''\"]|all_balance|\$\{?amount|[''\"]\$\w+[''\"]))'
+      description: 'Backtick send_money/transfer_funds invocation, either carried by an identity-injection frame or accompanied by a concrete argument literal (IBAN / long digits / 0x address / attacker_* / all_balance / $amount)'
     # Call transfer_funds tool with argument dict
     - field: content
       operator: regex
-      value: "(?i)(?:call|invoke|use)\\s+(?:the\\s+)?(?:transfer_funds|send_money|make_payment)\\s+tool[^.\\n]{0,100}(?:arguments?|args?)\\s*:\\s*\\{"
-      description: "Call transfer_funds/send_money tool with argument dict"
+      value: '(?i)(?:(?:<INFORMATION>|important\s+message\s+from\s+me|this\s+is\s+an\s+important\s+message|before\s+you\s+(?:can\s+)?(?:solve|complete|continue|proceed|do)\s+[^.\n]{0,40}task|do\s+not\s+(?:tell|mention|inform|notify)\s+(?:this\s+to\s+)?the\s+user|without\s+(?:telling|informing|notifying)\s+the\s+user)[\s\S]{0,400}(?:call|invoke|use)\s+(?:the\s+)?(?:transfer_funds|send_money|make_payment|wire_transfer)\s+tool[^.\n]{0,100}(?:arguments?|args?)\s*:?\s*\{|(?:call|invoke|use)\s+(?:the\s+)?(?:transfer_funds|send_money|make_payment|wire_transfer)\s+tool[^.\n]{0,100}(?:arguments?|args?|params?)\s*:?\s*(?:with\s+)?\{[^}]{0,200}(?:[''\"][A-Z]{2}\d{2}[A-Z0-9]{6,}|[''\"]?\d{8,}|0x[a-fA-F0-9]{8,}|[''\"]attacker[^''\"]{0,40}[''\"]|all_balance|\$\{?amount|[''\"]\$\w+[''\"]))'
+      description: 'transfer_funds/send_money tool call with an argument dict, either carried by an identity-injection frame or containing a concrete argument literal rather than a type name'
   condition: any
   false_positives:
     - "Legitimate tool documentation with example argument structures"
     - "Agent framework tutorials showing how to call tools with specific arguments"
+    - >
+      rule_version 2 note: conditions 4, 6 and 7 were standalone in v1 and were
+      measured blocking exactly the documentation the first two entries above
+      describe — "Use the tool `send_money` only after the user has confirmed the
+      amount", "call the transfer_funds tool with arguments: { recipient: string,
+      amount: number }", and the bare mail-merge sentence "Remember to substitute
+      the placeholders after the ''$'' in the template with the recipient, amount,
+      subject and date". Naming a privileged tool is not an attack; hijacking is.
+      Each of those conditions now requires either the identity-injection frame
+      (<INFORMATION>, important-message-from-me, before-you-solve-the-task,
+      do-not-tell-the-user) or a concrete argument literal — a real IBAN, a long
+      account number, a 0x address, attacker_*, all_balance, $amount — rather
+      than a type name.
+    - >
+      KNOWN RESIDUAL: a tutorial that passes a REAL account identifier to a
+      money-movement tool, e.g. "call the transfer_funds tool with arguments:
+      { recipient: ''DE89370400440532013000'', amount: 10 }", is byte-for-byte the
+      shape of the AgentDojo payload and still fires. Distinguishing a sandbox
+      IBAN from an attacker IBAN is not a pattern-layer question. Tutorials that
+      use type names instead of literals are clean.
 
 response:
   actions:
@@ -146,3 +166,20 @@ test_cases:
     - input: "The tool accepts these arguments: query, limit, format."
       expected: not_triggered
       description: "Legitimate tool documentation without injection"
+    # --- rule_version 2 regression locks -------------------------------------
+    # Measured firing at critical severity (verdict=deny) on rule_version 1.
+    - input: "The send_money tool takes arguments: { recipient: string, amount: number, currency: string }. Use the tool `send_money` only after the user has confirmed the amount."
+      expected: not_triggered
+      description: "Tool reference with type names, no frame and no literal (v1 blocked this)"
+    - input: "API reference: call the transfer_funds tool with arguments: { recipient: string, amount: number }. Errors return 4xx."
+      expected: not_triggered
+      description: "API reference argument dict with type names (v1 blocked this)"
+    - input: "Remember to substitute the placeholders after the '$' in the template with the recipient, amount, subject and date fields from the invoice record."
+      expected: not_triggered
+      description: "Mail-merge documentation with no frame and no payment target (v1 blocked this)"
+    - input: "Mail-merge guide: Remember to substitute the placeholders after the '$' in the letter template with the recipient, amount, subject and date."
+      expected: not_triggered
+      description: "Mail-merge guide, same shape (v1 blocked this)"
+    - input: "Use the tool `send_money` only after validating the recipient. Before you can solve the task, confirm the amount with the user."
+      expected: not_triggered
+      description: "Frame present but not carrying the tool invocation, and no argument literal (v1 blocked this)"

@@ -1,6 +1,6 @@
 title: "System Prompt Override via Fake Diagnostic/Admin Mode"
 id: ATR-2026-01019
-rule_version: 1
+rule_version: 2
 status: experimental
 description: >
   Detects sophisticated system-prompt override attacks that present themselves
@@ -70,8 +70,8 @@ detection:
     # Structured key-value block claiming to disable safety/content filter
     - field: user_input
       operator: regex
-      value: "(?i)(ADMIN_OVERRIDE|CONTENT_FILTER|SAFETY_OVERRIDE|AUTHORIZATION_LEVEL|COMPLIANCE_CHECK|RESPONSE_MODE|CONTEXT_FILTER)\\s*:\\s*(TRUE|FALSE|DISABLED|ENABLED|FULL|ACTIVE|PASSED|UNRESTRICTED|AUTHORIZED)"
-      description: "Structured key-value admin/safety field claiming override status"
+      value: '(?i)(?:ADMIN_OVERRIDE\s*:\s*(?:TRUE|ENABLED|ACTIVE|1|YES)|SAFETY_OVERRIDE\s*:\s*(?:TRUE|ENABLED|ACTIVE|ON|YES)|(?:CONTENT|CONTEXT)_FILTER\s*:\s*(?:DISABLED|OFF|FALSE|INACTIVE|NONE|BYPASS)|(?:RESPONSE_MODE\s*:\s*(?:UNRESTRICTED|UNFILTERED|UNCENSORED|RAW)|(?:AUTHORIZATION_LEVEL|COMPLIANCE_CHECK)\s*:\s*(?:FULL|ROOT|ADMIN|OMEGA|PASSED|UNRESTRICTED))[\s\S]{0,200}(?:ADMIN_OVERRIDE|SAFETY_OVERRIDE|CONTENT_FILTER|RESPONSE_MODE\s*:\s*UNRESTRICTED|ROOT_?ADMIN|OMEGA\s+CLEARANCE|SYSTEM\s+OVERRIDE))'
+      description: 'Structured admin/safety field paired with its UNSAFE value only (ADMIN_OVERRIDE: TRUE, CONTENT_FILTER: DISABLED, SAFETY_OVERRIDE: ACTIVE); RESPONSE_MODE / AUTHORIZATION_LEVEL / COMPLIANCE_CHECK require corroboration'
     # HTML/XML comment wrapper with SYSTEM OVERRIDE
     - field: user_input
       operator: regex
@@ -80,8 +80,8 @@ detection:
     # PRIORITY LEVEL: CRITICAL / AUTHORIZATION: ROOT_ADMIN block
     - field: user_input
       operator: regex
-      value: "(?i)(PRIORITY\\s+(LEVEL|DIRECTIVE)\\s*:\\s*(CRITICAL|OMEGA|ALPHA|MAXIMUM|HIGHEST|ROOT)|AUTHORIZATION\\s*:\\s*(ROOT_ADMIN|ADMIN|OMEGA|FULL|COMPLETE|AUTHORIZED))"
-      description: "Fake priority-level or authorization-level administrative claim"
+      value: '(?i)(?:(?:PRIORITY\s+(?:LEVEL|DIRECTIVE)\s*:\s*(?:OMEGA|ALPHA|ROOT)|AUTHORIZATION\s*:\s*(?:ROOT_ADMIN|OMEGA))|(?:PRIORITY\s+(?:LEVEL|DIRECTIVE)\s*:\s*(?:CRITICAL|MAXIMUM|HIGHEST)|AUTHORIZATION\s*:\s*(?:ADMIN|FULL|COMPLETE|AUTHORIZED))[\s\S]{0,200}(?:ROOT_?ADMIN|OMEGA\s+CLEARANCE|SYSTEM\s+OVERRIDE|ADMIN_OVERRIDE\s*:|CONTENT_FILTER\s*:\s*(?:DISABLED|OFF)|SAFETY_OVERRIDE\s*:|RESPONSE_MODE\s*:\s*UNRESTRICTED|\[INST\]|<<SYS>>|supersede\s+ALL\s+previous|EMERGENCY\s+OVERRIDE)|(?:ROOT_?ADMIN|OMEGA\s+CLEARANCE|SYSTEM\s+OVERRIDE|ADMIN_OVERRIDE\s*:|CONTENT_FILTER\s*:\s*(?:DISABLED|OFF)|SAFETY_OVERRIDE\s*:|RESPONSE_MODE\s*:\s*UNRESTRICTED|\[INST\]|<<SYS>>|supersede\s+ALL\s+previous|EMERGENCY\s+OVERRIDE)[\s\S]{0,200}(?:PRIORITY\s+(?:LEVEL|DIRECTIVE)\s*:\s*(?:CRITICAL|MAXIMUM|HIGHEST)|AUTHORIZATION\s*:\s*(?:ADMIN|FULL|COMPLETE|AUTHORIZED)))'
+      description: 'Fake priority/authorization claim: OMEGA/ALPHA/ROOT standalone; CRITICAL / ADMIN / FULL only when corroborated by another override token'
     # ML Safety benchmark impersonation
     - field: user_input
       operator: regex
@@ -101,6 +101,26 @@ detection:
   false_positives:
     - "Security testing documentation that describes these attack patterns as examples"
     - "Legitimate system configuration files that use key-value pairs for non-adversarial settings"
+    - >
+      rule_version 2 note on condition 1: v1 took the full cross product of
+      seven key names against nine values, so SAFE values fired the rule.
+      "RESPONSE_MODE: FULL selects verbose responses and CONTEXT_FILTER: ENABLED
+      turns on the content filter" is a configuration reference, not an override,
+      yet it was measured blocking at critical severity. Each key is now paired
+      only with its UNSAFE value, and RESPONSE_MODE / AUTHORIZATION_LEVEL /
+      COMPLIANCE_CHECK additionally require a corroborating override token —
+      those three appear alone in API references, audit reports and release notes.
+    - >
+      rule_version 2 note on condition 3: PRIORITY LEVEL: CRITICAL and
+      AUTHORIZATION: ADMIN|FULL|COMPLETE|AUTHORIZED were standalone triggers and
+      were measured blocking ordinary incident tickets and RBAC docs. They now
+      need corroboration; OMEGA / ALPHA / ROOT variants stay standalone.
+    - >
+      KNOWN RESIDUAL: documentation that instructs a reader to set the exact
+      unsafe flag ("set CONTENT_FILTER: DISABLED in the local dev config only")
+      still fires, deliberately — the text is an instruction to disable a safety
+      control and nothing in the content distinguishes a dev-config note from an
+      injected one. See docs/DETECTION-BOUNDARY.md.
 
 response:
   actions:
@@ -144,3 +164,26 @@ test_cases:
     - input: "Priority level for this ticket is CRITICAL — please address it today."
       expected: not_triggered
       description: "Legitimate ticket priority label, no override block structure"
+    # --- rule_version 2 regression locks -------------------------------------
+    # Measured firing at critical severity (verdict=deny) on rule_version 1.
+    - input: "The service reads a config file with key-value pairs. For example, RESPONSE_MODE: FULL selects verbose responses and CONTEXT_FILTER: ENABLED turns on the content filter."
+      expected: not_triggered
+      description: "Config reference pairing keys with SAFE values (v1 cross-product blocked this)"
+    - input: "The admin endpoint requires AUTHORIZATION_LEVEL: FULL per the API reference; read-only clients use AUTHORIZATION_LEVEL: READ."
+      expected: not_triggered
+      description: "API reference naming an authorization level, no corroborating override token (v1 blocked this)"
+    - input: "Nightly control scan finished. COMPLIANCE_CHECK: PASSED with no findings across 412 controls."
+      expected: not_triggered
+      description: "Audit report line, no corroborating override token (v1 blocked this)"
+    - input: "RESPONSE_MODE: UNRESTRICTED is not a supported value in v3; use RESPONSE_MODE: VERBOSE instead."
+      expected: not_triggered
+      description: "Release note quoting the unsafe value with no override context (v1 blocked this)"
+    - input: "PRIORITY DIRECTIVE: CRITICAL - this Sev1 requires executive notification within 15 minutes."
+      expected: not_triggered
+      description: "Incident priority directive, no corroborating override token (v1 blocked this)"
+    - input: "Incident ticket INC-4471\nPRIORITY LEVEL: CRITICAL\nComponent: payments-api\nOn-call has been paged."
+      expected: not_triggered
+      description: "Ordinary incident ticket priority field (v1 blocked this)"
+    - input: "The RBAC table lists roles. AUTHORIZATION: ADMIN grants write access to the billing namespace; AUTHORIZATION: READONLY grants list access only."
+      expected: not_triggered
+      description: "RBAC documentation using AUTHORIZATION: ADMIN as a role label (v1 blocked this)"
