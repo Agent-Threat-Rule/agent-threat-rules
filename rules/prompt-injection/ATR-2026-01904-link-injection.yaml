@@ -62,15 +62,15 @@ detection:
   conditions:
   - field: user_input
     operator: regex
-    value: (?i)\b(?:add|integrate|include|insert|append|enhance|modify|suggest)\b[\s\S]{0,80}(?:https?://|www\.[a-z0-9-]+\.[a-z]{2,}|[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}|[a-z0-9-]{3,}\.(?:com|net|org|io|xyz|co|info|app))[\s\S]{0,80}\b(?:your|the)\s+(?:reply|response|answer|message)\b
+    value: (?i)\b(?:add|integrate|include|insert|append|enhance|modify|suggest)\b[\s\S]{0,80}(?:https?://|www\.[a-z0-9-]+\.[a-z]{2,}|[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}|[a-z0-9-]{3,}\.(?:com|net|org|io|xyz|co|info|app)(?:[\s,;:!?/)\]"\x27<>.]|$))[\s\S]{0,80}\b(?:your|the)\s+(?:reply|response|answer|message)\b
     description: 'BIPIA link-injection invariant #1'
   - field: user_input
     operator: regex
-    value: (?i)\b(?:add|integrate|include|insert|append|enhance|modify|suggest)\b[\s\S]{0,80}\b(?:your|the)\s+(?:reply|response|answer|message)\b[\s\S]{0,90}(?:https?://|www\.[a-z0-9-]+\.[a-z]{2,}|[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}|[a-z0-9-]{3,}\.(?:com|net|org|io|xyz|co|info|app))
+    value: (?i)\b(?:add|integrate|include|insert|append|enhance|modify|suggest)\b[\s\S]{0,80}\b(?:your|the)\s+(?:reply|response|answer|message)\b[\s\S]{0,90}(?:https?://|www\.[a-z0-9-]+\.[a-z]{2,}|[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}|[a-z0-9-]{3,}\.(?:com|net|org|io|xyz|co|info|app)(?:[\s,;:!?/)\]"\x27<>.]|$))
     description: 'BIPIA link-injection invariant #2'
   - field: user_input
     operator: regex
-    value: (?i)\bin\s+your\s+(?:reply|response|answer|message)\b[\s\S]{0,80}\b(?:suggest|share|visit|click|download|directing|pointing|link)\b[\s\S]{0,45}(?:https?://|www\.[a-z0-9-]+\.[a-z]{2,}|[a-z0-9-]{3,}\.(?:com|net|org|io|xyz|co|info|app))
+    value: (?i)\bin\s+your\s+(?:reply|response|answer|message)\b[\s\S]{0,80}\b(?:suggest|share|visit|click|download|directing|pointing|link)\b[\s\S]{0,45}(?:https?://|www\.[a-z0-9-]+\.[a-z]{2,}|[a-z0-9-]{3,}\.(?:com|net|org|io|xyz|co|info|app)(?:[\s,;:!?/)\]"\x27<>.]|$))
     description: 'BIPIA link-injection invariant #3'
   condition: any
   false_positives:
@@ -124,3 +124,12 @@ test_cases:
   - input: Translate this attached paragraph for me and keep the tone formal.
     expected: not_triggered
     description: benign — lacks the malicious invariant
+  - input: "Add the reactions to the reactions list\n    messages.append(r)  # Add the message to the messages list"
+    expected: not_triggered
+    description: real FP from the benign conversation corpus — messages.append parsed as the domain messages.app
+  - input: 'if err != nil { logger.info("retrying"); return net.connect(addr) } # add the result to the response'
+    expected: not_triggered
+    description: logger.info and net.connect are method calls, not .info and .net domains
+  - input: Please add a docstring to repo.commit() and self.config so the reply is easier to read.
+    expected: not_triggered
+    description: repo.commit and self.config sit between an add verb and "the reply" — the exact chain that fired before
