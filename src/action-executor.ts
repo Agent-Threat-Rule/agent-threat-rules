@@ -20,7 +20,7 @@ import type {
   ExecutionContext,
   PlatformAdapter,
 } from "./types.js";
-import { isEnforcementAction, resolveBlocking } from "./enforcement.js";
+import { isEnforcementAction, resolveBlockingOrWarn } from "./enforcement.js";
 import { TIER_NAMES, actionTier } from "./quality/action-eligibility.js";
 
 /** Priority order: lower number = higher priority (executed first) */
@@ -95,7 +95,7 @@ export class ActionExecutor {
   constructor(config: ActionExecutorConfig) {
     this.adapter = config.adapter;
     this.dryRun = config.dryRun ?? false;
-    this.blocking = resolveBlocking(config.blocking);
+    this.blocking = resolveBlockingOrWarn(config.blocking);
     this.onActionComplete = config.onActionComplete;
   }
 

@@ -28,12 +28,18 @@ All notable changes to ATR will be documented in this file.
   both default `ATR_MIN_SEVERITY` to `high`. Bringing those under the same switch
   is a separate behaviour decision and is not made here.
 
-- **An unrecognised `ATR_LANE` now throws instead of being ignored.** `main` did
-  not read the variable at all, so a typo was previously silent; it is now a
-  `TypeError` from the `ATREngine` constructor. Failing loud is deliberate — a
-  misspelled lane that silently falls back to `hunt` is the failure mode this
-  release exists to remove — but it is a behaviour change for any environment
-  that happens to have the variable set to something else.
+- **An unrecognised `ATR_LANE` or `ATR_BLOCKING` warns on stderr and falls back
+  to the safe default.** `main` did not read either variable, so a typo was
+  previously inert. An earlier revision of this branch threw from the
+  constructor instead, which measured badly: `ATR_BLOCKING=enabled npx atr
+  guard` exited 1 with an empty stdout and no guard running — landing hardest on
+  the operator trying to turn enforcement ON — and a stray `ATR_LANE` in a shell
+  profile crashed the VS Code extension on activation. Neither process asked to
+  read the environment. An explicit bad argument (`new ATREngine({ lane })`)
+  still throws, because that is the caller's own bug rather than ambient state.
+  The warning names the variable, the bad value, and — for `ATR_BLOCKING` —
+  states outright that enforcement is NOT enabled; it is emitted once per
+  distinct value per process.
 
 - **`ActionExecutor` no longer dispatches response actions above the `observe`
   blast-radius tier unless blocking is enabled.** `alert` / `snapshot` /

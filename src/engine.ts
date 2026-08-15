@@ -32,7 +32,7 @@ import { loadRulesFromDirectory, loadRuleFile } from './loader.js';
 import { evaluateTraceRule } from './trace-evaluator.js';
 import { evaluateSemanticRule } from './semantic-evaluator.js';
 import { laneAllows, requiresConfirm, type Lane } from './quality/rule-contract.js';
-import { resolveLane } from './enforcement.js';
+import { resolveLaneOrWarn } from './enforcement.js';
 import type { SessionTracker } from './session-tracker.js';
 import { computeVerdict } from './verdict.js';
 import type { ActionExecutor } from './action-executor.js';
@@ -268,7 +268,7 @@ export class ATREngine {
   constructor(private readonly config: ATREngineConfig = {}) {
     // Resolve the lane at construction so an invalid config/env value fails
     // fast here, not silently at the first evaluation.
-    this.lane = resolveLane(config.lane);
+    this.lane = resolveLaneOrWarn(config.lane);
 
     // Initialize Layer 3 semantic module if config provided
     if (config.semanticModule) {

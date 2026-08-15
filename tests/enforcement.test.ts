@@ -35,6 +35,9 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
 import {
+  resolveLaneOrWarn,
+  resolveBlockingOrWarn,
+  resetEnforcementWarnings,
   DEFAULT_BLOCKING,
   DEFAULT_LANE,
   isEnforcementAction,
@@ -247,9 +250,37 @@ describe('lane has a real entrance', () => {
     expect(engine.getLane()).toBe('enforce');
   });
 
-  it('rejects an invalid ATR_LANE at construction, before any evaluation', () => {
+  // This expectation was the reverse until review measured what it costs.
+  // Throwing here meant `ATR_BLOCKING=enabled npx atr guard` exited 1 with an
+  // empty stdout and no guard at all, and a typo'd ATR_LANE in a shell profile
+  // crashed the VS Code extension from this constructor. Neither of those
+  // processes asked to read the environment; the environment is ambient.
+  //
+  // So the constructor warns and falls back, and the throwing resolver stays
+  // for an explicit argument, which is the caller's own bug. The warning is the
+  // part that matters -- a silent fallback here would be the failure the
+  // throwing version existed to prevent.
+  it('an invalid ATR_LANE warns and falls back rather than crashing the caller', () => {
     process.env['ATR_LANE'] = 'enfroce';
-    expect(() => new ATREngine({ rules: [fixtureRule()] })).toThrow(/ATR_LANE/);
+    const seen: string[] = [];
+    const write = process.stderr.write;
+    (process.stderr as { write: unknown }).write = (chunk: string) => {
+      seen.push(String(chunk));
+      return true;
+    };
+    try {
+      const engine = new ATREngine({ rules: [fixtureRule()] });
+      expect(engine.getLane()).toBe('hunt');
+    } finally {
+      (process.stderr as { write: unknown }).write = write;
+    }
+    expect(seen.join('')).toMatch(/ATR_LANE/);
+  });
+
+  it('an explicit invalid lane still throws', () => {
+    expect(() => new ATREngine({ rules: [fixtureRule()], lane: 'enfroce' as never })).toThrow(
+      /lane/i,
+    );
   });
 
   it('actually gates firing: a maturity=test rule fires in hunt, not in enforce', async () => {
@@ -648,5 +679,74 @@ test_cases:
     const { status, stderr } = runGuard(['--blocking', '--no-blocking']);
     expect(status).toBe(1);
     expect(stderr).toContain('mutually exclusive');
+  });
+});
+
+describe('ambient environment must not crash a library constructor', () => {
+  // A stray ATR_BLOCKING=enabled used to exit the guard with status 1 and an
+  // empty stdout -- landing hardest on the operator who was trying to turn
+  // enforcement ON. A typo'd ATR_LANE crashed the VS Code extension from the
+  // ATREngine constructor. Neither process asked to read the environment.
+  //
+  // The throwing resolvers stay for explicit arguments, which are the caller's
+  // own bug. The OrWarn wrappers exist for the ambient case: loud on stderr,
+  // safe default, process survives. Loud is what keeps this from being the
+  // silent fallback the throwing version exists to prevent.
+  beforeEach(() => resetEnforcementWarnings());
+
+  it('an unparseable ATR_LANE warns and falls back instead of throwing', () => {
+    const seen: string[] = [];
+    const write = process.stderr.write;
+    (process.stderr as { write: unknown }).write = (chunk: string) => {
+      seen.push(String(chunk));
+      return true;
+    };
+    try {
+      expect(resolveLaneOrWarn(undefined, { ATR_LANE: 'enfroce' })).toBe('hunt');
+    } finally {
+      (process.stderr as { write: unknown }).write = write;
+    }
+    expect(seen.join('')).toContain('enfroce');
+  });
+
+  it('an unparseable ATR_BLOCKING warns and falls back to off', () => {
+    const seen: string[] = [];
+    const write = process.stderr.write;
+    (process.stderr as { write: unknown }).write = (chunk: string) => {
+      seen.push(String(chunk));
+      return true;
+    };
+    try {
+      expect(resolveBlockingOrWarn(undefined, { ATR_BLOCKING: 'enabled' })).toBe(false);
+    } finally {
+      (process.stderr as { write: unknown }).write = write;
+    }
+    // The operator asked for enforcement and is not getting it. Say so.
+    expect(seen.join('')).toContain('NOT enabled');
+  });
+
+  it('an explicit bad argument still throws -- that is the caller, not the shell', () => {
+    expect(() => resolveLaneOrWarn('enfroce')).toThrow(TypeError);
+  });
+
+  it('constructing an engine under a typo\'d ATR_LANE does not throw', () => {
+    expect(() => new ATREngine({ rulesDir: 'rules' })).not.toThrow();
+  });
+
+  it('the warning is emitted once per distinct value, not per call', () => {
+    let calls = 0;
+    const write = process.stderr.write;
+    (process.stderr as { write: unknown }).write = () => {
+      calls += 1;
+      return true;
+    };
+    try {
+      for (let i = 0; i < 5; i += 1) {
+        resolveBlockingOrWarn(undefined, { ATR_BLOCKING: 'enabled' });
+      }
+    } finally {
+      (process.stderr as { write: unknown }).write = write;
+    }
+    expect(calls).toBe(1);
   });
 });

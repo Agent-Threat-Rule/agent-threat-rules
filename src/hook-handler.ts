@@ -32,7 +32,7 @@ import type {
 } from './types.js';
 import type { ATREngine } from './engine.js';
 import type { ActionExecutor } from './action-executor.js';
-import { resolveBlocking } from './enforcement.js';
+import { resolveBlockingOrWarn } from './enforcement.js';
 
 /** Default evaluation timeout in milliseconds */
 const DEFAULT_TIMEOUT_MS = 5_000;
@@ -231,7 +231,7 @@ export class HookHandler {
     this.executor = config.executor;
     this.timeoutMs = config.timeoutMs ?? DEFAULT_TIMEOUT_MS;
     this.failOpen = config.failOpen ?? true;
-    this.blocking = resolveBlocking(config.blocking);
+    this.blocking = resolveBlockingOrWarn(config.blocking);
   }
 
   /** Is this handler permitted to emit a blocking permission decision? */

@@ -106,6 +106,9 @@ export type { HookHandlerConfig, HookContractOptions } from './hook-handler.js';
 export {
   resolveLane,
   resolveBlocking,
+  resolveLaneOrWarn,
+  resolveBlockingOrWarn,
+  resetEnforcementWarnings,
   parseLane,
   parseBooleanFlag,
   isEnforcementAction,

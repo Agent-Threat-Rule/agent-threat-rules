@@ -168,6 +168,76 @@ export function resolveBlocking(
 }
 
 /**
+ * Same resolution, but never throws.
+ *
+ * WHY BOTH EXIST
+ *
+ * Throwing on a typo is right for an explicit invocation: `atr guard` should
+ * refuse to start rather than run with an enforcement posture the operator did
+ * not ask for. Silently reading `ATR_BLOCKING=enabled` as "off" is the worst
+ * failure this module can produce.
+ *
+ * It is wrong for a library constructor. `new ATREngine()` inside the VS Code
+ * extension, or `new ATRProcessor()` inside someone's Mastra pipeline, did not
+ * ask to read the environment — the environment is ambient. A stray
+ * `ATR_LANE=enfroce` in a shell profile should not crash an editor extension on
+ * activation, and `ATR_BLOCKING=enabled` should not stop the guard from
+ * starting at all, which is what it did: exit 1, nothing on stdout, no guard.
+ * That lands hardest on the operator who was trying to turn enforcement ON.
+ *
+ * So: constructors warn loudly and fall back to the safe default; the CLI keeps
+ * the throwing resolvers and formats the error itself. Loud is what stops this
+ * being the silent fallback the throwing version exists to prevent.
+ *
+ * The warning is emitted once per distinct bad value per process, so a hook
+ * invoked on every tool call does not turn stderr into a wall.
+ */
+const warned = new Set<string>();
+
+function warnOnce(message: string): void {
+  if (warned.has(message)) return;
+  warned.add(message);
+  process.stderr.write(`[atr] ${message}\n`);
+}
+
+/** Test seam: forget which warnings have already been emitted. */
+export function resetEnforcementWarnings(): void {
+  warned.clear();
+}
+
+export function resolveLaneOrWarn(
+  explicit?: Lane | string,
+  env: EnvSource = process.env
+): Lane {
+  try {
+    return resolveLane(explicit, env);
+  } catch (error) {
+    if (explicit !== undefined) throw error; // caller's own bug, not ambient
+    warnOnce(
+      `${(error as Error).message} Falling back to lane "${DEFAULT_LANE}". ` +
+        `Detection is unaffected; this only changes which maturities may fire.`
+    );
+    return DEFAULT_LANE;
+  }
+}
+
+export function resolveBlockingOrWarn(
+  explicit?: boolean,
+  env: EnvSource = process.env
+): boolean {
+  try {
+    return resolveBlocking(explicit, env);
+  } catch (error) {
+    if (explicit !== undefined) throw error;
+    warnOnce(
+      `${(error as Error).message} Falling back to blocking=${DEFAULT_BLOCKING}. ` +
+        `If you meant to enable enforcement, it is NOT enabled.`
+    );
+    return DEFAULT_BLOCKING;
+  }
+}
+
+/**
  * Is this response action enforcement rather than observation?
  *
  * The observe/enforce split is NOT redefined here — it reads the blast-radius
