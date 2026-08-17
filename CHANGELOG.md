@@ -80,11 +80,12 @@ All notable changes to ATR will be documented in this file.
   the process entry point, because that makes it a CLI rather than a library. An
   importer of the `./mcp` subpath does not reach that branch and gets its lane
   from the explicit option.
-  Not the only function in the package that reads the environment: eleven files
-  under `src/` do, and two of them — `adapters/openshell-filter.ts` and
-  `adapters/nemoclaw-preflight.ts` — read `ATR_MIN_SEVERITY` and still block by
-  default, as the scope limit below records. Reproduce with
-  `grep -rl "process\\.env" src/`.
+  Not the only function in the package that reads the environment: ten files
+  under `src/` read it in code, and two of them — `adapters/openshell-filter.ts`
+  and `adapters/nemoclaw-preflight.ts` — read `ATR_MIN_SEVERITY` and still block
+  by default, as the scope limit below records. `grep -rl "process\.env" src/`
+  returns eleven rather than ten: `src/index.ts` only names the variable in a
+  comment. An earlier revision of this paragraph published that grep count.
 
 - **Scope limit, stated so the headline is not read wider than it is.** This
   covers the two channels the engine itself drives: the Claude Code hook
