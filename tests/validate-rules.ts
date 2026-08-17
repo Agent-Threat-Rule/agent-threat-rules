@@ -242,6 +242,26 @@ function validateRule(filePath: string): ValidationResult {
     // References (warning if missing)
     if (!rule['references']) {
       warnings.push('Missing references (OWASP LLM / MITRE ATLAS mapping recommended)');
+    } else {
+      // Every reference list must hold plain strings. spec/schema/rule.schema.json
+      // already says items: {type: string}, but nothing enforced it here, so an
+      // unquoted framework title containing ": " parsed as a YAML map instead of a
+      // string and shipped to main. The website renders these straight into JSX,
+      // where a map is not a valid React child, and every deploy after it failed
+      // at prerender for three days while validate stayed green. Error, not warning.
+      const references = rule['references'] as Record<string, unknown>;
+      for (const [field, value] of Object.entries(references)) {
+        if (!Array.isArray(value)) continue;
+        value.forEach((entry, i) => {
+          if (typeof entry !== 'string') {
+            errors.push(
+              `references.${field}[${i}] must be a string, got ${
+                Array.isArray(entry) ? 'array' : typeof entry
+              } (${JSON.stringify(entry)}). A value containing ": " needs quoting in YAML.`
+            );
+          }
+        });
+      }
     }
 
     // Validate regex patterns don't cause errors
