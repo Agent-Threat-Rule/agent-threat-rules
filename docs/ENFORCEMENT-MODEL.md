@@ -203,15 +203,16 @@ The full matrix an integrator has to parse is four shapes, not two:
 | `atr_advisory` | `true` | **absent** | **absent** | `true` | **absent** | **absent** |
 | `atr_decision` | present | present | present | present | present | present |
 | `atr_reason` | present | present | **absent** (moves into the envelope) | present | **absent** | **absent** (moves to top-level `reason`) |
-| `decision` | — | — | — | **absent** | **absent** | `"block"` |
+| `decision` | **absent** — never set on this hook | **absent** | **absent** | **absent** | **absent** | `"block"` |
 | `matched_rules` | when ≥ 1 matched | when ≥ 1 matched | when ≥ 1 matched | when ≥ 1 matched | when ≥ 1 matched | when ≥ 1 matched |
 
 Two traps in that table are worth naming. `atr_reason` **disappears** on every
 blocking-mode `PostToolUse` payload, permissive or not, so a consumer that logs
 it will silently start logging nothing the day an operator enables blocking.
-And `atr_advisory` is the only reliable signal of the *mode* — `atr_hook_event`
-tracks the verdict, not the mode. Parse defensively on the keys, not on a fixed
-shape.
+And the presence of `atr_advisory` is the only reliable signal of the *mode*:
+on `PreToolUse`, `atr_hook_event` tracks whether an envelope was emitted — that
+is, the verdict — and on `PostToolUse` it is never present at all. Parse
+defensively on the keys, not on a fixed shape.
 
 `atr_decision` is what ATR *would* have answered. Log it, alert on it, measure
 it — that is the intended way to evaluate whether you want to enable blocking.
@@ -254,7 +255,7 @@ frozen empty one, and `resolveEnforcementPolicy()` — called only by
 |---|---|---|---|
 | TypeScript API | `new ATREngine({ lane: 'enforce' })` | `new ActionExecutor({ adapter, blocking: true })`, `new HookHandler({ …, blocking: true })` | **No** |
 | `atr guard` | `--lane <enforce\|alert\|hunt>` | `--blocking` / `--no-blocking` | Yes, both |
-| `atr scan` | `--lane <enforce\|alert\|hunt>` | n/a — scanning reports, it never enforces | `ATR_LANE` only |
+| `atr scan` | `--lane <enforce\|alert\|hunt>` | n/a — scanning reports, it never enforces | `ATR_LANE` acts; a malformed `ATR_BLOCKING` still warns but changes nothing |
 | GitHub Action | `lane:` input (default `hunt`) | n/a — the action reports findings only | via the CLI it invokes |
 | MCP server | `lane` option; `ATR_LANE` **only** when `mcp-server.ts` is the process entry point | n/a — its tools return matches and never block | Only as a process, never as an import |
 | Built-in default | `hunt` | off | — |
