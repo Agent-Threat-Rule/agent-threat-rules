@@ -234,12 +234,38 @@ hash matches specifically; §5.5 of SPEC.md is the engine-wide one.)
 | Blocking | `--blocking` / `--no-blocking` | `ATR_BLOCKING` | off |
 
 Resolution order for both: explicit programmatic config > environment > default.
-An unrecognised value is an error, never a silent fallback.
+On the command line an unrecognised value is a usage error, never a silent
+fallback — `atr guard --lane enfroce` exits 1 with
+`Error: Invalid --lane "enfroce". Expected one of: enforce, alert, hunt.`
 
 ```bash
-atr guard                                 # advisory: report only
-atr guard --lane enforce --blocking       # block, stable rules only
+atr guard                                 # advisory: report only (the default)
+atr guard --lane enforce --blocking       # blocking on, and only the 106 of 777
+                                          # live rules that are maturity: stable
+                                          # may fire (see the recall note below)
 ATR_LANE=enforce ATR_BLOCKING=1 atr guard # the same, via the environment
+```
+
+**`--lane enforce` costs recall, and the cost is large.** It loads only
+`maturity: stable` rules: **106 of the 777 live rules** in this repository at the
+commit this paragraph was written against. That is the trade being made every
+time enforcement is recommended alongside it — narrower firing set, lower
+false-positive rate, fewer attacks caught. Rule counts move daily, and a
+`grep`-based count is wrong here (eight rules quote the value as
+`maturity: "stable"`), so re-derive by parsing before quoting the figure
+anywhere:
+
+```bash
+python3 - <<'PY'
+import glob, yaml
+rules = [yaml.safe_load(open(p, encoding='utf-8'))
+         for p in glob.glob('rules/**/*.yaml', recursive=True)]
+live = [r for r in rules
+        if r.get('status') not in ('draft', 'deprecated')
+        and str(r.get('maturity') or '').strip() != 'deprecated']
+stable = [r for r in live if str(r.get('maturity') or '').strip() == 'stable']
+print(f'files={len(rules)} live={len(live)} enforce={len(stable)}')
+PY
 ```
 
 Programmatic embedding: `new ATREngine({ lane })` for the lane,

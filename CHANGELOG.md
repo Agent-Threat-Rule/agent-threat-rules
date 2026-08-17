@@ -54,13 +54,25 @@ All notable changes to ATR will be documented in this file.
 - **Both channels are governed by one switch**: `blocking` in config,
   `ATR_BLOCKING` in the environment, `--blocking` / `--no-blocking` on
   `atr guard`. Default off.
-- **Why**: `SPEC.md` §5.5 ("Engines MUST NOT execute response actions
-  automatically without an explicit configuration directive from the operator"),
-  `spec/atr-method-v1.1.md:164` ("Engines SHOULD NOT auto-block ... without
-  operator policy explicitly enabling it") and `docs/QUALITY-STANDARD.md:228`
-  (blocking only for `maturity: stable` + confidence ≥ 80) all describe a
-  directive that had no implementation: there was no CLI flag, no environment
-  variable and no documented config key by which an operator could express it.
+- **Why**: `SPEC.md` §5.5 (Response) is the engine-wide requirement, quoted
+  whole because it is short enough to be: "Engines MUST NOT execute response
+  actions automatically without an explicit configuration directive from the
+  operator. The `response` field is a recommendation expressed by the Rule
+  author, not a directive to the Engine." That directive had no implementation —
+  no CLI flag, no environment variable, no documented config key by which an
+  operator could express it. This change is that implementation.
+  Two narrower statements point the same way. Neither is the requirement, and
+  neither may be quoted as a general rule:
+  - `spec/atr-method-v1.1.md` §5.6 (Provenance and Trust) sits under §5
+    Signature Method and is scoped to hash matches: "Engines SHOULD NOT
+    auto-block on a hash match without operator policy explicitly enabling it;
+    the default response action SHOULD be `log_alert` until provenance is
+    operator-trusted." An earlier revision of this entry quoted that sentence
+    with "on a hash match" elided, which turned a Signature-Rule SHOULD NOT into
+    an engine-wide one. It is not one. Quote it whole or cite §5.5 instead.
+  - `docs/QUALITY-STANDARD.md` ("For Consumers") restricts blocking to
+    `maturity: stable` with confidence ≥ 80. That is deployment guidance
+    addressed to consumers, not a normative requirement on engines.
 - **Turning blocking on reproduces the previous behaviour exactly.** Verified by
   replaying 3,985 events (3,959 of them the rules' own `true_positives` plus 24
   ordinary developer operations under real Claude Code tool names) through
@@ -78,11 +90,17 @@ All notable changes to ATR will be documented in this file.
   `ATR_LANE` environment variable (honoured by every `ATREngine`, including the
   MCP server), and a `lane` input on the GitHub Action.
 - Resolution order for lane and blocking alike: explicit config > environment >
-  default. An unrecognised value throws / exits non-zero rather than falling back
-  silently — an operator who typed `--lane enfroce` must not be left believing
-  they are enforcing.
-- `atr guard` now prints its posture on stderr
-  (`[atr-guard] lane=hunt blocking=off (advisory: ...)`), and `atr init` says in
+  default. On the command line an unrecognised value is a usage error, never a
+  silent fallback: `atr guard --lane enfroce` prints
+  `Error: Invalid --lane "enfroce". Expected one of: enforce, alert, hunt.` and
+  exits 1, so an operator who typed it is not left believing they are enforcing.
+  An unrecognised value arriving from the *environment* is handled differently —
+  see the `ATR_LANE` / `ATR_BLOCKING` entry under "Changed" above, which is the
+  only place this file describes it.
+- `atr guard` now prints its posture on stderr. The full second line, in the
+  default mode, is
+  `[atr-guard] lane=hunt blocking=off (advisory: detections are reported, nothing is blocked)`;
+  it is preceded by `[atr-guard] Loaded <n> rules from <dir>`. `atr init` says in
   its success message that the installed hook is advisory. "Installed" must never
   read as "enforcing".
 
