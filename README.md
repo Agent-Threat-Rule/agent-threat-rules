@@ -219,24 +219,45 @@ Lanes are opt-in and fully backward-compatible: the default is `hunt`, so existi
 
 Detection always runs. **Blocking is opt-in and off by default.** In the default
 mode `atr guard` reports what it found and changes nothing: it emits no
-permission decision to the host — the field is omitted, not set to `allow`,
-because `allow` is affirmative approval in that contract and would suppress the
-host's own permission prompt — and it dispatches no response action above the
+permission decision to the host, and it dispatches no response action above the
 `observe` blast-radius tier (`alert` / `snapshot` / `shadow` / `escalate` still
 run). Turning blocking on is the explicit operator directive [SPEC.md](SPEC.md)
 §5.5 requires before an engine may execute response actions automatically.
 ([spec/atr-method-v1.1.md](spec/atr-method-v1.1.md) §5.6 says the same thing for
 hash matches specifically; §5.5 of SPEC.md is the engine-wide one.)
 
-| Switch | Flag | Environment | Default |
-|---|---|---|---|
-| Detection lane | `--lane <enforce\|alert\|hunt>` | `ATR_LANE` | `hunt` |
-| Blocking | `--blocking` / `--no-blocking` | `ATR_BLOCKING` | off |
+**ATR never answers `permissionDecision: "allow"` — in either mode.** That
+decision is not neutral in the Claude Code contract; it is an affirmative
+approval that suppresses the host's own permission prompt, so answering it on
+every operation ATR had not looked for would make a hooked session permit *more*
+than an unhooked one. A permission decision is emitted only to **restrain** —
+`deny` or `ask` — and only with blocking on. Any other verdict omits the whole
+`hookSpecificOutput` envelope, and the finding travels in `atr_decision`,
+`atr_reason` and `matched_rules` instead. Turning blocking on does not bring the
+affirmative decision back.
 
-Resolution order for both: explicit programmatic config > environment > default.
-On the command line an unrecognised value is a usage error, never a silent
-fallback — `atr guard --lane enfroce` exits 1 with
+| Switch | CLI flag | Environment (CLI only) | Library config | Default |
+|---|---|---|---|---|
+| Detection lane | `--lane <enforce\|alert\|hunt>` | `ATR_LANE` | `new ATREngine({ lane })` | `hunt` |
+| Blocking | `--blocking` / `--no-blocking` | `ATR_BLOCKING` | `blocking` on `ActionExecutor` / `HookHandler` | off |
+
+**The two surfaces resolve differently, and they do not share a chain:**
+
+- **Library** — explicit config **>** built-in default. `ATREngine`,
+  `ActionExecutor` and `HookHandler` do not read the environment at all, so an
+  embedded engine cannot be re-pointed by a variable the host never set.
+- **CLI** — flag **>** environment variable **>** built-in default.
+
+An unrecognised `--lane` value is a usage error, never a silent fallback:
+`atr guard --lane enfroce` exits 1 with
 `Error: Invalid --lane "enfroce". Expected one of: enforce, alert, hunt.`
+An unrecognised value in the *environment* warns on stderr, falls back to the
+safe default and keeps running (exit 0), because `atr guard` runs as a Claude
+Code command hook where a non-zero exit discards every detection and prints no
+reason. If `ATR_LANE` is the variable that could not be read, blocking is forced
+off even when `--blocking` was passed — the fallback lane is the broadest one,
+and enforcing on a lane the operator never chose is the only degradation that
+would be more dangerous than the request.
 
 ```bash
 atr guard                                 # advisory: report only (the default)
@@ -270,7 +291,12 @@ PY
 
 Programmatic embedding: `new ATREngine({ lane })` for the lane,
 `new ActionExecutor({ adapter, blocking })` and
-`new HookHandler({ engine, executor, blocking })` for enforcement.
+`new HookHandler({ engine, executor, blocking })` for enforcement. **These are
+the only inputs** — the constructors ignore `ATR_LANE` and `ATR_BLOCKING`, so
+setting them will not configure an embedded engine. An unrecognised lane throws
+a `TypeError`, and so does a non-boolean `blocking`: `blocking: "false"` is a
+string, and every non-empty string is truthy, so it used to switch enforcement
+**on** while reading as an explicit "off".
 
 ## 5. Specification
 

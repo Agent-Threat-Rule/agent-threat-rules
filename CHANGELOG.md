@@ -10,15 +10,77 @@ All notable changes to ATR will be documented in this file.
   enabled.** The Claude Code PreToolUse payload now carries the detection
   (`atr_decision`, `atr_reason`, `matched_rules`, `atr_advisory: true`) and drops
   the `hookSpecificOutput` envelope entirely, so the host applies its own
-  permission flow. The decision is **omitted, not downgraded to `allow`**: in that
-  contract `allow` is affirmative approval that suppresses the host's own prompt,
-  so emitting it would make a hooked session *less* safe than an unhooked one.
-  The whole envelope goes rather than just the decision field, because a partial
-  `hookSpecificOutput` is not a shape the contract is known to accept while extra
-  top-level keys demonstrably are — `atr_decision` and `matched_rules` have
-  shipped alongside it all along.
-  `toClaudeCodePostToolUse` likewise omits `decision: 'block'` (its envelope is
-  kept: an `allow` verdict has always emitted it with no decision inside).
+  permission flow. `toClaudeCodePostToolUse` likewise omits `decision: 'block'`
+  (its envelope is kept: a permissive verdict has always emitted it with no
+  decision inside).
+  The whole envelope goes rather than just the decision field as a **legibility**
+  choice, not a compatibility one. Both shapes are in fact accepted: the
+  hook-output schema in the shipped Claude Code 2.1.76 bundle declares
+  `hookSpecificOutput` optional, its PreToolUse member declares
+  `permissionDecision` optional, and the object is not strict, so unknown
+  top-level keys are stripped rather than rejected — which is also why
+  `atr_decision` and `matched_rules` have shipped alongside it all along. A
+  payload with no envelope simply cannot be misread as a decision that failed to
+  serialise.
+
+- **ATR never emits `permissionDecision: "allow"` — in either mode.** This is
+  wider than the blocking switch and is the part most likely to surprise: turning
+  blocking ON does **not** bring the affirmative decision back. In the PreToolUse
+  contract `allow` is not neutral; it is an approval that suppresses the host's
+  own permission prompt, so a hooked session would permit *more* than an unhooked
+  one on every operation ATR simply had not looked for. "No rule matched" is ATR
+  having nothing to say, and the way to say nothing on that channel is to omit
+  the field. A decision is therefore emitted only for the two verdicts that
+  **restrain** — `deny` and `ask` — and only when blocking is on. Everything else
+  travels in `atr_decision` / `atr_reason` / `matched_rules`.
+  Consequence for the payload shape: with blocking ON and a permissive verdict
+  the `hookSpecificOutput` envelope is dropped too, exactly as in advisory mode.
+  `atr_advisory: true` marks the *mode*, not the verdict, so it is the one key
+  that distinguishes the two:
+
+  ```console
+  $ printf '%s\n' '{"hook":"PreToolUse","tool_name":"Bash","tool_input":{"command":"ls -la"},"session_id":"s1"}' \
+      | npx tsx src/cli.ts guard --blocking 2>/dev/null
+  {"atr_hook_event":"PreToolUse","atr_decision":"allow","atr_reason":"ALLOW: High-Risk Tool Invocation Without Human Confirmation [low/71% confidence] (1 rule matched)","matched_rules":["ATR-2026-00099"]}
+  ```
+
+  The PostToolUse contract needed no equivalent change: it has exactly one
+  sentinel, `decision: 'block'`, and the absence of the key *is* the
+  pass-through. There is no value that function could set to suppress a host
+  behaviour.
+- **BREAKING for embedders: the library no longer reads the environment at all.**
+  `ATR_LANE` and `ATR_BLOCKING` are **CLI-only**. `ATREngine`, `ActionExecutor`
+  and `HookHandler` take their posture from explicit config or the built-in
+  default, and nothing else. If you embedded ATR and were relying on a variable
+  in the ambient environment to select a lane, **that no longer works** — pass
+  `new ATREngine({ lane })` instead.
+
+  ```ts
+  // With ATR_LANE=enforce ATR_BLOCKING=1 exported in the environment:
+  new ATREngine({ rulesDir }).getLane()          // 'hunt'  (was: 'enforce')
+  new ActionExecutor({ adapter }).isBlocking()   // false
+  new HookHandler({ engine, executor }).isBlocking() // false
+  ```
+
+  Ambient configuration crosses trust boundaries invisibly. A `new ATREngine()`
+  inside a VS Code extension, a Mastra pipeline, or the `/openshell-filter`,
+  `/nemoclaw-preflight` and `/mcp` entry points never asked to be reconfigured by
+  a shell profile — and because `enforce` is a *valid* value, the old behaviour
+  produced no warning at all while narrowing those callers to `maturity: stable`
+  rules only.
+  The guarantee is **structural, not a convention**: `resolveLane` and
+  `resolveBlocking` now require an `EnvSource` argument with no `process.env`
+  default, so there is no overload that can fall through to the environment. Two
+  new library-facing helpers, `laneFromConfig()` and `blockingFromConfig()`, pass
+  a frozen empty environment; the new `resolveEnforcementPolicy()` is the single
+  function in the package that touches `process.env`, and `src/cli.ts` is its
+  only caller. `resolveLaneOrWarn`, `resolveBlockingOrWarn` and
+  `resetEnforcementWarnings` are **removed**.
+  One deliberate exception: `src/mcp-server.ts` reads `ATR_LANE` when the file is
+  the process entry point, because that makes it a CLI rather than a library. An
+  importer of the `./mcp` subpath does not reach that branch and gets its lane
+  from the explicit option.
+
 - **Scope limit, stated so the headline is not read wider than it is.** This
   covers the two channels the engine itself drives: the Claude Code hook
   contract and `ActionExecutor`. It does NOT cover the framework adapters, which
@@ -28,18 +90,63 @@ All notable changes to ATR will be documented in this file.
   both default `ATR_MIN_SEVERITY` to `high`. Bringing those under the same switch
   is a separate behaviour decision and is not made here.
 
-- **An unrecognised `ATR_LANE` or `ATR_BLOCKING` warns on stderr and falls back
-  to the safe default.** `main` did not read either variable, so a typo was
-  previously inert. An earlier revision of this branch threw from the
-  constructor instead, which measured badly: `ATR_BLOCKING=enabled npx atr
-  guard` exited 1 with an empty stdout and no guard running — landing hardest on
-  the operator trying to turn enforcement ON — and a stray `ATR_LANE` in a shell
-  profile crashed the VS Code extension on activation. Neither process asked to
-  read the environment. An explicit bad argument (`new ATREngine({ lane })`)
-  still throws, because that is the caller's own bug rather than ambient state.
-  The warning names the variable, the bad value, and — for `ATR_BLOCKING` —
-  states outright that enforcement is NOT enabled; it is emitted once per
-  distinct value per process.
+- **An unrecognised `ATR_LANE` or `ATR_BLOCKING` warns on stderr, falls back to
+  the safe default, and the guard keeps running (exit 0).** `main` did not read
+  either variable, so a typo was previously inert. An earlier revision of this
+  branch threw from the constructor instead, which measured badly:
+  `ATR_BLOCKING=enabled npx atr guard` exited 1 with an empty stdout and no guard
+  running — landing hardest on the operator trying to turn enforcement ON.
+  `atr init` installs `atr guard` as a PreToolUse **command hook**, and Claude
+  Code 2.1.76 maps any exit status other than 0 or 2 to a non-blocking error: it
+  runs the tool anyway, hands the model nothing, and renders only
+  `<hookName> hook error` **without** the captured stderr. Exiting would have
+  discarded every detection and still not told the operator why; status 2, the
+  only loud one, blocks the tool outright, which a stray shell variable must
+  never do. The warnings are printed once, at startup, by the CLI — they are not
+  deduplicated per value, and the `resolveLaneOrWarn` / `resolveBlockingOrWarn` /
+  `resetEnforcementWarnings` helpers that did that are gone. Verbatim, prefixed
+  `[atr]` (red on a TTY):
+
+  ```text
+  [atr] Invalid ATR_LANE="enfroce". Expected one of: enforce, alert, hunt. Falling back to lane "hunt". Detection still runs; this only changes which maturities may fire.
+  [atr] Invalid ATR_BLOCKING="enabled". Expected one of: 1/true/yes/on or 0/false/no/off. Falling back to blocking=false. If you meant to enable enforcement, it is NOT enabled.
+  ```
+
+  A bad **flag** still exits 1 — `atr guard --lane enfroce` and
+  `atr scan --lane enfroce <target>` both print
+  `Error: Invalid --lane "enfroce". Expected one of: enforce, alert, hunt.` and
+  stop. A flag is typed at a prompt by someone who will see the exit code; an
+  inherited variable is not. An explicit bad argument
+  (`new ATREngine({ lane: 'enfroce' })`) still throws for the same reason.
+
+- **An unreadable `ATR_LANE` forces blocking off, even against an explicit
+  `--blocking`.** Falling back to `hunt` while blocking stays on is the one
+  degraded posture that is *more* dangerous than the one requested: the operator
+  asked to enforce on `maturity: stable` rules only and would instead enforce on
+  every maturity. `--blocking` says "you may block", not "block on a lane I never
+  chose". `ATR_LANE=enfroce atr guard --blocking` therefore exits 0 in advisory
+  mode, having printed the lane warning above plus:
+
+  ```text
+  [atr] Blocking disabled: ATR_LANE could not be read, and blocking on the fallback lane "hunt" would enforce on more rule maturities than you asked for. Fix ATR_LANE to re-enable enforcement.
+  ```
+
+- **Both switches now trim whitespace and ignore case, identically.** They were
+  asymmetric: `ATR_BLOCKING=ON` worked while `ATR_LANE=ENFORCE` did not, so the
+  pair `ATR_LANE=ENFORCE ATR_BLOCKING=ON` turned blocking on **and** silently
+  widened the lane to `hunt` — the operator asked for the narrowest enforcement
+  posture and got the broadest one. `ATR_LANE=ENFORCE`, `ATR_LANE=" alert "` and
+  `--lane Alert` are all honoured now.
+
+- **A non-boolean explicit `blocking` throws instead of enabling blocking.**
+  `new ActionExecutor({ adapter, blocking: "false" })` and
+  `new HookHandler({ engine, executor, blocking: "false" })` previously turned
+  blocking **on**, because every non-empty string is truthy — reading, to their
+  author, as an explicit "off". Both now raise
+  `TypeError: Invalid blocking value "false" (string). Expected a boolean.` The
+  lane path validated its explicit value from the start; a switch that fails
+  toward *more* enforcement was the wrong asymmetry to leave in place. This is
+  BREAKING for any JavaScript or JSON-config caller that was passing a string.
 
 - **`ActionExecutor` no longer dispatches response actions above the `observe`
   blast-radius tier unless blocking is enabled.** `alert` / `snapshot` /
@@ -51,9 +158,10 @@ All notable changes to ATR will be documented in this file.
   This closes the dual-channel contradiction where a benign
   `Bash{command:"ls -la"}` produced `permissionDecision: "allow"` while the
   executor really invoked `blockTool` on the adapter.
-- **Both channels are governed by one switch**: `blocking` in config,
-  `ATR_BLOCKING` in the environment, `--blocking` / `--no-blocking` on
-  `atr guard`. Default off.
+- **Both channels are governed by one switch**: the `blocking` config field on
+  `ActionExecutor` and `HookHandler` for embedders, and `--blocking` /
+  `--no-blocking` or `ATR_BLOCKING` on `atr guard` for the CLI. Default off. The
+  environment variable reaches the CLI only — see the embedder entry above.
 - **Why**: `SPEC.md` §5.5 (Response) is the engine-wide requirement, quoted
   whole because it is short enough to be: "Engines MUST NOT execute response
   actions automatically without an explicit configuration directive from the
@@ -73,36 +181,89 @@ All notable changes to ATR will be documented in this file.
   - `docs/QUALITY-STANDARD.md` ("For Consumers") restricts blocking to
     `maturity: stable` with confidence ≥ 80. That is deployment guidance
     addressed to consumers, not a normative requirement on engines.
-- **Turning blocking on reproduces the previous behaviour exactly.** Verified by
-  replaying 3,985 events (3,959 of them the rules' own `true_positives` plus 24
-  ordinary developer operations under real Claude Code tool names) through
-  `HookHandler` → `evaluateWithVerdict` → `ActionExecutor` on `origin/main` and
-  on this branch with `--blocking`: the two JSONL transcripts are byte-identical.
-- **Detection is unchanged in both modes**: same `matches`, `matchCount`,
-  `highestSeverity`, `highestConfidence` and reason string on all 3,985 events
-  (0 differences).
+- **Turning blocking on reproduces the previous behaviour on every verdict that
+  restrains — and only those.** An earlier revision of this entry claimed the
+  two transcripts were "byte-identical". They are not, and the difference is the
+  point of the change. Measured by replaying the 850 samples of
+  `data/pint-benchmark/pint-corpus.json` as **850 hook events per hook type**
+  (one JSON line in, one JSON line out) through `atr guard`'s stdio loop —
+  `HookHandler` → `evaluateWithVerdict` → `ActionExecutor` — on the pre-change
+  merge-base `994b01b2b` with no flags, and on `b9da8d710` with `--blocking`.
+  The rule corpus is byte-for-byte identical at those two commits
+  (`git diff --name-only 994b01b2b..b9da8d710 -- rules` is empty), so every
+  difference below is the contract change and nothing else.
+
+  | Hook | Events | Byte-identical output lines | Differing |
+  |---|---:|---:|---:|
+  | `PostToolUse` | 850 | **850** | 0 |
+  | `PreToolUse` | 850 | 85 | **765** |
+
+  `PostToolUse` is unchanged outright. On `PreToolUse` the 85 identical lines are
+  exactly the events where the baseline emitted a decision that **restrains** —
+  81 `deny` + 4 `ask` — and all 85 of those match byte for byte. The 765
+  differing lines are every event where the baseline emitted
+  `permissionDecision: "allow"`; on this branch all 765 carry no
+  `hookSpecificOutput` key at all.
+  Restricted to the 451 samples labelled `label: true` (the attacks), the same
+  replay gives 85 identical / 366 differing — i.e. **ATR was affirmatively
+  pre-approving 366 of 451 known attacks**, including under
+  `--lane enforce --blocking`, where no `stable` rule matched and the payload
+  was `{"permissionDecision":"allow","permissionDecisionReason":"No rules matched."}`.
+
+- **Detection is unchanged in both modes.** Over the same 850 × 2 events,
+  `matched_rules` is identical to the baseline on 850/850 for both hooks in both
+  modes, and `atr_decision` equals the baseline's internal decision on 850/850.
+  Blocking changes what the engine *does*, never what it *sees*.
 
 ### Added — the detection lane finally has an entrance
 
 - `ATREngineConfig.lane` existed and worked but no shipped code path ever set it
   and no user-facing entry point could, so `hunt` was the only reachable setting.
   Added `--lane <enforce|alert|hunt>` to `atr guard` and `atr scan`, the
-  `ATR_LANE` environment variable (honoured by every `ATREngine`, including the
-  MCP server), and a `lane` input on the GitHub Action.
-- Resolution order for lane and blocking alike: explicit config > environment >
-  default. On the command line an unrecognised value is a usage error, never a
+  `ATR_LANE` environment variable, and a `lane` input on the GitHub Action.
+  `ATR_LANE` is read by the **CLI surfaces only** — `atr guard`, `atr scan`, and
+  `src/mcp-server.ts` when it is the process entry point. It is *not* honoured by
+  every `ATREngine`: an engine constructed by an embedder ignores it entirely.
+  See the library/environment entry under "Changed" above.
+- **There is no single resolution order any more, and conflating the two was the
+  bug.** They are different chains on different surfaces:
+
+  | Surface | Chain |
+  |---|---|
+  | Library (`ATREngine` / `ActionExecutor` / `HookHandler`) | explicit config **>** built-in default. The environment is not consulted. |
+  | CLI (`atr guard`, `atr scan`) | flag **>** environment variable **>** built-in default. There is no programmatic config on this surface. |
+
+  The old "explicit programmatic config > environment > default" described a
+  chain that exists on neither surface.
+  On the command line an unrecognised `--lane` value is a usage error, never a
   silent fallback: `atr guard --lane enfroce` prints
   `Error: Invalid --lane "enfroce". Expected one of: enforce, alert, hunt.` and
   exits 1, so an operator who typed it is not left believing they are enforcing.
+  (`--blocking` / `--no-blocking` take no value; supplying one, as in
+  `--blocking=maybe`, is not recognised as the flag and leaves the switch to the
+  environment and then the default — it does not error.)
   An unrecognised value arriving from the *environment* is handled differently —
   see the `ATR_LANE` / `ATR_BLOCKING` entry under "Changed" above, which is the
   only place this file describes it.
-- `atr guard` now prints its posture on stderr. The full second line, in the
-  default mode, is
-  `[atr-guard] lane=hunt blocking=off (advisory: detections are reported, nothing is blocked)`;
-  it is preceded by `[atr-guard] Loaded <n> rules from <dir>`. `atr init` says in
-  its success message that the installed hook is advisory. "Installed" must never
-  read as "enforcing".
+- `atr guard` now prints its posture on stderr, preceded by
+  `[atr-guard] Loaded <n> rules from <dir>`. Both modes carry a parenthetical,
+  and the blocking one names the limit rather than claiming enforcement outright:
+
+  ```text
+  [atr-guard] lane=hunt blocking=off (advisory: detections are reported, nothing is blocked)
+  [atr-guard] lane=hunt blocking=on (deny/ask only; never approves a tool call)
+  ```
+
+  `atr init` says in its success message that the installed hook is advisory.
+  "Installed" must never read as "enforcing".
+
+- **Provenance of the console output quoted in this entry.** Every payload,
+  warning and posture line above is captured stdout/stderr from
+  `fix/review-never-affirmative-allow` at `b9da8d710`, pasted unedited apart from
+  stripping the ANSI colour codes on the `[atr]` warnings and rewriting the
+  absolute rules path. This branch carries the documentation; `b9da8d710` carries
+  the implementation. The commands reproduce these outputs once both have landed
+  — not before.
 
 ### Fixed
 
