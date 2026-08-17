@@ -361,10 +361,10 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | Source | Source version | Samples | Recall | Precision | FP rate | ATR version | Measured |
 |---|---|---:|---:|---:|---:|---|---|
 | AdvBench (LLM-attacks behaviors) | upstream-2026-06-16 | 520 | 2.1% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
-| atr-self-test | internal | 341 | 89.7% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| atr-self-test | internal | 341 | 96.6% | 100.0% | 0.0% | 3.5.12 | 2026-08-15 |
 | autoresearch | internal-1054 | 1,054 | 15.1% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
-| garak (in-the-wild jailbreaks) | inthewild-jailbreak-corpus-650 | 650 | 92.5% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
-| garak-full (all probe families) | 23-families | 3,475 | 57.2% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
+| garak (in-the-wild jailbreaks) | inthewild-jailbreak-corpus-650 | 650 | 92.3% | 100.0% | 0.0% | 3.5.12 | 2026-08-15 |
+| garak-full (all probe families) | 23-families | 3,475 | 57.2% | 100.0% | 0.0% | 3.5.12 | 2026-08-15 |
 | hackaprompt | v1 | 4,780 | 69.6% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | HarmBench (CAIS behaviors) | upstream-2026-06-16 | 400 | 2.8% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | hh-rlhf (Anthropic red-team-attempts) [^stdcorpora] | snapshot-2026-04 | 4,957 | 1.5% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
@@ -373,11 +373,11 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | MITRE ATLAS [^stdcorpora] | snapshot-2026-04 | 182 | 39.0% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
 | NeMo Guardrails (NVIDIA test fixtures) | corpus-2026-05-12 | 6 | 100.0% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | OWASP LLM Top 10 [^stdcorpora] | snapshot-2026-04 | 56 | 16.1% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
-| PINT-format (deepset + Lakera Gandalf) [^pint] | v1 | 850 | 60.3% | 100.0% | 0.0% | 3.5.11 | 2026-08-04 |
+| PINT-format (deepset + Lakera Gandalf) [^pint] | v1 | 850 | 65.4% | 100.0% | 0.0% | 3.5.12 | 2026-08-15 |
 | PromptBench (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 3,280 | 15.7% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
 | promptfoo (red-team plugin fixtures) | corpus-2026-05-12 | 44 | 97.7% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | PromptInject (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 1,080 | 100.0% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
-| SKILL.md benchmark (internal) [^skilllane] | internal-498 | 498 | 100.0% (hunt) / 0.0% (enforce) | 97.0% | 0.20% | 3.5.0 | 2026-06-16 |
+| SKILL.md benchmark (internal) [^skilllane] | internal-498 | 498 | 100.0% (hunt) / 0.0% (enforce) | 97.0% | 0.20% | 3.5.12 | 2026-08-15 |
 | Wild scan (OpenClaw + Skills.sh + Hermes + ClawHub) | corpus-2026-04-14 | 96,096 | — | 57.7% (floor) | 1.35% flag rate | 2.0.0 | 2026-04-14 |
 
 All detection corpora were (re-)measured against ATR 3.5.0 on 2026-06-16,
@@ -402,16 +402,18 @@ were never measurements of ATR.
 The per-row `ATR version` column above is the version each cell was actually
 measured against, mirroring the `atr_version` field in each
 `data/measurements/<source>/latest.json`. The headline `garak` recall moved
-98.0% (3.0.0) → 97.2% (3.5.0) → 95.7% (3.5.8) → 92.5% (3.5.11). The 3.5.8 →
+98.0% (3.0.0) → 97.2% (3.5.0) → 95.7% (3.5.8) → 92.5% (3.5.11) → 92.3%
+(3.5.12). The 3.5.8 →
 3.5.11 step is a real loss of detections, not a change in how they are counted:
 PR #327 tightened an over-broad persona regex in `ATR-2026-00001` that had been
 false-positiving on benign "you are now an expert …" prose, and tightening it
 also gave up the recall that regex had been earning on novel-persona jailbreaks
 ("you are now TrueGPT / ChatINF / Raven …"). The harness event shape changed in
-the same window (see below), and it is not the cause: replayed on today's 780
+the same window (see below), and it is not the cause: replayed on 780
 rules, the old shape scores 92.2% and the corrected shape 92.5%, a 0.3-point
 difference in the corrected shape's favour. The 3.2-point drop from 95.7% is
-the rules.
+the rules. The 3.5.11 → 3.5.12 step is one prompt (600/650 vs 601/650) and
+should be read as noise, not as a trend.
 
 Two numbers that briefly appeared here are **withdrawn**: between 2026-08-04
 and 2026-08-05, this table and `stats.json` cited **91.5%** for `garak` and
@@ -424,13 +426,13 @@ number is a version-pinned, reproducible measurement. It was also produced by a 
 that built an event of `type: 'llm_io'`, which is a rule *source* and not an
 `AgentEventType`; `src/engine.ts` could not map it and so ran every rule of
 every source against the event instead of the two source types the harness
-documented itself as using. The 92.5% above replaces it: measured on
-2026-08-05 at 780 rules through `llm_input` + `tool_response`, the two channels
+documented itself as using. The 92.3% above replaces it: measured on
+2026-08-15 at 784 rules through `llm_input` + `tool_response`, the two channels
 `src/hook-handler.ts` can actually deliver a prompt on, and written to
-`data/measurements/garak/2026-08-05_garak-inthewild-jailbreak-corpus-650_atr-3-5-11.json`
+`data/measurements/garak/2026-08-15_garak-inthewild-jailbreak-corpus-650_atr-3-5-12.json`
 with the commit that produced it. Under the wider shape set used for
 false-positive measurement (which also runs `engine.scanSkill()`) the same
-corpus scores 93.1%; that number is recorded in the measurement's `breakdown`
+corpus scores 92.9%; that number is recorded in the measurement's `breakdown`
 and is deliberately not the published one, because a garak prompt never reaches
 production as a SKILL.md. `.github/workflows/eval.yml` now runs
 `scripts/check-benchmark-citations.ts`, which fails CI if this table or
@@ -453,13 +455,18 @@ See [CHANGELOG.md](CHANGELOG.md).
     benchmark. That corpus is private and roughly 5x larger; this row is a
     self-built 850-sample corpus in PINT's format, assembled from
     `deepset/prompt-injections` (660) and `Lakera/gandalf_ignore_instructions`
-    (190). It also carries a scope caveat worth stating plainly: only **29 of
-    780 rules** fire on it at all, and `ATR-2026-00001` alone accounts for 226
-    of the 272 detections. Read it as a prompt-injection-family score, not as
+    (190). It also carries a scope caveat worth stating plainly: only **63 of
+    784 rules** fire on it at all, and `ATR-2026-00001` alone accounts for 226
+    of the 295 detections. Read it as a prompt-injection-family score, not as
     ATR's overall coverage. The row moved 63.6% → 60.3% between 3.5.0 and
     3.5.11 for the same reason `garak` moved: PR #327 tightened
     `ATR-2026-00001`'s persona-switch regex to stop it false-positiving on
-    benign prose. Precision moved 99.7% → 100% over the same span.
+    benign prose. Precision moved 99.7% → 100% over the same span. It then
+    recovered 60.3% → 65.4% at 3.5.12 (2026-08-15) as rules added since
+    3.5.11 widened the family: rules firing on this corpus went 29 → 63 while
+    `ATR-2026-00001`'s own contribution stayed at 226, so the gain came from
+    the tail, not from re-loosening the one dominant rule. Precision held at
+    100% (0 FP on the 399 benign samples).
 
 [^promptcorpora]: **Read both of these as closed-book scores.** Until
     2026-08-05 the harness recorded its per-rule breakdown as the literal
@@ -522,8 +529,8 @@ See [CHANGELOG.md](CHANGELOG.md).
     measures ATR against attack write-ups, not against traffic.
 
 Two `garak` rows are deliberate: the headline `garak` source tracks NVIDIA's
-in-the-wild jailbreak corpus (narrow, the ~92.5% number ATR cites publicly,
-refreshed 2026-08-05 against ATR 3.5.11), while `garak-full` tracks
+in-the-wild jailbreak corpus (narrow, the ~92% number ATR cites publicly,
+refreshed 2026-08-15 against ATR 3.5.12), while `garak-full` tracks
 every probe family in upstream garak (broad, includes families like
 `badchars`, `dra`, `encoding` that ATR's regex layer intentionally does
 not target). Both are valid measurements against different corpora; they

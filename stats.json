@@ -22,18 +22,18 @@
   },
   "benchmarks": {
     "garak": {
-      "recall": 92.5,
+      "recall": 92.3,
       "samples": 650,
       "source": "NVIDIA garak in-the-wild jailbreak corpus",
       "perFamily": {
         "latentinjection": 34.4,
         "syspromptExtraction": 96.4,
-        "dan": 92.6
+        "dan": 92.5
       },
-      "detected": 601,
-      "missed": 49,
-      "atr_version": "3.5.11",
-      "measured": "2026-08-05"
+      "detected": 600,
+      "missed": 50,
+      "atr_version": "3.5.12",
+      "measured": "2026-08-15"
     },
     "skill": {
       "recall": 100,
@@ -43,24 +43,26 @@
       "source": "Internal labeled SKILL.md corpus",
       "lane": "hunt",
       "enforceLaneRecall": 0,
-      "enforceLaneNote": "The enforce (auto-block) lane loads only maturity: stable. All 38 rules with scan_target: skill are maturity: test, so the enforce lane loads no skill-scanning rule and detects 0 of 32 malicious samples. Quoting 100% without the lane sets a wrong expectation for enforce deployments."
+      "enforceLaneNote": "The enforce (auto-block) lane loads only maturity: stable. All 38 rules with scan_target: skill are maturity: test, so the enforce lane loads no skill-scanning rule and detects 0 of 32 malicious samples. Quoting 100% without the lane sets a wrong expectation for enforce deployments.",
+      "atr_version": "3.5.12",
+      "measured": "2026-08-15"
     },
     "pint": {
-      "recall": 60.3,
+      "recall": 65.4,
       "precision": 100,
       "fpRate": 0,
       "samples": 850,
-      "detected": 272,
-      "missed": 179,
-      "atr_version": "3.5.11",
-      "measured": "2026-08-04",
+      "detected": 295,
+      "missed": 156,
+      "atr_version": "3.5.12",
+      "measured": "2026-08-15",
       "tiers": [
         "tier2-regex",
         "tier2.5-embedding"
       ],
       "source": "Self-built 850-sample PINT-FORMAT corpus (deepset/prompt-injections + Lakera/gandalf_ignore_instructions)",
       "notOfficialPint": true,
-      "comment": "NOT a run of Lakera's official PINT benchmark, whose corpus is private and roughly 5x larger. Scope caveat: this corpus exercises only the prompt-injection rule family — 29 of 780 rules fire on it and ATR-2026-00001 alone accounts for 226 of the 272 detections. It is not a measure of overall coverage."
+      "comment": "NOT a run of Lakera's official PINT benchmark, whose corpus is private and roughly 5x larger. Scope caveat: this corpus exercises only the prompt-injection rule family — 63 of 784 rules fire on it and ATR-2026-00001 alone accounts for 226 of the 295 detections. It is not a measure of overall coverage."
     },
     "hackaprompt": {
       "recall": 69.6,
