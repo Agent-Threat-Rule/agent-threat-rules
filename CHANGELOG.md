@@ -72,14 +72,19 @@ All notable changes to ATR will be documented in this file.
   `resolveBlocking` now require an `EnvSource` argument with no `process.env`
   default, so there is no overload that can fall through to the environment. Two
   new library-facing helpers, `laneFromConfig()` and `blockingFromConfig()`, pass
-  a frozen empty environment; the new `resolveEnforcementPolicy()` is the single
-  function in the package that touches `process.env`, and `src/cli.ts` is its
+  a frozen empty environment; the new `resolveEnforcementPolicy()` is the only
+  function that reads `process.env` **for these two switches**, and `src/cli.ts` is its
   only caller. `resolveLaneOrWarn`, `resolveBlockingOrWarn` and
   `resetEnforcementWarnings` are **removed**.
   One deliberate exception: `src/mcp-server.ts` reads `ATR_LANE` when the file is
   the process entry point, because that makes it a CLI rather than a library. An
   importer of the `./mcp` subpath does not reach that branch and gets its lane
   from the explicit option.
+  Not the only function in the package that reads the environment: eleven files
+  under `src/` do, and two of them — `adapters/openshell-filter.ts` and
+  `adapters/nemoclaw-preflight.ts` — read `ATR_MIN_SEVERITY` and still block by
+  default, as the scope limit below records. Reproduce with
+  `grep -rl "process\\.env" src/`.
 
 - **Scope limit, stated so the headline is not read wider than it is.** This
   covers the two channels the engine itself drives: the Claude Code hook
@@ -212,8 +217,16 @@ All notable changes to ATR will be documented in this file.
   Restricted to the 451 samples labelled `label: true` (the attacks), the same
   replay gives 85 identical / 366 differing — i.e. **ATR was affirmatively
   pre-approving 366 of 451 known attacks**, including under
-  `--lane enforce --blocking`, where no `stable` rule matched and the payload
-  was `{"permissionDecision":"allow","permissionDecisionReason":"No rules matched."}`.
+  the `enforce` lane, where no `stable` rule matched and the whole payload was
+
+  ```json
+  {"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow","permissionDecisionReason":"No rules matched."},"atr_decision":"allow"}
+  ```
+
+  captured on 994b01b2b through the TypeScript API rather than the CLI, because
+  the predecessor had no `--lane` flag to set the lane with. The excerpt an
+  earlier revision quoted here was the inner `hookSpecificOutput` object, not
+  the payload.
 
 - **Detection is unchanged in both modes.** Over the same 850 × 2 events,
   `matched_rules` is identical to the baseline on 850/850 for both hooks in both
