@@ -249,9 +249,7 @@ rules with no warning at all. The guarantee is structural: `resolveLane` and
 `resolveBlocking` take a required `EnvSource` argument with no `process.env`
 default, the library helpers `laneFromConfig()` / `blockingFromConfig()` pass a
 frozen empty one, and `resolveEnforcementPolicy()` — called only by
-`src/cli.ts` — is the single function in the package that touches `process.env`.
-
-| Surface | Lane | Blocking | Reads `ATR_LANE` / `ATR_BLOCKING`? |
+`src/cli.ts` — is the only function that reads `process.env` for these two switches. Ten files under `src/` read the environment in code; the OpenShell and NemoClaw adapters read `ATR_MIN_SEVERITY` and still block by default, as §3 and the scope limit in CHANGELOG.md record.urface | Lane | Blocking | Reads `ATR_LANE` / `ATR_BLOCKING`? |
 |---|---|---|---|
 | TypeScript API | `new ATREngine({ lane: 'enforce' })` | `new ActionExecutor({ adapter, blocking: true })`, `new HookHandler({ …, blocking: true })` | **No** |
 | `atr guard` | `--lane <enforce\|alert\|hunt>` | `--blocking` / `--no-blocking` | Yes, both |
@@ -538,7 +536,9 @@ not come back:
    affirmatively approved, this one stays silent and the host falls back to its
    own permission flow. On a `PreToolUse` replay of the 850-sample PINT corpus,
    85 of 850 payloads are byte-identical to the old build — exactly the 81
-   `deny` and 4 `ask` — and the other 765 differ solely by that removal. The
+   `deny` and 4 `ask` — and the other 765 lose the envelope and carry the
+   detection in `atr_hook_event` and `atr_reason` instead, so "solely by that
+   removal" would understate it: two keys arrive as one leaves. The
    `PostToolUse` payload is byte-identical on 850 of 850. Method and figures in
    [§8.4](#84-the-ab-replay-behind-the-shape-table).
 2. **The environment does not reconfigure an embedded engine.** If your old
