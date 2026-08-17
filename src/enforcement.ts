@@ -47,9 +47,17 @@
  *
  * WHO READS THE ENVIRONMENT
  *
- * Only the CLI. `resolveEnforcementPolicy` below is the single entry point that
- * touches `process.env`, and `src/cli.ts` is its only caller; it hands the
- * resolved values to ATREngine / ActionExecutor / HookHandler explicitly.
+ * For the lane and blocking switches: only the CLI. `resolveEnforcementPolicy`
+ * below is the only function that reads `process.env` for THESE TWO switches,
+ * and `src/cli.ts` is its only caller; it hands the resolved values to
+ * ATREngine / ActionExecutor / HookHandler explicitly.
+ *
+ * Not "the only function in the package that touches process.env" — that is
+ * false and an earlier revision of this comment said it. Eleven files under
+ * src/ read the environment, including `adapters/openshell-filter.ts` and
+ * `adapters/nemoclaw-preflight.ts`, which read `ATR_MIN_SEVERITY` and block by
+ * default. Those adapters are outside this switch and stay that way; see the
+ * scope limit in CHANGELOG.md. Reproduce with: grep -rl "process\.env" src/
  *
  * Library constructors take `laneFromConfig` / `blockingFromConfig`, which
  * cannot read the environment — `resolveLane` and `resolveBlocking` require an
