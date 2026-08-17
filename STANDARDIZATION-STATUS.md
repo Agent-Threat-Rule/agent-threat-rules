@@ -24,7 +24,7 @@ of those interfaces have changed**. Continue as before.
 
 | Layer | Artifact | Status | What this means for you |
 |---|---|---|---|
-| **Rule corpus** | `rules/*` (427 rules) | **STABLE — IN PRODUCTION** | Unchanged. Continues to be the canonical source. |
+| **Rule corpus** | `rules/*` (777 effective rules, 784 files) | **STABLE — IN PRODUCTION** | Unchanged. Continues to be the canonical source. |
 | **Rule format** | `spec/atr-schema.yaml` | **STABLE — IN PRODUCTION** | Unchanged. Rule YAML files still parse against this. |
 | **TS production engine** | `src/`, npm `agent-threat-rules` v2.1.3 | **STABLE — IN PRODUCTION** | Unchanged. No API breakage. |
 | **Existing ecosystem integrations** | Microsoft AGT, Cisco AI Defense, MISP CIRCL, OWASP A-S-R-H, precize, Sage, OpenHands, garak (in review) | **UNAFFECTED** | All continue to work without modification. |
@@ -66,8 +66,8 @@ Three external pressures converged in 2026-Q2:
 3. **F500 procurement questionnaires.** Microsoft AGT integration matured
    to the point that F500 procurement teams started asking "what does
    the governance look like, what does the conformance test look like,
-   what does the audit evidence look like?" — questions that a 427-rule
-   YAML corpus alone cannot answer.
+   what does the audit evidence look like?" — questions that a
+   YAML rule corpus alone cannot answer, at any size.
 
 The work was done as **proposal scaffolding** because:
 
