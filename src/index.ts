@@ -106,7 +106,8 @@ export type { HookHandlerConfig, HookContractOptions } from './hook-handler.js';
 //
 // Library callers want laneFromConfig / blockingFromConfig: they take an
 // explicit value and cannot read the environment. resolveEnforcementPolicy is
-// the CLI entry point and is the only function here that touches process.env —
+// the CLI entry point and is the only function that reads process.env for the
+// lane and blocking switches (other modules read it for unrelated settings) —
 // resolveLane / resolveBlocking require an EnvSource argument, so nothing else
 // can reach it by accident.
 export {

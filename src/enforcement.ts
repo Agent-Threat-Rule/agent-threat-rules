@@ -53,11 +53,15 @@
  * ATREngine / ActionExecutor / HookHandler explicitly.
  *
  * Not "the only function in the package that touches process.env" — that is
- * false and an earlier revision of this comment said it. Eleven files under
- * src/ read the environment, including `adapters/openshell-filter.ts` and
+ * false and an earlier revision of this comment said it. Ten files under src/
+ * read the environment in code, including `adapters/openshell-filter.ts` and
  * `adapters/nemoclaw-preflight.ts`, which read `ATR_MIN_SEVERITY` and block by
  * default. Those adapters are outside this switch and stay that way; see the
- * scope limit in CHANGELOG.md. Reproduce with: grep -rl "process\.env" src/
+ * scope limit in CHANGELOG.md.
+ *
+ * `grep -rl "process\.env" src/` returns eleven, not ten: `src/index.ts` only
+ * names it in a comment. The correction above was itself first written as
+ * "eleven" off that grep, which is the same mistake one level down.
  *
  * Library constructors take `laneFromConfig` / `blockingFromConfig`, which
  * cannot read the environment — `resolveLane` and `resolveBlocking` require an
