@@ -142,9 +142,14 @@ All notable changes to ATR will be documented in this file.
   `new ActionExecutor({ adapter, blocking: "false" })` and
   `new HookHandler({ engine, executor, blocking: "false" })` previously turned
   blocking **on**, because every non-empty string is truthy — reading, to their
-  author, as an explicit "off". Both now raise
-  `TypeError: Invalid blocking value "false" (string). Expected a boolean.` The
-  lane path validated its explicit value from the start; a switch that fails
+  author, as an explicit "off". Both now raise a `TypeError`, whose message in
+  full is:
+
+  ```text
+  Invalid blocking value "false" (string). Expected a boolean. Note that any non-empty string, including "false", would otherwise enable blocking.
+  ```
+
+  The lane path validated its explicit value from the start; a switch that fails
   toward *more* enforcement was the wrong asymmetry to leave in place. This is
   BREAKING for any JavaScript or JSON-config caller that was passing a string.
 
