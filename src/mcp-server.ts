@@ -17,6 +17,7 @@ import {
   CallToolRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import { ATREngine } from './engine.js';
+import type { Lane } from './quality/rule-contract.js';
 import { handleScan } from './mcp-tools/scan.js';
 import { handleScanSkill } from './mcp-tools/scan-skill.js';
 import { handleListRules } from './mcp-tools/list-rules.js';
@@ -202,14 +203,27 @@ const TOOLS = [
   },
 ];
 
-export async function createMCPServer(): Promise<Server> {
+/** Options for {@link createMCPServer}. */
+export interface MCPServerOptions {
+  /**
+   * Detection lane. Explicit only — this function does not read `ATR_LANE`,
+   * because `./mcp` is an exported subpath and an embedder's detection breadth
+   * must not depend on the shell that happened to start the host process.
+   * `atr mcp` reads the environment and passes the result here.
+   */
+  readonly lane?: Lane;
+}
+
+export async function createMCPServer(options: MCPServerOptions = {}): Promise<Server> {
   const semantic = createSemanticJudgeFromConfig();
-  // Lane comes from ATR_LANE (the engine resolves it — see src/enforcement.ts);
-  // this server has no CLI surface of its own to carry a --lane flag. The
-  // blocking opt-in has no meaning here: these tools return matches and never
-  // execute a response action or emit a permission decision, so there is
-  // nothing for it to gate.
-  const engine = new ATREngine({ rulesDir: RULES_DIR, semanticJudge: semantic.judge });
+  // The blocking opt-in has no meaning here: these tools return matches and
+  // never execute a response action or emit a permission decision, so there is
+  // nothing for it to gate. Only the lane applies.
+  const engine = new ATREngine({
+    rulesDir: RULES_DIR,
+    semanticJudge: semantic.judge,
+    ...(options.lane ? { lane: options.lane } : {}),
+  });
   const ruleCount = await engine.loadRules();
   process.stderr.write(`[atr-mcp] lane=${engine.getLane()} (detection only, never blocks)\n`);
   if (semantic.enabled) {
@@ -269,8 +283,8 @@ export async function createMCPServer(): Promise<Server> {
   return server;
 }
 
-export async function startMCPServer(): Promise<void> {
-  const server = await createMCPServer();
+export async function startMCPServer(options: MCPServerOptions = {}): Promise<void> {
+  const server = await createMCPServer(options);
   const transport = new StdioServerTransport();
   await server.connect(transport);
 }
@@ -282,7 +296,16 @@ const isDirectExecution =
    process.argv[1].endsWith('mcp-server.ts'));
 
 if (isDirectExecution) {
-  startMCPServer().catch((err) => {
+  // Reading ATR_LANE is correct HERE and only here: this branch runs when the
+  // file is the process entry point, which makes it a CLI, not a library. An
+  // importer of the `./mcp` subpath never reaches this code, so its lane still
+  // comes from the explicit option.
+  const { resolveEnforcementPolicy } = await import('./enforcement.js');
+  const policy = resolveEnforcementPolicy();
+  for (const note of policy.notes) {
+    process.stderr.write(`[atr-mcp] ${note}\n`);
+  }
+  startMCPServer({ lane: policy.lane }).catch((err) => {
     process.stderr.write(`ATR MCP Server error: ${err instanceof Error ? err.message : String(err)}\n`);
     process.exit(1);
   });

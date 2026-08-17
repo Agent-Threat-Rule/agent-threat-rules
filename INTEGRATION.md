@@ -58,23 +58,37 @@ default** as of Unreleased:
 
 | Component | What it does | Enable with |
 |---|---|---|
-| `HookHandler` | Emits a Claude Code `permissionDecision` | `blocking: true`, or `ATR_BLOCKING` |
-| `ActionExecutor` | Dispatches `response.actions` to your `PlatformAdapter` | `blocking: true`, or `ATR_BLOCKING` |
+| `HookHandler` | Emits a Claude Code `permissionDecision` of `deny` or `ask` | `blocking: true` |
+| `ActionExecutor` | Dispatches `response.actions` to your `PlatformAdapter` | `blocking: true` |
 
-Without it, `HookHandler` omits `permissionDecision` entirely (it never emits
-`allow` as a downgrade — in the Claude Code contract that is affirmative approval
-and would suppress the host's own prompt), and `ActionExecutor` refuses any
-action above the `observe` blast-radius tier: `alert`, `snapshot`, `shadow` and
-`escalate` still reach your adapter, `block_*`, `reduce_permissions`,
-`reset_context`, `quarantine_session` and `kill_agent` do not.
+Without it, `HookHandler` omits `permissionDecision` entirely, and
+`ActionExecutor` refuses any action above the `observe` blast-radius tier:
+`alert`, `snapshot`, `shadow` and `escalate` still reach your adapter,
+`block_*`, `reduce_permissions`, `reset_context`, `quarantine_session` and
+`kill_agent` do not.
+
+**ATR never emits `permissionDecision: "allow"`, in either mode.** In the Claude
+Code contract `allow` is affirmative approval that suppresses the host's own
+permission prompt, so ATR emitting it would make the host less safe than having
+no hook installed. A verdict of `allow` means "no rule matched", which is not the
+same statement as "this operation is approved" — so nothing is emitted and the
+host stays on its own default path. With `blocking: true` you get `deny` and
+`ask` and nothing else.
 
 **If you already implement a `PlatformAdapter` that really blocks**, this is a
 behaviour change: pass `blocking: true` to keep dispatching those actions.
 
 Which rules are allowed to fire at all is a separate switch, the detection lane:
-`new ATREngine({ lane: 'enforce' | 'alert' | 'hunt' })`, or `ATR_LANE`. Default
-`hunt` (all maturities). Resolution order for both switches is explicit config >
-environment > default.
+`new ATREngine({ lane: 'enforce' | 'alert' | 'hunt' })`. Default `hunt` (all
+maturities).
+
+**Neither switch reads the environment when you embed ATR.** `ATREngine`,
+`ActionExecutor` and `HookHandler` take explicit config only, so a stray
+`ATR_LANE` or `ATR_BLOCKING` in the shell that happened to start your process
+cannot change what your integration detects or does. `ATR_LANE` and
+`ATR_BLOCKING` are read by the `atr` CLI, which passes the resolved values down.
+If you want that behaviour in your own entry point, call
+`resolveEnforcementPolicy()` and pass the result in yourself.
 
 ### Semantic LLM-as-Judge
 

@@ -32,7 +32,7 @@ import { loadRulesFromDirectory, loadRuleFile } from './loader.js';
 import { evaluateTraceRule } from './trace-evaluator.js';
 import { evaluateSemanticRule } from './semantic-evaluator.js';
 import { laneAllows, requiresConfirm, type Lane } from './quality/rule-contract.js';
-import { resolveLaneOrWarn } from './enforcement.js';
+import { laneFromConfig } from './enforcement.js';
 import type { SessionTracker } from './session-tracker.js';
 import { computeVerdict } from './verdict.js';
 import type { ActionExecutor } from './action-executor.js';
@@ -218,10 +218,14 @@ export interface ATREngineConfig {
    *   'hunt'    : all maturities (advisory/eval; default, backward-compatible).
    * Deprecated/draft rules are always skipped regardless of lane.
    *
-   * Resolution order is `lane` here > `ATR_LANE` in the environment > 'hunt'
-   * (src/enforcement.ts resolveLane). Leaving this undefined therefore does NOT
-   * pin the lane to 'hunt' — it defers to the operator's environment. An
-   * unrecognised value from either source throws at construction time.
+   * This field is the ONLY input: the engine does not read `ATR_LANE` or any
+   * other environment variable. Leaving it undefined pins the lane to 'hunt',
+   * the widest and most advisory setting, no matter what the surrounding shell
+   * says. A CLI that wants environment support resolves it itself and passes
+   * the result here (src/cli.ts, resolveEnforcementPolicy).
+   *
+   * An unrecognised value throws at construction time — that is a caller bug,
+   * not ambient noise.
    */
   lane?: 'enforce' | 'alert' | 'hunt';
   /**
@@ -239,10 +243,9 @@ export class ATREngine {
   private readonly compiledPatterns = new Map<string, Map<string, RegExp[]>>();
   private readonly semanticModuleInstance: SemanticModule | null;
   /**
-   * Active detection lane, resolved ONCE at construction (config > env >
-   * 'hunt'). Held as a field rather than re-read per call so a mid-run
-   * environment mutation cannot move the lane underneath an in-flight
-   * evaluation — every gate in this engine sees the same lane for its lifetime.
+   * Active detection lane, resolved ONCE at construction from config alone.
+   * Held as a field so every gate in this engine sees the same lane for its
+   * lifetime.
    */
   private readonly lane: Lane;
 
@@ -266,9 +269,9 @@ export class ATREngine {
   }
 
   constructor(private readonly config: ATREngineConfig = {}) {
-    // Resolve the lane at construction so an invalid config/env value fails
-    // fast here, not silently at the first evaluation.
-    this.lane = resolveLaneOrWarn(config.lane);
+    // Config only — never the environment. An embedder's detection breadth must
+    // not depend on a variable someone exported in a shell profile.
+    this.lane = laneFromConfig(config.lane);
 
     // Initialize Layer 3 semantic module if config provided
     if (config.semanticModule) {
@@ -320,7 +323,7 @@ export class ATREngine {
     return laneAllows(rule.maturity, this.lane);
   }
 
-  /** Active detection lane (config > ATR_LANE > 'hunt'). Diagnostics/tests. */
+  /** Active detection lane (config, else 'hunt'). Diagnostics/tests. */
   getLane(): Lane {
     return this.lane;
   }

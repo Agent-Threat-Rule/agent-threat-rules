@@ -35,24 +35,44 @@
  *     but that section is deployment guidance addressed to consumers, not a
  *     normative engine requirement.
  *
- * WHY "NOT BLOCKING" IS NOT THE SAME AS "allow"
+ * WHY ATR NEVER SAYS "allow"
  *
  * In the Claude Code PreToolUse contract, `permissionDecision: "allow"` is not
  * neutral — it is an affirmative approval that suppresses the host's own
- * permission prompt. Downgrading a block to `allow` would make ATR *weaken* the
- * host's built-in safety. Advisory mode therefore omits the field rather than
- * setting it, so the host falls back to whatever it would have done with no
- * hook installed. See toClaudeCodePreToolUse in hook-handler.ts.
+ * permission prompt. ATR emits a permission decision only to RESTRAIN an
+ * operation (deny / ask). "No rule matched" is not "I approve this": it is ATR
+ * having nothing to say, and the host must be left on its own default path.
+ * This holds in BOTH modes — advisory omits every decision, and blocking omits
+ * the affirmative one. See toClaudeCodePreToolUse in hook-handler.ts.
  *
- * PRECEDENCE (identical for both switches, deliberately explicit)
+ * WHO READS THE ENVIRONMENT
  *
- *     explicit programmatic config  >  environment variable  >  built-in default
+ * Only the CLI. `resolveEnforcementPolicy` below is the single entry point that
+ * touches `process.env`, and `src/cli.ts` is its only caller; it hands the
+ * resolved values to ATREngine / ActionExecutor / HookHandler explicitly.
  *
- * An explicit value always wins, so a host embedding the engine cannot have its
- * policy silently overridden by an environment variable it did not set. An
- * invalid value from either source throws instead of falling back: a typo in
- * ATR_LANE must never leave the operator believing they are in a lane they are
- * not.
+ * Library constructors take `laneFromConfig` / `blockingFromConfig`, which
+ * cannot read the environment — `resolveLane` and `resolveBlocking` require an
+ * EnvSource argument, so there is no overload that silently falls through to
+ * `process.env`. This is structural, not a convention: an embedder cannot
+ * accidentally opt into ambient configuration.
+ *
+ * The rule exists because ambient configuration crosses trust boundaries
+ * invisibly. `new ATREngine()` inside a VS Code extension, a Mastra pipeline,
+ * or the `/openshell-filter`, `/nemoclaw-preflight` and `/mcp` entry points did
+ * not ask to be reconfigured by a shell profile — and `ATR_LANE=enforce` is a
+ * VALID value, so the old behaviour produced no warning at all while narrowing
+ * those callers to maturity=stable rules only.
+ *
+ * PRECEDENCE
+ *
+ *   library:  explicit config  >  built-in default
+ *   CLI:      flag  >  environment variable  >  built-in default
+ *
+ * An invalid explicit value (config field or CLI flag) throws or exits: that is
+ * the caller's own bug, reported where the caller is looking. An invalid
+ * ENVIRONMENT value degrades loudly instead — see resolveEnforcementPolicy for
+ * the measurement behind that split.
  *
  * @module agent-threat-rules/enforcement
  */
@@ -87,10 +107,18 @@ export type EnvSource = Readonly<Record<string, string | undefined>>;
 /**
  * Parse a lane name. Returns null for anything not in LANES, so callers that
  * want to report a usage error (the CLI) can do so without a try/catch.
+ *
+ * Trimmed and case-INSENSITIVE, matching parseBooleanFlag exactly. The two were
+ * asymmetric: `ATR_BLOCKING=ON` worked while `ATR_LANE=ENFORCE` did not, and the
+ * pair `ATR_LANE=ENFORCE ATR_BLOCKING=ON` therefore turned blocking on while
+ * silently widening the lane to hunt — the operator asked for the narrowest
+ * enforcement posture and got the broadest one. The fallback direction was
+ * exactly the dangerous one, so the fix is to accept the spelling, not to
+ * document the trap.
  */
 export function parseLane(value: string): Lane | null {
-  const trimmed = value.trim();
-  return LANE_SET.has(trimmed) ? (trimmed as Lane) : null;
+  const normalized = value.trim().toLowerCase();
+  return LANE_SET.has(normalized) ? (normalized as Lane) : null;
 }
 
 /**
@@ -108,11 +136,16 @@ export function parseBooleanFlag(value: string): boolean | null {
 /**
  * Resolve the active detection lane: explicit > env > default.
  *
+ * `env` is REQUIRED and has no `process.env` default. That is the whole
+ * mechanism keeping ambient configuration out of the library: a caller must
+ * name the environment it wants read, and library constructors pass NO_ENV via
+ * laneFromConfig. Only the CLI passes `process.env`.
+ *
  * @throws TypeError when either source carries a value that is not a lane.
  */
 export function resolveLane(
-  explicit?: Lane | string,
-  env: EnvSource = process.env
+  explicit: Lane | string | undefined,
+  env: EnvSource
 ): Lane {
   if (explicit !== undefined) {
     const parsed = parseLane(explicit);
@@ -141,16 +174,35 @@ export function resolveLane(
 /**
  * Resolve whether blocking is enabled: explicit > env > default (false).
  *
- * @throws TypeError when the environment variable is set to a value that is
- *         neither truthy nor falsy by the table above. Silently reading
- *         `ATR_BLOCKING=enabled` as "off" would be the worst possible failure:
- *         an operator who believes enforcement is on while it is not.
+ * `env` is REQUIRED — see resolveLane for why.
+ *
+ * @throws TypeError when the explicit value is not a boolean, or when the
+ *         environment variable is set to a value that is neither truthy nor
+ *         falsy by the table above.
+ *
+ *         The explicit-value check is not decoration. `blocking` crosses from
+ *         untyped JavaScript (and from JSON config files) as often as from
+ *         TypeScript, and every non-empty string is truthy: without this,
+ *         `new ActionExecutor({ adapter, blocking: "false" })` TURNS BLOCKING
+ *         ON while reading, to its author, as an explicit "off". The lane path
+ *         validated its explicit value from the start; this one did not, and a
+ *         switch that fails toward "more enforcement" is the wrong asymmetry to
+ *         leave in place.
  */
 export function resolveBlocking(
-  explicit?: boolean,
-  env: EnvSource = process.env
+  explicit: boolean | undefined,
+  env: EnvSource
 ): boolean {
-  if (explicit !== undefined) return explicit;
+  if (explicit !== undefined) {
+    if (typeof explicit !== 'boolean') {
+      throw new TypeError(
+        `Invalid blocking value ${JSON.stringify(explicit)} (${typeof explicit}). ` +
+          `Expected a boolean. Note that any non-empty string, including "false", ` +
+          `would otherwise enable blocking.`
+      );
+    }
+    return explicit;
+  }
 
   const fromEnv = env[BLOCKING_ENV_VAR];
   if (fromEnv !== undefined && fromEnv.trim() !== '') {
@@ -168,73 +220,123 @@ export function resolveBlocking(
 }
 
 /**
- * Same resolution, but never throws.
- *
- * WHY BOTH EXIST
- *
- * Throwing on a typo is right for an explicit invocation: `atr guard` should
- * refuse to start rather than run with an enforcement posture the operator did
- * not ask for. Silently reading `ATR_BLOCKING=enabled` as "off" is the worst
- * failure this module can produce.
- *
- * It is wrong for a library constructor. `new ATREngine()` inside the VS Code
- * extension, or `new ATRProcessor()` inside someone's Mastra pipeline, did not
- * ask to read the environment — the environment is ambient. A stray
- * `ATR_LANE=enfroce` in a shell profile should not crash an editor extension on
- * activation, and `ATR_BLOCKING=enabled` should not stop the guard from
- * starting at all, which is what it did: exit 1, nothing on stdout, no guard.
- * That lands hardest on the operator who was trying to turn enforcement ON.
- *
- * So: constructors warn loudly and fall back to the safe default; the CLI keeps
- * the throwing resolvers and formats the error itself. Loud is what stops this
- * being the silent fallback the throwing version exists to prevent.
- *
- * The warning is emitted once per distinct bad value per process, so a hook
- * invoked on every tool call does not turn stderr into a wall.
+ * An environment that is empty by construction. Library constructors resolve
+ * against this, so "the library does not read the environment" is enforced by
+ * the type system rather than by reviewer vigilance.
  */
-const warned = new Set<string>();
+const NO_ENV: EnvSource = Object.freeze({});
 
-function warnOnce(message: string): void {
-  if (warned.has(message)) return;
-  warned.add(message);
-  process.stderr.write(`[atr] ${message}\n`);
+/**
+ * Lane for a LIBRARY caller: explicit config, or the built-in default. Never
+ * reads the environment.
+ *
+ * @throws TypeError when the caller passes something that is not a lane.
+ */
+export function laneFromConfig(explicit?: Lane | string): Lane {
+  return resolveLane(explicit, NO_ENV);
 }
 
-/** Test seam: forget which warnings have already been emitted. */
-export function resetEnforcementWarnings(): void {
-  warned.clear();
+/**
+ * Blocking for a LIBRARY caller: explicit config, or off. Never reads the
+ * environment.
+ *
+ * @throws TypeError when the caller passes a non-boolean.
+ */
+export function blockingFromConfig(explicit?: boolean): boolean {
+  return resolveBlocking(explicit, NO_ENV);
 }
 
-export function resolveLaneOrWarn(
-  explicit?: Lane | string,
+/** The enforcement posture a CLI process will run under. */
+export interface EnforcementPolicy {
+  readonly lane: Lane;
+  readonly blocking: boolean;
+  /** Human-readable problems found while resolving. Empty on a clean read. */
+  readonly notes: readonly string[];
+}
+
+/**
+ * Resolve the posture for a CLI process: flag > environment > default.
+ *
+ * THE ONLY FUNCTION IN THIS PACKAGE THAT READS `process.env`.
+ *
+ * A bad FLAG is a usage error the CLI reports and exits on (see readLaneOption
+ * in cli.ts): it was typed by a person at a prompt who is looking at the exit
+ * code. A bad ENVIRONMENT VALUE is different, and this function degrades
+ * instead of throwing. That split was measured, not assumed.
+ *
+ * MEASUREMENT (Claude Code 2.1.76, hook dispatcher in the shipped binary)
+ * A `command` hook's exit status is mapped as:
+ *   status 0  -> `hook_success`; the renderer for that attachment returns null.
+ *   status 2  -> `hook_blocking_error`; stderr is shown AND the tool is blocked.
+ *   otherwise -> `hook_non_blocking_error`; the tool RUNS, the attachment maps
+ *                to [] for the model, and the renderer prints exactly
+ *                "<hookName> hook error" — the captured stderr is not shown.
+ *
+ * So for `atr guard`, which `atr init` installs as a PreToolUse command hook,
+ * exiting non-zero over a typo would: lose all detection for that call, let the
+ * tool run anyway, and tell the operator nothing beyond a bare "hook error".
+ * It buys no visibility at the cost of the entire product. The only loud exit
+ * status is 2 — which BLOCKS the tool, i.e. a stray shell variable would block
+ * every tool call. Both alternatives are worse than degrading.
+ *
+ * THE TRADE-OFF, STATED
+ * Degrading means an operator can believe enforcement is on when it is not.
+ * That is a real cost and it is why `notes` is not optional: the caller must
+ * print every note. It is accepted because the degraded posture is advisory —
+ * ATR emits no permission decision and dispatches no action above OBSERVE — so
+ * the failure mode is "ATR does not act", never "ATR acts wrongly". Exiting
+ * would produce "ATR does not act" too, and silently, minus the detection.
+ *
+ * WHY AN UNREADABLE LANE ALSO FORCES BLOCKING OFF
+ * Falling back to hunt while blocking is on is the one combination that makes
+ * the degraded posture MORE dangerous than the requested one: the operator
+ * asked to block on maturity=stable rules only, and would instead block on
+ * every maturity including draft. So when the requested lane cannot be honoured
+ * the process drops to advisory. An explicit `--blocking` does not override
+ * this: the flag says "you may block", not "block on a lane I never chose".
+ */
+export function resolveEnforcementPolicy(
+  flags: { readonly lane?: Lane | undefined; readonly blocking?: boolean | undefined } = {},
   env: EnvSource = process.env
-): Lane {
+): EnforcementPolicy {
+  const notes: string[] = [];
+
+  let lane: Lane;
+  let laneHonoured = true;
   try {
-    return resolveLane(explicit, env);
+    lane = resolveLane(flags.lane, env);
   } catch (error) {
-    if (explicit !== undefined) throw error; // caller's own bug, not ambient
-    warnOnce(
+    if (flags.lane !== undefined) throw error; // a flag is the caller's bug
+    laneHonoured = false;
+    lane = DEFAULT_LANE;
+    notes.push(
       `${(error as Error).message} Falling back to lane "${DEFAULT_LANE}". ` +
-        `Detection is unaffected; this only changes which maturities may fire.`
+        `Detection still runs; this only changes which maturities may fire.`
     );
-    return DEFAULT_LANE;
   }
-}
 
-export function resolveBlockingOrWarn(
-  explicit?: boolean,
-  env: EnvSource = process.env
-): boolean {
+  let blocking: boolean;
   try {
-    return resolveBlocking(explicit, env);
+    blocking = resolveBlocking(flags.blocking, env);
   } catch (error) {
-    if (explicit !== undefined) throw error;
-    warnOnce(
+    if (flags.blocking !== undefined) throw error;
+    blocking = DEFAULT_BLOCKING;
+    notes.push(
       `${(error as Error).message} Falling back to blocking=${DEFAULT_BLOCKING}. ` +
         `If you meant to enable enforcement, it is NOT enabled.`
     );
-    return DEFAULT_BLOCKING;
   }
+
+  if (!laneHonoured && blocking) {
+    blocking = false;
+    notes.push(
+      `Blocking disabled: ${LANE_ENV_VAR} could not be read, and blocking on the ` +
+        `fallback lane "${DEFAULT_LANE}" would enforce on more rule maturities ` +
+        `than you asked for. Fix ${LANE_ENV_VAR} to re-enable enforcement.`
+    );
+  }
+
+  return Object.freeze({ lane, blocking, notes: Object.freeze(notes) });
 }
 
 /**

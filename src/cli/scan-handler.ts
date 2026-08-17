@@ -47,10 +47,11 @@ export interface ScanOptions {
   readonly semanticTimeout?: string;
   readonly semanticNoJsonMode?: boolean;
   /**
-   * Detection lane (which rule maturities may fire). Undefined defers to
-   * ATR_LANE and then to the built-in default — see src/enforcement.ts.
-   * Scanning never blocks anything, so the blocking opt-in has no meaning here;
-   * only the lane does.
+   * Detection lane (which rule maturities may fire). Undefined means the
+   * engine's built-in default; `src/cli.ts` resolves `--lane` and `ATR_LANE`
+   * and always passes an explicit value, because the engine itself no longer
+   * reads the environment. Scanning never blocks anything, so the blocking
+   * opt-in has no meaning here; only the lane does.
    */
   readonly lane?: Lane;
 }

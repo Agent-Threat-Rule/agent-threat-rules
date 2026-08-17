@@ -103,12 +103,18 @@ export type { HookHandlerConfig, HookContractOptions } from './hook-handler.js';
 
 // Enforcement policy — the operator directive that turns blocking on.
 // Blocking is OFF by default; without it ATR reports and never blocks.
+//
+// Library callers want laneFromConfig / blockingFromConfig: they take an
+// explicit value and cannot read the environment. resolveEnforcementPolicy is
+// the CLI entry point and is the only function here that touches process.env —
+// resolveLane / resolveBlocking require an EnvSource argument, so nothing else
+// can reach it by accident.
 export {
+  laneFromConfig,
+  blockingFromConfig,
+  resolveEnforcementPolicy,
   resolveLane,
   resolveBlocking,
-  resolveLaneOrWarn,
-  resolveBlockingOrWarn,
-  resetEnforcementWarnings,
   parseLane,
   parseBooleanFlag,
   isEnforcementAction,
@@ -117,7 +123,7 @@ export {
   LANE_ENV_VAR,
   BLOCKING_ENV_VAR,
 } from './enforcement.js';
-export type { EnvSource } from './enforcement.js';
+export type { EnvSource, EnforcementPolicy } from './enforcement.js';
 
 // Quality Standard — RFC-001 reference implementation
 export * as quality from './quality/index.js';

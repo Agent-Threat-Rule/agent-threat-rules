@@ -18,7 +18,13 @@ import { loadRuleFile, loadRulesFromDirectory, validateRule } from './loader.js'
 import type { AgentEvent, ATRMatch, ATRRule, ATRTrace } from './types.js';
 import { generateBadgeSvg, generateBadgeEndpoint, lookupPackageScan, generateBadgeMarkdown } from './badge.js';
 import { cmdScanUnified } from './cli/scan-handler.js';
-import { BLOCKING_ENV_VAR, LANE_ENV_VAR, parseLane } from './enforcement.js';
+import {
+  BLOCKING_ENV_VAR,
+  LANE_ENV_VAR,
+  parseLane,
+  resolveEnforcementPolicy,
+  type EnforcementPolicy,
+} from './enforcement.js';
 import { LANES, type Lane } from './quality/rule-contract.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -163,10 +169,12 @@ function parseArgs(argv: string[]): { command: string; target: string; options: 
 /**
  * Read `--lane <enforce|alert|hunt>`.
  *
- * Returns undefined when the flag is absent so the engine falls through to
- * ATR_LANE and then to the built-in default; an unrecognised value is a usage
- * error, never a silent fallback (an operator who typed `--lane enfroce` must
- * not be left believing they are enforcing).
+ * Returns undefined when the flag is absent, so resolveEnforcementPolicy falls
+ * through to ATR_LANE and then to the built-in default; an unrecognised value
+ * is a usage error and exits, never a silent fallback (an operator who typed
+ * `--lane enfroce` must not be left believing they are enforcing). A flag is
+ * typed at a prompt by someone who will see the exit code — unlike an inherited
+ * environment variable, which degrades instead. See resolvePolicyAndReport.
  */
 function readLaneOption(options: Record<string, string>): Lane | undefined {
   const raw = options['lane'];
@@ -198,6 +206,36 @@ function readBlockingOption(options: Record<string, string>): boolean | undefine
   if (on) return true;
   if (off) return false;
   return undefined;
+}
+
+/**
+ * Resolve the enforcement posture for this process and report any problems.
+ *
+ * This is the CLI's half of the library/CLI split: `src/enforcement.ts` reads
+ * the environment here and nowhere else, and the resolved lane/blocking values
+ * are then passed EXPLICITLY into ATREngine / ActionExecutor / HookHandler.
+ *
+ * Notes are warnings, not errors, and the process keeps running. A bad flag has
+ * already exited by the time this runs — readLaneOption / readBlockingOption
+ * validate and exit while the arguments are being evaluated. A bad environment
+ * variable degrades to the advisory
+ * posture instead, because `atr guard` runs as a Claude Code command hook where
+ * a non-zero exit is measurably worse than a warning: the host maps any exit
+ * status other than 0 or 2 to a non-blocking error, runs the tool anyway, hands
+ * the model nothing, and renders only "<hookName> hook error" WITHOUT the
+ * stderr text. Exiting would therefore discard every detection and still not
+ * tell the operator why. (Status 2 is the only loud one, and it blocks the tool
+ * outright — a stray shell variable must not do that.) Verified against the
+ * Claude Code 2.1.76 hook dispatcher; see resolveEnforcementPolicy.
+ */
+function resolvePolicyAndReport(
+  flags: { readonly lane?: Lane | undefined; readonly blocking?: boolean | undefined }
+): EnforcementPolicy {
+  const policy = resolveEnforcementPolicy(flags);
+  for (const note of policy.notes) {
+    console.error(`${RED}[atr] ${note}${RESET}`);
+  }
+  return policy;
 }
 
 // --- VALIDATE command ---
@@ -711,40 +749,43 @@ async function cmdGuard(options: Record<string, string>): Promise<void> {
   const failOpen = options['fail-open'] !== 'false';
   const parsedTimeout = options['timeout'] ? parseInt(options['timeout'], 10) : 5000;
   const timeoutMs = (Number.isFinite(parsedTimeout) && parsedTimeout > 0) ? parsedTimeout : 5000;
-  const lane = readLaneOption(options);
-  // Absent flag stays undefined so ATR_BLOCKING can still speak; --blocking=false
-  // is an explicit "no" that overrides the environment.
-  const blocking = readBlockingOption(options);
+  // Absent flags stay undefined so the environment can still speak;
+  // --no-blocking is an explicit "no" that overrides it.
+  const policy = resolvePolicyAndReport({
+    lane: readLaneOption(options),
+    blocking: readBlockingOption(options),
+  });
 
   const { ActionExecutor } = await import('./action-executor.js');
   const { StdioAdapter } = await import('./adapters/stdio-adapter.js');
   const { HookHandler } = await import('./hook-handler.js');
 
-  const engine = new ATREngine({ rulesDir, ...(lane ? { lane } : {}) });
+  // Everything below receives the resolved posture explicitly. None of these
+  // constructors reads the environment.
+  const engine = new ATREngine({ rulesDir, lane: policy.lane });
   const ruleCount = await engine.loadRules();
 
   const adapter = new StdioAdapter();
-  const executor = new ActionExecutor({
-    adapter,
-    dryRun,
-    ...(blocking === undefined ? {} : { blocking }),
-  });
+  const executor = new ActionExecutor({ adapter, dryRun, blocking: policy.blocking });
   const handler = new HookHandler({
     engine,
     executor,
     timeoutMs,
     failOpen,
-    ...(blocking === undefined ? {} : { blocking }),
+    blocking: policy.blocking,
   });
 
   // State the enforcement posture out loud. "Installed" must never be mistaken
   // for "enforcing": in advisory mode this guard emits no permissionDecision at
-  // all and dispatches no action above the OBSERVE tier.
+  // all and dispatches no action above the OBSERVE tier. Even with blocking on,
+  // ATR only ever emits deny/ask — never an affirmative allow.
   process.stderr.write(
     `[atr-guard] Loaded ${ruleCount} rules from ${rulesDir}` +
     `${dryRun ? ' (dry-run)' : ''}\n` +
     `[atr-guard] lane=${engine.getLane()} blocking=${handler.isBlocking() ? 'on' : 'off'}` +
-    `${handler.isBlocking() ? '' : ' (advisory: detections are reported, nothing is blocked)'}\n`
+    `${handler.isBlocking()
+      ? ' (deny/ask only; never approves a tool call)'
+      : ' (advisory: detections are reported, nothing is blocked)'}\n`
   );
 
   await handler.startStdioLoop();
@@ -754,7 +795,8 @@ async function cmdGuard(options: Record<string, string>): Promise<void> {
 
 async function cmdMcp(): Promise<void> {
   const { startMCPServer } = await import('./mcp-server.js');
-  await startMCPServer();
+  // The MCP server never blocks, so only the lane half of the policy applies.
+  await startMCPServer({ lane: resolvePolicyAndReport({}).lane });
 }
 
 // --- SCAFFOLD command ---
@@ -1301,8 +1343,17 @@ async function main(): Promise<void> {
   }
 
   const rulesDir = options['rules'] ? resolve(options['rules']) : RULES_DIR;
-  // Validated once here so `atr scan --lane typo` fails before any rule loads.
-  const scanLane = readLaneOption(options);
+
+  /**
+   * Lane for the scanning commands. Resolved lazily so only the commands that
+   * actually have a lane pay for it — resolving eagerly would print an ATR_LANE
+   * warning while running `atr stats`, and would print it a second time inside
+   * `atr guard`, which resolves its own (blocking-aware) policy.
+   *
+   * `--lane typo` exits before any rule loads; ATR_LANE is read here because
+   * the engine no longer reads it.
+   */
+  const scanLane = (): Lane => resolvePolicyAndReport({ lane: readLaneOption(options) }).lane;
 
   switch (command) {
     case 'scan':
@@ -1319,7 +1370,7 @@ async function main(): Promise<void> {
         semanticModel: options['semantic-model'],
         semanticTimeout: options['semantic-timeout'],
         semanticNoJsonMode: options['semantic-no-json-mode'] === 'true',
-        ...(scanLane ? { lane: scanLane } : {}),
+        lane: scanLane(),
       });
       break;
     case 'scan-skill':
@@ -1337,7 +1388,7 @@ async function main(): Promise<void> {
         semanticModel: options['semantic-model'],
         semanticTimeout: options['semantic-timeout'],
         semanticNoJsonMode: options['semantic-no-json-mode'] === 'true',
-        ...(scanLane ? { lane: scanLane } : {}),
+        lane: scanLane(),
       });
       break;
     case 'validate':

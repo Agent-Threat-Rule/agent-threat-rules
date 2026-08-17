@@ -6,9 +6,10 @@
  * does not block the rest.
  *
  * ENFORCEMENT GATE: actions above the OBSERVE blast-radius tier are dispatched
- * only when the operator has enabled blocking (`blocking: true`, ATR_BLOCKING,
- * or `atr guard --blocking`). Without it they are recorded as suppressed and the
- * adapter is never called. See src/enforcement.ts for why this is opt-in and
+ * only when the operator has enabled blocking (`blocking: true` here; the CLI
+ * maps ATR_BLOCKING / `atr guard --blocking` onto it). Without it they are
+ * recorded as suppressed and the adapter is never called. See
+ * src/enforcement.ts for why this is opt-in and
  * src/quality/action-eligibility.ts for the tier ladder this gate reads.
  *
  * @module agent-threat-rules/action-executor
@@ -20,7 +21,7 @@ import type {
   ExecutionContext,
   PlatformAdapter,
 } from "./types.js";
-import { isEnforcementAction, resolveBlockingOrWarn } from "./enforcement.js";
+import { isEnforcementAction, blockingFromConfig } from "./enforcement.js";
 import { TIER_NAMES, actionTier } from "./quality/action-eligibility.js";
 
 /** Priority order: lower number = higher priority (executed first) */
@@ -73,8 +74,12 @@ export interface ActionExecutorConfig {
    * (block_input / block_output / block_tool / reduce_permissions /
    * reset_context / quarantine_session / kill_agent) is refused before the
    * adapter is touched; OBSERVE actions (alert / snapshot / shadow / escalate)
-   * run exactly as before. Resolution order is this field > ATR_BLOCKING in the
-   * environment > false — see src/enforcement.ts.
+   * run exactly as before.
+   *
+   * This field is the only input — the executor does not read `ATR_BLOCKING`.
+   * A non-boolean throws rather than being coerced: `blocking: "false"` is
+   * truthy in JavaScript and would otherwise enable enforcement. `atr guard`
+   * resolves the environment itself and passes the result here.
    *
    * This is the runtime half of SPEC.md §5.5 ("Engines MUST NOT execute
    * response actions automatically without an explicit configuration directive
@@ -95,7 +100,7 @@ export class ActionExecutor {
   constructor(config: ActionExecutorConfig) {
     this.adapter = config.adapter;
     this.dryRun = config.dryRun ?? false;
-    this.blocking = resolveBlockingOrWarn(config.blocking);
+    this.blocking = blockingFromConfig(config.blocking);
     this.onActionComplete = config.onActionComplete;
   }
 
@@ -157,7 +162,8 @@ export class ActionExecutor {
         success: true,
         message:
           `[advisory] Suppressed ${action} (tier ${TIER_NAMES[actionTier(action)]}): ` +
-          `blocking is disabled. Enable it with ATR_BLOCKING=1 or --blocking.`,
+          `blocking is disabled. Enable it with blocking: true (atr guard: ` +
+          `--blocking or ATR_BLOCKING=1).`,
         timestamp,
       });
     }
