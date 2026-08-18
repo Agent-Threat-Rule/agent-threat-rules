@@ -59,6 +59,28 @@ jobs:
       - name: Run tests
         run: npm test
 
+      # A staged major must be shipped by a human, not swept out as a patch on
+      # the next rules merge. package.json going to 4.0.0 while npm latest is
+      # still 3.x means a breaking change is waiting: `npm version patch` here
+      # would publish it as 4.0.1 with a release note about crystallized rules,
+      # and the release notes for the break would never exist. Blocks until the
+      # major is on npm; then majors match again and the patch train resumes.
+      #
+      # Fails closed: if `npm view` cannot answer, PUBLISHED stays 0.0.0 and the
+      # majors mismatch. Not publishing is the safe direction.
+      - name: Refuse to auto-publish across a staged major
+        run: |
+          LOCAL=$(node -p "require('./package.json').version")
+          PUBLISHED=$(npm view agent-threat-rules version 2>/dev/null || echo "0.0.0")
+          if [ "${LOCAL%%.*}" != "${PUBLISHED%%.*}" ]; then
+            echo "::error::package.json is $LOCAL but npm latest is $PUBLISHED."
+            echo "A major is staged and unpublished. Ship it deliberately"
+            echo "(workflow_dispatch with bump_type, or npm publish by hand),"
+            echo "then automated patch publishing resumes on its own."
+            exit 1
+          fi
+          echo "majors match ($LOCAL vs $PUBLISHED) - patch train may proceed"
+
       - name: Bump version
         id: bump
         run: |
