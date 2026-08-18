@@ -203,17 +203,22 @@ matches = engine.evaluate(AgentEvent(content="...", event_type="llm_input"))
 | MCP server | Live integration with Claude Code, Cursor, Windsurf, and other MCP clients |
 | Splunk / Elastic export | SIEM rule pack for runtime detection |
 
-### Detection lanes (v3.5.0)
+### Detection lanes
+
+A lane selects which rules may fire. It is one of the two runtime switches; the
+other is blocking, which decides whether ATR may act on what fired, and which
+the next section covers. Neither implies the other.
+[docs/ENFORCEMENT-MODEL.md](docs/ENFORCEMENT-MODEL.md) is the full reference.
 
 Each rule carries a maturity-driven **lane**, so a consumer can trade recall for precision instead of running every rule at one fixed threshold:
 
 | Lane | Fires | Intended use | FP on a 65K-sample benign gate |
 |---|---|---|---:|
-| `enforce` | `stable` rules behind an embedding `confirm` guard | Auto-block | ~0.24% |
+| `enforce` | `stable` only | Narrowest, highest-precision set — the one to run when blocking is on | ~0.24% |
 | `alert` | `stable` + `test` | Analyst / correlation | — |
-| `hunt` | all rules except `deprecated` | Advisory / eval (**default**) | ~9% |
+| `hunt` | all rules except `deprecated` | Broadest visibility (**default**) | ~9% |
 
-Lanes are opt-in and fully backward-compatible: the default is `hunt`, so existing integrations behave exactly as before. Selecting `enforce` raises precision by firing only the most mature rules — and therefore catches fewer attacks. Report false-positive rates lane-keyed (`enforce` ~0.24% / `hunt` ~9% on the 65K-sample benign gate), not as a single overall figure. That gate is a separate corpus from the per-source measurements in [§8 Evaluation](#8-evaluation).
+Lanes are opt-in and backward-compatible for detection: the default is `hunt`, so every integration sees exactly the rules it saw before. Selecting `enforce` raises precision by firing only the most mature rules — and therefore catches fewer attacks. Report false-positive rates lane-keyed (`enforce` ~0.24% / `hunt` ~9% on the 65K-sample benign gate), not as a single overall figure. That gate is a separate corpus from the per-source measurements in [§8 Evaluation](#8-evaluation).
 
 ### Detection and enforcement are separate switches
 
@@ -309,6 +314,7 @@ string, and every non-empty string is truthy, so it used to switch enforcement
 | Schema field reference | [docs/schema-spec.md](docs/schema-spec.md) | Human-readable schema docs |
 | Quality standard | [docs/QUALITY-STANDARD.md](docs/QUALITY-STANDARD.md) | Rule promotion criteria (experimental → stable) |
 | Quality gate | [docs/QUALITY-GATE.md](docs/QUALITY-GATE.md) | Safety-gate semantics for community PRs |
+| Enforcement model | [docs/ENFORCEMENT-MODEL.md](docs/ENFORCEMENT-MODEL.md) | Lane and blocking switches, decision channels, migration (reference implementation, not normative) |
 | Limitations | [LIMITATIONS.md](LIMITATIONS.md) | What ATR cannot detect; documented evasion techniques |
 | Threat model | [THREAT-MODEL.md](THREAT-MODEL.md) | Threat analysis driving the rule set |
 
