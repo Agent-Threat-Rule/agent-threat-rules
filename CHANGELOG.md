@@ -90,11 +90,43 @@ All notable changes to ATR will be documented in this file.
 - **Scope limit, stated so the headline is not read wider than it is.** This
   covers the two channels the engine itself drives: the Claude Code hook
   contract and `ActionExecutor`. It does NOT cover the framework adapters, which
-  read their own severity floor and still block out of the box —
-  `src/adapters/mastra.ts` defaults `blockSeverities` to `["critical", "high"]`,
-  and `src/adapters/openshell-filter.ts` and `src/adapters/nemoclaw-preflight.ts`
-  both default `ATR_MIN_SEVERITY` to `high`. Bringing those under the same switch
-  is a separate behaviour decision and is not made here.
+  keep their own severity floor: `src/adapters/mastra.ts` defaults
+  `blockSeverities` to `["critical", "high"]`, and the `openshell-filter` and
+  `nemoclaw-preflight` CLI entry points default `ATR_MIN_SEVERITY` to `high`.
+  (The `NemoClawPreflight` and `OpenShellFilter` classes take no default at all —
+  an embedder must pass `minSeverity`. Only the CLI wrappers supply one.)
+
+  They stay as they are, and the reason is measured rather than assumed. Driving
+  each adapter through its own API, with the event shape it really constructs:
+
+  | adapter | corpus | blocks |
+  |---|---|---:|
+  | `ATRProcessor` (mastra) | 432 benign skills, fed as user messages | 6 (1.4%) |
+  | `NemoClawPreflight` | the same 432 as skill bundles — its actual domain | 2 (0.5%) |
+  | `OpenShellFilter` | 24 everyday developer commands | 1 (4.2%) |
+
+  Three caveats on those figures, because they are small enough to be quoted
+  carelessly. Feeding skill files to a Mastra processor is out of domain — it
+  sees chat messages, so 1.4% says little about real traffic. Twenty-four
+  hand-written commands are not a corpus. And the benign skill set has the blind
+  spots `scripts/gate-corpus-visibility.ts` exists to surface.
+
+  The one real blemish is the command `OpenShellFilter` refused:
+  `scp -i ~/.ssh/deploy.pem dist.tgz ci@build.corp:/tmp/`, an ordinary
+  deployment. That is a rule being too wide, not an adapter default being wrong,
+  and it is the same shape review already recorded against the scp work.
+
+  Reproduce with `npx tsx scripts/measure/adapter-defaults-<adapter>.mts`. Each
+  script aborts before printing if its control fails, so a zero there means the
+  measurement did not run rather than that nothing blocked.
+
+  Unlike the hook, these adapters are not installed by a script into a global
+  config. An integrator imports one and wires it into a pipeline on purpose,
+  which is what an explicit operator directive looks like. An earlier draft of
+  this entry was going to bring them under the same switch on the strength of a
+  19.9% figure; that number came from feeding raw content straight to
+  `engine.evaluate` without the `type` each adapter sets, which bypasses the
+  `agent_source` filtering and fires rules the adapters never see.
 
 - **An unrecognised `ATR_LANE` or `ATR_BLOCKING` warns on stderr, falls back to
   the safe default, and the guard keeps running (exit 0).** `main` did not read
