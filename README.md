@@ -203,9 +203,12 @@ matches = engine.evaluate(AgentEvent(content="...", event_type="llm_input"))
 | MCP server | Live integration with Claude Code, Cursor, Windsurf, and other MCP clients |
 | Splunk / Elastic export | SIEM rule pack for runtime detection |
 
-### Detection lanes and enforcement (v3.5.0)
+### Detection lanes
 
-Two independent switches govern how ATR behaves at runtime. **Lane** selects which rules may fire; **blocking** selects whether ATR may act on what fired. Neither implies the other, and blocking is off unless an operator turns it on. [docs/ENFORCEMENT-MODEL.md](docs/ENFORCEMENT-MODEL.md) is the full reference.
+A lane selects which rules may fire. It is one of the two runtime switches; the
+other is blocking, which decides whether ATR may act on what fired, and which
+the next section covers. Neither implies the other.
+[docs/ENFORCEMENT-MODEL.md](docs/ENFORCEMENT-MODEL.md) is the full reference.
 
 Each rule carries a maturity-driven **lane**, so a consumer can trade recall for precision instead of running every rule at one fixed threshold:
 
@@ -216,12 +219,6 @@ Each rule carries a maturity-driven **lane**, so a consumer can trade recall for
 | `hunt` | all rules except `deprecated` | Broadest visibility (**default**) | ~9% |
 
 Lanes are opt-in and backward-compatible for detection: the default is `hunt`, so every integration sees exactly the rules it saw before. Selecting `enforce` raises precision by firing only the most mature rules — and therefore catches fewer attacks. Report false-positive rates lane-keyed (`enforce` ~0.24% / `hunt` ~9% on the 65K-sample benign gate), not as a single overall figure. That gate is a separate corpus from the per-source measurements in [§8 Evaluation](#8-evaluation).
-
-A lane on its own never blocks anything. **By default ATR reports and does not enforce:** it emits Match output and OBSERVE-tier response actions (`alert`, `snapshot`, `shadow`, `escalate`), returns no permission decision to a host, and dispatches no action that would deny an operation or alter session state. Enforcement is enabled explicitly — `atr guard --blocking`, `ATR_BLOCKING=1`, or `blocking: true` on the engine's executor and hook handler — which is what [SPEC.md](SPEC.md) §5.5 means by "an explicit configuration directive from the operator". Pair it with a lane you chose on purpose:
-
-```bash
-atr guard --lane enforce --blocking      # stable rules only, and they may act
-```
 
 ### Detection and enforcement are separate switches
 
