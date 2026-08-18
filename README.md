@@ -223,6 +223,89 @@ A lane on its own never blocks anything. **By default ATR reports and does not e
 atr guard --lane enforce --blocking      # stable rules only, and they may act
 ```
 
+### Detection and enforcement are separate switches
+
+Detection always runs. **Blocking is opt-in and off by default.** In the default
+mode `atr guard` reports what it found and changes nothing: it emits no
+permission decision to the host, and it dispatches no response action above the
+`observe` blast-radius tier (`alert` / `snapshot` / `shadow` / `escalate` still
+run). Turning blocking on is the explicit operator directive [SPEC.md](SPEC.md)
+§5.5 requires before an engine may execute response actions automatically.
+([spec/atr-method-v1.1.md](spec/atr-method-v1.1.md) §5.6 says the same thing for
+hash matches specifically; §5.5 of SPEC.md is the engine-wide one.)
+
+**ATR never answers `permissionDecision: "allow"` — in either mode.** That
+decision is not neutral in the Claude Code contract; it is an affirmative
+approval that suppresses the host's own permission prompt, so answering it on
+every operation ATR had not looked for would make a hooked session permit *more*
+than an unhooked one. A permission decision is emitted only to **restrain** —
+`deny` or `ask` — and only with blocking on. Any other verdict omits the whole
+`hookSpecificOutput` envelope, and the finding travels in `atr_decision`,
+`atr_reason` and `matched_rules` instead. Turning blocking on does not bring the
+affirmative decision back.
+
+| Switch | CLI flag | Environment (CLI only) | Library config | Default |
+|---|---|---|---|---|
+| Detection lane | `--lane <enforce\|alert\|hunt>` | `ATR_LANE` | `new ATREngine({ lane })` | `hunt` |
+| Blocking | `--blocking` / `--no-blocking` | `ATR_BLOCKING` | `blocking` on `ActionExecutor` / `HookHandler` | off |
+
+**The two surfaces resolve differently, and they do not share a chain:**
+
+- **Library** — explicit config **>** built-in default. `ATREngine`,
+  `ActionExecutor` and `HookHandler` do not read the environment at all, so an
+  embedded engine cannot be re-pointed by a variable the host never set.
+- **CLI** — flag **>** environment variable **>** built-in default.
+
+An unrecognised `--lane` value is a usage error, never a silent fallback:
+`atr guard --lane enfroce` exits 1 with
+`Error: Invalid --lane "enfroce". Expected one of: enforce, alert, hunt.`
+An unrecognised value in the *environment* warns on stderr, falls back to the
+safe default and keeps running (exit 0), because `atr guard` runs as a Claude
+Code command hook where a non-zero exit discards every detection and prints no
+reason. If `ATR_LANE` is the variable that could not be read, blocking is forced
+off even when `--blocking` was passed — the fallback lane is the broadest one,
+and enforcing on a lane the operator never chose is the only degradation that
+would be more dangerous than the request.
+
+```bash
+atr guard                                 # advisory: report only (the default)
+atr guard --lane enforce --blocking       # blocking on, and only the 106 of 777
+                                          # live rules that are maturity: stable
+                                          # may fire (see the recall note below)
+ATR_LANE=enforce ATR_BLOCKING=1 atr guard # the same, via the environment
+```
+
+**`--lane enforce` costs recall, and the cost is large.** It loads only
+`maturity: stable` rules: **106 of the 777 live rules** in this repository at the
+commit this paragraph was written against. That is the trade being made every
+time enforcement is recommended alongside it — narrower firing set, lower
+false-positive rate, fewer attacks caught. Rule counts move daily, and a
+`grep`-based count is wrong here (eight rules quote the value as
+`maturity: "stable"`), so re-derive by parsing before quoting the figure
+anywhere:
+
+```bash
+python3 - <<'PY'
+import glob, yaml
+rules = [yaml.safe_load(open(p, encoding='utf-8'))
+         for p in glob.glob('rules/**/*.yaml', recursive=True)]
+live = [r for r in rules
+        if r.get('status') not in ('draft', 'deprecated')
+        and str(r.get('maturity') or '').strip() != 'deprecated']
+stable = [r for r in live if str(r.get('maturity') or '').strip() == 'stable']
+print(f'files={len(rules)} live={len(live)} enforce={len(stable)}')
+PY
+```
+
+Programmatic embedding: `new ATREngine({ lane })` for the lane,
+`new ActionExecutor({ adapter, blocking })` and
+`new HookHandler({ engine, executor, blocking })` for enforcement. **These are
+the only inputs** — the constructors ignore `ATR_LANE` and `ATR_BLOCKING`, so
+setting them will not configure an embedded engine. An unrecognised lane throws
+a `TypeError`, and so does a non-boolean `blocking`: `blocking: "false"` is a
+string, and every non-empty string is truthy, so it used to switch enforcement
+**on** while reading as an explicit "off".
+
 ## 5. Specification
 
 | Artifact | Path | Purpose |
@@ -370,10 +453,10 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | Source | Source version | Samples | Recall | Precision | FP rate | ATR version | Measured |
 |---|---|---:|---:|---:|---:|---|---|
 | AdvBench (LLM-attacks behaviors) | upstream-2026-06-16 | 520 | 2.1% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
-| atr-self-test | internal | 341 | 89.7% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| atr-self-test | internal | 341 | 96.6% | 100.0% | 0.0% | 3.5.12 | 2026-08-15 |
 | autoresearch | internal-1054 | 1,054 | 15.1% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
-| garak (in-the-wild jailbreaks) | inthewild-jailbreak-corpus-650 | 650 | 92.5% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
-| garak-full (all probe families) | 23-families | 3,475 | 57.2% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
+| garak (in-the-wild jailbreaks) | inthewild-jailbreak-corpus-650 | 650 | 92.3% | 100.0% | 0.0% | 3.5.12 | 2026-08-15 |
+| garak-full (all probe families) | 23-families | 3,475 | 57.2% | 100.0% | 0.0% | 3.5.12 | 2026-08-15 |
 | hackaprompt | v1 | 4,780 | 69.6% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | HarmBench (CAIS behaviors) | upstream-2026-06-16 | 400 | 2.8% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | hh-rlhf (Anthropic red-team-attempts) [^stdcorpora] | snapshot-2026-04 | 4,957 | 1.5% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
@@ -382,11 +465,11 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | MITRE ATLAS [^stdcorpora] | snapshot-2026-04 | 182 | 39.0% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
 | NeMo Guardrails (NVIDIA test fixtures) | corpus-2026-05-12 | 6 | 100.0% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | OWASP LLM Top 10 [^stdcorpora] | snapshot-2026-04 | 56 | 16.1% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
-| PINT-format (deepset + Lakera Gandalf) [^pint] | v1 | 850 | 60.3% | 100.0% | 0.0% | 3.5.11 | 2026-08-04 |
+| PINT-format (deepset + Lakera Gandalf) [^pint] | v1 | 850 | 65.4% | 100.0% | 0.0% | 3.5.12 | 2026-08-15 |
 | PromptBench (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 3,280 | 15.7% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
 | promptfoo (red-team plugin fixtures) | corpus-2026-05-12 | 44 | 97.7% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | PromptInject (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 1,080 | 100.0% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
-| SKILL.md benchmark (internal) [^skilllane] | internal-498 | 498 | 100.0% (hunt) / 0.0% (enforce) | 97.0% | 0.20% | 3.5.0 | 2026-06-16 |
+| SKILL.md benchmark (internal) [^skilllane] | internal-498 | 498 | 100.0% (hunt) / 0.0% (enforce) | 97.0% | 0.20% | 3.5.12 | 2026-08-15 |
 | Wild scan (OpenClaw + Skills.sh + Hermes + ClawHub) | corpus-2026-04-14 | 96,096 | — | 57.7% (floor) | 1.35% flag rate | 2.0.0 | 2026-04-14 |
 
 All detection corpora were (re-)measured against ATR 3.5.0 on 2026-06-16,
@@ -411,16 +494,18 @@ were never measurements of ATR.
 The per-row `ATR version` column above is the version each cell was actually
 measured against, mirroring the `atr_version` field in each
 `data/measurements/<source>/latest.json`. The headline `garak` recall moved
-98.0% (3.0.0) → 97.2% (3.5.0) → 95.7% (3.5.8) → 92.5% (3.5.11). The 3.5.8 →
+98.0% (3.0.0) → 97.2% (3.5.0) → 95.7% (3.5.8) → 92.5% (3.5.11) → 92.3%
+(3.5.12). The 3.5.8 →
 3.5.11 step is a real loss of detections, not a change in how they are counted:
 PR #327 tightened an over-broad persona regex in `ATR-2026-00001` that had been
 false-positiving on benign "you are now an expert …" prose, and tightening it
 also gave up the recall that regex had been earning on novel-persona jailbreaks
 ("you are now TrueGPT / ChatINF / Raven …"). The harness event shape changed in
-the same window (see below), and it is not the cause: replayed on today's 780
+the same window (see below), and it is not the cause: replayed on 780
 rules, the old shape scores 92.2% and the corrected shape 92.5%, a 0.3-point
 difference in the corrected shape's favour. The 3.2-point drop from 95.7% is
-the rules.
+the rules. The 3.5.11 → 3.5.12 step is one prompt (600/650 vs 601/650) and
+should be read as noise, not as a trend.
 
 Two numbers that briefly appeared here are **withdrawn**: between 2026-08-04
 and 2026-08-05, this table and `stats.json` cited **91.5%** for `garak` and
@@ -433,13 +518,13 @@ number is a version-pinned, reproducible measurement. It was also produced by a 
 that built an event of `type: 'llm_io'`, which is a rule *source* and not an
 `AgentEventType`; `src/engine.ts` could not map it and so ran every rule of
 every source against the event instead of the two source types the harness
-documented itself as using. The 92.5% above replaces it: measured on
-2026-08-05 at 780 rules through `llm_input` + `tool_response`, the two channels
+documented itself as using. The 92.3% above replaces it: measured on
+2026-08-15 at 784 rules through `llm_input` + `tool_response`, the two channels
 `src/hook-handler.ts` can actually deliver a prompt on, and written to
-`data/measurements/garak/2026-08-05_garak-inthewild-jailbreak-corpus-650_atr-3-5-11.json`
+`data/measurements/garak/2026-08-15_garak-inthewild-jailbreak-corpus-650_atr-3-5-12.json`
 with the commit that produced it. Under the wider shape set used for
 false-positive measurement (which also runs `engine.scanSkill()`) the same
-corpus scores 93.1%; that number is recorded in the measurement's `breakdown`
+corpus scores 92.9%; that number is recorded in the measurement's `breakdown`
 and is deliberately not the published one, because a garak prompt never reaches
 production as a SKILL.md. `.github/workflows/eval.yml` now runs
 `scripts/check-benchmark-citations.ts`, which fails CI if this table or
@@ -462,13 +547,18 @@ See [CHANGELOG.md](CHANGELOG.md).
     benchmark. That corpus is private and roughly 5x larger; this row is a
     self-built 850-sample corpus in PINT's format, assembled from
     `deepset/prompt-injections` (660) and `Lakera/gandalf_ignore_instructions`
-    (190). It also carries a scope caveat worth stating plainly: only **29 of
-    780 rules** fire on it at all, and `ATR-2026-00001` alone accounts for 226
-    of the 272 detections. Read it as a prompt-injection-family score, not as
+    (190). It also carries a scope caveat worth stating plainly: only **63 of
+    784 rules** fire on it at all, and `ATR-2026-00001` alone accounts for 226
+    of the 295 detections. Read it as a prompt-injection-family score, not as
     ATR's overall coverage. The row moved 63.6% → 60.3% between 3.5.0 and
     3.5.11 for the same reason `garak` moved: PR #327 tightened
     `ATR-2026-00001`'s persona-switch regex to stop it false-positiving on
-    benign prose. Precision moved 99.7% → 100% over the same span.
+    benign prose. Precision moved 99.7% → 100% over the same span. It then
+    recovered 60.3% → 65.4% at 3.5.12 (2026-08-15) as rules added since
+    3.5.11 widened the family: rules firing on this corpus went 29 → 63 while
+    `ATR-2026-00001`'s own contribution stayed at 226, so the gain came from
+    the tail, not from re-loosening the one dominant rule. Precision held at
+    100% (0 FP on the 399 benign samples).
 
 [^promptcorpora]: **Read both of these as closed-book scores.** Until
     2026-08-05 the harness recorded its per-rule breakdown as the literal
@@ -531,8 +621,8 @@ See [CHANGELOG.md](CHANGELOG.md).
     measures ATR against attack write-ups, not against traffic.
 
 Two `garak` rows are deliberate: the headline `garak` source tracks NVIDIA's
-in-the-wild jailbreak corpus (narrow, the ~92.5% number ATR cites publicly,
-refreshed 2026-08-05 against ATR 3.5.11), while `garak-full` tracks
+in-the-wild jailbreak corpus (narrow, the ~92% number ATR cites publicly,
+refreshed 2026-08-15 against ATR 3.5.12), while `garak-full` tracks
 every probe family in upstream garak (broad, includes families like
 `badchars`, `dra`, `encoding` that ATR's regex layer intentionally does
 not target). Both are valid measurements against different corpora; they

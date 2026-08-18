@@ -31,7 +31,8 @@ import { computeContentHash } from './content-hash.js';
 import { loadRulesFromDirectory, loadRuleFile } from './loader.js';
 import { evaluateTraceRule } from './trace-evaluator.js';
 import { evaluateSemanticRule } from './semantic-evaluator.js';
-import { laneAllows, requiresConfirm } from './quality/rule-contract.js';
+import { laneAllows, requiresConfirm, type Lane } from './quality/rule-contract.js';
+import { laneFromConfig } from './enforcement.js';
 import type { SessionTracker } from './session-tracker.js';
 import { computeVerdict } from './verdict.js';
 import type { ActionExecutor } from './action-executor.js';
@@ -216,6 +217,15 @@ export interface ATREngineConfig {
    *   'alert'   : maturity stable + test (analyst/correlation lane).
    *   'hunt'    : all maturities (advisory/eval; default, backward-compatible).
    * Deprecated/draft rules are always skipped regardless of lane.
+   *
+   * This field is the ONLY input: the engine does not read `ATR_LANE` or any
+   * other environment variable. Leaving it undefined pins the lane to 'hunt',
+   * the widest and most advisory setting, no matter what the surrounding shell
+   * says. A CLI that wants environment support resolves it itself and passes
+   * the result here (src/cli.ts, resolveEnforcementPolicy).
+   *
+   * An unrecognised value throws at construction time — that is a caller bug,
+   * not ambient noise.
    */
   lane?: 'enforce' | 'alert' | 'hunt';
   /**
@@ -232,6 +242,12 @@ export class ATREngine {
   private rules: ATRRule[] = [];
   private readonly compiledPatterns = new Map<string, Map<string, RegExp[]>>();
   private readonly semanticModuleInstance: SemanticModule | null;
+  /**
+   * Active detection lane, resolved ONCE at construction from config alone.
+   * Held as a field so every gate in this engine sees the same lane for its
+   * lifetime.
+   */
+  private readonly lane: Lane;
 
   /**
    * Find bundled rules directory shipped with the npm package.
@@ -253,6 +269,10 @@ export class ATREngine {
   }
 
   constructor(private readonly config: ATREngineConfig = {}) {
+    // Config only — never the environment. An embedder's detection breadth must
+    // not depend on a variable someone exported in a shell profile.
+    this.lane = laneFromConfig(config.lane);
+
     // Initialize Layer 3 semantic module if config provided
     if (config.semanticModule) {
       const moduleConfig = createSemanticModuleFromConfig(config.semanticModule);
@@ -300,7 +320,12 @@ export class ATREngine {
   private passesLane(rule: ATRRule): boolean {
     // Single source of truth for the maturity->lane mapping (incl. safe-fail on
     // missing/odd maturity) lives in the rule-quality contract.
-    return laneAllows(rule.maturity, this.config.lane ?? 'hunt');
+    return laneAllows(rule.maturity, this.lane);
+  }
+
+  /** Active detection lane (config, else 'hunt'). Diagnostics/tests. */
+  getLane(): Lane {
+    return this.lane;
   }
 
   /**
@@ -329,7 +354,7 @@ export class ATREngine {
    */
   evaluate(event: AgentEvent): ATRMatch[] {
     const matches = this.evaluateRaw(event);
-    const lane = this.config.lane ?? 'hunt';
+    const lane = this.lane;
     if (lane === 'hunt') return matches;
     return matches.filter((m) => !requiresConfirm(m.rule));
   }
@@ -1572,7 +1597,7 @@ export class ATREngine {
     // and the additive signal below (avoids a double encode). Computed lazily: the
     // enforce lane (no additive signal) only encodes when a confirm-rule actually
     // matched, so benign no-match events in the block lane stay encode-free.
-    const lane = this.config.lane ?? 'hunt';
+    const lane = this.lane;
     const hasConfirmMatch = lane !== 'hunt' && matches.some((m) => requiresConfirm(m.rule));
     const needEmbedding = lane !== 'enforce' || hasConfirmMatch;
     let embResult: { matched: boolean; value: number; description: string } | null = null;
