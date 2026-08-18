@@ -215,6 +215,89 @@ Each rule carries a maturity-driven **lane**, so a consumer can trade recall for
 
 Lanes are opt-in and fully backward-compatible: the default is `hunt`, so existing integrations behave exactly as before. Selecting `enforce` raises precision by firing only the most mature rules — and therefore catches fewer attacks. Report false-positive rates lane-keyed (`enforce` ~0.24% / `hunt` ~9% on the 65K-sample benign gate), not as a single overall figure. That gate is a separate corpus from the per-source measurements in [§8 Evaluation](#8-evaluation).
 
+### Detection and enforcement are separate switches
+
+Detection always runs. **Blocking is opt-in and off by default.** In the default
+mode `atr guard` reports what it found and changes nothing: it emits no
+permission decision to the host, and it dispatches no response action above the
+`observe` blast-radius tier (`alert` / `snapshot` / `shadow` / `escalate` still
+run). Turning blocking on is the explicit operator directive [SPEC.md](SPEC.md)
+§5.5 requires before an engine may execute response actions automatically.
+([spec/atr-method-v1.1.md](spec/atr-method-v1.1.md) §5.6 says the same thing for
+hash matches specifically; §5.5 of SPEC.md is the engine-wide one.)
+
+**ATR never answers `permissionDecision: "allow"` — in either mode.** That
+decision is not neutral in the Claude Code contract; it is an affirmative
+approval that suppresses the host's own permission prompt, so answering it on
+every operation ATR had not looked for would make a hooked session permit *more*
+than an unhooked one. A permission decision is emitted only to **restrain** —
+`deny` or `ask` — and only with blocking on. Any other verdict omits the whole
+`hookSpecificOutput` envelope, and the finding travels in `atr_decision`,
+`atr_reason` and `matched_rules` instead. Turning blocking on does not bring the
+affirmative decision back.
+
+| Switch | CLI flag | Environment (CLI only) | Library config | Default |
+|---|---|---|---|---|
+| Detection lane | `--lane <enforce\|alert\|hunt>` | `ATR_LANE` | `new ATREngine({ lane })` | `hunt` |
+| Blocking | `--blocking` / `--no-blocking` | `ATR_BLOCKING` | `blocking` on `ActionExecutor` / `HookHandler` | off |
+
+**The two surfaces resolve differently, and they do not share a chain:**
+
+- **Library** — explicit config **>** built-in default. `ATREngine`,
+  `ActionExecutor` and `HookHandler` do not read the environment at all, so an
+  embedded engine cannot be re-pointed by a variable the host never set.
+- **CLI** — flag **>** environment variable **>** built-in default.
+
+An unrecognised `--lane` value is a usage error, never a silent fallback:
+`atr guard --lane enfroce` exits 1 with
+`Error: Invalid --lane "enfroce". Expected one of: enforce, alert, hunt.`
+An unrecognised value in the *environment* warns on stderr, falls back to the
+safe default and keeps running (exit 0), because `atr guard` runs as a Claude
+Code command hook where a non-zero exit discards every detection and prints no
+reason. If `ATR_LANE` is the variable that could not be read, blocking is forced
+off even when `--blocking` was passed — the fallback lane is the broadest one,
+and enforcing on a lane the operator never chose is the only degradation that
+would be more dangerous than the request.
+
+```bash
+atr guard                                 # advisory: report only (the default)
+atr guard --lane enforce --blocking       # blocking on, and only the 106 of 777
+                                          # live rules that are maturity: stable
+                                          # may fire (see the recall note below)
+ATR_LANE=enforce ATR_BLOCKING=1 atr guard # the same, via the environment
+```
+
+**`--lane enforce` costs recall, and the cost is large.** It loads only
+`maturity: stable` rules: **106 of the 777 live rules** in this repository at the
+commit this paragraph was written against. That is the trade being made every
+time enforcement is recommended alongside it — narrower firing set, lower
+false-positive rate, fewer attacks caught. Rule counts move daily, and a
+`grep`-based count is wrong here (eight rules quote the value as
+`maturity: "stable"`), so re-derive by parsing before quoting the figure
+anywhere:
+
+```bash
+python3 - <<'PY'
+import glob, yaml
+rules = [yaml.safe_load(open(p, encoding='utf-8'))
+         for p in glob.glob('rules/**/*.yaml', recursive=True)]
+live = [r for r in rules
+        if r.get('status') not in ('draft', 'deprecated')
+        and str(r.get('maturity') or '').strip() != 'deprecated']
+stable = [r for r in live if str(r.get('maturity') or '').strip() == 'stable']
+print(f'files={len(rules)} live={len(live)} enforce={len(stable)}')
+PY
+```
+
+Programmatic embedding: `new ATREngine({ lane })` for the lane,
+`new ActionExecutor({ adapter, blocking })` and
+`new HookHandler({ engine, executor, blocking })` for enforcement. **These are
+the only inputs** — the constructors ignore `ATR_LANE` and `ATR_BLOCKING`, so
+setting them will not configure an embedded engine. An unrecognised lane throws
+a `TypeError`, and so does a non-boolean `blocking`: `blocking: "false"` is a
+string, and every non-empty string is truthy, so it used to switch enforcement
+**on** while reading as an explicit "off".
+
 ## 5. Specification
 
 | Artifact | Path | Purpose |
