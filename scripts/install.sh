@@ -71,7 +71,17 @@ if [ "$UNINSTALL" = 1 ]; then
         try {
           const s = JSON.parse(fs.readFileSync(p, 'utf-8'));
           if (s.hooks && s.hooks.PreToolUse) {
-            s.hooks.PreToolUse = s.hooks.PreToolUse.filter(h => !h.command || !h.command.includes('atr'));
+            // Two shapes exist. \`atr init\` writes the Claude Code schema, where the
+            // command sits in h.hooks[].command; an older fallback in this script wrote
+            // it as h.command. Matching only the second one meant --uninstall left the
+            // hook the normal install path had put there.
+            const isATR = (h) => {
+              if (h.command && h.command.includes('atr')) return true;
+              return Array.isArray(h.hooks) &&
+                h.hooks.some(e => e.command && (e.command.includes('atr') ||
+                                                e.command.includes('agent-threat-rules')));
+            };
+            s.hooks.PreToolUse = s.hooks.PreToolUse.filter(h => !isATR(h));
             if (s.hooks.PreToolUse.length === 0) delete s.hooks.PreToolUse;
             if (Object.keys(s.hooks).length === 0) delete s.hooks;
             fs.writeFileSync(p, JSON.stringify(s, null, 2) + '\n');
@@ -247,9 +257,14 @@ elif [ "$HAS_CLAUDE" = 1 ] || [ -n "$DETECTED_IDES" ]; then
       if (!s.hooks.PreToolUse) s.hooks.PreToolUse = [];
       const hasATR = s.hooks.PreToolUse.some(h => h.command && h.command.includes('atr'));
       if (!hasATR) {
+        // Must match what \`atr init\` writes. The previous version pushed
+        // { matcher, command } with 'atr guard --event \$TOOL_INPUT', which is not
+        // the Claude Code hook schema and names a flag the CLI does not have:
+        // guard reads the event from stdin. Measured with stdin closed, that hook
+        // produced an empty stdout and exit 0 -- installed, and doing nothing.
         s.hooks.PreToolUse.push({
-          matcher: 'Bash',
-          command: 'atr guard --event \\\$TOOL_INPUT'
+          matcher: '',
+          hooks: [{ type: 'command', command: 'npx agent-threat-rules guard' }]
         });
         fs.writeFileSync(p, JSON.stringify(s, null, 2) + '\n');
         console.log('${GREEN}OK${RESET} Claude Code PreToolUse hook configured');
@@ -285,6 +300,16 @@ printf "  ${DIM}Version${RESET}    %s\n" "$ATR_VERSION"
 if [ -n "$DETECTED_IDES" ]; then
   printf "  ${DIM}IDE${RESET}        %s\n" "$(echo "$DETECTED_IDES" | sed 's/vscode/VS Code/g; s/cursor/Cursor/g' | xargs)"
 fi
+printf "\n"
+printf "  ${BOLD}Mode: advisory.${RESET} ${DIM}The guard reports what it finds and blocks\n"
+printf "  nothing. It emits no permission decision, so your host's own permission\n"
+printf "  prompts are untouched. Turn enforcement on deliberately:${RESET}\n"
+printf "\n"
+printf "    ${CYAN}atr guard --blocking --lane enforce${RESET}\n"
+printf "\n"
+printf "  ${DIM}The lane is the half worth thinking about: ${RESET}enforce${DIM} fires only\n"
+printf "  maturity: stable rules, which is a small fraction of the ruleset, so it\n"
+printf "  raises precision by catching fewer attacks. See docs/ENFORCEMENT-MODEL.md${RESET}\n"
 printf "\n"
 printf "  ${BOLD}Next steps:${RESET}\n"
 printf "\n"
