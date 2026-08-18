@@ -464,9 +464,20 @@ export interface PlatformAdapter {
   killAgent(ctx: ExecutionContext): Promise<ActionResult>;
 }
 
-/** Hook input from Claude Code / agent host */
+/**
+ * Hook input from Claude Code / agent host.
+ *
+ * Claude Code names the event `hook_event_name`. Verified against the shipped
+ * 2.1.76 bundle, whose PreToolUse schema is
+ * `{hook_event_name: literal("PreToolUse"), tool_name, tool_input, tool_use_id}`.
+ * This interface only declared `hook`, so every real event resolved to
+ * undefined, fell through the dispatch switch, and came back "Unknown hook
+ * type: undefined" with nothing evaluated. Both spellings are accepted now;
+ * `hookEventOf` is the single reader.
+ */
 export interface HookInput {
-  readonly hook: "PreToolUse" | "PostToolUse";
+  readonly hook?: "PreToolUse" | "PostToolUse";
+  readonly hook_event_name?: "PreToolUse" | "PostToolUse";
   readonly tool_name: string;
   readonly tool_input: Readonly<Record<string, unknown>>;
   readonly session_id?: string;

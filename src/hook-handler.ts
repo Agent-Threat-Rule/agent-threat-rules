@@ -256,6 +256,22 @@ function withTimeout<T>(
   });
 }
 
+/**
+ * The event name, under either spelling.
+ *
+ * Claude Code sends `hook_event_name` (verified against the shipped 2.1.76
+ * bundle). ATR's own fixtures, its docs and every integration test use `hook`.
+ * Reading only `hook` meant a real Claude Code event dispatched to the default
+ * branch and returned "Unknown hook type: undefined" without evaluating a
+ * single rule -- the hook was installed, printed its banner, and did nothing.
+ *
+ * Preferring `hook_event_name` matters: it is the one the host actually sends,
+ * so if a payload somehow carries both, the host's own field wins.
+ */
+export function hookEventOf(input: HookInput): string | undefined {
+  return input.hook_event_name ?? input.hook;
+}
+
 export class HookHandler {
   private readonly engine: ATREngine;
   private readonly executor: ActionExecutor;
@@ -330,7 +346,7 @@ export class HookHandler {
 
       try {
         const input = JSON.parse(trimmed) as HookInput;
-        if (input.hook === 'PostToolUse') hookType = 'PostToolUse';
+        if (hookEventOf(input) === 'PostToolUse') hookType = 'PostToolUse';
         output = await this.dispatch(input);
       } catch (err) {
         output = this.handleError(err);
@@ -354,7 +370,7 @@ export class HookHandler {
    * Dispatch a HookInput to the appropriate handler.
    */
   private async dispatch(input: HookInput): Promise<HookOutput> {
-    switch (input.hook) {
+    switch (hookEventOf(input)) {
       case 'PreToolUse':
         return this.handlePreToolUse(input);
       case 'PostToolUse':
