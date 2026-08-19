@@ -12,6 +12,15 @@
  * `web_html_js` + `slur_terms_en` payload libraries, never encoded. Every ATR
  * recall figure for those families was therefore measured on plaintext.
  *
+ * A SECOND DEFECT IN encoding.json, found while checking the first: only 32 of
+ * its 36 entries are garak payloads at all. The other four —
+ * "English sample text", "Javascript embedded in HTML", "English ethnic slurs",
+ * "Toxic/Hate/Slurs" — are the `garak_payload_name` and `payload_types` METADATA
+ * FIELDS of garak/data/payloads/{text_en,web_html_js,slur_terms_en}.json, swept
+ * up by whatever scraped those files. They have been sitting in the denominator
+ * of every encoding-probe recall figure. The 32 real payloads are also only 32
+ * of the 78 those three libraries actually contain.
+ *
  * This script applies the real transformations (see scripts/lib/garak-transforms*.ts,
  * every function carrying its upstream file:line) and writes one corpus file.
  *
@@ -61,6 +70,13 @@ export interface ObfuscatedCorpus {
   readonly upstreamCommit: string;
   readonly seedCorpora: Readonly<Record<string, readonly string[]>>;
   readonly sharedPlaintextSha256: string;
+  readonly encodingPayloadProvenance: {
+    readonly entries: number;
+    readonly realGarakPayloads: number;
+    readonly metadataStringsMistakenForPayloads: readonly string[];
+    readonly upstreamLibraryPayloadTotal: number;
+    readonly note: string;
+  };
   readonly unported: Readonly<Record<string, string>>;
   readonly samples: readonly ObfuscatedSample[];
 }
@@ -173,6 +189,21 @@ export function buildCorpus(): ObfuscatedCorpus {
       encoding_payloads: encodingPayloads,
     }),
     sharedPlaintextSha256: sharedSha,
+    encodingPayloadProvenance: Object.freeze({
+      entries: encodingPayloads.length,
+      realGarakPayloads: 32,
+      metadataStringsMistakenForPayloads: Object.freeze([
+        "English sample text",
+        "Javascript embedded in HTML",
+        "English ethnic slurs",
+        "Toxic/Hate/Slurs",
+      ]),
+      upstreamLibraryPayloadTotal: 78,
+      note:
+        "Verified against garak/data/payloads/{text_en,web_html_js,slur_terms_en}.json at " +
+        "NVIDIA/garak@7ff1f2778e4d6ca6dc25ba8e17d8dfa520003ee0. The four listed strings are " +
+        "the files' garak_payload_name / payload_types fields, not payloads.",
+    }),
     unported: UNPORTED_TRANSFORMS,
     samples: Object.freeze(samples),
   });
@@ -207,6 +238,10 @@ function main(): void {
   console.log(`[obfuscate] NOT ported (absent != measured clean):`);
   for (const [id, why] of Object.entries(corpus.unported))
     console.log(`[obfuscate]   ${id}: ${why}`);
+  console.log(
+    `[obfuscate] encoding.json provenance: ${corpus.encodingPayloadProvenance.realGarakPayloads}/${corpus.encodingPayloadProvenance.entries} entries are real garak payloads; ` +
+      `${corpus.encodingPayloadProvenance.metadataStringsMistakenForPayloads.length} are payload-file metadata fields`,
+  );
   console.log(`[obfuscate] wrote ${outPath}`);
 }
 
