@@ -30,13 +30,21 @@ import {
   UNPORTED_TRANSFORMS,
   type GarakTransform,
 } from "./lib/garak-transforms.js";
-import { ENCODING_TEMPLATES, applyTemplate } from "./lib/garak-transforms-encoding.js";
+import {
+  ENCODING_TEMPLATES,
+  applyTemplate,
+} from "./lib/garak-transforms-encoding.js";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const CORPUS_DIR = resolve(REPO_ROOT, "data/test-corpora/garak-full");
 
 /** The four families whose stored prompts are byte-identical plaintext payloads. */
-const SHARED_PLAINTEXT_FAMILIES = ["badchars", "malwaregen", "sata", "smuggling"] as const;
+const SHARED_PLAINTEXT_FAMILIES = [
+  "badchars",
+  "malwaregen",
+  "sata",
+  "smuggling",
+] as const;
 
 export interface ObfuscatedSample {
   readonly seedCorpus: string;
@@ -62,7 +70,9 @@ const UPSTREAM_COMMIT = "NVIDIA/garak@7ff1f2778e4d6ca6dc25ba8e17d8dfa520003ee0";
 function readPrompts(family: string): readonly string[] {
   const path = resolve(CORPUS_DIR, `${family}.json`);
   if (!existsSync(path)) throw new Error(`missing corpus file: ${path}`);
-  const parsed = JSON.parse(readFileSync(path, "utf-8")) as { prompts?: unknown };
+  const parsed = JSON.parse(readFileSync(path, "utf-8")) as {
+    prompts?: unknown;
+  };
   if (!Array.isArray(parsed.prompts) || parsed.prompts.length === 0) {
     throw new Error(`corpus ${family}.json has no prompts array`);
   }
@@ -71,7 +81,9 @@ function readPrompts(family: string): readonly string[] {
 
 /** SHA-256 over the sorted prompts, newline-joined — the identity check from the brief. */
 function sortedPromptsSha256(prompts: readonly string[]): string {
-  return createHash("sha256").update([...prompts].sort().join("\n"), "utf8").digest("hex");
+  return createHash("sha256")
+    .update([...prompts].sort().join("\n"), "utf8")
+    .digest("hex");
 }
 
 /**
@@ -80,12 +92,16 @@ function sortedPromptsSha256(prompts: readonly string[]): string {
  * caller must be told, not handed a file.
  */
 function assertSharedPlaintext(): string {
-  const hashes = SHARED_PLAINTEXT_FAMILIES.map((f) => sortedPromptsSha256(readPrompts(f)));
+  const hashes = SHARED_PLAINTEXT_FAMILIES.map((f) =>
+    sortedPromptsSha256(readPrompts(f)),
+  );
   const [first] = hashes;
   if (!hashes.every((h) => h === first)) {
     throw new Error(
       `families ${SHARED_PLAINTEXT_FAMILIES.join("/")} no longer share one payload list: ` +
-        hashes.map((h, i) => `${SHARED_PLAINTEXT_FAMILIES[i]}=${h.slice(0, 12)}`).join(" "),
+        hashes
+          .map((h, i) => `${SHARED_PLAINTEXT_FAMILIES[i]}=${h.slice(0, 12)}`)
+          .join(" "),
     );
   }
   return first;
@@ -99,7 +115,12 @@ function expandTransform(
   const out: ObfuscatedSample[] = [];
   for (let seedIndex = 0; seedIndex < seeds.length; seedIndex++) {
     for (const produced of transform.expand(seeds[seedIndex])) {
-      const base = { seedCorpus, seedIndex, transformId: transform.id, family: transform.family };
+      const base = {
+        seedCorpus,
+        seedIndex,
+        transformId: transform.id,
+        family: transform.family,
+      };
       if (transform.kind === "perturbation") {
         out.push({ ...base, presentation: "raw", text: produced });
         continue;
@@ -109,7 +130,11 @@ function expandTransform(
         out.push({
           ...base,
           presentation: `template-${t}`,
-          text: applyTemplate(ENCODING_TEMPLATES[t], transform.encodingName, produced),
+          text: applyTemplate(
+            ENCODING_TEMPLATES[t],
+            transform.encodingName,
+            produced,
+          ),
         });
       }
     }
@@ -128,8 +153,10 @@ export function buildCorpus(): ObfuscatedCorpus {
   //   encoding.py:217  payloads = ["default", "xss", "slur_terms"]
   //                    -> text_en + web_html_js + slur_terms_en == encoding.json
   const seedsFor = (t: GarakTransform): readonly [string, readonly string[]] =>
-    t.family === "encoding" || t.id.startsWith("smuggling-unicode") ||
-    t.id.startsWith("smuggling-variant") || t.id.startsWith("smuggling-sneaky")
+    t.family === "encoding" ||
+    t.id.startsWith("smuggling-unicode") ||
+    t.id.startsWith("smuggling-variant") ||
+    t.id.startsWith("smuggling-sneaky")
       ? ["encoding_payloads", encodingPayloads]
       : ["harmful_behaviors", harmfulBehaviors];
 
@@ -164,15 +191,22 @@ function main(): void {
   writeFileSync(outPath, `${JSON.stringify(corpus, null, 2)}\n`, "utf-8");
 
   const byTransform = new Map<string, number>();
-  for (const s of corpus.samples) byTransform.set(s.transformId, (byTransform.get(s.transformId) ?? 0) + 1);
+  for (const s of corpus.samples)
+    byTransform.set(s.transformId, (byTransform.get(s.transformId) ?? 0) + 1);
 
   console.log(`[obfuscate] upstream: ${corpus.upstreamCommit}`);
-  console.log(`[obfuscate] shared plaintext sha256(sorted prompts): ${corpus.sharedPlaintextSha256}`);
-  console.log(`[obfuscate] seeds: harmful_behaviors=${corpus.seedCorpora.harmful_behaviors.length} encoding_payloads=${corpus.seedCorpora.encoding_payloads.length}`);
-  for (const [id, n] of [...byTransform].sort()) console.log(`[obfuscate]   ${id.padEnd(30)} ${n}`);
+  console.log(
+    `[obfuscate] shared plaintext sha256(sorted prompts): ${corpus.sharedPlaintextSha256}`,
+  );
+  console.log(
+    `[obfuscate] seeds: harmful_behaviors=${corpus.seedCorpora.harmful_behaviors.length} encoding_payloads=${corpus.seedCorpora.encoding_payloads.length}`,
+  );
+  for (const [id, n] of [...byTransform].sort())
+    console.log(`[obfuscate]   ${id.padEnd(30)} ${n}`);
   console.log(`[obfuscate] total samples: ${corpus.samples.length}`);
   console.log(`[obfuscate] NOT ported (absent != measured clean):`);
-  for (const [id, why] of Object.entries(corpus.unported)) console.log(`[obfuscate]   ${id}: ${why}`);
+  for (const [id, why] of Object.entries(corpus.unported))
+    console.log(`[obfuscate]   ${id}: ${why}`);
   console.log(`[obfuscate] wrote ${outPath}`);
 }
 

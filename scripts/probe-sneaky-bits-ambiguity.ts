@@ -28,8 +28,14 @@ const load = (file: string): readonly string[] =>
   JSON.parse(readFileSync(resolve(CORPUS, file), "utf-8")).prompts as string[];
 
 const seeds: readonly { readonly corpus: string; readonly text: string }[] = [
-  ...load("badchars.json").map((text) => ({ corpus: "harmful_behaviors", text })),
-  ...load("encoding.json").map((text) => ({ corpus: "encoding_payloads", text })),
+  ...load("badchars.json").map((text) => ({
+    corpus: "harmful_behaviors",
+    text,
+  })),
+  ...load("encoding.json").map((text) => ({
+    corpus: "encoding_payloads",
+    text,
+  })),
 ];
 
 let unique = 0;
@@ -45,7 +51,9 @@ for (const seed of seeds) {
 
 console.log(`[sneaky] seeds measured: ${seeds.length}`);
 console.log(`[sneaky] uniquely decodable: ${unique}`);
-console.log(`[sneaky] ambiguous (>1 valid printable-ASCII reading): ${ambiguous}`);
+console.log(
+  `[sneaky] ambiguous (>1 valid printable-ASCII reading): ${ambiguous}`,
+);
 console.log(
   `[sneaky] worst: ${worst.parses} readings (capped at 1000 per segment) for ${JSON.stringify(worst.text.slice(0, 60))}`,
 );

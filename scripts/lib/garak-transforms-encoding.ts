@@ -35,15 +35,21 @@ export function applyTemplate(
   encodingName: string,
   encodedText: string,
 ): string {
-  return template.split("{encoding_name}").join(encodingName).split("{encoded_text}").join(encodedText);
+  return template
+    .split("{encoding_name}")
+    .join(encodingName)
+    .split("{encoded_text}")
+    .join(encodedText);
 }
 
 // --------------------------------------------------------------------------
 // Base-N family
 // --------------------------------------------------------------------------
 
-const B64_STD = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-const B64_URL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+const B64_STD =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+const B64_URL =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 const B32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
 function baseNEncode(bytes: Uint8Array, alphabet: string): string {
@@ -62,17 +68,22 @@ function baseNEncode(bytes: Uint8Array, alphabet: string): string {
 }
 
 /** encoding.py:296-302 — `base64.b64encode` / `standard_b64encode`. */
-export const injectBase64 = (text: string): string => baseNEncode(utf8(text), B64_STD);
+export const injectBase64 = (text: string): string =>
+  baseNEncode(utf8(text), B64_STD);
 
 /** encoding.py:298 — `base64.urlsafe_b64encode`. */
-export const injectBase64Url = (text: string): string => baseNEncode(utf8(text), B64_URL);
+export const injectBase64Url = (text: string): string =>
+  baseNEncode(utf8(text), B64_URL);
 
 /** encoding.py:300 — `binascii.b2a_base64`, which appends a newline. */
-export const injectB2aBase64 = (text: string): string => `${injectBase64(text)}\n`;
+export const injectB2aBase64 = (text: string): string =>
+  `${injectBase64(text)}\n`;
 
 /** encoding.py:316 — `base64.b16encode` (uppercase hex). */
 export const injectBase16 = (text: string): string =>
-  Array.from(utf8(text), (b) => b.toString(16).toUpperCase().padStart(2, "0")).join("");
+  Array.from(utf8(text), (b) =>
+    b.toString(16).toUpperCase().padStart(2, "0"),
+  ).join("");
 
 /** encoding.py:361 — `binascii.b2a_hex` (lowercase hex, no separator). */
 export const injectHex = (text: string): string =>
@@ -85,9 +96,11 @@ export function injectBase32(text: string): string {
   for (let i = 0; i < bytes.length; i += 5) {
     const chunk = bytes.subarray(i, i + 5);
     let bits = 0n;
-    for (let j = 0; j < 5; j++) bits = (bits << 8n) | BigInt(j < chunk.length ? chunk[j] : 0);
+    for (let j = 0; j < 5; j++)
+      bits = (bits << 8n) | BigInt(j < chunk.length ? chunk[j] : 0);
     const chars = [];
-    for (let j = 7; j >= 0; j--) chars.push(B32_ALPHABET[Number((bits >> BigInt(j * 5)) & 31n)]);
+    for (let j = 7; j >= 0; j--)
+      chars.push(B32_ALPHABET[Number((bits >> BigInt(j * 5)) & 31n)]);
     const significant = [0, 2, 4, 5, 7, 8][chunk.length];
     out += chars.slice(0, significant).join("") + "=".repeat(8 - significant);
   }
@@ -101,7 +114,8 @@ export function injectAscii85(text: string): string {
   for (let i = 0; i < bytes.length; i += 4) {
     const chunk = bytes.subarray(i, i + 4);
     let value = 0;
-    for (let j = 0; j < 4; j++) value = value * 256 + (j < chunk.length ? chunk[j] : 0);
+    for (let j = 0; j < 4; j++)
+      value = value * 256 + (j < chunk.length ? chunk[j] : 0);
     if (chunk.length === 4 && value === 0) {
       out += "z";
       continue;
@@ -129,7 +143,8 @@ export function injectUU(text: string): string {
       const b1 = j + 1 < chunk.length ? chunk[j + 1] : 0;
       const b2 = j + 2 < chunk.length ? chunk[j + 2] : 0;
       const triple = (b0 << 16) | (b1 << 8) | b2;
-      for (const shift of [18, 12, 6, 0]) line += String.fromCharCode(32 + ((triple >> shift) & 63));
+      for (const shift of [18, 12, 6, 0])
+        line += String.fromCharCode(32 + ((triple >> shift) & 63));
     }
     chunks.push(`${line}\n`);
   }
@@ -152,17 +167,53 @@ export const injectAtbash = (text: string): string =>
   text.replace(/[a-zA-Z]/g, (ch) => {
     const isUpper = ch <= "Z";
     const base = isUpper ? 65 : 97;
-    return String.fromCharCode((isUpper ? 90 : 122) - (ch.charCodeAt(0) - base));
+    return String.fromCharCode(
+      (isUpper ? 90 : 122) - (ch.charCodeAt(0) - base),
+    );
   });
 
 /** encoding.py:141-189 — `morse`. Unmapped characters are dropped, as upstream does. */
 const MORSE_MAP: Readonly<Record<string, string>> = Object.freeze({
-  A: ".-", B: "-...", C: "-.-.", D: "-..", E: ".", F: "..-.", G: "--.", H: "....",
-  I: "..", J: ".---", K: "-.-", L: ".-..", M: "--", N: "-.", O: "---", P: ".--.",
-  Q: "--.-", R: ".-.", S: "...", T: "-", U: "..-", V: "...-", W: ".--", X: "-..-",
-  Y: "-.--", Z: "--..", "1": ".----", "2": "..---", "3": "...--", "4": "....-",
-  "5": ".....", "6": "-....", "7": "--...", "8": "---..", "9": "----.", "0": "-----",
-  " ": "/", "\n": "/", "\r": "/", "\t": "/",
+  A: ".-",
+  B: "-...",
+  C: "-.-.",
+  D: "-..",
+  E: ".",
+  F: "..-.",
+  G: "--.",
+  H: "....",
+  I: "..",
+  J: ".---",
+  K: "-.-",
+  L: ".-..",
+  M: "--",
+  N: "-.",
+  O: "---",
+  P: ".--.",
+  Q: "--.-",
+  R: ".-.",
+  S: "...",
+  T: "-",
+  U: "..-",
+  V: "...-",
+  W: ".--",
+  X: "-..-",
+  Y: "-.--",
+  Z: "--..",
+  "1": ".----",
+  "2": "..---",
+  "3": "...--",
+  "4": "....-",
+  "5": ".....",
+  "6": "-....",
+  "7": "--...",
+  "8": "---..",
+  "9": "----.",
+  "0": "-----",
+  " ": "/",
+  "\n": "/",
+  "\r": "/",
+  "\t": "/",
 });
 export const injectMorse = (text: string): string =>
   Array.from(text.toUpperCase())
@@ -172,11 +223,32 @@ export const injectMorse = (text: string): string =>
 
 /** encoding.py:535-569 — `InjectNato.nato`. Non-letters are dropped, as upstream does. */
 const NATO_MAP: Readonly<Record<string, string>> = Object.freeze({
-  A: "Alfa", B: "Bravo", C: "Charlie", D: "Delta", E: "Echo", F: "Foxtrot",
-  G: "Golf", H: "Hotel", I: "India", J: "Juliett", K: "Kilo", L: "Lima",
-  M: "Mike", N: "November", O: "Oscar", P: "Papa", Q: "Quebec", R: "Romeo",
-  S: "Sierra", T: "Tango", U: "Uniform", V: "Victor", W: "Whiskey", X: "Xray",
-  Y: "Yankee", Z: "Zulu",
+  A: "Alfa",
+  B: "Bravo",
+  C: "Charlie",
+  D: "Delta",
+  E: "Echo",
+  F: "Foxtrot",
+  G: "Golf",
+  H: "Hotel",
+  I: "India",
+  J: "Juliett",
+  K: "Kilo",
+  L: "Lima",
+  M: "Mike",
+  N: "November",
+  O: "Oscar",
+  P: "Papa",
+  Q: "Quebec",
+  R: "Romeo",
+  S: "Sierra",
+  T: "Tango",
+  U: "Uniform",
+  V: "Victor",
+  W: "Whiskey",
+  X: "Xray",
+  Y: "Yankee",
+  Z: "Zulu",
 });
 export const injectNato = (text: string): string =>
   Array.from(text.toUpperCase())
@@ -186,13 +258,57 @@ export const injectNato = (text: string): string =>
 
 /** encoding.py:60-138 — `braille`. Uppercase letters get the U+2820 caps prefix. */
 const BRAILLE_MAP: Readonly<Record<string, string>> = Object.freeze({
-  a: "⠁", b: "⠃", k: "⠅", l: "⠇", c: "⠉", i: "⠊", f: "⠋", m: "⠍", s: "⠎",
-  p: "⠏", e: "⠑", h: "⠓", o: "⠕", r: "⠗", d: "⠙", j: "⠚", g: "⠛", n: "⠝",
-  t: "⠞", q: "⠟", u: "⠥", v: "⠧", x: "⠭", z: "⠵", w: "⠺", y: "⠽",
-  num: "⠼", caps: "⠠", ".": "⠲", "'": "⠄", ",": "⠂", "-": "⠤", "/": "⠌",
-  "!": "⠖", "?": "⠦", $: "⠲", ":": "⠒", ";": "⠰", "(": "⠶", ")": "⠶",
-  "1": "⠁", "2": "⠃", "3": "⠉", "4": "⠙", "5": "⠑", "6": "⠋", "7": "⠛",
-  "8": "⠓", "9": "⠊", "0": "⠚", " ": " ",
+  a: "⠁",
+  b: "⠃",
+  k: "⠅",
+  l: "⠇",
+  c: "⠉",
+  i: "⠊",
+  f: "⠋",
+  m: "⠍",
+  s: "⠎",
+  p: "⠏",
+  e: "⠑",
+  h: "⠓",
+  o: "⠕",
+  r: "⠗",
+  d: "⠙",
+  j: "⠚",
+  g: "⠛",
+  n: "⠝",
+  t: "⠞",
+  q: "⠟",
+  u: "⠥",
+  v: "⠧",
+  x: "⠭",
+  z: "⠵",
+  w: "⠺",
+  y: "⠽",
+  num: "⠼",
+  caps: "⠠",
+  ".": "⠲",
+  "'": "⠄",
+  ",": "⠂",
+  "-": "⠤",
+  "/": "⠌",
+  "!": "⠖",
+  "?": "⠦",
+  $: "⠲",
+  ":": "⠒",
+  ";": "⠰",
+  "(": "⠶",
+  ")": "⠶",
+  "1": "⠁",
+  "2": "⠃",
+  "3": "⠉",
+  "4": "⠙",
+  "5": "⠑",
+  "6": "⠋",
+  "7": "⠛",
+  "8": "⠓",
+  "9": "⠊",
+  "0": "⠚",
+  " ": " ",
 });
 export function injectBraille(text: string): string {
   const escapes = new Set(["\n", "\r", "\t"]);
@@ -241,11 +357,16 @@ export const injectLeet = (text: string): string => {
  * with the default emoji from encoding.py:667.
  */
 export const smuggleUnicodeTags = (text: string, emoji = "😈"): string =>
-  emoji + Array.from(text).map((ch) => String.fromCodePoint(0xe0000 + ch.charCodeAt(0))).join("");
+  emoji +
+  Array.from(text)
+    .map((ch) => String.fromCodePoint(0xe0000 + ch.charCodeAt(0)))
+    .join("");
 
 /** smuggle_ascii.py:33-47 — `variant_smuggling`, wired in at encoding.py:693. */
 export const smuggleVariantSelectors = (text: string): string =>
-  Array.from(text).map((ch) => String.fromCodePoint(0xe0100 + ch.charCodeAt(0))).join("");
+  Array.from(text)
+    .map((ch) => String.fromCodePoint(0xe0100 + ch.charCodeAt(0)))
+    .join("");
 
 /** smuggle_ascii.py:50-72 — `sneaky_bits_smuggling`, wired in at encoding.py:718. */
 export function smuggleSneakyBits(text: string): string {
@@ -257,7 +378,8 @@ export function smuggleSneakyBits(text: string): string {
       out += String.fromCodePoint(0x200b);
       continue;
     }
-    for (const bit of ch.charCodeAt(0).toString(2)) out += bit === "0" ? zero : one;
+    for (const bit of ch.charCodeAt(0).toString(2))
+      out += bit === "0" ? zero : one;
   }
   return out;
 }

@@ -85,9 +85,13 @@ function pythonRound(value: number): number {
 /** badchars.py:382-388 — `_select_ascii`. */
 export function selectAscii(limit: number): readonly string[] {
   if (limit <= 0 || limit >= ASCII_PRINTABLE.length) return ASCII_PRINTABLE;
-  const step = Math.max(1, Math.floor((ASCII_PRINTABLE.length - 1) / (limit - 1)));
+  const step = Math.max(
+    1,
+    Math.floor((ASCII_PRINTABLE.length - 1) / (limit - 1)),
+  );
   const selected: string[] = [];
-  for (let i = 0; i < ASCII_PRINTABLE.length; i += step) selected.push(ASCII_PRINTABLE[i]);
+  for (let i = 0; i < ASCII_PRINTABLE.length; i += step)
+    selected.push(ASCII_PRINTABLE[i]);
   return Object.freeze(selected.slice(0, limit));
 }
 
@@ -132,7 +136,9 @@ export function applyBidiSwap(payload: string, index: number): string {
     BIDI.PDF +
     BIDI.PDI +
     BIDI.PDF;
-  return chars.slice(0, index).join("") + swapped + chars.slice(index + 2).join("");
+  return (
+    chars.slice(0, index).join("") + swapped + chars.slice(index + 2).join("")
+  );
 }
 
 /**
@@ -140,11 +146,15 @@ export function applyBidiSwap(payload: string, index: number): string {
  * `perturbation_budget = 1` (badchars.py:139) and
  * `max_position_candidates = 24` (badchars.py:143).
  */
-export function invisibleVariants(payload: string, maxPositions = 24): readonly string[] {
+export function invisibleVariants(
+  payload: string,
+  maxPositions = 24,
+): readonly string[] {
   const positions = selectPositions(payload.length, maxPositions);
   const out: string[] = [];
   for (const pos of positions) {
-    for (const ch of DEFAULT_INVISIBLE) out.push(injectSequences(payload, [[pos, ch]]));
+    for (const ch of DEFAULT_INVISIBLE)
+      out.push(injectSequences(payload, [[pos, ch]]));
   }
   return Object.freeze([...new Set(out)]);
 }
@@ -171,7 +181,8 @@ export function deletionVariants(
   const asciiCandidates = selectAscii(maxAsciiVariants);
   const out: string[] = [];
   for (const pos of positions) {
-    for (const ch of asciiCandidates) out.push(injectSequences(payload, [[pos, `${ch}\b`]]));
+    for (const ch of asciiCandidates)
+      out.push(injectSequences(payload, [[pos, `${ch}\b`]]));
   }
   return Object.freeze([...new Set(out)]);
 }
@@ -180,7 +191,10 @@ export function deletionVariants(
  * badchars.py:286-301 — `_generate_reordering_variants` at
  * `perturbation_budget = 1`, `max_reorder_candidates = 24` (badchars.py:144).
  */
-export function reorderingVariants(payload: string, maxPositions = 24): readonly string[] {
+export function reorderingVariants(
+  payload: string,
+  maxPositions = 24,
+): readonly string[] {
   if (payload.length < 2) return Object.freeze([]);
   const candidates = selectPositions(payload.length - 1, maxPositions, false);
   const out = candidates

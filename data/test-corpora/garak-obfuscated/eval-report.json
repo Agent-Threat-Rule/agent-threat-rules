@@ -1,0 +1,2553 @@
+{
+  "ruleCount": 784,
+  "cap": 216,
+  "upstreamCommit": "NVIDIA/garak@7ff1f2778e4d6ca6dc25ba8e17d8dfa520003ee0",
+  "unported": {
+    "encoding-base2048": "encoding.py:444-458 requires the third-party `base2048` package; no pure-TS equivalent vendored",
+    "encoding-ecoji": "encoding.py:580-606 requires the third-party `ecoji` package",
+    "encoding-zalgo": "encoding.py:609-632 requires `zalgolib`, and its output is randomised per call",
+    "encoding-base85": "encoding.py:346 lists base64.b85encode alongside a85encode; only a85 is ported (same family, different alphabet)",
+    "encoding-qp-mime": "encoding.py:370-384 and :411-425 are marked active = False upstream — quoted-printable passes ASCII straight through"
+  },
+  "results": [
+    {
+      "transformId": "badchars-deletion",
+      "family": "badchars",
+      "seedCorpus": "harmful_behaviors",
+      "population": 3024,
+      "samples": 216,
+      "normalization": {
+        "reverses-to-plaintext": 0,
+        "changes-but-not-plaintext": 0,
+        "no-effect": 216
+      },
+      "shapes": [
+        {
+          "shape": "llm_input",
+          "baselineSeeds": 16,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 36,
+          "byPresentation": [
+            {
+              "presentation": "raw",
+              "samples": 216,
+              "detected": 36
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00458",
+            "ATR-2026-02211"
+          ]
+        },
+        {
+          "shape": "tool_response",
+          "baselineSeeds": 16,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 95,
+          "byPresentation": [
+            {
+              "presentation": "raw",
+              "samples": 216,
+              "detected": 95
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00298",
+            "ATR-2026-00299",
+            "ATR-2026-00394",
+            "ATR-2026-00458",
+            "ATR-2026-02211"
+          ]
+        },
+        {
+          "shape": "tool_call+skill",
+          "baselineSeeds": 16,
+          "baselineDetected": 0,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 70,
+          "byPresentation": [
+            {
+              "presentation": "raw",
+              "samples": 216,
+              "detected": 70
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00394"
+          ]
+        }
+      ]
+    },
+    {
+      "transformId": "badchars-homoglyph",
+      "family": "badchars",
+      "seedCorpus": "harmful_behaviors",
+      "population": 432,
+      "samples": 216,
+      "normalization": {
+        "reverses-to-plaintext": 203,
+        "changes-but-not-plaintext": 0,
+        "no-effect": 13
+      },
+      "shapes": [
+        {
+          "shape": "llm_input",
+          "baselineSeeds": 16,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 188,
+          "byPresentation": [
+            {
+              "presentation": "raw",
+              "samples": 216,
+              "detected": 188
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00086",
+            "ATR-2026-00458",
+            "ATR-2026-02211"
+          ]
+        },
+        {
+          "shape": "tool_response",
+          "baselineSeeds": 16,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 188,
+          "byPresentation": [
+            {
+              "presentation": "raw",
+              "samples": 216,
+              "detected": 188
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00086",
+            "ATR-2026-00298",
+            "ATR-2026-00299",
+            "ATR-2026-00458",
+            "ATR-2026-02211"
+          ]
+        },
+        {
+          "shape": "tool_call+skill",
+          "baselineSeeds": 16,
+          "baselineDetected": 0,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "raw",
+              "samples": 216,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        }
+      ]
+    },
+    {
+      "transformId": "badchars-invisible",
+      "family": "badchars",
+      "seedCorpus": "harmful_behaviors",
+      "population": 1134,
+      "samples": 216,
+      "normalization": {
+        "reverses-to-plaintext": 216,
+        "changes-but-not-plaintext": 0,
+        "no-effect": 0
+      },
+      "shapes": [
+        {
+          "shape": "llm_input",
+          "baselineSeeds": 16,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 110,
+          "byPresentation": [
+            {
+              "presentation": "raw",
+              "samples": 216,
+              "detected": 110
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00458",
+            "ATR-2026-02211"
+          ]
+        },
+        {
+          "shape": "tool_response",
+          "baselineSeeds": 16,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 110,
+          "byPresentation": [
+            {
+              "presentation": "raw",
+              "samples": 216,
+              "detected": 110
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00298",
+            "ATR-2026-00299",
+            "ATR-2026-00458",
+            "ATR-2026-02211"
+          ]
+        },
+        {
+          "shape": "tool_call+skill",
+          "baselineSeeds": 16,
+          "baselineDetected": 0,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "raw",
+              "samples": 216,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        }
+      ]
+    },
+    {
+      "transformId": "badchars-reordering",
+      "family": "badchars",
+      "seedCorpus": "harmful_behaviors",
+      "population": 376,
+      "samples": 216,
+      "normalization": {
+        "reverses-to-plaintext": 3,
+        "changes-but-not-plaintext": 213,
+        "no-effect": 0
+      },
+      "shapes": [
+        {
+          "shape": "llm_input",
+          "baselineSeeds": 16,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 216,
+          "byPresentation": [
+            {
+              "presentation": "raw",
+              "samples": 216,
+              "detected": 216
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00002",
+            "ATR-2026-00080",
+            "ATR-2026-00086",
+            "ATR-2026-00458",
+            "ATR-2026-02211"
+          ]
+        },
+        {
+          "shape": "tool_response",
+          "baselineSeeds": 16,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 216,
+          "byPresentation": [
+            {
+              "presentation": "raw",
+              "samples": 216,
+              "detected": 216
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00002",
+            "ATR-2026-00080",
+            "ATR-2026-00086",
+            "ATR-2026-00276",
+            "ATR-2026-00298",
+            "ATR-2026-00458",
+            "ATR-2026-02211"
+          ]
+        },
+        {
+          "shape": "tool_call+skill",
+          "baselineSeeds": 16,
+          "baselineDetected": 0,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 216,
+          "byPresentation": [
+            {
+              "presentation": "raw",
+              "samples": 216,
+              "detected": 216
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00276"
+          ]
+        }
+      ]
+    },
+    {
+      "transformId": "encoding-ascii85",
+      "family": "encoding",
+      "seedCorpus": "encoding_payloads",
+      "population": 216,
+      "samples": 216,
+      "normalization": {
+        "reverses-to-plaintext": 0,
+        "changes-but-not-plaintext": 0,
+        "no-effect": 216
+      },
+      "shapes": [
+        {
+          "shape": "llm_input",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        },
+        {
+          "shape": "tool_response",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 72,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00256"
+          ]
+        },
+        {
+          "shape": "tool_call+skill",
+          "baselineSeeds": 36,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        }
+      ]
+    },
+    {
+      "transformId": "encoding-atbash",
+      "family": "encoding",
+      "seedCorpus": "encoding_payloads",
+      "population": 216,
+      "samples": 216,
+      "normalization": {
+        "reverses-to-plaintext": 0,
+        "changes-but-not-plaintext": 0,
+        "no-effect": 216
+      },
+      "shapes": [
+        {
+          "shape": "llm_input",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        },
+        {
+          "shape": "tool_response",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 72,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00257"
+          ]
+        },
+        {
+          "shape": "tool_call+skill",
+          "baselineSeeds": 36,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        }
+      ]
+    },
+    {
+      "transformId": "encoding-base16",
+      "family": "encoding",
+      "seedCorpus": "encoding_payloads",
+      "population": 216,
+      "samples": 216,
+      "normalization": {
+        "reverses-to-plaintext": 0,
+        "changes-but-not-plaintext": 0,
+        "no-effect": 216
+      },
+      "shapes": [
+        {
+          "shape": "llm_input",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        },
+        {
+          "shape": "tool_response",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 95,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 23
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00256"
+          ]
+        },
+        {
+          "shape": "tool_call+skill",
+          "baselineSeeds": 36,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        }
+      ]
+    },
+    {
+      "transformId": "encoding-base32",
+      "family": "encoding",
+      "seedCorpus": "encoding_payloads",
+      "population": 216,
+      "samples": 216,
+      "normalization": {
+        "reverses-to-plaintext": 0,
+        "changes-but-not-plaintext": 0,
+        "no-effect": 216
+      },
+      "shapes": [
+        {
+          "shape": "llm_input",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        },
+        {
+          "shape": "tool_response",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 94,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 22
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00256"
+          ]
+        },
+        {
+          "shape": "tool_call+skill",
+          "baselineSeeds": 36,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        }
+      ]
+    },
+    {
+      "transformId": "encoding-base64",
+      "family": "encoding",
+      "seedCorpus": "encoding_payloads",
+      "population": 216,
+      "samples": 216,
+      "normalization": {
+        "reverses-to-plaintext": 0,
+        "changes-but-not-plaintext": 0,
+        "no-effect": 216
+      },
+      "shapes": [
+        {
+          "shape": "llm_input",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        },
+        {
+          "shape": "tool_response",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 92,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 20
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00256"
+          ]
+        },
+        {
+          "shape": "tool_call+skill",
+          "baselineSeeds": 36,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        }
+      ]
+    },
+    {
+      "transformId": "encoding-base64url",
+      "family": "encoding",
+      "seedCorpus": "encoding_payloads",
+      "population": 216,
+      "samples": 216,
+      "normalization": {
+        "reverses-to-plaintext": 0,
+        "changes-but-not-plaintext": 0,
+        "no-effect": 216
+      },
+      "shapes": [
+        {
+          "shape": "llm_input",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        },
+        {
+          "shape": "tool_response",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 92,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 20
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00256"
+          ]
+        },
+        {
+          "shape": "tool_call+skill",
+          "baselineSeeds": 36,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        }
+      ]
+    },
+    {
+      "transformId": "encoding-braille",
+      "family": "encoding",
+      "seedCorpus": "encoding_payloads",
+      "population": 216,
+      "samples": 216,
+      "normalization": {
+        "reverses-to-plaintext": 0,
+        "changes-but-not-plaintext": 0,
+        "no-effect": 216
+      },
+      "shapes": [
+        {
+          "shape": "llm_input",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        },
+        {
+          "shape": "tool_response",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 191,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 31
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 31
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 31
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 31
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 31
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00309",
+            "ATR-2026-00311"
+          ]
+        },
+        {
+          "shape": "tool_call+skill",
+          "baselineSeeds": 36,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        }
+      ]
+    },
+    {
+      "transformId": "encoding-hex",
+      "family": "encoding",
+      "seedCorpus": "encoding_payloads",
+      "population": 216,
+      "samples": 216,
+      "normalization": {
+        "reverses-to-plaintext": 0,
+        "changes-but-not-plaintext": 0,
+        "no-effect": 216
+      },
+      "shapes": [
+        {
+          "shape": "llm_input",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        },
+        {
+          "shape": "tool_response",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 95,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 23
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00256"
+          ]
+        },
+        {
+          "shape": "tool_call+skill",
+          "baselineSeeds": 36,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        }
+      ]
+    },
+    {
+      "transformId": "encoding-leetspeak",
+      "family": "encoding",
+      "seedCorpus": "encoding_payloads",
+      "population": 216,
+      "samples": 216,
+      "normalization": {
+        "reverses-to-plaintext": 0,
+        "changes-but-not-plaintext": 0,
+        "no-effect": 216
+      },
+      "shapes": [
+        {
+          "shape": "llm_input",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        },
+        {
+          "shape": "tool_response",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        },
+        {
+          "shape": "tool_call+skill",
+          "baselineSeeds": 36,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        }
+      ]
+    },
+    {
+      "transformId": "encoding-morse",
+      "family": "encoding",
+      "seedCorpus": "encoding_payloads",
+      "population": 216,
+      "samples": 216,
+      "normalization": {
+        "reverses-to-plaintext": 0,
+        "changes-but-not-plaintext": 0,
+        "no-effect": 216
+      },
+      "shapes": [
+        {
+          "shape": "llm_input",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 96,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 16
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 16
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 16
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 16
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 16
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 16
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00481"
+          ]
+        },
+        {
+          "shape": "tool_response",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 116,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 16
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 16
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 16
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 16
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 16
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00256",
+            "ATR-2026-00342",
+            "ATR-2026-00481"
+          ]
+        },
+        {
+          "shape": "tool_call+skill",
+          "baselineSeeds": 36,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        }
+      ]
+    },
+    {
+      "transformId": "encoding-nato",
+      "family": "encoding",
+      "seedCorpus": "encoding_payloads",
+      "population": 216,
+      "samples": 216,
+      "normalization": {
+        "reverses-to-plaintext": 0,
+        "changes-but-not-plaintext": 0,
+        "no-effect": 216
+      },
+      "shapes": [
+        {
+          "shape": "llm_input",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        },
+        {
+          "shape": "tool_response",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        },
+        {
+          "shape": "tool_call+skill",
+          "baselineSeeds": 36,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        }
+      ]
+    },
+    {
+      "transformId": "encoding-rot13",
+      "family": "encoding",
+      "seedCorpus": "encoding_payloads",
+      "population": 216,
+      "samples": 216,
+      "normalization": {
+        "reverses-to-plaintext": 0,
+        "changes-but-not-plaintext": 0,
+        "no-effect": 216
+      },
+      "shapes": [
+        {
+          "shape": "llm_input",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        },
+        {
+          "shape": "tool_response",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 72,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00257"
+          ]
+        },
+        {
+          "shape": "tool_call+skill",
+          "baselineSeeds": 36,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        }
+      ]
+    },
+    {
+      "transformId": "encoding-uu",
+      "family": "encoding",
+      "seedCorpus": "encoding_payloads",
+      "population": 216,
+      "samples": 216,
+      "normalization": {
+        "reverses-to-plaintext": 0,
+        "changes-but-not-plaintext": 0,
+        "no-effect": 216
+      },
+      "shapes": [
+        {
+          "shape": "llm_input",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        },
+        {
+          "shape": "tool_response",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 72,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00256"
+          ]
+        },
+        {
+          "shape": "tool_call+skill",
+          "baselineSeeds": 36,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        }
+      ]
+    },
+    {
+      "transformId": "smuggling-homoglyph",
+      "family": "smuggling",
+      "seedCorpus": "harmful_behaviors",
+      "population": 32,
+      "samples": 32,
+      "normalization": {
+        "reverses-to-plaintext": 32,
+        "changes-but-not-plaintext": 0,
+        "no-effect": 0
+      },
+      "shapes": [
+        {
+          "shape": "llm_input",
+          "baselineSeeds": 16,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 32,
+          "obfuscatedDetected": 32,
+          "byPresentation": [
+            {
+              "presentation": "raw",
+              "samples": 32,
+              "detected": 32
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00086",
+            "ATR-2026-00458",
+            "ATR-2026-02211"
+          ]
+        },
+        {
+          "shape": "tool_response",
+          "baselineSeeds": 16,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 32,
+          "obfuscatedDetected": 32,
+          "byPresentation": [
+            {
+              "presentation": "raw",
+              "samples": 32,
+              "detected": 32
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00086",
+            "ATR-2026-00298",
+            "ATR-2026-00299",
+            "ATR-2026-00458",
+            "ATR-2026-02211"
+          ]
+        },
+        {
+          "shape": "tool_call+skill",
+          "baselineSeeds": 16,
+          "baselineDetected": 0,
+          "obfuscatedSamples": 32,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "raw",
+              "samples": 32,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        }
+      ]
+    },
+    {
+      "transformId": "smuggling-sneaky-bits",
+      "family": "smuggling",
+      "seedCorpus": "encoding_payloads",
+      "population": 216,
+      "samples": 216,
+      "normalization": {
+        "reverses-to-plaintext": 0,
+        "changes-but-not-plaintext": 168,
+        "no-effect": 48
+      },
+      "shapes": [
+        {
+          "shape": "llm_input",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        },
+        {
+          "shape": "tool_response",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 216,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 36
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00129",
+            "ATR-2026-00276",
+            "ATR-2026-00311",
+            "ATR-2026-00313"
+          ]
+        },
+        {
+          "shape": "tool_call+skill",
+          "baselineSeeds": 36,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 18,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 3
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 3
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 3
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 3
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 3
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 3
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00129",
+            "ATR-2026-00276"
+          ]
+        }
+      ]
+    },
+    {
+      "transformId": "smuggling-unicode-tags",
+      "family": "smuggling",
+      "seedCorpus": "encoding_payloads",
+      "population": 216,
+      "samples": 216,
+      "normalization": {
+        "reverses-to-plaintext": 0,
+        "changes-but-not-plaintext": 0,
+        "no-effect": 216
+      },
+      "shapes": [
+        {
+          "shape": "llm_input",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        },
+        {
+          "shape": "tool_response",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 216,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 36
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00129",
+            "ATR-2026-00258",
+            "ATR-2026-00311",
+            "ATR-2026-00404"
+          ]
+        },
+        {
+          "shape": "tool_call+skill",
+          "baselineSeeds": 36,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 216,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 36
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00129"
+          ]
+        }
+      ]
+    },
+    {
+      "transformId": "smuggling-variant-selectors",
+      "family": "smuggling",
+      "seedCorpus": "encoding_payloads",
+      "population": 216,
+      "samples": 216,
+      "normalization": {
+        "reverses-to-plaintext": 0,
+        "changes-but-not-plaintext": 0,
+        "no-effect": 216
+      },
+      "shapes": [
+        {
+          "shape": "llm_input",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        },
+        {
+          "shape": "tool_response",
+          "baselineSeeds": 36,
+          "baselineDetected": 17,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 216,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 36
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 36
+            }
+          ],
+          "firingRuleIds": [
+            "ATR-2026-00311",
+            "ATR-2026-00312"
+          ]
+        },
+        {
+          "shape": "tool_call+skill",
+          "baselineSeeds": 36,
+          "baselineDetected": 8,
+          "obfuscatedSamples": 216,
+          "obfuscatedDetected": 0,
+          "byPresentation": [
+            {
+              "presentation": "bare",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-0",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-1",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-2",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-3",
+              "samples": 36,
+              "detected": 0
+            },
+            {
+              "presentation": "template-4",
+              "samples": 36,
+              "detected": 0
+            }
+          ],
+          "firingRuleIds": []
+        }
+      ]
+    }
+  ]
+}

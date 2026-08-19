@@ -43,7 +43,9 @@ const CORPUS_PATH =
     : resolve(REPO_ROOT, "data/test-corpora/garak-obfuscated/corpus.json");
 
 if (!existsSync(CORPUS_PATH)) {
-  console.error(`[normfix] corpus not found: ${CORPUS_PATH} — run scripts/garak-obfuscate.ts first`);
+  console.error(
+    `[normfix] corpus not found: ${CORPUS_PATH} — run scripts/garak-obfuscate.ts first`,
+  );
   process.exit(1);
 }
 
@@ -58,10 +60,18 @@ console.log(`[normfix] rules loaded: ${ruleCount}`);
 const anyShapeDetects = (text: string): boolean =>
   OBFUSCATION_SHAPES.some((s) => engine.evaluate(s.build(text)).length > 0);
 
+const detectsOnShape = (shapeName: string, text: string): boolean => {
+  const shape = OBFUSCATION_SHAPES.find((s) => s.name === shapeName);
+  if (!shape) throw new Error(`unknown shape: ${shapeName}`);
+  return engine.evaluate(shape.build(text)).length > 0;
+};
+
 // -------------------------------------------------------------------------
 // BENEFIT
 // -------------------------------------------------------------------------
-const corpus = JSON.parse(readFileSync(CORPUS_PATH, "utf-8")) as ObfuscatedCorpus;
+const corpus = JSON.parse(
+  readFileSync(CORPUS_PATH, "utf-8"),
+) as ObfuscatedCorpus;
 
 /** Only the transforms the decode is even aimed at; the rest would be noise. */
 const TARGETED = new Set([
@@ -73,38 +83,73 @@ const TARGETED = new Set([
 
 interface Row {
   readonly transformId: string;
+  readonly shape: string;
+  readonly population: number;
   readonly samples: number;
   readonly before: number;
   readonly after: number;
   readonly decodeChanged: number;
 }
 
+/**
+ * Deterministic stride sample. badchars-deletion alone is 3,024 variants and
+ * every one costs three engine evaluations twice over; the ratio being measured
+ * ("what fraction of this transform's variants are detected") is a proportion,
+ * so an evenly spaced subsample estimates it without bias. The population size
+ * is printed next to the sampled size so no reader mistakes one for the other.
+ */
+const SAMPLE_CAP = 300;
+function stride<T>(items: readonly T[], cap: number): readonly T[] {
+  if (items.length <= cap) return items;
+  const step = items.length / cap;
+  return Object.freeze(
+    Array.from({ length: cap }, (_, i) => items[Math.floor(i * step)]),
+  );
+}
+
 const rows: Row[] = [];
 for (const transformId of TARGETED) {
-  const samples = corpus.samples.filter((s) => s.transformId === transformId);
+  const population = corpus.samples.filter(
+    (s) => s.transformId === transformId,
+  );
+  const samples = stride(population, SAMPLE_CAP);
   if (samples.length === 0) continue;
-  let before = 0;
-  let after = 0;
-  let changed = 0;
-  for (const s of samples) {
-    const decoded = decodeCarriers(s.text);
-    if (decoded !== s.text) changed++;
-    const hitRaw = anyShapeDetects(s.text);
-    if (hitRaw) before++;
-    if (hitRaw || anyShapeDetects(decoded)) after++;
+  const decoded = samples.map((s) => decodeCarriers(s.text));
+  const changed = samples.filter((s, i) => decoded[i] !== s.text).length;
+  for (const shape of OBFUSCATION_SHAPES) {
+    let before = 0;
+    let after = 0;
+    for (let i = 0; i < samples.length; i++) {
+      const hitRaw = detectsOnShape(shape.name, samples[i].text);
+      if (hitRaw) before++;
+      if (hitRaw || detectsOnShape(shape.name, decoded[i])) after++;
+    }
+    rows.push({
+      transformId,
+      shape: shape.name,
+      population: population.length,
+      samples: samples.length,
+      before,
+      after,
+      decodeChanged: changed,
+    });
   }
-  rows.push({ transformId, samples: samples.length, before, after, decodeChanged: changed });
 }
 
 console.log("");
-console.log("BENEFIT — detection on the obfuscated corpus (union of all three shapes)");
+console.log("BENEFIT — detection on the obfuscated corpus, PER EVENT SHAPE");
 console.log(
-  `${"transform".padEnd(30)} ${"samples".padEnd(9)} ${"today".padEnd(16)} ${"with decode".padEnd(16)} decode altered`,
+  `${"transform".padEnd(30)} ${"shape".padEnd(17)} ${"sampled/pop".padEnd(13)} ${"today".padEnd(17)} ${"with decode".padEnd(17)} decode altered`,
 );
-for (const r of rows.sort((a, b) => a.transformId.localeCompare(b.transformId))) {
-  const p = (n: number): string => `${n}/${r.samples} (${((100 * n) / r.samples).toFixed(1)}%)`;
+for (const r of rows.sort(
+  (a, b) =>
+    a.transformId.localeCompare(b.transformId) ||
+    a.shape.localeCompare(b.shape),
+)) {
+  const p = (n: number): string =>
+    `${n}/${r.samples} (${((100 * n) / r.samples).toFixed(1)}%)`;
   console.log(
-    `${r.transformId.padEnd(30)} ${String(r.samples).padEnd(9)} ${p(r.before).padEnd(16)} ${p(r.after).padEnd(16)} ${r.decodeChanged}/${r.samples}`,
+    `${r.transformId.padEnd(30)} ${r.shape.padEnd(17)} ${`${r.samples}/${r.population}`.padEnd(13)} ${p(r.before).padEnd(17)} ${p(r.after).padEnd(17)} ${r.decodeChanged}/${r.samples}`,
   );
 }
 
@@ -113,9 +158,13 @@ for (const r of rows.sort((a, b) => a.transformId.localeCompare(b.transformId)))
 // -------------------------------------------------------------------------
 const benign = loadBenignSamples(REPO_ROOT);
 console.log("");
-console.log(`COST — benign corpora ${MEASUREMENT_CORPORA.join(", ")} (${benign.length} samples)`);
+console.log(
+  `COST — benign corpora ${MEASUREMENT_CORPORA.join(", ")} (${benign.length} samples)`,
+);
 if (benign.length === 0) {
-  console.error("[normfix] benign corpora are empty — cost is UNMEASURED, not zero");
+  console.error(
+    "[normfix] benign corpora are empty — cost is UNMEASURED, not zero",
+  );
   process.exit(1);
 }
 
@@ -132,9 +181,14 @@ for (const sample of benign) {
     if (newlyFlagged.length < 5) newlyFlagged.push(sample.slice(0, 160));
   }
 }
-console.log(`benign samples the decode alters at all: ${touched}/${benign.length}`);
-console.log(`benign samples that go clean -> flagged: ${cleanToFlagged}/${benign.length}`);
-for (const s of newlyFlagged) console.log(`  newly flagged: ${JSON.stringify(s)}`);
+console.log(
+  `benign samples the decode alters at all: ${touched}/${benign.length}`,
+);
+console.log(
+  `benign samples that go clean -> flagged: ${cleanToFlagged}/${benign.length}`,
+);
+for (const s of newlyFlagged)
+  console.log(`  newly flagged: ${JSON.stringify(s)}`);
 console.log("");
 console.log(
   cleanToFlagged === 0

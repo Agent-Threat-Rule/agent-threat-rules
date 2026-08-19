@@ -49,8 +49,10 @@ export interface GarakTransform {
   readonly expand: (seed: string) => readonly string[];
 }
 
-const one = (fn: (s: string) => string) => (seed: string): readonly string[] =>
-  Object.freeze([fn(seed)]);
+const one =
+  (fn: (s: string) => string) =>
+  (seed: string): readonly string[] =>
+    Object.freeze([fn(seed)]);
 
 export const GARAK_TRANSFORMS: readonly GarakTransform[] = Object.freeze([
   // ---- badchars: imperceptible perturbation ------------------------------
@@ -67,7 +69,8 @@ export const GARAK_TRANSFORMS: readonly GarakTransform[] = Object.freeze([
     family: "badchars",
     kind: "perturbation",
     encodingName: "",
-    citation: "garak/probes/badchars.py:77-108,260-284 (UTS#39 intentional.txt)",
+    citation:
+      "garak/probes/badchars.py:77-108,260-284 (UTS#39 intentional.txt)",
     expand: (seed) => homoglyphVariants(seed),
   },
   {
@@ -88,47 +91,139 @@ export const GARAK_TRANSFORMS: readonly GarakTransform[] = Object.freeze([
   },
 
   // ---- encoding: ciphertext + carrier template ---------------------------
-  { id: "encoding-base64", family: "encoding", kind: "encoding", encodingName: "BASE64",
-    citation: "garak/probes/encoding.py:296-302", expand: one(Enc.injectBase64) },
-  { id: "encoding-base64url", family: "encoding", kind: "encoding", encodingName: "BASE64",
-    citation: "garak/probes/encoding.py:298", expand: one(Enc.injectBase64Url) },
-  { id: "encoding-base16", family: "encoding", kind: "encoding", encodingName: "BASE16",
-    citation: "garak/probes/encoding.py:310-318", expand: one(Enc.injectBase16) },
-  { id: "encoding-base32", family: "encoding", kind: "encoding", encodingName: "BASE32",
-    citation: "garak/probes/encoding.py:325-333", expand: one(Enc.injectBase32) },
-  { id: "encoding-ascii85", family: "encoding", kind: "encoding", encodingName: "ASCII85",
-    citation: "garak/probes/encoding.py:340-348", expand: one(Enc.injectAscii85) },
-  { id: "encoding-hex", family: "encoding", kind: "encoding", encodingName: "hex",
-    citation: "garak/probes/encoding.py:355-363", expand: one(Enc.injectHex) },
-  { id: "encoding-uu", family: "encoding", kind: "encoding", encodingName: "UUencode",
-    citation: "garak/probes/encoding.py:387-408", expand: one(Enc.injectUU) },
-  { id: "encoding-rot13", family: "encoding", kind: "encoding", encodingName: "ROT13",
-    citation: "garak/probes/encoding.py:50-57,428-441", expand: one(Enc.injectRot13) },
-  { id: "encoding-atbash", family: "encoding", kind: "encoding", encodingName: "Atbash",
-    citation: "garak/probes/encoding.py:477-508", expand: one(Enc.injectAtbash) },
-  { id: "encoding-morse", family: "encoding", kind: "encoding", encodingName: "Morse",
-    citation: "garak/probes/encoding.py:141-189,511-524", expand: one(Enc.injectMorse) },
-  { id: "encoding-nato", family: "encoding", kind: "encoding", encodingName: "Nato",
-    citation: "garak/probes/encoding.py:527-577", expand: one(Enc.injectNato) },
-  { id: "encoding-braille", family: "encoding", kind: "encoding", encodingName: "Braille",
-    citation: "garak/probes/encoding.py:60-138,461-474", expand: one(Enc.injectBraille) },
-  { id: "encoding-leetspeak", family: "encoding", kind: "encoding", encodingName: "Leetspeak",
+  {
+    id: "encoding-base64",
+    family: "encoding",
+    kind: "encoding",
+    encodingName: "BASE64",
+    citation: "garak/probes/encoding.py:296-302",
+    expand: one(Enc.injectBase64),
+  },
+  {
+    id: "encoding-base64url",
+    family: "encoding",
+    kind: "encoding",
+    encodingName: "BASE64",
+    citation: "garak/probes/encoding.py:298",
+    expand: one(Enc.injectBase64Url),
+  },
+  {
+    id: "encoding-base16",
+    family: "encoding",
+    kind: "encoding",
+    encodingName: "BASE16",
+    citation: "garak/probes/encoding.py:310-318",
+    expand: one(Enc.injectBase16),
+  },
+  {
+    id: "encoding-base32",
+    family: "encoding",
+    kind: "encoding",
+    encodingName: "BASE32",
+    citation: "garak/probes/encoding.py:325-333",
+    expand: one(Enc.injectBase32),
+  },
+  {
+    id: "encoding-ascii85",
+    family: "encoding",
+    kind: "encoding",
+    encodingName: "ASCII85",
+    citation: "garak/probes/encoding.py:340-348",
+    expand: one(Enc.injectAscii85),
+  },
+  {
+    id: "encoding-hex",
+    family: "encoding",
+    kind: "encoding",
+    encodingName: "hex",
+    citation: "garak/probes/encoding.py:355-363",
+    expand: one(Enc.injectHex),
+  },
+  {
+    id: "encoding-uu",
+    family: "encoding",
+    kind: "encoding",
+    encodingName: "UUencode",
+    citation: "garak/probes/encoding.py:387-408",
+    expand: one(Enc.injectUU),
+  },
+  {
+    id: "encoding-rot13",
+    family: "encoding",
+    kind: "encoding",
+    encodingName: "ROT13",
+    citation: "garak/probes/encoding.py:50-57,428-441",
+    expand: one(Enc.injectRot13),
+  },
+  {
+    id: "encoding-atbash",
+    family: "encoding",
+    kind: "encoding",
+    encodingName: "Atbash",
+    citation: "garak/probes/encoding.py:477-508",
+    expand: one(Enc.injectAtbash),
+  },
+  {
+    id: "encoding-morse",
+    family: "encoding",
+    kind: "encoding",
+    encodingName: "Morse",
+    citation: "garak/probes/encoding.py:141-189,511-524",
+    expand: one(Enc.injectMorse),
+  },
+  {
+    id: "encoding-nato",
+    family: "encoding",
+    kind: "encoding",
+    encodingName: "Nato",
+    citation: "garak/probes/encoding.py:527-577",
+    expand: one(Enc.injectNato),
+  },
+  {
+    id: "encoding-braille",
+    family: "encoding",
+    kind: "encoding",
+    encodingName: "Braille",
+    citation: "garak/probes/encoding.py:60-138,461-474",
+    expand: one(Enc.injectBraille),
+  },
+  {
+    id: "encoding-leetspeak",
+    family: "encoding",
+    kind: "encoding",
+    encodingName: "Leetspeak",
     citation: "garak/resources/encodings.py:12-22 via encoding.py:635-652",
-    expand: one(Enc.injectLeet) },
+    expand: one(Enc.injectLeet),
+  },
 
   // ---- smuggling: invisible carriers -------------------------------------
-  { id: "smuggling-unicode-tags", family: "smuggling", kind: "encoding",
+  {
+    id: "smuggling-unicode-tags",
+    family: "smuggling",
+    kind: "encoding",
     encodingName: "ASCII in Unicode Tags",
-    citation: "garak/resources/smuggling/smuggle_ascii.py:15-30 via encoding.py:655-682",
-    expand: one((s) => Enc.smuggleUnicodeTags(s)) },
-  { id: "smuggling-variant-selectors", family: "smuggling", kind: "encoding",
+    citation:
+      "garak/resources/smuggling/smuggle_ascii.py:15-30 via encoding.py:655-682",
+    expand: one((s) => Enc.smuggleUnicodeTags(s)),
+  },
+  {
+    id: "smuggling-variant-selectors",
+    family: "smuggling",
+    kind: "encoding",
     encodingName: "ASCII in Unicode Variant Selector",
-    citation: "garak/resources/smuggling/smuggle_ascii.py:33-47 via encoding.py:685-704",
-    expand: one(Enc.smuggleVariantSelectors) },
-  { id: "smuggling-sneaky-bits", family: "smuggling", kind: "encoding",
+    citation:
+      "garak/resources/smuggling/smuggle_ascii.py:33-47 via encoding.py:685-704",
+    expand: one(Enc.smuggleVariantSelectors),
+  },
+  {
+    id: "smuggling-sneaky-bits",
+    family: "smuggling",
+    kind: "encoding",
     encodingName: "ASCII in hidden unicode binary encoding",
-    citation: "garak/resources/smuggling/smuggle_ascii.py:50-72 via encoding.py:707-728",
-    expand: one(Enc.smuggleSneakyBits) },
+    citation:
+      "garak/resources/smuggling/smuggle_ascii.py:50-72 via encoding.py:707-728",
+    expand: one(Enc.smuggleSneakyBits),
+  },
   {
     id: "smuggling-homoglyph",
     family: "smuggling",
@@ -150,15 +245,16 @@ export function transformById(id: string): GarakTransform {
  * Transformations upstream ships that this port does NOT implement, and why.
  * Reported by the CLI so a reader never mistakes "absent" for "measured clean".
  */
-export const UNPORTED_TRANSFORMS: Readonly<Record<string, string>> = Object.freeze({
-  "encoding-base2048":
-    "encoding.py:444-458 requires the third-party `base2048` package; no pure-TS equivalent vendored",
-  "encoding-ecoji":
-    "encoding.py:580-606 requires the third-party `ecoji` package",
-  "encoding-zalgo":
-    "encoding.py:609-632 requires `zalgolib`, and its output is randomised per call",
-  "encoding-base85":
-    "encoding.py:346 lists base64.b85encode alongside a85encode; only a85 is ported (same family, different alphabet)",
-  "encoding-qp-mime":
-    "encoding.py:370-384 and :411-425 are marked active = False upstream — quoted-printable passes ASCII straight through",
-});
+export const UNPORTED_TRANSFORMS: Readonly<Record<string, string>> =
+  Object.freeze({
+    "encoding-base2048":
+      "encoding.py:444-458 requires the third-party `base2048` package; no pure-TS equivalent vendored",
+    "encoding-ecoji":
+      "encoding.py:580-606 requires the third-party `ecoji` package",
+    "encoding-zalgo":
+      "encoding.py:609-632 requires `zalgolib`, and its output is randomised per call",
+    "encoding-base85":
+      "encoding.py:346 lists base64.b85encode alongside a85encode; only a85 is ported (same family, different alphabet)",
+    "encoding-qp-mime":
+      "encoding.py:370-384 and :411-425 are marked active = False upstream — quoted-printable passes ASCII straight through",
+  });

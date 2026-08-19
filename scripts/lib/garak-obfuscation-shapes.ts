@@ -11,7 +11,8 @@
  */
 import type { AgentEvent } from "../../src/types.js";
 
-export type ObfuscationShapeName = "llm_input" | "tool_response" | "tool_call+skill";
+export type ObfuscationShapeName =
+  "llm_input" | "tool_response" | "tool_call+skill";
 
 export interface ObfuscationShape {
   readonly name: ObfuscationShapeName;
