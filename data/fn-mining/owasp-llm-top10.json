@@ -1,0 +1,405 @@
+{
+  "corpus": "owasp-llm-top10",
+  "family_filter": [],
+  "channel": "prompt",
+  "registry_note": "Same defect as mitre-atlas: 'Example Attack Scenario' paragraphs from the OWASP document. Descriptive prose, no payload.",
+  "usable_as_raw_material": false,
+  "event_shapes": [
+    "llm-input",
+    "tool-response"
+  ],
+  "lane": "hunt",
+  "atr_version": "4.0.0",
+  "atr_commit": "cf91ad4a1",
+  "rules_loaded": 784,
+  "measured_at": "2026-08-19T07:39:56.516Z",
+  "samples_total": 56,
+  "duplicate_samples": 0,
+  "deduped": true,
+  "attack_samples": 56,
+  "benign_samples": 0,
+  "detected": 5,
+  "missed": 51,
+  "recall": 0.08928571428571429,
+  "benign_flagged": 0,
+  "benign_fp_rate": null,
+  "by_family": {
+    "LLM01": {
+      "total": 10,
+      "detected": 1,
+      "recall": 0.1
+    },
+    "LLM02": {
+      "total": 3,
+      "detected": 0,
+      "recall": 0
+    },
+    "LLM03": {
+      "total": 13,
+      "detected": 0,
+      "recall": 0
+    },
+    "LLM04": {
+      "total": 6,
+      "detected": 1,
+      "recall": 0.16666666666666666
+    },
+    "LLM05": {
+      "total": 7,
+      "detected": 1,
+      "recall": 0.14285714285714285
+    },
+    "LLM06": {
+      "total": 1,
+      "detected": 0,
+      "recall": 0
+    },
+    "LLM07": {
+      "total": 2,
+      "detected": 1,
+      "recall": 0.5
+    },
+    "LLM08": {
+      "total": 5,
+      "detected": 1,
+      "recall": 0.2
+    },
+    "LLM09": {
+      "total": 2,
+      "detected": 0,
+      "recall": 0
+    },
+    "LLM10": {
+      "total": 7,
+      "detected": 0,
+      "recall": 0
+    }
+  },
+  "min_support": 3,
+  "benign_gate_samples": 12060,
+  "benign_gate_corpora": [
+    "data/skill-benchmark/benign",
+    "data/benign-corpus-extended",
+    "data/benign-code"
+  ],
+  "clusters": [
+    {
+      "phrase": "an attacker",
+      "anchor_regex": "an\\s+attacker",
+      "phrase_family": "judgment",
+      "tokens": 2,
+      "misses_covered": 25,
+      "misses_newly_covered": 18,
+      "benign_hits": 20,
+      "benign_hit_rate": 0.001658374792703151,
+      "corpus_benign_hits": -1,
+      "verdict": "benign-collision",
+      "attack_families": [
+        "LLM01",
+        "LLM02",
+        "LLM03",
+        "LLM04",
+        "LLM05",
+        "LLM07",
+        "LLM10"
+      ],
+      "sample_ids": [
+        "owasp-LLM01-4",
+        "owasp-LLM01-5",
+        "owasp-LLM01-6",
+        "owasp-LLM01-7",
+        "owasp-LLM01-8",
+        "owasp-LLM01-9",
+        "owasp-LLM02-1",
+        "owasp-LLM03-0",
+        "owasp-LLM03-2",
+        "owasp-LLM03-5",
+        "owasp-LLM03-7",
+        "owasp-LLM03-8",
+        "owasp-LLM03-9",
+        "owasp-LLM03-10",
+        "owasp-LLM03-11",
+        "owasp-LLM04-1",
+        "owasp-LLM04-4",
+        "owasp-LLM05-4",
+        "owasp-LLM05-5",
+        "owasp-LLM07-1",
+        "owasp-LLM10-1",
+        "owasp-LLM10-2",
+        "owasp-LLM10-3",
+        "owasp-LLM10-4",
+        "owasp-LLM10-5"
+      ],
+      "examples": [
+        "an attacker modifies a document in a repository used by a retrieval-augmented generation (rag) application. when a user's query returns the modified content, the malicious instructions alter the llm's output, generating ",
+        "an attacker exploits a vulnerability (cve-2024-5184) in an llm-powered email assistant to inject malicious prompts, allowing access to sensitive information and manipulation of email content.",
+        "an attacker uploads a resume with split malicious prompts. when an llm is used to evaluate the candidate, the combined prompts manipulate the model's response, resulting in a positive recommendation despite the actual re"
+      ]
+    },
+    {
+      "phrase": "to",
+      "anchor_regex": "to",
+      "phrase_family": "judgment",
+      "tokens": 1,
+      "misses_covered": 47,
+      "misses_newly_covered": 9,
+      "benign_hits": 9931,
+      "benign_hit_rate": 0.8234660033167496,
+      "corpus_benign_hits": -1,
+      "verdict": "benign-collision",
+      "attack_families": [
+        "LLM01",
+        "LLM02",
+        "LLM03",
+        "LLM04",
+        "LLM05",
+        "LLM06",
+        "LLM07",
+        "LLM08",
+        "LLM09",
+        "LLM10"
+      ],
+      "sample_ids": [
+        "owasp-LLM01-0",
+        "owasp-LLM01-2",
+        "owasp-LLM01-3",
+        "owasp-LLM01-5",
+        "owasp-LLM01-6",
+        "owasp-LLM01-7",
+        "owasp-LLM01-8",
+        "owasp-LLM01-9",
+        "owasp-LLM02-0",
+        "owasp-LLM02-1",
+        "owasp-LLM02-2",
+        "owasp-LLM03-0",
+        "owasp-LLM03-1",
+        "owasp-LLM03-2",
+        "owasp-LLM03-3",
+        "owasp-LLM03-4",
+        "owasp-LLM03-5",
+        "owasp-LLM03-6",
+        "owasp-LLM03-7",
+        "owasp-LLM03-9",
+        "owasp-LLM03-10",
+        "owasp-LLM03-11",
+        "owasp-LLM03-12",
+        "owasp-LLM04-0",
+        "owasp-LLM04-2",
+        "owasp-LLM04-4",
+        "owasp-LLM05-0",
+        "owasp-LLM05-1",
+        "owasp-LLM05-2",
+        "owasp-LLM05-4",
+        "owasp-LLM05-5",
+        "owasp-LLM05-6",
+        "owasp-LLM06-0",
+        "owasp-LLM07-1",
+        "owasp-LLM08-0",
+        "owasp-LLM08-1",
+        "owasp-LLM08-3",
+        "owasp-LLM08-4",
+        "owasp-LLM09-0",
+        "owasp-LLM09-1"
+      ],
+      "examples": [
+        "perform regular penetration testing and breach simulations, treating the model as an untrusted user to test the effectiveness of trust boundaries and access controls.",
+        "a user employs an llm to summarize a webpage containing hidden instructions that cause the llm to insert an image linking to a url, leading to exfiltration of the private conversation.",
+        "a company includes an instruction in a job description to identify ai-generated applications. an applicant, unaware of this instruction, uses an llm to optimize their resume, inadvertently triggering the ai detection."
+      ]
+    },
+    {
+      "phrase": "the llm to",
+      "anchor_regex": "the\\s+llm\\s+to",
+      "phrase_family": "judgment",
+      "tokens": 3,
+      "misses_covered": 6,
+      "misses_newly_covered": 5,
+      "benign_hits": 4,
+      "benign_hit_rate": 0.0003316749585406302,
+      "corpus_benign_hits": -1,
+      "verdict": "benign-collision",
+      "attack_families": [
+        "LLM01",
+        "LLM05",
+        "LLM10"
+      ],
+      "sample_ids": [
+        "owasp-LLM01-2",
+        "owasp-LLM05-2",
+        "owasp-LLM05-4",
+        "owasp-LLM05-5",
+        "owasp-LLM10-0",
+        "owasp-LLM10-6"
+      ],
+      "examples": [
+        "a user employs an llm to summarize a webpage containing hidden instructions that cause the llm to insert an image linking to a url, leading to exfiltration of the private conversation.",
+        "a user utilizes a website summarizer tool powered by an llm to generate a concise summary of an article. the website includes a prompt injection instructing the llm to capture sensitive content from either the website or",
+        "a web app uses an llm to generate content from user text prompts without output sanitization. an attacker could submit a crafted prompt causing the llm to return an unsanitized javascript payload, leading to xss when ren"
+      ]
+    },
+    {
+      "phrase": "an llm",
+      "anchor_regex": "an\\s+llm",
+      "phrase_family": "judgment",
+      "tokens": 2,
+      "misses_covered": 14,
+      "misses_newly_covered": 5,
+      "benign_hits": 54,
+      "benign_hit_rate": 0.004477611940298508,
+      "corpus_benign_hits": -1,
+      "verdict": "benign-collision",
+      "attack_families": [
+        "LLM01",
+        "LLM03",
+        "LLM05",
+        "LLM07",
+        "LLM10"
+      ],
+      "sample_ids": [
+        "owasp-LLM01-2",
+        "owasp-LLM01-3",
+        "owasp-LLM01-6",
+        "owasp-LLM03-0",
+        "owasp-LLM03-3",
+        "owasp-LLM03-4",
+        "owasp-LLM03-12",
+        "owasp-LLM05-1",
+        "owasp-LLM05-2",
+        "owasp-LLM05-4",
+        "owasp-LLM05-5",
+        "owasp-LLM05-6",
+        "owasp-LLM07-1",
+        "owasp-LLM10-1"
+      ],
+      "examples": [
+        "a user employs an llm to summarize a webpage containing hidden instructions that cause the llm to insert an image linking to a url, leading to exfiltration of the private conversation.",
+        "a company includes an instruction in a job description to identify ai-generated applications. an applicant, unaware of this instruction, uses an llm to optimize their resume, inadvertently triggering the ai detection.",
+        "an attacker uploads a resume with split malicious prompts. when an llm is used to evaluate the candidate, the combined prompts manipulate the model's response, resulting in a positive recommendation despite the actual re"
+      ]
+    },
+    {
+      "phrase": "leading to",
+      "anchor_regex": "leading\\s+to",
+      "phrase_family": "judgment",
+      "tokens": 2,
+      "misses_covered": 13,
+      "misses_newly_covered": 4,
+      "benign_hits": 64,
+      "benign_hit_rate": 0.005306799336650083,
+      "corpus_benign_hits": -1,
+      "verdict": "benign-collision",
+      "attack_families": [
+        "LLM01",
+        "LLM03",
+        "LLM04",
+        "LLM05",
+        "LLM08",
+        "LLM09",
+        "LLM10"
+      ],
+      "sample_ids": [
+        "owasp-LLM01-2",
+        "owasp-LLM01-7",
+        "owasp-LLM03-3",
+        "owasp-LLM03-6",
+        "owasp-LLM03-12",
+        "owasp-LLM04-0",
+        "owasp-LLM04-4",
+        "owasp-LLM05-0",
+        "owasp-LLM05-4",
+        "owasp-LLM08-1",
+        "owasp-LLM09-0",
+        "owasp-LLM09-1",
+        "owasp-LLM10-3"
+      ],
+      "examples": [
+        "a user employs an llm to summarize a webpage containing hidden instructions that cause the llm to insert an image linking to a url, leading to exfiltration of the private conversation.",
+        "an attacker embeds a malicious prompt within an image that accompanies benign text. when a multimodal ai processes the image and text concurrently, the hidden prompt alters the model's behavior, potentially leading to un",
+        "an llm system deploys pre-trained models from a widely used repository without thorough verification. a compromised model introduces malicious code, causing biased outputs in certain contexts and leading to harmful or ma"
+      ]
+    },
+    {
+      "phrase": "an llm is used to",
+      "anchor_regex": "an\\s+llm\\s+is\\s+used\\s+to",
+      "phrase_family": "judgment",
+      "tokens": 5,
+      "misses_covered": 3,
+      "misses_newly_covered": 3,
+      "benign_hits": 0,
+      "benign_hit_rate": 0,
+      "corpus_benign_hits": -1,
+      "verdict": "candidate",
+      "attack_families": [
+        "LLM01",
+        "LLM05"
+      ],
+      "sample_ids": [
+        "owasp-LLM01-6",
+        "owasp-LLM05-5",
+        "owasp-LLM05-6"
+      ],
+      "examples": [
+        "an attacker uploads a resume with split malicious prompts. when an llm is used to evaluate the candidate, the combined prompts manipulate the model's response, resulting in a positive recommendation despite the actual re",
+        "an llm is used to generate dynamic email templates for a marketing campaign. an attacker manipulates the llm to include malicious javascript within the email content. if the application doesn't properly sanitize the llm ",
+        "an llm is used to generate code from natural language inputs in a software company, aiming to streamline development tasks. while efficient, this approach risks exposing sensitive information, creating insecure data hand"
+      ]
+    },
+    {
+      "phrase": "an attacker exploits",
+      "anchor_regex": "an\\s+attacker\\s+exploits",
+      "phrase_family": "judgment",
+      "tokens": 3,
+      "misses_covered": 3,
+      "misses_newly_covered": 3,
+      "benign_hits": 0,
+      "benign_hit_rate": 0,
+      "corpus_benign_hits": -1,
+      "verdict": "candidate",
+      "attack_families": [
+        "LLM01",
+        "LLM03"
+      ],
+      "sample_ids": [
+        "owasp-LLM01-5",
+        "owasp-LLM03-0",
+        "owasp-LLM03-8"
+      ],
+      "examples": [
+        "an attacker exploits a vulnerability (cve-2024-5184) in an llm-powered email assistant to inject malicious prompts, allowing access to sensitive information and manipulation of email content.",
+        "an attacker exploits a vulnerable python library to compromise an llm app. this happened in the first open ai data breach. attacks on the pypi package registry tricked model developers into downloading a compromised pyto",
+        "following the removal of wizardlm, an attacker exploits the interest in this model and publishes a fake version of the model with the same name but containing malware and backdoors."
+      ]
+    },
+    {
+      "phrase": "potentially leading to",
+      "anchor_regex": "potentially\\s+leading\\s+to",
+      "phrase_family": "judgment",
+      "tokens": 3,
+      "misses_covered": 3,
+      "misses_newly_covered": 3,
+      "benign_hits": 2,
+      "benign_hit_rate": 0.0001658374792703151,
+      "corpus_benign_hits": -1,
+      "verdict": "benign-collision",
+      "attack_families": [
+        "LLM01",
+        "LLM03",
+        "LLM05"
+      ],
+      "sample_ids": [
+        "owasp-LLM01-7",
+        "owasp-LLM03-6",
+        "owasp-LLM05-0"
+      ],
+      "examples": [
+        "an attacker embeds a malicious prompt within an image that accompanies benign text. when a multimodal ai processes the image and text concurrently, the hidden prompt alters the model's behavior, potentially leading to un",
+        "these attacks target cloud infrastructures, leveraging shared resources and vulnerabilities in the virtualization layers. cloudborne involves exploiting firmware vulnerabilities in shared cloud environments, compromising",
+        "1. llm output is entered directly into a system shell or similar function such as exec or eval, resulting in remote code execution. 2. javascript or markdown is generated by the llm and returned to a user. the code is th"
+      ]
+    }
+  ],
+  "misses_not_clustered": 1,
+  "missed_ids_sample": [
+    "owasp-LLM04-3"
+  ]
+}
