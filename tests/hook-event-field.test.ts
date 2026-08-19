@@ -69,3 +69,48 @@ describe('the hook event is read under the spelling the host actually sends', ()
     expect(out.reason ?? '').not.toContain('Unknown hook type');
   });
 });
+
+describe('the event SHAPE follows the same spelling, not just the dispatch', () => {
+  /**
+   * #483 fixed the dispatch switch and the stdio loop and stopped there.
+   * hookInputToEvent kept reading `input.hook`, so a real Claude Code event
+   * resolved isPreTool to false and was constructed as a tool_response. The
+   * dispatch was right and the shape was wrong, which is worse than the
+   * original bug in one way: it produced a plausible verdict instead of an
+   * obvious "Unknown hook type".
+   *
+   * Rules are admitted per agent_source, so a rule that only fires on tool_call
+   * could not fire on any real PreToolUse event.
+   */
+  it('a real PreToolUse builds a tool_call event, same as the ATR spelling', async () => {
+    const { ATREngine } = await import('../src/engine.js');
+    const { HookHandler } = await import('../src/hook-handler.js');
+    const engine = new ATREngine({ rulesDir: 'rules' });
+    const loaded = await engine.loadRules();
+    expect(loaded).toBeGreaterThan(100); // control: the engine really has rules
+
+    const seen: (string | undefined)[] = [];
+    const e = engine as unknown as {
+      evaluateWithVerdict: (ev: { type?: string }, ex?: unknown) => unknown;
+    };
+    const orig = e.evaluateWithVerdict.bind(engine);
+    e.evaluateWithVerdict = (ev, ex) => {
+      seen.push(ev?.type);
+      return orig(ev, ex);
+    };
+
+    const handler = new HookHandler({ engine }) as unknown as {
+      handlePreToolUse: (i: unknown) => Promise<unknown>;
+    };
+    const payload = (key: string) => ({
+      [key]: 'PreToolUse',
+      tool_name: 'Bash',
+      tool_input: { command: 'ls -la' },
+    });
+    await handler.handlePreToolUse(payload('hook_event_name'));
+    await handler.handlePreToolUse(payload('hook'));
+
+    expect(seen[0]).toBe('tool_call');
+    expect(seen[0]).toBe(seen[1]);
+  });
+});

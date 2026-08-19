@@ -84,7 +84,13 @@ function allowOutput(reason?: string): HookOutput {
  * Convert a HookInput into an AgentEvent for engine evaluation.
  */
 function hookInputToEvent(input: HookInput): AgentEvent {
-  const isPreTool = input.hook === 'PreToolUse';
+  // hookEventOf, not input.hook. #483 fixed the dispatch switch and the stdio
+  // loop but left this one, so a real Claude Code event -- which names the field
+  // hook_event_name -- resolved isPreTool to false and was built as a
+  // tool_response. Measured: the same PreToolUse payload produced event.type
+  // tool_response under hook_event_name and tool_call under ATR's own `hook`.
+  // Rules admitted only on tool_call could not fire on any real event.
+  const isPreTool = hookEventOf(input) === 'PreToolUse';
   const type = isPreTool ? 'tool_call' : 'tool_response';
 
   const toolInput = input.tool_input ?? {};
@@ -376,7 +382,7 @@ export class HookHandler {
       case 'PostToolUse':
         return this.handlePostToolUse(input);
       default:
-        return allowOutput(`Unknown hook type: ${String((input as unknown as Record<string, unknown>).hook)}`);
+        return allowOutput(`Unknown hook type: ${String(hookEventOf(input))}`);
     }
   }
 
