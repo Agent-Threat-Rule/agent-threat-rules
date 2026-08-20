@@ -119,12 +119,24 @@ detection:
       (for example a Markdown or API term embedded in a Chinese sentence) - normal bilingual writing, which is why
       condition 4 is scoped to CJK COMPATIBILITY ideographs only
 response:
-  # block_input is gone. Changing the detection changes the fingerprint, so the
-  # false-positive figure recorded for this rule no longer describes it and the
-  # eligibility gate reads it as unmeasured -- ceiling observe. That is the gate
-  # working: the rule that fired on 94.9% of Cyrillic descriptions was declaring
-  # the authority to interrupt on evidence it no longer had. It can earn the tier
-  # back by being re-measured, not by asserting it here.
+  # block_input is gone, and it stays gone through a re-measurement that would
+  # allow it back.
+  #
+  # After the narrowing, this rule measures 1 false positive across the 12,060
+  # benign samples: 0.0083%, which the eligibility ladder grades DEGRADE, above
+  # the INTERRUPT tier block_input needs. The gate passes either way; this was
+  # checked rather than assumed.
+  #
+  # It stays at observe because that corpus is English. The failure this rule just
+  # had -- firing on 94.9% of the skill descriptions written in Cyrillic -- is
+  # structurally invisible to it, so 1-in-12,060 says nothing about the behaviour
+  # that lost the tier in the first place. The ladder's own reasoning is that a
+  # gate which cannot read the relevant measurement must refuse rather than pass,
+  # and a measurement blind to the axis in question is the same situation.
+  #
+  # What would earn it back: a clean run against a corpus with non-Latin scripts
+  # in it. data/measurements/clawhub-benign has 39 such samples and this rule now
+  # scores 0 on them, which is the right direction and too small a denominator.
   actions:
     - alert
     - escalate
