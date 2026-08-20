@@ -119,8 +119,13 @@ detection:
       (for example a Markdown or API term embedded in a Chinese sentence) - normal bilingual writing, which is why
       condition 4 is scoped to CJK COMPATIBILITY ideographs only
 response:
+  # block_input is gone. Changing the detection changes the fingerprint, so the
+  # false-positive figure recorded for this rule no longer describes it and the
+  # eligibility gate reads it as unmeasured -- ceiling observe. That is the gate
+  # working: the rule that fired on 94.9% of Cyrillic descriptions was declaring
+  # the authority to interrupt on evidence it no longer had. It can earn the tier
+  # back by being re-measured, not by asserting it here.
   actions:
-    - block_input
     - alert
     - escalate
     - snapshot
