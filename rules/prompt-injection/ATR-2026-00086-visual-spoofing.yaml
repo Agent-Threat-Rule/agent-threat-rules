@@ -1,6 +1,6 @@
 title: Visual Spoofing via RTL Override, Punycode, and Homoglyph Injection
 id: ATR-2026-00086
-rule_version: 2
+rule_version: 3
 status: experimental
 description: >
   Detects injection attempts that use visual spoofing techniques including Right-to-Left (RTL) override characters,
@@ -72,8 +72,15 @@ detection:
       description: Punycode-encoded internationalized domain name
     - field: user_input
       operator: regex
-      value: "[\\u0400-\\u04FF][a-zA-Z]|[a-zA-Z][\\u0400-\\u04FF]"
-      description: Mixed Cyrillic and Latin characters (homoglyph attack)
+      value: "[\\u0430\\u0435\\u043E\\u0440\\u0441\\u0443\\u0445][a-zA-Z]|[a-zA-Z][\\u0430\\u0435\\u043E\\u0440\\u0441\\u0443\\u0445]"
+      description: >-
+        A Cyrillic letter that renders as Latin sitting directly against Latin text, which is the paypal-with-a-
+        Cyrillic-a shape. The Cyrillic side is restricted to those seven letters rather than the whole block, and
+        the reason is the engine's own normalization: foldConfusables maps exactly those homoglyphs to Latin, so
+        "Управляет расписанием" folds to "Yпpabляet pacпиcahиem" and the fold itself manufactures the mixed-script
+        adjacency this condition looks for. Matching the full Cyrillic block therefore fired on ordinary Russian
+        through the folded copy while the raw copy was clean. Restricting to the homoglyph set makes the condition
+        immune to that: after folding, any Cyrillic still present is by definition not a homoglyph.
     - field: user_input
       operator: regex
       value: "[\\uF900-\\uFAFF][a-zA-Z]{2,}|[a-zA-Z]{2,}[\\uF900-\\uFAFF]"
@@ -85,8 +92,19 @@ detection:
         writing, not a homoglyph.
     - field: user_input
       operator: regex
-      value: "[\\u0430\\u0435\\u043E\\u0440\\u0441\\u0443\\u0445]{2,}"
-      description: Cyrillic characters visually identical to Latin (a, e, o, p, c, y, x)
+      value: "(?:^|[^\\u0400-\\u04FF])[\\u0430\\u0435\\u043E\\u0440\\u0441\\u0443\\u0445]{4,}(?:[^\\u0400-\\u04FF]|$)"
+      description: >-
+        A whole token built only from the Cyrillic letters that render as Latin (a, e, o, p, c, y, x), so it reads
+        as a Latin word while containing no Latin at all. The token boundary is the discriminant, not the letters:
+        this previously matched any two of those seven adjacent, which is a property of the Russian language rather
+        than of an attack. Measured against 36,394 published ClawHub skills, that version fired on 37 of the 39
+        whose description contains Cyrillic (94.9%) and on zero attacks; ordinary sentences such as
+        "Управляет расписанием команды" matched. Requiring the run to fill a token and to be at least four
+        characters takes it to 0 of 36,394, while still catching the pure-Cyrillic spoof (хоросс, раура) that
+        condition 3 cannot see because no Latin sits beside it. Mixed spoofs like paypal-with-a-Cyrillic-a stay
+        with condition 3. Runs of four and five do occur inside real Russian words (сохра in сохранение), which is
+        why length alone is not the test.
+        Same correction condition 4 already carries for CJK, applied to the script it was not applied to.
   condition: any
   false_positives:
     - Legitimate content in Cyrillic, CJK, or RTL scripts
@@ -135,6 +153,21 @@ test_cases:
         ideographs next to Latin: that shape is ordinary bilingual technical prose - it occurs in 42 samples of
         the benign corpus - so matching it detected the Chinese language, not a visual-spoofing attack.
   true_negatives:
+    - user_input: "Управляет расписанием команды и проводит утренние встречи"
+      expected: not_triggered
+      description: >-
+        Ordinary Russian, zero attack content. rule_version 2 fired on this: runs of the seven Latin-lookalike
+        letters are a property of the language. Regression fixture for the ClawHub measurement.
+    - user_input: "WEEEK через Public API — интеграция с задачами"
+      expected: not_triggered
+      description: >-
+        Russian technical writing with Latin product names beside Cyrillic, the most common real shape in the
+        ClawHub registry.
+    - user_input: "сохранение расходов и чеков"
+      expected: not_triggered
+      description: >-
+        Contains сохра and расхо, the two longest lookalike runs found in real Russian across 36,394 skill
+        descriptions. Pins the token-boundary requirement rather than a length threshold.
     - input: We support internationalization with proper Unicode handling
       expected: not_triggered
     - input: "Please translate this text from English to Japanese: Good morning"
