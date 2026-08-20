@@ -4,7 +4,7 @@ Version: 0.1.0 (INTERNAL DRAFT — not published)
 Status: Draft alignment note for the OWASP Agentic adoption maturity model
 Date: 2026-06-14
 Editor: Adam Lin (林冠辛) <adam@agentthreatrule.org>
-Mapped corpus: Agent Threat Rules v3.5.8 (784 rules / 10 categories)
+Mapped corpus: Agent Threat Rules v3.5.8 (785 rules / 10 categories)
 Reference: "State of Agentic AI Security and Governance" (v2.01), OWASP GenAI Security Project, June 2026 — https://genai.owasp.org/resource/state-of-agentic-ai-security-and-governance/
 
 ---

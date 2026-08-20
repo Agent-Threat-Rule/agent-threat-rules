@@ -1,7 +1,7 @@
 # ATR → SAFE-MCP Technique Mapping
 
 Last updated: 2026-07-12 (corpus re-stamp v3.5.2->v3.5.8)
-ATR corpus: v3.5.8, 784 rules (10 categories)
+ATR corpus: v3.5.8, 785 rules (10 categories)
 SAFE-MCP version: latest (85 techniques, 47 mitigations)
 
 > Coverage note: the per-technique ATR rule citations in this document were last
