@@ -1,0 +1,1296 @@
+{
+  "corpus": "mitre-atlas",
+  "family_filter": [],
+  "channel": "prompt",
+  "registry_note": "PROSE ABOUT attacks, not attack payloads: case-study narrative extracted from ATLAS write-ups. A rule mined from it detects incident-report English, which is the exact defect that retired the ATR-PRED-* batch.",
+  "usable_as_raw_material": false,
+  "event_shapes": [
+    "llm-input",
+    "tool-response"
+  ],
+  "lane": "hunt",
+  "atr_version": "4.0.0",
+  "atr_commit": "cf91ad4a1",
+  "rules_loaded": 784,
+  "measured_at": "2026-08-19T07:40:08.800Z",
+  "samples_total": 182,
+  "duplicate_samples": 0,
+  "deduped": true,
+  "attack_samples": 182,
+  "benign_samples": 0,
+  "detected": 12,
+  "missed": 170,
+  "recall": 0.06593406593406594,
+  "benign_flagged": 0,
+  "benign_fp_rate": null,
+  "by_family": {
+    "other": {
+      "total": 118,
+      "detected": 10,
+      "recall": 0.0847457627118644
+    },
+    "data-exfiltration": {
+      "total": 22,
+      "detected": 0,
+      "recall": 0
+    },
+    "supply-chain": {
+      "total": 1,
+      "detected": 0,
+      "recall": 0
+    },
+    "prompt-injection": {
+      "total": 20,
+      "detected": 2,
+      "recall": 0.1
+    },
+    "persistent-injection": {
+      "total": 1,
+      "detected": 0,
+      "recall": 0
+    },
+    "tool-poisoning": {
+      "total": 11,
+      "detected": 0,
+      "recall": 0
+    },
+    "skill-compromise": {
+      "total": 7,
+      "detected": 0,
+      "recall": 0
+    },
+    "jailbreak": {
+      "total": 2,
+      "detected": 0,
+      "recall": 0
+    }
+  },
+  "min_support": 3,
+  "benign_gate_samples": 12060,
+  "benign_gate_corpora": [
+    "data/skill-benchmark/benign",
+    "data/benign-corpus-extended",
+    "data/benign-code"
+  ],
+  "clusters": [
+    {
+      "phrase": "the researchers",
+      "anchor_regex": "the\\s+researchers",
+      "phrase_family": "judgment",
+      "tokens": 2,
+      "misses_covered": 39,
+      "misses_newly_covered": 19,
+      "benign_hits": 0,
+      "benign_hit_rate": 0,
+      "corpus_benign_hits": -1,
+      "verdict": "candidate",
+      "attack_families": [
+        "data-exfiltration",
+        "other",
+        "prompt-injection",
+        "skill-compromise",
+        "supply-chain",
+        "tool-poisoning"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0013-15",
+        "atlas-AML.CS0013-16",
+        "atlas-AML.CS0014-17",
+        "atlas-AML.CS0014-18",
+        "atlas-AML.CS0014-21",
+        "atlas-AML.CS0019-32",
+        "atlas-AML.CS0022-44",
+        "atlas-AML.CS0023-45",
+        "atlas-AML.CS0023-46",
+        "atlas-AML.CS0024-47",
+        "atlas-AML.CS0024-48",
+        "atlas-AML.CS0037-79",
+        "atlas-AML.CS0037-80",
+        "atlas-AML.CS0037-81",
+        "atlas-AML.CS0037-82",
+        "atlas-AML.CS0037-83",
+        "atlas-AML.CS0037-84",
+        "atlas-AML.CS0037-87",
+        "atlas-AML.CS0039-92",
+        "atlas-AML.CS0039-93",
+        "atlas-AML.CS0039-95",
+        "atlas-AML.CS0039-97",
+        "atlas-AML.CS0041-103",
+        "atlas-AML.CS0041-104",
+        "atlas-AML.CS0045-117",
+        "atlas-AML.CS0045-118",
+        "atlas-AML.CS0045-120",
+        "atlas-AML.CS0046-127",
+        "atlas-AML.CS0046-128",
+        "atlas-AML.CS0051-151",
+        "atlas-AML.CS0051-152",
+        "atlas-AML.CS0051-153",
+        "atlas-AML.CS0051-154",
+        "atlas-AML.CS0052-162",
+        "atlas-AML.CS0052-163",
+        "atlas-AML.CS0052-164",
+        "atlas-AML.CS0054-169",
+        "atlas-AML.CS0054-170",
+        "atlas-AML.CS0054-171"
+      ],
+      "examples": [
+        "the researchers developed a novel approach to insert a backdoor into a compiled model that can be activated with a visual trigger. they inject a \"neural payload\" into the model that consists of a trigger detection networ",
+        "the researchers poisoned the victim model by injecting the neural payload into the compiled models by directly modifying the computation graph. the researchers then repackage the poisoned model back into the apk",
+        "the researchers performed a review of adversarial ml attacks on antimalware products. they discovered that techniques borrowed from attacks on image classifiers have been successfully applied to the antimalware domain. h"
+      ]
+    },
+    {
+      "phrase": "the",
+      "anchor_regex": "the",
+      "phrase_family": "judgment",
+      "tokens": 1,
+      "misses_covered": 164,
+      "misses_newly_covered": 15,
+      "benign_hits": 10226,
+      "benign_hit_rate": 0.8479270315091211,
+      "corpus_benign_hits": -1,
+      "verdict": "benign-collision",
+      "attack_families": [
+        "data-exfiltration",
+        "jailbreak",
+        "other",
+        "persistent-injection",
+        "prompt-injection",
+        "skill-compromise",
+        "supply-chain",
+        "tool-poisoning"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0000-1",
+        "atlas-AML.CS0000-3",
+        "atlas-AML.CS0000-4",
+        "atlas-AML.CS0005-5",
+        "atlas-AML.CS0005-6",
+        "atlas-AML.CS0005-7",
+        "atlas-AML.CS0009-8",
+        "atlas-AML.CS0010-10",
+        "atlas-AML.CS0010-11",
+        "atlas-AML.CS0010-12",
+        "atlas-AML.CS0010-13",
+        "atlas-AML.CS0012-14",
+        "atlas-AML.CS0013-15",
+        "atlas-AML.CS0013-16",
+        "atlas-AML.CS0014-17",
+        "atlas-AML.CS0014-18",
+        "atlas-AML.CS0014-19",
+        "atlas-AML.CS0014-20",
+        "atlas-AML.CS0014-21",
+        "atlas-AML.CS0016-23",
+        "atlas-AML.CS0016-24",
+        "atlas-AML.CS0016-26",
+        "atlas-AML.CS0016-27",
+        "atlas-AML.CS0019-30",
+        "atlas-AML.CS0019-31",
+        "atlas-AML.CS0019-32",
+        "atlas-AML.CS0019-33",
+        "atlas-AML.CS0020-34",
+        "atlas-AML.CS0020-35",
+        "atlas-AML.CS0020-36",
+        "atlas-AML.CS0020-37",
+        "atlas-AML.CS0021-38",
+        "atlas-AML.CS0021-39",
+        "atlas-AML.CS0021-40",
+        "atlas-AML.CS0021-41",
+        "atlas-AML.CS0021-42",
+        "atlas-AML.CS0021-43",
+        "atlas-AML.CS0022-44",
+        "atlas-AML.CS0023-45",
+        "atlas-AML.CS0023-46"
+      ],
+      "examples": [
+        "we trained a model on the http traffic dataset to use as a proxy for the target model. evaluation showed a true positive rate of ~ 99% and false positive rate of ~ 0.01%, on average. testing the model with a http packet ",
+        "we queried the model with our adversarial examples and adjusted them until the model was evaded.",
+        "with the crafted samples, we performed online evasion of the ml-based spyware detection model. the crafted packets were identified as benign with > 80% confidence. this evaluation demonstrates that adversaries are able t"
+      ]
+    },
+    {
+      "phrase": "border: 2px solid black; padding: 10px;\"> <span style=\"color:",
+      "anchor_regex": "border:\\s+2px\\s+solid\\s+black;\\s+padding:\\s+10px;\">\\s+<span\\s+style=\"color:",
+      "phrase_family": "judgment",
+      "tokens": 8,
+      "misses_covered": 13,
+      "misses_newly_covered": 13,
+      "benign_hits": 0,
+      "benign_hit_rate": 0,
+      "corpus_benign_hits": -1,
+      "verdict": "candidate",
+      "attack_families": [
+        "jailbreak",
+        "other",
+        "prompt-injection",
+        "tool-poisoning"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0026-55",
+        "atlas-AML.CS0026-56",
+        "atlas-AML.CS0026-57",
+        "atlas-AML.CS0026-58",
+        "atlas-AML.CS0035-69",
+        "atlas-AML.CS0035-72",
+        "atlas-AML.CS0038-88",
+        "atlas-AML.CS0038-90",
+        "atlas-AML.CS0038-91",
+        "atlas-AML.CS0041-103",
+        "atlas-AML.CS0041-105",
+        "atlas-AML.CS0041-106",
+        "atlas-AML.CS0041-107"
+      ],
+      "examples": [
+        "the zenity researchers achieved persistence in the victim system since the malicious prompt would be executed whenever the poisoned rag entry is retrieved. <div style=\"font-family: monospace; width: 50%; margin-left: 50p",
+        "the zenity researchers utilized a prompt injection to get the llm to execute different instructions when responding. this occurs any time the user searches and the poisoned rag entry containing the prompt injection is re",
+        "the zenity researchers compromised the <span style=\"font-family: monospace; color: purple\">search_enterprise</span> plugin by instructing the llm to override some of its behavior and only use the retrieved <span style=\"f"
+      ]
+    },
+    {
+      "phrase": "the malicious prompt",
+      "anchor_regex": "the\\s+malicious\\s+prompt",
+      "phrase_family": "judgment",
+      "tokens": 3,
+      "misses_covered": 21,
+      "misses_newly_covered": 11,
+      "benign_hits": 0,
+      "benign_hit_rate": 0,
+      "corpus_benign_hits": -1,
+      "verdict": "candidate",
+      "attack_families": [
+        "data-exfiltration",
+        "other",
+        "skill-compromise",
+        "tool-poisoning"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0020-36",
+        "atlas-AML.CS0020-37",
+        "atlas-AML.CS0026-55",
+        "atlas-AML.CS0029-64",
+        "atlas-AML.CS0029-65",
+        "atlas-AML.CS0037-80",
+        "atlas-AML.CS0038-89",
+        "atlas-AML.CS0038-90",
+        "atlas-AML.CS0038-91",
+        "atlas-AML.CS0039-93",
+        "atlas-AML.CS0039-95",
+        "atlas-AML.CS0039-96",
+        "atlas-AML.CS0039-97",
+        "atlas-AML.CS0041-105",
+        "atlas-AML.CS0045-119",
+        "atlas-AML.CS0045-121",
+        "atlas-AML.CS0045-122",
+        "atlas-AML.CS0045-124",
+        "atlas-AML.CS0046-128",
+        "atlas-AML.CS0049-144",
+        "atlas-AML.CS0049-145"
+      ],
+      "examples": [
+        "bing chat is capable of seeing currently opened websites if allowed by the user. if the user has the adversary's website open, the malicious prompt will be executed.",
+        "the malicious prompt directs bing chat to change its conversational style to that of a pirate, and its behavior to subtly convince the user to provide pii (e.g. their name) and encourage the user to click on a link that ",
+        "the zenity researchers achieved persistence in the victim system since the malicious prompt would be executed whenever the poisoned rag entry is retrieved. <div style=\"font-family: monospace; width: 50%; margin-left: 50p"
+      ]
+    },
+    {
+      "phrase": "the malicious",
+      "anchor_regex": "the\\s+malicious",
+      "phrase_family": "judgment",
+      "tokens": 2,
+      "misses_covered": 43,
+      "misses_newly_covered": 11,
+      "benign_hits": 4,
+      "benign_hit_rate": 0.0003316749585406302,
+      "corpus_benign_hits": -1,
+      "verdict": "benign-collision",
+      "attack_families": [
+        "data-exfiltration",
+        "jailbreak",
+        "other",
+        "prompt-injection",
+        "skill-compromise",
+        "tool-poisoning"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0020-35",
+        "atlas-AML.CS0020-36",
+        "atlas-AML.CS0020-37",
+        "atlas-AML.CS0024-50",
+        "atlas-AML.CS0024-51",
+        "atlas-AML.CS0026-55",
+        "atlas-AML.CS0029-64",
+        "atlas-AML.CS0029-65",
+        "atlas-AML.CS0035-71",
+        "atlas-AML.CS0035-72",
+        "atlas-AML.CS0037-80",
+        "atlas-AML.CS0038-89",
+        "atlas-AML.CS0038-90",
+        "atlas-AML.CS0038-91",
+        "atlas-AML.CS0039-93",
+        "atlas-AML.CS0039-94",
+        "atlas-AML.CS0039-95",
+        "atlas-AML.CS0039-96",
+        "atlas-AML.CS0039-97",
+        "atlas-AML.CS0041-103",
+        "atlas-AML.CS0041-105",
+        "atlas-AML.CS0041-106",
+        "atlas-AML.CS0041-107",
+        "atlas-AML.CS0045-117",
+        "atlas-AML.CS0045-118",
+        "atlas-AML.CS0045-119",
+        "atlas-AML.CS0045-121",
+        "atlas-AML.CS0045-122",
+        "atlas-AML.CS0045-124",
+        "atlas-AML.CS0046-128",
+        "atlas-AML.CS0047-135",
+        "atlas-AML.CS0049-144",
+        "atlas-AML.CS0049-145",
+        "atlas-AML.CS0050-149",
+        "atlas-AML.CS0050-150",
+        "atlas-AML.CS0051-153",
+        "atlas-AML.CS0051-156",
+        "atlas-AML.CS0051-157",
+        "atlas-AML.CS0051-158",
+        "atlas-AML.CS0051-160"
+      ],
+      "examples": [
+        "the malicious prompts were obfuscated by setting the font size to 0, making it harder to detect by a human.",
+        "bing chat is capable of seeing currently opened websites if allowed by the user. if the user has the adversary's website open, the malicious prompt will be executed.",
+        "the malicious prompt directs bing chat to change its conversational style to that of a pirate, and its behavior to subtly convince the user to provide pii (e.g. their name) and encourage the user to click on a link that "
+      ]
+    },
+    {
+      "phrase": "the prompt injection",
+      "anchor_regex": "the\\s+prompt\\s+injection",
+      "phrase_family": "judgment",
+      "tokens": 3,
+      "misses_covered": 11,
+      "misses_newly_covered": 8,
+      "benign_hits": 0,
+      "benign_hit_rate": 0,
+      "corpus_benign_hits": -1,
+      "verdict": "candidate",
+      "attack_families": [
+        "prompt-injection"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0016-26",
+        "atlas-AML.CS0021-41",
+        "atlas-AML.CS0024-49",
+        "atlas-AML.CS0026-56",
+        "atlas-AML.CS0043-110",
+        "atlas-AML.CS0043-112",
+        "atlas-AML.CS0045-123",
+        "atlas-AML.CS0051-155",
+        "atlas-AML.CS0051-156",
+        "atlas-AML.CS0051-157",
+        "atlas-AML.CS0054-172"
+      ],
+      "examples": [
+        "this showed that the actor could exploit the prompt injection vulnerability of the gpt-3 model used in the mathgpt application to use as an initial access vector.",
+        "the prompt injection is executed, causing chatgpt to include a markdown element for an image hosted on an adversary-controlled server and embed the user's chat history as query parameter in the url.",
+        "when the email containing the worm is retrieved by the email assistant in another reply generation task, the prompt injection changes the behavior of the genai email assistant."
+      ]
+    },
+    {
+      "phrase": "the prompt",
+      "anchor_regex": "the\\s+prompt",
+      "phrase_family": "judgment",
+      "tokens": 2,
+      "misses_covered": 31,
+      "misses_newly_covered": 6,
+      "benign_hits": 103,
+      "benign_hit_rate": 0.008540630182421228,
+      "corpus_benign_hits": -1,
+      "verdict": "benign-collision",
+      "attack_families": [
+        "data-exfiltration",
+        "jailbreak",
+        "other",
+        "prompt-injection",
+        "skill-compromise"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0016-26",
+        "atlas-AML.CS0021-39",
+        "atlas-AML.CS0021-41",
+        "atlas-AML.CS0021-43",
+        "atlas-AML.CS0024-49",
+        "atlas-AML.CS0024-50",
+        "atlas-AML.CS0024-51",
+        "atlas-AML.CS0026-56",
+        "atlas-AML.CS0037-79",
+        "atlas-AML.CS0037-85",
+        "atlas-AML.CS0037-86",
+        "atlas-AML.CS0037-87",
+        "atlas-AML.CS0040-99",
+        "atlas-AML.CS0040-100",
+        "atlas-AML.CS0040-101",
+        "atlas-AML.CS0041-104",
+        "atlas-AML.CS0041-106",
+        "atlas-AML.CS0041-107",
+        "atlas-AML.CS0043-110",
+        "atlas-AML.CS0043-112",
+        "atlas-AML.CS0045-123",
+        "atlas-AML.CS0047-137",
+        "atlas-AML.CS0051-154",
+        "atlas-AML.CS0051-155",
+        "atlas-AML.CS0051-156",
+        "atlas-AML.CS0051-157",
+        "atlas-AML.CS0051-161",
+        "atlas-AML.CS0054-172",
+        "atlas-AML.CS0054-173",
+        "atlas-AML.CS0054-175",
+        "atlas-AML.CS0054-176"
+      ],
+      "examples": [
+        "this showed that the actor could exploit the prompt injection vulnerability of the gpt-3 model used in the mathgpt application to use as an initial access vector.",
+        "the researcher included the prompt in a webpage, where it could be retrieved by chatgpt.",
+        "the prompt injection is executed, causing chatgpt to include a markdown element for an image hosted on an adversary-controlled server and embed the user's chat history as query parameter in the url."
+      ]
+    },
+    {
+      "phrase": "of the",
+      "anchor_regex": "of\\s+the",
+      "phrase_family": "judgment",
+      "tokens": 2,
+      "misses_covered": 34,
+      "misses_newly_covered": 5,
+      "benign_hits": 2962,
+      "benign_hit_rate": 0.24560530679933665,
+      "corpus_benign_hits": -1,
+      "verdict": "benign-collision",
+      "attack_families": [
+        "data-exfiltration",
+        "jailbreak",
+        "other",
+        "prompt-injection",
+        "skill-compromise",
+        "supply-chain",
+        "tool-poisoning"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0000-4",
+        "atlas-AML.CS0005-7",
+        "atlas-AML.CS0013-15",
+        "atlas-AML.CS0014-21",
+        "atlas-AML.CS0016-26",
+        "atlas-AML.CS0019-33",
+        "atlas-AML.CS0022-44",
+        "atlas-AML.CS0024-49",
+        "atlas-AML.CS0024-50",
+        "atlas-AML.CS0035-71",
+        "atlas-AML.CS0036-75",
+        "atlas-AML.CS0037-79",
+        "atlas-AML.CS0037-84",
+        "atlas-AML.CS0037-85",
+        "atlas-AML.CS0037-87",
+        "atlas-AML.CS0038-89",
+        "atlas-AML.CS0038-91",
+        "atlas-AML.CS0039-93",
+        "atlas-AML.CS0040-102",
+        "atlas-AML.CS0041-103",
+        "atlas-AML.CS0041-104",
+        "atlas-AML.CS0041-106",
+        "atlas-AML.CS0041-108",
+        "atlas-AML.CS0045-119",
+        "atlas-AML.CS0045-121",
+        "atlas-AML.CS0045-122",
+        "atlas-AML.CS0045-124",
+        "atlas-AML.CS0045-125",
+        "atlas-AML.CS0049-145",
+        "atlas-AML.CS0049-148",
+        "atlas-AML.CS0051-151",
+        "atlas-AML.CS0051-158",
+        "atlas-AML.CS0054-170",
+        "atlas-AML.CS0054-171"
+      ],
+      "examples": [
+        "with the crafted samples, we performed online evasion of the ml-based spyware detection model. the crafted packets were identified as benign with > 80% confidence. this evaluation demonstrates that adversaries are able t",
+        "adversarial attacks can cause errors that cause reputational damage to the company of the translation service and decrease user trust in ai-powered services.",
+        "the researchers developed a novel approach to insert a backdoor into a compiled model that can be activated with a visual trigger. they inject a \"neural payload\" into the model that consists of a trigger detection networ"
+      ]
+    },
+    {
+      "phrase": "the researchers crafted a",
+      "anchor_regex": "the\\s+researchers\\s+crafted\\s+a",
+      "phrase_family": "judgment",
+      "tokens": 4,
+      "misses_covered": 5,
+      "misses_newly_covered": 4,
+      "benign_hits": 0,
+      "benign_hit_rate": 0,
+      "corpus_benign_hits": -1,
+      "verdict": "candidate",
+      "attack_families": [
+        "data-exfiltration",
+        "other",
+        "skill-compromise"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0039-92",
+        "atlas-AML.CS0041-103",
+        "atlas-AML.CS0045-117",
+        "atlas-AML.CS0046-127",
+        "atlas-AML.CS0054-169"
+      ],
+      "examples": [
+        "the researchers crafted a malicious prompt that requests data from all other support tickets be posted as a reply to the current ticket.",
+        "the researchers crafted a prompt to target coding assistant that inject a call to the malicious javascript script in generated html. <div style=\"font-family: monospace; width: 50%; margin-left: 50px; background-color:gho",
+        "the researchers crafted a malicious prompt containing an instruction to execute the malicious shell command to exfiltrate the victim’s ai agent credentials."
+      ]
+    },
+    {
+      "phrase": "the ai agent",
+      "anchor_regex": "the\\s+ai\\s+agent",
+      "phrase_family": "judgment",
+      "tokens": 3,
+      "misses_covered": 5,
+      "misses_newly_covered": 4,
+      "benign_hits": 5,
+      "benign_hit_rate": 0.00041459369817578774,
+      "corpus_benign_hits": -1,
+      "verdict": "benign-collision",
+      "attack_families": [
+        "data-exfiltration",
+        "jailbreak",
+        "other",
+        "skill-compromise",
+        "tool-poisoning"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0039-95",
+        "atlas-AML.CS0052-164",
+        "atlas-AML.CS0052-165",
+        "atlas-AML.CS0054-175",
+        "atlas-AML.CS0054-176"
+      ],
+      "examples": [
+        "the malicious prompt requested information accessible to the ai agent via atlassian mcp tools, causing those tools to be invoked via mcp, granting the researchers increased privileges on the victim’s jsm instance.",
+        "the researchers directly prompted the ai agent with their malicious instructions.",
+        "for target applications where the ai agent refused the researcher’s request, they used lightweight jailbreaking strategies to bypass the llm’s guardrails."
+      ]
+    },
+    {
+      "phrase": "the attacker could",
+      "anchor_regex": "the\\s+attacker\\s+could",
+      "phrase_family": "judgment",
+      "tokens": 3,
+      "misses_covered": 4,
+      "misses_newly_covered": 4,
+      "benign_hits": 0,
+      "benign_hit_rate": 0,
+      "corpus_benign_hits": -1,
+      "verdict": "candidate",
+      "attack_families": [
+        "other",
+        "persistent-injection"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0036-75",
+        "atlas-AML.CS0036-76",
+        "atlas-AML.CS0036-77",
+        "atlas-AML.CS0036-78"
+      ],
+      "examples": [
+        "the attacker could craft malicious prompts that manipulate the context of a chat thread, an effect that would persist for the duration of the thread.",
+        "the attacker could then craft malicious prompts that manipulate the llm’s memory to achieve a persistent effect. any change in memory would also propagate to any new chat threads.",
+        "many llm desktop applications do not show the injected prompt for any ongoing chat, as they update chat history only once when initially opening it. this gave the attacker the opportunity to cover their tracks by manipul"
+      ]
+    },
+    {
+      "phrase": "to the",
+      "anchor_regex": "to\\s+the",
+      "phrase_family": "judgment",
+      "tokens": 2,
+      "misses_covered": 29,
+      "misses_newly_covered": 4,
+      "benign_hits": 2704,
+      "benign_hit_rate": 0.224212271973466,
+      "corpus_benign_hits": -1,
+      "verdict": "benign-collision",
+      "attack_families": [
+        "data-exfiltration",
+        "jailbreak",
+        "other",
+        "prompt-injection",
+        "skill-compromise",
+        "tool-poisoning"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0005-5",
+        "atlas-AML.CS0005-7",
+        "atlas-AML.CS0010-12",
+        "atlas-AML.CS0014-17",
+        "atlas-AML.CS0014-19",
+        "atlas-AML.CS0021-42",
+        "atlas-AML.CS0021-43",
+        "atlas-AML.CS0023-46",
+        "atlas-AML.CS0027-59",
+        "atlas-AML.CS0029-65",
+        "atlas-AML.CS0029-66",
+        "atlas-AML.CS0030-68",
+        "atlas-AML.CS0036-74",
+        "atlas-AML.CS0037-80",
+        "atlas-AML.CS0037-82",
+        "atlas-AML.CS0038-89",
+        "atlas-AML.CS0039-92",
+        "atlas-AML.CS0039-95",
+        "atlas-AML.CS0039-97",
+        "atlas-AML.CS0040-100",
+        "atlas-AML.CS0041-103",
+        "atlas-AML.CS0041-104",
+        "atlas-AML.CS0041-106",
+        "atlas-AML.CS0041-107",
+        "atlas-AML.CS0045-122",
+        "atlas-AML.CS0045-124",
+        "atlas-AML.CS0045-126",
+        "atlas-AML.CS0049-143",
+        "atlas-AML.CS0051-151"
+      ],
+      "examples": [
+        "the replicated models were used to generate adversarial examples that successfully transferred to the black-box translation services.",
+        "adversarial attacks can cause errors that cause reputational damage to the company of the translation service and decrease user trust in ai-powered services.",
+        "the team submitted the adversarial examples to the api to verify their efficacy on the production system."
+      ]
+    },
+    {
+      "phrase": "the researcher",
+      "anchor_regex": "the\\s+researcher",
+      "phrase_family": "judgment",
+      "tokens": 2,
+      "misses_covered": 23,
+      "misses_newly_covered": 4,
+      "benign_hits": 0,
+      "benign_hit_rate": 0,
+      "corpus_benign_hits": -1,
+      "verdict": "candidate",
+      "attack_families": [
+        "data-exfiltration",
+        "other",
+        "prompt-injection",
+        "skill-compromise"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0021-38",
+        "atlas-AML.CS0021-39",
+        "atlas-AML.CS0021-43",
+        "atlas-AML.CS0027-59",
+        "atlas-AML.CS0027-61",
+        "atlas-AML.CS0029-63",
+        "atlas-AML.CS0029-64",
+        "atlas-AML.CS0035-69",
+        "atlas-AML.CS0035-71",
+        "atlas-AML.CS0038-88",
+        "atlas-AML.CS0038-89",
+        "atlas-AML.CS0040-98",
+        "atlas-AML.CS0040-99",
+        "atlas-AML.CS0048-138",
+        "atlas-AML.CS0048-139",
+        "atlas-AML.CS0048-140",
+        "atlas-AML.CS0048-141",
+        "atlas-AML.CS0048-142",
+        "atlas-AML.CS0049-143",
+        "atlas-AML.CS0049-144",
+        "atlas-AML.CS0049-146",
+        "atlas-AML.CS0049-148",
+        "atlas-AML.CS0055-177"
+      ],
+      "examples": [
+        "the researcher developed a prompt that causes chatgpt to include a markdown element for an image with the user's conversation embedded in the url as part of its responses.",
+        "the researcher included the prompt in a webpage, where it could be retrieved by chatgpt.",
+        "additionally, the prompt can cause the llm to execute other plugins that do not match a user request. in this instance, the researcher demonstrated the `webpilot` plugin making a call to the `expedia` plugin."
+      ]
+    },
+    {
+      "phrase": "to",
+      "anchor_regex": "to",
+      "phrase_family": "judgment",
+      "tokens": 1,
+      "misses_covered": 121,
+      "misses_newly_covered": 4,
+      "benign_hits": 9931,
+      "benign_hit_rate": 0.8234660033167496,
+      "corpus_benign_hits": -1,
+      "verdict": "benign-collision",
+      "attack_families": [
+        "data-exfiltration",
+        "jailbreak",
+        "other",
+        "persistent-injection",
+        "prompt-injection",
+        "skill-compromise",
+        "supply-chain",
+        "tool-poisoning"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0000-1",
+        "atlas-AML.CS0000-4",
+        "atlas-AML.CS0005-5",
+        "atlas-AML.CS0005-6",
+        "atlas-AML.CS0005-7",
+        "atlas-AML.CS0009-8",
+        "atlas-AML.CS0009-9",
+        "atlas-AML.CS0010-12",
+        "atlas-AML.CS0013-15",
+        "atlas-AML.CS0014-17",
+        "atlas-AML.CS0014-18",
+        "atlas-AML.CS0014-19",
+        "atlas-AML.CS0014-20",
+        "atlas-AML.CS0016-23",
+        "atlas-AML.CS0016-24",
+        "atlas-AML.CS0016-26",
+        "atlas-AML.CS0016-27",
+        "atlas-AML.CS0019-30",
+        "atlas-AML.CS0019-31",
+        "atlas-AML.CS0020-34",
+        "atlas-AML.CS0020-35",
+        "atlas-AML.CS0020-37",
+        "atlas-AML.CS0021-38",
+        "atlas-AML.CS0021-40",
+        "atlas-AML.CS0021-41",
+        "atlas-AML.CS0021-42",
+        "atlas-AML.CS0021-43",
+        "atlas-AML.CS0022-44",
+        "atlas-AML.CS0023-45",
+        "atlas-AML.CS0023-46",
+        "atlas-AML.CS0024-47",
+        "atlas-AML.CS0024-48",
+        "atlas-AML.CS0024-50",
+        "atlas-AML.CS0024-51",
+        "atlas-AML.CS0026-52",
+        "atlas-AML.CS0026-54",
+        "atlas-AML.CS0026-56",
+        "atlas-AML.CS0026-57",
+        "atlas-AML.CS0026-58",
+        "atlas-AML.CS0027-59"
+      ],
+      "examples": [
+        "we trained a model on the http traffic dataset to use as a proxy for the target model. evaluation showed a true positive rate of ~ 99% and false positive rate of ~ 0.01%, on average. testing the model with a http packet ",
+        "with the crafted samples, we performed online evasion of the ml-based spyware detection model. the crafted packets were identified as benign with > 80% confidence. this evaluation demonstrates that adversaries are able t",
+        "the replicated models were used to generate adversarial examples that successfully transferred to the black-box translation services."
+      ]
+    },
+    {
+      "phrase": "to include a markdown element for an image",
+      "anchor_regex": "to\\s+include\\s+a\\s+markdown\\s+element\\s+for\\s+an\\s+image",
+      "phrase_family": "judgment",
+      "tokens": 8,
+      "misses_covered": 3,
+      "misses_newly_covered": 3,
+      "benign_hits": 0,
+      "benign_hit_rate": 0,
+      "corpus_benign_hits": -1,
+      "verdict": "candidate",
+      "attack_families": [
+        "other",
+        "prompt-injection"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0021-38",
+        "atlas-AML.CS0021-41",
+        "atlas-AML.CS0029-63"
+      ],
+      "examples": [
+        "the researcher developed a prompt that causes chatgpt to include a markdown element for an image with the user's conversation embedded in the url as part of its responses.",
+        "the prompt injection is executed, causing chatgpt to include a markdown element for an image hosted on an adversary-controlled server and embed the user's chat history as query parameter in the url.",
+        "the researcher developed a prompt that causes bard to include a markdown element for an image with the user's conversation embedded in the url as part of its responses."
+      ]
+    },
+    {
+      "phrase": "the prompt asks the agent to",
+      "anchor_regex": "the\\s+prompt\\s+asks\\s+the\\s+agent\\s+to",
+      "phrase_family": "judgment",
+      "tokens": 6,
+      "misses_covered": 3,
+      "misses_newly_covered": 3,
+      "benign_hits": 0,
+      "benign_hit_rate": 0,
+      "corpus_benign_hits": -1,
+      "verdict": "candidate",
+      "attack_families": [
+        "data-exfiltration",
+        "other"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0037-85",
+        "atlas-AML.CS0037-86",
+        "atlas-AML.CS0037-87"
+      ],
+      "examples": [
+        "the prompt asks the agent to retrieve all of the fields and rows from “customer support account owners.csv”. the agent retrieves the entire file.",
+        "the prompt asks the agent to retrieve all salesforce records using its get-records tool. the agent retrieves all records from the victim’s crm.",
+        "the prompt asks the agent to email the results to an address of the researcher’s choosing using its email tool. the researchers successfully exfiltrate their target data via the tool invocation."
+      ]
+    },
+    {
+      "phrase": "border: 2px solid black; padding:",
+      "anchor_regex": "border:\\s+2px\\s+solid\\s+black;\\s+padding:",
+      "phrase_family": "judgment",
+      "tokens": 5,
+      "misses_covered": 16,
+      "misses_newly_covered": 3,
+      "benign_hits": 0,
+      "benign_hit_rate": 0,
+      "corpus_benign_hits": -1,
+      "verdict": "candidate",
+      "attack_families": [
+        "jailbreak",
+        "other",
+        "prompt-injection",
+        "tool-poisoning"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0026-55",
+        "atlas-AML.CS0026-56",
+        "atlas-AML.CS0026-57",
+        "atlas-AML.CS0026-58",
+        "atlas-AML.CS0035-69",
+        "atlas-AML.CS0035-72",
+        "atlas-AML.CS0038-88",
+        "atlas-AML.CS0038-90",
+        "atlas-AML.CS0038-91",
+        "atlas-AML.CS0041-103",
+        "atlas-AML.CS0041-104",
+        "atlas-AML.CS0041-105",
+        "atlas-AML.CS0041-106",
+        "atlas-AML.CS0041-107",
+        "atlas-AML.CS0051-151",
+        "atlas-AML.CS0051-152"
+      ],
+      "examples": [
+        "the zenity researchers achieved persistence in the victim system since the malicious prompt would be executed whenever the poisoned rag entry is retrieved. <div style=\"font-family: monospace; width: 50%; margin-left: 50p",
+        "the zenity researchers utilized a prompt injection to get the llm to execute different instructions when responding. this occurs any time the user searches and the poisoned rag entry containing the prompt injection is re",
+        "the zenity researchers compromised the <span style=\"font-family: monospace; color: purple\">search_enterprise</span> plugin by instructing the llm to override some of its behavior and only use the retrieved <span style=\"f"
+      ]
+    },
+    {
+      "phrase": "the malicious prompt was",
+      "anchor_regex": "the\\s+malicious\\s+prompt\\s+was",
+      "phrase_family": "judgment",
+      "tokens": 4,
+      "misses_covered": 5,
+      "misses_newly_covered": 3,
+      "benign_hits": 0,
+      "benign_hit_rate": 0,
+      "corpus_benign_hits": -1,
+      "verdict": "candidate",
+      "attack_families": [
+        "other",
+        "skill-compromise",
+        "tool-poisoning"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0038-90",
+        "atlas-AML.CS0041-105",
+        "atlas-AML.CS0045-119",
+        "atlas-AML.CS0045-121",
+        "atlas-AML.CS0045-124"
+      ],
+      "examples": [
+        "when the user asked google gemini to summarize or interact with the email in some way, the malicious prompt was executed. <div style=\"font-family: monospace; width: 50%; margin-left: 50px; background-color:ghostwhite; bo",
+        "when the ai coding assistant was next initialized, its rules file was read and the malicious prompt was executed. <div style=\"font-family: monospace; width: 50%; margin-left: 50px; background-color:ghostwhite; border: 2p",
+        "the malicious prompt was hidden in the title tag of the webpage."
+      ]
+    },
+    {
+      "phrase": "a command and control",
+      "anchor_regex": "a\\s+command\\s+and\\s+control",
+      "phrase_family": "judgment",
+      "tokens": 4,
+      "misses_covered": 3,
+      "misses_newly_covered": 3,
+      "benign_hits": 0,
+      "benign_hit_rate": 0,
+      "corpus_benign_hits": -1,
+      "verdict": "candidate",
+      "attack_families": [
+        "other"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0000-0",
+        "atlas-AML.CS0027-61",
+        "atlas-AML.CS0051-161"
+      ],
+      "examples": [
+        "we acquired a command and control http traffic dataset consisting of approximately 33 million benign and 27 million malicious http packet headers.",
+        "the sliver implant grants the researcher a command and control channel so they can explore the victim's environment and continue the attack.",
+        "the prompt caused openclaw to act as a command and control agent for the researcher. it requested the todo list from `https://openclaw.aisystem.tech/todo` using its `web_fetch`skill and executed the commands via its `bas"
+      ]
+    },
+    {
+      "phrase": "this was done by",
+      "anchor_regex": "this\\s+was\\s+done\\s+by",
+      "phrase_family": "judgment",
+      "tokens": 4,
+      "misses_covered": 3,
+      "misses_newly_covered": 3,
+      "benign_hits": 0,
+      "benign_hit_rate": 0,
+      "corpus_benign_hits": -1,
+      "verdict": "candidate",
+      "attack_families": [
+        "other",
+        "tool-poisoning"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0009-8",
+        "atlas-AML.CS0050-149",
+        "atlas-AML.CS0050-150"
+      ],
+      "examples": [
+        "by repeatedly interacting with tay using racist and offensive language, they were able to skew tay's dataset towards that language as well. this was done by adversaries using the \"repeat after me\" function, a command tha",
+        "the malicious script disabled openclaw’s security feature that prompts users before running potentially dangerous commands. this was done by sending the following payload to openclaw’s gateway api: ``` { \"method\": \"exec.",
+        "the malicious script disabled openclaw’s sandboxing, forcing the agent to run commands directly on the host machine instead of inside a docker container. this was done by sending a `config.patch` request to openclaw’s ga"
+      ]
+    },
+    {
+      "phrase": "to interact with the",
+      "anchor_regex": "to\\s+interact\\s+with\\s+the",
+      "phrase_family": "judgment",
+      "tokens": 4,
+      "misses_covered": 3,
+      "misses_newly_covered": 3,
+      "benign_hits": 21,
+      "benign_hit_rate": 0.0017412935323383085,
+      "corpus_benign_hits": -1,
+      "verdict": "benign-collision",
+      "attack_families": [
+        "other"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0016-23",
+        "atlas-AML.CS0037-82",
+        "atlas-AML.CS0046-129"
+      ],
+      "examples": [
+        "the actor was able to interact with the underlying gpt-3 model via the mathgpt application. mathgpt uses gpt-3 to generate python code that solves math problems described by user-inputted prompts. it displays the generat",
+        "from here, the researchers repeat the same steps to interact with the ai agent, sending malicious prompts to the agent via email and receiving responses at their desired address.",
+        "when a user asked claude to interact with the pdf file, the embedded prompt was executed."
+      ]
+    },
+    {
+      "phrase": "the malicious prompt in",
+      "anchor_regex": "the\\s+malicious\\s+prompt\\s+in",
+      "phrase_family": "judgment",
+      "tokens": 4,
+      "misses_covered": 3,
+      "misses_newly_covered": 3,
+      "benign_hits": 0,
+      "benign_hit_rate": 0,
+      "corpus_benign_hits": -1,
+      "verdict": "candidate",
+      "attack_families": [
+        "other",
+        "skill-compromise"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0046-128",
+        "atlas-AML.CS0049-144",
+        "atlas-AML.CS0049-145"
+      ],
+      "examples": [
+        "the researchers embedded the malicious prompt in a pdf document. this document could have ended up on the victim’s system through a public-facing application such as email or shared document stores.",
+        "the researcher developed a poisoned clawdbot skill called \"what would elon do?\" the skill contained the malicious prompt in the `rules/logic.md` file, which is read when the skill is activated. the researcher published t",
+        "claude code read all files that are part of the skill, executing the malicious prompt in the `rules/logic.md` file."
+      ]
+    },
+    {
+      "phrase": "the researcher prompted clawdbot",
+      "anchor_regex": "the\\s+researcher\\s+prompted\\s+clawdbot",
+      "phrase_family": "judgment",
+      "tokens": 4,
+      "misses_covered": 3,
+      "misses_newly_covered": 3,
+      "benign_hits": 0,
+      "benign_hit_rate": 0,
+      "corpus_benign_hits": -1,
+      "verdict": "candidate",
+      "attack_families": [
+        "other"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0048-139",
+        "atlas-AML.CS0048-140",
+        "atlas-AML.CS0048-141"
+      ],
+      "examples": [
+        "the researcher prompted clawdbot to `cat soul.md` (the file containing clawdbot’s system prompt), and it replied with its contents.",
+        "the researcher prompted clawdbot with `env` and it responded by invoking its `bash` skill and executing the `env` command, which contained additional secrets for other services.",
+        "the researcher prompted clawdbot with `root` and it responded by invoking its ‘bash`skill logged in as the root user."
+      ]
+    },
+    {
+      "phrase": "hidden in the docstring",
+      "anchor_regex": "hidden\\s+in\\s+the\\s+docstring",
+      "phrase_family": "judgment",
+      "tokens": 4,
+      "misses_covered": 3,
+      "misses_newly_covered": 3,
+      "benign_hits": 0,
+      "benign_hit_rate": 0,
+      "corpus_benign_hits": -1,
+      "verdict": "candidate",
+      "attack_families": [
+        "prompt-injection",
+        "tool-poisoning"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0054-170",
+        "atlas-AML.CS0054-171",
+        "atlas-AML.CS0054-172"
+      ],
+      "examples": [
+        "the researchers hosted a poisoned mcp server that contains the malicious instructions hidden in the docstring of one of the provided tools.",
+        "the researchers hosted a poisoned mcp tool that contains the malicious instructions hidden in the docstring of the tool.",
+        "when a user called the remote mcp tool, the prompt injection hidden in the docstring is executed locally."
+      ]
+    },
+    {
+      "phrase": "the zenity researchers",
+      "anchor_regex": "the\\s+zenity\\s+researchers",
+      "phrase_family": "judgment",
+      "tokens": 3,
+      "misses_covered": 7,
+      "misses_newly_covered": 3,
+      "benign_hits": 0,
+      "benign_hit_rate": 0,
+      "corpus_benign_hits": -1,
+      "verdict": "candidate",
+      "attack_families": [
+        "other",
+        "prompt-injection"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0026-52",
+        "atlas-AML.CS0026-53",
+        "atlas-AML.CS0026-54",
+        "atlas-AML.CS0026-55",
+        "atlas-AML.CS0026-56",
+        "atlas-AML.CS0026-57",
+        "atlas-AML.CS0026-58"
+      ],
+      "examples": [
+        "by probing copilot and examining its responses, the zenity researchers identified delimiters (such as <span style=\"font-family: monospace; color: green;\">\\*\\*</span> and <span style=\"font-family: monospace; color: green;",
+        "the zenity researchers designed malicious prompts that bypassed copilot's system instructions. this was done via trial and error on a separate instance of copilot.",
+        "the zenity researchers sent an email to a user at the victim organization containing a malicious payload, exploiting the knowledge that all received emails are ingested into the copilot rag database."
+      ]
+    },
+    {
+      "phrase": "the llm to",
+      "anchor_regex": "the\\s+llm\\s+to",
+      "phrase_family": "judgment",
+      "tokens": 3,
+      "misses_covered": 5,
+      "misses_newly_covered": 3,
+      "benign_hits": 4,
+      "benign_hit_rate": 0.0003316749585406302,
+      "corpus_benign_hits": -1,
+      "verdict": "benign-collision",
+      "attack_families": [
+        "other",
+        "prompt-injection"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0016-27",
+        "atlas-AML.CS0020-34",
+        "atlas-AML.CS0021-43",
+        "atlas-AML.CS0026-56",
+        "atlas-AML.CS0026-57"
+      ],
+      "examples": [
+        "the actor was able to gain execution capabilities because the llm was connected to a python interpreter. the actor could indirectly execute any arbitrary code in the application's python interpreter that they could induc",
+        "the attacker created a website containing malicious system prompts for the llm to ingest in order to influence the model's behavior. these prompts are ingested by the model when access to it is requested by the user.",
+        "additionally, the prompt can cause the llm to execute other plugins that do not match a user request. in this instance, the researcher demonstrated the `webpilot` plugin making a call to the `expedia` plugin."
+      ]
+    },
+    {
+      "phrase": "the shell command",
+      "anchor_regex": "the\\s+shell\\s+command",
+      "phrase_family": "judgment",
+      "tokens": 3,
+      "misses_covered": 4,
+      "misses_newly_covered": 3,
+      "benign_hits": 2,
+      "benign_hit_rate": 0.0001658374792703151,
+      "corpus_benign_hits": -1,
+      "verdict": "benign-collision",
+      "attack_families": [
+        "other",
+        "skill-compromise"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0045-124",
+        "atlas-AML.CS0045-125",
+        "atlas-AML.CS0046-133",
+        "atlas-AML.CS0049-147"
+      ],
+      "examples": [
+        "when the mcp server scraped the malicious web site, it returned the injected prompt to the mcp client and poisoned the context of the cursor llm. the shell command in the malicious prompt was obscured via base64 encoding",
+        "the shell command located the `.openapi.apikey` and `.cursor/mcp.json` credentials files that were part of the cursor’s configuration.",
+        "the shell command executed by claude computer use deleted the victim’s filesystem."
+      ]
+    },
+    {
+      "phrase": "the target model.",
+      "anchor_regex": "the\\s+target\\s+model\\.",
+      "phrase_family": "judgment",
+      "tokens": 3,
+      "misses_covered": 3,
+      "misses_newly_covered": 3,
+      "benign_hits": 1,
+      "benign_hit_rate": 0.00008291873963515754,
+      "corpus_benign_hits": -1,
+      "verdict": "benign-collision",
+      "attack_families": [
+        "other"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0000-1",
+        "atlas-AML.CS0014-19",
+        "atlas-AML.CS0027-59"
+      ],
+      "examples": [
+        "we trained a model on the http traffic dataset to use as a proxy for the target model. evaluation showed a true positive rate of ~ 99% and false positive rate of ~ 0.01%, on average. testing the model with a http packet ",
+        "using a developed gradient-driven algorithm, malicious adversarial files for the proxy model were constructed from the malware files for black-box transfer to the target model.",
+        "the researcher embedded [sliver](https://github.com/bishopfox/sliver), an open source c2 server, into the target model. they added a `lambda` layer to the model, which allows for arbitrary code to be run, and used an `ex"
+      ]
+    },
+    {
+      "phrase": "the model was",
+      "anchor_regex": "the\\s+model\\s+was",
+      "phrase_family": "judgment",
+      "tokens": 3,
+      "misses_covered": 3,
+      "misses_newly_covered": 3,
+      "benign_hits": 3,
+      "benign_hit_rate": 0.0002487562189054726,
+      "corpus_benign_hits": -1,
+      "verdict": "benign-collision",
+      "attack_families": [
+        "other",
+        "prompt-injection"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0000-3",
+        "atlas-AML.CS0016-24",
+        "atlas-AML.CS0030-68"
+      ],
+      "examples": [
+        "we queried the model with our adversarial examples and adjusted them until the model was evaded.",
+        "the actor manually crafted adversarial prompts to test if the model was vulnerable to prompt injection and if it was indeed directly executing the gpt-3-generated code.",
+        "the adversaries used keychecker to discover which llm services were enabled in the cloud environment and if the resources had any resource quotas for the services. then, the adversaries checked to see if their stolen cre"
+      ]
+    },
+    {
+      "phrase": "the adversarial examples",
+      "anchor_regex": "the\\s+adversarial\\s+examples",
+      "phrase_family": "judgment",
+      "tokens": 3,
+      "misses_covered": 3,
+      "misses_newly_covered": 3,
+      "benign_hits": 0,
+      "benign_hit_rate": 0,
+      "corpus_benign_hits": -1,
+      "verdict": "candidate",
+      "attack_families": [
+        "other"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0005-6",
+        "atlas-AML.CS0010-12",
+        "atlas-AML.CS0010-13"
+      ],
+      "examples": [
+        "the adversarial examples were used to evade the machine translation services by a variety of means. this included targeted word flips, vulgar outputs, and dropped sentences.",
+        "the team submitted the adversarial examples to the api to verify their efficacy on the production system.",
+        "the team performed an online evasion attack by replaying the adversarial examples and accomplished their goals."
+      ]
+    },
+    {
+      "phrase": "exfiltrating the user's",
+      "anchor_regex": "exfiltrating\\s+the\\s+user's",
+      "phrase_family": "judgment",
+      "tokens": 3,
+      "misses_covered": 3,
+      "misses_newly_covered": 3,
+      "benign_hits": 0,
+      "benign_hit_rate": 0,
+      "corpus_benign_hits": -1,
+      "verdict": "candidate",
+      "attack_families": [
+        "data-exfiltration"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0021-42",
+        "atlas-AML.CS0029-66",
+        "atlas-AML.CS0049-148"
+      ],
+      "examples": [
+        "chatgpt automatically renders the image for the user, making the request to the adversary's server for the image contents, and exfiltrating the user's conversation.",
+        "bard automatically renders the markdown, which sends the request to the google app script, exfiltrating the user's conversation. this is allowed by bard's content security policy because the url is hosted on a google-own",
+        "in this proof of concept, the researcher simply pinged their server and warned the user of the dangers of using skills without reading the source code, causing no harm. however, they could have delivered a malicious payl"
+      ]
+    },
+    {
+      "phrase": "the lamehug malware",
+      "anchor_regex": "the\\s+lamehug\\s+malware",
+      "phrase_family": "judgment",
+      "tokens": 3,
+      "misses_covered": 3,
+      "misses_newly_covered": 3,
+      "benign_hits": 0,
+      "benign_hit_rate": 0,
+      "corpus_benign_hits": -1,
+      "verdict": "candidate",
+      "attack_families": [
+        "data-exfiltration",
+        "other"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0044-114",
+        "atlas-AML.CS0044-115",
+        "atlas-AML.CS0044-116"
+      ],
+      "examples": [
+        "the lamehug malware abused the qwen 2.5 coder 32b instruct model hugging face api to generate malicious commands from natural language prompts.",
+        "the lamehug malware used the ai generated commands to collect system information (saved to `%programdata%\\info\\info.txt`) and recursively searched documents, desktop, and downloads to stage files for exfiltration.",
+        "the lamehug malware exfiltrated collected data to attacker controlled servers via sftp or http post requests."
+      ]
+    },
+    {
+      "phrase": "using the",
+      "anchor_regex": "using\\s+the",
+      "phrase_family": "judgment",
+      "tokens": 2,
+      "misses_covered": 6,
+      "misses_newly_covered": 3,
+      "benign_hits": 818,
+      "benign_hit_rate": 0.06782752902155888,
+      "corpus_benign_hits": -1,
+      "verdict": "benign-collision",
+      "attack_families": [
+        "other",
+        "prompt-injection",
+        "tool-poisoning"
+      ],
+      "sample_ids": [
+        "atlas-AML.CS0009-8",
+        "atlas-AML.CS0010-11",
+        "atlas-AML.CS0012-14",
+        "atlas-AML.CS0019-31",
+        "atlas-AML.CS0051-151",
+        "atlas-AML.CS0051-155"
+      ],
+      "examples": [
+        "by repeatedly interacting with tay using racist and offensive language, they were able to skew tay's dataset towards that language as well. this was done by adversaries using the \"repeat after me\" function, a command tha",
+        "using the target model and data, the red team crafted evasive adversarial data in an offline manor.",
+        "using the proxy model, the red team optimized adversarial visual patterns as a physical domain patch-based attack using expectation over transformation."
+      ]
+    }
+  ],
+  "misses_not_clustered": 1,
+  "missed_ids_sample": [
+    "atlas-AML.CS0000-2"
+  ]
+}
