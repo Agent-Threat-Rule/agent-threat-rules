@@ -178,10 +178,13 @@ detection:
 
 response:
   actions:
-    - block_tool
     - alert
     - snapshot
     - escalate
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): no FP measurement on the
+    benign corpus; ceiling = observe. Removed block_tool(interrupt). Detection unchanged —
+    recall cost is zero.
   auto_response_threshold: high
   notify:
     - security_team

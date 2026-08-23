@@ -117,8 +117,11 @@ detection:
 
 response:
   actions:
-    - block_tool
     - alert
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): no FP measurement on the
+    benign corpus; ceiling = observe. Removed block_tool(interrupt). Detection unchanged —
+    recall cost is zero.
   message_template: >
     [ATR-2026-02542] MEDIUM: an observability-query tool argument injects a
     pipeline stage and comments out the remainder of the server-built query.
