@@ -28,12 +28,12 @@ columns are still extracted from ATR metadata, not authored here.
 
 ## Coverage
 
-- ATR rules total: 790
-- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 202
+- ATR rules total: 789
+- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 201
 - Distinct enterprise ATT&CK techniques referenced: 81
-- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 790
+- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 789
 - Distinct MITRE ATLAS techniques referenced: 44
-- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 790
+- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 789
 - ATR categories (distinct `tags.category` values): 9
 
 Categories are keyed on each rule's `tags.category` metadata, not on its
@@ -119,7 +119,7 @@ against.
 | T1565.001 | Data Manipulation: Stored Data Manipulation | `ATR-2026-00075`, `ATR-2026-00200`, `ATR-2026-01155`, `ATR-2026-02143`, `ATR-2026-02144`, `ATR-2026-02303` | context-exfiltration, data-poisoning, skill-compromise |
 | T1566 | Phishing | `ATR-2026-00119`, `ATR-2026-00420` | agent-manipulation, prompt-injection |
 | T1566.002 | Phishing: Spearphishing Link | `ATR-2026-02401` | excessive-autonomy |
-| T1567 | Exfiltration Over Web Service | `ATR-2026-00420`, `ATR-2026-02304`, `ATR-2026-02513`, `ATR-2026-02570` | context-exfiltration, prompt-injection |
+| T1567 | Exfiltration Over Web Service | `ATR-2026-00420`, `ATR-2026-02304`, `ATR-2026-02570` | context-exfiltration, prompt-injection |
 | T1573 | Encrypted Channel | `ATR-2026-01994` | excessive-autonomy |
 | T1574.002 | Hijack Execution Flow: DLL Side-Loading | `ATR-2026-02410` | skill-compromise |
 | T1574.006 | Hijack Execution Flow: Dynamic Linker Hijacking | `ATR-2026-02195`, `ATR-2026-02300` | privilege-escalation |
@@ -164,7 +164,7 @@ OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:202
 
 ### context-exfiltration
 
-Rules in category: 127
+Rules in category: 126
 
 ATT&CK techniques (join key):
 
@@ -193,7 +193,7 @@ ATT&CK techniques (join key):
 | T1552.001 | Credentials In Files | `ATR-2026-00113`, `ATR-2026-00201`, `ATR-2026-00524`, `ATR-2026-00863`, `ATR-2026-02104`, `ATR-2026-02122`, `ATR-2026-02262`, `ATR-2026-02406` |
 | T1552.005 | Cloud Instance Metadata API | `ATR-2026-01605`, `ATR-2026-01607`, `ATR-2026-01946` |
 | T1565.001 | Data Manipulation: Stored Data Manipulation | `ATR-2026-00075` |
-| T1567 | Exfiltration Over Web Service | `ATR-2026-02304`, `ATR-2026-02513`, `ATR-2026-02570` |
+| T1567 | Exfiltration Over Web Service | `ATR-2026-02304`, `ATR-2026-02570` |
 | T1657 | Financial Theft | `ATR-2026-00860`, `ATR-2026-00861` |
 
 ATLAS techniques ATR adds: AML.CS0036, AML.T0010, AML.T0024, AML.T0025, AML.T0040, AML.T0043, AML.T0048, AML.T0049, AML.T0051, AML.T0051.001, AML.T0053, AML.T0054, AML.T0055, AML.T0056, AML.T0057, AML.T0069, AML.T0080, AML.T0088
