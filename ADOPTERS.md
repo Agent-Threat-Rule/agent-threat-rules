@@ -152,14 +152,6 @@ Listed when the integration code has been merged or released.
 - **Since**: 2026-04-08
 - **Status**: in-review
 
-### NVIDIA garak
-- **Org**: NVIDIA
-- **Type**: rule-import
-- **Integration**: ATR detector plugin for the garak red-teaming framework
-- **Evidence**: <https://github.com/NVIDIA/garak/pull/1676>
-- **Since**: 2026-05-20
-- **Status**: in-review
-
 ### SigmaHQ
 - **Org**: SigmaHQ
 - **Type**: adapter
@@ -171,7 +163,7 @@ Listed when the integration code has been merged or released.
 ### Microsoft PyRIT
 - **Org**: Microsoft
 - **Type**: rule-import
-- **Integration**: ATR adversarial-payload dataset loader merged into PyRIT (PR #1715, merged 2026-05-27 by maintainer Roman Lutz); a follow-up AgentThreatRulesScorer (PR #1893) is in review
+- **Integration**: ATR adversarial-payload dataset loader merged into PyRIT (PR #1715, merged 2026-05-27 by maintainer Roman Lutz). A follow-up AgentThreatRulesScorer (PR #1893) was merged 2026-08-17 and reverted 2026-08-18 by PR #2410; only the dataset loader ships today
 - **Evidence**: <https://github.com/microsoft/PyRIT/pull/1715>
 - **Since**: 2026-05-27
 - **Status**: shipped
@@ -183,14 +175,6 @@ Listed when the integration code has been merged or released.
 - **Evidence**: <https://github.com/microsoft/agent-framework/pull/6528>
 - **Since**: 2026-06-16
 - **Status**: shipped
-
-### OpenAI Guardrails
-- **Org**: OpenAI
-- **Type**: adapter
-- **Integration**: Optional ATR deterministic text check contributed to the OpenAI Guardrails Python SDK
-- **Evidence**: <https://github.com/openai/openai-guardrails-python/pull/77>
-- **Since**: 2026-06-16
-- **Status**: in-review
 
 ### Cisco mcp-scanner
 - **Org**: Cisco
@@ -220,7 +204,7 @@ Listed when the integration code has been merged or released.
 - **Org**: NVIDIA
 - **Type**: rule-import
 - **Integration**: Agent Threat Rules detection rail for the NeMo Guardrails library
-- **Evidence**: <https://github.com/NVIDIA-NeMo/Guardrails/pull/1992>
+- **Evidence**: <https://github.com/NVIDIA-NeMo/Guardrails/pull/2251>
 - **Since**: 2026-06-04
 - **Status**: in-review
 
@@ -362,3 +346,5 @@ noted here with the reason and the original "Since" date preserved.
 - **Puliczek/awesome-mcp-security** (was Tier 3 · since 2026-04-21) — ATR is not present in the project README; listing could not be verified. Removed 2026-06-14.
 - **aaif-goose (block/goose)** (was Tier 2 · since 2026-05-19) — evidence PR aaif-goose/goose#9304 is goose's generic PreToolUse denial hook; the PR body does not reference ATR, so it is not an ATR-specific integration. Removed 2026-06-16.
 - **Google ADK** (was Tier 2 · since 2026-06-16) — evidence PR google/adk-python#6130 was closed without merge. Removed 2026-07-05.
+- **NVIDIA garak** (was Tier 2 · since 2026-05-20) — evidence PR NVIDIA/garak#1676 was closed without merge on 2026-08-04, withdrawn by its author after four months in changes-requested. Removed 2026-08-23.
+- **OpenAI Guardrails** (was Tier 2 · since 2026-06-16) — evidence PR openai/openai-guardrails-python#77 was closed without merge by an OpenAI maintainer on 2026-08-18, who recommended a separately maintained integration instead. Removed 2026-08-23.
