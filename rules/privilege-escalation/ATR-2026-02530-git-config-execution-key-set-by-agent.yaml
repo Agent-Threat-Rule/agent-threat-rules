@@ -151,13 +151,13 @@ detection:
     # -- 1: git config <callback key> <ephemeral path | inline shell> --
     - field: tool_args
       operator: regex
-      value: '(?i)\bgit\s+(?:-[a-zA-Z]\s+\S{1,40}\s+|--\S{1,24}\s+){0,3}config\s+(?:--\S{1,16}\s+){0,2}[''\"]?(?:core\.(?:fsmonitor|sshcommand|hookspath|askpass)|credential\.helper|(?:diff|merge)\.[\w.-]{1,32}\.(?:textconv|driver)|filter\.[\w.-]{1,32}\.(?:clean|smudge|process)|uploadpack\.packobjectshook)[''\"]?\s*[= ]\s*[''\"]?\s*(?:(?:/private)?/(?:tmp|var/tmp|dev/shm)/|\b(?:sh|bash|zsh|dash)\b\s{1,4}-c|\b(?:python[23]?|perl|ruby|node)\b\s{1,4}-[ce]\b|\b(?:curl|wget|eval|nc)\s)'
+      value: '(?i)(?:^|[^\x60])\bgit\s+(?:-[a-zA-Z]\s+\S{1,40}\s+|--\S{1,24}\s+){0,3}config\s+(?:--\S{1,16}\s+){0,2}[''\"]?(?:core\.(?:fsmonitor|sshcommand|hookspath|askpass)|credential\.helper|(?:diff|merge)\.[\w.-]{1,32}\.(?:textconv|driver)|filter\.[\w.-]{1,32}\.(?:clean|smudge|process)|uploadpack\.packobjectshook)[''\"]?\s*[= ]\s*[''\"]?\s*(?:(?:/private)?/(?:tmp|var/tmp|dev/shm)/|\b(?:sh|bash|zsh|dash)\b\s{1,4}-c|\b(?:python[23]?|perl|ruby|node)\b\s{1,4}-[ce]\b|\b(?:curl|wget|eval|nc)\s)'
       description: "A git callback key is set to a staged payload path or an inline interpreter command, arming code that runs on the next ordinary git operation"
 
     # -- 2: one-shot git -c key=<ephemeral path | inline shell> --
     - field: tool_args
       operator: regex
-      value: '(?i)\bgit\s+-c\s+[''\"]?(?:core\.(?:fsmonitor|sshcommand|hookspath|askpass)|credential\.helper|(?:diff|merge)\.[\w.-]{1,32}\.(?:textconv|driver)|filter\.[\w.-]{1,32}\.(?:clean|smudge))\s*=\s*[''\"]?\s*(?:(?:/private)?/(?:tmp|var/tmp|dev/shm)/|\b(?:sh|bash|zsh|dash)\b\s{1,4}-c|\b(?:python[23]?|perl|ruby|node)\b\s{1,4}-[ce]\b|\b(?:curl|wget|eval|nc)\s)'
+      value: '(?i)(?:^|[^\x60])\bgit\s+-c\s+[''\"]?(?:core\.(?:fsmonitor|sshcommand|hookspath|askpass)|credential\.helper|(?:diff|merge)\.[\w.-]{1,32}\.(?:textconv|driver)|filter\.[\w.-]{1,32}\.(?:clean|smudge))\s*=\s*[''\"]?\s*(?:(?:/private)?/(?:tmp|var/tmp|dev/shm)/|\b(?:sh|bash|zsh|dash)\b\s{1,4}-c|\b(?:python[23]?|perl|ruby|node)\b\s{1,4}-[ce]\b|\b(?:curl|wget|eval|nc)\s)'
       description: "The one-shot -c form arms the same callback for the duration of a single git invocation, leaving no persistent config entry to review"
 
     # -- 3: the callback written straight into a config file body --
