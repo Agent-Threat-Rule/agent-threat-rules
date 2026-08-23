@@ -44,6 +44,7 @@ import { tmpdir } from "node:os";
 import { execFileSync } from "node:child_process";
 import { load as yamlLoad } from "js-yaml";
 import { loadCorpus, collectRuleFiles, rewriteForRe2, type PatternRef } from "./fix-re2-escapes.js";
+import { needsUnicodeFlag } from "../src/engine.js";
 
 const BENIGN_DIR = resolve(process.cwd(), "data/skill-benchmark/benign");
 const BENIGN_SAMPLE = 30;
@@ -237,7 +238,6 @@ function fuzzInputs(pattern: string, after: string, count: number, seed: number)
 const GO_ORACLE = `package main
 
 import (
-import { needsUnicodeFlag } from "../src/engine.js";
 	"encoding/json"
 	"os"
 	"regexp"
