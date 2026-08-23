@@ -78,7 +78,7 @@ detection:
     # U+1D400-U+1D7FF: Mathematical Alphanumeric Symbols
     - field: user_input
       operator: regex
-      value: "[\\u{1D400}-\\u{1D7FF}]{3,}"
+      value: "[𝐀-𝟿]{3,}"
       description: "Three-or-more Mathematical Bold / Italic / Script / Sans-Serif Latin letters"
 
     # Fullwidth Latin: U+FF21 (A) - U+FF3A (Z) / U+FF41 (a) - U+FF5A (z)
@@ -90,7 +90,7 @@ detection:
     # Mixed Mathematical / Fullwidth obfuscation with payload context (output / say / etc.)
     - field: user_input
       operator: regex
-      value: "(?i)(say|output|print|emit|return|reply|respond|retype|repeat)[^\\n]{0,40}[\\u{1D400}-\\u{1D7FF}\\uFF21-\\uFF3A\\uFF41-\\uFF5A]{2,}"
+      value: "(?i)(say|output|print|emit|return|reply|respond|retype|repeat)[^\\n]{0,40}[𝐀-𝟿\\uFF21-\\uFF3A\\uFF41-\\uFF5A]{2,}"
       description: "Output verb + stylised Unicode payload (lower threshold when paired)"
 
 response:

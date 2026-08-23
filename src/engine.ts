@@ -930,7 +930,7 @@ export class ATREngine {
         }
         // Fallback: compile on the fly (ReDoS-gated — see safeCompile)
         const normalized = normalizeRegex(value);
-        const rFlags = normalized.includes('\\u{') || normalized.includes('\\p{') ? 'iu' : 'i';
+        const rFlags = needsUnicodeFlag(normalized) ? 'iu' : 'i';
         const regex = safeCompile(normalized, rFlags);
         if (regex && testNormalisedThenRaw(regex, fieldValue, rawFieldValue)) {
           if (suppressInCodeBlocks && codeRanges.length > 0 && isInsideCodeBlock(fieldValue, regex, codeRanges)) {
@@ -1528,7 +1528,7 @@ export class ATREngine {
         const cond = conditions[i] as unknown as Record<string, unknown>;
         if (cond['operator'] === 'regex' && typeof cond['value'] === 'string') {
           const pattern = normalizeRegex(cond['value'] as string);
-          const flags = pattern.includes('\\u{') || pattern.includes('\\p{') ? 'iu' : 'i';
+          const flags = needsUnicodeFlag(pattern) ? 'iu' : 'i';
           const compiledRe = safeCompile(pattern, flags, rule.id);
           if (compiledRe) ruleMap.set(String(i), [compiledRe]);
         }
@@ -2165,6 +2165,30 @@ export function isReDoSSafe(source: string): boolean {
  * be LOUD, not silent, so a rejected ReDoS pattern warns to stderr (never
  * stdout — that carries the hook protocol) with the offending source.
  */
+/**
+ * Does this pattern need the RegExp `u` flag?
+ *
+ * `\\u{...}` and `\\p{...}` require it by syntax, and so does a literal astral
+ * character: without `u`, JavaScript reads a surrogate pair, and a class range
+ * written with literals -- [<U+E0000>-<U+E007F>] -- is a SyntaxError rather than
+ * a range.
+ *
+ * The literal form matters because it is the only spelling the three consuming
+ * engines share. `\\u{...}` is JS-only: Python re needs `\\U000E0000`, Go needs
+ * `\\x{E0000}`, and neither of those is valid JavaScript. Sixteen conditions
+ * across ten rules used it, which made those rules uncompilable from the Python
+ * and Go channels; they are literals now, and this is what keeps them working
+ * here.
+ */
+function needsUnicodeFlag(pattern: string): boolean {
+  if (pattern.includes('\\u{') || pattern.includes('\\p{')) return true;
+  for (const ch of pattern) {
+    const cp = ch.codePointAt(0);
+    if (cp !== undefined && cp > 0xffff) return true;
+  }
+  return false;
+}
+
 function safeCompile(source: string, flags: string, ruleId?: string): RegExp | null {
   if (!isReDoSSafe(source)) {
     console.warn(
