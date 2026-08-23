@@ -34,8 +34,21 @@
  * property of the consumer, and the digest records each pattern's field so the
  * caller can filter if it ever gains the context to.
  *
+ * WHY EXCLUSIONS ARE GATED RATHER THAN JUST RECORDED
+ *
+ * Recording a dropped pattern is only half of it: a digest that quietly loses
+ * rules between releases looks identical to one that does not. Microsoft's own
+ * weekly ATR sync in agent-governance-toolkit runs without `--strict-regex` and
+ * skips invalid patterns with a warning, so an unknown number of rules are
+ * missing from a shipped product and nobody downstream can tell which. This
+ * exporter therefore diffs the exclusion set against a checked-in baseline and
+ * fails when it changes. Known breakage stays visible, new breakage stops the
+ * build, and accepting a change is a deliberate `--update-baseline` commit.
+ *
  * Usage:
  *   npx tsx scripts/export-pyrit-digest.ts --out data/pyrit-digest.json
+ *   npx tsx scripts/export-pyrit-digest.ts --out ... --update-baseline
+ *   npx tsx scripts/export-pyrit-digest.ts --out ... --strict   // any exclusion fails
  */
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
@@ -64,6 +77,34 @@ function ruleFiles(dir: string): string[] {
   return out;
 }
 
+/**
+ * Names of the patterns that will not compile under Python `re`.
+ *
+ * One subprocess for the whole set: the check has to run in the engine the
+ * consumer uses, but it does not have to run 3,300 times.
+ */
+function compileFailures(patterns: Record<string, string>): string[] {
+  const names = Object.keys(patterns);
+  if (names.length === 0) return [];
+  const probe = [
+    'import json,re,sys',
+    'items = json.load(sys.stdin)',
+    'bad = []',
+    'for name, pat in items.items():',
+    '    try:',
+    '        re.compile(pat)',
+    '    except re.error:',
+    '        bad.append(name)',
+    'print(json.dumps(bad))',
+  ].join('\n');
+  const outText = execFileSync('python3', ['-c', probe], {
+    input: JSON.stringify(patterns),
+    encoding: 'utf-8',
+    maxBuffer: 64 * 1024 * 1024,
+  });
+  return JSON.parse(outText) as string[];
+}
+
 function main(argv: readonly string[]): number {
   const outIdx = argv.indexOf('--out');
   const out = outIdx >= 0 ? argv[outIdx + 1] : undefined;
@@ -77,8 +118,16 @@ function main(argv: readonly string[]): number {
   const fields = new Set(
     (fieldIdx >= 0 ? argv[fieldIdx + 1] : 'agent_output,content').split(',').map((f) => f.trim()),
   );
+  const baselineIdx = argv.indexOf('--baseline');
+  const baseline =
+    baselineIdx >= 0 ? argv[baselineIdx + 1] : join(ROOT, 'data', 'pyrit-digest-exclusions.json');
+  const updateBaseline = argv.includes('--update-baseline');
+  const strict = argv.includes('--strict');
   if (!out) {
-    console.error('usage: export-pyrit-digest.ts --out <path> [--fields agent_output,content]');
+    console.error(
+      'usage: export-pyrit-digest.ts --out <path> [--fields agent_output,content] ' +
+        '[--baseline <path>] [--update-baseline] [--strict]',
+    );
     return 2;
   }
 
@@ -130,16 +179,6 @@ function main(argv: readonly string[]): number {
       const alreadyInline = /^\(\?[imsx]+\)/.test(raw);
       const pattern = cond.case_sensitive || alreadyInline ? raw : `(?i)${raw}`;
 
-      // Ship nothing that does not compile where it will be used.
-      try {
-        execFileSync('python3', ['-c', 'import re,sys; re.compile(sys.argv[1])', pattern], {
-          stdio: 'pipe',
-        });
-      } catch {
-        excluded[`${r.id}#${idx}`] = 'does not compile under Python re';
-        continue;
-      }
-
       const name = `${r.id}#${idx}`;
       patterns[name] = pattern;
       meta[name] = {
@@ -153,6 +192,17 @@ function main(argv: readonly string[]): number {
     }
     if (emittedForRule > 0) rulesEmitted += 1;
   }
+
+  // Ship nothing that does not compile where it will be used. Checked in one
+  // batch rather than a subprocess per pattern: at ~3,300 conditions the
+  // per-pattern spawn dominated the run and made this too slow to sit in CI,
+  // which would have quietly turned the guarantee into an optional step.
+  for (const name of compileFailures(patterns)) {
+    excluded[name] = 'does not compile under Python re';
+    delete patterns[name];
+    delete meta[name];
+  }
+  rulesEmitted = new Set(Object.values(meta).map((m) => m.rule_id)).size;
 
   let commit = 'unknown';
   try {
@@ -176,13 +226,65 @@ function main(argv: readonly string[]): number {
     pattern_count: Object.keys(patterns).length,
     patterns,
     meta,
-    excluded,
+    // Sorted so a reordered walk does not show up as a diff in a committed
+    // artifact. The batch compile check appends its failures at the end, which
+    // would otherwise churn this block on every refactor.
+    excluded: Object.fromEntries(Object.entries(excluded).sort(([a], [b]) => a.localeCompare(b))),
   };
   writeFileSync(out, JSON.stringify(digest, null, 2) + '\n');
   console.log(
     `[pyrit-digest] ${rulesEmitted}/${rulesSeen} rules, ${Object.keys(patterns).length} patterns, ` +
       `${Object.keys(excluded).length} excluded, ${outOfScope} out of field scope -> ${out}`,
   );
+
+  // Order-independent shape so a reordered walk is not mistaken for drift.
+  const current = Object.entries(excluded)
+    .map(([name, reason]) => `${name}\t${reason}`)
+    .sort();
+
+  if (updateBaseline) {
+    writeFileSync(
+      baseline,
+      JSON.stringify(
+        {
+          _comment:
+            'Known exclusions from the PyRIT digest. The export fails when this set changes; ' +
+            'update it deliberately so a rule that stops shipping is a reviewed decision.',
+          exclusions: current,
+        },
+        null,
+        2,
+      ) + '\n',
+    );
+    console.log(`[pyrit-digest] baseline updated -- ${current.length} known exclusions`);
+    return 0;
+  }
+
+  if (strict && current.length > 0) {
+    console.error(`[pyrit-digest] STRICT: ${current.length} exclusion(s); every rule must be representable`);
+    return 1;
+  }
+
+  let known: string[];
+  try {
+    known = JSON.parse(readFileSync(baseline, 'utf-8')).exclusions ?? [];
+  } catch {
+    // Absent baseline is a failure, not a default-permissive path: the whole
+    // point is that nothing drops without a recorded decision.
+    console.error(`[pyrit-digest] no baseline at ${baseline} -- run once with --update-baseline`);
+    return 1;
+  }
+
+  const added = current.filter((x) => !known.includes(x));
+  const removed = known.filter((x) => !current.includes(x));
+  if (added.length > 0 || removed.length > 0) {
+    console.error('[pyrit-digest] EXCLUSION SET CHANGED -- failing rather than skipping quietly.');
+    for (const x of added) console.error(`  + ${x.replace('\t', '  ')}`);
+    for (const x of removed) console.error(`  - ${x.replace('\t', '  ')}  (fixed -- rerun with --update-baseline)`);
+    return 1;
+  }
+
+  console.log(`[pyrit-digest] exclusions match baseline (${known.length})`);
   return 0;
 }
 
