@@ -73,7 +73,7 @@ No gradients. Period. Depth is achieved through whitespace, typography scale, an
 | Subheading | Inter Tight | 20px | 600 | 1.3 | -0.5px | Ink Black | Card titles, subsection headers |
 | Body | Inter | 16px | 400 | 1.7 | 0 | Graphite | Paragraph text, descriptions |
 | Body Small | Inter | 14px | 400 | 1.6 | 0 | Stone | Card descriptions, metadata |
-| Data Large | JetBrains Mono | clamp(36px, 5vw, 64px) | 700 | 1.0 | -1px | Ink Black | Big stats: "100", "99.7%", "<5ms" |
+| Data Large | JetBrains Mono | clamp(36px, 5vw, 64px) | 700 | 1.0 | -1px | Ink Black | Big stats: "100", "778", "<5ms" |
 | Data Unit | JetBrains Mono | 0.4em of parent | 400 | 1.0 | 0 | Stone | Units after big stats: "rules", "%", "ms" |
 | Data Inline | JetBrains Mono | 14px | 400 | 1.0 | 0 | Ink Black | Rule IDs, inline stats, code |
 | Nav Item | Inter | 14px | 500 | 1.0 | 0.5px | Ink Black | Navigation labels |
@@ -390,7 +390,7 @@ Four paths: TypeScript, Python, Raw YAML, SIEM converters.
 | OWASP Agentic Top 10 merge | Scene 6 + /coverage | PR #14, 10/10 categories |
 | SAFE-MCP coverage | Scene 6 + /coverage | 78/85 techniques, 91.8% |
 | OWASP AST10 coverage | Scene 6 + /coverage | 7/10, 3 are process-level |
-| PINT-format corpus (self-built) | Scene 3 + /research | 850 samples, 99.7% precision, 63.2% recall, F1 77.3 |
+| PINT-format corpus (self-built) | Scene 3 + /research | 850 samples, 65.4% recall at 3.5.12 (2026-08-15). Precision withdrawn -- all-attack corpus, no negatives. |
 | ClawHub full scan | Scene 2 + /research | 36,394 skills, 182 CRITICAL, 1,124 HIGH |
 | Skills.sh crawl | /research | 91,226 skills from 124 publishers |
 | npm downloads | Footer or Scene 3 | 23,000+ monthly across all packages |
