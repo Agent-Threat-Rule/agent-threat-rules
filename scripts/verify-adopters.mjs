@@ -66,7 +66,13 @@ function parseAdopters(raw) {
     const evidence = extractField(body, 'Evidence');
     const status = (extractField(body, 'Status') || 'shipped').toLowerCase();
     if (!evidence) return;
-    entries.push({ name, tier: currentTier, evidence: firstUrl(evidence), status });
+    entries.push({
+      name,
+      tier: currentTier,
+      evidence: firstUrl(evidence),
+      status,
+      stillPresent: extractField(body, 'Still-present'),
+    });
   };
 
   for (const line of raw.split('\n')) {
@@ -134,6 +140,30 @@ async function checkLink(url) {
   }
 }
 
+/**
+ * Assert that a path on the adopter's default branch still contains a string.
+ *
+ * Spec format, in the Still-present field:
+ *   README.md contains "Agent-Threat-Rule"
+ *
+ * Returns 'present' | 'absent' | 'path-missing' | 'unparsable' | 'api-NNN'.
+ */
+async function checkStillPresent(owner, repo, spec) {
+  const m = /^(\S+)\s+contains\s+"(.+)"\s*$/.exec(spec.trim());
+  if (!m) return 'unparsable';
+  const [, path, needle] = m;
+  const res = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
+    { headers: API_HEADERS },
+  );
+  if (res.status === 404) return 'path-missing';
+  if (!res.ok) return `api-${res.status}`;
+  const body = await res.json();
+  if (!body.content) return 'path-missing';
+  const text = Buffer.from(body.content, 'base64').toString('utf8');
+  return text.includes(needle) ? 'present' : 'absent';
+}
+
 function isOk(kind, declared, observed) {
   if (kind === 'pr') {
     if (declared === 'shipped') return observed === 'merged';
@@ -173,7 +203,18 @@ async function main() {
       kind = 'link';
       ({ observed } = await checkLink(entry.evidence));
     }
-    const ok = isOk(kind, entry.status, observed);
+    const repoMatch = prMatch || issueMatch;
+    let content = null;
+    if (entry.stillPresent && repoMatch) {
+      content = await checkStillPresent(
+        repoMatch[1],
+        repoMatch[2],
+        entry.stillPresent,
+      );
+    }
+    const ok =
+      isOk(kind, entry.status, observed) &&
+      (content === null || content === 'present');
     results.push({
       name: entry.name,
       tier: entry.tier,
@@ -181,10 +222,17 @@ async function main() {
       declared: entry.status,
       kind,
       observed,
+      content,
       ok,
     });
+    const contentNote =
+      content === null
+        ? ' [no content assertion]'
+        : content === 'present'
+          ? ' [content present]'
+          : ` [content ${content}]`;
     console.log(
-      `${ok ? '[ok]   ' : '[DRIFT]'} ${entry.name} — declared ${entry.status}, observed ${observed} (${kind})`,
+      `${ok ? '[ok]   ' : '[DRIFT]'} ${entry.name} — declared ${entry.status}, observed ${observed} (${kind})${contentNote}`,
     );
   }
 
@@ -199,14 +247,21 @@ async function main() {
       name: d.name,
       declared: d.declared,
       observed: d.observed,
+      content: d.content,
       evidence: d.evidence,
     })),
     results,
   };
   writeFileSync(OUT_PATH, `${JSON.stringify(out, null, 2)}\n`);
+  const unasserted = results.filter((r) => r.content === null).length;
   console.log(
     `\nwrote ${OUT_PATH} — ${out.ok}/${out.total} verified, ${drift.length} drift`,
   );
+  if (unasserted > 0) {
+    console.log(
+      `${unasserted} entries have no Still-present assertion — a merged PR is all that backs them.`,
+    );
+  }
 }
 
 await main();
