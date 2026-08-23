@@ -193,8 +193,11 @@ detection:
 
 response:
   actions:
-    - block_tool
     - alert
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): no FP measurement on the
+    benign corpus; ceiling = observe. Removed block_tool(interrupt). Detection unchanged —
+    recall cost is zero.
   auto_response_threshold: high
   message_template: >
     [ATR-2026-02528] A tool parameter that should be data is an option flag

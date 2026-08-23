@@ -174,9 +174,12 @@ detection:
 
 response:
   actions:
-    - block_tool
     - alert
     - escalate
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): no FP measurement on the
+    benign corpus; ceiling = observe. Removed block_tool(interrupt). Detection unchanged —
+    recall cost is zero.
   auto_response_threshold: high
   message_template: >
     [ATR-2026-02530] A git configuration callback key was pointed at a
