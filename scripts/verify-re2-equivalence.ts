@@ -44,6 +44,7 @@ import { tmpdir } from "node:os";
 import { execFileSync } from "node:child_process";
 import { load as yamlLoad } from "js-yaml";
 import { loadCorpus, collectRuleFiles, rewriteForRe2, type PatternRef } from "./fix-re2-escapes.js";
+import { needsUnicodeFlag } from "../src/engine.js";
 
 const BENIGN_DIR = resolve(process.cwd(), "data/skill-benchmark/benign");
 const BENIGN_SAMPLE = 30;
@@ -61,7 +62,7 @@ function normalizeRegex(pattern: string): string {
 
 export function engineCompile(value: string): RegExp | null {
   const normalized = normalizeRegex(value);
-  const flags = normalized.includes("\\u{") || normalized.includes("\\p{") ? "iu" : "i";
+  const flags = needsUnicodeFlag(normalized) ? "iu" : "i";
   try {
     return new RegExp(normalized, flags);
   } catch {
