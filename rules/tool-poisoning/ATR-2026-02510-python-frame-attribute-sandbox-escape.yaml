@@ -1,0 +1,194 @@
+title: "Python Interpreter-Frame Attribute Chain Escapes an Expression Sandbox (dunder-free)"
+id: ATR-2026-02510
+rule_version: 1
+status: draft
+description: >
+  Detects the dunder-free interpreter-frame walk that turns an agent's
+  "safe expression" evaluator into arbitrary code execution.
+
+  Generalised from CVE-2026-53753 (Crawl4AI < 0.8.7, CWE-94/CWE-913): the
+  computed-fields feature validated the extraction expression with an AST
+  walker that rejected any attribute name starting with an underscore. Frame,
+  generator, coroutine and traceback objects expose their interpreter
+  internals through attributes that do NOT start with an underscore (the
+  frame-bearing attributes gi_frame, cr_frame, ag_frame and tb_frame, then
+  f_back, f_globals and f_builtins), so an expression can hop from a
+  generator comprehension through the frame chain into the builtins mapping,
+  retrieve __import__ or eval from it, and execute anything the process can
+  execute.
+
+  The detection target is the attribute chain itself, not any vendor's field
+  name, because the same primitive defeats every "block dunder attributes"
+  validator in the ecosystem — RestrictedPython-style filters, Jinja sandbox
+  escapes, LLM-generated filter expressions, agent calculator/JMESPath/JSONata
+  bridges, and any MCP tool that accepts a Python expression as a parameter.
+
+  Conditions:
+  (a) any access into a frame's builtins mapping — that mapping is the escape
+      target and has essentially no legitimate use in agent-supplied text;
+  (b) a frame-bearing object attribute bridged within a short span to the
+      builtins mapping;
+  (c) frame globals indexed with the name of a code-execution builtin, but
+      only when the globals mapping was reached THROUGH a frame-bearing
+      attribute — an expression sandbox has no sys module, so the frame-bearer
+      is the only way in.
+
+  Deliberately NOT matched (all verified against the engine, not reasoned
+  about): reading frame globals off a traceback or coroutine to recover a
+  module name, which is what jinja2's debug rewriter, werkzeug's debugger,
+  sentry-style stack serializers and asyncio's coroutine repr all do;
+  sys._getframe().f_back caller introspection in logging helpers; copying a
+  builtins mapping out of an ordinary frame into a notebook/plugin namespace;
+  and taking .gi_frame off an inline generator, which is legal, meaningless
+  Python that appears in CPython's own tests and in generator documentation.
+
+author: "ATR Community"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM05:2025"
+  owasp_agentic:
+    - "ASI05:2026"
+  mitre_atlas:
+    - "AML.T0053 - LLM Plugin Compromise"
+  mitre_attack:
+    - "T1059 - Command and Scripting Interpreter"
+  cve:
+    - "CVE-2026-53753"
+  cwe:
+    - "CWE-94"
+    - "CWE-913"
+  external:
+    - "https://nvd.nist.gov/vuln/detail/CVE-2026-53753"
+
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  cve: human-reviewed
+  cwe: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - { article: "15", context: "Article 15 cybersecurity — runtime detection of interpreter-frame attribute chains that escape an agent expression sandbox.", strength: primary }
+    - { article: "9",  context: "Article 9 risk management — runtime risk-treatment control for sandbox-escape expressions reaching a code-execution sink.", strength: secondary }
+  nist_ai_rmf:
+    - { subcategory: "MP.5.1", context: "MAP 5.1 — adversarial input characterised/detected for dunder-free frame-walk sandbox escape.", strength: primary }
+    - { subcategory: "MG.3.2", context: "MANAGE 3.2 — runtime monitoring control for expression-sandbox escape attempts.", strength: secondary }
+  iso_42001:
+    - { clause: "8.1", context: "Clause 8.1 operational control — detection of frame-attribute sandbox-escape payloads in agent-supplied expressions.", strength: primary }
+    - { clause: "8.3", context: "Clause 8.3 AI risk treatment — runtime detection as treatment control.", strength: secondary }
+
+tags:
+  category: tool-poisoning
+  subcategory: sandbox-escape
+  scan_target: mcp
+  confidence: high
+  source: cve-disclosure
+  vendor_sources: nvd-cve-2026-53753
+
+agent_source:
+  type: tool_call
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "Reading frame globals off a traceback/coroutine/generator to recover a module name (jinja2 debug rewriter, werkzeug debugger, sentry stack serializer, asyncio coroutine repr) — reaches f_globals but never the builtins mapping and never indexes it with a code-execution name, so it is not matched."
+    - "Caller introspection via sys._getframe().f_back in a logging or profiling helper — no frame-bearing attribute and no builtins reach, not matched."
+    - "Rich traceback formatters reading tb_frame.f_locals or tb_frame.f_code to render a stack — not matched."
+    - "A notebook kernel or plugin loader copying a builtins mapping out of an ordinary frame (no gi_frame/cr_frame/ag_frame/tb_frame/f_back hop) — not matched."
+    - "Taking .gi_frame off an inline generator expression, which is legal Python seen in CPython's own test suite and in generator documentation — deliberately NOT a condition, because on its own it reaches nothing."
+    - "KNOWN RESIDUAL, measured not assumed: text that embeds the VERBATIM frame-walk chain still matches — a GHSA/NVD advisory, an exploit writeup, a semgrep/ATR detection fixture. It is not suppressed on purpose: any 'this looks like documentation' exclusion would key on attacker-controllable text and become a detection hole. Scope of the residual was measured against the real hook shapes: READING such a document does NOT fire (PostToolUse puts the body in tool_response while tool_args holds only the file path, and every condition is on tool_args); WRITING one does fire, because the body is then the tool argument. So the residual is limited to an agent authoring security content, not to an agent reading it."
+  conditions:
+    - field: tool_args
+      operator: regex
+      value: '(?i)\.\s*f_builtins\s*[\[.]'
+      description: >
+        Direct access into a frame's builtins mapping — the escape target of
+        every dunder-free sandbox bypass. Effectively never present in
+        legitimate agent-supplied expressions.
+    - field: tool_args
+      operator: regex
+      value: '(?i)\.\s*(?:gi_frame|cr_frame|ag_frame|tb_frame)\b[^\n]{0,40}\.\s*f_builtins\b'
+      description: >
+        A frame-bearing generator/coroutine/traceback attribute bridged within
+        a short span to the builtins mapping — the CVE-2026-53753 chain shape,
+        independent of the intermediate .f_back hops. Deliberately does NOT
+        accept a bare f_globals reach: resolving a module name out of frame
+        globals is ordinary debugger/traceback library behaviour.
+    - field: tool_args
+      operator: regex
+      value: '(?i)\.\s*(?:gi_frame|cr_frame|ag_frame|tb_frame|f_back)\b[^\n]{0,40}\.\s*f_globals\s*\[\s*\\?\s*["\x27](?:__builtins__|__import__|builtins|eval|exec|open|compile|breakpoint)\\?["\x27]'
+      description: >
+        Frame globals indexed with the name of a code-execution builtin — the
+        retrieval step that converts frame access into execution — but only
+        when the globals mapping was reached through a frame-bearing attribute.
+        The optional backslash before the quote is required, not cosmetic:
+        production tool_args is JSON.stringify(toolInput), so a payload's inner
+        double quote arrives escaped and a rule that demands a bare quote
+        silently misses every real tool call.
+        The frame-bearer requirement is what separates the sandbox escape from
+        a host process legitimately copying builtins out of its own frame.
+
+response:
+  actions:
+    - alert
+    - block_tool
+  message_template: >
+    [ATR-2026-02510] CRITICAL: interpreter-frame attribute chain detected in an
+    agent-supplied expression (CVE-2026-53753 class, CWE-94). Generator/frame
+    attributes such as gi_frame, f_back and f_builtins do not start with an
+    underscore, so "block dunder attributes" validators do not stop them; this
+    chain reaches the builtins mapping and yields arbitrary code execution.
+    Block the call and evaluate the expression with an allowlist AST walker.
+
+confidence: 85
+
+test_cases:
+  true_positives:
+    - tool_args: '{"extraction_schema": {"computed": "(v for v in ()).gi_frame.f_back.f_builtins[\"__import__\"](\"os\").popen(\"id\").read()"}}'
+      expected: triggered
+      description: "Generator-comprehension frame walk into the builtins mapping to fetch __import__ — CVE-2026-53753 escape chain"
+    - content: '{"expression": "gen.gi_frame.f_globals[\"__builtins__\"]"}'
+      expected: triggered
+      description: "Generator frame globals indexed to reach the builtins mapping"
+    - tool_args: '{"filter": "co.cr_frame.f_back.f_globals[\"eval\"](\"1+1\")"}'
+      expected: triggered
+      description: "Coroutine variant — frame-bearer plus f_back hop, globals indexed with a code-execution builtin"
+    - tool_args: '{"expr": "agen.ag_frame.f_back.f_builtins"}'
+      expected: triggered
+      description: "Async-generator frame-bearer reaching the builtins mapping — same primitive, different object type"
+  true_negatives:
+    - content: "def rewrite_traceback_stack(source=None):\n    exc_type, exc_value, tb = sys.exc_info()\n    template = tb.tb_frame.f_globals.get(\"__jinja_template__\")\n    return exc_value.with_traceback(tb)"
+      expected: not_triggered
+      description: "jinja2-style traceback rewriter resolving a template off frame globals — real dependency code, reaches f_globals but never the builtins mapping"
+    - content: "class Frame:\n    def __init__(self, exc_type, exc_value, tb):\n        self.function_name = tb.tb_frame.f_code.co_name\n        self.locals = tb.tb_frame.f_locals\n        self.globals = tb.tb_frame.f_globals"
+      expected: not_triggered
+      description: "werkzeug-style debugger frame wrapper — assigns frame globals wholesale for rendering, no indexing and no builtins reach"
+    - content: "def coro_module(coro):\n    if coro.cr_frame is None:\n        return \"<done>\"\n    return coro.cr_frame.f_globals.get(\"__name__\", \"<unknown>\")"
+      expected: not_triggered
+      description: "asyncio-style coroutine repr helper resolving a module name — cr_frame to f_globals is ordinary library behaviour"
+    - content: "def make_user_ns(frame):\n    ns = {}\n    ns[\"__builtins__\"] = frame.f_globals[\"__builtins__\"]\n    ns[\"__name__\"] = \"__main__\"\n    return ns"
+      expected: not_triggered
+      description: "Notebook kernel copying a builtins mapping out of an ordinary frame — no frame-bearing attribute hop, so not the sandbox-escape primitive"
+    - content: "def test_generator_has_frame_until_exhausted(self):\n    self.assertIsNotNone((i for i in range(3)).gi_frame)\n    g = (i for i in range(3))\n    list(g)\n    self.assertIsNone(g.gi_frame)"
+      expected: not_triggered
+      description: "CPython-style unit test asserting generator frame identity — taking .gi_frame reaches nothing on its own"
+    - content: "import sys\ncaller = sys._getframe().f_back\nlogger.debug(\"emitted from %s:%s\", caller.f_code.co_filename, caller.f_lineno)"
+      expected: not_triggered
+      description: "Legitimate caller introspection in a logging helper — never reaches the builtins mapping"
+    - content: "Our expression validator rejects any attribute whose name begins with an underscore, and we additionally deny frame introspection on generator and coroutine objects."
+      expected: not_triggered
+      description: "Security README describing the mitigation in prose, without the literal attribute chain"
+    - tool_args: '{"expression": "sum(item.total for item in invoice.lines)"}'
+      expected: not_triggered
+      description: "Benign computed-field expression using a generator expression for aggregation"
