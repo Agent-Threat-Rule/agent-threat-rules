@@ -11,10 +11,12 @@
  *
  * Case sensitivity. The ATR engine compiles case-insensitively unless a
  * condition sets `case_sensitive`, but `RegexScorer` passes no flags. Measured
- * on the current rule set, 1,082 of 3,322 regex conditions (32.6%) carry no
- * `(?i)` prefix and would silently become case-sensitive on the other side. Each
- * emitted pattern therefore carries its own `(?i)` unless the condition opted
- * out, so the digest means the same thing wherever it is compiled.
+ * on the current rule set, 1,078 of 3,315 regex conditions (32.5%) carry no
+ * `(?i)` prefix of their own and would silently become case-sensitive on the
+ * other side. Each emitted pattern therefore carries the flag the engine would
+ * have applied, so the digest means the same thing wherever it is compiled. A
+ * condition that opted out is emitted with `case_sensitive: true` instead, so a
+ * missing flag is always attributable rather than ambiguous.
  *
  * Astral escapes. `\u{...}` is JavaScript-only and does not compile under Python
  * `re`; the rules use literal characters for exactly this reason (see
@@ -22,17 +24,37 @@
  * still test-compiled below and anything that fails is dropped with its reason
  * recorded rather than shipped broken.
  *
- * WHAT IS NOT REPRESENTABLE
+ * WHAT THE CONSUMER STILL HAS TO DO: SELECT FIELDS
  *
- * `RegexScorer` is a pure OR across every pattern, so a rule whose conditions
- * must ALL hold cannot be expressed. Four rules use `condition: all`; they are
- * excluded and listed in the digest's `excluded` block, because a rule silently
- * downgraded from AND to OR is a false-positive generator, not a rule.
+ * ATR conditions are written against a named field -- `agent_output`,
+ * `tool_args`, `tool_name`, and so on -- and the engine only ever applies a
+ * condition to the field it names. A consumer that sees one undifferentiated
+ * string has no such routing, so handing it every pattern evaluates tool-call
+ * conditions against prose they were never written for.
  *
- * Field routing is likewise absent: the scorer sees one string, so a condition
- * written against `tool_args` is applied to whatever it is given. That is a
- * property of the consumer, and the digest records each pattern's field so the
- * caller can filter if it ever gains the context to.
+ * Measured on 600 ordinary conversations at `llm_output` shape, against the
+ * engine loading the same rules: selecting `default_fields` flags 0.7% and
+ * agrees with the engine on all 600 samples. Taking every field instead flags
+ * 21.7% with no severity floor applied, or 7.5% at the `medium` floor a
+ * consumer is likely to set -- the gap between those two is almost entirely
+ * ATR-2026-00099, a low-severity rule whose conditions name `tool_name` and
+ * `tool_args`. Quoting either figure without naming the floor misstates the
+ * cost, so scripts/measure-digest-parity.py reports both.
+ *
+ * So every condition is emitted carrying its `field`, and `default_fields` names
+ * the scope a consumer scoring an agent's text output should select. Conditions
+ * for the other fields are present for consumers that genuinely hold that
+ * content; selecting them is a deliberate act, not the default. There is
+ * deliberately no ready-made flat `{name: pattern}` map in the artifact, because
+ * the shape that is convenient to pass straight to a scorer is exactly the shape
+ * that produces the 21.7%.
+ *
+ * WHAT IS NOT REPRESENTABLE AT ALL
+ *
+ * A pure OR across independent patterns cannot express a rule whose conditions
+ * must ALL hold. Those rules are excluded and listed in the digest's `excluded`
+ * block, because a rule silently downgraded from AND to OR is a false-positive
+ * generator, not a rule.
  *
  * WHY EXCLUSIONS ARE GATED RATHER THAN JUST RECORDED
  *
@@ -47,6 +69,7 @@
  *
  * Usage:
  *   npx tsx scripts/export-pyrit-digest.ts --out data/pyrit-digest.json
+ *   npx tsx scripts/export-pyrit-digest.ts --out ... --default-fields agent_output,content
  *   npx tsx scripts/export-pyrit-digest.ts --out ... --update-baseline
  *   npx tsx scripts/export-pyrit-digest.ts --out ... --strict   // any exclusion fails
  */
@@ -58,6 +81,10 @@ import { load as parseYaml } from 'js-yaml';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const RULES = join(ROOT, 'rules');
+const SCHEMA = 1;
+
+/** The scope a consumer scoring an agent's text output should select. */
+const DEFAULT_FIELDS = ['agent_output', 'content'];
 
 interface Emitted {
   readonly rule_id: string;
@@ -65,6 +92,8 @@ interface Emitted {
   readonly field: string;
   readonly category: string;
   readonly severity: string;
+  /** Present only when the rule opted out of the engine's default folding. */
+  readonly case_sensitive?: true;
 }
 
 function ruleFiles(dir: string): string[] {
@@ -108,16 +137,12 @@ function compileFailures(patterns: Record<string, string>): string[] {
 function main(argv: readonly string[]): number {
   const outIdx = argv.indexOf('--out');
   const out = outIdx >= 0 ? argv[outIdx + 1] : undefined;
-  const fieldIdx = argv.indexOf('--fields');
-  // Which fields the consumer can actually present. A scorer that sees a model
-  // response can offer agent_output and content and nothing else; emitting a
-  // condition written against tool_args means applying it to prose it was never
-  // meant for. Measured on 600 ordinary conversations: the unfiltered digest
-  // flags 23.5% where the engine flags 0.8%, and 122 of the 141 extra come from
-  // one rule whose conditions name tool_name and tool_args.
-  const fields = new Set(
-    (fieldIdx >= 0 ? argv[fieldIdx + 1] : 'agent_output,content').split(',').map((f) => f.trim()),
-  );
+  const defIdx = argv.indexOf('--default-fields');
+  // Recorded, not applied. Everything is emitted; this names the scope a
+  // consumer that cannot route by field should select, and the count of rules
+  // that scope reaches is published alongside it.
+  const defaultFields =
+    defIdx >= 0 ? argv[defIdx + 1].split(',').map((f) => f.trim()) : [...DEFAULT_FIELDS];
   const baselineIdx = argv.indexOf('--baseline');
   const baseline =
     baselineIdx >= 0 ? argv[baselineIdx + 1] : join(ROOT, 'data', 'pyrit-digest-exclusions.json');
@@ -125,7 +150,7 @@ function main(argv: readonly string[]): number {
   const strict = argv.includes('--strict');
   if (!out) {
     console.error(
-      'usage: export-pyrit-digest.ts --out <path> [--fields agent_output,content] ' +
+      'usage: export-pyrit-digest.ts --out <path> [--default-fields agent_output,content] ' +
         '[--baseline <path>] [--update-baseline] [--strict]',
     );
     return 2;
@@ -136,7 +161,6 @@ function main(argv: readonly string[]): number {
   const excluded: Record<string, string> = {};
   let rulesSeen = 0;
   let rulesEmitted = 0;
-  let outOfScope = 0;
 
   for (const file of ruleFiles(RULES).sort()) {
     let doc: unknown;
@@ -149,10 +173,12 @@ function main(argv: readonly string[]): number {
     const r = doc as Record<string, any>;
     if (typeof r?.id !== 'string') continue;
 
+    // Exactly the engine's own test -- src/engine.ts and pyatr both gate on
+    // status alone. A rule the engine will never fire must not reach a consumer
+    // that has no such gate, and widening this (on maturity, say) would make the
+    // digest quietly stricter than the engine it stands in for.
     const status = String(r.status ?? '');
-    const maturity = String(r.maturity ?? '');
-    // Inert rules never fire in the engine either.
-    if (status === 'draft' || status === 'deprecated' || maturity === 'deprecated') continue;
+    if (status === 'draft' || status === 'deprecated') continue;
     rulesSeen += 1;
 
     const det = r.detection ?? {};
@@ -170,23 +196,21 @@ function main(argv: readonly string[]): number {
       const raw = String(cond.value ?? '');
       if (!raw) continue;
       const field = String(cond.field ?? 'content');
-      if (!fields.has(field)) {
-        outOfScope += 1;
-        continue;
-      }
 
       // Bake in the flag the engine would have applied.
+      const caseSensitive = Boolean(cond.case_sensitive);
       const alreadyInline = /^\(\?[imsx]+\)/.test(raw);
-      const pattern = cond.case_sensitive || alreadyInline ? raw : `(?i)${raw}`;
+      const pattern = caseSensitive || alreadyInline ? raw : `(?i)${raw}`;
 
       const name = `${r.id}#${idx}`;
       patterns[name] = pattern;
       meta[name] = {
         rule_id: r.id,
         pattern,
-        field: String(cond.field ?? 'content'),
+        field,
         category,
         severity,
+        ...(caseSensitive ? { case_sensitive: true as const } : {}),
       };
       emittedForRule += 1;
     }
@@ -212,20 +236,32 @@ function main(argv: readonly string[]): number {
   }
   const version = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf-8')).version;
 
+  const byField: Record<string, number> = {};
+  const rulesInDefault = new Set<string>();
+  for (const m of Object.values(meta)) {
+    byField[m.field] = (byField[m.field] ?? 0) + 1;
+    if (defaultFields.includes(m.field)) rulesInDefault.add(m.rule_id);
+  }
+
   const digest = {
     _comment:
       'Precompiled ATR rule digest for consumers that cannot take a dependency on an ATR engine. ' +
-      'Each pattern carries its own inline flags and compiles under Python re as-is. ' +
+      'Each pattern carries its own inline flags and compiles under Python re as-is. Each condition ' +
+      'carries the field it was written against; a consumer that cannot route by field should select ' +
+      'default_fields, because applying tool-call patterns to prose is a false-positive generator. ' +
       'Generated by scripts/export-pyrit-digest.ts -- do not hand-edit.',
+    schema: SCHEMA,
     atr_version: version,
     atr_commit: commit,
-    fields_in_scope: [...fields].sort(),
-    conditions_out_of_scope: outOfScope,
+    default_fields: [...defaultFields].sort(),
     rules_seen: rulesSeen,
     rules_emitted: rulesEmitted,
-    pattern_count: Object.keys(patterns).length,
-    patterns,
-    meta,
+    rules_in_default_fields: rulesInDefault.size,
+    condition_count: Object.keys(meta).length,
+    conditions_by_field: Object.fromEntries(
+      Object.entries(byField).sort(([a], [b]) => a.localeCompare(b)),
+    ),
+    conditions: meta,
     // Sorted so a reordered walk does not show up as a diff in a committed
     // artifact. The batch compile check appends its failures at the end, which
     // would otherwise churn this block on every refactor.
@@ -233,8 +269,8 @@ function main(argv: readonly string[]): number {
   };
   writeFileSync(out, JSON.stringify(digest, null, 2) + '\n');
   console.log(
-    `[pyrit-digest] ${rulesEmitted}/${rulesSeen} rules, ${Object.keys(patterns).length} patterns, ` +
-      `${Object.keys(excluded).length} excluded, ${outOfScope} out of field scope -> ${out}`,
+    `[pyrit-digest] ${rulesEmitted}/${rulesSeen} rules, ${Object.keys(meta).length} conditions, ` +
+      `${rulesInDefault.size} in default fields, ${Object.keys(excluded).length} excluded -> ${out}`,
   );
 
   // Order-independent shape so a reordered walk is not mistaken for drift.
