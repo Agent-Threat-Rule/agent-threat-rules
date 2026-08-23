@@ -34,6 +34,7 @@ import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { parseArgs } from 'node:util';
 import Anthropic from '@anthropic-ai/sdk';
+import { needsUnicodeFlag } from '../src/engine.js';
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -125,7 +126,7 @@ function normalizeRegex(pattern: string): string {
 
 function compileEngineAccurate(value: string): RegExp | null {
   const pattern = normalizeRegex(value);
-  const flags = pattern.includes('\\u{') || pattern.includes('\\p{') ? 'iu' : 'i';
+  const flags = needsUnicodeFlag(pattern) ? 'iu' : 'i';
   try {
     return new RegExp(pattern, flags);
   } catch {
@@ -230,7 +231,7 @@ RIGOR — reject your own candidate if it violates these:
 - The regex must capture the attack CLASS (the injection technique/structure), NOT a literal payload. It must plausibly match unseen variants, not just the exact strings you were shown.
 - Encode the actual injection signal — never a bare benign verb alone.
 - Use (?i) as a leading inline flag for case-insensitivity (the engine strips this prefix and reapplies it as a real regex flag — this is the house convention).
-- For emoji/astral codepoints use JS \\u{XXXX} escapes (the engine auto-detects these and adds the 'u' flag) — never Python-style \\UXXXXXXXX (a no-op in JS).
+- For emoji/astral codepoints write the LITERAL character, not an escape. \\u{XXXX} is JavaScript-only and does not compile in the Python or Go channels; \\UXXXXXXXX is Python-only and a no-op in JS. The literal is the one spelling all three accept, and the engine adds the 'u' flag when it sees one.
 - NEVER an unbounded .* — use bounded [\\s\\S]{0,N} spans instead.
 - Add \\b word boundaries around bare keyword tokens.
 - You are NOT given the benign corpus or the full FN set — you cannot know true recovers/benignFP. Propose your honest best candidates; an independent script will gate them empirically and only survivors move forward. Over-proposing plausible-looking candidates that get rejected is fine; under-proposing is not.

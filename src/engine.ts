@@ -2180,7 +2180,7 @@ export function isReDoSSafe(source: string): boolean {
  * and Go channels; they are literals now, and this is what keeps them working
  * here.
  */
-function needsUnicodeFlag(pattern: string): boolean {
+export function needsUnicodeFlag(pattern: string): boolean {
   if (pattern.includes('\\u{') || pattern.includes('\\p{')) return true;
   for (const ch of pattern) {
     const cp = ch.codePointAt(0);

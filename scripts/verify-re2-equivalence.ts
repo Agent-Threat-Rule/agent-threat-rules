@@ -61,7 +61,7 @@ function normalizeRegex(pattern: string): string {
 
 export function engineCompile(value: string): RegExp | null {
   const normalized = normalizeRegex(value);
-  const flags = normalized.includes("\\u{") || normalized.includes("\\p{") ? "iu" : "i";
+  const flags = needsUnicodeFlag(normalized) ? "iu" : "i";
   try {
     return new RegExp(normalized, flags);
   } catch {
@@ -237,6 +237,7 @@ function fuzzInputs(pattern: string, after: string, count: number, seed: number)
 const GO_ORACLE = `package main
 
 import (
+import { needsUnicodeFlag } from "../src/engine.js";
 	"encoding/json"
 	"os"
 	"regexp"
