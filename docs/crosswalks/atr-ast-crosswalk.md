@@ -11,7 +11,7 @@ This is a **curated thematic mapping**, not an id-equality join. ATR carries no 
 
 Regenerate with `python3 scripts/generate-ast-crosswalk.py`. CI runs `--check` so a stale copy fails the build.
 
-Rules in corpus at generation time: **808**.
+Rules in corpus at generation time: **807**.
 
 ## Coverage by AST control
 
@@ -19,7 +19,7 @@ Rules in corpus at generation time: **808**.
 |-----|-------|-----------|-------------------------------|
 | AST01 | Malicious Skills | 199 | ASI01 (57), ASI05 (53), ASI04 (48) |
 | AST02 | Supply Chain Compromise | 58 | ASI04 (22), ASI01 (12), ASI05 (12) |
-| AST03 | Over-Privileged Skills | 241 | ASI01 (92), ASI03 (92), ASI06 (42) |
+| AST03 | Over-Privileged Skills | 240 | ASI01 (92), ASI03 (91), ASI06 (42) |
 | AST04 | Insecure Metadata | 110 | ASI05 (42), ASI06 (34), ASI04 (28) |
 | AST05 | Untrusted External Instructions | 355 | ASI01 (335), ASI06 (16), ASI04 (14) |
 | AST06 | Weak Isolation | 135 | ASI01 (74), ASI03 (40), ASI06 (21) |
@@ -38,7 +38,7 @@ Rules in corpus at generation time: **808**.
 | tool-poisoning (110) | 110 | AST01 Malicious Skills | A poisoned tool/skill is a malicious skill at the point of use. |
 |  |  | AST04 Insecure Metadata | Tool-description / metadata poisoning is the AST04 insecure-metadata surface. |
 | agent-manipulation (109) | 109 | AST05 Untrusted External Instructions | Manipulating an agent via crafted external content is untrusted-instruction abuse. |
-| privilege-escalation (67) | 67 | AST03 Over-Privileged Skills | Privilege escalation is the direct consequence of over-privileged skills. |
+| privilege-escalation (66) | 66 | AST03 Over-Privileged Skills | Privilege escalation is the direct consequence of over-privileged skills. |
 | skill-compromise (46) | 46 | AST01 Malicious Skills | A compromised skill is a malicious skill. |
 |  |  | AST02 Supply Chain Compromise | Skill compromise via a tampered upstream is supply-chain compromise. |
 | model-abuse (43) | 43 | AST01 Malicious Skills | Coercing the model into attacker-chosen behaviour manifests as a malicious skill action. |
