@@ -105,7 +105,7 @@ async function main() {
   for (const s of samples) {
     const ids =
       shape === "skill"
-        ? new Set(engine.scanSkill(s).map((m) => m.rule_id))
+        ? new Set(engine.scanSkill(s).map((m) => m.rule.id))
         : matchedRuleIds(engine, s);
     if (ids.size > 0) hitSamples++;
     for (const id of ids) {
