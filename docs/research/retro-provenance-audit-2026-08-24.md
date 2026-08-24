@@ -10,67 +10,84 @@ Reproduce: `npx tsx scripts/audit-rule-provenance.ts --json out.json`
 (the control asserts engine-loaded == on-disk, a known attack fires, a plain
 sentence does not; it exits 1 and prints no table if any of those fail).
 
-## Result, split by the §10 provenance classifier
+## The finding: a gate that had nothing to test
+
+`check-rules-safety.ts` verifies that a new rule matches its own true positives.
+`extractTruePositives` read one shape:
+
+```ts
+tps.map((t) => (typeof t === "string" ? t : (t?.input ?? "")))
+```
+
+Most rules do write `- input: "..."`. **38 rules key the case by the detection
+field instead** — `tool_args`, `user_input`, `tool_description`,
+`tool_response`, `tool_name`, `agent_output`, `content` — and 8 more mix the two
+shapes. For those, the extractor returned an empty list, so the check iterated
+nothing and passed.
+
+That is a zero from a population that could not have produced a one, which is
+exactly the failure the `corpus-visibility` gate exists to prevent on the benign
+side. There was no equivalent guard on this side.
+
+**Two of the rules the check was silent about are `maturity: stable`** — the
+enforce lane, auto-block — and both carry `strength: primary` compliance claims
+against OWASP LLM02:2025, NIST AI RMF MS.2.7, EU AI Act Article 15, and ISO/IEC
+42001 clauses 8.1 and 6.2:
+
+| rule | |
+| --- | --- |
+| `ATR-2026-01601` | SQL injection destructive DDL |
+| `ATR-2026-01602` | SQL injection UNION SELECT exfiltration |
+
+Both do in fact carry four true positives each and do match them. The defect was
+never that they were untested; it was that the gate could not see the tests, so
+nobody could have known either way.
+
+Fixing the extractor makes the check real for all 46 affected rules. Three of
+them fail it: `ATR-2026-00040` (5 of 10 TPs unmatched), `ATR-2026-00060` (5 of
+5), `ATR-2026-00012` (2 of 10). All three are `maturity: test`, so the enforce
+lane is unaffected and no currently-blocking rule changes behaviour.
+
+## Whole-ruleset result, split by the §10 provenance classifier
 
 | check | corpus (288) | vuln (64) | generic (433) | all (785) |
 | --- | ---: | ---: | ---: | ---: |
-| has `true_positives` | 287 | 64 | **390** | 741 |
-| has `true_negatives` | 287 | 64 | **396** | 747 |
-| matches its own TPs | 285 | 64 | **383** | 732 |
+| has `true_positives` | 288 | 64 | 426 | 778 |
+| has `true_negatives` | 288 | 64 | 433 | 785 |
+| matches its own TPs | 286 | 64 | 416 | 766 |
+| self-TP check non-vacuous upstream (before the fix) | 287 | 64 | 397 | 748 |
 | exactly one ATLAS technique | 92 | 50 | 238 | 380 |
 | declares any ATLAS technique | 288 | 64 | 433 | 785 |
 | measurable (no `trace.*`/`behavioral.*` under `all`) | 288 | 64 | 433 | 785 |
 
-**Unsourced provenance predicts failure.** On "matches its own TPs" the corpus
-bucket passes 98.9% and the vuln bucket 100%, against 88.5% for the bucket whose
-`author:` names no source — roughly a tenfold difference in failure rate. That is
-the answer to the question the split was built to ask.
+Unsourced provenance is a mild predictor of failure but not a dramatic one:
+99.3% of the corpus bucket and 100% of the vuln bucket match their own true
+positives, against 96.1% of the bucket whose `author:` names no source. The
+19 failures are 7 rules with no true positives at all and 12 that declare some
+and do not match them; every one of the 19 is `draft` (6), `test` (12) or
+`experimental` (1). **Nothing live fails this check.**
 
-## The 53 rules that fail, separated
+## A coverage gap the missing check was hiding
 
-They are not one problem. 44 rules declare no true positives at all, and 9
-declare some and do not match them. The second group is entirely `draft` (6) and
-`test` (3), so none of them is live: the engine skips `draft`, and `test` never
-reaches the enforce lane.
+`ATR-2026-01601`'s single-quote branch was written `';` while its double-quote
+branch was written `"\s*;`. A payload with whitespace between the quote and the
+statement separator — `1' ; TRUNCATE TABLE accounts; --` — matched neither
+branch, so DROP, TRUNCATE and unbounded DELETE all escaped in that form, and the
+description promises all three. The rule's own true positives all happened to use
+the unspaced form, so even a working self-TP check would not have caught this;
+what would have caught it is a test case for the case the description names.
 
-The first group is where the finding is. Of the 44, 36 are `test` and 6
-`experimental` — but **two are `maturity: stable`**, which is the enforce lane,
-which is auto-block:
+Fixed by allowing `'\s*;`, which brings the single-quote branch in line with the
+double-quote branch it was already inconsistent with, plus two true positives
+covering the spaced form. Verified silent on `How do I drop a table in
+PostgreSQL?`, a normal parameterised `SELECT`, `We should drop the legacy table
+after the migration completes.`, and the deliberately awkward `The report's ;
+delimiter needs fixing before we delete from staging.`
 
-| rule | what it claims |
-| --- | --- |
-| `ATR-2026-01601` | SQL injection destructive DDL — "DROP TABLE, TRUNCATE TABLE, or unbounded DELETE FROM" |
-| `ATR-2026-01602` | SQL injection UNION SELECT exfiltration |
+## What is left
 
-Both carry `strength: primary` compliance claims against OWASP LLM02:2025,
-NIST AI RMF MS.2.7, EU AI Act Article 15, and ISO/IEC 42001 clauses 8.1 and 6.2.
-So a rule with no test case asserting it detects anything is auto-blocking
-traffic and is cited as primary evidence for five frameworks.
-
-### They are not inert, and one under-delivers against its own description
-
-Probed directly:
-
-| input | `01601` | `01602` |
-| --- | --- | --- |
-| `'; DROP TABLE users; --` | fires | — |
-| `1' ; TRUNCATE TABLE accounts; --` | **silent** | — |
-| `' UNION SELECT username, password FROM credentials --` | — | fires |
-| `SELECT name, total FROM orders WHERE region = 'APAC'` | silent | silent |
-| `We should drop the legacy table after the migration completes.` | silent | silent |
-
-`01601`'s description names TRUNCATE TABLE explicitly and does not detect it.
-That is a one-line true-positive away from being caught at authoring time, which
-is the whole cost of shipping without one.
-
-## What to do with this
-
-1. The two `stable` zero-TP rules need true positives, and `01601` needs the
-   TRUNCATE and unbounded-DELETE cases its description already promises — or the
-   description narrowed to what it does.
-2. `has true_positives` is a cheap CI gate that nothing currently enforces
-   repo-wide. 44 rules would fail it today.
-3. The 405 rules declaring more than one ATLAS technique are a softer finding —
+1. `ATR-2026-00040`, `ATR-2026-00060`, `ATR-2026-00012` fail the now-real check.
+2. The 405 rules declaring more than one ATLAS technique are a softer finding —
    §5's "one technique per rule" is about detection scope and multi-tagging is
-   sometimes legitimate — but it is the population to look at when a rule cannot
-   be demoted or retired cleanly.
+   sometimes legitimate — but that is the population to look at when a rule
+   cannot be demoted or retired cleanly.

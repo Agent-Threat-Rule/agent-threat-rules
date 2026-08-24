@@ -589,14 +589,48 @@ async function checkOwnTruePositivesMatch(
   return fps;
 }
 
+/** Keys on a test case that carry bookkeeping rather than sample text. */
+const NON_SAMPLE_TEST_KEYS = new Set([
+  "expected",
+  "description",
+  "note",
+  "detection_field",
+  "matched_condition",
+]);
+
+/**
+ * Sample text out of a true-positive entry.
+ *
+ * Most rules write `- input: "..."`, but 38 rules key the case by the
+ * detection field instead (`tool_args`, `user_input`, `tool_description`,
+ * `tool_response`, ...). Reading only `input` returned an empty list for
+ * those, so checkOwnTruePositivesMatch had nothing to test and passed them
+ * silently — a zero from a population that could not have produced a one,
+ * which is the failure mode the corpus-visibility gate exists to prevent on
+ * the benign side. Two of the rules it was silent about are `maturity:
+ * stable`, i.e. the enforce lane.
+ */
 function extractTruePositives(doc: Record<string, unknown>): string[] {
-  const tc = doc.test_cases as
-    | { true_positives?: Array<string | { input?: string }> }
-    | undefined;
-  const tps = tc?.true_positives ?? [];
-  return tps
-    .map((t) => (typeof t === "string" ? t : (t?.input ?? "")))
-    .filter((s): s is string => typeof s === "string" && s.length > 0);
+  const tc = doc.test_cases as { true_positives?: unknown } | undefined;
+  const out: string[] = [];
+  for (const t of (tc?.true_positives as unknown[]) ?? []) {
+    if (typeof t === "string") {
+      if (t.length > 0) out.push(t);
+      continue;
+    }
+    if (t === null || typeof t !== "object") continue;
+    const rec = t as Record<string, unknown>;
+    const direct = rec["input"];
+    if (typeof direct === "string" && direct.length > 0) {
+      out.push(direct);
+      continue;
+    }
+    for (const [k, v] of Object.entries(rec)) {
+      if (NON_SAMPLE_TEST_KEYS.has(k)) continue;
+      if (typeof v === "string" && v.length > 0) out.push(v);
+    }
+  }
+  return out;
 }
 
 /** Every benign sample the gate knows about, flattened to labelled text. */
