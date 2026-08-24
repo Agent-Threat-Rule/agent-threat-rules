@@ -275,8 +275,15 @@ function validateRule(filePath: string): ValidationResult {
             // Strip leading inline flags (JS uses RegExp flags instead)
             pattern = pattern.replace(/^\(\?[imsx]+\)/, '');
             try {
-              // Use 'u' flag when pattern contains \u{XXXXX} or \p{} — matches ATR engine behaviour
-              const needsUnicode = /\\u\{|\\p\{/.test(pattern);
+              // Use 'u' when the pattern needs it. \u{...} and \p{...} need it by
+              // syntax; so does a literal astral character, because without 'u' a
+              // class range written with literals is a SyntaxError rather than a
+              // range. Literals are the spelling ATR rules use, since \u{...} is
+              // JS-only and unusable from the Python and Go channels — keep this
+              // in step with needsUnicodeFlag in src/engine.ts.
+              const needsUnicode =
+                /\\u\{|\\p\{/.test(pattern) ||
+                [...pattern].some((ch) => (ch.codePointAt(0) ?? 0) > 0xffff);
               new RegExp(pattern, needsUnicode ? 'u' : '');
             } catch (e) {
               const desc = cond['description'] ?? cond['field'] ?? 'unknown';

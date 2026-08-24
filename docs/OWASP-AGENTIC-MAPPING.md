@@ -1,7 +1,7 @@
 # ATR -> OWASP Agentic Top 10 (2026) Mapping
 
 Last updated: 2026-07-12
-ATR version: v3.5.8 (785 rules with OWASP Agentic tags)
+ATR version: v3.5.8 (789 rules with OWASP Agentic tags)
 OWASP framework: Agentic Top 10 v1.0 (December 2025)
 
 ## Summary

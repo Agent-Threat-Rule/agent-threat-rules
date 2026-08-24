@@ -311,6 +311,14 @@ export function loadSiteStats(): SiteStats {
 
   const rules = loadAllRules();
 
+  // The engine skips status: draft | deprecated before the lane gate, so those
+  // rules fire in no lane at all; the raw file count overstates what runs. Cite
+  // the effective count on user-facing surfaces (same rule as sync-stats.ts).
+  const effectiveRuleCount = rules.filter(
+    (r: { status?: string }) =>
+      r.status !== "draft" && r.status !== "deprecated",
+  ).length;
+
   const categories = new Set(
     rules.map((r: { category: string }) => r.category),
   );
@@ -325,7 +333,7 @@ export function loadSiteStats(): SiteStats {
   }
 
   return {
-    ruleCount: rules.length,
+    ruleCount: effectiveRuleCount,
     categoryCount: categories.size,
     lastRegenerated:
       rootStatsJson?.lastUpdated ?? statsJson?.generatedAt?.slice(0, 10) ?? "",

@@ -235,14 +235,39 @@ class TestATR2026013ToolSSRF:
         rule_ids = [m.rule_id for m in matches]
         assert "ATR-2026-00013" in rule_ids, f"Expected ATR-2026-00013 in {rule_ids}"
 
-    def test_fires_on_localhost(self, engine: ATREngine) -> None:
+    def test_does_not_fire_on_dev_localhost(self, engine: ATREngine) -> None:
+        """Bare localhost is a developer address, not SSRF.
+
+        This assertion used to be the reverse. ATR-2026-00013 was narrowed in
+        #296 ("narrow ATR-2026-00013 to real SSRF, stop flagging dev-localhost")
+        precisely because http://localhost:PORT is what every local dev server
+        looks like, and the rule now carries http://localhost:3000/health in its
+        own true_negatives. The loopback forms that ARE evidence of SSRF -- the
+        obfuscated ones a human would not type by hand, 0x7f000001, ::ffff:127.0.0.1,
+        decimal 2130706433 -- are still matched, and are covered below.
+
+        Leaving the old assertion in place is why this suite could not be run
+        against a current rule set: it pinned behaviour the rules had deliberately
+        abandoned, so refreshing the bundle broke the build.
+        """
         event = AgentEvent(
             content="http://localhost:8080/admin/config",
             event_type="tool_call",
         )
         matches = engine.evaluate(event)
         rule_ids = [m.rule_id for m in matches]
-        assert "ATR-2026-00013" in rule_ids
+        assert "ATR-2026-00013" not in rule_ids
+
+    def test_fires_on_obfuscated_loopback(self, engine: ATREngine) -> None:
+        """The loopback forms that survive the narrowing: encoded, not typed."""
+        event = AgentEvent(
+            content="http://0x7f000001/admin",
+            event_type="tool_call",
+            fields={"tool_args": "http://0x7f000001/admin"},
+        )
+        matches = engine.evaluate(event)
+        rule_ids = [m.rule_id for m in matches]
+        assert "ATR-2026-00013" in rule_ids, f"Expected ATR-2026-00013 in {rule_ids}"
 
     def test_does_not_fire_on_public_url(self, engine: ATREngine) -> None:
         event = AgentEvent(
