@@ -1,0 +1,292 @@
+title: "Agent Instruction-Source Pointer Redirected Outside the Workspace"
+id: ATR-2026-02624
+rule_version: 3
+status: "experimental"
+description: >
+  Detects a configuration write that repoints the field naming the agent's OWN
+  instruction source -- instructionsFilePath, system_prompt_file, promptFile,
+  persona_file, rulesFile, memory_file -- at something outside the workspace: a
+  parent-directory chain, a remote URL, or a credential store. This is two
+  vulnerabilities in one event. It is arbitrary file read, and it is
+  self-inflicted prompt injection, because whatever sits at that path is loaded
+  as the agent's instructions on the next turn. The Paperclip advisory
+  (agent-controlled adapterConfig.instructionsFilePath) is the reference case.
+
+  MEASURED GAP. `{"agent":{"system_prompt_file":"/var/run/secrets/kubernetes.io/serviceaccount/token"}}`
+  and `{"adapterConfig":{"instructionsFilePath":"../../../../app/.env"}}` were
+  evaluated against the corpus: the first matched only a credential-path rule
+  that keys on the PATH, and the second matched only the generic traversal rules
+  ATR-2026-00066 and ATR-2026-00012. Nothing keys on the instruction-source field
+  itself, so the severity of the finding -- the agent is about to take orders
+  from that file -- is invisible to every existing rule.
+
+  WHY A PLAIN ABSOLUTE PATH IS NOT FLAGGED. `instructionsFilePath: /app/prompts/agent.md`
+  is what a containerised deployment looks like, and treating "absolute" as
+  suspicious would fire on every one of them. The rule therefore requires an
+  actual escape: a chain of two or more parent segments, a remote scheme, or a
+  path that names a known credential or system secret location. A single
+  normalising `docs/../prompts/rules.md` is below the chain threshold on purpose.
+
+  OVERLAP, STATED PLAINLY. The credential-path condition intersects rules that
+  match credential paths in any file argument. The non-overlapping contribution
+  here is the FIELD: those rules report a credential read, this one reports that
+  the agent's instruction source moved.
+author: "ATR Community"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: "test"
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM01:2025"
+    - "LLM06:2025"
+  owasp_agentic:
+    - "ASI01:2026"
+  mitre_atlas:
+    - "AML.T0051 - LLM Prompt Injection"
+    - "AML.T0051.001 - Indirect"
+    - "AML.T0057 - LLM Data Leakage"
+
+compliance:
+  owasp_agentic:
+    - id: ASI01:2026
+      context: "Redirecting the instruction source hands the agent's objective to whoever controls the new path, which is goal hijack achieved through configuration rather than through prompt text."
+      strength: primary
+  owasp_llm:
+    - id: LLM01:2025
+      context: "The file at the new path is loaded as instructions on the next turn, which is indirect prompt injection with a configuration field as the carrier."
+      strength: primary
+    - id: LLM06:2025
+      context: "Pointing the instruction loader at a credential store discloses that file's contents into model context."
+      strength: secondary
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 robustness: altering where the system reads its instructions from is a direct attempt to alter system behaviour."
+      strength: primary
+    - article: "14"
+      context: "Human oversight under Article 14 assumes the operator knows what instructions the system is following; a silent repoint defeats that assumption."
+      strength: secondary
+    - article: "12"
+      context: "Article 12 record-keeping: the change of instruction provenance is exactly the kind of event that must be reconstructable after the fact."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Manage
+      subcategory: MG.2.3
+      context: "Runtime treatment for configuration changes that alter the agent's instruction provenance."
+      strength: primary
+    - function: Map
+      subcategory: MP.5.1
+      context: "Catalogues instruction-source redirection as a risk distinct from both file disclosure and prompt-text injection."
+      strength: secondary
+    - function: Measure
+      subcategory: "MS.2.7"
+      context: "Detection events document the security and resilience evidence MEASURE 2.7 asks for on the configuration path."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Clause 8.1 operational control: the instruction artifact is a controlled input, and this event moves it outside the controlled boundary."
+      strength: primary
+    - clause: "6.2"
+      context: "Protecting the integrity of the agent's instruction source is an AIMS information security objective under clause 6.2."
+      strength: secondary
+    - clause: "8.4"
+      context: "Impact assessment under clause 8.4 must account for an agent whose instructions can be swapped at runtime."
+      strength: secondary
+
+tags:
+  category: agent-manipulation
+  subcategory: instruction-source-redirect
+  scan_target: both
+  confidence: medium
+  suppress_in_code_blocks: true
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  conditions:
+    - field: content
+      operator: regex
+      value: "(?i)\\b(?:instructionsFilePath|instructions_file(?:_path)?|instructionFile|system_prompt_file|systemPromptFile|systemPromptPath|system_prompt_path|promptFile|prompt_file|promptPath|prompt_path|personaFile|persona_file|agentFile|agent_file|rulesFile|rules_file|memoryFile|memory_file)(?:\\\\{0,2}[\"'`])?\\s*[:=]\\s*(?:\\\\{0,2}[\"'`])?\\s*(?:\\.\\.[\\\\/]){2,}[^\"'`\\n]{0,40}(?:\\.env\\b|\\.ssh/(?:id_[rd]sa|authorized_keys)|\\.aws/credentials|\\.kube/config\\b|\\.docker/config\\.json|\\.config/gh/hosts\\.yml|\\.config/gcloud/(?:application_default_)?credentials|\\.netrc\\b|\\.npmrc\\b|\\.pypirc\\b|\\.git-credentials\\b|\\.cargo/credentials|\\.terraform\\.d/credentials|etc/(?:passwd|shadow|sudoers)(?:$|[^\\w.-])|proc/self/environ|var/run/secrets/kubernetes\\.io/)"
+      description: "Agent instruction-source pointer redirected through a parent-directory chain that LANDS on a credential or secret file"
+
+    - field: content
+      operator: regex
+      value: "(?i)\\b(?:instructionsFilePath|instructions_file(?:_path)?|instructionFile|system_prompt_file|systemPromptFile|systemPromptPath|system_prompt_path|promptFile|prompt_file|promptPath|prompt_path|personaFile|persona_file|agentFile|agent_file|rulesFile|rules_file|memoryFile|memory_file)(?:\\\\{0,2}[\"'`])?\\s*[:=]\\s*(?:\\\\{0,2}[\"'`])?\\s*(?:data:[\\w.+-]{1,40}/[\\w.+-]{1,40}[;,]|data:;{0,1}base64,|(?:https?|ftp)://(?:169\\.254\\.169\\.254|169\\.254\\.170\\.2|100\\.100\\.100\\.200|(?:[\\w-]{1,40}\\.){0,3}(?:gist\\.githubusercontent\\.com|pastebin\\.com|paste\\.ee|hastebin\\.com|transfer\\.sh|file\\.io|anonfiles\\.com|webhook\\.site|requestbin\\.\\w{2,6}|ngrok(?:-free)?\\.(?:io|app|dev)|trycloudflare\\.com|serveo\\.net|localtunnel\\.me|metadata\\.google\\.internal)))"
+      description: "Agent instruction-source pointer redirected to an UNTRUSTWORTHY remote source -- a bare IP, a paste or tunnel host, cloud metadata, or an inline data: URI"
+
+    - field: content
+      operator: regex
+      value: "(?i)\\b(?:instructionsFilePath|instructions_file(?:_path)?|instructionFile|system_prompt_file|systemPromptFile|systemPromptPath|system_prompt_path|promptFile|prompt_file|promptPath|prompt_path|personaFile|persona_file|agentFile|agent_file|rulesFile|rules_file|memoryFile|memory_file)(?:\\\\{0,2}[\"'`])?\\s*[:=]\\s*(?:\\\\{0,2}[\"'`])?\\s*(?:file://)?(?:(?:~|/(?:home|Users|root))?/(?:[\\w.-]{1,30}/){0,3}(?:\\.ssh/(?:id_[rd]sa|authorized_keys)|\\.aws/credentials|\\.config/gh/hosts\\.yml|\\.config/gcloud/(?:application_default_)?credentials|\\.kube/config\\b|\\.docker/config\\.json|\\.netrc\\b|\\.pypirc\\b|\\.git-credentials\\b|\\.env\\b|\\.npmrc\\b|\\.cargo/credentials|\\.terraform\\.d/credentials)|/(?:etc/(?:passwd|shadow|sudoers)(?:$|[^\\w.-])|proc/self/environ|var/run/secrets/kubernetes\\.io/))"
+      description: "Agent instruction-source pointer aimed at a credential store or a system secret path"
+
+  condition: any
+  false_positives:
+    - "An operator deliberately pointing an agent at a prompt file outside the repo. The rule does not fire on a plain absolute path for exactly this reason -- only on traversal chains, hostile remote sources and credential/system paths."
+    - "IRREDUCIBLE CLASS, MEASURED IN ADVERSARIAL REVIEW: prose that quotes the attack in order to warn about it. A hardening CHANGELOG entry, a git commit message, a loader docstring, a YAML comment telling operators not to do this, a localisation bundle carrying the rejected value inside an error string, a non-English incident runbook, and a security-validator test asserting the value is rejected ALL fire. Proof that this cannot be fixed at the pattern layer: each of this rule true_positives was embedded verbatim in a benign advisory paragraph and all nine fired, because the false positive is a strict SUPERSTRING of the true positive -- the same bytes, only the surrounding narrative differs. Mitigation applied instead: tags.suppress_in_code_blocks is set, which silences the fenced-block and inline-backtick subset (a CHANGELOG that wraps the example in backticks, and this rule own description, both go quiet). Plain prose, comments and docstrings still fire. Triage on a hit should read the surrounding text for a rejection or warning framing before escalating."
+    - "FIXED in rule_version 2 -- an ordinary path component that happens to be on the credential leaf list. Measured false positives: ../../services/secrets/prompts/system.md, ../../packages/credentials-agent/prompts/base.md, ../../../tools/passwd-rotation/prompts/agent.md, /srv/agents/prompts/credentials.md, /etc/suricata/rules/credentials.rules, /var/lib/agent/credentials-audit/memory.jsonl. The leaf list previously accepted bare credentials, bare passwd and a bare /secrets?/ segment, all of which are ordinary directory and file names in security tooling. The list now names whole credential artifacts only (.aws/credentials, .ssh/id_rsa, .config/gh/hosts.yml, /etc/passwd, /var/run/secrets/ and so on)."
+    - "FIXED in rule_version 2 -- a prompt source on loopback or a private address. promptFile: http://127.0.0.1:8000/prompts/dev.md is a local hot-reload prompt server and system_prompt_file: http://10.42.0.17:9090/... is an internal prompt registry; both fired on the generic bare-IP branch. That branch was replaced by the cloud metadata addresses only (169.254.169.254, 169.254.170.2, 100.100.100.200). RECALL COST, STATED PLAINLY: an instruction source on a bare PUBLIC IP is no longer detected by condition 2."
+    - "FIXED in rule_version 2 -- the field alternation had no left word boundary, so user_agent_file matched agent_file. A leading \\b now blocks that, at the cost of no longer matching prefixed variants such as default_prompt_file."
+    - "A remote prompt source on a corporate CDN, and a file:// URL pointing inside the workspace. Both were measured FPs during authoring; condition 2 accepts only paste and tunnel hosts, cloud metadata and data: URIs."
+    - "A monorepo prompt path such as ../../shared/prompts/base.md. Measured during authoring: a bare traversal chain fired on three of six such paths, so the traversal condition also requires a credential or secret leaf."
+    - "A cache or state file under a dotted home directory. ~/.cache is excluded."
+    - "FIXED in rule_version 3 -- SECRET-MOUNT DELIVERY. /run/secrets/ and /var/run/secrets/ are where Docker Compose, Docker Swarm, BuildKit, Podman Quadlet and Kubernetes DELIVER a file into a container, and mounting the system prompt there is the recommended way to keep a proprietary prompt out of the image. Six measured FPs (docker-compose, k8s projected volume, BuildKit --mount=type=secret, Podman Quadlet, a startup log, an .env.example). The branch now names only var/run/secrets/kubernetes.io/, which is the service-account token path the reference case actually reads. RECALL COST, STATED PLAINLY: an instruction source aimed at an arbitrary /run/secrets/<name> is no longer detected."
+    - "FIXED in rule_version 3 -- a bare `data:` in condition 2. The whitespace run between the field name and its value spans NEWLINES, so any configuration whose prompt-file key has a child key named `data` matched (system_prompt_file:\\n  data: |). The branch now requires a real data-URI shape (mediatype/subtype then ; or , or an explicit base64,)."
+    - "FIXED in rule_version 3 -- the /etc/passwd leaf ended in \\b, which is satisfied by a hyphen or underscore, so a detection-engineering repo path such as ../../../rules/etc/passwd-watch.rules fired. The leaf now requires end-of-input or a character that cannot continue a filename."
+    - "ACCEPTED, NOT FIXED: an ephemeral dev tunnel serving prompts for hot reload (promptFile: https://team-agent-dev.ngrok-free.app/prompts/dev.md) fires. Unlike the loopback and RFC1918 prompt servers removed in v2, a tunnel host is publicly reachable and its content is editable by anyone holding the URL, which is the Paperclip risk itself. Kept deliberately; the alert asks who supplied the value, which is the right question here."
+
+response:
+  actions:
+    - alert
+  auto_response_threshold: high
+  message_template: >
+    [ATR-2026-02624] The agent's own instruction-source pointer was redirected
+    outside its workspace. This is arbitrary file read AND self-inflicted prompt
+    injection: whatever sits at that path becomes the agent's instructions on the
+    next turn. Verify who supplied this configuration value.
+
+confidence: 70
+test_cases:
+  true_positives:
+    - input: "{\"adapterConfig\":{\"instructionsFilePath\":\"../../../../app/.env\"}}"
+      expected: triggered
+      description: "Traversal chain in the Paperclip instructionsFilePath field"
+    - input: "{\"agent\":{\"system_prompt_file\":\"/var/run/secrets/kubernetes.io/serviceaccount/token\"}}"
+      expected: triggered
+      description: "Instruction source pointed at the Kubernetes service-account token"
+    - input: "update_config({\"promptFile\": \"https://gist.githubusercontent.com/anon/9f2/raw/persona.md\"})"
+      expected: triggered
+      description: "Instruction source repointed at a raw paste host -- next turn's instructions are fetched from content anyone can edit"
+    - input: "{\"tool\":\"set_agent_config\",\"arguments\":{\"persona_file\":\"~/.aws/credentials\"}}"
+      expected: triggered
+      description: "Persona file aimed at AWS credentials"
+    - input: "instructions_file: ../../../home/ops/.ssh/id_rsa"
+      expected: triggered
+      description: "YAML config redirecting the instruction file to a private key"
+    - input: "{\"rulesFile\":\"/home/ops/.config/gh/hosts.yml\"}"
+      expected: triggered
+      description: "Rules file aimed at the GitHub CLI credential store"
+    - input: "systemPromptPath = \"http://169.254.169.254/latest/user-data\""
+      expected: triggered
+      description: "Instruction source pointed at cloud user-data over HTTP"
+    - input: "{\"agent_file\":\"/etc/shadow\"}"
+      expected: triggered
+      description: "Agent definition file aimed at the shadow password file"
+    - input: "memory_file: file:///proc/self/environ"
+      expected: triggered
+      description: "Memory file pointed at the process environment through a file URL"
+  true_negatives:
+    - input: "{\"agent\":{\"system_prompt_file\":\"./prompts/system.md\"}}"
+      expected: not_triggered
+      description: "The ordinary relative form"
+    - input: "{\"adapterConfig\":{\"instructionsFilePath\":\"/app/prompts/agent.md\"}}"
+      expected: not_triggered
+      description: "An ABSOLUTE path inside the application image -- absolute alone is not the signal, and deliberately does not fire"
+    - input: "promptFile: \"${workspaceFolder}/prompts/reviewer.md\""
+      expected: not_triggered
+      description: "Editor variable expansion to a workspace-relative prompt"
+    - input: "{\"rules_file\": \"docs/../prompts/rules.md\"}"
+      expected: not_triggered
+      description: "A single normalising .. segment inside the workspace"
+    - input: "{\"promptFile\":\"../../shared/prompts/base.md\"}"
+      expected: not_triggered
+      description: "MEASURED FP during authoring: a monorepo pointing at a sibling package prompt. A traversal chain alone fired here, so condition 1 now also requires the path to land on a credential or secret file."
+    - input: "system_prompt_file: ../../../packages/agent-core/prompts/system.md"
+      expected: not_triggered
+      description: "MEASURED FP during authoring: deep relative path to a shared package prompt, entirely legitimate"
+    - input: "{\"rules_file\": \"../../.agent/rules.md\"}"
+      expected: not_triggered
+      description: "MEASURED FP during authoring: repo-root .agent directory reached from a nested package"
+    - input: "system_prompt_file: prompts/system.txt"
+      expected: not_triggered
+      description: "Bare relative path with no leading directory"
+    - input: "The instructionsFilePath option accepts any path readable by the process, which is why CVE-class advisories treat it as arbitrary file read. Never set it from user input."
+      expected: not_triggered
+      description: "Security documentation about this very field and this very risk, with no value assigned"
+    - input: "# .env.example\nPROMPT_FILE=./prompts/default.md\nAWS_SHARED_CREDENTIALS_FILE=~/.aws/credentials\n"
+      expected: not_triggered
+      description: "An env template that sets a prompt file AND names a credential file, but on different keys"
+    - input: "{\"persona_file\": \"personas/support-agent.yaml\", \"memory_file\": \"state/memory.jsonl\"}"
+      expected: not_triggered
+      description: "Normal project-relative agent wiring"
+    - input: "curl -sf https://raw.githubusercontent.com/org/repo/main/prompts/base.md -o ./prompts/base.md && echo promptFile: ./prompts/base.md >> config.yaml"
+      expected: not_triggered
+      description: "A deployment script that DOWNLOADS a prompt and then points the config at the local copy -- the URL and the field are both present but not joined"
+    - input: "agent_file: /opt/agents/reviewer/agent.yaml"
+      expected: not_triggered
+      description: "Absolute path into a deployment directory"
+    - input: "CI log :: [config] resolved system_prompt_file=/build/workspace/prompts/system.md :: sha256=ab12 :: ok"
+      expected: not_triggered
+      description: "CI log echoing a resolved absolute prompt path inside the build workspace"
+    - input: "{\"memoryFile\":\"~/.cache/myagent/memory.jsonl\"}"
+      expected: not_triggered
+      description: "A dotfile directory under home that is a cache, not a credential store"
+    - input: "{\"agent\":{\"system_prompt_file\":\"../../services/secrets/prompts/system.md\"}}"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: a monorepo service package literally named `secrets` has its own prompt. The old leaf list accepted a bare /secrets?/ path segment."
+    - input: "{\"promptFile\":\"../../packages/credentials-agent/prompts/base.md\"}"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: a monorepo package named credentials-agent. The old leaf list accepted a bare `credentials` word."
+    - input: "promptFile: ../../../tools/passwd-rotation/prompts/agent.md"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: a password-rotation tool's own agent prompt. The old leaf list accepted a bare `passwd` word."
+    - input: "{\"promptFile\": \"/srv/agents/prompts/credentials.md\"}"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: an absolute deployment prompt path whose FILENAME is credentials.md -- a prompt that teaches the agent how to talk about credentials."
+    - input: "rules_file: /etc/suricata/rules/credentials.rules"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: rules_file is a generic field name and detection-engineering content routinely ships a credentials.rules file."
+    - input: "{\"rules_file\": \"/opt/falco/rules/credentials.yaml\"}"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: the same shape in Falco rule content."
+    - input: "memory_file: /var/lib/agent/credentials-audit/memory.jsonl"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: an agent state file living under a directory named credentials-audit."
+    - input: "# dev override: hot-reload prompts from the local prompt server\npromptFile: \"http://127.0.0.1:8000/prompts/dev.md\""
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: a loopback prompt server. The old condition 2 accepted ANY bare IPv4, so 127.0.0.1 fired while the equivalent localhost URL did not."
+    - input: "system_prompt_file: http://10.42.0.17:9090/v1/prompts/support.md"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: an internal prompt registry on an RFC1918 cluster address."
+    - input: "{\"user_agent_file\": \"/opt/scraper/data/credentials.txt\"}"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: user_agent_file contains the substring agent_file. The alternation had no left word boundary."
+    - input: "prompt_path=/home/dev/.config/gh/../zsh/prompts"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: .config/gh/ was accepted as a path PREFIX; only the hosts.yml credential file itself now counts."
+    - input: "## 2.7.0 (2026-03-04)\n### Security\n- Prompt loader now refuses to escape the workspace. A value such as `promptFile: ../../../../app/.env` is rejected at startup instead of being read. Reported by @dsec."
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2 by tags.suppress_in_code_blocks: a hardening CHANGELOG entry that wraps the rejected value in backticks."
+    - input: "services:\n  agent:\n    image: acme/agent:1.4\n    environment:\n      SYSTEM_PROMPT_FILE: /run/secrets/system_prompt\n    secrets:\n      - system_prompt\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v3: docker-compose delivering the system prompt as a Docker secret. /run/secrets/ is where a container RECEIVES a prompt file, not only where credentials live -- this is the hardened deployment, and the old leaf list flagged it."
+    - input: "system_prompt_file: /var/run/secrets/acme.io/agent/system-prompt.md"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v3: a Kubernetes projected-volume prompt mount under /var/run/secrets/. Only the kubernetes.io service-account path now counts."
+    - input: "# syntax=docker/dockerfile:1.7\nRUN --mount=type=secret,id=persona \\\n    persona_file=/run/secrets/persona python -m agent.build\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v3: a BuildKit secret mount handing the build its persona file."
+    - input: "[Container]\nImage=quay.io/acme/agent:2.0\nSecret=house_prompt\nEnvironment=PROMPT_FILE=/run/secrets/house_prompt\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v3: a Podman Quadlet unit doing the same thing."
+    - input: "[13:02:11] agent-runner :: mounting docker secret\n[13:02:11] agent-runner :: prompt_file=/run/secrets/system_prompt (mode 0400)\n[13:02:12] agent-runner :: ready\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v3: startup log echoing the resolved secret-mounted prompt path."
+    - input: "# .env.example\nPROMPT_FILE=/run/secrets/system_prompt\nAWS_REGION=eu-west-1\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v3: an env template whose documented default is the secret mount."
+    - input: "rules_file: ../../../rules/etc/passwd-watch.rules"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v3: a detection-engineering repo organising rules by monitored path, reached relatively from a test directory. The old leaf accepted `passwd` with only a \\b after it, so passwd-watch.rules matched."
+    - input: "The loader accepts either an inline block or a path:\n\nsystem_prompt_file:\n  data: |\n    You are a release-notes assistant.\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v3: condition 2 accepted a BARE `data:`, and the whitespace run between the field and its value spans newlines -- so any config whose prompt_file key has a child key named `data` fired. A real data: URI shape is now required."
+    - input: "rules_file: ../../detections/linux/etc/passwd_modification.yml"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW probe, already clean: the same detection-repo layout with an underscore separator."

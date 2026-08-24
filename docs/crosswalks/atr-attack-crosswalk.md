@@ -28,12 +28,12 @@ columns are still extracted from ATR metadata, not authored here.
 
 ## Coverage
 
-- ATR rules total: 785
-- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 197
-- Distinct enterprise ATT&CK techniques referenced: 80
-- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 785
+- ATR rules total: 795
+- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 202
+- Distinct enterprise ATT&CK techniques referenced: 81
+- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 795
 - Distinct MITRE ATLAS techniques referenced: 44
-- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 785
+- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 795
 - ATR categories (distinct `tags.category` values): 9
 
 Categories are keyed on each rule's `tags.category` metadata, not on its
@@ -49,7 +49,7 @@ against.
 
 | ATT&CK technique | Name | ATR rules | ATR categories |
 |---|---|---|---|
-| T1005 | Data from Local System | `ATR-2026-01988`, `ATR-2026-02250` | context-exfiltration |
+| T1005 | Data from Local System | `ATR-2026-01988`, `ATR-2026-02250`, `ATR-2026-02703` | context-exfiltration |
 | T1027 | Obfuscated Files or Information | `ATR-2026-00535`, `ATR-2026-02004`, `ATR-2026-02006`, `ATR-2026-02010`, `ATR-2026-02016`, `ATR-2026-02018`, `ATR-2026-02374`, `ATR-2026-02411`, `ATR-2026-02412`, `ATR-2026-02413` | model-abuse, prompt-injection |
 | T1036 | Masquerading | `ATR-2026-00117`, `ATR-2026-00204`, `ATR-2026-00572`, `ATR-2026-01932`, `ATR-2026-02350` | agent-manipulation, privilege-escalation, tool-poisoning |
 | T1036.005 | Masquerading: Match Legitimate Name or Location | `ATR-2026-02410` | skill-compromise |
@@ -94,9 +94,9 @@ against.
 | T1213 | Data from Information Repositories | `ATR-2026-02406` | context-exfiltration |
 | T1485 | Data Destruction | `ATR-2026-00858`, `ATR-2026-01601`, `ATR-2026-02100`, `ATR-2026-02233` | context-exfiltration, privilege-escalation, tool-poisoning |
 | T1499 | Endpoint Denial of Service | `ATR-2026-00209`, `ATR-2026-02106` | excessive-autonomy, tool-poisoning |
-| T1528 | Steal Application Access Token | `ATR-2026-00114` | context-exfiltration |
+| T1528 | Steal Application Access Token | `ATR-2026-00114`, `ATR-2026-02684` | context-exfiltration |
 | T1530 | Data from Cloud Storage Object | `ATR-2026-00449` | context-exfiltration |
-| T1539 | Steal Web Session Cookie | `ATR-2026-00524` | context-exfiltration |
+| T1539 | Steal Web Session Cookie | `ATR-2026-00524`, `ATR-2026-02646` | context-exfiltration |
 | T1543 | Create or Modify System Process | `ATR-2026-00204` | privilege-escalation |
 | T1546 | Event Triggered Execution | `ATR-2026-00418`, `ATR-2026-00419`, `ATR-2026-00450`, `ATR-2026-00523`, `ATR-2026-00572`, `ATR-2026-00575` | agent-manipulation, data-poisoning, skill-compromise, tool-poisoning |
 | T1546.004 | Event Triggered Execution: Unix Shell Configuration Modification | `ATR-2026-02040` | privilege-escalation |
@@ -107,7 +107,7 @@ against.
 | T1550 | Use Alternate Authentication Material | `ATR-2026-00074` | agent-manipulation |
 | T1550.001 | Application Access Token | `ATR-2026-02409` | excessive-autonomy |
 | T1552 | Unsecured Credentials | `ATR-2026-00212`, `ATR-2026-00431`, `ATR-2026-00524`, `ATR-2026-00534`, `ATR-2026-00546`, `ATR-2026-01931`, `ATR-2026-02002`, `ATR-2026-02007`, `ATR-2026-02017`, `ATR-2026-02146` | context-exfiltration, privilege-escalation, prompt-injection, tool-poisoning |
-| T1552.001 | Credentials In Files | `ATR-2026-00113`, `ATR-2026-00201`, `ATR-2026-00524`, `ATR-2026-00576`, `ATR-2026-00863`, `ATR-2026-02104`, `ATR-2026-02122`, `ATR-2026-02261`, `ATR-2026-02262`, `ATR-2026-02406` | context-exfiltration, skill-compromise, tool-poisoning |
+| T1552.001 | Credentials In Files | `ATR-2026-00113`, `ATR-2026-00201`, `ATR-2026-00524`, `ATR-2026-00576`, `ATR-2026-00863`, `ATR-2026-02104`, `ATR-2026-02122`, `ATR-2026-02261`, `ATR-2026-02262`, `ATR-2026-02406`, `ATR-2026-02684` | context-exfiltration, skill-compromise, tool-poisoning |
 | T1552.005 | Cloud Instance Metadata API | `ATR-2026-00547`, `ATR-2026-01605`, `ATR-2026-01607`, `ATR-2026-01946` | context-exfiltration, privilege-escalation |
 | T1553 | Subvert Trust Controls | `ATR-2026-00539` | privilege-escalation |
 | T1556 | Modify Authentication Process | `ATR-2026-01992` | privilege-escalation |
@@ -118,10 +118,11 @@ against.
 | T1565.001 | Data Manipulation: Stored Data Manipulation | `ATR-2026-00075`, `ATR-2026-00200`, `ATR-2026-01155`, `ATR-2026-02143`, `ATR-2026-02144`, `ATR-2026-02303` | context-exfiltration, data-poisoning, skill-compromise |
 | T1566 | Phishing | `ATR-2026-00119`, `ATR-2026-00420` | agent-manipulation, prompt-injection |
 | T1566.002 | Phishing: Spearphishing Link | `ATR-2026-02401` | excessive-autonomy |
-| T1567 | Exfiltration Over Web Service | `ATR-2026-00420`, `ATR-2026-02304` | context-exfiltration, prompt-injection |
+| T1567 | Exfiltration Over Web Service | `ATR-2026-00420`, `ATR-2026-02304`, `ATR-2026-02647` | context-exfiltration, prompt-injection |
 | T1573 | Encrypted Channel | `ATR-2026-01994` | excessive-autonomy |
 | T1574.002 | Hijack Execution Flow: DLL Side-Loading | `ATR-2026-02410` | skill-compromise |
 | T1574.006 | Hijack Execution Flow: Dynamic Linker Hijacking | `ATR-2026-02195`, `ATR-2026-02300` | privilege-escalation |
+| T1583.001 | Acquire Infrastructure: Domains | `ATR-2026-02649` | context-exfiltration |
 | T1583.008 | Acquire Infrastructure: Malvertising | `ATR-2026-02410` | skill-compromise |
 | T1587.001 | Develop Capabilities: Malware | `ATR-2026-02211` | model-abuse |
 | T1595 | Active Scanning | `ATR-2026-02409` | excessive-autonomy |
@@ -137,7 +138,7 @@ For each ATR category: the enterprise ATT&CK techniques its rules reference
 
 ### agent-manipulation
 
-Rules in category: 108
+Rules in category: 109
 
 ATT&CK techniques (join key):
 
@@ -157,19 +158,19 @@ ATT&CK techniques (join key):
 | T1557 | Adversary-in-the-Middle | `ATR-2026-00116` |
 | T1566 | Phishing | `ATR-2026-00119` |
 
-ATLAS techniques ATR adds: AML.T0010, AML.T0040, AML.T0043, AML.T0048, AML.T0049, AML.T0050, AML.T0051, AML.T0051.000, AML.T0051.001, AML.T0052.000, AML.T0054
+ATLAS techniques ATR adds: AML.T0010, AML.T0040, AML.T0043, AML.T0048, AML.T0049, AML.T0050, AML.T0051, AML.T0051.000, AML.T0051.001, AML.T0052.000, AML.T0054, AML.T0057
 
 OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:2026, ASI05:2026, ASI06:2026, ASI07:2026, ASI09:2026, ASI10:2026
 
 ### context-exfiltration
 
-Rules in category: 125
+Rules in category: 134
 
 ATT&CK techniques (join key):
 
 | ATT&CK technique | Name | ATR rules |
 |---|---|---|
-| T1005 | Data from Local System | `ATR-2026-01988`, `ATR-2026-02250` |
+| T1005 | Data from Local System | `ATR-2026-01988`, `ATR-2026-02250`, `ATR-2026-02703` |
 | T1041 | Exfiltration Over C2 Channel | `ATR-2026-00201`, `ATR-2026-00863`, `ATR-2026-02262` |
 | T1048.003 | Exfiltration Over Alternative Protocol: Exfiltration Over Unencrypted/Obfuscated Non-C2 Protocol | `ATR-2026-02190` |
 | T1059.004 | Command and Scripting Interpreter: Unix Shell | `ATR-2026-00863` |
@@ -185,17 +186,18 @@ ATT&CK techniques (join key):
 | T1195.002 | Compromise Software Supply Chain | `ATR-2026-00524` |
 | T1213 | Data from Information Repositories | `ATR-2026-02406` |
 | T1485 | Data Destruction | `ATR-2026-00858` |
-| T1528 | Steal Application Access Token | `ATR-2026-00114` |
+| T1528 | Steal Application Access Token | `ATR-2026-00114`, `ATR-2026-02684` |
 | T1530 | Data from Cloud Storage Object | `ATR-2026-00449` |
-| T1539 | Steal Web Session Cookie | `ATR-2026-00524` |
+| T1539 | Steal Web Session Cookie | `ATR-2026-00524`, `ATR-2026-02646` |
 | T1552 | Unsecured Credentials | `ATR-2026-00212`, `ATR-2026-00431`, `ATR-2026-00524`, `ATR-2026-02017` |
-| T1552.001 | Credentials In Files | `ATR-2026-00113`, `ATR-2026-00201`, `ATR-2026-00524`, `ATR-2026-00863`, `ATR-2026-02104`, `ATR-2026-02122`, `ATR-2026-02262`, `ATR-2026-02406` |
+| T1552.001 | Credentials In Files | `ATR-2026-00113`, `ATR-2026-00201`, `ATR-2026-00524`, `ATR-2026-00863`, `ATR-2026-02104`, `ATR-2026-02122`, `ATR-2026-02262`, `ATR-2026-02406`, `ATR-2026-02684` |
 | T1552.005 | Cloud Instance Metadata API | `ATR-2026-01605`, `ATR-2026-01607`, `ATR-2026-01946` |
 | T1565.001 | Data Manipulation: Stored Data Manipulation | `ATR-2026-00075` |
-| T1567 | Exfiltration Over Web Service | `ATR-2026-02304` |
+| T1567 | Exfiltration Over Web Service | `ATR-2026-02304`, `ATR-2026-02647` |
+| T1583.001 | Acquire Infrastructure: Domains | `ATR-2026-02649` |
 | T1657 | Financial Theft | `ATR-2026-00860`, `ATR-2026-00861` |
 
-ATLAS techniques ATR adds: AML.CS0036, AML.T0010, AML.T0024, AML.T0025, AML.T0040, AML.T0043, AML.T0048, AML.T0049, AML.T0051, AML.T0051.001, AML.T0053, AML.T0054, AML.T0055, AML.T0056, AML.T0057, AML.T0069, AML.T0080, AML.T0088
+ATLAS techniques ATR adds: AML.CS0036, AML.T0010, AML.T0024, AML.T0025, AML.T0040, AML.T0043, AML.T0048, AML.T0049, AML.T0051, AML.T0051.001, AML.T0053, AML.T0054, AML.T0055, AML.T0056, AML.T0057, AML.T0069, AML.T0080, AML.T0088, AML.T0098
 
 OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:2026, ASI05:2026, ASI06:2026, ASI07:2026, ASI08:2026, ASI09:2026
 
