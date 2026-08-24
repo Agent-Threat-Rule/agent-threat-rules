@@ -21,7 +21,7 @@ import { join, resolve, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
 import { ATREngine } from "../src/engine.js";
-import { matchedRuleIds } from "../src/corpus-event.js";
+import { MEASURED_FIELDS, matchedRuleIds } from "../src/corpus-event.js";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const RULES_DIR = join(REPO_ROOT, "rules");
@@ -76,6 +76,11 @@ function samplesOf(entries: unknown): string[] {
     }
     for (const [k, v] of Object.entries(rec)) {
       if (NON_SAMPLE_KEYS.has(k)) continue;
+      // Only fields corpus-event.ts will actually fill. `tool_name` is a
+      // registered UNMEASURABLE_FIELD; treating the identifier a case carries
+      // as context as though it were a payload makes correct rules look like
+      // they miss their own tests.
+      if (!MEASURED_FIELDS.includes(k)) continue;
       if (typeof v === "string" && v) out.push(v);
     }
   }
@@ -185,6 +190,7 @@ async function main() {
       tp_count: myTps.length,
       gate_visible_tp: visibleTps,
       gate_blind: myTps.length > 0 && visibleTps === 0,
+      declared_tp_entries: ((doc["test_cases"] as { true_positives?: unknown[] } | undefined)?.true_positives ?? []).length,
       self_tp_misses: selfMisses.length,
       self_tp_ok: myTps.length > 0 && selfMisses.length === 0,
       atlas_count: atlas.length,
@@ -202,6 +208,7 @@ async function main() {
     ["declares any ATLAS technique", (r) => r.atlas_count > 0],
     ["measurable (not trace/behavioral under all)", (r) => r.unmeasurable_under_all === false],
     ["self-TP check is non-vacuous upstream", (r) => r.gate_blind === false],
+    ["TPs are on measurable fields (check can run)", (r) => r.declared_tp_entries === 0 || r.tp_count > 0],
   ];
 
   const valid = rows.filter((r) => !r["parse_error"]);
