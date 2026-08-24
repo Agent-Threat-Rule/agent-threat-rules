@@ -49,21 +49,54 @@ function walk(dir: string): string[] {
   return out;
 }
 
+/** Keys that carry bookkeeping rather than sample text. */
+const NON_SAMPLE_KEYS = new Set(["expected", "description", "note", "detection_field", "matched_condition"]);
+
+/**
+ * Pull the sample text out of a test case.
+ *
+ * `check-rules-safety.ts` reads `input` and nothing else. 38 rules key their
+ * cases by the detection field instead (`tool_args`, `user_input`,
+ * `tool_description`, ...), so for those the upstream self-TP check has no
+ * samples to test and passes silently. This reads both shapes, which is the
+ * point: the gap only shows up if you can see what the gate cannot.
+ */
+function samplesOf(entries: unknown): string[] {
+  const out: string[] = [];
+  for (const t of (entries as unknown[]) ?? []) {
+    if (typeof t === "string") {
+      if (t) out.push(t);
+      continue;
+    }
+    if (!t || typeof t !== "object") continue;
+    const rec = t as Record<string, unknown>;
+    if (typeof rec["input"] === "string" && rec["input"]) {
+      out.push(rec["input"]);
+      continue;
+    }
+    for (const [k, v] of Object.entries(rec)) {
+      if (NON_SAMPLE_KEYS.has(k)) continue;
+      if (typeof v === "string" && v) out.push(v);
+    }
+  }
+  return out;
+}
 function tps(doc: Record<string, unknown>): string[] {
+  const tc = doc["test_cases"] as { true_positives?: unknown } | undefined;
+  return samplesOf(tc?.true_positives);
+}
+function tns(doc: Record<string, unknown>): string[] {
+  const tc = doc["test_cases"] as { true_negatives?: unknown } | undefined;
+  return samplesOf(tc?.true_negatives);
+}
+/** Does the upstream gate (input-only) see any TP for this rule? */
+function gateVisibleTps(doc: Record<string, unknown>): number {
   const tc = doc["test_cases"] as
     | { true_positives?: Array<string | { input?: string }> }
     | undefined;
   return (tc?.true_positives ?? [])
     .map((t) => (typeof t === "string" ? t : (t?.input ?? "")))
-    .filter((s): s is string => typeof s === "string" && s.length > 0);
-}
-function tns(doc: Record<string, unknown>): string[] {
-  const tc = doc["test_cases"] as
-    | { true_negatives?: Array<string | { input?: string }> }
-    | undefined;
-  return (tc?.true_negatives ?? [])
-    .map((t) => (typeof t === "string" ? t : (t?.input ?? "")))
-    .filter((s): s is string => typeof s === "string" && s.length > 0);
+    .filter((s) => typeof s === "string" && s.length > 0).length;
 }
 
 /** Fields no text corpus can fill — a rule requiring them under `all` is
@@ -136,6 +169,7 @@ async function main() {
     const myTps = tps(doc);
     const myTns = tns(doc);
     const atlas = atlasTechniques(doc);
+    const visibleTps = gateVisibleTps(doc);
 
     const selfMisses = myTps.filter((t) => !matchedRuleIds(engine, t).has(id));
 
@@ -149,6 +183,8 @@ async function main() {
       has_tp: myTps.length > 0,
       has_tn: myTns.length > 0,
       tp_count: myTps.length,
+      gate_visible_tp: visibleTps,
+      gate_blind: myTps.length > 0 && visibleTps === 0,
       self_tp_misses: selfMisses.length,
       self_tp_ok: myTps.length > 0 && selfMisses.length === 0,
       atlas_count: atlas.length,
@@ -165,6 +201,7 @@ async function main() {
     ["exactly one ATLAS technique", (r) => r.single_technique === true],
     ["declares any ATLAS technique", (r) => r.atlas_count > 0],
     ["measurable (not trace/behavioral under all)", (r) => r.unmeasurable_under_all === false],
+    ["self-TP check is non-vacuous upstream", (r) => r.gate_blind === false],
   ];
 
   const valid = rows.filter((r) => !r["parse_error"]);
