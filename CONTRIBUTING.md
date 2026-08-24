@@ -123,6 +123,21 @@ permanently in the rule record.
 
 ---
 
+## Path 3: Mine a corpus (a few hours)
+
+Most of the ruleset came from attack corpora, not from the proposal queue.
+[docs/RULE-PRODUCTION.md](docs/RULE-PRODUCTION.md) is the written procedure for
+that path: how to decide whether a corpus is usable raw material at all, how to
+measure recall against it without wiring the harness wrong, how to turn false
+negatives into candidate rule anchors, and every gate between a candidate and
+`main`. Start with `npx tsx scripts/mine-corpus-fn.ts --list`.
+
+Read §4.4 before writing anything. Every artifact-bearing candidate the corpora
+currently in this repository produce is a fixture of the benchmark rather than
+of an attack, and the document explains how to tell the difference.
+
+---
+
 ## Quality bar
 
 The CI gate is non-negotiable. Everything else is guidance.
@@ -131,7 +146,10 @@ Required for any rule to merge:
 
 - At least 3 true positive test cases — real attack payloads, not synthetic
 - At least 3 true negative test cases — real benign strings, not placeholders
-- 0 false positives on the 432-sample benign corpus (`check-rules-safety.ts`)
+- 0 false positives on the benign skill corpus, 467 samples as of ATR v4.0.0
+  (`check-rules-safety.ts`; count it with
+  `find data/skill-benchmark/benign -name '*.md' | wc -l` rather than trusting
+  this line)
 - Regex must be attack-specific. Broad patterns that match general conversation
   will not pass review.
 - `description` must say what IS detected and what IS NOT

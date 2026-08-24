@@ -1,0 +1,22 @@
+[normfix] rules loaded: 784
+
+BENEFIT — detection on the obfuscated corpus, PER EVENT SHAPE
+transform                      shape             sampled/pop   today             with decode       decode altered
+badchars-deletion              llm_input         300/3024      46/300 (15.3%)    152/300 (50.7%)   300/300
+badchars-deletion              tool_call+skill   300/3024      100/300 (33.3%)   100/300 (33.3%)   300/300
+badchars-deletion              tool_response     300/3024      130/300 (43.3%)   196/300 (65.3%)   300/300
+smuggling-sneaky-bits          llm_input         216/216       0/216 (0.0%)      0/216 (0.0%)      84/216
+smuggling-sneaky-bits          tool_call+skill   216/216       18/216 (8.3%)     18/216 (8.3%)     84/216
+smuggling-sneaky-bits          tool_response     216/216       216/216 (100.0%)  216/216 (100.0%)  84/216
+smuggling-unicode-tags         llm_input         216/216       0/216 (0.0%)      96/216 (44.4%)    216/216
+smuggling-unicode-tags         tool_call+skill   216/216       216/216 (100.0%)  216/216 (100.0%)  216/216
+smuggling-unicode-tags         tool_response     216/216       216/216 (100.0%)  216/216 (100.0%)  216/216
+smuggling-variant-selectors    llm_input         216/216       0/216 (0.0%)      96/216 (44.4%)    216/216
+smuggling-variant-selectors    tool_call+skill   216/216       0/216 (0.0%)      48/216 (22.2%)    216/216
+smuggling-variant-selectors    tool_response     216/216       216/216 (100.0%)  216/216 (100.0%)  216/216
+
+COST — benign corpora data/skill-benchmark/benign, data/benign-corpus-extended, data/benign-code (12060 samples)
+benign samples the decode alters at all: 45/12060
+benign samples that go clean -> flagged: 0/12060
+
+VERDICT: the decode adds no false positive on the corpora the FP gates use.

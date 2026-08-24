@@ -1,0 +1,301 @@
+title: "Shell Command Separator Inside a Path-Typed MCP Tool Argument"
+id: ATR-2026-02557
+rule_version: 1
+status: experimental
+description: >
+  Detects an MCP or agent tool invocation in which a structurally path-typed
+  argument - projectPath, file_path, directory, filename, log_file_name, cwd,
+  output_path - carries a shell command separator followed by a command that
+  either takes an argument (a flag, or an absolute system path) or is a bare
+  reconnaissance binary that ends the value.
+
+  This is the shape reported as CVE-2026-25546 against godot-mcp, where
+  executeOperation passed projectPath straight into exec(), so every tool that
+  accepts a project path - create_scene, add_node, load_sprite and the rest -
+  became a command-execution primitive. The same shape recurs across the MCP
+  ecosystem wherever a typed path or identifier reaches a shell: MCP-for-Stata's
+  log_file_name, and the broader family of servers that build command lines by
+  string concatenation.
+
+  WHAT ADVERSARIAL MEASUREMENT CHANGED (2026-08-23). The first draft of this rule
+  asserted that a separator inside a path argument "has no legitimate meaning".
+  Run against the real engine, that formulation fired on 11 of 18 realistic
+  benign samples. Separators are legal POSIX filename characters and humans use
+  them as PUNCTUATION: "Smith; John Resume.pdf" (the Lastname; Firstname
+  convention), "Attention Is All You Need; Vaswani et al 2017.pdf",
+  "Terms; Conditions v4 EN.docx", "Fleet Overview | Grafana" (a browser page
+  title used as a save-as name), "Daft Punk | Alive 2007", "/opt/tools;/opt/sdk/bin"
+  (a semicolon-delimited search path). Structurally "| id" and "| Grafana" are
+  the SAME string shape, so a separator plus a word token cannot be the signal.
+
+  What survives measurement is narrower and honest: the injected command must
+  carry a shell TELL. Either it takes an argument that filename punctuation never
+  takes - a flag terminated by whitespace, a quote or '=', or an absolute system
+  path (/etc, /tmp, /var, /usr, /bin, ...) - or it is one of a deliberately tiny
+  vocabulary of argumentless reconnaissance binaries (whoami, uname, hostname,
+  ifconfig, netstat, lsblk, dmesg) that are not English filename words.
+
+  This rule therefore IS partly a command-shape test, not the pure structural
+  test the first draft claimed. It still adds detection the corpus does not have:
+  verified 2026-08-23 against the full loaded corpus, "; ls -la /etc",
+  "| whoami" and "; uname" through a path-typed argument produce a match from
+  this rule and from no other. "; cat /etc/passwd", "; python3 -c" and
+  "out.log; touch /tmp/pwn" are already covered by ATR-2026-00066 / 00111 /
+  01615, so this rule is additive there rather than load-bearing.
+
+  CWE-78 (OS Command Injection), CWE-88 (Argument Injection), CWE-1287
+  (Improper Validation of Specified Type of Input).
+author: "ATR Community"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+
+references:
+  cve:
+    - "CVE-2026-25546"
+  euvd:
+    - "EUVD-2026-25546"
+  owasp_llm:
+    - "LLM06:2025"
+  owasp_agentic:
+    - "ASI02:2026"
+    - "ASI05:2026"
+  mitre_atlas:
+    - "AML.T0053 - LLM Plugin Compromise"
+  mitre_attack:
+    - "T1059.004 - Command and Scripting Interpreter: Unix Shell"
+    - "T1505.003 - Server Software Component: Web Shell"
+  external:
+    - "https://github.com/Coding-Solo/godot-mcp/security/advisories"
+
+metadata_provenance:
+  cve: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_atlas: human-reviewed
+  mitre_attack: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 requires accuracy, robustness and cybersecurity appropriate to the intended purpose. An MCP server that turns a path argument into a shell command line fails that requirement for every tool that accepts the argument; detecting the separator at call time is the compensating control while the server remains unpatched."
+      strength: primary
+    - article: "9"
+      context: "Article 9 risk management must record the tool surface an agent can reach. When one unvalidated path parameter converts an entire tool family into command execution, that concentration of risk belongs in the risk register and this rule supplies the runtime evidence for it."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Measure
+      subcategory: "MS.2.7"
+      context: "MS.2.7 requires AI system security and resilience to be evaluated and documented. Inspecting typed tool arguments for shell syntax is a measurable, per-invocation control over the agent-to-tool boundary rather than an assumption that every MCP server validates its own input."
+      strength: primary
+    - function: Manage
+      subcategory: "MG.3.1"
+      context: "MG.3.1 requires risks from third-party AI resources to be managed. MCP servers are third-party components whose input handling the deploying organisation cannot audit at scale, so enforcing argument typing at the client is the practical management control."
+      strength: primary
+    - function: Map
+      subcategory: "MP.5.1"
+      context: "MP.5.1 requires adversarial techniques to be characterised. Argument injection through a structurally typed parameter is mapped here as distinct from command injection through a free-text command parameter, because the defensive assumption differs."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Clause 8.1 operational control over externally provided processes covers MCP servers invoked by the agent. This rule is the operational control applied to each invocation, independent of the server's own hardening."
+      strength: primary
+    - clause: "6.2"
+      context: "Clause 6.2 risk treatment requires proportionate controls. Because a single injected separator yields code execution at the server's privilege level, per-argument inspection is the proportionate treatment."
+      strength: secondary
+
+tags:
+  category: tool-poisoning
+  suppress_in_code_blocks: true
+  subcategory: argument-injection-path-typed-parameter
+  scan_target: tool_args
+  confidence: high
+  source: cve-disclosure
+  vendor_sources: godot-mcp-cve-2026-25546
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - mcp
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  method: pattern
+  false_positives:
+    - "MEASURED RESIDUAL: a document that quotes the attack payload verbatim inside a FOUR-SPACE INDENTED code block still matches. The engine's code-block suppression (tags.suppress_in_code_blocks, enabled here) covers fenced blocks, inline backticks and markdown table cells, but not indented blocks - so a fenced or inline advisory is clean and an indented one is not. Verified 2026-08-23: the fenced advisory, the inline-backtick advisory, the CHANGELOG prose and this rule's own YAML test cases are all clean; only the indented form fires."
+    - "Security test suites, MCP server fixtures and CVE reproductions that pass a deliberately malicious path argument will match, which is the intended behaviour for a detection corpus."
+    - "A path-typed argument whose value legitimately contains a separator followed by a lowercase word AND a flag-shaped token - for example a filename fragment written as 'draft -final ' with a trailing space - would match. The flag must terminate at whitespace, a quote or '=', which is what keeps 'draft -final.pdf' and 'rollup -v2.csv' clean; the residual is the spaced form."
+    - "The engine compiles array-format regex conditions with flag 'i' unconditionally (src/engine.ts compilePatterns) and IGNORES case_sensitive on this condition format. Every case-based discriminator is therefore unavailable to this rule. That is why the bare-recon vocabulary excludes 'id', 'pwd', 'groups', 'arch', 'env' and 'ps': each of them also matches an ordinary capitalised filename label such as '/scans/Passport | ID' or '/design/Hero Banner | ps'."
+  conditions:
+    # -- Layer 1: separator, then a command that TAKES AN ARGUMENT --
+    # Measured 2026-08-23 against the real engine: the earlier "any word token
+    # after a separator" formulation fired on 11 of 18 realistic benign samples.
+    # Separators are legal in POSIX filenames and humans use them as PUNCTUATION:
+    # "Smith; John Resume.pdf", "Terms; Conditions v4.docx", "Fleet Overview |
+    # Grafana", "Daft Punk | Alive 2007", "/opt/tools;/opt/sdk/bin". Structurally
+    # "| id" and "| Grafana" are the SAME shape, so a separator plus a bare word
+    # cannot be the signal.
+    #
+    # The ONE constraint that does the separating: the injected command must take
+    # an argument that filename punctuation never takes - a flag terminated by
+    # whitespace, a quote or '=', or an absolute system path. Filename
+    # punctuation is followed by more prose ("Resume 2026.pdf") or runs into an
+    # extension ("draft -final.pdf"), never by a terminated flag.
+    #
+    # CASE IS NOT AVAILABLE AS A DISCRIMINATOR. A revision of this rule tried to
+    # require a lowercase command on the theory that shell binaries are lowercase
+    # and filename punctuation is title-cased. It had no effect: src/engine.ts
+    # compilePatterns compiles array-format {operator: regex, value} conditions
+    # with flags 'i' UNCONDITIONALLY and ignores the condition's case_sensitive
+    # field (that field is only honoured on the named-map/patterns format). The
+    # character classes below are written [A-Za-z] to say so honestly rather than
+    # implying a case constraint the engine will not enforce.
+    - field: content
+      operator: regex
+      value: '"(?:[Pp]roject_?[Pp]ath|[Ff]ile_?[Pp]ath|[Dd]ir(?:ectory)?_?[Pp]ath|[Dd]irectory|[Ff]older|[Ff]ile_?[Nn]ame|[Oo]utput_?[Pp]ath|[Ii]nput_?[Pp]ath|[Ll]og_?[Ff]ile_?[Nn]ame|[Tt]arget_?[Pp]ath|[Ss]cene_?[Pp]ath|[Ss]ave_?[Pp]ath|cwd|[Ww]orkspace_?[Pp]ath)"\s*:\s*"[^"\n]{0,40}(?:;|&&|\|\||\s\|)\s{0,3}(?:\b[A-Za-z_][A-Za-z0-9_.-]{1,15}|/(?:usr/)?s?bin/[A-Za-z0-9_.-]{1,15})\s{1,2}(?:-{1,2}[A-Za-z][A-Za-z0-9-]{0,10}(?:\s|"|=)|/(?:etc|tmp|var|usr|bin|sbin|opt|root|home|dev|proc)[/\s"])'
+      description: "A path-typed tool argument is chained past a shell separator to a lowercase command that takes a flag or an absolute system path as its argument - argument injection into a server that concatenates the value into a shell string"
+
+    # -- Layer 2: separator, then a bare recon binary that ENDS the value --
+    # "/tmp/proj | id" carries no argument, so Layer 1 cannot see it. The only
+    # thing separating it from "Fleet Overview | Grafana" is that "id" is a
+    # command name, so this layer is an explicit, deliberately tiny vocabulary
+    # of argumentless reconnaissance binaries that must terminate the value.
+    # Because matching is forcibly case-insensitive, every entry must be a word
+    # that is not an ordinary filename label in ANY case. "id", "pwd", "groups",
+    # "arch", "env" and "ps" all failed that test and were removed: they match
+    # "/scans/Passport | ID", "/research/Interviews | Groups" and
+    # "/design/Hero Banner | ps". Dropping "id" costs the bare "| id" payload;
+    # that loss is recorded in evasion_tests rather than hidden.
+    - field: content
+      operator: regex
+      value: '"(?:[Pp]roject_?[Pp]ath|[Ff]ile_?[Pp]ath|[Dd]ir(?:ectory)?_?[Pp]ath|[Dd]irectory|[Ff]older|[Ff]ile_?[Nn]ame|[Oo]utput_?[Pp]ath|[Ii]nput_?[Pp]ath|[Ll]og_?[Ff]ile_?[Nn]ame|[Tt]arget_?[Pp]ath|[Ss]cene_?[Pp]ath|[Ss]ave_?[Pp]ath|cwd|[Ww]orkspace_?[Pp]ath)"\s*:\s*"[^"\n]{0,40}(?:;|&&|\|\||\s\|)\s{0,3}\b(?:whoami|uname|hostname|ifconfig|netstat|lsblk|dmesg)\s{0,2}"'
+      description: "A path-typed tool argument is chained past a shell separator to a bare reconnaissance binary that terminates the value - the argumentless form of the same argument injection"
+
+response:
+  actions:
+    - alert
+    - snapshot
+    - escalate
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): no FP measurement on the
+    benign corpus; ceiling = observe. Removed block_tool(interrupt). Detection unchanged —
+    recall cost is zero.
+  auto_response_threshold: high
+  notify:
+    - security_team
+  message_template: >
+    [ATR-2026-02557] HIGH: a path-typed tool argument contains a shell command
+    separator followed by a second command. A filesystem path has no legitimate
+    reason to contain ';', '&&', '||' or a spaced '|'. This is the CVE-2026-25546
+    (godot-mcp) pattern, where projectPath reached exec() and every tool that
+    accepted a project path became a command-execution primitive. Block the call,
+    and check whether the target server builds its command line by string
+    concatenation - if so, every path-typed argument it exposes is affected, not
+    just this one.
+
+confidence: 77
+
+test_cases:
+  true_positives:
+    - input: "{\"tool_name\":\"create_scene\",\"projectPath\":\"/srv/game; ls -la /etc\"}"
+      expected: triggered
+      description: "Paraphrased CVE-2026-25546 shape. Verified 2026-08-23: this rule is the ONLY rule in the loaded corpus that matches it."
+      matched_condition: "Layer 1"
+    - input: "{\"tool_name\":\"add_node\",\"projectPath\":\"/tmp/proj | whoami\"}"
+      expected: triggered
+      description: "Bare reconnaissance binary terminating the value. Also unique to this rule in the corpus."
+      matched_condition: "Layer 2"
+    - input: "{\"tool_name\":\"create_scene\",\"projectPath\":\"/srv/game; uname\"}"
+      expected: triggered
+      description: "The argumentless form through a semicolon"
+      matched_condition: "Layer 2"
+    - input: "{\"tool_name\":\"stata_log\",\"log_file_name\":\"out.log; touch /tmp/pwn\"}"
+      expected: triggered
+      description: "Bare-filename argument, path in the injected command - the MCP-for-Stata log_file_name shape. ATR-2026-01615 also covers this one."
+      matched_condition: "Layer 1"
+    - input: "{\"tool_name\":\"load_sprite\",\"filePath\":\"assets/a.png;python3 -c 'x'\"}"
+      expected: triggered
+      description: "Separator with no surrounding whitespace, chained to an interpreter one-liner. ATR-2026-00066 and 00111 also cover this one."
+      matched_condition: "Layer 1"
+    - input: "{\"tool_name\":\"add_node\",\"projectPath\":\"/tmp/proj; /usr/bin/env -i /bin/sh\"}"
+      expected: triggered
+      description: "Absolute binary path form. Regression guard: an earlier revision placed \\b before this alternative, and \\b between a space and '/' is not a word boundary, so the whole alternative was dead."
+      matched_condition: "Layer 1"
+  true_negatives:
+    # Every entry below was run through the real engine on 2026-08-23 and is
+    # clean. The first six FIRED against the rule's first revision - they are the
+    # measured false positives that forced the command-tell constraint, not
+    # invented near-misses.
+    - input: "{\"tool_name\":\"read_file\",\"file_path\":\"/vault/HR/Smith; John Resume 2026.pdf\"}"
+      expected: not_triggered
+      description: "The 'Lastname; Firstname' document-management naming convention. Fired against revision 1."
+    - input: "{\"tool_name\":\"open_document\",\"file_path\":\"/papers/Attention Is All You Need; Vaswani et al 2017.pdf\"}"
+      expected: not_triggered
+      description: "Academic PDF: title; author list. Fired against revision 1."
+    - input: "{\"tool_name\":\"save_page_as_pdf\",\"output_path\":\"/tmp/reports/Fleet Overview | Grafana\"}"
+      expected: not_triggered
+      description: "Browser save-as, where the default filename IS the page title and page titles are 'Page | Site'. Fired against revision 1."
+    - input: "{\"tool_name\":\"convert_document\",\"input_path\":\"/legal/Terms; Conditions v4 EN.docx\"}"
+      expected: not_triggered
+      description: "Ordinary legal document filename. Fired against revision 1."
+    - input: "{\"tool_name\":\"index_sources\",\"directory\":\"/opt/tools;/opt/sdk/bin\"}"
+      expected: not_triggered
+      description: "Semicolon-delimited search-path list. Fired against revision 1 through the /usr|/bin|/opt alternative."
+    - input: "{\"tool_name\":\"list_directory\",\"directory\":\"Board Minutes; March 2026/agenda\"}"
+      expected: not_triggered
+      description: "A directory literally named 'Board Minutes; March 2026'. Fired against revision 1's Layer 2."
+    - input: "{\"tool_name\":\"save\",\"output_path\":\"/docs/Report; draft -final.pdf\"}"
+      expected: not_triggered
+      description: "A filename suffix that looks like a flag. Fired against the first fix attempt; the flag must terminate at whitespace, a quote or '=', and here it runs into '.pdf'."
+    - input: "{\"tool_name\":\"read_file\",\"file_path\":\"/scans/Passport | ID\"}"
+      expected: not_triggered
+      description: "Why 'id' is absent from the recon vocabulary. The engine compiles this condition format with flag 'i' unconditionally, so a two-letter 'id' would also match this label."
+    - input: "{\"tool_name\":\"save\",\"output_path\":\"/data/exports/q1;q2.csv\"}"
+      expected: not_triggered
+      description: "A semicolon inside a real filename on a real path"
+    - input: "{\"tool_name\":\"open\",\"filename\":\"Rock & Roll Greatest Hits.mp3\"}"
+      expected: not_triggered
+      description: "Bare '&' is deliberately outside the separator set because of this extremely common shape."
+    - input: "{\"tool_name\":\"exec\",\"command\":\"cd /tmp; ls -la\"}"
+      expected: not_triggered
+      description: "A genuine command parameter doing exactly what it is for. The rule is about type confusion, so a free-text command argument is correctly out of scope."
+    - input: "{\"tool_name\":\"create_scene\",\"projectPath\":\"/Users/me/Projects/My Game\"}"
+      expected: not_triggered
+      description: "An ordinary project path containing spaces and capitals"
+    - input: "{\"tool_name\":\"sync\",\"directory\":\"/srv/www;--exclude /tmp\"}"
+      expected: not_triggered
+      description: "An rsync-style filter appended to a directory argument: it starts with a dash, so there is no command token to take it as an argument."
+    - input: "The projectPath argument is passed to exec() directly, so a value like \"/tmp; rm -rf /\" would run a second command."
+      expected: not_triggered
+      description: "The advisory sentence describing the vulnerability. Prose is not a JSON argument, so the key-colon-quote anchor never engages."
+
+evasion_tests:
+  - input: "{\"tool_name\":\"create_scene\",\"projectPath\":\"/srv/game; LS -LA /etc\"}"
+    expected: triggered
+    bypass_technique: case_variation
+    notes: "Not a defence the rule earns: the engine compiles array-format regex conditions with flag 'i' unconditionally and ignores case_sensitive, so case-folding is free and also unavoidable. Uppercase 'LS' is not a real Linux binary anyway."
+  - input: "{\"tool_name\":\"add_node\",\"projectPath\":\"/tmp/proj | id\"}"
+    expected: not_triggered
+    bypass_technique: bare_short_recon_binary
+    notes: "Real bypass, introduced deliberately by the 2026-08-23 fix. 'id', 'pwd', 'env', 'ps', 'arch' and 'groups' were removed from the bare-recon vocabulary because forced case-insensitive matching makes them indistinguishable from ordinary filename labels ('/scans/Passport | ID', '/design/Hero Banner | ps'). Cost accepted: an argumentless 'id' through a path argument is invisible to this rule."
+  - input: "{\"tool_name\":\"create_scene\",\"projectPath\":\"/srv/game; ls\"}"
+    expected: not_triggered
+    bypass_technique: argumentless_common_command
+    notes: "Real bypass and the direct price of the command-tell constraint. A bare 'ls' is the same string shape as '| Grafana', which is a browser page title. Restoring it would restore the measured false positives."
+  - input: "{\"tool_name\":\"create_scene\",\"projectPath\":\"/srv/game & calc\"}"
+    expected: not_triggered
+    bypass_technique: bare_ampersand_separator
+    notes: "Real bypass, accepted cost. Bare '&' appears in ordinary filenames ('Rock & Roll', 'R&D') often enough that including it would produce false positives on normal file operations."
+  - input: "{\"tool_name\":\"create_scene\",\"projectPath\":\"/srv/game\\n/usr/bin/id\"}"
+    expected: not_triggered
+    bypass_technique: newline_command_separator
+    notes: "Real bypass. Both layers exclude newlines from the value span, so the pattern cannot run past a line break."
+  - input: "{\"tool_name\":\"add_node\",\"projectPath\":\"/tmp/proj|whoami\"}"
+    expected: not_triggered
+    bypass_technique: unspaced_pipe
+    notes: "Real bypass and the direct price of the constraint that removes the 'report_v1.2|draft' false positive. A pipe glued between word characters is indistinguishable by pattern from a label separator."

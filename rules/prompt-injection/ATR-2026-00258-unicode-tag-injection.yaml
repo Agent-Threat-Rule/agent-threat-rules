@@ -66,15 +66,15 @@ detection:
   conditions:
     - field: tool_response
       operator: regex
-      value: '[\u{E0000}-\u{E007F}]{3,}'
+      value: '[󠀀-󠁿]{3,}'
       description: 'Three or more consecutive Unicode Tag block characters (U+E0000-U+E007F)'
     - field: tool_response
       operator: regex
-      value: '[\u{E0020}-\u{E007E}]'
+      value: '[󠀠-󠁾]'
       description: 'Any Tag-ASCII character (U+E0020 space to U+E007E tilde) — direct mapping from visible ASCII'
     - field: tool_response
       operator: regex
-      value: '[\u{E0001}\u{E007F}]'
+      value: '[󠀁󠁿]'
       description: 'Tag language-start (U+E0001) or tag-cancel (U+E007F) control character'
     - field: tool_response
       operator: regex
@@ -82,7 +82,7 @@ detection:
       description: 'Escaped Tag-range codepoint (prevents HTML/JSON smuggled payloads)'
     - field: tool_response
       operator: regex
-      value: '[\u{E0020}-\u{E007E}]'
+      value: '[󠀠-󠁾]'
       description: 'Tag characters appearing in tool response indicate exfiltration via invisible payload'
   condition: any
   false_positives:
