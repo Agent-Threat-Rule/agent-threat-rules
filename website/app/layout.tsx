@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     template: "%s | ATR",
   },
   description:
-    `Open-source detection standard for AI agent security. ${stats.ruleCount} rules, 96K skills scanned, 552 confirmed malware, RFC-001 quality standard. Shipped in Cisco AI Defense. MIT Licensed.`,
+    `Open-source detection standard for AI agent security. ${stats.ruleCount} rules, 96K skills scanned, 1,302 flagged, RFC-001 quality standard. Shipped in Cisco AI Defense. MIT Licensed.`,
   metadataBase: new URL("https://agentthreatrule.org"),
   alternates: {
     canonical: "https://agentthreatrule.org",
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "ATR - Agent Threat Rules",
     description:
-      `The open detection standard for AI agent security. ${stats.ruleCount} rules. 96K skills scanned. 552 confirmed malware. Shipped in Cisco.`,
+      `The open detection standard for AI agent security. ${stats.ruleCount} rules. 96K skills scanned. 1,302 flagged. Shipped in Cisco.`,
     url: "https://agentthreatrule.org",
     siteName: "ATR - Agent Threat Rules",
     type: "website",
@@ -77,7 +77,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "ATR - Agent Threat Rules",
     description:
-      `The open detection standard for AI agent security. ${stats.ruleCount} rules. 96K skills scanned. 552 confirmed malware. Shipped in Cisco.`,
+      `The open detection standard for AI agent security. ${stats.ruleCount} rules. 96K skills scanned. 1,302 flagged. Shipped in Cisco.`,
     images: ["https://agentthreatrule.org/og-image.png"],
   },
   keywords: [
@@ -122,7 +122,7 @@ const jsonLd = {
       "@type": "SoftwareSourceCode",
       name: "agent-threat-rules",
       description:
-        `Open-source detection standard for AI agent security. ${stats.ruleCount} rules, 96K skills scanned, 552 confirmed malware. Sub-millisecond, zero dependencies.`,
+        `Open-source detection standard for AI agent security. ${stats.ruleCount} rules, 96K skills scanned, 1,302 flagged. Sub-millisecond, zero dependencies.`,
       codeRepository: "https://github.com/Agent-Threat-Rule/agent-threat-rules",
       programmingLanguage: ["YAML", "TypeScript"],
       license: "https://opensource.org/licenses/MIT",

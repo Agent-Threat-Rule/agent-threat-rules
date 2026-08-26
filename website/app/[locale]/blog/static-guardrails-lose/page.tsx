@@ -86,9 +86,9 @@ export default async function StaticGuardrailsPostPage({
           </p>
           <p>
             這些規則扎根於真實世界,不是假設。我們掃了五個公開 registry 的 96,096 個 agent
-            skill,人工複審後確認 552 個惡意——憑證竊取、靜默外洩、藏在工具描述裡的命令執行。
-            在 PINT 語料上 ATR 的 recall 是 63.6%、precision 99.7%:抓得到真攻擊,又幾乎不亂叫,
-            這是讓一個持續規則層「能用」而不是「太吵」的關鍵。
+            skill,標記出 1,302 個——憑證竊取、靜默外洩、藏在工具描述裡的命令執行。其中 552 個
+            出自兩個發布帳號,名下每一個 skill 都命中同一條惡意散布規則。誤報率不是單一數字,
+            隨 lane 而不同,逐語料的量測結果都列在 coverage 頁。
           </p>
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">結論</h2>
@@ -186,10 +186,11 @@ export default async function StaticGuardrailsPostPage({
           </p>
           <p>
             The rules are grounded in what is actually in the wild, not hypotheticals. A scan of
-            96,096 published agent skills confirmed 552 as malicious after manual review — credential
+            96,096 published agent skills flagged 1,302 — credential
             theft, silent exfiltration, command execution buried in tool descriptions an agent
-            ingests as instructions. On the PINT corpus ATR runs at 63.6% recall and 99.7%
-            precision: it catches real attacks while almost never crying wolf, which is what keeps a
+            ingests as instructions. 552 of those come from two publisher accounts, every one
+            matching the same malware-distribution rule. False-positive rate is not a single
+            number; it is reported per lane, with the per-corpus measurements on the coverage page, which is what keeps a
             continuous rules layer usable instead of noisy.
           </p>
 

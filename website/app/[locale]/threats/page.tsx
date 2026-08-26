@@ -14,13 +14,13 @@ export function generateStaticParams() {
 export const metadata: Metadata = {
   title: "Threat Feed - ATR",
   description:
-    "Public blacklist of flagged AI agent skills. 1,302 flagged, 552 confirmed malware. Generated from open ATR ecosystem scans; Threat Cloud is an optional reference service that can also feed reports.",
+    "Public blacklist of flagged AI agent skills: 1,302 flagged, of which 552 are attributed to two known malware-publishing accounts. Generated from open ATR ecosystem scans; Threat Cloud is an optional reference service that can also feed reports.",
 };
 
 interface BlacklistData {
   generated: string;
   total_flagged: number;
-  confirmed_malware: number;
+  attributed_to_known_actor: number;
   severity: { critical: number; high: number; medium: number };
   threat_actors: string[];
 }
@@ -47,7 +47,7 @@ function loadBlacklist(): BlacklistData {
     return {
       generated: parsed.generated,
       total_flagged: parsed.total_flagged,
-      confirmed_malware: parsed.confirmed_malware,
+      attributed_to_known_actor: parsed.attributed_to_known_actor,
       severity: parsed.severity,
       threat_actors: parsed.threat_actors,
     };
@@ -55,7 +55,7 @@ function loadBlacklist(): BlacklistData {
     return {
       generated: "N/A",
       total_flagged: 0,
-      confirmed_malware: 0,
+      attributed_to_known_actor: 0,
       severity: { critical: 0, high: 0, medium: 0 },
       threat_actors: [],
     };
@@ -96,8 +96,8 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
       <Reveal delay={0.2}>
         <p className="text-base text-stone font-light mb-8 max-w-[560px] leading-[1.8]">
           {zh
-            ? <>一個偵測標準若只活在規格書裡，就沒有意義。<br />ATR 掃描了 {stats.megaScanTotal.toLocaleString()} 個真實 skill，標記 {bl.total_flagged.toLocaleString()} 個有風險、確認 {bl.confirmed_malware} 個為惡意軟體，<br className="sm:hidden" />並把背後的行為者公開記錄下來。<br /><br className="sm:hidden" />名單與規則都以 MIT 授權公開——任何人都能查詢、引用、自行核對。</>
-            : <>A detection standard that only lives in a spec is worth nothing. ATR scanned {stats.megaScanTotal.toLocaleString()} real skills, flagged {bl.total_flagged.toLocaleString()} as risky, confirmed {bl.confirmed_malware} as malware, and documented the actors behind them.<br /><br className="sm:hidden" />The list and the rules are public under MIT — anyone can query, cite, and verify them.</>}
+            ? <>一個偵測標準若只活在規格書裡，就沒有意義。<br />ATR 掃描了 {stats.megaScanTotal.toLocaleString()} 個真實 skill，標記 {bl.total_flagged.toLocaleString()} 個有風險，其中 {bl.attributed_to_known_actor} 個歸屬於兩個已知的惡意發布帳號，<br className="sm:hidden" />並把背後的行為者公開記錄下來。<br /><br className="sm:hidden" />名單與規則都以 MIT 授權公開——任何人都能查詢、引用、自行核對。</>
+            : <>A detection standard that only lives in a spec is worth nothing. ATR scanned {stats.megaScanTotal.toLocaleString()} real skills, flagged {bl.total_flagged.toLocaleString()} as risky, of which {bl.attributed_to_known_actor} are attributed to two known malware-publishing accounts, and documented those actors.<br /><br className="sm:hidden" />The list and the rules are public under MIT — anyone can query, cite, and verify them.</>}
         </p>
       </Reveal>
 
@@ -109,8 +109,8 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
             <div className="font-data text-xs text-stone mt-1">{zh ? "已標記" : "flagged"}</div>
           </div>
           <div className="bg-paper p-4 md:p-5">
-            <div className="font-data text-2xl md:text-3xl font-bold text-critical">{bl.confirmed_malware}</div>
-            <div className="font-data text-xs text-stone mt-1">{zh ? "確認惡意軟體" : "confirmed malware"}</div>
+            <div className="font-data text-2xl md:text-3xl font-bold text-critical">{bl.attributed_to_known_actor}</div>
+            <div className="font-data text-xs text-stone mt-1">{zh ? "歸屬已知行為者" : "attributed to known actors"}</div>
           </div>
           <div className="bg-paper p-4 md:p-5">
             <div className="font-data text-2xl md:text-3xl font-bold text-ink">{bl.severity.critical}</div>

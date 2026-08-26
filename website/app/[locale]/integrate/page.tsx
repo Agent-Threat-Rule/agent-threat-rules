@@ -427,7 +427,7 @@ jobs:
             {[
               { label: "Cisco AI Defense", detail: locale === "zh" ? "完整 ATR 規則包 · skill-scanner production (PR #99)" : "Full ATR rule pack · skill-scanner production (PR #99)", highlight: true },
               { label: locale === "zh" ? `${stats.ruleCount} 條偵測規則` : `${stats.ruleCount} detection rules`, detail: locale === "zh" ? `${stats.categoryCount} 個威脅類別` : `${stats.categoryCount} threat categories`, highlight: false },
-              { label: locale === "zh" ? `${stats.megaScanTotal.toLocaleString()} 已掃描` : `${stats.megaScanTotal.toLocaleString()} skills scanned`, detail: locale === "zh" ? "6 個 registry · 552 確認惡意軟體" : "6 registries · 552 confirmed malware", highlight: false },
+              { label: locale === "zh" ? `${stats.megaScanTotal.toLocaleString()} 已掃描` : `${stats.megaScanTotal.toLocaleString()} skills scanned`, detail: locale === "zh" ? "6 個 registry · 1,302 標記" : "6 registries · 1,302 flagged", highlight: false },
               { label: locale === "zh" ? `${stats.ecosystemIntegrations.length} 個生態系整合` : `${stats.ecosystemIntegrations.length} ecosystem integrations`, detail: `${stats.ecosystemIntegrations.filter(e => e.type === "merged").length} merged · ${stats.ecosystemIntegrations.filter(e => e.type === "open").length} under review`, highlight: false },
             ].map((item) => (
               <div key={item.label} className="bg-paper p-5">

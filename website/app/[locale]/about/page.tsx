@@ -74,8 +74,8 @@ const MILESTONES: Milestone[] = [
       zh: "大規模惡意軟體行動研究發布",
     },
     detail: {
-      en: "Scanned 96,096 skills across five registries. Documented malicious skills from three coordinated threat actors (552 confirmed on the live blacklist). Notified NousResearch via issue #9809.",
-      zh: "跨五個 registry 掃描 96,096 個 skill，記錄三個協同行為者的惡意 skill（即時黑名單已確認 552 個），透過 issue #9809 通報 NousResearch。",
+      en: "Scanned 96,096 skills across five registries. Documented malicious skills from three coordinated threat actors (552 of them from two accounts, all on the live blacklist). Notified NousResearch via issue #9809.",
+      zh: "跨五個 registry 掃描 96,096 個 skill，記錄三個協同行為者的惡意 skill（其中 552 個出自兩個帳號，全數在即時黑名單上），透過 issue #9809 通報 NousResearch。",
     },
   },
   {
