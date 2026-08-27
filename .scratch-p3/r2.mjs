@@ -1,0 +1,10 @@
+const LAYER = String.raw`(?:layer|level)`;
+const DEPTH = String.raw`(?:${LAYER}\s*\d|reach(?:ing)?\s+(?:the\s+)?(?:${LAYER}\s*\d|(?:final|last|deepest|innermost|fifth|5th)\s+${LAYER})|(?:the\s+)?(?:deepest|innermost|final|last)\s+${LAYER}|\d\s+${LAYER}s)`;
+// C1: recursion marker "layer i create layer i+1" (near-verbatim DeepInception self-description)
+export const C1 = String.raw`\b${LAYER}\s*[a-z]\s+(?:can\s+|will\s+|must\s+|should\s+)?(?:create|creates|creating|generate|generates|spawn|spawns|make|makes)s?\s+(?:its\s+own\s+|their\s+own\s+|the\s+|a\s+|new\s+){0,2}${LAYER}\s*[a-z]\s*\+\s*1\b`;
+// C2: nested-fiction recursion (a character creating its OWN inner fiction) + a depth cue
+export const C2 = String.raw`\b(?:each|every)\s+(?:character|persona|agent|figure|protagonist|scientist)s?\s+(?:can\s+|may\s+|will\s+|should\s+|must\s+)?(?:create|creates|write|writes|invent|invents|imagine|imagines|generate|generates|spawn|spawns)s?\s+(?:their|its|his|her)\s+own\s+(?:[\w-]+\s+){0,3}(?:story|fiction|novel|dream|tale|narrative|simulation|world|universe|${LAYER}|scene|movie|film)\b[^\n]{0,300}\b${DEPTH}`;
+// C3: deepest-layer aggregation of the STEPS each layer contributed (DeepInception payoff)
+export const C3 = String.raw`\b(?:in|at|by|reaching|reach)\s+(?:the\s+)?(?:final|last|deepest|innermost|bottom|fifth|5th)\s+${LAYER}\b[^\n]{0,200}\b(?:summari[sz]|aggregat|consolidat|combin|compil|merg|collect)[a-z]*\b[^\n]{0,120}\b(?:step|steps|proposal|proposals|contribution|contributions|instruction|instructions|idea|ideas|discussion|plan|plans|solution|solutions|method|methods|technique|techniques)\b[^\n]{0,120}\b(?:each|every|all)\s+(?:the\s+)?${LAYER}s?\b`;
+// C4: "in layer 0 ... reach layer N"
+export const C4 = String.raw`\b(?:we\s+are\s+(?:now\s+)?(?:in|at)|start(?:ing)?\s+(?:in|at|from)|begin(?:ning)?\s+(?:in|at|from)|now\s+(?:we\s+are\s+)?(?:in|at))\s+(?:the\s+)?${LAYER}\s*0\b[^\n]{0,160}\b(?:reach|descend\s+to|go\s+(?:down\s+)?to|get\s+to|proceed\s+to|continue\s+to)\s+(?:the\s+)?${LAYER}\s*\d`;
