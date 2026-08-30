@@ -69,7 +69,7 @@ detection:
     # Uses non-greedy matching to allow up to 5 Q/A cycles
     - field: user_input
       operator: regex
-      value: "(?i)(Q\\s*:\\s*.{5,200}\\s+A\\s*:\\s*.{5,300}\\s+){3,}Q\\s*:\\s*.{0,150}(password|secret|api[_\\s]?key|birth\\s*(date|day)|email\\s*(address)?|social\\s*security|SSN|override|bypass|admin|credentials?|master\\s*key)"
+      value: "(?i)(Q\\s*:\\s*\\S(?:(?!\\s+A\\s*:).){4,199}\\s+A\\s*:\\s*\\S(?:(?!\\s+Q\\s*:).){4,299}\\s+){3,}Q\\s*:\\s*.{0,150}(password|secret|api[_\\s]?key|birth\\s*(date|day)|email\\s*(address)?|social\\s*security|SSN|override|bypass|admin|credentials?|master\\s*key)"
       description: "Three or more Q&A pairs leading to password/secret/key request (many-shot chain)"
     # "Repeat X N times" conditioning followed by a question
     - field: user_input
