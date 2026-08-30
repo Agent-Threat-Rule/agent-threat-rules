@@ -71,6 +71,18 @@ except ImportError:                        # pragma: no cover - older runtimes
 import yaml
 
 BASELINE = Path("data/redos-baseline.json")
+
+# A fixed workload, timed on the same machine in the same run, so the budget
+# tracks how fast that machine is. Without it the gate is an absolute
+# millisecond threshold, which is the exact failure gate-rule-latency.ts was
+# rewritten to escape: on a GitHub runner roughly twice as slow as the machine
+# this was written on, six conditions sitting at 0.15-0.25s crossed a 0.3s line
+# while nothing about them had changed. The reference number below was measured
+# on that authoring machine; the ratio is what matters, not the absolute value.
+CALIBRATION_PATTERN = r"(?i)(?:foo|bar|baz)+\s*[a-z0-9_]{3,40}\s*[:=]\s*\S+"
+CALIBRATION_INPUT = ("foobarbaz " * 400) + "token_value = something\n"
+CALIBRATION_REPEATS = 200
+CALIBRATION_REFERENCE_SECONDS = None  # filled in by --update-baseline
 PUMPS = (2, 3, 4, 8, 16)
 CHUNK = 40
 GENERIC = (
@@ -247,6 +259,26 @@ def measure(items, budget, wall):
     return results, hung
 
 
+def calibrate() -> float:
+    """Seconds this machine takes on the fixed reference workload."""
+    rx = re.compile(CALIBRATION_PATTERN)
+    started = time.monotonic()
+    for _ in range(CALIBRATION_REPEATS):
+        rx.search(CALIBRATION_INPUT)
+    return time.monotonic() - started
+
+
+def scaled_budget(base: float, reference: float | None) -> tuple[float, float]:
+    """Budget adjusted for this machine, and the factor used."""
+    if not reference:
+        return base, 1.0
+    factor = calibrate() / reference
+    # Clamp so a wildly noisy calibration cannot disable the gate outright or
+    # make it absurdly strict.
+    factor = min(max(factor, 0.5), 8.0)
+    return base * factor, factor
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--budget", type=float, default=0.3,
@@ -257,6 +289,16 @@ def main() -> int:
     ap.add_argument("--rules", default="rules")
     ap.add_argument("--update-baseline", action="store_true")
     args = ap.parse_args()
+
+    reference = None
+    if BASELINE.exists():
+        reference = json.loads(BASELINE.read_text(encoding="utf-8")).get(
+            "calibration_reference_seconds"
+        )
+    budget, factor = scaled_budget(args.budget, reference)
+    if reference:
+        print(f"machine calibration factor {factor:.2f}x -> budget {budget:.3f}s")
+    args.budget = budget
 
     items = collect(Path(args.rules))
     if not items:
@@ -281,6 +323,7 @@ def main() -> int:
                                 "--update-baseline. Shrinking this file is the goal; "
                                 "growing it needs a reason in the commit message.",
                     "budget_seconds": args.budget,
+                    "calibration_reference_seconds": round(calibrate(), 6),
                     "known": {k: ("hang" if v == float("inf") else v)
                               for k, v in sorted(over.items())},
                 },
