@@ -67,23 +67,23 @@ detection:
   conditions:
     - field: tool_response
       operator: regex
-      value: '(?:decode|decipher|decrypt|apply)\s+(?:the\s+)?(?:following|this|below|above)?[^\n]{0,40}\b(?:rot[\s-]?(?:13|5|47)|atbash|caesar(?:\s+cipher)?|vigen[e]re|pig[\s-]?latin)\b'
+      value: '(?i)(?:decode|decipher|decrypt|apply)\s+(?:the\s+)?(?:following|this|below|above)?[^\n]{0,40}\b(?:rot[\s-]?(?:13|5|47)|atbash|caesar(?:\s+cipher)?|vigen[e]re|pig[\s-]?latin)\b'
       description: 'Explicit verb + known simple-cipher name in instruction context'
     - field: tool_response
       operator: regex
-      value: '\b(?:rot[\s-]?(?:13|5|47)|atbash|caesar\s+cipher|leet\s+speak|1337[\s-]?speak)\s+(?:encoded|encrypted|ciphered|message|text|version|of\s+this)\b'
+      value: '(?i)\b(?:rot[\s-]?(?:13|5|47)|atbash|caesar\s+cipher|leet\s+speak|1337[\s-]?speak)\s+(?:encoded|encrypted|ciphered|message|text|version|of\s+this)\b'
       description: 'Cipher name used adjectivally to describe the encoded payload'
     - field: tool_response
       operator: regex
-      value: '(?:shift|rotate|substitute)\s+(?:each\s+)?(?:letter|character|char)s?\s+by\s+\d{1,2}\s+(?:position|place|step)s?'
+      value: '(?i)(?:shift|rotate|substitute)\s+(?:each\s+)?(?:letter|character|char)s?\s+by\s+\d{1,2}\s+(?:position|place|step)s?'
       description: 'Caesar-shift-style instruction with explicit numeric shift'
     - field: tool_response
       operator: regex
-      value: '(?:this\s+(?:is|contains)\s+an?|here.{0,5}is\s+an?|take\s+this)\s+(?:rot[\s-]?(?:13|5|47)|atbash|caesar|leet|1337)[^\n]{0,80}(?:message|string|instruction|command|prompt)'
+      value: '(?i)(?:this\s+(?:is|contains)\s+an?|here.{0,5}is\s+an?|take\s+this)\s+(?:rot[\s-]?(?:13|5|47)|atbash|caesar|leet|1337)[^\n]{0,80}(?:message|string|instruction|command|prompt)'
       description: 'Demonstrative framing of a cipher-encoded payload'
     - field: tool_response
       operator: regex
-      value: '\b(?:rot13|atbash|caesar(?:\s+cipher)?)\b[^\n]{0,80}\b(?:decode\s+and\s+|and|then)\s+(?:follow|execute|run|do\s+what|obey|act\s+on|comply)\b'
+      value: '(?i)\b(?:rot13|atbash|caesar(?:\s+cipher)?)\b[^\n]{0,80}\b(?:decode\s+and\s+|and|then)\s+(?:follow|execute|run|do\s+what|obey|act\s+on|comply)\b'
       description: 'Cipher name paired with a downstream execute/follow instruction'
   condition: any
   false_positives:

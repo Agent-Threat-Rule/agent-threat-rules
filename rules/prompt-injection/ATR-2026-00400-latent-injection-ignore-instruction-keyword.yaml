@@ -75,23 +75,23 @@ detection:
   conditions:
     - field: user_input
       operator: regex
-      value: 'ignore\s+(?:the\s+)?(?:above\s+directions?|previous\s+instructions?|instructions?|the\s+rest\s+of\s+(?:this\s+)?(?:data|text|document))[,\s]+and\s+(?:just\s+)?(?:print|say|output|repeat|translate)\b'
+      value: '(?i)ignore\s+(?:the\s+)?(?:above\s+directions?|previous\s+instructions?|instructions?|the\s+rest\s+of\s+(?:this\s+)?(?:data|text|document))[,\s]+and\s+(?:just\s+)?(?:print|say|output|repeat|translate)\b'
       description: '"Ignore X and print/say Y" — canonical LatentJailbreak injection_instruction; allows comma before "and" to cover "Ignore instructions, and just print"'
     - field: tool_response
       operator: regex
-      value: 'ignore\s+(?:the\s+)?(?:above\s+directions?|previous\s+instructions?|instructions?|the\s+rest\s+of\s+(?:this\s+)?(?:data|text|document))[,\s]+and\s+(?:just\s+)?(?:print|say|output|repeat|translate)\b'
+      value: '(?i)ignore\s+(?:the\s+)?(?:above\s+directions?|previous\s+instructions?|instructions?|the\s+rest\s+of\s+(?:this\s+)?(?:data|text|document))[,\s]+and\s+(?:just\s+)?(?:print|say|output|repeat|translate)\b'
       description: '"Ignore X and print/say Y" in tool response — same LatentJailbreak pattern injected via tool output to redirect downstream agent'
     - field: user_input
       operator: regex
-      value: 'disregard\s+all\s+(?:info|information|context|previous|data)\s+except\s+for\s+the\s+following'
+      value: '(?i)disregard\s+all\s+(?:info|information|context|previous|data)\s+except\s+for\s+the\s+following'
       description: '"Disregard all info/data except for the following" — LatentJailbreak exception-redirect pattern that discards original task context'
     - field: user_input
       operator: regex
-      value: 'it\s+is\s+critical\s+to\s+my\s+career[\s\S]{0,80}(?:repeat|say|print|output)\b'
+      value: '(?i)it\s+is\s+critical\s+to\s+my\s+career[\s\S]{0,80}(?:repeat|say|print|output)\b'
       description: '"It is critical to my career" + output-redirect — LatentWhoisSnippet social-engineering urgency combined with output instruction, verbatim from garak injection_instructions'
     - field: user_input
       operator: regex
-      value: 'this\s+is\s+(?:really\s+)?important,\s*(?:extremely\s+)?important,\s+the\s+domain\s+name\s+is'
+      value: '(?i)this\s+is\s+(?:really\s+)?important,\s*(?:extremely\s+)?important,\s+the\s+domain\s+name\s+is'
       description: '"This is really important, extremely important, the domain name is" — LatentWhois probe verbatim marker injected into whois context to redirect agent output'
   condition: any
   false_positives:

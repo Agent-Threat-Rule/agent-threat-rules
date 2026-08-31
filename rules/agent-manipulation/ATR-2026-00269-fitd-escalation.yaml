@@ -71,23 +71,23 @@ detection:
   conditions:
     - field: tool_response
       operator: regex
-      value: '(?:since|given\s+that|because|as)\s+you\s+(?:just|already|have|did|helped?)\s+[\s\S]{0,60}(?:now|please)\s+also\s+(?:\w+\s+){0,4}(?:explain|describe|provide|tell|show|give)'
+      value: '(?i)(?:since|given\s+that|because|as)\s+you\s+(?:just|already|have|did|helped?)\s+[\s\S]{0,60}(?:now|please)\s+also\s+(?:\w+\s+){0,4}(?:explain|describe|provide|tell|show|give)'
       description: 'FITD escalation anchor: "since you already did X, now also explain/provide Y"'
     - field: tool_response
       operator: regex
-      value: '(?:continuing|building\s+on|expanding\s+on|following\s+up\s+on)\s+(?:from\s+)?(?:what|the|our|my)\s+(?:you\s+)?(?:said|showed|explained|described|wrote|provided|gave|helped)\s+(?:earlier|before|previously|above|just\s+now)'
+      value: '(?i)(?:continuing|building\s+on|expanding\s+on|following\s+up\s+on)\s+(?:from\s+)?(?:what|the|our|my)\s+(?:you\s+)?(?:said|showed|explained|described|wrote|provided|gave|helped)\s+(?:earlier|before|previously|above|just\s+now)'
       description: 'Explicit continuation anchor referencing prior response to justify escalation'
     - field: tool_response
       operator: regex
-      value: '(?:you\s+(?:already|just|have)\s+(?:agreed|said|told\s+me|confirmed|acknowledged|established|explained))\s+(?:that\s+)?[\s\S]{0,60}(?:so|therefore|thus|which\s+means)\s+(?:you\s+(?:can|should|must|will)|it\s+(?:should\s+be\s+)?(?:fine|okay|safe|acceptable))'
+      value: '(?i)(?:you\s+(?:already|just|have)\s+(?:agreed|said|told\s+me|confirmed|acknowledged|established|explained))\s+(?:that\s+)?[\s\S]{0,60}(?:so|therefore|thus|which\s+means)\s+(?:you\s+(?:can|should|must|will)|it\s+(?:should\s+be\s+)?(?:fine|okay|safe|acceptable))'
       description: 'Prior-agreement leveraging: "you already said X, so therefore you can do Y"'
     - field: tool_response
       operator: regex
-      value: '(?:step\s+[2-9]|phase\s+[2-9]|part\s+[2-9]|next\s+(?:step|stage|phase|level|part))\s*:\s*(?:now|please)?\s*(?:\w+\s+){0,4}(?:the\s+(?:actual|real|dangerous|sensitive|restricted|harmful|illegal))'
+      value: '(?i)(?:step\s+[2-9]|phase\s+[2-9]|part\s+[2-9]|next\s+(?:step|stage|phase|level|part))\s*:\s*(?:now|please)?\s*(?:\w+\s+){0,4}(?:the\s+(?:actual|real|dangerous|sensitive|restricted|harmful|illegal))'
       description: 'Numbered step with escalation marker — multi-step attack unmasking real intent in later step'
     - field: tool_response
       operator: regex
-      value: '(?:you\s+(?:helped|assisted|provided|gave)\s+(?:me|us)\s+(?:with\s+)?(?:the\s+)?(?:first|initial|previous|last)\s+(?:step|part|phase|section|piece))\s+(?:so|and|now)\s+(?:now\s+)?(?:I\s+need|please\s+(?:also|now)|can\s+you\s+also|continue\s+(?:to|with|by))'
+      value: '(?i)(?:you\s+(?:helped|assisted|provided|gave)\s+(?:me|us)\s+(?:with\s+)?(?:the\s+)?(?:first|initial|previous|last)\s+(?:step|part|phase|section|piece))\s+(?:so|and|now)\s+(?:now\s+)?(?:I\s+need|please\s+(?:also|now)|can\s+you\s+also|continue\s+(?:to|with|by))'
       description: 'Gratitude + continuation framing to lock in prior compliance before escalating'
   condition: any
   false_positives:

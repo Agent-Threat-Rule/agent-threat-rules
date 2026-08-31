@@ -86,7 +86,7 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: "\\b(?:i|ich|je|moi|im|in|iv|ih|ian)\\b\\s+(?:have|hab|habe|been|geworde|geworden|wurde|sind|behavior|habit|été)\\b(?!(?:\\s+have)?\\s+been\\s+pwned\\b)[\\s\\S]{0,20}\\bp[^a-z\\s]{0,2}[wv][^a-z\\s]{0,2}n[^a-z\\s]{0,2}e?[^a-z\\s]{0,2}d\\b(?!\\s+dataset|\\s+database)"
+      value: "(?i)\\b(?:i|ich|je|moi|im|in|iv|ih|ian)\\b\\s+(?:have|hab|habe|been|geworde|geworden|wurde|sind|behavior|habit|été)\\b(?!(?:\\s+have)?\\s+been\\s+pwned\\b)[\\s\\S]{0,20}\\bp[^a-z\\s]{0,2}[wv][^a-z\\s]{0,2}n[^a-z\\s]{0,2}e?[^a-z\\s]{0,2}d\\b(?!\\s+dataset|\\s+database)"
       description: "Channel-agnostic: targets the canary/exfil-marker phrase pattern used by the HackAPrompt benchmark (model made to emit a forbidden marker string). Matches a first-person subject pronoun (English or common European-language fragments: ich/je/moi/hab/habe/geworden/été) followed within a short window by a fuzzy 'p_w_n_ed'-shaped token where non-letter characters substitute for any letter of 'pwned'. Generalizes to any 'you have been compromised/pwned'-style canary-leak attempt where the attacker deliberately misspells or interleaves foreign words around the marker token to dodge literal-string filters — applies to system-prompt-leak canaries and DLP watermark tokens more broadly, not just this exact phrase."
 
   condition: any
