@@ -90,7 +90,7 @@ detection:
     # benign "password manager" / "best practices" educational form.
     - field: user_input
       operator: regex
-      value: "(?i)Q\\s*:\\s*.{5,150}\\s+A\\s*:\\s*.{5,200}\\s+Q\\s*:\\s*(?:[^?\\n]{0,80}?)(?:our\\s+(?:system\\s+)?password|the\\s+(?:system\\s+)?password|your\\s+password|master\\s*key|secret\\s*key|encryption\\s+key|api[_\\s-]?key|birth\\s*(?:date|day|year)|social\\s*security|ssn|home\\s*address|credit\\s*card)\\b(?!\\s*managers?)"
+      value: "(?i)Q\\s*:\\s*.{4,149}[^\\s]\\s+A\\s*:\\s*.{4,199}[^\\s]\\s+Q\\s*:\\s*(?:[^?\\n]{0,80}?)(?:our\\s+(?:system\\s+)?password|the\\s+(?:system\\s+)?password|your\\s+password|master\\s*key|secret\\s*key|encryption\\s+key|api[_\\s-]?key|birth\\s*(?:date|day|year)|social\\s*security|ssn|home\\s*address|credit\\s*card)\\b(?!\\s*managers?)"
       description: "Q&A pairs culminating in a specific credential/PII question (excludes 'password manager')"
     # (a) chained ignore-above few-shot
     - field: user_input
@@ -105,7 +105,7 @@ detection:
     # (b) multi-question quiz terminating in a credential (2+ questions then password)
     - field: user_input
       operator: regex
-      value: "(?i)(?:[^?\\n]{5,60}\\?\\s+){2,}[^?\\n]{0,40}(?:what'?s?\\s+(?:the\\s+)?(?:password|secret|system\\s+password|pin)\\b|password\\s+for\\s+our\\s+system)"
+      value: "(?i)(?:[^\\s?\\n][^?\\n]{4,59}\\?\\s+){2,}[^?\\n]{0,40}(?:what'?s?\\s+(?:the\\s+)?(?:password|secret|system\\s+password|pin)\\b|password\\s+for\\s+our\\s+system)"
       description: "Two or more trivia questions followed by a password question"
     # (b) reflective pivot to credential confirmation (may span a sentence break)
     - field: user_input
