@@ -19,6 +19,7 @@
  * Usage:  npx tsx scripts/measure-paraphrase-robustness.ts
  */
 import { ATREngine } from "../src/engine.js";
+import type { AgentEvent, AgentEventType } from "../src/types.js";
 
 interface Intent { intent: string; canonical: string; paraphrases: string[] }
 
@@ -74,7 +75,7 @@ const INTENTS: Intent[] = [
   },
 ];
 
-const EVENT_TYPES = ["llm_input", "tool_response"] as const;
+const EVENT_TYPES: readonly AgentEventType[] = ["llm_input", "tool_response"] as const;
 
 async function main() {
   const engine = new ATREngine({ lane: "hunt" });
@@ -87,9 +88,9 @@ async function main() {
   for (const it of INTENTS) {
     const probe = async (text: string) => {
       const ids = new Set<string>();
-      for (const t of EVENT_TYPES) {
-        const matches = await engine.evaluateAsync({ type: t, content: text } as never);
-        for (const m of matches) ids.add(m.rule_id ?? (m as never as { ruleId: string }).ruleId);
+      for (const type of EVENT_TYPES) {
+        const event: AgentEvent = { type, timestamp: new Date().toISOString(), content: text };
+        for (const m of await engine.evaluateAsync(event)) ids.add(m.rule.id);
       }
       return ids;
     };
