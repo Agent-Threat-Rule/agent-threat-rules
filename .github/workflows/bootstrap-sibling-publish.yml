@@ -1,0 +1,51 @@
+name: Bootstrap publish for a sibling package
+
+# One-shot. PyPI trusted publishing cannot bootstrap a project that does not
+# exist yet without someone configuring a pending publisher first, and this
+# repository already holds a working PYPI_API_TOKEN. This workflow uses it to
+# make the first release of a sibling package in the same organisation, after
+# which that package publishes itself over OIDC and this file is removed.
+#
+# The token never leaves GitHub.
+
+on:
+  workflow_dispatch:
+    inputs:
+      repository:
+        description: "owner/repo to build and publish"
+        required: true
+        default: "Agent-Threat-Rule/textattack-detection-atr"
+      ref:
+        description: "ref to publish"
+        required: true
+        default: "main"
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the sibling package
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ inputs.repository }}
+          ref: ${{ inputs.ref }}
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Build and verify
+        run: |
+          python -m pip install --upgrade pip build twine
+          python -m build
+          python -m twine check dist/*
+          ls -la dist/
+
+      - name: Publish
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: python -m twine upload dist/*
