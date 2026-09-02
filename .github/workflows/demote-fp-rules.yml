@@ -29,9 +29,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
+      - uses: ./.github/actions/atr-node
       - run: npm ci
       - name: Demote enforce-lane rules that FP on the current corpus
         id: demote
