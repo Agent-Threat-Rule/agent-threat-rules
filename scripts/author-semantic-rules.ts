@@ -760,6 +760,31 @@ async function main(): Promise<void> {
     });
   }
 
+  // Visibility for a silent-green run: per-cluster LLM failures are caught above
+  // (non-fatal by design — the T2 lane must not red the CI on a transient API
+  // blip), but that means an exhausted ANTHROPIC_API_KEY account produces zero
+  // rules while every step stays green and the only trace is buried in the JSON.
+  // Surface it as a GitHub warning annotation (yellow, non-failing) so the
+  // rule-authoring line being starved is visible in the run summary. Classify
+  // API-availability errors (credit/quota/rate-limit/overload) distinctly, since
+  // those are an account/billing signal rather than a code bug.
+  if (summary.errors > 0) {
+    const reasons = summary.results
+      .filter((r) => r.status === "error")
+      .map((r) => String(r.reason ?? ""));
+    const apiUnavailable = reasons.some((r) =>
+      /credit balance is too low|rate.?limit|\bquota\b|overloaded|insufficient|billing|\b(429|529)\b/i.test(r),
+    );
+    const kind = apiUnavailable
+      ? "Anthropic API unavailable (credit/quota/rate-limit/overload)"
+      : "authoring errors";
+    console.log(
+      `::warning::author-semantic-rules: ${summary.errors} cluster(s) errored (${kind}); ` +
+        `${summary.promoted} rule(s) produced this run. CI stays green (non-fatal by design), but ` +
+        `the T2 rule-authoring line is degraded — check the ANTHROPIC_API_KEY account balance if this recurs.`,
+    );
+  }
+
   if (REPORT_PATH) {
     const abs = resolve(REPO_ROOT, REPORT_PATH);
     mkdirSync(dirname(abs), { recursive: true });
