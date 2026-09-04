@@ -176,7 +176,7 @@ detection:
     # -- Layer 3b: Few-shot output manipulation (DE-specific, requires 3+ pairs) --
     - field: user_input
       operator: regex
-      value: "(?i)Eingabe\\s*:\\s*[^\\n]+\\s*Ausgabe\\s*:\\s*[^\\n]+\\s*Eingabe\\s*:\\s*[^\\n]+\\s*Ausgabe\\s*:"
+      value: "(?i)Eingabe\\s*:(?:\\s*\\S(?:[^\\n]*\\S)?|\\n*[^\\S\\n])\\s*Ausgabe\\s*:(?:\\s*\\S(?:[^\\n]*\\S)?|\\n*[^\\S\\n])\\s*Eingabe\\s*:(?:\\s*\\S(?:[^\\n]*\\S)?|\\n*[^\\S\\n])\\s*Ausgabe\\s*:"
       description: "German few-shot input/output override pattern (Eingabe/Ausgabe)"
 
     # -- Layer 4: Do-not-follow-rules patterns --
