@@ -81,7 +81,7 @@ detection:
     - field: user_input
       operator: regex
       value: >-
-        (?i)(write|compose|create|draft|author|craft|produce)\s+.{0,40}(story|narrative|fiction|tale|novel|screenplay|script|dialogue)\s+.{0,60}(AI|artificial\s+intelligence|chatbot|assistant|agent)\s+.{0,40}(character|protagonist|entity)\s+.{0,40}(no|without|lacks?|free\s+from|devoid\s+of)\s+.{0,20}(ethic|moral|restrict|constrain|limit|filter|guardrail|safety)
+        (?i)(write|compose|create|draft|author|craft|produce)\s+(?:[^\s].{0,39})?(story|narrative|fiction|tale|novel|screenplay|script|dialogue)\s+(?:[^\s].{0,59})?(AI|artificial\s+intelligence|chatbot|assistant|agent)\s+(?:[^\s].{0,39})?(character|protagonist|entity)\s+(?:[^\s].{0,39})?(no|without|lacks?|free\s+from|devoid\s+of)\s+(?:[^\s].{0,19})?(ethic|moral|restrict|constrain|limit|filter|guardrail|safety)
       description: Fiction writing request with unethical AI character
     - field: user_input
       operator: regex
