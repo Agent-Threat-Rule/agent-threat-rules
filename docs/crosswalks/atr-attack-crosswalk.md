@@ -28,12 +28,12 @@ columns are still extracted from ATR metadata, not authored here.
 
 ## Coverage
 
-- ATR rules total: 798
+- ATR rules total: 796
 - Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 202
 - Distinct enterprise ATT&CK techniques referenced: 81
-- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 798
+- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 796
 - Distinct MITRE ATLAS techniques referenced: 44
-- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 798
+- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 796
 - ATR categories (distinct `tags.category` values): 9
 
 Categories are keyed on each rule's `tags.category` metadata, not on its
@@ -164,7 +164,7 @@ OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:202
 
 ### context-exfiltration
 
-Rules in category: 127
+Rules in category: 126
 
 ATT&CK techniques (join key):
 
@@ -332,7 +332,7 @@ OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:202
 
 ### skill-compromise
 
-Rules in category: 45
+Rules in category: 44
 
 ATT&CK techniques (join key):
 
@@ -354,7 +354,7 @@ ATT&CK techniques (join key):
 | T1574.002 | Hijack Execution Flow: DLL Side-Loading | `ATR-2026-02410` |
 | T1583.008 | Acquire Infrastructure: Malvertising | `ATR-2026-02410` |
 
-ATLAS techniques ATR adds: AML.T0010, AML.T0010.005, AML.T0011, AML.T0011.000, AML.T0018.000, AML.T0020, AML.T0024, AML.T0040, AML.T0044, AML.T0047, AML.T0048, AML.T0050, AML.T0051, AML.T0051.001, AML.T0053, AML.T0054, AML.T0057, AML.T0060, AML.T0080, AML.T0104, AML.T0109
+ATLAS techniques ATR adds: AML.T0010, AML.T0010.005, AML.T0011, AML.T0011.000, AML.T0018.000, AML.T0020, AML.T0024, AML.T0040, AML.T0044, AML.T0047, AML.T0048, AML.T0050, AML.T0051, AML.T0051.001, AML.T0053, AML.T0057, AML.T0060, AML.T0080, AML.T0104, AML.T0109
 
 OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:2026, ASI05:2026, ASI06:2026, ASI07:2026, ASI08:2026, ASI09:2026
 
