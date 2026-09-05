@@ -1,0 +1,257 @@
+title: "npm Installer Auto-Consent Smuggled Through an MCP Server Environment"
+id: ATR-2026-02645
+rule_version: 2
+status: "experimental"
+description: >
+  Detects an MCP server definition whose `env` block carries an npm
+  CONFIGURATION VARIABLE that re-enables the behaviour the CLI flag was
+  blocked for: `npm_config_yes=true` (identical to `npx --yes`, so npx
+  installs whatever package name it is handed without asking),
+  `npm_config_ignore_scripts=false` (lifecycle scripts run again),
+  `npm_config_script_shell` (chooses the interpreter those scripts run in) and
+  `npm_config_unsafe_perm`. GHSA-xc48-889x-5qmw / CVE-2026-69263 (Flowise) is
+  the reference case: the patch for CVE-2025-8943 filtered the ARGUMENT form
+  and left the ENVIRONMENT form, which npm reads with exactly the same effect.
+
+  RELATIONSHIP TO ATR-2026-02300. That rule covers the loader-injection family
+  in the same `env` block -- NODE_OPTIONS --require, LD_PRELOAD, BASH_ENV,
+  PYTHONSTARTUP. Measured on this repo's engine, it does not fire on
+  `npm_config_yes`, and neither does anything else: `grep -ril npm_config
+  rules` returns no file. This rule adds the installer-consent family, and
+  unlike 02300 it is written without lookbehind or lookahead so it survives
+  RE2 conversion for downstream consumers.
+
+  VALUE DIRECTION IS PART OF THE PATTERN. `npm_config_ignore_scripts=true` is
+  HARDENING and must not be flagged; only the `false`/`0` setting is. The same
+  asymmetry is why `npm_config_yes` is matched only when set truthy. A benign
+  twin that pins `ignore_scripts` to true inside an mcpServers block was
+  written specifically to hold this line.
+
+  KNOWN AND ACCEPTED. A README that tells a developer to set
+  `npm_config_yes=true` in an mcpServers env block so CI stops prompting
+  contains this exact shape and fires. That is a real (if inadvisable)
+  practice; the alert says the server will install packages without asking,
+  which remains true regardless of who wrote it. Scoped to alert for that
+  reason.
+author: "ATR Community"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: "test"
+severity: high
+
+references:
+  cve:
+    - "CVE-2026-69263"
+    - "CVE-2025-8943"
+  ghsa:
+    - "GHSA-xc48-889x-5qmw"
+  cwe:
+    - CWE-184
+    - CWE-829
+  owasp_llm:
+    - "LLM03:2025"
+  owasp_agentic:
+    - "ASI05:2026"
+    - "ASI03:2026"
+  mitre_atlas:
+    - "AML.T0010 - AI Supply Chain Compromise"
+  mitre_attack:
+    - "T1195.002 - Compromise Software Supply Chain"
+  external:
+    - "https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-xc48-889x-5qmw"
+
+compliance:
+  owasp_agentic:
+    - id: ASI05:2026
+      context: "The agent's tool supply chain is widened at configuration time: a server entry that auto-consents to installation will fetch and execute whatever package name reaches it."
+      strength: primary
+    - id: ASI03:2026
+      context: "Re-enabling lifecycle scripts inside an MCP server definition converts config-write authority into code execution on the host running the agent."
+      strength: secondary
+  owasp_llm:
+    - id: LLM03:2025
+      context: "Supply-chain exposure introduced through agent configuration rather than through a dependency manifest."
+      strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 requires resilience of high-risk systems; a configuration that silently installs and executes third-party code removes the review step that resilience depends on."
+      strength: primary
+    - article: "9"
+      context: "Third-party component installation is a documented risk source for agent deployments; these detections are the Article 9 monitoring control for it."
+      strength: secondary
+    - article: "12"
+      context: "Article 12 traceability: an auto-consenting installer leaves no approval record, so the detection event is the only trace that the decision was made."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Map
+      subcategory: MP.5.1
+      context: "Characterises agent configuration as a supply-chain surface distinct from the dependency manifest."
+      strength: primary
+    - function: Manage
+      subcategory: MG.3.1
+      context: "Third-party package risk is managed by requiring explicit consent; this rule detects that consent being pre-granted in configuration."
+      strength: primary
+    - function: Measure
+      subcategory: "MS.2.7"
+      context: "Detection events evidence whether installation consent was actually enforced at run time."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Clause 8.1 control of externally provided processes -- an auto-consenting installer removes the control point entirely."
+      strength: primary
+    - clause: "8.4"
+      context: "Impact assessment under clause 8.4 must account for arbitrary third-party code executing inside the agent host."
+      strength: secondary
+    - clause: "6.2"
+      context: "Keeping installation gated is an AIMS objective under clause 6.2; this rule is its configuration-time control."
+      strength: secondary
+
+tags:
+  category: privilege-escalation
+  subcategory: mcp-config-installer-consent
+  scan_target: both
+  confidence: medium
+  # A README, a runbook or a CVE advisory quoting the vulnerable block is the
+  # dominant benign shape for this rule, and documentation fences its examples
+  # while a real client config does not. Measured in adversarial review: both a
+  # fenced troubleshooting README and a fenced GHSA proof-of-concept fired
+  # before this tag and are silent after it; no true positive is fenced.
+  suppress_in_code_blocks: true
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  conditions:
+    - field: content
+      operator: regex
+      value: '\bmcpservers\b[\s\S]{0,400}["'']?\benv\b["'']?\s*[:=][\s\S]{0,200}(?:\bnpm_config_yes\b["'']?\s*[:=]\s*["'']?(?:true|1|yes)\b|\bnpm_config_ignore_scripts\b["'']?\s*[:=]\s*["'']?(?:false|0)\b|\bnpm_config_unsafe_perm\b["'']?\s*[:=]\s*["'']?(?:true|1|yes)\b|\bnpm_config_script_shell\b["'']?\s*[:=]\s*["'']?(?:[/~.]|[a-z]:[\\/]|\\\\|(?:sh|bash|zsh|dash|ksh|fish|cmd|powershell|pwsh|node|python)\b))'
+      description: "MCP server block whose env sets an npm installer-consent variable to its dangerous value"
+
+    - field: content
+      operator: regex
+      value: '["'']command["'']\s*:\s*["''](?:npx|npm|pnpm|yarn|bunx|corepack)["''][\s\S]{0,300}["'']?\benv\b["'']?\s*[:=][\s\S]{0,200}(?:\bnpm_config_yes\b["'']?\s*[:=]\s*["'']?(?:true|1|yes)\b|\bnpm_config_ignore_scripts\b["'']?\s*[:=]\s*["'']?(?:false|0)\b|\bnpm_config_unsafe_perm\b["'']?\s*[:=]\s*["'']?(?:true|1|yes)\b|\bnpm_config_script_shell\b["'']?\s*[:=]\s*["'']?(?:[/~.]|[a-z]:[\\/]|\\\\|(?:sh|bash|zsh|dash|ksh|fish|cmd|powershell|pwsh|node|python)\b))'
+      description: "npx/npm launcher command followed by an npm installer-consent variable"
+
+    - field: content
+      operator: regex
+      value: '["'']?\benv\b["'']?\s*[:=][\s\S]{0,200}(?:\bnpm_config_yes\b["'']?\s*[:=]\s*["'']?(?:true|1|yes)\b|\bnpm_config_ignore_scripts\b["'']?\s*[:=]\s*["'']?(?:false|0)\b|\bnpm_config_unsafe_perm\b["'']?\s*[:=]\s*["'']?(?:true|1|yes)\b|\bnpm_config_script_shell\b["'']?\s*[:=]\s*["'']?(?:[/~.]|[a-z]:[\\/]|\\\\|(?:sh|bash|zsh|dash|ksh|fish|cmd|powershell|pwsh|node|python)\b))[\s\S]{0,300}(?:["'']command["'']\s*:\s*["''](?:npx|npm|pnpm|yarn|bunx|corepack)["'']|\bmcpservers\b)'
+      description: "npm installer-consent variable followed by the MCP server block or npx launcher it belongs to"
+  condition: any
+  false_positives:
+    - "FIXED in rule_version 2 -- VALUE DIRECTION WAS ONLY HALF APPLIED. npm_config_yes and npm_config_ignore_scripts checked their value, but npm_config_unsafe_perm and npm_config_script_shell accepted ANY non-space character. npm_config_unsafe_perm=false is npm's DEFAULT and its SAFE setting, and npm exports the entire config into every lifecycle script as npm_config_*, so that string appears in any env dump taken during npm run/npm ci. Six measured FPs turned on this alone: a bug report pasting an env dump next to the reporter's mcpServers block, a CI group log whose two npm_config values were BOTH the hardened ones, a generated env snapshot, a non-English deployment note, and two minimal configs. unsafe_perm now requires true/1/yes; script_shell now requires a value that is actually a path or a shell name, which also drops the npm_config_script_shell=null form that config dumps emit."
+    - "FIXED in rule_version 2 -- THE ENV BLOCK IS NOW REQUIRED, NOT ASSUMED. The conditions joined `mcpServers` (or a launcher command) to an npm_config variable across up to 400 characters of arbitrary text, so any document discussing both in the same paragraph fired. Measured FPs: npm's own documentation of the npm_config_* mechanism, a HARDENING checklist telling operators to remove npm_config_yes=true and set ignore_scripts=true, a Dockerfile using the documented root-in-container unsafe_perm workaround next to an mcpservers.json COPY, and a detection-engineering note about this very defect. All three conditions now require an actual env key (env: or \"env\":) within 200 characters of the variable, which is what the rule always claimed to detect. Every true positive contains one."
+    - "FIXED in rule_version 2 -- tags.suppress_in_code_blocks added. A fenced troubleshooting README and a fenced GHSA proof-of-concept both fired and are now silent; no true positive is fenced."
+    - "RESIDUAL, MEASURED: advisory or runbook prose that pastes the vulnerable block WITHOUT a code fence still fires. This is the irreducible superstring case -- the benign document contains the malicious bytes verbatim -- and is why the rule is alert-only."
+    - "RESIDUAL, UNCONFIRMED AS A REAL PRACTICE: an MCP env block setting npm_config_script_shell to a Windows shell path (C:\\Program Files\\Git\\bin\\bash.exe) as an npx workaround fires. Constructed during adversarial review; no evidence was found that this is a documented practice, and redirecting the lifecycle-script interpreter from inside a server definition is worth the alert on any platform, so the branch was kept."
+
+response:
+  actions:
+    - alert
+  auto_response_threshold: high
+  message_template: >
+    [ATR-2026-02645] An MCP server definition sets an npm installer-consent
+    variable (npm_config_yes / npm_config_ignore_scripts=false /
+    npm_config_script_shell). The server will fetch and execute packages
+    without a confirmation step, and lifecycle scripts may run. Reference:
+    GHSA-xc48-889x-5qmw. Verify who supplied this configuration.
+
+confidence: 70
+test_cases:
+  true_positives:
+    - input: '{"mcpServers":{"helper":{"command":"npx","args":["some-pkg"],"env":{"npm_config_yes":"true"}}}}'
+      expected: triggered
+      description: "The advisory shape: auto-consent supplied as an environment variable"
+    - input: '{"mcpServers":{"helper":{"command":"npx","args":["some-pkg"],"env":{"npm_config_yes":"true","npm_config_ignore_scripts":"false"}}}}'
+      expected: triggered
+      description: "Auto-consent plus lifecycle scripts re-enabled"
+    - input: 'mcpServers:\n  helper:\n    command: npx\n    args: [tool-pkg]\n    env:\n      npm_config_yes: true'
+      expected: triggered
+      description: "YAML form of the same configuration"
+    - input: '{"servers":{"x":{"command":"npx","args":["@scope/pkg"],"env":{"npm_config_script_shell":"/bin/sh"}}}}'
+      expected: triggered
+      description: "Lifecycle-script interpreter chosen by the configuration"
+    - input: '{"command":"npm","args":["exec","pkg"],"env":{"npm_config_unsafe_perm":"true"}}'
+      expected: triggered
+      description: "unsafe_perm set on an npm exec launcher"
+    - input: '{"env":{"npm_config_yes":"1"},"command":"npx","args":["remote-pkg"]}'
+      expected: triggered
+      description: "Environment listed before the launcher (reverse order)"
+    - input: '{"mcpServers":{"a":{"command":"node","args":["s.js"],"env":{"npm_config_ignore_scripts":"0"}}}}'
+      expected: triggered
+      description: "Lifecycle scripts re-enabled with the numeric falsy value"
+    - input: '{"mcpServers":{"b":{"command":"pnpm","args":["dlx","pkg"],"env":{"npm_config_yes":"yes"}}}}'
+      expected: triggered
+      description: "pnpm dlx launcher with word-form truthy consent"
+  true_negatives:
+    - input: '{"mcpServers":{"fs":{"command":"npx","args":["-y","@modelcontextprotocol/server-filesystem","/data"]}}}'
+      expected: not_triggered
+      description: "The ordinary published filesystem server -- consent is explicit on the command line, no env smuggling"
+    - input: '{"mcpServers":{"a":{"command":"node","args":["s.js"],"env":{"npm_config_ignore_scripts":"true"}}}}'
+      expected: not_triggered
+      description: "ignore_scripts pinned TRUE is hardening; the value direction keeps it out"
+    - input: '{"mcpServers":{"db":{"command":"npx","args":["pg-mcp"],"env":{"PGHOST":"db.internal","npm_config_loglevel":"warn"}}}}'
+      expected: not_triggered
+      description: "An npm_config_* variable that has no security effect"
+    - input: 'name: CI\njobs:\n  build:\n    env:\n      NPM_CONFIG_YES: "true"\n    steps:\n      - run: npm ci'
+      expected: not_triggered
+      description: "A CI workflow with no MCP server definition anywhere near it"
+    - input: 'ENV npm_config_ignore_scripts=true\nRUN npm ci --omit=dev'
+      expected: not_triggered
+      description: "Dockerfile hardening"
+    - input: 'npm config get yes returns false by default; npx will prompt before installing a package it does not have.'
+      expected: not_triggered
+      description: "Documentation of the default behaviour"
+    - input: '{"mcpServers":{"gh":{"command":"npx","args":["-y","gh-mcp"],"env":{"GITHUB_TOKEN":"${env:GH_PAT}"}}}}'
+      expected: not_triggered
+      description: "An ordinary MCP server passing a credential through env"
+    - input: 'Set npm_config_registry to your internal mirror before running the installer; nothing else in the environment changes.'
+      expected: not_triggered
+      description: "Registry configuration, which this rule deliberately does not claim"
+    - input: '{"mcpServers":{"c":{"command":"uvx","args":["mcp-server-git"],"env":{"UV_NO_SYNC":"1"}}}}'
+      expected: not_triggered
+      description: "A Python-side launcher with its own env var"
+    - input: 'Audit finding: npm_config_yes was set to true in the base image. Remediation: unset it and pin --yes only where a human reviewed the package.'
+      expected: not_triggered
+      description: "An audit note recommending removal, with no MCP block within range"
+    - input: '{"mcpServers":{"a":{"command":"npx","args":["pkg"],"env":{"npm_config_unsafe_perm":"false"}}}}'
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: unsafe_perm pinned FALSE is npm's default and its safe setting. The old branch accepted any non-space value."
+    - input: '{"mcpServers":{"a":{"command":"npx","args":["pkg"],"env":{"npm_config_script_shell":"null"}}}}'
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: the unset spelling that npm config dumps emit."
+    - input: "Bug report for the filesystem MCP server. `npm run start` env dump:\n\nnpm_config_ignore_scripts=\nnpm_config_unsafe_perm=false\nnpm_config_registry=https://registry.npmjs.org/\n\nMy config:\n{\"mcpServers\":{\"fs\":{\"command\":\"npx\",\"args\":[\"-y\",\"@modelcontextprotocol/server-filesystem\"]}}}\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: npm exports its whole config into lifecycle scripts as npm_config_*, so an env dump pasted into an issue always carries these names with their DEFAULT values, and the reporter's mcpServers block sits a few lines away."
+    - input: "##[group]Run npm ci\n  npm_config_unsafe_perm=false\n  npm_config_ignore_scripts=true\n##[endgroup]\nInstalling mcpservers workspace...\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: a CI log in which BOTH npm_config values are the hardened ones."
+    - input: "Every npm config key is exposed to lifecycle scripts as an environment variable. For example ignore-scripts becomes npm_config_ignore_scripts=false and unsafe-perm becomes npm_config_unsafe_perm=false. Your mcpServers entries inherit whatever the parent shell had.\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: npm's own documentation of the mechanism, quoting the DEFAULT values, with mcpServers named in the same paragraph."
+    - input: "Hardening checklist for agent hosts:\n1. In every mcpServers entry, confirm the env block does NOT contain npm_config_yes=true.\n2. Set npm_config_ignore_scripts=true globally.\n3. Pin every package by digest.\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: a hardening checklist telling operators to REMOVE the dangerous setting. The old pattern read `env block` as prose and joined it to the quoted value."
+    - input: "FROM node:20-alpine\n# npm <9 refuses to run lifecycle scripts as root without this\nENV npm_config_unsafe_perm=true\nRUN npm i -g mcp-server-git\nCOPY mcpservers.json /etc/mcpservers.json\nCMD [\"mcp-server-git\"]\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: the documented root-in-container workaround in an image that also ships an mcpservers.json. This is a container build, not an MCP server definition; requiring a real env key separates them."
+    - input: "# generated by tools/snapshot-env.mjs -- do not edit\nnpm_config_unsafe_perm=false\nnpm_config_script_shell=\nnpm_config_yes=false\n# consumed by mcpservers-bootstrap\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: a generated environment snapshot in which every value is the safe one."
+    - input: "部署備註:容器以 root 執行,npm 8 需要 npm_config_unsafe_perm=false 以外的設定才會跑 lifecycle script。我們的 mcpServers 設定檔放在 /etc/agent/。"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: a non-English operations note."
+    - input: "Detection note: the dangerous direction is npm_config_ignore_scripts=false, not true. A rule that keys on npm_config_unsafe_perm without checking the value will fire on npm_config_unsafe_perm=false, which is the default. Test against a real mcpServers block.\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: a detection-engineering note describing this exact defect."
+    - input: "### Troubleshooting\n\nIf CI hangs waiting for the npx prompt, add:\n\n```json\n{\"mcpServers\":{\"helper\":{\"command\":\"npx\",\"args\":[\"some-pkg\"],\"env\":{\"npm_config_yes\":\"true\"}}}}\n```\n\nWe do not recommend this outside CI.\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2 by suppress_in_code_blocks: a fenced troubleshooting README."
+    - input: "GHSA-xc48-889x-5qmw proof of concept:\n\n```json\n{\"mcpServers\":{\"x\":{\"command\":\"npx\",\"env\":{\"npm_config_yes\":\"true\"}}}}\n```\n\nThe patch for CVE-2025-8943 filtered only the argument form.\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2 by suppress_in_code_blocks: a fenced advisory proof-of-concept."

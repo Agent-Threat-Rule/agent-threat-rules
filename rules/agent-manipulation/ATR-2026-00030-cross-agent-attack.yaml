@@ -175,9 +175,12 @@ response:
   actions:
     - block_input
     - escalate
-    - quarantine_session
-    - kill_agent
     - snapshot
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 1/13601 = 0.01%
+    meets the 0.5% ceiling but is not zero; ceiling = degrade. Removed
+    quarantine_session(terminate), kill_agent(terminate). Detection unchanged — recall cost is
+    zero.
   auto_response_threshold: critical
   message_template: |
     [ATR-2026-030] CRITICAL: Cross-agent attack detected. Agent {agent_id}

