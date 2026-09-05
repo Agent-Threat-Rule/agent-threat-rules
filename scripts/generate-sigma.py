@@ -21,12 +21,12 @@ its known limitations):
     map those fields to their own agent-telemetry pipeline. This is approximate
     by nature and is called out, not hidden.
 
-  * ATR regexes are Python `re` with a near-universal leading inline `(?i)`.
-    Sigma's `re` modifier is case-sensitive by default but supports `re|i`.
-    Where an ATR pattern starts with `(?i)`, we strip it and emit `field|re|i`;
-    otherwise `field|re`. Remaining inline flags (rare) are preserved verbatim
-    inside the pattern -- backend support for inline flags varies, which is a
-    documented limitation, not a silent one.
+  * ATR regexes are case-insensitive by default unless a condition explicitly
+    sets `case_sensitive: true`. Sigma's `re` modifier is case-sensitive by
+    default, so the emitter uses `field|re|i` for the ATR default and `field|re`
+    for the explicit opt-out. A leading inline `(?i)` is normalised into the
+    Sigma modifier; other inline flags are preserved verbatim inside the
+    pattern, subject to backend support.
 
   * ATR's non-regex operators are rare. `operator: gt` (numeric behavioral
     threshold) has no clean Sigma string-match equivalent, so those single
@@ -435,11 +435,18 @@ def convert_conditions(atr_detection: dict, regex_dialect: str = "pcre") -> tupl
             if value is None:
                 warnings.append(f"condition #{idx} has no value; skipped")
                 continue
-            pattern, use_i = strip_leading_i_flag(str(value))
+            pattern, had_inline_i = strip_leading_i_flag(str(value))
+            case_sensitive = cond.get("case_sensitive") is True
+            if case_sensitive and had_inline_i:
+                warnings.append(
+                    f"condition #{idx} sets case_sensitive: true but its pattern "
+                    "has an inline i flag; case_sensitive takes precedence and "
+                    "the inline i flag was removed"
+                )
             pattern, blockers = emit_for_dialect(pattern, regex_dialect)
             for blocker in blockers:
                 warnings.append(f"condition #{idx} RE2-INCOMPATIBLE: {blocker}")
-            modifier = "re|i" if use_i else "re"
+            modifier = "re" if case_sensitive else "re|i"
             selections[sel_name] = {f"{field}|{modifier}": pattern}
         elif operator in ("gt", "lt", "gte", "lte", "eq"):
             # Numeric behavioral threshold. Sigma has no portable numeric
