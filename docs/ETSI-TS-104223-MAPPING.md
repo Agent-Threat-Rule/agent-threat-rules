@@ -4,7 +4,7 @@ Version: 0.1.0 (INTERNAL DRAFT — not published)
 Status: Draft alignment mapping for ETSI TS 104 223 V1.1.1 and the UK NCSC/DSIT AI Cyber Security Code of Practice
 Date: 2026-06-12
 Editor: Adam Lin (林冠辛) <adam@agentthreatrule.org>
-Mapped corpus: Agent Threat Rules v3.5.8 (815 rules / 10 categories; disk == data/stats.json on 2026-07-12)
+Mapped corpus: Agent Threat Rules v3.5.8 (825 rules / 10 categories; disk == data/stats.json on 2026-07-12)
 Reference frameworks:
   - ETSI TS 104 223 V1.1.1 (2025-04) "Securing Artificial Intelligence (SAI); Baseline Cyber Security Requirements for AI Models and Systems"
   - UK AI Cyber Security Code of Practice (DSIT / NCSC), "Code of practice for the cyber security of AI"
