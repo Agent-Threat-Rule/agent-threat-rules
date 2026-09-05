@@ -3,7 +3,7 @@
 Last updated: 2026-07-12 (corpus re-stamp to v3.5.8; cited rule IDs
 spot-checked as still resolving; the 7-gap authoring roadmap is carried forward
 and re-validated as those dedicated rules are written)
-ATR corpus: v3.5.8, 806 rules (10 categories)
+ATR corpus: v3.5.8, 815 rules (10 categories)
 Source taxonomy: **MCP-38 — A Comprehensive Threat Taxonomy for Model Context
 Protocol Systems (v1.0)**, Shen, Toyoda & Leung, arXiv:2603.18063. 38 protocol-
 specific threat categories (MCP-01 … MCP-38) grouped into 5 tactic categories

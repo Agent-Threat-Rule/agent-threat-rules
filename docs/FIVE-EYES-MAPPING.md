@@ -1,6 +1,6 @@
 # ATR → Five Eyes "Careful Adoption of Agentic AI Services" Mapping
 
-- **ATR corpus version:** v3.5.8, 806 rules across 10 detection-rule categories
+- **ATR corpus version:** v3.5.8, 815 rules across 10 detection-rule categories
 - **Five Eyes guidance:** "Careful Adoption of Agentic AI Services", published 2026-04-30 on media.defense.gov, jointly authored by CISA (US) + NSA (US) + ASD-ACSC (Australia) + CCCS (Canada) + NCSC-UK + NCSC-NZ
 - **Document date:** 2026-06-05
 - **Maintainer:** Adam Lin (adam@agentthreatrule.org)
