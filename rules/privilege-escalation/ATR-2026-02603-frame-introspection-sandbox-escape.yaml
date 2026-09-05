@@ -1,0 +1,309 @@
+title: "Python Sandbox Escape via Frame and Generator Introspection Attributes"
+id: ATR-2026-02603
+rule_version: 2
+status: "experimental"
+description: >
+  Detects the CVE-2026-53753 (Crawl4AI _safe_eval_expression) escape family:
+  code handed to an agent's Python evaluation tool reaches the interpreter's
+  builtins through FRAME and GENERATOR introspection attributes -- gi_frame,
+  cr_frame, ag_frame, f_back, f_globals, f_builtins. None of these begin with
+  an underscore, so every validator that blocks "attributes starting with an
+  underscore" lets them through, and every ATR rule that keys on dunders never
+  sees them.
+
+  WHAT IS CLAIMED IS THE COMPLETED ESCAPE, NOT THE ATTRIBUTE. Version 1 of this
+  rule keyed on the hop alone and adversarial review broke it: 18 of 20
+  hand-written benign samples fired it, one of which was this rule's own
+  description paragraph. Three independent causes, all now closed.
+
+  (a) The builtins mapping subscripted by a quoted name is its ordinary reading
+  interface, not an escape -- a bytecode VM pushing the build-class slot, an
+  import auditor saving and restoring the original importer, a sandbox's own
+  unit test asserting the dangerous entries are gone. So condition 1 now needs
+  an execution primitive AND that primitive being called, or handed a module
+  name, within 40 characters -- and for the direct subscript form, on the same
+  line. A wider window was tried first and was itself broken by a test file
+  whose NEXT test called os.system, and by a changelog whose next bullet did.
+
+  Condition 3's sink list says execl/execv, not exec-anything: the first
+  attempt fired on sys.executable and sys.exec_prefix read from a caller frame.
+
+  (b) The "genuine dotted chain" gap accepted whitespace and newlines as well
+  as word characters, so comma-free prose chained across ("...reads coro
+  .cr_frame.f_lineno and gi_frame.f_code. pdb prints f_builtins"), and so did a
+  list of dotted attribute paths written one per line. Condition 2 now walks a
+  pure dotted chain with no whitespace, and requires the chain to end at the
+  builtins mapping being subscripted or at a module binding, not merely at a
+  namespace it has no debugging reason to want.
+
+  (c) The 40-character window before the module subscript was satisfied by any
+  unrelated subscript on the same line, so an ordinary reference to the os
+  module standing near the word f_globals fired -- in a changelog line, in
+  Chinese prose, in a Japanese blog post. Condition 3 now requires the
+  subscript to be on f_globals itself and the module binding to be driven
+  through an OS or process sink.
+
+  tb_frame stays absent from condition 2: reading a traceback frame's globals
+  for the defining module name is ordinary traceback formatting. Reaching the
+  builtins through a frame without executing anything in the same event is
+  deliberately NOT claimed -- the engine sees one event at a time and cannot
+  tell that hop from a debugger's.
+author: "ATR Community"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: "test"
+severity: critical
+
+references:
+  owasp_llm:
+    - "LLM06:2025"
+  owasp_agentic:
+    - "ASI03:2026"
+  mitre_atlas:
+    - "AML.T0053 - LLM Plugin Compromise"
+    - "AML.T0011 - User Execution"
+  cve:
+    - "CVE-2026-53753"
+
+compliance:
+  owasp_agentic:
+    - id: ASI03:2026
+      context: "A restricted expression evaluator is escaped, so the agent gains the full authority of the host interpreter rather than the arithmetic it was granted."
+      strength: primary
+  owasp_llm:
+    - id: LLM06:2025
+      context: "Excessive agency: the sandbox is the entire boundary on what a code tool may do, and this payload removes it."
+      strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 cybersecurity: an evaluator escape is a direct failure of the technical measure the article requires, and this rule is its runtime detection."
+      strength: primary
+    - article: "9"
+      context: "Sandbox escape is a documented risk class for agents with code-execution tools; detections are the Article 9 monitoring evidence."
+      strength: secondary
+    - article: "12"
+      context: "Article 12 logging: the match records the exact escape chain, which is what an incident reconstruction needs."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Manage
+      subcategory: MG.2.3
+      context: "Runtime treatment for the risk that a code-execution boundary does not hold."
+      strength: primary
+    - function: Map
+      subcategory: MP.5.1
+      context: "Catalogues non-dunder introspection escapes as distinct from the dunder-based escapes existing rules cover."
+      strength: secondary
+    - function: Measure
+      subcategory: "MS.2.7"
+      context: "Detection events document the security and resilience of the sandbox as MEASURE 2.7 requires."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Clause 8.1 operational control: the evaluator's restriction list is an operational control and this rule verifies it at runtime."
+      strength: primary
+    - clause: "6.2"
+      context: "Preventing arbitrary code execution from model-supplied expressions is an AIMS information security objective under clause 6.2."
+      strength: secondary
+    - clause: "8.4"
+      context: "Impact assessment under 8.4 must account for what a code tool can reach once its sandbox fails; these events are the evidence for that path."
+      strength: secondary
+
+tags:
+  category: privilege-escalation
+  subcategory: sandbox-escape
+  scan_target: both
+  confidence: high
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  conditions:
+    - field: content
+      operator: regex
+      value: '\bf_builtins\b\s*(?:\[\s*["''](?:__import__|eval|exec|compile|breakpoint)["'']\s*\][^\n]{0,40}?|\.\s*(?:get|pop)\s*\(\s*["''](?:__import__|eval|exec|compile|breakpoint)["''][\s\S]{0,40}?)(?:\b(?:system|popen|getoutput|check_output|check_call|spawnv|spawnl|execv|execl)\s*\(|\bPopen\s*\(|\(\s*\\?["''](?:os|posix|nt|subprocess|pty|socket|shutil)\\?["''])'
+      description: "The builtins mapping is reached for an execution primitive which is then called, or handed a module name, within 40 characters -- same line for the direct subscript, across the assignment for the .get form"
+    - field: content
+      operator: regex
+      value: '\.\s*(?:gi_frame|cr_frame|ag_frame)(?:\s*\.\s*\w+){0,6}?\s*\.\s*(?:f_builtins\s*(?:\[\s*["'']|\.\s*(?:get|pop)\s*\(\s*["''])|f_globals\s*\[\s*["''](?:os|sys|subprocess|posix|nt|socket|shutil|pty|importlib)["''])'
+      description: "A generator, coroutine or async-generator frame walked by a pure dotted chain (no whitespace) into the builtins mapping or a module binding"
+    - field: content
+      operator: regex
+      value: '\bf_globals\b\s*\[\s*["''](?:os|sys|subprocess|posix|nt|socket|shutil|pty|importlib)["'']\s*\]\s*(?:\.\s*(?:system|popen|getoutput|spawn[lv]\w*|exec[lv]\w*|remove|unlink|rmtree|fork|kill|connect|run|call|check_output|check_call|Popen)\b|\.\s*modules\s*\[\s*["''](?:os|subprocess|posix|nt|pty|socket|shutil)["'']|\(\s*["''])'
+      description: "Frame globals subscripted for an execution-capable module and then driven through an OS or process sink (execl/execv, not sys.executable)"
+
+  condition: any
+  false_positives:
+    - "Security research, CVE write-ups or CTF material that quotes a complete working escape chain including the call"
+    - "A bespoke debugger or REPL that both reads f_builtins['exec'] and calls it on the same page of code"
+    - "An exec/eval helper that legitimately pulls a module binding out of a caller frame's globals and calls an OS function on it"
+
+response:
+  actions:
+    - alert
+    - snapshot
+    - escalate
+  auto_response_threshold: critical
+  message_template: >
+    [ATR-2026-02603] Python code reaching the interpreter's builtins through frame
+    or generator introspection (gi_frame / cr_frame / f_back / f_globals /
+    f_builtins). This is the standard escape from an AST-restricted evaluator and
+    none of the attribute names begin with an underscore, so name-prefix
+    validators do not stop it. Treat the evaluation as unsandboxed.
+
+confidence: 80
+test_cases:
+  true_positives:
+    - input: "(v for v in ()).gi_frame.f_back.f_builtins['__import__']('os').system('id')"
+      expected: triggered
+      description: "Generator-expression frame walked back to the builtins mapping"
+    - input: "result.cr_frame.f_globals['os'].popen('whoami').read()"
+      expected: triggered
+      description: "Coroutine frame globals indexed for os and used"
+    - input: "try:\n    1/0\nexcept Exception as e:\n    e.__traceback__.tb_frame.f_globals['subprocess'].run(['id'])"
+      expected: triggered
+      description: "Traceback frame globals indexed for subprocess"
+    - input: "f = something.gi_frame\nwhile f.f_back: f = f.f_back\nimp = f.f_builtins.get('__import__')\nimp('os').system('cat /etc/passwd')"
+      expected: triggered
+      description: "Frame walk to the outermost frame, then .get on the builtins mapping"
+    - input: "_safe_eval_expression(\"(x for x in []).gi_frame.f_builtins['eval']('__import__(\\\"os\\\").system(\\\"id\\\")')\")"
+      expected: triggered
+      description: "The CVE-2026-53753 shape: the escape passed to the restricted evaluator itself"
+  true_negatives:
+    - input: "f = sys._getframe(3)\nwhile hasattr(f, 'f_code'):\n    co = f.f_code\n    if os.path.normcase(co.co_filename) == _srcfile:\n        f = f.f_back\n        continue\n    return (co.co_filename, f.f_lineno, co.co_name)"
+      expected: not_triggered
+      description: "logging.Logger.findCaller, which walks f_back for every log record emitted"
+    - input: "for frame, lineno in walk_tb(tb):\n    filename = frame.f_code.co_filename\n    module = frame.f_globals.get('__name__', '<unknown>')\n    yield filename, lineno, module"
+      expected: not_triggered
+      description: "Traceback walker reading f_globals"
+    - input: "def frame_to_dict(frame):\n    return {'module': frame.f_globals.get('__name__'), 'lineno': frame.f_lineno, 'vars': frame.f_locals}"
+      expected: not_triggered
+      description: "Error-reporting SDK serialising a stack frame"
+    - input: "if coro.cr_frame is not None:\n    filename = coro.cr_frame.f_code.co_filename\n    lineno = coro.cr_frame.f_lineno\nelif getattr(coro, 'gi_frame', None):\n    lineno = coro.gi_frame.f_lineno"
+      expected: not_triggered
+      description: "asyncio coroutine repr reading cr_frame and gi_frame"
+    - input: "self.curframe = frame\nself.curframe_locals = frame.f_locals\nexec(code, self.curframe.f_globals, self.curframe_locals)"
+      expected: not_triggered
+      description: "pdb evaluating a user expression in the current frame"
+    - input: "def _module_of(tb):\n    return tb.tb_frame.f_globals.get('__name__', '<unknown>')"
+      expected: not_triggered
+      description: "tb_frame reaching f_globals -- ordinary traceback formatting, and the reason tb_frame is excluded from condition 2"
+    - input: "Frame objects expose f_back (the previous stack frame), f_code, f_locals, f_globals and f_builtins (the builtins namespace seen by this frame). Generator objects expose gi_frame."
+      expected: not_triggered
+      description: "CPython data-model documentation"
+    - input: "Crawl4AI blocked attributes beginning with an underscore, but gi_frame, f_back, f_builtins and f_globals do not begin with one, so a generator expression walks straight out of the AST sandbox to the builtins mapping."
+      expected: not_triggered
+      description: "Security write-up naming every attribute in one sentence -- this fired an earlier draft of condition 2"
+    - input: "The sandbox rejects attribute access to names such as gi_frame and cr_frame because they lead back to the frame and from there to the builtins namespace."
+      expected: not_triggered
+      description: "Sandbox library documentation"
+    - input: "Inside pdb, `p frame.f_builtins` prints the builtins mapping visible to the current frame, and `p frame.f_globals` prints the module globals."
+      expected: not_triggered
+      description: "Debugger documentation naming f_builtins without subscripting it"
+    - input: "def _get_module(frame):\n    name = frame.f_globals['__name__']\n    return sys.modules.get(name)"
+      expected: not_triggered
+      description: "Test framework indexing f_globals for a dunder that is not an executable module"
+    - input: "for tid, frame in sys._current_frames().items():\n    mod = frame.f_globals.get('__name__', '?')\n    stacks[tid] = (mod, frame.f_lineno)"
+      expected: not_triggered
+      description: "Sampling profiler"
+    - input: "loader = frame.f_globals.get('__loader__')\nname = frame.f_globals.get('__name__')\nlines = linecache.getlines(filename, frame.f_globals)"
+      expected: not_triggered
+      description: "linecache resolving source through frame globals"
+    - input: "user_ns = frame.f_globals\nuser_ns.update({'df': df, 'np': np})\nshell.run_cell(code, user_ns)"
+      expected: not_triggered
+      description: "Notebook shell injecting names into a frame's globals"
+    - input: "test_globs = frame.f_globals.copy()\ntest_globs['__name__'] = '__main__'\nrunner.run(test, globs=test_globs)"
+      expected: not_triggered
+      description: "doctest runner copying frame globals"
+    - input: "def trace(frame, event, arg):\n    filename = frame.f_globals.get('__file__')\n    if filename and filename.startswith(root):\n        data.add(filename, frame.f_lineno)\n    return trace"
+      expected: not_triggered
+      description: "Coverage tracer"
+    - input: "frame = greenlet.gr_frame\nwhile frame is not None:\n    frames.append((frame.f_code.co_name, frame.f_lineno))\n    frame = frame.f_back"
+      expected: not_triggered
+      description: "greenlet stack dump"
+    - input: "inspect.getmodule(object) tries object.__module__ and then falls back to looking the file up in sys.modules; for a frame it inspects frame.f_globals['__file__']."
+      expected: not_triggered
+      description: "inspect module documentation"
+    - input: "class ByteOp38(ByteOp37):\n    def LOAD_BUILD_CLASS(self):\n        \"\"\"Pushes builtins.__build_class__() onto the stack.\"\"\"\n        self.vm.push(self.vm.frame.f_builtins[\"__build_class__\"])\n\n    def LOAD_ASSERTION_ERROR(self):\n        self.vm.push(self.vm.frame.f_builtins[\"AssertionError\"])\n"
+      expected: not_triggered
+      description: "Bytecode VM pushing the build-class slot out of f_builtins -- fired rule_version 1 condition 1"
+    - input: "def test_restricted_namespace_has_no_eval(restricted_frame):\n    frame = restricted_frame\n    assert frame.f_builtins.get(\"eval\") is None\n    assert frame.f_builtins.get(\"compile\") is None\n"
+      expected: not_triggered
+      description: "A sandbox's own unit test asserting eval and compile were stripped -- fired rule_version 1 condition 1"
+    - input: "class ImportTimer:\n    def install(self, frame):\n        self._original = frame.f_builtins[\"__import__\"]\n        frame.f_builtins[\"__import__\"] = self._timed_import\n\n    def uninstall(self, frame):\n        frame.f_builtins[\"__import__\"] = self._original\n"
+      expected: not_triggered
+      description: "Import auditor saving and restoring the original importer -- fired rule_version 1 condition 1"
+    - input: "class ImportAuditor:\n    ALLOWED = {\"os\", \"sys\", \"json\", \"pathlib\"}\n\n    def install(self, frame):\n        self._original = frame.f_builtins[\"__import__\"]\n        frame.f_builtins[\"__import__\"] = self._audited\n"
+      expected: not_triggered
+      description: "Import auditor whose module allowlist mentions os -- fired the first tightening attempt"
+    - input: "The audit hook fires for every import. If you need the original callable, read\nframe.f_builtins[\"__import__\"] before installing yours, and put it back in a\nfinally block. Auditing \"os\" and \"subprocess\" imports is the common case.\n"
+      expected: not_triggered
+      description: "Audit-hook documentation naming the importer and the word os in prose -- fired the first tightening attempt"
+    - input: "def test_exec_and_subprocess_are_stripped(frame):\n    assert frame.f_builtins.get(\"exec\") is None\n    assert frame.f_builtins.get(\"compile\") is None\n    with pytest.raises(NameError):\n        subprocess.run([\"true\"])\n"
+      expected: not_triggered
+      description: "Sandbox test reading f_builtins entries with subprocess named nearby -- fired the first tightening attempt"
+    - input: "def owner_module(gen):\n    \"\"\"Which module defined this generator? Mirrors traceback's tb_frame logic.\"\"\"\n    return gen.gi_frame.f_globals.get(\"__name__\", \"<unknown>\") if gen.gi_frame else None\n"
+      expected: not_triggered
+      description: "Which-module-defined-this-generator one-liner, the gi_frame twin of the tb_frame case -- fired rule_version 1 condition 2"
+    - input: "def describe(agen):\n    if agen.ag_frame is None:\n        return f\"<async_generator {agen.ag_code.co_name} exhausted>\"\n    return f\"<async_generator {agen.ag_frame.f_globals.get('__name__')}.{agen.ag_code.co_name}>\"\n"
+      expected: not_triggered
+      description: "Async-generator debug repr reading ag_frame globals -- fired rule_version 1 condition 2"
+    - input: "gen.gi_frame.f_code\ngen.gi_frame.f_lasti\ngen.gi_frame.f_globals\n"
+      expected: not_triggered
+      description: "Dotted attribute paths one per line: newlines chained across the old gap -- fired rule_version 1 condition 2"
+    - input: "Supported introspection paths for the stack serialiser:\n\ncoro.cr_frame.f_code\ncoro.cr_frame.f_lineno\ncoro.cr_frame.f_globals\n"
+      expected: not_triggered
+      description: "Documented introspection paths listed one per line -- fired rule_version 1 condition 2"
+    - input: "WHY THE NAMES ALONE ARE NOT THE SIGNAL. These attributes are the working\nvocabulary of every debugger, profiler, tracer and logging library in Python.\nlogging.Logger.findCaller walks f_back. traceback and Sentry read\nframe.f_globals.get(\"__name__\"). asyncio's coroutine repr reads\ncoro.cr_frame.f_lineno and gi_frame.f_code. pdb prints f_builtins. All of\nthose were written out as benign twins and run before this rule was finalised.\n"
+      expected: not_triggered
+      description: "This rule's own version-1 description paragraph -- fired rule_version 1 condition 2"
+    - input: "\u7522\u751f\u5668\u7269\u4ef6\u7684\u5167\u7701\u5c6c\u6027:\ngen.gi_frame.f_code \u662f\u76ee\u524d\u57f7\u884c\u4e2d\u7684\u7a0b\u5f0f\u78bc\u7269\u4ef6\ngen.gi_frame.f_lasti \u662f\u6700\u5f8c\u4e00\u500b\u4f4d\u5143\u7d44\u78bc\u6307\u4ee4\u7684\u7d22\u5f15\ngen.gi_frame.f_globals \u662f\u5b9a\u7fa9\u8a72\u7522\u751f\u5668\u7684\u6a21\u7d44\u547d\u540d\u7a7a\u9593\n"
+      expected: not_triggered
+      description: "Traditional Chinese translation of the generator data-model docs -- fired rule_version 1 condition 2"
+    - input: "def builtins_of(frame):\n    bt = frame.f_globals.get(\"__builtins__\", sys.modules[\"builtins\"].__dict__)\n    return bt if isinstance(bt, dict) else vars(bt)\n"
+      expected: not_triggered
+      description: "The idiomatic builtins-namespace fallback via sys.modules -- fired rule_version 1 condition 3"
+    - input: "def _should_trace(frame):\n    mod = frame.f_globals.get(\"__name__\") or sys.modules[\"os\"].__name__\n    return not mod.startswith(\"_pytest\")\n"
+      expected: not_triggered
+      description: "Profiler line with an unrelated sys.modules subscript inside the old 40-character window -- fired rule_version 1 condition 3"
+    - input: "## 4.2.1 - 2026-03-14\n\n- Fixed a crash in the sampling tracer when frame.f_globals was empty and sys.modules['os'].__file__ was None (#412)\n- Bumped the minimum supported CPython to 3.11\n"
+      expected: not_triggered
+      description: "Changelog line naming f_globals and an os module path -- fired rule_version 1 condition 3"
+    - input: "\u6c99\u7bb1\u9003\u9038\u7684\u539f\u7406\u5176\u5be6\u5f88\u55ae\u7d14:\u653b\u64ca\u8005\u53ea\u8981\u62ff\u5230\u4efb\u4f55\u4e00\u500b frame \u7684 f_globals,\u518d\u5f9e sys.modules['os'].system \u9019\u689d\u8def\u8d70\u4e0b\u53bb,\u5c31\u7b49\u65bc\u62ff\u5230\u4e86\u6574\u53f0\u76f4\u8b6f\u5668\u7684\u6b0a\u9650\u3002\n\u6240\u4ee5\u771f\u6b63\u8a72\u64cb\u7684\u4e0d\u662f\u5c6c\u6027\u540d\u7a31,\u800c\u662f\u5b83\u6700\u5f8c\u6307\u5411\u54ea\u88e1\u3002\n"
+      expected: not_triggered
+      description: "Traditional Chinese security writing explaining this exact attack class -- fired rule_version 1 condition 3"
+    - input: "Python \u306e\u30b5\u30f3\u30c9\u30dc\u30c3\u30af\u30b9\u8131\u51fa\u306f\u3001frame.f_globals \u304b\u3089\u305f\u3069\u308c\u308b sys.modules[\"os\"].system() \u306b\u5230\u9054\u3067\u304d\u308b\u304b\u3069\u3046\u304b\u3067\u6c7a\u307e\u308a\u307e\u3059\u3002\n\u5c5e\u6027\u540d\u305d\u306e\u3082\u306e\u3092\u7981\u6b62\u3057\u3066\u3082\u610f\u5473\u304c\u3042\u308a\u307e\u305b\u3093\u3002\n"
+      expected: not_triggered
+      description: "Japanese blog post explaining this exact attack class -- fired rule_version 1 condition 3"
+    - input: "payload = {\"frame\": frame.f_globals, \"platform\": sys.modules[\"os\"].name}\ntransport.capture(payload)\n"
+      expected: not_triggered
+      description: "Error-reporting payload dict carrying f_globals and a platform name -- fired rule_version 1 condition 3"
+    - input: "def _exec_ns(frame):\n    ns = dict(frame.f_globals)\n    ns[\"__builtins__\"] = frame.f_globals[\"__builtins__\"].__dict__\n    return ns\n"
+      expected: not_triggered
+      description: "Exec helper copying the builtins namespace out of frame globals -- fired rule_version 1 condition 3"
+    - input: "def test_exec_helper_keeps_module_bindings(frame):\n    assert frame.f_globals[\"os\"].path is os.path\n    assert frame.f_globals[\"sys\"].version_info >= (3, 11)\n"
+      expected: not_triggered
+      description: "Unit test asserting an exec helper kept its module bindings -- fired rule_version 1 condition 3"
+    - input: "def _reloadable(frame):\n    return bool(frame.f_globals.get(\"__spec__\") and sys.modules[\"importlib\"].__name__)\n"
+      expected: not_triggered
+      description: "Reloadability check naming f_globals and sys.modules on one line -- fired rule_version 1 condition 3"
+    - input: "def load_from_caller(name):\n    frame = sys._getframe(1)\n    mod = frame.f_globals[\"importlib\"].import_module(name)\n    return mod\n"
+      expected: not_triggered
+      description: "Plugin loader resolving importlib out of a caller frame -- fired the first tightening attempt"
+    - input: "def test_exec_is_available_in_the_frame(frame):\n    assert frame.f_builtins[\"exec\"] is not None\n\n\ndef test_system_is_blocked():\n    with pytest.raises(PermissionError):\n        os.system(\"id\")\n"
+      expected: not_triggered
+      description: "Test file whose NEXT test mentions os.system -- fired the 200-character window of the first tightening"
+    - input: "## 3.1.0\n\n- The tracer no longer caches frame.f_builtins[\"eval\"] between runs.\n- Calls made through os.system() from a traced frame are now attributed correctly.\n"
+      expected: not_triggered
+      description: "Changelog whose next bullet mentions os.system -- fired the 200-character window of the first tightening"
+    - input: "def interpreter_of(frame):\n    \"\"\"The interpreter that will run a subprocess for this caller.\"\"\"\n    return frame.f_globals[\"sys\"].executable\n"
+      expected: not_triggered
+      description: "sys.executable read from a caller frame -- fired when the sink list said exec\\w+"
+    - input: "def venv_root(frame):\n    return frame.f_globals[\"sys\"].exec_prefix or frame.f_globals[\"sys\"].prefix\n"
+      expected: not_triggered
+      description: "sys.exec_prefix read from a caller frame -- fired when the sink list said exec\\w+"

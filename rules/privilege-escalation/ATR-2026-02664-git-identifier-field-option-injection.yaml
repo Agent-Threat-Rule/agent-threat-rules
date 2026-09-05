@@ -1,0 +1,238 @@
+title: "Git Identifier Field Carries an Option or ext:: Transport Instead of a Revision"
+id: ATR-2026-02664
+rule_version: 2
+status: experimental
+description: >
+  Detects a value that is supposed to be a git revision -- a 40-hex commit, a
+  tag, a branch -- but is written as a git OPTION, so git parses it as one.
+  The three executing forms are all here: a commit/ref field whose value starts
+  with a dash, --upload-pack= / --receive-pack= pointed at a shell or a script
+  instead of the git-*-pack binary, and the ext:: transport handing a command
+  to /bin/sh.
+  Mined from CVE-2026-50014 (pnpm): resolution.commit from a lockfile was
+  interpolated into the git fetch argument list with no -- separator and no
+  format check, so a poisoned lockfile executed code during install. The shape
+  generalises past pnpm to any agent that reads a manifest, lockfile or issue
+  body and passes an "identifier" straight to git.
+  NOTE what is NOT flagged: --upload-pack= aimed at a real git-upload-pack
+  binary (the option's legitimate use for servers with a non-standard install
+  path, INCLUDING a .sh wrapper outside /tmp) and ext::ssh (the documented
+  remote-ext helper).
+
+  RECALL GIVEN UP IN rule_version 2, DELIBERATELY. Condition 1 now names a
+  closed set of executing options (upload-pack, receive-pack, exec, output,
+  config) instead of accepting any dash-word, so an executing option outside
+  that set -- say --separate-git-dir= -- is missed. Condition 2 needs the pack
+  program to be an interpreter or to live under a world-writable directory, so
+  a payload script parked elsewhere is missed. Both were traded for the nine
+  benign inputs rule_version 1 fired on.
+author: "ATR Community (CVE sweep)"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+
+references:
+  cve:
+    - "CVE-2026-50014"
+  cwe:
+    - "CWE-88"
+    - "CWE-78"
+  owasp_llm:
+    - "LLM05:2025"
+  owasp_agentic:
+    - "ASI05:2026"
+    - "ASI04:2026"
+  mitre_attack:
+    - "T1195.001 - Compromise Software Dependencies and Development Tools"
+    - "T1059.004 - Unix Shell"
+  mitre_atlas:
+    - "AML.T0010 - AI Supply Chain Compromise"
+  external:
+    - "https://nvd.nist.gov/vuln/detail/CVE-2026-50014"
+    - "https://git-scm.com/docs/git-remote-ext"
+
+metadata_provenance:
+  cve: human-reviewed
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires resistance to third parties exploiting vulnerabilities; this rule detects argument injection through a dependency identifier, which turns a package install into arbitrary execution."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system): supply-chain argument injection is an identified risk whose runtime treatment is this detection."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Dependency-resolution argument injection is an identified AI supply-chain risk; this rule is the active runtime countermeasure."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Cataloguing lockfile-driven argument injection in the organizational AI risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by checking that identifier-typed fields carry identifiers before they reach a subprocess."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented by alerting on the injected option before git executes it."
+      strength: secondary
+
+tags:
+  category: privilege-escalation
+  subcategory: git-argument-injection
+  scan_target: runtime
+  confidence: high
+
+agent_source:
+  type: tool_call
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '\b(?:commit|commitish|revision|treeish|refname|gitref)["'']?\s{0,3}[:=]\s{0,3}["'']?-{1,2}(?:upload-pack|receive-pack|exec|output|config)[=\s]'
+      description: >-
+        A field named for a git revision whose value is one of git's EXECUTING
+        options -- CVE-2026-50014's resolution.commit primitive. rule_version 1
+        accepted any dash-word here, which made every ordinary rev-list option
+        passed through a revision-named parameter a match: {"revision":
+        "--since=2 weeks ago"} from a git MCP server, `revision: --all |
+        --branches | --tags` in a mirror-job config, `commit: --amend` in a
+        runbook. Those are identifiers-that-are-flags but they do not execute.
+
+    - field: content
+      operator: regex
+      value: '--(?:upload|receive)-pack\s{0,2}=\s{0,2}["'']?(?:/tmp/|/dev/shm/|/var/tmp/|\bsh\b|\bbash\b|\bcurl\b|\bwget\b|\bpython\d{0,1}\b|\bperl\b|\bnc\b)'
+      description: >-
+        --upload-pack= / --receive-pack= pointed at a shell, an interpreter, or
+        anything under a world-writable directory. Under the ssh and local
+        transports git executes this value. rule_version 1 also accepted any
+        path ending .sh/.py/.pl/.rb, which flagged the legitimate server
+        practice of wrapping the pack program in a script to set the
+        environment first (--receive-pack=/opt/gerrit/bin/receive-pack.sh).
+
+    - field: content
+      operator: regex
+      value: '(?:["'']|=\s{0,2})ext::\s{0,2}(?:sh|bash|dash|zsh|curl|wget|python\d{0,1}|perl|nc|env)[\s"'']'
+      description: >-
+        git's ext:: transport invoking a shell or interpreter as the transport
+        helper, in URL position: quoted on a command line, or after `url =` in
+        a .gitmodules / .git/config entry. ext::ssh, the documented use, does
+        not match. rule_version 1 matched a bare `ext::` anywhere, so it fired
+        on the NAMESPACE separator in ordinary source (`use crate::ext::env`,
+        `Ext::Curl.get(url)`) and on any sentence explaining the transport.
+
+  false_positives:
+    - "--upload-pack=/opt/git/bin/git-upload-pack and --receive-pack=/usr/local/bin/git-receive-pack: the option's real purpose on servers with a non-standard git install. Excluded because the value must be a shell, an interpreter or a script path."
+    - "ext::ssh %S user@host %p, the remote-ext example straight out of the git documentation. Excluded because ssh is not in the interpreter list."
+    - "A commit field holding a real sha, tag or branch (commit: 4f2b1c9..., branch: release-1.4), or an ordinary rev-list option in a revision-named parameter (--since=, --all, --amend, --first-parent). Excluded because the value must be one of git's executing options."
+    - "A .sh wrapper around git-upload-pack / git-receive-pack outside a world-writable directory: legitimate server practice, no longer claimed."
+    - "`ext::` used as a namespace separator in Rust, Ruby or C++ source, and prose explaining what the ext:: transport does. Excluded because the transport must appear in URL position (quoted, or after `url =`)."
+    - "MEASURED AND NOT FIXED. Security writing that QUOTES the executing payload -- 'the advisory shows commit: --upload-pack=/tmp/x.sh executed during install' -- contains the payload and still fires. This is the residue of a byte-level signature and is why the action is alert only. Sixteen benign samples were run against rule_version 2; these two prose shapes are the only ones that matched."
+
+response:
+  actions:
+    - alert
+  message_template: >
+    [ATR-2026-02664] A git revision/identifier argument is an option or an
+    ext:: transport command, not a revision. git will execute it. Reject the
+    value or pass it after a -- separator.
+
+confidence: 84
+
+test_cases:
+  true_positives:
+    - input: 'resolution: {type: git, repo: https://github.com/acme/lib.git, commit: --upload-pack=/tmp/evil.sh}'
+      expected: triggered
+      description: "CVE-2026-50014 -- a lockfile resolution.commit holding a git option"
+    - input: '{"tool":"Bash","input":{"command":"git fetch --depth 1 origin --upload-pack=/tmp/evil.sh"}}'
+      expected: triggered
+      description: "The same option on the command line, value pointing at a script in /tmp"
+    - input: "git clone 'ext::sh -c cat%20/etc/passwd%20>%20/tmp/o' target"
+      expected: triggered
+      description: "ext:: transport handing a command to /bin/sh"
+    - input: 'commitish="--exec=/tmp/payload"'
+      expected: triggered
+      description: "Different identifier field name, different executing option"
+    - input: '{"revision":"--upload-pack=bash -i","repo":"git@github.com:acme/lib.git"}'
+      expected: triggered
+      description: "JSON manifest whose revision field carries the option, value is an interactive shell"
+  true_negatives:
+    - input: 'git clone --upload-pack=/opt/git/bin/git-upload-pack ssh://git.internal.example/srv/repos/lib.git'
+      expected: not_triggered
+      description: "ADVERSARIAL: the legitimate use of --upload-pack= on a server with a non-standard git install path"
+    - input: 'git fetch --receive-pack=/usr/local/bin/git-receive-pack origin main'
+      expected: not_triggered
+      description: "Same for --receive-pack="
+    - input: 'git clone "ext::ssh -i /home/ci/.ssh/id_ed25519 %S build@git.internal.example %p" repo'
+      expected: not_triggered
+      description: "ADVERSARIAL: the remote-ext example from the git documentation -- ssh, not a shell"
+    - input: 'resolution: {type: git, repo: https://github.com/acme/lib.git, commit: 4f2b1c9d0a7e5b3c1f8a6d4e2b0c9a7f5e3d1b8c}'
+      expected: not_triggered
+      description: "An ordinary lockfile entry with a real commit sha"
+    - input: 'git fetch origin --depth 1 && git checkout --detach FETCH_HEAD'
+      expected: not_triggered
+      description: "Ordinary fetch with options that are not in an identifier position"
+    - input: 'branch: release-1.4.0    # tracked in the deployment manifest'
+      expected: not_triggered
+      description: "A branch field holding a branch name"
+    - input: 'The advisory explains that resolution.commit was interpolated without a -- separator, so a value beginning with a dash was parsed as an option.'
+      expected: not_triggered
+      description: "Prose describing the vulnerability without carrying a payload"
+    - input: 'REV=$(git rev-parse --short HEAD); echo "commit: $REV" >> build-info.txt'
+      expected: not_triggered
+      description: "Build script writing the real commit into a manifest"
+    - input: "git clone --upload-pack=/opt/gitlab/bin/git-upload-pack.sh ssh://git.internal.example/srv/repos/lib.git"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW: a .sh wrapper around git-upload-pack outside a world-writable directory -- legitimate server practice."
+    - input: "git supports an ext:: transport. A URL of the form ext::sh -c <command> hands the command to /bin/sh, which is why untrusted remote URLs must be rejected."
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW: prose explaining what the ext:: transport does. Every write-up of this attack contains this sentence."
+    - input: "use crate::ext::env::load_dotenv;\nuse crate::ext::sh::run;"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW: ext:: as a Rust module-path separator in ordinary source."
+    - input: "revision: --all | --branches | --tags   # which refs the mirror job walks"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW: a mirror-job config whose revision field holds ordinary rev-list options."
+    - input: "{\"tool\":\"git_log\",\"arguments\":{\"revision\":\"--since=2 weeks ago\",\"repo\":\"/srv/lib\"}}"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW: a benign git MCP tool call passing --since through a revision-named parameter."
+    - input: "git fetch --upload-pack=/usr/lib/git-core/git-upload-pack origin main"
+      expected: not_triggered
+      description: "The stock git-upload-pack path on a normal install."
+    - input: "COMMIT=\"${COMMIT:-HEAD}\"; git checkout \"$COMMIT\""
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW: shell parameter expansion with a default, in a CI script."
+    - input: "If the message is wrong: commit: --amend --no-edit, then force-push the branch."
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW: a runbook line pairing the word commit with a non-executing git option."
+    - input: "resolution: {type: git, repo: https://github.com/acme/lib.git, commit: 4f2b1c9d0a7e5b3c1f8a6d4e2b0c9a7f5e3d1b8c}"
+      expected: not_triggered
+      description: "An ordinary lockfile entry with a real commit sha."
+    - input: "git clone \"ext::ssh -i /home/ci/.ssh/id_ed25519 %S build@git.internal.example %p\" repo"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW: the remote-ext example from the git documentation -- ssh, not a shell."
+    - input: "require \"ext/curl\"\nExt::Curl.get(url)"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW: Ext:: as a Ruby namespace separator."
+    - input: "use Text::CSV; my $csv = Text::CSV->new({ binary => 1 });"
+      expected: not_triggered
+      description: "A Perl package separator that must never look like ext:: -- control."
+    - input: "REV=$(git rev-parse --short HEAD); echo \"commit: $REV\" >> build-info.txt"
+      expected: not_triggered
+      description: "Build script writing the real commit into a manifest."
+    - input: "On the mirror host set --receive-pack=/opt/gerrit/bin/receive-pack.sh so the hooks pick up the right JAVA_HOME."
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW: a Gerrit runbook using a .sh wrapper for receive-pack outside a world-writable directory."

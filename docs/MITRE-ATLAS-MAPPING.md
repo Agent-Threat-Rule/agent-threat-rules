@@ -4,7 +4,7 @@ Version: 0.1.0 (INTERNAL DRAFT — not published)
 Status: Draft alignment mapping for MITRE ATLAS content v2026.06 (data-format 6.0.0)
 Date: 2026-07-14 (re-reconciled to v2026.06; prior 2026-06-14, and a 2026-07-14 pass that mis-read the version — see note below)
 Editor: Adam Lin (林冠辛) <adam@agentthreatrule.org>
-Mapped corpus: Agent Threat Rules v3.5.8 (793 rules / 10 categories; disk == data/stats.json reconciled 2026-07-14)
+Mapped corpus: Agent Threat Rules v3.5.8 (815 rules / 10 categories; disk == data/stats.json reconciled 2026-07-14)
 Reference framework: MITRE ATLAS (Adversarial Threat Landscape for AI Systems). Since content release **v2026.05** MITRE split versioning: **content** follows a date-based `YYYY.MM` scheme stored in the Collection object (current: **v2026.06**, 2026-06-30), while the **data format** follows semver (current: **6.0.0**). The current machine-readable file is `dist/v6/ATLAS-2026.06.yaml` (reached via the `dist/ATLAS-latest.yaml` → `dist/v6/ATLAS-latest.yaml` pointer chain) — **16 tactics, 103 top-level techniques (173 including sub-techniques)**, downloaded and parsed locally 2026-07-14. NOTE: the older flat `dist/ATLAS.yaml` is **deprecated and frozen** at the v5.6.0-format content (101 techniques) and must not be used — it is what an earlier 2026-07-14 pass wrongly reconciled against, incorrectly reporting "still v5.6.0". Corrected here.
 
 ---
