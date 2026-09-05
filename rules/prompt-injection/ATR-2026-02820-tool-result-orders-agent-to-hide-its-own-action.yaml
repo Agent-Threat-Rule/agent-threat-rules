@@ -60,6 +60,36 @@ compliance:
       context: "An action deliberately withheld from the overseer is an unauthorized action under ASI02:2026, because consent cannot be given for what is not surfaced."
       strength: primary
 
+  eu_ai_act:
+    - article: "14"
+      context: "Article 14 (human oversight) requires that a high-risk system remain subject to oversight by a natural person who can intervene. An instruction, arriving in tool output, to carry out an action and omit it from what the agent reports removes the oversight rather than defeating it: the overseer is not overruled, they are never told. This rule provides the detection evidence for that specific attempt."
+      strength: primary
+    - article: "12"
+      context: "Article 12 (record-keeping) requires automatic recording of events over the system's lifetime. A directive to keep an action out of the log or the summary is an attack on that record itself, and detecting it is what keeps the logs admissible as evidence of what the system did."
+      strength: primary
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires resistance to unauthorised attempts to alter system behaviour; here the alteration is to the system's reporting behaviour, directed by untrusted retrieved content rather than by a principal."
+      strength: secondary
+
+  nist_ai_rmf:
+    - subcategory: "MG.4.1"
+      context: "MG.4.1 requires post-deployment monitoring plans to be enacted, including mechanisms to capture and document AI system actions. A tool result instructing the agent to suppress an action from its own report defeats that capture at the source, so detection of the instruction is a prerequisite for the monitoring to mean anything."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "MS.2.7 requires continuous evaluation of security and resilience. Indirect prompt injection through tool results is the channel this rule watches, and the concealment payload is the variant that removes the evidence a monitor would otherwise use."
+      strength: secondary
+    - subcategory: "GV.4.2"
+      context: "GV.4.2 requires organisational practices that enable documenting and communicating AI risks. An action the agent was told not to surface cannot be communicated, so this detection restores the precondition for that documentation."
+      strength: secondary
+
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control, including control of externally provided processes) is precisely the boundary crossed here: the externally provided process is the tool, and its output is directing the agent's reporting. This rule is the detection control on that boundary."
+      strength: primary
+    - clause: "9.1"
+      context: "Clause 9.1 (monitoring, measurement, analysis and evaluation) depends on the agent reporting what it did. A suppression directive undermines the input to the whole clause, so detecting it protects the monitoring rather than merely adding to it."
+      strength: secondary
+
 tags:
   category: prompt-injection
   subcategory: audit-evasion
