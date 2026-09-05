@@ -114,14 +114,24 @@ jobs:
             exit 0
           fi
           DATE=$(date -u +%Y-%m-%d)
-          BRANCH="atd-ingest/$DATE"
+          # One long-lived branch, not one per day. Before 2026-08-23 this was
+          # atd-ingest/$DATE, which cut a fresh branch off main every morning and
+          # rewrote the SAME cumulative file, website/public/atd/atd-techniques.json.
+          # Every day's PR therefore conflicted with every other day's, so they could
+          # never be merged as a set. Twenty-one of them accumulated as open drafts
+          # over fifteen days and none was mergeable. A rolling branch means there is
+          # exactly one PR, always carrying the current state, never in conflict with
+          # its own past runs.
+          BRANCH="atd-ingest/rolling"
           git config user.name "ATR ATD Bot"
           git config user.email "atd-bot@agentthreatrule.org"
-          git push origin --delete "$BRANCH" 2>/dev/null || true
-          git checkout -b "$BRANCH"
+          git stash push -- website/public/atd/atd-techniques.json data/atd-ingest/
+          git fetch origin main
+          git checkout -B "$BRANCH" origin/main
+          git stash pop
           git add website/public/atd/atd-techniques.json data/atd-ingest/
           git commit -m "feat(atd): daily CVE ingest $DATE — ${{ steps.ingest.outputs.summary }}"
-          git push origin "$BRANCH"
+          git push --force-with-lease origin "$BRANCH"
           {
             echo "Daily CVE -> ATD ingest for $DATE."
             echo ""
@@ -131,9 +141,19 @@ jobs:
             echo "New-technique DRAFTS (data/atd-ingest/new-technique-drafts-*.json) are Claude-authored candidate ATD entries for CWEs with no covering technique, corroborated by 2+ independent CVEs, and schema-validated against atd-technique.schema.json. Never auto-merged: a new technique is a claim about the threat taxonomy. Confirm tactic/mappings/atd_id (provisional — re-check it is still free) before pasting into website/public/atd/atd-techniques.json."
             echo "The flat candidates dump (data/atd-ingest/candidates-*.json) is everything else — no CWE at all, or a CWE seen only once — for human triage, not auto-drafted."
           } > /tmp/atd-pr-body.md
-          gh pr create \
-            --base main --head "$BRANCH" \
-            --title "atd: CVE ingest $DATE — ${{ steps.ingest.outputs.summary }}" \
-            --body-file /tmp/atd-pr-body.md \
-            --label "atd,needs-human-review" \
-            --draft
+          # Reuse the open PR for the rolling branch if there is one. Opening a new
+          # PR per run is what produced the backlog this change exists to end.
+          EXISTING=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTING" ]; then
+            gh pr edit "$EXISTING" \
+              --title "atd: CVE ingest $DATE — ${{ steps.ingest.outputs.summary }}" \
+              --body-file /tmp/atd-pr-body.md
+            echo "Refreshed existing PR #$EXISTING"
+          else
+            gh pr create \
+              --base main --head "$BRANCH" \
+              --title "atd: CVE ingest $DATE — ${{ steps.ingest.outputs.summary }}" \
+              --body-file /tmp/atd-pr-body.md \
+              --label "atd,needs-human-review" \
+              --draft
+          fi
