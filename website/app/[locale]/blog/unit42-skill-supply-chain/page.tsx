@@ -65,8 +65,8 @@ export default async function Unit42SkillSupplyChainPage({
           </p>
           <p>
             這對我們不是新聞——是<strong className="text-ink">第二份獨立資料集,落在我們早就到過的結論上</strong>。
-            我們掃過六個公開 registry 的 96,096 個 skill:1,302 個被標記、人工複審後 552 個確認惡意、
-            歸因到三個協同發布者。兩支團隊、兩個資料集、兩套方法,得到同一句話:
+            我們掃過六個公開 registry 的 96,096 個 skill:1,302 個被標記,歸因到三個協同發布者——
+            其中 552 個出自兩個帳號,每一個都命中同一條惡意散布規則。兩支團隊、兩個資料集、兩套方法,得到同一句話:
             <strong className="text-ink">agent-skill 供應鏈就是攻擊面。</strong>沒有人在猜。
           </p>
 
@@ -154,8 +154,8 @@ export default async function Unit42SkillSupplyChainPage({
           <p>
             To us that isn&rsquo;t news — it&rsquo;s a{" "}
             <strong className="text-ink">second independent dataset landing on a conclusion we had already
-            reached</strong>. We scanned 96,096 skills across six public registries: 1,302 flagged, 552
-            confirmed malicious after manual review, attributed to three coordinated publishers. Two
+            reached</strong>. We scanned 96,096 skills across six public registries: 1,302 flagged, attributed to three coordinated publishers — 552 of them from just two
+            accounts, every one matching the same malware-distribution rule. Two
             teams, two datasets, two methods, one sentence:{" "}
             <strong className="text-ink">the agent-skill supply chain is the attack surface.</strong>{" "}
             Nobody is guessing.
