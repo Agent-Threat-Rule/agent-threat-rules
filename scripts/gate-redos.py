@@ -82,6 +82,7 @@ BASELINE = Path("data/redos-baseline.json")
 CALIBRATION_PATTERN = r"(?i)(?:foo|bar|baz)+\s*[a-z0-9_]{3,40}\s*[:=]\s*\S+"
 CALIBRATION_INPUT = ("foobarbaz " * 400) + "token_value = something\n"
 CALIBRATION_REPEATS = 200
+CALIBRATION_SAMPLES = 5
 CALIBRATION_REFERENCE_SECONDS = None  # filled in by --update-baseline
 PUMPS = (2, 3, 4, 8, 16)
 CHUNK = 40
@@ -260,12 +261,24 @@ def measure(items, budget, wall):
 
 
 def calibrate() -> float:
-    """Seconds this machine takes on the fixed reference workload."""
+    """Seconds this machine takes on the fixed reference workload.
+
+    Median of several samples rather than one. A single sample lands wherever
+    the scheduler happened to be: the same machine produced factors of 1.01x,
+    1.69x and 2.20x in one afternoon depending on what else was running, and
+    the factor decides which conditions are in the baseline. A median over
+    repeated samples does not remove that but does stop one unlucky slice from
+    setting the budget for the whole scan.
+    """
     rx = re.compile(CALIBRATION_PATTERN)
-    started = time.monotonic()
-    for _ in range(CALIBRATION_REPEATS):
-        rx.search(CALIBRATION_INPUT)
-    return time.monotonic() - started
+    samples = []
+    for _ in range(CALIBRATION_SAMPLES):
+        started = time.monotonic()
+        for _ in range(CALIBRATION_REPEATS):
+            rx.search(CALIBRATION_INPUT)
+        samples.append(time.monotonic() - started)
+    samples.sort()
+    return samples[len(samples) // 2]
 
 
 def scaled_budget(base: float, reference: float | None) -> tuple[float, float]:
@@ -288,6 +301,12 @@ def main() -> int:
                          "child is killed and the chunk bisected")
     ap.add_argument("--rules", default="rules")
     ap.add_argument("--update-baseline", action="store_true")
+    ap.add_argument("--recalibrate", action="store_true",
+                    help="also re-measure the machine reference. Only on a quiet "
+                         "machine, and only deliberately: the reference is the "
+                         "anchor the budget is scaled against, so re-measuring it "
+                         "on every baseline write makes the ratio always 1 and the "
+                         "calibration a no-op.")
     args = ap.parse_args()
 
     reference = None
@@ -297,7 +316,8 @@ def main() -> int:
         )
     budget, factor = scaled_budget(args.budget, reference)
     if reference:
-        print(f"machine calibration factor {factor:.2f}x -> budget {budget:.3f}s")
+        print(f"machine calibration factor {factor:.2f}x -> budget {budget:.3f}s "
+              f"(median of {CALIBRATION_SAMPLES} samples)")
     args.budget = budget
 
     items = collect(Path(args.rules))
@@ -315,6 +335,8 @@ def main() -> int:
 
     if args.update_baseline:
         BASELINE.parent.mkdir(parents=True, exist_ok=True)
+        # Keep the existing anchor unless asked to move it.
+        anchor = reference if (reference and not args.recalibrate) else round(calibrate(), 6)
         BASELINE.write_text(
             json.dumps(
                 {
@@ -323,7 +345,7 @@ def main() -> int:
                                 "--update-baseline. Shrinking this file is the goal; "
                                 "growing it needs a reason in the commit message.",
                     "budget_seconds": args.budget,
-                    "calibration_reference_seconds": round(calibrate(), 6),
+                    "calibration_reference_seconds": anchor,
                     "known": {k: ("hang" if v == float("inf") else v)
                               for k, v in sorted(over.items())},
                 },
