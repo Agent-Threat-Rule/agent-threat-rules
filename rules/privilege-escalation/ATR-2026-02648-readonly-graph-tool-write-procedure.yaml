@@ -1,0 +1,303 @@
+title: "Write or Fetch Procedure Called Through a Read-Only Graph Query Tool"
+id: ATR-2026-02648
+rule_version: 2
+status: "experimental"
+description: >
+  Detects a query, carried in the argument of a tool that declares itself
+  READ-ONLY, that calls a procedure the read-only mode was supposed to
+  exclude: `CALL apoc.cypher.doIt`, `apoc.cypher.runFile`,
+  `apoc.periodic.submit`, `apoc.trigger.add`, `apoc.load.json`, `apoc.export.*`,
+  `dbms.security.*`, or a Cypher write clause such as `DETACH DELETE` /
+  `CREATE USER` / `GRANT ROLE`. CVE-2026-35402 (mcp-neo4j-cypher) is the
+  reference case: read-only was enforced by inspecting the query's top-level
+  clause, and `CALL` is not a write clause, so every APOC procedure behind it
+  ran with full authority. The KQL sibling `| externaldata(...)` is included
+  because it is the same move in a different query language -- a read verb
+  that reaches outside the database.
+
+  WHY ATR IS BLIND HERE TODAY. Measured on this repo's engine, the SQL
+  equivalents of these payloads are caught (ATR-2026-01601, ATR-2026-00066)
+  and the Cypher/KQL forms produce nothing but the tool-name noise rule
+  ATR-2026-00099. ATR knows SQL and does not know the other query languages.
+
+  WHY VERSION 1 WAS WITHDRAWN. It required only that the TOKEN `read-only`,
+  `readonly`, `read_query` or `neo4j_read` appear within 240 characters of a
+  procedure call. Adversarial review fired it on 13 of 16 benign probes, none
+  of which involved an agent at all: the APOC manual sentence "the first
+  statement must be read-only" beside `CALL apoc.periodic.iterate(...)`; a
+  TypeScript `readonly database: string` beside a purge query (the `readonly`
+  modifier is in every typed codebase); the Cypher manual page for DETACH
+  DELETE; the Azure KQL page for `externaldata`; an onboarding runbook granting
+  a read-only reporting role; a CI teardown log; a docker-compose file; a
+  CHANGELOG; a Traditional-Chinese operations note; the CVE-2026-35402 advisory
+  itself; and the hardening checklist that enumerates the very procedures the
+  tool must reject -- which the author believed had been excluded by requiring
+  a following `(`, but a checklist writes the parentheses too.
+
+  WHAT VERSION 2 REQUIRES INSTEAD. The event must BE a call to a read-scoped
+  tool: a tool-invocation object whose tool name is read-scoped, or one
+  carrying `read_only: true`. Prose that discusses such a tool no longer
+  qualifies. A second round of probes -- benign traffic through a genuinely
+  read-scoped tool -- forced three more constraints: the procedure must sit
+  inside an ARGUMENT (a result set carrying stored migration scripts is not a
+  query); it must sit at a statement boundary or at the head of a quoted
+  argument value (`CONTAINS 'DETACH DELETE n'` is a search FOR the clause);
+  and `apoc.create.*` / `apoc.export.*` are narrowed so that virtual-node
+  helpers and the streaming schema dump `apoc.export.cypher.schema(null,
+  {stream:true})`, which writes nothing, do not count.
+
+  ATR-2026-02100 already covers `apoc.load.json('file:///...')` -- the local
+  file-scheme case. This rule does not restate it; what it adds is the
+  read-only-mode bypass, whatever the procedure's argument happens to be.
+author: "ATR Community"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: "test"
+severity: high
+
+references:
+  cve:
+    - "CVE-2026-35402"
+  cwe:
+    - CWE-863
+    - CWE-89
+    - CWE-693
+  owasp_llm:
+    - "LLM06:2025"
+  owasp_agentic:
+    - "ASI03:2026"
+  mitre_atlas:
+    - "AML.T0053 - AI Agent Tool Invocation"
+  external:
+    - "https://nvd.nist.gov/vuln/detail/CVE-2026-35402"
+
+compliance:
+  owasp_agentic:
+    - id: ASI03:2026
+      context: "The agent obtains write and outbound-fetch authority through a tool that was granted read authority only; the boundary is crossed inside the query language."
+      strength: primary
+  owasp_llm:
+    - id: LLM06:2025
+      context: "Excessive agency: the effective permission of a tool is wider than the permission its declaration and its name assert."
+      strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 requires high-risk systems to be resilient against attempts to exceed their intended operation; a read-only gate defeated inside the query text is exactly such an attempt."
+      strength: primary
+    - article: "9"
+      context: "Tool-permission drift is a documented risk for agent deployments; these detections are the Article 9 monitoring control for it."
+      strength: secondary
+    - article: "12"
+      context: "Article 12 traceability -- a write that arrived through a read tool leaves no other record that the mode was bypassed."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Govern
+      subcategory: GV.4.1
+      context: "Detects circumvention of the least-privilege control that scopes a database tool to reads."
+      strength: primary
+    - function: Manage
+      subcategory: MG.2.3
+      context: "Runtime treatment for the risk that query-language features exceed the declared tool permission."
+      strength: primary
+    - function: Measure
+      subcategory: "MS.2.7"
+      context: "Detection events evidence whether read-only enforcement actually held, rather than being assumed from configuration."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Clause 8.1 operational control: a read-scoped integration that can write or fetch is outside the operating envelope that was approved."
+      strength: primary
+    - clause: "9.1"
+      context: "Monitoring under clause 9.1 must cover whether declared tool permissions are the effective ones."
+      strength: secondary
+    - clause: "6.2"
+      context: "Keeping data-store access least-privileged is an AIMS objective under clause 6.2; this rule is its runtime control for graph and log query languages."
+      strength: secondary
+
+tags:
+  category: privilege-escalation
+  subcategory: query-language-readonly-bypass
+  scan_target: both
+  confidence: medium
+  suppress_in_code_blocks: true
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  conditions:
+    # (1) The event must BE a call to a read-scoped tool -- a tool-invocation
+    # object whose tool name is read-scoped, or one carrying an explicit
+    # read_only: true flag. Version 1 only required the token `read-only`,
+    # `readonly` or `read_query` to appear within 240 characters of a procedure,
+    # which is true of: the APOC manual sentence "the first statement must be
+    # read-only" beside `CALL apoc.periodic.iterate(...)`; a TypeScript
+    # `readonly database: string` beside a purge query; the Cypher manual page
+    # for DETACH DELETE; the Azure KQL page for externaldata; an onboarding
+    # runbook granting a read-only reporting role; a CI teardown log; a
+    # docker-compose file; a CHANGELOG; the CVE-2026-35402 advisory; and the
+    # hardening checklist that lists the very procedures the tool must reject.
+    # Thirteen of sixteen benign probes, all of them prose ABOUT the tool.
+    - field: content
+      operator: regex
+      value: '^\s{0,8}\{[^{}]{0,160}(?:["''](?:tool|tool_name|toolName|name|function|mcp_tool)["'']\s*:\s*["''][\w.\-]{0,30}(?:read[_.\-]?(?:only|neo4j|cypher|graph|query|kql|kusto)|(?:neo4j|cypher|graph|kusto|kql)[\w.\-]{0,8}read)[\w.\-]{0,20}["'']|["'']?read_?only["'']?\s*:\s*(?:true|["''](?:on|yes|1)["'']))'
+      description: "The event is an invocation of a read-scoped query tool, or carries an explicit read_only flag"
+
+    # (2) The procedure must be INVOKED, inside an ARGUMENT of the call. Three
+    # constraints, each forced by a benign probe that fired without it.
+    # (a) It must follow an argument key, so a read tool's RESULT rows -- an
+    #     agent paging through stored migration scripts -- do not count.
+    # (b) It must sit at a statement boundary or at the very start of a quoted
+    #     argument value. `WHERE r.body CONTAINS 'DETACH DELETE n'` and
+    #     `WHERE e.statement STARTS WITH 'CREATE USER '` are searches FOR the
+    #     clause; both fired the draft that only required the clause to appear.
+    # (c) `apoc.create.*` is enumerated rather than wildcarded, so the virtual
+    #     -node helpers (`apoc.create.vNode`, `apoc.create.vRelationship`) used
+    #     inside read queries for visualisation do not count; and
+    #     `apoc.export.*` requires a QUOTED first argument, so the streaming
+    #     schema dump `apoc.export.cypher.schema(null,{stream:true})`, which
+    #     writes nothing, does not count.
+    - field: content
+      operator: regex
+      value: '["''](?:arguments|args|input|params|query|cypher|statement|stmt|kql|sql|q|command|script|text)["''][\s\S]{0,240}(?:^|[\s;,{(]|:\s{0,4}[\\]{0,2}["''\x60]\s{0,4})(?:CALL\s+apoc\.(?:cypher\.(?:doIt|runFile|runSchemaFile|runMany|runWrite)|periodic\.(?:submit|repeat|iterate|commit)|trigger\.(?:add|install)|refactor\.[\w]{1,24}|create\.(?:node|nodes|relationship|relationships|addLabels|removeLabels|setProperty|setProperties|setLabels|setRelProperty|uuids)|merge\.[\w]{1,24}|load\.(?:json|csv|xml|jdbc)(?:Params)?|systemdb\.[\w.]{1,24})\s*\(|CALL\s+apoc\.export\.[\w.]{1,24}\s*\(\s*[\\]{0,2}["''\x60]|DETACH\s+DELETE\s+[\w$(]|CREATE\s+(?:USER|ROLE)\s+[\w$]|DROP\s+(?:USER|ROLE)\s+[\w$]|dbms\.security\.[\w]{1,32}\s*\(|GRANT\s+(?:ROLE|ALL|WRITE|ADMIN)\s+[\w$]|\|\s*externaldata\s*\()'
+      description: "A write, administrative or outbound-fetch procedure is actually invoked inside a call argument"
+  condition: all
+  false_positives:
+    - "A read-scoped tool asked to EXPLAIN or PROFILE a write statement. `{\"tool\":\"read_neo4j_cypher\",\"arguments\":{\"query\":\"EXPLAIN MATCH (n:Stale) DETACH DELETE n\"}}` plans the write without running it. Measured residual: 1 of 28 benign probes. Excluding it needs a negative lookbehind, which RE2 does not have and the array condition format cannot express; a read-only tool being asked to plan a destructive statement is worth the alert"
+    - "A migration or admin job whose tool is genuinely named read_* and legitimately writes"
+    - "Advisory text for CVE-2026-35402 quoting the payload, if it is written as a tool-invocation object rather than as prose"
+
+response:
+  actions:
+    - alert
+  auto_response_threshold: high
+  message_template: >
+    [ATR-2026-02648] A query issued through a read-only graph/log tool calls a
+    write, administrative or outbound-fetch procedure (apoc.cypher.doIt,
+    apoc.periodic.*, apoc.trigger.*, apoc.load.*, dbms.security.*, DETACH
+    DELETE, CREATE USER, KQL externaldata). Reference: CVE-2026-35402. The
+    tool''s read-only promise did not hold; verify what the query changed.
+
+confidence: 70
+test_cases:
+  true_positives:
+    - input: '{"tool":"read_neo4j_cypher","arguments":{"query":"CALL apoc.cypher.doIt(''MATCH (u:User {name:\"svc\"}) SET u.role=\"admin\" RETURN u'', {})"}}'
+      expected: triggered
+      description: "The CVE shape: a write smuggled behind CALL through the read-only tool"
+    - input: '{"tool":"read_neo4j_cypher","arguments":{"query":"CALL apoc.load.json(''https://collector.example/x'') YIELD value RETURN value"}}'
+      expected: triggered
+      description: "Outbound fetch through the read-only tool"
+    - input: '{"tool":"read_only_query","arguments":{"cypher":"CALL apoc.trigger.add(''t'', ''MATCH (n) SET n.x=1'', {})"}}'
+      expected: triggered
+      description: "Persistent trigger installed through a read-only tool"
+    - input: '{"name":"neo4j_read","arguments":{"q":"MATCH (n:Secret) DETACH DELETE n"}}'
+      expected: triggered
+      description: "Plain Cypher write clause through a read-scoped tool"
+    - input: '{"tool":"graph_read_query","arguments":{"query":"CALL dbms.security.createUser(''backdoor'', ''p'', false)"}}'
+      expected: triggered
+      description: "User creation through a read-scoped graph tool"
+    - input: '{"read_only": true, "statement": "CALL apoc.periodic.submit(''j'', ''MATCH (n) SET n.flag=true'')"}'
+      expected: triggered
+      description: "read_only asserted in the request while a background write job is submitted"
+    - input: '{"tool":"read_neo4j_cypher","arguments":{"query":"CALL apoc.export.csv.all(''/tmp/dump.csv'', {})"}}'
+      expected: triggered
+      description: "Full graph export through the read tool"
+    - input: '{"tool":"kusto_read_query","arguments":{"query":"Traces | extend x = 1 | externaldata(u:string)[@''https://collector.example/l.csv'']"}}'
+      expected: triggered
+      description: "KQL externaldata reaching outside the cluster through a read-only log tool"
+  true_negatives:
+    - input: 'apoc.periodic.iterate takes two statements. The first must be read-only and streams the batch; the second may write. Example: CALL apoc.periodic.iterate("MATCH (p:Person) RETURN p", "SET p.seen = timestamp()", {batchSize:1000})'
+      expected: not_triggered
+      description: "The APOC manual describing the contract -- official documentation, and the sentence that names read-only sits beside the call"
+    - input: 'export interface GraphConfig { readonly database: string; readonly maxRetries: number; } const PURGE = ''MATCH (n:Stale) DETACH DELETE n'';'
+      expected: not_triggered
+      description: "The TypeScript `readonly` modifier beside a purge query -- present in every typed codebase"
+    - input: 'Onboarding step 4: GRANT ROLE reader TO analyst_svc. The analyst account must stay read-only; anything that writes belongs to the deploy role.'
+      expected: not_triggered
+      description: "Runbook granting a read-only reporting role"
+    - input: 'The externaldata operator is read-only and cannot modify the cluster. Syntax: Traces | externaldata(uri:string) [@"https://storage.example.net/list.csv"] with (format="csv").'
+      expected: not_triggered
+      description: "Azure KQL documentation for externaldata"
+    - input: 'Read-only queries use MATCH ... RETURN. To remove a node together with its relationships, run MATCH (n:Person {name:$name}) DETACH DELETE n.'
+      expected: not_triggered
+      description: "The Cypher manual page on deletion"
+    - input: 'CVE-2026-35402: mcp-neo4j-cypher enforced read-only by inspecting the top-level clause, so CALL apoc.cypher.doIt(''MATCH (u) SET u.role="admin"'', {}) executed with full authority. Upgrade to 0.4.1.'
+      expected: not_triggered
+      description: "The advisory for this very CVE, quoting the payload"
+    - input: '維運筆記:read_neo4j_cypher 這支工具號稱唯讀,但我們在測試環境用 CALL apoc.periodic.submit(''j'', ''MATCH (n) SET n.flag=true'') 驗證過,升級後已被擋下。'
+      expected: not_triggered
+      description: "Non-English operations note naming the tool and the procedure"
+    - input: 'Checklist: (1) the read_neo4j_cypher tool must reject CALL apoc.cypher.doIt(...), apoc.periodic.submit(...) and dbms.security.createUser(...); (2) run the container as a non-root user.'
+      expected: not_triggered
+      description: "The hardening checklist that enumerates the deny-list, parentheses included"
+    - input: '## 0.4.1 - read_neo4j_cypher now parses the full statement, so CALL apoc.cypher.doIt(''...'') no longer bypasses read-only mode.'
+      expected: not_triggered
+      description: "CHANGELOG entry for the fix"
+    - input: '[graph-tests] read_query fixtures loaded ok; running teardown: MATCH (n:TestFixture) DETACH DELETE n; 214 passed in 31.2s'
+      expected: not_triggered
+      description: "CI log from a graph integration suite"
+    - input: '{"tool":"read_neo4j_cypher","arguments":{"query":"MATCH (r:Runbook) WHERE r.body CONTAINS ''DETACH DELETE n'' RETURN r.title"}}'
+      expected: not_triggered
+      description: "The read tool searching FOR the clause as a string -- a search, not a use"
+    - input: '{"tool":"read_only_query","arguments":{"cypher":"MATCH (e:AuditEvent) WHERE e.statement STARTS WITH ''CREATE USER '' RETURN e.at, e.actor LIMIT 50"}}'
+      expected: not_triggered
+      description: "The read tool paging an audit table of past admin actions"
+    - input: '{"tool":"read_neo4j_cypher","result":[{"name":"0043_merge","body":"CALL apoc.refactor.mergeNodes(ns,{properties:''combine''})"}],"rows":1}'
+      expected: not_triggered
+      description: "A read tool RESULT carrying stored migration scripts -- data coming back, not a query going out"
+    - input: '{"tool":"read_neo4j_cypher","arguments":{"query":"CALL apoc.export.cypher.schema(null,{stream:true}) YIELD cypherStatements RETURN cypherStatements"}}'
+      expected: not_triggered
+      description: "Streaming schema dump: apoc.export with a null target writes nothing"
+    - input: '{"tool":"read_neo4j_cypher","arguments":{"query":"MATCH (a:Person),(b:Person) CALL apoc.create.vRelationship(a,''KNOWS'',{},b) YIELD rel RETURN rel"}}'
+      expected: not_triggered
+      description: "Virtual relationships for visualisation -- apoc.create.v* creates nothing in the store"
+    - input: '{"tool":"read_neo4j_cypher","arguments":{"query":"CALL apoc.meta.schema() YIELD value RETURN value"}}'
+      expected: not_triggered
+      description: "Schema introspection through the read tool"
+    - input: '{"tool":"graph_read_query","arguments":{"query":"SHOW ROLES YIELD role RETURN role ORDER BY role"}}'
+      expected: not_triggered
+      description: "Listing roles is a read, despite the word ROLE"
+    - input: '{"read_only": true, "docs": "This connection refuses writes. See the deny-list: apoc.cypher.doIt, apoc.periodic.submit, DETACH DELETE."}'
+      expected: not_triggered
+      description: "A read_only config object whose documentation string names the deny-list"
+    - input: '{"tool":"write_neo4j_cypher","arguments":{"query":"CALL apoc.periodic.iterate(''MATCH (n:Stale) RETURN n'', ''DETACH DELETE n'', {batchSize:1000})"}}'
+      expected: not_triggered
+      description: "A legitimate bulk cleanup through the tool that is actually allowed to write"
+    - input: 'CALL apoc.periodic.iterate("MATCH (p:Person) RETURN p", "SET p.updated = timestamp()", {batchSize: 500})'
+      expected: not_triggered
+      description: "Everyday APOC batch update with no read-only promise attached"
+    - input: '{"tool":"read_neo4j_cypher","arguments":{"query":"MATCH (u:User {id:$id})-[:OWNS]->(a:Account) RETURN u.name, a.balance"}}'
+      expected: not_triggered
+      description: "An actual read through the read-only tool"
+    - input: 'CREATE INDEX person_name IF NOT EXISTS FOR (p:Person) ON (p.name)'
+      expected: not_triggered
+      description: "Schema migration run by a DBA, no agent read tool involved"
+    - input: 'The read_neo4j_cypher tool rejects any statement containing CALL apoc.cypher.doIt, apoc.periodic.submit or DETACH DELETE.'
+      expected: not_triggered
+      description: "Deny-list documentation -- kept out because the procedures are named as a list, not called"
+    - input: '{"tool":"read_neo4j_cypher","arguments":{"query":"CALL db.labels() YIELD label RETURN label ORDER BY label"}}'
+      expected: not_triggered
+      description: "A read-only introspection procedure through the read-only tool"
+    - input: 'kusto: Traces | where Level == "Error" | summarize count() by bin(TimeGenerated, 1h)'
+      expected: not_triggered
+      description: "Ordinary KQL aggregation with no externaldata"
+    - input: 'GRANT ROLE reader TO analyst; // run once by the platform team during onboarding'
+      expected: not_triggered
+      description: "Role grant performed by an operator outside any read tool"
+    - input: '{"tool":"read_only_query","arguments":{"cypher":"MATCH (n) RETURN count(n) AS total"}}'
+      expected: not_triggered
+      description: "Counting nodes through the read-only tool"
+    - input: 'Migration 0042 uses apoc.refactor.mergeNodes; it runs from the deploy job, never from an agent tool.'
+      expected: not_triggered
+      description: "Release note naming a refactor procedure and explicitly excluding the agent path"
+
+evasion_tests:
+  - input: 'CALL apoc.export.csv.all("/tmp/dump.csv", {}) -- issued via read_neo4j_cypher'
+    expected: not_triggered
+    bypass_technique: procedure_stated_as_prose_rather_than_as_a_call
+    notes: "KNOWN GAP, deliberate. This was true_positive #7 in rule_version 1. It is a sentence ABOUT a call, not a call, and every attempt to keep it also kept the APOC manual, the Cypher manual, the CVE advisory and the hardening checklist. The same attack written as the tool-invocation object an agent actually emits is detected."

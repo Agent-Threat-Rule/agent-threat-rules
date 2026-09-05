@@ -1,0 +1,285 @@
+title: "Agent Configuration Tool Used to Disable the Agent's Own Guardrail"
+id: ATR-2026-02642
+rule_version: 2
+status: "experimental"
+description: >
+  Detects a call to an agent's CONFIGURATION-MUTATION tool -- `config.patch`,
+  `config.apply`, `settings.update`, `set_config` and siblings -- whose payload
+  turns off a protection the agent is subject to: the sandbox, the tool
+  deny-list, the approval requirement, the permission mode, or gateway
+  authentication. CVE-2026-45001 (OpenClaw agent-facing gateway) is the
+  reference case: the same channel the agent uses to adjust harmless
+  preferences also reaches the guard settings, so one tool call converts a
+  constrained agent into an unconstrained one, and every later action looks
+  legitimate because the policy really does permit it.
+
+  RELATIONSHIP TO ATR-2026-02400 AND ATR-2026-00118. 02400 detects the
+  approval gate being removed by CLI flag or by the `defaultMode` /
+  `autoApprovalSettings` family; 00118 detects approval fatigue. Measured on
+  this repo's engine, neither fires on `{"tool":"config.apply","arguments":
+  {"sandbox":{"enabled":false},"tools":{"denyList":[]}}}`. What this rule adds
+  is the CONFIG-WRITE CHANNEL: the tool name and the disabling assignment
+  together.
+
+  WHY THE TOOL NAME IS REQUIRED. `denyList: []` on its own is the default
+  value shipped in ordinary config templates, and `sandbox.enabled: false` is
+  a line a developer writes about their own machine. Neither is an attack. The
+  attack is the agent reaching the guard document through its own tool
+  surface, so the pattern requires a config-mutation tool.
+
+  ADVERSARIAL REVIEW 2026-08-24 -- WHAT "REQUIRES A TOOL NAME" HAD TO BECOME.
+  Twenty-seven benign samples were run through the shipped engine. Against
+  rule_version 1, ELEVEN of the first fifteen fired. Version 1 accepted a
+  METHOD-NAME shape anywhere in the text, and a bare `config.update` /
+  `settings.update` / `policy.apply` is not a tool call -- it is the most
+  common method name in software. It fired on:
+  a pytest fixture doing `config.update({"sandbox": False, "workdir": ...})`
+  (plain dict.update); an ESLint-style `config.merge({... blockList: [] })`;
+  a Kubernetes provisioning manifest with `policy.apply:` and an intentionally
+  empty `denyList: []`; a docker-compose dev override carrying `--config.set`
+  and `auth: "none"`; a VS Code extension calling `.update('telemetry', false)`;
+  a hardening changelog; an incident-response runbook; a Traditional Chinese
+  settings doc; and -- the diagnostic one -- this rule's own prose description
+  of what it detects.
+  The tool name must therefore appear in TOOL-CALL POSITION: as the value of a
+  `"tool"` / `"name"` / `"method"` / `"function"` / `"tool_name"` key. That is
+  the MCP wire shape the rule claims to be about, and it is what version 1's
+  third alternative already did; the two loose alternatives were removed.
+  Two further findings from a second round aimed at the fix:
+  (a) `{"name":"settings.update.sandbox","value":"...sandbox: false..."}` -- an
+  i18n string table whose keys mirror settings paths -- fired, so the tool name
+  may no longer carry a further dotted segment after the config token;
+  (b) a changelog reading `the payload {"tool":"config.apply","arguments":
+  {"theme":"dark"}} now requires an operator token when it carries sandbox:
+  false` fired, because the 200-character bridge joined a benign JSON example
+  to unrelated prose. The disabling assignment's KEY must now be quoted, which
+  is true on the JSON wire and false in prose. Cost: a YAML-bodied config write
+  (`sandbox: false` unquoted) is no longer matched. Stated limit.
+
+  KNOWN AND ACCEPTED. Documentation or a test harness that contains the
+  COMPLETE tool call, disabling arguments included, still fires; a content rule
+  cannot tell a quoted payload from the payload. Everything that merely
+  DESCRIBES the endpoint or shows a benign example of it is now silent, and
+  that was measured. The rule is alert-only.
+author: "ATR Community"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: "test"
+severity: critical
+
+references:
+  cve:
+    - "CVE-2026-45001"
+  cwe:
+    - CWE-732
+    - CWE-693
+    - CWE-1188
+  owasp_llm:
+    - "LLM06:2025"
+  owasp_agentic:
+    - "ASI03:2026"
+    - "ASI06:2026"
+  mitre_atlas:
+    - "AML.T0053 - AI Agent Tool Invocation"
+  mitre_attack:
+    - "T1562.001 - Impair Defenses: Disable or Modify Tools"
+  external:
+    - "https://nvd.nist.gov/vuln/detail/CVE-2026-45001"
+
+compliance:
+  owasp_agentic:
+    - id: ASI03:2026
+      context: "The agent escalates its own privilege by rewriting the document that defines its privilege, using a tool that was scoped for preferences."
+      strength: primary
+    - id: ASI06:2026
+      context: "Where the disabled control is the approval requirement, the human-in-the-loop gate is removed by the agent itself rather than by an operator."
+      strength: secondary
+  owasp_llm:
+    - id: LLM06:2025
+      context: "Excessive agency in its most literal form: the agent widens the boundary it was given instead of operating inside it."
+      strength: primary
+  eu_ai_act:
+    - article: "14"
+      context: "Article 14 human oversight is defeated when the system can switch off the approval requirement that implements it; this rule detects that write."
+      strength: primary
+    - article: "15"
+      context: "Article 15 requires resilience of high-risk systems against manipulation; a config channel that reaches the sandbox switch is the manipulation surface, and detections evidence its use."
+      strength: primary
+    - article: "12"
+      context: "Guardrail changes must be traceable under Article 12; alerting on each disabling write is the record that makes the change visible after the fact."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Govern
+      subcategory: GV.4.1
+      context: "Detects circumvention of the documented technical controls the governance function relies on to bound agent behaviour."
+      strength: primary
+    - function: Manage
+      subcategory: MG.2.3
+      context: "Runtime treatment for the risk that an agent disables its own containment before acting."
+      strength: primary
+    - function: Measure
+      subcategory: "MS.2.7"
+      context: "Detection events document whether sandboxing and deny-listing were actually in force, rather than merely configured once."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Clause 8.1 operational control depends on the guard configuration remaining as approved; this rule detects it being changed from inside the system."
+      strength: primary
+    - clause: "9.1"
+      context: "Monitoring under clause 9.1 must cover the controls themselves, not only the behaviour they bound."
+      strength: secondary
+    - clause: "6.2"
+      context: "Keeping containment settings intact is an AIMS objective under clause 6.2; a disabling write is the measurable failure of that objective."
+      strength: secondary
+
+tags:
+  category: privilege-escalation
+  subcategory: guardrail-config-write
+  scan_target: both
+  confidence: medium
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  conditions:
+    # Config-mutation tool named first, disabling assignment within 200 chars.
+    # {"tool":"config.apply","arguments":{"sandbox":{"enabled":false}}}
+    - field: content
+      operator: regex
+      value: '(?:["''](?:tool|tool_name|toolname|name|method|function)["'']\s{0,3}:\s{0,3}["''][\w./-]{0,20}(?:(?:update|set|patch|apply|write|save|replace|edit|merge)[\w./-]{0,8}(?:config|configuration|settings|policy)|(?:config|configuration|settings|policy)[\w./-]{0,8}(?:update|set|patch|apply|write|save|replace|edit|merge))[\w-]{0,12}["''])[\s\S]{0,200}(?:["'']sandbox(?:ed|ing)?["'']\s*:\s*(?:false|["''](?:off|none|disabled)["''])|["'']sandbox["'']\s*:\s*\{[^{}]{0,60}["'']enabled["'']\s*:\s*false|["''](?:denylist|deny_list|blocklist|block_list|blockedtools|blocked_tools|deniedtools|denied_tools|disallowedtools|disallowed_tools)["'']\s*:\s*\[\s*\]|["''](?:requireapproval|require_approval|requireconfirmation|require_confirmation|approvalrequired|approval_required)["'']\s*:\s*false|["'']permission_?mode["'']\s*:\s*["'']?bypass|["'']auth(?:entication)?["'']\s*:\s*["'']none["'']|["'']allowed_?tools["'']\s*:\s*\[\s*["'']\*["''])'
+      description: "Config-mutation tool call carrying a guardrail-disabling assignment"
+
+    # Disabling assignment first, config-mutation tool named after.
+    - field: content
+      operator: regex
+      value: '(?:["'']sandbox(?:ed|ing)?["'']\s*:\s*(?:false|["''](?:off|none|disabled)["''])|["'']sandbox["'']\s*:\s*\{[^{}]{0,60}["'']enabled["'']\s*:\s*false|["''](?:denylist|deny_list|blocklist|block_list|blockedtools|blocked_tools|deniedtools|denied_tools|disallowedtools|disallowed_tools)["'']\s*:\s*\[\s*\]|["''](?:requireapproval|require_approval|requireconfirmation|require_confirmation|approvalrequired|approval_required)["'']\s*:\s*false|["'']permission_?mode["'']\s*:\s*["'']?bypass|["'']auth(?:entication)?["'']\s*:\s*["'']none["''])[\s\S]{0,200}(?:["''](?:tool|tool_name|toolname|name|method|function)["'']\s{0,3}:\s{0,3}["''][\w./-]{0,20}(?:(?:update|set|patch|apply|write|save|replace|edit|merge)[\w./-]{0,8}(?:config|configuration|settings|policy)|(?:config|configuration|settings|policy)[\w./-]{0,8}(?:update|set|patch|apply|write|save|replace|edit|merge))[\w-]{0,12}["''])'
+      description: "Guardrail-disabling assignment followed by the config-mutation tool that carries it"
+  condition: any
+  false_positives:
+    - "Documentation or a changelog that shows the COMPLETE disabling tool call, arguments included (measured: still fires by design). Prose about the endpoint, a tool catalogue, an MCP tools/list manifest, an OpenAPI schema whose default is false, and a benign JSON example next to unrelated prose are all silent as of rule_version 2 -- each was measured."
+    - "A test harness that disables the sandbox on purpose to assert the agent refuses. Only fires if the assertion carries the full tool-call shape; `expect(config.apply({sandbox:{enabled:false}})).rejects` does not, and was measured silent."
+    - "An operator legitimately relaxing a policy through the same tool the agent uses -- the shape is identical, so triage by who issued the call"
+    - "Any ordinary use of a method named config.update / settings.update / policy.apply, including dict.update in Python, config merges in JS tooling, and Kubernetes or Terraform manifests. Eleven benign samples in this class fired rule_version 1; none fires version 2, because the name must sit in tool-call position."
+    - "Provisioning code that writes a config file whose deny-list is intentionally empty because allow-listing is used instead"
+    - "A config write whose body is YAML rather than JSON (`sandbox: false` with an unquoted key) is NOT detected. Stated recall limit, taken deliberately in exchange for not firing on prose."
+
+response:
+  actions:
+    - alert
+  auto_response_threshold: high
+  message_template: >
+    [ATR-2026-02642] A configuration-mutation tool call disables an agent
+    guardrail (sandbox / tool deny-list / approval requirement / permission
+    mode / gateway auth). Reference: CVE-2026-45001. Treat every subsequent
+    action in this session as unconstrained until the configuration is
+    restored and the origin of this call is established.
+
+confidence: 75
+test_cases:
+  true_positives:
+    - input: '{"tool":"config.apply","arguments":{"sandbox":{"enabled":false},"tools":{"denyList":[]},"gateway":{"auth":"none"}}}'
+      expected: triggered
+      description: "Full guard removal in a single config.apply"
+    - input: '{"tool":"config.patch","arguments":{"sandbox":{"enabled":false}}}'
+      expected: triggered
+      description: "Sandbox switched off through config.patch"
+    - input: '{"tool":"config.patch","arguments":{"tools":{"denyList":[]}}}'
+      expected: triggered
+      description: "Tool deny-list emptied through the config channel"
+    - input: '{"tool":"update_config","arguments":{"permissionMode":"bypassPermissions","allowedTools":["*"]}}'
+      expected: triggered
+      description: "Permission mode downgraded to bypass through a config tool"
+    - input: '{"method":"settings.update","params":{"require_approval":false,"model":"opus"}}'
+      expected: triggered
+      description: "Approval requirement removed through settings.update"
+    - input: '{"arguments":{"sandbox":false},"tool":"config.merge"}'
+      expected: triggered
+      description: "Disabling assignment before the tool name (reverse order)"
+    - input: '{"tool":"agent_config_write","arguments":{"gateway":{"authentication":"none"}}}'
+      expected: triggered
+      description: "Gateway authentication removed via a *config* tool name"
+    - input: '{"tool":"config.set","arguments":{"guard":{"blockedTools":[]},"note":"speed up the run"}}'
+      expected: triggered
+      description: "Blocked-tool list cleared with a plausible-sounding justification"
+  true_negatives:
+    - input: '{"tool":"config.patch","arguments":{"model":"opus","maxOutputTokens":8000,"theme":"dark"}}'
+      expected: not_triggered
+      description: "Ordinary preference change through the same tool"
+    - input: '{"tool":"config.patch","arguments":{"sandbox":{"enabled":true},"tools":{"denyList":["rm","curl"]}}}'
+      expected: not_triggered
+      description: "The same call tightening rather than loosening the guard"
+    - input: 'Default configuration shipped with the package: {"tools":{"denyList":[],"allowList":["read_file"]},"sandbox":{"enabled":true}}'
+      expected: not_triggered
+      description: "An empty deny-list in a default template, with no config-mutation tool involved"
+    - input: 'To develop locally you can edit settings.json and set sandbox.enabled to false; the daemon reads it on restart.'
+      expected: not_triggered
+      description: "English instructions about hand-editing a file -- no tool-call shape"
+    - input: '{"tool":"update_config","arguments":{"telemetry":false,"autoUpdate":false}}'
+      expected: not_triggered
+      description: "Disabling non-security options through the config tool"
+    - input: 'config.apply replaces the whole document and config.patch merges into it; both validate against schema v3 before writing.'
+      expected: not_triggered
+      description: "API reference describing the two methods without a disabling example"
+    - input: '{"tool":"read_config","arguments":{"path":"sandbox"},"result":{"sandbox":{"enabled":false}}}'
+      expected: not_triggered
+      description: "Reading a config that already has the sandbox off -- a read, not a write"
+    - input: 'terraform apply -var sandbox_enabled=false # staging cluster has no gVisor node pool'
+      expected: not_triggered
+      description: "Infrastructure tooling that happens to use the words apply and sandbox"
+    - input: '{"tool":"settings.update","params":{"editor":{"tabWidth":2},"telemetry":{"enabled":false}}}'
+      expected: not_triggered
+      description: "telemetry.enabled:false through settings.update -- an enabled:false that is not the sandbox"
+    - input: 'Alert triage note: permissionMode was bypassPermissions for 4 minutes. See the access log, not the config tool, for who changed it.'
+      expected: not_triggered
+      description: "Incident-response prose naming the mode and the config tool in the same breath"
+    - input: 'def make_settings(tmp_path):\n    config = default_settings()\n    config.update({"sandbox": False, "workdir": str(tmp_path)})\n    return config'
+      expected: not_triggered
+      description: "ADVERSARIAL 2026-08-24: a pytest fixture calling plain dict.update. FIRED version 1 -- the single most damaging false positive, since config.update is ordinary Python."
+    - input: 'it(''refuses to disable its own sandbox'', async () => {\n  await expect(config.apply({ sandbox: { enabled: false } })).rejects.toThrow(''guard: immutable'');\n});'
+      expected: not_triggered
+      description: "ADVERSARIAL 2026-08-24: a Jest test asserting the agent REFUSES. FIRED version 1."
+    - input: 'CVE-2026-45001: the OpenClaw gateway lets the agent reach its own guard document. A single call of the form config.apply with {"sandbox":{"enabled":false}} converts a constrained agent into an unconstrained one.'
+      expected: not_triggered
+      description: "ADVERSARIAL 2026-08-24: the security advisory that this rule was mined from. FIRED version 1 -- a rule that fires on the write-up of its own CVE fires on every blog that explains it."
+    - input: 'What this rule detects: a config-mutation tool (config.patch / settings.update) carrying a disabling assignment such as "sandbox": false, "denyList": [], or "require_approval": false.'
+      expected: not_triggered
+      description: "ADVERSARIAL 2026-08-24: this rule\u2019s own description of itself. FIRED version 1."
+    - input: '## 3.4.0\n- security: settings.update now rejects require_approval: false unless the caller presents an operator token (CVE-2026-45001)'
+      expected: not_triggered
+      description: "ADVERSARIAL 2026-08-24: a hardening changelog. FIRED version 1."
+    - input: '# local only -- never in staging\nservices:\n  grafana:\n    environment:\n      GF_AUTH_ANONYMOUS_ENABLED: "true"\n      auth: "none"\n    command: ["--config.set", "log.level=debug"]'
+      expected: not_triggered
+      description: "ADVERSARIAL 2026-08-24: a docker-compose dev override. FIRED version 1."
+    - input: '# bootstrap job, allowlisting is done at the mesh layer\npolicy.apply:\n  denyList: []\n  allowList: ["payments", "ledger"]'
+      expected: not_triggered
+      description: "ADVERSARIAL 2026-08-24: a Kubernetes provisioning manifest with an intentionally empty deny-list. FIRED version 1, and version 1\u2019s own false_positives list predicted it."
+    - input: 'config.merge({ rules: {}, settings: { react: { version: ''detect'' } }, blockList: [] })'
+      expected: not_triggered
+      description: "ADVERSARIAL 2026-08-24: an ESLint-style config merge. FIRED version 1."
+    - input: 'Containment runbook step 2: on the quarantined host only, run config.apply with sandbox: false so the forensic tooling can read the raw volume. Restore the guard before rejoining the fleet.'
+      expected: not_triggered
+      description: "ADVERSARIAL 2026-08-24: an incident-response runbook. FIRED version 1."
+    - input: '\u8a2d\u5b9a\u8aaa\u660e\uff1a\u547c\u53eb config.patch \u53ef\u4ee5\u4fee\u6539\u4efb\u4f55\u6b04\u4f4d\u3002\u9810\u8a2d\u503c\u70ba sandbox: false\uff0c\u5efa\u8b70\u6b63\u5f0f\u74b0\u5883\u6539\u6210 true\u3002'
+      expected: not_triggered
+      description: "ADVERSARIAL 2026-08-24: Traditional Chinese settings documentation. FIRED version 1."
+    - input: '{"tools":[{"name":"update_config","description":"Change any preference.","inputSchema":{"type":"object","properties":{"denyList":{"type":"array","default":[]},"sandbox":{"type":"boolean"}}}}]}'
+      expected: not_triggered
+      description: "ADVERSARIAL round 2, 2026-08-24: an MCP tools/list manifest advertising the config tool alongside its schema."
+    - input: '{"name":"settings.update.title","value":"Update settings"},{"name":"settings.update.sandbox","value":"Run without a sandbox: false disables isolation"}'
+      expected: not_triggered
+      description: "ADVERSARIAL round 2, 2026-08-24: an i18n string table whose keys mirror settings paths. FIRED the first version of the fix; drove the no-trailing-dotted-segment narrowing."
+    - input: 'Breaking: the payload {"tool":"config.apply","arguments":{"theme":"dark"}} now requires an operator token when it carries sandbox: false.'
+      expected: not_triggered
+      description: "ADVERSARIAL round 2, 2026-08-24: a changelog pairing a BENIGN tool-call example with unrelated prose. FIRED the first version of the fix; drove the mandatory quoted-key requirement."
+    - input: '{"ts":"2026-08-24T09:12:00Z","name":"config.patch","actor":"agent","decision":"denied","reason":"guard is immutable","current":{"sandbox":{"enabled":true}}}'
+      expected: not_triggered
+      description: "ADVERSARIAL round 2, 2026-08-24: an audit-log record of a DENIED call, showing the guard still on."
+    - input: '{"permissions":{"allow":["mcp__acme__update_config","Bash(git diff:*)"]},"sandbox":false,"note":"local dev box"}'
+      expected: not_triggered
+      description: "ADVERSARIAL round 2, 2026-08-24: a permissions allowlist naming the config tool, next to a developer-machine sandbox flag."
