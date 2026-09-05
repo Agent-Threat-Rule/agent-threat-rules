@@ -4,7 +4,7 @@ Version: 0.1.0 (INTERNAL DRAFT — not published, not submitted)
 Status: Draft for future OWASP AISVS Informative Reference / PR basis (human review gate before any upstream submission)
 Date: 2026-06-12
 Editor: Adam Lin (林冠辛) <adam@agentthreatrule.org>
-Mapped corpus: Agent Threat Rules v3.5.8 (793 rules / 10 categories, disk==stats.json verified 2026-07-12)
+Mapped corpus: Agent Threat Rules v3.5.8 (806 rules / 10 categories, disk==stats.json verified 2026-07-12)
 Reference framework: OWASP AI Security Verification Standard (AISVS) 1.0, chapters C9, C10, C13
 Reference framework license: CC BY-SA 4.0 (OWASP/AISVS README). Requirement text
 quoted below is reproduced under that license; this mapping is a derivative
