@@ -11,21 +11,21 @@ This is a **curated thematic mapping**, not an id-equality join. ATR carries no 
 
 Regenerate with `python3 scripts/generate-ast-crosswalk.py`. CI runs `--check` so a stale copy fails the build.
 
-Rules in corpus at generation time: **806**.
+Rules in corpus at generation time: **815**.
 
 ## Coverage by AST control
 
 | AST | Title | ATR rules | Top supporting ASI (evidence) |
 |-----|-------|-----------|-------------------------------|
 | AST01 | Malicious Skills | 202 | ASI01 (57), ASI05 (55), ASI04 (48) |
-| AST02 | Supply Chain Compromise | 56 | ASI04 (21), ASI01 (12), ASI05 (11) |
-| AST03 | Over-Privileged Skills | 239 | ASI01 (93), ASI03 (88), ASI06 (39) |
+| AST02 | Supply Chain Compromise | 58 | ASI04 (22), ASI01 (12), ASI05 (12) |
+| AST03 | Over-Privileged Skills | 245 | ASI01 (93), ASI03 (91), ASI06 (42) |
 | AST04 | Insecure Metadata | 113 | ASI05 (44), ASI06 (35), ASI02 (28) |
 | AST05 | Untrusted External Instructions | 355 | ASI01 (335), ASI06 (16), ASI04 (14) |
 | AST06 | Weak Isolation | 136 | ASI01 (75), ASI03 (40), ASI06 (21) |
 | AST07 | Update Drift | 0 | - |
 | AST08 | Poor Scanning | 0 | - |
-| AST09 | No Governance | 38 | ASI03 (18), ASI01 (15), ASI02 (9) |
+| AST09 | No Governance | 40 | ASI03 (19), ASI01 (15), ASI02 (10) |
 | AST10 | Cross-Platform Reuse | 0 | - |
 
 ## Category -> AST mapping (the editorial join table)
@@ -38,13 +38,15 @@ Rules in corpus at generation time: **806**.
 | tool-poisoning (113) | 113 | AST01 Malicious Skills | A poisoned tool/skill is a malicious skill at the point of use. |
 |  |  | AST04 Insecure Metadata | Tool-description / metadata poisoning is the AST04 insecure-metadata surface. |
 | agent-manipulation (109) | 109 | AST05 Untrusted External Instructions | Manipulating an agent via crafted external content is untrusted-instruction abuse. |
-| privilege-escalation (65) | 65 | AST03 Over-Privileged Skills | Privilege escalation is the direct consequence of over-privileged skills. |
+| privilege-escalation (69) | 69 | AST03 Over-Privileged Skills | Privilege escalation is the direct consequence of over-privileged skills. |
 | skill-compromise (46) | 46 | AST01 Malicious Skills | A compromised skill is a malicious skill. |
 |  |  | AST02 Supply Chain Compromise | Skill compromise via a tampered upstream is supply-chain compromise. |
 | model-abuse (43) | 43 | AST01 Malicious Skills | Coercing the model into attacker-chosen behaviour manifests as a malicious skill action. |
-| excessive-autonomy (38) | 38 | AST03 Over-Privileged Skills | Unbounded action authority is an over-privilege condition. |
+| excessive-autonomy (40) | 40 | AST03 Over-Privileged Skills | Unbounded action authority is an over-privilege condition. |
 |  |  | AST09 No Governance | Autonomy without checks is the AST09 governance gap. |
-| data-poisoning (10) | 10 | AST02 Supply Chain Compromise | Poisoned training/reference data enters through the supply chain. |
+| data-poisoning (12) | 12 | AST02 Supply Chain Compromise | Poisoned training/reference data enters through the supply chain. |
+
+> 1 rule(s) carry a category not in the mapping table and are excluded rather than force-fit.
 
 ## What ATR does not cover
 
