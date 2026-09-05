@@ -56,7 +56,7 @@ import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { load as yamlLoad } from "js-yaml";
 import { ATREngine } from "../src/engine.js";
-import { matchedRuleIds } from "./lib/corpus-event.js";
+import { MEASURED_FIELDS, matchedRuleIds } from "./lib/corpus-event.js";
 import { lintRuleDoc } from "./lint-rule-patterns.js";
 
 const MAX_NEW_PER_PR = Number(process.env.MAX_NEW_PER_PR ?? 10);
@@ -589,14 +589,72 @@ async function checkOwnTruePositivesMatch(
   return fps;
 }
 
+/** Keys on a test case that carry bookkeeping rather than sample text. */
+const NON_SAMPLE_TEST_KEYS = new Set([
+  "expected",
+  "description",
+  "note",
+  "detection_field",
+  "matched_condition",
+]);
+
+/**
+ * Sample text out of a true-positive entry, restricted to fields this harness
+ * can honestly present.
+ *
+ * Two shapes exist in the ruleset. Most rules write `- input: "..."`, but 46
+ * rules key the case by the detection field instead (`tool_args`,
+ * `user_input`, `tool_description`, `tool_name`, ...). Reading only `input`
+ * returned an empty list for those, so checkOwnTruePositivesMatch iterated
+ * nothing and passed them silently.
+ *
+ * Reading *every* string is the opposite error. A case may carry `tool_name:
+ * execute_shell` as context alongside the `tool_args` payload, and
+ * `tool_name` is a registered UNMEASURABLE_FIELD: corpus-event.ts refuses to
+ * pour sample text into it because production tool_name is a short
+ * identifier, and filling it would fabricate false positives on rules that
+ * are correct in production. Treating that identifier as a payload makes a
+ * correct rule look like it misses its own test case.
+ *
+ * So: `input` and bare strings are payloads, a key in MEASURED_FIELDS is a
+ * payload, and anything else is context that this harness cannot present.
+ * A rule whose true positives are *all* on unmeasurable fields is not passing
+ * this check — it is outside it, and `unverifiableTruePositives` says so.
+ */
 function extractTruePositives(doc: Record<string, unknown>): string[] {
-  const tc = doc.test_cases as
-    | { true_positives?: Array<string | { input?: string }> }
-    | undefined;
-  const tps = tc?.true_positives ?? [];
-  return tps
-    .map((t) => (typeof t === "string" ? t : (t?.input ?? "")))
-    .filter((s): s is string => typeof s === "string" && s.length > 0);
+  const tc = doc.test_cases as { true_positives?: unknown } | undefined;
+  const out: string[] = [];
+  for (const t of (tc?.true_positives as unknown[]) ?? []) {
+    if (typeof t === "string") {
+      if (t.length > 0) out.push(t);
+      continue;
+    }
+    if (t === null || typeof t !== "object") continue;
+    const rec = t as Record<string, unknown>;
+    const direct = rec["input"];
+    if (typeof direct === "string" && direct.length > 0) {
+      out.push(direct);
+      continue;
+    }
+    for (const [k, v] of Object.entries(rec)) {
+      if (NON_SAMPLE_TEST_KEYS.has(k)) continue;
+      if (!MEASURED_FIELDS.includes(k)) continue;
+      if (typeof v === "string" && v.length > 0) out.push(v);
+    }
+  }
+  return out;
+}
+
+/**
+ * True — this rule declares true positives, but every one of them lives on a
+ * field the harness cannot fill, so the self-TP check covers none of them.
+ * Reported, never silently counted as a pass.
+ */
+function unverifiableTruePositives(doc: Record<string, unknown>): boolean {
+  const tc = doc.test_cases as { true_positives?: unknown } | undefined;
+  const entries = (tc?.true_positives as unknown[]) ?? [];
+  if (entries.length === 0) return false;
+  return extractTruePositives(doc).length === 0;
 }
 
 /** Every benign sample the gate knows about, flattened to labelled text. */
@@ -781,6 +839,7 @@ async function main(): Promise<void> {
   const newRuleIds = new Set<string>();
   const fileToId = new Map<string, string>();
   const ruleEntries: Array<{ id: string; file: string; tps: string[] }> = [];
+  const unverifiableTpRules: Array<{ id: string; file: string }> = [];
 
   for (const file of newFiles) {
     const doc = loadDoc(file);
@@ -813,6 +872,7 @@ async function main(): Promise<void> {
     newRuleIds.add(id);
     fileToId.set(id, file);
     ruleEntries.push({ id, file, tps: extractTruePositives(doc) });
+    if (unverifiableTruePositives(doc)) unverifiableTpRules.push({ id, file });
 
     // Check 6 — loose-regex lint. The bare-keyword-without-word-boundary class
     // (e.g. "nc" matching inside "async", "host" inside prose) is the highest-
@@ -887,6 +947,18 @@ async function main(): Promise<void> {
           file: fileToId.get(id) ?? id,
           reason: `(+${reasons.length - 3} more TP-not-matched failures suppressed)`,
         });
+    }
+
+    // Not a failure, and deliberately not a silent pass: these rules declare
+    // true positives that live only on fields corpus-event.ts refuses to fill
+    // (tool_name above all), so Check 2 covered none of them. Saying so is the
+    // same discipline the corpus-visibility gate applies to a benign zero.
+    if (unverifiableTpRules.length > 0) {
+      console.log(
+        `\n[NOTE] self-TP check does not cover ${unverifiableTpRules.length} rule(s) — ` +
+          `every true positive is on an unmeasurable field (see UNMEASURABLE_FIELDS):`,
+      );
+      for (const r of unverifiableTpRules) console.log(`         ${r.id}  ${r.file}`);
     }
 
     // Check 3 — benign skill corpus FP (432 SKILL.md samples).
