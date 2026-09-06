@@ -1,0 +1,64 @@
+name: Rule IDs must be claimed once
+
+# Every other check in this repo looks at ONE tree. tests/validate-rules.ts
+# catches two files sharing an id inside a branch, and sees nothing at all when
+# the two files sit on different branches.
+#
+# On 2026-09-04 that gap surfaced. ATR-2026-02816 and ATR-2026-02818 existed on
+# feat/resweep-rules-b1 (authored 08-24) and feat/paper-mine-rules (08-27) at the
+# same time, carrying DIFFERENT detection logic, both marked rule_version 1, and
+# both green on every gate. Whichever PR merged second would have hit a conflict
+# in a rule file, and resolving that conflict the quick way -- taking one side --
+# drops the other version's conditions with nothing in CI able to say a rule just
+# got smaller. One of the two pairs differed by an entire condition.
+#
+# The check is deliberately narrow, because the noisy version of it is useless.
+# An id is a collision only when THIS branch introduces it (it is not on the base)
+# AND a sibling branch carries the same id with DIFFERENT content. Byte-identical
+# content is a cherry-pick or a shared ancestor; an id already on the base belongs
+# to every branch that descends from it.
+#
+# It costs one `git ls-tree` per branch and takes the blob sha as the content
+# hash, so it reads no files: ~2s against 84 sibling branches. The first cut ran
+# `git show` per file per branch and took longer than the entire test suite --
+# worth recording, because a gate slow enough to skip is a gate nobody runs.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "rules/**"
+      - "scripts/gate-id-collision.ts"
+      - "scripts/lib/id-collision.ts"
+      - ".github/workflows/id-collision-gate.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  id-collision:
+    name: A rule id may be claimed by one branch
+    runs-on: ubuntu-latest
+    steps:
+      # fetch-depth: 0 IS required here, unlike the other gates: this one has to
+      # see sibling branches, not just this one's history.
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The PR head is checked out detached, so name the base explicitly rather
+      # than trusting HEAD's symbolic name.
+      - name: Fetch sibling branches
+        run: git fetch --no-tags origin '+refs/heads/*:refs/remotes/origin/*'
+
+      # Exit 1: an id introduced here is also claimed, with different content, by
+      # another branch. Exit 2: the gate could not run -- never reported as a pass.
+      - name: Rule id collision
+        run: npx tsx scripts/gate-id-collision.ts --base origin/main
