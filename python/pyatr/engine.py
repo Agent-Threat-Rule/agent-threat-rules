@@ -10,6 +10,7 @@ import unicodedata
 from pathlib import Path
 from typing import Any
 
+import regex
 import yaml
 
 from pyatr.types import (
@@ -33,15 +34,32 @@ _ZERO_WIDTH_RE = re.compile(
 _INLINE_FLAGS_RE = re.compile(r"^\(\?[imsx]+\)")
 
 
+_SearchablePattern = re.Pattern[str] | regex.Pattern[str]
+
+
+class _RegexCompileError(Exception):
+    def __init__(self, stdlib_error: Exception, fallback_error: Exception) -> None:
+        super().__init__(str(fallback_error))
+        self.stdlib_error, self.fallback_error = stdlib_error, fallback_error
+
+
 def _normalize_unicode(text: str) -> str:
     """NFC-normalize and strip zero-width / bidi characters."""
     return _ZERO_WIDTH_RE.sub("", unicodedata.normalize("NFC", text))
 
 
-def _compile_regex(pattern: str) -> re.Pattern[str]:
-    """Compile an ATR regex pattern, stripping (?i) prefix and using IGNORECASE."""
+def _compile_regex(pattern: str) -> _SearchablePattern:
+    """Compile an ATR regex, falling back for syntax unsupported by ``re``."""
     cleaned = _INLINE_FLAGS_RE.sub("", pattern)
-    return re.compile(cleaned, re.IGNORECASE)
+    try:
+        return re.compile(cleaned, re.IGNORECASE)
+    except re.error as stdlib_error:
+        try:
+            # VERSION0 stays closest to re; VERSION1 would also enable full
+            # case-folding and nested sets, unrelated to lookbehind support.
+            return regex.compile(cleaned, regex.IGNORECASE | regex.VERSION0)
+        except regex.error as fallback_error:
+            raise _RegexCompileError(stdlib_error, fallback_error) from fallback_error
 
 
 def _load_yaml_file(path: Path) -> dict[str, Any]:
@@ -108,7 +126,8 @@ class ATREngine:
     def __init__(self) -> None:
         self._rules: list[ATRRule] = []
         # Pre-compiled regex cache: rule_id -> list of (condition_index, compiled_re)
-        self._compiled: dict[str, list[tuple[int, re.Pattern[str]]]] = {}
+        self._compiled: dict[str, list[tuple[int, _SearchablePattern]]] = {}
+        self._failed_regexes: set[tuple[str, int]] = set()
 
     @property
     def rules(self) -> list[ATRRule]:
@@ -187,14 +206,29 @@ class ATREngine:
 
     def _add_rule(self, rule: ATRRule) -> None:
         self._rules.append(rule)
-        compiled: list[tuple[int, re.Pattern[str]]] = []
+        compiled: list[tuple[int, _SearchablePattern]] = []
         for idx, cond in enumerate(rule.conditions):
             if cond.operator == "regex":
                 try:
                     compiled.append((idx, _compile_regex(cond.value)))
-                except re.error:
-                    pass
+                    self._failed_regexes.discard((rule.id, idx))
+                except _RegexCompileError as exc:
+                    self._record_regex_failure(rule.id, idx, exc)
         self._compiled[rule.id] = compiled
+
+    def _record_regex_failure(self, rule_id: str, idx: int, exc: _RegexCompileError) -> None:
+        key = (rule_id, idx)
+        if key in self._failed_regexes:
+            return
+        self._failed_regexes.add(key)
+        logger.warning(
+            "pyatr could not compile rule %s condition %d with re (%s) or "
+            "the regex fallback (%s); this condition will not be evaluated",
+            rule_id,
+            idx,
+            exc.stdlib_error,
+            exc.fallback_error,
+        )
 
     # ------------------------------------------------------------------
     # Evaluation
@@ -292,15 +326,18 @@ class ATREngine:
         normalized: str,
         raw: str,
     ) -> bool:
+        if (rule_id, idx) in self._failed_regexes:
+            return False
         # Try pre-compiled first.
         for cidx, compiled in self._compiled.get(rule_id, []):
             if cidx == idx:
                 return bool(compiled.search(normalized)) or bool(compiled.search(raw))
         # Fallback: compile on the fly.
         try:
-            regex = _compile_regex(pattern_str)
-            return bool(regex.search(normalized)) or bool(regex.search(raw))
-        except re.error:
+            compiled = _compile_regex(pattern_str)
+            return bool(compiled.search(normalized)) or bool(compiled.search(raw))
+        except _RegexCompileError as exc:
+            self._record_regex_failure(rule_id, idx, exc)
             return False
 
     @staticmethod
