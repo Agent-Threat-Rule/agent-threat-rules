@@ -1,0 +1,9 @@
+const AGENT = String.raw`(?:ai|a\.i\.|llm|automated|autonomous|shopping|browsing|virtual|digital|language[\s-]?model|chat)?[\s-]*(?:agent|assistant|bot|model|llm|chatbot|browser|crawler|scraper)`;
+const READING = String.raw`(?:read(?:s|ing)?|process(?:es|ing)?|pars(?:es|e|ing)|view(?:s|ing)?|see(?:s|ing)?|scan(?:s|ning)?|brows(?:es|e|ing)|encounter(?:s|ing)?|handl(?:es|e|ing))`;
+const IMP = String.raw`(?:please\s+|kindly\s+|then\s+|now\s+|instead\s+|go\s+ahead\s+and\s+|make\s+sure\s+to\s+|be\s+sure\s+to\s+)?(?:order|buy|purchase|add|remove|delete|send|email|e-mail|forward|transfer|wire|pay|post|publish|include|append|insert|write|set|change|update|modify|redirect|reroute|navigate|click|visit|go\s+to|download|reply|respond|ignore|disregard|recommend|rate|leave|submit|fill|enter|contact|call|book|cancel|refund|checkout|confirm|approve|prioriti[sz]e)`;
+// C1: conditional AGENT-reader + imperative. "if you're / if a/an/the AGENT [is] reading this ... IMP"
+export const C1 = String.raw`\bif\s+(?:you(?:['’]?re|\s+are)|(?:a|an|the)\s+${AGENT})\b[^\n]{0,50}\b${READING}\s+(?:this|these|the\s+(?:page|review|listing|item|product|message|text|content|post|comment|description|notice))\b[^\n]{0,90}\b${IMP}\b`;
+// C2: passive "if this (page/content) is being read by AGENT ... IMP"
+export const C2 = String.raw`\bif\s+(?:this|these|the\s+(?:page|review|listing|item|product|message|text|content|post|comment|description))\b[^\n]{0,40}\bis\s+being\s+${READING}\s+by\s+(?:a|an|the)?\s*${AGENT}\b[^\n]{0,90}\b${IMP}\b`;
+// C3: "any/every/each AGENT (reading this) should/must IMP"
+export const C3 = String.raw`\b(?:any|every|all|each)\s+${AGENT}s?\s+(?:${READING}\s+(?:this|these|the\s+\w+)|that\s+${READING}|who\s+${READING})\b[^\n]{0,80}\b(?:should|must|shall|is\s+(?:asked|instructed|required|expected|supposed)\s+to|needs?\s+to|ought\s+to|is\s+to)\s+${IMP}`;

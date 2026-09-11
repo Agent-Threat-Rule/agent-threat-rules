@@ -1,0 +1,14 @@
+[
+ {
+  "name": "envdump-to-hardcoded-url",
+  "value": "(?:(?:\\brequests?\\.(?:post|put|patch)|\\bhttpx\\.(?:post|put)|\\bsession\\.(?:post|put)|\\baxios\\.(?:post|put)|\\bfetch|\\burlopen|\\burllib\\.request\\.(?:urlopen|Request)|\\.post)\\s*\\(\\s*(?:[A-Za-z_][A-Za-z0-9_]{0,20}\\s*=\\s*)?[\\x22\\x27\\x60]https?://[A-Za-z][A-Za-z0-9-]{0,40}(?:\\.[A-Za-z0-9-]{1,40}){1,4}[/:\\x22\\x27\\x60][^\\n]{0,150}?(?:\\bdict\\s*\\(\\s*os\\.environ\\s*\\)|\\bos\\.environ\\.copy\\s*\\(\\s*\\)|\\{\\s*\\*\\*\\s*os\\.environ|\\bjson\\.dumps\\s*\\(\\s*(?:dict\\s*\\(\\s*)?os\\.environ|\\bstr\\s*\\(\\s*os\\.environ\\s*\\)|JSON\\.stringify\\s*\\(\\s*process\\.env|Object\\.entries\\s*\\(\\s*process\\.env|Object\\.assign\\s*\\(\\s*\\{\\s*\\}\\s*,\\s*process\\.env|\\{\\s*\\.\\.\\.\\s*process\\.env\\s*\\})|(?:\\bdict\\s*\\(\\s*os\\.environ\\s*\\)|\\bos\\.environ\\.copy\\s*\\(\\s*\\)|\\{\\s*\\*\\*\\s*os\\.environ|\\bjson\\.dumps\\s*\\(\\s*(?:dict\\s*\\(\\s*)?os\\.environ|\\bstr\\s*\\(\\s*os\\.environ\\s*\\)|JSON\\.stringify\\s*\\(\\s*process\\.env|Object\\.entries\\s*\\(\\s*process\\.env|Object\\.assign\\s*\\(\\s*\\{\\s*\\}\\s*,\\s*process\\.env|\\{\\s*\\.\\.\\.\\s*process\\.env\\s*\\})[^\\n]{0,150}?(?:\\brequests?\\.(?:post|put|patch)|\\bhttpx\\.(?:post|put)|\\bsession\\.(?:post|put)|\\baxios\\.(?:post|put)|\\bfetch|\\burlopen|\\burllib\\.request\\.(?:urlopen|Request)|\\.post)\\s*\\(\\s*(?:[A-Za-z_][A-Za-z0-9_]{0,20}\\s*=\\s*)?[\\x22\\x27\\x60]https?://[A-Za-z][A-Za-z0-9-]{0,40}(?:\\.[A-Za-z0-9-]{1,40}){1,4}[/:\\x22\\x27\\x60])"
+ },
+ {
+  "name": "shell-env-piped-out",
+  "value": "\\b(?:printenv|env|set)\\b[^\\n|]{0,40}?\\|[^\\n]{0,60}?\\b(?:curl|wget|nc|ncat|openssl\\s+s_client|base64)\\b[^\\n]{0,120}?(?:https?://|\\s-d\\b|--data|-X\\s*POST|--post-data|--upload-file|\\|\\s*(?:curl|wget|nc)\\b)"
+ },
+ {
+  "name": "obfuscated-destination",
+  "value": "(?:(?:\\brequests?\\.(?:post|put|patch)|\\bhttpx\\.(?:post|put)|\\bsession\\.(?:post|put)|\\baxios\\.(?:post|put)|\\bfetch|\\burlopen|\\burllib\\.request\\.(?:urlopen|Request)|\\.post)\\s*\\(\\s*(?:[A-Za-z_][A-Za-z0-9_]{0,20}\\s*=\\s*)?(?:(?:base64\\.)?b64decode|atob|Buffer\\.from)\\s*\\(|(?:(?:base64\\.)?b64decode|atob|Buffer\\.from)\\s*\\(\\s*[\\x22\\x27\\x60](?:aHR0cHM6Ly9|aHR0cDovL)[A-Za-z0-9+/=]{2,}[\\x22\\x27\\x60][\\s\\S]{0,200}?(?:\\brequests?\\.(?:post|put|patch)|\\bhttpx\\.(?:post|put)|\\bsession\\.(?:post|put)|\\baxios\\.(?:post|put)|\\bfetch|\\burlopen|\\burllib\\.request\\.(?:urlopen|Request)|\\.post)\\s*\\(|(?:\\brequests?\\.(?:post|put|patch)|\\bhttpx\\.(?:post|put)|\\bsession\\.(?:post|put)|\\baxios\\.(?:post|put)|\\bfetch|\\burlopen|\\burllib\\.request\\.(?:urlopen|Request)|\\.post)\\s*\\([\\s\\S]{0,120}?(?:(?:base64\\.)?b64decode|atob|Buffer\\.from)\\s*\\(\\s*[\\x22\\x27\\x60](?:aHR0cHM6Ly9|aHR0cDovL))"
+ }
+]

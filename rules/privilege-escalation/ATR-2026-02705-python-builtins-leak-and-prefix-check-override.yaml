@@ -1,0 +1,184 @@
+title: "Python Sandbox Escape by Recovering builtins from a Bound Method or Lambda"
+id: ATR-2026-02705
+rule_version: 2
+status: experimental
+description: >
+  Detects recovery of the real Python `builtins` module from the `__self__` of
+  a bound builtin (`print.__self__`) or the `__globals__` of a throwaway lambda
+  (`(lambda: 0).__globals__`). Neither attribute begins with a blocked name and
+  neither needs `__subclasses__`, so both slip past validators built around
+  those two signals. Mined from GHSA-4mr5-g6f9-cfrh (PraisonAI `execute_code`).
+  Verified on the shipped engine: `m = print.__self__; imp = vars(m)['__imp'+'ort__']`
+  and `g = (lambda: 0).__globals__` produced zero matches, while the control
+  payloads `().__class__.__base__.__subclasses__()` and `'{0.__class__...}'.format`
+  fire ATR-2026-00440 and ATR-2026-00554. ATR-2026-02101 covers dynamic dunder
+  assembly and ATR-2026-02145 covers generator and frame attributes -- different
+  routes to the same place, neither of which sees these two.
+  The advisory's third primitive, a `str` subclass whose `startswith` is
+  redefined to answer unconditionally, was authored and then REMOVED: a
+  condition for it fired on ordinary pytest doubles
+  (`class AlwaysMatch(str): def startswith(self, p, *a): return True`), which
+  are indistinguishable from the attack in local text. That primitive is
+  reported as a null result rather than shipped as a noisy condition.
+author: "ATR Community (GHSA sweep)"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+
+references:
+  cwe:
+    - "CWE-693"
+    - "CWE-913"
+  owasp_llm:
+    - "LLM05:2025"
+  owasp_agentic:
+    - "ASI06:2026"
+  mitre_attack:
+    - "T1059.006 - Python"
+  mitre_atlas:
+    - "AML.T0050 - Command and Scripting Interpreter"
+  external:
+    - "https://github.com/advisories/GHSA-4mr5-g6f9-cfrh"
+
+metadata_provenance:
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires resilience against attempts to subvert system controls; this rule detects code that recovers the Python builtins module or neutralises the validator inside a code-execution sandbox."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be treated; this rule is the runtime treatment for sandbox-escape attempts in agent code execution."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Sandbox escape from an agent code-execution tool is an identified AI risk requiring an active runtime countermeasure; this rule implements it."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Cataloguing builtins-recovery and validator-override primitives as AI-specific execution risks in the organizational risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by screening generated code for sandbox-escape primitives before execution."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented through runtime detection of the escape primitive."
+      strength: secondary
+
+tags:
+  category: privilege-escalation
+  subcategory: python-sandbox-escape-builtins-leak
+  scan_target: runtime
+  confidence: high
+  # A blog, an advisory or a CPython-internals note explaining this escape prints
+  # the two attribute names verbatim, and such writing fences its examples while
+  # generated code does not. Measured: a fenced security article fired before
+  # this tag and is silent after it; no true positive is fenced.
+  suppress_in_code_blocks: true
+
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?:(?:^|[^\w.])print\s{0,2}\.\s{0,2}__self__|\(\s{0,2}lambda\s{0,3}:[^)\r\n]{0,12}\)\s{0,2}\.\s{0,2}__globals__)[\s\S]{0,120}(?:vars\s{0,2}\(|getattr\s{0,2}\(|__builtins__|__import__|\[\s{0,2}["'']__|\.\s{0,2}get\s{0,2}\(\s{0,2}["'']|\beval\s{0,2}\(|\bexec\s{0,2}\(|\bcompile\s{0,2}\(|\bsystem\s{0,2}\(|\bpopen\s{0,2}\(|subprocess)'
+      description: "Recovery of the real builtins module through the __self__ of a bound builtin or the __globals__ of a throwaway lambda, followed within 120 characters by a USE of the recovered namespace -- vars(), a dunder subscript, __builtins__/__import__, getattr or a direct eval/exec/system call"
+  false_positives:
+    - "FIXED in rule_version 2 -- `print` WAS NOT REQUIRED TO BE THE BUILTIN. The condition opened with \\bprint, and \\b is satisfied by the dot in an attribute access, so ANY object with a print method fired on the standard bound-method idiom: console.print.__self__ is console (rich), writer.print.__self__ is writer, mock.print.__self__ is mock. __self__ is documented in the data model and asserting on it is ordinary test code. The condition now requires start-of-input or a character that is neither a word character nor a dot before print."
+    - "FIXED in rule_version 2 -- RECOVERY ALONE IS WHAT DOCUMENTATION SHOWS; THE ATTACK CHAINS IT. The condition stopped at the attribute, so it fired on writing that merely NAMES the attribute. Eight measured FPs, and five of them carry no security framing at all: a Python tutorial explaining that (lambda: 0).__globals__ is the same dict as globals(), the same lesson in Traditional Chinese, a note that print.__self__ is builtins, a CPython-behaviour test asserting both, and a helper using (lambda: None).__globals__ to reach its defining module. The other three were an advisory paragraph, a hardening CHANGELOG and the project's own parametrised regression test listing the payloads as strings. The condition now requires a USE of the recovered namespace within 120 characters -- vars(), a dunder subscript, __builtins__/__import__, getattr, or a direct eval/exec/compile/system/popen call. All fourteen benign probes are silent; all four true positives and the evasion test still fire."
+    - "RECALL COST, STATED PLAINLY: bare recovery with no subsequent use is no longer detected. Two true positives were bare (b = print . __self__) and were extended with their exploitation step, because bare recovery is exactly the shape a tutorial has and does nothing on its own -- every published PoC for GHSA-4mr5-g6f9-cfrh chains it immediately. The whitespace-padding property those cases existed to test is preserved in the extended spellings."
+    - "tags.suppress_in_code_blocks was added in rule_version 2: a fenced security article printing the payload fired before it and is silent after. No true positive is fenced."
+    - "A str subclass that stubs startswith. Deliberately NOT matched: a condition for it was written, measured against pytest-style doubles, found to fire on them, and removed."
+    - "A lambda whose result is inspected for debugging (`(lambda: 0).__code__`, `.__name__`, `.__qualname__`), none of which is __globals__."
+    - "Frame and generator introspection (gi_frame.f_back, cr_frame.f_globals), deliberately left to ATR-2026-02145 rather than duplicated here."
+
+response:
+  actions:
+    - alert
+  message_template: >
+    [ATR-2026-02705] Generated Python recovers the builtins module through a
+    bound-method or lambda attribute, or redefines startswith to defeat an
+    attribute-name check. Treat the code-execution sandbox as bypassed.
+
+confidence: 80
+
+test_cases:
+  true_positives:
+    - input: "m = print.__self__; imp = vars(m)['__imp' + 'ort__']; imp('os').system('id')"
+      expected: triggered
+      description: "GHSA-4mr5-g6f9-cfrh primary primitive -- the real builtins module via a bound builtin's __self__"
+    - input: "g = (lambda: 0).__globals__; g['__builtins__']['eval']('1+1')"
+      expected: triggered
+      description: "Same recovery through a throwaway lambda's globals mapping"
+    - input: "b = print . __self__\nimp = vars( b )['__imp' + 'ort__']\nimp('os').system('id')"
+      expected: triggered
+      description: "Whitespace-padded spelling of the bound-method builtins recovery, chained to its use. Padding is still the point of this case; the use was added in adversarial review because bare recovery is the shape Python TUTORIALS have."
+    - input: "helper = ( lambda : None ) . __globals__\nhelper['__builtins__']['eval']('1+1')"
+      expected: triggered
+      description: "Whitespace-padded spelling of the lambda globals recovery, chained to its use."
+  true_negatives:
+    - input: "print(sys.__name__); logger.debug('startswith check passed for %s', name)"
+      expected: not_triggered
+      description: "Ordinary printing and logging with no dunder recovery"
+    - input: "class AlwaysMatch(str):\n    def startswith(self, prefix, *a):\n        return True  # test double so the allowlist check passes"
+      expected: not_triggered
+      description: "A pytest double that stubs startswith -- the measured false positive that caused the third condition to be dropped"
+    - input: "fn = lambda: 0\nassert fn.__code__.co_argcount == 0 and fn.__qualname__.startswith('<lambda>')"
+      expected: not_triggered
+      description: "Debugging a lambda through __code__ and __qualname__, not __globals__"
+    - input: "for frame in inspect.stack():\n    print(frame.function, frame.lineno)"
+      expected: not_triggered
+      description: "Ordinary stack inspection for a traceback helper"
+    - input: "from rich.console import Console\nconsole = Console()\nrenderer = console.print\nassert renderer.__self__ is console\nassert console.print.__self__ is console\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: the standard bound-method idiom on an object that has a print method. \\bprint was satisfied by the preceding dot."
+    - input: "mock = create_autospec(Printer, instance=True)\n# autospec keeps __self__ wired to the mock instance\nassert mock.print.__self__ is mock\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: the same idiom against a unittest.mock autospec."
+    - input: "def owner_of(cb):\n    return getattr(cb, '__self__', None)\n\nassert owner_of(writer.print) is writer\nassert writer.print.__self__ is writer\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: callback-owner plumbing. Note it also contains getattr, so only the print fix keeps it out."
+    - input: "Every function object carries a __globals__ attribute pointing at the module namespace it was defined in. You can see it directly: (lambda: 0).__globals__ is the very same dict that globals() returns. This is why a closure cannot outlive its module.\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: an ordinary Python tutorial about __globals__, with no security framing whatsoever. The canonical way to teach the attribute is the throwaway lambda this rule keyed on."
+    - input: "Builtin methods expose the object they are bound to through __self__. For the print function that object is the builtins module itself, so print.__self__ is builtins evaluates to True.\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: the same lesson for __self__."
+    - input: "Python 的函式物件都有 __globals__ 屬性,指向它被定義時所在模組的命名空間。可以直接驗證:(lambda: 0).__globals__ 就等於 globals()。"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: the same tutorial in Traditional Chinese."
+    - input: "def test_lambda_shares_module_globals():\n    assert (lambda: 0).__globals__ is globals()\n\ndef test_builtin_method_self():\n    import builtins\n    assert print.__self__ is builtins\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: a CPython-behaviour test suite asserting both attributes."
+    - input: "def _defining_module_ns():\n    # cheapest way to reach this module's namespace from a helper\n    return (lambda: None).__globals__\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: a debugging helper reaching its own module namespace -- real code, not writing about code."
+    - input: "@pytest.mark.parametrize('payload', [\n    \"m = print.__self__\",\n    \"g = (lambda: 0).__globals__\",\n])\ndef test_validator_rejects_builtins_recovery(payload):\n    with pytest.raises(UnsafeCode):\n        validate(payload)\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: the regression test that ships WITH the fix for this CVE, listing both payloads as bare strings."
+    - input: "## 2.4.1\n### Security\n- execute_code now rejects builtins recovery via print.__self__ and (lambda: 0).__globals__. Reported in GHSA-4mr5-g6f9-cfrh.\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: a hardening CHANGELOG entry naming both primitives."
+    - input: "GHSA-4mr5-g6f9-cfrh: PraisonAI's execute_code validator blocked __subclasses__ and names beginning with an underscore, but g = (lambda: 0).__globals__ recovers the module namespace without either signal.\n"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: unfenced advisory prose. Previously the irreducible case for this rule; requiring the exploitation step separates it, because advisories name the primitive but do not chain it."
+
+evasion_tests:
+  - input: "helper = (lambda:1).__globals__['__builtins__']"
+    expected: triggered
+    bypass_technique: whitespace_free_lambda_body
+    notes: "Bounded \\s{0,2} runs absorb padding around the dot. Recovering builtins through a different bound builtin (len.__self__, sorted.__self__) is a known gap: the condition names print because that is the spelling the advisory and every published PoC use, and widening it to any identifier before .__self__ would match ordinary bound-method introspection."
