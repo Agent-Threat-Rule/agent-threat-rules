@@ -544,9 +544,13 @@ See [CHANGELOG.md](CHANGELOG.md).
     benchmark. That corpus is private and roughly 5x larger; this row is a
     self-built 850-sample corpus in PINT's format, assembled from
     `deepset/prompt-injections` (660) and `Lakera/gandalf_ignore_instructions`
-    (190). It also carries a scope caveat worth stating plainly: only **63 of
+    (190). It also carries a scope caveat worth stating plainly: only **62 of
     784 rules** fire on it at all, and `ATR-2026-00001` alone accounts for 226
-    of the 295 detections. Read it as a prompt-injection-family score, not as
+    of the 295 detections. The eval report's per-rule block lists 63 entries,
+    but one of those is `tier2.5-embedding-match` — the Tier 2.5 embedding
+    stage, not a rule. Ablating that stage leaves every confusion cell
+    unchanged (TP 295 / FP 0 / TN 399 / FN 156), so the row is reproducible as
+    a pure regex result. Read it as a prompt-injection-family score, not as
     ATR's overall coverage. The row moved 63.6% → 60.3% between 3.5.0 and
     3.5.11 for the same reason `garak` moved: PR #327 tightened
     `ATR-2026-00001`'s persona-switch regex to stop it false-positiving on
