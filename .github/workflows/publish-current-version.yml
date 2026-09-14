@@ -39,4 +39,7 @@ jobs:
         run: |
           VERSION=$(node -p "require('./package.json').version")
           echo "Publishing agent-threat-rules@${VERSION}"
-          npm publish --access public
+          # 4.0.0 shipped with a Sigstore attestation. Publishing the recovery
+          # version without one would make 4.1.0 the first unattested release
+          # on this line -- a supply-chain regression for a security catalog.
+          npm publish --access public --provenance
