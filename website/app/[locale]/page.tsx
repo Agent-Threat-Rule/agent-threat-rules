@@ -320,8 +320,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.2}>
             <h2 className="font-display text-[20px] md:text-[clamp(22px,3vw,32px)] font-extrabold tracking-[-1px] leading-[1.35] mb-3 md:mb-4 max-w-[620px] text-balance">
               {zh
-                ? <>個 skill 被標記,552 個經人工複審確認為惡意。三個協同攻擊者。史上最大的 AI agent 惡意軟體行動。</>
-                : <>skills flagged, 552 confirmed malware after manual review. Three coordinated threat actors. The largest AI agent malware campaign ever documented.</>}
+                ? <>個 skill 被標記，其中 552 個出自兩個發布帳號（這兩個帳號名下每一個 skill 都命中同一條惡意散布規則）。三個協同攻擊者。史上最大的 AI agent 惡意軟體行動。</>
+                : <>skills flagged, 552 of them published by two accounts whose entire output matched the same malware-distribution rule. Three coordinated threat actors. The largest AI agent malware campaign ever documented.</>}
             </h2>
           </Reveal>
           <Reveal delay={0.25}>
@@ -342,8 +342,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.3}>
             <p className="text-sm md:text-base text-graphite max-w-[520px] mt-5 leading-[1.8] text-pretty">
               {zh
-                ? "ATR 掃描 ClawHub、OpenClaw、Skills.sh 等六個 registry,共 96,096 個 skill 時發現了這些攻擊者。1,302 個 skill 被標記,經人工複審後確認 552 個為惡意,全數加入黑名單並已通報 NousResearch。"
-                : "ATR found these threat actors scanning 96,096 skills across six registries — ClawHub, OpenClaw, Skills.sh, and three others. 1,302 were flagged; 552 confirmed malware after manual review, all blacklisted and reported to NousResearch."}
+                ? "ATR 掃描 ClawHub、OpenClaw、Skills.sh 等六個 registry,共 96,096 個 skill 時發現了這些攻擊者。1,302 個 skill 被標記、其中 552 個出自兩個發布帳號（這兩個帳號名下每一個 skill 都命中同一條惡意散布規則），全數加入黑名單並已通報 NousResearch。"
+                : "ATR found these threat actors scanning 96,096 skills across six registries — ClawHub, OpenClaw, Skills.sh, and three others. 1,302 were flagged; 552 of them published by two accounts whose entire output matched the same malware-distribution rule, all blacklisted and reported to NousResearch."}
             </p>
           </Reveal>
           <Reveal delay={0.35}>

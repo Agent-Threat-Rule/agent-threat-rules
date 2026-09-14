@@ -68,9 +68,9 @@ export default async function FiveEyesPostPage({
           </p>
           <p>
             所以我們去讀了。我們掃了五個公開 registry 的 96,096 個 AI agent skill 與 MCP
-            server 定義檔。其中 1,302 個觸發了偵測規則，人工複審後 552 個確認為惡意——
-            憑證竊取、靜默外滲、把命令執行藏在 agent 當成指令照單全收的工具描述裡。三個
-            協同的發布者帳號出貨了其中絕大多數。
+            server 定義檔。其中 1,302 個觸發了偵測規則——憑證竊取、靜默外滲、把命令執行藏在 agent
+            當成指令照單全收的工具描述裡。三個協同的發布者帳號出貨了其中絕大多數:光是兩個帳號
+            名下的 552 個 skill,每一個都命中同一條惡意散布規則。
           </p>
           <p>
             指引要你驗證第三方元件。Agent Threat Rules(ATR)就是做這件事的開放、廠商中立、MIT
@@ -149,10 +149,10 @@ export default async function FiveEyesPostPage({
           </p>
           <p>
             So we read it. We scanned 96,096 AI agent skills and MCP server definitions across
-            five public registries. 1,302 tripped our detection rules; 552 were confirmed
-            malicious after manual review — credential theft, silent exfiltration, command
+            five public registries. 1,302 tripped our detection rules — credential theft, silent exfiltration, command
             execution buried in tool descriptions an agent ingests as instructions. Three
-            coordinated publisher accounts shipped most of them.
+            coordinated publisher accounts shipped most of them: 552 of those flagged skills come
+            from just two accounts, every single one matching the same malware-distribution rule.
           </p>
           <p>
             The guidance asks you to verify third-party components. Agent Threat Rules (ATR) is
