@@ -4,6 +4,35 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-08-23
+
+Published from `464548b43`. 778 effective rules across 10 categories.
+
+Two externally visible defaults flip, which is what makes this a major. Both are
+detailed in the sections below; the short version for anyone deciding whether to
+upgrade:
+
+- **Blocking is off unless an operator turns it on.** In the default posture the
+  Claude Code hook omits `permissionDecision` entirely and `ActionExecutor`
+  dispatches nothing above the `observe` blast-radius tier. Detection output is
+  unchanged. Turn it on with `--blocking` / `ATR_BLOCKING=1`, or `blocking: true`
+  on the engine's executor and hook handler.
+- **ATR never emits `permissionDecision: "allow"`, in either mode.** That value is
+  not neutral in the hook contract — it is an affirmative approval that suppresses
+  the host's own permission prompt. A decision is emitted only to restrain
+  (`deny` / `ask`).
+
+Also in this release, and the reason it matters more than the version number: the
+guard had never evaluated a real Claude Code event. It read `input.hook` where the
+host sends `hook_event_name`, so every event returned "Unknown hook type" with no
+rule evaluated. Fixed in two parts — the dispatch, then the constructed event
+shape. If you have been running `atr guard` as a hook, it was inert until now.
+
+Framework adapters (`mastra`, `openshell-filter`, `nemoclaw-preflight`) keep their
+own severity floors and are not covered by the blocking switch; measured
+false-positive rates for each are in the scope-limit note below.
+
+
 ### Changed — blocking is now opt-in (BREAKING for anyone relying on the old default)
 
 - **`atr guard` no longer emits a `permissionDecision` unless blocking is
