@@ -1,8 +1,10 @@
 # ATR Limitations
 
-ATR v3.5.0 uses regex-based pattern detection (`detection_tier: pattern`, `schema_version: 0.1`). This document is a transparent accounting of what that approach can and cannot do. Read this before deploying ATR in production.
+ATR uses regex-based pattern detection (`detection_tier: pattern`, `schema_version: 0.1`). This document is a transparent accounting of what that approach can and cannot do. Read this before deploying ATR in production.
 
-**Current stats:** 652 rules (ATR 3.5.0). On an 850-sample PINT-format corpus (deepset/prompt-injections + Lakera Gandalf -- not Lakera's official private PINT benchmark): 63.6% recall, 99.7% precision. SKILL.md benchmark: 100% recall, 97% precision, 0.20% FP (498 real-world samples). Plus 64 evasion tests documenting known bypasses. (Benchmarks re-measured against 3.5.0 on 2026-06-16; see README §Benchmarks for the full version-pinned table.)
+**Current stats:** 778 effective rules (785 files, 7 inert). On an 850-sample PINT-format corpus (deepset/prompt-injections + Lakera Gandalf -- not Lakera's official private PINT benchmark): 65.4% recall, measured against 3.5.12 on 2026-08-15. SKILL.md benchmark: 100% recall in the hunt lane and 0% in the enforce lane, 97% precision, 0.20% FP (498 real-world samples). Plus 64 evasion tests documenting known bypasses.
+
+A precision figure is deliberately absent from the PINT line. The 99.7% this document carried until 2026-08-23 was withdrawn on 2026-06-15 and must not be requoted: on an all-attack corpus, precision is a script convention rather than a measurement, because there are no negatives to be wrong about. The current benign gate is also being rebuilt after real attacks were found mixed into it, so there is no false-positive rate this project is willing to publish today. See README §Benchmarks for the version-pinned table.
 
 That pass rate sounds impressive. It is not. It means ATR correctly matches the patterns it was written to match. It says nothing about attacks that use different words to express the same intent.
 
@@ -133,8 +135,8 @@ We evaluated ATR against 850 external samples sourced from deepset/prompt-inject
 
 | Metric | Score |
 |--------|-------|
-| Precision | 99.7% |
-| Recall | 63.6% |
+| Precision | withdrawn -- see note below |
+| Recall | 65.4% (3.5.12, 2026-08-15) |
 | F1 | 77.7% |
 
 **Precision is high.** When ATR fires, it is almost always correct. This is by design -- regex patterns are specific, so false positives are rare.
@@ -160,7 +162,7 @@ On the MCP/PINT benchmark (v0.4, 71 rules at the time), only 6 rules fired on ex
 | Corpus | Recall |
 |--------|--------|
 | Self-test (341 samples) | 89.7% |
-| External (850 samples) | 63.6% |
+| External (850 samples) | 65.4% |
 
 The 26-point gap is explained entirely by the paraphrase problem. Self-test samples use the exact phrasings the rules were written to match. External samples express the same malicious intent using different words, sentence structures, and languages. This is the fundamental limitation of regex-based detection, documented extensively in the "What Regex CANNOT Detect" section above.
 
