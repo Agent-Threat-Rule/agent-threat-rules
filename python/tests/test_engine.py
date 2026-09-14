@@ -6,8 +6,9 @@ import os
 from pathlib import Path
 
 import pytest
+import yaml
 
-from pyatr.engine import ATREngine
+from pyatr.engine import ATREngine, _parse_rule
 from pyatr.types import AgentEvent
 
 RULES_DIR = Path(__file__).resolve().parent.parent.parent / "rules"
@@ -35,6 +36,43 @@ class TestRuleLoading:
                 f"Rule {rule.id} has unexpected severity: {rule.severity}"
             )
             assert len(rule.conditions) > 0, f"Rule {rule.id} has no conditions"
+
+
+@pytest.mark.parametrize(
+    "rule_path,event_type",
+    [
+        ("prompt-injection/ATR-2026-00442-quoted-exact-output-forcing.yaml", "llm_input"),
+        ("privilege-escalation/ATR-2026-02100-cypher-destructive-admin-query-injection.yaml", "llm_input"),
+        ("privilege-escalation/ATR-2026-02300-mcp-stdio-config-dangerous-env-var.yaml", "llm_input"),
+        ("context-exfiltration/ATR-2026-02304-preapproved-domain-encoded-path-exfil.yaml", "llm_input"),
+    ],
+)
+def test_variable_lookbehind_rule_vectors(rule_path: str, event_type: str) -> None:
+    data = yaml.safe_load((RULES_DIR / rule_path).read_text(encoding="utf-8"))
+    engine = ATREngine()
+    engine.load_rule(_parse_rule(data))
+
+    for case in data["test_cases"]["true_positives"]:
+        assert engine.evaluate(AgentEvent(case["input"], event_type)), case["input"]
+    for case in data["test_cases"]["true_negatives"]:
+        assert not engine.evaluate(AgentEvent(case["input"], event_type)), case["input"]
+
+
+def test_invalid_regex_warns_once_and_is_not_retried(caplog: pytest.LogCaptureFixture) -> None:
+    path = RULES_DIR / "context-exfiltration/ATR-2026-00290-divergence-repeat-word-training-extraction.yaml"
+    rule = _parse_rule(yaml.safe_load(path.read_text(encoding="utf-8")))
+    engine = ATREngine()
+
+    with caplog.at_level("WARNING", logger="pyatr.engine"):
+        engine.load_rule(rule)
+        event = AgentEvent("words " * 50, "tool_response")
+        engine.evaluate(event)
+        engine.evaluate(event)
+
+    messages = [record.getMessage() for record in caplog.records]
+    assert len(messages) == 1
+    assert "ATR-2026-00290 condition 3" in messages[0]
+    assert "invalid group reference" in messages[0]
 
 
 class TestATR2026001DirectPromptInjection:
