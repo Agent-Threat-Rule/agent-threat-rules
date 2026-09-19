@@ -100,5 +100,5 @@ python -m pytest tests/ -v
 
 - ATR rules are MIT licensed (`agent-threat-rules/LICENSE`)
 - ATR DOI: [10.5281/zenodo.19178002](https://doi.org/10.5281/zenodo.19178002)
-- ATR fiscal sponsor: Open Source Collective Inc. (501(c)(3), EIN 81-1567737)
+- ATR fiscal sponsor: Open Source Collective Inc. (501(c)(6), EIN 82-2037583)
 - Maintainer: Adam Lin, adam@agentthreatrule.org

@@ -44,7 +44,7 @@ The ATR project began in early 2026 as a community-led detection-rule corpus. As
 - **Measured performance**: 100% precision + 89.7% recall on 341-sample internal benchmark; 97.1% recall on NVIDIA garak; 99.7% precision + 63.2% recall on an 850-sample PINT-format corpus (self-built, not Lakera's official PINT)
 - **Zenodo DOI**: 10.5281/zenodo.19178002
 - **MIT** licensing (single license across the project)
-- **Fiscal sponsor**: Open Source Collective Inc. (501(c)(3), EIN 81-1567737)
+- **Fiscal sponsor**: Open Source Collective Inc. (501(c)(6), EIN 82-2037583)
 
 The project has matured to the point where its current single-maintainer governance model is a structural limit to further adoption. F500 buyers, national CERTs, and OASIS / NIST / EU AI Office have all signalled that the project would benefit from a multi-stakeholder governance model and a standards-body home.
 
