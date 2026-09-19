@@ -212,13 +212,15 @@ the next section covers. Neither implies the other.
 
 Each rule carries a maturity-driven **lane**, so a consumer can trade recall for precision instead of running every rule at one fixed threshold:
 
-| Lane | Fires | Intended use | FP on a 65K-sample benign gate |
+| Lane | Fires | Intended use | FP on a benign gate |
 |---|---|---|---:|
-| `enforce` | `stable` only | Narrowest, highest-precision set — the one to run when blocking is on | ~0.24% |
+| `enforce` | `stable` only | Narrowest, highest-precision set — the one to run when blocking is on | withdrawn |
 | `alert` | `stable` + `test` | Analyst / correlation | — |
-| `hunt` | all rules except `deprecated` | Broadest visibility (**default**) | ~9% |
+| `hunt` | all rules except `deprecated` | Broadest visibility (**default**) | withdrawn |
 
-Lanes are opt-in and backward-compatible for detection: the default is `hunt`, so every integration sees exactly the rules it saw before. Selecting `enforce` raises precision by firing only the most mature rules — and therefore catches fewer attacks. Report false-positive rates lane-keyed (`enforce` ~0.24% / `hunt` ~9% on the 65K-sample benign gate), not as a single overall figure. That gate is a separate corpus from the per-source measurements in [§8 Evaluation](#8-evaluation).
+Lanes are opt-in and backward-compatible for detection: the default is `hunt`, so every integration sees exactly the rules it saw before. Selecting `enforce` raises precision by firing only the most mature rules — and therefore catches fewer attacks. False-positive rates should always be reported lane-keyed rather than as a single overall figure, and that gate is a separate corpus from the per-source measurements in [§8 Evaluation](#8-evaluation).
+
+**The two lane FP rates previously published here (`enforce` ~0.24% / `hunt` ~9% over a "65K-sample benign gate") are withdrawn, and should not be cited.** Three things were wrong with them. The gate was labelled 65,000 samples; both rates were actually measured on a 10,863-sample subsample of it. The benign corpus contained real jailbreak samples — material the rules are meant to catch, sitting in the set that defines a false positive — until the exclusion filter merged on 2026-08-04 (#373), so the corpus changed underneath both figures. And the ladder that produced the `hunt` figure depended on a file that is no longer in the repository, so that one cannot be reproduced at all. Re-measurement against the current benign corpus is pending; until it lands there is a gap here rather than a number.
 
 ### Detection and enforcement are separate switches
 
@@ -651,10 +653,10 @@ the file path and `metadata.measurement_file` in `stats.json` for the absolute
 repo path.
 
 False-positive rate is lane-keyed as of v3.5.0, not a single overall figure.
-ATR ships detection lanes (`enforce` / `alert` / `hunt`); on a 65K-sample
-benign gate the `enforce` lane (stable + `confirm`-gated rules) holds ~0.24%
-FP, while the default `hunt` lane (all rules) runs ~9% FP. Per-corpus `FP rate`
-cells above are measured in the default `hunt` lane. See [CHANGELOG.md](CHANGELOG.md)
+ATR ships detection lanes (`enforce` / `alert` / `hunt`). The specific lane FP
+rates previously quoted here are withdrawn and awaiting re-measurement — see
+the note in the lanes section above for why. Per-corpus `FP rate` cells above
+are measured in the default `hunt` lane. See [CHANGELOG.md](CHANGELOG.md)
 (v3.5.0) for the lane definitions.
 
 ```bash
