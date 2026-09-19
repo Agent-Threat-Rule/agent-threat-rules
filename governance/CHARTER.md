@@ -37,7 +37,7 @@ This charter defines the technical governance of the Agent Threat Rules (ATR)
 project. ATR is the open detection-rule standard for AI agent threats,
 maintained at github.com/Agent-Threat-Rule/agent-threat-rules under the MIT
 license (code, tooling, rule content, and this charter — a single license
-throughout). Fiscal sponsor: Open Source Collective Inc. (EIN 81-1567737).
+throughout). Fiscal sponsor: Open Source Collective Inc. (EIN 82-2037583).
 
 This charter exists because the ATR rule corpus has reached the adoption
 threshold where single-maintainer governance is a structural risk to
