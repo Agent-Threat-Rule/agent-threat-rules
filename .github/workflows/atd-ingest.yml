@@ -73,10 +73,26 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      # Prefer subscription credit over the metered API balance.
+      #
+      # These lanes used to run only against ANTHROPIC_API_KEY. When that
+      # balance ran out they kept exiting 0 with nothing produced, and the
+      # daily rule pipeline was dead for days behind a green check.
+      #
+      # scripts/lib/claude-client.ts picks the CLI when CLAUDE_CODE_OAUTH_TOKEN
+      # is set and falls back to the API key when it is not, so this step is
+      # additive: with no secret configured the workflow behaves exactly as
+      # before. Mint the token with `claude setup-token`.
+      - name: Install Claude CLI (subscription-credit backend)
+        if: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
+        run: npm install -g @anthropic-ai/claude-code
+
 
       - name: Ingest CVEs into ATD (enrich + drafted new techniques)
         id: ingest
         env:
+          # Preferred: subscription credit. Absent -> the client falls back to the API key below.
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           set -eo pipefail

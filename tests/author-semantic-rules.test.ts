@@ -259,6 +259,12 @@ describe("classifyFailure", () => {
     "FetchError: request failed, reason: ECONNRESET",
     "TypeError: fetch failed",
     "connect ETIMEDOUT 160.79.104.10:443",
+    // Found in end-to-end testing on 2026-09-22: the CLI backend's own timeout
+    // string contains none of the network tokens above, and was being filed as a
+    // content rejection — i.e. as the gate working, when nothing had run at all.
+    "Error: claude CLI timed out after 600000ms",
+    "claude CLI exited 1: Usage limit reached",
+    "claude CLI exited 1: Not logged in. Please run /login",
   ];
 
   const content = [

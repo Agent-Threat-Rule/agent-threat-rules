@@ -34,8 +34,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import yaml from 'js-yaml';
-import Anthropic from '@anthropic-ai/sdk';
 import { parseATRRule, validateRuleMeetsStandard } from '../src/quality/index.js';
+import { callClaude as sharedCallClaude, describeBackend, backendAvailable } from './lib/claude-client.js';
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -390,20 +390,14 @@ Output JSON only with the same schema as before.`;
 // LLM call + parse
 // ---------------------------------------------------------------------------
 
+/**
+ * Route through the shared client so this lane spends subscription credit via
+ * the local `claude` CLI when a CLAUDE_CODE_OAUTH_TOKEN is present, and only
+ * falls back to the metered API key when it is not. See scripts/lib/claude-client.ts
+ * for why: a metered balance running out is what killed this lane silently.
+ */
 async function callClaude(systemPrompt: string, userPrompt: string, model: string): Promise<string> {
-  const client = new Anthropic({ apiKey: process.env['ANTHROPIC_API_KEY'] });
-  const response = await client.messages.create({
-    model,
-    max_tokens: MAX_TOKENS,
-    system: systemPrompt,
-    messages: [{ role: 'user', content: userPrompt }],
-  });
-
-  const textBlock = response.content.find((b) => b.type === 'text');
-  if (!textBlock || textBlock.type !== 'text') {
-    throw new Error('No text block in LLM response');
-  }
-  return textBlock.text;
+  return sharedCallClaude(systemPrompt, userPrompt, model, MAX_TOKENS);
 }
 
 /**
@@ -974,8 +968,8 @@ async function main(): Promise<void> {
     },
   });
 
-  if (!process.env['ANTHROPIC_API_KEY']) {
-    console.error('ERROR: ANTHROPIC_API_KEY env var not set');
+  if (!backendAvailable()) {
+    console.error('ERROR: no Claude backend. Set CLAUDE_CODE_OAUTH_TOKEN (preferred, subscription credit -- run `claude setup-token`) or ANTHROPIC_API_KEY (metered credit).');
     process.exit(1);
   }
 

@@ -35,6 +35,7 @@ import { execSync } from 'node:child_process';
 import { parseArgs } from 'node:util';
 import Anthropic from '@anthropic-ai/sdk';
 import { needsUnicodeFlag } from '../src/engine.js';
+import { callClaude as sharedCallClaude, describeBackend, backendAvailable } from './lib/claude-client.js';
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -77,17 +78,14 @@ const CORPORA: readonly CorpusSpec[] = [
 // Anthropic call plumbing (same pattern as scripts/quality-upgrade.ts)
 // ---------------------------------------------------------------------------
 
+/**
+ * Route through the shared client so this lane spends subscription credit via
+ * the local `claude` CLI when a CLAUDE_CODE_OAUTH_TOKEN is present, and only
+ * falls back to the metered API key when it is not. See scripts/lib/claude-client.ts
+ * for why: a metered balance running out is what killed this lane silently.
+ */
 async function callClaude(systemPrompt: string, userPrompt: string, model: string): Promise<string> {
-  const client = new Anthropic({ apiKey: process.env['ANTHROPIC_API_KEY'] });
-  const response = await client.messages.create({
-    model,
-    max_tokens: MAX_TOKENS,
-    system: systemPrompt,
-    messages: [{ role: 'user', content: userPrompt }],
-  });
-  const textBlock = response.content.find((b) => b.type === 'text');
-  if (!textBlock || textBlock.type !== 'text') throw new Error('No text block in LLM response');
-  return textBlock.text;
+  return sharedCallClaude(systemPrompt, userPrompt, model, MAX_TOKENS);
 }
 
 function extractBalancedJson(text: string): string {
