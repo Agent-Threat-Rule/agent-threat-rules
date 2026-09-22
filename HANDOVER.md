@@ -24,12 +24,40 @@ misstatement traces back to quoting one without checking the others.
 
 ## 2. Known broken, with root cause
 
-### 2.1 npm publishing has been dead since 2026-09-14
+### 2.1 Nothing has auto-published since 2026-08-23, and the token is the smaller half
 
 `main` and the git tag are at `v4.1.0`. npm `latest` is `4.0.0`. Every downstream
 consumer is running a version that is behind `main`.
 
-The package builds and tarballs fine; it fails on the final PUT:
+Two independent faults produced that, and fixing only the token will leave the
+worse one in place.
+
+**The auto-publish trigger cannot fire any more.** `publish-on-rules-merge.yml`
+gates its only job on the head commit being bot-authored:
+
+```yaml
+if: github.event_name == 'workflow_dispatch' ||
+    contains(github.event.head_commit.message, 'crystallized rules from Threat Cloud') ||
+    github.event.head_commit.author.email == 'bot@agentthreatrule.org'
+```
+
+The comment above it says this "prevents human rule edits from triggering an
+auto-publish", which was the intent. The consequence is that **a human-authored
+security fix never publishes.** Check it:
+
+```bash
+gh run list --workflow publish-on-rules-merge.yml --limit 20 \
+  --json createdAt,conclusion,event,displayTitle
+```
+
+Every `push` run back to at least 2026-08-15 is `skipped`, including the merge of
+#531 — the commit that removed catastrophic backtracking from eight rules. And
+the bot that produced qualifying commits, `tc-pr-back.yml`, was removed from this
+repository, so the condition can no longer be met by anything at all. The lane is
+not slow; it is closed.
+
+**The credential then failed the one manual attempt.** The 2026-09-14
+`workflow_dispatch` run built and tarballed fine and failed on the final PUT:
 
 ```
 npm notice version: 4.1.0 / 2.3 MB / 1194 files
@@ -41,6 +69,20 @@ npm answers authentication failures with 404 rather than 401, so this is the
 `NPM_TOKEN` repository secret being expired or under-scoped, not a missing
 package. The secret was last updated 2026-05-29. **Fixing this needs a human with
 an npm account**; it cannot be diagnosed further from inside CI.
+
+**What actually works.** The last successful publish, 4.0.0 on 2026-08-23, went
+out through `publish.yml` on a tag push. On that event it takes the version from
+the tag without bumping, runs `npm run validate` (which
+`publish-current-version.yml` does not), signs with `--provenance`, and creates
+the GitHub Release. That is the path to use, and `--ref` must be `main` — the
+`v4.1.0` tag predates the removal of the CLI's default telemetry endpoint, so
+publishing from that tag would ship a build that reports to a vendor host by
+default.
+
+**The design question this leaves.** Whatever replaces the bot-author gate has to
+distinguish "a rules commit that should ship immediately" from "a rules commit
+that should wait", without the answer being "only bots ship". A security fix is
+the case that matters and it is the case currently excluded.
 
 ### 2.2 The evidence re-measurement gate has never once succeeded
 
@@ -95,6 +137,21 @@ so all 103 true-positive fixtures scored zero matches. The runner was repaired i
 this handover pass; re-run it and read `conformance/v1.0/README.md` for the
 current pass rate. Treat any historical "115/226" figure as an artifact of the
 broken harness, not a measurement of the rules.
+
+### 2.5 `npm test` rewrites a tracked data file
+
+A test run regenerates `data/skill-benchmark/benchmark-report.json` in place, so
+`git status` is dirty after every `npm test` and the file will eventually be
+committed by accident. The committed copy is stale in a way that shows the
+problem: it carries `rule_count: 785` and a 2026-08-23 timestamp, i.e. the v4.0.0
+corpus, while disk has 825.
+
+That matters beyond tidiness, because the file also carries `avg_latency_ms` and
+`max_latency_ms`. Those are machine-dependent — the same run on a laptop and on a
+CI runner differ by more than a factor of two — so whoever commits it last sets
+the project's published latency figures to whatever their hardware did that day.
+Either make the test write to a temp path, or regenerate the file deliberately on
+CI and nowhere else.
 
 ## 3. Traps that have already cost someone a day
 
