@@ -86,9 +86,12 @@ ${BOLD}Options:${RESET}
   --semantic-model <model>       Judge model (or ATR_SEMANTIC_MODEL / LLM_MODEL)
   --semantic-timeout <ms>        Judge request timeout (or ATR_SEMANTIC_TIMEOUT_MS)
   --semantic-no-json-mode        Do not send OpenAI JSON-mode response_format
-  --no-report        Disable anonymous Threat Cloud reporting (enabled by default)
+  --report-to-cloud  Send anonymous detection reports to a Threat Cloud endpoint.
+                     OFF BY DEFAULT: nothing leaves your machine without it.
+                     (--no-report is accepted and is a no-op, kept for compatibility.)
   --fail-on <sev>    Exit non-zero if matches at/above this severity are found (for CI / pre-commit gates)
-  --tc-url <url>     Threat Cloud endpoint (default: https://tc.panguard.ai)
+  --tc-url <url>     Threat Cloud endpoint base URL. Also read from ATR_TC_URL.
+                     Only used when --report-to-cloud is passed.
   --lane <lane>    Detection lane: enforce (stable rules only) | alert
                    (stable+test) | hunt (all maturities). Overrides ATR_LANE.
                    Default: hunt.
@@ -1362,7 +1365,7 @@ async function main(): Promise<void> {
         sarif: options['sarif'] === 'true',
         severity: options['severity'],
         failOn: options['fail-on'],
-        reportToCloud: options['no-report'] !== 'true',
+        reportToCloud: options['report-to-cloud'] === 'true',
         tcUrl: options['tc-url'],
         semantic: options['semantic'] === 'true',
         semanticApiKey: options['semantic-api-key'],
@@ -1380,7 +1383,7 @@ async function main(): Promise<void> {
         severity: options['severity'],
         failOn: options['fail-on'],
         forceType: 'skill',
-        reportToCloud: options['no-report'] !== 'true',
+        reportToCloud: options['report-to-cloud'] === 'true',
         tcUrl: options['tc-url'],
         semantic: options['semantic'] === 'true',
         semanticApiKey: options['semantic-api-key'],

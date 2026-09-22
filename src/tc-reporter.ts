@@ -30,8 +30,23 @@ import type { ATRReporter, ATRDetectionReport, ATRCleanReport } from './engine.j
 
 const MAX_BUFFER = 1000;
 
+/**
+ * The endpoint used when reporting is switched on. Reporting itself is opt-in:
+ * the CLI sends nothing unless --report-to-cloud is passed.
+ *
+ * Resolution order: explicit argument, then the ATR_TC_URL environment variable,
+ * then the built-in default. The environment variable exists so that a deployment
+ * can point the sensor at its own collector without patching this package.
+ */
+export const DEFAULT_TC_URL = 'https://tc.panguard.ai';
+
+export function resolveTcUrl(explicit?: string): string {
+  const raw = explicit ?? process.env.ATR_TC_URL ?? DEFAULT_TC_URL;
+  return raw.replace(/\/+$/, '');
+}
+
 export interface TCReporterConfig {
-  /** Threat Cloud endpoint. Default: https://tc.panguard.ai */
+  /** Threat Cloud endpoint. Default: ATR_TC_URL, else https://tc.panguard.ai */
   readonly tcUrl?: string;
   /** Optional API key for authenticated reporting. Default: env TC_API_KEY */
   readonly apiKey?: string;
@@ -63,7 +78,7 @@ export function createTCReporter(config?: TCReporterConfig): ATRReporter & {
   flush(): Promise<void>;
   destroy(): Promise<void>;
 } {
-  const tcUrl = (config?.tcUrl ?? 'https://tc.panguard.ai').replace(/\/+$/, '');
+  const tcUrl = resolveTcUrl(config?.tcUrl);
   const apiKey = config?.apiKey ?? process.env.TC_API_KEY ?? '';
   const batchSize = config?.batchSize ?? 50;
   const flushIntervalMs = config?.flushIntervalMs ?? 60_000;
