@@ -15,6 +15,7 @@ import {
   buildAuthorPrompt,
   extractJson,
   toJsRegExp,
+  classifyFailure,
   type SemanticDraft,
 } from "../scripts/author-semantic-rules.js";
 
@@ -231,5 +232,58 @@ describe("extractJson", () => {
   });
   it("returns null on non-JSON", () => {
     expect(extractJson("no json here")).toBeNull();
+  });
+});
+
+/**
+ * Infrastructure failure vs content rejection.
+ *
+ * This distinction is the difference between a lane that is working and one
+ * that is dead. `routed_to_human` means the gate looked at a draft and said no.
+ * An API error means no draft was ever produced. Folding both into one counter
+ * is what let this workflow report success with promoted:0 / errors:8 on
+ * 2026-09-21, where all eight were HTTP 400 "credit balance is too low" — the
+ * run was green for days while nothing ran.
+ *
+ * These cases are drawn from the failures that actually reached CI, plus the
+ * neighbouring shapes that would have the same consequence.
+ */
+describe("classifyFailure", () => {
+  const infrastructure = [
+    // The literal failure that went green for days.
+    "400 {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API\"}}",
+    "429 Too Many Requests: rate limit exceeded",
+    "401 Unauthorized: invalid API key",
+    "529 overloaded_error",
+    "503 Service Unavailable",
+    "FetchError: request failed, reason: ECONNRESET",
+    "TypeError: fetch failed",
+    "connect ETIMEDOUT 160.79.104.10:443",
+  ];
+
+  const content = [
+    "narrow fallback regex matched 3 benign samples",
+    "judge prompt is missing the {{input}} placeholder",
+    "draft did not match any of its own true_positives",
+    "llm returned no JSON",
+    "category 'not-a-category' is not an ATR category",
+  ];
+
+  for (const reason of infrastructure) {
+    it(`treats as infrastructure: ${reason.slice(0, 56)}`, () => {
+      expect(classifyFailure(reason)).toBe("infrastructure");
+    });
+  }
+
+  for (const reason of content) {
+    it(`treats as content: ${reason.slice(0, 56)}`, () => {
+      expect(classifyFailure(reason)).toBe("content");
+    });
+  }
+
+  it("a gate rejection is never mistaken for the API being down", () => {
+    // The consequence of getting this backwards: every quality rejection would
+    // fail the workflow, and the lane would be red for doing its job correctly.
+    expect(content.map(classifyFailure)).not.toContain("infrastructure");
   });
 });
