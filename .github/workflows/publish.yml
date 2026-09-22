@@ -26,10 +26,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Pushes to main from this workflow go out as ATR_REPO_TOKEN rather than the
+      # default GITHUB_TOKEN. With GITHUB_TOKEN the pusher is github-actions[bot],
+      # which cannot be placed on a repository ruleset's bypass list — GitHub rejects
+      # the Integration actor at repo level. A direct push also carries no status
+      # checks of its own, so once `main` requires them this push is refused, and the
+      # failure lands late in the job after the release work is already done.
+      # ATR_REPO_TOKEN belongs to a repository admin, who is on the bypass list.
       - name: Checkout
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          token: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
