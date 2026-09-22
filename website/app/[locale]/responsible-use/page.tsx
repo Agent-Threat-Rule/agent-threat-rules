@@ -59,8 +59,8 @@ export default async function ResponsibleUsePage({
             {
               title: zh ? "整合進安全掃描器" : "Integrate into security scanners",
               desc: zh
-                ? "在 CI/CD pipeline、agent runtime、或 MCP server middleware 中執行 ATR 規則，偵測 SKILL.md、tool 描述、agent config 上的已知攻擊模式。Cisco AI Defense 與 Microsoft AGT 是生產環境的實際案例。"
-                : "Run ATR rules in CI/CD pipelines, agent runtimes, or MCP server middleware to detect known attack patterns in SKILL.md files, tool descriptions, and agent configs. Cisco AI Defense and Microsoft AGT are production examples.",
+                ? "在 CI/CD pipeline、agent runtime、或 MCP server middleware 中執行 ATR 規則，偵測 SKILL.md、tool 描述、agent config 上的已知攻擊模式。Cisco AI Defense 的開源 skill-scanner 與 Microsoft AGT 都已合併 ATR 規則集，是可以照著看的實例。"
+                : "Run ATR rules in CI/CD pipelines, agent runtimes, or MCP server middleware to detect known attack patterns in SKILL.md files, tool descriptions, and agent configs. Cisco AI Defense's open-source skill-scanner and Microsoft AGT have both merged the ATR rule pack and are worked examples you can read.",
             },
             {
               title: zh ? "紅隊測試的基準線" : "Red-team baseline",

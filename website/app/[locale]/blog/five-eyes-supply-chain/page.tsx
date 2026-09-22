@@ -67,14 +67,14 @@ export default async function FiveEyesPostPage({
             你的 agent 信任了它從未讀過的外部程式碼。
           </p>
           <p>
-            所以我們去讀了。我們掃了五個公開 registry 的 96,096 個 AI agent skill 與 MCP
-            server 定義檔。其中 1,302 個觸發了偵測規則，人工複審後 552 個確認為惡意——
+            所以我們去讀了。我們掃了五個公開 registry 的 101,280 個 AI agent skill 與 MCP
+            server 定義檔。其中 1,434 個觸發了偵測規則(engine v2.0.0，2026-04-13)——
             憑證竊取、靜默外滲、把命令執行藏在 agent 當成指令照單全收的工具描述裡。三個
-            協同的發布者帳號出貨了其中絕大多數。
+            協同的發布者帳號佔掉其中絕大多數的標記量。
           </p>
           <p>
             指引要你驗證第三方元件。Agent Threat Rules(ATR)就是做這件事的開放、廠商中立、MIT
-            授權標準——652 條機器可讀的偵測規則，對任何 skill 或 MCP manifest 秒級掃描，
+            授權標準——一整套機器可讀的偵測規則(規則數每週都在增加，現行數字見 ATR 首頁)，對任何 skill 或 MCP manifest 秒級掃描，
             任何符合規範的引擎都能評估。就像 Sigma 把 SIEM 的偵測寫成共用格式、YARA 之於
             malware：機構點出了缺口，標準把它寫成大家都能跑的規則。
           </p>
@@ -123,7 +123,7 @@ export default async function FiveEyesPostPage({
                 href={`/${locale}/research`}
                 className="font-data text-xs text-blue hover:underline break-all"
               >
-                ATR: 96,096 Skills, 552 Confirmed Malware — large-scale ecosystem scan
+                ATR: large-scale ecosystem scan of agent skills and MCP definitions
               </Link>
             </li>
           </ul>
@@ -148,16 +148,17 @@ export default async function FiveEyesPostPage({
             — your agent trusts external code it has never read.
           </p>
           <p>
-            So we read it. We scanned 96,096 AI agent skills and MCP server definitions across
-            five public registries. 1,302 tripped our detection rules; 552 were confirmed
-            malicious after manual review — credential theft, silent exfiltration, command
-            execution buried in tool descriptions an agent ingests as instructions. Three
-            coordinated publisher accounts shipped most of them.
+            So we read it. We scanned 101,280 AI agent skills and MCP server definitions across
+            five public registries. 1,434 tripped our detection rules (engine v2.0.0,
+            2026-04-13) — credential theft, silent exfiltration, command execution buried in
+            tool descriptions an agent ingests as instructions. Three coordinated publisher
+            accounts account for most of those flags.
           </p>
           <p>
             The guidance asks you to verify third-party components. Agent Threat Rules (ATR) is
-            the open, vendor-neutral, MIT-licensed standard that does exactly that — 652
-            machine-readable detection rules, evaluable by any conformant engine, running against
+            the open, vendor-neutral, MIT-licensed standard that does exactly that — a corpus of
+            machine-readable detection rules that grows every week (the current count is on the
+            ATR home page), evaluable by any conformant engine, running against
             any skill or MCP manifest in seconds. The way Sigma made SIEM detections a shared
             format and YARA did it for malware: the agencies named the gap, and a standard turns it
             into rules anyone can run.
@@ -212,7 +213,7 @@ export default async function FiveEyesPostPage({
                 href={`/${locale}/research`}
                 className="font-data text-xs text-blue hover:underline break-all"
               >
-                ATR: 96,096 Skills, 552 Confirmed Malware — large-scale ecosystem scan
+                ATR: large-scale ecosystem scan of agent skills and MCP definitions
               </Link>
             </li>
           </ul>

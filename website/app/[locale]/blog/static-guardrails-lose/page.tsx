@@ -85,10 +85,12 @@ export default async function StaticGuardrailsPostPage({
             跳過的事。
           </p>
           <p>
-            這些規則扎根於真實世界,不是假設。我們掃了五個公開 registry 的 96,096 個 agent
-            skill,人工複審後確認 552 個惡意——憑證竊取、靜默外洩、藏在工具描述裡的命令執行。
-            在 PINT 語料上 ATR 的 recall 是 63.6%、precision 99.7%:抓得到真攻擊,又幾乎不亂叫,
-            這是讓一個持續規則層「能用」而不是「太吵」的關鍵。
+            這些規則扎根於真實世界,不是假設。我們掃了五個公開 registry 的 101,280 個 agent
+            skill 與 MCP 定義,1,434 個被標記(engine v2.0.0,2026-04-13)——憑證竊取、靜默外洩、
+            藏在工具描述裡的命令執行。在一份 PINT 格式的自建 850 樣本語料上(不是 Lakera 官方
+            PINT benchmark),ATR 的 recall 是 65.4%、在 399 個良性樣本上 0 誤報(ATR 3.5.12,
+            2026-08-15):抓得到這一類攻擊,又不亂叫。注意這份語料只有一小部分規則會開火,
+            請把它讀成 prompt injection 家族的分數,不是整體覆蓋率。
           </p>
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">結論</h2>
@@ -128,7 +130,7 @@ export default async function StaticGuardrailsPostPage({
                 href={`/${locale}/research`}
                 className="font-data text-xs text-blue hover:underline break-all"
               >
-                ATR: 96,096 Skills, 552 Confirmed Malware — large-scale ecosystem scan
+                ATR: large-scale ecosystem scan of agent skills and MCP definitions
               </Link>
             </li>
           </ul>
@@ -186,11 +188,14 @@ export default async function StaticGuardrailsPostPage({
           </p>
           <p>
             The rules are grounded in what is actually in the wild, not hypotheticals. A scan of
-            96,096 published agent skills confirmed 552 as malicious after manual review — credential
-            theft, silent exfiltration, command execution buried in tool descriptions an agent
-            ingests as instructions. On the PINT corpus ATR runs at 63.6% recall and 99.7%
-            precision: it catches real attacks while almost never crying wolf, which is what keeps a
-            continuous rules layer usable instead of noisy.
+            101,280 published agent skills and MCP definitions flagged 1,434 of them (engine
+            v2.0.0, 2026-04-13) — credential theft, silent exfiltration, command execution buried
+            in tool descriptions an agent ingests as instructions. On a self-built 850-sample
+            corpus in PINT&rsquo;s format (not Lakera&rsquo;s official PINT benchmark) ATR runs at
+            65.4% recall with zero false positives on its 399 benign samples (ATR 3.5.12, measured
+            2026-08-15): it catches this family of attacks without crying wolf. Only a small subset
+            of rules fire on that corpus, so read it as a prompt-injection-family score rather than
+            overall coverage.
           </p>
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">The takeaway</h2>
@@ -228,7 +233,7 @@ export default async function StaticGuardrailsPostPage({
                 href={`/${locale}/research`}
                 className="font-data text-xs text-blue hover:underline break-all"
               >
-                ATR: 96,096 Skills, 552 Confirmed Malware — large-scale ecosystem scan
+                ATR: large-scale ecosystem scan of agent skills and MCP definitions
               </Link>
             </li>
           </ul>

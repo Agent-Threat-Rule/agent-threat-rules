@@ -24,7 +24,12 @@ interface ClawHubStats {
   flaggedCount: number;
 }
 
-// --- Mega Scan (96K ecosystem scan across 6 registries) ---
+// --- Mega Scan (per-registry crawl counts for the wild scan) ---
+// NOTE: this report's `totals` and `malware_campaign` are NOT citable. Its
+// totals describe the analysed subset of the wild scan, and its
+// confirmed_malware count is publisher-level attribution applied account-wide,
+// not per-file adjudication. Only the per-registry crawl counts are read from
+// here; the citable headline figures come from WildScanReport below.
 interface MegaScanReport {
   scan_date: string;
   engine_version?: string;
@@ -32,14 +37,21 @@ interface MegaScanReport {
   sources: Record<string, number>;
   totals: { scanned: number; flagged: number; flagged_rate?: string };
   severity: { critical: number; high: number; medium: number };
-  malware_campaign?: {
-    confirmed_malware: number;
-    threat_actors: Array<{
-      name: string;
-      skills: number;
-      malicious_rate: number;
-    }>;
-  };
+}
+
+// --- Wild Scan (the citable artifact) ---
+// data/full-scan-v2-2026-04-14.json is the only wild-scan artifact this repo
+// owns that preserved paths and rule ids. Per the standing freeze on wild-scan
+// figures, ONLY `total_scanned` / `total_flagged` / `engine.version` from this
+// file are citable externally. Confirmed-malware counts derived from it are
+// publisher attribution, not per-file analysis, and are not published here.
+// See docs/research/wild-scan-drift.md.
+interface WildScanReport {
+  timestamp: string;
+  engine: { version: string; rules: number };
+  total_scanned: number;
+  total_flagged: number;
+  severity: { critical: number; high: number; medium: number };
 }
 
 // --- PINT Benchmark ---
@@ -288,6 +300,9 @@ export function loadSiteStats(): SiteStats {
   const mega = readJson<MegaScanReport>(
     join(DATA_DIR, "mega-scan-report.json"),
   );
+  const wild = readJson<WildScanReport>(
+    join(DATA_DIR, "full-scan-v2-2026-04-14.json"),
+  );
   const pint = readJson<PintReport>(
     join(DATA_DIR, "pint-benchmark", "pint-eval-report.json"),
   );
@@ -344,22 +359,29 @@ export function loadSiteStats(): SiteStats {
     clawHubHigh: clawhub?.summary?.HIGH ?? 1124,
     clawHubScanDate: clawhub?.scanDate ?? "2026-03-26",
 
-    megaScanTotal: mega?.totals?.scanned ?? 96096,
-    megaScanFlagged: mega?.totals?.flagged ?? 1302,
-    megaScanCritical: mega?.severity?.critical ?? 989,
-    megaScanHigh: mega?.severity?.high ?? 353,
+    // Frozen artifact — these four come from full-scan-v2-2026-04-14.json,
+    // the only wild-scan figures cleared for external citation
+    // (101,280 scanned / 1,434 flagged, engine v2.0.0, as of 2026-04-13).
+    megaScanTotal: wild?.total_scanned ?? 101280,
+    megaScanFlagged: wild?.total_flagged ?? 1434,
+    megaScanCritical: wild?.severity?.critical ?? 1210,
+    megaScanHigh: wild?.severity?.high ?? 282,
     megaScanSources: {
       openclaw: mega?.sources?.openclaw ?? 56480,
       skillsSh: mega?.sources?.skills_sh ?? 3115,
     },
-    megaScanDate: mega?.scan_date ?? "2026-04-14",
+    megaScanDate: wild?.timestamp?.slice(0, 10) ?? "2026-04-13",
 
+    // PINT-format corpus: self-built, 850 samples, NOT Lakera's official PINT
+    // benchmark. Fallbacks mirror data/measurements/pint/latest.json
+    // (ATR 3.5.12, measured 2026-08-15): 65.4% recall / 100% precision /
+    // 79.1% F1. Never re-introduce the withdrawn single-figure precision claim.
     pintSamples: pint?.report?.corpusSize ?? 850,
     pintPrecision:
-      Math.round((pint?.report?.overall?.precision ?? 0.9965) * 1000) / 10, // 99.7%
+      Math.round((pint?.report?.overall?.precision ?? 1) * 1000) / 10,
     pintRecall:
-      Math.round((pint?.report?.overall?.recall ?? 0.6319) * 1000) / 10, // 63.2%
-    pintF1: Math.round((pint?.report?.overall?.f1 ?? 0.7599) * 1000) / 10, // 76.0%
+      Math.round((pint?.report?.overall?.recall ?? 0.6541) * 1000) / 10,
+    pintF1: Math.round((pint?.report?.overall?.f1 ?? 0.7909) * 1000) / 10,
 
     selfTestSamples: eval_?.report?.corpusSize ?? 341,
     selfTestPrecision:

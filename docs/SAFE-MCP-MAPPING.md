@@ -216,7 +216,7 @@ SAFE-MCP version: latest (85 techniques, 47 mitigations)
 | **Output** | "These attacks exist and here's how they work" | "Here's how to detect these attacks in real MCP traffic" |
 | **Format** | Markdown technique descriptions with mitigations | Machine-readable YAML rules with regex patterns |
 | **Data** | Theoretical framework with example scenarios | 36,394 real-world skills scanned, empirical findings |
-| **Benchmark** | No benchmark | PINT-format corpus (self-built): 63.6% recall, 99.7% precision |
+| **Benchmark** | No benchmark | PINT-format corpus (self-built, 850 samples from `deepset/prompt-injections` + `Lakera/gandalf_ignore_instructions`; **not** Lakera's official PINT benchmark): 65.4% recall, 100.0% precision, measured against ATR 3.5.12 on 2026-08-15. This is a prompt-injection-family score, not ATR's overall coverage. Current figures: [README section 8](../README.md#8-evaluation) |
 | **OWASP** | Not mapped | 10/10 OWASP Agentic Top 10 coverage |
 
 **ATR provides the detection layer that operationalizes SAFE-MCP's threat taxonomy.** SAFE-MCP tells you what to look for; ATR tells you how to find it.

@@ -35,11 +35,17 @@ const ATD_STATUS_ZH = "Editor's Draft — 治理前草案";
 const ATD_DATE = "2026-06-13";
 const ATD_DOI = "10.5281/zenodo.19178002";
 
-// Verified benchmark proof (state/facts.json, 2026-06-14). Real corpora.
+// Version-pinned benchmark proof. Every figure below mirrors
+// data/measurements/<source>/latest.json at ATR 3.5.12, measured 2026-08-15 —
+// re-verify there before citing, and never re-introduce the withdrawn
+// single-figure PINT precision claim.
+const PROOF_AS_OF = "2026-08-15";
+const PROOF_ATR_VERSION = "3.5.12";
 const PROOF = {
-  skill: { recall: 100, fp: 0, n: 341 },
-  garak: { recall: 98, n: 650 },
-  pint: { recall: 63.2, precision: 99.7, n: 850 },
+  selfTest: { recall: 96.6, fp: 0, n: 341 },
+  garak: { recall: 92.3, n: 650 },
+  // Self-built corpus in PINT's format — NOT Lakera's official PINT benchmark.
+  pint: { recall: 65.4, precision: 100, n: 850 },
 };
 
 const sevColor: Record<string, string> = {
@@ -293,8 +299,8 @@ export default async function ATDPage({
             { v: String(ATD_STATS.techniques), l: locale === "zh" ? "技法已編目" : "techniques cataloged" },
             { v: String(ATD_STATS.withCve), l: locale === "zh" ? "有 CVE 佐證" : "CVE-backed" },
             { v: String(ATD_STATS.withLiveRule), l: locale === "zh" ? "已綁定偵測規則(覆蓋率,非門檻)" : "bound to a rule (coverage, not a gate)" },
-            { v: `${PROOF.skill.recall}% · 0 FP`, l: locale === "zh" ? `recall(skill 語料 n=${PROOF.skill.n})` : `recall · ${PROOF.skill.fp} FP (skill corpus, n=${PROOF.skill.n})` },
-            { v: `${PROOF.garak.recall}%`, l: locale === "zh" ? `recall(garak 野外 n=${PROOF.garak.n})` : `recall (garak in-the-wild, n=${PROOF.garak.n})` },
+            { v: `${PROOF.selfTest.recall}% · ${PROOF.selfTest.fp} FP`, l: locale === "zh" ? `recall(self-test 語料 n=${PROOF.selfTest.n}·ATR ${PROOF_ATR_VERSION}·${PROOF_AS_OF})` : `recall · ${PROOF.selfTest.fp} FP (self-test corpus, n=${PROOF.selfTest.n}, ATR ${PROOF_ATR_VERSION}, ${PROOF_AS_OF})` },
+            { v: `${PROOF.garak.recall}%`, l: locale === "zh" ? `recall(garak 野外 n=${PROOF.garak.n}·ATR ${PROOF_ATR_VERSION}·${PROOF_AS_OF})` : `recall (garak in-the-wild, n=${PROOF.garak.n}, ATR ${PROOF_ATR_VERSION}, ${PROOF_AS_OF})` },
           ].map((m, i) => (
             <div key={i} style={{ background: "var(--spec-tint)", borderRadius: "10px", padding: "0.9rem 1rem" }}>
               <div className="text-navy-ink" style={{ fontFamily: "var(--font-data)", fontSize: "1.35rem", fontWeight: 600, letterSpacing: "-0.01em" }}>{m.v}</div>
@@ -304,9 +310,9 @@ export default async function ATDPage({
         </div>
         <p className="text-stone" style={{ fontSize: "0.8rem", marginTop: "0.9rem", lineHeight: 1.6 }}>
           {locale === "zh" ? (
-            <>ATD 的偵測規則由 ATR 發布 —— 已在 production:Microsoft Agent Governance Toolkit、Cisco AI Defense;並於 MISP/CIRCL 對映。consumer 整合的是 ATR 規則,非對本草案標準的背書。DOI{" "}<a className="text-navy underline" href={`https://doi.org/${ATD_DOI}`} target="_blank" rel="noopener noreferrer">{ATD_DOI}</a>。</>
+            <>ATD 的偵測規則由 ATR 發布 —— 已合併進 Microsoft Agent Governance Toolkit 與 Cisco AI Defense 的開源 skill-scanner,並於 MISP/CIRCL 對映。consumer 整合的是 ATR 規則,非對本草案標準的背書。DOI{" "}<a className="text-navy underline" href={`https://doi.org/${ATD_DOI}`} target="_blank" rel="noopener noreferrer">{ATD_DOI}</a>。</>
           ) : (
-            <>ATD&apos;s detection rules ship in ATR — in production in Microsoft Agent Governance Toolkit and Cisco AI Defense, and mapped in MISP/CIRCL. Consumers integrate ATR rules; this is not an endorsement of this draft standard. DOI{" "}<a className="text-navy underline" href={`https://doi.org/${ATD_DOI}`} target="_blank" rel="noopener noreferrer">{ATD_DOI}</a>.</>
+            <>ATD&apos;s detection rules ship in ATR — merged into Microsoft Agent Governance Toolkit and Cisco AI Defense&apos;s open-source skill-scanner, and mapped in MISP/CIRCL. Consumers integrate ATR rules; this is not an endorsement of this draft standard. DOI{" "}<a className="text-navy underline" href={`https://doi.org/${ATD_DOI}`} target="_blank" rel="noopener noreferrer">{ATD_DOI}</a>.</>
           )}
         </p>
       </section>

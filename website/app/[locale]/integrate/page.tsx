@@ -168,8 +168,8 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
           <div className="p-6">
             <p className="text-sm text-graphite mb-4 leading-relaxed">
               {locale === "zh"
-                ? "不需要註冊、不需要 API key。一行指令掃描你的 SKILL.md 或 MCP config——你在本機跑的這份 YAML,正是 Cisco 與 Microsoft 在 production 跑的同一份規則。"
-                : "No signup, no API key. One command scans your SKILL.md or MCP config — the same YAML you run locally is the same ruleset Cisco and Microsoft run in production."}
+                ? "不需要註冊、不需要 API key。一行指令掃描你的 SKILL.md 或 MCP config——你在本機跑的這份 YAML,正是已合併進 Cisco 與 Microsoft 開源工具的同一份規則。"
+                : "No signup, no API key. One command scans your SKILL.md or MCP config — the same YAML you run locally is the same ruleset merged into Cisco's and Microsoft's open-source tooling."}
             </p>
             <div className="space-y-3">
               <div>
@@ -289,8 +289,8 @@ jobs:
               </p>
               <p className="text-xs text-mist mt-2 leading-[1.7]">
                 {locale === "zh"
-                  ? "採用形式不只 GitHub Action——Cisco AI Defense (PR #79 PoC + PR #99 production) 以 rule-packs CLI 整合完整規則集;Microsoft AGT (PR #908 PoC + PR #1277 production) 以 PolicyDocument 格式整合規則(提 PR 時為 287 條,後續每週自動同步至 ATR main);Gen Digital Sage (PR #33) 整套規則包進 agentic-AI 風險評分層。這三筆算「上游採用」,不屬於 Action 使用統計。"
-                  : "Adoption forms vary — Cisco AI Defense (PR #79 PoC + PR #99 production) integrates the full rule pack via a rule-packs CLI; Microsoft AGT (PR #908 PoC + PR #1277 production) integrates rules as PolicyDocument (287 rules at time of PR, auto-synced to ATR main since via a weekly workflow); Gen Digital Sage (PR #33) ships the rule pack inside the agentic-AI risk-scoring layer. These three count as upstream adoption, separate from Action usage."}
+                  ? "採用形式不只 GitHub Action——Cisco AI Defense 的開源 skill-scanner (PR #79 PoC + PR #99) 以 rule-packs CLI 整合規則集;Microsoft AGT (PR #908 PoC + PR #1277) 以 PolicyDocument 格式整合規則(提 PR 時為 287 條,後續每週自動同步至 ATR main);Gen Digital Sage (PR #33) 整套規則包進 agentic-AI 風險評分層。這三筆算「上游採用」,憑據都是公開 repo 裡已合併的 PR,不屬於 Action 使用統計。"
+                  : "Adoption forms vary — Cisco AI Defense's open-source skill-scanner (PR #79 PoC + PR #99) consumes the rule pack via a rule-packs CLI; Microsoft AGT (PR #908 PoC + PR #1277) integrates rules as PolicyDocument (287 rules at time of PR, auto-synced to ATR main since via a weekly workflow); Gen Digital Sage (PR #33) ships the rule pack inside the agentic-AI risk-scoring layer. These three count as upstream adoption, each evidenced by a merged pull request in a public repository, and are separate from Action usage."}
               </p>
             </div>
           </div>
@@ -365,7 +365,7 @@ jobs:
                 { label: locale === "zh" ? "繞過測試" : "Evasion testing", atr: locale === "zh" ? "64 種已記錄的繞過技術，規則附帶 evasion_tests" : "64 documented evasion techniques, with per-rule evasion_tests", own: locale === "zh" ? "需要額外投入時間建立" : "Requires dedicated effort to build" },
                 { label: locale === "zh" ? "OWASP / MITRE 對應" : "OWASP / MITRE mapping", atr: locale === "zh" ? "內建。Agentic 10/10 + 每條規則對應 MITRE ATLAS" : "Pre-built. 10/10 Agentic + MITRE ATLAS per rule", own: locale === "zh" ? "數小時的手動對應工作" : "Hours of manual mapping work" },
                 { label: locale === "zh" ? "維護成本" : "Maintenance", atr: locale === "zh" ? "社群維護。MIT 授權。零成本。" : "Community-maintained. MIT. Zero cost.", own: locale === "zh" ? "需要持續的人力投入" : "Requires ongoing engineering effort" },
-                { label: locale === "zh" ? "生態系" : "Ecosystem", atr: locale === "zh" ? "Cisco、Microsoft、MISP 已整合，OWASP PR 審查中" : "Cisco, Microsoft, MISP integrated; OWASP PRs under review", own: locale === "zh" ? "獨立維護，無共享規則" : "Maintained independently, no shared rules" },
+                { label: locale === "zh" ? "生態系" : "Ecosystem", atr: locale === "zh" ? "Cisco、Microsoft、MISP 的開源專案已合併整合，OWASP PR 審查中" : "Merged into Cisco's, Microsoft's and MISP's open-source projects; OWASP PRs under review", own: locale === "zh" ? "獨立維護，無共享規則" : "Maintained independently, no shared rules" },
               ].map((row) => (
                 <div key={row.label} className="bg-paper text-sm">
                   {/* Desktop: 3-column */}
@@ -425,9 +425,9 @@ jobs:
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-fog">
             {[
-              { label: "Cisco AI Defense", detail: locale === "zh" ? "完整 ATR 規則包 · skill-scanner production (PR #99)" : "Full ATR rule pack · skill-scanner production (PR #99)", highlight: true },
+              { label: "Cisco AI Defense", detail: locale === "zh" ? "ATR 規則包 · 開源 skill-scanner repo (PR #99)" : "ATR rule pack · open-source skill-scanner repo (PR #99)", highlight: true },
               { label: locale === "zh" ? `${stats.ruleCount} 條偵測規則` : `${stats.ruleCount} detection rules`, detail: locale === "zh" ? `${stats.categoryCount} 個威脅類別` : `${stats.categoryCount} threat categories`, highlight: false },
-              { label: locale === "zh" ? `${stats.megaScanTotal.toLocaleString()} 已掃描` : `${stats.megaScanTotal.toLocaleString()} skills scanned`, detail: locale === "zh" ? "6 個 registry · 552 確認惡意軟體" : "6 registries · 552 confirmed malware", highlight: false },
+              { label: locale === "zh" ? `${stats.megaScanTotal.toLocaleString()} 已掃描` : `${stats.megaScanTotal.toLocaleString()} scanned`, detail: locale === "zh" ? `5 個 registry · ${stats.megaScanFlagged.toLocaleString()} 個被標記 (${stats.megaScanDate})` : `5 registries · ${stats.megaScanFlagged.toLocaleString()} flagged (${stats.megaScanDate})`, highlight: false },
               { label: locale === "zh" ? `${stats.ecosystemIntegrations.length} 個生態系整合` : `${stats.ecosystemIntegrations.length} ecosystem integrations`, detail: `${stats.ecosystemIntegrations.filter(e => e.type === "merged").length} merged · ${stats.ecosystemIntegrations.filter(e => e.type === "open").length} under review`, highlight: false },
             ].map((item) => (
               <div key={item.label} className="bg-paper p-5">
@@ -528,12 +528,12 @@ jobs:
           </div>
           <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <div className="font-data text-3xl font-bold text-ink mb-1">{locale === "zh" ? "完整規則包" : "full pack"}</div>
-              <div className="text-sm text-stone">{locale === "zh" ? "在 skill-scanner production" : "in skill-scanner production"}</div>
+              <div className="font-data text-3xl font-bold text-ink mb-1">{locale === "zh" ? "規則包" : "rule pack"}</div>
+              <div className="text-sm text-stone">{locale === "zh" ? "在開源 skill-scanner repo" : "in the open-source skill-scanner repo"}</div>
             </div>
             <div>
               <div className="font-data text-3xl font-bold text-ink mb-1">{locale === "zh" ? "2 PR" : "2 PRs"}</div>
-              <div className="text-sm text-stone">{locale === "zh" ? "PoC (#79) → production (#99)" : "PoC (#79) → production (#99)"}</div>
+              <div className="text-sm text-stone">{locale === "zh" ? "PoC (#79) → 規則包 (#99)" : "PoC (#79) → rule pack (#99)"}</div>
             </div>
             <div>
               <div className="font-data text-3xl font-bold text-ink mb-1">{locale === "zh" ? "3 天" : "3 days"}</div>
@@ -543,8 +543,8 @@ jobs:
           <div className="px-6 pb-6">
             <p className="text-sm text-graphite leading-relaxed mb-4">
               {locale === "zh"
-                ? <>Cisco 的 AI Defense 團隊把 ATR 規則整合為上游依賴。第一個 PR #79(2026-04-03)合併 34 條 PoC 規則,3 天內 merge。隨後 PR #80 建置 <span className="font-data">--rule-packs</span> CLI 把 ATR 作為第一級規則來源。production PR #99(2026-04-22)把完整 ATR 規則集送進 Cisco AI Defense 的 skill-scanner 生產環境。</>
-                : <>Cisco&apos;s AI Defense team integrated ATR rules as an upstream dependency. The first PR #79 (2026-04-03) merged a 34-rule PoC in three days. Follow-up PR #80 built the <span className="font-data">--rule-packs</span> CLI to consume ATR as a first-class rule source. Production PR #99 (2026-04-22) landed the full ATR rule pack inside Cisco AI Defense&apos;s skill-scanner.</>}
+                ? <>Cisco AI Defense 團隊維護的開源 repo <span className="font-data">cisco-ai-defense/skill-scanner</span> 把 ATR 規則整合為上游依賴。第一個 PR #79(2026-04-03)合併 34 條 PoC 規則,3 天內 merge。隨後 PR #80 建置 <span className="font-data">--rule-packs</span> CLI 把 ATR 作為第一級規則來源。PR #99(2026-04-22)把 ATR 規則集合併進該 repo。這是開源 repo 的已合併 PR,不是 Cisco 商業產品的出貨聲明。</>
+                : <>The Cisco AI Defense team&apos;s open-source repo <span className="font-data">cisco-ai-defense/skill-scanner</span> integrated ATR rules as an upstream dependency. The first PR #79 (2026-04-03) merged a 34-rule PoC in three days. Follow-up PR #80 built the <span className="font-data">--rule-packs</span> CLI to consume ATR as a first-class rule source. PR #99 (2026-04-22) merged the ATR rule pack into that repo. This is a merged pull request in an open-source repository, not a shipping claim about a Cisco commercial product.</>}
             </p>
             <div className="flex flex-wrap gap-4">
               <a href="https://github.com/cisco-ai-defense/skill-scanner/pull/79" target="_blank" rel="noopener noreferrer" className="font-data text-sm text-blue hover:underline">
@@ -554,7 +554,7 @@ jobs:
                 PR #80: rule-packs CLI &rarr;
               </a>
               <a href="https://github.com/cisco-ai-defense/skill-scanner/pull/99" target="_blank" rel="noopener noreferrer" className="font-data text-sm text-blue hover:underline">
-                PR #99: production &rarr;
+                PR #99: rule pack &rarr;
               </a>
             </div>
           </div>

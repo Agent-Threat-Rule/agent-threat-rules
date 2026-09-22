@@ -80,7 +80,7 @@ export default async function ActorPage({
             {statusLabel[actor.status][locale]}
           </span>
           <span className="font-data text-xs text-stone">
-            {actor.skillsMalicious} / {actor.skillsPublished} {zh ? "惡意" : "malicious"} ({actor.malRatio})
+            {actor.skillsMalicious} / {actor.skillsPublished} {zh ? "歸因為惡意" : "attributed malicious"} ({actor.malRatio})
           </span>
           <span className="text-fog">·</span>
           <span className="font-data text-xs text-stone">
@@ -104,7 +104,7 @@ export default async function ActorPage({
             value={actor.skillsPublished.toString()}
           />
           <DataRow
-            label={zh ? "惡意比例" : "Malicious ratio"}
+            label={zh ? "歸因為惡意的比例(帳號層級)" : "Attributed-malicious ratio (publisher-level)"}
             value={`${actor.skillsMalicious} / ${actor.skillsPublished} (${actor.malRatio})`}
           />
           <DataRow

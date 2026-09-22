@@ -1,0 +1,227 @@
+# Handover notes
+
+Written 2026-09-22 for an incoming maintainer. This file is a snapshot of what is
+broken, what is load-bearing, and what only lives in one person's head. It is not
+a description of how the code works — that is [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
+Everything below was verified by running it on `main` on the date given. Where a
+number appears, the command that produces it appears next to it. Do not trust a
+number in this file that has no command beside it.
+
+---
+
+## 1. Verify the state yourself before trusting anything
+
+```bash
+find rules -name '*.yaml' | wc -l                     # rule files on disk
+node scripts/reconcile-rule-count.mjs --report        # effective vs inert breakdown
+npm view agent-threat-rules dist-tags                 # what consumers actually get
+node -p "require('./package.json').version"           # what this checkout claims
+```
+
+These four disagree more often than you would expect, and every past public
+misstatement traces back to quoting one without checking the others.
+
+## 2. Known broken, with root cause
+
+### 2.1 npm publishing has been dead since 2026-09-14
+
+`main` and the git tag are at `v4.1.0`. npm `latest` is `4.0.0`. Every downstream
+consumer is running a version that is behind `main`.
+
+The package builds and tarballs fine; it fails on the final PUT:
+
+```
+npm notice version: 4.1.0 / 2.3 MB / 1194 files
+npm error code E404
+npm error 404 Not Found - PUT https://registry.npmjs.org/agent-threat-rules
+```
+
+npm answers authentication failures with 404 rather than 401, so this is the
+`NPM_TOKEN` repository secret being expired or under-scoped, not a missing
+package. The secret was last updated 2026-05-29. **Fixing this needs a human with
+an npm account**; it cannot be diagnosed further from inside CI.
+
+### 2.2 The evidence re-measurement gate has never once succeeded
+
+`action-eligibility.yml`'s `reverify` job has run 45 times on schedule since
+2026-08-09: 44 cancelled at the 90-minute ceiling, one still in flight, zero
+successful (`gh run list --workflow action-eligibility.yml --event schedule
+--limit 100`, checked 2026-09-22). It has two independent causes, and fixing only
+the first will waste your time:
+
+1. **It cannot finish.** The header comment's "~45 minutes" was estimated against
+   a 5,352-sample benign corpus. `data/benign-fp-measurement.json` now carries
+   13,848 samples. The work is roughly 825 rules x 13,848 samples x 5 shapes.
+   Both axes only grow, so this will not recover on its own. A matrix split over
+   `--ids` slices would preserve the semantics, since `gate-promotion-fp.ts`
+   already accepts `--ids`.
+2. **It would fail even if it finished.** The diff treats "rule is on disk but not
+   yet in the evidence file" and "a number was edited by hand" as the same kind of
+   drift. Disk is at 825, evidence at 793, so 32 rules land in that bucket
+   automatically. Those need to be separate categories: tampering should mean
+   "present in both, different `fp_count`".
+
+Consequence: the evidence file's `generated_at` is frozen at 2026-09-02, so the
+one thing this gate exists to prevent — silent number drift — has never actually
+been enforced.
+
+### 2.3 The benign gate used to read 432 of 467 samples (fixed 2026-09-22)
+
+`loadBenignSkills()` in `scripts/check-rules-safety.ts` used a non-recursive
+`readdirSync`, so the 35 files in `benign/ninja-legit/` sat in the corpus without
+ever being charged against a rule. The loader now walks subdirectories and the gate
+reports 467.
+
+This is worth knowing because it moves a historical baseline: **any false-positive
+measurement taken before 2026-09-22 was taken over 432 samples, not 467.** The 35
+newly included samples were checked against all 825 rules at the time of the change
+and produced zero matches, so no rule changed status as a result.
+
+### 2.4 pyatr silently drops rules the TypeScript engine loads
+
+Open as issue #331 since 2026-07-14. `pyatr` reports the same rule count as the TS
+engine while discarding conditions whose regex it cannot compile, with no warning.
+Measured effect: 12 conditions across 5 rules dropped, and 2 rules dead outright
+in Python. Anything that quotes a Python-side detection rate is quoting a
+different rule set than the TypeScript one.
+
+### 2.5 The conformance suite could not run against its own engine
+
+`SPEC.md` §12 makes this suite normative for ATR-Compatible claims and
+`TRADEMARK.md` §5 makes it the basis for certification, but the runner invoked the
+CLI with a flag the CLI does not accept and fed it a file type the CLI rejects,
+so all 103 true-positive fixtures scored zero matches. The runner was repaired in
+this handover pass; re-run it and read `conformance/v1.0/README.md` for the
+current pass rate. Treat any historical "115/226" figure as an artifact of the
+broken harness, not a measurement of the rules.
+
+## 3. Traps that have already cost someone a day
+
+- **`new ATREngine(...)` does not load rules.** You must `await engine.loadRules()`.
+  Forgetting it produces zero matches silently, with no error, and reads exactly
+  like "the product is broken". Use `data/skill-benchmark` as a positive control
+  whenever a scan returns nothing.
+- **`scripts/` is outside `tsconfig.json`'s `include`.** `npm run typecheck` has
+  never type-checked the gate scripts; `tsx` strips types without checking them.
+- **Green CI on an old PR means nothing.** `main` moves several times a day via the
+  CVE collector. Re-run checks before merging anything more than a few days old.
+- **A merged downstream PR is not a live integration.** `ADOPTERS.md` is the source
+  of truth and carries evidence links; operational notes elsewhere go stale.
+- **Rule counts change daily.** Never paste one into anything outward-facing
+  without re-running the command in §1 first.
+- **Run `actionlint` before pushing a workflow change.** A gate added on
+  2026-09-22 runs it on every PR. It is not a style check: the release-notes body
+  is assembled inside a double-quoted shell string, so an unescaped backtick in it
+  is command substitution that runs at release time. That is exactly what it
+  caught during this handover pass.
+- **Do not hand-edit a generated block in `data/stats.json`.** `benchmarks[]` is
+  written by `sync-stats-from-measurements.ts` and `byCategory` / `categories` /
+  `version` by `reconcile-rule-count.mjs`; both have a `--check` mode that CI
+  runs. Adding so much as an explanatory key to a generated block makes it
+  disagree with its source and fails the build. Notes belong in a block no script
+  owns, such as `ecosystem`. byCategory went stale for three months because two
+  scripts each assumed the other owned it, so this is the failure mode the
+  repository has already paid for once.
+
+## 4. What only a human with credentials can do
+
+Repository secrets in use (names only — values are never printed anywhere):
+`NPM_TOKEN`, `PYPI_API_TOKEN`, `ATR_REPO_TOKEN`, `ANTHROPIC_API_KEY`,
+`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `HF_TOKEN`, `TC_API_KEY`,
+`TC_ADMIN_API_KEY`.
+
+Hand-off items that cannot be automated:
+- Reissue `NPM_TOKEN` (see §2.1) and confirm `4.1.0` publishes.
+- Confirm `security@agentthreatrule.org` actually routes to a monitored inbox.
+  `SECURITY.md` now names it as the primary disclosure channel; if it silently
+  bounces, vulnerability reports are lost without anyone noticing.
+- Decide whether `mcp-registry-v2.json` (1.7 MB, crawled 2026-03-15, 4,922
+  entries, referenced by nothing in this repo) should stay in version control. It
+  matches a `.gitignore` rule but is tracked, so the two disagree.
+
+## 4b. Commit identity
+
+`git shortlog -sne origin/main --since="6 months ago"` shows twelve distinct author
+identities over the last six months. Two things follow from that:
+
+- **244 commits are authored as `Panguard AI <support@panguard.ai>`.** This project
+  is meant to be vendor-neutral and independent of that company, and public git
+  history is permanent. The machine's *global* git config carries that identity, so
+  it authors commits silently unless a local one is set. Before your first commit,
+  run `git config user.email` in your clone and set a local identity if it returns
+  a vendor address. Do not set it globally.
+- **The human contributor appears under at least five identities**
+  (`Adam Lin <imadam4real@gmail.com>`, `Adam Lin <adam@agentthreatrule.org>`,
+  `Adamthereal`, `eeee2345`, and the vendor one above), so `git log --author` and
+  `git blame` queries will quietly miss commits. Do not use author counts to
+  measure who wrote what here.
+
+## 5. Bot pull requests
+
+Scheduled workflows used to open a new branch and a new pull request on every run
+against the same accumulating files, so all but the newest were mutually exclusive
+by construction and none could merge. The backlog peaked at 92 open pull requests,
+41 of them daily CVE-ingest drafts.
+
+PRs #587 and #589 (2026-09-22) fixed the mechanism: the lanes now maintain a
+rolling branch instead of one per run, and open their PRs with a PAT so the checks
+actually execute. The backlog is 44 as of 2026-09-22 — 25 human-authored, 19 from
+bots — and the CVE-ingest line is down to a single open PR.
+
+Two things did not follow automatically:
+
+- `demote-fp-rules` was left on the job-level `GITHUB_TOKEN` when the other lanes
+  moved to the PAT, so its PRs are still authored by `app/github-actions` and their
+  checks still park at `action_required`. That lane demotes enforce-lane rules that
+  false positive, so of all of them it is the one that most needs to go green.
+  Repaired in this pass.
+- The repair only applies to newly opened PRs. The already-stuck ones need a human
+  to close and reopen them — a human event is what triggers the workflows — or an
+  empty commit pushed to each branch. Nothing will happen to them on its own.
+
+PR #500 proposed the rolling-branch fix back on 2026-08-23 and is still open,
+overtaken by #587. Check whether it still carries anything before closing it.
+
+A note on the shape of this backlog rather than its size: #500's checks were green
+and it was still not mergeable, because `main` advances several times a day and a
+month of that drift left the branch conflicting. A green PR is a statement about
+the past. Re-run checks on anything more than a few days old before merging it.
+
+## 6. What this handover pass changed
+
+Scope was deliberately narrow: documentation accuracy, CI plumbing, and one
+security fix. **No detection rule was modified.**
+
+- Telemetry is now opt-in. `atr scan` sent results to a remote endpoint by
+  default while `CONTRIBUTING.md` promised "No telemetry"; the default is now off,
+  `--report-to-cloud` turns it on, `ATR_TC_URL` overrides the endpoint, and
+  README §11 documents exactly which fields are sent.
+- Fixed a shell injection in `issue-to-proposal.yml`. The issue title — attacker
+  controlled, since anyone can open an issue — was interpolated into a `run:`
+  block in a job holding `contents:write`, `issues:write` and a PAT. It was
+  dormant only because a label it depended on did not exist; creating that label
+  as part of this pass would have armed it.
+- Withdrawn figures removed from outward-facing copy: the two lane FP rates
+  (withdrawn in #579), `99.7% precision` (withdrawn 2026-06-15), and the "shipped
+  in Cisco AI Defense" claim (that was a merge into an open-source scanner
+  repository, not a vendor product). Historical records keep their numbers and
+  gained errata notes instead of being rewritten.
+- 156 accidentally committed files (144 agent scratch dumps, Next.js and Vercel
+  build state, Python egg-info and caches) removed from version control and added
+  to `.gitignore`. The files remain on disk.
+- Repaired the conformance runner (§2.5) and the safety gate's argument parsing,
+  which silently reported "treating as safe" and exit 0 when given the exact
+  command `CONTRIBUTING.md` told contributors to run.
+
+## 7. Where the numbers are allowed to come from
+
+`data/stats.json` is generated. `ADOPTERS.md` carries evidence links for
+integrations. `README.md` §8 is the only place benchmark figures should be quoted
+from, and it is deliberately explicit about what each figure does and does not
+support — including that the PINT corpus is self-built and is not Lakera's
+official benchmark.
+
+Figures currently withdrawn and not citable: both lane false-positive rates
+(pending re-measurement against the current benign corpus) and `99.7% precision`.
+README §8 explains why for each.

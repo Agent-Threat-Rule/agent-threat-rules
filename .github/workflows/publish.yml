@@ -154,7 +154,9 @@ jobs:
         id: rules
         run: |
           TOTAL=$(find rules -name "*.yaml" | wc -l | tr -d ' ')
+          CATEGORIES=$(find rules -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')
           echo "total=$TOTAL" >> "$GITHUB_OUTPUT"
+          echo "categories=$CATEGORIES" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
         env:
@@ -171,9 +173,12 @@ jobs:
             --notes "## ATR v${{ env.VERSION }}
 
           ### Stats
-          - **${{ steps.rules.outputs.total }}** detection rules across 9 threat categories
-          - OWASP Agentic Top 10: 10/10 coverage
-          - PINT benchmark: 62.7% recall, 99.7% precision
+          - **${{ steps.rules.outputs.total }}** detection rules across ${{ steps.rules.outputs.categories }} threat categories
+          - Framework coverage: see [COVERAGE.md](https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/COVERAGE.md)
+          - Benchmarks are version-pinned and change between releases, so they are not
+            restated here. See [README section 8](https://github.com/Agent-Threat-Rule/agent-threat-rules#8-evaluation),
+            which states what each figure does and does not support, and
+            [data/stats.json](https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/data/stats.json).
 
           ### Changes since last release
           $CHANGELOG
@@ -184,7 +189,7 @@ jobs:
           \`\`\`
 
           ### Ecosystem
-          ATR rules are consumed by [Cisco AI Defense](https://github.com/cisco-ai-defense/skill-scanner/pull/79), [OWASP](https://github.com/OWASP/www-project-top-10-for-large-language-model-applications/pull/814), and the growing ecosystem of AI agent security tools.
+          Integrations with evidence links are listed in [ADOPTERS.md](https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ADOPTERS.md). Merged pull requests into an open-source project are statements about that repository, not about any vendor's product.
 
           Full stats: [data/stats.json](https://raw.githubusercontent.com/Agent-Threat-Rule/agent-threat-rules/main/data/stats.json)
           "

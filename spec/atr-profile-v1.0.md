@@ -244,8 +244,18 @@ inclusions:
       severity: ["critical", "high", "medium"]
 
 exclusions:
-  - rule_id_pattern: "ATR-2026-009*"          # de-scoped per BSI editorial
+  - rule_id_pattern: "ATR-2026-009*"          # illustrative glob, not a live ID band
 ```
+
+> **Note on `rule_id_pattern` (added 2026-09-22).** The ID globs in the
+> examples above are illustrative syntax, not live selectors. ATR rule IDs are
+> allocated sequentially in one five-digit space and do **not** encode a threat
+> category, so an ID-prefix glob selects a numeric band that spans categories
+> and that shifts as new rules are allocated. To select by category, use
+> `tag_match.category` as shown above. Reserve `rule_id_pattern` for genuinely
+> contiguous, deliberately allocated ranges, and pin the corpus version any
+> profile was resolved against.
+
 
 The `profile: "<other-profile>@<version>"` inclusion syntax enables
 composition — a sovereign profile inherits baseline + adds its

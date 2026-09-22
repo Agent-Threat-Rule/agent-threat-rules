@@ -52,13 +52,13 @@ AMOS infostealer (314 skills from hightower6eu), MedusaLocker PoC (Cato Networks
 
 | ATR Rule | Title | Severity | What it detects |
 |---|---|---|---|
-| ATR-2026-120 | SKILL.md Prompt Injection | CRITICAL | DAN jailbreaks, instruction override, system impersonation, HTML comment injection, Unicode smuggling |
-| ATR-2026-121 | Malicious Code in Skill Package | CRITICAL | Base64 payloads, password-protected ZIP evasion, curl\|bash, credential file access, reverse shells, persistence |
-| ATR-2026-122 | Weaponized Skill | HIGH | SQLMap, Metasploit, brute-force tools, ransomware patterns |
-| ATR-2026-111 | Shell Metacharacter Injection | CRITICAL | Shell escape sequences in tool arguments |
-| ATR-2026-113 | Credential File Theft | CRITICAL | Access to .aws, .ssh, .env, openclaw.json |
-| ATR-2026-110 | Eval Injection | CRITICAL | eval() and dynamic code execution |
-| ATR-2026-095 | Supply Chain Poisoning | CRITICAL | Poisoned tool descriptions and responses |
+| ATR-2026-00120 | SKILL.md Prompt Injection | CRITICAL | DAN jailbreaks, instruction override, system impersonation, HTML comment injection, Unicode smuggling |
+| ATR-2026-00121 | Malicious Code in Skill Package | CRITICAL | Base64 payloads, password-protected ZIP evasion, curl\|bash, credential file access, reverse shells, persistence |
+| ATR-2026-00122 | Weaponized Skill | HIGH | SQLMap, Metasploit, brute-force tools, ransomware patterns |
+| ATR-2026-00111 | Shell Metacharacter Injection | CRITICAL | Shell escape sequences in tool arguments |
+| ATR-2026-00113 | Credential File Theft | CRITICAL | Access to .aws, .ssh, .env, openclaw.json |
+| ATR-2026-00110 | Eval Injection | CRITICAL | eval() and dynamic code execution |
+| ATR-2026-00095 | Supply Chain Poisoning | CRITICAL | Poisoned tool descriptions and responses |
 
 ### AST02: Supply Chain Compromise (CRITICAL) — STRONG
 
@@ -67,14 +67,14 @@ CVE-2026-25253 (CVSS 8.8), CVE-2025-59536 (CVSS 8.7), CVE-2026-28363 (CVSS 9.9 C
 
 | ATR Rule | Title | Severity | What it detects |
 |---|---|---|---|
-| ATR-2026-060 | Skill Impersonation | CRITICAL | Typosquatting of known skills |
-| ATR-2026-061 | Description-Behavior Mismatch | HIGH | Skill does something different from what it claims |
-| ATR-2026-062 | Hidden Capability | HIGH | Undisclosed dangerous capabilities |
-| ATR-2026-065 | Skill Update Attack | HIGH | Malicious updates to previously safe skills |
-| ATR-2026-066 | Parameter Injection | HIGH | Hidden parameters in tool schemas |
-| ATR-2026-089 | Polymorphic Skill | HIGH | Skills that change behavior to evade detection |
-| ATR-2026-095 | Supply Chain Poisoning | CRITICAL | Poisoned components in supply chain |
-| ATR-2026-124 | Skill Name Squatting | HIGH | Fake brand claims, crypto-themed name patterns |
+| ATR-2026-00060 | Skill Impersonation | CRITICAL | Typosquatting of known skills |
+| ATR-2026-00061 | Description-Behavior Mismatch | HIGH | Skill does something different from what it claims |
+| ATR-2026-00062 | Hidden Capability | HIGH | Undisclosed dangerous capabilities |
+| ATR-2026-00065 | Skill Update Attack | HIGH | Malicious updates to previously safe skills |
+| ATR-2026-00066 | Parameter Injection | HIGH | Hidden parameters in tool schemas |
+| ATR-2026-00089 | Polymorphic Skill | HIGH | Skills that change behavior to evade detection |
+| ATR-2026-00095 | Supply Chain Poisoning | CRITICAL | Poisoned components in supply chain |
+| ATR-2026-00124 | Skill Name Squatting | HIGH | Fake brand claims, crypto-themed name patterns |
 
 ### AST03: Over-Privileged Skills (HIGH) — MODERATE
 
@@ -83,10 +83,10 @@ by Snyk. "Consent gap" (Cato Networks): once approved, skills gain persistent pe
 
 | ATR Rule | Title | Severity | What it detects |
 |---|---|---|---|
-| ATR-2026-064 | Over-Permissioned MCP Skill | HIGH | sudo, chmod, user creation, service management |
-| ATR-2026-123 | Over-Privileged Skill (AST) | HIGH | Bash(*), autoApprove, safety disablement, identity file writes |
-| ATR-2026-041 | Scope Creep | HIGH | Operations beyond declared scope |
-| ATR-2026-118 | Approval Fatigue Exploitation | MEDIUM | Exploiting repetitive approval prompts |
+| ATR-2026-00064 | Over-Permissioned MCP Skill | HIGH | sudo, chmod, user creation, service management |
+| ATR-2026-00123 | Over-Privileged Skill (AST) | HIGH | Bash(*), autoApprove, safety disablement, identity file writes |
+| ATR-2026-00041 | Scope Creep | HIGH | Operations beyond declared scope |
+| ATR-2026-00118 | Approval Fatigue Exploitation | MEDIUM | Exploiting repetitive approval prompts |
 
 ### AST04: Insecure Metadata (HIGH) — MODERATE
 
@@ -94,9 +94,9 @@ Typosquatting, fake brand impersonation, understated risk_tier masking destructi
 
 | ATR Rule | Title | Severity | What it detects |
 |---|---|---|---|
-| ATR-2026-124 | Skill Name Squatting | HIGH | Fake official claims, brand impersonation, crypto-themed names |
-| ATR-2026-060 | Skill Impersonation | CRITICAL | Name similarity to known tools |
-| ATR-2026-106 | Schema-Description Contradiction | MEDIUM | Metadata inconsistencies |
+| ATR-2026-00124 | Skill Name Squatting | HIGH | Fake official claims, brand impersonation, crypto-themed names |
+| ATR-2026-00060 | Skill Impersonation | CRITICAL | Name similarity to known tools |
+| ATR-2026-00106 | Schema-Description Contradiction | MEDIUM | Metadata inconsistencies |
 
 ### AST05: Unsafe Deserialization (HIGH) — MODERATE
 
@@ -104,9 +104,9 @@ YAML deserialization attacks, "From SKILL.md to Shell Access in Three Lines of M
 
 | ATR Rule | Title | Severity | What it detects |
 |---|---|---|---|
-| ATR-2026-120 | SKILL.md Prompt Injection | CRITICAL | Injection via SKILL.md markdown body |
-| ATR-2026-121 | Malicious Code in Skill Package | CRITICAL | Code execution triggered by skill loading |
-| ATR-2026-110 | Eval Injection | CRITICAL | Dynamic code evaluation |
+| ATR-2026-00120 | SKILL.md Prompt Injection | CRITICAL | Injection via SKILL.md markdown body |
+| ATR-2026-00121 | Malicious Code in Skill Package | CRITICAL | Code execution triggered by skill loading |
+| ATR-2026-00110 | Eval Injection | CRITICAL | Dynamic code evaluation |
 
 ### AST06: Weak Isolation (HIGH) — PARTIAL
 
@@ -115,9 +115,9 @@ Microsoft Defender advisory: "treat as untrusted code execution."
 
 | ATR Rule | Title | Severity | What it detects |
 |---|---|---|---|
-| ATR-2026-123 | Over-Privileged Skill | HIGH | Safety disablement, sandbox bypass instructions |
-| ATR-2026-040 | Privilege Escalation | CRITICAL | Escalation beyond intended scope |
-| ATR-2026-107 | Delayed Execution Bypass | HIGH | Deferred execution to avoid detection |
+| ATR-2026-00123 | Over-Privileged Skill | HIGH | Safety disablement, sandbox bypass instructions |
+| ATR-2026-00040 | Privilege Escalation | CRITICAL | Escalation beyond intended scope |
+| ATR-2026-00107 | Delayed Execution Bypass | HIGH | Deferred execution to avoid detection |
 
 **Gap:** ATR detects symptoms of weak isolation (privilege escalation attempts) but cannot enforce isolation itself. Isolation is a platform responsibility.
 
@@ -127,8 +127,8 @@ Version range specs (~1.0.0, ^1.0.0) allow auto-install of compromised patches.
 
 | ATR Rule | Title | Severity | What it detects |
 |---|---|---|---|
-| ATR-2026-065 | Skill Update Attack | HIGH | Malicious version updates |
-| ATR-2026-089 | Polymorphic Skill | HIGH | Behavior changes across versions |
+| ATR-2026-00065 | Skill Update Attack | HIGH | Malicious version updates |
+| ATR-2026-00089 | Polymorphic Skill | HIGH | Behavior changes across versions |
 
 **Gap:** ATR cannot detect version pinning policies or range spec issues. This requires registry-level enforcement.
 
@@ -155,7 +155,7 @@ Malicious skills ported from ClawHub to skills.sh with minimal modification.
 
 | ATR Rule | Title | Severity | What it detects |
 |---|---|---|---|
-| ATR-2026-121 | Malicious Code in Skill Package | CRITICAL | Platform-agnostic malicious code patterns |
+| ATR-2026-00121 | Malicious Code in Skill Package | CRITICAL | Platform-agnostic malicious code patterns |
 
 **Gap:** ATR cannot detect cross-platform porting itself. The same malicious patterns are
 detected regardless of platform, but ATR doesn't track skill provenance across registries.
