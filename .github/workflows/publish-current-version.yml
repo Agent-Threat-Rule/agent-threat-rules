@@ -39,4 +39,9 @@ jobs:
         run: |
           VERSION=$(node -p "require('./package.json').version")
           echo "Publishing agent-threat-rules@${VERSION}"
-          npm publish --access public
+          # --provenance, because publish.yml uses it and every published version
+          # so far carries an attestation. A release that arrives without one is
+          # a visible downgrade on the registry page for a security project, and
+          # npm will not let it be added after the fact. The job already declares
+          # id-token: write, which is the only precondition.
+          npm publish --access public --provenance

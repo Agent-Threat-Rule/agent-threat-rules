@@ -5,13 +5,15 @@
  *   import { ATREngine, createTCReporter } from 'agent-threat-rules';
  *
  *   const engine = new ATREngine({
- *     reporter: createTCReporter(),          // anonymous, no API key needed
+ *     // No API key needed, but an endpoint is: this package ships no default
+ *     // destination for detection data. ATR_TC_URL supplies it here.
+ *     reporter: createTCReporter(),
  *   });
  *
  *   // or with explicit config:
  *   const engine = new ATREngine({
  *     reporter: createTCReporter({
- *       tcUrl: 'https://tc.panguard.ai',
+ *       tcUrl: 'https://collector.example.org',
  *       apiKey: process.env.TC_API_KEY,
  *       batchSize: 50,
  *       flushIntervalMs: 60_000,
@@ -31,22 +33,37 @@ import type { ATRReporter, ATRDetectionReport, ATRCleanReport } from './engine.j
 const MAX_BUFFER = 1000;
 
 /**
- * The endpoint used when reporting is switched on. Reporting itself is opt-in:
- * the CLI sends nothing unless --report-to-cloud is passed.
+ * Where detections are sent, when reporting is switched on.
  *
- * Resolution order: explicit argument, then the ATR_TC_URL environment variable,
- * then the built-in default. The environment variable exists so that a deployment
- * can point the sensor at its own collector without patching this package.
+ * There is no default endpoint, deliberately. ATR is an open standard rather
+ * than any one vendor's client, so the package must not carry a built-in
+ * destination for detection data: an operator who opts into reporting decides
+ * who receives it, and there is no address to "forget" to change. Reporting is
+ * opt-in twice over — the CLI sends nothing unless --report-to-cloud is passed,
+ * and that flag now fails loudly instead of quietly choosing a recipient.
+ *
+ * Resolution order: explicit argument, then the ATR_TC_URL environment
+ * variable. If neither is set, this throws.
  */
-export const DEFAULT_TC_URL = 'https://tc.panguard.ai';
+export class NoTcEndpointError extends Error {
+  constructor() {
+    super(
+      'Threat Cloud reporting was requested but no endpoint was given. ' +
+        'Set one with --tc-url <url> or the ATR_TC_URL environment variable. ' +
+        'ATR ships no default endpoint: you choose who receives your detections.',
+    );
+    this.name = 'NoTcEndpointError';
+  }
+}
 
 export function resolveTcUrl(explicit?: string): string {
-  const raw = explicit ?? process.env.ATR_TC_URL ?? DEFAULT_TC_URL;
-  return raw.replace(/\/+$/, '');
+  const raw = explicit ?? process.env.ATR_TC_URL;
+  if (!raw || !raw.trim()) throw new NoTcEndpointError();
+  return raw.trim().replace(/\/+$/, '');
 }
 
 export interface TCReporterConfig {
-  /** Threat Cloud endpoint. Default: ATR_TC_URL, else https://tc.panguard.ai */
+  /** Threat Cloud endpoint. Falls back to ATR_TC_URL. No built-in default — one of the two is required. */
   readonly tcUrl?: string;
   /** Optional API key for authenticated reporting. Default: env TC_API_KEY */
   readonly apiKey?: string;
@@ -130,6 +147,10 @@ export function createTCReporter(config?: TCReporterConfig): ATRReporter & {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-ATR-Client-Id': clientId,
+          // Legacy alias. The header was named after one collector before this
+          // package stopped shipping a default endpoint; existing collectors
+          // still key off it, so both go out until they read X-ATR-Client-Id.
           'X-Panguard-Client-Id': clientId,
           ...(apiKey ? { 'Authorization': `Bearer ${apiKey}` } : {}),
         },
