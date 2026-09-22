@@ -42,8 +42,9 @@ It does not use `continue-on-error`.
 | Did the run produce the expected ATR-shaped result? | `Fresh PINT-format execution evidence` | The verifier requires a fresh timestamp, 850 samples, `ATREngine`, a positive rule count, a 850-row confusion total, and a passing ATR regression result. |
 | Did execution stay within its reviewable Git mutation boundary? | `Fresh PINT-format execution evidence` | Only the two tracked report pointers plus one new dated PINT measurement may change among non-ignored Git paths. Outputs are uploaded as artifacts, then restored or removed from the disposable checkout. |
 
-The first fork dispatch is intentionally pending while this package is reviewed. Its GitHub Actions
-run and artifacts become the evidence locator; no generated measurement is committed.
+The fork-only review branch is the workflow's only push trigger, so the matrix can run before an
+upstream pull request exists. Its GitHub Actions run and artifacts become the evidence locator; no
+generated measurement is committed.
 
 The mutation verifier observes non-ignored Git paths. It does not prove complete filesystem write
 confinement: ignored dependency/setup state, ignored Ota state, and any other ignored writes remain
