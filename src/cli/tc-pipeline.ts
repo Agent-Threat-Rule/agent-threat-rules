@@ -30,8 +30,19 @@ interface TCConfig {
 }
 
 function getConfig(options: Record<string, string | undefined>): TCConfig {
+  // No built-in endpoint, for the same reason the reporter has none: this
+  // package must not name a collector. These are operator commands, so failing
+  // here costs one flag; the alternative is a hostname nobody chose.
+  const tcUrl = options['tc-url'] ?? process.env['TC_URL'];
+  if (!tcUrl || !tcUrl.trim()) {
+    console.error(
+      `${RED}Error: no Threat Cloud endpoint. Pass --tc-url <url> or set TC_URL. ` +
+        `ATR ships no default endpoint.${RESET}`,
+    );
+    process.exit(1);
+  }
   return {
-    tcUrl: (options['tc-url'] ?? process.env['TC_URL'] ?? 'https://tc.panguard.ai').replace(/\/+$/, ''),
+    tcUrl: tcUrl.trim().replace(/\/+$/, ''),
     adminKey: options['tc-key'] ?? process.env['TC_ADMIN_API_KEY'] ?? process.env['TC_API_KEY'] ?? '',
     rulesDir: resolve(options['rules'] ?? 'rules'),
     dryRun: options['dry-run'] === 'true',

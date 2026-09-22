@@ -91,7 +91,8 @@ ${BOLD}Options:${RESET}
                      (--no-report is accepted and is a no-op, kept for compatibility.)
   --fail-on <sev>    Exit non-zero if matches at/above this severity are found (for CI / pre-commit gates)
   --tc-url <url>     Threat Cloud endpoint base URL. Also read from ATR_TC_URL.
-                     Only used when --report-to-cloud is passed.
+                     REQUIRED with --report-to-cloud: ATR ships no default
+                     endpoint, so you choose who receives your detections.
   --lane <lane>    Detection lane: enforce (stable rules only) | alert
                    (stable+test) | hunt (all maturities). Overrides ATR_LANE.
                    Default: hunt.

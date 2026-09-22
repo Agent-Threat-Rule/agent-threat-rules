@@ -706,7 +706,7 @@ Vulnerability reports are coordinated under [SECURITY.md](SECURITY.md). Report p
 Anonymous detection reporting is available as an opt-in, for deployments that want to contribute detections to a shared sensor network.
 
 - **Turn it on:** `--report-to-cloud`. Without this flag nothing leaves your machine.
-- **Endpoint:** `--tc-url <url>`, or the `ATR_TC_URL` environment variable. Pass the base URL only (`https://host`); `/api/threats` is appended for you. HTTPS is required for anything that is not localhost. If neither is set, reporting goes to `https://tc.panguard.ai/api/threats`.
+- **Endpoint:** `--tc-url <url>`, or the `ATR_TC_URL` environment variable. **One of the two is required** — there is no built-in default, so opting in without naming a recipient is an error, not a silent choice of one. ATR is an open standard rather than any single collector's client, and a package that carried a destination for detection data would be making that choice on your behalf. Pass the base URL only (`https://host`); `/api/threats` is appended for you. HTTPS is required for anything that is not localhost.
 - `--no-report` is still accepted and is now a no-op, since off is the default.
 
 When reporting is on, `atr scan` prints a notice saying so before it starts and names the endpoint when it finishes. The rest of this section describes what is sent **when you have opted in**.

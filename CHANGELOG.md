@@ -4,6 +4,52 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+## [4.1.1] - 2026-09-22
+
+The first release of the 4.1 line to actually reach npm. `4.1.0` was tagged on
+2026-09-14 and never published — the publish step failed on an expired registry
+token and nobody was watching, so for 30 days `npm install agent-threat-rules`
+kept returning 4.0.0 while `main` moved 38 commits ahead. **4.1.1 carries
+everything listed under 4.1.0 below, plus the entries here.** The version number
+skips 4.1.0 on purpose, so that what is on npm and what the git tag points at are
+the same tree.
+
+### Security
+
+- **`ATR-2026-00220` condition 2 backtracked catastrophically**, the same defect
+  as condition 0 of the same rule, which was fixed in #531 — a quantified run of
+  base64 characters between two unbounded `.*` gaps, with a literal at the end.
+  Only condition 0 was rewritten at the time. Measured on Node against a
+  base64-dense single line with no matching tail: 0.5s at 1 KB, 3.4s at 2 KB,
+  **23.4s at 4 KB**. The gaps are now bounded and the run is fixed-length;
+  the same inputs measure under a millisecond at 64 KB. All five of the rule's
+  true positives still fire and all five true negatives stay clean, with
+  condition 2 matching exactly the cases it matched before.
+  Reported as GHSA-66x9-5vw9-3wv3 against condition 0, which 4.1.0 had already
+  fixed; this closes the half of the rule that report did not cover.
+- **The package no longer ships a default endpoint for detection data.**
+  Reporting has been opt-in since 4.1.0, but opting in without naming a
+  recipient silently picked one. `--report-to-cloud` now requires `--tc-url` or
+  `ATR_TC_URL` and exits with an error naming the fix if neither is set. ATR is
+  an open standard, not one collector's client: an operator who turns reporting
+  on decides who receives it, and there is no address in the package to forget
+  to change. Detection events now also carry an `X-ATR-Client-Id` header; the
+  previous vendor-named header is still sent so existing collectors keep working.
+
+> **Nine conditions still backtrack** and are listed in
+> [`data/redos-baseline.json`](data/redos-baseline.json) with measured
+> times — `ATR-2026-00285#0` and `ATR-2026-00272#0` are the worst at 16s and
+> 14s, and `ATR-2026-00707#0` is `maturity: stable`, which means it runs in the
+> enforce lane. The ReDoS gate is a ratchet against that file: a green gate
+> means nothing got worse, not that the class is closed. Do not read this
+> release as "ReDoS fixed".
+
+### Changed
+
+- `CHANGELOG.md` is now included in the npm tarball. The `files` allowlist had
+  excluded it, so a release that fixed a security defect arrived at consumers
+  with nothing in the package to say so.
+
 ### Fixed — external claims that overstated what had happened
 
 - **The npm package `description` claimed a vendor product shipped the ATR rule
@@ -30,11 +76,10 @@ All notable changes to ATR will be documented in this file.
 
 ## [4.1.0] - 2026-09-14
 
-> **Not published to npm.** The tag `v4.1.0` exists and `package.json` says
-> `4.1.0`, but the publish never completed: `npm view agent-threat-rules
-> dist-tags` still reports `latest: 4.0.0` (checked 2026-09-22). If you install
-> from npm you get 4.0.0 and none of the changes below. Installing from git
-> gives you 4.1.0.
+> **Never published to npm.** The tag `v4.1.0` exists, but the publish failed on
+> an expired registry token and was not retried for 30 days. This version number
+> does not exist on the registry and never will; everything below shipped in
+> 4.1.1 instead.
 
 At release: 825 rule files, 818 effective.
 

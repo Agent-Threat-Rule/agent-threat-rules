@@ -105,12 +105,21 @@ export async function cmdScanUnified(
   // Threat Cloud reporting is OFF by default. Scanning is a local operation, and a
   // scan of internal material must not leave the machine because of a default. Opt in
   // explicitly with --report-to-cloud.
-  const reporter = options.reportToCloud === true
-    ? createTCReporter({
+  let reporter: ReturnType<typeof createTCReporter> | undefined;
+  if (options.reportToCloud === true) {
+    try {
+      reporter = createTCReporter({
         tcUrl: options.tcUrl,
         onError: (err) => console.error(`${DIM}TC upload: ${err.message}${RESET}`),
-      })
-    : undefined;
+      });
+    } catch (err) {
+      // No endpoint configured. Refusing here is the point: the alternative is
+      // picking a recipient for the operator, which is what a built-in default
+      // did. Fail with the fix in the message rather than a stack trace.
+      console.error(`${RED}Error: ${err instanceof Error ? err.message : String(err)}${RESET}`);
+      process.exit(1);
+    }
+  }
   if (reporter) {
     console.error(`${DIM}Threat Cloud: anonymous reporting enabled via --report-to-cloud${RESET}`);
   }
