@@ -97,19 +97,29 @@ jobs:
           if git diff --cached --quiet; then
             echo "No proposal changes this run (misses unchanged since last bridge run)."
           else
-            BRANCH="garak-miss-bridge/run-${{ github.run_id }}"
-            git checkout -b "$BRANCH"
+            # One rolling branch, force-pushed each run, not one per run. The output of this
+            # lane is cumulative, so per-run branches only ever accumulated: across three lanes
+            # 18 such PRs were open on 2026-09-22, 42% of the repo's open PRs, which reads as an
+            # unmaintained project rather than as a branch-naming choice. Same fix as #587.
+            BRANCH="garak-miss-bridge/rolling"
+            git checkout -B "$BRANCH"
             git commit -m "chore: refresh garak-clusters semantic proposals from current misses
 
           Source: data/garak-benchmark/garak-full-report.json (garak full benchmark).
           Pipeline: garak-miss-to-proposals.ts -> proposals/garak-clusters/ -> author-semantic-rules.ts.
           Scope: agent-attack families only (content-safety families and samples dropped).
           Status: proposals only; no rules authored. Human review required before any rule ships."
-            git push -u origin "$BRANCH"
+            git push --force-with-lease -u origin "$BRANCH" || git push --force -u origin "$BRANCH"
+            # Rolling branch: skip creation when the PR is already open. It would fail
+            # anyway and fall through to the || echo below, which reads like an error.
+            if gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty' | grep -q .; then
+              echo "Rolling PR already open for ${BRANCH}; force-pushed, not opening a second."
+            else
             gh pr create \
               --title "garak-miss-bridge: refresh semantic attack proposals from current misses" \
               --body "Regenerated proposals/garak-clusters/ from the latest garak full benchmark misses via scripts/garak-miss-to-proposals.ts. Only agent-attack families are included (prompt injection, jailbreak override, latent injection, system-prompt extraction, encoding/web injection, exploitation); content-safety families and content-safety samples are dropped to keep ATR in its lane. These are PROPOSALS only — no rule is authored or modified here. The T2 authoring pipeline (author-semantic-rules.ts) consumes them under its own deterministic 0-FP gate. Do NOT auto-merge; human review required." \
               --label "needs-human-review" \
               || echo "PR creation failed; branch '${BRANCH}' pushed — open PR manually (main was NOT modified)."
             echo "Opened PR from ${BRANCH}"
+            fi
           fi
