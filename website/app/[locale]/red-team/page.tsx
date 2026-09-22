@@ -914,8 +914,8 @@ export default async function RedTeamPage({
         <Reveal delay={0.2}>
           <p className="text-xs text-stone mt-6 max-w-[640px]">
             {zh
-              ? '排程從 GitHub issue / PR 同步。Merge 後從這裡移到 "Already Integrated"。Maintainer 若想插隊：security@agentthreatrule.org。'
-              : 'Schedule syncs from filed GitHub issues / PRs. Once merged, entries move to "Already Integrated" above. Maintainers wanting earlier engagement: security@agentthreatrule.org.'}
+              ? '排程從 GitHub issue / PR 同步。Merge 後從這裡移到 "Already Integrated"。Maintainer 若想插隊：adam@agentthreatrule.org。'
+              : 'Schedule syncs from filed GitHub issues / PRs. Once merged, entries move to "Already Integrated" above. Maintainers wanting earlier engagement: adam@agentthreatrule.org.'}
           </p>
         </Reveal>
       </section>

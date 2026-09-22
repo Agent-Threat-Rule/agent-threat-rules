@@ -133,9 +133,14 @@ Repository secrets in use (names only — values are never printed anywhere):
 
 Hand-off items that cannot be automated:
 - Reissue `NPM_TOKEN` (see §2.1) and confirm `4.1.0` publishes.
-- Confirm `security@agentthreatrule.org` actually routes to a monitored inbox.
-  `SECURITY.md` now names it as the primary disclosure channel; if it silently
-  bounces, vulnerability reports are lost without anyone noticing.
+- The disclosure address was tested on 2026-09-22 and `security@agentthreatrule.org`
+  did not exist: mail to it bounced with SMTP 5.1.3, "the email account that you
+  tried to reach does not exist". It had been published in SECURITY.md, README, the
+  telemetry spec, the downstream sync contract and two pages of the public site, so
+  anyone who tried to report a vulnerability by mail got a bounce. All of those now
+  point at `adam@agentthreatrule.org`, which is confirmed to receive. If you want a
+  role address instead, create the alias in Google Workspace first and send a test
+  message to it before changing any published reference.
 - Decide whether `mcp-registry-v2.json` (1.7 MB, crawled 2026-03-15, 4,922
   entries, referenced by nothing in this repo) should stay in version control. It
   matches a `.gitignore` rule but is tracked, so the two disagree.

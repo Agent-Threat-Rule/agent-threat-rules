@@ -215,12 +215,12 @@ A Python equivalent will ship in the `pyatr` package.
 | -------------------------------------------- | ------------------------------------------------------------ |
 | Spec (this doc)                              | v0.1 draft, 2026-05-12                                       |
 | Endpoint `telemetry.agentthreatrule.org`     | Not yet deployed — waiting for first consumer commitment     |
-| HMAC consumer key registry                   | Manual coordination via security@agentthreatrule.org         |
+| HMAC consumer key registry                   | Manual coordination via adam@agentthreatrule.org         |
 | `src/telemetry/client.ts`                    | Not built — implements once endpoint lands                   |
 | `scripts/aggregate-telemetry.ts`             | Not built — implements once first reports land               |
 | `scripts/maturity-promote.ts` telemetry hook | Wired as TODO comment — activates when telemetry data exists |
 
 If you maintain a downstream consumer and want to implement this
-spec, please open an issue or email `security@agentthreatrule.org`.
+spec, please open an issue or email `adam@agentthreatrule.org`.
 First implementer gets their feedback prioritised in the spec
 revision.

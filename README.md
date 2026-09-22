@@ -697,7 +697,7 @@ ATR is currently single-maintainer (BDFL) under Adam Lin, transitioning to a Tec
 
 ## 10. Security
 
-Vulnerability reports are coordinated under [SECURITY.md](SECURITY.md). Report privately — not in a public issue — for anything concerning a vulnerability in the engine or the rule corpus. Two channels are open: email to <security@agentthreatrule.org>, or a [GitHub Security Advisory](https://github.com/Agent-Threat-Rule/agent-threat-rules/security/advisories/new) (private vulnerability reporting is enabled on this repository, verified 2026-09-22). Response-time commitments are in [SECURITY.md](SECURITY.md).
+Vulnerability reports are coordinated under [SECURITY.md](SECURITY.md). Report privately — not in a public issue — for anything concerning a vulnerability in the engine or the rule corpus. Two channels are open: a [GitHub Security Advisory](https://github.com/Agent-Threat-Rule/agent-threat-rules/security/advisories/new) (private vulnerability reporting is enabled on this repository, verified 2026-09-22), or email to <adam@agentthreatrule.org>. Response-time commitments are in [SECURITY.md](SECURITY.md).
 
 ## 11. Telemetry
 
