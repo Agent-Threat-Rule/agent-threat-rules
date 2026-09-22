@@ -90,8 +90,18 @@ jobs:
       # additive: with no secret configured the workflow behaves exactly as
       # before. Mint the token with `claude setup-token`.
       - name: Install Claude CLI (subscription-credit backend)
-        if: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
-        run: npm install -g @anthropic-ai/claude-code
+        # `secrets` is not available in a step-level `if` — GitHub refuses to load the
+        # whole workflow, which is how this file broke main on 2026-09-22 (0 jobs, run
+        # named after the file path instead of the workflow). Test emptiness inside the
+        # step instead, where the secrets context is allowed.
+        env:
+          OAUTH: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          if [ -z "$OAUTH" ]; then
+            echo "No CLAUDE_CODE_OAUTH_TOKEN; the client will use ANTHROPIC_API_KEY (metered credit)."
+            exit 0
+          fi
+          npm install -g @anthropic-ai/claude-code
 
 
       - name: Run FN mining
