@@ -51,10 +51,40 @@ gh run list --workflow publish-on-rules-merge.yml --limit 20 \
 ```
 
 Every `push` run back to at least 2026-08-15 is `skipped`, including the merge of
-#531 — the commit that removed catastrophic backtracking from eight rules. And
-the bot that produced qualifying commits, `tc-pr-back.yml`, was removed from this
-repository, so the condition can no longer be met by anything at all. The lane is
-not slow; it is closed.
+#531 — the commit that removed catastrophic backtracking from eight rules.
+
+The precise reason is narrower than "the bot is gone", and worth stating exactly,
+because the loose version sends you looking in the wrong place. The bot still
+commits here:
+
+```bash
+git log origin/main --since=2026-09-01 --format='%ae|%s' | grep bot@agentthreatrule.org
+```
+
+Nine commits since 2026-09-01, all of them `chore(adopters)` or `chore(stats)`.
+**None of them touch `rules/`**, and the trigger carries `paths: ['rules/**']`, so
+the `paths` filter excludes every commit the author filter would have admitted.
+Meanwhile no commit since 2026-08-01 carries the `crystallized rules from Threat
+Cloud` message that the second clause looks for:
+
+```bash
+git log origin/main --since=2026-08-01 --format='%s' | grep -c 'crystallized rules from Threat Cloud'
+# 0
+```
+
+So the condition is not unsatisfiable in principle — **the intersection of
+`paths: rules/**` and `author == bot` is empty in practice**, and has been for at
+least six weeks. Rule commits here are written by people; bot commits here never
+touch rules.
+
+That is because the side that produces crystallized rule commits runs outside
+this repository, in infrastructure this repository does not control and most
+contributors cannot see. Whether that arrangement should continue is a governance
+question for an open standard, not a CI question, and it is not settled here.
+
+What is settled: **`workflow_dispatch` is the first clause of that `if`**, so a
+manual dispatch does publish. The lane is not sealed, it just never fires on its
+own for the changes that matter most.
 
 **The credential then failed the one manual attempt.** The 2026-09-14
 `workflow_dispatch` run built and tarballed fine and failed on the final PUT:
@@ -69,6 +99,23 @@ npm answers authentication failures with 404 rather than 401, so this is the
 `NPM_TOKEN` repository secret being expired or under-scoped, not a missing
 package. The secret was last updated 2026-05-29. **Fixing this needs a human with
 an npm account**; it cannot be diagnosed further from inside CI.
+
+**Two tagged versions exist that npm never received.** As of 2026-09-23:
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' https://registry.npmjs.org/agent-threat-rules/4.1.0  # 404
+curl -s -o /dev/null -w '%{http_code}\n' https://registry.npmjs.org/agent-threat-rules/4.1.1  # 404
+curl -s https://registry.npmjs.org/agent-threat-rules | grep -o '"modified":"[^"]*"'   # 2026-08-23
+```
+
+`v4.1.0` failed on an expired credential. `v4.1.1` failed differently and more
+instructively: the run reported success, printed `+ agent-threat-rules@4.1.1`,
+and signed a provenance statement into the Sigstore transparency log — and the
+version is still not on the registry. npm began restricting bypass-2FA granular
+tokens on 2026-07-31 and is moving publishing to a stage-then-approve flow, so a
+token scoped to stage-only publishes into a staging area that a human must
+release with 2FA. **A green publish job is not evidence that a version shipped.**
+Verify against the registry, not against the workflow.
 
 **What actually works.** The last successful publish, 4.0.0 on 2026-08-23, went
 out through `publish.yml` on a tag push. On that event it takes the version from
