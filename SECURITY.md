@@ -6,19 +6,18 @@ If you discover a security vulnerability in ATR rules, the evaluation engine,
 or any component of this project, please report it privately. Do not open a
 public issue for an unfixed vulnerability.
 
-**Email: security@agentthreatrule.org**
+Preferred: a [GitHub Security Advisory](https://github.com/Agent-Threat-Rule/agent-threat-rules/security/advisories/new).
+Private vulnerability reporting is enabled on this repository (verified by API on
+2026-09-22), so this keeps the whole exchange private and inside GitHub, and it
+cannot be lost to a mail routing problem.
 
-This mailbox is the primary channel and the one to use if you are unsure. Mail
-is unencrypted — no PGP key is published. If the report is sensitive enough that
-this matters, send a first message with no vulnerability details and ask for an
-encrypted channel.
+**Email: adam@agentthreatrule.org**
 
-GitHub private vulnerability reporting is enabled on this repository (verified
-2026-09-22), so a [GitHub Security Advisory](https://github.com/Agent-Threat-Rule/agent-threat-rules/security/advisories/new)
-is equally welcome and keeps the whole exchange inside GitHub. Use whichever of
-the two you prefer; email is always accepted. If the "Report a vulnerability"
-button is not visible to you, do not treat that as the channel being closed —
-fall back to the email address above and say what you saw.
+Use this if you would rather not report through GitHub, or if the "Report a
+vulnerability" button is not visible to you. This address was confirmed to
+receive mail on 2026-09-22. Mail is unencrypted — no PGP key is published. If
+the report is sensitive enough that this matters, send a first message with no
+vulnerability details and ask for an encrypted channel.
 
 **What to include:**
 - Description of the vulnerability

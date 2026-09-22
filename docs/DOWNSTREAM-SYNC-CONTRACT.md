@@ -127,7 +127,7 @@ If a rule fires on legitimate content in your environment:
 
 If you're a downstream maintainer and want a private channel for
 sensitive FP samples (customer-specific patterns), email
-`security@agentthreatrule.org`.
+`adam@agentthreatrule.org`.
 
 ## Current consumers and their sync workflows
 

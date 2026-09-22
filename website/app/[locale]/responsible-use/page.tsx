@@ -215,10 +215,10 @@ export default async function ResponsibleUsePage({
                 {zh ? "濫用回報" : "Abuse reports"}
               </div>
               <a
-                href="mailto:security@agentthreatrule.org"
+                href="mailto:adam@agentthreatrule.org"
                 className="font-data text-sm text-blue hover:underline"
               >
-                security@agentthreatrule.org
+                adam@agentthreatrule.org
               </a>
             </div>
             <div>
