@@ -23,22 +23,56 @@
     "low": 0,
     "informational": 0
   },
-  "malware_campaign": {
-    "confirmed_malware": 552,
-    "threat_actors": [
-      { "name": "hightower6eu", "skills": 354, "malicious_rate": 1.0 },
-      { "name": "sakaen736jih", "skills": 212, "malicious_rate": 0.93 },
-      { "name": "52yuanchangxing", "skills": 137, "malicious_rate": 0.72 }
+  "rule_hits": [
+    {
+      "id": "ATR-2026-00121",
+      "count": 686
+    },
+    {
+      "id": "ATR-2026-00123",
+      "count": 209
+    },
+    {
+      "id": "ATR-2026-00163",
+      "count": 99
+    },
+    {
+      "id": "ATR-2026-00120",
+      "count": 89
+    },
+    {
+      "id": "ATR-2026-00149",
+      "count": 79
+    },
+    {
+      "id": "ATR-2026-00162",
+      "count": 64
+    },
+    {
+      "id": "ATR-2026-00135",
+      "count": 57
+    }
+  ],
+  "tc_blacklist": 554,
+  "threat_actors": {
+    "note": "Flag counts per publisher account, not adjudicated malicious counts. The former `malware_campaign.confirmed_malware` field is removed: it held 751 (an OpenClaw-only flag total) until 2026-06-14, then 552, described in commit 3747e149 as 'confirmed after manual review'. 552 is reproducible from data/public-blacklist.json, but it is a publisher attribution rather than a review -- it is exactly the entries belonging to hightower6eu (354/354) and sakaen736jih (198/198), all matching the single rule ATR-2026-00121, while 125 other hits on that rule are marked unconfirmed only because the publisher differs. The third actor named in the campaign report has no blacklist entries at all.",
+    "actors": [
+      {
+        "name": "hightower6eu",
+        "flagged_skills": 354,
+        "critical_share": 1.0
+      },
+      {
+        "name": "sakaen736jih",
+        "flagged_skills": 212,
+        "critical_share": 0.93
+      },
+      {
+        "name": "52yuanchangxing",
+        "flagged_skills": 137,
+        "critical_share": 0.72
+      }
     ]
   },
-  "rule_hits": [
-    { "id": "ATR-2026-00121", "count": 686 },
-    { "id": "ATR-2026-00123", "count": 209 },
-    { "id": "ATR-2026-00163", "count": 99 },
-    { "id": "ATR-2026-00120", "count": 89 },
-    { "id": "ATR-2026-00149", "count": 79 },
-    { "id": "ATR-2026-00162", "count": 64 },
-    { "id": "ATR-2026-00135", "count": 57 }
-  ],
-  "tc_blacklist": 554
+  "_provenance_warning": "This report pairs a FOUR-source total with a FIVE-source breakdown, so its own numbers do not reconcile. `totals.scanned` 96,096 is the four SKILL.md registries only: OpenClaw 56,480 + ClawHub 36,378 + Skills.sh 3,115 + Hermes 123. The `sources` block below instead lists five sources -- adding MCP Registry 4,880 and recording ClawHub as 36,498 -- and sums to 101,096. `severity` likewise sums to 1,349 against `totals.flagged` 1,302. The authoritative record is data/full-scan-v2-2026-04-14.json: 101,280 scanned / 1,434 flagged, engine v2.0.0, every subtotal closing. 96,096 and 101,280 are different scopes, not competing counts -- quote 101,280/1,434 outward, and say 'excluding MCP Registry' whenever the narrower figure is used."
 }

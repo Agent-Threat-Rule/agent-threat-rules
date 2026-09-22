@@ -32,12 +32,14 @@ interface MegaScanReport {
   sources: Record<string, number>;
   totals: { scanned: number; flagged: number; flagged_rate?: string };
   severity: { critical: number; high: number; medium: number };
-  malware_campaign?: {
-    confirmed_malware: number;
-    threat_actors: Array<{
+  // `malware_campaign.confirmed_malware` was removed from the report on 2026-08-26:
+  // it was a publisher attribution, not an adjudicated malicious count. Nothing reads it.
+  threat_actors?: {
+    note: string;
+    actors: Array<{
       name: string;
-      skills: number;
-      malicious_rate: number;
+      flagged_skills: number;
+      critical_share: number;
     }>;
   };
 }

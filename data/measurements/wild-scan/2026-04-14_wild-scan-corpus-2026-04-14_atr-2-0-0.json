@@ -9,7 +9,7 @@
   "samples": 96096,
   "metrics": {
     "recall": 0,
-    "precision": 0.5768049155145929,
+    "precision": 0,
     "f1": 0,
     "fp_rate": 0
   },
@@ -34,27 +34,27 @@
       "low": 0,
       "informational": 0
     },
-    "malware_campaign": {
-      "confirmed_malware": 751,
-      "threat_actors": [
+    "flagged_rate": "1.355%",
+    "threat_actors": {
+      "note": "Publisher accounts whose skills were flagged. `skills` is a flag count, not an adjudicated malicious count; `flagged_rate` is the share of that publisher's flagged skills carrying a critical-severity hit. Summing these (703) does not yield a confirmed-malware total and must not be quoted as one.",
+      "actors": [
         {
           "name": "hightower6eu",
-          "skills": 354,
-          "malicious_rate": 1
+          "flagged_skills": 354,
+          "critical_share": 1
         },
         {
           "name": "sakaen736jih",
-          "skills": 212,
-          "malicious_rate": 0.93
+          "flagged_skills": 212,
+          "critical_share": 0.93
         },
         {
           "name": "52yuanchangxing",
-          "skills": 137,
-          "malicious_rate": 0.72
+          "flagged_skills": 137,
+          "critical_share": 0.72
         }
       ]
-    },
-    "flagged_rate": "1.355%"
+    }
   },
-  "notes": "Ecosystem wild scan, not a recall benchmark. The corpus has no ground-truth labels; `precision` is computed as confirmed_malware / flagged (precision floor). `recall` and `fp_rate` are undefined here and recorded as 0 by convention. Cite the flag rate from `breakdown.flagged_rate` for ecosystem context."
+  "notes": "Ecosystem wild scan, not a recall benchmark. The corpus has no ground-truth labels and no per-item adjudication. All four metrics are undefined here and recorded as 0 by convention -- including `precision`, which previously held 751/1302 = 0.5768. That was a flagged count divided by another flagged count: 751 is the OpenClaw-only flag total. The 552 'confirmed' figure quoted elsewhere is reproducible from data/public-blacklist.json but is a publisher attribution, not a review -- all 552 belong to two accounts (354/354 and 198/198, none excluded) and all match the single rule ATR-2026-00121, while 125 other hits on that same rule are unconfirmed only because their publisher differs. Cite `breakdown.flagged_rate` for ecosystem context and nothing else."
 }

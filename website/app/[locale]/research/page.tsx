@@ -52,8 +52,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             <p className="text-sm text-stone mb-3">
               {locale === "zh"
-                ? `ATR 標準為何存在的完整論述：當 agent 能自主行動，信任不再能假設，偵測必須變成一個任何人都能查核、版本化、社群維護的標準層。涵蓋 RFC-001 品質規範、96,096 個 skill 的生態系掃描（1,302 個被標記、經人工複審確認 552 個惡意），以及把標準從一次性快照變成活飛輪的機制。`
-                : `The full argument for why ATR exists: once agents act on their own, trust can no longer be assumed, and detection has to become a standard layer anyone can audit, version, and maintain. Covers the RFC-001 quality specification, a 96,096-skill ecosystem scan (1,302 flagged, 552 confirmed malware after manual review), and the mechanism that turns the standard from a one-time snapshot into a living one.`}
+                ? `ATR 標準為何存在的完整論述：當 agent 能自主行動，信任不再能假設，偵測必須變成一個任何人都能查核、版本化、社群維護的標準層。涵蓋 RFC-001 品質規範、96,096 個 skill 的生態系掃描（1,302 個被標記、其中 552 個出自兩個發布帳號（這兩個帳號名下每一個 skill 都命中同一條惡意散布規則）），以及把標準從一次性快照變成活飛輪的機制。`
+                : `The full argument for why ATR exists: once agents act on their own, trust can no longer be assumed, and detection has to become a standard layer anyone can audit, version, and maintain. Covers the RFC-001 quality specification, a 96,096-skill ecosystem scan (1,302 flagged, 552 of them from two malware-publishing accounts), and the mechanism that turns the standard from a one-time snapshot into a living one.`}
             </p>
             <div className="flex flex-wrap gap-3">
               <a href="https://doi.org/10.5281/zenodo.19178002" target="_blank" rel="noopener noreferrer" className="font-data text-xs text-blue hover:underline">Zenodo (DOI)</a>
@@ -70,13 +70,13 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             <div className="font-display text-base font-semibold text-ink mb-1">
               {locale === "zh"
-                ? "552 個確認惡意的 AI Agent Skill：史上最大規模的 AI Agent 惡意軟體行動"
-                : "552 Confirmed Malicious AI Agent Skills: The Largest AI Agent Malware Campaign Ever Documented"}
+                ? "1,302 個被標記的 AI Agent Skill：史上最大規模的 AI Agent 惡意軟體行動"
+                : "1,302 Flagged AI Agent Skills: The Largest AI Agent Malware Campaign Ever Documented"}
             </div>
             <p className="text-sm text-stone mb-3">
               {locale === "zh"
-                ? "掃描 96,096 個 skill、標記 1,302 個風險項，人工複審後確認 552 個惡意軟體。發現三個協同攻擊者（hightower6eu 354、sakaen736jih 212、52yuanchangxing 137）。已通報 NousResearch 並全數加入黑名單。"
-                : "1,302 flagged across 96,096 skills scanned in six registries; 552 confirmed malware after manual review. Three coordinated threat actors (hightower6eu 354, sakaen736jih 212, 52yuanchangxing 137). Reported to NousResearch and blacklisted."}
+                ? "掃描 96,096 個 skill、標記 1,302 個風險項，其中 552 個出自兩個發布帳號（這兩個帳號名下每一個 skill 都命中同一條惡意散布規則）。發現三個協同攻擊者（hightower6eu 354、sakaen736jih 212、52yuanchangxing 137）。已通報 NousResearch 並全數加入黑名單。"
+                : "1,302 flagged across 96,096 skills scanned in six registries; 552 of them published by two accounts whose entire output matched the same malware-distribution rule. Three coordinated threat actors (hightower6eu 354, sakaen736jih 212, 52yuanchangxing 137). Reported to NousResearch and blacklisted."}
             </p>
             <div className="flex flex-wrap gap-3">
               <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/research/openclaw-malware-campaign-2026-04.md" target="_blank" rel="noopener noreferrer" className="font-data text-xs text-blue hover:underline">{locale === "zh" ? "完整報告 (EN)" : "Full Report (EN)"}</a>
@@ -90,12 +90,12 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
               <span className="font-data text-xs text-mist">April 2026 · 7 pages · 32 references</span>
             </div>
             <div className="font-display text-base font-semibold text-ink mb-1">
-              96,096 Skills, 552 Confirmed Malware: A Large-Scale Security Audit of the AI Agent Ecosystem
+              96,096 Skills, 1,302 Flagged: A Large-Scale Security Audit of the AI Agent Ecosystem
             </div>
             <p className="text-sm text-stone mb-3">
               {locale === "zh"
-                ? "史上最大規模 AI agent 安全掃描。96,096 個 skill、1,302 個有風險、人工複審後 552 個確認惡意軟體。三個協同攻擊者。工具描述下毒佔偵測的 53%。"
-                : "The largest AI agent security scan to date. 96,096 skills across 6 registries, 1,302 flagged, 552 confirmed malware after manual review. Three coordinated threat actors. Credential access via tool descriptions accounts for 53% of detections."}
+                ? "史上最大規模 AI agent 安全掃描。96,096 個 skill、1,302 個有風險、其中 552 個出自兩個發布帳號（這兩個帳號名下每一個 skill 都命中同一條惡意散布規則）。三個協同攻擊者。工具描述下毒佔偵測的 53%。"
+                : "The largest AI agent security scan to date. 96,096 skills across 6 registries, 1,302 flagged, 552 of them published by two accounts whose entire output matched the same malware-distribution rule. Three coordinated threat actors. Credential access via tool descriptions accounts for 53% of detections."}
             </p>
             <div className="flex flex-wrap gap-3">
               <a href="https://doi.org/10.5281/zenodo.19476480" target="_blank" rel="noopener noreferrer" className="font-data text-xs text-blue hover:underline">Zenodo (DOI)</a>
