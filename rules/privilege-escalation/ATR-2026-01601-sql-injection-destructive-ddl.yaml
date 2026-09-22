@@ -67,7 +67,7 @@ detection:
   conditions:
     - field: tool_args
       operator: regex
-      value: "(?i)(?:';|\"\\s*;|--\\s*)\\s*(?:DROP\\s+(?:TABLE|DATABASE|INDEX|VIEW)|TRUNCATE\\s+(?:TABLE\\s+)?\\w|DELETE\\s+FROM\\s+\\w)"
+      value: "(?i)(?:'\\s*;|\"\\s*;|--\\s*)\\s*(?:DROP\\s+(?:TABLE|DATABASE|INDEX|VIEW)|TRUNCATE\\s+(?:TABLE\\s+)?\\w|DELETE\\s+FROM\\s+\\w)"
       description: "SQL injection: quote-termination followed by destructive DDL"
     - field: tool_args
       operator: regex
@@ -75,7 +75,7 @@ detection:
       description: "DROP TABLE with comment suppressor"
     - field: user_input
       operator: regex
-      value: "(?i)(?:';|\"\\s*;)\\s*(?:DROP\\s+TABLE|TRUNCATE|DELETE\\s+FROM\\s+\\w)"
+      value: "(?i)(?:'\\s*;|\"\\s*;)\\s*(?:DROP\\s+TABLE|TRUNCATE|DELETE\\s+FROM\\s+\\w)"
       description: "Destructive DDL injection in user input"
   condition: any
   false_positives:
@@ -106,6 +106,12 @@ test_cases:
     - user_input: "Find products with name = \"'; DROP TABLE products; --\""
       expected: triggered
       description: "Destructive DDL in user-facing search input"
+    - tool_args: "{\"filter\": \"1' ; TRUNCATE TABLE accounts; --\"}"
+      expected: triggered
+      description: "Whitespace between the quote and the statement separator; the double-quote branch already allowed it and the single-quote branch did not"
+    - tool_args: "{\"id\": \"7' ; DELETE FROM sessions; --\"}"
+      expected: triggered
+      description: "Unbounded DELETE FROM, spaced separator - the description promises this case"
   true_negatives:
     - tool_args: '{"action": "migrate", "direction": "up"}'
       expected: not_triggered
