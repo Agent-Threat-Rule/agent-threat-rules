@@ -45,6 +45,14 @@ jobs:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
 
+      # Trusted publishing needs npm >= 11.5.1, and the Node 22 line still ships
+      # npm 10.x. Without this the publish step falls back to looking for a token
+      # and fails with ENEEDAUTH, which reads like a credential problem and is not.
+      - name: Upgrade npm for OIDC
+        run: |
+          npm install -g npm@latest
+          npm --version
+
       - name: Install dependencies
         run: npm ci
 
@@ -135,9 +143,24 @@ jobs:
             console.log('Stats:', JSON.stringify(stats.rules));
           "
 
+      # Published through npm trusted publishing (OIDC), so there is no token here
+      # and none is wanted. The credential that used to sit in this step expired
+      # silently on 2026-08-27; six npm tokens have now expired that way, each
+      # discovered only when a release failed. An OIDC token is minted for this
+      # one run and expires in minutes, so there is nothing left to rotate.
+      #
+      # Trust is configured on the package, not in this file: npmjs.com ->
+      # agent-threat-rules -> Settings -> Trusted publishing, matching
+      # organization `Agent-Threat-Rule`, repository `agent-threat-rules`,
+      # workflow filename `publish.yml`. All three are case-sensitive, and the
+      # workflow filename is matched literally — renaming this file breaks
+      # publishing until the trusted publisher is recreated.
+      #
+      # `--provenance` is redundant under trusted publishing (attestations are
+      # generated automatically for a public package from a public repository)
+      # and is kept off rather than passed, so the log does not imply that the
+      # flag is what produced the attestation.
       - name: Publish to npm
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           # Auto-detect dist-tag from prerelease identifier so 3.0.0-alpha.X
           # doesn't accidentally take over the `latest` tag (which represents
@@ -148,7 +171,7 @@ jobs:
             console.log(m ? m[1] : 'latest');
           ")
           echo "Publishing with dist-tag: $TAG"
-          npm publish --access public --provenance --tag "$TAG"
+          npm publish --access public --tag "$TAG"
 
       - name: Count rules for release notes
         id: rules
