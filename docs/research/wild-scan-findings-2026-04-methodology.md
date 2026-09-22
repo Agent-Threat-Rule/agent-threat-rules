@@ -22,9 +22,11 @@ registries — not as a synthetic test.
 - Concentration: 552 of the flagged files belong to 3 coordinated threat-actor
   accounts (hightower6eu, sakaen736jih, 52yuanchangxing)
 - A separate published campaign analysis confirmed 751 skills as malicious
-  (see docs/research/96k-scan-751-malware-article.md). That confirmation is a
-  manual determination layered on the flagged set; this CSV is the raw flagged
-  output, not the curated 751.
+  (see docs/research/96k-scan-751-malware-article.md — the filename is
+  historical; the article itself now reports the 101,280 / 1,434 figures of
+  record). That confirmation is a manual determination layered on the flagged
+  set, dated nine days after this scan and covering one registry; this CSV is
+  the raw flagged output, not the curated 751.
 
 ## CSV schema
 registry, file, publisher, rule_id, category, severity, detection, threat_actor_account
