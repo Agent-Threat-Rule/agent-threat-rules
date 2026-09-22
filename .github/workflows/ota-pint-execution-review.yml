@@ -1,0 +1,208 @@
+name: "Evidence: Ota PINT execution review (non-blocking)"
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - ota.yaml
+      - .gitignore
+      - .github/ota/verify-pint-evidence.mjs
+      - .github/workflows/ota-pint-execution-review.yml
+      - docs/integrations/ota-pre-release-review.md
+      - package.json
+      - package-lock.json
+      - src/eval/**
+      - src/measurement/**
+      - scripts/ci/pint-regression-gate.mjs
+      - rules/**
+      - data/pint-benchmark/pint-corpus.json
+      - data/pint-benchmark/pint-eval-report.json
+      - data/measurements/pint/latest.json
+
+concurrency:
+  group: ota-pint-review-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  OTA_NO_UPDATE_CHECK: "1"
+
+jobs:
+  contract-ci-drift:
+    name: Contract-to-CI drift
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Set up Node 20
+        uses: actions/setup-node@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          node-version: "20"
+
+      - name: Set up Ota from the contract
+        uses: ota-run/setup@cdb0b0aab3f559b5fb9f47d84925c32a5baee250
+        with:
+          source: contract
+          contract-path: ota.yaml
+
+      - name: Fail on contract-to-CI workflow drift
+        uses: ota-run/action@6bb5bf686df5a8385202c8c20b6f91c045e3c161
+        with:
+          command: doctor
+          install: never
+          fail-on-error: false
+          fail-on-ci-drift: true
+          annotate: false
+          comment-pr: false
+          output-path: ota-contract-ci-drift.json
+
+      - name: Upload contract evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ota-pint-contract-ci-drift
+          path: |
+            ota-contract-ci-drift.json
+          if-no-files-found: ignore
+
+  pint-execution:
+    name: Fresh PINT-format execution evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Set up Node 20
+        uses: actions/setup-node@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Set up Ota from the contract
+        uses: ota-run/setup@cdb0b0aab3f559b5fb9f47d84925c32a5baee250
+        with:
+          source: contract
+          contract-path: ota.yaml
+
+      - name: Record tool identities
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/ota-pint-review"
+          node --version | tee "$RUNNER_TEMP/ota-pint-review/node-version.txt"
+          npm --version | tee "$RUNNER_TEMP/ota-pint-review/npm-version.txt"
+          ota --version --json > "$RUNNER_TEMP/ota-pint-review/ota-version.json"
+
+      - name: Validate contract
+        shell: bash
+        run: ota validate --json . > "$RUNNER_TEMP/ota-pint-review/ota-validate.json"
+
+      - name: Diagnose the bounded workflow
+        shell: bash
+        run: ota doctor --workflow pint --native --json . > "$RUNNER_TEMP/ota-pint-review/ota-doctor.json"
+
+      - name: Preview the selected execution path
+        shell: bash
+        run: ota run verify:pint --native --dry-run --json . > "$RUNNER_TEMP/ota-pint-review/ota-pint-preview.json"
+
+      - name: Reject the committed report as stale
+        shell: bash
+        run: |
+          date -u +%Y-%m-%dT%H:%M:%S.%3NZ > "$RUNNER_TEMP/ota-pint-review/started-at.txt"
+          cp data/pint-benchmark/pint-eval-report.json "$RUNNER_TEMP/ota-pint-review/pre-run-report.json"
+          cp data/measurements/pint/latest.json "$RUNNER_TEMP/ota-pint-review/pre-run-latest.json"
+          node .github/ota/verify-pint-evidence.mjs preflight \
+            --repo . \
+            --report data/pint-benchmark/pint-eval-report.json \
+            --started-at "$(cat "$RUNNER_TEMP/ota-pint-review/started-at.txt")" \
+            --ota-version "$RUNNER_TEMP/ota-pint-review/ota-version.json" \
+            --node-version "$RUNNER_TEMP/ota-pint-review/node-version.txt" \
+            --npm-version "$RUNNER_TEMP/ota-pint-review/npm-version.txt" \
+            --output "$RUNNER_TEMP/ota-pint-review/preflight.json"
+
+      - name: Execute the contract-selected PINT-format lane
+        shell: bash
+        run: |
+          set +e
+          ota run verify:pint --native --stream .
+          status=$?
+          printf '%s\n' "$status" > "$RUNNER_TEMP/ota-pint-review/ota-pint-exit-code.txt"
+          exit "$status"
+
+      - name: Record execution end
+        if: always()
+        shell: bash
+        run: date -u +%Y-%m-%dT%H:%M:%S.%3NZ > "$RUNNER_TEMP/ota-pint-review/ended-at.txt"
+
+      - name: Apply ATR's fresh PINT regression comparison
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          node scripts/ci/pint-regression-gate.mjs \
+            --report data/pint-benchmark/pint-eval-report.json \
+            --before "$RUNNER_TEMP/ota-pint-review/pre-run-report.json" \
+            --baseline "$RUNNER_TEMP/ota-pint-review/pre-run-latest.json" \
+            --tolerance 0.02 \
+            | tee "$RUNNER_TEMP/ota-pint-review/atr-pint-regression-gate.log"
+          status=${PIPESTATUS[0]}
+          printf '%s\n' "$status" > "$RUNNER_TEMP/ota-pint-review/atr-pint-regression-gate-exit-code.txt"
+          exit "$status"
+
+      - name: Verify fresh result and close evidence manifest
+        if: always()
+        shell: bash
+        run: |
+          node .github/ota/verify-pint-evidence.mjs verify \
+            --repo . \
+            --preflight "$RUNNER_TEMP/ota-pint-review/preflight.json" \
+            --ended-at "$(cat "$RUNNER_TEMP/ota-pint-review/ended-at.txt")" \
+            --ota-exit-code "$(cat "$RUNNER_TEMP/ota-pint-review/ota-pint-exit-code.txt")" \
+            --atr-gate-exit-code "$(cat "$RUNNER_TEMP/ota-pint-review/atr-pint-regression-gate-exit-code.txt")" \
+            --output "$RUNNER_TEMP/ota-pint-review/evidence-manifest.json"
+
+      - name: Collect generated evidence
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/ota-pint-review/generated"
+          if test -f data/pint-benchmark/pint-eval-report.json; then
+            cp data/pint-benchmark/pint-eval-report.json "$RUNNER_TEMP/ota-pint-review/generated/pint-eval-report.json"
+          fi
+          if test -f data/measurements/pint/latest.json; then
+            cp data/measurements/pint/latest.json "$RUNNER_TEMP/ota-pint-review/generated/latest.json"
+            measurement=$(node -e "const fs=require('fs'); console.log(JSON.parse(fs.readFileSync('data/measurements/pint/latest.json', 'utf8')).file)")
+            if test -f "data/measurements/pint/$measurement"; then
+              cp "data/measurements/pint/$measurement" "$RUNNER_TEMP/ota-pint-review/generated/$measurement"
+            fi
+          fi
+          git status --porcelain=v1 > "$RUNNER_TEMP/ota-pint-review/post-run-status.txt"
+
+      - name: Restore the disposable checkout
+        if: always()
+        shell: bash
+        run: |
+          manifest="$RUNNER_TEMP/ota-pint-review/evidence-manifest.json"
+          cleanup="$RUNNER_TEMP/ota-pint-review/cleanup.json"
+          if test -f "$manifest"; then
+            node .github/ota/verify-pint-evidence.mjs cleanup \
+              --repo . \
+              --manifest "$manifest" \
+              --output "$cleanup"
+          else
+            printf '%s\n' '{"schema_version":1,"kind":"ota_pint_cleanup","status":"not_attempted","reason":"no_verified_evidence_manifest"}' > "$cleanup"
+          fi
+
+      - name: Upload review evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ota-pint-execution-evidence
+          path: ${{ runner.temp }}/ota-pint-review
+          if-no-files-found: warn

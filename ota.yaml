@@ -1,0 +1,125 @@
+version: 1
+
+metadata:
+  ota:
+    minimum_version: "1.6.28"
+
+project:
+  name: agent-threat-rules
+  description: Bounded Ota review lane for fresh ATR-owned PINT-format execution evidence
+
+toolchains:
+  node:
+    version: ">=20,<21"
+    package_managers:
+      npm: "*"
+
+checks:
+  - name: pint-corpus-present
+    kind: file
+    severity: error
+    path: data/pint-benchmark/pint-corpus.json
+    expect: file
+
+  - name: npm-lockfile-present
+    kind: file
+    severity: error
+    path: package-lock.json
+    expect: file
+
+tasks:
+  setup:
+    category: setup
+    description: Install the lockfile-pinned Node dependencies needed by the PINT-format lane
+    prepare:
+      kind: dependency_hydration
+      medium: package_dependencies
+      source:
+        kind: node_package_manager
+        cwd: .
+        manager: npm
+        mode: ci
+    requirements:
+      toolchains:
+        - node
+    effects:
+      writes:
+        - node_modules
+        - dist
+        - tsconfig.tsbuildinfo
+      network: true
+      network_kind: dependency_hydration
+    notes: |
+      This is the repository's existing `npm ci` dependency path. Its package lifecycle also
+      generates ignored `dist/` and `tsconfig.tsbuildinfo` state; neither is benchmark evidence.
+
+  pint:execute:
+    category: test
+    description: Execute the ATR-owned 850-sample PINT-format evaluation harness
+    command:
+      exe: npm
+      args:
+        - run
+        - eval:pint
+    depends_on:
+      - setup
+    requirements:
+      toolchains:
+        - node
+    effects:
+      writes:
+        - data/pint-benchmark/pint-eval-report.json
+        - data/measurements/pint
+    safe_for_agent: false
+    notes: |
+      This invokes `npm run eval:pint` exactly. It writes tracked report and measurement files,
+      so it is intentionally outside the default agent-safe surface. The corpus is ATR-owned,
+      PINT-format, and self-built; it is not Lakera's official PINT benchmark.
+
+  verify:pint:
+    category: test
+    description: Run the bounded fresh PINT-format evidence lane
+    aggregate:
+      tasks:
+        - pint:execute
+    safe_for_agent: false
+    notes: |
+      Use this exact aggregate for the review workflow. It proves a fresh execution of the
+      declared ATR-owned PINT-format lane only when the workflow's separate evidence verifier
+      confirms the clean checkout identity, fresh output, and expected-only mutations.
+
+workflows:
+  default: pint
+  pint:
+    intent: ci_validation
+    description: Non-required review workflow for a fresh ATR-owned PINT-format execution
+    setup:
+      task: setup
+    run:
+      task: verify:pint
+    proof:
+      claim: bounded
+    notes: |
+      This workflow is a bounded review lane. It does not certify Lakera PINT, ATR detection
+      quality, benchmark methodology, or any downstream security claim.
+
+agent:
+  posture: readiness_strict
+  protected_paths:
+    - ota.yaml
+    - package-lock.json
+    - rules
+    - scripts
+    - data
+    - .github/workflows
+  bootstrap:
+    ota:
+      note: This fork-only pre-release review pins Ota's exact unreleased source revision.
+      source:
+        kind: git_rev
+        rev: b9c5d0b65eaca9d15d975e5913ba16135337e6b7
+  notes: |
+    No ATR task is agent-safe in this review contract. In particular, `verify:pint` replaces
+    tracked benchmark outputs and must remain a deliberately reviewed CI invocation. After Ota
+    v1.6.28 is released, replace the git revision above with the released `v1.6.28` source and
+    rerun the unchanged review workflow before any draft PR is opened.
