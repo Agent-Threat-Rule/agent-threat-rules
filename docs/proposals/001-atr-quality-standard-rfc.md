@@ -1,4 +1,24 @@
 # RFC-001: ATR Quality Standard v1.0
+
+> **ERRATUM (added 2026-09-22).** This is a dated historical artifact, preserved as
+> published. Figures quoted below have since been withdrawn or frozen and must not be
+> cited as current fact:
+>
+> - **Ecosystem / wild scan.** The "96,096 skills scanned" and "751 confirmed malware"
+>   figures are frozen. The only externally citable wild-scan figures are
+>   **101,280 items scanned / 1,434 flagged** (engine v2.0.0, as of 2026-04-13). See
+>   `docs/research/wild-scan-drift.md`, which also explains why the confirmed-malicious
+>   count is a triage floor and not a precision figure.
+> - **Precision / false-positive rate.** "99.7% precision" and the paired "0.3% FP rate"
+>   were withdrawn on 2026-06-15 and should not be cited by anyone, including this
+>   project. The per-lane FP rates published afterwards were withdrawn as well. Current
+>   version-pinned measurements live in README section 8 and `data/stats.json`.
+> - **Downstream adoption.** A merged pull request into an open-source repository such as
+>   `cisco-ai-defense/skill-scanner` is not a vendor product shipment or endorsement.
+>   `ADOPTERS.md` is the source of truth, with per-entry PR evidence.
+>
+> Rule counts, version numbers and adopter lists below are point-in-time and have moved.
+> Nothing below has been rewritten; this note is the correction of record.
 ## The Open Detection Standard for the AI Agent Era
 
 **Status:** Ready for Publication
@@ -33,7 +53,7 @@ In parallel, runtime-vendor solutions landed:
 
 - **Claude Managed Agents** — launched public beta on April 8, 2026, three days before the effective date of this specification. A managed runtime for Claude agents with sandboxing, identity, execution tracing, and persistent memory. Billed at $0.08 per session-hour plus token cost. Customers include Notion, Rakuten, and Asana.
 - **Microsoft Agent Governance Toolkit** — published April 2, 2026 under MIT license. The first toolkit to target all 10 OWASP Agentic risks with deterministic sub-millisecond policy enforcement.
-- **Cisco AI Defense MCP Scanner** — open-sourced 2026. Already ships 34 ATR rules upstream via `skill-scanner/#79` merged.
+- **Cisco AI Defense MCP Scanner** — open-sourced 2026. The `cisco-ai-defense/skill-scanner` repository merged 34 ATR rules upstream via `skill-scanner/#79`; this is an open-source repository merge, not a statement about a Cisco commercial product.
 - **Invariant Labs mcp-scan** — de facto standard MCP scanner (now a Snyk product).
 - **Adversa AI SecureClaw** — won "Most Innovative Agentic AI Security" at RSA Conference 2026 Global InfoSec Awards (March 2026). Open-source, OWASP-aligned agent security platform.
 - **Zenity** — showcased open-source AI agent security tools at RSA Conference 2026. Collaborated with MITRE ATLAS on 14 agent-specific techniques added in October 2025.
@@ -547,8 +567,8 @@ similar but the gates are different.
 
 **ATR empirical baselines referenced in this RFC:**
 
-20. ATR Project, *96,096 Agent Skills Scanned Across OpenClaw, Claude Code, Cursor, Hermes, Skills.sh, MCP Registry*. April 2026. 1,302 flagged (1.35%), 751 confirmed malware.
-21. ATR Project, *Cisco skill-scanner PR #79*. 34 ATR rules merged upstream into Cisco AI Defense. April 2026.
+20. ATR Project, *96,096 Agent Skills Scanned Across OpenClaw, Claude Code, Cursor, Hermes, Skills.sh, MCP Registry*. April 2026. 1,302 flagged (1.35%), 751 confirmed malware. **[Erratum 2026-09-22: the figures in this cited title are frozen and must not be requoted. The only citable wild-scan figures are 101,280 scanned / 1,434 flagged, engine v2.0.0, 2026-04-13 — see `docs/research/wild-scan-drift.md`.]**
+21. ATR Project, *Cisco skill-scanner PR #79*. 34 ATR rules merged upstream into the open-source `cisco-ai-defense/skill-scanner` repository. April 2026. **[Erratum 2026-09-22: a merged PR into an open-source repository is not a shipment in, or an endorsement by, any Cisco commercial product.]**
 22. Adversa AI, *Top Agentic AI Security Resources — April 2026*. <https://adversa.ai/blog/top-agentic-ai-security-resources-april-2026/>
 
 ## Future Work

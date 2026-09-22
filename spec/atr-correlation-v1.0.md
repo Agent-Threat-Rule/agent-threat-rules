@@ -71,13 +71,13 @@ correlation:
 
 source_rules:
   - alias: "injection"
-    rule_id: "ATR-2026-00012"                 # indirect prompt injection
+    rule_id: "ATR-2026-00002"                 # indirect prompt injection
   - alias: "tool_call"
-    rule_id_pattern: "ATR-2026-001*"          # tool-poisoning class
+    rule_id: "ATR-2026-00012"                 # unauthorized tool call (tool-poisoning)
   - alias: "memory_write"
-    rule_id_pattern: "ATR-2026-003*"          # memory write
+    rule_id: "ATR-2026-00075"                 # agent memory manipulation
   - alias: "exfil"
-    rule_id_pattern: "ATR-2026-006*"          # context exfiltration
+    rule_id: "ATR-2026-00020"                 # system prompt leak (context exfiltration)
 
 correlation_logic:
   type: "temporal_sequence"                   # see § Correlation types below
@@ -104,6 +104,18 @@ response:
     {memory_write.event_id} → exfiltration at {exfil.event_id}.
     Recommend immediate session quarantine plus memory store audit.
 ```
+
+> **Note on `rule_id_pattern` (added 2026-09-22).** ATR rule IDs are allocated
+> sequentially in a single five-digit space (`ATR-2026-00001` .. `ATR-2026-02845`
+> as of 2026-09-22); the digits do **not** encode a threat category. An
+> ID-prefix glob is therefore not a way to select "all rules in category X" —
+> it selects a numeric band that spans several categories and that shifts as
+> new rules are allocated. Earlier revisions of this example used band globs
+> such as `ATR-2026-006*` with category comments; under the current ID space
+> those patterns match either nothing or an unrelated set of rules. Prefer
+> explicit `rule_id` values, as the example above now does, and treat
+> `rule_id_pattern` as a convenience for genuinely contiguous, deliberately
+> allocated ranges only.
 
 ---
 

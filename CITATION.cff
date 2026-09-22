@@ -3,19 +3,25 @@ message: "If you use ATR in academic work or security research, please cite it a
 title: "ATR: Agent Threat Rules — Open Detection Standard for AI Agent Threats"
 abstract: >
   ATR is an open-source detection rule set for AI agent threats, analogous to
-  Sigma for SIEM or YARA for malware. It provides 818 rules across 10 threat
-  categories (prompt injection, tool poisoning, context exfiltration, skill
-  compromise, model abuse, data poisoning, privilege escalation, excessive
-  autonomy, model security), mapped to OWASP Agentic Top 10 (10/10), SAFE-MCP
-  (91.8% coverage), and MITRE ATLAS. Rules are hand-authored from real attack
-  payloads including the full NVIDIA garak probe corpus (92.3% recall on the
-  garak in-the-wild jailbreak benchmark, 650 prompts, ATR 3.5.12) and maintained
-  with a community safety gate requiring ≥5 true-positive and ≥5 true-negative
-  test cases per rule, plus a lane-keyed false-positive rate (enforce ~0.24% /
-  hunt ~9%) on a 65,000-sample benign gate.
-  ATR is shipped in Cisco AI Defense skill-scanner.
+  Sigma for SIEM or YARA for malware. At v4.1.0 it provides 825 rules across ten
+  threat categories (prompt injection, tool poisoning, context exfiltration,
+  agent manipulation, skill compromise, model abuse, data poisoning, privilege
+  escalation, excessive autonomy, model security), mapped to OWASP Agentic Top
+  10 (10/10 categories), SAFE-MCP (78 of 85 techniques) and MITRE ATLAS. Rules
+  are hand-authored from real attack payloads, including the NVIDIA garak probe
+  corpus (92.3% recall on the 650-prompt garak in-the-wild jailbreak corpus,
+  measured at ATR 3.5.12), and are held to a community safety gate that requires
+  true-positive and true-negative test cases on every rule, verifies each rule
+  matches its own true positives, and rejects any rule that fires on the
+  committed benign skill corpus. The exact thresholds are defined in
+  scripts/check-rules-safety.ts and CONTRIBUTING.md rather than here.
+  Rule counts change daily. Current counts, per-corpus benchmark figures and the
+  measurement file behind each one are published in data/stats.json and the
+  README evaluation table; those are the citable source, not this abstract.
 type: software
 authors:
+  - family-names: "Lin"
+    given-names: "Kuan-Hsin"
   - name: "ATR Community"
     website: "https://agentthreatrule.org"
 repository-code: "https://github.com/Agent-Threat-Rule/agent-threat-rules"
@@ -45,4 +51,4 @@ references:
   - type: software
     title: "NVIDIA garak"
     url: "https://github.com/NVIDIA/garak"
-    notes: "Source of attack probe payloads used to seed 193 ATR rules (ATR-00256~00414)"
+    notes: "Source of attack probe payloads used to seed a substantial share of ATR's prompt-injection and jailbreak rules; each rule records its own provenance in its references field."
