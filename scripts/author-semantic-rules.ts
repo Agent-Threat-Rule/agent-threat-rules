@@ -66,9 +66,13 @@
  *                       Sonnet/Opus id in CI for best judge-prompt quality)
  *
  * EXIT CODES
- *   0 success (promoted 0 or more)
- *   2 no API key / no source text
+ *   0 success (promoted 0 or more; any failures were content-level)
  *   1 fatal IO / parse error
+ *   2 no API key / no source text
+ *   4 the lane could not run — every attempted candidate died on an
+ *     infrastructure error (credit, auth, rate limit, network). Distinct from
+ *     0, because "promoted 0 because nothing qualified" and "promoted 0
+ *     because the API was down" must not look the same to CI.
  */
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
@@ -711,6 +715,8 @@ async function main(): Promise<void> {
     promoted: 0,
     routed_to_human: 0,
     errors: 0,
+    errors_infrastructure: 0,
+    errors_content: 0,
     skipped: skipped.slice(0, 50),
     results: [] as Array<Record<string, unknown>>,
   };
@@ -721,8 +727,12 @@ async function main(): Promise<void> {
     try {
       draft = await callLlm(prompt);
     } catch (e) {
+      const reason = String(e);
+      const kind = classifyFailure(reason);
       summary.errors += 1;
-      summary.results.push({ cluster: c.proposalRel, status: "error", reason: String(e) });
+      if (kind === "infrastructure") summary.errors_infrastructure += 1;
+      else summary.errors_content += 1;
+      summary.results.push({ cluster: c.proposalRel, status: "error", error_kind: kind, reason });
       continue;
     }
     if (!draft) {
@@ -775,8 +785,50 @@ async function main(): Promise<void> {
       routed_to_human: summary.routed_to_human,
       skipped_out_of_scope: summary.skipped_out_of_scope,
       errors: summary.errors,
+      errors_infrastructure: summary.errors_infrastructure,
     })}`,
   );
+
+  // Fail loudly when the lane could not run at all. Exiting 0 here is what made
+  // a dead lane look green: every attempted candidate died on an API error, no
+  // rule was produced, and the workflow read "promoted 0" as "nothing to do".
+  if (summary.candidates_attempted > 0 && summary.promoted === 0 && summary.errors_infrastructure === summary.candidates_attempted) {
+    const firstReason = (summary.results.find((r) => r.status === "error")?.reason as string) ?? "unknown";
+    console.error(
+      `::error::semantic lane could not run: all ${summary.candidates_attempted} attempted candidates failed with an infrastructure error. ` +
+        `First failure: ${firstReason.slice(0, 300)}`,
+    );
+    process.exit(4);
+  }
+  if (summary.errors_infrastructure > 0) {
+    console.error(
+      `::warning::${summary.errors_infrastructure} of ${summary.candidates_attempted} candidates failed with an infrastructure error; ` +
+        `${summary.promoted} still promoted. Partial run, not a clean one.`,
+    );
+  }
+}
+
+/**
+ * Is this failure the lane being unable to run, rather than a candidate being
+ * legitimately rejected?
+ *
+ * The distinction is load-bearing. `routed_to_human` means the gate looked at a
+ * draft and said no — that is the lane working. An API error means no draft was
+ * ever produced, and reporting that as "promoted 0" makes a dead lane
+ * indistinguishable from a quiet one. On 2026-09-21 this workflow reported
+ * success with promoted:0 / errors:8, where all eight were HTTP 400
+ * "credit balance is too low". The run was green for days while the lane was dead.
+ */
+export function classifyFailure(reason: string): "infrastructure" | "content" {
+  const r = reason.toLowerCase();
+  const infra = [
+    "credit balance", "insufficient_quota", "quota",
+    "rate limit", "rate_limit", "429",
+    "authentication", "invalid api key", "unauthorized", "401", "403",
+    "overloaded", "529", "500", "502", "503", "504",
+    "econnreset", "enotfound", "etimedout", "socket hang up", "fetch failed",
+  ];
+  return infra.some((needle) => r.includes(needle)) ? "infrastructure" : "content";
 }
 
 const isMainModule = import.meta.url === `file://${process.argv[1]}`;

@@ -99,10 +99,20 @@ jobs:
           npx tsx scripts/author-semantic-rules.ts --write --max "$INPUT_MAX" "${SOURCE_ARG[@]}" --report /tmp/semantic-report.json
           EXIT=$?
           set -e
-          # exit 1 = fatal IO/parse -> fail the step; 0 = ok, 2 = no API key,
-          # 3 = all candidates routed to human -> non-fatal (no PR, but not an error).
+          # 0 = ok (promoted 0 or more; any failures were content-level)
+          # 1 = fatal IO/parse            -> fail
+          # 2 = no API key / no source    -> non-fatal (nothing to do)
+          # 3 = all candidates routed to human -> non-fatal, the gate working
+          # 4 = the lane could not run    -> FAIL. Every attempted candidate died on
+          #     an infrastructure error (credit, auth, rate limit, network). Before
+          #     2026-09-22 this exited 0 and the workflow went green with promoted:0,
+          #     which is why a dead lane looked identical to a quiet one for days.
           if [ "$EXIT" -eq 1 ]; then echo "::error::author-semantic-rules fatal error"; exit 1; fi
-          echo "author-semantic-rules exited $EXIT (0=ok, 2=no-key, 3=all-human)"
+          if [ "$EXIT" -eq 4 ]; then
+            echo "::error::semantic lane is DOWN — every candidate failed on an infrastructure error (see the ::error:: line above). This is not a quiet day."
+            exit 1
+          fi
+          echo "author-semantic-rules exited $EXIT (0=ok, 2=no-key, 3=all-human, 4=lane-down)"
 
       - name: Validate new rules
         run: npm run validate
