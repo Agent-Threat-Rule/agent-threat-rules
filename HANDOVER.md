@@ -110,6 +110,19 @@ broken harness, not a measurement of the rules.
   of truth and carries evidence links; operational notes elsewhere go stale.
 - **Rule counts change daily.** Never paste one into anything outward-facing
   without re-running the command in §1 first.
+- **Run `actionlint` before pushing a workflow change.** A gate added on
+  2026-09-22 runs it on every PR. It is not a style check: the release-notes body
+  is assembled inside a double-quoted shell string, so an unescaped backtick in it
+  is command substitution that runs at release time. That is exactly what it
+  caught during this handover pass.
+- **Do not hand-edit a generated block in `data/stats.json`.** `benchmarks[]` is
+  written by `sync-stats-from-measurements.ts` and `byCategory` / `categories` /
+  `version` by `reconcile-rule-count.mjs`; both have a `--check` mode that CI
+  runs. Adding so much as an explanatory key to a generated block makes it
+  disagree with its source and fails the build. Notes belong in a block no script
+  owns, such as `ecosystem`. byCategory went stale for three months because two
+  scripts each assumed the other owned it, so this is the failure mode the
+  repository has already paid for once.
 
 ## 4. What only a human with credentials can do
 
