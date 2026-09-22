@@ -91,49 +91,23 @@ jobs:
           VERSION="${GITHUB_REF#refs/tags/v}"
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
-      - name: Generate stats.json
-        run: |
-          node -e "
-            const fs = require('fs');
-            const path = require('path');
-
-            const rulesDir = path.resolve('rules');
-            const categories = fs.readdirSync(rulesDir).filter(d =>
-              fs.statSync(path.join(rulesDir, d)).isDirectory()
-            );
-
-            const rulesByCategory = {};
-            let totalRules = 0;
-            for (const cat of categories) {
-              const catDir = path.join(rulesDir, cat);
-              const files = fs.readdirSync(catDir).filter(f => f.endsWith('.yaml'));
-              rulesByCategory[cat] = files.length;
-              totalRules += files.length;
-            }
-
-            let megaScan = { scanned: 0, flagged: 0 };
-            try {
-              const mega = JSON.parse(fs.readFileSync('data/mega-scan-report.json', 'utf8'));
-              megaScan = { scanned: mega.totals?.scanned ?? 0, flagged: mega.totals?.flagged ?? 0 };
-            } catch {}
-
-            let benchmark = { recall: 0, precision: 0 };
-            try {
-              const pint = JSON.parse(fs.readFileSync('data/pint-benchmark/pint-eval-report.json', 'utf8'));
-              benchmark = { recall: pint.report?.overall?.recall ?? 0, precision: pint.report?.overall?.precision ?? 0 };
-            } catch {}
-
-            const stats = {
-              version: '${{ env.VERSION }}',
-              generatedAt: new Date().toISOString(),
-              rules: { total: totalRules, categories: Object.keys(rulesByCategory).length, byCategory: rulesByCategory },
-              ecosystem: { skillsScanned: megaScan.scanned, skillsFlagged: megaScan.flagged },
-              benchmark: { pintRecall: benchmark.recall, pintPrecision: benchmark.precision },
-            };
-
-            fs.writeFileSync('data/stats.json', JSON.stringify(stats, null, 2) + '\n');
-            console.log('Stats:', JSON.stringify(stats.rules));
-          "
+      # Was an inline script that rebuilt data/stats.json from scratch with five
+      # fields. It destroyed two of them: `benchmarks` and
+      # `benchmarks_generated_at`, which website/lib/stats.ts calls the canonical
+      # source for version-pinned measurements. In their place it wrote
+      # `benchmark: { pintRecall, pintPrecision }` straight from the raw report —
+      # and pintPrecision reads 1, which the site renders as "100%".
+      #
+      # Those PINT figures are not citable: the corpus is self-built, 850 samples,
+      # not Lakera's official benchmark, and one rule accounts for most of the
+      # detections. Regenerating them here also bypassed every check the repo has,
+      # because this step was a second, divergent implementation of a job that
+      # scripts/reconcile-rule-count.mjs already does — surgically, field by field,
+      # with tests behind it.
+      #
+      # A release is the worst possible moment to run the untested copy.
+      - name: Reconcile stats.json
+        run: npm run reconcile-stats
 
       - name: Publish to npm
         env:
@@ -205,11 +179,22 @@ jobs:
 
       - name: Sync rules to Threat Cloud
         env:
-          TC_URL: ${{ vars.TC_URL || 'https://tc.panguard.ai' }}
+          TC_URL: ${{ vars.TC_URL }}
           TC_ADMIN_API_KEY: ${{ secrets.TC_ADMIN_API_KEY }}
         run: |
+          # No default endpoint. This workflow lives in a public repository for an
+          # open standard, and it posts the entire rule corpus to whatever host is
+          # named here — so the host must be named deliberately, in repository
+          # variables, by whoever operates the collector. A fallback baked into the
+          # file makes one vendor the default recipient of the standard's output,
+          # which is the same defect 4.1.1 removed from the CLI.
+          if [ -z "${TC_URL:-}" ]; then
+            echo "TC_URL repository variable is not set — skipping sync."
+            echo "Set it under Settings > Secrets and variables > Actions > Variables."
+            exit 0
+          fi
           TOTAL=$(find rules -name "*.yaml" | wc -l | tr -d ' ')
-          echo "Syncing $TOTAL rules to TC via /api/rules/sync..."
+          echo "Syncing $TOTAL rules to $TC_URL/api/rules/sync ..."
           node -e "
             const fs = require('fs');
             const path = require('path');
