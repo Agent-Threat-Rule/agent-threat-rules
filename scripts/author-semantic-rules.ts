@@ -54,14 +54,17 @@
  * AFTER a draft passes the gate, so failures never burn an id.
  *
  * USAGE
- *   ANTHROPIC_API_KEY=... npx tsx scripts/author-semantic-rules.ts            # dry-run
- *   ANTHROPIC_API_KEY=... npx tsx scripts/author-semantic-rules.ts --write    # write rules
+ *   npx tsx scripts/author-semantic-rules.ts            # dry-run (uses whichever backend is configured)
+ *   npx tsx scripts/author-semantic-rules.ts --write    # write rules
  *   ... --max 5                 cap promotions
  *   ... --source hackaprompt    only this cluster source (hackaprompt|promptinject|garak)
  *   ... --report /tmp/r.json    write a run-summary JSON (for the workflow)
  *
  * ENV
- *   ANTHROPIC_API_KEY   required (else exit 2; no fabricated rules)
+ *   CLAUDE_CODE_OAUTH_TOKEN  preferred — routes through the local `claude` CLI and spends
+ *                       subscription credit. Mint with `claude setup-token`.
+ *   ANTHROPIC_API_KEY   fallback — metered credit. One of the two is required
+ *                       (else exit 2; no fabricated rules).
  *   ATR_AUTHOR_MODEL    model id (default claude-haiku-4-5-20251001; set a
  *                       Sonnet/Opus id in CI for best judge-prompt quality)
  *
@@ -79,9 +82,9 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSy
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
-import Anthropic from "@anthropic-ai/sdk";
 import { RuleScaffolder } from "../src/rule-scaffolder.js";
 import type { ATRCategory, ATRSeverity } from "../src/types.js";
+import { callClaude as sharedCallClaude, describeBackend, backendAvailable } from "./lib/claude-client.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
@@ -584,20 +587,16 @@ export function extractJson(text: string): SemanticDraft | null {
   }
 }
 
+/**
+ * Route through the shared client so this lane spends subscription credit via
+ * the local `claude` CLI when a CLAUDE_CODE_OAUTH_TOKEN is present, and only
+ * falls back to the metered API key when it is not. See scripts/lib/claude-client.ts:
+ * a metered balance running out is what killed this lane silently on 2026-09-21.
+ */
 async function callLlm(prompt: string): Promise<SemanticDraft | null> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return null;
+  if (!backendAvailable()) return null;
   const model = process.env.ATR_AUTHOR_MODEL || DEFAULT_MODEL;
-  const client = new Anthropic({ apiKey });
-  const resp = await client.messages.create({
-    model,
-    max_tokens: 4096,
-    messages: [{ role: "user", content: prompt }],
-  });
-  const out = resp.content
-    .filter((b): b is Anthropic.TextBlock => b.type === "text")
-    .map((b) => b.text)
-    .join("\n");
+  const out = await sharedCallClaude("", prompt, model, 4096);
   return extractJson(out);
 }
 
@@ -680,8 +679,13 @@ function emit(o: Record<string, unknown>): void {
 }
 
 async function main(): Promise<void> {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    emit({ status: "no_api_key", note: "ANTHROPIC_API_KEY required; refusing to fabricate semantic rules" });
+  if (!backendAvailable()) {
+    emit({
+      status: "no_backend",
+      note:
+        "No Claude backend. Set CLAUDE_CODE_OAUTH_TOKEN (preferred, subscription credit — run " +
+        "`claude setup-token`) or ANTHROPIC_API_KEY (metered credit). Refusing to fabricate semantic rules.",
+    });
     process.exit(2);
   }
 
@@ -703,6 +707,8 @@ async function main(): Promise<void> {
     );
     process.exit(1);
   }
+
+  console.log(`[author-semantic] llm backend: ${describeBackend()}`);
 
   const summary = {
     run_date: new Date().toISOString(),
@@ -827,6 +833,11 @@ export function classifyFailure(reason: string): "infrastructure" | "content" {
     "authentication", "invalid api key", "unauthorized", "401", "403",
     "overloaded", "529", "500", "502", "503", "504",
     "econnreset", "enotfound", "etimedout", "socket hang up", "fetch failed",
+    // A timeout is the call never completing, not a draft being rejected. Missing
+    // this is how a CLI timeout got filed as a content failure in testing.
+    "timed out", "timeout", "aborted", "sigkill", "killed",
+    // The CLI surfaces its own auth/quota problems in prose rather than status codes.
+    "not logged in", "please run /login", "usage limit", "quota exceeded",
   ];
   return infra.some((needle) => r.includes(needle)) ? "infrastructure" : "content";
 }
