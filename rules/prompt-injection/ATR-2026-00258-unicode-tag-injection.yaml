@@ -122,9 +122,9 @@ test_cases:
       reason: "Text discussion of the range without actually containing the codepoints"
 evasion_tests:
   - input: "Mixed legitimate tag use 󠁧 with only 1 character"
-    expected: not_triggered
+    expected: triggered
     bypass_technique: "single-char-below-threshold"
-    notes: "Single tag char below min-3-consecutive threshold may slip past strictest condition, caught by condition 2"
+    notes: "Single tag char slips past condition 1's min-3-consecutive threshold but is caught by condition 2 (any Tag-ASCII character), so the rule still fires under condition: any"
   - input: "Payload split across pre/post boundary: pre󠀠post"
     expected: triggered
     bypass_technique: "boundary-spanning"
