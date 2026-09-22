@@ -64,13 +64,22 @@ jobs:
           # On 2026-09-22, 64 checks across 8 branches were sitting unrun, some for 16 days.
           # Opening with a PAT makes a real user the author, so the PR's own CI runs.
           GH_TOKEN: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
+          # Attacker-controlled. Passed as env so it is data, never script.
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
           set -e
-          BRANCH="proposal/issue-${{ github.event.issue.number }}-$(echo '${{ github.event.issue.title }}' | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/-\+/-/g' | cut -c1-50)"
+          # ISSUE_TITLE comes in through env, never interpolated into this script.
+          # It is attacker-controlled: anyone can open an issue. Interpolated directly
+          # it was shell-injectable in three places here, in a job that holds
+          # ATR_REPO_TOKEN. The `new-rule` label is not a security boundary — a
+          # maintainer labelling a hostile issue is exactly how this would fire.
+          SLUG=$(printf '%s' "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/-\+/-/g' | cut -c1-50)
+          BRANCH="proposal/issue-${ISSUE_NUMBER}-${SLUG}"
           git push origin --delete "$BRANCH" 2>/dev/null || true
           git checkout -b "$BRANCH"
           git add proposals/community/
-          git commit -m "feat(proposals): community issue #${{ github.event.issue.number }} — ${{ github.event.issue.title }}"
+          git commit -m "feat(proposals): community issue #${ISSUE_NUMBER} — ${ISSUE_TITLE}"
           git push origin "$BRANCH"
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
 
@@ -82,10 +91,13 @@ jobs:
           # with a PAT makes a real user the author so the PR's own CI runs. Falls back to
           # GITHUB_TOKEN when ATR_REPO_TOKEN is absent (PR still opens, checks still park).
           GH_TOKEN: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
+          # Attacker-controlled. Passed as env so it is data, never script.
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
           set -e
           PR_URL=$(gh pr create \
-            --title "feat(proposals): community issue #${{ github.event.issue.number }} — ${{ github.event.issue.title }}" \
+            --title "feat(proposals): community issue #${ISSUE_NUMBER} — ${ISSUE_TITLE}" \
             --body "$(cat <<'EOF'
           Community rule proposal from GitHub Issue #${{ github.event.issue.number }}.
 
