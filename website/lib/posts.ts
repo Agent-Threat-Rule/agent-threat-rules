@@ -19,12 +19,12 @@ export const posts: BlogPost[] = [
     slug: "unit42-skill-supply-chain",
     date: "2026-07-13",
     title: {
-      en: "Palo Alto's Unit 42 scanned 49,943 agent skills. It's the same story our 96,096 told.",
-      zh: "Palo Alto Unit 42 掃了 49,943 個 agent skill。跟我們掃 96,096 個講的是同一件事。",
+      en: "Palo Alto's Unit 42 scanned 49,943 agent skills. It's the same story our 101,280-item scan told.",
+      zh: "Palo Alto Unit 42 掃了 49,943 個 agent skill。跟我們掃 101,280 個項目講的是同一件事。",
     },
     summary: {
-      en: "Unit 42's Behavioral Integrity Verification research found 80% of agent skills deviate from their declared behavior, 18.9% adversarially — an independent second dataset landing on the conclusion our 96,096-skill scan reached: the agent-skill supply chain is the attack surface. BIV verifies declared-vs-actual at install time; ATR detects the attack at runtime. We mapped their 29-capability taxonomy to ATR, and their canonical credential-exfil payload exposed a real gap — a code-surface chain our shell-syntax rules missed — so we shipped ATR-2026-02261. Honest about the seam: ATR covers the observed-behavior half, not the manifest diff.",
-      zh: "Unit 42 的 Behavioral Integrity Verification 研究發現 80% 的 agent skill 行為與宣告不符、18.9% 帶對抗性——這是一份獨立的第二資料集，落在我們掃 96,096 個 skill 得到的同一個結論上：agent-skill 供應鏈就是攻擊面。BIV 在安裝時驗證「宣告 vs 實際」；ATR 在 runtime 偵測攻擊本身。我們把他們的 29 能力 taxonomy 對映到 ATR，而他們的 canonical 憑證外洩 payload 曝出一個真缺口——一條我們的 shell 語法規則漏掉的 code-surface 鏈——於是我們補上 ATR-2026-02261。也老實說清楚接縫：ATR 只覆蓋 observed-behavior 那半,不做 manifest diff。",
+      en: "Unit 42's Behavioral Integrity Verification research found 80% of agent skills deviate from their declared behavior, 18.9% adversarially — an independent second dataset landing on the conclusion our 101,280-item wild scan reached: the agent-skill supply chain is the attack surface. BIV verifies declared-vs-actual at install time; ATR detects the attack at runtime. We mapped their 29-capability taxonomy to ATR, and their canonical credential-exfil payload exposed a real gap — a code-surface chain our shell-syntax rules missed — so we shipped ATR-2026-02261. Honest about the seam: ATR covers the observed-behavior half, not the manifest diff.",
+      zh: "Unit 42 的 Behavioral Integrity Verification 研究發現 80% 的 agent skill 行為與宣告不符、18.9% 帶對抗性——這是一份獨立的第二資料集，落在我們掃 101,280 個項目得到的同一個結論上：agent-skill 供應鏈就是攻擊面。BIV 在安裝時驗證「宣告 vs 實際」；ATR 在 runtime 偵測攻擊本身。我們把他們的 29 能力 taxonomy 對映到 ATR，而他們的 canonical 憑證外洩 payload 曝出一個真缺口——一條我們的 shell 語法規則漏掉的 code-surface 鏈——於是我們補上 ATR-2026-02261。也老實說清楚接縫：ATR 只覆蓋 observed-behavior 那半,不做 manifest diff。",
     },
     atrRules: ["ATR-2026-02261", "ATR-2026-00201", "ATR-2026-00224"],
   },
@@ -95,12 +95,12 @@ export const posts: BlogPost[] = [
     slug: "five-eyes-supply-chain",
     date: "2026-06-14",
     title: {
-      en: "The Five Eyes told you to inspect your agent's dependencies. We scanned 96,096 of them.",
-      zh: "Five Eyes 要你檢查 agent 的依賴。我們掃了 96,096 個。",
+      en: "The Five Eyes told you to inspect your agent's dependencies. We scanned 101,280 of them.",
+      zh: "Five Eyes 要你檢查 agent 的依賴。我們掃了 101,280 個。",
     },
     summary: {
-      en: "The April 2026 Five Eyes guidance names third-party agent components — MCP servers, tools, skills — as a critical supply-chain risk, and gives no tool to check them. ATR scanned 96,096 across five registries: 1,302 flagged, 552 confirmed malicious after manual review, three coordinated publishers.",
-      zh: "2026 年 4 月 Five Eyes 指引點名第三方 agent 元件(MCP server、工具、skill)為關鍵供應鏈風險，卻沒給檢查的工具。ATR 掃了五個 registry 的 96,096 個：1,302 個有風險、人工複審後 552 個確認惡意、三個協同發布者。",
+      en: "The April 2026 Five Eyes guidance names third-party agent components — MCP servers, tools, skills — as a critical supply-chain risk, and gives no tool to check them. ATR scanned 101,280 across five registries: 1,434 flagged (engine v2.0.0, 2026-04-13), concentrated in three coordinated publisher accounts.",
+      zh: "2026 年 4 月 Five Eyes 指引點名第三方 agent 元件(MCP server、工具、skill)為關鍵供應鏈風險，卻沒給檢查的工具。ATR 掃了五個 registry 的 101,280 個：1,434 個被標記（engine v2.0.0，2026-04-13），標記量集中在三個協同發布帳號。",
     },
     atrRules: ["ATR-2026-00531", "ATR-2026-00161"],
   },

@@ -55,28 +55,28 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-graphite leading-[1.7]">
             {[
               {
-                name: "PINT (850 samples)",
+                name: "PINT-format (850 samples)",
                 verdict: locale === "zh"
-                  ? "ATR 在 850 個 PINT 格式對抗性樣本（自建語料，來自 deepset + Lakera Gandalf，非 Lakera 官方私有 benchmark）上達到 63.2% 召回率、99.7% 精準度、0.25% FP——代表規則在真實 MCP 流量中幾乎不誤報。"
-                  : "ATR reaches 63.2% recall, 99.7% precision, and 0.25% FP on 850 PINT-format adversarial samples (self-built from deepset + Lakera Gandalf; not Lakera's official private benchmark) — rules rarely fire on legitimate MCP traffic.",
+                  ? "ATR 在 850 個 PINT 格式對抗性樣本上達到 65.4% 召回率，並在該語料的 399 個良性樣本上 0 誤報（ATR 3.5.12，量測於 2026-08-15）。這是自建語料（deepset + Lakera Gandalf），不是 Lakera 官方私有 PINT benchmark；只有一小部分規則會在這份語料上開火，請讀成 prompt injection 家族的分數，不是整體覆蓋率。"
+                  : "ATR reaches 65.4% recall on 850 PINT-format adversarial samples, with zero false positives on that corpus's 399 benign samples (ATR 3.5.12, measured 2026-08-15). This is a self-built corpus (deepset + Lakera Gandalf), not Lakera's official private PINT benchmark; only a small subset of rules fire on it, so read it as a prompt-injection-family score rather than overall coverage.",
               },
               {
                 name: "HackAPrompt (4,780 samples)",
                 verdict: locale === "zh"
-                  ? "ATR 在 4,780 個 HackAPrompt 競賽樣本上達到 66.0% 召回率、100% 精準度，且不誤報。"
-                  : "ATR catches 66.0% of the 4,780 HackAPrompt competition samples at 100% precision, with no false alarms.",
+                  ? "ATR 在 4,780 個 HackAPrompt 競賽樣本上達到 69.6% 召回率（ATR 3.5.0，量測於 2026-06-16）。這份語料 100% 對抗性、沒有良性樣本，所以它算不出 precision 或誤報率——別把它當精準度證據。"
+                  : "ATR catches 69.6% of the 4,780 HackAPrompt competition samples (ATR 3.5.0, measured 2026-06-16). The corpus is 100% adversarial with no benign population, so it cannot yield a precision or false-positive figure — do not read it as precision evidence.",
               },
               {
                 name: "Self-test (341 samples)",
                 verdict: locale === "zh"
-                  ? "ATR 在 341 個內部自測樣本上達到 89.4% 召回率、100% 精準度、0% FP——這是與 SKILL.md benchmark 分開的獨立語料。"
-                  : "ATR reaches 89.4% recall, 100% precision, and 0% FP on 341 internal self-test samples — a separate corpus from the SKILL.md benchmark.",
+                  ? "ATR 在 341 個內部自測樣本上達到 96.6% 召回率、0 誤報（ATR 3.5.12，量測於 2026-08-15）——這是與 SKILL.md benchmark 分開的獨立語料，且是自家語料,不能當成樣本外證據。"
+                  : "ATR reaches 96.6% recall with zero false positives on 341 internal self-test samples (ATR 3.5.12, measured 2026-08-15) — a separate corpus from the SKILL.md benchmark, and an in-house one, so it is not out-of-sample evidence.",
               },
               {
                 name: "garak (650 in-the-wild / 3,475 full)",
                 verdict: locale === "zh"
-                  ? "ATR 對 garak in-the-wild jailbreak 集（650 個 prompt）達到 98.0% 召回率；對完整 23-probe garak 套件（3,475 個 prompt）為 38.5%。"
-                  : "ATR reaches 98.0% recall on garak's in-the-wild jailbreak set (650 prompts), and 38.5% on the full 23-probe garak suite (3,475 prompts).",
+                  ? "ATR 對 garak in-the-wild jailbreak 集（650 個 prompt）達到 92.3% 召回率；對完整 23-probe garak 套件（3,475 個 prompt）為 57.2%（皆為 ATR 3.5.12，量測於 2026-08-15）。"
+                  : "ATR reaches 92.3% recall on garak's in-the-wild jailbreak set (650 prompts), and 57.2% on the full 23-probe garak suite (3,475 prompts) — both at ATR 3.5.12, measured 2026-08-15.",
               },
             ].map((item) => (
               <div key={item.name}>

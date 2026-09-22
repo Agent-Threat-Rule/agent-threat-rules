@@ -207,14 +207,16 @@ python3 garak-to-tc.py \\
           <li>
             {zh ? (
               <>
-                通過 canary → 安全閘門(432 樣本良性語料 0 FP、test_cases 齊備、每個 PR ≤10 條規則)→
+                通過 canary → 安全閘門(良性 skill 語料 0 FP、test_cases 齊備、每個 PR ≤10 條規則;
+                語料以 <code>data/skill-benchmark/benign/</code> 為準,閘會遞迴讀取其下所有 .md)→
                 自動 merge 進 <code>agent-threat-rules</code> main →{' '}
                 <code>npm publish</code> 數分鐘內觸發 → 每個下游消費者在下次安裝時升級。
               </>
             ) : (
               <>
-                Survives canary → safety gate (0 FP on 432-sample benign corpus, test_cases present,
-                ≤10 rules per PR) → auto-merged into <code>agent-threat-rules</code> main →
+                Survives canary → safety gate (0 FP on the benign skill corpus, test_cases present,
+                ≤ 10 rules per PR; the gate reads every `.md` under
+                <code>data/skill-benchmark/benign/</code>, subdirectories included) → auto-merged into <code>agent-threat-rules</code> main →
                 <code>npm publish</code> fires within minutes → every downstream consumer upgrades on
                 next install.
               </>
@@ -278,8 +280,9 @@ python3 garak-to-tc.py \\
             {zh ? (
               <>
                 每次 POST 之間預設 100ms 延遲,跑完約一分鐘。兩個數字都公開:在 garak 公開
-                in-the-wild jailbreak 集(650 筆)上,recall 是 98.0%;在完整 garak 語料
-                (3,475 筆,涵蓋全部 probe 家族)上,recall 是 38.5%。落差是刻意的——regex
+                in-the-wild jailbreak 集(650 筆)上,recall 是 92.3%;在完整 garak 語料
+                (3,475 筆,涵蓋全部 probe 家族)上,recall 是 57.2%(皆為 ATR 3.5.12,量測於
+                2026-08-15)。落差是刻意的——regex
                 偵測層不去打某些 probe 家族(例如純語意越獄),硬塞只會換來脆弱簽章與誤報。
                 列出較低的那個數字,是因為一個標準的可信度,取決於它願不願意公開自己最差的數字。
               </>
@@ -287,7 +290,8 @@ python3 garak-to-tc.py \\
               <>
                 Default 100ms delay between POSTs; a run takes about a minute. Both figures are
                 published. On the public garak in-the-wild jailbreak set (650 samples) recall is
-                98.0%; on the full garak corpus (3,475 samples, every probe family) recall is 38.5%.
+                92.3%; on the full garak corpus (3,475 samples, every probe family) recall is 57.2%
+                — both at ATR 3.5.12, measured 2026-08-15.
                 The gap is deliberate — the regex detection layer does not chase some probe families
                 (pure semantic jailbreaks, for instance); forcing it to would buy brittle signatures
                 and false positives. We report the lower number because a standard earns trust by

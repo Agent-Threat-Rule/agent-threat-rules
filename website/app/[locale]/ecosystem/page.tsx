@@ -24,7 +24,7 @@ export function generateStaticParams() {
 export const metadata: Metadata = {
   title: "Ecosystem — ATR adopters",
   description:
-    "Standards bodies, production deployments, and open-source tooling that ship Agent Threat Rules (ATR).",
+    "Standards bodies, security vendors, and open-source tooling that have merged Agent Threat Rules (ATR) into their own public repositories.",
 };
 
 export default async function EcosystemPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -75,8 +75,8 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
       <Reveal delay={0.2}>
         <p className="text-base text-stone font-light mb-3 max-w-[640px]">
           {zh
-            ? "一個標準靠採用衡量,不靠宣稱。這頁列的是把 ATR 規則綁進公開、可驗證成品的專案——標準機構、生產部署、開源工具——而採用的形狀本身就是重點:企業整合走 pull request,不是私有 fork。這正是一個開放標準想要的治理質感。"
-            : "A standard is measured by adoption, not by assertion. This page lists projects that ship ATR rules in public, verifiable work — standards bodies, production deployments, open-source tooling. The shape of that adoption is itself the point: enterprises integrate through pull requests, not private forks. That is the governance texture an open standard is built for."}
+            ? "一個標準靠採用衡量,不靠宣稱。這頁列的是把 ATR 規則綁進公開、可驗證成品的專案——標準機構、資安廠商、開源工具——而採用的形狀本身就是重點:企業整合走 pull request,不是私有 fork。這正是一個開放標準想要的治理質感。"
+            : "A standard is measured by adoption, not by assertion. This page lists projects that ship ATR rules in public, verifiable work — standards bodies, security vendors, open-source tooling. Each entry is evidenced by a merged pull request in a public repository, not by a vendor product claim. The shape of that adoption is itself the point: enterprises integrate through pull requests, not private forks. That is the governance texture an open standard is built for."}
         </p>
       </Reveal>
       <Reveal delay={0.22}>
