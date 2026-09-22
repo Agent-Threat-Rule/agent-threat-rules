@@ -7,7 +7,7 @@ Rules' required CI, rules, scripts, benchmark data, or published measurements. I
 review contract, the review workflow/verifier, this report, and ignored Ota-owned local state.
 
 - upstream base: `Agent-Threat-Rule/agent-threat-rules` `main` at
-  `3c20d74e75c3dbc856ab04d5a47ad41d6d2d20b3`
+  `8ab5ba59cc27450e25d9fbd6f17741f0edf6980b`
 - review branch: `bobaikato/agent-threat-rules` `ota/pre-release-review`
 - Ota review source: exact unreleased Core revision
   `b9c5d0b65eaca9d15d975e5913ba16135337e6b7`
