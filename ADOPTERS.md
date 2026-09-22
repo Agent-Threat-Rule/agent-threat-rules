@@ -254,7 +254,7 @@ Listed when the integration code has been merged or released.
 
 ### atr-to-yaral
 - **Org**: Ajay Nyayapathi
-- **Type**: adopter
+- **Type**: adapter
 - **Integration**: Converts ATR YAML rules into YARA-L 2.0 rules for Google SecOps (Chronicle), including a real RE2 compile-check gate, Unicode-escape translation, and canary testing against each rule's own test cases
 - **Evidence**: <https://github.com/ajaynyayapathi/ATR-to-Yara-L-Converter/blob/main/atr-to-yaral/README.md>
 - **Since**: 2026-09-12
