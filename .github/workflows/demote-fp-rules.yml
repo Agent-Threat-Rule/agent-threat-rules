@@ -44,6 +44,13 @@ jobs:
         run: npm run validate
       - name: Open demotion PR
         if: steps.demote.outputs.changed != '0'
+        env:
+          # A PR opened with the default GITHUB_TOKEN is authored by app/github-actions,
+          # and GitHub parks every check on it at action_required instead of running it.
+          # This lane demotes enforce-lane rules that false positive, so a PR of its own
+          # that can never go green is the one kind that most needs to. #589 moved the
+          # other lanes onto the PAT; this step was left behind on the job-level default.
+          GH_TOKEN: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           # One rolling branch, force-pushed each run, not one per commit. The demote
