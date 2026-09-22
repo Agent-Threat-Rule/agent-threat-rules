@@ -11,6 +11,9 @@ review contract, the review workflow/verifier, this report, and ignored Ota-owne
 - review branch: `bobaikato/agent-threat-rules` `ota/pre-release-review`
 - Ota review source: exact unreleased Core revision
   `b9c5d0b65eaca9d15d975e5913ba16135337e6b7`
+- Ota drift-gate action: exact action revision
+  `1406e91ced3e717e4a2498d75c2496260d308049`; its Node 24 Action implementation runtime does not
+  replace this lane's workflow-selected Node 20 runtime
 - release gate: replace that Git revision with released `v1.6.28`, rerun this unchanged workflow,
   then decide whether to open the maintainer-invited draft PR
 
