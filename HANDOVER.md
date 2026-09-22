@@ -146,23 +146,34 @@ identities over the last six months. Two things follow from that:
 
 ## 5. Bot pull requests
 
-Four scheduled workflows open a new branch and a new PR on every run against the
-same accumulating files, so all but the newest are mutually exclusive by
-construction and none of them can merge. PR #500 contains the correct fix — one
-rolling branch — and has been open since 2026-08-23.
+Scheduled workflows used to open a new branch and a new pull request on every run
+against the same accumulating files, so all but the newest were mutually exclusive
+by construction and none could merge. The backlog peaked at 92 open pull requests,
+41 of them daily CVE-ingest drafts.
 
-As of 2026-09-22 its seven checks all pass but it is `CONFLICTING`/`DIRTY`: `main`
-advances several times a day, and a month of that drift has put the branch out of
-date. It needs a rebase before it can land, and the longer it waits the more
-expensive that rebase gets. This is the general shape of the backlog here — a PR
-being green is a statement about the past, not about whether it can merge today.
+PRs #587 and #589 (2026-09-22) fixed the mechanism: the lanes now maintain a
+rolling branch instead of one per run, and open their PRs with a PAT so the checks
+actually execute. The backlog is 44 as of 2026-09-22 — 25 human-authored, 19 from
+bots — and the CVE-ingest line is down to a single open PR.
 
-Three of those workflows opened their PRs with the default `GITHUB_TOKEN`, which
-makes `app/github-actions` the author; GitHub then parks every check on them at
-`action_required` forever. That was repaired in this pass, but **the repair only
-applies to newly opened PRs**. The six already-stuck PRs need a human to close and
-reopen them (a human event is what triggers the workflows) or an empty commit
-pushed to each branch.
+Two things did not follow automatically:
+
+- `demote-fp-rules` was left on the job-level `GITHUB_TOKEN` when the other lanes
+  moved to the PAT, so its PRs are still authored by `app/github-actions` and their
+  checks still park at `action_required`. That lane demotes enforce-lane rules that
+  false positive, so of all of them it is the one that most needs to go green.
+  Repaired in this pass.
+- The repair only applies to newly opened PRs. The already-stuck ones need a human
+  to close and reopen them — a human event is what triggers the workflows — or an
+  empty commit pushed to each branch. Nothing will happen to them on its own.
+
+PR #500 proposed the rolling-branch fix back on 2026-08-23 and is still open,
+overtaken by #587. Check whether it still carries anything before closing it.
+
+A note on the shape of this backlog rather than its size: #500's checks were green
+and it was still not mergeable, because `main` advances several times a day and a
+month of that drift left the branch conflicting. A green PR is a statement about
+the past. Re-run checks on anything more than a few days old before merging it.
 
 ## 6. What this handover pass changed
 
