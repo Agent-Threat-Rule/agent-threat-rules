@@ -46,10 +46,15 @@ jobs:
         if: steps.demote.outputs.changed != '0'
         run: |
           set -euo pipefail
-          BRANCH="fp-hygiene/demote-$(git rev-parse --short HEAD)"
+          # One rolling branch, force-pushed each run, not one per commit. The demote
+          # list is cumulative, so per-commit branches only ever accumulated: across
+          # three lanes 18 such PRs were open on 2026-09-22, 42% of the repo's open
+          # PRs, which reads as an unmaintained project rather than as a naming choice.
+          # Same fix as #587.
+          BRANCH="fp-hygiene/demote-rolling"
           git config user.name "atr-fp-bot"
           git config user.email "bot@agentthreatrule.org"
-          git checkout -b "$BRANCH"
+          git checkout -B "$BRANCH"
           git add rules/
           git commit -m "chore(maturity): demote enforce-lane rules that FP on the grown corpus
 
@@ -59,9 +64,20 @@ jobs:
           samples in the current corpus, so they are demoted stable -> test (out of
           the auto-block lane). They keep alerting; re-promote via promote-to-stable.ts
           once tightened."
-          git push -u origin "$BRANCH"
-          gh pr create --base main --head "$BRANCH" \
-            --title "chore(maturity): demote enforce-lane rules that FP on the grown corpus" \
-            --body "$(cat /tmp/demote.log)
+          git push --force-with-lease -u origin "$BRANCH" || git push --force -u origin "$BRANCH"
+          # Rolling branch: reuse the open PR if there is one. Without this the second
+          # run fails, because `gh pr create` refuses a duplicate on the same head.
+          BODY="$(cat /tmp/demote.log)
 
-          Enforce-lane hygiene: these stable rules false-positive on the current benign corpus and are demoted out of the auto-block lane (they keep alerting). Part of the FP feedback loop — the corpus grew, so rules that no longer clear it lose blocking power until tightened."
+          Enforce-lane hygiene: these stable rules false-positive on the current benign corpus and are demoted out of the auto-block lane (they keep alerting). Part of the FP feedback loop — the corpus grew, so rules that no longer clear it lose blocking power until tightened.
+
+          This PR is force-pushed on each run and always reflects the current demote list. It changes production rule maturity, so it is never auto-merged: a human reads the list."
+          EXISTING=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTING" ]; then
+            gh pr edit "$EXISTING" --body "$BODY"
+            echo "Updated rolling PR #$EXISTING; no second PR opened."
+          else
+            gh pr create --base main --head "$BRANCH" \
+              --title "chore(maturity): demote enforce-lane rules that FP on the grown corpus" \
+              --body "$BODY"
+          fi

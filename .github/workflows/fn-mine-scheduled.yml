@@ -117,7 +117,13 @@ jobs:
         if: steps.mine.outputs.files != ''
         id: push
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # A PR opened with the default GITHUB_TOKEN is authored by app/github-actions, and
+          # GitHub parks every check on it at action_required forever rather than running it —
+          # deliberately, to stop workflows triggering each other. The consequence here was that
+          # this lane's PRs could never go green, so they could never be merged, so they piled up.
+          # On 2026-09-22, 64 checks across 8 branches were sitting unrun, some for 16 days.
+          # Opening with a PAT makes a real user the author, so the PR's own CI runs.
+          GH_TOKEN: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           set -e
           BRANCH="fn-mine/scheduled-$(date +%Y%m%d)"
