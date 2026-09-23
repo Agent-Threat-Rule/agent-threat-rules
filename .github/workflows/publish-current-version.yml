@@ -63,15 +63,20 @@ jobs:
       - name: Run tests
         run: npm test
 
+      # No token here, deliberately. This workflow exists because a publish failed
+      # on a credential, twice: 2026-09-14 with an expired token (E404 on PUT), and
+      # 2026-09-22 with EOTP, npm demanding a one-time password from CI. npm is
+      # restricting bypass-2FA tokens and has said it will remove direct publishing
+      # through them in January 2027, so a third token would be a third failure mode
+      # on a deadline. Under trusted publishing the credential is minted per run and
+      # expires in minutes; attestations are generated automatically, so --provenance
+      # is dropped rather than passed.
+      #
+      # Trust is configured on the package: npmjs.com -> agent-threat-rules ->
+      # Settings -> Trusted publishing, naming this file by its exact filename.
+      # Renaming this workflow breaks publishing until that entry is recreated.
       - name: Publish current version to npm
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           VERSION=$(node -p "require('./package.json').version")
           echo "Publishing agent-threat-rules@${VERSION}"
-          # --provenance, because publish.yml uses it and every published version
-          # so far carries an attestation. A release that arrives without one is
-          # a visible downgrade on the registry page for a security project, and
-          # npm will not let it be added after the fact. The job already declares
-          # id-token: write, which is the only precondition.
-          npm publish --access public --provenance
+          npm publish --access public
