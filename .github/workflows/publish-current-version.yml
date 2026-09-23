@@ -25,6 +25,35 @@ jobs:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
 
+      # The Node 22 line ships npm 10.x, which predates staged publishing
+      # (npm >= 11.15.0). On 2026-09-22 a publish from this workflow printed
+      # `+ agent-threat-rules@4.1.1`, signed provenance into the Sigstore
+      # transparency log, and said the package was being processed — and the
+      # version never appeared on the registry, nor in the account's Staged
+      # Packages queue. The package document's `time.modified` did not move at
+      # all, so the PUT was accepted and never committed.
+      #
+      # The registry now speaks a protocol where a token's permission decides
+      # whether a publish goes live or waits for approval. An old client cannot
+      # express or read that, and the failure it produces is silent, which is
+      # the worst property a release step can have. Pin the floor explicitly and
+      # print it, so the next person reading a release log can see which client
+      # spoke to the registry.
+      - name: Ensure npm is new enough to talk to the registry correctly
+        run: |
+          echo "npm before: $(npm --version)"
+          npm install -g npm@latest
+          echo "npm after:  $(npm --version)"
+          NPM_V="$(npm --version)"
+          node -e '
+            const [maj, min] = process.argv[1].split(".").map(Number);
+            if (maj < 11 || (maj === 11 && min < 15)) {
+              console.error(`npm ${process.argv[1]} is below the 11.15.0 floor for staged publishing`);
+              process.exit(1);
+            }
+            console.log(`npm ${process.argv[1]} is new enough`);
+          ' "$NPM_V"
+
       - run: npm ci
 
       - name: Build
