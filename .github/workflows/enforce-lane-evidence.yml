@@ -1,0 +1,83 @@
+name: Enforce-lane evidence gate
+
+# docs/QUALITY-STANDARD.md defines STABLE as "Wild-validated, enterprise-ready /
+# confidence >= 80, wild FP rate <= 0.5%", and STABLE is the enforce lane:
+# auto-block, no human in the loop. That is the bar the project published for
+# itself.
+#
+# Measured 2026-08-09: 106 of 106 live stable rules fail it. 87 carry no
+# `confidence` field at all, 4 are below 80, and 15 clear the confidence bar but
+# have no wild evidence — the last group only became visible when #433 stripped
+# 230 `wild_fp_rate: 0` values that no run ever produced.
+#
+# The rules are not bad. All 106 measure zero false positives on the 5,352-sample
+# public benign corpus. What they lack is the evidence the standard asks for, and
+# the wild corpus it comes from is private and unreachable from CI — so the
+# project structurally cannot produce it here.
+#
+# Hence a RATCHET, same shape as rule-status-gate.yml and re2-portability.yml.
+# Failing the build on 106 of 106 would either stop all work or, far more likely,
+# get the standard quietly edited until the numbers agree. The two honest fixes —
+# demote all 106 and empty the enforce lane, or change the standard to accept
+# public-corpus evidence — are product decisions, not gate behaviour.
+#
+# So this freezes the debt at its measured size, names every rule in it, and
+# fails the moment it grows. The gap stops being silent without anyone having to
+# pretend it is closed.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "rules/**"
+      - "data/enforce-lane-evidence-baseline.json"
+      - "scripts/gate-enforce-lane-evidence.ts"
+      - "docs/QUALITY-STANDARD.md"
+      - ".github/workflows/enforce-lane-evidence.yml"
+  push:
+    branches: [main]
+    paths:
+      - "rules/**"
+      - "data/enforce-lane-evidence-baseline.json"
+      - "scripts/gate-enforce-lane-evidence.ts"
+      - "docs/QUALITY-STANDARD.md"
+
+permissions:
+  contents: read
+
+jobs:
+  enforce-lane-evidence:
+    name: Auto-block lane needs evidence
+    runs-on: ubuntu-latest
+    steps:
+      # No fetch-depth: 0 — the gate compares the working tree against a
+      # committed baseline, not against a base ref.
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Exit 1: a rule entered the enforce lane without the evidence the
+      # standard requires, or a rule file has no determinable maturity.
+      # "Cannot determine" is never reported as "does not apply" — that is the
+      # class of silent pass this repo spent a week removing.
+      - name: Enforce-lane evidence ratchet
+        run: npx tsx scripts/gate-enforce-lane-evidence.ts
+
+      # The baseline may only shrink. --write-baseline refuses to add entries,
+      # so a run that leaves the file dirty means rules earned their evidence
+      # without the record being tightened. Advisory: bookkeeping lag, not a
+      # safety failure — the ratchet above already blocks the direction that
+      # matters.
+      - name: Baseline is not stale
+        run: |
+          npx tsx scripts/gate-enforce-lane-evidence.ts --write-baseline
+          if ! git diff --quiet -- data/enforce-lane-evidence-baseline.json; then
+            echo "::warning::rules now meet the STABLE bar but the baseline still lists them."
+            echo "Run: npx tsx scripts/gate-enforce-lane-evidence.ts --write-baseline"
+            git diff --stat -- data/enforce-lane-evidence-baseline.json
+          fi
