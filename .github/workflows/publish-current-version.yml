@@ -43,16 +43,17 @@ jobs:
         run: |
           echo "npm before: $(npm --version)"
           npm install -g npm@latest
-          echo "npm after:  $(npm --version)"
           NPM_V="$(npm --version)"
-          node -e '
-            const [maj, min] = process.argv[1].split(".").map(Number);
-            if (maj < 11 || (maj === 11 && min < 15)) {
-              console.error(`npm ${process.argv[1]} is below the 11.15.0 floor for staged publishing`);
-              process.exit(1);
-            }
-            console.log(`npm ${process.argv[1]} is new enough`);
-          ' "$NPM_V"
+          echo "npm after:  $NPM_V"
+          FLOOR=11.15.0
+          # sort -V puts the lower version first; if the floor sorts first and the
+          # two differ, we are at or above it.
+          LOWEST="$(printf '%s\n%s\n' "$NPM_V" "$FLOOR" | sort -V | head -n1)"
+          if [ "$LOWEST" != "$FLOOR" ] && [ "$NPM_V" != "$FLOOR" ]; then
+            echo "npm $NPM_V is below the $FLOOR floor for staged publishing" >&2
+            exit 1
+          fi
+          echo "npm $NPM_V meets the $FLOOR floor"
 
       - run: npm ci
 
