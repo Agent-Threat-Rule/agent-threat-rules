@@ -8,6 +8,8 @@ import { fileURLToPath } from "node:url";
 import { ATREngine } from "../src/engine.js";
 import { matchedRuleIds } from "./lib/corpus-event.js";
 import { loadRulesFromDirectory } from "../src/loader.js";
+import { buildEventFromTestCase } from "../src/testcase-event.js";
+import type { ATRRule } from "../src/types.js";
 
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -84,6 +86,63 @@ function matchedForInput(engine: ATREngine, input: unknown): ReadonlySet<string>
   return ids;
 }
 
+/** Every key a test case may carry its payload under. Order is precedence. */
+const TEXT_KEYS = [
+  "tool_response",
+  "input",
+  "content",
+  "tool_description",
+  "tool_args",
+  "user_input",
+  "agent_output",
+  "agent_message",
+  "tool_name",
+] as const;
+
+function testCaseText(t: Record<string, unknown>): unknown {
+  for (const k of TEXT_KEYS) {
+    const v = t[k];
+    if (v !== undefined && v !== null && v !== "") return v;
+  }
+  return "";
+}
+
+
+/**
+ * Did this test case fire the rule?
+ *
+ * Two presentations, unioned, and both applied to true NEGATIVES as well as
+ * true positives — so the extra shape can never manufacture a clean pass.
+ *
+ *   1. The canonical shape set. This is the presentation the benign corpus is
+ *      charged against, so a rule must not earn detection credit on anything
+ *      wider than it.
+ *   2. The field-aware event, built by the SAME function `pga test` uses. A
+ *      rule whose condition reads `tool_args` cannot fire on an event carrying
+ *      no tool_args; scoring that as a rule failure measures the harness, not
+ *      the rule.
+ *
+ * Before this, only a text chain of tool_response / input / content /
+ * tool_description was read. 194 test cases across 27 rules name their payload
+ * under tool_args, tool_name, user_input or agent_output instead, and every one
+ * of them resolved to "" — true positives reported as broken detection, true
+ * negatives passing without ever being read.
+ */
+function firesOn(
+  engine: ATREngine,
+  tc: Record<string, unknown>,
+  rule: ATRRule,
+  text: unknown,
+): boolean {
+  if (matchedForInput(engine, text).has(RULE_ID)) return true;
+  try {
+    const event = buildEventFromTestCase(tc, rule);
+    return engine.evaluate(event).some((m) => m.rule.id === RULE_ID);
+  } catch {
+    return false;
+  }
+}
+
 async function main(): Promise<void> {
   const engine = new ATREngine({ rulesDir: RULES_DIR });
   await engine.loadRules();
@@ -103,8 +162,8 @@ async function main(): Promise<void> {
   let fail = 0;
   const fails: string[] = [];
   for (const t of tps) {
-    const input = t.tool_response ?? t.input ?? t.content ?? t.tool_description ?? "";
-    const hit = matchedForInput(engine, input).has(RULE_ID);
+    const input = testCaseText(t);
+    const hit = firesOn(engine, t, rule as unknown as ATRRule, input);
     if (hit) pass++;
     else {
       fail++;
@@ -112,8 +171,8 @@ async function main(): Promise<void> {
     }
   }
   for (const t of tns) {
-    const input = t.tool_response ?? t.input ?? t.content ?? t.tool_description ?? "";
-    const hit = matchedForInput(engine, input).has(RULE_ID);
+    const input = testCaseText(t);
+    const hit = firesOn(engine, t, rule as unknown as ATRRule, input);
     if (!hit) pass++;
     else {
       fail++;
