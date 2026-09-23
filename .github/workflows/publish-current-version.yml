@@ -25,6 +25,36 @@ jobs:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
 
+      # The Node 22 line ships npm 10.x, which predates staged publishing
+      # (npm >= 11.15.0). On 2026-09-22 a publish from this workflow printed
+      # `+ agent-threat-rules@4.1.1`, signed provenance into the Sigstore
+      # transparency log, and said the package was being processed — and the
+      # version never appeared on the registry, nor in the account's Staged
+      # Packages queue. The package document's `time.modified` did not move at
+      # all, so the PUT was accepted and never committed.
+      #
+      # The registry now speaks a protocol where a token's permission decides
+      # whether a publish goes live or waits for approval. An old client cannot
+      # express or read that, and the failure it produces is silent, which is
+      # the worst property a release step can have. Pin the floor explicitly and
+      # print it, so the next person reading a release log can see which client
+      # spoke to the registry.
+      - name: Ensure npm is new enough to talk to the registry correctly
+        run: |
+          echo "npm before: $(npm --version)"
+          npm install -g npm@latest
+          NPM_V="$(npm --version)"
+          echo "npm after:  $NPM_V"
+          FLOOR=11.15.0
+          # sort -V puts the lower version first; if the floor sorts first and the
+          # two differ, we are at or above it.
+          LOWEST="$(printf '%s\n%s\n' "$NPM_V" "$FLOOR" | sort -V | head -n1)"
+          if [ "$LOWEST" != "$FLOOR" ] && [ "$NPM_V" != "$FLOOR" ]; then
+            echo "npm $NPM_V is below the $FLOOR floor for staged publishing" >&2
+            exit 1
+          fi
+          echo "npm $NPM_V meets the $FLOOR floor"
+
       - run: npm ci
 
       - name: Build
