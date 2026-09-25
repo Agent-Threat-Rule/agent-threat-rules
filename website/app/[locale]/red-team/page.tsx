@@ -260,9 +260,9 @@ const CONTRIBUTOR_BENEFITS: ContributorBenefit[] = [
   {
     for: "Independent researchers",
     benefit:
-      "Ship a detection without hand-writing regex. Submit positive and negative examples; the deterministic auto-regex generator tries four variants against the full gate, and roughly one in three passes on the first attempt.",
+      "Ship a detection without hand-writing regex. Submit positive and negative examples; a maintainer writes the regex from them and runs it through the full gate.",
     proof:
-      "The generator clears 0 FP across 3,551 samples (benign + extended + research-mention + cross-rule) before a candidate is ever shown. The PR labels itself gate-passed and goes straight to maintainer review — the same gate every rule in the standard had to clear.",
+      "Your benign look-alikes become the rule's true negatives. The regex must match none of them and hold 0 FP on the benign corpus before it merges. That is the same gate every rule in the standard had to clear.",
   },
   {
     for: "Bug bounty hunters",
@@ -433,7 +433,7 @@ export default async function RedTeamPage({
       </section>
 
       {/* ============================================================
-          HOW IT WORKS — auto-regex highlighted
+          HOW IT WORKS — a maintainer converts the probe
       ============================================================ */}
       <section
         id="how-it-works"
@@ -448,8 +448,8 @@ export default async function RedTeamPage({
             </div>
             <h2 className="font-display text-[clamp(28px,4vw,44px)] font-extrabold tracking-[-2px] leading-[1.05] mb-12 max-w-[720px]">
               {zh
-                ? "Probe 進來、auto-regex 自動產、quality gate 全綠才 merge。"
-                : "Probe in. Auto-regex generates. Quality gate validates. Merge if green."}
+                ? "Probe 進來、maintainer 寫 regex、quality gate 全綠才 merge。"
+                : "Probe in. A maintainer writes the regex. Quality gate validates. Merge if green."}
             </h2>
           </Reveal>
 
@@ -485,18 +485,18 @@ export default async function RedTeamPage({
                 <div className="md:col-span-10">
                   <h3 className="font-display text-xl font-bold mb-3">
                     {zh
-                      ? "Auto-regex 跑 4 個變體"
-                      : "Auto-regex tries 4 variants"}
+                      ? "Maintainer 從你的樣本寫 regex"
+                      : "A maintainer writes the regex from your samples"}
                   </h3>
                   <p className="text-base text-paper/80 leading-relaxed mb-2">
                     {zh
-                      ? "Deterministic n-gram set-cover algorithm 從你的 positive examples 萃取 distinctive phrases，建 alternation regex，加 word boundary、whitespace anchor 或 co-occurrence 約束 — 每個變體跑完整 gate。"
-                      : "Deterministic n-gram set-cover algorithm extracts distinctive phrases from your positives, builds an alternation regex, tightens with word boundaries / whitespace anchors / co-occurrence constraints. Each variant runs through the full gate."}
+                      ? "Maintainer 審你的 issue，從你的 positive examples 寫 detection regex，你的 benign lookalike 則成為 true negatives。你也可以自己提 regex，留在 PR comment 或另開一條 PR。"
+                      : "A maintainer reviews your issue and writes a detection regex from your positive examples; your benign lookalikes become the true negatives. You can also propose a regex yourself, in a PR comment or in a PR of your own."}
                   </p>
                   <p className="text-sm text-paper/60">
                     {zh
-                      ? "Gate = 自己 TP 必須 100% 命中 + 1,783 樣本 benign+extended corpus 0 FP + 157 樣本 research-mention 0 FP + 跨規則 0 衝突。"
-                      : "Gate = your TPs must match 100% + 1,783-sample benign+extended corpus 0 FP + 157-sample research-mention 0 FP + 0 cross-rule conflicts."}
+                      ? "Gate = 自己 TP 必須 100% 命中 + benign、extended、code、research-mention corpus 全部 0 FP + 跨規則 0 衝突。樣本數以 gate 執行時印出的為準。"
+                      : "Gate = your TPs must match 100% + 0 FP on the benign, extended, code and research-mention corpora + 0 cross-rule conflicts. The gate prints the sample counts it used."}
                   </p>
                 </div>
               </div>
@@ -515,8 +515,8 @@ export default async function RedTeamPage({
                   </h3>
                   <p className="text-base text-paper/80 leading-relaxed mb-2">
                     {zh
-                      ? "PR 帶 gate-passed label。Maintainer 看 regex shape 是否太字面、需不需要 generalize — 通常 1-3 天 merge。沒過就留 stub，maintainer 手寫 regex（仍然會用你的 test cases）。"
-                      : "PR lands with the gate-passed label. Maintainer reviews regex shape — is it too literal, can it generalize? Usually merged within 1-3 days. If gate didn't clear, stays as stub and a maintainer hand-crafts the regex (still using your test cases as ground truth)."}
+                      ? "不論 regex 是誰寫的，都會審 regex shape 是否太字面、需不需要 generalize。Gate 沒過就留在 proposal，繼續收緊 regex（仍然會用你的 test cases）。"
+                      : "Whoever wrote the regex, it gets a shape review: is it too literal, can it generalize? If the gate doesn't clear, it stays a proposal while the regex is tightened (still using your test cases as ground truth)."}
                   </p>
                 </div>
               </div>
@@ -917,38 +917,6 @@ export default async function RedTeamPage({
               ? '排程從 GitHub issue / PR 同步。Merge 後從這裡移到 "Already Integrated"。Maintainer 若想插隊：adam@agentthreatrule.org。'
               : 'Schedule syncs from filed GitHub issues / PRs. Once merged, entries move to "Already Integrated" above. Maintainers wanting earlier engagement: adam@agentthreatrule.org.'}
           </p>
-        </Reveal>
-      </section>
-
-      {/* ============================================================
-          PIPELINE PROOF — concrete: what passed last week
-      ============================================================ */}
-      <section className="px-6 max-w-[1120px] mx-auto mb-24 md:mb-32">
-        <Reveal>
-          <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-4">
-            {zh ? "Pipeline 不是 vapor" : "Pipeline is not vapor"}
-          </div>
-          <h2 className="font-display text-[clamp(24px,3.4vw,36px)] font-extrabold tracking-[-2px] leading-tight mb-8 max-w-[680px]">
-            {zh
-              ? "Auto-regex 已經對你的範本 0 FP 跨 3,551 樣本。"
-              : "Auto-regex already clears 0 FP across 3,551 samples on the sample probe."}
-          </h2>
-        </Reveal>
-        <Reveal delay={0.1}>
-          <div className="bg-ash/40 border border-fog p-6 md:p-8 font-data text-xs md:text-sm text-ink overflow-x-auto">
-            <pre className="whitespace-pre leading-relaxed">{`$ npx tsx scripts/auto-regex.ts \\
-    --file proposals/red-team-probes/dan-trust-phrase-wrapping.proposal.yaml \\
-    --write
-
-[auto-regex] 3 TPs, 3 TNs — generating candidate regex…
-[auto-regex] gate corpora: 431 benign + 1,352 extended + 157 research + 1,611 cross-rule TNs
-[auto-regex] variant 0: 3 phrases, tp=100%, fp=0
-  (benign=0 ext=0 res=0 cross=0) — PASS
-[auto-regex] wrote regex to proposals/red-team-probes/...
-
-::auto-regex-summary::
-{ "passed": true, "variant": 0, "tp_coverage": 1, "total_fp": 0 }`}</pre>
-          </div>
         </Reveal>
       </section>
 
