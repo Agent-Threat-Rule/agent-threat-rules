@@ -50,7 +50,7 @@ if result.outcome == "deny":
     title: "Raw YAML (any language)",
     cmd: "git submodule add https://github.com/Agent-Threat-Rule/agent-threat-rules.git",
     code: `# Point your scanner at rules/ directory
-# Each .yaml file follows ATR-SPEC-v1 schema
+# Each .yaml file follows the SPEC.md rule format
 # Parse with any YAML library
 # Schema: spec/atr-schema.yaml
 
@@ -59,7 +59,7 @@ rules/
   tool-poisoning/
   agent-manipulation/
   ... (10 categories)`,
-    doc: "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ATR-FRAMEWORK-SPEC.md",
+    doc: "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md",
   },
   {
     title: "GitHub Action (CI/CD)",
@@ -312,11 +312,11 @@ jobs:
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div>
-                  <div className="font-display text-sm font-semibold mb-1">ATR-SPEC-v1 ({locale === "zh" ? "穩定版" : "stable"})</div>
+                  <div className="font-display text-sm font-semibold mb-1">SPEC.md ({locale === "zh" ? "草案" : "Draft"})</div>
                   <p className="text-sm text-stone leading-[1.6]">
                     {locale === "zh"
-                      ? "已發布且穩定。所有新增欄位皆為選填。現有欄位不會在主版本升級前被移除或重新命名。"
-                      : "Published and stable. All new fields are optional additions. No existing field will be removed or renamed without a major version bump."}
+                      ? "已以草案形式發布，內容穩定、可供實作。所有新增欄位皆為選填。現有欄位不會在主版本升級前被移除或重新命名。"
+                      : "Published as a Draft that is stable for implementation. All new fields are optional additions. No existing field will be removed or renamed without a major version bump."}
                   </p>
                 </div>
                 <div>
