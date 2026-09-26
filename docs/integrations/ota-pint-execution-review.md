@@ -2,7 +2,7 @@
 
 ## Status
 
-Draft PR review package. This does not change Agent Threat
+Maintainer-invited draft PR review package. This does not change Agent Threat
 Rules' required CI, rules, scripts, benchmark data, or published measurements. It adds only the
 review contract, the review workflow/verifier, this report, and ignored Ota-owned local state.
 
