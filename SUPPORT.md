@@ -2,55 +2,18 @@
 
 ATR is an MIT-licensed open detection rule standard for AI agent attacks. The rule corpus, detection engine, benchmark methodology, and integration tooling are maintained by a solo maintainer with community contributions. There is no commercial entity gating any part of the open standard.
 
-If you depend on ATR in production or want the open standard to keep shipping, you can back the project through any of the following channels.
+If you depend on ATR in production or want the open standard to keep shipping, you can back the project through Open Collective.
 
 ---
 
-## 1. Manifund (US tax-deductible)
+## Open Collective
 
-Manifund routes donations through Manifold for Charity, a registered 501(c)3 in Austin, Texas (EIN 88-3668801). Donations are US tax-deductible.
+Open Collective is the project's primary funding channel. Funds are held by the fiscal host Open Source Collective, Inc. (501(c)(6), EIN 82-2037583), and contributions and payouts made through it appear in its public ledger.
 
 Project page:
-https://manifund.org/projects/agent-threat-rules-atr-open-detection-rule-corpus-for-ai-agent-attacks
+https://opencollective.com/agent-threat-rules
 
-Minimum funding: 30,000 USD (6 months full-time maintenance)
-Funding goal: 50,000 USD (adds external security audit + second-maintainer onboarding)
-Closing: 2026-06-12
-
-You can donate any amount. Donations route through Manifold for Charity 501(c)3.
-
----
-
-## 2. Ko-fi (small donations, fast, no minimum)
-
-Ko-fi accepts payments via PayPal and credit/debit card. Lower friction than Manifund for small one-off donations.
-
-REPLACE_ME: https://ko-fi.com/agentthreatrules
-
-Starting at 5 USD. No login required for donors.
-
----
-
-## 3. Crypto (direct, no platform fees)
-
-The same EVM wallet address receives funds on five chains: Ethereum mainnet, Base, Arbitrum, Optimism, and Polygon. Pick whichever chain has the lowest gas fee at the time of your donation.
-
-Wallet address (all 5 EVM chains):
-
-REPLACE_ME_WITH_0x_ADDRESS
-
-QR code:
-
-REPLACE_ME_WITH_QR_PATH
-
-Recommended assets:
-- ETH or USDC on Ethereum mainnet (best for donations over 500 USD where gas does not matter)
-- USDC on Base (best for donations under 500 USD, gas typically under 0.10 USD)
-- USDC on Arbitrum or Optimism (alternative low-gas L2)
-- MATIC or USDC on Polygon (alternative low-gas chain)
-
-ENS name (when registered):
-REPLACE_ME.eth
+Five public tiers: Backer (from 5 USD), Friend 25 USD, Bronze 200 USD, Silver 1,000 USD, and Gold 5,000 USD per month. Funding milestones and custom sponsorship for organizations are described in [README.md §15](README.md#15-sponsorship).
 
 ---
 
@@ -72,7 +35,7 @@ REPLACE_ME.eth
 
 Every donor (regardless of amount) is listed in the CONTRIBUTORS file in the repository. Anonymity is the default option if you prefer not to be listed.
 
-For donations above 1,000 USD, optional acknowledgment in the project README under "Sustaining Supporters." For donations above 10,000 USD, optional acknowledgment in release notes and conference-talk slides.
+For donations above 1,000 USD, optional acknowledgment in the project README. For donations above 10,000 USD, optional acknowledgment in release notes and conference-talk slides.
 
 ---
 
