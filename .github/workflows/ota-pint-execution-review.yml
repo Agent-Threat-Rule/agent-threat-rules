@@ -6,21 +6,6 @@ on:
     branches: [bobai/ota-atr-v1.6.28]
   pull_request:
     branches: [main]
-    paths:
-      - ota.yaml
-      - .gitignore
-      - .github/ota/verify-pint-evidence.mjs
-      - .github/workflows/ota-pint-execution-review.yml
-      - docs/integrations/ota-pre-release-review.md
-      - package.json
-      - package-lock.json
-      - src/eval/**
-      - src/measurement/**
-      - scripts/ci/pint-regression-gate.mjs
-      - rules/**
-      - data/pint-benchmark/pint-corpus.json
-      - data/pint-benchmark/pint-eval-report.json
-      - data/measurements/pint/latest.json
 
 concurrency:
   group: ota-pint-review-${{ github.workflow }}-${{ github.ref }}
@@ -86,6 +71,9 @@ jobs:
         with:
           node-version: "20"
           cache: npm
+
+      - name: Check input-identity refusal regressions
+        run: node --test .github/ota/verify-pint-evidence.test.mjs
 
       - name: Set up Ota from the contract
         uses: ota-run/setup@493cba84bf7f7c11c9e8e996d832d93a89c62184 # v1.0.8
@@ -167,6 +155,9 @@ jobs:
             --ended-at "$(cat "$RUNNER_TEMP/ota-pint-review/ended-at.txt")" \
             --ota-exit-code "$(cat "$RUNNER_TEMP/ota-pint-review/ota-pint-exit-code.txt")" \
             --atr-gate-exit-code "$(cat "$RUNNER_TEMP/ota-pint-review/atr-pint-regression-gate-exit-code.txt")" \
+            --ota-version "$RUNNER_TEMP/ota-pint-review/ota-version.json" \
+            --node-version "$RUNNER_TEMP/ota-pint-review/node-version.txt" \
+            --npm-version "$RUNNER_TEMP/ota-pint-review/npm-version.txt" \
             --output "$RUNNER_TEMP/ota-pint-review/evidence-manifest.json"
 
       - name: Collect generated evidence

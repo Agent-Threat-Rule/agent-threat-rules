@@ -238,6 +238,14 @@ function verify(options) {
   if (preflightEvidence.kind !== 'ota_pint_preflight' || preflightEvidence.repository?.clean_worktree !== true) {
     fail('preflight evidence does not establish a clean checkout');
   }
+  if (preflightEvidence.repository.root !== repo) fail('preflight repository root changed');
+  const currentInputs = inputIdentities(
+    repo,
+    required(options, 'ota-version'),
+    required(options, 'node-version'),
+    required(options, 'npm-version'),
+  );
+  assertExactJson(currentInputs, preflightEvidence.inputs, 'preflight and execution input identities');
 
   const reportPath = repoPath(repo, REPORT_PATH);
   const latestPath = repoPath(repo, LATEST_PATH);
