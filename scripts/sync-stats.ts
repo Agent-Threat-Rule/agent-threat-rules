@@ -28,7 +28,7 @@ interface Stats {
     benign: { fpRate: number; samples: number };
   };
   ecosystem: { skillsScanned: number; confirmedMalware: number };
-  distribution: { npm: { downloads30d: number }; githubStars: number };
+  distribution: { npm: { downloads30d: number }; githubStars: number | null };
   coverage: {
     owaspAgentic: { display: string };
     safeMcp: { display: string; percentage: number };
