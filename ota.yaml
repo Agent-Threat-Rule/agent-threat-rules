@@ -114,12 +114,11 @@ agent:
     - .github/workflows
   bootstrap:
     ota:
-      note: This fork-only pre-release review pins Ota's exact unreleased source revision.
+      note: Install the reviewed Ota v1.6.28 release for this advisory review lane.
       source:
-        kind: git_rev
-        rev: b9c5d0b65eaca9d15d975e5913ba16135337e6b7
+        kind: version
+        version: v1.6.28
   notes: |
     No ATR task is agent-safe in this review contract. In particular, `verify:pint` replaces
     tracked benchmark outputs and must remain a deliberately reviewed CI invocation. After Ota
-    v1.6.28 is released, replace the git revision above with the released `v1.6.28` source and
-    rerun the unchanged review workflow before any draft PR is opened.
+    The selected task remains a deliberately reviewed CI invocation, not an agent-safe command.

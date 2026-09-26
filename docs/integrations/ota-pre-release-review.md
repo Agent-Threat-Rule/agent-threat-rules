@@ -1,21 +1,19 @@
-# Ota pre-release PINT execution review
+# Ota PINT-format execution review
 
 ## Status
 
-Fork-only review package. This is not an upstream pull request and does not change Agent Threat
+Draft PR review package. This does not change Agent Threat
 Rules' required CI, rules, scripts, benchmark data, or published measurements. It adds only the
 review contract, the review workflow/verifier, this report, and ignored Ota-owned local state.
 
 - upstream base: `Agent-Threat-Rule/agent-threat-rules` `main` at
-  `8ab5ba59cc27450e25d9fbd6f17741f0edf6980b`
-- review branch: `bobaikato/agent-threat-rules` `ota/pre-release-review`
-- Ota review source: exact unreleased Core revision
-  `b9c5d0b65eaca9d15d975e5913ba16135337e6b7`
+  `42fbbb227f1266d1a55b1ad5cb2f1b878e1037ac`
+- review branch: `bobaikato/agent-threat-rules` `bobai/ota-atr-v1.6.28`
+- Ota review source: released `v1.6.28`
 - Ota drift-gate action: exact action revision
-  `1406e91ced3e717e4a2498d75c2496260d308049`; its Node 24 Action implementation runtime does not
+  `8001070c0c9e54ca2b729282df40d1a9f40c8a79`; its Node 24 Action implementation runtime does not
   replace this lane's workflow-selected Node 20 runtime
-- release gate: replace that Git revision with released `v1.6.28`, rerun this unchanged workflow,
-  then decide whether to open the maintainer-invited draft PR
+- upstream review is pending; fork execution evidence is recorded by its exact run and artifacts
 
 ## Review scope
 
@@ -45,8 +43,8 @@ It does not use `continue-on-error`.
 | Did the run produce the expected ATR-shaped result? | `Fresh PINT-format execution evidence` | The verifier requires a fresh timestamp, 850 samples, `ATREngine`, a positive rule count, a 850-row confusion total, and a passing ATR regression result. |
 | Did execution stay within its reviewable Git mutation boundary? | `Fresh PINT-format execution evidence` | Only the two tracked report pointers plus one new dated PINT measurement may change among non-ignored Git paths. Outputs are uploaded as artifacts, then restored or removed from the disposable checkout. |
 
-The fork-only review branch is the workflow's only push trigger, so the matrix can run before an
-upstream pull request exists. Its GitHub Actions run and artifacts become the evidence locator; no
+The review branch is the workflow's only push trigger, so the matrix can run before an
+upstream pull request executes. Its GitHub Actions run and artifacts become the evidence locator; no
 generated measurement is committed.
 
 The mutation verifier observes non-ignored Git paths. It does not prove complete filesystem write
@@ -72,15 +70,8 @@ negatives, benchmark or artifact determinism, independent engine attestation, en
 adoption, merge readiness, coverage by ATR's required CI on `main`, or complete filesystem write
 confinement outside the observed non-ignored Git paths.
 
-## Draft PR gate
+## Draft PR boundary
 
-After Ota `v1.6.28` is released:
-
-1. change only `agent.bootstrap.ota.source` from the exact Git revision to `kind: version` /
-   `version: v1.6.28`;
-2. rerun the same fork workflow against the pinned release;
-3. review the released-pin matrix and its artifacts with the maintainer; and
-4. open the already invited draft PR only if that evidence remains valid and the maintainer wants
-   the unchanged bounded scope.
-
-Otherwise, leave this package on the fork for review and make no upstream change.
+The maintainer invited a draft PR for review. Keep it in draft pending maintainer review of the
+contract, exact-head run, retained artifacts, and the PINT-format naming boundary. Do not merge
+generated measurements or imply endorsement or certification.
