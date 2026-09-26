@@ -178,7 +178,7 @@ export default async function GovernancePage({
                 : "Rule PRs run through the six safety gates (see Merge policy above). Once they pass, a single maintainer review is sufficient to merge. Two-reviewer requirement is not enforced because the safety gates already cover objective quality.",
             },
             {
-              kind: zh ? "修改 spec(ATR-SPEC-v1)" : "Spec amendment (ATR-SPEC-v1)",
+              kind: zh ? "修改 spec(SPEC.md)" : "Spec amendment (SPEC.md)",
               quorum: zh
                 ? "RFC issue 先開 + 14 天公開評論窗口(複雜提案延長至 30 天)+ 2 名維護者核可"
                 : "RFC issue opened first + 14-day public comment window (extended to 30 for complex proposals) + 2 maintainer approvals",
@@ -282,8 +282,8 @@ export default async function GovernancePage({
             </li>
             <li>
               {zh
-                ? "熟悉 ATR-SPEC-v1 的內容到能解釋 conformance 條款的程度"
-                : "Familiar enough with ATR-SPEC-v1 to explain its conformance clauses"}
+                ? "熟悉 SPEC.md 的內容到能解釋 conformance 條款的程度"
+                : "Familiar enough with SPEC.md to explain its conformance clauses"}
             </li>
             <li>
               {zh

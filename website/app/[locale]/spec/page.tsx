@@ -1,5 +1,5 @@
 /* ATR Canonical Specification — long-form RFC-style document.
- * Mirrors the structure of README.md and ATR-SPEC-v1.md in the repo,
+ * Mirrors the structure of README.md and SPEC.md in the repo,
  * but rendered as a sticky-ToC standards-document page.
  */
 import Link from "next/link";
@@ -105,11 +105,11 @@ const SECTIONS: Section[] = [
     status: "normative",
     en: {
       title: "Conformance Levels",
-      body: `<p>The keywords MUST, MUST NOT, SHOULD, SHOULD NOT, and MAY in this document and in <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ATR-SPEC-v1.md" target="_blank" rel="noopener noreferrer">ATR-SPEC-v1.md</a> are to be interpreted as described in <a href="https://datatracker.ietf.org/doc/html/rfc2119" target="_blank" rel="noopener noreferrer">RFC 2119</a>.</p>
+      body: `<p>The keywords MUST, MUST NOT, SHOULD, SHOULD NOT, and MAY in this document and in <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a> are to be interpreted as described in <a href="https://datatracker.ietf.org/doc/html/rfc2119" target="_blank" rel="noopener noreferrer">RFC 2119</a>.</p>
 <h3>A conforming <strong>ATR engine</strong> MUST:</h3>
 <ol>
   <li>Parse all fields defined in <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/spec/atr-schema.yaml" target="_blank" rel="noopener noreferrer"><code>spec/atr-schema.yaml</code></a> without error.</li>
-  <li>Evaluate <code>detection.conditions</code> with the semantics defined in <code>ATR-SPEC-v1.md §3.5</code> (Detection Logic) and <code>§5</code> (Engine Requirements).</li>
+  <li>Evaluate <code>detection.conditions</code> with the semantics defined in <code>SPEC.md §6</code> (Detection Semantics), and emit Match output as defined in <code>SPEC.md §7</code> (Match Output).</li>
   <li>Honor the <code>scan_target</code> field — a rule with <code>scan_target: skill</code> MUST NOT be evaluated against <code>mcp_exchange</code> events and vice versa.</li>
   <li>Respect rule <code>status</code> — rules with <code>status: deprecated</code> or <code>status: draft</code> MUST NOT participate in production matching unless the consumer opts in explicitly.</li>
   <li>Emit <code>rule_id</code> and rule <code>severity</code> on every match.</li>
@@ -125,11 +125,11 @@ const SECTIONS: Section[] = [
     },
     zh: {
       title: "符規等級 (Conformance Levels)",
-      body: `<p>本文件與 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ATR-SPEC-v1.md" target="_blank" rel="noopener noreferrer">ATR-SPEC-v1.md</a> 中的關鍵詞 MUST、MUST NOT、SHOULD、SHOULD NOT、MAY,皆依 <a href="https://datatracker.ietf.org/doc/html/rfc2119" target="_blank" rel="noopener noreferrer">RFC 2119</a> 詮釋。</p>
+      body: `<p>本文件與 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a> 中的關鍵詞 MUST、MUST NOT、SHOULD、SHOULD NOT、MAY,皆依 <a href="https://datatracker.ietf.org/doc/html/rfc2119" target="_blank" rel="noopener noreferrer">RFC 2119</a> 詮釋。</p>
 <h3>一個符規的 <strong>ATR engine</strong> MUST:</h3>
 <ol>
   <li>解析 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/spec/atr-schema.yaml" target="_blank" rel="noopener noreferrer"><code>spec/atr-schema.yaml</code></a> 中所有定義的欄位,且不應出錯。</li>
-  <li>以 <code>ATR-SPEC-v1.md §3.5</code> (Detection Logic) 與 <code>§5</code> (Engine Requirements) 中定義的語意評估 <code>detection.conditions</code>。</li>
+  <li>以 <code>SPEC.md §6</code> (Detection Semantics) 中定義的語意評估 <code>detection.conditions</code>,並依 <code>SPEC.md §7</code> (Match Output) 的定義發出 Match 輸出。</li>
   <li>遵守 <code>scan_target</code> 欄位 ── 帶 <code>scan_target: skill</code> 的規則 MUST NOT 對 <code>mcp_exchange</code> event 評估,反之亦然。</li>
   <li>遵守規則的 <code>status</code> ── <code>status: deprecated</code> 或 <code>status: draft</code> 的規則 MUST NOT 參與生產環境比對,除非消費者明示 opt in。</li>
   <li>每次 match 皆 MUST 發出 <code>rule_id</code> 與 <code>severity</code>。</li>
@@ -156,9 +156,7 @@ const SECTIONS: Section[] = [
     <tr><th>Artifact</th><th>Purpose</th><th>Location</th></tr>
   </thead>
   <tbody>
-    <tr><td>SPEC.md</td><td>Specification entry pointer</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a></td></tr>
-    <tr><td>ATR-SPEC-v1.md</td><td>Rule format spec (normative)</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ATR-SPEC-v1.md" target="_blank" rel="noopener noreferrer">ATR-SPEC-v1.md</a></td></tr>
-    <tr><td>ATR-FRAMEWORK-SPEC.md</td><td>Multi-layer framework design</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ATR-FRAMEWORK-SPEC.md" target="_blank" rel="noopener noreferrer">ATR-FRAMEWORK-SPEC.md</a></td></tr>
+    <tr><td>SPEC.md</td><td>Rule format spec (normative)</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a></td></tr>
     <tr><td>spec/atr-schema.yaml</td><td>Machine-readable schema</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/spec/atr-schema.yaml" target="_blank" rel="noopener noreferrer">atr-schema.yaml</a></td></tr>
     <tr><td>docs/QUALITY-STANDARD.md</td><td>Rule promotion criteria (RFC-001)</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/QUALITY-STANDARD.md" target="_blank" rel="noopener noreferrer">QUALITY-STANDARD.md</a></td></tr>
     <tr><td>LIMITATIONS.md</td><td>Documented evasion techniques</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/LIMITATIONS.md" target="_blank" rel="noopener noreferrer">LIMITATIONS.md</a></td></tr>
@@ -206,9 +204,7 @@ test_cases:
     <tr><th>Artifact</th><th>用途</th><th>位置</th></tr>
   </thead>
   <tbody>
-    <tr><td>SPEC.md</td><td>規格入口指標</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a></td></tr>
-    <tr><td>ATR-SPEC-v1.md</td><td>規則格式 spec (normative)</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ATR-SPEC-v1.md" target="_blank" rel="noopener noreferrer">ATR-SPEC-v1.md</a></td></tr>
-    <tr><td>ATR-FRAMEWORK-SPEC.md</td><td>多層框架設計</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ATR-FRAMEWORK-SPEC.md" target="_blank" rel="noopener noreferrer">ATR-FRAMEWORK-SPEC.md</a></td></tr>
+    <tr><td>SPEC.md</td><td>規則格式 spec (normative)</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a></td></tr>
     <tr><td>spec/atr-schema.yaml</td><td>機器可讀 schema</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/spec/atr-schema.yaml" target="_blank" rel="noopener noreferrer">atr-schema.yaml</a></td></tr>
     <tr><td>docs/QUALITY-STANDARD.md</td><td>規則晉升標準 (RFC-001)</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/QUALITY-STANDARD.md" target="_blank" rel="noopener noreferrer">QUALITY-STANDARD.md</a></td></tr>
     <tr><td>LIMITATIONS.md</td><td>已記錄的 evasion 技術</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/LIMITATIONS.md" target="_blank" rel="noopener noreferrer">LIMITATIONS.md</a></td></tr>
@@ -403,7 +399,7 @@ test_cases:
       body: `<h3>Normative References</h3>
 <ul>
   <li><a href="https://datatracker.ietf.org/doc/html/rfc2119" target="_blank" rel="noopener noreferrer">RFC 2119</a> — Key words for use in RFCs to Indicate Requirement Levels.</li>
-  <li><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ATR-SPEC-v1.md" target="_blank" rel="noopener noreferrer">ATR-SPEC-v1.md</a> — ATR rule format specification, v1.0 Draft.</li>
+  <li><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a> — ATR rule format specification, v1.0 Draft.</li>
   <li><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/spec/atr-schema.yaml" target="_blank" rel="noopener noreferrer">spec/atr-schema.yaml</a> — Authoritative machine-readable schema.</li>
 </ul>
 <h3>Informative References</h3>
@@ -421,7 +417,7 @@ test_cases:
       body: `<h3>Normative References</h3>
 <ul>
   <li><a href="https://datatracker.ietf.org/doc/html/rfc2119" target="_blank" rel="noopener noreferrer">RFC 2119</a> — Key words for use in RFCs to Indicate Requirement Levels.</li>
-  <li><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ATR-SPEC-v1.md" target="_blank" rel="noopener noreferrer">ATR-SPEC-v1.md</a> — ATR rule format specification, v1.0 Draft.</li>
+  <li><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a> — ATR rule format specification, v1.0 Draft.</li>
   <li><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/spec/atr-schema.yaml" target="_blank" rel="noopener noreferrer">spec/atr-schema.yaml</a> — 規範性機器可讀 schema。</li>
 </ul>
 <h3>Informative References</h3>
