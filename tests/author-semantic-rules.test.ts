@@ -293,3 +293,60 @@ describe("classifyFailure", () => {
     expect(content.map(classifyFailure)).not.toContain("infrastructure");
   });
 });
+
+// ── dedupe: a cluster already turned into a rule must not be authored again ──
+//
+// Every rule this lane writes records the proposal it came from in
+// `_semantic_authored.source_cluster`. Without reading that back, each run
+// starts from the top of the same candidate list and opens a PR that
+// duplicates the previous one. These pin the two halves of the fix.
+import { authoredClustersFromRules, excludeAuthored } from "../scripts/author-semantic-rules.js";
+
+describe("authoredClustersFromRules", () => {
+  it("collects source_cluster from rules this lane authored", () => {
+    const docs = [
+      { id: "ATR-2026-09001", _semantic_authored: { source_cluster: "proposals/garak-clusters/dan.yaml" } },
+      { id: "ATR-2026-09002", _semantic_authored: { source_cluster: "proposals/hackaprompt-clusters/c3.yaml" } },
+    ];
+    expect([...authoredClustersFromRules(docs)].sort()).toEqual([
+      "proposals/garak-clusters/dan.yaml",
+      "proposals/hackaprompt-clusters/c3.yaml",
+    ]);
+  });
+
+  it("ignores rules it did not author, and anything malformed", () => {
+    const docs = [
+      { id: "ATR-2026-00001" },
+      { id: "ATR-2026-00002", _semantic_authored: {} },
+      { id: "ATR-2026-00003", _semantic_authored: { source_cluster: "" } },
+      { id: "ATR-2026-00004", _semantic_authored: { source_cluster: 42 } },
+      null,
+      "not a rule",
+    ];
+    expect(authoredClustersFromRules(docs).size).toBe(0);
+  });
+});
+
+describe("excludeAuthored", () => {
+  const c = (rel: string) => ({ proposalRel: rel, title: rel });
+
+  it("drops candidates whose cluster already has a rule, keeps order", () => {
+    const candidates = [c("a.yaml"), c("b.yaml"), c("c.yaml"), c("d.yaml")];
+    const { fresh, alreadyAuthored } = excludeAuthored(candidates, new Set(["b.yaml", "d.yaml"]));
+    expect(fresh.map((x) => x.proposalRel)).toEqual(["a.yaml", "c.yaml"]);
+    expect(alreadyAuthored.map((x) => x.proposalRel)).toEqual(["b.yaml", "d.yaml"]);
+  });
+
+  it("removes nothing when no rule has been authored yet, so the first run still runs", () => {
+    const candidates = [c("a.yaml"), c("b.yaml")];
+    const { fresh, alreadyAuthored } = excludeAuthored(candidates, new Set());
+    expect(fresh).toHaveLength(2);
+    expect(alreadyAuthored).toHaveLength(0);
+  });
+
+  it("with every cluster already authored, yields nothing to do rather than re-authoring", () => {
+    const candidates = [c("a.yaml"), c("b.yaml")];
+    const { fresh } = excludeAuthored(candidates, new Set(["a.yaml", "b.yaml"]));
+    expect(fresh).toHaveLength(0);
+  });
+});
