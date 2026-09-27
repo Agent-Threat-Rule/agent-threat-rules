@@ -186,7 +186,7 @@ const ATTRIBUTION_STATS: AttributionStat[] = [
     number: "0 FP",
     label: "Required across the benign gate before a rule ships",
     detail:
-      "A 6-check quality gate: own-TP must match + 431 benign + 1,352 extended + 157 research-mention + 1,611 cross-rule conflict-free + own true_negative coverage. A rule that fires on the paper describing the attack does not ship. The standard would rather miss a clever variant than corrupt the corpus with a false positive — and it publishes its real per-lane figures rather than a single flattering one.",
+      "A 6-check quality gate: own-TP must match, 0 FP across the benign, extended, code and research-mention corpora, 0 cross-rule conflicts, and own true_negative coverage. The gate prints the sample counts it used on every run — those are the figures of record, not a number on this page. A rule that fires on the paper describing the attack does not ship. The standard would rather miss a clever variant than corrupt the corpus with a false positive — and it publishes its real per-lane figures rather than a single flattering one.",
   },
 ];
 
