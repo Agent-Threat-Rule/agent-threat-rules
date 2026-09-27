@@ -112,8 +112,8 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
             {
               title: zh ? "提交紅隊 Probe(加入基準測試)" : "Submit a Red Team Probe (joins the benchmark)",
               desc: zh
-                ? "有 attack payload + 良性對照樣本?bot 轉成 proposal,合進去之後自動納入下一輪 measurement 跑分。recall 數字看得到你的貢獻。"
-                : "Have an attack payload plus benign look-alikes? The bot converts it into a proposal; once merged, your probe joins the next benchmark run. Your contribution shows up in the recall numbers.",
+                ? "有 attack payload + 良性對照樣本?maintainer 審過後轉成 proposal,合進去之後自動納入下一輪 measurement 跑分。recall 數字看得到你的貢獻。"
+                : "Have an attack payload plus benign look-alikes? A maintainer reviews it and turns it into a proposal; once merged, your probe joins the next benchmark run. Your contribution shows up in the recall numbers.",
               time: "~10 min",
               href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=red-team-probe.yml",
               cta: zh ? "送一個 Probe" : "Submit a Probe",
@@ -187,8 +187,8 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
           <ol className="text-sm text-stone leading-[1.7] space-y-2 list-decimal list-inside marker:font-data marker:text-ink">
             <li>
               {zh
-                ? "Bot 把你的 issue 轉成 proposals/ 下的 YAML 草案,開一條 draft PR,你在 PR 的 author 欄位被掛名。"
-                : "Bot converts your issue to a YAML draft under proposals/ and opens a draft PR with your name in the author field."}
+                ? "新規則 issue:bot 把你的 issue 轉成 proposals/ 下的 YAML 草案,開一條 draft PR,你在 PR 的 author 欄位被掛名。上面其他類型的 issue(包括紅隊 probe)會先由 maintainer 審,接受後才會有 PR。"
+                : "New Rule issues: a bot converts your issue to a YAML draft under proposals/ and opens a draft PR with your name in the author field. The other issue types above, Red Team Probes included, are reviewed by a maintainer first; a PR follows only if the maintainer accepts the report."}
             </li>
             <li>
               {zh
@@ -349,8 +349,8 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
             </h2>
             <p className="text-sm text-stone mt-1">
               {zh
-                ? "規則的權威產生路徑是上面「送出後會發生什麼」描述的社群/維護者流程(issue → bot 草案 PR → 維護者寫 regex → safety gate → merge → npm publish)。下面是 Threat Cloud 維護者運營的選用自動化版本,目標把同樣流程壓到數小時 — 用不用它,標準與規則都不變。"
-                : "The canonical way rules get made is the community/maintainer workflow described in \"What happens after you contribute\" above (issue → bot draft PR → maintainer writes regex → safety gate → merge → npm publish). Below is the optional, maintainer-operated automated version Threat Cloud runs to target hours for that same flow — the standard and the rules are identical whether or not you use it."}
+                ? "規則的權威產生路徑是上面「送出後會發生什麼」描述的社群/維護者流程(issue → 草案 PR → 維護者寫 regex → safety gate → merge → npm publish)。下面是 Threat Cloud 維護者運營的選用自動化版本,目標把同樣流程壓到數小時 — 用不用它,標準與規則都不變。"
+                : "The canonical way rules get made is the community/maintainer workflow described in \"What happens after you contribute\" above (issue → draft PR → maintainer writes regex → safety gate → merge → npm publish). Below is the optional, maintainer-operated automated version Threat Cloud runs to target hours for that same flow — the standard and the rules are identical whether or not you use it."}
             </p>
           </div>
           <div className="p-5 md:p-6">
