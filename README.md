@@ -312,9 +312,9 @@ string, and every non-empty string is truthy, so it used to switch enforcement
 |---|---|---|
 | Specification (canonical pointer) | [SPEC.md](SPEC.md) | Resolves to the authoritative documents below |
 | Rule format spec (normative) | [SPEC.md](SPEC.md) | Rule format, identifier scheme, evaluation semantics |
-| Framework spec | [ATR-FRAMEWORK-SPEC.md](ATR-FRAMEWORK-SPEC.md) | Multi-layer detection framework design |
+| Framework spec | [ATR-FRAMEWORK-SPEC.md](ATR-FRAMEWORK-SPEC.md) | **Superseded 2026-05-16 by [SPEC.md](SPEC.md).** Kept as a historical artifact; multi-layer detection framework design |
 | Machine-readable schema | [spec/atr-schema.yaml](spec/atr-schema.yaml) | Authoritative validation source |
-| Schema field reference | [docs/schema-spec.md](docs/schema-spec.md) | Human-readable schema docs |
+| Schema field reference | [docs/schema-spec.md](docs/schema-spec.md) | **Superseded 2026-05-16 by [SPEC.md](SPEC.md).** Kept as a historical artifact; human-readable schema docs |
 | Quality standard | [docs/QUALITY-STANDARD.md](docs/QUALITY-STANDARD.md) | Rule promotion criteria (experimental → stable) |
 | Quality gate | [docs/QUALITY-GATE.md](docs/QUALITY-GATE.md) | Safety-gate semantics for community PRs |
 | Enforcement model | [docs/ENFORCEMENT-MODEL.md](docs/ENFORCEMENT-MODEL.md) | Lane and blocking switches, decision channels, migration (reference implementation, not normative) |

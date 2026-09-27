@@ -149,7 +149,7 @@ security assessment process"); **5.2.5-2** (pre-deployment testing) and **5.2.5-
 
 | Provision focus | ATR contribution | Cited rules / mechanism |
 |-----------------|------------------|--------------------------|
-| Security-assessment test artefacts | Every ATR rule at `maturity: experimental` or above bundles `test_cases.true_positives` and `test_cases.true_negatives` (SPEC.md §5.6; ≥1 each at experimental maturity, ≥5 each at stable). A rule corpus is therefore a reusable, machine-runnable security-test input to a broader assessment process. | Corpus-wide property; see e.g. ATR-2026-00001, ATR-2026-00549 test blocks |
+| Security-assessment test artefacts | Every ATR rule at `maturity: experimental` or above bundles `test_cases.true_positives` and `test_cases.true_negatives` — verified across the corpus, no exceptions. SPEC.md §5.6 additionally requires ≥5 of each at `stable`; **the corpus does not yet meet that second threshold uniformly**, so it is stated here as a specification requirement and not as a property of the shipped rules. Recount before citing either: `node -e` over `rules/**/*.yaml` grouping by `maturity` and `test_cases.*.length`. A rule corpus is therefore a reusable, machine-runnable security-test input to a broader assessment process. | Corpus-wide property; see e.g. ATR-2026-00001, ATR-2026-00549 test blocks |
 | Adversarial-input test coverage | The prompt-injection, model-abuse, and tool-poisoning categories double as an adversarial test battery for an agent under evaluation | Categories: prompt-injection (177), model-abuse (10), tool-poisoning (47) — counts per data/stats.json 2026-06-12 |
 
 Note: ATR supplies a machine-checkable *input* to a security-assessment process. It
