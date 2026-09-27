@@ -416,6 +416,51 @@ function findCandidates(): { candidates: ClusterCandidate[]; skipped: Array<{ re
   return { candidates, skipped };
 }
 
+/**
+ * Clusters that already have a rule authored by this lane.
+ *
+ * Every rule written here records the proposal it came from in
+ * `_semantic_authored.source_cluster`. Without reading that back, each run
+ * starts from the top of the same candidate list and re-authors the same
+ * clusters, and every run opens a PR that duplicates the previous one. The
+ * workflow checks out the rolling branch merged with main before this runs, so
+ * the rules tree holds both merged rules and rules still waiting for review.
+ */
+export function authoredClustersFromRules(docs: unknown[]): Set<string> {
+  const seen = new Set<string>();
+  for (const doc of docs) {
+    if (!doc || typeof doc !== "object") continue;
+    const meta = (doc as { _semantic_authored?: unknown })._semantic_authored;
+    if (!meta || typeof meta !== "object") continue;
+    const src = (meta as { source_cluster?: unknown }).source_cluster;
+    if (typeof src === "string" && src.length > 0) seen.add(src);
+  }
+  return seen;
+}
+
+/** Split candidates into those still to author and those already authored. Order is kept. */
+export function excludeAuthored<T extends { proposalRel: string }>(
+  candidates: T[],
+  authored: Set<string>,
+): { fresh: T[]; alreadyAuthored: T[] } {
+  const fresh: T[] = [];
+  const alreadyAuthored: T[] = [];
+  for (const c of candidates) (authored.has(c.proposalRel) ? alreadyAuthored : fresh).push(c);
+  return { fresh, alreadyAuthored };
+}
+
+function loadAuthoredClusters(): Set<string> {
+  const docs: unknown[] = [];
+  for (const f of walkYamlAll(RULES_BASE)) {
+    try {
+      docs.push(yaml.load(readFileSync(f, "utf-8")));
+    } catch {
+      /* a rule that does not parse is validate's problem, not this lane's */
+    }
+  }
+  return authoredClustersFromRules(docs);
+}
+
 // ---------------------------------------------------------------------------
 // ID allocation — strict increment (the promote-detection-ready.ts pattern)
 // ---------------------------------------------------------------------------
@@ -689,7 +734,10 @@ async function main(): Promise<void> {
     process.exit(2);
   }
 
-  const { candidates, skipped } = findCandidates();
+  const { candidates: found, skipped } = findCandidates();
+  // Dedupe before capping. Slicing first would spend the whole --max budget
+  // on clusters that already have a rule and author nothing new.
+  const { fresh: candidates, alreadyAuthored } = excludeAuthored(found, loadAuthoredClusters());
   const limited = candidates.slice(0, MAX_PROMOTE);
   const idGen = nextAtrId();
   const benignCode = loadBenignCode();
@@ -718,6 +766,7 @@ async function main(): Promise<void> {
     candidates_total: candidates.length,
     candidates_attempted: limited.length,
     skipped_out_of_scope: skipped.length,
+    skipped_already_authored: alreadyAuthored.length,
     promoted: 0,
     routed_to_human: 0,
     errors: 0,
@@ -790,6 +839,7 @@ async function main(): Promise<void> {
       promoted: summary.promoted,
       routed_to_human: summary.routed_to_human,
       skipped_out_of_scope: summary.skipped_out_of_scope,
+      skipped_already_authored: summary.skipped_already_authored,
       errors: summary.errors,
       errors_infrastructure: summary.errors_infrastructure,
     })}`,
