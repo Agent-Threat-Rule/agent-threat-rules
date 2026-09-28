@@ -23,15 +23,30 @@ name: Promote Semantic (T2) Rules
 #
 # Complements promote-cve.yml (CVE PoC -> regex rules) and crystallize.yml
 # (TC + adversarial -> rules). This is the semantic/T2 intake lane.
+#
+# ONE ROLLING PR, NOT ONE PER RUN
+# Authored rules accumulate on a single branch, auto-semantic/rolling, and one
+# open PR tracks it. Each run resumes that branch merged with main, so the
+# author script sees every cluster that already has a rule -- merged or still
+# in review -- and skips it (_semantic_authored.source_cluster). Before this,
+# every run started from the top of the same list and opened a new PR that
+# duplicated the last one.
 
 on:
   # Chain after the CVE collector so semantic authoring runs on the freshest
   # cluster proposals each day, same as promote-cve.yml.
+  # Chain after the garak miss run, which writes the clusters this lane reads.
+  # The previous trigger named "CVE Collector — Daily Sync", which no longer
+  # lives in this repository; workflow_run cannot fire across repositories, so
+  # that trigger never ran.
   workflow_run:
-    workflows: ["CVE Collector — Daily Sync"]
+    workflows: ["Garak Miss -> Semantic Proposals"]
     types: [completed]
   schedule:
-    - cron: '50 5 * * *'   # daily safety net, after the collector's morning run
+    # Weekly safety net, the day after the Monday garak run, in case the chain
+    # did not fire. The candidate pool is a few dozen clusters and changes weekly;
+    # with the dedupe below, a second run in the same week authors nothing.
+    - cron: '50 5 * * 2'
   workflow_dispatch:
     inputs:
       max:
@@ -54,10 +69,39 @@ jobs:
     # Only run on a successful collector run, or on manual/scheduled trigger.
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
     steps:
+      # No credential is persisted into .git/config. The next steps run `npm ci`
+      # and then execute that dependency tree; a token sitting in .git/config is
+      # readable by every one of those packages. The push step supplies the token
+      # only for the push itself.
       - name: Checkout
         uses: actions/checkout@v5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Resume the rolling branch
+        run: |
+          set -euo pipefail
+          git config user.name "ATR Semantic Author"
+          git config user.email "semantic-author@atr-framework.org"
+          BRANCH="auto-semantic/rolling"
+          if git fetch --quiet origin "$BRANCH" 2>/dev/null; then
+            # Everything on the branch already landed (e.g. its PR was squash-merged):
+            # start clean from main rather than carry history that main already has.
+            if git diff --quiet origin/main "origin/$BRANCH" -- rules/; then
+              echo "Rolling branch has no rules main lacks; starting fresh from main."
+              git checkout -B "$BRANCH" origin/main
+            else
+              git checkout -B "$BRANCH" "origin/$BRANCH"
+              if ! git merge --no-edit origin/main; then
+                echo "::error::auto-semantic/rolling conflicts with main. Resolve it by hand; this run did not author anything."
+                exit 1
+              fi
+            fi
+          else
+            echo "No rolling branch yet; starting from main."
+            git checkout -B "$BRANCH" origin/main
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
@@ -153,38 +197,62 @@ jobs:
           echo "count=$count" >> "$GITHUB_OUTPUT"
           echo "Rules after: $count"
 
-      - name: Open PR for authored semantic rules (human review required)
+
+      - name: Push to the rolling branch and open or update its PR
         env:
           # A PR opened with the default GITHUB_TOKEN is authored by app/github-actions, and
-          # every check on it parks at action_required forever instead of running. Opening it
-          # with a PAT makes a real user the author so the PR's own CI runs. Falls back to
-          # GITHUB_TOKEN when ATR_REPO_TOKEN is absent (PR still opens, checks still park).
+          # every check on it parks at action_required forever instead of running. Pushing and
+          # opening with a PAT makes a real user the author, so the PR's CI runs -- including
+          # on later pushes to the same branch. Falls back to GITHUB_TOKEN when ATR_REPO_TOKEN
+          # is absent (the PR still opens, its checks still park).
+          PUSH_TOKEN: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
-          git config user.name "ATR Semantic Author"
-          git config user.email "semantic-author@atr-framework.org"
-
+          set -euo pipefail
+          BRANCH="auto-semantic/rolling"
           BEFORE=${{ steps.before.outputs.count }}
           AFTER=${{ steps.after.outputs.count }}
           NEW=$((AFTER - BEFORE))
 
           git add rules/ 2>/dev/null || true
           if git diff --cached --quiet; then
-            echo "No semantic rules authored this run (all drafts routed to human review or no in-scope clusters)."
-          else
-            BRANCH="auto-semantic/run-${{ github.run_id }}"
-            git checkout -b "$BRANCH"
-            git commit -m "feat: author ${NEW} semantic (T2) rule(s) from adversarial clusters
+            echo "No new semantic rules this run (every in-scope cluster already has a rule, or all drafts went to human review)."
+            exit 0
+          fi
+
+          git commit -m "feat: author ${NEW} semantic (T2) rule(s) from adversarial clusters
 
           Source: PromptInject / HackAPrompt / garak agent-attack clusters (content-safety filtered out).
           Pipeline: author-semantic-rules.ts — narrow regex fallback (anchor + redirect) plus LLM-as-judge prompt.
           Gate: deterministic 0-FP gate on benign-code + benign-skill corpus; judge prompt carries untrusted guard.
           Status: experimental / maturity: test — requires human review before promotion."
-            git push -u origin "$BRANCH"
-            gh pr create \
-              --title "auto-semantic: ${NEW} T2 semantic rule(s) for human review" \
-              --body "$(cat <<'BODY'
+
+          # The helper is single-quoted, so argv carries the literal text $PUSH_TOKEN and
+          # never its value; the shell git spawns for the helper reads it from the
+          # environment. Nothing is written to .git/config.
+          # SC2016 is the point here, not a mistake: expanding $PUSH_TOKEN now would put
+          # the token in argv, where any process listing on the runner can read it.
+          # shellcheck disable=SC2016
+          git -c credential.helper= \
+              -c 'credential.helper=!f() { test "$1" = get || exit 0; echo username=x-access-token; echo "password=$PUSH_TOKEN"; }; f' \
+              push origin "HEAD:refs/heads/$BRANCH"
+
+          OPEN=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$OPEN" ]; then
+            echo "Added ${NEW} rule(s) to the open rolling PR #${OPEN}."
+            exit 0
+          fi
+
+          # No `|| echo` here: a PR that fails to open must fail the job. Swallowing
+          # that error is how a lane goes quiet behind a green check.
+          gh pr create \
+            --head "$BRANCH" \
+            --title "auto-semantic: T2 semantic rules for human review (rolling)" \
+            --label "needs-human-review" \
+            --body "$(cat <<'BODY'
           Authored method=semantic (T2) rules from semantic-attack adversarial clusters (PromptInject / HackAPrompt / garak) via scripts/author-semantic-rules.ts.
+
+          This is a rolling PR. Each weekly run adds rules for clusters that do not yet have one and pushes them here; clusters already covered by a merged rule, or by a rule already in this PR, are skipped. Merge it when ready; the next run starts a new one.
 
           Why semantic, not regex: pure regex on a reworded prompt injection is the MiroFish failure mode (keys on the describing wording, false-positives on benign paraphrases, bypassed by the next rewording). Each rule here follows the ATR-2026-00573 T2 shape: a narrow regex fallback (anchor plus redirect, low false-positive by design) used only when no judge is configured, and a high-quality LLM-as-judge prompt that defines the attack class with positive and negative cues and returns strict JSON.
 
@@ -192,8 +260,4 @@ jobs:
 
           Status experimental, maturity test. Do not auto-merge; human review required.
           BODY
-          )" \
-              --label "needs-human-review" \
-              || echo "PR creation failed; branch '${BRANCH}' pushed — open PR manually (main was NOT modified)."
-            echo "Opened PR from ${BRANCH} with ${NEW} authored semantic rules"
-          fi
+          )"

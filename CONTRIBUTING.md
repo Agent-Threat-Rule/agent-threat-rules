@@ -23,12 +23,12 @@ You spotted an attack pattern. You have example payloads. That's enough to start
 
 3. Submit the issue.
 
-That's it. A workflow runs immediately and opens a draft PR. The proposal YAML
-is auto-generated from your examples. You do not need to clone anything.
+That's it. A maintainer reviews the issue and, if it is accepted, turns it
+into a proposal on a draft PR. You do not need to clone anything.
 
 A maintainer reviews the regex shape and runs the full quality gate before
-merging. You can stop at step 3, or check out the PR branch and write the
-regex yourself if you want to stay involved.
+merging. You can stop at step 3, or, if you want to stay involved, propose a
+regex yourself in a PR comment or in a PR of your own.
 
 ---
 
@@ -90,11 +90,12 @@ npx tsx scripts/next-rule-id.ts
 
 Once your issue or PR lands:
 
-1. Automated PR opens (probe path) or CI runs (direct PR path). The safety gate
-   checks 0 FP against the benign skill corpus (the gate prints the sample count
-   it used).
-   If it fails, the PR gets the `needs-human-review` label and a maintainer
-   looks at it manually.
+1. A maintainer opens the proposal PR (probe path) or CI runs (direct PR
+   path). The CI safety gate (`validate.yml`) checks the rule files a PR adds
+   or changes under `rules/`, so a probe is gated when its proposal is
+   promoted to `rules/`. It checks 0 FP against the benign skill corpus (the
+   gate prints the sample count it used).
+   If it fails, the check fails and a maintainer looks at it manually.
 
 2. Maintainer reviews the regex. Usually one round of tightening. The benign
    corpus is the bar — the regex must not fire on clean content.
@@ -108,8 +109,8 @@ Once your issue or PR lands:
    whether any downstream repo updates is theirs to decide, and merging a rule
    here is not a claim that it is running in any company's product.
 
-Typical time from probe submission to npm publish: same day or next day,
-depending on maintainer availability.
+There is no set time from probe submission to npm publish; it depends on
+maintainer availability.
 
 ---
 

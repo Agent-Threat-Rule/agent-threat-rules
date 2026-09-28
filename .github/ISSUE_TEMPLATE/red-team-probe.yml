@@ -1,5 +1,5 @@
 name: Red Team Probe Submission
-description: Submit a discovered attack probe — auto-converted to an ATR proposal PR
+description: Submit a discovered attack probe for a maintainer to turn into an ATR proposal PR
 title: "[Probe] "
 labels: ["red-team-probe"]
 body:
@@ -9,8 +9,8 @@ body:
         ## How this works
 
         1. Fill in the fields below with **one attack probe** (one attack family per submission).
-        2. When you submit, a workflow runs `scripts/probe-to-atr.ts` and opens a draft PR adding
-           your probe under `proposals/red-team-probes/<slug>.proposal.yaml`.
+        2. A maintainer reviews your issue and, if it is accepted, opens a draft PR adding your probe under
+           `proposals/red-team-probes/<slug>.proposal.yaml`.
         3. A maintainer reviews the proposal. The detection regex usually needs one round of tightening
            against the benign corpus before it gets promoted to `rules/`.
         4. You're credited via `metadata_provenance.discovered_by` and in the rule's `author` field.
@@ -84,7 +84,7 @@ body:
       description: |
         At least 3 lookalike-but-benign strings that should NOT match the rule.
         These become the rule's `test_cases.true_negatives` and gate the regex tightness.
-        Without these, the proposal cannot be auto-promoted.
+        Without these, a maintainer cannot promote the proposal to `rules/`.
       placeholder: |
         Could you explain what 'ignore previous instructions' means as an attack pattern?
         The DAN attack was first published in 2023 academic research.
