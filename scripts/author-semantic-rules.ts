@@ -83,6 +83,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
 import { RuleScaffolder } from "../src/rule-scaffolder.js";
+import { ineligibleActions, maxTierFor } from "../src/quality/action-eligibility.js";
 import type { ATRCategory, ATRSeverity } from "../src/types.js";
 import { callClaude as sharedCallClaude, describeBackend, backendAvailable } from "./lib/claude-client.js";
 
@@ -438,6 +439,18 @@ export function authoredClustersFromRules(docs: unknown[]): Set<string> {
   return seen;
 }
 
+/**
+ * The declared actions an authored rule may keep: those at or below the tier the
+ * shared action-eligibility contract grants a rule with no FP measurement.
+ * Declaration order is kept; if nothing survives, the rule still alerts.
+ */
+export function earnedActions(actions: readonly string[], maturity: string): string[] {
+  const ceiling = maxTierFor({ maturity }).maxTier;
+  const unearned = new Set(ineligibleActions(actions, ceiling));
+  const kept = actions.filter((a) => !unearned.has(a));
+  return kept.length > 0 ? kept : ["alert"];
+}
+
 /** Split candidates into those still to author and those already authored. Order is kept. */
 export function excludeAuthored<T extends { proposalRel: string }>(
   candidates: T[],
@@ -685,6 +698,19 @@ export function buildSemanticRule(
   rule.status = "experimental";
   rule.maturity = "test";
   rule.detection_tier = "semantic";
+
+  // The scaffolder picks actions from severity alone, so a high or critical
+  // cluster comes out declaring block_input. A freshly authored rule has no
+  // benign-corpus measurement, and the action-eligibility contract caps an
+  // unmeasured rule at the observe tier — the repository-conformance test
+  // rejects anything above it. Keep only what has been earned.
+  const response = rule.response as { actions?: unknown } | undefined;
+  if (response) {
+    const declared = Array.isArray(response.actions)
+      ? response.actions.filter((a): a is string => typeof a === "string")
+      : [];
+    response.actions = earnedActions(declared, String(rule.maturity));
+  }
 
   // Replace the scaffolder's brittle EXACT-match fallback with the LLM-authored
   // narrow generalized fallback (anchor + redirect), and swap in the authored
