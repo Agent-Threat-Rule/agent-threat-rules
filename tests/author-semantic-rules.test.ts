@@ -16,8 +16,10 @@ import {
   extractJson,
   toJsRegExp,
   classifyFailure,
+  earnedActions,
   type SemanticDraft,
 } from "../scripts/author-semantic-rules.js";
+import { ineligibleActions, maxTierFor } from "../src/quality/action-eligibility.js";
 
 // A small benign corpus standing in for data/benign-code + skill corpus.
 const BENIGN = [
@@ -192,6 +194,20 @@ describe("buildSemanticRule", () => {
     expect(rule._semantic_authored.source_cluster).toBe(candidate.proposalRel);
   });
 
+  // A new rule has no benign-corpus measurement, so the shared action-eligibility
+  // contract caps it at the observe tier. The scaffolder's severity table still
+  // hands high/critical rules block_input; shipping that is what failed the
+  // repository-conformance test on the lane's first two real runs (2026-09-28/29).
+  it("declares only the actions an unmeasured rule has earned", () => {
+    for (const severity of ["critical", "high", "medium", "low"] as const) {
+      const rule = buildSemanticRule({ ...candidate, severity }, goodDraft(), "ATR-2026-09003") as Record<string, any>;
+      const actions: string[] = rule.response.actions;
+      expect(actions.length).toBeGreaterThan(0);
+      expect(actions).not.toContain("block_input");
+      expect(ineligibleActions(actions, maxTierFor({ maturity: rule.maturity }).maxTier)).toEqual([]);
+    }
+  });
+
   it("produces YAML that round-trips and keeps id format valid", () => {
     const rule = buildSemanticRule(candidate, goodDraft(), "ATR-2026-09002");
     const dumped = yaml.dump(rule, { lineWidth: 120, noRefs: true });
@@ -348,5 +364,21 @@ describe("excludeAuthored", () => {
     const candidates = [c("a.yaml"), c("b.yaml")];
     const { fresh } = excludeAuthored(candidates, new Set(["a.yaml", "b.yaml"]));
     expect(fresh).toHaveLength(0);
+  });
+});
+
+describe("earnedActions", () => {
+  it("drops actions above the observe tier and keeps declaration order", () => {
+    expect(earnedActions(["block_input", "alert", "escalate"], "test")).toEqual(["alert", "escalate"]);
+  });
+
+  it("falls back to alert when nothing earned is left", () => {
+    expect(earnedActions(["block_input", "kill_agent"], "test")).toEqual(["alert"]);
+    expect(earnedActions([], "test")).toEqual(["alert"]);
+  });
+
+  it("never grants more than the contract does, whatever the maturity claims", () => {
+    // No measurement is passed in, so even a rule stamped stable stays at observe.
+    expect(earnedActions(["block_tool", "alert"], "stable")).toEqual(["alert"]);
   });
 });

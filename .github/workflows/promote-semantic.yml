@@ -94,8 +94,19 @@ jobs:
             else
               git checkout -B "$BRANCH" "origin/$BRANCH"
               if ! git merge --no-edit origin/main; then
-                echo "::error::auto-semantic/rolling conflicts with main. Resolve it by hand; this run did not author anything."
-                exit 1
+                # main's reconcile-stats bot rewrites the same two count caches this
+                # branch carries, so they collide on every merge. They are derived
+                # from rules/ and recomputed after authoring; take main's copy and
+                # move on. A conflict anywhere else still needs a human.
+                CONFLICTED=$(git diff --name-only --diff-filter=U)
+                OTHER=$(printf '%s\n' "$CONFLICTED" | grep -vxE 'stats\.json|data/stats\.json' || true)
+                if [ -n "$OTHER" ]; then
+                  echo "::error::auto-semantic/rolling conflicts with main in: $OTHER. Resolve it by hand; this run did not author anything."
+                  exit 1
+                fi
+                git checkout --theirs -- stats.json data/stats.json
+                git add stats.json data/stats.json
+                git commit --no-edit
               fi
             fi
           else
@@ -184,6 +195,14 @@ jobs:
           fi
           echo "author-semantic-rules exited $EXIT (0=ok, 2=no-key, 3=all-human, 4=lane-down)"
 
+      # stats.json and data/stats.json cache the rule count, and `npm test` asserts
+      # they match the disk (reconcile-rule-count.test.ts). New rules change the
+      # disk, so the caches move with them in the same commit — the same thing the
+      # PR's own CI will check. Both of the lane's first real runs (2026-09-28/29)
+      # failed here.
+      - name: Reconcile rule-count caches
+        run: node scripts/reconcile-rule-count.mjs
+
       - name: Validate new rules
         run: npm run validate
 
@@ -214,8 +233,8 @@ jobs:
           AFTER=${{ steps.after.outputs.count }}
           NEW=$((AFTER - BEFORE))
 
-          git add rules/ 2>/dev/null || true
-          if git diff --cached --quiet; then
+          git add rules/ stats.json data/stats.json
+          if git diff --cached --quiet -- rules/; then
             echo "No new semantic rules this run (every in-scope cluster already has a rule, or all drafts went to human review)."
             exit 0
           fi
