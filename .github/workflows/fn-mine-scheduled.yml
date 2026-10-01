@@ -3,8 +3,8 @@ name: Scheduled FN Mining (red-team false-negative sweep)
 # Weekly unattended counterpart to the interactive /fn-mine Claude Code
 # workflow. Regenerates fresh false-negative reports against the CURRENT
 # rule set for the corpora ATR has fixtures for (HackAPrompt, PINT), mines
-# generalizable candidates via the Anthropic API (scripts/fn-mine-llm.ts —
-# same @anthropic-ai/sdk pattern as scripts/quality-upgrade.ts), gates every
+# generalizable candidates with Claude (scripts/fn-mine-llm.ts, through
+# scripts/lib/claude-client.ts), gates every
 # candidate against the full FN set + the full benign corpus with the exact
 # engine regex-compile semantics, authors survivors, self-tests each on the
 # real engine, and re-verifies the whole batch against this repo's own
@@ -17,6 +17,9 @@ name: Scheduled FN Mining (red-team false-negative sweep)
 #     both corpora will naturally converge toward null results as their
 #     (finite, fixed-seed) reservoirs get mined out — that is expected, not
 #     a bug to chase.
+#   - One rolling branch, fn-mine/rolling, and one open PR. Each run resumes the
+#     branch, so the rules already waiting in that PR are on disk and count as
+#     covering their clusters; a cluster is not mined twice while its rule waits.
 #   - Capped at 5 rules per run by default (the `cap` workflow_dispatch input,
 #     or --cap 5 on the cron trigger), well under the repo's 10-rules/PR
 #     safety-gate limit, since an unattended batch has no interactive
@@ -55,6 +58,9 @@ jobs:
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          # The push below authenticates explicitly; nothing is left in .git/config
+          # for the rest of the job (npm ci, pip, the miner) to read.
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
@@ -79,16 +85,61 @@ jobs:
         run: |
           git config user.name "ATR FN-Mine Bot"
           git config user.email "fn-mine@agentthreatrule.org"
-      # Prefer subscription credit over the metered API balance.
+
+      # Mine on top of the open PR's rules, not beside them. Coverage counts every
+      # rule on disk, drafts included, so a cluster whose rule is already waiting
+      # in fn-mine/rolling is not mined again. Before this the branch was deleted
+      # and recreated per date, and nothing knew what the last PR had proposed.
       #
-      # These lanes used to run only against ANTHROPIC_API_KEY. When that
-      # balance ran out they kept exiting 0 with nothing produced, and the
-      # daily rule pipeline was dead for days behind a green check.
-      #
-      # scripts/lib/claude-client.ts picks the CLI when CLAUDE_CODE_OAUTH_TOKEN
-      # is set and falls back to the API key when it is not, so this step is
-      # additive: with no secret configured the workflow behaves exactly as
-      # before. Mint the token with `claude setup-token`.
+      # Resume only while that PR is open. A PR closed without merging leaves the
+      # branch behind (delete_branch_on_merge only fires on merge); resuming it
+      # would bring rejected rules back and let them suppress their clusters. The
+      # sha fetched here is the lease the push step overwrites against.
+      - name: Resume the rolling branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          BRANCH="fn-mine/rolling"
+          OLD_SHA=""
+          if git fetch --quiet origin "$BRANCH" 2>/dev/null; then
+            OLD_SHA=$(git rev-parse "origin/$BRANCH")
+          fi
+          echo "ROLLING_OLD_SHA=$OLD_SHA" >> "$GITHUB_ENV"
+          OPEN=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+
+          if [ -z "$OPEN" ] || [ -z "$OLD_SHA" ] || git diff --quiet origin/main "origin/$BRANCH" -- rules/; then
+            if [ -n "$OLD_SHA" ] && [ -z "$OPEN" ]; then
+              echo "fn-mine/rolling exists without an open PR (merged or closed); starting fresh from main."
+            else
+              echo "No rolling PR with rules main lacks; starting fresh from main."
+            fi
+            git checkout -B "$BRANCH" origin/main
+            exit 0
+          fi
+
+          echo "Resuming fn-mine/rolling for open PR #$OPEN."
+          git checkout -B "$BRANCH" "origin/$BRANCH"
+          if ! git merge --no-edit origin/main; then
+            # The two count caches and the two crosswalk documents are all generated
+            # from rules/, and main's rule PRs and reconcile-stats bot rewrite them, so
+            # they collide on most merges. Clear the markers with main's copy, then
+            # regenerate from the merged tree. A conflict anywhere else needs a human.
+            DERIVED='stats\.json|data/stats\.json|docs/crosswalks/atr-(attack|ast)-crosswalk\.md'
+            CONFLICTED=$(git diff --name-only --diff-filter=U)
+            OTHER=$(printf '%s\n' "$CONFLICTED" | grep -vxE "$DERIVED" || true)
+            if [ -n "$OTHER" ]; then
+              echo "::error::fn-mine/rolling conflicts with main in: $OTHER. Resolve it by hand; this run mined nothing."
+              exit 1
+            fi
+            printf '%s\n' "$CONFLICTED" | xargs git checkout --theirs --
+            python3 scripts/generate-attack-crosswalk.py
+            python3 scripts/generate-ast-crosswalk.py
+            node scripts/reconcile-rule-count.mjs
+            git add stats.json data/stats.json docs/crosswalks/atr-attack-crosswalk.md docs/crosswalks/atr-ast-crosswalk.md
+            git commit --no-edit
+          fi
+
       - name: Install Claude CLI (subscription-credit backend)
         # `secrets` is not available in a step-level `if` — GitHub refuses to load the
         # whole workflow, which is how this file broke main on 2026-09-22 (0 jobs, run
@@ -116,74 +167,104 @@ jobs:
           DRY_RUN_FLAG=""
           if [ "${{ inputs.dry_run }}" = "true" ]; then DRY_RUN_FLAG="--dry-run"; fi
           npx tsx scripts/fn-mine-llm.ts $DRY_RUN_FLAG --cap "${{ inputs.cap || '5' }}" | tee /tmp/fn-mine.out
-          FILES=$(grep "::authored-files::" /tmp/fn-mine.out | tail -1 | sed 's/::authored-files:://')
+          FILES=$(grep "::authored-files::" /tmp/fn-mine.out | tail -1 | sed 's/::authored-files:://' || true)
           echo "files=$FILES" >> "$GITHUB_OUTPUT"
 
+      # Says which stage emptied the run (no misses / all covered / nothing
+      # proposed / gate rejected all), so a zero is not read as "the gate is
+      # too strict" when the gate was never reached.
       - name: Stop here if nothing survived (null result — not an error)
         if: steps.mine.outputs.files == ''
-        run: echo "No rules survived the gate this run. Quiet exit, no PR."
+        run: |
+          LINE=$(grep -h 'NULL RESULT' /tmp/fn-mine.out | tail -1 || true)
+          echo "${LINE:-No rules survived this run.} Quiet exit, no PR."
+          echo "${LINE:-No rules survived this run.}" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Create branch + commit + push
+      - name: Keep the per-rule report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fn-mine-report
+          path: output/fn-mine-report.json
+          if-no-files-found: ignore
+
+      # stats.json and data/stats.json cache the rule count, and the PR's own CI
+      # asserts they match the disk (tests/reconcile-rule-count.test.ts).
+      - name: Reconcile rule-count caches
         if: steps.mine.outputs.files != ''
-        id: push
+        run: node scripts/reconcile-rule-count.mjs
+
+      - name: Push to the rolling branch and open or update its PR
+        if: steps.mine.outputs.files != ''
         env:
           # A PR opened with the default GITHUB_TOKEN is authored by app/github-actions, and
-          # GitHub parks every check on it at action_required forever rather than running it —
-          # deliberately, to stop workflows triggering each other. The consequence here was that
-          # this lane's PRs could never go green, so they could never be merged, so they piled up.
-          # On 2026-09-22, 64 checks across 8 branches were sitting unrun, some for 16 days.
-          # Opening with a PAT makes a real user the author, so the PR's own CI runs.
+          # every check on it parks at action_required forever instead of running; a push made
+          # with GITHUB_TOKEN does not trigger the PR's CI either. Pushing and opening with a
+          # PAT makes a real user the author, so the PR's CI runs on every later push too.
+          PUSH_TOKEN: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
-          set -e
-          BRANCH="fn-mine/scheduled-$(date +%Y%m%d)"
-          git push origin --delete "$BRANCH" 2>/dev/null || true
-          git checkout -b "$BRANCH"
-          git add rules/ docs/crosswalks/
+          set -euo pipefail
+          BRANCH="fn-mine/rolling"
+          git add rules/ docs/crosswalks/ stats.json data/stats.json
+          if git diff --cached --quiet -- rules/; then
+            echo "::error::the miner reported authored files but none are staged under rules/."
+            exit 1
+          fi
           git commit -m "$(cat <<'EOF'
           feat(rules): scheduled FN-mine sweep
 
-          Unattended weekly red-team false-negative mining (HackAPrompt + PINT).
-          See output/fn-mine-report.json for per-rule recovers counts.
+          Unattended weekly red-team false-negative mining (HackAPrompt successful
+          submissions + PINT). Per-rule recovers counts are in the fn-mine-report
+          artifact of the workflow run that pushed this commit.
           EOF
           )"
-          git push origin "$BRANCH"
-          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
 
-      - name: Open draft PR
-        if: steps.mine.outputs.files != ''
-        env:
-          # A PR opened with the default GITHUB_TOKEN is authored by app/github-actions, and
-          # every check on it parks at action_required forever instead of running. Opening it
-          # with a PAT makes a real user the author so the PR's own CI runs. Falls back to
-          # GITHUB_TOKEN when ATR_REPO_TOKEN is absent (PR still opens, checks still park).
-          GH_TOKEN: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
-        run: |
-          set -e
+          # The helper is single-quoted, so argv carries the literal text $PUSH_TOKEN and
+          # never its value; the shell git spawns for the helper reads it from the
+          # environment. Nothing is written to .git/config.
+          # Lease on the sha the resume step fetched: a resumed branch fast-forwards; a
+          # branch left by a merged or closed PR is replaced; a branch someone else
+          # moved since this run started is not touched. An empty lease requires the
+          # branch not to exist.
+          # shellcheck disable=SC2016
+          git -c credential.helper= \
+              -c 'credential.helper=!f() { test "$1" = get || exit 0; echo username=x-access-token; echo "password=$PUSH_TOKEN"; }; f' \
+              push --force-with-lease="refs/heads/$BRANCH:${ROLLING_OLD_SHA:-}" origin "HEAD:refs/heads/$BRANCH"
+
+          OPEN=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$OPEN" ]; then
+            echo "Added this run's rules to the open rolling PR #${OPEN}."
+            exit 0
+          fi
+
+          # No `|| echo` here: a PR that fails to open must fail the job.
           gh pr create \
-            --title "feat(rules): scheduled FN-mine sweep — $(date +%Y-%m-%d)" \
-            --body "$(cat <<'EOF'
-          Unattended weekly false-negative mining run (HackAPrompt + PINT reservoirs),
-          the scheduled counterpart to the interactive /fn-mine Claude Code workflow.
-
-          Method: regenerated fresh FN reports against the CURRENT rule set, filtered
-          out anything already covered by an existing rule regex on disk (any status,
-          draft included — prevents re-mining the same cluster every week just because
-          a prior draft hasn't been promoted yet), clustered the genuinely-uncovered
-          false negatives via Claude into candidate regexes, gated every candidate
-          against the FULL false-negative set and the FULL benign corpus using the
-          exact engine regex-compile semantics (not an approximation), authored
-          survivors, self-tested each on the real engine, then re-verified the whole
-          batch against this repo's own safety gate (65K-benign 0-FP + cross-rule
-          conflict + duplicate-ID checks) — dropping (not force-fixing) anything that
-          failed.
-
-          See output/fn-mine-report.json in this PR's diff for per-rule recovers
-          counts. Left as draft — nothing here is auto-merged; a human reviews and
-          decides, same as every other rule PR in this repo.
-          EOF
-          )" \
-            --label "auto-generated,fn-mine,needs-human-review" \
             --draft \
             --base main \
-            --head "${{ steps.push.outputs.branch }}"
+            --head "$BRANCH" \
+            --label "auto-generated,fn-mine,needs-human-review" \
+            --title "feat(rules): scheduled FN-mine sweep (rolling)" \
+            --body "$(cat <<'EOF'
+          Unattended weekly false-negative mining (HackAPrompt successful submissions and
+          PINT), the scheduled counterpart to the interactive /fn-mine workflow.
+
+          This is a rolling PR. Each Thursday run resumes fn-mine/rolling and adds the rules
+          it authored; clusters already covered by a rule on main or in this PR are skipped.
+          Merge it when ready; the next run starts a new one.
+
+          Method: fresh false-negative reports against the current rule set. A miss counts as
+          already covered only if the eval harness (src/eval/eval-harness.ts, canonical event
+          shapes) detects it with every rule on disk, drafts included; the run fails if a
+          negative canary ("hello", "What is the capital of France?") is covered, if a known
+          attack is not, or if more than half the misses come back covered. HackAPrompt
+          submissions that failed in the competition (correct=false) are not mined. Claude
+          clusters the uncovered misses into candidate regexes; every candidate is gated
+          against the full miss set and the full benign corpus with the engine's own regex
+          compile semantics, authored, self-tested on the real engine, and re-checked by
+          scripts/check-rules-safety.ts, dropping (not force-fixing) anything that fails.
+
+          Per-rule recovers counts are in the fn-mine-report artifact of each workflow run.
+          Draft: nothing here is auto-merged; a human reviews and decides.
+          EOF
+          )"
