@@ -79,39 +79,53 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      # Resume only while the rolling PR is open. A PR closed without merging leaves
+      # its branch behind (delete_branch_on_merge only fires on merge); resuming it
+      # would bring the rejected rules back. The sha fetched here is the lease the
+      # push step overwrites against.
       - name: Resume the rolling branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           git config user.name "ATR Semantic Author"
           git config user.email "semantic-author@atr-framework.org"
           BRANCH="auto-semantic/rolling"
+          OLD_SHA=""
           if git fetch --quiet origin "$BRANCH" 2>/dev/null; then
-            # Everything on the branch already landed (e.g. its PR was squash-merged):
-            # start clean from main rather than carry history that main already has.
-            if git diff --quiet origin/main "origin/$BRANCH" -- rules/; then
-              echo "Rolling branch has no rules main lacks; starting fresh from main."
-              git checkout -B "$BRANCH" origin/main
+            OLD_SHA=$(git rev-parse "origin/$BRANCH")
+          fi
+          echo "ROLLING_OLD_SHA=$OLD_SHA" >> "$GITHUB_ENV"
+          OPEN=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+
+          if [ -z "$OPEN" ] || [ -z "$OLD_SHA" ] || git diff --quiet origin/main "origin/$BRANCH" -- rules/; then
+            if [ -n "$OLD_SHA" ] && [ -z "$OPEN" ]; then
+              echo "auto-semantic/rolling exists without an open PR (merged or closed); starting fresh from main."
             else
-              git checkout -B "$BRANCH" "origin/$BRANCH"
-              if ! git merge --no-edit origin/main; then
-                # main's reconcile-stats bot rewrites the same two count caches this
-                # branch carries, so they collide on every merge. They are derived
-                # from rules/ and recomputed after authoring; take main's copy and
-                # move on. A conflict anywhere else still needs a human.
-                CONFLICTED=$(git diff --name-only --diff-filter=U)
-                OTHER=$(printf '%s\n' "$CONFLICTED" | grep -vxE 'stats\.json|data/stats\.json' || true)
-                if [ -n "$OTHER" ]; then
-                  echo "::error::auto-semantic/rolling conflicts with main in: $OTHER. Resolve it by hand; this run did not author anything."
-                  exit 1
-                fi
-                git checkout --theirs -- stats.json data/stats.json
-                git add stats.json data/stats.json
-                git commit --no-edit
-              fi
+              echo "No rolling PR with rules main lacks; starting fresh from main."
             fi
-          else
-            echo "No rolling branch yet; starting from main."
             git checkout -B "$BRANCH" origin/main
+            exit 0
+          fi
+
+          echo "Resuming auto-semantic/rolling for open PR #$OPEN."
+          git checkout -B "$BRANCH" "origin/$BRANCH"
+          if ! git merge --no-edit origin/main; then
+            # The two count caches and the two crosswalk documents are generated from
+            # rules/, and main's rule PRs and reconcile-stats bot rewrite them, so they
+            # collide on most merges. Take main's copy to clear the markers; all four
+            # are regenerated from the merged tree after authoring, before the tests.
+            # A conflict anywhere else still needs a human.
+            DERIVED='stats\.json|data/stats\.json|docs/crosswalks/atr-(attack|ast)-crosswalk\.md'
+            CONFLICTED=$(git diff --name-only --diff-filter=U)
+            OTHER=$(printf '%s\n' "$CONFLICTED" | grep -vxE "$DERIVED" || true)
+            if [ -n "$OTHER" ]; then
+              echo "::error::auto-semantic/rolling conflicts with main in: $OTHER. Resolve it by hand; this run did not author anything."
+              exit 1
+            fi
+            printf '%s\n' "$CONFLICTED" | xargs git checkout --theirs --
+            printf '%s\n' "$CONFLICTED" | xargs git add --
+            git commit --no-edit
           fi
 
       - name: Setup Node.js
@@ -203,6 +217,14 @@ jobs:
       - name: Reconcile rule-count caches
         run: node scripts/reconcile-rule-count.mjs
 
+      # Both crosswalk documents count rules too, and validate.yml checks them on
+      # every PR with --check. A new rule makes them stale, so the PR this lane
+      # opens would fail validation unless they move in the same commit.
+      - name: Regenerate the crosswalk documents
+        run: |
+          python3 scripts/generate-attack-crosswalk.py
+          python3 scripts/generate-ast-crosswalk.py
+
       - name: Validate new rules
         run: npm run validate
 
@@ -233,7 +255,7 @@ jobs:
           AFTER=${{ steps.after.outputs.count }}
           NEW=$((AFTER - BEFORE))
 
-          git add rules/ stats.json data/stats.json
+          git add rules/ stats.json data/stats.json docs/crosswalks/
           if git diff --cached --quiet -- rules/; then
             echo "No new semantic rules this run (every in-scope cluster already has a rule, or all drafts went to human review)."
             exit 0
@@ -251,10 +273,13 @@ jobs:
           # environment. Nothing is written to .git/config.
           # SC2016 is the point here, not a mistake: expanding $PUSH_TOKEN now would put
           # the token in argv, where any process listing on the runner can read it.
+          # The lease is the sha the resume step fetched: a resumed branch fast-forwards,
+          # a branch left by a merged or closed PR is replaced, and a branch someone else
+          # moved since this run started is not touched. Empty means it must not exist.
           # shellcheck disable=SC2016
           git -c credential.helper= \
               -c 'credential.helper=!f() { test "$1" = get || exit 0; echo username=x-access-token; echo "password=$PUSH_TOKEN"; }; f' \
-              push origin "HEAD:refs/heads/$BRANCH"
+              push --force-with-lease="refs/heads/$BRANCH:${ROLLING_OLD_SHA:-}" origin "HEAD:refs/heads/$BRANCH"
 
           OPEN=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
           if [ -n "$OPEN" ]; then
