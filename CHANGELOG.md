@@ -4,7 +4,36 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+## [4.1.2] - 2026-10-01
+
+The first release of the 4.1 line to reach npm. Until this one,
+`npm install agent-threat-rules` returned 4.0.0. 4.1.2 carries everything
+listed under 4.1.1 and 4.1.0 below. Rules, engine and spec are unchanged from
+the `v4.1.1` tag; the README rewords one row of its ETSI mapping, which had
+stated a conformance requirement as a fact about the corpus.
+
+Neither earlier 4.1 tag reached the registry:
+
+- `4.1.0` (tagged 2026-09-14): the publish step got E404 on the registry PUT.
+- `4.1.1` (tagged 2026-09-22): the tag-triggered publish failed with EOTP, npm
+  asking CI for a one-time password. A manual republish later that day was
+  placed in npm's staging queue instead of being published, and the retry on
+  2026-09-23 was refused with E409. npm does not allow publishing over a staged
+  version, so the number is skipped.
+
+The 4.1.1 entry below opens by calling itself the first 4.1 release to reach
+npm. It was not; the entry is otherwise left as written.
+
+### Changed
+
+- **Releases publish through npm trusted publishing (OIDC).** `publish.yml` no
+  longer reads a registry token. npm mints a short-lived credential for each
+  run, bound to this repository and that workflow file, and generates the
+  provenance attestation itself (#606).
+
 ## [4.1.1] - 2026-09-22
+
+> Not published to npm (see 4.1.2).
 
 The first release of the 4.1 line to actually reach npm. `4.1.0` was tagged on
 2026-09-14 and never published — the publish step failed on an expired registry
