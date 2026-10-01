@@ -120,10 +120,11 @@ jobs:
         run: npm run reconcile-stats
 
       # Published through npm trusted publishing (OIDC), so there is no token here
-      # and none is wanted. The credential that used to sit in this step expired
-      # silently on 2026-08-27; six npm tokens have now expired that way, each
-      # discovered only when a release failed. An OIDC token is minted for this
-      # one run and expires in minutes, so there is nothing left to rotate.
+      # and none is wanted. The token that used to sit in this step failed the
+      # 4.1.1 release on 2026-09-22 with EOTP: npm demanded a one-time password
+      # from CI. An OIDC credential is minted for this one run and expires in
+      # minutes, so this step has nothing to rotate. (npm-stage.yml and
+      # publish-on-rules-merge.yml still read NPM_TOKEN.)
       #
       # Trust is configured on the package, not in this file: npmjs.com ->
       # agent-threat-rules -> Settings -> Trusted publishing, matching
