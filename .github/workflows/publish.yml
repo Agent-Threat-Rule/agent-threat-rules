@@ -101,6 +101,21 @@ jobs:
           VERSION="${GITHUB_REF#refs/tags/v}"
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
+      # npm publishes the version in package.json, not the tag name. A tag pushed
+      # on a commit that is not the version bump would publish whatever version
+      # package.json carries there, under a GitHub release named after the tag.
+      # 4.1.1 is already staged on the registry and cannot be published over, so
+      # stop here, before anything is sent.
+      - name: Tag must match package.json
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$PKG_VERSION" != "$VERSION" ]; then
+            echo "::error::tag v$VERSION but package.json is $PKG_VERSION. Tag the commit where the version bump landed."
+            exit 1
+          fi
+          echo "tag v$VERSION matches package.json"
+
       # Was an inline script that rebuilt data/stats.json from scratch with five
       # fields. It destroyed two of them: `benchmarks` and
       # `benchmarks_generated_at`, which website/lib/stats.ts calls the canonical
