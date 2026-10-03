@@ -821,6 +821,6 @@ The 2026-04 ecosystem-wide skill scan was made possible by the maintainers of Op
 
 <div align="center">
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Agent-Threat-Rule/agent-threat-rules&type=Date)](https://star-history.com/#Agent-Threat-Rule/agent-threat-rules&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=Agent-Threat-Rule/agent-threat-rules&type=Date)](https://star-history.dera.page/#Agent-Threat-Rule/agent-threat-rules&Date)
 
 </div>
